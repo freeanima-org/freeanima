@@ -12,6 +12,7 @@ import {
   collectProviderIds,
   hop,
   profileDef,
+  shouldFailoverToNextHop,
   validateProfiles,
 } from "./index.ts";
 import { MockBackend } from "./test-helpers/mock-backend.ts";
@@ -158,6 +159,108 @@ describe("LlmProfile", () => {
       ProviderError,
     );
     expect(providers.get("main").getHealth().healthy).toBe(false);
+  });
+
+  it("chat failure message includes profile provider model", async () => {
+    const backend = new MockBackend({
+      chatError: new ProviderError("401 Invalid API key.", "authentication", false),
+    });
+    const { profile } = setupProfileStack(backend);
+    try {
+      await profile.chat([{ role: "user", content: "hi" }]);
+      expect.unreachable("should throw");
+    } catch (err) {
+      expect(err).toBeInstanceOf(ProviderError);
+      const pe = err as ProviderError;
+      expect(pe.message).toContain("[profile=chat provider=main model=cfg-model hop=0]");
+      expect(pe.profileId).toBe("chat");
+      expect(pe.providerId).toBe("main");
+      expect(pe.model).toBe("cfg-model");
+    }
+  });
+
+  it("chat falls over to chain[1] on authentication failure", async () => {
+    const primary = new MockBackend({
+      id: "primary",
+      chatError: new ProviderError("401 Invalid API key.", "authentication", false),
+    });
+    const standby = new MockBackend({
+      id: "standby",
+      chatResult: { content: "from-standby", model: "standby-model" },
+    });
+    const backends = new BackendRegistry();
+    backends.register(primary);
+    backends.register(standby);
+    const providers = new ProviderRegistry(backends);
+    providers.register(new LlmProvider("p1", primary.id, { apiKey: "bad" }, primary));
+    providers.register(new LlmProvider("p2", standby.id, { apiKey: "ok" }, standby));
+    const profile = new LlmProfile(
+      profileDef("chat", [hop("p1", "m1"), hop("p2", "standby-model")]),
+      providers,
+    );
+    const out = await profile.chat([{ role: "user", content: "hi" }]);
+    expect(out.content).toBe("from-standby");
+    expect(primary.chatCalls).toHaveLength(1);
+    expect(standby.chatCalls).toHaveLength(1);
+    expect(profile.provider.id).toBe("p2");
+    expect(profile.model).toBe("standby-model");
+  });
+
+  it("chat does not failover on invalid_request", async () => {
+    const primary = new MockBackend({
+      id: "primary",
+      chatError: new ProviderError("bad schema", "invalid_request", false),
+    });
+    const standby = new MockBackend({ id: "standby" });
+    const backends = new BackendRegistry();
+    backends.register(primary);
+    backends.register(standby);
+    const providers = new ProviderRegistry(backends);
+    providers.register(new LlmProvider("p1", primary.id, {}, primary));
+    providers.register(new LlmProvider("p2", standby.id, {}, standby));
+    const profile = new LlmProfile(
+      profileDef("chat", [hop("p1", "m1"), hop("p2", "m2")]),
+      providers,
+    );
+    await expect(profile.chat([{ role: "user", content: "hi" }])).rejects.toMatchObject({
+      code: "invalid_request",
+    });
+    expect(standby.chatCalls).toHaveLength(0);
+    expect(shouldFailoverToNextHop(new ProviderError("x", "invalid_request", false))).toBe(false);
+  });
+
+  it("chatStream falls over before first token", async () => {
+    const primary = new MockBackend({
+      id: "primary",
+      streamError: new ProviderError("401 Invalid API key.", "authentication", false),
+    });
+    const standby = new MockBackend({
+      id: "standby",
+      streamEvents: [
+        { type: "content", content: "ok" },
+        { type: "done", model: "m2", finish_reason: "stop" },
+      ],
+    });
+    const backends = new BackendRegistry();
+    backends.register(primary);
+    backends.register(standby);
+    const providers = new ProviderRegistry(backends);
+    providers.register(new LlmProvider("p1", primary.id, {}, primary));
+    providers.register(new LlmProvider("p2", standby.id, {}, standby));
+    const profile = new LlmProfile(
+      profileDef("chat", [hop("p1", "m1"), hop("p2", "m2")]),
+      providers,
+    );
+    const events = [];
+    for await (const ev of profile.chatStream([{ role: "user", content: "hi" }])) {
+      events.push(ev);
+    }
+    expect(events).toEqual([
+      { type: "content", content: "ok" },
+      { type: "done", model: "m2", finish_reason: "stop" },
+    ]);
+    expect(primary.streamCalls).toHaveLength(1);
+    expect(standby.streamCalls).toHaveLength(1);
   });
 
   it("chatStream yields backend events and marks healthy on completion", async () => {

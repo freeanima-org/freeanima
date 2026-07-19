@@ -4,6 +4,8 @@ import { spawnSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { buildSubprocessEnv } from "./subprocess-env.ts";
+
 const MAX_OUTPUT = 50 * 1024;
 const MAX_TIMEOUT = 600;
 
@@ -58,7 +60,7 @@ function formatSpawnResult(result: ReturnType<typeof spawnSync>): string {
   return output || "(no output)";
 }
 
-async function runBun(code: string, timeoutSec: number): Promise<string> {
+async function runBun(code: string, timeoutSec: number, env: NodeJS.ProcessEnv): Promise<string> {
   const dir = createTempDir("anima-exec-");
   const file = join(dir, "snippet.ts");
   writeFileSync(file, `${BUN_PREAMBLE}\n${code}`, "utf-8");
@@ -70,6 +72,7 @@ async function runBun(code: string, timeoutSec: number): Promise<string> {
       stdout: "pipe",
       stderr: "pipe",
       signal: controller.signal,
+      env,
     });
     const [stdout, stderr, exitCode] = await Promise.all([
       new Response(proc.stdout).text(),
@@ -85,7 +88,7 @@ async function runBun(code: string, timeoutSec: number): Promise<string> {
   }
 }
 
-function runNodejs(code: string, timeoutSec: number): string {
+function runNodejs(code: string, timeoutSec: number, env: NodeJS.ProcessEnv): string {
   const dir = createTempDir("anima-exec-");
   const file = join(dir, "snippet.mts");
   writeFileSync(file, `${NODEJS_PREAMBLE}\n${code}`, "utf-8");
@@ -94,6 +97,7 @@ function runNodejs(code: string, timeoutSec: number): string {
       encoding: "utf-8",
       timeout: timeoutSec * 1000,
       maxBuffer: MAX_OUTPUT,
+      env,
     });
     return formatSpawnResult(result);
   } catch (e) {
@@ -107,17 +111,20 @@ export async function runExecuteCode(
   code: string,
   runtime: RuntimeId,
   timeoutSec: number,
+  secretEnv?: Record<string, string>,
 ): Promise<string> {
+  const env = buildSubprocessEnv(secretEnv);
   switch (runtime) {
     case "bun":
-      return runBun(code, timeoutSec);
+      return runBun(code, timeoutSec, env);
     case "nodejs":
-      return runNodejs(code, timeoutSec);
+      return runNodejs(code, timeoutSec, env);
     default:
       return toolError(`runtime '${runtime}' is not supported`);
   }
 }
 
 export function clampTimeout(raw: unknown): number {
-  return Math.min(Math.max(1, Number(raw ?? 300)), MAX_TIMEOUT);
+  const n = typeof raw === "number" && Number.isFinite(raw) ? Math.floor(raw) : 300;
+  return Math.min(Math.max(1, n), MAX_TIMEOUT);
 }

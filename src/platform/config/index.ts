@@ -21,6 +21,7 @@ export * from "./eventbus.ts";
 export * from "./repo-root.ts";
 export * from "./version.ts";
 export * from "./config-sanitize.ts";
+export { restoreMaskedSecrets } from "./restore-masked-secrets.ts";
 export * from "./cjk.ts";
 export * from "./fts.ts";
 export * from "./embedding.ts";

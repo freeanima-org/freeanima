@@ -64,8 +64,8 @@ Disabled runtimes return a clear error listing available runtimes.
 - **Do not** auto-guess runtime from code content
 - JS runtimes can still import `node:fs`—terminal command hard denies do **not** apply inside `code_execute`
 
-## Credential Injection (Planned)
+## Credential Injection
 
-Architecture allows credential path injection in `execute_code` environments — **not yet implemented**. See [Issue #40](https://github.com/freeanima-org/freeanima/issues/40).
+`code_execute` (and `terminal_run`) accept optional `secrets[]`: Vault item refs decrypted for **that subprocess only** and merged into child `env` (not Hub `process.env`). Values never appear in LLM tool results. Prefer argv / `process.env.NAME` inside the snippet; no vault CLI inside runtimes.
 
-Credential values are never exposed to the LLM; injected from Vault at runtime — no vault CLI inside runtimes.
+File-path credential mounts (Issue #40 style) are **not** implemented; use `secrets[]` for CLI/runtime needs.

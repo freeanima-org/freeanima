@@ -251,7 +251,7 @@ Privacy fields live in `body.secrets_enc` + `body.dek_wrapped`; metadata (title,
 
 - **SAP:** `vault.*` — Shell defaults `subject_kind: user`; ToolSet defaults agent world.
 - **UI:** shell `/vault` (`@freeanima/satellite-vault`); bundled Chat has a dedicated master-password unlock (not a chat message).
-- **LLM:** ToolSet `vault` — metadata + `vault_inject_env` ack only; never plaintext secrets in context.
+- **LLM:** ToolSet `vault` — metadata list/search/get (MCP); `vault_create` / `vault_update` / `vault_delete` Habitat-only (Agent library seal for create/update); subprocess credentials via `terminal_run` / `code_execute` `secrets[]` (child env only); never plaintext secrets in tool results or Hub `process.env`.
 - **Config:** `vault("item_id", "field")` resolves Agent library at Hub boot (legacy `credential()` removed).
 
 Legacy pass (`~/.password-store`) is **not** deleted on disk; migrate entries manually via Shell UI.

@@ -10,6 +10,7 @@ import {
 import { contextCacheKey, parseOpenAiCompatibleContext } from "./context.ts";
 import { createOpenAiClientFromParsed } from "./client.ts";
 import { defaultModelInfo, fetchModelCatalog, findModelInCatalog } from "./catalog.ts";
+import { loadModelCatalogCache, saveModelCatalogCache } from "./catalog-cache.ts";
 import { mapOpenAiCompatibleError } from "./map-error.ts";
 import { runOpenAiChat, runOpenAiChatStream } from "./openai-chat.ts";
 
@@ -25,10 +26,17 @@ export class OpenAiCompatibleBackend extends LlmBackend {
       return cached;
     }
 
+    const fromShared = await loadModelCatalogCache(parsed);
+    if (fromShared) {
+      this.catalogCache.set(cacheKey, fromShared);
+      return fromShared;
+    }
+
     const client = createOpenAiClientFromParsed(parsed);
     try {
       const catalog = await fetchModelCatalog(client);
       this.catalogCache.set(cacheKey, catalog);
+      await saveModelCatalogCache(parsed, catalog);
       return catalog;
     } catch (err) {
       throw this.mapError(err, context);
@@ -40,7 +48,22 @@ export class OpenAiCompatibleBackend extends LlmBackend {
     const cacheKey = contextCacheKey(parsed);
     let catalog = this.catalogCache.get(cacheKey);
     if (!catalog) {
-      catalog = await this.listModels(context);
+      const fromShared = await loadModelCatalogCache(parsed);
+      if (fromShared) {
+        catalog = fromShared;
+        this.catalogCache.set(cacheKey, catalog);
+      }
+    }
+    if (!catalog) {
+      try {
+        const client = createOpenAiClientFromParsed(parsed);
+        catalog = await fetchModelCatalog(client);
+        this.catalogCache.set(cacheKey, catalog);
+        await saveModelCatalogCache(parsed, catalog);
+      } catch {
+        // /models flaky on many compatible gateways — keep chat usable
+        return defaultModelInfo(model);
+      }
     }
     return findModelInCatalog(catalog, model) ?? defaultModelInfo(model);
   }

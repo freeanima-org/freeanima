@@ -2,7 +2,7 @@ import { describe, it, expect } from "bun:test";
 import { sanitizeConfigForApi } from "./config-sanitize.ts";
 
 describe("sanitizeConfigForApi", () => {
-  it("sanitizes llm.providers.api_key", () => {
+  it("llm.providers.api_key 原样返回", () => {
     const out = sanitizeConfigForApi({
       llm: {
         default_profile: "chat",
@@ -20,19 +20,19 @@ describe("sanitizeConfigForApi", () => {
     } as never);
     const llm = out.llm as Record<string, unknown>;
     const providers = llm.providers as Record<string, Record<string, unknown>>;
-    expect(providers.main?.api_key).toBe("***");
+    expect(providers.main?.api_key).toBe("sk-secret");
   });
 
-  it("sanitizes password in database.url", () => {
+  it("database.url 原样返回", () => {
     const out = sanitizeConfigForApi({
       database: { url: "postgresql://anima:secretpass@127.0.0.1:5432/anima" },
     } as never);
     expect(out.database).toEqual({
-      url: "postgresql://***:***@127.0.0.1:5432/anima",
+      url: "postgresql://anima:secretpass@127.0.0.1:5432/anima",
     });
   });
 
-  it("sanitizes push.pushdeer.pushkey", () => {
+  it("push.pushdeer.pushkey 原样返回", () => {
     const out = sanitizeConfigForApi({
       push: {
         provider: "pushdeer",
@@ -41,7 +41,7 @@ describe("sanitizeConfigForApi", () => {
     } as never);
     expect(out.push).toEqual({
       provider: "pushdeer",
-      pushdeer: { pushkey: "***", api_base: "https://api2.pushdeer.com" },
+      pushdeer: { pushkey: "real-key", api_base: "https://api2.pushdeer.com" },
     });
   });
 

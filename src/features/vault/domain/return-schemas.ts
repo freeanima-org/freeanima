@@ -53,20 +53,28 @@ export const VAULT_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
     }),
     example: { ok: true, action: "get_meta", item: exampleItem },
   }),
-  vault_inject_env: defineToolReturn({
+  vault_create: defineToolReturn({
     schema: z.object({
       ok: z.literal(true),
-      action: z.literal("inject_env"),
-      env_name: z.string(),
-      item_id: z.number(),
-      subject_kind: z.enum(["user", "agent"]),
+      action: z.literal("create"),
+      item: vaultItemMetaSchema,
     }),
-    example: {
-      ok: true,
-      action: "inject_env",
-      env_name: "PGPASSWORD",
-      item_id: 10,
-      subject_kind: "agent",
-    },
+    example: { ok: true, action: "create", item: exampleItem },
+  }),
+  vault_update: defineToolReturn({
+    schema: z.object({
+      ok: z.literal(true),
+      action: z.literal("update"),
+      item: vaultItemMetaSchema,
+    }),
+    example: { ok: true, action: "update", item: exampleItem },
+  }),
+  vault_delete: defineToolReturn({
+    schema: z.object({
+      ok: z.literal(true),
+      action: z.literal("delete"),
+      id: z.number(),
+    }),
+    example: { ok: true, action: "delete", id: 10 },
   }),
 };

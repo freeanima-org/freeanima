@@ -201,7 +201,7 @@ bun run dev:hub     # random ≥10000 (not production 2658); writes ~/.anima/dev
 FREEANIMA_URL=http://127.0.0.1:<hub-port> bun run dev:web   # default :5000; browser Hub = page origin
 ```
 
-Browser Web defaults Hub URL to the **page origin** (same in production Hub-hosted `/web` and Vite). Dev injects Service API Token from `dev-web.token` automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves HTTPS using `~/.anima/tls` (Hub stays plain HTTP).
+Browser Web defaults Hub URL to the **page origin** (same in production Hub-hosted `/web` and Vite). Dev injects Service API Token from `dev-web.token` automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves HTTPS using `~/.anima/tls` (Hub stays plain HTTP). Source `dev:hub` also **ignores** `config.yaml` `web.enabled` / `web.host` / `web.port` — Hub does not host `/web` dist; use Vite (`WEB_DEV_PORT`, default 5000).
 
 **Source deploy** (Hub hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `build:web`. Source-tree `anima` has no `service` command.
 

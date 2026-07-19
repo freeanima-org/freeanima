@@ -9,6 +9,7 @@ import { fetchModelCatalog } from "@freeanima/capabilities/llm-openai/catalog.ts
 import { parseOpenAiCompatibleContext } from "@freeanima/capabilities/llm-openai/context.ts";
 import { OPENAI_COMPATIBLE_BACKEND_ID } from "@freeanima/core/config/schemas/llm-config.ts";
 import { resolveValue } from "@freeanima/platform/config/resolve.ts";
+import { CONFIG_MASKED_SECRET } from "@freeanima/platform/config";
 import { z } from "zod";
 
 import { ApiHandlerError } from "./errors.ts";
@@ -16,7 +17,6 @@ import { consoleCtx } from "./runtime.ts";
 import { probeDiscordBotToken, probeWeixinIlinkToken } from "./config-test-gateway-probes.ts";
 
 const TEST_TIMEOUT_MS = 15_000;
-const MASKED_SECRET = "***";
 
 export const configTestConnectionInputSchema = z.object({
   service: z.enum(["firecrawl", "camofox", "embedding", "llm_provider", "discord", "weixin"]),
@@ -47,7 +47,7 @@ function asRecord(value: unknown): Record<string, unknown> {
 export function pickConfigString(draft: unknown, saved: unknown): string {
   if (typeof draft === "string") {
     const trimmed = draft.trim();
-    if (trimmed === MASKED_SECRET) {
+    if (trimmed === CONFIG_MASKED_SECRET) {
       return typeof saved === "string" ? saved.trim() : "";
     }
     return trimmed;

@@ -12,15 +12,21 @@ export type ProviderErrorCode =
 
 export type ErrorClassification = "retryable" | "fatal";
 
+export type ProviderErrorOptions = {
+  providerId?: string;
+  profileId?: string;
+  model?: string;
+  /** 0-based hop index within profile.chain when known */
+  hopIndex?: number;
+  cause?: unknown;
+};
+
 export class ProviderError extends Error {
   constructor(
     message: string,
     readonly code: ProviderErrorCode,
     readonly retryable: boolean,
-    readonly options?: {
-      providerId?: string;
-      cause?: unknown;
-    },
+    readonly options?: ProviderErrorOptions,
   ) {
     super(message, options?.cause !== undefined ? { cause: options.cause } : undefined);
     this.name = "ProviderError";
@@ -28,6 +34,62 @@ export class ProviderError extends Error {
 
   get providerId(): string | undefined {
     return this.options?.providerId;
+  }
+
+  get profileId(): string | undefined {
+    return this.options?.profileId;
+  }
+
+  get model(): string | undefined {
+    return this.options?.model;
+  }
+
+  get hopIndex(): number | undefined {
+    return this.options?.hopIndex;
+  }
+}
+
+import { omitUndefined } from "@freeanima/core/util";
+
+/** Attach profile/provider/model to message + options (idempotent if already tagged). */
+export function withLlmRouteContext(
+  err: ProviderError,
+  route: {
+    profileId: string;
+    providerId: string;
+    model: string;
+    hopIndex?: number;
+  },
+): ProviderError {
+  const hopPart = route.hopIndex !== undefined ? ` hop=${route.hopIndex}` : "";
+  const tag = `[profile=${route.profileId} provider=${route.providerId} model=${route.model}${hopPart}]`;
+  const message = /\[profile=/.test(err.message) ? err.message : `${err.message} ${tag}`;
+  return new ProviderError(
+    message,
+    err.code,
+    err.retryable,
+    omitUndefined({
+      providerId: route.providerId,
+      profileId: route.profileId,
+      model: route.model,
+      hopIndex: route.hopIndex,
+      cause: err.options?.cause !== undefined ? err.options.cause : err,
+    }),
+  );
+}
+
+/**
+ * Whether profile.chain should try the next hop after this failure.
+ * UI documents multi-hop as standby routes; do not failover on client cancel / bad request / filter.
+ */
+export function shouldFailoverToNextHop(err: ProviderError): boolean {
+  switch (err.code) {
+    case "cancelled":
+    case "invalid_request":
+    case "content_filtered":
+      return false;
+    default:
+      return true;
   }
 }
 
