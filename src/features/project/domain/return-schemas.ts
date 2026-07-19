@@ -4,8 +4,8 @@ const projectRowSchema = z.object({
   id: z.number(),
   title: z.string(),
   status: z.string(),
-  start_at: z.string(),
-  end_at: z.string(),
+  start_at: z.string().nullable(),
+  end_at: z.string().nullable(),
   folder_id: z.number().nullable(),
 });
 

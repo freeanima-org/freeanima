@@ -26,18 +26,20 @@ export function priorityDot(priority: TaskItemPriority): string {
 }
 
 export function cloneTaskItemDisplay<T extends TaskItemDisplay>(item: T): T {
-  return { ...item, tag_ids: [...item.tag_ids] };
+  return { ...item, tag_ids: [...(item.tag_ids ?? [])] };
 }
 
 export function isTaskItemDisplayEqual(a: TaskItemDisplay, b: TaskItemDisplay): boolean {
+  const aTags = a.tag_ids ?? [];
+  const bTags = b.tag_ids ?? [];
   return (
     a.title === b.title &&
     a.content === b.content &&
     a.status === b.status &&
     a.priority === b.priority &&
     a.due_at === b.due_at &&
-    a.tag_ids.length === b.tag_ids.length &&
-    a.tag_ids.every((t, i) => t === b.tag_ids[i])
+    aTags.length === bTags.length &&
+    aTags.every((t, i) => t === bTags[i])
   );
 }
 
@@ -51,12 +53,12 @@ export function isTaskItemDisplayDirty(
 /** 列表行标签条默认最多展示的 chip 数；超出显示 +N */
 export const TASK_ROW_TAG_MAX_VISIBLE = 2;
 
-/** 从 tag_ids + 标题映射解析可读标签名（缺失 id 跳过） */
+/** 从 tag_ids + 标题映射解析可读标签名（缺失 id 跳过；tagIds 缺省视为空） */
 export function resolveTaskTagTitles(
-  tagIds: readonly number[],
+  tagIds: readonly number[] | null | undefined,
   titleById: ReadonlyMap<number, string> | null | undefined,
 ): string[] {
-  if (!titleById || tagIds.length === 0) return [];
+  if (!titleById || !tagIds?.length) return [];
   const out: string[] = [];
   for (const id of tagIds) {
     const title = titleById.get(id);

@@ -162,8 +162,8 @@ export async function createProject(
     content: input.content?.trim() ?? "",
     body: {
       folder_id: input.folder_id ?? null,
-      start_at: input.start_at,
-      end_at: input.end_at,
+      start_at: input.start_at ?? null,
+      end_at: input.end_at ?? null,
       status: "active" as const,
       product_tag: input.product_tag,
       sort_order: input.sort_order ?? siblings.length,

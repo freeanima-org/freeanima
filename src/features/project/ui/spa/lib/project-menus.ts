@@ -28,11 +28,37 @@ export function buildProjectMenuItems(
   handlers: {
     onEdit: (project: import("./api.ts").ProjectRow) => void;
     onDelete: (project: import("./api.ts").ProjectRow) => void;
+    onStatusChange: (
+      project: import("./api.ts").ProjectRow,
+      status: import("./api.ts").ProjectRow["status"],
+    ) => void;
+    /** 当前是否隐藏已完成；用于切换文案 */
+    hideCompleted: boolean;
+    onToggleHideCompleted: () => void;
   },
 ): ProjectMenuItem[] {
+  const statusItems: ProjectMenuItem[] =
+    project.status === "active"
+      ? [
+          { label: "搁置", onClick: () => void handlers.onStatusChange(project, "on_hold") },
+          { label: "完成", onClick: () => void handlers.onStatusChange(project, "completed") },
+          { label: "取消", onClick: () => void handlers.onStatusChange(project, "cancelled") },
+        ]
+      : [
+          {
+            label: "重新激活",
+            onClick: () => void handlers.onStatusChange(project, "active"),
+          },
+        ];
+
   return [
     { label: "编辑", onClick: () => handlers.onEdit(project) },
     { label: "复制 ID", onClick: () => void copyText(String(project.id)) },
+    ...statusItems,
+    {
+      label: handlers.hideCompleted ? "显示已完成" : "隐藏已完成",
+      onClick: handlers.onToggleHideCompleted,
+    },
     { label: "删除项目", danger: true, onClick: () => void handlers.onDelete(project) },
   ];
 }

@@ -21,8 +21,8 @@ export type ProjectFolderUpdateInput = {
 
 export type ProjectCreateInput = {
   title: string;
-  start_at: string;
-  end_at: string;
+  start_at?: string | null;
+  end_at?: string | null;
   content?: string;
   folder_id?: number | null;
   product_tag?: string;
@@ -33,8 +33,8 @@ export type ProjectCreateInput = {
 export type ProjectUpdateInput = {
   id: number;
   title?: string;
-  start_at?: string;
-  end_at?: string;
+  start_at?: string | null;
+  end_at?: string | null;
   content?: string;
   folder_id?: number | null;
   product_tag?: string | null;

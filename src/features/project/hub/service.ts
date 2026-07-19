@@ -152,8 +152,8 @@ export async function serviceProjectCreate(
   input: {
     subject_kind?: SubjectKind;
     title: string;
-    start_at: string;
-    end_at: string;
+    start_at?: string | null;
+    end_at?: string | null;
     content?: string;
     folder_id?: number | null;
     product_tag?: string;
@@ -185,8 +185,8 @@ export async function serviceProjectPatch(
     subject_kind?: SubjectKind;
     id: number;
     title?: string;
-    start_at?: string;
-    end_at?: string;
+    start_at?: string | null;
+    end_at?: string | null;
     content?: string;
     folder_id?: number | null;
     product_tag?: string | null;
