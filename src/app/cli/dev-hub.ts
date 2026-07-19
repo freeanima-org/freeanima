@@ -83,7 +83,10 @@ Production install uses standalone \`anima service\` (systemd). Source CLI has n
 
   console.log(`dev-hub · starting Hub in foreground…`);
   console.log(`  address: http://${host.split(",")[0]?.trim() || host}:${port}`);
-  console.log(`  http override: CLI --host/--port (config.yaml http.host not written)`);
+  console.log(`  http override: CLI --host/--port；Hub TLS skipped (Vite may terminate HTTPS)`);
+  console.log(
+    `  web override: Hub ignores config.yaml web.* (UI via bun run dev:web / WEB_DEV_PORT)`,
+  );
   console.log(`  tip: anima service is only on the standalone install CLI; TLS via Vite if needed`);
 
   process.env[FREEANIMA_DEV_HUB_ENV] = "1";

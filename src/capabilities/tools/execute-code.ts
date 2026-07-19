@@ -3,6 +3,11 @@ import { attachToolReturns } from "@freeanima/core/tool";
 
 import { clampTimeout, parseRuntime, runExecuteCode } from "./execute-code-runtimes.ts";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
+import {
+  parseSecretsArg,
+  resolveSubprocessSecrets,
+  SECRETS_TOOL_PROPERTY,
+} from "./subprocess-secrets.ts";
 
 export function registerExecuteCodeTool(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
@@ -14,7 +19,8 @@ export function registerExecuteCodeTool(toolSets: ToolSetRegistry): void {
           name: "code_execute",
           description:
             "Execute code snippet in subprocess (no shell). Default runtime bun: TypeScript/JavaScript, can use node:fs etc. " +
-            "Optional runtime=nodejs. Use terminal for Python scripts. Use terminal for complex shell operations.",
+            "Optional runtime=nodejs. Optional secrets[] injects vault fields into this subprocess env only (not Hub process.env). " +
+            "Use terminal for Python scripts. Use terminal for complex shell operations.",
           parameters: {
             type: "object",
             properties: {
@@ -33,6 +39,7 @@ export function registerExecuteCodeTool(toolSets: ToolSetRegistry): void {
                 default: 300,
                 description: "Timeout seconds, max 600",
               },
+              secrets: SECRETS_TOOL_PROPERTY,
             },
             required: ["code"],
           },
@@ -40,7 +47,11 @@ export function registerExecuteCodeTool(toolSets: ToolSetRegistry): void {
             const code = String(a.code ?? "");
             const runtime = parseRuntime(a.runtime);
             const timeout = clampTimeout(a.timeout);
-            return runExecuteCode(code, runtime, timeout);
+            const parsedSecrets = parseSecretsArg(a.secrets);
+            if (typeof parsedSecrets === "string") return parsedSecrets;
+            const resolved = await resolveSubprocessSecrets(parsedSecrets);
+            if (typeof resolved === "string") return resolved;
+            return runExecuteCode(code, runtime, timeout, resolved);
           },
         },
       ],

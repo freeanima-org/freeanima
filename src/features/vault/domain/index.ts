@@ -21,4 +21,4 @@ export {
   defaultVaultSubjectForShell,
 } from "./vault-world.ts";
 
-export { registerVaultTools, type VaultToolIo } from "./tools.ts";
+export { registerVaultTools } from "./tools.ts";

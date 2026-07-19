@@ -38,12 +38,12 @@ describe("hub config handlers", () => {
     bindConsoleRuntimeContext();
   });
 
-  it("getHubConfig 返回已脱敏的运行时配置快照", () => {
+  it("getHubConfig 返回含密钥明文的运行时配置快照", () => {
     bindTestConsoleContext();
     const out = getHubConfig();
     const llm = out.llm as Record<string, unknown>;
     const providers = llm.providers as Record<string, Record<string, unknown>>;
-    expect(providers.main?.api_key).toBe("***");
+    expect(providers.main?.api_key).toBe("sk-secret");
     expect(llm.default_profile).toBe("chat");
   });
 

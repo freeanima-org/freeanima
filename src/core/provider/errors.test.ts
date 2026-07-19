@@ -4,6 +4,8 @@ import {
   classifyProviderError,
   isProviderError,
   providerErrorFromHttpStatus,
+  shouldFailoverToNextHop,
+  withLlmRouteContext,
 } from "./errors.ts";
 
 describe("ProviderError", () => {
@@ -12,6 +14,33 @@ describe("ProviderError", () => {
     expect(err.name).toBe("ProviderError");
     expect(err.providerId).toBe("main");
     expect(err.retryable).toBe(false);
+  });
+});
+
+describe("withLlmRouteContext", () => {
+  it("appends profile/provider/model tag", () => {
+    const err = withLlmRouteContext(
+      new ProviderError("401 Invalid API key.", "authentication", false),
+      {
+        profileId: "chat",
+        providerId: "main",
+        model: "gpt-4",
+        hopIndex: 0,
+      },
+    );
+    expect(err.message).toBe("401 Invalid API key. [profile=chat provider=main model=gpt-4 hop=0]");
+    expect(err.profileId).toBe("chat");
+    expect(err.model).toBe("gpt-4");
+    expect(err.hopIndex).toBe(0);
+  });
+});
+
+describe("shouldFailoverToNextHop", () => {
+  it("allows auth and rate limit; blocks cancel and invalid_request", () => {
+    expect(shouldFailoverToNextHop(new ProviderError("x", "authentication", false))).toBe(true);
+    expect(shouldFailoverToNextHop(new ProviderError("x", "rate_limited", true))).toBe(true);
+    expect(shouldFailoverToNextHop(new ProviderError("x", "cancelled", false))).toBe(false);
+    expect(shouldFailoverToNextHop(new ProviderError("x", "invalid_request", false))).toBe(false);
   });
 });
 

@@ -20,8 +20,10 @@ export {
   classifyProviderError,
   isProviderError,
   providerErrorFromHttpStatus,
+  shouldFailoverToNextHop,
+  withLlmRouteContext,
 } from "./errors.ts";
-export type { ErrorClassification, ProviderErrorCode } from "./errors.ts";
+export type { ErrorClassification, ProviderErrorCode, ProviderErrorOptions } from "./errors.ts";
 
 export type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke.ts";
 

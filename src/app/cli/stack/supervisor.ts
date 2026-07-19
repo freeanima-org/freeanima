@@ -20,18 +20,27 @@ export type ServiceStackOptions = {
 };
 
 /** Hub 就绪后打印 Web 托管提示（无 sidecar） */
-async function onHubReady(hubPort: number): Promise<void> {
-  const bootstrap = loadBootstrapConfig();
-  if (isBootstrapWebHostingEnabled(bootstrap)) {
+async function onHubReady(hubPort: number, webHostedByHub: boolean): Promise<void> {
+  if (webHostedByHub) {
     console.log(`[stack] Web UI http://127.0.0.1:${hubPort}/web/chat（由 Hub 托管）`);
   }
 }
 
-/** Hub foreground（Web 静态由 Hub /web 托管） */
+/** Hub foreground（Web 静态由 Hub /web 托管；dev:hub skipTls 时改由 Vite） */
 export async function runServiceStack(options: ServiceStackOptions): Promise<void> {
   const bootstrap = loadBootstrapConfig();
-  const webEnabled = isBootstrapWebHostingEnabled(bootstrap);
   const bootstrapHttp = bootstrap.http;
+  /**
+   * 源码 `dev:hub`（skipTls）：覆盖 config.yaml `web.*`——Hub 不托管 dist，
+   * UI 由 `dev:web`（Vite :5000，可 HTTPS）提供；与 http 侧 skipTls 对称。
+   */
+  const yamlWebEnabled = isBootstrapWebHostingEnabled(bootstrap);
+  const webEnabled = options.skipTls ? false : yamlWebEnabled;
+  if (options.skipTls) {
+    console.log(
+      "[stack] skipTls/dev-hub：忽略 config.yaml web.enabled/host/port（UI 由 Vite WEB_DEV_PORT 提供，Hub 不托管 /web）",
+    );
+  }
 
   let webStatic: {
     distDir: string;
@@ -103,7 +112,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
       waitForDrain: waitForDrainWithTimeout,
     },
     onReady: () => {
-      void onHubReady(options.port);
+      void onHubReady(options.port, webStatic != null);
       if (tlsListen) {
         console.log(
           `[stack] Hub HTTPS https://127.0.0.1:${tlsListen.port}（TLS 证书：${tlsListen.material.source}）`,

@@ -6,7 +6,7 @@ import {
   type AnimaConfig,
 } from "@freeanima/core/config";
 import type { Logger } from "@freeanima/kernel/logging";
-import { PROFILE_CHAT } from "@freeanima/core/provider";
+import { PROFILE_CHAT, ProviderError } from "@freeanima/core/provider";
 import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/core/hooks/loop";
 import {
   beforeLlmCall,
@@ -351,8 +351,20 @@ export async function* runStream(
         yield { event: "done", data: { reason: "interrupted" } };
         return;
       }
-      const msg = `LLM call failed: ${e}`;
-      (opts?.logger ?? getRuntimeLogger()).with({ component: "engine" }).error(msg, { err: e });
+      const msg = `LLM call failed: ${e instanceof Error ? e.message : String(e)}`;
+      const routeCtx =
+        e instanceof ProviderError
+          ? omitUndefined({
+              profileId: e.profileId,
+              providerId: e.providerId,
+              model: e.model,
+              hopIndex: e.hopIndex,
+              code: e.code,
+            })
+          : {};
+      (opts?.logger ?? getRuntimeLogger())
+        .with({ component: "engine" })
+        .error(msg, { err: e, ...routeCtx });
       yield { event: "error", data: { error: msg } };
       return;
     }

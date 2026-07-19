@@ -1,5 +1,9 @@
 import { isBootstrapConfigKey, isRuntimeConfigSectionKey } from "@freeanima/core/config";
-import { sanitizeConfigForApi, isPatchableRuntimeConfig } from "@freeanima/platform/config";
+import {
+  sanitizeConfigForApi,
+  isPatchableRuntimeConfig,
+  restoreMaskedSecrets,
+} from "@freeanima/platform/config";
 import { ApiHandlerError } from "./errors.ts";
 import { consoleCtx } from "./runtime.ts";
 
@@ -37,6 +41,10 @@ export function getHubConfigSection(section: string) {
   });
 }
 
+function existingSection(config: { data: Record<string, unknown> }, section: string): unknown {
+  return (config.data as Record<string, unknown>)[section];
+}
+
 export async function patchHubConfigSection(section: string, patch: Record<string, unknown>) {
   if (isBootstrapConfigKey(section)) {
     throw new ApiHandlerError(400, `段 ${section} 为平台冷启动配置，非栖息地运行时配置`, {
@@ -44,7 +52,8 @@ export async function patchHubConfigSection(section: string, patch: Record<strin
     });
   }
   const config = requirePatchableConfig();
-  await config.patchSection(section, patch);
+  const restored = restoreMaskedSecrets(patch, existingSection(config, section));
+  await config.patchSection(section, restored);
   return sanitizeConfigForApi(config.data as import("@freeanima/core/config").RuntimeConfig);
 }
 
@@ -55,6 +64,7 @@ export async function replaceHubConfigSection(section: string, value: Record<str
     });
   }
   const config = requirePatchableConfig();
-  await config.replaceSection(section, value);
+  const restored = restoreMaskedSecrets(value, existingSection(config, section));
+  await config.replaceSection(section, restored);
   return sanitizeConfigForApi(config.data as import("@freeanima/core/config").RuntimeConfig);
 }

@@ -4,6 +4,12 @@ import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import { assertPathAllowed } from "./path-policy.ts";
 import { assertTerminalCommandAllowed, splitCommandLine } from "./terminal-command-policy.ts";
+import { buildSubprocessEnv } from "./subprocess-env.ts";
+import {
+  parseSecretsArg,
+  resolveSubprocessSecrets,
+  SECRETS_TOOL_PROPERTY,
+} from "./subprocess-secrets.ts";
 
 const MAX_OUTPUT = 50 * 1024;
 const MAX_FOREGROUND_TIMEOUT = 600;
@@ -31,7 +37,12 @@ function requireShellAllowed(): string | null {
   return null;
 }
 
-function runForegroundArgv(argv: string[], timeout: number, workdir?: string): string {
+function runForegroundArgv(
+  argv: string[],
+  timeout: number,
+  workdir: string | undefined,
+  env: NodeJS.ProcessEnv,
+): string {
   const safeTimeout = Math.min(Math.max(1, timeout), MAX_FOREGROUND_TIMEOUT);
   const bin = argv[0];
   if (!bin) return toolError("command is empty");
@@ -41,6 +52,7 @@ function runForegroundArgv(argv: string[], timeout: number, workdir?: string): s
       timeout: safeTimeout * 1000,
       cwd: workdir,
       maxBuffer: MAX_OUTPUT * 2,
+      env,
     });
     const parts: string[] = [];
     if (result.stdout) parts.push(result.stdout);
@@ -61,7 +73,12 @@ function runForegroundArgv(argv: string[], timeout: number, workdir?: string): s
   }
 }
 
-function runForegroundShell(command: string, timeout: number, workdir?: string): string {
+function runForegroundShell(
+  command: string,
+  timeout: number,
+  workdir: string | undefined,
+  env: NodeJS.ProcessEnv,
+): string {
   const safeTimeout = Math.min(Math.max(1, timeout), MAX_FOREGROUND_TIMEOUT);
   try {
     const result = spawnSync(command, {
@@ -70,6 +87,7 @@ function runForegroundShell(command: string, timeout: number, workdir?: string):
       timeout: safeTimeout * 1000,
       cwd: workdir,
       maxBuffer: MAX_OUTPUT * 2,
+      env,
     });
     const parts: string[] = [];
     if (result.stdout) parts.push(result.stdout);
@@ -90,13 +108,18 @@ function runForegroundShell(command: string, timeout: number, workdir?: string):
   }
 }
 
-function runBackgroundArgv(argv: string[], workdir?: string): string {
+function runBackgroundArgv(
+  argv: string[],
+  workdir: string | undefined,
+  env: NodeJS.ProcessEnv,
+): string {
   const bin = argv[0];
   if (!bin) return toolError("command is empty");
   try {
     const proc = spawn(bin, argv.slice(1), {
       cwd: workdir,
       stdio: ["ignore", "pipe", "pipe"],
+      env,
     });
     const conversationId = String(proc.pid ?? Date.now());
     backgroundOutput.set(conversationId, "");
@@ -115,12 +138,17 @@ function runBackgroundArgv(argv: string[], workdir?: string): string {
   }
 }
 
-function runBackgroundShell(command: string, workdir?: string): string {
+function runBackgroundShell(
+  command: string,
+  workdir: string | undefined,
+  env: NodeJS.ProcessEnv,
+): string {
   try {
     const proc = spawn(command, {
       shell: true,
       cwd: workdir,
       stdio: ["ignore", "pipe", "pipe"],
+      env,
     });
     const conversationId = String(proc.pid ?? Date.now());
     backgroundOutput.set(conversationId, "");
@@ -202,13 +230,14 @@ async function handleProcess(
   return toolError(`unsupported action '${action}'`);
 }
 
-function handleTerminal(
+async function handleTerminal(
   command: string,
   timeout: number,
-  workdir?: string | null,
-  background = false,
-  shell = false,
-): string {
+  workdir: string | null | undefined,
+  background: boolean,
+  shell: boolean,
+  secretsRaw: unknown,
+): Promise<string> {
   if (!command?.trim()) return toolError("command is empty");
 
   let cwd: string | undefined;
@@ -217,6 +246,12 @@ function handleTerminal(
   } catch (e) {
     return toolError(e instanceof Error ? e.message : String(e));
   }
+
+  const parsedSecrets = parseSecretsArg(secretsRaw);
+  if (typeof parsedSecrets === "string") return parsedSecrets;
+  const resolved = await resolveSubprocessSecrets(parsedSecrets);
+  if (typeof resolved === "string") return resolved;
+  const env = buildSubprocessEnv(resolved);
 
   const argv = shell ? null : splitCommandLine(command);
   const deny = assertTerminalCommandAllowed(command, {
@@ -228,14 +263,14 @@ function handleTerminal(
   if (shell) {
     const shellDeny = requireShellAllowed();
     if (shellDeny) return toolError(shellDeny);
-    if (background) return runBackgroundShell(command, cwd);
-    return runForegroundShell(command, timeout, cwd);
+    if (background) return runBackgroundShell(command, cwd, env);
+    return runForegroundShell(command, timeout, cwd, env);
   }
 
   const parts = argv ?? splitCommandLine(command);
   if (parts.length === 0) return toolError("command is empty");
-  if (background) return runBackgroundArgv(parts, cwd);
-  return runForegroundArgv(parts, timeout, cwd);
+  if (background) return runBackgroundArgv(parts, cwd, env);
+  return runForegroundArgv(parts, timeout, cwd, env);
 }
 
 export function registerTerminalTools(toolSets: ToolSetRegistry): void {
@@ -248,6 +283,8 @@ export function registerTerminalTools(toolSets: ToolSetRegistry): void {
           name: "terminal_run",
           description:
             "Run a command in a subprocess and return output. Default shell=false (argv spawn, no pipes). " +
+            "Optional secrets[] injects vault fields into this subprocess env only (not Hub process.env); " +
+            "use argv form e.g. printenv GH_TOKEN or gh … — do not rely on echo $VAR unless shell=true. " +
             "Set shell=true only when FREEANIMA_ALLOW_SHELL=true. Catastrophic targets (rm -rf /, ~, $HOME, system roots) are always blocked.",
           parameters: {
             type: "object",
@@ -268,6 +305,7 @@ export function registerTerminalTools(toolSets: ToolSetRegistry): void {
                   "Use a shell (pipes/redirection). Requires FREEANIMA_ALLOW_SHELL=true. Default false.",
               },
               pty: { type: "boolean", default: false },
+              secrets: SECRETS_TOOL_PROPERTY,
             },
             required: ["command"],
           },
@@ -278,6 +316,7 @@ export function registerTerminalTools(toolSets: ToolSetRegistry): void {
               a.workdir != null ? String(a.workdir) : null,
               Boolean(a.background),
               Boolean(a.shell),
+              a.secrets,
             ),
         },
         {
