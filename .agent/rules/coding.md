@@ -41,6 +41,7 @@
 
 - **Failures**: always `toolError(msg)` → JSON `{"error":"..."}`
 - **Successes**: structured tools use `toolResult(obj)`; LLM-readable tools (`file_read`, `terminal_run`, `code_execute`, etc.) may return plain-text stdout
+- **Tool 入参**: call 前须经 `validateToolArgs`（对照 `ToolDef.parameters`）；类型错误与未知字段一律 `toolError`，禁止静默忽略/strip。loop-engine 与 MCP hub 不得绕过该门闸直接调 `handler`
 - Safe paths per existing code (write protection, device blocking, binary filtering)
 
 ## ToolSet / tool naming
