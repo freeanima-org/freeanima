@@ -3,6 +3,8 @@ export type { TagRow, TagCreateInput, TagUpdateInput, TagSearchOpts } from "./ty
 export {
   listTags,
   searchTags,
+  findTagByTitle,
+  ensureTagsByTitles,
   createTag,
   updateTag,
   deleteTag,

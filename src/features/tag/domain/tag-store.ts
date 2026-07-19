@@ -19,6 +19,10 @@ function normalizeTitle(title: string): string {
   return title.trim();
 }
 
+function titleKey(title: string): string {
+  return normalizeTitle(title).toLowerCase();
+}
+
 function toTagRow(
   row: NonNullable<ReturnType<typeof asTag>>,
   meta: { created_at: Date; updated_at: Date },
@@ -38,10 +42,12 @@ async function assertTitleUnique(
   excludeId?: number,
 ): Promise<void> {
   const db = getDb();
+  const lowered = titleKey(title);
+  if (!lowered) return;
   const conditions = [
     eq(entities.world_id, worldId),
     eq(entities.primary_component, TAG_COMPONENT),
-    eq(entities.title, title),
+    sql`lower(${entities.title}) = ${lowered}`,
   ];
   if (excludeId != null) {
     conditions.push(ne(entities.id, excludeId));
@@ -54,6 +60,58 @@ async function assertTitleUnique(
   if (existing) {
     throw new Error(`tag title already exists: ${title}`);
   }
+}
+
+/** 按 title 查找（忽略大小写）；命中则返回库中原有写法。 */
+export async function findTagByTitle(worldId: number, title: string): Promise<TagRow | null> {
+  const normalized = normalizeTitle(title);
+  if (!normalized) return null;
+  const lowered = titleKey(normalized);
+  const db = getDb();
+  const [hit] = await db
+    .select({ id: entities.id })
+    .from(entities)
+    .where(
+      and(
+        eq(entities.world_id, worldId),
+        eq(entities.primary_component, TAG_COMPONENT),
+        sql`lower(${entities.title}) = ${lowered}`,
+      ),
+    )
+    .limit(1);
+  if (!hit) return null;
+  const row = await getEntity(hit.id);
+  if (!row) return null;
+  const parsed = asTag(row);
+  return parsed
+    ? toTagRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
+    : null;
+}
+
+/** 按名称查找或创建 tag；忽略大小写去重；返回 id 列表（保序、去重）。 */
+export async function ensureTagsByTitles(worldId: number, titles: string[]): Promise<number[]> {
+  const ids: number[] = [];
+  const seen = new Set<number>();
+  for (const raw of titles) {
+    const title = normalizeTitle(String(raw));
+    if (!title) continue;
+    let tag = await findTagByTitle(worldId, title);
+    if (!tag) {
+      try {
+        tag = await createTag(worldId, { title });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (!msg.startsWith("tag title already exists:")) throw e;
+        tag = await findTagByTitle(worldId, title);
+        if (!tag) throw e;
+      }
+    }
+    if (!seen.has(tag.id)) {
+      seen.add(tag.id);
+      ids.push(tag.id);
+    }
+  }
+  return ids;
 }
 
 async function assertTagsInWorld(worldId: number, tagIds: number[]): Promise<void> {
@@ -167,7 +225,7 @@ export async function updateTag(worldId: number, input: TagUpdateInput): Promise
   if (input.title !== undefined) {
     nextTitle = normalizeTitle(input.title);
     if (!nextTitle) throw new Error("title is required");
-    if (nextTitle !== existing.title) {
+    if (titleKey(nextTitle) !== titleKey(existing.title)) {
       await assertTitleUnique(worldId, nextTitle, input.id);
     }
   }

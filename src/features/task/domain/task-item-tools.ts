@@ -19,6 +19,7 @@ import {
   itemPayload,
   parsePriority,
   parseTagIds,
+  resolveToolTagIds,
   TASK_PRIORITIES,
   WORLD_ID_TOOL_PROPERTY,
 } from "./task-tool-helpers.ts";
@@ -64,7 +65,9 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
     return toolError(`invalid priority: ${args.priority}`);
   }
 
-  const tagIds = parseTagIds(args.tag_ids);
+  const tagResolved = await resolveToolTagIds(worldId, args);
+  if (!tagResolved.ok) return toolError(tagResolved.error);
+
   const dueAt = args.due_at != null && args.due_at !== "" ? String(args.due_at).trim() : null;
   const remindAt =
     args.remind_at != null && args.remind_at !== "" ? String(args.remind_at).trim() : null;
@@ -77,7 +80,7 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
       omitUndefined({
         title,
         content,
-        tag_ids: tagIds,
+        tag_ids: tagResolved.value,
         list_id: listId,
         priority,
         due_at: dueAt,
@@ -101,9 +104,10 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   const patch: TaskItemUpdateInput = { id };
   if (args.title !== undefined) patch.title = String(args.title);
   if (args.content !== undefined) patch.content = String(args.content);
-  if (args.tag_ids !== undefined) {
-    const tagIds = parseTagIds(args.tag_ids);
-    if (tagIds !== undefined) patch.tag_ids = tagIds;
+  if (args.tags !== undefined || args.tag_ids !== undefined) {
+    const tagResolved = await resolveToolTagIds(worldId, args);
+    if (!tagResolved.ok) return toolError(tagResolved.error);
+    if (tagResolved.value !== undefined) patch.tag_ids = tagResolved.value;
   }
   if (args.list_id !== undefined) {
     const listId = Number(args.list_id);
@@ -230,7 +234,9 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
     args.status === "completed" || args.status === "pending" || args.status === "all"
       ? args.status
       : "pending";
-  const tagIds = parseTagIds(args.tag_ids);
+  const tagParsed = parseTagIds(args.tag_ids);
+  if (!tagParsed.ok) return toolError(tagParsed.error);
+  const tagIds = tagParsed.value;
   const limit = typeof args.limit === "number" ? args.limit : 50;
 
   const items = await listTaskItems(worldId, {
@@ -342,6 +348,12 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
                 items: { type: "integer" },
                 description: "Optional tag entity ids (same world)",
               },
+              tags: {
+                type: "array",
+                items: { type: "string" },
+                description:
+                  "Optional tag titles (same world); find or create (case-insensitive), then attach as tag_ids",
+              },
               list_id: {
                 type: "integer",
                 description: "Target list id (default inbox); exclusive with project_id",
@@ -369,6 +381,12 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               title: { type: "string" },
               content: { type: "string" },
               tag_ids: { type: "array", items: { type: "integer" } },
+              tags: {
+                type: "array",
+                items: { type: "string" },
+                description:
+                  "Optional tag titles; find or create (case-insensitive), merged with tag_ids when both set",
+              },
               list_id: { type: "integer" },
               project_id: {
                 type: "integer",

@@ -11,7 +11,7 @@ import { ToolSetRegistry } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { registerTaskTools, getDefaultTaskList } from "@freeanima/features/task/domain";
 import { createProject } from "@freeanima/features/project/domain";
-import { createTag } from "@freeanima/features/tag/domain";
+import { createTag, listTags } from "@freeanima/features/tag/domain";
 import { getEntity } from "@freeanima/core/db/pg/entity";
 import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
@@ -447,5 +447,132 @@ describePg("tasks tool", () => {
 
     const conflict = JSON.parse(conflictOut) as { error?: string };
     expect(conflict.error).toContain("mutually exclusive");
+  });
+
+  it("task_create tags find-or-create and attach", async () => {
+    const sid = "sess-task-create-tags";
+    await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
+      platform: TEST_SAP_CHAT_PLATFORM,
+    });
+
+    const worldId = testAgentWorldId();
+    let output = "";
+    await runWithToolContext(
+      sid,
+      async () => {
+        const tool = toolSets.getTool("task_create")!;
+        output = await Promise.resolve(
+          tool.handler({
+            title: "Tagged by name",
+            tags: ["bug"],
+          }),
+        );
+      },
+      { tools: toolSets },
+    );
+
+    const parsed = JSON.parse(output) as {
+      ok: boolean;
+      item: { tag_ids: number[] };
+    };
+    expect(parsed.ok).toBe(true);
+    expect(parsed.item.tag_ids).toHaveLength(1);
+    const tags = await listTags(worldId);
+    const bug = tags.find((t) => t.title.toLowerCase() === "bug");
+    expect(bug).toBeDefined();
+    expect(parsed.item.tag_ids).toEqual([bug!.id]);
+  });
+
+  it("task_create tags reuses existing title case-insensitively", async () => {
+    const sid = "sess-task-create-tags-ci";
+    await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
+      platform: TEST_SAP_CHAT_PLATFORM,
+    });
+
+    const worldId = testAgentWorldId();
+    const existing = await createTag(worldId, { title: "Bug" });
+    const before = (await listTags(worldId)).length;
+
+    let output = "";
+    await runWithToolContext(
+      sid,
+      async () => {
+        const tool = toolSets.getTool("task_create")!;
+        output = await Promise.resolve(
+          tool.handler({
+            title: "Reuse tag",
+            tags: ["bug"],
+          }),
+        );
+      },
+      { tools: toolSets },
+    );
+
+    const parsed = JSON.parse(output) as {
+      ok: boolean;
+      item: { tag_ids: number[] };
+    };
+    expect(parsed.ok).toBe(true);
+    expect(parsed.item.tag_ids).toEqual([existing.id]);
+    expect((await listTags(worldId)).length).toBe(before);
+  });
+
+  it("task_create merges tags and tag_ids", async () => {
+    const sid = "sess-task-create-tags-merge";
+    await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
+      platform: TEST_SAP_CHAT_PLATFORM,
+    });
+
+    const worldId = testAgentWorldId();
+    const work = await createTag(worldId, { title: "work" });
+
+    let output = "";
+    await runWithToolContext(
+      sid,
+      async () => {
+        const tool = toolSets.getTool("task_create")!;
+        output = await Promise.resolve(
+          tool.handler({
+            title: "Merged tags",
+            tag_ids: [work.id],
+            tags: ["bug"],
+          }),
+        );
+      },
+      { tools: toolSets },
+    );
+
+    const parsed = JSON.parse(output) as {
+      ok: boolean;
+      item: { tag_ids: number[] };
+    };
+    expect(parsed.ok).toBe(true);
+    expect(parsed.item.tag_ids).toContain(work.id);
+    expect(parsed.item.tag_ids).toHaveLength(2);
+  });
+
+  it("task_create rejects non-integer tag_ids elements", async () => {
+    const sid = "sess-task-create-bad-tag-ids";
+    await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
+      platform: TEST_SAP_CHAT_PLATFORM,
+    });
+
+    let output = "";
+    await runWithToolContext(
+      sid,
+      async () => {
+        const tool = toolSets.getTool("task_create")!;
+        output = await Promise.resolve(
+          tool.handler({
+            title: "Bad tag_ids",
+            tag_ids: ["bug"],
+          }),
+        );
+      },
+      { tools: toolSets },
+    );
+
+    const parsed = JSON.parse(output) as { error?: string };
+    expect(parsed.error).toContain("invalid tag_ids");
   });
 });
