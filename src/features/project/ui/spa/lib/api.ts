@@ -36,6 +36,11 @@ export type ProjectFolderRow = ProjectFolderRowPayload;
 export type ProjectRow = ProjectRowPayload;
 export type TaskItemRow = TaskItemRowPayload;
 
+function normalizeTaskItemRows(items: readonly TaskItemRow[] | null | undefined): TaskItemRow[] {
+  if (!Array.isArray(items)) return [];
+  return items.map((row) => ({ ...row, tag_ids: row.tag_ids ?? [] }));
+}
+
 export type TaskListRow = {
   id: number;
   name: string;
@@ -147,8 +152,8 @@ export async function createProjectApi(
   _subjectKind: SubjectKind,
   input: {
     title: string;
-    start_at: string;
-    end_at: string;
+    start_at?: string | null;
+    end_at?: string | null;
     content?: string;
     folder_id?: number | null;
   },
@@ -163,7 +168,7 @@ export async function fetchProjectTasks(
 ): Promise<TaskItemRow[]> {
   const scope = resolveHubCacheScope();
   if (isTempId(projectId) || !isHubFetchAvailable()) {
-    return (await readCachedProjectItems(scope, projectId)) ?? [];
+    return normalizeTaskItemRows(await readCachedProjectItems(scope, projectId));
   }
   return withOfflineCache({
     scope,
@@ -174,7 +179,7 @@ export async function fetchProjectTasks(
         subject_kind: subjectKind,
         project_id: projectId,
       });
-      return data.items;
+      return normalizeTaskItemRows(data.items);
     },
     reconcile: (items) => reconcileServerProjectItems(projectId, items),
     offlineError: "project.item.list unavailable offline",
@@ -205,8 +210,8 @@ export async function patchProjectApi(
     status?: ProjectRow["status"];
     linked_diary_ids?: number[];
     title?: string;
-    start_at?: string;
-    end_at?: string;
+    start_at?: string | null;
+    end_at?: string | null;
     content?: string;
     folder_id?: number | null;
     sort_order?: number;

@@ -7,7 +7,6 @@ import { subscribeIdMappings } from "@freeanima/frontend/shell-sdk/offline-id-ma
 import { SubjectScopeToggle, useSubjectScope } from "@freeanima/frontend/shell-sdk/react.tsx";
 import {
   Button,
-  Checkbox,
   Dialog,
   DialogContent,
   DialogFooter,
@@ -26,8 +25,6 @@ import {
   useDetailPanelState,
 } from "@freeanima/frontend/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
-import { DatePickerInput } from "@freeanima/frontend/ui-kit/form/DatePickerInput.tsx";
-import { FormFieldLabel } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
 import {
   ThreeColumnLayout,
   useDrawerNav,
@@ -42,6 +39,7 @@ import { MoveToListPicker } from "@freeanima/frontend/ui-kit/composite";
 import { MoveToProjectPicker } from "./components/MoveToProjectPicker.tsx";
 import {
   ProjectEditorDialog,
+  projectEditorDatesToIso,
   type ProjectEditorTarget,
 } from "./components/ProjectEditorDialog.tsx";
 import { ProjectDetailHeader } from "./components/ProjectDetailHeader.tsx";
@@ -88,7 +86,6 @@ import {
   readHideCompleted,
   writeHideCompleted,
 } from "./lib/project-tree.ts";
-import { dateLocalToIso, todayDateLocalValue } from "./lib/format-task.ts";
 import {
   useActionSheetCapability,
   useContextMenuCapability,
@@ -146,9 +143,6 @@ export function ProjectApp() {
 
   const [newFolderName, setNewFolderName] = useState("");
   const [newProjectTitle, setNewProjectTitle] = useState("");
-  const [createProjectOpen, setCreateProjectOpen] = useState(false);
-  const [createProjectStart, setCreateProjectStart] = useState("");
-  const [createProjectEnd, setCreateProjectEnd] = useState("");
   const [quickTaskTitle, setQuickTaskTitle] = useState("");
 
   const [editorTarget, setEditorTarget] = useState<ProjectEditorTarget | null>(null);
@@ -401,39 +395,29 @@ export function ProjectApp() {
 
   const handleCreateProject = async () => {
     const title = newProjectTitle.trim();
-    const start_at = dateLocalToIso(createProjectStart);
-    const end_at = dateLocalToIso(createProjectEnd);
-    if (!title || !start_at || !end_at) return;
+    if (!title) return;
     const folder_id = folderIdForNewProject(selectedProjectId, selectedFolderId, projects);
     const item = await createProjectApi(subjectKind, {
       title,
-      start_at,
-      end_at,
       folder_id,
     });
     setNewProjectTitle("");
-    setCreateProjectStart("");
-    setCreateProjectEnd("");
-    setCreateProjectOpen(false);
     setSelectedProjectId(item.id);
     writeModuleSelection("project", item.id, { subjectKind });
     await reload();
   };
 
   const promptCreateProject = () => {
-    const title = newProjectTitle.trim();
-    if (!title) return;
-    setCreateProjectStart(todayDateLocalValue());
-    setCreateProjectOpen(true);
+    if (!newProjectTitle.trim()) return;
+    void handleCreateProject();
   };
 
-  const handleProjectDatesChange = async (startLocal: string, endLocal: string) => {
-    if (selectedProjectId == null) return;
-    const start_at = dateLocalToIso(startLocal);
-    const end_at = dateLocalToIso(endLocal);
-    if (!start_at || !end_at) return;
-    await patchProjectApi(subjectKind, selectedProjectId, { start_at, end_at });
-    await reload();
+  const toggleHideCompleted = () => {
+    setHideCompleted((prev) => {
+      const next = !prev;
+      writeHideCompleted(subjectKind, next);
+      return next;
+    });
   };
 
   const handleQuickAddTask = async () => {
@@ -567,11 +551,11 @@ export function ProjectApp() {
     [openMoveToListPicker, openMoveToProjectPicker, openTaskDetail],
   );
 
-  const handleProjectStatus = async (status: ProjectRow["status"]) => {
-    if (selectedProjectId == null) return;
-    await patchProjectApi(subjectKind, selectedProjectId, { status });
+  const handleProjectStatus = async (projectId: number, status: ProjectRow["status"]) => {
+    if (writesDisabled) return;
+    await patchProjectApi(subjectKind, projectId, { status });
     await reload();
-    await reloadProjectDetail();
+    if (selectedProjectId === projectId) await reloadProjectDetail();
   };
 
   const openFolderEditor = (folder: ProjectFolderRow) => {
@@ -582,7 +566,13 @@ export function ProjectApp() {
     setEditorTarget({ kind: "project", project });
   };
 
-  const saveEditor = async (input: { name: string; folderId: number | null; content?: string }) => {
+  const saveEditor = async (input: {
+    name: string;
+    folderId: number | null;
+    content?: string;
+    startLocal?: string;
+    endLocal?: string;
+  }) => {
     if (editorTarget == null) return;
     if (editorTarget.kind === "folder") {
       await patchProjectFolderApi(subjectKind, editorTarget.folder.id, {
@@ -590,10 +580,13 @@ export function ProjectApp() {
         parent_id: input.folderId,
       });
     } else {
+      const dates = projectEditorDatesToIso(input.startLocal ?? "", input.endLocal ?? "");
       await patchProjectApi(subjectKind, editorTarget.project.id, {
         title: input.name,
         folder_id: input.folderId,
         ...(input.content !== undefined ? { content: input.content } : {}),
+        start_at: dates.start_at,
+        end_at: dates.end_at,
       });
     }
     await reload();
@@ -609,6 +602,8 @@ export function ProjectApp() {
           parent_id: action.parentId,
         });
       } else if (action.type === "reorderFolders" || action.type === "placeFolder") {
+        // sortOrderUpdates 要求仍带旧 sort_order；先算 patch 再改写 UI
+        const updates = sortOrderUpdates(action.ordered);
         const ordered = action.ordered.map((row, index) => ({
           ...row,
           parent_id: action.parentId,
@@ -619,17 +614,17 @@ export function ProjectApp() {
           const others = prev.filter((f) => !ids.has(f.id));
           return [...others, ...ordered];
         });
-        if (action.type === "placeFolder") {
-          await patchProjectFolderApi(subjectKind, action.folderId, {
+        const placedFolderId = action.type === "placeFolder" ? action.folderId : null;
+        if (placedFolderId != null) {
+          await patchProjectFolderApi(subjectKind, placedFolderId, {
             parent_id: action.parentId,
-            sort_order: ordered.findIndex((f) => f.id === action.folderId),
+            sort_order: ordered.findIndex((f) => f.id === placedFolderId),
           });
         }
-        const updates = sortOrderUpdates(ordered);
         await Promise.all(
-          updates.map((u) =>
-            patchProjectFolderApi(subjectKind, u.id, { sort_order: u.sort_order }),
-          ),
+          updates
+            .filter((u) => u.id !== placedFolderId)
+            .map((u) => patchProjectFolderApi(subjectKind, u.id, { sort_order: u.sort_order })),
         );
       } else if (action.type === "moveProject") {
         setProjects((prev) =>
@@ -637,6 +632,7 @@ export function ProjectApp() {
         );
         await patchProjectApi(subjectKind, action.projectId, { folder_id: action.folderId });
       } else if (action.type === "reorderProjects" || action.type === "placeProject") {
+        const updates = sortOrderUpdates(action.ordered);
         const ordered = action.ordered.map((row, index) => ({
           ...row,
           folder_id: action.folderId,
@@ -647,15 +643,17 @@ export function ProjectApp() {
           const others = prev.filter((p) => !ids.has(p.id));
           return [...others, ...ordered];
         });
-        if (action.type === "placeProject") {
-          await patchProjectApi(subjectKind, action.projectId, {
+        const placedProjectId = action.type === "placeProject" ? action.projectId : null;
+        if (placedProjectId != null) {
+          await patchProjectApi(subjectKind, placedProjectId, {
             folder_id: action.folderId,
-            sort_order: ordered.findIndex((p) => p.id === action.projectId),
+            sort_order: ordered.findIndex((p) => p.id === placedProjectId),
           });
         }
-        const updates = sortOrderUpdates(ordered);
         await Promise.all(
-          updates.map((u) => patchProjectApi(subjectKind, u.id, { sort_order: u.sort_order })),
+          updates
+            .filter((u) => u.id !== placedProjectId)
+            .map((u) => patchProjectApi(subjectKind, u.id, { sort_order: u.sort_order })),
         );
       }
     } catch (err) {
@@ -682,6 +680,9 @@ export function ProjectApp() {
         buildProjectMenuItems(project, {
           onEdit: openProjectEditor,
           onDelete: (p) => setDeleteProjectTarget(p),
+          onStatusChange: (p, status) => void handleProjectStatus(p.id, status),
+          hideCompleted,
+          onToggleHideCompleted: toggleHideCompleted,
         }),
       ),
     );
@@ -717,11 +718,14 @@ export function ProjectApp() {
         buildProjectMenuItems(contextMenu.project, {
           onEdit: openProjectEditor,
           onDelete: (p) => setDeleteProjectTarget(p),
+          onStatusChange: (p, status) => void handleProjectStatus(p.id, status),
+          hideCompleted,
+          onToggleHideCompleted: toggleHideCompleted,
         }),
       );
     }
     return menuToSheet(buildTaskMenuForItem(contextMenu.item));
-  }, [buildTaskMenuForItem, contextMenu]);
+  }, [buildTaskMenuForItem, contextMenu, hideCompleted]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -742,7 +746,8 @@ export function ProjectApp() {
           detailOpen={detailOpen}
           onDetailOpenChange={handleDetailOpenChange}
           middleActions={
-            <>
+            <div className="flex min-w-0 items-center gap-2">
+              {selectedProject ? <ProjectDetailHeader project={selectedProject} /> : null}
               <Button
                 type="button"
                 variant="ghost"
@@ -754,59 +759,7 @@ export function ProjectApp() {
               >
                 {refreshing ? <Spinner className="size-3.5" /> : m.console_common_refresh()}
               </Button>
-              {selectedProject ? (
-                <>
-                  {selectedProject.status === "active" ? (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={writesDisabled}
-                        onClick={() => void handleProjectStatus("on_hold")}
-                      >
-                        搁置
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={writesDisabled}
-                        onClick={() => void handleProjectStatus("completed")}
-                      >
-                        完成
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={writesDisabled}
-                        onClick={() => void handleProjectStatus("cancelled")}
-                      >
-                        取消
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={writesDisabled}
-                      onClick={() => void handleProjectStatus("active")}
-                    >
-                      重新激活
-                    </Button>
-                  )}
-                </>
-              ) : null}
-            </>
-          }
-          middleHeaderExtra={
-            selectedProject ? (
-              <ProjectDetailHeader
-                project={selectedProject}
-                writesDisabled={writesDisabled}
-                onDatesChange={(startLocal, endLocal) =>
-                  void handleProjectDatesChange(startLocal, endLocal)
-                }
-              />
-            ) : null
+            </div>
           }
           list={
             <div className="flex h-full min-h-0 flex-col">
@@ -858,19 +811,16 @@ export function ProjectApp() {
           middle={
             selectedProject ? (
               <div className="flex h-full min-h-0 flex-col">
-                <label className="text-muted-foreground flex shrink-0 items-center gap-2 px-3 py-2 text-xs">
-                  <Checkbox
-                    checked={hideCompleted}
-                    onCheckedChange={(checked) => {
-                      const next = checked === true;
-                      setHideCompleted(next);
-                      writeHideCompleted(subjectKind, next);
-                    }}
-                  />
-                  隐藏已完成
-                </label>
+                <QuickAddBar
+                  value={quickTaskTitle}
+                  onChange={setQuickTaskTitle}
+                  disabled={writesDisabled}
+                  onSubmit={() => void handleQuickAddTask()}
+                  className="border flex shrink-0 gap-2 border-b p-3"
+                />
                 <PullToRefresh
                   className="min-h-0 flex-1"
+                  contentClassName="touch-pan-y px-2 py-2"
                   disabled={refreshing || loading}
                   onRefresh={handleManualRefresh}
                 >
@@ -891,12 +841,6 @@ export function ProjectApp() {
                     onReorderPending={(ordered) => void persistProjectTaskOrder(ordered)}
                   />
                 </PullToRefresh>
-                <QuickAddBar
-                  value={quickTaskTitle}
-                  onChange={setQuickTaskTitle}
-                  disabled={writesDisabled}
-                  onSubmit={() => void handleQuickAddTask()}
-                />
               </div>
             ) : (
               <div className="text-muted-foreground flex h-full items-center justify-center p-8 text-sm">
@@ -960,58 +904,6 @@ export function ProjectApp() {
         onClose={() => setEditorTarget(null)}
         onSave={(input) => saveEditor(input)}
       />
-
-      <Dialog open={createProjectOpen} onOpenChange={setCreateProjectOpen}>
-        <DialogContent className="max-w-sm safe-area-pt safe-area-pb">
-          <DialogHeader>
-            <DialogTitle>新建项目</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2">
-            <div>
-              <FormFieldLabel>项目名称</FormFieldLabel>
-              <Input
-                value={newProjectTitle}
-                onChange={(e) => setNewProjectTitle(e.target.value)}
-                placeholder="项目名称"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <FormFieldLabel>开始日期</FormFieldLabel>
-                <DatePickerInput
-                  value={createProjectStart}
-                  aria-label="开始日期"
-                  onChange={setCreateProjectStart}
-                />
-              </div>
-              <div>
-                <FormFieldLabel>结束日期</FormFieldLabel>
-                <DatePickerInput
-                  value={createProjectEnd}
-                  aria-label="结束日期"
-                  onChange={setCreateProjectEnd}
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setCreateProjectOpen(false)}>
-              取消
-            </Button>
-            <Button
-              disabled={
-                writesDisabled ||
-                !newProjectTitle.trim() ||
-                !createProjectStart ||
-                !createProjectEnd
-              }
-              onClick={() => void handleCreateProject()}
-            >
-              创建
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <Dialog
         open={childFolderParentId != null}

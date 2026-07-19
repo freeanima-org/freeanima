@@ -7,8 +7,8 @@ export type ProjectStatus = z.infer<typeof projectStatusSchema>;
 
 export const projectBodySchema = z.object({
   folder_id: z.number().int().positive().nullable().optional(),
-  start_at: z.string(),
-  end_at: z.string(),
+  start_at: z.string().nullable().default(null),
+  end_at: z.string().nullable().default(null),
   status: projectStatusSchema.default("active"),
   product_tag: z.string().optional(),
   sort_order: z.number().int().optional(),

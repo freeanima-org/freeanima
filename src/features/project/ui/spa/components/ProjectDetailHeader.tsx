@@ -1,45 +1,30 @@
-import { FormFieldLabel } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
-import { DatePickerInput } from "@freeanima/frontend/ui-kit/form/DatePickerInput.tsx";
-
 import type { ProjectRow } from "../lib/api.ts";
-import { isoToDateLocalValue } from "../lib/format-task.ts";
 
 type ProjectDetailHeaderProps = {
   project: ProjectRow;
-  writesDisabled: boolean;
-  onDatesChange: (startLocal: string, endLocal: string) => void;
 };
 
-export function ProjectDetailHeader({
-  project,
-  writesDisabled,
-  onDatesChange,
-}: ProjectDetailHeaderProps) {
-  const startLocal = isoToDateLocalValue(project.start_at);
-  const endLocal = isoToDateLocalValue(project.end_at);
+function formatDateShort(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString(undefined, { month: "numeric", day: "numeric" });
+}
+
+/** 顶栏只读日程摘要：无 label；无日期时不渲染 */
+export function ProjectDetailHeader({ project }: ProjectDetailHeaderProps) {
+  const start = formatDateShort(project.start_at);
+  const end = formatDateShort(project.end_at);
+  if (!start && !end) return null;
+
+  let text: string;
+  if (start && end) text = `${start} – ${end}`;
+  else if (start) text = `自 ${start}`;
+  else text = `至 ${end}`;
 
   return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <FormFieldLabel>开始日期</FormFieldLabel>
-          <DatePickerInput
-            value={startLocal}
-            disabled={writesDisabled}
-            aria-label="开始日期"
-            onChange={(next) => onDatesChange(next, endLocal)}
-          />
-        </div>
-        <div>
-          <FormFieldLabel>结束日期</FormFieldLabel>
-          <DatePickerInput
-            value={endLocal}
-            disabled={writesDisabled}
-            aria-label="结束日期"
-            onChange={(next) => onDatesChange(startLocal, next)}
-          />
-        </div>
-      </div>
-    </div>
+    <p className="text-muted-foreground truncate text-[11px] leading-4" title={text}>
+      {text}
+    </p>
   );
 }

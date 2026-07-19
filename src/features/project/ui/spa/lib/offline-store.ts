@@ -212,8 +212,8 @@ async function rewriteLocalProjectId(
           title: "",
           content: "",
           folder_id: null,
-          start_at: new Date().toISOString(),
-          end_at: new Date().toISOString(),
+          start_at: null,
+          end_at: null,
           status: "active",
           product_tag: null,
           sort_order: 0,
@@ -337,8 +337,12 @@ async function applyPendingProjectPatches(
     byId.set(id, {
       ...row,
       ...(typeof patch.title === "string" ? { title: patch.title } : {}),
-      ...(typeof patch.start_at === "string" ? { start_at: patch.start_at } : {}),
-      ...(typeof patch.end_at === "string" ? { end_at: patch.end_at } : {}),
+      ...(patch.start_at === null || typeof patch.start_at === "string"
+        ? { start_at: patch.start_at }
+        : {}),
+      ...(patch.end_at === null || typeof patch.end_at === "string"
+        ? { end_at: patch.end_at }
+        : {}),
       ...(typeof patch.content === "string" ? { content: patch.content } : {}),
       ...(typeof patch.status === "string" ? { status: patch.status as ProjectRow["status"] } : {}),
       ...(typeof patch.sort_order === "number" ? { sort_order: patch.sort_order } : {}),
@@ -666,8 +670,8 @@ export async function offlineDeleteProjectFolder(id: number): Promise<void> {
 
 export async function offlineCreateProject(input: {
   title: string;
-  start_at: string;
-  end_at: string;
+  start_at?: string | null;
+  end_at?: string | null;
   content?: string;
   folder_id?: number | null;
 }): Promise<ProjectRow> {
@@ -685,8 +689,8 @@ export async function offlineCreateProject(input: {
     title,
     content,
     folder_id: input.folder_id ?? null,
-    start_at: input.start_at,
-    end_at: input.end_at,
+    start_at: input.start_at ?? null,
+    end_at: input.end_at ?? null,
     status: "active",
     product_tag: null,
     sort_order: 0,
@@ -732,8 +736,8 @@ export async function offlineUpdateProject(
     status?: ProjectRow["status"];
     linked_diary_ids?: number[];
     title?: string;
-    start_at?: string;
-    end_at?: string;
+    start_at?: string | null;
+    end_at?: string | null;
     content?: string;
     folder_id?: number | null;
     sort_order?: number;

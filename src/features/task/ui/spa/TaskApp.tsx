@@ -114,6 +114,7 @@ import {
   buildSmartListMenuItems,
 } from "./lib/task-menus.ts";
 import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-detail-dirty.ts";
+import { normalizeTaskItemRows } from "./lib/normalize-task-item.ts";
 
 type ListMenuState = { x: number; y: number; listId: number };
 type SmartListMenuState = { x: number; y: number; smartListId: number };
@@ -330,9 +331,9 @@ export function TaskApp() {
     const scope = resolveHubCacheScope();
     const cached = await readCachedTaskItems(scope, listId);
     if (generation !== itemsLoadGenRef.current) return;
-    if (cached) setItems(cached);
+    if (cached) setItems(normalizeTaskItemRows(cached));
+    else setItems([]);
     if (isTempId(listId) || !isHubFetchAvailable()) {
-      if (!cached) setItems([]);
       return;
     }
     try {
@@ -786,12 +787,13 @@ export function TaskApp() {
     const active = lists.filter((l) => !l.closed);
     const siblingIds = new Set(ordered.map((l) => l.id));
     const others = active.filter((l) => getParentId(l) !== parentId || !siblingIds.has(l.id));
+    // sortOrderUpdates 要求元素仍带旧 sort_order；先算 patch 再改写 UI
+    const updates = sortOrderUpdates(ordered);
     const nextSiblings = ordered.map((list, index) => ({ ...list, sort_order: index }));
     const mergedActive = [...others, ...nextSiblings].toSorted(
       (a, b) => a.sort_order - b.sort_order || a.id - b.id,
     );
     setLists([...mergedActive, ...closed]);
-    const updates = sortOrderUpdates(nextSiblings);
     try {
       await Promise.all(updates.map((u) => updateTaskList(u.id, { sort_order: u.sort_order })));
     } catch (err) {
@@ -836,6 +838,8 @@ export function TaskApp() {
     const others = active.filter(
       (l) => l.id !== listId && (getParentId(l) !== parentId || !orderedIds.has(l.id)),
     );
+    // 与 persistSiblingOrder 相同：先对旧 sort_order 算 diff，再乐观改写
+    const updates = sortOrderUpdates(ordered);
     const nextSiblings = ordered.map((row, index) => ({
       ...row,
       parent_id: parentId,
@@ -851,8 +855,11 @@ export function TaskApp() {
         parent_id: parentId,
         sort_order: sortAt < 0 ? nextSiblings.length : sortAt,
       });
-      const updates = sortOrderUpdates(nextSiblings);
-      await Promise.all(updates.map((u) => updateTaskList(u.id, { sort_order: u.sort_order })));
+      await Promise.all(
+        updates
+          .filter((u) => u.id !== listId)
+          .map((u) => updateTaskList(u.id, { sort_order: u.sort_order })),
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       await loadLists();
@@ -1032,7 +1039,7 @@ export function TaskApp() {
     [tagPool],
   );
   const matchTag = useCallback(
-    (row: TaskItemRow) => tagFilterId == null || row.tag_ids.includes(tagFilterId),
+    (row: TaskItemRow) => tagFilterId == null || row.tag_ids?.includes(tagFilterId) === true,
     [tagFilterId],
   );
   const pendingItems = items.filter((i) => i.status === "pending" && matchTag(i));

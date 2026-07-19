@@ -23,6 +23,7 @@ import {
   type OfflineUpdateTaskItemOpts,
 } from "./offline-store.ts";
 import { readCachedTaskItems, readCachedTaskLists } from "./offline-cache.ts";
+import { normalizeTaskItemRows } from "./normalize-task-item.ts";
 
 export { seedLocalTaskItems };
 
@@ -158,13 +159,13 @@ export async function deleteTaskList(id: number): Promise<void> {
 
 export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
   if (isTempId(listId) || !isHubFetchAvailable()) {
-    return (await readCachedTaskItems(resolveHubCacheScope(), listId)) ?? [];
+    return normalizeTaskItemRows(await readCachedTaskItems(resolveHubCacheScope(), listId));
   }
   const data = await hub().call(
     "tasklist.item.list",
     withSubjectKind({ list_id: listId, status: "all" }),
   );
-  return data.items;
+  return normalizeTaskItemRows(data.items);
 }
 
 export async function fetchTaskItemsByFilters(
@@ -172,7 +173,7 @@ export async function fetchTaskItemsByFilters(
 ): Promise<TaskItemRow[]> {
   if (!isHubFetchAvailable()) return [];
   const data = await hub().call("tasklist.item.list", withSubjectKind({ filters }));
-  return data.items;
+  return normalizeTaskItemRows(data.items);
 }
 
 /** Resolve a single task by id (best-effort list scan; used by Anima URI overlay). */
@@ -182,7 +183,8 @@ export async function fetchTaskItemById(id: number): Promise<TaskItemRow | null>
     "tasklist.item.list",
     withSubjectKind({ status: "all", limit: 200 }),
   );
-  return data.items.find((row) => row.id === id) ?? null;
+  const row = normalizeTaskItemRows(data.items).find((item) => item.id === id);
+  return row ?? null;
 }
 
 export async function fetchSmartLists(): Promise<SmartListRow[]> {
@@ -228,7 +230,7 @@ export async function searchTaskItems(input: {
       limit: input.limit,
     }),
   );
-  return data.items;
+  return normalizeTaskItemRows(data.items);
 }
 
 export async function createTaskItem(input: {

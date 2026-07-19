@@ -1,9 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+  isTaskItemDisplayEqual,
   resolveTaskTagTitles,
   splitTaskTagTitlesForDisplay,
   TASK_ROW_TAG_MAX_VISIBLE,
+  type TaskItemDisplay,
 } from "./task-item-display.ts";
 
 describe("resolveTaskTagTitles", () => {
@@ -12,12 +14,36 @@ describe("resolveTaskTagTitles", () => {
     expect(resolveTaskTagTitles([], new Map([[1, "a"]]))).toEqual([]);
   });
 
+  test("returns empty when tagIds is nullish even with lookup map", () => {
+    const map = new Map([[1, "a"]]);
+    expect(resolveTaskTagTitles(undefined, map)).toEqual([]);
+    expect(resolveTaskTagTitles(null, map)).toEqual([]);
+  });
+
   test("skips missing ids and preserves order", () => {
     const map = new Map([
       [2, "beta"],
       [1, "alpha"],
     ]);
     expect(resolveTaskTagTitles([1, 9, 2], map)).toEqual(["alpha", "beta"]);
+  });
+});
+
+describe("isTaskItemDisplayEqual", () => {
+  const base: TaskItemDisplay = {
+    id: 1,
+    title: "t",
+    content: "",
+    tag_ids: [1],
+    status: "pending",
+    priority: "none",
+    due_at: null,
+  };
+
+  test("treats missing tag_ids as empty without throwing", () => {
+    const missingTags = { ...base, tag_ids: undefined as unknown as number[] };
+    expect(isTaskItemDisplayEqual(missingTags, { ...base, tag_ids: [] })).toBe(true);
+    expect(isTaskItemDisplayEqual(missingTags, base)).toBe(false);
   });
 });
 

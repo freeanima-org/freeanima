@@ -124,20 +124,26 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "project_create",
-          description: "Create a project with schedule; optional content for background notes",
+          description: "Create a project; start_at/end_at optional (omit or null if unset)",
           exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
               ...WORLD_ID_OPTIONAL,
               title: { type: "string" },
-              start_at: { type: "string" },
-              end_at: { type: "string" },
+              start_at: {
+                type: "string",
+                description: "ISO start date; omit or null if unset",
+              },
+              end_at: {
+                type: "string",
+                description: "ISO end date; omit or null if unset",
+              },
               content: { type: "string", description: "Project background / notes" },
               folder_id: { type: "integer" },
               product_tag: { type: "string" },
             },
-            required: ["title", "start_at", "end_at"],
+            required: ["title"],
           },
           handler: async (args) => {
             const worldId = await resolveWorld(args, "write");
@@ -149,8 +155,9 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
                 worldId,
                 omitUndefined({
                   title,
-                  start_at: String(args.start_at),
-                  end_at: String(args.end_at),
+                  start_at:
+                    args.start_at == null || args.start_at === "" ? null : String(args.start_at),
+                  end_at: args.end_at == null || args.end_at === "" ? null : String(args.end_at),
                   content: args.content != null ? String(args.content) : undefined,
                   folder_id:
                     args.folder_id != null && args.folder_id !== ""

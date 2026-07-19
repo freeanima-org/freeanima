@@ -10,8 +10,10 @@ import {
   Label,
   Textarea,
 } from "@freeanima/frontend/ui-kit";
+import { DatePickerInput } from "@freeanima/frontend/ui-kit/form/DatePickerInput.tsx";
 
 import type { ProjectFolderRow, ProjectRow } from "../lib/api.ts";
+import { dateLocalToIso, isoToDateLocalValue } from "../lib/format-task.ts";
 import { isFolderDescendant } from "../lib/project-tree.ts";
 
 export type ProjectEditorTarget =
@@ -27,6 +29,8 @@ type ProjectEditorDialogProps = {
     name: string;
     folderId: number | null;
     content?: string;
+    startLocal?: string;
+    endLocal?: string;
   }) => void | Promise<void>;
 };
 
@@ -40,6 +44,8 @@ export function ProjectEditorDialog({
   const [name, setName] = useState("");
   const [folderId, setFolderId] = useState<number | null>(null);
   const [content, setContent] = useState("");
+  const [startLocal, setStartLocal] = useState("");
+  const [endLocal, setEndLocal] = useState("");
   const [saving, setSaving] = useState(false);
 
   const folderOptions = useMemo(() => {
@@ -59,10 +65,14 @@ export function ProjectEditorDialog({
       setName(target.folder.name);
       setFolderId(target.folder.parent_id ?? null);
       setContent("");
+      setStartLocal("");
+      setEndLocal("");
     } else {
       setName(target.project.title);
       setFolderId(target.project.folder_id ?? null);
       setContent(target.project.content ?? "");
+      setStartLocal(isoToDateLocalValue(target.project.start_at));
+      setEndLocal(isoToDateLocalValue(target.project.end_at));
     }
     setSaving(false);
   }, [open, target]);
@@ -73,7 +83,13 @@ export function ProjectEditorDialog({
     setSaving(true);
     try {
       if (target.kind === "project") {
-        await onSave({ name: trimmed, folderId, content: content.trim() });
+        await onSave({
+          name: trimmed,
+          folderId,
+          content: content.trim(),
+          startLocal,
+          endLocal,
+        });
       } else {
         await onSave({ name: trimmed, folderId });
       }
@@ -107,15 +123,32 @@ export function ProjectEditorDialog({
             />
           </div>
           {target?.kind === "project" ? (
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="project-edit-content">背景说明</Label>
-              <Textarea
-                id="project-edit-content"
-                value={content}
-                rows={4}
-                onChange={(e) => setContent(e.target.value)}
-              />
-            </div>
+            <>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="project-edit-content">背景说明</Label>
+                <Textarea
+                  id="project-edit-content"
+                  value={content}
+                  rows={4}
+                  onChange={(e) => setContent(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex min-w-0 flex-col gap-1.5">
+                  <Label>开始日期</Label>
+                  <DatePickerInput
+                    value={startLocal}
+                    aria-label="开始日期"
+                    onChange={setStartLocal}
+                  />
+                </div>
+                <div className="flex min-w-0 flex-col gap-1.5">
+                  <Label>结束日期</Label>
+                  <DatePickerInput value={endLocal} aria-label="结束日期" onChange={setEndLocal} />
+                </div>
+              </div>
+              <p className="text-muted-foreground text-[11px]">可留空；也可只填其中一侧。</p>
+            </>
           ) : null}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="project-edit-folder">{folderLabel}</Label>
@@ -148,4 +181,18 @@ export function ProjectEditorDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+/** 将编辑弹窗日期本地值转为可 patch 的 ISO（空串 → null） */
+export function projectEditorDatesToIso(
+  startLocal: string,
+  endLocal: string,
+): {
+  start_at: string | null;
+  end_at: string | null;
+} {
+  return {
+    start_at: startLocal.trim() ? dateLocalToIso(startLocal) : null,
+    end_at: endLocal.trim() ? dateLocalToIso(endLocal) : null,
+  };
 }
