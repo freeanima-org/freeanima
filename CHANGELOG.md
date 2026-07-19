@@ -3,6 +3,48 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.9.2](https://github.com/freeanima-org/freeanima/compare/v0.9.1...v0.9.2) (2026-07-19)
+
+
+### Features
+
+* **chat:** 支持 slash 一级子命令补全 ([0a00f5e](https://github.com/freeanima-org/freeanima/commit/0a00f5eed9b4f29c0c01f9f571943b62cc17e075))
+* **chat:** 本机设置开启 LLM 调试，快照改 Redis 按需拉取 ([f9ffe5f](https://github.com/freeanima-org/freeanima/commit/f9ffe5fe6634c3139d8c768c6f870aa049e9c836))
+* **hub:** 只读 GET JSON 支持 ETag/304 协商缓存 ([e34bdc8](https://github.com/freeanima-org/freeanima/commit/e34bdc8c4c418e18f89e68c6c3033ea7e3a2fc2b))
+* **memory:** 落地时间摘要（全局 entity + 当天会话 JSONB） ([100f033](https://github.com/freeanima-org/freeanima/commit/100f0337fc669b4f3a10bc438eb0f6308a52e0a1))
+* **runtime:** 环境感知基线采集与变更通知 ([cd84519](https://github.com/freeanima-org/freeanima/commit/cd845191b844bc6bef0191ab1e6bd61b12cbbd8a))
+* **runtime:** 用户活跃统计面板与 env-health 基线迁 Redis ([4852eeb](https://github.com/freeanima-org/freeanima/commit/4852eeb48e63532c8022d130fb231c183d81f9f8))
+* **tag:** 引入独立 Tag Entity 并以任务为试点接入 ([f3a0478](https://github.com/freeanima-org/freeanima/commit/f3a04780703753e2d508789b81993114b2c0206d))
+* **task:** 任务行展示标签并复用详情面板 ([bbfd994](https://github.com/freeanima-org/freeanima/commit/bbfd99483ec9400383b7e2d9c7c4eeb0a788116c))
+* **task:** 全局搜索独立列表态并智能清单自动填 due ([3f9e3ca](https://github.com/freeanima-org/freeanima/commit/3f9e3ca25ca8ca78d915363f45c29308246a1487))
+* **tool:** 为 Tool 入参加运行时校验门闸 ([984497d](https://github.com/freeanima-org/freeanima/commit/984497d0d9c5359c42f6d1451e90b35188c8e9ab))
+* **update:** 三端升级增加下载进度反馈 ([7005c22](https://github.com/freeanima-org/freeanima/commit/7005c22364e77fd663f0fa266eeab5f6da443de1))
+* vault 按次 secrets、配置明文与 LLM 路由可观测 ([5adf85f](https://github.com/freeanima-org/freeanima/commit/5adf85f6e6d3ec8bf54f3e3cfa24e071dd8334e5))
+
+
+### Bug Fixes
+
+* **console:** 修复运维台对话列表因 sap:: 过滤恒为空 ([243a5f8](https://github.com/freeanima-org/freeanima/commit/243a5f82c9082b6e161d6a5f20ed569bc187cec9))
+* **db:** 修复 Bun SQL 裸绑 string[] 导致浅睡查询失败 ([4637665](https://github.com/freeanima-org/freeanima/commit/4637665b44ffe8fbf7324aff13e71454362ef0f9))
+* **desktop:** 主进程合并系统 CA，修复 mkcert HTTPS 测试连接 ([285dff7](https://github.com/freeanima-org/freeanima/commit/285dff7cf85c543310e893740f6df9c58cfcb315))
+* **dev:** Ctrl+C 时按进程组清理 hub/vite 子进程 ([8e5c52f](https://github.com/freeanima-org/freeanima/commit/8e5c52f8d82f18dba682b5f212e19ba206b1efa3))
+* **memory:** 精简时间摘要并剥离寒暄开场 ([28c2ba9](https://github.com/freeanima-org/freeanima/commit/28c2ba96634e9a722fc49b767f99dc3cf17dbcb9))
+* **mobile:** 修复 Android versionCode 回绕导致无法覆盖安装 ([52417dc](https://github.com/freeanima-org/freeanima/commit/52417dc661ff63674d01eb02bedd5c6d47d9db0e))
+* **task/project:** 修复无缓存清单崩溃并优化项目详情 ([e213fbd](https://github.com/freeanima-org/freeanima/commit/e213fbd10f67384cf8835726359c7e02bf0eec51))
+* **task:** 支持 task_create/update 的 tags 名称挂载 ([a839c72](https://github.com/freeanima-org/freeanima/commit/a839c72b984ba181bb943dc78e5fa5397075c76b))
+* **test:** 对齐 tag_ids、world subject 与日记 hybrid 排序断言 ([5cc0f39](https://github.com/freeanima-org/freeanima/commit/5cc0f39b18bb4e6479c249d242b995c2a05101be))
+* **worlds:** 新实例自动绑定 user/agent subject id ([b1489c5](https://github.com/freeanima-org/freeanima/commit/b1489c5c21d1460c02fc40b3eb37e169183dddfa))
+
+
+### Documentation
+
+* **naming:** 定稿栖息地/入口产品文案并同步 UI ([f7b3300](https://github.com/freeanima-org/freeanima/commit/f7b33001f64226b5ef89596d5dbfc6f001dffe43))
+
+
+### Refactoring
+
+* **project:** 移除里程碑与完成标准，改用 content 背景说明 ([3f536b6](https://github.com/freeanima-org/freeanima/commit/3f536b61d1808e64c359555f0753504029aba519))
+
 ## [0.9.1](https://github.com/freeanima-org/freeanima/compare/v0.9.0...v0.9.1) (2026-07-17)
 
 
