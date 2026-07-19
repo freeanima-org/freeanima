@@ -515,4 +515,128 @@ describe("applyStandaloneUpgrade", () => {
 
     expect(called).toBe(false);
   });
+
+  it("reports download progress via onDownloadProgress", async () => {
+    useTempHome();
+    const work = createTempDir("freeanima-upgrade-progress-");
+    tempDirs.push(work);
+    const prefix = join(work, "standalone");
+    mkdirSync(prefix, { recursive: true });
+    writeFileSync(join(prefix, "anima"), "old\n");
+    const tarBytes = await buildTestTarball(work);
+    const fetchImpl = mockReleaseFetch(tarBytes, tarBytes.byteLength);
+    const progress: Array<{ received: number; total: number | null }> = [];
+
+    const result = await applyStandaloneUpgrade({
+      prefix,
+      localVersion: "0.8.5",
+      channel: "release",
+      fetchOptions: { fetchImpl },
+      cliProgressTty: false,
+      onDownloadProgress: (p) => progress.push(p),
+    });
+
+    expect(result.status).toBe("upgraded");
+    expect(progress.length).toBeGreaterThan(0);
+    const last = progress.at(-1);
+    expect(last?.received).toBe(tarBytes.byteLength);
+    expect(last?.total).toBe(tarBytes.byteLength);
+  });
+});
+
+describe("cli download progress", () => {
+  it("formats wget-like line with percent bar", async () => {
+    const { formatCliDownloadProgressLine, formatHumanBytes } =
+      await import("./cli-download-progress.ts");
+    expect(formatHumanBytes(1536)).toBe("1.5K");
+    const line = formatCliDownloadProgressLine({
+      fileName: "anima-linux-x64.tar.gz",
+      received: 45,
+      total: 100,
+      barWidth: 10,
+      bytesPerSecond: 1024 * 1024 * 1.2,
+    });
+    expect(line).toContain("45%");
+    expect(line).toContain("anima-linux-x64.tar.gz");
+    expect(line).toContain("[");
+    expect(line).toContain(">");
+    expect(line).toContain("/s");
+  });
+
+  it("TTY sink rewrites with carriage return; non-TTY stays silent", async () => {
+    const { createCliDownloadProgressSink } = await import("./cli-download-progress.ts");
+    const { Writable } = await import("node:stream");
+    const chunks: string[] = [];
+    const stream = new Writable({
+      write(chunk, _enc, cb) {
+        chunks.push(String(chunk));
+        cb();
+      },
+    });
+    const tty = createCliDownloadProgressSink({
+      fileName: "a.tar.gz",
+      stream,
+      isTty: true,
+    });
+    tty.onProgress({ received: 10, total: 100 });
+    tty.finish();
+    expect(chunks[0]?.startsWith("\r")).toBe(true);
+    expect(chunks.at(-1)).toBe("\n");
+
+    const silentChunks: string[] = [];
+    const silentStream = new Writable({
+      write(chunk, _enc, cb) {
+        silentChunks.push(String(chunk));
+        cb();
+      },
+    });
+    const silent = createCliDownloadProgressSink({
+      fileName: "a.tar.gz",
+      stream: silentStream,
+      isTty: false,
+    });
+    silent.onProgress({ received: 10, total: 100 });
+    silent.finish();
+    expect(silentChunks).toEqual([]);
+  });
+});
+
+describe("downloadReleaseAsset progress", () => {
+  it("invokes onProgress with content-length total", async () => {
+    const { downloadReleaseAsset } = await import("./download.ts");
+    const destDir = createTempDir("freeanima-dl-progress-");
+    tempDirs.push(destDir);
+    const dest = join(destDir, "asset.bin");
+    const body = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+    const progress: Array<{ received: number; total: number | null }> = [];
+    await downloadReleaseAsset("https://example.com/asset.bin", dest, {
+      fetchImpl: (async () =>
+        new Response(body, {
+          status: 200,
+          headers: { "content-length": String(body.byteLength) },
+        })) as unknown as typeof fetch,
+      onProgress: (p) => progress.push(p),
+    });
+    expect(readFileSync(dest)).toEqual(Buffer.from(body));
+    expect(progress.at(-1)).toEqual({ received: body.byteLength, total: body.byteLength });
+  });
+
+  it("reports null total when Content-Length is absent", async () => {
+    const { downloadReleaseAsset } = await import("./download.ts");
+    const destDir = createTempDir("freeanima-dl-progress-nolength-");
+    tempDirs.push(destDir);
+    const dest = join(destDir, "asset.bin");
+    const body = new Uint8Array([9, 8, 7, 6]);
+    const progress: Array<{ received: number; total: number | null }> = [];
+    await downloadReleaseAsset("https://example.com/asset.bin", dest, {
+      fetchImpl: (async () =>
+        new Response(body, {
+          status: 200,
+        })) as unknown as typeof fetch,
+      onProgress: (p) => progress.push(p),
+    });
+    expect(readFileSync(dest)).toEqual(Buffer.from(body));
+    expect(progress.length).toBeGreaterThan(0);
+    expect(progress.at(-1)).toEqual({ received: body.byteLength, total: null });
+  });
 });

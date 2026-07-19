@@ -1,8 +1,11 @@
-import { closeSync, createWriteStream, mkdtempSync, openSync, readSync, statSync } from "node:fs";
+import { closeSync, mkdtempSync, openSync, readSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { pipeline } from "node:stream/promises";
-import { Readable } from "node:stream";
 import { type ChildProcess, spawn, type SpawnOptions } from "node:child_process";
+
+import {
+  pipeResponseBodyToFile,
+  type DownloadProgressHandler,
+} from "@freeanima/core/config/app-update/download";
 
 const PE_MAGIC = [0x4d, 0x5a] as const; // MZ
 
@@ -30,18 +33,30 @@ export function verifyDownloadedInstaller(filePath: string, expectedSize?: numbe
   }
 }
 
-export async function downloadInstallerToFile(url: string, dest: string): Promise<void> {
-  const res = await fetch(url, {
+export async function downloadInstallerToFile(
+  url: string,
+  dest: string,
+  opts?: {
+    expectedSize?: number;
+    onProgress?: DownloadProgressHandler;
+    fetchImpl?: typeof fetch;
+  },
+): Promise<void> {
+  const fetchImpl = opts?.fetchImpl ?? fetch;
+  const res = await fetchImpl(url, {
     headers: { "User-Agent": "freeanima-desktop-updater", Accept: "application/octet-stream" },
     redirect: "follow",
   });
   if (!res.ok || !res.body) {
     throw new Error(`下载安装包失败 HTTP ${res.status}`);
   }
-  const nodeStream = Readable.fromWeb(
-    res.body as unknown as import("node:stream/web").ReadableStream,
-  );
-  await pipeline(nodeStream, createWriteStream(dest));
+  const contentLength = res.headers.get("content-length");
+  const total = opts?.expectedSize ?? (contentLength != null ? Number(contentLength) : null);
+  const resolvedTotal = total != null && Number.isFinite(total) && total >= 0 ? total : null;
+  await pipeResponseBodyToFile(res.body as ReadableStream<Uint8Array>, dest, {
+    total: resolvedTotal,
+    ...(opts?.onProgress ? { onProgress: opts.onProgress } : {}),
+  });
 }
 
 /** 在 temp 下创建唯一目录并返回 setup.exe 路径 */

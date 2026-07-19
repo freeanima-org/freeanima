@@ -3699,6 +3699,24 @@ msgid "Downloading and installing…"
 msgstr ""
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:682
+#, no-wrap
+msgid "Downloading… {percent}%"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:683
+#, no-wrap
+msgid "Downloading… {bytes}"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:687
+#, no-wrap
+msgid "Installing…"
+msgstr ""
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:676
 #, no-wrap
 msgid "A new app version ({version}) is available."

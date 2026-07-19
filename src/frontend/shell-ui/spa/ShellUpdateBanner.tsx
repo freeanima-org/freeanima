@@ -47,6 +47,34 @@ function formatUpdateErrorMessage(err: unknown): string {
   return detail;
 }
 
+function formatProgressBytes(n: number): string {
+  if (!Number.isFinite(n) || n < 0) return "0 B";
+  if (n < 1024) return `${Math.floor(n)} B`;
+  if (n < 1024 ** 2) return `${(n / 1024).toFixed(1)} KB`;
+  if (n < 1024 ** 3) return `${(n / 1024 ** 2).toFixed(1)} MB`;
+  return `${(n / 1024 ** 3).toFixed(2)} GB`;
+}
+
+type ApplyProgress = {
+  received: number;
+  total: number | null;
+  phase: "downloading" | "installing";
+};
+
+function formatApplyingMessage(progress: ApplyProgress | null): string {
+  if (progress?.phase === "installing") {
+    return m.ui_shell_update_installing();
+  }
+  if (!progress) {
+    return m.ui_shell_update_applying();
+  }
+  if (progress.total != null && progress.total > 0) {
+    const percent = Math.min(100, Math.floor((100 * progress.received) / progress.total));
+    return m.ui_shell_update_downloading({ percent: String(percent) });
+  }
+  return m.ui_shell_update_downloading_bytes({ bytes: formatProgressBytes(progress.received) });
+}
+
 export const SHELL_UPDATE_CHECK_EVENT = "freeanima:shell-update-check";
 
 export type ShellUpdateRequestDetail = {
@@ -68,6 +96,7 @@ export function ShellUpdateBanner(): null {
   );
   const [error, setError] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
+  const [applyProgress, setApplyProgress] = useState<ApplyProgress | null>(null);
   const checkingRef = useRef(false);
 
   useEffect(() => {
@@ -186,7 +215,7 @@ export function ShellUpdateBanner(): null {
     }
 
     if (phase === "applying") {
-      showShellToast(SHELL_TOAST_IDS.shellUpdate, m.ui_shell_update_applying(), {
+      showShellToast(SHELL_TOAST_IDS.shellUpdate, formatApplyingMessage(applyProgress), {
         duration: Number.POSITIVE_INFINITY,
       });
       return;
@@ -214,14 +243,26 @@ export function ShellUpdateBanner(): null {
             setError(m.ui_shell_update_failed());
             return;
           }
+          setApplyProgress(null);
           setPhase("applying");
+          const unsub = window.satelliteShell?.onPackagedUpdateProgress?.((progress) => {
+            setApplyProgress({
+              received: progress.received,
+              total: progress.total,
+              phase: progress.phase ?? "downloading",
+            });
+          });
           void apply({
             assetUrl: update.assetUrl,
             ...(update.assetSize != null ? { expectedSize: update.assetSize } : {}),
-          }).catch((err) => {
-            setPhase("failed");
-            setError(formatUpdateErrorMessage(err));
-          });
+          })
+            .catch((err) => {
+              setPhase("failed");
+              setError(formatUpdateErrorMessage(err));
+            })
+            .finally(() => {
+              unsub?.();
+            });
         },
       },
       cancel: {
@@ -233,7 +274,7 @@ export function ShellUpdateBanner(): null {
         },
       },
     });
-  }, [error, kind, phase, switching, update]);
+  }, [applyProgress, error, kind, phase, switching, update]);
 
   return null;
 }
