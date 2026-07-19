@@ -80,6 +80,14 @@ export type SatelliteShellApi = {
   cancelNativeAlert?: (key: ShellNativeAlertCancelKey) => Promise<void>;
   /** 原生壳：确认后下载 Releases 产物并覆盖安装（Desktop NSIS / Mobile APK） */
   applyPackagedUpdate?: (opts: { assetUrl: string; expectedSize?: number }) => Promise<void>;
+  /** 下载/安装进度（Desktop IPC / Mobile Capacitor 事件） */
+  onPackagedUpdateProgress?: (
+    handler: (progress: {
+      received: number;
+      total: number | null;
+      phase?: "downloading" | "installing";
+    }) => void,
+  ) => () => void;
 };
 
 declare global {

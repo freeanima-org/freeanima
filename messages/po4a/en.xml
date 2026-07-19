@@ -4,8 +4,9 @@
   <msg id="chat_archived_section">Archived</msg>
   <msg id="chat_delete">Delete</msg>
   <msg id="chat_delete_confirm">Permanently delete this conversation and all messages? This cannot be undone.</msg>
-  <msg id="chat_llm_debug_description">Enable Debug, send a message, then open View. Data clears on refresh.</msg>
-  <msg id="chat_llm_debug_empty">Enable Debug and send a message to capture snapshots.</msg>
+  <msg id="chat_llm_debug_description">Enable in Settings → Chat, send a message, then open Debug. Snapshots are cached on the Habitat for 10 minutes.</msg>
+  <msg id="chat_llm_debug_empty">No cached snapshot for this conversation. Send a message with LLM debug enabled, then open Debug again.</msg>
+  <msg id="chat_llm_debug_loading">Loading debug snapshot…</msg>
   <msg id="chat_llm_debug_model">Model</msg>
   <msg id="chat_llm_debug_passive_hint">Check memory.passive_recall.enabled, FTS index, exclude_resident, and cron sessions.</msg>
   <msg id="chat_llm_debug_passive_missing">No passive_memory_context injection detected.</msg>
@@ -18,7 +19,7 @@
   <msg id="chat_llm_debug_tools">Tool list</msg>
   <msg id="chat_llm_debug_turn_index">Turn</msg>
   <msg id="chat_llm_debug_turns">Message turns</msg>
-  <msg id="chat_llm_debug_view">View</msg>
+  <msg id="chat_llm_debug_view">Debug</msg>
   <msg id="chat_show_archived">Show archived</msg>
   <msg id="chat_slash_result_close">Close</msg>
   <msg id="chat_slash_result_loading">Running…</msg>
@@ -606,6 +607,8 @@ Digital Humans</msg>
   <msg id="settings_appearance_theme_ocean">Ocean</msg>
   <msg id="settings_appearance_theme_sunset">Sunset</msg>
   <msg id="settings_appearance_theme_violet">Violet</msg>
+  <msg id="settings_chat_llm_debug_hint">When on, each send captures invoke snapshots on the Habitat (Redis, 10 min TTL). Open Debug in Chat to fetch — not streamed over the wire.</msg>
+  <msg id="settings_chat_llm_debug_label">Enable LLM debug</msg>
   <msg id="sidebar_architecture">Architecture</msg>
   <msg id="sidebar_compression">Compression</msg>
   <msg id="sidebar_concepts">Concepts</msg>
@@ -676,9 +679,12 @@ Digital Humans</msg>
   <msg id="ui_shell_update_available">A new app version ({version}) is available.</msg>
   <msg id="ui_shell_update_check">Check for updates</msg>
   <msg id="ui_shell_update_dismiss">Later</msg>
+  <msg id="ui_shell_update_downloading">Downloading… {percent}%</msg>
+  <msg id="ui_shell_update_downloading_bytes">Downloading… {bytes}</msg>
   <msg id="ui_shell_update_failed">Update failed. Please try again.</msg>
   <msg id="ui_shell_update_failed_detail">Update failed: {message}</msg>
   <msg id="ui_shell_update_install">Update now</msg>
+  <msg id="ui_shell_update_installing">Installing…</msg>
   <msg id="ui_shell_update_latest">You are on the latest version.</msg>
   <msg id="ui_shell_update_log_hint">See ~/.anima/desktop-shell/shell.log for details.</msg>
   <msg id="ui_shell_update_none">No update package for this platform yet.</msg>

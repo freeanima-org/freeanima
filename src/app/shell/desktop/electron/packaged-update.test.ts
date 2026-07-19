@@ -8,6 +8,7 @@ import { removeTempDir } from "@freeanima/core/util/temp-dir";
 
 import {
   createInstallerTempPath,
+  downloadInstallerToFile,
   launchWindowsNsisInstaller,
   parsePackagedUpdatePayload,
   verifyDownloadedInstaller,
@@ -122,5 +123,36 @@ describe("launchWindowsNsisInstaller", () => {
         timeoutMs: 100,
       }),
     ).rejects.toThrow(/无法启动安装程序/);
+  });
+});
+
+describe("downloadInstallerToFile", () => {
+  let tempDir = "";
+
+  afterEach(() => {
+    if (tempDir) {
+      removeTempDir(tempDir);
+      tempDir = "";
+    }
+  });
+
+  it("reports onProgress while writing", async () => {
+    tempDir = mkdtempSync(join(tmpdir(), "packaged-update-dl-"));
+    const dest = join(tempDir, "setup.exe");
+    const body = new Uint8Array(64).fill(0x41);
+    body[0] = 0x4d;
+    body[1] = 0x5a;
+    const progress: Array<{ received: number; total: number | null }> = [];
+    await downloadInstallerToFile("https://example.com/setup.exe", dest, {
+      expectedSize: body.byteLength,
+      fetchImpl: (async () =>
+        new Response(body, {
+          status: 200,
+          headers: { "content-length": String(body.byteLength) },
+        })) as unknown as typeof fetch,
+      onProgress: (p) => progress.push(p),
+    });
+    expect(progress.at(-1)).toEqual({ received: body.byteLength, total: body.byteLength });
+    verifyDownloadedInstaller(dest, body.byteLength);
   });
 });

@@ -3700,6 +3700,24 @@ msgid "Downloading and installing…"
 msgstr "正在下载并安装…"
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:682
+#, no-wrap
+msgid "Downloading… {percent}%"
+msgstr "下载中… {percent}%"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:683
+#, no-wrap
+msgid "Downloading… {bytes}"
+msgstr "下载中… {bytes}"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:687
+#, no-wrap
+msgid "Installing…"
+msgstr "正在安装…"
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:676
 #, no-wrap
 msgid "A new app version ({version}) is available."

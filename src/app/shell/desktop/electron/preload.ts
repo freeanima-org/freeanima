@@ -133,6 +133,22 @@ function createSatelliteShell(
         ...(expectedSize != null ? { expectedSize } : {}),
       });
     },
+    onPackagedUpdateProgress: (handler) => {
+      const listener = (
+        _event: Electron.IpcRendererEvent,
+        payload: {
+          received: number;
+          total: number | null;
+          phase?: "downloading" | "installing";
+        },
+      ) => {
+        handler(payload);
+      };
+      ipcRenderer.on("shell:packaged-update-progress", listener);
+      return () => {
+        ipcRenderer.removeListener("shell:packaged-update-progress", listener);
+      };
+    },
   };
 }
 

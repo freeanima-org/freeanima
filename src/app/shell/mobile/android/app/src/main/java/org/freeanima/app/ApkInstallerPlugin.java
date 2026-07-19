@@ -36,6 +36,7 @@ public class ApkInstallerPlugin extends Plugin {
             () -> {
               try {
                 File apk = downloadApk(assetUrl);
+                notifyProgress(apk.length(), apk.length(), "installing");
                 getActivity()
                     .runOnUiThread(
                         () -> {
@@ -55,6 +56,16 @@ public class ApkInstallerPlugin extends Plugin {
         .start();
   }
 
+  private void notifyProgress(long received, long total, String phase) {
+    JSObject progress = new JSObject();
+    progress.put("received", received);
+    if (total > 0) {
+      progress.put("total", total);
+    }
+    progress.put("phase", phase);
+    notifyListeners("downloadProgress", progress);
+  }
+
   private File downloadApk(String assetUrl) throws Exception {
     URL url = new URL(assetUrl);
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -65,17 +76,27 @@ public class ApkInstallerPlugin extends Plugin {
     if (code < 200 || code >= 300) {
       throw new Exception("HTTP " + code);
     }
+    long total = conn.getContentLengthLong();
     File out = new File(getContext().getCacheDir(), "freeanima-mobile-android.apk");
+    long received = 0;
+    long lastNotifyAt = 0;
     try (InputStream in = conn.getInputStream();
         FileOutputStream fos = new FileOutputStream(out)) {
       byte[] buf = new byte[8192];
       int n;
       while ((n = in.read(buf)) > 0) {
         fos.write(buf, 0, n);
+        received += n;
+        long now = System.currentTimeMillis();
+        if (now - lastNotifyAt >= 100 || (total > 0 && received >= total)) {
+          lastNotifyAt = now;
+          notifyProgress(received, total, "downloading");
+        }
       }
     } finally {
       conn.disconnect();
     }
+    notifyProgress(received, total > 0 ? total : received, "downloading");
     return out;
   }
 

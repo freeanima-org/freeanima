@@ -12,7 +12,11 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { downloadReleaseAsset } from "./download.ts";
+import {
+  createCliDownloadProgressSink,
+  type CliDownloadProgressSink,
+} from "./cli-download-progress.ts";
+import { downloadReleaseAsset, type DownloadProgressHandler } from "./download.ts";
 import { resolvePackagedUpdate } from "./resolve-packaged-update.ts";
 import type { BuildChannel } from "../build-meta.parse.ts";
 import {
@@ -36,6 +40,11 @@ export type ApplyStandaloneUpgradeOptions = {
   signal?: AbortSignal;
   fetchOptions?: Parameters<typeof resolvePackagedUpdate>[0]["fetchOptions"];
   log?: (msg: string) => void;
+  /** 自定义下载进度；未设时 TTY stderr 自动用类 wget 单行进度条 */
+  onDownloadProgress?: DownloadProgressHandler;
+  createDownloadProgressSink?: (assetName: string) => CliDownloadProgressSink;
+  /** 强制开/关 TTY 进度（测试用）；默认跟随 process.stderr.isTTY */
+  cliProgressTty?: boolean;
 };
 
 export type ApplyStandaloneUpgradeResult =
@@ -165,13 +174,29 @@ export async function applyStandaloneUpgrade(
   const tmp = mkdtempSync(join(tmpdir(), "anima-dl-"));
   const tarball = join(tmp, update.assetName);
   let staged: StagedTarball | undefined;
+  const progressSink =
+    opts.createDownloadProgressSink?.(update.assetName) ??
+    (opts.onDownloadProgress
+      ? {
+          onProgress: opts.onDownloadProgress,
+          finish: () => {},
+        }
+      : createCliDownloadProgressSink({
+          fileName: update.assetName,
+          isTty: opts.cliProgressTty ?? process.stderr.isTTY === true,
+        }));
   try {
     log(`下载 ${update.assetUrl} …`);
-    await downloadReleaseAsset(update.assetUrl, tarball, {
-      ...(opts.signal ? { signal: opts.signal } : {}),
-      ...(update.assetSize != null ? { expectedSize: update.assetSize } : {}),
-      ...(opts.fetchOptions?.fetchImpl ? { fetchImpl: opts.fetchOptions.fetchImpl } : {}),
-    });
+    try {
+      await downloadReleaseAsset(update.assetUrl, tarball, {
+        ...(opts.signal ? { signal: opts.signal } : {}),
+        ...(update.assetSize != null ? { expectedSize: update.assetSize } : {}),
+        ...(opts.fetchOptions?.fetchImpl ? { fetchImpl: opts.fetchOptions.fetchImpl } : {}),
+        onProgress: progressSink.onProgress,
+      });
+    } finally {
+      progressSink.finish();
+    }
     staged = await stageStandaloneTarball(tarball);
     await opts.beforeReplace?.();
     commitStandaloneReplace(staged.stagedAnimaPath, opts.prefix, log);

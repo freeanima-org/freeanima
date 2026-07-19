@@ -93,6 +93,32 @@ function notifyShellConfigChanged(): void {
   window.dispatchEvent(new CustomEvent(SHELL_CONFIG_CHANGED_EVENT));
 }
 
+type PackagedUpdateProgressHandler = (progress: {
+  received: number;
+  total: number | null;
+  phase?: "downloading" | "installing";
+}) => void;
+
+let packagedUpdateProgressHandler: PackagedUpdateProgressHandler | null = null;
+
+function subscribePackagedUpdateProgress(handler: PackagedUpdateProgressHandler): () => void {
+  packagedUpdateProgressHandler = handler;
+  return () => {
+    if (packagedUpdateProgressHandler === handler) {
+      packagedUpdateProgressHandler = null;
+    }
+  };
+}
+
+async function applyMobilePackagedUpdate(assetUrl: string): Promise<void> {
+  const { installApkFromUrl } = await import("./apk-installer.ts");
+  await installApkFromUrl(assetUrl, {
+    onProgress: (progress) => {
+      packagedUpdateProgressHandler?.(progress);
+    },
+  });
+}
+
 function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
   const apiFields = buildShellApiFields(
     snapshot.hubUrl,
@@ -111,9 +137,9 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
       replaceShellPath(SETTINGS_PAGE);
     },
     async applyPackagedUpdate({ assetUrl }): Promise<void> {
-      const { installApkFromUrl } = await import("./apk-installer.ts");
-      await installApkFromUrl(assetUrl);
+      await applyMobilePackagedUpdate(assetUrl);
     },
+    onPackagedUpdateProgress: subscribePackagedUpdateProgress,
     async emitConfigChanged(): Promise<void> {
       notifyShellConfigChanged();
     },
@@ -140,9 +166,9 @@ export function createMobileShellStub(): SatelliteShellApi {
       replaceShellPath(SETTINGS_PAGE);
     },
     async applyPackagedUpdate({ assetUrl }): Promise<void> {
-      const { installApkFromUrl } = await import("./apk-installer.ts");
-      await installApkFromUrl(assetUrl);
+      await applyMobilePackagedUpdate(assetUrl);
     },
+    onPackagedUpdateProgress: subscribePackagedUpdateProgress,
     async emitConfigChanged(): Promise<void> {
       notifyShellConfigChanged();
     },
