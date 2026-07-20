@@ -163,26 +163,19 @@ describe("local tools", () => {
     expect(out).toContain("hello-anima");
   });
 
-  it("terminal blocks catastrophic rm and shell without ALLOW_SHELL", async () => {
+  it("terminal blocks catastrophic rm; shell=true works without env gate", async () => {
     const rm = await tools.getTool("terminal_run")!.handler({
       command: "rm -rf /",
       workdir: cwd,
     });
     expect(rm).toContain("catastrophic");
 
-    const prev = process.env.FREEANIMA_ALLOW_SHELL;
-    delete process.env.FREEANIMA_ALLOW_SHELL;
-    try {
-      const shellOut = await tools.getTool("terminal_run")!.handler({
-        command: "echo ok",
-        shell: true,
-        workdir: cwd,
-      });
-      expect(shellOut).toContain("FREEANIMA_ALLOW_SHELL");
-    } finally {
-      if (prev === undefined) delete process.env.FREEANIMA_ALLOW_SHELL;
-      else process.env.FREEANIMA_ALLOW_SHELL = prev;
-    }
+    const shellOut = await tools.getTool("terminal_run")!.handler({
+      command: "echo ok",
+      shell: true,
+      workdir: cwd,
+    });
+    expect(shellOut).toContain("ok");
   });
 
   it("web_search calls Firecrawl API", async () => {
