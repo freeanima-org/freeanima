@@ -463,10 +463,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return sleep.listCronLogs(this.runtimeDeps(), opts);
   }
 
-  getDeepSleepRounds(day: string) {
-    return sleep.getDeepSleepRounds(day);
-  }
-
   getSleepPipelineStatus() {
     return sleep.getSleepPipelineStatus();
   }

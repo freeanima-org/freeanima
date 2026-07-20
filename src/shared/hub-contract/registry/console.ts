@@ -27,7 +27,6 @@ const idParamInputSchema = z.object({ id: z.string().min(1) });
 const conversationIdParamSchema = z.object({ conversationId: z.string().min(1) });
 const cronJobIdParamSchema = z.object({ id: z.string().min(1) });
 const nameParamSchema = z.object({ name: z.string().min(1) });
-const dayParamSchema = z.object({ day: z.string().min(1) });
 const promptDebugQuerySchema = z.object({
   conversation_id: z.string().optional(),
   platform: z.string().optional(),
@@ -321,11 +320,6 @@ export const consoleMethodDefs = {
   }),
   "sleep.pipelineRuns": defineHubMethod({
     input: pipelineRunsQuerySchema,
-    output: unknownOutputSchema,
-    meta: dualTransportMeta(true),
-  }),
-  "sleep.deepSleepRounds": defineHubMethod({
-    input: dayParamSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),

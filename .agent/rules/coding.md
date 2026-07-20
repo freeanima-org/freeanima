@@ -129,6 +129,12 @@ Table shapes SSOT: [`src/core/db/schema/`](../../src/core/db/schema/). User ops 
 
 Repository query conventions (ORM vs `db.execute`, DbRow typing): [`drizzle-db.md`](drizzle-db.md).
 
+## Service 日志（error.log）
+
+- **`~/.anima/error.log`**（service file sink）用于 **非预期失败** 与需介入的 **warn**；不是业务步骤的运行史。
+- 业务步骤的成功 / 预期跳过：以 **PG**（如 `pipeline_step_run.output`）或专用业务落盘为 SSOT；Console 读 DB，运维不靠 error.log。
+- **不要**为运维复述向 service logger 打 `info`（会同时进 stderr + error.log）；**不要**维护与 PG 重复的本地 JSON 运行史（如已入库的 deep sleep round log）。
+
 ## LLM profile 回退
 
 - 内置场景 id：`chat` / `summary` / `reflect`（`PROFILE_*` 常量）

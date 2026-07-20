@@ -37,6 +37,16 @@ export function createEmptyChangeLog(): DeepSleepChangeLog {
   return { entries: {}, addedIds: [], modifiedIds: [], deprecatedIds: [] };
 }
 
+/** 深睡单轮结束时的 change log 快照（写入 pipeline output） */
+export function snapshotChangeLog(log: DeepSleepChangeLog): DeepSleepChangeLog {
+  return {
+    entries: { ...log.entries },
+    addedIds: [...log.addedIds],
+    modifiedIds: [...log.modifiedIds],
+    deprecatedIds: [...log.deprecatedIds],
+  };
+}
+
 export function applyChangeLog(
   log: DeepSleepChangeLog,
   action: DeepSleepChangeEntry["action"],
@@ -59,35 +69,17 @@ export function applyChangeLog(
   }
 }
 
-/** Deep sleep single-round run record (for log files) */
-export type DeepSleepRoundLog = {
-  day: string;
-  round: DeepSleepRound;
-  round_index: number;
-  started_at: string;
-  finished_at: string;
-  input: {
-    active_memory_count: number;
-    prior_deprecated_count: number;
-    prior_added_count: number;
-    prior_modified_count: number;
-  };
-  output: {
-    tool_calls: number;
-    summary: string;
-  };
-  change_log_snapshot: DeepSleepChangeLog;
-};
-
-/** Deep sleep full-run result */
+/** Deep sleep full-run result（持久化于 pipeline_step_run.output） */
 export type DeepSleepResult = {
   ok: boolean;
   day: string;
   rounds: {
     round: DeepSleepRound;
+    round_index: number;
     tool_calls: number;
     summary: string;
     skipped?: string;
+    change_log_snapshot: DeepSleepChangeLog;
   }[];
   total_tool_calls: number;
   skipped?: string;

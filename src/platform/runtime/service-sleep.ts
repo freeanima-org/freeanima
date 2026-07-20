@@ -6,11 +6,7 @@ import type {
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import { listPipelineStepRuns as listPgPipelineStepRuns } from "@freeanima/core/db/pg/pipeline";
 import { listCronLogs as listPgCronLogs } from "@freeanima/core/db/pg/cron";
-import {
-  buildSleepSummary,
-  listDeepSleepRoundLogs,
-  type SleepSummary,
-} from "@freeanima/capabilities/memory";
+import { buildSleepSummary, type SleepSummary } from "@freeanima/capabilities/memory";
 import type { PipelineRunState } from "@freeanima/runtime/pipeline";
 
 import {
@@ -63,10 +59,6 @@ export async function listPipelineStepRuns(
   };
   const items = await listPgPipelineStepRuns(listOpts);
   return { items, total: items.length };
-}
-
-export function getDeepSleepRounds(day: string) {
-  return { day, rounds: listDeepSleepRoundLogs(day) };
 }
 
 export type SleepPipelineStatus = {

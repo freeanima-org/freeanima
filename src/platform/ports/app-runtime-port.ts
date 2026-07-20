@@ -128,7 +128,6 @@ export type AppRuntimeSleepPort = {
     offset?: number;
     ok?: boolean;
   }): Promise<unknown>;
-  getDeepSleepRounds(day: string): { day: string; rounds: unknown[] };
   getSleepPipelineStatus(): unknown;
   startSleepCycle(opts?: {
     day?: string;

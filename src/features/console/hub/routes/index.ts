@@ -69,7 +69,6 @@ import { getPromptDebug } from "../console-api/handlers/prompt.ts";
 import { getSatellitesStatus } from "../console-api/handlers/satellites.ts";
 import { listSelfBlocks } from "../console-api/handlers/self.ts";
 import {
-  getDeepSleepRounds,
   getSleepPipelineStatus,
   getSleepSummary,
   listCronLogs,
@@ -414,11 +413,6 @@ export const consoleHubRoutes = mergeFeatureRoutes([
     wrapConsoleLegacyHandler((payload) =>
       listPipelineStepRuns(omitUndefined(payload as Record<string, unknown>)),
     ),
-  ),
-  defineHubRouteFromDef(
-    "sleep.deepSleepRounds",
-    consoleMethodDefs["sleep.deepSleepRounds"],
-    wrapConsoleLegacyHandler((payload) => getDeepSleepRounds((payload as { day: string }).day)),
   ),
   defineHubRouteFromDef(
     "sleep.pipelineStatus",

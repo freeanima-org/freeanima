@@ -207,10 +207,6 @@ export async function listPipelineStepRuns(opts?: {
   return hubCall(hub().call("sleep.pipelineRuns", omitUndefined(opts ?? {})));
 }
 
-export async function getDeepSleepRounds(day: string) {
-  return hubCall(hub().call("sleep.deepSleepRounds", { day }));
-}
-
 export async function getSleepPipelineStatus() {
   return hubCall(hub().call("sleep.pipelineStatus", {}));
 }
