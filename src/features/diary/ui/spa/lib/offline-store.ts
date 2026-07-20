@@ -371,11 +371,13 @@ export async function offlineCreateDiaryEntry(
         ? [
             {
               id: allocateTempId(scope, MODULE_ID),
+              title: "",
               content: initialContent,
               sort_order: 0,
               parent_id: tempId,
               client_op_id: null,
-              components: [],
+              components: ["content_block"],
+              tag_ids: [],
               created_at: now,
               updated_at: now,
             },
@@ -479,11 +481,13 @@ export async function offlineAppendDiaryEntry(
     const last = existing.blocks.toSorted((a, b) => a.sort_order - b.sort_order).at(-1);
     const block: DiaryTextBlock = {
       id: allocateTempId(scope, MODULE_ID),
+      title: "",
       content: fragment,
       sort_order: last ? last.sort_order + 1 : 0,
       parent_id: resolvedId,
       client_op_id: null,
-      components: [],
+      components: ["content_block"],
+      tag_ids: [],
       created_at: now,
       updated_at: now,
     };
@@ -528,12 +532,26 @@ export async function offlineAppendDiaryEntry(
   }, doOffline);
 }
 
+export type OfflineDiaryBlockCreateInput = {
+  content: string;
+  title?: string;
+  tag_ids?: number[];
+  components?: string[];
+  sort_order?: number;
+};
+
 export async function offlineCreateDiaryBlock(
   subjectKind: DiarySubjectKind,
   parentId: number,
-  content: string,
+  input: OfflineDiaryBlockCreateInput | string,
   sortOrder?: number,
 ): Promise<DiaryTextBlock> {
+  const opts: OfflineDiaryBlockCreateInput =
+    typeof input === "string"
+      ? sortOrder !== undefined
+        ? { content: input, sort_order: sortOrder }
+        : { content: input }
+      : input;
   const scope = resolveOutboxScope();
   await ensureAllocatorSeeded(scope);
   const existing = await findLocalEntry(scope, subjectKind, parentId);
@@ -547,11 +565,13 @@ export async function offlineCreateDiaryBlock(
     const opId = randomUuid();
     const block: DiaryTextBlock = {
       id: tempId,
-      content,
-      sort_order: sortOrder ?? (last ? last.sort_order + 1 : 0),
+      title: opts.title?.trim() ?? "",
+      content: opts.content,
+      sort_order: opts.sort_order ?? (last ? last.sort_order + 1 : 0),
       parent_id: resolvedParentId,
       client_op_id: opId,
-      components: [],
+      components: opts.components ?? ["content_block"],
+      tag_ids: opts.tag_ids ?? [],
       created_at: now,
       updated_at: now,
     };
@@ -567,7 +587,10 @@ export async function offlineCreateDiaryBlock(
       payload: {
         subject_kind: subjectKind,
         parent_id: resolvedParentId,
-        content,
+        content: block.content,
+        title: block.title,
+        tag_ids: block.tag_ids,
+        components: block.components,
         sort_order: block.sort_order,
         client_op_id: opId,
       },
@@ -587,8 +610,11 @@ export async function offlineCreateDiaryBlock(
     const data = await hub().call("diary.blockCreate", {
       subject_kind: subjectKind,
       parent_id: resolvedParentId,
-      content,
-      ...(sortOrder != null ? { sort_order: sortOrder } : {}),
+      content: opts.content,
+      ...(opts.title !== undefined ? { title: opts.title } : {}),
+      ...(opts.tag_ids !== undefined ? { tag_ids: opts.tag_ids } : {}),
+      ...(opts.components !== undefined ? { components: opts.components } : {}),
+      ...(opts.sort_order != null ? { sort_order: opts.sort_order } : {}),
       client_op_id: opId,
     });
     const entry = await findLocalEntry(scope, subjectKind, resolvedParentId);
@@ -609,7 +635,7 @@ export async function offlineCreateDiaryBlock(
 export async function offlineUpdateDiaryBlock(
   subjectKind: DiarySubjectKind,
   id: number,
-  patch: { content?: string; sort_order?: number },
+  patch: { content?: string; title?: string; tag_ids?: number[]; sort_order?: number },
 ): Promise<DiaryTextBlock> {
   const scope = resolveOutboxScope();
   const list = await readLocalList(scope, subjectKind);

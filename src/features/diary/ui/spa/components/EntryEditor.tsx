@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   DndContext,
   type DragEndEvent,
@@ -13,12 +14,25 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVerticalIcon, Trash2Icon } from "lucide-react";
-import { Button, Textarea } from "@freeanima/frontend/ui-kit";
+import { ChevronDownIcon, ChevronRightIcon, GripVerticalIcon, Trash2Icon } from "lucide-react";
+import { Button, Input, Textarea } from "@freeanima/frontend/ui-kit";
 
 import type { BlockDraft, EntryDraft } from "../lib/entry-draft-dirty.ts";
+import {
+  firstContentParagraph,
+  isBlockCollapsed,
+  setBlockCollapsed,
+} from "../lib/block-collapse.ts";
+import { BlockTagPicker } from "./BlockTagPicker.tsx";
 
 export type EntrySaveStatus = "idle" | "saving" | "saved" | "error";
+
+function semanticLabelOf(components: string[]): string | null {
+  if (components.includes("dream")) return "梦境";
+  if (components.includes("limbic")) return "情绪";
+  if (components.includes("narrative")) return "自传";
+  return null;
+}
 
 function SortableBlock({
   block,
@@ -28,7 +42,7 @@ function SortableBlock({
 }: {
   block: BlockDraft;
   readOnly: boolean;
-  onChange: (content: string) => void;
+  onChange: (patch: Partial<Pick<BlockDraft, "title" | "content" | "tag_ids">>) => void;
   onDelete: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -40,11 +54,19 @@ function SortableBlock({
     transition,
     opacity: isDragging ? 0.7 : 1,
   };
-  const isDream = block.components.includes("dream");
-  const isLimbic = block.components.includes("limbic");
-  const isNarrative = block.components.includes("narrative");
-  const semanticLabel = isDream ? "梦境" : isLimbic ? "情绪" : isNarrative ? "自传" : null;
+  const semanticLabel = semanticLabelOf(block.components);
   const blockReadOnly = readOnly || semanticLabel != null;
+  const [collapsed, setCollapsed] = useState(() => isBlockCollapsed(block.id));
+
+  const toggleCollapsed = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    setBlockCollapsed(block.id, next);
+  };
+
+  const collapsedSummary = block.title.trim()
+    ? block.title.trim()
+    : firstContentParagraph(block.content) || "（空）";
 
   return (
     <div
@@ -52,16 +74,51 @@ function SortableBlock({
       style={style}
       className="group border-border/60 flex flex-col gap-1 rounded-md border border-transparent px-1 py-1 hover:border-border"
     >
-      {semanticLabel ? (
-        <span className="text-muted-foreground px-1 text-xs font-medium tracking-wide">
-          {semanticLabel}
-        </span>
-      ) : null}
-      <div className="flex gap-1">
-        {!blockReadOnly ? (
+      <div className="flex items-center gap-1 px-1">
+        <button
+          type="button"
+          className="text-muted-foreground hover:text-foreground h-6 w-6 shrink-0"
+          aria-label={collapsed ? "展开块" : "收起块"}
+          onClick={toggleCollapsed}
+        >
+          {collapsed ? (
+            <ChevronRightIcon className="size-4" />
+          ) : (
+            <ChevronDownIcon className="size-4" />
+          )}
+        </button>
+
+        {collapsed ? (
+          <p className="text-foreground min-w-0 flex-1 truncate text-sm font-medium">
+            {collapsedSummary}
+          </p>
+        ) : (
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            {blockReadOnly ? (
+              block.title.trim() ? (
+                <span className="text-foreground truncate text-sm font-medium">{block.title}</span>
+              ) : null
+            ) : (
+              <Input
+                className="text-foreground h-7 min-w-0 flex-1 border-0 bg-transparent px-0 text-sm font-medium shadow-none placeholder:text-muted-foreground/50 focus-visible:ring-0"
+                value={block.title}
+                onChange={(e) => onChange({ title: e.target.value })}
+                placeholder="标题（可选）"
+                aria-label="块标题"
+              />
+            )}
+            {semanticLabel ? (
+              <span className="bg-primary/10 text-primary shrink-0 rounded px-1.5 py-0.5 text-xs font-medium tracking-wide">
+                {semanticLabel}
+              </span>
+            ) : null}
+          </div>
+        )}
+
+        {!blockReadOnly && !collapsed ? (
           <button
             type="button"
-            className="text-muted-foreground mt-2 h-6 w-6 shrink-0 cursor-grab touch-none opacity-0 group-hover:opacity-100"
+            className="text-muted-foreground h-6 w-6 shrink-0 cursor-grab touch-none opacity-0 group-hover:opacity-100"
             aria-label="拖拽排序"
             {...attributes}
             {...listeners}
@@ -69,20 +126,12 @@ function SortableBlock({
             <GripVerticalIcon className="size-4" />
           </button>
         ) : null}
-        <Textarea
-          className="min-h-16 w-full flex-1 resize-none border-0 bg-transparent px-0 font-mono text-sm leading-relaxed shadow-none focus-visible:ring-0"
-          value={block.content}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="写点什么…"
-          aria-label={semanticLabel ? `${semanticLabel}块` : "正文块"}
-          readOnly={blockReadOnly}
-        />
-        {!blockReadOnly ? (
+        {!blockReadOnly && !collapsed ? (
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="text-muted-foreground mt-1 h-7 w-7 shrink-0 p-0 opacity-0 group-hover:opacity-100"
+            className="text-muted-foreground h-7 w-7 shrink-0 p-0 opacity-0 group-hover:opacity-100"
             aria-label="删除块"
             onClick={onDelete}
           >
@@ -90,6 +139,29 @@ function SortableBlock({
           </Button>
         ) : null}
       </div>
+
+      {!collapsed ? (
+        <>
+          <div className="flex gap-1 pl-7">
+            <Textarea
+              className="min-h-16 w-full flex-1 resize-none border-0 bg-transparent px-0 font-mono text-sm leading-relaxed shadow-none focus-visible:ring-0"
+              value={block.content}
+              onChange={(e) => onChange({ content: e.target.value })}
+              placeholder="写点什么…"
+              aria-label={semanticLabel ? `${semanticLabel}块` : "正文块"}
+              readOnly={blockReadOnly}
+            />
+          </div>
+          <div className="pl-7">
+            <BlockTagPicker
+              tagIds={block.tag_ids}
+              onChange={(tag_ids) => onChange({ tag_ids })}
+              alwaysShowTrigger={!blockReadOnly}
+              readOnly={blockReadOnly}
+            />
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }
@@ -136,8 +208,8 @@ export function EntryEditor({
                   key={block.id}
                   block={block}
                   readOnly={readOnly}
-                  onChange={(content) =>
-                    setBlocks(draft.blocks.map((b) => (b.id === block.id ? { ...b, content } : b)))
+                  onChange={(patch) =>
+                    setBlocks(draft.blocks.map((b) => (b.id === block.id ? { ...b, ...patch } : b)))
                   }
                   onDelete={() => setBlocks(draft.blocks.filter((b) => b.id !== block.id))}
                 />

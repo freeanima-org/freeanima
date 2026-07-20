@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { mergeComponentBody, validateEntityBody, validatePrimaryComponentBody } from "./body.ts";
 import { CONTENT_BLOCK_COMPONENT } from "./components/content-block.ts";
+import { DIARY_BLOCK_TEMPLATE_COMPONENT } from "./components/diary-block-template.ts";
 import { DREAM_COMPONENT } from "./components/dream.ts";
 import { LIMBIC_COMPONENT } from "./components/limbic.ts";
 import { NARRATIVE_COMPONENT } from "./components/narrative.ts";
@@ -53,6 +54,20 @@ describe("validateEntityBody", () => {
     expect(body.block_type).toBe("text");
     expect(body.parent_id).toBe(10);
     expect(body.url).toBeNull();
+  });
+
+  test("accepts diary_block_template body with preset", () => {
+    const body = validatePrimaryComponentBody(DIARY_BLOCK_TEMPLATE_COMPONENT, {
+      sort_order: 0,
+      preset: {
+        title: "今日回顾",
+        content: "",
+        components: [CONTENT_BLOCK_COMPONENT],
+        tag_ids: [],
+      },
+    });
+    expect(body.sort_order).toBe(0);
+    expect((body.preset as { title: string }).title).toBe("今日回顾");
   });
 
   test("rejects invalid content_block block_type", () => {

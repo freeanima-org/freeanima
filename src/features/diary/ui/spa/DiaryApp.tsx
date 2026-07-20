@@ -7,19 +7,29 @@ import {
   createDiaryBlock,
   createDiaryEntry,
   deleteDiaryBlock,
+  fetchDiaryBlockTemplates,
   fetchDiaryEntries,
   reorderDiaryBlocks,
   searchDiaryEntries,
   updateDiaryBlock,
   updateDiaryEntry,
+  type DiaryBlockTemplateRow,
 } from "./lib/api.ts";
 import { mergeDraftAfterSave } from "@freeanima/frontend/ui-kit/lib/merge-draft-after-save.ts";
 import { Button, Input, Spinner } from "@freeanima/frontend/ui-kit";
 import { PullToRefresh } from "@freeanima/frontend/ui-kit/composite";
 import { ListDetailLayout } from "@freeanima/frontend/ui-kit/layout";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@freeanima/frontend/ui-kit/components/ui/dropdown-menu.tsx";
 import { PlusIcon } from "lucide-react";
 import { m } from "@paraglide/messages";
 
+import { DiaryBlockTemplateDialog } from "./components/DiaryBlockTemplateDialog.tsx";
 import { EntryEditor, type EntrySaveStatus } from "./components/EntryEditor.tsx";
 import { EntryTimeline, findEntryByDayLocal } from "./components/EntryTimeline.tsx";
 import {
@@ -66,6 +76,8 @@ export function DiaryApp() {
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<EntrySaveStatus>("idle");
   const [error, setError] = useState("");
+  const [templates, setTemplates] = useState<DiaryBlockTemplateRow[]>([]);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const selectedIdRef = useRef<number | null>(null);
   const initialTodayOpenedRef = useRef(false);
@@ -188,6 +200,20 @@ export function DiaryApp() {
   useEffect(() => subscribeShellConfigChanges(), []);
 
   useEffect(() => {
+    let cancelled = false;
+    void fetchDiaryBlockTemplates(subjectKind)
+      .then((items) => {
+        if (!cancelled) setTemplates(items);
+      })
+      .catch(() => {
+        if (!cancelled) setTemplates([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [subjectKind]);
+
+  useEffect(() => {
     setSelectedId(null);
     setDraft(null);
     setDraftBaseline(null);
@@ -240,31 +266,43 @@ export function DiaryApp() {
       for (const block of savingSnapshot.blocks) {
         const base = baselineById.get(block.id);
         if (!base) {
-          const created = await createDiaryBlock(
-            subjectKind,
-            entry.id,
-            block.content,
-            block.sort_order,
-          );
+          const created = await createDiaryBlock(subjectKind, entry.id, {
+            content: block.content,
+            title: block.title,
+            tag_ids: block.tag_ids,
+            components: block.components,
+            sort_order: block.sort_order,
+          });
           nextBlocks.push({
             id: created.id,
+            title: created.title ?? block.title,
             content: created.content,
             sort_order: created.sort_order,
             client_op_id: created.client_op_id,
-            components: created.components ?? [],
+            components: created.components ?? block.components,
+            tag_ids: created.tag_ids ?? block.tag_ids,
           });
           continue;
         }
-        if (base.content !== block.content) {
+        const titleChanged = base.title !== block.title;
+        const contentChanged = base.content !== block.content;
+        const tagsChanged =
+          [...base.tag_ids].toSorted((a, b) => a - b).join(",") !==
+          [...block.tag_ids].toSorted((a, b) => a - b).join(",");
+        if (titleChanged || contentChanged || tagsChanged) {
           const updated = await updateDiaryBlock(subjectKind, block.id, {
             content: block.content,
+            title: block.title,
+            tag_ids: block.tag_ids,
           });
           nextBlocks.push({
             id: updated.id,
+            title: updated.title ?? block.title,
             content: updated.content,
             sort_order: block.sort_order,
             client_op_id: updated.client_op_id,
             components: updated.components ?? block.components,
+            tag_ids: updated.tag_ids ?? block.tag_ids,
           });
         } else {
           nextBlocks.push(block);
@@ -281,11 +319,13 @@ export function DiaryApp() {
         ...entry,
         blocks: ordered.map((b) => ({
           id: b.id,
+          title: b.title,
           content: b.content,
           sort_order: b.sort_order,
           parent_id: entry.id,
           client_op_id: b.client_op_id,
           components: b.components ?? [],
+          tag_ids: b.tag_ids ?? [],
           created_at: selectedEntry.created_at,
           updated_at: new Date().toISOString(),
         })),
@@ -423,23 +463,28 @@ export function DiaryApp() {
     })();
   }, [creating, flushDraftSave, openTodayEntry, writesDisabled]);
 
-  const handleAddBlock = useCallback(() => {
-    if (!draft) return;
-    const nextOrder = draft.blocks.length;
-    setDraft({
-      ...draft,
-      blocks: [
-        ...draft.blocks,
-        {
-          id: -Date.now(),
-          content: "",
-          sort_order: nextOrder,
-          client_op_id: null,
-          components: [],
-        },
-      ],
-    });
-  }, [draft]);
+  const handleAddBlock = useCallback(
+    (preset?: DiaryBlockTemplateRow["preset"]) => {
+      if (!draft) return;
+      const nextOrder = draft.blocks.length;
+      setDraft({
+        ...draft,
+        blocks: [
+          ...draft.blocks,
+          {
+            id: -Date.now(),
+            title: preset?.title ?? "",
+            content: preset?.content ?? "",
+            sort_order: nextOrder,
+            client_op_id: null,
+            components: preset?.components ?? ["content_block"],
+            tag_ids: preset?.tag_ids ?? [],
+          },
+        ],
+      });
+    },
+    [draft],
+  );
 
   useEffect(() => {
     if (!selectedEntry || !draft || !draftBaseline || writesDisabled) return;
@@ -520,32 +565,57 @@ export function DiaryApp() {
         ) : saveStatus === "error" ? (
           <span className="text-destructive text-xs">保存失败</span>
         ) : null}
-        <Button type="button" variant="ghost" size="sm" onClick={handleAddBlock}>
-          <PlusIcon className="size-3.5" />
-          添加块
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button type="button" variant="ghost" size="sm">
+              <PlusIcon className="size-3.5" />
+              添加块
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onSelect={() => handleAddBlock()}>空白块</DropdownMenuItem>
+            {templates.length > 0 ? <DropdownMenuSeparator /> : null}
+            {templates.map((tpl) => (
+              <DropdownMenuItem key={tpl.id} onSelect={() => handleAddBlock(tpl.preset)}>
+                {tpl.name}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => setTemplateDialogOpen(true)}>
+              管理日记块模板…
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     ) : null;
 
   return (
-    <ListDetailLayout
-      detailTitle={detailTitle}
-      detailActions={detailActions}
-      listTitle="日记"
-      columnSplitKey="diary"
-      defaultListWidthPx={320}
-      list={(ctx) => (
-        <div className="flex h-full min-h-0 flex-col gap-3 p-3">
-          {listPane}
-          {ctx.isDrawer ? (
-            <Button type="button" variant="ghost" size="sm" onClick={ctx.close}>
-              关闭列表
-            </Button>
-          ) : null}
-        </div>
-      )}
-    >
-      <div className="flex h-full min-h-0 flex-col p-4">{detailPane}</div>
-    </ListDetailLayout>
+    <>
+      <ListDetailLayout
+        detailTitle={detailTitle}
+        detailActions={detailActions}
+        listTitle="日记"
+        columnSplitKey="diary"
+        defaultListWidthPx={320}
+        list={(ctx) => (
+          <div className="flex h-full min-h-0 flex-col gap-3 p-3">
+            {listPane}
+            {ctx.isDrawer ? (
+              <Button type="button" variant="ghost" size="sm" onClick={ctx.close}>
+                关闭列表
+              </Button>
+            ) : null}
+          </div>
+        )}
+      >
+        <div className="flex h-full min-h-0 flex-col p-4">{detailPane}</div>
+      </ListDetailLayout>
+      <DiaryBlockTemplateDialog
+        open={templateDialogOpen}
+        subjectKind={subjectKind}
+        onClose={() => setTemplateDialogOpen(false)}
+        onChanged={setTemplates}
+      />
+    </>
   );
 }

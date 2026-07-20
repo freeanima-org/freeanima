@@ -1,0 +1,347 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-20 13:14+0800\n"
+"PO-Revision-Date: 2026-07-20 13:14+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Yaml Front Matter Hash Value: title
+#: docs/concepts/temporal-summary.md:1
+#, fuzzy, no-wrap
+#| msgid "Memory Storage (Summary)"
+msgid "Temporal Summary"
+msgstr "记忆存储（摘要）"
+
+#. type: Title #
+#: docs/concepts/temporal-summary.md:5
+#, no-wrap
+msgid "Temporal Summary（时间摘要）"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:9
+#, no-wrap
+msgid ""
+"> Objective, indiscriminate digests of conversation activity over time buckets.\n"
+"> Related: [`memory.md`](memory.md), [`sleep.md`](sleep.md), [`diary.md`](../features/diary.md), [`compression.md`](compression.md), [`entity-model.md`](entity-model.md).\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/temporal-summary.md:10 docs/sap/tools.md:11
+#, no-wrap
+msgid "Naming"
+msgstr "命名"
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:13
+#, no-wrap
+msgid "**时间摘要** (`temporal_summary`) — digests **of conversation content**, bucketed by **day / month / year**. Not a memory taxonomy entry (semantic / limbic / narrative), not diary prose, not the runtime compression `summary` segment.\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/temporal-summary.md:14
+#, fuzzy, no-wrap
+#| msgid "Diary"
+msgid "vs Diary"
+msgstr "日记"
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:22
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Cognitive type   | Description                                                                                 |\n"
+#| "| ---------------- | ------------------------------------------------------------------------------------------- |\n"
+#| "| Episodic         | Conversation archive; full history retained                                                 |\n"
+#| "| Semantic         | Cross-session facts, preferences, experiences; **`procedural` type** for \"how-to\" knowledge |\n"
+#| "| Limbic           | Emotional anchors and imprints — \"what was felt\"                                            |\n"
+#| "| Autobiographical | Meaning of important experiences; recalled on demand                                        |\n"
+msgid ""
+"| Axis           | Diary                  | Temporal summary                                                       |\n"
+"| -------------- | ---------------------- | ---------------------------------------------------------------------- |\n"
+"| Stance         | Subjective             | Objective                                                              |\n"
+"| Selection      | Editorial              | Indiscriminate coverage of active sessions                             |\n"
+"| Storage        | `diary_entry` + blocks | Global → entity; today per-conversation → `conversations.temporal_day` |\n"
+"| Primary reader | `/diary` UI            | System prompt (yesterday+) / timeline inject (today peers)             |\n"
+msgstr ""
+"| 认知类型                  | 说明                                                                 |\n"
+"| ------------------------- | -------------------------------------------------------------------- |\n"
+"| Episodic（情景）          | 对话归档；保留完整历史                                               |\n"
+"| Semantic（语义）          | 跨 sessions 的事实、偏好、经历；“how-to” 知识用 **`procedural` 类型** |\n"
+"| Limbic（感性）            | 情绪锚点与印记——“感受到什么”                                         |\n"
+"| Autobiographical（自传） | 重要经历的意义；按需召回                                             |\n"
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:24
+msgid ""
+"LLM compression still applies (char caps). **Objective ≠ exhaustive log "
+"replay**: cover events without an editorial “worth remembering” filter, but "
+"write **event-level** digests (themes + outcomes). Omit internal IDs, step-"
+"by-step tool/config actions, and per-notification timestamps unless "
+"essential to understand what happened."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/temporal-summary.md:25
+#, fuzzy, no-wrap
+#| msgid "Estate layer"
+msgid "Storage layers"
+msgstr "资源层"
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:31
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Port                      | Role                                                                  |\n"
+#| "| ------------------------- | --------------------------------------------------------------------- |\n"
+#| "| `EntityStorePort.list`    | Structural filters; stable sort                                       |\n"
+#| "| `EntitySearchPort.search` | Hard filters + optional text query; hybrid FTS/trigram/vector via RRF |\n"
+msgid ""
+"| Layer                           | Where                                           | Citable (`[[anima:id]]`) |\n"
+"| ------------------------------- | ----------------------------------------------- | ------------------------ |\n"
+"| Global day / month / year       | `entities` `primary_component=temporal_summary` | Yes                      |\n"
+"| Conversation day chunks (today) | `conversations.temporal_day` JSONB              | **No** (operational)     |\n"
+msgstr ""
+"| 端口                      | 作用                                                                  |\n"
+"| ------------------------- | --------------------------------------------------------------------- |\n"
+"| `EntityStorePort.list`    | 结构过滤；稳定排序                                                      |\n"
+"| `EntitySearchPort.search` | 硬过滤 + 可选文本查询；经 RRF 混合 FTS/trigram/vector                 |\n"
+
+#. type: Title ###
+#: docs/concepts/temporal-summary.md:32
+#, fuzzy, no-wrap
+#| msgid "Conversation"
+msgid "Conversation JSONB"
+msgstr "对话"
+
+#. type: Fenced code block (ts)
+#: docs/concepts/temporal-summary.md:34
+#, no-wrap
+msgid ""
+"{\n"
+"  cst_date: string,\n"
+"  chunks: Array<{\n"
+"    at: string,\n"
+"    bucket: string, // CST half-hour bucket start, e.g. 2026-07-18T06:00+08:00\n"
+"    summary: string,\n"
+"    watermark_message_id?: string,\n"
+"    watermark_at?: string,\n"
+"  }>\n"
+"}\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:48
+msgid ""
+"Chunks are **append-only** within a CST day. Tick only pushes new chunks "
+"when there are messages after the watermark."
+msgstr ""
+
+#. type: Title ###
+#: docs/concepts/temporal-summary.md:49
+#, no-wrap
+msgid "Global entity body"
+msgstr ""
+
+#. type: Fenced code block (ts)
+#: docs/concepts/temporal-summary.md:51
+#, no-wrap
+msgid "{ window: \"day\" | \"month\" | \"year\", period_start: string } // CST YYYY-MM-DD\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:56
+msgid ""
+"Unique on `(window, period_start)` for global rows (expression unique index)."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/temporal-summary.md:57
+#, fuzzy, no-wrap
+#| msgid "Conversation"
+msgid "Generation"
+msgstr "对话"
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:65
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Stage              | Target                       | Purpose                                                                                  |\n"
+#| "| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |\n"
+#| "| 1 Semantic         | Semantic memory              | Extract facts, preferences, experiences from dialogue                                    |\n"
+#| "| 2 Limbic           | Emotional anchors            | Capture conversation mood and emotional turning points                                   |\n"
+#| "| 3 Autobiographical | Autobiographical narrative   | Record what experiences meant to the digital life                                        |\n"
+#| "| 3b                 | Autobiography summary (self) | Compress narratives into grouped self-layer outline (title-only bullets by significance) |\n"
+msgid ""
+"| Step               | Trigger                                                  | Output                                                     |\n"
+"| ------------------ | -------------------------------------------------------- | ---------------------------------------------------------- |\n"
+"| Conversation chunk | `builtin-temporal-summary-tick` `*/30`                   | Append chunk if new messages                               |\n"
+"| Peer rollup        | Same tick / on assemble for **closed** buckets           | One merged peer digest per viewer source-set → Redis cache |\n"
+"| Global day         | Sleep step `temporal-summary-day` (after light-sleep)    | Overwrite global `day` entity for sleep day                |\n"
+"| Month / year       | Sleep step `temporal-summary-cascade` (after deep-sleep) | Month on month-end; year on Dec 31                         |\n"
+msgstr ""
+"| 阶段              | 目标                       | 用途                                                                                  |\n"
+"| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |\n"
+"| 1 语义         | 语义记忆              | 从对话提取事实、偏好、经历                                    |\n"
+"| 2 感性           | 情感锚点            | 捕获 conversation 情绪与情感转折点                                        |\n"
+"| 3 自传体 | 自传叙事   | 记录经历对数字生命的意义                                        |\n"
+"| 3b                 | 自传概括（自我层） | 将叙事压缩为分组自我层大纲（按重要性仅标题 bullet） |\n"
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:67
+msgid ""
+"Identity context (self + resident) must ride with LLM summarization calls."
+msgstr ""
+
+#. type: Title ###
+#: docs/concepts/temporal-summary.md:68
+#, no-wrap
+msgid "Redis peer rollup key"
+msgstr ""
+
+#. type: Fenced code block (text)
+#: docs/concepts/temporal-summary.md:70
+#, no-wrap
+msgid "{prefix}:peer_roll:{cst_date}:{bucket}:{sources_fp}\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/temporal-summary.md:79
+msgid ""
+"Default prefix: `anima:temporal` (config "
+"`memory.temporal_summary.redis_key_prefix`)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/temporal-summary.md:79
+msgid ""
+"`sources_fp`: short hash of canonical sorted `(conversation_id, at, "
+"summary)` **excluding the viewer**"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/temporal-summary.md:79
+msgid "Value: `{ summary, sources_fp, created_at }`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/temporal-summary.md:79
+msgid ""
+"TTL: ~36h (discardable cache via Redis cache layer + in-process fallback)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/temporal-summary.md:79
+msgid ""
+"Miss: LLM merge (or concatenate truncate if LLM unavailable); Hit: reuse"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:81
+msgid ""
+"Same source set shares one key across viewers that exclude the same peers."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/temporal-summary.md:82
+#, no-wrap
+msgid "Injection（LLM prefix / KV cache）"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:88
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Port                      | Role                                                                  |\n"
+#| "| ------------------------- | --------------------------------------------------------------------- |\n"
+#| "| `EntityStorePort.list`    | Structural filters; stable sort                                       |\n"
+#| "| `EntitySearchPort.search` | Hard filters + optional text query; hybrid FTS/trigram/vector via RRF |\n"
+msgid ""
+"| Content                       | Where                                    | When it changes               |\n"
+"| ----------------------------- | ---------------------------------------- | ----------------------------- |\n"
+"| Yesterday … earlier (rolling) | System prompt section `temporal-summary` | CST 02:00 rebuild only        |\n"
+"| Today other sessions          | **Not** system                           | Closed half-hour buckets only |\n"
+msgstr ""
+"| 端口                      | 作用                                                                  |\n"
+"| ------------------------- | --------------------------------------------------------------------- |\n"
+"| `EntityStorePort.list`    | 结构过滤；稳定排序                                                      |\n"
+"| `EntitySearchPort.search` | 硬过滤 + 可选文本查询；经 RRF 混合 FTS/trigram/vector                 |\n"
+
+#. type: Title ###
+#: docs/concepts/temporal-summary.md:89
+#, no-wrap
+msgid "Today: timeline insert (one block per closed bucket)"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:92
+msgid "When assembling messages for viewer `V`:"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/concepts/temporal-summary.md:97
+msgid ""
+"For each **closed** CST half-hour bucket today, collect other sessions’ "
+"chunks in that bucket."
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/concepts/temporal-summary.md:97
+msgid "Resolve peer rollup via Redis key above → **one** summary string."
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/concepts/temporal-summary.md:97
+msgid ""
+"Insert a runtime-only assistant message (`name: temporal_summary_peers`) at "
+"`bucket_end` on `V`’s timeline (by message timestamps)."
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/concepts/temporal-summary.md:97
+msgid ""
+"Never rewrite older buckets; new activity only opens newer buckets → stable "
+"prefix for LLM KV cache across parallel sessions."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:99
+#, no-wrap
+msgid "**Forbidden:** putting today peers in system prompt; per-turn tail replace of a stable today block; injecting N raw peer chunks side-by-side for one bucket.\n"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/temporal-summary.md:100 messages/po4a/en.xml:102
+#, no-wrap
+msgid "Config"
+msgstr "配置"
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:103
+msgid ""
+"`memory.temporal_summary` in runtime config / `config.example.yaml`: "
+"`enabled`, char caps, `redis_key_prefix`."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/temporal-summary.md:104
+#, fuzzy, no-wrap
+#| msgid "Layer Relationships"
+msgid "Sleep relationship"
+msgstr "层间关系"
+
+#. type: Plain text
+#: docs/concepts/temporal-summary.md:106
+msgid ""
+"Global day overwrite is a **side product** of the sleep cycle, not a "
+"replacement for light-sleep semantic / limbic / autobiography stages."
+msgstr ""

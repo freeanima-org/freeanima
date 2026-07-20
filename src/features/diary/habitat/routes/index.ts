@@ -36,4 +36,12 @@ export const diaryHubRoutes = bindHubRouteHandlers(diaryMethodDefs, {
     service.serviceDiaryBlockDelete(depsOf(deps).runtime.runtimeDeps(), input),
   "diary.blockReorder": async (deps, input) =>
     service.serviceDiaryBlockReorder(depsOf(deps).runtime.runtimeDeps(), input),
+  "diary.templateList": async (deps, input) =>
+    service.serviceDiaryTemplateList(depsOf(deps).runtime.runtimeDeps(), input),
+  "diary.templateCreate": async (deps, input) =>
+    service.serviceDiaryTemplateCreate(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "diary.templatePatch": async (deps, input) =>
+    service.serviceDiaryTemplatePatch(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "diary.templateDelete": async (deps, input) =>
+    service.serviceDiaryTemplateDelete(depsOf(deps).runtime.runtimeDeps(), input),
 });

@@ -12,11 +12,13 @@ const baseEntry: DiaryEntryRow = {
   blocks: [
     {
       id: 10,
+      title: "小节",
       content: "正文",
       sort_order: 0,
       parent_id: 1,
       client_op_id: null,
-      components: [],
+      components: ["content_block"],
+      tag_ids: [3],
       created_at: "2026-01-01T00:00:00.000Z",
       updated_at: "2026-01-01T00:00:00.000Z",
     },
@@ -28,7 +30,17 @@ const baseEntry: DiaryEntryRow = {
 describe("entryDraftFromRow", () => {
   it("从条目生成 draft", () => {
     expect(entryDraftFromRow(baseEntry)).toEqual({
-      blocks: [{ id: 10, content: "正文", sort_order: 0, client_op_id: null, components: [] }],
+      blocks: [
+        {
+          id: 10,
+          title: "小节",
+          content: "正文",
+          sort_order: 0,
+          client_op_id: null,
+          components: ["content_block"],
+          tag_ids: [3],
+        },
+      ],
       entryDateLocal: "2026-01-01",
       tagsText: "a, b",
     });
@@ -48,6 +60,30 @@ describe("isEntryDraftDirty", () => {
         {
           ...baseline,
           blocks: [{ ...baseline.blocks[0]!, content: "新正文" }],
+        },
+        baseline,
+      ),
+    ).toBe(true);
+  });
+
+  it("块标题变更时返回 true", () => {
+    expect(
+      isEntryDraftDirty(
+        {
+          ...baseline,
+          blocks: [{ ...baseline.blocks[0]!, title: "新标题" }],
+        },
+        baseline,
+      ),
+    ).toBe(true);
+  });
+
+  it("块标签变更时返回 true", () => {
+    expect(
+      isEntryDraftDirty(
+        {
+          ...baseline,
+          blocks: [{ ...baseline.blocks[0]!, tag_ids: [3, 4] }],
         },
         baseline,
       ),

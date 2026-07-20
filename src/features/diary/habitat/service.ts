@@ -1,16 +1,21 @@
 import {
   appendDiaryEntry,
+  createDiaryBlockTemplate,
   createDiaryEntry,
   createDiaryTextBlock,
+  deleteDiaryBlockTemplate,
   deleteDiaryEntry,
   deleteDiaryTextBlock,
   getDiaryEntry,
+  listDiaryBlockTemplates,
   listDiaryEntries,
   reorderDiaryTextBlocks,
   resolveDiaryWorldId,
   searchDiaryEntries,
+  updateDiaryBlockTemplate,
   updateDiaryEntry,
   updateDiaryTextBlock,
+  type DiaryBlockTemplatePreset,
   type DiarySubjectKind,
 } from "../domain/index.ts";
 
@@ -153,6 +158,9 @@ export async function serviceDiaryBlockCreate(
     subject_kind: DiarySubjectKind;
     parent_id: number;
     content: string;
+    title?: string;
+    tag_ids?: number[];
+    components?: string[];
     sort_order?: number;
     client_op_id?: string;
   },
@@ -164,6 +172,9 @@ export async function serviceDiaryBlockCreate(
     omitUndefined({
       parent_id: input.parent_id,
       content: input.content,
+      title: input.title,
+      tag_ids: input.tag_ids,
+      components: input.components,
       sort_order: input.sort_order,
       client_op_id: input.client_op_id,
     }),
@@ -177,6 +188,8 @@ export async function serviceDiaryBlockPatch(
     subject_kind: DiarySubjectKind;
     id: number;
     content?: string;
+    title?: string;
+    tag_ids?: number[];
     sort_order?: number;
   },
 ) {
@@ -187,6 +200,8 @@ export async function serviceDiaryBlockPatch(
     omitUndefined({
       id: input.id,
       content: input.content,
+      title: input.title,
+      tag_ids: input.tag_ids,
       sort_order: input.sort_order,
     }),
   );
@@ -216,4 +231,74 @@ export async function serviceDiaryBlockReorder(
   const ctx = await storeContext(deps, input.subject_kind);
   const items = await reorderDiaryTextBlocks(ctx, input.items);
   return { items };
+}
+
+export async function serviceDiaryTemplateList(
+  deps: RuntimeDeps,
+  input: { subject_kind: DiarySubjectKind },
+) {
+  assertPg(deps);
+  const ctx = await storeContext(deps, input.subject_kind);
+  const items = await listDiaryBlockTemplates(ctx);
+  return { items };
+}
+
+export async function serviceDiaryTemplateCreate(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind: DiarySubjectKind;
+    name: string;
+    preset: DiaryBlockTemplatePreset;
+    sort_order?: number;
+    client_op_id?: string;
+  },
+) {
+  assertPg(deps);
+  const ctx = await storeContext(deps, input.subject_kind);
+  const item = await createDiaryBlockTemplate(
+    ctx,
+    omitUndefined({
+      name: input.name,
+      preset: input.preset,
+      sort_order: input.sort_order,
+      client_op_id: input.client_op_id,
+    }),
+  );
+  return { item };
+}
+
+export async function serviceDiaryTemplatePatch(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind: DiarySubjectKind;
+    id: number;
+    name?: string;
+    preset?: Partial<DiaryBlockTemplatePreset>;
+    sort_order?: number;
+  },
+) {
+  assertPg(deps);
+  const ctx = await storeContext(deps, input.subject_kind);
+  const item = await updateDiaryBlockTemplate(
+    ctx,
+    omitUndefined({
+      id: input.id,
+      name: input.name,
+      preset: input.preset,
+      sort_order: input.sort_order,
+    }),
+  );
+  if (!item) throw new Error("NOT_FOUND");
+  return { item };
+}
+
+export async function serviceDiaryTemplateDelete(
+  deps: RuntimeDeps,
+  input: { subject_kind: DiarySubjectKind; id: number },
+) {
+  assertPg(deps);
+  const ctx = await storeContext(deps, input.subject_kind);
+  const ok = await deleteDiaryBlockTemplate(ctx, input.id);
+  if (!ok) throw new Error("NOT_FOUND");
+  return { ok: true as const };
 }

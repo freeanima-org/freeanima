@@ -21,6 +21,14 @@ import {
   diaryPatchOutputSchema,
   diarySearchInputSchema,
   diarySearchOutputSchema,
+  diaryTemplateCreateInputSchema,
+  diaryTemplateCreateOutputSchema,
+  diaryTemplateDeleteInputSchema,
+  diaryTemplateDeleteOutputSchema,
+  diaryTemplateListInputSchema,
+  diaryTemplateListOutputSchema,
+  diaryTemplatePatchInputSchema,
+  diaryTemplatePatchOutputSchema,
 } from "@freeanima/shared/sap-contract/frames/diary";
 
 import { defineHubMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
@@ -79,6 +87,26 @@ export const diaryMethodDefs = {
   "diary.blockReorder": defineHubMethod({
     input: diaryBlockReorderInputSchema,
     output: diaryBlockReorderOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "diary.templateList": defineHubMethod({
+    input: diaryTemplateListInputSchema,
+    output: diaryTemplateListOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "diary.templateCreate": defineHubMethod({
+    input: diaryTemplateCreateInputSchema,
+    output: diaryTemplateCreateOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "diary.templatePatch": defineHubMethod({
+    input: diaryTemplatePatchInputSchema,
+    output: diaryTemplatePatchOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "diary.templateDelete": defineHubMethod({
+    input: diaryTemplateDeleteInputSchema,
+    output: diaryTemplateDeleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
 } as const;

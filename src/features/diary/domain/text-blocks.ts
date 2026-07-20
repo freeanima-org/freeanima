@@ -21,18 +21,33 @@ import type {
   DiaryTextBlockUpdateInput,
 } from "./types.ts";
 
+function normalizeBlockComponents(components: string[] | undefined): string[] {
+  const list = (components ?? [CONTENT_BLOCK_COMPONENT]).map((c) => c.trim()).filter(Boolean);
+  if (!list.includes(CONTENT_BLOCK_COMPONENT)) {
+    list.unshift(CONTENT_BLOCK_COMPONENT);
+  }
+  return [...new Set(list)];
+}
+
 function toTextBlock(
   row: NonNullable<ReturnType<typeof asContentBlock>>,
-  meta: { created_at: Date; updated_at: Date; components: string[] },
+  meta: {
+    created_at: Date;
+    updated_at: Date;
+    components: string[];
+    tag_ids: number[];
+  },
 ): DiaryTextBlock | null {
   if (row.block_type !== "text") return null;
   return {
     id: row.id,
+    title: row.title,
     content: row.content,
     sort_order: row.sort_order,
     parent_id: row.parent_id,
     client_op_id: row.client_op_id,
     components: meta.components,
+    tag_ids: [...meta.tag_ids],
     created_at: meta.created_at.toISOString(),
     updated_at: meta.updated_at.toISOString(),
   };
@@ -47,6 +62,7 @@ function mapHit(row: {
   body: Record<string, unknown>;
   pinned?: boolean;
   reference_count?: number;
+  tag_ids?: number[];
   created_at: Date;
   updated_at: Date;
   primary_component: string;
@@ -64,7 +80,7 @@ function mapHit(row: {
     body: row.body,
     pinned: row.pinned ?? false,
     reference_count: row.reference_count ?? 0,
-    tag_ids: [],
+    tag_ids: [...(row.tag_ids ?? [])],
     created_at: row.created_at,
     updated_at: row.updated_at,
   });
@@ -73,6 +89,7 @@ function mapHit(row: {
     created_at: row.created_at,
     updated_at: row.updated_at,
     components: row.components,
+    tag_ids: row.tag_ids ?? [],
   });
 }
 
@@ -167,14 +184,17 @@ export async function createDiaryTextBlock(
     sortOrder = last ? last.sort_order + 1 : 0;
   }
 
+  const components = normalizeBlockComponents(input.components);
+
   const row = await createEntity({
     type: "content",
     world_id: ctx.worldId,
-    components: [CONTENT_BLOCK_COMPONENT],
+    components,
     primary_component: CONTENT_BLOCK_COMPONENT,
-    title: "",
+    title: input.title?.trim() ?? "",
     summary: "",
     content: input.content,
+    tag_ids: input.tag_ids ?? [],
     body: {
       block_type: "text",
       parent_id: input.parent_id,
@@ -208,6 +228,8 @@ export async function updateDiaryTextBlock(
     omitUndefined({
       id: input.id,
       content: input.content,
+      title: input.title !== undefined ? input.title.trim() : undefined,
+      tag_ids: input.tag_ids,
       body: Object.keys(bodyPatch).length > 0 ? bodyPatch : undefined,
     }),
   );
