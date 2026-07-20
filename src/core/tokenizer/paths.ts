@@ -14,7 +14,7 @@ export function getRegistryPath(): string {
   return join(getTokenizersRootDir(), "registry.json");
 }
 
-/** Local cache dir for a Hub repo id (org/name). */
+/** Local cache dir for a Habitat repo id (org/name). */
 export function repoToCacheDir(repo: string): string {
   const [org, name] = repo.split("/");
   if (!org || !name) {

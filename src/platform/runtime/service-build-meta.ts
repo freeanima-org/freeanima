@@ -15,7 +15,7 @@ function bakedServiceBuildMetaPath(repoRoot: string): string {
   return join(repoRoot, "dist", "build-meta.json");
 }
 
-/** Hub / CLI service 进程启动时 resolve 一次并缓存 */
+/** Habitat / CLI service 进程启动时 resolve 一次并缓存 */
 export function resolveServiceBuildMeta(): ComponentBuildMeta {
   if (cachedServiceBuildMeta) return cachedServiceBuildMeta;
 

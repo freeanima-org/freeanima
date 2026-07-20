@@ -1,4 +1,4 @@
-/** 本机聊天偏好（localStorage，不同步 Hub） */
+/** 本机聊天偏好（localStorage，不同步 Habitat） */
 
 export const CHAT_LLM_DEBUG_ENABLED_KEY = "freeanima.chat.llmDebugEnabled";
 

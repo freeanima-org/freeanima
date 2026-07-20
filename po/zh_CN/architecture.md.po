@@ -61,24 +61,24 @@ msgstr "凭证管理是一等系统关切"
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:18
 msgid ""
-"Hub **runtime configuration** (LLM, compression, integrations) is persisted "
+"Habitat **runtime configuration** (LLM, compression, integrations) is persisted "
 "in PostgreSQL (`hub_runtime_config`); `~/.anima/config.yaml` holds "
 "**bootstrap** only (`database`, `http`, `redis`, `web`) for cold start — not "
-"editable via Shell or Console API"
+"editable via Shell or Habitat API"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:18
 msgid ""
-"Hub **may start without LLM** configured; first-time setup happens in Shell "
-"**设置 → Hub 服务** (persist to PG), then restart Hub so registries rebuild. "
+"Habitat **may start without LLM** configured; first-time setup happens in Shell "
+"**设置 → Habitat 服务** (persist to PG), then restart Habitat so registries rebuild. "
 "Missing `llm` must not block cold start."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:18
 msgid ""
-"Whether Hub hosts browser `/web/*` is **`config.yaml` `web.enabled`** "
+"Whether Habitat hosts browser `/web/*` is **`config.yaml` `web.enabled`** "
 "(bootstrap; absent defaults to on when dist exists). Do not put this switch "
 "in PG — empty runtime would otherwise block the Settings UI that configures "
 "that runtime."
@@ -95,7 +95,7 @@ msgstr "资产管理是一等系统关切"
 #: docs/concepts/architecture.md:19
 #, fuzzy, no-wrap
 #| msgid "Configuration"
-msgid "Hub configuration (SSOT)"
+msgid "Habitat configuration (SSOT)"
 msgstr "配置"
 
 #. type: Plain text
@@ -109,7 +109,7 @@ msgid ""
 "| Layer         | Storage                                                     | Who reads/writes                                          |\n"
 "| ------------- | ----------------------------------------------------------- | --------------------------------------------------------- |\n"
 "| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`, `web`) | `platform/boot` only; install/ops edit YAML               |\n"
-"| **Runtime**   | PostgreSQL `hub_runtime_config`                             | Engine, tools, Shell **Hub 服务设置**, Console `config.*` |\n"
+"| **Runtime**   | PostgreSQL `hub_runtime_config`                             | Engine, tools, Shell **Habitat 服务设置**, Habitat `config.*` |\n"
 msgstr ""
 "| 方法           | Schema                                                            | 返回值                                         |\n"
 "| -------------- | ----------------------------------------------------------------- | ---------------------------------------------- |\n"
@@ -275,13 +275,13 @@ msgstr ""
 #, fuzzy
 #| msgid ""
 #| "Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-"
-#| "backed); legacy **Console email route removed."
+#| "backed); legacy **Habitat email route removed."
 msgid ""
 "Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-"
-"backed); legacy Console email route removed."
+"backed); legacy Habitat email route removed."
 msgstr ""
 "Shell UI **`/tasks`** 与 **`/email`** 是主要模块入口（实体支撑）；旧版 "
-"**Console 邮件路由已移除。"
+"**Habitat 邮件路由已移除。"
 
 #. type: Title ###
 #: docs/concepts/architecture.md:80
@@ -306,13 +306,13 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/architecture.md:87
 #, no-wrap
-msgid "Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Hub adapter + domain + `plugin.ts`). Console is renamed **console** and uses the **same module shape** as chat/task — not a separate admin-\\* stack. `src/satellites/` is legacy naming; do not add new products there.\n"
+msgid "Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Habitat adapter + domain + `plugin.ts`). Habitat is renamed **console** and uses the **same module shape** as chat/task — not a separate admin-\\* stack. `src/satellites/` is legacy naming; do not add new products there.\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/architecture.md:89
 #, no-wrap
-msgid "**End state:** Hub RPC per feature; business methods use `POST|WS /hub/rpc/v1` (same envelope). Public health/TLS probes and binary methods (e.g. `tts.synthesize`) are Hub RPC REST with `auth: optional` or Bearer as declared in registry.\n"
+msgid "**End state:** Habitat RPC per feature; business methods use `POST|WS /rpc/v1` (same envelope). Public health/TLS probes and binary methods (e.g. `tts.synthesize`) are Habitat RPC REST with `auth: optional` or Bearer as declared in registry.\n"
 msgstr ""
 
 #. type: Plain text
@@ -340,23 +340,23 @@ msgstr ""
 #| msgid ""
 #| "| Layer              | Platform-native?             | Location                                                 | 数据通道             |\n"
 #| "| ------------------ | ---------------------------- | -------------------------------------------------------- | -------------------- |\n"
-#| "| Shell / capability | Yes                          | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Hub wiring       | preload/IPC          |\n"
+#| "| Shell / capability | Yes                          | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Habitat wiring       | preload/IPC          |\n"
 #| "| Shared SPA shell   | Branch on `detectPlatform()` | `packages/shell-ui`                                      | 无 SAP wire          |\n"
-#| "| **Console 前端         | **Console embed                  | `platform/feature-console` + `ui-kit` + `shell-sdk`       | REST `/api`          |\n"
-#| "| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | Hub RPC + SAP attach |\n"
+#| "| **Habitat 前端         | **Habitat embed                  | `platform/feature-console` + `ui-kit` + `shell-sdk`       | REST `/api`          |\n"
+#| "| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | Habitat RPC + SAP attach |\n"
 msgid ""
 "| Layer            | Platform-native?                   | Location (current → target)                                            | 数据通道                                |\n"
 "| ---------------- | ---------------------------------- | ---------------------------------------------------------------------- | --------------------------------------- |\n"
-"| Shell（壳子维）  | Yes                                | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Hub wiring | preload/IPC                             |\n"
-"| Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                                                | Hub RPC（Feature RPC）                  |\n"
-"| Console 前端     | Shell embed                        | `src/features/console`（UI + `plugin.hub.rpc`）                        | Hub RPC（WS + HTTP POST `/hub/rpc/v1`） |\n"
-"| 卫星应用         | Sidecar only                       | `src/satellites/companion`                                             | Hub RPC + SAP attach                    |\n"
+"| Shell（壳子维）  | Yes                                | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Habitat wiring | preload/IPC                             |\n"
+"| Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                                                | Habitat RPC（Feature RPC）                  |\n"
+"| Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.hub.rpc`）                        | Habitat RPC（WS + HTTP POST `/rpc/v1`） |\n"
+"| 卫星应用         | Sidecar only                       | `src/satellites/companion`                                             | Habitat RPC + SAP attach                    |\n"
 msgstr ""
 "| 层                 | 平台原生？                   | 位置                                                     | 数据通道      |\n"
 "| ------------------ | ---------------------------- | -------------------------------------------------------- | ------------- |\n"
-"| Shell / capability | 是                           | `src/app/shell/desktop`、`src/app/shell/mobile`、companion、Hub 接线         | preload/IPC   |\n"
+"| Shell / capability | 是                           | `src/app/shell/desktop`、`src/app/shell/mobile`、companion、Habitat 接线         | preload/IPC   |\n"
 "| Shared SPA shell   | 按 `detectPlatform()` 分支   | `packages/shell-ui`                                      | 无 SAP wire   |\n"
-"| hub-rest 前端      | Console 嵌入                   | `platform/feature-console` + `ui-kit` + `shell-sdk`       | Eden `/api`   |\n"
+"| hub-rest 前端      | Habitat 嵌入                   | `platform/feature-console` + `ui-kit` + `shell-sdk`       | Eden `/api`   |\n"
 "| SAP 产品面         | Satellite 应用               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | SAP `/sap/v1` |\n"
 
 #. type: Plain text
@@ -371,24 +371,24 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/architecture.md:106
 #, no-wrap
-msgid "**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Hub；**SAP attach / tool.\\*** 协议由 companion 等卫星 sidecar 使用。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。\n"
+msgid "**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Habitat；**SAP attach / tool.\\*** 协议由 companion 等卫星 sidecar 使用。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。\n"
 msgstr ""
 
 #. type: Title ###
 #: docs/concepts/architecture.md:107
 #, fuzzy, no-wrap
-#| msgid "**Console navigation ↔ cognitive layers"
-msgid "Console navigation ↔ cognitive layers"
+#| msgid "**Habitat navigation ↔ cognitive layers"
+msgid "Habitat navigation ↔ cognitive layers"
 msgstr "管理台导航 ↔ 认知层"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:110
 #, fuzzy
 #| msgid ""
-#| "**Console sidebar is grouped (not flat storage tables). Map new features "
+#| "**Habitat sidebar is grouped (not flat storage tables). Map new features "
 #| "onto these user-visible concepts:"
 msgid ""
-"Console sidebar is grouped (not flat storage tables). Map new features onto "
+"Habitat sidebar is grouped (not flat storage tables). Map new features onto "
 "these user-visible concepts:"
 msgstr "管理台侧栏分组展示（非扁平存储表）。新功能应映射到以下用户可见概念："
 
@@ -719,7 +719,7 @@ msgid ""
 "Production (standalone install CLI): `anima service` (systemd --user). Auto-"
 "restarts after crashes; only `systemctl stop` stops the service. Source-tree "
 "`anima` does **not** register `service` — use `bun run dev:hub` for local "
-"Hub."
+"Habitat."
 msgstr ""
 "生产环境：`anima service`（systemd --user）。崩溃后自动重启；只有 `systemctl "
 "stop` 才会停止服务。"
@@ -729,13 +729,13 @@ msgstr ""
 #: docs/concepts/architecture.md:207
 #, fuzzy
 #| msgid ""
-#| "**service**: long-running — Hub HTTP (`/api`, `/hub/rpc/v1`), Discord / "
+#| "**service**: long-running — Habitat HTTP (`/api`, `/rpc/v1`), Discord / "
 #| "WeChat Gateway, cron"
 msgid ""
-"**hub / service**: long-running — Hub HTTP (`/hub/rpc/v1`), Discord / WeChat "
+"**hub / service**: long-running — Habitat HTTP (`/rpc/v1`), Discord / WeChat "
 "Gateway, cron"
 msgstr ""
-"**service**：长期运行——Hub HTTP（`/api`、`/sap/v1`）、Discord / 微信 "
+"**service**：长期运行——Habitat HTTP（`/api`、`/sap/v1`）、Discord / 微信 "
 "Gateway、cron"
 
 #. type: Bullet: '- '
@@ -743,13 +743,13 @@ msgstr ""
 #, fuzzy
 #| msgid ""
 #| "**UI**: `src/app/shell/desktop` / `src/app/shell/mobile` bundled SPA "
-#| "(Chat + **Console); Hub does not host `/admin`"
+#| "(Chat + **Habitat); Habitat does not host `/admin`"
 msgid ""
 "**UI**: `src/app/shell/desktop` / `src/app/shell/mobile` bundled SPA (Chat + "
-"Console); Hub does not host `/console`"
+"Habitat); Habitat does not host `/habitat`"
 msgstr ""
 "**UI**：`src/app/shell/desktop` / `src/app/shell/mobile` bundled SPA（聊天室 "
-"+ 管理台）；Hub 不托管 `/admin`"
+"+ 管理台）；Habitat 不托管 `/admin`"
 
 #. type: Fenced code block (bash)
 #: docs/concepts/architecture.md:208
@@ -761,10 +761,10 @@ msgid ""
 "anima service status\n"
 "\n"
 "# monorepo / worktree\n"
-"just dev                         # Hub (≥10000) + Vite Web (≥5000)\n"
-"bun run dev:hub                  # Hub foreground (default random ≥10000; not 2658)\n"
+"just dev                         # Habitat (≥10000) + Vite Web (≥5000)\n"
+"bun run dev:hub                  # Habitat foreground (default random ≥10000; not 2658)\n"
 "bun run dev:web                  # browser shell Vite HMR from :5000 (set FREEANIMA_URL)\n"
-"bun run build:web                # source deploy / Hub /web: build dist before start\n"
+"bun run build:web                # source deploy / Habitat /web: build dist before start\n"
 msgstr ""
 
 #. type: Title ##
@@ -1030,9 +1030,9 @@ msgstr ""
 #. type: Title ##
 #: docs/concepts/architecture.md:308
 #, fuzzy, no-wrap
-#| msgid "Client UI（Hub Web SSOT + 薄壳）"
+#| msgid "Client UI（Habitat Web SSOT + 薄壳）"
 msgid "Client UI（web/dist SSOT + 原生壳打包）"
-msgstr "Client UI（Hub Web SSOT + 薄壳）"
+msgstr "Client UI（Habitat Web SSOT + 薄壳）"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:311
@@ -1046,9 +1046,9 @@ msgstr ""
 msgid ""
 "| 客户端       | UI 加载                                                                                                               | 更新方式                                                                                                                                                                              |\n"
 "| ------------ | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| 浏览器 / PWA | Hub 托管 `/web/*`（`config.yaml` `web.enabled`，或 `anima web start`）                                                | Service Worker 提示新版本后**手动重载**（不自动刷新）；**不**跟 GitHub 包通道                                                                                                         |\n"
+"| 浏览器 / PWA | Habitat 托管 `/web/*`（`config.yaml` `web.enabled`，或 `anima web start`）                                                | Service Worker 提示新版本后**手动重载**（不自动刷新）；**不**跟 GitHub 包通道                                                                                                         |\n"
 "| Desktop      | **安装包内** `vendor/shell-ui`（本地 static `/web/*`）；调试可用 `DESKTOP_SHELL_VITE_URL` 或 `DESKTOP_UI_MODE=remote` | 按 bake `channel` 查 GitHub（`release`=stable latest + semver；`canary`=tag `canary` + commit）；用户确认后 NSIS 覆盖；可切换 `release`⇄`canary`；About 可选公共 gh-proxy（默认直连） |\n"
-"| Mobile APK   | **安装包内** Capacitor `www/web`（本地同源）；Hub 仅 API                                                              | 同上轨语义；有 APK asset 才提示；确认后系统安装器覆盖；可切换轨；同上代理选择                                                                                                         |\n"
+"| Mobile APK   | **安装包内** Capacitor `www/web`（本地同源）；Habitat 仅 API                                                              | 同上轨语义；有 APK asset 才提示；确认后系统安装器覆盖；可切换轨；同上代理选择                                                                                                         |\n"
 "| Standalone   | 嵌入 Web UI 的单文件 `anima`                                                                                          | `anima upgrade` / `--channel release\\|canary` / `--proxy …`；`dev` / 源码安装不可换轨；curl 安装脚本可用 `PROXY=…`                                                                    |\n"
 msgstr ""
 
@@ -1056,11 +1056,11 @@ msgstr ""
 #: docs/concepts/architecture.md:320
 msgid ""
 "壳层保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 "
-"sidecar 等）。**无壳内 UI OTA**：原生端不从 Hub 热替换 SPA。允许**用户确认后"
+"sidecar 等）。**无壳内 UI OTA**：原生端不从 Habitat 热替换 SPA。允许**用户确认后"
 "**的安装包级覆盖（Desktop NSIS / Mobile APK / Standalone `anima upgrade` → 独"
 "立前缀如 `~/.anima/standalone`）。分发轨 SSOT 为安装包 bake 的 `build-"
-"meta.channel`（`release` / `canary` / `dev`）。Hub 配置统一走 settings「连"
-"接」（`/settings`）；无独立 bootstrap Hub 页。"
+"meta.channel`（`release` / `canary` / `dev`）。Habitat 配置统一走 settings「连"
+"接」（`/settings`）；无独立 bootstrap Habitat 页。"
 msgstr ""
 
 #. type: Title ###
@@ -1075,12 +1075,12 @@ msgstr "两层模型"
 msgid ""
 "| 层                   | 驱动                                   | 职责                                                                                     |\n"
 "| -------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- |\n"
-"| **交互与原生能力层** | 壳运行时（Electron / Capacitor / Web） | 存储、IPC、Hub 连接后端、settings registry **内容**、hash 路由、长按 vs 右键、滑动手势等 |\n"
+"| **交互与原生能力层** | 壳运行时（Electron / Capacitor / Web） | 存储、IPC、Habitat 连接后端、settings registry **内容**、hash 路由、长按 vs 右键、滑动手势等 |\n"
 "| **布局层**           | **仅视口断点**（壳不锁定底栏/顶栏）    | 窄/中/宽三档；列表 drawer / 并列 / 三栏；settings **chrome**（tabs vs 侧栏）             |\n"
 msgstr ""
 "| 层                   | 驱动                                   | 职责                                                                                     |\n"
 "| -------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- |\n"
-"| **交互与原生能力层** | 壳运行时（Electron / Capacitor / Web） | 存储、IPC、Hub 连接后端、settings registry **内容**、hash 路由、长按 vs 右键、滑动手势等 |\n"
+"| **交互与原生能力层** | 壳运行时（Electron / Capacitor / Web） | 存储、IPC、Habitat 连接后端、settings registry **内容**、hash 路由、长按 vs 右键、滑动手势等 |\n"
 "| **布局层**           | **仅视口断点**（壳不锁定底栏/顶栏）    | 窄/中/宽三档；列表 drawer / 并列 / 三栏；settings **chrome**（tabs vs 侧栏）             |\n"
 
 #. type: Plain text
@@ -1137,21 +1137,21 @@ msgstr ""
 #| msgid ""
 #| "| 客户端       | UI 加载                                                               | 壳发版                   |\n"
 #| "| ------------ | --------------------------------------------------------------------- | ------------------------ |\n"
-#| "| 浏览器 / PWA | Hub `/web/*`                                                          | 随 Hub / `anima upgrade` |\n"
-#| "| Desktop      | 默认 Hub `/web/*`（`DESKTOP_UI_MODE=bundled` 回退本地 static）        | 仅 Electron / 伴侣变更   |\n"
-#| "| Mobile APK   | bootstrap → Hub `/web/*`                                              | 仅 Capacitor 插件变更    |\n"
+#| "| 浏览器 / PWA | Habitat `/web/*`                                                          | 随 Habitat / `anima upgrade` |\n"
+#| "| Desktop      | 默认 Habitat `/web/*`（`DESKTOP_UI_MODE=bundled` 回退本地 static）        | 仅 Electron / 伴侣变更   |\n"
+#| "| Mobile APK   | bootstrap → Habitat `/web/*`                                              | 仅 Capacitor 插件变更    |\n"
 msgid ""
 "| 客户端       | UI 加载                                                        | 壳发版                          |\n"
 "| ------------ | -------------------------------------------------------------- | ------------------------------- |\n"
-"| 浏览器 / PWA | Hub `/web/*`                                                   | 随 Hub / `anima upgrade`        |\n"
+"| 浏览器 / PWA | Habitat `/web/*`                                                   | 随 Habitat / `anima upgrade`        |\n"
 "| Desktop      | 安装包内本地 `/web/*`（默认）；`DESKTOP_UI_MODE=remote` 调试用 | Electron 安装包（含 UI + 伴侣） |\n"
 "| Mobile APK   | 安装包内本地 `/web/*`                                          | APK（含 UI + Capacitor）        |\n"
 msgstr ""
 "| 客户端       | UI 加载                                                               | 壳发版                   |\n"
 "| ------------ | --------------------------------------------------------------------- | ------------------------ |\n"
-"| 浏览器 / PWA | Hub `/web/*`                                                          | 随 Hub / `anima upgrade` |\n"
-"| Desktop      | 默认 Hub `/web/*`（`DESKTOP_UI_MODE=bundled` 回退本地 static）        | 仅 Electron / 伴侣变更   |\n"
-"| Mobile APK   | bootstrap → Hub `/web/*`                                              | 仅 Capacitor 插件变更    |\n"
+"| 浏览器 / PWA | Habitat `/web/*`                                                          | 随 Habitat / `anima upgrade` |\n"
+"| Desktop      | 默认 Habitat `/web/*`（`DESKTOP_UI_MODE=bundled` 回退本地 static）        | 仅 Electron / 伴侣变更   |\n"
+"| Mobile APK   | bootstrap → Habitat `/web/*`                                              | 仅 Capacitor 插件变更    |\n"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:350
@@ -1159,18 +1159,18 @@ msgstr ""
 #| msgid ""
 #| "| Module | Connection                                         | Notes                  |\n"
 #| "| ------ | -------------------------------------------------- | ---------------------- |\n"
-#| "| Chat   | Hub RPC `/hub/rpc/v1` (shared WS, no `sap.attach`) | `/web/chat`            |\n"
-#| "| **Console  | Hub REST `/api/*` (CORS + shell)                   | `/web/console/dashboard` |\n"
+#| "| Chat   | Habitat RPC `/rpc/v1` (shared WS, no `sap.attach`) | `/web/chat`            |\n"
+#| "| **Habitat  | Habitat REST `/api/*` (CORS + shell)                   | `/web/habitat/dashboard` |\n"
 msgid ""
 "| Module  | Connection                                            | Notes                    |\n"
 "| ------- | ----------------------------------------------------- | ------------------------ |\n"
-"| Chat    | Hub RPC `/hub/rpc/v1` (shared WS, no `sap.attach`)    | `/web/chat`              |\n"
-"| Console | Hub RPC `/hub/rpc/v1` (WS + HTTP POST, same envelope) | `/web/console/dashboard` |\n"
+"| Chat    | Habitat RPC `/rpc/v1` (shared WS, no `sap.attach`)    | `/web/chat`              |\n"
+"| Habitat | Habitat RPC `/rpc/v1` (WS + HTTP POST, same envelope) | `/web/habitat/dashboard` |\n"
 msgstr ""
 "| 模块   | 连接                              | 说明                   |\n"
 "| ------ | --------------------------------- | ---------------------- |\n"
 "| Chat   | SAP WebSocket `/sap/v1`           | `/web/chat`            |\n"
-"| **Console  | Hub REST `/api/*`（CORS + shell） | `/web/console/dashboard` |\n"
+"| **Habitat  | Habitat REST `/api/*`（CORS + shell） | `/web/habitat/dashboard` |\n"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:352
@@ -1209,11 +1209,11 @@ msgstr ""
 #| msgid ""
 #| "**Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: "
 #| "light → deep → cross-domain maintenance steps). State in `~/.anima/"
-#| "runtime/pipeline_*_run.json`; Console API for diagnostics."
+#| "runtime/pipeline_*_run.json`; Habitat API for diagnostics."
 msgid ""
 "**Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light "
 "→ deep → cross-domain maintenance steps). State in `~/.anima/runtime/"
-"pipeline_*_run.json`; Console API for diagnostics."
+"pipeline_*_run.json`; Habitat API for diagnostics."
 msgstr ""
 "**Pipeline Runner**：后台周期的显式 DAG（sleep-cycle：浅睡 → 深睡 → 跨域维护"
 "步骤）。状态位于 `~/.anima/runtime/pipeline_*_run.json`；管理台 API 用于诊"
@@ -1241,7 +1241,7 @@ msgstr ""
 #: docs/concepts/architecture.md:361
 #, fuzzy, no-wrap
 #| msgid "Desktop Companion"
-msgid "Desktop companion (Hub SSOT)"
+msgid "Desktop companion (Habitat SSOT)"
 msgstr "桌面伴侣"
 
 #. type: Plain text
@@ -1255,12 +1255,12 @@ msgstr ""
 #: docs/concepts/architecture.md:373
 #, no-wrap
 msgid ""
-"| Concern                             | Hub (`src/features/companion/`)            | Local device                              |\n"
+"| Concern                             | Habitat (`src/features/companion/`)            | Local device                              |\n"
 "| ----------------------------------- | ------------------------------------------ | ----------------------------------------- |\n"
-"| Behavior, slots, active model       | `companion_profile` entity + Hub RPC       | Cache in `~/.anima/companion/config.json` |\n"
-"| VRM / VRMA library                  | Files on Hub host + content-hash metadata  | Lazy download to desktop cache            |\n"
-"| FBX → VRMA                          | Hub service only                           | Not bundled in desktop installer          |\n"
-"| Settings UI                         | Hub RPC + `/hub/rpc/v1/companion/*` upload | Desktop Settings section (not Console)    |\n"
+"| Behavior, slots, active model       | `companion_profile` entity + Habitat RPC       | Cache in `~/.anima/companion/config.json` |\n"
+"| VRM / VRMA library                  | Files on Habitat host + content-hash metadata  | Lazy download to desktop cache            |\n"
+"| FBX → VRMA                          | Habitat service only                           | Not bundled in desktop installer          |\n"
+"| Settings UI                         | Habitat RPC + `/rpc/v1/companion/*` upload | Desktop Settings section (not Habitat)    |\n"
 "| VRM render, float window, patrol    | —                                          | Electron + overlay SPA                    |\n"
 "| Agent tools (`bubble`, `play_slot`) | SAP route                                  | Thin sidecar executes + runtime WS        |\n"
 msgstr ""
@@ -1269,11 +1269,11 @@ msgstr ""
 #: docs/concepts/architecture.md:375
 #, fuzzy
 #| msgid ""
-#| "Desktop companion Hub source: [`companion.md`](../features/companion.md)"
+#| "Desktop companion Habitat source: [`companion.md`](../features/companion.md)"
 msgid ""
 "Multiple desktops share one library; each machine keeps its own "
 "`instance_id` for SAP. See [`companion.md`](../features/companion.md)."
-msgstr "桌面伴侣 Hub 来源：[`companion.md`](../features/companion.md)"
+msgstr "桌面伴侣 Habitat 来源：[`companion.md`](../features/companion.md)"
 
 #. type: Title ##
 #: docs/concepts/architecture.md:376

@@ -9,11 +9,11 @@ import { omitUndefined } from "@freeanima/core/util";
 import { resolveValue } from "@freeanima/platform/config";
 
 import {
-  defaultHubTlsCertPath,
+  defaultHabitatTlsCertPath,
   defaultHubTlsKeyPath,
   ensureHubTlsMaterial,
   type HubTlsMaterial,
-} from "./hub-tls-material.ts";
+} from "./habitat-tls-material.ts";
 
 export type ResolvedHubTlsListenConfig = {
   enabled: true;
@@ -26,14 +26,14 @@ async function resolveOptionalConfigString(value: string | undefined): Promise<s
   return resolveValue(value);
 }
 
-export async function resolveHubTlsListenConfig(
+export async function resolveHabitatTlsListenConfig(
   http: HttpConfig | undefined,
   bindHosts: string[],
 ): Promise<ResolvedHubTlsListenConfig | null> {
   const tls: HttpTlsConfigFields | undefined = http?.tls ?? undefined;
   if (!tls?.enabled) return null;
 
-  const certRaw = (await resolveOptionalConfigString(tls.cert)) ?? defaultHubTlsCertPath();
+  const certRaw = (await resolveOptionalConfigString(tls.cert)) ?? defaultHabitatTlsCertPath();
   const keyRaw = (await resolveOptionalConfigString(tls.key)) ?? defaultHubTlsKeyPath();
   const passphrase = await resolveOptionalConfigString(tls.passphrase);
 
@@ -53,13 +53,13 @@ export async function resolveHubTlsListenConfig(
   };
 }
 
-export type HubTlsBunOptions = {
+export type HabitatTlsBunOptions = {
   key: ReturnType<typeof Bun.file>;
   cert: ReturnType<typeof Bun.file>;
   passphrase?: string;
 };
 
-export function toHubTlsBunOptions(material: HubTlsMaterial): HubTlsBunOptions {
+export function toHabitatTlsBunOptions(material: HubTlsMaterial): HabitatTlsBunOptions {
   return omitUndefined({
     key: Bun.file(material.keyPath),
     cert: Bun.file(material.certPath),

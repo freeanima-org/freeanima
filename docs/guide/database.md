@@ -99,7 +99,7 @@ pre-commit `test:changed` does **not** run integration tests.
 | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Service fails on DB connect                         | `database.url`; PostgreSQL running; pass credentials readable                                                                                                           |
 | `Idle timeout reached after 30s` on startup/migrate | Bun ≤1.3.14 会误杀进行中查询（[oven-sh/bun#30646](https://github.com/oven-sh/bun/issues/30646)）。确保 `FREEANIMA_PG_POOL_IDLE_TIMEOUT=0`（默认）或临时导出该变量后重启 |
-| Hub 「未就绪」超时而进程仍在跑                      | 迁移在 HTTP listen **之前**；默认等 15min（`FREEANIMA_HUB_READY_TIMEOUT_MS`）。看 `journalctl --user -u anima -f`，勿中途 `stop`                                        |
+| Habitat 「未就绪」超时而进程仍在跑                  | 迁移在 HTTP listen **之前**；默认等 15min（`FREEANIMA_HUB_READY_TIMEOUT_MS`）。看 `journalctl --user -u anima -f`，勿中途 `stop`                                        |
 | Migration fails                                     | Extensions installed; DB user has DDL privileges；HNSW / 大批量 backfill 可能很慢，勿与上述 idle timeout 混淆                                                           |
 | FTS / keyword recall empty                          | `ensure-pg-extensions.sql` applied (`pg_trgm`); jieba/FTS rebuild if needed                                                                                             |
 

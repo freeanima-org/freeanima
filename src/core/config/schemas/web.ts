@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const DEFAULT_WEB_HOST = "127.0.0.1";
-/** 独立 Web 静态服（anima web start）默认端口；Hub TLS 使用 2659 */
+/** 独立 Web 静态服（anima web start）默认端口；Habitat TLS 使用 2659 */
 export const DEFAULT_WEB_PORT = 2660;
 
 export const webConfigSchema = z

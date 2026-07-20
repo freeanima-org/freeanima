@@ -25,7 +25,7 @@ export function resolveMotionsSearchDirs(): string[] {
   return dirs.filter((dir, index) => dirs.indexOf(dir) === index);
 }
 
-/** 本地 cache 静态文件解析（不依赖 Hub 导入管线） */
+/** 本地 cache 静态文件解析（不依赖 Habitat 导入管线） */
 export function resolveMotionFile(relativePath: string): string | null {
   const rawName = basename(relativePath);
   let name: string;

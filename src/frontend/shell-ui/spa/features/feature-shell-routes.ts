@@ -67,13 +67,13 @@ export function registerFeaturePluginShellRoutes(): void {
   ]);
 }
 
-/** Console/admin SPA embedded in shell (formerly ConsoleShell). */
-export function loadConsoleShellRoute() {
+/** Habitat/admin SPA embedded in shell (formerly HabitatShell). */
+export function loadHabitatShellRoute() {
   return shellLazyRoute(
     () =>
-      import("@freeanima/features/console/ui/spa").then(async (mod) => {
-        await import("@freeanima/features/console/ui/console/styles.css");
-        return { default: mod.ConsoleShell as import("react").ComponentType<object> };
+      import("@freeanima/features/habitat/ui/spa").then(async (mod) => {
+        await import("@freeanima/features/habitat/ui/habitat/styles.css");
+        return { default: mod.HabitatShell as import("react").ComponentType<object> };
       }) as Promise<{ default: import("react").ComponentType<object> }>,
   );
 }

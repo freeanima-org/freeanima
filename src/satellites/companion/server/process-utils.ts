@@ -49,7 +49,7 @@ export async function removePath(path: string): Promise<void> {
 
 export async function extractZipArchive(zipPath: string, extractRoot: string): Promise<void> {
   if (process.platform === "win32") {
-    const ps = `[Console]::OutputEncoding = [Text.UTF8Encoding]::UTF8; Expand-Archive -LiteralPath '${zipPath.replace(/'/g, "''")}' -DestinationPath '${extractRoot.replace(/'/g, "''")}' -Force`;
+    const ps = `[Habitat]::OutputEncoding = [Text.UTF8Encoding]::UTF8; Expand-Archive -LiteralPath '${zipPath.replace(/'/g, "''")}' -DestinationPath '${extractRoot.replace(/'/g, "''")}' -Force`;
     const { code, stderr } = await runCommand(["powershell", "-NoProfile", "-Command", ps]);
     if (code !== 0) {
       throw new Error(`解压失败 (powershell): ${stderr || code}`);

@@ -82,7 +82,7 @@ export function bindModelForTest(model: string, primaryRepo: string, activeRepo:
   bindModel(model.trim(), primaryRepo, activeRepo);
 }
 
-/** Unit tests: bind model to loaded fallback without Hub resolve. */
+/** Unit tests: bind model to loaded fallback without Habitat resolve. */
 export function bindModelToFallbackForTest(model: string): void {
   bindModel(model.trim(), null, FALLBACK_TOKENIZER_REPO);
 }

@@ -209,10 +209,10 @@ msgstr ""
 #: docs/concepts/self-layer.md:79
 #, fuzzy
 #| msgid ""
-#| "Maintenance: self-layer tools in **Console, or direct edits via CLI / "
-#| "**Console UI."
+#| "Maintenance: self-layer tools in **Habitat, or direct edits via CLI / "
+#| "**Habitat UI."
 msgid ""
-"Maintenance: self-layer tools in Console, or direct edits via CLI / Console "
+"Maintenance: self-layer tools in Habitat, or direct edits via CLI / Habitat "
 "UI."
 msgstr "维护方式：管理台中的自我层工具，或通过 CLI / 管理台 UI 直接编辑。"
 

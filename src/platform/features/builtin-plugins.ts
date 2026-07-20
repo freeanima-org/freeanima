@@ -1,6 +1,6 @@
 import type { FeaturePlugin } from "./types.ts";
 import { chatPlugin } from "@freeanima/features/chat/plugin";
-import { consolePlugin } from "@freeanima/features/console/plugin";
+import { habitatPlugin } from "@freeanima/features/habitat/plugin";
 import { diaryPlugin } from "@freeanima/features/diary/plugin";
 import { emailPlugin } from "@freeanima/features/email/plugin";
 import { notificationPlugin } from "@freeanima/features/notification/plugin";
@@ -11,10 +11,10 @@ import { projectPlugin } from "@freeanima/features/project/plugin";
 import { tagPlugin } from "@freeanima/features/tag/plugin";
 import { vaultPlugin } from "@freeanima/features/vault/plugin";
 
-/** Hub feature plugins registered at boot. */
+/** Habitat feature plugins registered at boot. */
 export const builtinFeaturePlugins: FeaturePlugin[] = [
   chatPlugin,
-  consolePlugin,
+  habitatPlugin,
   taskPlugin,
   projectPlugin,
   tagPlugin,

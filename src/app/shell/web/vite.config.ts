@@ -5,10 +5,10 @@ import { defineConfig, mergeConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { createComponentBuildMeta } from "../vite-config-imports.ts";
 import {
-  createHubDevProxyMap,
+  createHabitatDevProxyMap,
   createShellViteInlineConfig,
   quietBenignWsProxyErrorsPlugin,
-  resolveProxyHubUrl,
+  resolveProxyHabitatUrl,
   shellBridgeHtmlPlugin,
   shellEntryFileNames,
 } from "../vite-config-imports.ts";
@@ -24,9 +24,9 @@ const REPO_ROOT = join(PKG_DIR, "..", "..", "..", "..");
 const SPA_DIR = join(PKG_DIR, "spa");
 const DIST_DIR = join(PKG_DIR, "dist");
 
-const PROXY_HUB = resolveProxyHubUrl();
+const PROXY_HABITAT = resolveProxyHabitatUrl();
 /** 仅 Vite proxy 目标；浏览器 hub_url 用页面 origin */
-const PROXY_HUB_URL = PROXY_HUB.url;
+const PROXY_HABITAT_URL = PROXY_HABITAT.url;
 const PORT = Number(process.env.WEB_DEV_PORT ?? process.env.SHELL_DEV_PORT ?? DEFAULT_WEB_DEV_PORT);
 
 function readUiVersion(): string {
@@ -59,7 +59,17 @@ function webDevPlugin(): Plugin {
     name: "app-web-dev",
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        const path = req.url?.split("?")[0];
+        const path = req.url?.split("?")[0] ?? "";
+        // Legacy Console → Habitat（dev SPA 入口）
+        if (path === "/web/console" || path.startsWith("/web/console/")) {
+          const rest = path.slice("/web/console".length) || "/dashboard";
+          const suffix = rest === "/" ? "/dashboard" : rest;
+          const qs = req.url?.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+          res.statusCode = 302;
+          res.setHeader("Location", `/web/habitat${suffix}${qs}`);
+          res.end();
+          return;
+        }
         if (path === "/web/config.json") {
           const token = readDevWebTokenPlaintext();
           res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -94,15 +104,15 @@ function webDevPlugin(): Plugin {
         const httpsOn = Boolean(server.config.server.https);
         const scheme = httpsOn ? "https" : "http";
         console.log(
-          `[dev:web] proxy→${PROXY_HUB_URL} (${PROXY_HUB.source}) · ${scheme}://127.0.0.1:${port}/web/chat · Console /web/console/dashboard`,
+          `[dev:web] proxy→${PROXY_HABITAT_URL} (${PROXY_HABITAT.source}) · ${scheme}://127.0.0.1:${port}/web/chat · Habitat /web/habitat/dashboard`,
         );
-        if (PROXY_HUB.source === "default") {
+        if (PROXY_HABITAT.source === "default") {
           console.warn(
             "[dev:web] FREEANIMA_URL unset and no server.status.json — proxy defaults to http://127.0.0.1:2658; set FREEANIMA_URL or run just dev / dev:hub",
           );
-        } else if (PROXY_HUB.source === "status") {
+        } else if (PROXY_HABITAT.source === "status") {
           console.info(
-            "[dev:web] FREEANIMA_URL unset; using Hub port from ~/.anima/server.status.json",
+            "[dev:web] FREEANIMA_URL unset; using Habitat port from ~/.anima/server.status.json",
           );
         }
       });
@@ -155,9 +165,9 @@ function webPwaPlugin(options?: { disable?: boolean }): Plugin[] {
           icons: [{ src: "/web/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
         },
         {
-          name: "Console",
-          short_name: "Console",
-          url: "/web/console/dashboard",
+          name: "Habitat",
+          short_name: "Habitat",
+          url: "/web/habitat/dashboard",
           icons: [{ src: "/web/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
         },
       ],
@@ -229,7 +239,7 @@ export default defineConfig(({ command, mode }) => {
       strictPort: false,
       allowedHosts: true,
       ...(https ? { https } : {}),
-      proxy: createHubDevProxyMap(PROXY_HUB_URL),
+      proxy: createHabitatDevProxyMap(PROXY_HABITAT_URL),
     },
   });
 });

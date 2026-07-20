@@ -16,7 +16,7 @@ anima:42?component=task_item&present=overlay
 
 - Recognize and open entities from **text** (Markdown, notices) later via `openEntityResource`
 - Share / deep-link / cross-module open today
-- Structured FK in PG/Hub remain **numeric ids** — Anima URI is not a persistence format
+- Structured FK in PG/Habitat remain **numeric ids** — Anima URI is not a persistence format
 
 This task ships: grammar + `parse`/`format` + overlay registry + `task_item` sample. **Not yet:** Chat Markdown link interception.
 
@@ -40,10 +40,10 @@ Same `id` with different `component=` can open **different** overlays (entity ma
 
 ## Layering vs persistence
 
-| Layer               | Stores                                         | Anima URI                                                 |
-| ------------------- | ---------------------------------------------- | --------------------------------------------------------- |
-| PG / Hub body / RPC | Entity **`id`** (e.g. pomodoro `task_item_id`) | **Never** as FK string                                    |
-| Shell UI            | —                                              | `formatAnimaUri` / `parseAnimaUri` / `openEntityResource` |
+| Layer                   | Stores                                         | Anima URI                                                 |
+| ----------------------- | ---------------------------------------------- | --------------------------------------------------------- |
+| PG / Habitat body / RPC | Entity **`id`** (e.g. pomodoro `task_item_id`) | **Never** as FK string                                    |
+| Shell UI                | —                                              | `formatAnimaUri` / `parseAnimaUri` / `openEntityResource` |
 
 Anima URI is a **Shell/UI locator protocol**, not a database foreign key. User-authored body text that happens to contain `anima:…` is content, not a structured relation.
 

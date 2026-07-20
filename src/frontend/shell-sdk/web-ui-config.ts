@@ -1,7 +1,7 @@
 import type { ComponentBuildMeta } from "./build-meta.ts";
 import { parseComponentBuildMeta } from "./build-meta.ts";
 
-/** Hub `/web/config.json` 契约（运行时生成） */
+/** Habitat `/web/config.json` 契约（运行时生成） */
 export type WebUiConfigJson = {
   app_id: string;
   hub_url: string;
@@ -10,7 +10,7 @@ export type WebUiConfigJson = {
   web_build?: ComponentBuildMeta;
   min_shell_version?: string;
   layout_mode?: "compact" | "expanded";
-  /** 仅 Vite `dev:web` 注入；生产 Hub 托管永不下发 */
+  /** 仅 Vite `dev:web` 注入；生产 Habitat 托管永不下发 */
   remote_auth_token?: string;
 };
 
@@ -18,8 +18,8 @@ export function parseWebUiConfigJson(raw: unknown): WebUiConfigJson | null {
   if (raw == null || typeof raw !== "object") return null;
   const o = raw as Record<string, unknown>;
   const appId = typeof o.app_id === "string" ? o.app_id : "chat";
-  const hubUrl = typeof o.hub_url === "string" ? o.hub_url : "";
-  const hubWsUrl = typeof o.hub_ws_url === "string" ? o.hub_ws_url : "";
+  const habitatUrl = typeof o.hub_url === "string" ? o.hub_url : "";
+  const habitatWsUrl = typeof o.hub_ws_url === "string" ? o.hub_ws_url : "";
   const layoutRaw = o.layout_mode;
   const layout_mode = layoutRaw === "compact" || layoutRaw === "expanded" ? layoutRaw : undefined;
   const webBuild = parseComponentBuildMeta(o.web_build);
@@ -27,8 +27,8 @@ export function parseWebUiConfigJson(raw: unknown): WebUiConfigJson | null {
     typeof o.remote_auth_token === "string" ? o.remote_auth_token.trim() : undefined;
   return {
     app_id: appId,
-    hub_url: hubUrl,
-    hub_ws_url: hubWsUrl,
+    hub_url: habitatUrl,
+    hub_ws_url: habitatWsUrl,
     ...(typeof o.ui_version === "string" ? { ui_version: o.ui_version } : {}),
     ...(webBuild ? { web_build: webBuild } : {}),
     ...(typeof o.min_shell_version === "string" ? { min_shell_version: o.min_shell_version } : {}),

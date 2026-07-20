@@ -147,10 +147,10 @@ export function PullToRefresh({
   };
 
   const label = refreshing
-    ? m.console_common_refreshing()
+    ? m.habitat_common_refreshing()
     : shouldTriggerRefresh(pullDistance, thresholdPx)
-      ? m.console_common_refresh()
-      : m.console_common_refresh();
+      ? m.habitat_common_refresh()
+      : m.habitat_common_refresh();
 
   return (
     <div className={cn("flex h-full min-h-0 flex-col", className)}>

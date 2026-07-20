@@ -18,7 +18,7 @@ export type ToolSet = {
   private?: boolean;
 };
 
-/** Console / API view */
+/** Habitat / API view */
 export type ToolSetView = {
   name: string;
   description: string;
@@ -110,7 +110,7 @@ export class ToolSetRegistry {
       .filter((t): t is ToolDef => t !== undefined);
   }
 
-  /** Tools with exposeMcp=true for Hub /mcp outbound */
+  /** Tools with exposeMcp=true for Habitat /mcp outbound */
   listMcpExposedTools(): ToolDef[] {
     return this.listTools().filter((t) => t.exposeMcp === true);
   }

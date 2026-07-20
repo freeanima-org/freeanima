@@ -3,17 +3,17 @@ import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig, type Plugin } from "vite";
 
 import {
-  createHubDevProxyMap,
+  createHabitatDevProxyMap,
   createShellViteInlineConfig,
   quietBenignWsProxyErrorsPlugin,
-  resolveProxyHubUrl,
+  resolveProxyHabitatUrl,
 } from "../vite-config-imports.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(PKG_DIR, "..", "..", "..", "..");
 const SPA_DIR = join(PKG_DIR, "spa");
-const PROXY_HUB = resolveProxyHubUrl();
-const HUB_URL = PROXY_HUB.url;
+const PROXY_HABITAT = resolveProxyHabitatUrl();
+const HUB_URL = PROXY_HABITAT.url;
 const PORT = Number(process.env.DESKTOP_SHELL_VITE_PORT ?? 5173);
 
 function desktopDevPlugin(): Plugin {
@@ -21,7 +21,7 @@ function desktopDevPlugin(): Plugin {
     name: "app-desktop-dev",
     configureServer() {
       console.log(
-        `[dev:desktop] shell HMR http://127.0.0.1:${PORT} · Hub ${HUB_URL} (${PROXY_HUB.source})`,
+        `[dev:desktop] shell HMR http://127.0.0.1:${PORT} · Habitat ${HUB_URL} (${PROXY_HABITAT.source})`,
       );
     },
   };
@@ -50,7 +50,7 @@ export default defineConfig(({ command, mode }) => {
       host: "127.0.0.1",
       port: PORT,
       strictPort: false,
-      proxy: createHubDevProxyMap(HUB_URL, ["/sap"]),
+      proxy: createHabitatDevProxyMap(HUB_URL, ["/sap"]),
     },
   });
 });

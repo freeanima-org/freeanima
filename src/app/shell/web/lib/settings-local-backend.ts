@@ -2,7 +2,9 @@ import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/setting
 import type { ScopedSettingsBackend } from "@freeanima/frontend/shell-sdk/settings";
 import {
   DEBUG_VCONSOLE_ENABLED_KEY,
-  HUB_URL_KEY,
+  HABITAT_URL_KEY,
+  HABITAT_URL_KEY_LEGACY,
+  readStoredHabitatUrl,
   REMOTE_AUTH_TOKEN_KEY,
 } from "@freeanima/frontend/shell-sdk/settings";
 import {
@@ -13,11 +15,11 @@ import {
 function loadKvScope(scope: SettingsStorageScope): unknown {
   if (scope.kind !== "kv") throw new Error("web 仅支持 kv scope");
   const scopeId = scope.id;
-  if (scopeId === "hub") {
-    const hubUrl = localStorage.getItem(HUB_URL_KEY)?.trim() ?? "";
+  if (scopeId === "habitat") {
+    const habitatUrl = readStoredHabitatUrl((k) => localStorage.getItem(k));
     const remoteAuthToken = localStorage.getItem(REMOTE_AUTH_TOKEN_KEY)?.trim() ?? "";
-    if (!hubUrl && !remoteAuthToken) return null;
-    return { hubUrl, remoteAuthToken };
+    if (!habitatUrl && !remoteAuthToken) return null;
+    return { habitatUrl, remoteAuthToken };
   }
   if (scopeId === "debug") {
     return parseShellDebugConfig({
@@ -30,9 +32,10 @@ function loadKvScope(scope: SettingsStorageScope): unknown {
 function saveKvScope(scope: SettingsStorageScope, value: unknown): void {
   if (scope.kind !== "kv") throw new Error("web 仅支持 kv scope");
   const scopeId = scope.id;
-  if (scopeId === "hub") {
-    const raw = value as { hubUrl: string; remoteAuthToken: string };
-    localStorage.setItem(HUB_URL_KEY, raw.hubUrl);
+  if (scopeId === "habitat") {
+    const raw = value as { habitatUrl: string; remoteAuthToken: string };
+    localStorage.setItem(HABITAT_URL_KEY, raw.habitatUrl);
+    localStorage.removeItem(HABITAT_URL_KEY_LEGACY);
     localStorage.setItem(REMOTE_AUTH_TOKEN_KEY, raw.remoteAuthToken);
     return;
   }

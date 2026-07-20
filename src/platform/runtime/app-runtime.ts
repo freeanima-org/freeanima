@@ -157,7 +157,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     this.pokeSessionWatchers(conversationId);
   }
 
-  /** Console SSE: wake watchers without re-running onConversationUpdated (ACP progress already notified). */
+  /** Habitat SSE: wake watchers without re-running onConversationUpdated (ACP progress already notified). */
   pokeSessionWatchers(conversationId: string): void {
     const set = this.conversationWatchers.get(conversationId);
     if (set) {
@@ -171,7 +171,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     }
   }
 
-  /** Console SSE: notify when conversation messages/meta change (ACP progress, callbacks). */
+  /** Habitat SSE: notify when conversation messages/meta change (ACP progress, callbacks). */
   watchConversation(conversationId: string, cb: () => void): () => void {
     let set = this.conversationWatchers.get(conversationId);
     if (!set) {

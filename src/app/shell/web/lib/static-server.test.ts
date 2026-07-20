@@ -14,7 +14,7 @@ describe("startWebStaticServer", () => {
       distDir: dist,
       host: "127.0.0.1",
       port: 0,
-      runtime: { appId: "chat", hubUrl: "https://anima.example.com" },
+      runtime: { appId: "chat", habitatUrl: "https://anima.example.com" },
     });
 
     const port = handle.port;
@@ -33,7 +33,7 @@ describe("startWebStaticServer", () => {
     await handle.close();
   });
 
-  test("config.json uses request origin when hubUrl omitted", async () => {
+  test("config.json uses request origin when habitatUrl omitted", async () => {
     const dist = mkdtempSync(join(tmpdir(), "web-dist-"));
     writeFileSync(join(dist, "index.html"), "<html>ok</html>");
 
@@ -50,7 +50,7 @@ describe("startWebStaticServer", () => {
         r.json(),
       )) as { hub_url?: string; hub_ws_url?: string };
       expect(cfg.hub_url).toBe(`http://127.0.0.1:${port}`);
-      expect(cfg.hub_ws_url).toBe(`ws://127.0.0.1:${port}/hub/rpc/v1`);
+      expect(cfg.hub_ws_url).toBe(`ws://127.0.0.1:${port}/rpc/v1`);
     } finally {
       await handle.close();
     }
@@ -71,7 +71,7 @@ describe("startWebStaticServer", () => {
     });
 
     const port = handle.port;
-    const adminPage = await fetch(`http://127.0.0.1:${port}/web/console/dashboard`);
+    const adminPage = await fetch(`http://127.0.0.1:${port}/web/habitat/dashboard`);
     expect(adminPage.ok).toBe(true);
     expect(await adminPage.text()).toContain('src="/web/assets/main.js"');
 

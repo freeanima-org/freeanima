@@ -132,7 +132,7 @@ export function FormRenderer({
     try {
       const parsed = fields.zodSchema.parse(values);
       await store.test(parsed);
-      setStatus(sectionId === "hub" ? "连接成功" : "已保存");
+      setStatus(sectionId === "habitat" ? "连接成功" : "已保存");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -150,9 +150,9 @@ export function FormRenderer({
 
   return (
     <div className={`space-y-4 ${platform === "mobile" ? "pb-8" : ""}`}>
-      {sectionId === "hub" && error?.includes("连接") ? (
+      {sectionId === "habitat" && error?.includes("连接") ? (
         <Alert variant="info" className="text-sm">
-          请确认 Hub 已启动（<code className="text-xs">anima service start --host 0.0.0.0</code>
+          请确认栖息地已启动（<code className="text-xs">anima service start --host 0.0.0.0</code>
           ）、客户端连接设置中的 Service API Token（<code className="text-xs">fa_at_...</code>
           ）有效；详见项目文档 remote-access。
         </Alert>

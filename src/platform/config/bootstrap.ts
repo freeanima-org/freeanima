@@ -11,7 +11,7 @@ export function loadBootstrapConfig(): BootstrapConfig {
   const yamlRecord = loadConfigYamlRecord();
   if (hasRuntimeSectionsInYaml(yamlRecord)) {
     console.warn(
-      "[config] config.yaml 仍含运行时配置段，已忽略；请在 Shell Hub 服务设置中编辑，并清理 YAML 废段",
+      "[config] config.yaml 仍含运行时配置段，已忽略；请在 Shell Habitat 服务设置中编辑，并清理 YAML 废段",
     );
   }
   const bootstrap = pickBootstrapRecord(yamlRecord);

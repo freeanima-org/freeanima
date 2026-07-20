@@ -11,6 +11,6 @@ export async function resolveSidecarOrigin(_maxWaitMs = 45_000): Promise<string>
 }
 
 export async function resolveHubBaseUrl(): Promise<string> {
-  const shell = (window as Window & { satelliteShell?: { hubUrl?: string } }).satelliteShell;
-  return shell?.hubUrl?.trim().replace(/\/$/, "") || "http://127.0.0.1:2658";
+  const shell = (window as Window & { satelliteShell?: { habitatUrl?: string } }).satelliteShell;
+  return shell?.habitatUrl?.trim().replace(/\/$/, "") || "http://127.0.0.1:2658";
 }

@@ -12,11 +12,11 @@ import { useMemo } from "react";
 import { shouldUseNativeShellNavigation } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
 
 import { shellLazyRoute } from "./lazy-route.tsx";
-import { loadConsoleShellRoute } from "./features/feature-shell-routes.ts";
+import { loadHabitatShellRoute } from "./features/feature-shell-routes.ts";
 import { listShellFeatureRoutes } from "./features/shell-registry.ts";
 import { ModuleShell } from "./main/ModuleShell.tsx";
 import { SettingsPage } from "./settings/SettingsPage.tsx";
-import { needsHubSetup } from "./setup/hub-setup.ts";
+import { needsHabitatSetup } from "./setup/habitat-setup.ts";
 import { resolveShellRouterBasepath } from "./router-basepath.ts";
 
 const rootRoute = createRootRoute({
@@ -40,7 +40,7 @@ const mainLayoutRoute = createRoute({
   id: "main-layout",
   component: ModuleShell,
   beforeLoad: ({ location }) => {
-    if (needsHubSetup() && !isSettingsPath(location.pathname)) {
+    if (needsHabitatSetup() && !isSettingsPath(location.pathname)) {
       throw redirect({ to: "/settings" as never });
     }
   },
@@ -62,24 +62,45 @@ const featureRoutes = listShellFeatureRoutes().map((entry) =>
   }),
 );
 
-const consoleIndexRoute = createRoute({
+const habitatIndexRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
-  path: "/console",
+  path: "/habitat",
   beforeLoad: () => {
-    throw redirect({ to: "/console/dashboard" as never });
+    throw redirect({ to: "/habitat/dashboard" as never });
   },
 });
 
-const consoleDashboardRoute = createRoute({
+const habitatDashboardRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
-  path: "/console/dashboard",
-  component: loadConsoleShellRoute(),
+  path: "/habitat/dashboard",
+  component: loadHabitatShellRoute(),
 });
 
-const consoleRoute = createRoute({
+const habitatCatchAllRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/habitat/$",
+  component: loadHabitatShellRoute(),
+});
+
+/** Legacy `/console/*` → `/habitat/*` */
+const legacyConsoleRedirectRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/console/$",
-  component: loadConsoleShellRoute(),
+  beforeLoad: ({ location }) => {
+    const marker = "/console";
+    const idx = location.pathname.indexOf(marker);
+    const rest = idx === -1 ? "" : location.pathname.slice(idx + marker.length);
+    const suffix = !rest || rest === "/" ? "/dashboard" : rest;
+    throw redirect({ to: `/habitat${suffix}` as never });
+  },
+});
+
+const legacyConsoleIndexRedirectRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/console",
+  beforeLoad: () => {
+    throw redirect({ to: "/habitat/dashboard" as never });
+  },
 });
 
 const settingsRoute = createRoute({
@@ -93,9 +114,11 @@ const routeTree = rootRoute.addChildren([
   mainLayoutRoute.addChildren([
     indexRoute,
     ...featureRoutes,
-    consoleIndexRoute,
-    consoleDashboardRoute,
-    consoleRoute,
+    habitatIndexRoute,
+    habitatDashboardRoute,
+    habitatCatchAllRoute,
+    legacyConsoleIndexRedirectRoute,
+    legacyConsoleRedirectRoute,
     settingsRoute,
   ]),
 ]);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { resolveEmbeddedConsoleBasepath, shellBasepathFromViteBase } from "./router-basepath.ts";
+import { resolveEmbeddedHabitatBasepath, shellBasepathFromViteBase } from "./router-basepath.ts";
 
 describe("shellBasepathFromViteBase", () => {
   it("returns undefined for root or relative base", () => {
@@ -8,13 +8,13 @@ describe("shellBasepathFromViteBase", () => {
     expect(shellBasepathFromViteBase("./")).toBeUndefined();
   });
 
-  it("normalizes Hub web base", () => {
+  it("normalizes Habitat web base", () => {
     expect(shellBasepathFromViteBase("/web/")).toBe("/web");
   });
 });
 
-describe("resolveEmbeddedConsoleBasepath", () => {
-  it("uses /console when shell has no basepath", () => {
-    expect(resolveEmbeddedConsoleBasepath()).toBe("/console");
+describe("resolveEmbeddedHabitatBasepath", () => {
+  it("uses /habitat when shell has no basepath", () => {
+    expect(resolveEmbeddedHabitatBasepath()).toBe("/habitat");
   });
 });

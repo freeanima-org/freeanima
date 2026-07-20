@@ -2,7 +2,7 @@ import type { SapRequestContext } from "@freeanima/shared/sap-contract";
 
 import type { SapServerDeps } from "../sap/types.ts";
 
-/** Hub RPC method handler registered by a feature plugin. */
+/** Habitat RPC method handler registered by a feature plugin. */
 export type FeatureRpcHandler = (
   deps: SapServerDeps,
   payload: unknown,

@@ -95,7 +95,7 @@ async function fetchHttpStatus(
 ): Promise<[boolean, Record<string, unknown> | null, number]> {
   const probeHost = resolveProbeHost(host);
   const t0 = performance.now();
-  const health = await apiGet(probeHost, port, "/hub/rpc/v1/health/probe", 2000);
+  const health = await apiGet(probeHost, port, "/rpc/v1/health/probe", 2000);
   const ms = performance.now() - t0;
   if (!health || health.status !== "ok") return [false, null, ms];
   return [true, null, ms];

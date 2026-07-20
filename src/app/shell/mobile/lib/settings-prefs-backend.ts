@@ -2,7 +2,8 @@ import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/setting
 import type { ScopedSettingsBackend } from "@freeanima/frontend/shell-sdk/settings";
 import {
   DEBUG_VCONSOLE_ENABLED_KEY,
-  HUB_URL_KEY,
+  HABITAT_URL_KEY,
+  HABITAT_URL_KEY_LEGACY,
   REMOTE_AUTH_TOKEN_KEY,
 } from "@freeanima/frontend/shell-sdk/settings";
 import { parseShellDebugConfig, type ShellDebugConfig } from "@freeanima/frontend/shell-sdk";
@@ -11,21 +12,27 @@ import { applyMobileDebugConsole } from "./debug-console.ts";
 import { prefsGet, prefsSet } from "./prefs-safe.ts";
 import { readShellSnapshot } from "./mobile-shell.ts";
 
-function loadHubConfigFromShellSnapshot(): { hubUrl: string; remoteAuthToken: string } | null {
+function loadHabitatConfigFromShellSnapshot(): {
+  habitatUrl: string;
+  remoteAuthToken: string;
+} | null {
   const snapshot = readShellSnapshot();
-  if (!snapshot?.hubUrl?.trim()) return null;
+  if (!snapshot?.habitatUrl?.trim()) return null;
   return {
-    hubUrl: snapshot.hubUrl.trim(),
+    habitatUrl: snapshot.habitatUrl.trim(),
     remoteAuthToken: snapshot.remoteAuthToken?.trim() ?? "",
   };
 }
 
-function loadHubConfigFromSatelliteShell(): { hubUrl: string; remoteAuthToken: string } | null {
+function loadHabitatConfigFromSatelliteShell(): {
+  habitatUrl: string;
+  remoteAuthToken: string;
+} | null {
   const shell = window.satelliteShell;
-  const hubUrl = shell?.hubUrl?.trim();
-  if (!hubUrl) return null;
+  const habitatUrl = shell?.habitatUrl?.trim();
+  if (!habitatUrl) return null;
   return {
-    hubUrl,
+    habitatUrl,
     remoteAuthToken: shell?.remoteAuth?.token?.trim() ?? "",
   };
 }
@@ -33,18 +40,21 @@ function loadHubConfigFromSatelliteShell(): { hubUrl: string; remoteAuthToken: s
 async function loadKvScope(scope: SettingsStorageScope): Promise<unknown> {
   if (scope.kind !== "kv") throw new Error("mobile 仅支持 kv scope");
   const scopeId = scope.id;
-  if (scopeId === "hub") {
-    const shellFallback = loadHubConfigFromSatelliteShell() ?? loadHubConfigFromShellSnapshot();
+  if (scopeId === "habitat") {
+    const shellFallback =
+      loadHabitatConfigFromSatelliteShell() ?? loadHabitatConfigFromShellSnapshot();
     try {
-      const [hubUrl, remoteAuthToken] = await Promise.all([
-        prefsGet({ key: HUB_URL_KEY }, 2_000),
+      const [habitatUrl, habitatUrlLegacy, remoteAuthToken] = await Promise.all([
+        prefsGet({ key: HABITAT_URL_KEY }, 2_000),
+        prefsGet({ key: HABITAT_URL_KEY_LEGACY }, 2_000),
         prefsGet({ key: REMOTE_AUTH_TOKEN_KEY }, 2_000),
       ]);
-      if (hubUrl.value || remoteAuthToken.value) {
-        return { hubUrl: hubUrl.value ?? "", remoteAuthToken: remoteAuthToken.value ?? "" };
+      const url = habitatUrl.value?.trim() || habitatUrlLegacy.value?.trim() || "";
+      if (url || remoteAuthToken.value) {
+        return { habitatUrl: url, remoteAuthToken: remoteAuthToken.value ?? "" };
       }
     } catch {
-      /* 远程 Hub 页 Preferences 可能尚未就绪，回退 shell-bridge 注入 */
+      /* 远程栖息地页 Preferences 可能尚未就绪，回退 shell-bridge 注入 */
     }
     return shellFallback ?? null;
   }
@@ -60,9 +70,10 @@ async function loadKvScope(scope: SettingsStorageScope): Promise<unknown> {
 async function saveKvScope(scope: SettingsStorageScope, value: unknown): Promise<void> {
   if (scope.kind !== "kv") throw new Error("mobile 仅支持 kv scope");
   const scopeId = scope.id;
-  if (scopeId === "hub") {
-    const raw = value as { hubUrl: string; remoteAuthToken: string };
-    await prefsSet({ key: HUB_URL_KEY, value: raw.hubUrl });
+  if (scopeId === "habitat") {
+    const raw = value as { habitatUrl: string; remoteAuthToken: string };
+    await prefsSet({ key: HABITAT_URL_KEY, value: raw.habitatUrl });
+    await prefsSet({ key: HABITAT_URL_KEY_LEGACY, value: "" });
     await prefsSet({ key: REMOTE_AUTH_TOKEN_KEY, value: raw.remoteAuthToken });
     return;
   }
@@ -85,10 +96,10 @@ export function createMobileScopedBackend(): ScopedSettingsBackend {
   };
 }
 
-export async function testMobileHubConnection(value: {
-  hubUrl: string;
+export async function testMobileHabitatConnection(value: {
+  habitatUrl: string;
   remoteAuthToken: string;
 }): Promise<void> {
-  const { testHubConnection } = await import("./mobile-shell.ts");
-  await testHubConnection(value.hubUrl, value.remoteAuthToken);
+  const { testHabitatConnection } = await import("./mobile-shell.ts");
+  await testHabitatConnection(value.habitatUrl, value.remoteAuthToken);
 }

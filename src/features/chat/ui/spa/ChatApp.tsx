@@ -53,12 +53,12 @@ import {
 } from "@freeanima/frontend/ui-kit/layout";
 import { omitUndefined } from "@freeanima/core/util";
 import {
-  reconnectHub,
+  reconnectHabitat,
   useActionSheetCapability,
   useChatLlmDebugEnabled,
   useContextMenuCapability,
   useEnterToSendCapability,
-  useHubConnection,
+  useHabitatConnection,
   useNetworkOnline,
   useOpenHubSettingsCapability,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
@@ -138,8 +138,8 @@ function getSatelliteShell() {
   return window.satelliteShell;
 }
 
-function openHubSettingsIfAvailable(): void {
-  getSatelliteShell()?.openHubSettings?.();
+function openHabitatSettingsIfAvailable(): void {
+  getSatelliteShell()?.openHabitatSettings?.();
 }
 
 function isTransportFailureMessage(msg: string): boolean {
@@ -214,9 +214,9 @@ export function ChatApp() {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const networkOnline = useNetworkOnline();
-  const hubConnection = useHubConnection();
-  const canSendOnline = networkOnline && hubConnection === "connected";
-  const shellWritesDisabled = !networkOnline || hubConnection !== "connected";
+  const habitatConnection = useHabitatConnection();
+  const canSendOnline = networkOnline && habitatConnection === "connected";
+  const shellWritesDisabled = !networkOnline || habitatConnection !== "connected";
   const writesDisabled = shellWritesDisabled;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [menuConversationId, setMenuConversationId] = useState<string | null>(null);
@@ -255,7 +255,7 @@ export function ChatApp() {
   const mobileLayout = useCompactLayout();
   /** Enter 发送：仅交互维（pointer）；与布局/壳正交 */
   const enterToSend = useEnterToSendCapability();
-  const canOpenHubSettingsUi = useOpenHubSettingsCapability();
+  const canOpenHabitatSettingsUi = useOpenHubSettingsCapability();
   const useActionSheet = useActionSheetCapability();
   const contextMenuEnabled = useContextMenuCapability();
   const drawerNav = useDrawerNav();
@@ -372,7 +372,7 @@ export function ChatApp() {
           platform: "",
         },
       )
-    : m.console_chat_title();
+    : m.habitat_chat_title();
 
   const acpDock = useAcpProgressDock(currentId, {
     patchProgress: patchProgressLine,
@@ -488,8 +488,8 @@ export function ChatApp() {
     if (refreshing) return;
     setRefreshing(true);
     try {
-      if (hubConnection === "disconnected") {
-        await reconnectHub();
+      if (habitatConnection === "disconnected") {
+        await reconnectHabitat();
       }
       useChatStore.getState().abortStream();
       await fetchConversations();
@@ -499,14 +499,14 @@ export function ChatApp() {
     } finally {
       setRefreshing(false);
     }
-  }, [refreshing, hubConnection, currentId, fetchConversations, selectConversation]);
+  }, [refreshing, habitatConnection, currentId, fetchConversations, selectConversation]);
 
   useEffect(() => {
-    if (hubConnection !== "connected") {
+    if (habitatConnection !== "connected") {
       useChatStore.getState().abortStream();
       sendingRef.current = false;
     }
-  }, [hubConnection]);
+  }, [habitatConnection]);
 
   useEffect(() => subscribeShellConfigChanges(), []);
 
@@ -552,9 +552,9 @@ export function ChatApp() {
   }, [currentId, display, outboxEntries, outboxAckEntry]);
 
   useEffect(() => {
-    if (hubConnection !== "connected") return;
+    if (habitatConnection !== "connected") return;
     void fetchConversations();
-  }, [hubConnection, fetchConversations]);
+  }, [habitatConnection, fetchConversations]);
 
   useEffect(() => {
     stopSpeech();
@@ -647,7 +647,7 @@ export function ChatApp() {
     return () => sub.unsubscribe();
   }, [currentId, fetchConversations]);
 
-  /** 刷新或切回会话时：末条为 user 且无 assistant → 轮询直到 Hub 落库 */
+  /** 刷新或切回会话时：末条为 user 且无 assistant → 轮询直到 Habitat 落库 */
   useEffect(() => {
     if (!currentId) return;
     if (streaming && streamingConversationId === currentId) return;
@@ -784,7 +784,7 @@ export function ChatApp() {
 
   const conversationMenuItems: ActionSheetItem[] = menuConversationId
     ? [
-        { label: m.console_common_rename(), onClick: startRename },
+        { label: m.habitat_common_rename(), onClick: startRename },
         ...(contextConversation?.archivedAt
           ? [{ label: m.chat_unarchive(), onClick: () => void handleUnarchive() }]
           : [{ label: m.chat_archive(), onClick: () => void handleArchive() }]),
@@ -986,7 +986,7 @@ export function ChatApp() {
                 content: `⚠️ ${msg}`,
               });
               if (isTransportFailureMessage(msg)) {
-                void reconnectHub().catch(() => undefined);
+                void reconnectHabitat().catch(() => undefined);
               }
               if (isViewingOrigin()) scrollDown();
             },
@@ -1295,17 +1295,17 @@ export function ChatApp() {
     return (
       <div className="h-full flex items-center justify-center p-8">
         <div className="max-w-md text-center space-y-3">
-          <h2 className="text-lg font-bold">{m.console_chat_title()}</h2>
+          <h2 className="text-lg font-bold">{m.habitat_chat_title()}</h2>
           <p className="text-sm text-destructive">{error}</p>
           <p className="text-xs text-muted-foreground">
-            {getSatelliteShell()?.hubWsUrl
-              ? canOpenHubSettingsUi
+            {getSatelliteShell()?.habitatWsUrl
+              ? canOpenHabitatSettingsUi
                 ? "请确认栖息地已运行，或在设置中检查栖息地地址。"
                 : "请确认栖息地已运行（anima service start）。"
               : "请确认栖息地已运行，且 chat dev server 提供 /config.json。"}
           </p>
-          {canOpenHubSettingsUi ? (
-            <Button type="button" size="sm" onClick={openHubSettingsIfAvailable}>
+          {canOpenHabitatSettingsUi ? (
+            <Button type="button" size="sm" onClick={openHabitatSettingsIfAvailable}>
               连接设置
             </Button>
           ) : null}
@@ -1334,10 +1334,10 @@ export function ChatApp() {
           size="sm"
           className="h-7 shrink-0 px-2"
           disabled={refreshing || !ready}
-          aria-label={m.console_common_refresh()}
+          aria-label={m.habitat_common_refresh()}
           onClick={() => void handleManualRefresh()}
         >
-          {refreshing ? <Spinner className="size-3.5" /> : m.console_common_refresh()}
+          {refreshing ? <Spinner className="size-3.5" /> : m.habitat_common_refresh()}
         </Button>
         <Button
           type="button"
@@ -1345,17 +1345,17 @@ export function ChatApp() {
           className={`h-7 px-2 ${drawerNav ? "" : "hidden"}`}
           onClick={startConversation}
         >
-          {m.console_common_new_conversation()}
+          {m.habitat_common_new_conversation()}
         </Button>
-        {canOpenHubSettingsUi ? (
+        {canOpenHabitatSettingsUi ? (
           <Button
             type="button"
             variant="ghost"
             size="sm"
             className="h-7 px-2"
-            onClick={openHubSettingsIfAvailable}
+            onClick={openHabitatSettingsIfAvailable}
           >
-            Hub
+            Habitat
           </Button>
         ) : null}
         {llmDebugEnabled ? (
@@ -1404,7 +1404,7 @@ export function ChatApp() {
                     className="w-full"
                     onClick={() => void newConversation()}
                   >
-                    {m.console_common_new_conversation()}
+                    {m.habitat_common_new_conversation()}
                   </Button>
                   <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 text-xs">
                     <Checkbox
@@ -1458,14 +1458,14 @@ export function ChatApp() {
               ) : null}
               {!currentId ? (
                 <div className="flex flex-col items-center justify-center h-full gap-3 text-foreground/40 text-sm">
-                  <p>{m.console_chat_select_conversation()}</p>
+                  <p>{m.habitat_chat_select_conversation()}</p>
                   <Button
                     type="button"
                     size="sm"
                     disabled={writesDisabled}
                     onClick={startConversation}
                   >
-                    {m.console_common_new_conversation()}
+                    {m.habitat_common_new_conversation()}
                   </Button>
                 </div>
               ) : messagesLoading ? (
@@ -1474,7 +1474,7 @@ export function ChatApp() {
                 </div>
               ) : display.length === 0 && !streamVisible && !recovering ? (
                 <div className="flex items-center justify-center h-full text-foreground/40 text-sm">
-                  {m.console_chat_send_first_message()}
+                  {m.habitat_chat_send_first_message()}
                 </div>
               ) : null}
 
@@ -1502,7 +1502,7 @@ export function ChatApp() {
                                 setEditDraft("");
                               }}
                             >
-                              {m.console_common_cancel()}
+                              {m.habitat_common_cancel()}
                             </Button>
                             <Button
                               type="button"
@@ -1517,7 +1517,7 @@ export function ChatApp() {
                                   : confirmReeditUserMessage())
                               }
                             >
-                              {m.console_common_confirm()}
+                              {m.habitat_common_confirm()}
                             </Button>
                           </div>
                         </div>
@@ -1665,7 +1665,7 @@ export function ChatApp() {
               {clarifyPending ? (
                 <Alert variant="info" className="shadow-sm">
                   <AlertDescription className="w-full space-y-2">
-                    <p className="font-medium">{m.console_chat_clarify_hint()}</p>
+                    <p className="font-medium">{m.habitat_chat_clarify_hint()}</p>
                     {clarifyPending.items.map((item, ci) => (
                       <div key={ci} className="text-sm">
                         <p>
@@ -1709,7 +1709,7 @@ export function ChatApp() {
                   <div className="flex justify-start">
                     <div className="chat-bubble chat-bubble-assistant text-muted-foreground flex items-center gap-2 text-sm">
                       <Spinner className="size-3" />
-                      {m.console_chat_composing_reply()}
+                      {m.habitat_chat_composing_reply()}
                     </div>
                   </div>
                 )
@@ -1719,7 +1719,7 @@ export function ChatApp() {
                 <div className="flex justify-start">
                   <div className="chat-bubble chat-bubble-assistant text-muted-foreground flex items-center gap-2 text-sm">
                     <Spinner className="size-3" />
-                    {m.console_message_waiting_result()}
+                    {m.habitat_message_waiting_result()}
                   </div>
                 </div>
               ) : null}
@@ -1751,7 +1751,7 @@ export function ChatApp() {
                         className="h-7 shrink-0 px-2"
                         onClick={() => void sendQueuedNow(item.id)}
                       >
-                        {m.console_chat_queue_send_now()}
+                        {m.habitat_chat_queue_send_now()}
                       </Button>
                     </li>
                   ))}
@@ -1814,7 +1814,7 @@ export function ChatApp() {
                     }}
                     rows={1}
                     className="!min-h-9 h-9 max-h-48 w-full resize-none overflow-y-auto py-1.5 leading-5 [field-sizing:fixed]"
-                    placeholder={m.console_chat_message_placeholder()}
+                    placeholder={m.habitat_chat_message_placeholder()}
                     disabled={streamVisible}
                     onFocus={() => {
                       requestAnimationFrame(() => {
@@ -1829,11 +1829,11 @@ export function ChatApp() {
                 </div>
                 {streamVisible ? (
                   <Button type="submit" variant="destructive" disabled={!canSendOnline}>
-                    {m.console_common_stop()}
+                    {m.habitat_common_stop()}
                   </Button>
                 ) : (
                   <Button type="submit" disabled={!inputText.trim()}>
-                    {m.console_common_send()}
+                    {m.habitat_common_send()}
                   </Button>
                 )}
               </form>
@@ -1878,7 +1878,7 @@ export function ChatApp() {
       <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
         <DialogContent showCloseButton={false} className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>{m.console_common_edit_title()}</DialogTitle>
+            <DialogTitle>{m.habitat_common_edit_title()}</DialogTitle>
           </DialogHeader>
           <Input
             ref={renameInputRef}
@@ -1886,7 +1886,7 @@ export function ChatApp() {
             onChange={(e) => setRenameText(e.target.value)}
             type="text"
             className="text-sm"
-            placeholder={m.console_common_title_placeholder()}
+            placeholder={m.habitat_common_title_placeholder()}
             onKeyDown={(e) => {
               if (e.key === "Enter") void confirmRename();
               if (e.key === "Escape") setShowRenameDialog(false);
@@ -1899,10 +1899,10 @@ export function ChatApp() {
               size="sm"
               onClick={() => setShowRenameDialog(false)}
             >
-              {m.console_common_cancel()}
+              {m.habitat_common_cancel()}
             </Button>
             <Button type="button" size="sm" onClick={() => void confirmRename()}>
-              {m.console_common_confirm()}
+              {m.habitat_common_confirm()}
             </Button>
           </DialogFooter>
         </DialogContent>

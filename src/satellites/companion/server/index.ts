@@ -13,7 +13,7 @@ import { SATELLITE_PORT_ATTEMPTS, SATELLITE_PORT_START } from "../shared/constan
 import { advanceBubble, bubbleState } from "./runtime-state.ts";
 import { handleRuntimeWsClose, handleRuntimeWsOpen, runtimeWsPayload } from "./runtime-ws.ts";
 import { createNodeHttpServer, listenServer, type DevMiddleware } from "./http/node-bridge.ts";
-import { syncCompanionFromHub } from "./hub-sync.ts";
+import { syncCompanionFromHub } from "./habitat-sync.ts";
 
 export type StartCompanionServerOptions = {
   port?: number;

@@ -26,7 +26,7 @@ export function renderSystemdUnit(
 ): string {
   const execStart = `${binPath} service start --foreground --host ${host} --port ${port}`;
   return `[Unit]
-Description=FreeAnima stack（Hub + optional Web）
+Description=FreeAnima stack（Habitat + optional Web）
 After=network.target
 # 0 = never give up restarting on consecutive failures (only systemctl stop can stop)
 StartLimitIntervalSec=${SYSTEMD_START_LIMIT_INTERVAL_SEC}
@@ -60,7 +60,7 @@ export function systemdUserAvailable(): boolean {
 }
 
 /**
- * 停止 Hub stack（anima.service）。
+ * 停止 Habitat stack（anima.service）。
  * Satellite 使用 PartOf=anima.service，随 hub 一并关停。
  */
 export function stopHubStackViaSystemd(): ReturnType<typeof systemctl> | null {

@@ -1,4 +1,4 @@
-/** Desktop 主窗口 UI 来源：本地 bundled（默认）或调试用远程 Hub `/web` */
+/** Desktop 主窗口 UI 来源：本地 bundled（默认）或调试用远程 Habitat `/web` */
 export type DesktopUiMode = "local" | "remote";
 
 export function resolveDesktopUiMode(): DesktopUiMode {
@@ -8,10 +8,10 @@ export function resolveDesktopUiMode(): DesktopUiMode {
   return "local";
 }
 
-export function resolveRemoteShellUiBase(hubUrl: string): string {
+export function resolveRemoteShellUiBase(habitatUrl: string): string {
   const override = process.env.DESKTOP_UI_URL?.replace(/\/$/, "");
   if (override) return override;
-  return `${hubUrl.replace(/\/$/, "")}/web`;
+  return `${habitatUrl.replace(/\/$/, "")}/web`;
 }
 
 export function shellUiPathToUrl(base: string, path: string): string {

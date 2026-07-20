@@ -7,11 +7,11 @@ import type {
 } from "@freeanima/shared/sap-contract/frames/project";
 import type { TaskItemRowPayload } from "@freeanima/shared/sap-contract/frames/task";
 
-import { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
+import { resolveHabitatCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
-import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
+import { isHabitatFetchAvailable } from "@freeanima/frontend/shell-sdk/habitat-fetch-gate";
 import { isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 import {
   offlineCreateProject,
@@ -70,11 +70,11 @@ function ensureProjectOfflineModule(): void {
 }
 
 function hub() {
-  return getTypedSatelliteHubClient();
+  return getTypedSatelliteHabitatClient();
 }
 
 export async function fetchProjectFolders(subjectKind: SubjectKind): Promise<ProjectFolderRow[]> {
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   return withOfflineCache({
     scope,
     namespace: "project",
@@ -110,7 +110,7 @@ export async function fetchProjects(
   subjectKind: SubjectKind,
   folderId?: number | null,
 ): Promise<ProjectRow[]> {
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   if (folderId !== undefined) {
     if (folderId != null && isTempId(folderId)) {
       const cached = (await readCachedProjects(scope)) ?? [];
@@ -122,7 +122,7 @@ export async function fetchProjects(
       return withDefaultProjectTaskCount(cached.filter((p) => (p.folder_id ?? null) === folderId));
     };
 
-    if (!isHubFetchAvailable()) {
+    if (!isHabitatFetchAvailable()) {
       return readLocalFiltered();
     }
 
@@ -155,13 +155,13 @@ export async function fetchProjects(
 }
 
 export async function fetchProjectStats(subjectKind: SubjectKind): Promise<Map<number, number>> {
-  if (!isHubFetchAvailable()) return new Map();
+  if (!isHabitatFetchAvailable()) return new Map();
   const data = await hub().call("project.stats", { subject_kind: subjectKind });
   return new Map(data.counts.map((row) => [row.id, row.task_count]));
 }
 
 export async function fetchProject(subjectKind: SubjectKind, id: number): Promise<ProjectRow> {
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
 
   const readLocal = async (): Promise<ProjectRow> => {
     const cached = (await readCachedProjects(scope)) ?? [];
@@ -174,7 +174,7 @@ export async function fetchProject(subjectKind: SubjectKind, id: number): Promis
     return readLocal();
   }
 
-  if (!isHubFetchAvailable()) {
+  if (!isHabitatFetchAvailable()) {
     return readLocal();
   }
 
@@ -208,7 +208,7 @@ export async function fetchProjectTasks(
   subjectKind: SubjectKind,
   projectId: number,
 ): Promise<TaskItemRow[]> {
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   if (isTempId(projectId)) {
     return normalizeTaskItemRows(await readCachedProjectItems(scope, projectId));
   }
@@ -327,7 +327,7 @@ export async function deleteProjectTask(_subjectKind: SubjectKind, id: number): 
 }
 
 export async function fetchTaskListsForMove(subjectKind: SubjectKind): Promise<TaskListRow[]> {
-  if (!isHubFetchAvailable()) return [];
+  if (!isHabitatFetchAvailable()) return [];
   const data = await hub().call("tasklist.list", { subject_kind: subjectKind });
   return data.lists.map((list) => ({
     id: list.id,

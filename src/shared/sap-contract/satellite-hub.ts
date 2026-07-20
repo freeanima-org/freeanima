@@ -2,7 +2,7 @@ import type { SapAttachOutput } from "./frames/lifecycle.ts";
 import type { SapToolDefInput, ToolCallPayload } from "./frames/tool.ts";
 import type { SapInstanceStore } from "./instance-store.ts";
 import type { SapClient } from "./router.ts";
-import { runHubRpcTransport, type HubRpcTransportHandle } from "@freeanima/shared/hub-rpc";
+import { runHubRpcTransport, type HubRpcTransportHandle } from "@freeanima/shared/habitat-rpc";
 import {
   attachHubEventFanout,
   createSapRelayServerState,
@@ -13,7 +13,7 @@ import { loadSapInstanceId } from "./instance-store.ts";
 
 export type CreateSatelliteHubOptions = {
   appId: string;
-  hubUrl: string;
+  habitatUrl: string;
   httpUrl?: string;
   instanceStore?: SapInstanceStore;
   featuresRequested?: string[];
@@ -33,7 +33,7 @@ export type SatelliteHubHandle = {
   getInstanceId(): string | null;
   isConnected(): boolean;
   whenConnected(): Promise<SapClient>;
-  reconnect(hubUrl: string, httpUrl?: string): void;
+  reconnect(habitatUrl: string, httpUrl?: string): void;
   stop(): void;
   relayState: SapRelayServerState | null;
   getSapClient(): Promise<SapClient>;
@@ -50,7 +50,7 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
   let instanceId: string | null = null;
   const relayState = options.relay ? createSapRelayServerState() : null;
   let currentHttpUrl = options.httpUrl;
-  let currentHubUrl = options.hubUrl;
+  let currentHubUrl = options.habitatUrl;
 
   async function registerToolsAndHandlers(client: SapClient): Promise<void> {
     if (options.tools?.length) {
@@ -114,9 +114,9 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
     throw new Error("sap.attach failed");
   }
 
-  function startTransport(hubUrl: string, httpUrl?: string): HubRpcTransportHandle {
+  function startTransport(habitatUrl: string, httpUrl?: string): HubRpcTransportHandle {
     transport?.stop();
-    currentHubUrl = hubUrl;
+    currentHubUrl = habitatUrl;
     currentHttpUrl = httpUrl ?? currentHttpUrl;
     const authToken = options.remoteAuthToken?.trim();
     if (!authToken) {
@@ -124,7 +124,7 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
     }
 
     transport = runHubRpcTransport({
-      hubUrl: currentHubUrl,
+      habitatUrl: currentHubUrl,
       authToken,
       onConnected: async (rpc) => {
         const client = sapClientFromRpc(rpc);
@@ -141,7 +141,7 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
   }
 
   if (!transport) {
-    startTransport(options.hubUrl, options.httpUrl);
+    startTransport(options.habitatUrl, options.httpUrl);
   }
 
   return {
@@ -157,10 +157,10 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
       }
       return transport.whenConnected().then((rpc) => sapClient ?? sapClientFromRpc(rpc));
     },
-    reconnect(hubUrl: string, httpUrl?: string): void {
+    reconnect(habitatUrl: string, httpUrl?: string): void {
       sapClient = null;
       instanceId = null;
-      startTransport(hubUrl, httpUrl);
+      startTransport(habitatUrl, httpUrl);
     },
     stop(): void {
       transport?.stop();

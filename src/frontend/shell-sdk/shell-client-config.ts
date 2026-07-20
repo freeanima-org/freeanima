@@ -1,28 +1,37 @@
 export type ShellClientConfig = {
-  hubUrl: string;
+  habitatUrl: string;
   remoteAuthToken: string;
 };
+
+/** @deprecated 读兼容旧字段 hubUrl；0.9.4 可删 */
+function readUrl(obj: Record<string, unknown>): string {
+  if (typeof obj.habitatUrl === "string" && obj.habitatUrl.trim()) return obj.habitatUrl.trim();
+  if (typeof obj.habitatUrl === "string" && obj.habitatUrl.trim()) return obj.habitatUrl.trim();
+  return "";
+}
 
 export function parseShellClientConfig(raw: unknown): ShellClientConfig | null {
   if (!raw || typeof raw !== "object") return null;
   const obj = raw as Record<string, unknown>;
-  const hubUrl = typeof obj.hubUrl === "string" ? obj.hubUrl.trim() : "";
+  const habitatUrl = readUrl(obj);
   const remoteAuthToken = typeof obj.remoteAuthToken === "string" ? obj.remoteAuthToken.trim() : "";
-  if (!hubUrl) return null;
-  return { hubUrl, remoteAuthToken };
+  if (!habitatUrl) return null;
+  return { habitatUrl, remoteAuthToken };
 }
 
 export function normalizeShellClientConfig(input: {
-  hubUrl: string;
+  habitatUrl?: string;
+  /** @deprecated 读兼容 */
+  hubUrl?: string;
   remoteAuthToken: string;
 }): ShellClientConfig {
-  const hubUrl = input.hubUrl.trim().replace(/\/$/, "");
+  const habitatUrl = (input.habitatUrl ?? input.hubUrl ?? "").trim().replace(/\/$/, "");
   const remoteAuthToken = input.remoteAuthToken.trim();
-  if (!hubUrl) throw new Error("栖息地地址不能为空");
-  return { hubUrl, remoteAuthToken };
+  if (!habitatUrl) throw new Error("栖息地地址不能为空");
+  return { habitatUrl, remoteAuthToken };
 }
 
-/** 未配置 Hub API Token 时需先完成连接引导（SAP / Web 壳层） */
-export function shellClientNeedsHubSetup(config: ShellClientConfig | null): boolean {
+/** 未配置栖息地 API Token 时需先完成连接引导（SAP / Web 壳层） */
+export function shellClientNeedsHabitatSetup(config: ShellClientConfig | null): boolean {
   return !config?.remoteAuthToken?.trim();
 }

@@ -18,7 +18,7 @@ describe("applyWebUiConfig", () => {
       hub_ws_url: "",
       remote_auth_token: "fa_at_devtoken_xx",
     });
-    expect(result.hubUrl).toBe("http://127.0.0.1:5000");
+    expect(result.habitatUrl).toBe("http://127.0.0.1:5000");
     expect(result.sameOrigin).toBe(true);
     expect(result.remoteAuthToken).toBe("fa_at_devtoken_xx");
   });
@@ -31,9 +31,9 @@ describe("applyWebUiConfig", () => {
     const result = applyWebUiConfig({
       app_id: "chat",
       hub_url: "http://127.0.0.1:2658",
-      hub_ws_url: "ws://127.0.0.1:2658/hub/rpc/v1",
+      hub_ws_url: "ws://127.0.0.1:2658/rpc/v1",
     });
-    expect(result.hubUrl).toBe("http://127.0.0.1:2658");
+    expect(result.habitatUrl).toBe("http://127.0.0.1:2658");
     expect(result.sameOrigin).toBe(false);
   });
 });

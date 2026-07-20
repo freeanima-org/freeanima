@@ -6,32 +6,32 @@ title: SAP Transport
 
 FreeAnima uses a **two-layer** wire model on a single WebSocket endpoint:
 
-1. **Hub RPC** (`HubRPC/1.0`) — transport connect, auth, heartbeat, generic `req`/`res`/`evt`.
+1. **Habitat RPC** (`HubRPC/1.0`) — transport connect, auth, heartbeat, generic `req`/`res`/`evt`.
 2. **SAP** (`SAP/1.0`) — optional `sap.attach` / `sap.detach` session for true satellite processes.
 
-Bundled SPA clients use layer 1 only. See [hub-rpc.md](hub-rpc.md) for transport details.
+Bundled SPA clients use layer 1 only. See [habitat-rpc.md](habitat-rpc.md) for transport details.
 
 ## Endpoint
 
 ```text
-ws://{hub_host}:{port}/hub/rpc/v1
+ws://{hub_host}:{port}/rpc/v1
 ```
 
-Derive from Hub HTTP URL: replace `http` with `ws`, strip trailing slash, append `/hub/rpc/v1`. Default Hub port: **2658**.
+Derive from Habitat HTTP URL: replace `http` with `ws`, strip trailing slash, append `/rpc/v1`. Default Habitat port: **2658**.
 
-Implemented in [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-route.ts). Client helpers: `@freeanima/hub-rpc` (`resolveHubRpcWsUrl`) and `@freeanima/sap-contract/urls` (re-exports).
+Implemented in [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-route.ts). Client helpers: `@freeanima/shared/habitat-rpc` (`resolveHabitatRpcWsUrl`) and `@freeanima/sap-contract/urls` (re-exports).
 
 ## Envelope kinds
 
-Hub RPC envelopes live in [`src/shared/hub-rpc/protocol.ts`](../../src/shared/hub-rpc/protocol.ts). SAP re-exports them from [`src/shared/sap-contract/protocol.ts`](../../src/shared/sap-contract/protocol.ts).
+Habitat RPC envelopes live in [`src/shared/habitat-rpc/protocol.ts`](../../src/shared/habitat-rpc/protocol.ts). SAP re-exports them from [`src/shared/sap-contract/protocol.ts`](../../src/shared/sap-contract/protocol.ts).
 
-| `kind`      | Layer   | Purpose                                                                   |
-| ----------- | ------- | ------------------------------------------------------------------------- |
-| `connect`   | Hub RPC | `protocol: HubRPC/1.0`, `auth_token`                                      |
-| `connected` | Hub RPC | `session_id`, `heartbeat_interval_sec`                                    |
-| `req`       | Both    | RPC (`id`, `method`, `payload`) — incl. `sap.attach`, `conversation.*`, … |
-| `res`       | Both    | RPC response                                                              |
-| `evt`       | Both    | Async event                                                               |
+| `kind`      | Layer       | Purpose                                                                   |
+| ----------- | ----------- | ------------------------------------------------------------------------- |
+| `connect`   | Habitat RPC | `protocol: HubRPC/1.0`, `auth_token`                                      |
+| `connected` | Habitat RPC | `session_id`, `heartbeat_interval_sec`                                    |
+| `req`       | Both        | RPC (`id`, `method`, `payload`) — incl. `sap.attach`, `conversation.*`, … |
+| `res`       | Both        | RPC response                                                              |
+| `evt`       | Both        | Async event                                                               |
 
 Invalid JSON or schema → WebSocket close **1003** (`invalid frame`).
 
@@ -50,15 +50,15 @@ stateDiagram-v2
 
 Rules ([`src/platform/sap/ws-server.ts`](../../src/platform/sap/ws-server.ts) `attachSapWebSocket`):
 
-- First valid frame **must** be Hub RPC `connect` with verified `auth_token`.
+- First valid frame **must** be Habitat RPC `connect` with verified `auth_token`.
 - Second `connect` on same socket → close **1008** (`already connected`).
 - `req` or non-heartbeat `evt` before connect → close **1008** (`not connected`).
 - `tool.*` and instance-scoped SAP methods require prior `sap.attach`.
-- Bundled methods (`conversation.*`, `task.*`, `notification.*`, …) work after Hub RPC connect **without** `sap.attach`.
+- Bundled methods (`conversation.*`, `task.*`, `notification.*`, …) work after Habitat RPC connect **without** `sap.attach`.
 
-## Hub RPC handshake
+## Habitat RPC handshake
 
-Schema: [`src/shared/hub-rpc/lifecycle.ts`](../../src/shared/hub-rpc/lifecycle.ts).
+Schema: [`src/shared/habitat-rpc/lifecycle.ts`](../../src/shared/habitat-rpc/lifecycle.ts).
 
 | `connect` field | Required | Role              |
 | --------------- | -------- | ----------------- |
@@ -73,7 +73,7 @@ Schema: [`src/shared/hub-rpc/lifecycle.ts`](../../src/shared/hub-rpc/lifecycle.t
 
 ## SAP attach (satellites only)
 
-After Hub RPC connect, satellite processes send `req sap.attach`:
+After Habitat RPC connect, satellite processes send `req sap.attach`:
 
 Schema: [`src/shared/sap-contract/frames/sap-session.ts`](../../src/shared/sap-contract/frames/sap-session.ts).
 
@@ -83,29 +83,29 @@ Schema: [`src/shared/sap-contract/frames/sap-session.ts`](../../src/shared/sap-c
 | `instance_id`        | no       | 3-char id; omit on first register   |
 | `protocol`           | yes      | `SAP/1.0`                           |
 | `features_requested` | no       | Feature flags                       |
-| `http_url`           | no       | Satellite UI URL for Console        |
+| `http_url`           | no       | Satellite UI URL for Habitat        |
 | `instance_label`     | no       | Display label                       |
 
 Reply payload includes `instance_id`, `features_enabled`, `server_info` (same semantics as legacy SAP connect).
 
-Use `createSatelliteHub()` ([`src/shared/sap-contract/satellite-hub.ts`](../../src/shared/sap-contract/satellite-hub.ts)) — it runs Hub RPC transport and performs attach automatically.
+Use `createSatelliteHub()` ([`src/shared/sap-contract/satellite-hub.ts`](../../src/shared/sap-contract/satellite-hub.ts)) — it runs Habitat RPC transport and performs attach automatically.
 
 ## Heartbeat
 
-Client sends `evt { method: "heartbeat" }` on `heartbeat_interval_sec`. Hub replies with `evt { method: "heartbeat", payload: { ts } }`.
+Client sends `evt { method: "heartbeat" }` on `heartbeat_interval_sec`. Habitat replies with `evt { method: "heartbeat", payload: { ts } }`.
 
 `runHubRpcTransport` starts the heartbeat timer after connect.
 
 ## Reconnect
 
-- **Bundled SPA:** `getBundledHubRpcClient()` / `runHubRpcTransport` with backoff.
+- **Bundled SPA:** `getBundledHabitatRpcClient()` / `runHubRpcTransport` with backoff.
 - **Satellites:** `createSatelliteHub()` reconnects transport and re-attaches SAP session.
 
-On detach or disconnect, Hub calls `onSapDetach` and unregisters tools for that instance.
+On detach or disconnect, Habitat calls `onSapDetach` and unregisters tools for that instance.
 
 ## Local SAP relay (optional)
 
-Some Type B satellites may expose `ws://{satellite_host}:{port}/sap/relay/v1` for browser UI. The satellite **process** holds the Hub `/hub/rpc/v1` connection and SAP attach; relay clients send `req`/`res`/`evt` without transport or SAP handshakes.
+Some Type B satellites may expose `ws://{satellite_host}:{port}/sap/relay/v1` for browser UI. The satellite **process** holds the Habitat `/rpc/v1` connection and SAP attach; relay clients send `req`/`res`/`evt` without transport or SAP handshakes.
 
 | Event         | Direction           | Meaning                            |
 | ------------- | ------------------- | ---------------------------------- |

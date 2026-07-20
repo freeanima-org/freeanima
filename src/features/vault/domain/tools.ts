@@ -388,7 +388,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
         {
           name: "vault_create",
           description:
-            "Create an Agent-library vault item. Pass plaintext secrets to seal on Hub; result is metadata only. Not exposed via MCP. User library: use Vault UI.",
+            "Create an Agent-library vault item. Pass plaintext secrets to seal on Habitat; result is metadata only. Not exposed via MCP. User library: use Vault UI.",
           parameters: {
             type: "object",
             properties: {

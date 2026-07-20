@@ -173,7 +173,7 @@ msgstr ""
 #. type: Plain text
 #: docs/features/diary.md:42
 msgid ""
-"One-shot migration: Hub `runMigrations` moves legacy diary `content` into "
+"One-shot migration: Habitat `runMigrations` moves legacy diary `content` into "
 "the first text block and clears the container column."
 msgstr ""
 

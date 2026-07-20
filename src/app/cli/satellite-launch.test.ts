@@ -12,7 +12,7 @@ describe("satellite-launch", () => {
     const ctx = getInstallContext();
     const launch = resolveSatelliteLaunch(
       { command: "bun", args: ["src/satellites/companion/dev.ts"] },
-      { hubUrl: "http://127.0.0.1:2658", install: ctx },
+      { habitatUrl: "http://127.0.0.1:2658", install: ctx },
     );
     expect(launch.workingDirectory).toBe(ctx.monorepoRoot ?? ctx.cliRoot);
     expect(launch.environment.FREEANIMA_URL).toBe("http://127.0.0.1:2658");

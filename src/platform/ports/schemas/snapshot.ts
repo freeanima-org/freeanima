@@ -6,7 +6,7 @@ export type HealthSnapshot = {
   status: "ok";
   version: string;
   build?: ComponentBuildMeta;
-  /** Hub 进程本次启动时间（CST ISO） */
+  /** Habitat 进程本次启动时间（CST ISO） */
   started_at?: string;
   /** health.probe：Bearer 是否足以访问其余 REST API */
   authed?: boolean;

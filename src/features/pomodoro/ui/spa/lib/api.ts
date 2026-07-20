@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
-import { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
+import { resolveHabitatCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 import { registerPomodoroOfflineModule } from "./pomodoro-offline-adapter.ts";
 
@@ -66,7 +66,7 @@ export type PomodoroTaskFocusSegmentInput = {
 };
 
 function hub() {
-  return getTypedSatelliteHubClient();
+  return getTypedSatelliteHabitatClient();
 }
 
 let pomodoroModuleRegistered = false;
@@ -81,7 +81,7 @@ export async function fetchPomodoroConfig(
   subjectKind: PomodoroSubjectKind,
 ): Promise<PomodoroConfigRow> {
   ensurePomodoroOfflineModule();
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   return withOfflineCache({
     scope,
     namespace: "pomodoro",
@@ -153,7 +153,7 @@ export async function fetchPomodoroSessions(
   opts?: { limit?: number; offset?: number },
 ): Promise<{ items: PomodoroSessionRow[]; total: number }> {
   ensurePomodoroOfflineModule();
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   return withOfflineCache({
     scope,
     namespace: "pomodoro",
@@ -173,7 +173,7 @@ export async function fetchPomodoroStats(
   period: "today" | "week" = "today",
 ): Promise<PomodoroStats> {
   ensurePomodoroOfflineModule();
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   return withOfflineCache({
     scope,
     namespace: "pomodoro",

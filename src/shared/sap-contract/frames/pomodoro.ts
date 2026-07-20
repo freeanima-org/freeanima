@@ -230,7 +230,7 @@ export const pomodoroActiveClearOutputSchema = z.object({
 });
 export type PomodoroActiveClearOutput = z.infer<typeof pomodoroActiveClearOutputSchema>;
 
-/** Hub → 已连接客户端：active put/clear 后广播 */
+/** Habitat → 已连接客户端：active put/clear 后广播 */
 export const pomodoroActiveChangedEventSchema = z.object({
   subject_kind: notificationRecipientKindSchema,
   active: pomodoroActiveStateSchema.nullable(),

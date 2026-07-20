@@ -75,6 +75,6 @@ export type CompanionConfig = {
 };
 
 export const FBX_IMPORT_UNAVAILABLE_MSG =
-  "未找到 FBX2glTF 转换器，请直接导入 .vrma；或在 Hub 宿主机执行 bun run setup:fbx。";
+  "未找到 FBX2glTF 转换器，请直接导入 .vrma；或在 Habitat 宿主机执行 bun run setup:fbx。";
 
 export { newModelId, newMotionId } from "./asset-id.ts";

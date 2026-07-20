@@ -1,5 +1,5 @@
 import { createBrowserSpeechAdapter } from "./browser-adapter.ts";
-import { consumeLastHubSpeechError, createHubSpeechAdapter } from "./hub-adapter.ts";
+import { consumeLastHubSpeechError, createHabitatSpeechAdapter } from "./habitat-adapter.ts";
 import type { SpeechPlaybackAdapter } from "./adapter-types.ts";
 import type { SpeechPlaybackConfig } from "./types.ts";
 
@@ -7,7 +7,7 @@ export function createSpeechAdapter(config: SpeechPlaybackConfig): SpeechPlaybac
   if (config.provider === "web-speech") {
     return createBrowserSpeechAdapter(undefined, config);
   }
-  return createHubSpeechAdapter(config);
+  return createHabitatSpeechAdapter(config);
 }
 
 let previewAdapter: ReturnType<typeof createSpeechAdapter> | null = null;

@@ -236,7 +236,7 @@ function readSubjectWorldId(subject: EntityRow): number {
   return worldId;
 }
 
-/** Hub 启动：确保 user/agent subject 及默认私有 world 存在 */
+/** Habitat 启动：确保 user/agent subject 及默认私有 world 存在 */
 export async function ensureWorldSubjects(config: RuntimeConfig): Promise<EnsuredWorldSubjects> {
   const { user_subject_id, agent_subject_id } = resolveWorldSubjectIds(config);
 
@@ -260,7 +260,7 @@ export async function ensureWorldSubjects(config: RuntimeConfig): Promise<Ensure
   };
 }
 
-/** Console：创建 subject（不固定 id） */
+/** Habitat：创建 subject（不固定 id） */
 export async function createSubjectEntityRecord(input: {
   type: "agent" | "user";
   title: string;

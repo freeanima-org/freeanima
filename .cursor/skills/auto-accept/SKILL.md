@@ -1,15 +1,15 @@
 ---
 name: auto-accept
 description: >-
-  FreeAnima 功能层 E2E 验收：用 just dev 起独立 Hub+Web，优先经 Cursor 内置浏览器
-  按「## 验收」操作 /web/*；UI 覆盖不到时用 Hub RPC（/hub/rpc/v1）验证，输出通过/失败报告。
+  FreeAnima 功能层 E2E 验收：用 just dev 起独立 Habitat+Web，优先经 Cursor 内置浏览器
+  按「## 验收」操作 /web/*；UI 覆盖不到时用 Habitat RPC（/rpc/v1）验证，输出通过/失败报告。
   实现任务或功能改动完成后应主动使用；用户说「自动验收」「E2E」「浏览器验收」「验收一下」时也使用。
   不是质量门禁（勿跑 just check / lint / typecheck）；不标记任务完成。
 ---
 
 # 自动验收（浏览器 E2E + RPC 回退）
 
-功能层验收，**不是** `just check`。本 worktree `just dev` + 浏览器为主；**UI 测不到**且 Hub RPC 可达时，用 RPC 取证。
+功能层验收，**不是** `just check`。本 worktree `just dev` + 浏览器为主；**UI 测不到**且 Habitat RPC 可达时，用 RPC 取证。
 
 ## 何时运行
 
@@ -70,27 +70,27 @@ just dev
 5. 同一失败动作最多再试一次；四次仍无进展 → **停**，报告阻塞
 6. 整轮结束：`browser_lock` unlock
 
-常用入口（base `/web/`）：`/web/chat`、`/web/console/dashboard`、`/web/settings`、`/web/tasks`、`/web/projects`、`/web/pomodoro`、`/web/vault`、`/web/notifications`、`/web/diary`、`/web/email`。
+常用入口（base `/web/`）：`/web/chat`、`/web/habitat/dashboard`、`/web/settings`、`/web/tasks`、`/web/projects`、`/web/pomodoro`、`/web/vault`、`/web/notifications`、`/web/diary`、`/web/email`。
 
-### 4. Hub RPC 回退
+### 4. Habitat RPC 回退
 
-打**本验收 Hub**（`FREEANIMA_URL`，非 2658）：
+打**本验收 Habitat**（`FREEANIMA_URL`，非 2658）：
 
 ```bash
 TOKEN="$(cat ~/.anima/dev-web.token)"
 # 只读示例
 curl -sS -H "Authorization: Bearer ${TOKEN}" \
-  "http://127.0.0.1:<hub>/hub/rpc/v1/<domain>/<action>?<query>"
+  "http://127.0.0.1:<hub>/rpc/v1/<domain>/<action>?<query>"
 # 写入示例
 curl -sS -X POST -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" \
-  -d '{…}' "http://127.0.0.1:<hub>/hub/rpc/v1/<domain>/<action>"
+  -d '{…}' "http://127.0.0.1:<hub>/rpc/v1/<domain>/<action>"
 ```
 
 约定：
 
-- 方法名 `domain.action` → 路径 `/hub/rpc/v1/domain/action`（点改斜杠）；读写 HTTP 动词以注册为准（常见只读 GET、写入 POST）
+- 方法名 `domain.action` → 路径 `/rpc/v1/domain/action`（点改斜杠）；读写 HTTP 动词以注册为准（常见只读 GET、写入 POST）
 - **先**在源码 / 注册表确认真实方法名与参数，禁止臆造 endpoint
-- 也可经 Vite 代理：`http://127.0.0.1:<web>/hub/rpc/v1/...`（同样带 Bearer）
+- 也可经 Vite 代理：`http://127.0.0.1:<web>/rpc/v1/...`（同样带 Bearer）
 - `health.probe` 等 `auth: optional` 可不带 token；业务方法必须带
 - 证据：请求方法路径 + 关键响应字段（勿把完整 token 写进报告）
 - 破坏性写操作：仅验收必需时做；优先用可逆/可清理的数据，并在报告注明

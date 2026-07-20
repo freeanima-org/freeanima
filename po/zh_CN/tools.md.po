@@ -24,11 +24,11 @@ msgstr "SAP 工具"
 #. type: Plain text
 #: docs/sap/tools.md:8
 msgid ""
-"Satellites register **local tools** on the Hub. The agent invokes them "
-"during a bound session; Hub forwards execution to the Satellite via "
+"Satellites register **local tools** on the Habitat. The agent invokes them "
+"during a bound session; Habitat forwards execution to the Satellite via "
 "`tool.call` and waits for `tool.result` / `tool.error`."
 msgstr ""
-"Satellite 在 Hub 上注册**本地工具**。代理在已绑定的会话期间调用它们；Hub 通"
+"Satellite 在 Habitat 上注册**本地工具**。代理在已绑定的会话期间调用它们；Habitat 通"
 "过 `tool.call` 将执行转发给 Satellite，并等待 `tool.result` / `tool.error`。"
 
 #. type: Plain text
@@ -147,33 +147,33 @@ msgstr "注册流程"
 msgid ""
 "sequenceDiagram\n"
 "  participant Sat as Satellite\n"
-"  participant Hub as Hub\n"
+"  participant Habitat as Habitat\n"
 "  participant Agent as AgentRuntime\n"
 "\n"
-"  Sat->>Hub: req tool.register tools local_name description parameters\n"
-"  Hub->>Hub: SatelliteManager.registerTools\n"
-"  Hub->>Sat: res registered canonical names\n"
+"  Sat->>Habitat: req tool.register tools local_name description parameters\n"
+"  Habitat->>Habitat: SatelliteManager.registerTools\n"
+"  Habitat->>Sat: res registered canonical names\n"
 "  Note over Agent: later during message.send stream\n"
-"  Agent->>Hub: invoke sap_* tool\n"
-"  Hub->>Sat: evt tool.call call_id local_name args\n"
+"  Agent->>Habitat: invoke sap_* tool\n"
+"  Habitat->>Sat: evt tool.call call_id local_name args\n"
 "  Sat->>Sat: execute local handler\n"
-"  Sat->>Hub: req tool.result call_id content\n"
-"  Hub->>Agent: resume turn\n"
+"  Sat->>Habitat: req tool.result call_id content\n"
+"  Habitat->>Agent: resume turn\n"
 msgstr ""
 "sequenceDiagram\n"
 "  participant Sat as Satellite\n"
-"  participant Hub as Hub\n"
+"  participant Habitat as Habitat\n"
 "  participant Agent as AgentRuntime\n"
 "\n"
-"  Sat->>Hub: req tool.register tools local_name description parameters\n"
-"  Hub->>Hub: SatelliteManager.registerTools\n"
-"  Hub->>Sat: res registered canonical names\n"
+"  Sat->>Habitat: req tool.register tools local_name description parameters\n"
+"  Habitat->>Habitat: SatelliteManager.registerTools\n"
+"  Habitat->>Sat: res registered canonical names\n"
 "  Note over Agent: later during message.send stream\n"
-"  Agent->>Hub: invoke sap_* tool\n"
-"  Hub->>Sat: evt tool.call call_id local_name args\n"
+"  Agent->>Habitat: invoke sap_* tool\n"
+"  Habitat->>Sat: evt tool.call call_id local_name args\n"
 "  Sat->>Sat: execute local handler\n"
-"  Sat->>Hub: req tool.result call_id content\n"
-"  Hub->>Agent: resume turn\n"
+"  Sat->>Habitat: req tool.result call_id content\n"
+"  Habitat->>Agent: resume turn\n"
 
 #. type: Plain text
 #: docs/sap/tools.md:60
@@ -188,8 +188,8 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/tools.md:62
-msgid "On disconnect, Hub unregisters all tools for that app/instance."
-msgstr "断开连接时，Hub 会注销该 app/instance 的所有工具。"
+msgid "On disconnect, Habitat unregisters all tools for that app/instance."
+msgstr "断开连接时，Habitat 会注销该 app/instance 的所有工具。"
 
 #. type: Title ##
 #: docs/sap/tools.md:63
@@ -200,11 +200,11 @@ msgstr "严格路由"
 #. type: Plain text
 #: docs/sap/tools.md:66
 msgid ""
-"SAP-prefixed tool names **never fall back** to Hub-local tools with the same "
+"SAP-prefixed tool names **never fall back** to Habitat-local tools with the same "
 "name. `SatelliteManager.installToolRouting()` wraps "
 "`ToolSetRegistry.getTool` to enforce this."
 msgstr ""
-"以 SAP 为前缀的工具名称**绝不会回退**到 Hub 上同名的本地工具。"
+"以 SAP 为前缀的工具名称**绝不会回退**到 Habitat 上同名的本地工具。"
 "`SatelliteManager.installToolRouting()` 包装 `ToolSetRegistry.getTool` 以强制"
 "执行此规则。"
 
@@ -262,14 +262,14 @@ msgid ""
 "| Session not bound to satellite app/instance | Reject                                        |\n"
 "| Instance offline                            | Reject                                        |\n"
 "| Tool not registered on connected instance   | Reject                                        |\n"
-"| Unregistered `sap_*` name                   | Guard handler returns error (no Hub fallback) |\n"
+"| Unregistered `sap_*` name                   | Guard handler returns error (no Habitat fallback) |\n"
 msgstr ""
 "| 条件                                        | 结果                                          |\n"
 "| ------------------------------------------- | --------------------------------------------- |\n"
 "| 会话未绑定到 satellite app/instance         | 拒绝                                          |\n"
 "| 实例离线                                    | 拒绝                                          |\n"
 "| 工具未在已连接实例上注册                    | 拒绝                                          |\n"
-"| 未注册的 `sap_*` 名称                       | 守卫处理器返回错误（不回退到 Hub）            |\n"
+"| 未注册的 `sap_*` 名称                       | 守卫处理器返回错误（不回退到 Habitat）            |\n"
 
 #. type: Plain text
 #: docs/sap/tools.md:97
@@ -330,12 +330,12 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/tools.md:114
 msgid ""
-"`instance_id` is a Hub-assigned 3-character `[a-z0-9]` string, globally "
-"unique across all SAP apps. Hub returns the assigned or confirmed id in "
+"`instance_id` is a Habitat-assigned 3-character `[a-z0-9]` string, globally "
+"unique across all SAP apps. Habitat returns the assigned or confirmed id in "
 "`connected.instance_id`."
 msgstr ""
-"`instance_id` 是 Hub 分配的 3 字符 `[a-z0-9]` 字符串，在所有 SAP app 间全局唯"
-"一。Hub 在 `connected.instance_id` 中返回分配或确认的 id。"
+"`instance_id` 是 Habitat 分配的 3 字符 `[a-z0-9]` 字符串，在所有 SAP app 间全局唯"
+"一。Habitat 在 `connected.instance_id` 中返回分配或确认的 id。"
 
 #. type: Title ##
 #: docs/sap/tools.md:115
@@ -361,10 +361,10 @@ msgstr "`tool.error` — `{ call_id, error }`（失败调用）"
 #. type: Plain text
 #: docs/sap/tools.md:123
 msgid ""
-"Hub resolves the pending promise and continues the agent turn. Timeout or "
+"Habitat resolves the pending promise and continues the agent turn. Timeout or "
 "disconnect fails the call."
 msgstr ""
-"Hub 解析待处理的 promise 并继续代理轮次。超时或断开连接会导致调用失败。"
+"Habitat 解析待处理的 promise 并继续代理轮次。超时或断开连接会导致调用失败。"
 
 #. type: Plain text
 #: docs/sap/tools.md:124

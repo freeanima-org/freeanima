@@ -1,8 +1,8 @@
 import {
   COMPANION_SHELL_SCOPE,
   createScopedSettingsStore,
-  HUB_SETTINGS_SCOPE,
-  parseHubClientSettings,
+  HABITAT_SETTINGS_SCOPE,
+  parseHabitatClientSettings,
   type SettingsStore,
 } from "@freeanima/frontend/shell-sdk/settings";
 import { normalizeShellClientConfig, type ShellClientConfig } from "@freeanima/frontend/shell-sdk";
@@ -15,7 +15,7 @@ export type DesktopGeneralSettings = ShellClientConfig & {
 };
 
 export type DesktopSettingsStores = {
-  hub: SettingsStore<DesktopGeneralSettings>;
+  habitat: SettingsStore<DesktopGeneralSettings>;
   companionShell: SettingsStore<CompanionShellSettings>;
 };
 
@@ -26,12 +26,12 @@ function parseDesktopGeneralSettings(raw: unknown): DesktopGeneralSettings {
     typeof (raw as Record<string, unknown>).launchAtLogin === "boolean"
       ? ((raw as Record<string, unknown>).launchAtLogin as boolean)
       : false;
-  return { ...parseHubClientSettings(raw), launchAtLogin };
+  return { ...parseHabitatClientSettings(raw), launchAtLogin };
 }
 
 function normalizeDesktopGeneralSettings(input: DesktopGeneralSettings): DesktopGeneralSettings {
-  const hub = normalizeShellClientConfig(input);
-  return { ...hub, launchAtLogin: Boolean(input.launchAtLogin) };
+  const habitat = normalizeShellClientConfig(input);
+  return { ...habitat, launchAtLogin: Boolean(input.launchAtLogin) };
 }
 
 function parseCompanionShellSettings(raw: unknown): CompanionShellSettings {
@@ -48,13 +48,13 @@ function parseCompanionShellSettings(raw: unknown): CompanionShellSettings {
 export function createDesktopSettingsStores(): DesktopSettingsStores {
   const backend = createDesktopScopedBackend();
   return {
-    hub: createScopedSettingsStore<DesktopGeneralSettings>({
-      scope: HUB_SETTINGS_SCOPE,
+    habitat: createScopedSettingsStore<DesktopGeneralSettings>({
+      scope: HABITAT_SETTINGS_SCOPE,
       backend,
       parseLoad: parseDesktopGeneralSettings,
       normalizeSave: normalizeDesktopGeneralSettings,
       async test(value) {
-        await testScopedSettings(HUB_SETTINGS_SCOPE, value);
+        await testScopedSettings(HABITAT_SETTINGS_SCOPE, value);
       },
     }),
     companionShell: createScopedSettingsStore<CompanionShellSettings>({

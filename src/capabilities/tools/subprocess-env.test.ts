@@ -31,7 +31,7 @@ describe("buildSubprocessEnv", () => {
     }
   });
 
-  it("merges extra without writing extras into Hub process.env", () => {
+  it("merges extra without writing extras into Habitat process.env", () => {
     const before = process.env[KEY];
     delete process.env[KEY];
     try {

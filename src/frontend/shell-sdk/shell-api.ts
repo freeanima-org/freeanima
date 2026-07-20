@@ -1,4 +1,4 @@
-import type { HubFetch, RemoteAuthCredentials } from "./remote-auth.ts";
+import type { HabitatFetch, RemoteAuthCredentials } from "./remote-auth.ts";
 import type { ComponentBuildMeta } from "./build-meta.ts";
 import type { PrimaryInputKind } from "./shell-capability.ts";
 
@@ -44,19 +44,19 @@ export type SatelliteShellApi = {
   nativeBuild?: ComponentBuildMeta;
   /** 主输入范式（可选；未设时 Electron→pointer，Capacitor→touch，Web→媒体查询） */
   primaryInput?: PrimaryInputKind;
-  hubUrl: string;
-  hubWsUrl: string;
-  /** 非 loopback Hub 时的 Bearer / SAP connect 凭证 */
+  habitatUrl: string;
+  habitatWsUrl: string;
+  /** 非 loopback Habitat 时的 Bearer / SAP connect 凭证 */
   remoteAuth?: RemoteAuthCredentials;
-  /** 带 Bearer 的 Hub REST fetch */
-  hubFetch?: HubFetch;
+  /** 带 Bearer 的 Habitat REST fetch */
+  habitatFetch?: HabitatFetch;
   /** companion overlay/settings；其他前端为 null */
   windowRole?: CompanionWindowRole | null;
   /** companion sidecar HTTP 根；其他前端为 null */
   apiOrigin?: string | null;
   createFileInstanceStore(appId: string): SapInstanceStore;
   /** 移动端：打开 连接设置页 */
-  openHubSettings?: () => void;
+  openHabitatSettings?: () => void;
   setClickThrough?: (ignore: boolean) => Promise<void>;
   setPointerActive?: (active: boolean) => Promise<void>;
   moveWindow?: (x: number, y: number) => Promise<void>;

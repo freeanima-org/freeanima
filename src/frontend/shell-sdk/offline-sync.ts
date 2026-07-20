@@ -1,4 +1,4 @@
-import { isHubFetchAvailable } from "./hub-fetch-gate.ts";
+import { isHabitatFetchAvailable } from "./habitat-fetch-gate.ts";
 import { loadIdMap, setIdMapping } from "./offline-id-map.ts";
 import { getOfflineModule, listOfflineModules } from "./offline-module-registry.ts";
 import type {
@@ -178,7 +178,7 @@ async function drainPendingRerun(): Promise<void> {
   while (pendingRerun) {
     pendingRerun = false;
     const scope = pendingRerunScope;
-    if (!scope || !isHubFetchAvailable()) {
+    if (!scope || !isHabitatFetchAvailable()) {
       pendingRerunAll = false;
       pendingRerunModuleId = null;
       pendingRerunScope = null;
@@ -215,7 +215,7 @@ export async function flushOfflineModule(
   opts?: FlushModuleOptions,
 ): Promise<void> {
   // 与 flushAllOfflineModules 共用锁，避免 ChatApp 与 OfflineSyncBootstrap 并发 flush 同一条
-  if (!isHubFetchAvailable()) return;
+  if (!isHabitatFetchAvailable()) return;
   if (flushing) {
     markPendingRerunModule(moduleId, scope, opts);
     return;
@@ -250,7 +250,7 @@ export async function flushAllOfflineModules(
     streamContextByModule?: Partial<Record<"chat", StreamFlushContext>>;
   },
 ): Promise<void> {
-  if (!isHubFetchAvailable()) return;
+  if (!isHabitatFetchAvailable()) return;
   if (flushing) {
     markPendingRerunAll(scope, opts);
     return;

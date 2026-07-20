@@ -15,16 +15,16 @@ User-facing product terms (Chinese in [`i18n/glossary.md`](../../i18n/glossary.m
 | Long-running process / connect target | **Habitat**      | **栖息地** | One process hosts **multiple digital lives** (`agent` subjects) and **human assets** (`user`); connect / token / restart target |
 | External connectors (class)           | **Portal**       | **入口**   | Shell, MCP clients, and similar ways in; not the Habitat itself                                                                 |
 | Shell                                 | **Shell**        | **壳**     | A Portal (desktop / mobile / web window; SSH-like)                                                                              |
-| Admin / inspect UI (legacy Console)   | **Habitat** (UI) | **栖息地** | Area under `/console/*`; "Open Habitat" vs "Connect to Habitat"                                                                 |
-| Admin home page                       | **Dashboard**    | **仪表盘** | `/console/dashboard` only; other console routes keep their own labels                                                           |
+| Admin / inspect UI (legacy Habitat)   | **Habitat** (UI) | **栖息地** | Area under `/habitat/*`; "Open Habitat" vs "Connect to Habitat"                                                                 |
+| Admin home page                       | **Dashboard**    | **仪表盘** | `/habitat/dashboard` only; other console routes keep their own labels                                                           |
 | Message bridges                       | **Gateway**      | Gateway    | Discord / WeChat — **not** a Portal                                                                                             |
-| Wire / code legacy                    | **Hub**          | —          | Paths such as `/hub/rpc/v1`, `hubUrl`, `dev:hub` — keep until a migration task                                                  |
+| Wire / code                           | —                | —          | RPC `/rpc/v1`（legacy `/hub/rpc/v1` 至 0.9.4）；CLI `dev:hub` 仍为脚本名；DB `hub_runtime_config` 不动                          |
 
 Verbs: **connect to Habitat** (URL + token); **open Habitat** (admin UI); **reach via a Portal** (Shell / MCP).
 
 Estate **Body** (VM / OS / network under the four-layer model) is the cognitive "what I run on" for a subject — **not** the Habitat process name.
 
-### Hub configuration (SSOT)
+### Habitat configuration (SSOT)
 
 User copy says Habitat; storage and RPC identifiers may still say `hub_*` until migrated.
 
@@ -96,7 +96,7 @@ A digital life is structured from the inside out. Each layer answers a different
 
 Structured business data (tasks, notes, email accounts/messages, future memory migrations) converges on a single **`entities`** PostgreSQL table with component tags (`task_list`, `task_item`, `email_account`, …). Self layer [`self_blocks`](self-layer.md) stays physically separate. See [`entity-model.md`](entity-model.md).
 
-Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed); legacy Console email route removed.
+Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed); legacy Habitat email route removed.
 
 ### Anima URI (Shell locator)
 
@@ -104,9 +104,9 @@ Entity deep links / overlay / clipboard use **Anima URI** (`anima:{id}?component
 
 ### Repository layout (Phase 0 — revised)
 
-Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Hub adapter + domain + `plugin.ts`). Console is renamed **console** and uses the **same module shape** as chat/task — not a separate admin-\* stack. `src/satellites/` is legacy naming; do not add new products there.
+Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Habitat adapter + domain + `plugin.ts`). Habitat uses the **same module shape** as chat/task — not a separate admin-\* stack. `src/satellites/` is legacy naming; do not add new products there.
 
-**End state:** Hub RPC per feature; business methods use `POST|WS /hub/rpc/v1` (same envelope). Public health/TLS probes and binary methods (e.g. `tts.synthesize`) are Hub RPC REST with `auth: optional` or Bearer as declared in registry.
+**End state:** Habitat RPC per feature; business methods use `POST|WS /rpc/v1` (same envelope). Public health/TLS probes and binary methods (e.g. `tts.synthesize`) are Habitat RPC REST with `auth: optional` or Bearer as declared in registry.
 
 Authoritative spec: [`repository-topology.md`](repository-topology.md).
 
@@ -114,20 +114,20 @@ Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platfo
 
 ### Platform UI layering (legacy paths — migrating to features/\*)
 
-| Layer            | Platform-native?                   | Location (current → target)                                            | 数据通道                                |
-| ---------------- | ---------------------------------- | ---------------------------------------------------------------------- | --------------------------------------- |
-| Shell（壳子维）  | Yes                                | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Hub wiring | preload/IPC                             |
-| Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                                                | Hub RPC（Feature RPC）                  |
-| Console 前端     | Shell embed                        | `src/features/console`（UI + `plugin.hub.rpc`）                        | Hub RPC（WS + HTTP POST `/hub/rpc/v1`） |
-| 卫星应用         | Sidecar only                       | `src/satellites/companion`                                             | Hub RPC + SAP attach                    |
+| Layer            | Platform-native?                   | Location (current → target)                                                | 数据通道                                |
+| ---------------- | ---------------------------------- | -------------------------------------------------------------------------- | --------------------------------------- |
+| Shell（壳子维）  | Yes                                | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Habitat wiring | preload/IPC                             |
+| Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                                                    | Habitat RPC（Feature RPC）              |
+| Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.hub.rpc`）                            | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
+| 卫星应用         | Sidecar only                       | `src/satellites/companion`                                                 | Habitat RPC + SAP attach                |
 
 导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `isElectron` / `getShellKind()` 锁 Shell 布局。交互（右键/长按/Enter）用 shell-sdk 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
 
-**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Hub；**SAP attach / tool.\*** 协议由 companion 等卫星 sidecar 使用。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
+**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Habitat；**SAP attach / tool.\*** 协议由 companion 等卫星 sidecar 使用。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
 
-### Console navigation ↔ cognitive layers
+### Habitat navigation ↔ cognitive layers
 
-Console sidebar is grouped (not flat storage tables). Map new features onto these user-visible concepts:
+Habitat sidebar is grouped (not flat storage tables). Map new features onto these user-visible concepts:
 
 | Group        | Cognitive layer | Routes (representative)                             |
 | ------------ | --------------- | --------------------------------------------------- |
@@ -227,10 +227,10 @@ See [`guide/security.md`](../guide/security.md).
 
 ## Runtime Modes
 
-Production (standalone install CLI): `anima service` (systemd --user). Auto-restarts after crashes; only `systemctl stop` stops the service. Source-tree `anima` does **not** register `service` — use `bun run dev:hub` for local Hub.
+Production (standalone install CLI): `anima service` (systemd --user). Auto-restarts after crashes; only `systemctl stop` stops the service. Source-tree `anima` does **not** register `service` — use `bun run dev:hub` for local Habitat.
 
-- **hub / service**: long-running — Hub HTTP (`/hub/rpc/v1`), Discord / WeChat Gateway, cron
-- **UI**: `src/app/shell/desktop` / `src/app/shell/mobile` bundled SPA (Chat + Console); Hub does not host `/console`
+- **hub / service**: long-running — Habitat HTTP (`/rpc/v1`), Discord / WeChat Gateway, cron
+- **UI**: `src/app/shell/desktop` / `src/app/shell/mobile` bundled SPA (Chat + Habitat); Habitat does not host `/habitat`
 
 ```bash
 # standalone install
@@ -239,10 +239,10 @@ anima service start --foreground # foreground (logs to stdout; systemd unit uses
 anima service status
 
 # monorepo / worktree
-just dev                         # Hub (≥10000) + Vite Web (≥5000)
-bun run dev:hub                  # Hub foreground (default random ≥10000; not 2658)
+just dev                         # Habitat (≥10000) + Vite Web (≥5000)
+bun run dev:hub                  # Habitat foreground (default random ≥10000; not 2658)
 bun run dev:web                  # browser shell Vite HMR from :5000 (set FREEANIMA_URL)
-bun run build:web                # source deploy / Hub /web: build dist before start
+bun run build:web                # source deploy / Habitat /web: build dist before start
 ```
 
 ## Tool Architecture (Three Layers)
@@ -338,19 +338,19 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 
 | 客户端       | UI 加载                                                                                                               | 更新方式                                                                                                                                                                              |
 | ------------ | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 浏览器 / PWA | Hub 托管 `/web/*`（`config.yaml` `web.enabled`，或 `anima web start`）                                                | Service Worker 提示新版本后**手动重载**（不自动刷新）；**不**跟 GitHub 包通道                                                                                                         |
+| 浏览器 / PWA | Habitat 托管 `/web/*`（`config.yaml` `web.enabled`，或 `anima web start`）                                            | Service Worker 提示新版本后**手动重载**（不自动刷新）；**不**跟 GitHub 包通道                                                                                                         |
 | Desktop      | **安装包内** `vendor/shell-ui`（本地 static `/web/*`）；调试可用 `DESKTOP_SHELL_VITE_URL` 或 `DESKTOP_UI_MODE=remote` | 按 bake `channel` 查 GitHub（`release`=stable latest + semver；`canary`=tag `canary` + commit）；用户确认后 NSIS 覆盖；可切换 `release`⇄`canary`；About 可选公共 gh-proxy（默认直连） |
-| Mobile APK   | **安装包内** Capacitor `www/web`（本地同源）；Hub 仅 API                                                              | 同上轨语义；有 APK asset 才提示；确认后系统安装器覆盖；可切换轨；同上代理选择                                                                                                         |
+| Mobile APK   | **安装包内** Capacitor `www/web`（本地同源）；Habitat 仅 API                                                          | 同上轨语义；有 APK asset 才提示；确认后系统安装器覆盖；可切换轨；同上代理选择                                                                                                         |
 | Standalone   | 嵌入 Web UI 的单文件 `anima`                                                                                          | `anima upgrade` / `--channel release\|canary` / `--proxy …`；`dev` / 源码安装不可换轨；curl 安装脚本可用 `PROXY=…`                                                                    |
 
-壳层保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 sidecar 等）。**无壳内 UI OTA**：原生端不从 Hub 热替换 SPA。允许**用户确认后**的安装包级覆盖（Desktop NSIS / Mobile APK / Standalone `anima upgrade` → 独立前缀如 `~/.anima/standalone`）。分发轨 SSOT 为安装包 bake 的 `build-meta.channel`（`release` / `canary` / `dev`）。Hub 配置统一走 settings「连接」（`/settings`）；无独立 bootstrap Hub 页。
+壳层保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 sidecar 等）。**无壳内 UI OTA**：原生端不从 Habitat 热替换 SPA。允许**用户确认后**的安装包级覆盖（Desktop NSIS / Mobile APK / Standalone `anima upgrade` → 独立前缀如 `~/.anima/standalone`）。分发轨 SSOT 为安装包 bake 的 `build-meta.channel`（`release` / `canary` / `dev`）。Habitat 配置统一走 settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
 
 ### 两层模型
 
-| 层                   | 驱动                                   | 职责                                                                                     |
-| -------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- |
-| **交互与原生能力层** | 壳运行时（Electron / Capacitor / Web） | 存储、IPC、Hub 连接后端、settings registry **内容**、hash 路由、长按 vs 右键、滑动手势等 |
-| **布局层**           | **仅视口断点**（壳不锁定底栏/顶栏）    | 窄/中/宽三档；列表 drawer / 并列 / 三栏；settings **chrome**（tabs vs 侧栏）             |
+| 层                   | 驱动                                   | 职责                                                                                         |
+| -------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **交互与原生能力层** | 壳运行时（Electron / Capacitor / Web） | 存储、IPC、Habitat 连接后端、settings registry **内容**、hash 路由、长按 vs 右键、滑动手势等 |
+| **布局层**           | **仅视口断点**（壳不锁定底栏/顶栏）    | 窄/中/宽三档；列表 drawer / 并列 / 三栏；settings **chrome**（tabs vs 侧栏）                 |
 
 手机端通常只有窄档，但 **手机端 ≠ 窄布局**；Electron / 浏览器窗口可以是窄、中、宽任意档。
 
@@ -366,37 +366,37 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 
 | 客户端       | UI 加载                                                        | 壳发版                          |
 | ------------ | -------------------------------------------------------------- | ------------------------------- |
-| 浏览器 / PWA | Hub `/web/*`                                                   | 随 Hub / `anima upgrade`        |
+| 浏览器 / PWA | Habitat `/web/*`                                               | 随 Habitat / `anima upgrade`    |
 | Desktop      | 安装包内本地 `/web/*`（默认）；`DESKTOP_UI_MODE=remote` 调试用 | Electron 安装包（含 UI + 伴侣） |
 | Mobile APK   | 安装包内本地 `/web/*`                                          | APK（含 UI + Capacitor）        |
 
 | Module  | Connection                                            | Notes                    |
 | ------- | ----------------------------------------------------- | ------------------------ |
-| Chat    | Hub RPC `/hub/rpc/v1` (shared WS, no `sap.attach`)    | `/web/chat`              |
-| Console | Hub RPC `/hub/rpc/v1` (WS + HTTP POST, same envelope) | `/web/console/dashboard` |
+| Chat    | Habitat RPC `/rpc/v1` (shared WS, no `sap.attach`)    | `/web/chat`              |
+| Habitat | Habitat RPC `/rpc/v1` (WS + HTTP POST, same envelope) | `/web/habitat/dashboard` |
 
 `/web/config.json` 提供 `hub_url`、`ui_version`、`min_shell_version`（浏览器/PWA 与壳调试用；原生壳 UI 版本随安装包）。
 
 ## Events and Hooks (Summary)
 
 - **EventBus**: async notification transport (Redis queue); production code currently emits topics such as `session:updated` with **no registered handlers** — ACP callbacks use direct `onSessionUpdated` instead. **Not** used for sleep orchestration.
-- **Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light → deep → cross-domain maintenance steps). State in `~/.anima/runtime/pipeline_*_run.json`; Console API for diagnostics.
+- **Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light → deep → cross-domain maintenance steps). State in `~/.anima/runtime/pipeline_*_run.json`; Habitat API for diagnostics.
 - **Hooks**: sync interceptors — validation or clarification at message ingress, turn end, tool return, etc.
 
 Complementary: Pipeline Runner handles scheduled multi-step background work; Hooks handle "may this proceed before/during"; EventBus remains available for future cross-process fan-out but is not on the sleep path.
 
-## Desktop companion (Hub SSOT)
+## Desktop companion (Habitat SSOT)
 
 The desktop companion is a **dynamic SAP Type B satellite** with a split boundary:
 
-| Concern                             | Hub (`src/features/companion/`)            | Local device                              |
-| ----------------------------------- | ------------------------------------------ | ----------------------------------------- |
-| Behavior, slots, active model       | `companion_profile` entity + Hub RPC       | Cache in `~/.anima/companion/config.json` |
-| VRM / VRMA library                  | Files on Hub host + content-hash metadata  | Lazy download to desktop cache            |
-| FBX → VRMA                          | Hub service only                           | Not bundled in desktop installer          |
-| Settings UI                         | Hub RPC + `/hub/rpc/v1/companion/*` upload | Desktop Settings section (not Console)    |
-| VRM render, float window, patrol    | —                                          | Electron + overlay SPA                    |
-| Agent tools (`bubble`, `play_slot`) | SAP route                                  | Thin sidecar executes + runtime WS        |
+| Concern                             | Habitat (`src/features/companion/`)           | Local device                              |
+| ----------------------------------- | --------------------------------------------- | ----------------------------------------- |
+| Behavior, slots, active model       | `companion_profile` entity + Habitat RPC      | Cache in `~/.anima/companion/config.json` |
+| VRM / VRMA library                  | Files on Habitat host + content-hash metadata | Lazy download to desktop cache            |
+| FBX → VRMA                          | Habitat service only                          | Not bundled in desktop installer          |
+| Settings UI                         | Habitat RPC + `/rpc/v1/companion/*` upload    | Desktop Settings section (not Habitat)    |
+| VRM render, float window, patrol    | —                                             | Electron + overlay SPA                    |
+| Agent tools (`bubble`, `play_slot`) | SAP route                                     | Thin sidecar executes + runtime WS        |
 
 Multiple desktops share one library; each machine keeps its own `instance_id` for SAP. See [`companion.md`](../features/companion.md).
 

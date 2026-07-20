@@ -2,7 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import type { SettingsBinding, SettingsPlatform } from "@freeanima/frontend/shell-sdk/settings";
 
 import { FormRenderer } from "../form/FormRenderer.tsx";
-import { needsHubSetup } from "../setup/hub-setup.ts";
+import { needsHabitatSetup } from "../setup/habitat-setup.ts";
 import { LazyComponentPanel } from "./LazyComponentPanel.tsx";
 
 type Props = {
@@ -14,7 +14,7 @@ export function SettingsSectionPanel({ binding, platform }: Props) {
   const { section, store, deps } = binding;
   const entry = section.platforms[platform];
   const navigate = useNavigate();
-  const gateMode = section.id === "hub" && needsHubSetup();
+  const gateMode = section.id === "habitat" && needsHabitatSetup();
 
   if (!entry) {
     return <p className="text-sm text-muted-foreground">此平台暂无设置项</p>;

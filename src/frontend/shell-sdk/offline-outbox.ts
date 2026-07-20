@@ -1,5 +1,8 @@
 /// <reference lib="dom" />
-import { resolveHubCacheScope, setSatelliteOfflineCacheBackendForTests } from "./offline-cache.ts";
+import {
+  resolveHabitatCacheScope,
+  setSatelliteOfflineCacheBackendForTests,
+} from "./offline-cache.ts";
 import {
   OFFLINE_OUTBOX_STORE,
   offlineDbDelete,
@@ -145,7 +148,7 @@ export async function listFailedOutboxOps(
 }
 
 export function resolveOutboxScope(): string {
-  return resolveHubCacheScope();
+  return resolveHabitatCacheScope();
 }
 
 export async function countOutboxOps(scope: string, moduleId?: OfflineModuleId): Promise<number> {

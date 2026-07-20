@@ -49,7 +49,7 @@ class MockRelayWebSocket {
   }
 
   send(_data: string): void {
-    /* relay client 仅上行 req，单测不模拟 Hub */
+    /* relay client 仅上行 req，单测不模拟 Habitat */
   }
 
   close(): void {

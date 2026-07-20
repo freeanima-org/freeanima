@@ -523,7 +523,7 @@ export async function camofoxPress(conversationId: string, key: string): Promise
 export async function camofoxConsole(_conversationId: string, _clear = false): Promise<string> {
   return toolResult({
     success: true,
-    console_messages: [],
+    habitat_messages: [],
     js_errors: [],
     total_messages: 0,
     total_errors: 0,

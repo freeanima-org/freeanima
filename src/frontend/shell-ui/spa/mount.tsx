@@ -44,7 +44,7 @@ function ShellBootNotice({ message }: { message: string }): JSX.Element {
       role="alert"
       className="shrink-0 border-b border-yellow-500/40 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-700 dark:text-yellow-300"
     >
-      启动异常：{message}。可在「设置」中检查 Hub 配置，或完全关闭应用后重试。
+      启动异常：{message}。可在「设置」中检查 Habitat 配置，或完全关闭应用后重试。
     </div>
   );
 }

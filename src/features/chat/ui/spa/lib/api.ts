@@ -4,8 +4,8 @@ import type {
   DisplayItem,
   StreamApiEvent,
 } from "./types.ts";
-import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { isHabitatFetchAvailable } from "@freeanima/frontend/shell-sdk/habitat-fetch-gate";
+import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
 import { getChatSapClient, chatPlatform } from "./sap-client.ts";
 import { m } from "./i18n.ts";
 import { omitUndefined } from "@freeanima/core/util";
@@ -37,11 +37,11 @@ function mapConversationList(raw: {
 }
 
 function hub() {
-  return getTypedSatelliteHubClient();
+  return getTypedSatelliteHabitatClient();
 }
 
-function requireHubFetch(method: string): void {
-  if (!isHubFetchAvailable()) {
+function requireHabitatFetch(method: string): void {
+  if (!isHabitatFetchAvailable()) {
     throw new Error(`${method} unavailable offline`);
   }
 }
@@ -54,7 +54,7 @@ function sap() {
 export type { ConversationAcpDockSnapshot, StreamApiEvent } from "./types.ts";
 
 export async function listConversations(opts?: { includeArchived?: boolean }) {
-  requireHubFetch("conversation.list");
+  requireHabitatFetch("conversation.list");
   const result = await hub().call("conversation.list", {
     platform: chatPlatform(),
     include_archived: opts?.includeArchived,
@@ -68,7 +68,7 @@ export async function createConversation() {
 }
 
 export async function getConversationTail(conversationId: string) {
-  requireHubFetch("conversation.tail");
+  requireHabitatFetch("conversation.tail");
   return hub().call("conversation.tail", { conversation_id: conversationId });
 }
 
@@ -93,7 +93,7 @@ export async function getStoredMessages(
   conversationId: string,
   opts?: StoredMessagesOpts,
 ): Promise<StoredMessagesResponse> {
-  requireHubFetch("conversation.messages");
+  requireHabitatFetch("conversation.messages");
   return hub().call(
     "conversation.messages",
     omitUndefined({
@@ -133,7 +133,7 @@ export async function rollbackBeforeLastUserMessage(conversationId: string) {
 export async function getConversationAcpDock(
   conversationId: string,
 ): Promise<ConversationAcpDockSnapshot> {
-  requireHubFetch("conversation.acpDock");
+  requireHabitatFetch("conversation.acpDock");
   const raw = await hub().call("conversation.acpDock", { conversation_id: conversationId });
   return {
     ...raw,
@@ -193,7 +193,7 @@ export async function runConversationCommand(
   conversationId: string,
   text: string,
 ): Promise<ConversationCommandResult> {
-  requireHubFetch("conversation.command");
+  requireHabitatFetch("conversation.command");
   const raw = await hub().call(
     "conversation.command",
     {
@@ -243,21 +243,21 @@ export async function fetchLlmDebug(conversationId: string): Promise<{
 
 export async function loadConfig() {
   const shell = window.satelliteShell;
-  if (shell?.hubWsUrl) {
-    return { app_id: "chat", hub_ws_url: shell.hubWsUrl };
+  if (shell?.habitatWsUrl) {
+    return { app_id: "chat", hub_ws_url: shell.habitatWsUrl };
   }
 
   if (shell?.isNativeShell) {
-    throw new Error("Hub 未配置，请先在设置中填写 栖息地地址与 Token");
+    throw new Error("Habitat 未配置，请先在设置中填写 栖息地地址与 Token");
   }
 
   const res = await fetch("/config.json");
   if (!res.ok) {
-    throw new Error(m.console_common_network_error());
+    throw new Error(m.habitat_common_network_error());
   }
   const ct = res.headers.get("content-type") ?? "";
   if (!ct.includes("application/json")) {
-    throw new Error(m.console_common_network_error());
+    throw new Error(m.habitat_common_network_error());
   }
   return res.json() as Promise<{
     app_id: string;
@@ -269,5 +269,5 @@ export async function loadConfig() {
 
 export function conversationErrorMessage(err: unknown): string {
   if (err instanceof Error && err.message.trim()) return err.message;
-  return m.console_common_network_error();
+  return m.habitat_common_network_error();
 }

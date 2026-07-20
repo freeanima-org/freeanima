@@ -4,16 +4,16 @@ title: Chat
 
 # Chat — 离线发送与多端冲突
 
-Chat SPA 支持 **离线写入 outbox**、上线后 **自动重试**，并通过 Hub 侧幂等与 tail CAS 避免重复发送与陈旧消息。
+Chat SPA 支持 **离线写入 outbox**、上线后 **自动重试**，并通过 Habitat 侧幂等与 tail CAS 避免重复发送与陈旧消息。
 
 ## 客户端
 
 - 发送先入 IndexedDB `outbox`（`moduleId: chat`），并乐观显示 user bubble（`sendStatus: pending`）。
-- 离线时可输入并发送；消息排队，Hub 恢复后按 FIFO 重试。
+- 离线时可输入并发送；消息排队，Habitat 恢复后按 FIFO 重试。
 - 重试前调用 `conversation.tail` 对比入队时的 `expected_tail_pos`。
 - **tail 不一致**（会话已在别端继续）：标记 `stale`，默认不发送；用户可 **丢弃** 或 **仍要发送**（`force_tail`）。
 
-## Hub 协议
+## Habitat 协议
 
 `message.send` 可选字段：
 

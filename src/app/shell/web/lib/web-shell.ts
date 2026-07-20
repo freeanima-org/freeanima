@@ -1,9 +1,12 @@
 import { browserSapInstanceStore } from "@freeanima/shared/sap-contract";
-import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
+import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import { buildShellApiFields } from "@freeanima/frontend/shell-sdk/shell-api-fields";
 import { normalizeShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
 import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
-import { HUB_URL_KEY, REMOTE_AUTH_TOKEN_KEY } from "@freeanima/frontend/shell-sdk/settings";
+import {
+  readStoredHabitatUrl,
+  REMOTE_AUTH_TOKEN_KEY,
+} from "@freeanima/frontend/shell-sdk/settings";
 
 export const SHELL_CONFIG_CHANGED_EVENT = "freeanima:shell-config-changed";
 
@@ -12,10 +15,10 @@ function notifyShellConfigChanged(): void {
 }
 
 function reloadWebShellFromPrefs(): void {
-  const hubUrl = localStorage.getItem(HUB_URL_KEY)?.trim() ?? "";
+  const habitatUrl = readStoredHabitatUrl((k) => localStorage.getItem(k));
   const remoteAuthToken = localStorage.getItem(REMOTE_AUTH_TOKEN_KEY)?.trim() ?? "";
-  if (!hubUrl) return;
-  installWebShellFromPrefs(hubUrl, remoteAuthToken);
+  if (!habitatUrl) return;
+  installWebShellFromPrefs(habitatUrl, remoteAuthToken);
 }
 
 function shellExtras(
@@ -52,19 +55,22 @@ export function normalizeWebHubUrl(raw: string): string {
 export function createWebShellStub(): SatelliteShellApi {
   return {
     isElectron: false,
-    hubUrl: "",
-    hubWsUrl: "",
+    habitatUrl: "",
+    habitatWsUrl: "",
     windowRole: null,
     apiOrigin: null,
     ...shellExtras(""),
   };
 }
 
-export function buildWebShellFromRaw(hubUrl: string, remoteAuthToken: string): SatelliteShellApi {
-  const trimmedHub = hubUrl.trim().replace(/\/$/, "");
+export function buildWebShellFromRaw(
+  habitatUrl: string,
+  remoteAuthToken: string,
+): SatelliteShellApi {
+  const trimmedHub = habitatUrl.trim().replace(/\/$/, "");
   if (!trimmedHub) return createWebShellStub();
-  const hubWsUrl = resolveHubRpcWsUrl(trimmedHub);
-  const apiFields = buildShellApiFields(trimmedHub, hubWsUrl, remoteAuthToken.trim());
+  const habitatWsUrl = resolveHabitatRpcWsUrl(trimmedHub);
+  const apiFields = buildShellApiFields(trimmedHub, habitatWsUrl, remoteAuthToken.trim());
   return {
     isElectron: false,
     ...apiFields,
@@ -74,28 +80,31 @@ export function buildWebShellFromRaw(hubUrl: string, remoteAuthToken: string): S
   };
 }
 
-export function buildWebShell(hubUrl: string, remoteAuthToken: string): SatelliteShellApi {
-  const normalized = normalizeShellClientConfig({ hubUrl, remoteAuthToken });
-  return buildWebShellFromRaw(normalized.hubUrl, normalized.remoteAuthToken);
+export function buildWebShell(habitatUrl: string, remoteAuthToken: string): SatelliteShellApi {
+  const normalized = normalizeShellClientConfig({ habitatUrl, remoteAuthToken });
+  return buildWebShellFromRaw(normalized.habitatUrl, normalized.remoteAuthToken);
 }
 
 export function installWebShellFromPrefs(
-  hubUrl: string,
+  habitatUrl: string,
   remoteAuthToken: string,
 ): SatelliteShellApi {
-  const shell = buildWebShellFromRaw(hubUrl, remoteAuthToken);
+  const shell = buildWebShellFromRaw(habitatUrl, remoteAuthToken);
   window.satelliteShell = shell;
   return shell;
 }
 
-export async function testWebHubConnection(hubUrl: string, remoteAuthToken: string): Promise<void> {
-  const { testHubHealthConnection } = await import("@freeanima/frontend/shell-sdk");
-  const normalized = normalizeWebHubUrl(hubUrl);
+export async function testWebHabitatConnection(
+  habitatUrl: string,
+  remoteAuthToken: string,
+): Promise<void> {
+  const { testHabitatHealthConnection } = await import("@freeanima/frontend/shell-sdk");
+  const normalized = normalizeWebHubUrl(habitatUrl);
   const token = remoteAuthToken.trim();
-  await testHubHealthConnection(normalized, token || undefined);
+  await testHabitatHealthConnection(normalized, token || undefined);
 }
 
-/** Web 壳层：localStorage / 构建默认值中均未配置 Hub API Token */
+/** Web 壳层：localStorage / 构建默认值中均未配置 Habitat API Token */
 export function webNeedsHubSetupFromConfig(): boolean {
   return !window.satelliteShell?.remoteAuth?.token?.trim();
 }

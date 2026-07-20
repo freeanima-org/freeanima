@@ -160,7 +160,7 @@ Existing `smart_list` entities and built-in presets (Today, Tomorrow, etc.) rema
 Aligned with [entity-model Shell scope](../concepts/entity-model.md#shell-ui-global-subject-scope):
 
 - `project_folder` and `project` live in the **current subject's default private world**
-- Hub RPC methods accept optional `subject_kind: user | agent` (default `user`, same as tasks)
+- Habitat RPC methods accept optional `subject_kind: user | agent` (default `user`, same as tasks)
 - **v1:** no cross user/agent world sharing for projects
 
 ---
@@ -243,7 +243,7 @@ Explicit **out of scope** for the first implementation:
 - Gantt / Kanban (including folder-level cross-project views)
 - Notes, clips, file/photo library and project material uploads
 - Cross-entity reference UI and archived reference context
-- Console admin surfaces for projects
+- Habitat admin surfaces for projects
 - Cross user/agent world project sharing
 
 ---
@@ -288,9 +288,9 @@ Entity type: `content`. Text fields use entity columns where noted.
 
 ---
 
-## Hub RPC methods (v1)
+## Habitat RPC methods (v1)
 
-All methods optional `subject_kind: user | agent` (default `user`). Transport: `POST|WS /hub/rpc/v1`.
+All methods optional `subject_kind: user | agent` (default `user`). Transport: `POST|WS /rpc/v1`.
 
 ### `projectfolder.*`
 
@@ -312,7 +312,7 @@ All methods optional `subject_kind: user | agent` (default `user`). Transport: `
 | `project.patch`  | Update fields (including optional `content`), terminal status, or `release_tasks` side-effect |
 | `project.delete` | Delete project; tasks move to default list (Inbox)                                            |
 
-### Task item Hub methods（归属拆分）
+### Task item Habitat methods（归属拆分）
 
 | Method                                    | Purpose                                          |
 | ----------------------------------------- | ------------------------------------------------ |

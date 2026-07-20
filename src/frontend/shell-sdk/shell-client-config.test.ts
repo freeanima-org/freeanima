@@ -16,17 +16,19 @@ import {
 import {
   normalizeShellClientConfig,
   parseShellClientConfig,
-  shellClientNeedsHubSetup,
+  shellClientNeedsHabitatSetup,
 } from "./shell-client-config.ts";
 
 describe("shell-client-config", () => {
   test("parseShellClientConfig validates fields", () => {
-    expect(parseShellClientConfig({ hubUrl: "https://a.com", remoteAuthToken: "tok" })).toEqual({
-      hubUrl: "https://a.com",
-      remoteAuthToken: "tok",
-    });
-    expect(parseShellClientConfig({ hubUrl: "https://a.com" })).toEqual({
-      hubUrl: "https://a.com",
+    expect(parseShellClientConfig({ habitatUrl: "https://a.com", remoteAuthToken: "tok" })).toEqual(
+      {
+        habitatUrl: "https://a.com",
+        remoteAuthToken: "tok",
+      },
+    );
+    expect(parseShellClientConfig({ habitatUrl: "https://a.com" })).toEqual({
+      habitatUrl: "https://a.com",
       remoteAuthToken: "",
     });
   });
@@ -34,33 +36,36 @@ describe("shell-client-config", () => {
   test("normalizeShellClientConfig allows empty token", () => {
     expect(
       normalizeShellClientConfig({
-        hubUrl: "http://192.168.1.10:2658",
+        habitatUrl: "http://192.168.1.10:2658",
         remoteAuthToken: "",
       }),
     ).toEqual({
-      hubUrl: "http://192.168.1.10:2658",
+      habitatUrl: "http://192.168.1.10:2658",
       remoteAuthToken: "",
     });
   });
 
-  test("shellClientNeedsHubSetup when token missing", () => {
-    expect(shellClientNeedsHubSetup(null)).toBe(true);
+  test("shellClientNeedsHabitatSetup when token missing", () => {
+    expect(shellClientNeedsHabitatSetup(null)).toBe(true);
     expect(
-      shellClientNeedsHubSetup({ hubUrl: "https://hub.example.com", remoteAuthToken: "" }),
+      shellClientNeedsHabitatSetup({ habitatUrl: "https://hub.example.com", remoteAuthToken: "" }),
     ).toBe(true);
     expect(
-      shellClientNeedsHubSetup({ hubUrl: "https://hub.example.com", remoteAuthToken: "tok" }),
+      shellClientNeedsHabitatSetup({
+        habitatUrl: "https://hub.example.com",
+        remoteAuthToken: "tok",
+      }),
     ).toBe(false);
   });
 
-  test("normalizeShellClientConfig trims hub url", () => {
+  test("normalizeShellClientConfig trims habitat url", () => {
     expect(
       normalizeShellClientConfig({
-        hubUrl: "https://hub.example.com/",
+        habitatUrl: "https://hub.example.com/",
         remoteAuthToken: " secret ",
       }),
     ).toEqual({
-      hubUrl: "https://hub.example.com",
+      habitatUrl: "https://hub.example.com",
       remoteAuthToken: "secret",
     });
   });
@@ -85,11 +90,11 @@ describe("shell-settings-node", () => {
     const home = mkdtempSync(join(tmpdir(), "anima-desktop-"));
     try {
       saveShellClientConfig(
-        { hubUrl: "https://hub.example.com", remoteAuthToken: "secret-token-min-16" },
+        { habitatUrl: "https://hub.example.com", remoteAuthToken: "secret-token-min-16" },
         home,
       );
       expect(loadShellClientConfig(home)).toEqual({
-        hubUrl: "https://hub.example.com",
+        habitatUrl: "https://hub.example.com",
         remoteAuthToken: "secret-token-min-16",
       });
       saveShellDebugConfig(
@@ -101,7 +106,7 @@ describe("shell-settings-node", () => {
       expect(loadShellDebugConfig(home)).toEqual({
         vConsoleEnabled: true,
       });
-      expect(loadShellClientConfig(home)?.hubUrl).toBe("https://hub.example.com");
+      expect(loadShellClientConfig(home)?.habitatUrl).toBe("https://hub.example.com");
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
@@ -112,7 +117,7 @@ describe("shell-settings-node", () => {
     try {
       saveShellSettings(
         {
-          hub: { hubUrl: "https://a.com", remoteAuthToken: "token-at-least-16-ch" },
+          habitat: { habitatUrl: "https://a.com", remoteAuthToken: "token-at-least-16-ch" },
           debug: { vConsoleEnabled: false },
         },
         home,
@@ -124,7 +129,7 @@ describe("shell-settings-node", () => {
         home,
       );
       const settings = loadShellSettings(home);
-      expect(settings.hub?.hubUrl).toBe("https://a.com");
+      expect(settings.habitat?.habitatUrl).toBe("https://a.com");
       expect(settings.debug.vConsoleEnabled).toBe(true);
     } finally {
       rmSync(home, { recursive: true, force: true });
@@ -138,7 +143,7 @@ describe("shell-settings-node", () => {
       writeFileSync(
         legacyShellClientConfigPath(animaHome),
         JSON.stringify({
-          hubUrl: "https://legacy.example.com",
+          habitatUrl: "https://legacy.example.com",
           remoteAuthToken: "legacy-token-min-16",
         }),
         "utf-8",
@@ -147,15 +152,15 @@ describe("shell-settings-node", () => {
       process.env.FREEANIMA_HOME = animaHome;
       try {
         const settings = loadShellSettings(desktopHome);
-        expect(settings.hub).toEqual({
-          hubUrl: "https://legacy.example.com",
+        expect(settings.habitat).toEqual({
+          habitatUrl: "https://legacy.example.com",
           remoteAuthToken: "legacy-token-min-16",
         });
         expect(existsSync(desktopSettingsPath(desktopHome))).toBe(true);
         const written = JSON.parse(readFileSync(desktopSettingsPath(desktopHome), "utf-8")) as {
-          hub: { hubUrl: string };
+          habitat: { habitatUrl: string };
         };
-        expect(written.hub.hubUrl).toBe("https://legacy.example.com");
+        expect(written.habitat.habitatUrl).toBe("https://legacy.example.com");
       } finally {
         if (prev === undefined) delete process.env.FREEANIMA_HOME;
         else process.env.FREEANIMA_HOME = prev;

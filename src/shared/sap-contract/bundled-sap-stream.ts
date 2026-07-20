@@ -1,9 +1,9 @@
 /// <reference lib="dom" />
 import {
-  getBundledHubRpcClient,
+  getBundledHabitatRpcClient,
   subscribeBundledHubRpcConfigChanges,
-  type HubRpcConnectionState,
-} from "@freeanima/shared/hub-rpc";
+  type HabitatRpcConnectionState,
+} from "@freeanima/shared/habitat-rpc";
 import type { StreamApiLikeEvent } from "./frames/message.ts";
 import {
   createSapConversationStreamClient,
@@ -12,7 +12,7 @@ import {
 import { sapClientFromRpc } from "./sap-client-from-rpc.ts";
 import type { SapClient } from "./router.ts";
 
-export type SapConnectionState = HubRpcConnectionState;
+export type SapConnectionState = HabitatRpcConnectionState;
 
 export type BundledSapStreamClient = {
   whenReady(): Promise<SapClient>;
@@ -32,13 +32,13 @@ let bundledClient: BundledSapStreamClient | null = null;
 
 export function createBundledSapStreamClient(options?: {
   hubRpcWsUrl?: string;
-  hubUrl?: string;
+  habitatUrl?: string;
   authToken?: string;
   onConnectionStateChange?: (state: SapConnectionState) => void;
 }): BundledSapStreamClient {
-  const hubRpc = getBundledHubRpcClient({
+  const hubRpc = getBundledHabitatRpcClient({
     ...(options?.hubRpcWsUrl !== undefined ? { hubRpcWsUrl: options.hubRpcWsUrl } : {}),
-    ...(options?.hubUrl !== undefined ? { hubUrl: options.hubUrl } : {}),
+    ...(options?.habitatUrl !== undefined ? { habitatUrl: options.habitatUrl } : {}),
     ...(options?.authToken !== undefined ? { authToken: options.authToken } : {}),
     ...(options?.onConnectionStateChange !== undefined
       ? { onConnectionStateChange: options.onConnectionStateChange }

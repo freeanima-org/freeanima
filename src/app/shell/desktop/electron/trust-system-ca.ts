@@ -1,7 +1,7 @@
 /**
  * Electron 主进程 Node TLS 默认只含 Mozilla 捆绑根，不含 OS 信任库。
  * mkcert -install / 用户导入的 rootCA.pem 在系统库中；不合并则
- * shell:settings:test、companion Hub HTTPS/WSS 会 UNABLE_TO_VERIFY_LEAF_SIGNATURE。
+ * shell:settings:test、companion Habitat HTTPS/WSS 会 UNABLE_TO_VERIFY_LEAF_SIGNATURE。
  * 渲染进程走 Chromium，本模块只修主进程 Node（fetch / ws）。
  */
 import tls from "node:tls";
@@ -71,7 +71,7 @@ export function trustSystemCaCertificates(
   }
 }
 
-/** 须在任何 Hub HTTPS 之前调用（main-entry → main） */
+/** 须在任何 Habitat HTTPS 之前调用（main-entry → main） */
 export function applyTrustSystemCaAtStartup(): void {
   const result = trustSystemCaCertificates();
   if (result.ok) {

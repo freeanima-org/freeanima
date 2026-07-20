@@ -3,7 +3,7 @@ import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk";
 
 import { isCapacitorShellCandidate } from "./capacitor-runtime.ts";
 import {
-  canOpenHubSettings,
+  canOpenHabitatSettings,
   getShellKind,
   isNativeShell,
   shouldUseNativeShellNavigation,
@@ -50,21 +50,21 @@ describe("shell-runtime", () => {
     expect(isNativeShell()).toBe(false);
   });
 
-  it("canOpenHubSettings：有 openHubSettings", () => {
+  it("canOpenHabitatSettings：有 openHabitatSettings", () => {
     (globalThis as { window: Window }).window = {
       satelliteShell: {
         isElectron: false,
-        openHubSettings: () => {},
+        openHabitatSettings: () => {},
       } as SatelliteShellApi,
     } as unknown as Window;
-    expect(canOpenHubSettings()).toBe(true);
+    expect(canOpenHabitatSettings()).toBe(true);
   });
 
-  it("canOpenHubSettings：Electron 无方法仍 true（packaged）", () => {
+  it("canOpenHabitatSettings：Electron 无方法仍 true（packaged）", () => {
     (globalThis as { window: Window }).window = {
       satelliteShell: { isElectron: true } as SatelliteShellApi,
     } as unknown as Window;
-    expect(canOpenHubSettings()).toBe(true);
+    expect(canOpenHabitatSettings()).toBe(true);
   });
 
   it("shouldUseNativeShellNavigation：isNativeShell", () => {

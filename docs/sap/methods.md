@@ -4,9 +4,9 @@ title: SAP RPC Methods
 
 # SAP RPC Methods
 
-RPC calls use envelope `kind: "req"` with a unique `id`. Hub responds with matching `kind: "res"`.
+RPC calls use envelope `kind: "req"` with a unique `id`. Habitat responds with matching `kind: "res"`.
 
-The authoritative method list is `SAP_METHODS` in [`src/shared/sap-contract/router.ts`](../../src/shared/sap-contract/router.ts). Product feature wire schemas are bundled in [`@freeanima/sap-contract/feature-rpc`](../../src/shared/sap-contract/feature-rpc/index.ts); individual frame modules live under [`src/shared/sap-contract/frames/`](../../src/shared/sap-contract/frames/). Each `src/features/*/protocol/` re-exports the subset its Hub handlers need.
+The authoritative method list is `SAP_METHODS` in [`src/shared/sap-contract/router.ts`](../../src/shared/sap-contract/router.ts). Product feature wire schemas are bundled in [`@freeanima/sap-contract/feature-rpc`](../../src/shared/sap-contract/feature-rpc/index.ts); individual frame modules live under [`src/shared/sap-contract/frames/`](../../src/shared/sap-contract/frames/). Each `src/features/*/protocol/` re-exports the subset its Habitat handlers need.
 
 ## Domain map
 
@@ -15,7 +15,7 @@ flowchart TB
   subgraph satellite [Satellite]
     Client[SapClient.request]
   end
-  subgraph hub [Hub ws-server]
+  subgraph hub [Habitat ws-server]
     Router[SAP_METHODS router]
     Sessions[service-conversations]
     Runtime[AppRuntime]
@@ -32,7 +32,7 @@ flowchart TB
 
 ## Session
 
-| Method                    | Schema                                                               | Hub behavior                                                                                                |
+| Method                    | Schema                                                               | Habitat behavior                                                                                            |
 | ------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `conversation.create`     | [`session.ts`](../../src/shared/sap-contract/frames/conversation.ts) | Creates session; sets `platform_extra.satellite_app_id`, `satellite_instance_id`, optional workspace fields |
 | `conversation.list`       | `session.ts`                                                         | Lists conversations, optional `platform` filter                                                             |
@@ -45,7 +45,7 @@ flowchart TB
 
 ### `conversation.create` platform binding
 
-Hub resolves `platform` from input or `formatSapPlatform(app_id, instance_id)` → `sap:{app_slug}:{instance_id}` (e.g. `sap:pairprogramming:k7m`). Writes into conversation `platform_extra`:
+Habitat resolves `platform` from input or `formatSapPlatform(app_id, instance_id)` → `sap:{app_slug}:{instance_id}` (e.g. `sap:pairprogramming:k7m`). Writes into conversation `platform_extra`:
 
 - `satellite_app_id` — normalized app slug
 - `satellite_instance_id` — instance id from connect context
@@ -59,11 +59,11 @@ This binding is required for [strict tool routing](tools.md).
 | -------------- | --------------------------------------------------------------- | ---------------------------------------------- |
 | `message.send` | [`message.ts`](../../src/shared/sap-contract/frames/message.ts) | `{ stream_id }`; stream events follow on `evt` |
 
-Payload: `conversation_id`, `message` (user text). Hub bridges runtime stream to SAP `stream.*` events — see [events.md](events.md).
+Payload: `conversation_id`, `message` (user text). Habitat bridges runtime stream to SAP `stream.*` events — see [events.md](events.md).
 
 ## Terminal
 
-Hub-side PTY sessions. Events: `terminal.ready`, `terminal.output`, `terminal.exit`, `terminal.error`.
+Habitat-side PTY sessions. Events: `terminal.ready`, `terminal.output`, `terminal.exit`, `terminal.error`.
 
 | Method            | Schema                                                                                                    |
 | ----------------- | --------------------------------------------------------------------------------------------------------- |
@@ -72,14 +72,14 @@ Hub-side PTY sessions. Events: `terminal.ready`, `terminal.output`, `terminal.ex
 | `terminal.resize` | `terminal_id`, `cols`, `rows`                                                                             |
 | `terminal.close`  | `terminal_id`                                                                                             |
 
-## Tool (Satellite → Hub)
+## Tool (Satellite → Habitat)
 
-| Method            | Direction       | Role                                          |
-| ----------------- | --------------- | --------------------------------------------- |
-| `tool.register`   | Satellite → Hub | Register local tools; returns canonical names |
-| `tool.unregister` | Satellite → Hub | Remove tools by `local_names`                 |
-| `tool.result`     | Satellite → Hub | Complete a `tool.call`                        |
-| `tool.error`      | Satellite → Hub | Fail a `tool.call`                            |
+| Method            | Direction           | Role                                          |
+| ----------------- | ------------------- | --------------------------------------------- |
+| `tool.register`   | Satellite → Habitat | Register local tools; returns canonical names |
+| `tool.unregister` | Satellite → Habitat | Remove tools by `local_names`                 |
+| `tool.result`     | Satellite → Habitat | Complete a `tool.call`                        |
+| `tool.error`      | Satellite → Habitat | Fail a `tool.call`                            |
 
 `tool.call` is an **event**, not RPC — see [tools.md](tools.md) and [events.md](events.md).
 

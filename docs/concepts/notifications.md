@@ -12,7 +12,7 @@ PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron 
 
 ## Alert（本机提醒，本机-only）
 
-**不走 Hub RPC、不写 PG、不跨设备同步。** 各 shell 端在启动时注册 `AlertBackend`（web / desktop / mobile）。Feature 通过 `shell-sdk/alert` 使用**当前设备**系统通知通道。
+**不走 Habitat RPC、不写 PG、不跨设备同步。** 各 shell 端在启动时注册 `AlertBackend`（web / desktop / mobile）。Feature 通过 `shell-sdk/alert` 使用**当前设备**系统通知通道。
 
 Alert 分两档（同一契约，成对）：
 
@@ -23,7 +23,7 @@ Alert 分两档（同一契约，成对）：
 
 硬约束：**schedule ⊕ cancel 成对**。只登记不能取消 = 不可用（暂停/手动中止后仍会到点骚扰）。同 `tag` 再 `schedule` = replace（先 cancel 再登记）；`cancel` 对不存在的 id/tag **幂等成功**。
 
-**不是** Hub 后台进程 / Inbox。任务到期「inbox→本机弹」可后续复用同一 `schedule` API。
+**不是** Habitat 后台进程 / Inbox。任务到期「inbox→本机弹」可后续复用同一 `schedule` API。
 
 ### 三壳 durability
 
@@ -35,7 +35,7 @@ Alert 分两档（同一契约，成对）：
 
 ### 番茄钟
 
-**例外（Hub 同步，非 Alert）**：运行中活跃态（`pomodoro_active` + `pomodoro.active.*`）跨端 **last-write-wins**；**阶段结束系统通知仍仅本机**。多端同步靠 `put` / `clear` 后的 `pomodoro.active.changed`；重连与页面可见时 `active.get` 兜底，**不作周期轮询**。
+**例外（Habitat 同步，非 Alert）**：运行中活跃态（`pomodoro_active` + `pomodoro.active.*`）跨端 **last-write-wins**；**阶段结束系统通知仍仅本机**。多端同步靠 `put` / `clear` 后的 `pomodoro.active.changed`；重连与页面可见时 `active.get` 兜底，**不作周期轮询**。
 
 阶段开始 / 继续时 `scheduleLocalAlert`（`phaseEndsAt`）；暂停、**手动取消进行中会话**（`runPhaseAbort`）、阶段完成等路径 `cancelScheduledAlert`。状态机推进仍由 `PomodoroShellWatcher`（或重开后 catch-up）负责；预登记只保证提醒。
 
@@ -64,12 +64,12 @@ PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron 
 
 ## Recipients
 
-Subject entity ids are bound at Hub boot into **`ResolvedWorldContext`** and persisted to `hub_runtime_config.worlds` (see [`entity-model.md`](entity-model.md)). Operators do **not** need to hand-maintain these ids on a new instance.
+Subject entity ids are bound at Habitat boot into **`ResolvedWorldContext`** and persisted to `hub_runtime_config.worlds` (see [`entity-model.md`](entity-model.md)). Operators do **not** need to hand-maintain these ids on a new instance.
 
 Optional override (advanced; rarely needed):
 
 ```yaml
-# hub_runtime_config (Shell → Hub 服务设置 → worlds)，或冷启动后由 boot 自动回写
+# hub_runtime_config (Shell → Habitat 服务设置 → worlds)，或冷启动后由 boot 自动回写
 worlds:
   user_subject_id: 109 # type=user entity
   agent_subject_id: 110 # type=agent entity
@@ -77,7 +77,7 @@ worlds:
 
 Legacy `notifications.user_subject_id` / `agent_subject_id` are still read as fallback when `worlds` is unset.
 
-`user_world_id` / `agent_world_id` are derived at Hub boot from each subject's `default_private_world_id`.
+`user_world_id` / `agent_world_id` are derived at Habitat boot from each subject's `default_private_world_id`.
 
 Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` (entity id string from `ResolvedWorldContext`).
 
@@ -151,7 +151,7 @@ Included in default conversation toolsets when registered.
 - `notification.markRead`
 - `notification.recipients` — configured subject ids for UI tabs
 
-No SAP create RPC in v1; writes are Hub-internal + tools.
+No SAP create RPC in v1; writes are Habitat-internal + tools.
 
 ## Related
 

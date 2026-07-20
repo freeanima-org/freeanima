@@ -1,4 +1,4 @@
-import type { HubConnectionState } from "@freeanima/frontend/shell-sdk/react.tsx";
+import type { HabitatConnectionState } from "@freeanima/frontend/shell-sdk/react.tsx";
 
 export type ConnectivityNoticeVariant = "info" | "warning";
 
@@ -9,15 +9,15 @@ export type ConnectivityNotice = {
 
 export function resolveConnectivityNotice(input: {
   networkOnline: boolean;
-  hubConnection: HubConnectionState;
+  habitatConnection: HabitatConnectionState;
 }): ConnectivityNotice | null {
   if (!input.networkOnline) {
     return { variant: "warning", kind: "offline" };
   }
-  if (input.hubConnection === "connecting") {
+  if (input.habitatConnection === "connecting") {
     return { variant: "info", kind: "hub-connecting" };
   }
-  if (input.hubConnection === "disconnected") {
+  if (input.habitatConnection === "disconnected") {
     return { variant: "warning", kind: "hub-disconnected" };
   }
   return null;
@@ -25,7 +25,7 @@ export function resolveConnectivityNotice(input: {
 
 export function shellWritesDisabled(input: {
   networkOnline: boolean;
-  hubConnection: HubConnectionState;
+  habitatConnection: HabitatConnectionState;
 }): boolean {
-  return !input.networkOnline || input.hubConnection !== "connected";
+  return !input.networkOnline || input.habitatConnection !== "connected";
 }

@@ -38,7 +38,7 @@ Diary UI labels semantic bricks（梦境 / 情绪 / 自传）as read-only sectio
 - `body.sort_order` — view order (no semantic precedence)
 - text lives in the block's `content` column
 
-One-shot migration: Hub `runMigrations` moves legacy diary `content` into the first text block and clears the container column.
+One-shot migration: Habitat `runMigrations` moves legacy diary `content` into the first text block and clears the container column.
 
 ## Agent tools (ToolSet `diary`)
 

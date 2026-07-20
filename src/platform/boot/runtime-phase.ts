@@ -24,12 +24,12 @@ import { registerSleepPipelineStepRecorder } from "../runtime/pipeline-step-run-
 import { startupLog } from "./status.ts";
 import type { EnginePhaseResult } from "./engine-phase.ts";
 import { bindSapServerDeps } from "../sap/runtime-context.ts";
-import { HubSessionRegistry } from "../sap/hub-session-registry.ts";
+import { HubSessionRegistry } from "../sap/habitat-session-registry.ts";
 import { SapInstanceRegistry } from "../sap/instance-registry.ts";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import { ANIMA_VERSION } from "../runtime/version.ts";
 import { builtinFeaturePlugins, registerFeatures } from "../features/index.ts";
-import { initHubRouter } from "../hub/init.ts";
+import { initHubRouter } from "../habitat/init.ts";
 
 export type RuntimePhaseResult = {
   runtime: AppRuntime;

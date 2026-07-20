@@ -40,7 +40,7 @@ export function deriveBaseModelNames(model: string): string[] {
   return names;
 }
 
-/** Search query variants for HF Hub model search. */
+/** Search query variants for HF Habitat model search. */
 export function buildSearchQueries(model: string): string[] {
   const trimmed = model.trim();
   if (!trimmed || trimmed.includes("/")) return [];

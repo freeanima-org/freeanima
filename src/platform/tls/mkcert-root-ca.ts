@@ -3,9 +3,9 @@ import { spawnSync } from "node:child_process";
 import { X509Certificate } from "node:crypto";
 
 import { expandConfigPath } from "./tls-paths.ts";
-import { defaultHubTlsCertPath } from "./hub-tls-material.ts";
+import { defaultHabitatTlsCertPath } from "./habitat-tls-material.ts";
 
-export type HubTlsIssuerKind = "mkcert" | "self-signed" | "missing";
+export type HabitatTlsIssuerKind = "mkcert" | "self-signed" | "missing";
 
 function commandAvailable(name: string): boolean {
   const r = spawnSync("command", ["-v", name], { encoding: "utf-8", shell: true });
@@ -38,9 +38,9 @@ export function readMkcertRootCaPem(): string | null {
   }
 }
 
-export function detectHubTlsIssuerKind(
-  certPath = expandConfigPath(defaultHubTlsCertPath()),
-): HubTlsIssuerKind {
+export function detectHabitatTlsIssuerKind(
+  certPath = expandConfigPath(defaultHabitatTlsCertPath()),
+): HabitatTlsIssuerKind {
   try {
     if (!existsSync(certPath)) return "missing";
     const pem = readFileSync(certPath, "utf-8");

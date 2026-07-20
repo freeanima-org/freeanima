@@ -31,7 +31,7 @@ function buildCredentials(data: Record<string, unknown>, source: string): Weixin
   };
 }
 
-/** Hub runtime `weixin` section or env WEIXIN_ILINK_TOKEN；`enabled: false` 时不加载 */
+/** Habitat runtime `weixin` section or env WEIXIN_ILINK_TOKEN；`enabled: false` 时不加载 */
 export function loadWeixinCredentials(): WeixinCredentials | null {
   try {
     const cfg = getActiveRuntimeConfig().data as Record<string, unknown>;

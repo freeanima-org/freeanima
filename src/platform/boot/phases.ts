@@ -5,7 +5,7 @@ import { bootEnginePhase } from "./engine-phase.ts";
 import { bootRuntimePhase } from "./runtime-phase.ts";
 import { startAsyncIntegrations } from "./integrations-phase.ts";
 
-/** Hub 启动阶段清单（顺序即依赖顺序） */
+/** Habitat 启动阶段清单（顺序即依赖顺序） */
 export const BOOT_PHASES = [
   { id: "config", run: bootConfigPhase },
   { id: "persistence", run: bootPersistencePhase },

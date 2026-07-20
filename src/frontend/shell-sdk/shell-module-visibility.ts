@@ -9,7 +9,7 @@ export type ShellModuleId =
   | "diary"
   | "vault"
   | "notifications"
-  | "console"
+  | "habitat"
   | "settings";
 
 export const SHELL_MODULE_IDS: ShellModuleId[] = [
@@ -21,7 +21,7 @@ export const SHELL_MODULE_IDS: ShellModuleId[] = [
   "diary",
   "vault",
   "notifications",
-  "console",
+  "habitat",
   "settings",
 ];
 
@@ -43,15 +43,20 @@ function storage(): Storage | null {
   }
 }
 
+/** 旧 localStorage 值 `console` → `habitat`（只读兼容，写出用新 id） */
+function migrateModuleId(id: string): string {
+  return id === "console" ? "habitat" : id;
+}
+
 function parseVisible(raw: string | null): Set<ShellModuleId> {
   if (!raw) return new Set(DEFAULT_VISIBLE);
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return new Set(DEFAULT_VISIBLE);
-    const ids = parsed.filter(
-      (id): id is ShellModuleId =>
-        typeof id === "string" && SHELL_MODULE_IDS.includes(id as ShellModuleId),
-    );
+    const ids = parsed
+      .filter((id): id is string => typeof id === "string")
+      .map(migrateModuleId)
+      .filter((id): id is ShellModuleId => SHELL_MODULE_IDS.includes(id as ShellModuleId));
     for (const locked of SHELL_MODULE_LOCKED) {
       if (!ids.includes(locked)) ids.push(locked);
     }
@@ -112,7 +117,7 @@ export function resolveShellModuleIdFromPath(pathname: string): ShellModuleId | 
   if (path.startsWith("/diary")) return "diary";
   if (path.startsWith("/vault")) return "vault";
   if (path.startsWith("/notifications")) return "notifications";
-  if (path.startsWith("/console")) return "console";
+  if (path.startsWith("/habitat") || path.startsWith("/console")) return "habitat";
   if (path.startsWith("/settings")) return "settings";
   return null;
 }
@@ -126,7 +131,7 @@ const MODULE_DEFAULT_PATH: Record<ShellModuleId, string> = {
   diary: "/diary",
   vault: "/vault",
   notifications: "/notifications",
-  console: "/console/dashboard",
+  habitat: "/habitat/dashboard",
   settings: "/settings",
 };
 

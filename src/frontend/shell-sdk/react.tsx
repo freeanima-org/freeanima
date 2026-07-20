@@ -17,7 +17,7 @@ export {
   useTouchPrimaryCapability,
 } from "./shell-capability-react.tsx";
 export {
-  canOpenHubSettings,
+  canOpenHabitatSettings,
   detectShellRuntimeKind,
   getShellKind,
   isNativeShell,
@@ -33,9 +33,9 @@ export { useSetShellModuleOrder, useShellModuleOrder } from "./shell-module-orde
 export { useColorTheme, useSetColorTheme } from "./color-theme-react.tsx";
 export { useChatLlmDebugEnabled, useSetChatLlmDebugEnabled } from "./chat-prefs-react.tsx";
 export { useNetworkOnline } from "./use-network-status.ts";
-export { useHubConnection } from "./use-hub-connection.ts";
-export { reconnectHub } from "./hub-connection.ts";
-export type { HubConnectionState } from "./hub-connection.ts";
+export { useHabitatConnection } from "./use-habitat-connection.ts";
+export { reconnectHabitat } from "./habitat-connection.ts";
+export type { HabitatConnectionState } from "./habitat-connection.ts";
 export { getUserVaultSession, VAULT_UI_SCOPE } from "./vault/user-vault-session.ts";
 export type { UserVaultSessionState, UserVaultUnlockInput } from "./vault/user-vault-session.ts";
 export { registerVaultRpcHandlers } from "./vault/vault-rpc-handlers.ts";

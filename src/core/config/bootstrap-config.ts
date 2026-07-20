@@ -23,7 +23,7 @@ export const bootstrapConfigSchema = z.object({
   database: databaseConfigSchema,
   http: httpConfigSchema.optional(),
   redis: redisBootstrapSchema,
-  /** Hub 是否托管 /web；缺省视为 true（有 dist 时生效） */
+  /** Habitat 是否托管 /web；缺省视为 true（有 dist 时生效） */
   web: webConfigSchema,
 });
 
@@ -57,7 +57,7 @@ export function isEmptyRuntimeDocument(document: Record<string, unknown>): boole
   return Object.keys(document).length === 0;
 }
 
-/** Hub 是否托管浏览器 /web（bootstrap；未写 enabled 默认 true） */
+/** Habitat 是否托管浏览器 /web（bootstrap；未写 enabled 默认 true） */
 export function isBootstrapWebHostingEnabled(bootstrap: BootstrapConfig): boolean {
   return bootstrap.web?.enabled ?? true;
 }

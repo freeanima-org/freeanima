@@ -66,17 +66,17 @@ msgstr ""
 #: docs/guide/install.md:18
 #, fuzzy
 #| msgid ""
-#| "All paths run the same `anima service` runtime (Hub REST `/api` + Hub RPC "
-#| "`/hub/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. "
+#| "All paths run the same `anima service` runtime (Habitat REST `/api` + Habitat RPC "
+#| "`/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. "
 #| "Redis powers EventBus and task context; it **degrades silently** when "
 #| "unavailable — Docker and production setups should still run it."
 msgid ""
-"Both paths run the same `anima service` runtime (Hub REST `/api` + Hub RPC `/"
+"Both paths run the same `anima service` runtime (Habitat REST `/api` + Habitat RPC `/"
 "hub/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis "
 "powers EventBus and task context; it **degrades silently** when unavailable "
 "— production setups should still run it."
 msgstr ""
-"所有路径运行相同的 `anima service` 运行时（Hub REST `/api` + SAP `/sap/v1` + "
+"所有路径运行相同的 `anima service` 运行时（Habitat REST `/api` + SAP `/sap/v1` + "
 "engine）。带 **pgvector** 的 PostgreSQL **必需**。Redis 支撑 EventBus 与任务"
 "上下文，不可用时**静默降级** — Docker 与生产环境仍应运行 Redis。"
 
@@ -288,14 +288,14 @@ msgstr "**`database.url`** — PostgreSQL 连接字符串（必需）"
 #. type: Bullet: '- '
 #: docs/guide/install.md:99
 msgid ""
-"**`web.enabled`** — Hub hosts `/web/*` when dist exists (optional; defaults "
+"**`web.enabled`** — Habitat hosts `/web/*` when dist exists (optional; defaults "
 "to on if omitted)"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:101
 #, no-wrap
-msgid "**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`hub_runtime_config`). Edit them in the Shell app under **Settings → Hub 服务 → 服务配置**.\n"
+msgid "**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`hub_runtime_config`). Edit them in the Shell app under **Settings → Habitat 服务 → 服务配置**.\n"
 msgstr ""
 
 #. type: Plain text
@@ -336,12 +336,12 @@ msgstr ""
 #: docs/guide/install.md:113
 #, fuzzy
 #| msgid ""
-#| "Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/"
+#| "Default bind: `127.0.0.1:2658`（Habitat API：`/api`，Habitat RPC：`/hub/rpc/"
 #| "v1`）。"
 msgid ""
-"Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`；Web "
+"Default bind: `127.0.0.1:2658`（Habitat API：`/api`，Habitat RPC：`/rpc/v1`；Web "
 "UI：`/web/*` when `config.yaml` `web.enabled`)."
-msgstr "默认绑定：`127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）。"
+msgstr "默认绑定：`127.0.0.1:2658`（Habitat API：`/api`，SAP：`/sap/v1`）。"
 
 #. type: Title ###
 #: docs/guide/install.md:114
@@ -368,7 +368,7 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:127
 msgid ""
-"升级时 Hub 在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进"
+"升级时 Habitat 在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进"
 "制瞬间短暂停服并自动拉起。未运行 service 时仅覆盖 `prefix/anima`，不会自动启"
 "动。"
 msgstr ""
@@ -536,32 +536,32 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:196
 #, no-wrap
-msgid "**Dev** (Hub + Vite HMR; never auto-builds Web). Prefer `just dev` for multi-worktree:\n"
+msgid "**Dev** (Habitat + Vite HMR; never auto-builds Web). Prefer `just dev` for multi-worktree:\n"
 msgstr ""
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:197
 #, no-wrap
 msgid ""
-"just dev            # Hub random ≥10000 + Web from :5000; FREEANIMA_URL wires Vite proxy only\n"
+"just dev            # Habitat random ≥10000 + Web from :5000; FREEANIMA_URL wires Vite proxy only\n"
 "# or two terminals:\n"
 "bun run dev:hub     # random ≥10000 (not production 2658); writes ~/.anima/dev-web.token\n"
-"FREEANIMA_URL=http://127.0.0.1:<hub-port> bun run dev:web   # default :5000; browser Hub = page origin\n"
+"FREEANIMA_URL=http://127.0.0.1:<hub-port> bun run dev:web   # default :5000; browser Habitat = page origin\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:205
 msgid ""
-"Browser Web defaults Hub URL to the **page origin** (same in production Hub-"
+"Browser Web defaults Habitat URL to the **page origin** (same in production Habitat-"
 "hosted `/web` and Vite). Dev injects Service API Token from `dev-web.token` "
 "automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves HTTPS "
-"using `~/.anima/tls` (Hub stays plain HTTP)."
+"using `~/.anima/tls` (Habitat stays plain HTTP)."
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:207
 #, no-wrap
-msgid "**Source deploy** (Hub hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `build:web`. Source-tree `anima` has no `service` command.\n"
+msgid "**Source deploy** (Habitat hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `build:web`. Source-tree `anima` has no `service` command.\n"
 msgstr ""
 
 #. type: Fenced code block (bash)
@@ -625,10 +625,10 @@ msgstr ""
 msgid ""
 "anima service start\n"
 "anima token create --subject-id 1 --name bootstrap\n"
-"# 将输出的 fa_at_... 填入客户端 Hub 设置\n"
+"# 将输出的 fa_at_... 填入客户端 Habitat 设置\n"
 "\n"
 "anima service status\n"
-"curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/hub/rpc/v1/status/get | jq '.version, .memory_kb'\n"
+"curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/rpc/v1/status/get | jq '.version, .memory_kb'\n"
 msgstr ""
 
 #. type: Plain text
@@ -652,23 +652,23 @@ msgstr "后续步骤"
 #, fuzzy
 #| msgid ""
 #| "**Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not "
-#| "expose **Console without auth ([`security.md`](security.md))"
+#| "expose **Habitat without auth ([`security.md`](security.md))"
 msgid ""
 "**Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not "
-"expose Console without auth ([`security.md`](security.md))"
+"expose Habitat without auth ([`security.md`](security.md))"
 msgstr ""
 "**安全** — 密钥使用 Vault / `env()`、`chmod 700 ~/.anima`、无认证勿暴露 "
-"**Console（[`security.md`](security.md)）"
+"**Habitat（[`security.md`](security.md)）"
 
 #. type: Bullet: '2. '
 #: docs/guide/install.md:246
 #, fuzzy
 #| msgid ""
 #| "**Remote access** — optional Cloudflare Tunnel + Service API Token for "
-#| "personal mobile/remote **Console ([`remote-access.md`](remote-access.md))"
+#| "personal mobile/remote **Habitat ([`remote-access.md`](remote-access.md))"
 msgid ""
 "**Remote access** — Service API Token + LAN / local HTTPS for personal "
-"mobile/remote Console ([`remote-access.md`](remote-access.md))"
+"mobile/remote Habitat ([`remote-access.md`](remote-access.md))"
 msgstr ""
 "**远程访问** — 可选 Cloudflare Tunnel + Service API Token，用于个人移动/远程"
 "管理台（[`remote-access.md`](remote-access.md)）"

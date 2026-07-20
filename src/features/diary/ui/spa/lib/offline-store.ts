@@ -1,6 +1,6 @@
 import {
   readOfflineCache,
-  resolveHubCacheScope,
+  resolveHabitatCacheScope,
   writeOfflineCache,
 } from "@freeanima/frontend/shell-sdk/offline-cache";
 import { getIdMapping, resolveIdFields } from "@freeanima/frontend/shell-sdk/offline-id-map";
@@ -26,7 +26,7 @@ import {
   seedTempIdAllocatorFromIdMap,
 } from "@freeanima/frontend/shell-sdk/offline-temp-id";
 import { preferOnlineWrite } from "@freeanima/frontend/shell-sdk/prefer-online-write";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
 import { randomUuid } from "@freeanima/shared/sap-contract";
 
 import type { DiaryEntryRow, DiarySubjectKind, DiaryTextBlock } from "./format-diary.ts";
@@ -152,10 +152,10 @@ function scheduleFlush(scope: string): void {
 }
 
 function hub() {
-  return getTypedSatelliteHubClient();
+  return getTypedSatelliteHabitatClient();
 }
 
-/** temp 且尚无 id-map 时 Hub 不认识该实体，只能走 outbox。 */
+/** temp 且尚无 id-map 时栖息地不认识该实体，只能走 outbox。 */
 async function unresolvedTempId(scope: string, id: number): Promise<boolean> {
   if (!isTempId(id)) return false;
   return (await getIdMapping(scope, MODULE_ID, id)) == null;
@@ -851,4 +851,4 @@ export async function countDiaryPendingOps(): Promise<number> {
   return listOutboxOps(resolveOutboxScope(), MODULE_ID).then((ops) => ops.length);
 }
 
-export { resolveHubCacheScope };
+export { resolveHabitatCacheScope };

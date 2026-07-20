@@ -6,7 +6,7 @@ export const alertSettingsSection: SettingsSection = {
   category: "client",
   title: "提示",
   description:
-    "本机瞬时提醒（系统通知与提示音）。仅作用于当前设备，不同步到 Hub 或其他端。番茄钟、后续聊天等能力通过此通道提醒。",
+    "本机瞬时提醒（系统通知与提示音）。仅作用于当前设备，不同步到 Habitat 或其他端。番茄钟、后续聊天等能力通过此通道提醒。",
   platforms: {
     desktop: {
       kind: "component",

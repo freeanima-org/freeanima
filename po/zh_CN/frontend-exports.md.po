@@ -142,16 +142,16 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/frontend-exports.md:40
 msgid ""
-"`embedMode` describes **how the shell hosts the UI**, not which Hub wire the "
-"module uses at runtime (that is determined by module code: Hub RPC vs REST)."
+"`embedMode` describes **how the shell hosts the UI**, not which Habitat wire the "
+"module uses at runtime (that is determined by module code: Habitat RPC vs REST)."
 msgstr ""
-"`embedMode` 描述**shell 如何托管 UI**，而非模块运行时使用的 Hub 线路（由模块"
-"代码决定：Hub RPC 或 REST）。"
+"`embedMode` 描述**shell 如何托管 UI**，而非模块运行时使用的 Habitat 线路（由模块"
+"代码决定：Habitat RPC 或 REST）。"
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:42
-msgid "Bundled SPA: Hub provides `/api` and `/hub/rpc/v1`."
-msgstr "壳内 bundled SPA：Hub 提供 `/api` 与 `/hub/rpc/v1`。"
+msgid "Bundled SPA: Habitat provides `/api` and `/rpc/v1`."
+msgstr "壳内 bundled SPA：Habitat 提供 `/api` 与 `/rpc/v1`。"
 
 #. type: Title ##
 #: docs/sap/frontend-exports.md:43
@@ -167,13 +167,13 @@ msgstr "当前前端 package"
 #| "| -------------------------------- | ----------- | ------------------- |\n"
 #| "| `@freeanima/satellite-companion` | `companion` | `embedded-sidecar`  |\n"
 #| "| `@freeanima/satellite-chat`      | `chat`      | `bundled-spa`       |\n"
-#| "| **Console (`src/app/shell/desktop` profile)    | `admin`     | `bundled-spa`       |\n"
+#| "| **Habitat (`src/app/shell/desktop` profile)    | `admin`     | `bundled-spa`       |\n"
 msgid ""
 "| Package                          | appId       | embedMode (profile) |\n"
 "| -------------------------------- | ----------- | ------------------- |\n"
 "| `@freeanima/satellite-companion` | `companion` | `embedded-sidecar`  |\n"
 "| `@freeanima/feature-chat`        | `chat`      | `bundled-spa`       |\n"
-"| `@freeanima/feature-console`     | `console`   | `bundled-spa`       |\n"
+"| `@freeanima/feature-habitat`     | `console`   | `bundled-spa`       |\n"
 msgstr ""
 "| Package                          | appId       | embedMode（配置）   |\n"
 "| -------------------------------- | ----------- | ------------------- |\n"
@@ -202,25 +202,25 @@ msgstr ""
 #. type: Title ##
 #: docs/sap/frontend-exports.md:53
 #, no-wrap
-msgid "Chat: Hub RPC and instance_id"
-msgstr "聊天室：Hub RPC 与 instance_id"
+msgid "Chat: Habitat RPC and instance_id"
+msgstr "聊天室：Habitat RPC 与 instance_id"
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:56
 #, fuzzy
 #| msgid ""
 #| "Bundled chat uses [`createSapDirectClient`](../../packages/sap-contract/"
-#| "src/direct-client.ts) on the shared Hub RPC transport "
-#| "(`getBundledHubRpcClient` / `whenHubRpcReady`). It does **not** call "
+#| "src/direct-client.ts) on the shared Habitat RPC transport "
+#| "(`getBundledHabitatRpcClient` / `whenHabitatRpcReady`). It does **not** call "
 #| "`sap.attach`."
 msgid ""
 "Bundled chat uses [`getBundledSapStreamClient`](../../src/shared/sap-"
-"contract/bundled-sap-stream.ts) on the shared Hub RPC transport "
-"(`getBundledHubRpcClient` / `whenHubRpcReady`). It does **not** call "
+"contract/bundled-sap-stream.ts) on the shared Habitat RPC transport "
+"(`getBundledHabitatRpcClient` / `whenHabitatRpcReady`). It does **not** call "
 "`sap.attach`."
 msgstr ""
-"壳内 bundled 聊天室在共享 Hub RPC 传输层（`getBundledHubRpcClient` / "
-"`whenHubRpcReady`）上使用 [`createSapDirectClient`](../../packages/sap-"
+"壳内 bundled 聊天室在共享 Habitat RPC 传输层（`getBundledHabitatRpcClient` / "
+"`whenHabitatRpcReady`）上使用 [`createSapDirectClient`](../../packages/sap-"
 "contract/src/direct-client.ts)。**不会**调用 `sap.attach`。"
 
 #. type: Plain text
@@ -245,16 +245,16 @@ msgstr "Capacitor：Preferences"
 #. type: Title ##
 #: docs/sap/frontend-exports.md:62
 #, fuzzy, no-wrap
-#| msgid "**Console: Hub REST + bundled SPA"
-msgid "Console: Hub REST + bundled SPA"
-msgstr "管理台：Hub REST + bundled SPA"
+#| msgid "**Habitat: Habitat REST + bundled SPA"
+msgid "Habitat: Habitat REST + bundled SPA"
+msgstr "管理台：Habitat REST + bundled SPA"
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:65
 msgid ""
-"Console UI source SSOT: [`src/features/console/ui/console/`](../../src/"
-"features/console/ui/console/). Build helpers: [`src/features/console/build/`]"
-"(../../src/features/console/build/)（Paraglide compile、admin hash）；SPA 打"
+"Habitat UI source SSOT: [`src/features/habitat/ui/habitat/`](../../src/"
+"features/habitat/ui/habitat/). Build helpers: [`src/features/habitat/build/`]"
+"(../../src/features/habitat/build/)（Paraglide compile、admin hash）；SPA 打"
 "包进 desktop / mobile / web shell。"
 msgstr ""
 
@@ -262,25 +262,25 @@ msgstr ""
 #: docs/sap/frontend-exports.md:67
 #, fuzzy
 #| msgid ""
-#| "REST base: bundled pages use `window.satelliteShell.hubUrl` for Hub **`/"
-#| "api/*`**. Hub enables CORS for localhost / Capacitor origins."
+#| "REST base: bundled pages use `window.satelliteShell.hubUrl` for Habitat **`/"
+#| "api/*`**. Habitat enables CORS for localhost / Capacitor origins."
 msgid ""
-"REST base: bundled pages use `window.satelliteShell.hubUrl` for Hub RPC REST "
-"**`/hub/rpc/v1/*`** (or `hub().call(\"method\")`). Hub enables CORS for "
+"REST base: bundled pages use `window.satelliteShell.hubUrl` for Habitat RPC REST "
+"**`/rpc/v1/*`** (or `hub().call(\"method\")`). Habitat enables CORS for "
 "localhost / Capacitor origins."
 msgstr ""
-"REST 基址：打包页面通过 `window.satelliteShell.hubUrl` 访问 Hub **`/api/"
-"*`**。Hub 为 localhost / Capacitor 来源启用 CORS。"
+"REST 基址：打包页面通过 `window.satelliteShell.hubUrl` 访问 Habitat **`/api/"
+"*`**。Habitat 为 localhost / Capacitor 来源启用 CORS。"
 
 #. type: Plain text
 #: docs/sap/frontend-exports.md:68
 #, fuzzy
 #| msgid ""
-#| "Local shell dev: `bun run dev:web` → `http://127.0.0.1:4173` (Hub must be "
-#| "running; includes Chat, **Console, settings)."
+#| "Local shell dev: `bun run dev:web` → `http://127.0.0.1:4173` (Habitat must be "
+#| "running; includes Chat, **Habitat, settings)."
 msgid ""
-"Local shell dev: `bun run dev:web` → `http://127.0.0.1:4173` (Hub must be "
-"running; includes Chat, Console, settings)."
+"Local shell dev: `bun run dev:web` → `http://127.0.0.1:4173` (Habitat must be "
+"running; includes Chat, Habitat, settings)."
 msgstr ""
-"本地 shell 开发：`bun run dev:web` → `http://127.0.0.1:4173`（Hub 须已运行；"
+"本地 shell 开发：`bun run dev:web` → `http://127.0.0.1:4173`（Habitat 须已运行；"
 "含聊天室、管理台、设置）。"

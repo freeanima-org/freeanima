@@ -5,7 +5,7 @@ export const shellModulesSettingsSection: SettingsSection = {
   order: 20,
   category: "client",
   title: "模块",
-  description: "控制 Shell 导航中显示的模块及顺序。设置保存在本机，不同步到 Hub。",
+  description: "控制 Shell 导航中显示的模块及顺序。设置保存在本机，不同步到栖息地。",
   platforms: {
     desktop: {
       kind: "component",

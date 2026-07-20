@@ -122,7 +122,7 @@ export function emitStreamEvent(emit: SapStreamEmitter, streamId: string, ev: St
   }
 }
 
-/** Hub 投影：runtime reducer → display_append + token；不转发原始 tool_begin/result */
+/** Habitat 投影：runtime reducer → display_append + token；不转发原始 tool_begin/result */
 export async function* bridgeMessageStream(
   streamId: string,
   source: AsyncIterable<StreamEvent>,
@@ -189,7 +189,7 @@ export async function* bridgeSessionUpdates(
   }
 }
 
-/** Bridge Console SSE-shaped events through the same mapper (for existing HTTP routes) */
+/** Bridge Habitat SSE-shaped events through the same mapper (for existing HTTP routes) */
 export async function* bridgeApiStreamEvents(
   streamId: string,
   source: AsyncIterable<{ event: string; data: string }>,

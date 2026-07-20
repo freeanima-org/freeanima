@@ -9,10 +9,10 @@ title: Repository topology
 
 ## Packages
 
-| Package           | Path            | Role                                                                         |
-| ----------------- | --------------- | ---------------------------------------------------------------------------- |
-| `freeanima`       | repository root | Hub runtime, CLI, capabilities, features, shells — **one `package.json`**    |
-| `@freeanima/site` | `site/`         | Astro/Starlight 文档站（**独立** `package.json` + `bun.lock`，非 workspace） |
+| Package           | Path            | Role                                                                          |
+| ----------------- | --------------- | ----------------------------------------------------------------------------- |
+| `freeanima`       | repository root | Habitat runtime, CLI, capabilities, features, shells — **one `package.json`** |
+| `@freeanima/site` | `site/`         | Astro/Starlight 文档站（**独立** `package.json` + `bun.lock`，非 workspace）  |
 
 根目录 **无** `workspaces`；`site/` 与产品依赖图分离，内容（`docs/`、`po/`、`messages/`）仍与产品同仓。
 
@@ -23,10 +23,10 @@ src/
 ├── kernel/          # 日志、事件总线、无业务依赖
 ├── core/            # 配置、PG schema、repos、LLM 工具
 ├── runtime/         # 对话轮次、目标、流水线
-├── platform/        # 组合根：Hub、连接器、SAP、slash commands
+├── platform/        # 组合根：Habitat、连接器、SAP、slash commands
 ├── capabilities/    # acp, memory, tools, mcp-*, llm-openai, …
 ├── features/        # chat, console, task, vault, diary, …
-├── shared/          # hub-rpc, hub-contract, sap-contract, vault-crypto
+├── shared/          # habitat-rpc, habitat-contract, sap-contract, vault-crypto
 ├── frontend/        # ui-kit, shell-sdk, shell-ui
 ├── app/
 │   ├── cli/         # `anima` CLI（无内层 src/）

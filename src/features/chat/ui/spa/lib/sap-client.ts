@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import {
-  resolveHubRpcWsUrl,
+  resolveHabitatRpcWsUrl,
   getBundledSapStreamClient,
   resetBundledSapStreamClientForTests,
   subscribeShellConfigChanges,
@@ -10,17 +10,17 @@ import {
 
 const CHAT_PLATFORM = "chat";
 
-function resolveHubRpcWsUrlFromEnv(): string {
+function resolveHabitatRpcWsUrlFromEnv(): string {
   const shell = window.satelliteShell;
-  if (shell?.hubWsUrl) return shell.hubWsUrl;
+  if (shell?.habitatWsUrl) return shell.habitatWsUrl;
   const fromVite = process.env.VITE_FREEANIMA_HUB_WS?.trim();
   if (fromVite) return fromVite;
-  return resolveHubRpcWsUrl("http://127.0.0.1:2658");
+  return resolveHabitatRpcWsUrl("http://127.0.0.1:2658");
 }
 
 function getClient() {
   return getBundledSapStreamClient({
-    hubRpcWsUrl: resolveHubRpcWsUrlFromEnv(),
+    hubRpcWsUrl: resolveHabitatRpcWsUrlFromEnv(),
   });
 }
 

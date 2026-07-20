@@ -1,4 +1,4 @@
-import { isHubFetchAvailable } from "./hub-fetch-gate.ts";
+import { isHabitatFetchAvailable } from "./habitat-fetch-gate.ts";
 import { readOfflineCache, writeOfflineCache } from "./offline-cache.ts";
 
 export type WithOfflineCacheOptions<T> = {
@@ -15,12 +15,12 @@ export type WithOfflineCacheOptions<T> = {
 };
 
 /**
- * 在线 Hub-first / 离线 cache：
- * - Hub 可用：先发 fetch（可与 IDB 读并行，缓存仅作失败回退）；成功后异步写回缓存
- * - Hub 不可用：只读本地快照，不发起 RPC
+ * 在线栖息地优先 / 离线 cache：
+ * - 栖息地可用：先发 fetch（可与 IDB 读并行，缓存仅作失败回退）；成功后异步写回缓存
+ * - 栖息地不可用：只读本地快照，不发起 RPC
  */
 export async function withOfflineCache<T>(opts: WithOfflineCacheOptions<T>): Promise<T> {
-  if (!isHubFetchAvailable()) {
+  if (!isHabitatFetchAvailable()) {
     const cached = await readOfflineCache<T>(opts.scope, opts.namespace, opts.id);
     if (cached != null) return cached;
     throw new Error(opts.offlineError ?? "offline fetch failed");

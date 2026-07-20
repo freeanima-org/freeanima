@@ -3,7 +3,7 @@ import type { StreamApiLikeEvent } from "./frames/message.ts";
 import { mapSapStreamMethodToApi, streamEventMethods } from "./frames/message.ts";
 import type { ConversationCreateInput, ConversationListInput } from "./frames/conversation.ts";
 import { formatSapPlatform } from "./naming.ts";
-import { HUB_RPC_MESSAGE_SEND_TIMEOUT_MS } from "@freeanima/shared/hub-rpc";
+import { HABITAT_RPC_MESSAGE_SEND_TIMEOUT_MS } from "@freeanima/shared/habitat-rpc";
 import { omitUndefined } from "@freeanima/core/util";
 
 export type SubscribeCallbacks<T> = {
@@ -115,7 +115,7 @@ export function createSapConversationStreamClient(
               expected_tail_pos: input.expectedTailPos,
               force_tail: input.forceTail ? true : undefined,
             }),
-            { timeoutMs: HUB_RPC_MESSAGE_SEND_TIMEOUT_MS },
+            { timeoutMs: HABITAT_RPC_MESSAGE_SEND_TIMEOUT_MS },
           );
 
           for (const method of streamEventMethods) {

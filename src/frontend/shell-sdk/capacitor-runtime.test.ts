@@ -16,7 +16,7 @@ describe("isCapacitorShellCandidate", () => {
     expect(isCapacitorShellCandidate()).toBe(false);
   });
 
-  it("手机浏览器直连远程 Hub 不为 Capacitor 候选", () => {
+  it("手机浏览器直连远程 Habitat 不为 Capacitor 候选", () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14; Mobile)" },
       location: { origin: "https://anima.fengtrace.me" },
@@ -36,7 +36,7 @@ describe("isCapacitorShellCandidate", () => {
     expect(isCapacitorShellCandidate()).toBe(true);
   });
 
-  it("远程 Hub + nativePromise 视为真壳", () => {
+  it("远程 Habitat + nativePromise 视为真壳", () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14)" },
       location: { origin: "https://hub.example.com" },

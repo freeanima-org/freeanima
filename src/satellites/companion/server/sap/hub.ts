@@ -45,13 +45,13 @@ function sapAuthTokenReady(): boolean {
   return Boolean(remoteAuthTokenFromShell()?.trim());
 }
 
-function ensureHub(hubUrl: string, httpUrl?: string): SatelliteHubHandle | null {
+function ensureHub(habitatUrl: string, httpUrl?: string): SatelliteHubHandle | null {
   if (!sapAuthTokenReady()) return null;
   if (!hub) {
     const remoteAuthToken = remoteAuthTokenFromShell();
     hub = createSatelliteHub({
       appId: APP_ID,
-      hubUrl,
+      habitatUrl,
       ...(httpUrl !== undefined ? { httpUrl } : {}),
       ...(remoteAuthToken !== undefined ? { remoteAuthToken } : {}),
       instanceStore: fileSapInstanceStore(instanceStorePath()),
@@ -78,29 +78,29 @@ export function isSapConnected(): boolean {
   return hub?.isConnected() ?? false;
 }
 
-export function startSapTransport(hubUrl: string, httpUrl?: string): void {
+export function startSapTransport(habitatUrl: string, httpUrl?: string): void {
   if (!sapAuthTokenReady()) {
-    console.log("companion SAP: waiting for Hub API Token");
+    console.log("companion SAP: waiting for Habitat API Token");
     return;
   }
-  ensureHub(hubUrl, httpUrl);
+  ensureHub(habitatUrl, httpUrl);
 }
 
-export function reconnectSap(hubUrl: string, httpUrl?: string): void {
+export function reconnectSap(habitatUrl: string, httpUrl?: string): void {
   if (!sapAuthTokenReady()) {
     hub?.stop();
     hub = null;
     return;
   }
   if (hub) {
-    hub.reconnect(hubUrl, httpUrl);
+    hub.reconnect(habitatUrl, httpUrl);
     return;
   }
-  ensureHub(hubUrl, httpUrl);
+  ensureHub(habitatUrl, httpUrl);
 }
 
-export async function getSapClient(hubUrl: string, httpUrl?: string) {
-  const handle = ensureHub(hubUrl, httpUrl);
+export async function getSapClient(habitatUrl: string, httpUrl?: string) {
+  const handle = ensureHub(habitatUrl, httpUrl);
   if (!handle) {
     throw new Error("satellite hub requires remoteAuthToken");
   }

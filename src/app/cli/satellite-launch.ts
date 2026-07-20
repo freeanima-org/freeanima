@@ -62,7 +62,7 @@ export function formatExecStart(command: string, args: string[]): string {
 
 export function resolveSatelliteLaunch(
   entry: SatelliteEntryConfig,
-  opts?: { hubUrl?: string; install?: InstallContext },
+  opts?: { habitatUrl?: string; install?: InstallContext },
 ): SatelliteLaunch {
   const command = entry.command?.trim();
   if (!command) {
@@ -71,11 +71,11 @@ export function resolveSatelliteLaunch(
 
   const install = opts?.install ?? getInstallContext();
   const workingDirectory = install.monorepoRoot ?? install.cliRoot;
-  const hubUrl = opts?.hubUrl ?? process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658";
+  const habitatUrl = opts?.habitatUrl ?? process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658";
   const args = entry.args ?? [];
 
   const environment: Record<string, string> = {
-    FREEANIMA_URL: hubUrl,
+    FREEANIMA_URL: habitatUrl,
     FREEANIMA_REPO_ROOT: workingDirectory,
     ...entry.env,
   };

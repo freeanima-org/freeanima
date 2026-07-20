@@ -33,7 +33,7 @@ const ALLOW_PREFIX = [
 const ALLOW = new Set([
   "GitHub",
   "English",
-  "Console",
+  "Habitat",
   "Docker Compose",
   "MIT",
   "Gateway",

@@ -18,26 +18,26 @@ msgstr ""
 #. type: Title #
 #: docs/sap/hub-rpc.md:1 docs/sap/hub-rpc.md:5
 #, no-wrap
-msgid "Hub RPC"
-msgstr "Hub RPC"
+msgid "Habitat RPC"
+msgstr "Habitat RPC"
 
 #. type: Plain text
 #: docs/sap/hub-rpc.md:8
 #, no-wrap
-msgid "**Hub RPC** (`HubRPC/1.0`) is the **single business channel** between Hub clients and the agent runtime. Transport:\n"
+msgid "**Habitat RPC** (`HubRPC/1.0`) is the **single business channel** between Habitat clients and the agent runtime. Transport:\n"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/hub-rpc.md:11
 msgid ""
-"**WebSocket** — long-lived connection at **`/hub/rpc/v1`** (connect "
+"**WebSocket** — long-lived connection at **`/rpc/v1`** (connect "
 "handshake + heartbeat; HubRPC `req`/`res`/`evt` envelope)"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/hub-rpc.md:11
 msgid ""
-"**HTTP REST** — stateless GET/POST at **`/hub/rpc/v1/{method/path}`** (plain "
+"**HTTP REST** — stateless GET/POST at **`/rpc/v1/{method/path}`** (plain "
 "JSON body or query; `Authorization: Bearer`)"
 msgstr ""
 
@@ -53,23 +53,23 @@ msgstr ""
 #: docs/sap/hub-rpc.md:15
 msgid ""
 "Binary HTTP methods (e.g. `tts.synthesize`, companion assets, TLS PEM/QR) "
-"use Hub RPC REST with registry `request` / `response` encoding. Public "
-"probes (`health.probe`, `tls.ca.*`) are Hub RPC methods with `auth: "
-"optional` — `GET /hub/rpc/v1/health/probe`, `GET /hub/rpc/v1/tls/ca`, etc."
+"use Habitat RPC REST with registry `request` / `response` encoding. Public "
+"probes (`health.probe`, `tls.ca.*`) are Habitat RPC methods with `auth: "
+"optional` — `GET /rpc/v1/health/probe`, `GET /rpc/v1/tls/ca`, etc."
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/hub-rpc.md:17
 #, fuzzy
 #| msgid ""
-#| "SAP (`SAP/1.0`) is a **session layer** on top of Hub RPC: true satellites "
+#| "SAP (`SAP/1.0`) is a **session layer** on top of Habitat RPC: true satellites "
 #| "call `sap.attach` after connect; bundled SPA modules **never** attach."
 msgid ""
-"SAP (`SAP/1.0`) is a **session layer** on top of Hub RPC WebSocket: true "
+"SAP (`SAP/1.0`) is a **session layer** on top of Habitat RPC WebSocket: true "
 "satellites call `sap.attach` after connect; bundled SPA modules **never** "
 "attach."
 msgstr ""
-"SAP（`SAP/1.0`）是 Hub RPC 之上的**会话层**：真正的卫星在 connect 后调用 "
+"SAP（`SAP/1.0`）是 Habitat RPC 之上的**会话层**：真正的卫星在 connect 后调用 "
 "`sap.attach`；壳内 bundled SPA 模块**从不** attach。"
 
 #. type: Title ##
@@ -83,37 +83,37 @@ msgstr "端点"
 #: docs/sap/hub-rpc.md:20
 #, no-wrap
 msgid ""
-"ws://{hub_host}:{port}/hub/rpc/v1              # WebSocket upgrade (HubRPC envelope)\n"
-"http://{hub_host}:{port}/hub/rpc/v1/task/list  # GET (read-only methods)\n"
-"http://{hub_host}:{port}/hub/rpc/v1/task/create # POST (write methods)\n"
+"ws://{hub_host}:{port}/rpc/v1              # WebSocket upgrade (HubRPC envelope)\n"
+"http://{hub_host}:{port}/rpc/v1/task/list  # GET (read-only methods)\n"
+"http://{hub_host}:{port}/rpc/v1/task/create # POST (write methods)\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/hub-rpc.md:27
 #, fuzzy
 #| msgid ""
-#| "Derive from Hub HTTP URL: replace `http` with `ws`, strip trailing slash, "
-#| "append `/hub/rpc/v1`. Helpers: `resolveHubRpcWsUrl` in `@freeanima/hub-"
+#| "Derive from Habitat HTTP URL: replace `http` with `ws`, strip trailing slash, "
+#| "append `/rpc/v1`. Helpers: `resolveHabitatRpcWsUrl` in `@freeanima/hub-"
 #| "rpc`."
 msgid ""
-"Derive WS URL from HTTP: replace `http` with `ws`, append `/hub/rpc/v1`. "
-"Helpers: `resolveHubRpcWsUrl`, `buildHubRestRequest` in `@freeanima/shared/"
+"Derive WS URL from HTTP: replace `http` with `ws`, append `/rpc/v1`. "
+"Helpers: `resolveHabitatRpcWsUrl`, `buildHabitatRestRequest` in `@freeanima/shared/"
 "hub-rpc`."
 msgstr ""
-"由 Hub HTTP URL 推导：将 `http` 替换为 `ws`，去掉末尾斜杠，追加 `/hub/rpc/"
-"v1`。辅助函数：`@freeanima/hub-rpc` 中的 `resolveHubRpcWsUrl`。"
+"由 Habitat HTTP URL 推导：将 `http` 替换为 `ws`，去掉末尾斜杠，追加 `/hub/rpc/"
+"v1`。辅助函数：`@freeanima/hub-rpc` 中的 `resolveHabitatRpcWsUrl`。"
 
 #. type: Plain text
 #: docs/sap/hub-rpc.md:29
 #, fuzzy
 #| msgid ""
-#| "Hub route: [`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
+#| "Habitat route: [`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
 #| "route.ts)."
 msgid ""
-"Hub route: [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-"
+"Habitat route: [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-"
 "route.ts)."
 msgstr ""
-"Hub 路由：[`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
+"Habitat 路由：[`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
 "route.ts)。"
 
 #. type: Title ##
@@ -125,7 +125,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/hub-rpc.md:33
 msgid ""
-"Hub method `domain.action` maps to path **`/hub/rpc/v1/domain/action`** "
+"Habitat method `domain.action` maps to path **`/rpc/v1/domain/action`** "
 "(dots → slashes; camelCase preserved)."
 msgstr ""
 
@@ -135,11 +135,11 @@ msgstr ""
 msgid ""
 "| Kind           | HTTP     | Example                                                             |\n"
 "| -------------- | -------- | ------------------------------------------------------------------- |\n"
-"| Read-only      | **GET**  | `GET /hub/rpc/v1/task/list?subject_kind=user`                       |\n"
-"| Write          | **POST** | `POST /hub/rpc/v1/task/create` `{ subject_kind, title, … }`         |\n"
-"| By id (read)   | **GET**  | `GET /hub/rpc/v1/task/get/42?subject_kind=user`                     |\n"
-"| By id (write)  | **POST** | `POST /hub/rpc/v1/task/patch/42` `{ subject_kind, title?, … }`      |\n"
-"| Sensitive read | **POST** | `POST /hub/rpc/v1/vault/get/3` `{ subject_kind, include_secrets? }` |\n"
+"| Read-only      | **GET**  | `GET /rpc/v1/task/list?subject_kind=user`                       |\n"
+"| Write          | **POST** | `POST /rpc/v1/task/create` `{ subject_kind, title, … }`         |\n"
+"| By id (read)   | **GET**  | `GET /rpc/v1/task/get/42?subject_kind=user`                     |\n"
+"| By id (write)  | **POST** | `POST /rpc/v1/task/patch/42` `{ subject_kind, title?, … }`      |\n"
+"| Sensitive read | **POST** | `POST /rpc/v1/vault/get/3` `{ subject_kind, include_secrets? }` |\n"
 msgstr ""
 
 #. type: Plain text
@@ -147,7 +147,7 @@ msgstr ""
 msgid ""
 "Route metadata is generated from [`hub-contract`](../../src/shared/hub-"
 "contract/) (`meta.http`: `verb`, `path`, `pathParams`). Wrong verb on a "
-"known path → **405**; legacy `POST /hub/rpc/v1` envelope → **410**."
+"known path → **405**; legacy `POST /rpc/v1` envelope → **410**."
 msgstr ""
 
 #. type: Plain text
@@ -170,26 +170,26 @@ msgstr "信封类型"
 #| msgid ""
 #| "| `kind`      | Direction    | Purpose                                           |\n"
 #| "| ----------- | ------------ | ------------------------------------------------- |\n"
-#| "| `connect`   | Client → Hub | First frame; `protocol: HubRPC/1.0`, `auth_token` |\n"
-#| "| `connected` | Hub → Client | `session_id`, `heartbeat_interval_sec`            |\n"
-#| "| `req`       | Client → Hub | RPC (`id`, `method`, `payload`)                   |\n"
-#| "| `res`       | Hub → Client | RPC reply                                         |\n"
+#| "| `connect`   | Client → Habitat | First frame; `protocol: HubRPC/1.0`, `auth_token` |\n"
+#| "| `connected` | Habitat → Client | `session_id`, `heartbeat_interval_sec`            |\n"
+#| "| `req`       | Client → Habitat | RPC (`id`, `method`, `payload`)                   |\n"
+#| "| `res`       | Habitat → Client | RPC reply                                         |\n"
 #| "| `evt`       | Both         | Async event (incl. `heartbeat`)                   |\n"
 msgid ""
 "| `kind`      | Direction    | Purpose                                                    |\n"
 "| ----------- | ------------ | ---------------------------------------------------------- |\n"
-"| `connect`   | Client → Hub | WS only: first frame; `protocol: HubRPC/1.0`, `auth_token` |\n"
-"| `connected` | Hub → Client | WS only: `session_id`, `heartbeat_interval_sec`            |\n"
-"| `req`       | Client → Hub | RPC (`id`, `method`, `payload`)                            |\n"
-"| `res`       | Hub → Client | RPC reply                                                  |\n"
+"| `connect`   | Client → Habitat | WS only: first frame; `protocol: HubRPC/1.0`, `auth_token` |\n"
+"| `connected` | Habitat → Client | WS only: `session_id`, `heartbeat_interval_sec`            |\n"
+"| `req`       | Client → Habitat | RPC (`id`, `method`, `payload`)                            |\n"
+"| `res`       | Habitat → Client | RPC reply                                                  |\n"
 "| `evt`       | Both         | Async event (WS only; incl. `heartbeat`)                   |\n"
 msgstr ""
 "| `kind`      | 方向         | 用途                                              |\n"
 "| ----------- | ------------ | ------------------------------------------------- |\n"
-"| `connect`   | Client → Hub | 首帧；`protocol: HubRPC/1.0`、`auth_token`        |\n"
-"| `connected` | Hub → Client | `session_id`、`heartbeat_interval_sec`            |\n"
-"| `req`       | Client → Hub | RPC（`id`、`method`、`payload`）                  |\n"
-"| `res`       | Hub → Client | RPC 回复                                          |\n"
+"| `connect`   | Client → Habitat | 首帧；`protocol: HubRPC/1.0`、`auth_token`        |\n"
+"| `connected` | Habitat → Client | `session_id`、`heartbeat_interval_sec`            |\n"
+"| `req`       | Client → Habitat | RPC（`id`、`method`、`payload`）                  |\n"
+"| `res`       | Habitat → Client | RPC 回复                                          |\n"
 "| `evt`       | 双向         | 异步事件（含 `heartbeat`）                        |\n"
 
 #. type: Plain text
@@ -219,26 +219,26 @@ msgstr "认证"
 #, fuzzy
 #| msgid ""
 #| "Every connection must send a valid **service API token** in the `connect` "
-#| "payload (`auth_token`). The Hub verifies it with `verifyServiceApiToken` "
+#| "payload (`auth_token`). The Habitat verifies it with `verifyServiceApiToken` "
 #| "([`core/src/db/pg/service-api-token/`](../../core/src/db/pg/service-api-"
 #| "token/))."
 msgid ""
 "Every **WebSocket** connection must send a valid **service API token** in "
 "the `connect` payload (`auth_token`). **HTTP REST** uses `Authorization: "
 "Bearer fa_at_...` on each request unless the method registry marks `auth: "
-"optional` (public read-only probes only). The Hub verifies with "
+"optional` (public read-only probes only). The Habitat verifies with "
 "`verifyServiceApiToken` ([`src/core/db/pg/service-api-token/`](../../src/"
 "core/db/pg/service-api-token/))."
 msgstr ""
 "每次连接必须在 `connect` 载荷（`auth_token`）中发送有效的**服务 API 令牌**。"
-"Hub 通过 `verifyServiceApiToken` 验证（[`core/src/db/pg/service-api-token/`]"
+"Habitat 通过 `verifyServiceApiToken` 验证（[`core/src/db/pg/service-api-token/`]"
 "(../../core/src/db/pg/service-api-token/)）。"
 
 #. type: Plain text
 #: docs/sap/hub-rpc.md:65
 msgid ""
 "Bundled clients read the token from `window.satelliteShell.remoteAuth.token` "
-"(shell bridge), configured in client **Hub settings** (`/settings`). Hub `/"
+"(shell bridge), configured in client **Habitat settings** (`/settings`). Habitat `/"
 "web/config.json` does not include tokens."
 msgstr ""
 
@@ -269,7 +269,7 @@ msgstr ""
 msgid ""
 "| Encoding             | Use                                                                                                         |\n"
 "| -------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
-"| `response: raw`      | Handler returns `Response` (PEM, PNG, VRM, MPEG, octet-stream). Client: `callRaw()` or `fetchHubRestRaw()`. |\n"
+"| `response: raw`      | Handler returns `Response` (PEM, PNG, VRM, MPEG, octet-stream). Client: `callRaw()` or `fetchHabitatRestRaw()`. |\n"
 "| `request: multipart` | POST with `FormData` body (e.g. `companion.model.upload`).                                                  |\n"
 "| `request: raw`       | POST body read from `ctx.httpRequest` in handler.                                                           |\n"
 msgstr ""
@@ -290,7 +290,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/hub-rpc.md:79
 msgid ""
-"Helpers: `hubRestUrl()`, `binaryHttpMeta()` / `rawPublicHttpMeta()` in hub-"
+"Helpers: `habitatRestUrl()`, `binaryHttpMeta()` / `rawPublicHttpMeta()` in hub-"
 "contract. JSON methods continue to use `hubClient.call()`."
 msgstr ""
 
@@ -306,23 +306,23 @@ msgstr "客户端配置"
 #| msgid ""
 #| "| Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |\n"
 #| "| ----------------- | ------------------------------------------------ | ------------ | ---------------------------------------------- |\n"
-#| "| Bundled SPA       | `getBundledHubRpcClient()` / `whenHubRpcReady()` | **No**       | Chat, task, notification, diary, email modules |\n"
+#| "| Bundled SPA       | `getBundledHabitatRpcClient()` / `whenHabitatRpcReady()` | **No**       | Chat, task, notification, diary, email modules |\n"
 #| "| Satellite process | `createSatelliteHub()` in sap-contract           | **Yes**      | companion, pair-programming                    |\n"
 msgid ""
 "| Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |\n"
 "| ----------------- | ------------------------------------------------ | ------------ | ---------------------------------------------- |\n"
-"| Bundled SPA       | `getBundledHubRpcClient()` / `whenHubRpcReady()` | **No**       | Chat, task, notification, diary, email modules |\n"
+"| Bundled SPA       | `getBundledHabitatRpcClient()` / `whenHabitatRpcReady()` | **No**       | Chat, task, notification, diary, email modules |\n"
 "| Satellite process | `createSatelliteHub()` in sap-contract           | **Yes**      | companion                                      |\n"
 msgstr ""
 "| 配置            | Package 入口                                      | `sap.attach` | 典型消费者                                   |\n"
 "| --------------- | ------------------------------------------------- | ------------ | -------------------------------------------- |\n"
-"| Bundled SPA     | `getBundledHubRpcClient()` / `whenHubRpcReady()`  | **否**       | 聊天室、任务、通知、日记、邮件等模块         |\n"
+"| Bundled SPA     | `getBundledHabitatRpcClient()` / `whenHabitatRpcReady()`  | **否**       | 聊天室、任务、通知、日记、邮件等模块         |\n"
 "| Satellite 进程  | sap-contract 中的 `createSatelliteHub()`          | **是**       | companion、pair-programming                  |\n"
 
 #. type: Plain text
 #: docs/sap/hub-rpc.md:88
 msgid ""
-"Bundled SPA shares **one** Hub RPC WebSocket per page load (for streaming, "
+"Bundled SPA shares **one** Habitat RPC WebSocket per page load (for streaming, "
 "subscriptions, and WS fallback). **`hub-client.call()`** picks transport per "
 "method: **read-only** dual-transport methods default to **HTTP GET**; "
 "**writes** default to **WebSocket** (`dualTransportMeta` in hub-contract). "
@@ -333,10 +333,10 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/hub-rpc.md:90
 msgid ""
-"Satellite processes connect with Hub RPC, then `sap.attach` with `app_id` / "
+"Satellite processes connect with Habitat RPC, then `sap.attach` with `app_id` / "
 "`instance_id` before `tool.register` or instance-scoped methods."
 msgstr ""
-"Satellite 进程先通过 Hub RPC 连接，再以 `app_id` / `instance_id` 调用 "
+"Satellite 进程先通过 Habitat RPC 连接，再以 `app_id` / `instance_id` 调用 "
 "`sap.attach`，之后方可 `tool.register` 或使用实例范围的方法。"
 
 #. type: Content of: <messages><msg>
@@ -349,11 +349,11 @@ msgstr "重连"
 #: docs/sap/hub-rpc.md:94
 msgid ""
 "Use `runHubRpcTransport` for connect, heartbeat, and exponential backoff "
-"(default 1s → 30s cap). On satellite detach or socket close, Hub unregisters "
+"(default 1s → 30s cap). On satellite detach or socket close, Habitat unregisters "
 "tools for that instance."
 msgstr ""
 "使用 `runHubRpcTransport` 处理 connect、心跳与指数退避重连（默认 1s → 上限 "
-"30s）。卫星 detach 或 socket 关闭时，Hub 注销该实例的工具。"
+"30s）。卫星 detach 或 socket 关闭时，Habitat 注销该实例的工具。"
 
 #. type: Plain text
 #: docs/sap/hub-rpc.md:95

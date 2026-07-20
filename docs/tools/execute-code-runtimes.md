@@ -66,6 +66,6 @@ Disabled runtimes return a clear error listing available runtimes.
 
 ## Credential Injection
 
-`code_execute` (and `terminal_run`) accept optional `secrets[]`: Vault item refs decrypted for **that subprocess only** and merged into child `env` (not Hub `process.env`). Values never appear in LLM tool results. Prefer argv / `process.env.NAME` inside the snippet; no vault CLI inside runtimes.
+`code_execute` (and `terminal_run`) accept optional `secrets[]`: Vault item refs decrypted for **that subprocess only** and merged into child `env` (not Habitat `process.env`). Values never appear in LLM tool results. Prefer argv / `process.env.NAME` inside the snippet; no vault CLI inside runtimes.
 
 File-path credential mounts (Issue #40 style) are **not** implemented; use `secrets[]` for CLI/runtime needs.

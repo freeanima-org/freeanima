@@ -5,7 +5,8 @@ import Store from "electron-store";
 
 import {
   DEBUG_VCONSOLE_ENABLED_KEY,
-  HUB_URL_KEY,
+  HABITAT_URL_KEY,
+  HABITAT_URL_KEY_LEGACY,
   LAUNCH_AT_LOGIN_KEY,
   COMPANION_VISIBLE_KEY,
   REMOTE_AUTH_TOKEN_KEY,
@@ -40,14 +41,19 @@ function getStore(): ScopedStore {
 }
 
 function migrateLegacySettings(kv: ScopedStore): void {
-  if (kv.get(HUB_URL_KEY)) return;
+  if (kv.get(HABITAT_URL_KEY)) return;
+  const legacyUrl = kv.get(HABITAT_URL_KEY_LEGACY)?.trim();
+  if (legacyUrl) {
+    kv.set(HABITAT_URL_KEY, legacyUrl);
+    return;
+  }
 
   const legacyPath = desktopSettingsPath();
   if (existsSync(legacyPath)) {
     try {
       const raw = JSON.parse(readFileSync(legacyPath, "utf-8")) as unknown;
       const parsed = parseShellSettings(raw);
-      applyHubToStore(kv, parsed.hub);
+      applyHabitatToStore(kv, parsed.habitat);
       applyDebugToStore(kv, parsed.debug);
       renameSync(legacyPath, `${legacyPath}.migrated`);
       return;
@@ -60,8 +66,8 @@ function migrateLegacySettings(kv: ScopedStore): void {
   if (existsSync(legacyHubPath)) {
     try {
       const raw = JSON.parse(readFileSync(legacyHubPath, "utf-8")) as unknown;
-      const hub = parseShellClientConfig(raw);
-      applyHubToStore(kv, hub);
+      const habitat = parseShellClientConfig(raw);
+      applyHabitatToStore(kv, habitat);
       renameSync(legacyHubPath, `${legacyHubPath}.migrated`);
     } catch {
       /* ignore */
@@ -69,29 +75,30 @@ function migrateLegacySettings(kv: ScopedStore): void {
   }
 }
 
-function applyHubToStore(kv: ScopedStore, hub: ShellClientConfig | null): void {
-  if (!hub) return;
-  kv.set(HUB_URL_KEY, hub.hubUrl);
-  kv.set(REMOTE_AUTH_TOKEN_KEY, hub.remoteAuthToken);
+function applyHabitatToStore(kv: ScopedStore, habitat: ShellClientConfig | null): void {
+  if (!habitat) return;
+  kv.set(HABITAT_URL_KEY, habitat.habitatUrl);
+  kv.set(REMOTE_AUTH_TOKEN_KEY, habitat.remoteAuthToken);
 }
 
 function applyDebugToStore(kv: ScopedStore, debug: ShellDebugConfig): void {
   kv.set(DEBUG_VCONSOLE_ENABLED_KEY, debug.vConsoleEnabled ? "1" : "0");
 }
 
-export function loadHubConfigFromStore(): ShellClientConfig | null {
+export function loadHabitatConfigFromStore(): ShellClientConfig | null {
   const kv = getStore();
-  const hubUrl = kv.get(HUB_URL_KEY)?.trim() ?? "";
+  const habitatUrl =
+    kv.get(HABITAT_URL_KEY)?.trim() || kv.get(HABITAT_URL_KEY_LEGACY)?.trim() || "";
   const remoteAuthToken = kv.get(REMOTE_AUTH_TOKEN_KEY)?.trim() ?? "";
-  if (!hubUrl && !remoteAuthToken) return null;
-  return parseShellClientConfig({ hubUrl, remoteAuthToken });
+  if (!habitatUrl && !remoteAuthToken) return null;
+  return parseShellClientConfig({ habitatUrl, remoteAuthToken });
 }
 
-export function saveHubConfigToStore(config: ShellClientConfig): ShellClientConfig {
+export function saveHabitatConfigToStore(config: ShellClientConfig): ShellClientConfig {
   const normalized = parseShellClientConfig(config);
-  if (!normalized) throw new Error("Hub 配置无效");
+  if (!normalized) throw new Error("栖息地配置无效");
   const kv = getStore();
-  kv.set(HUB_URL_KEY, normalized.hubUrl);
+  kv.set(HABITAT_URL_KEY, normalized.habitatUrl);
   kv.set(REMOTE_AUTH_TOKEN_KEY, normalized.remoteAuthToken);
   return normalized;
 }

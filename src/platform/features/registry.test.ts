@@ -1,13 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import type { SapRequestContext } from "@freeanima/shared/sap-contract";
-import { listHubMethods } from "@freeanima/shared/hub-contract";
-import { wsOnlyMethodDefs } from "@freeanima/shared/hub-contract/registry/ws-only.ts";
-import { resetHubMethodRegistryForTests } from "@freeanima/shared/hub-contract/registry/runtime.ts";
+import { listHubMethods } from "@freeanima/shared/habitat-contract";
+import { wsOnlyMethodDefs } from "@freeanima/shared/habitat-contract/registry/ws-only.ts";
+import { resetHubMethodRegistryForTests } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
 
 import type { SapServerDeps } from "../sap/types.ts";
 import { builtinFeaturePlugins } from "./builtin-plugins.ts";
-import { resetHubRouterForTests } from "../hub/init.ts";
-import { resetCompiledHttpRoutes } from "../hub/http-rest-router.ts";
+import { resetHubRouterForTests } from "../habitat/init.ts";
+import { resetCompiledHttpRoutes } from "../habitat/http-rest-router.ts";
 import {
   getFeatureRpcHandler,
   registerFeatures,

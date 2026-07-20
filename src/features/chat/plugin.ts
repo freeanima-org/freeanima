@@ -1,4 +1,4 @@
-/** Chat feature plugin — shell + conversation/message Hub RPC. */
+/** Chat feature plugin — shell + conversation/message Habitat RPC. */
 export const chatPlugin = {
   id: "chat",
   shell: {

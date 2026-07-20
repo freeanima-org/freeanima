@@ -1,11 +1,11 @@
 import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
 import {
   readOfflineCache,
-  resolveHubCacheScope,
+  resolveHabitatCacheScope,
   writeOfflineCache,
 } from "@freeanima/frontend/shell-sdk/offline-cache";
 
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 export type EmailAccountRow = {
   id: number;
@@ -33,7 +33,7 @@ export type EmailMessageRow = {
 };
 
 function hub() {
-  return getTypedSatelliteHubClient();
+  return getTypedSatelliteHabitatClient();
 }
 
 function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
@@ -62,7 +62,7 @@ function searchCacheId(input: { query: string; account_id?: number; limit?: numb
 }
 
 export async function fetchEmailAccounts(): Promise<EmailAccountRow[]> {
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   const cacheId = accountsCacheId();
   const cached = await readOfflineCache<EmailAccountRow[]>(scope, "email", cacheId);
   try {
@@ -81,7 +81,7 @@ export async function fetchEmailMessages(input: {
   unread?: boolean;
   limit?: number;
 }): Promise<EmailMessageRow[]> {
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   const cacheId = messagesCacheId(input);
   const cached = await readOfflineCache<EmailMessageRow[]>(scope, "email", cacheId);
   try {
@@ -95,7 +95,7 @@ export async function fetchEmailMessages(input: {
 }
 
 export async function readEmailMessage(id: number): Promise<EmailMessageRow> {
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   const cacheId = messageCacheId(id);
   const cached = await readOfflineCache<EmailMessageRow>(scope, "email", cacheId);
   try {
@@ -144,7 +144,7 @@ export async function searchEmailMessages(input: {
   account_id?: number;
   limit?: number;
 }): Promise<EmailMessageRow[]> {
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   const cacheId = searchCacheId(input);
   const cached = await readOfflineCache<EmailMessageRow[]>(scope, "email", cacheId);
   try {

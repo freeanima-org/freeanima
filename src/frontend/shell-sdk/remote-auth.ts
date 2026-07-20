@@ -1,12 +1,12 @@
-export type HubFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
+export type HabitatFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
 export type RemoteAuthCredentials = {
   token: string;
 };
 
-export function isLoopbackHubUrl(hubUrl: string): boolean {
+export function isLoopbackHabitatUrl(habitatUrl: string): boolean {
   try {
-    const withScheme = /^https?:\/\//i.test(hubUrl) ? hubUrl : `http://${hubUrl}`;
+    const withScheme = /^https?:\/\//i.test(habitatUrl) ? habitatUrl : `http://${habitatUrl}`;
     const host = new URL(withScheme).hostname.toLowerCase();
     return host === "127.0.0.1" || host === "localhost" || host === "::1";
   } catch {
@@ -41,8 +41,8 @@ function resolveFetchUrl(input: string | URL | Request): string {
 export function createBearerFetch(
   token: string,
   hubOrigin: string,
-  baseFetch: HubFetch = fetch,
-): HubFetch {
+  baseFetch: HabitatFetch = fetch,
+): HabitatFetch {
   const hub = hubOrigin.replace(/\/$/, "");
   const bearer = `Bearer ${token.trim()}`;
   return async (input, init) => {

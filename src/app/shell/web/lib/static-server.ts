@@ -27,9 +27,9 @@ function isAddrInUse(error: unknown): boolean {
 
 export type WebStaticRuntimeConfig = {
   appId?: string;
-  /** Hub REST 根 URL，供 /config.json 与设置页默认提示 */
-  hubUrl?: string;
-  hubWsUrl?: string;
+  /** Habitat REST 根 URL，供 /config.json 与设置页默认提示 */
+  habitatUrl?: string;
+  habitatWsUrl?: string;
   uiVersion?: string;
   minShellVersion?: string;
 };
@@ -78,15 +78,23 @@ function createShellStaticFetch(
       return Response.redirect(`${WEB_PREFIX}/chat`, 302);
     }
 
+    // Legacy Console path → Habitat
+    if (pathname === `${WEB_PREFIX}/console` || pathname.startsWith(`${WEB_PREFIX}/console/`)) {
+      const rest = pathname.slice(`${WEB_PREFIX}/console`.length) || "/dashboard";
+      const suffix = rest === "/" ? "/dashboard" : rest;
+      return Response.redirect(`${WEB_PREFIX}/habitat${suffix}`, 302);
+    }
+
     if (pathname === `${WEB_PREFIX}/config.json`) {
       const origin = new URL(req.url).origin;
-      const hubUrl = (runtime?.hubUrl?.trim() || origin).replace(/\/$/, "");
-      const hubWsUrl = runtime?.hubWsUrl?.trim() || `${hubUrl.replace(/^http/, "ws")}/hub/rpc/v1`;
+      const habitatUrl = (runtime?.habitatUrl?.trim() || origin).replace(/\/$/, "");
+      const habitatWsUrl =
+        runtime?.habitatWsUrl?.trim() || `${habitatUrl.replace(/^http/, "ws")}/rpc/v1`;
       return new Response(
         JSON.stringify({
           app_id: runtime?.appId ?? "chat",
-          hub_url: hubUrl,
-          hub_ws_url: hubWsUrl,
+          hub_url: habitatUrl,
+          hub_ws_url: habitatWsUrl,
           ui_version: runtime?.uiVersion,
           min_shell_version: runtime?.minShellVersion,
         }),

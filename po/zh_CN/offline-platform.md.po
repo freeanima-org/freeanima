@@ -46,7 +46,7 @@ msgstr ""
 msgid ""
 "| 层级          | 能力                      | 模块                                   |\n"
 "| ------------- | ------------------------- | -------------------------------------- |\n"
-"| Tier 1        | IndexedDB 只读快照        | Email、Notification、Console、Dream 等 |\n"
+"| Tier 1        | IndexedDB 只读快照        | Email、Notification、Habitat、Dream 等 |\n"
 "| Tier 2-CRUD   | outbox + 乐观 KV          | Diary、Task、Project                   |\n"
 "| Tier 2-Hybrid | outbox + localStorage LWW | Pomodoro（active 计时）                |\n"
 "| Tier 2-Stream | SAP 流式 flush            | Chat send                              |\n"
@@ -101,8 +101,8 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/guide/offline-platform.md:25
 msgid ""
-"`hub-fetch-gate` — `isHubFetchAvailable()`：断网 **或** Hub 非 `connected` 时"
-"不发起 Hub RPC 读/flush，只读 IndexedDB 快照"
+"`hub-fetch-gate` — `isHabitatFetchAvailable()`：断网 **或** Habitat 非 `connected` 时"
+"不发起 Habitat RPC 读/flush，只读 IndexedDB 快照"
 msgstr ""
 
 #. type: Title ##
@@ -114,8 +114,8 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/offline-platform.md:29
 msgid ""
-"`isHubFetchAvailable()` = `navigator.onLine !== false` **且** "
-"`getHubRpcConnectionState() === \"connected\"`。"
+"`isHabitatFetchAvailable()` = `navigator.onLine !== false` **且** "
+"`getHabitatRpcConnectionState() === \"connected\"`。"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -222,7 +222,7 @@ msgstr ""
 
 #. type: Bullet: '1. '
 #: docs/guide/offline-platform.md:59
-msgid "Hub 写 RPC 支持 `client_op_id`（若尚未有）"
+msgid "Habitat 写 RPC 支持 `client_op_id`（若尚未有）"
 msgstr ""
 
 #. type: Bullet: '2. '
@@ -249,7 +249,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/offline-platform.md:61
-msgid "冲突策略：单设备；flush 后 refreshAll，以 Hub 为准。"
+msgid "冲突策略：单设备；flush 后 refreshAll，以 Habitat 为准。"
 msgstr ""
 
 #. type: Title ##

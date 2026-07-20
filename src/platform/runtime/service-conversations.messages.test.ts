@@ -48,7 +48,7 @@ describe("getMessages pagination", () => {
     expect(page.offset).toBe(7);
   });
 
-  it("offset path keeps Console head pagination", async () => {
+  it("offset path keeps Habitat head pagination", async () => {
     const deps = makeDeps(all);
     const page = await getMessages(deps, "c1", "", { offset: 0, limit: 3 });
     expect(page.display[0]).toMatchObject({ content: "m1" });

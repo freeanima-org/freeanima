@@ -14,7 +14,7 @@ const PREFIX_REWRITES: [string, string][] = [
   // 短作用域别名
   ["@/", "@freeanima/satellites/companion/spa/"],
   ["@chat/", "@freeanima/features/chat/ui/spa/"],
-  ["@console/", "@freeanima/features/console/ui/console/"],
+  ["@console/", "@freeanima/features/habitat/ui/habitat/"],
   ["@shared/", "@freeanima/satellites/companion/shared/"],
   ["@task/", "@freeanima/features/task/ui/spa/"],
   // capabilities 复合名（先于 capabilities- 单段）
@@ -31,17 +31,17 @@ const PREFIX_REWRITES: [string, string][] = [
   ["@freeanima/app-desktop/", "@freeanima/app/shell/desktop/"],
   ["@freeanima/app-mobile/", "@freeanima/app/shell/mobile/"],
   ["@freeanima/app-web/", "@freeanima/app/shell/web/"],
-  ["@freeanima/console-api/", "@freeanima/features/console/hub/console-api/"],
-  ["@freeanima/console-contract/", "@freeanima/features/console/protocol/console-contract/"],
+  ["@freeanima/habitat-api/", "@freeanima/features/habitat/habitat/habitat-api/"],
+  ["@freeanima/habitat-contract/", "@freeanima/features/habitat/protocol/habitat-contract/"],
   ["@freeanima/ui-kit/", "@freeanima/frontend/ui-kit/"],
   ["@freeanima/shell-ui/", "@freeanima/frontend/shell-ui/"],
   ["@freeanima/shell-sdk/", "@freeanima/frontend/shell-sdk/"],
   ["@freeanima/platform/commands/", "@freeanima/platform/slash-commands/"],
-  ["@freeanima/admin-api/", "@freeanima/features/console/hub/console-api/"],
-  ["@freeanima/admin-contract/", "@freeanima/features/console/protocol/console-contract/"],
-  ["@freeanima/hub-contract/", "@freeanima/shared/hub-contract/"],
-  ["@freeanima/hub-client/", "@freeanima/shared/hub-client/"],
-  ["@freeanima/hub-rpc/", "@freeanima/shared/hub-rpc/"],
+  ["@freeanima/admin-api/", "@freeanima/features/habitat/habitat/habitat-api/"],
+  ["@freeanima/admin-contract/", "@freeanima/features/habitat/protocol/habitat-contract/"],
+  ["@freeanima/hub-contract/", "@freeanima/shared/habitat-contract/"],
+  ["@freeanima/hub-client/", "@freeanima/shared/habitat-client/"],
+  ["@freeanima/hub-rpc/", "@freeanima/shared/habitat-rpc/"],
   ["@freeanima/vault-crypto/", "@freeanima/shared/vault-crypto/"],
   // bare imports（精确匹配，无尾斜杠）
   ["@freeanima/capabilities-tools", "@freeanima/capabilities/tools"],
@@ -53,16 +53,17 @@ const PREFIX_REWRITES: [string, string][] = [
   ["@freeanima/capabilities-acp", "@freeanima/capabilities/acp"],
   ["@freeanima/capabilities-identity", "@freeanima/capabilities/identity"],
   ["@freeanima/satellite-companion", "@freeanima/satellites/companion/lib"],
-  ["@freeanima/console-api", "@freeanima/features/console/hub/console-api"],
-  ["@freeanima/console-contract", "@freeanima/features/console/protocol/console-contract"],
+  ["@freeanima/console-api", "@freeanima/features/habitat/habitat/habitat-api"],
+  ["@freeanima/habitat-api", "@freeanima/features/habitat/habitat/habitat-api"],
+  ["@freeanima/console-contract", "@freeanima/features/habitat/protocol/habitat-contract"],
   ["@freeanima/ui-kit", "@freeanima/frontend/ui-kit"],
   ["@freeanima/shell-ui", "@freeanima/frontend/shell-ui/lib"],
   ["@freeanima/shell-sdk", "@freeanima/frontend/shell-sdk"],
-  ["@freeanima/admin-api", "@freeanima/features/console/hub/console-api"],
-  ["@freeanima/admin-contract", "@freeanima/features/console/protocol/console-contract"],
-  ["@freeanima/hub-contract", "@freeanima/shared/hub-contract"],
-  ["@freeanima/hub-client", "@freeanima/shared/hub-client"],
-  ["@freeanima/hub-rpc", "@freeanima/shared/hub-rpc"],
+  ["@freeanima/admin-api", "@freeanima/features/habitat/habitat/habitat-api"],
+  ["@freeanima/admin-contract", "@freeanima/features/habitat/protocol/habitat-contract"],
+  ["@freeanima/hub-contract", "@freeanima/shared/habitat-contract"],
+  ["@freeanima/hub-client", "@freeanima/shared/habitat-client"],
+  ["@freeanima/hub-rpc", "@freeanima/shared/habitat-rpc"],
   ["@freeanima/vault-crypto", "@freeanima/shared/vault-crypto"],
   ["@freeanima/feature-diary", "@freeanima/features/diary/domain"],
   ["@freeanima/feature-email", "@freeanima/features/email/domain"],
@@ -91,10 +92,10 @@ const EXACT_REWRITES: Record<string, string> = {
     "@freeanima/satellites/companion/lib/exports/desktop.ts",
   "@freeanima/satellites/companion/mobile": "@freeanima/satellites/companion/lib/exports/mobile.ts",
   "@freeanima/satellites/companion/build": "@freeanima/satellites/companion/lib/exports/build.ts",
-  "@freeanima/features/console/ui/console/i18n":
-    "@freeanima/features/console/ui/console/lib/i18n.ts",
-  "@freeanima/features/console/ui/console/router":
-    "@freeanima/features/console/ui/console/router.tsx",
+  "@freeanima/features/habitat/ui/habitat/i18n":
+    "@freeanima/features/habitat/ui/habitat/lib/i18n.ts",
+  "@freeanima/features/habitat/ui/habitat/router":
+    "@freeanima/features/habitat/ui/habitat/router.tsx",
   "@freeanima/platform/commands/vault-cli": "@freeanima/platform/slash-commands/vault-cli.ts",
   "@freeanima/kernel/logging/console": "@freeanima/kernel/logging/sinks/console.ts",
   "@freeanima/kernel/logging/file": "@freeanima/kernel/logging/sinks/file.ts",
@@ -122,14 +123,12 @@ const EXACT_REWRITES: Record<string, string> = {
     "@freeanima/app/shell/mobile/lib/native-build-meta-prefs.ts",
   "@freeanima/app/shell/mobile/mobile-shell": "@freeanima/app/shell/mobile/lib/mobile-shell.ts",
   "@freeanima/app/shell/web/static-server": "@freeanima/app/shell/web/lib/static-server.ts",
-  "@freeanima/features/console/hub/console-api/console-hub-handlers":
-    "@freeanima/features/console/hub/console-api/console-hub-handlers.ts",
-  "@freeanima/features/console/protocol/console-contract/display-util":
-    "@freeanima/features/console/protocol/console-contract/display-util.ts",
-  "@freeanima/features/console/protocol/console-contract/date-json":
-    "@freeanima/features/console/protocol/console-contract/date-json.ts",
-  "@freeanima/shared/hub-contract/schemas/console-schemas":
-    "@freeanima/shared/hub-contract/schemas/console-schemas.ts",
+  "@freeanima/features/habitat/protocol/habitat-contract/display-util":
+    "@freeanima/features/habitat/protocol/habitat-contract/display-util.ts",
+  "@freeanima/features/habitat/protocol/habitat-contract/date-json":
+    "@freeanima/features/habitat/protocol/habitat-contract/date-json.ts",
+  "@freeanima/shared/habitat-contract/schemas/habitat-schemas":
+    "@freeanima/shared/habitat-contract/schemas/habitat-schemas.ts",
   "@freeanima/capabilities/acp/schemas/acp-jsonrpc":
     "@freeanima/capabilities/acp/schemas/acp-jsonrpc.ts",
   "@freeanima/capabilities/llm-openai/stream-tools":
@@ -145,13 +144,13 @@ const EXACT_REWRITES: Record<string, string> = {
   "@freeanima/platform/alive": "@freeanima/platform/alive.ts",
   "@freeanima/kernel/random-uuid": "@freeanima/kernel/random-uuid.ts",
   "@freeanima/frontend/shell-sdk/react": "@freeanima/frontend/shell-sdk/react.tsx",
-  "@freeanima/features/console/build/paraglide-compile":
-    "@freeanima/features/console/build/paraglide-compile.ts",
-  "@freeanima/features/console/build/build-utils":
-    "@freeanima/features/console/build/build-utils.ts",
+  "@freeanima/features/habitat/build/paraglide-compile":
+    "@freeanima/features/habitat/build/paraglide-compile.ts",
+  "@freeanima/features/habitat/build/build-utils":
+    "@freeanima/features/habitat/build/build-utils.ts",
   "@freeanima/features/chat/ui/spa/styles.css": "@freeanima/features/chat/ui/spa/styles.css",
-  "@freeanima/features/console/ui/console/styles.css":
-    "@freeanima/features/console/ui/console/styles.css",
+  "@freeanima/features/habitat/ui/habitat/styles.css":
+    "@freeanima/features/habitat/ui/habitat/styles.css",
   "@freeanima/frontend/ui-kit/styles.css": "@freeanima/frontend/ui-kit/styles.css",
 };
 

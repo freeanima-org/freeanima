@@ -13,7 +13,7 @@ describe("resolveAlertDisplayPlatform", () => {
     expect(resolveAlertDisplayPlatform(backend)).toBe("mobile");
   });
 
-  it("web backend + 手机浏览器直连 Hub 保持 web（不跟 UA）", () => {
+  it("web backend + 手机浏览器直连 Habitat 保持 web（不跟 UA）", () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14; Mobile)" },
       location: { origin: "https://hub.example.com" },

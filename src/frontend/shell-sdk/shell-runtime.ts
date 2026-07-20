@@ -40,18 +40,18 @@ export function isPackagedShell(): boolean {
 
 /**
  * 是否展示「打开 连接设置」。
- * 优先检测 `openHubSettings`；否则 packaged shell 视为可打开。
+ * 优先检测 `openHabitatSettings`；否则 packaged shell 视为可打开。
  */
-export function canOpenHubSettings(): boolean {
+export function canOpenHabitatSettings(): boolean {
   const w = runtimeWindow();
   if (!w) return false;
-  if (typeof w.satelliteShell?.openHubSettings === "function") return true;
+  if (typeof w.satelliteShell?.openHabitatSettings === "function") return true;
   return isPackagedShell();
 }
 
 /**
  * 原生壳导航（hash 路由 / 保存后进模块）。
- * Capacitor 真壳与薄壳候选；手机浏览器直连 Hub 仍走 path。
+ * Capacitor 真壳与薄壳候选；手机浏览器直连 Habitat 仍走 path。
  */
 export function shouldUseNativeShellNavigation(): boolean {
   const w = runtimeWindow();

@@ -1,4 +1,4 @@
-/** Product feature Hub RPC frame schemas (bundled shell — not satellite attach). */
+/** Product feature Habitat RPC frame schemas (bundled shell — not satellite attach). */
 export * from "../frames/conversation.ts";
 export * from "../frames/message.ts";
 export * from "../frames/task.ts";

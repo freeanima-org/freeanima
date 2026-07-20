@@ -1,6 +1,6 @@
 import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
-import { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
-import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
+import { resolveHabitatCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
+import { isHabitatFetchAvailable } from "@freeanima/frontend/shell-sdk/habitat-fetch-gate";
 import { isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
 
 import type {
@@ -9,7 +9,7 @@ import type {
   TaskItemSearchFiltersPayload,
 } from "@freeanima/shared/sap-contract/frames/task.ts";
 
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 import {
   offlineCreateTaskItem,
@@ -62,7 +62,7 @@ export type TaskListRow = {
 export type TaskItemRow = TaskItemRowPayload;
 
 function hub() {
-  return getTypedSatelliteHubClient();
+  return getTypedSatelliteHabitatClient();
 }
 
 function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
@@ -70,8 +70,8 @@ function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
 }
 
 export async function fetchTaskLists(opts?: { includeClosed?: boolean }): Promise<TaskListRow[]> {
-  const scope = resolveHubCacheScope();
-  if (!isHubFetchAvailable()) {
+  const scope = resolveHabitatCacheScope();
+  if (!isHabitatFetchAvailable()) {
     return (await readCachedTaskLists(scope)) ?? [];
   }
   try {
@@ -90,7 +90,7 @@ export async function fetchTaskLists(opts?: { includeClosed?: boolean }): Promis
 export async function fetchTaskListStats(opts?: {
   includeClosed?: boolean;
 }): Promise<Map<number, number>> {
-  if (!isHubFetchAvailable()) return new Map();
+  if (!isHabitatFetchAvailable()) return new Map();
   const data = await hub().call(
     "tasklist.stats",
     withSubjectKind({ include_closed: opts?.includeClosed }),
@@ -99,7 +99,7 @@ export async function fetchTaskListStats(opts?: {
 }
 
 export async function fetchSmartListStats(): Promise<Map<string, number>> {
-  if (!isHubFetchAvailable()) return new Map();
+  if (!isHabitatFetchAvailable()) return new Map();
   const data = await hub().call("smartlist.stats", withSubjectKind({}));
   const map = new Map<string, number>();
   for (const row of data.counts) {
@@ -144,8 +144,8 @@ export async function deleteTaskList(id: number): Promise<void> {
 }
 
 export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
-  const scope = resolveHubCacheScope();
-  if (isTempId(listId) || !isHubFetchAvailable()) {
+  const scope = resolveHabitatCacheScope();
+  if (isTempId(listId) || !isHabitatFetchAvailable()) {
     return normalizeTaskItemRows(await readCachedTaskItems(scope, listId));
   }
   try {
@@ -165,7 +165,7 @@ export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
 export async function fetchTaskItemsByFilters(
   filters: TaskItemSearchFilters,
 ): Promise<TaskItemRow[]> {
-  if (!isHubFetchAvailable()) return [];
+  if (!isHabitatFetchAvailable()) return [];
   const data = await hub().call("tasklist.item.list", withSubjectKind({ filters }));
   const items = normalizeTaskItemRows(data.items);
   void seedLocalTaskItems(items);
@@ -174,7 +174,7 @@ export async function fetchTaskItemsByFilters(
 
 /** Resolve a single task by id (best-effort list scan; used by Anima URI overlay). */
 export async function fetchTaskItemById(id: number): Promise<TaskItemRow | null> {
-  if (!isHubFetchAvailable()) return null;
+  if (!isHabitatFetchAvailable()) return null;
   const data = await hub().call(
     "tasklist.item.list",
     withSubjectKind({ status: "all", limit: 200 }),
@@ -186,7 +186,7 @@ export async function fetchTaskItemById(id: number): Promise<TaskItemRow | null>
 }
 
 export async function fetchSmartLists(): Promise<SmartListRow[]> {
-  if (!isHubFetchAvailable()) return [];
+  if (!isHabitatFetchAvailable()) return [];
   const data = await hub().call("smartlist.list", withSubjectKind({}));
   return data.smart_lists;
 }

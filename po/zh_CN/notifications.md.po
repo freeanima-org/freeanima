@@ -54,7 +54,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/notifications.md:16
 #, no-wrap
-msgid "**不走 Hub RPC、不写 PG、不跨设备同步。** 各 shell 端在启动时注册 `AlertBackend`（web / desktop / mobile）。Feature 通过 `shell-sdk/alert` 使用**当前设备**系统通知通道。\n"
+msgid "**不走 Habitat RPC、不写 PG、不跨设备同步。** 各 shell 端在启动时注册 `AlertBackend`（web / desktop / mobile）。Feature 通过 `shell-sdk/alert` 使用**当前设备**系统通知通道。\n"
 msgstr ""
 
 #. type: Plain text
@@ -92,7 +92,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/notifications.md:27
 #, no-wrap
-msgid "**不是** Hub 后台进程 / Inbox。任务到期「inbox→本机弹」可后续复用同一 `schedule` API。\n"
+msgid "**不是** Habitat 后台进程 / Inbox。任务到期「inbox→本机弹」可后续复用同一 `schedule` API。\n"
 msgstr ""
 
 #. type: Title ###
@@ -121,7 +121,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/notifications.md:39
 #, no-wrap
-msgid "**例外（Hub 同步，非 Alert）**：运行中活跃态（`pomodoro_active` + `pomodoro.active.*`）跨端 **last-write-wins**；**阶段结束系统通知仍仅本机**。多端同步靠 `put` / `clear` 后的 `pomodoro.active.changed`；重连与页面可见时 `active.get` 兜底，**不作周期轮询**。\n"
+msgid "**例外（Habitat 同步，非 Alert）**：运行中活跃态（`pomodoro_active` + `pomodoro.active.*`）跨端 **last-write-wins**；**阶段结束系统通知仍仅本机**。多端同步靠 `put` / `clear` 后的 `pomodoro.active.changed`；重连与页面可见时 `active.get` 兜底，**不作周期轮询**。\n"
 msgstr ""
 
 #. type: Plain text
@@ -224,7 +224,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/notifications.md:76
 msgid ""
-"`user_world_id` / `agent_world_id` are derived at Hub boot from each "
+"`user_world_id` / `agent_world_id` are derived at Habitat boot from each "
 "subject's `default_private_world_id` (see [`entity-model.md`](entity-"
 "model.md))."
 msgstr ""
@@ -482,8 +482,8 @@ msgstr "`notification.recipients` — UI 标签页用的已配置主体 id"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:149
-msgid "No SAP create RPC in v1; writes are Hub-internal + tools."
-msgstr "v1 无 SAP 创建 RPC；写入由 Hub 内部 + 工具完成。"
+msgid "No SAP create RPC in v1; writes are Habitat-internal + tools."
+msgstr "v1 无 SAP 创建 RPC；写入由 Habitat 内部 + 工具完成。"
 
 #. type: Title ##
 #: docs/concepts/notifications.md:150

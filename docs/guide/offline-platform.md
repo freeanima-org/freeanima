@@ -8,7 +8,7 @@ FreeAnima 卫星壳离线能力分三层：
 
 | 层级          | 能力                      | 模块                                   |
 | ------------- | ------------------------- | -------------------------------------- |
-| Tier 1        | IndexedDB 只读快照        | Email、Notification、Console、Dream 等 |
+| Tier 1        | IndexedDB 只读快照        | Email、Notification、Habitat、Dream 等 |
 | Tier 2-CRUD   | outbox + 乐观 KV          | Diary、Task、Project                   |
 | Tier 2-Hybrid | outbox + localStorage LWW | Pomodoro（active 计时）                |
 | Tier 2-Stream | SAP 流式 flush            | Chat send                              |
@@ -20,24 +20,24 @@ FreeAnima 卫星壳离线能力分三层：
 - `offline-id-map` / `offline-temp-id` — 本地负 id → server id；`subscribeIdMappings` 供 UI remap
 - `offline-module-registry` — Rpc / Stream 双适配器注册
 - `offline-sync` — 重连/可见时 orchestrator flush + refreshAll；flush 锁尾触发；compact 后删除被吸收的 IDB op
-- `offline-cache-first` — `withOfflineCache()`：**在线 Hub-first** / 离线只读快照（可与 IDB 并行读作失败回退）
+- `offline-cache-first` — `withOfflineCache()`：**在线栖息地优先** / 离线只读快照（可与 IDB 并行读作失败回退）
 - `prefer-online-write` — `preferOnlineWrite()`：在线写优先 Hub RPC；仅网络/传输失败回退 outbox；业务错误直接抛出
-- `hub-fetch-gate` — `isHubFetchAvailable()`：断网 **或** Hub 非 `connected` 时不发起 Hub RPC 读/flush，只读 IndexedDB 快照
+- `hub-fetch-gate` — `isHabitatFetchAvailable()`：断网 **或** Hub 非 `connected` 时不发起 Hub RPC 读/flush，只读 IndexedDB 快照
 
-## 在线 Hub-first / 离线本地优先
+## 在线栖息地优先 / 离线本地优先
 
-`isHubFetchAvailable()` = `navigator.onLine !== false` **且** `getHubRpcConnectionState() === "connected"`。
+`isHabitatFetchAvailable()` = `navigator.onLine !== false` **且** `getHabitatRpcConnectionState() === "connected"`。
 
 ### 读
 
-- Hub 可用：必打 Hub（缓存命中不短路）；成功后异步写回本地 KV；fetch 失败回退快照
-- Hub 不可用：只读本地；无缓存则抛 offlineError
+- 栖息地可用：必打 Hub（缓存命中不短路）；成功后异步写回本地 KV；fetch 失败回退快照
+- 栖息地不可用：只读本地；无缓存则抛 offlineError
 - Tier 1 / 可写模块 list·get：优先 `withOfflineCache()`；手写路径须同语义
 
 ### 写（Diary / Task / Project）
 
-- Hub 可用：`preferOnlineWrite` → 直连 Hub RPC（带 `client_op_id`），用响应回写本地 KV，**不入 outbox**；create 直接得到服务端正 id
-- Hub 不可用，或仍为未映射的 temp id：本地乐观 KV + outbox + `scheduleFlush`
+- 栖息地可用：`preferOnlineWrite` → 直连 Hub RPC（带 `client_op_id`），用响应回写本地 KV，**不入 outbox**；create 直接得到服务端正 id
+- 栖息地不可用，或仍为未映射的 temp id：本地乐观 KV + outbox + `scheduleFlush`
 - 网络/传输失败：回退 outbox；业务校验错误抛给 UI，不进队列
 - 模块接线模板统一，gate / 错误分流只认 sdk；不抽泛型 CRUD 框架
 
@@ -63,13 +63,13 @@ create flush 成功后，本地世界里不得再以「裸 temp id」作为查�
 
 ## 接入清单
 
-1. Hub 写 RPC 支持 `client_op_id`（若尚未有）
+1. Habitat 写 RPC 支持 `client_op_id`（若尚未有）
 2. 实现 `features/<slug>/ui/spa/lib/offline-store.ts`（或 stream adapter）
 3. `registerOfflineModule(adapter)` + `registerOfflineModuleCap({ offlineWritable: true })`
 4. `api.ts`：读走 `withOfflineCache`（或同语义）；写委托 offline-store，入口包 `preferOnlineWrite`
 5. 更新 `docs/guide/remote-access.md`（若边界变化）
 
-冲突策略：单设备；flush 后 refreshAll，以 Hub 为准。
+冲突策略：单设备；flush 后 refreshAll，以 Habitat 为准。
 
 ## Sync vs page refresh
 

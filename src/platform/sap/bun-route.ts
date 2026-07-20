@@ -1,7 +1,11 @@
 import type { ServerWebSocket } from "bun";
+import {
+  HABITAT_RPC_REST_PREFIX,
+  HABITAT_RPC_REST_PREFIX_LEGACY,
+} from "@freeanima/shared/habitat-rpc/urls.ts";
 import type { SapServerDeps } from "./ws-server.ts";
 import { attachSapWebSocket } from "./ws-server.ts";
-import { handleHttpHubRestRequestWithAuth } from "../hub/http-rpc.ts";
+import { handleHttpHabitatRestRequestWithAuth } from "../habitat/http-rpc.ts";
 
 type SapSocketData = {
   handler: ReturnType<typeof attachSapWebSocket>;
@@ -9,6 +13,18 @@ type SapSocketData = {
 
 function isWebSocketUpgrade(req: Request): boolean {
   return (req.headers.get("Upgrade") ?? "").toLowerCase() === "websocket";
+}
+
+function isRpcRoot(pathname: string): boolean {
+  return pathname === HABITAT_RPC_REST_PREFIX || pathname === HABITAT_RPC_REST_PREFIX_LEGACY;
+}
+
+function isRpcTree(pathname: string): boolean {
+  return (
+    pathname.startsWith(`${HABITAT_RPC_REST_PREFIX}/`) ||
+    pathname.startsWith(`${HABITAT_RPC_REST_PREFIX_LEGACY}/`) ||
+    isRpcRoot(pathname)
+  );
 }
 
 export function createSapBunHandlers(deps: SapServerDeps): {
@@ -25,13 +41,13 @@ export function createSapBunHandlers(deps: SapServerDeps): {
   return {
     fetch(req, server) {
       const url = new URL(req.url);
-      if (!url.pathname.startsWith("/hub/rpc/v1")) {
+      if (!isRpcTree(url.pathname)) {
         return;
       }
 
-      if (url.pathname === "/hub/rpc/v1") {
+      if (isRpcRoot(url.pathname)) {
         if (req.method === "POST") {
-          return new Response("Hub RPC envelope POST is no longer supported; use REST paths", {
+          return new Response("Habitat RPC envelope POST is no longer supported; use REST paths", {
             status: 410,
           });
         }
@@ -49,7 +65,7 @@ export function createSapBunHandlers(deps: SapServerDeps): {
       }
 
       if (req.method === "GET" || req.method === "POST") {
-        return handleHttpHubRestRequestWithAuth(req, deps);
+        return handleHttpHabitatRestRequestWithAuth(req, deps);
       }
 
       return new Response("Method Not Allowed", { status: 405 });

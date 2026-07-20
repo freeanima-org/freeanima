@@ -29,7 +29,7 @@ function formatJson(obj: Record<string, unknown>) {
 
 function truncateResult(text: string, max = 8000) {
   if (text.length <= max) return text;
-  return `${text.slice(0, max)}\n${m.console_message_truncated()}`;
+  return `${text.slice(0, max)}\n${m.habitat_message_truncated()}`;
 }
 
 export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
@@ -44,7 +44,7 @@ export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
       >
         <span className="shrink-0 text-muted-foreground">{expanded ? "▼" : "▶"}</span>
         <span className="font-medium text-muted-foreground truncate">
-          {m.console_message_tool_calls({ count: String(calls.length) })}
+          {m.habitat_message_tool_calls({ count: String(calls.length) })}
         </span>
       </button>
 
@@ -66,7 +66,7 @@ export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
               </div>
               {c.args && Object.keys(c.args).length > 0 ? (
                 <div className="min-w-0">
-                  <div className="text-muted-foreground mb-0.5">{m.console_message_args()}</div>
+                  <div className="text-muted-foreground mb-0.5">{m.habitat_message_args()}</div>
                   <pre className="tool-bubble-scroll text-[11px] whitespace-pre-wrap break-all">
                     {formatJson(c.args)}
                   </pre>
@@ -74,14 +74,14 @@ export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
               ) : null}
               {c.result ? (
                 <div className="min-w-0">
-                  <div className="text-muted-foreground mb-0.5">{m.console_message_result()}</div>
+                  <div className="text-muted-foreground mb-0.5">{m.habitat_message_result()}</div>
                   <pre className="tool-bubble-scroll text-[11px] whitespace-pre-wrap break-all">
                     {truncateResult(c.result)}
                   </pre>
                 </div>
               ) : c.status === "pending" ? (
                 <div className="text-foreground/40 italic">
-                  {m.console_message_waiting_result()}
+                  {m.habitat_message_waiting_result()}
                 </div>
               ) : null}
             </div>

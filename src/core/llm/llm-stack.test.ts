@@ -34,7 +34,7 @@ describe("createLlmRuntime", () => {
     expect(rt.profiles.resolve("chat").def.id).toBe("chat");
   });
 
-  it("allows missing llm for Hub cold start", () => {
+  it("allows missing llm for Habitat cold start", () => {
     const rt = createLlmRuntime({} as AnimaConfig);
     expect(rt.backends.has("openai_compatible")).toBe(true);
     expect(rt.profiles.list()).toEqual([]);

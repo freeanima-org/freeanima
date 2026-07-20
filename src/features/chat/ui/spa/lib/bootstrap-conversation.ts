@@ -37,7 +37,7 @@ export type BootstrapConversationDeps = {
 export type BootstrapConversationResult = "selected" | "created" | "empty";
 
 /**
- * Hub 未就绪时 list 常为 []，不可据此立刻 create。
+ * Habitat 未就绪时 list 常为 []，不可据此立刻 create。
  * 仅在 whenReady 后重拉仍为空时才新建；并发调用共用同一次 in-flight。
  */
 let bootstrapInFlight: Promise<BootstrapConversationResult> | null = null;

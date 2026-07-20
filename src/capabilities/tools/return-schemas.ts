@@ -67,7 +67,7 @@ const browserPressSchema = browserSuccessSchema.extend({
 });
 
 const browserConsoleSchema = browserSuccessSchema.extend({
-  console_messages: z.array(z.unknown()),
+  habitat_messages: z.array(z.unknown()),
   js_errors: z.array(z.unknown()),
   note: z.string().optional(),
 });
@@ -294,7 +294,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     schema: browserConsoleSchema,
     example: {
       success: true,
-      console_messages: [],
+      habitat_messages: [],
       js_errors: [],
       note: "Camofox backend does not support console capture yet",
     },

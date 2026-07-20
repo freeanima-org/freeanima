@@ -60,7 +60,7 @@ async function waitForHealth(
   let lastError: unknown;
   while (Date.now() < deadline) {
     try {
-      const res = await fetch(`http://127.0.0.1:${port}/hub/rpc/v1/health/probe`);
+      const res = await fetch(`http://127.0.0.1:${port}/rpc/v1/health/probe`);
       if (res.ok) {
         const body = (await res.json()) as Record<string, unknown>;
         if (body.status === "ok") return body;
@@ -122,7 +122,7 @@ describePg("standalone CLI HTTP health", () => {
   });
 
   it(
-    "GET /hub/rpc/v1/health/probe returns status ok from standalone executable",
+    "GET /rpc/v1/health/probe returns status ok from standalone executable",
     async () => {
       const body = await waitForHealth(TEST_PORT);
       expect(body.status).toBe("ok");

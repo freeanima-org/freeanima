@@ -23,7 +23,7 @@ export type McpCallContext = {
 
 export const MCP_HTTP_PATH = "/mcp";
 
-/** Hub Streamable HTTP MCP endpoint path */
+/** Habitat Streamable HTTP MCP endpoint path */
 export function isMcpPath(pathname: string): boolean {
   return pathname === MCP_HTTP_PATH || pathname === `${MCP_HTTP_PATH}/`;
 }

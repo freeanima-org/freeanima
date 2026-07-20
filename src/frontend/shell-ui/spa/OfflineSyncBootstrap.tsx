@@ -17,8 +17,8 @@ import {
   flushOfflineModule,
   subscribeOfflineSyncTriggers,
 } from "@freeanima/frontend/shell-sdk/offline-sync";
-import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
-import { reconnectHub, useHubConnection } from "@freeanima/frontend/shell-sdk/react.tsx";
+import { isHabitatFetchAvailable } from "@freeanima/frontend/shell-sdk/habitat-fetch-gate";
+import { reconnectHabitat, useHabitatConnection } from "@freeanima/frontend/shell-sdk/react.tsx";
 import type { StreamFlushContext } from "@freeanima/frontend/shell-sdk/offline-module-types";
 import {
   dismissShellToast,
@@ -95,7 +95,7 @@ function buildIssueDescription(issues: OfflineOutboxOp[]): string | undefined {
 }
 
 export function OfflineSyncBootstrap(): null {
-  const hubConnection = useHubConnection();
+  const habitatConnection = useHabitatConnection();
   const [summary, setSummary] = useState<GlobalOutboxSummary>({
     pending: 0,
     failed: 0,
@@ -120,7 +120,7 @@ export function OfflineSyncBootstrap(): null {
 
   const runFlush = useCallback(
     async (opts?: { forceRetry?: boolean; forceTail?: boolean }) => {
-      if (!isHubFetchAvailable()) return;
+      if (!isHabitatFetchAvailable()) return;
       const scope = resolveOutboxScope();
       await flushAllOfflineModules(scope, {
         ...resolveFlushOptions(opts?.forceTail ?? false),
@@ -139,14 +139,14 @@ export function OfflineSyncBootstrap(): null {
   }, [runFlush]);
 
   useEffect(() => {
-    if (hubConnection !== "connected") return;
+    if (habitatConnection !== "connected") return;
     void runFlush();
-  }, [hubConnection, runFlush]);
+  }, [habitatConnection, runFlush]);
 
   const handleRetryAll = useCallback(async () => {
     setBusy(true);
     try {
-      await reconnectHub();
+      await reconnectHabitat();
       const scope = resolveOutboxScope();
       for (const op of problemOps(summary)) {
         await resetOutboxOpForRetry(scope, op.id);

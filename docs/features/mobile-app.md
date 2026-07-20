@@ -9,13 +9,13 @@ title: Mobile app (Android)
 
 ## Scope
 
-| Item       | Description                                                 |
-| ---------- | ----------------------------------------------------------- |
-| Platform   | **Android only** sideload (APK); iOS later                  |
-| UI         | APK 内 `www/web`（`build:web` → `sync-mobile-www`）         |
-| Modules    | Chat + Console（本地 shell-ui）                             |
-| Hub config | APP **设置 → 连接**（Preferences）；无独立 bootstrap Hub 页 |
-| Hub duties | Hub RPC REST `/hub/rpc/v1` + WebSocket；**不**托管壳内 SPA  |
+| Item           | Description                                                     |
+| -------------- | --------------------------------------------------------------- |
+| Platform       | **Android only** sideload (APK); iOS later                      |
+| UI             | APK 内 `www/web`（`build:web` → `sync-mobile-www`）             |
+| Modules        | Chat + Habitat（本地 shell-ui）                                 |
+| Habitat config | APP **设置 → 连接**（Preferences）；无独立 bootstrap Habitat 页 |
+| Habitat duties | Habitat RPC REST `/rpc/v1` + WebSocket；**不**托管壳内 SPA      |
 
 ## Topology
 
@@ -24,27 +24,27 @@ flowchart LR
   Phone[Android WebView]
   Local["www/web 本地 SPA"]
   Chat["/web/chat"]
-  Console["/web/console"]
-  Hub[Anima Service]
+  Habitat["/web/habitat"]
+  Habitat[Anima Service]
 
   Phone --> Local
   Local --> Chat
-  Local --> Console
-  Chat -->|Hub RPC Bearer| Hub
-  Console -->|Hub RPC Bearer| Hub
+  Local --> Habitat
+  Chat -->|Habitat RPC Bearer| Habitat
+  Habitat -->|Habitat RPC Bearer| Habitat
 ```
 
-Mobile REST **connects directly** to Hub (no local REST proxy); requires a **Service API Token** and Hub CORS for Capacitor origin（`http://localhost`；`androidScheme: http`）。
+Mobile REST **connects directly** to Habitat (no local REST proxy); requires a **Service API Token** and Habitat CORS for Capacitor origin（`http://localhost`；`androidScheme: http`）。
 
-## Hub settings
+## Habitat settings
 
 1. Home PC: `anima service start --host 0.0.0.0`, create a Service API Token (`anima token create --subject-id 1 --name bootstrap`; see [`remote-access.md`](../guide/remote-access.md)).
 2. 首次启动未配置 Token → 进入 **设置 → 连接**：
-   - Hub URL（`http://<PC-IP>:2658` 或本地 HTTPS `https://<host>:2659`；勿用 `127.0.0.1`）
+   - Habitat URL（`http://<PC-IP>:2658` 或本地 HTTPS `https://<host>:2659`；勿用 `127.0.0.1`）
    - Service API Token (`fa_at_...`)
 3. **测试连接** → **保存并进入** → 本地 `/web/chat`。
 
-Non-loopback Hub URL requires token; REST uses `Authorization: Bearer`; SAP sends `auth_token` in `connect` frame.
+Non-loopback Habitat URL requires token; REST uses `Authorization: Bearer`; SAP sends `auth_token` in `connect` frame.
 
 ## Troubleshooting
 
@@ -52,13 +52,13 @@ Non-loopback Hub URL requires token; REST uses `Authorization: Bearer`; SAP send
 | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Keyboard covers chat input                                | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes                                                                                                       |
 | Chat input unresponsive                                   | No selected conversation (first install should auto-create); or SAP disconnected                                                                                                                      |
-| Console load failed / Failed to fetch                     | Hub not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header                                                                                                            |
+| Habitat load failed / Failed to fetch                     | Habitat not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header                                                                                                        |
 | 测试连接「网络错误」、浏览器同地址正常                    | 需 **Capacitor 原生 HTTP**（`CapacitorHttp`）或可信 HTTPS；自签 CA 另需 APK 信任用户 CA                                                                                                               |
-| 连接测试成功，但压缩/LLM 等报 `config.get` 超时           | 旧路径经 WebSocket 拉全量配置且 3s 超时；现已改为 `config.getSection` + HTTP 双传输。仍超时则查 WS 半开连接或 Hub 不可达                                                                              |
-| ZeroTier / 虚拟网卡 IP                                    | 确认手机 ZeroTier 在线；Hub `http.host: 0.0.0.0`；`allowed_hosts` 含该 IP；壳层 Hub URL **勿带尾斜杠**，HTTP 用 `:2658`                                                                               |
-| Not Found                                                 | Avoid legacy paths; use SPA `/web/console/dashboard`                                                                                                                                                  |
-| TTS / 朗读无声                                            | 默认 Edge TTS 需 Hub 出网；Hub 设置 → 语音 → 试听。若用 Web Speech 需 HTTPS 安全上下文                                                                                                                |
-| UI 与发版不一致                                           | UI 随 **APK**；需重装/发新包。浏览器 Hub `/web` 另有独立部署链                                                                                                                                        |
+| 连接测试成功，但压缩/LLM 等报 `config.get` 超时           | 旧路径经 WebSocket 拉全量配置且 3s 超时；现已改为 `config.getSection` + HTTP 双传输。仍超时则查 WS 半开连接或 Habitat 不可达                                                                          |
+| ZeroTier / 虚拟网卡 IP                                    | 确认手机 ZeroTier 在线；Habitat `http.host: 0.0.0.0`；`allowed_hosts` 含该 IP；壳层 Habitat URL **勿带尾斜杠**，HTTP 用 `:2658`                                                                       |
+| Not Found                                                 | Avoid legacy paths; use SPA `/web/habitat/dashboard`                                                                                                                                                  |
+| TTS / 朗读无声                                            | 默认 Edge TTS 需 Habitat 出网；Habitat 设置 → 语音 → 试听。若用 Web Speech 需 HTTPS 安全上下文                                                                                                        |
+| UI 与发版不一致                                           | UI 随 **APK**；需重装/发新包。浏览器 Habitat `/web` 另有独立部署链                                                                                                                                    |
 | 安装失败「签名冲突」                                      | 已装旧 APK 与新版证书不同；卸载 `FreeAnima` 后重装。CI 固定签名后同 channel 可覆盖升级                                                                                                                |
 | Install fails with “a newer version is already installed” | Older canary `versionCode` used a wrapping minute stamp and dwarfed release `base`; new builds use a generation floor + clock encoding and can overwrite. If it still fails, uninstall then reinstall |
 
@@ -70,7 +70,7 @@ Settings → **Debug** (desktop and mobile share shell-ui panel):
 | ---------- | ----------------- | ------------------------------------------- |
 | Sentry     | DSN in settings   | Same                                        |
 | DevTools   | F12 / dev package | Debug APK + USB → Chrome `chrome://inspect` |
-| Console    | Electron DevTools | vConsole (settings toggle)                  |
+| Habitat    | Electron DevTools | vConsole (settings toggle)                  |
 
 `bun run debug:android`：`build:mobile:debug` + 安装；inspect 目标为本地 SPA。
 
@@ -91,11 +91,11 @@ Package README: [`src/app/shell/mobile/README.md`](../../src/app/shell/mobile/RE
 
 ## vs desktop shell
 
-|              | Electron `src/app/shell/desktop`      | Capacitor `src/app/shell/mobile`             |
-| ------------ | ------------------------------------- | -------------------------------------------- |
-| Injection    | preload → `window.satelliteShell`     | Hub SPA `bootstrap-capacitor` → API          |
-| Hub config   | 设置 → 连接 → 桌面 prefs              | 设置 → 连接 → Preferences                    |
-| Debug/Sentry | Settings → Debug                      | Settings → Debug                             |
-| REST         | Direct `hubUrl/hub/rpc/v1/*` (Bearer) | Direct `hubUrl/hub/rpc/v1/*` (CORS + Bearer) |
-| instance_id  | File `~/.anima/satellites/chat/`      | Preferences                                  |
-| Content      | 安装包内 web/dist + companion         | 安装包内 web/dist                            |
+|                | Electron `src/app/shell/desktop`  | Capacitor `src/app/shell/mobile`         |
+| -------------- | --------------------------------- | ---------------------------------------- |
+| Injection      | preload → `window.satelliteShell` | Habitat SPA `bootstrap-capacitor` → API  |
+| Habitat config | 设置 → 连接 → 桌面 prefs          | 设置 → 连接 → Preferences                |
+| Debug/Sentry   | Settings → Debug                  | Settings → Debug                         |
+| REST           | Direct `hubUrl/rpc/v1/*` (Bearer) | Direct `hubUrl/rpc/v1/*` (CORS + Bearer) |
+| instance_id    | File `~/.anima/satellites/chat/`  | Preferences                              |
+| Content        | 安装包内 web/dist + companion     | 安装包内 web/dist                        |

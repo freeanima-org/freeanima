@@ -79,7 +79,7 @@ Self layer and resident memory use a second-person instruction skeleton wrapping
 
 Live environment/health **changes** are not rewritten into an existing session prompt; they surface as Inbox notifications (event-level).
 
-Maintenance: self-layer tools in Console, or direct edits via CLI / Console UI.
+Maintenance: self-layer tools in Habitat, or direct edits via CLI / Habitat UI.
 
 ---
 

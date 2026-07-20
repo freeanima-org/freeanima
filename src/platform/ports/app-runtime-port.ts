@@ -147,7 +147,7 @@ export type AppRuntimeSleepPort = {
   }): Promise<unknown>;
 };
 
-/** Console / Gateway 完整运行时 API 契约（域 port 组合） */
+/** Habitat / Gateway 完整运行时 API 契约（域 port 组合） */
 export type AppRuntimePort = AppRuntimeLifecyclePort &
   AppRuntimeMessagingPort &
   AppRuntimeOpsPort &

@@ -38,7 +38,7 @@ function emptyPlaceholderBlocks(): SelfBlockDisplay[] {
   }));
 }
 
-/** Console self-layer six blocks read-only display */
+/** Habitat self-layer six blocks read-only display */
 export async function listSelfBlocks(_deps: RuntimeDeps): Promise<{ blocks: SelfBlockDisplay[] }> {
   try {
     const rows = await listPgSelfBlocks();

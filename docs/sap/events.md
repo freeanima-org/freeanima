@@ -4,30 +4,30 @@ title: SAP Events
 
 # SAP Events
 
-Async notifications use envelope `kind: "evt"` with a `method` string and `payload`. Either side may send events; most Hub → Satellite events are pushed after an RPC or subscription.
+Async notifications use envelope `kind: "evt"` with a `method` string and `payload`. Either side may send events; most Habitat → Satellite events are pushed after an RPC or subscription.
 
 ## Stream events (`message.send`)
 
-After `message.send` returns `stream_id`, Hub pushes `stream.*` events. Defined in [`src/shared/sap-contract/frames/message.ts`](../../src/shared/sap-contract/frames/message.ts) as `streamEventMethods`.
+After `message.send` returns `stream_id`, Habitat pushes `stream.*` events. Defined in [`src/shared/sap-contract/frames/message.ts`](../../src/shared/sap-contract/frames/message.ts) as `streamEventMethods`.
 
 ```mermaid
 sequenceDiagram
   participant Sat as Satellite
-  participant Hub as Hub
+  participant Habitat as Habitat
   participant Agent as AgentRuntime
 
-  Sat->>Hub: req message.send
-  Hub->>Sat: res stream_id
-  Hub-->>Sat: evt stream.accepted
+  Sat->>Habitat: req message.send
+  Habitat->>Sat: res stream_id
+  Habitat-->>Sat: evt stream.accepted
   loop tokens
-    Hub-->>Sat: evt stream.token
+    Habitat-->>Sat: evt stream.token
   end
-  Agent->>Hub: tool invocation
-  Hub-->>Sat: evt stream.tool_begin
-  Hub-->>Sat: evt tool.call
-  Sat->>Hub: req tool.result
-  Hub-->>Sat: evt stream.tool_result
-  Hub-->>Sat: evt stream.done
+  Agent->>Habitat: tool invocation
+  Habitat-->>Sat: evt stream.tool_begin
+  Habitat-->>Sat: evt tool.call
+  Sat->>Habitat: req tool.result
+  Habitat-->>Sat: evt stream.tool_result
+  Habitat-->>Sat: evt stream.done
 ```
 
 | Method                    | Typical payload fields              |
@@ -46,7 +46,7 @@ sequenceDiagram
 
 Mapping helpers: `mapRuntimeStreamEventToSap`, `mapSapStreamMethodToApi` in the same file.
 
-## SAP stream → Console SSE
+## SAP stream → Habitat SSE
 
 Satellites that expose HTTP SSE to a browser can reuse the same event names via `mapSapStreamMethodToApi`:
 
@@ -64,7 +64,7 @@ flowchart LR
   StreamDone --> DoneEvent
 ```
 
-Type B satellites with relay may fan out Hub `stream.*` events over `/sap/relay/v1` (see [`satellite-relay-server.ts`](../../src/shared/sap-contract/satellite-relay-server.ts)); the browser uses `createSapRelayBrowserClient` and `mapSapStreamMethodToApi`.
+Type B satellites with relay may fan out Habitat `stream.*` events over `/sap/relay/v1` (see [`satellite-relay-server.ts`](../../src/shared/sap-contract/satellite-relay-server.ts)); the browser uses `createSapRelayBrowserClient` and `mapSapStreamMethodToApi`.
 
 ## Session events
 
@@ -75,7 +75,7 @@ Type B satellites with relay may fan out Hub `stream.*` events over `/sap/relay/
 
 `conversation.updated` is bridged from the runtime conversation watch in [`src/platform/sap/stream-bridge.ts`](../../src/platform/sap/stream-bridge.ts).
 
-`pomodoro.active.changed` is fan-out by Hub session registry keyed on `auth.subject_type` ([`src/platform/sap/hub-session-registry.ts`](../../src/platform/sap/hub-session-registry.ts)); payload schema: `pomodoroActiveChangedEventSchema` in [`frames/pomodoro.ts`](../../src/shared/sap-contract/frames/pomodoro.ts).
+`pomodoro.active.changed` is fan-out by Habitat session registry keyed on `auth.subject_type` ([`src/platform/sap/habitat-session-registry.ts`](../../src/platform/sap/habitat-session-registry.ts)); payload schema: `pomodoroActiveChangedEventSchema` in [`frames/pomodoro.ts`](../../src/shared/sap-contract/frames/pomodoro.ts).
 
 ## Terminal events
 
@@ -90,9 +90,9 @@ Constants: `TERMINAL_EVENT_METHODS` in [`frames/terminal.ts`](../../src/shared/s
 
 ## Tool events
 
-| Method      | Direction       | Role                            |
-| ----------- | --------------- | ------------------------------- |
-| `tool.call` | Hub → Satellite | Execute a registered local tool |
+| Method      | Direction           | Role                            |
+| ----------- | ------------------- | ------------------------------- |
+| `tool.call` | Habitat → Satellite | Execute a registered local tool |
 
 Payload schema: `toolCallPayloadSchema` in [`frames/tool.ts`](../../src/shared/sap-contract/frames/tool.ts) — includes `call_id`, `tool_name`, `local_name`, `args`, `conversation_id`, optional `workspace_root`.
 

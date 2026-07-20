@@ -15,12 +15,12 @@ import {
   getSapServerDeps,
 } from "@freeanima/platform/sap/runtime-context";
 import { SapInstanceRegistry } from "@freeanima/platform/sap/instance-registry";
-import { HubSessionRegistry } from "@freeanima/platform/sap/hub-session-registry";
+import { HubSessionRegistry } from "@freeanima/platform/sap/habitat-session-registry";
 import type { SatelliteManager } from "@freeanima/capabilities/satellite";
 
-import { bindConsoleRuntimeContext } from "@freeanima/features/console/hub/console-api/handlers/runtime.ts";
-import { applyHttpAuth } from "@freeanima/features/console/hub/console-api/http-dispatch.ts";
-import { createServiceAuthVerifier } from "@freeanima/features/console/hub/console-api/service-auth.ts";
+import { bindHabitatRuntimeContext } from "@freeanima/features/habitat/habitat/habitat-api/handlers/runtime.ts";
+import { applyHttpAuth } from "@freeanima/features/habitat/habitat/habitat-api/http-dispatch.ts";
+import { createServiceAuthVerifier } from "@freeanima/features/habitat/habitat/habitat-api/service-auth.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -52,7 +52,7 @@ describePg("service API tokens", () => {
   describe("HTTP auth", () => {
     beforeEach(async () => {
       await beginIntegrationCase("freeanima-svc-auth-");
-      bindConsoleRuntimeContext();
+      bindHabitatRuntimeContext();
       registerFeatures(builtinFeaturePlugins);
       const runtime = getAppRuntime();
       runtime.markStarted();
@@ -72,8 +72,8 @@ describePg("service API tokens", () => {
       await restoreIntegrationHome(prev);
     });
 
-    it("GET /hub/rpc/v1/health/probe without token returns ok and authed=false", async () => {
-      const res = await hubFetch("/hub/rpc/v1/health/probe");
+    it("GET /rpc/v1/health/probe without token returns ok and authed=false", async () => {
+      const res = await hubFetch("/rpc/v1/health/probe");
       expect(res.status).toBe(200);
       const body = (await res.json()) as { status: string; authed: boolean };
       expect(body.status).toBe("ok");
@@ -90,14 +90,14 @@ describePg("service API tokens", () => {
       expect(res.status).toBe(401);
     });
 
-    it("GET /hub/rpc/v1/health/probe with valid Bearer reports authed=true", async () => {
+    it("GET /rpc/v1/health/probe with valid Bearer reports authed=true", async () => {
       const { user_subject_id } = getResolvedWorldContext();
       const { plaintext } = await createServiceApiTokenWithSecret({
         subject_id: user_subject_id,
         name: "health-authed",
       });
 
-      const res = await hubFetch("/hub/rpc/v1/health/probe", {
+      const res = await hubFetch("/rpc/v1/health/probe", {
         headers: { Authorization: `Bearer ${plaintext}` },
       });
       expect(res.status).toBe(200);

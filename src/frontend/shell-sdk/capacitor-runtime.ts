@@ -23,7 +23,7 @@ export function hasCapacitorNativePromise(): boolean {
   return Boolean(readCapacitorNativeBridge()?.nativePromise);
 }
 
-/** 等待 Capacitor 注入 nativePromise（远程 Hub 页上 @capacitor/core 可能晚于 shell-bridge）。 */
+/** 等待 Capacitor 注入 nativePromise（远程 Habitat 页上 @capacitor/core 可能晚于 shell-bridge）。 */
 export async function waitForCapacitorNativePromise(timeoutMs = 3_000): Promise<boolean> {
   if (hasCapacitorNativePromise()) return true;
   if (!isCapacitorShellCandidate()) return false;
@@ -50,7 +50,7 @@ export function isCapacitorNativePlatform(): boolean {
  *
  * - 已有 nativePromise / isNativeShell → 真壳
  * - 薄壳首页（localhost / capacitor://）+ 移动 UA → 可试读 APK 内资产
- * - **禁止**仅凭远程 Hub 上的手机 UA 判为壳：普通 Safari/Chrome 直连 `/web` 必须走 Web bridge
+ * - **禁止**仅凭远程 Habitat 上的手机 UA 判为壳：普通 Safari/Chrome 直连 `/web` 必须走 Web bridge
  *   （能力层跟壳，不跟 UA；布局轴另由 viewport 决定）
  */
 export function isCapacitorShellCandidate(): boolean {
@@ -65,7 +65,7 @@ export function isCapacitorShellCandidate(): boolean {
   return /Android|iPhone|iPad|Mobile/i.test(ua);
 }
 
-/** 远程 Hub 页上 @capacitor/core 动态加载后 window.Capacitor 才可用 */
+/** 远程 Habitat 页上 @capacitor/core 动态加载后 window.Capacitor 才可用 */
 export async function waitForCapacitorNativePlatform(timeoutMs = 3_000): Promise<boolean> {
   if (isCapacitorNativePlatform()) return true;
   if (!isCapacitorShellCandidate()) return false;

@@ -93,7 +93,7 @@ describe("resolveVaultSecretValue", () => {
     resolveVaultToolWorldMock.mockImplementation(async () => 1);
   });
 
-  it("resolves agent secret without writing Hub process.env", async () => {
+  it("resolves agent secret without writing Habitat process.env", async () => {
     const resolved = await resolveVaultSecretValue({
       id: 99,
       field: "password",
@@ -116,7 +116,7 @@ describe("resolveSubprocessSecrets", () => {
     delete process.env[KEY];
   });
 
-  it("resolves agent secrets without writing Hub process.env", async () => {
+  it("resolves agent secrets without writing Habitat process.env", async () => {
     const resolved = await resolveSubprocessSecrets([
       { id: 99, env_name: KEY, subject_kind: "agent" },
     ]);
@@ -125,7 +125,7 @@ describe("resolveSubprocessSecrets", () => {
     expect(resolveAgentVaultSecretMock).toHaveBeenCalled();
   });
 
-  it("child printenv sees secrets via buildSubprocessEnv; Hub env stays clean", async () => {
+  it("child printenv sees secrets via buildSubprocessEnv; Habitat env stays clean", async () => {
     const resolved = await resolveSubprocessSecrets([
       { id: 99, env_name: KEY, subject_kind: "agent" },
     ]);

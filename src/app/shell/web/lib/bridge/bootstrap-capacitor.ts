@@ -7,11 +7,11 @@ export async function bootstrapCapacitorBridge(): Promise<void> {
     attachNativeBuild,
     buildMobileShell,
     createMobileShellStub,
-    loadHubUrl,
+    loadHabitatUrl,
     loadRemoteAuthToken,
     readShellSnapshot,
   } = await import("@freeanima/app/shell/mobile/lib/mobile-shell.ts");
-  const { createMobileScopedBackend, testMobileHubConnection } =
+  const { createMobileScopedBackend, testMobileHabitatConnection } =
     await import("@freeanima/app/shell/mobile/lib/settings-prefs-backend.ts");
   const { loadMobileNativeBuildMeta, persistNativeBuildMeta } =
     await import("@freeanima/app/shell/mobile/lib/native-build-meta-prefs.ts");
@@ -31,20 +31,20 @@ export async function bootstrapCapacitorBridge(): Promise<void> {
   }
 
   const snapshot = readShellSnapshot();
-  let hubUrl = snapshot?.hubUrl ?? null;
+  let habitatUrl = snapshot?.habitatUrl ?? null;
   let remoteAuthToken = snapshot?.remoteAuthToken ?? "";
-  if (!hubUrl) {
+  if (!habitatUrl) {
     try {
-      hubUrl = await loadHubUrl();
+      habitatUrl = await loadHabitatUrl();
       remoteAuthToken = (await loadRemoteAuthToken()) ?? "";
     } catch {
-      /* 远程 Hub 页可能尚无 Preferences 桥，依赖上方快照 */
+      /* 远程 Habitat 页可能尚无 Preferences 桥，依赖上方快照 */
     }
   }
 
   window.satelliteShell = attachNativeBuild(createMobileShellStub(), nativeBuild);
-  if (hubUrl) {
-    window.satelliteShell = await buildMobileShell(hubUrl, remoteAuthToken);
+  if (habitatUrl) {
+    window.satelliteShell = await buildMobileShell(habitatUrl, remoteAuthToken);
   }
   if (window.satelliteShell) {
     const { attachMobileNativeAlertToShell } =
@@ -59,9 +59,9 @@ export async function bootstrapCapacitorBridge(): Promise<void> {
       await backend.save(scope, value);
     },
     test: async (scope, value) => {
-      if (scope.kind === "kv" && scope.id === "hub") {
-        const raw = value as { hubUrl: string; remoteAuthToken: string };
-        await testMobileHubConnection(raw);
+      if (scope.kind === "kv" && scope.id === "habitat") {
+        const raw = value as { habitatUrl: string; remoteAuthToken: string };
+        await testMobileHabitatConnection(raw);
         return;
       }
       await backend.save(scope, value);

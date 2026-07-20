@@ -1,7 +1,7 @@
 import type { DiaryEntryRow, DiarySubjectKind, DiaryTextBlock } from "./format-diary.ts";
-import { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
+import { resolveHabitatCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 import {
   offlineAppendDiaryEntry,
@@ -25,7 +25,7 @@ function ensureDiaryOfflineModule(): void {
 }
 
 function hub() {
-  return getTypedSatelliteHubClient();
+  return getTypedSatelliteHabitatClient();
 }
 
 function diaryListCacheId(subjectKind: DiarySubjectKind, query?: string): string {
@@ -41,7 +41,7 @@ export async function fetchDiaryEntries(
   subjectKind: DiarySubjectKind,
   opts?: { limit?: number },
 ): Promise<DiaryEntryRow[]> {
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   const cacheId = diaryListCacheId(subjectKind);
   return withOfflineCache({
     scope,
@@ -64,7 +64,7 @@ export async function searchDiaryEntries(
   query: string,
   limit?: number,
 ): Promise<DiaryEntryRow[]> {
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   const cacheId = diaryListCacheId(subjectKind, query);
   return withOfflineCache({
     scope,
@@ -86,7 +86,7 @@ export async function getDiaryEntry(
   subjectKind: DiarySubjectKind,
   id: number,
 ): Promise<DiaryEntryRow> {
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   const cacheId = diaryEntryCacheId(subjectKind, id);
   return withOfflineCache({
     scope,

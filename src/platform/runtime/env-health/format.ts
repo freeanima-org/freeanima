@@ -9,7 +9,7 @@ const LABEL: Record<keyof EnvHealthMarkers, string> = {
   hostname: "Hostname",
   os: "OS",
   timezone: "Timezone",
-  hub_version: "Hub version",
+  hub_version: "Habitat version",
   boot_started_at: "Boot started at",
   postgres: "PostgreSQL",
   redis: "Redis",

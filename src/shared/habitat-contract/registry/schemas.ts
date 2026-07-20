@@ -1,0 +1,23 @@
+/** Habitat Habitat wire schemas — migrated from habitat-api/api/schemas.ts */
+export {
+  autobiographicalMemoryListBodySchema,
+  createConversationBodySchema,
+  entityIdParamsSchema,
+  entityListQuerySchema,
+  entitySearchBodySchema,
+  entitySearchQuerySchema,
+  limbicMemoryListBodySchema,
+  memorySearchBodySchema,
+  messagesQuerySchema,
+  patchTitleBodySchema,
+  promptDebugResponseSchema,
+  semanticMemoryListBodySchema,
+  semanticMemoryPinBodySchema,
+  streamApiEventSchema,
+  subjectEntityCreateBodySchema,
+  subjectEntityUpdateBodySchema,
+  toolsStatusResponseSchema,
+  worldEntityCreateBodySchema,
+  worldEntityPatchInputSchema,
+  worldEntityUpdateBodySchema,
+} from "../schemas/habitat-schemas.ts";

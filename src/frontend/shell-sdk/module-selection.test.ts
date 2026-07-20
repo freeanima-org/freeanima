@@ -33,7 +33,7 @@ function mockLocalStorage(): Storage {
 }
 
 describe("module-selection", () => {
-  const ctx = { hubScope: "http://127.0.0.1:2658/sap", subjectKind: "user" as const };
+  const ctx = { habitatScope: "http://127.0.0.1:2658/sap", subjectKind: "user" as const };
 
   beforeEach(() => {
     globalThis.localStorage = mockLocalStorage();
@@ -80,13 +80,13 @@ describe("module-selection", () => {
     expect(readModuleSelection("email", ctx)).toEqual({ accountId: 3 });
   });
 
-  test("hub 与 subject 键隔离", () => {
+  test("habitat 与 subject 键隔离", () => {
     writeModuleSelection("chat", "a", ctx);
     writeModuleSelection("chat", "b", { ...ctx, subjectKind: "agent" });
-    writeModuleSelection("chat", "c", { ...ctx, hubScope: "http://other/sap" });
+    writeModuleSelection("chat", "c", { ...ctx, habitatScope: "http://other/sap" });
     expect(readModuleSelection("chat", ctx)).toBe("a");
     expect(readModuleSelection("chat", { ...ctx, subjectKind: "agent" })).toBe("b");
-    expect(readModuleSelection("chat", { ...ctx, hubScope: "http://other/sap" })).toBe("c");
+    expect(readModuleSelection("chat", { ...ctx, habitatScope: "http://other/sap" })).toBe("c");
   });
 
   test("非法 JSON 返回 null", () => {

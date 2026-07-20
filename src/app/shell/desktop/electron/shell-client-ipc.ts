@@ -1,13 +1,13 @@
 import { ipcMain } from "electron";
 
-import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc/urls.ts";
-import { testHubHealthConnection } from "@freeanima/frontend/shell-sdk/hub-health-probe.ts";
+import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc/urls.ts";
+import { testHabitatHealthConnection } from "@freeanima/frontend/shell-sdk/habitat-health-probe.ts";
 import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
 import {
   COMPANION_CONFIG_SCOPE,
   COMPANION_SHELL_SCOPE,
   DEBUG_SETTINGS_SCOPE,
-  HUB_SETTINGS_SCOPE,
+  HABITAT_SETTINGS_SCOPE,
 } from "@freeanima/frontend/shell-sdk/settings";
 
 import { readShellClientConfig, writeShellClientConfig } from "./shell-client-store.ts";
@@ -21,32 +21,32 @@ import {
   saveCompanionVisibleToStore,
 } from "./shell-scoped-prefs.ts";
 
-export type HubClientConfigPayload = {
-  hubUrl: string;
-  hubWsUrl: string;
+export type HabitatClientConfigPayload = {
+  habitatUrl: string;
+  habitatWsUrl: string;
   remoteAuthToken: string;
 };
 
-type HubSettingsPayload = {
-  hubUrl: string;
+type HabitatSettingsPayload = {
+  habitatUrl: string;
   remoteAuthToken: string;
   launchAtLogin?: boolean;
 };
 
-function loadHubSettingsPayload(): HubSettingsPayload | null {
+function loadHabitatSettingsPayload(): HabitatSettingsPayload | null {
   const cfg = readShellClientConfig();
   if (!cfg) {
-    return { hubUrl: "", remoteAuthToken: "", launchAtLogin: readLaunchAtLoginFromStore() };
+    return { habitatUrl: "", remoteAuthToken: "", launchAtLogin: readLaunchAtLoginFromStore() };
   }
   return { ...cfg, launchAtLogin: readLaunchAtLoginFromStore() };
 }
 
-export function resolveHubClientConfig(): HubClientConfigPayload | null {
+export function resolveHabitatClientConfig(): HabitatClientConfigPayload | null {
   const cfg = readShellClientConfig();
   if (!cfg) return null;
   return {
-    hubUrl: cfg.hubUrl,
-    hubWsUrl: resolveHubRpcWsUrl(cfg.hubUrl),
+    habitatUrl: cfg.habitatUrl,
+    habitatWsUrl: resolveHabitatRpcWsUrl(cfg.habitatUrl),
     remoteAuthToken: cfg.remoteAuthToken,
   };
 }
@@ -58,14 +58,14 @@ function assertScope(expected: SettingsStorageScope, actual: SettingsStorageScop
 }
 
 export function registerShellClientIpc(
-  showHubSettings: () => void,
+  showHabitatSettings: () => void,
   onConfigSaved?: () => void,
   onCompanionVisibleSaved?: (visible: boolean) => void,
 ): void {
   ipcMain.handle("shell:settings:load", (_event, scope: SettingsStorageScope) => {
-    if (scope.kind === "kv" && scope.id === "hub") {
-      assertScope(HUB_SETTINGS_SCOPE, scope);
-      return loadHubSettingsPayload();
+    if (scope.kind === "kv" && scope.id === "habitat") {
+      assertScope(HABITAT_SETTINGS_SCOPE, scope);
+      return loadHabitatSettingsPayload();
     }
     if (scope.kind === "kv" && scope.id === "debug") {
       assertScope(DEBUG_SETTINGS_SCOPE, scope);
@@ -83,15 +83,15 @@ export function registerShellClientIpc(
   });
 
   ipcMain.handle("shell:settings:save", (_event, scope: SettingsStorageScope, value: unknown) => {
-    if (scope.kind === "kv" && scope.id === "hub") {
-      assertScope(HUB_SETTINGS_SCOPE, scope);
-      const raw = value as HubSettingsPayload;
-      writeShellClientConfig({ hubUrl: raw.hubUrl, remoteAuthToken: raw.remoteAuthToken });
+    if (scope.kind === "kv" && scope.id === "habitat") {
+      assertScope(HABITAT_SETTINGS_SCOPE, scope);
+      const raw = value as HabitatSettingsPayload;
+      writeShellClientConfig({ habitatUrl: raw.habitatUrl, remoteAuthToken: raw.remoteAuthToken });
       if (typeof raw.launchAtLogin === "boolean") {
         setLaunchAtLogin(raw.launchAtLogin);
       }
       onConfigSaved?.();
-      return loadHubSettingsPayload();
+      return loadHabitatSettingsPayload();
     }
     if (scope.kind === "kv" && scope.id === "debug") {
       assertScope(DEBUG_SETTINGS_SCOPE, scope);
@@ -118,28 +118,28 @@ export function registerShellClientIpc(
   ipcMain.handle(
     "shell:settings:test",
     async (_event, scope: SettingsStorageScope, value: unknown) => {
-      if (scope.kind === "kv" && scope.id === "hub") {
-        assertScope(HUB_SETTINGS_SCOPE, scope);
-        const raw = value as { hubUrl: string; remoteAuthToken: string };
-        const hubUrl = String(raw.hubUrl ?? "")
+      if (scope.kind === "kv" && scope.id === "habitat") {
+        assertScope(HABITAT_SETTINGS_SCOPE, scope);
+        const raw = value as { habitatUrl: string; remoteAuthToken: string };
+        const habitatUrl = String(raw.habitatUrl ?? "")
           .trim()
           .replace(/\/$/, "");
         const token = String(raw.remoteAuthToken ?? "").trim();
-        if (!hubUrl) throw new Error("栖息地地址不能为空");
-        await testHubHealthConnection(hubUrl, token || undefined);
+        if (!habitatUrl) throw new Error("栖息地地址不能为空");
+        await testHabitatHealthConnection(habitatUrl, token || undefined);
         return true;
       }
       throw new Error(`scope ${scope.id} 不支持 test`);
     },
   );
 
-  ipcMain.handle("shell:get-client-config", () => resolveHubClientConfig());
+  ipcMain.handle("shell:get-client-config", () => resolveHabitatClientConfig());
 
   ipcMain.on("shell:get-client-config-sync", (event) => {
-    event.returnValue = resolveHubClientConfig();
+    event.returnValue = resolveHabitatClientConfig();
   });
 
   ipcMain.handle("shell:open-settings", () => {
-    showHubSettings();
+    showHabitatSettings();
   });
 }

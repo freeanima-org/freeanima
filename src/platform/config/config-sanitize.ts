@@ -16,7 +16,7 @@ export function isConfigSecretKey(key: string): boolean {
 }
 
 /**
- * 递归整理配置快照供 HTTP / Console：
+ * 递归整理配置快照供 HTTP / Habitat：
  * - 密钥字段（api_key 等）与 database.url **原样返回**（不脱敏）
  * - MCP `env` 仍只暴露 `env_keys`（不把环境变量明文塞进配置段）
  */
@@ -52,7 +52,7 @@ function sanitizeRecord(obj: Record<string, unknown>): Record<string, unknown> {
   return out;
 }
 
-/** Runtime config snapshot for HTTP / Console（密钥明文；MCP env → env_keys） */
+/** Runtime config snapshot for HTTP / Habitat（密钥明文；MCP env → env_keys） */
 export function sanitizeConfigForApi(cfg: RuntimeConfig | AnimaConfig): Record<string, unknown> {
   return sanitizeRecord(cfg as Record<string, unknown>);
 }

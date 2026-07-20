@@ -186,7 +186,7 @@ function mapShellNativePermission(perm: AlertPermissionState): ShellNativeAlertP
   return "unsupported";
 }
 
-/** bootstrap 注入：远程 Hub 页通过 satelliteShell 调原生通知，不依赖 Web Notification API。 */
+/** bootstrap 注入：远程 Habitat 页通过 satelliteShell 调原生通知，不依赖 Web Notification API。 */
 export function attachMobileNativeAlertToShell(shell: SatelliteShellApi): SatelliteShellApi {
   if (!shell.isNativeShell) return shell;
   return {

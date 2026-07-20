@@ -66,7 +66,7 @@ Priority when estimating compression budget:
 
 1. `models.<model>.context_window` in `config.yaml`
 2. `compression.default_context_window` (applies to all models)
-3. Provider `/models` catalog `contextWindow` (when Hub has registered lookup)
+3. Provider `/models` catalog `contextWindow` (when Habitat has registered lookup)
 4. Message-count fallback (`max_rounds` thresholds) when none of the above apply
 
 Per-model config always wins over dynamically fetched catalog values; catalog is read-only and never written back to `config.yaml`.

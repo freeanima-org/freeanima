@@ -14,7 +14,7 @@ title: Installation
 | **Source**     | Contributors, day-to-day development      | Required    | You install | Optional (recommended) | Vault / `env()` (recommended) |
 | **Standalone** | Production / self-host without a checkout | Not needed  | You install | Optional (recommended) | Vault / `env()` (recommended) |
 
-Both paths run the same `anima service` runtime (Hub REST `/api` + Hub RPC `/hub/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers EventBus and task context; it **degrades silently** when unavailable — production setups should still run it.
+Both paths run the same `anima service` runtime (Habitat REST `/api` + Habitat RPC `/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers EventBus and task context; it **degrades silently** when unavailable — production setups should still run it.
 
 ## Shared prerequisites
 
@@ -100,9 +100,9 @@ cp /path/to/freeanima-checkout/config.example.yaml ~/.anima/config.yaml
 Minimum production settings in `~/.anima/config.yaml` (**bootstrap only**):
 
 - **`database.url`** — PostgreSQL connection string (required)
-- **`web.enabled`** — Hub hosts `/web/*` when dist exists (optional; defaults to on if omitted)
+- **`web.enabled`** — Habitat hosts `/web/*` when dist exists (optional; defaults to on if omitted)
 
-**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`hub_runtime_config`). Edit them in the Shell app under **Settings → Hub 服务 → 服务配置**.
+**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`hub_runtime_config`). Edit them in the Shell app under **Settings → Habitat 服务 → 服务配置**.
 
 Prefer Vault or `env()` for secrets. See [`security.md`](security.md#credential-responsibilities).
 
@@ -114,7 +114,7 @@ anima service start --foreground # debug — logs to stdout
 anima service status
 ```
 
-Default bind: `127.0.0.1:2658`（Hub API：`/api`，Hub RPC：`/hub/rpc/v1`；Web UI：`/web/*` when `config.yaml` `web.enabled`).
+Default bind: `127.0.0.1:2658`（Habitat API：`/api`，Habitat RPC：`/rpc/v1`；Web UI：`/web/*` when `config.yaml` `web.enabled`).
 
 ### 4. Upgrade
 
@@ -198,18 +198,18 @@ cp config.example.yaml ~/.anima/config.yaml
 # configure database + LLM (see database.md, security.md)
 ```
 
-**Dev** (Hub + Vite HMR; never auto-builds Web). Prefer `just dev` for multi-worktree:
+**Dev** (Habitat + Vite HMR; never auto-builds Web). Prefer `just dev` for multi-worktree:
 
 ```bash
-just dev            # Hub random ≥10000 + Web from :5000; FREEANIMA_URL wires Vite proxy only
+just dev            # Habitat random ≥10000 + Web from :5000; FREEANIMA_URL wires Vite proxy only
 # or two terminals:
 bun run dev:hub     # random ≥10000 (not production 2658); writes ~/.anima/dev-web.token
-FREEANIMA_URL=http://127.0.0.1:<hub-port> bun run dev:web   # default :5000; browser Hub = page origin
+FREEANIMA_URL=http://127.0.0.1:<hub-port> bun run dev:web   # default :5000; browser Habitat = page origin
 ```
 
-Browser Web defaults Hub URL to the **page origin** (same in production Hub-hosted `/web` and Vite). Dev injects Service API Token from `dev-web.token` automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves HTTPS using `~/.anima/tls` (Hub stays plain HTTP). Source `dev:hub` also **ignores** `config.yaml` `web.enabled` / `web.host` / `web.port` — Hub does not host `/web` dist; use Vite (`WEB_DEV_PORT`, default 5000).
+Browser Web defaults Habitat URL to the **page origin** (same in production Habitat-hosted `/web` and Vite). Dev injects Service API Token from `dev-web.token` automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves HTTPS using `~/.anima/tls` (Habitat stays plain HTTP). Source `dev:hub` also **ignores** `config.yaml` `web.enabled` / `web.host` / `web.port` — Habitat does not host `/web` dist; use Vite (`WEB_DEV_PORT`, default 5000).
 
-**Source deploy** (Hub hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `build:web`. Source-tree `anima` has no `service` command.
+**Source deploy** (Habitat hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `build:web`. Source-tree `anima` has no `service` command.
 
 ```bash
 bun run build:web
@@ -235,18 +235,18 @@ Requires the **standalone** `anima` binary (`anima service` is not on the source
 ```bash
 anima service start
 anima token create --subject-id 1 --name bootstrap
-# 将输出的 fa_at_... 填入客户端 Hub 设置
+# 将输出的 fa_at_... 填入客户端 Habitat 设置
 
 anima service status
-curl -s -H "Authorization: Bearer <fa_at_...>" http://127.0.0.1:2658/hub/rpc/v1/status/get | jq '.version, .memory_kb'
+curl -s -H "Authorization: Bearer <fa_at_...>" http://127.0.0.1:2658/rpc/v1/status/get | jq '.version, .memory_kb'
 ```
 
 If status fails, check PostgreSQL connectivity, that migrations completed ([`database.md`](database.md#troubleshooting)), and that a valid Service API Token is configured.
 
 ## Next steps
 
-1. **Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not expose Console without auth ([`security.md`](security.md))
-2. **Remote access** — Service API Token + LAN / local HTTPS for personal mobile/remote Console ([`remote-access.md`](remote-access.md))
+1. **Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not expose Habitat without auth ([`security.md`](security.md))
+2. **Remote access** — Service API Token + LAN / local HTTPS for personal mobile/remote Habitat ([`remote-access.md`](remote-access.md))
 3. **Database** — backups, extensions, manual migrations if needed ([`database.md`](database.md))
 4. **Operations** — start/stop, memory metrics ([`service.md`](service.md))
 5. **Architecture** — memory pipeline, self layer, tools ([`../concepts/architecture.md`](../concepts/architecture.md))

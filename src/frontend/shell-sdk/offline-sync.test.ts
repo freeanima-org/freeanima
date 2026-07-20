@@ -1,21 +1,21 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
 
 // 先捕获真实实现，mock 后在 afterAll 恢复，避免 mock.module 全局泄漏污染其他测试文件。
-const realGate = await import("./hub-fetch-gate.ts");
+const realGate = await import("./habitat-fetch-gate.ts");
 const gateOriginal = {
-  isHubFetchAvailable: realGate.isHubFetchAvailable,
+  isHabitatFetchAvailable: realGate.isHabitatFetchAvailable,
   isNetworkOnline: realGate.isNetworkOnline,
   isHubConnected: realGate.isHubConnected,
   shellWritesDisabledFromState: realGate.shellWritesDisabledFromState,
 };
 
-mock.module("./hub-fetch-gate.ts", () => ({
+mock.module("./habitat-fetch-gate.ts", () => ({
   ...gateOriginal,
-  isHubFetchAvailable: () => true,
+  isHabitatFetchAvailable: () => true,
 }));
 
 afterAll(() => {
-  mock.module("./hub-fetch-gate.ts", () => gateOriginal);
+  mock.module("./habitat-fetch-gate.ts", () => gateOriginal);
 });
 
 const { flushOfflineModule, resetOfflineSyncStateForTests } = await import("./offline-sync.ts");

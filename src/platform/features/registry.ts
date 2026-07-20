@@ -1,7 +1,7 @@
 import type { FeaturePlugin, FeatureRpcHandler } from "./types.ts";
-import { hubRouter } from "../hub/hub-router.ts";
-import { initHubRouter } from "../hub/init.ts";
-import { toFeatureRpcHandlerMap } from "../hub/route-handlers.ts";
+import { hubRouter } from "../habitat/habitat-router.ts";
+import { initHubRouter } from "../habitat/init.ts";
+import { toFeatureRpcHandlerMap } from "../habitat/route-handlers.ts";
 
 const plugins: FeaturePlugin[] = [];
 const rpcHandlers = new Map<string, FeatureRpcHandler>();

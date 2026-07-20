@@ -27,7 +27,7 @@ export async function discoverPlatforms(
     if (sectionEnabled(discordCfg)) {
       const tokenRef = discordCfg.token;
       if (typeof tokenRef !== "string" || !tokenRef.trim()) {
-        throw new Error("discord.token not set in Hub runtime config");
+        throw new Error("discord.token not set in Habitat runtime config");
       }
       const token = await resolveValue(tokenRef.trim());
       const { createDiscordAdapter } = await import("./discord/discord-adapter.ts");
@@ -48,7 +48,7 @@ export async function discoverPlatforms(
       logComponent("gateway").info("Discovered platform: weixin");
     } else {
       logComponent("gateway").info(
-        "WeChat not configured (Hub runtime config weixin.token or WEIXIN_ILINK_TOKEN)",
+        "WeChat not configured (Habitat runtime config weixin.token or WEIXIN_ILINK_TOKEN)",
       );
     }
   }

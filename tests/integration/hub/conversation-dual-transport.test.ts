@@ -5,8 +5,8 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { bindConsoleRuntimeContext } from "@freeanima/features/console/hub/console-api/handlers/runtime";
-import { chatHubRoutes } from "@freeanima/features/chat/hub/routes/index.ts";
+import { bindHabitatRuntimeContext } from "@freeanima/features/habitat/habitat/habitat-api/handlers/runtime";
+import { chatHubRoutes } from "@freeanima/features/chat/habitat/routes/index.ts";
 import {
   builtinFeaturePlugins,
   getFeatureRpcHandler,
@@ -22,14 +22,14 @@ describePg("hub conversation.list dual transport", () => {
 
   beforeEach(async () => {
     await beginIntegrationCase("hub-dual-");
-    bindConsoleRuntimeContext();
+    bindHabitatRuntimeContext();
     registerFeatures(builtinFeaturePlugins);
     getAppRuntime().markStarted();
   });
 
   afterEach(async () => {
     resetFeatureRegistryForTests();
-    bindConsoleRuntimeContext();
+    bindHabitatRuntimeContext();
     await restoreIntegrationHome(prev);
   });
 
