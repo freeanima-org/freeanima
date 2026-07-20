@@ -90,6 +90,11 @@ import {
   useActionSheetCapability,
   useContextMenuCapability,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
+import { TaskTagFilterBar } from "@freeanima/features/task/ui/spa/components/TaskTagFilterBar.tsx";
+import {
+  collectTagsFromTaskItems,
+  matchTaskItemByTag,
+} from "@freeanima/features/task/ui/spa/lib/task-tag-filter.ts";
 import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-detail-dirty.ts";
 import { fetchTags } from "@freeanima/features/tag/ui/spa/lib/api.ts";
 
@@ -131,6 +136,7 @@ export function ProjectApp() {
   const [hideCompleted, setHideCompleted] = useState(() => readHideCompleted(subjectKind));
   const [tasks, setTasks] = useState<TaskItemRow[]>([]);
   const [tagPool, setTagPool] = useState<Array<{ id: number; title: string }>>([]);
+  const [tagFilterId, setTagFilterId] = useState<number | null>(null);
   const [selectionSubjectKind, setSelectionSubjectKind] = useState(subjectKind);
 
   // subject 切换时在 render 阶段清空选中，避免详情 effect 用旧 ID 打到新 world
@@ -139,6 +145,7 @@ export function ProjectApp() {
     setSelectedFolderId(null);
     setSelectedProjectId(null);
     setTasks([]);
+    setTagFilterId(null);
   }
 
   const [newFolderName, setNewFolderName] = useState("");
@@ -363,6 +370,23 @@ export function ProjectApp() {
     [tagPool],
   );
 
+  const projectTags = useMemo(
+    () => collectTagsFromTaskItems(tasks, tagTitleById),
+    [tasks, tagTitleById],
+  );
+
+  const filteredTasks = useMemo(
+    () => tasks.filter((row) => matchTaskItemByTag(row, tagFilterId)),
+    [tasks, tagFilterId],
+  );
+
+  useEffect(() => {
+    if (tagFilterId == null) return;
+    if (!projectTags.some((tag) => tag.id === tagFilterId)) {
+      setTagFilterId(null);
+    }
+  }, [projectTags, tagFilterId]);
+
   useEffect(() => {
     resetDetail();
     void reload();
@@ -380,6 +404,7 @@ export function ProjectApp() {
 
   const handleSelectProject = (id: number) => {
     setSelectedProjectId(id);
+    setTagFilterId(null);
     writeModuleSelection("project", id, { subjectKind });
     setSelectedFolderId(null);
     closeTaskDetail({ discard: true });
@@ -818,6 +843,11 @@ export function ProjectApp() {
                   onSubmit={() => void handleQuickAddTask()}
                   className="border flex shrink-0 gap-2 border-b p-3"
                 />
+                <TaskTagFilterBar
+                  tags={projectTags}
+                  value={tagFilterId}
+                  onChange={setTagFilterId}
+                />
                 <PullToRefresh
                   className="min-h-0 flex-1"
                   contentClassName="touch-pan-y px-2 py-2"
@@ -825,7 +855,7 @@ export function ProjectApp() {
                   onRefresh={handleManualRefresh}
                 >
                   <ProjectTaskList
-                    items={tasks}
+                    items={filteredTasks}
                     activeItemId={detailItem?.id ?? null}
                     hideCompleted={hideCompleted}
                     useActionSheet={useActionSheet}
