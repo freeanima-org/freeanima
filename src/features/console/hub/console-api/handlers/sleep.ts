@@ -24,10 +24,6 @@ export async function listCronLogs(opts?: {
   return consoleCtx().listCronLogs(opts);
 }
 
-export function getDeepSleepRounds(day: string) {
-  return consoleCtx().getDeepSleepRounds(day);
-}
-
 export function getSleepPipelineStatus() {
   return consoleCtx().getSleepPipelineStatus();
 }

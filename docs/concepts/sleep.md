@@ -137,7 +137,7 @@ For a single past CST calendar day (e.g. before go-live or after migration), use
 1. Set **Day** to `YYYY-MM-DD`
 2. Run the **light-sleep** step (check **Force** to skip dependency checks if needed)
 
-Each step run is logged in the **Pipeline history** table on the sleep page. Cross-session merge for that day still relies on a subsequent **deep-sleep** run. Cron-triggered cycle runs appear in **Console → Cron → Run history** on the sleep-cycle task.
+Each step run is logged in the **Pipeline history** table on the sleep page (`pipeline_step_run.output`; deep-sleep rows include per-round summaries and change-log snapshots). Cross-session merge for that day still relies on a subsequent **deep-sleep** run. Cron-triggered cycle runs appear in **Console → Cron → Run history** on the sleep-cycle task.
 
 ## Relationship to Existing Architecture
 

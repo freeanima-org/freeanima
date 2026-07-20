@@ -95,7 +95,6 @@ export { readDeepSleepState, writeDeepSleepState, recordDeepSleepRun } from "./d
 export { applyDeepSleepToolResult } from "./deep-sleep/apply-tool-result.ts";
 export {
   buildSleepSummary,
-  listDeepSleepRoundLogs,
   SLEEP_JOB_IDS,
   SLEEP_CYCLE_JOB_ID,
   type SleepSummary,

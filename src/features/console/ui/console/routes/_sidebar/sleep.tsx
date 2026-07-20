@@ -27,7 +27,6 @@ import {
   FormFieldset,
 } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
 import {
-  getDeepSleepRounds,
   getSleepPipelineStatus,
   listPipelineStepRuns,
   startSleepCycle,
@@ -61,16 +60,48 @@ type PipelineRunRow = {
   skipped_reason: string | null;
 };
 
-type DeepSleepRound = {
+type DeepSleepRoundRow = {
   round: string;
   round_index: number;
-  output: { tool_calls: number; summary: string };
+  tool_calls: number;
+  summary: string;
   change_log_snapshot: {
     addedIds?: string[];
     modifiedIds?: string[];
     deprecatedIds?: string[];
   };
 };
+
+function deepSleepRoundsFromOutput(output: Record<string, unknown> | null): DeepSleepRoundRow[] {
+  if (!output || !Array.isArray(output.rounds)) return [];
+
+  const rounds: DeepSleepRoundRow[] = [];
+  for (const item of output.rounds) {
+    if (typeof item !== "object" || item === null) continue;
+    const row = item as Record<string, unknown>;
+    if (typeof row.round !== "string" || typeof row.round_index !== "number") continue;
+
+    const snapshot =
+      typeof row.change_log_snapshot === "object" && row.change_log_snapshot !== null
+        ? (row.change_log_snapshot as Record<string, unknown>)
+        : {};
+
+    rounds.push({
+      round: row.round,
+      round_index: row.round_index,
+      tool_calls: typeof row.tool_calls === "number" ? row.tool_calls : 0,
+      summary: typeof row.summary === "string" ? row.summary : "",
+      change_log_snapshot: {
+        addedIds: Array.isArray(snapshot.addedIds) ? (snapshot.addedIds as string[]) : [],
+        modifiedIds: Array.isArray(snapshot.modifiedIds) ? (snapshot.modifiedIds as string[]) : [],
+        deprecatedIds: Array.isArray(snapshot.deprecatedIds)
+          ? (snapshot.deprecatedIds as string[])
+          : [],
+      },
+    });
+  }
+  return rounds;
+}
 
 export const Route = createFileRoute("/_sidebar/sleep")({
   loader: async () => {
@@ -176,8 +207,6 @@ function SleepPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [rounds, setRounds] = useState<DeepSleepRound[]>([]);
-  const [roundsLoading, setRoundsLoading] = useState(false);
   const [pipelineDay, setPipelineDay] = useState("");
   const [pipelineForce, setPipelineForce] = useState(false);
   const [deepSleepMode, setDeepSleepMode] = useState<"full" | "incremental">("full");
@@ -298,31 +327,8 @@ function SleepPage() {
     }
   };
 
-  const loadRounds = useCallback(async (day: string) => {
-    setRoundsLoading(true);
-    try {
-      const data = (await getDeepSleepRounds(day)) as { rounds?: DeepSleepRound[] };
-      setRounds(data.rounds ?? []);
-    } catch (err) {
-      logCaughtError("sleep/loadDeepSleepRounds", err);
-      setRounds([]);
-    } finally {
-      setRoundsLoading(false);
-    }
-  }, []);
-
   const toggleExpand = (row: PipelineRunRow) => {
-    if (expandedId === row.id) {
-      setExpandedId(null);
-      setRounds([]);
-      return;
-    }
-    setExpandedId(row.id);
-    if (row.step_id === "deep-sleep" && row.status === "completed" && row.day) {
-      void loadRounds(row.day);
-    } else {
-      setRounds([]);
-    }
+    setExpandedId(expandedId === row.id ? null : row.id);
   };
 
   const stepNodes = pipelineStatus?.definition?.nodes ?? [];
@@ -507,57 +513,64 @@ function SleepPage() {
                     </Button>
                   </TableCell>
                 </TableRow>
-                {expandedId === row.id && (
-                  <TableRow>
-                    <TableCell colSpan={8} className="bg-muted">
-                      {row.error && (
-                        <pre className="text-xs text-destructive whitespace-pre-wrap break-all">
-                          {row.error}
-                        </pre>
-                      )}
-                      {row.skipped_reason && (
-                        <p className="text-xs text-muted-foreground mb-2">{row.skipped_reason}</p>
-                      )}
-                      {row.output && (
-                        <pre className="text-xs whitespace-pre-wrap break-all max-h-48 overflow-auto">
-                          {JSON.stringify(row.output, null, 2)}
-                        </pre>
-                      )}
-                      {row.step_id === "deep-sleep" && row.status === "completed" && row.day && (
-                        <div className="mt-3">
-                          <h4 className="font-semibold text-sm mb-1">
-                            {m.console_sleep_deep_rounds()}
-                          </h4>
-                          {roundsLoading && (
-                            <p className="text-xs">{m.console_sleep_loading_rounds()}</p>
+                {expandedId === row.id &&
+                  (() => {
+                    const deepSleepRounds =
+                      row.step_id === "deep-sleep" && row.status === "completed"
+                        ? deepSleepRoundsFromOutput(row.output)
+                        : [];
+                    return (
+                      <TableRow>
+                        <TableCell colSpan={8} className="bg-muted">
+                          {row.error && (
+                            <pre className="text-xs text-destructive whitespace-pre-wrap break-all">
+                              {row.error}
+                            </pre>
                           )}
-                          {!roundsLoading &&
-                            rounds.map((r) => (
-                              <div key={r.round_index} className="mb-2 border-t border pt-2">
-                                <p className="text-sm font-medium">
-                                  {m.console_sleep_round_tools({
-                                    index: String(r.round_index),
-                                    round: r.round,
-                                    count: String(r.output.tool_calls),
-                                  })}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {m.console_sleep_change_log({
-                                    added: String(r.change_log_snapshot.addedIds?.length ?? 0),
-                                    updated: String(r.change_log_snapshot.modifiedIds?.length ?? 0),
-                                  })}{" "}
-                                  / -{r.change_log_snapshot.deprecatedIds?.length ?? 0}
-                                </p>
-                                <p className="text-xs whitespace-pre-wrap">
-                                  {r.output.summary.slice(0, 400)}
-                                </p>
-                              </div>
-                            ))}
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                )}
+                          {row.skipped_reason && (
+                            <p className="text-xs text-muted-foreground mb-2">
+                              {row.skipped_reason}
+                            </p>
+                          )}
+                          {row.output && (
+                            <pre className="text-xs whitespace-pre-wrap break-all max-h-48 overflow-auto">
+                              {JSON.stringify(row.output, null, 2)}
+                            </pre>
+                          )}
+                          {deepSleepRounds.length > 0 && (
+                            <div className="mt-3">
+                              <h4 className="font-semibold text-sm mb-1">
+                                {m.console_sleep_deep_rounds()}
+                              </h4>
+                              {deepSleepRounds.map((r) => (
+                                <div key={r.round_index} className="mb-2 border-t border pt-2">
+                                  <p className="text-sm font-medium">
+                                    {m.console_sleep_round_tools({
+                                      index: String(r.round_index),
+                                      round: r.round,
+                                      count: String(r.tool_calls),
+                                    })}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {m.console_sleep_change_log({
+                                      added: String(r.change_log_snapshot.addedIds?.length ?? 0),
+                                      updated: String(
+                                        r.change_log_snapshot.modifiedIds?.length ?? 0,
+                                      ),
+                                    })}{" "}
+                                    / -{r.change_log_snapshot.deprecatedIds?.length ?? 0}
+                                  </p>
+                                  <p className="text-xs whitespace-pre-wrap">
+                                    {r.summary.slice(0, 400)}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })()}
               </Fragment>
             ))}
             {runs.length === 0 && (

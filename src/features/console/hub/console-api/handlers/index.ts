@@ -34,12 +34,7 @@ export { getSatellitesStatus } from "./satellites.ts";
 export { getAcpStatus, acpStartAll, acpStopAll, acpStartAgent, acpStopAgent } from "./acp.ts";
 export { fetchConversationAcpDock, iterateConversationEvents } from "./conversation-events.ts";
 export { getFtsStatus, startRebuildFtsIndex, getRebuildFtsJobStatus } from "./fts.ts";
-export {
-  getSleepSummary,
-  listPipelineStepRuns,
-  listCronLogs,
-  getDeepSleepRounds,
-} from "./sleep.ts";
+export { getSleepSummary, listPipelineStepRuns, listCronLogs } from "./sleep.ts";
 export { listAutoLlmRuns } from "./auto-llm-runs.ts";
 export {
   listWorldEntities,

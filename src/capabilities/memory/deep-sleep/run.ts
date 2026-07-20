@@ -1,5 +1,5 @@
 import { logCapability as logComponent } from "@freeanima/core/config";
-import { formatCstIso, omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/core/util";
 
 import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
 import { runDeepSleepEngine } from "../deep-sleep-port.ts";
@@ -14,13 +14,13 @@ import {
 } from "./build-messages.ts";
 import {
   createEmptyChangeLog,
+  snapshotChangeLog,
   type DeepSleepRound,
   type DeepSleepResult,
   type DeepSleepMode,
 } from "./types.ts";
 export type { DeepSleepResult } from "./types.ts";
 import { recordDeepSleepRun } from "./state.ts";
-import { writeDeepSleepRoundLog, makeRoundLog } from "./log.ts";
 
 export type RunDeepSleepOpts = {
   selfContent: string;
@@ -62,7 +62,6 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
       total_tool_calls: 0,
       skipped: "Semantic memory store empty; skipping deep sleep",
     };
-    logComponent("memory").info("deep sleep skipped", { day, reason: "no_memories" });
     recordDeepSleepRun({ day, roundsCompleted: 0, stats: { total_tool_calls: 0 } });
     return result;
   }
@@ -89,14 +88,6 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
   const systemPrompt = composeSystemPrompt(parts);
   const changeLog = createEmptyChangeLog();
 
-  logComponent("memory").info("deep sleep started", {
-    day,
-    mode,
-    active_memories: allRows.length,
-    json_bytes: bytes,
-    size_status: sizeStatus,
-  });
-
   const roundResults: DeepSleepResult["rounds"] = [];
   let totalToolCalls = 0;
   const roundStats: Record<string, number> = {};
@@ -105,7 +96,6 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
     const round = DEEP_SLEEP_ROUNDS[i];
     if (round === undefined) continue;
     const roundIndex = i + 1;
-    const startedAt = formatCstIso();
 
     // ── Pre-round skip checks ──
 
@@ -115,16 +105,13 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
     if (round === "split") {
       splitCandidates = filterSplitCandidates(allRows, mode);
       if (splitCandidates.length === 0) {
-        logComponent("memory").info("deep sleep round skipped (no split candidates)", {
-          day,
-          round,
-          reason: "no_candidates",
-        });
         roundResults.push({
           round,
+          round_index: roundIndex,
           tool_calls: 0,
           summary: "No split candidates; skipped",
           skipped: "no_candidates",
+          change_log_snapshot: createEmptyChangeLog(),
         });
         continue;
       }
@@ -136,32 +123,26 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
       mode === "incremental" &&
       !hasRecentMemoryUpdates(allRows)
     ) {
-      logComponent("memory").info("deep sleep round skipped (no recent updates)", {
-        day,
-        round,
-        reason: "no_recent_updates",
-      });
       roundResults.push({
         round,
+        round_index: roundIndex,
         tool_calls: 0,
         summary: "No recent updates; skipping contradiction check",
         skipped: "no_recent_updates",
+        change_log_snapshot: createEmptyChangeLog(),
       });
       continue;
     }
 
     // Merge (incremental): skip if nothing updated in 24h (includes deprecations)
     if (round === "merge" && mode === "incremental" && !hasRecentMemoryUpdates(allRows)) {
-      logComponent("memory").info("deep sleep round skipped (no recent updates)", {
-        day,
-        round,
-        reason: "no_recent_updates",
-      });
       roundResults.push({
         round,
+        round_index: roundIndex,
         tool_calls: 0,
         summary: "No recent updates; skipping merge",
         skipped: "no_recent_updates",
+        change_log_snapshot: createEmptyChangeLog(),
       });
       continue;
     }
@@ -192,36 +173,15 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
       changeLog,
     });
 
-    const finishedAt = formatCstIso();
     totalToolCalls += engineResult.tool_calls;
     roundStats[round] = engineResult.tool_calls;
 
-    // Write operation log
-    const roundLog = makeRoundLog({
-      day,
-      round,
-      roundIndex,
-      startedAt,
-      finishedAt,
-      activeMemoryCount: allRows.length,
-      changeLogBefore: changeLog, // snapshot (by reference)
-      toolCalls: engineResult.tool_calls,
-      summary: engineResult.summary,
-      changeLogAfter: changeLog,
-    });
-    writeDeepSleepRoundLog(roundLog);
-
     roundResults.push({
-      round,
-      tool_calls: engineResult.tool_calls,
-      summary: engineResult.summary,
-    });
-
-    logComponent("memory").info("deep sleep round completed", {
-      day,
       round,
       round_index: roundIndex,
       tool_calls: engineResult.tool_calls,
+      summary: engineResult.summary,
+      change_log_snapshot: snapshotChangeLog(changeLog),
     });
   }
 
@@ -241,13 +201,10 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
     }),
   });
 
-  const result: DeepSleepResult = {
+  return {
     ok: true,
     day,
     rounds: roundResults,
     total_tool_calls: totalToolCalls,
   };
-
-  logComponent("memory").info("deep sleep completed", result);
-  return result;
 }
