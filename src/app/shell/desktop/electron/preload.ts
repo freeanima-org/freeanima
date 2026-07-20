@@ -40,14 +40,20 @@ function readArgvHubConfig(): { hubUrl: string; remoteAuthToken: string } {
   };
 }
 
-function resolvePreloadHubConfig(
-  cfg: HubClientConfigPayload | null,
-): Pick<SatelliteShellApi, "hubUrl" | "hubWsUrl" | "remoteAuth" | "hubFetch"> {
+/** Electron 仅过桥可序列化字段；勿暴露 hubFetch（Response 经 contextBridge 会丢方法）。 */
+type PreloadHubFields = Pick<SatelliteShellApi, "hubUrl" | "hubWsUrl" | "remoteAuth">;
+
+function resolvePreloadHubConfig(cfg: HubClientConfigPayload | null): PreloadHubFields {
   const fallback = readArgvHubConfig();
   const hubUrl = (cfg?.hubUrl?.trim() || fallback.hubUrl || DEFAULT_HUB_URL).replace(/\/$/, "");
   const hubWsUrl = cfg?.hubWsUrl?.trim() || resolveHubRpcWsUrl(hubUrl);
   const remoteAuthToken = cfg?.remoteAuthToken?.trim() || fallback.remoteAuthToken || "";
-  return buildShellApiFields(hubUrl, hubWsUrl, remoteAuthToken);
+  const fields = buildShellApiFields(hubUrl, hubWsUrl, remoteAuthToken);
+  return {
+    hubUrl: fields.hubUrl,
+    hubWsUrl: fields.hubWsUrl,
+    ...(fields.remoteAuth !== undefined ? { remoteAuth: fields.remoteAuth } : {}),
+  };
 }
 
 function createFileInstanceStore(appId: string): SapInstanceStore {
@@ -61,9 +67,7 @@ function createFileInstanceStore(appId: string): SapInstanceStore {
   };
 }
 
-function createSatelliteShell(
-  hubFields: Pick<SatelliteShellApi, "hubUrl" | "hubWsUrl" | "remoteAuth" | "hubFetch">,
-): SatelliteShellApi {
+function createSatelliteShell(hubFields: PreloadHubFields): SatelliteShellApi {
   return {
     isElectron: true,
     primaryInput: "pointer",
@@ -152,10 +156,7 @@ function createSatelliteShell(
   };
 }
 
-function applyHubFields(
-  shell: SatelliteShellApi,
-  hubFields: Pick<SatelliteShellApi, "hubUrl" | "hubWsUrl" | "remoteAuth" | "hubFetch">,
-): void {
+function applyHubFields(shell: SatelliteShellApi, hubFields: PreloadHubFields): void {
   shell.hubUrl = hubFields.hubUrl;
   shell.hubWsUrl = hubFields.hubWsUrl;
   if (hubFields.remoteAuth !== undefined) {
@@ -163,11 +164,8 @@ function applyHubFields(
   } else {
     delete shell.remoteAuth;
   }
-  if (hubFields.hubFetch !== undefined) {
-    shell.hubFetch = hubFields.hubFetch;
-  } else {
-    delete shell.hubFetch;
-  }
+  // 勿经 contextBridge 暴露 hubFetch：返回的 Response 会被克隆并丢失 .text()
+  delete shell.hubFetch;
 }
 
 async function refreshHubFields(shell: SatelliteShellApi): Promise<void> {
