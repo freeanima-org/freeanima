@@ -1,11 +1,6 @@
 import type { DiaryEntryRow, DiarySubjectKind, DiaryTextBlock } from "./format-diary.ts";
-import {
-  readOfflineCache,
-  resolveHubCacheScope,
-  writeOfflineCache,
-} from "@freeanima/frontend/shell-sdk/offline-cache";
+import { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
-import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
 import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 
 import {
@@ -93,14 +88,16 @@ export async function getDiaryEntry(
 ): Promise<DiaryEntryRow> {
   const scope = resolveHubCacheScope();
   const cacheId = diaryEntryCacheId(subjectKind, id);
-  const cached = await readOfflineCache<DiaryEntryRow>(scope, "diary", cacheId);
-  if (cached) return cached;
-  if (!isHubFetchAvailable()) {
-    throw new Error("diary.get unavailable offline");
-  }
-  const data = await hub().call("diary.get", { subject_kind: subjectKind, id });
-  void writeOfflineCache(scope, "diary", cacheId, data.item);
-  return data.item;
+  return withOfflineCache({
+    scope,
+    namespace: "diary",
+    id: cacheId,
+    fetch: async () => {
+      const data = await hub().call("diary.get", { subject_kind: subjectKind, id });
+      return data.item;
+    },
+    offlineError: "diary.get unavailable offline",
+  });
 }
 
 export async function createDiaryEntry(

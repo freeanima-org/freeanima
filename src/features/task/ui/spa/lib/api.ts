@@ -18,11 +18,18 @@ import {
   offlineDeleteTaskList,
   offlineUpdateTaskItem,
   offlineUpdateTaskList,
+  reconcileServerTaskItems,
+  reconcileServerTaskLists,
   registerTaskOfflineModule,
   seedLocalTaskItems,
   type OfflineUpdateTaskItemOpts,
 } from "./offline-store.ts";
-import { readCachedTaskItems, readCachedTaskLists } from "./offline-cache.ts";
+import {
+  readCachedTaskItems,
+  readCachedTaskLists,
+  writeCachedTaskItems,
+  writeCachedTaskLists,
+} from "./offline-cache.ts";
 import { normalizeTaskItemRows } from "./normalize-task-item.ts";
 
 export { seedLocalTaskItems };
@@ -54,34 +61,6 @@ export type TaskListRow = {
 
 export type TaskItemRow = TaskItemRowPayload;
 
-function normalizeTaskListRow(list: {
-  id: number;
-  name: string;
-  sort_order: number;
-  closed: boolean;
-  color: string | null;
-  is_default: boolean;
-  is_folder: boolean;
-  parent_id: number | null;
-  item_count?: number | undefined;
-  created_at: string;
-  updated_at: string;
-}): TaskListRow {
-  return {
-    id: list.id,
-    name: list.name,
-    sort_order: list.sort_order,
-    closed: list.closed,
-    color: list.color,
-    is_default: list.is_default,
-    is_folder: list.is_folder,
-    parent_id: list.parent_id,
-    item_count: list.item_count ?? 0,
-    created_at: list.created_at,
-    updated_at: list.updated_at,
-  };
-}
-
 function hub() {
   return getTypedSatelliteHubClient();
 }
@@ -91,14 +70,21 @@ function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
 }
 
 export async function fetchTaskLists(opts?: { includeClosed?: boolean }): Promise<TaskListRow[]> {
+  const scope = resolveHubCacheScope();
   if (!isHubFetchAvailable()) {
-    return (await readCachedTaskLists(resolveHubCacheScope())) ?? [];
+    return (await readCachedTaskLists(scope)) ?? [];
   }
-  const data = await hub().call(
-    "tasklist.list",
-    withSubjectKind({ include_closed: opts?.includeClosed }),
-  );
-  return data.lists.map(normalizeTaskListRow);
+  try {
+    const data = await hub().call(
+      "tasklist.list",
+      withSubjectKind({ include_closed: opts?.includeClosed }),
+    );
+    const merged = await reconcileServerTaskLists(data.lists);
+    void writeCachedTaskLists(scope, merged);
+    return merged;
+  } catch {
+    return (await readCachedTaskLists(scope)) ?? [];
+  }
 }
 
 export async function fetchTaskListStats(opts?: {
@@ -158,14 +144,22 @@ export async function deleteTaskList(id: number): Promise<void> {
 }
 
 export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
+  const scope = resolveHubCacheScope();
   if (isTempId(listId) || !isHubFetchAvailable()) {
-    return normalizeTaskItemRows(await readCachedTaskItems(resolveHubCacheScope(), listId));
+    return normalizeTaskItemRows(await readCachedTaskItems(scope, listId));
   }
-  const data = await hub().call(
-    "tasklist.item.list",
-    withSubjectKind({ list_id: listId, status: "all" }),
-  );
-  return normalizeTaskItemRows(data.items);
+  try {
+    const data = await hub().call(
+      "tasklist.item.list",
+      withSubjectKind({ list_id: listId, status: "all" }),
+    );
+    const items = normalizeTaskItemRows(data.items);
+    const merged = await reconcileServerTaskItems(listId, items);
+    void writeCachedTaskItems(scope, listId, merged);
+    return merged;
+  } catch {
+    return normalizeTaskItemRows(await readCachedTaskItems(scope, listId));
+  }
 }
 
 export async function fetchTaskItemsByFilters(
@@ -173,7 +167,9 @@ export async function fetchTaskItemsByFilters(
 ): Promise<TaskItemRow[]> {
   if (!isHubFetchAvailable()) return [];
   const data = await hub().call("tasklist.item.list", withSubjectKind({ filters }));
-  return normalizeTaskItemRows(data.items);
+  const items = normalizeTaskItemRows(data.items);
+  void seedLocalTaskItems(items);
+  return items;
 }
 
 /** Resolve a single task by id (best-effort list scan; used by Anima URI overlay). */
@@ -183,7 +179,9 @@ export async function fetchTaskItemById(id: number): Promise<TaskItemRow | null>
     "tasklist.item.list",
     withSubjectKind({ status: "all", limit: 200 }),
   );
-  const row = normalizeTaskItemRows(data.items).find((item) => item.id === id);
+  const items = normalizeTaskItemRows(data.items);
+  void seedLocalTaskItems(items);
+  const row = items.find((item) => item.id === id);
   return row ?? null;
 }
 

@@ -1,5 +1,4 @@
 import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
-import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
 import { getIdMapping, resolveIdFields } from "@freeanima/frontend/shell-sdk/offline-id-map";
 import {
   registerOfflineModule,
@@ -22,6 +21,7 @@ import {
   isTempId,
   seedTempIdAllocatorFromIdMap,
 } from "@freeanima/frontend/shell-sdk/offline-temp-id";
+import { preferOnlineWrite } from "@freeanima/frontend/shell-sdk/prefer-online-write";
 import { formatCstIso } from "@freeanima/core/util/time";
 import { omitUndefined } from "@freeanima/core/util";
 import type {
@@ -300,6 +300,14 @@ export async function reconcileServerTaskLists(
   return mergeServerTaskLists(resolveOutboxScope(), serverLists.map(normalizeListRow));
 }
 
+/** 供 cache-first 读路径写回某清单下任务前，合并未同步的 temp 任务。 */
+export async function reconcileServerTaskItems(
+  listId: number,
+  serverItems: TaskItemRow[],
+): Promise<TaskItemRow[]> {
+  return mergeServerTaskItems(resolveOutboxScope(), listId, serverItems);
+}
+
 async function upsertLocalItem(scope: string, item: TaskItemRow): Promise<void> {
   if (item.list_id == null) return;
   const items = await readLocalItems(scope, item.list_id);
@@ -340,54 +348,81 @@ export type OfflineUpdateTaskItemOpts = {
   seed?: TaskItemRow;
 };
 
-/** 本地无缓存且在线时直写 Hub，并把结果补进本地。 */
-async function patchTaskItemDirectHub(
-  scope: string,
-  id: number,
+function hub() {
+  return getTypedSatelliteHubClient();
+}
+
+/** temp 且尚无 id-map 时 Hub 不认识该实体，只能走 outbox。 */
+async function unresolvedTempId(scope: string, id: number): Promise<boolean> {
+  if (!isTempId(id)) return false;
+  return (await getIdMapping(scope, MODULE_ID, id)) == null;
+}
+
+async function callTaskItemWrite(
+  entityId: number,
   patch: TaskItemContentPatch,
 ): Promise<TaskItemRow> {
-  if (!isHubFetchAvailable()) {
-    throw new Error("task item not found locally");
-  }
-  const entityId = await resolveEntityId(scope, id);
-  if (isTempId(entityId)) {
-    throw new Error("task item not found locally");
-  }
-
-  const hub = getTypedSatelliteHubClient();
   const opId = randomUuid();
   const movingToProject = typeof patch.project_id === "number";
   const movingToList = !movingToProject && patch.list_id != null;
 
-  let result: { item: TaskItemRow };
   if (movingToProject) {
-    result = await hub.call("task.moveToProject", {
+    const result = await hub().call("task.moveToProject", {
       ...subjectPayload(),
       id: entityId,
       client_op_id: opId,
       project_id: patch.project_id as number,
       ...(patch.sort_order !== undefined ? { sort_order: patch.sort_order } : {}),
     });
-  } else if (movingToList) {
-    result = await hub.call("task.moveToList", {
+    return result.item;
+  }
+  if (movingToList) {
+    const result = await hub().call("task.moveToList", {
       ...subjectPayload(),
       id: entityId,
       client_op_id: opId,
       list_id: patch.list_id as number,
       ...(patch.sort_order !== undefined ? { sort_order: patch.sort_order } : {}),
     });
-  } else {
-    const { list_id: _listId, project_id: _projectId, ...contentPatch } = patch;
-    result = await hub.call("task.patch", {
-      ...subjectPayload(),
-      id: entityId,
-      client_op_id: opId,
-      ...contentPatch,
-    });
+    return result.item;
   }
-
-  await upsertLocalItem(scope, result.item);
+  const { list_id: _listId, project_id: _projectId, ...contentPatch } = patch;
+  const result = await hub().call("task.patch", {
+    ...subjectPayload(),
+    id: entityId,
+    client_op_id: opId,
+    ...contentPatch,
+  });
   return result.item;
+}
+
+async function applyServerItemLocally(
+  scope: string,
+  item: TaskItemRow,
+  previous?: { item: TaskItemRow; listId: number },
+): Promise<void> {
+  if (previous) {
+    const sourceListId = previous.listId;
+    const existing = previous.item;
+    const nextListId = item.list_id;
+    if (nextListId == null || nextListId !== sourceListId) {
+      await removeLocalItem(scope, sourceListId, existing.id);
+      if (existing.status === "pending") await adjustListItemCount(scope, sourceListId, -1);
+    }
+    if (nextListId != null && nextListId !== sourceListId) {
+      await upsertLocalItem(scope, item);
+      if (item.status === "pending") await adjustListItemCount(scope, nextListId, 1);
+    } else if (nextListId === sourceListId) {
+      await upsertLocalItem(scope, item);
+      if (existing.status === "pending" && item.status === "completed") {
+        await adjustListItemCount(scope, sourceListId, -1);
+      } else if (existing.status === "completed" && item.status === "pending") {
+        await adjustListItemCount(scope, sourceListId, 1);
+      }
+    }
+    return;
+  }
+  await upsertLocalItem(scope, item);
 }
 
 async function removeLocalItem(scope: string, listId: number, id: number): Promise<void> {
@@ -524,9 +559,8 @@ async function flushTaskOp(
   op: OfflineOutboxOp,
   scope: string,
 ): Promise<import("@freeanima/frontend/shell-sdk/offline-module-types").FlushOpOutcome> {
-  const hub = getTypedSatelliteHubClient();
   try {
-    const result = (await hub.call(op.method as "tasklist.create", op.payload as never)) as {
+    const result = (await hub().call(op.method as "tasklist.create", op.payload as never)) as {
       item?: TaskListRow | TaskItemRow;
       ok?: true;
     };
@@ -569,12 +603,11 @@ export const taskRpcAdapter: RpcModuleAdapter = {
   },
   refreshAll: async (scope) => {
     const flushedMethods = takeFlushedMethods();
-    const hub = getTypedSatelliteHubClient();
     const localLists = await readLocalLists(scope);
     const cachedListIds = localLists.filter((list) => !list.is_folder).map((list) => list.id);
 
     try {
-      const data = await hub.call("tasklist.list", {
+      const data = await hub().call("tasklist.list", {
         ...subjectPayload(),
         include_closed: true,
       });
@@ -593,7 +626,7 @@ export const taskRpcAdapter: RpcModuleAdapter = {
     for (const listId of listIds) {
       if (isTempId(listId)) continue;
       try {
-        const itemData = await hub.call("tasklist.item.list", {
+        const itemData = await hub().call("tasklist.item.list", {
           ...subjectPayload(),
           list_id: listId,
           status: "all",
@@ -623,43 +656,63 @@ export async function offlineCreateTaskList(input: {
   const name = input.name.trim();
   if (name.length === 0) throw new Error("task list name is required");
 
-  const scope = resolveOutboxScope();
-  await ensureAllocatorSeeded(scope);
-  const tempId = allocateTempId(scope, MODULE_ID);
-  const opId = randomUuid();
-  const now = new Date().toISOString();
-  const row: TaskListRow = {
-    id: tempId,
-    name,
-    sort_order: input.sort_order ?? 0,
-    closed: false,
-    color: input.color ?? null,
-    is_default: false,
-    is_folder: input.is_folder ?? false,
-    parent_id: input.parent_id ?? null,
-    item_count: 0,
-    created_at: now,
-    updated_at: now,
-  };
-  await upsertLocalList(scope, row);
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "tasklist.create",
-    payload: {
-      ...subjectPayload(),
-      client_op_id: opId,
-      name: row.name,
-      sort_order: row.sort_order,
-      color: row.color,
-      is_folder: row.is_folder,
-      parent_id: row.parent_id,
+  return preferOnlineWrite(
+    async () => {
+      const scope = resolveOutboxScope();
+      const opId = randomUuid();
+      const data = await hub().call("tasklist.create", {
+        ...subjectPayload(),
+        client_op_id: opId,
+        name,
+        sort_order: input.sort_order ?? 0,
+        color: input.color ?? null,
+        is_folder: input.is_folder ?? false,
+        parent_id: input.parent_id ?? null,
+      });
+      const row = normalizeListRow(data.item);
+      await upsertLocalList(scope, row);
+      return row;
     },
-    tempEntityId: tempId,
-    createdAt: now,
-  });
-  scheduleFlush(scope);
-  return row;
+    async () => {
+      const scope = resolveOutboxScope();
+      await ensureAllocatorSeeded(scope);
+      const tempId = allocateTempId(scope, MODULE_ID);
+      const opId = randomUuid();
+      const now = new Date().toISOString();
+      const row: TaskListRow = {
+        id: tempId,
+        name,
+        sort_order: input.sort_order ?? 0,
+        closed: false,
+        color: input.color ?? null,
+        is_default: false,
+        is_folder: input.is_folder ?? false,
+        parent_id: input.parent_id ?? null,
+        item_count: 0,
+        created_at: now,
+        updated_at: now,
+      };
+      await upsertLocalList(scope, row);
+      await enqueueOutboxOp(scope, {
+        id: opId,
+        moduleId: MODULE_ID,
+        method: "tasklist.create",
+        payload: {
+          ...subjectPayload(),
+          client_op_id: opId,
+          name: row.name,
+          sort_order: row.sort_order,
+          color: row.color,
+          is_folder: row.is_folder,
+          parent_id: row.parent_id,
+        },
+        tempEntityId: tempId,
+        createdAt: now,
+      });
+      scheduleFlush(scope);
+      return row;
+    },
+  );
 }
 
 export async function offlineUpdateTaskList(
@@ -676,66 +729,104 @@ export async function offlineUpdateTaskList(
     (resolvedId !== id ? lists.find((row) => row.id === id) : undefined);
   if (!existing) throw new Error("task list not found locally");
 
-  const now = new Date().toISOString();
-  const updated: TaskListRow = {
-    ...existing,
-    ...patch,
-    updated_at: now,
-  };
-  await upsertLocalList(scope, updated);
+  const doOffline = async (): Promise<TaskListRow> => {
+    const now = new Date().toISOString();
+    const updated: TaskListRow = {
+      ...existing,
+      ...patch,
+      updated_at: now,
+    };
+    await upsertLocalList(scope, updated);
 
-  const opId = randomUuid();
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "tasklist.patch",
-    payload: {
+    const opId = randomUuid();
+    await enqueueOutboxOp(scope, {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "tasklist.patch",
+      payload: {
+        ...subjectPayload(),
+        id: existing.id,
+        client_op_id: opId,
+        ...patch,
+      },
+      createdAt: now,
+    });
+    scheduleFlush(scope);
+    return updated;
+  };
+
+  if (await unresolvedTempId(scope, existing.id)) {
+    return doOffline();
+  }
+
+  return preferOnlineWrite(async () => {
+    const opId = randomUuid();
+    const data = await hub().call("tasklist.patch", {
       ...subjectPayload(),
       id: existing.id,
       client_op_id: opId,
       ...patch,
-    },
-    createdAt: now,
-  });
-  scheduleFlush(scope);
-  return updated;
+    });
+    const row = normalizeListRow(data.item);
+    await upsertLocalList(scope, row);
+    return row;
+  }, doOffline);
 }
 
 export async function offlineDeleteTaskList(id: number): Promise<void> {
   const scope = resolveOutboxScope();
   const resolvedId = await resolveEntityId(scope, id);
-  await removeLocalList(scope, resolvedId);
-  if (resolvedId !== id) await removeLocalList(scope, id);
 
-  if (isTempId(resolvedId) || isTempId(id)) {
-    const tempIds = new Set([id, resolvedId].filter(isTempId));
-    const ops = await listOutboxOps(scope, MODULE_ID);
-    for (const op of ops) {
-      if (
-        (typeof op.tempEntityId === "number" && tempIds.has(op.tempEntityId)) ||
-        (typeof op.payload.id === "number" &&
-          (tempIds.has(op.payload.id) || op.payload.id === resolvedId))
-      ) {
-        await removeOutboxOp(scope, op.id);
+  const doOffline = async (): Promise<void> => {
+    await removeLocalList(scope, resolvedId);
+    if (resolvedId !== id) await removeLocalList(scope, id);
+
+    if (isTempId(resolvedId) || isTempId(id)) {
+      const tempIds = new Set([id, resolvedId].filter(isTempId));
+      const ops = await listOutboxOps(scope, MODULE_ID);
+      for (const op of ops) {
+        if (
+          (typeof op.tempEntityId === "number" && tempIds.has(op.tempEntityId)) ||
+          (typeof op.payload.id === "number" &&
+            (tempIds.has(op.payload.id) || op.payload.id === resolvedId))
+        ) {
+          await removeOutboxOp(scope, op.id);
+        }
       }
+      return;
     }
-    return;
+
+    const opId = randomUuid();
+    await enqueueOutboxOp(scope, {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "tasklist.delete",
+      payload: {
+        ...subjectPayload(),
+        id: resolvedId,
+        cascade: true,
+        client_op_id: opId,
+      },
+      createdAt: new Date().toISOString(),
+    });
+    scheduleFlush(scope);
+  };
+
+  if (await unresolvedTempId(scope, resolvedId)) {
+    return doOffline();
   }
 
-  const opId = randomUuid();
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "tasklist.delete",
-    payload: {
+  return preferOnlineWrite(async () => {
+    const opId = randomUuid();
+    await hub().call("tasklist.delete", {
       ...subjectPayload(),
       id: resolvedId,
       cascade: true,
       client_op_id: opId,
-    },
-    createdAt: new Date().toISOString(),
-  });
-  scheduleFlush(scope);
+    });
+    await removeLocalList(scope, resolvedId);
+    if (resolvedId !== id) await removeLocalList(scope, id);
+  }, doOffline);
 }
 
 export async function offlineCreateTaskItem(input: {
@@ -750,61 +841,80 @@ export async function offlineCreateTaskItem(input: {
   const title = input.title.trim();
   if (title.length === 0) throw new Error("task title is required");
 
-  const scope = resolveOutboxScope();
-  await ensureAllocatorSeeded(scope);
-  const tempId = allocateTempId(scope, MODULE_ID);
-  const opId = randomUuid();
-  const now = new Date().toISOString();
-  const row: TaskItemRow = {
-    id: tempId,
+  const payload = {
     title,
+    list_id: input.list_id,
     content: input.content?.trim() ?? "",
     tag_ids: input.tag_ids ?? [],
-    status: "pending",
-    priority: input.priority ?? "none",
+    priority: input.priority ?? ("none" as const),
     due_at: input.due_at ?? null,
-    remind_at: null,
-    list_id: input.list_id,
-    project_id: null,
     sort_order: input.sort_order ?? 0,
-    completed_at: null,
-    created_at: now,
-    updated_at: now,
   };
-  await upsertLocalItem(scope, row);
-  if (row.list_id != null) {
-    await adjustListItemCount(scope, row.list_id, 1);
+
+  const doOffline = async (): Promise<TaskItemRow> => {
+    const scope = resolveOutboxScope();
+    await ensureAllocatorSeeded(scope);
+    const tempId = allocateTempId(scope, MODULE_ID);
+    const opId = randomUuid();
+    const now = new Date().toISOString();
+    const row: TaskItemRow = {
+      id: tempId,
+      ...payload,
+      status: "pending",
+      remind_at: null,
+      project_id: null,
+      completed_at: null,
+      created_at: now,
+      updated_at: now,
+    };
+    await upsertLocalItem(scope, row);
+    if (row.list_id != null) {
+      await adjustListItemCount(scope, row.list_id, 1);
+    }
+
+    const baseOp = {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "tasklist.item.create",
+      payload: {
+        ...subjectPayload(),
+        client_op_id: opId,
+        ...payload,
+      },
+      tempEntityId: tempId,
+      createdAt: now,
+    } satisfies OfflineOutboxOp;
+
+    if (isTempId(input.list_id)) {
+      await enqueueOutboxOp(scope, {
+        ...baseOp,
+        dependsOn: [{ tempId: input.list_id, field: "list_id" }],
+      });
+    } else {
+      await enqueueOutboxOp(scope, baseOp);
+    }
+    scheduleFlush(scope);
+    return row;
+  };
+
+  const scope = resolveOutboxScope();
+  if (isTempId(input.list_id) || (await unresolvedTempId(scope, input.list_id))) {
+    return doOffline();
   }
 
-  const baseOp = {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "tasklist.item.create",
-    payload: {
+  return preferOnlineWrite(async () => {
+    const opId = randomUuid();
+    const data = await hub().call("tasklist.item.create", {
       ...subjectPayload(),
       client_op_id: opId,
-      title: row.title,
-      list_id: row.list_id,
-      content: row.content,
-      tag_ids: row.tag_ids,
-      priority: row.priority,
-      due_at: row.due_at,
-      sort_order: row.sort_order,
-    },
-    tempEntityId: tempId,
-    createdAt: now,
-  } satisfies OfflineOutboxOp;
-
-  if (isTempId(input.list_id)) {
-    await enqueueOutboxOp(scope, {
-      ...baseOp,
-      dependsOn: [{ tempId: input.list_id, field: "list_id" }],
+      ...payload,
     });
-  } else {
-    await enqueueOutboxOp(scope, baseOp);
-  }
-  scheduleFlush(scope);
-  return row;
+    await upsertLocalItem(scope, data.item);
+    if (data.item.list_id != null) {
+      await adjustListItemCount(scope, data.item.list_id, 1);
+    }
+    return data.item;
+  }, doOffline);
 }
 
 export async function offlineUpdateTaskItem(
@@ -819,105 +929,119 @@ export async function offlineUpdateTaskItem(
     await upsertLocalItem(scope, { ...opts.seed, id: seedId });
     found = await findLocalItem(scope, id);
   }
-  if (!found) {
-    return patchTaskItemDirectHub(scope, id, patch);
-  }
-  const existing = found.item;
-  const sourceListId = found.listId;
 
-  const now = new Date().toISOString();
-  const patchProjectId = patch.project_id;
-  const movingToProject = typeof patchProjectId === "number";
-  const nextProjectId: number | null = movingToProject
-    ? patchProjectId
-    : patchProjectId === null
+  const entityId = found?.item.id ?? (await resolveEntityId(scope, id));
+
+  const doOffline = async (): Promise<TaskItemRow> => {
+    if (!found) {
+      throw new Error("task item not found locally");
+    }
+    const existing = found.item;
+    const sourceListId = found.listId;
+
+    const now = new Date().toISOString();
+    const patchProjectId = patch.project_id;
+    const movingToProject = typeof patchProjectId === "number";
+    const nextProjectId: number | null = movingToProject
+      ? patchProjectId
+      : patchProjectId === null
+        ? null
+        : (existing.project_id ?? null);
+    const nextListId: number | null = movingToProject
       ? null
-      : (existing.project_id ?? null);
-  const nextListId: number | null = movingToProject
-    ? null
-    : (patch.list_id ?? existing.list_id ?? null);
-  const nextStatus = patch.status ?? existing.status;
-  const updated: TaskItemRow = {
-    ...existing,
-    ...patch,
-    list_id: nextListId,
-    project_id: nextProjectId,
-    status: nextStatus,
-    completed_at:
-      patch.status === "completed"
-        ? formatCstIso(new Date())
-        : patch.status === "pending"
-          ? null
-          : existing.completed_at,
-    updated_at: now,
+      : (patch.list_id ?? existing.list_id ?? null);
+    const nextStatus = patch.status ?? existing.status;
+    const updated: TaskItemRow = {
+      ...existing,
+      ...patch,
+      list_id: nextListId,
+      project_id: nextProjectId,
+      status: nextStatus,
+      completed_at:
+        patch.status === "completed"
+          ? formatCstIso(new Date())
+          : patch.status === "pending"
+            ? null
+            : existing.completed_at,
+      updated_at: now,
+    };
+
+    if (movingToProject || nextListId == null) {
+      await removeLocalItem(scope, sourceListId, existing.id);
+      if (existing.status === "pending") await adjustListItemCount(scope, sourceListId, -1);
+    } else if (nextListId !== sourceListId) {
+      await removeLocalItem(scope, sourceListId, existing.id);
+      await upsertLocalItem(scope, updated);
+      if (existing.status === "pending") await adjustListItemCount(scope, sourceListId, -1);
+      if (nextStatus === "pending") await adjustListItemCount(scope, nextListId, 1);
+    } else {
+      await upsertLocalItem(scope, updated);
+      if (existing.status === "pending" && nextStatus === "completed") {
+        await adjustListItemCount(scope, sourceListId, -1);
+      } else if (existing.status === "completed" && nextStatus === "pending") {
+        await adjustListItemCount(scope, sourceListId, 1);
+      }
+    }
+
+    const opId = randomUuid();
+    const movingToList = !movingToProject && patch.list_id != null;
+
+    if (movingToProject) {
+      await enqueueOutboxOp(scope, {
+        id: opId,
+        moduleId: MODULE_ID,
+        method: "task.moveToProject",
+        payload: omitUndefined({
+          ...subjectPayload(),
+          id: existing.id,
+          client_op_id: opId,
+          project_id: patch.project_id,
+          sort_order: patch.sort_order,
+        }),
+        createdAt: now,
+      });
+    } else if (movingToList) {
+      await enqueueOutboxOp(scope, {
+        id: opId,
+        moduleId: MODULE_ID,
+        method: "task.moveToList",
+        payload: omitUndefined({
+          ...subjectPayload(),
+          id: existing.id,
+          client_op_id: opId,
+          list_id: patch.list_id,
+          sort_order: patch.sort_order,
+        }),
+        createdAt: now,
+      });
+    } else {
+      const { list_id: _listId, project_id: _projectId, ...contentPatch } = patch;
+      await enqueueOutboxOp(scope, {
+        id: opId,
+        moduleId: MODULE_ID,
+        method: "task.patch",
+        payload: {
+          ...subjectPayload(),
+          id: existing.id,
+          client_op_id: opId,
+          ...contentPatch,
+        },
+        createdAt: now,
+      });
+    }
+    scheduleFlush(scope);
+    return updated;
   };
 
-  if (movingToProject || nextListId == null) {
-    await removeLocalItem(scope, sourceListId, existing.id);
-    if (existing.status === "pending") await adjustListItemCount(scope, sourceListId, -1);
-  } else if (nextListId !== sourceListId) {
-    await removeLocalItem(scope, sourceListId, existing.id);
-    await upsertLocalItem(scope, updated);
-    if (existing.status === "pending") await adjustListItemCount(scope, sourceListId, -1);
-    if (nextStatus === "pending") await adjustListItemCount(scope, nextListId, 1);
-  } else {
-    await upsertLocalItem(scope, updated);
-    if (existing.status === "pending" && nextStatus === "completed") {
-      await adjustListItemCount(scope, sourceListId, -1);
-    } else if (existing.status === "completed" && nextStatus === "pending") {
-      await adjustListItemCount(scope, sourceListId, 1);
-    }
+  if (await unresolvedTempId(scope, entityId)) {
+    return doOffline();
   }
 
-  const opId = randomUuid();
-  const movingToList = !movingToProject && patch.list_id != null;
-  const entityId = existing.id;
-
-  if (movingToProject) {
-    await enqueueOutboxOp(scope, {
-      id: opId,
-      moduleId: MODULE_ID,
-      method: "task.moveToProject",
-      payload: omitUndefined({
-        ...subjectPayload(),
-        id: entityId,
-        client_op_id: opId,
-        project_id: patch.project_id,
-        sort_order: patch.sort_order,
-      }),
-      createdAt: now,
-    });
-  } else if (movingToList) {
-    await enqueueOutboxOp(scope, {
-      id: opId,
-      moduleId: MODULE_ID,
-      method: "task.moveToList",
-      payload: omitUndefined({
-        ...subjectPayload(),
-        id: entityId,
-        client_op_id: opId,
-        list_id: patch.list_id,
-        sort_order: patch.sort_order,
-      }),
-      createdAt: now,
-    });
-  } else {
-    const { list_id: _listId, project_id: _projectId, ...contentPatch } = patch;
-    await enqueueOutboxOp(scope, {
-      id: opId,
-      moduleId: MODULE_ID,
-      method: "task.patch",
-      payload: {
-        ...subjectPayload(),
-        id: entityId,
-        client_op_id: opId,
-        ...contentPatch,
-      },
-      createdAt: now,
-    });
-  }
-  scheduleFlush(scope);
-  return updated;
+  return preferOnlineWrite(async () => {
+    const item = await callTaskItemWrite(entityId, patch);
+    await applyServerItemLocally(scope, item, found ?? undefined);
+    return item;
+  }, doOffline);
 }
 
 export async function offlineDeleteTaskItem(id: number, listId?: number): Promise<void> {
@@ -944,40 +1068,60 @@ export async function offlineDeleteTaskItem(id: number, listId?: number): Promis
     wasPending = items.find((row) => row.id === resolvedId || row.id === id)?.status === "pending";
   }
 
-  if (resolvedListId != null) {
-    await removeLocalItem(scope, resolvedListId, resolvedId);
-    if (resolvedId !== id) await removeLocalItem(scope, resolvedListId, id);
-    if (wasPending) await adjustListItemCount(scope, resolvedListId, -1);
-  }
-
-  if (isTempId(resolvedId) || isTempId(id)) {
-    const tempIds = new Set([id, resolvedId].filter(isTempId));
-    const ops = await listOutboxOps(scope, MODULE_ID);
-    for (const op of ops) {
-      if (
-        (typeof op.tempEntityId === "number" && tempIds.has(op.tempEntityId)) ||
-        (typeof op.payload.id === "number" &&
-          (tempIds.has(op.payload.id) || op.payload.id === resolvedId))
-      ) {
-        await removeOutboxOp(scope, op.id);
-      }
+  const doOffline = async (): Promise<void> => {
+    if (resolvedListId != null) {
+      await removeLocalItem(scope, resolvedListId, resolvedId);
+      if (resolvedId !== id) await removeLocalItem(scope, resolvedListId, id);
+      if (wasPending) await adjustListItemCount(scope, resolvedListId, -1);
     }
-    return;
+
+    if (isTempId(resolvedId) || isTempId(id)) {
+      const tempIds = new Set([id, resolvedId].filter(isTempId));
+      const ops = await listOutboxOps(scope, MODULE_ID);
+      for (const op of ops) {
+        if (
+          (typeof op.tempEntityId === "number" && tempIds.has(op.tempEntityId)) ||
+          (typeof op.payload.id === "number" &&
+            (tempIds.has(op.payload.id) || op.payload.id === resolvedId))
+        ) {
+          await removeOutboxOp(scope, op.id);
+        }
+      }
+      return;
+    }
+
+    const opId = randomUuid();
+    await enqueueOutboxOp(scope, {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "task.delete",
+      payload: {
+        ...subjectPayload(),
+        id: resolvedId,
+        client_op_id: opId,
+      },
+      createdAt: new Date().toISOString(),
+    });
+    scheduleFlush(scope);
+  };
+
+  if (await unresolvedTempId(scope, resolvedId)) {
+    return doOffline();
   }
 
-  const opId = randomUuid();
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "task.delete",
-    payload: {
+  return preferOnlineWrite(async () => {
+    const opId = randomUuid();
+    await hub().call("task.delete", {
       ...subjectPayload(),
       id: resolvedId,
       client_op_id: opId,
-    },
-    createdAt: new Date().toISOString(),
-  });
-  scheduleFlush(scope);
+    });
+    if (resolvedListId != null) {
+      await removeLocalItem(scope, resolvedListId, resolvedId);
+      if (resolvedId !== id) await removeLocalItem(scope, resolvedListId, id);
+      if (wasPending) await adjustListItemCount(scope, resolvedListId, -1);
+    }
+  }, doOffline);
 }
 
 export async function countTaskPendingOps(): Promise<number> {
