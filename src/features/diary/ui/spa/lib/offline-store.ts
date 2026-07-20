@@ -25,6 +25,7 @@ import {
   isTempId,
   seedTempIdAllocatorFromIdMap,
 } from "@freeanima/frontend/shell-sdk/offline-temp-id";
+import { preferOnlineWrite } from "@freeanima/frontend/shell-sdk/prefer-online-write";
 import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
 import { randomUuid } from "@freeanima/shared/sap-contract";
 
@@ -150,6 +151,16 @@ function scheduleFlush(scope: string): void {
   void flushOfflineModule(MODULE_ID, scope).catch(() => {});
 }
 
+function hub() {
+  return getTypedSatelliteHubClient();
+}
+
+/** temp 且尚无 id-map 时 Hub 不认识该实体，只能走 outbox。 */
+async function unresolvedTempId(scope: string, id: number): Promise<boolean> {
+  if (!isTempId(id)) return false;
+  return (await getIdMapping(scope, MODULE_ID, id)) == null;
+}
+
 async function pendingTempEntryIds(scope: string): Promise<Set<number>> {
   const ops = await listOutboxOps(scope, MODULE_ID);
   const ids = new Set<number>();
@@ -249,9 +260,8 @@ async function flushDiaryOp(
   op: OfflineOutboxOp,
   scope: string,
 ): Promise<import("@freeanima/frontend/shell-sdk/offline-module-types").FlushOpOutcome> {
-  const hub = getTypedSatelliteHubClient();
   try {
-    const result = (await hub.call(op.method as never, op.payload as never)) as {
+    const result = (await hub().call(op.method as never, op.payload as never)) as {
       item?: DiaryEntryRow | DiaryTextBlock;
     };
     if (
@@ -301,10 +311,9 @@ export const diaryRpcAdapter: RpcModuleAdapter = {
   resolvePayloadIds: (payload, idMap) => resolveIdFields(payload, idMap, ["id", "parent_id"]),
   flushOp: async (op, ctx) => flushDiaryOp(op, ctx.scope),
   refreshAll: async (scope) => {
-    const hub = getTypedSatelliteHubClient();
     for (const subjectKind of ["user", "agent"] as const) {
       try {
-        const data = await hub.call("diary.list", {
+        const data = await hub().call("diary.list", {
           subject_kind: subjectKind,
           limit: 200,
         });
@@ -337,52 +346,68 @@ export async function offlineCreateDiaryEntry(
   if (title.length === 0) throw new Error("diary title is required");
   if (!input.entry_at.trim()) throw new Error("diary entry_at is required");
 
-  const scope = resolveOutboxScope();
-  await ensureAllocatorSeeded(scope);
-  const tempId = allocateTempId(scope, MODULE_ID);
-  const opId = randomUuid();
-  const now = new Date().toISOString();
-  const initialContent = input.content?.trim() ?? "";
-  const blocks: DiaryTextBlock[] = initialContent
-    ? [
-        {
-          id: allocateTempId(scope, MODULE_ID),
-          content: initialContent,
-          sort_order: 0,
-          parent_id: tempId,
-          client_op_id: null,
-          components: [],
-          created_at: now,
-          updated_at: now,
-        },
-      ]
-    : [];
-  const row: DiaryEntryRow = {
-    id: tempId,
-    title,
-    summary: input.summary ?? "",
-    entry_at: input.entry_at,
-    tags: input.tags ?? [],
-    blocks,
-    created_at: now,
-    updated_at: now,
-  };
-  await upsertLocalEntry(scope, subjectKind, row);
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "diary.create",
-    payload: {
-      subject_kind: subjectKind,
-      client_op_id: opId,
-      ...input,
-      title,
+  const payload = { ...input, title };
+
+  return preferOnlineWrite(
+    async () => {
+      const scope = resolveOutboxScope();
+      const opId = randomUuid();
+      const data = await hub().call("diary.create", {
+        subject_kind: subjectKind,
+        client_op_id: opId,
+        ...payload,
+      });
+      await upsertLocalEntry(scope, subjectKind, data.item);
+      return data.item;
     },
-    tempEntityId: tempId,
-    createdAt: now,
-  });
-  scheduleFlush(scope);
-  return row;
+    async () => {
+      const scope = resolveOutboxScope();
+      await ensureAllocatorSeeded(scope);
+      const tempId = allocateTempId(scope, MODULE_ID);
+      const opId = randomUuid();
+      const now = new Date().toISOString();
+      const initialContent = input.content?.trim() ?? "";
+      const blocks: DiaryTextBlock[] = initialContent
+        ? [
+            {
+              id: allocateTempId(scope, MODULE_ID),
+              content: initialContent,
+              sort_order: 0,
+              parent_id: tempId,
+              client_op_id: null,
+              components: [],
+              created_at: now,
+              updated_at: now,
+            },
+          ]
+        : [];
+      const row: DiaryEntryRow = {
+        id: tempId,
+        title,
+        summary: input.summary ?? "",
+        entry_at: input.entry_at,
+        tags: input.tags ?? [],
+        blocks,
+        created_at: now,
+        updated_at: now,
+      };
+      await upsertLocalEntry(scope, subjectKind, row);
+      await enqueueOutboxOp(scope, {
+        id: opId,
+        moduleId: MODULE_ID,
+        method: "diary.create",
+        payload: {
+          subject_kind: subjectKind,
+          client_op_id: opId,
+          ...payload,
+        },
+        tempEntityId: tempId,
+        createdAt: now,
+      });
+      scheduleFlush(scope);
+      return row;
+    },
+  );
 }
 
 export async function offlineUpdateDiaryEntry(
@@ -395,29 +420,47 @@ export async function offlineUpdateDiaryEntry(
   if (!existing) throw new Error("diary entry not found locally");
   const resolvedId = existing.id;
 
-  const now = new Date().toISOString();
-  const updated: DiaryEntryRow = {
-    ...existing,
-    ...patch,
-    updated_at: now,
-  };
-  await upsertLocalEntry(scope, subjectKind, updated);
+  const doOffline = async (): Promise<DiaryEntryRow> => {
+    const now = new Date().toISOString();
+    const updated: DiaryEntryRow = {
+      ...existing,
+      ...patch,
+      updated_at: now,
+    };
+    await upsertLocalEntry(scope, subjectKind, updated);
 
-  const opId = randomUuid();
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "diary.patch",
-    payload: {
+    const opId = randomUuid();
+    await enqueueOutboxOp(scope, {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "diary.patch",
+      payload: {
+        subject_kind: subjectKind,
+        id: resolvedId,
+        client_op_id: opId,
+        ...patch,
+      },
+      createdAt: now,
+    });
+    scheduleFlush(scope);
+    return updated;
+  };
+
+  if (await unresolvedTempId(scope, resolvedId)) {
+    return doOffline();
+  }
+
+  return preferOnlineWrite(async () => {
+    const opId = randomUuid();
+    const data = await hub().call("diary.patch", {
       subject_kind: subjectKind,
       id: resolvedId,
       client_op_id: opId,
       ...patch,
-    },
-    createdAt: now,
-  });
-  scheduleFlush(scope);
-  return updated;
+    });
+    await upsertLocalEntry(scope, subjectKind, data.item);
+    return data.item;
+  }, doOffline);
 }
 
 export async function offlineAppendDiaryEntry(
@@ -429,42 +472,60 @@ export async function offlineAppendDiaryEntry(
   const existing = await findLocalEntry(scope, subjectKind, id);
   if (!existing) throw new Error("diary entry not found locally");
   const resolvedId = existing.id;
-
   const fragment = content.trim();
-  const now = new Date().toISOString();
-  const last = existing.blocks.toSorted((a, b) => a.sort_order - b.sort_order).at(-1);
-  const block: DiaryTextBlock = {
-    id: allocateTempId(scope, MODULE_ID),
-    content: fragment,
-    sort_order: last ? last.sort_order + 1 : 0,
-    parent_id: resolvedId,
-    client_op_id: null,
-    components: [],
-    created_at: now,
-    updated_at: now,
-  };
-  const updated: DiaryEntryRow = {
-    ...existing,
-    blocks: [...existing.blocks, block],
-    updated_at: now,
-  };
-  await upsertLocalEntry(scope, subjectKind, updated);
 
-  const opId = randomUuid();
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "diary.append",
-    payload: {
+  const doOffline = async (): Promise<DiaryEntryRow> => {
+    const now = new Date().toISOString();
+    const last = existing.blocks.toSorted((a, b) => a.sort_order - b.sort_order).at(-1);
+    const block: DiaryTextBlock = {
+      id: allocateTempId(scope, MODULE_ID),
+      content: fragment,
+      sort_order: last ? last.sort_order + 1 : 0,
+      parent_id: resolvedId,
+      client_op_id: null,
+      components: [],
+      created_at: now,
+      updated_at: now,
+    };
+    const updated: DiaryEntryRow = {
+      ...existing,
+      blocks: [...existing.blocks, block],
+      updated_at: now,
+    };
+    await upsertLocalEntry(scope, subjectKind, updated);
+
+    const opId = randomUuid();
+    await enqueueOutboxOp(scope, {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "diary.append",
+      payload: {
+        subject_kind: subjectKind,
+        id: resolvedId,
+        content: fragment,
+        client_op_id: opId,
+      },
+      createdAt: now,
+    });
+    scheduleFlush(scope);
+    return updated;
+  };
+
+  if (await unresolvedTempId(scope, resolvedId)) {
+    return doOffline();
+  }
+
+  return preferOnlineWrite(async () => {
+    const opId = randomUuid();
+    const data = await hub().call("diary.append", {
       subject_kind: subjectKind,
       id: resolvedId,
       content: fragment,
       client_op_id: opId,
-    },
-    createdAt: now,
-  });
-  scheduleFlush(scope);
-  return updated;
+    });
+    await upsertLocalEntry(scope, subjectKind, data.item);
+    return data.item;
+  }, doOffline);
 }
 
 export async function offlineCreateDiaryBlock(
@@ -478,41 +539,71 @@ export async function offlineCreateDiaryBlock(
   const existing = await findLocalEntry(scope, subjectKind, parentId);
   if (!existing) throw new Error("diary entry not found locally");
   const resolvedParentId = existing.id;
-  const now = new Date().toISOString();
-  const last = existing.blocks.toSorted((a, b) => a.sort_order - b.sort_order).at(-1);
-  const tempId = allocateTempId(scope, MODULE_ID);
-  const opId = randomUuid();
-  const block: DiaryTextBlock = {
-    id: tempId,
-    content,
-    sort_order: sortOrder ?? (last ? last.sort_order + 1 : 0),
-    parent_id: resolvedParentId,
-    client_op_id: opId,
-    components: [],
-    created_at: now,
-    updated_at: now,
+
+  const doOffline = async (): Promise<DiaryTextBlock> => {
+    const now = new Date().toISOString();
+    const last = existing.blocks.toSorted((a, b) => a.sort_order - b.sort_order).at(-1);
+    const tempId = allocateTempId(scope, MODULE_ID);
+    const opId = randomUuid();
+    const block: DiaryTextBlock = {
+      id: tempId,
+      content,
+      sort_order: sortOrder ?? (last ? last.sort_order + 1 : 0),
+      parent_id: resolvedParentId,
+      client_op_id: opId,
+      components: [],
+      created_at: now,
+      updated_at: now,
+    };
+    await upsertLocalEntry(scope, subjectKind, {
+      ...existing,
+      blocks: [...existing.blocks, block],
+      updated_at: now,
+    });
+    await enqueueOutboxOp(scope, {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "diary.blockCreate",
+      payload: {
+        subject_kind: subjectKind,
+        parent_id: resolvedParentId,
+        content,
+        sort_order: block.sort_order,
+        client_op_id: opId,
+      },
+      tempEntityId: tempId,
+      createdAt: now,
+    });
+    scheduleFlush(scope);
+    return block;
   };
-  await upsertLocalEntry(scope, subjectKind, {
-    ...existing,
-    blocks: [...existing.blocks, block],
-    updated_at: now,
-  });
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "diary.blockCreate",
-    payload: {
+
+  if (await unresolvedTempId(scope, resolvedParentId)) {
+    return doOffline();
+  }
+
+  return preferOnlineWrite(async () => {
+    const opId = randomUuid();
+    const data = await hub().call("diary.blockCreate", {
       subject_kind: subjectKind,
       parent_id: resolvedParentId,
       content,
-      sort_order: block.sort_order,
+      ...(sortOrder != null ? { sort_order: sortOrder } : {}),
       client_op_id: opId,
-    },
-    tempEntityId: tempId,
-    createdAt: now,
-  });
-  scheduleFlush(scope);
-  return block;
+    });
+    const entry = await findLocalEntry(scope, subjectKind, resolvedParentId);
+    if (entry) {
+      const blocks = entry.blocks
+        .concat([data.item])
+        .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+      await upsertLocalEntry(scope, subjectKind, {
+        ...entry,
+        blocks,
+        updated_at: new Date().toISOString(),
+      });
+    }
+    return data.item;
+  }, doOffline);
 }
 
 export async function offlineUpdateDiaryBlock(
@@ -534,33 +625,58 @@ export async function offlineUpdateDiaryBlock(
   }
   if (!parent || !block) throw new Error("diary block not found locally");
 
-  const now = new Date().toISOString();
-  const updatedBlock: DiaryTextBlock = {
-    ...block,
-    ...patch,
-    updated_at: now,
-  };
-  await upsertLocalEntry(scope, subjectKind, {
-    ...parent,
-    blocks: parent.blocks.map((b) => (b.id === id ? updatedBlock : b)),
-    updated_at: now,
-  });
+  const doOffline = async (): Promise<DiaryTextBlock> => {
+    const now = new Date().toISOString();
+    const updatedBlock: DiaryTextBlock = {
+      ...block,
+      ...patch,
+      updated_at: now,
+    };
+    await upsertLocalEntry(scope, subjectKind, {
+      ...parent,
+      blocks: parent.blocks.map((b) => (b.id === id ? updatedBlock : b)),
+      updated_at: now,
+    });
 
-  const opId = randomUuid();
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "diary.blockPatch",
-    payload: {
+    const opId = randomUuid();
+    await enqueueOutboxOp(scope, {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "diary.blockPatch",
+      payload: {
+        subject_kind: subjectKind,
+        id,
+        client_op_id: opId,
+        ...patch,
+      },
+      createdAt: now,
+    });
+    scheduleFlush(scope);
+    return updatedBlock;
+  };
+
+  if (await unresolvedTempId(scope, id)) {
+    return doOffline();
+  }
+
+  return preferOnlineWrite(async () => {
+    const opId = randomUuid();
+    const data = await hub().call("diary.blockPatch", {
       subject_kind: subjectKind,
       id,
       client_op_id: opId,
       ...patch,
-    },
-    createdAt: now,
-  });
-  scheduleFlush(scope);
-  return updatedBlock;
+    });
+    const entry = await findLocalEntry(scope, subjectKind, parent.id);
+    if (entry) {
+      await upsertLocalEntry(scope, subjectKind, {
+        ...entry,
+        blocks: entry.blocks.map((b) => (b.id === id ? data.item : b)),
+        updated_at: new Date().toISOString(),
+      });
+    }
+    return data.item;
+  }, doOffline);
 }
 
 export async function offlineDeleteDiaryBlock(
@@ -571,35 +687,59 @@ export async function offlineDeleteDiaryBlock(
   const scope = resolveOutboxScope();
   const existing = await findLocalEntry(scope, subjectKind, parentId);
   if (!existing) throw new Error("diary entry not found locally");
-  const now = new Date().toISOString();
-  await upsertLocalEntry(scope, subjectKind, {
-    ...existing,
-    blocks: existing.blocks.filter((b) => b.id !== blockId),
-    updated_at: now,
-  });
 
-  if (isTempId(blockId)) {
-    const ops = await listOutboxOps(scope, MODULE_ID);
-    for (const op of ops) {
-      if (
-        (typeof op.tempEntityId === "number" && op.tempEntityId === blockId) ||
-        (op.method === "diary.blockCreate" && op.payload.client_op_id != null)
-      ) {
-        if (op.tempEntityId === blockId) await removeOutboxOp(scope, op.id);
+  const doOffline = async (): Promise<void> => {
+    const now = new Date().toISOString();
+    await upsertLocalEntry(scope, subjectKind, {
+      ...existing,
+      blocks: existing.blocks.filter((b) => b.id !== blockId),
+      updated_at: now,
+    });
+
+    if (isTempId(blockId)) {
+      const ops = await listOutboxOps(scope, MODULE_ID);
+      for (const op of ops) {
+        if (
+          (typeof op.tempEntityId === "number" && op.tempEntityId === blockId) ||
+          (op.method === "diary.blockCreate" && op.payload.client_op_id != null)
+        ) {
+          if (op.tempEntityId === blockId) await removeOutboxOp(scope, op.id);
+        }
       }
+      return;
     }
-    return;
+
+    const opId = randomUuid();
+    await enqueueOutboxOp(scope, {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "diary.blockDelete",
+      payload: { subject_kind: subjectKind, id: blockId, client_op_id: opId },
+      createdAt: now,
+    });
+    scheduleFlush(scope);
+  };
+
+  if (await unresolvedTempId(scope, blockId)) {
+    return doOffline();
   }
 
-  const opId = randomUuid();
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "diary.blockDelete",
-    payload: { subject_kind: subjectKind, id: blockId, client_op_id: opId },
-    createdAt: now,
-  });
-  scheduleFlush(scope);
+  return preferOnlineWrite(async () => {
+    const opId = randomUuid();
+    await hub().call("diary.blockDelete", {
+      subject_kind: subjectKind,
+      id: blockId,
+      client_op_id: opId,
+    });
+    const entry = await findLocalEntry(scope, subjectKind, parentId);
+    if (entry) {
+      await upsertLocalEntry(scope, subjectKind, {
+        ...entry,
+        blocks: entry.blocks.filter((b) => b.id !== blockId),
+        updated_at: new Date().toISOString(),
+      });
+    }
+  }, doOffline);
 }
 
 export async function offlineReorderDiaryBlocks(
@@ -610,26 +750,46 @@ export async function offlineReorderDiaryBlocks(
   const scope = resolveOutboxScope();
   const existing = await findLocalEntry(scope, subjectKind, parentId);
   if (!existing) throw new Error("diary entry not found locally");
-  const order = new Map(items.map((i) => [i.id, i.sort_order]));
-  const now = new Date().toISOString();
-  const blocks = existing.blocks
-    .map((b) => {
-      const nextOrder = order.get(b.id);
-      return nextOrder != null ? { ...b, sort_order: nextOrder, updated_at: now } : b;
-    })
-    .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
-  await upsertLocalEntry(scope, subjectKind, { ...existing, blocks, updated_at: now });
 
-  const opId = randomUuid();
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "diary.blockReorder",
-    payload: { subject_kind: subjectKind, items },
-    createdAt: now,
-  });
-  scheduleFlush(scope);
-  return blocks;
+  const doOffline = async (): Promise<DiaryTextBlock[]> => {
+    const order = new Map(items.map((i) => [i.id, i.sort_order]));
+    const now = new Date().toISOString();
+    const blocks = existing.blocks
+      .map((b) => {
+        const nextOrder = order.get(b.id);
+        return nextOrder != null ? { ...b, sort_order: nextOrder, updated_at: now } : b;
+      })
+      .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+    await upsertLocalEntry(scope, subjectKind, { ...existing, blocks, updated_at: now });
+
+    const opId = randomUuid();
+    await enqueueOutboxOp(scope, {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "diary.blockReorder",
+      payload: { subject_kind: subjectKind, items },
+      createdAt: now,
+    });
+    scheduleFlush(scope);
+    return blocks;
+  };
+
+  if (items.some((i) => isTempId(i.id)) || (await unresolvedTempId(scope, existing.id))) {
+    return doOffline();
+  }
+
+  return preferOnlineWrite(async () => {
+    const data = await hub().call("diary.blockReorder", {
+      subject_kind: subjectKind,
+      items,
+    });
+    await upsertLocalEntry(scope, subjectKind, {
+      ...existing,
+      blocks: data.items,
+      updated_at: new Date().toISOString(),
+    });
+    return data.items;
+  }, doOffline);
 }
 
 export async function offlineDeleteDiaryEntry(
@@ -639,34 +799,52 @@ export async function offlineDeleteDiaryEntry(
   const scope = resolveOutboxScope();
   const existing = await findLocalEntry(scope, subjectKind, id);
   const resolvedId = existing?.id ?? (await resolveEntityId(scope, id));
-  await removeLocalEntry(scope, subjectKind, resolvedId);
-  if (resolvedId !== id) await removeLocalEntry(scope, subjectKind, id);
 
-  if (isTempId(resolvedId) || isTempId(id)) {
-    const tempIds = new Set([id, resolvedId].filter(isTempId));
-    const ops = await listOutboxOps(scope, MODULE_ID);
-    for (const op of ops) {
-      if (
-        (typeof op.tempEntityId === "number" && tempIds.has(op.tempEntityId)) ||
-        (typeof op.payload.id === "number" &&
-          (tempIds.has(op.payload.id) || op.payload.id === resolvedId)) ||
-        (typeof op.payload.parent_id === "number" && tempIds.has(op.payload.parent_id))
-      ) {
-        await removeOutboxOp(scope, op.id);
+  const doOffline = async (): Promise<void> => {
+    await removeLocalEntry(scope, subjectKind, resolvedId);
+    if (resolvedId !== id) await removeLocalEntry(scope, subjectKind, id);
+
+    if (isTempId(resolvedId) || isTempId(id)) {
+      const tempIds = new Set([id, resolvedId].filter(isTempId));
+      const ops = await listOutboxOps(scope, MODULE_ID);
+      for (const op of ops) {
+        if (
+          (typeof op.tempEntityId === "number" && tempIds.has(op.tempEntityId)) ||
+          (typeof op.payload.id === "number" &&
+            (tempIds.has(op.payload.id) || op.payload.id === resolvedId)) ||
+          (typeof op.payload.parent_id === "number" && tempIds.has(op.payload.parent_id))
+        ) {
+          await removeOutboxOp(scope, op.id);
+        }
       }
+      return;
     }
-    return;
+
+    const opId = randomUuid();
+    await enqueueOutboxOp(scope, {
+      id: opId,
+      moduleId: MODULE_ID,
+      method: "diary.delete",
+      payload: { subject_kind: subjectKind, id: resolvedId, client_op_id: opId },
+      createdAt: new Date().toISOString(),
+    });
+    scheduleFlush(scope);
+  };
+
+  if (await unresolvedTempId(scope, resolvedId)) {
+    return doOffline();
   }
 
-  const opId = randomUuid();
-  await enqueueOutboxOp(scope, {
-    id: opId,
-    moduleId: MODULE_ID,
-    method: "diary.delete",
-    payload: { subject_kind: subjectKind, id: resolvedId, client_op_id: opId },
-    createdAt: new Date().toISOString(),
-  });
-  scheduleFlush(scope);
+  return preferOnlineWrite(async () => {
+    const opId = randomUuid();
+    await hub().call("diary.delete", {
+      subject_kind: subjectKind,
+      id: resolvedId,
+      client_op_id: opId,
+    });
+    await removeLocalEntry(scope, subjectKind, resolvedId);
+    if (resolvedId !== id) await removeLocalEntry(scope, subjectKind, id);
+  }, doOffline);
 }
 
 export async function countDiaryPendingOps(): Promise<number> {

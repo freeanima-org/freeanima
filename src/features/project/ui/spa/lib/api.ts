@@ -30,7 +30,11 @@ import {
   reconcileServerProjects,
   registerProjectOfflineModule,
 } from "./offline-store.ts";
-import { readCachedProjectItems, readCachedProjects } from "./offline-cache.ts";
+import {
+  readCachedProjectItems,
+  readCachedProjects,
+  writeCachedProjects,
+} from "./offline-cache.ts";
 
 export type ProjectFolderRow = ProjectFolderRowPayload;
 export type ProjectRow = ProjectRowPayload;
@@ -108,15 +112,34 @@ export async function fetchProjects(
 ): Promise<ProjectRow[]> {
   const scope = resolveHubCacheScope();
   if (folderId !== undefined) {
-    if (!isHubFetchAvailable()) {
+    if (folderId != null && isTempId(folderId)) {
       const cached = (await readCachedProjects(scope)) ?? [];
       return withDefaultProjectTaskCount(cached.filter((p) => (p.folder_id ?? null) === folderId));
     }
-    const data = await hub().call("project.list", {
-      subject_kind: subjectKind,
-      folder_id: folderId,
-    });
-    return withDefaultProjectTaskCount(data.projects);
+
+    const readLocalFiltered = async (): Promise<ProjectRow[]> => {
+      const cached = (await readCachedProjects(scope)) ?? [];
+      return withDefaultProjectTaskCount(cached.filter((p) => (p.folder_id ?? null) === folderId));
+    };
+
+    if (!isHubFetchAvailable()) {
+      return readLocalFiltered();
+    }
+
+    try {
+      const data = await hub().call("project.list", {
+        subject_kind: subjectKind,
+        folder_id: folderId,
+      });
+      const projects = withDefaultProjectTaskCount(data.projects);
+      const cached = (await readCachedProjects(scope)) ?? [];
+      const byId = new Map(cached.map((p) => [p.id, p]));
+      for (const p of projects) byId.set(p.id, p);
+      void writeCachedProjects(scope, [...byId.values()]);
+      return projects;
+    } catch {
+      return readLocalFiltered();
+    }
   }
   return withOfflineCache({
     scope,
@@ -138,14 +161,33 @@ export async function fetchProjectStats(subjectKind: SubjectKind): Promise<Map<n
 }
 
 export async function fetchProject(subjectKind: SubjectKind, id: number): Promise<ProjectRow> {
-  if (isTempId(id) || !isHubFetchAvailable()) {
-    const cached = (await readCachedProjects(resolveHubCacheScope())) ?? [];
+  const scope = resolveHubCacheScope();
+
+  const readLocal = async (): Promise<ProjectRow> => {
+    const cached = (await readCachedProjects(scope)) ?? [];
     const found = cached.find((p) => p.id === id);
     if (!found) throw new Error("project not found locally");
     return found;
+  };
+
+  if (isTempId(id)) {
+    return readLocal();
   }
-  const data = await hub().call("project.get", { subject_kind: subjectKind, id });
-  return data.item;
+
+  if (!isHubFetchAvailable()) {
+    return readLocal();
+  }
+
+  try {
+    const data = await hub().call("project.get", { subject_kind: subjectKind, id });
+    const cached = (await readCachedProjects(scope)) ?? [];
+    const next = cached.filter((p) => p.id !== data.item.id);
+    next.push(data.item);
+    void writeCachedProjects(scope, next);
+    return data.item;
+  } catch {
+    return readLocal();
+  }
 }
 
 export async function createProjectApi(
@@ -167,7 +209,7 @@ export async function fetchProjectTasks(
   projectId: number,
 ): Promise<TaskItemRow[]> {
   const scope = resolveHubCacheScope();
-  if (isTempId(projectId) || !isHubFetchAvailable()) {
+  if (isTempId(projectId)) {
     return normalizeTaskItemRows(await readCachedProjectItems(scope, projectId));
   }
   return withOfflineCache({

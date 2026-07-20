@@ -14,19 +14,26 @@ export type WithOfflineCacheOptions<T> = {
   reconcile?: (fresh: T) => T | Promise<T>;
 };
 
-/** Tier 1 cache-first：Hub 可用时 refresh；断连时只读快照、不发起 RPC。 */
+/**
+ * 在线 Hub-first / 离线 cache：
+ * - Hub 可用：先发 fetch（可与 IDB 读并行，缓存仅作失败回退）；成功后异步写回缓存
+ * - Hub 不可用：只读本地快照，不发起 RPC
+ */
 export async function withOfflineCache<T>(opts: WithOfflineCacheOptions<T>): Promise<T> {
-  const cached = await readOfflineCache<T>(opts.scope, opts.namespace, opts.id);
   if (!isHubFetchAvailable()) {
+    const cached = await readOfflineCache<T>(opts.scope, opts.namespace, opts.id);
     if (cached != null) return cached;
     throw new Error(opts.offlineError ?? "offline fetch failed");
   }
+
+  const cachedPromise = readOfflineCache<T>(opts.scope, opts.namespace, opts.id);
   try {
     const fresh = await opts.fetch();
     const next = opts.reconcile ? await opts.reconcile(fresh) : fresh;
     void writeOfflineCache(opts.scope, opts.namespace, opts.id, next);
     return next;
   } catch {
+    const cached = await cachedPromise;
     if (cached != null) return cached;
     throw new Error(opts.offlineError ?? "offline fetch failed");
   }
