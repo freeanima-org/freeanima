@@ -4,14 +4,31 @@ import { isStandaloneExecutable } from "./cli-install.ts";
 import { PATHS } from "./paths.ts";
 import { resolveMonorepoRoot } from "./repo-root.ts";
 
+export {
+  animaBinShimPath,
+  currentAnimaLinkPath,
+  defaultAnimaBinDir,
+  getCurrentVersionId,
+  installVersionedBinary,
+  legacyAnimaBinShimPath,
+  listInstalledVersions,
+  MAX_KEPT_STANDALONE_VERSIONS,
+  migrateFlatAnimaFileIfNeeded,
+  normalizeVersionFileId,
+  parseVersionIdFromFileName,
+  pruneVersionedBinaries,
+  relinkPathShim,
+  removeLegacyAnimaBinShim,
+  resolveStableStandaloneAnimaPath,
+  setCurrentVersion,
+  versionedAnimaFileName,
+  versionedAnimaPath,
+  type InstalledStandaloneVersion,
+} from "./standalone-versions.ts";
+
 /** 默认独立安装前缀（非 monorepo、非 dist staging） */
 export function defaultStandaloneInstallPrefix(home = PATHS.home): string {
   return join(home, "standalone");
-}
-
-/** PATH 入口目录（`~/.anima/bin`） */
-export function defaultAnimaBinDir(home = PATHS.home): string {
-  return join(home, "bin");
 }
 
 export function resolveInstallPrefixFromEnv(
@@ -54,18 +71,13 @@ export function assertSafeStandaloneInstallPrefix(
 }
 
 /**
- * standalone 安装前缀 = 可执行文件所在目录。
- * 当前进程为 standalone 时用之；否则若明确传入已安装的 anima 路径也取其 dirname。
+ * standalone 安装前缀 = 可执行文件所在目录（`anima` / `anima_<ver>` 同目录）。
+ * 当前进程为 standalone 时用之。
  */
 export function resolveStandalonePrefixFromExec(execPath: string): string | null {
   if (isStandaloneExecutable()) {
     return dirname(execPath);
   }
-  // 非 standalone 进程：无法可靠判断 path 是否为编译产物，返回 null
   void execPath;
   return null;
-}
-
-export function animaBinShimPath(binDir = defaultAnimaBinDir()): string {
-  return join(binDir, "anima");
 }

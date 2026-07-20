@@ -1,14 +1,4 @@
-import {
-  chmodSync,
-  cpSync,
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readdirSync,
-  renameSync,
-  rmSync,
-  symlinkSync,
-} from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -20,9 +10,10 @@ import { downloadReleaseAsset, type DownloadProgressHandler } from "./download.t
 import { resolvePackagedUpdate } from "./resolve-packaged-update.ts";
 import type { BuildChannel } from "../build-meta.parse.ts";
 import {
-  animaBinShimPath,
   assertSafeStandaloneInstallPrefix,
-  defaultAnimaBinDir,
+  installVersionedBinary,
+  migrateFlatAnimaFileIfNeeded,
+  normalizeVersionFileId,
 } from "../install-prefix.ts";
 import { getStandaloneRuntimeMeta } from "../standalone-runtime-meta.ts";
 
@@ -59,15 +50,6 @@ type StagedTarball = {
   cleanup: () => void;
 };
 
-function relinkBinShim(prefix: string): void {
-  const binDir = defaultAnimaBinDir();
-  mkdirSync(binDir, { recursive: true });
-  const shim = animaBinShimPath(binDir);
-  const target = join(prefix, "anima");
-  rmSync(shim, { force: true });
-  symlinkSync(target, shim);
-}
-
 function findAnimaInExtract(extractDir: string): string {
   const direct = join(extractDir, "anima");
   if (existsSync(direct)) return direct;
@@ -99,32 +81,24 @@ async function stageStandaloneTarball(tarballPath: string): Promise<StagedTarbal
   };
 }
 
-/** 从 staging 原子替换 prefix/anima（单文件） */
+/** 安装为 anima_<ver>，切换 current symlink，刷新 PATH，修剪旧版 */
 function commitStandaloneReplace(
   stagedAnimaPath: string,
   prefix: string,
+  remoteVersion: string,
+  localVersion: string,
   log: (msg: string) => void,
 ): void {
-  mkdirSync(prefix, { recursive: true });
-  const destAnima = join(prefix, "anima");
-  const destAnimaNew = join(prefix, "anima.new");
-
-  cpSync(stagedAnimaPath, destAnimaNew);
-  chmodSync(destAnimaNew, 0o755);
-  if (existsSync(destAnima)) {
-    try {
-      renameSync(destAnima, join(prefix, "anima.old"));
-    } catch {
-      rmSync(destAnima, { force: true });
-    }
+  if (migrateFlatAnimaFileIfNeeded(prefix, localVersion)) {
+    log(`已迁移旧扁平 anima → anima_${normalizeVersionFileId(localVersion)}`);
   }
-  renameSync(destAnimaNew, destAnima);
-  rmSync(join(prefix, "anima.old"), { force: true });
-  // 清理旧旁路布局残留（若有）
-  rmSync(join(prefix, "package.json"), { force: true });
-  rmSync(join(prefix, "dist"), { recursive: true, force: true });
-  relinkBinShim(prefix);
-  log(`已覆盖安装单文件: ${destAnima}`);
+  const versionId = normalizeVersionFileId(remoteVersion);
+  const result = installVersionedBinary(prefix, stagedAnimaPath, versionId);
+  log(`已安装版本 ${versionId}: ${result.versionPath}`);
+  log(`current → ${result.currentLink}`);
+  if (result.pruned.length > 0) {
+    log(`已修剪旧版本: ${result.pruned.join(", ")}`);
+  }
 }
 
 export async function applyStandaloneUpgrade(
@@ -199,7 +173,13 @@ export async function applyStandaloneUpgrade(
     }
     staged = await stageStandaloneTarball(tarball);
     await opts.beforeReplace?.();
-    commitStandaloneReplace(staged.stagedAnimaPath, opts.prefix, log);
+    commitStandaloneReplace(
+      staged.stagedAnimaPath,
+      opts.prefix,
+      update.remoteVersion,
+      localVersion,
+      log,
+    );
   } finally {
     staged?.cleanup();
     rmSync(tmp, { recursive: true, force: true });

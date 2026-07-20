@@ -54,7 +54,7 @@ curl -fsSL https://freeanima.com/install | PROXY=ghproxy-net bash
 curl -fsSL https://freeanima.com/install | CHANNEL=canary PROXY=ghfast-top bash
 ```
 
-可选环境变量：`FREEANIMA_INSTALL_PREFIX`（默认 `~/.anima/standalone`）、`FREEANIMA_HOME`（默认 `~/.anima`，决定 `bin` shim 位置）。
+可选环境变量：`FREEANIMA_INSTALL_PREFIX`（默认 `~/.anima/standalone`）、`FREEANIMA_HOME`（默认 `~/.anima`，数据目录）。
 
 备用（不依赖站点发布）：
 
@@ -62,23 +62,28 @@ curl -fsSL https://freeanima.com/install | CHANNEL=canary PROXY=ghfast-top bash
 curl -fsSL https://raw.githubusercontent.com/freeanima-org/freeanima/main/scripts/install.sh | bash
 ```
 
-Install prefix 只需要 **一个** `anima` 文件。Do not unpack into a git checkout. Ensure `~/.anima/bin` is on `PATH`.
+Install prefix keeps versioned binaries as `anima_<version>` plus an `anima` symlink to the current version (up to 7 versions retained). Do not unpack into a git checkout. Ensure `~/.local/bin` is on `PATH`.
 
 Manual unpack (same layout as the installer):
 
 ```bash
 mkdir -p ~/.anima/standalone && cd ~/.anima/standalone
 tar -xzf /path/to/anima-linux-x64.tar.gz
-mkdir -p ~/.anima/bin && ln -sf "$PWD/anima" ~/.anima/bin/anima
+# assume extracted file is ./anima — rename to versioned file then link
+mv anima anima_0.9.2
+ln -sfn anima_0.9.2 anima
+mkdir -p ~/.local/bin && ln -sfn "$PWD/anima" ~/.local/bin/anima
 ```
 
 Or from a checkout: `just install-cli` (builds then installs to the same default prefix).
 
-Installed standalone 可用内置升级换轨：
+Installed standalone 可用内置升级换轨与本机版本切换：
 
 ```bash
 anima upgrade --channel canary   # 跟随 canary tip
 anima upgrade --channel release  # 切回稳定轨 tip
+anima versions                   # 列出本机 anima_*（* = current）
+anima versions use 0.9.2         # 切换 current symlink
 ```
 
 **Mobile Android APK**（`freeanima-mobile-android.apk`）：从 GitHub Release（`canary` 或版本 tag）下载 sideload。CI 使用固定 upload 签名，同 channel 内可覆盖升级。若曾安装旧版未固定签名的包，或密钥轮换后，需先卸载 `FreeAnima`（`org.freeanima.app`）再安装。
@@ -123,10 +128,11 @@ anima upgrade --proxy ghproxy-net
 anima upgrade --check --channel canary --proxy ghfast-top
 ```
 
-升级时 Hub 在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进制瞬间短暂停服并自动拉起。未运行 service 时仅覆盖 `prefix/anima`，不会自动启动。
+升级时 Hub 在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进制瞬间短暂停服并自动拉起。未运行 service 时仅写入新的 `anima_<version>` 并切换 `anima` symlink，不会自动启动。
 
 ```bash
 anima service restart   # 手动升级二进制后若未自动拉起时使用
+anima versions use <id> # 回退到本机已保留的旧版本（同样会按需停/启 service）
 ```
 
 Re-run the curl installer to reinstall/overwrite the same prefix, or from a checkout rebuild and reinstall (never into the repo):
@@ -145,7 +151,7 @@ Always runs `build:web` before compiling the binary (embeds current Web dist):
 bun run build:cli:executable
 # → dist/anima-executable/ (staging)
 just install-cli
-# → ~/.anima/standalone/ + ~/.anima/bin/anima
+# → ~/.anima/standalone/anima_<version> + anima symlink + ~/.local/bin/anima
 anima --version
 ```
 
@@ -180,7 +186,7 @@ To install a **standalone** binary into an independent prefix (default `~/.anima
 
 ```bash
 just install-cli
-# ensure ~/.anima/bin is on PATH
+# ensure ~/.local/bin is on PATH
 anima --version
 ```
 
