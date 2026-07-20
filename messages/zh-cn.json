@@ -334,8 +334,8 @@
   "habitat_limbic_search": "搜索词（可选，内容 ILIKE）",
   "habitat_mcp_action_failed": "{name} {action}失败: {detail}",
   "habitat_mcp_configured": "已配置",
-  "habitat_mcp_desc": "MCP 服务器配置与运行时状态（工具、资源、Prompt）。",
-  "habitat_mcp_empty_hint": "未配置 MCP 服务器。在 ~/.anima/config.yaml 的 mcp_servers 中添加。",
+  "habitat_mcp_desc": "配置入站 MCP 服务器（stdio / http / SSE），启停连接并查看工具。",
+  "habitat_mcp_empty_hint": "尚未配置 MCP 服务器。展开下方「编辑服务器配置」添加。",
   "habitat_mcp_registered_tools": "注册工具",
   "habitat_mcp_start_all_failed": "全部启动失败: {detail}",
   "habitat_mcp_stop_all_failed": "全部停止失败: {detail}",
@@ -691,5 +691,9 @@
   "ui_shell_update_proxy_ghfast_top": "ghfast.top",
   "ui_shell_update_proxy_ghproxy_net": "ghproxy.net",
   "ui_shell_update_proxy_label": "下载代理",
-  "ui_shell_update_proxy_none": "直连（GitHub）"
+  "ui_shell_update_proxy_none": "直连（GitHub）",
+  "habitat_mcp_edit_config": "编辑服务器配置",
+  "habitat_mcp_save_config": "保存 MCP 配置",
+  "habitat_mcp_save_failed": "保存失败: {detail}",
+  "habitat_mcp_runtime_heading": "运行态"
 }

@@ -2,14 +2,15 @@ import { isEnabledByDefault } from "@freeanima/core/util";
 import type { McpServerConfig } from "./client.ts";
 
 export type McpServerConfigView = {
-  transport: "stdio" | "sse";
+  transport: "stdio" | "sse" | "http";
   enabled: boolean;
   command?: string;
   args?: string[];
   url?: string;
   api_key_env?: string;
+  headers?: Record<string, string>;
   cwd?: string;
-  env_keys?: string[];
+  env?: Record<string, string>;
   connect_timeout_ms?: number;
 };
 
@@ -79,10 +80,9 @@ export function sanitizeMcpConfig(cfg: McpServerConfig): McpServerConfigView {
   if (cfg.args?.length) view.args = cfg.args;
   if (cfg.url) view.url = cfg.url;
   if (cfg.api_key_env) view.api_key_env = cfg.api_key_env;
+  if (cfg.headers && Object.keys(cfg.headers).length > 0) view.headers = { ...cfg.headers };
   if (cfg.cwd) view.cwd = cfg.cwd;
   if (cfg.connect_timeout_ms) view.connect_timeout_ms = cfg.connect_timeout_ms;
-  if (cfg.env && Object.keys(cfg.env).length > 0) {
-    view.env_keys = Object.keys(cfg.env);
-  }
+  if (cfg.env && Object.keys(cfg.env).length > 0) view.env = { ...cfg.env };
   return view;
 }

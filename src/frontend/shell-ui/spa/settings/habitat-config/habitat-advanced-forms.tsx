@@ -1,4 +1,4 @@
-import { Label, Textarea } from "@freeanima/frontend/ui-kit";
+import { Label } from "@freeanima/frontend/ui-kit";
 import {
   HubConfigRecordEntryEditor,
   habitatConfigBoolField,
@@ -18,14 +18,13 @@ export const ADVANCED_SECTIONS = [
   "cjk",
   "fts",
   "models",
-  "mcp_servers",
   "acp_agents",
   "worlds",
   "auto_llm",
 ] as const;
 
 /** 以条目名为 key 的 record 段；保存时需整段替换才能删除条目。 */
-export const HUB_CONFIG_RECORD_SECTIONS = ["models", "mcp_servers", "acp_agents"] as const;
+export const HUB_CONFIG_RECORD_SECTIONS = ["models", "acp_agents"] as const;
 
 export type AdvancedSectionId = (typeof ADVANCED_SECTIONS)[number];
 
@@ -201,55 +200,6 @@ function ModelsForm({
           (v) => patch({ context_window: v === "" ? undefined : v }),
         )
       }
-    />
-  );
-}
-
-function McpServersForm({
-  value,
-  onChange,
-}: {
-  value: Record<string, unknown>;
-  onChange: (v: Record<string, unknown>) => void;
-}) {
-  return (
-    <HubConfigRecordEntryEditor
-      label="MCP"
-      value={value}
-      onChange={onChange}
-      renderFields={(entry, patch) => (
-        <div className="space-y-4">
-          {habitatConfigBoolField("enabled", entry.enabled !== false, (v) => patch({ enabled: v }))}
-          {hubConfigTextField("command", String(entry.command ?? ""), (v) => patch({ command: v }))}
-          {hubConfigTextField("url", String(entry.url ?? ""), (v) => patch({ url: v }))}
-          {hubConfigTransportField(String(entry.transport ?? ""), (v) =>
-            patch({ transport: v || undefined }),
-          )}
-          {hubConfigTextField("cwd", String(entry.cwd ?? ""), (v) => patch({ cwd: v }))}
-          {hubConfigTextField("api_key_env", String(entry.api_key_env ?? ""), (v) =>
-            patch({ api_key_env: v }),
-          )}
-          {habitatConfigNumberField(
-            "connect_timeout_ms",
-            typeof entry.connect_timeout_ms === "number" ? entry.connect_timeout_ms : "",
-            (v) => patch({ connect_timeout_ms: v === "" ? undefined : v }),
-          )}
-          <div className="space-y-1">
-            <Label className="text-sm">args（每行一个）</Label>
-            <Textarea
-              className="w-full font-mono text-xs min-h-24"
-              value={Array.isArray(entry.args) ? entry.args.map(String).join("\n") : ""}
-              onChange={(e) => {
-                const args = e.target.value
-                  .split("\n")
-                  .map((line) => line.trim())
-                  .filter(Boolean);
-                patch({ args: args.length > 0 ? args : undefined });
-              }}
-            />
-          </div>
-        </div>
-      )}
     />
   );
 }
@@ -522,8 +472,6 @@ export function AdvancedSectionForm({
       return <FtsForm value={value} onChange={onChange} />;
     case "models":
       return <ModelsForm value={value} onChange={onChange} />;
-    case "mcp_servers":
-      return <McpServersForm value={value} onChange={onChange} />;
     case "acp_agents":
       return <AcpAgentsForm value={value} onChange={onChange} />;
     case "worlds":

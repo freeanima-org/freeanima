@@ -180,7 +180,7 @@ mcpServers:
       Authorization: "Bearer fa_at_..."
 ```
 
-- **Inbound** (Habitat connects to external MCP servers): `config.yaml` `mcp_servers` (`src/capabilities/mcp-client`)
+- **Inbound** (Habitat connects to external MCP servers): runtime `mcp_servers` (`src/capabilities/mcp-client`); manage in Habitat UI `/habitat/mcp`
 - **Outbound** (external agents call Habitat tools): `/mcp` endpoint (`src/capabilities/mcp-server`)
 
 ## Operations

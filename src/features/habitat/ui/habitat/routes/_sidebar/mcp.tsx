@@ -1,5 +1,5 @@
+import { useCallback, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 import { Badge, Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
 import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
@@ -15,6 +15,11 @@ import {
   catchWithFallback,
   logCaughtError,
 } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
+import { McpServersConfigEditor } from "@freeanima/features/habitat/ui/habitat/components/McpServersConfigEditor.tsx";
+import {
+  McpServerToolsList,
+  type McpToolListItem,
+} from "@freeanima/features/habitat/ui/habitat/components/McpServerToolsList.tsx";
 
 export const Route = createFileRoute("/_sidebar/mcp")({
   loader: () => getMcpStatus().catch(catchWithFallback("mcp/getMcpStatus", null)),
@@ -64,6 +69,17 @@ function McpPage() {
   const [bulkActing, setBulkActing] = useState(false);
   const [acting, setActing] = useState<Record<string, string>>({});
   const [error, setError] = useState(initial ? "" : m.habitat_common_load_failed_short());
+
+  const refreshStatus = useCallback(async () => {
+    try {
+      const next = await getMcpStatus();
+      setStatus(next as McpStatus);
+      setError("");
+    } catch (e) {
+      logCaughtError("routes/_sidebar/mcp/refresh", e);
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }, []);
 
   const controlServer = async (name: string, action: "start" | "stop") => {
     setError("");
@@ -115,6 +131,9 @@ function McpPage() {
         <StatusAlert variant="error" className="mt-4">
           {error || m.habitat_common_load_failed_short()}
         </StatusAlert>
+        <div className="mt-4">
+          <McpServersConfigEditor onSaved={refreshStatus} />
+        </div>
       </div>
     );
   }
@@ -170,6 +189,10 @@ function McpPage() {
         ))}
       </div>
 
+      <McpServersConfigEditor onSaved={refreshStatus} />
+
+      <h3 className="text-sm font-semibold mb-3">{m.habitat_mcp_runtime_heading()}</h3>
+
       {status.servers.length === 0 ? (
         <StatusAlert variant="info">{m.habitat_mcp_empty_hint()}</StatusAlert>
       ) : (
@@ -215,14 +238,7 @@ function McpPage() {
                     {JSON.stringify(srv.config, null, 2)}
                   </pre>
                 </details>
-                <p className="text-sm font-medium">
-                  {m.habitat_mcp_tools_count({ count: String(srv.tools.length) })}
-                </p>
-                <ul className="text-xs font-mono space-y-1">
-                  {srv.tools.map((t, i) => (
-                    <li key={i}>{(t as { name?: string }).name ?? JSON.stringify(t)}</li>
-                  ))}
-                </ul>
+                <McpServerToolsList tools={srv.tools as McpToolListItem[]} />
               </CardContent>
             </Card>
           ))}

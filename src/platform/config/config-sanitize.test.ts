@@ -45,7 +45,7 @@ describe("sanitizeConfigForApi", () => {
     });
   });
 
-  it("MCP env keeps env_keys only", () => {
+  it("MCP env and headers round-trip in cleartext", () => {
     const out = sanitizeConfigForApi({
       mcp_servers: {
         db: {
@@ -53,13 +53,23 @@ describe("sanitizeConfigForApi", () => {
           transport: "stdio",
           env: { SECRET: "hidden", OTHER: "x" },
         },
+        remote: {
+          url: "https://example.com/mcp",
+          transport: "sse",
+          headers: { Authorization: "Bearer tok" },
+        },
       },
     } as never);
     expect(out.mcp_servers).toEqual({
       db: {
         command: "node",
         transport: "stdio",
-        env_keys: ["SECRET", "OTHER"],
+        env: { SECRET: "hidden", OTHER: "x" },
+      },
+      remote: {
+        url: "https://example.com/mcp",
+        transport: "sse",
+        headers: { Authorization: "Bearer tok" },
       },
     });
   });
