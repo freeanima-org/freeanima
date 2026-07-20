@@ -125,7 +125,7 @@ describe("browser tools", () => {
     const out = await toolSets.getTool("browser_type")!.handler({
       ref: "@e1",
       text: "x",
-      secret: { id: 1 },
+      secret: { id: 1, field: "password" },
     });
     const data = JSON.parse(out);
     expect(data.error).toContain("either text or secret");

@@ -45,9 +45,16 @@ describe("parseSecretArg", () => {
     expect(out).toContain("secret must be an object");
   });
 
-  it("parses ref with defaults", () => {
-    const out = parseSecretArg({ id: 12 });
-    expect(out).toEqual({ id: 12, subject_kind: "agent" });
+  it("requires id and field", () => {
+    expect(String(parseSecretArg({ id: 12 }))).toContain("secret.field is required");
+    expect(String(parseSecretArg({ field: "password" }))).toContain("secret.id is required");
+  });
+
+  it("parses id and field", () => {
+    expect(parseSecretArg({ id: 12, field: "password" })).toEqual({
+      id: 12,
+      field: "password",
+    });
   });
 });
 
@@ -87,7 +94,11 @@ describe("resolveVaultSecretValue", () => {
   });
 
   it("resolves agent secret without writing Hub process.env", async () => {
-    const resolved = await resolveVaultSecretValue({ id: 99, subject_kind: "agent" });
+    const resolved = await resolveVaultSecretValue({
+      id: 99,
+      field: "password",
+      subject_kind: "agent",
+    });
     expect(resolved).toEqual({ value: "secret-value-xyz" });
     expect(resolveAgentVaultSecretMock).toHaveBeenCalled();
   });

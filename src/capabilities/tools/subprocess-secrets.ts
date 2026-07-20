@@ -13,7 +13,13 @@ import {
   WORLD_ID_TOOL_PROPERTY,
 } from "@freeanima/features/vault/domain/tool-world-resolve";
 
-/** Vault item ref without env mapping (browser_type secret, etc.). */
+/** Vault item ref without env mapping (browser_type secret). */
+export type BrowserSecretRef = {
+  id: number;
+  field: string;
+};
+
+/** Vault item ref for subprocess secrets (field optional → default password). */
 export type VaultSecretRef = {
   id: number;
   field?: string;
@@ -37,15 +43,16 @@ export const SECRET_TOOL_PROPERTY = {
   type: "object",
   description:
     "Vault secret to type into the input (never returned in tool results). " +
-    "Discover items via vault_list/vault_search/vault_get_meta first. Default subject_kind=agent. " +
+    "Discover items via vault_list/vault_search/vault_get_meta first. Uses agent library. " +
     "Mutually exclusive with text.",
   properties: {
     id: SECRET_ID_PROPERTY,
-    field: SECRET_FIELD_PROPERTY,
-    subject_kind: SUBJECT_KIND_TOOL_PROPERTY,
-    world_id: WORLD_ID_TOOL_PROPERTY,
+    field: {
+      type: "string",
+      description: 'Secret field path (e.g. "password", "custom_fields.0.value")',
+    },
   },
-  required: ["id"],
+  required: ["id", "field"],
 } as const;
 
 /** JSON-schema fragment for terminal_run / code_execute `secrets` parameter. */
@@ -89,12 +96,17 @@ function parseVaultSecretFields(
 }
 
 /** Parse optional single `secret` object; nullish → null; invalid → toolError JSON string. */
-export function parseSecretArg(raw: unknown): VaultSecretRef | null | string {
+export function parseSecretArg(raw: unknown): BrowserSecretRef | null | string {
   if (raw == null) return null;
   if (typeof raw !== "object" || Array.isArray(raw)) {
     return toolError("secret must be an object");
   }
-  return parseVaultSecretFields(raw as Record<string, unknown>, "secret.id is required");
+  const rec = raw as Record<string, unknown>;
+  const id = Number(rec.id);
+  if (!Number.isFinite(id) || id <= 0) return toolError("secret.id is required");
+  const field = String(rec.field ?? "").trim();
+  if (!field) return toolError("secret.field is required");
+  return { id, field };
 }
 
 export function parseSecretsArg(raw: unknown): SubprocessSecretRef[] | string {
