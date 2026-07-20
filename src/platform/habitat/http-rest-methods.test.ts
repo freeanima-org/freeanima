@@ -97,6 +97,14 @@ describe("http-rest feature methods", () => {
     expect(init.body).toBe(form);
   });
 
+  test("buildHabitatRestRequest GET emailaccount.list", () => {
+    const { url, init } = buildHabitatRestRequest("http://127.0.0.1:2658", "emailaccount.list", {
+      subject_kind: "user",
+    });
+    expect(url).toBe("http://127.0.0.1:2658/rpc/v1/emailaccount/list?subject_kind=user");
+    expect(init.method).toBe("GET");
+  });
+
   test("isNonJsonHabitatHttpMethod feature methods", () => {
     expect(isNonJsonHabitatHttpMethod("tasklist.item.list")).toBe(false);
     expect(isNonJsonHabitatHttpMethod("companion.model.upload")).toBe(true);

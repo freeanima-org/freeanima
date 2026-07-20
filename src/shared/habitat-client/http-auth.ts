@@ -1,3 +1,10 @@
+/// <reference lib="dom" />
+
+import {
+  HABITAT_RPC_REST_PREFIX,
+  HABITAT_RPC_REST_PREFIX_LEGACY,
+} from "@freeanima/shared/habitat-rpc/urls.ts";
+
 export type BearerFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
 /** 最小 Bearer fetch 辅助（不依赖 shell-sdk，避免循环依赖） */
@@ -35,5 +42,10 @@ export function createBearerFetch(token: string, hubOrigin: string): BearerFetch
 }
 
 export function habitatHttpFromWsUrl(wsUrl: string): string {
-  return wsUrl.replace(/^ws/i, "http").replace(/\/hub\/rpc\/v1\/?$/i, "");
+  return wsUrl
+    .replace(/^ws/i, "http")
+    .replace(
+      new RegExp(`(?:${HABITAT_RPC_REST_PREFIX}|${HABITAT_RPC_REST_PREFIX_LEGACY})/?$`, "i"),
+      "",
+    );
 }
