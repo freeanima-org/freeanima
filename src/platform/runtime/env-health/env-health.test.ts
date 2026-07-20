@@ -19,7 +19,7 @@ function sampleMarkers(overrides: Partial<EnvHealthMarkers> = {}): EnvHealthMark
     boot_started_at: "2026-07-18T10:00:00+08:00",
     postgres: "connected",
     redis: "connected",
-    rss_band: "0-256MiB",
+    rss_band: "0-512MiB",
     mcp_connected: 1,
     mcp_servers: 2,
     acp_connected: 0,
@@ -62,11 +62,11 @@ function mockNotificationPort(opts?: {
 }
 
 describe("env-health band", () => {
-  it("bands RSS into 256MiB buckets", () => {
-    expect(bandRssKb(0)).toBe("0-256MiB");
-    expect(bandRssKb(255 * 1024)).toBe("0-256MiB");
-    expect(bandRssKb(256 * 1024)).toBe("256-512MiB");
-    expect(bandRssKb(512 * 1024)).toBe("512-768MiB");
+  it("bands RSS into 512MiB buckets", () => {
+    expect(bandRssKb(0)).toBe("0-512MiB");
+    expect(bandRssKb(511 * 1024)).toBe("0-512MiB");
+    expect(bandRssKb(512 * 1024)).toBe("512-1024MiB");
+    expect(bandRssKb(1024 * 1024)).toBe("1024-1536MiB");
   });
 
   it("bands disk free into GiB buckets", () => {
@@ -155,7 +155,7 @@ describe("env-health tick", () => {
 
   it("notifies user and agent on change then saves baseline", async () => {
     const base = sampleMarkers();
-    const next = sampleMarkers({ postgres: "error", rss_band: "256-512MiB" });
+    const next = sampleMarkers({ postgres: "error", rss_band: "512-1024MiB" });
     const store = memoryStore(base);
     const port = mockNotificationPort();
     const result = await runEnvHealthTick({

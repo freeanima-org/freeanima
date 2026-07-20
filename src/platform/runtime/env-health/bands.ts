@@ -1,5 +1,5 @@
-/** RSS KB → `0-256MiB` / `256-512MiB` / … */
-export const RSS_BAND_MIB = 256;
+/** RSS KB → `0-512MiB` / `512-1024MiB` / … */
+export const RSS_BAND_MIB = 512;
 const MIB = 1024;
 
 export function bandRssKb(rssKb: number): string {

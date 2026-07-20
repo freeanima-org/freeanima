@@ -36,7 +36,7 @@ Implementation: `src/platform/runtime/env-health/`.
 
 **Environment:** hostname, OS, timezone label, Habitat version, boot started_at, PostgreSQL / Redis status (`connected` | `error` | `not_configured`).
 
-**Health:** RSS band (256 MiB), MCP/ACP connection counts, disk free band for `FREEANIMA_HOME` (`<1GiB` | `1-2GiB` | `2-4GiB` | `4-8GiB` | `≥8GiB` | `unknown`).
+**Health:** RSS band (512 MiB), MCP/ACP connection counts, disk free band for `FREEANIMA_HOME` (`<1GiB` | `1-2GiB` | `2-4GiB` | `4-8GiB` | `≥8GiB` | `unknown`).
 
 Continuous metrics are banded so minor jitter does not spam notifications.
 
