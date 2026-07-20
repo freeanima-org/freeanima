@@ -1,6 +1,7 @@
 export { registerBrowserTools } from "./browser.ts";
 export { registerToolsetTools } from "./toolset.ts";
 export { registerSkillsTools } from "./skill.ts";
+export { registerDocsTools } from "./docs.ts";
 export { registerTodoTool } from "./todo.ts";
 export { registerFileTools } from "./file.ts";
 export { registerConversationTools } from "./conversation.ts";
@@ -21,6 +22,7 @@ import { registerExecuteCodeTool } from "./execute-code.ts";
 import { registerFileTools } from "./file.ts";
 import { registerConversationTools } from "./conversation.ts";
 import { registerSkillsTools } from "./skill.ts";
+import { registerDocsTools } from "./docs.ts";
 import { registerTerminalTools } from "./terminal.ts";
 import { registerWebTools } from "./web.ts";
 import { registerEntitySearchTools } from "./entity-search.ts";
@@ -37,7 +39,7 @@ export function registerCoreTools(toolSets: ToolSetRegistry, config: Config): vo
   registerEntitySearchTools(toolSets);
 }
 
-/** skills + browser */
+/** skills + docs + browser */
 export function registerSupplementalTools(
   toolSets: ToolSetRegistry,
   skills: SkillRegistry,
@@ -45,5 +47,6 @@ export function registerSupplementalTools(
 ): void {
   bindBrowserToolsConfig(config);
   registerSkillsTools(toolSets, skills);
+  registerDocsTools(toolSets);
   registerBrowserTools(toolSets);
 }
