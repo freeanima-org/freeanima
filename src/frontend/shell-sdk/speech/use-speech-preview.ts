@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SpeechPlaybackConfig } from "./types.ts";
 import { createSpeechAdapter, stopSpeechPreview } from "./create-adapter.ts";
-import { consumeLastHubSpeechError, primeHubSpeechOutput } from "./hub-adapter.ts";
+import { consumeLastHubSpeechError, primeHabitatSpeechOutput } from "./habitat-adapter.ts";
 
 let previewAdapter: ReturnType<typeof createSpeechAdapter> | null = null;
 
@@ -22,7 +22,7 @@ export function useSpeechPreview(config: SpeechPlaybackConfig, locale: string) {
 
   const prime = useCallback(() => {
     if (configRef.current.provider === "edge-tts") {
-      primeHubSpeechOutput();
+      primeHabitatSpeechOutput();
     }
   }, []);
 
@@ -46,7 +46,7 @@ export function useSpeechPreview(config: SpeechPlaybackConfig, locale: string) {
 
       previewAdapter = adapter;
       setPreviewing(true);
-      primeHubSpeechOutput();
+      primeHabitatSpeechOutput();
 
       adapter.speak(
         trimmed,

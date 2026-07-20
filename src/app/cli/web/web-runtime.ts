@@ -2,7 +2,7 @@ import { omitUndefined } from "@freeanima/core/util";
 import { PATHS } from "@freeanima/core/config";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { DEFAULT_WEB_HOST, DEFAULT_WEB_PORT, type WebConfigFields } from "@freeanima/core/config";
-import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
+import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import { loadBootstrapConfig } from "@freeanima/platform/config/bootstrap.ts";
 import {
   startWebStaticServer,
@@ -40,7 +40,7 @@ export function isWebProcessAlive(): number | null {
 export async function resolveDefaultHubUrlForWeb(): Promise<string> {
   const publicUrl = loadBootstrapConfig().web?.public_url?.trim();
   if (publicUrl) return publicUrl.replace(/\/$/, "");
-  // 空 = sidecar 按请求 origin 生成（与 Hub 托管 /web 一致）
+  // 空 = sidecar 按请求 origin 生成（与 Habitat 托管 /web 一致）
   return "";
 }
 
@@ -49,7 +49,7 @@ export type StartWebServerOptions = {
   port?: number;
   dist?: string;
   writePid?: boolean;
-  hubUrl?: string;
+  habitatUrl?: string;
 };
 
 export async function startWebServer(
@@ -61,7 +61,7 @@ export async function startWebServer(
   const bindPort = opts.port ?? port;
 
   const distDir = resolveWebDistDir(opts.dist);
-  const hubUrl = (opts.hubUrl ?? (await resolveDefaultHubUrlForWeb())).replace(/\/$/, "");
+  const habitatUrl = (opts.habitatUrl ?? (await resolveDefaultHubUrlForWeb())).replace(/\/$/, "");
 
   return startWebStaticServer(
     omitUndefined({
@@ -71,10 +71,10 @@ export async function startWebServer(
       portAttempts: bindPort === port ? 3 : 1,
       runtime: {
         appId: "chat",
-        ...(hubUrl
+        ...(habitatUrl
           ? {
-              hubUrl,
-              hubWsUrl: resolveHubRpcWsUrl(hubUrl),
+              habitatUrl,
+              habitatWsUrl: resolveHabitatRpcWsUrl(habitatUrl),
             }
           : {}),
       },

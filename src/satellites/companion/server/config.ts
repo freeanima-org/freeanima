@@ -187,7 +187,7 @@ export function hubUrlFromConfig(): string {
   const fromEnv = process.env.FREEANIMA_URL?.trim();
   if (fromEnv) return fromEnv.replace(/\/$/, "");
   const shell = loadShellClientConfig();
-  if (shell?.hubUrl?.trim()) return shell.hubUrl.trim().replace(/\/$/, "");
+  if (shell?.habitatUrl?.trim()) return shell.habitatUrl.trim().replace(/\/$/, "");
   return loadConfig().hub_url.replace(/\/$/, "");
 }
 

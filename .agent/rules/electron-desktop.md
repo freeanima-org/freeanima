@@ -37,15 +37,15 @@ Windows 安装包需在目标机 **冷启动** 验证一次（无开发用 node_
 
 - 覆盖安装前：`--quit-for-install` 由 `electron/main-entry.ts` **先于** 主逻辑加载（避免旧版 main 启动即崩时无法响应安装器）。
 - 删旧目录失败（20 次重试后仍有残留）时 **中止安装** 并提示手动删除；日志：`%TEMP%\FreeAnima-Desktop-install.log`。
-- 首次启动未配置 Hub API Token：打开 `/settings`（连接），companion SAP **延后连接**（有 token 后再 `reconnectCompanionSap`）。
+- 首次启动未配置 Habitat API Token：打开 `/settings`（连接），companion SAP **延后连接**（有 token 后再 `reconnectCompanionSap`）。
 - 主窗口 UI：默认本地 `vendor/shell-ui`（来自 `web/dist`）；调试用 `DESKTOP_SHELL_VITE_URL` 或 `DESKTOP_UI_MODE=remote`。
 
 ## 主进程 TLS（mkcert / 系统 CA）
 
-Node 默认信任库**不含** OS 证书。Hub `http.tls` + mkcert 时，主进程 `fetch` / WSS（`shell:settings:test`、companion）会证书校验失败，而渲染进程（Chromium）在系统已信任 rootCA 后可通。
+Node 默认信任库**不含** OS 证书。Habitat `http.tls` + mkcert 时，主进程 `fetch` / WSS（`shell:settings:test`、companion）会证书校验失败，而渲染进程（Chromium）在系统已信任 rootCA 后可通。
 
 - **启动最早**：`electron/main-entry.ts` 在加载 `main.ts` 前调用 `applyTrustSystemCaAtStartup()`（`trust-system-ca.ts`：`tls.getCACertificates('system'|'bundled')` → `setDefaultCACertificates`）。
-- 客户端仍须把 Hub 的 `rootCA.pem` 装进 **OS** 信任库（或 Hub 本机 `mkcert -install`）；见 [`docs/guide/remote-access.md`](../../docs/guide/remote-access.md)。
+- 客户端仍须把 Habitat 的 `rootCA.pem` 装进 **OS** 信任库（或 Habitat 本机 `mkcert -install`）；见 [`docs/guide/remote-access.md`](../../docs/guide/remote-access.md)。
 
 ## contextBridge 与 Hub fetch
 

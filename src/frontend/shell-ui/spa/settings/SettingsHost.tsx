@@ -7,7 +7,7 @@ import type {
 } from "@freeanima/frontend/shell-sdk/settings";
 import { listSettingsSectionsForPlatform } from "@freeanima/frontend/shell-sdk/settings";
 
-import { needsHubSetup } from "../setup/hub-setup.ts";
+import { needsHabitatSetup } from "../setup/habitat-setup.ts";
 import { SettingsSectionPanel } from "./SettingsSectionPanel.tsx";
 
 type Props = {
@@ -18,7 +18,7 @@ type Props = {
 
 const CATEGORY_LABELS: Record<SettingsCategory, string> = {
   client: "本机",
-  server: "Hub 服务",
+  server: "栖息地服务",
 };
 
 const CATEGORY_ORDER: SettingsCategory[] = ["client", "server"];
@@ -43,12 +43,13 @@ function resolveInitialSectionId(bindings: SettingsBinding[], platform: Settings
   const params = new URLSearchParams(window.location.search);
   const fromQuery = params.get("section")?.trim();
   const visible = listSettingsSectionsForPlatform(bindings, platform);
-  const normalizedQuery = fromQuery === "hub-runtime" ? "compression" : fromQuery;
+  const normalizedQuery =
+    fromQuery === "hub-runtime" ? "compression" : fromQuery === "hub" ? "habitat" : fromQuery;
   if (normalizedQuery && visible.some((b) => b.section.id === normalizedQuery)) {
     return normalizedQuery;
   }
-  if (needsHubSetup() && visible.some((b) => b.section.id === "hub")) {
-    return "hub";
+  if (needsHabitatSetup() && visible.some((b) => b.section.id === "habitat")) {
+    return "habitat";
   }
   return visible[0]?.section.id ?? "";
 }

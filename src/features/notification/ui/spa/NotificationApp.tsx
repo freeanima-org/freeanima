@@ -182,10 +182,10 @@ export function NotificationApp() {
           variant="ghost"
           size="sm"
           disabled={loading}
-          aria-label={m.console_common_refresh()}
+          aria-label={m.habitat_common_refresh()}
           onClick={() => void fetchList(offset)}
         >
-          {loading ? m.console_common_refreshing() : m.console_common_refresh()}
+          {loading ? m.habitat_common_refreshing() : m.habitat_common_refresh()}
         </Button>
       </div>
 

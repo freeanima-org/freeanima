@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { getSubjectKind } from "@freeanima/frontend/shell-sdk/subject-scope-store.ts";
 import {
-  useHubConnection,
+  useHabitatConnection,
   useNetworkOnline,
   useSubjectScope,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
@@ -10,7 +10,7 @@ import {
   subscribePomodoroSync,
 } from "@freeanima/frontend/shell-sdk/pomodoro-sync-local.ts";
 import { readPomodoroActiveState } from "@freeanima/frontend/shell-sdk/pomodoro-active.ts";
-import { whenSatelliteHubRpcReady } from "@freeanima/frontend/shell-sdk/hub-rpc-call";
+import { whenSatelliteHubRpcReady } from "@freeanima/frontend/shell-sdk/habitat-rpc-call";
 import {
   POMODORO_ACTIVE_CHANGED_EVENT,
   pomodoroActiveChangedEventSchema,
@@ -30,7 +30,7 @@ const POLL_MS = 1_000;
 export function PomodoroShellWatcher() {
   const { kind: subjectKind } = useSubjectScope();
   const networkOnline = useNetworkOnline();
-  const hubConnection = useHubConnection();
+  const habitatConnection = useHabitatConnection();
   const tickRef = useRef(0);
   const completingRef = useRef(false);
 
@@ -57,10 +57,10 @@ export function PomodoroShellWatcher() {
   }, [subjectKind]);
 
   useEffect(() => {
-    if (!networkOnline || hubConnection !== "connected") return;
+    if (!networkOnline || habitatConnection !== "connected") return;
     void pullPomodoroActive(subjectKind);
     flushPomodoroOutbox();
-  }, [networkOnline, hubConnection, subjectKind]);
+  }, [networkOnline, habitatConnection, subjectKind]);
 
   useEffect(() => {
     const onVisible = () => {
@@ -73,7 +73,7 @@ export function PomodoroShellWatcher() {
   }, [subjectKind]);
 
   useEffect(() => {
-    if (!networkOnline || hubConnection !== "connected") return;
+    if (!networkOnline || habitatConnection !== "connected") return;
     let cancelled = false;
     let off: (() => void) | undefined;
     void whenSatelliteHubRpcReady().then((rpc) => {
@@ -89,7 +89,7 @@ export function PomodoroShellWatcher() {
       cancelled = true;
       off?.();
     };
-  }, [networkOnline, hubConnection, subjectKind]);
+  }, [networkOnline, habitatConnection, subjectKind]);
 
   useEffect(() => {
     const id = window.setInterval(() => {

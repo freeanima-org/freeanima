@@ -1,5 +1,5 @@
 import type { SpeechUnsupportedReason } from "@freeanima/frontend/shell-sdk/speech/adapter-types";
-import { primeHubSpeechOutput } from "@freeanima/frontend/shell-sdk/speech/hub-adapter";
+import { primeHabitatSpeechOutput } from "@freeanima/frontend/shell-sdk/speech/habitat-adapter";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@freeanima/frontend/ui-kit";
 import { copyText } from "@freeanima/frontend/ui-kit/lib/copy-text.ts";
@@ -60,7 +60,7 @@ export function MessageActionBar({
         size="icon-sm"
         className={`size-7 text-xs ${copied ? "text-foreground" : "text-muted-foreground"}`}
         aria-label={
-          copied ? m.console_common_copied({ label: "" }).trim() : m.console_common_copy()
+          copied ? m.habitat_common_copied({ label: "" }).trim() : m.habitat_common_copy()
         }
         onClick={() => void handleCopy()}
       >
@@ -82,7 +82,7 @@ export function MessageActionBar({
             : undefined
         }
         onPointerDown={() => {
-          if (canSpeak) primeHubSpeechOutput();
+          if (canSpeak) primeHabitatSpeechOutput();
         }}
         onClick={onToggleSpeech}
       >
@@ -94,7 +94,7 @@ export function MessageActionBar({
           variant="ghost"
           size="icon-sm"
           className="text-muted-foreground size-7 text-xs"
-          aria-label={m.console_common_edit()}
+          aria-label={m.habitat_common_edit()}
           onClick={onEdit}
         >
           ✎

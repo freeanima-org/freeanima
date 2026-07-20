@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
+import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import type { SapInstanceStore } from "@freeanima/shared/sap-contract";
 import {
   buildShellApiFields,
@@ -8,9 +8,9 @@ import {
 } from "@freeanima/frontend/shell-sdk";
 import { readNativeBuildMetaFromDefine } from "@freeanima/frontend/shell-sdk/native-build-meta.read";
 
-type HubClientConfigPayload = {
-  hubUrl: string;
-  hubWsUrl: string;
+type HabitatClientConfigPayload = {
+  habitatUrl: string;
+  habitatWsUrl: string;
   remoteAuthToken: string;
 };
 
@@ -29,29 +29,32 @@ const windowRoleRaw = windowRoleArg?.slice("--companion-window=".length);
 const windowRole: CompanionWindowRole | null =
   windowRoleRaw === "settings" ? "settings" : windowRoleRaw === "overlay" ? "overlay" : null;
 
-function readArgvHubConfig(): { hubUrl: string; remoteAuthToken: string } {
-  const hubUrlArg = process.argv.find((v) => v.startsWith("--hub-url="));
-  const rawUrl = hubUrlArg?.slice("--hub-url=".length)?.trim() ?? "";
+function readArgvHubConfig(): { habitatUrl: string; remoteAuthToken: string } {
+  const habitatUrlArg = process.argv.find((v) => v.startsWith("--hub-url="));
+  const rawUrl = habitatUrlArg?.slice("--hub-url=".length)?.trim() ?? "";
   const remoteAuthTokenArg = process.argv.find((v) => v.startsWith("--remote-auth-token="));
   const remoteAuthToken = remoteAuthTokenArg?.slice("--remote-auth-token=".length) ?? "";
   return {
-    hubUrl: rawUrl || DEFAULT_HUB_URL,
+    habitatUrl: rawUrl || DEFAULT_HUB_URL,
     remoteAuthToken,
   };
 }
 
-/** Electron 仅过桥可序列化字段；勿暴露 hubFetch（Response 经 contextBridge 会丢方法）。 */
-type PreloadHubFields = Pick<SatelliteShellApi, "hubUrl" | "hubWsUrl" | "remoteAuth">;
+/** Electron 仅过桥可序列化字段；勿暴露 habitatFetch（Response 经 contextBridge 会丢方法）。 */
+type PreloadHabitatFields = Pick<SatelliteShellApi, "habitatUrl" | "habitatWsUrl" | "remoteAuth">;
 
-function resolvePreloadHubConfig(cfg: HubClientConfigPayload | null): PreloadHubFields {
+function resolvePreloadHabitatConfig(cfg: HabitatClientConfigPayload | null): PreloadHabitatFields {
   const fallback = readArgvHubConfig();
-  const hubUrl = (cfg?.hubUrl?.trim() || fallback.hubUrl || DEFAULT_HUB_URL).replace(/\/$/, "");
-  const hubWsUrl = cfg?.hubWsUrl?.trim() || resolveHubRpcWsUrl(hubUrl);
+  const habitatUrl = (cfg?.habitatUrl?.trim() || fallback.habitatUrl || DEFAULT_HUB_URL).replace(
+    /\/$/,
+    "",
+  );
+  const habitatWsUrl = cfg?.habitatWsUrl?.trim() || resolveHabitatRpcWsUrl(habitatUrl);
   const remoteAuthToken = cfg?.remoteAuthToken?.trim() || fallback.remoteAuthToken || "";
-  const fields = buildShellApiFields(hubUrl, hubWsUrl, remoteAuthToken);
+  const fields = buildShellApiFields(habitatUrl, habitatWsUrl, remoteAuthToken);
   return {
-    hubUrl: fields.hubUrl,
-    hubWsUrl: fields.hubWsUrl,
+    habitatUrl: fields.habitatUrl,
+    habitatWsUrl: fields.habitatWsUrl,
     ...(fields.remoteAuth !== undefined ? { remoteAuth: fields.remoteAuth } : {}),
   };
 }
@@ -67,7 +70,7 @@ function createFileInstanceStore(appId: string): SapInstanceStore {
   };
 }
 
-function createSatelliteShell(hubFields: PreloadHubFields): SatelliteShellApi {
+function createSatelliteShell(hubFields: PreloadHabitatFields): SatelliteShellApi {
   return {
     isElectron: true,
     primaryInput: "pointer",
@@ -76,7 +79,7 @@ function createSatelliteShell(hubFields: PreloadHubFields): SatelliteShellApi {
     windowRole,
     apiOrigin,
     createFileInstanceStore,
-    openHubSettings: () => void ipcRenderer.invoke("shell:open-settings"),
+    openHabitatSettings: () => void ipcRenderer.invoke("shell:open-settings"),
     setClickThrough: (ignore) => ipcRenderer.invoke("shell:set-clickthrough", ignore),
     setPointerActive: (active) => ipcRenderer.invoke("shell:set-pointer-active", active),
     moveWindow: (x, y) => ipcRenderer.invoke("shell:move-window", x, y),
@@ -156,42 +159,44 @@ function createSatelliteShell(hubFields: PreloadHubFields): SatelliteShellApi {
   };
 }
 
-function applyHubFields(shell: SatelliteShellApi, hubFields: PreloadHubFields): void {
-  shell.hubUrl = hubFields.hubUrl;
-  shell.hubWsUrl = hubFields.hubWsUrl;
+function applyHabitatFields(shell: SatelliteShellApi, hubFields: PreloadHabitatFields): void {
+  shell.habitatUrl = hubFields.habitatUrl;
+  shell.habitatWsUrl = hubFields.habitatWsUrl;
   if (hubFields.remoteAuth !== undefined) {
     shell.remoteAuth = hubFields.remoteAuth;
   } else {
     delete shell.remoteAuth;
   }
-  // 勿经 contextBridge 暴露 hubFetch：返回的 Response 会被克隆并丢失 .text()
-  delete shell.hubFetch;
+  // 勿经 contextBridge 暴露 habitatFetch：返回的 Response 会被克隆并丢失 .text()
+  delete shell.habitatFetch;
 }
 
-async function refreshHubFields(shell: SatelliteShellApi): Promise<void> {
-  const next = await loadHubClientConfig();
-  applyHubFields(shell, resolvePreloadHubConfig(next));
+async function refreshHabitatFields(shell: SatelliteShellApi): Promise<void> {
+  const next = await loadHabitatClientConfig();
+  applyHabitatFields(shell, resolvePreloadHabitatConfig(next));
 }
 
-async function loadHubClientConfig(): Promise<HubClientConfigPayload | null> {
-  return ipcRenderer.invoke("shell:get-client-config") as Promise<HubClientConfigPayload | null>;
+async function loadHabitatClientConfig(): Promise<HabitatClientConfigPayload | null> {
+  return ipcRenderer.invoke(
+    "shell:get-client-config",
+  ) as Promise<HabitatClientConfigPayload | null>;
 }
 
-function loadHubClientConfigSync(): HubClientConfigPayload | null {
-  return ipcRenderer.sendSync("shell:get-client-config-sync") as HubClientConfigPayload | null;
+function loadHabitatClientConfigSync(): HabitatClientConfigPayload | null {
+  return ipcRenderer.sendSync("shell:get-client-config-sync") as HabitatClientConfigPayload | null;
 }
 
 function bootstrapPreload(): void {
-  const cfg = loadHubClientConfigSync();
-  const shell = createSatelliteShell(resolvePreloadHubConfig(cfg));
+  const cfg = loadHabitatClientConfigSync();
+  const shell = createSatelliteShell(resolvePreloadHabitatConfig(cfg));
 
   shell.emitConfigChanged = async () => {
-    await refreshHubFields(shell);
+    await refreshHabitatFields(shell);
     await ipcRenderer.invoke("shell:emit-config-changed");
   };
 
   ipcRenderer.on("shell:config-changed", () => {
-    void refreshHubFields(shell);
+    void refreshHabitatFields(shell);
   });
 
   contextBridge.exposeInMainWorld("satelliteShell", shell);

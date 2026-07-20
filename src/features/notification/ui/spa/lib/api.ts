@@ -1,6 +1,6 @@
 import {
   readOfflineCache,
-  resolveHubCacheScope,
+  resolveHabitatCacheScope,
   writeOfflineCache,
 } from "@freeanima/frontend/shell-sdk/offline-cache";
 import type {
@@ -10,12 +10,12 @@ import type {
   NotificationRecipientsOutput,
 } from "@freeanima/shared/sap-contract";
 
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 export type NotificationRow = NotificationListOutput["items"][number];
 
 function hub() {
-  return getTypedSatelliteHubClient();
+  return getTypedSatelliteHabitatClient();
 }
 
 function cacheKey(input: NotificationListInput): string {
@@ -25,7 +25,7 @@ function cacheKey(input: NotificationListInput): string {
 export async function listNotifications(
   input: NotificationListInput,
 ): Promise<NotificationListOutput> {
-  const scope = resolveHubCacheScope();
+  const scope = resolveHabitatCacheScope();
   const key = cacheKey(input);
   const cached = await readOfflineCache<NotificationListOutput>(scope, "notifications", key);
   try {

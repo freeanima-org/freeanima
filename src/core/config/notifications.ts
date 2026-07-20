@@ -28,7 +28,7 @@ export function resolveNotificationRecipients(config: AnimaConfig): ResolvedNoti
   const { user_subject_id, agent_subject_id } = resolveWorldSubjectIds(config);
   if (user_subject_id == null || agent_subject_id == null) {
     throw new Error(
-      "worlds subject ids 未解析；请等待 Hub 启动完成 ensureWorldSubjects，或配置 worlds.user_subject_id / agent_subject_id",
+      "worlds subject ids 未解析；请等待 Habitat 启动完成 ensureWorldSubjects，或配置 worlds.user_subject_id / agent_subject_id",
     );
   }
   return {

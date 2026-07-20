@@ -1,4 +1,7 @@
-import { subscribeHubRpcConnectionState, whenHubRpcReady } from "@freeanima/shared/hub-rpc";
+import {
+  subscribeHabitatRpcConnectionState,
+  whenHabitatRpcReady,
+} from "@freeanima/shared/habitat-rpc";
 import { z } from "zod";
 
 import { getUserVaultSession } from "./user-vault-session.ts";
@@ -18,7 +21,7 @@ async function attachResolveSecretUserHandler(): Promise<void> {
   detachRequestHandler?.();
   detachRequestHandler = null;
 
-  const rpc = await whenHubRpcReady();
+  const rpc = await whenHabitatRpcReady();
   detachRequestHandler = rpc.onRequest("vault.resolve_secret_user", async (payload) => {
     const input = resolveSecretUserInputSchema.parse(payload);
     const session = getUserVaultSession();
@@ -38,7 +41,7 @@ async function attachResolveSecretUserHandler(): Promise<void> {
   });
 }
 
-/** 注册 Hub → Shell 的 User 库解密 RPC（vault.resolve_secret_user） */
+/** 注册 Habitat → Shell 的 User 库解密 RPC（vault.resolve_secret_user） */
 export function registerVaultRpcHandlers(): () => void {
   if (registered) {
     return () => {
@@ -49,7 +52,7 @@ export function registerVaultRpcHandlers(): () => void {
   }
   registered = true;
 
-  const offConnection = subscribeHubRpcConnectionState((state) => {
+  const offConnection = subscribeHabitatRpcConnectionState((state) => {
     if (state === "connected") {
       void attachResolveSecretUserHandler().catch(() => undefined);
     }

@@ -218,7 +218,7 @@ export async function buildStatus(
     chatModel = getProfileHopModel(cfg, PROFILE_CHAT);
     apiBase = getDefaultProviderBaseUrl(cfg);
   } catch {
-    /* LLM 可未配置：Hub 仍可启动，设置页写入后需重启 */
+    /* LLM 可未配置：Habitat 仍可启动，设置页写入后需重启 */
   }
 
   const tokenizerStatus: ServiceSnapshot["tokenizer"] = {};

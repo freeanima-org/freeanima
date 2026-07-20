@@ -3,7 +3,7 @@ import { bigint, index, pgTable, text, uniqueIndex } from "drizzle-orm/pg-core";
 import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 import { entities } from "./entity/entity.ts";
 
-/** Hub Service API tokens — bound to subject (user/agent) entity id */
+/** Habitat Service API tokens — bound to subject (user/agent) entity id */
 export const serviceApiTokens = pgTable(
   "service_api_tokens",
   {

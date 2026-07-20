@@ -1,8 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
 
-const realGate = await import("@freeanima/frontend/shell-sdk/hub-fetch-gate");
+const realGate = await import("@freeanima/frontend/shell-sdk/habitat-fetch-gate");
 const gateOriginal = {
-  isHubFetchAvailable: realGate.isHubFetchAvailable,
+  isHabitatFetchAvailable: realGate.isHabitatFetchAvailable,
   isNetworkOnline: realGate.isNetworkOnline,
   isHubConnected: realGate.isHubConnected,
   shellWritesDisabledFromState: realGate.shellWritesDisabledFromState,
@@ -26,17 +26,17 @@ const hubCall = mock(async (method: string, _payload: unknown) => {
   throw new Error(`unexpected ${method}`);
 });
 
-mock.module("@freeanima/frontend/shell-sdk/hub-fetch-gate", () => ({
+mock.module("@freeanima/frontend/shell-sdk/habitat-fetch-gate", () => ({
   ...gateOriginal,
-  isHubFetchAvailable: () => true,
+  isHabitatFetchAvailable: () => true,
 }));
 
-mock.module("@freeanima/platform/hub/client.ts", () => ({
-  getTypedSatelliteHubClient: () => ({ call: hubCall }),
+mock.module("@freeanima/platform/habitat/client.ts", () => ({
+  getTypedSatelliteHabitatClient: () => ({ call: hubCall }),
 }));
 
 afterAll(() => {
-  mock.module("@freeanima/frontend/shell-sdk/hub-fetch-gate", () => gateOriginal);
+  mock.module("@freeanima/frontend/shell-sdk/habitat-fetch-gate", () => gateOriginal);
 });
 
 const { listOutboxOps, resolveOutboxScope, setOfflineOutboxBackendForTests } =

@@ -2,7 +2,7 @@ import { readOfflineCache, writeOfflineCache } from "@freeanima/frontend/shell-s
 
 import type { TaskItemRow, TaskListRow } from "./api.ts";
 
-export { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
+export { resolveHabitatCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
 
 export async function readCachedTaskLists(scope: string): Promise<TaskListRow[] | null> {
   const raw = await readOfflineCache<TaskListRow[]>(scope, "tasks", "lists");

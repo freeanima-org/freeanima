@@ -4,7 +4,7 @@ export {
   serializeSapEnvelope,
   hubRpcConnectPayloadSchema,
   hubRpcConnectedPayloadSchema,
-  HUB_RPC_VERSION,
+  HABITAT_RPC_VERSION,
 } from "./protocol.ts";
 export type { SapEnvelope, SapError } from "./protocol.ts";
 export { randomUuid } from "@freeanima/kernel/random-uuid.ts";
@@ -465,11 +465,11 @@ export type {
 } from "./router.ts";
 
 export {
-  resolveHubHttpUrl,
+  resolveHabitatHttpUrl,
   resolveHubWsUrl,
-  resolveHubRpcWsUrl,
-  hubHttpFromWsUrl,
-  hubHttpFromRpcWsUrl,
+  resolveHabitatRpcWsUrl,
+  habitatHttpFromWsUrl,
+  habitatHttpFromRpcWsUrl,
   resolveRelayWsUrl,
 } from "./urls.ts";
 

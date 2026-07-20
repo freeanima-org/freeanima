@@ -63,13 +63,13 @@ export async function fetchWebUiConfig(): Promise<WebUiConfigJson | null> {
 }
 
 export type WebUiBootstrapConfig = {
-  hubUrl: string;
+  habitatUrl: string;
   /** 空 hub_url 或与页面 origin 相同时 true：用页面 origin，忽略旧 localStorage hub */
   sameOrigin: boolean;
   remoteAuthToken?: string;
 };
 
-/** Web UI 默认 Hub = 当前页面 origin（生产 Hub 托管与 Vite 开发统一） */
+/** Web UI 默认 Habitat = 当前页面 origin（生产 Habitat 托管与 Vite 开发统一） */
 export function applyWebUiConfig(cfg: WebUiConfigJson | null): WebUiBootstrapConfig {
   const pageOrigin = typeof window !== "undefined" ? window.location.origin.replace(/\/$/, "") : "";
   const compileFallback = (
@@ -90,14 +90,14 @@ export function applyWebUiConfig(cfg: WebUiConfigJson | null): WebUiBootstrapCon
 
   if (!runtimeHub || (pageOrigin && runtimeHub === pageOrigin)) {
     return {
-      hubUrl: pageOrigin || runtimeHub || compileFallback,
+      habitatUrl: pageOrigin || runtimeHub || compileFallback,
       sameOrigin: true,
       ...(remoteAuthToken ? { remoteAuthToken } : {}),
     };
   }
 
   return {
-    hubUrl: runtimeHub,
+    habitatUrl: runtimeHub,
     sameOrigin: false,
     ...(remoteAuthToken ? { remoteAuthToken } : {}),
   };

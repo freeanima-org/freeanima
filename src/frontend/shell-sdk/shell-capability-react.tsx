@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { hasEnterToSendCapability, hasFinePointerCapability } from "./shell-capability.ts";
-import { canOpenHubSettings, getShellKind, type ShellRuntimeKind } from "./shell-runtime.ts";
+import { canOpenHabitatSettings, getShellKind, type ShellRuntimeKind } from "./shell-runtime.ts";
 
 /** 精确指针能力（右键菜单）；与视口布局正交 */
 export function useFinePointerCapability(): boolean {
@@ -72,10 +72,10 @@ export function useShellKind(): ShellRuntimeKind {
 
 /** 是否展示「打开 连接设置」 */
 export function useOpenHubSettingsCapability(): boolean {
-  const [open, setOpen] = useState(() => canOpenHubSettings());
+  const [open, setOpen] = useState(() => canOpenHabitatSettings());
 
   useEffect(() => {
-    setOpen(canOpenHubSettings());
+    setOpen(canOpenHabitatSettings());
   }, []);
 
   return open;

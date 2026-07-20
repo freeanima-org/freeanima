@@ -5,7 +5,7 @@ import {
   launchPomodoroForTask,
 } from "@freeanima/frontend/shell-sdk";
 import type { TaskModuleSelection } from "@freeanima/frontend/shell-sdk";
-import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
+import { isHabitatFetchAvailable } from "@freeanima/frontend/shell-sdk/habitat-fetch-gate";
 import { subscribeIdMappings } from "@freeanima/frontend/shell-sdk/offline-id-map";
 import { isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
 import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
@@ -80,7 +80,7 @@ import {
 import {
   readCachedTaskItems,
   readCachedTaskLists,
-  resolveHubCacheScope,
+  resolveHabitatCacheScope,
   writeCachedTaskItems,
   writeCachedTaskLists,
 } from "./lib/offline-cache.ts";
@@ -310,7 +310,7 @@ export function TaskApp() {
 
   const loadItemsByFilters = useCallback(async (filters: SmartListRow["filters"]) => {
     const generation = ++itemsLoadGenRef.current;
-    if (!isHubFetchAvailable()) {
+    if (!isHabitatFetchAvailable()) {
       if (generation !== itemsLoadGenRef.current) return;
       setItems([]);
       return;
@@ -328,12 +328,12 @@ export function TaskApp() {
 
   const loadItems = useCallback(async (listId: number) => {
     const generation = ++itemsLoadGenRef.current;
-    const scope = resolveHubCacheScope();
+    const scope = resolveHabitatCacheScope();
     const cached = await readCachedTaskItems(scope, listId);
     if (generation !== itemsLoadGenRef.current) return;
     if (cached) setItems(normalizeTaskItemRows(cached));
     else setItems([]);
-    if (isTempId(listId) || !isHubFetchAvailable()) {
+    if (isTempId(listId) || !isHabitatFetchAvailable()) {
       return;
     }
     try {
@@ -349,11 +349,11 @@ export function TaskApp() {
 
   const loadLists = useCallback(async (): Promise<TaskListRow[]> => {
     const generation = ++listsLoadGenRef.current;
-    const scope = resolveHubCacheScope();
+    const scope = resolveHabitatCacheScope();
     const cached = await readCachedTaskLists(scope);
     if (generation !== listsLoadGenRef.current) return cached ?? [];
     if (cached?.length) setLists(cached);
-    if (!isHubFetchAvailable()) {
+    if (!isHabitatFetchAvailable()) {
       return cached ?? [];
     }
     try {
@@ -410,7 +410,7 @@ export function TaskApp() {
 
   const refresh = useCallback(async () => {
     setError("");
-    const scope = resolveHubCacheScope();
+    const scope = resolveHabitatCacheScope();
     const cached = await readCachedTaskLists(scope);
     if (cached?.length) {
       setLists(cached);
@@ -1340,10 +1340,10 @@ export function TaskApp() {
                   size="sm"
                   className="h-7 shrink-0 px-2"
                   disabled={refreshing || loading}
-                  aria-label={m.console_common_refresh()}
+                  aria-label={m.habitat_common_refresh()}
                   onClick={() => void handleManualRefresh()}
                 >
-                  {refreshing ? <Spinner className="size-3.5" /> : m.console_common_refresh()}
+                  {refreshing ? <Spinner className="size-3.5" /> : m.habitat_common_refresh()}
                 </Button>
                 {loading || searching ? <Spinner className="size-4" /> : null}
               </>

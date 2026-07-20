@@ -11,7 +11,7 @@ export type ParsedSapPlatform = {
   platform: string;
 };
 
-/** Hub-assigned instance ids: 3 lowercase alphanumeric chars */
+/** Habitat-assigned instance ids: 3 lowercase alphanumeric chars */
 export const SAP_INSTANCE_ID_PATTERN = /^[a-z0-9]{3}$/;
 
 const INSTANCE_NORM_RE = /^([a-z0-9]{3,64})_(.+)$/;

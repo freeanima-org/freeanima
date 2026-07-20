@@ -25,7 +25,7 @@ export function registerServiceCommand(program: Command): void {
       `
 standalone install only (not available in source-tree anima CLI).
 
-Monorepo / worktree Hub: bun run dev:hub
+Monorepo / worktree Habitat: bun run dev:hub
 
 systemd (default):
   First start writes ~/.config/systemd/user/anima.service

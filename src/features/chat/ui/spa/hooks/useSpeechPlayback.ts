@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { fetchHubConfig } from "@freeanima/frontend/shell-sdk/hub-config-api";
+import { fetchHabitatConfig } from "@freeanima/frontend/shell-sdk/habitat-config-api";
 import { createSpeechAdapter } from "@freeanima/frontend/shell-sdk/speech/create-adapter";
 import {
   DEFAULT_SPEECH_PLAYBACK_CONFIG,
@@ -7,7 +7,7 @@ import {
   type SpeechPlaybackConfig,
 } from "@freeanima/frontend/shell-sdk/speech/types";
 import { getWebSpeechUnsupportedReason } from "@freeanima/frontend/shell-sdk/speech/web-speech-support";
-import { consumeLastHubSpeechError } from "@freeanima/frontend/shell-sdk/speech/hub-adapter";
+import { consumeLastHubSpeechError } from "@freeanima/frontend/shell-sdk/speech/habitat-adapter";
 import { getAppLocale, m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import { createSpeechPlaybackController } from "@freeanima/features/chat/ui/spa/lib/speech/controller.ts";
 import type { SpeechPlaybackAdapter } from "@freeanima/features/chat/ui/spa/lib/speech/types.ts";
@@ -46,12 +46,12 @@ export function useSpeechPlayback(adapter?: SpeechPlaybackAdapter) {
     let cancelled = false;
     void (async () => {
       try {
-        const data = await fetchHubConfig();
+        const data = await fetchHabitatConfig();
         if (!cancelled) {
           setSpeechConfig(parseSpeechConfigFromHub(data.tts));
         }
       } catch {
-        /* 离线或 Hub 未配置时沿用默认 */
+        /* 离线或 Habitat 未配置时沿用默认 */
       }
     })();
     return () => {

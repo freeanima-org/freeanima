@@ -30,7 +30,7 @@ async function ensureDbFromBootstrap(): Promise<void> {
   await runMigrations(getDb());
 }
 
-/** Hub 进程内或 CLI 独立写入运行时段 */
+/** Habitat 进程内或 CLI 独立写入运行时段 */
 export async function patchRuntimeConfigSection(
   section: string,
   patch: Record<string, unknown>,
@@ -46,7 +46,7 @@ export async function patchRuntimeConfigSection(
       return;
     }
   } catch {
-    /* Hub 未启动：走 PG 直连 */
+    /* Habitat 未启动：走 PG 直连 */
   }
 
   await ensureDbFromBootstrap();
@@ -68,7 +68,7 @@ export async function replaceRuntimeConfigSection(
       return;
     }
   } catch {
-    /* Hub 未启动：走 PG 直连 */
+    /* Habitat 未启动：走 PG 直连 */
   }
 
   await ensureDbFromBootstrap();

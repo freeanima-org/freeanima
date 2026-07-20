@@ -12,7 +12,7 @@ import { writeStatusLine } from "../output/status.ts";
 export function registerTokenCommand(program: Command): void {
   const tokenCmd = program
     .command("token")
-    .description("管理 Hub Service API Token（直连 PostgreSQL，不经 HTTP）");
+    .description("管理 Habitat Service API Token（直连 PostgreSQL，不经 HTTP）");
 
   tokenCmd
     .command("create")

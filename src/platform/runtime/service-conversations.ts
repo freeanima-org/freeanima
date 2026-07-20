@@ -153,7 +153,7 @@ export async function getMessages(
   page = await expandLeadingToolBoundary(deps, conversationId, page);
 
   if (opts?.offset == null) {
-    // 尾页 / before_pos：扩窗后按窗口长度回写 offset（Console 显式 offset 保持原值）
+    // 尾页 / before_pos：扩窗后按窗口长度回写 offset（Habitat 显式 offset 保持原值）
     offset = Math.max(0, total - page.length);
   }
 

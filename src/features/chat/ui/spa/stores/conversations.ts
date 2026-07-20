@@ -18,11 +18,11 @@ import {
 import {
   readCachedConversations,
   readCachedMessages,
-  resolveHubCacheScope,
+  resolveHabitatCacheScope,
   writeCachedConversations,
   writeCachedMessages,
 } from "@freeanima/features/chat/ui/spa/lib/offline-cache.ts";
-import { isHubFetchAvailable } from "@freeanima/frontend/shell-sdk/hub-fetch-gate";
+import { isHabitatFetchAvailable } from "@freeanima/frontend/shell-sdk/habitat-fetch-gate";
 import { getConversationTail } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import { sortConversationsByUpdatedAt } from "@freeanima/features/chat/ui/spa/lib/sort-conversations.ts";
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
@@ -132,13 +132,13 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
   },
 
   async fetchConversations() {
-    const scope = resolveHubCacheScope();
+    const scope = resolveHabitatCacheScope();
     const includeArchived = get().showArchived;
     const cached = await readCachedConversations(scope, includeArchived);
     if (cached?.length) {
       set({ conversations: sortConversationsByUpdatedAt(cached) });
     }
-    if (!isHubFetchAvailable()) {
+    if (!isHabitatFetchAvailable()) {
       return cached ?? [];
     }
     try {
@@ -166,12 +166,12 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       fromPos: null,
       loadingOlder: false,
     });
-    const scope = resolveHubCacheScope();
+    const scope = resolveHabitatCacheScope();
     const cached = await readCachedMessages(scope, id);
     if (cached) {
       set({ display: cached });
     }
-    if (!isHubFetchAvailable()) {
+    if (!isHabitatFetchAvailable()) {
       set({ loading: false });
       return;
     }
@@ -275,7 +275,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
   },
 
   async refreshMessages(conversationId, baselineCount) {
-    const scope = resolveHubCacheScope();
+    const scope = resolveHabitatCacheScope();
     try {
       const resp = await getStoredMessages(conversationId, { limit: CHAT_MESSAGES_PAGE_SIZE });
       const page = applyMessagesPage(resp);
@@ -294,7 +294,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
 
   async reloadConversationIfCurrent(conversationId) {
     if (get().currentId !== conversationId) return;
-    const scope = resolveHubCacheScope();
+    const scope = resolveHabitatCacheScope();
     try {
       const resp = await getStoredMessages(conversationId, { limit: CHAT_MESSAGES_PAGE_SIZE });
       const page = applyMessagesPage(resp);
@@ -311,7 +311,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
     if (!currentId || !hasMoreBefore || fromPos == null || loadingOlder || loading) {
       return false;
     }
-    if (!isHubFetchAvailable()) return false;
+    if (!isHabitatFetchAvailable()) return false;
     set({ loadingOlder: true });
     try {
       const resp = await getStoredMessages(currentId, {
@@ -331,7 +331,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
         hasMoreBefore: nextHasMore,
         loadingOlder: false,
       });
-      const scope = resolveHubCacheScope();
+      const scope = resolveHabitatCacheScope();
       void writeCachedMessages(scope, currentId, get().display);
       return older.length > 0;
     } catch (e) {

@@ -2,15 +2,15 @@ import { describe, expect, test } from "bun:test";
 
 import {
   createBearerFetch,
-  isLoopbackHubUrl,
+  isLoopbackHabitatUrl,
   resolveConnectAuthToken,
   shouldAttachRemoteAuth,
 } from "./remote-auth.ts";
 
 describe("remote-auth helpers", () => {
-  test("isLoopbackHubUrl", () => {
-    expect(isLoopbackHubUrl("http://127.0.0.1:2658")).toBe(true);
-    expect(isLoopbackHubUrl("https://anima.example.com")).toBe(false);
+  test("isLoopbackHabitatUrl", () => {
+    expect(isLoopbackHabitatUrl("http://127.0.0.1:2658")).toBe(true);
+    expect(isLoopbackHabitatUrl("https://anima.example.com")).toBe(false);
   });
 
   test("shouldAttachRemoteAuth when token configured", () => {
@@ -33,8 +33,8 @@ describe("remote-auth helpers", () => {
       return new Response("ok", { status: 200 });
     }) as typeof fetch;
     try {
-      const hubFetch = createBearerFetch("secret-token-min-16", "http://127.0.0.1:2658");
-      await hubFetch("http://127.0.0.1:2658/hub/rpc/v1/health/probe");
+      const habitatFetch = createBearerFetch("secret-token-min-16", "http://127.0.0.1:2658");
+      await habitatFetch("http://127.0.0.1:2658/rpc/v1/health/probe");
       expect(seenAuth).toBe("Bearer secret-token-min-16");
     } finally {
       globalThis.fetch = originalFetch;
@@ -53,8 +53,8 @@ describe("remote-auth helpers", () => {
       return new Response("ok", { status: 200 });
     }) as typeof fetch;
     try {
-      const hubFetch = createBearerFetch("secret-token-min-16", "https://hub.example.com");
-      await hubFetch(new Request("https://hub.example.com/api/status", { method: "GET" }));
+      const habitatFetch = createBearerFetch("secret-token-min-16", "https://hub.example.com");
+      await habitatFetch(new Request("https://hub.example.com/api/status", { method: "GET" }));
       expect(seenAuth).toBe("Bearer secret-token-min-16");
       expect(seenMethod).toBe("GET");
     } finally {
@@ -64,12 +64,16 @@ describe("remote-auth helpers", () => {
 
   test("createBearerFetch 可注入底层 fetch（绕过 CapacitorHttp patch）", async () => {
     let calledCustom = false;
-    const customFetch: import("./remote-auth.ts").HubFetch = async () => {
+    const customFetch: import("./remote-auth.ts").HabitatFetch = async () => {
       calledCustom = true;
       return new Response("ok", { status: 200 });
     };
-    const hubFetch = createBearerFetch("secret-token-min-16", "http://127.0.0.1:2658", customFetch);
-    await hubFetch("http://127.0.0.1:2658/hub/rpc/v1/tts/synthesize", { method: "POST" });
+    const habitatFetch = createBearerFetch(
+      "secret-token-min-16",
+      "http://127.0.0.1:2658",
+      customFetch,
+    );
+    await habitatFetch("http://127.0.0.1:2658/rpc/v1/tts/synthesize", { method: "POST" });
     expect(calledCustom).toBe(true);
   });
 });

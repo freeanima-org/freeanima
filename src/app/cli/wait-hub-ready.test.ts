@@ -8,7 +8,7 @@ describe("waitForHubReady", () => {
     globalThis.fetch = origFetch;
   });
 
-  it("returns true when /hub/rpc/v1/health/probe status is ok", async () => {
+  it("returns true when /rpc/v1/health/probe status is ok", async () => {
     globalThis.fetch = (async () =>
       new Response(JSON.stringify({ status: "ok" }), {
         status: 200,

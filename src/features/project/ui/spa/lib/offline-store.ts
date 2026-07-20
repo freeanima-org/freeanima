@@ -24,7 +24,7 @@ import {
 import { preferOnlineWrite } from "@freeanima/frontend/shell-sdk/prefer-online-write";
 import { formatCstIso } from "@freeanima/core/util/time";
 import { omitUndefined } from "@freeanima/core/util";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
 import { randomUuid } from "@freeanima/shared/sap-contract";
 
 import type { ProjectFolderRow, ProjectRow, TaskItemRow } from "./api.ts";
@@ -164,10 +164,10 @@ function scheduleFlush(scope: string): void {
 }
 
 function hub() {
-  return getTypedSatelliteHubClient();
+  return getTypedSatelliteHabitatClient();
 }
 
-/** temp 且尚无 id-map 时 Hub 不认识该实体，只能走 outbox。 */
+/** temp 且尚无 id-map 时栖息地不认识该实体，只能走 outbox。 */
 async function unresolvedTempId(scope: string, id: number): Promise<boolean> {
   if (!isTempId(id)) return false;
   return (await getIdMapping(scope, MODULE_ID, id)) == null;

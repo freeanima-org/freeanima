@@ -47,10 +47,10 @@ export const PATHS = {
   get cjkUserDict() {
     return homePath("cjk", "user.dict");
   },
-  get consoleBuildDir() {
+  get habitatBuildDir() {
     return homePath("runtime", "console-build");
   },
-  get consoleDevBuildDir() {
+  get habitatDevBuildDir() {
     return homePath("runtime", "console-dev-build");
   },
   get satellitesRuntimeDir() {

@@ -9,7 +9,7 @@ mock.module("../config.ts", () => ({
 const { startSapTransport } = await import("./hub.ts");
 
 describe("companion startSapTransport", () => {
-  test("无 Hub API Token 时不启动 SAP（不抛错）", () => {
+  test("无 Habitat API Token 时不启动 SAP（不抛错）", () => {
     remoteAuthTokenFromShell.mockReturnValue(undefined);
     expect(() => startSapTransport("http://127.0.0.1:2658", "http://127.0.0.1:4176")).not.toThrow();
   });

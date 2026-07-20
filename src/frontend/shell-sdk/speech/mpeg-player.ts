@@ -184,7 +184,7 @@ export async function readStreamToArrayBuffer(
   }
 
   if (total === 0) {
-    throw new Error("Hub 未返回音频数据");
+    throw new Error("栖息地未返回音频数据");
   }
 
   const merged = new Uint8Array(total);
@@ -363,7 +363,7 @@ async function playMpegViaMse(
         }
 
         if (totalBytes === 0) {
-          reject(new Error("Hub 未返回音频数据"));
+          reject(new Error("栖息地未返回音频数据"));
           return;
         }
 

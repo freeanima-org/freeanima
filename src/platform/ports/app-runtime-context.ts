@@ -18,7 +18,7 @@ export type AppRuntimeContext = {
   port: number;
 } & AppRuntimePort;
 
-/** Console SSR bundle 与主进程共享；仅限 connector / composition 入口 */
+/** Habitat SSR bundle 与主进程共享；仅限 connector / composition 入口 */
 const GLOBAL_CTX_KEY = Symbol.for("freeanima.appRuntime");
 
 let ctx: AppRuntimeContext | null = null;

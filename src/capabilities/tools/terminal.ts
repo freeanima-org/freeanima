@@ -274,7 +274,7 @@ export function registerTerminalTools(toolSets: ToolSetRegistry): void {
           name: "terminal_run",
           description:
             "Run a command in a subprocess and return output. Default shell=false (argv spawn, no pipes). " +
-            "Optional secrets[] injects vault fields into this subprocess env only (not Hub process.env); " +
+            "Optional secrets[] injects vault fields into this subprocess env only (not Habitat process.env); " +
             "use argv form e.g. printenv GH_TOKEN or gh … — do not rely on echo $VAR unless shell=true. " +
             "Pass shell=true only when pipes/redirection are needed. Catastrophic targets (rm -rf /, ~, $HOME, system roots) are always blocked.",
           parameters: {

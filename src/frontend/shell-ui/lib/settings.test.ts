@@ -7,9 +7,9 @@ import type { SettingsBinding } from "./settings.ts";
 describe("defineSettingsForm", () => {
   test("accepts matching keys", () => {
     const fields = defineSettingsForm({
-      zodSchema: z.object({ hubUrl: z.string(), remoteAuthToken: z.string() }),
+      zodSchema: z.object({ habitatUrl: z.string(), remoteAuthToken: z.string() }),
       items: [
-        { key: "hubUrl", type: "text", label: "Hub" },
+        { key: "habitatUrl", type: "text", label: "Habitat" },
         { key: "remoteAuthToken", type: "password", label: "Token" },
       ],
     });
@@ -19,7 +19,7 @@ describe("defineSettingsForm", () => {
   test("rejects orphan field keys", () => {
     expect(() =>
       defineSettingsForm({
-        zodSchema: z.object({ hubUrl: z.string() }),
+        zodSchema: z.object({ habitatUrl: z.string() }),
         items: [{ key: "missing", type: "text", label: "X" }],
       }),
     ).toThrow(/不在 zodSchema/);
@@ -30,15 +30,15 @@ describe("listSettingsSectionsForPlatform", () => {
   const bindings: SettingsBinding[] = [
     {
       section: {
-        id: "hub",
+        id: "habitat",
         order: 0,
-        title: "Hub",
+        title: "Habitat",
         platforms: {
           desktop: {
             kind: "form",
             fields: {
-              zodSchema: z.object({ hubUrl: z.string() }),
-              items: [{ key: "hubUrl", type: "text", label: "Hub" }],
+              zodSchema: z.object({ habitatUrl: z.string() }),
+              items: [{ key: "habitatUrl", type: "text", label: "Habitat" }],
             },
           },
         },
@@ -65,7 +65,7 @@ describe("listSettingsSectionsForPlatform", () => {
 
   test("sorts by order", () => {
     const rows = listSettingsSectionsForPlatform(bindings, "desktop");
-    expect(rows[0]?.section.id).toBe("hub");
+    expect(rows[0]?.section.id).toBe("habitat");
     expect(rows[1]?.section.id).toBe("companion");
   });
 });

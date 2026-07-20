@@ -13,7 +13,7 @@ import {
   reconnectCompanionSap,
   type CompanionServerHandle,
 } from "@freeanima/satellites/companion/lib/exports/desktop.ts";
-import { shellClientNeedsHubSetup } from "@freeanima/frontend/shell-sdk/shell-client-config.ts";
+import { shellClientNeedsHabitatSetup } from "@freeanima/frontend/shell-sdk/shell-client-config.ts";
 
 import {
   effectiveCompanionClickthrough,
@@ -83,16 +83,16 @@ async function releaseInstallLocks(): Promise<void> {
   shellStaticServer = null;
 }
 
-function resolveHubClient(): { hubUrl: string; remoteAuthToken: string } {
+function resolveHabitatClient(): { habitatUrl: string; remoteAuthToken: string } {
   const saved = readShellClientConfig();
   if (saved) {
-    return { hubUrl: saved.hubUrl, remoteAuthToken: saved.remoteAuthToken };
+    return { habitatUrl: saved.habitatUrl, remoteAuthToken: saved.remoteAuthToken };
   }
-  return { hubUrl: defaultHubUrl(), remoteAuthToken: "" };
+  return { habitatUrl: defaultHubUrl(), remoteAuthToken: "" };
 }
 
-function syncHubEnv(client: { hubUrl: string; remoteAuthToken: string }): void {
-  process.env.FREEANIMA_URL = client.hubUrl;
+function syncHubEnv(client: { habitatUrl: string; remoteAuthToken: string }): void {
+  process.env.FREEANIMA_URL = client.habitatUrl;
   if (client.remoteAuthToken) {
     process.env.FREEANIMA_REMOTE_AUTH_TOKEN = client.remoteAuthToken;
   } else {
@@ -100,7 +100,7 @@ function syncHubEnv(client: { hubUrl: string; remoteAuthToken: string }): void {
   }
 }
 
-let hubClient = resolveHubClient();
+let hubClient = resolveHabitatClient();
 syncHubEnv(hubClient);
 
 const devToolsOnStart = !app.isPackaged || process.env.DESKTOP_SHELL_DEVTOOLS === "1";
@@ -141,7 +141,7 @@ function appWindowIcon(): Electron.NativeImage {
 }
 
 function shellArgs(extra: string[]): string[] {
-  const args = [`--hub-url=${hubClient.hubUrl}`];
+  const args = [`--hub-url=${hubClient.habitatUrl}`];
   if (hubClient.remoteAuthToken) {
     args.push(`--remote-auth-token=${hubClient.remoteAuthToken}`);
   }
@@ -166,17 +166,17 @@ function applyClickthrough(win: BrowserWindow): void {
   win.setIgnoreMouseEvents(ignore, { forward: true });
 }
 
-function reloadHubClientAndMainWindow(): void {
-  hubClient = resolveHubClient();
+function reloadHabitatClientAndMainWindow(): void {
+  hubClient = resolveHabitatClient();
   syncHubEnv(hubClient);
   if (serverHandle) {
-    reconnectCompanionSap(hubClient.hubUrl, serverHandle.url);
+    reconnectCompanionSap(hubClient.habitatUrl, serverHandle.url);
   }
   broadcast("shell:config-changed");
 }
 
 function initialShellPath(): string {
-  if (shellClientNeedsHubSetup(readShellClientConfig())) {
+  if (shellClientNeedsHabitatSetup(readShellClientConfig())) {
     return "/settings";
   }
   return "/chat";
@@ -374,7 +374,7 @@ async function startShellStatic(): Promise<void> {
   }
 
   if (resolveDesktopUiMode() === "remote") {
-    shellStaticUrl = resolveRemoteShellUiBase(hubClient.hubUrl);
+    shellStaticUrl = resolveRemoteShellUiBase(hubClient.habitatUrl);
     logLine(`shell-ui remote ${shellStaticUrl}`);
     return;
   }
@@ -406,7 +406,7 @@ async function bootstrap(): Promise<void> {
   registerInstanceStoreIpc();
   registerAlertIpc();
   registerPackagedUpdateIpc();
-  registerShellClientIpc(openSettingsWindow, reloadHubClientAndMainWindow, (visible) => {
+  registerShellClientIpc(openSettingsWindow, reloadHabitatClientAndMainWindow, (visible) => {
     try {
       setCompanionVisible(visible);
     } catch {
@@ -437,7 +437,7 @@ async function bootstrap(): Promise<void> {
     serverHandle = await startCompanionSidecar();
     await startShellStatic();
     logLine(
-      `companion server ${serverHandle.url}; shell-ui ${shellStaticUrl}; hub ${hubClient.hubUrl}`,
+      `companion server ${serverHandle.url}; shell-ui ${shellStaticUrl}; hub ${hubClient.habitatUrl}`,
     );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);

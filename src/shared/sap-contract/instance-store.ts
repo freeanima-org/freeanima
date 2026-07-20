@@ -1,4 +1,4 @@
-/** Persist Hub-assigned instance_id per deployment environment */
+/** Persist Habitat-assigned instance_id per deployment environment */
 
 export type SapInstanceStore = {
   load(): Promise<string | null> | string | null;

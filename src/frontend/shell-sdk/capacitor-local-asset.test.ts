@@ -18,7 +18,7 @@ describe("detectCapacitorShellForBootstrap", () => {
     await expect(detectCapacitorShellForBootstrap()).resolves.toBe(false);
   });
 
-  it("手机浏览器直连 Hub 时走 Web bridge（无 localhost 资产）", async () => {
+  it("手机浏览器直连 Habitat 时走 Web bridge（无 localhost 资产）", async () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14; Mobile)" },
       location: { origin: "https://anima.fengtrace.me" },
@@ -28,7 +28,7 @@ describe("detectCapacitorShellForBootstrap", () => {
     await expect(detectCapacitorShellForBootstrap()).resolves.toBe(false);
   });
 
-  it("Capacitor WebView 远程 Hub 页有 nativePromise 时走 Capacitor bridge", async () => {
+  it("Capacitor WebView 远程 Habitat 页有 nativePromise 时走 Capacitor bridge", async () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14)" },
       Capacitor: {

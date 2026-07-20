@@ -7,7 +7,7 @@ describe("detectShellRuntimeKind", () => {
     delete (globalThis as { window?: Window }).window;
   });
 
-  it("手机浏览器直连 Hub 为 web（不因 UA 判 capacitor）", () => {
+  it("手机浏览器直连 Habitat 为 web（不因 UA 判 capacitor）", () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)" },
       location: { origin: "https://hub.example.com" },

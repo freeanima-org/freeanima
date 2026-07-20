@@ -49,7 +49,7 @@ function attachNativeBuildToSatelliteShell(meta: ComponentBuildMeta): void {
   window.dispatchEvent(new CustomEvent(NATIVE_BUILD_META_CHANGED_EVENT));
 }
 
-/** 设置 → 关于：解析 native shell 构建信息（Capacitor 远程 Hub UI 从 APK 资产 / Preferences 读取） */
+/** 设置 → 关于：解析 native shell 构建信息（Capacitor 远程 Habitat UI 从 APK 资产 / Preferences 读取） */
 export async function resolveAboutNativeBuildMeta(): Promise<ComponentBuildMeta | null> {
   if (!isCapacitorShellCandidate() && !isCapacitorNativePlatform()) {
     const fromShellOnly = readNativeBuildFromSatelliteShell();
@@ -59,7 +59,7 @@ export async function resolveAboutNativeBuildMeta(): Promise<ComponentBuildMeta 
   const fromShell = readNativeBuildFromSatelliteShell();
   if (fromShell) return fromShell;
 
-  // 远程 Hub 页：WebView 拦截 https://localhost，不依赖 window.Capacitor
+  // 远程 Habitat 页：WebView 拦截 https://localhost，不依赖 window.Capacitor
   const fromAsset = await readNativeBuildFromCapacitorAsset();
   if (fromAsset) {
     attachNativeBuildToSatelliteShell(fromAsset);

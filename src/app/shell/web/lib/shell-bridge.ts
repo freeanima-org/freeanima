@@ -4,7 +4,7 @@ import { pinCapacitorNativeBridge } from "@freeanima/app/shell/mobile/lib/capaci
 import { applyWebUiConfig, fetchWebUiConfig, installShellBridgeReady } from "./bridge/shared.ts";
 import { registerVaultRpcHandlers } from "@freeanima/frontend/shell-sdk";
 
-// 尽早 pin，避免 Hub main bundle 加载 @capacitor/core 后覆盖 window.Capacitor。
+// 尽早 pin，避免 Habitat main bundle 加载 @capacitor/core 后覆盖 window.Capacitor。
 pinCapacitorNativeBridge();
 
 async function bootstrapShellBridge(): Promise<void> {
@@ -13,7 +13,7 @@ async function bootstrapShellBridge(): Promise<void> {
 
   try {
     const cfg = await fetchWebUiConfig();
-    const { hubUrl: defaultHubUrl, sameOrigin, remoteAuthToken } = applyWebUiConfig(cfg);
+    const { habitatUrl: defaultHubUrl, sameOrigin, remoteAuthToken } = applyWebUiConfig(cfg);
 
     if (window.satelliteShell?.isElectron) {
       const { bootstrapElectronBridge } = await import("./bridge/bootstrap-web.ts");

@@ -11,7 +11,7 @@ import {
   createNotification,
   listNotifications,
   markNotificationRead,
-} from "@freeanima/features/notification/hub/service";
+} from "@freeanima/features/notification/habitat/service";
 import type { RuntimeDeps } from "@freeanima/platform/runtime/runtime-deps";
 
 function testRuntimeDeps(): RuntimeDeps {

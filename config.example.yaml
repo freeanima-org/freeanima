@@ -2,14 +2,14 @@
 # 复制到 ~/.anima/config.yaml 并根据需要修改
 #
 # 运行时配置（llm、compression、mcp 等）保存在 PostgreSQL（hub_runtime_config）；
-# 请在 Shell 设置 → Hub 服务 → 服务配置 中编辑。YAML 中的运行时段会被忽略，请清理废段。
+# 请在 Shell 设置 → Habitat 服务 → 服务配置 中编辑。YAML 中的运行时段会被忽略，请清理废段。
 
 # 生产必填：PostgreSQL 连接（也可用 env DATABASE_URL）
 database:
   url: env("DATABASE_URL")
   # url: postgresql://freeanima:password@127.0.0.1:5432/freeanima
 
-# Hub HTTP 监听（可选，默认 127.0.0.1:2658）
+# Habitat HTTP 监听（可选，默认 127.0.0.1:2658）
 # http:
 #   host: 0.0.0.0
 #   allowed_hosts:           # TLS SAN（host 为 0.0.0.0 时填客户端访问用的主机名/IP）
@@ -28,7 +28,7 @@ database:
 # redis:
 #   url: redis://127.0.0.1:6379/0
 
-# --- 以下运行时段请通过 Shell「Hub 服务设置」编辑；勿再写入 config.yaml ---
+# --- 以下运行时段请通过 Shell「Habitat 服务设置」编辑；勿再写入 config.yaml ---
 #
 # llm / compression / memory / mcp_servers / acp_agents / embedding / web / worlds …
 # memory.temporal_summary：时间摘要（半小时 tick、全局天/月/年、peer Redis）；见 docs/concepts/temporal-summary.md

@@ -251,9 +251,9 @@ export class LlmProfile {
   }
 }
 
-/** 空 ProfileRegistry（Hub 可先启动，设置页配置后再重启） */
+/** 空 ProfileRegistry（Habitat 可先启动，设置页配置后再重启） */
 export const LLM_PROFILES_UNCONFIGURED_MESSAGE =
-  "LLM 未配置；请在 Shell 设置 → Hub 服务中配置 LLM 后重启服务";
+  "LLM 未配置；请在 Shell 设置 → Habitat 服务中配置 LLM 后重启服务";
 
 /** Resolve and return LlmProfile entities only */
 export class ProfileRegistry {

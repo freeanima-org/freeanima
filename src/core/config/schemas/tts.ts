@@ -9,11 +9,11 @@ export const TTS_PROVIDERS = ["edge-tts", "web-speech"] as const;
 export type TtsProvider = (typeof TTS_PROVIDERS)[number];
 export const DEFAULT_TTS_PROVIDER: TtsProvider = "edge-tts";
 
-/** Hub 运行时语音配置：客户端按 provider 消费 */
+/** Habitat 运行时语音配置：客户端按 provider 消费 */
 export const ttsConfigSchema = z
   .object({
     enabled: z.boolean().optional(),
-    /** edge-tts（Hub 合成）或 web-speech（浏览器本机） */
+    /** edge-tts（Habitat 合成）或 web-speech（浏览器本机） */
     provider: z.enum(TTS_PROVIDERS).optional(),
     /** BCP 47，如 zh-CN / en-US；留空则跟随应用语言 */
     lang: z.string().optional(),

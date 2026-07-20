@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import type { SatelliteShellApi } from "./shell-api.ts";
-import { resolveHubRpcWsUrl } from "./hub-ws-url.ts";
+import { resolveHabitatRpcWsUrl } from "./habitat-ws-url.ts";
 import { getSubjectKind } from "./subject-scope-store.ts";
 import {
   OFFLINE_KV_STORE,
@@ -30,30 +30,30 @@ export function setSatelliteOfflineCacheBackendForTests(map: MemoryBackend | nul
   setOfflineDbBackendForTests(map);
 }
 
-export function resolveCacheScope(hubWsUrl: string): string {
-  return hubWsUrl.trim().toLowerCase();
+export function resolveCacheScope(habitatWsUrl: string): string {
+  return habitatWsUrl.trim().toLowerCase();
 }
 
 function readFallbackHubWs(): string {
   if (typeof process !== "undefined" && process.env) {
     const fromVite = process.env.VITE_FREEANIMA_HUB_WS?.trim();
     if (fromVite) return fromVite;
-    const hubUrl = process.env.FREEANIMA_URL?.trim();
-    if (hubUrl) return resolveHubRpcWsUrl(hubUrl.replace(/\/$/, ""));
+    const habitatUrl = process.env.FREEANIMA_URL?.trim();
+    if (habitatUrl) return resolveHabitatRpcWsUrl(habitatUrl.replace(/\/$/, ""));
   }
-  return resolveHubRpcWsUrl("http://127.0.0.1:2658");
+  return resolveHabitatRpcWsUrl("http://127.0.0.1:2658");
 }
 
-export function resolveHubCacheScope(): string {
+export function resolveHabitatCacheScope(): string {
   const shell = (globalThis.window as (Window & { satelliteShell?: SatelliteShellApi }) | undefined)
     ?.satelliteShell;
-  let hubScope: string;
-  if (shell?.hubWsUrl?.trim()) {
-    hubScope = resolveCacheScope(shell.hubWsUrl);
+  let habitatScope: string;
+  if (shell?.habitatWsUrl?.trim()) {
+    habitatScope = resolveCacheScope(shell.habitatWsUrl);
   } else {
-    hubScope = resolveCacheScope(readFallbackHubWs());
+    habitatScope = resolveCacheScope(readFallbackHubWs());
   }
-  return `${hubScope}:${getSubjectKind()}`;
+  return `${habitatScope}:${getSubjectKind()}`;
 }
 
 function cacheKey(scope: string, namespace: string, id: string): string {

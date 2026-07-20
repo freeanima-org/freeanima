@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   getUserVaultSession,
   SubjectScopeToggle,
-  useHubConnection,
+  useHabitatConnection,
   useNetworkOnline,
   useSubjectScope,
   VAULT_UI_SCOPE,
@@ -162,8 +162,8 @@ function VaultCreateForm({
 export function VaultApp() {
   const { kind: subjectKind } = useSubjectScope();
   const networkOnline = useNetworkOnline();
-  const hubConnection = useHubConnection();
-  const writesDisabled = !networkOnline || hubConnection !== "connected";
+  const habitatConnection = useHabitatConnection();
+  const writesDisabled = !networkOnline || habitatConnection !== "connected";
 
   const [items, setItems] = useState<VaultItemMetaRowPayload[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -435,10 +435,10 @@ export function VaultApp() {
           size="sm"
           variant="outline"
           disabled={loading}
-          aria-label={m.console_common_refresh()}
+          aria-label={m.habitat_common_refresh()}
           onClick={() => void reload()}
         >
-          {loading ? <Spinner className="size-4" /> : m.console_common_refresh()}
+          {loading ? <Spinner className="size-4" /> : m.habitat_common_refresh()}
         </Button>
       </div>
 

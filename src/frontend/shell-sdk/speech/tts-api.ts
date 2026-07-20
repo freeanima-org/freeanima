@@ -1,7 +1,7 @@
-import { buildHubRestRequest } from "@freeanima/shared/hub-rpc";
+import { buildHabitatRestRequest } from "@freeanima/shared/habitat-rpc";
 
-import { resolveBinarySafeHubFetch } from "../hub-api-fetch.ts";
-import { resolveHubApiOrigin } from "../hub-api-origin.ts";
+import { resolveBinarySafeHabitatFetch } from "../habitat-api-fetch.ts";
+import { resolveHabitatApiOrigin } from "../habitat-api-origin.ts";
 import { MAX_HUB_TTS_TEXT_LENGTH } from "./constants.ts";
 import { buildTtsCacheKey, getTtsAudioCache } from "./tts-cache.ts";
 import { consumeMpegStream, playMpegBuffer } from "./mpeg-player.ts";
@@ -35,9 +35,9 @@ function normalizeHubTtsText(text: string): string {
 
 async function postHubTtsSynthesize(params: HubTtsSynthesizeParams): Promise<Response> {
   const text = normalizeHubTtsText(params.text);
-  // 不可用 resolveHubApiFetch / shell.hubFetch：CapacitorHttp patch 会损坏 MP3 字节
-  const hubFetch = resolveBinarySafeHubFetch();
-  const { url, init } = buildHubRestRequest(resolveHubApiOrigin(), "tts.synthesize", {
+  // 不可用 resolveHabitatApiFetch / shell.habitatFetch：CapacitorHttp patch 会损坏 MP3 字节
+  const habitatFetch = resolveBinarySafeHabitatFetch();
+  const { url, init } = buildHabitatRestRequest(resolveHabitatApiOrigin(), "tts.synthesize", {
     text,
     lang: params.lang ?? undefined,
     voice: params.voice ?? undefined,
@@ -46,7 +46,7 @@ async function postHubTtsSynthesize(params: HubTtsSynthesizeParams): Promise<Res
     pitch: params.pitch,
     volume: params.volume,
   });
-  const response = await hubFetch(url, init);
+  const response = await habitatFetch(url, init);
 
   if (!response.ok) {
     let message = "语音合成失败";
@@ -66,14 +66,14 @@ async function postHubTtsSynthesize(params: HubTtsSynthesizeParams): Promise<Res
       }
     } catch {
       if (response.status === 401) {
-        message = "语音合成需要 Hub 认证，请检查 Service API Token";
+        message = "语音合成需要栖息地认证，请检查 Service API Token";
       }
     }
     throw new Error(message);
   }
 
   if (!response.body) {
-    throw new Error("Hub 未返回音频流");
+    throw new Error("栖息地未返回音频流");
   }
 
   return response;
@@ -100,7 +100,7 @@ export async function synthesizeSpeechViaHubStream(
   options.onResponse?.();
   const body = response.body;
   if (!body) {
-    throw new Error("Hub 未返回音频流");
+    throw new Error("栖息地未返回音频流");
   }
 
   const { buffer, played } = await consumeMpegStream(body, options.generation, options.play);

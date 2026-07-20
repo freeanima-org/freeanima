@@ -27,7 +27,7 @@ describe("sap-contract envelopes", () => {
     expect(parsed).toEqual(frame);
   });
 
-  it("validates Hub RPC connect payload", () => {
+  it("validates Habitat RPC connect payload", () => {
     const payload = hubRpcConnectPayloadSchema.parse({
       protocol: "HubRPC/1.0",
       auth_token: "secret",

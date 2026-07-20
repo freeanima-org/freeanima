@@ -31,7 +31,7 @@ function isLegacyKeyForSubject(key: string, subjectKind: SubjectKind): boolean {
   return key.endsWith(`:${subjectKind}`) || key.endsWith(`:${subjectKind}:${subjectKind}`);
 }
 
-/** 读取时兼容历史 hubScope 键名，找到后迁移到 subject-only 键。 */
+/** 读取时兼容历史 habitatScope 键名，找到后迁移到 subject-only 键。 */
 function findStoredRaw(subjectKind: SubjectKind): { raw: string; legacyKey: string | null } | null {
   const store = storage();
   if (!store) return null;

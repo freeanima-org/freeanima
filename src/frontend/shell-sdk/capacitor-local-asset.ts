@@ -10,7 +10,7 @@ const DEFAULT_CAPACITOR_SCHEME = "https";
 /** 与 mobile `capacitor.config.json` androidScheme 默认一致；Capacitor 未注入时回退。 */
 const DEFAULT_ANDROID_CAPACITOR_SCHEME = "http";
 
-/** Capacitor 打包 www 内静态资源 URL（远程 Hub 页回读 APK 内 JSON 等） */
+/** Capacitor 打包 www 内静态资源 URL（远程 Habitat 页回读 APK 内 JSON 等） */
 export function resolveCapacitorBundledAssetUrl(assetPath: string): string {
   const path = assetPath.startsWith("/") ? assetPath : `/${assetPath}`;
   const cap = (
@@ -29,7 +29,7 @@ export function resolveCapacitorBundledAssetUrl(assetPath: string): string {
   } else if (platform === "android") {
     scheme = cap?.config?.androidScheme?.trim() || DEFAULT_ANDROID_CAPACITOR_SCHEME;
   } else if (isCapacitorShellCandidate()) {
-    // 远程 Hub 页上 window.Capacitor 可能尚未注入；Android 薄壳默认可读 http://localhost 资产
+    // 远程 Habitat 页上 window.Capacitor 可能尚未注入；Android 薄壳默认可读 http://localhost 资产
     scheme = cap?.config?.androidScheme?.trim() || DEFAULT_ANDROID_CAPACITOR_SCHEME;
   } else {
     scheme = cap?.config?.androidScheme?.trim() || DEFAULT_CAPACITOR_SCHEME;
@@ -108,14 +108,14 @@ export async function readCapacitorBundledJson(assetPath: string): Promise<unkno
 const CAPACITOR_BOOTSTRAP_PROBE_PATH = "/native-build-meta.json";
 
 /**
- * Hub 托管 Web UI 的 bootstrap 分流：仅 Capacitor 原生或 WebView 内嵌壳（可读到 localhost 资产），
- * 普通手机浏览器（Safari/Chrome 直连 Hub）应走 Web bridge。
+ * Habitat 托管 Web UI 的 bootstrap 分流：仅 Capacitor 原生或 WebView 内嵌壳（可读到 localhost 资产），
+ * 普通手机浏览器（Safari/Chrome 直连 Habitat）应走 Web bridge。
  */
 export async function detectCapacitorShellForBootstrap(): Promise<boolean> {
   if (isCapacitorNativePlatform()) return true;
   if (!isCapacitorShellCandidate()) return false;
 
-  // 远程 Hub 页跨域 fetch localhost 会 CORS 失败；Capacitor 8 以 nativePromise 为准。
+  // 远程 Habitat 页跨域 fetch localhost 会 CORS 失败；Capacitor 8 以 nativePromise 为准。
   if (hasCapacitorNativePromise()) return true;
   if (await waitForCapacitorNativePromise(1_500)) return true;
 

@@ -1,6 +1,6 @@
 # FreeAnima 移动端（Android）
 
-Capacitor 壳 + **安装包内** `web/dist`（本地 `/web/*`）。Hub 地址在 APP **设置 → 连接** 配置。
+Capacitor 壳 + **安装包内** `web/dist`（本地 `/web/*`）。Habitat 地址在 APP **设置 → 连接** 配置。
 
 ## 前置条件
 

@@ -43,7 +43,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/message-gateway.md:12
-msgid "Shell → **Hub 服务** → **服务配置**："
+msgid "Shell → **Habitat 服务** → **服务配置**："
 msgstr ""
 
 #. type: Plain text
@@ -80,7 +80,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/guide/message-gateway.md:25
 msgid ""
-"保存后需 **重启 Hub / anima service** 才会重新 `discoverPlatforms`；当前不支"
+"保存后需 **重启 Habitat / anima service** 才会重新 `discoverPlatforms`；当前不支"
 "持热重载。"
 msgstr ""
 

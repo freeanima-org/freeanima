@@ -28,7 +28,7 @@ import type {
   TaskItemRowPayload,
   TaskListRowPayload,
 } from "@freeanima/shared/sap-contract/frames/task.ts";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
 import { randomUuid } from "@freeanima/shared/sap-contract";
 
 import {
@@ -349,10 +349,10 @@ export type OfflineUpdateTaskItemOpts = {
 };
 
 function hub() {
-  return getTypedSatelliteHubClient();
+  return getTypedSatelliteHabitatClient();
 }
 
-/** temp 且尚无 id-map 时 Hub 不认识该实体，只能走 outbox。 */
+/** temp 且尚无 id-map 时栖息地不认识该实体，只能走 outbox。 */
 async function unresolvedTempId(scope: string, id: number): Promise<boolean> {
   if (!isTempId(id)) return false;
   return (await getIdMapping(scope, MODULE_ID, id)) == null;

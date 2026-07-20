@@ -49,11 +49,11 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 - Subjects are **not** scoped by `world_id` in a membership sense; row `world_id` stays at bootstrap root (`ENTITY_ROOT_WORLD_ID`) as a table placeholder.
 - **`agent_config` / `user_config` body**: `default_private_world_id` — the subject's single default private world (auto-created on subject create; configurable from private worlds owned by the subject).
 - **Notifications** use subject entity ids as `recipient_id` (see [`notifications.md`](notifications.md)); ids come from boot-time **`ResolvedWorldContext`** (and are persisted to `hub_runtime_config.worlds`).
-- **Service API Token**（`service_api_tokens` 表）绑定 subject entity id；Hub REST/SAP/MCP 从 Bearer token 解析调用方身份。见 [`remote-access.md`](../guide/remote-access.md)。
+- **Service API Token**（`service_api_tokens` 表）绑定 subject entity id；Habitat REST/SAP/MCP 从 Bearer token 解析调用方身份。见 [`remote-access.md`](../guide/remote-access.md)。
 
 ### Boot-time ensure (`worlds` config)
 
-Hub startup runs **`ensureWorldSubjects()`** once (after migrations, before engine):
+Habitat startup runs **`ensureWorldSubjects()`** once (after migrations, before engine):
 
 - **Optional override**: if `hub_runtime_config.worlds.user_subject_id` / `agent_subject_id` (or legacy `notifications`) are set, ensures those entity ids exist with the correct `type`.
 - **Unconfigured**: discovers the lowest-id entity of `type=user` / `type=agent`; if none exist, creates them with the next serial id (not fixed `1`/`2`).
@@ -71,7 +71,7 @@ Legacy SQL bootstrap seeds (public world id=1, Inbox id=2) are removed by migrat
   - `private: false` — public world
   - `private: true` + `owner_subject_id` — private world owned by an `agent` or `user` entity
   - `default_private: true` — marks the subject's **exclusive** default private world (at most one per `owner_subject_id`)
-  - `grants: [{ subject_id, permission: "read" | "write" }]` — explicit subject grants (**write includes read**; `subject_id` must not equal owner). Configured in Console Worlds UI; never hardcoded per subject in source.
+  - `grants: [{ subject_id, permission: "read" | "write" }]` — explicit subject grants (**write includes read**; `subject_id` must not equal owner). Configured in Habitat Worlds UI; never hardcoded per subject in source.
 - **Access rules** (MCP / LLM tools via `resolveToolWorld`):
 
   | World   | Read                   | Write                    |
@@ -111,7 +111,7 @@ LLM ToolSets: `@freeanima/feature-task/domain` — `task` (item CRUD + `task_sea
 
 ### Shell UI: global Subject scope
 
-Hub startup binds **`ResolvedWorldContext`** (`hub().call("worlds.context")` / `GET /hub/rpc/v1/worlds/context`). The product shell exposes a **single User / Agent toggle** in the module header — not an arbitrary `world_id` picker. Selection maps to `user_world_id` / `agent_world_id` and persists in `sessionStorage` for the tab.
+Habitat startup binds **`ResolvedWorldContext`** (`hub().call("worlds.context")` / `GET /rpc/v1/worlds/context`). The product shell exposes a **single User / Agent toggle** in the module header — not an arbitrary `world_id` picker. Selection maps to `user_world_id` / `agent_world_id` and persists in `sessionStorage` for the tab.
 
 | Surface          | World binding                                    | Control                        |
 | ---------------- | ------------------------------------------------ | ------------------------------ |
@@ -123,9 +123,9 @@ Hub startup binds **`ResolvedWorldContext`** (`hub().call("worlds.context")` / `
 | `/diary`         | subject default private world via `subject_kind` | none (inherits header)         |
 | `/vault`         | default **user** library; optional Agent view    | User: master password lock     |
 
-SAP task/email methods accept optional `subject_kind` (defaults: task `user`, email `agent`). Satellites read the shell scope via **`useSubjectScope()`** from `@freeanima/shell-sdk`; Hub REST entity search uses **`resolveWorldIdForSubject()`** with the same scope.
+SAP task/email methods accept optional `subject_kind` (defaults: task `user`, email `agent`). Satellites read the shell scope via **`useSubjectScope()`** from `@freeanima/shell-sdk`; Habitat REST entity search uses **`resolveWorldIdForSubject()`** with the same scope.
 
-Future multi-world browse (e.g. diary calendar aggregation across worlds) should add **module-scoped** filters or Console tooling — not a speculative arbitrary world picker.
+Future multi-world browse (e.g. diary calendar aggregation across worlds) should add **module-scoped** filters or Habitat tooling — not a speculative arbitrary world picker.
 
 ## Tag module（轻语义）
 
@@ -138,7 +138,7 @@ Future multi-world browse (e.g. diary calendar aggregation across worlds) should
 - **名称**在 entity `title`；body 仅 `sort_order` / `client_op_id`
 - 任意 content entity 通过顶层 **`tag_ids`** 挂载标签；含义由「实体类型 + 标签」组合自然产生（不做语义空间区分）
 - 同 World 内 title（trim 后）唯一；删除标签时从该 World 所有实体的 `tag_ids` 剔除
-- **Hub RPC：** `tag.list` / `tag.search` / `tag.create` / `tag.patch` / `tag.delete` / `tag.setOnEntity`
+- **Habitat RPC：** `tag.list` / `tag.search` / `tag.create` / `tag.patch` / `tag.delete` / `tag.setOnEntity`
 - **LLM ToolSet：** `tag`（`tag_list` / `tag_search` / `tag_create` / `tag_update` / `tag_delete` / `tag_set_on_entity`）
 - **搜索：** `EntitySearchOpts.tag_ids`（或 `task_item` filters.`tag_ids`）为数组包含过滤（AND）
 - **UI 试点：** 任务详情 TagPicker + 列表按标签筛选；其他模块后续接入
@@ -152,7 +152,7 @@ Project management uses a **separate folder tree** from task-list folders. Tasks
 | Project folder | `type=content` | `project_folder` |
 | Project        | `type=content` | `project`        |
 
-`task_item.body.project_id` links items to a project. Optional project background notes use entity `content` (not `body`). Smart Lists in the task module default to tasks with no `project_id`. Shell route `/projects`; Hub RPC `projectfolder.*`, `project.*`, `project.item.*`；跨边界归属用 `task.moveToProject` / `task.moveToList`。
+`task_item.body.project_id` links items to a project. Optional project background notes use entity `content` (not `body`). Smart Lists in the task module default to tasks with no `project_id`. Shell route `/projects`; Habitat RPC `projectfolder.*`, `project.*`, `project.item.*`；跨边界归属用 `task.moveToProject` / `task.moveToList`。
 
 Full spec: [`docs/features/project.md`](../features/project.md).
 
@@ -166,7 +166,7 @@ Email accounts, threads, and mirrored messages map to:
 | Thread  | `type=content` | `email_thread`  |
 | Message | `type=content` | `email_message` |
 
-Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages store IMAP UID in `body.imap_uid`; human-readable subject/body use entity columns. IMAP sync upserts threads/messages; UI lives in shell `/email` (SAP `email.*` methods), not Console REST.
+Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages store IMAP UID in `body.imap_uid`; human-readable subject/body use entity columns. IMAP sync upserts threads/messages; UI lives in shell `/email` (SAP `email.*` methods), not Habitat REST.
 
 LLM ToolSets: `@freeanima/feature-email/domain` — `email-account` (account entities) and `email` (sync, send/receive, search); load via `toolset_load`. User and agent each have accounts in their **default private world**; LLM tools accept optional **`world_id`** (SAP uses `subject_kind`). Legacy `config.yaml` `email.accounts[]` migrates via [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts).
 
@@ -242,17 +242,17 @@ Encrypted credentials in two libraries (**User** + **Agent**), ECS components `v
 | Config  | `type=content` | `vault_config` |
 | Item    | `type=content` | `vault_item`   |
 
-| Library | Crypto mode       | Decrypt location          | Headless inject                     |
-| ------- | ----------------- | ------------------------- | ----------------------------------- |
-| User    | `master_password` | Client (Shell)            | No — Chat unlock box or `/vault` UI |
-| Agent   | `machine`         | Hub (`agent-machine.key`) | Yes — cron / tools                  |
+| Library | Crypto mode       | Decrypt location              | Headless inject                     |
+| ------- | ----------------- | ----------------------------- | ----------------------------------- |
+| User    | `master_password` | Client (Shell)                | No — Chat unlock box or `/vault` UI |
+| Agent   | `machine`         | Habitat (`agent-machine.key`) | Yes — cron / tools                  |
 
 Privacy fields live in `body.secrets_enc` + `body.dek_wrapped`; metadata (title, url, username, custom field **names**) is plaintext for search.
 
 - **SAP:** `vault.*` — Shell defaults `subject_kind: user`; ToolSet defaults agent world.
 - **UI:** shell `/vault` (`@freeanima/satellite-vault`); bundled Chat has a dedicated master-password unlock (not a chat message).
-- **LLM:** ToolSet `vault` — metadata list/search/get (MCP); `vault_create` / `vault_update` / `vault_delete` Habitat-only (Agent library seal for create/update); credentials via `terminal_run` / `code_execute` `secrets[]` (child env only) or `browser_type` `secret` (typed into page; redacted in tool results); never plaintext secrets in tool results or Hub `process.env`.
-- **Config:** `vault("item_id", "field")` resolves Agent library at Hub boot (legacy `credential()` removed).
+- **LLM:** ToolSet `vault` — metadata list/search/get (MCP); `vault_create` / `vault_update` / `vault_delete` Habitat-only (Agent library seal for create/update); credentials via `terminal_run` / `code_execute` `secrets[]` (child env only) or `browser_type` `secret` (typed into page; redacted in tool results); never plaintext secrets in tool results or Habitat `process.env`.
+- **Config:** `vault("item_id", "field")` resolves Agent library at Habitat boot (legacy `credential()` removed).
 
 Legacy pass (`~/.password-store`) is **not** deleted on disk; migrate entries manually via Shell UI.
 
@@ -269,11 +269,11 @@ Entity **list** (deterministic browse) and **search** (relevance ranking) are se
 
 **Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tag_ids`, `due_today`). Top-level `tag_ids` filter applies across components. Arbitrary JSONPath is forbidden.
 
-**Tools / API:** `entity_search` (LLM/MCP) and `hub().call("entity.searchGet")` / `hub().call("entity.searchPost")` (REST `GET /hub/rpc/v1/entity/searchGet` | `POST /hub/rpc/v1/entity/searchPost`) share `EntitySearchPort`. Task UI search box uses the same Hub RPC endpoint.
+**Tools / API:** `entity_search` (LLM/MCP) and `hub().call("entity.searchGet")` / `hub().call("entity.searchPost")` (REST `GET /rpc/v1/entity/searchGet` | `POST /rpc/v1/entity/searchPost`) share `EntitySearchPort`. Task UI search box uses the same Habitat RPC endpoint.
 
 See memory hybrid search in [`memory.md`](memory.md) for FTS operator syntax; entity search reuses the same query builder.
 
-**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Console **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.
+**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Habitat **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.
 
 ## Future migration map
 

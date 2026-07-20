@@ -26,13 +26,13 @@
 
 能力调用走封装；组件不直接用壳类型驱动布局或交互：
 
-| API                                                         | 用途                            |
-| ----------------------------------------------------------- | ------------------------------- |
-| `getShellKind()` / `useShellKind()`                         | 一元壳类型                      |
-| `canOpenHubSettings()` / `useOpenHubSettingsCapability()`   | 是否展示 Hub 设置入口           |
-| `shouldUseNativeShellNavigation()`                          | hash 路由 / 保存后进模块        |
-| `isCapacitorShellRuntime()` / `isCapacitorNativePlatform()` | Capacitor 能力                  |
-| `isCapacitorShellCandidate()`                               | **仅** bootstrap / 薄壳探测内部 |
+| API                                                           | 用途                            |
+| ------------------------------------------------------------- | ------------------------------- |
+| `getShellKind()` / `useShellKind()`                           | 一元壳类型                      |
+| `canOpenHabitatSettings()` / `useOpenHubSettingsCapability()` | 是否展示 Habitat 设置入口       |
+| `shouldUseNativeShellNavigation()`                            | hash 路由 / 保存后进模块        |
+| `isCapacitorShellRuntime()` / `isCapacitorNativePlatform()`   | Capacitor 能力                  |
+| `isCapacitorShellCandidate()`                                 | **仅** bootstrap / 薄壳探测内部 |
 
 壳不支持的能力返回 `null`/`false`，组件自行降级。
 
@@ -107,7 +107,7 @@
 | 用 `isElectron` / `isNativeShell` 锁 Shell 主布局 | `useLayoutMode()` / `useDrawerNav()`                    |
 | 用视口断点决定右键 vs 长按                        | `useContextMenuCapability` / `useActionSheetCapability` |
 | 用布局+壳组合决定 Enter 发送                      | `useEnterToSendCapability()`                            |
-| 手写三处不同的 Hub 设置可见性                     | `canOpenHubSettings()`                                  |
+| 手写三处不同的 Habitat 设置可见性                 | `canOpenHabitatSettings()`                              |
 | 把 `isCapacitorShellCandidate` 当布局             | 仅 bootstrap / 路由壳探测                               |
 
 ## 代码入口

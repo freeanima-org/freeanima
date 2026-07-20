@@ -5,7 +5,7 @@ export const appearanceSettingsSection: SettingsSection = {
   order: 15,
   category: "client",
   title: "外观",
-  description: "选择强调色主题，便于区分本机与远端等不同环境。设置保存在本机，不同步到 Hub。",
+  description: "选择强调色主题，便于区分本机与远端等不同环境。设置保存在本机，不同步到 Habitat。",
   platforms: {
     desktop: {
       kind: "component",

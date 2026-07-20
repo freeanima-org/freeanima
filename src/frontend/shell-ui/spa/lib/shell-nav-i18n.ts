@@ -51,34 +51,34 @@ function navItem(
 /** 全部 Shell 模块（Rail / 设置页顺序） */
 export function shellNavItems(): ShellNavItem[] {
   return [
-    navItem("chat", "/chat", "/chat", shellNavLabel(m.console_nav_chat), MessageSquare),
-    navItem("tasks", "/tasks", "/tasks", shellNavLabel(m.console_nav_tasks), ListTodo),
+    navItem("chat", "/chat", "/chat", shellNavLabel(m.habitat_nav_chat), MessageSquare),
+    navItem("tasks", "/tasks", "/tasks", shellNavLabel(m.habitat_nav_tasks), ListTodo),
     navItem(
       "projects",
       "/projects",
       "/projects",
-      shellNavLabel(m.console_nav_projects),
+      shellNavLabel(m.habitat_nav_projects),
       FolderKanban,
     ),
-    navItem("pomodoro", "/pomodoro", "/pomodoro", shellNavLabel(m.console_nav_pomodoro), Timer),
-    navItem("email", "/email", "/email", shellNavLabel(m.console_nav_email), Mail),
-    navItem("diary", "/diary", "/diary", shellNavLabel(m.console_nav_diary), BookOpen),
-    navItem("vault", "/vault", "/vault", shellNavLabel(m.console_nav_vault), Lock),
+    navItem("pomodoro", "/pomodoro", "/pomodoro", shellNavLabel(m.habitat_nav_pomodoro), Timer),
+    navItem("email", "/email", "/email", shellNavLabel(m.habitat_nav_email), Mail),
+    navItem("diary", "/diary", "/diary", shellNavLabel(m.habitat_nav_diary), BookOpen),
+    navItem("vault", "/vault", "/vault", shellNavLabel(m.habitat_nav_vault), Lock),
     navItem(
       "notifications",
       "/notifications",
       "/notifications",
-      shellNavLabel(m.console_nav_notifications),
+      shellNavLabel(m.habitat_nav_notifications),
       Bell,
     ),
     navItem(
-      "console",
-      "/console/dashboard",
-      "/console",
-      shellNavLabel(m.console_nav),
+      "habitat",
+      "/habitat/dashboard",
+      "/habitat",
+      shellNavLabel(m.habitat_nav),
       LayoutDashboard,
     ),
-    navItem("settings", "/settings", "/settings", shellNavLabel(m.console_nav_settings), Settings),
+    navItem("settings", "/settings", "/settings", shellNavLabel(m.habitat_nav_settings), Settings),
   ];
 }
 

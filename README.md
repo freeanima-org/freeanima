@@ -31,7 +31,7 @@ The technical stack (layered memory, self layer, flat tool registry, Gateway, pa
 | **Tools**       | Flat registry: local / MCP / ACP; capability masks                                                     |
 | **Gateway**     | Discord · WeChat · Chat                                                                                |
 | **Credentials** | pass (GPG) injection; LLM sees paths, not values                                                       |
-| **Runtime**     | Bun Hub: Hub RPC REST/WS `/hub/rpc/v1` + SAP `/sap/v1` + Pipeline Runner (sleep, cron)                 |
+| **Runtime**     | Bun Habitat: Habitat RPC REST/WS `/rpc/v1` + SAP `/sap/v1` + Pipeline Runner (sleep, cron)             |
 
 ## Architecture at a glance
 
@@ -92,10 +92,10 @@ just install-cli   # or: bun run install-cli
 
 ## Client UI
 
-聊天室与管理台由 **desktop / mobile 壳层**（`src/app/shell/desktop`、`src/app/shell/mobile`）提供 bundled SPA。Hub 托管 API / SAP；`web.enabled` 且已有 dist 时托管 `/web/*`：
+聊天室与管理台由 **desktop / mobile 壳层**（`src/app/shell/desktop`、`src/app/shell/mobile`）提供 bundled SPA。Habitat 托管 API / SAP；`web.enabled` 且已有 dist 时托管 `/web/*`：
 
 - API：`http://127.0.0.1:2658/api`
-- Dev：`bun run dev:hub` + `bun run dev:web` → `http://127.0.0.1:4173/web/chat`（Console：`/web/console/dashboard`）
+- Dev：`bun run dev:hub` + `bun run dev:web` → `http://127.0.0.1:4173/web/chat`（Habitat：`/web/habitat/dashboard`）
 
 ## First-deploy security checklist
 
@@ -103,7 +103,7 @@ just install-cli   # or: bun run install-cli
 2. `chmod 700 ~/.anima`
 3. Default bind is `127.0.0.1` only; add your own auth before exposing to the public internet
 4. Review MCP/ACP config; set `enabled: false` on untrusted external servers
-5. HTTP / Console have **no built-in authentication** — see [`docs/guide/security.md`](docs/guide/security.md)
+5. HTTP / Habitat have **no built-in authentication** — see [`docs/guide/security.md`](docs/guide/security.md)
 
 ## Open-source statement
 

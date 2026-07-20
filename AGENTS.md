@@ -5,15 +5,15 @@
 
 ## Global view
 
-`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: product name for the long-running process is **Habitat**（栖息地）; Shell / MCP are **Portal**（入口）. Source: `bun run dev:hub`; standalone: `anima service`（wire still Hub RPC `/hub/rpc/v1` + MCP `/mcp` + engine）; UI from `src/app/shell/desktop` / `mobile`. Naming: [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming + [`i18n/glossary.md`](i18n/glossary.md).
+`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: product name for the long-running process is **Habitat**（栖息地）; Shell / MCP are **Portal**（入口）. Source: `bun run dev:hub`; standalone: `anima service`（wire still Habitat RPC `/rpc/v1` + MCP `/mcp` + engine）; UI from `src/app/shell/desktop` / `mobile`. Naming: [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming + [`i18n/glossary.md`](i18n/glossary.md).
 
-| Capability     | Highlights                                                                                                                                                                                                          |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                                                                 |
-| Tools          | Local / MCP / ACP flat registration; MCP client `src/capabilities/mcp-client/`、MCP server `/mcp` `src/capabilities/mcp-server/`；tools `src/capabilities/tools/`、ACP `src/capabilities/acp/`                      |
-| Secrets        | Vault (User/Agent libraries); config `vault()` / `env()`; LLM **sees metadata, not values**                                                                                                                         |
-| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                                                              |
-| Code layout    | 产品代码在 `src/`（`features/`、`app/shell/`、`platform/` 等）— 见 [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)；Desktop/Mobile 安装包内嵌 `web/dist`，浏览器/PWA 用 Hub `/web/*` |
+| Capability     | Highlights                                                                                                                                                                                                              |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                                                                     |
+| Tools          | Local / MCP / ACP flat registration; MCP client `src/capabilities/mcp-client/`、MCP server `/mcp` `src/capabilities/mcp-server/`；tools `src/capabilities/tools/`、ACP `src/capabilities/acp/`                          |
+| Secrets        | Vault (User/Agent libraries); config `vault()` / `env()`; LLM **sees metadata, not values**                                                                                                                             |
+| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                                                                  |
+| Code layout    | 产品代码在 `src/`（`features/`、`app/shell/`、`platform/` 等）— 见 [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)；Desktop/Mobile 安装包内嵌 `web/dist`，浏览器/PWA 用 Habitat `/web/*` |
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 
@@ -22,7 +22,7 @@
 Directional heuristics for _what_ FreeAnima should feel like. Mechanisms and cognitive architecture live in [`docs/concepts/`](docs/concepts/) — related, but not a 1:1 rule list.
 
 - **Platform-native UX** — Mobile and desktop are **separate interaction and layout designs**, not one responsive skin stretched across form factors. Shared contracts (API, SAP, settings keys) may exist; presentation and interaction patterns should fit each platform. **Three orthogonal dimensions**（详见 [`.agent/rules/ui-dimensions.md`](.agent/rules/ui-dimensions.md)）：**壳子**（`getShellKind` / `satelliteShell`：存储、IPC、通知等原生能力）、**布局**（视口-only：`< md` → `compact` 底栏+drawer；`≥ md` → `expanded` 左栏+三栏）、**交互**（`pointer`/`touch`：右键 vs 长按、Enter 发送等）。壳**不**锁布局（Electron 窄窗可用底栏；Capacitor iPad 宽屏可用左栏）。`detectSettingsChromePlatform()` 仅设置页 chrome（tabs vs 侧栏），跟布局粗档。Phone 通常窄，但 **phone ≠ 窄布局**。
-- **Habitat & Portal** — User copy: **栖息地 / Habitat** = long-running place (multi digital life + human assets); **入口 / Portal** = Shell、MCP 等外部连接。Wire 仍可写 Hub（`/hub/rpc/v1`）。见 [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming、[`i18n/glossary.md`](i18n/glossary.md)。
+- **Habitat & Portal** — User copy: **栖息地 / Habitat** = long-running place (multi digital life + human assets); **入口 / Portal** = Shell、MCP 等外部连接。Wire 仍可写 Habitat（`/rpc/v1`）。见 [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming、[`i18n/glossary.md`](i18n/glossary.md)。
 - **Concept convergence over feature sprawl** — As capabilities grow, **resist cognitive overload**: keep a small set of core concepts visible and stable; new features should map onto existing mental models rather than multiplying parallel abstractions in the UI.
 
 ## Code implementation principles
@@ -52,7 +52,7 @@ How agents should _shape_ changes. Hard checks and conventions → [`.agent/rule
 ```bash
 bun install
 just                  # 列出配方
-just dev              # Hub（≥10000）+ Web（:5000）；多 worktree 友好
+just dev              # Habitat（≥10000）+ Web（:5000）；多 worktree 友好
 just hub / just web   # 分进程
 just check            # PR 前质量门禁
 just test / just test-changed
@@ -69,12 +69,12 @@ bun run build:web
 # anima service … # 仅 standalone 安装版 CLI
 ```
 
-- Hub API（**生产**）：`http://127.0.0.1:2658/hub/rpc/v1`（standalone `anima service`；`web.enabled` 且已有 dist 时托管 `/web/*`）
-- Hub API（**源码/dev:hub**）：默认随机 **≥10000**（避开 2658/2659）；多 worktree 并行友好
+- Habitat API（**生产**）：`http://127.0.0.1:2658/rpc/v1`（standalone `anima service`；`web.enabled` 且已有 dist 时托管 `/web/*`）
+- Habitat API（**源码/dev:hub**）：默认随机 **≥10000**（避开 2658/2659）；多 worktree 并行友好
 - Web 形态：standalone / 源码部署须先有 `build:web`（打包时强制；源码部署手动）；dev 用 `dev:hub` + `dev:web`（HMR，不依赖落盘）
 - 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `src/app/shell/desktop` / `mobile` / `web`（web 仅本地调试）
-- Dev UI：`bun run dev:web` → `http://127.0.0.1:5000/web/chat`（若 `http.tls`/`DEV_HTTPS` 则为 `https://…`；Console：`/web/console/dashboard`）；浏览器默认 Hub = **页面 origin**（Vite `/hub` proxy）；`dev:hub` 自动写入 `~/.anima/dev-web.token` 供 Vite 注入 token；**忽略** yaml `web.*`（Hub 不托管 dist）
-- 开发 TLS：若 `http.tls.enabled` / `DEV_HTTPS=1`，由 **Vite HTTPS** 终止（复用 `~/.anima/tls`），Hub 仅明文（`skipTls`）；与 `http` 覆盖对称，dev 亦覆盖 `web.enabled/host/port`
+- Dev UI：`bun run dev:web` → `http://127.0.0.1:5000/web/chat`（若 `http.tls`/`DEV_HTTPS` 则为 `https://…`；Habitat：`/web/habitat/dashboard`）；浏览器默认 Habitat = **页面 origin**（Vite `/hub` proxy）；`dev:hub` 自动写入 `~/.anima/dev-web.token` 供 Vite 注入 token；**忽略** yaml `web.*`（Habitat 不托管 dist）
+- 开发 TLS：若 `http.tls.enabled` / `DEV_HTTPS=1`，由 **Vite HTTPS** 终止（复用 `~/.anima/tls`），Habitat 仅明文（`skipTls`）；与 `http` 覆盖对称，dev 亦覆盖 `web.enabled/host/port`
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)
 - PG ops (install, backup): [`docs/guide/database.md`](docs/guide/database.md)
 - Remote access (Service API Token / LAN): [`docs/guide/remote-access.md`](docs/guide/remote-access.md)

@@ -15,7 +15,7 @@ describe("shell-bridge shared", () => {
     expect(isCapacitorShellCandidate()).toBe(false);
   });
 
-  it("远程 Hub 手机 UA 无 Capacitor 不为候选", () => {
+  it("远程 Habitat 手机 UA 无 Capacitor 不为候选", () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14)" },
       location: { origin: "https://hub.example.com" },

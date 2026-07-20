@@ -3,11 +3,13 @@ export {
   COMPANION_CONFIG_SCOPE,
   COMPANION_SHELL_SCOPE,
   DEBUG_SETTINGS_SCOPE,
-  HUB_SETTINGS_SCOPE,
+  HABITAT_SETTINGS_SCOPE,
 } from "./scopes.ts";
 export {
   DEBUG_VCONSOLE_ENABLED_KEY,
-  HUB_URL_KEY,
+  HABITAT_URL_KEY,
+  HABITAT_URL_KEY_LEGACY,
+  readStoredHabitatUrl,
   COMPANION_VISIBLE_KEY,
   LAUNCH_AT_LOGIN_KEY,
   NATIVE_BUILD_META_KEY,
@@ -18,9 +20,9 @@ export type { ScopedSettingsBackend, SettingsStore } from "./settings-store.ts";
 export { createScopedSettingsStore } from "./settings-store.ts";
 export {
   createDebugSettingsStore,
-  createHubSettingsStore,
-  parseHubClientSettings,
-} from "./hub-debug-stores.ts";
+  createHabitatSettingsStore,
+  parseHabitatClientSettings,
+} from "./habitat-debug-stores.ts";
 export type {
   CompanionSettingsApi,
   FormFieldDescriptor,
@@ -40,7 +42,7 @@ export type {
 export { defineSettingsForm, listSettingsSectionsForPlatform } from "./types.ts";
 export {
   desktopGeneralSettingsSection,
-  hubFields,
-  hubSettingsSection,
-} from "./sections/hub-section.ts";
+  habitatFields,
+  habitatSettingsSection,
+} from "./sections/habitat-section.ts";
 export { debugSettingsSection } from "./sections/debug-section.ts";

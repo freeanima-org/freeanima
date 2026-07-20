@@ -31,7 +31,7 @@ msgstr ""
 #. type: Plain text
 #: docs/features/chat.md:8
 msgid ""
-"Chat SPA 支持 **离线写入 outbox**、上线后 **自动重试**，并通过 Hub 侧幂等与 "
+"Chat SPA 支持 **离线写入 outbox**、上线后 **自动重试**，并通过 Habitat 侧幂等与 "
 "tail CAS 避免重复发送与陈旧消息。"
 msgstr ""
 
@@ -50,7 +50,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/features/chat.md:15
-msgid "离线时可输入并发送；消息排队，Hub 恢复后按 FIFO 重试。"
+msgid "离线时可输入并发送；消息排队，Habitat 恢复后按 FIFO 重试。"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -68,7 +68,7 @@ msgstr ""
 #. type: Title ##
 #: docs/features/chat.md:16
 #, no-wrap
-msgid "Hub 协议"
+msgid "Habitat 协议"
 msgstr ""
 
 #. type: Plain text

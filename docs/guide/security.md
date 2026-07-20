@@ -11,7 +11,7 @@ title: Security
 
 FreeAnima is designed for **single-user local / intranet** deployment:
 
-- Hub RPC REST (`/hub/rpc/v1/*` except health probe/CORS/echo) requires a **Service API Token** (`Authorization: Bearer fa_at_…`); create with `anima token create`. Binding `127.0.0.1` limits network exposure but does not replace token auth — any local process that can reach the port still needs a valid token for business routes.
+- Habitat RPC REST (`/rpc/v1/*` except health probe/CORS/echo) requires a **Service API Token** (`Authorization: Bearer fa_at_…`); create with `anima token create`. Binding `127.0.0.1` limits network exposure but does not replace token auth — any local process that can reach the port still needs a valid token for business routes.
 - Default bind is `127.0.0.1`; for LAN access, assess CORS and network isolation yourself.
 - **Do not** expose the service to the public internet without TLS and token-protected clients (see [`remote-access.md`](remote-access.md)).
 
@@ -26,15 +26,15 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 | User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                     |
 | Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                              |
 
-`config.yaml` supports `vault("item_id", "field")` (Agent library, Hub headless) and `env("KEY")` for secrets; values are injected at runtime. Agent tools that need CLI credentials pass per-call `secrets[]` on `terminal_run` / `code_execute` (child env only). Browser form fields use `browser_type` `secret` (typed into the page; never echoed in tool results). User-library resolution still requires an unlocked Chat session on the client.
+`config.yaml` supports `vault("item_id", "field")` (Agent library, Habitat headless) and `env("KEY")` for secrets; values are injected at runtime. Agent tools that need CLI credentials pass per-call `secrets[]` on `terminal_run` / `code_execute` (child env only). Browser form fields use `browser_type` `secret` (typed into the page; never echoed in tool results). User-library resolution still requires an unlocked Chat session on the client.
 
 ### Vault trust boundaries
 
-| Surface | User library                                                    | Agent library                                                   |
-| ------- | --------------------------------------------------------------- | --------------------------------------------------------------- |
-| Hub PG  | Ciphertext + verifier only                                      | Ciphertext + machine key file on disk                           |
-| LLM     | Metadata only; subprocess `secrets[]` / `browser_type` `secret` | Metadata only; subprocess `secrets[]` / `browser_type` `secret` |
-| Shell   | Client master key in memory                                     | Hub decrypt over loopback SAP                                   |
+| Surface    | User library                                                    | Agent library                                                   |
+| ---------- | --------------------------------------------------------------- | --------------------------------------------------------------- |
+| Habitat PG | Ciphertext + verifier only                                      | Ciphertext + machine key file on disk                           |
+| LLM        | Metadata only; subprocess `secrets[]` / `browser_type` `secret` | Metadata only; subprocess `secrets[]` / `browser_type` `secret` |
+| Shell      | Client master key in memory                                     | Habitat decrypt over loopback SAP                               |
 
 ## Data Persistence
 
@@ -63,9 +63,9 @@ Disk backup = data access. Protect backup media accordingly.
 ### Agent vault usage
 
 1. **Discover** — `vault_list` / `vault_search` / `vault_get_meta` (metadata only; never plaintext in tool results).
-2. **Write (Agent library)** — `vault_create` / `vault_update` / `vault_delete` in Habitat chat only (not MCP). create/update accept plaintext `secrets` to seal on Hub; results return metadata only. User library: Vault UI.
+2. **Write (Agent library)** — `vault_create` / `vault_update` / `vault_delete` in Habitat chat only (not MCP). create/update accept plaintext `secrets` to seal on Habitat; results return metadata only. User library: Vault UI.
 3. **Use** — pass `secrets: [{ id, env_name, field?, subject_kind? }]` on the same `terminal_run` or `code_execute` call that needs the credential (e.g. `GH_TOKEN` for `gh`); or `secret: { id, field }` on `browser_type` for form fields.
-4. **Scope** — plaintext is decrypted for that call only (`secrets[]` → child `env`; `browser_type` `secret` → Camofox type payload). It is **not** written to Hub `process.env` and **not** returned in tool results. Default `shell=false`: use argv form (`printenv GH_TOKEN`, `gh …`), not `echo $VAR`.
+4. **Scope** — plaintext is decrypted for that call only (`secrets[]` → child `env`; `browser_type` `secret` → Camofox type payload). It is **not** written to Habitat `process.env` and **not** returned in tool results. Default `shell=false`: use argv form (`printenv GH_TOKEN`, `gh …`), not `echo $VAR`.
 
 ## Measures in Place
 
@@ -117,7 +117,7 @@ The following are planned in code or docs—**deployers must not assume implemen
 | **Runtime**        | Default 127.0.0.1 bind                                     | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |
 | **Gateway**        | Token in Vault / env                                       | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |
 | **CLI / Tools**    | Local shell compromised                                    | path deny + terminal hard deny (bypass via `code_execute` possible) | Reduced catastrophic rm   | —                  | Logs may contain conversations     |
-| **HTTP / Console** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
+| **HTTP / Habitat** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
 | **MCP / ACP**      | SSE auth undefined                                         | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |
 | **Vault**          | Agent machine key file permissions                         | Metadata-only tools; per-call `secrets[]` / `browser_type` `secret` | Wrong item / env_name     | Web Crypto         | User MP never in PG messages       |
 

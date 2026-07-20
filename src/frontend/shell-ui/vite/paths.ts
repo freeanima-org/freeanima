@@ -10,7 +10,7 @@ export function shellSourcePaths(root = REPO_ROOT) {
     chat: join(root, "src/features", "chat", "ui", "spa"),
     task: join(root, "src/features", "task", "ui", "spa"),
     diary: join(root, "src/features", "diary", "ui", "spa"),
-    console: join(root, "src/features", "console", "ui", "console"),
+    habitat: join(root, "src/features", "habitat", "ui", "habitat"),
     shell: join(root, "src/frontend", "shell-ui", "spa"),
     companionApp: join(root, "src/satellites", "companion", "spa"),
     companionShared: join(root, "src/satellites", "companion", "shared"),

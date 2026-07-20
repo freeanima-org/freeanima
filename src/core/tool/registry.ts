@@ -32,7 +32,7 @@ export type ToolDef = {
   returnExample?: unknown;
   /** Readable format hint for text tools */
   returnTextHint?: string;
-  /** When true, exposed via Hub /mcp Streamable HTTP endpoint */
+  /** When true, exposed via Habitat /mcp Streamable HTTP endpoint */
   exposeMcp?: boolean;
 };
 

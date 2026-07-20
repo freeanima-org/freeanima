@@ -59,7 +59,7 @@ export const SECRET_TOOL_PROPERTY = {
 export const SECRETS_TOOL_PROPERTY = {
   type: "array",
   description:
-    "Per-call vault secrets injected only into this subprocess env (never Hub process.env, never tool results). " +
+    "Per-call vault secrets injected only into this subprocess env (never Habitat process.env, never tool results). " +
     "Discover items via vault_list/vault_search/vault_get_meta first. Default subject_kind=agent.",
   items: {
     type: "object",

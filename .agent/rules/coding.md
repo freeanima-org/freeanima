@@ -33,11 +33,11 @@
   - `eslint/eqeqeq` — always `===` / `!==` (`null` checks may use `== null` / `!= null`).
   - `eslint/no-promise-executor-return` — Promise executor must not return a value; use block body (`{ setTimeout(resolve, ms); }`).
   - `unicorn/explicit-length-check` — use `.length > 0` / `.length === 0`, not truthy `.length`.
-- **React**（feature-console Console / ui-kit / satellites override）: `react/rules-of-hooks` error；`react/exhaustive-deps` warn。
+- **React**（feature-console Habitat / ui-kit / satellites override）: `react/rules-of-hooks` error；`react/exhaustive-deps` warn。
 - **Disable 纪律**（oxlint + review 把关）:
   - `oxlint-disable` / `eslint-disable` 行须含 `-- reason`
   - 禁止 `ts-ignore` / `ts-nocheck`；`ts-expect-error` 须同行说明
-  - 契约目录（`src/platform/ports/`、`console-contract/`、`sap-contract/`）禁止显式 `any`（`oxlint` `no-explicit-any`）
+  - 契约目录（`src/platform/ports/`、`habitat-contract/`、`sap-contract/`）禁止显式 `any`（`oxlint` `no-explicit-any`）
 
 - **Failures**: always `toolError(msg)` → JSON `{"error":"..."}`
 - **Successes**: structured tools use `toolResult(obj)`; LLM-readable tools (`file_read`, `terminal_run`, `code_execute`, etc.) may return plain-text stdout
@@ -71,7 +71,7 @@ When adding or moving types / Zod / ports, decide in this order:
 Additional rules:
 
 - Domain views may `import type` / `z.infer` from `@freeanima/core/db`, but **must not duplicate** storage Zod definitions
-- **HTTP/Console wire 契约** → `@freeanima/console-contract`（类型 + `date-json` / `display-util`）；**Console REST 实现** → `@freeanima/console-api`；**in-process snapshots/display** → `@freeanima/platform`
+- **HTTP/Habitat wire 契约** → `@freeanima/console-contract`（类型 + `date-json` / `display-util`）；**Habitat REST 实现** → `@freeanima/console-api`；**in-process snapshots/display** → `@freeanima/platform`
 - **EventBus payloads** → publisher's domain package (e.g. memory events → `capabilities-memory`)
 - **Repository row shapes** → [`src/core/db/schema/rows/`](../../src/core/db/schema/rows/) = `typeof table.$inferSelect`；domain `types.ts` re-export；1:1 CRUD **无 mapper**（非平凡 join/transform 见 [`drizzle-db.md`](drizzle-db.md)）
 
@@ -83,7 +83,7 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 - **Port 方法名**（`searchFts`、`appendMessageReturningId` 等）与 **tool/REST 计算字段** 保持 camelCase
 - **Row 数据字段** 一律 snake_case；时间戳列统一 `created_at` / `updated_at`（以 [`src/core/db/schema/`](../../src/core/db/schema/) 为准）
 - **PG row 类型**：`src/core/db/schema/rows/*` 或 `typeof table.$inferSelect`；JSON 边界 `Date`↔ISO（见 drizzle-db）；禁止 camelCase→snake_case 字段改名表与 dual-key DbRow
-- **SAP / satellite wire**：capabilities 从 `@freeanima/sap-contract` re-export Payload；Console UI 从 `@freeanima/console-contract/api` 导入 Row / 响应类型
+- **SAP / satellite wire**：capabilities 从 `@freeanima/sap-contract` re-export Payload；Habitat UI 从 `@freeanima/habitat-contract/api` 导入 Row / 响应类型
 
 详情：[`drizzle-db.md`](drizzle-db.md) DbRow / FTS 列名约定。
 
@@ -95,11 +95,11 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
 ## 横切审查清单（重构 / 大改后）
 
-| 领域   | 检查项                                                                                                                       |
-| ------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| 安全   | 凭证路径不入 log / tool 返回；Hub REST 输入校验；memory/self-layer 变更对照 [`identity.md`](../../docs/concepts/identity.md) |
-| 性能   | PG 查询热点（`src/core/db/pg`）；EventBus/Redis；流式 merge（`src/core/provider/stream-tools.ts`）                           |
-| 可测性 | colocated 单测 + `tests/integration/` 覆盖 boot / SAP 路径 gaps                                                              |
+| 领域   | 检查项                                                                                                                           |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| 安全   | 凭证路径不入 log / tool 返回；Habitat REST 输入校验；memory/self-layer 变更对照 [`identity.md`](../../docs/concepts/identity.md) |
+| 性能   | PG 查询热点（`src/core/db/pg`）；EventBus/Redis；流式 merge（`src/core/provider/stream-tools.ts`）                               |
+| 可测性 | colocated 单测 + `tests/integration/` 覆盖 boot / SAP 路径 gaps                                                                  |
 
 **New PG domain**: `src/core/db/schema/{domain}` → repos in `src/core/db/pg/{domain}/` → barrel `index.ts` + `types.ts` → consumers import `@freeanima/core/db/pg/{domain}`。
 
@@ -121,7 +121,7 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 **Data migration (required when DDL drops or renames a populated table)**:
 
 - **Co-locate with schema migration** — backfill / `INSERT … SELECT` / column moves belong in the **same** `src/core/migrations/{ts}_{name}/migration.sql` as the DDL, appended after `db:generate` output.
-- **Order**: copy/transform data **before** `DROP TABLE` / destructive DDL in that file. Hub startup runs `runMigrations` only; it does **not** run standalone scripts under `scripts/`.
+- **Order**: copy/transform data **before** `DROP TABLE` / destructive DDL in that file. Habitat startup runs `runMigrations` only; it does **not** run standalone scripts under `scripts/`.
 - **Forbidden**: a migration that `DROP TABLE` legacy data without an in-file backfill in the same migration; a separate manual script as the **only** migration path (scripts may exist for dry-run / repair, but production path must be the migration SQL).
 - One-off repair scripts (`scripts/*.ts`) are for operator recovery or idempotent re-runs after the fact — not a substitute for the migration chain.
 
@@ -132,7 +132,7 @@ Repository query conventions (ORM vs `db.execute`, DbRow typing): [`drizzle-db.m
 ## Service 日志（error.log）
 
 - **`~/.anima/error.log`**（service file sink）用于 **非预期失败** 与需介入的 **warn**；不是业务步骤的运行史。
-- 业务步骤的成功 / 预期跳过：以 **PG**（如 `pipeline_step_run.output`）或专用业务落盘为 SSOT；Console 读 DB，运维不靠 error.log。
+- 业务步骤的成功 / 预期跳过：以 **PG**（如 `pipeline_step_run.output`）或专用业务落盘为 SSOT；Habitat 读 DB，运维不靠 error.log。
 - **不要**为运维复述向 service logger 打 `info`（会同时进 stderr + error.log）；**不要**维护与 PG 重复的本地 JSON 运行史（如已入库的 deep sleep round log）。
 
 ## LLM profile 回退

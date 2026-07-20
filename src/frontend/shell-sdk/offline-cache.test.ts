@@ -5,7 +5,7 @@ import {
   readOfflineCache,
   readOfflineCacheEntry,
   resolveCacheScope,
-  resolveHubCacheScope,
+  resolveHabitatCacheScope,
   setSatelliteOfflineCacheBackendForTests,
   writeOfflineCache,
 } from "./offline-cache.ts";
@@ -14,7 +14,7 @@ import { resetSubjectScopeForTest, setSubjectKind } from "./subject-scope-store.
 describe("satellite-sdk offline-cache", () => {
   test("read/write round-trip with cachedAt envelope", async () => {
     setSatelliteOfflineCacheBackendForTests(new Map());
-    const scope = resolveCacheScope("ws://127.0.0.1:2658/hub/rpc/v1");
+    const scope = resolveCacheScope("ws://127.0.0.1:2658/rpc/v1");
     await writeOfflineCache(scope, "tasks", "lists", [{ id: 1 }]);
     expect(await readOfflineCache<{ id: number }[]>(scope, "tasks", "lists")).toEqual([{ id: 1 }]);
     const entry = await readOfflineCacheEntry<{ id: number }[]>(scope, "tasks", "lists");
@@ -39,15 +39,15 @@ describe("satellite-sdk offline-cache", () => {
     expect(text.length).toBeGreaterThan(0);
   });
 
-  test("resolveHubCacheScope includes subject kind", () => {
+  test("resolveHabitatCacheScope includes subject kind", () => {
     resetSubjectScopeForTest();
     const prevWindow = globalThis.window;
-    const shell = { hubWsUrl: "ws://hub.example/hub/rpc/v1" };
+    const shell = { habitatWsUrl: "ws://hub.example/rpc/v1" };
     globalThis.window = { satelliteShell: shell } as Window & typeof globalThis;
     try {
-      expect(resolveHubCacheScope()).toBe("ws://hub.example/hub/rpc/v1:user");
+      expect(resolveHabitatCacheScope()).toBe("ws://hub.example/rpc/v1:user");
       setSubjectKind("agent");
-      expect(resolveHubCacheScope()).toBe("ws://hub.example/hub/rpc/v1:agent");
+      expect(resolveHabitatCacheScope()).toBe("ws://hub.example/rpc/v1:agent");
     } finally {
       globalThis.window = prevWindow;
       resetSubjectScopeForTest();
@@ -57,15 +57,15 @@ describe("satellite-sdk offline-cache", () => {
   test("user and agent offline cache are isolated", async () => {
     resetSubjectScopeForTest();
     setSatelliteOfflineCacheBackendForTests(new Map());
-    const hubScope = resolveCacheScope("ws://127.0.0.1:2658/hub/rpc/v1");
-    await writeOfflineCache(`${hubScope}:user`, "tasks", "lists", [{ id: 1 }]);
-    await writeOfflineCache(`${hubScope}:agent`, "tasks", "lists", [{ id: 2 }]);
-    expect(await readOfflineCache<{ id: number }[]>(`${hubScope}:user`, "tasks", "lists")).toEqual([
-      { id: 1 },
-    ]);
-    expect(await readOfflineCache<{ id: number }[]>(`${hubScope}:agent`, "tasks", "lists")).toEqual(
-      [{ id: 2 }],
-    );
+    const habitatScope = resolveCacheScope("ws://127.0.0.1:2658/rpc/v1");
+    await writeOfflineCache(`${habitatScope}:user`, "tasks", "lists", [{ id: 1 }]);
+    await writeOfflineCache(`${habitatScope}:agent`, "tasks", "lists", [{ id: 2 }]);
+    expect(
+      await readOfflineCache<{ id: number }[]>(`${habitatScope}:user`, "tasks", "lists"),
+    ).toEqual([{ id: 1 }]);
+    expect(
+      await readOfflineCache<{ id: number }[]>(`${habitatScope}:agent`, "tasks", "lists"),
+    ).toEqual([{ id: 2 }]);
     setSatelliteOfflineCacheBackendForTests(null);
     resetSubjectScopeForTest();
   });

@@ -7,7 +7,7 @@ import {
   mergeRemoteActive,
 } from "@freeanima/frontend/shell-sdk/pomodoro-sync-local.ts";
 import { readPomodoroActiveState } from "@freeanima/frontend/shell-sdk/pomodoro-active.ts";
-import { getHubRpcConnectionState } from "@freeanima/frontend/shell-sdk/hub-connection.ts";
+import { getHabitatRpcConnectionState } from "@freeanima/frontend/shell-sdk/habitat-connection.ts";
 
 import {
   abortPomodoroSession,
@@ -42,7 +42,7 @@ const putTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 function hubReady(): boolean {
   if (typeof navigator !== "undefined" && !navigator.onLine) return false;
-  return getHubRpcConnectionState() === "connected";
+  return getHabitatRpcConnectionState() === "connected";
 }
 
 export function isPhaseAlreadyHandled(state: PomodoroActiveState): boolean {
@@ -175,7 +175,7 @@ export async function pullPomodoroActive(subjectKind: PomodoroSubjectKind): Prom
   }
 }
 
-/** Hub `pomodoro.active.changed` 推送：null 表示对端 clear，直接清空本地。 */
+/** Habitat `pomodoro.active.changed` 推送：null 表示对端 clear，直接清空本地。 */
 export function applyPomodoroActiveChangedEvent(
   subjectKind: PomodoroSubjectKind,
   remote: Parameters<typeof mergeRemoteActive>[0],

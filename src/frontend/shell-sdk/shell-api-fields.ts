@@ -6,28 +6,28 @@ import {
 import type { SatelliteShellApi } from "./shell-api.ts";
 
 export function buildShellApiFields(
-  hubUrl: string,
-  hubWsUrl: string,
+  habitatUrl: string,
+  habitatWsUrl: string,
   remoteAuthToken: string,
-): Pick<SatelliteShellApi, "hubUrl" | "hubWsUrl" | "remoteAuth" | "hubFetch"> {
+): Pick<SatelliteShellApi, "habitatUrl" | "habitatWsUrl" | "remoteAuth" | "habitatFetch"> {
   const token = remoteAuthToken.trim();
   const remoteAuth = token ? { token } : undefined;
-  const hubFetch = token ? createBearerFetch(token, hubUrl) : undefined;
+  const habitatFetch = token ? createBearerFetch(token, habitatUrl) : undefined;
   return {
-    hubUrl,
-    hubWsUrl,
+    habitatUrl,
+    habitatWsUrl,
     ...(remoteAuth !== undefined ? { remoteAuth } : {}),
-    ...(hubFetch !== undefined ? { hubFetch } : {}),
+    ...(habitatFetch !== undefined ? { habitatFetch } : {}),
   };
 }
 
 export function connectAuthTokenForHub(
-  hubUrl: string,
+  habitatUrl: string,
   remoteAuthToken: string,
 ): string | undefined {
-  return resolveConnectAuthToken(hubUrl, remoteAuthToken);
+  return resolveConnectAuthToken(habitatUrl, remoteAuthToken);
 }
 
-export function hubRequiresRemoteAuth(hubUrl: string, remoteAuthToken: string): boolean {
-  return shouldAttachRemoteAuth(hubUrl, remoteAuthToken);
+export function hubRequiresRemoteAuth(habitatUrl: string, remoteAuthToken: string): boolean {
+  return shouldAttachRemoteAuth(habitatUrl, remoteAuthToken);
 }

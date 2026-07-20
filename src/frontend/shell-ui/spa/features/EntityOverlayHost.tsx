@@ -1,6 +1,6 @@
 import { useEffect, useState, type JSX } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@freeanima/frontend/ui-kit";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 import { getEntityOverlay } from "./entity-overlay-registry.ts";
 import {
@@ -18,7 +18,7 @@ export function EntityOverlayHost(): JSX.Element | null {
     bindOpenEntityResourceToWindow();
     setAnimaUriPrimaryComponentResolver(async (id) => {
       try {
-        const raw: unknown = await getTypedSatelliteHubClient().call("memory.semanticList", {
+        const raw: unknown = await getTypedSatelliteHabitatClient().call("memory.semanticList", {
           status: "all",
           limit: 100,
           offset: 0,

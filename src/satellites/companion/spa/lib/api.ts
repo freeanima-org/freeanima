@@ -5,8 +5,8 @@ import type {
   MotionSlotId,
 } from "@freeanima/satellites/companion/shared/constants.ts";
 import type { CompanionBehavior } from "@freeanima/satellites/companion/shared/companion-schema.ts";
-import { fetchHubRestRaw, parseHubRestResponse } from "@freeanima/shared/hub-rpc";
-import { getCompanionHubClient, type CompanionHubConfigResponse } from "./hub-client.ts";
+import { fetchHabitatRestRaw, parseHabitatRestResponse } from "@freeanima/shared/habitat-rpc";
+import { getCompanionHabitatClient, type CompanionHubConfigResponse } from "./habitat-client.ts";
 import { resolveHubBaseUrl, resolveSidecarOrigin } from "./sidecar.ts";
 
 export function resetSidecarOriginCache(): void {
@@ -35,7 +35,7 @@ async function hubBase(): Promise<string> {
 }
 
 export async function fetchCompanionConfig(): Promise<CompanionConfig> {
-  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+  const data = await getCompanionHabitatClient().call<CompanionHubConfigResponse>(
     "companion.config.get",
     {},
   );
@@ -65,8 +65,8 @@ export async function fetchSidecarRuntimeFields(): Promise<{
   }
 }
 
-/** Hub 设置页：profile 走 RPC，运行时字段走 sidecar */
-export async function loadHubCompanionSettingsConfig(): Promise<CompanionConfig> {
+/** Habitat 设置页：profile 走 RPC，运行时字段走 sidecar */
+export async function loadHabitatCompanionSettingsConfig(): Promise<CompanionConfig> {
   const profile = await fetchCompanionConfig();
   const runtime = await fetchSidecarRuntimeFields();
   return { ...profile, ...runtime };
@@ -77,7 +77,7 @@ export async function saveSettings(patch: {
   behavior?: Partial<CompanionBehavior>;
   motion_slots?: ClientCompanionConfig["motion_slots"];
 }) {
-  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+  const data = await getCompanionHabitatClient().call<CompanionHubConfigResponse>(
     "companion.config.update",
     {
       ...(patch.behavior !== undefined ? { behavior: patch.behavior } : {}),
@@ -91,9 +91,9 @@ export async function uploadModel(file: File) {
   const base = await hubBase();
   const form = new FormData();
   form.append("file", file);
-  const res = await fetchHubRestRaw(base, "companion.model.upload", {}, { body: form });
-  await parseHubRestResponse(res);
-  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+  const res = await fetchHabitatRestRaw(base, "companion.model.upload", {}, { body: form });
+  await parseHabitatRestResponse(res);
+  const data = await getCompanionHabitatClient().call<CompanionHubConfigResponse>(
     "companion.config.get",
     {},
   );
@@ -101,7 +101,7 @@ export async function uploadModel(file: File) {
 }
 
 export async function setActiveModel(id: string) {
-  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+  const data = await getCompanionHabitatClient().call<CompanionHubConfigResponse>(
     "companion.model.setActive",
     { id },
   );
@@ -109,11 +109,11 @@ export async function setActiveModel(id: string) {
 }
 
 export async function renameModel(id: string, name: string) {
-  await getCompanionHubClient().call("companion.model.rename", { id, name });
+  await getCompanionHabitatClient().call("companion.model.rename", { id, name });
 }
 
 export async function deleteModel(id: string) {
-  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+  const data = await getCompanionHabitatClient().call<CompanionHubConfigResponse>(
     "companion.model.delete",
     { id },
   );
@@ -121,7 +121,7 @@ export async function deleteModel(id: string) {
 }
 
 export async function fetchMotionLibrary() {
-  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+  const data = await getCompanionHabitatClient().call<CompanionHubConfigResponse>(
     "companion.config.get",
     {},
   );
@@ -135,13 +135,13 @@ export async function uploadMotionFile(file: File) {
   const base = await hubBase();
   const form = new FormData();
   form.append("file", file);
-  const res = await fetchHubRestRaw(base, "companion.motion.import", {}, { body: form });
-  const body = (await parseHubRestResponse(res)) as {
+  const res = await fetchHabitatRestRaw(base, "companion.motion.import", {}, { body: form });
+  const body = (await parseHabitatRestResponse(res)) as {
     library?: MotionLibraryEntry[];
     entries?: MotionLibraryEntry[];
     skipped_fbx?: string[];
   };
-  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+  const data = await getCompanionHabitatClient().call<CompanionHubConfigResponse>(
     "companion.config.get",
     {},
   );
@@ -157,7 +157,7 @@ export async function uploadMotionFile(file: File) {
 }
 
 export async function setMotionSlot(slot: MotionSlotId, motionIds: string[]) {
-  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+  const data = await getCompanionHabitatClient().call<CompanionHubConfigResponse>(
     "companion.motion.setSlot",
     {
       slot,
@@ -168,7 +168,7 @@ export async function setMotionSlot(slot: MotionSlotId, motionIds: string[]) {
 }
 
 export async function renameMotion(id: string, name: string) {
-  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+  const data = await getCompanionHabitatClient().call<CompanionHubConfigResponse>(
     "companion.motion.rename",
     { id, name },
   );
@@ -176,7 +176,7 @@ export async function renameMotion(id: string, name: string) {
 }
 
 export async function deleteMotion(id: string) {
-  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+  const data = await getCompanionHabitatClient().call<CompanionHubConfigResponse>(
     "companion.motion.delete",
     { id },
   );
@@ -184,7 +184,7 @@ export async function deleteMotion(id: string) {
 }
 
 export async function fetchMotionStatus() {
-  const data = await getCompanionHubClient().call<CompanionHubConfigResponse>(
+  const data = await getCompanionHabitatClient().call<CompanionHubConfigResponse>(
     "companion.config.get",
     {},
   );

@@ -2,7 +2,7 @@ import { readOfflineCache, writeOfflineCache } from "@freeanima/frontend/shell-s
 
 import type { ProjectFolderRow, ProjectRow, TaskItemRow } from "./api.ts";
 
-export { resolveHubCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
+export { resolveHabitatCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
 
 const NAMESPACE = "project";
 

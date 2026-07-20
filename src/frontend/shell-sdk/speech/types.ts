@@ -7,7 +7,7 @@ export const TTS_PROVIDERS = ["edge-tts", "web-speech"] as const;
 export type TtsProvider = (typeof TTS_PROVIDERS)[number];
 export const DEFAULT_TTS_PROVIDER: TtsProvider = "edge-tts";
 
-/** 客户端朗读参数（由 Hub tts 段解析） */
+/** 客户端朗读参数（由 Habitat tts 段解析） */
 export type SpeechPlaybackConfig = {
   enabled: boolean;
   provider: TtsProvider;

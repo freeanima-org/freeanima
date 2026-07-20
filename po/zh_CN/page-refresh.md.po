@@ -47,7 +47,7 @@ msgstr ""
 msgid ""
 "| Verb        | When                                                       | What happens                                                                                                                   |\n"
 "| ----------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |\n"
-"| **sync**    | Hub reconnect, tab visible again, Offline sync toast retry | Flush outbox; modules that flushed call `refreshAll` (see [offline platform](../guide/offline-platform.md))                    |\n"
+"| **sync**    | Habitat reconnect, tab visible again, Offline sync toast retry | Flush outbox; modules that flushed call `refreshAll` (see [offline platform](../guide/offline-platform.md))                    |\n"
 "| **refresh** | Header **Refresh** button or touch pull-to-refresh         | Re-run the page’s `reload*` / list fetch (online `withOfflineCache` already network-fetches). Same handler for button and pull |\n"
 msgstr ""
 
@@ -85,7 +85,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/features/page-refresh.md:22
 msgid ""
-"**Out of scope**: Hub fan-out for every CRUD entity; React Query; turning "
+"**Out of scope**: Habitat fan-out for every CRUD entity; React Query; turning "
 "the offline-sync toast into a page refresh control."
 msgstr ""
 
@@ -106,7 +106,7 @@ msgstr "消息"
 #| "| Self layer (six blocks)                  | Persistent definition of \"who I am\"                                                                                             |\n"
 #| "| Tools (local / MCP / ACP)                | \"Limbs\" for perception and action                                                                                               |\n"
 #| "| pass credentials                         | Lifeline (injected at runtime, never plaintext)                                                                                 |\n"
-#| "| Gateway                                  | Ears and mouth (Discord / WeChat / **Console)                                                                                       |\n"
+#| "| Gateway                                  | Ears and mouth (Discord / WeChat / **Habitat)                                                                                       |\n"
 #| "| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |\n"
 #| "| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |\n"
 msgid ""
@@ -116,7 +116,7 @@ msgid ""
 "| B Tier2 CRUD     | Task, Project, Diary              | Mount / selection cache-first; local write reload; sync → `refreshAll` | Header + pull-to-refresh                  |\n"
 "| C Hybrid         | Pomodoro                          | `pomodoro.active.changed`                                              | Offline `refreshAll` for config/stats     |\n"
 "| D Tier1 snapshot | Email, Notification, Dream, Vault | Mount / dependency load                                                | Header refresh (pull on list where wired) |\n"
-"| E Console        | Ops lists                         | Load on enter                                                          | Explicit refresh (existing)               |\n"
+"| E Habitat        | Ops lists                         | Load on enter                                                          | Explicit refresh (existing)               |\n"
 "| F Settings       | Shell settings                    | Load on open                                                           | Re-read after save                        |\n"
 "| G Shell update   | PWA / installer                   | Update check                                                           | Reload / install ≠ business refresh       |\n"
 msgstr ""
@@ -126,7 +126,7 @@ msgstr ""
 "| Self layer（六个区块）           | “我是谁”的持久定义                                                                                                           |\n"
 "| Tools（local / MCP / ACP）       | 用于感知与行动的“肢体”                                                                                                       |\n"
 "| pass credentials                 | 生命线（运行时注入，绝不明文）                                                                                               |\n"
-"| Gateway                          | 耳朵与嘴巴（Discord / WeChat / **Console）                                                                                       |\n"
+"| Gateway                          | 耳朵与嘴巴（Discord / WeChat / **Habitat）                                                                                       |\n"
 "| EventBus                         | 异步通知传输（Redis 队列）；睡眠使用 Pipeline Runner，而非 EventBus——见 [`architecture.md`](architecture.md)                |\n"
 "| `AGENTS.md` 等项目叙事文件       | 项目上下文的锚点                                                                                                             |\n"
 
@@ -147,7 +147,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/features/page-refresh.md:39
-msgid "Copy: `m.console_common_refresh` / `m.console_common_refreshing`."
+msgid "Copy: `m.habitat_common_refresh` / `m.habitat_common_refreshing`."
 msgstr ""
 
 #. type: Bullet: '- '

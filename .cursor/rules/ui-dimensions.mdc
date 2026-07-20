@@ -16,6 +16,6 @@ alwaysApply: false
 
 选用 API：
 
-- 壳：`getShellKind` / `canOpenHubSettings` / `shouldUseNativeShellNavigation`
+- 壳：`getShellKind` / `canOpenHabitatSettings` / `shouldUseNativeShellNavigation`
 - 布局：`useLayoutMode` / `useCompactLayout` / `useDrawerNav`
 - 交互：`useContextMenuCapability` / `useActionSheetCapability` / `useEnterToSendCapability`

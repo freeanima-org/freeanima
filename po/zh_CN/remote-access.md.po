@@ -53,7 +53,7 @@ msgstr "远程访问（Tunnel + 应用 token）"
 #: docs/guide/remote-access.md:9
 #, no-wrap
 msgid ""
-"> Hub 业务 API（Hub RPC `POST|WS /hub/rpc/v1` + MCP）须带 **per-subject Service API Token**（`Authorization: Bearer fa_at_...` 或 WS `connect.auth_token`）。\n"
+"> Habitat 业务 API（Habitat RPC `POST|WS /rpc/v1` + MCP）须带 **per-subject Service API Token**（`Authorization: Bearer fa_at_...` 或 WS `connect.auth_token`）。\n"
 "> Security context: [`security.md`](security.md) · Install: [`install.md`](install.md)\n"
 msgstr ""
 
@@ -65,33 +65,33 @@ msgstr ""
 #| "| ----------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
 #| "| **Service API Token**   | 绑定 `user` / `agent` subject；REST `Authorization: Bearer`；SAP `connect.auth_token`；MCP `/mcp` 同 Bearer |\n"
 #| "| **CLI bootstrap**       | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                               |\n"
-#| "| **cloudflared**         | Outbound tunnel；single hostname → Hub `127.0.0.1:2658`（API + Web UI at `/web`）                           |\n"
-#| "| **`http.host`**         | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                     |\n"
+#| "| **cloudflared**         | Outbound tunnel；single hostname → Habitat `127.0.0.1:2658`（API + Web UI at `/web`）                           |\n"
+#| "| **`http.host`**         | Habitat listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                     |\n"
 #| "| **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel          |\n"
-#| "| **Client settings**     | desktop / mobile shell / **browser Web** fill Hub URL and token in **Hub settings**                       |\n"
-#| "| **Remote UI**           | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |\n"
+#| "| **Client settings**     | desktop / mobile shell / **browser Web** fill Habitat URL and token in **Habitat settings**                       |\n"
+#| "| **Remote UI**           | Desktop / Mobile 默认从 Habitat `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |\n"
 #| "| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                 |\n"
 msgid ""
 "| Layer                    | Role                                                                                                                               |\n"
 "| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| **Service API Token**    | 绑定 `user` / `agent` subject；Hub RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer                 |\n"
+"| **Service API Token**    | 绑定 `user` / `agent` subject；Habitat RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer                 |\n"
 "| **CLI bootstrap**        | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                                      |\n"
-"| **`http.host`**          | Hub listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                                            |\n"
+"| **`http.host`**          | Habitat listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                                            |\n"
 "| **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出客户端访问用的名称）；变更后 `auto: true` 时重启自动重签                  |\n"
 "| **`http.cors_origins`**  | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy)                                                        |\n"
-"| **Client settings**      | Desktop / mobile shell / **browser Web** fill Hub URL and token in **Hub settings**                                                |\n"
-"| **Remote UI**            | 浏览器/PWA 从 Hub `/web/*` 加载；Desktop/Mobile 默认安装包内本地 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |\n"
+"| **Client settings**      | Desktop / mobile shell / **browser Web** fill Habitat URL and token in **Habitat settings**                                                |\n"
+"| **Remote UI**            | 浏览器/PWA 从 Habitat `/web/*` 加载；Desktop/Mobile 默认安装包内本地 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |\n"
 "| **PWA**                  | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                                        |\n"
 msgstr ""
 "| 层级                   | 作用                                                                                                            |\n"
 "| ----------------------- | --------------------------------------------------------------------------------------------------------------- |\n"
 "| **Service API Token**   | 绑定 `user` / `agent` subject；REST `Authorization: Bearer`；SAP `connect.auth_token`；MCP `/mcp` 同上 |\n"
 "| **CLI bootstrap**       | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                   |\n"
-"| **cloudflared**         | 出站隧道；single hostname → Hub `127.0.0.1:2658`（API + Web UI 位于 `/web`）                                    |\n"
-"| **`http.host`**         | Hub 监听绑定（IP 或可解析主机名）；默认 `127.0.0.1`；局域网用 `0.0.0.0`                                          |\n"
+"| **cloudflared**         | 出站隧道；single hostname → Habitat `127.0.0.1:2658`（API + Web UI 位于 `/web`）                                    |\n"
+"| **`http.host`**         | Habitat 监听绑定（IP 或可解析主机名）；默认 `127.0.0.1`；局域网用 `0.0.0.0`                                          |\n"
 "| **`http.cors_origins`** | 显式跨源浏览器 origin（dev:web、分离式 UI/API 反向代理）；独立于 Tunnel                                         |\n"
-"| **客户端设置**          | desktop / mobile shell / **浏览器 Web** 在 **Hub 设置** 中填写 Hub URL 与 token                               |\n"
-"| **远程 UI**             | Desktop / Mobile 默认从 Hub `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) 的 Client UI |\n"
+"| **客户端设置**          | desktop / mobile shell / **浏览器 Web** 在 **Habitat 设置** 中填写 Habitat URL 与 token                               |\n"
+"| **远程 UI**             | Desktop / Mobile 默认从 Habitat `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) 的 Client UI |\n"
 "| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 `compact` 布局                                   |\n"
 
 #. type: Plain text
@@ -110,10 +110,10 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:36
 msgid ""
-"**Secure context**：Service Worker 需要 HTTPS 或 `localhost`。局域网可用 Hub "
+"**Secure context**：Service Worker 需要 HTTPS 或 `localhost`。局域网可用 Habitat "
 "本地 HTTPS（`:2659`）或自建 TLS 终止。浏览器 **Web Speech** 朗读同样需安全上"
-"下文；默认 **Edge TTS**（Hub `POST /hub/rpc/v1/tts/synthesize`）在 HTTP 局域"
-"网下也可用，但 Hub 需能访问外网 Microsoft 语音服务。"
+"下文；默认 **Edge TTS**（Habitat `POST /rpc/v1/tts/synthesize`）在 HTTP 局域"
+"网下也可用，但 Habitat 需能访问外网 Microsoft 语音服务。"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -134,10 +134,10 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:36
 msgid ""
-"**更新**：Hub 部署新 Web 静态产物后，已安装 PWA 会提示「新版本可用」；点击重"
+"**更新**：Habitat 部署新 Web 静态产物后，已安装 PWA 会提示「新版本可用」；点击重"
 "新加载后生效（不会自动刷新）。壳层 JS 由 Workbox precache，生产环境会定期/"
 "`visibilitychange` 时 `registration.update()`。`/web/config.json` 始终 `no-"
-"store`（Hub URL 动态）。Desktop/Mobile 不走 SW；升级见 Releases 安装包检测"
+"store`（Habitat URL 动态）。Desktop/Mobile 不走 SW；升级见 Releases 安装包检测"
 "（设置 → 关于「检查更新」）。"
 msgstr ""
 
@@ -156,7 +156,7 @@ msgstr ""
 #: docs/guide/remote-access.md:36
 msgid ""
 "**业务快照（IndexedDB）**：Chat / Task / Project / Notification / Diary / "
-"Email / Dream / Pomodoro（config/历史）及 Console 部分只读页由 `shell-sdk/"
+"Email / Dream / Pomodoro（config/历史）及 Habitat 部分只读页由 `shell-sdk/"
 "offline-cache` 做 cache-first；**Tier 2 可写**模块（Diary、Task、Project、"
 "Chat send、Pomodoro outbox）离线可编辑，恢复在线后 outbox flush；详见 "
 "[`offline-platform.md`](offline-platform.md)。"
@@ -173,15 +173,15 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:36
 msgid ""
-"**存储**：SW 缓存、localStorage（Hub 设置）、IndexedDB（业务快照）互不冲突；"
+"**存储**：SW 缓存、localStorage（Habitat 设置）、IndexedDB（业务快照）互不冲突；"
 "清除站点数据会同时删除三者。"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:38
 msgid ""
-"Registry 标记 `auth: optional` 的 Hub RPC 方法（如 `health.probe`、"
-"`tls.ca.*`）与 CORS 预检可不带 Bearer；其余 `/hub/rpc/v1/*` 与 MCP 须 "
+"Registry 标记 `auth: optional` 的 Habitat RPC 方法（如 `health.probe`、"
+"`tls.ca.*`）与 CORS 预检可不带 Bearer；其余 `/rpc/v1/*` 与 MCP 须 "
 "Bearer。"
 msgstr ""
 
@@ -196,7 +196,7 @@ msgstr ""
 #, no-wrap
 msgid ""
 "anima token create --subject-id 1 --name bootstrap\n"
-"# 终端打印 fa_at_...（仅此一次）→ 填入客户端 Hub 设置\n"
+"# 终端打印 fa_at_...（仅此一次）→ 填入客户端 Habitat 设置\n"
 msgstr ""
 
 #. type: Plain text
@@ -214,26 +214,26 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:54
-msgid "Console Hub RPC REST（需已认证 `full` token）："
+msgid "Habitat Habitat RPC REST（需已认证 `full` token）："
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:58
 msgid ""
-"`GET /hub/rpc/v1/tokens/listForSubject?id=:id`（或 "
+"`GET /rpc/v1/tokens/listForSubject?id=:id`（或 "
 "`hub().call(\"tokens.listForSubject\", { id })`）"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:58
 msgid ""
-"`POST /hub/rpc/v1/tokens/createForSubject` — body `{ \"id\": <subject_id>, "
+"`POST /rpc/v1/tokens/createForSubject` — body `{ \"id\": <subject_id>, "
 "\"name\": \"desktop\" }`，响应含一次性 `plaintext`"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:58
-msgid "`POST /hub/rpc/v1/tokens/revoke` — body `{ \"id\": <token_id> }`"
+msgid "`POST /rpc/v1/tokens/revoke` — body `{ \"id\": <token_id> }`"
 msgstr ""
 
 #. type: Title ###
@@ -261,7 +261,7 @@ msgstr ""
 msgid ""
 "Multiple binds (distinct interfaces only — not client-facing aliases). Use "
 "`0.0.0.0` instead of listing every IP; do not mix `0.0.0.0` with specific "
-"addresses. Hostnames must resolve on the Hub machine (`/etc/hosts` or DNS):"
+"addresses. Hostnames must resolve on the Habitat machine (`/etc/hosts` or DNS):"
 msgstr ""
 
 #. type: Fenced code block (yaml)
@@ -284,7 +284,7 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/remote-access.md:80
 #, no-wrap
-msgid "LAN: `http://<PC-IP>:2658/web/chat` with `http.host: 0.0.0.0` (or `anima service start --host 0.0.0.0`); clients set Hub URL to `http://<PC-IP>:2658` (no `/web` suffix).\n"
+msgid "LAN: `http://<PC-IP>:2658/web/chat` with `http.host: 0.0.0.0` (or `anima service start --host 0.0.0.0`); clients set Habitat URL to `http://<PC-IP>:2658` (no `/web` suffix).\n"
 msgstr ""
 
 #. type: Title ###
@@ -296,7 +296,7 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/remote-access.md:84
 msgid ""
-"When the browser UI and Hub API share the same origin (e.g. Hub `/web` + "
+"When the browser UI and Habitat API share the same origin (e.g. Habitat `/web` + "
 "same-host `/api`), **no CORS config is needed**."
 msgstr ""
 
@@ -327,12 +327,12 @@ msgstr ""
 #. type: Title ###
 #: docs/guide/remote-access.md:95
 #, no-wrap
-msgid "Hub 本地 HTTPS（双端口，可选）"
+msgid "Habitat 本地 HTTPS（双端口，可选）"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:98
-msgid "Hub 可在 **独立端口** 提供原生 TLS（`Bun.serve`），与默认 HTTP 并行："
+msgid "Habitat 可在 **独立端口** 提供原生 TLS（`Bun.serve`），与默认 HTTP 并行："
 msgstr ""
 
 #. type: Plain text
@@ -347,7 +347,7 @@ msgid ""
 "| 端口     | 协议  | 用途                                                                                  |\n"
 "| -------- | ----- | ------------------------------------------------------------------------------------- |\n"
 "| **2658** | HTTP  | 默认；CLI 探活、日常客户端、局域网访问                                                |\n"
-"| **2659** | HTTPS | 本地/局域网安全上下文（Web Speech / PWA 等）；客户端 Hub URL 填 `https://<host>:2659` |\n"
+"| **2659** | HTTPS | 本地/局域网安全上下文（Web Speech / PWA 等）；客户端 Habitat URL 填 `https://<host>:2659` |\n"
 msgstr ""
 "| 端口                      | 作用                                                                  |\n"
 "| ------------------------- | --------------------------------------------------------------------- |\n"
@@ -380,14 +380,14 @@ msgid ""
 "**`auto: true`**（默认）：首次启动在 `~/.anima/tls/` 自动生成 cert/key（优先 "
 "**mkcert**，否则 **openssl 自签**）；SAN 含 `localhost`、`127.0.0.1`、`::1`、"
 "`http.host` 中的 bind 地址（跳过 `0.0.0.0`）及 **`http.allowed_hosts`**。配置"
-"变更导致 SAN 不足时，**重启 Hub 会自动删除旧证书并重签**（`auto: false` 时仅"
+"变更导致 SAN 不足时，**重启 Habitat 会自动删除旧证书并重签**（`auto: false` 时仅"
 "告警，不覆盖手动证书）。"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:120
 msgid ""
-"**探活**：`anima service status` 与 `GET /hub/rpc/v1/health/probe` 仍走 HTTP "
+"**探活**：`anima service status` 与 `GET /rpc/v1/health/probe` 仍走 HTTP "
 "`:2658`。"
 msgstr ""
 
@@ -400,7 +400,7 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/remote-access.md:124
 msgid ""
-"Hub 服务器证书在 Hub 机器上；手机浏览器/APK 无警告访问须在各设备安装 "
+"Habitat 服务器证书在 Habitat 机器上；手机浏览器/APK 无警告访问须在各设备安装 "
 "**mkcert 根 CA**（`rootCA.pem`，非 `cert.pem`）："
 msgstr ""
 
@@ -455,8 +455,8 @@ msgstr "3. 客户端配置"
 #. type: Plain text
 #: docs/guide/remote-access.md:140
 #, no-wrap
-msgid "**Desktop shell** (`src/app/shell/desktop`), **mobile shell** (`src/app/shell/mobile`), and **browser Web** are remote clients; they **do not read** Hub `config.yaml` token.\n"
-msgstr "**桌面壳层**（`src/app/shell/desktop`）、**移动壳层**（`src/app/shell/mobile`）与 **浏览器 Web**（`web.enabled` + Tunnel 或局域网 `:2659`）为远程客户端；它们**不读取** Hub `config.yaml` 中的 token。\n"
+msgid "**Desktop shell** (`src/app/shell/desktop`), **mobile shell** (`src/app/shell/mobile`), and **browser Web** are remote clients; they **do not read** Habitat `config.yaml` token.\n"
+msgstr "**桌面壳层**（`src/app/shell/desktop`）、**移动壳层**（`src/app/shell/mobile`）与 **浏览器 Web**（`web.enabled` + Tunnel 或局域网 `:2659`）为远程客户端；它们**不读取** Habitat `config.yaml` 中的 token。\n"
 
 #. type: Plain text
 #: docs/guide/remote-access.md:146
@@ -488,36 +488,36 @@ msgstr "设置（所有客户端）："
 #. type: Bullet: '1. '
 #: docs/guide/remote-access.md:151
 msgid ""
-"**Hub URL** — e.g. `http://192.168.1.10:2658` or `https://<lan-host>:2659` "
-"(Hub root, **without** `/web`)"
+"**Habitat URL** — e.g. `http://192.168.1.10:2658` or `https://<lan-host>:2659` "
+"(Habitat root, **without** `/web`)"
 msgstr ""
 
 #. type: Bullet: '2. '
 #: docs/guide/remote-access.md:151
-msgid "**Hub API Token** — `fa_at_...` from `anima token create`"
+msgid "**Habitat API Token** — `fa_at_...` from `anima token create`"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:153
 msgid ""
-"Browser Web: `/web/config.json` defaults Hub to the **page origin** "
-"(production Hub-hosted `/web` and Vite `dev:web`). Source `dev:hub` writes "
+"Browser Web: `/web/config.json` defaults Habitat to the **page origin** "
+"(production Habitat-hosted `/web` and Vite `dev:web`). Source `dev:hub` writes "
 "`~/.anima/dev-web.token`; Vite injects it as `remote_auth_token` so the "
-"first visit need not paste a token. Production Hub never puts tokens in "
-"`config.json` — use `anima token create` and Hub settings."
+"first visit need not paste a token. Production Habitat never puts tokens in "
+"`config.json` — use `anima token create` and Habitat settings."
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:155
 #, fuzzy
 #| msgid ""
-#| "Flow: open Hub settings → fill → **Test connection** → Save. Desktop "
+#| "Flow: open Habitat settings → fill → **Test connection** → Save. Desktop "
 #| "requires **restart desktop shell** after save.\n"
 msgid ""
-"Flow: open Hub settings → fill → **Test connection** → Save. Desktop "
+"Flow: open Habitat settings → fill → **Test connection** → Save. Desktop "
 "requires **restart desktop shell** after save."
 msgstr ""
-"流程：打开 Hub 设置 → 填写 → **测试连接** → 保存。桌面端保存后需**重启桌面壳"
+"流程：打开 Habitat 设置 → 填写 → **测试连接** → 保存。桌面端保存后需**重启桌面壳"
 "层**。\n"
 
 #. type: Title ##
@@ -532,7 +532,7 @@ msgstr "4. 认证行为"
 #, no-wrap
 msgid ""
 "REST:  Authorization: Bearer fa_at_<prefix>_<secret>\n"
-"Hub RPC: WebSocket /hub/rpc/v1 → connect frame includes auth_token\n"
+"Habitat RPC: WebSocket /rpc/v1 → connect frame includes auth_token\n"
 "MCP:   POST/GET /mcp → Authorization: Bearer <token>\n"
 msgstr ""
 "REST:  Authorization: Bearer <token>\n"
@@ -549,25 +549,25 @@ msgstr ""
 #
 #. type: Plain text
 #: docs/guide/remote-access.md:167
-msgid "Missing or invalid token → HTTP `401` or Hub RPC connection closed."
+msgid "Missing or invalid token → HTTP `401` or Habitat RPC connection closed."
 msgstr "缺少或错误的 token → HTTP `401` 或 SAP 连接关闭。"
 
 #. type: Title ##
 #: docs/guide/remote-access.md:168
 #, fuzzy, no-wrap
-#| msgid "5. MCP outbound (external agents query Hub data)"
-msgid "4. MCP outbound (external agents query Hub data)"
-msgstr "5. MCP 出站（外部 Agent 查询 Hub 数据）"
+#| msgid "5. MCP outbound (external agents query Habitat data)"
+msgid "4. MCP outbound (external agents query Habitat data)"
+msgstr "5. MCP 出站（外部 Agent 查询 Habitat 数据）"
 
 #. type: Plain text
 #: docs/guide/remote-access.md:171
 msgid ""
-"Hub serves Streamable HTTP MCP Server at **`/mcp`**, exposing read-only "
+"Habitat serves Streamable HTTP MCP Server at **`/mcp`**, exposing read-only "
 "tools from ToolSets with `expose_mcp: true` (e.g. `memory_recall`, "
 "`conversation_search`). External MCP clients (Cursor, Claude Desktop, etc.) "
 "connect **without LLM relay**."
 msgstr ""
-"Hub 在 **`/mcp`** 提供 Streamable HTTP MCP Server，暴露 `expose_mcp: true` "
+"Habitat 在 **`/mcp`** 提供 Streamable HTTP MCP Server，暴露 `expose_mcp: true` "
 "的 ToolSet 中的只读工具（如 `memory_recall`、`conversation_search`）。外部 "
 "MCP 客户端（Cursor、Claude Desktop 等）**无需 LLM relay** 即可连接。"
 
@@ -593,26 +593,26 @@ msgstr ""
 #: docs/guide/remote-access.md:183
 #, fuzzy
 #| msgid ""
-#| "**Inbound** (Hub connects to external MCP servers): `config.yaml` "
+#| "**Inbound** (Habitat connects to external MCP servers): `config.yaml` "
 #| "`mcp_servers` (`capabilities/mcp-client`)"
 msgid ""
-"**Inbound** (Hub connects to external MCP servers): `config.yaml` "
+"**Inbound** (Habitat connects to external MCP servers): `config.yaml` "
 "`mcp_servers` (`src/capabilities/mcp-client`)"
 msgstr ""
-"**入站**（Hub 连接外部 MCP 服务器）：`config.yaml` `mcp_servers`"
+"**入站**（Habitat 连接外部 MCP 服务器）：`config.yaml` `mcp_servers`"
 "（`capabilities/mcp-client`）"
 
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:183
 #, fuzzy
 #| msgid ""
-#| "**Outbound** (external agents call Hub tools): `/mcp` endpoint "
+#| "**Outbound** (external agents call Habitat tools): `/mcp` endpoint "
 #| "(`capabilities/mcp-server`)"
 msgid ""
-"**Outbound** (external agents call Hub tools): `/mcp` endpoint (`src/"
+"**Outbound** (external agents call Habitat tools): `/mcp` endpoint (`src/"
 "capabilities/mcp-server`)"
 msgstr ""
-"**出站**（外部 Agent 调用 Hub 工具）：`/mcp` 端点（`capabilities/mcp-"
+"**出站**（外部 Agent 调用 Habitat 工具）：`/mcp` 端点（`capabilities/mcp-"
 "server`）"
 
 #. type: Title ##
@@ -631,20 +631,20 @@ msgstr "运维"
 #| "| `anima tunnel status`            | Tunnel / cloudflared status                    |\n"
 #| "| `anima tunnel start` / `stop`    | Manual cloudflared (production: service stack) |\n"
 #| "| `anima web start --foreground`   | Standalone Web static server (debug, `/web`)   |\n"
-#| "| `anima service status`           | Hub / Tunnel stack                             |\n"
+#| "| `anima service status`           | Habitat / Tunnel stack                             |\n"
 msgid ""
 "| Command                          | Description                                  |\n"
 "| -------------------------------- | -------------------------------------------- |\n"
 "| `anima token create/list/revoke` | Service API Token 管理（CLI，直连 PG）       |\n"
 "| `anima web start --foreground`   | Standalone Web static server (debug, `/web`) |\n"
-"| `anima service status`           | Hub stack status                             |\n"
+"| `anima service status`           | Habitat stack status                             |\n"
 msgstr ""
 "| 命令                        | 说明                                       |\n"
 "| ------------------------------ | ------------------------------------------------- |\n"
 "| `anima tunnel status`          | Tunnel / cloudflared 状态                       |\n"
 "| `anima tunnel start` / `stop`  | 手动 cloudflared（生产环境：service 栈）    |\n"
 "| `anima web start --foreground` | 独立 Web 静态服务器（调试）              |\n"
-"| `anima service status`         | Hub / Web / Tunnel 栈                          |\n"
+"| `anima service status`         | Habitat / Web / Tunnel 栈                          |\n"
 
 #. type: Plain text
 #: docs/guide/remote-access.md:201
@@ -652,28 +652,28 @@ msgstr ""
 #| msgid ""
 #| "| Symptom                | Check                                                               |\n"
 #| "| ---------------------- | ------------------------------------------------------------------- |\n"
-#| "| Public 502             | Is Hub running? `anima service status`                              |\n"
+#| "| Public 502             | Is Habitat running? `anima service status`                              |\n"
 #| "| Public 1033            | `anima tunnel status` shows `connected: no`                         |\n"
 #| "| 401                    | Client token valid; run `anima token list --subject-id <id>`        |\n"
 #| "| Local OK, remote fails | Remote requests need Bearer / SAP auth_token                        |\n"
-#| "| CORS error in browser  | Add UI origin to `http.cors_origins`, or use Hub `/web` same-origin |\n"
+#| "| CORS error in browser  | Add UI origin to `http.cors_origins`, or use Habitat `/web` same-origin |\n"
 #| "| 401 after token change | Update client settings; revoke old tokens if needed                 |\n"
 msgid ""
 "| Symptom                | Check                                                                |\n"
 "| ---------------------- | -------------------------------------------------------------------- |\n"
-"| Cannot reach Hub       | Is Hub running? `anima service status`; check `http.host` / firewall |\n"
+"| Cannot reach Habitat       | Is Habitat running? `anima service status`; check `http.host` / firewall |\n"
 "| 401                    | Client token valid; run `anima token list --subject-id <id>`         |\n"
 "| Local OK, remote fails | Remote requests need Bearer / SAP auth_token                         |\n"
-"| CORS error in browser  | Add UI origin to `http.cors_origins`, or use Hub `/web` same-origin  |\n"
+"| CORS error in browser  | Add UI origin to `http.cors_origins`, or use Habitat `/web` same-origin  |\n"
 "| 401 after token change | Update client settings; revoke old tokens if needed                  |\n"
 msgstr ""
 "| 现象                         | 检查                                                      |\n"
 "| ------------------------------- | ---------------------------------------------------------- |\n"
-"| 公网 502                      | Hub 是否在运行？`anima service status`                     |\n"
+"| 公网 502                      | Habitat 是否在运行？`anima service status`                     |\n"
 "| 公网 1033                     | `anima tunnel status` 显示 `connected: no`                |\n"
 "| 401                             | 客户端 token 是否与 `remote_auth.token` 一致                   |\n"
 "| 本地正常、远程失败          | 远程请求需 Bearer / SAP auth_token；公网 Host 需 token |\n"
-"| 更换 token 后 401        | 更新 Hub 配置**并**所有客户端设置页        |\n"
+"| 更换 token 后 401        | 更新 Habitat 配置**并**所有客户端设置页        |\n"
 
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:205
@@ -683,5 +683,5 @@ msgstr "移动端：[`mobile-app.md`](../features/mobile-app.md)"
 #. type: Bullet: '- '
 #: docs/guide/remote-access.md:205
 msgid ""
-"Desktop companion Hub source: [`companion.md`](../features/companion.md)"
-msgstr "桌面伴侣 Hub 来源：[`companion.md`](../features/companion.md)"
+"Desktop companion Habitat source: [`companion.md`](../features/companion.md)"
+msgstr "桌面伴侣 Habitat 来源：[`companion.md`](../features/companion.md)"

@@ -3,39 +3,47 @@ import { describe, expect, test } from "bun:test";
 import { resolveConnectivityNotice, shellWritesDisabled } from "./connectivity-notice.ts";
 
 describe("resolveConnectivityNotice", () => {
-  test("在线且 Hub 已连接时不展示", () => {
+  test("在线且 Habitat 已连接时不展示", () => {
     expect(
-      resolveConnectivityNotice({ networkOnline: true, hubConnection: "connected" }),
+      resolveConnectivityNotice({ networkOnline: true, habitatConnection: "connected" }),
     ).toBeNull();
   });
 
   test("浏览器离线优先", () => {
-    expect(resolveConnectivityNotice({ networkOnline: false, hubConnection: "connected" })).toEqual(
-      { variant: "warning", kind: "offline" },
-    );
-  });
-
-  test("Hub 连接中", () => {
-    expect(resolveConnectivityNotice({ networkOnline: true, hubConnection: "connecting" })).toEqual(
-      { variant: "info", kind: "hub-connecting" },
-    );
-  });
-
-  test("Hub 已断开", () => {
     expect(
-      resolveConnectivityNotice({ networkOnline: true, hubConnection: "disconnected" }),
+      resolveConnectivityNotice({ networkOnline: false, habitatConnection: "connected" }),
+    ).toEqual({ variant: "warning", kind: "offline" });
+  });
+
+  test("Habitat 连接中", () => {
+    expect(
+      resolveConnectivityNotice({ networkOnline: true, habitatConnection: "connecting" }),
+    ).toEqual({ variant: "info", kind: "hub-connecting" });
+  });
+
+  test("Habitat 已断开", () => {
+    expect(
+      resolveConnectivityNotice({ networkOnline: true, habitatConnection: "disconnected" }),
     ).toEqual({ variant: "warning", kind: "hub-disconnected" });
   });
 });
 
 describe("shellWritesDisabled", () => {
-  test("在线且 Hub 已连接时可写", () => {
-    expect(shellWritesDisabled({ networkOnline: true, hubConnection: "connected" })).toBe(false);
+  test("在线且 Habitat 已连接时可写", () => {
+    expect(shellWritesDisabled({ networkOnline: true, habitatConnection: "connected" })).toBe(
+      false,
+    );
   });
 
-  test("离线或 Hub 未连接时禁用写操作", () => {
-    expect(shellWritesDisabled({ networkOnline: false, hubConnection: "connected" })).toBe(true);
-    expect(shellWritesDisabled({ networkOnline: true, hubConnection: "connecting" })).toBe(true);
-    expect(shellWritesDisabled({ networkOnline: true, hubConnection: "disconnected" })).toBe(true);
+  test("离线或 Habitat 未连接时禁用写操作", () => {
+    expect(shellWritesDisabled({ networkOnline: false, habitatConnection: "connected" })).toBe(
+      true,
+    );
+    expect(shellWritesDisabled({ networkOnline: true, habitatConnection: "connecting" })).toBe(
+      true,
+    );
+    expect(shellWritesDisabled({ networkOnline: true, habitatConnection: "disconnected" })).toBe(
+      true,
+    );
   });
 });

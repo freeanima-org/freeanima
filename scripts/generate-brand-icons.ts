@@ -118,7 +118,7 @@ async function main(): Promise<void> {
   const faviconDests = [
     join(ROOT, "site/public/favicon.png"),
     join(ROOT, "src/app/shell/web/spa/public/favicon.png"),
-    join(ROOT, "src/features/console/ui/console/public/favicon.png"),
+    join(ROOT, "src/features/habitat/ui/habitat/public/favicon.png"),
   ];
   const favicon32 = await renderIcon(32);
   for (const dest of faviconDests) {

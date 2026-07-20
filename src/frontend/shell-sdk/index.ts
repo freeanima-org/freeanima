@@ -29,7 +29,7 @@ export type { ShellClientConfig } from "./shell-client-config.ts";
 export {
   normalizeShellClientConfig,
   parseShellClientConfig,
-  shellClientNeedsHubSetup,
+  shellClientNeedsHabitatSetup,
 } from "./shell-client-config.ts";
 export type { ShellDebugConfig } from "./shell-debug-config.ts";
 export {
@@ -47,7 +47,7 @@ export type { RemoteAuthCredentials } from "./remote-auth.ts";
 export {
   buildBearerHeaders,
   createBearerFetch,
-  isLoopbackHubUrl,
+  isLoopbackHabitatUrl,
   resolveConnectAuthToken,
   shouldAttachRemoteAuth,
   shellConfigToRemoteAuth,
@@ -69,14 +69,14 @@ export {
   formatBuildMetaLines,
   parseComponentBuildMeta,
 } from "./build-meta.ts";
-export type { HubHealthBody } from "./hub-health-probe.ts";
+export type { HabitatHealthBody } from "./habitat-health-probe.ts";
 export {
-  HUB_HEALTH_PROBE_TIMEOUT_MS,
-  hubHealthFailureReason,
-  isHubHealthConnected,
-  probeHubHealthUrl,
-  testHubHealthConnection,
-} from "./hub-health-probe.ts";
+  HABITAT_HEALTH_PROBE_TIMEOUT_MS,
+  habitatHealthFailureReason,
+  isHabitatHealthConnected,
+  probeHabitatHealthUrl,
+  testHabitatHealthConnection,
+} from "./habitat-health-probe.ts";
 export type { ResolvedWorldContext } from "./world-context.ts";
 export type { SubjectKind } from "./subject-scope.ts";
 export {

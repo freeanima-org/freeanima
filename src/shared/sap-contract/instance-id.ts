@@ -2,7 +2,7 @@ import { SAP_INSTANCE_ID_PATTERN } from "./naming.ts";
 
 const INSTANCE_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
 
-/** Generate a random 3-char Hub instance id candidate */
+/** Generate a random 3-char Habitat instance id candidate */
 export function generateSapInstanceIdCandidate(): string {
   let out = "";
   for (let i = 0; i < 3; i++) {

@@ -187,7 +187,7 @@ export function LlmDebugPanel({ open, onClose, snapshots, loading }: LlmDebugPan
           className="h-7 shrink-0 px-2"
           onClick={onClose}
         >
-          {m.console_common_close()}
+          {m.habitat_common_close()}
         </Button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">

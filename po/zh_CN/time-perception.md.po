@@ -313,9 +313,9 @@ msgstr "❌ 不修改持久化消息"
 #. type: Bullet: '- '
 #: docs/concepts/time-perception.md:87
 #, fuzzy
-#| msgid "❌ Do not show time prefix in **Console"
-msgid "❌ Do not show time prefix in Console"
-msgstr "❌ 不在 Console 界面中显示时间前缀"
+#| msgid "❌ Do not show time prefix in **Habitat"
+msgid "❌ Do not show time prefix in Habitat"
+msgstr "❌ 不在 Habitat 界面中显示时间前缀"
 
 #. type: Bullet: '- '
 #: docs/concepts/time-perception.md:87

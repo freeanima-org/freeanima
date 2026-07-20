@@ -1,8 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
 
-const realGate = await import("./hub-fetch-gate.ts");
+const realGate = await import("./habitat-fetch-gate.ts");
 const gateOriginal = {
-  isHubFetchAvailable: realGate.isHubFetchAvailable,
+  isHabitatFetchAvailable: realGate.isHabitatFetchAvailable,
   isNetworkOnline: realGate.isNetworkOnline,
   isHubConnected: realGate.isHubConnected,
   shellWritesDisabledFromState: realGate.shellWritesDisabledFromState,
@@ -10,13 +10,13 @@ const gateOriginal = {
 
 let hubAvailable = true;
 
-mock.module("./hub-fetch-gate.ts", () => ({
+mock.module("./habitat-fetch-gate.ts", () => ({
   ...gateOriginal,
-  isHubFetchAvailable: () => hubAvailable,
+  isHabitatFetchAvailable: () => hubAvailable,
 }));
 
 afterAll(() => {
-  mock.module("./hub-fetch-gate.ts", () => gateOriginal);
+  mock.module("./habitat-fetch-gate.ts", () => gateOriginal);
 });
 
 const { withOfflineCache } = await import("./offline-cache-first.ts");

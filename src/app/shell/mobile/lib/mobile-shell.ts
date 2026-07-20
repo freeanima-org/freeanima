@@ -1,15 +1,15 @@
-import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
+import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import {
   buildShellApiFields,
   normalizeShellClientConfig,
-  testHubHealthConnection,
+  testHabitatHealthConnection,
   type SapInstanceStore,
   type SatelliteShellApi,
 } from "@freeanima/frontend/shell-sdk";
 import type { ComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
 
 import { loadMobileNativeBuildMeta } from "./native-build-meta-prefs.ts";
-import { HUB_URL_KEY, REMOTE_AUTH_TOKEN_KEY, sapInstanceKey } from "./prefs-keys.ts";
+import { HABITAT_URL_KEY, REMOTE_AUTH_TOKEN_KEY, sapInstanceKey } from "./prefs-keys.ts";
 import { prefsGet, prefsSet } from "./prefs-safe.ts";
 import { SETTINGS_PAGE } from "./paths.ts";
 import { replaceShellPath } from "./shell-nav.ts";
@@ -24,12 +24,12 @@ export function attachNativeBuild(
 }
 
 export type ShellSnapshot = {
-  hubUrl: string;
-  hubWsUrl: string;
+  habitatUrl: string;
+  habitatWsUrl: string;
   remoteAuthToken: string;
 };
 
-export function normalizeHubUrl(raw: string): string {
+export function normalizeHabitatUrl(raw: string): string {
   const trimmed = raw.trim().replace(/\/$/, "");
   if (!trimmed) throw new Error("栖息地地址不能为空");
   const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `http://${trimmed}`;
@@ -40,8 +40,8 @@ export function normalizeHubUrl(raw: string): string {
   return `${url.protocol}//${url.host}`;
 }
 
-export async function loadHubUrl(): Promise<string | null> {
-  const { value } = await prefsGet({ key: HUB_URL_KEY });
+export async function loadHabitatUrl(): Promise<string | null> {
+  const { value } = await prefsGet({ key: HABITAT_URL_KEY });
   return value?.trim() || null;
 }
 
@@ -50,9 +50,12 @@ export async function loadRemoteAuthToken(): Promise<string | null> {
   return value?.trim() || null;
 }
 
-export async function saveShellClientPrefs(hubUrl: string, remoteAuthToken: string): Promise<void> {
-  const normalized = normalizeShellClientConfig({ hubUrl, remoteAuthToken });
-  await prefsSet({ key: HUB_URL_KEY, value: normalized.hubUrl });
+export async function saveShellClientPrefs(
+  habitatUrl: string,
+  remoteAuthToken: string,
+): Promise<void> {
+  const normalized = normalizeShellClientConfig({ habitatUrl, remoteAuthToken });
+  await prefsSet({ key: HABITAT_URL_KEY, value: normalized.habitatUrl });
   await prefsSet({ key: REMOTE_AUTH_TOKEN_KEY, value: normalized.remoteAuthToken });
 }
 
@@ -78,7 +81,7 @@ export function readShellSnapshot(): ShellSnapshot | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as ShellSnapshot;
-    if (parsed.hubUrl?.trim() && parsed.hubWsUrl?.trim()) {
+    if (parsed.habitatUrl?.trim() && parsed.habitatWsUrl?.trim()) {
       return parsed;
     }
   } catch {
@@ -121,8 +124,8 @@ async function applyMobilePackagedUpdate(assetUrl: string): Promise<void> {
 
 function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
   const apiFields = buildShellApiFields(
-    snapshot.hubUrl,
-    snapshot.hubWsUrl,
+    snapshot.habitatUrl,
+    snapshot.habitatWsUrl,
     snapshot.remoteAuthToken,
   );
   return {
@@ -133,7 +136,7 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
     windowRole: null,
     apiOrigin: null,
     createFileInstanceStore: createPreferencesInstanceStore,
-    openHubSettings(): void {
+    openHabitatSettings(): void {
       replaceShellPath(SETTINGS_PAGE);
     },
     async applyPackagedUpdate({ assetUrl }): Promise<void> {
@@ -151,18 +154,18 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
   };
 }
 
-/** Hub 未配置时的 minimal 壳层标记（供设置页正确识别 mobile 平台） */
+/** Habitat 未配置时的 minimal 壳层标记（供设置页正确识别 mobile 平台） */
 export function createMobileShellStub(): SatelliteShellApi {
   return {
     isElectron: false,
     isNativeShell: true,
     primaryInput: "touch",
-    hubUrl: "",
-    hubWsUrl: "",
+    habitatUrl: "",
+    habitatWsUrl: "",
     windowRole: null,
     apiOrigin: null,
     createFileInstanceStore: createPreferencesInstanceStore,
-    openHubSettings(): void {
+    openHabitatSettings(): void {
       replaceShellPath(SETTINGS_PAGE);
     },
     async applyPackagedUpdate({ assetUrl }): Promise<void> {
@@ -181,14 +184,14 @@ export function createMobileShellStub(): SatelliteShellApi {
 }
 
 export async function buildMobileShell(
-  hubUrl: string,
+  habitatUrl: string,
   remoteAuthToken: string,
 ): Promise<SatelliteShellApi> {
-  const normalized = normalizeShellClientConfig({ hubUrl, remoteAuthToken });
-  const hubWsUrl = resolveHubRpcWsUrl(normalized.hubUrl);
+  const normalized = normalizeShellClientConfig({ habitatUrl, remoteAuthToken });
+  const habitatWsUrl = resolveHabitatRpcWsUrl(normalized.habitatUrl);
   const snapshot: ShellSnapshot = {
-    hubUrl: normalized.hubUrl,
-    hubWsUrl,
+    habitatUrl: normalized.habitatUrl,
+    habitatWsUrl,
     remoteAuthToken: normalized.remoteAuthToken,
   };
   writeShellSnapshot(snapshot);
@@ -198,10 +201,10 @@ export async function buildMobileShell(
 
 /** 从 Preferences 加载并注入 window.satelliteShell */
 export async function installMobileShellFromPrefs(): Promise<SatelliteShellApi | null> {
-  const hubUrl = await loadHubUrl();
-  if (!hubUrl) return null;
+  const habitatUrl = await loadHabitatUrl();
+  if (!habitatUrl) return null;
   const remoteAuthToken = (await loadRemoteAuthToken()) ?? "";
-  const shell = await buildMobileShell(hubUrl, remoteAuthToken);
+  const shell = await buildMobileShell(habitatUrl, remoteAuthToken);
   window.satelliteShell = shell;
   return shell;
 }
@@ -210,16 +213,16 @@ export async function installMobileShellFromPrefs(): Promise<SatelliteShellApi |
 export async function ensureMobileShellForChat(): Promise<SatelliteShellApi> {
   let snapshot = readShellSnapshot();
   if (!snapshot) {
-    const hubUrl = await loadHubUrl();
-    if (!hubUrl) {
+    const habitatUrl = await loadHabitatUrl();
+    if (!habitatUrl) {
       replaceShellPath(SETTINGS_PAGE);
       throw new Error("redirect settings");
     }
     const remoteAuthToken = (await loadRemoteAuthToken()) ?? "";
-    const normalized = normalizeShellClientConfig({ hubUrl, remoteAuthToken });
+    const normalized = normalizeShellClientConfig({ habitatUrl, remoteAuthToken });
     snapshot = {
-      hubUrl: normalized.hubUrl,
-      hubWsUrl: resolveHubRpcWsUrl(normalized.hubUrl),
+      habitatUrl: normalized.habitatUrl,
+      habitatWsUrl: resolveHabitatRpcWsUrl(normalized.habitatUrl),
       remoteAuthToken: normalized.remoteAuthToken,
     };
     writeShellSnapshot(snapshot);
@@ -230,9 +233,12 @@ export async function ensureMobileShellForChat(): Promise<SatelliteShellApi> {
   return shell;
 }
 
-/** 测试 Hub REST 是否可达且认证通过 */
-export async function testHubConnection(hubUrl: string, remoteAuthToken: string): Promise<void> {
-  const normalized = normalizeHubUrl(hubUrl);
+/** 测试 Habitat REST 是否可达且认证通过 */
+export async function testHabitatConnection(
+  habitatUrl: string,
+  remoteAuthToken: string,
+): Promise<void> {
+  const normalized = normalizeHabitatUrl(habitatUrl);
   const token = remoteAuthToken.trim();
-  await testHubHealthConnection(normalized, token || undefined);
+  await testHabitatHealthConnection(normalized, token || undefined);
 }

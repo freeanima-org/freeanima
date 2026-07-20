@@ -62,7 +62,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/concepts/anima-uri.md:20
 msgid ""
-"Structured FK in PG/Hub remain **numeric ids** — Anima URI is not a "
+"Structured FK in PG/Habitat remain **numeric ids** — Anima URI is not a "
 "persistence format"
 msgstr ""
 
@@ -148,7 +148,7 @@ msgstr "数据持久化"
 msgid ""
 "| Layer               | Stores                                         | Anima URI                                                 |\n"
 "| ------------------- | ---------------------------------------------- | --------------------------------------------------------- |\n"
-"| PG / Hub body / RPC | Entity **`id`** (e.g. pomodoro `task_item_id`) | **Never** as FK string                                    |\n"
+"| PG / Habitat body / RPC | Entity **`id`** (e.g. pomodoro `task_item_id`) | **Never** as FK string                                    |\n"
 "| Shell UI            | —                                              | `formatAnimaUri` / `parseAnimaUri` / `openEntityResource` |\n"
 msgstr ""
 "| 能力              | 说明                                                                                                   |\n"

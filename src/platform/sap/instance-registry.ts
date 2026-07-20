@@ -24,7 +24,7 @@ export type ResolveConnectInstanceResult =
 
 /**
  * SAP instance registry with optional PG backing.
- * Hub assigns 3-char globally unique ids on omit; client-provided ids are provisioned when unused.
+ * Habitat assigns 3-char globally unique ids on omit; client-provided ids are provisioned when unused.
  */
 export class SapInstanceRegistry {
   private readonly byInstanceId = new Map<string, SapInstanceRecord>();

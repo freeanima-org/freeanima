@@ -1,6 +1,6 @@
 /**
  * SAP WS 帧级 router 类型（legacy satellite attach 路径）。
- * 完整 Hub method 列表与 transport meta 以 `@freeanima/platform/hub/hub-router` 为 SSOT。
+ * 完整 Habitat method 列表与 transport meta 以 `@freeanima/platform/habitat/habitat-router` 为 SSOT。
  */
 import type {
   MessageInterruptInput,
@@ -501,7 +501,7 @@ export type SapClient = {
   request<K extends SapMethod>(
     method: K,
     payload: SapRouterInputs[K],
-    opts?: import("@freeanima/shared/hub-rpc").RpcRequestOptions,
+    opts?: import("@freeanima/shared/habitat-rpc").RpcRequestOptions,
   ): Promise<SapRouterOutputs[K]>;
   onEvent(method: string, handler: (payload: unknown) => void): () => void;
   close(): void;

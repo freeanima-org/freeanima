@@ -4,7 +4,7 @@
 
 ## 推荐：设置页导入
 
-1. 从 [VRoid Hub](https://hub.vroid.com/) 或 [VRoid Studio](https://vroid.com/en/studio) 获取 `.vrm` 文件
+1. 从 [VRoid Habitat](https://hub.vroid.com/) 或 [VRoid Studio](https://vroid.com/en/studio) 获取 `.vrm` 文件
 2. 在桌宠设置中点击「导入模型」选择文件
 3. 模型会保存到 `~/.anima/companion/models/` 并自动生效
 

@@ -46,10 +46,10 @@ export function loadShellSettings(desktopHome?: string): ShellSettings {
     }
   }
 
-  const legacyHub = readLegacyHubConfig();
-  if (legacyHub) {
+  const legacyHabitat = readLegacyHubConfig();
+  if (legacyHabitat) {
     const migrated: ShellSettings = {
-      hub: legacyHub,
+      habitat: legacyHabitat,
       debug: { ...DEFAULT_SHELL_SETTINGS.debug },
     };
     writeSettingsFile(migrated, desktopHome);
@@ -70,11 +70,11 @@ export function saveShellSettings(
 }
 
 export function loadShellClientConfig(desktopHome?: string): ShellClientConfig | null {
-  return loadShellSettings(desktopHome).hub;
+  return loadShellSettings(desktopHome).habitat;
 }
 
 export function saveShellClientConfig(config: ShellClientConfig, desktopHome?: string): void {
-  saveShellSettings({ hub: normalizeShellClientConfig(config) }, desktopHome);
+  saveShellSettings({ habitat: normalizeShellClientConfig(config) }, desktopHome);
 }
 
 export function loadShellDebugConfig(desktopHome?: string): ShellDebugConfig {

@@ -7,7 +7,7 @@ import {
   useThreeColumnLayoutMode,
 } from "@freeanima/frontend/ui-kit/layout";
 import {
-  useHubConnection,
+  useHabitatConnection,
   useNetworkOnline,
   useSubjectScope,
   SubjectScopeToggle,
@@ -41,8 +41,8 @@ function formatWhen(iso: string): string {
 export function EmailApp() {
   const { kind: subjectKind } = useSubjectScope();
   const networkOnline = useNetworkOnline();
-  const hubConnection = useHubConnection();
-  const writesDisabled = !networkOnline || hubConnection !== "connected";
+  const habitatConnection = useHabitatConnection();
+  const writesDisabled = !networkOnline || habitatConnection !== "connected";
   const layoutMode = useThreeColumnLayoutMode();
   const useDrawer = useDrawerNav();
   const [accounts, setAccounts] = useState<EmailAccountRow[]>([]);
@@ -396,10 +396,10 @@ export function EmailApp() {
                 size="sm"
                 className="h-7 shrink-0 px-2"
                 disabled={refreshing || loading}
-                aria-label={m.console_common_refresh()}
+                aria-label={m.habitat_common_refresh()}
                 onClick={() => void handleManualRefresh()}
               >
-                {refreshing ? <Spinner className="size-3.5" /> : m.console_common_refresh()}
+                {refreshing ? <Spinner className="size-3.5" /> : m.habitat_common_refresh()}
               </Button>
               {activeAccount ? (
                 <>

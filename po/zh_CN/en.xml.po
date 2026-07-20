@@ -2762,8 +2762,8 @@ msgstr "显示 {shown} / {total} · ~{tokens} tokens"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:497
 #, no-wrap
-msgid "Browse entity tasks (/hub/rpc/v1/task/*) with keyword, status, priority, and list filters (read-only)."
-msgstr "浏览实体任务（/hub/rpc/v1/task/*），支持关键词、状态、优先级与列表筛选（只读）。"
+msgid "Browse entity tasks (/rpc/v1/task/*) with keyword, status, priority, and list filters (read-only)."
+msgstr "浏览实体任务（/rpc/v1/task/*），支持关键词、状态、优先级与列表筛选（只读）。"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:498

@@ -36,10 +36,10 @@ msgstr "FreeAnima 在单一 WebSocket 端点上使用**两层**线路模型："
 #. type: Bullet: '1. '
 #: docs/sap/transport.md:11
 msgid ""
-"**Hub RPC** (`HubRPC/1.0`) — transport connect, auth, heartbeat, generic "
+"**Habitat RPC** (`HubRPC/1.0`) — transport connect, auth, heartbeat, generic "
 "`req`/`res`/`evt`."
 msgstr ""
-"**Hub RPC**（`HubRPC/1.0`）— 传输层 connect、认证、心跳及通用 `req`/`res`/"
+"**Habitat RPC**（`HubRPC/1.0`）— 传输层 connect、认证、心跳及通用 `req`/`res`/"
 "`evt`。"
 
 #. type: Bullet: '2. '
@@ -68,17 +68,17 @@ msgstr "端点"
 #. type: Fenced code block (text)
 #: docs/sap/transport.md:16
 #, no-wrap
-msgid "ws://{hub_host}:{port}/hub/rpc/v1\n"
-msgstr "ws://{hub_host}:{port}/hub/rpc/v1\n"
+msgid "ws://{hub_host}:{port}/rpc/v1\n"
+msgstr "ws://{hub_host}:{port}/rpc/v1\n"
 
 #. type: Plain text
 #: docs/sap/transport.md:21
 msgid ""
-"Derive from Hub HTTP URL: replace `http` with `ws`, strip trailing slash, "
-"append `/hub/rpc/v1`. Default Hub port: **2658**."
+"Derive from Habitat HTTP URL: replace `http` with `ws`, strip trailing slash, "
+"append `/rpc/v1`. Default Habitat port: **2658**."
 msgstr ""
-"由 Hub HTTP URL 推导：将 `http` 替换为 `ws`，去掉末尾斜杠，追加 `/hub/rpc/"
-"v1`。Hub 默认端口：**2658**。"
+"由 Habitat HTTP URL 推导：将 `http` 替换为 `ws`，去掉末尾斜杠，追加 `/hub/rpc/"
+"v1`。Habitat 默认端口：**2658**。"
 
 #. type: Plain text
 #: docs/sap/transport.md:23
@@ -86,14 +86,14 @@ msgstr ""
 #| msgid ""
 #| "Implemented in [`platform/src/sap/bun-route.ts`](../../platform/src/sap/"
 #| "bun-route.ts). Client helpers: `@freeanima/hub-rpc` "
-#| "(`resolveHubRpcWsUrl`) and `@freeanima/sap-contract/urls` (re-exports)."
+#| "(`resolveHabitatRpcWsUrl`) and `@freeanima/sap-contract/urls` (re-exports)."
 msgid ""
 "Implemented in [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-"
-"route.ts). Client helpers: `@freeanima/hub-rpc` (`resolveHubRpcWsUrl`) and "
+"route.ts). Client helpers: `@freeanima/hub-rpc` (`resolveHabitatRpcWsUrl`) and "
 "`@freeanima/sap-contract/urls` (re-exports)."
 msgstr ""
 "实现位于 [`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
-"route.ts)。客户端辅助：`@freeanima/hub-rpc`（`resolveHubRpcWsUrl`）与 "
+"route.ts)。客户端辅助：`@freeanima/hub-rpc`（`resolveHabitatRpcWsUrl`）与 "
 "`@freeanima/sap-contract/urls`（再导出）。"
 
 #. type: Title ##
@@ -106,16 +106,16 @@ msgstr "信封类型"
 #: docs/sap/transport.md:27
 #, fuzzy
 #| msgid ""
-#| "Hub RPC envelopes live in [`packages/hub-rpc/src/protocol.ts`](../../"
+#| "Habitat RPC envelopes live in [`packages/hub-rpc/src/protocol.ts`](../../"
 #| "packages/hub-rpc/src/protocol.ts). SAP re-exports them from [`packages/"
 #| "sap-contract/src/protocol.ts`](../../packages/sap-contract/src/"
 #| "protocol.ts)."
 msgid ""
-"Hub RPC envelopes live in [`src/shared/hub-rpc/protocol.ts`](../../src/"
+"Habitat RPC envelopes live in [`src/shared/hub-rpc/protocol.ts`](../../src/"
 "shared/hub-rpc/protocol.ts). SAP re-exports them from [`src/shared/sap-"
 "contract/protocol.ts`](../../src/shared/sap-contract/protocol.ts)."
 msgstr ""
-"Hub RPC 信封位于 [`packages/hub-rpc/src/protocol.ts`](../../packages/hub-rpc/"
+"Habitat RPC 信封位于 [`packages/hub-rpc/src/protocol.ts`](../../packages/hub-rpc/"
 "src/protocol.ts)。SAP 从 [`packages/sap-contract/src/protocol.ts`](../../"
 "packages/sap-contract/src/protocol.ts) 再导出。"
 
@@ -125,16 +125,16 @@ msgstr ""
 msgid ""
 "| `kind`      | Layer   | Purpose                                                                   |\n"
 "| ----------- | ------- | ------------------------------------------------------------------------- |\n"
-"| `connect`   | Hub RPC | `protocol: HubRPC/1.0`, `auth_token`                                      |\n"
-"| `connected` | Hub RPC | `session_id`, `heartbeat_interval_sec`                                    |\n"
+"| `connect`   | Habitat RPC | `protocol: HubRPC/1.0`, `auth_token`                                      |\n"
+"| `connected` | Habitat RPC | `session_id`, `heartbeat_interval_sec`                                    |\n"
 "| `req`       | Both    | RPC (`id`, `method`, `payload`) — incl. `sap.attach`, `conversation.*`, … |\n"
 "| `res`       | Both    | RPC response                                                              |\n"
 "| `evt`       | Both    | Async event                                                               |\n"
 msgstr ""
 "| `kind`      | 层      | 用途                                                                      |\n"
 "| ----------- | ------- | ------------------------------------------------------------------------- |\n"
-"| `connect`   | Hub RPC | `protocol: HubRPC/1.0`、`auth_token`                                      |\n"
-"| `connected` | Hub RPC | `session_id`、`heartbeat_interval_sec`                                    |\n"
+"| `connect`   | Habitat RPC | `protocol: HubRPC/1.0`、`auth_token`                                      |\n"
+"| `connected` | Habitat RPC | `session_id`、`heartbeat_interval_sec`                                    |\n"
 "| `req`       | 双层    | RPC（`id`、`method`、`payload`）— 含 `sap.attach`、`conversation.*` 等    |\n"
 "| `res`       | 双层    | RPC 响应                                                                  |\n"
 "| `evt`       | 双层    | 异步事件                                                                  |\n"
@@ -188,9 +188,9 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/sap/transport.md:58
 msgid ""
-"First valid frame **must** be Hub RPC `connect` with verified `auth_token`."
+"First valid frame **must** be Habitat RPC `connect` with verified `auth_token`."
 msgstr ""
-"首个有效帧**必须**为已通过验证的 Hub RPC `connect`（含 `auth_token`）。"
+"首个有效帧**必须**为已通过验证的 Habitat RPC `connect`（含 `auth_token`）。"
 
 #. type: Bullet: '- '
 #: docs/sap/transport.md:58
@@ -215,16 +215,16 @@ msgstr "`tool.*` 及实例范围的 SAP 方法须先完成 `sap.attach`。"
 #: docs/sap/transport.md:58
 msgid ""
 "Bundled methods (`conversation.*`, `task.*`, `notification.*`, …) work after "
-"Hub RPC connect **without** `sap.attach`."
+"Habitat RPC connect **without** `sap.attach`."
 msgstr ""
-"壳内 bundled 方法（`conversation.*`、`task.*`、`notification.*` 等）在 Hub "
+"壳内 bundled 方法（`conversation.*`、`task.*`、`notification.*` 等）在 Habitat "
 "RPC connect 后**无需** `sap.attach` 即可使用。"
 
 #. type: Title ##
 #: docs/sap/transport.md:59
 #, no-wrap
-msgid "Hub RPC handshake"
-msgstr "Hub RPC 握手"
+msgid "Habitat RPC handshake"
+msgstr "Habitat RPC 握手"
 
 #. type: Plain text
 #: docs/sap/transport.md:62
@@ -277,8 +277,8 @@ msgstr "SAP attach（仅卫星）"
 
 #. type: Plain text
 #: docs/sap/transport.md:77
-msgid "After Hub RPC connect, satellite processes send `req sap.attach`:"
-msgstr "Hub RPC connect 后，satellite 进程发送 `req sap.attach`："
+msgid "After Habitat RPC connect, satellite processes send `req sap.attach`:"
+msgstr "Habitat RPC connect 后，satellite 进程发送 `req sap.attach`："
 
 #. type: Plain text
 #: docs/sap/transport.md:79
@@ -303,7 +303,7 @@ msgstr ""
 #| "| `instance_id`        | no       | 3-char id; omit on first register          |\n"
 #| "| `protocol`           | yes      | `SAP/1.0`                                  |\n"
 #| "| `features_requested` | no       | Feature flags                              |\n"
-#| "| `http_url`           | no       | Satellite UI URL for **Console                 |\n"
+#| "| `http_url`           | no       | Satellite UI URL for **Habitat                 |\n"
 #| "| `instance_label`     | no       | Display label                              |\n"
 msgid ""
 "| Field                | Required | Role                                |\n"
@@ -312,7 +312,7 @@ msgid ""
 "| `instance_id`        | no       | 3-char id; omit on first register   |\n"
 "| `protocol`           | yes      | `SAP/1.0`                           |\n"
 "| `features_requested` | no       | Feature flags                       |\n"
-"| `http_url`           | no       | Satellite UI URL for Console        |\n"
+"| `http_url`           | no       | Satellite UI URL for Habitat        |\n"
 "| `instance_label`     | no       | Display label                       |\n"
 msgstr ""
 "| 字段                 | 必填 | 作用                                       |\n"
@@ -338,15 +338,15 @@ msgstr ""
 #, fuzzy
 #| msgid ""
 #| "Use `createSatelliteHub()` ([`packages/sap-contract/src/satellite-hub.ts`]"
-#| "(../../packages/sap-contract/src/satellite-hub.ts)) — it runs Hub RPC "
+#| "(../../packages/sap-contract/src/satellite-hub.ts)) — it runs Habitat RPC "
 #| "transport and performs attach automatically."
 msgid ""
 "Use `createSatelliteHub()` ([`src/shared/sap-contract/satellite-hub.ts`]"
-"(../../src/shared/sap-contract/satellite-hub.ts)) — it runs Hub RPC "
+"(../../src/shared/sap-contract/satellite-hub.ts)) — it runs Habitat RPC "
 "transport and performs attach automatically."
 msgstr ""
 "使用 `createSatelliteHub()`（[`packages/sap-contract/src/satellite-hub.ts`]"
-"(../../packages/sap-contract/src/satellite-hub.ts)）— 自动运行 Hub RPC 传输并"
+"(../../packages/sap-contract/src/satellite-hub.ts)）— 自动运行 Habitat RPC 传输并"
 "完成 attach。"
 
 #. type: Title ##
@@ -359,9 +359,9 @@ msgstr "心跳"
 #: docs/sap/transport.md:96
 msgid ""
 "Client sends `evt { method: \"heartbeat\" }` on `heartbeat_interval_sec`. "
-"Hub replies with `evt { method: \"heartbeat\", payload: { ts } }`."
+"Habitat replies with `evt { method: \"heartbeat\", payload: { ts } }`."
 msgstr ""
-"客户端按 `heartbeat_interval_sec` 发送 `evt { method: \"heartbeat\" }`。Hub "
+"客户端按 `heartbeat_interval_sec` 发送 `evt { method: \"heartbeat\" }`。Habitat "
 "以 `evt { method: \"heartbeat\", payload: { ts } }` 回复。"
 
 #. type: Plain text
@@ -372,10 +372,10 @@ msgstr "`runHubRpcTransport` 在 connect 后启动心跳定时器。"
 #. type: Bullet: '- '
 #: docs/sap/transport.md:103
 msgid ""
-"**Bundled SPA:** `getBundledHubRpcClient()` / `runHubRpcTransport` with "
+"**Bundled SPA:** `getBundledHabitatRpcClient()` / `runHubRpcTransport` with "
 "backoff."
 msgstr ""
-"**壳内 bundled SPA：** `getBundledHubRpcClient()` / `runHubRpcTransport`（含"
+"**壳内 bundled SPA：** `getBundledHabitatRpcClient()` / `runHubRpcTransport`（含"
 "退避）。"
 
 #. type: Bullet: '- '
@@ -389,9 +389,9 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/transport.md:105
 msgid ""
-"On detach or disconnect, Hub calls `onSapDetach` and unregisters tools for "
+"On detach or disconnect, Habitat calls `onSapDetach` and unregisters tools for "
 "that instance."
-msgstr "detach 或断开时，Hub 调用 `onSapDetach` 并注销该实例的工具。"
+msgstr "detach 或断开时，Habitat 调用 `onSapDetach` 并注销该实例的工具。"
 
 #. type: Title ##
 #: docs/sap/transport.md:106
@@ -405,17 +405,17 @@ msgstr "本地 SAP relay（pair-programming）"
 #, fuzzy
 #| msgid ""
 #| "Pair-programming exposes `ws://{satellite_host}:{port}/sap/relay/v1` for "
-#| "browser UI. The satellite **process** holds the Hub `/hub/rpc/v1` "
+#| "browser UI. The satellite **process** holds the Habitat `/rpc/v1` "
 #| "connection and SAP attach; relay clients send `req`/`res`/`evt` without "
 #| "transport or SAP handshakes."
 msgid ""
 "Some Type B satellites may expose `ws://{satellite_host}:{port}/sap/relay/"
-"v1` for browser UI. The satellite **process** holds the Hub `/hub/rpc/v1` "
+"v1` for browser UI. The satellite **process** holds the Habitat `/rpc/v1` "
 "connection and SAP attach; relay clients send `req`/`res`/`evt` without "
 "transport or SAP handshakes."
 msgstr ""
 "pair-programming 为浏览器 UI 暴露 `ws://{satellite_host}:{port}/sap/relay/"
-"v1`。satellite **进程**持有 Hub `/hub/rpc/v1` 连接并完成 SAP attach；relay 客"
+"v1`。satellite **进程**持有 Habitat `/rpc/v1` 连接并完成 SAP attach；relay 客"
 "户端发送 `req`/`res`/`evt`，无需传输层或 SAP 握手。"
 
 #. type: Plain text

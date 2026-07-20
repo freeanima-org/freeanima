@@ -37,7 +37,7 @@ function readLiveCapacitor(): CapacitorNativeBridge | undefined {
   return (window as CapacitorWindow).Capacitor;
 }
 
-/** shell-bridge 启动时缓存原生桥，避免 Hub bundle 加载 @capacitor/core 后覆盖 window.Capacitor。 */
+/** shell-bridge 启动时缓存原生桥，避免 Habitat bundle 加载 @capacitor/core 后覆盖 window.Capacitor。 */
 export function pinCapacitorNativeBridge(): CapacitorNativeBridge | null {
   const cap = readLiveCapacitor();
   if (!cap?.nativePromise) return null;
@@ -52,7 +52,7 @@ export function readPinnedCapacitorNativeBridge(): CapacitorNativeBridge | null 
   return live?.nativePromise ? live : null;
 }
 
-/** 移动壳 WebView（含远程 Hub 页）应能走原生桥，勿依赖 @capacitor/* 静态 import。 */
+/** 移动壳 WebView（含远程 Habitat 页）应能走原生桥，勿依赖 @capacitor/* 静态 import。 */
 export function isCapacitorBridgeExpected(): boolean {
   return isCapacitorShellCandidate() || isCapacitorNativePlatform();
 }

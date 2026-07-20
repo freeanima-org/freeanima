@@ -1,16 +1,16 @@
 import {
-  createHubDebugSettingsStores,
-  type HubDebugSettingsStores,
-} from "../../shared/hub-debug-settings-stores.ts";
+  createHabitatDebugSettingsStores,
+  type HabitatDebugSettingsStores,
+} from "../../shared/habitat-debug-settings-stores.ts";
 import { createWebScopedBackend } from "./settings-local-backend.ts";
 import {
   installWebShellFromPrefs,
   SHELL_CONFIG_CHANGED_EVENT,
-  testWebHubConnection,
+  testWebHabitatConnection,
 } from "./web-shell.ts";
 import { notifyDebugConfigChanged } from "@freeanima/frontend/shell-ui/spa/debug-config-events.ts";
 
-export type WebSettingsStores = HubDebugSettingsStores;
+export type WebSettingsStores = HabitatDebugSettingsStores;
 
 function notifyShellConfigChanged(): void {
   window.dispatchEvent(new CustomEvent(SHELL_CONFIG_CHANGED_EVENT));
@@ -18,13 +18,13 @@ function notifyShellConfigChanged(): void {
 
 export function createWebSettingsStores(): WebSettingsStores {
   const backend = createWebScopedBackend();
-  return createHubDebugSettingsStores({
+  return createHabitatDebugSettingsStores({
     backend,
-    testHub: async (value) => {
-      await testWebHubConnection(value.hubUrl, value.remoteAuthToken);
+    testHabitat: async (value) => {
+      await testWebHabitatConnection(value.habitatUrl, value.remoteAuthToken);
     },
-    onHubSave(normalized) {
-      installWebShellFromPrefs(normalized.hubUrl, normalized.remoteAuthToken);
+    onHabitatSave(normalized) {
+      installWebShellFromPrefs(normalized.habitatUrl, normalized.remoteAuthToken);
     },
     notifyDebugChanged: notifyDebugConfigChanged,
     notifyShellConfigChanged,

@@ -35,10 +35,10 @@ function parseOrder(raw: string | null): ShellModuleId[] {
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [...SHELL_MODULE_IDS];
-    const ids = parsed.filter(
-      (id): id is ShellModuleId =>
-        typeof id === "string" && SHELL_MODULE_IDS.includes(id as ShellModuleId),
-    );
+    const ids = parsed
+      .filter((id): id is string => typeof id === "string")
+      .map((id) => (id === "console" ? "habitat" : id))
+      .filter((id): id is ShellModuleId => SHELL_MODULE_IDS.includes(id as ShellModuleId));
     return normalizeShellModuleOrder(ids);
   } catch {
     return [...SHELL_MODULE_IDS];

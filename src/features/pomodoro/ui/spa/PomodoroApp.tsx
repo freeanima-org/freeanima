@@ -11,7 +11,7 @@ import {
   subscribePomodoroSync,
 } from "@freeanima/frontend/shell-sdk/pomodoro-sync-local.ts";
 import {
-  useHubConnection,
+  useHabitatConnection,
   useNetworkOnline,
   useSubjectScope,
   SubjectScopeToggle,
@@ -143,8 +143,8 @@ function SessionHistory({
 export function PomodoroApp() {
   const { kind: subjectKind } = useSubjectScope();
   const networkOnline = useNetworkOnline();
-  const hubConnection = useHubConnection();
-  const hubOnline = networkOnline && hubConnection === "connected";
+  const habitatConnection = useHabitatConnection();
+  const habitatOnline = networkOnline && habitatConnection === "connected";
 
   const [config, setConfig] = useState<PomodoroConfigRow | null>(null);
   const [active, setActive] = useState<PomodoroActiveState | null>(
@@ -205,11 +205,11 @@ export function PomodoroApp() {
   }, [subjectKind]);
 
   useEffect(() => {
-    if (!hubOnline) return;
+    if (!habitatOnline) return;
     void pullPomodoroActive(subjectKind).then(() => {
       setActive(getPomodoroSyncSnapshot(subjectKind).active);
     });
-  }, [hubOnline, subjectKind]);
+  }, [habitatOnline, subjectKind]);
 
   useEffect(() => {
     let cancelled = false;
@@ -361,7 +361,7 @@ export function PomodoroApp() {
 
   const handleConfigChange = async (patch: Partial<PomodoroConfigRow>) => {
     if (!config) return;
-    if (!hubOnline) {
+    if (!habitatOnline) {
       await enqueuePomodoroConfigUpdate(subjectKind, patch);
       const next = { ...config, ...patch };
       setConfig(next);
@@ -522,7 +522,7 @@ export function PomodoroApp() {
                   className="w-24"
                   type="number"
                   value={config[key]}
-                  disabled={!hubOnline}
+                  disabled={!habitatOnline}
                   onChange={(e) => void handleConfigChange({ [key]: Number(e.target.value) })}
                 />
               </div>
@@ -539,7 +539,7 @@ export function PomodoroApp() {
                 <span>{label}</span>
                 <Switch
                   checked={config[key]}
-                  disabled={!hubOnline}
+                  disabled={!habitatOnline}
                   onCheckedChange={(checked) => void handleConfigChange({ [key]: checked })}
                 />
               </div>

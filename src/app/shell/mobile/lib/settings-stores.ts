@@ -1,12 +1,15 @@
 import {
-  createHubDebugSettingsStores,
-  type HubDebugSettingsStores,
-} from "../../shared/hub-debug-settings-stores.ts";
+  createHabitatDebugSettingsStores,
+  type HabitatDebugSettingsStores,
+} from "../../shared/habitat-debug-settings-stores.ts";
 import { buildMobileShell, SHELL_CONFIG_CHANGED_EVENT } from "./mobile-shell.ts";
-import { createMobileScopedBackend, testMobileHubConnection } from "./settings-prefs-backend.ts";
+import {
+  createMobileScopedBackend,
+  testMobileHabitatConnection,
+} from "./settings-prefs-backend.ts";
 import { DEBUG_CONFIG_CHANGED_EVENT } from "./debug-events.ts";
 
-export type MobileSettingsStores = HubDebugSettingsStores;
+export type MobileSettingsStores = HabitatDebugSettingsStores;
 
 function notifyShellConfigChanged(): void {
   window.dispatchEvent(new CustomEvent(SHELL_CONFIG_CHANGED_EVENT));
@@ -18,11 +21,14 @@ function notifyDebugConfigChanged(): void {
 
 export function createMobileSettingsStores(): MobileSettingsStores {
   const backend = createMobileScopedBackend();
-  return createHubDebugSettingsStores({
+  return createHabitatDebugSettingsStores({
     backend,
-    testHub: testMobileHubConnection,
-    async onHubSave(normalized) {
-      window.satelliteShell = await buildMobileShell(normalized.hubUrl, normalized.remoteAuthToken);
+    testHabitat: testMobileHabitatConnection,
+    async onHabitatSave(normalized) {
+      window.satelliteShell = await buildMobileShell(
+        normalized.habitatUrl,
+        normalized.remoteAuthToken,
+      );
     },
     notifyDebugChanged: notifyDebugConfigChanged,
     notifyShellConfigChanged,

@@ -1,6 +1,6 @@
 import {
-  reconnectHub,
-  useHubConnection,
+  reconnectHabitat,
+  useHabitatConnection,
   useNetworkOnline,
   useOpenHubSettingsCapability,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
@@ -14,17 +14,17 @@ import { useEffect, useRef } from "react";
 import { m } from "@paraglide/messages";
 import { resolveConnectivityNotice } from "./connectivity-notice.ts";
 
-function openHubSettingsIfAvailable(): void {
-  window.satelliteShell?.openHubSettings?.();
+function openHabitatSettingsIfAvailable(): void {
+  window.satelliteShell?.openHabitatSettings?.();
 }
 
 export function ShellConnectivityBar(): null {
   const networkOnline = useNetworkOnline();
-  const hubConnection = useHubConnection();
+  const habitatConnection = useHabitatConnection();
   const reconnectingRef = useRef(false);
-  const canOpenHubSettings = useOpenHubSettingsCapability();
+  const canOpenHabitatSettings = useOpenHubSettingsCapability();
 
-  const notice = resolveConnectivityNotice({ networkOnline, hubConnection });
+  const notice = resolveConnectivityNotice({ networkOnline, habitatConnection });
 
   useEffect(() => {
     if (!notice) {
@@ -40,31 +40,31 @@ export function ShellConnectivityBar(): null {
     }
 
     if (notice.kind === "hub-connecting") {
-      showShellToast(SHELL_TOAST_IDS.connectivity, m.console_common_connecting());
+      showShellToast(SHELL_TOAST_IDS.connectivity, m.habitat_common_connecting());
       return;
     }
 
-    showShellToast(SHELL_TOAST_IDS.connectivity, m.console_hub_disconnected(), {
+    showShellToast(SHELL_TOAST_IDS.connectivity, m.habitat_hub_disconnected(), {
       action: {
-        label: m.console_common_reconnect(),
+        label: m.habitat_common_reconnect(),
         onClick: () => {
-          if (reconnectingRef.current || hubConnection === "connecting") return;
+          if (reconnectingRef.current || habitatConnection === "connecting") return;
           reconnectingRef.current = true;
-          void reconnectHub().finally(() => {
+          void reconnectHabitat().finally(() => {
             reconnectingRef.current = false;
           });
         },
       },
-      ...(canOpenHubSettings
+      ...(canOpenHabitatSettings
         ? {
             cancel: {
               label: "连接设置",
-              onClick: openHubSettingsIfAvailable,
+              onClick: openHabitatSettingsIfAvailable,
             },
           }
         : {}),
     });
-  }, [canOpenHubSettings, hubConnection, notice]);
+  }, [canOpenHabitatSettings, habitatConnection, notice]);
 
   return null;
 }

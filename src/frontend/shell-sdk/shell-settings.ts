@@ -7,21 +7,22 @@ import {
 } from "./shell-debug-config.ts";
 
 export type ShellSettings = {
-  hub: ShellClientConfig | null;
+  habitat: ShellClientConfig | null;
   debug: ShellDebugConfig;
 };
 
 export const DEFAULT_SHELL_SETTINGS: ShellSettings = {
-  hub: null,
+  habitat: null,
   debug: { ...DEFAULT_SHELL_DEBUG },
 };
 
 export function parseShellSettings(raw: unknown): ShellSettings {
   if (!raw || typeof raw !== "object") return { ...DEFAULT_SHELL_SETTINGS };
   const obj = raw as Record<string, unknown>;
-  const hub = parseShellClientConfig(obj.hub);
+  // 兼容旧 JSON 键 hub
+  const habitat = parseShellClientConfig(obj.habitat ?? obj.hub);
   const debug = parseShellDebugConfig(obj.debug);
-  return { hub, debug };
+  return { habitat, debug };
 }
 
 export function mergeShellSettings(
@@ -29,7 +30,7 @@ export function mergeShellSettings(
   patch: Partial<ShellSettings>,
 ): ShellSettings {
   return {
-    hub: patch.hub !== undefined ? patch.hub : current.hub,
+    habitat: patch.habitat !== undefined ? patch.habitat : current.habitat,
     debug: patch.debug !== undefined ? patch.debug : current.debug,
   };
 }

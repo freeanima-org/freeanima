@@ -66,7 +66,7 @@ export function ShellModuleRail() {
     >
       <div className="shell-rail-brand">
         <BrandLogo size={22} />
-        <span className="shell-rail-brand-label">{shellMessages.console_brand()}</span>
+        <span className="shell-rail-brand-label">{shellMessages.habitat_brand()}</span>
       </div>
 
       <nav className="shell-rail-nav">

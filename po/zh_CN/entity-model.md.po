@@ -188,7 +188,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/concepts/entity-model.md:50
 msgid ""
-"**Service API Token**（`service_api_tokens` 表）绑定 subject entity id；Hub "
+"**Service API Token**（`service_api_tokens` 表）绑定 subject entity id；Habitat "
 "REST/SAP/MCP 从 Bearer token 解析调用方身份。见 [`remote-access.md`](../"
 "guide/remote-access.md)。"
 msgstr ""
@@ -202,7 +202,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/entity-model.md:54
 msgid ""
-"Hub startup runs **`ensureWorldSubjects()`** once (after migrations, before "
+"Habitat startup runs **`ensureWorldSubjects()`** once (after migrations, before "
 "engine):"
 msgstr ""
 
@@ -288,7 +288,7 @@ msgstr ""
 msgid ""
 "`grants: [{ subject_id, permission: \"read\" | \"write\" }]` — explicit "
 "subject grants (**write includes read**; `subject_id` must not equal owner). "
-"Configured in Console Worlds UI; never hardcoded per subject in source."
+"Configured in Habitat Worlds UI; never hardcoded per subject in source."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -461,8 +461,8 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/entity-model.md:110
 msgid ""
-"Hub startup binds **`ResolvedWorldContext`** "
-"(`hub().call(\"worlds.context\")` / `GET /hub/rpc/v1/worlds/context`). The "
+"Habitat startup binds **`ResolvedWorldContext`** "
+"(`hub().call(\"worlds.context\")` / `GET /rpc/v1/worlds/context`). The "
 "product shell exposes a **single User / Agent toggle** in the module header "
 "— not an arbitrary `world_id` picker. Selection maps to `user_world_id` / "
 "`agent_world_id` and persists in `sessionStorage` for the tab."
@@ -488,7 +488,7 @@ msgstr ""
 msgid ""
 "SAP task/email methods accept optional `subject_kind` (defaults: task "
 "`user`, email `agent`). Satellites read the shell scope via "
-"**`useSubjectScope()`** from `@freeanima/shell-sdk`; Hub REST entity search "
+"**`useSubjectScope()`** from `@freeanima/shell-sdk`; Habitat REST entity search "
 "uses **`resolveWorldIdForSubject()`** with the same scope."
 msgstr ""
 
@@ -496,7 +496,7 @@ msgstr ""
 #: docs/concepts/entity-model.md:124
 msgid ""
 "Future multi-world browse (e.g. diary calendar aggregation across worlds) "
-"should add **module-scoped** filters or Console tooling — not a speculative "
+"should add **module-scoped** filters or Habitat tooling — not a speculative "
 "arbitrary world picker."
 msgstr ""
 
@@ -541,7 +541,7 @@ msgstr ""
 msgid ""
 "`task_item.body.project_id` and optional `milestone_id` link items to "
 "projects. Smart Lists in the task module default to tasks with no "
-"`project_id`. Shell route `/projects`; Hub RPC `projectfolder.*`, "
+"`project_id`. Shell route `/projects`; Habitat RPC `projectfolder.*`, "
 "`project.*`, `milestone.*`, `project.item.*`；跨边界归属用 "
 "`task.moveToProject` / `task.moveToList`。"
 msgstr ""
@@ -587,16 +587,16 @@ msgstr ""
 #| "Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. "
 #| "Messages store IMAP UID in `body.imap_uid`; human-readable subject/body "
 #| "use entity columns. IMAP sync upserts threads/messages; UI lives in shell "
-#| "`/email` (SAP `email.*` methods), not Console REST."
+#| "`/email` (SAP `email.*` methods), not Habitat REST."
 msgid ""
 "Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages "
 "store IMAP UID in `body.imap_uid`; human-readable subject/body use entity "
 "columns. IMAP sync upserts threads/messages; UI lives in shell `/email` (SAP "
-"`email.*` methods), not Console REST."
+"`email.*` methods), not Habitat REST."
 msgstr ""
 "账户在 `body.sync` 存 SMTP/IMAP 设置与同步游标。消息在 `body.imap_uid` 存 "
 "IMAP UID；可读主题/正文用实体列。IMAP 同步 upsert 线程/消息；UI 在 shell `/"
-"email`（SAP `email.*` 方法），非 Console REST。"
+"email`（SAP `email.*` 方法），非 Habitat REST。"
 
 #. type: Plain text
 #: docs/concepts/entity-model.md:152
@@ -884,7 +884,7 @@ msgid ""
 "| Library | Crypto mode       | Decrypt location          | Headless inject                     |\n"
 "| ------- | ----------------- | ------------------------- | ----------------------------------- |\n"
 "| User    | `master_password` | Client (Shell)            | No — Chat unlock box or `/vault` UI |\n"
-"| Agent   | `machine`         | Hub (`agent-machine.key`) | Yes — cron / tools                  |\n"
+"| Agent   | `machine`         | Habitat (`agent-machine.key`) | Yes — cron / tools                  |\n"
 msgstr ""
 
 #. type: Plain text
@@ -920,10 +920,10 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/concepts/entity-model.md:235
 msgid ""
-"**Config:** `vault(\"item_id\", \"field\")` resolves Agent library at Hub "
+"**Config:** `vault(\"item_id\", \"field\")` resolves Agent library at Habitat "
 "boot (legacy `credential()` removed)."
 msgstr ""
-"**Config：** `vault(\"item_id\", \"field\")` 在 Hub 启动时解析 Agent 库（遗"
+"**Config：** `vault(\"item_id\", \"field\")` 在 Habitat 启动时解析 Agent 库（遗"
 "留 `credential()` 已移除）。"
 
 #. type: Plain text
@@ -985,7 +985,7 @@ msgstr "**组件过滤：** 按 `primary_component` 白名单（如 `task_item`�
 #: docs/concepts/entity-model.md:252
 #, fuzzy, no-wrap
 #| msgid "**Tools / API:** `entity_search` (LLM/MCP) and `GET|POST /api/entities/search` share `EntitySearchPort`. Task UI search box uses the same REST endpoint.\n"
-msgid "**Tools / API:** `entity_search` (LLM/MCP) and `hub().call(\"entity.searchGet\")` / `hub().call(\"entity.searchPost\")` (REST `GET /hub/rpc/v1/entity/searchGet` | `POST /hub/rpc/v1/entity/searchPost`) share `EntitySearchPort`. Task UI search box uses the same Hub RPC endpoint.\n"
+msgid "**Tools / API:** `entity_search` (LLM/MCP) and `hub().call(\"entity.searchGet\")` / `hub().call(\"entity.searchPost\")` (REST `GET /rpc/v1/entity/searchGet` | `POST /rpc/v1/entity/searchPost`) share `EntitySearchPort`. Task UI search box uses the same Habitat RPC endpoint.\n"
 msgstr "**工具 / API：** `entity_search`（LLM/MCP）与 `GET|POST /api/entities/search` 共用 `EntitySearchPort`。任务 UI 搜索框使用同一 REST 端点。\n"
 
 #. type: Plain text
@@ -1000,8 +1000,8 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/entity-model.md:256
 #, fuzzy, no-wrap
-#| msgid "**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run **Console **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.\n"
-msgid "**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Console **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.\n"
+#| msgid "**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run **Habitat **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.\n"
+msgid "**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Habitat **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.\n"
 msgstr "**FTS 索引：** 与语义记忆相同的 `fts_segmented` + jieba 写入路径（实体创建/更新时 `resolveFtsSegmentedForWrite`）。此列之前导入的旧行可能缺分词；运行管理台 **FTS** 重建（`onlyMissing`）回填 `entities.fts_segmented`，使 jieba 查询 token 与 GIN 索引对齐。\n"
 
 #. type: Title ##

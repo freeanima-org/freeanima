@@ -3,13 +3,13 @@ import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 
 /** LLM 仅存 PG hub_runtime_config，不在 bootstrap config.yaml */
 export const LLM_NOT_CONFIGURED_MESSAGE =
-  "LLM 未配置（hub_runtime_config.llm）；请在 Shell 设置 → Hub 服务中配置后重启服务";
+  "LLM 未配置（hub_runtime_config.llm）；请在 Shell 设置 → Habitat 服务中配置后重启服务";
 
 export function tryGetLlmConfig(cfg: AnimaConfig | RuntimeConfig): LlmConfig | undefined {
   return cfg.llm;
 }
 
-/** 是否已有可用 profile（缺省或空段视为未配置，不挡 Hub 启动） */
+/** 是否已有可用 profile（缺省或空段视为未配置，不挡 Habitat 启动） */
 export function isLlmConfigured(cfg: AnimaConfig | RuntimeConfig): boolean {
   const llm = tryGetLlmConfig(cfg);
   if (!llm) return false;

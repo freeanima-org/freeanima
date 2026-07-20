@@ -3,8 +3,8 @@ import { isBootstrapWebHostingEnabled } from "@freeanima/core/config";
 import { loadBootstrapConfig } from "@freeanima/platform/config/bootstrap.ts";
 import { parseBindHosts } from "@freeanima/platform";
 import {
-  resolveHubTlsListenConfig,
-  toHubTlsBunOptions,
+  resolveHabitatTlsListenConfig,
+  toHabitatTlsBunOptions,
 } from "@freeanima/platform/tls/resolve-hub-tls";
 
 import { tryResolveWebDistDir } from "../web/dist-path.ts";
@@ -13,32 +13,32 @@ export type ServiceStackOptions = {
   host: string;
   port: number;
   /**
-   * 为 true 时跳过 Hub TLS listen（即使 config.yaml http.tls.enabled）。
-   * 源码 `dev:hub` 使用：HTTPS 由 Vite 终止，Hub 只听明文高位口。
+   * 为 true 时跳过 Habitat TLS listen（即使 config.yaml http.tls.enabled）。
+   * 源码 `dev:hub` 使用：HTTPS 由 Vite 终止，Habitat 只听明文高位口。
    */
   skipTls?: boolean;
 };
 
-/** Hub 就绪后打印 Web 托管提示（无 sidecar） */
+/** Habitat 就绪后打印 Web 托管提示（无 sidecar） */
 async function onHubReady(hubPort: number, webHostedByHub: boolean): Promise<void> {
   if (webHostedByHub) {
-    console.log(`[stack] Web UI http://127.0.0.1:${hubPort}/web/chat（由 Hub 托管）`);
+    console.log(`[stack] Web UI http://127.0.0.1:${hubPort}/web/chat（由 Habitat 托管）`);
   }
 }
 
-/** Hub foreground（Web 静态由 Hub /web 托管；dev:hub skipTls 时改由 Vite） */
+/** Habitat foreground（Web 静态由 Habitat /web 托管；dev:hub skipTls 时改由 Vite） */
 export async function runServiceStack(options: ServiceStackOptions): Promise<void> {
   const bootstrap = loadBootstrapConfig();
   const bootstrapHttp = bootstrap.http;
   /**
-   * 源码 `dev:hub`（skipTls）：覆盖 config.yaml `web.*`——Hub 不托管 dist，
+   * 源码 `dev:hub`（skipTls）：覆盖 config.yaml `web.*`——Habitat 不托管 dist，
    * UI 由 `dev:web`（Vite :5000，可 HTTPS）提供；与 http 侧 skipTls 对称。
    */
   const yamlWebEnabled = isBootstrapWebHostingEnabled(bootstrap);
   const webEnabled = options.skipTls ? false : yamlWebEnabled;
   if (options.skipTls) {
     console.log(
-      "[stack] skipTls/dev-hub：忽略 config.yaml web.enabled/host/port（UI 由 Vite WEB_DEV_PORT 提供，Hub 不托管 /web）",
+      "[stack] skipTls/dev-hub：忽略 config.yaml web.enabled/host/port（UI 由 Vite WEB_DEV_PORT 提供，Habitat 不托管 /web）",
     );
   }
 
@@ -68,25 +68,25 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
         };
       } else {
         console.warn(
-          "[stack] config.yaml web.enabled 已开启（或缺省开启）但未找到 Web dist，Hub 将不托管 /web（请先 bun run build:web）",
+          "[stack] config.yaml web.enabled 已开启（或缺省开启）但未找到 Web dist，Habitat 将不托管 /web（请先 bun run build:web）",
         );
       }
     } catch (err) {
-      logStartupError("[stack] Web dist 解析失败，继续启动 Hub（不托管 /web）", err);
+      logStartupError("[stack] Web dist 解析失败，继续启动 Habitat（不托管 /web）", err);
       webStatic = null;
     }
   }
 
   const { serve } = await import("@freeanima/platform");
   const { startHubHttpServers, closeHttpServers, waitForDrainWithTimeout } =
-    await import("@freeanima/features/console/hub/console-api");
+    await import("@freeanima/features/habitat/habitat/habitat-api");
 
   const bindHosts = parseBindHosts(options.host);
   const tlsListen = options.skipTls
     ? null
-    : await resolveHubTlsListenConfig(bootstrapHttp, bindHosts);
+    : await resolveHabitatTlsListenConfig(bootstrapHttp, bindHosts);
   if (options.skipTls && bootstrapHttp?.tls?.enabled) {
-    console.log("[stack] skipTls：不绑 Hub TLS（开发由 Vite HTTPS 终止；Hub 仅明文 HTTP）");
+    console.log("[stack] skipTls：不绑 Habitat TLS（开发由 Vite HTTPS 终止；Habitat 仅明文 HTTP）");
   }
 
   await serve(options.host, options.port, {
@@ -101,7 +101,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
             ? {
                 tlsListen: {
                   port: resolvedTls.port,
-                  tls: toHubTlsBunOptions(resolvedTls.material),
+                  tls: toHabitatTlsBunOptions(resolvedTls.material),
                 },
               }
             : {}),
@@ -115,7 +115,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
       void onHubReady(options.port, webStatic != null);
       if (tlsListen) {
         console.log(
-          `[stack] Hub HTTPS https://127.0.0.1:${tlsListen.port}（TLS 证书：${tlsListen.material.source}）`,
+          `[stack] Habitat HTTPS https://127.0.0.1:${tlsListen.port}（TLS 证书：${tlsListen.material.source}）`,
         );
       }
     },

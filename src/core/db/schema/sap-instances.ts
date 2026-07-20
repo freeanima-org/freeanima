@@ -2,7 +2,7 @@ import { pgTable, text } from "drizzle-orm/pg-core";
 
 import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 
-/** Hub-assigned SAP satellite instance ids (3-char, globally unique) */
+/** Habitat-assigned SAP satellite instance ids (3-char, globally unique) */
 export const sapInstances = pgTable("sap_instances", {
   instance_id: text("instance_id").primaryKey(),
   app_id: text("app_id").notNull(),

@@ -1,12 +1,12 @@
 import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
 import type { TagRowPayload } from "@freeanima/shared/sap-contract/frames/tag.ts";
 
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 export type TagRow = TagRowPayload;
 
 function hub() {
-  return getTypedSatelliteHubClient();
+  return getTypedSatelliteHabitatClient();
 }
 
 function withSubjectKind<T extends Record<string, unknown>>(payload: T) {

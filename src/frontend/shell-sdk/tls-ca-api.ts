@@ -1,5 +1,5 @@
-/** Hub REST 默认 HTTP 端口（与 @freeanima/core/config DEFAULT_HUB_HTTP_PORT 保持一致） */
-import { hubTlsCaInfoUrl } from "@freeanima/shared/hub-rpc";
+/** Habitat REST 默认 HTTP 端口（与 @freeanima/core/config DEFAULT_HUB_HTTP_PORT 保持一致） */
+import { habitatTlsCaInfoUrl } from "@freeanima/shared/habitat-rpc";
 
 const DEFAULT_HUB_HTTP_PORT = 2658;
 
@@ -14,7 +14,7 @@ export type TlsCaInfo = {
   install_hint: string;
 };
 
-function collectTlsCaInfoBases(hubUrl?: string): string[] {
+function collectTlsCaInfoBases(habitatUrl?: string): string[] {
   const bases: string[] = [];
   const push = (raw: string) => {
     try {
@@ -39,7 +39,7 @@ function collectTlsCaInfoBases(hubUrl?: string): string[] {
     }
   }
 
-  const trimmed = hubUrl?.trim();
+  const trimmed = habitatUrl?.trim();
   if (trimmed) {
     push(trimmed);
     try {
@@ -58,12 +58,12 @@ function collectTlsCaInfoBases(hubUrl?: string): string[] {
   return bases;
 }
 
-export async function fetchTlsCaInfo(hubUrl?: string): Promise<TlsCaInfo> {
-  const bases = collectTlsCaInfoBases(hubUrl);
+export async function fetchTlsCaInfo(habitatUrl?: string): Promise<TlsCaInfo> {
+  const bases = collectTlsCaInfoBases(habitatUrl);
   let lastError: Error | undefined;
   for (const base of bases) {
     try {
-      const res = await fetch(hubTlsCaInfoUrl(base), { cache: "no-store" });
+      const res = await fetch(habitatTlsCaInfoUrl(base), { cache: "no-store" });
       if (!res.ok) {
         throw new Error(`TLS CA 信息不可用（${res.status}）`);
       }

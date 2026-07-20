@@ -120,7 +120,7 @@ When the returned JSON contains a `pending` field, Cursor is waiting for a decis
 ### Parallel long tasks
 
 1. Launch multiple `acp_cursor(prompt, mode=agent)` — each gets its own ACP session
-2. Monitor with `acp_task_status(list_all=true)` or Console ACP dock
+2. Monitor with `acp_task_status(list_all=true)` or Habitat ACP dock
 3. Handle each callback / `[ACP result]` independently; reuse via each result's `acp_conversation_id`
 
 ### Research (code analysis)

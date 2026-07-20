@@ -7,7 +7,7 @@ import {
   setTokenizerEncodeForTest,
 } from "@freeanima/core/tokenizer/testing";
 
-/** Unit tests: mock fallback tokenizer (~3.5 chars/token) without Hub download. */
+/** Unit tests: mock fallback tokenizer (~3.5 chars/token) without Habitat download. */
 export function installTokenizerMockForTests(): void {
   beforeEach(async () => {
     setTokenizerEncodeForTest(FALLBACK_TOKENIZER_REPO, (text) => {

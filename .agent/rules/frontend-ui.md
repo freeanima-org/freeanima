@@ -48,7 +48,7 @@
 
 - 布局：`useLayoutMode` / `useCompactLayout` / `useDrawerNav`（视口断点）
 - 交互：`useContextMenuCapability` / `useActionSheetCapability` / `useEnterToSendCapability`
-- 壳：`getShellKind` / `canOpenHubSettings`；**禁止**用 `isElectron` 锁主布局
+- 壳：`getShellKind` / `canOpenHabitatSettings`；**禁止**用 `isElectron` 锁主布局
 - 多列布局可传 `columnSplitKey` 拖拽列宽（`freeanima:column-splits:<key>`）
 - Shell 模块可见性：`shell-module-visibility.ts`；`chat` / `settings` 不可关
 - `ListDetailLayout` drawer 颜色用 Tailwind class，不在 `shared-safe-area.css` 写主题色
@@ -56,5 +56,5 @@
 ## 禁止
 
 - DaisyUI class / `--color-base-*` / `data-theme`
-- 在 `ui-kit` 内 import `sap-contract`、Hub API
+- 在 `ui-kit` 内 import `sap-contract`、Habitat API
 - 在 `shell-ui` 内深路径 import satellite 源码（走 package export）

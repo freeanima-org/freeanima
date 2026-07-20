@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@freeanima/frontend/ui-kit";
 import type { ComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
-import { resolveHubApiOrigin } from "@freeanima/frontend/shell-sdk/hub-api-origin";
-import { hubHealthProbeUrl } from "@freeanima/shared/hub-rpc";
+import { resolveHabitatApiOrigin } from "@freeanima/frontend/shell-sdk/habitat-api-origin";
+import { habitatHealthProbeUrl } from "@freeanima/shared/habitat-rpc";
 import {
   isSwitchableChannel,
   otherUpdateTrack,
@@ -132,8 +132,8 @@ type ServiceAboutInfo = {
 
 async function fetchServiceAboutInfo(): Promise<ServiceAboutInfo> {
   try {
-    const origin = resolveHubApiOrigin();
-    const res = await fetch(hubHealthProbeUrl(origin), { cache: "no-store" });
+    const origin = resolveHabitatApiOrigin();
+    const res = await fetch(habitatHealthProbeUrl(origin), { cache: "no-store" });
     if (!res.ok) return { meta: null };
     const body = (await res.json()) as {
       build?: unknown;

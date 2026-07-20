@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Sample anima service process RSS (VmRSS) and Hub RPC status.get snapshot.
+ * Sample anima service process RSS (VmRSS) and Habitat RPC status.get snapshot.
  *
  *   just memory-sample -- --label idle
  *   just memory-sample -- --pid 12345 --label after-chat
@@ -10,7 +10,7 @@
 
 import { readFileSync } from "node:fs";
 
-import { fetchHubRestRaw, parseHubRestResponse } from "@freeanima/shared/hub-rpc";
+import { fetchHabitatRestRaw, parseHabitatRestResponse } from "@freeanima/shared/habitat-rpc";
 
 type MemoryDetail = {
   rss_kb?: number;
@@ -75,8 +75,8 @@ async function fetchStatusViaHubRpc(
   const bearer = token?.trim() || process.env.FREEANIMA_REMOTE_AUTH_TOKEN?.trim();
   try {
     const options = bearer ? { authToken: bearer } : undefined;
-    const res = await fetchHubRestRaw(hubUrl, "status.get", {}, options);
-    return (await parseHubRestResponse(res)) as Record<string, unknown>;
+    const res = await fetchHabitatRestRaw(hubUrl, "status.get", {}, options);
+    return (await parseHabitatRestResponse(res)) as Record<string, unknown>;
   } catch {
     return null;
   }

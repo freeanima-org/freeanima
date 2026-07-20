@@ -1,7 +1,7 @@
 import { useEffect, useState, type JSX } from "react";
 import { Spinner } from "@freeanima/frontend/ui-kit";
 import { EntityIdLabel } from "@freeanima/frontend/ui-kit/composite";
-import { getTypedSatelliteHubClient } from "@freeanima/platform/hub/client.ts";
+import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 import type { EntityOverlayProps } from "@freeanima/frontend/shell-ui/spa/features/entity-overlay-registry.ts";
 
@@ -23,7 +23,7 @@ export function SemanticMemoryEntityOverlay({ id }: EntityOverlayProps): JSX.Ele
     let cancelled = false;
     setLoading(true);
     setError(null);
-    void getTypedSatelliteHubClient()
+    void getTypedSatelliteHabitatClient()
       .call("memory.semanticList", {
         status: "all",
         limit: 100,

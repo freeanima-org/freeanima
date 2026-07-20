@@ -1,12 +1,12 @@
 import { browserSapInstanceStore } from "@freeanima/shared/sap-contract";
-import { resolveHubRpcWsUrl } from "@freeanima/shared/hub-rpc";
-import { testHubHealthConnection } from "@freeanima/frontend/shell-sdk";
+import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
+import { testHabitatHealthConnection } from "@freeanima/frontend/shell-sdk";
 import { buildShellApiFields } from "@freeanima/frontend/shell-sdk/shell-api-fields";
 import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
 import { parseShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
 import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
 import type { ScopedSettingsBackend } from "@freeanima/frontend/shell-sdk/settings";
-import { HUB_SETTINGS_SCOPE } from "@freeanima/frontend/shell-sdk/settings";
+import { HABITAT_SETTINGS_SCOPE } from "@freeanima/frontend/shell-sdk/settings";
 
 import { createDesktopDevScopedBackend } from "./settings-dev-backend.ts";
 
@@ -46,14 +46,14 @@ function installDevScopedSettingsBridge(): void {
       await backend.save(scope, value);
     },
     test: async (scope, value) => {
-      if (scope.kind === "kv" && scope.id === "hub") {
-        const raw = value as { hubUrl: string; remoteAuthToken: string };
-        const hubUrl = String(raw.hubUrl ?? "")
+      if (scope.kind === "kv" && scope.id === "habitat") {
+        const raw = value as { habitatUrl: string; remoteAuthToken: string };
+        const habitatUrl = String(raw.habitatUrl ?? "")
           .trim()
           .replace(/\/$/, "");
         const token = String(raw.remoteAuthToken ?? "").trim();
-        if (!hubUrl) throw new Error("栖息地地址不能为空");
-        await testHubHealthConnection(hubUrl, token || undefined);
+        if (!habitatUrl) throw new Error("栖息地地址不能为空");
+        await testHabitatHealthConnection(habitatUrl, token || undefined);
         return;
       }
       if (scope.kind === "kv" && scope.id === "debug") {
@@ -64,26 +64,26 @@ function installDevScopedSettingsBridge(): void {
   };
 }
 
-function createBrowserDevShellStub(hubUrl = "", remoteAuthToken = ""): SatelliteShellApi {
-  const trimmedHub = hubUrl.replace(/\/$/, "");
-  const hubWsUrl = trimmedHub ? resolveHubRpcWsUrl(trimmedHub) : "";
+function createBrowserDevShellStub(habitatUrl = "", remoteAuthToken = ""): SatelliteShellApi {
+  const trimmedHub = habitatUrl.replace(/\/$/, "");
+  const habitatWsUrl = trimmedHub ? resolveHabitatRpcWsUrl(trimmedHub) : "";
   const apiFields = trimmedHub
-    ? buildShellApiFields(trimmedHub, hubWsUrl, remoteAuthToken)
-    : { hubUrl: "", hubWsUrl: "" };
+    ? buildShellApiFields(trimmedHub, habitatWsUrl, remoteAuthToken)
+    : { habitatUrl: "", habitatWsUrl: "" };
 
   const shell: SatelliteShellApi = {
     isElectron: false,
     windowRole: null,
     apiOrigin: null,
-    hubUrl: apiFields.hubUrl,
-    hubWsUrl: apiFields.hubWsUrl,
+    habitatUrl: apiFields.habitatUrl,
+    habitatWsUrl: apiFields.habitatWsUrl,
     createFileInstanceStore: (appId) =>
       browserSapInstanceStore(trimmedHub || "http://127.0.0.1:2658", appId),
     emitConfigChanged: async () => {},
     listenConfigChanged: () => () => {},
   };
   if (apiFields.remoteAuth !== undefined) shell.remoteAuth = apiFields.remoteAuth;
-  if (apiFields.hubFetch !== undefined) shell.hubFetch = apiFields.hubFetch;
+  if (apiFields.habitatFetch !== undefined) shell.habitatFetch = apiFields.habitatFetch;
   return shell;
 }
 
@@ -99,13 +99,16 @@ async function bootstrapShellBridge(): Promise<void> {
     window.satelliteShell = createBrowserDevShellStub();
     try {
       const backend = createDesktopDevScopedBackend();
-      const raw = await backend.load(HUB_SETTINGS_SCOPE);
+      const raw = await backend.load(HABITAT_SETTINGS_SCOPE);
       const parsed = parseShellClientConfig(raw);
-      if (parsed?.hubUrl) {
-        window.satelliteShell = createBrowserDevShellStub(parsed.hubUrl, parsed.remoteAuthToken);
+      if (parsed?.habitatUrl) {
+        window.satelliteShell = createBrowserDevShellStub(
+          parsed.habitatUrl,
+          parsed.remoteAuthToken,
+        );
       }
     } catch {
-      /* 开发回退：Hub 未配置时保留 stub */
+      /* 开发回退：Habitat 未配置时保留 stub */
     }
   }
 

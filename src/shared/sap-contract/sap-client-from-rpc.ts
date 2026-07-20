@@ -1,4 +1,4 @@
-import type { RpcClient, RpcRequestOptions } from "@freeanima/shared/hub-rpc";
+import type { RpcClient, RpcRequestOptions } from "@freeanima/shared/habitat-rpc";
 import type { SapClient, SapMethod, SapRouterInputs, SapRouterOutputs } from "./router.ts";
 
 export function sapClientFromRpc(rpc: RpcClient): SapClient {

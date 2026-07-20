@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { hubRpcRestPrefix } from "@freeanima/shared/hub-rpc";
+import { habitatRpcRestPrefix } from "@freeanima/shared/habitat-rpc";
 import type { CompanionClientConfigPayload } from "@freeanima/shared/sap-contract/frames/companion";
 import { activeModelPath, hubUrlFromEnv, loadCompanionConfig } from "./config.ts";
 import { fbxImportAvailable } from "./fbx-converter-kit.ts";
@@ -29,7 +29,7 @@ export function companionAssetUrl(
   hubBase: string,
 ): string {
   const base = hubBase.replace(/\/$/, "");
-  return `${base}${hubRpcRestPrefix()}/companion/assets/${kind}/${encodeURIComponent(fileName)}`;
+  return `${base}${habitatRpcRestPrefix()}/companion/assets/${kind}/${encodeURIComponent(fileName)}`;
 }
 
 export function listAssetDownloadUrls(
@@ -40,12 +40,14 @@ export function listAssetDownloadUrls(
   for (const model of cfg.models) {
     const fileName = model.path.replace(/^\/models\//, "");
     if (fileName)
-      urls.push(`${hubRpcRestPrefix()}/companion/assets/models/${encodeURIComponent(fileName)}`);
+      urls.push(
+        `${habitatRpcRestPrefix()}/companion/assets/models/${encodeURIComponent(fileName)}`,
+      );
   }
   for (const motion of cfg.motion_library) {
     if (motion.file) {
       urls.push(
-        `${hubRpcRestPrefix()}/companion/assets/motions/${encodeURIComponent(motion.file)}`,
+        `${habitatRpcRestPrefix()}/companion/assets/motions/${encodeURIComponent(motion.file)}`,
       );
     }
   }

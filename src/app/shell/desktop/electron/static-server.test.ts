@@ -1,9 +1,9 @@
 import { describe, it, expect } from "bun:test";
 
-const CONSOLE_PREFIX = "/console";
+const HABITAT_PREFIX = "/habitat";
 
-function resolveConsoleAssetPath(pathname: string): string {
-  let rel = pathname.slice(CONSOLE_PREFIX.length);
+function resolveHabitatAssetPath(pathname: string): string {
+  let rel = pathname.slice(HABITAT_PREFIX.length);
   if (rel.startsWith("/")) rel = rel.slice(1);
   if (rel === "" || !rel.includes(".")) {
     return "index.html";
@@ -11,15 +11,15 @@ function resolveConsoleAssetPath(pathname: string): string {
   return rel;
 }
 
-describe("resolveConsoleAssetPath", () => {
-  it("maps chunk assets under /console", () => {
-    expect(resolveConsoleAssetPath("/console/chunk-abc123.js")).toBe("chunk-abc123.js");
-    expect(resolveConsoleAssetPath("/console/chunk-abc123.css")).toBe("chunk-abc123.css");
+describe("resolveHabitatAssetPath", () => {
+  it("maps chunk assets under /habitat", () => {
+    expect(resolveHabitatAssetPath("/habitat/chunk-abc123.js")).toBe("chunk-abc123.js");
+    expect(resolveHabitatAssetPath("/habitat/chunk-abc123.css")).toBe("chunk-abc123.css");
   });
 
   it("falls back to index.html for SPA routes", () => {
-    expect(resolveConsoleAssetPath("/console/")).toBe("index.html");
-    expect(resolveConsoleAssetPath("/console")).toBe("index.html");
-    expect(resolveConsoleAssetPath("/console/dashboard")).toBe("index.html");
+    expect(resolveHabitatAssetPath("/habitat/")).toBe("index.html");
+    expect(resolveHabitatAssetPath("/habitat")).toBe("index.html");
+    expect(resolveHabitatAssetPath("/habitat/dashboard")).toBe("index.html");
   });
 });

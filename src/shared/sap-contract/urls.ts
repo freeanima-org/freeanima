@@ -1,19 +1,19 @@
 export {
-  resolveHubHttpUrl,
-  resolveHubRpcWsUrl,
-  hubHttpFromRpcWsUrl,
-} from "@freeanima/shared/hub-rpc";
+  resolveHabitatHttpUrl,
+  resolveHabitatRpcWsUrl,
+  habitatHttpFromRpcWsUrl,
+} from "@freeanima/shared/habitat-rpc";
 
-import { resolveHubRpcWsUrl, hubHttpFromRpcWsUrl } from "@freeanima/shared/hub-rpc";
+import { resolveHabitatRpcWsUrl, habitatHttpFromRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 
-/** @deprecated 使用 resolveHubRpcWsUrl */
-export function resolveHubWsUrl(hubUrl: string): string {
-  return resolveHubRpcWsUrl(hubUrl);
+/** @deprecated 使用 resolveHabitatRpcWsUrl */
+export function resolveHubWsUrl(habitatUrl: string): string {
+  return resolveHabitatRpcWsUrl(habitatUrl);
 }
 
-/** @deprecated 使用 hubHttpFromRpcWsUrl */
-export function hubHttpFromWsUrl(wsUrl: string): string {
-  return hubHttpFromRpcWsUrl(wsUrl);
+/** @deprecated 使用 habitatHttpFromRpcWsUrl */
+export function habitatHttpFromWsUrl(wsUrl: string): string {
+  return habitatHttpFromRpcWsUrl(wsUrl);
 }
 
 export function resolveRelayWsUrl(origin?: string, path = "/sap/relay/v1"): string {

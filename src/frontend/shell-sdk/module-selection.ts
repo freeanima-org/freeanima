@@ -1,4 +1,4 @@
-import { resolveHubCacheScope } from "./offline-cache.ts";
+import { resolveHabitatCacheScope } from "./offline-cache.ts";
 import { getSubjectKind } from "./subject-scope-store.ts";
 import type { SubjectKind } from "./subject-scope.ts";
 
@@ -17,7 +17,7 @@ export type TaskModuleSelection =
   | { kind: "search" };
 
 export type ModuleSelectionContext = {
-  hubScope?: string;
+  habitatScope?: string;
   subjectKind?: SubjectKind;
 };
 
@@ -30,18 +30,18 @@ function storage(): Storage | null {
 }
 
 function resolveContext(ctx?: ModuleSelectionContext): {
-  hubScope: string;
+  habitatScope: string;
   subjectKind: SubjectKind;
 } {
   return {
-    hubScope: ctx?.hubScope ?? resolveHubCacheScope(),
+    habitatScope: ctx?.habitatScope ?? resolveHabitatCacheScope(),
     subjectKind: ctx?.subjectKind ?? getSubjectKind(),
   };
 }
 
 function storageKey(module: ModuleSelectionModule, ctx?: ModuleSelectionContext): string {
-  const { hubScope, subjectKind } = resolveContext(ctx);
-  return `${STORAGE_PREFIX}:${hubScope}:${subjectKind}:${module}`;
+  const { habitatScope, subjectKind } = resolveContext(ctx);
+  return `${STORAGE_PREFIX}:${habitatScope}:${subjectKind}:${module}`;
 }
 
 function parseChatValue(raw: string | null): string | null {

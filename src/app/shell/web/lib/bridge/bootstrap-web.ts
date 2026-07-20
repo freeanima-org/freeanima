@@ -1,13 +1,13 @@
 import { parseShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
 import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
-import { HUB_SETTINGS_SCOPE } from "@freeanima/frontend/shell-sdk/settings";
+import { HABITAT_SETTINGS_SCOPE } from "@freeanima/frontend/shell-sdk/settings";
 
 import { createWebScopedBackend } from "../settings-local-backend.ts";
 import {
   buildWebShellFromRaw,
   createWebShellStub,
   installWebShellFromPrefs,
-  testWebHubConnection,
+  testWebHabitatConnection,
   webNeedsHubSetupFromConfig,
 } from "../web-shell.ts";
 
@@ -27,9 +27,9 @@ function installScopedSettingsBridge(): void {
       await backend.save(scope, value);
     },
     test: async (scope: SettingsStorageScope, value: unknown): Promise<unknown> => {
-      if (scope.kind === "kv" && scope.id === "hub") {
-        const raw = value as { hubUrl: string; remoteAuthToken: string };
-        await testWebHubConnection(raw.hubUrl, raw.remoteAuthToken);
+      if (scope.kind === "kv" && scope.id === "habitat") {
+        const raw = value as { habitatUrl: string; remoteAuthToken: string };
+        await testWebHabitatConnection(raw.habitatUrl, raw.remoteAuthToken);
         return;
       }
       if (scope.kind === "kv" && scope.id === "debug") {
@@ -57,10 +57,10 @@ export async function bootstrapElectronBridge(defaultHubUrl: string): Promise<vo
   window.satelliteShell = createWebShellStub();
   if (!window.freeanimaScopedSettings) installScopedSettingsBridge();
   const backend = createWebScopedBackend();
-  const raw = await backend.load(HUB_SETTINGS_SCOPE);
+  const raw = await backend.load(HABITAT_SETTINGS_SCOPE);
   const parsed = parseShellClientConfig(raw);
   if (parsed) {
-    installWebShellFromPrefs(parsed.hubUrl, parsed.remoteAuthToken);
+    installWebShellFromPrefs(parsed.habitatUrl, parsed.remoteAuthToken);
   } else if (defaultHubUrl) {
     window.satelliteShell = buildWebShellFromRaw(defaultHubUrl, "");
   }
@@ -73,7 +73,7 @@ export async function bootstrapWebBridge(
   installScopedSettingsBridge();
   window.satelliteShell = createWebShellStub();
   const backend = createWebScopedBackend();
-  const raw = await backend.load(HUB_SETTINGS_SCOPE);
+  const raw = await backend.load(HABITAT_SETTINGS_SCOPE);
   const parsed = parseShellClientConfig(raw);
   const pageOrigin = window.location.origin.replace(/\/$/, "");
   const sameOrigin = options?.sameOrigin !== false;
@@ -81,19 +81,19 @@ export async function bootstrapWebBridge(
   const prefsToken = parsed?.remoteAuthToken?.trim() ?? "";
 
   if (sameOrigin) {
-    const hubUrl = (defaultHubUrl || pageOrigin).replace(/\/$/, "");
+    const habitatUrl = (defaultHubUrl || pageOrigin).replace(/\/$/, "");
     const token = prefsToken || autoToken;
-    if (hubUrl) {
-      installWebShellFromPrefs(hubUrl, token);
+    if (habitatUrl) {
+      installWebShellFromPrefs(habitatUrl, token);
       if (autoToken && !prefsToken) {
-        await backend.save(HUB_SETTINGS_SCOPE, {
-          hubUrl,
+        await backend.save(HABITAT_SETTINGS_SCOPE, {
+          habitatUrl,
           remoteAuthToken: autoToken,
         });
       }
     }
   } else if (parsed) {
-    installWebShellFromPrefs(parsed.hubUrl, parsed.remoteAuthToken);
+    installWebShellFromPrefs(parsed.habitatUrl, parsed.remoteAuthToken);
   } else if (defaultHubUrl) {
     window.satelliteShell = buildWebShellFromRaw(defaultHubUrl, prefsToken || autoToken);
   }

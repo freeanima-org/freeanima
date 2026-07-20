@@ -335,7 +335,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
         {
           name: "task_create",
           description:
-            "Create a task in a list (default inbox when list_id omitted) or in a project (project_id). list_id and project_id are mutually exclusive. Hub 入口：清单侧 tasklist.item.create；项目侧 project.item.create。",
+            "Create a task in a list (default inbox when list_id omitted) or in a project (project_id). list_id and project_id are mutually exclusive. Habitat 入口：清单侧 tasklist.item.create；项目侧 project.item.create。",
           exposeMcp: true,
           parameters: {
             type: "object",

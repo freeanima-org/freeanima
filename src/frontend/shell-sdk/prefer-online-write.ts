@@ -1,13 +1,13 @@
-import { isHubRpcTransportError } from "@freeanima/shared/hub-rpc";
+import { isHabitatRpcTransportError } from "@freeanima/shared/habitat-rpc";
 
-import { isHubFetchAvailable, isNetworkOnline } from "./hub-fetch-gate.ts";
+import { isHabitatFetchAvailable, isNetworkOnline } from "./habitat-fetch-gate.ts";
 
 /**
  * 在线写失败后是否应回退 outbox（仅网络/传输类）。
  * 业务校验等错误应直接抛给 UI，避免把必然失败的 op 塞进队列。
  */
 export function isRetriableOfflineWriteError(err: unknown): boolean {
-  if (isHubRpcTransportError(err)) return true;
+  if (isHabitatRpcTransportError(err)) return true;
   if (!isNetworkOnline()) return true;
   if (!(err instanceof Error)) return false;
   const msg = err.message.toLowerCase();
@@ -28,7 +28,7 @@ export async function preferOnlineWrite<T>(
   online: () => Promise<T>,
   offline: () => Promise<T>,
 ): Promise<T> {
-  if (!isHubFetchAvailable()) {
+  if (!isHabitatFetchAvailable()) {
     return offline();
   }
   try {

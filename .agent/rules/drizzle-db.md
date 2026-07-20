@@ -79,7 +79,7 @@ Patch objects: `Partial<typeof {table}.$inferInsert>`.
 
 ### Time columns
 
-Use [`pgTimestamptz`](../../src/core/db/schema/columns/pg-timestamptz.ts) in schema — application code reads/writes **`Date`**. JSON API boundary: Hub RPC REST serializes `Date` → ISO string; Console `unwrap()` calls [`reviveDates`](../../src/core/util/date-json.ts).
+Use [`pgTimestamptz`](../../src/core/db/schema/columns/pg-timestamptz.ts) in schema — application code reads/writes **`Date`**. JSON API boundary: Habitat RPC REST serializes `Date` → ISO string; Habitat `unwrap()` calls [`reviveDates`](../../src/core/util/date-json.ts).
 
 Column names: **`created_at` / `updated_at`** (no `created` / `updated` aliases).
 

@@ -14,7 +14,7 @@ const MIME: Record<string, string> = {
   ".ico": "image/x-icon",
 };
 
-const CONSOLE_PREFIX = "/console";
+const HABITAT_PREFIX = "/habitat";
 const WEB_PREFIX = "/web";
 
 function isAddrInUse(error: unknown): boolean {
@@ -28,11 +28,11 @@ function isAddrInUse(error: unknown): boolean {
 
 export type StaticServerConfig = {
   appId: string;
-  hubWsUrl: string;
+  habitatWsUrl: string;
 };
 
-function resolveConsoleAssetPath(pathname: string): string {
-  let rel = pathname.slice(CONSOLE_PREFIX.length);
+function resolveHabitatAssetPath(pathname: string): string {
+  let rel = pathname.slice(HABITAT_PREFIX.length);
   if (rel.startsWith("/")) rel = rel.slice(1);
   if (rel === "" || !rel.includes(".")) {
     return "index.html";
@@ -60,7 +60,7 @@ function createStaticHandler(
     if (pathname === "/config.json" && config) {
       res.setHeader("Content-Type", "application/json; charset=utf-8");
       res.setHeader("Cache-Control", "no-store");
-      res.end(JSON.stringify({ app_id: config.appId, hub_ws_url: config.hubWsUrl }));
+      res.end(JSON.stringify({ app_id: config.appId, hub_ws_url: config.habitatWsUrl }));
       return;
     }
     const rel = pathname === "/" ? "/index.html" : pathname;
@@ -76,17 +76,17 @@ function createStaticHandler(
   };
 }
 
-function createConsoleStaticHandler(
+function createHabitatStaticHandler(
   distDir: string,
 ): (req: IncomingMessage, res: ServerResponse) => void {
   return (req, res) => {
     const pathname = new URL(req.url ?? "/", "http://127.0.0.1").pathname;
-    if (pathname !== CONSOLE_PREFIX && !pathname.startsWith(`${CONSOLE_PREFIX}/`)) {
+    if (pathname !== HABITAT_PREFIX && !pathname.startsWith(`${HABITAT_PREFIX}/`)) {
       res.statusCode = 404;
       res.end("Not Found");
       return;
     }
-    const rel = resolveConsoleAssetPath(pathname);
+    const rel = resolveHabitatAssetPath(pathname);
     if (serveStaticFile(distDir, rel, res)) return;
     const indexPath = join(distDir, "index.html");
     if (existsSync(indexPath)) {
@@ -108,6 +108,24 @@ function createShellStaticHandler(
     if (pathname === WEB_PREFIX || pathname === `${WEB_PREFIX}/`) {
       res.statusCode = 302;
       res.setHeader("Location", `${WEB_PREFIX}/chat`);
+      res.end();
+      return;
+    }
+
+    if (pathname === `${WEB_PREFIX}/console` || pathname.startsWith(`${WEB_PREFIX}/console/`)) {
+      const rest = pathname.slice(`${WEB_PREFIX}/console`.length) || "/dashboard";
+      const suffix = rest === "/" ? "/dashboard" : rest;
+      res.statusCode = 302;
+      res.setHeader("Location", `${WEB_PREFIX}/habitat${suffix}`);
+      res.end();
+      return;
+    }
+
+    if (pathname === "/console" || pathname.startsWith("/console/")) {
+      const rest = pathname.slice("/console".length) || "/dashboard";
+      const suffix = rest === "/" ? "/dashboard" : rest;
+      res.statusCode = 302;
+      res.setHeader("Location", `/habitat${suffix}`);
       res.end();
       return;
     }
@@ -196,7 +214,7 @@ export async function startShellStaticServer(
   throw lastError ?? new Error(`无法在 ${portStart}–${portStart + portAttempts - 1} 找到可用端口`);
 }
 
-export async function startConsoleStaticServer(
+export async function startHabitatStaticServer(
   distDir: string,
   portStart: number,
   portAttempts = 10,
@@ -204,7 +222,7 @@ export async function startConsoleStaticServer(
   let lastError: unknown;
   for (let i = 0; i < portAttempts; i++) {
     const port = portStart + i;
-    const server = createServer(createConsoleStaticHandler(distDir));
+    const server = createServer(createHabitatStaticHandler(distDir));
     try {
       const boundPort = await listenStatic(server, port);
       const url = `http://127.0.0.1:${boundPort}`;

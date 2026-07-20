@@ -4,7 +4,7 @@ title: SAP Tools
 
 # SAP Tools
 
-Satellites register **local tools** on the Hub. The agent invokes them during a bound session; Hub forwards execution to the Satellite via `tool.call` and waits for `tool.result` / `tool.error`.
+Satellites register **local tools** on the Habitat. The agent invokes them during a bound session; Habitat forwards execution to the Satellite via `tool.call` and waits for `tool.result` / `tool.error`.
 
 Implementation: [`src/capabilities/satellite/manager.ts`](../../src/capabilities/satellite/manager.ts).
 
@@ -42,27 +42,27 @@ Set `private: false` on `tool.register` to expose tools like built-in toolsets.
 ```mermaid
 sequenceDiagram
   participant Sat as Satellite
-  participant Hub as Hub
+  participant Habitat as Habitat
   participant Agent as AgentRuntime
 
-  Sat->>Hub: req tool.register tools local_name description parameters
-  Hub->>Hub: SatelliteManager.registerTools
-  Hub->>Sat: res registered canonical names
+  Sat->>Habitat: req tool.register tools local_name description parameters
+  Habitat->>Habitat: SatelliteManager.registerTools
+  Habitat->>Sat: res registered canonical names
   Note over Agent: later during message.send stream
-  Agent->>Hub: invoke sap_* tool
-  Hub->>Sat: evt tool.call call_id local_name args
+  Agent->>Habitat: invoke sap_* tool
+  Habitat->>Sat: evt tool.call call_id local_name args
   Sat->>Sat: execute local handler
-  Sat->>Hub: req tool.result call_id content
-  Hub->>Agent: resume turn
+  Sat->>Habitat: req tool.result call_id content
+  Habitat->>Agent: resume turn
 ```
 
 Register via `tool.register` with `SapToolDefInput`: `local_name`, `description`, `parameters` (JSON Schema object), optional `return_kind` (`json` | `text`), optional `private` (default `true`).
 
-On disconnect, Hub unregisters all tools for that app/instance.
+On disconnect, Habitat unregisters all tools for that app/instance.
 
 ## Strict routing
 
-SAP-prefixed tool names **never fall back** to Hub-local tools with the same name. `SatelliteManager.installToolRouting()` wraps `ToolSetRegistry.getTool` to enforce this.
+SAP-prefixed tool names **never fall back** to Habitat-local tools with the same name. `SatelliteManager.installToolRouting()` wraps `ToolSetRegistry.getTool` to enforce this.
 
 ```mermaid
 flowchart TD
@@ -86,12 +86,12 @@ flowchart TD
 
 Common rejection reasons:
 
-| Condition                                   | Result                                        |
-| ------------------------------------------- | --------------------------------------------- |
-| Session not bound to satellite app/instance | Reject                                        |
-| Instance offline                            | Reject                                        |
-| Tool not registered on connected instance   | Reject                                        |
-| Unregistered `sap_*` name                   | Guard handler returns error (no Hub fallback) |
+| Condition                                   | Result                                            |
+| ------------------------------------------- | ------------------------------------------------- |
+| Session not bound to satellite app/instance | Reject                                            |
+| Instance offline                            | Reject                                            |
+| Tool not registered on connected instance   | Reject                                            |
+| Unregistered `sap_*` name                   | Guard handler returns error (no Habitat fallback) |
 
 Session binding requires `platform_extra.satellite_app_id` and `platform_extra.satellite_instance_id` set at `conversation.create` time.
 
@@ -110,7 +110,7 @@ sap:{app_slug}:{instance_id}
 | `companion` | `sap:companion:k7m` |
 | `chat`      | `sap:chat:k7m`      |
 
-`instance_id` is a Hub-assigned 3-character `[a-z0-9]` string, globally unique across all SAP apps. Hub returns the assigned or confirmed id in `connected.instance_id`.
+`instance_id` is a Habitat-assigned 3-character `[a-z0-9]` string, globally unique across all SAP apps. Habitat returns the assigned or confirmed id in `connected.instance_id`.
 
 ## Completing a call
 
@@ -119,6 +119,6 @@ Satellite receives `tool.call` with `call_id`. Reply with:
 - `tool.result` — `{ call_id, content }`
 - `tool.error` — `{ call_id, error }`
 
-Hub resolves the pending promise and continues the agent turn. Timeout or disconnect fails the call.
+Habitat resolves the pending promise and continues the agent turn. Timeout or disconnect fails the call.
 
 Reference handler: [`src/satellites/companion/server/sap/hub.ts`](../../src/satellites/companion/server/sap/hub.ts).

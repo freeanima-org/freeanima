@@ -30,7 +30,7 @@ function systemdHubFailed(): boolean {
   return String(r.stdout ?? "").trim() === "failed";
 }
 
-/** Poll GET /hub/rpc/v1/health/probe until status is ok or timeout. */
+/** Poll GET /rpc/v1/health/probe until status is ok or timeout. */
 export async function waitForHubReady(
   host: string,
   port: number,
@@ -42,7 +42,7 @@ export async function waitForHubReady(
   const deadline = Date.now() + timeoutMs;
 
   while (Date.now() < deadline) {
-    const health = await apiGet(probeHost, port, "/hub/rpc/v1/health/probe", 2000);
+    const health = await apiGet(probeHost, port, "/rpc/v1/health/probe", 2000);
     if (health?.status === "ok") return true;
     await sleep(intervalMs);
   }
@@ -58,23 +58,23 @@ export async function waitForHubReadyOrWarn(host: string, port: number): Promise
   let lastProgressAt = 0;
 
   while (Date.now() < deadline) {
-    const health = await apiGet(probeHost, port, "/hub/rpc/v1/health/probe", 2000);
+    const health = await apiGet(probeHost, port, "/rpc/v1/health/probe", 2000);
     if (health?.status === "ok") return true;
 
     if (systemdHubFailed()) {
-      writeStatusLine("warning", "Hub 启动失败（systemd 报告 anima.service failed）");
+      writeStatusLine("warning", "Habitat 启动失败（systemd 报告 anima.service failed）");
       writeStatusLine("info", "See: journalctl --user -u anima -n 30 --no-pager");
       return false;
     }
 
     const now = Date.now();
     if (!waited) {
-      writeStatusLine("info", "等待 Hub 就绪（含数据库迁移）…");
+      writeStatusLine("info", "等待 Habitat 就绪（含数据库迁移）…");
       waited = true;
       lastProgressAt = now;
     } else if (now - lastProgressAt >= 5000) {
       const elapsed = Math.round((now - (deadline - timeoutMs)) / 1000);
-      writeStatusLine("info", `仍在等待 Hub（${elapsed}s）…`);
+      writeStatusLine("info", `仍在等待 Habitat（${elapsed}s）…`);
       lastProgressAt = now;
     }
 
@@ -83,7 +83,7 @@ export async function waitForHubReadyOrWarn(host: string, port: number): Promise
 
   writeStatusLine(
     "warning",
-    `Hub 在 ${Math.round(timeoutMs / 1000)}s 内未就绪（可能仍在跑迁移，或已退出）`,
+    `Habitat 在 ${Math.round(timeoutMs / 1000)}s 内未就绪（可能仍在跑迁移，或已退出）`,
   );
   writeStatusLine("info", "Check: journalctl --user -u anima -n 50 --no-pager");
   writeStatusLine("info", "Check: anima service status");

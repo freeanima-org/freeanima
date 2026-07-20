@@ -3,7 +3,7 @@ import { omitUndefined } from "@freeanima/core/util";
 import type { SapServerDeps } from "./types.ts";
 export type { SapServerDeps } from "./types.ts";
 import { bindVaultShellSendRequest } from "@freeanima/platform/connectors/vault";
-import { bindChatSessionPumps } from "@freeanima/features/chat/hub/session-pumps";
+import { bindChatSessionPumps } from "@freeanima/features/chat/habitat/session-pumps";
 import {
   sapAttachPayloadSchema,
   defineSapRouter,
@@ -15,11 +15,11 @@ import {
   type SapRouterInputs,
   type SapServerHandlers,
 } from "@freeanima/shared/sap-contract";
-import { hubRpcConnectPayloadSchema, HUB_RPC_VERSION } from "@freeanima/shared/hub-rpc";
+import { hubRpcConnectPayloadSchema, HABITAT_RPC_VERSION } from "@freeanima/shared/habitat-rpc";
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
-import { isHubMethod } from "@freeanima/shared/hub-contract";
+import { isHubMethod } from "@freeanima/shared/habitat-contract";
 import { getFeatureRpcHandler } from "../features/registry.ts";
-import { hubDispatch } from "../hub/dispatch.ts";
+import { habitatDispatch } from "../habitat/dispatch.ts";
 
 const HEARTBEAT_INTERVAL_SEC = 30;
 const SATELLITE_REQUEST_TIMEOUT_MS = 30_000;
@@ -78,7 +78,7 @@ export function createSapServerHandlers(
       if (isHubMethod(method)) {
         const featureHandler = getFeatureRpcHandler(method);
         if (featureHandler) {
-          return hubDispatch(deps, method, payload, ctx) as Promise<
+          return habitatDispatch(deps, method, payload, ctx) as Promise<
             import("@freeanima/shared/sap-contract").SapRouterOutputs[typeof method]
           >;
         }
@@ -91,7 +91,7 @@ export function createSapServerHandlers(
       switch (method) {
         case "sap.attach":
         case "sap.detach":
-          throw new Error("sap session methods are handled by Hub RPC transport");
+          throw new Error("sap session methods are handled by Habitat RPC transport");
         default:
           throw new Error(`unknown SAP method: ${String(method)}`);
       }
@@ -195,7 +195,7 @@ export function attachSapWebSocket(
       sendEnvelope({
         kind: "connected",
         payload: {
-          protocol: HUB_RPC_VERSION,
+          protocol: HABITAT_RPC_VERSION,
           session_id: hubSessionId,
           heartbeat_interval_sec: HEARTBEAT_INTERVAL_SEC,
         },

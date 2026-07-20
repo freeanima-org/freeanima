@@ -26,7 +26,7 @@ const BUNDLED_INTERNAL_PACKAGES = new Set([
   "@freeanima/shell-sdk",
   "@freeanima/satellite-companion",
   "@freeanima/feature-chat",
-  "@freeanima/feature-console",
+  "@freeanima/feature-habitat",
   "@freeanima/shell-ui",
 ]);
 

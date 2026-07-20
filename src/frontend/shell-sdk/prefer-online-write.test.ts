@@ -1,8 +1,8 @@
 import { afterAll, describe, expect, it, mock } from "bun:test";
 
-const realGate = await import("./hub-fetch-gate.ts");
+const realGate = await import("./habitat-fetch-gate.ts");
 const gateOriginal = {
-  isHubFetchAvailable: realGate.isHubFetchAvailable,
+  isHabitatFetchAvailable: realGate.isHabitatFetchAvailable,
   isNetworkOnline: realGate.isNetworkOnline,
   isHubConnected: realGate.isHubConnected,
   shellWritesDisabledFromState: realGate.shellWritesDisabledFromState,
@@ -11,23 +11,23 @@ const gateOriginal = {
 let hubAvailable = true;
 let networkOnline = true;
 
-mock.module("./hub-fetch-gate.ts", () => ({
+mock.module("./habitat-fetch-gate.ts", () => ({
   ...gateOriginal,
-  isHubFetchAvailable: () => hubAvailable,
+  isHabitatFetchAvailable: () => hubAvailable,
   isNetworkOnline: () => networkOnline,
 }));
 
 afterAll(() => {
-  mock.module("./hub-fetch-gate.ts", () => gateOriginal);
+  mock.module("./habitat-fetch-gate.ts", () => gateOriginal);
 });
 
 const { preferOnlineWrite, isRetriableOfflineWriteError } =
   await import("./prefer-online-write.ts");
-const { HubRpcTimeoutError } = await import("@freeanima/shared/hub-rpc");
+const { HabitatRpcTimeoutError } = await import("@freeanima/shared/habitat-rpc");
 
 describe("isRetriableOfflineWriteError", () => {
   it("识别传输超时与业务错误", () => {
-    expect(isRetriableOfflineWriteError(new HubRpcTimeoutError("x"))).toBe(true);
+    expect(isRetriableOfflineWriteError(new HabitatRpcTimeoutError("x"))).toBe(true);
     expect(isRetriableOfflineWriteError(new Error("Hub RPC WebSocket closed"))).toBe(true);
     expect(isRetriableOfflineWriteError(new Error("diary title is required"))).toBe(false);
   });
@@ -58,7 +58,7 @@ describe("preferOnlineWrite", () => {
     networkOnline = true;
     const result = await preferOnlineWrite(
       async () => {
-        throw new HubRpcTimeoutError("timed out");
+        throw new HabitatRpcTimeoutError("timed out");
       },
       async () => "offline",
     );

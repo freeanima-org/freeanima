@@ -278,7 +278,7 @@ export function mapRuntimeStreamEventToSap(
   }
 }
 
-/** 将 Hub 下发的 SAP stream.* evt 映射为 Console SSE 事件名与 payload */
+/** 将 Habitat 下发的 SAP stream.* evt 映射为 Habitat SSE 事件名与 payload */
 export function mapSapStreamMethodToApi(
   method: StreamEventMethod,
   payload: Record<string, unknown>,

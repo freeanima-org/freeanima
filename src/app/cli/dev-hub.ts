@@ -1,12 +1,12 @@
 #!/usr/bin/env bun
 /**
- * 源码 / worktree 本机起 Hub（前台）。不经 anima service / systemd。
+ * 源码 / worktree 本机起 Habitat（前台）。不经 anima service / systemd。
  *
  *   bun run dev:hub
  *   bun run dev:hub -- --port 12001
  *   bun run dev:hub -- --port 12001 --strict-port
  *
- * 默认随机 ≥10000 闲口（避开生产 2658/2659）。TLS 由 Vite 终止，本进程不绑 Hub TLS。
+ * 默认随机 ≥10000 闲口（避开生产 2658/2659）。TLS 由 Vite 终止，本进程不绑 Habitat TLS。
  */
 import { installErrorLogHandlers, logStartupError } from "@freeanima/platform/logging";
 import { Command } from "commander";
@@ -25,7 +25,7 @@ const FREEANIMA_DEV_HUB_ENV = "FREEANIMA_DEV_HUB";
 async function main(): Promise<void> {
   const program = new Command()
     .name("dev-hub")
-    .description("Run FreeAnima Hub in foreground (monorepo / worktree; not anima service)")
+    .description("Run FreeAnima Habitat in foreground (monorepo / worktree; not anima service)")
     .option(
       "--host <host>",
       "Listen address (overrides http.host in config; comma-separated for multiple binds)",
@@ -81,11 +81,11 @@ Production install uses standalone \`anima service\` (systemd). Source CLI has n
     }
   }
 
-  console.log(`dev-hub · starting Hub in foreground…`);
+  console.log(`dev-hub · starting Habitat in foreground…`);
   console.log(`  address: http://${host.split(",")[0]?.trim() || host}:${port}`);
-  console.log(`  http override: CLI --host/--port；Hub TLS skipped (Vite may terminate HTTPS)`);
+  console.log(`  http override: CLI --host/--port；Habitat TLS skipped (Vite may terminate HTTPS)`);
   console.log(
-    `  web override: Hub ignores config.yaml web.* (UI via bun run dev:web / WEB_DEV_PORT)`,
+    `  web override: Habitat ignores config.yaml web.* (UI via bun run dev:web / WEB_DEV_PORT)`,
   );
   console.log(`  tip: anima service is only on the standalone install CLI; TLS via Vite if needed`);
 

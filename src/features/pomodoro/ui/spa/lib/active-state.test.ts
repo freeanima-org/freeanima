@@ -24,7 +24,7 @@ const config: PomodoroConfigRow = {
   sound_enabled: true,
 };
 
-const HUB = "ws://127.0.0.1:2658/hub/rpc/v1";
+const HUB = "ws://127.0.0.1:2658/rpc/v1";
 
 function mockLocalStorage(): Storage {
   const store = new Map<string, string>();

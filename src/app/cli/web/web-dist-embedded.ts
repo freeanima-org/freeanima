@@ -26,7 +26,7 @@ export function getRegisteredEmbeddedWebDist(): EmbeddedWebDistFile[] | null {
   return files && files.length > 0 ? files : null;
 }
 
-/** 将嵌入的 Web 静态文件落到磁盘目录供 Hub /web 托管 */
+/** 将嵌入的 Web 静态文件落到磁盘目录供 Habitat /web 托管 */
 export function materializeEmbeddedWebDist(files: EmbeddedWebDistFile[]): string {
   const hash = createHash("sha256")
     .update(

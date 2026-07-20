@@ -8,7 +8,7 @@ Discord / 微信（iLink）通道与全局网关选项保存在 PostgreSQL `hub_
 
 ## 在哪里改
 
-Shell → **Hub 服务** → **服务配置**：
+Shell → **Habitat 服务** → **服务配置**：
 
 | 段                      | 作用                                            |
 | ----------------------- | ----------------------------------------------- |
@@ -21,7 +21,7 @@ Shell → **Hub 服务** → **服务配置**：
 ## 启用与生效
 
 - `enabled: false`：即使有 token 也不启动该通道（默认有 token 且未禁用则启动）。
-- 保存后需 **重启 Hub / anima service** 才会重新 `discoverPlatforms`；当前不支持热重载。
+- 保存后需 **重启 Habitat / anima service** 才会重新 `discoverPlatforms`；当前不支持热重载。
 
 ## 测试连接
 

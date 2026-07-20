@@ -25,7 +25,7 @@ const sampleItems = [
   mockItem("diary", "日记"),
   mockItem("notifications", "通知"),
   mockItem("vault", "Vault"),
-  mockItem("console", "仪表盘"),
+  mockItem("habitat", "仪表盘"),
   mockItem("settings", "设置"),
 ];
 
@@ -38,7 +38,7 @@ const elevenItems = [
   mockItem("diary", "日记"),
   mockItem("vault", "Vault"),
   mockItem("notifications", "通知"),
-  mockItem("console", "仪表盘"),
+  mockItem("habitat", "仪表盘"),
   mockItem("settings", "设置"),
   mockItem("pomodoro", "番茄钟2"),
 ];

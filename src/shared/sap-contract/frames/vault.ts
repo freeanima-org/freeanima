@@ -199,7 +199,7 @@ export type VaultCreatePlainOutput = z.infer<typeof vaultCreatePlainOutputSchema
 export const vaultPatchPlainOutputSchema = z.object({ item: vaultItemMetaRowSchema });
 export type VaultPatchPlainOutput = z.infer<typeof vaultPatchPlainOutputSchema>;
 
-/** Hub → Shell RPC（非 SAP router 方法） */
+/** Habitat → Shell RPC（非 SAP router 方法） */
 export const vaultResolveSecretUserInputSchema = z.object({
   item_id: z.number().int().positive(),
   field: z.string().min(1),

@@ -52,7 +52,7 @@ export type SettingsSection = {
   order: number;
   title: string;
   description?: string;
-  /** 设置分组：本机 vs Hub 服务（默认 client） */
+  /** 设置分组：本机 vs Habitat 服务（默认 client） */
   category?: SettingsCategory;
   platforms: {
     desktop?: SettingsPlatformEntry;
@@ -67,7 +67,7 @@ export type SettingsBinding<T = unknown> = {
   deps?: SettingsSectionDeps;
 };
 
-/** companion 非配置持久化操作（模型/动作经 Hub RPC） */
+/** companion 非配置持久化操作（模型/动作经 Habitat RPC） */
 export type CompanionSettingsApi = {
   uploadModel(file: File): Promise<void>;
   setActiveModel(id: string): Promise<void>;

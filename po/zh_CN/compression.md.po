@@ -198,8 +198,8 @@ msgstr "`compression.default_context_window`（适用于所有模型）"
 #. type: Bullet: '3. '
 #: docs/concepts/compression.md:71
 msgid ""
-"Provider `/models` catalog `contextWindow` (when Hub has registered lookup)"
-msgstr "Provider `/models` 目录中的 `contextWindow`（Hub 已注册 lookup 时）"
+"Provider `/models` catalog `contextWindow` (when Habitat has registered lookup)"
+msgstr "Provider `/models` 目录中的 `contextWindow`（Habitat 已注册 lookup 时）"
 
 #. type: Bullet: '4. '
 #: docs/concepts/compression.md:71

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import {
   fetchSidecarRuntimeConfig,
-  loadHubCompanionSettingsConfig,
+  loadHabitatCompanionSettingsConfig,
   resetSidecarOriginCache,
   saveSettings,
   uploadModel as uploadModelApi,
@@ -28,7 +28,7 @@ type CompanionState = {
   error: string | null;
   settingsTab: SettingsTabId;
   settingsOpen: boolean;
-  hubUrl: string;
+  habitatUrl: string;
   modelPath: string;
   instanceId: string;
   sapConnected: boolean;
@@ -81,7 +81,7 @@ function applyConfigToState(cfg: CompanionConfig, prev?: CompanionState): Partia
   const modelPath = cfg.model_available ? cfg.model_path : "";
   const bumpRevision = visualConfigChanged(cfg, prev);
   return {
-    hubUrl: cfg.hub_url,
+    habitatUrl: cfg.hub_url,
     modelPath,
     instanceId: cfg.instance_id,
     sapConnected: cfg.sap_connected,
@@ -101,7 +101,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   error: null,
   settingsTab: "behavior",
   settingsOpen: false,
-  hubUrl: "http://127.0.0.1:2658",
+  habitatUrl: "http://127.0.0.1:2658",
   modelPath: "",
   instanceId: "",
   sapConnected: false,
@@ -149,7 +149,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
 
   applyConfig(cfg) {
     const prev = get();
-    const hubChanged = prev.hubUrl !== cfg.hub_url;
+    const hubChanged = prev.habitatUrl !== cfg.hub_url;
     if (hubChanged) {
       resetSidecarOriginCache();
     }
@@ -178,7 +178,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   async initHubSettings() {
     set({ loading: true, error: null });
     try {
-      const cfg = await loadHubCompanionSettingsConfig();
+      const cfg = await loadHabitatCompanionSettingsConfig();
       get().applyConfig(cfg);
     } catch (e) {
       set({
@@ -192,7 +192,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
     try {
       const cfg = isCompanionOverlay()
         ? await fetchSidecarRuntimeConfig()
-        : await loadHubCompanionSettingsConfig();
+        : await loadHabitatCompanionSettingsConfig();
       get().applyConfig(cfg);
     } catch (e) {
       set({ error: e instanceof Error ? e.message : String(e) });

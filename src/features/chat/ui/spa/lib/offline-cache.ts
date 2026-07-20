@@ -7,7 +7,7 @@ import {
 import type { ConversationListItem, DisplayItem } from "./types.ts";
 
 export {
-  resolveHubCacheScope,
+  resolveHabitatCacheScope,
   resolveCacheScope,
 } from "@freeanima/frontend/shell-sdk/offline-cache";
 

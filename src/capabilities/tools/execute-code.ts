@@ -19,7 +19,7 @@ export function registerExecuteCodeTool(toolSets: ToolSetRegistry): void {
           name: "code_execute",
           description:
             "Execute code snippet in subprocess (no shell). Default runtime bun: TypeScript/JavaScript, can use node:fs etc. " +
-            "Optional runtime=nodejs. Optional secrets[] injects vault fields into this subprocess env only (not Hub process.env). " +
+            "Optional runtime=nodejs. Optional secrets[] injects vault fields into this subprocess env only (not Habitat process.env). " +
             "Use terminal for Python scripts. Use terminal for complex shell operations.",
           parameters: {
             type: "object",

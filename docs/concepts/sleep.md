@@ -36,9 +36,9 @@ Sleep uses a **macro DAG** (`sleep-cycle` pipeline) orchestrated by `PipelineRun
 
 **Light sleep** and **deep sleep** keep their **internal** multi-stage / multi-round sequencing inside `runLightSleep()` / `runDeepSleep()` — not promoted to macro DAG nodes.
 
-Console (`/console`/dashboard/sleep`) supports **diagnostic** runs: full cycle or individual steps (`force` skips dependency checks). **Deep sleep mode** (full vs incremental) can be selected before manual runs.
+Habitat (`/habitat`/dashboard/sleep`) supports **diagnostic** runs: full cycle or individual steps (`force` skips dependency checks). **Deep sleep mode** (full vs incremental) can be selected before manual runs.
 
-**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Console → Cron** via each task's **Run history** button.
+**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Habitat → Cron** via each task's **Run history** button.
 
 Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.json` (SSOT for step status; no EventBus).
 
@@ -46,7 +46,7 @@ Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.js
 
 | Attribute     | Value                                                                                         |
 | ------------- | --------------------------------------------------------------------------------------------- |
-| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Console diagnostics)                          |
+| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Habitat diagnostics)                          |
 | Scope         | Sessions with activity in previous calendar day (**excludes cron-platform sessions**)         |
 | Input         | Full day's **user conversations** (user+assistant, tools stripped), segmented by conversation |
 | Orchestration | Three stages sequential (separate LLM calls each)                                             |
@@ -84,7 +84,7 @@ Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.js
 
 **Ordering rationale:** Clean problems first, then refine, then merge, then review pinned quality.
 
-**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Console manual runs default to full but can select incremental.
+**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Habitat manual runs default to full but can select incremental.
 
 ### Contradiction Definition (Exclusive)
 
@@ -130,14 +130,14 @@ After downtime, the next scheduled run catches up.
 
 **Compression** stays session-scoped (turn-time `advanceCompressionMeta`); it is **not** a sleep-cycle step. Nightly consolidation does not replace per-conversation compression.
 
-## Historical Day (Console)
+## Historical Day (Habitat)
 
-For a single past CST calendar day (e.g. before go-live or after migration), use **Console → Sleep** (`/console`/dashboard/sleep`):
+For a single past CST calendar day (e.g. before go-live or after migration), use **Habitat → Sleep** (`/habitat`/dashboard/sleep`):
 
 1. Set **Day** to `YYYY-MM-DD`
 2. Run the **light-sleep** step (check **Force** to skip dependency checks if needed)
 
-Each step run is logged in the **Pipeline history** table on the sleep page (`pipeline_step_run.output`; deep-sleep rows include per-round summaries and change-log snapshots). Cross-session merge for that day still relies on a subsequent **deep-sleep** run. Cron-triggered cycle runs appear in **Console → Cron → Run history** on the sleep-cycle task.
+Each step run is logged in the **Pipeline history** table on the sleep page (`pipeline_step_run.output`; deep-sleep rows include per-round summaries and change-log snapshots). Cross-session merge for that day still relies on a subsequent **deep-sleep** run. Cron-triggered cycle runs appear in **Habitat → Cron → Run history** on the sleep-cycle task.
 
 ## Relationship to Existing Architecture
 

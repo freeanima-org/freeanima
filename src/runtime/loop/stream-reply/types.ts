@@ -25,7 +25,7 @@ export type StreamReplyState = {
   terminal?: StreamReplyTerminal;
 };
 
-/** 结构化工具调用（Hub display / Gateway 格式化 SSOT） */
+/** 结构化工具调用（Habitat display / Gateway 格式化 SSOT） */
 export type StructuredToolCall = {
   name: string;
   argsPreview: string;
