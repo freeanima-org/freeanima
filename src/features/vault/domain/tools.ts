@@ -337,7 +337,8 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "vault",
     "Vault metadata and Agent-library write tools (no secrets in tool results). " +
-      "Use terminal_run/code_execute secrets for subprocess credentials. Default library: agent. " +
+      "Use terminal_run/code_execute secrets[] for subprocess credentials, or browser_type secret for form fields. " +
+      "Default library: agent. " +
       "vault_create/vault_update/vault_delete are Habitat-only (not MCP).",
     attachToolReturns(
       [

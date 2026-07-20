@@ -12,6 +12,7 @@ import { registerSupplementalTools } from "@freeanima/capabilities/tools";
 import {
   camofoxNavigate,
   camofoxSnapshot,
+  camofoxType,
   checkCamofoxAvailable,
   getCamofoxUrl,
   isCamofoxConfigured,
@@ -112,6 +113,57 @@ describe("browser tools", () => {
     const out = await toolSets.getTool("browser_click")!.handler({});
     const data = JSON.parse(out);
     expect(data.error).toContain("ref");
+  });
+
+  it("browser_type requires text or secret", async () => {
+    const out = await toolSets.getTool("browser_type")!.handler({ ref: "@e1" });
+    const data = JSON.parse(out);
+    expect(data.error).toContain("text or secret");
+  });
+
+  it("browser_type rejects text and secret together", async () => {
+    const out = await toolSets.getTool("browser_type")!.handler({
+      ref: "@e1",
+      text: "x",
+      secret: { id: 1 },
+    });
+    const data = JSON.parse(out);
+    expect(data.error).toContain("either text or secret");
+  });
+
+  it("camofoxType redacts typed when redactTyped", async () => {
+    const fetchMock = vi.fn(async (input: string | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/tabs") && init?.method === "POST") {
+        return new Response(JSON.stringify({ tabId: "tab-type", url: "https://example.com" }), {
+          status: 200,
+        });
+      }
+      if (url.includes("/snapshot")) {
+        return new Response(JSON.stringify({ snapshot: "ok", refsCount: 0 }), { status: 200 });
+      }
+      if (url.includes("/type") && init?.method === "POST") {
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }
+      return new Response("{}", { status: 404 });
+    });
+    stubFetch(fetchMock as unknown as typeof fetch);
+
+    await camofoxNavigate("sess-type", "https://example.com");
+    const out = JSON.parse(
+      await camofoxType("sess-type", "@e3", "super-secret-password", { redactTyped: true }),
+    );
+    expect(out.success).toBe(true);
+    expect(out.typed).toBe("***");
+    expect(JSON.stringify(out)).not.toContain("super-secret-password");
+    const typeBody = fetchMock.mock.calls.find(([u]) => String(u).includes("/type"))?.[1] as
+      | RequestInit
+      | undefined;
+    expect(JSON.parse(String(typeBody?.body))).toEqual({
+      userId: expect.any(String),
+      ref: "e3",
+      text: "super-secret-password",
+    });
   });
 
   it("browser_scroll rejects invalid direction", async () => {

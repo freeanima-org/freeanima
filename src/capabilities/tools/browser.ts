@@ -16,6 +16,11 @@ import {
   camofoxVision,
   isCamofoxConfigured,
 } from "./browser-camofox.ts";
+import {
+  parseSecretArg,
+  resolveVaultSecretValue,
+  SECRET_TOOL_PROPERTY,
+} from "./subprocess-secrets.ts";
 
 function sessionKey(): string {
   return getToolConversationId() ?? "default";
@@ -86,18 +91,40 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
         {
           name: "browser_type",
           description:
-            "Type text into the input identified by ref (clears first). Requires browser_navigate first.",
+            "Type text into the input identified by ref (clears first). Requires browser_navigate first. " +
+            "Pass text for plaintext, or secret to inject a vault field (never echoed in tool results). " +
+            "Provide exactly one of text or secret.",
           parameters: {
             type: "object",
             properties: {
               ref: { type: "string", description: "Input ref, e.g. @e3" },
-              text: { type: "string", description: "Text to type" },
+              text: {
+                type: "string",
+                description: "Plaintext to type (mutually exclusive with secret)",
+              },
+              secret: SECRET_TOOL_PROPERTY,
             },
-            required: ["ref", "text"],
+            required: ["ref"],
           },
-          handler: (args) => {
+          handler: async (args) => {
             const ref = String(args.ref ?? "").trim();
             if (!ref) return toolError("ref is required");
+            const hasText = args.text != null;
+            const hasSecret = args.secret != null;
+            if (hasText && hasSecret) {
+              return toolError("provide either text or secret, not both");
+            }
+            if (!hasText && !hasSecret) {
+              return toolError("text or secret is required");
+            }
+            if (hasSecret) {
+              const parsed = parseSecretArg(args.secret);
+              if (typeof parsed === "string") return parsed;
+              if (parsed == null) return toolError("secret is required");
+              const resolved = await resolveVaultSecretValue(parsed);
+              if (typeof resolved === "string") return resolved;
+              return camofoxType(sessionKey(), ref, resolved.value, { redactTyped: true });
+            }
             return camofoxType(sessionKey(), ref, String(args.text ?? ""));
           },
         },
