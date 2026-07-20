@@ -1,6 +1,12 @@
 import {
+  emailAccountCreateInputSchema,
+  emailAccountCreateOutputSchema,
+  emailAccountDeleteInputSchema,
+  emailAccountDeleteOutputSchema,
   emailAccountListInputSchema,
   emailAccountListOutputSchema,
+  emailAccountPatchInputSchema,
+  emailAccountPatchOutputSchema,
   emailMessageListInputSchema,
   emailMessageListOutputSchema,
   emailMessageMarkReadInputSchema,
@@ -9,6 +15,8 @@ import {
   emailMessageReadOutputSchema,
   emailMessageSearchInputSchema,
   emailMessageSearchOutputSchema,
+  emailProviderListInputSchema,
+  emailProviderListOutputSchema,
   emailSyncInputSchema,
   emailSyncOutputSchema,
   emailThreadListInputSchema,
@@ -21,6 +29,26 @@ export const emailMethodDefs = {
   "emailaccount.list": defineHubMethod({
     input: emailAccountListInputSchema,
     output: emailAccountListOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "emailaccount.create": defineHubMethod({
+    input: emailAccountCreateInputSchema,
+    output: emailAccountCreateOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "emailaccount.patch": defineHubMethod({
+    input: emailAccountPatchInputSchema,
+    output: emailAccountPatchOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "emailaccount.delete": defineHubMethod({
+    input: emailAccountDeleteInputSchema,
+    output: emailAccountDeleteOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "emailprovider.list": defineHubMethod({
+    input: emailProviderListInputSchema,
+    output: emailProviderListOutputSchema,
     meta: dualTransportMeta(true),
   }),
   "email.message.list": defineHubMethod({

@@ -2,26 +2,88 @@ import { z } from "@freeanima/core/tool";
 
 import type { listEmailAccountRows } from "./account-store.ts";
 import type { getEmailMessageRow } from "./message-store.ts";
+import {
+  applyProviderPreset,
+  requireCompleteEmailHosts,
+  EMAIL_PROVIDER_IDS,
+} from "./provider-presets.ts";
 
-export const accountCreateSchema = z.object({
-  password: z.string().min(1),
-  address: z.string().email(),
-  display_name: z.string().optional(),
-  smtp_host: z.string().min(1),
-  smtp_port: z.number().int().positive(),
-  imap_host: z.string().min(1),
-  imap_port: z.number().int().positive(),
-  default_sender: z.boolean().optional(),
-  enabled: z.boolean().optional(),
-  desc: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+export const emailProviderSchema = z.enum(EMAIL_PROVIDER_IDS);
+
+const accountHostFieldsSchema = z.object({
+  provider: emailProviderSchema.optional(),
+  smtp_host: z.string().min(1).optional(),
+  smtp_port: z.number().int().positive().optional(),
+  imap_host: z.string().min(1).optional(),
+  imap_port: z.number().int().positive().optional(),
 });
 
-export const accountPatchSchema = accountCreateSchema
-  .partial()
-  .omit({ password: true })
-  .extend({
+export const accountCreateSchema = z
+  .object({
+    password: z.string().min(1),
+    address: z.string().email(),
+    display_name: z.string().optional(),
+    default_sender: z.boolean().optional(),
+    enabled: z.boolean().optional(),
+    desc: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+  })
+  .merge(accountHostFieldsSchema)
+  .transform((raw) => {
+    const withPreset = applyProviderPreset(raw);
+    const hosts = requireCompleteEmailHosts(withPreset);
+    return {
+      password: withPreset.password,
+      address: withPreset.address,
+      smtp_host: hosts.smtp_host,
+      smtp_port: hosts.smtp_port,
+      imap_host: hosts.imap_host,
+      imap_port: hosts.imap_port,
+      ...(withPreset.display_name !== undefined ? { display_name: withPreset.display_name } : {}),
+      ...(withPreset.default_sender !== undefined
+        ? { default_sender: withPreset.default_sender }
+        : {}),
+      ...(withPreset.enabled !== undefined ? { enabled: withPreset.enabled } : {}),
+      ...(withPreset.desc !== undefined ? { desc: withPreset.desc } : {}),
+      ...(withPreset.tags !== undefined ? { tags: withPreset.tags } : {}),
+    };
+  });
+
+export const accountPatchSchema = z
+  .object({
     password: z.string().min(1).optional(),
+    address: z.string().email().optional(),
+    display_name: z.string().optional(),
+    default_sender: z.boolean().optional(),
+    enabled: z.boolean().optional(),
+    desc: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+  })
+  .merge(accountHostFieldsSchema)
+  .transform((raw) => {
+    const withPreset = applyProviderPreset(raw);
+    const touchesHosts =
+      withPreset.provider != null || withPreset.smtp_host != null || withPreset.imap_host != null;
+    const hosts = touchesHosts ? requireCompleteEmailHosts(withPreset) : null;
+    return {
+      ...(withPreset.password !== undefined ? { password: withPreset.password } : {}),
+      ...(withPreset.address !== undefined ? { address: withPreset.address } : {}),
+      ...(withPreset.display_name !== undefined ? { display_name: withPreset.display_name } : {}),
+      ...(hosts
+        ? {
+            smtp_host: hosts.smtp_host,
+            smtp_port: hosts.smtp_port,
+            imap_host: hosts.imap_host,
+            imap_port: hosts.imap_port,
+          }
+        : {}),
+      ...(withPreset.default_sender !== undefined
+        ? { default_sender: withPreset.default_sender }
+        : {}),
+      ...(withPreset.enabled !== undefined ? { enabled: withPreset.enabled } : {}),
+      ...(withPreset.desc !== undefined ? { desc: withPreset.desc } : {}),
+      ...(withPreset.tags !== undefined ? { tags: withPreset.tags } : {}),
+    };
   });
 
 export type EmailToolIo = {

@@ -140,3 +140,72 @@ export const emailMessageSearchOutputSchema = z.object({
   messages: z.array(emailMessageRowSchema),
 });
 export type EmailMessageSearchOutput = z.infer<typeof emailMessageSearchOutputSchema>;
+
+export const emailProviderIdSchema = z.enum(["aliyun", "gmail", "qq", "custom"]);
+export type EmailProviderId = z.infer<typeof emailProviderIdSchema>;
+
+export const emailProviderPresetSchema = z.object({
+  id: z.enum(["aliyun", "gmail", "qq"]),
+  label: z.string(),
+  imap_host: z.string(),
+  imap_port: z.number().int().positive(),
+  smtp_host: z.string(),
+  smtp_port: z.number().int().positive(),
+});
+export type EmailProviderPresetPayload = z.infer<typeof emailProviderPresetSchema>;
+
+export const emailProviderListInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema.optional(),
+});
+export type EmailProviderListInput = z.infer<typeof emailProviderListInputSchema>;
+export const emailProviderListOutputSchema = z.object({
+  providers: z.array(emailProviderPresetSchema),
+});
+export type EmailProviderListOutput = z.infer<typeof emailProviderListOutputSchema>;
+
+const emailAccountHostFields = {
+  provider: emailProviderIdSchema.optional(),
+  smtp_host: z.string().min(1).optional(),
+  smtp_port: z.number().int().positive().optional(),
+  imap_host: z.string().min(1).optional(),
+  imap_port: z.number().int().positive().optional(),
+};
+
+export const emailAccountCreateInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  password: z.string().min(1),
+  address: z.string().email(),
+  display_name: z.string().optional(),
+  default_sender: z.boolean().optional(),
+  enabled: z.boolean().optional(),
+  desc: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  ...emailAccountHostFields,
+});
+export type EmailAccountCreateInput = z.infer<typeof emailAccountCreateInputSchema>;
+export const emailAccountCreateOutputSchema = z.object({ account: emailAccountRowSchema });
+export type EmailAccountCreateOutput = z.infer<typeof emailAccountCreateOutputSchema>;
+
+export const emailAccountPatchInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  id: z.number().int().positive(),
+  password: z.string().min(1).optional(),
+  address: z.string().email().optional(),
+  display_name: z.string().optional(),
+  default_sender: z.boolean().optional(),
+  enabled: z.boolean().optional(),
+  desc: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  ...emailAccountHostFields,
+});
+export type EmailAccountPatchInput = z.infer<typeof emailAccountPatchInputSchema>;
+export const emailAccountPatchOutputSchema = z.object({ account: emailAccountRowSchema });
+export type EmailAccountPatchOutput = z.infer<typeof emailAccountPatchOutputSchema>;
+
+export const emailAccountDeleteInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  id: z.number().int().positive(),
+});
+export type EmailAccountDeleteInput = z.infer<typeof emailAccountDeleteInputSchema>;
+export const emailAccountDeleteOutputSchema = z.object({ ok: z.literal(true) });
+export type EmailAccountDeleteOutput = z.infer<typeof emailAccountDeleteOutputSchema>;

@@ -1,12 +1,22 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
 import { Alert, AlertDescription, Button, Input, Spinner } from "@freeanima/frontend/ui-kit";
-import { EmptyState, PullToRefresh, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import {
+  ActionSheet,
+  ConfirmDialog,
+  ContextMenu,
+  EmptyState,
+  PullToRefresh,
+  StatusAlert,
+} from "@freeanima/frontend/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
 import {
   ThreeColumnLayout,
   useDrawerNav,
   useThreeColumnLayoutMode,
 } from "@freeanima/frontend/ui-kit/layout";
 import {
+  useActionSheetCapability,
+  useContextMenuCapability,
   useHabitatConnection,
   useNetworkOnline,
   useSubjectScope,
@@ -15,11 +25,15 @@ import {
 import { readModuleSelection, writeModuleSelection } from "@freeanima/frontend/shell-sdk";
 import { m } from "@paraglide/messages";
 
+import { EmailAccountFormDialog } from "./components/EmailAccountFormDialog.tsx";
+import { EmailAccountSidebar } from "./components/EmailAccountSidebar.tsx";
 import { EmailMessageDetail } from "./components/EmailMessageDetail.tsx";
 import {
+  deleteEmailAccount,
   fetchEmailAccounts,
   fetchEmailMessages,
   markEmailMessageRead,
+  patchEmailAccount,
   readEmailMessage,
   searchEmailMessages,
   syncEmailAccount,
@@ -38,6 +52,11 @@ function formatWhen(iso: string): string {
   return d.toLocaleString();
 }
 
+type AccountMenuState = { account: EmailAccountRow; x: number; y: number };
+type MessageMenuState = { message: EmailMessageRow; x: number; y: number };
+type SheetMenuState = { title?: string; items: ActionSheetItem[] };
+type FormState = { mode: "create" | "edit"; account?: EmailAccountRow | null };
+
 export function EmailApp() {
   const { kind: subjectKind } = useSubjectScope();
   const networkOnline = useNetworkOnline();
@@ -45,6 +64,9 @@ export function EmailApp() {
   const writesDisabled = !networkOnline || habitatConnection !== "connected";
   const layoutMode = useThreeColumnLayoutMode();
   const useDrawer = useDrawerNav();
+  const contextMenuEnabled = useContextMenuCapability();
+  const useActionSheet = useActionSheetCapability();
+
   const [accounts, setAccounts] = useState<EmailAccountRow[]>([]);
   const [activeAccountId, setActiveAccountId] = useState<number | null>(null);
   const [messages, setMessages] = useState<EmailMessageRow[]>([]);
@@ -61,6 +83,11 @@ export function EmailApp() {
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
   const [syncNotice, setSyncNotice] = useState("");
+  const [formState, setFormState] = useState<FormState | null>(null);
+  const [accountMenu, setAccountMenu] = useState<AccountMenuState | null>(null);
+  const [messageMenu, setMessageMenu] = useState<MessageMenuState | null>(null);
+  const [sheetMenu, setSheetMenu] = useState<SheetMenuState | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<EmailAccountRow | null>(null);
 
   const activeAccount = useMemo(
     () => accounts.find((a) => a.id === activeAccountId) ?? null,
@@ -101,13 +128,17 @@ export function EmailApp() {
     setError("");
     try {
       const rows = await fetchEmailAccounts();
-      const enabled = rows.filter((a) => a.enabled);
-      setAccounts(enabled);
-      if (enabled.length === 0) return;
+      setAccounts(rows);
+      if (rows.length === 0) {
+        setActiveAccountId(null);
+        setMessages([]);
+        return;
+      }
 
       const stored = readModuleSelection("email");
-      const fallback = enabled[0];
-      const account = enabled.find((a) => a.id === stored?.accountId) ?? fallback;
+      const enabled = rows.filter((a) => a.enabled);
+      const fallback = enabled[0] ?? rows[0];
+      const account = rows.find((a) => a.id === stored?.accountId) ?? fallback;
       if (!account) return;
 
       setActiveAccountId(account.id);
@@ -159,10 +190,9 @@ export function EmailApp() {
     if (refreshing) return;
     setRefreshing(true);
     try {
+      const rows = await fetchEmailAccounts();
+      setAccounts(rows);
       if (activeAccountId != null) {
-        const rows = await fetchEmailAccounts();
-        const enabled = rows.filter((a) => a.enabled);
-        setAccounts(enabled);
         await loadMessages(activeAccountId);
       } else {
         await loadAccounts();
@@ -219,16 +249,19 @@ export function EmailApp() {
     }
   };
 
-  const onSync = async () => {
-    if (activeAccountId == null) return;
+  const onSync = async (accountId?: number) => {
+    const id = accountId ?? activeAccountId;
+    if (id == null) return;
     setSyncing(true);
     setError("");
     setSyncNotice("");
     try {
-      const results = await syncEmailAccount(activeAccountId, 100);
+      const results = await syncEmailAccount(id, 100);
       const synced = results.reduce((sum, row) => sum + row.upserted_messages, 0);
-      setSyncNotice(synced > 0 ? `同步完成，新增 ${synced} 封邮件。` : "同步完成，暂无新邮件。");
-      await loadMessages(activeAccountId);
+      setSyncNotice(
+        synced > 0 ? m.email_sync_done_new({ count: synced }) : m.email_sync_done_none(),
+      );
+      if (activeAccountId === id) await loadMessages(id);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -258,6 +291,115 @@ export function EmailApp() {
     }
   };
 
+  const accountMenuItems = (account: EmailAccountRow): ActionSheetItem[] => {
+    const items: ActionSheetItem[] = [];
+    if (!writesDisabled && !syncing) {
+      items.push({
+        label: m.email_menu_sync(),
+        onClick: () => void onSync(account.id),
+      });
+    }
+    if (!writesDisabled) {
+      items.push({
+        label: m.email_edit_account(),
+        onClick: () => setFormState({ mode: "edit", account }),
+      });
+      if (!account.default_sender) {
+        items.push({
+          label: m.email_set_default_sender(),
+          onClick: () =>
+            void patchEmailAccount({ id: account.id, default_sender: true })
+              .then((saved) => {
+                setAccounts((prev) =>
+                  prev.map((row) =>
+                    row.id === saved.id ? saved : { ...row, default_sender: false },
+                  ),
+                );
+              })
+              .catch((err) => setError(err instanceof Error ? err.message : String(err))),
+        });
+      }
+      items.push({
+        label: account.enabled ? m.email_disable_account() : m.email_enable_account(),
+        onClick: () =>
+          void patchEmailAccount({ id: account.id, enabled: !account.enabled })
+            .then((saved) => {
+              setAccounts((prev) => prev.map((row) => (row.id === saved.id ? saved : row)));
+            })
+            .catch((err) => setError(err instanceof Error ? err.message : String(err))),
+      });
+      items.push({
+        label: m.email_delete_account(),
+        danger: true,
+        onClick: () => setDeleteTarget(account),
+      });
+    }
+    return items;
+  };
+
+  const messageMenuItems = (message: EmailMessageRow): ActionSheetItem[] => {
+    const items: ActionSheetItem[] = [];
+    if (!writesDisabled && message.unread) {
+      items.push({
+        label: m.email_mark_read(),
+        onClick: () =>
+          void markEmailMessageRead(message.id)
+            .then(() => {
+              setMessages((prev) =>
+                prev.map((row) => (row.id === message.id ? { ...row, unread: false } : row)),
+              );
+            })
+            .catch((err) => setError(err instanceof Error ? err.message : String(err))),
+      });
+    }
+    if (!writesDisabled && !syncing && activeAccountId != null) {
+      items.push({
+        label: m.email_menu_sync(),
+        onClick: () => void onSync(),
+      });
+    }
+    return items;
+  };
+
+  const openAccountMenu = (account: EmailAccountRow) => {
+    if (useActionSheet) {
+      setSheetMenu({ title: accountLabel(account), items: accountMenuItems(account) });
+      return;
+    }
+    setFormState({ mode: "edit", account });
+  };
+
+  const openAccountContextMenu = (e: MouseEvent, account: EmailAccountRow) => {
+    if (useActionSheet || !contextMenuEnabled) return;
+    e.preventDefault();
+    setAccountMenu({ account, x: e.clientX, y: e.clientY });
+  };
+
+  const openMessageContextMenu = (e: MouseEvent, message: EmailMessageRow) => {
+    if (useActionSheet || !contextMenuEnabled) return;
+    e.preventDefault();
+    setMessageMenu({ message, x: e.clientX, y: e.clientY });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget.id;
+    try {
+      await deleteEmailAccount(id);
+      setDeleteTarget(null);
+      setAccounts((prev) => prev.filter((row) => row.id !== id));
+      if (activeAccountId === id) {
+        setActiveAccountId(null);
+        setMessages([]);
+        setDetail(null);
+      }
+    } catch (err) {
+      const errDetail = err instanceof Error ? err.message : String(err);
+      setError(m.email_delete_failed({ detail: errDetail }));
+      setDeleteTarget(null);
+    }
+  };
+
   if (loading && accounts.length === 0) {
     return (
       <div className="flex h-full items-center justify-center p-6">
@@ -265,34 +407,6 @@ export function EmailApp() {
       </div>
     );
   }
-
-  const accountSidebar = (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-2">
-      {accounts.length === 0 ? (
-        <EmptyState message="暂无邮件账户。" className="items-start p-2 text-left text-sm" />
-      ) : (
-        <ul className="space-y-1">
-          {accounts.map((account) => (
-            <li key={account.id}>
-              <button
-                type="button"
-                className={`hover:bg-muted w-full rounded-lg px-3 py-2 text-left text-sm ${
-                  activeAccountId === account.id
-                    ? "bg-primary/10 ring-primary/30 ring-1 ring-inset"
-                    : ""
-                }`}
-                onClick={() => void selectAccount(account)}
-              >
-                <div className="truncate font-medium">{accountLabel(account)}</div>
-                <div className="text-muted-foreground truncate text-xs">{account.address}</div>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <p className="text-muted-foreground mt-3 px-2 text-xs">账户注册请通过 Agent 工具完成。</p>
-    </div>
-  );
 
   const messageList = (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -308,7 +422,7 @@ export function EmailApp() {
       ) : null}
       {!activeAccount ? (
         <div className="text-muted-foreground flex flex-1 items-center justify-center p-8 text-sm">
-          选择邮箱账户查看收件箱
+          {m.email_select_account()}
         </div>
       ) : listLoading && messages.length === 0 ? (
         <div className="flex flex-1 items-center justify-center p-4">
@@ -321,7 +435,7 @@ export function EmailApp() {
           onRefresh={handleManualRefresh}
         >
           <EmptyState
-            message="暂无邮件。点击「同步」从 IMAP 拉取。"
+            message={m.email_no_messages_hint()}
             className="items-start flex-1 p-4 text-left"
           />
         </PullToRefresh>
@@ -342,6 +456,7 @@ export function EmailApp() {
                       : ""
                   }`}
                   onClick={() => void openMessage(message)}
+                  onContextMenu={(e) => openMessageContextMenu(e, message)}
                 >
                   <div className="flex items-start gap-2">
                     {message.unread ? (
@@ -350,7 +465,9 @@ export function EmailApp() {
                       <span className="mt-1 inline-block h-2 w-2 shrink-0" />
                     )}
                     <div className="min-w-0 flex-1">
-                      <div className="truncate font-medium">{message.subject || "(无主题)"}</div>
+                      <div className="truncate font-medium">
+                        {message.subject || m.habitat_email_no_subject()}
+                      </div>
                       <div className="text-muted-foreground truncate text-xs">{message.from}</div>
                       <div className="text-muted-foreground mt-1 truncate text-xs">
                         {message.preview}
@@ -379,12 +496,12 @@ export function EmailApp() {
         <ThreeColumnLayout
           layoutMode={layoutMode}
           columnSplitKey="email"
-          listTitle="邮箱"
-          middleTitle={activeAccount ? accountLabel(activeAccount) : "收件箱"}
-          detailTitle={detail?.subject || "(无主题)"}
+          listTitle={m.email_accounts_title()}
+          middleTitle={activeAccount ? accountLabel(activeAccount) : m.email_inbox_title()}
+          detailTitle={detail?.subject || m.habitat_email_no_subject()}
           listOpen={listOpen}
           onListOpenChange={setListOpen}
-          listToggleAriaLabel="打开邮箱"
+          listToggleAriaLabel={m.email_open_accounts()}
           detailOpen={detailOpen}
           onDetailOpenChange={handleDetailOpenChange}
           middleActions={
@@ -410,7 +527,7 @@ export function EmailApp() {
                     disabled={syncing || writesDisabled}
                     onClick={() => void onSync()}
                   >
-                    {syncing ? "同步中…" : "同步"}
+                    {syncing ? m.email_syncing() : m.email_sync()}
                   </Button>
                 </>
               ) : null}
@@ -421,7 +538,7 @@ export function EmailApp() {
               <div className="flex gap-2">
                 <Input
                   className="h-8 min-w-0 flex-1"
-                  placeholder="搜索邮件"
+                  placeholder={m.email_search_placeholder()}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
@@ -435,16 +552,86 @@ export function EmailApp() {
                   disabled={searching}
                   onClick={() => void onSearch()}
                 >
-                  搜
+                  {m.email_search()}
                 </Button>
               </div>
             ) : null
           }
-          list={accountSidebar}
+          list={
+            <EmailAccountSidebar
+              accounts={accounts}
+              activeAccountId={activeAccountId}
+              writesDisabled={writesDisabled}
+              useActionSheet={useActionSheet}
+              onSelect={(account) => void selectAccount(account)}
+              onAdd={() => setFormState({ mode: "create" })}
+              onOpenMenu={openAccountMenu}
+              onOpenContextMenu={openAccountContextMenu}
+            />
+          }
           middle={messageList}
           detail={<EmailMessageDetail loading={detailLoading} message={detail} />}
         />
       )}
+
+      <EmailAccountFormDialog
+        open={formState != null}
+        mode={formState?.mode ?? "create"}
+        account={formState?.account ?? null}
+        disabled={writesDisabled}
+        onClose={() => setFormState(null)}
+        onSaved={(saved) => {
+          setAccounts((prev) => {
+            const exists = prev.some((row) => row.id === saved.id);
+            if (!exists) return [...prev, saved];
+            return prev.map((row) => {
+              if (row.id === saved.id) return saved;
+              if (saved.default_sender) return { ...row, default_sender: false };
+              return row;
+            });
+          });
+          if (formState?.mode === "create") {
+            void selectAccount(saved);
+          }
+        }}
+      />
+
+      {accountMenu ? (
+        <ContextMenu
+          x={accountMenu.x}
+          y={accountMenu.y}
+          items={accountMenuItems(accountMenu.account)}
+          onClose={() => setAccountMenu(null)}
+        />
+      ) : null}
+
+      {messageMenu ? (
+        <ContextMenu
+          x={messageMenu.x}
+          y={messageMenu.y}
+          items={messageMenuItems(messageMenu.message)}
+          onClose={() => setMessageMenu(null)}
+        />
+      ) : null}
+
+      {sheetMenu ? (
+        <ActionSheet
+          title={sheetMenu.title}
+          items={sheetMenu.items}
+          onClose={() => setSheetMenu(null)}
+        />
+      ) : null}
+
+      <ConfirmDialog
+        open={deleteTarget != null}
+        title={m.email_delete_account()}
+        description={m.email_delete_confirm()}
+        confirmLabel={m.email_delete_account()}
+        cancelLabel={m.email_cancel()}
+        variant="error"
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

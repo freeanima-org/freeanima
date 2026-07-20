@@ -16,6 +16,14 @@ function depsOf(deps: unknown): EmailSapServerDeps {
 export const emailHubRoutes = bindHubRouteHandlers(emailMethodDefs, {
   "emailaccount.list": async (deps, input) =>
     service.serviceEmailAccountList(depsOf(deps).runtime.runtimeDeps(), input),
+  "emailaccount.create": async (deps, input) =>
+    service.serviceEmailAccountCreate(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "emailaccount.patch": async (deps, input) =>
+    service.serviceEmailAccountPatch(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "emailaccount.delete": async (deps, input) =>
+    service.serviceEmailAccountDelete(depsOf(deps).runtime.runtimeDeps(), input),
+  "emailprovider.list": async (deps) =>
+    service.serviceEmailProviderList(depsOf(deps).runtime.runtimeDeps()),
   "email.message.list": async (deps, input) =>
     service.serviceEmailMessageList(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "email.message.read": async (deps, input) =>

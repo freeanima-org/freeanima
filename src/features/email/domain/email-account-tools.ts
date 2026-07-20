@@ -35,7 +35,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
         {
           name: "email_register_account",
           description:
-            'Register an email account as entity. password supports plaintext, env("KEY"), or vault("item_id", "field").',
+            'Register an email account as entity. password supports plaintext, env("KEY"), or vault("item_id", "field"). Pass provider (aliyun|gmail|qq) to fill default IMAP/SMTP, or provide smtp_*/imap_* explicitly.',
           parameters: {
             type: "object",
             properties: {
@@ -43,6 +43,11 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
               password: { type: "string" },
               address: { type: "string" },
               display_name: { type: "string" },
+              provider: {
+                type: "string",
+                enum: ["aliyun", "gmail", "qq", "custom"],
+                description: "Named provider preset for IMAP/SMTP defaults (explicit only).",
+              },
               smtp_host: { type: "string" },
               smtp_port: { type: "number" },
               imap_host: { type: "string" },
@@ -52,7 +57,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
               desc: { type: "string" },
               tags: { type: "array", items: { type: "string" } },
             },
-            required: ["password", "address", "smtp_host", "smtp_port", "imap_host", "imap_port"],
+            required: ["password", "address"],
           },
           handler: async (args) => {
             try {
@@ -70,7 +75,8 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
         },
         {
           name: "email_edit_account",
-          description: "Edit a registered email account entity.",
+          description:
+            "Edit a registered email account entity. Pass provider (aliyun|gmail|qq) to fill missing IMAP/SMTP defaults.",
           parameters: {
             type: "object",
             properties: {
@@ -79,6 +85,11 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
               password: { type: "string" },
               address: { type: "string" },
               display_name: { type: "string" },
+              provider: {
+                type: "string",
+                enum: ["aliyun", "gmail", "qq", "custom"],
+                description: "Named provider preset for IMAP/SMTP defaults (explicit only).",
+              },
               smtp_host: { type: "string" },
               smtp_port: { type: "number" },
               imap_host: { type: "string" },

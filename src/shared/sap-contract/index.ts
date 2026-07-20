@@ -229,6 +229,16 @@ export {
   emailThreadListOutputSchema,
   emailMessageSearchInputSchema,
   emailMessageSearchOutputSchema,
+  emailProviderIdSchema,
+  emailProviderPresetSchema,
+  emailProviderListInputSchema,
+  emailProviderListOutputSchema,
+  emailAccountCreateInputSchema,
+  emailAccountCreateOutputSchema,
+  emailAccountPatchInputSchema,
+  emailAccountPatchOutputSchema,
+  emailAccountDeleteInputSchema,
+  emailAccountDeleteOutputSchema,
 } from "./frames/email.ts";
 export type {
   EmailAccountRowPayload,
@@ -248,6 +258,16 @@ export type {
   EmailSyncOutput,
   EmailThreadListInput,
   EmailThreadListOutput,
+  EmailProviderId,
+  EmailProviderPresetPayload,
+  EmailProviderListInput,
+  EmailProviderListOutput,
+  EmailAccountCreateInput,
+  EmailAccountCreateOutput,
+  EmailAccountPatchInput,
+  EmailAccountPatchOutput,
+  EmailAccountDeleteInput,
+  EmailAccountDeleteOutput,
 } from "./frames/email.ts";
 
 export {

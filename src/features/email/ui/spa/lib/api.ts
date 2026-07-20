@@ -11,11 +11,28 @@ export type EmailAccountRow = {
   id: number;
   display_name: string;
   address: string;
+  smtp_host: string;
+  smtp_port: number;
+  imap_host: string;
+  imap_port: number;
   default_sender: boolean;
   enabled: boolean;
+  desc?: string | undefined;
+  tags: string[];
   created_at: string;
   updated_at: string;
 };
+
+export type EmailProviderPreset = {
+  id: "aliyun" | "gmail" | "qq";
+  label: string;
+  imap_host: string;
+  imap_port: number;
+  smtp_host: string;
+  smtp_port: number;
+};
+
+export type EmailProviderId = "aliyun" | "gmail" | "qq" | "custom";
 
 export type EmailMessageRow = {
   id: number;
@@ -30,6 +47,37 @@ export type EmailMessageRow = {
   unread: boolean;
   direction: "inbound" | "outbound";
   tags: string[];
+};
+
+export type EmailAccountCreateInput = {
+  password: string;
+  address: string;
+  display_name?: string;
+  provider?: EmailProviderId;
+  smtp_host?: string;
+  smtp_port?: number;
+  imap_host?: string;
+  imap_port?: number;
+  default_sender?: boolean;
+  enabled?: boolean;
+  desc?: string;
+  tags?: string[];
+};
+
+export type EmailAccountPatchInput = {
+  id: number;
+  password?: string;
+  address?: string;
+  display_name?: string;
+  provider?: EmailProviderId;
+  smtp_host?: string;
+  smtp_port?: number;
+  imap_host?: string;
+  imap_port?: number;
+  default_sender?: boolean;
+  enabled?: boolean;
+  desc?: string;
+  tags?: string[];
 };
 
 function hub() {
@@ -61,6 +109,11 @@ function searchCacheId(input: { query: string; account_id?: number; limit?: numb
   return `search:${JSON.stringify(input)}`;
 }
 
+async function invalidateAccountsCache(): Promise<void> {
+  const scope = resolveHabitatCacheScope();
+  await writeOfflineCache(scope, "email", accountsCacheId(), null as unknown as EmailAccountRow[]);
+}
+
 export async function fetchEmailAccounts(): Promise<EmailAccountRow[]> {
   const scope = resolveHabitatCacheScope();
   const cacheId = accountsCacheId();
@@ -73,6 +126,28 @@ export async function fetchEmailAccounts(): Promise<EmailAccountRow[]> {
     if (cached) return cached;
     throw err;
   }
+}
+
+export async function fetchEmailProviders(): Promise<EmailProviderPreset[]> {
+  const data = await hub().call("emailprovider.list", withSubjectKind({}));
+  return data.providers;
+}
+
+export async function createEmailAccount(input: EmailAccountCreateInput): Promise<EmailAccountRow> {
+  const data = await hub().call("emailaccount.create", withSubjectKind(input));
+  await invalidateAccountsCache();
+  return data.account;
+}
+
+export async function patchEmailAccount(input: EmailAccountPatchInput): Promise<EmailAccountRow> {
+  const data = await hub().call("emailaccount.patch", withSubjectKind(input));
+  await invalidateAccountsCache();
+  return data.account;
+}
+
+export async function deleteEmailAccount(id: number): Promise<void> {
+  await hub().call("emailaccount.delete", withSubjectKind({ id }));
+  await invalidateAccountsCache();
 }
 
 export async function fetchEmailMessages(input: {
