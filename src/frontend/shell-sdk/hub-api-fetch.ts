@@ -20,13 +20,17 @@ function resolveRemoteAuthToken(): string | undefined {
   return localStorage.getItem(REMOTE_AUTH_TOKEN_KEY)?.trim() || undefined;
 }
 
+/**
+ * 优先在渲染进程内建 Bearer fetch，避免 Electron preload 经 contextBridge
+ * 返回的 Response 被结构化克隆后丢失 `.text()` / `.json()`。
+ * （与 console `resolveHubFetch` 顺序一致。）
+ */
 export function resolveHubApiFetch(): HubFetch {
   const shell = satelliteShell();
-  if (shell?.hubFetch) return shell.hubFetch;
-
   const origin = resolveHubApiOrigin();
   const token = resolveRemoteAuthToken();
   if (token) return createBearerFetch(token, origin);
+  if (shell?.hubFetch) return shell.hubFetch;
   return fetch;
 }
 
