@@ -22,6 +22,7 @@ import {
   createStandaloneEmbedPlugin,
   type StandaloneEmbedInput,
 } from "./standalone-embed-plugin.ts";
+import { listDocsEmbeds } from "./standalone-docs-embeds.ts";
 import {
   assertStandaloneBinaryHasNoTiktokenBuildPath,
   createTiktokenWasmPlugin,
@@ -35,6 +36,7 @@ const EMBEDS_MODULE = join(ROOT, "src/app/cli/standalone-embeds.ts");
 const MIGRATIONS_DIR = join(ROOT, "src/core/migrations");
 const WEB_DIST_DIR = join(ROOT, "src/app/shell/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
+const DOCS_DIR = join(ROOT, "docs");
 
 async function ensureWebDist(): Promise<void> {
   const force = process.env.FREEANIMA_FORCE_WEB_BUILD === "1";
@@ -111,7 +113,7 @@ async function main(): Promise<void> {
   });
   const embedVersion = buildMeta.version;
 
-  const files = [...listMigrationEmbeds(), ...listWebEmbeds()];
+  const files = [...listMigrationEmbeds(), ...listWebEmbeds(), ...listDocsEmbeds(DOCS_DIR)];
   const outfile = join(OUT_DIR, "anima");
   const tiktokenPackageWasm = resolveTiktokenWasmPath(ROOT);
   const tiktokenPackageDir = dirname(tiktokenPackageWasm);

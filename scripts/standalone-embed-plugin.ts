@@ -8,7 +8,7 @@ import { realpathSync } from "node:fs";
 import type { ComponentBuildMeta } from "@freeanima/core/config/build-meta.parse";
 
 export type StandaloneEmbedInput = {
-  kind: "migration" | "web";
+  kind: "migration" | "web" | "docs";
   rel: string;
   absPath: string;
 };
@@ -53,7 +53,7 @@ export function createStandaloneEmbedPlugin(opts: {
 import type { ComponentBuildMeta } from "@freeanima/core/config/build-meta.parse";
 
 export type StandaloneEmbedFile = {
-  kind: "migration" | "web";
+  kind: "migration" | "web" | "docs";
   rel: string;
   path: string;
 };
