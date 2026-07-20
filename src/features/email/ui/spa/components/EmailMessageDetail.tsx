@@ -1,4 +1,5 @@
 import { Spinner } from "@freeanima/frontend/ui-kit";
+import { m } from "@paraglide/messages";
 
 import type { EmailMessageRow } from "../lib/api.ts";
 
@@ -26,7 +27,7 @@ export function EmailMessageDetail({ loading, message }: EmailMessageDetailProps
   if (!message) {
     return (
       <div className="text-muted-foreground flex flex-1 items-center justify-center p-8 text-sm">
-        选择一封邮件阅读
+        {m.habitat_email_select_message()}
       </div>
     );
   }
@@ -34,11 +35,19 @@ export function EmailMessageDetail({ loading, message }: EmailMessageDetailProps
   return (
     <article className="min-h-0 flex-1 overflow-y-auto p-4 text-sm">
       <div className="text-muted-foreground mb-4 space-y-1">
-        <div>发件人：{message.from}</div>
-        <div>收件人：{message.to}</div>
-        <div>时间：{formatWhen(message.sent_at)}</div>
+        <div>
+          {m.habitat_email_from()} {message.from}
+        </div>
+        <div>
+          {m.habitat_email_to()} {message.to}
+        </div>
+        <div>
+          {m.habitat_email_date()} {formatWhen(message.sent_at)}
+        </div>
       </div>
-      <pre className="wrap-break-word whitespace-pre-wrap">{message.body}</pre>
+      <pre className="wrap-break-word whitespace-pre-wrap">
+        {message.body || m.habitat_email_no_body()}
+      </pre>
     </article>
   );
 }

@@ -37,3 +37,15 @@ export {
   type EmailSyncPort,
 } from "./sync-port.ts";
 export { registerEmailTools } from "./tools.ts";
+export {
+  applyProviderPreset,
+  assertCompleteEmailHosts,
+  requireCompleteEmailHosts,
+  EMAIL_PROVIDER_IDS,
+  EMAIL_PROVIDER_PRESETS,
+  isNamedEmailProvider,
+  listEmailProviderPresets,
+  type EmailHostFields,
+  type EmailProviderId,
+  type EmailProviderPreset,
+} from "./provider-presets.ts";

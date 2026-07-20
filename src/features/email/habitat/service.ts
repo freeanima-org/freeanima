@@ -2,11 +2,17 @@ import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import { omitUndefined } from "@freeanima/core/util";
 import { resolveSubjectWorldId, type SubjectKind } from "@freeanima/core/config";
 import {
+  applyProviderPreset,
+  createEmailAccount,
+  deleteEmailAccountRow,
   getEmailMessageRow,
   listEmailAccountRows,
   listEmailMessages,
+  listEmailProviderPresets,
   listEmailThreads,
+  requireCompleteEmailHosts,
   searchEmailMessages,
+  updateEmailAccount,
 } from "../domain/index.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
@@ -82,6 +88,117 @@ export async function serviceEmailAccountList(
   assertPg(deps);
   const accounts = await listEmailAccountRows(emailWorldId(input?.subject_kind));
   return { accounts: accounts.map(toAccountPayload) };
+}
+
+export async function serviceEmailProviderList(_deps: RuntimeDeps) {
+  return { providers: listEmailProviderPresets() };
+}
+
+export async function serviceEmailAccountCreate(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    password: string;
+    address: string;
+    display_name?: string;
+    provider?: string;
+    smtp_host?: string;
+    smtp_port?: number;
+    imap_host?: string;
+    imap_port?: number;
+    default_sender?: boolean;
+    enabled?: boolean;
+    desc?: string;
+    tags?: string[];
+  },
+) {
+  assertPg(deps);
+  const { subject_kind, ...raw } = input;
+  const withPreset = applyProviderPreset(raw);
+  const hosts = requireCompleteEmailHosts(withPreset);
+  const { assertEmailPasswordResolvable } = await import("@freeanima/platform/connectors/email");
+  await assertEmailPasswordResolvable({ password: withPreset.password });
+  const account = await createEmailAccount(
+    emailWorldId(subject_kind),
+    omitUndefined({
+      password: withPreset.password,
+      address: withPreset.address,
+      smtp_host: hosts.smtp_host,
+      smtp_port: hosts.smtp_port,
+      imap_host: hosts.imap_host,
+      imap_port: hosts.imap_port,
+      display_name: withPreset.display_name,
+      default_sender: withPreset.default_sender,
+      enabled: withPreset.enabled,
+      desc: withPreset.desc,
+      tags: withPreset.tags,
+    }),
+  );
+  return { account: toAccountPayload(account) };
+}
+
+export async function serviceEmailAccountPatch(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    id: number;
+    password?: string;
+    address?: string;
+    display_name?: string;
+    provider?: string;
+    smtp_host?: string;
+    smtp_port?: number;
+    imap_host?: string;
+    imap_port?: number;
+    default_sender?: boolean;
+    enabled?: boolean;
+    desc?: string;
+    tags?: string[];
+  },
+) {
+  assertPg(deps);
+  const { subject_kind, id, ...raw } = input;
+  const withPreset = applyProviderPreset(raw);
+  const touchesHosts =
+    withPreset.provider != null ||
+    withPreset.smtp_host != null ||
+    withPreset.smtp_port != null ||
+    withPreset.imap_host != null ||
+    withPreset.imap_port != null;
+  const hosts = touchesHosts ? requireCompleteEmailHosts(withPreset) : null;
+  if (withPreset.password) {
+    const { assertEmailPasswordResolvable } = await import("@freeanima/platform/connectors/email");
+    await assertEmailPasswordResolvable({ password: withPreset.password });
+  }
+  const account = await updateEmailAccount(
+    emailWorldId(subject_kind),
+    omitUndefined({
+      id,
+      password: withPreset.password,
+      address: withPreset.address,
+      smtp_host: hosts?.smtp_host,
+      smtp_port: hosts?.smtp_port,
+      imap_host: hosts?.imap_host,
+      imap_port: hosts?.imap_port,
+      display_name: withPreset.display_name,
+      default_sender: withPreset.default_sender,
+      enabled: withPreset.enabled,
+      desc: withPreset.desc,
+      tags: withPreset.tags,
+    }),
+  );
+  if (!account) throw new Error("NOT_FOUND");
+  return { account: toAccountPayload(account) };
+}
+
+export async function serviceEmailAccountDelete(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+) {
+  assertPg(deps);
+  const ok = await deleteEmailAccountRow(emailWorldId(input.subject_kind), input.id);
+  if (!ok) throw new Error("NOT_FOUND");
+  return { ok: true as const };
 }
 
 export async function serviceEmailMessageList(
