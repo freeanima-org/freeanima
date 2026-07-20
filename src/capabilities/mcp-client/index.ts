@@ -10,4 +10,10 @@ export {
   type McpStatusResponse,
   type McpToolView,
 } from "./status.ts";
-export { McpClientSession, type McpServerConfig, type McpToolDef } from "./client.ts";
+export {
+  McpClientSession,
+  buildSseRequestHeaders,
+  buildHttpRequestHeaders,
+  type McpServerConfig,
+  type McpToolDef,
+} from "./client.ts";

@@ -15,6 +15,24 @@ import {
 
 type McpServersConfig = NonNullable<import("@freeanima/core/config").AnimaConfig["mcp_servers"]>;
 
+function formatMcpError(err: unknown): string {
+  if (err instanceof Error) {
+    const msg = err.message?.trim();
+    if (msg && msg !== "undefined") return msg;
+    return err.name || "Unknown MCP error";
+  }
+  if (typeof err === "string") {
+    const msg = err.trim();
+    return msg && msg !== "undefined" ? msg : "Unknown MCP error";
+  }
+  try {
+    const json = JSON.stringify(err);
+    if (json && json !== "{}" && json !== "null") return json;
+  } catch {
+    /* ignore */
+  }
+  return "Unknown MCP error";
+}
 /** MCP manager — start MCP Servers from config, discover and register tools */
 export class MCPManager {
   private readonly clients = new Map<string, McpClientSession>();
@@ -132,9 +150,28 @@ export class MCPManager {
   }
 
   private resolveServerConfig(name: string): McpServerConfig | undefined {
-    const cfg = this.config.data;
-    const fromCfg = cfg.mcp_servers?.[name] as McpServerConfig | undefined;
-    return this.serverConfigs.get(name) ?? fromCfg;
+    const fromCfg = this.config.data.mcp_servers?.[name] as McpServerConfig | undefined;
+    if (!fromCfg) return undefined;
+    this.serverConfigs.set(name, fromCfg);
+    return fromCfg;
+  }
+
+  /** 配置已删除的条目：停连、卸工具、清缓存（避免状态页幽灵统计） */
+  private async pruneServersNotInConfig(): Promise<void> {
+    const configured = new Set(Object.keys(this.config.data.mcp_servers ?? {}));
+    const stale = new Set<string>([
+      ...this.serverConfigs.keys(),
+      ...this.clients.keys(),
+      ...this.serverErrors.keys(),
+    ]);
+    for (const name of stale) {
+      if (configured.has(name)) continue;
+      if (this.clients.has(name) || this.connecting.has(name)) {
+        await this.stopServer(name);
+      }
+      this.serverConfigs.delete(name);
+      this.serverErrors.delete(name);
+    }
   }
 
   private async runStartAll(
@@ -190,7 +227,7 @@ export class MCPManager {
       this.serverErrors.delete(name);
       return registered;
     } catch (err) {
-      this.serverErrors.set(name, String(err));
+      this.serverErrors.set(name, formatMcpError(err));
       logComponent("mcp").error(`Failed to start MCP server '${name}'`, { err, server: name });
       return 0;
     } finally {
@@ -259,25 +296,33 @@ export class MCPManager {
     connected_count: number;
     connecting_count: number;
   } {
-    const cfg = this.config.data;
-    const serversCfg = cfg.mcp_servers ?? {};
-    const serverNames = new Set([...Object.keys(serversCfg), ...this.serverConfigs.keys()]);
+    const serversCfg = this.config.data.mcp_servers ?? {};
+    const configured = new Set(Object.keys(serversCfg));
+    let connected = 0;
+    for (const name of this.clients.keys()) {
+      if (configured.has(name)) connected += 1;
+    }
+    let connecting = 0;
+    for (const name of this.connecting) {
+      if (configured.has(name)) connecting += 1;
+    }
     return {
-      server_count: serverNames.size,
-      connected_count: this.clients.size,
-      connecting_count: this.connecting.size,
+      server_count: configured.size,
+      connected_count: connected,
+      connecting_count: connecting,
     };
   }
 
   async getStatus(): Promise<McpStatusResponse> {
-    const cfg = this.config.data;
-    const serversCfg = cfg.mcp_servers ?? {};
-    const serverNames = new Set([...Object.keys(serversCfg), ...this.serverConfigs.keys()]);
+    await this.pruneServersNotInConfig();
+
+    const serversCfg = this.config.data.mcp_servers ?? {};
+    const serverNames = Object.keys(serversCfg);
 
     const servers: McpServerStatusView[] = [];
-    for (const name of [...serverNames].toSorted()) {
+    for (const name of serverNames.toSorted()) {
       const rawCfg =
-        this.serverConfigs.get(name) ?? (serversCfg[name] as McpServerConfig | undefined) ?? {};
+        (serversCfg[name] as McpServerConfig | undefined) ?? this.serverConfigs.get(name) ?? {};
       const enabled = isMcpServerEnabled(rawCfg);
       const client = this.clients.get(name);
       const error = this.serverErrors.get(name);
@@ -355,8 +400,8 @@ export class MCPManager {
 
     return {
       server_count: servers.length,
-      connected_count: this.clients.size,
-      connecting_count: this.connecting.size,
+      connected_count: [...this.clients.keys()].filter((n) => serverNames.includes(n)).length,
+      connecting_count: [...this.connecting].filter((n) => serverNames.includes(n)).length,
       tool_count: this.toolCount,
       servers,
     };

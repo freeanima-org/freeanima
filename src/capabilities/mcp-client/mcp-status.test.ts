@@ -29,20 +29,22 @@ function mcpTestConfig() {
 }
 
 describe("sanitizeMcpConfig", () => {
-  it("redacts env values, keeps key names only", () => {
+  it("keeps env and headers values for round-trip editing", () => {
     const view = sanitizeMcpConfig({
       command: "node",
       args: ["server.mjs"],
       transport: "stdio",
       env: { SECRET: "hidden", OTHER: "x" },
       api_key_env: "MCP_TOKEN",
+      headers: { "X-Custom": "1" },
     });
     expect(view.command).toBe("node");
     expect(view.args).toEqual(["server.mjs"]);
     expect(view.api_key_env).toBe("MCP_TOKEN");
-    expect(view.env_keys).toEqual(["SECRET", "OTHER"]);
+    expect(view.env).toEqual({ SECRET: "hidden", OTHER: "x" });
+    expect(view.headers).toEqual({ "X-Custom": "1" });
     expect(view.enabled).toBe(true);
-    expect(view).not.toHaveProperty("env");
+    expect(view).not.toHaveProperty("env_keys");
   });
 
   it("marked disabled when enabled: false", () => {
@@ -78,6 +80,24 @@ describe("MCPManager.getStatus", () => {
     mgr.startAllAsync();
     const status = await mgr.getStatus();
     expect(status.server_count).toBe(2);
+    await mgr.closeAll();
+  });
+
+  it("does not keep deleted servers as status ghosts after config update", async () => {
+    const config = mcpTestConfig();
+    const mgr = new MCPManager(new ToolSetRegistry(), config);
+    // 填充内存缓存（与启动路径一致）
+    await mgr.startAllEnabled();
+
+    const next = structuredClone(config.data);
+    delete next.mcp_servers!.remote;
+    config.update(next);
+
+    const status = await mgr.getStatus();
+    expect(status.server_count).toBe(1);
+    expect(status.servers.map((s) => s.name)).toEqual(["db"]);
+    expect(mgr.getConnectionSummary().server_count).toBe(1);
+
     await mgr.closeAll();
   });
 });

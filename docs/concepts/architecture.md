@@ -268,14 +268,21 @@ LLM view — flat tool list:
 
 - Connect to external MCP servers (separate processes)
 - Each server may register many fine-grained tools (single function calls)
-- Configure in `config.yaml` under `mcp_servers`
+- Configure under Habitat runtime `mcp_servers` (PG `hub_runtime_config`); manage in **Habitat UI** `/habitat/mcp` (config + start/stop + tools). Shell Settings no longer edits this section.
 
 ```yaml
 mcp_servers:
   database:
-    command: npx @modelcontextprotocol/server-postgres
-    args: ["--connection", "postgresql://..."]
+    command: npx
+    args: ["@modelcontextprotocol/server-postgres", "postgresql://..."]
     transport: stdio
+    env:
+      PGOPTIONS: "-c statement_timeout=5s"
+  remote_habitat:
+    transport: http # Streamable HTTP — use for FreeAnima Hub /mcp
+    url: http://127.0.0.1:2658/mcp
+    headers:
+      Authorization: "Bearer fa_at_…"
 ```
 
 ### Layer 3: ACP Tools (Agent Client Protocol)

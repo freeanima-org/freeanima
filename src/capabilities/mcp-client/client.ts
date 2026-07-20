@@ -6,15 +6,24 @@ import {
   SSEClientTransport,
   type SSEClientTransportOptions,
 } from "@modelcontextprotocol/sdk/client/sse.js";
+import {
+  StreamableHTTPClientTransport,
+  type StreamableHTTPClientTransportOptions,
+} from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
+
+export type McpTransportKind = "stdio" | "sse" | "http";
 
 export type McpServerConfig = {
   command?: string;
   args?: string[];
   url?: string;
-  transport?: "stdio" | "sse";
+  transport?: McpTransportKind;
+  /** @deprecated Prefer `headers.Authorization`; kept for runtime compat */
   api_key_env?: string;
+  /** SSE / HTTP request headers (e.g. Authorization) */
+  headers?: Record<string, string>;
   env?: Record<string, string>;
   cwd?: string;
   /** Connection timeout (ms), default 15000 */
@@ -24,6 +33,25 @@ export type McpServerConfig = {
 };
 
 const DEFAULT_CONNECT_TIMEOUT_MS = 15_000;
+
+/** Merge explicit headers with legacy `api_key_env` → Bearer when Authorization absent. */
+export function buildHttpRequestHeaders(cfg: McpServerConfig): Record<string, string> | undefined {
+  const headers: Record<string, string> = { ...cfg.headers };
+  const hasAuthorization = Object.keys(headers).some((k) => k.toLowerCase() === "authorization");
+  if (!hasAuthorization) {
+    const apiKey = resolveApiKey(cfg.api_key_env);
+    if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
+  }
+  return Object.keys(headers).length > 0 ? headers : undefined;
+}
+
+/** @deprecated Use buildHttpRequestHeaders */
+export const buildSseRequestHeaders = buildHttpRequestHeaders;
+
+function resolveApiKey(envVar?: string): string | undefined {
+  if (!envVar) return undefined;
+  return process.env[envVar];
+}
 
 export type McpToolDef = {
   name: string;
@@ -44,28 +72,33 @@ export type McpPromptDef = {
   arguments?: Array<{ name: string; description?: string; required?: boolean }>;
 };
 
-function resolveApiKey(envVar?: string): string | undefined {
-  if (!envVar) return undefined;
-  return process.env[envVar];
-}
-
 function createTransport(serverName: string, cfg: McpServerConfig): Transport {
   const transport = cfg.transport ?? "stdio";
 
-  if (transport === "sse") {
+  if (transport === "http" || transport === "sse") {
     if (!cfg.url) {
-      throw new Error(`MCP server '${serverName}': SSE transport requires url`);
+      throw new Error(`MCP server '${serverName}': ${transport} transport requires url`);
     }
-    const apiKey = resolveApiKey(cfg.api_key_env);
     const url = new URL(cfg.url);
+    const headers = buildHttpRequestHeaders(cfg);
+
+    if (transport === "http") {
+      const opts: StreamableHTTPClientTransportOptions = {};
+      if (headers) opts.requestInit = { headers };
+      // SDK StreamableHTTPClientTransport.sessionId 为 string|undefined，与 Transport 严格可选不完全一致
+      return new StreamableHTTPClientTransport(url, opts) as Transport;
+    }
+
+    // 旧 HTTP+SSE（已弃用）；连 FreeAnima Hub /mcp 请用 transport: http
     const opts: SSEClientTransportOptions = {};
-    if (apiKey) {
-      const headers = { Authorization: `Bearer ${apiKey}` };
+    if (headers) {
       opts.requestInit = { headers };
       opts.eventSourceInit = {
         fetch: (input, init) => {
           const merged = new Headers(init?.headers);
-          merged.set("Authorization", `Bearer ${apiKey}`);
+          for (const [key, value] of Object.entries(headers)) {
+            merged.set(key, value);
+          }
           return fetch(input, { ...init, headers: merged });
         },
       };

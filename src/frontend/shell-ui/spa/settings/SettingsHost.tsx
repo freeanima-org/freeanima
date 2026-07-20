@@ -9,6 +9,7 @@ import { listSettingsSectionsForPlatform } from "@freeanima/frontend/shell-sdk/s
 
 import { needsHabitatSetup } from "../setup/habitat-setup.ts";
 import { SettingsSectionPanel } from "./SettingsSectionPanel.tsx";
+import { resolveMcpServersRedirectUrl } from "./mcp-servers-redirect.ts";
 
 type Props = {
   bindings: SettingsBinding[];
@@ -43,6 +44,10 @@ function resolveInitialSectionId(bindings: SettingsBinding[], platform: Settings
   const params = new URLSearchParams(window.location.search);
   const fromQuery = params.get("section")?.trim();
   const visible = listSettingsSectionsForPlatform(bindings, platform);
+  // MCP 配置已迁至栖息地 /habitat/mcp
+  if (fromQuery === "mcp_servers") {
+    window.location.replace(resolveMcpServersRedirectUrl(window.location.pathname));
+  }
   const normalizedQuery =
     fromQuery === "hub-runtime" ? "compression" : fromQuery === "hub" ? "habitat" : fromQuery;
   if (normalizedQuery && visible.some((b) => b.section.id === normalizedQuery)) {
