@@ -111,6 +111,18 @@ function checkShouldStop(opts?: Pick<EngineOpts, "signal" | "shouldStop">): void
   }
 }
 
+/**
+ * Resolve tool schemas for the engine loop.
+ * - `tools` omitted / undefined → fall back to all tools in the registry
+ * - `tools: []` → explicitly no tools (do not expand to full registry)
+ */
+export function resolveEngineToolSchemas(
+  opts?: Pick<EngineOpts, "tools" | "toolRegistry">,
+): OpenAiToolSchema[] {
+  const registry = resolveToolRegistry(opts);
+  return opts?.tools != null ? opts.tools : registry.openaiSchemas();
+}
+
 function prepareEngine(
   opts?: Pick<EngineOpts, "model" | "tools" | "config" | "toolRegistry">,
 ): [OpenAiToolSchema[], string] {
@@ -119,8 +131,7 @@ function prepareEngine(
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
   }
-  const schemas: OpenAiToolSchema[] =
-    opts?.tools && opts.tools.length > 0 ? opts.tools : registry.openaiSchemas();
+  const schemas = resolveEngineToolSchemas(opts);
   const cfg = opts?.config ?? getActiveRuntimeConfig().data;
   const resolved = opts?.model ?? getProfileHopModel(cfg, PROFILE_CHAT);
   return [schemas, resolved];

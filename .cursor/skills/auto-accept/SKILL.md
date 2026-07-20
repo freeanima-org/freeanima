@@ -26,11 +26,11 @@ description: >-
 
 ## 验证通道（优先级）
 
-| 顺序 | 通道 | 何时用 |
-|------|------|--------|
-| 1 | **浏览器** `/web/*` | 有可见 UI / 可点击流程 |
-| 2 | **Hub RPC** `/hub/rpc/v1` | UI 测不到，但业务可通过 RPC 读/写验证 |
-| 3 | **待人工** | 无 UI、无对应 RPC（或需真实设备/外部密钥等） |
+| 顺序 | 通道                      | 何时用                                       |
+| ---- | ------------------------- | -------------------------------------------- |
+| 1    | **浏览器** `/web/*`       | 有可见 UI / 可点击流程                       |
+| 2    | **Hub RPC** `/hub/rpc/v1` | UI 测不到，但业务可通过 RPC 读/写验证        |
+| 3    | **待人工**                | 无 UI、无对应 RPC（或需真实设备/外部密钥等） |
 
 不得在仍有 UI 路径时跳过浏览器只打 RPC（除非验收项明确是 API/协议行为）。
 
@@ -48,14 +48,14 @@ description: >-
 just dev
 ```
 
-| 约定 | 说明 |
-|------|------|
-| 独立 | 本 worktree 源码进程 + 专用端口；**禁止**用生产 `anima service` / `:2658` |
-| 端口 | Hub 默认随机 ≥10000；Web 默认从 `:5000`（占用则 Vite 自增）。多 worktree 可设 `HUB_PORT` / `WEB_DEV_PORT` |
-| 日志 | 解析实际 `FREEANIMA_URL`（Hub）与 Web 端口 |
-| 就绪 | `GET http://127.0.0.1:<hub>/hub/rpc/v1/health/probe` 或打开 `/web/chat` 成功后再测 |
+| 约定 | 说明                                                                                                                            |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 独立 | 本 worktree 源码进程 + 专用端口；**禁止**用生产 `anima service` / `:2658`                                                       |
+| 端口 | Hub 默认随机 ≥10000；Web 默认从 `:5000`（占用则 Vite 自增）。多 worktree 可设 `HUB_PORT` / `WEB_DEV_PORT`                       |
+| 日志 | 解析实际 `FREEANIMA_URL`（Hub）与 Web 端口                                                                                      |
+| 就绪 | `GET http://127.0.0.1:<hub>/hub/rpc/v1/health/probe` 或打开 `/web/chat` 成功后再测                                              |
 | 认证 | Hub 写 `~/.anima/dev-web.token`；浏览器同 origin 通常无需手贴；**RPC 须** `Authorization: Bearer $(cat ~/.anima/dev-web.token)` |
-| 数据 | 默认 `~/.anima`。仅验收要求干净环境时才设 `FREEANIMA_HOME` |
+| 数据 | 默认 `~/.anima`。仅验收要求干净环境时才设 `FREEANIMA_HOME`                                                                      |
 
 后台启动；**默认验收结束后保留** `just dev`。用户要求或端口冲突时再杀进程组。
 
@@ -110,13 +110,14 @@ curl -sS -X POST -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: applicati
 
 ```markdown
 ## 验收报告（E2E）
+
 - 来源：风巢 #<id> | 对话推导 | …
 - 环境：Hub http://127.0.0.1:<hub> · Web http://127.0.0.1:<web>/web/ · just dev 仍在跑/已停
 - 范围：浏览器优先；UI 不可达则 Hub RPC（非 just check）
 
-| 条目 | 结果 | 通道 | 操作路径 | 证据 |
-|------|------|------|----------|------|
-| … | 通过/失败/待人工 | 浏览器/RPC/人工 | /web/… 或 domain.action | snapshot / 响应字段摘要 |
+| 条目 | 结果             | 通道            | 操作路径                | 证据                    |
+| ---- | ---------------- | --------------- | ----------------------- | ----------------------- |
+| …    | 通过/失败/待人工 | 浏览器/RPC/人工 | /web/… 或 domain.action | snapshot / 响应字段摘要 |
 
 结论：全部通过 | 未通过（N）| 含待人工（M）
 下一步：…
