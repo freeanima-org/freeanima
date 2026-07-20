@@ -2,11 +2,13 @@ export type DiarySubjectKind = "user" | "agent";
 
 export type DiaryTextBlock = {
   id: number;
+  title: string;
   content: string;
   sort_order: number;
   parent_id: number;
   client_op_id: string | null;
   components: string[];
+  tag_ids: number[];
   created_at: string;
   updated_at: string;
 };

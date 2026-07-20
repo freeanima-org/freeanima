@@ -27,4 +27,11 @@ export {
   reorderDiaryTextBlocks,
   updateDiaryTextBlock,
 } from "./text-blocks.ts";
+export {
+  createDiaryBlockTemplate,
+  deleteDiaryBlockTemplate,
+  ensureDiaryBlockTemplateSeeds,
+  listDiaryBlockTemplates,
+  updateDiaryBlockTemplate,
+} from "./block-template-store.ts";
 export { registerDiaryTools } from "./tools.ts";

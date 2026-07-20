@@ -3,6 +3,7 @@ import { z } from "zod";
 import { entities, entityTypeSchema, type EntitySelect } from "./entity.ts";
 import {
   CONTENT_BLOCK_COMPONENT,
+  DIARY_BLOCK_TEMPLATE_COMPONENT,
   DIARY_ENTRY_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,
@@ -22,6 +23,7 @@ import {
   POMODORO_ACTIVE_COMPONENT,
   WORLD_CONFIG_COMPONENT,
   contentBlockBodySchema,
+  diaryBlockTemplateBodySchema,
   diaryEntryBodySchema,
   emailAccountBodySchema,
   emailMessageBodySchema,
@@ -41,6 +43,7 @@ import {
   pomodoroActiveBodySchema,
   worldConfigBodySchema,
   type ContentBlockBody,
+  type DiaryBlockTemplateBody,
   type DiaryEntryBody,
   type EmailAccountBody,
   type EmailMessageBody,
@@ -183,6 +186,14 @@ export function asDiaryEntry(
   return parsed.success
     ? { id: row.id, title: row.title, content: row.content, summary: row.summary, ...parsed.data }
     : null;
+}
+
+export function asDiaryBlockTemplate(
+  row: EntityRow,
+): (DiaryBlockTemplateBody & { id: number; name: string }) | null {
+  if (row.primary_component !== DIARY_BLOCK_TEMPLATE_COMPONENT) return null;
+  const parsed = diaryBlockTemplateBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, name: row.title, ...parsed.data } : null;
 }
 
 export function asContentBlock(

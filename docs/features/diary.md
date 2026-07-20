@@ -37,6 +37,19 @@ Diary UI labels semantic bricks（梦境 / 情绪 / 自传）as read-only sectio
 - `body.parent_id` → diary entry id
 - `body.sort_order` — view order (no semantic precedence)
 - text lives in the block's `content` column
+- optional `title` (entity column) — user-editable block heading; empty means no heading weight in UI
+- optional `tag_ids` (entity column) — unified entity tags (not the container's `body.tags` strings)
+- semantic component tags on the block (`dream` / `limbic` / `narrative`) render as read-only labels（梦境 / 情绪 / 自传）beside the title; they are **not** the block title
+
+**日记块模板** (`diary_block_template` entity, subject private world):
+
+- `entities.title` = **模板名称**（列表/管理显示）
+- `entities.content` / `entities.tag_ids` stay empty — do **not** store insert payload there
+- `body.preset` = `{ title, content, components, tag_ids }` applied when inserting a new text block
+- SAP: `diary.templateList` / `templateCreate` / `templatePatch` / `templateDelete`
+- Empty world lazy-seeds「今日回顾」「运动」
+
+UI also persists per-block expand/collapse in localStorage (default expanded).
 
 One-shot migration: Habitat `runMigrations` moves legacy diary `content` into the first text block and clears the container column.
 
@@ -62,7 +75,8 @@ Fine-grained block CRUD / reorder: ToolSet `content-block`.
 UI satellite `@freeanima/satellite-diary` (`/diary`) calls SAP:
 
 - `diary.list` / `diary.create` / `diary.append` / `diary.patch` / `diary.delete` / `diary.get` / `diary.search`
-- `diary.blockCreate` / `diary.blockPatch` / `diary.blockDelete` / `diary.blockReorder` (text only)
+- `diary.blockCreate` / `diary.blockPatch` / `diary.blockDelete` / `diary.blockReorder` (text only; create/patch accept optional `title` / `tag_ids` / `components`)
+- `diary.templateList` / `diary.templateCreate` / `diary.templatePatch` / `diary.templateDelete`（日记块模板；`name` ≠ `preset`）
 
 All methods require `subject_kind: user | agent`.
 
@@ -70,3 +84,4 @@ All methods require `subject_kind: user | agent`.
 - `diary.append` → new trailing text block
 - `diary.patch` → container metadata only
 - `diary.delete` → cascade-delete child blocks
+- `diary.template*` → CRUD for `diary_block_template`（模板名 `name` + 插入载荷 `preset`）

@@ -298,6 +298,16 @@ export {
   diaryBlockDeleteOutputSchema,
   diaryBlockReorderInputSchema,
   diaryBlockReorderOutputSchema,
+  diaryBlockTemplatePresetSchema,
+  diaryBlockTemplateRowSchema,
+  diaryTemplateListInputSchema,
+  diaryTemplateListOutputSchema,
+  diaryTemplateCreateInputSchema,
+  diaryTemplateCreateOutputSchema,
+  diaryTemplatePatchInputSchema,
+  diaryTemplatePatchOutputSchema,
+  diaryTemplateDeleteInputSchema,
+  diaryTemplateDeleteOutputSchema,
 } from "./frames/diary.ts";
 export type {
   DiaryEntryRowPayload,
@@ -324,6 +334,16 @@ export type {
   DiaryBlockDeleteOutput,
   DiaryBlockReorderInput,
   DiaryBlockReorderOutput,
+  DiaryBlockTemplatePresetPayload,
+  DiaryBlockTemplateRowPayload,
+  DiaryTemplateListInput,
+  DiaryTemplateListOutput,
+  DiaryTemplateCreateInput,
+  DiaryTemplateCreateOutput,
+  DiaryTemplatePatchInput,
+  DiaryTemplatePatchOutput,
+  DiaryTemplateDeleteInput,
+  DiaryTemplateDeleteOutput,
 } from "./frames/diary.ts";
 
 export {

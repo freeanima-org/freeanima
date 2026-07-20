@@ -2,10 +2,13 @@ import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/c
 
 const diaryTextBlockSchema = z.object({
   id: z.number(),
+  title: z.string(),
   content: z.string(),
   sort_order: z.number(),
   parent_id: z.number(),
   client_op_id: z.string().nullable(),
+  components: z.array(z.string()),
+  tag_ids: z.array(z.number()),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -23,10 +26,13 @@ const diaryEntrySchema = z.object({
 
 const exampleBlock = {
   id: 101,
+  title: "",
   content: "第一段",
   sort_order: 0,
   parent_id: 42,
   client_op_id: null,
+  components: ["content_block"],
+  tag_ids: [] as number[],
   created_at: "2026-06-29T20:00:00+08:00",
   updated_at: "2026-06-29T20:00:00+08:00",
 };

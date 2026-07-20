@@ -12,6 +12,10 @@ import {
 import { POMODORO_ACTIVE_COMPONENT, pomodoroActiveBodySchema } from "./pomodoro-active.ts";
 import { AGENT_CONFIG_COMPONENT, agentConfigBodySchema } from "./agent-config.ts";
 import { CONTENT_BLOCK_COMPONENT, contentBlockBodySchema } from "./content-block.ts";
+import {
+  DIARY_BLOCK_TEMPLATE_COMPONENT,
+  diaryBlockTemplateBodySchema,
+} from "./diary-block-template.ts";
 import { DIARY_ENTRY_COMPONENT, diaryEntryBodySchema } from "./diary-entry.ts";
 import { DREAM_COMPONENT, dreamBodySchema } from "./dream.ts";
 import { EMAIL_ACCOUNT_COMPONENT, emailAccountBodySchema } from "./email-account.ts";
@@ -42,6 +46,7 @@ export const COMPONENT_IDS = [
   PROJECT_COMPONENT,
   TAG_COMPONENT,
   DIARY_ENTRY_COMPONENT,
+  DIARY_BLOCK_TEMPLATE_COMPONENT,
   CONTENT_BLOCK_COMPONENT,
   LIMBIC_COMPONENT,
   NARRATIVE_COMPONENT,
@@ -76,6 +81,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [PROJECT_COMPONENT]: projectBodySchema,
   [TAG_COMPONENT]: tagBodySchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntryBodySchema,
+  [DIARY_BLOCK_TEMPLATE_COMPONENT]: diaryBlockTemplateBodySchema,
   [CONTENT_BLOCK_COMPONENT]: contentBlockBodySchema,
   [LIMBIC_COMPONENT]: limbicBodySchema,
   [NARRATIVE_COMPONENT]: narrativeBodySchema,
@@ -115,6 +121,7 @@ export * from "./project-folder.ts";
 export * from "./project.ts";
 export * from "./tag.ts";
 export * from "./diary-entry.ts";
+export * from "./diary-block-template.ts";
 export * from "./dream.ts";
 export * from "./content-block.ts";
 export * from "./limbic.ts";

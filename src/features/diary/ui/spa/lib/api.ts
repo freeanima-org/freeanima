@@ -140,20 +140,85 @@ export async function deleteDiaryEntry(subjectKind: DiarySubjectKind, id: number
 export async function createDiaryBlock(
   subjectKind: DiarySubjectKind,
   parentId: number,
-  content: string,
-  sortOrder?: number,
+  input: {
+    content: string;
+    title?: string;
+    tag_ids?: number[];
+    components?: string[];
+    sort_order?: number;
+  },
 ): Promise<DiaryTextBlock> {
   ensureDiaryOfflineModule();
-  return offlineCreateDiaryBlock(subjectKind, parentId, content, sortOrder);
+  return offlineCreateDiaryBlock(subjectKind, parentId, input);
 }
 
 export async function updateDiaryBlock(
   subjectKind: DiarySubjectKind,
   id: number,
-  patch: { content?: string; sort_order?: number },
+  patch: { content?: string; title?: string; tag_ids?: number[]; sort_order?: number },
 ): Promise<DiaryTextBlock> {
   ensureDiaryOfflineModule();
   return offlineUpdateDiaryBlock(subjectKind, id, patch);
+}
+
+export type DiaryBlockTemplateRow = {
+  id: number;
+  name: string;
+  sort_order: number;
+  preset: {
+    title: string;
+    content: string;
+    components: string[];
+    tag_ids: number[];
+  };
+  created_at: string;
+  updated_at: string;
+};
+
+export async function fetchDiaryBlockTemplates(
+  subjectKind: DiarySubjectKind,
+): Promise<DiaryBlockTemplateRow[]> {
+  const data = await hub().call("diary.templateList", { subject_kind: subjectKind });
+  return data.items;
+}
+
+export async function createDiaryBlockTemplate(
+  subjectKind: DiarySubjectKind,
+  input: {
+    name: string;
+    preset: DiaryBlockTemplateRow["preset"];
+    sort_order?: number;
+  },
+): Promise<DiaryBlockTemplateRow> {
+  const data = await hub().call("diary.templateCreate", {
+    subject_kind: subjectKind,
+    ...input,
+  });
+  return data.item;
+}
+
+export async function updateDiaryBlockTemplate(
+  subjectKind: DiarySubjectKind,
+  id: number,
+  patch: {
+    name?: string;
+    preset?: Partial<DiaryBlockTemplateRow["preset"]>;
+    sort_order?: number;
+  },
+): Promise<DiaryBlockTemplateRow> {
+  const data = await hub().call("diary.templatePatch", {
+    subject_kind: subjectKind,
+    id,
+    ...patch,
+  });
+  return data.item;
+}
+
+export async function deleteDiaryBlockTemplate(
+  subjectKind: DiarySubjectKind,
+  id: number,
+): Promise<void> {
+  await hub().call("diary.templateDelete", { subject_kind: subjectKind, id });
 }
 
 export async function deleteDiaryBlock(

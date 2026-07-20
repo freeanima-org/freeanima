@@ -118,6 +118,14 @@ import type {
   DiaryPatchOutput,
   DiarySearchInput,
   DiarySearchOutput,
+  DiaryTemplateCreateInput,
+  DiaryTemplateCreateOutput,
+  DiaryTemplateDeleteInput,
+  DiaryTemplateDeleteOutput,
+  DiaryTemplateListInput,
+  DiaryTemplateListOutput,
+  DiaryTemplatePatchInput,
+  DiaryTemplatePatchOutput,
 } from "./frames/diary.ts";
 import type {
   CompanionConfigGetInput,
@@ -233,6 +241,10 @@ export const SAP_METHODS = [
   "diary.blockPatch",
   "diary.blockDelete",
   "diary.blockReorder",
+  "diary.templateList",
+  "diary.templateCreate",
+  "diary.templatePatch",
+  "diary.templateDelete",
   "vault.list",
   "vault.get",
   "vault.create",
@@ -327,6 +339,10 @@ export type SapRouterInputs = {
   "diary.blockPatch": DiaryBlockPatchInput;
   "diary.blockDelete": DiaryBlockDeleteInput;
   "diary.blockReorder": DiaryBlockReorderInput;
+  "diary.templateList": DiaryTemplateListInput;
+  "diary.templateCreate": DiaryTemplateCreateInput;
+  "diary.templatePatch": DiaryTemplatePatchInput;
+  "diary.templateDelete": DiaryTemplateDeleteInput;
   "vault.list": VaultListInput;
   "vault.get": VaultGetInput;
   "vault.create": VaultCreateInput;
@@ -419,6 +435,10 @@ export type SapRouterOutputs = {
   "diary.blockPatch": DiaryBlockPatchOutput;
   "diary.blockDelete": DiaryBlockDeleteOutput;
   "diary.blockReorder": DiaryBlockReorderOutput;
+  "diary.templateList": DiaryTemplateListOutput;
+  "diary.templateCreate": DiaryTemplateCreateOutput;
+  "diary.templatePatch": DiaryTemplatePatchOutput;
+  "diary.templateDelete": DiaryTemplateDeleteOutput;
   "vault.list": VaultListOutput;
   "vault.get": VaultGetOutput;
   "vault.create": VaultCreateOutput;
