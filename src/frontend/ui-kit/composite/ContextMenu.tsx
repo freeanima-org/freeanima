@@ -19,17 +19,17 @@ function runMenuItemAction(onClick: () => void, onClose: () => void) {
 export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
   useEffect(() => {
     const close = () => onClose();
-    // 延后注册，避免打开菜单的 click 立刻触发关闭
-    const clickTimer = window.setTimeout(() => {
+    // 延后注册：避免「右键打开」同一轮 contextmenu 冒泡到 window 时立刻被关掉
+    const armTimer = window.setTimeout(() => {
       window.addEventListener("click", close);
+      window.addEventListener("contextmenu", close);
     }, 0);
     window.addEventListener("scroll", close, true);
-    window.addEventListener("contextmenu", close);
     return () => {
-      window.clearTimeout(clickTimer);
+      window.clearTimeout(armTimer);
       window.removeEventListener("click", close);
-      window.removeEventListener("scroll", close, true);
       window.removeEventListener("contextmenu", close);
+      window.removeEventListener("scroll", close, true);
     };
   }, [onClose]);
 

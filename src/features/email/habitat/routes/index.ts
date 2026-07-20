@@ -30,8 +30,14 @@ export const emailHubRoutes = bindHubRouteHandlers(emailMethodDefs, {
     service.serviceEmailMessageRead(depsOf(deps).runtime.runtimeDeps(), input),
   "email.message.markRead": async (deps, input) =>
     service.serviceEmailMessageMarkRead(depsOf(deps).runtime.runtimeDeps(), input),
+  "email.message.markUnread": async (deps, input) =>
+    service.serviceEmailMessageMarkUnread(depsOf(deps).runtime.runtimeDeps(), input),
+  "email.message.delete": async (deps, input) =>
+    service.serviceEmailMessageDelete(depsOf(deps).runtime.runtimeDeps(), input),
   "email.message.search": async (deps, input) =>
     service.serviceEmailMessageSearch(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "email.send": async (deps, input) =>
+    service.serviceEmailSend(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "email.sync": async (deps, input) =>
     service.serviceEmailSync(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "emailthread.list": async (deps, input) =>

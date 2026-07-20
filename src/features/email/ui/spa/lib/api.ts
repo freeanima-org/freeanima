@@ -187,6 +187,30 @@ export async function markEmailMessageRead(id: number): Promise<void> {
   await hub().call("email.message.markRead", withSubjectKind({ id }));
 }
 
+export async function markEmailMessageUnread(id: number): Promise<void> {
+  await hub().call("email.message.markUnread", withSubjectKind({ id }));
+}
+
+export async function deleteEmailMessage(id: number): Promise<void> {
+  await hub().call("email.message.delete", withSubjectKind({ id }));
+}
+
+export async function sendEmailMessage(input: {
+  account_id?: number;
+  to: string;
+  subject: string;
+  body: string;
+  cc?: string;
+  bcc?: string;
+}): Promise<{ messageId: string; account_id: number; message_entity_id: number }> {
+  const data = await hub().call("email.send", withSubjectKind(input));
+  return {
+    messageId: data.messageId,
+    account_id: data.account_id,
+    message_entity_id: data.message_entity_id,
+  };
+}
+
 export type EmailSyncResult = {
   account_id: number;
   upserted_messages: number;

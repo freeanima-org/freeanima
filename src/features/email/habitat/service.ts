@@ -238,6 +238,44 @@ export async function serviceEmailMessageMarkRead(
   return { ok: true as const };
 }
 
+export async function serviceEmailMessageMarkUnread(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+) {
+  assertPg(deps);
+  const { markAsUnread } = await import("@freeanima/platform/connectors/email");
+  await markAsUnread(input.id);
+  return { ok: true as const };
+}
+
+export async function serviceEmailMessageDelete(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+) {
+  assertPg(deps);
+  const { deleteEmail } = await import("@freeanima/platform/connectors/email");
+  await deleteEmail(input.id);
+  return { ok: true as const };
+}
+
+export async function serviceEmailSend(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    account_id?: number;
+    to: string;
+    subject: string;
+    body: string;
+    cc?: string;
+    bcc?: string;
+  },
+) {
+  assertPg(deps);
+  const { sendEmail } = await import("@freeanima/platform/connectors/email");
+  const { subject_kind: _subjectKind, ...sendInput } = input;
+  return sendEmail(omitUndefined(sendInput));
+}
+
 export async function serviceEmailSync(
   deps: RuntimeDeps,
   input: { subject_kind?: SubjectKind; account_id?: number; limit?: number },

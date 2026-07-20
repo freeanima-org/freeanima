@@ -23,16 +23,21 @@ import {
   SubjectScopeToggle,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
 import { readModuleSelection, writeModuleSelection } from "@freeanima/frontend/shell-sdk";
+import { copyText } from "@freeanima/frontend/ui-kit/lib/copy-text.ts";
 import { m } from "@paraglide/messages";
+import { MoreHorizontal } from "lucide-react";
 
 import { EmailAccountFormDialog } from "./components/EmailAccountFormDialog.tsx";
 import { EmailAccountSidebar } from "./components/EmailAccountSidebar.tsx";
 import { EmailMessageDetail } from "./components/EmailMessageDetail.tsx";
+import { EmailReplyDialog } from "./components/EmailReplyDialog.tsx";
 import {
   deleteEmailAccount,
+  deleteEmailMessage,
   fetchEmailAccounts,
   fetchEmailMessages,
   markEmailMessageRead,
+  markEmailMessageUnread,
   patchEmailAccount,
   readEmailMessage,
   searchEmailMessages,
@@ -52,6 +57,7 @@ function formatWhen(iso: string): string {
   return d.toLocaleString();
 }
 
+type ListFilter = "unread" | "all";
 type AccountMenuState = { account: EmailAccountRow; x: number; y: number };
 type MessageMenuState = { message: EmailMessageRow; x: number; y: number };
 type SheetMenuState = { title?: string; items: ActionSheetItem[] };
@@ -70,6 +76,7 @@ export function EmailApp() {
   const [accounts, setAccounts] = useState<EmailAccountRow[]>([]);
   const [activeAccountId, setActiveAccountId] = useState<number | null>(null);
   const [messages, setMessages] = useState<EmailMessageRow[]>([]);
+  const [listFilter, setListFilter] = useState<ListFilter>("unread");
   const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
   const [detail, setDetail] = useState<EmailMessageRow | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -84,14 +91,29 @@ export function EmailApp() {
   const [error, setError] = useState("");
   const [syncNotice, setSyncNotice] = useState("");
   const [formState, setFormState] = useState<FormState | null>(null);
+  const [replyMessage, setReplyMessage] = useState<EmailMessageRow | null>(null);
   const [accountMenu, setAccountMenu] = useState<AccountMenuState | null>(null);
   const [messageMenu, setMessageMenu] = useState<MessageMenuState | null>(null);
   const [sheetMenu, setSheetMenu] = useState<SheetMenuState | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<EmailAccountRow | null>(null);
+  const [deleteAccountTarget, setDeleteAccountTarget] = useState<EmailAccountRow | null>(null);
+  const [deleteMessageTarget, setDeleteMessageTarget] = useState<EmailMessageRow | null>(null);
 
   const activeAccount = useMemo(
     () => accounts.find((a) => a.id === activeAccountId) ?? null,
     [accounts, activeAccountId],
+  );
+
+  const applyUnreadLocal = useCallback(
+    (messageId: number, unread: boolean) => {
+      setMessages((prev) => {
+        if (!unread && listFilter === "unread") {
+          return prev.filter((row) => row.id !== messageId);
+        }
+        return prev.map((row) => (row.id === messageId ? { ...row, unread } : row));
+      });
+      setDetail((prev) => (prev?.id === messageId ? { ...prev, unread } : prev));
+    },
+    [listFilter],
   );
 
   const loadMessageDetail = useCallback(
@@ -107,9 +129,8 @@ export function EmailApp() {
         if (row.unread && !writesDisabled) {
           try {
             await markEmailMessageRead(row.id);
-            setMessages((prev) =>
-              prev.map((item) => (item.id === message.id ? { ...item, unread: false } : item)),
-            );
+            applyUnreadLocal(row.id, false);
+            setDetail((prev) => (prev?.id === row.id ? { ...prev, unread: false } : prev));
           } catch (markErr) {
             console.warn("markEmailMessageRead failed:", markErr);
           }
@@ -120,7 +141,28 @@ export function EmailApp() {
         setDetailLoading(false);
       }
     },
-    [layoutMode, writesDisabled],
+    [applyUnreadLocal, layoutMode, writesDisabled],
+  );
+
+  const loadMessages = useCallback(
+    async (accountId: number, filter: ListFilter = listFilter) => {
+      setListLoading(true);
+      setError("");
+      try {
+        const rows = await fetchEmailMessages({
+          account_id: accountId,
+          limit: 100,
+          ...(filter === "unread" ? { unread: true } : {}),
+        });
+        setMessages(rows);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+        setMessages([]);
+      } finally {
+        setListLoading(false);
+      }
+    },
+    [listFilter],
   );
 
   const loadAccounts = useCallback(async () => {
@@ -146,8 +188,13 @@ export function EmailApp() {
 
       setListLoading(true);
       try {
-        const messageRows = await fetchEmailMessages({ account_id: account.id, limit: 100 });
+        const messageRows = await fetchEmailMessages({
+          account_id: account.id,
+          limit: 100,
+          unread: true,
+        });
         setMessages(messageRows);
+        setListFilter("unread");
 
         const storedMessage =
           stored?.messageId != null
@@ -171,20 +218,6 @@ export function EmailApp() {
       setLoading(false);
     }
   }, [loadMessageDetail, useDrawer]);
-
-  const loadMessages = useCallback(async (accountId: number) => {
-    setListLoading(true);
-    setError("");
-    try {
-      const rows = await fetchEmailMessages({ account_id: accountId, limit: 100 });
-      setMessages(rows);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      setMessages([]);
-    } finally {
-      setListLoading(false);
-    }
-  }, []);
 
   const handleManualRefresh = useCallback(async () => {
     if (refreshing) return;
@@ -211,6 +244,7 @@ export function EmailApp() {
     setDetail(null);
     setDetailOpen(false);
     setSearchQuery("");
+    setListFilter("unread");
     void loadAccounts();
   }, [subjectKind, loadAccounts]);
 
@@ -231,6 +265,12 @@ export function EmailApp() {
     writeModuleSelection("email", { accountId: account.id, messageId: null });
     if (useDrawer) setListOpen(false);
     await loadMessages(account.id);
+  };
+
+  const changeListFilter = async (filter: ListFilter) => {
+    setListFilter(filter);
+    setSearchQuery("");
+    if (activeAccountId != null) await loadMessages(activeAccountId, filter);
   };
 
   const openMessage = async (message: EmailMessageRow) => {
@@ -291,6 +331,24 @@ export function EmailApp() {
     }
   };
 
+  const copyMessageId = (message: EmailMessageRow) => {
+    void copyText(String(message.id)).then((ok) => {
+      if (!ok) setError(m.email_copy_id_failed());
+    });
+  };
+
+  const onMarkRead = (message: EmailMessageRow) => {
+    void markEmailMessageRead(message.id)
+      .then(() => applyUnreadLocal(message.id, false))
+      .catch((err) => setError(err instanceof Error ? err.message : String(err)));
+  };
+
+  const onMarkUnread = (message: EmailMessageRow) => {
+    void markEmailMessageUnread(message.id)
+      .then(() => applyUnreadLocal(message.id, true))
+      .catch((err) => setError(err instanceof Error ? err.message : String(err)));
+  };
+
   const accountMenuItems = (account: EmailAccountRow): ActionSheetItem[] => {
     const items: ActionSheetItem[] = [];
     if (!writesDisabled && !syncing) {
@@ -331,7 +389,7 @@ export function EmailApp() {
       items.push({
         label: m.email_delete_account(),
         danger: true,
-        onClick: () => setDeleteTarget(account),
+        onClick: () => setDeleteAccountTarget(account),
       });
     }
     return items;
@@ -339,54 +397,102 @@ export function EmailApp() {
 
   const messageMenuItems = (message: EmailMessageRow): ActionSheetItem[] => {
     const items: ActionSheetItem[] = [];
-    if (!writesDisabled && message.unread) {
+    if (!writesDisabled) {
       items.push({
-        label: m.email_mark_read(),
-        onClick: () =>
-          void markEmailMessageRead(message.id)
-            .then(() => {
-              setMessages((prev) =>
-                prev.map((row) => (row.id === message.id ? { ...row, unread: false } : row)),
-              );
-            })
-            .catch((err) => setError(err instanceof Error ? err.message : String(err))),
+        label: m.email_reply(),
+        onClick: () => setReplyMessage(message),
       });
     }
-    if (!writesDisabled && !syncing && activeAccountId != null) {
+    items.push({
+      label: m.email_copy_id(),
+      onClick: () => copyMessageId(message),
+    });
+    if (!writesDisabled) {
+      if (message.unread) {
+        items.push({
+          label: m.email_mark_read(),
+          onClick: () => onMarkRead(message),
+        });
+      } else {
+        items.push({
+          label: m.email_mark_unread(),
+          onClick: () => onMarkUnread(message),
+        });
+      }
       items.push({
-        label: m.email_menu_sync(),
-        onClick: () => void onSync(),
+        label: m.email_delete_message(),
+        danger: true,
+        onClick: () => setDeleteMessageTarget(message),
       });
     }
     return items;
   };
 
-  const openAccountMenu = (account: EmailAccountRow) => {
+  const openAccountMenu = (account: EmailAccountRow, e?: MouseEvent) => {
     if (useActionSheet) {
       setSheetMenu({ title: accountLabel(account), items: accountMenuItems(account) });
       return;
     }
-    setFormState({ mode: "edit", account });
+    let x = e?.clientX ?? 0;
+    let y = e?.clientY ?? 0;
+    const target = e?.currentTarget;
+    if (target instanceof HTMLElement) {
+      const rect = target.getBoundingClientRect();
+      x = rect.left;
+      y = rect.bottom + 4;
+    }
+    setMessageMenu(null);
+    setSheetMenu(null);
+    setAccountMenu({ account, x, y });
+  };
+
+  const openMessageMenu = (message: EmailMessageRow, e?: MouseEvent) => {
+    if (useActionSheet) {
+      setSheetMenu({
+        title: message.subject || m.habitat_email_no_subject(),
+        items: messageMenuItems(message),
+      });
+      return;
+    }
+    let x = e?.clientX ?? 0;
+    let y = e?.clientY ?? 0;
+    const target = e?.currentTarget;
+    if (target instanceof HTMLElement) {
+      const rect = target.getBoundingClientRect();
+      x = rect.left;
+      y = rect.bottom + 4;
+    }
+    setAccountMenu(null);
+    setSheetMenu(null);
+    setMessageMenu({ message, x, y });
   };
 
   const openAccountContextMenu = (e: MouseEvent, account: EmailAccountRow) => {
-    if (useActionSheet || !contextMenuEnabled) return;
+    if (useActionSheet) return;
+    if (!contextMenuEnabled) return;
     e.preventDefault();
+    e.stopPropagation();
+    setMessageMenu(null);
+    setSheetMenu(null);
     setAccountMenu({ account, x: e.clientX, y: e.clientY });
   };
 
   const openMessageContextMenu = (e: MouseEvent, message: EmailMessageRow) => {
-    if (useActionSheet || !contextMenuEnabled) return;
+    if (useActionSheet) return;
+    if (!contextMenuEnabled) return;
     e.preventDefault();
+    e.stopPropagation();
+    setAccountMenu(null);
+    setSheetMenu(null);
     setMessageMenu({ message, x: e.clientX, y: e.clientY });
   };
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-    const id = deleteTarget.id;
+  const confirmDeleteAccount = async () => {
+    if (!deleteAccountTarget) return;
+    const id = deleteAccountTarget.id;
     try {
       await deleteEmailAccount(id);
-      setDeleteTarget(null);
+      setDeleteAccountTarget(null);
       setAccounts((prev) => prev.filter((row) => row.id !== id));
       if (activeAccountId === id) {
         setActiveAccountId(null);
@@ -396,7 +502,26 @@ export function EmailApp() {
     } catch (err) {
       const errDetail = err instanceof Error ? err.message : String(err);
       setError(m.email_delete_failed({ detail: errDetail }));
-      setDeleteTarget(null);
+      setDeleteAccountTarget(null);
+    }
+  };
+
+  const confirmDeleteMessage = async () => {
+    if (!deleteMessageTarget) return;
+    const id = deleteMessageTarget.id;
+    try {
+      await deleteEmailMessage(id);
+      setDeleteMessageTarget(null);
+      setMessages((prev) => prev.filter((row) => row.id !== id));
+      if (selectedMessageId === id) {
+        setSelectedMessageId(null);
+        setDetail(null);
+        setDetailOpen(false);
+      }
+    } catch (err) {
+      const errDetail = err instanceof Error ? err.message : String(err);
+      setError(m.email_delete_message_failed({ detail: errDetail }));
+      setDeleteMessageTarget(null);
     }
   };
 
@@ -435,7 +560,9 @@ export function EmailApp() {
           onRefresh={handleManualRefresh}
         >
           <EmptyState
-            message={m.email_no_messages_hint()}
+            message={
+              listFilter === "unread" ? m.email_no_unread_hint() : m.email_no_messages_hint()
+            }
             className="items-start flex-1 p-4 text-left"
           />
         </PullToRefresh>
@@ -448,36 +575,55 @@ export function EmailApp() {
           <ul className="divide-border divide-y">
             {messages.map((message) => (
               <li key={message.id}>
-                <button
-                  type="button"
-                  className={`hover:bg-muted/60 w-full px-3 py-3 text-left ${
+                <div
+                  className={`group hover:bg-muted/60 flex w-full items-stretch ${
                     selectedMessageId === message.id
                       ? "bg-primary/10 ring-primary/30 ring-1 ring-inset"
                       : ""
                   }`}
-                  onClick={() => void openMessage(message)}
-                  onContextMenu={(e) => openMessageContextMenu(e, message)}
                 >
-                  <div className="flex items-start gap-2">
-                    {message.unread ? (
-                      <span className="bg-primary mt-1 inline-block h-2 w-2 shrink-0 rounded-full" />
-                    ) : (
-                      <span className="mt-1 inline-block h-2 w-2 shrink-0" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate font-medium">
-                        {message.subject || m.habitat_email_no_subject()}
+                  <button
+                    type="button"
+                    className="min-w-0 flex-1 px-3 py-3 text-left"
+                    onClick={() => void openMessage(message)}
+                    onContextMenu={(e) => openMessageContextMenu(e, message)}
+                  >
+                    <div className="flex items-start gap-2">
+                      {message.unread ? (
+                        <span className="bg-primary mt-1 inline-block h-2 w-2 shrink-0 rounded-full" />
+                      ) : (
+                        <span className="mt-1 inline-block h-2 w-2 shrink-0" />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-medium">
+                          {message.subject || m.habitat_email_no_subject()}
+                        </div>
+                        <div className="text-muted-foreground truncate text-xs">{message.from}</div>
+                        <div className="text-muted-foreground mt-1 truncate text-xs">
+                          {message.preview}
+                        </div>
                       </div>
-                      <div className="text-muted-foreground truncate text-xs">{message.from}</div>
-                      <div className="text-muted-foreground mt-1 truncate text-xs">
-                        {message.preview}
+                      <div className="text-muted-foreground shrink-0 text-[10px]">
+                        {formatWhen(message.sent_at)}
                       </div>
                     </div>
-                    <div className="text-muted-foreground shrink-0 text-[10px]">
-                      {formatWhen(message.sent_at)}
-                    </div>
-                  </div>
-                </button>
+                  </button>
+                  <button
+                    type="button"
+                    className={`text-muted-foreground hover:text-foreground flex shrink-0 items-center justify-center ${
+                      useActionSheet
+                        ? "min-h-11 min-w-11"
+                        : "min-h-9 min-w-9 opacity-70 group-hover:opacity-100"
+                    }`}
+                    aria-label={m.email_message_actions()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openMessageMenu(message, e);
+                    }}
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
@@ -535,25 +681,47 @@ export function EmailApp() {
           }
           middleHeaderExtra={
             activeAccount ? (
-              <div className="flex gap-2">
-                <Input
-                  className="h-8 min-w-0 flex-1"
-                  placeholder={m.email_search_placeholder()}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") void onSearch();
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={searching}
-                  onClick={() => void onSearch()}
-                >
-                  {m.email_search()}
-                </Button>
+              <div className="flex flex-col gap-2">
+                <div className="inline-flex w-fit overflow-hidden rounded-md border shadow-xs">
+                  <Button
+                    type="button"
+                    variant={listFilter === "unread" ? "default" : "outline"}
+                    size="sm"
+                    className="rounded-none border-0"
+                    onClick={() => void changeListFilter("unread")}
+                  >
+                    {m.email_filter_unread()}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={listFilter === "all" ? "default" : "outline"}
+                    size="sm"
+                    className="rounded-none border-0 border-l"
+                    onClick={() => void changeListFilter("all")}
+                  >
+                    {m.email_filter_all()}
+                  </Button>
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    className="h-8 min-w-0 flex-1"
+                    placeholder={m.email_search_placeholder()}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") void onSearch();
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={searching}
+                    onClick={() => void onSearch()}
+                  >
+                    {m.email_search()}
+                  </Button>
+                </div>
               </div>
             ) : null
           }
@@ -565,12 +733,29 @@ export function EmailApp() {
               useActionSheet={useActionSheet}
               onSelect={(account) => void selectAccount(account)}
               onAdd={() => setFormState({ mode: "create" })}
+              onEdit={(account) => setFormState({ mode: "edit", account })}
               onOpenMenu={openAccountMenu}
               onOpenContextMenu={openAccountContextMenu}
             />
           }
           middle={messageList}
-          detail={<EmailMessageDetail loading={detailLoading} message={detail} />}
+          detail={
+            <EmailMessageDetail
+              loading={detailLoading}
+              message={detail}
+              writesDisabled={writesDisabled}
+              {...(detail
+                ? {
+                    onReply: () => setReplyMessage(detail),
+                    onCopyId: () => copyMessageId(detail),
+                    onDelete: () => setDeleteMessageTarget(detail),
+                    ...(detail.unread
+                      ? { onMarkRead: () => onMarkRead(detail) }
+                      : { onMarkUnread: () => onMarkUnread(detail) }),
+                  }
+                : {})}
+            />
+          }
         />
       )}
 
@@ -594,6 +779,14 @@ export function EmailApp() {
             void selectAccount(saved);
           }
         }}
+      />
+
+      <EmailReplyDialog
+        open={replyMessage != null}
+        message={replyMessage}
+        accountId={replyMessage?.account_id ?? activeAccountId}
+        disabled={writesDisabled}
+        onClose={() => setReplyMessage(null)}
       />
 
       {accountMenu ? (
@@ -623,14 +816,25 @@ export function EmailApp() {
       ) : null}
 
       <ConfirmDialog
-        open={deleteTarget != null}
+        open={deleteAccountTarget != null}
         title={m.email_delete_account()}
         description={m.email_delete_confirm()}
         confirmLabel={m.email_delete_account()}
         cancelLabel={m.email_cancel()}
         variant="error"
-        onConfirm={() => void confirmDelete()}
-        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void confirmDeleteAccount()}
+        onCancel={() => setDeleteAccountTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={deleteMessageTarget != null}
+        title={m.email_delete_message()}
+        description={m.email_delete_message_confirm()}
+        confirmLabel={m.email_delete_message()}
+        cancelLabel={m.email_cancel()}
+        variant="error"
+        onConfirm={() => void confirmDeleteMessage()}
+        onCancel={() => setDeleteMessageTarget(null)}
       />
     </div>
   );
