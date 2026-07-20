@@ -26,7 +26,7 @@ describe("shell completion", () => {
   it("source CLI omits service", () => {
     const bash = generateCompletion("bash", buildProgram({ standalone: false }));
     expect(bash).not.toContain("_service()");
-    for (const token of ["vault", "completion", "upgrade"]) {
+    for (const token of ["vault", "completion", "upgrade", "versions"]) {
       expect(bash).toContain(token);
     }
   });
@@ -34,7 +34,7 @@ describe("shell completion", () => {
   it("covers top-level commands when standalone", () => {
     const bash = generateCompletion("bash", buildProgram({ standalone: true }));
     const zsh = generateCompletion("zsh", buildProgram({ standalone: true }));
-    for (const token of ["service", "vault", "completion", "upgrade"]) {
+    for (const token of ["service", "vault", "completion", "upgrade", "versions"]) {
       expect(bash).toContain(token);
       expect(zsh).toContain(token);
     }

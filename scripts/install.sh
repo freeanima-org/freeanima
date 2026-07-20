@@ -13,13 +13,14 @@
 #   VERSION=vX.Y.Z           (optional pin; implies release-style tag download)
 #   PROXY=none|ghproxy-net|gh-proxy-com|ghfast-top  (default: none；公共 GitHub 反代)
 #   FREEANIMA_INSTALL_PREFIX (default: ~/.anima/standalone)
-#   FREEANIMA_HOME           (data dir root; default: ~/.anima — used for bin shim)
+#   FREEANIMA_HOME           (data dir root; default: ~/.anima)
 set -euo pipefail
 
 REPO="freeanima-org/freeanima"
 ASSET_NAME="anima-linux-x64.tar.gz"
 GITHUB_API="https://api.github.com"
 GITHUB_DL="https://github.com/${REPO}/releases"
+MAX_KEPT_VERSIONS=7
 
 error() {
   printf 'freeanima install: %s\n' "$*" >&2
@@ -59,7 +60,8 @@ PROXY="${PROXY:-none}"
 HOME_DIR="${HOME:?HOME 未设置}"
 ANIMA_HOME="${FREEANIMA_HOME:-${HOME_DIR}/.anima}"
 PREFIX="${FREEANIMA_INSTALL_PREFIX:-${ANIMA_HOME}/standalone}"
-BIN_DIR="${ANIMA_HOME}/bin"
+BIN_DIR="${HOME_DIR}/.local/bin"
+LEGACY_BIN_SHIM="${ANIMA_HOME}/bin/anima"
 
 case "$CHANNEL" in
   release | canary) ;;
@@ -232,23 +234,113 @@ fi
 mkdir -p "$PREFIX" "$BIN_DIR"
 chmod 700 "$ANIMA_HOME" 2>/dev/null || true
 
-DEST="${PREFIX}/anima"
-DEST_NEW="${PREFIX}/anima.new"
-cp "$ANIMA_SRC" "$DEST_NEW"
-chmod 755 "$DEST_NEW"
-if [[ -e "$DEST" ]]; then
-  mv -f "$DEST" "${PREFIX}/anima.old" 2>/dev/null || rm -f "$DEST"
+# 规范化版本 id（去前导 v；非法字符 → _）
+normalize_version_id() {
+  local raw="$1"
+  raw="${raw#v}"
+  raw="${raw#V}"
+  printf '%s' "$raw" | sed -E 's/[^A-Za-z0-9._+-]/_/g'
+  # sed 空结果时
+}
+
+# 探测版本：VERSION 环境变量 > 二进制 --version 首字段 > unknown
+detect_version_id() {
+  local bin="$1"
+  local ver_line first
+  if [[ -n "$VERSION" ]]; then
+    normalize_version_id "$VERSION"
+    return 0
+  fi
+  version_id_from_binary "$bin"
+}
+
+version_id_from_binary() {
+  local bin="$1"
+  local ver_line first
+  ver_line="$("$bin" --version 2>/dev/null | head -1 || true)"
+  first="$(printf '%s' "$ver_line" | awk '{print $1}')"
+  if [[ -n "$first" ]]; then
+    normalize_version_id "$first"
+    return 0
+  fi
+  printf 'unknown'
+}
+
+# 旧布局：PREFIX/anima 为普通文件时迁到 anima_<id>
+migrate_flat_anima_if_needed() {
+  local id="$1"
+  local link="${PREFIX}/anima"
+  local dest="${PREFIX}/anima_${id}"
+  if [[ -f "$link" && ! -L "$link" ]]; then
+    rm -f "$dest"
+    mv -f "$link" "$dest"
+    ln -sfn "anima_${id}" "$link"
+    info "已迁移旧布局: ${dest}"
+  fi
+}
+
+prune_old_versions() {
+  local current_id="$1"
+  local -a oldest=()
+  local f base id
+  # 最旧在前
+  while IFS= read -r f; do
+    [[ -n "$f" ]] || continue
+    oldest+=("$f")
+  done < <(ls -1tr "${PREFIX}"/anima_* 2>/dev/null | grep -vE '\.(new|old)$' || true)
+
+  while ((${#oldest[@]} > MAX_KEPT_VERSIONS)); do
+    local removed=0
+    for f in "${oldest[@]}"; do
+      base="$(basename "$f")"
+      id="${base#anima_}"
+      if [[ "$id" == "$current_id" ]]; then
+        continue
+      fi
+      rm -f "$f"
+      info "已修剪旧版本: ${id}"
+      removed=1
+      break
+    done
+    if ((removed == 0)); then
+      break
+    fi
+    oldest=()
+    while IFS= read -r f; do
+      [[ -n "$f" ]] || continue
+      oldest+=("$f")
+    done < <(ls -1tr "${PREFIX}"/anima_* 2>/dev/null | grep -vE '\.(new|old)$' || true)
+  done
+}
+
+# 先拷到临时文件跑 --version（尚未写入版本名）
+STAGE_BIN="${PREFIX}/.anima.installing"
+cp "$ANIMA_SRC" "$STAGE_BIN"
+chmod 755 "$STAGE_BIN"
+VER_ID="$(detect_version_id "$STAGE_BIN")"
+[[ -n "$VER_ID" ]] || VER_ID="unknown"
+
+# 旧扁平文件先按「旧二进制自身版本」迁走，避免被新版本 id 覆盖命名
+if [[ -f "${PREFIX}/anima" && ! -L "${PREFIX}/anima" ]]; then
+  OLD_ID="$(version_id_from_binary "${PREFIX}/anima")"
+  [[ -n "$OLD_ID" ]] || OLD_ID="unknown"
+  migrate_flat_anima_if_needed "$OLD_ID"
 fi
-mv -f "$DEST_NEW" "$DEST"
-rm -f "${PREFIX}/anima.old"
 
-ln -sfn "$DEST" "${BIN_DIR}/anima"
+DEST_VERSIONED="${PREFIX}/anima_${VER_ID}"
+mv -f "$STAGE_BIN" "$DEST_VERSIONED"
+ln -sfn "anima_${VER_ID}" "${PREFIX}/anima"
+ln -sfn "${PREFIX}/anima" "${BIN_DIR}/anima"
+rm -f "$LEGACY_BIN_SHIM" "${PREFIX}/anima.old" "${PREFIX}/anima.new"
 
-info "已安装: ${DEST}"
-info "PATH shim: ${BIN_DIR}/anima → ${DEST}"
+prune_old_versions "$VER_ID"
 
-if "$DEST" --version >/dev/null 2>&1; then
-  info "版本: $($DEST --version 2>/dev/null | head -1)"
+info "已安装: ${DEST_VERSIONED}"
+info "current: ${PREFIX}/anima → anima_${VER_ID}"
+info "PATH shim: ${BIN_DIR}/anima → ${PREFIX}/anima"
+
+if "${PREFIX}/anima" --version >/dev/null 2>&1; then
+  info "版本: $(${PREFIX}/anima --version 2>/dev/null | head -1)"
 else
   info "已写入二进制（无法执行 --version；请检查架构/权限）"
 fi
@@ -268,4 +360,5 @@ info "下一步（本脚本不写配置、不起服务）："
 printf '  1. 配置 ~/.anima/config.yaml（至少 database.url）— 见 https://freeanima.com/docs/guide/install/\n'
 printf '  2. anima service start\n'
 printf '  3. 之后升级: anima upgrade   # 或 anima upgrade --channel canary [--proxy ghproxy-net]\n'
+printf '  4. 本地多版本: anima versions / anima versions use <id>\n'
 printf '\n'

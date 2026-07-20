@@ -1,5 +1,6 @@
-import { realpathSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { dirname, join } from "node:path";
 
 /** 仅两种运行形态：源码 / bun --compile standalone */
 export type CliInstallKind = "source" | "standalone";
@@ -67,6 +68,10 @@ export function animaBinString(scriptPath?: string): string {
     (!scriptPath && isStandaloneExecutable()) ||
     (scriptPath && isStandaloneExecutable(scriptPath))
   ) {
+    // 优先稳定 symlink `$PREFIX/anima`，避免 unit 钉死 `anima_<ver>`
+    const prefix = dirname(process.execPath);
+    const stable = join(prefix, "anima");
+    if (existsSync(stable)) return stable;
     return process.execPath;
   }
   const script = scriptPath ?? process.argv[1];

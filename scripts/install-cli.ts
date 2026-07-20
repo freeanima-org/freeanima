@@ -1,22 +1,23 @@
 #!/usr/bin/env bun
 /**
  * 将 `dist/anima-executable/anima` 安装到独立前缀（默认 `~/.anima/standalone`），
- * 并在 `~/.anima/bin/anima` 放置指向已安装二进制的 symlink。
+ * 写入 `anima_<version>`，`anima` symlink 指向当前版，并在 `~/.local/bin/anima` 放置 PATH shim。
  *
  * 用法：
  *   just install-cli
  *   bun scripts/install-cli.ts [--prefix DIR] [--skip-build]
  */
-import { chmodSync, cpSync, existsSync, mkdirSync, rmSync, symlinkSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { existsSync } from "node:fs";
+import { join, resolve } from "node:path";
 
 import {
-  animaBinShimPath,
   assertSafeStandaloneInstallPrefix,
-  defaultAnimaBinDir,
+  installVersionedBinary,
+  migrateFlatAnimaFileIfNeeded,
   resolveInstallPrefixFromEnv,
 } from "@freeanima/core/config/install-prefix";
 import { resolveMonorepoRoot } from "@freeanima/core/config/repo-root";
+import { readAppVersion } from "@freeanima/core/config/version";
 
 const ROOT = resolveMonorepoRoot(import.meta.dir) ?? join(import.meta.dir, "..");
 const STAGING_ANIMA = join(ROOT, "dist/anima-executable/anima");
@@ -37,7 +38,8 @@ function parseArgs(argv: string[]): { prefix?: string; skipBuild: boolean } {
 
 安装单文件 standalone 到独立前缀（禁止 monorepo 内）。
 默认前缀: ~/.anima/standalone（或 FREEANIMA_INSTALL_PREFIX）
-PATH 入口: ~/.anima/bin/anima
+版本文件: anima_<version>；当前链接: anima
+PATH 入口: ~/.local/bin/anima
 `);
       process.exit(0);
     }
@@ -49,23 +51,6 @@ function requireStaging(): void {
   if (!existsSync(STAGING_ANIMA)) {
     throw new Error(`缺少构建产物 ${STAGING_ANIMA}。请先执行: just build-cli`);
   }
-}
-
-function installBinary(prefix: string): void {
-  mkdirSync(prefix, { recursive: true });
-  const destAnima = join(prefix, "anima");
-  cpSync(STAGING_ANIMA, destAnima);
-  chmodSync(destAnima, 0o755);
-}
-
-function linkBinShim(prefix: string): string {
-  const binDir = defaultAnimaBinDir();
-  mkdirSync(binDir, { recursive: true });
-  const shim = animaBinShimPath(binDir);
-  const target = join(prefix, "anima");
-  rmSync(shim, { force: true });
-  symlinkSync(target, shim);
-  return shim;
 }
 
 async function main(): Promise<void> {
@@ -81,11 +66,18 @@ async function main(): Promise<void> {
   const prefix = resolve(args.prefix ?? resolveInstallPrefixFromEnv());
   assertSafeStandaloneInstallPrefix(prefix, { monorepoRoot: resolveMonorepoRoot(ROOT) });
 
-  console.log(`installing single-file anima → ${prefix}`);
-  installBinary(prefix);
-  const shim = linkBinShim(prefix);
-  console.log(`bin shim → ${shim} -> ${join(prefix, "anima")}`);
-  console.log(`done. Ensure PATH includes ${dirname(shim)} then: anima --version`);
+  const versionId = readAppVersion(ROOT);
+  if (migrateFlatAnimaFileIfNeeded(prefix, versionId)) {
+    console.log(`migrated flat anima → anima_${versionId}`);
+  }
+  console.log(`installing single-file anima → ${prefix} (version ${versionId})`);
+  const result = installVersionedBinary(prefix, STAGING_ANIMA, versionId);
+  console.log(`versioned binary → ${result.versionPath}`);
+  console.log(`current link → ${result.currentLink}`);
+  if (result.pruned.length > 0) {
+    console.log(`pruned old versions: ${result.pruned.join(", ")}`);
+  }
+  console.log(`done. Ensure PATH includes ~/.local/bin then: anima --version`);
 }
 
 await main();

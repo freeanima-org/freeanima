@@ -66,7 +66,7 @@ Two runtime modes — **Linux standalone** (recommended for self-host) or **sour
 ```bash
 # Standalone (Linux x64; no Bun on host)
 curl -fsSL https://freeanima.com/install | bash
-# Ensure ~/.anima/bin is on PATH, then:
+# Ensure ~/.local/bin is on PATH, then:
 anima --version
 
 # Canary / pin:
