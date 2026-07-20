@@ -98,6 +98,37 @@ export type EmailMessageMarkReadInput = z.infer<typeof emailMessageMarkReadInput
 export const emailMessageMarkReadOutputSchema = z.object({ ok: z.literal(true) });
 export type EmailMessageMarkReadOutput = z.infer<typeof emailMessageMarkReadOutputSchema>;
 
+export const emailMessageMarkUnreadInputSchema = emailMessageMarkReadInputSchema;
+export type EmailMessageMarkUnreadInput = z.infer<typeof emailMessageMarkUnreadInputSchema>;
+export const emailMessageMarkUnreadOutputSchema = emailMessageMarkReadOutputSchema;
+export type EmailMessageMarkUnreadOutput = z.infer<typeof emailMessageMarkUnreadOutputSchema>;
+
+export const emailMessageDeleteInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  id: z.number().int().positive(),
+});
+export type EmailMessageDeleteInput = z.infer<typeof emailMessageDeleteInputSchema>;
+export const emailMessageDeleteOutputSchema = z.object({ ok: z.literal(true) });
+export type EmailMessageDeleteOutput = z.infer<typeof emailMessageDeleteOutputSchema>;
+
+export const emailSendInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  account_id: z.number().int().positive().optional(),
+  to: z.string().min(1),
+  subject: z.string(),
+  body: z.string(),
+  cc: z.string().optional(),
+  bcc: z.string().optional(),
+});
+export type EmailSendInput = z.infer<typeof emailSendInputSchema>;
+export const emailSendOutputSchema = z.object({
+  ok: z.literal(true),
+  messageId: z.string(),
+  account_id: z.number().int().positive(),
+  message_entity_id: z.number().int().positive(),
+});
+export type EmailSendOutput = z.infer<typeof emailSendOutputSchema>;
+
 export const emailSyncInputSchema = z.object({
   subject_kind: emailSubjectKindSchema,
   account_id: z.number().int().positive().optional(),

@@ -17,7 +17,8 @@ type EmailAccountSidebarProps = {
   useActionSheet: boolean;
   onSelect: (account: EmailAccountRow) => void;
   onAdd: () => void;
-  onOpenMenu: (account: EmailAccountRow) => void;
+  onEdit: (account: EmailAccountRow) => void;
+  onOpenMenu: (account: EmailAccountRow, e?: MouseEvent) => void;
   onOpenContextMenu: (e: MouseEvent, account: EmailAccountRow) => void;
 };
 
@@ -28,6 +29,7 @@ export function EmailAccountSidebar({
   useActionSheet,
   onSelect,
   onAdd,
+  onEdit,
   onOpenMenu,
   onOpenContextMenu,
 }: EmailAccountSidebarProps) {
@@ -61,13 +63,13 @@ export function EmailAccountSidebar({
                     ? "bg-primary/10 ring-primary/30 ring-1 ring-inset"
                     : ""
                 } ${account.enabled ? "" : "opacity-60"}`}
-                onContextMenu={(e) => onOpenContextMenu(e, account)}
               >
                 <button
                   type="button"
                   className="min-w-0 flex-1 px-3 py-2 text-left text-sm"
                   onClick={() => onSelect(account)}
-                  onDoubleClick={useActionSheet ? undefined : () => onOpenMenu(account)}
+                  onDoubleClick={useActionSheet ? undefined : () => onEdit(account)}
+                  onContextMenu={(e) => onOpenContextMenu(e, account)}
                 >
                   <div className="truncate font-medium">{accountLabel(account)}</div>
                   <div className="text-muted-foreground truncate text-xs">{account.address}</div>
@@ -77,19 +79,22 @@ export function EmailAccountSidebar({
                     </div>
                   ) : null}
                 </button>
-                {useActionSheet ? (
-                  <button
-                    type="button"
-                    className="text-muted-foreground hover:text-foreground flex min-h-11 min-w-11 shrink-0 items-center justify-center"
-                    aria-label={m.email_edit_account()}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onOpenMenu(account);
-                    }}
-                  >
-                    <MoreHorizontal className="size-4" />
-                  </button>
-                ) : null}
+                <button
+                  type="button"
+                  className={`text-muted-foreground hover:text-foreground flex shrink-0 items-center justify-center ${
+                    useActionSheet
+                      ? "min-h-11 min-w-11"
+                      : "min-h-9 min-w-9 opacity-70 group-hover:opacity-100"
+                  }`}
+                  aria-label={m.email_account_actions()}
+                  disabled={writesDisabled}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenMenu(account, e);
+                  }}
+                >
+                  <MoreHorizontal className="size-4" />
+                </button>
               </div>
             </li>
           ))}

@@ -121,6 +121,35 @@ export async function markMessageReadOnImap(messageId: number): Promise<{ ok: tr
   return { ok: true };
 }
 
+export async function markMessageUnreadOnImap(messageId: number): Promise<{ ok: true }> {
+  const message = await getEmailMessageRow(messageId);
+  if (!message) throw new Error(`Email message not found: ${messageId}`);
+  const account = await getEmailAccountRow(message.account_id);
+  if (!account?.enabled) {
+    throw new Error(`Email account not found or disabled: ${message.account_id}`);
+  }
+
+  if (message.imap_uid != null) {
+    await withImapAccount(
+      account,
+      async (client, mailbox) => {
+        const lock = await client.getMailboxLock(mailbox);
+        try {
+          const imapUid = message.imap_uid;
+          if (imapUid == null) return;
+          await client.messageFlagsRemove(imapUid, ["\\Seen"], { uid: true });
+        } finally {
+          lock.release();
+        }
+      },
+      message.imap_mailbox,
+    );
+  }
+
+  await markEmailMessageRead(messageId, true);
+  return { ok: true };
+}
+
 export async function deleteMessageOnImap(messageId: number): Promise<{ ok: true }> {
   const message = await getEmailMessageRow(messageId);
   if (!message) throw new Error(`Email message not found: ${messageId}`);
