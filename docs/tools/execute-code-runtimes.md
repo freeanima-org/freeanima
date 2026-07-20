@@ -14,8 +14,8 @@ title: Execute Code Runtimes
 
 |           | `execute_code`                               | `terminal`                                                               |
 | --------- | -------------------------------------------- | ------------------------------------------------------------------------ |
-| Execution | No shell, fixed runtime                      | Default `shell=false` (argv); `shell=true` needs `FREEANIMA_ALLOW_SHELL` |
-| Best for  | Short scripts, data processing, logic checks | System commands, git, long tasks; pipes only with ALLOW_SHELL            |
+| Execution | No shell, fixed runtime                      | Default `shell=false` (argv); `shell=true` for pipes/redirection         |
+| Best for  | Short scripts, data processing, logic checks | System commands, git, long tasks; pipes need `shell=true`                |
 | Output    | 50KB cap, configurable timeout               | Same limits                                                              |
 | Security  | No shell injection; **not** a FS sandbox     | Catastrophic command hard deny + workdir path policy; still ≠ OS sandbox |
 

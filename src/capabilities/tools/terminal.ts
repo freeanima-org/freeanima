@@ -30,13 +30,6 @@ function resolveWorkdir(workdir?: string | null): string | undefined {
   return workdir.trim();
 }
 
-function requireShellAllowed(): string | null {
-  if (process.env.FREEANIMA_ALLOW_SHELL !== "true") {
-    return "shell=true requires FREEANIMA_ALLOW_SHELL=true (pipes/redirection); default is argv spawn without shell";
-  }
-  return null;
-}
-
 function runForegroundArgv(
   argv: string[],
   timeout: number,
@@ -261,8 +254,6 @@ async function handleTerminal(
   if (deny) return toolError(deny);
 
   if (shell) {
-    const shellDeny = requireShellAllowed();
-    if (shellDeny) return toolError(shellDeny);
     if (background) return runBackgroundShell(command, cwd, env);
     return runForegroundShell(command, timeout, cwd, env);
   }
@@ -285,7 +276,7 @@ export function registerTerminalTools(toolSets: ToolSetRegistry): void {
             "Run a command in a subprocess and return output. Default shell=false (argv spawn, no pipes). " +
             "Optional secrets[] injects vault fields into this subprocess env only (not Hub process.env); " +
             "use argv form e.g. printenv GH_TOKEN or gh … — do not rely on echo $VAR unless shell=true. " +
-            "Set shell=true only when FREEANIMA_ALLOW_SHELL=true. Catastrophic targets (rm -rf /, ~, $HOME, system roots) are always blocked.",
+            "Pass shell=true only when pipes/redirection are needed. Catastrophic targets (rm -rf /, ~, $HOME, system roots) are always blocked.",
           parameters: {
             type: "object",
             properties: {
@@ -301,8 +292,7 @@ export function registerTerminalTools(toolSets: ToolSetRegistry): void {
               shell: {
                 type: "boolean",
                 default: false,
-                description:
-                  "Use a shell (pipes/redirection). Requires FREEANIMA_ALLOW_SHELL=true. Default false.",
+                description: "Use a shell (pipes/redirection). Default false (argv spawn).",
               },
               pty: { type: "boolean", default: false },
               secrets: SECRETS_TOOL_PROPERTY,

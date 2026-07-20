@@ -48,17 +48,17 @@ Disk backup = data access. Protect backup media accordingly.
 
 ## LLM Tool Risks
 
-| Capability                                                 | Risk                                                                                                                                                                                                                                                                                                          |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `terminal_run`                                             | Default `shell: false` (argv spawn). `shell: true` requires `FREEANIMA_ALLOW_SHELL=true`. Optional `secrets[]` decrypts Vault into **that subprocess env only** (not Hub `process.env`). Always-on hard deny for catastrophic targets—**not** an OS sandbox; bypass via `code_execute` / interpreters remains |
-| `file_read` / `file_write` / `file_delete` / `file_search` | Path deny: `/etc`, `/proc`, `/sys`, dangerous `/dev`, `~/.ssh` private keys, `FREEANIMA_HOME/vault`. Heuristic deny ≠ writable-root sandbox                                                                                                                                                                   |
-| `code_execute`                                             | No shell (Bun/Node argv). Optional `secrets[]` same as `terminal_run`. Arbitrary JS can still use `node:fs`—not a container sandbox                                                                                                                                                                           |
-| `browser_type`                                             | Optional `secret` decrypts one Vault field and types it into the page; tool result redacts `typed` as `***` (never plaintext)                                                                                                                                                                                 |
-| MCP tools                                                  | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                                                                                                                                                                                                         |
-| Capability mask (Mask)                                     | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `src/features/task/domain/mask/`                                                                                                                                                                              |
-| ACP (Cursor)                                               | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                                                                                                                                                                                                      |
-| `vault_list` / `vault_search` / `vault_get_meta`           | Vault metadata only; no secret values (MCP-exposed)                                                                                                                                                                                                                                                           |
-| `vault_create` / `vault_update` / `vault_delete`           | Habitat-only (not MCP). create/update seal plaintext into **Agent** library only; tool results are metadata only. User library writes stay in Vault UI                                                                                                                                                        |
+| Capability                                                 | Risk                                                                                                                                                                                                                                                                                                       |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `terminal_run`                                             | Default `shell: false` (argv spawn). Explicit `shell: true` enables pipes/redirection. Optional `secrets[]` decrypts Vault into **that subprocess env only** (not Hub `process.env`). Always-on hard deny for catastrophic targets—**not** an OS sandbox; bypass via `code_execute` / interpreters remains |
+| `file_read` / `file_write` / `file_delete` / `file_search` | Path deny: `/etc`, `/proc`, `/sys`, dangerous `/dev`, `~/.ssh` private keys, `FREEANIMA_HOME/vault`. Heuristic deny ≠ writable-root sandbox                                                                                                                                                                |
+| `code_execute`                                             | No shell (Bun/Node argv). Optional `secrets[]` same as `terminal_run`. Arbitrary JS can still use `node:fs`—not a container sandbox                                                                                                                                                                        |
+| `browser_type`                                             | Optional `secret` decrypts one Vault field and types it into the page; tool result redacts `typed` as `***` (never plaintext)                                                                                                                                                                              |
+| MCP tools                                                  | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                                                                                                                                                                                                      |
+| Capability mask (Mask)                                     | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `src/features/task/domain/mask/`                                                                                                                                                                           |
+| ACP (Cursor)                                               | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                                                                                                                                                                                                   |
+| `vault_list` / `vault_search` / `vault_get_meta`           | Vault metadata only; no secret values (MCP-exposed)                                                                                                                                                                                                                                                        |
+| `vault_create` / `vault_update` / `vault_delete`           | Habitat-only (not MCP). create/update seal plaintext into **Agent** library only; tool results are metadata only. User library writes stay in Vault UI                                                                                                                                                     |
 
 ### Agent vault usage
 
@@ -75,7 +75,7 @@ Disk backup = data access. Protect backup media accordingly.
 | Config API secrets         | Console/Hub config GET returns secrets in cleartext (`api_key`, etc.); MCP `env` still becomes `env_keys` only. Legacy `"***"` on write-back is restored via `restoreMaskedSecrets` |
 | MCP config redaction       | `sanitizeConfigForApi`: MCP `env` → `env_keys` only                                                                                                                                 |
 | File path policy           | Shared `path-policy` for `file_*` tools: `/etc`, vault, ssh private keys, `/proc`/`/sys`, blocked devices                                                                           |
-| Terminal shell default off | `terminal_run` default `shell=false`; pipes need `FREEANIMA_ALLOW_SHELL=true`                                                                                                       |
+| Terminal shell default off | `terminal_run` default `shell=false`; pass `shell=true` only when pipes/redirection are needed (friction, not a sandbox)                                                            |
 | Terminal command hard deny | Always-on catastrophic command policy (`terminal-command-policy`); cannot be disabled via env                                                                                       |
 | Slash commands             | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result                                              |
 | MCP default stdio          | Reduces port exposure                                                                                                                                                               |
@@ -88,17 +88,17 @@ Disk backup = data access. Protect backup media accordingly.
 
 The following are planned in code or docs—**deployers must not assume implemented**:
 
-| Priority | Item                                               | Status                                                        |
-| -------- | -------------------------------------------------- | ------------------------------------------------------------- |
-| P0       | `file_*` path deny (`/etc/`, vault, ssh, …)        | **Implemented** (`path-policy`)                               |
-| P0       | `terminal_run` default `shell=false` + ALLOW_SHELL | **Implemented**                                               |
-| P0       | Terminal catastrophic command hard deny            | **Implemented** (heuristic; ≠ sandbox)                        |
-| P0       | `code_execute` no shell                            | **Implemented** (JS FS still open)                            |
-| P1       | Runtime Unix socket `chmod 600` + handshake token  | Not implemented                                               |
-| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`     | Not implemented                                               |
-| P2       | (retired) Config API field redaction maintenance   | Dropped — secrets not masked; MCP `env_keys` still maintained |
-| P3       | IPC / LLM rate limiting                            | None                                                          |
-| P3       | Session disk encryption                            | None                                                          |
+| Priority | Item                                              | Status                                                        |
+| -------- | ------------------------------------------------- | ------------------------------------------------------------- |
+| P0       | `file_*` path deny (`/etc/`, vault, ssh, …)       | **Implemented** (`path-policy`)                               |
+| P0       | `terminal_run` default `shell=false`              | **Implemented**                                               |
+| P0       | Terminal catastrophic command hard deny           | **Implemented** (heuristic; ≠ sandbox)                        |
+| P0       | `code_execute` no shell                           | **Implemented** (JS FS still open)                            |
+| P1       | Runtime Unix socket `chmod 600` + handshake token | Not implemented                                               |
+| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`    | Not implemented                                               |
+| P2       | (retired) Config API field redaction maintenance  | Dropped — secrets not masked; MCP `env_keys` still maintained |
+| P3       | IPC / LLM rate limiting                           | None                                                          |
+| P3       | Session disk encryption                           | None                                                          |
 
 ## Threat Sources
 
@@ -130,7 +130,7 @@ The following are planned in code or docs—**deployers must not assume implemen
 
 ### P0 — Shell execution + command hard deny (landed)
 
-- `terminal_run` default `shell=false`; `FREEANIMA_ALLOW_SHELL=true` for shell pipes
+- `terminal_run` default `shell=false`; pass `shell=true` only for pipes/redirection (not a sandbox)
 - Always-on deny for catastrophic `rm`/`rmdir`, `mkfs*`, `dd of=/dev/…`, fork bombs, power commands, recursive chmod/chown on `/` or `$HOME`, destructive `find` on system/home roots
 - `code_execute` remains argv-only (no shell); **not** a process sandbox
 
@@ -152,4 +152,4 @@ The following are planned in code or docs—**deployers must not assume implemen
 5. Review `mcp_servers` / `acp_agents` config; set `enabled: false` for untrusted external Servers
 6. Regularly backup `~/.anima/` (and legacy `~/.password-store` if kept); encrypt backup media
 7. Do not commit `.env`, `config.yaml` to git
-8. Keep `FREEANIMA_ALLOW_SHELL` unset unless you intentionally need shell pipes in `terminal_run`
+8. Do not pass `shell=true` on `terminal_run` unless you intentionally need pipes/redirection
