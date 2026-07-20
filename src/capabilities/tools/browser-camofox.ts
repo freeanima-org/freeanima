@@ -453,6 +453,7 @@ export async function camofoxType(
   conversationId: string,
   ref: string,
   text: string,
+  opts?: { redactTyped?: boolean },
 ): Promise<string> {
   try {
     const session = requireTab(conversationId);
@@ -464,7 +465,7 @@ export async function camofoxType(
     });
     return toolResult({
       success: true,
-      typed: text,
+      typed: opts?.redactTyped === true ? "***" : text,
       element: cleanRef,
     });
   } catch (err) {

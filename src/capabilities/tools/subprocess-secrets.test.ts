@@ -29,8 +29,27 @@ mock.module("@freeanima/features/vault/domain/vault-world", () => ({
   defaultVaultSubjectForTools: () => "agent" as const,
 }));
 
-const { parseSecretsArg, resolveSubprocessSecrets } = await import("./subprocess-secrets.ts");
+const { parseSecretArg, parseSecretsArg, resolveSubprocessSecrets, resolveVaultSecretValue } =
+  await import("./subprocess-secrets.ts");
 const { buildSubprocessEnv } = await import("./subprocess-env.ts");
+
+describe("parseSecretArg", () => {
+  it("returns null for nullish", () => {
+    expect(parseSecretArg(undefined)).toBeNull();
+    expect(parseSecretArg(null)).toBeNull();
+  });
+
+  it("rejects non-object", () => {
+    const out = parseSecretArg([]);
+    expect(typeof out).toBe("string");
+    expect(out).toContain("secret must be an object");
+  });
+
+  it("parses ref with defaults", () => {
+    const out = parseSecretArg({ id: 12 });
+    expect(out).toEqual({ id: 12, subject_kind: "agent" });
+  });
+});
 
 describe("parseSecretsArg", () => {
   it("returns empty array for nullish", () => {
@@ -55,6 +74,22 @@ describe("parseSecretsArg", () => {
         subject_kind: "agent",
       },
     ]);
+  });
+});
+
+describe("resolveVaultSecretValue", () => {
+  beforeEach(() => {
+    resolveAgentVaultSecretMock.mockClear();
+    resolveUserVaultSecretMock.mockClear();
+    resolveVaultToolWorldMock.mockClear();
+    resolveAgentVaultSecretMock.mockImplementation(async () => "secret-value-xyz");
+    resolveVaultToolWorldMock.mockImplementation(async () => 1);
+  });
+
+  it("resolves agent secret without writing Hub process.env", async () => {
+    const resolved = await resolveVaultSecretValue({ id: 99, subject_kind: "agent" });
+    expect(resolved).toEqual({ value: "secret-value-xyz" });
+    expect(resolveAgentVaultSecretMock).toHaveBeenCalled();
   });
 });
 

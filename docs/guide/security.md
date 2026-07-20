@@ -26,15 +26,15 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 | User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                     |
 | Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                              |
 
-`config.yaml` supports `vault("item_id", "field")` (Agent library, Hub headless) and `env("KEY")` for secrets; values are injected at runtime. Agent tools that need CLI credentials pass per-call `secrets[]` on `terminal_run` / `code_execute` (child env only). User-library resolution still requires an unlocked Chat session on the client.
+`config.yaml` supports `vault("item_id", "field")` (Agent library, Hub headless) and `env("KEY")` for secrets; values are injected at runtime. Agent tools that need CLI credentials pass per-call `secrets[]` on `terminal_run` / `code_execute` (child env only). Browser form fields use `browser_type` `secret` (typed into the page; never echoed in tool results). User-library resolution still requires an unlocked Chat session on the client.
 
 ### Vault trust boundaries
 
-| Surface | User library                          | Agent library                         |
-| ------- | ------------------------------------- | ------------------------------------- |
-| Hub PG  | Ciphertext + verifier only            | Ciphertext + machine key file on disk |
-| LLM     | Metadata only; subprocess `secrets[]` | Metadata only; subprocess `secrets[]` |
-| Shell   | Client master key in memory           | Hub decrypt over loopback SAP         |
+| Surface | User library                                                    | Agent library                                                   |
+| ------- | --------------------------------------------------------------- | --------------------------------------------------------------- |
+| Hub PG  | Ciphertext + verifier only                                      | Ciphertext + machine key file on disk                           |
+| LLM     | Metadata only; subprocess `secrets[]` / `browser_type` `secret` | Metadata only; subprocess `secrets[]` / `browser_type` `secret` |
+| Shell   | Client master key in memory                                     | Hub decrypt over loopback SAP                                   |
 
 ## Data Persistence
 
@@ -53,6 +53,7 @@ Disk backup = data access. Protect backup media accordingly.
 | `terminal_run`                                             | Default `shell: false` (argv spawn). `shell: true` requires `FREEANIMA_ALLOW_SHELL=true`. Optional `secrets[]` decrypts Vault into **that subprocess env only** (not Hub `process.env`). Always-on hard deny for catastrophic targets—**not** an OS sandbox; bypass via `code_execute` / interpreters remains |
 | `file_read` / `file_write` / `file_delete` / `file_search` | Path deny: `/etc`, `/proc`, `/sys`, dangerous `/dev`, `~/.ssh` private keys, `FREEANIMA_HOME/vault`. Heuristic deny ≠ writable-root sandbox                                                                                                                                                                   |
 | `code_execute`                                             | No shell (Bun/Node argv). Optional `secrets[]` same as `terminal_run`. Arbitrary JS can still use `node:fs`—not a container sandbox                                                                                                                                                                           |
+| `browser_type`                                             | Optional `secret` decrypts one Vault field and types it into the page; tool result redacts `typed` as `***` (never plaintext)                                                                                                                                                                                 |
 | MCP tools                                                  | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                                                                                                                                                                                                         |
 | Capability mask (Mask)                                     | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `src/features/task/domain/mask/`                                                                                                                                                                              |
 | ACP (Cursor)                                               | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                                                                                                                                                                                                      |
@@ -63,8 +64,8 @@ Disk backup = data access. Protect backup media accordingly.
 
 1. **Discover** — `vault_list` / `vault_search` / `vault_get_meta` (metadata only; never plaintext in tool results).
 2. **Write (Agent library)** — `vault_create` / `vault_update` / `vault_delete` in Habitat chat only (not MCP). create/update accept plaintext `secrets` to seal on Hub; results return metadata only. User library: Vault UI.
-3. **Use** — pass `secrets: [{ id, env_name, field?, subject_kind? }]` on the same `terminal_run` or `code_execute` call that needs the credential (e.g. `GH_TOKEN` for `gh`).
-4. **Scope** — plaintext is decrypted for that spawn only and merged into the child `env`; it is **not** written to Hub `process.env`. Default `shell=false`: use argv form (`printenv GH_TOKEN`, `gh …`), not `echo $VAR`.
+3. **Use** — pass `secrets: [{ id, env_name, field?, subject_kind? }]` on the same `terminal_run` or `code_execute` call that needs the credential (e.g. `GH_TOKEN` for `gh`); or `secret: { id, field?, subject_kind? }` on `browser_type` for form fields.
+4. **Scope** — plaintext is decrypted for that call only (`secrets[]` → child `env`; `browser_type` `secret` → Camofox type payload). It is **not** written to Hub `process.env` and **not** returned in tool results. Default `shell=false`: use argv form (`printenv GH_TOKEN`, `gh …`), not `echo $VAR`.
 
 ## Measures in Place
 
@@ -118,7 +119,7 @@ The following are planned in code or docs—**deployers must not assume implemen
 | **CLI / Tools**    | Local shell compromised                                    | path deny + terminal hard deny (bypass via `code_execute` possible) | Reduced catastrophic rm   | —                  | Logs may contain conversations     |
 | **HTTP / Console** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
 | **MCP / ACP**      | SSE auth undefined                                         | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |
-| **Vault**          | Agent machine key file permissions                         | Metadata-only tools; per-call `secrets[]` on subprocess tools       | Wrong item / env_name     | Web Crypto         | User MP never in PG messages       |
+| **Vault**          | Agent machine key file permissions                         | Metadata-only tools; per-call `secrets[]` / `browser_type` `secret` | Wrong item / env_name     | Web Crypto         | User MP never in PG messages       |
 
 ## Proposals Pending Review
 
