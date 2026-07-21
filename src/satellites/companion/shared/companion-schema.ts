@@ -74,7 +74,9 @@ export function defaultMotionSlotsFromManifest(): MotionSlotsConfig {
 }
 
 export type CompanionConfigV2 = {
-  hub_url: string;
+  habitat_url: string;
+  /** @deprecated 0.9.3 后删除 — 请用 habitat_url */
+  hub_url?: string;
   model_path?: string;
   active_model_id: string;
   models: ModelEntry[];

@@ -24,7 +24,7 @@ import { z } from "zod";
 
 import {
   binaryHttpMeta,
-  defineHubMethod,
+  defineHabitatMethod,
   dualTransportMeta,
 } from "@freeanima/shared/habitat-contract";
 
@@ -36,57 +36,57 @@ const companionAssetGetInputSchema = z.object({
 const companionUploadOkOutputSchema = z.object({ ok: z.literal(true) });
 
 export const companionMethodDefs = {
-  "companion.config.get": defineHubMethod({
+  "companion.config.get": defineHabitatMethod({
     input: companionConfigGetInputSchema,
     output: companionConfigGetOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "companion.config.update": defineHubMethod({
+  "companion.config.update": defineHabitatMethod({
     input: companionConfigUpdateInputSchema,
     output: companionConfigUpdateOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "companion.model.setActive": defineHubMethod({
+  "companion.model.setActive": defineHabitatMethod({
     input: companionModelSetActiveInputSchema,
     output: companionModelSetActiveOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "companion.model.rename": defineHubMethod({
+  "companion.model.rename": defineHabitatMethod({
     input: companionModelRenameInputSchema,
     output: companionModelRenameOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "companion.model.delete": defineHubMethod({
+  "companion.model.delete": defineHabitatMethod({
     input: companionModelDeleteInputSchema,
     output: companionModelDeleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "companion.motion.setSlot": defineHubMethod({
+  "companion.motion.setSlot": defineHabitatMethod({
     input: companionMotionSetSlotInputSchema,
     output: companionMotionSetSlotOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "companion.motion.rename": defineHubMethod({
+  "companion.motion.rename": defineHabitatMethod({
     input: companionMotionRenameInputSchema,
     output: companionMotionRenameOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "companion.motion.delete": defineHubMethod({
+  "companion.motion.delete": defineHabitatMethod({
     input: companionMotionDeleteInputSchema,
     output: companionMotionDeleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "companion.migrate.fromLocal": defineHubMethod({
+  "companion.migrate.fromLocal": defineHabitatMethod({
     input: companionMigrateFromLocalInputSchema,
     output: companionMigrateFromLocalOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "companion.sync.pull": defineHubMethod({
+  "companion.sync.pull": defineHabitatMethod({
     input: companionSyncPullInputSchema,
     output: companionSyncPullOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "companion.asset.get": defineHubMethod({
+  "companion.asset.get": defineHabitatMethod({
     input: companionAssetGetInputSchema,
     output: z.record(z.string(), z.unknown()),
     meta: binaryHttpMeta({
@@ -96,7 +96,7 @@ export const companionMethodDefs = {
       response: "raw",
     }),
   }),
-  "companion.model.upload": defineHubMethod({
+  "companion.model.upload": defineHabitatMethod({
     input: emptyInputSchema,
     output: companionUploadOkOutputSchema,
     meta: binaryHttpMeta({
@@ -105,7 +105,7 @@ export const companionMethodDefs = {
       request: "multipart",
     }),
   }),
-  "companion.motion.import": defineHubMethod({
+  "companion.motion.import": defineHabitatMethod({
     input: emptyInputSchema,
     output: z.record(z.string(), z.unknown()),
     meta: binaryHttpMeta({

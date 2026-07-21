@@ -5,10 +5,14 @@ import {
   HABITAT_RPC_DEFAULT_REQUEST_TIMEOUT_MS,
 } from "./constants.ts";
 import { HabitatRpcTimeoutError } from "./errors.ts";
-import type { HubRpcConnectPayload, HubRpcConnectedPayload } from "./lifecycle.ts";
-import { hubRpcConnectPayloadSchema } from "./lifecycle.ts";
-import type { HubRpcEnvelope } from "./protocol.ts";
-import { parseHubRpcEnvelope, serializeHubRpcEnvelope } from "./protocol.ts";
+import type { HabitatRpcConnectPayload, HabitatRpcConnectedPayload } from "./lifecycle.ts";
+import { habitatRpcConnectPayloadSchema } from "./lifecycle.ts";
+import type { HabitatRpcEnvelope } from "./protocol.ts";
+import {
+  HABITAT_RPC_VERSION,
+  parseHabitatRpcEnvelope,
+  serializeHabitatRpcEnvelope,
+} from "./protocol.ts";
 
 type PendingRequest = {
   resolve: (value: unknown) => void;
@@ -24,7 +28,7 @@ export type RpcRequestOptions = {
 export type RpcRequestHandler = (payload: unknown) => unknown | Promise<unknown>;
 
 export type RpcClient = {
-  connect(payload: Omit<HubRpcConnectPayload, "protocol">): Promise<HubRpcConnectedPayload>;
+  connect(payload: Omit<HabitatRpcConnectPayload, "protocol">): Promise<HabitatRpcConnectedPayload>;
   request<T = unknown>(method: string, payload?: unknown, opts?: RpcRequestOptions): Promise<T>;
   onEvent(method: string, handler: (payload: unknown) => void): () => void;
   onRequest(method: string, handler: RpcRequestHandler): () => void;
@@ -33,7 +37,7 @@ export type RpcClient = {
 
 export type CreateRpcClientOptions = {
   ws: WebSocket;
-  onConnected?: (payload: HubRpcConnectedPayload) => void;
+  onConnected?: (payload: HabitatRpcConnectedPayload) => void;
   onDisconnected?: () => void;
   /** 全局 Habitat→Client 请求处理器（与 {@link RpcClient.onRequest} 二选一或并存） */
   onRequest?: (req: { id: string; method: string; payload: unknown }) => unknown | Promise<unknown>;
@@ -74,11 +78,11 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
   const eventHandlers = new Map<string, Set<(payload: unknown) => void>>();
   const requestHandlers = new Map<string, Set<RpcRequestHandler>>();
 
-  const send = (envelope: HubRpcEnvelope): void => {
-    ws.send(serializeHubRpcEnvelope(envelope));
+  const send = (envelope: HabitatRpcEnvelope): void => {
+    ws.send(serializeHabitatRpcEnvelope(envelope));
   };
 
-  const dispatchEnvelope = (envelope: HubRpcEnvelope): void => {
+  const dispatchEnvelope = (envelope: HabitatRpcEnvelope): void => {
     if (envelope.kind === "req") {
       const onRequest = options.onRequest;
       if (onRequest) {
@@ -96,7 +100,7 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
               id: envelope.id,
               ok: false,
               error: {
-                code: "hub_rpc_error",
+                code: "habitat_rpc_error",
                 message: e instanceof Error ? e.message : String(e),
               },
             });
@@ -119,7 +123,7 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
             id: envelope.id,
             ok: false,
             error: {
-              code: "hub_rpc_error",
+              code: "habitat_rpc_error",
               message: e instanceof Error ? e.message : String(e),
             },
           });
@@ -140,7 +144,7 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
       return;
     }
     if (envelope.kind === "connected") {
-      options.onConnected?.(envelope.payload as HubRpcConnectedPayload);
+      options.onConnected?.(envelope.payload as HabitatRpcConnectedPayload);
       return;
     }
     if (envelope.kind === "evt") {
@@ -155,7 +159,7 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
   ws.addEventListener("message", (ev) => {
     if (typeof ev.data !== "string") return;
     try {
-      dispatchEnvelope(parseHubRpcEnvelope(ev.data));
+      dispatchEnvelope(parseHabitatRpcEnvelope(ev.data));
     } catch {
       // ignore malformed frames in client
     }
@@ -172,10 +176,13 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
 
   return {
     async connect(
-      payload: Omit<HubRpcConnectPayload, "protocol">,
-    ): Promise<HubRpcConnectedPayload> {
-      const body = hubRpcConnectPayloadSchema.parse({ ...payload, protocol: "HubRPC/1.0" });
-      const connectPromise = new Promise<HubRpcConnectedPayload>((resolve, reject) => {
+      payload: Omit<HabitatRpcConnectPayload, "protocol">,
+    ): Promise<HabitatRpcConnectedPayload> {
+      const body = habitatRpcConnectPayloadSchema.parse({
+        ...payload,
+        protocol: HABITAT_RPC_VERSION,
+      });
+      const connectPromise = new Promise<HabitatRpcConnectedPayload>((resolve, reject) => {
         const cleanup = (): void => {
           ws.removeEventListener("message", onMessage);
           ws.removeEventListener("close", onClose);
@@ -183,10 +190,10 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
         const onMessage = (ev: MessageEvent): void => {
           if (typeof ev.data !== "string") return;
           try {
-            const envelope = parseHubRpcEnvelope(ev.data);
+            const envelope = parseHabitatRpcEnvelope(ev.data);
             if (envelope.kind === "connected") {
               cleanup();
-              const connected = envelope.payload as HubRpcConnectedPayload;
+              const connected = envelope.payload as HabitatRpcConnectedPayload;
               options.onConnected?.(connected);
               resolve(connected);
             }

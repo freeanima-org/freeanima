@@ -17,7 +17,10 @@ import {
   sapAttachPayloadSchema,
 } from "@freeanima/shared/sap-contract/frames/sap-session";
 import { wsOnlyMeta } from "@freeanima/shared/habitat-contract";
-import { defineHubRoute, mergeFeatureRoutes } from "@freeanima/shared/habitat-contract/route.ts";
+import {
+  defineHabitatRoute,
+  mergeFeatureRoutes,
+} from "@freeanima/shared/habitat-contract/route.ts";
 import type { SapRequestContext } from "@freeanima/shared/sap-contract";
 import { z } from "zod";
 
@@ -41,7 +44,7 @@ function ctxOf(ctx: unknown): SapRequestContext {
 }
 
 export const wsOnlyHubRoutes = mergeFeatureRoutes([
-  defineHubRoute({
+  defineHabitatRoute({
     method: "sap.attach",
     input: sapAttachPayloadSchema,
     output: sapAttachOutputSchema,
@@ -50,7 +53,7 @@ export const wsOnlyHubRoutes = mergeFeatureRoutes([
       throw new Error("sap.attach is handled by Habitat RPC transport layer");
     },
   }),
-  defineHubRoute({
+  defineHabitatRoute({
     method: "sap.detach",
     input: sapDetachInputSchema,
     output: okSchema,
@@ -59,7 +62,7 @@ export const wsOnlyHubRoutes = mergeFeatureRoutes([
       throw new Error("sap.detach is handled by Habitat RPC transport layer");
     },
   }),
-  defineHubRoute({
+  defineHabitatRoute({
     method: "tool.register",
     input: toolRegisterInputSchema,
     output: toolRegisterOutputSchema,
@@ -75,7 +78,7 @@ export const wsOnlyHubRoutes = mergeFeatureRoutes([
       return { registered };
     },
   }),
-  defineHubRoute({
+  defineHabitatRoute({
     method: "tool.unregister",
     input: toolUnregisterInputSchema,
     output: okSchema,
@@ -90,7 +93,7 @@ export const wsOnlyHubRoutes = mergeFeatureRoutes([
       return { ok: true as const };
     },
   }),
-  defineHubRoute({
+  defineHabitatRoute({
     method: "tool.result",
     input: toolResultInputSchema,
     output: okSchema,
@@ -100,7 +103,7 @@ export const wsOnlyHubRoutes = mergeFeatureRoutes([
       return { ok: true as const };
     },
   }),
-  defineHubRoute({
+  defineHabitatRoute({
     method: "tool.error",
     input: toolErrorInputSchema,
     output: okSchema,
@@ -110,7 +113,7 @@ export const wsOnlyHubRoutes = mergeFeatureRoutes([
       return { ok: true as const };
     },
   }),
-  defineHubRoute({
+  defineHabitatRoute({
     method: "terminal.attach",
     input: terminalAttachInputSchema,
     output: terminalAttachOutputSchema,
@@ -129,7 +132,7 @@ export const wsOnlyHubRoutes = mergeFeatureRoutes([
       return { terminal_id: conversationId };
     },
   }),
-  defineHubRoute({
+  defineHabitatRoute({
     method: "terminal.write",
     input: terminalWriteInputSchema,
     output: okSchema,
@@ -141,7 +144,7 @@ export const wsOnlyHubRoutes = mergeFeatureRoutes([
       return { ok: true as const };
     },
   }),
-  defineHubRoute({
+  defineHabitatRoute({
     method: "terminal.resize",
     input: terminalResizeInputSchema,
     output: okSchema,
@@ -153,7 +156,7 @@ export const wsOnlyHubRoutes = mergeFeatureRoutes([
       return { ok: true as const };
     },
   }),
-  defineHubRoute({
+  defineHabitatRoute({
     method: "terminal.close",
     input: terminalCloseInputSchema,
     output: okSchema,

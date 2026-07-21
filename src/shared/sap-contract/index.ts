@@ -2,9 +2,12 @@ export {
   SAP_VERSION,
   parseSapEnvelope,
   serializeSapEnvelope,
+  habitatRpcConnectPayloadSchema,
+  habitatRpcConnectedPayloadSchema,
   hubRpcConnectPayloadSchema,
   hubRpcConnectedPayloadSchema,
   HABITAT_RPC_VERSION,
+  HABITAT_RPC_VERSION_LEGACY,
 } from "./protocol.ts";
 export type { SapEnvelope, SapError } from "./protocol.ts";
 export { randomUuid } from "@freeanima/kernel/random-uuid.ts";
@@ -569,6 +572,7 @@ export {
 export type { CreateSapRelayClientOptions, SapRelayClient } from "./relay-client.ts";
 
 export {
+  createSatelliteHabitatAttach,
   createSatelliteHub,
   type CreateSatelliteHubOptions,
   type SatelliteHubHandle,

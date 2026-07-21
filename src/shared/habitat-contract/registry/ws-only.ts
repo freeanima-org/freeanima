@@ -18,58 +18,58 @@ import {
 } from "@freeanima/shared/sap-contract/frames/terminal";
 import { z } from "zod";
 
-import { defineHubMethod, wsOnlyMeta } from "../method-def.ts";
+import { defineHabitatMethod, wsOnlyMeta } from "../method-def.ts";
 
 const okSchema = z.object({ ok: z.literal(true) });
 const sapDetachInputSchema = z.object({}).strict();
 
 export const wsOnlyMethodDefs = {
-  "sap.attach": defineHubMethod({
+  "sap.attach": defineHabitatMethod({
     input: sapAttachPayloadSchema,
     output: sapAttachOutputSchema,
     meta: wsOnlyMeta(),
   }),
-  "sap.detach": defineHubMethod({
+  "sap.detach": defineHabitatMethod({
     input: sapDetachInputSchema,
     output: okSchema,
     meta: wsOnlyMeta(),
   }),
-  "tool.register": defineHubMethod({
+  "tool.register": defineHabitatMethod({
     input: toolRegisterInputSchema,
     output: toolRegisterOutputSchema,
     meta: wsOnlyMeta(),
   }),
-  "tool.unregister": defineHubMethod({
+  "tool.unregister": defineHabitatMethod({
     input: toolUnregisterInputSchema,
     output: okSchema,
     meta: wsOnlyMeta(),
   }),
-  "tool.result": defineHubMethod({
+  "tool.result": defineHabitatMethod({
     input: toolResultInputSchema,
     output: okSchema,
     meta: wsOnlyMeta(),
   }),
-  "tool.error": defineHubMethod({
+  "tool.error": defineHabitatMethod({
     input: toolErrorInputSchema,
     output: okSchema,
     meta: wsOnlyMeta(),
   }),
-  "terminal.attach": defineHubMethod({
+  "terminal.attach": defineHabitatMethod({
     input: terminalAttachInputSchema,
     output: terminalAttachOutputSchema,
     meta: wsOnlyMeta(),
   }),
-  "terminal.write": defineHubMethod({
+  "terminal.write": defineHabitatMethod({
     input: terminalWriteInputSchema,
     output: okSchema,
     meta: wsOnlyMeta(),
   }),
-  "terminal.resize": defineHubMethod({
+  "terminal.resize": defineHabitatMethod({
     input: terminalResizeInputSchema,
     output: okSchema,
     meta: wsOnlyMeta(),
   }),
-  "terminal.close": defineHubMethod({
+  "terminal.close": defineHabitatMethod({
     input: terminalCloseInputSchema,
     output: okSchema,
     meta: wsOnlyMeta(),

@@ -4,5 +4,5 @@ export const vaultPlugin = {
   shell: {
     routes: [{ path: "/vault", featureId: "vault", navLabel: "Vault" }],
   },
-  hub: {},
+  habitat: {},
 } as const;

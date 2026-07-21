@@ -7,22 +7,22 @@ import {
 } from "@freeanima/shared/sap-contract/frames/notification";
 import { z } from "zod";
 
-import { defineHubMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
+import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
 
 const emptyInputSchema = z.object({}).passthrough();
 
 export const notificationMethodDefs = {
-  "notification.list": defineHubMethod({
+  "notification.list": defineHabitatMethod({
     input: notificationListInputSchema,
     output: notificationListOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "notification.markRead": defineHubMethod({
+  "notification.markRead": defineHabitatMethod({
     input: notificationMarkReadInputSchema,
     output: notificationMarkReadOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "notification.recipients": defineHubMethod({
+  "notification.recipients": defineHabitatMethod({
     input: emptyInputSchema,
     output: notificationRecipientsOutputSchema,
     meta: dualTransportMeta(true),

@@ -61,7 +61,7 @@ export type TaskListRow = {
 
 export type TaskItemRow = TaskItemRowPayload;
 
-function hub() {
+function habitat() {
   return getTypedSatelliteHabitatClient();
 }
 
@@ -75,7 +75,7 @@ export async function fetchTaskLists(opts?: { includeClosed?: boolean }): Promis
     return (await readCachedTaskLists(scope)) ?? [];
   }
   try {
-    const data = await hub().call(
+    const data = await habitat().call(
       "tasklist.list",
       withSubjectKind({ include_closed: opts?.includeClosed }),
     );
@@ -91,7 +91,7 @@ export async function fetchTaskListStats(opts?: {
   includeClosed?: boolean;
 }): Promise<Map<number, number>> {
   if (!isHabitatFetchAvailable()) return new Map();
-  const data = await hub().call(
+  const data = await habitat().call(
     "tasklist.stats",
     withSubjectKind({ include_closed: opts?.includeClosed }),
   );
@@ -100,7 +100,7 @@ export async function fetchTaskListStats(opts?: {
 
 export async function fetchSmartListStats(): Promise<Map<string, number>> {
   if (!isHabitatFetchAvailable()) return new Map();
-  const data = await hub().call("smartlist.stats", withSubjectKind({}));
+  const data = await habitat().call("smartlist.stats", withSubjectKind({}));
   const map = new Map<string, number>();
   for (const row of data.counts) {
     if (row.preset != null) map.set(row.preset, row.item_count);
@@ -149,7 +149,7 @@ export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
     return normalizeTaskItemRows(await readCachedTaskItems(scope, listId));
   }
   try {
-    const data = await hub().call(
+    const data = await habitat().call(
       "tasklist.item.list",
       withSubjectKind({ list_id: listId, status: "all" }),
     );
@@ -166,7 +166,7 @@ export async function fetchTaskItemsByFilters(
   filters: TaskItemSearchFilters,
 ): Promise<TaskItemRow[]> {
   if (!isHabitatFetchAvailable()) return [];
-  const data = await hub().call("tasklist.item.list", withSubjectKind({ filters }));
+  const data = await habitat().call("tasklist.item.list", withSubjectKind({ filters }));
   const items = normalizeTaskItemRows(data.items);
   void seedLocalTaskItems(items);
   return items;
@@ -175,7 +175,7 @@ export async function fetchTaskItemsByFilters(
 /** Resolve a single task by id (best-effort list scan; used by Anima URI overlay). */
 export async function fetchTaskItemById(id: number): Promise<TaskItemRow | null> {
   if (!isHabitatFetchAvailable()) return null;
-  const data = await hub().call(
+  const data = await habitat().call(
     "tasklist.item.list",
     withSubjectKind({ status: "all", limit: 200 }),
   );
@@ -187,7 +187,7 @@ export async function fetchTaskItemById(id: number): Promise<TaskItemRow | null>
 
 export async function fetchSmartLists(): Promise<SmartListRow[]> {
   if (!isHabitatFetchAvailable()) return [];
-  const data = await hub().call("smartlist.list", withSubjectKind({}));
+  const data = await habitat().call("smartlist.list", withSubjectKind({}));
   return data.smart_lists;
 }
 
@@ -196,7 +196,7 @@ export async function createSmartList(input: {
   filters: TaskItemSearchFilters;
   sort_order?: number;
 }): Promise<SmartListRow> {
-  const data = await hub().call("smartlist.create", withSubjectKind(input));
+  const data = await habitat().call("smartlist.create", withSubjectKind(input));
   return data.item;
 }
 
@@ -204,12 +204,12 @@ export async function updateSmartList(
   id: number,
   patch: { title?: string; filters?: TaskItemSearchFilters; sort_order?: number },
 ): Promise<SmartListRow> {
-  const data = await hub().call("smartlist.patch", withSubjectKind({ id, ...patch }));
+  const data = await habitat().call("smartlist.patch", withSubjectKind({ id, ...patch }));
   return data.item;
 }
 
 export async function deleteSmartList(id: number): Promise<void> {
-  await hub().call("smartlist.delete", withSubjectKind({ id }));
+  await habitat().call("smartlist.delete", withSubjectKind({ id }));
 }
 
 export async function searchTaskItems(input: {
@@ -219,7 +219,7 @@ export async function searchTaskItems(input: {
   status?: "pending" | "completed" | "all";
   limit?: number;
 }): Promise<TaskItemRow[]> {
-  const data = await hub().call(
+  const data = await habitat().call(
     "task.search",
     withSubjectKind({
       query: input.query,
@@ -285,7 +285,7 @@ export async function moveTaskItemToProject(
 export type ProjectPickerRow = { id: number; title: string; status: string };
 
 export async function fetchProjectsForMove(): Promise<ProjectPickerRow[]> {
-  const data = await hub().call("project.list", withSubjectKind({}));
+  const data = await habitat().call("project.list", withSubjectKind({}));
   return data.projects.map((p) => ({ id: p.id, title: p.title, status: p.status }));
 }
 

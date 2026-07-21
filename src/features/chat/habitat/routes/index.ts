@@ -4,7 +4,7 @@ import { omitUndefined } from "@freeanima/core/util";
 import { getLastMessageRole, getMaxMessagePos } from "@freeanima/core/db/pg/conversation";
 import { getConversationUpdatedAt } from "@freeanima/core/db/pg/conversation/repos/conversation-repo.ts";
 import type { SapServerDeps } from "@freeanima/platform/sap/types";
-import { bindHubRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 import type { SapRouterOutputs } from "@freeanima/shared/sap-contract";
 import {
   formatSapPlatform,
@@ -45,7 +45,7 @@ async function loadServiceStatus() {
   return import("@freeanima/platform/runtime/service-status");
 }
 
-export const chatHubRoutes = bindHubRouteHandlers(chatMethodDefs, {
+export const chatHubRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
   "conversation.create": async (deps, input, ctx) => {
     const sapCtx = ctxOf(ctx);
     const platform = input.platform ?? formatSapPlatform(sapCtx.app_id, sapCtx.instance_id);

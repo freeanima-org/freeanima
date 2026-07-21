@@ -1,34 +1,47 @@
 import type { z } from "zod";
 
-import type { HubMethodDef } from "./method-def.ts";
+import type { HabitatMethodDef, HubMethodDef } from "./method-def.ts";
 
 /** 单条 Habitat route：schema + meta + handler 同位 */
-export type HubRouteBundle<
+export type HabitatRouteBundle<
   M extends string = string,
   I extends z.ZodTypeAny = z.ZodTypeAny,
   O extends z.ZodTypeAny = z.ZodTypeAny,
 > = {
   method: M;
-  def: HubMethodDef<I, O>;
-  handler: HubRouteHandler<I, O>;
+  def: HabitatMethodDef<I, O>;
+  handler: HabitatRouteHandler<I, O>;
 };
 
-export type HubRouteHandler<I extends z.ZodTypeAny, O extends z.ZodTypeAny> = (
+/** @deprecated 0.9.3 后删除 — 请用 HabitatRouteBundle */
+export type HubRouteBundle<
+  M extends string = string,
+  I extends z.ZodTypeAny = z.ZodTypeAny,
+  O extends z.ZodTypeAny = z.ZodTypeAny,
+> = HabitatRouteBundle<M, I, O>;
+
+export type HabitatRouteHandler<I extends z.ZodTypeAny, O extends z.ZodTypeAny> = (
   deps: unknown,
   input: z.infer<I>,
   ctx: unknown,
 ) => Promise<z.infer<O>>;
 
+/** @deprecated 0.9.3 后删除 — 请用 HabitatRouteHandler */
+export type HubRouteHandler<I extends z.ZodTypeAny, O extends z.ZodTypeAny> = HabitatRouteHandler<
+  I,
+  O
+>;
+
 export type FeatureRouteBundle = {
-  handlers: Record<string, HubRouteHandler<z.ZodTypeAny, z.ZodTypeAny>>;
-  defs: Record<string, HubMethodDef>;
+  handlers: Record<string, HabitatRouteHandler<z.ZodTypeAny, z.ZodTypeAny>>;
+  defs: Record<string, HabitatMethodDef>;
 };
 
-type RouteBundleDefs<R extends readonly HubRouteBundle[]> = {
+type RouteBundleDefs<R extends readonly HabitatRouteBundle[]> = {
   [K in R[number]["method"]]: Extract<R[number], { method: K }>["def"];
 };
 
-type RouteBundleHandlers<R extends readonly HubRouteBundle[]> = {
+type RouteBundleHandlers<R extends readonly HabitatRouteBundle[]> = {
   [K in R[number]["method"]]: Extract<R[number], { method: K }>["handler"];
 };
 
@@ -42,7 +55,7 @@ export type MergedRouteBundle<B extends readonly FeatureRouteBundle[]> = B exten
     }
   : { handlers: Record<string, never>; defs: Record<string, never> };
 
-export function defineHubRoute<
+export function defineHabitatRoute<
   const M extends string,
   I extends z.ZodTypeAny,
   O extends z.ZodTypeAny,
@@ -50,9 +63,9 @@ export function defineHubRoute<
   method: M;
   input: I;
   output: O;
-  meta: HubMethodDef<I, O>["meta"];
-  handler: HubRouteHandler<I, O>;
-}): HubRouteBundle<M, I, O> {
+  meta: HabitatMethodDef<I, O>["meta"];
+  handler: HabitatRouteHandler<I, O>;
+}): HabitatRouteBundle<M, I, O> {
   return {
     method: def.method,
     def: {
@@ -64,7 +77,10 @@ export function defineHubRoute<
   };
 }
 
-export function mergeFeatureRoutes<const R extends readonly HubRouteBundle[]>(
+/** @deprecated 0.9.3 后删除 — 请用 defineHabitatRoute */
+export const defineHubRoute = defineHabitatRoute;
+
+export function mergeFeatureRoutes<const R extends readonly HabitatRouteBundle[]>(
   routes: R,
 ): {
   handlers: RouteBundleHandlers<R>;
@@ -75,9 +91,9 @@ export function mergeFeatureRoutes<const R extends readonly HubRouteBundle[]>(
 
   for (const route of routes) {
     if (handlers[route.method] !== undefined) {
-      throw new Error(`duplicate hub route in feature bundle: ${route.method}`);
+      throw new Error(`duplicate habitat route in feature bundle: ${route.method}`);
     }
-    handlers[route.method] = route.handler as HubRouteHandler<z.ZodTypeAny, z.ZodTypeAny>;
+    handlers[route.method] = route.handler as HabitatRouteHandler<z.ZodTypeAny, z.ZodTypeAny>;
     defs[route.method] = route.def;
   }
 
@@ -87,7 +103,7 @@ export function mergeFeatureRoutes<const R extends readonly HubRouteBundle[]>(
   };
 }
 
-export function mergeHubRouteBundles<const B extends readonly FeatureRouteBundle[]>(
+export function mergeHabitatRouteBundles<const B extends readonly FeatureRouteBundle[]>(
   bundles: B,
 ): MergedRouteBundle<B> {
   const handlers: FeatureRouteBundle["handlers"] = {};
@@ -96,13 +112,13 @@ export function mergeHubRouteBundles<const B extends readonly FeatureRouteBundle
   for (const bundle of bundles) {
     for (const [method, handler] of Object.entries(bundle.handlers)) {
       if (handlers[method] !== undefined) {
-        throw new Error(`duplicate hub route handler: ${method}`);
+        throw new Error(`duplicate habitat route handler: ${method}`);
       }
       handlers[method] = handler;
     }
     for (const [method, def] of Object.entries(bundle.defs)) {
       if (defs[method] !== undefined) {
-        throw new Error(`duplicate hub route def: ${method}`);
+        throw new Error(`duplicate habitat route def: ${method}`);
       }
       defs[method] = def;
     }
@@ -111,12 +127,15 @@ export function mergeHubRouteBundles<const B extends readonly FeatureRouteBundle
   return { handlers, defs } as MergedRouteBundle<B>;
 }
 
-/** 从已有 HubMethodDef（registry/schemas）绑定 handler，用于 console 等大批量 method */
-export function defineHubRouteFromDef<M extends string>(
+/** @deprecated 0.9.3 后删除 — 请用 mergeHabitatRouteBundles */
+export const mergeHubRouteBundles = mergeHabitatRouteBundles;
+
+/** 从已有 HabitatMethodDef（registry/schemas）绑定 handler，用于 Habitat UI 等大批量 method */
+export function defineHabitatRouteFromDef<M extends string>(
   method: M,
-  def: HubMethodDef,
-  handler: HubRouteHandler<z.ZodTypeAny, z.ZodTypeAny>,
-): HubRouteBundle<M, z.ZodTypeAny, z.ZodTypeAny> {
+  def: HabitatMethodDef,
+  handler: HabitatRouteHandler<z.ZodTypeAny, z.ZodTypeAny>,
+): HabitatRouteBundle<M, z.ZodTypeAny, z.ZodTypeAny> {
   return {
     method,
     def,
@@ -124,32 +143,44 @@ export function defineHubRouteFromDef<M extends string>(
   };
 }
 
-type HubMethodDefMap = Readonly<Record<string, HubMethodDef>>;
+/** @deprecated 0.9.3 后删除 — 请用 defineHabitatRouteFromDef */
+export const defineHubRouteFromDef = defineHabitatRouteFromDef;
+
+type HabitatMethodDefMap = Readonly<Record<string, HabitatMethodDef>>;
 
 /** 由 method-defs 推导各 method handler 的 input/output 类型 */
-export type HubRouteHandlersForDefs<T extends HubMethodDefMap> = {
-  [K in keyof T & string]: T[K] extends HubMethodDef<infer I, infer O>
-    ? HubRouteHandler<I, O>
+export type HabitatRouteHandlersForDefs<T extends HabitatMethodDefMap> = {
+  [K in keyof T & string]: T[K] extends HabitatMethodDef<infer I, infer O>
+    ? HabitatRouteHandler<I, O>
     : never;
 };
 
-/** 将 feature method-defs（SSOT）与 handler 绑定，供 hub routes 与 client registry 复用同一份 def */
-export function bindHubRouteHandlers<const T extends HubMethodDefMap>(
+/** @deprecated 0.9.3 后删除 — 请用 HabitatRouteHandlersForDefs */
+export type HubRouteHandlersForDefs<T extends HabitatMethodDefMap> = HabitatRouteHandlersForDefs<T>;
+
+/** 将 feature method-defs（SSOT）与 handler 绑定，供 habitat routes 与 client registry 复用同一份 def */
+export function bindHabitatRouteHandlers<const T extends HabitatMethodDefMap>(
   defs: T,
-  handlers: HubRouteHandlersForDefs<T>,
-): { handlers: HubRouteHandlersForDefs<T>; defs: T } {
+  handlers: HabitatRouteHandlersForDefs<T>,
+): { handlers: HabitatRouteHandlersForDefs<T>; defs: T } {
   const outHandlers: FeatureRouteBundle["handlers"] = {};
   const outDefs: FeatureRouteBundle["defs"] = {};
   for (const method of Object.keys(defs)) {
     const def = defs[method];
     const handler = handlers[method as keyof T & string];
-    if (!def) throw new Error(`missing hub route def for ${method}`);
-    if (!handler) throw new Error(`missing hub route handler for ${method}`);
-    outHandlers[method] = handler as HubRouteHandler<z.ZodTypeAny, z.ZodTypeAny>;
+    if (!def) throw new Error(`missing habitat route def for ${method}`);
+    if (!handler) throw new Error(`missing habitat route handler for ${method}`);
+    outHandlers[method] = handler as HabitatRouteHandler<z.ZodTypeAny, z.ZodTypeAny>;
     outDefs[method] = def;
   }
   return { handlers: outHandlers, defs: outDefs } as {
-    handlers: HubRouteHandlersForDefs<T>;
+    handlers: HabitatRouteHandlersForDefs<T>;
     defs: T;
   };
 }
+
+/** @deprecated 0.9.3 后删除 — 请用 bindHabitatRouteHandlers */
+export const bindHubRouteHandlers = bindHabitatRouteHandlers;
+
+// re-export for type-only consumers that still import HubMethodDef via route
+export type { HubMethodDef };

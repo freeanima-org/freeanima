@@ -4,5 +4,5 @@ export const taskPlugin = {
   shell: {
     routes: [{ path: "/tasks", featureId: "task", navLabel: "Tasks" }],
   },
-  hub: {},
+  habitat: {},
 } as const;

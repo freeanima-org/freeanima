@@ -4,5 +4,5 @@ export const tagPlugin = {
   shell: {
     routes: [] as { path: string; featureId: string; navLabel?: string }[],
   },
-  hub: {},
+  habitat: {},
 } as const;

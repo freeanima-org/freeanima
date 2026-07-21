@@ -1,4 +1,4 @@
-import { bindHubRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 import {
   getMcpStatus,
   mcpStartAll,
@@ -9,7 +9,7 @@ import {
 
 import { mcpMethodDefs } from "../method-defs.ts";
 
-export const mcpHubRoutes = bindHubRouteHandlers(mcpMethodDefs, {
+export const mcpHubRoutes = bindHabitatRouteHandlers(mcpMethodDefs, {
   "mcp.status": async () => getMcpStatus(),
   "mcp.startAll": async () => mcpStartAll(),
   "mcp.stopAll": async () => mcpStopAll(),

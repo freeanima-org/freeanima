@@ -4,5 +4,5 @@ export const emailPlugin = {
   shell: {
     routes: [{ path: "/email", featureId: "email", navLabel: "Email" }],
   },
-  hub: {},
+  habitat: {},
 } as const;

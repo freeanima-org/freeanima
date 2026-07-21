@@ -1,17 +1,32 @@
 export {
   HABITAT_RPC_VERSION,
+  HABITAT_RPC_VERSION_LEGACY,
+  habitatRpcErrorSchema,
+  habitatRpcEnvelopeSchema,
+  parseHabitatRpcEnvelope,
+  serializeHabitatRpcEnvelope,
   hubRpcErrorSchema,
+  hubRpcEnvelopeSchema,
   parseHubRpcEnvelope,
   serializeHubRpcEnvelope,
 } from "./protocol.ts";
-export type { HubRpcEnvelope, HubRpcError } from "./protocol.ts";
+export type {
+  HabitatRpcEnvelope,
+  HabitatRpcError,
+  HubRpcEnvelope,
+  HubRpcError,
+} from "./protocol.ts";
 
 export {
+  habitatRpcConnectPayloadSchema,
+  habitatRpcConnectedPayloadSchema,
+  heartbeatPayloadSchema,
   hubRpcConnectPayloadSchema,
   hubRpcConnectedPayloadSchema,
-  heartbeatPayloadSchema,
 } from "./lifecycle.ts";
 export type {
+  HabitatRpcConnectPayload,
+  HabitatRpcConnectedPayload,
   HubRpcConnectPayload,
   HubRpcConnectedPayload,
   HeartbeatPayload,
@@ -40,8 +55,11 @@ export type {
   RpcRequestOptions,
 } from "./client.ts";
 
-export { runHubRpcTransport } from "./transport.ts";
+export { runHabitatRpcTransport, runHubRpcTransport } from "./transport.ts";
 export type {
+  HabitatRpcReconnectPolicy,
+  RunHabitatRpcTransportOptions,
+  HabitatRpcTransportHandle,
   HubRpcReconnectPolicy,
   RunHubRpcTransportOptions,
   HubRpcTransportHandle,
@@ -76,14 +94,19 @@ export type { BuildHabitatRestRequestOptions, HabitatRestErrorBody } from "./htt
 export {
   getBundledHabitatRpcClient,
   whenHabitatRpcReady,
+  resetBundledHabitatRpcClientForTests,
   resetBundledHubRpcClientForTests,
+  subscribeBundledHabitatRpcConfigChanges,
   subscribeBundledHubRpcConfigChanges,
   subscribeHabitatRpcConnectionState,
   getHabitatRpcConnectionState,
+  getHabitatRpcLastInboundAt,
   getHubRpcLastInboundAt,
   reconnectHabitatRpc,
 } from "./bundled.ts";
 export type {
+  BundledHabitatRpcClient,
+  BundledHabitatRpcClientOptions,
   BundledHubRpcClient,
   BundledHubRpcClientOptions,
   HabitatRpcConnectionState,

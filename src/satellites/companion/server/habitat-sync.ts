@@ -181,6 +181,7 @@ export async function syncCompanionFromHub(): Promise<boolean> {
     const result = await hubRpcCall<SyncPullResponse>("companion.sync.pull", {});
     ensureCompanionDataDir();
     const {
+      habitat_url: _habitat,
       hub_url: _hub,
       model_path: _mp,
       model_available: _ma,

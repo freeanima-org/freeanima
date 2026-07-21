@@ -16,6 +16,7 @@ export async function buildClientCompanionConfig(): Promise<CompanionClientConfi
   const model_path = activeModelPath(cfg);
   return {
     ...cfg,
+    habitat_url: hubUrlFromEnv(),
     hub_url: hubUrlFromEnv(),
     model_path,
     model_available: isModelPathAvailable(model_path),

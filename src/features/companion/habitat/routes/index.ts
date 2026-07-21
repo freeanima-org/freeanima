@@ -1,6 +1,6 @@
 import type { SapServerDeps } from "@freeanima/platform/sap/types";
 import type { SapRequestContext } from "@freeanima/shared/sap-contract";
-import { bindHubRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 
 import {
   handleCompanionAssetGet,
@@ -18,7 +18,7 @@ function ctxOf(ctx: unknown): SapRequestContext {
   return ctx as SapRequestContext;
 }
 
-export const companionHubRoutes = bindHubRouteHandlers(companionMethodDefs, {
+export const companionHubRoutes = bindHabitatRouteHandlers(companionMethodDefs, {
   "companion.config.get": async () => service.serviceCompanionConfigGet(),
   "companion.config.update": async (_deps, input) =>
     service.serviceCompanionConfigUpdate(service.serviceCompanionConfigUpdateOmit(input)),

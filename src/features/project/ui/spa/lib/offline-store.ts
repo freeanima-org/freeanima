@@ -163,7 +163,7 @@ function scheduleFlush(scope: string): void {
   void flushOfflineModule(MODULE_ID, scope).catch(() => {});
 }
 
-function hub() {
+function habitat() {
   return getTypedSatelliteHabitatClient();
 }
 
@@ -473,7 +473,7 @@ async function flushProjectOp(
   scope: string,
 ): Promise<import("@freeanima/frontend/shell-sdk/offline-module-types").FlushOpOutcome> {
   try {
-    const result = (await hub().call(op.method as "project.create", op.payload as never)) as {
+    const result = (await habitat().call(op.method as "project.create", op.payload as never)) as {
       item?: ProjectFolderRow | ProjectRow | TaskItemRow;
       ok?: true;
     };
@@ -522,7 +522,7 @@ export const projectRpcAdapter: RpcModuleAdapter = {
     const cachedProjectIds = localProjects.map((row) => row.id);
 
     try {
-      const folderData = await hub().call("projectfolder.list", { ...subjectPayload() });
+      const folderData = await habitat().call("projectfolder.list", { ...subjectPayload() });
       const mergedFolders = await mergeServerFolders(scope, folderData.folders);
       await writeLocalFolders(scope, mergedFolders);
     } catch {
@@ -530,7 +530,7 @@ export const projectRpcAdapter: RpcModuleAdapter = {
     }
 
     try {
-      const projectData = await hub().call("project.list", { ...subjectPayload() });
+      const projectData = await habitat().call("project.list", { ...subjectPayload() });
       const mergedProjects = await mergeServerProjects(scope, projectData.projects);
       await writeLocalProjects(scope, mergedProjects);
       for (const project of mergedProjects) {
@@ -543,7 +543,7 @@ export const projectRpcAdapter: RpcModuleAdapter = {
     for (const projectId of new Set(cachedProjectIds)) {
       if (isTempId(projectId)) continue;
       try {
-        const itemData = await hub().call("project.item.list", {
+        const itemData = await habitat().call("project.item.list", {
           ...subjectPayload(),
           project_id: projectId,
         });
@@ -620,7 +620,7 @@ export async function offlineCreateProjectFolder(input: {
   return preferOnlineWrite(async () => {
     const scope = resolveOutboxScope();
     const opId = randomUuid();
-    const data = await hub().call(
+    const data = await habitat().call(
       "projectfolder.create",
       omitUndefined({
         ...subjectPayload(),
@@ -678,7 +678,7 @@ export async function offlineUpdateProjectFolder(
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    const data = await hub().call(
+    const data = await habitat().call(
       "projectfolder.patch",
       omitUndefined({
         ...subjectPayload(),
@@ -732,7 +732,7 @@ export async function offlineDeleteProjectFolder(id: number): Promise<void> {
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    await hub().call("projectfolder.delete", {
+    await habitat().call("projectfolder.delete", {
       ...subjectPayload(),
       id: resolvedId,
       client_op_id: opId,
@@ -813,7 +813,7 @@ export async function offlineCreateProject(input: {
     const scope = resolveOutboxScope();
     const opId = randomUuid();
     const content = input.content?.trim() ?? "";
-    const data = await hub().call(
+    const data = await habitat().call(
       "project.create",
       omitUndefined({
         ...subjectPayload(),
@@ -886,7 +886,7 @@ export async function offlineUpdateProject(
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    const data = await hub().call(
+    const data = await habitat().call(
       "project.patch",
       omitUndefined({
         ...subjectPayload(),
@@ -941,7 +941,7 @@ export async function offlineDeleteProject(id: number): Promise<void> {
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    await hub().call("project.delete", {
+    await habitat().call("project.delete", {
       ...subjectPayload(),
       id: resolvedId,
       client_op_id: opId,
@@ -1018,7 +1018,7 @@ export async function offlineCreateProjectTask(input: {
   return preferOnlineWrite(async () => {
     const scope = resolveOutboxScope();
     const opId = randomUuid();
-    const data = await hub().call("project.item.create", {
+    const data = await habitat().call("project.item.create", {
       ...subjectPayload(),
       client_op_id: opId,
       title,
@@ -1111,7 +1111,7 @@ export async function offlineUpdateProjectTask(
           : "task.patch";
 
     if (method === "task.complete" || method === "task.uncomplete") {
-      const data = await hub().call(method, {
+      const data = await habitat().call(method, {
         ...subjectPayload(),
         id: existing.id,
         client_op_id: opId,
@@ -1121,7 +1121,7 @@ export async function offlineUpdateProjectTask(
     }
 
     const { status: _status, ...contentPatch } = patch;
-    const data = await hub().call(
+    const data = await habitat().call(
       "task.patch",
       omitUndefined({
         ...subjectPayload(),
@@ -1182,7 +1182,7 @@ export async function offlineDeleteProjectTask(id: number): Promise<void> {
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    await hub().call("task.delete", {
+    await habitat().call("task.delete", {
       ...subjectPayload(),
       id: resolvedId,
       client_op_id: opId,
@@ -1231,7 +1231,7 @@ export async function offlineMoveProjectTaskToList(taskId: number, listId: numbe
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    await hub().call("task.moveToList", {
+    await habitat().call("task.moveToList", {
       ...subjectPayload(),
       id: resolvedId,
       list_id: listId,
@@ -1327,7 +1327,7 @@ export async function offlineMoveTaskToProject(
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    const data = await hub().call("task.moveToProject", {
+    const data = await habitat().call("task.moveToProject", {
       ...subjectPayload(),
       id: resolvedTaskId,
       project_id: projectId,

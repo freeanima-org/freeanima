@@ -1,5 +1,5 @@
 export class HabitatRpcTimeoutError extends Error {
-  readonly code = "hub_rpc_timeout" as const;
+  readonly code = "habitat_rpc_timeout" as const;
 
   constructor(message: string) {
     super(message);
@@ -10,7 +10,8 @@ export class HabitatRpcTimeoutError extends Error {
 export function isHabitatRpcTimeoutError(err: unknown): boolean {
   return (
     err instanceof HabitatRpcTimeoutError ||
-    (err instanceof Error && err.message.includes("hub_rpc_timeout"))
+    (err instanceof Error &&
+      (err.message.includes("habitat_rpc_timeout") || err.message.includes("hub_rpc_timeout")))
   );
 }
 

@@ -77,7 +77,10 @@ function webDevPlugin(): Plugin {
           res.end(
             JSON.stringify({
               app_id: "chat",
-              // 空 = 浏览器用 location.origin（经 Vite /hub proxy）
+              // 空 = 浏览器用 location.origin（经 Vite /rpc proxy）
+              habitat_url: "",
+              habitat_ws_url: "",
+              // @deprecated 0.9.3 后删除 — dual-write
               hub_url: "",
               hub_ws_url: "",
               ui_version: UI_VERSION,
@@ -108,7 +111,7 @@ function webDevPlugin(): Plugin {
         );
         if (PROXY_HABITAT.source === "default") {
           console.warn(
-            "[dev:web] FREEANIMA_URL unset and no server.status.json — proxy defaults to http://127.0.0.1:2658; set FREEANIMA_URL or run just dev / dev:hub",
+            "[dev:web] FREEANIMA_URL unset and no server.status.json — proxy defaults to http://127.0.0.1:2658; set FREEANIMA_URL or run just dev / dev:habitat",
           );
         } else if (PROXY_HABITAT.source === "status") {
           console.info(

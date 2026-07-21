@@ -2,14 +2,14 @@ import { afterEach, describe, expect, test } from "bun:test";
 
 import {
   getHabitatRpcConnectionState,
-  resetBundledHubRpcClientForTests,
+  resetBundledHabitatRpcClientForTests,
 } from "@freeanima/shared/habitat-rpc";
 
 import { reconnectHabitat, subscribeHabitatConnection } from "./habitat-connection.ts";
 
 describe("hub-connection", () => {
   afterEach(() => {
-    resetBundledHubRpcClientForTests();
+    resetBundledHabitatRpcClientForTests();
   });
 
   test("subscribeHabitatConnection 立即回调当前状态", () => {

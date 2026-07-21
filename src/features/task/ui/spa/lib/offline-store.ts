@@ -348,7 +348,7 @@ export type OfflineUpdateTaskItemOpts = {
   seed?: TaskItemRow;
 };
 
-function hub() {
+function habitat() {
   return getTypedSatelliteHabitatClient();
 }
 
@@ -367,7 +367,7 @@ async function callTaskItemWrite(
   const movingToList = !movingToProject && patch.list_id != null;
 
   if (movingToProject) {
-    const result = await hub().call("task.moveToProject", {
+    const result = await habitat().call("task.moveToProject", {
       ...subjectPayload(),
       id: entityId,
       client_op_id: opId,
@@ -377,7 +377,7 @@ async function callTaskItemWrite(
     return result.item;
   }
   if (movingToList) {
-    const result = await hub().call("task.moveToList", {
+    const result = await habitat().call("task.moveToList", {
       ...subjectPayload(),
       id: entityId,
       client_op_id: opId,
@@ -387,7 +387,7 @@ async function callTaskItemWrite(
     return result.item;
   }
   const { list_id: _listId, project_id: _projectId, ...contentPatch } = patch;
-  const result = await hub().call("task.patch", {
+  const result = await habitat().call("task.patch", {
     ...subjectPayload(),
     id: entityId,
     client_op_id: opId,
@@ -560,7 +560,7 @@ async function flushTaskOp(
   scope: string,
 ): Promise<import("@freeanima/frontend/shell-sdk/offline-module-types").FlushOpOutcome> {
   try {
-    const result = (await hub().call(op.method as "tasklist.create", op.payload as never)) as {
+    const result = (await habitat().call(op.method as "tasklist.create", op.payload as never)) as {
       item?: TaskListRow | TaskItemRow;
       ok?: true;
     };
@@ -607,7 +607,7 @@ export const taskRpcAdapter: RpcModuleAdapter = {
     const cachedListIds = localLists.filter((list) => !list.is_folder).map((list) => list.id);
 
     try {
-      const data = await hub().call("tasklist.list", {
+      const data = await habitat().call("tasklist.list", {
         ...subjectPayload(),
         include_closed: true,
       });
@@ -626,7 +626,7 @@ export const taskRpcAdapter: RpcModuleAdapter = {
     for (const listId of listIds) {
       if (isTempId(listId)) continue;
       try {
-        const itemData = await hub().call("tasklist.item.list", {
+        const itemData = await habitat().call("tasklist.item.list", {
           ...subjectPayload(),
           list_id: listId,
           status: "all",
@@ -660,7 +660,7 @@ export async function offlineCreateTaskList(input: {
     async () => {
       const scope = resolveOutboxScope();
       const opId = randomUuid();
-      const data = await hub().call("tasklist.create", {
+      const data = await habitat().call("tasklist.create", {
         ...subjectPayload(),
         client_op_id: opId,
         name,
@@ -761,7 +761,7 @@ export async function offlineUpdateTaskList(
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    const data = await hub().call("tasklist.patch", {
+    const data = await habitat().call("tasklist.patch", {
       ...subjectPayload(),
       id: existing.id,
       client_op_id: opId,
@@ -818,7 +818,7 @@ export async function offlineDeleteTaskList(id: number): Promise<void> {
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    await hub().call("tasklist.delete", {
+    await habitat().call("tasklist.delete", {
       ...subjectPayload(),
       id: resolvedId,
       cascade: true,
@@ -904,7 +904,7 @@ export async function offlineCreateTaskItem(input: {
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    const data = await hub().call("tasklist.item.create", {
+    const data = await habitat().call("tasklist.item.create", {
       ...subjectPayload(),
       client_op_id: opId,
       ...payload,
@@ -1111,7 +1111,7 @@ export async function offlineDeleteTaskItem(id: number, listId?: number): Promis
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    await hub().call("task.delete", {
+    await habitat().call("task.delete", {
       ...subjectPayload(),
       id: resolvedId,
       client_op_id: opId,

@@ -4,5 +4,5 @@ export const diaryPlugin = {
   shell: {
     routes: [{ path: "/diary", featureId: "diary", navLabel: "Diary" }],
   },
-  hub: {},
+  habitat: {},
 } as const;

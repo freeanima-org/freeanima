@@ -5,7 +5,7 @@ import { startupLog } from "./status.ts";
 
 export type WorldSubjectsPhaseResult = Record<string, never>;
 
-/** 与 hub_runtime_config.worlds 段比对（不含 legacy notifications 伪装） */
+/** 与 habitat_runtime_config.worlds 段比对（不含 legacy notifications 伪装） */
 function worldsSectionNeedsPersist(
   worlds:
     | { user_subject_id?: number | undefined; agent_subject_id?: number | undefined }

@@ -12,6 +12,7 @@ export {
   useContextMenuCapability,
   useEnterToSendCapability,
   useFinePointerCapability,
+  useOpenHabitatSettingsCapability,
   useOpenHubSettingsCapability,
   useShellKind,
   useTouchPrimaryCapability,

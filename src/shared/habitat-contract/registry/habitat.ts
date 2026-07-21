@@ -14,7 +14,7 @@ import {
 } from "./schemas.ts";
 import {
   binaryHttpMeta,
-  defineHubMethod,
+  defineHabitatMethod,
   dualTransportMeta,
   publicHttpMeta,
   rawPublicHttpMeta,
@@ -88,277 +88,277 @@ const ttsSynthesizeInputSchema = z.object({
 
 /** Habitat 运维面 HTTP-only methods（conversation.* dual 定义在 chat registry） */
 export const habitatMethodDefs = {
-  "health.probe": defineHubMethod({
+  "health.probe": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: publicHttpMeta(),
   }),
-  "tls.ca.info": defineHubMethod({
+  "tls.ca.info": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: publicHttpMeta(),
   }),
-  "tls.ca.qr": defineHubMethod({
+  "tls.ca.qr": defineHabitatMethod({
     input: tlsCaQrInputSchema,
     output: unknownOutputSchema,
     meta: rawPublicHttpMeta(),
   }),
-  "tls.ca": defineHubMethod({
+  "tls.ca": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: rawPublicHttpMeta(),
   }),
-  "status.get": defineHubMethod({
+  "status.get": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "status.tools": defineHubMethod({
+  "status.tools": defineHabitatMethod({
     input: toolsQuerySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "status.platforms": defineHubMethod({
+  "status.platforms": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "status.cronJobs": defineHubMethod({
+  "status.cronJobs": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "status.cronJobPause": defineHubMethod({
+  "status.cronJobPause": defineHabitatMethod({
     input: cronJobIdParamSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "status.cronJobResume": defineHubMethod({
+  "status.cronJobResume": defineHabitatMethod({
     input: cronJobIdParamSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "status.cronJobRun": defineHubMethod({
+  "status.cronJobRun": defineHabitatMethod({
     input: cronJobIdParamSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "status.restart": defineHubMethod({
+  "status.restart": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "config.get": defineHubMethod({
+  "config.get": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "config.getSection": defineHubMethod({
+  "config.getSection": defineHabitatMethod({
     input: configSectionParamSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "config.patchSection": defineHubMethod({
+  "config.patchSection": defineHabitatMethod({
     input: configSectionParamSchema.extend({ patch: z.record(z.string(), z.unknown()) }),
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "config.replaceSection": defineHubMethod({
+  "config.replaceSection": defineHabitatMethod({
     input: configSectionParamSchema.extend({ value: z.record(z.string(), z.unknown()) }),
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "config.testConnection": defineHubMethod({
+  "config.testConnection": defineHabitatMethod({
     input: configTestConnectionInputSchema,
     output: configTestConnectionOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "memory.files": defineHubMethod({
+  "memory.files": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "memory.search": defineHubMethod({
+  "memory.search": defineHabitatMethod({
     input: memorySearchBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "memory.semanticCount": defineHubMethod({
+  "memory.semanticCount": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "memory.semanticList": defineHubMethod({
+  "memory.semanticList": defineHabitatMethod({
     input: semanticMemoryListBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "memory.semanticPin": defineHubMethod({
+  "memory.semanticPin": defineHabitatMethod({
     input: semanticMemoryPinBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "memory.limbicList": defineHubMethod({
+  "memory.limbicList": defineHabitatMethod({
     input: limbicMemoryListBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "memory.autobiographicalList": defineHubMethod({
+  "memory.autobiographicalList": defineHabitatMethod({
     input: autobiographicalMemoryListBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "entity.searchGet": defineHubMethod({
+  "entity.searchGet": defineHabitatMethod({
     input: entitySearchQuerySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "entity.searchPost": defineHubMethod({
+  "entity.searchPost": defineHabitatMethod({
     input: entitySearchBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "entity.worldsList": defineHubMethod({
+  "entity.worldsList": defineHabitatMethod({
     input: entityListQuerySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "entity.worldsCreate": defineHubMethod({
+  "entity.worldsCreate": defineHabitatMethod({
     input: worldEntityCreateBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "entity.worldsGet": defineHubMethod({
+  "entity.worldsGet": defineHabitatMethod({
     input: idParamInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "entity.worldsPatch": defineHubMethod({
+  "entity.worldsPatch": defineHabitatMethod({
     input: worldEntityPatchInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "entity.subjectsList": defineHubMethod({
+  "entity.subjectsList": defineHabitatMethod({
     input: entityListQuerySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "entity.subjectsCreate": defineHubMethod({
+  "entity.subjectsCreate": defineHabitatMethod({
     input: subjectEntityCreateBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "entity.subjectsGet": defineHubMethod({
+  "entity.subjectsGet": defineHabitatMethod({
     input: idParamInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "entity.subjectsPatch": defineHubMethod({
+  "entity.subjectsPatch": defineHabitatMethod({
     input: z.object({ id: z.string().min(1) }).passthrough(),
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "self.blocks": defineHubMethod({
+  "self.blocks": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "prompt.debug": defineHubMethod({
+  "prompt.debug": defineHabitatMethod({
     input: promptDebugQuerySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "src/satellites.status": defineHubMethod({
+  "src/satellites.status": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "acp.status": defineHubMethod({
+  "acp.status": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "acp.startAll": defineHubMethod({
+  "acp.startAll": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "acp.stopAll": defineHubMethod({
+  "acp.stopAll": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "acp.startAgent": defineHubMethod({
+  "acp.startAgent": defineHabitatMethod({
     input: nameParamSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "acp.stopAgent": defineHubMethod({
+  "acp.stopAgent": defineHabitatMethod({
     input: nameParamSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "fts.status": defineHubMethod({
+  "fts.status": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "fts.rebuildStatus": defineHubMethod({
+  "fts.rebuildStatus": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "fts.rebuild": defineHubMethod({
+  "fts.rebuild": defineHabitatMethod({
     input: ftsRebuildBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "sleep.summary": defineHubMethod({
+  "sleep.summary": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "sleep.pipelineRuns": defineHubMethod({
+  "sleep.pipelineRuns": defineHabitatMethod({
     input: pipelineRunsQuerySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "sleep.pipelineStatus": defineHubMethod({
+  "sleep.pipelineStatus": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "sleep.runPipelineStep": defineHubMethod({
+  "sleep.runPipelineStep": defineHabitatMethod({
     input: sleepRunStepBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "sleep.startCycle": defineHubMethod({
+  "sleep.startCycle": defineHabitatMethod({
     input: sleepCycleBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "cronLogs.list": defineHubMethod({
+  "cronLogs.list": defineHabitatMethod({
     input: cronLogsQuerySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "autoLlmRuns.list": defineHubMethod({
+  "autoLlmRuns.list": defineHabitatMethod({
     input: autoLlmRunsQuerySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "worlds.context": defineHubMethod({
+  "worlds.context": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "conversation.adminGet": defineHubMethod({
+  "conversation.adminGet": defineHabitatMethod({
     input: conversationIdParamSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "conversation.adminListAll": defineHubMethod({
+  "conversation.adminListAll": defineHabitatMethod({
     input: z.object({
       offset: z.coerce.number().int().min(0).optional(),
       limit: z.coerce.number().int().min(1).optional(),
@@ -366,17 +366,17 @@ export const habitatMethodDefs = {
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "conversation.adminCreate": defineHubMethod({
+  "conversation.adminCreate": defineHabitatMethod({
     input: createConversationBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "tokens.listForSubject": defineHubMethod({
+  "tokens.listForSubject": defineHabitatMethod({
     input: z.object({ id: z.coerce.number().int().positive() }),
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "tokens.createForSubject": defineHubMethod({
+  "tokens.createForSubject": defineHabitatMethod({
     input: z.object({
       id: z.coerce.number().int().positive(),
       name: z.string().min(1),
@@ -384,12 +384,12 @@ export const habitatMethodDefs = {
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "tokens.revoke": defineHubMethod({
+  "tokens.revoke": defineHabitatMethod({
     input: z.object({ id: z.coerce.number().int().positive() }),
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "tts.synthesize": defineHubMethod({
+  "tts.synthesize": defineHabitatMethod({
     input: ttsSynthesizeInputSchema,
     output: z.record(z.string(), z.unknown()),
     meta: binaryHttpMeta({

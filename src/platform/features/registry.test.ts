@@ -37,7 +37,7 @@ describe("registerFeatures", () => {
     registerFeatures([
       {
         id: "mock",
-        hub: {
+        habitat: {
           rpc: {
             "mock.echo": async () => ({ ok: true }),
           },

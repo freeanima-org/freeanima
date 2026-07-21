@@ -47,13 +47,13 @@ Node 默认信任库**不含** OS 证书。Habitat `http.tls` + mkcert 时，主
 - **启动最早**：`electron/main-entry.ts` 在加载 `main.ts` 前调用 `applyTrustSystemCaAtStartup()`（`trust-system-ca.ts`：`tls.getCACertificates('system'|'bundled')` → `setDefaultCACertificates`）。
 - 客户端仍须把 Habitat 的 `rootCA.pem` 装进 **OS** 信任库（或 Habitat 本机 `mkcert -install`）；见 [`docs/guide/remote-access.md`](../../docs/guide/remote-access.md)。
 
-## contextBridge 与 Hub fetch
+## contextBridge 与 Habitat fetch
 
 `contextBridge` 对返回值做**结构化克隆**：`Response` 等方法（`.text()` / `.json()`）会丢失，表现为 `e.text is not a function`。
 
-- **禁止**经 preload 暴露 `satelliteShell.hubFetch`（或任何返回 `Response` 的桥接函数）。
-- Hub HTTP 须在**渲染进程**内用 `remoteAuth.token` + `createBearerFetch`（见 `resolveHubApiFetch` / console `resolveHubFetch`）。
-- 可安全过桥：`hubUrl` / `hubWsUrl` / `remoteAuth` 等纯数据。
+- **禁止**经 preload 暴露 `satelliteShell.habitatFetch`（或任何返回 `Response` 的桥接函数）。
+- Habitat HTTP 须在**渲染进程**内用 `remoteAuth.token` + `createBearerFetch`（见 `resolveHabitatApiFetch` / Habitat UI `resolveHabitatFetch`）。
+- 可安全过桥：`habitatUrl` / `habitatWsUrl` / `remoteAuth` 等纯数据。
 
 ## 相关文件
 

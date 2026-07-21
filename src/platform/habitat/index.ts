@@ -9,12 +9,21 @@ export {
 } from "./http-rest-router.ts";
 export { isOptionalAuthHubHttpRequest, matchHabitatHttpRoute } from "./http-rest-auth.ts";
 export {
+  habitatRouter,
   hubRouter,
+  type HabitatMethod,
   type HubMethod,
+  type HabitatMethodInputs,
   type HubMethodInputs,
+  type HabitatMethodOutputs,
   type HubMethodOutputs,
 } from "./habitat-router.ts";
-export { initHubRouter, resetHubRouterForTests } from "./init.ts";
+export {
+  initHabitatRouter,
+  initHubRouter,
+  resetHabitatRouterForTests,
+  resetHubRouterForTests,
+} from "./init.ts";
 export {
   createTypedHabitatClient,
   getTypedConsoleHabitatClient,

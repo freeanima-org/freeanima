@@ -6,8 +6,8 @@ describe("parseWebUiConfigJson", () => {
   test("解析 Habitat config.json 字段", () => {
     const cfg = parseWebUiConfigJson({
       app_id: "chat",
-      hub_url: "http://127.0.0.1:2658",
-      hub_ws_url: "ws://127.0.0.1:2658/rpc/v1",
+      habitat_url: "http://127.0.0.1:2658",
+      habitat_ws_url: "ws://127.0.0.1:2658/rpc/v1",
       ui_version: "0.8.1",
       web_build: {
         component: "web",
@@ -18,17 +18,28 @@ describe("parseWebUiConfigJson", () => {
       min_shell_version: "0.8.0",
       layout_mode: "compact",
     });
+    expect(cfg?.habitat_url).toBe("http://127.0.0.1:2658");
     expect(cfg?.ui_version).toBe("0.8.1");
     expect(cfg?.web_build?.version).toBe("0.8.1");
     expect(cfg?.min_shell_version).toBe("0.8.0");
     expect(cfg?.layout_mode).toBe("compact");
   });
 
+  test("legacy hub_url 双读", () => {
+    const cfg = parseWebUiConfigJson({
+      app_id: "chat",
+      hub_url: "http://127.0.0.1:2658",
+      hub_ws_url: "ws://127.0.0.1:2658/rpc/v1",
+    });
+    expect(cfg?.habitat_url).toBe("http://127.0.0.1:2658");
+    expect(cfg?.habitat_ws_url).toBe("ws://127.0.0.1:2658/rpc/v1");
+  });
+
   test("解析 optional remote_auth_token", () => {
     const cfg = parseWebUiConfigJson({
       app_id: "chat",
-      hub_url: "",
-      hub_ws_url: "",
+      habitat_url: "",
+      habitat_ws_url: "",
       remote_auth_token: " fa_at_x ",
     });
     expect(cfg?.remote_auth_token).toBe("fa_at_x");

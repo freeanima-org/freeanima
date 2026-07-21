@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 import {
   getBundledHabitatRpcClient,
-  subscribeBundledHubRpcConfigChanges,
+  subscribeBundledHabitatRpcConfigChanges,
   type HabitatRpcConnectionState,
 } from "@freeanima/shared/habitat-rpc";
 import type { StreamApiLikeEvent } from "./frames/message.ts";
@@ -90,4 +90,4 @@ export function resetBundledSapStreamClientForTests(): void {
   bundledClient = null;
 }
 
-export { subscribeBundledHubRpcConfigChanges as subscribeShellConfigChanges };
+export { subscribeBundledHabitatRpcConfigChanges as subscribeShellConfigChanges };

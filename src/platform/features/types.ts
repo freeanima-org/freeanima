@@ -20,7 +20,11 @@ export type FeaturePlugin = {
   shell?: {
     routes: readonly FeatureShellRouteDef[];
   };
-  hub: {
+  habitat: {
+    rpc?: Record<string, FeatureRpcHandler>;
+  };
+  /** @deprecated 0.9.3 后删除 — 请用 habitat */
+  hub?: {
     rpc?: Record<string, FeatureRpcHandler>;
   };
 };

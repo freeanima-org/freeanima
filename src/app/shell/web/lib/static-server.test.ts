@@ -22,8 +22,12 @@ describe("startWebStaticServer", () => {
     expect(health.ok).toBe(true);
 
     const cfg = (await fetch(`http://127.0.0.1:${port}/web/config.json`).then((r) => r.json())) as {
+      habitat_url?: string;
+      habitat_ws_url?: string;
       hub_url?: string;
+      hub_ws_url?: string;
     };
+    expect(cfg.habitat_url ?? cfg.hub_url).toBe("https://anima.example.com");
     expect(cfg.hub_url).toBe("https://anima.example.com");
 
     const page = await fetch(`http://127.0.0.1:${port}/web/chat`);
@@ -48,9 +52,14 @@ describe("startWebStaticServer", () => {
       const port = handle.port;
       const cfg = (await fetch(`http://127.0.0.1:${port}/web/config.json`).then((r) =>
         r.json(),
-      )) as { hub_url?: string; hub_ws_url?: string };
-      expect(cfg.hub_url).toBe(`http://127.0.0.1:${port}`);
-      expect(cfg.hub_ws_url).toBe(`ws://127.0.0.1:${port}/rpc/v1`);
+      )) as {
+        habitat_url?: string;
+        habitat_ws_url?: string;
+        hub_url?: string;
+        hub_ws_url?: string;
+      };
+      expect(cfg.habitat_url ?? cfg.hub_url).toBe(`http://127.0.0.1:${port}`);
+      expect(cfg.habitat_ws_url ?? cfg.hub_ws_url).toBe(`ws://127.0.0.1:${port}/rpc/v1`);
     } finally {
       await handle.close();
     }

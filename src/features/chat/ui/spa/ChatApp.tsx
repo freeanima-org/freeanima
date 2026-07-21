@@ -61,7 +61,7 @@ import {
   useEnterToSendCapability,
   useHabitatConnection,
   useNetworkOnline,
-  useOpenHubSettingsCapability,
+  useOpenHabitatSettingsCapability,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
 import { initAppLocale, m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@freeanima/features/chat/ui/spa/lib/input-draft.ts";
@@ -147,7 +147,7 @@ function openHabitatSettingsIfAvailable(): void {
 
 function isTransportFailureMessage(msg: string): boolean {
   return (
-    /timed out|websocket|hub_rpc_timeout|网络错误/i.test(msg) ||
+    /timed out|websocket|habitat_rpc_timeout|hub_rpc_timeout|网络错误/i.test(msg) ||
     isRetriableOfflineWriteError(new Error(msg))
   );
 }
@@ -264,7 +264,7 @@ export function ChatApp() {
   const mobileLayout = useCompactLayout();
   /** Enter 发送：仅交互维（pointer）；与布局/壳正交 */
   const enterToSend = useEnterToSendCapability();
-  const canOpenHabitatSettingsUi = useOpenHubSettingsCapability();
+  const canOpenHabitatSettingsUi = useOpenHabitatSettingsCapability();
   const useActionSheet = useActionSheetCapability();
   const contextMenuEnabled = useContextMenuCapability();
   const drawerNav = useDrawerNav();

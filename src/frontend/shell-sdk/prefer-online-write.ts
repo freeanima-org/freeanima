@@ -21,7 +21,7 @@ export function isRetriableOfflineWriteError(err: unknown): boolean {
 }
 
 /**
- * Hub 可用时优先走 online；仅网络/传输失败时回退 offline。
+ * Habitat 可用时优先走 online；仅网络/传输失败时回退 offline。
  * 业务错误原样抛出。Hub 不可用时直接 offline。
  */
 export async function preferOnlineWrite<T>(

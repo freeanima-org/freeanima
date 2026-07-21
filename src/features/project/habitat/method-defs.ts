@@ -1,4 +1,4 @@
-import { defineHubMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
+import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
 import {
   projectCreateInputSchema,
   projectCreateOutputSchema,
@@ -23,52 +23,52 @@ import {
 } from "@freeanima/shared/sap-contract/frames/project";
 
 export const projectMethodDefs = {
-  "projectfolder.list": defineHubMethod({
+  "projectfolder.list": defineHabitatMethod({
     input: projectfolderListInputSchema,
     output: projectfolderListOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "projectfolder.create": defineHubMethod({
+  "projectfolder.create": defineHabitatMethod({
     input: projectfolderCreateInputSchema,
     output: projectfolderCreateOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "projectfolder.patch": defineHubMethod({
+  "projectfolder.patch": defineHabitatMethod({
     input: projectfolderPatchInputSchema,
     output: projectfolderPatchOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "projectfolder.delete": defineHubMethod({
+  "projectfolder.delete": defineHabitatMethod({
     input: projectfolderDeleteInputSchema,
     output: projectfolderDeleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "project.list": defineHubMethod({
+  "project.list": defineHabitatMethod({
     input: projectListInputSchema,
     output: projectListOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "project.stats": defineHubMethod({
+  "project.stats": defineHabitatMethod({
     input: projectStatsInputSchema,
     output: projectStatsOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "project.create": defineHubMethod({
+  "project.create": defineHabitatMethod({
     input: projectCreateInputSchema,
     output: projectCreateOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "project.get": defineHubMethod({
+  "project.get": defineHabitatMethod({
     input: projectGetInputSchema,
     output: projectGetOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "project.patch": defineHubMethod({
+  "project.patch": defineHabitatMethod({
     input: projectPatchInputSchema,
     output: projectPatchOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "project.delete": defineHubMethod({
+  "project.delete": defineHabitatMethod({
     input: projectDeleteInputSchema,
     output: projectDeleteOutputSchema,
     meta: dualTransportMeta(false),

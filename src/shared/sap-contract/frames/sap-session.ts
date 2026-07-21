@@ -19,12 +19,17 @@ export const sapAttachOutputSchema = z.object({
   server_info: z
     .object({
       anima_version: z.string(),
-      hub_rpc_version: z.string(),
+      habitat_rpc_version: z.string().optional(),
+      /** @deprecated 0.9.3 后删除 */
+      hub_rpc_version: z.string().optional(),
       capability_mask: z
         .object({
           presets: z.array(capabilityMaskPresetSchema),
         })
         .optional(),
+    })
+    .refine((info) => info.habitat_rpc_version != null || info.hub_rpc_version != null, {
+      message: "server_info requires habitat_rpc_version or hub_rpc_version",
     })
     .optional(),
 });

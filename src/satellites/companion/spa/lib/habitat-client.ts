@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { whenSatelliteHubRpcReady } from "@freeanima/frontend/shell-sdk/habitat-rpc-call";
+import { whenSatelliteHabitatRpcReady } from "@freeanima/frontend/shell-sdk/habitat-rpc-call";
 import type { ClientCompanionConfig } from "@freeanima/satellites/companion/shared/constants.ts";
 
 export type HubCompanionConfig = Omit<
@@ -15,7 +15,7 @@ export type CompanionHubConfigResponse = { config: HubCompanionConfig };
 export function getCompanionHabitatClient() {
   return {
     call<T = unknown>(method: string, payload?: unknown): Promise<T> {
-      return whenSatelliteHubRpcReady().then((rpc) => rpc.request<T>(method, payload));
+      return whenSatelliteHabitatRpcReady().then((rpc) => rpc.request<T>(method, payload));
     },
   };
 }

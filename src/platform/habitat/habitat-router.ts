@@ -1,4 +1,4 @@
-import { mergeHubRouteBundles } from "@freeanima/shared/habitat-contract/route.ts";
+import { mergeHabitatRouteBundles } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { chatHubRoutes } from "@freeanima/features/chat/habitat/routes/index.ts";
 import { companionHubRoutes } from "@freeanima/features/companion/habitat/routes/index.ts";
@@ -32,9 +32,11 @@ const featureRouteBundles = [
   consoleHubRoutes,
 ] as const;
 
-export const hubRouter = mergeHubRouteBundles(featureRouteBundles);
+export const habitatRouter = mergeHabitatRouteBundles(featureRouteBundles);
+/** @deprecated 0.9.3 后删除 — 请用 habitatRouter */
+export const hubRouter = habitatRouter;
 
-export type HubMethodInputs = InferHubInputs<typeof chatHubRoutes> &
+export type HabitatMethodInputs = InferHubInputs<typeof chatHubRoutes> &
   InferHubInputs<typeof taskHubRoutes> &
   InferHubInputs<typeof projectHubRoutes> &
   InferHubInputs<typeof tagHubRoutes> &
@@ -48,7 +50,10 @@ export type HubMethodInputs = InferHubInputs<typeof chatHubRoutes> &
   InferHubInputs<typeof mcpHubRoutes> &
   InferHubInputs<typeof consoleHubRoutes>;
 
-export type HubMethodOutputs = InferHubOutputs<typeof chatHubRoutes> &
+/** @deprecated 0.9.3 后删除 — 请用 HabitatMethodInputs */
+export type HubMethodInputs = HabitatMethodInputs;
+
+export type HabitatMethodOutputs = InferHubOutputs<typeof chatHubRoutes> &
   InferHubOutputs<typeof taskHubRoutes> &
   InferHubOutputs<typeof projectHubRoutes> &
   InferHubOutputs<typeof tagHubRoutes> &
@@ -62,6 +67,12 @@ export type HubMethodOutputs = InferHubOutputs<typeof chatHubRoutes> &
   InferHubOutputs<typeof mcpHubRoutes> &
   InferHubOutputs<typeof consoleHubRoutes>;
 
-export type HubMethod = keyof HubMethodInputs & string;
+/** @deprecated 0.9.3 后删除 — 请用 HabitatMethodOutputs */
+export type HubMethodOutputs = HabitatMethodOutputs;
+
+export type HabitatMethod = keyof HabitatMethodInputs & string;
+
+/** @deprecated 0.9.3 后删除 — 请用 HabitatMethod */
+export type HubMethod = HabitatMethod;
 
 export type { InferHubInputs, InferHubOutputs } from "./types.ts";

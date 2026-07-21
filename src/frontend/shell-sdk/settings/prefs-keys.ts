@@ -1,7 +1,7 @@
 /** Capacitor / electron-store 键名 */
 /** 新键；读时仍兼容 freeanima.hubUrl */
 export const HABITAT_URL_KEY = "freeanima.habitatUrl";
-/** @deprecated 0.9.4 删除 */
+/** @deprecated 0.9.3 删除 */
 export const HABITAT_URL_KEY_LEGACY = "freeanima.hubUrl";
 export const REMOTE_AUTH_TOKEN_KEY = "freeanima.remoteAuthToken";
 export const NATIVE_BUILD_META_KEY = "freeanima.nativeBuildMeta";

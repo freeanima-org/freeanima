@@ -6,7 +6,7 @@ import {
   type HabitatConnectionState,
 } from "./habitat-connection.ts";
 
-/** 与 Habitat 的 HubRPC WebSocket 连接状态 */
+/** 与 Habitat 的 HabitatRPC WebSocket 连接状态 */
 export function useHabitatConnection(): HabitatConnectionState {
   const [connection, setConnection] = useState<HabitatConnectionState>(() =>
     typeof window !== "undefined" ? getHabitatRpcConnectionState() : "connecting",

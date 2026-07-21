@@ -80,7 +80,7 @@ export type EmailAccountPatchInput = {
   tags?: string[];
 };
 
-function hub() {
+function habitat() {
   return getTypedSatelliteHabitatClient();
 }
 
@@ -119,7 +119,7 @@ export async function fetchEmailAccounts(): Promise<EmailAccountRow[]> {
   const cacheId = accountsCacheId();
   const cached = await readOfflineCache<EmailAccountRow[]>(scope, "email", cacheId);
   try {
-    const data = await hub().call("emailaccount.list", withSubjectKind({}));
+    const data = await habitat().call("emailaccount.list", withSubjectKind({}));
     void writeOfflineCache(scope, "email", cacheId, data.accounts);
     return data.accounts;
   } catch (err) {
@@ -129,24 +129,24 @@ export async function fetchEmailAccounts(): Promise<EmailAccountRow[]> {
 }
 
 export async function fetchEmailProviders(): Promise<EmailProviderPreset[]> {
-  const data = await hub().call("emailprovider.list", withSubjectKind({}));
+  const data = await habitat().call("emailprovider.list", withSubjectKind({}));
   return data.providers;
 }
 
 export async function createEmailAccount(input: EmailAccountCreateInput): Promise<EmailAccountRow> {
-  const data = await hub().call("emailaccount.create", withSubjectKind(input));
+  const data = await habitat().call("emailaccount.create", withSubjectKind(input));
   await invalidateAccountsCache();
   return data.account;
 }
 
 export async function patchEmailAccount(input: EmailAccountPatchInput): Promise<EmailAccountRow> {
-  const data = await hub().call("emailaccount.patch", withSubjectKind(input));
+  const data = await habitat().call("emailaccount.patch", withSubjectKind(input));
   await invalidateAccountsCache();
   return data.account;
 }
 
 export async function deleteEmailAccount(id: number): Promise<void> {
-  await hub().call("emailaccount.delete", withSubjectKind({ id }));
+  await habitat().call("emailaccount.delete", withSubjectKind({ id }));
   await invalidateAccountsCache();
 }
 
@@ -160,7 +160,7 @@ export async function fetchEmailMessages(input: {
   const cacheId = messagesCacheId(input);
   const cached = await readOfflineCache<EmailMessageRow[]>(scope, "email", cacheId);
   try {
-    const data = await hub().call("email.message.list", withSubjectKind(input));
+    const data = await habitat().call("email.message.list", withSubjectKind(input));
     void writeOfflineCache(scope, "email", cacheId, data.messages);
     return data.messages;
   } catch (err) {
@@ -174,7 +174,7 @@ export async function readEmailMessage(id: number): Promise<EmailMessageRow> {
   const cacheId = messageCacheId(id);
   const cached = await readOfflineCache<EmailMessageRow>(scope, "email", cacheId);
   try {
-    const data = await hub().call("email.message.read", withSubjectKind({ id }));
+    const data = await habitat().call("email.message.read", withSubjectKind({ id }));
     void writeOfflineCache(scope, "email", cacheId, data.message);
     return data.message;
   } catch (err) {
@@ -184,15 +184,15 @@ export async function readEmailMessage(id: number): Promise<EmailMessageRow> {
 }
 
 export async function markEmailMessageRead(id: number): Promise<void> {
-  await hub().call("email.message.markRead", withSubjectKind({ id }));
+  await habitat().call("email.message.markRead", withSubjectKind({ id }));
 }
 
 export async function markEmailMessageUnread(id: number): Promise<void> {
-  await hub().call("email.message.markUnread", withSubjectKind({ id }));
+  await habitat().call("email.message.markUnread", withSubjectKind({ id }));
 }
 
 export async function deleteEmailMessage(id: number): Promise<void> {
-  await hub().call("email.message.delete", withSubjectKind({ id }));
+  await habitat().call("email.message.delete", withSubjectKind({ id }));
 }
 
 export async function sendEmailMessage(input: {
@@ -203,7 +203,7 @@ export async function sendEmailMessage(input: {
   cc?: string;
   bcc?: string;
 }): Promise<{ messageId: string; account_id: number; message_entity_id: number }> {
-  const data = await hub().call("email.send", withSubjectKind(input));
+  const data = await habitat().call("email.send", withSubjectKind(input));
   return {
     messageId: data.messageId,
     account_id: data.account_id,
@@ -223,7 +223,10 @@ export async function syncEmailAccount(
   accountId?: number,
   limit = 100,
 ): Promise<EmailSyncResult[]> {
-  const data = await hub().call("email.sync", withSubjectKind({ account_id: accountId, limit }));
+  const data = await habitat().call(
+    "email.sync",
+    withSubjectKind({ account_id: accountId, limit }),
+  );
   const results = data.results;
   const failed = results.filter((row) => row.error);
   if (failed.length > 0) {
@@ -247,7 +250,7 @@ export async function searchEmailMessages(input: {
   const cacheId = searchCacheId(input);
   const cached = await readOfflineCache<EmailMessageRow[]>(scope, "email", cacheId);
   try {
-    const data = await hub().call(
+    const data = await habitat().call(
       "email.message.search",
       withSubjectKind({
         query: input.query,

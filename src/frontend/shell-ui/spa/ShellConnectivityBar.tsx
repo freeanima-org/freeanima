@@ -2,7 +2,7 @@ import {
   reconnectHabitat,
   useHabitatConnection,
   useNetworkOnline,
-  useOpenHubSettingsCapability,
+  useOpenHabitatSettingsCapability,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
 import {
   dismissShellToast,
@@ -22,7 +22,7 @@ export function ShellConnectivityBar(): null {
   const networkOnline = useNetworkOnline();
   const habitatConnection = useHabitatConnection();
   const reconnectingRef = useRef(false);
-  const canOpenHabitatSettings = useOpenHubSettingsCapability();
+  const canOpenHabitatSettings = useOpenHabitatSettingsCapability();
 
   const notice = resolveConnectivityNotice({ networkOnline, habitatConnection });
 

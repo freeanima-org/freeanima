@@ -1,5 +1,5 @@
 import { omitUndefined } from "@freeanima/core/util";
-import { bindHubRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { emailMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
@@ -13,7 +13,7 @@ function depsOf(deps: unknown): EmailSapServerDeps {
   return deps as EmailSapServerDeps;
 }
 
-export const emailHubRoutes = bindHubRouteHandlers(emailMethodDefs, {
+export const emailHubRoutes = bindHabitatRouteHandlers(emailMethodDefs, {
   "emailaccount.list": async (deps, input) =>
     service.serviceEmailAccountList(depsOf(deps).runtime.runtimeDeps(), input),
   "emailaccount.create": async (deps, input) =>

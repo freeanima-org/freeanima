@@ -81,7 +81,7 @@ function applyConfigToState(cfg: CompanionConfig, prev?: CompanionState): Partia
   const modelPath = cfg.model_available ? cfg.model_path : "";
   const bumpRevision = visualConfigChanged(cfg, prev);
   return {
-    habitatUrl: cfg.hub_url,
+    habitatUrl: cfg.habitat_url ?? cfg.hub_url,
     modelPath,
     instanceId: cfg.instance_id,
     sapConnected: cfg.sap_connected,
@@ -149,7 +149,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
 
   applyConfig(cfg) {
     const prev = get();
-    const hubChanged = prev.habitatUrl !== cfg.hub_url;
+    const hubChanged = prev.habitatUrl !== (cfg.habitat_url ?? cfg.hub_url);
     if (hubChanged) {
       resetSidecarOriginCache();
     }

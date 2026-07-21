@@ -35,100 +35,104 @@ import {
 } from "@freeanima/shared/sap-contract/frames/message";
 import { z } from "zod";
 
-import { defineHubMethod, dualTransportMeta, wsOnlyMeta } from "@freeanima/shared/habitat-contract";
+import {
+  defineHabitatMethod,
+  dualTransportMeta,
+  wsOnlyMeta,
+} from "@freeanima/shared/habitat-contract";
 
 const conversationMessagesOutputSchema = z.record(z.string(), z.unknown());
 const conversationPatchTitleOutputSchema = z.object({ ok: z.literal(true) });
 const conversationSubscribeOutputSchema = z.object({ ok: z.literal(true) });
 
 export const chatMethodDefs = {
-  "conversation.create": defineHubMethod({
+  "conversation.create": defineHabitatMethod({
     input: conversationCreateInputSchema,
     output: conversationCreateOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "conversation.list": defineHubMethod({
+  "conversation.list": defineHabitatMethod({
     input: conversationListInputSchema,
     output: conversationListOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "conversation.messages": defineHubMethod({
+  "conversation.messages": defineHabitatMethod({
     input: conversationMessagesInputSchema,
     output: conversationMessagesOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "conversation.tail": defineHubMethod({
+  "conversation.tail": defineHabitatMethod({
     input: conversationTailInputSchema,
     output: conversationTailOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "conversation.patchTitle": defineHubMethod({
+  "conversation.patchTitle": defineHabitatMethod({
     input: conversationPatchTitleInputSchema,
     output: conversationPatchTitleOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "conversation.archive": defineHubMethod({
+  "conversation.archive": defineHabitatMethod({
     input: conversationArchiveInputSchema,
     output: conversationMutateOutputSchema,
     meta: wsOnlyMeta(),
   }),
-  "conversation.unarchive": defineHubMethod({
+  "conversation.unarchive": defineHabitatMethod({
     input: conversationUnarchiveInputSchema,
     output: conversationMutateOutputSchema,
     meta: wsOnlyMeta(),
   }),
-  "conversation.delete": defineHubMethod({
+  "conversation.delete": defineHabitatMethod({
     input: conversationDeleteInputSchema,
     output: conversationMutateOutputSchema,
     meta: wsOnlyMeta(),
   }),
-  "conversation.rollbackBeforeLastUser": defineHubMethod({
+  "conversation.rollbackBeforeLastUser": defineHabitatMethod({
     input: conversationDeleteInputSchema,
     output: conversationMutateOutputSchema,
     meta: wsOnlyMeta(),
   }),
-  "conversation.subscribe": defineHubMethod({
+  "conversation.subscribe": defineHabitatMethod({
     input: conversationSubscribeInputSchema,
     output: conversationSubscribeOutputSchema,
     meta: wsOnlyMeta(),
   }),
-  "conversation.acpDock": defineHubMethod({
+  "conversation.acpDock": defineHabitatMethod({
     input: sessionAcpDockInputSchema,
     output: sessionAcpDockOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "conversation.commands": defineHubMethod({
+  "conversation.commands": defineHabitatMethod({
     input: conversationCommandsInputSchema,
     output: conversationCommandsOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "conversation.command": defineHubMethod({
+  "conversation.command": defineHabitatMethod({
     input: conversationCommandInputSchema,
     output: conversationCommandOutputSchema,
     // 与 conversation.commands 一致走 HTTP，避免卫星默认 WS 时调试困难
     meta: dualTransportMeta(true),
   }),
-  "message.send": defineHubMethod({
+  "message.send": defineHabitatMethod({
     input: messageSendInputSchema,
     output: messageSendOutputSchema,
     meta: wsOnlyMeta(),
   }),
-  "message.interrupt": defineHubMethod({
+  "message.interrupt": defineHabitatMethod({
     input: messageInterruptInputSchema,
     output: messageInterruptOutputSchema,
     meta: wsOnlyMeta(),
   }),
-  "stream.attach": defineHubMethod({
+  "stream.attach": defineHabitatMethod({
     input: streamAttachInputSchema,
     output: streamAttachOutputSchema,
     meta: wsOnlyMeta(),
   }),
-  "stream.lookup": defineHubMethod({
+  "stream.lookup": defineHabitatMethod({
     input: streamLookupInputSchema,
     output: streamLookupOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "llm_debug.get": defineHubMethod({
+  "llm_debug.get": defineHabitatMethod({
     input: llmDebugGetInputSchema,
     output: llmDebugGetOutputSchema,
     meta: dualTransportMeta(true),

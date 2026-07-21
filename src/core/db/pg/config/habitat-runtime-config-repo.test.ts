@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test";
 
-import { mergeSection, replaceSection } from "./hub-runtime-config-repo.ts";
+import { mergeSection, replaceSection } from "./habitat-runtime-config-repo.ts";
 
-describe("hub-runtime-config section merge vs replace", () => {
+describe("habitat-runtime-config section merge vs replace", () => {
   it("mergeSection 浅合并 record，无法删除已有条目", () => {
     const doc = {
       acp_agents: {

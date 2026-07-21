@@ -5,7 +5,7 @@ export const HABITAT_RPC_REST_PREFIX = "/rpc/v1";
 
 /**
  * 旧前缀（仅兼容）。HTTP 请求 302 → {@link HABITAT_RPC_REST_PREFIX}；WS 双挂。
- * @deprecated 0.9.4 删除
+ * @deprecated 0.9.3 后删除
  */
 export const HABITAT_RPC_REST_PREFIX_LEGACY = "/hub/rpc/v1";
 
@@ -13,7 +13,7 @@ export function habitatRpcRestPrefix(): string {
   return HABITAT_RPC_REST_PREFIX;
 }
 
-/** 是否权威或 legacy RPC 路径（legacy 于 0.9.4 删除） */
+/** 是否权威或 legacy RPC 路径（legacy 于 0.9.3 后删除） */
 export function isHabitatRpcPathname(pathname: string): boolean {
   return (
     pathname === HABITAT_RPC_REST_PREFIX ||

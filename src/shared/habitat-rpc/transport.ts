@@ -4,20 +4,23 @@ import {
   HABITAT_RPC_LIVENESS_CHECK_INTERVAL_MS,
   HABITAT_RPC_LIVENESS_SILENCE_MS,
 } from "./constants.ts";
-import type { HubRpcConnectedPayload } from "./lifecycle.ts";
-import { serializeHubRpcEnvelope } from "./protocol.ts";
+import type { HabitatRpcConnectedPayload } from "./lifecycle.ts";
+import { serializeHabitatRpcEnvelope } from "./protocol.ts";
 
-export type HubRpcReconnectPolicy = {
+export type HabitatRpcReconnectPolicy = {
   initialMs?: number;
   maxMs?: number;
   factor?: number;
 };
 
-export type RunHubRpcTransportOptions = {
+/** @deprecated 使用 {@link HabitatRpcReconnectPolicy} */
+export type HubRpcReconnectPolicy = HabitatRpcReconnectPolicy;
+
+export type RunHabitatRpcTransportOptions = {
   habitatUrl: string;
   authToken: string;
-  reconnect?: HubRpcReconnectPolicy | false;
-  onConnected: (client: RpcClient, connected: HubRpcConnectedPayload) => void | Promise<void>;
+  reconnect?: HabitatRpcReconnectPolicy | false;
+  onConnected: (client: RpcClient, connected: HabitatRpcConnectedPayload) => void | Promise<void>;
   onDisconnected?: () => void;
   createWebSocket?: (wsUrl: string) => WebSocket;
   signal?: AbortSignal;
@@ -27,20 +30,26 @@ export type RunHubRpcTransportOptions = {
   livenessCheckIntervalMs?: number;
 };
 
-export type HubRpcTransportHandle = {
+/** @deprecated 使用 {@link RunHabitatRpcTransportOptions} */
+export type RunHubRpcTransportOptions = RunHabitatRpcTransportOptions;
+
+export type HabitatRpcTransportHandle = {
   getClient(): RpcClient | null;
   whenConnected(): Promise<RpcClient>;
   getLastInboundAt(): number | null;
   stop(): void;
 };
 
-const DEFAULT_POLICY: Required<HubRpcReconnectPolicy> = {
+/** @deprecated 使用 {@link HabitatRpcTransportHandle} */
+export type HubRpcTransportHandle = HabitatRpcTransportHandle;
+
+const DEFAULT_POLICY: Required<HabitatRpcReconnectPolicy> = {
   initialMs: 1000,
   maxMs: 30_000,
   factor: 2,
 };
 
-function hubRpcWsUrl(habitatUrl: string): string {
+function habitatRpcWsUrl(habitatUrl: string): string {
   return habitatUrl.replace(/^http/, "ws").replace(/\/$/, "") + "/rpc/v1";
 }
 function sleep(ms: number, signal?: AbortSignal): Promise<void> {
@@ -85,7 +94,9 @@ function forceCloseWs(ws: WebSocket): void {
   }
 }
 
-export function runHubRpcTransport(options: RunHubRpcTransportOptions): HubRpcTransportHandle {
+export function runHabitatRpcTransport(
+  options: RunHabitatRpcTransportOptions,
+): HabitatRpcTransportHandle {
   const policy =
     options.reconnect === false
       ? null
@@ -146,7 +157,11 @@ export function runHubRpcTransport(options: RunHubRpcTransportOptions): HubRpcTr
     }, livenessCheckIntervalMs);
   }
 
-  function startHeartbeat(ws: WebSocket, rpc: RpcClient, connected: HubRpcConnectedPayload): void {
+  function startHeartbeat(
+    ws: WebSocket,
+    rpc: RpcClient,
+    connected: HabitatRpcConnectedPayload,
+  ): void {
     clearHeartbeat();
     const serverIntervalMs = (connected.heartbeat_interval_sec ?? 30) * 1000;
     const sendIntervalMs = Math.min(serverIntervalMs, HABITAT_RPC_HEARTBEAT_SEND_CAP_MS);
@@ -158,7 +173,7 @@ export function runHubRpcTransport(options: RunHubRpcTransportOptions): HubRpcTr
     heartbeatTimer = setInterval(() => {
       try {
         ws.send(
-          serializeHubRpcEnvelope({
+          serializeHabitatRpcEnvelope({
             kind: "evt",
             method: "heartbeat",
             payload: { ts: Date.now() },
@@ -197,7 +212,7 @@ export function runHubRpcTransport(options: RunHubRpcTransportOptions): HubRpcTr
   }
 
   async function connectOnce(): Promise<void> {
-    const wsUrl = hubRpcWsUrl(options.habitatUrl);
+    const wsUrl = habitatRpcWsUrl(options.habitatUrl);
     const ws = options.createWebSocket?.(wsUrl) ?? new WebSocket(wsUrl);
     currentWs = ws;
 
@@ -291,3 +306,6 @@ export function runHubRpcTransport(options: RunHubRpcTransportOptions): HubRpcTr
     },
   };
 }
+
+/** @deprecated 使用 {@link runHabitatRpcTransport} */
+export const runHubRpcTransport = runHabitatRpcTransport;

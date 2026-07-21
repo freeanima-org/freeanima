@@ -46,7 +46,7 @@ export function isHabitatRpcPath(pathname: string): boolean {
 
 /**
  * 旧 `/hub/rpc/v1` HTTP → `/rpc/v1` 302（WS 不重定向，由双挂兼容）。
- * @deprecated 0.9.4 删除
+ * @deprecated 0.9.3 删除
  */
 export function legacyRpcHttpRedirect(req: Request): Response | null {
   if (isSapWebSocketUpgrade(req)) return null;

@@ -85,7 +85,7 @@ export function applyWebUiConfig(cfg: WebUiConfigJson | null): WebUiBootstrapCon
     window.__freeanimaWebUiConfig = meta;
   }
 
-  const runtimeHub = cfg?.hub_url?.trim().replace(/\/$/, "") ?? "";
+  const runtimeHub = (cfg?.habitat_url ?? cfg?.hub_url)?.trim().replace(/\/$/, "") ?? "";
   const remoteAuthToken = cfg?.remote_auth_token?.trim() || undefined;
 
   if (!runtimeHub || (pageOrigin && runtimeHub === pageOrigin)) {

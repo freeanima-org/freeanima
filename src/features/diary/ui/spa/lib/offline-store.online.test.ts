@@ -58,7 +58,7 @@ describe("diary online write-through", () => {
     hubCall.mockClear();
   });
 
-  it("Hub 可用时 create 直连且不入 outbox", async () => {
+  it("Habitat 可用时 create 直连且不入 outbox", async () => {
     const created = await offlineCreateDiaryEntry("user", {
       title: "online",
       entry_at: "2026-07-12T00:00:00.000Z",

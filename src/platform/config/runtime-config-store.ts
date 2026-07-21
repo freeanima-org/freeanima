@@ -24,7 +24,7 @@ export function isPatchableRuntimeConfig(config: Config): config is PatchableRun
   );
 }
 
-/** PG hub_runtime_config 运行时配置存储 */
+/** PG habitat_runtime_config 运行时配置存储 */
 export class RuntimeConfigStore extends Config implements PatchableRuntimeConfig {
   private constructor(snapshot: RuntimeConfig) {
     super(snapshot as import("@freeanima/core/config").AnimaConfig);

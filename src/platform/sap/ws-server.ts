@@ -15,7 +15,7 @@ import {
   type SapRouterInputs,
   type SapServerHandlers,
 } from "@freeanima/shared/sap-contract";
-import { hubRpcConnectPayloadSchema, HABITAT_RPC_VERSION } from "@freeanima/shared/habitat-rpc";
+import { habitatRpcConnectPayloadSchema, HABITAT_RPC_VERSION } from "@freeanima/shared/habitat-rpc";
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 import { isHubMethod } from "@freeanima/shared/habitat-contract";
 import { getFeatureRpcHandler } from "../features/registry.ts";
@@ -55,7 +55,7 @@ export function createSapServerHandlers(
         features_enabled: parsed.features_requested,
         server_info: {
           anima_version: deps.animaVersion,
-          hub_rpc_version: "HubRPC/1.0",
+          habitat_rpc_version: HABITAT_RPC_VERSION,
           ...(wantsMaskPresets
             ? {
                 capability_mask: {
@@ -177,7 +177,7 @@ export function attachSapWebSocket(
         ws.close(1008, "already connected");
         return;
       }
-      const parsed = hubRpcConnectPayloadSchema.parse(envelope.payload);
+      const parsed = habitatRpcConnectPayloadSchema.parse(envelope.payload);
       const verified = await verifyServiceApiToken(parsed.auth_token.trim());
       if (!verified) {
         ws.close(1008, "unauthorized");
@@ -337,7 +337,7 @@ export function attachSapWebSocket(
           id: envelope.id,
           ok: false,
           error: {
-            code: "hub_rpc_error",
+            code: "habitat_rpc_error",
             message: e instanceof Error ? e.message : String(e),
           },
         });

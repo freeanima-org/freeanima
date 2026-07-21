@@ -2,11 +2,12 @@
 /**
  * 源码 / worktree 本机起 Habitat（前台）。不经 anima service / systemd。
  *
- *   bun run dev:hub
- *   bun run dev:hub -- --port 12001
- *   bun run dev:hub -- --port 12001 --strict-port
+ *   bun run dev:habitat
+ *   bun run dev:habitat -- --port 12001
+ *   bun run dev:habitat -- --port 12001 --strict-port
  *
  * 默认随机 ≥10000 闲口（避开生产 2658/2659）。TLS 由 Vite 终止，本进程不绑 Habitat TLS。
+ * `dev:hub` / FREEANIMA_DEV_HUB 为 legacy alias（0.9.3 后删除）。
  */
 import { installErrorLogHandlers, logStartupError } from "@freeanima/platform/logging";
 import { Command } from "commander";
@@ -14,17 +15,20 @@ import { Command } from "commander";
 import { resolveServiceBindHost } from "./service-bind-host.ts";
 import { runServiceStack } from "./stack/supervisor.ts";
 import {
-  DEV_HUB_PORT_MIN,
+  DEV_HABITAT_PORT_MIN,
   findAvailableTcpPort,
   isTcpPortInUse,
   pickRandomAvailableTcpPort,
 } from "./tcp-port-available.ts";
 
-/** 与 platform/boot/dev-web-token.ts 的 FREEANIMA_DEV_HUB_ENV 一致 */
+/** 与 platform/boot/dev-web-token.ts 的 FREEANIMA_DEV_HABITAT_ENV 一致 */
+const FREEANIMA_DEV_HABITAT_ENV = "FREEANIMA_DEV_HABITAT";
+/** @deprecated 0.9.3 后删除 */
 const FREEANIMA_DEV_HUB_ENV = "FREEANIMA_DEV_HUB";
+
 async function main(): Promise<void> {
   const program = new Command()
-    .name("dev-hub")
+    .name("dev-habitat")
     .description("Run FreeAnima Habitat in foreground (monorepo / worktree; not anima service)")
     .option(
       "--host <host>",
@@ -42,11 +46,11 @@ async function main(): Promise<void> {
       "after",
       `
 Examples:
-  bun run dev:hub
-  bun run dev:hub -- --port 12001
-  bun run dev:hub -- --port 12001 --strict-port
+  bun run dev:habitat
+  bun run dev:habitat -- --port 12001
+  bun run dev:habitat -- --port 12001 --strict-port
 
-Dev defaults: random port ≥${DEV_HUB_PORT_MIN} (not 2658/2659). Pair with bun run dev:web (Vite proxy).
+Dev defaults: random port ≥${DEV_HABITAT_PORT_MIN} (not 2658/2659). Pair with bun run dev:web (Vite proxy).
 Production install uses standalone \`anima service\` (systemd). Source CLI has no \`service\` command.
 `,
     )
@@ -60,8 +64,10 @@ Production install uses standalone \`anima service\` (systemd). Source CLI has n
   let port: number;
 
   if (!portArg) {
-    port = await pickRandomAvailableTcpPort(host, DEV_HUB_PORT_MIN);
-    console.log(`dev-hub · picked random port ${port} (≥${DEV_HUB_PORT_MIN}; not production 2658)`);
+    port = await pickRandomAvailableTcpPort(host, DEV_HABITAT_PORT_MIN);
+    console.log(
+      `dev-habitat · picked random port ${port} (≥${DEV_HABITAT_PORT_MIN}; not production 2658)`,
+    );
   } else {
     const requested = parseInt(portArg, 10);
     if (!Number.isFinite(requested) || requested <= 0 || requested > 65535) {
@@ -75,13 +81,13 @@ Production install uses standalone \`anima service\` (systemd). Source CLI has n
         process.exit(1);
       }
       port = await findAvailableTcpPort(host, requested);
-      console.log(`dev-hub · port ${requested} busy → using ${port}`);
+      console.log(`dev-habitat · port ${requested} busy → using ${port}`);
     } else {
       port = requested;
     }
   }
 
-  console.log(`dev-hub · starting Habitat in foreground…`);
+  console.log(`dev-habitat · starting Habitat in foreground…`);
   console.log(`  address: http://${host.split(",")[0]?.trim() || host}:${port}`);
   console.log(`  http override: CLI --host/--port；Habitat TLS skipped (Vite may terminate HTTPS)`);
   console.log(
@@ -89,12 +95,13 @@ Production install uses standalone \`anima service\` (systemd). Source CLI has n
   );
   console.log(`  tip: anima service is only on the standalone install CLI; TLS via Vite if needed`);
 
+  process.env[FREEANIMA_DEV_HABITAT_ENV] = "1";
   process.env[FREEANIMA_DEV_HUB_ENV] = "1";
   installErrorLogHandlers();
   try {
     await runServiceStack({ host, port, skipTls: true });
   } catch (e) {
-    logStartupError("dev-hub startup failed", e);
+    logStartupError("dev-habitat startup failed", e);
     process.exit(1);
   }
 }

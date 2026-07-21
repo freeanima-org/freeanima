@@ -50,7 +50,8 @@ export const companionConfigSchema = z.object({
 export type CompanionConfigPayload = z.infer<typeof companionConfigSchema>;
 
 export const companionClientConfigSchema = companionConfigSchema.extend({
-  hub_url: z.string(),
+  habitat_url: z.string().optional(),
+  hub_url: z.string().optional(),
   model_path: z.string(),
   model_available: z.boolean(),
   fbx_import_available: z.boolean(),

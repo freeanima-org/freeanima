@@ -4,7 +4,7 @@ import type { HubMethodMeta } from "./transport.ts";
 import type { HttpRouteMeta, HttpRequestEncoding, HttpResponseEncoding } from "./http-route.ts";
 
 /** 单个 Habitat method 的契约定义 */
-export type HubMethodDef<
+export type HabitatMethodDef<
   I extends z.ZodTypeAny = z.ZodTypeAny,
   O extends z.ZodTypeAny = z.ZodTypeAny,
 > = {
@@ -13,11 +13,20 @@ export type HubMethodDef<
   meta: HubMethodMeta;
 };
 
-export function defineHubMethod<I extends z.ZodTypeAny, O extends z.ZodTypeAny>(
-  def: HubMethodDef<I, O>,
-): HubMethodDef<I, O> {
+export function defineHabitatMethod<I extends z.ZodTypeAny, O extends z.ZodTypeAny>(
+  def: HabitatMethodDef<I, O>,
+): HabitatMethodDef<I, O> {
   return def;
 }
+
+/** @deprecated 0.9.3 后删除 — 请用 HabitatMethodDef */
+export type HubMethodDef<
+  I extends z.ZodTypeAny = z.ZodTypeAny,
+  O extends z.ZodTypeAny = z.ZodTypeAny,
+> = HabitatMethodDef<I, O>;
+
+/** @deprecated 0.9.3 后删除 — 请用 defineHabitatMethod */
+export const defineHubMethod = defineHabitatMethod;
 
 export type DualTransportMetaOptions = {
   http?: Partial<HttpRouteMeta>;

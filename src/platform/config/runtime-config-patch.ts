@@ -15,7 +15,7 @@ import {
 
 import { loadBootstrapConfig } from "../boot/bootstrap.ts";
 
-/** CLI 冷路径：连 PG 并应用迁移后再读/写 hub_runtime_config（模拟新用户空库） */
+/** CLI 冷路径：连 PG 并应用迁移后再读/写 habitat_runtime_config（模拟新用户空库） */
 async function ensureDbFromBootstrap(): Promise<void> {
   try {
     getDb();

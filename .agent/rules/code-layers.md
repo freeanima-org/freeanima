@@ -28,7 +28,7 @@ app → platform → capabilities → runtime → core → kernel
 | **platform**     | `src/platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI wiring, feature registry                      |
 | **app**          | `app/`              | CLI / shells          | CLI、desktop/mobile 壳（安装包内嵌 `web/dist`）；浏览器/PWA 仍由 Habitat `/web/*` 托管 |
 
-### Habitat（hub-rest）
+### Habitat（habitat-rest）
 
 | 包名                          | 物理路径                                      | 说明                                                    |
 | ----------------------------- | --------------------------------------------- | ------------------------------------------------------- |

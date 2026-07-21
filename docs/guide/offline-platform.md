@@ -21,8 +21,8 @@ FreeAnima 卫星壳离线能力分三层：
 - `offline-module-registry` — Rpc / Stream 双适配器注册
 - `offline-sync` — 重连/可见时 orchestrator flush + refreshAll；flush 锁尾触发；compact 后删除被吸收的 IDB op
 - `offline-cache-first` — `withOfflineCache()`：**在线栖息地优先** / 离线只读快照（可与 IDB 并行读作失败回退）
-- `prefer-online-write` — `preferOnlineWrite()`：在线写优先 Hub RPC；仅网络/传输失败回退 outbox；业务错误直接抛出
-- `hub-fetch-gate` — `isHabitatFetchAvailable()`：断网 **或** Hub 非 `connected` 时不发起 Hub RPC 读/flush，只读 IndexedDB 快照
+- `prefer-online-write` — `preferOnlineWrite()`：在线写优先 Habitat RPC；仅网络/传输失败回退 outbox；业务错误直接抛出
+- `habitat-fetch-gate` — `isHabitatFetchAvailable()`：断网 **或** Habitat 非 `connected` 时不发起 Habitat RPC 读/flush，只读 IndexedDB 快照
 
 ## 在线栖息地优先 / 离线本地优先
 
@@ -30,17 +30,17 @@ FreeAnima 卫星壳离线能力分三层：
 
 ### 读
 
-- 栖息地可用：必打 Hub（缓存命中不短路）；成功后异步写回本地 KV；fetch 失败回退快照
+- 栖息地可用：必打 Habitat（缓存命中不短路）；成功后异步写回本地 KV；fetch 失败回退快照
 - 栖息地不可用：只读本地；无缓存则抛 offlineError
 - Tier 1 / 可写模块 list·get：优先 `withOfflineCache()`；手写路径须同语义
 
 ### 写（全 Tier 2：在线不入 outbox）
 
-| 层级          | 模块                   | 在线                                                                                                                  | 离线 / 传输失败                                              |
-| ------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Tier 2-CRUD   | Diary / Task / Project | `preferOnlineWrite` → 直连 Hub RPC（带 `client_op_id`），响应回写本地 KV，**不入 outbox**；create 直接得到服务端正 id | 乐观 KV + outbox + `scheduleFlush`（含仍为未映射的 temp id） |
-| Tier 2-Hybrid | Pomodoro               | `preferOnlineWrite` → Hub RPC（config / active / session），**不入 outbox**；本地 LWW 仍即时写                        | enqueue outbox，重连 flush                                   |
-| Tier 2-Stream | Chat                   | 栖息地可用：内存 `client_op_id` + 直发 message stream，**不入 outbox**                                                | enqueue outbox；仅传输失败从在线直发回退入队                 |
+| 层级          | 模块                   | 在线                                                                                                                      | 离线 / 传输失败                                              |
+| ------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Tier 2-CRUD   | Diary / Task / Project | `preferOnlineWrite` → 直连 Habitat RPC（带 `client_op_id`），响应回写本地 KV，**不入 outbox**；create 直接得到服务端正 id | 乐观 KV + outbox + `scheduleFlush`（含仍为未映射的 temp id） |
+| Tier 2-Hybrid | Pomodoro               | `preferOnlineWrite` → Habitat RPC（config / active / session），**不入 outbox**；本地 LWW 仍即时写                        | enqueue outbox，重连 flush                                   |
+| Tier 2-Stream | Chat                   | 栖息地可用：内存 `client_op_id` + 直发 message stream，**不入 outbox**                                                    | enqueue outbox；仅传输失败从在线直发回退入队                 |
 
 - 业务校验 / 尾冲突等错误抛给 UI，不进「可自动重试」队列
 - 模块接线：gate / 错误分流认 sdk（`preferOnlineWrite` / `isRetriableOfflineWriteError`）；不抽泛型 CRUD 框架
@@ -49,7 +49,7 @@ FreeAnima 卫星壳离线能力分三层：
 
 - `flushOfflineModule` / `flushAllOfflineModules`：gate 为 false 时 no-op，重连后由 `OfflineSyncBootstrap` 触发；flush 锁尾触发
 - 自动 flush 连续失败达到 5 次后停止重试
-- **Bootstrap toast**：展示 **failed / stale**（任意连接状态）；纯 **pending** 仅在 Hub **未** `connected` 时展示。`connected` 下正常排队/在线直发不得弹「重新连接并全部重试」
+- **Bootstrap toast**：展示 **failed / stale**（任意连接状态）；纯 **pending** 仅在 Habitat **未** `connected` 时展示。`connected` 下正常排队/在线直发不得弹「重新连接并全部重试」
 - 支持单条重试、丢弃与「重连并重试全部」
 - chat 流式 flush 在离开聊天页时回退到 headless context，全局 bar 仍可 flush
 

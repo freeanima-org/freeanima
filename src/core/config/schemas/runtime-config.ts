@@ -5,7 +5,7 @@ import {
   type BootstrapConfigKey,
 } from "../bootstrap-config.ts";
 
-/** Habitat 运行时配置（PG hub_runtime_config）；不含 bootstrap 段 */
+/** Habitat 运行时配置（PG habitat_runtime_config）；不含 bootstrap 段 */
 export const runtimeConfigSchema = animaConfigSchema
   .omit({
     database: true,

@@ -42,12 +42,14 @@ export async function findAvailableTcpPort(
   );
 }
 
-export const DEV_HUB_PORT_MIN = 10_000;
+export const DEV_HABITAT_PORT_MIN = 10_000;
+/** @deprecated 0.9.3 后删除 — 请用 DEV_HABITAT_PORT_MIN */
+export const DEV_HUB_PORT_MIN = DEV_HABITAT_PORT_MIN;
 
-/** 在 [minPort, maxPort] 内随机找闲口（dev:hub 默认避开生产 2658/2659） */
+/** 在 [minPort, maxPort] 内随机找闲口（dev:habitat 默认避开生产 2658/2659） */
 export async function pickRandomAvailableTcpPort(
   host: string,
-  minPort = DEV_HUB_PORT_MIN,
+  minPort = DEV_HABITAT_PORT_MIN,
   maxPort = 65_535,
   attempts = 40,
 ): Promise<number> {
