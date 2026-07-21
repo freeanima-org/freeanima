@@ -48,7 +48,7 @@ import { ProjectSidebar } from "./components/ProjectSidebar.tsx";
 import { ProjectTaskDetailPanel } from "./components/ProjectTaskDetailPanel.tsx";
 import { ProjectTaskList } from "./components/ProjectTaskList.tsx";
 import type { ProjectDragEndAction } from "./lib/resolve-project-drag-end.ts";
-import { sortOrderUpdates } from "./lib/reorder.ts";
+import { applySortOrderUpdates, sortOrderUpdates } from "./lib/reorder.ts";
 import {
   completeProjectTask,
   createProjectApi,
@@ -473,22 +473,22 @@ export function ProjectApp() {
     if (selectedProjectId == null) return;
     const title = quickTaskTitle.trim();
     if (!title) return;
-    const pending = tasks.filter((t) => t.status === "pending");
-    await createProjectTask(subjectKind, {
+    // 省略 sort_order：与清单一致，domain / offline 统一 prepend 到 pending 最前
+    const created = await createProjectTask(subjectKind, {
       title,
       project_id: selectedProjectId,
-      sort_order: pending.length,
     });
     setQuickTaskTitle("");
     await reloadProjectDetail();
     await reload();
+    openTaskDetail(created);
   };
 
   const persistProjectTaskOrder = async (orderedPending: TaskItemRow[]) => {
     const completed = tasks.filter((t) => t.status === "completed");
-    const merged = [...orderedPending, ...completed];
-    setTasks(merged.map((item, index) => ({ ...item, sort_order: index })));
     const updates = sortOrderUpdates(orderedPending);
+    const nextPending = applySortOrderUpdates(orderedPending, updates);
+    setTasks([...nextPending, ...completed]);
     try {
       await Promise.all(
         updates.map((u) => updateProjectTask(subjectKind, u.id, { sort_order: u.sort_order })),
@@ -651,13 +651,12 @@ export function ProjectApp() {
           parent_id: action.parentId,
         });
       } else if (action.type === "reorderFolders" || action.type === "placeFolder") {
-        // sortOrderUpdates 要求仍带旧 sort_order；先算 patch 再改写 UI
+        // sortOrderUpdates 要求仍带旧 sort_order；先算 patch 再乐观改写
         const updates = sortOrderUpdates(action.ordered);
-        const ordered = action.ordered.map((row, index) => ({
-          ...row,
-          parent_id: action.parentId,
-          sort_order: index,
-        }));
+        const ordered = applySortOrderUpdates(
+          action.ordered.map((row) => ({ ...row, parent_id: action.parentId })),
+          updates,
+        );
         setFolders((prev) => {
           const ids = new Set(ordered.map((f) => f.id));
           const others = prev.filter((f) => !ids.has(f.id));
@@ -665,9 +664,10 @@ export function ProjectApp() {
         });
         const placedFolderId = action.type === "placeFolder" ? action.folderId : null;
         if (placedFolderId != null) {
+          const placed = ordered.find((f) => f.id === placedFolderId);
           await patchProjectFolderApi(subjectKind, placedFolderId, {
             parent_id: action.parentId,
-            sort_order: ordered.findIndex((f) => f.id === placedFolderId),
+            sort_order: placed?.sort_order ?? ordered.length,
           });
         }
         await Promise.all(
@@ -682,11 +682,10 @@ export function ProjectApp() {
         await patchProjectApi(subjectKind, action.projectId, { folder_id: action.folderId });
       } else if (action.type === "reorderProjects" || action.type === "placeProject") {
         const updates = sortOrderUpdates(action.ordered);
-        const ordered = action.ordered.map((row, index) => ({
-          ...row,
-          folder_id: action.folderId,
-          sort_order: index,
-        }));
+        const ordered = applySortOrderUpdates(
+          action.ordered.map((row) => ({ ...row, folder_id: action.folderId })),
+          updates,
+        );
         setProjects((prev) => {
           const ids = new Set(ordered.map((p) => p.id));
           const others = prev.filter((p) => !ids.has(p.id));
@@ -694,9 +693,10 @@ export function ProjectApp() {
         });
         const placedProjectId = action.type === "placeProject" ? action.projectId : null;
         if (placedProjectId != null) {
+          const placed = ordered.find((p) => p.id === placedProjectId);
           await patchProjectApi(subjectKind, placedProjectId, {
             folder_id: action.folderId,
-            sort_order: ordered.findIndex((p) => p.id === placedProjectId),
+            sort_order: placed?.sort_order ?? ordered.length,
           });
         }
         await Promise.all(

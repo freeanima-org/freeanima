@@ -24,6 +24,7 @@ import {
 import { preferOnlineWrite } from "@freeanima/frontend/shell-sdk/prefer-online-write";
 import { formatCstIso } from "@freeanima/core/util/time";
 import { omitUndefined } from "@freeanima/core/util";
+import { nextPrependSortOrder } from "@freeanima/features/task/domain/sort-order.ts";
 import type {
   TaskItemRowPayload,
   TaskListRowPayload,
@@ -314,6 +315,12 @@ async function upsertLocalItem(scope: string, item: TaskItemRow): Promise<void> 
   const next = items.filter((row) => row.id !== item.id);
   next.push(item);
   await writeLocalItems(scope, item.list_id, next);
+}
+
+/** 未显式 sort_order 时：本地 pending 取 min-STEP（允许负值），与 domain prepend 一致。 */
+async function localNextPrependSortOrder(scope: string, listId: number): Promise<number> {
+  const pending = (await readLocalItems(scope, listId)).filter((item) => item.status === "pending");
+  return nextPrependSortOrder(pending.map((item) => item.sort_order));
 }
 
 /**
@@ -841,6 +848,7 @@ export async function offlineCreateTaskItem(input: {
   const title = input.title.trim();
   if (title.length === 0) throw new Error("task title is required");
 
+  const autoPrepend = input.sort_order === undefined;
   const payload = {
     title,
     list_id: input.list_id,
@@ -848,7 +856,7 @@ export async function offlineCreateTaskItem(input: {
     tag_ids: input.tag_ids ?? [],
     priority: input.priority ?? ("none" as const),
     due_at: input.due_at ?? null,
-    sort_order: input.sort_order ?? 0,
+    ...(autoPrepend ? {} : { sort_order: input.sort_order }),
   };
 
   const doOffline = async (): Promise<TaskItemRow> => {
@@ -857,9 +865,18 @@ export async function offlineCreateTaskItem(input: {
     const tempId = allocateTempId(scope, MODULE_ID);
     const opId = randomUuid();
     const now = new Date().toISOString();
+    const sort_order = autoPrepend
+      ? await localNextPrependSortOrder(scope, input.list_id)
+      : (input.sort_order as number);
     const row: TaskItemRow = {
       id: tempId,
-      ...payload,
+      title: payload.title,
+      list_id: payload.list_id,
+      content: payload.content,
+      tag_ids: payload.tag_ids,
+      priority: payload.priority,
+      due_at: payload.due_at,
+      sort_order,
       status: "pending",
       remind_at: null,
       project_id: null,

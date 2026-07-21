@@ -109,7 +109,7 @@ import {
   smartListRowKey,
 } from "./lib/task-smart-list-utils.ts";
 import { getParentId, getSiblings } from "@freeanima/frontend/ui-kit/lib/task-list-tree.ts";
-import { sortOrderUpdates } from "./lib/reorder.ts";
+import { sortOrderUpdates, applySortOrderUpdates } from "./lib/reorder.ts";
 import {
   buildItemMenuItems,
   buildListMenuItems,
@@ -796,9 +796,9 @@ export function TaskApp() {
     const active = lists.filter((l) => !l.closed);
     const siblingIds = new Set(ordered.map((l) => l.id));
     const others = active.filter((l) => getParentId(l) !== parentId || !siblingIds.has(l.id));
-    // sortOrderUpdates 要求元素仍带旧 sort_order；先算 patch 再改写 UI
+    // sortOrderUpdates 要求元素仍带旧 sort_order；先算 patch 再乐观改写
     const updates = sortOrderUpdates(ordered);
-    const nextSiblings = ordered.map((list, index) => ({ ...list, sort_order: index }));
+    const nextSiblings = applySortOrderUpdates(ordered, updates);
     const mergedActive = [...others, ...nextSiblings].toSorted(
       (a, b) => a.sort_order - b.sort_order || a.id - b.id,
     );
@@ -849,20 +849,19 @@ export function TaskApp() {
     );
     // 与 persistSiblingOrder 相同：先对旧 sort_order 算 diff，再乐观改写
     const updates = sortOrderUpdates(ordered);
-    const nextSiblings = ordered.map((row, index) => ({
-      ...row,
-      parent_id: parentId,
-      sort_order: index,
-    }));
+    const nextSiblings = applySortOrderUpdates(
+      ordered.map((row) => ({ ...row, parent_id: parentId })),
+      updates,
+    );
     const mergedActive = [...others, ...nextSiblings].toSorted(
       (a, b) => a.sort_order - b.sort_order || a.id - b.id,
     );
     setLists([...mergedActive, ...closed]);
-    const sortAt = nextSiblings.findIndex((l) => l.id === listId);
+    const placed = nextSiblings.find((l) => l.id === listId);
     try {
       await updateTaskList(listId, {
         parent_id: parentId,
-        sort_order: sortAt < 0 ? nextSiblings.length : sortAt,
+        sort_order: placed?.sort_order ?? nextSiblings.length,
       });
       await Promise.all(
         updates
@@ -877,9 +876,9 @@ export function TaskApp() {
 
   const persistItemOrder = async (orderedPending: TaskItemRow[]) => {
     const completed = items.filter((i) => i.status === "completed");
-    const merged = [...orderedPending, ...completed];
-    setItems(merged.map((item, index) => ({ ...item, sort_order: index })));
     const updates = sortOrderUpdates(orderedPending);
+    const nextPending = applySortOrderUpdates(orderedPending, updates);
+    setItems([...nextPending, ...completed]);
     try {
       await Promise.all(updates.map((u) => updateTaskItem(u.id, { sort_order: u.sort_order })));
     } catch (err) {
@@ -895,20 +894,20 @@ export function TaskApp() {
     const targetListId = selection?.kind === "list" ? selection.id : resolveDefaultListId(lists);
     if (targetListId == null) return;
     try {
-      const pending = items.filter((i) => i.status === "pending");
       let due_at: string | null = null;
       if (selection?.kind === "smart_list") {
         const row = findSmartListRowByKey(smartLists, selection.key);
         if (row) due_at = resolveSmartListDueAt(row.filters);
       }
-      await createTaskItem({
+      // 省略 sort_order：domain / offline 统一 prepend 到 pending 最前
+      const created = await createTaskItem({
         title,
         list_id: targetListId,
-        sort_order: pending.length,
         ...(due_at ? { due_at } : {}),
       });
       setQuickTitle("");
       await Promise.all([reloadCurrentItems(), loadLists()]);
+      openTaskDetail(created);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }

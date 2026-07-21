@@ -24,6 +24,7 @@ import {
 import { preferOnlineWrite } from "@freeanima/frontend/shell-sdk/prefer-online-write";
 import { formatCstIso } from "@freeanima/core/util/time";
 import { omitUndefined } from "@freeanima/core/util";
+import { nextPrependSortOrder } from "@freeanima/features/task/domain/sort-order.ts";
 import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 import { randomUuid } from "@freeanima/shared/rpc-contract";
 
@@ -111,6 +112,14 @@ async function upsertLocalItem(scope: string, item: TaskItemRow): Promise<void> 
   const next = items.filter((row) => row.id !== item.id);
   next.push(item);
   await writeLocalItems(scope, item.project_id, next);
+}
+
+/** 未显式 sort_order 时：本地 pending 取 min-STEP（允许负值），与 domain prepend 一致。 */
+async function localNextPrependSortOrder(scope: string, projectId: number): Promise<number> {
+  const pending = (await readLocalItems(scope, projectId)).filter(
+    (item) => item.status === "pending",
+  );
+  return nextPrependSortOrder(pending.map((item) => item.sort_order));
 }
 
 async function removeLocalItem(scope: string, projectId: number, id: number): Promise<void> {
@@ -959,12 +968,22 @@ export async function offlineCreateProjectTask(input: {
   const title = input.title.trim();
   if (title.length === 0) throw new Error("task title is required");
 
+  const autoPrepend = input.sort_order === undefined;
+  const createPayload = {
+    title,
+    project_id: input.project_id,
+    ...(autoPrepend ? {} : { sort_order: input.sort_order }),
+  };
+
   const doOffline = async (): Promise<TaskItemRow> => {
     const scope = resolveOutboxScope();
     await ensureAllocatorSeeded(scope);
     const tempId = allocateTempId(scope, MODULE_ID);
     const opId = randomUuid();
     const now = new Date().toISOString();
+    const sort_order = autoPrepend
+      ? await localNextPrependSortOrder(scope, input.project_id)
+      : (input.sort_order as number);
     const row: TaskItemRow = {
       id: tempId,
       title,
@@ -976,7 +995,7 @@ export async function offlineCreateProjectTask(input: {
       remind_at: null,
       list_id: null,
       project_id: input.project_id,
-      sort_order: input.sort_order ?? 0,
+      sort_order,
       completed_at: null,
       created_at: now,
       updated_at: now,
@@ -991,9 +1010,7 @@ export async function offlineCreateProjectTask(input: {
       payload: {
         ...subjectPayload(),
         client_op_id: opId,
-        title: row.title,
-        project_id: row.project_id,
-        sort_order: row.sort_order,
+        ...createPayload,
       },
       tempEntityId: tempId,
       createdAt: now,
@@ -1021,9 +1038,7 @@ export async function offlineCreateProjectTask(input: {
     const data = await habitat().call("project.item.create", {
       ...subjectPayload(),
       client_op_id: opId,
-      title,
-      project_id: input.project_id,
-      sort_order: input.sort_order ?? 0,
+      ...createPayload,
     });
     await upsertLocalItem(scope, data.item);
     await adjustProjectTaskCount(scope, input.project_id, 1);

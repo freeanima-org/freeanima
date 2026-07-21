@@ -1,3 +1,11 @@
+export {
+  SORT_ORDER_STEP,
+  applySortOrderUpdates,
+  nextPrependSortOrder,
+  sortOrderUpdates,
+} from "@freeanima/features/task/domain/sort-order.ts";
+export type { SortOrderPatch, SortOrderRow } from "@freeanima/features/task/domain/sort-order.ts";
+
 /** 将 draggedId 插入到 targetId 之前（targetId 为空则放到末尾） */
 export function reorderIds<T extends { id: number }>(
   items: T[],
@@ -24,16 +32,4 @@ export function reorderIds<T extends { id: number }>(
 
   next.splice(to, 0, dragged);
   return next;
-}
-
-export function sortOrderUpdates<T extends { id: number; sort_order: number }>(
-  ordered: T[],
-): Array<{ id: number; sort_order: number }> {
-  const updates: Array<{ id: number; sort_order: number }> = [];
-  ordered.forEach((item, index) => {
-    if (item.sort_order !== index) {
-      updates.push({ id: item.id, sort_order: index });
-    }
-  });
-  return updates;
 }

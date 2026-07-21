@@ -20,6 +20,7 @@ import {
   updateTaskItem,
   updateTaskList,
 } from "@freeanima/features/task/domain";
+import { createProject } from "@freeanima/features/project/domain";
 import { getEntity } from "@freeanima/core/db/pg/entity";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
@@ -98,6 +99,46 @@ describePg("entity task PG", () => {
     const lists = await listTaskLists(worldId);
     expect(lists.find((l) => l.id === list.id)?.item_count).toBeUndefined();
     expect(await listTaskListStats(worldId)).toContainEqual({ id: list.id, item_count: 1 });
+  });
+
+  it("未传 sort_order 时新任务排在 pending 最前（清单与项目一致）", async () => {
+    const worldId = testUserWorldId();
+    const list = await createTaskList(worldId, { name: "排序清单" });
+    const older = await createTaskItem(worldId, { title: "旧任务", list_id: list.id });
+    const newer = await createTaskItem(worldId, { title: "新任务", list_id: list.id });
+
+    const listItems = await listTaskItems(worldId, { list_id: list.id, status: "pending" });
+    expect(listItems.map((i) => i.title)).toEqual(["新任务", "旧任务"]);
+    expect(listItems[0]?.id).toBe(newer.id);
+    expect(listItems[0]?.sort_order).toBe(-10);
+    expect(listItems[1]?.id).toBe(older.id);
+    expect(listItems[1]?.sort_order).toBe(0);
+
+    const pinned = await createTaskItem(worldId, {
+      title: "指定末尾",
+      list_id: list.id,
+      sort_order: 2,
+    });
+    const afterExplicit = await listTaskItems(worldId, { list_id: list.id, status: "pending" });
+    expect(afterExplicit.map((i) => i.title)).toEqual(["新任务", "旧任务", "指定末尾"]);
+    expect(pinned.sort_order).toBe(2);
+
+    const project = await createProject(worldId, { title: "排序项目" });
+    const projectOlder = await createTaskItem(worldId, {
+      title: "项目旧",
+      project_id: project.id,
+    });
+    const projectNewer = await createTaskItem(worldId, {
+      title: "项目新",
+      project_id: project.id,
+    });
+    const projectItems = await listTaskItems(worldId, {
+      project_id: project.id,
+      status: "pending",
+    });
+    expect(projectItems.map((i) => i.title)).toEqual(["项目新", "项目旧"]);
+    expect(projectItems[0]?.id).toBe(projectNewer.id);
+    expect(projectItems[1]?.id).toBe(projectOlder.id);
   });
 
   it("closes and reopens task lists; default list cannot be closed", async () => {
