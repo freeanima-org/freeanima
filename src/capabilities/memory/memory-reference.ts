@@ -9,5 +9,4 @@ export {
   MEMORY_REFERENCE_STALE_WEIGHT,
   memoryReferenceWeight,
   parseMemoryReferenceMarkers,
-  SEMANTIC_MEMORY_ID_PATTERN,
 } from "@freeanima/core/db/pg/memory-reference/markers";

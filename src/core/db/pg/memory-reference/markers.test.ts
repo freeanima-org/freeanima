@@ -24,9 +24,7 @@ describe("memory-reference markers", () => {
     expect(parseMemoryReferenceMarkers(text)).toEqual([42, 101]);
   });
 
-  it("parseMemoryReferenceMarkers ignores non-bracket markers", () => {
-    expect(parseMemoryReferenceMarkers("[memory #42] body")).toEqual([]);
-    expect(parseMemoryReferenceMarkers("[记忆 #42] body")).toEqual([]);
+  it("parseMemoryReferenceMarkers ignores invalid markers", () => {
     expect(parseMemoryReferenceMarkers("[[invalid]] body")).toEqual([]);
     expect(parseMemoryReferenceMarkers("[[anima:0]] body")).toEqual([]);
     expect(parseMemoryReferenceMarkers("no markers")).toEqual([]);

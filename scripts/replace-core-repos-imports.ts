@@ -85,7 +85,6 @@ const SYMBOL_MODULE: Record<string, string> = {
   EntitySearchHit: "@freeanima/core/db/pg/entity/types",
   EntitySearchResult: "@freeanima/core/db/pg/entity/types",
   SapInstanceUpsertInput: "@freeanima/core/db/pg/sap/types",
-  SEMANTIC_MEMORY_ID_PATTERN: "@freeanima/core/db/pg/memory-reference/markers",
   MEMORY_REFERENCE_MARKER_RE: "@freeanima/core/db/pg/memory-reference/markers",
   formatMemoryReferenceMarker: "@freeanima/core/db/pg/memory-reference/markers",
   formatResidentMemoryLine: "@freeanima/core/db/pg/memory-reference/markers",
