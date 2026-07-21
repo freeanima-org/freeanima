@@ -4,7 +4,7 @@ const realGate = await import("@freeanima/frontend/shell-sdk/habitat-fetch-gate"
 const gateOriginal = {
   isHabitatFetchAvailable: realGate.isHabitatFetchAvailable,
   isNetworkOnline: realGate.isNetworkOnline,
-  isHubConnected: realGate.isHubConnected,
+  isHabitatConnected: realGate.isHabitatConnected,
   shellWritesDisabledFromState: realGate.shellWritesDisabledFromState,
 };
 

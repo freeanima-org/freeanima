@@ -352,7 +352,7 @@
   "habitat_fts_semantic_emb": "Semantic memory · embedding",
   "habitat_fts_semantic_seg": "Semantic memory · segmented",
   "habitat_fts_title": "Full-text search",
-  "habitat_hub_disconnected": "Disconnected",
+  "habitat_disconnected": "Disconnected",
   "habitat_limbic_content": "Content",
   "habitat_limbic_desc": "Browse limbic_memory (limbic system / emotional intensity).",
   "habitat_limbic_intensity": "Intensity",

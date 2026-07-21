@@ -297,6 +297,7 @@
   <msg id="habitat_dashboard_tools_registered">Registered</msg>
   <msg id="habitat_dashboard_uptime">Uptime</msg>
   <msg id="habitat_dashboard_version">Version</msg>
+  <msg id="habitat_disconnected">Disconnected</msg>
   <msg id="habitat_email_address">Address</msg>
   <msg id="habitat_email_back_accounts">← Back to accounts</msg>
   <msg id="habitat_email_date">Date:</msg>
@@ -388,7 +389,6 @@
   <msg id="habitat_fts_semantic_emb">Semantic memory · embedding</msg>
   <msg id="habitat_fts_semantic_seg">Semantic memory · segmented</msg>
   <msg id="habitat_fts_title">Full-text search</msg>
-  <msg id="habitat_hub_disconnected">Disconnected</msg>
   <msg id="habitat_limbic_content">Content</msg>
   <msg id="habitat_limbic_desc">Browse limbic_memory (limbic system / emotional intensity).</msg>
   <msg id="habitat_limbic_intensity">Intensity</msg>

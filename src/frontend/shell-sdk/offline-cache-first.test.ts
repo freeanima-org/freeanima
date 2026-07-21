@@ -4,7 +4,7 @@ const realGate = await import("./habitat-fetch-gate.ts");
 const gateOriginal = {
   isHabitatFetchAvailable: realGate.isHabitatFetchAvailable,
   isNetworkOnline: realGate.isNetworkOnline,
-  isHubConnected: realGate.isHubConnected,
+  isHabitatConnected: realGate.isHabitatConnected,
   shellWritesDisabledFromState: realGate.shellWritesDisabledFromState,
 };
 
@@ -49,7 +49,7 @@ describe("offline-cache-first", () => {
     expect(cached?.from).toBe("hub");
   });
 
-  it("Hub fetch 失败时回退缓存", async () => {
+  it("Habitat fetch 失败时回退缓存", async () => {
     const scope = "test-scope";
     await writeOfflineCache(scope, "ns", "id", { ok: true });
 
@@ -64,7 +64,7 @@ describe("offline-cache-first", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("Hub 不可用时只读缓存", async () => {
+  it("Habitat 不可用时只读缓存", async () => {
     hubAvailable = false;
     const scope = "test-scope";
     await writeOfflineCache(scope, "ns", "id", { ok: true });

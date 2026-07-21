@@ -6,7 +6,7 @@ import { registerTaskOfflineModule } from "@freeanima/features/task/ui/spa/lib/o
 
 let registered = false;
 
-/** shell 启动时注册全部 Tier-2 可写模块，避免未进入功能页时全局 bar 无法统计/flush。 */
+/** shell 启动时注册全部 offlineWritable（outbox）模块，避免未进入功能页时全局 bar 无法统计/flush。 */
 export function registerAllOfflineModules(): void {
   if (registered) return;
   registered = true;

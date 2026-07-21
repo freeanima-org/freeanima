@@ -18,13 +18,13 @@ describe("resolveConnectivityNotice", () => {
   test("Habitat 连接中", () => {
     expect(
       resolveConnectivityNotice({ networkOnline: true, habitatConnection: "connecting" }),
-    ).toEqual({ variant: "info", kind: "hub-connecting" });
+    ).toEqual({ variant: "info", kind: "habitat-connecting" });
   });
 
   test("Habitat 已断开", () => {
     expect(
       resolveConnectivityNotice({ networkOnline: true, habitatConnection: "disconnected" }),
-    ).toEqual({ variant: "warning", kind: "hub-disconnected" });
+    ).toEqual({ variant: "warning", kind: "habitat-disconnected" });
   });
 });
 

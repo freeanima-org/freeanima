@@ -20,7 +20,7 @@ export function HabitatConnectionBanner({ state, onRetry }: Props) {
   return (
     <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-yellow-500/50/30 text-sm">
       <span className="text-yellow-700 dark:text-yellow-300/90">
-        {state === "connecting" ? m.habitat_common_connecting() : m.habitat_hub_disconnected()}
+        {state === "connecting" ? m.habitat_common_connecting() : m.habitat_disconnected()}
       </span>
       <div className="flex items-center gap-1">
         {showHabitatSettings ? (

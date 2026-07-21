@@ -28,3 +28,9 @@
 | RPC                 | RPC         | Alias of Habitat RPC；协议字面量 canonical `HabitatRPC/1.0`（legacy `HubRPC/1.0` 至 0.9.3）       |
 | instance_id         | instance_id | Habitat-assigned id for one remote-tool registrant（同机可多实例；不跟 Portal 壳走）              |
 | remote tools        | 远程工具    | Unreachable local app connects to Habitat and registers tools；Habitat reverse-calls via `tool.*` |
+| offline snapshot    | 只读快照    | Shell IndexedDB read-only cache（`withOfflineCache`）；not outbox                                 |
+| offline outbox      | 离线写队列  | Pending write ops（`OfflineOutboxOp`）；modules with `offlineWritable`                            |
+| offline sync        | 离线同步    | Reconnect/visibility flush + module `refreshAll`（`OfflineSyncBootstrap`）                        |
+| flush               | flush       | Push outbox ops to Habitat；code identifier keep English                                          |
+| refresh（page）     | 刷新        | User-driven re-fetch of current view；≠ sync                                                      |
+| connectivity        | 连接状态    | Network / Habitat link UI（`ShellConnectivityBar`）；≠ outbox                                     |

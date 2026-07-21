@@ -302,6 +302,7 @@ type ParaglideMessageExports = {
   readonly habitat_dashboard_tools_registered: ParaglideMessageFn;
   readonly habitat_dashboard_uptime: ParaglideMessageFn;
   readonly habitat_dashboard_version: ParaglideMessageFn;
+  readonly habitat_disconnected: ParaglideMessageFn;
   readonly habitat_email_address: ParaglideMessageFn;
   readonly habitat_email_back_accounts: ParaglideMessageFn;
   readonly habitat_email_date: ParaglideMessageFn;
@@ -393,7 +394,6 @@ type ParaglideMessageExports = {
   readonly habitat_fts_semantic_emb: ParaglideMessageFn;
   readonly habitat_fts_semantic_seg: ParaglideMessageFn;
   readonly habitat_fts_title: ParaglideMessageFn;
-  readonly habitat_hub_disconnected: ParaglideMessageFn;
   readonly habitat_limbic_content: ParaglideMessageFn;
   readonly habitat_limbic_desc: ParaglideMessageFn;
   readonly habitat_limbic_intensity: ParaglideMessageFn;
@@ -1061,6 +1061,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const habitat_dashboard_tools_registered: ParaglideMessageFn;
   export const habitat_dashboard_uptime: ParaglideMessageFn;
   export const habitat_dashboard_version: ParaglideMessageFn;
+  export const habitat_disconnected: ParaglideMessageFn;
   export const habitat_email_address: ParaglideMessageFn;
   export const habitat_email_back_accounts: ParaglideMessageFn;
   export const habitat_email_date: ParaglideMessageFn;
@@ -1152,7 +1153,6 @@ declare module "*/messages/paraglide/messages.js" {
   export const habitat_fts_semantic_emb: ParaglideMessageFn;
   export const habitat_fts_semantic_seg: ParaglideMessageFn;
   export const habitat_fts_title: ParaglideMessageFn;
-  export const habitat_hub_disconnected: ParaglideMessageFn;
   export const habitat_limbic_content: ParaglideMessageFn;
   export const habitat_limbic_desc: ParaglideMessageFn;
   export const habitat_limbic_intensity: ParaglideMessageFn;

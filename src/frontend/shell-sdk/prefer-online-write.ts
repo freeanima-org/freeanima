@@ -15,14 +15,13 @@ export function isRetriableOfflineWriteError(err: unknown): boolean {
     msg.includes("failed to fetch") ||
     msg.includes("networkerror") ||
     msg.includes("network request failed") ||
-    msg.includes("hub not connected") ||
     msg.includes("not connected")
   );
 }
 
 /**
  * Habitat 可用时优先走 online；仅网络/传输失败时回退 offline。
- * 业务错误原样抛出。Hub 不可用时直接 offline。
+ * 业务错误原样抛出。Habitat 不可用时直接 offline。
  */
 export async function preferOnlineWrite<T>(
   online: () => Promise<T>,

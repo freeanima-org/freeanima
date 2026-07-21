@@ -20,17 +20,17 @@ Satellite UI keeps data fresh with two distinct verbs. Do not conflate them with
 - **Interaction dimension** (see [ui-dimensions](../../.agent/rules/ui-dimensions.md)): pointer uses a header button; touch also gets pull-to-refresh on the primary list. Shell kind does not lock the affordance.
 - **Out of scope**: Habitat fan-out for every CRUD entity; React Query; turning the offline-sync toast into a page refresh control.
 
-## Page tiers
+## Page classes
 
-| Tier             | Pages                             | Auto                                                                   | Manual                                    |
-| ---------------- | --------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------- |
-| A Stream         | Chat                              | SAP stream + recovery poll                                             | Header refresh (existing)                 |
-| B Tier2 CRUD     | Task, Project, Diary              | Mount / selection cache-first; local write reload; sync → `refreshAll` | Header + pull-to-refresh                  |
-| C Hybrid         | Pomodoro                          | `pomodoro.active.changed`                                              | Offline `refreshAll` for config/stats     |
-| D Tier1 snapshot | Email, Notification, Dream, Vault | Mount / dependency load                                                | Header refresh (pull on list where wired) |
-| E Habitat        | Ops lists                         | Load on enter                                                          | Explicit refresh (existing)               |
-| F Settings       | Shell settings                    | Load on open                                                           | Re-read after save                        |
-| G Shell update   | PWA / installer                   | Update check                                                           | Reload / install ≠ business refresh       |
+| Class           | Pages                             | Auto                                                                   | Manual                                    |
+| --------------- | --------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------- |
+| A Stream        | Chat                              | SAP stream + recovery poll                                             | Header refresh (existing)                 |
+| B CRUD outbox   | Task, Project, Diary              | Mount / selection cache-first; local write reload; sync → `refreshAll` | Header + pull-to-refresh                  |
+| C Hybrid outbox | Pomodoro                          | `pomodoro.active.changed`                                              | Offline `refreshAll` for config/stats     |
+| D snapshot      | Email, Notification, Dream, Vault | Mount / dependency load                                                | Header refresh (pull on list where wired) |
+| E Habitat       | Ops lists                         | Load on enter                                                          | Explicit refresh (existing)               |
+| F Settings      | Shell settings                    | Load on open                                                           | Re-read after save                        |
+| G Shell update  | PWA / installer                   | Update check                                                           | Reload / install ≠ business refresh       |
 
 ## Implementation notes
 

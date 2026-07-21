@@ -10,9 +10,6 @@ export function isHabitatConnected(): boolean {
   return getHabitatRpcConnectionState() === "connected";
 }
 
-/** @deprecated 0.9.3 后删除 — 请用 isHabitatConnected */
-export const isHubConnected = isHabitatConnected;
-
 /** 断网或 Habitat 未连接时不应发起 Habitat RPC 读请求，只读本地缓存。 */
 export function isHabitatFetchAvailable(): boolean {
   return isNetworkOnline() && isHabitatConnected();

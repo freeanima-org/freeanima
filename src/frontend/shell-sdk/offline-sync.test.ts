@@ -5,7 +5,7 @@ const realGate = await import("./habitat-fetch-gate.ts");
 const gateOriginal = {
   isHabitatFetchAvailable: realGate.isHabitatFetchAvailable,
   isNetworkOnline: realGate.isNetworkOnline,
-  isHubConnected: realGate.isHubConnected,
+  isHabitatConnected: realGate.isHabitatConnected,
   shellWritesDisabledFromState: realGate.shellWritesDisabledFromState,
 };
 

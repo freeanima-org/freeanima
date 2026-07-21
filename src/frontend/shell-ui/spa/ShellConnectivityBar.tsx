@@ -39,12 +39,12 @@ export function ShellConnectivityBar(): null {
       return;
     }
 
-    if (notice.kind === "hub-connecting") {
+    if (notice.kind === "habitat-connecting") {
       showShellToast(SHELL_TOAST_IDS.connectivity, m.habitat_common_connecting());
       return;
     }
 
-    showShellToast(SHELL_TOAST_IDS.connectivity, m.habitat_hub_disconnected(), {
+    showShellToast(SHELL_TOAST_IDS.connectivity, m.habitat_disconnected(), {
       action: {
         label: m.habitat_common_reconnect(),
         onClick: () => {
