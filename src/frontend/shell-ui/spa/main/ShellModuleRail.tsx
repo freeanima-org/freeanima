@@ -14,6 +14,7 @@ import {
   writeShellRailExpanded,
 } from "../lib/shell-rail-prefs.ts";
 import { m as shellMessages } from "@paraglide/messages";
+import { ShellNavUnreadBadge } from "./ShellNavUnreadBadge.tsx";
 
 function useShellRailExpanded(): [boolean, () => void] {
   const expanded = useSyncExternalStore(
@@ -46,7 +47,10 @@ function RailNavLink({ item, expanded }: { item: ShellNavItem; expanded: boolean
       title={expanded ? undefined : label}
       aria-current={active ? "page" : undefined}
     >
-      <Icon className="shell-rail-nav-icon" aria-hidden />
+      <span className="relative inline-flex shrink-0">
+        <Icon className="shell-rail-nav-icon" aria-hidden />
+        <ShellNavUnreadBadge moduleId={item.id} />
+      </span>
       <span className="shell-rail-nav-label">{label}</span>
     </Link>
   );

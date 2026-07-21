@@ -87,6 +87,8 @@ export type AppRuntimeConversationPort = {
   getConversationInfo(conversationId: string, platform?: string): Promise<unknown>;
   getConversationAcpDock(conversationId: string, platform?: string): Promise<unknown>;
   watchConversation(conversationId: string, cb: () => void): () => void;
+  /** 任意会话更新（用户未读 / inbox） */
+  watchInbox(cb: (conversationId: string) => void): () => void;
   getMessages(
     conversationId: string,
     platform?: string,

@@ -35,4 +35,17 @@ Unit tests **must not** `import` `tests/helpers/log-isolation.ts` or write `conf
 
 Use `tests/helpers/integration-case.ts` (`restoreIntegrationHome` + `flushCompressionSummaries`); do not pollute `~/.anima/error.log`.
 
+### PG：必须用隔离库（硬禁止指日常库）
+
+`bun run test:integration` 起 Docker 临时 PG → 建迁移好的模板库 `anima_it_template` → 每个测试进程克隆 `anima_it_*` 独立库（**不再** `clearPgTables`）。`--parallel` 默认开启（`FREEANIMA_TEST_PARALLEL` 可覆盖）。
+
+| 允许                                                        | 禁止                                                                         |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `bun run test:integration`（Docker 随机高位端口）           | 把 `ANIMA_TEST_PG_URL` 指到与 `~/.anima/config.yaml` **同 host:port** 的实例 |
+| 自起 Docker / 空实例（端口 ≠ 日常）再设 `ANIMA_TEST_PG_URL` | `bun test tests/integration/...` 复用 `just dev` / 日常库                    |
+
+护栏：同 host:port 时 `describePg` **整包 skip**，且 `setupIntegrationPg` / `createIsolatedTestDb` **直接 throw**（零副作用）。
+
+无 Docker 且未设隔离 URL 时：PG 用例 **skip**，**不要**改指日常库。
+
 Layout and CI wiring: [`tests/README.md`](../../tests/README.md).

@@ -35,7 +35,8 @@ bun run test:changed       # pre-commit：src 内变更的单元测试
 bun run check              # typecheck + lint + format + test:changed
 ```
 
-- 有 Docker 时，[`scripts/integration-pg-setup.ts`](../scripts/integration-pg-setup.ts) 会为 `test:integration` 注入 `ANIMA_TEST_PG_URL`。
+- 有 Docker 时，[`scripts/integration-pg-setup.ts`](../scripts/integration-pg-setup.ts) 会建模板库并注入 `ANIMA_TEST_PG_URL`；`test:integration` 默认 `--parallel`（每 worker 克隆独立库，**无 clearPgTables**）。
+- **禁止**把 `ANIMA_TEST_PG_URL` 指到日常 `~/.anima` / `config.yaml` 同 host:port（护栏 skip + throw）；细则见 [`.agent/rules/testing.md`](../.agent/rules/testing.md)。
 - Before opening a PR, run full `bun run test` occasionally, not only `test:changed`.
 
 ## Main repo ↔ testing-repo wiring

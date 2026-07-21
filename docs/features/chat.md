@@ -6,6 +6,17 @@ title: Chat
 
 Chat SPA 支持 **离线写入 outbox**、上线后 **自动重试**，并通过 Habitat 侧幂等与 tail CAS 避免重复发送与陈旧消息。
 
+## 用户未读
+
+Chat 维护 **用户已读水位**（`conversation_read_state`，按 Habitat user subject）：
+
+- 会话未读：存在 `role=assistant` 且 `pos > last_read_pos` 的消息。
+- `conversation.list` 返回 `unread`；`conversation.unreadCount` 返回未归档未读会话数（Shell 角标）。
+- 打开会话或正在查看时流式结束后调用 `conversation.markRead`（水位单调升高）。
+- `conversation.subscribeInbox`（WS）在任意会话更新时推送 `conversation.updated`，供列表与角标刷新。
+
+用户自己发送的消息不构成未读；不做 agent 未读分区。
+
 ## 客户端
 
 - 发送先入 IndexedDB `outbox`（`moduleId: chat`），并乐观显示 user bubble（`sendStatus: pending`）。

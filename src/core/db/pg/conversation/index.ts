@@ -26,6 +26,12 @@ export {
   isCronSession,
 } from "./repos/conversation-repo.ts";
 export {
+  markConversationRead,
+  countUnreadConversations,
+  getConversationLastReadPos,
+  conversationUnreadExistsSql,
+} from "./repos/conversation-read-state-repo.ts";
+export {
   aggregateUserActivityStats,
   emptyUserActivityStats,
   type ActivityWindowBound,

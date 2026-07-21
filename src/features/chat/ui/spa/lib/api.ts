@@ -24,6 +24,7 @@ function mapConversationList(raw: {
     platform?: string | undefined;
     updated_at?: string | undefined;
     archived_at?: string | null | undefined;
+    unread?: boolean | undefined;
   }>;
 }): { conversations: ConversationListItem[] } {
   return {
@@ -33,6 +34,7 @@ function mapConversationList(raw: {
       platform: s.platform ?? "",
       created: s.updated_at ?? "",
       archivedAt: s.archived_at ?? null,
+      ...(s.unread === true ? { unread: true } : {}),
     })),
   };
 }
@@ -71,6 +73,28 @@ export async function createConversation() {
 export async function getConversationTail(conversationId: string) {
   requireHabitatFetch("conversation.tail");
   return habitat().call("conversation.tail", { conversation_id: conversationId });
+}
+
+/** 将用户已读水位升到当前（或指定）pos */
+export async function markConversationRead(
+  conversationId: string,
+  lastReadPos?: number,
+): Promise<{ ok: true; last_read_pos: number }> {
+  requireHabitatFetch("conversation.markRead");
+  return habitat().call(
+    "conversation.markRead",
+    omitUndefined({
+      conversation_id: conversationId,
+      last_read_pos: lastReadPos,
+    }),
+  );
+}
+
+/** 用户未归档未读会话数（Shell 角标） */
+export async function getUnreadConversationCount(): Promise<number> {
+  requireHabitatFetch("conversation.unreadCount");
+  const result = await habitat().call("conversation.unreadCount", {});
+  return result.count;
 }
 
 export type StoredMessagesOpts = {
@@ -176,6 +200,13 @@ export function subscribeConversationUpdates(
   onUpdate: () => void,
 ): { unsubscribe: () => void } {
   return sap().subscribeConversationEvents(conversationId, onUpdate);
+}
+
+/** 任意会话更新（列表刷新 / 角标）；与单会话 subscribe 共用 conversation.updated 事件 */
+export function subscribeConversationInbox(onUpdate: (conversationId: string) => void): {
+  unsubscribe: () => void;
+} {
+  return sap().subscribeInboxEvents(onUpdate);
 }
 
 export async function listConversationCommands(opts?: { all?: boolean }) {

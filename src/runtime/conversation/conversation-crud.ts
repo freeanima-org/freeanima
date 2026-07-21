@@ -152,6 +152,7 @@ export async function listConversationSummariesPage(opts?: {
   offset?: number;
   limit?: number;
   includeArchived?: boolean;
+  user_subject_id?: string;
 }): Promise<{
   items: ConversationSummaryRow[];
   total: number;

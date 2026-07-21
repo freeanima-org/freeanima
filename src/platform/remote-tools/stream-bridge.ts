@@ -193,6 +193,38 @@ export async function* bridgeSessionUpdates(
   }
 }
 
+/** 任意会话更新 → conversation.updated（含真实 conversation_id） */
+export async function* bridgeInboxUpdates(
+  watch: (cb: (conversationId: string) => void) => () => void,
+  signal: AbortSignal,
+): AsyncGenerator<{ method: string; payload: Record<string, unknown> }> {
+  let pendingId: string | null = null;
+  let pending: (() => void) | null = null;
+  const wake = (conversationId: string): void => {
+    pendingId = conversationId;
+    pending?.();
+    pending = null;
+  };
+  const unwatch = watch(wake);
+  try {
+    while (!signal.aborted) {
+      await new Promise<void>((resolve) => {
+        pending = resolve;
+      });
+      if (signal.aborted) break;
+      const conversation_id = pendingId;
+      pendingId = null;
+      if (!conversation_id) continue;
+      yield {
+        method: "conversation.updated",
+        payload: { conversation_id },
+      };
+    }
+  } finally {
+    unwatch();
+  }
+}
+
 /** Bridge Habitat SSE-shaped events through the same mapper (for existing HTTP routes) */
 export async function* bridgeApiStreamEvents(
   streamId: string,

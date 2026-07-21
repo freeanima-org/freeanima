@@ -16,6 +16,8 @@ import { orderedVisibleShellNavItems, type ShellNavItem } from "../lib/shell-nav
 import { useShellBottomNavLayout } from "../lib/use-shell-bottom-nav-layout.ts";
 import { ShellModuleRail } from "./ShellModuleRail.tsx";
 import { PomodoroShellWatcher } from "@freeanima/features/pomodoro/ui/spa/PomodoroShellWatcher.tsx";
+import { ChatUnreadShellWatcher } from "@freeanima/features/chat/ui/spa/ChatUnreadShellWatcher.tsx";
+import { ShellNavUnreadBadge } from "./ShellNavUnreadBadge.tsx";
 
 function useNavActive(match: string): boolean {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -51,7 +53,10 @@ function ShellBottomNavLink({ item, density }: { item: ShellNavItem; density: "l
       aria-label={label}
       aria-current={active ? "page" : undefined}
     >
-      <Icon className="size-5 shrink-0" aria-hidden />
+      <span className="relative inline-flex">
+        <Icon className="size-5 shrink-0" aria-hidden />
+        <ShellNavUnreadBadge moduleId={item.id} />
+      </span>
       {density === "label" ? (
         <span className="leading-none truncate max-w-full px-0.5">{label}</span>
       ) : null}
@@ -115,7 +120,10 @@ function MoreNavMenu({ items }: { items: ShellNavItem[] }) {
                     setOpen(false);
                   }}
                 >
-                  <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                  <span className="relative inline-flex">
+                    <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                    <ShellNavUnreadBadge moduleId={item.id} />
+                  </span>
                   {item.label()}
                 </button>
               );
@@ -170,6 +178,7 @@ export function ModuleShell() {
     <SubjectScopeProvider>
       <ShellModuleVisibilityGuard />
       <PomodoroShellWatcher />
+      <ChatUnreadShellWatcher />
       {isCompactLayout(layoutMode) ? <MobileModuleShell /> : <DesktopModuleShell />}
     </SubjectScopeProvider>
   );

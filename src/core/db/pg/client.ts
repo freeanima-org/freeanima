@@ -45,8 +45,17 @@ export function isPostgresPrimary(): boolean {
  * ERR_POSTGRES_IDLE_TIMEOUT（oven-sh/bun#30646），启动迁移 / HNSW 建索
  * / 大批量 backfill 超过 30s 时直接把 Service startup 打挂。
  * Bun 修好后可用 FREEANIMA_PG_POOL_IDLE_TIMEOUT=30 再打开。
+ *
+ * prepare 必须保持默认 true（Bun SQL）。`prepare: false` 时 jsonb / 复杂参数
+ * 会被绑成 `[object Object]`，插入 entities.body 等列直接失败。
+ * 并发下偶发 ERR_POSTGRES_UNSUPPORTED_INTEGER_SIZE（oven-sh/bun#16774）是另一类
+ * 驱动竞态，不能用关 prepare 换；勿设 FREEANIMA_PG_PREPARE=0。
  */
-function resolvePoolOptions(): { max: number; idleTimeout: number; maxLifetime: number } {
+function resolvePoolOptions(): {
+  max: number;
+  idleTimeout: number;
+  maxLifetime: number;
+} {
   const maxRaw = Number.parseInt(process.env.FREEANIMA_PG_POOL_MAX ?? "", 10);
   const idleRaw = Number.parseInt(process.env.FREEANIMA_PG_POOL_IDLE_TIMEOUT ?? "", 10);
   const lifetimeRaw = Number.parseInt(process.env.FREEANIMA_PG_POOL_MAX_LIFETIME ?? "", 10);

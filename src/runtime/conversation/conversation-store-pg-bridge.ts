@@ -198,6 +198,7 @@ export async function pgListConversationSummariesPage(opts?: {
   offset?: number;
   limit?: number;
   includeArchived?: boolean;
+  user_subject_id?: string;
 }): Promise<{
   items: Array<{
     id: string;
@@ -206,6 +207,7 @@ export async function pgListConversationSummariesPage(opts?: {
     updated_at: Date;
     platform: string;
     archived_at?: Date | null;
+    unread?: boolean;
   }>;
   total: number;
 }> {

@@ -28,6 +28,7 @@ import {
   conversationMetaToInsert,
 } from "../transform.ts";
 import { formatDbError } from "../../utils/db-error.ts";
+import { conversationUnreadExistsSql } from "./conversation-read-state-repo.ts";
 import { pgJsonbOrNull, pgTextOrNull } from "../../utils/timestamp.ts";
 import type { ConversationInsert } from "@freeanima/core/db/schema";
 
@@ -367,6 +368,7 @@ function mapConversationSummaryRow(row: {
   created_at: Date;
   updated_at: Date;
   archived_at?: Date | null;
+  unread?: boolean | null;
 }): ConversationSummaryRow {
   const raw = row.platform_info?.platform;
   return {
@@ -376,6 +378,7 @@ function mapConversationSummaryRow(row: {
     updated_at: row.updated_at,
     platform: typeof raw === "string" ? raw : "",
     archived_at: row.archived_at ?? null,
+    ...(row.unread === true ? { unread: true } : row.unread === false ? { unread: false } : {}),
   };
 }
 
@@ -399,10 +402,12 @@ export async function getConversationUpdatedAt(conversation_id: string): Promise
 
 export async function listConversationSummaries(
   platform?: string | null,
-  opts?: { includeArchived?: boolean },
+  opts?: { includeArchived?: boolean; user_subject_id?: string },
 ): Promise<ConversationSummaryRow[]> {
   const db = getDb();
   const where = buildConversationListWhere(platform, opts?.includeArchived);
+  const userSubjectId = opts?.user_subject_id?.trim();
+  const unreadExpr = userSubjectId ? conversationUnreadExistsSql(userSubjectId) : undefined;
   const rows = await db
     .select({
       id: conversations.id,
@@ -411,6 +416,7 @@ export async function listConversationSummaries(
       created_at: conversations.created_at,
       updated_at: conversations.updated_at,
       archived_at: conversations.archived_at,
+      ...(unreadExpr ? { unread: unreadExpr } : {}),
     })
     .from(conversations)
     .where(where)
@@ -423,12 +429,16 @@ export async function listConversationSummariesPage(opts?: {
   offset?: number;
   limit?: number;
   includeArchived?: boolean;
+  /** 若提供，则为用户视角计算 unread */
+  user_subject_id?: string;
 }): Promise<{ items: ConversationSummaryRow[]; total: number }> {
   const offset = Math.max(0, opts?.offset ?? 0);
   const limit = Math.min(500, Math.max(1, opts?.limit ?? 20));
   const platform = opts?.platform;
   const db = getDb();
   const where = buildConversationListWhere(platform, opts?.includeArchived);
+  const userSubjectId = opts?.user_subject_id?.trim();
+  const unreadExpr = userSubjectId ? conversationUnreadExistsSql(userSubjectId) : undefined;
 
   const countRows = await db
     .select({ count: sql<number>`count(*)::int` })
@@ -444,6 +454,7 @@ export async function listConversationSummariesPage(opts?: {
       created_at: conversations.created_at,
       updated_at: conversations.updated_at,
       archived_at: conversations.archived_at,
+      ...(unreadExpr ? { unread: unreadExpr } : {}),
     })
     .from(conversations)
     .where(where)

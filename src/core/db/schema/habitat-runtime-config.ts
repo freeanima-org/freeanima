@@ -15,6 +15,3 @@ export const habitatRuntimeConfig = pgTable("habitat_runtime_config", {
     .notNull()
     .default(sql`now()`),
 });
-
-/** @deprecated 0.9.3 后删除 — 请用 habitatRuntimeConfig */
-export const hubRuntimeConfig = habitatRuntimeConfig;

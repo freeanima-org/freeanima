@@ -1,6 +1,7 @@
 export {
   bridgeMessageStream,
   bridgeSessionUpdates,
+  bridgeInboxUpdates,
   bridgeApiStreamEvents,
   emitStreamEvent,
 } from "./stream-bridge.ts";

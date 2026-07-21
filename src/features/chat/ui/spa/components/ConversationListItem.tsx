@@ -7,6 +7,7 @@ type ConversationListItemProps = {
   label: string;
   active: boolean;
   faded?: boolean;
+  unread?: boolean;
   useActionSheet: boolean;
   contextMenuEnabled: boolean;
   onNavigate: (conversationId: string) => void;
@@ -18,6 +19,7 @@ export function ConversationListItem({
   label,
   active,
   faded = false,
+  unread = false,
   useActionSheet,
   contextMenuEnabled,
   onNavigate,
@@ -61,7 +63,17 @@ export function ConversationListItem({
             }
       }
     >
-      <div className="min-w-0 flex-1 truncate">{label}</div>
+      <div
+        className={[
+          "min-w-0 flex-1 truncate",
+          unread && !active ? "font-semibold text-foreground" : "",
+        ].join(" ")}
+      >
+        {label}
+      </div>
+      {unread && !active ? (
+        <span className="bg-primary size-2 shrink-0 rounded-full" aria-label="未读" title="未读" />
+      ) : null}
     </div>
   );
 }

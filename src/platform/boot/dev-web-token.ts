@@ -7,6 +7,7 @@ import {
   createServiceApiTokenWithSecret,
   listServiceApiTokensBySubject,
   revokeServiceApiToken,
+  verifyServiceApiToken,
 } from "@freeanima/core/db/pg/service-api-token";
 import type { RuntimeConfigStore } from "@freeanima/platform/config";
 import { logComponent } from "@freeanima/platform/logging";
@@ -51,18 +52,23 @@ function writeDevWebTokenFile(plaintext: string): void {
 
 /**
  * 确保 `dev-web` token 明文在 PATHS.devWebTokenFile（仅 FREEANIMA_DEV_HABITAT=1 / legacy FREEANIMA_DEV_HUB=1）。
- * 文件已有内容则复用；否则 revoke 旧同名 token 后新建。
+ * 文件已有内容且能通过 DB 校验则复用；否则 revoke 旧同名 token 后新建并覆写文件
+ * （避免 integration 清库后文件残留导致 Web「认证失败」）。
  */
 export async function ensureDevWebTokenFile(config: RuntimeConfigStore): Promise<void> {
   if (!isDevHabitatProcess()) return;
 
   const existingFile = readDevWebTokenFile();
   if (existingFile) {
-    if (process.env.FREEANIMA_DEV_TOKEN?.trim()) {
-      writeDevWebTokenFile(existingFile);
+    const verified = await verifyServiceApiToken(existingFile);
+    if (verified) {
+      if (process.env.FREEANIMA_DEV_TOKEN?.trim()) {
+        writeDevWebTokenFile(existingFile);
+      }
+      startupLog(`dev-web token ready (${PATHS.devWebTokenFile})`);
+      return;
     }
-    startupLog(`dev-web token ready (${PATHS.devWebTokenFile})`);
-    return;
+    startupLog("dev-web token file stale (not in DB); recreating…");
   }
 
   const ctx = await resolveAndBindWorldContext(config.data);

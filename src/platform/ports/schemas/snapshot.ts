@@ -114,6 +114,8 @@ export type ConversationSummary = {
   updated_at: Date;
   platform: string;
   archived_at?: Date | null;
+  /** 用户未读（assistant 回复尚未被用户读到） */
+  unread?: boolean;
 };
 
 export type SafeConfigSnapshot = {

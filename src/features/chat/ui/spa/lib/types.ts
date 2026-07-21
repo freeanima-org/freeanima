@@ -28,6 +28,8 @@ export type ConversationListItem = {
   created: string;
   platform: string;
   archivedAt?: string | null;
+  /** 用户未读 */
+  unread?: boolean;
 };
 
 export type LlmDebugSnapshotPayload = {

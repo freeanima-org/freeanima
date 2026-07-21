@@ -1,7 +1,14 @@
 import { randomUUID } from "node:crypto";
 
 import { omitUndefined } from "@freeanima/core/util";
-import { getLastMessageRole, getMaxMessagePos } from "@freeanima/core/db/pg/conversation";
+import { resolveNotificationRecipients } from "@freeanima/core/config";
+import {
+  countUnreadConversations,
+  getConversationLastReadPos,
+  getLastMessageRole,
+  getMaxMessagePos,
+  markConversationRead,
+} from "@freeanima/core/db/pg/conversation";
 import { getConversationUpdatedAt } from "@freeanima/core/db/pg/conversation/repos/conversation-repo.ts";
 import type { RemoteToolsServerDeps } from "@freeanima/platform/remote-tools/types";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
@@ -12,6 +19,7 @@ import { chatMethodDefs } from "../method-defs.ts";
 import { chatSessionPumps } from "../session-pumps.ts";
 import {
   attachStreamSession,
+  pumpInboxUpdates,
   pumpMessageStream,
   pumpSessionUpdates,
   resolveConversationPlatform,
@@ -26,6 +34,10 @@ function depsOf(deps: unknown): ChatHubDeps {
 
 function ctxOf(ctx: unknown): RemoteToolsRequestContext {
   return ctx as RemoteToolsRequestContext;
+}
+
+function resolveUserSubjectId(deps: ChatHubDeps): string {
+  return resolveNotificationRecipients(deps.runtime.runtimeDeps().engine.config.data).user.id;
 }
 
 async function loadServiceSessions() {
@@ -67,6 +79,7 @@ export const chatHubRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
   "conversation.list": async (deps, input, _ctx) => {
     const platform = input.platform?.trim() || undefined;
     const serviceSessions = await loadServiceSessions();
+    const user_subject_id = resolveUserSubjectId(depsOf(deps));
     const result = await serviceSessions.listConversations(
       depsOf(deps).runtime.runtimeDeps(),
       platform ?? null,
@@ -74,17 +87,42 @@ export const chatHubRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
         includeArchived: input.include_archived,
         offset: input.offset,
         limit: input.limit,
+        user_subject_id,
       }),
     );
     return {
-      conversations: result.conversations.map((s) => ({
-        conversation_id: s.id,
-        title: s.title,
-        platform: s.platform,
-        updated_at: s.updated_at.toISOString(),
-        archived_at: s.archived_at?.toISOString() ?? null,
-      })),
+      conversations: result.conversations.map((s) =>
+        omitUndefined({
+          conversation_id: s.id,
+          title: s.title,
+          platform: s.platform,
+          updated_at: s.updated_at.toISOString(),
+          archived_at: s.archived_at?.toISOString() ?? null,
+          unread: s.unread === true ? true : s.unread === false ? false : undefined,
+        }),
+      ),
     };
+  },
+  "conversation.markRead": async (deps, input) => {
+    await resolveConversationPlatform(depsOf(deps), input.conversation_id);
+    const subject_id = resolveUserSubjectId(depsOf(deps));
+    const before = await getConversationLastReadPos(input.conversation_id, subject_id);
+    const result = await markConversationRead(
+      omitUndefined({
+        conversation_id: input.conversation_id,
+        subject_id,
+        last_read_pos: input.last_read_pos,
+      }),
+    );
+    if (result.last_read_pos > before) {
+      depsOf(deps).runtime.emitSessionUpdated(input.conversation_id);
+    }
+    return { ok: true as const, last_read_pos: result.last_read_pos };
+  },
+  "conversation.unreadCount": async (deps) => {
+    const subject_id = resolveUserSubjectId(depsOf(deps));
+    const count = await countUnreadConversations(subject_id);
+    return { count };
   },
   "conversation.messages": async (deps, input) => {
     const platform = await resolveConversationPlatform(depsOf(deps), input.conversation_id);
@@ -149,6 +187,19 @@ export const chatHubRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
         input.conversation_id,
         controller.signal,
       ).finally(() => {
+        sessionPumps.delete(pumpKey);
+      });
+    }
+    return { ok: true as const };
+  },
+  "conversation.subscribeInbox": async (deps, _input, ctx) => {
+    const sapCtx = ctxOf(ctx);
+    const sessionPumps = chatSessionPumps();
+    const pumpKey = `${sapCtx.app_id}:${sapCtx.instance_id}:inbox`;
+    if (!sessionPumps.has(pumpKey)) {
+      const controller = new AbortController();
+      sessionPumps.set(pumpKey, controller);
+      void pumpInboxUpdates(depsOf(deps), sapCtx, controller.signal).finally(() => {
         sessionPumps.delete(pumpKey);
       });
     }

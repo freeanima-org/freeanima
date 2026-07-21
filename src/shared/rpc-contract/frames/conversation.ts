@@ -36,6 +36,8 @@ export const conversationSummarySchema = z.object({
   platform: z.string().optional(),
   updated_at: z.string().optional(),
   archived_at: z.string().nullable().optional(),
+  /** 用户未读：存在尚未读到的 assistant 回复 */
+  unread: z.boolean().optional(),
 });
 
 export type ConversationSummary = z.infer<typeof conversationSummarySchema>;
@@ -45,6 +47,34 @@ export const conversationListOutputSchema = z.object({
 });
 
 export type ConversationListOutput = z.infer<typeof conversationListOutputSchema>;
+
+export const conversationMarkReadInputSchema = z.object({
+  conversation_id: z.string().min(1),
+  last_read_pos: z.number().int().min(0).optional(),
+});
+
+export type ConversationMarkReadInput = z.infer<typeof conversationMarkReadInputSchema>;
+
+export const conversationMarkReadOutputSchema = z.object({
+  ok: z.literal(true),
+  last_read_pos: z.number().int().min(0),
+});
+
+export type ConversationMarkReadOutput = z.infer<typeof conversationMarkReadOutputSchema>;
+
+export const conversationUnreadCountInputSchema = z.object({});
+
+export type ConversationUnreadCountInput = z.infer<typeof conversationUnreadCountInputSchema>;
+
+export const conversationUnreadCountOutputSchema = z.object({
+  count: z.number().int().min(0),
+});
+
+export type ConversationUnreadCountOutput = z.infer<typeof conversationUnreadCountOutputSchema>;
+
+export const conversationSubscribeInboxInputSchema = z.object({});
+
+export type ConversationSubscribeInboxInput = z.infer<typeof conversationSubscribeInboxInputSchema>;
 
 export const conversationMessagesInputSchema = z.object({
   conversation_id: z.string().min(1),

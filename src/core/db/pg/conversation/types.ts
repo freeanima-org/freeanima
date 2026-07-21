@@ -13,6 +13,8 @@ export type ConversationSummaryRow = {
   updated_at: Date;
   platform: string;
   archived_at?: Date | null;
+  /** 用户未读：存在 pos > last_read_pos 的 assistant 消息 */
+  unread?: boolean;
 };
 
 export type ConversationListOpts = {
