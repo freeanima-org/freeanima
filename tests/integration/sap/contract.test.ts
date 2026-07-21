@@ -76,9 +76,9 @@ describe("sap-contract envelopes", () => {
     messageSendInputSchema.parse({ conversation_id: "s1", message: "hi" });
   });
 
-  it("formats sap tool names", () => {
+  it("formats remote tool names", () => {
     expect(formatRemoteToolName("companion", "k7m", "scan_code")).toBe(
-      "sap_companion_k7m_scan_code",
+      "remote_companion_k7m_scan_code",
     );
   });
 
