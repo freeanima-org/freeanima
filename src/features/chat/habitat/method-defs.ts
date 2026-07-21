@@ -28,6 +28,10 @@ import {
   messageInterruptOutputSchema,
   messageSendInputSchema,
   messageSendOutputSchema,
+  streamAttachInputSchema,
+  streamAttachOutputSchema,
+  streamLookupInputSchema,
+  streamLookupOutputSchema,
 } from "@freeanima/shared/sap-contract/frames/message";
 import { z } from "zod";
 
@@ -113,6 +117,16 @@ export const chatMethodDefs = {
     input: messageInterruptInputSchema,
     output: messageInterruptOutputSchema,
     meta: wsOnlyMeta(),
+  }),
+  "stream.attach": defineHubMethod({
+    input: streamAttachInputSchema,
+    output: streamAttachOutputSchema,
+    meta: wsOnlyMeta(),
+  }),
+  "stream.lookup": defineHubMethod({
+    input: streamLookupInputSchema,
+    output: streamLookupOutputSchema,
+    meta: dualTransportMeta(true),
   }),
   "llm_debug.get": defineHubMethod({
     input: llmDebugGetInputSchema,

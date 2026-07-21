@@ -26,6 +26,10 @@ export type BundledSapStreamClient = {
     input: { conversationId: string; message: string },
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
   ): { unsubscribe: () => void };
+  resumeMessageStream(
+    streamId: string,
+    callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
+  ): { unsubscribe: () => void };
 };
 
 let bundledClient: BundledSapStreamClient | null = null;
@@ -64,6 +68,7 @@ export function createBundledSapStreamClient(options?: {
     },
     subscribeConversationEvents: stream.subscribeConversationEvents.bind(stream),
     sendMessageStream: stream.sendMessageStream.bind(stream),
+    resumeMessageStream: stream.resumeMessageStream.bind(stream),
   };
 }
 

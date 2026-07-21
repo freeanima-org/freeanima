@@ -4,6 +4,10 @@ import {
   mapRuntimeStreamEventToSap,
   mapSapStreamMethodToApi,
   messageSendInputSchema,
+  streamAttachInputSchema,
+  streamAttachOutputSchema,
+  streamLookupInputSchema,
+  streamLookupOutputSchema,
 } from "./message.ts";
 
 describe("message stream llm_debug", () => {
@@ -14,6 +18,23 @@ describe("message stream llm_debug", () => {
       llm_debug: true,
     });
     expect(parsed.llm_debug).toBe(true);
+  });
+
+  it("parses stream.attach schemas", () => {
+    expect(streamAttachInputSchema.parse({ stream_id: "sid-1" }).stream_id).toBe("sid-1");
+    expect(streamAttachOutputSchema.parse({ status: "active", replayed: true })).toEqual({
+      status: "active",
+      replayed: true,
+    });
+  });
+
+  it("parses stream.lookup schemas", () => {
+    expect(streamLookupInputSchema.parse({ conversation_id: "c1" }).conversation_id).toBe("c1");
+    expect(streamLookupOutputSchema.parse({})).toEqual({});
+    expect(streamLookupOutputSchema.parse({ stream_id: "s1", status: "active" })).toEqual({
+      stream_id: "s1",
+      status: "active",
+    });
   });
 
   it("maps runtime llm_debug to SAP stream event", () => {

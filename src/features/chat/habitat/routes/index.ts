@@ -15,7 +15,13 @@ import {
 import { loadLlmDebugCache } from "../llm-debug-cache.ts";
 import { chatMethodDefs } from "../method-defs.ts";
 import { chatSessionPumps } from "../session-pumps.ts";
-import { pumpMessageStream, pumpSessionUpdates, resolveConversationPlatform } from "../stream.ts";
+import {
+  attachStreamSession,
+  pumpMessageStream,
+  pumpSessionUpdates,
+  resolveConversationPlatform,
+} from "../stream.ts";
+import { streamSessionRegistry } from "../stream-session-registry.ts";
 
 type ChatHubDeps = SapServerDeps;
 
@@ -196,8 +202,22 @@ export const chatHubRoutes = bindHubRouteHandlers(chatMethodDefs, {
   },
   "message.send": async (deps, input, ctx) => {
     const sapCtx = ctxOf(ctx);
+
+    // 弱网重复投递：已有进行中 stream 则复用 stream_id，不新开 pump
+    if (input.client_op_id) {
+      const existing = streamSessionRegistry.findByClientOpId(input.client_op_id);
+      if (existing && existing.status === "active") {
+        return { stream_id: existing.stream_id };
+      }
+    }
+
     const streamId = randomUUID();
     const platform = await resolveConversationPlatform(depsOf(deps), input.conversation_id);
+    streamSessionRegistry.openSession(
+      streamId,
+      input.conversation_id,
+      omitUndefined({ client_op_id: input.client_op_id }),
+    );
     void pumpMessageStream(
       depsOf(deps),
       sapCtx,
@@ -217,6 +237,15 @@ export const chatHubRoutes = bindHubRouteHandlers(chatMethodDefs, {
   "message.interrupt": async (deps, input) => {
     depsOf(deps).runtime.interruptSessionStream(input.conversation_id);
     return { ok: true as const };
+  },
+  "stream.attach": async (_deps, input, ctx) => {
+    return attachStreamSession(ctxOf(ctx), input.stream_id);
+  },
+  "stream.lookup": async (_deps, input) => {
+    const session = streamSessionRegistry.findByConversationId(input.conversation_id);
+    // 仅进行中：done 仍在 TTL 内时不应在打开会话时误触发 resume 重放
+    if (!session || session.status !== "active") return {};
+    return { stream_id: session.stream_id, status: session.status };
   },
   "llm_debug.get": async (_deps, input) => {
     const cached = await loadLlmDebugCache(input.conversation_id);

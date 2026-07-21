@@ -3,6 +3,7 @@ import type { SapRequestContext } from "@freeanima/shared/sap-contract";
 import type { SapServerDeps } from "@freeanima/platform/sap/types";
 
 import { rememberLlmDebugFromStreamPayload } from "./llm-debug-cache.ts";
+import { streamSessionRegistry } from "./stream-session-registry.ts";
 
 async function loadStreamBridge() {
   return import("@freeanima/platform/sap/stream-bridge");
@@ -21,6 +22,16 @@ export async function resolveConversationPlatform(
   return platform;
 }
 
+function publishStreamEvent(
+  fallback: SapRequestContext,
+  method: string,
+  payload: Record<string, unknown>,
+): void {
+  if (!streamSessionRegistry.applyAndPublish(method, payload)) {
+    fallback.sendEvent(method, payload);
+  }
+}
+
 export async function pumpMessageStream(
   deps: SapServerDeps,
   ctx: SapRequestContext,
@@ -37,6 +48,12 @@ export async function pumpMessageStream(
 ): Promise<void> {
   const { bridgeMessageStream } = await loadStreamBridge();
   const originExtra = sendExtra && Object.keys(sendExtra).length > 0 ? sendExtra : undefined;
+
+  // 发起连接订阅 fan-out（attach 的连接另订）
+  const unsubscribe = streamSessionRegistry.subscribe(streamId, (method, payload) => {
+    ctx.sendEvent(method, payload);
+  });
+
   try {
     for await (const mapped of bridgeMessageStream(
       streamId,
@@ -50,14 +67,16 @@ export async function pumpMessageStream(
         );
         continue;
       }
-      ctx.sendEvent(mapped.method, mapped.payload);
+      publishStreamEvent(ctx, mapped.method, mapped.payload);
     }
   } catch (e) {
-    ctx.sendEvent("stream.error", {
+    publishStreamEvent(ctx, "stream.error", {
       stream_id: streamId,
       error: String(e),
     });
-    ctx.sendEvent("stream.done", { stream_id: streamId });
+    publishStreamEvent(ctx, "stream.done", { stream_id: streamId });
+  } finally {
+    unsubscribe?.();
   }
 }
 
@@ -76,4 +95,39 @@ export async function pumpSessionUpdates(
     if (signal.aborted) break;
     ctx.sendEvent(mapped.method, mapped.payload);
   }
+}
+
+/** stream.attach：订阅当前连接并重放 buffer dump */
+export function attachStreamSession(
+  ctx: SapRequestContext,
+  streamId: string,
+): { status: "active" | "done" | "error" | "interrupted"; replayed: boolean } {
+  const session = streamSessionRegistry.getSession(streamId);
+  if (!session) {
+    throw new Error(`stream not found: ${streamId}`);
+  }
+
+  let unsubscribe: (() => void) | null = null;
+  const emit = (method: string, payload: Record<string, unknown>): void => {
+    ctx.sendEvent(method, payload);
+    if (method === "stream.done" || method === "stream.error") {
+      unsubscribe?.();
+      unsubscribe = null;
+    }
+  };
+
+  unsubscribe = streamSessionRegistry.subscribe(streamId, emit);
+  if (!unsubscribe) {
+    throw new Error(`stream not found: ${streamId}`);
+  }
+
+  // 客户端须在 attach 请求前注册 onEvent，才能收到同步重放
+  streamSessionRegistry.replaySnapshot(streamId, emit);
+
+  if (session.status !== "active") {
+    unsubscribe?.();
+    unsubscribe = null;
+  }
+
+  return { status: session.status, replayed: true };
 }

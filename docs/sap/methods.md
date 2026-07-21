@@ -55,11 +55,16 @@ This binding is required for [strict tool routing](tools.md).
 
 ## Message
 
-| Method         | Schema                                                          | Returns                                        |
-| -------------- | --------------------------------------------------------------- | ---------------------------------------------- |
-| `message.send` | [`message.ts`](../../src/shared/sap-contract/frames/message.ts) | `{ stream_id }`; stream events follow on `evt` |
+| Method              | Schema                                                          | Returns                                                                               |
+| ------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `message.send`      | [`message.ts`](../../src/shared/sap-contract/frames/message.ts) | `{ stream_id }`; stream events follow on `evt`                                        |
+| `message.interrupt` | `message.ts`                                                    | `{ ok: true }`                                                                        |
+| `stream.attach`     | `message.ts`                                                    | `{ status, replayed }`; buffer dump via `stream.content_replace` then live            |
+| `stream.lookup`     | `message.ts`                                                    | 仅 `status=active` 时返回 `{ stream_id, status }`（按 `conversation_id`；刷新后续传） |
 
-Payload: `conversation_id`, `message` (user text). Habitat bridges runtime stream to SAP `stream.*` events — see [events.md](events.md).
+Payload for `message.send`: `conversation_id`, `message` (user text). Habitat bridges runtime stream to SAP `stream.*` events — see [events.md](events.md).
+
+Weak-network / refresh resume: keep `stream_id`（`sessionStorage`）或 `stream.lookup` 按会话查询 → `stream.attach`。Habitat 以 `stream.content_replace` dump 当前 buffer，再继续 live tokens。
 
 ## Terminal
 

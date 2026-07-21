@@ -32,6 +32,10 @@ export type SapSidecarClient = {
     input: { conversationId: string; message: string },
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
   ): { unsubscribe: () => void };
+  resumeMessageStream(
+    streamId: string,
+    callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
+  ): { unsubscribe: () => void };
 };
 
 const DEFAULT_POLICY: Required<SapReconnectPolicy> = {
@@ -248,5 +252,6 @@ export function createSapSidecarClient(options: SapSidecarClientOptions = {}): S
     },
     subscribeConversationEvents: stream.subscribeConversationEvents.bind(stream),
     sendMessageStream: stream.sendMessageStream.bind(stream),
+    resumeMessageStream: stream.resumeMessageStream.bind(stream),
   };
 }
