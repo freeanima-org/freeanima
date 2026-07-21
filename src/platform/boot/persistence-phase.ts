@@ -1,4 +1,5 @@
 import { closeDb, getDb, initDatabase } from "@freeanima/core/db/pg";
+import { formatPgStartupError } from "@freeanima/core/db/pg/startup-error.ts";
 import { initRedis } from "@freeanima/platform/connectors/redis";
 import { runMigrations } from "@freeanima/core/db";
 import {
@@ -28,8 +29,12 @@ export async function bootPersistencePhase(): Promise<PersistencePhaseResult> {
   });
 
   startupLog("Initializing PostgreSQL connection pool…");
-  const db = getDb();
-  await runMigrations(db);
+  try {
+    const db = getDb();
+    await runMigrations(db);
+  } catch (err) {
+    throw formatPgStartupError(err, { databaseUrl: dbUrl });
+  }
   startupLog("Database migrations complete");
 
   startupLog("Loading runtime config from database…");
