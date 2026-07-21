@@ -22,6 +22,7 @@ export type BundledSapStreamClient = {
     conversationId: string,
     onUpdate: () => void,
   ): { unsubscribe: () => void };
+  subscribeInboxEvents(onUpdate: (conversationId: string) => void): { unsubscribe: () => void };
   sendMessageStream(
     input: { conversationId: string; message: string },
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
@@ -67,6 +68,7 @@ export function createBundledSapStreamClient(options?: {
       hubRpc.stop();
     },
     subscribeConversationEvents: stream.subscribeConversationEvents.bind(stream),
+    subscribeInboxEvents: stream.subscribeInboxEvents.bind(stream),
     sendMessageStream: stream.sendMessageStream.bind(stream),
     resumeMessageStream: stream.resumeMessageStream.bind(stream),
   };

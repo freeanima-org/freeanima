@@ -19,6 +19,7 @@ export type SapSessionStreamClient = {
     conversationId: string,
     onUpdate: () => void,
   ): { unsubscribe: () => void };
+  subscribeInboxEvents(onUpdate: (conversationId: string) => void): { unsubscribe: () => void };
   sendMessageStream(
     input: {
       conversationId: string;
@@ -68,17 +69,25 @@ export function createSapConversationStreamClient(
 ): SapSessionStreamClient {
   const subscribedConversations = new Set<string>();
   const conversationListeners = new Map<string, Set<() => void>>();
+  const inboxListeners = new Set<(conversationId: string) => void>();
+  let inboxSubscribed = false;
   let conversationUpdatedOff: (() => void) | null = null;
 
   const notifyConversation = (conversationId: string): void => {
     for (const listener of conversationListeners.get(conversationId) ?? []) {
       listener();
     }
+    for (const listener of inboxListeners) {
+      listener(conversationId);
+    }
   };
 
   const resubscribeSessions = async (client: RpcStreamClient): Promise<void> => {
     for (const conversationId of subscribedConversations) {
       await client.request("conversation.subscribe", { conversation_id: conversationId });
+    }
+    if (inboxSubscribed) {
+      await client.request("conversation.subscribeInbox", {});
     }
   };
 
@@ -119,6 +128,19 @@ export function createSapConversationStreamClient(
           if (set && set.size === 0) {
             conversationListeners.delete(conversationId);
             subscribedConversations.delete(conversationId);
+          }
+        },
+      };
+    },
+    subscribeInboxEvents(onUpdate) {
+      inboxListeners.add(onUpdate);
+      inboxSubscribed = true;
+      void ensureSessionHooks().then((client) => client.request("conversation.subscribeInbox", {}));
+      return {
+        unsubscribe: () => {
+          inboxListeners.delete(onUpdate);
+          if (inboxListeners.size === 0) {
+            inboxSubscribed = false;
           }
         },
       };

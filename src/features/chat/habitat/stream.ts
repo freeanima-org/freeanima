@@ -97,6 +97,18 @@ export async function pumpSessionUpdates(
   }
 }
 
+export async function pumpInboxUpdates(
+  deps: RemoteToolsServerDeps,
+  ctx: RemoteToolsRequestContext,
+  signal: AbortSignal,
+): Promise<void> {
+  const { bridgeInboxUpdates } = await loadStreamBridge();
+  for await (const mapped of bridgeInboxUpdates((cb) => deps.runtime.watchInbox(cb), signal)) {
+    if (signal.aborted) break;
+    ctx.sendEvent(mapped.method, mapped.payload);
+  }
+}
+
 /** stream.attach：本连接独占 fan-out 并重放 buffer dump（替换发起连接旧订阅，避免同 WS 双发） */
 export function attachStreamSession(
   ctx: RemoteToolsRequestContext,

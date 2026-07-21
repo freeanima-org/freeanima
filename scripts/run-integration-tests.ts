@@ -22,9 +22,22 @@ function ensureStandaloneBuilt(): void {
   }
 }
 
+function parallelWorkers(): string {
+  const env = process.env.FREEANIMA_TEST_PARALLEL?.trim();
+  if (env && /^\d+$/.test(env)) return env;
+  try {
+    const n = Math.max(
+      1,
+      Math.min(8, Number(execSync("nproc", { encoding: "utf-8" }).trim()) || 2),
+    );
+    return String(n);
+  } catch {
+    return "2";
+  }
+}
+
 let exitCode = 0;
 let teardown: () => Promise<void> = async () => {};
-const pgPreset = process.env.ANIMA_TEST_PG_URL?.trim();
 
 try {
   ensureStandaloneBuilt();
@@ -34,27 +47,28 @@ try {
   process.exit(1);
 }
 
-if (!pgPreset) {
-  try {
-    teardown = await setupIntegrationPg();
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[${label}] ${msg}\n[${label}] continuing (PG integration tests will be skipped)`);
-  }
+try {
+  teardown = await setupIntegrationPg();
+} catch (err) {
+  const msg = err instanceof Error ? err.message : String(err);
+  console.warn(`[${label}] ${msg}\n[${label}] continuing (PG integration tests will be skipped)`);
 }
 
+const workers = parallelWorkers();
+const testArgs = ["test", "tests/integration", "--pass-with-no-tests", `--parallel=${workers}`];
+console.log(`[${label}] bun ${testArgs.join(" ")}`);
+
 try {
-  execSync("bun test tests/integration --pass-with-no-tests", {
+  const result = spawnSync("bun", testArgs, {
     cwd: repoRoot,
     stdio: "inherit",
     env: process.env,
   });
+  exitCode = result.status ?? 1;
 } catch {
   exitCode = 1;
 } finally {
-  if (!pgPreset) {
-    await teardown();
-  }
+  await teardown();
 }
 
 process.exit(exitCode);

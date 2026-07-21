@@ -51,18 +51,6 @@ async function ensureIntegrationWorldContext(config: Config): Promise<void> {
   bindResolvedWorldContext(ctx);
 }
 
-async function clearPgTables(sql: SqlClient, config: Config): Promise<void> {
-  await sql`DELETE FROM memory_references`;
-  await sql`DELETE FROM messages`;
-  await sql`DELETE FROM conversations`;
-  await sql`DELETE FROM self_blocks`;
-  await sql`DELETE FROM service_api_tokens`;
-  await sql`DELETE FROM entities`;
-  await ensureIntegrationWorldContext(config);
-  await sql`DELETE FROM notifications`;
-  await sql`DELETE FROM cron_jobs`;
-}
-
 function createTestEngine(config: Config): Engine {
   registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
   const llm = initLlmRuntime(config.data);
@@ -75,20 +63,23 @@ function wireEngine(config: Config): Engine {
   return engine;
 }
 
-/** Root-level tests (Vitest, etc.): inject PG connection and clear tables */
 function createTestSql(url: string): { sql: SqlClient; db: Db } {
   const sql = new SQL(url);
   const db = drizzle({ client: sql, relations });
   return { sql, db };
 }
 
+/**
+ * 初始化 PG 测试连接并 seed world context。
+ * 每个测试文件使用独立数据库（由 createIsolatedTestDb 建库 + migrate），
+ * 因此不再需要 clearPgTables。
+ */
 export async function setupPgTestDb(url: string, config: Config): Promise<PgTestContext> {
   initDatabase({ getDatabaseUrl: () => url });
   bindActiveRuntimeConfig(config);
   const { sql, db } = createTestSql(url);
-  // ensureWorldSubjects（clearPgTables 内）走 getDb()，须先注入测试连接以免泄漏孤儿连接
   setDbForTest(db, sql);
-  await clearPgTables(sql, config);
+  await ensureIntegrationWorldContext(config);
   const engine = createTestEngine(config);
   activeCtx = {
     sql,
@@ -143,8 +134,8 @@ export function writeIntegrationDatabaseConfig(
 }
 
 /**
- * Standard integration test setup: temp FREEANIMA_HOME + database.url + PG connection.
- * Reuses connection within the same process; clears tables per case (avoids CONNECTION_ENDED from closing in afterEach).
+ * Standard integration setup: temp FREEANIMA_HOME + 进程独立 PG。
+ * 同进程复用连接；不清表（隔离靠独立库 / --parallel --isolate）。
  */
 export async function setupIntegrationHome(opts: {
   url: string;
@@ -155,7 +146,6 @@ export async function setupIntegrationHome(opts: {
   const config = FileConfig.open();
   bindActiveRuntimeConfig(config);
   if (activeCtx) {
-    await clearPgTables(activeCtx.sql, config);
     activeCtx.config = config;
     wireEngine(config);
     return activeCtx;

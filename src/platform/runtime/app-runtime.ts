@@ -48,6 +48,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   private bus: EventBus | null = null;
   private onConversationUpdated: ((sid: string) => void) | null = null;
   private readonly conversationWatchers = new Map<string, Set<() => void>>();
+  private readonly inboxWatchers = new Set<(conversationId: string) => void>();
 
   readonly kernel: Kernel;
   readonly engine: ServiceEnginePort;
@@ -169,6 +170,13 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
         }
       }
     }
+    for (const cb of this.inboxWatchers) {
+      try {
+        cb(conversationId);
+      } catch {
+        /* ignore watcher errors */
+      }
+    }
   }
 
   /** Habitat SSE: notify when conversation messages/meta change (ACP progress, callbacks). */
@@ -182,6 +190,14 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return () => {
       set?.delete(cb);
       if (set && set.size === 0) this.conversationWatchers.delete(conversationId);
+    };
+  }
+
+  /** 任意会话更新（用户未读角标 / 会话列表 inbox） */
+  watchInbox(cb: (conversationId: string) => void): () => void {
+    this.inboxWatchers.add(cb);
+    return () => {
+      this.inboxWatchers.delete(cb);
     };
   }
 

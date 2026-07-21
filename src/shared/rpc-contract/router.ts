@@ -24,6 +24,11 @@ import type {
   ConversationDeleteInput,
   ConversationMutateOutput,
   ConversationSubscribeInput,
+  ConversationSubscribeInboxInput,
+  ConversationMarkReadInput,
+  ConversationMarkReadOutput,
+  ConversationUnreadCountInput,
+  ConversationUnreadCountOutput,
   ConversationCommandsInput,
   ConversationCommandsOutput,
   ConversationCommandInput,
@@ -208,6 +213,9 @@ export const RPC_WIRE_METHODS = [
   "conversation.delete",
   "conversation.rollbackBeforeLastUser",
   "conversation.subscribe",
+  "conversation.subscribeInbox",
+  "conversation.markRead",
+  "conversation.unreadCount",
   "conversation.acpDock",
   "conversation.commands",
   "conversation.command",
@@ -308,6 +316,9 @@ export type RpcRouterInputs = {
   "conversation.delete": ConversationDeleteInput;
   "conversation.rollbackBeforeLastUser": ConversationDeleteInput;
   "conversation.subscribe": ConversationSubscribeInput;
+  "conversation.subscribeInbox": ConversationSubscribeInboxInput;
+  "conversation.markRead": ConversationMarkReadInput;
+  "conversation.unreadCount": ConversationUnreadCountInput;
   "conversation.acpDock": ConversationAcpDockInput;
   "conversation.commands": ConversationCommandsInput;
   "conversation.command": ConversationCommandInput;
@@ -406,6 +417,9 @@ export type RpcRouterOutputs = {
   "conversation.delete": ConversationMutateOutput;
   "conversation.rollbackBeforeLastUser": ConversationMutateOutput;
   "conversation.subscribe": { ok: true };
+  "conversation.subscribeInbox": { ok: true };
+  "conversation.markRead": ConversationMarkReadOutput;
+  "conversation.unreadCount": ConversationUnreadCountOutput;
   "conversation.acpDock": ConversationAcpDockOutput;
   "conversation.commands": ConversationCommandsOutput;
   "conversation.command": ConversationCommandOutput;

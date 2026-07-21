@@ -45,7 +45,10 @@ import {
   rollbackBeforeLastUserMessage,
   runConversationCommand,
   subscribeConversationUpdates,
+  subscribeConversationInbox,
+  markConversationRead,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
+import { useChatUnreadStore } from "@freeanima/features/chat/ui/spa/stores/chat-unread.ts";
 import { runBootstrapConversation } from "@freeanima/features/chat/ui/spa/lib/bootstrap-conversation.ts";
 import {
   ListDetailLayout,
@@ -678,6 +681,18 @@ export function ChatApp() {
     return () => sub.unsubscribe();
   }, [currentId, fetchConversations]);
 
+  useEffect(() => {
+    const sub = subscribeConversationInbox((conversationId) => {
+      const viewing = useConversationsStore.getState().currentId;
+      // 当前会话已有 subscribeConversationUpdates 刷新列表；此处再拉会重复请求
+      if (viewing !== conversationId) {
+        void fetchConversations();
+      }
+      void useChatUnreadStore.getState().refreshCount();
+    });
+    return () => sub.unsubscribe();
+  }, [fetchConversations]);
+
   /** 刷新 / 整页刷新 / 切回会话：先 stream.lookup/attach 续传，否则轮询落库 */
   useEffect(() => {
     if (!currentId) return;
@@ -914,6 +929,7 @@ export function ChatApp() {
       label={conversationLabel(s)}
       active={s.id === currentId}
       faded={faded}
+      unread={s.unread === true && s.id !== currentId}
       useActionSheet={useActionSheet}
       contextMenuEnabled={contextMenuEnabled}
       onNavigate={(id) => void navigateToConversation(id)}
@@ -1012,6 +1028,13 @@ export function ChatApp() {
           streamingConversationId: null,
           streamText: "",
         });
+        if (useConversationsStore.getState().currentId === conversationId) {
+          void markConversationRead(conversationId)
+            .then(() => useChatUnreadStore.getState().refreshCount())
+            .catch(() => undefined);
+        } else {
+          void useChatUnreadStore.getState().refreshCount();
+        }
       },
       onError: (conversationId: string, msg: string) => {
         for (const entry of Object.values(useOutboxStore.getState().entries)) {

@@ -39,7 +39,12 @@ const DEFAULT_CONVERSATION_LIST_LIMIT = 200;
 export async function listConversations(
   deps: RuntimeDeps,
   platform?: string | null,
-  opts?: { offset?: number; limit?: number; includeArchived?: boolean },
+  opts?: {
+    offset?: number;
+    limit?: number;
+    includeArchived?: boolean;
+    user_subject_id?: string;
+  },
 ): Promise<{ conversations: ConversationSummary[]; total: number }> {
   const p = platform === "" ? null : platform;
   // 始终走分页 API，禁止无界全表拉取
@@ -49,6 +54,7 @@ export async function listConversations(
       offset: opts?.offset ?? 0,
       limit: opts?.limit ?? DEFAULT_CONVERSATION_LIST_LIMIT,
       includeArchived: opts?.includeArchived,
+      user_subject_id: opts?.user_subject_id,
     }),
   );
   return { conversations: page.items, total: page.total };

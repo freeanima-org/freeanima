@@ -30,7 +30,7 @@ Directional heuristics for _what_ FreeAnima should feel like. Mechanisms and cog
 
 How agents should _shape_ changes. Hard checks and conventions → [`.agent/rules/`](.agent/rules/README.md) — related, but not a 1:1 rule list.
 
-- **Testability by design** — Structure code so behavior can be verified: colocated unit tests for package logic, integration tests when boundaries cross packages or touch real persistence; design for injection and clear seams — see [`.agent/rules/testing.md`](.agent/rules/testing.md).
+- **Testability by design** — Structure code so behavior can be verified: colocated unit tests for package logic, integration tests when boundaries cross packages or touch real persistence; design for injection and clear seams — see [`.agent/rules/testing.md`](.agent/rules/testing.md). **PG integration 禁止**把 `ANIMA_TEST_PG_URL` 指到与日常 `~/.anima/config.yaml` **同 host:port** 的库（护栏 skip + throw）；须经 `bun run test:integration`（Docker 临时 PG、模板库克隆、无 `clearPgTables`）或等价隔离实例。
 - **Elegant, minimal architecture** — Prefer the **simplest correct structure**; readable boundaries beat clever indirection. The repository is in an active reshaping phase — optimize for the **end-state codebase**; large refactors and breaking changes are acceptable when clarity wins.
 - **No speculative layering** — Do not introduce abstractions, extension points, or parallel APIs for **unused or far-future** needs; add structure when a second real consumer exists, not when imagining one.
 
