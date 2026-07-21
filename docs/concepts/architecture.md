@@ -128,11 +128,11 @@ Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platfo
 | Shell（壳子维）  | Yes                                | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Habitat wiring | preload/IPC                             |
 | Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                                                    | Habitat RPC（Feature RPC）              |
 | Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.hub.rpc`）                            | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
-| Companion host   | In-process (Electron main)         | `src/satellites/companion`                                                 | Habitat RPC + remote tool registration  |
+| Companion host   | Overlay WebView-host（第一方）     | `src/satellites/companion`（spa attach；壳薄 IPC/FS）                      | Habitat RPC + `remote_tools.attach`     |
 
 导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `isElectron` / `getShellKind()` 锁 Shell 布局。交互（右键/长按/Enter）用 shell-sdk 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
 
-**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Habitat。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于 Habitat 拨不到的本地应用（今日 companion，嵌在 Portal 主进程；未来亦可为独立应用）。产品面（Chat 等）**不做** attach。可拨号对端的工具走 **MCP**。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/guide/habitat-rpc.md`](../guide/habitat-rpc.md)。
+**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Habitat。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于 Habitat 拨不到的本地应用（今日 companion：**第一方 overlay WebView-host** 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）。产品面（Chat 等）**不做** attach。可拨号对端的工具走 **MCP**。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/guide/habitat-rpc.md`](../guide/habitat-rpc.md)。
 
 ### Habitat navigation ↔ cognitive layers
 
@@ -403,18 +403,18 @@ Complementary: Pipeline Runner handles scheduled multi-step background work; Hoo
 
 ## Desktop companion (Habitat SSOT)
 
-The desktop companion is an **unreachable local app** that **actively connects** to Habitat and registers remote tools (embedded in Electron main — not a separate Node process), with a split boundary:
+The desktop companion is an **unreachable local app** that **actively connects** to Habitat and registers remote tools in the **first-party overlay WebView** (shell provides window/IPC/FS only — **not** a Node sidecar), with a split boundary:
 
-| Concern                             | Habitat (`src/features/companion/`)              | Local install                                     |
-| ----------------------------------- | ------------------------------------------------ | ------------------------------------------------- |
-| Behavior, slots, active model       | `companion_profile` entity + Habitat RPC         | Cache in `~/.anima/companion/config.json`         |
-| VRM / VRMA library                  | Files on Habitat host + content-hash metadata    | Lazy download to desktop cache                    |
-| FBX → VRMA                          | Habitat service only                             | Not bundled in desktop installer                  |
-| Settings UI                         | Habitat RPC + `/rpc/v1/companion/*` upload       | Desktop Settings section (not Habitat)            |
-| VRM render, float window, patrol    | —                                                | Electron + overlay SPA                            |
-| Agent tools (`bubble`, `play_slot`) | Habitat RPC `tool.*` after `remote_tools.attach` | In-process host executes; Electron IPC to overlay |
+| Concern                             | Habitat (`src/features/companion/`)              | Local install                             |
+| ----------------------------------- | ------------------------------------------------ | ----------------------------------------- |
+| Behavior, slots, active model       | `companion_profile` entity + Habitat RPC         | Cache in `~/.anima/companion/config.json` |
+| VRM / VRMA library                  | Files on Habitat host + content-hash metadata    | Lazy download to desktop cache            |
+| FBX → VRMA                          | Habitat service only                             | Not bundled in desktop installer          |
+| Settings UI                         | Habitat RPC + `/rpc/v1/companion/*` upload       | Desktop Settings section (not Habitat)    |
+| VRM render, float window, patrol    | —                                                | Electron shell + overlay SPA              |
+| Agent tools (`bubble`, `play_slot`) | Habitat RPC `tool.*` after `remote_tools.attach` | Overlay WebView-host 执行（本地 runtime） |
 
-**Remote tools ≠ Portal / MCP**: Portal shells and Chat/Settings use Habitat RPC for UI only. Dialable peers expose tools via **MCP**. Remote-tool attach exists solely when Habitat cannot dial the app (companion today; future independent local apps). Routing uses `instance_id` (same machine may have multiple instances). See [`companion.md`](../features/companion.md)、[`habitat-rpc.md`](../guide/habitat-rpc.md).
+**Remote tools ≠ Portal / MCP**: Portal shells and Chat/Settings use Habitat RPC for UI only. Dialable peers expose tools via **MCP**. Remote-tool attach exists solely when Habitat cannot dial the app (companion overlay today; future independent local apps). Routing uses `instance_id` (same machine may have multiple instances). See [`companion.md`](../features/companion.md)、[`habitat-rpc.md`](../guide/habitat-rpc.md).
 
 ## Direction
 

@@ -104,6 +104,10 @@ build-web: _deps
 build-cli: _deps
   bun run build:cli:executable
 
+# Windows 安装包（electron-builder；≡ bun run package:windows）
+pack-windows: _deps
+  bun run package:windows
+
 # 构建后安装到独立前缀（默认 ~/.anima/standalone；PATH shim → ~/.local/bin）
 install-cli: build-cli
   bun scripts/install-cli.ts --skip-build

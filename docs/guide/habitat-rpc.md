@@ -46,10 +46,10 @@ Helpers: `resolveHabitatRpcWsUrl`, `buildHabitatRestRequest` in `@freeanima/shar
 
 ## Client profiles
 
-| Profile          | Attach                          | Typical consumer                                                         |
-| ---------------- | ------------------------------- | ------------------------------------------------------------------------ |
-| Bundled SPA      | **No**                          | Chat, task, notification, diary, email                                   |
-| Remote-tool host | **Yes** (`remote_tools.attach`) | companion (in-process with desktop shell); future independent local apps |
+| Profile          | Attach                          | Typical consumer                                                |
+| ---------------- | ------------------------------- | --------------------------------------------------------------- |
+| Bundled SPA      | **No**                          | Chat, task, notification, diary, email                          |
+| Remote-tool host | **Yes** (`remote_tools.attach`) | companion (overlay WebView-host); future independent local apps |
 
 Bundled SPA shares **one** Habitat RPC WebSocket per page load. Product modules pass a simple `platform` channel (e.g. `"chat"`), never a remote-tool `instance_id`.
 

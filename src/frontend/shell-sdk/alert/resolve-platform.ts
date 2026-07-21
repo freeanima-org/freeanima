@@ -17,6 +17,7 @@ export function resolveAlertDisplayPlatform(
   if (backend?.platform && backend.platform !== "web") {
     return backend.platform;
   }
+  if (typeof window.satelliteShell?.showNativeAlert === "function") return "desktop";
   if (window.satelliteShell?.isElectron) return "desktop";
   if (isCapacitorShellRuntime()) return "mobile";
   return backend?.platform ?? "web";

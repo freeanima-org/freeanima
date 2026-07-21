@@ -80,11 +80,16 @@ function visualConfigChanged(cfg: CompanionConfig, prev?: CompanionState): boole
 function applyConfigToState(cfg: CompanionConfig, prev?: CompanionState): Partial<CompanionState> {
   const modelPath = cfg.model_available ? cfg.model_path : "";
   const bumpRevision = visualConfigChanged(cfg, prev);
+  const runtimeFields = isCompanionOverlay()
+    ? {}
+    : {
+        instanceId: cfg.instance_id,
+        sapConnected: cfg.remote_tools_connected,
+      };
   return {
     habitatUrl: cfg.habitat_url ?? cfg.hub_url,
     modelPath,
-    instanceId: cfg.instance_id,
-    sapConnected: cfg.remote_tools_connected,
+    ...runtimeFields,
     fbxImportAvailable: cfg.fbx_import_available,
     activeModelId: cfg.active_model_id,
     models: cfg.models,

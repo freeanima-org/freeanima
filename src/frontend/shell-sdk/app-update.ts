@@ -335,9 +335,12 @@ export async function resolvePackagedUpdate(opts: {
 
 export function resolveNativePackagedKind(): PackagedReleaseKind | null {
   const shell = typeof window !== "undefined" ? window.satelliteShell : undefined;
-  if (shell?.isElectron) return "desktop-windows";
-  if (shell?.isNativeShell) return "mobile-android";
-  return null;
+  if (!shell) return null;
+  // 能力优先：有 applyPackagedUpdate 则按壳类型选产物
+  if (typeof shell.applyPackagedUpdate !== "function") return null;
+  if (shell.isNativeShell) return "mobile-android";
+  if (shell.isElectron || (shell as { isTauri?: boolean }).isTauri) return "desktop-windows";
+  return "desktop-windows";
 }
 
 export function otherUpdateTrack(channel: UpdateTrack): UpdateTrack {

@@ -3,9 +3,7 @@ import { join } from "node:path";
 import type { ViteDevServer } from "vite";
 import { WebSocketServer } from "ws";
 import { companionPackageRoot } from "./companion-root.ts";
-import { connectSap } from "./sap/run.ts";
 import { corsPreflight, jsonResponse } from "./http/cors.ts";
-import { hubUrlFromConfig } from "./config.ts";
 import { clientCompanionConfig } from "./config-response.ts";
 import { ensureCompanionDataDir } from "./paths.ts";
 import { serveSidecarAsset, serveStatic, setStaticDistDir } from "./static.ts";
@@ -156,8 +154,6 @@ export async function startCompanionServer(
       if (opts.announce !== false) {
         announceSidecarPort(boundPort);
       }
-
-      void connectSap(hubUrlFromConfig(), activeHttpUrl);
 
       return {
         port: boundPort,

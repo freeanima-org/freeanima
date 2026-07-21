@@ -3,7 +3,6 @@ import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import type { RemoteInstanceStore } from "@freeanima/shared/rpc-contract";
 import {
   buildShellApiFields,
-  type CompanionRuntimeMessage,
   type CompanionWindowRole,
   type ShellApi,
 } from "@freeanima/frontend/shell-sdk";
@@ -116,21 +115,14 @@ function createSatelliteShell(hubFields: PreloadHabitatFields): ShellApi {
         ipcRenderer.removeListener("shell:server-error", listener);
       };
     },
-    listenCompanionRuntime: (handler) => {
-      const listener = (_event: Electron.IpcRendererEvent, message: CompanionRuntimeMessage) => {
-        handler(message);
-      };
-      ipcRenderer.on("companion:runtime", listener);
-      return () => {
-        ipcRenderer.removeListener("companion:runtime", listener);
-      };
+    reportCompanionRemoteToolsStatus: async (status) => {
+      await ipcRenderer.invoke("companion:remote-tools-status-report", status);
     },
-    advanceCompanionBubble: () =>
-      ipcRenderer.invoke("companion:bubbles-advance") as Promise<{
-        current: { id: string; text: string; createdAt: number } | null;
+    getCompanionRemoteToolsStatus: () =>
+      ipcRenderer.invoke("companion:remote-tools-status-get") as Promise<{
+        instance_id: string;
+        remote_tools_connected: boolean;
       }>,
-    getCompanionRuntimeSnapshot: () =>
-      ipcRenderer.invoke("companion:runtime-snapshot") as Promise<CompanionRuntimeMessage>,
     showNativeAlert: (payload) => ipcRenderer.invoke("shell:alert:show", payload) as Promise<void>,
     requestNativeAlertPermission: () =>
       ipcRenderer.invoke("shell:alert:request-permission") as Promise<
