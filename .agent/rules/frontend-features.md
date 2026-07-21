@@ -5,7 +5,7 @@
 ## 决策树
 
 1. 是否需要用户可见的产品 CRUD + 实时 Habitat WS？→ **原型 A（Feature RPC）**
-2. 是否需要不可达本机的远程工具反向调用？→ **原型 A′（remote tools host）** — 仅 Habitat 拨不到的本地应用（今日 `companion`；可嵌在壳主进程，亦可未来独立应用）
+2. 是否需要不可达本机的远程工具反向调用？→ **原型 A′（remote tools host）** — 仅 Habitat 拨不到的本地应用（今日 `companion` overlay WebView-host；亦可未来独立应用）
 3. 是否是运维/配置/记忆管理类 UI（Habitat）？→ **原型 B（Habitat RPC）** — 与原型 A 相同 wire
 4. 是否仅是壳层设置（Habitat URL、debug）？→ **原型 C（shell-sdk settings）**
 5. 对端可拨号的工具？→ **MCP**（不要用远程工具注册）
@@ -28,15 +28,16 @@
 
 ## 原型 A′ — 远程工具宿主（不可达本地应用）
 
-**示例**：companion（Electron main 同进程 `createRemoteToolsHub`；overlay 经 IPC 收 runtime）
+**示例**：companion（**overlay WebView-host**：`createRemoteToolsHub` 在第一方 overlay 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）
 
-| 层                       | 必须改                                                           |
-| ------------------------ | ---------------------------------------------------------------- |
-| `rpc-contract`           | `remote-tools/` + `frames/*` attach / tool schema                |
-| `src/satellites/<name>/` | host + UI（仅白名单；**禁止**再加独立 sidecar；路径为 legacy）   |
-| 桌面壳                   | preload IPC / 静态资产 HTTP；产品面仍走 Feature RPC，不做 attach |
+| 层                       | 必须改                                                                  |
+| ------------------------ | ----------------------------------------------------------------------- |
+| `rpc-contract`           | `remote-tools/` + `frames/*` attach / tool schema                       |
+| `src/satellites/<name>/` | overlay UI + 可选极薄静态服（白名单；**禁止**再加独立 sidecar；legacy） |
+| 桌面壳                   | 透明窗 / click-through / 托盘 / FS；产品面仍走 Feature RPC，不做 attach |
 
-**不要**：为 Chat/Task 等产品面新建 `satellites/*` 或 `remote_tools.attach`；不要把 attach 放进 renderer；能 MCP 解决的不要走远程工具注册。
+**不要**：为 Chat/Task 等产品面新建 `satellites/*` 或 `remote_tools.attach`；能 MCP 解决的不要走远程工具注册。  
+**允许**：Companion 等原型 A′ 的**第一方 overlay** 内 `remote_tools.attach`（WebView-host）。**禁止**：Chat 等产品面 attach；禁止为 attach 再起 Node sidecar。
 
 ## 原型 B — Habitat 运维面（Habitat RPC）
 

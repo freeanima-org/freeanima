@@ -10,7 +10,6 @@ import {
 } from "../lib/shell-profile.ts";
 import {
   startCompanionServer,
-  reconnectCompanionSap,
   type CompanionServerHandle,
 } from "@freeanima/satellites/companion/lib/exports/desktop.ts";
 import { shellClientNeedsHabitatSetup } from "@freeanima/frontend/shell-sdk/shell-client-config.ts";
@@ -20,7 +19,7 @@ import {
   registerCompanionHostIpc,
   startCompanionCursorPoll,
 } from "./companion-host.ts";
-import { registerCompanionRuntimeIpc } from "./companion-runtime-ipc.ts";
+import { registerCompanionRemoteToolsStatusIpc } from "./companion-remote-tools-status-ipc.ts";
 import { registerInstanceStoreIpc } from "./instance-store-ipc.ts";
 import { clearAllScheduledNativeAlerts, registerAlertIpc } from "./alert-ipc.ts";
 import { attachWindowDevTools } from "./devtools.ts";
@@ -170,9 +169,7 @@ function applyClickthrough(win: BrowserWindow): void {
 function reloadHabitatClientAndMainWindow(): void {
   hubClient = resolveHabitatClient();
   syncHubEnv(hubClient);
-  if (serverHandle) {
-    reconnectCompanionSap(hubClient.habitatUrl, serverHandle.url);
-  }
+  // overlay 经 shell:config-changed 自行重建 remote_tools hub
   broadcast("shell:config-changed");
 }
 
@@ -433,7 +430,7 @@ async function bootstrap(): Promise<void> {
       broadcast,
     },
   );
-  registerCompanionRuntimeIpc(() => companionWindow);
+  registerCompanionRemoteToolsStatusIpc();
 
   try {
     serverHandle = await startCompanionSidecar();

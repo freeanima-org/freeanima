@@ -18,7 +18,14 @@ export async function registerShellAlertBackend(): Promise<void> {
     }
   }
 
-  if (window.satelliteShell?.isElectron) {
+  const shell = window.satelliteShell;
+  // 能力检测：有原生 alert API 且非 Capacitor → 桌面壳（Electron / 未来 Tauri）
+  if (
+    typeof shell?.showNativeAlert === "function" &&
+    typeof shell.requestNativeAlertPermission === "function" &&
+    !shell.isNativeShell &&
+    !isCapacitorShellCandidate()
+  ) {
     const { createDesktopAlertBackend } =
       await import("@freeanima/app/shell/desktop/lib/alert-backend.ts");
     registerAlertBackend(createDesktopAlertBackend());

@@ -41,7 +41,7 @@ function writeDismissedKey(key: string): void {
 function formatUpdateErrorMessage(err: unknown): string {
   const message = err instanceof Error ? err.message : String(err);
   const detail = m.ui_shell_update_failed_detail({ message });
-  if (window.satelliteShell?.isElectron) {
+  if (typeof window.satelliteShell?.applyPackagedUpdate === "function") {
     return `${detail} ${m.ui_shell_update_log_hint()}`;
   }
   return detail;

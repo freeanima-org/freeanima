@@ -23,6 +23,15 @@ describe("shell-runtime", () => {
     expect(getShellKind()).toBe("electron");
   });
 
+  it("getShellKind：Tauri isTauri", () => {
+    (globalThis as { window: Window }).window = {
+      satelliteShell: { isElectron: false, isTauri: true } as ShellApi,
+      location: { origin: "https://example.com" },
+      navigator: { userAgent: "Mozilla/5.0" },
+    } as unknown as Window;
+    expect(getShellKind()).toBe("tauri");
+  });
+
   it("getShellKind：Capacitor isNativeShell", () => {
     (globalThis as { window: Window }).window = {
       satelliteShell: { isElectron: false, isNativeShell: true } as ShellApi,

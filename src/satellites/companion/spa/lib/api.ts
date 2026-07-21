@@ -57,6 +57,14 @@ export async function fetchSidecarRuntimeFields(): Promise<{
   instance_id: string;
   remote_tools_connected: boolean;
 }> {
+  const shell = window.satelliteShell;
+  if (shell?.getCompanionRemoteToolsStatus) {
+    try {
+      return await shell.getCompanionRemoteToolsStatus();
+    } catch {
+      /* fall through */
+    }
+  }
   try {
     const cfg = await fetchSidecarRuntimeConfig();
     return { instance_id: cfg.instance_id, remote_tools_connected: cfg.remote_tools_connected };
@@ -220,17 +228,9 @@ export function runtimeWsUrl(httpOrigin: string): string {
 }
 
 export async function advanceBubble() {
-  const shell = window.satelliteShell;
-  if (shell?.isElectron && shell.advanceCompanionBubble) {
-    return shell.advanceCompanionBubble();
-  }
-  const base = await resolveSidecarOrigin();
-  const res = await fetch(`${base}/api/bubbles/advance`, { method: "POST" });
-  if (!res.ok) {
-    const err = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(err.error ?? `HTTP ${res.status}`);
-  }
-  return (await res.json()) as { current: { id: string; text: string } | null };
+  const { advanceBubbleLocal } = await import("./runtime-local.ts");
+  const current = advanceBubbleLocal();
+  return { current };
 }
 
 export { isElectron } from "./electron.ts";

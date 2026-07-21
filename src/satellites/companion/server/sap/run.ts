@@ -1,9 +1,7 @@
-import { startRemoteToolsTransport } from "./hub.ts";
-
-/** 启动远程工具 transport（幂等；transport 内 backoff 重连） */
-export function connectSap(habitatUrl: string, httpUrl?: string): void {
-  startRemoteToolsTransport(habitatUrl, httpUrl);
+/** @deprecated attach 在 overlay；保留空壳以免旧 import 断裂 */
+export function connectSap(_habitatUrl: string, _httpUrl?: string): void {
+  /* no-op */
 }
 
-/** @deprecated use connectSap / startRemoteToolsTransport */
+/** @deprecated use connectSap */
 export const runCompanionSap = connectSap;

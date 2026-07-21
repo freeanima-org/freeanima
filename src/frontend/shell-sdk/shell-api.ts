@@ -51,6 +51,8 @@ export type ShellApi = {
   isElectron: boolean;
   /** Capacitor 等原生壳 */
   isNativeShell?: boolean;
+  /** 未来 Tauri 壳标记（Phase 2+）；getShellKind 认 "tauri" */
+  isTauri?: boolean;
   /** 原生壳构建元数据（desktop/mobile build 时 bake） */
   nativeBuild?: ComponentBuildMeta;
   /** 主输入范式（可选；未设时 Electron→pointer，Capacitor→touch，Web→媒体查询） */
@@ -65,14 +67,27 @@ export type ShellApi = {
   windowRole?: CompanionWindowRole | null;
   /** companion sidecar HTTP 根；其他前端为 null */
   apiOrigin?: string | null;
-  /** Electron：订阅 companion runtime（bubble / play_slot）；返回取消函数 */
+  /** Electron：订阅 companion runtime（bubble / play_slot）；返回取消函数
+   * @deprecated overlay 本地执行 tools 后不再需要；保留兼容 */
   listenCompanionRuntime?: (handler: (message: CompanionRuntimeMessage) => void) => () => void;
-  /** Electron：点击气泡下一条（等价 POST /api/bubbles/advance） */
+  /** Electron：点击气泡下一条（等价 POST /api/bubbles/advance）
+   * @deprecated 使用 overlay 本地 advanceBubbleLocal */
   advanceCompanionBubble?: () => Promise<{
     current: { id: string; text: string; createdAt: number } | null;
   }>;
-  /** Electron：拉取当前 runtime 快照（订阅前补一次） */
+  /** Electron：拉取当前 runtime 快照（订阅前补一次）
+   * @deprecated overlay 本地 runtime */
   getCompanionRuntimeSnapshot?: () => Promise<CompanionRuntimeMessage>;
+  /** overlay → main：上报 remote tools 连接状态（供设置页读取） */
+  reportCompanionRemoteToolsStatus?: (status: {
+    instance_id: string;
+    remote_tools_connected: boolean;
+  }) => Promise<void>;
+  /** 设置页：读取 overlay 上报的 remote tools 状态 */
+  getCompanionRemoteToolsStatus?: () => Promise<{
+    instance_id: string;
+    remote_tools_connected: boolean;
+  }>;
   createFileInstanceStore(appId: string): RemoteInstanceStore;
   /** 移动端：打开 连接设置页 */
   openHabitatSettings?: () => void;

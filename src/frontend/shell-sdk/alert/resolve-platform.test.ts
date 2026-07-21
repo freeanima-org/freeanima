@@ -53,4 +53,16 @@ describe("resolveAlertDisplayPlatform", () => {
     const backend = { platform: "web" } as AlertBackend;
     expect(resolveAlertDisplayPlatform(backend)).toBe("web");
   });
+
+  it("web backend + showNativeAlert 展示 desktop", () => {
+    (globalThis as { window: Window }).window = {
+      satelliteShell: {
+        isElectron: false,
+        showNativeAlert: async () => {},
+      },
+      navigator: { userAgent: "Mozilla/5.0 (X11; Linux x86_64)" },
+    } as unknown as Window;
+    const backend = { platform: "web" } as AlertBackend;
+    expect(resolveAlertDisplayPlatform(backend)).toBe("desktop");
+  });
 });

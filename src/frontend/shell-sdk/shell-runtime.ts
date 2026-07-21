@@ -1,7 +1,7 @@
 import { isCapacitorNativePlatform, isCapacitorShellCandidate } from "./capacitor-runtime.ts";
 
 /** 壳子维：运行时壳类型（与布局/交互正交） */
-export type ShellRuntimeKind = "electron" | "capacitor" | "web";
+export type ShellRuntimeKind = "electron" | "capacitor" | "web" | "tauri";
 
 function runtimeWindow(): Window | undefined {
   if (typeof window !== "undefined") return window;
@@ -21,8 +21,12 @@ export function isNativeShell(): boolean {
 export function getShellKind(): ShellRuntimeKind {
   const w = runtimeWindow();
   if (!w) return "web";
-  if (w.satelliteShell?.isElectron) return "electron";
-  if (w.satelliteShell?.isNativeShell || isCapacitorNativePlatform()) {
+  const shell = w.satelliteShell as
+    | (NonNullable<Window["satelliteShell"]> & { isTauri?: boolean })
+    | undefined;
+  if (shell?.isTauri) return "tauri";
+  if (shell?.isElectron) return "electron";
+  if (shell?.isNativeShell || isCapacitorNativePlatform()) {
     return "capacitor";
   }
   // 薄壳首页尚未注入 satelliteShell 时：localhost / capacitor:// 仍可能是 Capacitor

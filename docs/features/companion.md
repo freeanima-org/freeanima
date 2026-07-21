@@ -4,32 +4,32 @@ title: Desktop Companion
 
 # Desktop Companion
 
-> **remote-tools attach host** embedded in the desktop Portal (Electron main) — not managed via `config.yaml`, and **not** a separate Node sidecar process.
+> **remote-tools attach host** in the Companion **overlay WebView** (first-party) — embedded by the desktop Portal shell for window/IPC/FS only. Not managed via `config.yaml`, and **not** a separate Node sidecar process.
 
-The content pack (React + VRM + in-process host) is embedded by the **desktop shell** (`src/app/shell/desktop`), connects with Habitat RPC, calls `remote_tools.attach`, and exposes local tools (`bubble`, `play_slot`) to the Agent. Product modules such as Chat use Habitat RPC only (no attach).
+The content pack (React + VRM) is embedded by the **desktop shell** (`src/app/shell/desktop`). The overlay connects with Habitat RPC, calls `remote_tools.attach`, and exposes local tools (`bubble`, `play_slot`) to the Agent. Product modules such as Chat use Habitat RPC only (no attach).
 
 ## Architecture
 
 ```text
 FreeAnima Desktop (src/app/shell/desktop)
-├── Electron Main — tray / multi-window + in-process companion host
-│   ├── companion overlay — transparent always-on-top, VRM / speech bubble
-│   ├── companion settings — settings window (Habitat RPC + asset HTTP)
+├── Electron Main — tray / multi-window + thin companion static/sync HTTP
+│   ├── companion overlay — transparent always-on-top; VRM + remote_tools.attach
+│   ├── companion settings — settings in main window (Habitat RPC + asset HTTP)
 │   ├── chat — Chat SPA (Habitat RPC, no remote_tools.attach)
 │   └── console — Habitat WebView (Habitat RPC REST)
-└── Renderer — preload satelliteShell; companion visibility + runtime via IPC
-         ↕ Habitat RPC (+ remote_tools.attach on host only)
+└── Renderer — preload satelliteShell; overlay owns attach + tool runtime
+         ↕ Habitat RPC (+ remote_tools.attach in overlay only)
     anima service Habitat (companion_profile SSOT + assets + FBX→VRMA)
 ```
 
 ### Habitat vs local boundary
 
-| Layer              | Location                           | Responsibility                                                                                                                                                                   |
-| ------------------ | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Habitat SSOT**   | `src/features/companion/`          | `companion_profile` entity (behavior, slots, library meta); VRM/VRMA files under `~/.anima/companion/` on Habitat host; FBX→VRMA conversion; Settings read/write via Habitat RPC |
-| **Settings UI**    | Desktop Settings → Companion       | Habitat RPC (`companion.config.*`, model/motion CRUD); upload via `POST /rpc/v1/companion/model/upload` and `/companion/motion/import`                                           |
-| **Companion host** | `src/satellites/companion/server/` | Same process as Electron main: `remote_tools.attach`, tools, local asset cache, `companion.sync.pull`; Electron IPC for runtime; HTTP for static assets                          |
-| **Electron**       | `src/app/shell/desktop/`           | Transparent window, click-through, tray, show/hide + runtime IPC                                                                                                                 |
+| Layer              | Location                     | Responsibility                                                                                                                                                                   |
+| ------------------ | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Habitat SSOT**   | `src/features/companion/`    | `companion_profile` entity (behavior, slots, library meta); VRM/VRMA files under `~/.anima/companion/` on Habitat host; FBX→VRMA conversion; Settings read/write via Habitat RPC |
+| **Settings UI**    | Desktop Settings → Companion | Habitat RPC (`companion.config.*`, model/motion CRUD); upload via `POST /rpc/v1/companion/model/upload` and `/companion/motion/import`                                           |
+| **Companion host** | overlay SPA (`spa/`)         | `remote_tools.attach`, tool execution, local runtime (bubble/play); optional thin HTTP for static assets + `companion.sync.pull` cache                                           |
+| **Electron**       | `src/app/shell/desktop/`     | Transparent window, click-through, tray, show/hide + FS / prefs IPC                                                                                                              |
 
 Management is in **Settings only** — Habitat has no companion admin page.
 
@@ -37,20 +37,20 @@ On host start: Habitat config wins; `~/.anima/companion/config.json` on the desk
 
 ```text
 Settings ──Habitat RPC/HTTP──► features/companion (Habitat)
-Host     ◄──sync.pull────► Habitat          ──► local cache (VRM/VRMA)
-Overlay  ◄──IPC runtime──► Host             (+ HTTP for /models /motions)
-Electron ◄──IPC──────────► Settings         (show/hide, connection)
-Agent    ──Habitat RPC tool.call─► Host             (bubble, play_slot)
+Static   ◄──sync.pull────► Habitat          ──► local cache (VRM/VRMA)
+Overlay ──remote_tools.attach──► Habitat    （bubble / play_slot 本地执行）
+Electron ◄──IPC──────────► Settings         (show/hide, connection status)
+Agent    ──Habitat RPC tool.call─► Overlay
 ```
 
-The content pack lives in [`src/satellites/companion/`](../../src/satellites/companion/) (`spa/` + `server/` + `shared/`). Habitat domain logic: [`src/features/companion/`](../../src/features/companion/). Export conventions: [`frontend-exports.md`](../sap/frontend-exports.md).
+The content pack lives in [`src/satellites/companion/`](../../src/satellites/companion/) (`spa/` + `server/` + `shared/`). Habitat domain logic: [`src/features/companion/`](../../src/features/companion/).
 
-|              | Chat / other product modules | Companion                                        |
-| ------------ | ---------------------------- | ------------------------------------------------ |
-| UI           | Browser / shell Web UI       | Native transparent companion window + settings   |
-| Deployment   | Bundled in shell             | Dynamic attach when Habitat token is configured  |
-| Wire         | Habitat RPC only (no attach) | Habitat RPC + `remote_tools.attach` + tools      |
-| Runtime push | —                            | Electron IPC (browser-dev: localhost runtime WS) |
+|            | Chat / other product modules | Companion                                        |
+| ---------- | ---------------------------- | ------------------------------------------------ |
+| UI         | Browser / shell Web UI       | Native transparent companion window + settings   |
+| Deployment | Bundled in shell             | Dynamic attach when Habitat token is configured  |
+| Wire       | Habitat RPC only (no attach) | Habitat RPC + `remote_tools.attach` in overlay   |
+| Runtime    | —                            | Overlay-local tool runtime（browser-dev 同路径） |
 
 ## Features
 
@@ -72,7 +72,7 @@ The content pack lives in [`src/satellites/companion/`](../../src/satellites/com
 
 Periodic content (e.g. scheduled jokes) is configured on **anima service / scheduled tasks**; the Agent calls `bubble`. Companion has no built-in timer.
 
-Settings → Companion client section shows **instance id** and **remote tools connected** (`remote_tools_connected` from host `/api/config`). Without a Habitat API token, attach is skipped until connection settings are saved.
+Settings → Companion client section shows **instance id** and **remote tools connected**（overlay 上报 / ShellApi；无 token 时跳过 attach）。
 
 ## Models and motions
 

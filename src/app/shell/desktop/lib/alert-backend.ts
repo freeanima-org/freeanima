@@ -9,7 +9,7 @@ import type {
 
 function shellNativeAlertAvailable(): boolean {
   const shell = window.satelliteShell;
-  return Boolean(shell?.isElectron && shell.showNativeAlert && shell.requestNativeAlertPermission);
+  return Boolean(shell?.showNativeAlert && shell.requestNativeAlertPermission);
 }
 
 function shellScheduleAvailable(): boolean {
