@@ -1,23 +1,23 @@
 import { omitUndefined } from "@freeanima/core/util";
-import type { SapRequestContext } from "@freeanima/shared/sap-contract";
+import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { vaultMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 
-type VaultSapServerDeps = {
+type VaultRemoteToolsServerDeps = {
   runtime: {
     runtimeDeps(): RuntimeDeps;
   };
 };
 
-function depsOf(deps: unknown): VaultSapServerDeps {
-  return deps as VaultSapServerDeps;
+function depsOf(deps: unknown): VaultRemoteToolsServerDeps {
+  return deps as VaultRemoteToolsServerDeps;
 }
 
 function ctxAuth(ctx: unknown) {
-  return (ctx as SapRequestContext).auth;
+  return (ctx as RemoteToolsRequestContext).auth;
 }
 
 export const vaultHubRoutes = bindHabitatRouteHandlers(vaultMethodDefs, {

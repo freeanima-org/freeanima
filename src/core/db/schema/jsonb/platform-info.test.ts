@@ -4,19 +4,19 @@ import {
   buildOriginIdentityProbe,
   buildPlatformInfo,
   isCronPlatformInfo,
-  isSapPlatformString,
-  parseSapPlatformString,
+  isRemotePlatformString,
+  parseRemotePlatformString,
   splitPlatformInfo,
   stripOriginRoutingMeta,
 } from "./platform-info.ts";
 
 describe("platform-info", () => {
-  test("parseSapPlatformString accepts sap:app:instance", () => {
-    expect(parseSapPlatformString("sap:chat:default")).toEqual({
+  test("parseRemotePlatformString accepts sap:app:instance", () => {
+    expect(parseRemotePlatformString("sap:chat:default")).toEqual({
       app_slug: "chat",
       instance_id_norm: "default",
     });
-    expect(parseSapPlatformString("discord:x")).toBeNull();
+    expect(parseRemotePlatformString("discord:x")).toBeNull();
   });
 
   test("buildPlatformInfo fills SAP satellite fields", () => {
@@ -69,8 +69,8 @@ describe("platform-info", () => {
     expect(isCronPlatformInfo(buildPlatformInfo("sap:chat:x", {}))).toBe(false);
   });
 
-  test("isSapPlatformString", () => {
-    expect(isSapPlatformString("sap:chat:default")).toBe(true);
-    expect(isSapPlatformString("sap:chat")).toBe(false);
+  test("isRemotePlatformString", () => {
+    expect(isRemotePlatformString("sap:chat:default")).toBe(true);
+    expect(isRemotePlatformString("sap:chat")).toBe(false);
   });
 });

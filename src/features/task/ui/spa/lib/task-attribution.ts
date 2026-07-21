@@ -1,4 +1,4 @@
-import type { TaskItemRowPayload } from "@freeanima/shared/sap-contract/frames/task.ts";
+import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task.ts";
 
 /** 搜索/全局视图中的任务归属标签 */
 export function taskAttributionLabel(item: TaskItemRowPayload): string {

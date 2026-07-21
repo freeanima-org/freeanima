@@ -1,16 +1,16 @@
 import { isConversationMeta } from "@freeanima/core/db/domain";
-import type { SapRequestContext } from "@freeanima/shared/sap-contract";
-import type { SapServerDeps } from "@freeanima/platform/sap/types";
+import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
+import type { RemoteToolsServerDeps } from "@freeanima/platform/remote-tools/types";
 
 import { rememberLlmDebugFromStreamPayload } from "./llm-debug-cache.ts";
 import { streamSessionRegistry } from "./stream-session-registry.ts";
 
 async function loadStreamBridge() {
-  return import("@freeanima/platform/sap/stream-bridge");
+  return import("@freeanima/platform/remote-tools/stream-bridge");
 }
 
 export async function resolveConversationPlatform(
-  deps: SapServerDeps,
+  deps: RemoteToolsServerDeps,
   conversationId: string,
 ): Promise<string> {
   const meta = await deps.runtime.conversation.loadConversationMeta(conversationId);
@@ -23,7 +23,7 @@ export async function resolveConversationPlatform(
 }
 
 function publishStreamEvent(
-  fallback: SapRequestContext,
+  fallback: RemoteToolsRequestContext,
   method: string,
   payload: Record<string, unknown>,
 ): void {
@@ -33,8 +33,8 @@ function publishStreamEvent(
 }
 
 export async function pumpMessageStream(
-  deps: SapServerDeps,
-  ctx: SapRequestContext,
+  deps: RemoteToolsServerDeps,
+  ctx: RemoteToolsRequestContext,
   streamId: string,
   conversationId: string,
   message: string,
@@ -81,8 +81,8 @@ export async function pumpMessageStream(
 }
 
 export async function pumpSessionUpdates(
-  deps: SapServerDeps,
-  ctx: SapRequestContext,
+  deps: RemoteToolsServerDeps,
+  ctx: RemoteToolsRequestContext,
   conversationId: string,
   signal: AbortSignal,
 ): Promise<void> {
@@ -99,7 +99,7 @@ export async function pumpSessionUpdates(
 
 /** stream.attach：本连接独占 fan-out 并重放 buffer dump（替换发起连接旧订阅，避免同 WS 双发） */
 export function attachStreamSession(
-  ctx: SapRequestContext,
+  ctx: RemoteToolsRequestContext,
   streamId: string,
 ): { status: "active" | "done" | "error" | "interrupted"; replayed: boolean } {
   const session = streamSessionRegistry.getSession(streamId);

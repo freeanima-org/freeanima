@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import { getSubjectKind } from "@freeanima/frontend/shell-sdk/subject-scope-store.ts";
-import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 export type TaskPomodoroFocusRow = {
   id: number;
@@ -11,7 +11,7 @@ export type TaskPomodoroFocusRow = {
 };
 
 function habitat() {
-  return getTypedSatelliteHabitatClient();
+  return getTypedHabitatClient();
 }
 
 export async function fetchTaskPomodoroFocus(

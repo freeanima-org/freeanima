@@ -6,8 +6,8 @@ import {
   type OfflineOutboxOp,
 } from "@freeanima/frontend/shell-sdk/offline-outbox";
 
-import type { PomodoroActiveStatePayload } from "@freeanima/shared/sap-contract/frames/pomodoro";
-import { randomUuid } from "@freeanima/shared/sap-contract";
+import type { PomodoroActiveStatePayload } from "@freeanima/shared/rpc-contract/frames/pomodoro";
+import { randomUuid } from "@freeanima/shared/rpc-contract";
 
 import type { PhaseEndPayload } from "./runtime.ts";
 import type { PomodoroConfigRow, PomodoroSubjectKind } from "./api.ts";

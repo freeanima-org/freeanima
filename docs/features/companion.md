@@ -4,9 +4,9 @@ title: Desktop Companion
 
 # Desktop Companion
 
-> **SAP attach host** embedded in the desktop Portal (Electron main) — not managed via `config.yaml`, and **not** a separate Node sidecar process.
+> **remote-tools attach host** embedded in the desktop Portal (Electron main) — not managed via `config.yaml`, and **not** a separate Node sidecar process.
 
-The content pack (React + VRM + in-process host) is embedded by the **desktop shell** (`src/app/shell/desktop`), connects with Habitat RPC, calls `sap.attach`, and exposes local tools (`bubble`, `play_slot`) to the Agent. Product modules such as Chat use Habitat RPC only (no attach).
+The content pack (React + VRM + in-process host) is embedded by the **desktop shell** (`src/app/shell/desktop`), connects with Habitat RPC, calls `remote_tools.attach`, and exposes local tools (`bubble`, `play_slot`) to the Agent. Product modules such as Chat use Habitat RPC only (no attach).
 
 ## Architecture
 
@@ -15,10 +15,10 @@ FreeAnima Desktop (src/app/shell/desktop)
 ├── Electron Main — tray / multi-window + in-process companion host
 │   ├── companion overlay — transparent always-on-top, VRM / speech bubble
 │   ├── companion settings — settings window (Habitat RPC + asset HTTP)
-│   ├── chat — Chat SPA (Habitat RPC, no sap.attach)
+│   ├── chat — Chat SPA (Habitat RPC, no remote_tools.attach)
 │   └── console — Habitat WebView (Habitat RPC REST)
 └── Renderer — preload satelliteShell; companion visibility + runtime via IPC
-         ↕ Habitat RPC (+ sap.attach on host only)
+         ↕ Habitat RPC (+ remote_tools.attach on host only)
     anima service Habitat (companion_profile SSOT + assets + FBX→VRMA)
 ```
 
@@ -28,7 +28,7 @@ FreeAnima Desktop (src/app/shell/desktop)
 | ------------------ | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Habitat SSOT**   | `src/features/companion/`          | `companion_profile` entity (behavior, slots, library meta); VRM/VRMA files under `~/.anima/companion/` on Habitat host; FBX→VRMA conversion; Settings read/write via Habitat RPC |
 | **Settings UI**    | Desktop Settings → Companion       | Habitat RPC (`companion.config.*`, model/motion CRUD); upload via `POST /rpc/v1/companion/model/upload` and `/companion/motion/import`                                           |
-| **Companion host** | `src/satellites/companion/server/` | Same process as Electron main: `sap.attach`, tools, local asset cache, `companion.sync.pull`; Electron IPC for runtime; HTTP for static assets                                   |
+| **Companion host** | `src/satellites/companion/server/` | Same process as Electron main: `remote_tools.attach`, tools, local asset cache, `companion.sync.pull`; Electron IPC for runtime; HTTP for static assets                          |
 | **Electron**       | `src/app/shell/desktop/`           | Transparent window, click-through, tray, show/hide + runtime IPC                                                                                                                 |
 
 Management is in **Settings only** — Habitat has no companion admin page.
@@ -40,7 +40,7 @@ Settings ──Habitat RPC/HTTP──► features/companion (Habitat)
 Host     ◄──sync.pull────► Habitat          ──► local cache (VRM/VRMA)
 Overlay  ◄──IPC runtime──► Host             (+ HTTP for /models /motions)
 Electron ◄──IPC──────────► Settings         (show/hide, connection)
-Agent    ──SAP tool.call─► Host             (bubble, play_slot)
+Agent    ──Habitat RPC tool.call─► Host             (bubble, play_slot)
 ```
 
 The content pack lives in [`src/satellites/companion/`](../../src/satellites/companion/) (`spa/` + `server/` + `shared/`). Habitat domain logic: [`src/features/companion/`](../../src/features/companion/). Export conventions: [`frontend-exports.md`](../sap/frontend-exports.md).
@@ -49,7 +49,7 @@ The content pack lives in [`src/satellites/companion/`](../../src/satellites/com
 | ------------ | ---------------------------- | ------------------------------------------------ |
 | UI           | Browser / shell Web UI       | Native transparent companion window + settings   |
 | Deployment   | Bundled in shell             | Dynamic attach when Habitat token is configured  |
-| Wire         | Habitat RPC only (no attach) | Habitat RPC + `sap.attach` + tools               |
+| Wire         | Habitat RPC only (no attach) | Habitat RPC + `remote_tools.attach` + tools      |
 | Runtime push | —                            | Electron IPC (browser-dev: localhost runtime WS) |
 
 ## Features
@@ -72,7 +72,7 @@ The content pack lives in [`src/satellites/companion/`](../../src/satellites/com
 
 Periodic content (e.g. scheduled jokes) is configured on **anima service / scheduled tasks**; the Agent calls `bubble`. Companion has no built-in timer.
 
-Settings → Companion client section shows **instance id** and **SAP connected** (`sap_connected` from host `/api/config`). Without a Habitat API token, attach is skipped until connection settings are saved.
+Settings → Companion client section shows **instance id** and **remote tools connected** (`remote_tools_connected` from host `/api/config`). Without a Habitat API token, attach is skipped until connection settings are saved.
 
 ## Models and motions
 
@@ -109,4 +109,4 @@ Uses the same in-process HTTP server; runtime events use localhost WebSocket (`/
 
 Desktop shell starts the companion host in-process (`startCompanionServer`) and loads the overlay from the host HTTP origin. Runtime events use Electron IPC (`companion:runtime`).
 
-See also: [SAP overview](../sap/overview.md), [architecture companion section](../concepts/architecture.md#desktop-companion-habitat-ssot).
+See also: [Habitat RPC](../guide/habitat-rpc.md), [architecture companion section](../concepts/architecture.md#desktop-companion-habitat-ssot).

@@ -1,4 +1,4 @@
-import type { notificationRecipientKindSchema } from "@freeanima/shared/sap-contract/frames/notification";
+import type { notificationRecipientKindSchema } from "@freeanima/shared/rpc-contract/frames/notification";
 import type { z } from "zod";
 
 import type {

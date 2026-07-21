@@ -1,11 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
+import type { ShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
 
 import { needsHabitatSetup } from "./habitat-setup.ts";
 
-function stubShell(
-  partial: Partial<SatelliteShellApi> & Pick<SatelliteShellApi, "isElectron">,
-): SatelliteShellApi {
+function stubShell(partial: Partial<ShellApi> & Pick<ShellApi, "isElectron">): ShellApi {
   return {
     habitatUrl: "",
     habitatWsUrl: "",

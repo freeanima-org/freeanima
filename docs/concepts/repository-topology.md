@@ -26,7 +26,7 @@ src/
 ├── platform/        # 组合根：Habitat、连接器、SAP、slash commands
 ├── capabilities/    # acp, memory, tools, mcp-*, llm-openai, …
 ├── features/        # chat, console, task, vault, diary, …
-├── shared/          # habitat-rpc, habitat-contract, sap-contract, vault-crypto
+├── shared/          # habitat-rpc, habitat-contract, rpc-contract, vault-crypto
 ├── frontend/        # ui-kit, shell-sdk, shell-ui
 ├── app/
 │   ├── cli/         # `anima` CLI（无内层 src/）

@@ -30,7 +30,7 @@ export function resetApiClientCache(): void {
 
 export async function listConversations(opts?: { offset?: number; limit?: number }) {
   // 运维面必须走 adminListAll：conversation.list 会按 SAP 上下文默认 platform，
-  // Habitat HTTP REST 的 app_id/instance_id 为空时会落到 "sap::" 过滤，列表恒为空。
+  // Habitat HTTP REST 的 app_id/instance_id 为空时会落到 "remote::" 过滤，列表恒为空。
   const raw = await habitat().call(
     "conversation.adminListAll",
     omitUndefined({

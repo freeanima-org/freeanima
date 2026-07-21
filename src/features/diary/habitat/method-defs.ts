@@ -29,7 +29,7 @@ import {
   diaryTemplateListOutputSchema,
   diaryTemplatePatchInputSchema,
   diaryTemplatePatchOutputSchema,
-} from "@freeanima/shared/sap-contract/frames/diary";
+} from "@freeanima/shared/rpc-contract/frames/diary";
 
 import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
 

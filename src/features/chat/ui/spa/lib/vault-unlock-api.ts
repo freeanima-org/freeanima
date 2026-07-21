@@ -1,10 +1,10 @@
-import { whenBundledSapClientReady } from "@freeanima/shared/sap-contract";
-import type { VaultConfigRowPayload } from "@freeanima/shared/sap-contract";
+import { whenBundledRpcStreamClientReady } from "@freeanima/shared/rpc-contract";
+import type { VaultConfigRowPayload } from "@freeanima/shared/rpc-contract";
 
 export async function getVaultCryptoConfig(
   subjectKind: "user" | "agent",
 ): Promise<VaultConfigRowPayload | null> {
-  const client = await whenBundledSapClientReady();
+  const client = await whenBundledRpcStreamClientReady();
   const data = await client.request(
     "vault.crypto.get" as never,
     {

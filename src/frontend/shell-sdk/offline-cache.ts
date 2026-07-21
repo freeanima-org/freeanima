@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import type { SatelliteShellApi } from "./shell-api.ts";
+import type { ShellApi } from "./shell-api.ts";
 import { resolveHabitatRpcWsUrl } from "./habitat-ws-url.ts";
 import { getSubjectKind } from "./subject-scope-store.ts";
 import {
@@ -45,7 +45,7 @@ function readFallbackHubWs(): string {
 }
 
 export function resolveHabitatCacheScope(): string {
-  const shell = (globalThis.window as (Window & { satelliteShell?: SatelliteShellApi }) | undefined)
+  const shell = (globalThis.window as (Window & { satelliteShell?: ShellApi }) | undefined)
     ?.satelliteShell;
   let habitatScope: string;
   if (shell?.habitatWsUrl?.trim()) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import {
-  SAP_METHODS,
+  RPC_WIRE_METHODS,
   smartlistCreateInputSchema,
   smartlistListInputSchema,
   tasklistCreateInputSchema,
@@ -11,25 +11,25 @@ import {
   projectItemCreateInputSchema,
   taskMoveToProjectInputSchema,
   taskMoveToListInputSchema,
-} from "@freeanima/shared/sap-contract";
+} from "@freeanima/shared/rpc-contract";
 
 describe("task SAP procedures", () => {
   it("registers tasklist.* project.item.* task.* and smartlist.* methods", () => {
-    expect(SAP_METHODS).toContain("tasklist.list");
-    expect(SAP_METHODS).toContain("tasklist.create");
-    expect(SAP_METHODS).toContain("tasklist.item.list");
-    expect(SAP_METHODS).toContain("tasklist.item.create");
-    expect(SAP_METHODS).toContain("smartlist.list");
-    expect(SAP_METHODS).toContain("smartlist.create");
-    expect(SAP_METHODS).toContain("smartlist.patch");
-    expect(SAP_METHODS).toContain("smartlist.delete");
-    expect(SAP_METHODS).toContain("project.item.list");
-    expect(SAP_METHODS).toContain("project.item.create");
-    expect(SAP_METHODS).toContain("task.moveToProject");
-    expect(SAP_METHODS).toContain("task.moveToList");
-    expect(SAP_METHODS).toContain("task.patch");
-    expect(SAP_METHODS).toContain("task.complete");
-    expect(SAP_METHODS).toContain("task.delete");
+    expect(RPC_WIRE_METHODS).toContain("tasklist.list");
+    expect(RPC_WIRE_METHODS).toContain("tasklist.create");
+    expect(RPC_WIRE_METHODS).toContain("tasklist.item.list");
+    expect(RPC_WIRE_METHODS).toContain("tasklist.item.create");
+    expect(RPC_WIRE_METHODS).toContain("smartlist.list");
+    expect(RPC_WIRE_METHODS).toContain("smartlist.create");
+    expect(RPC_WIRE_METHODS).toContain("smartlist.patch");
+    expect(RPC_WIRE_METHODS).toContain("smartlist.delete");
+    expect(RPC_WIRE_METHODS).toContain("project.item.list");
+    expect(RPC_WIRE_METHODS).toContain("project.item.create");
+    expect(RPC_WIRE_METHODS).toContain("task.moveToProject");
+    expect(RPC_WIRE_METHODS).toContain("task.moveToList");
+    expect(RPC_WIRE_METHODS).toContain("task.patch");
+    expect(RPC_WIRE_METHODS).toContain("task.complete");
+    expect(RPC_WIRE_METHODS).toContain("task.delete");
   });
 
   it("validates task procedure inputs", () => {

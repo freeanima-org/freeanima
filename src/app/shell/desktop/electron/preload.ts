@@ -1,11 +1,11 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
-import type { SapInstanceStore } from "@freeanima/shared/sap-contract";
+import type { RemoteInstanceStore } from "@freeanima/shared/rpc-contract";
 import {
   buildShellApiFields,
   type CompanionRuntimeMessage,
   type CompanionWindowRole,
-  type SatelliteShellApi,
+  type ShellApi,
 } from "@freeanima/frontend/shell-sdk";
 import { readNativeBuildMetaFromDefine } from "@freeanima/frontend/shell-sdk/native-build-meta.read";
 
@@ -42,7 +42,7 @@ function readArgvHubConfig(): { habitatUrl: string; remoteAuthToken: string } {
 }
 
 /** Electron 仅过桥可序列化字段；勿暴露 habitatFetch（Response 经 contextBridge 会丢方法）。 */
-type PreloadHabitatFields = Pick<SatelliteShellApi, "habitatUrl" | "habitatWsUrl" | "remoteAuth">;
+type PreloadHabitatFields = Pick<ShellApi, "habitatUrl" | "habitatWsUrl" | "remoteAuth">;
 
 function resolvePreloadHabitatConfig(cfg: HabitatClientConfigPayload | null): PreloadHabitatFields {
   const fallback = readArgvHubConfig();
@@ -60,7 +60,7 @@ function resolvePreloadHabitatConfig(cfg: HabitatClientConfigPayload | null): Pr
   };
 }
 
-function createFileInstanceStore(appId: string): SapInstanceStore {
+function createFileInstanceStore(appId: string): RemoteInstanceStore {
   return {
     load(): Promise<string | null> {
       return ipcRenderer.invoke("shell:instance-load", appId) as Promise<string | null>;
@@ -71,7 +71,7 @@ function createFileInstanceStore(appId: string): SapInstanceStore {
   };
 }
 
-function createSatelliteShell(hubFields: PreloadHabitatFields): SatelliteShellApi {
+function createSatelliteShell(hubFields: PreloadHabitatFields): ShellApi {
   return {
     isElectron: true,
     primaryInput: "pointer",
@@ -175,7 +175,7 @@ function createSatelliteShell(hubFields: PreloadHabitatFields): SatelliteShellAp
   };
 }
 
-function applyHabitatFields(shell: SatelliteShellApi, hubFields: PreloadHabitatFields): void {
+function applyHabitatFields(shell: ShellApi, hubFields: PreloadHabitatFields): void {
   shell.habitatUrl = hubFields.habitatUrl;
   shell.habitatWsUrl = hubFields.habitatWsUrl;
   if (hubFields.remoteAuth !== undefined) {
@@ -187,7 +187,7 @@ function applyHabitatFields(shell: SatelliteShellApi, hubFields: PreloadHabitatF
   delete shell.habitatFetch;
 }
 
-async function refreshHabitatFields(shell: SatelliteShellApi): Promise<void> {
+async function refreshHabitatFields(shell: ShellApi): Promise<void> {
   const next = await loadHabitatClientConfig();
   applyHabitatFields(shell, resolvePreloadHabitatConfig(next));
 }

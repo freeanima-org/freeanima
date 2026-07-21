@@ -1,4 +1,4 @@
-import type { TaskItemRowPayload } from "@freeanima/shared/sap-contract/frames/task.ts";
+import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task.ts";
 
 /** Habitat / 缓存行可能缺 tag_ids；渲染前归一成数组。 */
 export function normalizeTaskItemRow<T extends TaskItemRowPayload>(row: T): T {

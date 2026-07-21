@@ -326,6 +326,6 @@ All methods optional `subject_kind: user | agent` (default `user`). Transport: `
 | `task.search`                             | 跨归属搜索；结果含 project/list 归属             |
 | `task.complete` / `uncomplete` / `delete` | 按 id 共享操作                                   |
 
-Implementation target: `src/features/project/` (domain + hub + `ui/spa` + `plugin.ts`); schemas under `src/core/db/schema/entity/components/`; SAP frames under `src/shared/sap-contract/frames/`.
+Implementation target: `src/features/project/` (domain + hub + `ui/spa` + `plugin.ts`); schemas under `src/core/db/schema/entity/components/`; SAP frames under `src/shared/rpc-contract/frames/`.
 
 See also [entity-model — Project module](../concepts/entity-model.md#project-module-v1-spec).

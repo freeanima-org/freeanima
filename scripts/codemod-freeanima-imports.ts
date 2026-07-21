@@ -19,7 +19,7 @@ const PREFIX_REWRITES: [string, string][] = [
   ["@task/", "@freeanima/features/task/ui/spa/"],
   // capabilities 复合名（先于 capabilities- 单段）
   ["@freeanima/capabilities-tools/", "@freeanima/capabilities/tools/"],
-  ["@freeanima/capabilities-satellite/", "@freeanima/capabilities/satellite/"],
+  ["@freeanima/capabilities-satellite/", "@freeanima/capabilities/remote-tools/"],
   ["@freeanima/capabilities-llm-openai/", "@freeanima/capabilities/llm-openai/"],
   ["@freeanima/capabilities-mcp-client/", "@freeanima/capabilities/mcp-client/"],
   ["@freeanima/capabilities-mcp-server/", "@freeanima/capabilities/mcp-server/"],
@@ -45,7 +45,7 @@ const PREFIX_REWRITES: [string, string][] = [
   ["@freeanima/vault-crypto/", "@freeanima/shared/vault-crypto/"],
   // bare imports（精确匹配，无尾斜杠）
   ["@freeanima/capabilities-tools", "@freeanima/capabilities/tools"],
-  ["@freeanima/capabilities-satellite", "@freeanima/capabilities/satellite"],
+  ["@freeanima/capabilities-satellite", "@freeanima/capabilities/remote-tools"],
   ["@freeanima/capabilities-llm-openai", "@freeanima/capabilities/llm-openai"],
   ["@freeanima/capabilities-mcp-client", "@freeanima/capabilities/mcp-client"],
   ["@freeanima/capabilities-mcp-server", "@freeanima/capabilities/mcp-server"],

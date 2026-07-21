@@ -15,17 +15,18 @@ export function isGatewayPlatform(value: string): value is GatewayPlatform {
   return (GATEWAY_PLATFORMS as readonly string[]).includes(value);
 }
 
-export function isSapPlatformString(platform: string): boolean {
-  if (!platform.startsWith("sap:")) return false;
+export function isRemotePlatformString(platform: string): boolean {
   const parts = platform.split(":");
-  return parts.length === 3 && parts[0] === "sap" && !!parts[1]?.trim() && !!parts[2]?.trim();
+  const prefix = parts[0];
+  if (parts.length !== 3 || (prefix !== "remote" && prefix !== "sap")) return false;
+  return !!parts[1]?.trim() && !!parts[2]?.trim();
 }
 
-export function parseSapPlatformString(platform: string): {
+export function parseRemotePlatformString(platform: string): {
   app_slug: string;
   instance_id_norm: string;
 } | null {
-  if (!isSapPlatformString(platform)) return null;
+  if (!isRemotePlatformString(platform)) return null;
   const parts = platform.split(":");
   const appSlug = parts[1];
   const instanceId = parts[2];
@@ -33,8 +34,10 @@ export function parseSapPlatformString(platform: string): {
   return { app_slug: appSlug, instance_id_norm: instanceId };
 }
 
-const sapPlatformInfoSchema = z.looseObject({
-  platform: z.string().refine((p) => isSapPlatformString(p), { message: "invalid sap platform" }),
+const remotePlatformInfoSchema = z.looseObject({
+  platform: z
+    .string()
+    .refine((p) => isRemotePlatformString(p), { message: "invalid remote platform" }),
   satellite_app_id: z.string().optional(),
   satellite_instance_id: z.string().optional(),
   workspace_root: z.string().optional(),
@@ -94,18 +97,19 @@ const weixinPlatformInfoSchema = z.looseObject({
 
 /**
  * conversations.platform_info: platform + per-channel extra merged as discriminated union.
- * SAP satellites use platform `sap:{app_slug}:{instance_id}`.
+ * Remote-tool hosts use platform `remote:{app_slug}:{instance_id}` (legacy `sap:` accepted).
  */
 export const platformInfoSchema = z.union([
   chatPlatformInfoSchema,
-  sapPlatformInfoSchema,
+  remotePlatformInfoSchema,
   discordPlatformInfoSchema,
   weixinPlatformInfoSchema,
   cronPlatformInfoSchema,
 ]);
 
 export type PlatformInfo = z.infer<typeof platformInfoSchema>;
-export type SapPlatformInfo = z.infer<typeof sapPlatformInfoSchema>;
+export type SapPlatformInfo = z.infer<typeof remotePlatformInfoSchema>;
+export type RemotePlatformInfo = z.infer<typeof remotePlatformInfoSchema>;
 export type DiscordPlatformInfo = z.infer<typeof discordPlatformInfoSchema>;
 export type WeixinPlatformInfo = z.infer<typeof weixinPlatformInfoSchema>;
 
@@ -171,7 +175,7 @@ export function buildPlatformInfo(
     const merged: Record<string, unknown> = { platform: "chat", ...extra };
     return chatPlatformInfoSchema.parse(merged);
   }
-  if (!isGatewayPlatform(platform) && !isSapPlatformString(platform)) {
+  if (!isGatewayPlatform(platform) && !isRemotePlatformString(platform)) {
     return null;
   }
   const extra = normalizePlatformExtra(platformExtra);
@@ -180,8 +184,8 @@ export function buildPlatformInfo(
     platform,
     ...withDefaults,
   };
-  if (isSapPlatformString(platform)) {
-    const parsed = parseSapPlatformString(platform);
+  if (isRemotePlatformString(platform)) {
+    const parsed = parseRemotePlatformString(platform);
     if (parsed) {
       merged.satellite_app_id ??= parsed.app_slug;
       merged.satellite_instance_id ??= parsed.instance_id_norm;

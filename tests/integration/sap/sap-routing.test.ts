@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { ToolSetRegistry, toolError } from "@freeanima/core/tool";
-import { formatSapToolName } from "@freeanima/shared/sap-contract";
-import { SatelliteManager } from "@freeanima/capabilities/satellite";
+import { formatRemoteToolName } from "@freeanima/shared/rpc-contract";
+import { RemoteToolsManager } from "@freeanima/capabilities/remote-tools";
 
 describe("sap strict routing integration", () => {
   it("does not fall back to hub file_read for mismatched sap tool", () => {
@@ -15,10 +15,10 @@ describe("sap strict routing integration", () => {
       },
     ]);
 
-    const manager = new SatelliteManager(registry);
+    const manager = new RemoteToolsManager(registry);
     manager.installToolRouting();
 
-    const sapName = formatSapToolName("companion", "a1b", "file_read");
+    const sapName = formatRemoteToolName("companion", "a1b", "file_read");
     const route = manager.resolveToolCall("sid", sapName, {
       satellite_app_id: "companion",
       satellite_instance_id: "c2d",
@@ -36,8 +36,8 @@ describe("sap strict routing integration", () => {
   });
 
   it("returns toolError content for reject route", async () => {
-    const manager = new SatelliteManager(new ToolSetRegistry());
-    const name = formatSapToolName("companion", "k7m", "x");
+    const manager = new RemoteToolsManager(new ToolSetRegistry());
+    const name = formatRemoteToolName("companion", "k7m", "x");
     const out = await manager.callToolViaSatellite("sid", name, {}, undefined);
     expect(out).toBe(toolError("session has no satellite binding; sap tools forbidden"));
   });

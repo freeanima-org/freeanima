@@ -4,7 +4,7 @@ import {
   notificationMarkReadInputSchema,
   notificationMarkReadOutputSchema,
   notificationRecipientsOutputSchema,
-} from "@freeanima/shared/sap-contract/frames/notification";
+} from "@freeanima/shared/rpc-contract/frames/notification";
 import { z } from "zod";
 
 import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";

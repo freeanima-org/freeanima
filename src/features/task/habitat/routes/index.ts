@@ -1,23 +1,23 @@
 import { omitUndefined } from "@freeanima/core/util";
-import type { SapRequestContext } from "@freeanima/shared/sap-contract";
+import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { taskMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 
-type TaskSapServerDeps = {
+type TaskRemoteToolsServerDeps = {
   runtime: {
     runtimeDeps(): RuntimeDeps;
   };
 };
 
-function depsOf(deps: unknown): TaskSapServerDeps {
-  return deps as TaskSapServerDeps;
+function depsOf(deps: unknown): TaskRemoteToolsServerDeps {
+  return deps as TaskRemoteToolsServerDeps;
 }
 
 function ctxAuth(ctx: unknown) {
-  return (ctx as SapRequestContext).auth;
+  return (ctx as RemoteToolsRequestContext).auth;
 }
 
 export const taskHubRoutes = bindHabitatRouteHandlers(taskMethodDefs, {

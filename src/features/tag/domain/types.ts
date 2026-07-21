@@ -1,4 +1,4 @@
-export type { TagRowPayload as TagRow } from "@freeanima/shared/sap-contract/frames/tag.ts";
+export type { TagRowPayload as TagRow } from "@freeanima/shared/rpc-contract/frames/tag.ts";
 
 export type TagCreateInput = {
   title: string;

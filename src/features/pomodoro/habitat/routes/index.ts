@@ -3,25 +3,25 @@ import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/rou
 import {
   POMODORO_ACTIVE_CHANGED_EVENT,
   type PomodoroActiveChangedEvent,
-} from "@freeanima/shared/sap-contract/frames/pomodoro";
-import type { SapServerDeps } from "@freeanima/platform/sap/types";
+} from "@freeanima/shared/rpc-contract/frames/pomodoro";
+import type { RemoteToolsServerDeps } from "@freeanima/platform/remote-tools/types";
 
 import { pomodoroMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 
-type PomodoroSapServerDeps = SapServerDeps & {
+type PomodoroRemoteToolsServerDeps = RemoteToolsServerDeps & {
   runtime: {
     runtimeDeps(): RuntimeDeps;
   };
 };
 
-function depsOf(deps: unknown): PomodoroSapServerDeps {
-  return deps as PomodoroSapServerDeps;
+function depsOf(deps: unknown): PomodoroRemoteToolsServerDeps {
+  return deps as PomodoroRemoteToolsServerDeps;
 }
 
 function broadcastActiveChanged(
-  deps: PomodoroSapServerDeps,
+  deps: PomodoroRemoteToolsServerDeps,
   event: PomodoroActiveChangedEvent,
 ): void {
   deps.hubSessionRegistry.broadcastToSubject(

@@ -5,7 +5,7 @@ export const companionClientSettingsSection: SettingsSection = {
   order: 11,
   category: "client",
   title: "桌面伴侣",
-  description: "本机窗口显隐与 SAP 连接状态（只读）",
+  description: "本机窗口显隐与远程工具连接状态（只读）",
   platforms: {
     desktop: {
       kind: "component",

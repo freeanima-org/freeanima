@@ -15,7 +15,7 @@ import type { AppRuntimePort } from "@freeanima/platform/ports/app-runtime-port"
 import type { AcpManagerPort } from "@freeanima/platform/ports/acp-manager";
 import type { MaskRegistryPort } from "@freeanima/platform/ports/mask-registry";
 import type { McpManagerPort } from "@freeanima/platform/ports/mcp-manager";
-import type { SatelliteManagerPort } from "@freeanima/platform/ports/satellite-manager";
+import type { RemoteToolsManagerPort } from "@freeanima/platform/ports/remote-tools-manager";
 import type { ServiceEnginePort } from "@freeanima/platform/ports/service-engine";
 import { collectStreamReply } from "@freeanima/runtime/loop";
 import { createTurnMessageCallbacks, type StreamTurnHost } from "./turn-lifecycle.ts";
@@ -54,7 +54,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   readonly conversation: ConversationService;
   readonly masks: MaskRegistryPort;
   readonly mcp: McpManagerPort | null;
-  readonly satellite: SatelliteManagerPort | null;
+  readonly satellite: RemoteToolsManagerPort | null;
   readonly acp: AcpManagerPort;
   readonly host: string;
   readonly port: number;

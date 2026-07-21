@@ -2,18 +2,18 @@ import { omitUndefined } from "@freeanima/core/util";
 import type { NotificationRow as PgNotificationRow } from "@freeanima/core/db/schema/rows";
 import { resolveNotificationRecipients } from "@freeanima/core/config";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
-import type { NotificationRow } from "@freeanima/shared/sap-contract/frames/notification";
+import type { NotificationRow } from "@freeanima/shared/rpc-contract/frames/notification";
 
 import { notificationMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 
-type NotificationSapServerDeps = {
+type NotificationRemoteToolsServerDeps = {
   runtime: { runtimeDeps(): RuntimeDeps };
 };
 
-function depsOf(deps: unknown): NotificationSapServerDeps {
-  return deps as NotificationSapServerDeps;
+function depsOf(deps: unknown): NotificationRemoteToolsServerDeps {
+  return deps as NotificationRemoteToolsServerDeps;
 }
 
 function serializeNotificationRow(row: PgNotificationRow): NotificationRow {

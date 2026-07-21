@@ -32,7 +32,7 @@ mock.module("@freeanima/frontend/shell-sdk/habitat-fetch-gate", () => ({
 }));
 
 mock.module("@freeanima/platform/habitat/client.ts", () => ({
-  getTypedSatelliteHabitatClient: () => ({ call: hubCall }),
+  getTypedHabitatClient: () => ({ call: hubCall }),
 }));
 
 afterAll(() => {

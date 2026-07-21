@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk";
+import type { ShellApi } from "@freeanima/frontend/shell-sdk";
 
 import { isCapacitorShellCandidate } from "./capacitor-runtime.ts";
 import {
@@ -16,7 +16,7 @@ describe("shell-runtime", () => {
 
   it("getShellKind：Electron", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: true } as SatelliteShellApi,
+      satelliteShell: { isElectron: true } as ShellApi,
       location: { origin: "https://example.com" },
       navigator: { userAgent: "Mozilla/5.0" },
     } as unknown as Window;
@@ -25,7 +25,7 @@ describe("shell-runtime", () => {
 
   it("getShellKind：Capacitor isNativeShell", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: false, isNativeShell: true } as SatelliteShellApi,
+      satelliteShell: { isElectron: false, isNativeShell: true } as ShellApi,
       location: { origin: "https://example.com" },
       navigator: { userAgent: "Mozilla/5.0" },
     } as unknown as Window;
@@ -43,7 +43,7 @@ describe("shell-runtime", () => {
 
   it("isNativeShell 读 flag", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: false, isNativeShell: true } as SatelliteShellApi,
+      satelliteShell: { isElectron: false, isNativeShell: true } as ShellApi,
     } as unknown as Window;
     expect(isNativeShell()).toBe(true);
     (globalThis as { window: Window }).window = {} as unknown as Window;
@@ -55,21 +55,21 @@ describe("shell-runtime", () => {
       satelliteShell: {
         isElectron: false,
         openHabitatSettings: () => {},
-      } as SatelliteShellApi,
+      } as ShellApi,
     } as unknown as Window;
     expect(canOpenHabitatSettings()).toBe(true);
   });
 
   it("canOpenHabitatSettings：Electron 无方法仍 true（packaged）", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: true } as SatelliteShellApi,
+      satelliteShell: { isElectron: true } as ShellApi,
     } as unknown as Window;
     expect(canOpenHabitatSettings()).toBe(true);
   });
 
   it("shouldUseNativeShellNavigation：isNativeShell", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: false, isNativeShell: true } as SatelliteShellApi,
+      satelliteShell: { isElectron: false, isNativeShell: true } as ShellApi,
     } as unknown as Window;
     expect(shouldUseNativeShellNavigation()).toBe(true);
   });

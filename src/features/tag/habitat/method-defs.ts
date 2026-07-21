@@ -12,7 +12,7 @@ import {
   tagSearchOutputSchema,
   tagSetOnEntityInputSchema,
   tagSetOnEntityOutputSchema,
-} from "@freeanima/shared/sap-contract/frames/tag";
+} from "@freeanima/shared/rpc-contract/frames/tag";
 
 export const tagMethodDefs = {
   "tag.list": defineHabitatMethod({

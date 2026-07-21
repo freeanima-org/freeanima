@@ -49,7 +49,7 @@ import {
   titleFromDateLocal,
 } from "./lib/format-diary.ts";
 import { sortOrderUpdates } from "./lib/reorder.ts";
-import { subscribeShellConfigChanges } from "@freeanima/shared/sap-contract";
+import { subscribeShellConfigChanges } from "@freeanima/shared/rpc-contract";
 
 function sortEntries(items: DiaryEntryRow[]): DiaryEntryRow[] {
   return items.toSorted((a, b) => b.entry_at.localeCompare(a.entry_at));

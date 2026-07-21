@@ -128,11 +128,11 @@ Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platfo
 | Shell（壳子维）  | Yes                                | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Habitat wiring | preload/IPC                             |
 | Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                                                    | Habitat RPC（Feature RPC）              |
 | Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.hub.rpc`）                            | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
-| Companion host   | In-process (Electron main)         | `src/satellites/companion`                                                 | Habitat RPC + SAP attach                |
+| Companion host   | In-process (Electron main)         | `src/satellites/companion`                                                 | Habitat RPC + remote tool registration  |
 
 导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `isElectron` / `getShellKind()` 锁 Shell 布局。交互（右键/长按/Enter）用 shell-sdk 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
 
-**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Habitat；**SAP attach / tool.\*** 仅 companion 宿主（与 Portal 壳主进程同进程，非独立 sidecar 进程）。产品面（Chat 等）**不做** attach。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
+**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Habitat。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于 Habitat 拨不到的本地应用（今日 companion，嵌在 Portal 主进程；未来亦可为独立应用）。产品面（Chat 等）**不做** attach。可拨号对端的工具走 **MCP**。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/guide/habitat-rpc.md`](../guide/habitat-rpc.md)。
 
 ### Habitat navigation ↔ cognitive layers
 
@@ -144,7 +144,7 @@ Habitat sidebar is grouped (not flat storage tables). Map new features onto thes
 | Memory       | Memory          | memory hub, browse sub-routes, sleep, auto-llm-runs |
 | Self         | Self            | self-layer, system-prompt                           |
 | Estate       | Estate          | subjects, worlds                                    |
-| Capabilities | Estate (tools)  | tools, commands, mcp, acp, satellites               |
+| Capabilities | Estate (tools)  | tools, commands, mcp, acp, remote-tool instances    |
 
 FTS index maintenance is under Memory (not top-level). Do not add new flat nav items without mapping to a group above.
 
@@ -386,10 +386,10 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 | Desktop      | 安装包内本地 `/web/*`（默认）；`DESKTOP_UI_MODE=remote` 调试用 | Electron 安装包（含 UI + 伴侣） |
 | Mobile APK   | 安装包内本地 `/web/*`                                          | APK（含 UI + Capacitor）        |
 
-| Module  | Connection                                            | Notes                    |
-| ------- | ----------------------------------------------------- | ------------------------ |
-| Chat    | Habitat RPC `/rpc/v1` (shared WS, no `sap.attach`)    | `/web/chat`              |
-| Habitat | Habitat RPC `/rpc/v1` (WS + HTTP POST, same envelope) | `/web/habitat/dashboard` |
+| Module  | Connection                                               | Notes                    |
+| ------- | -------------------------------------------------------- | ------------------------ |
+| Chat    | Habitat RPC `/rpc/v1` (shared WS, no remote-tool attach) | `/web/chat`              |
+| Habitat | Habitat RPC `/rpc/v1` (WS + HTTP POST, same envelope)    | `/web/habitat/dashboard` |
 
 `/web/config.json` 提供 `hub_url`、`ui_version`、`min_shell_version`（浏览器/PWA 与壳调试用；原生壳 UI 版本随安装包）。
 
@@ -403,18 +403,18 @@ Complementary: Pipeline Runner handles scheduled multi-step background work; Hoo
 
 ## Desktop companion (Habitat SSOT)
 
-The desktop companion is a **dynamic SAP attach host** embedded in Electron main (not a separate Node process), with a split boundary:
+The desktop companion is an **unreachable local app** that **actively connects** to Habitat and registers remote tools (embedded in Electron main — not a separate Node process), with a split boundary:
 
-| Concern                             | Habitat (`src/features/companion/`)           | Local device                                      |
-| ----------------------------------- | --------------------------------------------- | ------------------------------------------------- |
-| Behavior, slots, active model       | `companion_profile` entity + Habitat RPC      | Cache in `~/.anima/companion/config.json`         |
-| VRM / VRMA library                  | Files on Habitat host + content-hash metadata | Lazy download to desktop cache                    |
-| FBX → VRMA                          | Habitat service only                          | Not bundled in desktop installer                  |
-| Settings UI                         | Habitat RPC + `/rpc/v1/companion/*` upload    | Desktop Settings section (not Habitat)            |
-| VRM render, float window, patrol    | —                                             | Electron + overlay SPA                            |
-| Agent tools (`bubble`, `play_slot`) | SAP `tool.*` after `sap.attach`               | In-process host executes; Electron IPC to overlay |
+| Concern                             | Habitat (`src/features/companion/`)              | Local install                                     |
+| ----------------------------------- | ------------------------------------------------ | ------------------------------------------------- |
+| Behavior, slots, active model       | `companion_profile` entity + Habitat RPC         | Cache in `~/.anima/companion/config.json`         |
+| VRM / VRMA library                  | Files on Habitat host + content-hash metadata    | Lazy download to desktop cache                    |
+| FBX → VRMA                          | Habitat service only                             | Not bundled in desktop installer                  |
+| Settings UI                         | Habitat RPC + `/rpc/v1/companion/*` upload       | Desktop Settings section (not Habitat)            |
+| VRM render, float window, patrol    | —                                                | Electron + overlay SPA                            |
+| Agent tools (`bubble`, `play_slot`) | Habitat RPC `tool.*` after `remote_tools.attach` | In-process host executes; Electron IPC to overlay |
 
-**SAP ≠ Portal**: the shell is a Portal; Chat/Settings use Habitat RPC only. SAP attach exists solely so Habitat can reverse-call local tools on this machine. Multiple desktops share one library; each machine keeps its own `instance_id`. See [`companion.md`](../features/companion.md).
+**Remote tools ≠ Portal / MCP**: Portal shells and Chat/Settings use Habitat RPC for UI only. Dialable peers expose tools via **MCP**. Remote-tool attach exists solely when Habitat cannot dial the app (companion today; future independent local apps). Routing uses `instance_id` (same machine may have multiple instances). See [`companion.md`](../features/companion.md)、[`habitat-rpc.md`](../guide/habitat-rpc.md).
 
 ## Direction
 

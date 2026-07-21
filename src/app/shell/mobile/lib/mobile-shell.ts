@@ -3,8 +3,8 @@ import {
   buildShellApiFields,
   normalizeShellClientConfig,
   testHabitatHealthConnection,
-  type SapInstanceStore,
-  type SatelliteShellApi,
+  type RemoteInstanceStore,
+  type ShellApi,
 } from "@freeanima/frontend/shell-sdk";
 import type { ComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
 
@@ -16,10 +16,7 @@ import { replaceShellPath } from "./shell-nav.ts";
 
 const SHELL_SNAPSHOT_KEY = "freeanima.shell.snapshot";
 
-export function attachNativeBuild(
-  shell: SatelliteShellApi,
-  nativeBuild?: ComponentBuildMeta,
-): SatelliteShellApi {
+export function attachNativeBuild(shell: ShellApi, nativeBuild?: ComponentBuildMeta): ShellApi {
   return nativeBuild ? { ...shell, nativeBuild } : shell;
 }
 
@@ -59,7 +56,7 @@ export async function saveShellClientPrefs(
   await prefsSet({ key: REMOTE_AUTH_TOKEN_KEY, value: normalized.remoteAuthToken });
 }
 
-export function createPreferencesInstanceStore(appId: string): SapInstanceStore {
+export function createPreferencesInstanceStore(appId: string): RemoteInstanceStore {
   const key = sapInstanceKey(appId);
   return {
     async load(): Promise<string | null> {
@@ -122,7 +119,7 @@ async function applyMobilePackagedUpdate(assetUrl: string): Promise<void> {
   });
 }
 
-function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
+function createShellFromSnapshot(snapshot: ShellSnapshot): ShellApi {
   const apiFields = buildShellApiFields(
     snapshot.habitatUrl,
     snapshot.habitatWsUrl,
@@ -155,7 +152,7 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
 }
 
 /** Habitat 未配置时的 minimal 壳层标记（供设置页正确识别 mobile 平台） */
-export function createMobileShellStub(): SatelliteShellApi {
+export function createMobileShellStub(): ShellApi {
   return {
     isElectron: false,
     isNativeShell: true,
@@ -186,7 +183,7 @@ export function createMobileShellStub(): SatelliteShellApi {
 export async function buildMobileShell(
   habitatUrl: string,
   remoteAuthToken: string,
-): Promise<SatelliteShellApi> {
+): Promise<ShellApi> {
   const normalized = normalizeShellClientConfig({ habitatUrl, remoteAuthToken });
   const habitatWsUrl = resolveHabitatRpcWsUrl(normalized.habitatUrl);
   const snapshot: ShellSnapshot = {
@@ -200,7 +197,7 @@ export async function buildMobileShell(
 }
 
 /** 从 Preferences 加载并注入 window.satelliteShell */
-export async function installMobileShellFromPrefs(): Promise<SatelliteShellApi | null> {
+export async function installMobileShellFromPrefs(): Promise<ShellApi | null> {
   const habitatUrl = await loadHabitatUrl();
   if (!habitatUrl) return null;
   const remoteAuthToken = (await loadRemoteAuthToken()) ?? "";
@@ -210,7 +207,7 @@ export async function installMobileShellFromPrefs(): Promise<SatelliteShellApi |
 }
 
 /** chat 页：sessionStorage 快照 + Preferences instance store */
-export async function ensureMobileShellForChat(): Promise<SatelliteShellApi> {
+export async function ensureMobileShellForChat(): Promise<ShellApi> {
   let snapshot = readShellSnapshot();
   if (!snapshot) {
     const habitatUrl = await loadHabitatUrl();

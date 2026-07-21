@@ -1,4 +1,4 @@
-import { bridgeSessionUpdates } from "@freeanima/platform/sap/stream-bridge";
+import { bridgeSessionUpdates } from "@freeanima/platform/remote-tools/stream-bridge";
 import { habitatCtx } from "./runtime.ts";
 
 export async function fetchConversationAcpDock(conversationId: string) {

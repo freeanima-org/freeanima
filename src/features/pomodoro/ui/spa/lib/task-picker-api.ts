@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import { getSubjectKind } from "@freeanima/frontend/shell-sdk/subject-scope-store.ts";
-import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 export type PomodoroTaskPickRow = {
   id: number;
@@ -12,7 +12,7 @@ export type PomodoroTaskPickRow = {
 const PICK_LIMIT = 10;
 
 function habitat() {
-  return getTypedSatelliteHabitatClient();
+  return getTypedHabitatClient();
 }
 
 function withSubjectKind<T extends Record<string, unknown>>(payload: T) {

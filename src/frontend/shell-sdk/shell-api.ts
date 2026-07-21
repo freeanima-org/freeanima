@@ -2,8 +2,8 @@ import type { HabitatFetch, RemoteAuthCredentials } from "./remote-auth.ts";
 import type { ComponentBuildMeta } from "./build-meta.ts";
 import type { PrimaryInputKind } from "./shell-capability.ts";
 
-/** 与 @freeanima/sap-contract SapInstanceStore 对齐 */
-export type SapInstanceStore = {
+/** 与 @freeanima/shared/rpc-contract RemoteInstanceStore 对齐 */
+export type RemoteInstanceStore = {
   load(): Promise<string | null> | string | null;
   save(instanceId: string): Promise<void> | void;
 };
@@ -47,7 +47,7 @@ export type ShellNativeAlertScheduleResult = { id: string };
 export type ShellNativeAlertCancelKey = { id?: string; tag?: string };
 
 /** 通用壳层桥接（Electron preload / Capacitor 注入 window.satelliteShell） */
-export type SatelliteShellApi = {
+export type ShellApi = {
   isElectron: boolean;
   /** Capacitor 等原生壳 */
   isNativeShell?: boolean;
@@ -73,7 +73,7 @@ export type SatelliteShellApi = {
   }>;
   /** Electron：拉取当前 runtime 快照（订阅前补一次） */
   getCompanionRuntimeSnapshot?: () => Promise<CompanionRuntimeMessage>;
-  createFileInstanceStore(appId: string): SapInstanceStore;
+  createFileInstanceStore(appId: string): RemoteInstanceStore;
   /** 移动端：打开 连接设置页 */
   openHabitatSettings?: () => void;
   setClickThrough?: (ignore: boolean) => Promise<void>;
@@ -111,7 +111,7 @@ export type SatelliteShellApi = {
 
 declare global {
   interface Window {
-    satelliteShell?: SatelliteShellApi;
+    satelliteShell?: ShellApi;
   }
 }
 

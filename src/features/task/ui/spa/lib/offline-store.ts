@@ -27,9 +27,9 @@ import { omitUndefined } from "@freeanima/core/util";
 import type {
   TaskItemRowPayload,
   TaskListRowPayload,
-} from "@freeanima/shared/sap-contract/frames/task.ts";
-import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
-import { randomUuid } from "@freeanima/shared/sap-contract";
+} from "@freeanima/shared/rpc-contract/frames/task.ts";
+import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { randomUuid } from "@freeanima/shared/rpc-contract";
 
 import {
   readCachedTaskItems,
@@ -349,7 +349,7 @@ export type OfflineUpdateTaskItemOpts = {
 };
 
 function habitat() {
-  return getTypedSatelliteHabitatClient();
+  return getTypedHabitatClient();
 }
 
 /** temp 且尚无 id-map 时栖息地不认识该实体，只能走 outbox。 */

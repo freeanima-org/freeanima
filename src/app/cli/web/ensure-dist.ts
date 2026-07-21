@@ -24,7 +24,7 @@ export const WEB_SOURCE_WATCH_DIRS = [
   "src/frontend/shell-ui",
   "src/frontend/ui-kit",
   "src/shared",
-  "src/shared/sap-contract",
+  "src/shared/rpc-contract",
   "src/features/habitat/ui/habitat",
   "src/features/chat/ui/spa",
   "src/features/task/ui/spa",

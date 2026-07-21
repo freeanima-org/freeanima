@@ -37,9 +37,9 @@ export type { Mask, MaskRegistryPort, CredentialPermission } from "./mask-regist
 export type { McpControlResult, McpManagerPort, McpStatusResponse } from "./mcp-manager.ts";
 export type {
   SatelliteInstanceStatus,
-  SatelliteManagerPort,
+  RemoteToolsManagerPort,
   SatellitesStatusResponse,
-} from "./satellite-manager.ts";
+} from "./remote-tools-manager.ts";
 export type { ServiceEnginePort } from "./service-engine.ts";
 export {
   onConversationCloseBeforeNew,

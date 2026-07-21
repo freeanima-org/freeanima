@@ -28,7 +28,7 @@ export default function CompanionClientSettingsSection({ store }: SettingsPanelP
         const runtime = await fetchSidecarRuntimeFields();
         if (!cancelled) {
           setInstanceId(runtime.instance_id);
-          setSapConnected(runtime.sap_connected);
+          setSapConnected(runtime.remote_tools_connected);
         }
       } finally {
         if (!cancelled) setReady(true);
@@ -71,7 +71,7 @@ export default function CompanionClientSettingsSection({ store }: SettingsPanelP
             实例 ID：<span className="text-foreground">{instanceId || "—"}</span>
           </p>
           <p>
-            SAP：
+            远程工具：
             <span
               className={
                 sapConnected

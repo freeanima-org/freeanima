@@ -19,7 +19,7 @@ export {
   gatewayPlatformSchema,
   type GatewayPlatform,
   isGatewayPlatform,
-  isSapPlatformString,
+  isRemotePlatformString,
   platformInfoSchema,
   type PlatformInfo,
   buildPlatformInfo,

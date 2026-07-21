@@ -27,7 +27,7 @@ export {
 export {
   createTypedHabitatClient,
   getTypedConsoleHabitatClient,
-  getTypedSatelliteHabitatClient,
+  getTypedHabitatClient,
   resetTypedHabitatClientForTests,
   type TypedHabitatClient,
 } from "./client.ts";

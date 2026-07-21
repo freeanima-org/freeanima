@@ -1,4 +1,4 @@
-import type { SapDisplayItem } from "@freeanima/shared/sap-contract/frames/message";
+import type { SapDisplayItem } from "@freeanima/shared/rpc-contract/frames/message";
 
 /** 生成完成后保留快照，供短时 attach 重放 */
 export const STREAM_SESSION_DONE_TTL_MS = 600_000;

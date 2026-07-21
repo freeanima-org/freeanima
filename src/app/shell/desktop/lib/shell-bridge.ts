@@ -1,8 +1,8 @@
-import { browserSapInstanceStore } from "@freeanima/shared/sap-contract";
+import { browserRemoteInstanceStore } from "@freeanima/shared/rpc-contract";
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import { testHabitatHealthConnection } from "@freeanima/frontend/shell-sdk";
 import { buildShellApiFields } from "@freeanima/frontend/shell-sdk/shell-api-fields";
-import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
+import type { ShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
 import { parseShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
 import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
 import type { ScopedSettingsBackend } from "@freeanima/frontend/shell-sdk/settings";
@@ -64,21 +64,21 @@ function installDevScopedSettingsBridge(): void {
   };
 }
 
-function createBrowserDevShellStub(habitatUrl = "", remoteAuthToken = ""): SatelliteShellApi {
+function createBrowserDevShellStub(habitatUrl = "", remoteAuthToken = ""): ShellApi {
   const trimmedHub = habitatUrl.replace(/\/$/, "");
   const habitatWsUrl = trimmedHub ? resolveHabitatRpcWsUrl(trimmedHub) : "";
   const apiFields = trimmedHub
     ? buildShellApiFields(trimmedHub, habitatWsUrl, remoteAuthToken)
     : { habitatUrl: "", habitatWsUrl: "" };
 
-  const shell: SatelliteShellApi = {
+  const shell: ShellApi = {
     isElectron: false,
     windowRole: null,
     apiOrigin: null,
     habitatUrl: apiFields.habitatUrl,
     habitatWsUrl: apiFields.habitatWsUrl,
     createFileInstanceStore: (appId) =>
-      browserSapInstanceStore(trimmedHub || "http://127.0.0.1:2658", appId),
+      browserRemoteInstanceStore(trimmedHub || "http://127.0.0.1:2658", appId),
     emitConfigChanged: async () => {},
     listenConfigChanged: () => () => {},
   };

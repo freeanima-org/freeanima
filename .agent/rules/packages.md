@@ -9,7 +9,7 @@ Workspace package names reflect the layer topology in [`code-layers.md`](code-la
 | Layer aggregate | `@freeanima/{layer}`             | `kernel`, `core`, `runtime`, `platform`                             |
 | Capability pack | `@freeanima/capabilities-{slug}` | `capabilities-memory`, `capabilities-tools`                         |
 | Feature module  | `@freeanima/feature-{slug}`      | `feature-chat`, `feature-console`                                   |
-| Shared wire     | `@freeanima/shared/{name}`       | `habitat-rpc`, `habitat-client`, `habitat-contract`, `sap-contract` |
+| Shared wire     | `@freeanima/shared/{name}`       | `habitat-rpc`, `habitat-client`, `habitat-contract`, `rpc-contract` |
 | Frontend shell  | `@freeanima/{name}`              | `ui-kit`, `shell-sdk`, `shell-ui`（`src/frontend/`）                |
 | Entry           | CLI app (`src/app/cli`)          | Source / standalone entry（逻辑名可仍标 `@freeanima/cli` 安装前缀） |
 | Satellite       | `@freeanima/satellite-{slug}`    | `satellite-companion`（`src/satellites/` 白名单）                   |
@@ -31,7 +31,7 @@ Workspace package names reflect the layer topology in [`code-layers.md`](code-la
 | `@freeanima/shared/habitat-rpc`      | shared       | Habitat RPC 传输（connect / req / res / evt）                                          |
 | `@freeanima/shared/habitat-contract` | shared       | Habitat method SSOT（Zod + 静态 transport 元信息）                                     |
 | `@freeanima/shared/habitat-client`   | shared       | Habitat 多传输客户端（call / subscribe + HTTP/WS dispatch）                            |
-| `@freeanima/sap-contract`            | shared       | SAP + Feature RPC wire；`./satellite`、`./feature-rpc` 子入口                          |
+| `@freeanima/rpc-contract`            | shared       | Habitat RPC feature wire + remote tools wire；`./satellite`、`./feature-rpc` 子入口    |
 | `@freeanima/shell-sdk`               | frontend     | 壳层 manifest/settings/Habitat 连通（依赖 habitat-rpc）                                |
 | `@freeanima/shell-ui`                | frontend     | 壳层 SPA                                                                               |
 

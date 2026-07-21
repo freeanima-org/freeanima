@@ -23,7 +23,7 @@ import {
   vaultPatchPlainOutputSchema,
   vaultSearchInputSchema,
   vaultSearchOutputSchema,
-} from "@freeanima/shared/sap-contract/frames/vault";
+} from "@freeanima/shared/rpc-contract/frames/vault";
 
 import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
 

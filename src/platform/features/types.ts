@@ -1,12 +1,12 @@
-import type { SapRequestContext } from "@freeanima/shared/sap-contract";
+import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 
-import type { SapServerDeps } from "../sap/types.ts";
+import type { RemoteToolsServerDeps } from "../remote-tools/types.ts";
 
 /** Habitat RPC method handler registered by a feature plugin. */
 export type FeatureRpcHandler = (
-  deps: SapServerDeps,
+  deps: RemoteToolsServerDeps,
   payload: unknown,
-  ctx: SapRequestContext,
+  ctx: RemoteToolsRequestContext,
 ) => Promise<unknown>;
 
 export type FeatureShellRouteDef = {

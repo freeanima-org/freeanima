@@ -8,7 +8,7 @@ export const companionManifest: FrontendManifest = {
   version: readMonorepoVersion(),
   supportsDesktop: true,
   supportsMobile: false,
-  sap: { relay: false, tools: true },
+  remoteTools: { tools: true },
 };
 
 export function getCompanionManifest(): FrontendManifest {

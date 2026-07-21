@@ -19,7 +19,7 @@ import {
   pomodoroSessionListOutputSchema,
   pomodoroSessionStatsInputSchema,
   pomodoroSessionStatsOutputSchema,
-} from "@freeanima/shared/sap-contract/frames/pomodoro";
+} from "@freeanima/shared/rpc-contract/frames/pomodoro";
 
 import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
 

@@ -23,9 +23,9 @@ import { registerBootCronHandlers } from "./cron-handlers.ts";
 import { registerSleepPipelineStepRecorder } from "../runtime/pipeline-step-run-log.ts";
 import { startupLog } from "./status.ts";
 import type { EnginePhaseResult } from "./engine-phase.ts";
-import { bindSapServerDeps } from "../sap/runtime-context.ts";
-import { HubSessionRegistry } from "../sap/habitat-session-registry.ts";
-import { SapInstanceRegistry } from "../sap/instance-registry.ts";
+import { bindRemoteToolsServerDeps } from "../remote-tools/runtime-context.ts";
+import { HubSessionRegistry } from "../remote-tools/habitat-session-registry.ts";
+import { RemoteInstanceRegistry } from "../remote-tools/instance-registry.ts";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import { ANIMA_VERSION } from "../runtime/version.ts";
 import { builtinFeaturePlugins, registerFeatures } from "../features/index.ts";
@@ -102,10 +102,10 @@ export async function bootRuntimePhase(
     return meta.platform_extra;
   };
 
-  bindSapServerDeps({
+  bindRemoteToolsServerDeps({
     runtime,
-    satelliteManager: satellite,
-    instanceRegistry: await createSapInstanceRegistry(),
+    remoteToolsManager: satellite,
+    instanceRegistry: await createRemoteInstanceRegistry(),
     hubSessionRegistry: new HubSessionRegistry(),
     animaVersion: ANIMA_VERSION,
     masks,
@@ -114,8 +114,8 @@ export async function bootRuntimePhase(
   return { runtime };
 }
 
-async function createSapInstanceRegistry(): Promise<SapInstanceRegistry> {
-  const registry = new SapInstanceRegistry(true);
+async function createRemoteInstanceRegistry(): Promise<RemoteInstanceRegistry> {
+  const registry = new RemoteInstanceRegistry(true);
   try {
     const rows = await listAllSapInstances();
     registry.hydrate(

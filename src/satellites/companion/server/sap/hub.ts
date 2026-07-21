@@ -2,10 +2,10 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 import {
-  createSatelliteHub,
-  type SatelliteHubHandle,
-} from "@freeanima/shared/sap-contract/satellite-hub.ts";
-import { fileSapInstanceStore } from "@freeanima/shared/sap-contract/file-instance-store.ts";
+  createRemoteToolsHub,
+  type RemoteToolsHubHandle,
+} from "@freeanima/shared/rpc-contract/remote-tools-hub.ts";
+import { fileRemoteInstanceStore } from "@freeanima/shared/rpc-contract/file-instance-store.ts";
 import { remoteAuthTokenFromShell } from "../config.ts";
 import { executeCompanionTool } from "../tools/executor.ts";
 
@@ -42,55 +42,60 @@ function instanceStorePath(): string {
   return join(home, "companion", "instance.json");
 }
 
-let hub: SatelliteHubHandle | null = null;
+let hub: RemoteToolsHubHandle | null = null;
 
-function sapAuthTokenReady(): boolean {
+function authTokenReady(): boolean {
   return Boolean(remoteAuthTokenFromShell()?.trim());
 }
 
-function ensureHub(habitatUrl: string, httpUrl?: string): SatelliteHubHandle | null {
-  if (!sapAuthTokenReady()) return null;
+function ensureHub(habitatUrl: string, httpUrl?: string): RemoteToolsHubHandle | null {
+  if (!authTokenReady()) return null;
   if (!hub) {
     const remoteAuthToken = remoteAuthTokenFromShell();
-    hub = createSatelliteHub({
+    hub = createRemoteToolsHub({
       appId: APP_ID,
       habitatUrl,
       ...(httpUrl !== undefined ? { httpUrl } : {}),
       ...(remoteAuthToken !== undefined ? { remoteAuthToken } : {}),
-      instanceStore: fileSapInstanceStore(instanceStorePath()),
-      relay: false,
+      instanceStore: fileRemoteInstanceStore(instanceStorePath()),
       tools: REGISTERED_TOOLS,
       toolsetPrivate: false,
       onToolCall: async (localName, args) => executeCompanionTool(localName, args),
       onConnected: async () => {
-        console.log("companion SAP connected");
+        console.log("companion remote tools connected");
       },
     });
   }
   return hub;
 }
 
-export function getSapInstanceId(): string {
+export function getRemoteToolInstanceId(): string {
   const fromHub = hub?.getInstanceId();
   if (fromHub) return fromHub;
-  const id = fileSapInstanceStore(instanceStorePath()).load();
+  const id = fileRemoteInstanceStore(instanceStorePath()).load();
   return id instanceof Promise ? "" : (id ?? "");
 }
 
-export function isSapConnected(): boolean {
+export function isRemoteToolsConnected(): boolean {
   return hub?.isConnected() ?? false;
 }
 
-export function startSapTransport(habitatUrl: string, httpUrl?: string): void {
-  if (!sapAuthTokenReady()) {
-    console.log("companion SAP: waiting for Habitat API Token");
+/** @deprecated use isRemoteToolsConnected */
+export const isSapConnected = isRemoteToolsConnected;
+
+export function startRemoteToolsTransport(habitatUrl: string, httpUrl?: string): void {
+  if (!authTokenReady()) {
+    console.log("companion remote tools: waiting for Habitat API Token");
     return;
   }
   ensureHub(habitatUrl, httpUrl);
 }
 
-export function reconnectSap(habitatUrl: string, httpUrl?: string): void {
-  if (!sapAuthTokenReady()) {
+/** @deprecated use startRemoteToolsTransport */
+export const startSapTransport = startRemoteToolsTransport;
+
+export function reconnectRemoteTools(habitatUrl: string, httpUrl?: string): void {
+  if (!authTokenReady()) {
     hub?.stop();
     hub = null;
     return;
@@ -101,10 +106,13 @@ export function reconnectSap(habitatUrl: string, httpUrl?: string): void {
   ensureHub(habitatUrl, httpUrl);
 }
 
-export async function getSapClient(habitatUrl: string, httpUrl?: string) {
+/** @deprecated use reconnectRemoteTools */
+export const reconnectSap = reconnectRemoteTools;
+
+export async function getRpcStreamClient(habitatUrl: string, httpUrl?: string) {
   const handle = ensureHub(habitatUrl, httpUrl);
   if (!handle) {
-    throw new Error("satellite hub requires remoteAuthToken");
+    throw new Error("remote tools hub requires remoteAuthToken");
   }
-  return handle.getSapClient();
+  return handle.getRpcStreamClient();
 }

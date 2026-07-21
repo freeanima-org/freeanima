@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { COMPANION_APP_ID } from "../shared/constants.ts";
-import { getSapInstanceId, isSapConnected } from "./sap/hub.ts";
+import { getRemoteToolInstanceId, isSapConnected } from "./sap/hub.ts";
 import { hubUrlFromConfig, type CompanionConfig } from "./config.ts";
 import { companionConfigPath, ensureCompanionDataDir } from "./paths.ts";
 import { activeModelPath } from "./config.ts";
@@ -21,7 +21,7 @@ export type ClientCompanionConfig = {
   /** @deprecated */ hub_url?: string;
   model_path: string;
   model_available: boolean;
-  sap_connected: boolean;
+  remote_tools_connected: boolean;
   fbx_import_available: boolean;
   active_model_id: string;
   models: ModelEntry[];
@@ -60,7 +60,7 @@ export function clientCompanionConfig(): ClientCompanionConfig {
   const model_path = activeModelPath(cfg);
   return {
     app_id: COMPANION_APP_ID,
-    instance_id: getSapInstanceId(),
+    instance_id: getRemoteToolInstanceId(),
     habitat_url: hubUrlFromConfig(),
     hub_url: hubUrlFromConfig(),
     models,
@@ -70,7 +70,7 @@ export function clientCompanionConfig(): ClientCompanionConfig {
     active_model_id,
     model_path,
     model_available: isModelPathAvailable(model_path),
-    sap_connected: isSapConnected(),
+    remote_tools_connected: isSapConnected(),
     fbx_import_available: false,
   };
 }

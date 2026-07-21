@@ -84,7 +84,7 @@ function applyConfigToState(cfg: CompanionConfig, prev?: CompanionState): Partia
     habitatUrl: cfg.habitat_url ?? cfg.hub_url,
     modelPath,
     instanceId: cfg.instance_id,
-    sapConnected: cfg.sap_connected,
+    sapConnected: cfg.remote_tools_connected,
     fbxImportAvailable: cfg.fbx_import_available,
     activeModelId: cfg.active_model_id,
     models: cfg.models,

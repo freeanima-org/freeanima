@@ -17,11 +17,14 @@ import {
   HABITAT_RPC_REST_PREFIX,
   HABITAT_RPC_REST_PREFIX_LEGACY,
 } from "@freeanima/shared/habitat-rpc/urls.ts";
-import type { SapRequestAuthContext, SapRequestContext } from "@freeanima/shared/sap-contract";
+import type {
+  RpcRequestAuthContext,
+  RemoteToolsRequestContext,
+} from "@freeanima/shared/rpc-contract";
 
 import { habitatDispatch } from "./dispatch.ts";
 import { jsonResponseWithConditionalGet } from "./http-conditional.ts";
-import type { SapServerDeps } from "../sap/types.ts";
+import type { RemoteToolsServerDeps } from "../remote-tools/types.ts";
 
 /** 与 habitat-api handlers/errors 对齐；platform 不依赖 feature 内部 handler */
 class HubRestHandlerError extends Error {
@@ -139,12 +142,12 @@ function jsonError(status: number, code: string, message: string): Response {
 function ctxFor(
   auth: HttpHubRestAuth,
   req: Request,
-): SapRequestContext & {
+): RemoteToolsRequestContext & {
   app_id: string;
   instance_id: string;
   httpRequest: Request;
 } {
-  const authCtx: SapRequestAuthContext = auth ?? {
+  const authCtx: RpcRequestAuthContext = auth ?? {
     token_id: 0,
     subject_id: 0,
     subject_type: "user",
@@ -161,11 +164,11 @@ function ctxFor(
   };
 }
 
-export type HttpHubRestAuth = SapRequestAuthContext | null;
+export type HttpHubRestAuth = RpcRequestAuthContext | null;
 
 export async function handleHttpHabitatRestRequest(
   req: Request,
-  deps: SapServerDeps,
+  deps: RemoteToolsServerDeps,
   auth: HttpHubRestAuth,
 ): Promise<Response> {
   const verb = req.method;

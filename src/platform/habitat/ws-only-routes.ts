@@ -4,62 +4,62 @@ import {
   toolRegisterOutputSchema,
   toolResultInputSchema,
   toolUnregisterInputSchema,
-} from "@freeanima/shared/sap-contract/frames/tool";
+} from "@freeanima/shared/rpc-contract/frames/tool";
 import {
   terminalAttachInputSchema,
   terminalAttachOutputSchema,
   terminalCloseInputSchema,
   terminalResizeInputSchema,
   terminalWriteInputSchema,
-} from "@freeanima/shared/sap-contract/frames/terminal";
+} from "@freeanima/shared/rpc-contract/frames/terminal";
 import {
-  sapAttachOutputSchema,
-  sapAttachPayloadSchema,
-} from "@freeanima/shared/sap-contract/frames/sap-session";
+  remoteToolsAttachOutputSchema,
+  remoteToolsAttachPayloadSchema,
+} from "@freeanima/shared/rpc-contract/frames/remote-tools-session";
 import { wsOnlyMeta } from "@freeanima/shared/habitat-contract";
 import {
   defineHabitatRoute,
   mergeFeatureRoutes,
 } from "@freeanima/shared/habitat-contract/route.ts";
-import type { SapRequestContext } from "@freeanima/shared/sap-contract";
+import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { z } from "zod";
 
-import type { SapServerDeps } from "../sap/types.ts";
+import type { RemoteToolsServerDeps } from "../remote-tools/types.ts";
 import {
   closeTerminalSession,
   createTerminalSession,
   getTerminalSession,
   TerminalSessionError,
-} from "../sap/terminal-session.ts";
+} from "../remote-tools/terminal-session.ts";
 
 const okSchema = z.object({ ok: z.literal(true) });
 const sapDetachInputSchema = z.object({}).strict();
 
-function depsOf(deps: unknown): SapServerDeps {
-  return deps as SapServerDeps;
+function depsOf(deps: unknown): RemoteToolsServerDeps {
+  return deps as RemoteToolsServerDeps;
 }
 
-function ctxOf(ctx: unknown): SapRequestContext {
-  return ctx as SapRequestContext;
+function ctxOf(ctx: unknown): RemoteToolsRequestContext {
+  return ctx as RemoteToolsRequestContext;
 }
 
 export const wsOnlyHubRoutes = mergeFeatureRoutes([
   defineHabitatRoute({
-    method: "sap.attach",
-    input: sapAttachPayloadSchema,
-    output: sapAttachOutputSchema,
+    method: "remote_tools.attach",
+    input: remoteToolsAttachPayloadSchema,
+    output: remoteToolsAttachOutputSchema,
     meta: wsOnlyMeta(),
     handler: async () => {
-      throw new Error("sap.attach is handled by Habitat RPC transport layer");
+      throw new Error("remote_tools.attach is handled by Habitat RPC transport layer");
     },
   }),
   defineHabitatRoute({
-    method: "sap.detach",
+    method: "remote_tools.detach",
     input: sapDetachInputSchema,
     output: okSchema,
     meta: wsOnlyMeta(),
     handler: async () => {
-      throw new Error("sap.detach is handled by Habitat RPC transport layer");
+      throw new Error("remote_tools.detach is handled by Habitat RPC transport layer");
     },
   }),
   defineHabitatRoute({
@@ -69,7 +69,7 @@ export const wsOnlyHubRoutes = mergeFeatureRoutes([
     meta: wsOnlyMeta(),
     handler: async (deps, input, ctx) => {
       const sapCtx = ctxOf(ctx);
-      const registered = depsOf(deps).satelliteManager.registerTools(
+      const registered = depsOf(deps).remoteToolsManager.registerTools(
         sapCtx.app_id,
         sapCtx.instance_id,
         input.tools,
@@ -85,7 +85,7 @@ export const wsOnlyHubRoutes = mergeFeatureRoutes([
     meta: wsOnlyMeta(),
     handler: async (deps, input, ctx) => {
       const sapCtx = ctxOf(ctx);
-      depsOf(deps).satelliteManager.unregisterTools(
+      depsOf(deps).remoteToolsManager.unregisterTools(
         sapCtx.app_id,
         sapCtx.instance_id,
         input.local_names,
@@ -99,7 +99,7 @@ export const wsOnlyHubRoutes = mergeFeatureRoutes([
     output: okSchema,
     meta: wsOnlyMeta(),
     handler: async (deps, input) => {
-      depsOf(deps).satelliteManager.handleToolResult(input.call_id, input.content);
+      depsOf(deps).remoteToolsManager.handleToolResult(input.call_id, input.content);
       return { ok: true as const };
     },
   }),
@@ -109,7 +109,7 @@ export const wsOnlyHubRoutes = mergeFeatureRoutes([
     output: okSchema,
     meta: wsOnlyMeta(),
     handler: async (deps, input) => {
-      depsOf(deps).satelliteManager.handleToolError(input.call_id, input.error);
+      depsOf(deps).remoteToolsManager.handleToolError(input.call_id, input.error);
       return { ok: true as const };
     },
   }),

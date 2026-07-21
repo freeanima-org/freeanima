@@ -15,7 +15,7 @@ alwaysApply: true
    - compression algorithm → `compression.md`
    - new packages → `packages.md`
    - i18n / Paraglide / PO / UI strings → `i18n.md`
-   - frontend features / SAP vs hub-rest → `frontend-features.md`
+   - frontend features / Habitat RPC vs remote tools → `frontend-features.md`
    - DaisyUI / ui-kit / Modal → `frontend-ui.md`
    - 壳子/布局/交互三维度 → `ui-dimensions.md`
    - `docs/**` or `po/zh_CN/*.po` → `docs-i18n.md`

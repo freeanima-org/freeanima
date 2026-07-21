@@ -22,7 +22,7 @@ const COMPANION_ROOT = join(REPO_ROOT, "src", "satellites", "companion");
 const ROOT_PACKAGE_JSON = join(REPO_ROOT, "package.json");
 
 const BUNDLED_INTERNAL_PACKAGES = new Set([
-  "@freeanima/sap-contract",
+  "@freeanima/shared/rpc-contract",
   "@freeanima/shell-sdk",
   "@freeanima/satellite-companion",
   "@freeanima/feature-chat",

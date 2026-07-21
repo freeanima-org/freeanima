@@ -6,6 +6,12 @@ export const frontendManifestSchema = z.object({
   version: z.string().min(1),
   supportsDesktop: z.boolean(),
   supportsMobile: z.boolean(),
+  remoteTools: z
+    .object({
+      tools: z.boolean().optional(),
+    })
+    .optional(),
+  /** @deprecated use remoteTools */
   sap: z
     .object({
       relay: z.boolean(),

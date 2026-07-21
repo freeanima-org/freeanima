@@ -20,7 +20,7 @@ import {
   projectfolderListOutputSchema,
   projectfolderPatchInputSchema,
   projectfolderPatchOutputSchema,
-} from "@freeanima/shared/sap-contract/frames/project";
+} from "@freeanima/shared/rpc-contract/frames/project";
 
 export const projectMethodDefs = {
   "projectfolder.list": defineHabitatMethod({

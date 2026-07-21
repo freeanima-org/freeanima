@@ -11,8 +11,8 @@ import { bindHabitatApiLogging } from "./api-logging.ts";
 import { bindHabitatRuntimeContext, habitatCtx } from "./handlers/runtime.ts";
 import { applyCorsToResponse } from "./cors.ts";
 import { broadcastWsReconnect, shutdownAdmin } from "./shutdown.ts";
-import { getSapServerDeps } from "@freeanima/platform/sap/runtime-context";
-import { createSapBunHandlers } from "@freeanima/platform/sap/bun-route";
+import { getRemoteToolsServerDeps } from "@freeanima/platform/remote-tools/runtime-context";
+import { createSapBunHandlers } from "@freeanima/platform/remote-tools/bun-route";
 import { createServiceAuthVerifier, type ServiceAuthVerifier } from "./service-auth.ts";
 import {
   applyHttpAuth,
@@ -79,7 +79,7 @@ function resolveRemoteAddress(bunServer: unknown, req: Request): string | undefi
 function prepareApiServerRuntime(options: ApiServerOptions): ApiServerRuntime {
   bindHabitatRuntimeContext();
   bindHabitatApiLogging(habitatCtx().engine.logger);
-  const sapDeps = getSapServerDeps();
+  const sapDeps = getRemoteToolsServerDeps();
   const sapHandlers = sapDeps ? createSapBunHandlers(sapDeps) : null;
   const serviceAuth = options.serviceAuth ?? createServiceAuthVerifier();
   const mcpHandler = createMcpBunHandler({

@@ -1,12 +1,12 @@
 /// <reference lib="dom" />
 import {
   resolveHabitatRpcWsUrl,
-  getBundledSapStreamClient,
-  resetBundledSapStreamClientForTests,
+  getBundledRpcStreamClient,
+  resetBundledRpcStreamClientForTests,
   subscribeShellConfigChanges,
-  whenBundledSapClientReady,
-  type SapClient,
-} from "@freeanima/shared/sap-contract";
+  whenBundledRpcStreamClientReady,
+  type RpcStreamClient,
+} from "@freeanima/shared/rpc-contract";
 
 const CHAT_PLATFORM = "chat";
 
@@ -19,12 +19,12 @@ function resolveHabitatRpcWsUrlFromEnv(): string {
 }
 
 function getClient() {
-  return getBundledSapStreamClient({
+  return getBundledRpcStreamClient({
     hubRpcWsUrl: resolveHabitatRpcWsUrlFromEnv(),
   });
 }
 
-export function getChatSapClient() {
+export function getChatRpcStreamClient() {
   return getClient();
 }
 
@@ -36,12 +36,12 @@ export function chatPlatform(): string {
   return CHAT_PLATFORM;
 }
 
-export async function whenSapClientReady(): Promise<SapClient> {
-  return whenBundledSapClientReady();
+export async function whenRpcStreamClientReady(): Promise<RpcStreamClient> {
+  return whenBundledRpcStreamClientReady();
 }
 
 export { subscribeShellConfigChanges };
 
 export function resetChatInstanceCacheForTests(): void {
-  resetBundledSapStreamClientForTests();
+  resetBundledRpcStreamClientForTests();
 }

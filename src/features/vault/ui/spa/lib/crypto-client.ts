@@ -4,7 +4,7 @@ import {
   sealVaultSecrets,
   type VaultSecretsPayload,
 } from "@freeanima/shared/vault-crypto";
-import type { VaultCreateInput, VaultPatchInput } from "@freeanima/shared/sap-contract";
+import type { VaultCreateInput, VaultPatchInput } from "@freeanima/shared/rpc-contract";
 
 export async function buildUserVaultCreatePayload(input: {
   title: string;

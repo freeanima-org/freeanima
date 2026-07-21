@@ -5,12 +5,12 @@ import { emailMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 
-type EmailSapServerDeps = {
+type EmailRemoteToolsServerDeps = {
   runtime: { runtimeDeps(): RuntimeDeps };
 };
 
-function depsOf(deps: unknown): EmailSapServerDeps {
-  return deps as EmailSapServerDeps;
+function depsOf(deps: unknown): EmailRemoteToolsServerDeps {
+  return deps as EmailRemoteToolsServerDeps;
 }
 
 export const emailHubRoutes = bindHabitatRouteHandlers(emailMethodDefs, {

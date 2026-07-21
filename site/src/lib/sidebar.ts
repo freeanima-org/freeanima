@@ -24,6 +24,7 @@ export const starlightSidebar = [
           { ...t(m.sidebar_security), link: "/docs/guide/security/" },
           { ...t(m.sidebar_database), link: "/docs/guide/database/" },
           { ...t(m.sidebar_service), link: "/docs/guide/service/" },
+          { ...t(m.sidebar_sap_overview), link: "/docs/guide/habitat-rpc/" },
         ],
       },
       {
@@ -44,19 +45,6 @@ export const starlightSidebar = [
         ...t(m.sidebar_features),
         collapsed: true,
         items: [{ ...t(m.sidebar_mobile_app), link: "/docs/features/mobile-app/" }],
-      },
-      {
-        ...t(m.sidebar_sap),
-        collapsed: true,
-        items: [
-          { ...t(m.sidebar_sap_overview), link: "/docs/sap/overview/" },
-          { ...t(m.sidebar_sap_transport), link: "/docs/sap/transport/" },
-          { ...t(m.sidebar_sap_methods), link: "/docs/sap/methods/" },
-          { ...t(m.sidebar_sap_events), link: "/docs/sap/events/" },
-          { ...t(m.sidebar_sap_tools), link: "/docs/sap/tools/" },
-          { ...t(m.sidebar_sap_satellite_guide), link: "/docs/sap/satellite-guide/" },
-          { ...t(m.sidebar_sap_security), link: "/docs/sap/security-model/" },
-        ],
       },
       {
         ...t(m.sidebar_tools),

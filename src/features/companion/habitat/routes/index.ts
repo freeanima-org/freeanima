@@ -1,5 +1,5 @@
-import type { SapServerDeps } from "@freeanima/platform/sap/types";
-import type { SapRequestContext } from "@freeanima/shared/sap-contract";
+import type { RemoteToolsServerDeps } from "@freeanima/platform/remote-tools/types";
+import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 
 import {
@@ -10,12 +10,12 @@ import {
 import { companionMethodDefs } from "../method-defs.ts";
 import * as service from "../service.ts";
 
-function depsOf(deps: unknown): SapServerDeps {
-  return deps as SapServerDeps;
+function depsOf(deps: unknown): RemoteToolsServerDeps {
+  return deps as RemoteToolsServerDeps;
 }
 
-function ctxOf(ctx: unknown): SapRequestContext {
-  return ctx as SapRequestContext;
+function ctxOf(ctx: unknown): RemoteToolsRequestContext {
+  return ctx as RemoteToolsRequestContext;
 }
 
 export const companionHubRoutes = bindHabitatRouteHandlers(companionMethodDefs, {
