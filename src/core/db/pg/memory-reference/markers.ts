@@ -6,9 +6,6 @@ export const MEMORY_REFERENCE_MARKER_RE = new RegExp(
   "gi",
 );
 
-/** @deprecated use ANIMA_ENTITY_ID_PATTERN — kept for test migration notes */
-export const SEMANTIC_MEMORY_ID_PATTERN = ANIMA_ENTITY_ID_PATTERN;
-
 /** Citation marker: `[[anima:{id}]]` */
 export function formatMemoryReferenceMarker(entityId: string | number): string {
   return `[[anima:${entityId}]]`;
