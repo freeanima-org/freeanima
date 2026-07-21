@@ -14,6 +14,7 @@ type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;
   onError?: (err: Error) => void;
   onComplete?: () => void;
+  onStreamId?: (streamId: string) => void;
 };
 
 function mapConversationList(raw: {
@@ -220,6 +221,23 @@ export function subscribeMessageStream(
   callbacks: SubscribeCallbacks<StreamApiEvent>,
 ): { unsubscribe: () => void } {
   return sap().sendMessageStream(input, callbacks);
+}
+
+export function resumeMessageStream(
+  streamId: string,
+  callbacks: SubscribeCallbacks<StreamApiEvent>,
+): { unsubscribe: () => void } {
+  return sap().resumeMessageStream(streamId, callbacks);
+}
+
+/** 按会话查询服务端仍持有的流（刷新后 sessionStorage 丢失时的权威来源） */
+export async function lookupActiveStream(
+  conversationId: string,
+): Promise<{ stream_id?: string; status?: string }> {
+  requireHabitatFetch("stream.lookup");
+  const raw = await hub().call("stream.lookup", { conversation_id: conversationId });
+  if (!raw || typeof raw !== "object") return {};
+  return raw as { stream_id?: string; status?: string };
 }
 
 export async function interruptMessageStream(conversationId: string): Promise<void> {

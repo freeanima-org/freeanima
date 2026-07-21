@@ -43,8 +43,25 @@ sequenceDiagram
 | `stream.done`             | `stream_id`, optional `reason`      |
 | `stream.error`            | `stream_id`, `error`                |
 | `stream.ping`             | `stream_id`                         |
+| `stream.llm_debug`        | debug snapshot (server-side cache)  |
 
 Mapping helpers: `mapRuntimeStreamEventToSap`, `mapSapStreamMethodToApi` in the same file.
+
+## Weak-network resume (`stream.attach`)
+
+While a generation is in flight, Habitat keeps an in-process **text buffer** keyed by `stream_id` (SAP projection layer; not LLM token DB persistence). After WebSocket reconnect:
+
+1. Client registers `stream.*` event handlers for the same `stream_id`
+2. Client calls `req stream.attach { stream_id }`
+3. Habitat replies `{ status, replayed: true }` and pushes:
+   - `stream.accepted`
+   - `stream.content_replace` with the full buffer so far (方案二 buffer dump)
+   - live `stream.token` / other events until terminal
+4. If the turn already finished within TTL (~10 min), attach still dumps buffer then `stream.done` / `stream.error`
+
+Unknown `stream_id` → RPC error. Concurrent `message.send` with the same in-flight `client_op_id` returns the existing `stream_id` without starting a second turn.
+
+**Page refresh / 刷新按钮：** Chat UI 将 `{ conversationId, streamId }` 写入 `sessionStorage`；加载后若末条仍为 user（等待回复），先 `stream.lookup(conversation_id)`（或读 sessionStorage）再 `stream.attach`。`abortStream`（手动刷新）只拆本地监听，不删 persist。
 
 ## SAP stream → Habitat SSE
 

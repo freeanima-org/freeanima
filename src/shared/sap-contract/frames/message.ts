@@ -30,6 +30,32 @@ export const messageInterruptOutputSchema = z.object({
 
 export type MessageInterruptOutput = z.infer<typeof messageInterruptOutputSchema>;
 
+export const streamAttachInputSchema = z.object({
+  stream_id: z.string().min(1),
+});
+
+export type StreamAttachInput = z.infer<typeof streamAttachInputSchema>;
+
+export const streamAttachOutputSchema = z.object({
+  status: z.enum(["active", "done", "error", "interrupted"]),
+  replayed: z.boolean(),
+});
+
+export type StreamAttachOutput = z.infer<typeof streamAttachOutputSchema>;
+
+export const streamLookupInputSchema = z.object({
+  conversation_id: z.string().min(1),
+});
+
+export type StreamLookupInput = z.infer<typeof streamLookupInputSchema>;
+
+export const streamLookupOutputSchema = z.object({
+  stream_id: z.string().optional(),
+  status: z.enum(["active", "done", "error", "interrupted"]).optional(),
+});
+
+export type StreamLookupOutput = z.infer<typeof streamLookupOutputSchema>;
+
 export const llmDebugGetInputSchema = z.object({
   conversation_id: z.string().min(1),
 });

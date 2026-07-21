@@ -10,6 +10,8 @@ export type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;
   onError?: (err: Error) => void;
   onComplete?: () => void;
+  /** message.send / stream.attach 拿到 stream_id 后回调，供弱网 resume */
+  onStreamId?: (streamId: string) => void;
 };
 
 export type SapSessionStreamClient = {
@@ -28,8 +30,38 @@ export type SapSessionStreamClient = {
     },
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
   ): { unsubscribe: () => void };
+  resumeMessageStream(
+    streamId: string,
+    callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
+  ): { unsubscribe: () => void };
   detach(): void;
 };
+
+function bindStreamEventListeners(
+  client: SapClient,
+  streamId: string,
+  callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
+  finish: () => void,
+  closed: () => boolean,
+): Array<() => void> {
+  const cleanups: Array<() => void> = [];
+  for (const method of streamEventMethods) {
+    cleanups.push(
+      client.onEvent(method, (payload) => {
+        if (closed()) return;
+        const record = payload as Record<string, unknown>;
+        if (record.stream_id !== streamId) return;
+        const apiEvent = mapSapStreamMethodToApi(method, record);
+        if (!apiEvent || apiEvent.event === "ping") return;
+        callbacks.onData?.(apiEvent);
+        if (apiEvent.event === "done" || apiEvent.event === "error") {
+          finish();
+        }
+      }),
+    );
+  }
+  return cleanups;
+}
 
 export function createSapConversationStreamClient(
   whenClient: () => Promise<SapClient>,
@@ -117,22 +149,40 @@ export function createSapConversationStreamClient(
             }),
             { timeoutMs: HABITAT_RPC_MESSAGE_SEND_TIMEOUT_MS },
           );
-
-          for (const method of streamEventMethods) {
-            cleanups.push(
-              client.onEvent(method, (payload) => {
-                if (closed) return;
-                const record = payload as Record<string, unknown>;
-                if (record.stream_id !== streamId) return;
-                const apiEvent = mapSapStreamMethodToApi(method, record);
-                if (!apiEvent || apiEvent.event === "ping") return;
-                callbacks.onData?.(apiEvent);
-                if (apiEvent.event === "done" || apiEvent.event === "error") {
-                  finish();
-                }
-              }),
-            );
+          callbacks.onStreamId?.(streamId);
+          cleanups.push(
+            ...bindStreamEventListeners(client, streamId, callbacks, finish, () => closed),
+          );
+        } catch (e) {
+          if (!closed) {
+            callbacks.onError?.(e instanceof Error ? e : new Error(String(e)));
+            finish();
           }
+        }
+      })();
+
+      return { unsubscribe: finish };
+    },
+    resumeMessageStream(streamId, callbacks) {
+      let closed = false;
+      const cleanups: Array<() => void> = [];
+
+      const finish = (): void => {
+        if (closed) return;
+        closed = true;
+        for (const off of cleanups) off();
+        callbacks.onComplete?.();
+      };
+
+      void (async () => {
+        try {
+          const client = await ensureSessionHooks();
+          // 先挂监听再 attach，才能收到同步 buffer dump
+          cleanups.push(
+            ...bindStreamEventListeners(client, streamId, callbacks, finish, () => closed),
+          );
+          callbacks.onStreamId?.(streamId);
+          await client.request("stream.attach", { stream_id: streamId });
         } catch (e) {
           if (!closed) {
             callbacks.onError?.(e instanceof Error ? e : new Error(String(e)));

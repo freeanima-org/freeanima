@@ -19,6 +19,18 @@ describe("displayAwaitingReply", () => {
       ]),
     ).toBe(false);
   });
+
+  it("returns true when tool_block follows user before assistant", () => {
+    expect(
+      displayAwaitingReply([
+        { type: "message", role: "user", content: "hi" },
+        {
+          type: "tool_block",
+          calls: [{ name: "x", argsPreview: "{}", tool_call_id: "1", status: "running" }],
+        },
+      ]),
+    ).toBe(true);
+  });
 });
 
 describe("hasNewAssistantReply", () => {

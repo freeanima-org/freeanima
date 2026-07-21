@@ -5,11 +5,25 @@ export function hasNewAssistantReply(display: DisplayItem[], baselineCount: numb
   return newItems.some((item) => item.type === "message" && item.role === "assistant");
 }
 
-/** 最后一条为 user 且尚无 assistant 回复（含刷新后恢复轮询） */
+/**
+ * 末条 user 之后尚无 assistant（中间可有 tool_block 等）。
+ * 刷新后续传依赖此判断；勿要求「最后一项必须是 user」。
+ */
 export function displayAwaitingReply(display: DisplayItem[]): boolean {
-  if (display.length === 0) return false;
-  const last = display.at(-1);
-  return last?.type === "message" && last.role === "user";
+  let lastUserIdx = -1;
+  for (let i = display.length - 1; i >= 0; i--) {
+    const item = display[i];
+    if (item?.type === "message" && item.role === "user") {
+      lastUserIdx = i;
+      break;
+    }
+  }
+  if (lastUserIdx < 0) return false;
+  for (let j = lastUserIdx + 1; j < display.length; j++) {
+    const after = display[j];
+    if (after?.type === "message" && after.role === "assistant") return false;
+  }
+  return true;
 }
 
 export const RECOVERY_INITIAL_DELAY_MS = 500;

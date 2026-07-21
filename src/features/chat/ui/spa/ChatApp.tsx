@@ -37,6 +37,7 @@ import {
   displayAwaitingReply,
   pollUntilAssistantReply,
 } from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
+import { readPersistedActiveStream } from "@freeanima/features/chat/ui/spa/lib/active-stream-persist.ts";
 import {
   fetchLlmDebug,
   listConversationCommands,
@@ -205,6 +206,7 @@ export function ChatApp() {
   const streamText = useChatStore((s) => s.streamText);
   const recovering = useChatStore((s) => s.recovering);
   const send = useChatStore((s) => s.send);
+  const resumeIfActive = useChatStore((s) => s.resumeIfActive);
   const queue = useChatStore((s) => s.queue);
   const messageQueue = useMemo(
     () => (currentId ? queue.filter((q) => q.conversationId === currentId) : []),
@@ -420,6 +422,15 @@ export function ChatApp() {
     return [...synced, ...pendingOutbox];
   }, [currentId, display, outboxEntries]);
 
+  /** 等待助手回复：流式中 / 恢复中 / 末条 user 后尚无 assistant（刷新后占位） */
+  const awaitingAssistant =
+    Boolean(currentId) &&
+    (streamVisible ||
+      recovering ||
+      (!messagesLoading &&
+        displayAwaitingReply(mergedDisplay) &&
+        habitatConnection === "connected"));
+
   const pendingOutboxKey = useMemo(
     () =>
       Object.values(outboxEntries)
@@ -491,7 +502,16 @@ export function ChatApp() {
       if (habitatConnection === "disconnected") {
         await reconnectHabitat();
       }
+      // 拆本地监听，保留 sessionStorage 中的 stream_id 供续传；先占位避免空白
       useChatStore.getState().abortStream();
+      pendingRecoveryKeyRef.current = null;
+      if (
+        currentId &&
+        (displayAwaitingReply(useConversationsStore.getState().display) ||
+          readPersistedActiveStream(currentId))
+      ) {
+        useChatStore.setState({ recovering: true });
+      }
       await fetchConversations();
       if (currentId) {
         await selectConversation(currentId);
@@ -503,7 +523,9 @@ export function ChatApp() {
 
   useEffect(() => {
     if (habitatConnection !== "connected") {
+      // 拆监听；保留 sessionStorage，并清 recovery key 以便重连后重试 attach
       useChatStore.getState().abortStream();
+      pendingRecoveryKeyRef.current = null;
       sendingRef.current = false;
     }
   }, [habitatConnection]);
@@ -647,15 +669,20 @@ export function ChatApp() {
     return () => sub.unsubscribe();
   }, [currentId, fetchConversations]);
 
-  /** 刷新或切回会话时：末条为 user 且无 assistant → 轮询直到 Habitat 落库 */
+  /** 刷新 / 整页刷新 / 切回会话：先 stream.lookup/attach 续传，否则轮询落库 */
   useEffect(() => {
     if (!currentId) return;
+    if (habitatConnection !== "connected") return;
     if (streaming && streamingConversationId === currentId) return;
-    if (!displayAwaitingReply(display)) {
+
+    const awaiting = displayAwaitingReply(display);
+    const persisted = Boolean(readPersistedActiveStream(currentId));
+    if (!awaiting && !persisted) {
       pendingRecoveryKeyRef.current = null;
       return;
     }
-    const key = `${currentId}@${display.length}`;
+
+    const key = `${currentId}@${display.length}@${persisted ? "p" : "n"}@connected`;
     if (pendingRecoveryKeyRef.current === key) return;
     pendingRecoveryKeyRef.current = key;
 
@@ -667,16 +694,91 @@ export function ChatApp() {
       void refreshMessages(currentId, baseline);
     });
 
-    void pollUntilAssistantReply(currentId, (id) => refreshMessages(id, baseline)).finally(() => {
-      if (!cancelled) useChatStore.setState({ recovering: false });
+    const originId = currentId;
+    const isViewingOrigin = () => useConversationsStore.getState().currentId === originId;
+    // 不用下方的 scrollDown：本 effect 在其声明之前，避免 TDZ
+    const scrollResume = () => {
+      requestAnimationFrame(() => {
+        const el = msgAreaRef.current;
+        if (!el) return;
+        el.scrollTop = el.scrollHeight;
+      });
+    };
+
+    void (async () => {
+      const resumed = await resumeIfActive(originId, {
+        recoverDisplay: (id) => refreshMessages(id, baseline),
+        onToken: () => {
+          if (isViewingOrigin()) scrollResume();
+        },
+        onDisplayAppend: (item) => {
+          appendItemForConversation(originId, item);
+          if (isViewingOrigin()) scrollResume();
+        },
+        onAwaitingClarify: (data) => {
+          if (!isViewingOrigin()) return;
+          if (Array.isArray(data.items) && data.items.length > 0) {
+            setClarifyPending({
+              items: data.items as ClarifyPending["items"],
+              timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
+            });
+          }
+          scrollResume();
+        },
+        onError: (msg) => {
+          if (!isViewingOrigin()) return;
+          appendItemForConversation(originId, {
+            type: "message",
+            role: "assistant",
+            content: `⚠️ ${msg}`,
+          });
+          scrollResume();
+        },
+        onDone: (opts) => {
+          if (opts?.recovered) {
+            if (isViewingOrigin()) scrollResume();
+            return;
+          }
+          void reloadConversationIfCurrent(originId);
+          void fetchConversations();
+          if (isViewingOrigin()) scrollResume();
+        },
+      });
+      if (cancelled) return;
+      if (resumed) return;
+      if (!awaiting) {
+        useChatStore.setState({ recovering: false });
+        return;
+      }
+      // attach 失败：保持「正在生成」占位，继续轮询落库
+      useChatStore.setState({ recovering: true });
+      await pollUntilAssistantReply(originId, (id) => refreshMessages(id, baseline));
+    })().finally(() => {
+      if (cancelled) return;
+      // 仍在流式时由 resumeIfActive 自己清 recovering
+      if (!useChatStore.getState().streaming) {
+        useChatStore.setState({ recovering: false });
+      }
     });
 
     return () => {
       cancelled = true;
       sub.unsubscribe();
-      useChatStore.setState({ recovering: false });
+      // 不在 cleanup 清 recovering：lookup 异步期间 display 变化会重跑 effect，
+      // 清掉会导致「正在撰写」占位闪没；由新 effect / finally / resumeIfActive 接管。
     };
-  }, [currentId, display, streaming, streamingConversationId, refreshMessages]);
+  }, [
+    currentId,
+    display,
+    streaming,
+    streamingConversationId,
+    habitatConnection,
+    refreshMessages,
+    resumeIfActive,
+    appendItemForConversation,
+    reloadConversationIfCurrent,
+    fetchConversations,
+  ]);
 
   const scrollDown = (opts?: { force?: boolean }) => {
     requestAnimationFrame(() => {
@@ -1472,7 +1574,7 @@ export function ChatApp() {
                 <div className="flex h-full items-center justify-center">
                   <Spinner className="size-6" />
                 </div>
-              ) : display.length === 0 && !streamVisible && !recovering ? (
+              ) : display.length === 0 && !awaitingAssistant ? (
                 <div className="flex items-center justify-center h-full text-foreground/40 text-sm">
                   {m.habitat_chat_send_first_message()}
                 </div>
@@ -1684,8 +1786,8 @@ export function ChatApp() {
                 </Alert>
               ) : null}
 
-              {streamVisible && !recovering ? (
-                streamText ? (
+              {awaitingAssistant ? (
+                streamVisible && streamText ? (
                   <div className="flex justify-start">
                     <div className="chat-bubble chat-bubble-assistant">
                       <div
@@ -1709,19 +1811,12 @@ export function ChatApp() {
                   <div className="flex justify-start">
                     <div className="chat-bubble chat-bubble-assistant text-muted-foreground flex items-center gap-2 text-sm">
                       <Spinner className="size-3" />
-                      {m.habitat_chat_composing_reply()}
+                      {recovering && !streamVisible
+                        ? m.habitat_message_waiting_result()
+                        : m.habitat_chat_composing_reply()}
                     </div>
                   </div>
                 )
-              ) : null}
-
-              {recovering ? (
-                <div className="flex justify-start">
-                  <div className="chat-bubble chat-bubble-assistant text-muted-foreground flex items-center gap-2 text-sm">
-                    <Spinner className="size-3" />
-                    {m.habitat_message_waiting_result()}
-                  </div>
-                </div>
               ) : null}
             </div>
 

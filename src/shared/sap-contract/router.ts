@@ -7,6 +7,10 @@ import type {
   MessageInterruptOutput,
   MessageSendInput,
   MessageSendOutput,
+  StreamAttachInput,
+  StreamAttachOutput,
+  StreamLookupInput,
+  StreamLookupOutput,
 } from "./frames/message.ts";
 import type {
   ConversationCreateInput,
@@ -209,6 +213,8 @@ export const SAP_METHODS = [
   "conversation.command",
   "message.send",
   "message.interrupt",
+  "stream.attach",
+  "stream.lookup",
   "tasklist.list",
   "tasklist.stats",
   "tasklist.create",
@@ -307,6 +313,8 @@ export type SapRouterInputs = {
   "conversation.command": ConversationCommandInput;
   "message.send": MessageSendInput;
   "message.interrupt": MessageInterruptInput;
+  "stream.attach": StreamAttachInput;
+  "stream.lookup": StreamLookupInput;
   "tasklist.list": TasklistListInput;
   "tasklist.stats": TasklistStatsInput;
   "tasklist.create": TasklistCreateInput;
@@ -403,6 +411,8 @@ export type SapRouterOutputs = {
   "conversation.command": ConversationCommandOutput;
   "message.send": MessageSendOutput;
   "message.interrupt": MessageInterruptOutput;
+  "stream.attach": StreamAttachOutput;
+  "stream.lookup": StreamLookupOutput;
   "tasklist.list": TasklistListOutput;
   "tasklist.stats": TasklistStatsOutput;
   "tasklist.create": TasklistCreateOutput;
