@@ -2,7 +2,7 @@ import type { PomodoroConfigRow } from "./api.ts";
 
 import type { PomodoroActiveState } from "@freeanima/frontend/shell-sdk/pomodoro-active-types.ts";
 import { openWorkFocusSegment } from "@freeanima/frontend/shell-sdk/pomodoro-focus-segments.ts";
-import { randomUuid } from "@freeanima/shared/sap-contract";
+import { randomUuid } from "@freeanima/shared/rpc-contract";
 export {
   actualDurationMs,
   effectiveFinishedAtIso,

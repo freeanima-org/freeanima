@@ -45,7 +45,7 @@ describePg("hub conversation.list dual transport", () => {
     const runtime = getAppRuntime();
     const deps = {
       runtime: runtime as never,
-      satelliteManager: null as never,
+      remoteToolsManager: null as never,
       instanceRegistry: null as never,
       hubSessionRegistry: null as never,
       animaVersion: "test",

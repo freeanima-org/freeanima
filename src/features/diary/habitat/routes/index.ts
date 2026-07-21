@@ -5,12 +5,12 @@ import { diaryMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 
-type DiarySapServerDeps = {
+type DiaryRemoteToolsServerDeps = {
   runtime: { runtimeDeps(): RuntimeDeps };
 };
 
-function depsOf(deps: unknown): DiarySapServerDeps {
-  return deps as DiarySapServerDeps;
+function depsOf(deps: unknown): DiaryRemoteToolsServerDeps {
+  return deps as DiaryRemoteToolsServerDeps;
 }
 
 export const diaryHubRoutes = bindHabitatRouteHandlers(diaryMethodDefs, {

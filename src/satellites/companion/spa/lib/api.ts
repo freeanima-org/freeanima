@@ -16,17 +16,17 @@ export function resetSidecarOriginCache(): void {
 export type CompanionConfig = ClientCompanionConfig;
 
 function wrapHubConfig(
-  cfg: Omit<ClientCompanionConfig, "app_id" | "instance_id" | "sap_connected"> & {
+  cfg: Omit<ClientCompanionConfig, "app_id" | "instance_id" | "remote_tools_connected"> & {
     app_id?: ClientCompanionConfig["app_id"];
     instance_id?: string;
-    sap_connected?: boolean;
+    remote_tools_connected?: boolean;
   },
 ): CompanionConfig {
   return {
     ...cfg,
     app_id: "companion",
     instance_id: cfg.instance_id ?? "",
-    sap_connected: cfg.sap_connected ?? false,
+    remote_tools_connected: cfg.remote_tools_connected ?? false,
   };
 }
 
@@ -55,13 +55,13 @@ export async function fetchSidecarRuntimeConfig(): Promise<CompanionConfig> {
 
 export async function fetchSidecarRuntimeFields(): Promise<{
   instance_id: string;
-  sap_connected: boolean;
+  remote_tools_connected: boolean;
 }> {
   try {
     const cfg = await fetchSidecarRuntimeConfig();
-    return { instance_id: cfg.instance_id, sap_connected: cfg.sap_connected };
+    return { instance_id: cfg.instance_id, remote_tools_connected: cfg.remote_tools_connected };
   } catch {
-    return { instance_id: "", sap_connected: false };
+    return { instance_id: "", remote_tools_connected: false };
   }
 }
 

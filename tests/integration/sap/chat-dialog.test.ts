@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import {
-  getBundledSapStreamClient,
+  getBundledRpcStreamClient,
   mapSapStreamMethodToApi,
   streamEventMethods,
-} from "@freeanima/shared/sap-contract";
+} from "@freeanima/shared/rpc-contract";
 
 describe("chat browser SAP client", () => {
   it("sendMessageStream maps stream events to console shape", () => {
@@ -15,8 +15,8 @@ describe("chat browser SAP client", () => {
     expect(streamEventMethods).toContain("stream.done");
   });
 
-  it("getBundledSapStreamClient exposes subscribe and stream helpers", () => {
-    const client = getBundledSapStreamClient({
+  it("getBundledRpcStreamClient exposes subscribe and stream helpers", () => {
+    const client = getBundledRpcStreamClient({
       hubRpcWsUrl: "ws://127.0.0.1:2658/rpc/v1",
     });
     expect(client.getClient()).toBeNull();

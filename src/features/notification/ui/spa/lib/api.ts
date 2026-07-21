@@ -8,14 +8,14 @@ import type {
   NotificationListOutput,
   NotificationMarkReadOutput,
   NotificationRecipientsOutput,
-} from "@freeanima/shared/sap-contract";
+} from "@freeanima/shared/rpc-contract";
 
-import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 export type NotificationRow = NotificationListOutput["items"][number];
 
 function habitat() {
-  return getTypedSatelliteHabitatClient();
+  return getTypedHabitatClient();
 }
 
 function cacheKey(input: NotificationListInput): string {

@@ -7,13 +7,13 @@
 
 `freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: product name for the long-running process is **Habitat**（栖息地）; Shell / MCP are **Portal**（入口）. Source: `bun run dev:habitat`（legacy `dev:hub`）；standalone: `anima service`（wire still Habitat RPC `/rpc/v1` + MCP `/mcp` + engine）; UI from `src/app/shell/desktop` / `mobile`. Naming: [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming + [`i18n/glossary.md`](i18n/glossary.md).
 
-| Capability     | Highlights                                                                                                                                                                                                              |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                                                                     |
-| Tools          | Local / MCP / ACP flat registration; MCP client `src/capabilities/mcp-client/`、MCP server `/mcp` `src/capabilities/mcp-server/`；tools `src/capabilities/tools/`、ACP `src/capabilities/acp/`                          |
-| Secrets        | Vault (User/Agent libraries); config `vault()` / `env()`; LLM **sees metadata, not values**                                                                                                                             |
-| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                                                                  |
-| Code layout    | 产品代码在 `src/`（`features/`、`app/shell/`、`platform/` 等）— 见 [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)；Desktop/Mobile 安装包内嵌 `web/dist`，浏览器/PWA 用 Habitat `/web/*` |
+| Capability     | Highlights                                                                                                                                                                                                                                                        |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                                                                                                               |
+| Tools          | Local / MCP / ACP flat registration; MCP client `src/capabilities/mcp-client/`、MCP server `/mcp` `src/capabilities/mcp-server/`；unreachable local apps may register remote tools over Habitat RPC；tools `src/capabilities/tools/`、ACP `src/capabilities/acp/` |
+| Secrets        | Vault (User/Agent libraries); config `vault()` / `env()`; LLM **sees metadata, not values**                                                                                                                                                                       |
+| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                                                                                                            |
+| Code layout    | 产品代码在 `src/`（`features/`、`app/shell/`、`platform/` 等）— 见 [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)；Desktop/Mobile 安装包内嵌 `web/dist`，浏览器/PWA 用 Habitat `/web/*`                                           |
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 
@@ -21,8 +21,9 @@
 
 Directional heuristics for _what_ FreeAnima should feel like. Mechanisms and cognitive architecture live in [`docs/concepts/`](docs/concepts/) — related, but not a 1:1 rule list.
 
-- **Platform-native UX** — Mobile and desktop are **separate interaction and layout designs**, not one responsive skin stretched across form factors. Shared contracts (API, SAP, settings keys) may exist; presentation and interaction patterns should fit each platform. **Three orthogonal dimensions**（详见 [`.agent/rules/ui-dimensions.md`](.agent/rules/ui-dimensions.md)）：**壳子**（`getShellKind` / `satelliteShell`：存储、IPC、通知等原生能力）、**布局**（视口-only：`< md` → `compact` 底栏+drawer；`≥ md` → `expanded` 左栏+三栏）、**交互**（`pointer`/`touch`：右键 vs 长按、Enter 发送等）。壳**不**锁布局（Electron 窄窗可用底栏；Capacitor iPad 宽屏可用左栏）。`detectSettingsChromePlatform()` 仅设置页 chrome（tabs vs 侧栏），跟布局粗档。Phone 通常窄，但 **phone ≠ 窄布局**。
+- **Platform-native UX** — Mobile and desktop are **separate interaction and layout designs**, not one responsive skin stretched across form factors. Shared contracts (API, Habitat RPC, settings keys) may exist; presentation and interaction patterns should fit each platform. **Three orthogonal dimensions**（详见 [`.agent/rules/ui-dimensions.md`](.agent/rules/ui-dimensions.md)）：**壳子**（`getShellKind` / shell API：存储、IPC、通知等原生能力）、**布局**（视口-only：`< md` → `compact` 底栏+drawer；`≥ md` → `expanded` 左栏+三栏）、**交互**（`pointer`/`touch`：右键 vs 长按、Enter 发送等）。壳**不**锁布局（Electron 窄窗可用底栏；Capacitor iPad 宽屏可用左栏）。`detectSettingsChromePlatform()` 仅设置页 chrome（tabs vs 侧栏），跟布局粗档。Phone 通常窄，但 **phone ≠ 窄布局**。
 - **Habitat & Portal** — User copy: **栖息地 / Habitat** = long-running place (multi digital life + human assets); **入口 / Portal** = Shell、MCP 等外部连接。Wire 仍可写 Habitat（`/rpc/v1`）。见 [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming、[`i18n/glossary.md`](i18n/glossary.md)。
+- **Tools: MCP first, remote registration rare** — Dialable peers exchange tools via **MCP**. Only unreachable local apps (no stable inbound listener; e.g. desktop companion) **actively connect** to Habitat and register remote tools over Habitat RPC (`instance_id` routes `tool.call`). Product UI uses Habitat RPC only — never remote-tool attach. See architecture Client UI / companion sections.
 - **Concept convergence over feature sprawl** — As capabilities grow, **resist cognitive overload**: keep a small set of core concepts visible and stable; new features should map onto existing mental models rather than multiplying parallel abstractions in the UI.
 
 ## Code implementation principles
@@ -96,7 +97,7 @@ bun run build:web
 | [`docs/concepts/`](docs/concepts/)                                                 | Core concepts (memory, self layer, etc.)                         |
 | [`docs/guide/`](docs/guide/)                                                       | Usage and maintenance (security, database ops)                   |
 | [`docs/features/`](docs/features/)                                                 | Major product capabilities                                       |
-| [`docs/sap/`](docs/sap/)                                                           | Satellite Application Protocol (SAP)                             |
+| [`docs/guide/habitat-rpc.md`](docs/guide/habitat-rpc.md)                           | Habitat RPC transport + remote tool registration                 |
 | [`docs/tools/`](docs/tools/)                                                       | General/minor built-in tools                                     |
 
 ---

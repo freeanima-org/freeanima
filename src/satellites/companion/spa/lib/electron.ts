@@ -3,7 +3,7 @@
 import type {
   CompanionWindowRole,
   PatrolScreenInfo,
-  SatelliteShellApi,
+  ShellApi,
 } from "@freeanima/frontend/shell-sdk";
 import type { ScreenPoint } from "./window-metrics.ts";
 
@@ -30,7 +30,7 @@ export function isCompanionOverlay(): boolean {
   return isElectron();
 }
 
-function shell(): SatelliteShellApi | undefined {
+function shell(): ShellApi | undefined {
   return window.satelliteShell;
 }
 

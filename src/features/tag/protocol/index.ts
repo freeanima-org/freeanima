@@ -1,1 +1,1 @@
-export * from "@freeanima/shared/sap-contract/frames/tag.ts";
+export * from "@freeanima/shared/rpc-contract/frames/tag.ts";

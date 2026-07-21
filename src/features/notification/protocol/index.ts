@@ -1,6 +1,6 @@
-/** Notification Feature Habitat RPC wire types — SSOT: `@freeanima/sap-contract/feature-rpc` (subset). */
+/** Notification Feature Habitat RPC wire types — SSOT: `@freeanima/shared/rpc-contract/feature-rpc` (subset). */
 export {
   notificationListInputSchema,
   notificationMarkReadInputSchema,
-  type SapRequestContext,
-} from "@freeanima/shared/sap-contract";
+  type RemoteToolsRequestContext,
+} from "@freeanima/shared/rpc-contract";

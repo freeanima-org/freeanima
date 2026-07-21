@@ -3,7 +3,7 @@ import { resolveSubjectWorldId } from "@freeanima/core/config/world-context";
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import { omitUndefined } from "@freeanima/core/util";
 import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
-import type { SapRequestAuthContext } from "@freeanima/shared/sap-contract";
+import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 import type { ProjectStatus } from "@freeanima/core/db/schema/entity";
 
 import {
@@ -26,7 +26,7 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-function assertSubjectKindMatches(auth: SapRequestAuthContext, subject_kind?: SubjectKind): void {
+function assertSubjectKindMatches(auth: RpcRequestAuthContext, subject_kind?: SubjectKind): void {
   if (!subject_kind || subject_kind === auth.subject_type) return;
   // 单实例 Habitat：user token 可访问 agent 私有 world（Shell User/Agent 切换）
   if (auth.subject_type === "user" && subject_kind === "agent") return;
@@ -38,7 +38,7 @@ function resolveSubjectKind(subject_kind?: SubjectKind): SubjectKind {
 }
 
 async function projectWorldIdForAuth(
-  auth: SapRequestAuthContext,
+  auth: RpcRequestAuthContext,
   subject_kind?: SubjectKind,
 ): Promise<number> {
   const kind = resolveSubjectKind(subject_kind);

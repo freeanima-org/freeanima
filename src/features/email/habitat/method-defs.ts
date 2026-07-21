@@ -27,7 +27,7 @@ import {
   emailSyncOutputSchema,
   emailThreadListInputSchema,
   emailThreadListOutputSchema,
-} from "@freeanima/shared/sap-contract/frames/email";
+} from "@freeanima/shared/rpc-contract/frames/email";
 
 import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
 

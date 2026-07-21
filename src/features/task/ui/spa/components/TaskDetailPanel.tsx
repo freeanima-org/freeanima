@@ -3,7 +3,7 @@ import {
   TaskDetailEditor,
   type DetailSaveStatus,
 } from "@freeanima/frontend/ui-kit/composite";
-import type { TaskItemRowPayload } from "@freeanima/shared/sap-contract/frames/task.ts";
+import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task.ts";
 
 import { taskAttributionLabel } from "../lib/task-attribution.ts";
 import { TaskPomodoroFocusSection } from "./TaskPomodoroFocusSection.tsx";

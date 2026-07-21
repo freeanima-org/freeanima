@@ -5,13 +5,13 @@ import {
   revokeServiceApiToken,
 } from "@freeanima/core/db/pg/service-api-token";
 import type { FeatureRpcHandler } from "@freeanima/platform/features";
-import type { SapRequestContext } from "@freeanima/shared/sap-contract";
+import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 
 import { authHasScope, type ServiceAuthContext } from "../auth-context.ts";
 import { getSubjectEntity } from "./entities.ts";
 import { ApiHandlerError } from "./errors.ts";
 
-function requireFullAuth(ctx: SapRequestContext): ServiceAuthContext {
+function requireFullAuth(ctx: RemoteToolsRequestContext): ServiceAuthContext {
   const auth = ctx.auth;
   if (!auth || !authHasScope(auth, "full")) {
     throw new ApiHandlerError(403, "full scope required", { code: "scope_forbidden" });

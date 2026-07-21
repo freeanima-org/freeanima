@@ -13,8 +13,10 @@ import { getCompanionManifest } from "./manifest.ts";
 
 export { startCompanionServer };
 export type { CompanionServerHandle } from "../../server/index.ts";
-export { reconnectSap as reconnectCompanionSap } from "../../server/sap/hub.ts";
-export { isSapConnected as isCompanionSapConnected } from "../../server/sap/hub.ts";
+export { reconnectRemoteTools as reconnectCompanionSap } from "../../server/sap/hub.ts";
+export { reconnectRemoteTools as reconnectCompanionRemoteTools } from "../../server/sap/hub.ts";
+export { isRemoteToolsConnected as isCompanionSapConnected } from "../../server/sap/hub.ts";
+export { isRemoteToolsConnected as isCompanionRemoteToolsConnected } from "../../server/sap/hub.ts";
 export { advanceBubble, bubbleState } from "../../server/runtime-state.ts";
 export {
   addRuntimeExternalListener,

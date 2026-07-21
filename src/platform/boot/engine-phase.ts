@@ -14,7 +14,7 @@ import {
 import { createServiceLogger, logComponent } from "@freeanima/platform/logging";
 import { MaskRegistry } from "@freeanima/features/task/domain/mask";
 import { MCPManager } from "@freeanima/capabilities/mcp-client";
-import { SatelliteManager } from "@freeanima/capabilities/satellite";
+import { RemoteToolsManager } from "@freeanima/capabilities/remote-tools";
 import { getAcpManager } from "@freeanima/capabilities/acp";
 import { wireContextWindowLookup } from "../wire-context-window.ts";
 import type { Kernel } from "@freeanima/kernel";
@@ -31,7 +31,7 @@ export type EnginePhaseResult = {
   catalog: EngineCatalog;
   masks: MaskRegistry;
   mcp: MCPManager;
-  satellite: SatelliteManager;
+  satellite: RemoteToolsManager;
   acp: ReturnType<typeof getAcpManager>;
 };
 
@@ -65,7 +65,7 @@ export function bootEnginePhase(
   });
 
   const mcp = new MCPManager(catalog.toolSets, config);
-  const satellite = new SatelliteManager(catalog.toolSets);
+  const satellite = new RemoteToolsManager(catalog.toolSets);
   satellite.installToolRouting();
   const acp = getAcpManager();
 

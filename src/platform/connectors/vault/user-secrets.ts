@@ -3,7 +3,7 @@ import { resolveVaultWorldId } from "@freeanima/features/vault/domain/vault-worl
 import {
   vaultResolveSecretUserInputSchema,
   vaultResolveSecretUserOutputSchema,
-} from "@freeanima/shared/sap-contract";
+} from "@freeanima/shared/rpc-contract";
 
 type ShellSendRequest = (method: string, payload: unknown) => Promise<unknown>;
 

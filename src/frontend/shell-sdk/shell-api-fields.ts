@@ -3,13 +3,13 @@ import {
   resolveConnectAuthToken,
   shouldAttachRemoteAuth,
 } from "./remote-auth.ts";
-import type { SatelliteShellApi } from "./shell-api.ts";
+import type { ShellApi } from "./shell-api.ts";
 
 export function buildShellApiFields(
   habitatUrl: string,
   habitatWsUrl: string,
   remoteAuthToken: string,
-): Pick<SatelliteShellApi, "habitatUrl" | "habitatWsUrl" | "remoteAuth" | "habitatFetch"> {
+): Pick<ShellApi, "habitatUrl" | "habitatWsUrl" | "remoteAuth" | "habitatFetch"> {
   const token = remoteAuthToken.trim();
   const remoteAuth = token ? { token } : undefined;
   const habitatFetch = token ? createBearerFetch(token, habitatUrl) : undefined;

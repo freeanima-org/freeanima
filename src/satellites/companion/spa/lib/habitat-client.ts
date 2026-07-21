@@ -4,10 +4,10 @@ import type { ClientCompanionConfig } from "@freeanima/satellites/companion/shar
 
 export type HubCompanionConfig = Omit<
   ClientCompanionConfig,
-  "app_id" | "instance_id" | "sap_connected"
+  "app_id" | "instance_id" | "remote_tools_connected"
 > & {
   instance_id?: string;
-  sap_connected?: boolean;
+  remote_tools_connected?: boolean;
 };
 
 export type CompanionHubConfigResponse = { config: HubCompanionConfig };

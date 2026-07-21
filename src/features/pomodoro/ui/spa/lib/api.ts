@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 import { resolveHabitatCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
-import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 import { registerPomodoroOfflineModule } from "./pomodoro-offline-adapter.ts";
 
@@ -66,7 +66,7 @@ export type PomodoroTaskFocusSegmentInput = {
 };
 
 function habitat() {
-  return getTypedSatelliteHabitatClient();
+  return getTypedHabitatClient();
 }
 
 let pomodoroModuleRegistered = false;

@@ -1,4 +1,4 @@
-import { randomUuid } from "@freeanima/shared/sap-contract";
+import { randomUuid } from "@freeanima/shared/rpc-contract";
 
 /** 导入素材的稳定 ID 与磁盘路径（显示名称单独存 config，改 name 不影响文件） */
 

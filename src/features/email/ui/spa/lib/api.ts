@@ -5,7 +5,7 @@ import {
   writeOfflineCache,
 } from "@freeanima/frontend/shell-sdk/offline-cache";
 
-import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 export type EmailAccountRow = {
   id: number;
@@ -81,7 +81,7 @@ export type EmailAccountPatchInput = {
 };
 
 function habitat() {
-  return getTypedSatelliteHabitatClient();
+  return getTypedHabitatClient();
 }
 
 function withSubjectKind<T extends Record<string, unknown>>(payload: T) {

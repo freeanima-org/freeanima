@@ -1,21 +1,21 @@
 import { describe, expect, it } from "bun:test";
 import {
-  sapAttachPayloadSchema,
-  sapAttachOutputSchema,
-  formatSapToolName,
+  remoteToolsAttachPayloadSchema,
+  remoteToolsAttachOutputSchema,
+  formatRemoteToolName,
   notificationListInputSchema,
   notificationMarkReadInputSchema,
   mapSapStreamMethodToApi,
   messageSendInputSchema,
-  parseSapEnvelope,
-  serializeSapEnvelope,
+  parseRpcEnvelope,
+  serializeRpcEnvelope,
   sessionAcpDockInputSchema,
   conversationCommandsInputSchema,
   toolRegisterInputSchema,
   habitatRpcConnectPayloadSchema,
   HABITAT_RPC_VERSION,
   HABITAT_RPC_VERSION_LEGACY,
-} from "@freeanima/shared/sap-contract";
+} from "@freeanima/shared/rpc-contract";
 
 describe("sap-contract envelopes", () => {
   it("round-trips req/res frames", () => {
@@ -25,7 +25,7 @@ describe("sap-contract envelopes", () => {
       method: "conversation.create",
       payload: { platform: "sap:chat:k7m" },
     };
-    const parsed = parseSapEnvelope(serializeSapEnvelope(frame));
+    const parsed = parseRpcEnvelope(serializeRpcEnvelope(frame));
     expect(parsed).toEqual(frame);
   });
 
@@ -45,8 +45,8 @@ describe("sap-contract envelopes", () => {
     expect(payload.protocol).toBe(HABITAT_RPC_VERSION_LEGACY);
   });
 
-  it("validates sap.attach payload", () => {
-    const payload = sapAttachPayloadSchema.parse({
+  it("validates remote_tools.attach payload", () => {
+    const payload = remoteToolsAttachPayloadSchema.parse({
       app_id: "companion",
       instance_id: "k7m",
       features_requested: [],
@@ -77,11 +77,13 @@ describe("sap-contract envelopes", () => {
   });
 
   it("formats sap tool names", () => {
-    expect(formatSapToolName("companion", "k7m", "scan_code")).toBe("sap_companion_k7m_scan_code");
+    expect(formatRemoteToolName("companion", "k7m", "scan_code")).toBe(
+      "sap_companion_k7m_scan_code",
+    );
   });
 
-  it("validates sap.attach output capability_mask presets shape", () => {
-    const parsed = sapAttachOutputSchema.parse({
+  it("validates remote_tools.attach output capability_mask presets shape", () => {
+    const parsed = remoteToolsAttachOutputSchema.parse({
       instance_id: "k7m",
       features_enabled: ["capability_mask"],
       server_info: {
@@ -95,8 +97,8 @@ describe("sap-contract envelopes", () => {
     expect(parsed.server_info?.capability_mask?.presets[0]?.name).toBe("developer");
   });
 
-  it("accepts legacy hub_rpc_version in sap.attach output", () => {
-    const parsed = sapAttachOutputSchema.parse({
+  it("accepts legacy hub_rpc_version in remote_tools.attach output", () => {
+    const parsed = remoteToolsAttachOutputSchema.parse({
       instance_id: "k7m",
       features_enabled: [],
       server_info: {

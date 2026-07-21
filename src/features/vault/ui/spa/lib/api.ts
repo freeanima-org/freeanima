@@ -9,11 +9,11 @@ import type {
   VaultPatchInput,
   VaultPatchPlainInput,
   VaultSecretsViewPayload,
-} from "@freeanima/shared/sap-contract";
+} from "@freeanima/shared/rpc-contract";
 import type { SubjectKind } from "@freeanima/frontend/shell-sdk";
-import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
-type VaultSapMethod =
+type VaultRpcMethod =
   | "vault.list"
   | "vault.get"
   | "vault.search"
@@ -27,10 +27,10 @@ type VaultSapMethod =
   | "vault.ensureAgent";
 
 async function vaultRequest<T>(
-  method: VaultSapMethod,
+  method: VaultRpcMethod,
   payload: Record<string, unknown>,
 ): Promise<T> {
-  return getTypedSatelliteHabitatClient().call(method as never, payload as never) as Promise<T>;
+  return getTypedHabitatClient().call(method as never, payload as never) as Promise<T>;
 }
 
 export async function fetchVaultItems(

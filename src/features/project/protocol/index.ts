@@ -1,3 +1,3 @@
-/** Project Feature Habitat RPC wire types — SSOT: `@freeanima/sap-contract/frames/project`. */
-export * from "@freeanima/shared/sap-contract/frames/project";
-export type { SapRequestContext } from "@freeanima/shared/sap-contract";
+/** Project Feature Habitat RPC wire types — SSOT: `@freeanima/shared/rpc-contract/frames/project`. */
+export * from "@freeanima/shared/rpc-contract/frames/project";
+export type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";

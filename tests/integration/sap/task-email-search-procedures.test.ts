@@ -1,14 +1,14 @@
 import { describe, expect, it } from "bun:test";
 import {
-  SAP_METHODS,
+  RPC_WIRE_METHODS,
   emailMessageSearchInputSchema,
   taskSearchInputSchema,
-} from "@freeanima/shared/sap-contract";
+} from "@freeanima/shared/rpc-contract";
 
 describe("task/email SAP search procedures", () => {
   it("registers task.search and email.message.search", () => {
-    expect(SAP_METHODS).toContain("task.search");
-    expect(SAP_METHODS).toContain("email.message.search");
+    expect(RPC_WIRE_METHODS).toContain("task.search");
+    expect(RPC_WIRE_METHODS).toContain("email.message.search");
   });
 
   it("validates task.search input", () => {

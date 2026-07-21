@@ -14,7 +14,7 @@ import { m } from "@paraglide/messages";
 import type {
   VaultItemDetailRowPayload,
   VaultItemMetaRowPayload,
-} from "@freeanima/shared/sap-contract";
+} from "@freeanima/shared/rpc-contract";
 
 import {
   createVaultItem,

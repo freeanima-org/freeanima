@@ -8,7 +8,7 @@ import type {
   AlertScheduleResult,
 } from "@freeanima/frontend/shell-sdk/alert/types.ts";
 import type {
-  SatelliteShellApi,
+  ShellApi,
   ShellNativeAlertPayload,
   ShellNativeAlertPermission,
 } from "@freeanima/frontend/shell-sdk/shell-api.ts";
@@ -187,7 +187,7 @@ function mapShellNativePermission(perm: AlertPermissionState): ShellNativeAlertP
 }
 
 /** bootstrap 注入：远程 Habitat 页通过 satelliteShell 调原生通知，不依赖 Web Notification API。 */
-export function attachMobileNativeAlertToShell(shell: SatelliteShellApi): SatelliteShellApi {
+export function attachMobileNativeAlertToShell(shell: ShellApi): ShellApi {
   if (!shell.isNativeShell) return shell;
   return {
     ...shell,

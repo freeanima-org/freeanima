@@ -3,15 +3,10 @@ import { randomUUID } from "node:crypto";
 import { omitUndefined } from "@freeanima/core/util";
 import { getLastMessageRole, getMaxMessagePos } from "@freeanima/core/db/pg/conversation";
 import { getConversationUpdatedAt } from "@freeanima/core/db/pg/conversation/repos/conversation-repo.ts";
-import type { SapServerDeps } from "@freeanima/platform/sap/types";
+import type { RemoteToolsServerDeps } from "@freeanima/platform/remote-tools/types";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
-import type { SapRouterOutputs } from "@freeanima/shared/sap-contract";
-import {
-  formatSapPlatform,
-  normalizeAppSlug,
-  resolveDefaultSapPlatform,
-  type SapRequestContext,
-} from "../../protocol/index.ts";
+import type { RpcRouterOutputs } from "@freeanima/shared/rpc-contract";
+import { type RemoteToolsRequestContext } from "../../protocol/index.ts";
 import { loadLlmDebugCache } from "../llm-debug-cache.ts";
 import { chatMethodDefs } from "../method-defs.ts";
 import { chatSessionPumps } from "../session-pumps.ts";
@@ -23,14 +18,14 @@ import {
 } from "../stream.ts";
 import { streamSessionRegistry } from "../stream-session-registry.ts";
 
-type ChatHubDeps = SapServerDeps;
+type ChatHubDeps = RemoteToolsServerDeps;
 
 function depsOf(deps: unknown): ChatHubDeps {
   return deps as ChatHubDeps;
 }
 
-function ctxOf(ctx: unknown): SapRequestContext {
-  return ctx as SapRequestContext;
+function ctxOf(ctx: unknown): RemoteToolsRequestContext {
+  return ctx as RemoteToolsRequestContext;
 }
 
 async function loadServiceSessions() {
@@ -46,14 +41,9 @@ async function loadServiceStatus() {
 }
 
 export const chatHubRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
-  "conversation.create": async (deps, input, ctx) => {
-    const sapCtx = ctxOf(ctx);
-    const platform = input.platform ?? formatSapPlatform(sapCtx.app_id, sapCtx.instance_id);
+  "conversation.create": async (deps, input, _ctx) => {
+    const platform = input.platform?.trim() || "chat";
     const platformExtra: Record<string, unknown> = {};
-    if (sapCtx.app_id.trim() && sapCtx.instance_id.trim()) {
-      platformExtra.satellite_app_id = normalizeAppSlug(sapCtx.app_id);
-      platformExtra.satellite_instance_id = sapCtx.instance_id;
-    }
     if (input.workspace_root) platformExtra.workspace_root = input.workspace_root;
     if (input.workspace_gitignore !== undefined) {
       platformExtra.workspace_gitignore = input.workspace_gitignore;
@@ -74,9 +64,8 @@ export const chatHubRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
     }
     return { conversation_id: sid };
   },
-  "conversation.list": async (deps, input, ctx) => {
-    const sapCtx = ctxOf(ctx);
-    const platform = resolveDefaultSapPlatform(input.platform, sapCtx.app_id, sapCtx.instance_id);
+  "conversation.list": async (deps, input, _ctx) => {
+    const platform = input.platform?.trim() || undefined;
     const serviceSessions = await loadServiceSessions();
     const result = await serviceSessions.listConversations(
       depsOf(deps).runtime.runtimeDeps(),
@@ -108,7 +97,7 @@ export const chatHubRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
         before_pos: input.before_pos,
       }),
     );
-    return messages as SapRouterOutputs["conversation.messages"];
+    return messages as RpcRouterOutputs["conversation.messages"];
   },
   "conversation.tail": async (deps, input) => {
     await resolveConversationPlatform(depsOf(deps), input.conversation_id);
@@ -174,9 +163,8 @@ export const chatHubRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
       platform,
     );
   },
-  "conversation.commands": async (_deps, input, ctx) => {
-    const sapCtx = ctxOf(ctx);
-    const platform = resolveDefaultSapPlatform(input.platform, sapCtx.app_id, sapCtx.instance_id);
+  "conversation.commands": async (_deps, input, _ctx) => {
+    const platform = input.platform?.trim() || undefined;
     const serviceStatus = await loadServiceStatus();
     return serviceStatus.listCommands(
       omitUndefined({

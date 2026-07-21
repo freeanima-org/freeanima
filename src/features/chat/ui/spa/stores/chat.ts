@@ -1,7 +1,7 @@
 import { omitUndefined } from "@freeanima/core/util/omit-undefined";
 import type { DisplayItem, StreamApiEvent } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 import { pollUntilAssistantReply } from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
-import { randomUuid } from "@freeanima/shared/sap-contract";
+import { randomUuid } from "@freeanima/shared/rpc-contract";
 import { subscribeHabitatRpcConnectionState } from "@freeanima/shared/habitat-rpc";
 import { marked } from "marked";
 import { create } from "zustand";

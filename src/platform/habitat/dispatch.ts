@@ -1,9 +1,9 @@
-import type { SapMethod, SapRequestContext } from "@freeanima/shared/sap-contract";
+import type { RpcMethod, RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { getHubMethodDef, isHubMethod, type HubMethod } from "@freeanima/shared/habitat-contract";
 import { getFeatureRpcHandler } from "../features/registry.ts";
-import type { SapServerDeps } from "../sap/types.ts";
+import type { RemoteToolsServerDeps } from "../remote-tools/types.ts";
 
-export type HubDispatchContext = SapRequestContext & {
+export type HubDispatchContext = RemoteToolsRequestContext & {
   app_id: string;
   instance_id: string;
   /** HTTP REST 适配器注入；WS 无此字段 */
@@ -12,7 +12,7 @@ export type HubDispatchContext = SapRequestContext & {
 
 /** 统一 Habitat method dispatch（WS / HTTP 适配器共用入口） */
 export async function habitatDispatch(
-  deps: SapServerDeps,
+  deps: RemoteToolsServerDeps,
   method: string,
   payload: unknown,
   ctx: HubDispatchContext,
@@ -24,7 +24,7 @@ export async function habitatDispatch(
   const def = getHubMethodDef(hubMethod);
   const parsedInput = def.input.parse(payload);
 
-  const featureHandler = getFeatureRpcHandler(hubMethod as SapMethod);
+  const featureHandler = getFeatureRpcHandler(hubMethod as RpcMethod);
   if (featureHandler) {
     return featureHandler(deps, parsedInput, ctx);
   }

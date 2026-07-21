@@ -1,27 +1,27 @@
 import { describe, expect, it } from "bun:test";
 import {
-  SAP_METHODS,
+  RPC_WIRE_METHODS,
   diaryAppendInputSchema,
   diaryBlockCreateInputSchema,
   diaryBlockReorderInputSchema,
   diaryCreateInputSchema,
   diaryListInputSchema,
   diaryPatchInputSchema,
-} from "@freeanima/shared/sap-contract";
+} from "@freeanima/shared/rpc-contract";
 
 describe("diary SAP procedures", () => {
   it("registers diary.* methods", () => {
-    expect(SAP_METHODS).toContain("diary.list");
-    expect(SAP_METHODS).toContain("diary.create");
-    expect(SAP_METHODS).toContain("diary.append");
-    expect(SAP_METHODS).toContain("diary.patch");
-    expect(SAP_METHODS).toContain("diary.delete");
-    expect(SAP_METHODS).toContain("diary.get");
-    expect(SAP_METHODS).toContain("diary.search");
-    expect(SAP_METHODS).toContain("diary.blockCreate");
-    expect(SAP_METHODS).toContain("diary.blockPatch");
-    expect(SAP_METHODS).toContain("diary.blockDelete");
-    expect(SAP_METHODS).toContain("diary.blockReorder");
+    expect(RPC_WIRE_METHODS).toContain("diary.list");
+    expect(RPC_WIRE_METHODS).toContain("diary.create");
+    expect(RPC_WIRE_METHODS).toContain("diary.append");
+    expect(RPC_WIRE_METHODS).toContain("diary.patch");
+    expect(RPC_WIRE_METHODS).toContain("diary.delete");
+    expect(RPC_WIRE_METHODS).toContain("diary.get");
+    expect(RPC_WIRE_METHODS).toContain("diary.search");
+    expect(RPC_WIRE_METHODS).toContain("diary.blockCreate");
+    expect(RPC_WIRE_METHODS).toContain("diary.blockPatch");
+    expect(RPC_WIRE_METHODS).toContain("diary.blockDelete");
+    expect(RPC_WIRE_METHODS).toContain("diary.blockReorder");
   });
 
   it("validates diary procedure inputs", () => {

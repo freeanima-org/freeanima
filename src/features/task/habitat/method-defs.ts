@@ -41,7 +41,7 @@ import {
   taskSearchOutputSchema,
   taskUncompleteInputSchema,
   taskUncompleteOutputSchema,
-} from "@freeanima/shared/sap-contract/frames/task";
+} from "@freeanima/shared/rpc-contract/frames/task";
 
 import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
 

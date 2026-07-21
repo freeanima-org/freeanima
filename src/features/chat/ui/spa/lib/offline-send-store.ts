@@ -1,4 +1,4 @@
-import { randomUuid } from "@freeanima/shared/sap-contract";
+import { randomUuid } from "@freeanima/shared/rpc-contract";
 import { omitUndefined } from "@freeanima/core/util";
 import {
   enqueueOutboxOp,

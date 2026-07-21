@@ -5,8 +5,8 @@ import type {
   StreamApiEvent,
 } from "./types.ts";
 import { isHabitatFetchAvailable } from "@freeanima/frontend/shell-sdk/habitat-fetch-gate";
-import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
-import { getChatSapClient, chatPlatform } from "./sap-client.ts";
+import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getChatRpcStreamClient, chatPlatform } from "./sap-client.ts";
 import { m } from "./i18n.ts";
 import { omitUndefined } from "@freeanima/core/util";
 
@@ -38,7 +38,7 @@ function mapConversationList(raw: {
 }
 
 function habitat() {
-  return getTypedSatelliteHabitatClient();
+  return getTypedHabitatClient();
 }
 
 function requireHabitatFetch(method: string): void {
@@ -47,9 +47,9 @@ function requireHabitatFetch(method: string): void {
   }
 }
 
-/** WS-only 流式仍走 SapClient */
+/** WS-only 流式仍走 RpcStreamClient */
 function sap() {
-  return getChatSapClient();
+  return getChatRpcStreamClient();
 }
 
 export type { ConversationAcpDockSnapshot, StreamApiEvent } from "./types.ts";

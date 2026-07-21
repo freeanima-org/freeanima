@@ -8,12 +8,13 @@ For **FreeAnima users** — self-hosted deployment, talking to a digital life, c
 
 ## Guide — Usage and Maintenance
 
-| Topic        | File                                   |
-| ------------ | -------------------------------------- |
-| Installation | [guide/install.md](guide/install.md)   |
-| Security     | [guide/security.md](guide/security.md) |
-| Database     | [guide/database.md](guide/database.md) |
-| Service      | [guide/service.md](guide/service.md)   |
+| Topic        | File                                         |
+| ------------ | -------------------------------------------- |
+| Installation | [guide/install.md](guide/install.md)         |
+| Security     | [guide/security.md](guide/security.md)       |
+| Database     | [guide/database.md](guide/database.md)       |
+| Service      | [guide/service.md](guide/service.md)         |
+| Habitat RPC  | [guide/habitat-rpc.md](guide/habitat-rpc.md) |
 
 ## Concepts — Core Ideas
 
@@ -35,20 +36,6 @@ For **FreeAnima users** — self-hosted deployment, talking to a digital life, c
 | ----------------- | ------------------------------------------------ |
 | Mobile app        | [features/mobile-app.md](features/mobile-app.md) |
 | Desktop companion | [features/companion.md](features/companion.md)   |
-
-## SAP — Satellite Application Protocol
-
-| Topic            | File                                               |
-| ---------------- | -------------------------------------------------- |
-| Overview         | [sap/overview.md](sap/overview.md)                 |
-| Habitat RPC      | [sap/habitat-rpc.md](sap/habitat-rpc.md)           |
-| Transport        | [sap/transport.md](sap/transport.md)               |
-| RPC methods      | [sap/methods.md](sap/methods.md)                   |
-| Events           | [sap/events.md](sap/events.md)                     |
-| Tools            | [sap/tools.md](sap/tools.md)                       |
-| Satellite guide  | [sap/satellite-guide.md](sap/satellite-guide.md)   |
-| Frontend exports | [sap/frontend-exports.md](sap/frontend-exports.md) |
-| Security         | [sap/security-model.md](sap/security-model.md)     |
 
 ## Tools — Built-in Tools
 

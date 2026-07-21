@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk";
+import type { ShellApi } from "@freeanima/frontend/shell-sdk";
 
 import { isCompactLayoutViewport, isNativeShell, isWebShell } from "./platform.ts";
 
@@ -10,7 +10,7 @@ describe("task platform", () => {
 
   it("isNativeShell reads satelliteShell flag", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isNativeShell: true } as SatelliteShellApi,
+      satelliteShell: { isNativeShell: true } as ShellApi,
     } as unknown as Window;
     expect(isNativeShell()).toBe(true);
     (globalThis as { window: Window }).window = {} as unknown as Window;
@@ -19,7 +19,7 @@ describe("task platform", () => {
 
   it("isWebShell：Electron 不是 web", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: true, isNativeShell: false } as SatelliteShellApi,
+      satelliteShell: { isElectron: true, isNativeShell: false } as ShellApi,
       location: { origin: "https://example.com" },
       navigator: { userAgent: "Mozilla/5.0" },
     } as unknown as Window;
@@ -36,7 +36,7 @@ describe("task platform", () => {
 
   it("isWebShell：Capacitor 不是 web", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: false, isNativeShell: true } as SatelliteShellApi,
+      satelliteShell: { isElectron: false, isNativeShell: true } as ShellApi,
       location: { origin: "https://example.com" },
       navigator: { userAgent: "Mozilla/5.0" },
     } as unknown as Window;

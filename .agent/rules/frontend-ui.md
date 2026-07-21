@@ -56,5 +56,5 @@
 ## 禁止
 
 - DaisyUI class / `--color-base-*` / `data-theme`
-- 在 `ui-kit` 内 import `sap-contract`、Habitat API
+- 在 `ui-kit` 内 import `rpc-contract`、Habitat API
 - 在 `shell-ui` 内深路径 import satellite 源码（走 package export）

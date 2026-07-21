@@ -7,9 +7,9 @@ import type {
   SmartListRowPayload,
   TaskItemRowPayload,
   TaskItemSearchFiltersPayload,
-} from "@freeanima/shared/sap-contract/frames/task.ts";
+} from "@freeanima/shared/rpc-contract/frames/task.ts";
 
-import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 import {
   offlineCreateTaskItem,
@@ -62,7 +62,7 @@ export type TaskListRow = {
 export type TaskItemRow = TaskItemRowPayload;
 
 function habitat() {
-  return getTypedSatelliteHabitatClient();
+  return getTypedHabitatClient();
 }
 
 function withSubjectKind<T extends Record<string, unknown>>(payload: T) {

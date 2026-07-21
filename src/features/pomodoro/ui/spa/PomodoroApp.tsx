@@ -27,7 +27,7 @@ import {
   Switch,
 } from "@freeanima/frontend/ui-kit";
 import { openEntityResource } from "@freeanima/frontend/shell-ui/spa/features/open-entity-resource.ts";
-import { randomUuid } from "@freeanima/shared/sap-contract";
+import { randomUuid } from "@freeanima/shared/rpc-contract";
 
 import { TaskPickerDialog } from "./components/TaskPickerDialog.tsx";
 import {

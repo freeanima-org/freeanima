@@ -37,7 +37,7 @@
 - **Disable 纪律**（oxlint + review 把关）:
   - `oxlint-disable` / `eslint-disable` 行须含 `-- reason`
   - 禁止 `ts-ignore` / `ts-nocheck`；`ts-expect-error` 须同行说明
-  - 契约目录（`src/platform/ports/`、`habitat-contract/`、`sap-contract/`）禁止显式 `any`（`oxlint` `no-explicit-any`）
+  - 契约目录（`src/platform/ports/`、`habitat-contract/`、`rpc-contract/`）禁止显式 `any`（`oxlint` `no-explicit-any`）
 
 - **Failures**: always `toolError(msg)` → JSON `{"error":"..."}`
 - **Successes**: structured tools use `toolResult(obj)`; LLM-readable tools (`file_read`, `terminal_run`, `code_execute`, etc.) may return plain-text stdout
@@ -56,7 +56,7 @@
 | Meta fields holding id lists       | no                    | yes                 | `cached_toolsets`, `staged_toolsets`               |
 | TS types                           | `ToolSet`             | property `toolSets` | unrelated to id strings                            |
 
-**Multi-segment tool names:** `_` is standard (`mcp_{server}_{local}`, `acp_{agent}_{action}`, `sap_{app}_{instance}_{local}`). `:` only for SAP alias. `-` only in ToolSet ids (e.g. `fridge-magnet`), not in tool names. `/` forbidden.
+**Multi-segment tool names:** `_` is standard (`mcp_{server}_{local}`, `acp_{agent}_{action}`, `remote_{app}_{instance}_{local}`). `.` / `:` aliases for remote tools. `-` only in ToolSet ids (e.g. `fridge-magnet`), not in tool names. `/` forbidden.
 
 **Module files:** one ToolSet per register module — `src/capabilities/**/src/{toolset-id}.ts` matching `registerToolSet("…")` (composite ids: `memory_semantic` → `memory-semantic.ts`). Plural filenames allowed only for multi-id config (`default-conversation-toolsets.ts`).
 
@@ -83,7 +83,7 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 - **Port 方法名**（`searchFts`、`appendMessageReturningId` 等）与 **tool/REST 计算字段** 保持 camelCase
 - **Row 数据字段** 一律 snake_case；时间戳列统一 `created_at` / `updated_at`（以 [`src/core/db/schema/`](../../src/core/db/schema/) 为准）
 - **PG row 类型**：`src/core/db/schema/rows/*` 或 `typeof table.$inferSelect`；JSON 边界 `Date`↔ISO（见 drizzle-db）；禁止 camelCase→snake_case 字段改名表与 dual-key DbRow
-- **SAP / satellite wire**：capabilities 从 `@freeanima/sap-contract` re-export Payload；Habitat UI 从 `@freeanima/habitat-contract/api` 导入 Row / 响应类型
+- **Remote tools / feature wire**：capabilities 从 `@freeanima/rpc-contract` re-export Payload；Habitat UI 从 `@freeanima/habitat-contract/api` 导入 Row / 响应类型
 
 详情：[`drizzle-db.md`](drizzle-db.md) DbRow / FTS 列名约定。
 
@@ -99,7 +99,7 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | 安全   | 凭证路径不入 log / tool 返回；Habitat REST 输入校验；memory/self-layer 变更对照 [`identity.md`](../../docs/concepts/identity.md) |
 | 性能   | PG 查询热点（`src/core/db/pg`）；EventBus/Redis；流式 merge（`src/core/provider/stream-tools.ts`）                               |
-| 可测性 | colocated 单测 + `tests/integration/` 覆盖 boot / SAP 路径 gaps                                                                  |
+| 可测性 | colocated 单测 + `tests/integration/` 覆盖 boot / Habitat RPC 路径 gaps                                                          |
 
 **New PG domain**: `src/core/db/schema/{domain}` → repos in `src/core/db/pg/{domain}/` → barrel `index.ts` + `types.ts` → consumers import `@freeanima/core/db/pg/{domain}`。
 

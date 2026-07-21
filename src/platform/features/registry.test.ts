@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import type { SapRequestContext } from "@freeanima/shared/sap-contract";
+import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { listHubMethods } from "@freeanima/shared/habitat-contract";
 import { wsOnlyMethodDefs } from "@freeanima/shared/habitat-contract/registry/ws-only.ts";
 import { resetHubMethodRegistryForTests } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
 
-import type { SapServerDeps } from "../sap/types.ts";
+import type { RemoteToolsServerDeps } from "../remote-tools/types.ts";
 import { builtinFeaturePlugins } from "./builtin-plugins.ts";
 import { resetHubRouterForTests } from "../habitat/init.ts";
 import { resetCompiledHttpRoutes } from "../habitat/http-rest-router.ts";
@@ -22,7 +22,7 @@ describe("registerFeatures", () => {
     resetHubMethodRegistryForTests();
     resetHubRouterForTests();
     resetCompiledHttpRoutes();
-    const deps = {} as SapServerDeps;
+    const deps = {} as RemoteToolsServerDeps;
     const ctx = {
       app_id: "x",
       instance_id: "y",
@@ -33,7 +33,7 @@ describe("registerFeatures", () => {
         scopes: [],
       },
       sendEvent: () => {},
-    } satisfies SapRequestContext;
+    } satisfies RemoteToolsRequestContext;
     registerFeatures([
       {
         id: "mock",

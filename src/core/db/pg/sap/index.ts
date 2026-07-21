@@ -1,6 +1,6 @@
 export * from "./types.ts";
 export {
-  getSapInstance,
-  upsertSapInstance,
+  getRemoteToolInstance,
+  upsertRemoteToolInstance,
   listAllSapInstances,
 } from "./repos/sap-instance-repo.ts";

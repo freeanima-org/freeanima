@@ -45,7 +45,7 @@ let typedSatelliteClient: TypedHabitatClient | null = null;
 let typedSatelliteKey = "";
 
 /** Satellite UI 用 typed client（与 getSatelliteHabitatClient 共享 shell 解析） */
-export function getTypedSatelliteHabitatClient(
+export function getTypedHabitatClient(
   options: BundledHabitatClientOptions = {},
 ): TypedHabitatClient {
   const resolved = resolveBundledHabitatClientOptions({ profile: "satellite", ...options });

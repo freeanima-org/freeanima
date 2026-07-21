@@ -3,7 +3,7 @@ import {
   type DetailSaveStatus,
   type TaskDetailPanelProps,
 } from "@freeanima/features/task/ui/spa/components/TaskDetailPanel.tsx";
-import type { TaskItemRowPayload } from "@freeanima/shared/sap-contract/frames/task.ts";
+import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task.ts";
 
 export type { DetailSaveStatus };
 

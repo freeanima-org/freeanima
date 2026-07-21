@@ -4,7 +4,7 @@ import type { SapInstanceRow, SapInstanceUpsertInput } from "../types.ts";
 
 import { getDb } from "../../client.ts";
 
-export async function getSapInstance(instance_id: string): Promise<SapInstanceRow | null> {
+export async function getRemoteToolInstance(instance_id: string): Promise<SapInstanceRow | null> {
   const db = getDb();
   const rows = await db
     .select()
@@ -15,7 +15,7 @@ export async function getSapInstance(instance_id: string): Promise<SapInstanceRo
   return row ? row : null;
 }
 
-export async function upsertSapInstance(input: SapInstanceUpsertInput): Promise<void> {
+export async function upsertRemoteToolInstance(input: SapInstanceUpsertInput): Promise<void> {
   const db = getDb();
   const created_at = input.created_at ? new Date(input.created_at) : new Date();
   await db

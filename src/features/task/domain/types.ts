@@ -4,9 +4,9 @@ import type { TaskItemSearchFilters } from "@freeanima/core/db/schema";
 export type {
   TaskItemRowPayload as TaskItemRow,
   TaskListRowPayload as TaskListRow,
-} from "@freeanima/shared/sap-contract";
+} from "@freeanima/shared/rpc-contract";
 
-export type { SmartListRowPayload as SmartListRow } from "@freeanima/shared/sap-contract/frames/task.ts";
+export type { SmartListRowPayload as SmartListRow } from "@freeanima/shared/rpc-contract/frames/task.ts";
 
 export type TaskListCreateInput = {
   name: string;

@@ -1,5 +1,5 @@
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
-import type { SapRequestAuthContext } from "@freeanima/shared/sap-contract";
+import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 import {
   getHubMethodDef,
   resolveHubAuthPolicy,
@@ -8,7 +8,7 @@ import {
 
 import { handleHttpHabitatRestRequest } from "./http-rest-router.ts";
 import { matchHabitatHttpRoute } from "./http-rest-auth.ts";
-import type { SapServerDeps } from "../sap/types.ts";
+import type { RemoteToolsServerDeps } from "../remote-tools/types.ts";
 
 function parseBearerToken(req: Request): string | null {
   const auth = req.headers.get("Authorization") ?? req.headers.get("authorization");
@@ -20,7 +20,7 @@ function parseBearerToken(req: Request): string | null {
 async function resolveHttpRestAuth(
   req: Request,
   hubMethod: HubMethod,
-): Promise<SapRequestAuthContext | null | Response> {
+): Promise<RpcRequestAuthContext | null | Response> {
   const optional = resolveHubAuthPolicy(getHubMethodDef(hubMethod).meta) === "optional";
   const token = parseBearerToken(req);
   if (!token) {
@@ -38,7 +38,7 @@ async function resolveHttpRestAuth(
 /** GET/POST /rpc/v1/{path}：Habitat RPC REST（Bearer 鉴权，plain JSON 响应） */
 export async function handleHttpHabitatRestRequestWithAuth(
   req: Request,
-  deps: SapServerDeps,
+  deps: RemoteToolsServerDeps,
 ): Promise<Response> {
   const matched = matchHabitatHttpRoute(req);
   if (!matched) {

@@ -15,7 +15,7 @@ import {
   mergeFeatureRoutes,
   type HubRouteHandler,
 } from "@freeanima/shared/habitat-contract/route.ts";
-import type { SapRequestContext } from "@freeanima/shared/sap-contract";
+import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 
 import { authHasScope, type ServiceAuthContext } from "../habitat-api/auth-context.ts";
 import {
@@ -118,7 +118,7 @@ function qrRequest(ctx: HubDispatchContext, payload: { size?: number }): Request
 }
 
 function requireFullAuth(ctx: unknown): ServiceAuthContext {
-  const auth = (ctx as SapRequestContext).auth;
+  const auth = (ctx as RemoteToolsRequestContext).auth;
   if (!auth || !authHasScope(auth, "full")) {
     throw new ApiHandlerError(403, "full scope required", { code: "scope_forbidden" });
   }
@@ -129,7 +129,7 @@ const entitySearchHandler: AnyHubRouteHandler = (_deps, input, ctx) =>
   Promise.resolve(
     searchEntities(
       input as Parameters<typeof searchEntities>[0],
-      (ctx as SapRequestContext).auth ?? null,
+      (ctx as RemoteToolsRequestContext).auth ?? null,
     ),
   );
 

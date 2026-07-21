@@ -1,10 +1,10 @@
-/** Chat Feature Habitat RPC wire types — SSOT: `@freeanima/sap-contract/feature-rpc` (subset). */
-export * from "@freeanima/shared/sap-contract/frames/conversation";
-export * from "@freeanima/shared/sap-contract/frames/message";
-export * from "@freeanima/shared/sap-contract/frames/acp";
+/** Chat Feature Habitat RPC wire types — SSOT: `@freeanima/shared/rpc-contract/feature-rpc` (subset). */
+export * from "@freeanima/shared/rpc-contract/frames/conversation";
+export * from "@freeanima/shared/rpc-contract/frames/message";
+export * from "@freeanima/shared/rpc-contract/frames/acp";
 export {
-  formatSapPlatform,
+  formatRemotePlatform,
   normalizeAppSlug,
-  resolveDefaultSapPlatform,
-  type SapRequestContext,
-} from "@freeanima/shared/sap-contract";
+  resolveDefaultRemotePlatform,
+  type RemoteToolsRequestContext,
+} from "@freeanima/shared/rpc-contract";

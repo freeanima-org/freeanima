@@ -66,7 +66,7 @@ import {
 import { initAppLocale, m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@freeanima/features/chat/ui/spa/lib/input-draft.ts";
 import {
-  getChatSapClient,
+  getChatRpcStreamClient,
   subscribeShellConfigChanges,
 } from "@freeanima/features/chat/ui/spa/lib/sap-client.ts";
 import { LlmDebugPanel } from "@freeanima/features/chat/ui/spa/components/LlmDebugPanel.tsx";
@@ -306,7 +306,7 @@ export function ChatApp() {
       const result = await runBootstrapConversation({
         fetchConversations,
         whenReady: async () => {
-          await getChatSapClient().whenReady();
+          await getChatRpcStreamClient().whenReady();
         },
         createConversation: newConversationFn,
         selectConversation: async (conversationId) => {
@@ -319,7 +319,7 @@ export function ChatApp() {
         const createdId = useConversationsStore.getState().currentId;
         if (createdId) writeConversationToUrl(createdId);
       }
-      void getChatSapClient()
+      void getChatRpcStreamClient()
         .whenReady()
         .then(() => listConversationCommands())
         .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
@@ -545,7 +545,7 @@ export function ChatApp() {
     void (async () => {
       try {
         await loadConfig();
-        getChatSapClient();
+        getChatRpcStreamClient();
         setReady(true);
         void bootstrapConversation().catch((e) => {
           console.error("chat bootstrap:", e);

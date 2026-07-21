@@ -26,8 +26,8 @@ import {
   seedTempIdAllocatorFromIdMap,
 } from "@freeanima/frontend/shell-sdk/offline-temp-id";
 import { preferOnlineWrite } from "@freeanima/frontend/shell-sdk/prefer-online-write";
-import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
-import { randomUuid } from "@freeanima/shared/sap-contract";
+import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { randomUuid } from "@freeanima/shared/rpc-contract";
 
 import type { DiaryEntryRow, DiarySubjectKind, DiaryTextBlock } from "./format-diary.ts";
 
@@ -152,7 +152,7 @@ function scheduleFlush(scope: string): void {
 }
 
 function habitat() {
-  return getTypedSatelliteHabitatClient();
+  return getTypedHabitatClient();
 }
 
 /** temp 且尚无 id-map 时栖息地不认识该实体，只能走 outbox。 */

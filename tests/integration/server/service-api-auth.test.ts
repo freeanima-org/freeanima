@@ -8,15 +8,15 @@ import {
   registerFeatures,
   resetFeatureRegistryForTests,
 } from "@freeanima/platform/features";
-import { createSapBunHandlers } from "@freeanima/platform/sap/bun-route";
+import { createSapBunHandlers } from "@freeanima/platform/remote-tools/bun-route";
 import {
-  bindSapServerDeps,
-  clearSapServerDeps,
-  getSapServerDeps,
-} from "@freeanima/platform/sap/runtime-context";
-import { SapInstanceRegistry } from "@freeanima/platform/sap/instance-registry";
-import { HubSessionRegistry } from "@freeanima/platform/sap/habitat-session-registry";
-import type { SatelliteManager } from "@freeanima/capabilities/satellite";
+  bindRemoteToolsServerDeps,
+  clearRemoteToolsServerDeps,
+  getRemoteToolsServerDeps,
+} from "@freeanima/platform/remote-tools/runtime-context";
+import { RemoteInstanceRegistry } from "@freeanima/platform/remote-tools/instance-registry";
+import { HubSessionRegistry } from "@freeanima/platform/remote-tools/habitat-session-registry";
+import type { RemoteToolsManager } from "@freeanima/capabilities/remote-tools";
 
 import { bindHabitatRuntimeContext } from "@freeanima/features/habitat/habitat/habitat-api/handlers/runtime.ts";
 import { applyHttpAuth } from "@freeanima/features/habitat/habitat/habitat-api/http-dispatch.ts";
@@ -37,7 +37,7 @@ describePg("service API tokens", () => {
     const auth = await applyHttpAuth(req, "127.0.0.1", serviceAuth);
     if (auth.blocked) return auth.blocked;
     const authedReq = auth.req;
-    const sapDeps = getSapServerDeps();
+    const sapDeps = getRemoteToolsServerDeps();
     if (!sapDeps) return new Response("Not Found", { status: 404 });
     const sapHandlers = createSapBunHandlers(sapDeps);
     const sapRes = await sapHandlers.fetch(authedReq, undefined as never);
@@ -45,7 +45,7 @@ describePg("service API tokens", () => {
   }
 
   afterAll(async () => {
-    clearSapServerDeps();
+    clearRemoteToolsServerDeps();
     await endIntegrationCase();
   });
 
@@ -56,10 +56,10 @@ describePg("service API tokens", () => {
       registerFeatures(builtinFeaturePlugins);
       const runtime = getAppRuntime();
       runtime.markStarted();
-      bindSapServerDeps({
+      bindRemoteToolsServerDeps({
         runtime,
-        satelliteManager: runtime.fullDeps().satellite as SatelliteManager,
-        instanceRegistry: new SapInstanceRegistry(false),
+        remoteToolsManager: runtime.fullDeps().satellite as RemoteToolsManager,
+        instanceRegistry: new RemoteInstanceRegistry(false),
         hubSessionRegistry: new HubSessionRegistry(),
         animaVersion: "test",
         masks: runtime.fullDeps().masks,
@@ -67,7 +67,7 @@ describePg("service API tokens", () => {
     });
 
     afterEach(async () => {
-      clearSapServerDeps();
+      clearRemoteToolsServerDeps();
       resetFeatureRegistryForTests();
       await restoreIntegrationHome(prev);
     });

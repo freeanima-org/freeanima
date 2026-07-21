@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { z } from "zod";
 
-import type { SapRequestContext } from "@freeanima/shared/sap-contract";
-import type { SapServerDeps } from "@freeanima/platform/sap/types";
+import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
+import type { RemoteToolsServerDeps } from "@freeanima/platform/remote-tools/types";
 
 import { ApiHandlerError } from "../../habitat/habitat/habitat-api/handlers/errors.ts";
 import { resolveAssetFilePath } from "../domain/client-config.ts";
@@ -15,8 +15,8 @@ const companionAssetGetInputSchema = z.object({
   fileName: z.string().min(1),
 });
 
-function requireHttpRequest(ctx: SapRequestContext): Request {
-  const httpRequest = (ctx as SapRequestContext & { httpRequest?: Request }).httpRequest;
+function requireHttpRequest(ctx: RemoteToolsRequestContext): Request {
+  const httpRequest = (ctx as RemoteToolsRequestContext & { httpRequest?: Request }).httpRequest;
   if (!httpRequest) {
     throw new Error("companion binary hub method requires HTTP request context");
   }
@@ -24,9 +24,9 @@ function requireHttpRequest(ctx: SapRequestContext): Request {
 }
 
 export async function handleCompanionAssetGet(
-  _deps: SapServerDeps,
+  _deps: RemoteToolsServerDeps,
   payload: unknown,
-  _ctx: SapRequestContext,
+  _ctx: RemoteToolsRequestContext,
 ): Promise<Response> {
   const input = companionAssetGetInputSchema.parse(payload);
   const path = resolveAssetFilePath(input.kind, input.fileName);
@@ -45,9 +45,9 @@ export async function handleCompanionAssetGet(
 }
 
 export async function handleCompanionModelUpload(
-  _deps: SapServerDeps,
+  _deps: RemoteToolsServerDeps,
   _payload: unknown,
-  ctx: SapRequestContext,
+  ctx: RemoteToolsRequestContext,
 ): Promise<{ ok: true }> {
   const request = requireHttpRequest(ctx);
   let form: FormData;
@@ -69,9 +69,9 @@ export async function handleCompanionModelUpload(
 }
 
 export async function handleCompanionMotionImport(
-  _deps: SapServerDeps,
+  _deps: RemoteToolsServerDeps,
   _payload: unknown,
-  ctx: SapRequestContext,
+  ctx: RemoteToolsRequestContext,
 ): Promise<Record<string, unknown>> {
   const request = requireHttpRequest(ctx);
   let form: FormData;

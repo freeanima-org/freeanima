@@ -14,7 +14,7 @@ import { whenSatelliteHabitatRpcReady } from "@freeanima/frontend/shell-sdk/habi
 import {
   POMODORO_ACTIVE_CHANGED_EVENT,
   pomodoroActiveChangedEventSchema,
-} from "@freeanima/shared/sap-contract/frames/pomodoro";
+} from "@freeanima/shared/rpc-contract/frames/pomodoro";
 
 import { fetchPomodoroConfig } from "./lib/api.ts";
 import {

@@ -1,8 +1,8 @@
-import { browserSapInstanceStore } from "@freeanima/shared/sap-contract";
+import { browserRemoteInstanceStore } from "@freeanima/shared/rpc-contract";
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import { buildShellApiFields } from "@freeanima/frontend/shell-sdk/shell-api-fields";
 import { normalizeShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
-import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
+import type { ShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
 import {
   readStoredHabitatUrl,
   REMOTE_AUTH_TOKEN_KEY,
@@ -23,12 +23,9 @@ function reloadWebShellFromPrefs(): void {
 
 function shellExtras(
   hubOrigin: string,
-): Pick<
-  SatelliteShellApi,
-  "createFileInstanceStore" | "emitConfigChanged" | "listenConfigChanged"
-> {
+): Pick<ShellApi, "createFileInstanceStore" | "emitConfigChanged" | "listenConfigChanged"> {
   return {
-    createFileInstanceStore: (appId) => browserSapInstanceStore(hubOrigin, appId),
+    createFileInstanceStore: (appId) => browserRemoteInstanceStore(hubOrigin, appId),
     async emitConfigChanged(): Promise<void> {
       reloadWebShellFromPrefs();
       notifyShellConfigChanged();
@@ -52,7 +49,7 @@ export function normalizeWebHubUrl(raw: string): string {
   return `${url.protocol}//${url.host}`;
 }
 
-export function createWebShellStub(): SatelliteShellApi {
+export function createWebShellStub(): ShellApi {
   return {
     isElectron: false,
     habitatUrl: "",
@@ -63,10 +60,7 @@ export function createWebShellStub(): SatelliteShellApi {
   };
 }
 
-export function buildWebShellFromRaw(
-  habitatUrl: string,
-  remoteAuthToken: string,
-): SatelliteShellApi {
+export function buildWebShellFromRaw(habitatUrl: string, remoteAuthToken: string): ShellApi {
   const trimmedHub = habitatUrl.trim().replace(/\/$/, "");
   if (!trimmedHub) return createWebShellStub();
   const habitatWsUrl = resolveHabitatRpcWsUrl(trimmedHub);
@@ -80,15 +74,12 @@ export function buildWebShellFromRaw(
   };
 }
 
-export function buildWebShell(habitatUrl: string, remoteAuthToken: string): SatelliteShellApi {
+export function buildWebShell(habitatUrl: string, remoteAuthToken: string): ShellApi {
   const normalized = normalizeShellClientConfig({ habitatUrl, remoteAuthToken });
   return buildWebShellFromRaw(normalized.habitatUrl, normalized.remoteAuthToken);
 }
 
-export function installWebShellFromPrefs(
-  habitatUrl: string,
-  remoteAuthToken: string,
-): SatelliteShellApi {
+export function installWebShellFromPrefs(habitatUrl: string, remoteAuthToken: string): ShellApi {
   const shell = buildWebShellFromRaw(habitatUrl, remoteAuthToken);
   window.satelliteShell = shell;
   return shell;

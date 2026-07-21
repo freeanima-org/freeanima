@@ -24,7 +24,7 @@ import type { TaskItemSearchFilters } from "@freeanima/core/db/schema";
 import type { SubjectKind } from "@freeanima/core/config";
 import { resolveSubjectWorldId } from "@freeanima/core/config/world-context";
 import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
-import type { SapRequestAuthContext } from "@freeanima/shared/sap-contract";
+import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
 import type { RuntimeDeps } from "./runtime-deps.ts";
@@ -35,7 +35,7 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-function assertSubjectKindMatches(auth: SapRequestAuthContext, subject_kind?: SubjectKind): void {
+function assertSubjectKindMatches(auth: RpcRequestAuthContext, subject_kind?: SubjectKind): void {
   if (!subject_kind || subject_kind === auth.subject_type) return;
   if (auth.subject_type === "user" && subject_kind === "agent") return;
   throw new Error("FORBIDDEN_SUBJECT");
@@ -46,7 +46,7 @@ function resolveSubjectKind(subject_kind?: SubjectKind): SubjectKind {
 }
 
 async function taskWorldIdForAuth(
-  auth: SapRequestAuthContext,
+  auth: RpcRequestAuthContext,
   subject_kind?: SubjectKind,
 ): Promise<number> {
   const kind = resolveSubjectKind(subject_kind);

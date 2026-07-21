@@ -3,7 +3,7 @@ import type { ProjectStatus } from "@freeanima/core/db/schema/entity";
 export type {
   ProjectFolderRowPayload as ProjectFolderRow,
   ProjectRowPayload as ProjectRow,
-} from "@freeanima/shared/sap-contract/frames/project.ts";
+} from "@freeanima/shared/rpc-contract/frames/project.ts";
 
 export type ProjectFolderCreateInput = {
   name: string;

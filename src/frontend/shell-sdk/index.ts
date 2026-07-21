@@ -9,8 +9,8 @@ export type {
   CompanionRuntimeMessage,
   CompanionWindowRole,
   PatrolScreenInfo,
-  SapInstanceStore,
-  SatelliteShellApi,
+  RemoteInstanceStore,
+  ShellApi,
   ScreenPoint,
 } from "./shell-api.ts";
 

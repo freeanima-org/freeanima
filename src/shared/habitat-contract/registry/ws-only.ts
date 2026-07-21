@@ -1,21 +1,21 @@
 import {
-  sapAttachPayloadSchema,
-  sapAttachOutputSchema,
-} from "@freeanima/shared/sap-contract/frames/sap-session";
+  remoteToolsAttachPayloadSchema,
+  remoteToolsAttachOutputSchema,
+} from "@freeanima/shared/rpc-contract/frames/remote-tools-session";
 import {
   toolErrorInputSchema,
   toolRegisterInputSchema,
   toolRegisterOutputSchema,
   toolResultInputSchema,
   toolUnregisterInputSchema,
-} from "@freeanima/shared/sap-contract/frames/tool";
+} from "@freeanima/shared/rpc-contract/frames/tool";
 import {
   terminalAttachInputSchema,
   terminalAttachOutputSchema,
   terminalCloseInputSchema,
   terminalResizeInputSchema,
   terminalWriteInputSchema,
-} from "@freeanima/shared/sap-contract/frames/terminal";
+} from "@freeanima/shared/rpc-contract/frames/terminal";
 import { z } from "zod";
 
 import { defineHabitatMethod, wsOnlyMeta } from "../method-def.ts";
@@ -24,12 +24,12 @@ const okSchema = z.object({ ok: z.literal(true) });
 const sapDetachInputSchema = z.object({}).strict();
 
 export const wsOnlyMethodDefs = {
-  "sap.attach": defineHabitatMethod({
-    input: sapAttachPayloadSchema,
-    output: sapAttachOutputSchema,
+  "remote_tools.attach": defineHabitatMethod({
+    input: remoteToolsAttachPayloadSchema,
+    output: remoteToolsAttachOutputSchema,
     meta: wsOnlyMeta(),
   }),
-  "sap.detach": defineHabitatMethod({
+  "remote_tools.detach": defineHabitatMethod({
     input: sapDetachInputSchema,
     output: okSchema,
     meta: wsOnlyMeta(),

@@ -3,7 +3,7 @@ import {
   cacheSetJson,
   REDIS_CACHE_KEY_PREFIX,
 } from "@freeanima/platform/connectors/redis";
-import type { LlmDebugSnapshotPayload } from "@freeanima/shared/sap-contract/frames/message";
+import type { LlmDebugSnapshotPayload } from "@freeanima/shared/rpc-contract/frames/message";
 
 /** 滚动覆盖：每次写入重置 TTL */
 export const LLM_DEBUG_CACHE_TTL_SECONDS = 600;

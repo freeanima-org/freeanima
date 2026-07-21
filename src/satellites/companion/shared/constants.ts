@@ -50,7 +50,7 @@ export type ClientCompanionConfig = {
   /** @deprecated */ hub_url?: string;
   model_path: string;
   model_available: boolean;
-  sap_connected: boolean;
+  remote_tools_connected: boolean;
   fbx_import_available: boolean;
   active_model_id: string;
   models: ModelEntry[];

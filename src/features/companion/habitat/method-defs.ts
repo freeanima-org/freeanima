@@ -19,7 +19,7 @@ import {
   companionMotionSetSlotOutputSchema,
   companionSyncPullInputSchema,
   companionSyncPullOutputSchema,
-} from "@freeanima/shared/sap-contract/frames/companion";
+} from "@freeanima/shared/rpc-contract/frames/companion";
 import { z } from "zod";
 
 import {

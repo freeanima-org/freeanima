@@ -37,7 +37,7 @@ Windows 安装包需在目标机 **冷启动** 验证一次（无开发用 node_
 
 - 覆盖安装前：`--quit-for-install` 由 `electron/main-entry.ts` **先于** 主逻辑加载（避免旧版 main 启动即崩时无法响应安装器）。
 - 删旧目录失败（20 次重试后仍有残留）时 **中止安装** 并提示手动删除；日志：`%TEMP%\FreeAnima-Desktop-install.log`。
-- 首次启动未配置 Habitat API Token：打开 `/settings`（连接），companion SAP **延后连接**（有 token 后再 `reconnectCompanionSap`）。
+- 首次启动未配置 Habitat API Token：打开 `/settings`（连接），companion 远程工具 **延后连接**（有 token 后再 `reconnectCompanionRemoteTools`）。
 - 主窗口 UI：默认本地 `vendor/shell-ui`（来自 `web/dist`）；调试用 `DESKTOP_SHELL_VITE_URL` 或 `DESKTOP_UI_MODE=remote`。
 
 ## 主进程 TLS（mkcert / 系统 CA）

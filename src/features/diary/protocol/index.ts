@@ -1,3 +1,3 @@
-/** Diary Feature Habitat RPC wire types — SSOT: `@freeanima/sap-contract/feature-rpc` (subset). */
-export * from "@freeanima/shared/sap-contract/frames/diary";
-export type { SapRequestContext } from "@freeanima/shared/sap-contract";
+/** Diary Feature Habitat RPC wire types — SSOT: `@freeanima/shared/rpc-contract/feature-rpc` (subset). */
+export * from "@freeanima/shared/rpc-contract/frames/diary";
+export type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";

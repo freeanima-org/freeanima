@@ -10,7 +10,7 @@ import {
   type OfflineOutboxOp,
 } from "@freeanima/frontend/shell-sdk/offline-outbox";
 import { flushOfflineModule } from "@freeanima/frontend/shell-sdk/offline-sync";
-import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 import { POMODORO_OUTBOX_MODULE_ID } from "./pomodoro-offline-store.ts";
 
@@ -54,7 +54,7 @@ async function flushPomodoroOp(
   op: OfflineOutboxOp,
   _scope: string,
 ): Promise<import("@freeanima/frontend/shell-sdk/offline-module-types").FlushOpOutcome> {
-  const hub = getTypedSatelliteHabitatClient();
+  const hub = getTypedHabitatClient();
   try {
     await hub.call(op.method as "pomodoro.config.update", {
       ...op.payload,
@@ -74,7 +74,7 @@ export const pomodoroRpcAdapter: RpcModuleAdapter = {
   compactOutbox: compactPomodoroOutbox,
   flushOp: async (op, ctx) => flushPomodoroOp(op, ctx.scope),
   refreshAll: async (scope) => {
-    const hub = getTypedSatelliteHabitatClient();
+    const hub = getTypedHabitatClient();
     for (const subjectKind of ["user", "agent"] as const) {
       try {
         const [configData, sessions, statsToday, statsWeek] = await Promise.all([

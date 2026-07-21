@@ -1,7 +1,7 @@
 import {
   sessionAcpDockInputSchema,
   sessionAcpDockOutputSchema,
-} from "@freeanima/shared/sap-contract/frames/acp";
+} from "@freeanima/shared/rpc-contract/frames/acp";
 import {
   conversationArchiveInputSchema,
   conversationCommandsInputSchema,
@@ -20,7 +20,7 @@ import {
   conversationUnarchiveInputSchema,
   conversationCommandInputSchema,
   conversationCommandOutputSchema,
-} from "@freeanima/shared/sap-contract/frames/conversation";
+} from "@freeanima/shared/rpc-contract/frames/conversation";
 import {
   llmDebugGetInputSchema,
   llmDebugGetOutputSchema,
@@ -32,7 +32,7 @@ import {
   streamAttachOutputSchema,
   streamLookupInputSchema,
   streamLookupOutputSchema,
-} from "@freeanima/shared/sap-contract/frames/message";
+} from "@freeanima/shared/rpc-contract/frames/message";
 import { z } from "zod";
 
 import {

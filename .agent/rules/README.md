@@ -12,7 +12,7 @@ Detailed implementation constraints for AI agents working in this repository. St
 | [`packages.md`](packages.md)                                                         | New workspace package or rename (RFC #1)                                            |
 | [`code-layers.md`](code-layers.md)                                                   | Six-layer deps, composition root, Registry injection                                |
 | [`docs/concepts/repository-topology.md`](../../docs/concepts/repository-topology.md) | Repo layout Phase 0 audit; shared/frontend migration; checker rewrite spec          |
-| [`frontend-features.md`](frontend-features.md)                                       | 前端功能原型 A/B/C、SAP vs habitat-rest 通道、新功能 touch 清单                     |
+| [`frontend-features.md`](frontend-features.md)                                       | 前端功能原型 A/B/C、Feature RPC vs Habitat 通道、新功能 touch 清单                  |
 | [`frontend-ui.md`](frontend-ui.md)                                                   | DaisyUI 基元约定、`ui-kit/composite` 复合组件、Modal/空态规范                       |
 | [`ui-dimensions.md`](ui-dimensions.md)                                               | 壳子/布局/交互三维度正交、API 映射、旧名→新名                                       |
 | [`release.md`](release.md)                                                           | SemVer, Conventional Commits, Release Please, Linux standalone                      |

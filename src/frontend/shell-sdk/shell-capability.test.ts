@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import type { SatelliteShellApi } from "@freeanima/frontend/shell-sdk";
+import type { ShellApi } from "@freeanima/frontend/shell-sdk";
 
 import { hasEnterToSendCapability, hasFinePointerCapability } from "./shell-capability.ts";
 
@@ -23,7 +23,7 @@ describe("shell-capability", () => {
     delete (globalThis as { window?: Window }).window;
   });
 
-  function installWindow(shell?: SatelliteShellApi) {
+  function installWindow(shell?: ShellApi) {
     (globalThis as { window: Window }).window = {
       ...(shell ? { satelliteShell: shell } : {}),
       matchMedia: () =>
@@ -41,13 +41,13 @@ describe("shell-capability", () => {
   }
 
   it("Electron 窄窗仍为 pointer（与布局正交）", () => {
-    installWindow({ isElectron: true } as SatelliteShellApi);
+    installWindow({ isElectron: true } as ShellApi);
     mockMedia(false);
     expect(hasFinePointerCapability()).toBe(true);
   });
 
   it("Capacitor 宽屏（如 iPad）仍为 touch", () => {
-    installWindow({ isNativeShell: true, isElectron: false } as SatelliteShellApi);
+    installWindow({ isNativeShell: true, isElectron: false } as ShellApi);
     mockMedia(true);
     expect(hasFinePointerCapability()).toBe(false);
   });
@@ -69,7 +69,7 @@ describe("shell-capability", () => {
   });
 
   it("Capacitor 宽屏仍不 Enter 发送", () => {
-    installWindow({ isNativeShell: true, isElectron: false } as SatelliteShellApi);
+    installWindow({ isNativeShell: true, isElectron: false } as ShellApi);
     mockMedia(true);
     expect(hasEnterToSendCapability()).toBe(false);
   });

@@ -1,17 +1,17 @@
-import type { NotificationRecipientKind } from "@freeanima/shared/sap-contract/frames/notification";
+import type { NotificationRecipientKind } from "@freeanima/shared/rpc-contract/frames/notification";
 
 export type SubjectKind = NotificationRecipientKind;
 import type {
   ProjectFolderRowPayload,
   ProjectRowPayload,
-} from "@freeanima/shared/sap-contract/frames/project";
-import type { TaskItemRowPayload } from "@freeanima/shared/sap-contract/frames/task";
+} from "@freeanima/shared/rpc-contract/frames/project";
+import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task";
 
 import { resolveHabitatCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
 import { isHabitatFetchAvailable } from "@freeanima/frontend/shell-sdk/habitat-fetch-gate";
 import { isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
-import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 import {
   offlineCreateProject,
@@ -70,7 +70,7 @@ function ensureProjectOfflineModule(): void {
 }
 
 function habitat() {
-  return getTypedSatelliteHabitatClient();
+  return getTypedHabitatClient();
 }
 
 export async function fetchProjectFolders(subjectKind: SubjectKind): Promise<ProjectFolderRow[]> {
