@@ -15,7 +15,9 @@ export default function CompanionClientSettingsSection({ store }: SettingsPanelP
 
   useEffect(() => {
     let cancelled = false;
-    void (async () => {
+    let unsubConfig: (() => void) | undefined;
+
+    const refresh = async (): Promise<void> => {
       try {
         if (store) {
           const raw = (await store.load()) as CompanionShellSettings;
@@ -31,9 +33,19 @@ export default function CompanionClientSettingsSection({ store }: SettingsPanelP
       } finally {
         if (!cancelled) setReady(true);
       }
-    })();
+    };
+
+    void refresh();
+    const shell = window.satelliteShell;
+    if (shell?.listenConfigChanged) {
+      unsubConfig = shell.listenConfigChanged(() => {
+        void refresh();
+      });
+    }
+
     return () => {
       cancelled = true;
+      unsubConfig?.();
     };
   }, [store]);
 

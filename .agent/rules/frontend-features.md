@@ -5,7 +5,7 @@
 ## 决策树
 
 1. 是否需要用户可见的产品 CRUD + 实时 Habitat WS？→ **原型 A（Feature RPC）**
-2. 是否需要 SAP attach 的独立卫星进程/壳？→ **原型 A′（SAP satellite）** — 仅 `companion`
+2. 是否需要 SAP attach 的本地工具反向调用？→ **原型 A′（SAP attach host）** — 仅 `companion`（壳主进程内嵌，非独立 sidecar 进程）
 3. 是否是运维/配置/记忆管理类 UI（Habitat）？→ **原型 B（Habitat RPC）** — 与原型 A 相同 wire，handler 在 `console/plugin.hub.rpc`
 4. 是否仅是壳层设置（Habitat URL、debug）？→ **原型 C（shell-sdk settings）**
 
@@ -25,15 +25,17 @@
 
 **不要**：在 `shell-ui` 内 `import @freeanima/sap-contract`；在 capabilities 内 import platform；新建 `satellite-*` 做 chat/task 等产品面。
 
-## 原型 A′ — SAP attach 卫星
+## 原型 A′ — SAP attach 宿主（仅 companion）
 
-**示例**：companion
+**示例**：companion（Electron main 同进程 `createSatelliteHub`；overlay 经 IPC 收 runtime）
 
-| 层                       | 必须改                                       |
-| ------------------------ | -------------------------------------------- |
-| `sap-contract`           | `satellite/` + `frames/*` attach 相关 schema |
-| `src/satellites/<name>/` | `sap-client` + UI（仅白名单目录）            |
-| `shell-ui`               | 路由 + `@freeanima/satellite-*/app`          |
+| 层                       | 必须改                                                           |
+| ------------------------ | ---------------------------------------------------------------- |
+| `sap-contract`           | `satellite/` + `frames/*` attach / tool schema                   |
+| `src/satellites/<name>/` | attach host + UI（仅白名单；**禁止**再加独立 sidecar 进程）      |
+| 桌面壳                   | preload IPC / 静态资产 HTTP；产品面仍走 Feature RPC，不做 attach |
+
+**不要**：为 Chat/Task 等产品面新建 `satellites/*` 或 `sap.attach`；不要把 attach 放进 renderer。
 
 ## 原型 B — Habitat 运维面（Habitat RPC）
 

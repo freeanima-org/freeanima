@@ -6,6 +6,7 @@ import * as shellApi from "./shell-api.ts";
 void shellApi;
 
 export type {
+  CompanionRuntimeMessage,
   CompanionWindowRole,
   PatrolScreenInfo,
   SapInstanceStore,

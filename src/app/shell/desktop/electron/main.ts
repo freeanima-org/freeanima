@@ -20,6 +20,7 @@ import {
   registerCompanionHostIpc,
   startCompanionCursorPoll,
 } from "./companion-host.ts";
+import { registerCompanionRuntimeIpc } from "./companion-runtime-ipc.ts";
 import { registerInstanceStoreIpc } from "./instance-store-ipc.ts";
 import { clearAllScheduledNativeAlerts, registerAlertIpc } from "./alert-ipc.ts";
 import { attachWindowDevTools } from "./devtools.ts";
@@ -432,6 +433,7 @@ async function bootstrap(): Promise<void> {
       broadcast,
     },
   );
+  registerCompanionRuntimeIpc(() => companionWindow);
 
   try {
     serverHandle = await startCompanionSidecar();

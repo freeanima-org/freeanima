@@ -1,4 +1,4 @@
-/** 文字气泡与动作播放队列（sidecar 内存；SAP tool 写入，UI 经 WebSocket 推送） */
+/** 文字气泡与动作播放队列（host 内存；SAP tool 写入，UI 经 IPC 或 WebSocket 推送） */
 
 import { broadcastRuntime, runtimeWsPayload } from "./runtime-ws.ts";
 

@@ -81,7 +81,7 @@ flowchart LR
   StreamDone --> DoneEvent
 ```
 
-Type B satellites with relay may fan out Habitat `stream.*` events over `/sap/relay/v1` (see [`satellite-relay-server.ts`](../../src/shared/sap-contract/satellite-relay-server.ts)); the browser uses `createSapRelayBrowserClient` and `mapSapStreamMethodToApi`.
+Hosts with `relay: true` may fan out Habitat `stream.*` events over `/sap/relay/v1` (see [`satellite-relay-server.ts`](../../src/shared/sap-contract/satellite-relay-server.ts)). **Companion does not use relay**; bundled Chat uses Habitat RPC stream helpers instead.
 
 ## Session events
 

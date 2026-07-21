@@ -1,8 +1,11 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { createSatelliteHub, type SatelliteHubHandle } from "@freeanima/shared/sap-contract";
-import { fileSapInstanceStore } from "@freeanima/shared/sap-contract/file-instance-store";
+import {
+  createSatelliteHub,
+  type SatelliteHubHandle,
+} from "@freeanima/shared/sap-contract/satellite-hub.ts";
+import { fileSapInstanceStore } from "@freeanima/shared/sap-contract/file-instance-store.ts";
 import { remoteAuthTokenFromShell } from "../config.ts";
 import { executeCompanionTool } from "../tools/executor.ts";
 
@@ -92,10 +95,9 @@ export function reconnectSap(habitatUrl: string, httpUrl?: string): void {
     hub = null;
     return;
   }
-  if (hub) {
-    hub.reconnect(habitatUrl, httpUrl);
-    return;
-  }
+  // 设置变更后 token 可能更新；重建 hub 以读取 remoteAuthTokenFromShell()
+  hub?.stop();
+  hub = null;
   ensureHub(habitatUrl, httpUrl);
 }
 

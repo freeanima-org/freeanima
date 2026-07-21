@@ -14,6 +14,13 @@ import { getCompanionManifest } from "./manifest.ts";
 export { startCompanionServer };
 export type { CompanionServerHandle } from "../../server/index.ts";
 export { reconnectSap as reconnectCompanionSap } from "../../server/sap/hub.ts";
+export { isSapConnected as isCompanionSapConnected } from "../../server/sap/hub.ts";
+export { advanceBubble, bubbleState } from "../../server/runtime-state.ts";
+export {
+  addRuntimeExternalListener,
+  runtimeWsPayload,
+  type RuntimeWsMessage,
+} from "../../server/runtime-ws.ts";
 
 export const companionDesktopExport: FrontendDesktopExport = {
   manifest: getCompanionManifest(),
