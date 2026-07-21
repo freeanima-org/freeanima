@@ -119,11 +119,11 @@ Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platfo
 | Shell（壳子维）  | Yes                                | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Habitat wiring | preload/IPC                             |
 | Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                                                    | Habitat RPC（Feature RPC）              |
 | Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.hub.rpc`）                            | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
-| 卫星应用         | Sidecar only                       | `src/satellites/companion`                                                 | Habitat RPC + SAP attach                |
+| Companion host   | In-process (Electron main)         | `src/satellites/companion`                                                 | Habitat RPC + SAP attach                |
 
 导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `isElectron` / `getShellKind()` 锁 Shell 布局。交互（右键/长按/Enter）用 shell-sdk 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
 
-**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Habitat；**SAP attach / tool.\*** 协议由 companion 等卫星 sidecar 使用。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
+**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Habitat；**SAP attach / tool.\*** 仅 companion 宿主（与 Portal 壳主进程同进程，非独立 sidecar 进程）。产品面（Chat 等）**不做** attach。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
 
 ### Habitat navigation ↔ cognitive layers
 
@@ -350,7 +350,7 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 | Mobile APK   | **安装包内** Capacitor `www/web`（本地同源）；Habitat 仅 API                                                          | 同上轨语义；有 APK asset 才提示；确认后系统安装器覆盖；可切换轨；同上代理选择                                                                                                         |
 | Standalone   | 嵌入 Web UI 的单文件 `anima`                                                                                          | `anima upgrade` / `--channel release\|canary` / `--proxy …`；`dev` / 源码安装不可换轨；curl 安装脚本可用 `PROXY=…`                                                                    |
 
-壳层保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 sidecar 等）。**无壳内 UI OTA**：原生端不从 Habitat 热替换 SPA。允许**用户确认后**的安装包级覆盖（Desktop NSIS / Mobile APK / Standalone `anima upgrade` → 独立前缀如 `~/.anima/standalone`）。分发轨 SSOT 为安装包 bake 的 `build-meta.channel`（`release` / `canary` / `dev`）。Habitat 配置统一走 settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
+壳层保留原生能力（Electron preload、Capacitor Preferences/Keyboard、伴侣 in-process host 等）。**无壳内 UI OTA**：原生端不从 Habitat 热替换 SPA。允许**用户确认后**的安装包级覆盖（Desktop NSIS / Mobile APK / Standalone `anima upgrade` → 独立前缀如 `~/.anima/standalone`）。分发轨 SSOT 为安装包 bake 的 `build-meta.channel`（`release` / `canary` / `dev`）。Habitat 配置统一走 settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
 
 ### 两层模型
 
@@ -394,18 +394,18 @@ Complementary: Pipeline Runner handles scheduled multi-step background work; Hoo
 
 ## Desktop companion (Habitat SSOT)
 
-The desktop companion is a **dynamic SAP Type B satellite** with a split boundary:
+The desktop companion is a **dynamic SAP attach host** embedded in Electron main (not a separate Node process), with a split boundary:
 
-| Concern                             | Habitat (`src/features/companion/`)           | Local device                              |
-| ----------------------------------- | --------------------------------------------- | ----------------------------------------- |
-| Behavior, slots, active model       | `companion_profile` entity + Habitat RPC      | Cache in `~/.anima/companion/config.json` |
-| VRM / VRMA library                  | Files on Habitat host + content-hash metadata | Lazy download to desktop cache            |
-| FBX → VRMA                          | Habitat service only                          | Not bundled in desktop installer          |
-| Settings UI                         | Habitat RPC + `/rpc/v1/companion/*` upload    | Desktop Settings section (not Habitat)    |
-| VRM render, float window, patrol    | —                                             | Electron + overlay SPA                    |
-| Agent tools (`bubble`, `play_slot`) | SAP route                                     | Thin sidecar executes + runtime WS        |
+| Concern                             | Habitat (`src/features/companion/`)           | Local device                                      |
+| ----------------------------------- | --------------------------------------------- | ------------------------------------------------- |
+| Behavior, slots, active model       | `companion_profile` entity + Habitat RPC      | Cache in `~/.anima/companion/config.json`         |
+| VRM / VRMA library                  | Files on Habitat host + content-hash metadata | Lazy download to desktop cache                    |
+| FBX → VRMA                          | Habitat service only                          | Not bundled in desktop installer                  |
+| Settings UI                         | Habitat RPC + `/rpc/v1/companion/*` upload    | Desktop Settings section (not Habitat)            |
+| VRM render, float window, patrol    | —                                             | Electron + overlay SPA                            |
+| Agent tools (`bubble`, `play_slot`) | SAP `tool.*` after `sap.attach`               | In-process host executes; Electron IPC to overlay |
 
-Multiple desktops share one library; each machine keeps its own `instance_id` for SAP. See [`companion.md`](../features/companion.md).
+**SAP ≠ Portal**: the shell is a Portal; Chat/Settings use Habitat RPC only. SAP attach exists solely so Habitat can reverse-call local tools on this machine. Multiple desktops share one library; each machine keeps its own `instance_id`. See [`companion.md`](../features/companion.md).
 
 ## Direction
 

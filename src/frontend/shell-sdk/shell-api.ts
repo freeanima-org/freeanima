@@ -21,6 +21,17 @@ export type PatrolScreenInfo = {
 
 export type CompanionWindowRole = "overlay" | "settings";
 
+/** companion host → overlay runtime 推送（与 RuntimeWsMessage 对齐） */
+export type CompanionRuntimeMessage = {
+  type: "runtime";
+  bubble: {
+    current: { id: string; text: string; createdAt: number } | null;
+    pending: number;
+    version: number;
+  };
+  play: Array<{ id: string; slot: string; motionId?: string }>;
+};
+
 export type ShellNativeAlertPayload = {
   title: string;
   body?: string;
@@ -54,6 +65,14 @@ export type SatelliteShellApi = {
   windowRole?: CompanionWindowRole | null;
   /** companion sidecar HTTP 根；其他前端为 null */
   apiOrigin?: string | null;
+  /** Electron：订阅 companion runtime（bubble / play_slot）；返回取消函数 */
+  listenCompanionRuntime?: (handler: (message: CompanionRuntimeMessage) => void) => () => void;
+  /** Electron：点击气泡下一条（等价 POST /api/bubbles/advance） */
+  advanceCompanionBubble?: () => Promise<{
+    current: { id: string; text: string; createdAt: number } | null;
+  }>;
+  /** Electron：拉取当前 runtime 快照（订阅前补一次） */
+  getCompanionRuntimeSnapshot?: () => Promise<CompanionRuntimeMessage>;
   createFileInstanceStore(appId: string): SapInstanceStore;
   /** 移动端：打开 连接设置页 */
   openHabitatSettings?: () => void;

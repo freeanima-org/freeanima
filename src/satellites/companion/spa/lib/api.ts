@@ -220,6 +220,10 @@ export function runtimeWsUrl(httpOrigin: string): string {
 }
 
 export async function advanceBubble() {
+  const shell = window.satelliteShell;
+  if (shell?.isElectron && shell.advanceCompanionBubble) {
+    return shell.advanceCompanionBubble();
+  }
   const base = await resolveSidecarOrigin();
   const res = await fetch(`${base}/api/bubbles/advance`, { method: "POST" });
   if (!res.ok) {

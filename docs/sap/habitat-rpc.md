@@ -4,21 +4,21 @@ title: Habitat RPC
 
 # Habitat RPC
 
-**Habitat RPC** (`HubRPC/1.0`) is the **single business channel** between Habitat clients and the agent runtime. Transport:
+**Habitat RPC** is the **single business channel** between Habitat clients and the agent runtime. The TypeScript constant is `HABITAT_RPC_VERSION`; the wire connect literal is still the historical value `"HubRPC/1.0"` (legacy name — do not use HubRPC as the product term). Transport:
 
-- **WebSocket** — long-lived connection at **`/rpc/v1`** (connect handshake + heartbeat; HubRPC `req`/`res`/`evt` envelope)
+- **WebSocket** — long-lived connection at **`/rpc/v1`** (connect handshake + heartbeat; Habitat RPC `req`/`res`/`evt` envelope)
 - **HTTP REST** — stateless GET/POST at **`/rpc/v1/{method/path}`** (plain JSON body or query; `Authorization: Bearer`)
 
 Implemented in [`src/shared/habitat-rpc/`](../../src/shared/habitat-rpc/) (WS envelope + HTTP REST helpers) and [`src/platform/habitat/http-rest-router.ts`](../../src/platform/habitat/http-rest-router.ts) (HTTP adapter).
 
 Binary HTTP methods (e.g. `tts.synthesize`, companion assets, TLS PEM/QR) use Habitat RPC REST with registry `request` / `response` encoding. Public probes (`health.probe`, `tls.ca.*`) are Habitat RPC methods with `auth: optional` — `GET /rpc/v1/health/probe`, `GET /rpc/v1/tls/ca`, etc.
 
-SAP (`SAP/1.0`) is a **session layer** on top of Habitat RPC WebSocket: true satellites call `sap.attach` after connect; bundled SPA modules **never** attach.
+SAP is a **session layer** on top of Habitat RPC WebSocket: the companion host calls `sap.attach` after connect; bundled SPA modules **never** attach.
 
 ## Endpoints
 
 ```text
-ws://{hub_host}:{port}/rpc/v1              # WebSocket upgrade (HubRPC envelope)
+ws://{hub_host}:{port}/rpc/v1              # WebSocket upgrade (Habitat RPC envelope)
 http://{hub_host}:{port}/rpc/v1/task/list  # GET (read-only methods)
 http://{hub_host}:{port}/rpc/v1/task/create # POST (write methods)
 ```
@@ -41,17 +41,17 @@ Habitat method `domain.action` maps to path **`/rpc/v1/domain/action`** (dots �
 
 Route metadata is generated from [`habitat-contract`](../../src/shared/habitat-contract/) (`meta.http`: `verb`, `path`, `pathParams`). Wrong verb on a known path → **405**; legacy `POST /rpc/v1` envelope → **410**.
 
-HTTP responses are **plain handler JSON** (not HubRPC `res` envelope). Errors: `{ "error": { "code", "message" } }` with 4xx/5xx status.
+HTTP responses are **plain handler JSON** (not Habitat RPC `res` envelope). Errors: `{ "error": { "code", "message" } }` with 4xx/5xx status.
 
 ## WebSocket envelope kinds
 
-| `kind`      | Direction        | Purpose                                                    |
-| ----------- | ---------------- | ---------------------------------------------------------- |
-| `connect`   | Client → Habitat | WS only: first frame; `protocol: HubRPC/1.0`, `auth_token` |
-| `connected` | Habitat → Client | WS only: `session_id`, `heartbeat_interval_sec`            |
-| `req`       | Client → Habitat | RPC (`id`, `method`, `payload`)                            |
-| `res`       | Habitat → Client | RPC reply                                                  |
-| `evt`       | Both             | Async event (WS only; incl. `heartbeat`)                   |
+| `kind`      | Direction        | Purpose                                                                                      |
+| ----------- | ---------------- | -------------------------------------------------------------------------------------------- |
+| `connect`   | Client → Habitat | WS only: first frame; `protocol` = `HABITAT_RPC_VERSION` (wire `"HubRPC/1.0"`), `auth_token` |
+| `connected` | Habitat → Client | WS only: `session_id`, `heartbeat_interval_sec`                                              |
+| `req`       | Client → Habitat | RPC (`id`, `method`, `payload`)                                                              |
+| `res`       | Habitat → Client | RPC reply                                                                                    |
+| `evt`       | Both             | Async event (WS only; incl. `heartbeat`)                                                     |
 
 HTTP REST uses Bearer on each GET/POST unless the method declares `auth: optional` (e.g. `health.probe`, `tls.ca.*`). WebSocket uses `connect` frame `auth_token` (required).
 
@@ -79,14 +79,14 @@ Helpers: `habitatRestUrl()`, `binaryHttpMeta()` / `rawPublicHttpMeta()` in habit
 
 ## Client profiles
 
-| Profile           | Package entry                                            | `sap.attach` | Typical consumer                               |
-| ----------------- | -------------------------------------------------------- | ------------ | ---------------------------------------------- |
-| Bundled SPA       | `getBundledHabitatRpcClient()` / `whenHabitatRpcReady()` | **No**       | Chat, task, notification, diary, email modules |
-| Satellite process | `createSatelliteHub()` in sap-contract                   | **Yes**      | companion                                      |
+| Profile                 | Package entry                                            | `sap.attach` | Typical consumer                               |
+| ----------------------- | -------------------------------------------------------- | ------------ | ---------------------------------------------- |
+| Bundled SPA             | `getBundledHabitatRpcClient()` / `whenHabitatRpcReady()` | **No**       | Chat, task, notification, diary, email modules |
+| Satellite / attach host | `createSatelliteHub()` in sap-contract                   | **Yes**      | companion (in-process with desktop shell)      |
 
 Bundled SPA shares **one** Habitat RPC WebSocket per page load (for streaming, subscriptions, and WS fallback). **`habitat-client.call()`** picks transport per method: **read-only** dual-transport methods default to **HTTP GET**; **writes** default to **WebSocket** (`dualTransportMeta` in habitat-contract). WS failure on a read-only call falls back to the other channel when `fallback` is enabled.
 
-Satellite processes connect with Habitat RPC, then `sap.attach` with `app_id` / `instance_id` before `tool.register` or instance-scoped methods.
+Satellite / companion hosts connect with Habitat RPC, then `sap.attach` with `app_id` / `instance_id` before `tool.register` or instance-scoped methods.
 
 ## Reconnect
 

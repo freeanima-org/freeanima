@@ -3,6 +3,7 @@ import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import type { SapInstanceStore } from "@freeanima/shared/sap-contract";
 import {
   buildShellApiFields,
+  type CompanionRuntimeMessage,
   type CompanionWindowRole,
   type SatelliteShellApi,
 } from "@freeanima/frontend/shell-sdk";
@@ -115,6 +116,21 @@ function createSatelliteShell(hubFields: PreloadHabitatFields): SatelliteShellAp
         ipcRenderer.removeListener("shell:server-error", listener);
       };
     },
+    listenCompanionRuntime: (handler) => {
+      const listener = (_event: Electron.IpcRendererEvent, message: CompanionRuntimeMessage) => {
+        handler(message);
+      };
+      ipcRenderer.on("companion:runtime", listener);
+      return () => {
+        ipcRenderer.removeListener("companion:runtime", listener);
+      };
+    },
+    advanceCompanionBubble: () =>
+      ipcRenderer.invoke("companion:bubbles-advance") as Promise<{
+        current: { id: string; text: string; createdAt: number } | null;
+      }>,
+    getCompanionRuntimeSnapshot: () =>
+      ipcRenderer.invoke("companion:runtime-snapshot") as Promise<CompanionRuntimeMessage>,
     showNativeAlert: (payload) => ipcRenderer.invoke("shell:alert:show", payload) as Promise<void>,
     requestNativeAlertPermission: () =>
       ipcRenderer.invoke("shell:alert:request-permission") as Promise<

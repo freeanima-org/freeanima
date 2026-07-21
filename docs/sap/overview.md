@@ -4,69 +4,71 @@ title: SAP Overview
 
 # SAP Overview
 
-**SAP** (Satellite Application Protocol, version `SAP/1.0`) is the WebSocket JSON protocol between the FreeAnima **Habitat** (`anima service`) and **Satellite** processes. Satellites are standalone apps (e.g. Chat) that expose their own HTTP UI while delegating agent runtime to the Habitat.
+**SAP** (Satellite Application Protocol) is the **optional session layer** on Habitat RPC WebSocket: a true satellite calls `sap.attach` after connect, then may register local tools (`tool.*`). Product UI modules (Chat, Task, Settings, …) use **Habitat RPC only** and **never** attach.
 
-Schemas and client SDK live in [`src/shared/sap-contract/`](../../src/shared/sap-contract/) (`./satellite` for attach/tool/terminal frames; `./feature-rpc` for bundled product Habitat RPC). Habitat server implementation: [`src/platform/sap/`](../../src/platform/sap/); feature handlers register via [`src/platform/features/`](../../src/platform/features/).
+Wire transport is **Habitat RPC** (`HABITAT_RPC_VERSION`; historical wire literal `"HubRPC/1.0"` — legacy name, keep for compatibility). Schemas live in [`src/shared/sap-contract/`](../../src/shared/sap-contract/) (`./satellite` for attach/tool frames; `./feature-rpc` for bundled Habitat RPC). Habitat server: [`src/platform/sap/`](../../src/platform/sap/).
+
+Today the **only** in-tree SAP attach consumer is the **desktop companion** host (in-process with Electron main — not a separate sidecar process).
 
 ## Design goals
 
-- **One Habitat WS per client**: each browser tab or satellite process opens one `/rpc/v1` connection (bundled SPA shares one transport; satellites multiplex after `sap.attach`).
-- **Two layers**: Habitat RPC for transport + auth; SAP attach for true satellite instances only.
-- **Shared contract**: `@freeanima/shared/habitat-rpc` for transport; `@freeanima/sap-contract` for SAP RPC types, `createSatelliteHub`, bundled stream helpers.
+- **One Habitat WS per client**: each browser tab or companion host opens one `/rpc/v1` connection (bundled SPA shares one transport; companion multiplexes after `sap.attach`).
+- **Two layers**: Habitat RPC for transport + auth; SAP attach only for local-tool hosts (companion).
+- **Fewer processes**: do not add product-facing sidecar processes; companion stays in the Portal shell main process.
+- **Shared contract**: `@freeanima/shared/habitat-rpc` for transport; `@freeanima/sap-contract` for attach/tool types and `createSatelliteHub`.
 
 ## Topology
 
 ```mermaid
 flowchart LR
-  subgraph chat [Chat satellite]
-    B1[Browser] -->|SAP WS or relay| Habitat
+  subgraph portal [Portal Electron]
+    Chat[Chat SPA]
+    CompHost[Companion host in-process]
+    Overlay[Overlay renderer]
   end
-  Habitat --> Runtime[AgentRuntime]
-  subgraph hubConsole [Habitat Habitat]
-    Habitat["/habitat"]
-  end
+  Habitat[Habitat /rpc/v1]
+  Chat -->|Habitat RPC no attach| Habitat
+  CompHost -->|Habitat RPC plus sap.attach| Habitat
+  Habitat -->|tool.call| CompHost
+  CompHost -->|IPC runtime| Overlay
+  CompHost -->|HTTP static assets| Overlay
 ```
 
-| Role    | Default                  | Responsibility                                                 |
-| ------- | ------------------------ | -------------------------------------------------------------- |
-| Habitat | `http://127.0.0.1:2658`  | Agent runtime, Habitat RPC WebSocket at `/rpc/v1`              |
-| Chat    | bundled `/chat`          | Chat UI; shared Habitat RPC (no `sap.attach`)                  |
-| Habitat | bundled shell `/habitat` | Memory, tools, satellite status (Habitat RPC REST `/rpc/v1/*`) |
+| Role       | Default                 | Responsibility                                                              |
+| ---------- | ----------------------- | --------------------------------------------------------------------------- |
+| Habitat    | `http://127.0.0.1:2658` | Agent runtime, Habitat RPC at `/rpc/v1`                                     |
+| Chat       | bundled `/chat`         | Chat UI; shared Habitat RPC (no `sap.attach`)                               |
+| Companion  | Electron main + overlay | `sap.attach` + `bubble` / `play_slot`; static HTTP for VRM; runtime via IPC |
+| Habitat UI | bundled `/habitat`      | Ops UI; Habitat RPC REST `/rpc/v1/*`                                        |
 
 See also: [architecture Client UI section](../concepts/architecture.md#client-uibundled).
 
-## End-to-end happy path
+## End-to-end happy path (companion)
 
 ```mermaid
 sequenceDiagram
-  participant Sat as Satellite process
+  participant Host as Companion host
   participant Habitat as Habitat
   participant Agent as AgentRuntime
+  participant Overlay as Overlay
 
-  Sat->>Habitat: connect HubRPC/1.0 auth_token
-  Habitat->>Sat: connected session_id
-  Sat->>Habitat: req sap.attach
-  Habitat->>Sat: res instance_id
-  Sat->>Habitat: req tool.register
-  Habitat->>Sat: res ok
-  Sat->>Habitat: req conversation.create
-  Habitat->>Sat: res conversation_id
-  Sat->>Habitat: req message.send
-  Habitat->>Sat: res stream_id
-  Habitat-->>Sat: evt stream.accepted
-  Habitat-->>Sat: evt stream.token
-  Agent->>Habitat: invoke sap tool
-  Habitat-->>Sat: evt tool.call
-  Sat->>Habitat: req tool.result
-  Habitat-->>Sat: evt stream.tool_result
-  Habitat-->>Sat: evt stream.done
+  Host->>Habitat: connect Habitat RPC auth_token
+  Habitat->>Host: connected session_id
+  Host->>Habitat: req sap.attach
+  Habitat->>Host: res instance_id
+  Host->>Habitat: req tool.register
+  Habitat->>Host: res ok
+  Agent->>Habitat: invoke companion tool
+  Habitat-->>Host: evt tool.call
+  Host->>Overlay: IPC companion runtime
+  Host->>Habitat: req tool.result
 ```
 
-1. Client opens `ws://{hub}/rpc/v1` and sends Habitat RPC `connect` with `auth_token`.
-2. Satellite process sends `sap.attach`; Habitat registers the instance in `SatelliteManager`. Bundled SPA skips this step.
-3. Satellite registers local tools via `tool.register` (if any).
-4. `message.send` returns a `stream_id`; Habitat pushes `stream.*` events.
-5. When the agent calls a Satellite tool, Habitat sends `tool.call`; Satellite replies with `tool.result` or `tool.error`.
+1. Companion host opens `ws://{hub}/rpc/v1` and sends Habitat RPC `connect` with `auth_token`.
+2. Host sends `sap.attach`; Habitat registers the instance in `SatelliteManager`. Bundled SPA skips this step.
+3. Host registers local tools via `tool.register` (`bubble`, `play_slot`).
+4. When the agent calls a companion tool, Habitat sends `tool.call`; host executes and pushes runtime to the overlay (Electron IPC; browser-dev may use localhost WebSocket).
+5. Host replies with `tool.result` or `tool.error`.
 
 ## Document map
 
@@ -77,4 +79,5 @@ sequenceDiagram
 | Async events                      | [events.md](events.md)                                          |
 | Tool naming and routing           | [tools.md](tools.md)                                            |
 | Config and implementation         | [satellite-guide.md](satellite-guide.md)                        |
+| Frontend embed exports            | [frontend-exports.md](frontend-exports.md)                      |
 | Security model                    | [security-model.md](security-model.md)                          |

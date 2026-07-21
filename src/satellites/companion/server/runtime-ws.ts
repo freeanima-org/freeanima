@@ -20,6 +20,9 @@ export type RuntimeWsMessage = {
 
 const clients = new Set<WebSocket>();
 
+type RuntimeExternalListener = (message: RuntimeWsMessage) => void;
+const externalListeners = new Set<RuntimeExternalListener>();
+
 export function runtimeWsPayload(
   bubble: RuntimeWsBubble,
   play: RuntimeWsPlay[] = [],
@@ -38,6 +41,21 @@ export function broadcastRuntime(message: RuntimeWsMessage): void {
       clients.delete(ws);
     }
   }
+  for (const listener of externalListeners) {
+    try {
+      listener(message);
+    } catch {
+      /* ignore listener errors */
+    }
+  }
+}
+
+/** Electron main 等注册：旁路 localhost WS，向 overlay 推送 runtime */
+export function addRuntimeExternalListener(listener: RuntimeExternalListener): () => void {
+  externalListeners.add(listener);
+  return () => {
+    externalListeners.delete(listener);
+  };
 }
 
 export function handleRuntimeWsOpen(ws: WebSocket): void {

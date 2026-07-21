@@ -4,15 +4,13 @@ title: Satellite Guide
 
 # Satellite Guide
 
-How to run, configure, and implement a Satellite app that speaks SAP.
+How to run, configure, and implement a **SAP attach** host. Product modules (Chat, Task, …) are **not** satellites — they use Habitat RPC only. Today the only in-tree attach host is **desktop companion**.
 
 ## Deployment modes
 
-Habitat learns about Satellites in two ways:
+### Managed (config + systemd) — historical
 
-### Managed (config + systemd)
-
-Declare a process in `~/.anima/config.yaml`. `anima service start/stop/restart` writes `anima-satellite-<name>.service` user units (when systemd is available) and starts/stops them with `anima.service`.
+Declare a process in `~/.anima/config.yaml`. Current Habitat stacks **no longer** spawn managed satellites from `anima service`; companion is started by the desktop Portal (or `dev.ts` for browser debug). See [service.md](../guide/service.md).
 
 ```yaml
 satellites:
@@ -22,143 +20,88 @@ satellites:
     args: ["src/satellites/companion/dev.ts"]
 ```
 
-**Chat / Task / Habitat** etc. are bundled in shell-ui (desktop / mobile / web); no separate `satellites:` dev process needed; browser local debug: `bun run dev:web`.
-
 | Field              | Role                                             |
 | ------------------ | ------------------------------------------------ |
 | `command` / `args` | Process to run (required for managed satellites) |
 | `env`              | Extra environment variables                      |
 
-Working directory is derived by anima from the install layout (monorepo root or CLI package root), not configured here.
-
-**Startup:** historically, managed satellites waited for Habitat `GET /rpc/v1/health/probe` (`status: ok`). Current Habitat stacks no longer spawn managed satellites from `anima service`; companion/sidecars are separate. See [service.md](../guide/service.md) for Habitat startup (migrations before HTTP listen).
-
 ### Dynamic (SAP connect)
 
-No `command` in config. Start the satellite yourself; it connects to Habitat via SAP WebSocket. Instances appear on Habitat → Satellites after connect.
+Start the companion host yourself (Electron main or `dev.ts`); it connects with Habitat RPC, then `sap.attach`. Instances appear on Habitat → Satellites after connect.
 
 There is **no** global `studio:` section in `config.yaml`.
 
-Open managed satellite UI at the URL from Habitat (SAP `http_url`), typically the companion sidecar HTTP port.
+Shell modules (Chat, Habitat, etc.) open in desktop / mobile / web shell routes; no dedicated SAP port.
 
-Shell satellites (Chat, Habitat, etc.) open in desktop / mobile / web shell routes; no dedicated port.
+## Instance allocation
 
-## Instance allocation strategies
+`instance_id` is a 3-character lowercase alphanumeric id (see [`src/shared/sap-contract/naming.ts`](../../src/shared/sap-contract/naming.ts)). It appears in platform strings (`sap:{app_slug}:{instance_id}`), session `platform_extra`, and SAP tool names.
 
-`instance_id` is a 3-character lowercase alphanumeric id (see [`src/shared/sap-contract/naming.ts`](../../src/shared/sap-contract/naming.ts)). It appears in platform strings (`sap:{app_slug}:{instance_id}`), session `platform_extra`, and SAP tool names. **Do not remove it from the protocol** — but each satellite app picks an **allocation strategy** suited to its product model:
+| Strategy    | Meaning                              | Apps          | Client behavior                                                       |
+| ----------- | ------------------------------------ | ------------- | --------------------------------------------------------------------- |
+| **machine** | One id per physical device / install | **Companion** | Omit `instance_id` on first connect; Habitat assigns; persist locally |
 
-| Strategy      | Meaning                                    | Apps             | Client behavior                                                                |
-| ------------- | ------------------------------------------ | ---------------- | ------------------------------------------------------------------------------ |
-| **singleton** | One fixed id per Habitat for the whole app | **Chat** (`def`) | Always send `instance_id` on `connect`; Habitat auto-provisions if missing     |
-| **machine**   | One id per physical device / install       | **Companion**    | Omit `instance_id` on first connect; Habitat assigns randomly; persist locally |
+**Companion:** `~/.anima/companion/instance.json` — one id per computer. Platform `sap:companion:{id}`.
 
-```mermaid
-flowchart TB
-  subgraph policies [Allocation strategies]
-    Singleton["singleton: chat → def"]
-    Machine["machine: companion → per machine"]
-  end
-  Singleton --> Platform1["platform = sap:chat:def"]
-  Machine --> Platform2["platform = sap:companion:{machineId}"]
-```
-
-**Chat (singleton):** all desktop / mobile clients share `CHAT_INSTANCE_ID` (`def`) so `conversation.list` is unified across devices. Chat registers no satellite tools; multiple devices may connect with the same id (Habitat shows the last `http_url`).
-
-**Companion (machine):** `~/.anima/companion/instance.json` — one id per computer.
+Bundled Chat does **not** use SAP `instance_id` for attach (no `sap.attach`). Conversation identity is ordinary Habitat RPC / subject scope.
 
 Habitat [`SapInstanceRegistry`](../../src/platform/sap/instance-registry.ts): omit `instance_id` → random allocation; send known id → reconnect or **auto-provision** if the id is valid and unused.
 
-## Satellite access modes
+## Access modes
 
-**Rule:** each `app_id + instance_id` has **at most one** active entry in `SatelliteManager` (last connect wins). Multiple WebSockets with the same id are not rejected but stream events follow each socket's own context.
+**Rule:** each `app_id + instance_id` has **at most one** active entry in `SatelliteManager` (last connect wins).
 
-### Type B + tools, no relay (companion)
+### Companion host (in-process, no relay)
 
-- Sidecar `createSatelliteHub({ relay: false, tools: [...] })` holds the sole Habitat WS.
-- Browser talks to sidecar HTTP only (no SAP relay); tools execute in sidecar (`bubble`, `play_slot`).
-- `instance_id` in `~/.anima/companion/instance.json`; platform `sap:companion:{id}`.
+- Electron main (or browser `dev.ts`) runs `createSatelliteHub({ relay: false, tools: [...] })` — **same process**, not a child sidecar.
+- Overlay receives tool runtime via **Electron IPC** (desktop) or localhost `/api/runtime/ws` (browser-dev).
+- Static assets still served over loopback HTTP (`/models`, `/motions`, overlay dist).
+- Do **not** use `createSapSidecarClient` / `relay: true` for companion.
 
 ```mermaid
 flowchart TB
-  subgraph companion [Companion Type B]
-    B[Browser] --> SidecarHTTP[sidecar HTTP]
-    SidecarHTTP --> ProcSAP[createSatelliteHub]
-    ProcSAP -->|single SAP WS| Habitat[Habitat]
-    ProcSAP --> ToolExec[tool executor]
+  subgraph companion [Companion in-process host]
+    Overlay[Overlay] -->|IPC or runtime WS| Host[createSatelliteHub]
+    Host -->|Habitat RPC plus attach| Habitat[Habitat]
+    Host --> ToolExec[tool executor]
   end
 ```
-
-**Deprecated:** HTTP hub-api REST→SAP proxy (removed).
 
 ### Bundled Habitat RPC — shell modules (chat, task, notification, …)
 
 - Modules use shared [`getBundledHabitatRpcClient`](../../src/shared/habitat-rpc/bundled.ts) / [`getBundledSapStreamClient`](../../src/shared/sap-contract/bundled-sap-stream.ts) on `/rpc/v1`.
-- **No** `sap.attach`; **no** relay sidecar for these modules.
+- **No** `sap.attach`; **no** sidecar.
 - See [`habitat-rpc.md`](habitat-rpc.md) and [`frontend-exports.md`](frontend-exports.md).
 
 ### Chat (bundled feature)
 
-- **Shell / browser dev (recommended)**: `getBundledSapStreamClient` on shared Habitat RPC; UI from [`src/features/chat/ui/spa/`](../../src/features/chat/ui/spa/) embedded in shell-ui (no SAP relay, no `sap.attach`).
-- Habitat RPC handlers: [`src/features/chat/habitat/routes/index.ts`](../../src/features/chat/habitat/routes/index.ts); wire types: [`src/features/chat/protocol/`](../../src/features/chat/protocol/) → `@freeanima/sap-contract/feature-rpc`.
+- Shell / browser: `getBundledSapStreamClient` on shared Habitat RPC; UI from [`src/features/chat/ui/spa/`](../../src/features/chat/ui/spa/) (no attach).
+- Habitat RPC handlers: [`src/features/chat/habitat/routes/index.ts`](../../src/features/chat/habitat/routes/index.ts).
 
-### Companion satellite
-
-Reference files:
+### Companion reference files
 
 - [`src/satellites/companion/server/sap/hub.ts`](../../src/satellites/companion/server/sap/hub.ts)
-- [`src/features/chat/ui/spa/lib/sap-client.ts`](../../src/features/chat/ui/spa/lib/sap-client.ts)
-- [`src/shared/sap-contract/sidecar-client.ts`](../../src/shared/sap-contract/sidecar-client.ts)
-- [`src/shared/sap-contract/satellite-relay-server.ts`](../../src/shared/sap-contract/satellite-relay-server.ts)
+- [`src/shared/sap-contract/satellite-hub.ts`](../../src/shared/sap-contract/satellite-hub.ts)
 
 ## Minimal SAP client
 
-Use `runSapTransport` or `createSatelliteHub` from `@freeanima/sap-contract`:
+Use `createSatelliteHub` from `@freeanima/shared/sap-contract`:
 
 ```typescript
 import { createSatelliteHub, fileSapInstanceStore } from "@freeanima/shared/sap-contract";
 
 const hub = createSatelliteHub({
-  appId: "my-app",
-  hubUrl: process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658",
-  httpUrl: `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4173}`,
-  instanceStore: fileSapInstanceStore("/path/to/instance.json"),
+  appId: "companion",
+  habitatUrl: "http://127.0.0.1:2658",
+  remoteAuthToken: process.env.FREEANIMA_REMOTE_AUTH_TOKEN!,
+  instanceStore: fileSapInstanceStore("~/.anima/companion/instance.json"),
   relay: false,
-  tools: [],
-  onConnected: async () => {
-    /* optional conversation.create — connect does not auto-create conversations */
+  tools: [/* bubble, play_slot */],
+  onToolCall: async (localName, args) => {
+    /* execute local tool */
+    return JSON.stringify({ ok: true });
   },
 });
 ```
 
-**Machine strategy (companion):** omit `instance_id` on first connect; Habitat assigns a 3-char id and returns it in `connected.instance_id`. Persist via `SapInstanceStore.save`.
-
-**Singleton strategy (chat):** pass fixed `instance_id` (or `instanceId` option on `getBundledSapStreamClient`); Habitat auto-provisions on first sight.
-
-Browser UI on Type B relay satellites uses `createSapRelayBrowserClient()` instead of talking to Habitat directly.
-
-Transport handles WebSocket open, `connect` handshake, heartbeat, and reconnect with exponential backoff.
-
-## Environment variables
-
-| Variable         | Role                                         |
-| ---------------- | -------------------------------------------- |
-| `FREEANIMA_URL`  | Habitat HTTP base URL                        |
-| `SATELLITE_PORT` | Satellite HTTP listen port                   |
-| `FREEANIMA_HOME` | Data root (`~/.anima`); instance store paths |
-
-## Layer dependencies
-
-Per [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md) (Dependency allow/deny matrix): `src/satellites/*` may depend only on `@freeanima/sap-contract`, `@freeanima/kernel`, and `kernel-*` packages. Do not import `platform`, `runtime`, `core`, or `capabilities-*` from Satellite code.
-
-## Habitat visibility
-
-`hub().call("src/satellites.status")` (REST `GET /rpc/v1/src/satellites/status`; Habitat → Satellites) reads `SatelliteManager.getStatus()`: connected instances, `http_url`, registered tools, heartbeat timestamps.
-
-## Further reading
-
-- Frontend manifest / desktop / mobile exports: [`frontend-exports.md`](frontend-exports.md)
-- Desktop shell: [`src/app/shell/desktop/`](../../src/app/shell/desktop/)
-- [overview.md](overview.md) — protocol goals
-- [transport.md](transport.md) — envelopes and handshake
-- [tools.md](tools.md) — tool registration and routing
-- [companion](../features/companion.md) — Companion product docs
+See [overview.md](overview.md) for the attach happy path and [security-model.md](security-model.md) for tokens.

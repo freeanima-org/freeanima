@@ -6,8 +6,8 @@ title: SAP Transport
 
 FreeAnima uses a **two-layer** wire model on a single WebSocket endpoint:
 
-1. **Habitat RPC** (`HubRPC/1.0`) — transport connect, auth, heartbeat, generic `req`/`res`/`evt`.
-2. **SAP** (`SAP/1.0`) — optional `sap.attach` / `sap.detach` session for true satellite processes.
+1. **Habitat RPC** — transport connect, auth, heartbeat, generic `req`/`res`/`evt`. Product name: **Habitat RPC**. Wire connect literal remains historical `"HubRPC/1.0"` (`HABITAT_RPC_VERSION`).
+2. **SAP** — optional `sap.attach` / `sap.detach` session for local-tool hosts (companion only in-tree).
 
 Bundled SPA clients use layer 1 only. See [habitat-rpc.md](habitat-rpc.md) for transport details.
 
@@ -27,7 +27,7 @@ Habitat RPC envelopes live in [`src/shared/habitat-rpc/protocol.ts`](../../src/s
 
 | `kind`      | Layer       | Purpose                                                                   |
 | ----------- | ----------- | ------------------------------------------------------------------------- |
-| `connect`   | Habitat RPC | `protocol: HubRPC/1.0`, `auth_token`                                      |
+| `connect`   | Habitat RPC | `protocol` = `HABITAT_RPC_VERSION` (wire `"HubRPC/1.0"`), `auth_token`    |
 | `connected` | Habitat RPC | `session_id`, `heartbeat_interval_sec`                                    |
 | `req`       | Both        | RPC (`id`, `method`, `payload`) — incl. `sap.attach`, `conversation.*`, … |
 | `res`       | Both        | RPC response                                                              |
@@ -103,9 +103,11 @@ Client sends `evt { method: "heartbeat" }` on `heartbeat_interval_sec`. Habitat 
 
 On detach or disconnect, Habitat calls `onSapDetach` and unregisters tools for that instance.
 
-## Local SAP relay (optional)
+## Local SAP relay (optional / unused by companion)
 
-Some Type B satellites may expose `ws://{satellite_host}:{port}/sap/relay/v1` for browser UI. The satellite **process** holds the Habitat `/rpc/v1` connection and SAP attach; relay clients send `req`/`res`/`evt` without transport or SAP handshakes.
+Historical path: a host with `relay: true` may expose `ws://{host}:{port}/sap/relay/v1` for a browser UI. The host holds Habitat `/rpc/v1` + `sap.attach`; relay clients send `req`/`res`/`evt` without handshakes.
+
+**Companion does not use relay** (`relay: false`); overlay uses Electron IPC (or browser-dev runtime WS). Prefer not adding new relay consumers.
 
 | Event         | Direction           | Meaning                            |
 | ------------- | ------------------- | ---------------------------------- |

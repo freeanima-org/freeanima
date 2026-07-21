@@ -78,6 +78,10 @@ function waitWebSocketClose(ws: WebSocket): Promise<void> {
   });
 }
 
+/**
+ * @deprecated Relay-style UI client for Type B satellites. Companion uses
+ * `createSatelliteHub({ relay: false })` in-process — do not use for new code.
+ */
 export function createSapSidecarClient(options: SapSidecarClientOptions = {}): SapSidecarClient {
   const policy =
     options.reconnect === false

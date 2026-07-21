@@ -4,68 +4,66 @@ title: Desktop Companion
 
 # Desktop Companion
 
-> **Dynamic SAP satellite**: a standalone desktop GUI app, not managed via `config.yaml`.
+> **SAP attach host** embedded in the desktop Portal (Electron main) — not managed via `config.yaml`, and **not** a separate Node sidecar process.
 
-The desktop companion is a SAP **Type B** app (embedded sidecar holds the Habitat WebSocket, `relay: false`): the **content pack** (React + VRM + Node sidecar) is embedded by the **desktop shell** (`src/app/shell/desktop`), registers with the Habitat via SAP, and exposes local tools to the Agent.
+The content pack (React + VRM + in-process host) is embedded by the **desktop shell** (`src/app/shell/desktop`), connects with Habitat RPC, calls `sap.attach`, and exposes local tools (`bubble`, `play_slot`) to the Agent. Product modules such as Chat use Habitat RPC only (no attach).
 
 ## Architecture
 
 ```text
 FreeAnima Desktop (src/app/shell/desktop)
-├── Electron Main — tray / multi-window + embedded companion sidecar
+├── Electron Main — tray / multi-window + in-process companion host
 │   ├── companion overlay — transparent always-on-top, VRM / speech bubble
 │   ├── companion settings — settings window (Habitat RPC + asset HTTP)
-│   ├── chat — Chat SPA (SAP direct, no sidecar)
-│   └── console — Habitat WebView (Habitat REST)
-└── Renderer — preload satelliteShell; companion visibility via IPC
-         ↕ SAP WS + Habitat RPC
+│   ├── chat — Chat SPA (Habitat RPC, no sap.attach)
+│   └── console — Habitat WebView (Habitat RPC REST)
+└── Renderer — preload satelliteShell; companion visibility + runtime via IPC
+         ↕ Habitat RPC (+ sap.attach on host only)
     anima service Habitat (companion_profile SSOT + assets + FBX→VRMA)
 ```
 
 ### Habitat vs local boundary
 
-| Layer            | Location                             | Responsibility                                                                                                                                                                   |
-| ---------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Habitat SSOT** | `src/features/companion/`            | `companion_profile` entity (behavior, slots, library meta); VRM/VRMA files under `~/.anima/companion/` on Habitat host; FBX→VRMA conversion; Settings read/write via Habitat RPC |
-| **Settings UI**  | Desktop Settings → Companion section | Habitat RPC (`companion.config.*`, model/motion CRUD); upload via `POST /rpc/v1/companion/model/upload` and `/companion/motion/import`                                           |
-| **Thin sidecar** | `src/satellites/companion/server/`   | SAP attach, `bubble` / `play_slot`, runtime WebSocket, local asset cache; startup `companion.sync.pull`                                                                          |
-| **Electron**     | `src/app/shell/desktop/`             | Transparent window, click-through, tray, companion show/hide IPC                                                                                                                 |
+| Layer              | Location                           | Responsibility                                                                                                                                                                   |
+| ------------------ | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Habitat SSOT**   | `src/features/companion/`          | `companion_profile` entity (behavior, slots, library meta); VRM/VRMA files under `~/.anima/companion/` on Habitat host; FBX→VRMA conversion; Settings read/write via Habitat RPC |
+| **Settings UI**    | Desktop Settings → Companion       | Habitat RPC (`companion.config.*`, model/motion CRUD); upload via `POST /rpc/v1/companion/model/upload` and `/companion/motion/import`                                           |
+| **Companion host** | `src/satellites/companion/server/` | Same process as Electron main: `sap.attach`, tools, local asset cache, `companion.sync.pull`; Electron IPC for runtime; HTTP for static assets                                   |
+| **Electron**       | `src/app/shell/desktop/`           | Transparent window, click-through, tray, show/hide + runtime IPC                                                                                                                 |
 
 Management is in **Settings only** — Habitat has no companion admin page.
 
-On sidecar start: Habitat config wins; `~/.anima/companion/config.json` on the desktop is an **offline cache**. Legacy local data is migrated once to Habitat (`companion.migrate.fromLocal` or HTTP upload). Multiple desktops share the same model/motion library via Habitat.
+On host start: Habitat config wins; `~/.anima/companion/config.json` on the desktop is an **offline cache**. Legacy local data is migrated once to Habitat (`companion.migrate.fromLocal` or HTTP upload). Multiple desktops share the same model/motion library via Habitat.
 
 ```text
 Settings ──Habitat RPC/HTTP──► features/companion (Habitat)
-Sidecar  ◄──sync.pull────► Habitat          ──► local cache (VRM/VRMA)
-Overlay  ◄──localhost────► Sidecar       (runtime WS + /api/config)
-Electron ◄──IPC──────────► Settings       (show/hide only)
-Agent    ──SAP───────────► Sidecar        (bubble, play_slot)
+Host     ◄──sync.pull────► Habitat          ──► local cache (VRM/VRMA)
+Overlay  ◄──IPC runtime──► Host             (+ HTTP for /models /motions)
+Electron ◄──IPC──────────► Settings         (show/hide, connection)
+Agent    ──SAP tool.call─► Host             (bubble, play_slot)
 ```
 
-The content pack lives in [`src/satellites/companion/`](../../src/satellites/companion/) (`spa/` + thin `server/` + `shared/`). Habitat domain logic: [`src/features/companion/`](../../src/features/companion/). Export conventions: [`frontend-exports.md`](../sap/frontend-exports.md).
+The content pack lives in [`src/satellites/companion/`](../../src/satellites/companion/) (`spa/` + `server/` + `shared/`). Habitat domain logic: [`src/features/companion/`](../../src/features/companion/). Export conventions: [`frontend-exports.md`](../sap/frontend-exports.md).
 
-Compared with Chat / pair programming:
-
-|             | Chat / pair programming              | Companion                                            |
-| ----------- | ------------------------------------ | ---------------------------------------------------- |
-| UI          | Browser Web UI                       | Native transparent companion window + settings       |
-| Deployment  | Managed (can co-locate with service) | Dynamic (user starts manually)                       |
-| SAP         | Type A or Type B + relay             | Type B + tools, no relay                             |
-| Client & UI | Can be separated                     | Companion render and settings share one Electron app |
+|              | Chat / other product modules | Companion                                        |
+| ------------ | ---------------------------- | ------------------------------------------------ |
+| UI           | Browser / shell Web UI       | Native transparent companion window + settings   |
+| Deployment   | Bundled in shell             | Dynamic attach when Habitat token is configured  |
+| Wire         | Habitat RPC only (no attach) | Habitat RPC + `sap.attach` + tools               |
+| Runtime push | —                            | Electron IPC (browser-dev: localhost runtime WS) |
 
 ## Features
 
 - VRM avatar rendering (Three.js + `@pixiv/three-vrm`); VRM 1.0 and 0.x auto orientation correction
 - **Motion slots**: five slots — `idle`, `rest`, `walk`, `climb`, `in_place`; each slot binds 0..n VRMA clips; play by id or random; empty slot = no animation
-- **Speech bubble**: one-way text queue; user click advances; no auto-dismiss; pushed by Habitat Agent via `companion.bubble` tool
+- **Speech bubble**: one-way text queue; user click advances; no auto-dismiss; pushed by Habitat Agent via companion `bubble` tool
 - Transparent always-on-top companion window (160×260); avatar area clickable, empty area click-through
 - **Local interaction**: drag to move window; click body to play random motion from `in_place` slot
 - **Patrol** (Settings → Behavior tab): idle patrol, double-click patrol, corner pause, patrol speed, return-to-start on launch, etc.
 - System tray: show/hide companion, **Settings…** (open settings window), quit
 - Settings tabs: **General** / **Behavior** / **Models** / **Motion slots** / **Motion library**
 
-## Agent tools (sidecar registration)
+## Agent tools (host registration)
 
 | Tool        | Parameters                           | Description                            |
 | ----------- | ------------------------------------ | -------------------------------------- |
@@ -74,13 +72,15 @@ Compared with Chat / pair programming:
 
 Periodic content (e.g. scheduled jokes) is configured on **anima service / scheduled tasks**; the Agent calls `bubble`. Companion has no built-in timer.
 
+Settings → Companion client section shows **instance id** and **SAP connected** (`sap_connected` from host `/api/config`). Without a Habitat API token, attach is skipped until connection settings are saved.
+
 ## Models and motions
 
-The repo **does not bundle** `.vrm` / `.vrma` files. **Habitat** is the SSOT: `companion_profile` entity in PostgreSQL plus files on the Habitat host at `~/.anima/companion/models/` and `motions/`. Each desktop keeps a **local cache** synced on sidecar start (`companion.sync.pull`).
+The repo **does not bundle** `.vrm` / `.vrma` files. **Habitat** is the SSOT: `companion_profile` entity in PostgreSQL plus files on the Habitat host at `~/.anima/companion/models/` and `motions/`. Each desktop keeps a **local cache** synced on host start (`companion.sync.pull`).
 
 ### VRM models
 
-Settings → **Models** tab: list, import, delete, rename, switch current model. Upload goes to Habitat (`POST /rpc/v1/companion/model/upload`); sidecar downloads missing files for overlay rendering.
+Settings → **Models** tab: list, import, delete, rename, switch current model. Upload goes to Habitat (`POST /rpc/v1/companion/model/upload`); host downloads missing files for overlay rendering.
 
 During development, files in `src/satellites/companion/public/models/` serve as fallback.
 
@@ -98,61 +98,15 @@ FBX→VRMA runs on the **Habitat host** (`anima service`). Desktop installers no
 
 ### Browser dev (no Electron)
 
-In `src/satellites/companion`:
-
 ```bash
-bun run dev
-# or bun src/satellites/companion/dev.ts
+bun run --filter @freeanima/satellite-companion dev
+# or: bun src/satellites/companion/dev.ts
 ```
 
-- Companion: http://127.0.0.1:4176
-- Settings (browser dev): http://127.0.0.1:4176/?view=settings
+Uses the same in-process HTTP server; runtime events use localhost WebSocket (`/api/runtime/ws`).
 
-In the Electron desktop shell, open settings via tray → **Settings…**; the overlay has no settings button.
+### Desktop (Electron)
 
-### Electron desktop shell (companion + Chat + Habitat)
+Desktop shell starts the companion host in-process (`startCompanionServer`) and loads the overlay from the host HTTP origin. Runtime events use Electron IPC (`companion:runtime`).
 
-```bash
-# 从仓库根目录
-bun run dev:windows
-```
-
-Packaging (Linux cross-build for Windows):
-
-```bash
-# Daily: portable win-unpacked (~20s; copy exe to Windows)
-bun run dev:windows
-
-# Installer / install-flow test (NSIS, ~2min+)
-bun run package:windows
-```
-
-Or from repository root: `bun run dev:windows` / `bun run package:windows`. Fast path keeps `vendor/` and `release/` for incremental builds; full clean: `DESKTOP_SHELL_CLEAN=1`.
-
-Environment variables:
-
-| Variable                 | Default                 | Description                                      |
-| ------------------------ | ----------------------- | ------------------------------------------------ |
-| `FREEANIMA_URL`          | `http://127.0.0.1:2658` | Habitat fallback when no desktop `settings.json` |
-| `SATELLITE_PORT`         | `4176`                  | Local HTTP port                                  |
-| `COMPANION_VRMA_ZIP_URL` | (empty)                 | Optional direct zip mirror; downloaded on start  |
-
-Habitat URL and remote token are managed by the desktop shell in **`~/.anima-desktop/settings.json`** (`habitat` section; tray → **Habitat settings…**). Companion Settings → General tab shows Habitat URL read-only.
-
-Habitat assigns a **3-character** `instance_id` on first `connect`, stored in `~/.anima/companion/instance.json` (not under `src/satellites/`).
-
-### Troubleshooting
-
-| Symptom                  | Action                                                                                                    |
-| ------------------------ | --------------------------------------------------------------------------------------------------------- |
-| Double-click, no window  | Check system tray; tray → **Settings…** → import `.vrm`                                                   |
-| Click, no motion         | Settings → **Motion library** import VRMA; **Motion slots** bind slot                                     |
-| Cannot reach Habitat     | Confirm `anima service` and Habitat settings token (`fa_at_...`); tray **Habitat settings** URL and token |
-| Import has no effect     | Hot reload after import; confirm slot has motion checked                                                  |
-| Background service fails | See `~/.anima/desktop-shell/shell.log`; confirm ports 4176–4185 free                                      |
-| FBX import unavailable   | Run `bun run setup:fbx` on the **Habitat host** (not the desktop installer)                               |
-
-## Related docs
-
-- SAP satellite guide: [`satellite-guide.md`](../sap/satellite-guide.md)
-- SAP security model: [`security-model.md`](../sap/security-model.md)
+See also: [SAP overview](../sap/overview.md), [architecture companion section](../concepts/architecture.md#desktop-companion-habitat-ssot).

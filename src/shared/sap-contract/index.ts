@@ -27,13 +27,6 @@ export {
 export type { ParsedSapToolName, ParsedSapPlatform } from "./naming.ts";
 
 export { generateSapInstanceIdCandidate, assertSapInstanceId } from "./instance-id.ts";
-export {
-  CHAT_INSTANCE_ID,
-  TASK_INSTANCE_ID,
-  EMAIL_INSTANCE_ID,
-  DIARY_INSTANCE_ID,
-  NOTIFICATION_INSTANCE_ID,
-} from "./satellite-instance.ts";
 
 export {
   browserSapInstanceStore,
@@ -562,6 +555,7 @@ export {
 } from "./satellite-config.ts";
 
 export {
+  /** @deprecated Prefer createSatelliteHub for companion; relay UI path unused in production. */
   createSapSidecarClient,
   type SapSidecarClient,
   type SapSidecarClientOptions,
