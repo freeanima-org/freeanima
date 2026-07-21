@@ -31,7 +31,7 @@ import {
   useThreeColumnLayoutMode,
 } from "@freeanima/frontend/ui-kit/layout";
 import { m } from "@paraglide/messages";
-import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 
 import { registerProjectOfflineModule } from "./lib/offline-store.ts";
 
@@ -91,8 +91,10 @@ import {
   useContextMenuCapability,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
 import { TaskTagFilterBar } from "@freeanima/features/task/ui/spa/components/TaskTagFilterBar.tsx";
+import type { TaskTagKnown } from "@freeanima/features/task/ui/spa/components/TaskTagPicker.tsx";
 import {
   collectTagsFromTaskItems,
+  findUnresolvedTaskTagIds,
   matchTaskItemByTag,
 } from "@freeanima/features/task/ui/spa/lib/task-tag-filter.ts";
 import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-detail-dirty.ts";
@@ -336,39 +338,61 @@ export function ProjectApp() {
     }
   }, [selectedProjectId, subjectKind]);
 
+  const reloadTags = useCallback(async () => {
+    try {
+      const tags = await fetchTags();
+      setTagPool(tags.map((t) => ({ id: t.id, title: t.title })));
+    } catch {
+      setTagPool([]);
+    }
+  }, []);
+
+  const rememberTag = useCallback((tag: TaskTagKnown) => {
+    setTagPool((prev) => {
+      if (prev.some((row) => row.id === tag.id && row.title === tag.title)) return prev;
+      const without = prev.filter((row) => row.id !== tag.id);
+      return [...without, { id: tag.id, title: tag.title }];
+    });
+  }, []);
+
   const handleManualRefresh = useCallback(async () => {
     if (refreshing) return;
     setRefreshing(true);
     try {
-      await reload({ quiet: true });
-      await reloadProjectDetail();
+      await Promise.all([reload({ quiet: true }), reloadProjectDetail(), reloadTags()]);
     } finally {
       setRefreshing(false);
     }
-  }, [refreshing, reload, reloadProjectDetail]);
+  }, [refreshing, reload, reloadProjectDetail, reloadTags]);
 
   useEffect(() => {
     setHideCompleted(readHideCompleted(subjectKind));
   }, [subjectKind]);
 
   useEffect(() => {
-    let cancelled = false;
-    void fetchTags()
-      .then((tags) => {
-        if (!cancelled) setTagPool(tags.map((t) => ({ id: t.id, title: t.title })));
-      })
-      .catch(() => {
-        if (!cancelled) setTagPool([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [subjectKind]);
+    void reloadTags();
+  }, [subjectKind, reloadTags]);
 
   const tagTitleById = useMemo(
     () => new Map(tagPool.map((t) => [t.id, t.title] as const)),
     [tagPool],
   );
+
+  const unresolvedTagKey = useMemo(
+    () => findUnresolvedTaskTagIds(tasks, tagTitleById).join(","),
+    [tasks, tagTitleById],
+  );
+  const attemptedUnresolvedTagKeyRef = useRef("");
+
+  useEffect(() => {
+    if (!unresolvedTagKey) {
+      attemptedUnresolvedTagKeyRef.current = "";
+      return;
+    }
+    if (attemptedUnresolvedTagKeyRef.current === unresolvedTagKey) return;
+    attemptedUnresolvedTagKeyRef.current = unresolvedTagKey;
+    void reloadTags();
+  }, [unresolvedTagKey, reloadTags]);
 
   const projectTags = useMemo(
     () => collectTagsFromTaskItems(tasks, tagTitleById),
@@ -884,6 +908,7 @@ export function ProjectApp() {
                 item={detailItem}
                 onChange={setDetailItem}
                 saveStatus={detailSaveStatus}
+                onTagKnown={rememberTag}
               />
             ) : (
               <div className="text-muted-foreground flex h-full items-center justify-center p-8 text-sm">

@@ -48,6 +48,8 @@ import { SortableTaskList } from "./components/SortableTaskList.tsx";
 import { TaskDetailPanel } from "./components/TaskDetailPanel.tsx";
 import { TaskDndRoot } from "./components/TaskDndRoot.tsx";
 import { ThreeColumnLayout } from "@freeanima/frontend/ui-kit/layout";
+import type { TaskTagKnown } from "./components/TaskTagPicker.tsx";
+import { findUnresolvedTaskTagIds } from "./lib/task-tag-filter.ts";
 import { fetchTags } from "@freeanima/features/tag/ui/spa/lib/api.ts";
 import {
   completeTaskItem,
@@ -247,20 +249,27 @@ export function TaskApp() {
     }
   }, [detailItem, webShell]);
 
+  const reloadTags = useCallback(async () => {
+    try {
+      const tags = await fetchTags();
+      setTagPool(tags.map((t) => ({ id: t.id, title: t.title })));
+    } catch {
+      setTagPool([]);
+    }
+  }, []);
+
+  const rememberTag = useCallback((tag: TaskTagKnown) => {
+    setTagPool((prev) => {
+      if (prev.some((row) => row.id === tag.id && row.title === tag.title)) return prev;
+      const without = prev.filter((row) => row.id !== tag.id);
+      return [...without, { id: tag.id, title: tag.title }];
+    });
+  }, []);
+
   useEffect(() => {
-    let cancelled = false;
     setTagFilterId(null);
-    void fetchTags()
-      .then((tags) => {
-        if (!cancelled) setTagPool(tags.map((t) => ({ id: t.id, title: t.title })));
-      })
-      .catch(() => {
-        if (!cancelled) setTagPool([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [subjectKind]);
+    void reloadTags();
+  }, [subjectKind, reloadTags]);
 
   useEffect(() => {
     if (!webShell) return;
@@ -433,7 +442,7 @@ export function TaskApp() {
     setError("");
     try {
       if (selection?.kind === "search") {
-        await loadLists();
+        await Promise.all([loadLists(), reloadTags()]);
         const q = searchQuery.trim();
         if (q) {
           const rows = await searchTaskItems({ query: q, limit: 30 });
@@ -441,14 +450,14 @@ export function TaskApp() {
           void seedLocalTaskItems(rows);
         }
       } else {
-        await Promise.all([loadLists(), reloadCurrentItems()]);
+        await Promise.all([loadLists(), reloadCurrentItems(), reloadTags()]);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setRefreshing(false);
     }
-  }, [loadLists, refreshing, reloadCurrentItems, searchQuery, selection?.kind]);
+  }, [loadLists, refreshing, reloadCurrentItems, reloadTags, searchQuery, selection?.kind]);
 
   useEffect(() => {
     registerTaskOfflineModule();
@@ -1038,6 +1047,20 @@ export function TaskApp() {
     () => new Map(tagPool.map((t) => [t.id, t.title] as const)),
     [tagPool],
   );
+  const unresolvedTagKey = useMemo(
+    () => findUnresolvedTaskTagIds([...items, ...searchHits], tagTitleById).join(","),
+    [items, searchHits, tagTitleById],
+  );
+  const attemptedUnresolvedTagKeyRef = useRef("");
+  useEffect(() => {
+    if (!unresolvedTagKey) {
+      attemptedUnresolvedTagKeyRef.current = "";
+      return;
+    }
+    if (attemptedUnresolvedTagKeyRef.current === unresolvedTagKey) return;
+    attemptedUnresolvedTagKeyRef.current = unresolvedTagKey;
+    void reloadTags();
+  }, [unresolvedTagKey, reloadTags]);
   const matchTag = useCallback(
     (row: TaskItemRow) => tagFilterId == null || row.tag_ids?.includes(tagFilterId) === true,
     [tagFilterId],
@@ -1588,6 +1611,7 @@ export function TaskApp() {
                   item={detailItem}
                   onChange={setDetailItem}
                   saveStatus={detailSaveStatus}
+                  onTagKnown={rememberTag}
                 />
               ) : (
                 <div className="text-muted-foreground flex h-full min-h-0 items-center justify-center p-8 text-sm">

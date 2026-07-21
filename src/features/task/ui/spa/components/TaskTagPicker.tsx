@@ -12,12 +12,16 @@ import {
 } from "@freeanima/frontend/ui-kit/components/ui/dropdown-menu.tsx";
 import { createTag, fetchTags, type TagRow } from "@freeanima/features/tag/ui/spa/lib/api.ts";
 
+export type TaskTagKnown = { id: number; title: string };
+
 type TaskTagPickerProps = {
   tagIds: number[];
   onChange: (tagIds: number[]) => void;
+  /** 新建标签成功后同步给父层，避免筛选栏/行内标题滞后显示裸 id */
+  onTagKnown?: (tag: TaskTagKnown) => void;
 };
 
-export function TaskTagPicker({ tagIds, onChange }: TaskTagPickerProps): JSX.Element {
+export function TaskTagPicker({ tagIds, onChange, onTagKnown }: TaskTagPickerProps): JSX.Element {
   const [pool, setPool] = useState<TagRow[]>([]);
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +55,7 @@ export function TaskTagPicker({ tagIds, onChange }: TaskTagPickerProps): JSX.Ele
           (a, b) => a.sort_order - b.sort_order || a.title.localeCompare(b.title) || a.id - b.id,
         ),
       );
+      onTagKnown?.({ id: item.id, title: item.title });
       if (!tagIds.includes(item.id)) onChange([...tagIds, item.id]);
       setDraft("");
     } catch (err) {
