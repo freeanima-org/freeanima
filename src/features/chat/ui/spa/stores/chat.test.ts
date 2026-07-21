@@ -7,6 +7,33 @@ mock.module("@paraglide/runtime", () => ({
   setLocale: async (_locale: string) => {},
 }));
 
+mock.module("@freeanima/features/chat/ui/spa/lib/api.ts", () => ({
+  subscribeMessageStream: (
+    _input: unknown,
+    callbacks: { onComplete?: () => void; onStreamId?: (id: string) => void },
+  ) => {
+    queueMicrotask(() => callbacks.onStreamId?.("stream-test"));
+    return {
+      unsubscribe: () => {
+        callbacks.onComplete?.();
+      },
+    };
+  },
+  resumeMessageStream: () => ({ unsubscribe: () => {} }),
+  interruptMessageStream: async () => {},
+  lookupActiveStream: async () => ({}),
+}));
+
+mock.module("@freeanima/features/chat/ui/spa/lib/active-stream-persist.ts", () => ({
+  writePersistedActiveStream: () => {},
+  clearPersistedActiveStream: () => {},
+  readPersistedActiveStream: () => null,
+}));
+
+mock.module("@freeanima/shared/habitat-rpc", () => ({
+  subscribeHabitatRpcConnectionState: () => () => {},
+}));
+
 import { useChatStore } from "./chat.ts";
 
 describe("useChatStore queue", () => {
@@ -14,6 +41,7 @@ describe("useChatStore queue", () => {
     useChatStore.setState({
       queue: [],
       streaming: false,
+      recovering: false,
       streamingConversationId: null,
       streamText: "",
     });
@@ -33,5 +61,25 @@ describe("useChatStore queue", () => {
     const taken = useChatStore.getState().takeQueued(first.id);
     expect(taken?.text).toBe("a");
     expect(useChatStore.getState().peekQueue("s1")?.text).toBe("b");
+  });
+
+  test("abortStream 使进行中的 send() Promise settle（避免刷新后发送锁死）", async () => {
+    const sendPromise = useChatStore.getState().send("conv-1", "hi", {
+      recoverDisplay: async () => false,
+    });
+    // 等到订阅挂上
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(useChatStore.getState().streaming).toBe(true);
+
+    useChatStore.getState().abortStream();
+    expect(useChatStore.getState().streaming).toBe(false);
+
+    await Promise.race([
+      sendPromise,
+      new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error("send() hung after abortStream")), 500);
+      }),
+    ]);
   });
 });

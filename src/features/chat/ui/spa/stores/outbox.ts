@@ -14,6 +14,10 @@ type OutboxState = {
   flushing: Set<string>;
   hydrate: (entries: ChatOutboxEntry[]) => void;
   setEntryStatus: (clientOpId: string, status: OutboxSendStatus, lastError?: string) => void;
+  /** 在线直发：仅挂内存，不写 IDB。 */
+  trackLocal: (entry: ChatOutboxEntry) => void;
+  /** 传输失败时把 ephemeral 条目写入 IDB outbox。 */
+  persistToIdb: (clientOpId: string) => Promise<void>;
   enqueue: (
     conversationId: string,
     text: string,
@@ -41,11 +45,16 @@ export const useOutboxStore = create<OutboxState>((set, get) => ({
   flushing: new Set(),
 
   hydrate(entries) {
-    const map: Record<string, ChatOutboxEntry> = {};
-    for (const entry of entries) {
-      map[entry.clientOpId] = entry;
-    }
-    set({ entries: map });
+    set((s) => {
+      const map: Record<string, ChatOutboxEntry> = {};
+      for (const [id, e] of Object.entries(s.entries)) {
+        if (e.persisted === false) map[id] = e;
+      }
+      for (const entry of entries) {
+        map[entry.clientOpId] = entry;
+      }
+      return { entries: map };
+    });
   },
 
   setEntryStatus(clientOpId, status, lastError) {
@@ -55,6 +64,21 @@ export const useOutboxStore = create<OutboxState>((set, get) => ({
         clientOpId,
         lastError !== undefined ? { status, lastError } : { status },
       ),
+    }));
+  },
+
+  trackLocal(entry) {
+    set((s) => ({ entries: { ...s.entries, [entry.clientOpId]: entry } }));
+  },
+
+  async persistToIdb(clientOpId) {
+    const entry = get().entries[clientOpId];
+    if (!entry || entry.persisted !== false) return;
+    await enqueueChatSend(entry.conversationId, entry.text, entry.expectedTailPos, {
+      clientOpId: entry.clientOpId,
+    });
+    set((s) => ({
+      entries: patchEntry(s.entries, clientOpId, { persisted: true }),
     }));
   },
 

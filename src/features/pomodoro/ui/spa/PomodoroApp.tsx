@@ -49,6 +49,7 @@ import {
   runPhaseAbort,
   runPhaseComplete,
 } from "./lib/pomodoro-sync.ts";
+import { preferOnlineWrite } from "@freeanima/frontend/shell-sdk/prefer-online-write";
 import { syncPomodoroPhaseLocalAlert } from "./lib/pomodoro-phase-alert.ts";
 import {
   createInitialActiveState,
@@ -361,15 +362,14 @@ export function PomodoroApp() {
 
   const handleConfigChange = async (patch: Partial<PomodoroConfigRow>) => {
     if (!config) return;
-    if (!habitatOnline) {
-      await enqueuePomodoroConfigUpdate(subjectKind, patch);
-      const next = { ...config, ...patch };
-      setConfig(next);
-      if (active) await syncPomodoroPhaseLocalAlert(active, active, next);
-      return;
-    }
     try {
-      const next = await updatePomodoroConfig(subjectKind, patch);
+      const next = await preferOnlineWrite(
+        async () => updatePomodoroConfig(subjectKind, patch),
+        async () => {
+          await enqueuePomodoroConfigUpdate(subjectKind, patch);
+          return { ...config, ...patch };
+        },
+      );
       setConfig(next);
       if (active) await syncPomodoroPhaseLocalAlert(active, active, next);
     } catch (e) {

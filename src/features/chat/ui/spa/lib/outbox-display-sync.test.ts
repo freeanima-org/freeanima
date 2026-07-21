@@ -79,4 +79,48 @@ describe("outbox-display-sync", () => {
     );
     expect(remaining).toHaveLength(0);
   });
+
+  it("刷新后服务端已有 user、助手未到时不拼第二条乐观气泡", () => {
+    const display: DisplayItem[] = [
+      { type: "message", role: "user", content: "也都不认识。国产动漫呢。" },
+    ];
+    const remaining = filterUndeliveredOutbox(
+      display,
+      [
+        {
+          clientOpId: "op-online",
+          conversationId: "c1",
+          text: "也都不认识。国产动漫呢。",
+          expectedTailPos: 1,
+          status: "sending",
+          attempts: 0,
+          createdAt: "2026-01-01T00:00:00.000Z",
+          persisted: false,
+        },
+      ],
+      "c1",
+    );
+    expect(remaining).toHaveLength(0);
+  });
+
+  it("离线 pending 且服务端尚无同文 user 时仍展示", () => {
+    const display: DisplayItem[] = [];
+    const remaining = filterUndeliveredOutbox(
+      display,
+      [
+        {
+          clientOpId: "op-offline",
+          conversationId: "c1",
+          text: "queued offline",
+          expectedTailPos: 0,
+          status: "pending",
+          attempts: 0,
+          createdAt: "2026-01-01T00:00:00.000Z",
+          persisted: true,
+        },
+      ],
+      "c1",
+    );
+    expect(remaining).toHaveLength(1);
+  });
 });

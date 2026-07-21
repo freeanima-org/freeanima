@@ -97,7 +97,7 @@ export async function pumpSessionUpdates(
   }
 }
 
-/** stream.attach：订阅当前连接并重放 buffer dump */
+/** stream.attach：本连接独占 fan-out 并重放 buffer dump（替换发起连接旧订阅，避免同 WS 双发） */
 export function attachStreamSession(
   ctx: SapRequestContext,
   streamId: string,
@@ -116,7 +116,7 @@ export function attachStreamSession(
     }
   };
 
-  unsubscribe = streamSessionRegistry.subscribe(streamId, emit);
+  unsubscribe = streamSessionRegistry.subscribeExclusive(streamId, emit);
   if (!unsubscribe) {
     throw new Error(`stream not found: ${streamId}`);
   }
