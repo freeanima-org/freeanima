@@ -4,7 +4,7 @@ import {
   findAvailableTcpPort,
   isTcpPortInUse,
   pickRandomAvailableTcpPort,
-  DEV_HUB_PORT_MIN,
+  DEV_HABITAT_PORT_MIN,
 } from "./tcp-port-available.ts";
 
 describe("isTcpPortInUse", () => {
@@ -65,11 +65,11 @@ describe("pickRandomAvailableTcpPort", () => {
   it("returns a free port in range", async () => {
     const port = await pickRandomAvailableTcpPort(
       "127.0.0.1",
-      DEV_HUB_PORT_MIN,
-      DEV_HUB_PORT_MIN + 200,
+      DEV_HABITAT_PORT_MIN,
+      DEV_HABITAT_PORT_MIN + 200,
     );
-    expect(port).toBeGreaterThanOrEqual(DEV_HUB_PORT_MIN);
-    expect(port).toBeLessThanOrEqual(DEV_HUB_PORT_MIN + 200);
+    expect(port).toBeGreaterThanOrEqual(DEV_HABITAT_PORT_MIN);
+    expect(port).toBeLessThanOrEqual(DEV_HABITAT_PORT_MIN + 200);
     expect(await isTcpPortInUse("127.0.0.1", port)).toBe(false);
   });
 });

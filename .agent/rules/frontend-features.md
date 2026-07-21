@@ -6,7 +6,7 @@
 
 1. 是否需要用户可见的产品 CRUD + 实时 Habitat WS？→ **原型 A（Feature RPC）**
 2. 是否需要 SAP attach 的本地工具反向调用？→ **原型 A′（SAP attach host）** — 仅 `companion`（壳主进程内嵌，非独立 sidecar 进程）
-3. 是否是运维/配置/记忆管理类 UI（Habitat）？→ **原型 B（Habitat RPC）** — 与原型 A 相同 wire，handler 在 `console/plugin.hub.rpc`
+3. 是否是运维/配置/记忆管理类 UI（Habitat）？→ **原型 B（Habitat RPC）** — 与原型 A 相同 wire，handler 在 `console/plugin.habitat.rpc`
 4. 是否仅是壳层设置（Habitat URL、debug）？→ **原型 C（shell-sdk settings）**
 
 ## 原型 A — Feature RPC 产品面
@@ -18,7 +18,7 @@
 | `src/core/db`                                 | entity component 或专用表 + migration                                                                                         |
 | `src/features/<slug>/domain`                  | 域逻辑 SSOT                                                                                                                   |
 | `sap-contract`                                | `feature-rpc/frames/<domain>.ts` + router 子集                                                                                |
-| `src/features/<slug>/habitat/routes/index.ts` | Habitat RPC handler（`defineHubRoute`）                                                                                       |
+| `src/features/<slug>/habitat/routes/index.ts` | Habitat RPC handler（`defineHabitatRoute`）                                                                                   |
 | `src/features/<slug>/ui`                      | 产品 UI（`@freeanima/feature-<slug>/ui/*`）                                                                                   |
 | `platform`                                    | `src/features/<slug>/plugin.ts` 注册 + 必要时 `service-*` 薄适配                                                              |
 | `shell-ui`                                    | 路由 lazy-load `@freeanima/feature-<slug>/ui/spa`（不写 SAP wire）；壳 CSS 已 `@source` 整棵 `src`，一般不必再按 feature 登记 |
@@ -27,7 +27,7 @@
 
 ## 原型 A′ — SAP attach 宿主（仅 companion）
 
-**示例**：companion（Electron main 同进程 `createSatelliteHub`；overlay 经 IPC 收 runtime）
+**示例**：companion（Electron main 同进程 `createSatelliteHabitatAttach`；overlay 经 IPC 收 runtime）
 
 | 层                       | 必须改                                                           |
 | ------------------------ | ---------------------------------------------------------------- |
@@ -41,12 +41,12 @@
 
 **示例**：memory、config、cron、MCP、entity worlds（Habitat UI）
 
-| 层                                               | 必须改                                                                          |
-| ------------------------------------------------ | ------------------------------------------------------------------------------- |
-| `src/features/habitat/protocol/habitat-contract` | API 类型 + habitat-contract re-export（schema SSOT 在 habitat-contract）        |
-| `src/features/habitat/habitat/habitat-api`       | Habitat RPC handler 实现 + REST 基础设施（health、TLS、TTS）                    |
-| `src/features/habitat/plugin.ts`                 | `hub.rpc` 注册 handler；HTTP REST path 由 habitat-contract `meta.http` 自动生成 |
-| `src/features/habitat/ui/habitat`                | `@freeanima/habitat-client` `call` / `subscribe`                                |
+| 层                                               | 必须改                                                                              |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `src/features/habitat/protocol/habitat-contract` | API 类型 + habitat-contract re-export（schema SSOT 在 habitat-contract）            |
+| `src/features/habitat/habitat/habitat-api`       | Habitat RPC handler 实现 + REST 基础设施（health、TLS、TTS）                        |
+| `src/features/habitat/plugin.ts`                 | `habitat.rpc` 注册 handler；HTTP REST path 由 habitat-contract `meta.http` 自动生成 |
+| `src/features/habitat/ui/habitat`                | `@freeanima/habitat-client` `call` / `subscribe`                                    |
 
 **不要**：import `sap-contract`；在 registry 手写 legacy `/api/*` Habitat path（主 Habitat 统一为 `/rpc/v1/*`）；新建 `satellite-*` 包。
 
@@ -65,11 +65,11 @@
 
 1. 在 `src/features/<slug>/habitat/method-defs.ts` 增加 method 定义（Zod + `dualTransportMeta` / `wsOnlyMeta` / `binaryHttpMeta`）
 2. 在 `src/shared/sap-contract/feature-rpc/frames/` 增加 schema（若尚未存在）
-3. 在 `src/features/<slug>/habitat/routes/index.ts` 用 `bindHubRouteHandlers(methodDefs, handlers)` 绑定 handler（**禁止** import `habitat-client`）
+3. 在 `src/features/<slug>/habitat/routes/index.ts` 用 `bindHabitatRouteHandlers(methodDefs, handlers)` 绑定 handler（**禁止** import `habitat-client`）
 4. 在 `src/platform/habitat/habitat-router.ts` import 该 feature routes bundle；`platform/habitat/feature-method-defs.ts` 聚合 `method-defs.ts` 供浏览器 client registry
 5. Feature UI `api.ts` 使用 `@freeanima/platform/habitat/client.ts` 的 `getTypedSatelliteHabitatClient` / `call` / `subscribe`
 
-Habitat method：`habitat-contract/registry/habitat.ts` + `console/habitat/routes/index.ts`（`defineHubRouteFromDef`）。业务传输：**WS** `/rpc/v1`（HubRPC envelope）；**HTTP** `/rpc/v1/{path}`（REST GET/POST，plain JSON）。
+Habitat method：`habitat-contract/registry/habitat.ts` + `console/habitat/routes/index.ts`（`defineHabitatRouteFromDef`）。业务传输：**WS** `/rpc/v1`（HabitatRPC envelope）；**HTTP** `/rpc/v1/{path}`（REST GET/POST，plain JSON）。
 
 SAP attach 专用 method（tool/terminal/sap.attach）仍在 [`src/platform/sap/ws-server.ts`](../../src/platform/sap/ws-server.ts) switch 内。
 

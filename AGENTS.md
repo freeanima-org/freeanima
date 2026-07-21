@@ -5,7 +5,7 @@
 
 ## Global view
 
-`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: product name for the long-running process is **Habitat**（栖息地）; Shell / MCP are **Portal**（入口）. Source: `bun run dev:hub`; standalone: `anima service`（wire still Habitat RPC `/rpc/v1` + MCP `/mcp` + engine）; UI from `src/app/shell/desktop` / `mobile`. Naming: [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming + [`i18n/glossary.md`](i18n/glossary.md).
+`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: product name for the long-running process is **Habitat**（栖息地）; Shell / MCP are **Portal**（入口）. Source: `bun run dev:habitat`（legacy `dev:hub`）；standalone: `anima service`（wire still Habitat RPC `/rpc/v1` + MCP `/mcp` + engine）; UI from `src/app/shell/desktop` / `mobile`. Naming: [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming + [`i18n/glossary.md`](i18n/glossary.md).
 
 | Capability     | Highlights                                                                                                                                                                                                              |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -53,27 +53,27 @@ How agents should _shape_ changes. Hard checks and conventions → [`.agent/rule
 bun install
 just                  # 列出配方
 just dev              # Habitat（≥10000）+ Web（:5000）；多 worktree 友好
-just hub / just web   # 分进程
+just habitat / just web (legacy: just hub)   # 分进程
 just check            # PR 前质量门禁
 just test / just test-changed
 just fmt / just lint-fix
 just db-generate / just db-migrate   # 需 DATABASE_URL
 just build-web / just install-cli
-just memory-sample -- --hub-url http://127.0.0.1:<hub> --stage full
+just memory-sample -- --habitat-url http://127.0.0.1:<habitat> --stage full
 
 # CI / hook 仍用 bun run（勿删这些 package.json 名）
 bun run check
 bun run typecheck && bun run lint && bun run test:changed
-bun run dev:hub && bun run dev:web
+bun run dev:habitat && bun run dev:web
 bun run build:web
 # anima service … # 仅 standalone 安装版 CLI
 ```
 
 - Habitat API（**生产**）：`http://127.0.0.1:2658/rpc/v1`（standalone `anima service`；`web.enabled` 且已有 dist 时托管 `/web/*`）
-- Habitat API（**源码/dev:hub**）：默认随机 **≥10000**（避开 2658/2659）；多 worktree 并行友好
-- Web 形态：standalone / 源码部署须先有 `build:web`（打包时强制；源码部署手动）；dev 用 `dev:hub` + `dev:web`（HMR，不依赖落盘）
+- Habitat API（**源码/dev:habitat**）：默认随机 **≥10000**（避开 2658/2659）；多 worktree 并行友好
+- Web 形态：standalone / 源码部署须先有 `build:web`（打包时强制；源码部署手动）；dev 用 `dev:habitat` + `dev:web`（HMR，不依赖落盘）
 - 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `src/app/shell/desktop` / `mobile` / `web`（web 仅本地调试）
-- Dev UI：`bun run dev:web` → `http://127.0.0.1:5000/web/chat`（若 `http.tls`/`DEV_HTTPS` 则为 `https://…`；Habitat：`/web/habitat/dashboard`）；浏览器默认 Habitat = **页面 origin**（Vite `/hub` proxy）；`dev:hub` 自动写入 `~/.anima/dev-web.token` 供 Vite 注入 token；**忽略** yaml `web.*`（Habitat 不托管 dist）
+- Dev UI：`bun run dev:web` → `http://127.0.0.1:5000/web/chat`（若 `http.tls`/`DEV_HTTPS` 则为 `https://…`；Habitat：`/web/habitat/dashboard`）；浏览器默认 Habitat = **页面 origin**（Vite `/rpc` proxy；legacy `/hub` 至 0.9.3）；`dev:habitat` 自动写入 `~/.anima/dev-web.token` 供 Vite 注入 token；**忽略** yaml `web.*`（Habitat 不托管 dist）
 - 开发 TLS：若 `http.tls.enabled` / `DEV_HTTPS=1`，由 **Vite HTTPS** 终止（复用 `~/.anima/tls`），Habitat 仅明文（`skipTls`）；与 `http` 覆盖对称，dev 亦覆盖 `web.enabled/host/port`
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)
 - PG ops (install, backup): [`docs/guide/database.md`](docs/guide/database.md)

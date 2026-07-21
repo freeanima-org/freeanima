@@ -13,7 +13,7 @@ export const mcpServerSchema = z
     command: z.string().optional(),
     args: z.array(z.string()).optional(),
     url: z.string().optional(),
-    /** stdio | sse（旧 HTTP+SSE）| http（Streamable HTTP，连 Hub /mcp 用这个） */
+    /** stdio | sse（旧 HTTP+SSE）| http（Streamable HTTP，连 Habitat /mcp 用这个） */
     transport: z.enum(["stdio", "sse", "http"]).optional(),
     /** @deprecated Prefer `headers.Authorization`; kept for runtime compat */
     api_key_env: z.string().optional(),

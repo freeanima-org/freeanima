@@ -25,65 +25,65 @@ import {
   vaultSearchOutputSchema,
 } from "@freeanima/shared/sap-contract/frames/vault";
 
-import { defineHubMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
+import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
 
 export const vaultMethodDefs = {
-  "vault.list": defineHubMethod({
+  "vault.list": defineHabitatMethod({
     input: vaultListInputSchema,
     output: vaultListOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "vault.get": defineHubMethod({
+  "vault.get": defineHabitatMethod({
     input: vaultGetInputSchema,
     output: vaultGetOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "vault.create": defineHubMethod({
+  "vault.create": defineHabitatMethod({
     input: vaultCreateInputSchema,
     output: vaultCreateOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "vault.createPlain": defineHubMethod({
+  "vault.createPlain": defineHabitatMethod({
     input: vaultCreatePlainInputSchema,
     output: vaultCreatePlainOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "vault.patch": defineHubMethod({
+  "vault.patch": defineHabitatMethod({
     input: vaultPatchInputSchema,
     output: vaultPatchOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "vault.patchPlain": defineHubMethod({
+  "vault.patchPlain": defineHabitatMethod({
     input: vaultPatchPlainInputSchema,
     output: vaultPatchPlainOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "vault.delete": defineHubMethod({
+  "vault.delete": defineHabitatMethod({
     input: vaultDeleteInputSchema,
     output: vaultDeleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "vault.search": defineHubMethod({
+  "vault.search": defineHabitatMethod({
     input: vaultSearchInputSchema,
     output: vaultSearchOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "vault.crypto.get": defineHubMethod({
+  "vault.crypto.get": defineHabitatMethod({
     input: vaultCryptoGetInputSchema,
     output: vaultCryptoGetOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "vault.crypto.init": defineHubMethod({
+  "vault.crypto.init": defineHabitatMethod({
     input: vaultCryptoInitInputSchema,
     output: vaultCryptoInitOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "vault.crypto.change": defineHubMethod({
+  "vault.crypto.change": defineHabitatMethod({
     input: vaultCryptoChangeInputSchema,
     output: vaultCryptoChangeOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "vault.ensureAgent": defineHubMethod({
+  "vault.ensureAgent": defineHabitatMethod({
     input: vaultEnsureAgentInputSchema,
     output: vaultEnsureAgentOutputSchema,
     meta: dualTransportMeta(false),

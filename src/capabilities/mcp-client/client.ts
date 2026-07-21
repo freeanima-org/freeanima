@@ -89,7 +89,7 @@ function createTransport(serverName: string, cfg: McpServerConfig): Transport {
       return new StreamableHTTPClientTransport(url, opts) as Transport;
     }
 
-    // 旧 HTTP+SSE（已弃用）；连 FreeAnima Hub /mcp 请用 transport: http
+    // 旧 HTTP+SSE（已弃用）；连 FreeAnima Habitat /mcp 请用 transport: http
     const opts: SSEClientTransportOptions = {};
     if (headers) {
       opts.requestInit = { headers };

@@ -29,7 +29,7 @@ describe("offline-cache-first", () => {
     hubAvailable = true;
   });
 
-  it("Hub 可用时优先 fetch，不因缓存命中短路", async () => {
+  it("Habitat 可用时优先 fetch，不因缓存命中短路", async () => {
     const scope = "test-scope";
     await writeOfflineCache(scope, "ns", "id", { ok: false, from: "cache" });
 

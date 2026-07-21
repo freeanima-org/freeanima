@@ -63,6 +63,9 @@ function webConfigJsonResponse(req: Request, options: WebStaticOptions): Respons
     options.webBuild === undefined ? readWebBuildMetaFromDist(options.distDir) : options.webBuild;
   const body = JSON.stringify({
     app_id: options.appId ?? "chat",
+    habitat_url: origin,
+    habitat_ws_url: resolveHabitatRpcWsUrl(origin),
+    // @deprecated 0.9.3 后删除 — dual-write
     hub_url: origin,
     hub_ws_url: resolveHabitatRpcWsUrl(origin),
     ...(options.uiVersion ? { ui_version: options.uiVersion } : {}),

@@ -11,7 +11,7 @@ export type PomodoroTaskPickRow = {
 
 const PICK_LIMIT = 10;
 
-function hub() {
+function habitat() {
   return getTypedSatelliteHabitatClient();
 }
 
@@ -29,7 +29,7 @@ function sortByUpdatedDesc(items: PomodoroTaskPickRow[]): PomodoroTaskPickRow[] 
 }
 
 export async function fetchRecentPendingTasksForPicker(): Promise<PomodoroTaskPickRow[]> {
-  const data = await hub().call(
+  const data = await habitat().call(
     "tasklist.item.list",
     withSubjectKind({ status: "pending", limit: 50 }),
   );
@@ -40,7 +40,7 @@ export async function fetchRecentPendingTasksForPicker(): Promise<PomodoroTaskPi
 export async function searchPendingTasksForPicker(query: string): Promise<PomodoroTaskPickRow[]> {
   const q = query.trim();
   if (!q) return fetchRecentPendingTasksForPicker();
-  const data = await hub().call(
+  const data = await habitat().call(
     "task.search",
     withSubjectKind({ query: q, status: "pending", limit: PICK_LIMIT }),
   );
@@ -52,7 +52,7 @@ export async function resolveTaskTitleForPicker(taskId: number): Promise<string 
   const hit = recent.find((row) => row.id === taskId);
   if (hit) return hit.title;
 
-  const data = await hub().call(
+  const data = await habitat().call(
     "tasklist.item.list",
     withSubjectKind({ status: "all", limit: 200 }),
   );

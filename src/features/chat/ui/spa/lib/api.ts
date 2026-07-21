@@ -37,7 +37,7 @@ function mapConversationList(raw: {
   };
 }
 
-function hub() {
+function habitat() {
   return getTypedSatelliteHabitatClient();
 }
 
@@ -56,7 +56,7 @@ export type { ConversationAcpDockSnapshot, StreamApiEvent } from "./types.ts";
 
 export async function listConversations(opts?: { includeArchived?: boolean }) {
   requireHabitatFetch("conversation.list");
-  const result = await hub().call("conversation.list", {
+  const result = await habitat().call("conversation.list", {
     platform: chatPlatform(),
     include_archived: opts?.includeArchived,
   });
@@ -64,13 +64,13 @@ export async function listConversations(opts?: { includeArchived?: boolean }) {
 }
 
 export async function createConversation() {
-  const result = await hub().call("conversation.create", { platform: chatPlatform() });
+  const result = await habitat().call("conversation.create", { platform: chatPlatform() });
   return { conversation_id: result.conversation_id };
 }
 
 export async function getConversationTail(conversationId: string) {
   requireHabitatFetch("conversation.tail");
-  return hub().call("conversation.tail", { conversation_id: conversationId });
+  return habitat().call("conversation.tail", { conversation_id: conversationId });
 }
 
 export type StoredMessagesOpts = {
@@ -95,7 +95,7 @@ export async function getStoredMessages(
   opts?: StoredMessagesOpts,
 ): Promise<StoredMessagesResponse> {
   requireHabitatFetch("conversation.messages");
-  return hub().call(
+  return habitat().call(
     "conversation.messages",
     omitUndefined({
       conversation_id: conversationId,
@@ -106,28 +106,28 @@ export async function getStoredMessages(
 }
 
 export async function setConversationTitle(conversationId: string, title: string) {
-  await hub().call("conversation.patchTitle", { conversation_id: conversationId, title });
+  await habitat().call("conversation.patchTitle", { conversation_id: conversationId, title });
   return { ok: true as const };
 }
 
 export async function archiveConversation(conversationId: string) {
-  await hub().call("conversation.archive", { conversation_id: conversationId });
+  await habitat().call("conversation.archive", { conversation_id: conversationId });
   return { ok: true as const };
 }
 
 export async function unarchiveConversation(conversationId: string) {
-  await hub().call("conversation.unarchive", { conversation_id: conversationId });
+  await habitat().call("conversation.unarchive", { conversation_id: conversationId });
   return { ok: true as const };
 }
 
 export async function deleteConversation(conversationId: string) {
-  await hub().call("conversation.delete", { conversation_id: conversationId });
+  await habitat().call("conversation.delete", { conversation_id: conversationId });
   return { ok: true as const };
 }
 
 /** 重编辑：删除末条用户消息及其后的所有内容 */
 export async function rollbackBeforeLastUserMessage(conversationId: string) {
-  await hub().call("conversation.rollbackBeforeLastUser", { conversation_id: conversationId });
+  await habitat().call("conversation.rollbackBeforeLastUser", { conversation_id: conversationId });
   return { ok: true as const };
 }
 
@@ -135,7 +135,7 @@ export async function getConversationAcpDock(
   conversationId: string,
 ): Promise<ConversationAcpDockSnapshot> {
   requireHabitatFetch("conversation.acpDock");
-  const raw = await hub().call("conversation.acpDock", { conversation_id: conversationId });
+  const raw = await habitat().call("conversation.acpDock", { conversation_id: conversationId });
   return {
     ...raw,
     tasks: raw.tasks.map((task) => ({
@@ -151,7 +151,7 @@ export async function getConversationAcpDock(
 }
 
 export async function listCommands(opts?: { all?: boolean; platform?: string }) {
-  return hub().call("conversation.commands", {
+  return habitat().call("conversation.commands", {
     all: opts?.all,
     platform: opts?.platform,
   });
@@ -179,7 +179,7 @@ export function subscribeConversationUpdates(
 }
 
 export async function listConversationCommands(opts?: { all?: boolean }) {
-  return hub().call("conversation.commands", {
+  return habitat().call("conversation.commands", {
     platform: chatPlatform(),
     all: opts?.all,
   });
@@ -195,7 +195,7 @@ export async function runConversationCommand(
   text: string,
 ): Promise<ConversationCommandResult> {
   requireHabitatFetch("conversation.command");
-  const raw = await hub().call(
+  const raw = await habitat().call(
     "conversation.command",
     {
       conversation_id: conversationId,
@@ -235,7 +235,7 @@ export async function lookupActiveStream(
   conversationId: string,
 ): Promise<{ stream_id?: string; status?: string }> {
   requireHabitatFetch("stream.lookup");
-  const raw = await hub().call("stream.lookup", { conversation_id: conversationId });
+  const raw = await habitat().call("stream.lookup", { conversation_id: conversationId });
   if (!raw || typeof raw !== "object") return {};
   return raw as { stream_id?: string; status?: string };
 }
@@ -250,7 +250,7 @@ export async function fetchLlmDebug(conversationId: string): Promise<{
   final?: import("@freeanima/features/chat/ui/spa/lib/types.ts").LlmDebugSnapshotPayload;
   updated_at?: string;
 }> {
-  const raw = await hub().call("llm_debug.get", { conversation_id: conversationId });
+  const raw = await habitat().call("llm_debug.get", { conversation_id: conversationId });
   if (!raw || typeof raw !== "object") return {};
   return raw as {
     initial?: import("@freeanima/features/chat/ui/spa/lib/types.ts").LlmDebugSnapshotPayload;

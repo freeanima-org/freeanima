@@ -4,5 +4,5 @@ export const notificationPlugin = {
   shell: {
     routes: [{ path: "/notifications", featureId: "notification", navLabel: "Notifications" }],
   },
-  hub: {},
+  habitat: {},
 } as const;

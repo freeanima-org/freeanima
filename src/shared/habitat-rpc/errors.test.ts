@@ -9,6 +9,7 @@ import {
 describe("habitat-rpc errors", () => {
   test("isHabitatRpcTimeoutError 识别 HabitatRpcTimeoutError", () => {
     expect(isHabitatRpcTimeoutError(new HabitatRpcTimeoutError("x"))).toBe(true);
+    expect(isHabitatRpcTimeoutError(new Error("habitat_rpc_timeout: x"))).toBe(true);
     expect(isHabitatRpcTimeoutError(new Error("hub_rpc_timeout: x"))).toBe(true);
     expect(isHabitatRpcTimeoutError(new Error("other"))).toBe(false);
   });

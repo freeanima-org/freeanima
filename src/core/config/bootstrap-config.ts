@@ -14,7 +14,7 @@ const redisBootstrapSchema = z
   })
   .optional();
 
-/** 冷启动引导段：必须在 config.yaml，不写入 hub_runtime_config */
+/** 冷启动引导段：必须在 config.yaml，不写入 habitat_runtime_config */
 export const BOOTSTRAP_CONFIG_KEYS = ["database", "http", "redis", "web"] as const;
 
 export type BootstrapConfigKey = (typeof BOOTSTRAP_CONFIG_KEYS)[number];

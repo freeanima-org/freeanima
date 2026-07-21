@@ -1,6 +1,6 @@
 import { omitUndefined } from "@freeanima/core/util";
 import type { SapRequestContext } from "@freeanima/shared/sap-contract";
-import { bindHubRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { tagMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
@@ -20,7 +20,7 @@ function ctxAuth(ctx: unknown) {
   return (ctx as SapRequestContext).auth;
 }
 
-export const tagHubRoutes = bindHubRouteHandlers(tagMethodDefs, {
+export const tagHubRoutes = bindHabitatRouteHandlers(tagMethodDefs, {
   "tag.list": async (deps, input, ctx) =>
     service.serviceTagList(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input), ctxAuth(ctx)),
   "tag.search": async (deps, input, ctx) =>

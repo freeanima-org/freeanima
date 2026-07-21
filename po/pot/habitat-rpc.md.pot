@@ -17,33 +17,33 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title #
-#: docs/sap/hub-rpc.md:1 docs/sap/hub-rpc.md:5
+#: docs/sap/habitat-rpc.md:1 docs/sap/habitat-rpc.md:5
 #, no-wrap
 msgid "Hub RPC"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:8
+#: docs/sap/habitat-rpc.md:8
 #, no-wrap
 msgid "**Hub RPC** (`HubRPC/1.0`) is the **single business channel** between Hub clients and the agent runtime. Transport:\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/hub-rpc.md:11
+#: docs/sap/habitat-rpc.md:11
 msgid ""
 "**WebSocket** — long-lived connection at **`/hub/rpc/v1`** (connect "
 "handshake + heartbeat; HubRPC `req`/`res`/`evt` envelope)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/hub-rpc.md:11
+#: docs/sap/habitat-rpc.md:11
 msgid ""
 "**HTTP REST** — stateless GET/POST at **`/hub/rpc/v1/{method/path}`** (plain "
 "JSON body or query; `Authorization: Bearer`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:13
+#: docs/sap/habitat-rpc.md:13
 msgid ""
 "Implemented in [`src/shared/hub-rpc/`](../../src/shared/hub-rpc/) (WS "
 "envelope + HTTP REST helpers) and [`src/platform/hub/http-rest-router.ts`]"
@@ -51,7 +51,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:15
+#: docs/sap/habitat-rpc.md:15
 msgid ""
 "Binary HTTP methods (e.g. `tts.synthesize`, companion assets, TLS PEM/QR) "
 "use Hub RPC REST with registry `request` / `response` encoding. Public "
@@ -60,7 +60,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:17
+#: docs/sap/habitat-rpc.md:17
 msgid ""
 "SAP (`SAP/1.0`) is a **session layer** on top of Hub RPC WebSocket: true "
 "satellites call `sap.attach` after connect; bundled SPA modules **never** "
@@ -68,13 +68,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/hub-rpc.md:18
+#: docs/sap/habitat-rpc.md:18
 #, no-wrap
 msgid "Endpoints"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/sap/hub-rpc.md:20
+#: docs/sap/habitat-rpc.md:20
 #, no-wrap
 msgid ""
 "ws://{hub_host}:{port}/hub/rpc/v1              # WebSocket upgrade (HubRPC envelope)\n"
@@ -83,7 +83,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:27
+#: docs/sap/habitat-rpc.md:27
 msgid ""
 "Derive WS URL from HTTP: replace `http` with `ws`, append `/hub/rpc/v1`. "
 "Helpers: `resolveHubRpcWsUrl`, `buildHubRestRequest` in `@freeanima/shared/"
@@ -91,27 +91,27 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:29
+#: docs/sap/habitat-rpc.md:29
 msgid ""
 "Hub route: [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-"
 "route.ts)."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/hub-rpc.md:30
+#: docs/sap/habitat-rpc.md:30
 #, no-wrap
 msgid "HTTP REST mapping"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:33
+#: docs/sap/habitat-rpc.md:33
 msgid ""
 "Hub method `domain.action` maps to path **`/hub/rpc/v1/domain/action`** "
 "(dots → slashes; camelCase preserved)."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:41
+#: docs/sap/habitat-rpc.md:41
 #, no-wrap
 msgid ""
 "| Kind           | HTTP     | Example                                                             |\n"
@@ -124,7 +124,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:43
+#: docs/sap/habitat-rpc.md:43
 msgid ""
 "Route metadata is generated from [`hub-contract`](../../src/shared/hub-"
 "contract/) (`meta.http`: `verb`, `path`, `pathParams`). Wrong verb on a "
@@ -132,20 +132,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:45
+#: docs/sap/habitat-rpc.md:45
 msgid ""
 "HTTP responses are **plain handler JSON** (not HubRPC `res` envelope). "
 "Errors: `{ \"error\": { \"code\", \"message\" } }` with 4xx/5xx status."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/hub-rpc.md:46
+#: docs/sap/habitat-rpc.md:46
 #, no-wrap
 msgid "WebSocket envelope kinds"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:55
+#: docs/sap/habitat-rpc.md:55
 #, no-wrap
 msgid ""
 "| `kind`      | Direction    | Purpose                                                    |\n"
@@ -158,7 +158,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:57
+#: docs/sap/habitat-rpc.md:57
 msgid ""
 "HTTP REST uses Bearer on each GET/POST unless the method declares `auth: "
 "optional` (e.g. `health.probe`, `tls.ca.*`). WebSocket uses `connect` frame "
@@ -166,7 +166,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:59
+#: docs/sap/habitat-rpc.md:59
 msgid ""
 "Method contracts live in [`src/shared/hub-contract/registry/`](../../src/"
 "shared/hub-contract/registry/) (`transports: http | ws`; HTTP routes in "
@@ -174,13 +174,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/hub-rpc.md:60
+#: docs/sap/habitat-rpc.md:60
 #, no-wrap
 msgid "Authentication"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:63
+#: docs/sap/habitat-rpc.md:63
 msgid ""
 "Every **WebSocket** connection must send a valid **service API token** in "
 "the `connect` payload (`auth_token`). **HTTP REST** uses `Authorization: "
@@ -191,7 +191,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:65
+#: docs/sap/habitat-rpc.md:65
 msgid ""
 "Bundled clients read the token from `window.satelliteShell.remoteAuth.token` "
 "(shell bridge), configured in client **Hub settings** (`/settings`). Hub `/"
@@ -199,20 +199,20 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/hub-rpc.md:66
+#: docs/sap/habitat-rpc.md:66
 #, no-wrap
 msgid "Binary HTTP methods"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:69
+#: docs/sap/habitat-rpc.md:69
 msgid ""
 "Registry `meta.http` may set `request` / `response` encoding (default "
 "`json`):"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:75
+#: docs/sap/habitat-rpc.md:75
 #, no-wrap
 msgid ""
 "| Encoding             | Use                                                                                                         |\n"
@@ -223,27 +223,27 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:77
+#: docs/sap/habitat-rpc.md:77
 msgid ""
 "Examples: `tts.synthesize` (JSON POST → MPEG stream), `companion.asset.get` "
 "(GET → VRM), `tls.ca` (GET → PEM)."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:79
+#: docs/sap/habitat-rpc.md:79
 msgid ""
 "Helpers: `hubRestUrl()`, `binaryHttpMeta()` / `rawPublicHttpMeta()` in hub-"
 "contract. JSON methods continue to use `hubClient.call()`."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/hub-rpc.md:80
+#: docs/sap/habitat-rpc.md:80
 #, no-wrap
 msgid "Client profiles"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:86
+#: docs/sap/habitat-rpc.md:86
 #, no-wrap
 msgid ""
 "| Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |\n"
@@ -253,7 +253,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:88
+#: docs/sap/habitat-rpc.md:88
 msgid ""
 "Bundled SPA shares **one** Hub RPC WebSocket per page load (for streaming, "
 "subscriptions, and WS fallback). **`hub-client.call()`** picks transport per "
@@ -264,20 +264,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:90
+#: docs/sap/habitat-rpc.md:90
 msgid ""
 "Satellite processes connect with Hub RPC, then `sap.attach` with `app_id` / "
 "`instance_id` before `tool.register` or instance-scoped methods."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/sap/hub-rpc.md:91 docs/sap/transport.md:99 messages/po4a/en.xml:147
+#: docs/sap/habitat-rpc.md:91 docs/sap/transport.md:99 messages/po4a/en.xml:147
 #, no-wrap
 msgid "Reconnect"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:94
+#: docs/sap/habitat-rpc.md:94
 msgid ""
 "Use `runHubRpcTransport` for connect, heartbeat, and exponential backoff "
 "(default 1s → 30s cap). On satellite detach or socket close, Hub unregisters "
@@ -285,7 +285,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/hub-rpc.md:95
+#: docs/sap/habitat-rpc.md:95
 msgid ""
 "See also: [transport.md](transport.md) (full state machine), [overview.md]"
 "(overview.md)."

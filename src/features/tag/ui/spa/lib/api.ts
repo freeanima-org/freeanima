@@ -5,7 +5,7 @@ import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/clie
 
 export type TagRow = TagRowPayload;
 
-function hub() {
+function habitat() {
   return getTypedSatelliteHabitatClient();
 }
 
@@ -14,17 +14,17 @@ function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
 }
 
 export async function fetchTags(): Promise<TagRow[]> {
-  const data = await hub().call("tag.list", withSubjectKind({}));
+  const data = await habitat().call("tag.list", withSubjectKind({}));
   return data.tags;
 }
 
 export async function createTag(title: string): Promise<TagRow> {
-  const data = await hub().call("tag.create", withSubjectKind({ title }));
+  const data = await habitat().call("tag.create", withSubjectKind({ title }));
   return data.item;
 }
 
 export async function setEntityTagIds(entityId: number, tagIds: number[]): Promise<number[]> {
-  const data = await hub().call(
+  const data = await habitat().call(
     "tag.setOnEntity",
     withSubjectKind({ entity_id: entityId, tag_ids: tagIds }),
   );

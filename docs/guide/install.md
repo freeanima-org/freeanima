@@ -128,7 +128,7 @@ anima upgrade --proxy ghproxy-net
 anima upgrade --check --channel canary --proxy ghfast-top
 ```
 
-升级时 Hub 在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进制瞬间短暂停服并自动拉起。未运行 service 时仅写入新的 `anima_<version>` 并切换 `anima` symlink，不会自动启动。
+升级时 Habitat 在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进制瞬间短暂停服并自动拉起。未运行 service 时仅写入新的 `anima_<version>` 并切换 `anima` symlink，不会自动启动。
 
 ```bash
 anima service restart   # 手动升级二进制后若未自动拉起时使用

@@ -11,7 +11,7 @@ import { omitUndefined } from "@freeanima/core/util";
 import type { HubDispatchContext } from "@freeanima/platform/habitat/dispatch.ts";
 import { habitatMethodDefs } from "@freeanima/shared/habitat-contract/registry/habitat.ts";
 import {
-  defineHubRouteFromDef,
+  defineHabitatRouteFromDef,
   mergeFeatureRoutes,
   type HubRouteHandler,
 } from "@freeanima/shared/habitat-contract/route.ts";
@@ -134,34 +134,41 @@ const entitySearchHandler: AnyHubRouteHandler = (_deps, input, ctx) =>
   );
 
 export const consoleHubRoutes = mergeFeatureRoutes([
-  defineHubRouteFromDef("health.probe", habitatMethodDefs["health.probe"], (_deps, _input, ctx) =>
-    Promise.resolve(getHealthProbe((ctx as HubDispatchContext).auth ?? null)),
+  defineHabitatRouteFromDef(
+    "health.probe",
+    habitatMethodDefs["health.probe"],
+    (_deps, _input, ctx) =>
+      Promise.resolve(getHealthProbe((ctx as HubDispatchContext).auth ?? null)),
   ),
-  defineHubRouteFromDef("tls.ca.info", habitatMethodDefs["tls.ca.info"], (_deps, _input, ctx) =>
+  defineHabitatRouteFromDef("tls.ca.info", habitatMethodDefs["tls.ca.info"], (_deps, _input, ctx) =>
     Promise.resolve(getTlsCaInfo(requireHttpRequest(ctx as HubDispatchContext))),
   ),
-  defineHubRouteFromDef("tls.ca.qr", habitatMethodDefs["tls.ca.qr"], async (_deps, input, ctx) => {
-    const res = await getTlsCaQrResponse(
-      qrRequest(ctx as HubDispatchContext, input as { size?: number }),
-    );
-    if (!res) {
-      throw new ApiHandlerError(404, "TLS CA unavailable", { code: "TLS_CA_UNAVAILABLE" });
-    }
-    return res;
-  }),
-  defineHubRouteFromDef("tls.ca", habitatMethodDefs["tls.ca"], async () => {
+  defineHabitatRouteFromDef(
+    "tls.ca.qr",
+    habitatMethodDefs["tls.ca.qr"],
+    async (_deps, input, ctx) => {
+      const res = await getTlsCaQrResponse(
+        qrRequest(ctx as HubDispatchContext, input as { size?: number }),
+      );
+      if (!res) {
+        throw new ApiHandlerError(404, "TLS CA unavailable", { code: "TLS_CA_UNAVAILABLE" });
+      }
+      return res;
+    },
+  ),
+  defineHabitatRouteFromDef("tls.ca", habitatMethodDefs["tls.ca"], async () => {
     const res = getTlsCaPemResponse();
     if (!res) {
       throw new ApiHandlerError(404, "TLS CA unavailable", { code: "TLS_CA_UNAVAILABLE" });
     }
     return res;
   }),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "status.get",
     habitatMethodDefs["status.get"],
     wrapConsoleLegacyHandler(() => getStatus()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "status.tools",
     habitatMethodDefs["status.tools"],
     wrapConsoleLegacyHandler((payload) => {
@@ -169,49 +176,49 @@ export const consoleHubRoutes = mergeFeatureRoutes([
       return listTools(scope === "default" ? "default" : undefined);
     }),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "status.platforms",
     habitatMethodDefs["status.platforms"],
     wrapConsoleLegacyHandler(() => getPlatforms()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "status.cronJobs",
     habitatMethodDefs["status.cronJobs"],
     wrapConsoleLegacyHandler(() => listCronJobs()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "status.cronJobPause",
     habitatMethodDefs["status.cronJobPause"],
     wrapConsoleLegacyHandler((payload) => pauseCronJob((payload as { id: string }).id)),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "status.cronJobResume",
     habitatMethodDefs["status.cronJobResume"],
     wrapConsoleLegacyHandler((payload) => resumeCronJob((payload as { id: string }).id)),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "status.cronJobRun",
     habitatMethodDefs["status.cronJobRun"],
     wrapConsoleLegacyHandler((payload) => runCronJobNow((payload as { id: string }).id)),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "status.restart",
     habitatMethodDefs["status.restart"],
     wrapConsoleLegacyHandler(() => restartService()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "config.get",
     habitatMethodDefs["config.get"],
     wrapConsoleLegacyHandler(() => getHubConfig()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "config.getSection",
     habitatMethodDefs["config.getSection"],
     wrapConsoleLegacyHandler((payload) =>
       getHubConfigSection((payload as { section: string }).section),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "config.patchSection",
     habitatMethodDefs["config.patchSection"],
     wrapConsoleLegacyHandler((payload) => {
@@ -219,7 +226,7 @@ export const consoleHubRoutes = mergeFeatureRoutes([
       return patchHabitatConfigSection(section, patch);
     }),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "config.replaceSection",
     habitatMethodDefs["config.replaceSection"],
     wrapConsoleLegacyHandler((payload) => {
@@ -227,7 +234,7 @@ export const consoleHubRoutes = mergeFeatureRoutes([
       return replaceHabitatConfigSection(section, value);
     }),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "config.testConnection",
     habitatMethodDefs["config.testConnection"],
     wrapConsoleLegacyHandler((payload) =>
@@ -240,75 +247,75 @@ export const consoleHubRoutes = mergeFeatureRoutes([
       ),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "memory.files",
     habitatMethodDefs["memory.files"],
     wrapConsoleLegacyHandler(() => listMemoryFiles()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "memory.search",
     habitatMethodDefs["memory.search"],
     wrapConsoleLegacyHandler((payload) =>
       memorySearch(payload as { query: string; limit?: number }),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "memory.semanticCount",
     habitatMethodDefs["memory.semanticCount"],
     wrapConsoleLegacyHandler(() => countSemanticMemory()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "memory.semanticList",
     habitatMethodDefs["memory.semanticList"],
     wrapConsoleLegacyHandler((payload) => listSemanticMemories(payload as Record<string, unknown>)),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "memory.semanticPin",
     habitatMethodDefs["memory.semanticPin"],
     wrapConsoleLegacyHandler((payload) =>
       updateSemanticMemoryPinned(payload as { id: number; pinned: boolean }),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "memory.limbicList",
     habitatMethodDefs["memory.limbicList"],
     wrapConsoleLegacyHandler((payload) => listLimbicMemories(payload as Record<string, unknown>)),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "memory.autobiographicalList",
     habitatMethodDefs["memory.autobiographicalList"],
     wrapConsoleLegacyHandler((payload) =>
       listAutobiographicalMemories(payload as Record<string, unknown>),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "entity.searchGet",
     habitatMethodDefs["entity.searchGet"],
     entitySearchHandler,
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "entity.searchPost",
     habitatMethodDefs["entity.searchPost"],
     entitySearchHandler,
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "entity.worldsList",
     habitatMethodDefs["entity.worldsList"],
     wrapConsoleLegacyHandler((payload) => listWorldEntities(payload as Record<string, unknown>)),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "entity.worldsCreate",
     habitatMethodDefs["entity.worldsCreate"],
     wrapConsoleLegacyHandler((payload) =>
       createWorldEntity(payload as Parameters<typeof createWorldEntity>[0]),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "entity.worldsGet",
     habitatMethodDefs["entity.worldsGet"],
     wrapConsoleLegacyHandler((payload) => getWorldEntity(Number((payload as { id: string }).id))),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "entity.worldsPatch",
     habitatMethodDefs["entity.worldsPatch"],
     wrapConsoleLegacyHandler((payload) => {
@@ -316,24 +323,24 @@ export const consoleHubRoutes = mergeFeatureRoutes([
       return updateWorldEntity(Number(id), body);
     }),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "entity.subjectsList",
     habitatMethodDefs["entity.subjectsList"],
     wrapConsoleLegacyHandler((payload) => listSubjectEntities(payload as Record<string, unknown>)),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "entity.subjectsCreate",
     habitatMethodDefs["entity.subjectsCreate"],
     wrapConsoleLegacyHandler((payload) =>
       createSubjectEntity(payload as Parameters<typeof createSubjectEntity>[0]),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "entity.subjectsGet",
     habitatMethodDefs["entity.subjectsGet"],
     wrapConsoleLegacyHandler((payload) => getSubjectEntity(Number((payload as { id: string }).id))),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "entity.subjectsPatch",
     habitatMethodDefs["entity.subjectsPatch"],
     wrapConsoleLegacyHandler((payload) => {
@@ -341,59 +348,59 @@ export const consoleHubRoutes = mergeFeatureRoutes([
       return updateSubjectEntity(Number(id), body);
     }),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "self.blocks",
     habitatMethodDefs["self.blocks"],
     wrapConsoleLegacyHandler(() => listSelfBlocks()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "prompt.debug",
     habitatMethodDefs["prompt.debug"],
     wrapConsoleLegacyHandler((payload) =>
       getPromptDebug((payload as { conversation_id?: string }).conversation_id),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "src/satellites.status",
     habitatMethodDefs["src/satellites.status"],
     wrapConsoleLegacyHandler(() => getSatellitesStatus()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "acp.status",
     habitatMethodDefs["acp.status"],
     wrapConsoleLegacyHandler(() => getAcpStatus()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "acp.startAll",
     habitatMethodDefs["acp.startAll"],
     wrapConsoleLegacyHandler(() => acpStartAll()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "acp.stopAll",
     habitatMethodDefs["acp.stopAll"],
     wrapConsoleLegacyHandler(() => acpStopAll()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "acp.startAgent",
     habitatMethodDefs["acp.startAgent"],
     wrapConsoleLegacyHandler((payload) => acpStartAgent((payload as { name: string }).name)),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "acp.stopAgent",
     habitatMethodDefs["acp.stopAgent"],
     wrapConsoleLegacyHandler((payload) => acpStopAgent((payload as { name: string }).name)),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "fts.status",
     habitatMethodDefs["fts.status"],
     wrapConsoleLegacyHandler(() => getFtsStatus()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "fts.rebuildStatus",
     habitatMethodDefs["fts.rebuildStatus"],
     wrapConsoleLegacyHandler(() => getRebuildFtsJobStatus()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "fts.rebuild",
     habitatMethodDefs["fts.rebuild"],
     wrapConsoleLegacyHandler((payload) =>
@@ -402,24 +409,24 @@ export const consoleHubRoutes = mergeFeatureRoutes([
       ),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "sleep.summary",
     habitatMethodDefs["sleep.summary"],
     wrapConsoleLegacyHandler(() => getSleepSummary()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "sleep.pipelineRuns",
     habitatMethodDefs["sleep.pipelineRuns"],
     wrapConsoleLegacyHandler((payload) =>
       listPipelineStepRuns(omitUndefined(payload as Record<string, unknown>)),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "sleep.pipelineStatus",
     habitatMethodDefs["sleep.pipelineStatus"],
     wrapConsoleLegacyHandler(() => getSleepPipelineStatus()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "sleep.runPipelineStep",
     habitatMethodDefs["sleep.runPipelineStep"],
     wrapConsoleLegacyHandler((payload) =>
@@ -435,40 +442,40 @@ export const consoleHubRoutes = mergeFeatureRoutes([
       ),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "sleep.startCycle",
     habitatMethodDefs["sleep.startCycle"],
     wrapConsoleLegacyHandler((payload) =>
       startSleepCycle(omitUndefined(payload as Record<string, unknown>)),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "cronLogs.list",
     habitatMethodDefs["cronLogs.list"],
     wrapConsoleLegacyHandler((payload) =>
       listCronLogs(omitUndefined(payload as Record<string, unknown>)),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "autoLlmRuns.list",
     habitatMethodDefs["autoLlmRuns.list"],
     wrapConsoleLegacyHandler((payload) =>
       listAutoLlmRuns(omitUndefined(payload as Record<string, unknown>)),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "worlds.context",
     habitatMethodDefs["worlds.context"],
     wrapConsoleLegacyHandler(() => getResolvedWorldContext()),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "conversation.adminGet",
     habitatMethodDefs["conversation.adminGet"],
     wrapConsoleLegacyHandler((payload) =>
       getConversationInfo((payload as { conversationId: string }).conversationId),
     ),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "conversation.adminListAll",
     habitatMethodDefs["conversation.adminListAll"],
     wrapConsoleLegacyHandler((payload) => {
@@ -482,12 +489,12 @@ export const consoleHubRoutes = mergeFeatureRoutes([
       );
     }),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "conversation.adminCreate",
     habitatMethodDefs["conversation.adminCreate"],
     wrapConsoleLegacyHandler((payload) => createConversation(payload as { platform: string })),
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "tokens.listForSubject",
     habitatMethodDefs["tokens.listForSubject"],
     async (_deps, payload, ctx) => {
@@ -498,7 +505,7 @@ export const consoleHubRoutes = mergeFeatureRoutes([
       return { items };
     },
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "tokens.createForSubject",
     habitatMethodDefs["tokens.createForSubject"],
     async (_deps, payload, ctx) => {
@@ -516,7 +523,7 @@ export const consoleHubRoutes = mergeFeatureRoutes([
       return { token: result.token, plaintext: result.plaintext };
     },
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "tokens.revoke",
     habitatMethodDefs["tokens.revoke"],
     async (_deps, payload, ctx) => {
@@ -533,7 +540,7 @@ export const consoleHubRoutes = mergeFeatureRoutes([
       return { ok: true as const };
     },
   ),
-  defineHubRouteFromDef(
+  defineHabitatRouteFromDef(
     "tts.synthesize",
     habitatMethodDefs["tts.synthesize"],
     handleTtsSynthesize as AnyHubRouteHandler,

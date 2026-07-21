@@ -2,6 +2,8 @@
 import { formatSapPlatform } from "./naming.ts";
 
 export type DirectSatelliteConfig = {
+  habitat_ws_url: string;
+  /** @deprecated 0.9.3 后删除 — 请用 habitat_ws_url */
   hub_ws_url: string;
   app_id: string;
   instance_id?: string;
@@ -14,13 +16,20 @@ export async function loadDirectSatelliteConfig(
   if (!res.ok) {
     throw new Error(`加载 config 失败: HTTP ${res.status}`);
   }
-  const raw = (await res.json()) as Partial<DirectSatelliteConfig>;
-  if (!raw.hub_ws_url?.trim()) {
-    throw new Error("config.json 缺少 hub_ws_url");
+  const raw = (await res.json()) as Partial<{
+    habitat_ws_url?: string;
+    hub_ws_url?: string;
+    app_id?: string;
+    instance_id?: string;
+  }>;
+  const ws = raw.habitat_ws_url?.trim() || raw.hub_ws_url?.trim() || "";
+  if (!ws) {
+    throw new Error("config.json 缺少 habitat_ws_url");
   }
   const instanceId = raw.instance_id?.trim();
   return {
-    hub_ws_url: raw.hub_ws_url.trim(),
+    habitat_ws_url: ws,
+    hub_ws_url: ws,
     app_id: raw.app_id?.trim() || "chat",
     ...(instanceId ? { instance_id: instanceId } : {}),
   };

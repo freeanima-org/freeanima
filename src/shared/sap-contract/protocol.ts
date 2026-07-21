@@ -1,5 +1,11 @@
 import {
   HABITAT_RPC_VERSION,
+  HABITAT_RPC_VERSION_LEGACY,
+  habitatRpcErrorSchema,
+  parseHabitatRpcEnvelope,
+  serializeHabitatRpcEnvelope,
+  habitatRpcConnectPayloadSchema,
+  habitatRpcConnectedPayloadSchema,
   hubRpcErrorSchema,
   parseHubRpcEnvelope,
   serializeHubRpcEnvelope,
@@ -9,6 +15,12 @@ import {
 
 export {
   HABITAT_RPC_VERSION,
+  HABITAT_RPC_VERSION_LEGACY,
+  habitatRpcErrorSchema,
+  parseHabitatRpcEnvelope,
+  serializeHabitatRpcEnvelope,
+  habitatRpcConnectPayloadSchema,
+  habitatRpcConnectedPayloadSchema,
   hubRpcErrorSchema,
   parseHubRpcEnvelope,
   serializeHubRpcEnvelope,
@@ -16,12 +28,17 @@ export {
   hubRpcConnectedPayloadSchema,
 };
 
-export type { HubRpcEnvelope, HubRpcError } from "@freeanima/shared/habitat-rpc";
+export type {
+  HabitatRpcEnvelope,
+  HabitatRpcError,
+  HubRpcEnvelope,
+  HubRpcError,
+} from "@freeanima/shared/habitat-rpc";
 
 /** @deprecated 使用 HABITAT_RPC_VERSION */
 export const SAP_VERSION = HABITAT_RPC_VERSION;
 
-export const parseSapEnvelope = parseHubRpcEnvelope;
-export const serializeSapEnvelope = serializeHubRpcEnvelope;
-export type SapEnvelope = import("@freeanima/shared/habitat-rpc").HubRpcEnvelope;
-export type SapError = import("@freeanima/shared/habitat-rpc").HubRpcError;
+export const parseSapEnvelope = parseHabitatRpcEnvelope;
+export const serializeSapEnvelope = serializeHabitatRpcEnvelope;
+export type SapEnvelope = import("@freeanima/shared/habitat-rpc").HabitatRpcEnvelope;
+export type SapError = import("@freeanima/shared/habitat-rpc").HabitatRpcError;

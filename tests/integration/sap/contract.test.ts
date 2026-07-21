@@ -12,7 +12,9 @@ import {
   sessionAcpDockInputSchema,
   conversationCommandsInputSchema,
   toolRegisterInputSchema,
-  hubRpcConnectPayloadSchema,
+  habitatRpcConnectPayloadSchema,
+  HABITAT_RPC_VERSION,
+  HABITAT_RPC_VERSION_LEGACY,
 } from "@freeanima/shared/sap-contract";
 
 describe("sap-contract envelopes", () => {
@@ -28,11 +30,19 @@ describe("sap-contract envelopes", () => {
   });
 
   it("validates Habitat RPC connect payload", () => {
-    const payload = hubRpcConnectPayloadSchema.parse({
-      protocol: "HubRPC/1.0",
+    const payload = habitatRpcConnectPayloadSchema.parse({
+      protocol: HABITAT_RPC_VERSION,
       auth_token: "secret",
     });
     expect(payload.auth_token).toBe("secret");
+  });
+
+  it("accepts legacy Habitat RPC connect protocol", () => {
+    const payload = habitatRpcConnectPayloadSchema.parse({
+      protocol: HABITAT_RPC_VERSION_LEGACY,
+      auth_token: "secret",
+    });
+    expect(payload.protocol).toBe(HABITAT_RPC_VERSION_LEGACY);
   });
 
   it("validates sap.attach payload", () => {
@@ -76,13 +86,25 @@ describe("sap-contract envelopes", () => {
       features_enabled: ["capability_mask"],
       server_info: {
         anima_version: "0.5.0",
-        hub_rpc_version: "HubRPC/1.0",
+        habitat_rpc_version: HABITAT_RPC_VERSION,
         capability_mask: {
           presets: [{ name: "developer", allowed_tools_summary: ["file_read"] }],
         },
       },
     });
     expect(parsed.server_info?.capability_mask?.presets[0]?.name).toBe("developer");
+  });
+
+  it("accepts legacy hub_rpc_version in sap.attach output", () => {
+    const parsed = sapAttachOutputSchema.parse({
+      instance_id: "k7m",
+      features_enabled: [],
+      server_info: {
+        anima_version: "0.5.0",
+        hub_rpc_version: HABITAT_RPC_VERSION_LEGACY,
+      },
+    });
+    expect(parsed.server_info?.hub_rpc_version).toBe(HABITAT_RPC_VERSION_LEGACY);
   });
 
   it("maps sap stream events to console sse shape", () => {

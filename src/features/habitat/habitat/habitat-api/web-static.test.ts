@@ -79,12 +79,14 @@ describe("web-static", () => {
     const cfgRes = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/config.json`), opts);
     expect(cfgRes?.ok).toBe(true);
     const cfg = (await cfgRes!.json()) as {
+      habitat_url?: string;
+      habitat_ws_url?: string;
       hub_url?: string;
       hub_ws_url?: string;
       ui_version?: string;
     };
-    expect(cfg.hub_url).toBe(base);
-    expect(cfg.hub_ws_url).toContain("/rpc/v1");
+    expect(cfg.habitat_url ?? cfg.hub_url).toBe(base);
+    expect(cfg.habitat_ws_url ?? cfg.hub_ws_url).toContain("/rpc/v1");
 
     const asset = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/assets/main.js`), {
       ...opts,

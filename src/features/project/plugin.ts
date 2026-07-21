@@ -4,5 +4,5 @@ export const projectPlugin = {
   shell: {
     routes: [{ path: "/projects", featureId: "project", navLabel: "Projects" }],
   },
-  hub: {},
+  habitat: {},
 } as const;

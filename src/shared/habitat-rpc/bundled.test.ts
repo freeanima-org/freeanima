@@ -3,14 +3,14 @@ import { afterEach, describe, expect, test } from "bun:test";
 import {
   getBundledHabitatRpcClient,
   getHabitatRpcConnectionState,
-  resetBundledHubRpcClientForTests,
+  resetBundledHabitatRpcClientForTests,
   subscribeHabitatRpcConnectionState,
   type HabitatRpcConnectionState,
 } from "./bundled.ts";
 
 describe("subscribeHabitatRpcConnectionState", () => {
   afterEach(() => {
-    resetBundledHubRpcClientForTests();
+    resetBundledHabitatRpcClientForTests();
   });
 
   test("初始状态为 connecting，订阅时立即回调", () => {

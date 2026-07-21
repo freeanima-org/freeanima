@@ -29,75 +29,75 @@ import {
   emailThreadListOutputSchema,
 } from "@freeanima/shared/sap-contract/frames/email";
 
-import { defineHubMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
+import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
 
 export const emailMethodDefs = {
-  "emailaccount.list": defineHubMethod({
+  "emailaccount.list": defineHabitatMethod({
     input: emailAccountListInputSchema,
     output: emailAccountListOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "emailaccount.create": defineHubMethod({
+  "emailaccount.create": defineHabitatMethod({
     input: emailAccountCreateInputSchema,
     output: emailAccountCreateOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "emailaccount.patch": defineHubMethod({
+  "emailaccount.patch": defineHabitatMethod({
     input: emailAccountPatchInputSchema,
     output: emailAccountPatchOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "emailaccount.delete": defineHubMethod({
+  "emailaccount.delete": defineHabitatMethod({
     input: emailAccountDeleteInputSchema,
     output: emailAccountDeleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "emailprovider.list": defineHubMethod({
+  "emailprovider.list": defineHabitatMethod({
     input: emailProviderListInputSchema,
     output: emailProviderListOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "email.message.list": defineHubMethod({
+  "email.message.list": defineHabitatMethod({
     input: emailMessageListInputSchema,
     output: emailMessageListOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "email.message.read": defineHubMethod({
+  "email.message.read": defineHabitatMethod({
     input: emailMessageReadInputSchema,
     output: emailMessageReadOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "email.message.markRead": defineHubMethod({
+  "email.message.markRead": defineHabitatMethod({
     input: emailMessageMarkReadInputSchema,
     output: emailMessageMarkReadOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "email.message.markUnread": defineHubMethod({
+  "email.message.markUnread": defineHabitatMethod({
     input: emailMessageMarkUnreadInputSchema,
     output: emailMessageMarkUnreadOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "email.message.delete": defineHubMethod({
+  "email.message.delete": defineHabitatMethod({
     input: emailMessageDeleteInputSchema,
     output: emailMessageDeleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "email.message.search": defineHubMethod({
+  "email.message.search": defineHabitatMethod({
     input: emailMessageSearchInputSchema,
     output: emailMessageSearchOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "email.send": defineHubMethod({
+  "email.send": defineHabitatMethod({
     input: emailSendInputSchema,
     output: emailSendOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "email.sync": defineHubMethod({
+  "email.sync": defineHabitatMethod({
     input: emailSyncInputSchema,
     output: emailSyncOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "emailthread.list": defineHubMethod({
+  "emailthread.list": defineHabitatMethod({
     input: emailThreadListInputSchema,
     output: emailThreadListOutputSchema,
     meta: dualTransportMeta(true),

@@ -2,11 +2,11 @@
 import type { RpcClient } from "./client.ts";
 import { HABITAT_RPC_LIVENESS_SILENCE_MS } from "./constants.ts";
 import { habitatHttpFromRpcWsUrl } from "./urls.ts";
-import { runHubRpcTransport, type HubRpcTransportHandle } from "./transport.ts";
+import { runHabitatRpcTransport, type HabitatRpcTransportHandle } from "./transport.ts";
 
 export type HabitatRpcConnectionState = "connecting" | "connected" | "disconnected";
 
-export type BundledHubRpcClientOptions = {
+export type BundledHabitatRpcClientOptions = {
   hubRpcWsUrl?: string;
   habitatUrl?: string;
   authToken?: string;
@@ -14,22 +14,28 @@ export type BundledHubRpcClientOptions = {
   onConnectionStateChange?: (state: HabitatRpcConnectionState) => void;
 };
 
+/** @deprecated 使用 {@link BundledHabitatRpcClientOptions} */
+export type BundledHubRpcClientOptions = BundledHabitatRpcClientOptions;
+
 export type ReconnectOptions = {
   /** true 时强制断开重建（如 Habitat 配置变更）；默认健康连接直接复用。 */
   force?: boolean;
 };
 
-export type BundledHubRpcClient = {
+export type BundledHabitatRpcClient = {
   whenReady(): Promise<RpcClient>;
   getClient(): RpcClient | null;
   stop(): void;
   reconnect(opts?: ReconnectOptions): Promise<RpcClient>;
 };
 
+/** @deprecated 使用 {@link BundledHabitatRpcClient} */
+export type BundledHubRpcClient = BundledHabitatRpcClient;
+
 const SHELL_CONFIG_CHANGED_EVENT = "freeanima:shell-config-changed";
 
-let sharedClient: BundledHubRpcClient | null = null;
-let sharedTransport: HubRpcTransportHandle | null = null;
+let sharedClient: BundledHabitatRpcClient | null = null;
+let sharedTransport: HabitatRpcTransportHandle | null = null;
 let cachedConnectionState: HabitatRpcConnectionState = "connecting";
 const connectionStateListeners = new Set<(state: HabitatRpcConnectionState) => void>();
 let foregroundWatchInstalled = false;
@@ -47,9 +53,12 @@ export function getHabitatRpcConnectionState(): HabitatRpcConnectionState {
   return cachedConnectionState;
 }
 
-export function getHubRpcLastInboundAt(): number | null {
+export function getHabitatRpcLastInboundAt(): number | null {
   return sharedTransport?.getLastInboundAt() ?? null;
 }
+
+/** @deprecated 使用 {@link getHabitatRpcLastInboundAt} */
+export const getHubRpcLastInboundAt = getHabitatRpcLastInboundAt;
 
 function ensureHubForegroundReconnectWatch(): void {
   if (foregroundWatchInstalled || typeof document === "undefined") return;
@@ -72,7 +81,7 @@ export function subscribeHabitatRpcConnectionState(
   ensureHubForegroundReconnectWatch();
   connectionStateListeners.add(listener);
   listener(cachedConnectionState);
-  if (!sharedClient && typeof window !== "undefined" && hasBundledHubRpcAuthToken()) {
+  if (!sharedClient && typeof window !== "undefined" && hasBundledHabitatRpcAuthToken()) {
     try {
       void getBundledHabitatRpcClient()
         .whenReady()
@@ -97,7 +106,7 @@ function resolveAuthToken(explicit?: string): string {
   throw new Error("Habitat RPC requires auth_token");
 }
 
-function hasBundledHubRpcAuthToken(options: BundledHubRpcClientOptions = {}): boolean {
+function hasBundledHabitatRpcAuthToken(options: BundledHabitatRpcClientOptions = {}): boolean {
   try {
     resolveAuthToken(options.authToken);
     return true;
@@ -105,8 +114,7 @@ function hasBundledHubRpcAuthToken(options: BundledHubRpcClientOptions = {}): bo
     return false;
   }
 }
-
-function resolveHubUrl(options: BundledHubRpcClientOptions): string {
+function resolveHubUrl(options: BundledHabitatRpcClientOptions): string {
   if (options.habitatUrl?.trim()) return options.habitatUrl.trim().replace(/\/$/, "");
   if (options.hubRpcWsUrl?.trim()) return habitatHttpFromRpcWsUrl(options.hubRpcWsUrl.trim());
   const shell = readSatelliteShell();
@@ -115,8 +123,10 @@ function resolveHubUrl(options: BundledHubRpcClientOptions): string {
   return "http://127.0.0.1:2658";
 }
 
-function createBundledHubRpcClient(options: BundledHubRpcClientOptions = {}): BundledHubRpcClient {
-  let transport: HubRpcTransportHandle | null = null;
+function createBundledHabitatRpcClient(
+  options: BundledHabitatRpcClientOptions = {},
+): BundledHabitatRpcClient {
+  let transport: HabitatRpcTransportHandle | null = null;
   let initPromise: Promise<void> | null = null;
 
   const notify = (state: HabitatRpcConnectionState): void => {
@@ -124,12 +134,12 @@ function createBundledHubRpcClient(options: BundledHubRpcClientOptions = {}): Bu
     broadcastConnectionState(state);
   };
 
-  const startTransport = (): HubRpcTransportHandle => {
+  const startTransport = (): HabitatRpcTransportHandle => {
     transport?.stop();
     const habitatUrl = resolveHubUrl(options);
     const authToken = resolveAuthToken(options.authToken);
     notify("connecting");
-    transport = runHubRpcTransport({
+    transport = runHabitatRpcTransport({
       habitatUrl,
       authToken,
       ...(options.signal !== undefined ? { signal: options.signal } : {}),
@@ -161,7 +171,7 @@ function createBundledHubRpcClient(options: BundledHubRpcClientOptions = {}): Bu
         try {
           startTransport();
           if (transport === null) {
-            throw new Error("hub RPC transport failed to start");
+            throw new Error("Habitat RPC transport failed to start");
           }
           await transport.whenConnected();
         } catch (err) {
@@ -175,7 +185,7 @@ function createBundledHubRpcClient(options: BundledHubRpcClientOptions = {}): Bu
     }
     await initPromise;
     if (transport === null) {
-      throw new Error("hub RPC transport not initialized");
+      throw new Error("Habitat RPC transport not initialized");
     }
     return transport.whenConnected();
   };
@@ -205,12 +215,11 @@ function createBundledHubRpcClient(options: BundledHubRpcClientOptions = {}): Bu
     },
   };
 }
-
 export function getBundledHabitatRpcClient(
-  options: BundledHubRpcClientOptions = {},
-): BundledHubRpcClient {
+  options: BundledHabitatRpcClientOptions = {},
+): BundledHabitatRpcClient {
   if (!sharedClient) {
-    sharedClient = createBundledHubRpcClient(options);
+    sharedClient = createBundledHabitatRpcClient(options);
   }
   return sharedClient;
 }
@@ -219,7 +228,7 @@ export async function whenHabitatRpcReady(): Promise<RpcClient> {
   return getBundledHabitatRpcClient().whenReady();
 }
 
-export function resetBundledHubRpcClientForTests(): void {
+export function resetBundledHabitatRpcClientForTests(): void {
   sharedClient?.stop();
   sharedClient = null;
   sharedTransport = null;
@@ -227,10 +236,13 @@ export function resetBundledHubRpcClientForTests(): void {
   connectionStateListeners.clear();
 }
 
-export function subscribeBundledHubRpcConfigChanges(): () => void {
+/** @deprecated 使用 {@link resetBundledHabitatRpcClientForTests} */
+export const resetBundledHubRpcClientForTests = resetBundledHabitatRpcClientForTests;
+
+export function subscribeBundledHabitatRpcConfigChanges(): () => void {
   if (typeof window === "undefined") return () => {};
   const handler = (): void => {
-    if (!hasBundledHubRpcAuthToken()) return;
+    if (!hasBundledHabitatRpcAuthToken()) return;
     // 配置变更（Habitat URL / token）必须强制重建，不能复用旧连接。
     void getBundledHabitatRpcClient()
       .reconnect({ force: true })
@@ -239,3 +251,6 @@ export function subscribeBundledHubRpcConfigChanges(): () => void {
   window.addEventListener(SHELL_CONFIG_CHANGED_EVENT, handler);
   return () => window.removeEventListener(SHELL_CONFIG_CHANGED_EVENT, handler);
 }
+
+/** @deprecated 使用 {@link subscribeBundledHabitatRpcConfigChanges} */
+export const subscribeBundledHubRpcConfigChanges = subscribeBundledHabitatRpcConfigChanges;

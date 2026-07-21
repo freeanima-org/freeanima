@@ -22,9 +22,10 @@ import { loadShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-clien
 
 export type CompanionConfig = CompanionConfigV2;
 
-const HUB_URL = (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");
+const HABITAT_URL = (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");
 
 type LegacyConfig = {
+  habitat_url?: string;
   hub_url?: string;
   model_path?: string;
   locomotion?: Partial<Record<string, string>>;
@@ -40,7 +41,8 @@ function defaultModels(): ModelEntry[] {
 }
 
 export const DEFAULT_CONFIG: CompanionConfig = {
-  hub_url: HUB_URL,
+  habitat_url: HABITAT_URL,
+  hub_url: HABITAT_URL,
   active_model_id: "",
   models: defaultModels(),
   motion_library: [],
@@ -49,7 +51,7 @@ export const DEFAULT_CONFIG: CompanionConfig = {
 };
 
 function migrateLegacy(raw: LegacyConfig): CompanionConfig {
-  const hub_url = raw.hub_url ?? DEFAULT_CONFIG.hub_url;
+  const habitat_url = raw.habitat_url ?? raw.hub_url ?? DEFAULT_CONFIG.habitat_url;
   const behavior = mergeBehavior(raw.behavior);
   let models = raw.models ?? [];
   let motion_library = raw.motion_library ?? [];
@@ -95,7 +97,8 @@ function migrateLegacy(raw: LegacyConfig): CompanionConfig {
       : (models[0]?.id ?? "");
 
   const merged: CompanionConfig = {
-    hub_url,
+    habitat_url,
+    hub_url: habitat_url,
     active_model_id,
     models,
     motion_library,
@@ -188,7 +191,8 @@ export function hubUrlFromConfig(): string {
   if (fromEnv) return fromEnv.replace(/\/$/, "");
   const shell = loadShellClientConfig();
   if (shell?.habitatUrl?.trim()) return shell.habitatUrl.trim().replace(/\/$/, "");
-  return loadConfig().hub_url.replace(/\/$/, "");
+  const cfg = loadConfig();
+  return (cfg.habitat_url ?? cfg.hub_url ?? "").replace(/\/$/, "");
 }
 
 export function remoteAuthTokenFromShell(): string | undefined {

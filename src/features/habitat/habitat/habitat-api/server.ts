@@ -101,7 +101,7 @@ function createApiFetchHandler(runtime: ApiServerRuntime) {
     const sapUpgrade = trySapWebSocketUpgrade(req, bunServer as Bun.Server<unknown>, sapHandlers);
     if (sapUpgrade != null) return sapUpgrade;
 
-    // 旧 /rpc/v1 HTTP → /rpc/v1（0.9.4 删除）；WS 已在上方双挂
+    // 旧 /rpc/v1 HTTP → /rpc/v1（0.9.3 删除）；WS 已在上方双挂
     const legacyRedirect = legacyRpcHttpRedirect(req);
     if (legacyRedirect) return legacyRedirect;
 

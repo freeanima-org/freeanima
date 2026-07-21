@@ -1,16 +1,25 @@
 import { z } from "zod";
 
-export const HABITAT_RPC_VERSION = "HubRPC/1.0";
+export const HABITAT_RPC_VERSION = "HabitatRPC/1.0";
 
-export const hubRpcErrorSchema = z.object({
+/** @deprecated 0.9.3 后删除 */
+export const HABITAT_RPC_VERSION_LEGACY = "HubRPC/1.0";
+
+export const habitatRpcErrorSchema = z.object({
   code: z.string(),
   message: z.string(),
   details: z.unknown().optional(),
 });
 
-export type HubRpcError = z.infer<typeof hubRpcErrorSchema>;
+/** @deprecated 使用 {@link habitatRpcErrorSchema} */
+export const hubRpcErrorSchema = habitatRpcErrorSchema;
 
-export const hubRpcEnvelopeSchema = z.union([
+export type HabitatRpcError = z.infer<typeof habitatRpcErrorSchema>;
+
+/** @deprecated 使用 {@link HabitatRpcError} */
+export type HubRpcError = HabitatRpcError;
+
+export const habitatRpcEnvelopeSchema = z.union([
   z.object({ kind: z.literal("connect"), payload: z.record(z.string(), z.unknown()) }),
   z.object({ kind: z.literal("connected"), payload: z.record(z.string(), z.unknown()) }),
   z.object({
@@ -29,7 +38,7 @@ export const hubRpcEnvelopeSchema = z.union([
     kind: z.literal("res"),
     id: z.string().min(1),
     ok: z.literal(false),
-    error: hubRpcErrorSchema,
+    error: habitatRpcErrorSchema,
   }),
   z.object({
     kind: z.literal("evt"),
@@ -38,13 +47,25 @@ export const hubRpcEnvelopeSchema = z.union([
   }),
 ]);
 
-export type HubRpcEnvelope = z.infer<typeof hubRpcEnvelopeSchema>;
+/** @deprecated 使用 {@link habitatRpcEnvelopeSchema} */
+export const hubRpcEnvelopeSchema = habitatRpcEnvelopeSchema;
 
-export function parseHubRpcEnvelope(raw: string): HubRpcEnvelope {
+export type HabitatRpcEnvelope = z.infer<typeof habitatRpcEnvelopeSchema>;
+
+/** @deprecated 使用 {@link HabitatRpcEnvelope} */
+export type HubRpcEnvelope = HabitatRpcEnvelope;
+
+export function parseHabitatRpcEnvelope(raw: string): HabitatRpcEnvelope {
   const parsed = JSON.parse(raw) as unknown;
-  return hubRpcEnvelopeSchema.parse(parsed);
+  return habitatRpcEnvelopeSchema.parse(parsed);
 }
 
-export function serializeHubRpcEnvelope(envelope: HubRpcEnvelope): string {
+/** @deprecated 使用 {@link parseHabitatRpcEnvelope} */
+export const parseHubRpcEnvelope = parseHabitatRpcEnvelope;
+
+export function serializeHabitatRpcEnvelope(envelope: HabitatRpcEnvelope): string {
   return JSON.stringify(envelope);
 }
+
+/** @deprecated 使用 {@link serializeHabitatRpcEnvelope} */
+export const serializeHubRpcEnvelope = serializeHabitatRpcEnvelope;

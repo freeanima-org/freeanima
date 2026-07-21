@@ -1,5 +1,5 @@
 import { omitUndefined } from "@freeanima/core/util";
-import { bindHubRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { diaryMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
@@ -13,7 +13,7 @@ function depsOf(deps: unknown): DiarySapServerDeps {
   return deps as DiarySapServerDeps;
 }
 
-export const diaryHubRoutes = bindHubRouteHandlers(diaryMethodDefs, {
+export const diaryHubRoutes = bindHabitatRouteHandlers(diaryMethodDefs, {
   "diary.list": async (deps, input) =>
     service.serviceDiaryList(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "diary.create": async (deps, input) =>

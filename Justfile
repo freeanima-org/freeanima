@@ -18,11 +18,15 @@ _deps:
 deps: _deps
 
 # ─── 开发（源码 / worktree）──────────────────────────────────────────
-# Habitat ≥10000 / Web :5000；见 scripts/dev.sh。可选 HUB_PORT / WEB_DEV_PORT。
+# Habitat ≥10000 / Web :5000；见 scripts/dev.sh。可选 HABITAT_PORT（或 legacy HUB_PORT）/ WEB_DEV_PORT。
 dev: _deps
   bash "{{justfile_directory()}}/scripts/dev.sh"
 
-# 仅 Habitat（可附加：just hub -- --port 12001）
+# 仅 Habitat（可附加：just habitat -- --port 12001）
+habitat *args: _deps
+  bun run dev:habitat -- {{args}}
+
+# @deprecated 0.9.3 后删除 — 请用 `just habitat`
 hub *args: _deps
   bun run dev:hub -- {{args}}
 
@@ -140,7 +144,7 @@ i18n-docs-migrate-layout: _deps
 
 # ─── 本地工具 / 归档 ───────────────────────────────────────────────
 
-# Habitat 内存采样：just memory-sample -- --hub-url http://127.0.0.1:12001 --stage full
+# Habitat 内存采样：just memory-sample -- --habitat-url http://127.0.0.1:12001 --stage full
 memory-sample *args: _deps
   bun scripts/memory-sample.ts {{args}}
 

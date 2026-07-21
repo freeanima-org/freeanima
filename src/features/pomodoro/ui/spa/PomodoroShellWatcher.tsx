@@ -10,7 +10,7 @@ import {
   subscribePomodoroSync,
 } from "@freeanima/frontend/shell-sdk/pomodoro-sync-local.ts";
 import { readPomodoroActiveState } from "@freeanima/frontend/shell-sdk/pomodoro-active.ts";
-import { whenSatelliteHubRpcReady } from "@freeanima/frontend/shell-sdk/habitat-rpc-call";
+import { whenSatelliteHabitatRpcReady } from "@freeanima/frontend/shell-sdk/habitat-rpc-call";
 import {
   POMODORO_ACTIVE_CHANGED_EVENT,
   pomodoroActiveChangedEventSchema,
@@ -76,7 +76,7 @@ export function PomodoroShellWatcher() {
     if (!networkOnline || habitatConnection !== "connected") return;
     let cancelled = false;
     let off: (() => void) | undefined;
-    void whenSatelliteHubRpcReady().then((rpc) => {
+    void whenSatelliteHabitatRpcReady().then((rpc) => {
       if (cancelled) return;
       off = rpc.onEvent(POMODORO_ACTIVE_CHANGED_EVENT, (payload) => {
         const parsed = pomodoroActiveChangedEventSchema.safeParse(payload);

@@ -14,7 +14,7 @@ export type ServiceStackOptions = {
   port: number;
   /**
    * 为 true 时跳过 Habitat TLS listen（即使 config.yaml http.tls.enabled）。
-   * 源码 `dev:hub` 使用：HTTPS 由 Vite 终止，Habitat 只听明文高位口。
+   * 源码 `dev:habitat` 使用：HTTPS 由 Vite 终止，Habitat 只听明文高位口。
    */
   skipTls?: boolean;
 };
@@ -26,12 +26,12 @@ async function onHubReady(hubPort: number, webHostedByHub: boolean): Promise<voi
   }
 }
 
-/** Habitat foreground（Web 静态由 Habitat /web 托管；dev:hub skipTls 时改由 Vite） */
+/** Habitat foreground（Web 静态由 Habitat /web 托管；dev:habitat skipTls 时改由 Vite） */
 export async function runServiceStack(options: ServiceStackOptions): Promise<void> {
   const bootstrap = loadBootstrapConfig();
   const bootstrapHttp = bootstrap.http;
   /**
-   * 源码 `dev:hub`（skipTls）：覆盖 config.yaml `web.*`——Habitat 不托管 dist，
+   * 源码 `dev:habitat`（skipTls）：覆盖 config.yaml `web.*`——Habitat 不托管 dist，
    * UI 由 `dev:web`（Vite :5000，可 HTTPS）提供；与 http 侧 skipTls 对称。
    */
   const yamlWebEnabled = isBootstrapWebHostingEnabled(bootstrap);

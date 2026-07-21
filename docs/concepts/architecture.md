@@ -10,15 +10,15 @@ System-level constraints and long-lived design principles.
 
 User-facing product terms (Chinese in [`i18n/glossary.md`](../../i18n/glossary.md)):
 
-| Role                                  | English          | Chinese    | Meaning                                                                                                                         |
-| ------------------------------------- | ---------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Long-running process / connect target | **Habitat**      | **栖息地** | One process hosts **multiple digital lives** (`agent` subjects) and **human assets** (`user`); connect / token / restart target |
-| External connectors (class)           | **Portal**       | **入口**   | Shell, MCP clients, and similar ways in; not the Habitat itself                                                                 |
-| Shell                                 | **Shell**        | **壳**     | A Portal (desktop / mobile / web window; SSH-like)                                                                              |
-| Admin / inspect UI (legacy Habitat)   | **Habitat** (UI) | **栖息地** | Area under `/habitat/*`; "Open Habitat" vs "Connect to Habitat"                                                                 |
-| Admin home page                       | **Dashboard**    | **仪表盘** | `/habitat/dashboard` only; other console routes keep their own labels                                                           |
-| Message bridges                       | **Gateway**      | Gateway    | Discord / WeChat — **not** a Portal                                                                                             |
-| Wire / code                           | —                | —          | RPC `/rpc/v1`（legacy `/hub/rpc/v1` 至 0.9.4）；CLI `dev:hub` 仍为脚本名；DB `hub_runtime_config` 不动                          |
+| Role                                  | English          | Chinese    | Meaning                                                                                                                                                                          |
+| ------------------------------------- | ---------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Long-running process / connect target | **Habitat**      | **栖息地** | One process hosts **multiple digital lives** (`agent` subjects) and **human assets** (`user`); connect / token / restart target                                                  |
+| External connectors (class)           | **Portal**       | **入口**   | Shell, MCP clients, and similar ways in; not the Habitat itself                                                                                                                  |
+| Shell                                 | **Shell**        | **壳**     | A Portal (desktop / mobile / web window; SSH-like)                                                                                                                               |
+| Admin / inspect UI (legacy Habitat)   | **Habitat** (UI) | **栖息地** | Area under `/habitat/*`; "Open Habitat" vs "Connect to Habitat"                                                                                                                  |
+| Admin home page                       | **Dashboard**    | **仪表盘** | `/habitat/dashboard` only; other console routes keep their own labels                                                                                                            |
+| Message bridges                       | **Gateway**      | Gateway    | Discord / WeChat — **not** a Portal                                                                                                                                              |
+| Wire / code                           | —                | —          | Canonical：`/rpc/v1`、`HabitatRPC/1.0`、`habitat_*`、`habitat_runtime_config`、`dev:habitat`。Legacy（`/hub/rpc/v1`、`HubRPC/1.0`、`hub_*`、`dev:hub` 等）**至 0.9.3，其后删除** |
 
 Verbs: **connect to Habitat** (URL + token); **open Habitat** (admin UI); **reach via a Portal** (Shell / MCP).
 
@@ -26,19 +26,28 @@ Estate **Body** (VM / OS / network under the four-layer model) is the cognitive 
 
 ### Habitat configuration (SSOT)
 
-User copy says Habitat; storage and RPC identifiers may still say `hub_*` until migrated.
+User copy says Habitat. Canonical storage/RPC identifiers use `habitat_*` / `HabitatRPC/1.0` as of 0.9.3; dual-read legacy `hub_*` / `HubRPC/1.0` / `/hub/rpc/v1` until removed after 0.9.3.
 
-| Layer         | Storage                                                     | Who reads/writes                                             |
-| ------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
-| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`, `web`) | `platform/boot` only; install/ops edit YAML                  |
-| **Runtime**   | PostgreSQL `hub_runtime_config`                             | Engine, tools, Shell Habitat settings, Habitat UI `config.*` |
+| Layer         | Storage                                                                                   | Who reads/writes                                             |
+| ------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`, `web`)                               | `platform/boot` only; install/ops edit YAML                  |
+| **Runtime**   | PostgreSQL `habitat_runtime_config`（legacy table `hub_runtime_config` renamed in 0.9.3） | Engine, tools, Shell Habitat settings, Habitat UI `config.*` |
+
+### Legacy hub_* removal checklist（0.9.3 后）
+
+Remove in a follow-up PR after 0.9.3 ships:
+
+- `/hub/rpc/v1` and Vite `/hub` proxy (`HABITAT_RPC_REST_PREFIX_LEGACY`)
+- Protocol literal `HubRPC/1.0` dual-accept; dual-write `hub_url` / `hub_ws_url`
+- TS aliases (`defineHubRoute`, `hubRouter`, `plugin.hub`, …) and CLI `dev:hub` / `FREEANIMA_HUB_*`
+- localStorage `freeanima.hubUrl` read path
 
 ## Core Principles
 
 - The memory system may be layered internally, but the LLM sees a single entry point
 - Memory orchestration is built into the runtime; the LLM does not control memory pipelines
 - Credential management is a first-class system concern
-- Habitat **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL (`hub_runtime_config`); `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`, `web`) for cold start — not editable via Shell or Habitat UI API
+- Habitat **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL (`habitat_runtime_config`); `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`, `web`) for cold start — not editable via Shell or Habitat UI API
 - Habitat **may start without LLM** configured; first-time setup happens in Shell **Settings → Habitat** (persist to PG), then restart Habitat so registries rebuild. Missing `llm` must not block cold start.
 - Whether Habitat hosts browser `/web/*` is **`config.yaml` `web.enabled`** (bootstrap; absent defaults to on when dist exists). Do not put this switch in PG — empty runtime would otherwise block the Settings UI that configures that runtime.
 - **Asset management** is a first-class system concern
@@ -279,7 +288,7 @@ mcp_servers:
     env:
       PGOPTIONS: "-c statement_timeout=5s"
   remote_habitat:
-    transport: http # Streamable HTTP — use for FreeAnima Hub /mcp
+    transport: http # Streamable HTTP — use for FreeAnima Habitat /mcp
     url: http://127.0.0.1:2658/mcp
     headers:
       Authorization: "Bearer fa_at_…"

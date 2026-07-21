@@ -1,7 +1,7 @@
 import { omitUndefined } from "@freeanima/core/util";
 import type { NotificationRow as PgNotificationRow } from "@freeanima/core/db/schema/rows";
 import { resolveNotificationRecipients } from "@freeanima/core/config";
-import { bindHubRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 import type { NotificationRow } from "@freeanima/shared/sap-contract/frames/notification";
 
 import { notificationMethodDefs } from "../method-defs.ts";
@@ -31,7 +31,7 @@ function serializeNotificationRow(row: PgNotificationRow): NotificationRow {
   };
 }
 
-export const notificationHubRoutes = bindHubRouteHandlers(notificationMethodDefs, {
+export const notificationHubRoutes = bindHabitatRouteHandlers(notificationMethodDefs, {
   "notification.list": async (deps, input) => {
     const result = await service.listNotifications(
       depsOf(deps).runtime.runtimeDeps(),

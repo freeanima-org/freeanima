@@ -56,6 +56,7 @@ export {
 export {
   buildShellApiFields,
   connectAuthTokenForHub,
+  habitatRequiresRemoteAuth,
   hubRequiresRemoteAuth,
 } from "./shell-api-fields.ts";
 export type {

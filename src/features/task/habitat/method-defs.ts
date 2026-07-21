@@ -43,110 +43,110 @@ import {
   taskUncompleteOutputSchema,
 } from "@freeanima/shared/sap-contract/frames/task";
 
-import { defineHubMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
+import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
 
 export const taskMethodDefs = {
-  "tasklist.list": defineHubMethod({
+  "tasklist.list": defineHabitatMethod({
     input: tasklistListInputSchema,
     output: tasklistListOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "tasklist.stats": defineHubMethod({
+  "tasklist.stats": defineHabitatMethod({
     input: tasklistStatsInputSchema,
     output: tasklistStatsOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "tasklist.create": defineHubMethod({
+  "tasklist.create": defineHabitatMethod({
     input: tasklistCreateInputSchema,
     output: tasklistCreateOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "tasklist.patch": defineHubMethod({
+  "tasklist.patch": defineHabitatMethod({
     input: tasklistPatchInputSchema,
     output: tasklistPatchOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "tasklist.delete": defineHubMethod({
+  "tasklist.delete": defineHabitatMethod({
     input: tasklistDeleteInputSchema,
     output: tasklistDeleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "tasklist.item.list": defineHubMethod({
+  "tasklist.item.list": defineHabitatMethod({
     input: tasklistItemListInputSchema,
     output: tasklistItemListOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "tasklist.item.create": defineHubMethod({
+  "tasklist.item.create": defineHabitatMethod({
     input: tasklistItemCreateInputSchema,
     output: tasklistItemCreateOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "smartlist.list": defineHubMethod({
+  "smartlist.list": defineHabitatMethod({
     input: smartlistListInputSchema,
     output: smartlistListOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "smartlist.stats": defineHubMethod({
+  "smartlist.stats": defineHabitatMethod({
     input: smartlistStatsInputSchema,
     output: smartlistStatsOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "smartlist.create": defineHubMethod({
+  "smartlist.create": defineHabitatMethod({
     input: smartlistCreateInputSchema,
     output: smartlistCreateOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "smartlist.patch": defineHubMethod({
+  "smartlist.patch": defineHabitatMethod({
     input: smartlistPatchInputSchema,
     output: smartlistPatchOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "smartlist.delete": defineHubMethod({
+  "smartlist.delete": defineHabitatMethod({
     input: smartlistDeleteInputSchema,
     output: smartlistDeleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "project.item.list": defineHubMethod({
+  "project.item.list": defineHabitatMethod({
     input: projectItemListInputSchema,
     output: projectItemListOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "project.item.create": defineHubMethod({
+  "project.item.create": defineHabitatMethod({
     input: projectItemCreateInputSchema,
     output: projectItemCreateOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "task.patch": defineHubMethod({
+  "task.patch": defineHabitatMethod({
     input: taskPatchInputSchema,
     output: taskPatchOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "task.moveToProject": defineHubMethod({
+  "task.moveToProject": defineHabitatMethod({
     input: taskMoveToProjectInputSchema,
     output: taskMoveToProjectOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "task.moveToList": defineHubMethod({
+  "task.moveToList": defineHabitatMethod({
     input: taskMoveToListInputSchema,
     output: taskMoveToListOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "task.complete": defineHubMethod({
+  "task.complete": defineHabitatMethod({
     input: taskCompleteInputSchema,
     output: taskCompleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "task.uncomplete": defineHubMethod({
+  "task.uncomplete": defineHabitatMethod({
     input: taskUncompleteInputSchema,
     output: taskUncompleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "task.delete": defineHubMethod({
+  "task.delete": defineHabitatMethod({
     input: taskDeleteInputSchema,
     output: taskDeleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "task.search": defineHubMethod({
+  "task.search": defineHabitatMethod({
     input: taskSearchInputSchema,
     output: taskSearchOutputSchema,
     meta: dualTransportMeta(true),

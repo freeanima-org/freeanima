@@ -249,12 +249,12 @@ export async function handleHttpHabitatRestRequest(
     if (typeof apiErr.status === "number" && apiErr.message) {
       return jsonError(
         apiErr.status,
-        typeof apiErr.context?.code === "string" ? apiErr.context.code : "hub_rpc_error",
+        typeof apiErr.context?.code === "string" ? apiErr.context.code : "habitat_rpc_error",
         apiErr.message,
       );
     }
-    console.error("[hub-rest] handler failed:", e);
-    return jsonError(500, "hub_rpc_error", "Habitat RPC request failed");
+    console.error("[habitat-rest] handler failed:", e);
+    return jsonError(500, "habitat_rpc_error", "Habitat RPC request failed");
   }
 }
 

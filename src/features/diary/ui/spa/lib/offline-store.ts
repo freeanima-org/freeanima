@@ -151,7 +151,7 @@ function scheduleFlush(scope: string): void {
   void flushOfflineModule(MODULE_ID, scope).catch(() => {});
 }
 
-function hub() {
+function habitat() {
   return getTypedSatelliteHabitatClient();
 }
 
@@ -261,7 +261,7 @@ async function flushDiaryOp(
   scope: string,
 ): Promise<import("@freeanima/frontend/shell-sdk/offline-module-types").FlushOpOutcome> {
   try {
-    const result = (await hub().call(op.method as never, op.payload as never)) as {
+    const result = (await habitat().call(op.method as never, op.payload as never)) as {
       item?: DiaryEntryRow | DiaryTextBlock;
     };
     if (
@@ -313,7 +313,7 @@ export const diaryRpcAdapter: RpcModuleAdapter = {
   refreshAll: async (scope) => {
     for (const subjectKind of ["user", "agent"] as const) {
       try {
-        const data = await hub().call("diary.list", {
+        const data = await habitat().call("diary.list", {
           subject_kind: subjectKind,
           limit: 200,
         });
@@ -352,7 +352,7 @@ export async function offlineCreateDiaryEntry(
     async () => {
       const scope = resolveOutboxScope();
       const opId = randomUuid();
-      const data = await hub().call("diary.create", {
+      const data = await habitat().call("diary.create", {
         subject_kind: subjectKind,
         client_op_id: opId,
         ...payload,
@@ -454,7 +454,7 @@ export async function offlineUpdateDiaryEntry(
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    const data = await hub().call("diary.patch", {
+    const data = await habitat().call("diary.patch", {
       subject_kind: subjectKind,
       id: resolvedId,
       client_op_id: opId,
@@ -521,7 +521,7 @@ export async function offlineAppendDiaryEntry(
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    const data = await hub().call("diary.append", {
+    const data = await habitat().call("diary.append", {
       subject_kind: subjectKind,
       id: resolvedId,
       content: fragment,
@@ -607,7 +607,7 @@ export async function offlineCreateDiaryBlock(
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    const data = await hub().call("diary.blockCreate", {
+    const data = await habitat().call("diary.blockCreate", {
       subject_kind: subjectKind,
       parent_id: resolvedParentId,
       content: opts.content,
@@ -687,7 +687,7 @@ export async function offlineUpdateDiaryBlock(
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    const data = await hub().call("diary.blockPatch", {
+    const data = await habitat().call("diary.blockPatch", {
       subject_kind: subjectKind,
       id,
       client_op_id: opId,
@@ -752,7 +752,7 @@ export async function offlineDeleteDiaryBlock(
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    await hub().call("diary.blockDelete", {
+    await habitat().call("diary.blockDelete", {
       subject_kind: subjectKind,
       id: blockId,
       client_op_id: opId,
@@ -805,7 +805,7 @@ export async function offlineReorderDiaryBlocks(
   }
 
   return preferOnlineWrite(async () => {
-    const data = await hub().call("diary.blockReorder", {
+    const data = await habitat().call("diary.blockReorder", {
       subject_kind: subjectKind,
       items,
     });
@@ -863,7 +863,7 @@ export async function offlineDeleteDiaryEntry(
 
   return preferOnlineWrite(async () => {
     const opId = randomUuid();
-    await hub().call("diary.delete", {
+    await habitat().call("diary.delete", {
       subject_kind: subjectKind,
       id: resolvedId,
       client_op_id: opId,

@@ -14,6 +14,8 @@ describe("applyWebUiConfig", () => {
 
     const result = applyWebUiConfig({
       app_id: "chat",
+      habitat_url: "",
+      habitat_ws_url: "",
       hub_url: "",
       hub_ws_url: "",
       remote_auth_token: "fa_at_devtoken_xx",
@@ -30,6 +32,8 @@ describe("applyWebUiConfig", () => {
 
     const result = applyWebUiConfig({
       app_id: "chat",
+      habitat_url: "http://127.0.0.1:2658",
+      habitat_ws_url: "ws://127.0.0.1:2658/rpc/v1",
       hub_url: "http://127.0.0.1:2658",
       hub_ws_url: "ws://127.0.0.1:2658/rpc/v1",
     });

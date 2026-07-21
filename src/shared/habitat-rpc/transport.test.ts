@@ -6,14 +6,14 @@ import {
 import {
   createRpcClient,
   HabitatRpcTimeoutError,
-  runHubRpcTransport,
+  runHabitatRpcTransport,
 } from "@freeanima/shared/habitat-rpc";
 import {
   HABITAT_RPC_VERSION,
-  parseHubRpcEnvelope,
-  serializeHubRpcEnvelope,
+  parseHabitatRpcEnvelope,
+  serializeHabitatRpcEnvelope,
 } from "@freeanima/shared/habitat-rpc";
-import type { HubRpcEnvelope } from "@freeanima/shared/habitat-rpc";
+import type { HabitatRpcEnvelope } from "@freeanima/shared/habitat-rpc";
 
 type Listener = (ev: Event | MessageEvent | CloseEvent) => void;
 
@@ -58,9 +58,9 @@ class MockWebSocket {
   }
 
   send(data: string): void {
-    const envelope = parseHubRpcEnvelope(data) as HubRpcEnvelope;
+    const envelope = parseHabitatRpcEnvelope(data) as HabitatRpcEnvelope;
     if (envelope.kind === "connect") {
-      const connected = serializeHubRpcEnvelope({
+      const connected = serializeHabitatRpcEnvelope({
         kind: "connected",
         payload: {
           protocol: HABITAT_RPC_VERSION,
@@ -74,7 +74,7 @@ class MockWebSocket {
     if (envelope.kind === "evt" && envelope.method === "heartbeat") {
       if (!this.respondToHeartbeat) return;
       this.emit("message", {
-        data: serializeHubRpcEnvelope({
+        data: serializeHabitatRpcEnvelope({
           kind: "evt",
           method: "heartbeat",
           payload: { ts: Date.now() },
@@ -84,7 +84,7 @@ class MockWebSocket {
     }
     if (envelope.kind === "req") {
       if (!this.respondToRequests) return;
-      const res = serializeHubRpcEnvelope({
+      const res = serializeHabitatRpcEnvelope({
         kind: "res",
         id: envelope.id,
         ok: true,
@@ -101,9 +101,9 @@ class MockWebSocket {
   }
 }
 
-describe("runHubRpcTransport", () => {
+describe("runHabitatRpcTransport", () => {
   it("connects and resolves whenConnected", async () => {
-    const handle = runHubRpcTransport({
+    const handle = runHabitatRpcTransport({
       habitatUrl: "http://127.0.0.1:2658",
       authToken: "test-token",
       reconnect: false,
@@ -124,7 +124,7 @@ describe("runHubRpcTransport", () => {
       const ws = new MockWebSocket();
       ws.respondToHeartbeat = false;
 
-      const handle = runHubRpcTransport({
+      const handle = runHabitatRpcTransport({
         habitatUrl: "http://127.0.0.1:2658",
         authToken: "test-token",
         reconnect: false,
@@ -148,7 +148,7 @@ describe("runHubRpcTransport", () => {
     let wsInstance: MockWebSocket | null = null;
     let connectCount = 0;
 
-    const handle = runHubRpcTransport({
+    const handle = runHabitatRpcTransport({
       habitatUrl: "http://127.0.0.1:2658",
       authToken: "test-token",
       reconnect: { initialMs: 50, maxMs: 50, factor: 1 },

@@ -4,5 +4,5 @@ export const pomodoroPlugin = {
   shell: {
     routes: [{ path: "/pomodoro", featureId: "pomodoro", navLabel: "Pomodoro" }],
   },
-  hub: {},
+  habitat: {},
 } as const;

@@ -1,5 +1,5 @@
 import { omitUndefined } from "@freeanima/core/util";
-import { bindHubRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 import {
   POMODORO_ACTIVE_CHANGED_EVENT,
   type PomodoroActiveChangedEvent,
@@ -31,7 +31,7 @@ function broadcastActiveChanged(
   );
 }
 
-export const pomodoroHubRoutes = bindHubRouteHandlers(pomodoroMethodDefs, {
+export const pomodoroHubRoutes = bindHabitatRouteHandlers(pomodoroMethodDefs, {
   "pomodoro.config.get": async (deps, input) =>
     service.servicePomodoroConfigGet(depsOf(deps).runtime.runtimeDeps(), input),
   "pomodoro.config.update": async (deps, input) =>

@@ -14,7 +14,7 @@ import { getTypedSatelliteHabitatClient } from "@freeanima/platform/habitat/clie
 
 export type NotificationRow = NotificationListOutput["items"][number];
 
-function hub() {
+function habitat() {
   return getTypedSatelliteHabitatClient();
 }
 
@@ -29,7 +29,7 @@ export async function listNotifications(
   const key = cacheKey(input);
   const cached = await readOfflineCache<NotificationListOutput>(scope, "notifications", key);
   try {
-    const result = await hub().call("notification.list", input);
+    const result = await habitat().call("notification.list", input);
     void writeOfflineCache(scope, "notifications", key, result);
     return result;
   } catch {
@@ -39,9 +39,9 @@ export async function listNotifications(
 }
 
 export async function markNotificationRead(id: string): Promise<NotificationMarkReadOutput> {
-  return hub().call("notification.markRead", { id });
+  return habitat().call("notification.markRead", { id });
 }
 
 export async function getNotificationRecipients(): Promise<NotificationRecipientsOutput> {
-  return hub().call("notification.recipients", {});
+  return habitat().call("notification.recipients", {});
 }

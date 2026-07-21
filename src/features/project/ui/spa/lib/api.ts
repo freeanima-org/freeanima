@@ -69,7 +69,7 @@ function ensureProjectOfflineModule(): void {
   projectModuleRegistered = true;
 }
 
-function hub() {
+function habitat() {
   return getTypedSatelliteHabitatClient();
 }
 
@@ -80,7 +80,7 @@ export async function fetchProjectFolders(subjectKind: SubjectKind): Promise<Pro
     namespace: "project",
     id: "folders",
     fetch: async () => {
-      const data = await hub().call("projectfolder.list", { subject_kind: subjectKind });
+      const data = await habitat().call("projectfolder.list", { subject_kind: subjectKind });
       return data.folders;
     },
     reconcile: (folders) => reconcileServerProjectFolders(folders),
@@ -127,7 +127,7 @@ export async function fetchProjects(
     }
 
     try {
-      const data = await hub().call("project.list", {
+      const data = await habitat().call("project.list", {
         subject_kind: subjectKind,
         folder_id: folderId,
       });
@@ -146,7 +146,7 @@ export async function fetchProjects(
     namespace: "project",
     id: "projects",
     fetch: async () => {
-      const data = await hub().call("project.list", { subject_kind: subjectKind });
+      const data = await habitat().call("project.list", { subject_kind: subjectKind });
       return withDefaultProjectTaskCount(data.projects);
     },
     reconcile: (projects) => reconcileServerProjects(projects),
@@ -156,7 +156,7 @@ export async function fetchProjects(
 
 export async function fetchProjectStats(subjectKind: SubjectKind): Promise<Map<number, number>> {
   if (!isHabitatFetchAvailable()) return new Map();
-  const data = await hub().call("project.stats", { subject_kind: subjectKind });
+  const data = await habitat().call("project.stats", { subject_kind: subjectKind });
   return new Map(data.counts.map((row) => [row.id, row.task_count]));
 }
 
@@ -179,7 +179,7 @@ export async function fetchProject(subjectKind: SubjectKind, id: number): Promis
   }
 
   try {
-    const data = await hub().call("project.get", { subject_kind: subjectKind, id });
+    const data = await habitat().call("project.get", { subject_kind: subjectKind, id });
     const cached = (await readCachedProjects(scope)) ?? [];
     const next = cached.filter((p) => p.id !== data.item.id);
     next.push(data.item);
@@ -217,7 +217,7 @@ export async function fetchProjectTasks(
     namespace: "project",
     id: `items:${projectId}`,
     fetch: async () => {
-      const data = await hub().call("project.item.list", {
+      const data = await habitat().call("project.item.list", {
         subject_kind: subjectKind,
         project_id: projectId,
       });
@@ -328,7 +328,7 @@ export async function deleteProjectTask(_subjectKind: SubjectKind, id: number): 
 
 export async function fetchTaskListsForMove(subjectKind: SubjectKind): Promise<TaskListRow[]> {
   if (!isHabitatFetchAvailable()) return [];
-  const data = await hub().call("tasklist.list", { subject_kind: subjectKind });
+  const data = await habitat().call("tasklist.list", { subject_kind: subjectKind });
   return data.lists.map((list) => ({
     id: list.id,
     name: list.name,

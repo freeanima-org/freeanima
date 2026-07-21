@@ -29,7 +29,7 @@ import { SapInstanceRegistry } from "../sap/instance-registry.ts";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import { ANIMA_VERSION } from "../runtime/version.ts";
 import { builtinFeaturePlugins, registerFeatures } from "../features/index.ts";
-import { initHubRouter } from "../habitat/init.ts";
+import { initHabitatRouter } from "../habitat/init.ts";
 
 export type RuntimePhaseResult = {
   runtime: AppRuntime;
@@ -93,7 +93,7 @@ export async function bootRuntimePhase(
     getToolRegistry: () => catalog.toolSets,
   });
 
-  initHubRouter();
+  initHabitatRouter();
   registerFeatures(builtinFeaturePlugins);
 
   satellite.loadSessionPlatformExtra = async (conversationId) => {

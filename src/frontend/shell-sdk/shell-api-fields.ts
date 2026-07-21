@@ -28,6 +28,9 @@ export function connectAuthTokenForHub(
   return resolveConnectAuthToken(habitatUrl, remoteAuthToken);
 }
 
-export function hubRequiresRemoteAuth(habitatUrl: string, remoteAuthToken: string): boolean {
+export function habitatRequiresRemoteAuth(habitatUrl: string, remoteAuthToken: string): boolean {
   return shouldAttachRemoteAuth(habitatUrl, remoteAuthToken);
 }
+
+/** @deprecated 0.9.3 后删除 — 请用 habitatRequiresRemoteAuth */
+export const hubRequiresRemoteAuth = habitatRequiresRemoteAuth;

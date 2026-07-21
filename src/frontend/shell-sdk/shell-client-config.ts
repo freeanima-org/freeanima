@@ -3,7 +3,7 @@ export type ShellClientConfig = {
   remoteAuthToken: string;
 };
 
-/** @deprecated 读兼容旧字段 hubUrl；0.9.4 可删 */
+/** @deprecated 读兼容旧字段 hubUrl；0.9.3 可删 */
 function readUrl(obj: Record<string, unknown>): string {
   if (typeof obj.habitatUrl === "string" && obj.habitatUrl.trim()) return obj.habitatUrl.trim();
   if (typeof obj.habitatUrl === "string" && obj.habitatUrl.trim()) return obj.habitatUrl.trim();

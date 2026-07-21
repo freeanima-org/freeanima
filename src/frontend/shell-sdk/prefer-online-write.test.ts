@@ -34,7 +34,7 @@ describe("isRetriableOfflineWriteError", () => {
 });
 
 describe("preferOnlineWrite", () => {
-  it("Hub 可用时走 online", async () => {
+  it("Habitat 可用时走 online", async () => {
     hubAvailable = true;
     networkOnline = true;
     const result = await preferOnlineWrite(

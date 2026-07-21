@@ -93,6 +93,9 @@ function createShellStaticFetch(
       return new Response(
         JSON.stringify({
           app_id: runtime?.appId ?? "chat",
+          habitat_url: habitatUrl,
+          habitat_ws_url: habitatWsUrl,
+          // @deprecated 0.9.3 后删除 — dual-write
           hub_url: habitatUrl,
           hub_ws_url: habitatWsUrl,
           ui_version: runtime?.uiVersion,

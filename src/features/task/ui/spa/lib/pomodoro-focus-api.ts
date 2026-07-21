@@ -10,7 +10,7 @@ export type TaskPomodoroFocusRow = {
   duration_ms: number;
 };
 
-function hub() {
+function habitat() {
   return getTypedSatelliteHabitatClient();
 }
 
@@ -18,7 +18,7 @@ export async function fetchTaskPomodoroFocus(
   taskItemId: number,
   limit = 10,
 ): Promise<TaskPomodoroFocusRow[]> {
-  const data = await hub().call("pomodoro.focus.list", {
+  const data = await habitat().call("pomodoro.focus.list", {
     subject_kind: getSubjectKind(),
     task_item_id: taskItemId,
     limit,

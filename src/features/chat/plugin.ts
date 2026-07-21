@@ -4,5 +4,5 @@ export const chatPlugin = {
   shell: {
     routes: [{ path: "/chat", featureId: "chat", navLabel: "Chat" }],
   },
-  hub: {},
+  habitat: {},
 } as const;

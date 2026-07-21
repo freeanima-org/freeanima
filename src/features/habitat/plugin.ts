@@ -4,5 +4,5 @@ export const habitatPlugin = {
   shell: {
     routes: [{ path: "/habitat", featureId: "habitat", navLabel: "Habitat" }],
   },
-  hub: {},
+  habitat: {},
 } as const;

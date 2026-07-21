@@ -24,7 +24,7 @@ function ensureDiaryOfflineModule(): void {
   diaryModuleRegistered = true;
 }
 
-function hub() {
+function habitat() {
   return getTypedSatelliteHabitatClient();
 }
 
@@ -48,7 +48,7 @@ export async function fetchDiaryEntries(
     namespace: "diary",
     id: cacheId,
     fetch: async () => {
-      const data = await hub().call("diary.list", {
+      const data = await habitat().call("diary.list", {
         subject_kind: subjectKind,
         limit: opts?.limit ?? 200,
       });
@@ -71,7 +71,7 @@ export async function searchDiaryEntries(
     namespace: "diary",
     id: cacheId,
     fetch: async () => {
-      const data = await hub().call("diary.search", {
+      const data = await habitat().call("diary.search", {
         subject_kind: subjectKind,
         query,
         limit,
@@ -93,7 +93,7 @@ export async function getDiaryEntry(
     namespace: "diary",
     id: cacheId,
     fetch: async () => {
-      const data = await hub().call("diary.get", { subject_kind: subjectKind, id });
+      const data = await habitat().call("diary.get", { subject_kind: subjectKind, id });
       return data.item;
     },
     offlineError: "diary.get unavailable offline",
@@ -178,7 +178,7 @@ export type DiaryBlockTemplateRow = {
 export async function fetchDiaryBlockTemplates(
   subjectKind: DiarySubjectKind,
 ): Promise<DiaryBlockTemplateRow[]> {
-  const data = await hub().call("diary.templateList", { subject_kind: subjectKind });
+  const data = await habitat().call("diary.templateList", { subject_kind: subjectKind });
   return data.items;
 }
 
@@ -190,7 +190,7 @@ export async function createDiaryBlockTemplate(
     sort_order?: number;
   },
 ): Promise<DiaryBlockTemplateRow> {
-  const data = await hub().call("diary.templateCreate", {
+  const data = await habitat().call("diary.templateCreate", {
     subject_kind: subjectKind,
     ...input,
   });
@@ -206,7 +206,7 @@ export async function updateDiaryBlockTemplate(
     sort_order?: number;
   },
 ): Promise<DiaryBlockTemplateRow> {
-  const data = await hub().call("diary.templatePatch", {
+  const data = await habitat().call("diary.templatePatch", {
     subject_kind: subjectKind,
     id,
     ...patch,
@@ -218,7 +218,7 @@ export async function deleteDiaryBlockTemplate(
   subjectKind: DiarySubjectKind,
   id: number,
 ): Promise<void> {
-  await hub().call("diary.templateDelete", { subject_kind: subjectKind, id });
+  await habitat().call("diary.templateDelete", { subject_kind: subjectKind, id });
 }
 
 export async function deleteDiaryBlock(

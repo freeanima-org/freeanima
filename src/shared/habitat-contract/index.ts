@@ -16,11 +16,13 @@ export {
 } from "./transport.ts";
 
 export type {
+  HabitatMethodDef,
   HubMethodDef,
   DualTransportMetaOptions,
   BinaryHttpMetaOptions,
 } from "./method-def.ts";
 export {
+  defineHabitatMethod,
   defineHubMethod,
   dualTransportMeta,
   httpTransportMeta,
@@ -31,12 +33,21 @@ export {
 } from "./method-def.ts";
 
 export {
+  defineHabitatRoute,
   defineHubRoute,
+  defineHabitatRouteFromDef,
   defineHubRouteFromDef,
   mergeFeatureRoutes,
+  mergeHabitatRouteBundles,
   mergeHubRouteBundles,
+  bindHabitatRouteHandlers,
+  bindHubRouteHandlers,
+  type HabitatRouteBundle,
   type HubRouteBundle,
+  type HabitatRouteHandler,
   type HubRouteHandler,
+  type HabitatRouteHandlersForDefs,
+  type HubRouteHandlersForDefs,
   type FeatureRouteBundle,
 } from "./route.ts";
 

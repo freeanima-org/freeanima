@@ -71,7 +71,7 @@ export function useShellKind(): ShellRuntimeKind {
 }
 
 /** 是否展示「打开 连接设置」 */
-export function useOpenHubSettingsCapability(): boolean {
+export function useOpenHabitatSettingsCapability(): boolean {
   const [open, setOpen] = useState(() => canOpenHabitatSettings());
 
   useEffect(() => {
@@ -80,3 +80,6 @@ export function useOpenHubSettingsCapability(): boolean {
 
   return open;
 }
+
+/** @deprecated 0.9.3 后删除 */
+export const useOpenHubSettingsCapability = useOpenHabitatSettingsCapability;

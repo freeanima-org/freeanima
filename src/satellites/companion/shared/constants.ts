@@ -46,7 +46,8 @@ export const LOCOMOTION_SLOT_LABELS: Record<LocomotionSlot, string> = {
 export type ClientCompanionConfig = {
   app_id: typeof COMPANION_APP_ID;
   instance_id: string;
-  hub_url: string;
+  habitat_url: string;
+  /** @deprecated */ hub_url?: string;
   model_path: string;
   model_available: boolean;
   sap_connected: boolean;

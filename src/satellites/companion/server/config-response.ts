@@ -17,7 +17,8 @@ import {
 export type ClientCompanionConfig = {
   app_id: typeof COMPANION_APP_ID;
   instance_id: string;
-  hub_url: string;
+  habitat_url: string;
+  /** @deprecated */ hub_url?: string;
   model_path: string;
   model_available: boolean;
   sap_connected: boolean;
@@ -48,6 +49,7 @@ export function clientCompanionConfig(): ClientCompanionConfig {
   const motion_slots = cached.motion_slots ?? emptyMotionSlots();
   const active_model_id = cached.active_model_id ?? "";
   const cfg: CompanionConfig = {
+    habitat_url: hubUrlFromConfig(),
     hub_url: hubUrlFromConfig(),
     active_model_id,
     models,
@@ -59,6 +61,7 @@ export function clientCompanionConfig(): ClientCompanionConfig {
   return {
     app_id: COMPANION_APP_ID,
     instance_id: getSapInstanceId(),
+    habitat_url: hubUrlFromConfig(),
     hub_url: hubUrlFromConfig(),
     models,
     motion_library,

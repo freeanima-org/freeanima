@@ -18,7 +18,7 @@ describe("http-dispatch", () => {
     expect(isHabitatRpcPath("/api/health")).toBe(false);
   });
 
-  test("isHabitatRpcPath still matches legacy /hub/rpc/v1 until 0.9.4", () => {
+  test("isHabitatRpcPath still matches legacy /hub/rpc/v1 until 0.9.3", () => {
     expect(isHabitatRpcPath("/hub/rpc/v1")).toBe(true);
     expect(isHabitatRpcPath("/hub/rpc/v1/health/probe")).toBe(true);
   });

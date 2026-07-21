@@ -2,7 +2,10 @@ import type { SapAttachOutput } from "./frames/lifecycle.ts";
 import type { SapToolDefInput, ToolCallPayload } from "./frames/tool.ts";
 import type { SapInstanceStore } from "./instance-store.ts";
 import type { SapClient } from "./router.ts";
-import { runHubRpcTransport, type HubRpcTransportHandle } from "@freeanima/shared/habitat-rpc";
+import {
+  runHabitatRpcTransport,
+  type HabitatRpcTransportHandle,
+} from "@freeanima/shared/habitat-rpc";
 import {
   attachHubEventFanout,
   createSapRelayServerState,
@@ -44,8 +47,10 @@ function isStaleInstanceIdError(error: unknown): boolean {
   return msg.includes("unknown instance_id");
 }
 
-export function createSatelliteHub(options: CreateSatelliteHubOptions): SatelliteHubHandle {
-  let transport: HubRpcTransportHandle | null = null;
+export function createSatelliteHabitatAttach(
+  options: CreateSatelliteHubOptions,
+): SatelliteHubHandle {
+  let transport: HabitatRpcTransportHandle | null = null;
   let sapClient: SapClient | null = null;
   let instanceId: string | null = null;
   const relayState = options.relay ? createSapRelayServerState() : null;
@@ -114,7 +119,7 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
     throw new Error("sap.attach failed");
   }
 
-  function startTransport(habitatUrl: string, httpUrl?: string): HubRpcTransportHandle {
+  function startTransport(habitatUrl: string, httpUrl?: string): HabitatRpcTransportHandle {
     transport?.stop();
     currentHubUrl = habitatUrl;
     currentHttpUrl = httpUrl ?? currentHttpUrl;
@@ -123,7 +128,7 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
       throw new Error("satellite hub requires remoteAuthToken");
     }
 
-    transport = runHubRpcTransport({
+    transport = runHabitatRpcTransport({
       habitatUrl: currentHubUrl,
       authToken,
       onConnected: async (rpc) => {
@@ -173,3 +178,6 @@ export function createSatelliteHub(options: CreateSatelliteHubOptions): Satellit
     },
   };
 }
+
+/** @deprecated 0.9.3 后删除 — 请用 createSatelliteHabitatAttach */
+export const createSatelliteHub = createSatelliteHabitatAttach;

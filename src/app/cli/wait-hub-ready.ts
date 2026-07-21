@@ -3,19 +3,29 @@ import { existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { SYSTEMD_UNIT, systemdUserAvailable } from "./systemd-unit.ts";
 
-export type WaitForHubReadyOptions = {
+export type WaitForHabitatReadyOptions = {
   timeoutMs?: number;
   intervalMs?: number;
 };
 
-/** 启动探活默认 15min：慢迁移（HNSW / 记忆 backfill）常超过旧的 2min 窗口 */
-export const DEFAULT_HUB_READY_TIMEOUT_MS = 900_000;
+/** @deprecated 0.9.3 后删除 — 请用 WaitForHabitatReadyOptions */
+export type WaitForHubReadyOptions = WaitForHabitatReadyOptions;
 
-function resolveHubReadyTimeoutMs(override?: number): number {
+/** 启动探活默认 15min：慢迁移（HNSW / 记忆 backfill）常超过旧的 2min 窗口 */
+export const DEFAULT_HABITAT_READY_TIMEOUT_MS = 900_000;
+/** @deprecated 0.9.3 后删除 — 请用 DEFAULT_HABITAT_READY_TIMEOUT_MS */
+export const DEFAULT_HUB_READY_TIMEOUT_MS = DEFAULT_HABITAT_READY_TIMEOUT_MS;
+
+function resolveHabitatReadyTimeoutMs(override?: number): number {
   if (typeof override === "number" && Number.isFinite(override) && override > 0) return override;
-  const raw = Number.parseInt(process.env.FREEANIMA_HUB_READY_TIMEOUT_MS ?? "", 10);
+  const raw = Number.parseInt(
+    process.env.FREEANIMA_HABITAT_READY_TIMEOUT_MS ??
+      process.env.FREEANIMA_HUB_READY_TIMEOUT_MS ??
+      "",
+    10,
+  );
   if (Number.isFinite(raw) && raw > 0) return raw;
-  return DEFAULT_HUB_READY_TIMEOUT_MS;
+  return DEFAULT_HABITAT_READY_TIMEOUT_MS;
 }
 
 function sleep(ms: number): Promise<void> {
@@ -24,19 +34,19 @@ function sleep(ms: number): Promise<void> {
   });
 }
 
-function systemdHubFailed(): boolean {
+function systemdHabitatFailed(): boolean {
   if (!systemdUserAvailable() || !existsSync(serviceUnitPath())) return false;
   const r = spawnSync("systemctl", ["--user", "is-failed", SYSTEMD_UNIT], { encoding: "utf-8" });
   return String(r.stdout ?? "").trim() === "failed";
 }
 
 /** Poll GET /rpc/v1/health/probe until status is ok or timeout. */
-export async function waitForHubReady(
+export async function waitForHabitatReady(
   host: string,
   port: number,
-  opts?: WaitForHubReadyOptions,
+  opts?: WaitForHabitatReadyOptions,
 ): Promise<boolean> {
-  const timeoutMs = resolveHubReadyTimeoutMs(opts?.timeoutMs);
+  const timeoutMs = resolveHabitatReadyTimeoutMs(opts?.timeoutMs);
   const intervalMs = opts?.intervalMs ?? 500;
   const probeHost = resolveProbeHost(host);
   const deadline = Date.now() + timeoutMs;
@@ -49,8 +59,11 @@ export async function waitForHubReady(
   return false;
 }
 
-export async function waitForHubReadyOrWarn(host: string, port: number): Promise<boolean> {
-  const timeoutMs = resolveHubReadyTimeoutMs();
+/** @deprecated 0.9.3 后删除 — 请用 waitForHabitatReady */
+export const waitForHubReady = waitForHabitatReady;
+
+export async function waitForHabitatReadyOrWarn(host: string, port: number): Promise<boolean> {
+  const timeoutMs = resolveHabitatReadyTimeoutMs();
   const intervalMs = 500;
   const probeHost = resolveProbeHost(host);
   const deadline = Date.now() + timeoutMs;
@@ -61,7 +74,7 @@ export async function waitForHubReadyOrWarn(host: string, port: number): Promise
     const health = await apiGet(probeHost, port, "/rpc/v1/health/probe", 2000);
     if (health?.status === "ok") return true;
 
-    if (systemdHubFailed()) {
+    if (systemdHabitatFailed()) {
       writeStatusLine("warning", "Habitat 启动失败（systemd 报告 anima.service failed）");
       writeStatusLine("info", "See: journalctl --user -u anima -n 30 --no-pager");
       return false;
@@ -90,3 +103,6 @@ export async function waitForHubReadyOrWarn(host: string, port: number): Promise
   writeStatusLine("info", "Try: anima service restart（勿在迁移进行中 stop）");
   return false;
 }
+
+/** @deprecated 0.9.3 后删除 — 请用 waitForHabitatReadyOrWarn */
+export const waitForHubReadyOrWarn = waitForHabitatReadyOrWarn;

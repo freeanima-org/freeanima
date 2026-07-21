@@ -4,8 +4,8 @@
  *
  *   just memory-sample -- --label idle
  *   just memory-sample -- --pid 12345 --label after-chat
- *   just memory-sample -- --hub-url http://127.0.0.1:2658
- *   just memory-sample -- --hub-url http://127.0.0.1:2658 --stage full
+ *   just memory-sample -- --habitat-url http://127.0.0.1:2658
+ *   just memory-sample -- --habitat-url http://127.0.0.1:2658 --stage full
  */
 
 import { readFileSync } from "node:fs";
@@ -42,12 +42,12 @@ function readRssKb(pid: number): number {
 function parseArgs(argv: string[]): {
   pid: number;
   label: string;
-  hubUrl: string | null;
+  habitatUrl: string | null;
   stage: string;
 } {
   let pid = process.pid;
   let label = "";
-  let hubUrl: string | null = null;
+  let habitatUrl: string | null = null;
   let stage = "basic";
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -57,15 +57,15 @@ function parseArgs(argv: string[]): {
     } else if (arg === "--label" && argv[i + 1]) {
       const labelArg = argv[++i];
       if (labelArg !== undefined) label = labelArg;
-    } else if ((arg === "--hub-url" || arg === "--url") && argv[i + 1]) {
+    } else if ((arg === "--habitat-url" || arg === "--hub-url" || arg === "--url") && argv[i + 1]) {
       const urlArg = argv[++i];
-      if (urlArg !== undefined) hubUrl = urlArg.replace(/\/api\/status\/?$/, "");
+      if (urlArg !== undefined) habitatUrl = urlArg.replace(/\/api\/status\/?$/, "");
     } else if (arg === "--stage" && argv[i + 1]) {
       const stageArg = argv[++i];
       if (stageArg !== undefined) stage = stageArg;
     }
   }
-  return { pid, label, hubUrl, stage };
+  return { pid, label, habitatUrl, stage };
 }
 
 async function fetchStatusViaHubRpc(
@@ -104,7 +104,7 @@ function appendMemoryDetail(
   }
 }
 
-const { pid, label, hubUrl, stage } = parseArgs(process.argv.slice(2));
+const { pid, label, habitatUrl, stage } = parseArgs(process.argv.slice(2));
 const rssKb = readRssKb(pid);
 const rssMb = (rssKb / 1024).toFixed(1);
 
@@ -115,8 +115,8 @@ parts.push(`pid=${pid}`);
 parts.push(`rss_kb=${rssKb}`);
 parts.push(`rss_mb=${rssMb}`);
 
-if (hubUrl) {
-  const status = await fetchStatusViaHubRpc(hubUrl);
+if (habitatUrl) {
+  const status = await fetchStatusViaHubRpc(habitatUrl);
   if (status) {
     if (typeof status.memory_kb === "number") {
       parts.push(`status_memory_kb=${status.memory_kb}`);
