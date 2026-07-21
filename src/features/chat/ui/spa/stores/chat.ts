@@ -395,7 +395,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
           };
 
           const onError = (err: Error) => {
-            if (generation !== _streamGeneration) return;
+            if (generation !== _streamGeneration) {
+              // 与 onComplete 相同：abort 后必须 settle，否则 await send 挂死、sendingRef 卡死
+              settleOk();
+              return;
+            }
             // 传输层断开：等重连 attach，不立刻失败
             if (activeStreamId && !receivedDone) {
               hadDisconnect = true;
@@ -407,7 +411,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
           };
 
           const onComplete = () => {
-            if (generation !== _streamGeneration) return;
+            // abortStream 会先 ++generation 再 unsubscribe→onComplete；必须 settle，否则 Promise 挂死
+            if (generation !== _streamGeneration) {
+              settleOk();
+              return;
+            }
             if (!receivedDone && activeStreamId && hadDisconnect) return;
             settleOk();
           };
@@ -446,12 +454,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
             return;
           }
           if (state === "connected" && hadDisconnect && activeStreamId && !receivedDone) {
-            hadDisconnect = false;
-            // 只拆旧 stream 监听，保留连接状态订阅
+            // 先拆旧订阅（hadDisconnect 仍为 true → onComplete 不 settle），再清标志并 resume
             if (_unsubscribe) {
               _unsubscribe();
               _unsubscribe = null;
             }
+            hadDisconnect = false;
             const next = attachStreamHandlers("resume");
             _unsubscribe = () => next.unsubscribe();
           }
@@ -644,11 +652,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
             return;
           }
           if (state === "connected" && hadDisconnect && activeStreamId && !receivedDone) {
-            hadDisconnect = false;
+            // 先拆旧订阅（hadDisconnect 仍为 true → onComplete 不 settle），再清标志并 resume
             if (_unsubscribe) {
               _unsubscribe();
               _unsubscribe = null;
             }
+            hadDisconnect = false;
             const next = wire();
             _unsubscribe = () => next.unsubscribe();
           }

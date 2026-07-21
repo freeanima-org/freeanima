@@ -89,6 +89,20 @@ export class StreamSessionRegistry {
   }
 
   /**
+   * attach/续传独占 fan-out：清掉发起连接等旧订阅后再挂新 emit。
+   * 否则同 WS 上 message.send 泵订阅 + stream.attach 并存，token 双发 → 客户端字词重复。
+   */
+  subscribeExclusive(streamId: string, emit: StreamSessionEmitter): (() => void) | null {
+    const session = this.byStreamId.get(streamId);
+    if (!session) return null;
+    session.subscribers.clear();
+    session.subscribers.add(emit);
+    return () => {
+      session.subscribers.delete(emit);
+    };
+  }
+
+  /**
    * 更新 buffer 并广播。返回 false 表示 session 不存在。
    * llm_debug 不入 buffer，也不广播（由 pump 单独处理）。
    */

@@ -20,6 +20,8 @@ export type ChatOutboxEntry = {
   attempts: number;
   createdAt: string;
   lastError?: string;
+  /** false = 仅内存（在线直发未入 IDB）；缺省 / true = 已持久化到 outbox */
+  persisted?: boolean;
 };
 
 const CHAT_MODULE_ID = "chat";
@@ -66,6 +68,7 @@ function toEntry(op: OfflineOutboxOp, status: OutboxSendStatus): ChatOutboxEntry
     status,
     attempts: 0,
     createdAt: op.createdAt,
+    persisted: true,
     ...(op.lastError !== undefined ? { lastError: op.lastError } : {}),
   };
 }
@@ -109,6 +112,27 @@ export async function enqueueChatSend(
     status: "pending",
     attempts: 0,
     createdAt,
+    persisted: true,
+  };
+}
+
+/** 在线直发：仅内存跟踪，不写 IDB。 */
+export function createEphemeralChatSend(
+  conversationId: string,
+  text: string,
+  expectedTailPos: number,
+  opts?: { clientOpId?: string },
+): ChatOutboxEntry {
+  const clientOpId = opts?.clientOpId ?? randomUuid();
+  return {
+    clientOpId,
+    conversationId,
+    text,
+    expectedTailPos,
+    status: "pending",
+    attempts: 0,
+    createdAt: new Date().toISOString(),
+    persisted: false,
   };
 }
 

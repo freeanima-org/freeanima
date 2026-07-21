@@ -8,6 +8,7 @@ import {
 } from "@freeanima/frontend/shell-sdk/pomodoro-sync-local.ts";
 import { readPomodoroActiveState } from "@freeanima/frontend/shell-sdk/pomodoro-active.ts";
 import { getHabitatRpcConnectionState } from "@freeanima/frontend/shell-sdk/habitat-connection.ts";
+import { preferOnlineWrite } from "@freeanima/frontend/shell-sdk/prefer-online-write";
 
 import {
   abortPomodoroSession,
@@ -91,17 +92,15 @@ export async function applyPomodoroActive(
 
   if (next == null) {
     cancelScheduledPut(subjectKind);
-    if (hubReady()) {
-      try {
+    await preferOnlineWrite(
+      async () => {
         await clearPomodoroActiveRemote(subjectKind);
-      } catch {
+      },
+      async () => {
         const { enqueuePomodoroActiveClear } = await import("./pomodoro-offline-store.ts");
         await enqueuePomodoroActiveClear(subjectKind);
-      }
-    } else {
-      const { enqueuePomodoroActiveClear } = await import("./pomodoro-offline-store.ts");
-      await enqueuePomodoroActiveClear(subjectKind);
-    }
+      },
+    );
     return;
   }
 
@@ -142,21 +141,19 @@ async function flushActivePut(
   if (!state) return;
   const syncedAtMs = Date.now();
   const active = buildHubActivePayload(state, syncedAtMs);
-  if (!hubReady()) {
-    const { enqueuePomodoroActivePut } = await import("./pomodoro-offline-store.ts");
-    await enqueuePomodoroActivePut(subjectKind, active);
-    return;
-  }
-  try {
-    await putPomodoroActiveRemote(subjectKind, active);
-    applyLocalPomodoroActive(state, subjectKind, {
-      device_id: active.device_id,
-      updated_at_ms: syncedAtMs,
-    });
-  } catch {
-    const { enqueuePomodoroActivePut } = await import("./pomodoro-offline-store.ts");
-    await enqueuePomodoroActivePut(subjectKind, active);
-  }
+  await preferOnlineWrite(
+    async () => {
+      await putPomodoroActiveRemote(subjectKind, active);
+      applyLocalPomodoroActive(state, subjectKind, {
+        device_id: active.device_id,
+        updated_at_ms: syncedAtMs,
+      });
+    },
+    async () => {
+      const { enqueuePomodoroActivePut } = await import("./pomodoro-offline-store.ts");
+      await enqueuePomodoroActivePut(subjectKind, active);
+    },
+  );
 }
 
 export async function pullPomodoroActive(subjectKind: PomodoroSubjectKind): Promise<void> {
@@ -201,18 +198,16 @@ async function persistPhaseEnd(
   interrupted: boolean,
 ): Promise<void> {
   const payload = buildPhaseEndPayload(state);
-  if (!hubReady()) {
-    if (interrupted) await enqueuePomodoroSessionAbort(subjectKind, payload);
-    else await enqueuePomodoroSessionComplete(subjectKind, payload);
-    return;
-  }
-  try {
-    if (interrupted) await abortPomodoroSession(subjectKind, payload);
-    else await completePomodoroSession(subjectKind, payload);
-  } catch {
-    if (interrupted) await enqueuePomodoroSessionAbort(subjectKind, payload);
-    else await enqueuePomodoroSessionComplete(subjectKind, payload);
-  }
+  await preferOnlineWrite(
+    async () => {
+      if (interrupted) await abortPomodoroSession(subjectKind, payload);
+      else await completePomodoroSession(subjectKind, payload);
+    },
+    async () => {
+      if (interrupted) await enqueuePomodoroSessionAbort(subjectKind, payload);
+      else await enqueuePomodoroSessionComplete(subjectKind, payload);
+    },
+  );
 }
 
 export async function runPhaseComplete(options: {

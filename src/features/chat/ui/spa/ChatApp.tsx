@@ -87,6 +87,7 @@ import { useConversationsStore } from "@freeanima/features/chat/ui/spa/stores/co
 import { useOutboxStore } from "@freeanima/features/chat/ui/spa/stores/outbox.ts";
 import {
   claimChatSend,
+  createEphemeralChatSend,
   listChatOutboxEntries,
   releaseChatSend,
 } from "@freeanima/features/chat/ui/spa/lib/offline-send-store.ts";
@@ -99,6 +100,7 @@ import type { DisplayItem, StreamApiEvent } from "@freeanima/features/chat/ui/sp
 import { registerChatStreamContextFactory } from "@freeanima/frontend/shell-ui/spa/OfflineSyncBootstrap.tsx";
 import { resolveOutboxScope } from "@freeanima/frontend/shell-sdk/offline-outbox";
 import { flushOfflineModule } from "@freeanima/frontend/shell-sdk/offline-sync";
+import { isRetriableOfflineWriteError } from "@freeanima/frontend/shell-sdk/prefer-online-write";
 import {
   filterUndeliveredOutbox,
   isOutboxDeliveredOnDisplay,
@@ -144,7 +146,10 @@ function openHabitatSettingsIfAvailable(): void {
 }
 
 function isTransportFailureMessage(msg: string): boolean {
-  return /timed out|websocket|hub_rpc_timeout|网络错误/i.test(msg);
+  return (
+    /timed out|websocket|hub_rpc_timeout|网络错误/i.test(msg) ||
+    isRetriableOfflineWriteError(new Error(msg))
+  );
 }
 
 function buildSendOpts(
@@ -165,6 +170,8 @@ type SendDispatchOpts = {
   clientOpId?: string;
   expectedTailPos?: number;
   forceTail?: boolean;
+  /** false = 在线直发未入 IDB；缺省 true = 已在 outbox */
+  persisted?: boolean;
 };
 
 export function ChatApp() {
@@ -434,7 +441,7 @@ export function ChatApp() {
   const pendingOutboxKey = useMemo(
     () =>
       Object.values(outboxEntries)
-        .filter((e) => e.status === "pending" || e.status === "failed")
+        .filter((e) => e.persisted !== false && (e.status === "pending" || e.status === "failed"))
         .map((e) => `${e.clientOpId}:${e.status}`)
         .toSorted()
         .join(","),
@@ -505,6 +512,8 @@ export function ChatApp() {
       // 拆本地监听，保留 sessionStorage 中的 stream_id 供续传；先占位避免空白
       useChatStore.getState().abortStream();
       pendingRecoveryKeyRef.current = null;
+      // abort 可能使进行中的 send() 稍后 settle；先松开发送锁，避免输入/发送无响应
+      sendingRef.current = false;
       if (
         currentId &&
         (displayAwaitingReply(useConversationsStore.getState().display) ||
@@ -924,6 +933,9 @@ export function ChatApp() {
     const idbIds = new Set(idbEntries.map((e) => e.clientOpId));
     for (const opId of Object.keys(useOutboxStore.getState().entries)) {
       if (!idbIds.has(opId)) {
+        const mem = useOutboxStore.getState().entries[opId];
+        // 在线直发 ephemeral：尚未入 IDB，勿当孤儿清掉
+        if (mem?.persisted === false) continue;
         removeDisplayByClientOpId(opId);
         await outboxAckEntry(opId);
         continue;
@@ -1037,8 +1049,11 @@ export function ChatApp() {
       const isViewingOrigin = () =>
         useConversationsStore.getState().currentId === originConversationId;
 
+      const inOutbox = sendMeta?.persisted !== false;
       if (sendMeta?.clientOpId) {
-        claimChatSend(sendMeta.clientOpId);
+        if (inOutbox) {
+          claimChatSend(sendMeta.clientOpId);
+        }
         patchDisplayByClientOpId(sendMeta.clientOpId, { sendStatus: "sending" });
         outboxSetEntryStatus(sendMeta.clientOpId, "sending");
       }
@@ -1068,17 +1083,22 @@ export function ChatApp() {
               scrollDown();
             },
             onError: (msg) => {
-              if (sendMeta?.clientOpId) {
-                const entry = useOutboxStore.getState().entries[sendMeta.clientOpId];
+              const opId = sendMeta?.clientOpId;
+              if (opId) {
+                const entry = useOutboxStore.getState().entries[opId];
                 if (entry?.status !== "stale") {
-                  patchDisplayByClientOpId(sendMeta.clientOpId, { sendStatus: "failed" });
-                  outboxSetEntryStatus(sendMeta.clientOpId, "failed", msg);
+                  const transport = isTransportFailureMessage(msg);
+                  const persistThenFail = async () => {
+                    if (sendMeta.persisted === false && transport) {
+                      await useOutboxStore.getState().persistToIdb(opId);
+                    }
+                    patchDisplayByClientOpId(opId, { sendStatus: "failed" });
+                    outboxSetEntryStatus(opId, "failed", msg);
+                  };
+                  void persistThenFail();
                 }
               }
-              if (
-                sendMeta?.clientOpId &&
-                useOutboxStore.getState().entries[sendMeta.clientOpId]?.status === "stale"
-              ) {
+              if (opId && useOutboxStore.getState().entries[opId]?.status === "stale") {
                 if (isViewingOrigin()) scrollDown();
                 return;
               }
@@ -1118,13 +1138,19 @@ export function ChatApp() {
             },
           },
           buildSendOpts(sendMeta, llmDebugEnabled, () => {
-            if (!sendMeta?.clientOpId) return;
-            patchDisplayByClientOpId(sendMeta.clientOpId, { sendStatus: "stale" });
-            outboxSetEntryStatus(sendMeta.clientOpId, "stale");
+            const opId = sendMeta?.clientOpId;
+            if (!opId) return;
+            void (async () => {
+              if (sendMeta.persisted === false) {
+                await useOutboxStore.getState().persistToIdb(opId);
+              }
+              patchDisplayByClientOpId(opId, { sendStatus: "stale" });
+              outboxSetEntryStatus(opId, "stale");
+            })();
           }),
         );
       } finally {
-        if (sendMeta?.clientOpId) {
+        if (sendMeta?.clientOpId && inOutbox) {
           releaseChatSend(sendMeta.clientOpId);
         }
       }
@@ -1151,7 +1177,7 @@ export function ChatApp() {
 
     void (async () => {
       const pending = Object.values(useOutboxStore.getState().entries).filter(
-        (e) => e.status === "pending" || e.status === "failed",
+        (e) => e.persisted !== false && (e.status === "pending" || e.status === "failed"),
       );
       const conversationIds = [...new Set(pending.map((e) => e.conversationId))];
       for (const conversationId of conversationIds) {
@@ -1162,7 +1188,7 @@ export function ChatApp() {
       }
 
       const stillPending = Object.values(useOutboxStore.getState().entries).filter(
-        (e) => e.status === "pending" || e.status === "failed",
+        (e) => e.persisted !== false && (e.status === "pending" || e.status === "failed"),
       );
       if (stillPending.length === 0 || sendingRef.current) return;
 
@@ -1267,30 +1293,41 @@ export function ChatApp() {
       }
 
       const expectedTailPos = await resolveExpectedTailPos(originConversationId, canSendOnline);
-      const entry = await useOutboxStore
-        .getState()
-        .enqueue(originConversationId, text, expectedTailPos);
-      // enqueue 后立刻 claim，堵住 flush effect / OfflineSyncBootstrap 窗口
-      claimChatSend(entry.clientOpId);
-      claimedOpId = entry.clientOpId;
 
       if (!text.startsWith("/") || !canSendOnline) {
         setInputText("");
         saveInputDraft(originConversationId, "");
         requestAnimationFrame(resizeInput);
       }
-      appendItem({
-        type: "message",
-        role: "user",
-        content: text,
-        clientOpId: entry.clientOpId,
-        sendStatus: "pending",
-      });
 
       if (canSendOnline) {
+        // 在线栖息地优先：内存 clientOpId + 直发，不入 IDB outbox
+        const entry = createEphemeralChatSend(originConversationId, text, expectedTailPos);
+        useOutboxStore.getState().trackLocal(entry);
+        appendItem({
+          type: "message",
+          role: "user",
+          content: text,
+          clientOpId: entry.clientOpId,
+          sendStatus: "pending",
+        });
         await dispatchSend(text, originConversationId, {
           clientOpId: entry.clientOpId,
           expectedTailPos: entry.expectedTailPos,
+          persisted: false,
+        });
+      } else {
+        const entry = await useOutboxStore
+          .getState()
+          .enqueue(originConversationId, text, expectedTailPos);
+        claimChatSend(entry.clientOpId);
+        claimedOpId = entry.clientOpId;
+        appendItem({
+          type: "message",
+          role: "user",
+          content: text,
+          clientOpId: entry.clientOpId,
+          sendStatus: "pending",
         });
       }
     } finally {

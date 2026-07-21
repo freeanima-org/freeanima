@@ -72,8 +72,29 @@ describe("stream-session-registry", () => {
     expect(streamSessionRegistry.getSession("s1")?.status).toBe("done");
   });
 
+  it("subscribeExclusive 替换旧订阅，后续事件只达新订阅者", () => {
+    streamSessionRegistry.openSession("s1", "c1");
+    const fromPump: string[] = [];
+    const fromAttach: string[] = [];
+    streamSessionRegistry.subscribe("s1", (method) => {
+      fromPump.push(method);
+    });
+    streamSessionRegistry.subscribeExclusive("s1", (method) => {
+      fromAttach.push(method);
+    });
+
+    streamSessionRegistry.applyAndPublish("stream.token", {
+      stream_id: "s1",
+      content: "x",
+    });
+
+    expect(fromPump).toEqual([]);
+    expect(fromAttach).toEqual(["stream.token"]);
+  });
+
   it("subscribe returns null for unknown stream", () => {
     expect(streamSessionRegistry.subscribe("missing", () => {})).toBeNull();
+    expect(streamSessionRegistry.subscribeExclusive("missing", () => {})).toBeNull();
   });
 
   it("indexes active stream by conversation_id", () => {

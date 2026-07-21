@@ -1,6 +1,14 @@
 import type { DisplayItem } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 import type { ChatOutboxEntry } from "@freeanima/features/chat/ui/spa/lib/offline-send-store.ts";
 
+/** 服务端 display 中是否已有同内容的 user 消息（无 clientOpId，即已落库） */
+export function hasServerUserMessage(display: DisplayItem[], text: string): boolean {
+  return display.some(
+    (item) =>
+      item.type === "message" && item.role === "user" && item.content === text && !item.clientOpId,
+  );
+}
+
 /** 服务端 display 中是否已有该 user 文本且其后已有 assistant 回复 */
 export function isOutboxDeliveredOnDisplay(display: DisplayItem[], text: string): boolean {
   for (let i = 0; i < display.length; i++) {
@@ -21,14 +29,7 @@ export function stripRedundantOptimisticDisplay(display: DisplayItem[]): Display
   return display.filter((item) => {
     if (item.type !== "message" || item.role !== "user" || !item.clientOpId) return true;
     if (item.sendStatus !== "pending" && item.sendStatus !== "sending") return true;
-    const hasServerCopy = display.some(
-      (other) =>
-        other.type === "message" &&
-        other.role === "user" &&
-        other.content === item.content &&
-        !other.clientOpId,
-    );
-    return !hasServerCopy;
+    return !hasServerUserMessage(display, item.content);
   });
 }
 
@@ -62,6 +63,13 @@ export function filterUndeliveredOutbox(
     if (entry.conversationId !== conversationId) return false;
     if (serverClientIds.has(entry.clientOpId)) return false;
     if (isOutboxDeliveredOnDisplay(display, entry.text)) return false;
+    // 刷新/续传：服务端已有同内容 user（助手可能还在生成），勿再拼一条乐观气泡
+    if (
+      (entry.status === "pending" || entry.status === "sending") &&
+      hasServerUserMessage(display, entry.text)
+    ) {
+      return false;
+    }
     return true;
   });
 }

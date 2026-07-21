@@ -29,6 +29,10 @@ import {
 import { m } from "@paraglide/messages";
 
 import { registerAllOfflineModules } from "./register-offline-modules.ts";
+import {
+  buildOfflineSyncSummaryMessage,
+  shouldShowOfflineSyncToast,
+} from "./offline-sync-toast.ts";
 
 let chatStreamContextFactory: (() => StreamFlushContext | null) | null = null;
 
@@ -71,14 +75,6 @@ function moduleLabel(moduleId: OfflineModuleId): string {
 
 function problemOps(summary: GlobalOutboxSummary): OfflineOutboxOp[] {
   return summary.ops.filter((op) => Boolean(op.lastError) || isStaleOutboxOp(op));
-}
-
-function buildSummaryMessage(summary: GlobalOutboxSummary): string {
-  const parts: string[] = [];
-  if (summary.pending > 0) parts.push(m.ui_offline_sync_pending({ count: summary.pending }));
-  if (summary.failed > 0) parts.push(m.ui_offline_sync_failed({ count: summary.failed }));
-  if (summary.stale > 0) parts.push(m.ui_offline_sync_stale({ count: summary.stale }));
-  return parts.join(" · ");
 }
 
 function buildIssueDescription(issues: OfflineOutboxOp[]): string | undefined {
@@ -179,18 +175,23 @@ export function OfflineSyncBootstrap(): null {
     [refreshSummary],
   );
 
-  const total = summary.pending + summary.failed + summary.stale;
   const issues = problemOps(summary);
+  const showToast = shouldShowOfflineSyncToast(summary, habitatConnection);
 
   useEffect(() => {
-    if (total <= 0) {
+    if (!showToast) {
       dismissShellToast(SHELL_TOAST_IDS.offlineSync);
       return;
     }
 
     const firstIssue = issues[0];
     const description = buildIssueDescription(issues);
-    showShellToast(SHELL_TOAST_IDS.offlineSync, buildSummaryMessage(summary), {
+    const message = buildOfflineSyncSummaryMessage(summary, habitatConnection, {
+      pending: (count) => m.ui_offline_sync_pending({ count }),
+      failed: (count) => m.ui_offline_sync_failed({ count }),
+      stale: (count) => m.ui_offline_sync_stale({ count }),
+    });
+    showShellToast(SHELL_TOAST_IDS.offlineSync, message, {
       ...(description != null ? { description } : {}),
       action: {
         label: m.ui_offline_sync_retry_all(),
@@ -212,7 +213,7 @@ export function OfflineSyncBootstrap(): null {
           }
         : {}),
     });
-  }, [busy, handleRetryAll, handleRetryOp, issues, summary, total]);
+  }, [busy, handleRetryAll, handleRetryOp, habitatConnection, issues, showToast, summary]);
 
   return null;
 }
