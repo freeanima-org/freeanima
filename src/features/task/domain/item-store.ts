@@ -18,6 +18,7 @@ import {
 } from "@freeanima/core/db/pg/entity";
 
 import { assertListAcceptsTasks, assertTaskListNotArchived } from "./list-store.ts";
+import { nextPrependSortOrder } from "./sort-order.ts";
 import type {
   TaskItemCreateInput,
   TaskItemListOpts,
@@ -172,11 +173,23 @@ export async function createTaskItem(
   await assertTagIdsInWorld(worldId, tagIds);
   const listId = hasProject ? null : (input.list_id as number);
   const projectId = hasProject ? (input.project_id as number) : null;
+
+  // 未显式传 sort_order：min(pending)-STEP（允许负值），只写新行；拖拽有空隙时也只改一项。
+  let sortOrder = input.sort_order;
+  if (sortOrder === undefined) {
+    const siblings = await listTaskItems(worldId, {
+      ...(listId != null ? { list_id: listId } : {}),
+      ...(projectId != null ? { project_id: projectId } : {}),
+      status: "pending",
+    });
+    sortOrder = nextPrependSortOrder(siblings.map((s) => s.sort_order));
+  }
+
   const body = {
     status: "pending" as const,
     priority: input.priority ?? "none",
     list_id: listId,
-    sort_order: input.sort_order ?? 0,
+    sort_order: sortOrder,
     tags: [] as string[],
     due_at: input.due_at ?? null,
     remind_at: input.remind_at ?? null,

@@ -33,6 +33,14 @@ export {
 } from "./item-store.ts";
 
 export {
+  SORT_ORDER_STEP,
+  nextPrependSortOrder,
+  sortOrderUpdates,
+  applySortOrderUpdates,
+} from "./sort-order.ts";
+export type { SortOrderRow, SortOrderPatch } from "./sort-order.ts";
+
+export {
   listSmartListsMerged,
   createSmartList,
   updateSmartList,

@@ -17,7 +17,7 @@ import {
   offlineUpdateTaskItem,
   reconcileServerTaskLists,
 } from "./offline-store.ts";
-import { writeCachedTaskItems } from "./offline-cache.ts";
+import { writeCachedTaskItems, readCachedTaskItems } from "./offline-cache.ts";
 
 function list(partial: Partial<TaskListRow> & Pick<TaskListRow, "id" | "name">): TaskListRow {
   return {
@@ -124,6 +124,48 @@ describe("reconcileServerTaskLists", () => {
     const moved = merged.find((row) => row.id === 17);
     expect(moved?.parent_id).toBeNull();
     expect(moved?.sort_order).toBe(1);
+  });
+});
+
+describe("offlineCreateTaskItem prepend", () => {
+  beforeEach(() => {
+    setOfflineOutboxBackendForTests(new Map());
+    resetOfflineModuleRegistryForTests();
+    resetTempIdAllocatorForTests();
+  });
+
+  it("未传 sort_order 时本地取 min(pending)-STEP，旧任务不变，且 RPC payload 不含 sort_order", async () => {
+    const scope = resolveOutboxScope();
+    const listId = 20;
+    await writeOfflineCache(scope, "tasks", "lists", [list({ id: listId, name: "inbox" })]);
+    await writeCachedTaskItems(scope, listId, [
+      item({ id: 1, title: "旧A", list_id: listId, sort_order: 0 }),
+      item({ id: 2, title: "旧B", list_id: listId, sort_order: 1 }),
+      item({
+        id: 3,
+        title: "已完成",
+        list_id: listId,
+        sort_order: 0,
+        status: "completed",
+      }),
+    ]);
+
+    const created = await offlineCreateTaskItem({
+      title: "新任务",
+      list_id: listId,
+    });
+    expect(created.sort_order).toBe(-10);
+
+    const cached = await readCachedTaskItems(scope, listId);
+    expect(cached?.find((row) => row.id === created.id)?.sort_order).toBe(-10);
+    expect(cached?.find((row) => row.id === 1)?.sort_order).toBe(0);
+    expect(cached?.find((row) => row.id === 2)?.sort_order).toBe(1);
+    expect(cached?.find((row) => row.id === 3)?.sort_order).toBe(0);
+
+    const ops = await listOutboxOps(scope, "task");
+    const createOp = ops.find((op) => op.method === "tasklist.item.create");
+    expect(createOp).toBeDefined();
+    expect(createOp?.payload).not.toHaveProperty("sort_order");
   });
 });
 
