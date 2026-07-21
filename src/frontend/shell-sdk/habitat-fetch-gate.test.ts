@@ -7,7 +7,7 @@ describe("habitat-fetch-gate", () => {
     expect(isNetworkOnline()).toBe(true);
   });
 
-  it("isHabitatFetchAvailable is false when hub not connected", () => {
+  it("isHabitatFetchAvailable is false when habitat not connected", () => {
     expect(isHabitatFetchAvailable()).toBe(false);
   });
 });

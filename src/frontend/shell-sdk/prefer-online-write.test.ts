@@ -4,7 +4,7 @@ const realGate = await import("./habitat-fetch-gate.ts");
 const gateOriginal = {
   isHabitatFetchAvailable: realGate.isHabitatFetchAvailable,
   isNetworkOnline: realGate.isNetworkOnline,
-  isHubConnected: realGate.isHubConnected,
+  isHabitatConnected: realGate.isHabitatConnected,
   shellWritesDisabledFromState: realGate.shellWritesDisabledFromState,
 };
 
@@ -28,7 +28,7 @@ const { HabitatRpcTimeoutError } = await import("@freeanima/shared/habitat-rpc")
 describe("isRetriableOfflineWriteError", () => {
   it("识别传输超时与业务错误", () => {
     expect(isRetriableOfflineWriteError(new HabitatRpcTimeoutError("x"))).toBe(true);
-    expect(isRetriableOfflineWriteError(new Error("Hub RPC WebSocket closed"))).toBe(true);
+    expect(isRetriableOfflineWriteError(new Error("Habitat RPC WebSocket closed"))).toBe(true);
     expect(isRetriableOfflineWriteError(new Error("diary title is required"))).toBe(false);
   });
 });
@@ -44,7 +44,7 @@ describe("preferOnlineWrite", () => {
     expect(result).toBe("online");
   });
 
-  it("Hub 不可用时走 offline", async () => {
+  it("Habitat 不可用时走 offline", async () => {
     hubAvailable = false;
     const result = await preferOnlineWrite(
       async () => "online",

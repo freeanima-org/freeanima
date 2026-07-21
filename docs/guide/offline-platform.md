@@ -2,20 +2,36 @@
 title: Offline Platform
 ---
 
-# 离线平台（Tier 2）
+# 离线平台
 
-FreeAnima 卫星壳离线能力分三层：
+FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier 编号）：
 
-| 层级          | 能力                      | 模块                                   |
-| ------------- | ------------------------- | -------------------------------------- |
-| Tier 1        | IndexedDB 只读快照        | Email、Notification、Habitat、Dream 等 |
-| Tier 2-CRUD   | outbox + 乐观 KV          | Diary、Task、Project                   |
-| Tier 2-Hybrid | outbox + localStorage LWW | Pomodoro（active 计时）                |
-| Tier 2-Stream | SAP 流式 flush            | Chat send                              |
+| 能力          | 叫法                     | 机制                      | 模块                                   |
+| ------------- | ------------------------ | ------------------------- | -------------------------------------- |
+| 只读本地副本  | **snapshot**（只读快照） | IndexedDB KV              | Email、Notification、Habitat、Dream 等 |
+| 可写 + 写队列 | **CRUD outbox**          | outbox + 乐观 KV          | Diary、Task、Project                   |
+| 可写 + 写队列 | **Hybrid outbox**        | outbox + localStorage LWW | Pomodoro（active 计时）                |
+| 可写 + 写队列 | **Stream outbox**        | SAP 流式 flush            | Chat send                              |
+
+可写模块统一用 `offlineWritable: true` 标记（outbox 模块）。
+
+## 词表
+
+| 概念         | 叫法                            | 代码                                                  | 含义                                        |
+| ------------ | ------------------------------- | ----------------------------------------------------- | ------------------------------------------- |
+| 只读本地副本 | snapshot                        | `offline-cache` / `withOfflineCache`                  | 栖息地不可用时只读；在线必打 Habitat 并回写 |
+| 可写离线模块 | outbox 模块 / `offlineWritable` | `registerOfflineModuleCap({ offlineWritable: true })` | 离线可改，失败入队，重连 flush              |
+| 写队列条目   | outbox                          | `offline-outbox` / `OfflineOutboxOp`                  | 待同步写操作                                |
+| 写路径形状   | CRUD / Hybrid / Stream          | `kind: "rpc"`、Pomodoro LWW、`kind: "stream"`         | 如何本地写与如何 flush                      |
+| 在线写优先   | `preferOnlineWrite`             | 同名                                                  | 在线直连 Habitat；仅传输失败回退 outbox     |
+| 推队列       | flush                           | `flushOfflineModule` / `flushAllOfflineModules`       | 把 outbox 打到 Habitat                      |
+| 重连编排     | sync                            | `offline-sync` / `OfflineSyncBootstrap`               | 重连/可见时 flush + 模块 `refreshAll`       |
+| 用户拉视图   | refresh                         | 页头刷新 / pull-to-refresh                            | 与 sync 职责分离                            |
+| 连接状态 UI  | connectivity                    | `connectivity-notice` / `ShellConnectivityBar`        | 断网 vs Habitat 未连；**不是** outbox       |
 
 ## 平台原语（shell-sdk）
 
-- `offline-cache` — Tier 1 KV 快照
+- `offline-cache` — snapshot KV
 - `offline-outbox` — 跨模块写队列
 - `offline-id-map` / `offline-temp-id` — 本地负 id → server id；`subscribeIdMappings` 供 UI remap
 - `offline-module-registry` — Rpc / Stream 双适配器注册
@@ -32,15 +48,15 @@ FreeAnima 卫星壳离线能力分三层：
 
 - 栖息地可用：必打 Habitat（缓存命中不短路）；成功后异步写回本地 KV；fetch 失败回退快照
 - 栖息地不可用：只读本地；无缓存则抛 offlineError
-- Tier 1 / 可写模块 list·get：优先 `withOfflineCache()`；手写路径须同语义
+- snapshot / outbox 模块 list·get：优先 `withOfflineCache()`；手写路径须同语义
 
-### 写（全 Tier 2：在线不入 outbox）
+### 写（全体 outbox 模块：在线不入 outbox）
 
-| 层级          | 模块                   | 在线                                                                                                                      | 离线 / 传输失败                                              |
+| 形状          | 模块                   | 在线                                                                                                                      | 离线 / 传输失败                                              |
 | ------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Tier 2-CRUD   | Diary / Task / Project | `preferOnlineWrite` → 直连 Habitat RPC（带 `client_op_id`），响应回写本地 KV，**不入 outbox**；create 直接得到服务端正 id | 乐观 KV + outbox + `scheduleFlush`（含仍为未映射的 temp id） |
-| Tier 2-Hybrid | Pomodoro               | `preferOnlineWrite` → Habitat RPC（config / active / session），**不入 outbox**；本地 LWW 仍即时写                        | enqueue outbox，重连 flush                                   |
-| Tier 2-Stream | Chat                   | 栖息地可用：内存 `client_op_id` + 直发 message stream，**不入 outbox**                                                    | enqueue outbox；仅传输失败从在线直发回退入队                 |
+| CRUD outbox   | Diary / Task / Project | `preferOnlineWrite` → 直连 Habitat RPC（带 `client_op_id`），响应回写本地 KV，**不入 outbox**；create 直接得到服务端正 id | 乐观 KV + outbox + `scheduleFlush`（含仍为未映射的 temp id） |
+| Hybrid outbox | Pomodoro               | `preferOnlineWrite` → Habitat RPC（config / active / session），**不入 outbox**；本地 LWW 仍即时写                        | enqueue outbox，重连 flush                                   |
+| Stream outbox | Chat                   | 栖息地可用：内存 `client_op_id` + 直发 message stream，**不入 outbox**                                                    | enqueue outbox；仅传输失败从在线直发回退入队                 |
 
 - 业务校验 / 尾冲突等错误抛给 UI，不进「可自动重试」队列
 - 模块接线：gate / 错误分流认 sdk（`preferOnlineWrite` / `isRetriableOfflineWriteError`）；不抽泛型 CRUD 框架
@@ -55,7 +71,7 @@ FreeAnima 卫星壳离线能力分三层：
 
 写 RPC 可选 `client_op_id`；flush 重试使用同一 id；create 响应含完整 `item` 供 id-map 写入。
 
-## Temp id 生命周期契约（Tier 2-CRUD）
+## Temp id 生命周期契约（CRUD outbox）
 
 create flush 成功后，本地世界里不得再以「裸 temp id」作为查找键：
 

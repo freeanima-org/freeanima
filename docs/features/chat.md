@@ -36,6 +36,6 @@ Chat SPA 支持 **离线写入 outbox**、上线后 **自动重试**，并通过
 
 客户端：在线 `dispatchSend` 期间对 outbox op 做进程内 claim，flush preflight 跳过已 claim 的条目；`flushOfflineModule` 与全局 sync 共用锁。
 
-## 与 Tier 2 离线平台
+## 与离线平台（Stream outbox）
 
-Outbox 布局与 [`shell-sdk/offline-outbox`](../../src/frontend/shell-sdk/offline-outbox.ts) 对齐；Chat flush 走 WS 流式 `message.send`，非通用 `hub().call` 单次响应。
+Outbox 布局与 [`shell-sdk/offline-outbox`](../../src/frontend/shell-sdk/offline-outbox.ts) 对齐；Chat flush 走 WS 流式 `message.send`，非通用 Habitat RPC 单次响应。

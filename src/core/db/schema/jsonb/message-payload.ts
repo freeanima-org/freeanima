@@ -30,7 +30,7 @@ export const userPayloadSchema = messageBaseSchema.extend({
   role: z.literal("user"),
   content: z.string(),
   name: z.string().optional(),
-  /** 客户端 outbox 幂等键（Tier 2 Habitat 约定 client_op_id） */
+  /** 客户端 outbox 幂等键（Habitat 写 RPC / Stream outbox 约定 client_op_id） */
   client_op_id: z.string().optional(),
 });
 
