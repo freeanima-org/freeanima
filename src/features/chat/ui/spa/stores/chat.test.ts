@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 
 mock.module("@paraglide/messages", () => ({ m: {} }));
 mock.module("@paraglide/runtime", () => ({
@@ -24,20 +24,29 @@ mock.module("@freeanima/features/chat/ui/spa/lib/api.ts", () => ({
   lookupActiveStream: async () => ({}),
 }));
 
-mock.module("@freeanima/features/chat/ui/spa/lib/active-stream-persist.ts", () => ({
-  writePersistedActiveStream: () => {},
-  clearPersistedActiveStream: () => {},
-  readPersistedActiveStream: () => null,
-}));
-
 mock.module("@freeanima/shared/habitat-rpc", () => ({
   subscribeHabitatRpcConnectionState: () => () => {},
 }));
 
 import { useChatStore } from "./chat.ts";
 
+const sessionStore = new Map<string, string>();
+
 describe("useChatStore queue", () => {
   beforeEach(() => {
+    sessionStore.clear();
+    Object.defineProperty(globalThis, "sessionStorage", {
+      configurable: true,
+      value: {
+        getItem: (key: string) => sessionStore.get(key) ?? null,
+        setItem: (key: string, value: string) => {
+          sessionStore.set(key, value);
+        },
+        removeItem: (key: string) => {
+          sessionStore.delete(key);
+        },
+      },
+    });
     useChatStore.setState({
       queue: [],
       streaming: false,
@@ -45,6 +54,10 @@ describe("useChatStore queue", () => {
       streamingConversationId: null,
       streamText: "",
     });
+  });
+
+  afterEach(() => {
+    sessionStore.clear();
   });
 
   test("enqueue 与 peekQueue 按 conversation 隔离", () => {
