@@ -22,10 +22,12 @@ import {
   Button,
   Card,
   CardContent,
+  cn,
   Input,
   Spinner,
   Switch,
 } from "@freeanima/frontend/ui-kit";
+import { useCompactLayout } from "@freeanima/frontend/ui-kit/layout";
 import { openEntityResource } from "@freeanima/frontend/shell-ui/spa/features/open-entity-resource.ts";
 import { randomUuid } from "@freeanima/shared/rpc-contract";
 
@@ -142,6 +144,7 @@ function SessionHistory({
 }
 
 export function PomodoroApp() {
+  const compact = useCompactLayout();
   const { kind: subjectKind } = useSubjectScope();
   const networkOnline = useNetworkOnline();
   const habitatConnection = useHabitatConnection();
@@ -387,9 +390,23 @@ export function PomodoroApp() {
     );
   }
 
+  const historySection = (
+    <div className={cn("flex min-h-0 flex-col", !compact && "h-full overflow-hidden")}>
+      <h2 className="mb-2 shrink-0 text-sm font-medium">专注历史</h2>
+      <div className={cn(compact ? undefined : "min-h-0 flex-1 overflow-y-auto")}>
+        <SessionHistory items={sessions} focusBySessionId={focusBySessionId} />
+      </div>
+    </div>
+  );
+
   return (
-    <div className="mx-auto flex w-full max-w-lg flex-col gap-4 p-4">
-      <div className="flex items-center justify-between gap-2">
+    <div
+      className={cn(
+        "mx-auto flex h-full min-h-0 w-full flex-col gap-4 p-4",
+        compact ? "max-w-lg overflow-y-auto" : "max-w-5xl",
+      )}
+    >
+      <div className="flex shrink-0 items-center justify-between gap-2">
         <h1 className="text-lg font-semibold">番茄钟</h1>
         <SubjectScopeToggle />
       </div>
@@ -400,157 +417,166 @@ export function PomodoroApp() {
         </Alert>
       ) : null}
 
-      <Card>
-        <CardContent className="flex flex-col items-center gap-4 pt-6">
-          <div
-            className="relative flex h-48 w-48 items-center justify-center rounded-full border-4 border-primary/30"
-            style={{
-              background: `conic-gradient(hsl(var(--primary)) ${progress * 360}deg, transparent 0)`,
-            }}
-          >
-            <div className="bg-background flex h-40 w-40 flex-col items-center justify-center rounded-full">
-              <span className="text-muted-foreground text-sm">
-                {active ? phaseLabel(active.phase) : "就绪"}
-              </span>
-              <span className="font-mono text-4xl tabular-nums">
-                {active
-                  ? formatClock(displayRemaining)
-                  : formatClock((config?.work_minutes ?? 25) * 60_000)}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-2">
-            {!active ? (
-              <Button type="button" onClick={handleStart} disabled={!config}>
-                开始
-              </Button>
-            ) : (
-              <>
-                <Button type="button" variant="outline" onClick={handlePauseResume}>
-                  {active.runState === "paused" ? "继续" : "暂停"}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => void handleSkip()}>
-                  跳过
-                </Button>
-                <Button type="button" variant="ghost" onClick={() => void handleAbort()}>
-                  放弃
-                </Button>
-              </>
-            )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowSettings((v) => !v)}
-            >
-              设置
-            </Button>
-          </div>
-
-          <div className="w-full space-y-2">
-            <span className="text-muted-foreground block text-xs">关联任务（可选）</span>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="min-w-0 flex-1 justify-start"
-                disabled={Boolean(active) && !canPickTaskWhileActive && taskItemId == null}
-                onClick={() => {
-                  if (taskItemId != null) {
-                    openTaskItemOverlay(taskItemId);
-                    return;
-                  }
-                  if (!active || canPickTaskWhileActive) setTaskPickerOpen(true);
+      <div
+        className={cn(
+          "min-h-0 flex-1",
+          compact ? "flex flex-col gap-4" : "grid grid-cols-2 gap-6 overflow-hidden",
+        )}
+      >
+        <div className={cn("flex flex-col gap-4", !compact && "min-h-0 overflow-y-auto")}>
+          <Card>
+            <CardContent className="flex flex-col items-center gap-4 pt-6">
+              <div
+                className="relative flex h-48 w-48 items-center justify-center rounded-full border-4 border-primary/30"
+                style={{
+                  background: `conic-gradient(hsl(var(--primary)) ${progress * 360}deg, transparent 0)`,
                 }}
               >
-                <span className="truncate">
-                  {linkedTaskTitle ?? (taskItemId != null ? `任务 #${taskItemId}` : "点击选择任务")}
-                </span>
-              </Button>
-              {taskItemId != null && (!active || canPickTaskWhileActive) ? (
+                <div className="bg-background flex h-40 w-40 flex-col items-center justify-center rounded-full">
+                  <span className="text-muted-foreground text-sm">
+                    {active ? phaseLabel(active.phase) : "就绪"}
+                  </span>
+                  <span className="font-mono text-4xl tabular-nums">
+                    {active
+                      ? formatClock(displayRemaining)
+                      : formatClock((config?.work_minutes ?? 25) * 60_000)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-2">
+                {!active ? (
+                  <Button type="button" onClick={handleStart} disabled={!config}>
+                    开始
+                  </Button>
+                ) : (
+                  <>
+                    <Button type="button" variant="outline" onClick={handlePauseResume}>
+                      {active.runState === "paused" ? "继续" : "暂停"}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => void handleSkip()}>
+                      跳过
+                    </Button>
+                    <Button type="button" variant="ghost" onClick={() => void handleAbort()}>
+                      放弃
+                    </Button>
+                  </>
+                )}
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => setTaskPickerOpen(true)}
+                  onClick={() => setShowSettings((v) => !v)}
                 >
-                  更换
+                  设置
                 </Button>
-              ) : null}
-              {taskItemId != null && (!active || canPickTaskWhileActive) ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setTaskItemId(null);
-                    setLinkedTaskTitle(null);
-                    if (active && canPickTaskWhileActive) {
-                      void applyPomodoroActive(switchWorkFocusTask(active, null), subjectKind);
-                    }
-                  }}
-                >
-                  清除
-                </Button>
-              ) : null}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {stats ? (
-        <p className="text-muted-foreground text-center text-sm">
-          今日 {stats.completed_work_sessions} 个番茄 · {stats.total_focus_minutes} 分钟专注
-        </p>
-      ) : null}
-
-      {showSettings && config ? (
-        <Card>
-          <CardContent className="space-y-3 pt-4 text-sm">
-            {(
-              [
-                ["work_minutes", "专注（分钟）"],
-                ["short_break_minutes", "短休（分钟）"],
-                ["long_break_minutes", "长休（分钟）"],
-                ["cycles_before_long_break", "长休前番茄数"],
-              ] as const
-            ).map(([key, label]) => (
-              <div key={key} className="flex items-center justify-between gap-2">
-                <span>{label}</span>
-                <Input
-                  className="w-24"
-                  type="number"
-                  value={config[key]}
-                  disabled={!habitatOnline}
-                  onChange={(e) => void handleConfigChange({ [key]: Number(e.target.value) })}
-                />
               </div>
-            ))}
-            {(
-              [
-                ["auto_start_break", "自动开始休息"],
-                ["auto_start_work", "自动开始专注"],
-                ["notify_on_phase_end", "阶段结束系统通知"],
-                ["sound_enabled", "提示音"],
-              ] as const
-            ).map(([key, label]) => (
-              <div key={key} className="flex items-center justify-between gap-2">
-                <span>{label}</span>
-                <Switch
-                  checked={config[key]}
-                  disabled={!habitatOnline}
-                  onCheckedChange={(checked) => void handleConfigChange({ [key]: checked })}
-                />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      ) : null}
 
-      <div>
-        <h2 className="mb-2 text-sm font-medium">最近记录</h2>
-        <SessionHistory items={sessions} focusBySessionId={focusBySessionId} />
+              <div className="w-full space-y-2">
+                <span className="text-muted-foreground block text-xs">关联任务（可选）</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-w-0 flex-1 justify-start"
+                    disabled={Boolean(active) && !canPickTaskWhileActive && taskItemId == null}
+                    onClick={() => {
+                      if (taskItemId != null) {
+                        openTaskItemOverlay(taskItemId);
+                        return;
+                      }
+                      if (!active || canPickTaskWhileActive) setTaskPickerOpen(true);
+                    }}
+                  >
+                    <span className="truncate">
+                      {linkedTaskTitle ??
+                        (taskItemId != null ? `任务 #${taskItemId}` : "点击选择任务")}
+                    </span>
+                  </Button>
+                  {taskItemId != null && (!active || canPickTaskWhileActive) ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setTaskPickerOpen(true)}
+                    >
+                      更换
+                    </Button>
+                  ) : null}
+                  {taskItemId != null && (!active || canPickTaskWhileActive) ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setTaskItemId(null);
+                        setLinkedTaskTitle(null);
+                        if (active && canPickTaskWhileActive) {
+                          void applyPomodoroActive(switchWorkFocusTask(active, null), subjectKind);
+                        }
+                      }}
+                    >
+                      清除
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {stats ? (
+            <p className="text-muted-foreground text-center text-sm">
+              今日 {stats.completed_work_sessions} 个番茄 · {stats.total_focus_minutes} 分钟专注
+            </p>
+          ) : null}
+
+          {showSettings && config ? (
+            <Card>
+              <CardContent className="space-y-3 pt-4 text-sm">
+                {(
+                  [
+                    ["work_minutes", "专注（分钟）"],
+                    ["short_break_minutes", "短休（分钟）"],
+                    ["long_break_minutes", "长休（分钟）"],
+                    ["cycles_before_long_break", "长休前番茄数"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <div key={key} className="flex items-center justify-between gap-2">
+                    <span>{label}</span>
+                    <Input
+                      className="w-24"
+                      type="number"
+                      value={config[key]}
+                      disabled={!habitatOnline}
+                      onChange={(e) => void handleConfigChange({ [key]: Number(e.target.value) })}
+                    />
+                  </div>
+                ))}
+                {(
+                  [
+                    ["auto_start_break", "自动开始休息"],
+                    ["auto_start_work", "自动开始专注"],
+                    ["notify_on_phase_end", "阶段结束系统通知"],
+                    ["sound_enabled", "提示音"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <div key={key} className="flex items-center justify-between gap-2">
+                    <span>{label}</span>
+                    <Switch
+                      checked={config[key]}
+                      disabled={!habitatOnline}
+                      onCheckedChange={(checked) => void handleConfigChange({ [key]: checked })}
+                    />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {compact ? historySection : null}
+        </div>
+
+        {!compact ? historySection : null}
       </div>
 
       <TaskPickerDialog
