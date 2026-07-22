@@ -145,7 +145,7 @@ export async function listDiaryEntries(
     world_id: ctx.worldId,
     primary_component: DIARY_ENTRY_COMPONENT,
     ...(Object.keys(filters).length > 0 ? { filters } : {}),
-    limit: opts.limit ?? 500,
+    limit: opts.limit ?? 20,
     offset: opts.offset ?? 0,
     mode: "filter_only",
   });

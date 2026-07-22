@@ -97,7 +97,14 @@ async function handleGet(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleList(args: Record<string, unknown>): Promise<string> {
-  const limit = typeof args.limit === "number" ? args.limit : 50;
+  const limit =
+    typeof args.limit === "number" && Number.isFinite(args.limit)
+      ? Math.max(1, Math.min(500, Math.floor(args.limit)))
+      : 20;
+  const offset =
+    typeof args.offset === "number" && Number.isFinite(args.offset)
+      ? Math.max(0, Math.floor(args.offset))
+      : 0;
   const entry_after =
     args.entry_after != null && String(args.entry_after).trim()
       ? String(args.entry_after).trim()
@@ -118,6 +125,7 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
         entry_before,
         tags: parseTags(args.tags),
         limit,
+        offset,
       }),
     );
     return toolResult({
@@ -239,7 +247,8 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "diary_list",
-          description: "List diary entries with optional date/tag filters",
+          description:
+            "List diary entries (default entry_at DESC, limit 20) with optional date/tag filters and offset pagination",
           exposeMcp: true,
           parameters: {
             type: "object",
@@ -248,7 +257,8 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
               entry_after: { type: "string", description: "ISO8601 lower bound on entry_at" },
               entry_before: { type: "string", description: "ISO8601 upper bound on entry_at" },
               tags: { type: "array", items: { type: "string" } },
-              limit: { type: "integer" },
+              limit: { type: "integer", description: "Page size; default 20, max 500" },
+              offset: { type: "integer", description: "Skip N rows; default 0" },
             },
           },
           handler: handleList,
