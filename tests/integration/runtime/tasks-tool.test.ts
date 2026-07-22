@@ -1,4 +1,5 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { randomUUID } from "node:crypto";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -100,20 +101,24 @@ describePg("tasks tool", () => {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    const list = await getDefaultTaskList(testAgentWorldId());
-
-    let createOut = "";
+    let listId = 0;
     await runWithToolContext(
       sid,
       async () => {
+        const createList = toolSets.getTool("tasklist_create")!;
+        const listOut = await Promise.resolve(
+          createList.handler({ name: `pending-only-${randomUUID().slice(0, 8)}` }),
+        );
+        listId = (JSON.parse(listOut) as { list: { id: number } }).list.id;
+
         const create = toolSets.getTool("task_create")!;
-        createOut = await Promise.resolve(
-          create.handler({ title: "Active task", list_id: list.id }),
+        const createOut = await Promise.resolve(
+          create.handler({ title: "Active task", list_id: listId }),
         );
         const complete = toolSets.getTool("task_complete")!;
         const created = JSON.parse(createOut) as { item: { id: number } };
         await Promise.resolve(complete.handler({ id: created.item.id }));
-        await Promise.resolve(create.handler({ title: "Pending task", list_id: list.id }));
+        await Promise.resolve(create.handler({ title: "Pending task", list_id: listId }));
       },
       { tools: toolSets },
     );
@@ -123,7 +128,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("task_list")!;
-        output = await Promise.resolve(tool.handler({ list_id: list.id }));
+        output = await Promise.resolve(tool.handler({ list_id: listId }));
       },
       { tools: toolSets },
     );
@@ -490,7 +495,8 @@ describePg("tasks tool", () => {
     });
 
     const worldId = testAgentWorldId();
-    const existing = await createTag(worldId, { title: "Bug" });
+    const tagTitle = `Bug-${randomUUID().slice(0, 8)}`;
+    const existing = await createTag(worldId, { title: tagTitle });
     const before = (await listTags(worldId)).length;
 
     let output = "";
@@ -501,7 +507,7 @@ describePg("tasks tool", () => {
         output = await Promise.resolve(
           tool.handler({
             title: "Reuse tag",
-            tags: ["bug"],
+            tags: [tagTitle.toLowerCase()],
           }),
         );
       },
@@ -524,7 +530,9 @@ describePg("tasks tool", () => {
     });
 
     const worldId = testAgentWorldId();
-    const work = await createTag(worldId, { title: "work" });
+    const workTitle = `work-${randomUUID().slice(0, 8)}`;
+    const bugTitle = `bug-${randomUUID().slice(0, 8)}`;
+    const work = await createTag(worldId, { title: workTitle });
 
     let output = "";
     await runWithToolContext(
@@ -535,7 +543,7 @@ describePg("tasks tool", () => {
           tool.handler({
             title: "Merged tags",
             tag_ids: [work.id],
-            tags: ["bug"],
+            tags: [bugTitle],
           }),
         );
       },

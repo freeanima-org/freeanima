@@ -1,5 +1,6 @@
-import { it, expect, beforeAll, beforeEach, afterEach } from "bun:test";
+import { it, expect, beforeAll, beforeEach, afterEach, afterAll } from "bun:test";
 import { spawn, type ChildProcess } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +9,7 @@ import { describePg, pgTestUrl } from "../../helpers/pg-test-gate.ts";
 import { beginLogIsolation } from "../../helpers/log-isolation.ts";
 import { restoreIntegrationHome } from "../../helpers/integration-case.ts";
 import { writeIntegrationDatabaseConfig } from "../../helpers/pg-test.ts";
+import { createIsolatedTestDb, dropIsolatedTestDb } from "../../helpers/isolated-pg.ts";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const standaloneRoot = join(repoRoot, "dist/anima-executable");
@@ -82,6 +84,8 @@ describePg("standalone CLI HTTP health", () => {
   const prevHome = process.env.FREEANIMA_HOME;
   let child: ChildProcess | null = null;
   let home = "";
+  let dbSlug = "";
+  let dbUrl = "";
 
   beforeAll(() => {
     assertStandaloneBuilt();
@@ -89,9 +93,11 @@ describePg("standalone CLI HTTP health", () => {
 
   beforeEach(async () => {
     if (!pgTestUrl) throw new Error("ANIMA_TEST_PG_URL is not set");
+    dbSlug = `standalone_${randomUUID().replace(/-/g, "").slice(0, 12)}`;
+    dbUrl = createIsolatedTestDb(dbSlug);
     home = beginLogIsolation("standalone-cli-serve-");
-    writeIntegrationDatabaseConfig(home, pgTestUrl);
-    await seedRuntimeConfig(pgTestUrl);
+    writeIntegrationDatabaseConfig(home, dbUrl);
+    await seedRuntimeConfig(dbUrl);
 
     child = spawn(
       standaloneBin,
@@ -118,7 +124,16 @@ describePg("standalone CLI HTTP health", () => {
     stopChild(child);
     child = null;
     await sleep(300);
-    restoreIntegrationHome(prevHome);
+    await restoreIntegrationHome(prevHome);
+    if (dbSlug) {
+      dropIsolatedTestDb(dbSlug);
+      dbSlug = "";
+      dbUrl = "";
+    }
+  });
+
+  afterAll(async () => {
+    if (dbSlug) dropIsolatedTestDb(dbSlug);
   });
 
   it(
