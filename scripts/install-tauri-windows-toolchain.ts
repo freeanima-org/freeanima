@@ -21,6 +21,25 @@ function ok(cmd: string, args: string[]): boolean {
   return spawnSync(cmd, args, { stdio: "ignore", shell: false }).status === 0;
 }
 
+/** cc-rs 交叉编 MSVC 目标需要 `llvm-lib`；apt 的 llvm 常只装版本化名。 */
+function ensureLlvmLibOnPath(): void {
+  if (which("llvm-lib")) return;
+  const probe = spawnSync(
+    "sh",
+    ["-c", "command -v llvm-lib-18 || command -v llvm-lib-17 || command -v llvm-lib-16 || true"],
+    { encoding: "utf-8", shell: false },
+  );
+  const versioned = (probe.stdout ?? "").trim().split("\n")[0]?.trim();
+  if (!versioned) return;
+  const link = spawnSync("sudo", ["ln", "-sfn", versioned, "/usr/local/bin/llvm-lib"], {
+    stdio: "inherit",
+    shell: false,
+  });
+  if (link.status === 0 && which("llvm-lib")) {
+    console.log(`[install-tauri-windows] llvm-lib → ${versioned}`);
+  }
+}
+
 function run(cmd: string, args: string[], label: string): void {
   console.log(`[install-tauri-windows] ${label}`);
   const r = spawnSync(cmd, args, { stdio: "inherit", shell: false, env: process.env });
@@ -49,10 +68,12 @@ function listMissing(): string[] {
   if (!which("makensis")) missing.push("nsis/makensis");
   if (!which("clang")) missing.push("clang");
   if (!which("lld")) missing.push("lld");
+  if (!which("llvm-lib")) missing.push("llvm/llvm-lib");
   return missing;
 }
 
 if (checkOnly) {
+  ensureLlvmLibOnPath();
   const missing = listMissing();
   if (missing.length > 0) failCheck(`工具链不完整：${missing.join(", ")}`);
   console.log("[ensure-tauri-windows] OK");
@@ -93,8 +114,10 @@ if (ok("cargo", ["xwin", "--version"])) {
   if (!which("makensis")) missing.push("nsis");
   if (!which("clang")) missing.push("clang");
   if (!which("lld")) missing.push("lld");
+  // llvm 提供 llvm-lib（ring/cc-rs 编 MSVC 目标需要）
+  if (!which("llvm-lib")) missing.push("llvm");
   if (missing.length === 0) {
-    console.log("[install-tauri-windows] nsis / clang / lld 已就绪");
+    console.log("[install-tauri-windows] nsis / clang / lld / llvm-lib 已就绪");
   } else if (process.platform === "linux" && withApt) {
     run("sudo", ["apt-get", "update", "-qq"], "sudo apt-get update");
     run(
@@ -102,6 +125,13 @@ if (ok("cargo", ["xwin", "--version"])) {
       ["apt-get", "install", "-y", ...missing],
       `sudo apt-get install -y ${missing.join(" ")}`,
     );
+    ensureLlvmLibOnPath();
+    if (!which("llvm-lib")) {
+      console.error(
+        "[install-tauri-windows] 已装 llvm 但仍无 llvm-lib；请检查 /usr/bin/llvm-lib-*",
+      );
+      process.exit(1);
+    }
   } else if (process.platform === "linux") {
     console.error(
       `[install-tauri-windows] 缺少：${missing.join(", ")}\n` +
@@ -113,10 +143,11 @@ if (ok("cargo", ["xwin", "--version"])) {
     console.error("[install-tauri-windows] macOS：brew install nsis llvm");
     process.exit(1);
   } else {
-    console.error("[install-tauri-windows] 请自行安装 nsis / clang / lld");
+    console.error("[install-tauri-windows] 请自行安装 nsis / clang / lld / llvm");
     process.exit(1);
   }
 }
 
+ensureLlvmLibOnPath();
 console.log("[install-tauri-windows] 完成。下一步：just pack-tauri-windows");
 process.exit(0);
