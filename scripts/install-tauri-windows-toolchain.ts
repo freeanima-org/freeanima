@@ -116,8 +116,15 @@ if (ok("cargo", ["xwin", "--version"])) {
   if (!which("lld")) missing.push("lld");
   // llvm 提供 llvm-lib（ring/cc-rs 编 MSVC 目标需要）
   if (!which("llvm-lib")) missing.push("llvm");
+  // tauri-cli 在 Linux 宿主上打包（含交叉 Windows）会探测 appindicator，缺则 abort
+  const appindicatorOk =
+    spawnSync("pkg-config", ["--exists", "ayatana-appindicator3-0.1"], {
+      stdio: "ignore",
+    }).status === 0 ||
+    spawnSync("pkg-config", ["--exists", "appindicator3-0.1"], { stdio: "ignore" }).status === 0;
+  if (!appindicatorOk) missing.push("libappindicator3-dev");
   if (missing.length === 0) {
-    console.log("[install-tauri-windows] nsis / clang / lld / llvm-lib 已就绪");
+    console.log("[install-tauri-windows] nsis / clang / lld / llvm-lib / appindicator 已就绪");
   } else if (process.platform === "linux" && withApt) {
     run("sudo", ["apt-get", "update", "-qq"], "sudo apt-get update");
     run(
