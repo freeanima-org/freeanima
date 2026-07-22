@@ -231,6 +231,7 @@
   "email_edit_account": "Edit account",
   "email_accounts_title": "Mail",
   "email_inbox_title": "Inbox",
+  "email_sent_title": "Sent",
   "email_select_account": "Select an email account to view the inbox",
   "email_no_messages_hint": "No messages yet. Tap Sync to fetch from IMAP.",
   "email_sync": "Sync",

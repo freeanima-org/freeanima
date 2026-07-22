@@ -3,6 +3,7 @@ import { EntityIdLabel } from "@freeanima/frontend/ui-kit/composite";
 import { m } from "@paraglide/messages";
 
 import type { EmailMessageRow } from "../lib/api.ts";
+import { buildEmailHtmlSrcDoc, looksLikeHtmlBody } from "../lib/email-html.ts";
 
 function formatWhen(iso: string): string {
   if (!iso) return "";
@@ -15,6 +16,8 @@ type EmailMessageDetailProps = {
   loading: boolean;
   message: EmailMessageRow | null;
   writesDisabled?: boolean;
+  /** 发件箱不显示已读/未读操作 */
+  showUnreadActions?: boolean;
   onReply?: () => void;
   onMarkUnread?: () => void;
   onMarkRead?: () => void;
@@ -26,6 +29,7 @@ export function EmailMessageDetail({
   loading,
   message,
   writesDisabled = false,
+  showUnreadActions = true,
   onReply,
   onMarkUnread,
   onMarkRead,
@@ -48,6 +52,8 @@ export function EmailMessageDetail({
     );
   }
 
+  const isHtml = message.content_type === "text/html" || looksLikeHtmlBody(message.body);
+
   return (
     <article className="flex min-h-0 flex-1 flex-col overflow-hidden text-sm">
       <div className="border-border flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-2">
@@ -58,29 +64,31 @@ export function EmailMessageDetail({
               {m.email_reply()}
             </Button>
           ) : null}
-          {message.unread
-            ? onMarkRead && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={writesDisabled}
-                  onClick={onMarkRead}
-                >
-                  {m.email_mark_read()}
-                </Button>
-              )
-            : onMarkUnread && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={writesDisabled}
-                  onClick={onMarkUnread}
-                >
-                  {m.email_mark_unread()}
-                </Button>
-              )}
+          {showUnreadActions
+            ? message.unread
+              ? onMarkRead && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={writesDisabled}
+                    onClick={onMarkRead}
+                  >
+                    {m.email_mark_read()}
+                  </Button>
+                )
+              : onMarkUnread && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={writesDisabled}
+                    onClick={onMarkUnread}
+                  >
+                    {m.email_mark_unread()}
+                  </Button>
+                )
+            : null}
           {onCopyId ? (
             <Button type="button" size="sm" variant="ghost" onClick={onCopyId}>
               {m.email_copy_id()}
@@ -112,9 +120,19 @@ export function EmailMessageDetail({
             {m.habitat_email_date()} {formatWhen(message.sent_at)}
           </div>
         </div>
-        <pre className="wrap-break-word whitespace-pre-wrap">
-          {message.body || m.habitat_email_no_body()}
-        </pre>
+        {isHtml && message.body ? (
+          <iframe
+            title={message.subject || m.habitat_email_no_subject()}
+            className="border-border h-[min(70vh,48rem)] w-full rounded-md border bg-white"
+            sandbox=""
+            referrerPolicy="no-referrer"
+            srcDoc={buildEmailHtmlSrcDoc(message.body)}
+          />
+        ) : (
+          <pre className="wrap-break-word whitespace-pre-wrap">
+            {message.body || m.habitat_email_no_body()}
+          </pre>
+        )}
       </div>
     </article>
   );

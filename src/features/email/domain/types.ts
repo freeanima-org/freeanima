@@ -14,10 +14,20 @@ export type EmailAccountRow = import("@freeanima/shared/rpc-contract").EmailAcco
 
 export type EmailThreadRow = import("@freeanima/shared/rpc-contract").EmailThreadRowPayload;
 
-export type EmailMessageRow = import("@freeanima/shared/rpc-contract").EmailMessageRowPayload & {
+export type EmailMessageRow = Omit<
+  import("@freeanima/shared/rpc-contract").EmailMessageRowPayload,
+  "headers" | "attachments" | "content_type" | "body"
+> & {
+  /** 解码后正文（content raw：plain 或 html） */
+  body: string;
+  content_type: import("@freeanima/core/db/schema/entity").EmailContentType;
+  /** 纯文本（ToolSet 默认） */
+  text: string;
   imap_mailbox: string;
   message_id: string | null;
   flags: string[];
+  headers: Record<string, string> | null;
+  attachments: import("@freeanima/core/db/schema/entity").EmailMessageAttachmentMeta[];
 };
 
 export type EmailAccountCreateInput = {
@@ -66,7 +76,13 @@ export type EmailMessageUpsertInput = {
   thread_id: number;
   subject: string;
   preview: string;
+  /** 解码后正文 raw（优先 html，否则 plain）→ entity content */
   body: string;
+  content_type?: import("@freeanima/core/db/schema/entity").EmailContentType;
+  /** 纯文本 */
+  text?: string | null;
+  headers?: Record<string, string> | null;
+  attachments?: import("@freeanima/core/db/schema/entity").EmailMessageAttachmentMeta[];
   imap_uid?: number | null;
   imap_mailbox?: string;
   message_id?: string | null;

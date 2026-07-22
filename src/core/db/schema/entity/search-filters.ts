@@ -93,6 +93,7 @@ export const emailMessageSearchFiltersSchema = z
     unread: z.boolean().optional(),
     direction: emailDirectionSchema.optional(),
     tags: z.array(z.string()).optional(),
+    from: z.string().min(1).optional(),
     since: z.string().optional(),
     before: z.string().optional(),
   })

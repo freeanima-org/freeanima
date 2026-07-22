@@ -27,9 +27,11 @@ export {
   listEmailMessages,
   markEmailMessageRead,
   searchEmailMessages,
+  setEmailMessageAttachments,
   tagEmailMessage,
   upsertEmailMessage,
 } from "./message-store.ts";
+export { persistEmailAttachments } from "./attachment-store.ts";
 export {
   registerEmailSyncPort,
   getEmailSyncPort,

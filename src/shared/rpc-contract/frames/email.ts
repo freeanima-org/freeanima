@@ -29,6 +29,7 @@ export const emailMessageRowSchema = z.object({
   subject: z.string(),
   preview: z.string(),
   body: z.string(),
+  content_type: z.enum(["text/plain", "text/html"]).optional(),
   from: z.string(),
   to: z.string(),
   cc: z.string().nullable(),
@@ -37,6 +38,19 @@ export const emailMessageRowSchema = z.object({
   direction: z.enum(["inbound", "outbound"]),
   imap_uid: z.number().nullable(),
   tags: z.array(z.string()),
+  /** email.message.read：剥离后的 SMTP/MIME 头（不含 From/To/Subject/Date） */
+  headers: z.record(z.string(), z.string()).optional(),
+  attachments: z
+    .array(
+      z.object({
+        file_id: z.string(),
+        filename: z.string(),
+        content_type: z.string(),
+        size: z.number().int().nonnegative(),
+        entity_id: z.number().int().positive(),
+      }),
+    )
+    .optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -73,6 +87,7 @@ export const emailMessageListInputSchema = z.object({
   account_id: z.number().int().positive().optional(),
   thread_id: z.number().int().positive().optional(),
   unread: z.boolean().optional(),
+  direction: z.enum(["inbound", "outbound"]).optional(),
   limit: z.number().int().positive().optional(),
   offset: z.number().int().nonnegative().optional(),
 });
@@ -85,6 +100,7 @@ export type EmailMessageListOutput = z.infer<typeof emailMessageListOutputSchema
 export const emailMessageReadInputSchema = z.object({
   subject_kind: emailSubjectKindSchema,
   id: z.number().int().positive(),
+  raw: z.boolean().optional(),
 });
 export type EmailMessageReadInput = z.infer<typeof emailMessageReadInputSchema>;
 export const emailMessageReadOutputSchema = z.object({ message: emailMessageRowSchema });
@@ -164,6 +180,9 @@ export const emailMessageSearchInputSchema = z.object({
   subject_kind: emailSubjectKindSchema,
   query: z.string().min(1),
   account_id: z.number().int().positive().optional(),
+  from: z.string().min(1).optional(),
+  sent_after: z.string().optional(),
+  sent_before: z.string().optional(),
   limit: z.number().int().positive().optional(),
 });
 export type EmailMessageSearchInput = z.infer<typeof emailMessageSearchInputSchema>;

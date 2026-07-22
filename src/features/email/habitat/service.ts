@@ -44,22 +44,14 @@ function toAccountPayload(account: Awaited<ReturnType<typeof listEmailAccountRow
   };
 }
 
-function toMessagePayload(message: NonNullable<Awaited<ReturnType<typeof getEmailMessageRow>>>) {
+async function toMessagePayload(
+  message: NonNullable<Awaited<ReturnType<typeof getEmailMessageRow>>>,
+  opts: { raw?: boolean; includeHeaders?: boolean; includeAttachments?: boolean } = {},
+) {
+  const { messagePayload } = await import("../domain/email-tool-helpers.ts");
+  const payload = await messagePayload(message, opts);
   return {
-    id: message.id,
-    account_id: message.account_id,
-    thread_id: message.thread_id,
-    subject: message.subject,
-    preview: message.preview,
-    body: message.body,
-    from: message.from,
-    to: message.to,
-    cc: message.cc,
-    sent_at: message.sent_at,
-    unread: message.unread,
-    direction: message.direction,
-    imap_uid: message.imap_uid,
-    tags: message.tags,
+    ...payload,
     created_at: message.created_at,
     updated_at: message.updated_at,
   };
@@ -208,6 +200,7 @@ export async function serviceEmailMessageList(
     account_id?: number;
     thread_id?: number;
     unread?: boolean;
+    direction?: "inbound" | "outbound";
     limit?: number;
     offset?: number;
   },
@@ -215,17 +208,23 @@ export async function serviceEmailMessageList(
   assertPg(deps);
   const { subject_kind, ...listInput } = input;
   const messages = await listEmailMessages(emailWorldId(subject_kind), listInput);
-  return { messages: messages.map(toMessagePayload) };
+  return { messages: await Promise.all(messages.map((m) => toMessagePayload(m))) };
 }
 
 export async function serviceEmailMessageRead(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_kind?: SubjectKind; id: number; raw?: boolean | undefined },
 ) {
   assertPg(deps);
   const message = await getEmailMessageRow(input.id);
   if (!message) throw new Error("NOT_FOUND");
-  return { message: toMessagePayload(message) };
+  return {
+    message: await toMessagePayload(message, {
+      raw: input.raw === true,
+      includeHeaders: true,
+      includeAttachments: true,
+    }),
+  };
 }
 
 export async function serviceEmailMessageMarkRead(
@@ -312,11 +311,21 @@ export async function serviceEmailMessageSearch(
     subject_kind?: SubjectKind;
     query: string;
     account_id?: number;
+    from?: string;
+    sent_after?: string;
+    sent_before?: string;
     limit?: number;
   },
 ) {
   assertPg(deps);
-  const { subject_kind, ...searchInput } = input;
-  const messages = await searchEmailMessages(emailWorldId(subject_kind), searchInput);
-  return { messages: messages.map(toMessagePayload) };
+  const { subject_kind, sent_after, sent_before, ...rest } = input;
+  const messages = await searchEmailMessages(
+    emailWorldId(subject_kind),
+    omitUndefined({
+      ...rest,
+      since: sent_after,
+      before: sent_before,
+    }),
+  );
+  return { messages: await Promise.all(messages.map((m) => toMessagePayload(m))) };
 }

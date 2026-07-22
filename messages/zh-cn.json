@@ -83,6 +83,7 @@
   "email_search_placeholder": "搜索邮件",
   "email_select_account": "选择邮箱账户查看收件箱",
   "email_send_action": "发送",
+  "email_sent_title": "发件箱",
   "email_set_default_sender": "设为默认发件账户",
   "email_smtp_host": "SMTP 主机",
   "email_smtp_port": "SMTP 端口",

@@ -32,7 +32,7 @@ Thumbs.db
 /tmp/cursor-*/
 
 # Node.js / Bun
-node_modules/
+node_modules
 .pnpm-store/
 .turbo/
 **/dist/

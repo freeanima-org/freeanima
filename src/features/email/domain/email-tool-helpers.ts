@@ -124,16 +124,33 @@ export function accountPayload(account: Awaited<ReturnType<typeof listEmailAccou
   };
 }
 
-export function messagePayload(
+export type MessagePayloadOpts = {
+  /** true：返回正文 content raw（html 或 plain）；默认返回纯文本 */
+  raw?: boolean;
+  /** 是否附带 headers 字段 */
+  includeHeaders?: boolean;
+  /** 是否附带 attachments 元信息 */
+  includeAttachments?: boolean;
+};
+
+export async function messagePayload(
   message: NonNullable<Awaited<ReturnType<typeof getEmailMessageRow>>>,
+  opts: MessagePayloadOpts = {},
 ) {
+  const { resolveEmailBodyForRead, resolveEmailHeadersForRead, resolveEmailContentType } =
+    await import("./mime-parse.ts");
+  const body = await resolveEmailBodyForRead(message, { raw: opts.raw === true });
+  const content_type = await resolveEmailContentType(message);
+  const includeHeaders = opts.includeHeaders === true;
+  const includeAttachments = opts.includeAttachments === true;
   return {
     id: message.id,
     account_id: message.account_id,
     thread_id: message.thread_id,
     subject: message.subject,
     preview: message.preview,
-    body: message.body,
+    body,
+    content_type,
     from: message.from,
     to: message.to,
     cc: message.cc,
@@ -142,6 +159,18 @@ export function messagePayload(
     direction: message.direction,
     imap_uid: message.imap_uid,
     tags: message.tags,
+    ...(includeHeaders ? { headers: await resolveEmailHeadersForRead(message) } : {}),
+    ...(includeAttachments
+      ? {
+          attachments: (message.attachments ?? []).map((a) => ({
+            file_id: a.file_id,
+            filename: a.filename,
+            content_type: a.content_type,
+            size: a.size,
+            entity_id: message.id,
+          })),
+        }
+      : {}),
   };
 }
 

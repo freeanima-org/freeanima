@@ -381,6 +381,9 @@ function buildEmailMessageBodyConditions(
       conditions.push(sql`${entities.body}->'tags' ? ${tag}`);
     }
   }
+  if (filters.from) {
+    conditions.push(sql`${entities.body}->>'from' ILIKE ${`%${filters.from}%`}`);
+  }
   if (filters.since) {
     conditions.push(
       sql`(${entities.body}->>'sent_at')::timestamptz >= ${filters.since}::timestamptz`,
