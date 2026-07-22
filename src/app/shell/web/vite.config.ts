@@ -4,17 +4,15 @@ import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import {
-  parseShellBuildTarget,
-  shellWebDistDirName,
-} from "@freeanima/frontend/shell-sdk/shell-build-target.ts";
-import { createComponentBuildMeta } from "../vite-config-imports.ts";
-import {
+  createComponentBuildMeta,
   createHabitatDevProxyMap,
   createShellViteInlineConfig,
+  parseShellBuildTarget,
   quietBenignWsProxyErrorsPlugin,
   resolveProxyHabitatUrl,
   shellBridgeHtmlPlugin,
   shellEntryFileNames,
+  shellWebDistDirName,
 } from "../vite-config-imports.ts";
 import {
   DEFAULT_WEB_DEV_PORT,
