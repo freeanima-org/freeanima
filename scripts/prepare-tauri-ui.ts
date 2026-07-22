@@ -35,11 +35,18 @@ const cargoTargetDir = join(srcTauri, "target");
 /** 目录迁移后 Cargo/Tauri 缓存仍可能引用已删的 desktop/tauri 路径，导致 plugin permissions 读失败。 */
 function purgeStaleCargoTargetIfNeeded(): void {
   if (!existsSync(cargoTargetDir)) return;
-  const probe = Bun.spawnSync(
-    ["rg", "-l", "shell/desktop/tauri|shell/mobile/(android|tauri)", cargoTargetDir],
-    { stdout: "pipe", stderr: "pipe" },
-  );
-  if (probe.exitCode !== 0) return;
+  let hit = false;
+  try {
+    const probe = Bun.spawnSync(
+      ["rg", "-l", "shell/desktop/tauri|shell/mobile/(android|tauri)", cargoTargetDir],
+      { stdout: "pipe", stderr: "pipe" },
+    );
+    hit = probe.exitCode === 0;
+  } catch {
+    // CI / 精简环境可能无 rg；跳过陈旧 target 探测
+    return;
+  }
+  if (!hit) return;
   console.warn("[prepare-tauri] 检测到陈旧 Cargo target（含旧 shell 路径），清理后重编…");
   rmSync(cargoTargetDir, { recursive: true, force: true });
 }
