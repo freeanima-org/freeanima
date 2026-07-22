@@ -1,3 +1,7 @@
+---
+title: Tauri Companion 验收
+---
+
 # Tauri Companion 验收清单（Phase 3）
 
 人工验收（Agent 无法替代）：

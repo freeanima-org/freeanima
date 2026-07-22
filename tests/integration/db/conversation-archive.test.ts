@@ -90,7 +90,8 @@ describePg("conversation archive/delete (PostgreSQL)", () => {
     });
 
     const list = await listConversationSummaries(TEST_SAP_CHAT_PLATFORM);
-    expect(list.map((s) => s.id)).toEqual([newerId, olderId]);
+    const scoped = list.filter((s) => s.id === newerId || s.id === olderId).map((s) => s.id);
+    expect(scoped).toEqual([newerId, olderId]);
   });
 
   it("hides archived conversations from default list and restores on unarchive", async () => {
@@ -102,17 +103,26 @@ describePg("conversation archive/delete (PostgreSQL)", () => {
     await archiveConversation(archivedId);
 
     const defaultList = await listConversationSummaries(TEST_SAP_CHAT_PLATFORM);
-    expect(defaultList.map((s) => s.id)).toEqual([activeId]);
+    const defaultScoped = defaultList
+      .filter((s) => s.id === activeId || s.id === archivedId)
+      .map((s) => s.id);
+    expect(defaultScoped).toEqual([activeId]);
 
     const fullList = await listConversationSummaries(TEST_SAP_CHAT_PLATFORM, {
       includeArchived: true,
     });
-    expect(fullList.map((s) => s.id).toSorted()).toEqual([activeId, archivedId].toSorted());
+    const fullScoped = fullList
+      .filter((s) => s.id === activeId || s.id === archivedId)
+      .map((s) => s.id);
+    expect(fullScoped.toSorted()).toEqual([activeId, archivedId].toSorted());
     expect(fullList.find((s) => s.id === archivedId)?.archived_at).toBeTruthy();
 
     await unarchiveConversation(archivedId);
     const restored = await listConversationSummaries(TEST_SAP_CHAT_PLATFORM);
-    expect(restored.map((s) => s.id).toSorted()).toEqual([activeId, archivedId].toSorted());
+    const restoredScoped = restored
+      .filter((s) => s.id === activeId || s.id === archivedId)
+      .map((s) => s.id);
+    expect(restoredScoped.toSorted()).toEqual([activeId, archivedId].toSorted());
   });
 
   it("hard deletes conversation and cascades messages", async () => {

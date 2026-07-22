@@ -148,13 +148,19 @@ describePg("server memory API", () => {
     await ctx.sql`UPDATE entities SET reference_count = ${1} WHERE id = ${lowId} AND primary_component = 'semantic_memory'`;
     await ctx.sql`UPDATE entities SET reference_count = ${5} WHERE id = ${highId} AND primary_component = 'semantic_memory'`;
 
+    const lowRow = await getSemanticMemory(lowId);
+    const highRow = await getSemanticMemory(highId);
+    expect(lowRow?.reference_count).toBe(1);
+    expect(highRow?.reference_count).toBe(5);
+
     const browseByRefs = await getAppRuntime().listSemanticMemories({
+      query: "unique-sort-token",
       sort_by: "reference_count",
       limit: 100,
     });
-    const probeIds = browseByRefs.items
-      .filter((row: { content: string }) => row.content.includes("unique-sort-token"))
-      .map((row: { id: number }) => row.id);
+    const probeIds = browseByRefs.items.map((row: { id: number }) => row.id);
+    expect(probeIds).toContain(highId);
+    expect(probeIds).toContain(lowId);
     expect(probeIds.indexOf(highId)).toBeLessThan(probeIds.indexOf(lowId));
     expect(
       browseByRefs.items.find((row: { id: number }) => row.id === highId)?.reference_count,
