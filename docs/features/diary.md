@@ -57,14 +57,14 @@ One-shot migration: Habitat `runMigrations` moves legacy diary `content` into th
 
 Load via `toolset_load` with `diary`. Tools locate entries by **`date` (YYYY-MM-DD)**；**default today** (CST noon `…T12:00:00+08:00`)；**no `diary_create`** — use `diary_append` (creates empty shell for the day if missing, then adds a **new text block**). All tools accept optional **`world_id`**.
 
-| Tool           | Description                                                                     |
-| -------------- | ------------------------------------------------------------------------------- |
-| `diary_append` | New text block for date; create shell if missing; `tags` only on shell creation |
-| `diary_update` | Update entry **metadata** (title/summary/tags) by date — not body text          |
-| `diary_get`    | Read entry + `blocks` for date; error if not found                              |
-| `diary_delete` | Delete entry for date (cascades child blocks); returns `{ ok, action, date }`   |
-| `diary_list`   | List / date filter (+ blocks)                                                   |
-| `diary_search` | Hybrid search over **text blocks**, returns matching diary entries              |
+| Tool           | Description                                                                      |
+| -------------- | -------------------------------------------------------------------------------- |
+| `diary_append` | New text block for date; create shell if missing; `tags` only on shell creation  |
+| `diary_update` | Update entry **metadata** (title/summary/tags) by date — not body text           |
+| `diary_get`    | Read entry + `blocks` for date; error if not found                               |
+| `diary_delete` | Delete entry for date (cascades child blocks); returns `{ ok, action, date }`    |
+| `diary_list`   | List by `entry_at DESC` (default `limit=20`, `offset`); optional date/tag filter |
+| `diary_search` | Hybrid search over **text blocks**, returns matching diary entries               |
 
 Fine-grained block CRUD / reorder: ToolSet `content-block`.
 
@@ -80,6 +80,7 @@ UI satellite `@freeanima/satellite-diary` (`/diary`) calls SAP:
 
 All methods require `subject_kind: user | agent`.
 
+- `diary.list` defaults to **`entry_at DESC`**, `limit=20`, supports `offset` pagination
 - `diary.create` optional `content` → first text block (container `content` stays empty)
 - `diary.append` → new trailing text block
 - `diary.patch` → container metadata only

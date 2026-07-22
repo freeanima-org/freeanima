@@ -55,6 +55,8 @@ function sortEntries(items: DiaryEntryRow[]): DiaryEntryRow[] {
   return items.toSorted((a, b) => b.entry_at.localeCompare(a.entry_at));
 }
 
+const DIARY_PAGE_SIZE = 20;
+
 function applyEntryToList(prev: DiaryEntryRow[], item: DiaryEntryRow): DiaryEntryRow[] {
   const next = prev.filter((e) => e.id !== item.id);
   next.push(item);
@@ -66,6 +68,8 @@ export function DiaryApp() {
   const [pendingOps, setPendingOps] = useState(0);
   const writesDisabled = false;
   const [entries, setEntries] = useState<DiaryEntryRow[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [draft, setDraft] = useState<EntryDraft | null>(null);
   const [draftBaseline, setDraftBaseline] = useState<EntryDraft | null>(null);
@@ -102,8 +106,9 @@ export function DiaryApp() {
       const query = searchQuery.trim();
       const items = query
         ? await searchDiaryEntries(subjectKind, query)
-        : await fetchDiaryEntries(subjectKind);
-      setEntries(items);
+        : await fetchDiaryEntries(subjectKind, { limit: DIARY_PAGE_SIZE, offset: 0 });
+      setEntries(query ? items : sortEntries(items));
+      setHasMore(!query && items.length >= DIARY_PAGE_SIZE);
       const currentSelectedId = selectedIdRef.current;
       if (currentSelectedId != null && !items.some((e) => e.id === currentSelectedId)) {
         setSelectedId(null);
@@ -126,6 +131,28 @@ export function DiaryApp() {
       setLoading(false);
     }
   }, [searchQuery, subjectKind]);
+
+  const loadMore = useCallback(async () => {
+    if (searchQuery.trim() || loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    setError("");
+    try {
+      const page = await fetchDiaryEntries(subjectKind, {
+        limit: DIARY_PAGE_SIZE,
+        offset: entries.length,
+      });
+      setEntries((prev) => {
+        const seen = new Set(prev.map((e) => e.id));
+        const appended = page.filter((e) => !seen.has(e.id));
+        return sortEntries([...prev, ...appended]);
+      });
+      setHasMore(page.length >= DIARY_PAGE_SIZE);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [entries.length, hasMore, loadingMore, searchQuery, subjectKind]);
 
   const handleManualRefresh = useCallback(async () => {
     if (refreshing) return;
@@ -217,6 +244,7 @@ export function DiaryApp() {
     setSelectedId(null);
     setDraft(null);
     setDraftBaseline(null);
+    setHasMore(false);
     initialTodayOpenedRef.current = false;
   }, [subjectKind]);
 
@@ -539,7 +567,23 @@ export function DiaryApp() {
         disabled={refreshing || loading}
         onRefresh={handleManualRefresh}
       >
-        <EntryTimeline items={entries} selectedId={selectedId} onSelect={selectEntryById} />
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <EntryTimeline items={entries} selectedId={selectedId} onSelect={selectEntryById} />
+          </div>
+          {!searchQuery.trim() && hasMore ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="shrink-0 self-center"
+              disabled={loadingMore || loading || refreshing}
+              onClick={() => void loadMore()}
+            >
+              {loadingMore ? <Spinner className="size-3.5" /> : "加载更多"}
+            </Button>
+          ) : null}
+        </div>
       </PullToRefresh>
     </div>
   );

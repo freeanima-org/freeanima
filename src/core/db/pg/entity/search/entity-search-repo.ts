@@ -6,7 +6,12 @@ import {
   entityRowSelectColumns,
   mapEntityRow,
 } from "@freeanima/core/db/schema/entity";
-import { entities, CONTENT_BLOCK_COMPONENT, TASK_ITEM_COMPONENT } from "@freeanima/core/db/schema";
+import {
+  entities,
+  CONTENT_BLOCK_COMPONENT,
+  DIARY_ENTRY_COMPONENT,
+  TASK_ITEM_COMPONENT,
+} from "@freeanima/core/db/schema";
 import { and, asc, count, desc, sql } from "drizzle-orm";
 
 import { getDb } from "../../client.ts";
@@ -29,6 +34,9 @@ function candidateLimit(requested: number, ftsCount: number): number {
 }
 
 function defaultOrderBy(primary_component?: string, opts?: { hasQuery?: boolean }) {
+  if (primary_component === DIARY_ENTRY_COMPONENT && !opts?.hasQuery) {
+    return [desc(sql`(${entities.body}->>'entry_at')::timestamptz`), desc(entities.id)] as const;
+  }
   if (
     (primary_component === TASK_ITEM_COMPONENT || primary_component === CONTENT_BLOCK_COMPONENT) &&
     !opts?.hasQuery

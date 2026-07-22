@@ -39,8 +39,21 @@ function diaryEntryCacheId(subjectKind: DiarySubjectKind, id: number): string {
 
 export async function fetchDiaryEntries(
   subjectKind: DiarySubjectKind,
-  opts?: { limit?: number },
+  opts?: { limit?: number; offset?: number },
 ): Promise<DiaryEntryRow[]> {
+  const limit = opts?.limit ?? 20;
+  const offset = opts?.offset ?? 0;
+
+  // 分页后续页不走 list cache，避免把「仅首屏」写成「全量」
+  if (offset > 0) {
+    const data = await habitat().call("diary.list", {
+      subject_kind: subjectKind,
+      limit,
+      offset,
+    });
+    return data.items;
+  }
+
   const scope = resolveHabitatCacheScope();
   const cacheId = diaryListCacheId(subjectKind);
   return withOfflineCache({
@@ -50,7 +63,8 @@ export async function fetchDiaryEntries(
     fetch: async () => {
       const data = await habitat().call("diary.list", {
         subject_kind: subjectKind,
-        limit: opts?.limit ?? 200,
+        limit,
+        offset: 0,
       });
       return data.items;
     },
