@@ -1,7 +1,8 @@
-import { isCapacitorNativePlatform, isCapacitorShellCandidate } from "./capacitor-runtime.ts";
+import { getShellBuildTarget } from "./shell-build-target.ts";
+import { isTauriRuntime } from "./tauri-runtime.ts";
 
 /** 壳子维：运行时壳类型（与布局/交互正交） */
-export type ShellRuntimeKind = "electron" | "capacitor" | "web" | "tauri";
+export type ShellRuntimeKind = "web" | "tauri";
 
 function runtimeWindow(): Window | undefined {
   if (typeof window !== "undefined") return window;
@@ -15,31 +16,31 @@ export function isNativeShell(): boolean {
 }
 
 /**
- * 一元壳类型。跟 satelliteShell / Capacitor 原生桥，不跟手机 UA（phone ≠ Capacitor）。
- * features / shell-ui 应优先用此函数，勿手写 isElectron && isNativeShell 组合。
+ * 一元壳类型。跟 satelliteShell / Tauri IPC，不跟手机 UA。
+ * 若编译期 `__FREEANIMA_SHELL_TARGET__` 为 desktop/mobile，优先跟产物形态。
  */
 export function getShellKind(): ShellRuntimeKind {
+  const buildTarget = getShellBuildTarget();
   const w = runtimeWindow();
-  if (!w) return "web";
-  const shell = w.satelliteShell as
+  const shell = w?.satelliteShell as
     | (NonNullable<Window["satelliteShell"]> & { isTauri?: boolean })
     | undefined;
-  if (shell?.isTauri) return "tauri";
-  if (shell?.isElectron) return "electron";
-  if (shell?.isNativeShell || isCapacitorNativePlatform()) {
-    return "capacitor";
+
+  if (buildTarget === "desktop" || buildTarget === "mobile") {
+    return "tauri";
   }
-  // 薄壳首页尚未注入 satelliteShell 时：localhost / capacitor:// 仍可能是 Capacitor
-  if (isCapacitorShellCandidate()) return "capacitor";
+
+  if (!w) return "web";
+  if (shell?.isTauri || isTauriRuntime()) return "tauri";
   return "web";
 }
 
 /** @deprecated 使用 `getShellKind`；保留别名供 composition 过渡 */
 export const detectShellRuntimeKind = getShellKind;
 
-/** 是否为已打包原生壳（Electron / Capacitor），非纯浏览器 Web */
+/** 是否为已打包原生壳（Tauri），非纯浏览器 Web */
 export function isPackagedShell(): boolean {
-  return getShellKind() !== "web";
+  return getShellKind() === "tauri";
 }
 
 /**
@@ -53,13 +54,11 @@ export function canOpenHabitatSettings(): boolean {
   return isPackagedShell();
 }
 
-/**
- * 原生壳导航（hash 路由 / 保存后进模块）。
- * Capacitor 真壳与薄壳候选；手机浏览器直连 Habitat 仍走 path。
- */
+/** 原生壳导航（hash 路由 / 保存后进模块）。桌面/移动编译产物一律视为原生壳导航。 */
 export function shouldUseNativeShellNavigation(): boolean {
+  const buildTarget = getShellBuildTarget();
+  if (buildTarget === "desktop" || buildTarget === "mobile") return true;
   const w = runtimeWindow();
   if (!w) return false;
-  if (w.satelliteShell?.isNativeShell) return true;
-  return isCapacitorNativePlatform() || isCapacitorShellCandidate();
+  return Boolean(w.satelliteShell?.isNativeShell);
 }

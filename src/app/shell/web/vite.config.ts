@@ -3,6 +3,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import {
+  parseShellBuildTarget,
+  shellWebDistDirName,
+} from "@freeanima/frontend/shell-sdk/shell-build-target.ts";
 import { createComponentBuildMeta } from "../vite-config-imports.ts";
 import {
   createHabitatDevProxyMap,
@@ -22,7 +26,8 @@ import {
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(PKG_DIR, "..", "..", "..", "..");
 const SPA_DIR = join(PKG_DIR, "spa");
-const DIST_DIR = join(PKG_DIR, "dist");
+const SHELL_TARGET = parseShellBuildTarget(process.env.FREEANIMA_SHELL_TARGET);
+const DIST_DIR = join(PKG_DIR, shellWebDistDirName(SHELL_TARGET));
 
 const PROXY_HABITAT = resolveProxyHabitatUrl();
 /** 仅 Vite proxy 目标；浏览器 hub_url 用页面 origin */
@@ -201,21 +206,25 @@ export default defineConfig(({ command, mode }) => {
       // Web 默认同源；编译期常量仅作极端回退（Electron 等非 Web 路径）
       __WEB_DEFAULT_HUB_URL__: JSON.stringify(""),
       __WEB_UI_VERSION__: JSON.stringify(UI_VERSION),
+      __FREEANIMA_SHELL_TARGET__: JSON.stringify(SHELL_TARGET),
     },
   });
 
-  // 开发 serve 禁用 PWA，避免历史 SW 缓存旧 JS（HMR 被劫持）
-  const skipPwa = isServe || process.env.FREEANIMA_WEB_SKIP_PWA === "1";
+  // 开发 serve / 桌面·移动壳产物默认关 PWA，避免 SW 干扰原生壳
+  const skipPwa = isServe || SHELL_TARGET !== "web" || process.env.FREEANIMA_WEB_SKIP_PWA === "1";
   inline.plugins = [...(inline.plugins ?? []), ...webPwaPlugin({ disable: skipPwa })];
   if (skipPwa) {
     console.info(
       isServe
         ? "[dev:web] VitePWA disabled (dev serve — no SW)"
-        : "[build:web] FREEANIMA_WEB_SKIP_PWA=1 — VitePWA disabled",
+        : SHELL_TARGET !== "web"
+          ? `[build:web] shellTarget=${SHELL_TARGET} — VitePWA disabled`
+          : "[build:web] FREEANIMA_WEB_SKIP_PWA=1 — VitePWA disabled",
     );
   }
 
   if (!isServe) {
+    console.info(`[build:web] shellTarget=${SHELL_TARGET} outDir=${DIST_DIR}`);
     if (
       inline.build?.rolldownOptions?.output &&
       !Array.isArray(inline.build.rolldownOptions.output)

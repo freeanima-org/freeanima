@@ -16,7 +16,7 @@ Detailed implementation constraints for AI agents working in this repository. St
 | [`frontend-ui.md`](frontend-ui.md)                                                   | DaisyUI 基元约定、`ui-kit/composite` 复合组件、Modal/空态规范                       |
 | [`ui-dimensions.md`](ui-dimensions.md)                                               | 壳子/布局/交互三维度正交、API 映射、旧名→新名                                       |
 | [`release.md`](release.md)                                                           | SemVer, Conventional Commits, Release Please, Linux standalone                      |
-| [`electron-desktop.md`](electron-desktop.md)                                         | 桌面壳 main 打包、external 白名单、安装包启动断言                                   |
+| [`tauri-shell.md`](tauri-shell.md)                                                   | Portal 壳（Tauri）：工程位置、禁止 Node sidecar、ShellApi、双轨发版                 |
 | [`compression.md`](compression.md)                                                   | l-point compression algorithm and module entry points                               |
 | [`i18n.md`](i18n.md)                                                                 | UI/docs i18n: Paraglide, po4a, PO workflow, site/Habitat message keys               |
 | [`docs-i18n.md`](docs-i18n.md)                                                       | AI rules for `docs/**` authoring and `po/zh_CN/*.po` msgstr                         |

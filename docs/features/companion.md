@@ -4,20 +4,20 @@ title: Desktop Companion
 
 # Desktop Companion
 
-> **remote-tools attach host** in the Companion **overlay WebView** (first-party) — embedded by the desktop Portal shell for window/IPC/FS only. Not managed via `config.yaml`, and **not** a separate Node sidecar process.
+> **remote-tools attach host** in the Companion **overlay WebView** (first-party) — embedded by the desktop Portal shell for window/IPC/FS only. Target shell: **Tauri**（见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)）。Not managed via `config.yaml`, and **not** a separate Node sidecar process.
 
-The content pack (React + VRM) is embedded by the **desktop shell** (`src/app/shell/desktop`). The overlay connects with Habitat RPC, calls `remote_tools.attach`, and exposes local tools (`bubble`, `play_slot`) to the Agent. Product modules such as Chat use Habitat RPC only (no attach).
+The content pack (React + VRM) is embedded by the **desktop Tauri shell** (`src/app/shell/tauri`). The overlay connects with Habitat RPC, calls `remote_tools.attach`, and exposes local tools (`bubble`, `play_slot`) to the Agent. Product modules such as Chat use Habitat RPC only (no attach).
 
 ## Architecture
 
 ```text
-FreeAnima Desktop (src/app/shell/desktop)
-├── Electron Main — tray / multi-window + thin companion static/sync HTTP
+FreeAnima Portal (src/app/shell/tauri)
+├── Tauri (Rust) — tray / multi-window + prefs / IPC
 │   ├── companion overlay — transparent always-on-top; VRM + remote_tools.attach
 │   ├── companion settings — settings in main window (Habitat RPC + asset HTTP)
 │   ├── chat — Chat SPA (Habitat RPC, no remote_tools.attach)
-│   └── console — Habitat WebView (Habitat RPC REST)
-└── Renderer — preload satelliteShell; overlay owns attach + tool runtime
+│   └── habitat — Habitat WebView (Habitat RPC REST)
+└── Renderer — satelliteShell; overlay owns attach + tool runtime
          ↕ Habitat RPC (+ remote_tools.attach in overlay only)
     anima service Habitat (companion_profile SSOT + assets + FBX→VRMA)
 ```
@@ -29,7 +29,7 @@ FreeAnima Desktop (src/app/shell/desktop)
 | **Habitat SSOT**   | `src/features/companion/`    | `companion_profile` entity (behavior, slots, library meta); VRM/VRMA files under `~/.anima/companion/` on Habitat host; FBX→VRMA conversion; Settings read/write via Habitat RPC |
 | **Settings UI**    | Desktop Settings → Companion | Habitat RPC (`companion.config.*`, model/motion CRUD); upload via `POST /rpc/v1/companion/model/upload` and `/companion/motion/import`                                           |
 | **Companion host** | overlay SPA (`spa/`)         | `remote_tools.attach`, tool execution, local runtime (bubble/play); optional thin HTTP for static assets + `companion.sync.pull` cache                                           |
-| **Electron**       | `src/app/shell/desktop/`     | Transparent window, click-through, tray, show/hide + FS / prefs IPC                                                                                                              |
+| **Tauri host**     | `src/app/shell/tauri/`       | Transparent window, click-through, tray, show/hide + FS / prefs IPC                                                                                                              |
 
 Management is in **Settings only** — Habitat has no companion admin page.
 
@@ -39,7 +39,7 @@ On host start: Habitat config wins; `~/.anima/companion/config.json` on the desk
 Settings ──Habitat RPC/HTTP──► features/companion (Habitat)
 Static   ◄──sync.pull────► Habitat          ──► local cache (VRM/VRMA)
 Overlay ──remote_tools.attach──► Habitat    （bubble / play_slot 本地执行）
-Electron ◄──IPC──────────► Settings         (show/hide, connection status)
+Tauri   ◄──IPC──────────► Settings         (show/hide, connection status)
 Agent    ──Habitat RPC tool.call─► Overlay
 ```
 

@@ -117,6 +117,21 @@ export function writePomodoroActiveState(
       window.dispatchEvent(
         new CustomEvent("freeanima:pomodoro-active-changed", { detail: { subjectKind: kind } }),
       );
+      // Tauri 移动：同步主屏小组件快照（失败忽略）
+      if (window.satelliteShell?.isTauri) {
+        const remainingMs =
+          state.phaseEndsAt != null
+            ? Math.max(0, state.phaseEndsAt - Date.now())
+            : (state.pausedRemainingMs ?? 0);
+        void import("@freeanima/app/shell/tauri/bridge/bootstrap-tauri-mobile.ts")
+          .then(({ syncPomodoroWidgetState }) =>
+            syncPomodoroWidgetState({
+              phase: state.phase,
+              remainingSec: Math.floor(remainingMs / 1000),
+            }),
+          )
+          .catch(() => undefined);
+      }
     }
   } catch {
     /* ignore */

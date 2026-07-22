@@ -14,6 +14,9 @@ describe("isBundledClientOrigin", () => {
     expect(isBundledClientOrigin("http://localhost")).toBe(true);
     expect(isBundledClientOrigin("https://localhost")).toBe(true);
     expect(isBundledClientOrigin("capacitor://localhost")).toBe(true);
+    expect(isBundledClientOrigin("http://tauri.localhost")).toBe(true);
+    expect(isBundledClientOrigin("https://tauri.localhost")).toBe(true);
+    expect(isBundledClientOrigin("tauri://localhost")).toBe(true);
   });
 
   it("rejects arbitrary remote origins", () => {

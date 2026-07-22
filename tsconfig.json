@@ -13,11 +13,5 @@
     "messages/**/*.json",
     "src/satellites/companion/shared/**/*.json"
   ],
-  "exclude": [
-    "node_modules",
-    "**/dist/**",
-    "**/.turbo/**",
-    "src/app/shell/mobile/android/**",
-    "scripts/codemod-freeanima-imports.ts"
-  ]
+  "exclude": ["node_modules", "**/dist/**", "**/.turbo/**", "scripts/codemod-freeanima-imports.ts"]
 }

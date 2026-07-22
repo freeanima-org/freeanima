@@ -11,7 +11,7 @@ import sharp from "sharp";
 const ROOT = join(import.meta.dir, "..");
 const APP_ICON_PNG = join(ROOT, "brand/app-icon.png");
 
-const ANDROID_RES = join(ROOT, "src/app/shell/mobile/android/app/src/main/res");
+const ANDROID_RES = join(ROOT, "src/app/shell/tauri/src-tauri/gen/android/app/src/main/res");
 
 const BG_DARK = "#0a0a0b";
 const BG_NAVY = "#0d1628";
@@ -132,12 +132,12 @@ async function main(): Promise<void> {
     await renderMaskable(512),
   );
 
-  const electronIcons = join(ROOT, "src/app/shell/desktop/electron/icons");
-  const png32 = join(electronIcons, "32x32.png");
-  const png128 = join(electronIcons, "128x128.png");
-  const png256 = join(electronIcons, "256x256.png");
-  const png512 = join(electronIcons, "512x512.png");
-  const png1024 = join(electronIcons, "1024x1024.png");
+  const tauriIcons = join(ROOT, "src/app/shell/tauri/src-tauri/icons");
+  const png32 = join(tauriIcons, "32x32.png");
+  const png128 = join(tauriIcons, "128x128.png");
+  const png256 = join(tauriIcons, "256x256.png");
+  const png512 = join(tauriIcons, "512x512.png");
+  const png1024 = join(tauriIcons, "1024x1024.png");
 
   writePng(png32, await renderIcon(32));
   writePng(png128, await renderIcon(128));
@@ -146,8 +146,8 @@ async function main(): Promise<void> {
   const buf1024 = await renderIcon(1024);
   writePng(png1024, buf1024);
 
-  await writeIco([png32, png128, png256], join(electronIcons, "icon.ico"));
-  writeIcns(buf1024, join(electronIcons, "icon.icns"));
+  await writeIco([png32, png128, png256], join(tauriIcons, "icon.ico"));
+  writeIcns(buf1024, join(tauriIcons, "icon.icns"));
 
   for (const [folder, size] of Object.entries(MIPMAP_LAUNCHER)) {
     const base = join(ANDROID_RES, folder);

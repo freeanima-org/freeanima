@@ -12,7 +12,7 @@ import {
   useTouchPrimaryCapability,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
 
-/** 纯浏览器 Web 壳（非 Electron / Capacitor） */
+/** 纯浏览器 Web 壳（非 Tauri） */
 export function isWebShell(): boolean {
   return getShellKind() === "web";
 }

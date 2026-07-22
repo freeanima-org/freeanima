@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import type { ShellApi } from "@freeanima/frontend/shell-sdk";
 
-import { isCapacitorShellCandidate } from "./capacitor-runtime.ts";
+import { setShellBuildTargetForTests } from "./shell-build-target.ts";
 import {
   canOpenHabitatSettings,
   getShellKind,
@@ -12,33 +12,48 @@ import {
 describe("shell-runtime", () => {
   afterEach(() => {
     delete (globalThis as { window?: Window }).window;
-  });
-
-  it("getShellKind：Electron", () => {
-    (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: true } as ShellApi,
-      location: { origin: "https://example.com" },
-      navigator: { userAgent: "Mozilla/5.0" },
-    } as unknown as Window;
-    expect(getShellKind()).toBe("electron");
+    setShellBuildTargetForTests(null);
   });
 
   it("getShellKind：Tauri isTauri", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: false, isTauri: true } as ShellApi,
-      location: { origin: "https://example.com" },
+      satelliteShell: { isTauri: true } as ShellApi,
+      location: { origin: "https://example.com", protocol: "https:", hostname: "example.com" },
       navigator: { userAgent: "Mozilla/5.0" },
     } as unknown as Window;
     expect(getShellKind()).toBe("tauri");
   });
 
-  it("getShellKind：Capacitor isNativeShell", () => {
+  it("getShellKind：Tauri tauri.localhost（bridge 注入前）", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: false, isNativeShell: true } as ShellApi,
+      location: {
+        origin: "https://tauri.localhost",
+        protocol: "https:",
+        hostname: "tauri.localhost",
+      },
+      navigator: { userAgent: "Mozilla/5.0" },
+    } as unknown as Window;
+    expect(getShellKind()).toBe("tauri");
+  });
+
+  it("getShellKind：编译期 desktop 为 tauri", () => {
+    setShellBuildTargetForTests("desktop");
+    (globalThis as { window: Window }).window = {
+      satelliteShell: { isNativeShell: true } as ShellApi,
+      location: { origin: "https://example.com", protocol: "https:", hostname: "example.com" },
+      navigator: { userAgent: "Mozilla/5.0" },
+    } as unknown as Window;
+    expect(getShellKind()).toBe("tauri");
+  });
+
+  it("getShellKind：编译期 mobile 为 tauri", () => {
+    setShellBuildTargetForTests("mobile");
+    (globalThis as { window: Window }).window = {
+      satelliteShell: { isNativeShell: true } as ShellApi,
       location: { origin: "https://example.com" },
       navigator: { userAgent: "Mozilla/5.0" },
     } as unknown as Window;
-    expect(getShellKind()).toBe("capacitor");
+    expect(getShellKind()).toBe("tauri");
   });
 
   it("getShellKind：Web 默认", () => {
@@ -47,12 +62,11 @@ describe("shell-runtime", () => {
       navigator: { userAgent: "Mozilla/5.0" },
     } as unknown as Window;
     expect(getShellKind()).toBe("web");
-    expect(isCapacitorShellCandidate()).toBe(false);
   });
 
   it("isNativeShell 读 flag", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: false, isNativeShell: true } as ShellApi,
+      satelliteShell: { isNativeShell: true } as ShellApi,
     } as unknown as Window;
     expect(isNativeShell()).toBe(true);
     (globalThis as { window: Window }).window = {} as unknown as Window;
@@ -62,23 +76,30 @@ describe("shell-runtime", () => {
   it("canOpenHabitatSettings：有 openHabitatSettings", () => {
     (globalThis as { window: Window }).window = {
       satelliteShell: {
-        isElectron: false,
         openHabitatSettings: () => {},
       } as ShellApi,
     } as unknown as Window;
     expect(canOpenHabitatSettings()).toBe(true);
   });
 
-  it("canOpenHabitatSettings：Electron 无方法仍 true（packaged）", () => {
+  it("canOpenHabitatSettings：Tauri packaged", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: true } as ShellApi,
+      satelliteShell: { isTauri: true } as ShellApi,
     } as unknown as Window;
     expect(canOpenHabitatSettings()).toBe(true);
   });
 
   it("shouldUseNativeShellNavigation：isNativeShell", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: false, isNativeShell: true } as ShellApi,
+      satelliteShell: { isNativeShell: true } as ShellApi,
+    } as unknown as Window;
+    expect(shouldUseNativeShellNavigation()).toBe(true);
+  });
+
+  it("shouldUseNativeShellNavigation：编译期 desktop", () => {
+    setShellBuildTargetForTests("desktop");
+    (globalThis as { window: Window }).window = {
+      location: { origin: "https://example.com" },
     } as unknown as Window;
     expect(shouldUseNativeShellNavigation()).toBe(true);
   });

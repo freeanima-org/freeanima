@@ -15,7 +15,8 @@ export default defineConfig(({ command, mode }) => {
     appDir: SPA_DIR,
     repoRoot: REPO_ROOT,
     outdir: isServe ? join(PKG_DIR, "node_modules", ".vite-companion") : DIST_DIR,
-    base: "/",
+    // `./`：Electron HTTP 与 Tauri file:// / resource 均可解析 assets
+    base: "./",
     minify: mode === "production",
     sourcemap: mode !== "production",
   });

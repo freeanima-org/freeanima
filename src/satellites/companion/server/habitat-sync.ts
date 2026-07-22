@@ -1,6 +1,5 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { isHubMethod, type HubMethod } from "@freeanima/shared/habitat-contract";
 import { fetchHabitatRestRaw, parseHabitatRestResponse } from "@freeanima/shared/habitat-rpc";
 import {
   companionCacheDir,
@@ -73,12 +72,9 @@ function listDataFiles(dir: string, ext: string): string[] {
 }
 
 async function hubRpcCall<T>(method: string, payload: Record<string, unknown> = {}): Promise<T> {
-  if (!isHubMethod(method)) {
-    throw new Error(`unknown hub method: ${method}`);
-  }
   const token = remoteAuthTokenFromShell();
   const options = token !== undefined ? { authToken: token } : undefined;
-  const res = await fetchHabitatRestRaw(hubUrlFromConfig(), method as HubMethod, payload, options);
+  const res = await fetchHabitatRestRaw(hubUrlFromConfig(), method, payload, options);
   return (await parseHabitatRestResponse(res)) as T;
 }
 

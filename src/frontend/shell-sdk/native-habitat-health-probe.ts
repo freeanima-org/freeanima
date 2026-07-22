@@ -26,15 +26,26 @@ function hubOrigin(habitatUrl: string): string {
   }
 }
 
-/** Capacitor 原生 HTTP：绕过 WebView 混合内容与 CORS（bootstrap https://localhost → 局域网 Habitat） */
+/** Capacitor / Tauri 原生 HTTP：绕过 WebView CORS / AsyncDns（hosts 主机名） */
 export async function probeHabitatHealthViaCapacitorHttp(
   url: string,
   headers: Record<string, string>,
   timeoutMs: number,
 ): Promise<HabitatHealthBody> {
+  if (typeof window !== "undefined" && window.satelliteShell?.isTauri) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const rawAuth = headers.authorization ?? headers.Authorization ?? "";
+    const token = rawAuth.replace(/^Bearer\s+/i, "").trim();
+    const body = await invoke<HabitatHealthBody>("probe_habitat_health", {
+      url,
+      token: token || null,
+      timeoutMs,
+    });
+    return body;
+  }
   const { hasCapacitorNativePromise } = await import("./capacitor-runtime.ts");
   if (!hasCapacitorNativePromise()) {
-    throw new Error("CapacitorHttp 不可用，请 cap sync 后重装 APK");
+    throw new Error("原生 HTTP 探测不可用（非 Tauri / 无 Capacitor 桥）");
   }
   const w = window as Window & {
     __freeanimaCapacitorNative?: { nativePromise?: CapacitorNativeInvoker };
@@ -44,7 +55,7 @@ export async function probeHabitatHealthViaCapacitorHttp(
     ? w.__freeanimaCapacitorNative
     : w.Capacitor;
   if (!cap?.nativePromise) {
-    throw new Error("CapacitorHttp 不可用，请 cap sync 后重装 APK");
+    throw new Error("原生 HTTP 探测不可用（非 Tauri / 无 Capacitor 桥）");
   }
   const response = (await cap.nativePromise("CapacitorHttp", "get", {
     url,
@@ -65,6 +76,12 @@ type CapacitorNativeInvoker = (
 ) => Promise<unknown>;
 
 export async function shouldProbeHubHealthViaCapacitorHttp(habitatUrl: string): Promise<boolean> {
+  if (typeof window !== "undefined" && window.satelliteShell?.isTauri) {
+    const page = window.location.origin;
+    const hub = hubOrigin(habitatUrl);
+    if (page && hub && page === hub) return false;
+    return true;
+  }
   const { isCapacitorNativePlatform, isCapacitorShellCandidate, waitForCapacitorNativePlatform } =
     await import("./capacitor-runtime.ts");
   let native = isCapacitorNativePlatform();

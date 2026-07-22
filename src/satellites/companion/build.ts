@@ -18,6 +18,8 @@ function companionViteBuildOptions(
     appDir: SPA_DIR,
     repoRoot: REPO_ROOT,
     outdir: DIST_DIR,
+    // `./`：HTTP 与 Tauri file:// resource 均可解析；勿用绝对 `/`
+    base: "./",
     ...overrides,
   };
 }
