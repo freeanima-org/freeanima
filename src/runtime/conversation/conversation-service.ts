@@ -47,6 +47,7 @@ import {
   advanceCompressionMeta,
   maybeApplyEmergencyCompression,
   recompressConversation,
+  summarizeConversation,
 } from "../turn/compression-orchestration.ts";
 import {
   beginTurn,
@@ -111,6 +112,10 @@ export function createConversationService(tools: ToolSetRegistry) {
       opts?: Parameters<typeof recompressConversation>[2],
       preloaded?: Parameters<typeof recompressConversation>[3],
     ) => recompressConversation(tools, conversationId, opts, preloaded),
+    summarizeConversation: (
+      conversationId: string,
+      preloaded?: Parameters<typeof summarizeConversation>[2],
+    ) => summarizeConversation(tools, conversationId, preloaded),
     repairAndPersistToolLoop,
     maybeApplyEmergencyCompression,
     buildRuntimeMessages: (conversationId: string) => buildRuntimeMessages(tools, conversationId),

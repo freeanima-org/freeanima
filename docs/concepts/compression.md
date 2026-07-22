@@ -75,6 +75,12 @@ Without any context window source, compression falls back to message-count trigg
 
 Force compression in chat: `/compress` (`--force` ignores hysteresis).
 
+Manual summarize (Cursor-style): `/summarize` collapses history into the runtime summary without waiting for automatic thresholds. When the turn is **idle** (last message is a completed assistant reply), boundaries become `l2 = l3 = l4` and slim/raw are empty. During an **in-progress** turn, only content through the last completed assistant is summarized; the unfinished tail stays in raw. Summary text is merged **incrementally** (same as automatic compression), and the command waits for the summary LLM to finish.
+
+### Mid-turn protection vs empty raw
+
+Automatic boundary derivation keeps a non-empty raw segment (with a leading user message) so turns can continue while usage-based compression runs. That rule applies when **some raw tail must remain**. It is not a ban on empty raw: when the user explicitly `/summarize` on an idle conversation, full collapse (`l2 = l3 = l4`) is allowed. Mid-turn protection is implemented by **not folding incomplete turns into the summary**, not by permanently requiring a user in raw.
+
 ## Relationship to Memory Pipeline
 
 Compression and light/deep sleep run **independently**: compression manages the current conversation's LLM window; memory extraction runs nightly from the full conversation archive.

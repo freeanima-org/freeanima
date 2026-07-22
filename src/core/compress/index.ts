@@ -6,4 +6,5 @@ export * from "./compression-summary.ts";
 export * from "./compression-summary-scheduler.ts";
 export * from "./compression-tool-loop.ts";
 export * from "./emergency-compression.ts";
+export * from "./summarize-collapse.ts";
 export * from "./token-estimate.ts";

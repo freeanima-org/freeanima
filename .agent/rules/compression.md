@@ -102,10 +102,13 @@ Legacy meta **read-time migration** (`parseCompressionState`):
 | `src/core/compress/compression-config.ts`    | Config and unified `context_window` resolution (config > default > catalog)                   |
 | `src/core/compress/compression-summary.ts`   | Summary LLM                                                                                   |
 | `src/core/compress/compression-tool-loop.ts` | `isInToolLoop`                                                                                |
+| `runtime/src/turn/summarize-conversation.ts` | `summarizeConversation` (manual `/summarize`)                                                 |
 | `runtime/src/conversation/conversation.ts`   | `recompressConversation`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression`            |
 | `runtime/src/loop/engine.ts`                 | Emergency call site                                                                           |
 | `src/platform/runtime/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy                                                            |
 
-Manual: `/compress` (`--force` ignores hysteresis).
+Manual: `/compress` (`--force` ignores hysteresis). `/summarize` — manual collapse when idle (`l2=l3=l4`), incremental summary merge, awaits summary LLM (see [`docs/concepts/compression.md`](../../docs/concepts/compression.md)).
+
+Mid-turn: do not fold incomplete turns into summary; idle `/summarize` may leave empty raw. Automatic `deriveBoundariesFromL4` still requires a valid non-empty raw when advancing during an open turn.
 
 Compression **does not** trigger semantic memory extraction; light sleep cron runs independently (see [`docs/concepts/sleep.md`](../../docs/concepts/sleep.md)).

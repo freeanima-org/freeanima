@@ -26,6 +26,10 @@ function defaultChatModel(): string {
 }
 
 export { flushCompressionSummaries, maybeApplyEmergencyCompression };
+export {
+  summarizeConversation,
+  type SummarizeConversationResult,
+} from "./summarize-conversation.ts";
 
 /** Maintain meta.compression from full history (no message delete; async summary on cut change) */
 export async function advanceCompressionMeta(
