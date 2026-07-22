@@ -186,4 +186,10 @@ if (target === "desktop") {
   mkdirSync(dirname(companionResource), { recursive: true });
   cpSync(companionDist, companionResource, { recursive: true });
   console.log(`[prepare-tauri] companion → ${companionResource}`);
+} else {
+  // tauri.conf.json 固定 resources: companion-dist/；mobile 无伴侣内容，放空目录满足打包。
+  if (existsSync(companionResource)) rmSync(companionResource, { recursive: true });
+  mkdirSync(companionResource, { recursive: true });
+  writeFileSync(join(companionResource, ".gitkeep"), "");
+  console.log(`[prepare-tauri] companion-dist placeholder → ${companionResource}`);
 }

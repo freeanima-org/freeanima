@@ -83,11 +83,20 @@ const prep = spawnSync("bun", ["scripts/prepare-tauri-ui.ts"], {
 });
 if (prep.status !== 0) process.exit(prep.status ?? 1);
 
+// ring 交叉编译会产生海量 -Wunsafe-buffer-usage，易撑爆 CI 日志并掩盖真错误；
+// 限并行降低 clang 峰值内存（xwin + ring 易 OOM）。
+const buildEnv = {
+  ...process.env,
+  CARGO_BUILD_JOBS: process.env.CARGO_BUILD_JOBS?.trim() || "2",
+  CFLAGS: [process.env.CFLAGS, "-Wno-unsafe-buffer-usage", "-w"].filter(Boolean).join(" "),
+  CXXFLAGS: [process.env.CXXFLAGS, "-Wno-unsafe-buffer-usage", "-w"].filter(Boolean).join(" "),
+};
+
 const build = spawnSync("bunx", ["tauri", "build", "--runner", "cargo-xwin", "--target", TARGET], {
   cwd: tauriDir,
   stdio: "inherit",
   shell: true,
-  env: process.env,
+  env: buildEnv,
 });
 if (build.status !== 0) process.exit(build.status ?? 1);
 
