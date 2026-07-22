@@ -1,4 +1,5 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { randomUUID } from "node:crypto";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -134,12 +135,13 @@ describePg("server memory API", () => {
   });
 
   it("listSemanticMemories supports sort_by and reference_count", async () => {
+    const token = `unique-sort-${randomUUID().slice(0, 8)}`;
     const lowId = await createSemanticMemory({
-      content: "sort probe low refs unique-sort-token",
+      content: `sort probe low refs ${token}`,
       type: "world",
     });
     const highId = await createSemanticMemory({
-      content: "sort probe high refs unique-sort-token",
+      content: `sort probe high refs ${token}`,
       type: "world",
     });
 
@@ -148,26 +150,24 @@ describePg("server memory API", () => {
     await ctx.sql`UPDATE entities SET reference_count = ${1} WHERE id = ${lowId} AND primary_component = 'semantic_memory'`;
     await ctx.sql`UPDATE entities SET reference_count = ${5} WHERE id = ${highId} AND primary_component = 'semantic_memory'`;
 
-    const lowRow = await getSemanticMemory(lowId);
-    const highRow = await getSemanticMemory(highId);
-    expect(lowRow?.reference_count).toBe(1);
-    expect(highRow?.reference_count).toBe(5);
+    expect((await getSemanticMemory(lowId))?.reference_count).toBe(1);
+    expect((await getSemanticMemory(highId))?.reference_count).toBe(5);
 
+    // 无 query 时才尊重 sort_by=reference_count（有 query 会强制 rank）
     const browseByRefs = await getAppRuntime().listSemanticMemories({
-      query: "unique-sort-token",
       sort_by: "reference_count",
       limit: 100,
     });
-    const probeIds = browseByRefs.items.map((row: { id: number }) => row.id);
-    expect(probeIds).toContain(highId);
-    expect(probeIds).toContain(lowId);
-    expect(probeIds.indexOf(highId)).toBeLessThan(probeIds.indexOf(lowId));
+    const probeIds = browseByRefs.items
+      .filter((row: { content: string }) => row.content.includes(token))
+      .map((row: { id: number }) => row.id);
+    expect(probeIds).toEqual([highId, lowId]);
     expect(
       browseByRefs.items.find((row: { id: number }) => row.id === highId)?.reference_count,
     ).toBe(5);
 
     const searched = await getAppRuntime().listSemanticMemories({
-      query: "unique-sort-token",
+      query: token,
       sort_by: "rank",
       limit: 10,
     });
@@ -179,7 +179,7 @@ describePg("server memory API", () => {
     }
 
     const forcedRank = await getAppRuntime().listSemanticMemories({
-      query: "unique-sort-token",
+      query: token,
       sort_by: "updated_at",
       limit: 10,
     });
