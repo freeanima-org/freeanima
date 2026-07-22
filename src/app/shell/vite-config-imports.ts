@@ -3,6 +3,10 @@ export { createComponentBuildMeta, isShipChannel } from "../../core/config/build
 export type { BuildChannel, ComponentBuildMeta } from "../../core/config/build-meta.ts";
 export { resolveHabitatRpcWsUrl } from "../../shared/habitat-rpc/urls.ts";
 export { nativeBuildMetaDefine } from "../../frontend/shell-sdk/native-build-meta.ts";
+export {
+  parseShellBuildTarget,
+  shellWebDistDirName,
+} from "../../frontend/shell-sdk/shell-build-target.ts";
 export { shellEntryFileNames } from "../../frontend/shell-ui/vite/entry-file-names.ts";
 export { createShellViteInlineConfig } from "../../frontend/shell-ui/vite/run-build.ts";
 export { shellBridgeHtmlPlugin } from "../../frontend/shell-ui/vite/shell-bridge-html.ts";
