@@ -36,10 +36,21 @@ function isElectronShellRuntime(): boolean {
   );
 }
 
-function isNativeMobileShellRuntime(): boolean {
+function isTauriShellRuntime(): boolean {
   return Boolean(
-    (globalThis as { satelliteShell?: { isNativeShell?: boolean } }).satelliteShell?.isNativeShell,
+    (globalThis as { satelliteShell?: { isTauri?: boolean } }).satelliteShell?.isTauri,
   );
+}
+
+function isNativeMobileShellRuntime(): boolean {
+  const shell = (
+    globalThis as {
+      satelliteShell?: { isNativeShell?: boolean; isTauri?: boolean; isElectron?: boolean };
+    }
+  ).satelliteShell;
+  // Tauri / Electron 桌面也带 isNativeShell，勿套用移动端文案
+  if (shell?.isTauri || shell?.isElectron) return false;
+  return Boolean(shell?.isNativeShell);
 }
 
 /** 供单测；将 fetch/网络失败映射为设置页可读文案 */
@@ -50,12 +61,16 @@ export function formatHabitatHealthProbeFetchError(err: unknown, habitatUrl?: st
   if (err instanceof TypeError) {
     const httpsHub = habitatUrl?.trim().toLowerCase().startsWith("https://");
     const electronShell = isElectronShellRuntime();
+    const tauriShell = isTauriShellRuntime();
     const nativeShell = isNativeMobileShellRuntime();
-    if (electronShell && httpsHub) {
+    if ((electronShell || tauriShell) && httpsHub) {
       return "网络错误：桌面壳 HTTPS 需在本机信任栖息地的 mkcert 根 CA（设置页下载 rootCA.pem 并导入系统），或暂用 http://…:2658";
     }
     if (nativeShell && httpsHub) {
       return "网络错误：壳层内 HTTPS 需在手机「设置 → 安全」安装 mkcert 根 CA（rootCA.pem），并重新安装 APK；或暂用 http://…:2658";
+    }
+    if (tauriShell) {
+      return "网络错误（请检查栖息地地址与本机 hosts；WebView 对自定义域名可能解析失败，可先用 IP 验证）";
     }
     if (nativeShell) {
       return "网络错误（请检查栖息地地址、ZeroTier 是否在线，以及栖息地是否监听 0.0.0.0）";
@@ -84,7 +99,14 @@ export async function probeHabitatHealthUrl(
     if (await shouldProbeHubHealthViaCapacitorHttp(base)) {
       try {
         return await probeHabitatHealthViaCapacitorHttp(healthUrl, headers, timeoutMs);
-      } catch {
+      } catch (nativeErr) {
+        // Tauri 原生探测失败时不要回退 WebView fetch（hosts / AsyncDns 仍会失败，掩盖真实错误）
+        if (
+          typeof window !== "undefined" &&
+          (window as Window & { satelliteShell?: { isTauri?: boolean } }).satelliteShell?.isTauri
+        ) {
+          throw nativeErr;
+        }
         /* CapacitorHttp 失败时回退 fetch（androidScheme http + Habitat CORS localhost） */
       }
     }
@@ -101,7 +123,7 @@ export async function probeHabitatHealthUrl(
   }
 }
 
-/** 设置页「测试连接」：可达且 authed 为 true */
+/** 设置页「测试连接」：可达且 authed 为 true；Tauri 壳额外探测 WebSocket（与实际 RPC 同路径）。 */
 export async function testHabitatHealthConnection(
   habitatUrl: string,
   remoteAuthToken?: string,
@@ -112,4 +134,66 @@ export async function testHabitatHealthConnection(
   );
   const reason = habitatHealthFailureReason(body);
   if (reason) throw new Error(reason);
+
+  if (isTauriShellRuntime()) {
+    await probeHabitatRpcWebSocket(habitatUrl);
+  }
+}
+
+/**
+ * 实际业务走 WebView WebSocket；「测试连接」默认是原生 HTTP。
+ * 在此补一轮 WS open，避免 HTTP 通但 WS/TLS 失败时误报成功。
+ */
+export async function probeHabitatRpcWebSocket(
+  habitatUrl: string,
+  timeoutMs = 8_000,
+): Promise<void> {
+  const { resolveHabitatRpcWsUrl } = await import("@freeanima/shared/habitat-rpc/urls.ts");
+  const base = habitatUrl.trim().replace(/\/$/, "");
+  const wsUrl = resolveHabitatRpcWsUrl(base);
+  const httpsHub = base.toLowerCase().startsWith("https://");
+
+  await new Promise<void>((resolve, reject) => {
+    let settled = false;
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(wsUrl);
+    } catch (e) {
+      reject(
+        new Error(e instanceof Error ? e.message : "无法创建 Habitat RPC WebSocket", { cause: e }),
+      );
+      return;
+    }
+    const finish = (err?: Error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      try {
+        ws.close();
+      } catch {
+        /* ignore */
+      }
+      if (err) reject(err);
+      else resolve();
+    };
+    const timer = setTimeout(() => {
+      finish(
+        new Error(
+          httpsHub
+            ? "Habitat RPC WebSocket 超时：原生 HTTP 探测已通，但壳内 wss 失败。请确认本机/手机已信任栖息地 TLS（mkcert 根 CA），或暂用 http://…:2658"
+            : "Habitat RPC WebSocket 超时：原生 HTTP 探测已通，但壳内 ws 未连通（检查地址、防火墙与反向代理 WebSocket）",
+        ),
+      );
+    }, timeoutMs);
+    ws.addEventListener("open", () => finish());
+    ws.addEventListener("error", () => {
+      finish(
+        new Error(
+          httpsHub
+            ? "Habitat RPC WebSocket 失败：测试连接的原生 HTTPS 可能已通，但 WebView 未信任该证书。请安装 mkcert 根 CA，或改用 http://…:2658"
+            : "Habitat RPC WebSocket 失败：与「测试连接」原生 HTTP 路径不同，请检查 ws 地址与网络",
+        ),
+      );
+    });
+  });
 }

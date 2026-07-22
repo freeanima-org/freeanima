@@ -12,6 +12,15 @@ describe("pwa runtime", () => {
     globalThis.window = prev;
   });
 
+  it("isBrowserWebShell 在 Tauri 下为 false", () => {
+    const prev = globalThis.window;
+    globalThis.window = {
+      satelliteShell: { isTauri: true },
+    } as Window & typeof globalThis.window;
+    expect(isBrowserWebShell()).toBe(false);
+    globalThis.window = prev;
+  });
+
   it("readInstallDismissed 无记录时为 false", () => {
     const prev = globalThis.localStorage;
     const store = new Map<string, string>();

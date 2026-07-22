@@ -56,6 +56,15 @@ export function isCapacitorNativePlatform(): boolean {
 export function isCapacitorShellCandidate(): boolean {
   const w = runtimeWindow();
   if (!w || w.satelliteShell?.isElectron) return false;
+  // tauri.localhost 也匹配 /localhost/，必须先排除，否则误进 Capacitor 探测
+  try {
+    const host = w.location?.hostname ?? "";
+    if (host === "tauri.localhost" || host === "ipc.localhost") return false;
+    if (w.location?.protocol === "tauri:") return false;
+  } catch {
+    /* ignore */
+  }
+  if ((w as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__) return false;
   if (isCapacitorNativePlatform()) return true;
   if (w.satelliteShell?.isNativeShell) return true;
   const origin = w.location?.origin ?? "";

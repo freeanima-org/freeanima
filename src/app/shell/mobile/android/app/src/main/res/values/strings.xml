@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">FreeAnima</string>
-    <string name="title_activity_main">FreeAnima</string>
-    <string name="package_name">org.freeanima.app</string>
-    <string name="custom_url_scheme">org.freeanima.app</string>
-</resources>

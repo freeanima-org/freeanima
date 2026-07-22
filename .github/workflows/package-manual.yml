@@ -119,8 +119,6 @@ jobs:
           fetch-depth: 0
 
       - uses: ./.github/actions/setup-bun
-      - uses: ./.github/actions/cache-electron-builder
-        if: matrix.kind == 'desktop'
 
       - uses: ./.github/actions/setup-anima-home
         if: matrix.kind == 'linux'
@@ -134,18 +132,21 @@ jobs:
           cd dist/anima-executable
           tar -czf ../../anima-linux-x64.tar.gz anima
 
-      - name: Build Desktop
+      - name: Install Rust (Desktop Windows cross)
+        if: matrix.kind == 'desktop'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Desktop (Tauri Windows)
         if: matrix.kind == 'desktop'
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
         run: |
           set -euo pipefail
+          bun scripts/install-tauri-windows-toolchain.ts --apt
           bun run setup:fbx
-          bun test src/app/shell/desktop/build-electron.test.ts
-          bun run package:windows
+          bun run package:tauri:windows
           mkdir -p dist
-          installer="$(ls src/app/shell/desktop/release/FreeAnima-Desktop-*.exe 2>/dev/null || ls src/app/shell/desktop/release/*.exe | head -1)"
-          cp "$installer" dist/freeanima-desktop-windows-x64-setup.exe
+          cp dist/freeanima-desktop-tauri-windows-x64-setup.exe dist/freeanima-desktop-windows-x64-setup.exe
 
       - name: Setup JDK 21
         if: matrix.kind == 'mobile'
@@ -155,38 +156,39 @@ jobs:
           java-version: "21"
           cache: gradle
           cache-dependency-path: |
-            src/app/shell/mobile/android/**/*.gradle*
-            src/app/shell/mobile/android/gradle/wrapper/gradle-wrapper.properties
+            src/app/shell/tauri/src-tauri/gen/android/**/*.gradle*
+            src/app/shell/tauri/src-tauri/gen/android/gradle/wrapper/gradle-wrapper.properties
             bun.lock
+
+      - name: Install Rust (Mobile)
+        if: matrix.kind == 'mobile'
+        uses: dtolnay/rust-toolchain@stable
 
       - uses: ./.github/actions/cache-android-sdk
         if: matrix.kind == 'mobile'
 
       - name: Setup Android SDK
         if: matrix.kind == 'mobile'
-        run: bash src/app/shell/mobile/scripts/setup-android-sdk.sh
+        run: bash scripts/setup-android-sdk.sh
 
-      - name: Build Mobile
+      - name: Build Mobile (Tauri)
         if: matrix.kind == 'mobile'
         env:
           FREEANIMA_ANDROID_KEYSTORE_BASE64: ${{ secrets.FREEANIMA_ANDROID_KEYSTORE_BASE64 }}
           FREEANIMA_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.FREEANIMA_ANDROID_KEYSTORE_PASSWORD }}
           FREEANIMA_ANDROID_KEY_PASSWORD: ${{ secrets.FREEANIMA_ANDROID_KEY_PASSWORD }}
           FREEANIMA_ANDROID_KEY_ALIAS: ${{ secrets.FREEANIMA_ANDROID_KEY_ALIAS }}
+          FREEANIMA_ADB_INSTALL: "0"
         run: |
           set -euo pipefail
-          # shellcheck source=src/app/shell/mobile/scripts/android-env.sh
-          source src/app/shell/mobile/scripts/android-env.sh
-          # shellcheck source=src/app/shell/mobile/scripts/export-android-signing-env.sh
-          source src/app/shell/mobile/scripts/export-android-signing-env.sh
-          bun run build:mobile
-          cd src/app/shell/mobile
-          bunx cap sync android
-          cd android
-          ./gradlew assembleDebug --build-cache
-          mkdir -p "$GITHUB_WORKSPACE/dist"
-          cp app/build/outputs/apk/debug/app-debug.apk \
-            "$GITHUB_WORKSPACE/dist/freeanima-mobile-android.apk"
+          bun scripts/install-android-tauri-deps.ts --init
+          # shellcheck source=scripts/android-env.sh
+          source scripts/android-env.sh
+          # shellcheck source=scripts/export-android-signing-env.sh
+          source scripts/export-android-signing-env.sh
+          bun run package:android
+          mkdir -p dist
+          cp dist/freeanima-mobile-tauri-android.apk dist/freeanima-mobile-android.apk
 
       - uses: actions/upload-artifact@v7
         with:

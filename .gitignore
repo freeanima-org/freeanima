@@ -36,6 +36,8 @@ node_modules/
 .pnpm-store/
 .turbo/
 **/dist/
+**/dist-desktop/
+**/dist-mobile/
 **/*.tsbuildinfo
 **/.tsout/
 pnpm-debug.log*
@@ -64,3 +66,9 @@ gettextization.failed.po
 
 # Misc
 /tmp/
+
+# Tauri
+**/src-tauri/target/
+**/src-tauri/companion-dist/
+**/src-tauri/ui/
+**/src-tauri/gen/

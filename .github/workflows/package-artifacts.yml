@@ -99,7 +99,7 @@ jobs:
           if-no-files-found: error
 
   desktop-windows:
-    name: Desktop Windows
+    name: Desktop Windows (Tauri)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -110,24 +110,31 @@ jobs:
           fetch-depth: 0
 
       - uses: ./.github/actions/setup-bun
-      - uses: ./.github/actions/cache-electron-builder
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Windows cross toolchain
+        run: bun scripts/install-tauri-windows-toolchain.ts --apt
 
       - name: 安装 companion FBX 工具
         run: bun run setup:fbx
 
-      - name: 校验 Electron main bundle 不变量
-        run: bun test src/app/shell/desktop/build-electron.test.ts
-
-      - name: 构建 FreeAnima Desktop（Linux 交叉编译）
+      - name: 构建 FreeAnima Desktop Tauri Windows（Linux 交叉编译）
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
-        run: bun run package:windows
+        run: bun run package:tauri:windows
 
       - name: 收集安装包
         run: |
           set -euo pipefail
           mkdir -p dist
-          installer="$(ls src/app/shell/desktop/release/FreeAnima-Desktop-*.exe 2>/dev/null || ls src/app/shell/desktop/release/*.exe | head -1)"
+          installer="dist/freeanima-desktop-tauri-windows-x64-setup.exe"
+          if [[ ! -f "$installer" ]]; then
+            echo "missing $installer" >&2
+            ls -la dist/ >&2 || true
+            exit 1
+          fi
           cp "$installer" dist/freeanima-desktop-windows-x64-setup.exe
           ls -la dist/
 
@@ -137,8 +144,65 @@ jobs:
           path: dist/freeanima-desktop-windows-x64-setup.exe
           if-no-files-found: error
 
+  desktop-tauri:
+    name: Desktop Tauri (target)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-bun
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Linux WebKit deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src/app/shell/tauri/src-tauri
+
+      - name: Build Tauri desktop (Linux host)
+        run: bun run package:tauri
+
+      - name: Collect bundle
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          bundle="$(find src/app/shell/tauri/src-tauri/target/release/bundle -type f -name '*.AppImage' | head -1 || true)"
+          if [[ -z "$bundle" ]]; then
+            bundle="$(find src/app/shell/tauri/src-tauri/target/release/bundle -type f -name '*.deb' | head -1 || true)"
+          fi
+          if [[ -z "$bundle" ]]; then
+            echo "No AppImage/deb found; listing bundle dir" >&2
+            find src/app/shell/tauri/src-tauri/target/release/bundle -type f | head -50 >&2 || true
+            exit 1
+          fi
+          # Release 固定文件名（deb 也拷成 .AppImage 名会误导；优先 AppImage）
+          if [[ "$bundle" == *.AppImage ]]; then
+            cp "$bundle" dist/freeanima-desktop-tauri-linux.AppImage
+          else
+            cp "$bundle" dist/freeanima-desktop-tauri-linux.AppImage
+            echo "warn: used non-AppImage as AppImage artifact name: $bundle" >&2
+          fi
+          ls -la dist/
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: package-desktop-tauri
+          path: dist/freeanima-desktop-tauri-linux.AppImage
+          if-no-files-found: error
+
   mobile-android:
-    name: Mobile Android
+    name: Mobile Android (Tauri)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -157,36 +221,38 @@ jobs:
           java-version: "21"
           cache: gradle
           cache-dependency-path: |
-            src/app/shell/mobile/android/**/*.gradle*
-            src/app/shell/mobile/android/gradle/wrapper/gradle-wrapper.properties
+            src/app/shell/tauri/src-tauri/gen/android/**/*.gradle*
+            src/app/shell/tauri/src-tauri/gen/android/gradle/wrapper/gradle-wrapper.properties
             bun.lock
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
 
       - uses: ./.github/actions/cache-android-sdk
 
       - name: Setup Android SDK
-        run: bash src/app/shell/mobile/scripts/setup-android-sdk.sh
+        run: bash scripts/setup-android-sdk.sh
 
-      - name: Build debug APK
+      - name: Install Tauri Android deps
+        run: bun scripts/install-android-tauri-deps.ts --init
+
+      - name: Build Tauri APK
         env:
           FREEANIMA_ANDROID_KEYSTORE_BASE64: ${{ secrets.FREEANIMA_ANDROID_KEYSTORE_BASE64 }}
           FREEANIMA_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.FREEANIMA_ANDROID_KEYSTORE_PASSWORD }}
           FREEANIMA_ANDROID_KEY_PASSWORD: ${{ secrets.FREEANIMA_ANDROID_KEY_PASSWORD }}
           FREEANIMA_ANDROID_KEY_ALIAS: ${{ secrets.FREEANIMA_ANDROID_KEY_ALIAS }}
+          FREEANIMA_ADB_INSTALL: "0"
         run: |
           set -euo pipefail
-          # shellcheck source=src/app/shell/mobile/scripts/android-env.sh
-          source src/app/shell/mobile/scripts/android-env.sh
-          # shellcheck source=src/app/shell/mobile/scripts/export-android-signing-env.sh
-          source src/app/shell/mobile/scripts/export-android-signing-env.sh
-          bun run build:mobile
-          cd src/app/shell/mobile
-          bunx cap sync android
-          cd android
-          ./gradlew assembleDebug --build-cache
-          mkdir -p "$GITHUB_WORKSPACE/dist"
-          cp app/build/outputs/apk/debug/app-debug.apk \
-            "$GITHUB_WORKSPACE/dist/freeanima-mobile-android.apk"
-          ls -lh "$GITHUB_WORKSPACE/dist/freeanima-mobile-android.apk"
+          # shellcheck source=scripts/android-env.sh
+          source scripts/android-env.sh
+          # shellcheck source=scripts/export-android-signing-env.sh
+          source scripts/export-android-signing-env.sh
+          bun run package:android
+          mkdir -p dist
+          cp dist/freeanima-mobile-tauri-android.apk dist/freeanima-mobile-android.apk
+          ls -lh dist/freeanima-mobile-android.apk
 
       - uses: actions/upload-artifact@v7
         with:
@@ -196,7 +262,7 @@ jobs:
 
   publish:
     name: Publish GitHub Release assets
-    needs: [linux-standalone, desktop-windows, mobile-android]
+    needs: [linux-standalone, desktop-windows, desktop-tauri, mobile-android]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -239,6 +305,7 @@ jobs:
           body: ${{ inputs.release_body }}
           files: |
             artifacts/anima-linux-x64.tar.gz
+            artifacts/freeanima-desktop-tauri-linux.AppImage
             artifacts/freeanima-desktop-windows-x64-setup.exe
             artifacts/freeanima-mobile-android.apk
           fail_on_unmatched_files: true
@@ -255,6 +322,7 @@ jobs:
           token: ${{ secrets.FREEANIMA_CI }}
           files: |
             artifacts/anima-linux-x64.tar.gz
+            artifacts/freeanima-desktop-tauri-linux.AppImage
             artifacts/freeanima-desktop-windows-x64-setup.exe
             artifacts/freeanima-mobile-android.apk
           fail_on_unmatched_files: true

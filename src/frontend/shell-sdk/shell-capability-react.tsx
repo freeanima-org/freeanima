@@ -59,7 +59,7 @@ export function useEnterToSendCapability(): boolean {
   return enterToSend;
 }
 
-/** 壳子维 kind（web / capacitor / electron） */
+/** 壳子维 kind（web / tauri） */
 export function useShellKind(): ShellRuntimeKind {
   const [kind, setKind] = useState(() => getShellKind());
 

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "FreeAnima",
+  "version": "0.9.2",
+  "identifier": "org.freeanima.app",
+  "build": {
+    "beforeDevCommand": "",
+    "devUrl": "http://127.0.0.1:5000/web/chat",
+    "beforeBuildCommand": "",
+    "frontendDist": "ui"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "FreeAnima",
+        "url": "web/index.html",
+        "width": 1100,
+        "height": 800,
+        "minWidth": 720,
+        "minHeight": 560,
+        "resizable": true,
+        "fullscreen": false,
+        "backgroundColor": "#0a0a0b",
+        "additionalBrowserArgs": "--host-resolver-rules=MAP tauri.localhost 127.0.0.1,MAP ipc.localhost 127.0.0.1 --dns-over-https-mode=off"
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": ["companion-dist/"],
+    "android": {
+      "minSdkVersion": 26
+    }
+  },
+  "plugins": {}
+}

@@ -17,10 +17,14 @@ describe("task platform", () => {
     expect(isNativeShell()).toBe(false);
   });
 
-  it("isWebShell：Electron 不是 web", () => {
+  it("isWebShell：Tauri 不是 web", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: true, isNativeShell: false } as ShellApi,
-      location: { origin: "https://example.com" },
+      satelliteShell: { isTauri: true, isNativeShell: true } as ShellApi,
+      location: {
+        origin: "https://example.com",
+        protocol: "https:",
+        hostname: "example.com",
+      },
       navigator: { userAgent: "Mozilla/5.0" },
     } as unknown as Window;
     expect(isWebShell()).toBe(false);
@@ -32,15 +36,6 @@ describe("task platform", () => {
       navigator: { userAgent: "Mozilla/5.0" },
     } as unknown as Window;
     expect(isWebShell()).toBe(true);
-  });
-
-  it("isWebShell：Capacitor 不是 web", () => {
-    (globalThis as { window: Window }).window = {
-      satelliteShell: { isElectron: false, isNativeShell: true } as ShellApi,
-      location: { origin: "https://example.com" },
-      navigator: { userAgent: "Mozilla/5.0" },
-    } as unknown as Window;
-    expect(isWebShell()).toBe(false);
   });
 
   it("isCompactLayoutViewport uses matchMedia", () => {

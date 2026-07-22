@@ -1,0 +1,20 @@
+{
+  "name": "freeanima-desktop-tauri",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun ../../../../../scripts/dev-tauri-desktop.ts",
+    "build": "bun ../../../../../scripts/build-tauri-desktop.ts",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.10.1"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/plugin-autostart": "^2.5.1",
+    "@tauri-apps/plugin-notification": "^2.3.3",
+    "@tauri-apps/plugin-store": "^2.4.2"
+  }
+}

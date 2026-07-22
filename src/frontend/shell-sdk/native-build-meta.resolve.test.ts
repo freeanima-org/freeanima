@@ -26,11 +26,16 @@ describe("native-build-meta.resolve", () => {
     expect(meta?.version).toBe("0.8.4");
   });
 
-  it("resolveAboutNativeBuildMeta 薄壳首页从 localhost 资产读取", async () => {
+  it("resolveAboutNativeBuildMeta Tauri 从 asset 读取", async () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14)" },
-      location: { origin: "http://localhost" },
-      satelliteShell: { isNativeShell: true },
+      location: {
+        origin: "https://tauri.localhost",
+        protocol: "https:",
+        hostname: "tauri.localhost",
+        href: "https://tauri.localhost/",
+      },
+      satelliteShell: { isTauri: true, isNativeShell: true },
       dispatchEvent: () => true,
     } as unknown as Window;
 

@@ -4,7 +4,7 @@
 
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
-stylelint_globs := 'src/frontend/**/spa/**/*.css src/frontend/**/lib/**/*.css src/features/**/ui/**/*.css src/satellites/**/spa/**/*.css src/app/shell/desktop/**/spa/**/*.css src/app/shell/web/**/spa/**/*.css'
+stylelint_globs := 'src/frontend/**/spa/**/*.css src/frontend/**/lib/**/*.css src/features/**/ui/**/*.css src/satellites/**/spa/**/*.css src/app/shell/tauri/**/spa/**/*.css src/app/shell/web/**/spa/**/*.css'
 
 default:
   @just --choose
@@ -34,11 +34,12 @@ hub *args: _deps
 web *args: _deps
   bun run dev:web -- {{args}}
 
-# Electron 桌面壳开发
-windows: _deps
-  bun run dev:windows
 
-# Android 调试安装
+# Tauri 桌面壳开发（目标 Portal；需 just web 或已有 Vite :5000）
+tauri: _deps
+  bun run dev:tauri
+
+# Android Tauri 调试
 android: _deps
   bun run debug:android
 
@@ -96,7 +97,41 @@ db-generate: _deps
 db-migrate: _deps
   bun run db:migrate
 
-# ─── 构建 / 安装 ────────────────────────────────────────────────────
+# ─── 打包依赖安装（pack 通过 ensure 预检；缺则提示先跑对应 install）────────
+
+# 本机 Linux pack-tauri：WebKitGTK（缺包：just install-tauri-linux -- --apt）
+install-tauri-linux *args:
+  bun scripts/install-tauri-linux-deps.ts {{args}}
+
+# 交叉 pack-tauri-windows：rust target + cargo-xwin（缺系统包加 --apt）
+install-tauri-windows *args: _deps
+  bun scripts/install-tauri-windows-toolchain.ts {{args}}
+
+# Android SDK + JDK（Tauri Android；缺 JDK：--apt）
+install-android *args: _deps
+  bun scripts/install-android-deps.ts {{args}}
+
+# Tauri Android：Rust targets + NDK + gen（缺工程：--init）
+install-android-tauri *args: _deps
+  bun scripts/install-android-tauri-deps.ts {{args}}
+
+[private]
+_ensure-tauri-linux:
+  bun scripts/install-tauri-linux-deps.ts --check
+
+[private]
+_ensure-tauri-windows:
+  bun scripts/install-tauri-windows-toolchain.ts --check
+
+[private]
+_ensure-android:
+  bun scripts/install-android-deps.ts --check
+
+[private]
+_ensure-android-tauri: _ensure-android
+  bun scripts/install-android-tauri-deps.ts --check
+
+# ─── 构建 / 打包 ────────────────────────────────────────────────────
 
 build-web: _deps
   bun run build:web
@@ -104,9 +139,32 @@ build-web: _deps
 build-cli: _deps
   bun run build:cli:executable
 
-# Windows 安装包（electron-builder；≡ bun run package:windows）
-pack-windows: _deps
-  bun run package:windows
+# Tauri 本机安装包（Linux 需 WebKitGTK）
+pack-tauri: _deps _ensure-tauri-linux
+  bun run package:tauri
+
+# Tauri Windows NSIS 交叉编译
+pack-tauri-windows: _deps _ensure-tauri-windows
+  bun run package:tauri:windows
+
+# Tauri Android APK → dist/freeanima-mobile-tauri-android.apk（有 adb 设备则尝试安装）
+pack-android: _deps _ensure-android-tauri
+  bun run package:android
+
+
+# 仅安装已有 dist APK（无设备则跳过）：just install-android-apk [tauri]
+install-android-apk which="tauri": _deps
+  #!/usr/bin/env bash
+  set -euo pipefail
+  case "{{which}}" in
+    tauri|"")
+      bun scripts/try-adb-install-apk.ts dist/freeanima-mobile-tauri-android.apk
+      ;;
+    *)
+      echo "用法: just install-android-apk [tauri]" >&2
+      exit 1
+      ;;
+  esac
 
 # 构建后安装到独立前缀（默认 ~/.anima/standalone；PATH shim → ~/.local/bin）
 install-cli: build-cli

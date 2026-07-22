@@ -1,42 +1,26 @@
-import { detectCapacitorShellForBootstrap } from "@freeanima/frontend/shell-sdk/capacitor-local-asset";
-import { isCapacitorShellRuntime } from "@freeanima/frontend/shell-sdk/alert/resolve-platform.ts";
 import { registerAlertBackend } from "@freeanima/frontend/shell-sdk/alert";
-import { isCapacitorShellCandidate } from "@freeanima/frontend/shell-sdk/capacitor-runtime.ts";
+import { getShellBuildTarget } from "@freeanima/frontend/shell-sdk/shell-build-target.ts";
+import {
+  isTauriMobileUserAgent,
+  isTauriRuntime,
+} from "@freeanima/frontend/shell-sdk/tauri-runtime";
 
 /** 按运行时注册本机 Alert backend（不跨端）。 */
 export async function registerShellAlertBackend(): Promise<void> {
-  if (window.satelliteShell?.isNativeShell || isCapacitorShellCandidate()) {
-    const { pinCapacitorNativeBridge } =
-      await import("@freeanima/app/shell/mobile/lib/capacitor-plugins.ts");
-    const { waitForCapacitorBridge } =
-      await import("@freeanima/app/shell/mobile/lib/capacitor-ready.ts");
-    pinCapacitorNativeBridge();
-    try {
-      await waitForCapacitorBridge(2_000);
-    } catch {
-      /* 桥未就绪时仍尝试注册 mobile 后端，设置页会再补注册 */
-    }
-  }
+  const buildTarget = getShellBuildTarget();
+  const tauri = Boolean(window.satelliteShell?.isTauri) || isTauriRuntime();
 
-  const shell = window.satelliteShell;
-  // 能力检测：有原生 alert API 且非 Capacitor → 桌面壳（Electron / 未来 Tauri）
-  if (
-    typeof shell?.showNativeAlert === "function" &&
-    typeof shell.requestNativeAlertPermission === "function" &&
-    !shell.isNativeShell &&
-    !isCapacitorShellCandidate()
-  ) {
-    const { createDesktopAlertBackend } =
-      await import("@freeanima/app/shell/desktop/lib/alert-backend.ts");
-    registerAlertBackend(createDesktopAlertBackend());
+  if (tauri && (buildTarget === "mobile" || isTauriMobileUserAgent())) {
+    const { createMobileAlertBackend } =
+      await import("@freeanima/app/shell/tauri/lib/mobile-alert-backend.ts");
+    registerAlertBackend(createMobileAlertBackend());
     return;
   }
 
-  const bundledCapacitorShell = await detectCapacitorShellForBootstrap();
-  if (isCapacitorShellRuntime() || bundledCapacitorShell) {
-    const { createMobileAlertBackend } =
-      await import("@freeanima/app/shell/mobile/lib/alert-backend.ts");
-    registerAlertBackend(createMobileAlertBackend());
+  if (buildTarget === "desktop" || tauri) {
+    const { createDesktopAlertBackend } =
+      await import("@freeanima/app/shell/tauri/lib/desktop-alert-backend.ts");
+    registerAlertBackend(createDesktopAlertBackend());
     return;
   }
 

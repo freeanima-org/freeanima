@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.tauri.app/config/2/capability",
+  "identifier": "default",
+  "description": "FreeAnima desktop shell capabilities",
+  "windows": ["main", "companion"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-create",
+    "core:window:allow-close",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-set-focus",
+    "core:window:allow-set-position",
+    "core:window:allow-set-size",
+    "core:window:allow-outer-position",
+    "core:window:allow-outer-size",
+    "core:window:allow-set-ignore-cursor-events",
+    "core:window:allow-start-dragging",
+    "core:window:allow-set-always-on-top",
+    "core:event:default",
+    "core:tray:default",
+    "store:default",
+    "notification:default",
+    "autostart:default",
+    "shell:allow-open"
+  ]
+}

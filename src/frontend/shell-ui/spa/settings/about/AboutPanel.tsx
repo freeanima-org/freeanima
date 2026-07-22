@@ -22,7 +22,11 @@ import {
   NATIVE_BUILD_META_CHANGED_EVENT,
   resolveAboutNativeBuildMeta,
 } from "@freeanima/frontend/shell-sdk/native-build-meta.resolve";
-import { getShellKind, isPackagedShell } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
+import {
+  getShellKind,
+  type ShellRuntimeKind,
+} from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
+import { isTauriRuntime } from "@freeanima/frontend/shell-sdk/tauri-runtime";
 import { parseWebUiConfigJson } from "@freeanima/frontend/shell-sdk/web-ui-config";
 
 import { m } from "@paraglide/messages";
@@ -73,7 +77,8 @@ function BuildMetaRows({
     { label: m.settings_about_field_channel(), value: meta.channel },
   ];
   if (meta.component === "native" && meta.shell) {
-    rows.push({ label: m.settings_about_field_shell(), value: meta.shell });
+    const shellValue = getShellKind() === "tauri" ? `${meta.shell} · Tauri` : meta.shell;
+    rows.push({ label: m.settings_about_field_shell(), value: shellValue });
   }
   if (meta.git?.commit) {
     rows.push({ label: m.settings_about_field_commit(), value: meta.git.commit });
@@ -183,13 +188,13 @@ async function fetchWebBuildMeta(): Promise<ComponentBuildMeta | null> {
 }
 
 export default function AboutPanel() {
-  const showWebSection = getShellKind() === "web";
+  /** null：桥未决议，不渲染 Web/原生壳卡片，避免「原生壳→Web UI」闪烁 */
+  const [shellKind, setShellKind] = useState<ShellRuntimeKind | null>(null);
+  const showWebSection = shellKind === "web";
+  const showNative = shellKind != null && shellKind !== "web";
   const [serviceAbout, setServiceAbout] = useState<ServiceAboutInfo | undefined>(undefined);
-  const [webBuild, setWebBuild] = useState<ComponentBuildMeta | null | undefined>(
-    showWebSection ? undefined : null,
-  );
+  const [webBuild, setWebBuild] = useState<ComponentBuildMeta | null | undefined>(undefined);
   const [nativeBuild, setNativeBuild] = useState<ComponentBuildMeta | null | undefined>(undefined);
-  const [nativeSection, setNativeSection] = useState<"pending" | "show" | "hide">("pending");
   const [updateProxy, setUpdateProxy] = useState<GithubReleaseProxyId>(() =>
     readGithubReleaseProxyPref(),
   );
@@ -199,11 +204,21 @@ export default function AboutPanel() {
     void fetchServiceAboutInfo().then((value) => {
       if (!cancelled) setServiceAbout(value);
     });
-    if (showWebSection) {
-      void fetchWebBuildMeta().then((value) => {
-        if (!cancelled) setWebBuild(value);
-      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!showWebSection) {
+      setWebBuild(null);
+      return;
     }
+    let cancelled = false;
+    setWebBuild(undefined);
+    void fetchWebBuildMeta().then((value) => {
+      if (!cancelled) setWebBuild(value);
+    });
     return () => {
       cancelled = true;
     };
@@ -212,7 +227,7 @@ export default function AboutPanel() {
   useEffect(() => {
     let cancelled = false;
 
-    const refresh = (): void => {
+    const refreshNative = (): void => {
       void resolveAboutNativeBuildMeta().then((value) => {
         if (!cancelled) setNativeBuild(value);
       });
@@ -230,26 +245,28 @@ export default function AboutPanel() {
         }
       }
       if (cancelled) return;
-      if (!isPackagedShell()) {
-        setNativeSection("hide");
+
+      // Tauri WebView：即使 bridge 误走 web stub，也不回落成 Web UI
+      const kind: ShellRuntimeKind = isTauriRuntime() ? "tauri" : getShellKind();
+
+      setShellKind(kind);
+      if (kind === "web") {
         setNativeBuild(null);
         return;
       }
-      setNativeSection("show");
-      refresh();
+      refreshNative();
     };
 
     void run();
-    window.addEventListener(NATIVE_BUILD_META_CHANGED_EVENT, refresh);
-    window.addEventListener("freeanima:shell-config-changed", refresh);
+    window.addEventListener(NATIVE_BUILD_META_CHANGED_EVENT, refreshNative);
+    window.addEventListener("freeanima:shell-config-changed", refreshNative);
     return () => {
       cancelled = true;
-      window.removeEventListener(NATIVE_BUILD_META_CHANGED_EVENT, refresh);
-      window.removeEventListener("freeanima:shell-config-changed", refresh);
+      window.removeEventListener(NATIVE_BUILD_META_CHANGED_EVENT, refreshNative);
+      window.removeEventListener("freeanima:shell-config-changed", refreshNative);
     };
   }, []);
 
-  const showNative = nativeSection !== "hide";
   const canCheckNative = resolveNativePackagedKind() != null;
   const nativeChannel = nativeBuild?.channel;
   const canSwitchChannel =

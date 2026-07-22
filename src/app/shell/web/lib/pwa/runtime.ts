@@ -1,3 +1,5 @@
+import { isTauriRuntime } from "@freeanima/frontend/shell-sdk/tauri-runtime";
+
 const STANDALONE_QUERY = "(display-mode: standalone)";
 const INSTALL_DISMISS_KEY = "freeanima.pwa.installDismissedAt";
 /** 7 天内不再提示安装 */
@@ -8,10 +10,11 @@ function isCapacitorRuntime(): boolean {
   return Boolean(cap?.isNativePlatform?.() ?? cap);
 }
 
-/** 浏览器 Web 壳（非 Electron / Capacitor），可启用 PWA 安装与 SW 更新 UX */
+/** 浏览器 Web 壳（非 Electron / Capacitor / Tauri），可启用 PWA 安装与 SW 更新 UX */
 export function isBrowserWebShell(): boolean {
   if (typeof window === "undefined") return false;
   if (window.satelliteShell?.isElectron) return false;
+  if (isTauriRuntime()) return false;
   if (isCapacitorRuntime()) return false;
   return true;
 }

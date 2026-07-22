@@ -1,4 +1,5 @@
 import type { SettingsPlatform } from "@freeanima/frontend/shell-sdk/settings";
+import { getShellBuildTarget } from "@freeanima/frontend/shell-sdk/shell-build-target.ts";
 import { getShellKind } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
 
 import { detectLayoutMode, type LayoutMode } from "./layout-mode.ts";
@@ -13,10 +14,11 @@ export function resolveSettingsChromePlatform(ctx: PlatformDetectContext): Setti
   return "desktop";
 }
 
-/** 设置 section 列表与字段：跟壳子维（Electron→desktop，Capacitor→mobile），不跟视口布局 */
+/** 设置 section 列表与字段：跟壳子维（Tauri desktop/mobile），不跟视口布局 */
 export function resolveSettingsContentPlatform(): SettingsPlatform {
   const kind = getShellKind();
-  if (kind === "capacitor") return "mobile";
+  const buildTarget = getShellBuildTarget();
+  if (kind === "tauri" && buildTarget === "mobile") return "mobile";
   return "desktop";
 }
 

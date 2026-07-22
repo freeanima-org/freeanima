@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 
+import { setShellBuildTargetForTests } from "@freeanima/frontend/shell-sdk/shell-build-target.ts";
+
 import { resolveSettingsChromePlatform, resolveSettingsContentPlatform } from "../spa/platform.ts";
 
 type TestWindow = Window & typeof globalThis;
@@ -25,14 +27,27 @@ describe("resolveSettingsChromePlatform", () => {
 describe("resolveSettingsContentPlatform", () => {
   const originalShell = globalThis.window?.satelliteShell;
 
-  test("Electron 壳为 desktop", () => {
-    setTestWindow({ satelliteShell: { isElectron: true } } as Partial<TestWindow>);
+  afterEach(() => {
+    setShellBuildTargetForTests(null);
+    if (originalShell !== undefined) {
+      (globalThis.window as TestWindow).satelliteShell = originalShell;
+    } else {
+      delete (globalThis.window as TestWindow).satelliteShell;
+    }
+  });
+
+  test("Tauri desktop 壳为 desktop", () => {
+    setShellBuildTargetForTests("desktop");
+    setTestWindow({
+      satelliteShell: { isTauri: true, isNativeShell: true },
+    } as Partial<TestWindow>);
     expect(resolveSettingsContentPlatform()).toBe("desktop");
   });
 
-  test("Capacitor 原生壳为 mobile", () => {
+  test("Tauri mobile 壳为 mobile", () => {
+    setShellBuildTargetForTests("mobile");
     setTestWindow({
-      satelliteShell: { isNativeShell: true, isElectron: false },
+      satelliteShell: { isTauri: true, isNativeShell: true },
     } as Partial<TestWindow>);
     expect(resolveSettingsContentPlatform()).toBe("mobile");
   });
@@ -40,13 +55,5 @@ describe("resolveSettingsContentPlatform", () => {
   test("Web 无壳为 desktop", () => {
     setTestWindow({});
     expect(resolveSettingsContentPlatform()).toBe("desktop");
-  });
-
-  afterEach(() => {
-    if (originalShell !== undefined) {
-      (globalThis.window as TestWindow).satelliteShell = originalShell;
-    } else {
-      delete (globalThis.window as TestWindow).satelliteShell;
-    }
   });
 });

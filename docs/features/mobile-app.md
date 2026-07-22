@@ -4,98 +4,79 @@ title: Mobile app (Android)
 
 # Mobile app (Android)
 
-> Capacitor 壳 + **安装包内** `web/dist`（与浏览器/PWA 同源产物；本地加载）。  
-> Package: [`src/app/shell/mobile/`](../../src/app/shell/mobile/)
+> Portal：**Tauri Android**（`src/app/shell/tauri/`）+ 包内 `dist-mobile` / `ui/web`。  
+> Shell rules: [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md).
 
 ## Scope
 
-| Item           | Description                                                     |
-| -------------- | --------------------------------------------------------------- |
-| Platform       | **Android only** sideload (APK); iOS later                      |
-| UI             | APK 内 `www/web`（`build:web` → `sync-mobile-www`）             |
-| Modules        | Chat + Habitat（本地 shell-ui）                                 |
-| Habitat config | APP **设置 → 连接**（Preferences）；无独立 bootstrap Habitat 页 |
-| Habitat duties | Habitat RPC REST `/rpc/v1` + WebSocket；**不**托管壳内 SPA      |
+| Item           | Description                                                |
+| -------------- | ---------------------------------------------------------- |
+| Platform       | **Android** sideload (APK); iOS later                      |
+| UI             | APK 内 WebView 加载 `prepare-tauri-ui` 拷入的 `ui/web`     |
+| Modules        | Chat + Habitat（本地 shell-ui）                            |
+| Habitat config | APP **设置 → 连接**（Rust prefs / `app_config_dir`）       |
+| Habitat duties | Habitat RPC REST `/rpc/v1` + WebSocket；**不**托管壳内 SPA |
 
 ## Topology
 
 ```mermaid
 flowchart LR
   Phone[Android WebView]
-  Local["www/web 本地 SPA"]
+  Local["ui/web 本地 SPA"]
   Chat["/web/chat"]
-  Habitat["/web/habitat"]
-  Habitat[Anima Service]
+  HabitatUI["/web/habitat"]
+  HabitatSvc[Anima Service]
 
   Phone --> Local
   Local --> Chat
-  Local --> Habitat
-  Chat -->|Habitat RPC Bearer| Habitat
-  Habitat -->|Habitat RPC Bearer| Habitat
+  Local --> HabitatUI
+  Chat -->|Habitat RPC Bearer| HabitatSvc
+  HabitatUI -->|Habitat RPC Bearer| HabitatSvc
 ```
 
-Mobile REST **connects directly** to Habitat (no local REST proxy); requires a **Service API Token** and Habitat CORS for Capacitor origin（`http://localhost`；`androidScheme: http`）。
+Mobile REST **connects directly** to Habitat (no local REST proxy); requires a **Service API Token** and Habitat CORS for the WebView origin.
 
 ## Habitat settings
 
 1. Home PC: `anima service start --host 0.0.0.0`, create a Service API Token (`anima token create --subject-id 1 --name bootstrap`; see [`remote-access.md`](../guide/remote-access.md)).
-2. 首次启动未配置 Token → 进入 **设置 → 连接**：
-   - Habitat URL（`http://<PC-IP>:2658` 或本地 HTTPS `https://<host>:2659`；勿用 `127.0.0.1`）
+2. First launch without Token → **设置 → 连接**:
+   - Habitat URL（`http://<PC-IP>:2658` or HTTPS；avoid `127.0.0.1` on phone）
    - Service API Token (`fa_at_...`)
-3. **测试连接** → **保存并进入** → 本地 `/web/chat`。
-
-Non-loopback Habitat URL requires token; REST uses `Authorization: Bearer`; SAP sends `auth_token` in `connect` frame.
+3. **测试连接** → **保存并进入** → local `/web/chat`.
 
 ## Troubleshooting
 
-| Symptom                                                   | Common cause                                                                                                                                                                                          |
-| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Keyboard covers chat input                                | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes                                                                                                       |
-| Chat input unresponsive                                   | No selected conversation (first install should auto-create); or SAP disconnected                                                                                                                      |
-| Habitat load failed / Failed to fetch                     | Habitat not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header                                                                                                        |
-| 测试连接「网络错误」、浏览器同地址正常                    | 需 **Capacitor 原生 HTTP**（`CapacitorHttp`）或可信 HTTPS；自签 CA 另需 APK 信任用户 CA                                                                                                               |
-| 连接测试成功，但压缩/LLM 等报 `config.get` 超时           | 旧路径经 WebSocket 拉全量配置且 3s 超时；现已改为 `config.getSection` + HTTP 双传输。仍超时则查 WS 半开连接或 Habitat 不可达                                                                          |
-| ZeroTier / 虚拟网卡 IP                                    | 确认手机 ZeroTier 在线；Habitat `http.host: 0.0.0.0`；`allowed_hosts` 含该 IP；壳层 Habitat URL **勿带尾斜杠**，HTTP 用 `:2658`                                                                       |
-| Not Found                                                 | Avoid legacy paths; use SPA `/web/habitat/dashboard`                                                                                                                                                  |
-| TTS / 朗读无声                                            | 默认 Edge TTS 需 Habitat 出网；Habitat 设置 → 语音 → 试听。若用 Web Speech 需 HTTPS 安全上下文                                                                                                        |
-| UI 与发版不一致                                           | UI 随 **APK**；需重装/发新包。浏览器 Habitat `/web` 另有独立部署链                                                                                                                                    |
-| 安装失败「签名冲突」                                      | 已装旧 APK 与新版证书不同；卸载 `FreeAnima` 后重装。CI 固定签名后同 channel 可覆盖升级                                                                                                                |
-| Install fails with “a newer version is already installed” | Older canary `versionCode` used a wrapping minute stamp and dwarfed release `base`; new builds use a generation floor + clock encoding and can overwrite. If it still fails, uninstall then reinstall |
+| Symptom                                       | Common cause                                                                                      |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Keyboard covers chat input                    | WebView not resizing; rely on `visualViewport` inset (no Capacitor Keyboard plugin)               |
+| Chat input unresponsive                       | No selected conversation; or Habitat RPC disconnected                                             |
+| Habitat load failed / Failed to fetch         | Habitat not `--host 0.0.0.0`, wrong token, firewall                                               |
+| 测试连接「网络错误」、浏览器同地址正常        | 壳内 HTTPS 需信任 mkcert 根 CA（`network_security_config` 已信任用户 CA）；或暂用 `http://…:2658` |
+| 测试连接成功，实际「连接已断开」              | 测试含原生 HTTP + WebSocket；仍断连则查 token / WS 代理                                           |
+| `Read-only file system` on save               | Fixed: prefs write to app private config dir                                                      |
+| ZeroTier / 虚拟网卡 IP                        | Phone ZeroTier online; Habitat `http.host: 0.0.0.0`; shell URL without trailing slash             |
+| Install `NO_CERTIFICATES` / version downgrade | Pack signs APK; uninstall old Capacitor/canary build then reinstall                               |
+| 安装失败「签名冲突」                          | Uninstall `org.freeanima.app` then reinstall                                                      |
 
 ## Debugging
 
-Settings → **Debug** (desktop and mobile share shell-ui panel):
-
-| Capability | Desktop           | Mobile                                      |
-| ---------- | ----------------- | ------------------------------------------- |
-| Sentry     | DSN in settings   | Same                                        |
-| DevTools   | F12 / dev package | Debug APK + USB → Chrome `chrome://inspect` |
-| Habitat    | Electron DevTools | vConsole (settings toggle)                  |
-
-`bun run debug:android`：`build:mobile:debug` + 安装；inspect 目标为本地 SPA。
+`bun run debug:android` / `just android`：Tauri Android debug。Chrome `chrome://inspect` 连 WebView。
 
 ## Build and sideload
 
 ```bash
-bun run build:mobile
-cd src/app/shell/mobile && bunx cap sync android
+just install-android
+just install-android-tauri -- --init   # 首次
+just pack-android                      # → dist/freeanima-mobile-tauri-android.apk（有设备则尝试 adb 安装）
 ```
 
-`www/` 含完整 `web/` SPA（gitignore）。前端改动需重新 `build:mobile`（或 sync）再出 APK。
-
-Debug full flow: `bun run debug:android`
-
-**Sideload 升级**：GitHub Release 的 `freeanima-mobile-android.apk`（canary / release）由 CI 用固定 upload 密钥签名，同 channel 内可覆盖安装。若曾安装旧版未固定签名的 APK，或轮换密钥后，需先**卸载** `FreeAnima`（`org.freeanima.app`）再安装。本地 `debug:android` 为 `org.freeanima.app.dev`，与正式包可并存。
-
-Package README: [`src/app/shell/mobile/README.md`](../../src/app/shell/mobile/README.md)
+Release asset name on GitHub: `freeanima-mobile-android.apk`（same contents, CI copies from Tauri dist）。
 
 ## vs desktop shell
 
-|                | Electron `src/app/shell/desktop`  | Capacitor `src/app/shell/mobile`         |
-| -------------- | --------------------------------- | ---------------------------------------- |
-| Injection      | preload → `window.satelliteShell` | Habitat SPA `bootstrap-capacitor` → API  |
-| Habitat config | 设置 → 连接 → 桌面 prefs          | 设置 → 连接 → Preferences                |
-| Debug/Sentry   | Settings → Debug                  | Settings → Debug                         |
-| REST           | Direct `hubUrl/rpc/v1/*` (Bearer) | Direct `hubUrl/rpc/v1/*` (CORS + Bearer) |
-| instance_id    | File `~/.anima/satellites/chat/`  | Preferences                              |
-| Content        | 安装包内 web/dist + companion     | 安装包内 web/dist                        |
+|                | Desktop Tauri                        | Android Tauri                       |
+| -------------- | ------------------------------------ | ----------------------------------- |
+| Injection      | `bootstrap-tauri-desktop` → ShellApi | `bootstrap-tauri-mobile` → ShellApi |
+| Habitat config | 设置 → 连接 → `~/.anima` prefs       | 设置 → 连接 → app config dir        |
+| Companion      | overlay WebView                      | n/a（番茄钟小组件 MVP）             |
+| REST / RPC     | Direct Habitat + Bearer / WS         | Same                                |

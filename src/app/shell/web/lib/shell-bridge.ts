@@ -1,42 +1,42 @@
-import { detectCapacitorShellForBootstrap } from "@freeanima/frontend/shell-sdk/capacitor-local-asset";
-import { pinCapacitorNativeBridge } from "@freeanima/app/shell/mobile/lib/capacitor-plugins.ts";
-
-import { applyWebUiConfig, fetchWebUiConfig, installShellBridgeReady } from "./bridge/shared.ts";
+import {
+  isTauriMobileUserAgent,
+  isTauriRuntime,
+} from "@freeanima/frontend/shell-sdk/tauri-runtime";
 import { registerVaultRpcHandlers } from "@freeanima/frontend/shell-sdk";
 
-// 尽早 pin，避免 Habitat main bundle 加载 @capacitor/core 后覆盖 window.Capacitor。
-pinCapacitorNativeBridge();
+import { applyWebUiConfig, fetchWebUiConfig, installShellBridgeReady } from "./bridge/shared.ts";
 
 async function bootstrapShellBridge(): Promise<void> {
   const finish = installShellBridgeReady();
   document.documentElement.dataset.shellUi = "1";
 
   try {
-    const cfg = await fetchWebUiConfig();
-    const { habitatUrl: defaultHubUrl, sameOrigin, remoteAuthToken } = applyWebUiConfig(cfg);
-
-    if (window.satelliteShell?.isElectron) {
-      const { bootstrapElectronBridge } = await import("./bridge/bootstrap-web.ts");
-      await bootstrapElectronBridge(defaultHubUrl);
-    } else if (await detectCapacitorShellForBootstrap()) {
-      try {
-        const { bootstrapCapacitorBridge } = await import("./bridge/bootstrap-capacitor.ts");
-        await bootstrapCapacitorBridge();
-      } catch (err) {
-        console.warn("[shell-bridge] Capacitor bootstrap 失败，回退 Web bridge", err);
-        const { bootstrapWebBridge } = await import("./bridge/bootstrap-web.ts");
-        await bootstrapWebBridge(defaultHubUrl, {
-          sameOrigin,
-          ...(remoteAuthToken ? { remoteAuthToken } : {}),
+    if (isTauriRuntime()) {
+      if ("serviceWorker" in navigator) {
+        void navigator.serviceWorker.getRegistrations().then((regs) => {
+          for (const r of regs) void r.unregister();
         });
       }
-    } else {
-      const { bootstrapWebBridge } = await import("./bridge/bootstrap-web.ts");
-      await bootstrapWebBridge(defaultHubUrl, {
-        sameOrigin,
-        ...(remoteAuthToken ? { remoteAuthToken } : {}),
-      });
+      if (isTauriMobileUserAgent()) {
+        const { bootstrapTauriMobileBridge } =
+          await import("@freeanima/app/shell/tauri/bridge/bootstrap-tauri-mobile.ts");
+        await bootstrapTauriMobileBridge();
+      } else {
+        const { bootstrapTauriBridge } =
+          await import("@freeanima/app/shell/tauri/bridge/bootstrap-tauri-desktop.ts");
+        await bootstrapTauriBridge();
+      }
+      registerVaultRpcHandlers();
+      return;
     }
+
+    const cfg = await fetchWebUiConfig();
+    const { habitatUrl: defaultHubUrl, sameOrigin, remoteAuthToken } = applyWebUiConfig(cfg);
+    const { bootstrapWebBridge } = await import("./bridge/bootstrap-web.ts");
+    await bootstrapWebBridge(defaultHubUrl, {
+      sameOrigin,
+      ...(remoteAuthToken ? { remoteAuthToken } : {}),
+    });
 
     registerVaultRpcHandlers();
   } finally {

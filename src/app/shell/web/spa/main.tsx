@@ -14,7 +14,7 @@ void (async () => {
     try {
       await bridge.ready;
     } catch {
-      /* 桥接失败时仍尝试注册 web/capacitor 后端 */
+      /* 桥接失败时仍尝试注册 web 后端 */
     }
   }
   await registerShellAlertBackend();

@@ -1,6 +1,5 @@
-import { Keyboard } from "@capacitor/keyboard";
-import { isCapacitorNativePlatform } from "@freeanima/frontend/shell-sdk/capacitor-runtime";
-import { getShellKind } from "@freeanima/frontend/shell-sdk/shell-runtime.ts";
+import { getShellBuildTarget } from "@freeanima/frontend/shell-sdk/shell-build-target.ts";
+import { isTauriRuntime } from "@freeanima/frontend/shell-sdk/tauri-runtime";
 import { useEffect, useState } from "react";
 
 import {
@@ -13,14 +12,15 @@ function readInnerHeight(): number {
   return typeof window !== "undefined" ? window.innerHeight : 0;
 }
 
-function shouldListenNativeKeyboard(): boolean {
-  return getShellKind() === "capacitor" && isCapacitorNativePlatform();
+/** Tauri Android / 移动 Web：依赖 visualViewport；无 Capacitor Keyboard 插件。 */
+function shouldUseVisualViewportOnly(): boolean {
+  const buildTarget = getShellBuildTarget();
+  return buildTarget === "mobile" || isTauriRuntime();
 }
 
 /** 虚拟键盘 inset；壳适配在 hook 内自判，调用方不传壳 flag */
 export function useKeyboardInset(): number {
   const [vvInset, setVvInset] = useState(0);
-  const [nativeHeight, setNativeHeight] = useState(0);
   const [baselineInnerHeight, setBaselineInnerHeight] = useState(readInnerHeight);
   const [innerHeight, setInnerHeight] = useState(readInnerHeight);
 
@@ -30,6 +30,9 @@ export function useKeyboardInset(): number {
     const update = () => {
       setInnerHeight(readInnerHeight());
       setVvInset(computeVisualViewportInset(vv));
+      if (shouldUseVisualViewportOnly()) {
+        setBaselineInnerHeight(readInnerHeight());
+      }
     };
     update();
     vv.addEventListener("resize", update);
@@ -40,27 +43,6 @@ export function useKeyboardInset(): number {
     };
   }, []);
 
-  useEffect(() => {
-    if (!shouldListenNativeKeyboard()) return;
-    let showListener: { remove: () => Promise<void> } | undefined;
-    let hideListener: { remove: () => Promise<void> } | undefined;
-    void (async () => {
-      showListener = await Keyboard.addListener("keyboardDidShow", (info) => {
-        setNativeHeight(info.keyboardHeight);
-      });
-      hideListener = await Keyboard.addListener("keyboardDidHide", () => {
-        setNativeHeight(0);
-        const height = readInnerHeight();
-        setBaselineInnerHeight(height);
-        setInnerHeight(height);
-      });
-    })();
-    return () => {
-      void showListener?.remove();
-      void hideListener?.remove();
-    };
-  }, []);
-
   const layoutShrink = computeLayoutShrink(baselineInnerHeight, innerHeight);
-  return mergeKeyboardInset(vvInset, nativeHeight, layoutShrink);
+  return mergeKeyboardInset(vvInset, 0, layoutShrink);
 }
