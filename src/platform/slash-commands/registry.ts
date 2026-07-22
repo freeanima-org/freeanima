@@ -166,6 +166,7 @@ const DEFERRED_SYNC_COMMANDS = new Set([
   "rebuild-conversation-cache",
   "rebuild-session-cache",
   "compress",
+  "summarize",
   "new",
 ]);
 
@@ -174,6 +175,7 @@ const PRE_ACK_MESSAGES: Record<string, string> = {
   "rebuild-conversation-cache": "⏳ 正在重建会话缓存…",
   "rebuild-session-cache": "⏳ 正在重建会话缓存…",
   compress: "⏳ 正在重新计算会话压缩…",
+  summarize: "⏳ 正在将历史压缩为摘要…",
   new: "⏳ 正在创建新会话…",
   mask: "⏳ 正在更新能力面具并重建缓存…",
   stats: "⏳ 正在汇总全部会话统计…",

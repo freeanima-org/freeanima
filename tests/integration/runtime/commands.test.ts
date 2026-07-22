@@ -25,6 +25,7 @@ import {
   isRestartResult,
   isUpgradeResult,
   resolveCommand,
+  commandNeedsPreAck,
 } from "@freeanima/platform/slash-commands";
 import { getAppRuntime } from "@freeanima/platform";
 import { getHomeChannel } from "@freeanima/platform/ports/home-channel";
@@ -326,6 +327,25 @@ describePg("slash commands", () => {
     });
     expect(result.text).toContain("l3");
     expect(result.text).toContain("stored");
+  });
+
+  it("summarize command is registered and reports empty conversation", async () => {
+    const sid = await testConv().newConversation(TEST_SAP_CHAT_PLATFORM);
+    const [cmd] = findCommand("/summarize");
+    expect(cmd?.name).toBe("summarize");
+    const result = await executeCommand(cmd!, {
+      conversationId: sid,
+      platform: TEST_SAP_CHAT_PLATFORM,
+      args: [],
+      raw: "/summarize",
+    });
+    expect(result.text).toContain("No conversation content");
+  });
+
+  it("summarize needs pre-ack", () => {
+    const [cmd] = findCommand("/summarize");
+    expect(cmd?.name).toBe("summarize");
+    expect(commandNeedsPreAck(cmd!, [])).toBe(true);
   });
 
   it("cwd command uses existing directory", async () => {

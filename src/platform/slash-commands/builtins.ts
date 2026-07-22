@@ -281,6 +281,49 @@ async function cmdSethome(ctx: CommandContext): Promise<CommandResult> {
   return asToast("⚠️ /sethome only works in Discord or WeChat chat.");
 }
 
+async function cmdSummarize(ctx: CommandContext): Promise<CommandResult> {
+  const r = (await conv().summarizeConversation(ctx.conversationId)) as Record<string, unknown> &
+    CompressionAnalysis & {
+      updated?: boolean;
+      idle?: boolean;
+      error?: string;
+    };
+
+  if (!r.enabled) {
+    return asToast("Session compression not enabled (config.yaml → compression.enabled)");
+  }
+
+  if (r.error === "empty") {
+    return asToast("⚠️ No conversation content to summarize.");
+  }
+  if (r.error === "in_progress") {
+    return asToast("⚠️ Turn still in progress — wait for the assistant reply, then /summarize.");
+  }
+  if (r.error === "already_collapsed") {
+    return asToast("ℹ️ Already fully summarized (l2 = l3 = l4).");
+  }
+  if (!r.ok) {
+    return asToast("⚠️ Could not summarize this conversation.");
+  }
+
+  const cfg = getCompressionConfig();
+  const mode = r.idle ? "idle (l2=l3=l4)" : "partial (in-progress tail kept in raw)";
+  const summaryPreview = String(
+    (r as { compression?: { summary?: string } }).compression?.summary ?? "",
+  ).trim();
+  const preview =
+    summaryPreview.length > 400 ? `${summaryPreview.slice(0, 400)}…` : summaryPreview || "(empty)";
+  const lines = [
+    `✅ Summarized (${mode})`,
+    `l2: ${r.l2 ?? "—"}  l3: ${r.l3 ?? "—"}  l4: ${r.l4 ?? "—"}`,
+    "",
+    "**Summary preview:**",
+    preview,
+    ...formatCompressionDiagnostics(r, cfg, { includeStorageSummary: true }),
+  ];
+  return asPanel(lines.join("\n"));
+}
+
 async function cmdCompress(ctx: CommandContext): Promise<CommandResult> {
   const force = ctx.args.includes("--force") || ctx.args.includes("-f");
   const r = (await conv().recompressConversation(ctx.conversationId, { force })) as Record<
@@ -478,6 +521,13 @@ export function registerBuiltins(): void {
     description:
       "Recalculate current conversation runtime compression (--force ignores hysteresis)",
     handler: cmdCompress,
+    scope: "conversation",
+  });
+  registerCommand({
+    name: "summarize",
+    description:
+      "Manually collapse history into the runtime summary (idle: l2=l3=l4; waits for summary LLM)",
+    handler: cmdSummarize,
     scope: "conversation",
   });
   registerCommand({
