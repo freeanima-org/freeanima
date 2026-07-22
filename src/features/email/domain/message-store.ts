@@ -33,6 +33,8 @@ function toMessageRow(
     subject: row.subject,
     preview: row.preview,
     body: row.body,
+    content_type: row.content_type ?? "text/plain",
+    text: row.text ?? (row.content_type === "text/html" ? "" : row.body),
     account_id: row.account_id,
     thread_id: row.thread_id,
     imap_uid: row.imap_uid ?? null,
@@ -46,6 +48,8 @@ function toMessageRow(
     unread: row.unread ?? false,
     flags: row.flags ?? [],
     tags: row.tags ?? [],
+    headers: row.headers ?? null,
+    attachments: row.attachments ?? [],
     created_at: meta.created_at.toISOString(),
     updated_at: meta.updated_at.toISOString(),
   };
@@ -93,6 +97,10 @@ export async function upsertEmailMessage(input: EmailMessageUpsertInput): Promis
     unread: input.unread ?? false,
     flags: input.flags ?? [],
     tags: normalizeTags(input.tags),
+    content_type: input.content_type ?? "text/plain",
+    ...(input.text != null ? { text: input.text } : {}),
+    ...(input.headers != null ? { headers: input.headers } : {}),
+    ...(input.attachments != null ? { attachments: input.attachments } : {}),
   };
 
   if (existing) {
@@ -205,6 +213,21 @@ export async function tagEmailMessage(id: number, tags: string[]): Promise<Email
   return toMessageRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
 }
 
+export async function setEmailMessageAttachments(
+  id: number,
+  attachments: import("@freeanima/core/db/schema/entity").EmailMessageAttachmentMeta[],
+): Promise<EmailMessageRow | null> {
+  const row = await getEntity(id);
+  if (!row) return null;
+  const parsed = asEmailMessage(row);
+  if (!parsed) return null;
+  const updated = await updateEntity({ id, body: { ...parsed, attachments } });
+  if (!updated) return null;
+  const next = asEmailMessage(updated);
+  if (!next) return null;
+  return toMessageRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
+}
+
 export async function searchEmailMessages(
   worldId: number,
   input: {
@@ -212,6 +235,9 @@ export async function searchEmailMessages(
     account_id?: number;
     thread_id?: number;
     unread?: boolean;
+    from?: string;
+    since?: string;
+    before?: string;
     limit?: number;
   },
 ): Promise<EmailMessageRow[]> {
@@ -219,6 +245,9 @@ export async function searchEmailMessages(
   if (input.account_id != null) filters.account_id = input.account_id;
   if (input.thread_id != null) filters.thread_id = input.thread_id;
   if (input.unread != null) filters.unread = input.unread;
+  if (input.from) filters.from = input.from;
+  if (input.since) filters.since = input.since;
+  if (input.before) filters.before = input.before;
 
   const result = await searchEntities({
     world_id: worldId,

@@ -88,6 +88,7 @@ type ParaglideMessageExports = {
   readonly email_search_placeholder: ParaglideMessageFn;
   readonly email_select_account: ParaglideMessageFn;
   readonly email_send_action: ParaglideMessageFn;
+  readonly email_sent_title: ParaglideMessageFn;
   readonly email_set_default_sender: ParaglideMessageFn;
   readonly email_smtp_host: ParaglideMessageFn;
   readonly email_smtp_port: ParaglideMessageFn;
@@ -847,6 +848,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const email_search_placeholder: ParaglideMessageFn;
   export const email_select_account: ParaglideMessageFn;
   export const email_send_action: ParaglideMessageFn;
+  export const email_sent_title: ParaglideMessageFn;
   export const email_set_default_sender: ParaglideMessageFn;
   export const email_smtp_host: ParaglideMessageFn;
   export const email_smtp_port: ParaglideMessageFn;

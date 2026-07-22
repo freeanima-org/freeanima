@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent,
+} from "react";
 import { Alert, AlertDescription, Button, Input, Spinner } from "@freeanima/frontend/ui-kit";
 import {
   ActionSheet,
@@ -28,7 +36,7 @@ import { m } from "@paraglide/messages";
 import { MoreHorizontal } from "lucide-react";
 
 import { EmailAccountFormDialog } from "./components/EmailAccountFormDialog.tsx";
-import { EmailAccountSidebar } from "./components/EmailAccountSidebar.tsx";
+import { EmailAccountSidebar, type EmailMailboxFolder } from "./components/EmailAccountSidebar.tsx";
 import { EmailMessageDetail } from "./components/EmailMessageDetail.tsx";
 import { EmailReplyDialog } from "./components/EmailReplyDialog.tsx";
 import {
@@ -45,6 +53,10 @@ import {
   type EmailAccountRow,
   type EmailMessageRow,
 } from "./lib/api.ts";
+
+function folderDirection(folder: EmailMailboxFolder): "inbound" | "outbound" {
+  return folder === "sent" ? "outbound" : "inbound";
+}
 
 function accountLabel(account: EmailAccountRow): string {
   return account.display_name || account.address;
@@ -75,8 +87,13 @@ export function EmailApp() {
 
   const [accounts, setAccounts] = useState<EmailAccountRow[]>([]);
   const [activeAccountId, setActiveAccountId] = useState<number | null>(null);
+  const [activeFolder, setActiveFolder] = useState<EmailMailboxFolder>("inbox");
+  const activeFolderRef = useRef(activeFolder);
+  activeFolderRef.current = activeFolder;
   const [messages, setMessages] = useState<EmailMessageRow[]>([]);
   const [listFilter, setListFilter] = useState<ListFilter>("unread");
+  const listFilterRef = useRef(listFilter);
+  listFilterRef.current = listFilter;
   const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
   const [detail, setDetail] = useState<EmailMessageRow | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -103,18 +120,15 @@ export function EmailApp() {
     [accounts, activeAccountId],
   );
 
-  const applyUnreadLocal = useCallback(
-    (messageId: number, unread: boolean) => {
-      setMessages((prev) => {
-        if (!unread && listFilter === "unread") {
-          return prev.filter((row) => row.id !== messageId);
-        }
-        return prev.map((row) => (row.id === messageId ? { ...row, unread } : row));
-      });
-      setDetail((prev) => (prev?.id === messageId ? { ...prev, unread } : prev));
-    },
-    [listFilter],
-  );
+  const applyUnreadLocal = useCallback((messageId: number, unread: boolean) => {
+    setMessages((prev) => {
+      if (!unread && listFilterRef.current === "unread") {
+        return prev.filter((row) => row.id !== messageId);
+      }
+      return prev.map((row) => (row.id === messageId ? { ...row, unread } : row));
+    });
+    setDetail((prev) => (prev?.id === messageId ? { ...prev, unread } : prev));
+  }, []);
 
   const loadMessageDetail = useCallback(
     async (message: EmailMessageRow, accountId: number) => {
@@ -124,9 +138,10 @@ export function EmailApp() {
       if (layoutMode === "compact") setDetailOpen(true);
       writeModuleSelection("email", { accountId, messageId: message.id });
       try {
-        const row = await readEmailMessage(message.id);
+        // raw=true：返回解码后的正文 content（html 或 plain），供沙箱 / 原文展示
+        const row = await readEmailMessage(message.id, { raw: true });
         setDetail(row);
-        if (row.unread && !writesDisabled) {
+        if (row.direction === "inbound" && row.unread && !writesDisabled) {
           try {
             await markEmailMessageRead(row.id);
             applyUnreadLocal(row.id, false);
@@ -145,12 +160,15 @@ export function EmailApp() {
   );
 
   const loadMessages = useCallback(
-    async (accountId: number, filter: ListFilter = listFilter) => {
+    async (accountId: number, opts?: { filter?: ListFilter; folder?: EmailMailboxFolder }) => {
+      const folder = opts?.folder ?? activeFolderRef.current;
+      const filter = folder === "sent" ? "all" : (opts?.filter ?? listFilterRef.current);
       setListLoading(true);
       setError("");
       try {
         const rows = await fetchEmailMessages({
           account_id: accountId,
+          direction: folderDirection(folder),
           limit: 100,
           ...(filter === "unread" ? { unread: true } : {}),
         });
@@ -162,63 +180,67 @@ export function EmailApp() {
         setListLoading(false);
       }
     },
-    [listFilter],
+    [],
   );
 
-  const loadAccounts = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const rows = await fetchEmailAccounts();
-      setAccounts(rows);
-      if (rows.length === 0) {
-        setActiveAccountId(null);
-        setMessages([]);
-        return;
-      }
-
-      const stored = readModuleSelection("email");
-      const enabled = rows.filter((a) => a.enabled);
-      const fallback = enabled[0] ?? rows[0];
-      const account = rows.find((a) => a.id === stored?.accountId) ?? fallback;
-      if (!account) return;
-
-      setActiveAccountId(account.id);
-      if (useDrawer) setListOpen(false);
-
-      setListLoading(true);
+  const loadAccounts = useCallback(
+    async (opts?: { filter?: ListFilter; folder?: EmailMailboxFolder }) => {
+      const folder = opts?.folder ?? activeFolderRef.current;
+      const filter = folder === "sent" ? "all" : (opts?.filter ?? listFilterRef.current);
+      setLoading(true);
+      setError("");
       try {
-        const messageRows = await fetchEmailMessages({
-          account_id: account.id,
-          limit: 100,
-          unread: true,
-        });
-        setMessages(messageRows);
-        setListFilter("unread");
+        const rows = await fetchEmailAccounts();
+        setAccounts(rows);
+        if (rows.length === 0) {
+          setActiveAccountId(null);
+          setMessages([]);
+          return;
+        }
 
-        const storedMessage =
-          stored?.messageId != null
-            ? messageRows.find((row) => row.id === stored.messageId)
-            : undefined;
+        const stored = readModuleSelection("email");
+        const enabled = rows.filter((a) => a.enabled);
+        const fallback = enabled[0] ?? rows[0];
+        const account = rows.find((a) => a.id === stored?.accountId) ?? fallback;
+        if (!account) return;
 
-        if (storedMessage) {
-          await loadMessageDetail(storedMessage, account.id);
-        } else {
-          writeModuleSelection("email", { accountId: account.id, messageId: null });
+        setActiveAccountId(account.id);
+        if (useDrawer) setListOpen(false);
+
+        setListLoading(true);
+        try {
+          const messageRows = await fetchEmailMessages({
+            account_id: account.id,
+            direction: folderDirection(folder),
+            limit: 100,
+            ...(filter === "unread" ? { unread: true } : {}),
+          });
+          setMessages(messageRows);
+
+          const storedMessage =
+            stored?.messageId != null
+              ? messageRows.find((row) => row.id === stored.messageId)
+              : undefined;
+
+          if (storedMessage) {
+            await loadMessageDetail(storedMessage, account.id);
+          } else {
+            writeModuleSelection("email", { accountId: account.id, messageId: null });
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : String(err));
+          setMessages([]);
+        } finally {
+          setListLoading(false);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
-        setMessages([]);
       } finally {
-        setListLoading(false);
+        setLoading(false);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoading(false);
-    }
-  }, [loadMessageDetail, useDrawer]);
-
+    },
+    [loadMessageDetail, useDrawer],
+  );
   const handleManualRefresh = useCallback(async () => {
     if (refreshing) return;
     setRefreshing(true);
@@ -237,16 +259,21 @@ export function EmailApp() {
     }
   }, [activeAccountId, loadAccounts, loadMessages, refreshing]);
 
-  useEffect(() => {
+  const resetForSubjectKind = useEffectEvent(() => {
     setActiveAccountId(null);
+    setActiveFolder("inbox");
     setMessages([]);
     setSelectedMessageId(null);
     setDetail(null);
     setDetailOpen(false);
     setSearchQuery("");
     setListFilter("unread");
-    void loadAccounts();
-  }, [subjectKind, loadAccounts]);
+    void loadAccounts({ filter: "unread", folder: "inbox" });
+  });
+
+  useEffect(() => {
+    resetForSubjectKind();
+  }, [subjectKind]);
 
   useEffect(() => {
     if (layoutMode !== "compact") {
@@ -256,21 +283,27 @@ export function EmailApp() {
     }
   }, [layoutMode, detail?.id]);
 
-  const selectAccount = async (account: EmailAccountRow) => {
+  const selectFolder = async (account: EmailAccountRow, folder: EmailMailboxFolder) => {
     setActiveAccountId(account.id);
+    setActiveFolder(folder);
     setSelectedMessageId(null);
     setDetail(null);
     setDetailOpen(false);
     setSearchQuery("");
+    if (folder === "sent") setListFilter("all");
     writeModuleSelection("email", { accountId: account.id, messageId: null });
     if (useDrawer) setListOpen(false);
-    await loadMessages(account.id);
+    await loadMessages(account.id, {
+      folder,
+      filter: folder === "sent" ? "all" : listFilterRef.current,
+    });
   };
 
   const changeListFilter = async (filter: ListFilter) => {
+    if (activeFolder === "sent") return;
     setListFilter(filter);
     setSearchQuery("");
-    if (activeAccountId != null) await loadMessages(activeAccountId, filter);
+    if (activeAccountId != null) await loadMessages(activeAccountId, { filter });
   };
 
   const openMessage = async (message: EmailMessageRow) => {
@@ -323,7 +356,8 @@ export function EmailApp() {
         limit: 50,
         ...(activeAccountId != null ? { account_id: activeAccountId } : {}),
       });
-      setMessages(hits);
+      const direction = folderDirection(activeFolderRef.current);
+      setMessages(hits.filter((row) => row.direction === direction));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -396,6 +430,7 @@ export function EmailApp() {
   };
 
   const messageMenuItems = (message: EmailMessageRow): ActionSheetItem[] => {
+    const showUnreadActions = activeFolder === "inbox" && message.direction !== "outbound";
     const items: ActionSheetItem[] = [];
     if (!writesDisabled) {
       items.push({
@@ -408,16 +443,18 @@ export function EmailApp() {
       onClick: () => copyMessageId(message),
     });
     if (!writesDisabled) {
-      if (message.unread) {
-        items.push({
-          label: m.email_mark_read(),
-          onClick: () => onMarkRead(message),
-        });
-      } else {
-        items.push({
-          label: m.email_mark_unread(),
-          onClick: () => onMarkUnread(message),
-        });
+      if (showUnreadActions) {
+        if (message.unread) {
+          items.push({
+            label: m.email_mark_read(),
+            onClick: () => onMarkRead(message),
+          });
+        } else {
+          items.push({
+            label: m.email_mark_unread(),
+            onClick: () => onMarkUnread(message),
+          });
+        }
       }
       items.push({
         label: m.email_delete_message(),
@@ -561,7 +598,9 @@ export function EmailApp() {
         >
           <EmptyState
             message={
-              listFilter === "unread" ? m.email_no_unread_hint() : m.email_no_messages_hint()
+              activeFolder === "inbox" && listFilter === "unread"
+                ? m.email_no_unread_hint()
+                : m.email_no_messages_hint()
             }
             className="items-start flex-1 p-4 text-left"
           />
@@ -589,16 +628,20 @@ export function EmailApp() {
                     onContextMenu={(e) => openMessageContextMenu(e, message)}
                   >
                     <div className="flex items-start gap-2">
-                      {message.unread ? (
-                        <span className="bg-primary mt-1 inline-block h-2 w-2 shrink-0 rounded-full" />
-                      ) : (
-                        <span className="mt-1 inline-block h-2 w-2 shrink-0" />
-                      )}
+                      {activeFolder === "inbox" ? (
+                        message.unread ? (
+                          <span className="bg-primary mt-1 inline-block h-2 w-2 shrink-0 rounded-full" />
+                        ) : (
+                          <span className="mt-1 inline-block h-2 w-2 shrink-0" />
+                        )
+                      ) : null}
                       <div className="min-w-0 flex-1">
                         <div className="truncate font-medium">
                           {message.subject || m.habitat_email_no_subject()}
                         </div>
-                        <div className="text-muted-foreground truncate text-xs">{message.from}</div>
+                        <div className="text-muted-foreground truncate text-xs">
+                          {activeFolder === "sent" ? message.to : message.from}
+                        </div>
                         <div className="text-muted-foreground mt-1 truncate text-xs">
                           {message.preview}
                         </div>
@@ -643,7 +686,13 @@ export function EmailApp() {
           layoutMode={layoutMode}
           columnSplitKey="email"
           listTitle={m.email_accounts_title()}
-          middleTitle={activeAccount ? accountLabel(activeAccount) : m.email_inbox_title()}
+          middleTitle={
+            activeAccount
+              ? `${accountLabel(activeAccount)} · ${
+                  activeFolder === "sent" ? m.email_sent_title() : m.email_inbox_title()
+                }`
+              : m.email_inbox_title()
+          }
           detailTitle={detail?.subject || m.habitat_email_no_subject()}
           listOpen={listOpen}
           onListOpenChange={setListOpen}
@@ -682,26 +731,28 @@ export function EmailApp() {
           middleHeaderExtra={
             activeAccount ? (
               <div className="flex flex-col gap-2">
-                <div className="inline-flex w-fit overflow-hidden rounded-md border shadow-xs">
-                  <Button
-                    type="button"
-                    variant={listFilter === "unread" ? "default" : "outline"}
-                    size="sm"
-                    className="rounded-none border-0"
-                    onClick={() => void changeListFilter("unread")}
-                  >
-                    {m.email_filter_unread()}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={listFilter === "all" ? "default" : "outline"}
-                    size="sm"
-                    className="rounded-none border-0 border-l"
-                    onClick={() => void changeListFilter("all")}
-                  >
-                    {m.email_filter_all()}
-                  </Button>
-                </div>
+                {activeFolder === "inbox" ? (
+                  <div className="inline-flex w-fit overflow-hidden rounded-md border shadow-xs">
+                    <Button
+                      type="button"
+                      variant={listFilter === "unread" ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-none border-0"
+                      onClick={() => void changeListFilter("unread")}
+                    >
+                      {m.email_filter_unread()}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={listFilter === "all" ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-none border-0 border-l"
+                      onClick={() => void changeListFilter("all")}
+                    >
+                      {m.email_filter_all()}
+                    </Button>
+                  </div>
+                ) : null}
                 <div className="flex gap-2">
                   <Input
                     className="h-8 min-w-0 flex-1"
@@ -729,9 +780,10 @@ export function EmailApp() {
             <EmailAccountSidebar
               accounts={accounts}
               activeAccountId={activeAccountId}
+              activeFolder={activeFolder}
               writesDisabled={writesDisabled}
               useActionSheet={useActionSheet}
-              onSelect={(account) => void selectAccount(account)}
+              onSelectFolder={(account, folder) => void selectFolder(account, folder)}
               onAdd={() => setFormState({ mode: "create" })}
               onEdit={(account) => setFormState({ mode: "edit", account })}
               onOpenMenu={openAccountMenu}
@@ -744,14 +796,17 @@ export function EmailApp() {
               loading={detailLoading}
               message={detail}
               writesDisabled={writesDisabled}
+              showUnreadActions={activeFolder === "inbox"}
               {...(detail
                 ? {
                     onReply: () => setReplyMessage(detail),
                     onCopyId: () => copyMessageId(detail),
                     onDelete: () => setDeleteMessageTarget(detail),
-                    ...(detail.unread
-                      ? { onMarkRead: () => onMarkRead(detail) }
-                      : { onMarkUnread: () => onMarkUnread(detail) }),
+                    ...(activeFolder === "inbox"
+                      ? detail.unread
+                        ? { onMarkRead: () => onMarkRead(detail) }
+                        : { onMarkUnread: () => onMarkUnread(detail) }
+                      : {}),
                   }
                 : {})}
             />
@@ -776,7 +831,7 @@ export function EmailApp() {
             });
           });
           if (formState?.mode === "create") {
-            void selectAccount(saved);
+            void selectFolder(saved, "inbox");
           }
         }}
       />

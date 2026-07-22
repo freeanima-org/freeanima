@@ -83,6 +83,7 @@
   <msg id="email_search_placeholder">Search mail</msg>
   <msg id="email_select_account">Select an email account to view the inbox</msg>
   <msg id="email_send_action">Send</msg>
+  <msg id="email_sent_title">Sent</msg>
   <msg id="email_set_default_sender">Set as default sender</msg>
   <msg id="email_smtp_host">SMTP host</msg>
   <msg id="email_smtp_port">SMTP port</msg>

@@ -27,7 +27,7 @@ export const emailHubRoutes = bindHabitatRouteHandlers(emailMethodDefs, {
   "email.message.list": async (deps, input) =>
     service.serviceEmailMessageList(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "email.message.read": async (deps, input) =>
-    service.serviceEmailMessageRead(depsOf(deps).runtime.runtimeDeps(), input),
+    service.serviceEmailMessageRead(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "email.message.markRead": async (deps, input) =>
     service.serviceEmailMessageMarkRead(depsOf(deps).runtime.runtimeDeps(), input),
   "email.message.markUnread": async (deps, input) =>

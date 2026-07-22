@@ -109,7 +109,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
                 }),
               );
               return toolResult({
-                messages: messages.map((m) => messagePayload(m)),
+                messages: await Promise.all(messages.map((m) => messagePayload(m))),
                 count: messages.length,
               });
             } catch (err) {
@@ -119,7 +119,8 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
         },
         {
           name: "email_search",
-          description: "Hybrid search synced email messages.",
+          description:
+            "Hybrid search synced email messages. Optional from / sent_after / sent_before filters combine with query (AND).",
           parameters: {
             type: "object",
             properties: {
@@ -128,6 +129,18 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               account_id: { type: "number" },
               thread_id: { type: "number" },
               unread: { type: "boolean" },
+              from: {
+                type: "string",
+                description: "Filter by sender address (substring match, case-insensitive).",
+              },
+              sent_after: {
+                type: "string",
+                description: "ISO timestamp: only messages with sent_at >= this value.",
+              },
+              sent_before: {
+                type: "string",
+                description: "ISO timestamp: only messages with sent_at <= this value.",
+              },
               limit: { type: "number" },
             },
             required: ["query"],
@@ -150,11 +163,20 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
                   account_id: accountId,
                   thread_id: parseAccountId(args.thread_id),
                   unread: args.unread != null ? Boolean(args.unread) : undefined,
+                  from: args.from != null ? String(args.from).trim() || undefined : undefined,
+                  since:
+                    args.sent_after != null
+                      ? String(args.sent_after).trim() || undefined
+                      : undefined,
+                  before:
+                    args.sent_before != null
+                      ? String(args.sent_before).trim() || undefined
+                      : undefined,
                   limit: args.limit != null ? Number(args.limit) : undefined,
                 }),
               );
               return toolResult({
-                messages: messages.map((m) => messagePayload(m)),
+                messages: await Promise.all(messages.map((m) => messagePayload(m))),
                 count: messages.length,
               });
             } catch (err) {
@@ -164,10 +186,18 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
         },
         {
           name: "email_read",
-          description: "Read a synced email message by entity id.",
+          description:
+            "Read a synced email by entity id. Default body is plain text; set raw=true for decoded content raw (text/html or text/plain). Returns headers and attachment metadata.",
           parameters: {
             type: "object",
-            properties: { message_id: { type: "number" } },
+            properties: {
+              message_id: { type: "number" },
+              raw: {
+                type: "boolean",
+                description:
+                  "If true, return decoded body content as stored (HTML or plain). Default returns plain text.",
+              },
+            },
             required: ["message_id"],
           },
           handler: async (args) => {
@@ -176,7 +206,13 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
             try {
               const message = await getEmailMessageRow(messageId);
               if (!message) return toolError(`Email message not found: ${messageId}`);
-              return toolResult({ message: messagePayload(message) });
+              return toolResult({
+                message: await messagePayload(message, {
+                  raw: args.raw === true,
+                  includeHeaders: true,
+                  includeAttachments: true,
+                }),
+              });
             } catch (err) {
               return toolError(errMsg(err));
             }
@@ -322,7 +358,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               if (target === "message") {
                 const message = await tagEmailMessage(id, tags);
                 if (!message) return toolError(`Email message not found: ${id}`);
-                return toolResult({ ok: true, message: messagePayload(message) });
+                return toolResult({ ok: true, message: await messagePayload(message) });
               }
               return toolError("target must be thread or message");
             } catch (err) {

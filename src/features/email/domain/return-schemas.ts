@@ -20,10 +20,12 @@ const messageSchema = z.object({
   subject: z.string(),
   preview: z.string(),
   body: z.string(),
+  content_type: z.enum(["text/plain", "text/html"]).optional(),
   from: z.string(),
   to: z.string(),
   sent_at: z.string(),
   unread: z.boolean(),
+  direction: z.enum(["inbound", "outbound"]).optional(),
 });
 
 export const EMAIL_TOOL_RETURNS: Partial<Record<string, ToolReturnContractFields>> = {
@@ -77,10 +79,12 @@ export const EMAIL_TOOL_RETURNS: Partial<Record<string, ToolReturnContractFields
         subject: "Hello",
         preview: "Hello world",
         body: "Hello world",
+        content_type: "text/plain" as const,
         from: "a@example.com",
         to: "b@example.com",
         sent_at: "2026-06-27T10:00:00+08:00",
         unread: false,
+        direction: "inbound" as const,
       },
     },
   }),

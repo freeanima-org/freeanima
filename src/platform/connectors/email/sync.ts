@@ -11,6 +11,9 @@ import {
   worldIdForAccount,
   type EmailSyncResult,
 } from "@freeanima/features/email/domain";
+import { parseEmailMime } from "@freeanima/features/email/domain/mime-parse";
+import { persistEmailAttachments } from "@freeanima/features/email/domain/attachment-store";
+import { setEmailMessageAttachments } from "@freeanima/features/email/domain";
 import { formatCstIso } from "@freeanima/core/util";
 
 import {
@@ -82,8 +85,10 @@ export async function syncEmailAccount(
                 subject,
               }),
             );
-            const bodyText = extractBody(msg.source);
-            const preview = messagePreview(bodyText);
+            const rawSource = extractBody(msg.source);
+            const mime = await parseEmailMime(rawSource);
+            const bodyText = mime.content;
+            const preview = messagePreview(mime.text || bodyText);
             const sentAt = envelope?.date?.toISOString() ?? formatCstIso();
             const unread = !msg.flags?.has("\\Seen");
 
@@ -99,12 +104,15 @@ export async function syncEmailAccount(
             upsertedThreads += 1;
 
             const existingBefore = await findEmailMessageByImapUid(account.id, uid, box);
-            await upsertEmailMessage({
+            const message = await upsertEmailMessage({
               account_id: account.id,
               thread_id: thread.id,
               subject,
               preview,
               body: bodyText,
+              content_type: mime.content_type,
+              text: mime.text,
+              headers: mime.headers,
               imap_uid: uid,
               imap_mailbox: box,
               message_id: messageId ?? null,
@@ -115,6 +123,14 @@ export async function syncEmailAccount(
               unread,
               flags: [...(msg.flags ?? [])],
             });
+            if (mime.attachments.length > 0) {
+              const attachmentMeta = await persistEmailAttachments(
+                account.id,
+                message.id,
+                mime.attachments,
+              );
+              await setEmailMessageAttachments(message.id, attachmentMeta);
+            }
             if (!existingBefore) upsertedMessages += 1;
             highestUid = Math.max(highestUid ?? 0, uid);
           }
