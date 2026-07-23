@@ -10,14 +10,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@freeanima/frontend/ui-kit/components/ui/dropdown-menu.tsx";
+import { createTag, fetchTags, type TagRow } from "@freeanima/features/tag/ui/spa/lib/api.ts";
 
 import { suggestDiaryTags, type DiarySubjectKind } from "../lib/api.ts";
-import { parseTagsText } from "../lib/entry-draft-dirty.ts";
 
 type EntryTagHeaderProps = {
   subjectKind: DiarySubjectKind;
-  tagsText: string;
-  onTagsTextChange: (tagsText: string) => void;
+  tagIds: number[];
+  onTagIdsChange: (tagIds: number[]) => void;
   readOnly?: boolean;
   /** 仅 chips，不含「添加标签」按钮（按钮放在 detailActions） */
   chipsOnly?: boolean;
@@ -25,70 +25,67 @@ type EntryTagHeaderProps = {
   triggerOnly?: boolean;
 };
 
-function tagsFromText(tagsText: string): string[] {
-  return parseTagsText(tagsText);
-}
-
-function toTagsText(tags: string[]): string {
-  return tags.join(", ");
-}
-
 export function EntryTagChips({
-  tags,
+  tagIds,
+  titleById,
   readOnly = false,
   onRemove,
 }: {
-  tags: string[];
+  tagIds: number[];
+  titleById: Map<number, string>;
   readOnly?: boolean;
-  onRemove?: (tag: string) => void;
+  onRemove?: (tagId: number) => void;
 }): JSX.Element | null {
-  if (tags.length === 0) return null;
+  if (tagIds.length === 0) return null;
   const canRemove = !readOnly && onRemove != null;
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-1">
-      {tags.map((tag) =>
-        !canRemove ? (
+      {tagIds.map((id) => {
+        const title = titleById.get(id) ?? `#${id}`;
+        return !canRemove ? (
           <span
-            key={tag}
+            key={id}
             className="bg-muted text-muted-foreground inline-flex max-w-full items-center truncate rounded-md px-2 py-0.5 text-xs"
           >
-            {tag}
+            {title}
           </span>
         ) : (
           <button
-            key={tag}
+            key={id}
             type="button"
             className="bg-muted text-muted-foreground hover:bg-muted/80 inline-flex max-w-full items-center gap-1 truncate rounded-md px-2 py-0.5 text-xs"
-            onClick={() => onRemove(tag)}
-            aria-label={`移除标签 ${tag}`}
+            onClick={() => onRemove(id)}
+            aria-label={`移除标签 ${title}`}
           >
-            <span className="truncate">{tag}</span>
+            <span className="truncate">{title}</span>
             <XIcon className="size-3 shrink-0" />
           </button>
-        ),
-      )}
+        );
+      })}
     </div>
   );
 }
 
 export function EntryTagAddMenu({
   subjectKind,
-  tagsText,
-  onTagsTextChange,
+  tagIds,
+  onTagIdsChange,
   readOnly = false,
+  onTagCreated,
 }: {
   subjectKind: DiarySubjectKind;
-  tagsText: string;
-  onTagsTextChange: (tagsText: string) => void;
+  tagIds: number[];
+  onTagIdsChange: (tagIds: number[]) => void;
   readOnly?: boolean;
+  onTagCreated?: (tag: TagRow) => void;
 }): JSX.Element | null {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [items, setItems] = useState<Array<{ tag: string; count: number }>>([]);
+  const [items, setItems] = useState<Array<{ id: number; title: string; count: number }>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const selected = useMemo(() => new Set(tagsFromText(tagsText)), [tagsText]);
+  const selected = useMemo(() => new Set(tagIds), [tagIds]);
 
   useEffect(() => {
     if (!open) return;
@@ -121,22 +118,36 @@ export function EntryTagAddMenu({
 
   if (readOnly) return null;
 
-  function pick(tag: string): void {
-    const trimmed = tag.trim();
-    if (!trimmed || selected.has(trimmed)) {
+  function pick(id: number): void {
+    if (selected.has(id)) {
       setOpen(false);
       return;
     }
-    onTagsTextChange(toTagsText([...tagsFromText(tagsText), trimmed]));
+    onTagIdsChange([...tagIds, id]);
     setQuery("");
     setOpen(false);
+  }
+
+  async function createAndPick(title: string): Promise<void> {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    setError(null);
+    try {
+      const item = await createTag(trimmed);
+      onTagCreated?.(item);
+      if (!selected.has(item.id)) onTagIdsChange([...tagIds, item.id]);
+      setQuery("");
+      setOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
   }
 
   const q = query.trim();
   const showCreate =
     q.length > 0 &&
-    !selected.has(q) &&
-    !items.some((row) => row.tag.toLowerCase() === q.toLowerCase());
+    !items.some((row) => row.title.toLowerCase() === q.toLowerCase()) &&
+    ![...selected].some((id) => items.some((row) => row.id === id && row.title === q));
 
   return (
     <DropdownMenu
@@ -166,7 +177,7 @@ export function EntryTagAddMenu({
           onKeyDown={(e) => {
             if (e.key === "Enter" && showCreate) {
               e.preventDefault();
-              pick(q);
+              void createAndPick(q);
             }
           }}
         />
@@ -178,10 +189,10 @@ export function EntryTagAddMenu({
         ) : null}
         {!loading
           ? items
-              .filter((row) => !selected.has(row.tag))
+              .filter((row) => !selected.has(row.id))
               .map((row) => (
-                <DropdownMenuItem key={row.tag} onSelect={() => pick(row.tag)}>
-                  <span className="min-w-0 flex-1 truncate">{row.tag}</span>
+                <DropdownMenuItem key={row.id} onSelect={() => pick(row.id)}>
+                  <span className="min-w-0 flex-1 truncate">{row.title}</span>
                   <span className="text-muted-foreground shrink-0 text-xs">{row.count}</span>
                 </DropdownMenuItem>
               ))
@@ -189,7 +200,7 @@ export function EntryTagAddMenu({
         {showCreate ? (
           <>
             {items.length > 0 ? <DropdownMenuSeparator /> : null}
-            <DropdownMenuItem onSelect={() => pick(q)}>添加「{q}」</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => void createAndPick(q)}>添加「{q}」</DropdownMenuItem>
           </>
         ) : null}
       </DropdownMenuContent>
@@ -200,45 +211,83 @@ export function EntryTagAddMenu({
 /** 兼容聚合：chips + 可选 trigger；DiaryApp 通常拆开用 */
 export function EntryTagHeader({
   subjectKind,
-  tagsText,
-  onTagsTextChange,
+  tagIds,
+  onTagIdsChange,
   readOnly = false,
   chipsOnly = false,
   triggerOnly = false,
 }: EntryTagHeaderProps): JSX.Element | null {
-  const tags = tagsFromText(tagsText);
-  const remove = (tag: string) => {
-    onTagsTextChange(toTagsText(tags.filter((t) => t !== tag)));
+  const [pool, setPool] = useState<TagRow[]>([]);
+
+  const tagIdsKey = tagIds.join(",");
+  useEffect(() => {
+    let cancelled = false;
+    void fetchTags()
+      .then((tags) => {
+        if (!cancelled) setPool(tags);
+      })
+      .catch(() => {
+        /* 侧栏/顶栏无标题时回退 #id */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tagIdsKey]);
+
+  const titleById = useMemo(() => new Map(pool.map((t) => [t.id, t.title])), [pool]);
+
+  const remove = (tagId: number) => {
+    onTagIdsChange(tagIds.filter((id) => id !== tagId));
   };
 
   if (triggerOnly) {
     return (
       <EntryTagAddMenu
         subjectKind={subjectKind}
-        tagsText={tagsText}
-        onTagsTextChange={onTagsTextChange}
+        tagIds={tagIds}
+        onTagIdsChange={onTagIdsChange}
         readOnly={readOnly}
+        onTagCreated={(tag) =>
+          setPool((prev) =>
+            prev.some((t) => t.id === tag.id)
+              ? prev
+              : [...prev, tag].toSorted(
+                  (a, b) =>
+                    a.sort_order - b.sort_order || a.title.localeCompare(b.title) || a.id - b.id,
+                ),
+          )
+        }
       />
     );
   }
 
   if (chipsOnly) {
-    if (readOnly) return <EntryTagChips tags={tags} readOnly />;
-    return <EntryTagChips tags={tags} onRemove={remove} />;
+    if (readOnly) return <EntryTagChips tagIds={tagIds} titleById={titleById} readOnly />;
+    return <EntryTagChips tagIds={tagIds} titleById={titleById} onRemove={remove} />;
   }
 
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-2">
       {readOnly ? (
-        <EntryTagChips tags={tags} readOnly />
+        <EntryTagChips tagIds={tagIds} titleById={titleById} readOnly />
       ) : (
-        <EntryTagChips tags={tags} onRemove={remove} />
+        <EntryTagChips tagIds={tagIds} titleById={titleById} onRemove={remove} />
       )}
       <EntryTagAddMenu
         subjectKind={subjectKind}
-        tagsText={tagsText}
-        onTagsTextChange={onTagsTextChange}
+        tagIds={tagIds}
+        onTagIdsChange={onTagIdsChange}
         readOnly={readOnly}
+        onTagCreated={(tag) =>
+          setPool((prev) =>
+            prev.some((t) => t.id === tag.id)
+              ? prev
+              : [...prev, tag].toSorted(
+                  (a, b) =>
+                    a.sort_order - b.sort_order || a.title.localeCompare(b.title) || a.id - b.id,
+                ),
+          )
+        }
       />
     </div>
   );

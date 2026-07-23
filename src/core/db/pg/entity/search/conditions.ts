@@ -272,11 +272,7 @@ function buildDiaryEntryBodyConditions(
   filters: ReturnType<typeof parseDiaryEntrySearchFilters>,
 ): SQL[] {
   const conditions: SQL[] = [];
-  if (filters.tags?.length) {
-    for (const tag of filters.tags) {
-      conditions.push(sql`${entities.body}->'tags' ? ${tag}`);
-    }
-  }
+  // 日记标签已迁到顶层 tag_ids；filters.tag_ids 由 buildEntitySearchConditions 顶层处理
   if (filters.entry_after) {
     conditions.push(
       sql`(${entities.body}->>'entry_at')::timestamptz >= ${filters.entry_after}::timestamptz`,

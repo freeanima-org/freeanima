@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DiaryEntryRow } from "../lib/format-diary.ts";
 import { EmptyState } from "@freeanima/frontend/ui-kit/composite";
 import { Spinner } from "@freeanima/frontend/ui-kit";
+import { fetchTags } from "@freeanima/features/tag/ui/spa/lib/api.ts";
 import {
   dateLocalToEntryAtIso,
   defaultEntryDateLocal,
@@ -38,18 +39,18 @@ export function groupEntriesByDate(items: DiaryEntryRow[]): DayGroup[] {
     .toSorted((a, b) => b.item.entry_at.localeCompare(a.item.entry_at));
 }
 
-function EntryTags({ tags }: { tags: string[] }) {
-  if (tags.length === 0) {
+function EntryTags({ tagIds, titleById }: { tagIds: number[]; titleById: Map<number, string> }) {
+  if (tagIds.length === 0) {
     return <div className="text-sm text-muted-foreground/70 mt-1 truncate">（无标签）</div>;
   }
   return (
     <div className="mt-1 flex min-w-0 flex-wrap gap-1">
-      {tags.map((tag) => (
+      {tagIds.map((id) => (
         <span
-          key={tag}
+          key={id}
           className="bg-muted text-muted-foreground max-w-full truncate rounded px-1.5 py-0.5 text-xs"
         >
-          {tag}
+          {titleById.get(id) ?? `#${id}`}
         </span>
       ))}
     </div>
@@ -75,6 +76,21 @@ export function EntryTimeline({
   const sentinelRef = useRef<HTMLDivElement>(null);
   const onLoadMoreRef = useRef(onLoadMore);
   onLoadMoreRef.current = onLoadMore;
+  const [titleById, setTitleById] = useState<Map<number, string>>(() => new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchTags()
+      .then((tags) => {
+        if (!cancelled) setTitleById(new Map(tags.map((t) => [t.id, t.title])));
+      })
+      .catch(() => {
+        /* 无标题时回退 #id */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!hasMore || !onLoadMore) return;
@@ -113,7 +129,7 @@ export function EntryTimeline({
           onClick={() => onSelect(group.item.id)}
         >
           <div className="text-xs font-semibold text-muted-foreground truncate">{group.label}</div>
-          <EntryTags tags={group.item.tags} />
+          <EntryTags tagIds={group.item.tag_ids ?? []} titleById={titleById} />
         </button>
       ))}
       {hasMore ? (

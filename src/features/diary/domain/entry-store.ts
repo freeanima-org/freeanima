@@ -13,6 +13,7 @@ import {
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
 import { ensureDiaryEntryForDay as ensureDiaryEntryForDayCore } from "@freeanima/core/db/pg/diary";
+import { ensureTagsByTitles } from "@freeanima/features/tag/domain";
 
 import {
   createDiaryTextBlock,
@@ -33,22 +34,9 @@ import type {
   DiaryTextBlock,
 } from "./types.ts";
 
-function normalizeTags(tags: string[] | undefined): string[] {
-  if (!tags?.length) return [];
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const raw of tags) {
-    const tag = raw.trim();
-    if (!tag || seen.has(tag)) continue;
-    seen.add(tag);
-    out.push(tag);
-  }
-  return out;
-}
-
 function toEntryRow(
   row: NonNullable<ReturnType<typeof asDiaryEntry>>,
-  meta: { created_at: Date; updated_at: Date },
+  meta: { created_at: Date; updated_at: Date; tag_ids?: number[] },
   blocks: DiaryTextBlock[],
 ): DiaryEntryRow {
   return {
@@ -56,7 +44,7 @@ function toEntryRow(
     title: row.title,
     summary: row.summary,
     entry_at: row.entry_at,
-    tags: row.tags ?? [],
+    tag_ids: [...(meta.tag_ids ?? [])],
     blocks,
     created_at: meta.created_at.toISOString(),
     updated_at: meta.updated_at.toISOString(),
@@ -105,7 +93,6 @@ export async function findDiaryEntryByDay(
   });
   const hit = items.find((row) => entryDayKey(row.entry_at) === day);
   if (!hit) return null;
-  // list 不挂 blocks；按日查找需完整正文时再 get
   return getDiaryEntry(ctx, hit.id);
 }
 
@@ -124,12 +111,14 @@ export async function listDiaryEntries(
   const filters: DiaryEntrySearchFilters = {};
   if (opts.entry_after) filters.entry_after = opts.entry_after;
   if (opts.entry_before) filters.entry_before = opts.entry_before;
-  if (opts.tags?.length) filters.tags = opts.tags;
+
+  const tagIds = opts.tag_ids?.length ? opts.tag_ids : undefined;
 
   const result = await searchEntities({
     world_id: ctx.worldId,
     primary_component: DIARY_ENTRY_COMPONENT,
     ...(Object.keys(filters).length > 0 ? { filters } : {}),
+    ...(tagIds ? { tag_ids: tagIds } : {}),
     limit: opts.limit ?? 20,
     offset: opts.offset ?? 0,
     mode: "filter_only",
@@ -139,7 +128,11 @@ export async function listDiaryEntries(
     .map((row) => {
       const parsed = asDiaryEntry(row);
       return parsed
-        ? toEntryRow(parsed, { created_at: row.created_at, updated_at: row.updated_at }, [])
+        ? toEntryRow(
+            parsed,
+            { created_at: row.created_at, updated_at: row.updated_at, tag_ids: row.tag_ids },
+            [],
+          )
         : null;
     })
     .filter((row): row is DiaryEntryRow => row != null);
@@ -158,7 +151,11 @@ export async function getDiaryEntry(
   const blocks = await listDiaryTextBlocks(ctx, id);
   return toEntryRow(
     parsed,
-    { created_at: existing.created_at, updated_at: existing.updated_at },
+    {
+      created_at: existing.created_at,
+      updated_at: existing.updated_at,
+      tag_ids: existing.tag_ids,
+    },
     blocks,
   );
 }
@@ -180,7 +177,30 @@ async function findDiaryEntryByClientOpId(
   const parsed = asDiaryEntry(row);
   if (!parsed) return null;
   const blocks = await listDiaryTextBlocks(ctx, parsed.id);
-  return toEntryRow(parsed, { created_at: row.created_at, updated_at: row.updated_at }, blocks);
+  return toEntryRow(
+    parsed,
+    { created_at: row.created_at, updated_at: row.updated_at, tag_ids: row.tag_ids },
+    blocks,
+  );
+}
+
+async function resolveCreateTagIds(
+  worldId: number,
+  input: { tag_ids?: number[]; tags?: string[] },
+): Promise<number[]> {
+  const parts: number[][] = [];
+  if (input.tag_ids?.length) parts.push(input.tag_ids);
+  if (input.tags?.length) parts.push(await ensureTagsByTitles(worldId, input.tags));
+  const out: number[] = [];
+  const seen = new Set<number>();
+  for (const part of parts) {
+    for (const id of part) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(id);
+    }
+  }
+  return out;
 }
 
 export async function createDiaryEntry(
@@ -200,9 +220,9 @@ export async function createDiaryEntry(
     throw new Error(`diary entry already exists for ${entryDayKey(entryAt)}`);
   }
 
+  const tagIds = await resolveCreateTagIds(ctx.worldId, input);
   const body: DiaryEntryBody = {
     entry_at: entryAt,
-    tags: normalizeTags(input.tags),
     client_op_id: input.client_op_id ?? null,
   };
 
@@ -214,6 +234,7 @@ export async function createDiaryEntry(
     title: input.title.trim(),
     summary: input.summary?.trim() ?? "",
     content: "",
+    tag_ids: tagIds,
     body,
   });
 
@@ -232,7 +253,11 @@ export async function createDiaryEntry(
     );
   }
 
-  return toEntryRow(parsed, { created_at: row.created_at, updated_at: row.updated_at }, blocks);
+  return toEntryRow(
+    parsed,
+    { created_at: row.created_at, updated_at: row.updated_at, tag_ids: row.tag_ids },
+    blocks,
+  );
 }
 
 export async function updateDiaryEntry(
@@ -251,13 +276,24 @@ export async function updateDiaryEntry(
     }
     bodyPatch.entry_at = nextEntryAt;
   }
-  if (input.tags !== undefined) bodyPatch.tags = normalizeTags(input.tags);
+
+  let nextTagIds: number[] | undefined;
+  if (input.tag_ids !== undefined || input.tags !== undefined) {
+    nextTagIds = await resolveCreateTagIds(
+      ctx.worldId,
+      omitUndefined({
+        tag_ids: input.tag_ids,
+        tags: input.tags,
+      }),
+    );
+  }
 
   const row = await updateEntity(
     omitUndefined({
       id: input.id,
       title: input.title?.trim(),
       summary: input.summary?.trim(),
+      tag_ids: nextTagIds,
       body: Object.keys(bodyPatch).length > 0 ? bodyPatch : undefined,
     }),
   );
@@ -266,7 +302,11 @@ export async function updateDiaryEntry(
   const parsed = asDiaryEntry(row);
   if (!parsed) return null;
   const blocks = await listDiaryTextBlocks(ctx, input.id);
-  return toEntryRow(parsed, { created_at: row.created_at, updated_at: row.updated_at }, blocks);
+  return toEntryRow(
+    parsed,
+    { created_at: row.created_at, updated_at: row.updated_at, tag_ids: row.tag_ids },
+    blocks,
+  );
 }
 
 export async function appendDiaryEntry(
@@ -312,31 +352,43 @@ export async function searchDiaryEntries(
   const filters: DiaryEntrySearchFilters = {};
   if (opts.entry_after) filters.entry_after = opts.entry_after;
   if (opts.entry_before) filters.entry_before = opts.entry_before;
-  if (opts.tags?.length) filters.tags = opts.tags;
+
+  const tagIds = opts.tag_ids?.length ? opts.tag_ids : undefined;
 
   const result = await searchEntities({
     world_id: ctx.worldId,
     primary_component: DIARY_ENTRY_COMPONENT,
     ...(Object.keys(filters).length > 0 ? { filters } : {}),
+    ...(tagIds ? { tag_ids: tagIds } : {}),
     limit: 500,
     mode: "filter_only",
   });
 
   const byId = new Map<
     number,
-    { parsed: NonNullable<ReturnType<typeof asDiaryEntry>>; created_at: Date; updated_at: Date }
+    {
+      parsed: NonNullable<ReturnType<typeof asDiaryEntry>>;
+      created_at: Date;
+      updated_at: Date;
+      tag_ids: number[];
+    }
   >();
   for (const row of result.results) {
     const parsed = asDiaryEntry(row);
     if (!parsed) continue;
-    byId.set(parsed.id, { parsed, created_at: row.created_at, updated_at: row.updated_at });
+    byId.set(parsed.id, {
+      parsed,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      tag_ids: row.tag_ids ?? [],
+    });
   }
 
   return parentIds
     .map((id) => byId.get(id))
     .filter((row): row is NonNullable<typeof row> => row != null)
-    .map(({ parsed, created_at, updated_at }) =>
-      toEntryRow(parsed, { created_at, updated_at }, []),
+    .map(({ parsed, created_at, updated_at, tag_ids }) =>
+      toEntryRow(parsed, { created_at, updated_at, tag_ids }, []),
     );
 }
 
@@ -389,6 +441,7 @@ export async function appendDiaryEntryByDate(
         title: titleFromEntryAt(entryAt),
         entry_at: entryAt,
         tags: input.tags,
+        tag_ids: input.tag_ids,
       }),
     );
   }
@@ -413,6 +466,7 @@ export async function updateDiaryEntryByDate(
       title: input.title,
       summary: input.summary,
       tags: input.tags,
+      tag_ids: input.tag_ids,
     }),
   );
 }

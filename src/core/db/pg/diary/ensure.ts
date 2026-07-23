@@ -95,7 +95,6 @@ export async function ensureDiaryEntryForDay(
   const entryAt = diaryEntryAtNoon(dayKey);
   const body: DiaryEntryBody = {
     entry_at: entryAt,
-    tags: [],
     client_op_id: null,
   };
   const title = titleFromDiaryDay(dayKey);
@@ -107,6 +106,7 @@ export async function ensureDiaryEntryForDay(
     title,
     summary: "",
     content: "",
+    tag_ids: [],
     body,
   });
   const parsed = asDiaryEntry(row);

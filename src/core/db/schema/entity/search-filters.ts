@@ -116,7 +116,9 @@ export const diaryEntrySearchFiltersSchema = z
   .object({
     entry_after: z.string().optional(),
     entry_before: z.string().optional(),
+    /** @deprecated 改用 EntitySearchOpts.tag_ids；迁移期仍接受但不再过滤 body.tags */
     tags: z.array(z.string()).optional(),
+    tag_ids: z.array(z.number().int().positive()).optional(),
     client_op_id: z.string().min(1).optional(),
   })
   .strict();

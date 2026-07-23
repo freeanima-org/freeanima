@@ -28,7 +28,7 @@ Diary UI labels semantic bricks（梦境 / 情绪 / 自传）as read-only sectio
 **Container** (`diary_entry`):
 
 - `body.entry_at` — ISO 8601, when the diary entry occurred (**unique per day** per subject private world)
-- `body.tags` — optional tags
+- `tag_ids` — optional tags（顶层 `entities.tag_ids`，指向同 World 的 `tag` entity）
 - `title` / `summary` — entity columns
 - container **`content` is not used for body text** (kept empty after migration)
 
@@ -38,7 +38,7 @@ Diary UI labels semantic bricks（梦境 / 情绪 / 自传）as read-only sectio
 - `body.sort_order` — view order (no semantic precedence)
 - text lives in the block's `content` column
 - optional `title` (entity column) — user-editable block heading; empty means no heading weight in UI
-- optional `tag_ids` (entity column) — unified entity tags (not the container's `body.tags` strings)
+- optional `tag_ids` (entity column) — unified entity tags（与日记容器同一模型）
 - semantic component tags on the block (`dream` / `limbic` / `narrative`) render as read-only labels（梦境 / 情绪 / 自传）beside the title; they are **not** the block title
 
 **日记块模板** (`diary_block_template` entity, subject private world):
@@ -57,14 +57,14 @@ One-shot migration: Habitat `runMigrations` moves legacy diary `content` into th
 
 Load via `toolset_load` with `diary`. Tools locate entries by **`date` (YYYY-MM-DD)**；**default today** (CST noon `…T12:00:00+08:00`)；**no `diary_create`** — use `diary_append` (creates empty shell for the day if missing, then adds a **new text block**). All tools accept optional **`world_id`**.
 
-| Tool           | Description                                                                      |
-| -------------- | -------------------------------------------------------------------------------- |
-| `diary_append` | New text block for date; create shell if missing; `tags` only on shell creation  |
-| `diary_update` | Update entry **metadata** (title/summary/tags) by date — not body text           |
-| `diary_get`    | Read entry + `blocks` for date; error if not found                               |
-| `diary_delete` | Delete entry for date (cascades child blocks); returns `{ ok, action, date }`    |
-| `diary_list`   | List by `entry_at DESC` (default `limit=20`, `offset`); optional date/tag filter |
-| `diary_search` | Hybrid search over **text blocks**, returns matching diary entries               |
+| Tool           | Description                                                                               |
+| -------------- | ----------------------------------------------------------------------------------------- |
+| `diary_append` | New text block for date; create shell if missing; `tags`/`tag_ids` only on shell creation |
+| `diary_update` | Update entry **metadata** (title/summary/`tags`/`tag_ids`) by date — not body text        |
+| `diary_get`    | Read entry + `blocks` for date; error if not found                                        |
+| `diary_delete` | Delete entry for date (cascades child blocks); returns `{ ok, action, date }`             |
+| `diary_list`   | List by `entry_at DESC` (default `limit=20`, `offset`); optional date/`tags`/`tag_ids`    |
+| `diary_search` | Hybrid search over **text blocks**, returns matching diary entries                        |
 
 Fine-grained block CRUD / reorder: ToolSet `content-block`.
 

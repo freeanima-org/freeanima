@@ -1,15 +1,16 @@
 import { and, eq, sql } from "drizzle-orm";
 
-import { DIARY_ENTRY_COMPONENT, entities } from "@freeanima/core/db/schema";
+import { DIARY_ENTRY_COMPONENT, TAG_COMPONENT, entities } from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
 
 export type DiaryEntryTagSuggestion = {
-  tag: string;
+  id: number;
+  title: string;
   count: number;
 };
 
-/** 本 world 日记实体 body.tags 频次统计；无 query 时取 topN，有 query 时 ILIKE 过滤后按频次 */
+/** 本 world 日记实体 tag_ids 引用频次；无 query 时 topN，有 query 时 ILIKE title */
 export async function suggestDiaryEntryTags(
   worldId: number,
   opts?: { query?: string; limit?: number },
@@ -18,38 +19,52 @@ export async function suggestDiaryEntryTags(
   const query = opts?.query?.trim() ?? "";
   const db = getDb();
 
-  const tagExpr = sql<string>`tag_elem.tag`;
-  const countExpr = sql<number>`count(*)::int`;
-
   const conditions = [
     eq(entities.world_id, worldId),
-    eq(entities.primary_component, DIARY_ENTRY_COMPONENT),
-    sql`jsonb_typeof(${entities.body}->'tags') = 'array'`,
+    eq(entities.primary_component, TAG_COMPONENT),
+    sql`EXISTS (
+      SELECT 1 FROM ${entities} AS d
+      WHERE d.world_id = ${worldId}
+        AND d.primary_component = ${DIARY_ENTRY_COMPONENT}
+        AND d.tag_ids @> ARRAY[${entities.id}]::bigint[]
+    )`,
   ];
   if (query) {
     const escaped = query.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
-    conditions.push(sql`tag_elem.tag ILIKE ${`%${escaped}%`} ESCAPE '\\'`);
+    conditions.push(sql`${entities.title} ILIKE ${`%${escaped}%`} ESCAPE '\\'`);
   }
+
+  const countExpr = sql<number>`(
+    SELECT count(*)::int FROM ${entities} AS d
+    WHERE d.world_id = ${worldId}
+      AND d.primary_component = ${DIARY_ENTRY_COMPONENT}
+      AND d.tag_ids @> ARRAY[${entities.id}]::bigint[]
+  )`;
 
   const rows = await db
     .select({
-      tag: tagExpr,
+      id: entities.id,
+      title: entities.title,
       count: countExpr,
     })
     .from(entities)
-    .innerJoin(
-      sql`LATERAL jsonb_array_elements_text(coalesce(${entities.body}->'tags', '[]'::jsonb)) AS tag_elem(tag)`,
-      sql`true`,
-    )
     .where(and(...conditions))
-    .groupBy(tagExpr)
-    .orderBy(sql`count(*) DESC`, sql`tag_elem.tag ASC`)
+    .orderBy(
+      sql`(
+      SELECT count(*) FROM ${entities} AS d
+      WHERE d.world_id = ${worldId}
+        AND d.primary_component = ${DIARY_ENTRY_COMPONENT}
+        AND d.tag_ids @> ARRAY[${entities.id}]::bigint[]
+    ) DESC`,
+      sql`${entities.title} ASC`,
+    )
     .limit(limit);
 
   return rows
     .map((row) => ({
-      tag: String(row.tag ?? "").trim(),
+      id: Number(row.id),
+      title: String(row.title ?? "").trim(),
       count: Number(row.count ?? 0),
     }))
-    .filter((row) => row.tag.length > 0);
+    .filter((row) => row.id > 0 && row.title.length > 0 && row.count > 0);
 }

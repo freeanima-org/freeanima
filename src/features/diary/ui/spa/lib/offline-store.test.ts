@@ -24,7 +24,7 @@ function row(id: number, entryAt: string): DiaryEntryRow {
     title: `t${id}`,
     summary: "",
     entry_at: entryAt,
-    tags: [],
+    tag_ids: [],
     blocks: [],
     created_at: entryAt,
     updated_at: entryAt,
@@ -118,9 +118,9 @@ describe("offlineUpdateDiaryEntry temp id resolve", () => {
       row(serverId, "2026-07-12T12:00:00+08:00"),
     ]);
 
-    const updated = await offlineUpdateDiaryEntry("user", created.id, { tags: ["日常"] });
+    const updated = await offlineUpdateDiaryEntry("user", created.id, { tag_ids: [7] });
     expect(updated.id).toBe(serverId);
-    expect(updated.tags).toEqual(["日常"]);
+    expect(updated.tag_ids).toEqual([7]);
 
     const ops = await listOutboxOps(scope, "diary");
     const patch = ops.find((op) => op.method === "diary.patch");

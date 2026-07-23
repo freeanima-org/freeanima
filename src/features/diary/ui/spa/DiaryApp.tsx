@@ -32,14 +32,13 @@ import { m } from "@paraglide/messages";
 
 import { DiaryBlockTemplateDialog } from "./components/DiaryBlockTemplateDialog.tsx";
 import { EntryEditor, type EntrySaveStatus } from "./components/EntryEditor.tsx";
-import { EntryTagAddMenu, EntryTagChips } from "./components/EntryTagHeader.tsx";
+import { EntryTagAddMenu, EntryTagHeader } from "./components/EntryTagHeader.tsx";
 import { EntryTimeline, findEntryByDayLocal } from "./components/EntryTimeline.tsx";
 import {
   entryDraftFromRow,
   isEntryDraftDirty,
   isEntryDraftEqual,
   isEntryMetaDirty,
-  parseTagsText,
   type BlockDraft,
   type EntryDraft,
 } from "./lib/entry-draft-dirty.ts";
@@ -291,7 +290,7 @@ export function DiaryApp() {
           title: titleFromDateLocal(savingSnapshot.entryDateLocal),
           summary: "",
           entry_at: dateLocalToEntryAtIso(savingSnapshot.entryDateLocal),
-          tags: parseTagsText(savingSnapshot.tagsText),
+          tag_ids: savingSnapshot.tag_ids,
         });
       }
 
@@ -426,7 +425,7 @@ export function DiaryApp() {
         title: titleFromDateLocal(today),
         summary: "",
         entry_at: dateLocalToEntryAtIso(today),
-        tags: [],
+        tag_ids: [],
       });
       setEntries((prev) =>
         sortEntries([
@@ -619,17 +618,13 @@ export function DiaryApp() {
 
   const detailHeaderExtra =
     selectedEntry && draft ? (
-      writesDisabled ? (
-        <EntryTagChips tags={parseTagsText(draft.tagsText)} readOnly />
-      ) : (
-        <EntryTagChips
-          tags={parseTagsText(draft.tagsText)}
-          onRemove={(tag) => {
-            const next = parseTagsText(draft.tagsText).filter((t) => t !== tag);
-            setDraft({ ...draft, tagsText: next.join(", ") });
-          }}
-        />
-      )
+      <EntryTagHeader
+        subjectKind={subjectKind}
+        tagIds={draft.tag_ids}
+        onTagIdsChange={(tag_ids) => setDraft({ ...draft, tag_ids })}
+        readOnly={writesDisabled}
+        chipsOnly
+      />
     ) : null;
 
   const detailActions =
@@ -644,8 +639,8 @@ export function DiaryApp() {
         ) : null}
         <EntryTagAddMenu
           subjectKind={subjectKind}
-          tagsText={draft.tagsText}
-          onTagsTextChange={(tagsText) => setDraft({ ...draft, tagsText })}
+          tagIds={draft.tag_ids}
+          onTagIdsChange={(tag_ids) => setDraft({ ...draft, tag_ids })}
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

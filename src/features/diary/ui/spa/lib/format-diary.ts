@@ -18,7 +18,7 @@ export type DiaryEntryRow = {
   title: string;
   summary: string;
   entry_at: string;
-  tags: string[];
+  tag_ids: number[];
   /** list/search 侧常为空；编辑前由 get 填充 */
   blocks: DiaryTextBlock[];
   created_at: string;

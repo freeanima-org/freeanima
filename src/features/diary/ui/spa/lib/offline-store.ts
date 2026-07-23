@@ -113,7 +113,7 @@ async function rewriteLocalEntryId(
           title: "",
           summary: "",
           entry_at: new Date().toISOString(),
-          tags: [],
+          tag_ids: [],
           blocks: [],
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -340,6 +340,7 @@ export async function offlineCreateDiaryEntry(
     summary?: string;
     entry_at: string;
     tags?: string[];
+    tag_ids?: number[];
   },
 ): Promise<DiaryEntryRow> {
   const title = input.title.trim();
@@ -388,7 +389,7 @@ export async function offlineCreateDiaryEntry(
         title,
         summary: input.summary ?? "",
         entry_at: input.entry_at,
-        tags: input.tags ?? [],
+        tag_ids: input.tag_ids ?? [],
         blocks,
         created_at: now,
         updated_at: now,
@@ -415,7 +416,9 @@ export async function offlineCreateDiaryEntry(
 export async function offlineUpdateDiaryEntry(
   subjectKind: DiarySubjectKind,
   id: number,
-  patch: Partial<Pick<DiaryEntryRow, "title" | "summary" | "entry_at" | "tags">>,
+  patch: Partial<Pick<DiaryEntryRow, "title" | "summary" | "entry_at" | "tag_ids">> & {
+    tags?: string[];
+  },
 ): Promise<DiaryEntryRow> {
   const scope = resolveOutboxScope();
   const existing = await findLocalEntry(scope, subjectKind, id);

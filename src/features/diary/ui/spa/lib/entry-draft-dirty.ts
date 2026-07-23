@@ -14,7 +14,7 @@ export type BlockDraft = {
 export type EntryDraft = {
   blocks: BlockDraft[];
   entryDateLocal: string;
-  tagsText: string;
+  tag_ids: number[];
 };
 
 export function blockDraftFromRow(block: DiaryTextBlock): BlockDraft {
@@ -35,7 +35,7 @@ export function entryDraftFromRow(entry: DiaryEntryRow): EntryDraft {
       .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id)
       .map(blockDraftFromRow),
     entryDateLocal: isoToDateLocalValue(entry.entry_at),
-    tagsText: entry.tags.join(", "),
+    tag_ids: [...(entry.tag_ids ?? [])],
   };
 }
 
@@ -72,7 +72,7 @@ export function isEntryDraftDirty(draft: EntryDraft, baseline: EntryDraft): bool
   return (
     !blocksEqual(draft.blocks, baseline.blocks) ||
     draft.entryDateLocal !== baseline.entryDateLocal ||
-    draft.tagsText !== baseline.tagsText
+    !tagIdsEqual(draft.tag_ids, baseline.tag_ids)
   );
 }
 
@@ -81,12 +81,8 @@ export function isEntryDraftEqual(a: EntryDraft, b: EntryDraft): boolean {
 }
 
 export function isEntryMetaDirty(draft: EntryDraft, baseline: EntryDraft): boolean {
-  return draft.entryDateLocal !== baseline.entryDateLocal || draft.tagsText !== baseline.tagsText;
-}
-
-export function parseTagsText(tagsText: string): string[] {
-  return tagsText
-    .split(/[,，]/)
-    .map((t) => t.trim())
-    .filter(Boolean);
+  return (
+    draft.entryDateLocal !== baseline.entryDateLocal ||
+    !tagIdsEqual(draft.tag_ids, baseline.tag_ids)
+  );
 }
