@@ -66,7 +66,7 @@ FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier �
 - `flushOfflineModule` / `flushAllOfflineModules`：gate 为 false 时 no-op，重连后由 `OfflineSyncBootstrap` 触发；flush 锁尾触发
 - 自动 flush 连续失败达到 5 次后停止重试
 - **Bootstrap toast**：展示 **failed / stale**（任意连接状态）；纯 **pending** 仅在 Habitat **未** `connected` 时展示。`connected` 下正常排队/在线直发不得弹「重新连接并全部重试」
-- 支持单条重试、丢弃与「重连并重试全部」
+- 失败/冲突 toast：单条 **重试** + **丢弃**；「重连并全部重试」仅用于未连接时的纯 pending toast
 - chat 流式 flush 在离开聊天页时回退到 headless context，全局 bar 仍可 flush
 
 写 RPC 可选 `client_op_id`；flush 重试使用同一 id；create 响应含完整 `item` 供 id-map 写入。
