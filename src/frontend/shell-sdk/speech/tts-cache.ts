@@ -1,10 +1,10 @@
-import type { HubTtsSynthesizeParams } from "./tts-api.ts";
+import type { HabitatTtsSynthesizeParams } from "./tts-api.ts";
 
 export const TTS_CACHE_MAX_ENTRIES = 32;
 export const TTS_CACHE_MAX_BYTES = 32 * 1024 * 1024;
 
 export type TtsCacheKeyParams = Pick<
-  HubTtsSynthesizeParams,
+  HabitatTtsSynthesizeParams,
   "text" | "lang" | "voice" | "appLocale" | "rate" | "pitch" | "volume"
 >;
 

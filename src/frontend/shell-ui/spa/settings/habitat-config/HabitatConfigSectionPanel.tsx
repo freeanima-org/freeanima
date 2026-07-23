@@ -135,8 +135,8 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
   const afterSave = useCallback(
     async (section: string) => {
       const restart = await showConfirm({
-        title: uiMessages.ui_hub_config_saved_restart_title(),
-        description: uiMessages.ui_hub_config_saved_restart_description({ section }),
+        title: uiMessages.ui_habitat_config_saved_restart_title(),
+        description: uiMessages.ui_habitat_config_saved_restart_description({ section }),
         confirmLabel: uiMessages.habitat_common_restart_service(),
       });
       if (restart) {

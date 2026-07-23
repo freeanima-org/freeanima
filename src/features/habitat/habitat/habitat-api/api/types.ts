@@ -1,4 +1,4 @@
-/** Habitat Habitat API wire types — canonical imports (no console-contract barrel). */
+/** Habitat API protocol types — canonical imports (no console-contract barrel). */
 
 export type {
   DisplayItem,

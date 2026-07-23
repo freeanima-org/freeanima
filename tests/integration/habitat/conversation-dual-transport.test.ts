@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 import { bindHabitatRuntimeContext } from "@freeanima/features/habitat/habitat/habitat-api/handlers/runtime";
-import { chatHubRoutes } from "@freeanima/features/chat/habitat/routes/index.ts";
+import { chatHabitatRoutes } from "@freeanima/features/chat/habitat/routes/index.ts";
 import {
   builtinFeaturePlugins,
   getFeatureRpcHandler,
@@ -17,11 +17,11 @@ import { getAppRuntime } from "@freeanima/platform";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 import { testConv } from "../../helpers/pg-test.ts";
 
-describePg("hub conversation.list dual transport", () => {
+describePg("habitat conversation.list dual transport", () => {
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
-    await beginIntegrationCase("hub-dual-");
+    await beginIntegrationCase("habitat-dual-");
     bindHabitatRuntimeContext();
     registerFeatures(builtinFeaturePlugins);
     getAppRuntime().markStarted();
@@ -60,7 +60,7 @@ describePg("hub conversation.list dual transport", () => {
     const input = { platform: TEST_SAP_CHAT_PLATFORM };
 
     const registryHandler = getFeatureRpcHandler("conversation.list");
-    const routeHandler = chatHubRoutes.handlers["conversation.list"];
+    const routeHandler = chatHabitatRoutes.handlers["conversation.list"];
     if (!registryHandler || !routeHandler) {
       throw new Error("conversation.list handler missing");
     }

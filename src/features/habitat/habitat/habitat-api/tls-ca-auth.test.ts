@@ -1,20 +1,22 @@
 import { describe, expect, test } from "bun:test";
 
-import { isOptionalAuthHubHttpRequest } from "@freeanima/platform/habitat/http-rest-auth.ts";
+import { isOptionalAuthHabitatHttpRequest } from "@freeanima/platform/habitat/http-rest-auth.ts";
 
 describe("tls-ca auth via registry", () => {
   test("tls.ca paths are optional auth", () => {
-    expect(isOptionalAuthHubHttpRequest(new Request("http://127.0.0.1:2658/rpc/v1/tls/ca"))).toBe(
-      true,
-    );
     expect(
-      isOptionalAuthHubHttpRequest(new Request("http://127.0.0.1:2658/rpc/v1/tls/ca/info")),
+      isOptionalAuthHabitatHttpRequest(new Request("http://127.0.0.1:2658/rpc/v1/tls/ca")),
     ).toBe(true);
     expect(
-      isOptionalAuthHubHttpRequest(new Request("http://127.0.0.1:2658/rpc/v1/tls/ca/qr?size=256")),
+      isOptionalAuthHabitatHttpRequest(new Request("http://127.0.0.1:2658/rpc/v1/tls/ca/info")),
     ).toBe(true);
     expect(
-      isOptionalAuthHubHttpRequest(
+      isOptionalAuthHabitatHttpRequest(
+        new Request("http://127.0.0.1:2658/rpc/v1/tls/ca/qr?size=256"),
+      ),
+    ).toBe(true);
+    expect(
+      isOptionalAuthHabitatHttpRequest(
         new Request("http://127.0.0.1:2658/rpc/v1/tls/ca", { method: "POST" }),
       ),
     ).toBe(false);

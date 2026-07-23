@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-23 14:39+0800\n"
 "PO-Revision-Date: 2026-06-29 14:00+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -199,7 +199,7 @@ msgid ""
 "**Notifications** use subject entity ids as `recipient_id` (see "
 "[`notifications.md`](notifications.md)); ids come from boot-time "
 "**`ResolvedWorldContext`** (and are persisted to "
-"`hub_runtime_config.worlds`)."
+"`habitat_runtime_config.worlds`)."
 msgstr ""
 "**通知**以 subject 实体 id 作为 `recipient_id`（见 [`notifications.md`]"
 "(notifications.md) 与 `config.yaml` 的 `worlds.user_subject_id` / "
@@ -229,7 +229,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/concepts/entity-model.md:64
 msgid ""
-"**Optional override**: if `hub_runtime_config.worlds.user_subject_id` / "
+"**Optional override**: if `habitat_runtime_config.worlds.user_subject_id` / "
 "`agent_subject_id` (or legacy `notifications`) are set, ensures those entity "
 "ids exist with the correct `type`."
 msgstr ""
@@ -253,7 +253,7 @@ msgstr ""
 #: docs/concepts/entity-model.md:64
 msgid ""
 "If resolved ids differ from config (including when unset), **persists** them "
-"back to `hub_runtime_config.worlds` so the next boot is stable."
+"back to `habitat_runtime_config.worlds` so the next boot is stable."
 msgstr ""
 
 #. type: Bullet: '- '
@@ -515,10 +515,11 @@ msgstr ""
 #: docs/concepts/entity-model.md:115
 msgid ""
 "Habitat startup binds **`ResolvedWorldContext`** "
-"(`hub().call(\"worlds.context\")` / `GET /rpc/v1/worlds/context`). The "
-"product shell exposes a **single User / Agent toggle** in the module header "
-"— not an arbitrary `world_id` picker. Selection maps to `user_world_id` / "
-"`agent_world_id` and persists in `sessionStorage` for the tab."
+"(`createTypedHabitatClient().call(\"worlds.context\")` / `GET /rpc/v1/worlds/"
+"context`). The product shell exposes a **single User / Agent toggle** in the "
+"module header — not an arbitrary `world_id` picker. Selection maps to "
+"`user_world_id` / `agent_world_id` and persists in `sessionStorage` for the "
+"tab."
 msgstr ""
 
 #. type: Plain text
@@ -1136,7 +1137,7 @@ msgstr "**组件过滤：** 按 `primary_component` 白名单（如 `task_item`�
 #: docs/concepts/entity-model.md:273
 #, fuzzy, no-wrap
 #| msgid "**Tools / API:** `entity_search` (LLM/MCP) and `GET|POST /api/entities/search` share `EntitySearchPort`. Task UI search box uses the same REST endpoint.\n"
-msgid "**Tools / API:** `entity_search` (LLM/MCP) and `hub().call(\"entity.searchGet\")` / `hub().call(\"entity.searchPost\")` (REST `GET /rpc/v1/entity/searchGet` | `POST /rpc/v1/entity/searchPost`) share `EntitySearchPort`. Task UI search box uses the same Habitat RPC endpoint.\n"
+msgid "**Tools / API:** `entity_search` (LLM/MCP) and `createTypedHabitatClient().call(\"entity.searchGet\")` / `createTypedHabitatClient().call(\"entity.searchPost\")` (REST `GET /rpc/v1/entity/searchGet` | `POST /rpc/v1/entity/searchPost`) share `EntitySearchPort`. Task UI search box uses the same Habitat RPC endpoint.\n"
 msgstr "**工具 / API：** `entity_search`（LLM/MCP）与 `GET|POST /api/entities/search` 共用 `EntitySearchPort`。任务 UI 搜索框使用同一 REST 端点。\n"
 
 #. type: Plain text

@@ -1,23 +1,23 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 
-import { isHubMethod } from "@freeanima/shared/habitat-contract";
-import { resetHubMethodRegistryForTests } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
+import { isHabitatMethod } from "@freeanima/shared/habitat-contract";
+import { resetHabitatMethodRegistryForTests } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
 import {
-  ensureClientHubMethodRegistry,
-  resetClientHubMethodRegistryForTests,
+  ensureClientHabitatMethodRegistry,
+  resetClientHabitatMethodRegistryForTests,
 } from "./install-client-method-registry.ts";
 
-describe("ensureClientHubMethodRegistry", () => {
+describe("ensureClientHabitatMethodRegistry", () => {
   beforeEach(() => {
-    resetHubMethodRegistryForTests();
-    resetClientHubMethodRegistryForTests();
+    resetHabitatMethodRegistryForTests();
+    resetClientHabitatMethodRegistryForTests();
   });
 
-  test("安装后 feature method 可被 isHubMethod 识别", () => {
-    expect(isHubMethod("pomodoro.focus.list")).toBe(false);
-    ensureClientHubMethodRegistry();
-    expect(isHubMethod("pomodoro.focus.list")).toBe(true);
-    expect(isHubMethod("tasklist.item.list")).toBe(true);
-    expect(isHubMethod("conversation.list")).toBe(true);
+  test("安装后 feature method 可被 isHabitatMethod 识别", () => {
+    expect(isHabitatMethod("pomodoro.focus.list")).toBe(false);
+    ensureClientHabitatMethodRegistry();
+    expect(isHabitatMethod("pomodoro.focus.list")).toBe(true);
+    expect(isHabitatMethod("tasklist.item.list")).toBe(true);
+    expect(isHabitatMethod("conversation.list")).toBe(true);
   });
 });

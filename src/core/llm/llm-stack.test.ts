@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "bun:test";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
+import { bindOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
 import { createLlmRuntime } from "./llm-stack.ts";
 import { registerLlmStackConfigurator } from "./llm-stack-configurator.ts";
 import type { AnimaConfig } from "@freeanima/core/config";
@@ -23,7 +23,7 @@ const testCfg = {
 } as AnimaConfig;
 
 beforeAll(() => {
-  registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
+  registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
 });
 
 describe("createLlmRuntime", () => {

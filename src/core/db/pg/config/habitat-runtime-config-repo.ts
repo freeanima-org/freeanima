@@ -47,7 +47,7 @@ function normalizeDocumentSection(
 
 export { mergeSection, replaceSection };
 
-export async function getHubRuntimeConfigDocument(): Promise<Record<string, unknown>> {
+export async function getHabitatRuntimeConfigDocument(): Promise<Record<string, unknown>> {
   const db = getDb();
   const rows = await db
     .select({ document: habitatRuntimeConfig.document })
@@ -59,7 +59,7 @@ export async function getHubRuntimeConfigDocument(): Promise<Record<string, unkn
   return row.document ?? {};
 }
 
-export async function upsertHubRuntimeConfigDocument(
+export async function upsertHabitatRuntimeConfigDocument(
   document: Record<string, unknown>,
 ): Promise<void> {
   const db = getDb();
@@ -80,30 +80,30 @@ export async function upsertHubRuntimeConfigDocument(
     });
 }
 
-export async function patchHubRuntimeConfigSection(
+export async function patchHabitatRuntimeConfigSection(
   section: string,
   patch: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  const current = await getHubRuntimeConfigDocument();
+  const current = await getHabitatRuntimeConfigDocument();
   const next = normalizeDocumentSection(mergeSection(current, section, patch), section);
-  await upsertHubRuntimeConfigDocument(next);
+  await upsertHabitatRuntimeConfigDocument(next);
   return next;
 }
 
 /** 整段替换（用于 acp_agents / mcp_servers 等 record 配置，支持删除条目）。 */
-export async function replaceHubRuntimeConfigSection(
+export async function replaceHabitatRuntimeConfigSection(
   section: string,
   value: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  const current = await getHubRuntimeConfigDocument();
+  const current = await getHabitatRuntimeConfigDocument();
   const next = normalizeDocumentSection(replaceSection(current, section, value), section);
-  await upsertHubRuntimeConfigDocument(next);
+  await upsertHabitatRuntimeConfigDocument(next);
   return next;
 }
 
-export async function replaceHubRuntimeConfigDocument(
+export async function replaceHabitatRuntimeConfigDocument(
   document: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  await upsertHubRuntimeConfigDocument(document);
+  await upsertHabitatRuntimeConfigDocument(document);
   return document;
 }

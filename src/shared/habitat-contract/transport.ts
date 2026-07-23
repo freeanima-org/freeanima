@@ -10,28 +10,28 @@ export type { HttpRouteMeta, HttpRequestEncoding, HttpResponseEncoding } from ".
 export { resolveHttpRequestEncoding, resolveHttpResponseEncoding } from "./http-route.ts";
 
 /** Habitat method HTTP/WS 鉴权策略（默认 required） */
-export type HubAuthPolicy = "required" | "optional";
+export type HabitatAuthPolicy = "required" | "optional";
 
-export type HubMethodMeta = {
+export type HabitatMethodMeta = {
   transports: readonly TransportKind[];
   /** habitat / satellite profile 下的默认传输 */
   defaultByProfile: Record<HabitatClientProfile, TransportKind>;
   /** 传输层失败时是否尝试备用通道（写操作默认 false） */
   fallback?: boolean;
   /** Bearer 鉴权：optional 允许无 token（如 health.probe） */
-  auth?: HubAuthPolicy;
+  auth?: HabitatAuthPolicy;
   /** HTTP REST 路由（transports 含 http 时由 registry finalize 填充） */
   http?: HttpRouteMeta;
   /** dualTransportMeta 传入的部分 http 覆盖，finalize 后清除 */
   httpOverrides?: Partial<HttpRouteMeta>;
 };
 
-export function resolveHubAuthPolicy(meta: HubMethodMeta): HubAuthPolicy {
+export function resolveHabitatAuthPolicy(meta: HabitatMethodMeta): HabitatAuthPolicy {
   return meta.auth ?? "required";
 }
 
 export function resolveDefaultTransport(
-  meta: HubMethodMeta,
+  meta: HabitatMethodMeta,
   profile: HabitatClientProfile,
 ): TransportKind {
   const preferred = meta.defaultByProfile[profile];
@@ -40,7 +40,7 @@ export function resolveDefaultTransport(
 }
 
 export function resolveFallbackTransport(
-  meta: HubMethodMeta,
+  meta: HabitatMethodMeta,
   primary: TransportKind,
 ): TransportKind | null {
   if (meta.fallback === false) return null;

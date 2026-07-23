@@ -124,7 +124,7 @@ export async function headTokenizerJsonExists(repo: string): Promise<boolean> {
   }
 }
 
-type HubModelEntry = {
+type HabitatModelEntry = {
   id?: string;
   modelId?: string;
 };
@@ -134,7 +134,7 @@ async function fetchHubSearchIds(query: string): Promise<string[]> {
   try {
     const res = await fetchWithTimeout(url);
     if (!res.ok) return [];
-    const entries = (await res.json()) as HubModelEntry[];
+    const entries = (await res.json()) as HabitatModelEntry[];
     const ids: string[] = [];
     const seen = new Set<string>();
     for (const entry of entries) {

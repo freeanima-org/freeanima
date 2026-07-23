@@ -8,9 +8,9 @@ import { buildViteAliases } from "./module-aliases.ts";
 import { paraglideCompilePlugin } from "./paraglide-plugin.ts";
 
 function satelliteViteDefine(extra?: Record<string, string>): Record<string, string> {
-  const viteHubWs = process.env.VITE_FREEANIMA_HUB_WS ?? "";
+  const viteHabitatWs = process.env.VITE_FREEANIMA_HABITAT_WS ?? "";
   return {
-    "process.env.VITE_FREEANIMA_HUB_WS": JSON.stringify(viteHubWs),
+    "process.env.VITE_FREEANIMA_HABITAT_WS": JSON.stringify(viteHabitatWs),
     ...extra,
   };
 }

@@ -115,7 +115,7 @@ export async function ensureTokenizer(model: string): Promise<void> {
   bindModel(trimmed, TOKENX_ESTIMATE_REPO, TOKENX_ESTIMATE_REPO);
 }
 
-/** @deprecated No-op: primary path is always tokenx; kept for wire/API compatibility. */
+/** @deprecated No-op: primary path is always tokenx; kept for protocol/API compatibility. */
 export async function reconcileTokenizer(model: string): Promise<boolean> {
   const trimmed = model.trim();
   if (!trimmed) return false;

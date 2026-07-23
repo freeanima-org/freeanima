@@ -72,8 +72,8 @@ describe("resolveHabitatFetch", () => {
       return new Response("ok", { status: 200 });
     }) as typeof fetch;
 
-    const habitatFetch = createBearerFetch("secret-token-min-16", "https://hub.example.com");
-    await habitatFetch(new Request("https://hub.example.com/api/status", { method: "GET" }));
+    const habitatFetch = createBearerFetch("secret-token-min-16", "https://habitat.example.com");
+    await habitatFetch(new Request("https://habitat.example.com/api/status", { method: "GET" }));
     expect(seenAuth).toBe("Bearer secret-token-min-16");
   });
 });

@@ -36,9 +36,9 @@ describe("RemoteToolsManager routing", () => {
     }
   });
 
-  it("allows hub_local for non-sap tools", () => {
+  it("allows habitat_local for non-sap tools", () => {
     const manager = new RemoteToolsManager(new ToolSetRegistry());
-    expect(manager.resolveToolCall("sid", "toolset_search", {}).kind).toBe("hub_local");
+    expect(manager.resolveToolCall("sid", "toolset_search", {}).kind).toBe("habitat_local");
   });
 
   it("reports connected instance status and tools", () => {

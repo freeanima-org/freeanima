@@ -5,12 +5,12 @@ import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import {
   createAppRuntime,
   initRuntimeContext,
-  wireServicePorts,
+  bindServicePorts,
   registerSystemPromptHooks,
 } from "@freeanima/platform";
 import { getAcpManager } from "@freeanima/capabilities/acp";
 import { MaskRegistry } from "@freeanima/features/task/domain/mask";
-import { initMaskSystem } from "@freeanima/platform/runtime/mask-wire";
+import { initMaskSystem } from "@freeanima/platform/runtime/mask-bind";
 import {
   registerServiceTools,
   registerServiceStores,
@@ -56,7 +56,7 @@ async function flushActiveCompressionSummaries(): Promise<void> {
 }
 
 /** Standard integration-test AppRuntime (builtins / Habitat handler) */
-export function wireIntegrationRuntimeContext(pg: PgTestContext): void {
+export function bindIntegrationRuntimeContext(pg: PgTestContext): void {
   bindHomeChannelConfig(pg.config);
   const kernel = createServiceKernel(pg.config);
   const conversation = createConversationService(pg.engine.catalog.toolSets);
@@ -74,7 +74,7 @@ export function wireIntegrationRuntimeContext(pg: PgTestContext): void {
     port: 2658,
   };
   const runtime = createAppRuntime(fullDeps);
-  wireServicePorts(fullDeps);
+  bindServicePorts(fullDeps);
   initRuntimeContext(runtime);
   resetRegisterServiceToolsForTest();
   registerServiceTools({
@@ -82,12 +82,12 @@ export function wireIntegrationRuntimeContext(pg: PgTestContext): void {
     skills: pg.engine.catalog.skills,
     config: pg.config,
   });
-  getAcpManager().wireRegistries({
+  getAcpManager().bindRegistries({
     toolSets: pg.engine.catalog.toolSets,
     skills: pg.engine.catalog.skills,
     config: pg.config,
   });
-  getAcpManager().wireConversation(conversation);
+  getAcpManager().bindConversation(conversation);
   registerSystemPromptHooks({
     hookRegistry: kernel.hookRegistry,
     getToolRegistry: () => pg.engine.catalog.toolSets,
@@ -138,7 +138,7 @@ async function beginWithUrl(
     home,
     ...(configYaml !== undefined ? { configYaml } : {}),
   });
-  wireIntegrationRuntimeContext(pg);
+  bindIntegrationRuntimeContext(pg);
   await syncIntegrationSelfLayer(pg);
   return { home, pg };
 }

@@ -31,7 +31,7 @@ function serializeNotificationRow(row: PgNotificationRow): NotificationRow {
   };
 }
 
-export const notificationHubRoutes = bindHabitatRouteHandlers(notificationMethodDefs, {
+export const notificationHabitatRoutes = bindHabitatRouteHandlers(notificationMethodDefs, {
   "notification.list": async (deps, input) => {
     const result = await service.listNotifications(
       depsOf(deps).runtime.runtimeDeps(),

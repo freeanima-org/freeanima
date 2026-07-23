@@ -14,12 +14,3 @@ export async function getConfiguredDatabaseUrlFromBootstrap(
   if (!db?.url) return null;
   return resolveDatabaseUrl(db.url);
 }
-
-/** @deprecated 使用 getConfiguredDatabaseUrlFromBootstrap */
-export async function getConfiguredDatabaseUrl(cfg: {
-  database?: BootstrapConfig["database"];
-}): Promise<string | null> {
-  const db = cfg.database;
-  if (!db?.url) return null;
-  return resolveDatabaseUrl(db.url);
-}

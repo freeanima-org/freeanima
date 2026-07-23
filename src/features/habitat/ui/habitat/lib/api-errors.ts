@@ -1,14 +1,14 @@
 import { omitUndefined } from "./omit-undefined.ts";
 import { m } from "./i18n.ts";
 
-export type ApiWirePayload = {
+export type ApiProtocolPayload = {
   error?: string;
   message?: string;
   code?: string;
   params?: Record<string, string>;
 };
 
-export function translateApiPayload(payload: ApiWirePayload | null | undefined): string {
+export function translateApiPayload(payload: ApiProtocolPayload | null | undefined): string {
   if (!payload) return m.habitat_common_request_failed();
   const code = payload.code;
   const params = payload.params ?? {};

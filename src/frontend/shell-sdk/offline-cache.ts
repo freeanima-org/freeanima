@@ -36,7 +36,7 @@ export function resolveCacheScope(habitatWsUrl: string): string {
 
 function readFallbackHubWs(): string {
   if (typeof process !== "undefined" && process.env) {
-    const fromVite = process.env.VITE_FREEANIMA_HUB_WS?.trim();
+    const fromVite = process.env.VITE_FREEANIMA_HABITAT_WS?.trim();
     if (fromVite) return fromVite;
     const habitatUrl = process.env.FREEANIMA_URL?.trim();
     if (habitatUrl) return resolveHabitatRpcWsUrl(habitatUrl.replace(/\/$/, ""));

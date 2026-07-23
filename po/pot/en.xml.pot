@@ -3772,7 +3772,7 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:670
 #, no-wrap
-msgid "When on, each send captures invoke snapshots on the Habitat (Redis, 10 min TTL). Open Debug in Chat to fetch — not streamed over the wire."
+msgid "When on, each send captures invoke snapshots on the Habitat (Redis, 10 min TTL). Open Debug in Chat to fetch — not streamed over Habitat RPC."
 msgstr ""
 
 #. type: Content of: <messages><msg>

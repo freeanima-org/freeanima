@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { habitatRpcRestPrefix } from "@freeanima/shared/habitat-rpc";
 import type { CompanionClientConfigPayload } from "@freeanima/shared/rpc-contract/frames/companion";
-import { activeModelPath, hubUrlFromEnv, loadCompanionConfig } from "./config.ts";
+import { activeModelPath, habitatUrlFromEnv, loadCompanionConfig } from "./config.ts";
 import { fbxImportAvailable } from "./fbx-converter-kit.ts";
 import { isModelPathAvailable } from "./model-path.ts";
 import { scanModelsOnDisk } from "./model-registry.ts";
@@ -16,8 +16,7 @@ export async function buildClientCompanionConfig(): Promise<CompanionClientConfi
   const model_path = activeModelPath(cfg);
   return {
     ...cfg,
-    habitat_url: hubUrlFromEnv(),
-    hub_url: hubUrlFromEnv(),
+    habitat_url: habitatUrlFromEnv(),
     model_path,
     model_available: isModelPathAvailable(model_path),
     fbx_import_available: fbxImportAvailable(),
@@ -27,14 +26,14 @@ export async function buildClientCompanionConfig(): Promise<CompanionClientConfi
 export function companionAssetUrl(
   kind: "models" | "motions",
   fileName: string,
-  hubBase: string,
+  habitatBase: string,
 ): string {
-  const base = hubBase.replace(/\/$/, "");
+  const base = habitatBase.replace(/\/$/, "");
   return `${base}${habitatRpcRestPrefix()}/companion/assets/${kind}/${encodeURIComponent(fileName)}`;
 }
 
 export function listAssetDownloadUrls(
-  _hubBase: string,
+  _habitatBase: string,
   cfg: Awaited<ReturnType<typeof loadCompanionConfig>>,
 ): string[] {
   const urls: string[] = [];

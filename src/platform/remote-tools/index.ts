@@ -8,10 +8,10 @@ export {
 export type { RemoteToolsStreamEmitter } from "./stream-bridge.ts";
 export { createRemoteToolsServerHandlers, attachSapWebSocket } from "./ws-server.ts";
 export type { RemoteToolsServerDeps } from "./ws-server.ts";
-export { HubSessionRegistry } from "./habitat-session-registry.ts";
+export { HabitatSessionRegistry } from "./habitat-session-registry.ts";
 export type {
-  HubSessionEntry,
-  HubSessionSendEvent,
+  HabitatSessionEntry,
+  HabitatSessionSendEvent,
   BroadcastToSubjectOptions,
 } from "./habitat-session-registry.ts";
 export { createSapBunHandlers } from "./bun-route.ts";

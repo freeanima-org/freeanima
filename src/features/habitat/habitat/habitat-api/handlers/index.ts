@@ -47,10 +47,10 @@ export {
   updateSubjectEntity,
   searchEntities,
 } from "./entities.ts";
-export { tokensHubHandlers } from "./service-api-tokens.ts";
+export { tokensHabitatHandlers } from "./service-api-tokens.ts";
 export {
-  getHubConfig,
-  getHubConfigSection,
+  getHabitatConfig,
+  getHabitatConfigSection,
   patchHabitatConfigSection,
   replaceHabitatConfigSection,
 } from "./config.ts";

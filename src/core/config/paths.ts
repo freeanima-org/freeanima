@@ -71,7 +71,7 @@ export const PATHS = {
   get vaultAgentMachineKey() {
     return homePath("vault", "agent-machine.key");
   },
-  /** 源码 `dev:hub` 写出的 Web 自动填充 token（明文，0600；生产 service 不写） */
+  /** 源码 `dev:habitat` 写出的 Web 自动填充 token（明文，0600；生产 service 不写） */
   get devWebTokenFile() {
     return homePath("dev-web.token");
   },

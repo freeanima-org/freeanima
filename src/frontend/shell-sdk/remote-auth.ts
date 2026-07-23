@@ -15,7 +15,7 @@ export function isLoopbackHabitatUrl(habitatUrl: string): boolean {
 }
 
 /** 配置了 token 则始终附 Bearer（含 loopback） */
-export function shouldAttachRemoteAuth(_hubUrl: string, token?: string | null): boolean {
+export function shouldAttachRemoteAuth(_habitatUrl: string, token?: string | null): boolean {
   return Boolean(token?.trim());
 }
 
@@ -24,7 +24,7 @@ export function buildBearerHeaders(token: string): Record<string, string> {
 }
 
 export function resolveConnectAuthToken(
-  _hubUrl: string,
+  _habitatUrl: string,
   token?: string | null,
 ): string | undefined {
   const trimmed = token?.trim();
@@ -40,17 +40,17 @@ function resolveFetchUrl(input: string | URL | Request): string {
 
 export function createBearerFetch(
   token: string,
-  hubOrigin: string,
+  habitatOrigin: string,
   baseFetch: HabitatFetch = fetch,
 ): HabitatFetch {
-  const hub = hubOrigin.replace(/\/$/, "");
+  const origin = habitatOrigin.replace(/\/$/, "");
   const bearer = `Bearer ${token.trim()}`;
   return async (input, init) => {
     if (!token.trim()) {
       return baseFetch(input, init);
     }
     const url = resolveFetchUrl(input);
-    if (!url.startsWith(hub)) {
+    if (!url.startsWith(origin)) {
       return baseFetch(input, init);
     }
     if (input instanceof Request) {

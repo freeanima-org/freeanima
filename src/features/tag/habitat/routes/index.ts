@@ -20,7 +20,7 @@ function ctxAuth(ctx: unknown) {
   return (ctx as RemoteToolsRequestContext).auth;
 }
 
-export const tagHubRoutes = bindHabitatRouteHandlers(tagMethodDefs, {
+export const tagHabitatRoutes = bindHabitatRouteHandlers(tagMethodDefs, {
   "tag.list": async (deps, input, ctx) =>
     service.serviceTagList(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input), ctxAuth(ctx)),
   "tag.search": async (deps, input, ctx) =>

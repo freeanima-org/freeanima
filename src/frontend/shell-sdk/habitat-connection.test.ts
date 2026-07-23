@@ -7,7 +7,7 @@ import {
 
 import { reconnectHabitat, subscribeHabitatConnection } from "./habitat-connection.ts";
 
-describe("hub-connection", () => {
+describe("habitat-connection", () => {
   afterEach(() => {
     resetBundledHabitatRpcClientForTests();
   });

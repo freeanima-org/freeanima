@@ -20,7 +20,7 @@ function ctxAuth(ctx: unknown) {
   return (ctx as RemoteToolsRequestContext).auth;
 }
 
-export const vaultHubRoutes = bindHabitatRouteHandlers(vaultMethodDefs, {
+export const vaultHabitatRoutes = bindHabitatRouteHandlers(vaultMethodDefs, {
   "vault.list": async (deps, input, ctx) =>
     service.serviceVaultList(
       depsOf(deps).runtime.runtimeDeps(),

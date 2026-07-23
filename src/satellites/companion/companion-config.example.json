@@ -1,4 +1,4 @@
 {
-  "hub_url": "http://127.0.0.1:2658",
+  "habitat_url": "http://127.0.0.1:2658",
   "model_path": "/models/default.vrm"
 }

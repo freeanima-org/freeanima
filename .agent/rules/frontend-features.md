@@ -6,7 +6,7 @@
 
 1. 是否需要用户可见的产品 CRUD + 实时 Habitat WS？→ **原型 A（Feature RPC）**
 2. 是否需要不可达本机的远程工具反向调用？→ **原型 A′（remote tools host）** — 仅 Habitat 拨不到的本地应用（今日 `companion` overlay WebView-host；亦可未来独立应用）
-3. 是否是运维/配置/记忆管理类 UI（Habitat）？→ **原型 B（Habitat RPC）** — 与原型 A 相同 wire
+3. 是否是运维/配置/记忆管理类 UI（Habitat）？→ **原型 B（Habitat RPC）** — 与原型 A 相同 protocol
 4. 是否仅是壳层设置（Habitat URL、debug）？→ **原型 C（shell-sdk settings）**
 5. 对端可拨号的工具？→ **MCP**（不要用远程工具注册）
 
@@ -28,7 +28,7 @@
 
 ## 原型 A′ — 远程工具宿主（不可达本地应用）
 
-**示例**：companion（**overlay WebView-host**：`createRemoteToolsHub` 在第一方 overlay 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）
+**示例**：companion（**overlay WebView-host**：`createRemoteToolsHabitatAttach` 在第一方 overlay 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）
 
 | 层                       | 必须改                                                                  |
 | ------------------------ | ----------------------------------------------------------------------- |

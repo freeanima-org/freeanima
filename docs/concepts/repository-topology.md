@@ -53,7 +53,7 @@ src/
 ## Module resolution
 
 - TypeScript：`tsconfig.json` 单一配置；`@freeanima/*` 通过 `compilerOptions.paths` 映射到 `src/**`。
-- Vite 壳层：`src/frontend/shell-ui/vite/paths.ts` 与别名（`@chat/*`、`@console/*` 等）；feature UI 在 `ui/spa/`。
+- Vite 壳层：`src/frontend/shell-ui/vite/paths.ts` 与别名（`@chat/*`、`@habitat/*` 等）；feature UI 在 `ui/spa/`。
 - 产品无 workspace 子 `package.json`；`site/` 为兄弟目录独立包。
 
 ## 护栏

@@ -26,7 +26,7 @@ export const vaultItemBodySchema = z.object({
 
 export type VaultItemBody = z.infer<typeof vaultItemBodySchema>;
 
-/** Decrypted secrets payload (client / hub memory only). */
+/** Decrypted secrets payload (client / Habitat memory only). */
 export const vaultSecretsPayloadSchema = z
   .object({
     password: z.string().optional(),

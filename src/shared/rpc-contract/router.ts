@@ -202,7 +202,7 @@ import type {
   TerminalWriteInput,
 } from "./frames/terminal.ts";
 
-export const RPC_WIRE_METHODS = [
+export const RPC_PROTOCOL_METHODS = [
   "remote_tools.attach",
   "remote_tools.detach",
   "conversation.create",
@@ -304,7 +304,7 @@ export const RPC_WIRE_METHODS = [
   "tool.error",
 ] as const;
 
-export type RpcMethod = (typeof RPC_WIRE_METHODS)[number];
+export type RpcMethod = (typeof RPC_PROTOCOL_METHODS)[number];
 
 export type RpcRouterInputs = {
   "remote_tools.attach": RemoteToolsAttachPayload;
@@ -536,14 +536,14 @@ export type RemoteToolsRequestContext = {
   sendEvent(method: string, payload: unknown): void;
 };
 
-export function defineRpcWireRouter(): {
+export function defineRpcProtocolRouter(): {
   methods: readonly RpcMethod[];
   isRpcMethod(method: string): method is RpcMethod;
 } {
   return {
-    methods: RPC_WIRE_METHODS,
+    methods: RPC_PROTOCOL_METHODS,
     isRpcMethod(method: string): method is RpcMethod {
-      return (RPC_WIRE_METHODS as readonly string[]).includes(method);
+      return (RPC_PROTOCOL_METHODS as readonly string[]).includes(method);
     },
   };
 }

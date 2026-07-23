@@ -78,13 +78,6 @@ function createShellStaticFetch(
       return Response.redirect(`${WEB_PREFIX}/chat`, 302);
     }
 
-    // Legacy Console path → Habitat
-    if (pathname === `${WEB_PREFIX}/console` || pathname.startsWith(`${WEB_PREFIX}/console/`)) {
-      const rest = pathname.slice(`${WEB_PREFIX}/console`.length) || "/dashboard";
-      const suffix = rest === "/" ? "/dashboard" : rest;
-      return Response.redirect(`${WEB_PREFIX}/habitat${suffix}`, 302);
-    }
-
     if (pathname === `${WEB_PREFIX}/config.json`) {
       const origin = new URL(req.url).origin;
       const habitatUrl = (runtime?.habitatUrl?.trim() || origin).replace(/\/$/, "");
@@ -95,9 +88,6 @@ function createShellStaticFetch(
           app_id: runtime?.appId ?? "chat",
           habitat_url: habitatUrl,
           habitat_ws_url: habitatWsUrl,
-          // @deprecated 0.9.3 后删除 — dual-write
-          hub_url: habitatUrl,
-          hub_ws_url: habitatWsUrl,
           ui_version: runtime?.uiVersion,
           min_shell_version: runtime?.minShellVersion,
         }),

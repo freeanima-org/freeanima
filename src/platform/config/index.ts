@@ -29,12 +29,7 @@ export * from "./llm-config.ts";
 export { resolveValue, resolveCredentialRef } from "./resolve.ts";
 export { loadConfigYamlRecord } from "./yaml-io.ts";
 export { patchRuntimeConfigSection, loadRuntimeConfigSection } from "./runtime-config-patch.ts";
-export {
-  validateBootstrapOnStartup,
-  validateConfigOnStartup,
-  validateFullConfigOnStartup,
-  validateRuntimeConfigOnStartup,
-} from "./validate.ts";
+export { validateBootstrapOnStartup, validateRuntimeConfigOnStartup } from "./validate.ts";
 export { resolveLlmProviderApiKeys } from "./llm-resolve.ts";
 export {
   animaConfigSchema,

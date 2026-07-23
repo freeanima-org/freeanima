@@ -38,11 +38,11 @@ export {
   type FtsRebuildJobStatus,
 } from "./fts/index.ts";
 export {
-  getHubRuntimeConfigDocument,
+  getHabitatRuntimeConfigDocument,
   mergeSection,
-  patchHubRuntimeConfigSection,
+  patchHabitatRuntimeConfigSection,
   replaceSection,
-  replaceHubRuntimeConfigSection,
-  replaceHubRuntimeConfigDocument,
-  upsertHubRuntimeConfigDocument,
+  replaceHabitatRuntimeConfigSection,
+  replaceHabitatRuntimeConfigDocument,
+  upsertHabitatRuntimeConfigDocument,
 } from "./config/index.ts";

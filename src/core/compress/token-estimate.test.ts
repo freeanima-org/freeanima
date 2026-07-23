@@ -34,7 +34,7 @@ describe("token estimate helpers", () => {
     resetTokenizerForTest();
   });
 
-  async function wireOneTokenPerChar(): Promise<void> {
+  async function bindOneTokenPerChar(): Promise<void> {
     setTokenizerEncodeForTest(FALLBACK_TOKENIZER_REPO, (text) => {
       const n = text.trim().length;
       return n ? Array.from({ length: n }, (_, i) => i + 1) : [];
@@ -43,24 +43,24 @@ describe("token estimate helpers", () => {
   }
 
   it("estimateTokens uses tokenizer", async () => {
-    await wireOneTokenPerChar();
+    await bindOneTokenPerChar();
     expect(estimateTokens("abcd")).toBe(4);
   });
 
   it("estimateMessagesTokens sums message parts", async () => {
-    await wireOneTokenPerChar();
+    await bindOneTokenPerChar();
     const total = estimateMessagesTokens([{ content: "ab" }, { content: "c" }]);
     expect(total).toBe(3);
   });
 
   it("estimateToolsTokens returns 0 for empty tools", async () => {
-    await wireOneTokenPerChar();
+    await bindOneTokenPerChar();
     expect(estimateToolsTokens(undefined)).toBe(0);
     expect(estimateToolsTokens([])).toBe(0);
   });
 
   it("estimateToolsTokens counts serialized tools", async () => {
-    await wireOneTokenPerChar();
+    await bindOneTokenPerChar();
     const tools = [{ type: "function", function: { name: "x" } }];
     const json = JSON.stringify(tools);
     expect(estimateToolsTokens(tools)).toBe(json.length);

@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { waitForHubReady } from "./wait-hub-ready.ts";
+import { waitForHabitatReady } from "./wait-habitat-ready.ts";
 
-describe("waitForHubReady", () => {
+describe("waitForHabitatReady", () => {
   const origFetch = globalThis.fetch;
 
   afterEach(() => {
@@ -15,7 +15,7 @@ describe("waitForHubReady", () => {
         headers: { "Content-Type": "application/json" },
       })) as unknown as typeof fetch;
 
-    const ok = await waitForHubReady("127.0.0.1", 2658, {
+    const ok = await waitForHabitatReady("127.0.0.1", 2658, {
       timeoutMs: 2000,
       intervalMs: 50,
     });
@@ -29,7 +29,7 @@ describe("waitForHubReady", () => {
         headers: { "Content-Type": "application/json" },
       })) as unknown as typeof fetch;
 
-    const ok = await waitForHubReady("127.0.0.1", 2658, {
+    const ok = await waitForHabitatReady("127.0.0.1", 2658, {
       timeoutMs: 200,
       intervalMs: 50,
     });

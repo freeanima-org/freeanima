@@ -6,7 +6,7 @@ import {
 } from "./web-static.ts";
 import { createMcpBunHandler, isMcpPath } from "@freeanima/capabilities/mcp-server";
 import { HABITAT_BASE_PATH } from "@freeanima/platform/ports/constants";
-import type { HabitatTlsBunOptions } from "@freeanima/platform/tls/resolve-hub-tls";
+import type { HabitatTlsBunOptions } from "@freeanima/platform/tls/resolve-habitat-tls";
 import { bindHabitatApiLogging } from "./api-logging.ts";
 import { bindHabitatRuntimeContext, habitatCtx } from "./handlers/runtime.ts";
 import { applyCorsToResponse } from "./cors.ts";
@@ -17,7 +17,6 @@ import { createServiceAuthVerifier, type ServiceAuthVerifier } from "./service-a
 import {
   applyHttpAuth,
   handleHabitatCorsPreflight,
-  legacyRpcHttpRedirect,
   trySapWebSocketUpgrade,
 } from "./http-dispatch.ts";
 
@@ -102,8 +101,6 @@ function createApiFetchHandler(runtime: ApiServerRuntime) {
     if (sapUpgrade != null) return sapUpgrade;
 
     // 旧 /rpc/v1 HTTP → /rpc/v1（0.9.3 删除）；WS 已在上方双挂
-    const legacyRedirect = legacyRpcHttpRedirect(req);
-    if (legacyRedirect) return legacyRedirect;
 
     const run = async (): Promise<Response> => {
       const preflight = handleHabitatCorsPreflight(req);

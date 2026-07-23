@@ -21,8 +21,3 @@ export function buildRedisUrl(config?: RedisConfigInput): string {
 export function getConfiguredRedisUrlFromBootstrap(bootstrap: BootstrapConfig): string {
   return buildRedisUrl(bootstrap.redis ? omitUndefined(bootstrap.redis) : undefined);
 }
-
-/** @deprecated 使用 getConfiguredRedisUrlFromBootstrap */
-export function getConfiguredRedisUrl(cfg: { redis?: BootstrapConfig["redis"] }): string {
-  return buildRedisUrl(cfg.redis ? omitUndefined(cfg.redis) : undefined);
-}

@@ -64,12 +64,12 @@ PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron 
 
 ## Recipients
 
-Subject entity ids are bound at Habitat boot into **`ResolvedWorldContext`** and persisted to `hub_runtime_config.worlds` (see [`entity-model.md`](entity-model.md)). Operators do **not** need to hand-maintain these ids on a new instance.
+Subject entity ids are bound at Habitat boot into **`ResolvedWorldContext`** and persisted to `habitat_runtime_config.worlds` (see [`entity-model.md`](entity-model.md)). Operators do **not** need to hand-maintain these ids on a new instance.
 
 Optional override (advanced; rarely needed):
 
 ```yaml
-# hub_runtime_config (Shell → Habitat 服务设置 → worlds)，或冷启动后由 boot 自动回写
+# habitat_runtime_config (Shell → Habitat 服务设置 → worlds)，或冷启动后由 boot 自动回写
 worlds:
   user_subject_id: 109 # type=user entity
   agent_subject_id: 110 # type=agent entity

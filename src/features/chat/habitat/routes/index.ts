@@ -52,7 +52,7 @@ async function loadServiceStatus() {
   return import("@freeanima/platform/runtime/service-status");
 }
 
-export const chatHubRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
+export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
   "conversation.create": async (deps, input, _ctx) => {
     const platform = input.platform?.trim() || "chat";
     const platformExtra: Record<string, unknown> = {};

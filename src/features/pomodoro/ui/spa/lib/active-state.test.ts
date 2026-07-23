@@ -24,7 +24,7 @@ const config: PomodoroConfigRow = {
   sound_enabled: true,
 };
 
-const HUB = "ws://127.0.0.1:2658/rpc/v1";
+const HABITAT = "ws://127.0.0.1:2658/rpc/v1";
 
 function mockLocalStorage(): Storage {
   const store = new Map<string, string>();
@@ -68,11 +68,11 @@ describe("pomodoro active-state", () => {
     expect(readPomodoroActiveState(undefined, "user")).toEqual(state);
   });
 
-  test("reads and migrates legacy hub-scoped storage key", () => {
+  test("reads and migrates legacy habitat-scoped storage key", () => {
     const state = createInitialActiveState(config, {}, 1_000_000);
-    localStorage.setItem(`freeanima.pomodoro.active:${HUB}:user:user`, JSON.stringify(state));
+    localStorage.setItem(`freeanima.pomodoro.active:${HABITAT}:user:user`, JSON.stringify(state));
     expect(readPomodoroActiveState(undefined, "user")).toEqual(state);
     expect(localStorage.getItem("freeanima.pomodoro.active:user")).not.toBeNull();
-    expect(localStorage.getItem(`freeanima.pomodoro.active:${HUB}:user:user`)).toBeNull();
+    expect(localStorage.getItem(`freeanima.pomodoro.active:${HABITAT}:user:user`)).toBeNull();
   });
 });

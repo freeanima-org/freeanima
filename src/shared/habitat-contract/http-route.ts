@@ -142,7 +142,7 @@ export function buildHttpRouteMeta(
 }
 
 /** dualTransportMeta 的 fallback 与 readOnly 一致：true=只读 GET，false=写入 POST */
-export function isReadOnlyHubMeta(meta: { fallback?: boolean }): boolean {
+export function isReadOnlyHabitatMeta(meta: { fallback?: boolean }): boolean {
   return meta.fallback !== false;
 }
 

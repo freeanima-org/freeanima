@@ -16,7 +16,7 @@ import { MaskRegistry } from "@freeanima/features/task/domain/mask";
 import { MCPManager } from "@freeanima/capabilities/mcp-client";
 import { RemoteToolsManager } from "@freeanima/capabilities/remote-tools";
 import { getAcpManager } from "@freeanima/capabilities/acp";
-import { wireContextWindowLookup } from "../wire-context-window.ts";
+import { bindContextWindowLookup } from "../bind-context-window.ts";
 import type { Kernel } from "@freeanima/kernel";
 import type { RuntimeConfigStore } from "@freeanima/platform/config";
 
@@ -50,7 +50,7 @@ export function bootEnginePhase(
   if (!isLlmConfigured(config.data)) {
     logComponent("startup").warn("LLM 未配置；请在 Shell 设置 → Habitat 服务中配置后重启服务");
   }
-  wireContextWindowLookup();
+  bindContextWindowLookup();
   const logger = createServiceLogger();
   const engine = createEngine({ llm: getLlmRuntime(), catalog, config, logger });
   const conversation = createConversationService(catalog.toolSets);

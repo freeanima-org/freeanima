@@ -14,8 +14,8 @@ export async function loadRemoteInstanceId(store?: RemoteInstanceStore): Promise
 
 const STORAGE_PREFIX = "freeanima.sap.instance.";
 
-export function browserRemoteInstanceStoreKey(hubOrigin: string, appId: string): string {
-  return `${STORAGE_PREFIX}${hubOrigin}|${appId}`;
+export function browserRemoteInstanceStoreKey(habitatOrigin: string, appId: string): string {
+  return `${STORAGE_PREFIX}${habitatOrigin}|${appId}`;
 }
 
 export function sapInstanceStoreFromKey(key: string): RemoteInstanceStore {
@@ -32,8 +32,11 @@ export function sapInstanceStoreFromKey(key: string): RemoteInstanceStore {
   };
 }
 
-export function browserRemoteInstanceStore(hubOrigin: string, appId: string): RemoteInstanceStore {
-  return sapInstanceStoreFromKey(browserRemoteInstanceStoreKey(hubOrigin, appId));
+export function browserRemoteInstanceStore(
+  habitatOrigin: string,
+  appId: string,
+): RemoteInstanceStore {
+  return sapInstanceStoreFromKey(browserRemoteInstanceStoreKey(habitatOrigin, appId));
 }
 
 export function memoryRemoteInstanceStore(initial: string | null = null): RemoteInstanceStore {

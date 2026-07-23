@@ -6,7 +6,7 @@ export type {
   EmailThreadRowPayload,
 } from "@freeanima/shared/rpc-contract";
 
-/** Entity store row (includes credential path fields not exposed on SAP wire). */
+/** Entity store row (includes credential path fields not exposed on Habitat RPC protocol). */
 export type EmailAccountRow = import("@freeanima/shared/rpc-contract").EmailAccountRowPayload & {
   password: string;
   sync: EmailAccountBody["sync"];

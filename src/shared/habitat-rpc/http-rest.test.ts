@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { getHubMethodDef } from "@freeanima/shared/habitat-contract";
+import { getHabitatMethodDef } from "@freeanima/shared/habitat-contract";
 
 import {
   appendPayloadToQuery,
@@ -41,7 +41,7 @@ describe("http-rest", () => {
   });
 
   test("tls.ca.qr marked raw response", () => {
-    const http = getHubMethodDef("tls.ca.qr").meta.http!;
+    const http = getHabitatMethodDef("tls.ca.qr").meta.http!;
     expect(http.response).toBe("raw");
   });
 

@@ -1,7 +1,5 @@
 /** 与 shell-sdk/settings/prefs-keys 对齐 */
 export const HABITAT_URL_KEY = "freeanima.habitatUrl";
-/** @deprecated 0.9.3 */
-export const HABITAT_URL_KEY_LEGACY = "freeanima.hubUrl";
 export const REMOTE_AUTH_TOKEN_KEY = "freeanima.remoteAuthToken";
 export const NATIVE_BUILD_META_KEY = "freeanima.nativeBuildMeta";
 export const DEBUG_VCONSOLE_ENABLED_KEY = "freeanima.debug.vConsoleEnabled";

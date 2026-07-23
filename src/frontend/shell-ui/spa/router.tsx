@@ -82,27 +82,6 @@ const habitatCatchAllRoute = createRoute({
   component: loadHabitatShellRoute(),
 });
 
-/** Legacy `/console/*` → `/habitat/*` */
-const legacyConsoleRedirectRoute = createRoute({
-  getParentRoute: () => mainLayoutRoute,
-  path: "/console/$",
-  beforeLoad: ({ location }) => {
-    const marker = "/console";
-    const idx = location.pathname.indexOf(marker);
-    const rest = idx === -1 ? "" : location.pathname.slice(idx + marker.length);
-    const suffix = !rest || rest === "/" ? "/dashboard" : rest;
-    throw redirect({ to: `/habitat${suffix}` as never });
-  },
-});
-
-const legacyConsoleIndexRedirectRoute = createRoute({
-  getParentRoute: () => mainLayoutRoute,
-  path: "/console",
-  beforeLoad: () => {
-    throw redirect({ to: "/habitat/dashboard" as never });
-  },
-});
-
 const settingsRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/settings",
@@ -117,8 +96,6 @@ const routeTree = rootRoute.addChildren([
     habitatIndexRoute,
     habitatDashboardRoute,
     habitatCatchAllRoute,
-    legacyConsoleIndexRedirectRoute,
-    legacyConsoleRedirectRoute,
     settingsRoute,
   ]),
 ]);

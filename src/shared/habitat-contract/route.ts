@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-import type { HabitatMethodDef, HubMethodDef } from "./method-def.ts";
+import type { HabitatMethodDef } from "./method-def.ts";
 
 /** 单条 Habitat route：schema + meta + handler 同位 */
 export type HabitatRouteBundle<
@@ -13,24 +13,11 @@ export type HabitatRouteBundle<
   handler: HabitatRouteHandler<I, O>;
 };
 
-/** @deprecated 0.9.3 后删除 — 请用 HabitatRouteBundle */
-export type HubRouteBundle<
-  M extends string = string,
-  I extends z.ZodTypeAny = z.ZodTypeAny,
-  O extends z.ZodTypeAny = z.ZodTypeAny,
-> = HabitatRouteBundle<M, I, O>;
-
 export type HabitatRouteHandler<I extends z.ZodTypeAny, O extends z.ZodTypeAny> = (
   deps: unknown,
   input: z.infer<I>,
   ctx: unknown,
 ) => Promise<z.infer<O>>;
-
-/** @deprecated 0.9.3 后删除 — 请用 HabitatRouteHandler */
-export type HubRouteHandler<I extends z.ZodTypeAny, O extends z.ZodTypeAny> = HabitatRouteHandler<
-  I,
-  O
->;
 
 export type FeatureRouteBundle = {
   handlers: Record<string, HabitatRouteHandler<z.ZodTypeAny, z.ZodTypeAny>>;
@@ -76,9 +63,6 @@ export function defineHabitatRoute<
     handler: def.handler,
   };
 }
-
-/** @deprecated 0.9.3 后删除 — 请用 defineHabitatRoute */
-export const defineHubRoute = defineHabitatRoute;
 
 export function mergeFeatureRoutes<const R extends readonly HabitatRouteBundle[]>(
   routes: R,
@@ -127,9 +111,6 @@ export function mergeHabitatRouteBundles<const B extends readonly FeatureRouteBu
   return { handlers, defs } as MergedRouteBundle<B>;
 }
 
-/** @deprecated 0.9.3 后删除 — 请用 mergeHabitatRouteBundles */
-export const mergeHubRouteBundles = mergeHabitatRouteBundles;
-
 /** 从已有 HabitatMethodDef（registry/schemas）绑定 handler，用于 Habitat UI 等大批量 method */
 export function defineHabitatRouteFromDef<M extends string>(
   method: M,
@@ -143,9 +124,6 @@ export function defineHabitatRouteFromDef<M extends string>(
   };
 }
 
-/** @deprecated 0.9.3 后删除 — 请用 defineHabitatRouteFromDef */
-export const defineHubRouteFromDef = defineHabitatRouteFromDef;
-
 type HabitatMethodDefMap = Readonly<Record<string, HabitatMethodDef>>;
 
 /** 由 method-defs 推导各 method handler 的 input/output 类型 */
@@ -154,9 +132,6 @@ export type HabitatRouteHandlersForDefs<T extends HabitatMethodDefMap> = {
     ? HabitatRouteHandler<I, O>
     : never;
 };
-
-/** @deprecated 0.9.3 后删除 — 请用 HabitatRouteHandlersForDefs */
-export type HubRouteHandlersForDefs<T extends HabitatMethodDefMap> = HabitatRouteHandlersForDefs<T>;
 
 /** 将 feature method-defs（SSOT）与 handler 绑定，供 habitat routes 与 client registry 复用同一份 def */
 export function bindHabitatRouteHandlers<const T extends HabitatMethodDefMap>(
@@ -179,8 +154,5 @@ export function bindHabitatRouteHandlers<const T extends HabitatMethodDefMap>(
   };
 }
 
-/** @deprecated 0.9.3 后删除 — 请用 bindHabitatRouteHandlers */
-export const bindHubRouteHandlers = bindHabitatRouteHandlers;
-
-// re-export for type-only consumers that still import HubMethodDef via route
-export type { HubMethodDef };
+// re-export for type-only consumers that still import HabitatMethodDef via route
+export type { HabitatMethodDef };

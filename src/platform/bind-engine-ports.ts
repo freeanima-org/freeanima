@@ -4,14 +4,14 @@ import { registerSystemPromptHookRunner } from "@freeanima/core/hooks/prompt";
 import { rebuildConversationCache } from "@freeanima/runtime/conversation";
 import { registerConversationToolMaskFilter } from "@freeanima/core/tool";
 import { registerCompressionSummaryPostCut } from "@freeanima/core/compress";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
+import { bindOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
 import { foldSystemPromptSections, systemPromptBuild } from "@freeanima/core/hooks/prompt";
-import { filterToolNamesByMask, resolveConversationMaskFromMeta } from "./runtime/mask-wire.ts";
+import { filterToolNamesByMask, resolveConversationMaskFromMeta } from "./runtime/mask-bind.ts";
 import { getAppRuntime } from "./context.ts";
 
-/** Composition-root wiring for engine injection ports (call once before initLlmRuntime) */
-export function wireEnginePorts(): void {
-  registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
+/** Composition-root binding for engine injection ports (call once before initLlmRuntime) */
+export function bindEnginePorts(): void {
+  registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
 
   registerSystemPromptHookRunner(async (ctx) => {
     const { kernel } = getAppRuntime();
@@ -32,7 +32,7 @@ export function wireEnginePorts(): void {
   });
 }
 
-/** Late wire after AppRuntime exists; hooks above call getAppRuntime at runtime */
+/** Late bind after AppRuntime exists; hooks above call getAppRuntime at runtime */
 export function bindEnginePortRuntime(_deps: FullRuntimeDeps): void {
   /* composition marker — runtime resolved via getAppRuntime() in callbacks */
 }

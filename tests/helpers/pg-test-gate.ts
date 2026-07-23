@@ -1,6 +1,6 @@
-import { wireEnginePorts } from "@freeanima/platform";
+import { bindEnginePorts } from "@freeanima/platform";
 
-wireEnginePorts();
+bindEnginePorts();
 
 import { describe } from "bun:test";
 import { readFileSync } from "node:fs";

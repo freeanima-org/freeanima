@@ -174,8 +174,3 @@ export async function countReferencesBySemanticMemory(entity_id: number): Promis
     .where(eq(memoryReferences.entity_id, entity_id));
   return Number(rows[0]?.count ?? 0);
 }
-
-/** @deprecated alias */
-export async function countReferencesByEntity(entity_id: number): Promise<number> {
-  return countReferencesBySemanticMemory(entity_id);
-}

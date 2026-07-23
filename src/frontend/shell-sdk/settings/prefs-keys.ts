@@ -1,8 +1,5 @@
 /** 壳层 prefs 键名（Web localStorage / Tauri store） */
-/** 新键；读时仍兼容 freeanima.hubUrl */
 export const HABITAT_URL_KEY = "freeanima.habitatUrl";
-/** @deprecated 0.9.3 删除 */
-export const HABITAT_URL_KEY_LEGACY = "freeanima.hubUrl";
 export const REMOTE_AUTH_TOKEN_KEY = "freeanima.remoteAuthToken";
 export const NATIVE_BUILD_META_KEY = "freeanima.nativeBuildMeta";
 export const DEBUG_VCONSOLE_ENABLED_KEY = "freeanima.debug.vConsoleEnabled";
@@ -13,7 +10,7 @@ export function sapInstanceKey(appId: string): string {
   return `freeanima.sap.instance.${appId}`;
 }
 
-/** localStorage：新键优先，兼容旧 freeanima.hubUrl */
+/** localStorage：栖息地 URL */
 export function readStoredHabitatUrl(getItem: (key: string) => string | null): string {
-  return getItem(HABITAT_URL_KEY)?.trim() || getItem(HABITAT_URL_KEY_LEGACY)?.trim() || "";
+  return getItem(HABITAT_URL_KEY)?.trim() || "";
 }

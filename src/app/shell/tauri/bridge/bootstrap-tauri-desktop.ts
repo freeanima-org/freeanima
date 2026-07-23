@@ -22,12 +22,12 @@ import {
 
 type HabitatCfg = { habitatUrl: string; remoteAuthToken: string };
 
-type RemoteToolsStatusWire = {
+type RemoteToolsStatusPayload = {
   instance_id: string;
   remote_tools_connected: boolean;
 };
 
-const DEFAULT_HUB = "http://127.0.0.1:2658";
+const DEFAULT_HABITAT_URL = "http://127.0.0.1:2658";
 
 function detectWindowRole(): CompanionWindowRole | null {
   const q = new URLSearchParams(window.location.search);
@@ -59,9 +59,9 @@ export async function bootstrapTauriBridge(): Promise<void> {
   try {
     cfg = await invoke<HabitatCfg>("get_habitat_config");
   } catch {
-    cfg = { habitatUrl: DEFAULT_HUB, remoteAuthToken: "" };
+    cfg = { habitatUrl: DEFAULT_HABITAT_URL, remoteAuthToken: "" };
   }
-  const habitatUrl = (cfg.habitatUrl || DEFAULT_HUB).replace(/\/$/, "");
+  const habitatUrl = (cfg.habitatUrl || DEFAULT_HABITAT_URL).replace(/\/$/, "");
   const habitatWsUrl = resolveHabitatRpcWsUrl(habitatUrl);
   const fields = buildShellApiFields(habitatUrl, habitatWsUrl, cfg.remoteAuthToken ?? "");
   const windowRole = detectWindowRole();
@@ -114,7 +114,7 @@ export async function bootstrapTauriBridge(): Promise<void> {
         remote_tools_connected: Boolean(
           raw.remote_tools_connected ?? raw.remoteToolsConnected ?? false,
         ),
-      } satisfies RemoteToolsStatusWire;
+      } satisfies RemoteToolsStatusPayload;
     },
     showNativeAlert: (payload: ShellNativeAlertPayload) => invoke("show_native_alert", { payload }),
     requestNativeAlertPermission: async () => "granted" as const,

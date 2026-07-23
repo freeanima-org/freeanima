@@ -48,17 +48,17 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 - Identity is **`type`** plus `agent_config` or `user_config` primary component.
 - Subjects are **not** scoped by `world_id` in a membership sense; row `world_id` stays at bootstrap root (`ENTITY_ROOT_WORLD_ID`) as a table placeholder.
 - **`agent_config` / `user_config` body**: `default_private_world_id` — the subject's single default private world (auto-created on subject create; configurable from private worlds owned by the subject).
-- **Notifications** use subject entity ids as `recipient_id` (see [`notifications.md`](notifications.md)); ids come from boot-time **`ResolvedWorldContext`** (and are persisted to `hub_runtime_config.worlds`).
+- **Notifications** use subject entity ids as `recipient_id` (see [`notifications.md`](notifications.md)); ids come from boot-time **`ResolvedWorldContext`** (and are persisted to `habitat_runtime_config.worlds`).
 - **Service API Token**（`service_api_tokens` 表）绑定 subject entity id；Habitat REST/SAP/MCP 从 Bearer token 解析调用方身份。见 [`remote-access.md`](../guide/remote-access.md)。
 
 ### Boot-time ensure (`worlds` config)
 
 Habitat startup runs **`ensureWorldSubjects()`** once (after migrations, before engine):
 
-- **Optional override**: if `hub_runtime_config.worlds.user_subject_id` / `agent_subject_id` (or legacy `notifications`) are set, ensures those entity ids exist with the correct `type`.
+- **Optional override**: if `habitat_runtime_config.worlds.user_subject_id` / `agent_subject_id` (or legacy `notifications`) are set, ensures those entity ids exist with the correct `type`.
 - **Unconfigured**: discovers the lowest-id entity of `type=user` / `type=agent`; if none exist, creates them with the next serial id (not fixed `1`/`2`).
 - Ensures each subject has a **default private world** (`default_private_world_id`); private world ids are **not fixed**.
-- If resolved ids differ from config (including when unset), **persists** them back to `hub_runtime_config.worlds` so the next boot is stable.
+- If resolved ids differ from config (including when unset), **persists** them back to `habitat_runtime_config.worlds` so the next boot is stable.
 - Binds **`ResolvedWorldContext`** in memory: `user_subject_id`, `agent_subject_id`, `user_world_id`, `agent_world_id`.
 - Type conflict (configured id exists but wrong `type`) **aborts service startup**.
 
@@ -111,7 +111,7 @@ LLM ToolSets: `@freeanima/feature-task/domain` — `task` (item CRUD + `task_sea
 
 ### Shell UI: global Subject scope
 
-Habitat startup binds **`ResolvedWorldContext`** (`hub().call("worlds.context")` / `GET /rpc/v1/worlds/context`). The product shell exposes a **single User / Agent toggle** in the module header — not an arbitrary `world_id` picker. Selection maps to `user_world_id` / `agent_world_id` and persists in `sessionStorage` for the tab.
+Habitat startup binds **`ResolvedWorldContext`** (`createTypedHabitatClient().call("worlds.context")` / `GET /rpc/v1/worlds/context`). The product shell exposes a **single User / Agent toggle** in the module header — not an arbitrary `world_id` picker. Selection maps to `user_world_id` / `agent_world_id` and persists in `sessionStorage` for the tab.
 
 | Surface          | World binding                                    | Control                        |
 | ---------------- | ------------------------------------------------ | ------------------------------ |
@@ -269,7 +269,7 @@ Entity **list** (deterministic browse) and **search** (relevance ranking) are se
 
 **Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tag_ids`, `due_today`). Top-level `tag_ids` filter applies across components. Arbitrary JSONPath is forbidden.
 
-**Tools / API:** `entity_search` (LLM/MCP) and `hub().call("entity.searchGet")` / `hub().call("entity.searchPost")` (REST `GET /rpc/v1/entity/searchGet` | `POST /rpc/v1/entity/searchPost`) share `EntitySearchPort`. Task UI search box uses the same Habitat RPC endpoint.
+**Tools / API:** `entity_search` (LLM/MCP) and `createTypedHabitatClient().call("entity.searchGet")` / `createTypedHabitatClient().call("entity.searchPost")` (REST `GET /rpc/v1/entity/searchGet` | `POST /rpc/v1/entity/searchPost`) share `EntitySearchPort`. Task UI search box uses the same Habitat RPC endpoint.
 
 See memory hybrid search in [`memory.md`](memory.md) for FTS operator syntax; entity search reuses the same query builder.
 

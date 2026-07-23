@@ -13,9 +13,6 @@ export type HabitatRpcReconnectPolicy = {
   factor?: number;
 };
 
-/** @deprecated 使用 {@link HabitatRpcReconnectPolicy} */
-export type HubRpcReconnectPolicy = HabitatRpcReconnectPolicy;
-
 export type RunHabitatRpcTransportOptions = {
   habitatUrl: string;
   authToken: string;
@@ -30,18 +27,12 @@ export type RunHabitatRpcTransportOptions = {
   livenessCheckIntervalMs?: number;
 };
 
-/** @deprecated 使用 {@link RunHabitatRpcTransportOptions} */
-export type RunHubRpcTransportOptions = RunHabitatRpcTransportOptions;
-
 export type HabitatRpcTransportHandle = {
   getClient(): RpcClient | null;
   whenConnected(): Promise<RpcClient>;
   getLastInboundAt(): number | null;
   stop(): void;
 };
-
-/** @deprecated 使用 {@link HabitatRpcTransportHandle} */
-export type HubRpcTransportHandle = HabitatRpcTransportHandle;
 
 const DEFAULT_POLICY: Required<HabitatRpcReconnectPolicy> = {
   initialMs: 1000,
@@ -306,6 +297,3 @@ export function runHabitatRpcTransport(
     },
   };
 }
-
-/** @deprecated 使用 {@link runHabitatRpcTransport} */
-export const runHubRpcTransport = runHabitatRpcTransport;

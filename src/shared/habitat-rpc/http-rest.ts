@@ -1,5 +1,5 @@
 import {
-  getHubMethodDef,
+  getHabitatMethodDef,
   resolveHttpRequestEncoding,
   resolveHttpResponseEncoding,
 } from "@freeanima/shared/habitat-contract";
@@ -132,10 +132,10 @@ export function buildHabitatRestRequest(
   authToken?: string,
   options?: BuildHabitatRestRequestOptions,
 ): { url: string; init: RequestInit } {
-  const def = getHubMethodDef(method);
+  const def = getHabitatMethodDef(method);
   const http = def.meta.http;
   if (!http) {
-    throw new Error(`hub method ${method} has no HTTP REST route`);
+    throw new Error(`habitat method ${method} has no HTTP REST route`);
   }
 
   const pathParams = http.pathParams ?? [];
@@ -176,7 +176,7 @@ export function buildHabitatRestRequest(
     options?.body !== undefined &&
     !(options.body instanceof FormData)
   ) {
-    throw new Error(`hub method ${method} requires FormData body`);
+    throw new Error(`habitat method ${method} requires FormData body`);
   }
 
   const init: RequestInit = { method: "POST", headers };
@@ -263,7 +263,7 @@ export function habitatTlsCaDownloadUrl(httpOrigin: string): string {
 }
 
 export function isNonJsonHabitatHttpMethod(method: string): boolean {
-  const http = getHubMethodDef(method).meta.http;
+  const http = getHabitatMethodDef(method).meta.http;
   if (!http) return false;
   return (
     resolveHttpRequestEncoding(http) !== "json" || resolveHttpResponseEncoding(http) !== "json"

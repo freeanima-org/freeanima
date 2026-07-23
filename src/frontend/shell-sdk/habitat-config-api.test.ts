@@ -2,10 +2,10 @@ import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test";
 
 const call = mock((_method: string, _payload?: unknown) => Promise.resolve({}));
 
-const hubClientActual = await import("@freeanima/shared/habitat-client");
+const habitatClientActual = await import("@freeanima/shared/habitat-client");
 
 mock.module("@freeanima/shared/habitat-client", () => ({
-  ...hubClientActual,
+  ...habitatClientActual,
   getBundledHabitatClient: () => ({ call }),
   resetBundledHabitatClientForTests: () => undefined,
 }));

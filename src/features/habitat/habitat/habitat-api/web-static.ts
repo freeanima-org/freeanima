@@ -65,9 +65,6 @@ function webConfigJsonResponse(req: Request, options: WebStaticOptions): Respons
     app_id: options.appId ?? "chat",
     habitat_url: origin,
     habitat_ws_url: resolveHabitatRpcWsUrl(origin),
-    // @deprecated 0.9.3 后删除 — dual-write
-    hub_url: origin,
-    hub_ws_url: resolveHabitatRpcWsUrl(origin),
     ...(options.uiVersion ? { ui_version: options.uiVersion } : {}),
     ...(webBuild ? { web_build: webBuild } : {}),
     ...(options.minShellVersion ? { min_shell_version: options.minShellVersion } : {}),
@@ -132,7 +129,7 @@ export function serveWebStatic(req: Request, options: WebStaticOptions): Respons
   }
 
   if (pathname === `${WEB_URL_PREFIX}/health`) {
-    return new Response(JSON.stringify({ ok: true, app: "web", mode: "hub-static" }), {
+    return new Response(JSON.stringify({ ok: true, app: "web", mode: "habitat-static" }), {
       headers: { "Content-Type": "application/json; charset=utf-8" },
     });
   }

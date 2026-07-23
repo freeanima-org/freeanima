@@ -13,7 +13,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 
-export type McpHubDeps = {
+export type McpServerDeps = {
   toolSets: ToolSetRegistry;
 };
 
@@ -28,7 +28,7 @@ export function isMcpPath(pathname: string): boolean {
   return pathname === MCP_HTTP_PATH || pathname === `${MCP_HTTP_PATH}/`;
 }
 
-function createMcpServer(deps: McpHubDeps, callCtx?: McpCallContext): Server {
+function createMcpServer(deps: McpServerDeps, callCtx?: McpCallContext): Server {
   const server = new Server(
     { name: "freeanima", version: readAppVersion() },
     { capabilities: { tools: {} } },
@@ -71,7 +71,7 @@ function createMcpServer(deps: McpHubDeps, callCtx?: McpCallContext): Server {
 
 /** Stateless Streamable HTTP handler for Bun.serve fetch */
 export function createMcpBunHandler(
-  deps: McpHubDeps,
+  deps: McpServerDeps,
 ): (req: Request, ctx?: McpCallContext) => Promise<Response | undefined> {
   return async (req: Request, ctx?: McpCallContext): Promise<Response | undefined> => {
     if (!isMcpPath(new URL(req.url).pathname)) return undefined;

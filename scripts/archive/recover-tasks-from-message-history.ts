@@ -166,11 +166,11 @@ async function resolveDatabaseUrl(): Promise<string> {
   const fromEnv = process.env.DATABASE_URL?.trim();
   if (fromEnv) return fromEnv;
 
-  const { FileConfig, getConfiguredDatabaseUrl } = await import(
+  const { FileConfig, getConfiguredDatabaseUrlFromBootstrap } = await import(
     join(repoRoot, "src/platform/config/index.ts")
   );
   const cfg = FileConfig.open();
-  const url = await getConfiguredDatabaseUrl(cfg.data);
+  const url = await getConfiguredDatabaseUrlFromBootstrap(cfg.data);
   if (!url) throw new Error("DATABASE_URL or anima database.url required");
   return url;
 }

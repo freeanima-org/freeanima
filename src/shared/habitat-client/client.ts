@@ -1,12 +1,12 @@
 import {
-  getHubMethodDef,
-  isHubMethod,
+  getHabitatMethodDef,
+  isHabitatMethod,
   resolveDefaultTransport,
   resolveFallbackTransport,
   type HabitatClientProfile,
-  type HubMethod,
-  type HubMethodInputs,
-  type HubMethodOutputs,
+  type HabitatMethod,
+  type HabitatMethodInputs,
+  type HabitatMethodOutputs,
   type TransportKind,
 } from "@freeanima/shared/habitat-contract";
 import type { RpcClient } from "@freeanima/shared/habitat-rpc";
@@ -17,13 +17,13 @@ import {
   throwHabitatRestError,
 } from "@freeanima/shared/habitat-rpc";
 
-export type HubCallOptions = {
+export type HabitatCallOptions = {
   transport?: "auto" | TransportKind;
   profile?: HabitatClientProfile;
   signal?: AbortSignal;
 };
 
-export type HubCallRawOptions = HubCallOptions & {
+export type HabitatCallRawOptions = HabitatCallOptions & {
   body?: BodyInit;
 };
 
@@ -35,17 +35,17 @@ export type HabitatClientOptions = {
   profile?: HabitatClientProfile;
 };
 
-export class HubTransportError extends Error {
+export class HabitatTransportError extends Error {
   readonly transport: TransportKind;
   constructor(transport: TransportKind, message: string, cause?: unknown) {
     super(message, { cause });
-    this.name = "HubTransportError";
+    this.name = "HabitatTransportError";
     this.transport = transport;
   }
 }
 
 function isTransportFailure(err: unknown): boolean {
-  if (err instanceof HubTransportError) return true;
+  if (err instanceof HabitatTransportError) return true;
   if (err instanceof TypeError) return true;
   const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
   return (
@@ -56,7 +56,7 @@ function isTransportFailure(err: unknown): boolean {
   );
 }
 
-function isReadMethod(method: HubMethod): boolean {
+function isReadMethod(method: HabitatMethod): boolean {
   return (
     method.endsWith(".list") ||
     method.endsWith(".get") ||
@@ -82,21 +82,21 @@ export function createHabitatClient(options: HabitatClientOptions) {
   /** GET JSON 条件请求：同 method+payload 记忆 ETag 与正文 */
   const conditionalGetCache = new Map<string, ConditionalGetCacheEntry>();
 
-  async function callViaWs<K extends HubMethod>(
+  async function callViaWs<K extends HabitatMethod>(
     method: K,
-    payload: HubMethodInputs[K],
-  ): Promise<HubMethodOutputs[K]> {
+    payload: HabitatMethodInputs[K],
+  ): Promise<HabitatMethodOutputs[K]> {
     const rpc = await options.getRpcClient();
-    return rpc.request(method, payload) as Promise<HubMethodOutputs[K]>;
+    return rpc.request(method, payload) as Promise<HabitatMethodOutputs[K]>;
   }
 
-  async function callViaHttp<K extends HubMethod>(
+  async function callViaHttp<K extends HabitatMethod>(
     method: K,
-    payload: HubMethodInputs[K],
+    payload: HabitatMethodInputs[K],
     signal?: AbortSignal,
-  ): Promise<HubMethodOutputs[K]> {
+  ): Promise<HabitatMethodOutputs[K]> {
     if (isNonJsonHabitatHttpMethod(method)) {
-      throw new Error(`hub method ${method} requires callRaw() for non-JSON HTTP`);
+      throw new Error(`habitat method ${method} requires callRaw() for non-JSON HTTP`);
     }
     const recordPayload = (payload ?? {}) as Record<string, unknown>;
     const cacheKey = conditionalGetCacheKey(method, recordPayload);
@@ -112,27 +112,27 @@ export function createHabitatClient(options: HabitatClientOptions) {
       ...init,
       ...(signal !== undefined ? { signal } : {}),
     });
-    const def = getHubMethodDef(method);
+    const def = getHabitatMethodDef(method);
     if (res.status === 304) {
       if (!cached) {
         throw new Error(`HTTP 304 Not Modified without local cache for ${method}`);
       }
-      return def.output.parse(cached.body) as HubMethodOutputs[K];
+      return def.output.parse(cached.body) as HabitatMethodOutputs[K];
     }
     const result = await parseHabitatRestResponse(res);
     const etag = res.headers.get("ETag");
     if (etag) {
       conditionalGetCache.set(cacheKey, { etag, body: result });
     }
-    return def.output.parse(result) as HubMethodOutputs[K];
+    return def.output.parse(result) as HabitatMethodOutputs[K];
   }
 
-  async function callOne<K extends HubMethod>(
+  async function callOne<K extends HabitatMethod>(
     method: K,
-    payload: HubMethodInputs[K],
+    payload: HabitatMethodInputs[K],
     transport: TransportKind,
     signal?: AbortSignal,
-  ): Promise<HubMethodOutputs[K]> {
+  ): Promise<HabitatMethodOutputs[K]> {
     try {
       if (transport === "ws") {
         return await callViaWs(method, payload);
@@ -140,20 +140,20 @@ export function createHabitatClient(options: HabitatClientOptions) {
       return await callViaHttp(method, payload, signal);
     } catch (err) {
       throw transport === "ws"
-        ? new HubTransportError("ws", err instanceof Error ? err.message : String(err), err)
-        : new HubTransportError("http", err instanceof Error ? err.message : String(err), err);
+        ? new HabitatTransportError("ws", err instanceof Error ? err.message : String(err), err)
+        : new HabitatTransportError("http", err instanceof Error ? err.message : String(err), err);
     }
   }
 
-  async function call<K extends HubMethod>(
+  async function call<K extends HabitatMethod>(
     method: K,
-    payload: HubMethodInputs[K],
-    opts: HubCallOptions = {},
-  ): Promise<HubMethodOutputs[K]> {
-    if (!isHubMethod(method)) {
-      throw new Error(`unknown hub method: ${method}`);
+    payload: HabitatMethodInputs[K],
+    opts: HabitatCallOptions = {},
+  ): Promise<HabitatMethodOutputs[K]> {
+    if (!isHabitatMethod(method)) {
+      throw new Error(`unknown habitat method: ${method}`);
     }
-    const def = getHubMethodDef(method);
+    const def = getHabitatMethodDef(method);
     def.input.parse(payload);
 
     const profileUsed = opts.profile ?? profile;
@@ -181,18 +181,18 @@ export function createHabitatClient(options: HabitatClientOptions) {
     }
   }
 
-  async function callRaw<K extends HubMethod>(
+  async function callRaw<K extends HabitatMethod>(
     method: K,
-    payload: HubMethodInputs[K],
-    opts: HubCallRawOptions = {},
+    payload: HabitatMethodInputs[K],
+    opts: HabitatCallRawOptions = {},
   ): Promise<Response> {
-    if (!isHubMethod(method)) {
-      throw new Error(`unknown hub method: ${method}`);
+    if (!isHabitatMethod(method)) {
+      throw new Error(`unknown habitat method: ${method}`);
     }
     if (!isNonJsonHabitatHttpMethod(method)) {
-      throw new Error(`hub method ${method} should use call() for JSON HTTP`);
+      throw new Error(`habitat method ${method} should use call() for JSON HTTP`);
     }
-    const def = getHubMethodDef(method);
+    const def = getHabitatMethodDef(method);
     def.input.parse(payload);
 
     const recordPayload = (payload ?? {}) as Record<string, unknown>;

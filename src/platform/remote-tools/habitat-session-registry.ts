@@ -1,9 +1,9 @@
 import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 
-export type HubSessionSendEvent = (method: string, payload: unknown) => void;
+export type HabitatSessionSendEvent = (method: string, payload: unknown) => void;
 
-export type HubSessionEntry = {
-  sendEvent: HubSessionSendEvent;
+export type HabitatSessionEntry = {
+  sendEvent: HabitatSessionSendEvent;
   auth: RpcRequestAuthContext;
 };
 
@@ -12,10 +12,10 @@ export type BroadcastToSubjectOptions = {
 };
 
 /** 已 connect 的 Habitat RPC WebSocket 会话表；按 auth.subject_type  fan-out。 */
-export class HubSessionRegistry {
-  private readonly sessions = new Map<string, HubSessionEntry>();
+export class HabitatSessionRegistry {
+  private readonly sessions = new Map<string, HabitatSessionEntry>();
 
-  register(id: string, entry: HubSessionEntry): void {
+  register(id: string, entry: HabitatSessionEntry): void {
     this.sessions.set(id, entry);
   }
 
@@ -23,7 +23,7 @@ export class HubSessionRegistry {
     this.sessions.delete(id);
   }
 
-  get(id: string): HubSessionEntry | undefined {
+  get(id: string): HabitatSessionEntry | undefined {
     return this.sessions.get(id);
   }
 

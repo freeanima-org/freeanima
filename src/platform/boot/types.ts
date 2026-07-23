@@ -1,12 +1,12 @@
 import type { AppRuntime } from "../runtime/app-runtime.ts";
-import type { ResolvedHubTlsListenConfig } from "../tls/resolve-hub-tls.ts";
+import type { ResolvedHabitatTlsListenConfig } from "../tls/resolve-habitat-tls.ts";
 
 export type HttpServerHandle = {
   close: () => void | Promise<void>;
 };
 
 export type HttpListenOptions = {
-  tls?: ResolvedHubTlsListenConfig | null;
+  tls?: ResolvedHabitatTlsListenConfig | null;
 };
 
 export type HttpStartResult = {

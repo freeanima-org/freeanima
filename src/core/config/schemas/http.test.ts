@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { DEFAULT_HUB_TLS_PORT } from "./http-ports.ts";
+import { DEFAULT_HABITAT_TLS_PORT } from "./http-ports.ts";
 import { httpConfigSchema, httpTlsConfigSchema } from "./http.ts";
 
 describe("httpTlsConfigSchema", () => {
@@ -34,7 +34,7 @@ describe("httpConfigSchema", () => {
     }
   });
 
-  test("DEFAULT_HUB_TLS_PORT is 2659", () => {
-    expect(DEFAULT_HUB_TLS_PORT).toBe(2659);
+  test("DEFAULT_HABITAT_TLS_PORT is 2659", () => {
+    expect(DEFAULT_HABITAT_TLS_PORT).toBe(2659);
   });
 });

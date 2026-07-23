@@ -258,11 +258,11 @@ export class RemoteToolsManager {
     name: string,
     platformExtra: Record<string, unknown> | undefined,
   ):
-    | { kind: "hub_local" }
+    | { kind: "habitat_local" }
     | { kind: "reject"; error: string }
     | { kind: "satellite_proxy"; payload: ToolCallPayload } {
     if (!isRemotePrefixedToolName(name)) {
-      return { kind: "hub_local" };
+      return { kind: "habitat_local" };
     }
 
     const parsed = parseRemoteToolName(name);
@@ -319,8 +319,8 @@ export class RemoteToolsManager {
     platformExtra: Record<string, unknown> | undefined,
   ): Promise<string> {
     const route = this.resolveToolCall(conversationId, name, platformExtra);
-    if (route.kind === "hub_local") {
-      throw new Error(`expected sap tool, got hub_local: ${name}`);
+    if (route.kind === "habitat_local") {
+      throw new Error(`expected sap tool, got habitat_local: ${name}`);
     }
     if (route.kind === "reject") {
       return toolError(route.error);
@@ -392,8 +392,8 @@ export class RemoteToolsManager {
     if (route.kind === "reject") {
       return toolError(route.error);
     }
-    if (route.kind === "hub_local") {
-      return toolError(`unexpected hub_local for sap tool: ${fullName}`);
+    if (route.kind === "habitat_local") {
+      return toolError(`unexpected habitat_local for sap tool: ${fullName}`);
     }
 
     return this.callToolViaSatellite(conversationId, fullName, args, meta);

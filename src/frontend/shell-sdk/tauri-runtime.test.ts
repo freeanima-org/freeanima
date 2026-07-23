@@ -34,7 +34,7 @@ describe("tauri-runtime", () => {
 
   it("isTauriRuntime：普通浏览器 origin 为 false", () => {
     (globalThis as { window: Window }).window = {
-      location: { protocol: "https:", hostname: "hub.example.com" },
+      location: { protocol: "https:", hostname: "habitat.example.com" },
       navigator: { userAgent: "Mozilla/5.0" },
     } as unknown as Window;
     expect(isTauriRuntime()).toBe(false);

@@ -31,7 +31,7 @@ function broadcastActiveChanged(
   );
 }
 
-export const pomodoroHubRoutes = bindHabitatRouteHandlers(pomodoroMethodDefs, {
+export const pomodoroHabitatRoutes = bindHabitatRouteHandlers(pomodoroMethodDefs, {
   "pomodoro.config.get": async (deps, input) =>
     service.servicePomodoroConfigGet(depsOf(deps).runtime.runtimeDeps(), input),
   "pomodoro.config.update": async (deps, input) =>

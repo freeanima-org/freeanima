@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 import type { PomodoroActiveBody } from "@freeanima/core/db/schema/entity";
 import type { PomodoroActiveState } from "./pomodoro-active-types.ts";
-import { activeStateToHubBody, hubBodyToActiveState } from "./pomodoro-active-hub.ts";
+import { activeStateToHabitatBody, habitatBodyToActiveState } from "./pomodoro-active-store.ts";
 import { readPomodoroActiveState, writePomodoroActiveState } from "./pomodoro-active.ts";
 import { getPomodoroDeviceId } from "./pomodoro-device-id.ts";
 
@@ -114,7 +114,7 @@ export function buildHubActivePayload(
   state: PomodoroActiveState,
   updatedAtMs: number = Date.now(),
 ): PomodoroActiveBody {
-  return activeStateToHubBody(state, getPomodoroDeviceId(), updatedAtMs);
+  return activeStateToHabitatBody(state, getPomodoroDeviceId(), updatedAtMs);
 }
 
 export function mergeRemoteActive(
@@ -127,10 +127,10 @@ export function mergeRemoteActive(
   }
   const remoteMeta = { device_id: remote.device_id, updated_at_ms: remote.updated_at_ms };
   if (!local) {
-    return { active: hubBodyToActiveState(remote), meta: remoteMeta };
+    return { active: habitatBodyToActiveState(remote), meta: remoteMeta };
   }
   if (!localMeta || remote.updated_at_ms >= localMeta.updated_at_ms) {
-    return { active: hubBodyToActiveState(remote), meta: remoteMeta };
+    return { active: habitatBodyToActiveState(remote), meta: remoteMeta };
   }
   return { active: local, meta: localMeta };
 }

@@ -16,7 +16,7 @@ describe("acp manager", () => {
   it("registerAcpTools returns 0 when no agents configured", () => {
     const config = emptyConfig();
     const catalog = createEngineCatalog();
-    getAcpManager().wireRegistries({ toolSets: catalog.toolSets, skills: catalog.skills, config });
+    getAcpManager().bindRegistries({ toolSets: catalog.toolSets, skills: catalog.skills, config });
     const count = registerAcpTools({});
     expect(count).toBe(0);
   });
@@ -24,7 +24,7 @@ describe("acp manager", () => {
   it("registerAcpTools registers tools from config", () => {
     const config = emptyConfig();
     const catalog = createEngineCatalog();
-    getAcpManager().wireRegistries({ toolSets: catalog.toolSets, skills: catalog.skills, config });
+    getAcpManager().bindRegistries({ toolSets: catalog.toolSets, skills: catalog.skills, config });
     const before = catalog.toolSets.listTools().filter((t) => t.name.startsWith("acp_")).length;
     const count = registerAcpTools({
       test_agent: {

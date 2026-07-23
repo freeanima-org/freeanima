@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-23 14:39+0800\n"
 "PO-Revision-Date: 2026-06-29 14:00+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -179,13 +179,19 @@ msgstr "实现：`src/frontend/shell-sdk/alert/` + 各端 backend。"
 
 #. type: Plain text
 #: docs/concepts/notifications.md:58
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| 端          | 即时通道                                                 | 预登记                                                                |\n"
+#| "| ----------- | -------------------------------------------------------- | --------------------------------------------------------------------- |\n"
+#| "| **desktop** | Tauri 桌面通知（`showNativeAlert`） | Tauri schedule / cancel |\n"
+#| "| **web**     | Web Notification API                                     | 页内 `setTimeout`（best-effort）                                      |\n"
+#| "| **mobile**  | Tauri Android 本地通知（`showNativeAlert`）              | schedule / cancel                                                    |\n"
 msgid ""
-"| 端          | 即时通道                                                 | 预登记                                                                |\n"
-"| ----------- | -------------------------------------------------------- | --------------------------------------------------------------------- |\n"
-"| **desktop** | Tauri 桌面通知（`showNativeAlert`） | Tauri schedule / cancel |\n"
-"| **web**     | Web Notification API                                     | 页内 `setTimeout`（best-effort）                                      |\n"
-"| **mobile**  | Tauri Android 本地通知（`showNativeAlert`）              | schedule / cancel                                                    |\n"
+"| 端          | 即时通道                                    | 预登记                           |\n"
+"| ----------- | ------------------------------------------- | -------------------------------- |\n"
+"| **desktop** | Tauri 桌面通知（`showNativeAlert`）         | Tauri schedule / cancel          |\n"
+"| **web**     | Web Notification API                        | 页内 `setTimeout`（best-effort） |\n"
+"| **mobile**  | Tauri Android 本地通知（`showNativeAlert`） | schedule / cancel                |\n"
 msgstr ""
 "| 端          | 即时通道                                                 | 预登记                                                                |\n"
 "| ----------- | -------------------------------------------------------- | --------------------------------------------------------------------- |\n"
@@ -208,9 +214,9 @@ msgstr "收件人"
 #: docs/concepts/notifications.md:68
 msgid ""
 "Subject entity ids are bound at Habitat boot into **`ResolvedWorldContext`** "
-"and persisted to `hub_runtime_config.worlds` (see [`entity-model.md`](entity-"
-"model.md)). Operators do **not** need to hand-maintain these ids on a new "
-"instance."
+"and persisted to `habitat_runtime_config.worlds` (see [`entity-model.md`]"
+"(entity-model.md)). Operators do **not** need to hand-maintain these ids on "
+"a new instance."
 msgstr ""
 
 #. type: Plain text
@@ -220,14 +226,19 @@ msgstr ""
 
 #. type: Fenced code block (yaml)
 #: docs/concepts/notifications.md:71
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "# habitat_runtime_config (Shell → Habitat 服务设置 → worlds)，或冷启动后由 boot 自动回写\n"
+#| "worlds:\n"
+#| "  user_subject_id: 109 # type=user entity\n"
+#| "  agent_subject_id: 110 # type=agent entity\n"
 msgid ""
-"# hub_runtime_config (Shell → Habitat 服务设置 → worlds)，或冷启动后由 boot 自动回写\n"
+"# habitat_runtime_config (Shell → Habitat 服务设置 → worlds)，或冷启动后由 boot 自动回写\n"
 "worlds:\n"
 "  user_subject_id: 109 # type=user entity\n"
 "  agent_subject_id: 110 # type=agent entity\n"
 msgstr ""
-"# hub_runtime_config (Shell → Habitat 服务设置 → worlds)，或冷启动后由 boot 自动回写\n"
+"# habitat_runtime_config (Shell → Habitat 服务设置 → worlds)，或冷启动后由 boot 自动回写\n"
 "worlds:\n"
 "  user_subject_id: 109 # type=user entity\n"
 "  agent_subject_id: 110 # type=agent entity\n"

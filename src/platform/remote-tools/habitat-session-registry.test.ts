@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
-import { HubSessionRegistry } from "./habitat-session-registry.ts";
+import { HabitatSessionRegistry } from "./habitat-session-registry.ts";
 
-describe("HubSessionRegistry", () => {
+describe("HabitatSessionRegistry", () => {
   test("broadcastToSubject 只发给匹配 subject_type 的会话", () => {
-    const registry = new HubSessionRegistry();
+    const registry = new HabitatSessionRegistry();
     const userEvents: Array<{ method: string; payload: unknown }> = [];
     const agentEvents: Array<{ method: string; payload: unknown }> = [];
 
@@ -30,7 +30,7 @@ describe("HubSessionRegistry", () => {
   });
 
   test("excludeId 跳过写方连接", () => {
-    const registry = new HubSessionRegistry();
+    const registry = new HabitatSessionRegistry();
     const received: string[] = [];
     registry.register("writer", {
       auth: { subject_id: 1, subject_type: "user", token_id: 1, scopes: [] },
@@ -50,7 +50,7 @@ describe("HubSessionRegistry", () => {
   });
 
   test("unregister 后不再收到广播", () => {
-    const registry = new HubSessionRegistry();
+    const registry = new HabitatSessionRegistry();
     let count = 0;
     registry.register("s1", {
       auth: { subject_id: 1, subject_type: "user", token_id: 1, scopes: [] },

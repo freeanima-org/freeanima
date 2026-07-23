@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-23 14:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,7 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/habitat-rpc.md:8
 #, no-wrap
-msgid "**Habitat RPC** is the **single business channel** between Habitat clients and the agent runtime. The TypeScript constant is `HABITAT_RPC_VERSION`; the wire connect literal may still accept the historical value `\"HubRPC/1.0\"` for compatibility. Transport:\n"
+msgid "**Habitat RPC** is the **single business channel** between Habitat clients and the agent runtime. The TypeScript constant is `HABITAT_RPC_VERSION`. Transport:\n"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -128,7 +128,8 @@ msgstr ""
 #: docs/guide/habitat-rpc.md:37
 msgid ""
 "Server: [`src/platform/remote-tools/`](../../src/platform/remote-tools/). "
-"Client helper: `createRemoteToolsHub` in `@freeanima/shared/rpc-contract`."
+"Client helper: `createRemoteToolsHabitatAttach` in `@freeanima/shared/rpc-"
+"contract`."
 msgstr ""
 
 #. type: Title ##
@@ -141,8 +142,8 @@ msgstr ""
 #: docs/guide/habitat-rpc.md:40
 #, no-wrap
 msgid ""
-"ws://{hub_host}:{port}/rpc/v1\n"
-"http://{hub_host}:{port}/rpc/v1/task/list\n"
+"ws://{habitat_host}:{port}/rpc/v1\n"
+"http://{habitat_host}:{port}/rpc/v1/task/list\n"
 msgstr ""
 
 #. type: Plain text

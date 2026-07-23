@@ -12,6 +12,6 @@ export function createTestAcpManager(config: Config): {
   const toolSets = new ToolSetRegistry();
   const skills = new SkillRegistry();
   const mgr = new AcpManager();
-  mgr.wireRegistries({ toolSets, skills, config });
+  mgr.bindRegistries({ toolSets, skills, config });
   return { mgr, toolSets, skills };
 }

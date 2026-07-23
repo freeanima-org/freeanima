@@ -54,10 +54,9 @@ type CompanionState = {
   setRuntimeBubble: (current: { id: string; text: string } | null, pending: number) => void;
   applyConfig: (cfg: CompanionConfig) => void;
   init: () => Promise<void>;
-  initHubSettings: () => Promise<void>;
+  initHabitatSettings: () => Promise<void>;
   refreshConfig: () => Promise<void>;
   updateSettings: (patch: {
-    hub_url?: string;
     behavior?: Partial<CompanionBehavior>;
     motion_slots?: MotionSlotsConfig;
   }) => Promise<void>;
@@ -87,7 +86,7 @@ function applyConfigToState(cfg: CompanionConfig, prev?: CompanionState): Partia
         sapConnected: cfg.remote_tools_connected,
       };
   return {
-    habitatUrl: cfg.habitat_url ?? cfg.hub_url,
+    habitatUrl: cfg.habitat_url,
     modelPath,
     ...runtimeFields,
     fbxImportAvailable: cfg.fbx_import_available,
@@ -154,8 +153,8 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
 
   applyConfig(cfg) {
     const prev = get();
-    const hubChanged = prev.habitatUrl !== (cfg.habitat_url ?? cfg.hub_url);
-    if (hubChanged) {
+    const habitatChanged = prev.habitatUrl !== cfg.habitat_url;
+    if (habitatChanged) {
       resetSidecarOriginCache();
     }
     const modelPath = cfg.model_available ? cfg.model_path : "";
@@ -180,7 +179,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
     }
   },
 
-  async initHubSettings() {
+  async initHabitatSettings() {
     set({ loading: true, error: null });
     try {
       const cfg = await loadHabitatCompanionSettingsConfig();

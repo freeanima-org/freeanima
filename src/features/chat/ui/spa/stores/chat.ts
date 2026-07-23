@@ -590,7 +590,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           reject(err);
         };
 
-        const wire = () => {
+        const readSnapshot = () => {
           const onData = (ev: StreamApiEvent) => {
             if (generation !== _streamGeneration) return;
             const result = handleStreamEvent(ev, streamText, callbacks, (partial) => {
@@ -658,12 +658,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
               _unsubscribe = null;
             }
             hadDisconnect = false;
-            const next = wire();
+            const next = readSnapshot();
             _unsubscribe = () => next.unsubscribe();
           }
         });
 
-        const sub = wire();
+        const sub = readSnapshot();
         _unsubscribe = () => sub.unsubscribe();
       });
 

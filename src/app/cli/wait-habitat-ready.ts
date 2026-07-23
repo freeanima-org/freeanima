@@ -8,22 +8,12 @@ export type WaitForHabitatReadyOptions = {
   intervalMs?: number;
 };
 
-/** @deprecated 0.9.3 后删除 — 请用 WaitForHabitatReadyOptions */
-export type WaitForHubReadyOptions = WaitForHabitatReadyOptions;
-
 /** 启动探活默认 15min：慢迁移（HNSW / 记忆 backfill）常超过旧的 2min 窗口 */
 export const DEFAULT_HABITAT_READY_TIMEOUT_MS = 900_000;
-/** @deprecated 0.9.3 后删除 — 请用 DEFAULT_HABITAT_READY_TIMEOUT_MS */
-export const DEFAULT_HUB_READY_TIMEOUT_MS = DEFAULT_HABITAT_READY_TIMEOUT_MS;
 
 function resolveHabitatReadyTimeoutMs(override?: number): number {
   if (typeof override === "number" && Number.isFinite(override) && override > 0) return override;
-  const raw = Number.parseInt(
-    process.env.FREEANIMA_HABITAT_READY_TIMEOUT_MS ??
-      process.env.FREEANIMA_HUB_READY_TIMEOUT_MS ??
-      "",
-    10,
-  );
+  const raw = Number.parseInt(process.env.FREEANIMA_HABITAT_READY_TIMEOUT_MS ?? "", 10);
   if (Number.isFinite(raw) && raw > 0) return raw;
   return DEFAULT_HABITAT_READY_TIMEOUT_MS;
 }
@@ -58,9 +48,6 @@ export async function waitForHabitatReady(
   }
   return false;
 }
-
-/** @deprecated 0.9.3 后删除 — 请用 waitForHabitatReady */
-export const waitForHubReady = waitForHabitatReady;
 
 export async function waitForHabitatReadyOrWarn(host: string, port: number): Promise<boolean> {
   const timeoutMs = resolveHabitatReadyTimeoutMs();
@@ -103,6 +90,3 @@ export async function waitForHabitatReadyOrWarn(host: string, port: number): Pro
   writeStatusLine("info", "Try: anima service restart（勿在迁移进行中 stop）");
   return false;
 }
-
-/** @deprecated 0.9.3 后删除 — 请用 waitForHabitatReadyOrWarn */
-export const waitForHubReadyOrWarn = waitForHabitatReadyOrWarn;

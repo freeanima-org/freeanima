@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { DEFAULT_HUB_TLS_PORT } from "./http-ports.ts";
+import { DEFAULT_HABITAT_TLS_PORT } from "./http-ports.ts";
 
 /** 完整 origin（scheme://host[:port]，无 path） */
 export const httpCorsOriginSchema = z
@@ -60,4 +60,4 @@ export type HttpTlsConfigFields = NonNullable<HttpTlsConfig>;
 export type HttpConfig = z.infer<typeof httpConfigSchema>;
 export type HttpConfigFields = NonNullable<HttpConfig>;
 
-export { DEFAULT_HUB_TLS_PORT };
+export { DEFAULT_HABITAT_TLS_PORT };

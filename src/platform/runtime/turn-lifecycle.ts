@@ -1,5 +1,5 @@
 import { isConversationMeta, resolveExecutableToolNames } from "@freeanima/runtime/conversation";
-import { resolveConversationMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-wire.ts";
+import { resolveConversationMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-bind.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import {
   triggerConversationTitleIfFirstTurn,

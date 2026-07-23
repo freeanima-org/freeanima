@@ -39,7 +39,7 @@ bun run check              # typecheck + lint + format + test:changed
 - **禁止**把 `ANIMA_TEST_PG_URL` 指到日常 `~/.anima` / `config.yaml` 同 host:port（护栏 skip + throw）；细则见 [`.agent/rules/testing.md`](../.agent/rules/testing.md)。
 - Before opening a PR, run full `bun run test` occasionally, not only `test:changed`.
 
-## Main repo ↔ testing-repo wiring
+## Main repo ↔ testing-repo binding
 
 | Repo                  | Secret                          | Purpose                                               |
 | --------------------- | ------------------------------- | ----------------------------------------------------- |

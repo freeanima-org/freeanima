@@ -25,16 +25,6 @@ describe("parseWebUiConfigJson", () => {
     expect(cfg?.layout_mode).toBe("compact");
   });
 
-  test("legacy hub_url 双读", () => {
-    const cfg = parseWebUiConfigJson({
-      app_id: "chat",
-      hub_url: "http://127.0.0.1:2658",
-      hub_ws_url: "ws://127.0.0.1:2658/rpc/v1",
-    });
-    expect(cfg?.habitat_url).toBe("http://127.0.0.1:2658");
-    expect(cfg?.habitat_ws_url).toBe("ws://127.0.0.1:2658/rpc/v1");
-  });
-
   test("解析 optional remote_auth_token", () => {
     const cfg = parseWebUiConfigJson({
       app_id: "chat",

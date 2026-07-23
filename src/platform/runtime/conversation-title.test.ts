@@ -5,7 +5,7 @@ import { MaskRegistry } from "@freeanima/features/task/domain/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
+import { bindOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { createLogger } from "@freeanima/kernel/logging";
 import { createMemorySink } from "@freeanima/kernel/logging/sinks/memory";
@@ -24,7 +24,7 @@ import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
-registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
+registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
 const testEngine = createEngine({
   catalog,
   config: testConfig,
@@ -32,15 +32,15 @@ const testEngine = createEngine({
   logger: createTestLogger(),
 });
 
-function wireTestDeps(): FullRuntimeDeps {
+function bindTestDeps(): FullRuntimeDeps {
   const kernel = createServiceKernel(testConfig);
   const conversation = createConversationService(catalog.toolSets);
-  getAcpManager().wireRegistries({
+  getAcpManager().bindRegistries({
     toolSets: catalog.toolSets,
     skills: catalog.skills,
     config: testConfig,
   });
-  getAcpManager().wireConversation(conversation);
+  getAcpManager().bindConversation(conversation);
   return {
     kernel,
     engine: testEngine,
@@ -64,7 +64,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
   });
 
   it("skips when conversation already has a title", async () => {
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("existing");
     const gen = spyOn(sessionTitleLlm, "generateConversationTitle");
     restores.push(getTitle, gen);
@@ -78,7 +78,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
   });
 
   it("skips when user message count is not 1", async () => {
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
     const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(2);
     const gen = spyOn(sessionTitleLlm, "generateConversationTitle");
@@ -93,7 +93,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
   });
 
   it("generates when only one user message even if total message count grew", async () => {
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
     const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
     const totalCount = spyOn(deps.conversation, "countMessages").mockResolvedValue(5);
@@ -114,7 +114,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
   });
 
   it("sets title and notifies on success", async () => {
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
     const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
     const gen = spyOn(sessionTitleLlm, "generateConversationTitle").mockResolvedValue({
@@ -140,7 +140,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
   });
 
   it("prefers emitSessionUpdated over bus/onConversationUpdated", async () => {
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
     const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
     const gen = spyOn(sessionTitleLlm, "generateConversationTitle").mockResolvedValue({
@@ -170,7 +170,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
   });
 
   it("skips duplicate in-flight generation for same session", async () => {
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
     const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
     let resolveGen: (v: { ok: true; title: string }) => void = () => {};
@@ -202,7 +202,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
   });
 
   it("does not overwrite when title appears before LLM returns", async () => {
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     let titleReads = 0;
     const getTitle = spyOn(deps.conversation, "getConversationTitle").mockImplementation(
       async () => {
@@ -227,7 +227,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
   });
 
   it("firstTurn skips userCount re-check when goal loop added a second user message", async () => {
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
     let countCalls = 0;
     const userCount = spyOn(deps.conversation, "countUserMessages").mockImplementation(async () => {
@@ -259,7 +259,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
       llm: initLlmRuntime(testConfig.data),
       logger: createLogger({ level: "debug", sinks: [sink] }),
     });
-    const deps = { ...wireTestDeps(), engine };
+    const deps = { ...bindTestDeps(), engine };
     const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
     const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
     const gen = spyOn(sessionTitleLlm, "generateConversationTitle").mockResolvedValue({
@@ -299,7 +299,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
       llm: initLlmRuntime(testConfig.data),
       logger: createLogger({ level: "debug", sinks: [sink] }),
     });
-    const deps = { ...wireTestDeps(), engine };
+    const deps = { ...bindTestDeps(), engine };
     const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
     const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
     const gen = spyOn(sessionTitleLlm, "generateConversationTitle").mockRejectedValue(
@@ -321,7 +321,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
   });
 
   it("triggerConversationTitleIfFirstTurn gates on sync user count", async () => {
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
     const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(2);
     const gen = spyOn(sessionTitleLlm, "generateConversationTitle");
@@ -336,7 +336,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
   });
 
   it("shouldGenerateConversationTitle returns false when title exists", async () => {
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("已有");
     const userCount = spyOn(deps.conversation, "countUserMessages");
     restores.push(getTitle, userCount);

@@ -15,6 +15,3 @@ export const companionHabitatSettingsSection: SettingsSection = {
     mobile: { kind: "component", load: companionHubPanelLoad },
   },
 };
-
-/** @deprecated 使用 companionHabitatSettingsSection */
-export const companionSettingsSection = companionHabitatSettingsSection;

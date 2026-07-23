@@ -48,11 +48,14 @@ describe("shell-client-config", () => {
   test("shellClientNeedsHabitatSetup when token missing", () => {
     expect(shellClientNeedsHabitatSetup(null)).toBe(true);
     expect(
-      shellClientNeedsHabitatSetup({ habitatUrl: "https://hub.example.com", remoteAuthToken: "" }),
+      shellClientNeedsHabitatSetup({
+        habitatUrl: "https://habitat.example.com",
+        remoteAuthToken: "",
+      }),
     ).toBe(true);
     expect(
       shellClientNeedsHabitatSetup({
-        habitatUrl: "https://hub.example.com",
+        habitatUrl: "https://habitat.example.com",
         remoteAuthToken: "tok",
       }),
     ).toBe(false);
@@ -61,11 +64,11 @@ describe("shell-client-config", () => {
   test("normalizeShellClientConfig trims habitat url", () => {
     expect(
       normalizeShellClientConfig({
-        habitatUrl: "https://hub.example.com/",
+        habitatUrl: "https://habitat.example.com/",
         remoteAuthToken: " secret ",
       }),
     ).toEqual({
-      habitatUrl: "https://hub.example.com",
+      habitatUrl: "https://habitat.example.com",
       remoteAuthToken: "secret",
     });
   });
@@ -90,11 +93,11 @@ describe("shell-settings-node", () => {
     const home = mkdtempSync(join(tmpdir(), "anima-desktop-"));
     try {
       saveShellClientConfig(
-        { habitatUrl: "https://hub.example.com", remoteAuthToken: "secret-token-min-16" },
+        { habitatUrl: "https://habitat.example.com", remoteAuthToken: "secret-token-min-16" },
         home,
       );
       expect(loadShellClientConfig(home)).toEqual({
-        habitatUrl: "https://hub.example.com",
+        habitatUrl: "https://habitat.example.com",
         remoteAuthToken: "secret-token-min-16",
       });
       saveShellDebugConfig(
@@ -106,7 +109,7 @@ describe("shell-settings-node", () => {
       expect(loadShellDebugConfig(home)).toEqual({
         vConsoleEnabled: true,
       });
-      expect(loadShellClientConfig(home)?.habitatUrl).toBe("https://hub.example.com");
+      expect(loadShellClientConfig(home)?.habitatUrl).toBe("https://habitat.example.com");
     } finally {
       rmSync(home, { recursive: true, force: true });
     }

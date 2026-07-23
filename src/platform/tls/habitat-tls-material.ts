@@ -7,16 +7,16 @@ import { logComponent } from "@freeanima/platform/logging";
 import { certSanCoversRequired, readCertSanNames } from "./cert-san.ts";
 import { buildOpenSslSubjectAltName, collectTlsSanNames, expandConfigPath } from "./tls-paths.ts";
 
-export type HubTlsMaterialSource = "existing" | "mkcert" | "self-signed";
+export type HabitatTlsMaterialSource = "existing" | "mkcert" | "self-signed";
 
-export type HubTlsMaterial = {
+export type HabitatTlsMaterial = {
   certPath: string;
   keyPath: string;
-  source: HubTlsMaterialSource;
+  source: HabitatTlsMaterialSource;
   passphrase?: string;
 };
 
-export type EnsureHubTlsMaterialOptions = {
+export type EnsureHabitatTlsMaterialOptions = {
   certPath: string;
   keyPath: string;
   auto: boolean;
@@ -138,7 +138,9 @@ function existingMaterialCoversSan(
 /**
  * 确保 Habitat TLS cert/key 存在；auto 时优先 mkcert，fallback openssl 自签。
  */
-export function ensureHubTlsMaterial(options: EnsureHubTlsMaterialOptions): HubTlsMaterial {
+export function ensureHabitatTlsMaterial(
+  options: EnsureHabitatTlsMaterialOptions,
+): HabitatTlsMaterial {
   const certPath = expandConfigPath(options.certPath);
   const keyPath = expandConfigPath(options.keyPath);
   const passphrase = options.passphrase?.trim() || undefined;
@@ -190,6 +192,6 @@ export function defaultHabitatTlsCertPath(): string {
   return PATHS.tlsCertFile;
 }
 
-export function defaultHubTlsKeyPath(): string {
+export function defaultHabitatTlsKeyPath(): string {
   return PATHS.tlsKeyFile;
 }

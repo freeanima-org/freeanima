@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-23 14:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -194,7 +194,7 @@ msgstr ""
 #: docs/guide/remote-access.md:58
 msgid ""
 "`GET /rpc/v1/tokens/listForSubject?id=:id`（或 "
-"`hub().call(\"tokens.listForSubject\", { id })`）"
+"`createTypedHabitatClient().call(\"tokens.listForSubject\", { id })`）"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -467,7 +467,7 @@ msgstr ""
 #: docs/guide/remote-access.md:155
 msgid ""
 "Browser Web: `/web/config.json` defaults Habitat to the **page origin** "
-"(production Habitat-hosted `/web` and Vite `dev:web`). Source `dev:hub` "
+"(production Habitat-hosted `/web` and Vite `dev:web`). Source `dev:habitat` "
 "writes `~/.anima/dev-web.token`; Vite injects it as `remote_auth_token` so "
 "the first visit need not paste a token. Production Habitat never puts tokens "
 "in `config.json` — use `anima token create` and Habitat settings."

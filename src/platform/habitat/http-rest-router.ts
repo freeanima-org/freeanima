@@ -1,22 +1,19 @@
 import { z } from "zod";
 
 import {
-  getHubMethodDef,
-  listHubMethods,
+  getHabitatMethodDef,
+  listHabitatMethods,
   coercePayloadForSchema,
   resolveHttpRequestEncoding,
   resolveHttpResponseEncoding,
-  type HubMethod,
+  type HabitatMethod,
   type HttpRouteMeta,
 } from "@freeanima/shared/habitat-contract";
 import {
   appendPayloadToQuery,
   parseQueryToPayload,
 } from "@freeanima/shared/habitat-rpc/http-rest.ts";
-import {
-  HABITAT_RPC_REST_PREFIX,
-  HABITAT_RPC_REST_PREFIX_LEGACY,
-} from "@freeanima/shared/habitat-rpc/urls.ts";
+import { HABITAT_RPC_REST_PREFIX } from "@freeanima/shared/habitat-rpc/urls.ts";
 import type {
   RpcRequestAuthContext,
   RemoteToolsRequestContext,
@@ -27,23 +24,22 @@ import { jsonResponseWithConditionalGet } from "./http-conditional.ts";
 import type { RemoteToolsServerDeps } from "../remote-tools/types.ts";
 
 /** 与 habitat-api handlers/errors 对齐；platform 不依赖 feature 内部 handler */
-class HubRestHandlerError extends Error {
+class HabitatRestHandlerError extends Error {
   readonly status: number;
   readonly code: string;
 
   constructor(status: number, code: string, message: string) {
     super(message);
-    this.name = "HubRestHandlerError";
+    this.name = "HabitatRestHandlerError";
     this.status = status;
     this.code = code;
   }
 }
 
 const HABITAT_RPC_REST_PREFIX_SLASH = `${HABITAT_RPC_REST_PREFIX}/`;
-const HABITAT_RPC_REST_PREFIX_LEGACY_SLASH = `${HABITAT_RPC_REST_PREFIX_LEGACY}/`;
 
 type RouteEntry = {
-  hubMethod: HubMethod;
+  hubMethod: HabitatMethod;
   http: HttpRouteMeta;
 };
 
@@ -63,8 +59,8 @@ function routeSpecificity(path: string): number {
 
 function compileHttpRoutes(): CompiledRoutes {
   const routes: CompiledRoutes = { GET: [], POST: [] };
-  for (const hubMethod of listHubMethods()) {
-    const def = getHubMethodDef(hubMethod);
+  for (const hubMethod of listHabitatMethods()) {
+    const def = getHabitatMethodDef(hubMethod);
     if (!def.meta.transports.includes("http") || !def.meta.http) continue;
     routes[def.meta.http.verb].push({ hubMethod, http: def.meta.http });
   }
@@ -127,12 +123,9 @@ function findRouteAnyVerb(
 }
 
 function habitatRestRelativePath(pathname: string): string | null {
-  for (const prefix of [HABITAT_RPC_REST_PREFIX_SLASH, HABITAT_RPC_REST_PREFIX_LEGACY_SLASH]) {
-    if (!pathname.startsWith(prefix)) continue;
-    const rel = pathname.slice(prefix.length);
-    return rel.length > 0 ? rel : null;
-  }
-  return null;
+  if (!pathname.startsWith(HABITAT_RPC_REST_PREFIX_SLASH)) return null;
+  const rel = pathname.slice(HABITAT_RPC_REST_PREFIX_SLASH.length);
+  return rel.length > 0 ? rel : null;
 }
 
 function jsonError(status: number, code: string, message: string): Response {
@@ -215,7 +208,7 @@ export async function handleHttpHabitatRestRequest(
     ...pathValues,
   };
 
-  const def = getHubMethodDef(entry.hubMethod);
+  const def = getHabitatMethodDef(entry.hubMethod);
   const coerced = coercePayloadForSchema(merged, def.input);
   const responseEncoding = resolveHttpResponseEncoding(entry.http);
 
@@ -245,7 +238,7 @@ export async function handleHttpHabitatRestRequest(
     if (e instanceof z.ZodError) {
       return jsonError(400, "invalid_input", e.message);
     }
-    if (e instanceof HubRestHandlerError) {
+    if (e instanceof HabitatRestHandlerError) {
       return jsonError(e.status, e.code, e.message);
     }
     const apiErr = e as { status?: number; message?: string; context?: { code?: string } };
@@ -264,12 +257,12 @@ export async function handleHttpHabitatRestRequest(
 /** 供测试：给定 method 与 payload 生成 REST URL（不发起请求） */
 export function buildHabitatRestPathForTest(
   httpOrigin: string,
-  method: HubMethod,
+  method: HabitatMethod,
   payload: Record<string, unknown>,
 ): string {
-  const def = getHubMethodDef(method);
+  const def = getHabitatMethodDef(method);
   const http = def.meta.http;
-  if (!http) throw new Error(`hub method ${method} has no HTTP REST route`);
+  if (!http) throw new Error(`habitat method ${method} has no HTTP REST route`);
   const pathParams = http.pathParams ?? [];
   const omitKeys = new Set(pathParams);
 

@@ -14,17 +14,6 @@ import { getCompanionManifest } from "./manifest.ts";
 export { startCompanionServer };
 export type { CompanionServerHandle } from "../../server/index.ts";
 
-/** @deprecated attach 在 overlay；no-op */
-export { reconnectRemoteTools as reconnectCompanionSap } from "../../server/sap/hub.ts";
-/** @deprecated attach 在 overlay；no-op */
-export { reconnectRemoteTools as reconnectCompanionRemoteTools } from "../../server/sap/hub.ts";
-/** @deprecated 始终 false；状态见 ShellApi.getCompanionRemoteToolsStatus */
-export { isRemoteToolsConnected as isCompanionSapConnected } from "../../server/sap/hub.ts";
-/** @deprecated 始终 false；状态见 ShellApi.getCompanionRemoteToolsStatus */
-export { isRemoteToolsConnected as isCompanionRemoteToolsConnected } from "../../server/sap/hub.ts";
-
-/** @deprecated server runtime 仅 browser-dev 遗留；Portal overlay 用本地 runtime */
-export { advanceBubble, bubbleState } from "../../server/runtime-state.ts";
 export {
   addRuntimeExternalListener,
   runtimeWsPayload,

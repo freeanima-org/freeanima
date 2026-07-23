@@ -18,7 +18,7 @@ export async function buildSystemPrompt(
 ): Promise<string> {
   if (!runner) {
     throw new Error(
-      "SystemPromptHookRunner not registered: call wireEnginePorts() or registerSystemPromptHookRunner",
+      "SystemPromptHookRunner not registered: call bindEnginePorts() or registerSystemPromptHookRunner",
     );
   }
   return runner(omitUndefined({ functionNames, cwd, meta }));

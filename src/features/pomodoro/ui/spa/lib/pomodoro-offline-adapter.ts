@@ -54,9 +54,9 @@ async function flushPomodoroOp(
   op: OfflineOutboxOp,
   _scope: string,
 ): Promise<import("@freeanima/frontend/shell-sdk/offline-module-types").FlushOpOutcome> {
-  const hub = getTypedHabitatClient();
+  const habitatClient = getTypedHabitatClient();
   try {
-    await hub.call(op.method as "pomodoro.config.update", {
+    await habitatClient.call(op.method as "pomodoro.config.update", {
       ...op.payload,
       subject_kind: op.payload.subject_kind as "user" | "agent",
     });
@@ -74,18 +74,24 @@ export const pomodoroRpcAdapter: RpcModuleAdapter = {
   compactOutbox: compactPomodoroOutbox,
   flushOp: async (op, ctx) => flushPomodoroOp(op, ctx.scope),
   refreshAll: async (scope) => {
-    const hub = getTypedHabitatClient();
+    const habitatClient = getTypedHabitatClient();
     for (const subjectKind of ["user", "agent"] as const) {
       try {
         const [configData, sessions, statsToday, statsWeek] = await Promise.all([
-          hub.call("pomodoro.config.get", { subject_kind: subjectKind }),
-          hub.call("pomodoro.session.list", {
+          habitatClient.call("pomodoro.config.get", { subject_kind: subjectKind }),
+          habitatClient.call("pomodoro.session.list", {
             subject_kind: subjectKind,
             limit: 20,
             offset: 0,
           }),
-          hub.call("pomodoro.session.stats", { subject_kind: subjectKind, period: "today" }),
-          hub.call("pomodoro.session.stats", { subject_kind: subjectKind, period: "week" }),
+          habitatClient.call("pomodoro.session.stats", {
+            subject_kind: subjectKind,
+            period: "today",
+          }),
+          habitatClient.call("pomodoro.session.stats", {
+            subject_kind: subjectKind,
+            period: "week",
+          }),
         ]);
         await writeOfflineCache(scope, NAMESPACE, configCacheId(subjectKind), configData.config);
         await writeOfflineCache(scope, NAMESPACE, sessionsCacheId(subjectKind), sessions);

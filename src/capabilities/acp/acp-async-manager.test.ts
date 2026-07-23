@@ -27,7 +27,7 @@ describe("AcpManager async progress polling", () => {
     };
 
     const { mgr } = createTestAcpManager(acpMinimalConfig());
-    mgr.wireConversation({
+    mgr.bindConversation({
       loadConversationMeta: async () => ({
         role: "conversation_meta" as const,
         model: "test",
@@ -38,7 +38,7 @@ describe("AcpManager async progress polling", () => {
       }),
       updateConversationMetaField: async () => {},
     });
-    mgr.wireProgressDelivery(port);
+    mgr.bindProgressDelivery(port);
     mgr.registerTools();
 
     const store = (mgr as unknown as { taskStore: { set: (t: unknown) => void } }).taskStore;

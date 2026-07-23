@@ -129,7 +129,7 @@ export function runtimeToolMaskFromResolved(
   return { allowedTools: resolved.allowed_tools };
 }
 
-/** Register built-in / YAML masks at startup (tool mask filter wired in wireEnginePorts) */
+/** Register built-in / YAML masks at startup (tool mask filter bound in bindEnginePorts) */
 export function initMaskSystem(masks: MaskRegistry): void {
   registerBuiltinMasks(masks);
   loadMasksFromYaml(masks);

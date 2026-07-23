@@ -29,7 +29,7 @@ import {
 } from "@freeanima/platform/slash-commands";
 import { getAppRuntime } from "@freeanima/platform";
 import { getHomeChannel } from "@freeanima/platform/ports/home-channel";
-import { getHubRuntimeConfigDocument } from "@freeanima/core/db/pg";
+import { getHabitatRuntimeConfigDocument } from "@freeanima/core/db/pg";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 import * as engineConversation from "@freeanima/runtime/conversation";
 import { patchConversationMeta } from "@freeanima/core/db/pg/conversation";
@@ -377,7 +377,7 @@ describePg("slash commands", () => {
       chat_id: "1234567890123456789",
       thread_id: "999",
     });
-    const doc = await getHubRuntimeConfigDocument();
+    const doc = await getHabitatRuntimeConfigDocument();
     const discord = doc.discord as Record<string, unknown> | undefined;
     expect(discord?.home_channel).toBe("1234567890123456789");
     expect(discord?.home_thread_id).toBe("999");
@@ -395,7 +395,7 @@ describePg("slash commands", () => {
     });
     expect(result.text).toContain("WeChat home channel");
     expect(getHomeChannel("weixin")).toEqual({ chat_id: "peer@im.wechat" });
-    const doc = await getHubRuntimeConfigDocument();
+    const doc = await getHabitatRuntimeConfigDocument();
     const weixin = doc.weixin as Record<string, unknown> | undefined;
     expect(weixin?.home_channel).toBe("peer@im.wechat");
   });

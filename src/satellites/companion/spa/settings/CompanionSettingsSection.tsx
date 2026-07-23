@@ -6,7 +6,7 @@ import { useCompanionStore } from "../stores/companion.ts";
 
 export default function CompanionSettingsSection({ deps }: SettingsPanelProps) {
   useEffect(() => {
-    void useCompanionStore.getState().initHubSettings();
+    void useCompanionStore.getState().initHabitatSettings();
   }, []);
 
   return <SettingsPanel standalone hubOnly {...(deps ? { deps } : {})} />;

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wv 53\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-23 14:39+0800\n"
 "PO-Revision-Date: 2026-07-17 22:43+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -30,12 +30,16 @@ msgstr "消息网关配置"
 
 #. type: Plain text
 #: docs/guide/message-gateway.md:8
+#, fuzzy
+#| msgid ""
+#| "Discord / 微信（iLink）通道与全局网关选项保存在 PostgreSQL "
+#| "`habitat_runtime_config`，**不要**写进 `~/.anima/config.yaml`。"
 msgid ""
 "Discord / 微信（iLink）通道与全局网关选项保存在 PostgreSQL "
-"`hub_runtime_config`，**不要**写进 `~/.anima/config.yaml`。"
+"`habitat_runtime_config`，**不要**写进 `~/.anima/config.yaml`。"
 msgstr ""
 "Discord / 微信（iLink）通道与全局网关选项保存在 PostgreSQL "
-"`hub_runtime_config`，**不要**写进 `~/.anima/config.yaml`。"
+"`habitat_runtime_config`，**不要**写进 `~/.anima/config.yaml`。"
 
 #. type: Title ##
 #: docs/guide/message-gateway.md:9

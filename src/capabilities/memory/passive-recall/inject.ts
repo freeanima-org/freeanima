@@ -15,9 +15,6 @@ export function isPassiveMemoryContextAssistant(msg: StoredMessage): msg is Assi
   return msg.role === "assistant" && msg.name === PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME;
 }
 
-/** @deprecated 使用 isPassiveMemoryContextAssistant */
-export const isPassiveMemoryContextSystem = isPassiveMemoryContextAssistant;
-
 function formatPassiveMemoryLine(hit: SemanticRecallHit): string {
   const marker = formatMemoryReferenceMarker(hit.semantic_memory_id);
   return `${marker} ${hit.content}`;

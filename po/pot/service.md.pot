@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-23 14:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,8 +43,9 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/service.md:12
 msgid ""
-"`anima service status` and `hub().call(\"status.get\")` (REST `GET /rpc/v1/"
-"status/get`) report process memory under `memory_kb` and `memory_detail`."
+"`anima service status` and `createTypedHabitatClient().call(\"status.get\")` "
+"(REST `GET /rpc/v1/status/get`) report process memory under `memory_kb` and "
+"`memory_detail`."
 msgstr ""
 
 #. type: Plain text
@@ -80,7 +81,7 @@ msgstr ""
 msgid ""
 "curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/rpc/v1/status/get | jq '.memory_kb, .memory_detail'\n"
 "grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status\n"
-"just memory-sample -- --hub-url http://127.0.0.1:2658 --stage full\n"
+"just memory-sample -- --habitat-url http://127.0.0.1:2658 --stage full\n"
 msgstr ""
 
 #. type: Title ##
@@ -95,7 +96,7 @@ msgstr ""
 msgid ""
 "| Mode                    | How to run Habitat                                                                                                               |\n"
 "| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| **Monorepo / worktree** | `bun run dev:hub` (default random port ≥10000; optional `--port` / `--strict-port`; source `anima` has **no** `service` command) |\n"
+"| **Monorepo / worktree** | `bun run dev:habitat` (default random port ≥10000; optional `--port` / `--strict-port`; source `anima` has **no** `service` command) |\n"
 "| **Standalone install**  | `anima service start` / `stop` / `status` (systemd user unit; **2658** / TLS **2659**)                                           |\n"
 msgstr ""
 
@@ -125,7 +126,7 @@ msgid ""
 "\n"
 "# --- monorepo / worktree ---\n"
 "just dev                     # Habitat (≥10000) + Vite Web (≥5000); proxy via FREEANIMA_URL\n"
-"bun run dev:hub              # Habitat foreground; default random ≥10000; skip Habitat TLS (Vite may HTTPS)\n"
+"bun run dev:habitat              # Habitat foreground; default random ≥10000; skip Habitat TLS (Vite may HTTPS)\n"
 "bun run dev:web              # Vite HMR from :5000 (set FREEANIMA_URL to Habitat); browser Habitat = page origin\n"
 msgstr ""
 
@@ -151,19 +152,19 @@ msgid ""
 "| ------------------ | -------------------------------------------- | ------------------------------------------------------- |\n"
 "| Standalone release | Forced during `bun run build:cli:executable` | Embedded, served at `/web/*`                            |\n"
 "| Source deploy      | Run `bun run build:web` before start         | Habitat `/web/*` when `web.enabled`                     |\n"
-"| Dev                | Not required                                 | `just dev` / `dev:hub` + `dev:web` → Web **:5000+** HMR |\n"
+"| Dev                | Not required                                 | `just dev` / `dev:habitat` + `dev:web` → Web **:5000+** HMR |\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/service.md:67
 #, no-wrap
-msgid "When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. For standalone static hosting without the Habitat process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `dev:hub` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
+msgid "When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. For standalone static hosting without the Habitat process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `dev:habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/service.md:69
 #, no-wrap
-msgid "**Startup order:** Habitat must pass `GET /rpc/v1/health/probe` (`status: ok`) before `serve()` `onReady` hooks run. `anima service start` waits up to **15 minutes** by default (`FREEANIMA_HUB_READY_TIMEOUT_MS`) because schema migrations run **before** HTTP listen. Remote-tool host disconnects are retried by `@freeanima/shared/rpc-contract` transport (exponential backoff).\n"
+msgid "**Startup order:** Habitat must pass `GET /rpc/v1/health/probe` (`status: ok`) before `serve()` `onReady` hooks run. `anima service start` waits up to **15 minutes** by default (`FREEANIMA_HABITAT_READY_TIMEOUT_MS`) because schema migrations run **before** HTTP listen. Remote-tool host disconnects are retried by `@freeanima/shared/rpc-contract` transport (exponential backoff).\n"
 msgstr ""
 
 #. type: Plain text
@@ -192,6 +193,6 @@ msgstr ""
 msgid ""
 "**Local Web dev (`bun run dev:web`):** Vite from `:5000` with base `/web/` — "
 "Chat `http://127.0.0.1:5000/web/chat`, Habitat `…/web/habitat/dashboard`; `/"
-"hub` and `/mcp` proxied to `FREEANIMA_URL`. Browser Habitat defaults to page "
-"origin; `dev:hub` auto-fills token via `~/.anima/dev-web.token`."
+"rpc` and `/mcp` proxied to `FREEANIMA_URL`. Browser Habitat defaults to page "
+"origin; `dev:habitat` auto-fills token via `~/.anima/dev-web.token`."
 msgstr ""

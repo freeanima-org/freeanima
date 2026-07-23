@@ -8,12 +8,12 @@ import {
   revokeServiceApiToken,
 } from "@freeanima/core/db/pg/service-api-token";
 import { omitUndefined } from "@freeanima/core/util";
-import type { HubDispatchContext } from "@freeanima/platform/habitat/dispatch.ts";
+import type { HabitatDispatchContext } from "@freeanima/platform/habitat/dispatch.ts";
 import { habitatMethodDefs } from "@freeanima/shared/habitat-contract/registry/habitat.ts";
 import {
   defineHabitatRouteFromDef,
   mergeFeatureRoutes,
-  type HubRouteHandler,
+  type HabitatRouteHandler,
 } from "@freeanima/shared/habitat-contract/route.ts";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 
@@ -27,8 +27,8 @@ import {
 } from "../habitat-api/handlers/acp.ts";
 import { listAutoLlmRuns } from "../habitat-api/handlers/auto-llm-runs.ts";
 import {
-  getHubConfig,
-  getHubConfigSection,
+  getHabitatConfig,
+  getHabitatConfigSection,
   patchHabitatConfigSection,
   replaceHabitatConfigSection,
 } from "../habitat-api/handlers/config.ts";
@@ -93,22 +93,22 @@ import {
 } from "../habitat-api/handlers/tls-ca.ts";
 import { handleTtsSynthesize } from "../tts-handler.ts";
 
-type AnyHubRouteHandler = HubRouteHandler<z.ZodTypeAny, z.ZodTypeAny>;
+type AnyHabitatRouteHandler = HabitatRouteHandler<z.ZodTypeAny, z.ZodTypeAny>;
 
 function wrapConsoleLegacyHandler(
   fn: (payload: unknown) => Promise<unknown> | unknown,
-): AnyHubRouteHandler {
+): AnyHabitatRouteHandler {
   return (_deps, input, _ctx) => Promise.resolve(fn(input));
 }
 
-function requireHttpRequest(ctx: HubDispatchContext): Request {
+function requireHttpRequest(ctx: HabitatDispatchContext): Request {
   if (!ctx.httpRequest) {
-    throw new Error("public hub method requires HTTP request context");
+    throw new Error("public habitat method requires HTTP request context");
   }
   return ctx.httpRequest;
 }
 
-function qrRequest(ctx: HubDispatchContext, payload: { size?: number }): Request {
+function qrRequest(ctx: HabitatDispatchContext, payload: { size?: number }): Request {
   const base = requireHttpRequest(ctx);
   const url = new URL(base.url);
   if (payload.size !== undefined) {
@@ -125,7 +125,7 @@ function requireFullAuth(ctx: unknown): ServiceAuthContext {
   return auth;
 }
 
-const entitySearchHandler: AnyHubRouteHandler = (_deps, input, ctx) =>
+const entitySearchHandler: AnyHabitatRouteHandler = (_deps, input, ctx) =>
   Promise.resolve(
     searchEntities(
       input as Parameters<typeof searchEntities>[0],
@@ -133,22 +133,22 @@ const entitySearchHandler: AnyHubRouteHandler = (_deps, input, ctx) =>
     ),
   );
 
-export const consoleHubRoutes = mergeFeatureRoutes([
+export const habitatCoreRoutes = mergeFeatureRoutes([
   defineHabitatRouteFromDef(
     "health.probe",
     habitatMethodDefs["health.probe"],
     (_deps, _input, ctx) =>
-      Promise.resolve(getHealthProbe((ctx as HubDispatchContext).auth ?? null)),
+      Promise.resolve(getHealthProbe((ctx as HabitatDispatchContext).auth ?? null)),
   ),
   defineHabitatRouteFromDef("tls.ca.info", habitatMethodDefs["tls.ca.info"], (_deps, _input, ctx) =>
-    Promise.resolve(getTlsCaInfo(requireHttpRequest(ctx as HubDispatchContext))),
+    Promise.resolve(getTlsCaInfo(requireHttpRequest(ctx as HabitatDispatchContext))),
   ),
   defineHabitatRouteFromDef(
     "tls.ca.qr",
     habitatMethodDefs["tls.ca.qr"],
     async (_deps, input, ctx) => {
       const res = await getTlsCaQrResponse(
-        qrRequest(ctx as HubDispatchContext, input as { size?: number }),
+        qrRequest(ctx as HabitatDispatchContext, input as { size?: number }),
       );
       if (!res) {
         throw new ApiHandlerError(404, "TLS CA unavailable", { code: "TLS_CA_UNAVAILABLE" });
@@ -209,13 +209,13 @@ export const consoleHubRoutes = mergeFeatureRoutes([
   defineHabitatRouteFromDef(
     "config.get",
     habitatMethodDefs["config.get"],
-    wrapConsoleLegacyHandler(() => getHubConfig()),
+    wrapConsoleLegacyHandler(() => getHabitatConfig()),
   ),
   defineHabitatRouteFromDef(
     "config.getSection",
     habitatMethodDefs["config.getSection"],
     wrapConsoleLegacyHandler((payload) =>
-      getHubConfigSection((payload as { section: string }).section),
+      getHabitatConfigSection((payload as { section: string }).section),
     ),
   ),
   defineHabitatRouteFromDef(
@@ -543,6 +543,6 @@ export const consoleHubRoutes = mergeFeatureRoutes([
   defineHabitatRouteFromDef(
     "tts.synthesize",
     habitatMethodDefs["tts.synthesize"],
-    handleTtsSynthesize as AnyHubRouteHandler,
+    handleTtsSynthesize as AnyHabitatRouteHandler,
   ),
 ]);

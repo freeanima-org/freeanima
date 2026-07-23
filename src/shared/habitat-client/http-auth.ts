@@ -1,9 +1,6 @@
 /// <reference lib="dom" />
 
-import {
-  HABITAT_RPC_REST_PREFIX,
-  HABITAT_RPC_REST_PREFIX_LEGACY,
-} from "@freeanima/shared/habitat-rpc/urls.ts";
+import { HABITAT_RPC_REST_PREFIX } from "@freeanima/shared/habitat-rpc/urls.ts";
 
 export type BearerFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
@@ -12,8 +9,8 @@ export function buildBearerHeaders(token: string): Record<string, string> {
   return { Authorization: `Bearer ${token.trim()}` };
 }
 
-export function createBearerFetch(token: string, hubOrigin: string): BearerFetch {
-  const hub = hubOrigin.replace(/\/$/, "");
+export function createBearerFetch(token: string, habitatOrigin: string): BearerFetch {
+  const origin = habitatOrigin.replace(/\/$/, "");
   const bearer = `Bearer ${token.trim()}`;
   return async (input, init) => {
     if (!token.trim()) {
@@ -27,7 +24,7 @@ export function createBearerFetch(token: string, hubOrigin: string): BearerFetch
           : input instanceof Request
             ? input.url
             : String(input);
-    if (!url.startsWith(hub)) {
+    if (!url.startsWith(origin)) {
       return fetch(input, init);
     }
     if (input instanceof Request) {
@@ -44,8 +41,5 @@ export function createBearerFetch(token: string, hubOrigin: string): BearerFetch
 export function habitatHttpFromWsUrl(wsUrl: string): string {
   return wsUrl
     .replace(/^ws/i, "http")
-    .replace(
-      new RegExp(`(?:${HABITAT_RPC_REST_PREFIX}|${HABITAT_RPC_REST_PREFIX_LEGACY})/?$`, "i"),
-      "",
-    );
+    .replace(new RegExp(`${HABITAT_RPC_REST_PREFIX}/?$`, "i"), "");
 }

@@ -7,7 +7,7 @@ describe("shell-bridge shared", () => {
     delete (globalThis as { window?: Window }).window;
   });
 
-  it("applyWebUiConfig：同源 hub_url 用页面 origin", () => {
+  it("applyWebUiConfig：同源 habitat_url 用页面 origin", () => {
     (globalThis as { window: Window }).window = {
       location: { origin: "http://127.0.0.1:5000" },
     } as unknown as Window;
@@ -19,7 +19,7 @@ describe("shell-bridge shared", () => {
     expect(cfg.habitatUrl).toBe("http://127.0.0.1:5000");
   });
 
-  it("applyWebUiConfig：跨 origin hub 保留地址", () => {
+  it("applyWebUiConfig：跨 origin Habitat 保留地址", () => {
     (globalThis as { window: Window }).window = {
       location: { origin: "http://127.0.0.1:5000" },
     } as unknown as Window;

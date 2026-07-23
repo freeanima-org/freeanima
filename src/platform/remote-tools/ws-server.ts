@@ -6,7 +6,7 @@ import { bindVaultShellSendRequest } from "@freeanima/platform/connectors/vault"
 import { bindChatSessionPumps } from "@freeanima/features/chat/habitat/session-pumps";
 import {
   remoteToolsAttachPayloadSchema,
-  defineRpcWireRouter,
+  defineRpcProtocolRouter,
   parseRpcEnvelope,
   serializeRpcEnvelope,
   type RpcMethod,
@@ -17,7 +17,7 @@ import {
 } from "@freeanima/shared/rpc-contract";
 import { habitatRpcConnectPayloadSchema, HABITAT_RPC_VERSION } from "@freeanima/shared/habitat-rpc";
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
-import { isHubMethod } from "@freeanima/shared/habitat-contract";
+import { isHabitatMethod } from "@freeanima/shared/habitat-contract";
 import { getFeatureRpcHandler } from "../features/registry.ts";
 import { habitatDispatch } from "../habitat/dispatch.ts";
 
@@ -34,7 +34,7 @@ export function createRemoteToolsServerHandlers(
   sessionPumps: Map<string, AbortController>,
 ): RemoteToolsServerHandlers {
   bindChatSessionPumps(sessionPumps);
-  const router = defineRpcWireRouter();
+  const router = defineRpcProtocolRouter();
 
   const handlers: RemoteToolsServerHandlers = {
     async onRemoteToolsAttach(payload) {
@@ -75,7 +75,7 @@ export function createRemoteToolsServerHandlers(
     },
 
     async handle(method, payload, ctx) {
-      if (isHubMethod(method)) {
+      if (isHabitatMethod(method)) {
         const featureHandler = getFeatureRpcHandler(method);
         if (featureHandler) {
           return habitatDispatch(deps, method, payload, ctx) as Promise<

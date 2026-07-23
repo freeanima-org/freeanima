@@ -19,8 +19,7 @@ export const DEFAULT_SHELL_SETTINGS: ShellSettings = {
 export function parseShellSettings(raw: unknown): ShellSettings {
   if (!raw || typeof raw !== "object") return { ...DEFAULT_SHELL_SETTINGS };
   const obj = raw as Record<string, unknown>;
-  // 兼容旧 JSON 键 hub
-  const habitat = parseShellClientConfig(obj.habitat ?? obj.hub);
+  const habitat = parseShellClientConfig(obj.habitat);
   const debug = parseShellDebugConfig(obj.debug);
   return { habitat, debug };
 }

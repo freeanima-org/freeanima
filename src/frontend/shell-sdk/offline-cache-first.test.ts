@@ -40,13 +40,13 @@ describe("offline-cache-first", () => {
       id: "id",
       fetch: async () => {
         fetched = true;
-        return { ok: true, from: "hub" };
+        return { ok: true, from: "habitat" };
       },
     });
     expect(fetched).toBe(true);
-    expect(result.from).toBe("hub");
+    expect(result.from).toBe("habitat");
     const cached = await readOfflineCache<{ from: string }>(scope, "ns", "id");
-    expect(cached?.from).toBe("hub");
+    expect(cached?.from).toBe("habitat");
   });
 
   it("Habitat fetch 失败时回退缓存", async () => {

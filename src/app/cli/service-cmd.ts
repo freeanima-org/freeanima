@@ -24,7 +24,7 @@ import {
   stopHubStackViaSystemd,
 } from "./systemd-unit.ts";
 import { printServiceRunningStatus } from "./output/service-status-display.ts";
-import { waitForHubReadyOrWarn } from "./wait-hub-ready.ts";
+import { waitForHabitatReadyOrWarn } from "./wait-habitat-ready.ts";
 import { isBootstrapWebHostingEnabled } from "@freeanima/core/config";
 import { validateBootstrapOnStartup } from "@freeanima/platform/config";
 import { loadBootstrapConfig } from "@freeanima/platform/config/bootstrap.ts";
@@ -269,7 +269,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     if (!systemdUserAvailable()) {
       await validateBootstrapOnStartup();
       await startDetachedWithoutSystemd(args);
-      await waitForHubReadyOrWarn(args.host, args.port);
+      await waitForHabitatReadyOrWarn(args.host, args.port);
       return;
     }
 
@@ -285,7 +285,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     console.log(`  unit: ${serviceUnitPath()}`);
     console.log(`  address: http://${args.host}:${args.port}`);
     console.log("  status: anima service status");
-    await waitForHubReadyOrWarn(args.host, args.port);
+    await waitForHabitatReadyOrWarn(args.host, args.port);
     return;
   }
 
@@ -323,7 +323,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       systemctl("daemon-reload");
       const r = systemctl("restart", SYSTEMD_UNIT);
       if (r.status === 0) {
-        await waitForHubReadyOrWarn(args.host, args.port);
+        await waitForHabitatReadyOrWarn(args.host, args.port);
         writeStatusLine("ok", "Restarted (systemd)");
         return;
       }

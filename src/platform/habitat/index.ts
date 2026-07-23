@@ -1,4 +1,4 @@
-export { habitatDispatch, type HubDispatchContext } from "./dispatch.ts";
+export { habitatDispatch, type HabitatDispatchContext } from "./dispatch.ts";
 export { handleHttpHabitatRestRequestWithAuth, parseBearerToken } from "./http-rpc.ts";
 export {
   handleHttpHabitatRestRequest,
@@ -7,28 +7,19 @@ export {
   compileHttpRoutesFromRegistry,
   resetCompiledHttpRoutes,
 } from "./http-rest-router.ts";
-export { isOptionalAuthHubHttpRequest, matchHabitatHttpRoute } from "./http-rest-auth.ts";
+export { isOptionalAuthHabitatHttpRequest, matchHabitatHttpRoute } from "./http-rest-auth.ts";
 export {
   habitatRouter,
-  hubRouter,
   type HabitatMethod,
-  type HubMethod,
   type HabitatMethodInputs,
-  type HubMethodInputs,
   type HabitatMethodOutputs,
-  type HubMethodOutputs,
 } from "./habitat-router.ts";
-export {
-  initHabitatRouter,
-  initHubRouter,
-  resetHabitatRouterForTests,
-  resetHubRouterForTests,
-} from "./init.ts";
+export { initHabitatRouter, resetHabitatRouterForTests } from "./init.ts";
 export {
   createTypedHabitatClient,
-  getTypedConsoleHabitatClient,
+  getTypedHabitatUiClient,
   getTypedHabitatClient,
   resetTypedHabitatClientForTests,
   type TypedHabitatClient,
 } from "./client.ts";
-export { wsOnlyHubRoutes } from "./ws-only-routes.ts";
+export { wsOnlyHabitatRoutes } from "./ws-only-routes.ts";

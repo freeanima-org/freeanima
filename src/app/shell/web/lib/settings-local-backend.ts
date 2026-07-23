@@ -3,7 +3,6 @@ import type { ScopedSettingsBackend } from "@freeanima/frontend/shell-sdk/settin
 import {
   DEBUG_VCONSOLE_ENABLED_KEY,
   HABITAT_URL_KEY,
-  HABITAT_URL_KEY_LEGACY,
   readStoredHabitatUrl,
   REMOTE_AUTH_TOKEN_KEY,
 } from "@freeanima/frontend/shell-sdk/settings";
@@ -35,7 +34,6 @@ function saveKvScope(scope: SettingsStorageScope, value: unknown): void {
   if (scopeId === "habitat") {
     const raw = value as { habitatUrl: string; remoteAuthToken: string };
     localStorage.setItem(HABITAT_URL_KEY, raw.habitatUrl);
-    localStorage.removeItem(HABITAT_URL_KEY_LEGACY);
     localStorage.setItem(REMOTE_AUTH_TOKEN_KEY, raw.remoteAuthToken);
     return;
   }

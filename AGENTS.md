@@ -5,7 +5,7 @@
 
 ## Global view
 
-`freeanima` (FreeAnima) is an agent runtime: **product / Habitat logic is TypeScript-only**; **Portal Shell** is **Tauri**（Rust host + shared `web/dist-*` UI）。Product name for the long-running process is **Habitat**（栖息地）; Shell / MCP are **Portal**（入口）. Source: `bun run dev:habitat`（legacy `dev:hub`）；standalone: `anima service`（wire still Habitat RPC `/rpc/v1` + MCP `/mcp` + engine）; UI from `src/app/shell/tauri` + `src/app/shell/web`. Naming: [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming + [`i18n/glossary.md`](i18n/glossary.md). Shell rules: [`.agent/rules/tauri-shell.md`](.agent/rules/tauri-shell.md).
+`freeanima` (FreeAnima) is an agent runtime: **product / Habitat logic is TypeScript-only**; **Portal Shell** is **Tauri**（Rust host + shared `web/dist-*` UI）。Product name for the long-running process is **Habitat**（栖息地）; Shell / MCP are **Portal**（入口）. Source: `bun run dev:habitat`；standalone: `anima service`（协议侧仍为 Habitat RPC `/rpc/v1` + MCP `/mcp` + engine）; UI from `src/app/shell/tauri` + `src/app/shell/web`. Naming: [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming + [`i18n/glossary.md`](i18n/glossary.md). Shell rules: [`.agent/rules/tauri-shell.md`](.agent/rules/tauri-shell.md).
 
 | Capability     | Highlights                                                                                                                                                                                                                                                        |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -22,7 +22,7 @@
 Directional heuristics for _what_ FreeAnima should feel like. Mechanisms and cognitive architecture live in [`docs/concepts/`](docs/concepts/) — related, but not a 1:1 rule list.
 
 - **Platform-native UX** — Mobile and desktop are **separate interaction and layout designs**, not one responsive skin stretched across form factors. Shared contracts (API, Habitat RPC, settings keys) may exist; presentation and interaction patterns should fit each platform. **Three orthogonal dimensions**（详见 [`.agent/rules/ui-dimensions.md`](.agent/rules/ui-dimensions.md)）：**壳子**（`getShellKind` / shell API：存储、IPC、通知等原生能力）、**布局**（视口-only：`< md` → `compact` 底栏+drawer；`≥ md` → `expanded` 左栏+三栏）、**交互**（`pointer`/`touch`：右键 vs 长按、Enter 发送等）。壳**不**锁布局（Tauri 窄窗可用底栏；移动宽屏可用左栏）。`detectSettingsChromePlatform()` 仅设置页 chrome（tabs vs 侧栏），跟布局粗档。Phone 通常窄，但 **phone ≠ 窄布局**。
-- **Habitat & Portal** — User copy: **栖息地 / Habitat** = long-running place (multi digital life + human assets); **入口 / Portal** = Shell、MCP 等外部连接。Wire 仍可写 Habitat（`/rpc/v1`）。见 [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming、[`i18n/glossary.md`](i18n/glossary.md)。
+- **Habitat & Portal** — User copy: **栖息地 / Habitat** = long-running place (multi digital life + human assets); **入口 / Portal** = Shell、MCP 等外部连接。协议/代码标识仍写 Habitat（`/rpc/v1`）。见 [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming、[`i18n/glossary.md`](i18n/glossary.md)。
 - **Tools: MCP first, remote registration rare** — Dialable peers exchange tools via **MCP**. Only unreachable local apps (no stable inbound listener; e.g. desktop companion) **actively connect** to Habitat and register remote tools over Habitat RPC (`instance_id` routes `tool.call`). Product UI uses Habitat RPC only — never remote-tool attach. See architecture Client UI / companion sections.
 - **Concept convergence over feature sprawl** — As capabilities grow, **resist cognitive overload**: keep a small set of core concepts visible and stable; new features should map onto existing mental models rather than multiplying parallel abstractions in the UI.
 
@@ -55,7 +55,7 @@ How agents should _shape_ changes. Hard checks and conventions → [`.agent/rule
 bun install
 just                  # 列出配方
 just dev              # Habitat（≥10000）+ Web（:5000）；多 worktree 友好
-just habitat / just web (legacy: just hub)   # 分进程
+just habitat / just web (legacy: just habitat)   # 分进程
 just check            # PR 前质量门禁
 just test / just test-changed
 just fmt / just lint-fix
@@ -75,7 +75,7 @@ bun run build:web
 - Habitat API（**源码/dev:habitat**）：默认随机 **≥10000**（避开 2658/2659）；多 worktree 并行友好
 - Web 形态：standalone / 源码部署须先有 `build:web`（打包时强制；源码部署手动）；dev 用 `dev:habitat` + `dev:web`（HMR，不依赖落盘）
 - 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `src/app/shell/tauri`（Portal）与 `src/app/shell/web`（浏览器调试）
-- Dev UI：`bun run dev:web` → `http://127.0.0.1:5000/web/chat`（若 `http.tls`/`DEV_HTTPS` 则为 `https://…`；Habitat：`/web/habitat/dashboard`）；浏览器默认 Habitat = **页面 origin**（Vite `/rpc` proxy；legacy `/hub` 至 0.9.3）；`dev:habitat` 自动写入 `~/.anima/dev-web.token` 供 Vite 注入 token；**忽略** yaml `web.*`（Habitat 不托管 dist）
+- Dev UI：`bun run dev:web` → `http://127.0.0.1:5000/web/chat`（若 `http.tls`/`DEV_HTTPS` 则为 `https://…`；Habitat：`/web/habitat/dashboard`）；浏览器默认 Habitat = **页面 origin**（Vite `/rpc` proxy；legacy `/rpc` 至 0.9.3）；`dev:habitat` 自动写入 `~/.anima/dev-web.token` 供 Vite 注入 token；**忽略** yaml `web.*`（Habitat 不托管 dist）
 - 开发 TLS：若 `http.tls.enabled` / `DEV_HTTPS=1`，由 **Vite HTTPS** 终止（复用 `~/.anima/tls`），Habitat 仅明文（`skipTls`）；与 `http` 覆盖对称，dev 亦覆盖 `web.enabled/host/port`
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)
 - PG ops (install, backup): [`docs/guide/database.md`](docs/guide/database.md)

@@ -38,7 +38,7 @@ describe("countTokens with test encode", () => {
     resetTokenizerForTest();
   });
 
-  function wireFallback(charsPerToken: number): void {
+  function bindFallback(charsPerToken: number): void {
     setTokenizerEncodeForTest(FALLBACK_TOKENIZER_REPO, (text) => {
       const len = text.trim().length;
       if (!len) return [];
@@ -48,13 +48,13 @@ describe("countTokens with test encode", () => {
   }
 
   it("empty text is 0", async () => {
-    wireFallback(3.5);
+    bindFallback(3.5);
     await ensureFallbackTokenizer();
     expect(countTokens("", "m")).toBe(0);
   });
 
   it("uses fallback when model resolve fails", async () => {
-    wireFallback(4);
+    bindFallback(4);
     await ensureFallbackTokenizer();
     bindModelToFallbackForTest("unknown-model-xyz");
     expect(isUsingFallbackTokenizer("unknown-model-xyz")).toBe(true);
@@ -76,7 +76,7 @@ describe("countTokens with test encode", () => {
   });
 
   it("splitTextByTokenLimit respects max tokens", async () => {
-    wireFallback(1);
+    bindFallback(1);
     await ensureFallbackTokenizer();
     bindModelToFallbackForTest("split-test");
     const text = "a".repeat(10);
@@ -88,7 +88,7 @@ describe("countTokens with test encode", () => {
   });
 
   it("evicts unused fallback after primary bind", async () => {
-    wireFallback(4);
+    bindFallback(4);
     setTokenizerEncodeForTest("Org/model", (text) => {
       const len = text.trim().length;
       return len ? [1] : [];
@@ -100,7 +100,7 @@ describe("countTokens with test encode", () => {
   });
 
   it("releaseTokenizerRepo refuses when repo still referenced", async () => {
-    wireFallback(4);
+    bindFallback(4);
     await ensureFallbackTokenizer();
     bindModelToFallbackForTest("needs-fallback");
     expect(releaseTokenizerRepo(FALLBACK_TOKENIZER_REPO)).toBe(false);

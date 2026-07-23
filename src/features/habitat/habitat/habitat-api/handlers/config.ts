@@ -15,12 +15,12 @@ function requirePatchableConfig() {
   return config;
 }
 
-export function getHubConfig() {
+export function getHabitatConfig() {
   // SafeConfigSnapshot.config 已是脱敏后的运行时配置快照，无嵌套 .data 字段。
   return habitatCtx().getConfig().config;
 }
 
-export function getHubConfigSection(section: string) {
+export function getHabitatConfigSection(section: string) {
   if (isBootstrapConfigKey(section)) {
     throw new ApiHandlerError(400, `段 ${section} 为平台冷启动配置，非栖息地运行时配置`, {
       code: "config_bootstrap_section",

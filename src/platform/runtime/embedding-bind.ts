@@ -10,7 +10,7 @@ import { logComponent } from "@freeanima/platform/logging";
 const log = logComponent("embedding");
 
 /** Register OpenAI-compatible embedding client per config.embedding */
-export function wireEmbeddingRuntime(config: Config): void {
+export function bindEmbeddingRuntime(config: Config): void {
   const cfg = getResolvedEmbeddingConfig(config.data);
   if (!cfg) {
     registerEmbedTextFn(null);

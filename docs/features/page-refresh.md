@@ -27,7 +27,7 @@ Satellite UI keeps data fresh with two distinct verbs. Do not conflate them with
 | A Stream        | Chat                              | SAP stream + recovery poll                                             | Header refresh (existing)                 |
 | B CRUD outbox   | Task, Project, Diary              | Mount / selection cache-first; local write reload; sync → `refreshAll` | Header + pull-to-refresh                  |
 | C Hybrid outbox | Pomodoro                          | `pomodoro.active.changed`                                              | Offline `refreshAll` for config/stats     |
-| D snapshot      | Email, Notification, Dream, Vault | Mount / dependency load                                                | Header refresh (pull on list where wired) |
+| D snapshot      | Email, Notification, Dream, Vault | Mount / dependency load                                                | Header refresh (pull on list where bound) |
 | E Habitat       | Ops lists                         | Load on enter                                                          | Explicit refresh (existing)               |
 | F Settings      | Shell settings                    | Load on open                                                           | Re-read after save                        |
 | G Shell update  | PWA / installer                   | Update check                                                           | Reload / install ≠ business refresh       |

@@ -16,17 +16,10 @@ import { startupLog } from "./status.ts";
 
 export const DEV_WEB_TOKEN_NAME = "dev-web";
 export const FREEANIMA_DEV_HABITAT_ENV = "FREEANIMA_DEV_HABITAT";
-/** @deprecated 0.9.3 后删除 — 请用 FREEANIMA_DEV_HABITAT */
-export const FREEANIMA_DEV_HUB_ENV = "FREEANIMA_DEV_HUB";
 
 export function isDevHabitatProcess(): boolean {
-  return (
-    process.env[FREEANIMA_DEV_HABITAT_ENV] === "1" || process.env[FREEANIMA_DEV_HUB_ENV] === "1"
-  );
+  return process.env[FREEANIMA_DEV_HABITAT_ENV] === "1";
 }
-
-/** @deprecated 0.9.3 后删除 — 请用 isDevHabitatProcess */
-export const isDevHubProcess = isDevHabitatProcess;
 
 export function readDevWebTokenFile(): string | null {
   const fromEnv = process.env.FREEANIMA_DEV_TOKEN?.trim();
@@ -51,7 +44,7 @@ function writeDevWebTokenFile(plaintext: string): void {
 }
 
 /**
- * 确保 `dev-web` token 明文在 PATHS.devWebTokenFile（仅 FREEANIMA_DEV_HABITAT=1 / legacy FREEANIMA_DEV_HUB=1）。
+ * 确保 `dev-web` token 明文在 PATHS.devWebTokenFile（仅 FREEANIMA_DEV_HABITAT=1）。
  * 文件已有内容且能通过 DB 校验则复用；否则 revoke 旧同名 token 后新建并覆写文件
  * （避免 integration 清库后文件残留导致 Web「认证失败」）。
  */
@@ -86,6 +79,6 @@ export async function ensureDevWebTokenFile(config: RuntimeConfigStore): Promise
   writeDevWebTokenFile(result.plaintext);
   startupLog(`Wrote dev-web token → ${PATHS.devWebTokenFile}`);
   logComponent("startup").info(
-    "dev:hub 已写入 Web 自动填充 token（仅本机文件；Vite serve 会注入 config.json）",
+    "dev:habitat 已写入 Web 自动填充 token（仅本机文件；Vite serve 会注入 config.json）",
   );
 }

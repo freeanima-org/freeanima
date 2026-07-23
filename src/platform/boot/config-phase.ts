@@ -1,7 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { wireEnginePorts } from "../wire-engine-ports.ts";
-import { wireCapabilityInjection } from "../wire-capability-injection.ts";
+import { bindEnginePorts } from "../bind-engine-ports.ts";
+import { bindCapabilityInjection } from "../bind-capability-injection.ts";
 import {
   PATHS,
   validateBootstrapOnStartup,
@@ -22,8 +22,8 @@ export async function bootConfigPhase(): Promise<ConfigPhaseResult> {
   startupLog("Validating config.yaml (bootstrap)…");
   await validateBootstrapOnStartup();
   bindBootstrapHttpForProcess(loadBootstrapConfig().http);
-  wireEnginePorts();
-  wireCapabilityInjection();
+  bindEnginePorts();
+  bindCapabilityInjection();
 
   mkdirSync(dirname(PATHS.pidFile), { recursive: true });
   claimPidFileIfUnowned();

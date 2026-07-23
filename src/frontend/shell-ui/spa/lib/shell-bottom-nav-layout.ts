@@ -9,9 +9,6 @@ export const SHELL_BOTTOM_NAV_MIN_ICON_PER_ITEM_PX = 35;
 /** More 按钮占位宽度 */
 export const SHELL_BOTTOM_NAV_MORE_SLOT_WIDTH_PX = SHELL_BOTTOM_NAV_MIN_ICON_PER_ITEM_PX;
 
-/** @deprecated 保留常量兼容 */
-export const SHELL_BOTTOM_NAV_MIN_TAB_WIDTH_PX = 56;
-
 export type ShellBottomNavDensity = "label" | "icon";
 
 export type ShellBottomNavLayout = {
@@ -105,27 +102,4 @@ export function layoutShellBottomNav(
 ): ShellBottomNavLayout {
   const available = resolveShellBottomNavAvailableWidth(viewportWidthPx, safeAreaHorizontalPx);
   return layoutShellBottomNavItems(items, available);
-}
-
-/** @deprecated 仅保留测试兼容 */
-export function resolveShellBottomNavCapacity(
-  viewportWidthPx: number,
-  items: ShellNavItem[],
-  safeAreaHorizontalPx = 0,
-): number {
-  const available = resolveShellBottomNavAvailableWidth(viewportWidthPx, safeAreaHorizontalPx);
-  if (items.length === 0) return 0;
-  const perItem = perItemWidth(items.length, available);
-  if (perItem >= SHELL_BOTTOM_NAV_MIN_LABEL_PER_ITEM_PX) return items.length;
-  return Math.max(1, Math.floor(available / SHELL_BOTTOM_NAV_MIN_ICON_PER_ITEM_PX));
-}
-
-/** @deprecated 仅保留测试兼容 */
-export function splitShellBottomNavItems(
-  items: ShellNavItem[],
-  capacity: number,
-): { bar: ShellNavItem[]; more: ShellNavItem[] } {
-  const available = capacity * SHELL_BOTTOM_NAV_MIN_LABEL_PER_ITEM_PX;
-  const { bar, more } = layoutShellBottomNavItems(items, available);
-  return { bar, more };
 }

@@ -2,7 +2,7 @@
 import { whenSatelliteHabitatRpcReady } from "@freeanima/frontend/shell-sdk/habitat-rpc-call";
 import type { ClientCompanionConfig } from "@freeanima/satellites/companion/shared/constants.ts";
 
-export type HubCompanionConfig = Omit<
+export type HabitatCompanionConfig = Omit<
   ClientCompanionConfig,
   "app_id" | "instance_id" | "remote_tools_connected"
 > & {
@@ -10,7 +10,7 @@ export type HubCompanionConfig = Omit<
   remote_tools_connected?: boolean;
 };
 
-export type CompanionHubConfigResponse = { config: HubCompanionConfig };
+export type CompanionHabitatConfigResponse = { config: HabitatCompanionConfig };
 
 export function getCompanionHabitatClient() {
   return {

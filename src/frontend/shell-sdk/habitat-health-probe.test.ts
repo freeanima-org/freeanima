@@ -35,7 +35,7 @@ describe("habitat-health-probe", () => {
       primaryInput: "pointer",
     };
     expect(
-      formatHabitatHealthProbeFetchError(new TypeError("fetch failed"), "https://hub.lan:2659"),
+      formatHabitatHealthProbeFetchError(new TypeError("fetch failed"), "https://habitat.lan:2659"),
     ).toContain("桌面壳 HTTPS");
   });
 
@@ -50,7 +50,7 @@ describe("habitat-health-probe", () => {
       primaryInput: "touch",
     };
     expect(
-      formatHabitatHealthProbeFetchError(new TypeError("fetch failed"), "https://hub.lan:2659"),
+      formatHabitatHealthProbeFetchError(new TypeError("fetch failed"), "https://habitat.lan:2659"),
     ).toContain("手机");
   });
 });

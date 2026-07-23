@@ -69,7 +69,7 @@ export const SUBJECT_KIND_TOOL_PROPERTY = {
   type: "string",
   enum: ["user", "agent"],
   description:
-    "Vault library: user (client MP) or agent (hub machine key). Defaults to agent for tools.",
+    "Vault library: user (client MP) or agent (Habitat machine key). Defaults to agent for tools.",
 } as const;
 
 export const WORLD_ID_TOOL_PROPERTY = {

@@ -4,18 +4,17 @@
 #
 # 环境变量：
 #   HABITAT_PORT  固定 Habitat 端口（默认随机 ≥10000）
-#   HUB_PORT      @deprecated 0.9.3 后删除 — 同 HABITAT_PORT
 #   WEB_DEV_PORT  Vite 起始端口（默认 5000；占用则 Vite 自增）
-#   FREEANIMA_URL 由本脚本写入，仅作 Vite /rpc|/mcp|/hub proxy 目标
+#   FREEANIMA_URL 由本脚本写入，仅作 Vite /rpc|/mcp proxy 目标
 set -euo pipefail
 # 后台 job 各自成进程组（pgid == 首进程 pid），便于 Ctrl+C / EXIT 时整组杀掉，
-# 避免只 kill「bun run」包装进程而留下 dev-hub / vite 孙进程。
+# 避免只 kill「bun run」包装进程而留下 dev-habitat / vite 孙进程。
 set -m
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-habitat_port="${HABITAT_PORT:-${HUB_PORT:-}}"
+habitat_port="${HABITAT_PORT:-}"
 if [[ -z "$habitat_port" ]]; then
   habitat_port="$(bun -e '
     import { pickRandomAvailableTcpPort, DEV_HABITAT_PORT_MIN } from "./src/app/cli/tcp-port-available.ts";

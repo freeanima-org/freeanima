@@ -12,7 +12,7 @@
 | Chat                | 聊天室      | Chat room UI                                                                                      |
 | Conversation        | 对话        | User-facing term; not “Session” in Habitat UI                                                     |
 | Dashboard           | 仪表盘      | Habitat UI page at `/habitat/dashboard` only                                                      |
-| —                   | —           | Legacy `/console/*` → `/habitat/*`; legacy `/hub/rpc/v1` → `/rpc/v1`（至 0.9.3，其后删除）        |
+| —                   | —           | Admin UI under `/habitat/*`                                                                       |
 | Self layer          | 自我层      | Architecture layer                                                                                |
 | Memory layer        | 记忆层      | Architecture layer                                                                                |
 | Perception layer    | 感知层      | Architecture layer                                                                                |
@@ -24,8 +24,8 @@
 | Gateway             | Gateway     | Message bridges (Discord / WeChat); **not** Portal                                                |
 | Service             | —           | CLI / systemd (`anima service`) only; not the product name for Habitat                            |
 | MCP / ACP           | MCP / ACP   | Protocol names；default tool interop when peers are dialable                                      |
-| Habitat RPC         | 栖息地 RPC  | Product UI / session wire at `/rpc/v1`；also remote tool registration for unreachable local apps  |
-| RPC                 | RPC         | Alias of Habitat RPC；协议字面量 canonical `HabitatRPC/1.0`（legacy `HubRPC/1.0` 至 0.9.3）       |
+| Habitat RPC         | 栖息地 RPC  | Product UI / session 协议路径 `/rpc/v1`；also remote tool registration for unreachable local apps |
+| RPC                 | RPC         | Alias of Habitat RPC；协议字面量 `HabitatRPC/1.0`                                                 |
 | instance_id         | instance_id | Habitat-assigned id for one remote-tool registrant（同机可多实例；不跟 Portal 壳走）              |
 | remote tools        | 远程工具    | Unreachable local app connects to Habitat and registers tools；Habitat reverse-calls via `tool.*` |
 | offline snapshot    | 只读快照    | Shell IndexedDB read-only cache（`withOfflineCache`）；not outbox                                 |

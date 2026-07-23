@@ -221,7 +221,7 @@ export class AcpManager {
   private skills: SkillRegistry | null = null;
   private config: Config | null = null;
 
-  wireRegistries(opts: { toolSets: ToolSetRegistry; skills: SkillRegistry; config: Config }): void {
+  bindRegistries(opts: { toolSets: ToolSetRegistry; skills: SkillRegistry; config: Config }): void {
     this.toolSets = opts.toolSets;
     this.skills = opts.skills;
     this.config = opts.config;
@@ -229,20 +229,20 @@ export class AcpManager {
 
   private requireConfig(): Config {
     if (!this.config) {
-      throw new Error("AcpManager: config not wired; call wireRegistries first");
+      throw new Error("AcpManager: config not bound; call bindRegistries first");
     }
     return this.config;
   }
 
-  wireConversation(conversationPort: ConversationPort): void {
+  bindConversation(conversationPort: ConversationPort): void {
     this.conversationPort = conversationPort;
   }
 
-  wireProgressDelivery(port: AcpProgressDeliveryPort): void {
+  bindProgressDelivery(port: AcpProgressDeliveryPort): void {
     this.progressDelivery = port;
   }
 
-  wireTaskQuery(port: AcpTaskQueryPort): void {
+  bindTaskQuery(port: AcpTaskQueryPort): void {
     this.taskQuery = port;
   }
 
@@ -261,7 +261,7 @@ export class AcpManager {
 
   private conv(): ConversationPort {
     if (!this.conversationPort) {
-      throw new Error("AcpManager: conversation not wired; call wireConversation first");
+      throw new Error("AcpManager: conversation not bound; call bindConversation first");
     }
     return this.conversationPort;
   }
@@ -278,7 +278,7 @@ export class AcpManager {
   registerTools(agentsCfg?: Record<string, AcpAgentConfig>): number {
     if (this.toolsRegistered && !agentsCfg) return 0;
     if (!this.toolSets || !this.skills) {
-      throw new Error("AcpManager: toolSets/skills not wired; call wireRegistries first");
+      throw new Error("AcpManager: toolSets/skills not bound; call bindRegistries first");
     }
     const cfg = this.requireConfig().data;
     const agents = agentsCfg ?? cfg.acp_agents ?? {};

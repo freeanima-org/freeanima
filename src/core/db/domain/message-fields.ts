@@ -5,7 +5,7 @@ export function assistantReasoningText(msg: AssistantMessage): string {
   return String(msg.reasoning ?? "").trim();
 }
 
-/** Resolve max tool-loop turns from wire (`max_turns`) or runtime (`maxTurns`) opts. */
+/** Resolve max tool-loop turns from protocol (`max_turns`) or runtime (`maxTurns`) opts. */
 export function resolveMaxTurns(
   opts?: { max_turns?: number; maxTurns?: number },
   fallback = 98,

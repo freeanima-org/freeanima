@@ -9,7 +9,7 @@ import {
 
 import { mcpMethodDefs } from "../method-defs.ts";
 
-export const mcpHubRoutes = bindHabitatRouteHandlers(mcpMethodDefs, {
+export const mcpHabitatRoutes = bindHabitatRouteHandlers(mcpMethodDefs, {
   "mcp.status": async () => getMcpStatus(),
   "mcp.startAll": async () => mcpStartAll(),
   "mcp.stopAll": async () => mcpStopAll(),

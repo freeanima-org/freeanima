@@ -71,9 +71,9 @@ just dev
 | 约定 | 说明                                                                                                                                |
 | ---- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | 独立 | 本 worktree 源码进程 + 专用端口；**禁止**用生产 `anima service` / `:2658`                                                           |
-| 端口 | Habitat 默认随机 ≥10000；Web 默认从 `:5000`（占用则 Vite 自增）。多 worktree 可设 `HUB_PORT` / `WEB_DEV_PORT`                       |
+| 端口 | Habitat 默认随机 ≥10000；Web 默认从 `:5000`（占用则 Vite 自增）。多 worktree 可设 `HABITAT_PORT` / `WEB_DEV_PORT`                   |
 | 日志 | 解析 Habitat 端口与 Web URL（可能为 `https://127.0.0.1:<web>/web/`，以日志为准）                                                    |
-| 就绪 | `GET http://127.0.0.1:<hub>/rpc/v1/health/probe` 或打开 `/web/chat` 成功后再测                                                      |
+| 就绪 | `GET http://127.0.0.1:<habitat>/rpc/v1/health/probe` 或打开 `/web/chat` 成功后再测                                                  |
 | 认证 | Habitat 写 `~/.anima/dev-web.token`；浏览器同 origin 通常无需手贴；**RPC 须** `Authorization: Bearer $(cat ~/.anima/dev-web.token)` |
 | 数据 | 默认 `~/.anima`。仅验收要求干净环境时才设 `FREEANIMA_HOME`                                                                          |
 
@@ -146,9 +146,9 @@ just dev
 ```bash
 TOKEN="$(cat ~/.anima/dev-web.token)"
 curl -sS -H "Authorization: Bearer ${TOKEN}" \
-  "http://127.0.0.1:<hub>/rpc/v1/<domain>/<action>?<query>"
+  "http://127.0.0.1:<habitat>/rpc/v1/<domain>/<action>?<query>"
 curl -sS -X POST -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" \
-  -d '{…}' "http://127.0.0.1:<hub>/rpc/v1/<domain>/<action>"
+  -d '{…}' "http://127.0.0.1:<habitat>/rpc/v1/<domain>/<action>"
 ```
 
 约定：
@@ -181,7 +181,7 @@ curl -sS -X POST -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: applicati
 ## 验收报告（E2E）
 
 - 来源：风巢 #<id> | 对话推导 | …
-- 环境：Habitat http://127.0.0.1:<hub> · Web http(s)://127.0.0.1:<web>/web/ · just dev 仍在跑/已停
+- 环境：Habitat http://127.0.0.1:<habitat> · Web http(s)://127.0.0.1:<web>/web/ · just dev 仍在跑/已停
 - 范围：浏览器优先；UI 不可达则 Habitat RPC（非 just check）
 - 备注：（可选）浏览器 MCP 不可用 / 本轮为补浏览器验收、合并先前 RPC
 

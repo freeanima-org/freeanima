@@ -6,7 +6,7 @@ import {
 import { listAllSapInstances } from "@freeanima/core/db/pg/sap";
 
 import { createAppRuntime, type AppRuntime } from "../runtime/app-runtime.ts";
-import { wireServicePorts } from "../wire-api.ts";
+import { bindServicePorts } from "../bind-api.ts";
 import { registerSystemPromptHooks } from "../register-prompt-hooks.ts";
 import {
   registerNotificationInject,
@@ -17,14 +17,14 @@ import {
 } from "../register.ts";
 import { createAcpSessionUpdatedHandler } from "../acp-conversation-callback.ts";
 import { initRuntimeContext } from "../runtime/runtime-context.ts";
-import { registerMemoryEngineWires } from "../runtime/memory-engines.ts";
-import { initMaskSystem } from "../runtime/mask-wire.ts";
+import { registerMemoryEngines } from "../runtime/memory-engines.ts";
+import { initMaskSystem } from "../runtime/mask-bind.ts";
 import { registerBootCronHandlers } from "./cron-handlers.ts";
 import { registerSleepPipelineStepRecorder } from "../runtime/pipeline-step-run-log.ts";
 import { startupLog } from "./status.ts";
 import type { EnginePhaseResult } from "./engine-phase.ts";
 import { bindRemoteToolsServerDeps } from "../remote-tools/runtime-context.ts";
-import { HubSessionRegistry } from "../remote-tools/habitat-session-registry.ts";
+import { HabitatSessionRegistry } from "../remote-tools/habitat-session-registry.ts";
 import { RemoteInstanceRegistry } from "../remote-tools/instance-registry.ts";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import { ANIMA_VERSION } from "../runtime/version.ts";
@@ -69,7 +69,7 @@ export async function bootRuntimePhase(
 
   if (acpSessionUpdatedRef) acpSessionUpdatedRef.handler = acpHandler;
 
-  wireServicePorts(runtime.fullDeps());
+  bindServicePorts(runtime.fullDeps());
   initRuntimeContext(runtime);
 
   registerServiceStores(runtime.fullDeps(), engine.config);
@@ -81,7 +81,7 @@ export async function bootRuntimePhase(
   await loadSelfLayerPrompt();
 
   initMaskSystem(masks);
-  registerMemoryEngineWires(runtime.fullDeps());
+  registerMemoryEngines(runtime.fullDeps());
   registerBootCronHandlers(engine);
   registerSleepPipelineStepRecorder();
 
@@ -106,7 +106,7 @@ export async function bootRuntimePhase(
     runtime,
     remoteToolsManager: satellite,
     instanceRegistry: await createRemoteInstanceRegistry(),
-    hubSessionRegistry: new HubSessionRegistry(),
+    hubSessionRegistry: new HabitatSessionRegistry(),
     animaVersion: ANIMA_VERSION,
     masks,
   });

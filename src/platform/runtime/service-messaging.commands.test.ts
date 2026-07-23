@@ -7,7 +7,7 @@ import { MaskRegistry } from "@freeanima/features/task/domain/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
+import { bindOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import { parseYaml } from "@freeanima/platform/config";
@@ -20,7 +20,7 @@ import * as turnLifecycle from "./turn-lifecycle.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
-registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
+registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
 const testEngine = createEngine({
   catalog,
   config: testConfig,
@@ -28,18 +28,18 @@ const testEngine = createEngine({
   logger: createTestLogger(),
 });
 
-async function wireTestRuntime() {
+async function bindTestRuntime() {
   registerBuiltins();
   const { createAppRuntime } = await import("./app-runtime.ts");
   const { initRuntimeContext } = await import("../context.ts");
   const kernel = createServiceKernel(testConfig);
   const conversation = createConversationService(catalog.toolSets);
-  getAcpManager().wireRegistries({
+  getAcpManager().bindRegistries({
     toolSets: catalog.toolSets,
     skills: catalog.skills,
     config: testConfig,
   });
-  getAcpManager().wireConversation(conversation);
+  getAcpManager().bindConversation(conversation);
   const runtime = createAppRuntime({
     kernel,
     engine: testEngine,
@@ -96,7 +96,7 @@ describe("sendMessageStream slash commands", () => {
       ] as never),
     );
 
-    const app = await wireTestRuntime();
+    const app = await bindTestRuntime();
     const tokens: string[] = [];
     for await (const ev of app.sendMessageStream("test-sid", "/retry", "sap:chat:test")) {
       if (ev.event === "token") tokens.push(ev.data.content);
@@ -110,7 +110,7 @@ describe("sendMessageStream slash commands", () => {
   it("/help never yields empty token content", async () => {
     mockConversationBasics();
 
-    const app = await wireTestRuntime();
+    const app = await bindTestRuntime();
     const tokens: string[] = [];
     for await (const ev of app.sendMessageStream("test-sid", "/help", "sap:chat:test")) {
       if (ev.event === "token") tokens.push(ev.data.content);
@@ -142,7 +142,7 @@ describe("sendMessageStream slash commands", () => {
       }),
     );
 
-    const app = await wireTestRuntime();
+    const app = await bindTestRuntime();
     const tokens: string[] = [];
     for await (const ev of app.sendMessageStream("test-sid", "/compress", "sap:chat:test")) {
       if (ev.event === "token") tokens.push(ev.data.content);
@@ -179,7 +179,7 @@ describe("runConversationCommand Chat RPC", () => {
 
   it("/help returns delivery rpc with panel ux", async () => {
     mockConversationBasics();
-    const app = await wireTestRuntime();
+    const app = await bindTestRuntime();
     const result = await app.runConversationCommand({
       conversation_id: "test-sid",
       text: "/help",
@@ -194,7 +194,7 @@ describe("runConversationCommand Chat RPC", () => {
 
   it("/retry returns delivery message without executing stream", async () => {
     mockConversationBasics();
-    const app = await wireTestRuntime();
+    const app = await bindTestRuntime();
     const result = await app.runConversationCommand({
       conversation_id: "test-sid",
       text: "/retry",
@@ -214,7 +214,7 @@ describe("runConversationCommand Chat RPC", () => {
         subgoals: [],
       } as never),
     );
-    const app = await wireTestRuntime();
+    const app = await bindTestRuntime();
 
     const start = await app.runConversationCommand({
       conversation_id: "test-sid",

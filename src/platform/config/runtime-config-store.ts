@@ -5,9 +5,9 @@ import {
   type RuntimeConfig,
 } from "@freeanima/core/config";
 import {
-  getHubRuntimeConfigDocument,
-  patchHubRuntimeConfigSection,
-  replaceHubRuntimeConfigSection,
+  getHabitatRuntimeConfigDocument,
+  patchHabitatRuntimeConfigSection,
+  replaceHabitatRuntimeConfigSection,
 } from "@freeanima/core/db/pg";
 
 export type PatchableRuntimeConfig = Config & {
@@ -31,7 +31,7 @@ export class RuntimeConfigStore extends Config implements PatchableRuntimeConfig
   }
 
   static async loadSnapshot(): Promise<RuntimeConfig> {
-    const document = await getHubRuntimeConfigDocument();
+    const document = await getHabitatRuntimeConfigDocument();
     return parseRuntimeConfig(document);
   }
 
@@ -50,7 +50,7 @@ export class RuntimeConfigStore extends Config implements PatchableRuntimeConfig
     if (isBootstrapConfigKey(section)) {
       throw new Error(`bootstrap 段 ${section} 为平台冷启动配置，非栖息地运行时配置`);
     }
-    const document = await patchHubRuntimeConfigSection(section, patch);
+    const document = await patchHabitatRuntimeConfigSection(section, patch);
     const next = parseRuntimeConfig(document);
     this.update(next as import("@freeanima/core/config").AnimaConfig);
     return next;
@@ -60,7 +60,7 @@ export class RuntimeConfigStore extends Config implements PatchableRuntimeConfig
     if (isBootstrapConfigKey(section)) {
       throw new Error(`bootstrap 段 ${section} 为平台冷启动配置，非栖息地运行时配置`);
     }
-    const document = await replaceHubRuntimeConfigSection(section, value);
+    const document = await replaceHabitatRuntimeConfigSection(section, value);
     const next = parseRuntimeConfig(document);
     this.update(next as import("@freeanima/core/config").AnimaConfig);
     return next;

@@ -20,7 +20,7 @@ import { Config } from "@freeanima/core/config";
 import type { Kernel } from "@freeanima/kernel";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
-import { wireEnginePorts } from "./wire-engine-ports.ts";
+import { bindEnginePorts } from "./bind-engine-ports.ts";
 import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "./register.ts";
 import { initRuntimeContext } from "./context.ts";
@@ -106,7 +106,7 @@ describe("service-prompt-debug", () => {
 
   beforeEach(async () => {
     resetRegisterServiceToolsForTest();
-    wireEnginePorts();
+    bindEnginePorts();
     setTokenizerEncodeForTest(FALLBACK_TOKENIZER_REPO, (text: string) => {
       const len = text.trim().length;
       if (!len) return [];

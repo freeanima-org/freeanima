@@ -25,7 +25,7 @@ declare global {
     >;
   }
 
-  const __WEB_DEFAULT_HUB_URL__: string;
+  const __WEB_DEFAULT_HABITAT_URL__: string;
 }
 
 export function installShellBridgeReady(): () => void {
@@ -56,7 +56,7 @@ export async function fetchWebUiConfig(): Promise<WebUiConfigJson | null> {
 
 export type WebUiBootstrapConfig = {
   habitatUrl: string;
-  /** 空 hub_url 或与页面 origin 相同时 true：用页面 origin，忽略旧 localStorage hub */
+  /** 空 habitat_url 或与页面 origin 相同时 true：用页面 origin */
   sameOrigin: boolean;
   remoteAuthToken?: string;
 };
@@ -65,7 +65,7 @@ export type WebUiBootstrapConfig = {
 export function applyWebUiConfig(cfg: WebUiConfigJson | null): WebUiBootstrapConfig {
   const pageOrigin = typeof window !== "undefined" ? window.location.origin.replace(/\/$/, "") : "";
   const compileFallback = (
-    typeof __WEB_DEFAULT_HUB_URL__ !== "undefined" ? __WEB_DEFAULT_HUB_URL__ : ""
+    typeof __WEB_DEFAULT_HABITAT_URL__ !== "undefined" ? __WEB_DEFAULT_HABITAT_URL__ : ""
   ).replace(/\/$/, "");
 
   if (cfg) {
@@ -77,19 +77,19 @@ export function applyWebUiConfig(cfg: WebUiConfigJson | null): WebUiBootstrapCon
     window.__freeanimaWebUiConfig = meta;
   }
 
-  const runtimeHub = (cfg?.habitat_url ?? cfg?.hub_url)?.trim().replace(/\/$/, "") ?? "";
+  const runtimeHabitatUrl = cfg?.habitat_url?.trim().replace(/\/$/, "") ?? "";
   const remoteAuthToken = cfg?.remote_auth_token?.trim() || undefined;
 
-  if (!runtimeHub || (pageOrigin && runtimeHub === pageOrigin)) {
+  if (!runtimeHabitatUrl || (pageOrigin && runtimeHabitatUrl === pageOrigin)) {
     return {
-      habitatUrl: pageOrigin || runtimeHub || compileFallback,
+      habitatUrl: pageOrigin || runtimeHabitatUrl || compileFallback,
       sameOrigin: true,
       ...(remoteAuthToken ? { remoteAuthToken } : {}),
     };
   }
 
   return {
-    habitatUrl: runtimeHub,
+    habitatUrl: runtimeHabitatUrl,
     sameOrigin: false,
     ...(remoteAuthToken ? { remoteAuthToken } : {}),
   };

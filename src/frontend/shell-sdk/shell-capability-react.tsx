@@ -80,6 +80,3 @@ export function useOpenHabitatSettingsCapability(): boolean {
 
   return open;
 }
-
-/** @deprecated 0.9.3 后删除 */
-export const useOpenHubSettingsCapability = useOpenHabitatSettingsCapability;

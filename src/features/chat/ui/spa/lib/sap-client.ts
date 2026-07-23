@@ -13,14 +13,14 @@ const CHAT_PLATFORM = "chat";
 function resolveHabitatRpcWsUrlFromEnv(): string {
   const shell = window.satelliteShell;
   if (shell?.habitatWsUrl) return shell.habitatWsUrl;
-  const fromVite = process.env.VITE_FREEANIMA_HUB_WS?.trim();
+  const fromVite = process.env.VITE_FREEANIMA_HABITAT_WS?.trim();
   if (fromVite) return fromVite;
   return resolveHabitatRpcWsUrl("http://127.0.0.1:2658");
 }
 
 function getClient() {
   return getBundledRpcStreamClient({
-    hubRpcWsUrl: resolveHabitatRpcWsUrlFromEnv(),
+    habitatRpcWsUrl: resolveHabitatRpcWsUrlFromEnv(),
   });
 }
 

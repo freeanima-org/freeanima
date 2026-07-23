@@ -14,7 +14,7 @@ import { appendAutoLlmRun } from "@freeanima/core/db/pg/auto-llm-run";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import type { ResolvedMask } from "@freeanima/features/task/domain/mask";
-import { runtimeToolMaskFromResolved } from "./mask-wire.ts";
+import { runtimeToolMaskFromResolved } from "./mask-bind.ts";
 
 const AUTO_LLM_MAX_ATTEMPTS = 3;
 const AUTO_LLM_RETRY_BASE_MS = 500;

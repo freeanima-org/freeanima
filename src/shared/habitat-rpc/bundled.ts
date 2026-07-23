@@ -7,15 +7,12 @@ import { runHabitatRpcTransport, type HabitatRpcTransportHandle } from "./transp
 export type HabitatRpcConnectionState = "connecting" | "connected" | "disconnected";
 
 export type BundledHabitatRpcClientOptions = {
-  hubRpcWsUrl?: string;
+  habitatRpcWsUrl?: string;
   habitatUrl?: string;
   authToken?: string;
   signal?: AbortSignal;
   onConnectionStateChange?: (state: HabitatRpcConnectionState) => void;
 };
-
-/** @deprecated 使用 {@link BundledHabitatRpcClientOptions} */
-export type BundledHubRpcClientOptions = BundledHabitatRpcClientOptions;
 
 export type ReconnectOptions = {
   /** true 时强制断开重建（如 Habitat 配置变更）；默认健康连接直接复用。 */
@@ -28,9 +25,6 @@ export type BundledHabitatRpcClient = {
   stop(): void;
   reconnect(opts?: ReconnectOptions): Promise<RpcClient>;
 };
-
-/** @deprecated 使用 {@link BundledHabitatRpcClient} */
-export type BundledHubRpcClient = BundledHabitatRpcClient;
 
 const SHELL_CONFIG_CHANGED_EVENT = "freeanima:shell-config-changed";
 
@@ -56,9 +50,6 @@ export function getHabitatRpcConnectionState(): HabitatRpcConnectionState {
 export function getHabitatRpcLastInboundAt(): number | null {
   return sharedTransport?.getLastInboundAt() ?? null;
 }
-
-/** @deprecated 使用 {@link getHabitatRpcLastInboundAt} */
-export const getHubRpcLastInboundAt = getHabitatRpcLastInboundAt;
 
 function ensureHubForegroundReconnectWatch(): void {
   if (foregroundWatchInstalled || typeof document === "undefined") return;
@@ -116,7 +107,8 @@ function hasBundledHabitatRpcAuthToken(options: BundledHabitatRpcClientOptions =
 }
 function resolveHubUrl(options: BundledHabitatRpcClientOptions): string {
   if (options.habitatUrl?.trim()) return options.habitatUrl.trim().replace(/\/$/, "");
-  if (options.hubRpcWsUrl?.trim()) return habitatHttpFromRpcWsUrl(options.hubRpcWsUrl.trim());
+  if (options.habitatRpcWsUrl?.trim())
+    return habitatHttpFromRpcWsUrl(options.habitatRpcWsUrl.trim());
   const shell = readSatelliteShell();
   if (shell?.habitatUrl?.trim()) return shell.habitatUrl.trim().replace(/\/$/, "");
   if (shell?.habitatWsUrl?.trim()) return habitatHttpFromRpcWsUrl(shell.habitatWsUrl.trim());
@@ -236,9 +228,6 @@ export function resetBundledHabitatRpcClientForTests(): void {
   connectionStateListeners.clear();
 }
 
-/** @deprecated 使用 {@link resetBundledHabitatRpcClientForTests} */
-export const resetBundledHubRpcClientForTests = resetBundledHabitatRpcClientForTests;
-
 export function subscribeBundledHabitatRpcConfigChanges(): () => void {
   if (typeof window === "undefined") return () => {};
   const handler = (): void => {
@@ -251,6 +240,3 @@ export function subscribeBundledHabitatRpcConfigChanges(): () => void {
   window.addEventListener(SHELL_CONFIG_CHANGED_EVENT, handler);
   return () => window.removeEventListener(SHELL_CONFIG_CHANGED_EVENT, handler);
 }
-
-/** @deprecated 使用 {@link subscribeBundledHabitatRpcConfigChanges} */
-export const subscribeBundledHubRpcConfigChanges = subscribeBundledHabitatRpcConfigChanges;

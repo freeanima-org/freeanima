@@ -25,7 +25,7 @@ describe("web-static", () => {
   });
 
   test("readWebBuildMetaFromDist reads build-meta.json", () => {
-    const dist = mkdtempSync(join(tmpdir(), "hub-web-meta-"));
+    const dist = mkdtempSync(join(tmpdir(), "habitat-web-meta-"));
     writeFileSync(
       join(dist, "build-meta.json"),
       JSON.stringify({
@@ -39,7 +39,7 @@ describe("web-static", () => {
   });
 
   test("serveWebStatic config.json includes web_build from dist", async () => {
-    const dist = mkdtempSync(join(tmpdir(), "hub-web-dist-meta-"));
+    const dist = mkdtempSync(join(tmpdir(), "habitat-web-dist-meta-"));
     writeFileSync(join(dist, "index.html"), "<html>ok</html>");
     writeFileSync(
       join(dist, "build-meta.json"),
@@ -62,7 +62,7 @@ describe("web-static", () => {
   });
 
   test("serveWebStatic serves files, config.json, and conditional GET", async () => {
-    const dist = mkdtempSync(join(tmpdir(), "hub-web-dist-"));
+    const dist = mkdtempSync(join(tmpdir(), "habitat-web-dist-"));
     writeFileSync(join(dist, "index.html"), "<html>ok</html>");
     mkdirSync(join(dist, "assets"), { recursive: true });
     writeFileSync(join(dist, "assets", "main.js"), "ok");
@@ -81,12 +81,11 @@ describe("web-static", () => {
     const cfg = (await cfgRes!.json()) as {
       habitat_url?: string;
       habitat_ws_url?: string;
-      hub_url?: string;
-      hub_ws_url?: string;
+
       ui_version?: string;
     };
-    expect(cfg.habitat_url ?? cfg.hub_url).toBe(base);
-    expect(cfg.habitat_ws_url ?? cfg.hub_ws_url).toContain("/rpc/v1");
+    expect(cfg.habitat_url).toBe(base);
+    expect(cfg.habitat_ws_url).toContain("/rpc/v1");
 
     const asset = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/assets/main.js`), {
       ...opts,
@@ -122,7 +121,7 @@ describe("web-static", () => {
   });
 
   test("buildFileEtag 随文件 mtime 变化", () => {
-    const dist = mkdtempSync(join(tmpdir(), "hub-web-etag-"));
+    const dist = mkdtempSync(join(tmpdir(), "habitat-web-etag-"));
     const filePath = join(dist, "index.html");
     writeFileSync(filePath, "v1");
     const etag1 = buildFileEtag(filePath);

@@ -3,7 +3,6 @@ import {
   applyHttpAuth,
   handleHabitatCorsPreflight,
   isHabitatRpcPath,
-  legacyRpcHttpRedirect,
   trySapWebSocketUpgrade,
 } from "./http-dispatch.ts";
 import { createServiceAuthVerifier } from "./service-auth.ts";
@@ -16,22 +15,6 @@ describe("http-dispatch", () => {
     expect(isHabitatRpcPath("/rpc/v1/health/probe")).toBe(true);
     expect(isHabitatRpcPath("/rpc/v1/tts/synthesize")).toBe(true);
     expect(isHabitatRpcPath("/api/health")).toBe(false);
-  });
-
-  test("isHabitatRpcPath still matches legacy /hub/rpc/v1 until 0.9.3", () => {
-    expect(isHabitatRpcPath("/hub/rpc/v1")).toBe(true);
-    expect(isHabitatRpcPath("/hub/rpc/v1/health/probe")).toBe(true);
-  });
-
-  test("legacyRpcHttpRedirect 302 to /rpc/v1", () => {
-    const res = legacyRpcHttpRedirect(
-      new Request("http://127.0.0.1:2658/hub/rpc/v1/health/probe?x=1"),
-    );
-    expect(res?.status).toBe(302);
-    expect(res?.headers.get("Location")).toBe("http://127.0.0.1:2658/rpc/v1/health/probe?x=1");
-    expect(
-      legacyRpcHttpRedirect(new Request("http://127.0.0.1:2658/rpc/v1/health/probe")),
-    ).toBeNull();
   });
 
   test("applyHttpAuth blocks GET /rpc/v1/task/list without token", async () => {
@@ -55,7 +38,7 @@ describe("http-dispatch", () => {
     expect(result.blocked).toBeNull();
   });
 
-  test("applyHttpAuth blocks without token for protected hub rpc", async () => {
+  test("applyHttpAuth blocks without token for protected Habitat RPC", async () => {
     const serviceAuth = createServiceAuthVerifier();
     const req = new Request("https://anima.freetrace.me/rpc/v1/status/get");
     const result = await applyHttpAuth(req, "127.0.0.1", serviceAuth);
@@ -74,7 +57,7 @@ describe("http-dispatch", () => {
   });
 
   test("handleHabitatCorsPreflight returns 204 for localhost origin", () => {
-    const req = new Request("https://hub.example.com/rpc/v1/health/probe", {
+    const req = new Request("https://habitat.example.com/rpc/v1/health/probe", {
       method: "OPTIONS",
       headers: { Origin: "https://localhost" },
     });

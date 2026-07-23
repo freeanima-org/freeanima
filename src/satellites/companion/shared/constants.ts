@@ -47,7 +47,6 @@ export type ClientCompanionConfig = {
   app_id: typeof COMPANION_APP_ID;
   instance_id: string;
   habitat_url: string;
-  /** @deprecated */ hub_url?: string;
   model_path: string;
   model_available: boolean;
   remote_tools_connected: boolean;

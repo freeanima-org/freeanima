@@ -1,12 +1,12 @@
 /**
- * Companion WebView-host：在第一方 overlay 内 createRemoteToolsHub + attach。
+ * Companion WebView-host：在第一方 overlay 内 createRemoteToolsHabitatAttach + attach。
  * 产品面（Chat 等）禁止 attach。
  */
 
 import {
-  createRemoteToolsHub,
-  type RemoteToolsHubHandle,
-} from "@freeanima/shared/rpc-contract/remote-tools-hub.ts";
+  createRemoteToolsHabitatAttach,
+  type RemoteToolsAttachHandle,
+} from "@freeanima/shared/rpc-contract/remote-tools-attach.ts";
 import {
   browserRemoteInstanceStore,
   type RemoteInstanceStore,
@@ -77,7 +77,7 @@ function reportStatus(status: CompanionRemoteToolsStatus): void {
 }
 
 /**
- * 启动 overlay 内 remote tools hub。无 token 时返回 null（不抛错）。
+ * 启动 overlay 内 remote tools attach。无 token 时返回 null（不抛错）。
  */
 export function startCompanionRemoteToolsHost(opts?: {
   habitatUrl?: string;
@@ -94,18 +94,18 @@ export function startCompanionRemoteToolsHost(opts?: {
 
   const habitatUrl = resolveHabitatUrl(opts?.habitatUrl);
   const httpUrl = opts?.httpUrl ?? window.satelliteShell?.apiOrigin ?? undefined;
-  let hub: RemoteToolsHubHandle | null = null;
+  let attach: RemoteToolsAttachHandle | null = null;
 
   const publish = (): void => {
     const status: CompanionRemoteToolsStatus = {
-      instance_id: hub?.getInstanceId() ?? "",
-      remote_tools_connected: hub?.isConnected() ?? false,
+      instance_id: attach?.getInstanceId() ?? "",
+      remote_tools_connected: attach?.isConnected() ?? false,
     };
     opts?.onStatus?.(status);
     reportStatus(status);
   };
 
-  hub = createRemoteToolsHub({
+  attach = createRemoteToolsHabitatAttach({
     appId: APP_ID,
     habitatUrl,
     ...(httpUrl ? { httpUrl } : {}),
@@ -124,15 +124,15 @@ export function startCompanionRemoteToolsHost(opts?: {
 
   return {
     stop: () => {
-      hub?.stop();
-      hub = null;
+      attach?.stop();
+      attach = null;
       const empty = { instance_id: "", remote_tools_connected: false };
       opts?.onStatus?.(empty);
       reportStatus(empty);
     },
     getStatus: () => ({
-      instance_id: hub?.getInstanceId() ?? "",
-      remote_tools_connected: hub?.isConnected() ?? false,
+      instance_id: attach?.getInstanceId() ?? "",
+      remote_tools_connected: attach?.isConnected() ?? false,
     }),
   };
 }

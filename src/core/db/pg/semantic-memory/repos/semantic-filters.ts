@@ -1,4 +1,4 @@
-import { eq, inArray, sql as drizzleSql, type SQL } from "drizzle-orm";
+import { eq, sql as drizzleSql, type SQL } from "drizzle-orm";
 import { SEMANTIC_MEMORY_COMPONENT, entities } from "@freeanima/core/db/schema";
 import { pgTextArray } from "../../utils/pg-sql.ts";
 
@@ -47,10 +47,4 @@ export function buildSemanticConditions(args: {
   const sourceCond = buildSemanticSourceConversationsCondition(args.source_conversations ?? []);
   if (sourceCond) conditions.push(sourceCond);
   return conditions;
-}
-
-/** @deprecated unused after entity migration */
-export function buildSemanticIdInCondition(ids: readonly number[]): SQL | undefined {
-  if (ids.length === 0) return undefined;
-  return inArray(entities.id, [...ids]);
 }
