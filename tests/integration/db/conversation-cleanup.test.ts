@@ -2,7 +2,7 @@ import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { eq } from "drizzle-orm";
 import { conversations } from "@freeanima/core/db/schema";
 import { getDb } from "@freeanima/core/db/pg";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import {
   cleanupStaleConversations,
   STALE_SESSION_MIN_AGE_MS,

@@ -30,7 +30,7 @@ export {
 export { getPromptDebug } from "./prompt.ts";
 export { listSelfBlocks } from "./self.ts";
 export { getMcpStatus, mcpStartAll, mcpStopAll, mcpStartServer, mcpStopServer } from "./mcp.ts";
-export { getSatellitesStatus } from "./satellites.ts";
+export { getOutpostsStatus } from "./outposts.ts";
 export { getAcpStatus, acpStartAll, acpStopAll, acpStartAgent, acpStopAgent } from "./acp.ts";
 export { fetchConversationAcpDock, iterateConversationEvents } from "./conversation-events.ts";
 export { getFtsStatus, startRebuildFtsIndex, getRebuildFtsJobStatus } from "./fts.ts";

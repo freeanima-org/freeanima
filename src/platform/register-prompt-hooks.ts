@@ -13,15 +13,15 @@ function describePlatform(platform?: string): string {
   if (platform === "weixin") return "微信";
   if (platform === "chat") return "网页聊天 (Chat)";
   if (platform === "desktop" || platform === "mobile") return platform;
-  if (platform.startsWith("remote:chat:") || platform.startsWith("sap:chat:")) {
+  if (platform.startsWith("remote:chat:")) {
     return "网页聊天 (Chat)";
   }
-  if (platform.startsWith("remote:companion:") || platform.startsWith("sap:companion:")) {
+  if (platform.startsWith("remote:companion:")) {
     return "桌面伴侣";
   }
-  if (platform.startsWith("remote:") || platform.startsWith("sap:")) {
+  if (platform.startsWith("remote:")) {
     const app = platform.split(":")[1] ?? "unknown";
-    return `远程工具宿主 (${app})`;
+    return `前哨 (${app})`;
   }
   return platform;
 }

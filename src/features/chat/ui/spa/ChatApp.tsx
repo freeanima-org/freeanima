@@ -71,7 +71,7 @@ import { loadInputDraft, saveInputDraft } from "@freeanima/features/chat/ui/spa/
 import {
   getChatRpcStreamClient,
   subscribeShellConfigChanges,
-} from "@freeanima/features/chat/ui/spa/lib/sap-client.ts";
+} from "@freeanima/features/chat/ui/spa/lib/habitat-stream-client.ts";
 import { LlmDebugPanel } from "@freeanima/features/chat/ui/spa/components/LlmDebugPanel.tsx";
 import type {
   ConversationListItem,
@@ -140,12 +140,12 @@ function writeConversationToUrl(conversationId: string | null) {
   window.history.replaceState(null, "", url);
 }
 
-function getSatelliteShell() {
-  return window.satelliteShell;
+function getPortalShell() {
+  return window.portalShell;
 }
 
 function openHabitatSettingsIfAvailable(): void {
-  getSatelliteShell()?.openHabitatSettings?.();
+  getPortalShell()?.openHabitatSettings?.();
 }
 
 function isTransportFailureMessage(msg: string): boolean {
@@ -1460,7 +1460,7 @@ export function ChatApp() {
           <h2 className="text-lg font-bold">{m.habitat_chat_title()}</h2>
           <p className="text-sm text-destructive">{error}</p>
           <p className="text-xs text-muted-foreground">
-            {getSatelliteShell()?.habitatWsUrl
+            {getPortalShell()?.habitatWsUrl
               ? canOpenHabitatSettingsUi
                 ? "请确认栖息地已运行，或在设置中检查栖息地地址。"
                 : "请确认栖息地已运行（anima service start）。"

@@ -17,7 +17,7 @@ import { createSemanticMemory, getSemanticMemory } from "@freeanima/core/db/pg/s
 import { upsertSelfBlock } from "@freeanima/core/db/pg/self-layer";
 import { countSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
 import { getTestEngine, getActivePgTestContext, seedSession } from "../../helpers/pg-test.ts";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 describePg("server memory API", () => {
   let home: string;

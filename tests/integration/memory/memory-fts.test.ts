@@ -15,7 +15,7 @@ import {
 } from "@freeanima/core/db/pg/semantic-memory";
 import { listMessages, searchMessagesFts } from "@freeanima/core/db/pg/conversation";
 import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 describePg("memory PG FTS", () => {
   const prev = process.env.FREEANIMA_HOME;

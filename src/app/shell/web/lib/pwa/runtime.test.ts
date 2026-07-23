@@ -6,7 +6,7 @@ describe("pwa runtime", () => {
   it("isBrowserWebShell 在 Tauri Portal 下为 false", () => {
     const prev = globalThis.window;
     globalThis.window = {
-      satelliteShell: { isTauri: true, isNativeShell: true },
+      portalShell: { isTauri: true, isNativeShell: true },
     } as unknown as Window & typeof globalThis.window;
     expect(isBrowserWebShell()).toBe(false);
     globalThis.window = prev;

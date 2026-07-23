@@ -9,21 +9,21 @@ function runtimeWindow(): Window | undefined {
   return (globalThis as { window?: Window }).window;
 }
 
-/** 读取 `satelliteShell.isNativeShell`（壳 flag，非布局） */
+/** 读取 `portalShell.isNativeShell`（壳 flag，非布局） */
 export function isNativeShell(): boolean {
   const w = runtimeWindow();
-  return Boolean(w?.satelliteShell?.isNativeShell);
+  return Boolean(w?.portalShell?.isNativeShell);
 }
 
 /**
- * 一元壳类型。跟 satelliteShell / Tauri IPC，不跟手机 UA。
+ * 一元壳类型。跟 portalShell / Tauri IPC，不跟手机 UA。
  * 若编译期 `__FREEANIMA_SHELL_TARGET__` 为 desktop/mobile，优先跟产物形态。
  */
 export function getShellKind(): ShellRuntimeKind {
   const buildTarget = getShellBuildTarget();
   const w = runtimeWindow();
-  const shell = w?.satelliteShell as
-    | (NonNullable<Window["satelliteShell"]> & { isTauri?: boolean })
+  const shell = w?.portalShell as
+    | (NonNullable<Window["portalShell"]> & { isTauri?: boolean })
     | undefined;
 
   if (buildTarget === "desktop" || buildTarget === "mobile") {
@@ -47,7 +47,7 @@ export function isPackagedShell(): boolean {
 export function canOpenHabitatSettings(): boolean {
   const w = runtimeWindow();
   if (!w) return false;
-  if (typeof w.satelliteShell?.openHabitatSettings === "function") return true;
+  if (typeof w.portalShell?.openHabitatSettings === "function") return true;
   return isPackagedShell();
 }
 
@@ -57,5 +57,5 @@ export function shouldUseNativeShellNavigation(): boolean {
   if (buildTarget === "desktop" || buildTarget === "mobile") return true;
   const w = runtimeWindow();
   if (!w) return false;
-  return Boolean(w.satelliteShell?.isNativeShell);
+  return Boolean(w.portalShell?.isNativeShell);
 }

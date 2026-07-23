@@ -16,7 +16,7 @@ export type RuntimeDeps = {
 export type FullRuntimeDeps = RuntimeDeps & {
   masks: MaskRegistryPort;
   mcp: McpManagerPort | null;
-  satellite: RemoteToolsManagerPort | null;
+  outpost: RemoteToolsManagerPort | null;
   acp: AcpManagerPort;
   host: string;
   port: number;

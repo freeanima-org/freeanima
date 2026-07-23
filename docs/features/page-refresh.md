@@ -4,7 +4,7 @@ title: Page refresh
 
 # Page refresh (sync vs refresh)
 
-Satellite UI keeps data fresh with two distinct verbs. Do not conflate them with PWA / installer “reload”, which updates shell assets only.
+Outpost/Portal UI keeps data fresh with two distinct verbs. Do not conflate them with PWA / installer “reload”, which updates shell assets only.
 
 ## Verbs
 

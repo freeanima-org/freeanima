@@ -7,7 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { testConv } from "../../helpers/pg-test.ts";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 describePg("schemas/message", () => {
   const prev = process.env.FREEANIMA_HOME;

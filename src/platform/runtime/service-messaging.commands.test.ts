@@ -45,7 +45,7 @@ async function bindTestRuntime() {
     engine: testEngine,
     conversation,
     mcp: null,
-    satellite: null,
+    outpost: null,
     acp: getAcpManager(),
     masks: new MaskRegistry(),
     host: "127.0.0.1",
@@ -73,7 +73,7 @@ describe("sendMessageStream slash commands", () => {
         cached_toolsets: [],
         functions: [],
         timestamp: new Date().toISOString(),
-        platform: "sap:chat:test",
+        platform: "remote:chat:test",
       }),
     );
   }
@@ -98,7 +98,7 @@ describe("sendMessageStream slash commands", () => {
 
     const app = await bindTestRuntime();
     const tokens: string[] = [];
-    for await (const ev of app.sendMessageStream("test-sid", "/retry", "sap:chat:test")) {
+    for await (const ev of app.sendMessageStream("test-sid", "/retry", "remote:chat:test")) {
       if (ev.event === "token") tokens.push(ev.data.content);
     }
 
@@ -112,7 +112,7 @@ describe("sendMessageStream slash commands", () => {
 
     const app = await bindTestRuntime();
     const tokens: string[] = [];
-    for await (const ev of app.sendMessageStream("test-sid", "/help", "sap:chat:test")) {
+    for await (const ev of app.sendMessageStream("test-sid", "/help", "remote:chat:test")) {
       if (ev.event === "token") tokens.push(ev.data.content);
     }
 
@@ -144,7 +144,7 @@ describe("sendMessageStream slash commands", () => {
 
     const app = await bindTestRuntime();
     const tokens: string[] = [];
-    for await (const ev of app.sendMessageStream("test-sid", "/compress", "sap:chat:test")) {
+    for await (const ev of app.sendMessageStream("test-sid", "/compress", "remote:chat:test")) {
       if (ev.event === "token") tokens.push(ev.data.content);
     }
 

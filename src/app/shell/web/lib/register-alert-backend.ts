@@ -8,7 +8,7 @@ import {
 /** 按运行时注册本机 Alert backend（不跨端）。 */
 export async function registerShellAlertBackend(): Promise<void> {
   const buildTarget = getShellBuildTarget();
-  const tauri = Boolean(window.satelliteShell?.isTauri) || isTauriRuntime();
+  const tauri = Boolean(window.portalShell?.isTauri) || isTauriRuntime();
 
   if (tauri && (buildTarget === "mobile" || isTauriMobileUserAgent())) {
     const { createMobileAlertBackend } =

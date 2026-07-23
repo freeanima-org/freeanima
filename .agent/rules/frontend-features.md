@@ -5,7 +5,7 @@
 ## 决策树
 
 1. 是否需要用户可见的产品 CRUD + 实时 Habitat WS？→ **原型 A（Feature RPC）**
-2. 是否需要不可达本机的远程工具反向调用？→ **原型 A′（remote tools host）** — 仅 Habitat 拨不到的本地应用（今日 `companion` overlay WebView-host；亦可未来独立应用）
+2. 是否需要不可达本机的远程工具反向调用？→ **原型 A′（remote tools host）** — 仅 Habitat 拨不到的本地应用（今日 companion Outpost；亦可未来独立工具）
 3. 是否是运维/配置/记忆管理类 UI（Habitat）？→ **原型 B（Habitat RPC）** — 与原型 A 相同 protocol
 4. 是否仅是壳层设置（Habitat URL、debug）？→ **原型 C（shell-sdk settings）**
 5. 对端可拨号的工具？→ **MCP**（不要用远程工具注册）
@@ -24,19 +24,19 @@
 | `platform`                                    | `src/features/<slug>/plugin.ts` 注册 + 必要时 `service-*` 薄适配                                             |
 | `shell-ui`                                    | 路由 lazy-load `@freeanima/feature-<slug>/ui/spa`；壳 CSS 已 `@source` 整棵 `src`，一般不必再按 feature 登记 |
 
-**不要**：在 `shell-ui` 内 `import @freeanima/shared/rpc-contract`；在 capabilities 内 import platform；新建 `satellites/*` 做 chat/task 等产品面；产品面不做 `remote_tools.attach`。
+**不要**：在 `shell-ui` 内 `import @freeanima/shared/rpc-contract`；在 capabilities 内 import platform；新建独立 satellites 树做产品面；产品面不做 `remote_tools.attach`。
 
 ## 原型 A′ — 远程工具宿主（不可达本地应用）
 
 **示例**：companion（**overlay WebView-host**：`createRemoteToolsHabitatAttach` 在第一方 overlay 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）
 
-| 层                       | 必须改                                                                  |
-| ------------------------ | ----------------------------------------------------------------------- |
-| `rpc-contract`           | `remote-tools/` + `frames/*` attach / tool schema                       |
-| `src/satellites/<name>/` | overlay UI + 可选极薄静态服（白名单；**禁止**再加独立 sidecar；legacy） |
-| 桌面壳                   | 透明窗 / click-through / 托盘 / FS；产品面仍走 Feature RPC，不做 attach |
+| 层                          | 必须改                                                                  |
+| --------------------------- | ----------------------------------------------------------------------- |
+| `rpc-contract`              | `remote-tools/` + `frames/*` attach / tool schema                       |
+| `src/features/companion/ui` | Outpost overlay UI + 可选极薄静态服（**禁止** Node sidecar）            |
+| 桌面壳                      | 透明窗 / click-through / 托盘 / FS；产品面仍走 Feature RPC，不做 attach |
 
-**不要**：为 Chat/Task 等产品面新建 `satellites/*` 或 `remote_tools.attach`；能 MCP 解决的不要走远程工具注册。  
+**不要**：为 Chat/Task 等产品面新建 Outpost attach 或 `remote_tools.attach`；能 MCP 解决的不要走远程工具注册。  
 **允许**：Companion 等原型 A′ 的**第一方 overlay** 内 `remote_tools.attach`（WebView-host）。**禁止**：Chat 等产品面 attach；禁止为 attach 再起 Node sidecar。
 
 ## 原型 B — Habitat 运维面（Habitat RPC）
@@ -79,9 +79,8 @@
 | -------------- | ----------------------------------------------------------- | ------------------------------------------------------------------ |
 | `ui-kit`       | react                                                       | rpc-contract、workspace                                            |
 | `shell-sdk`    | kernel\*、habitat-rpc、vault-crypto                         | rpc-contract                                                       |
-| `shell-ui`     | ui-kit、shell-sdk、feature-\*                               | rpc-contract、深路径 import satellites                             |
+| `shell-ui`     | ui-kit、shell-sdk、feature-\*                               | rpc-contract、深路径绕过 feature 边界                              |
 | `feature-*` UI | habitat-client、habitat-contract（类型）、shell-sdk、ui-kit | 在 `habitat/routes` 使用 habitat-client；`platform/habitat` 桶文件 |
-| `satellite-*`  | rpc-contract、shell-sdk、ui-kit                             | shell-ui、admin-\*                                                 |
 
 **typed Habitat client**：前端 UI 只能从 `@freeanima/platform/habitat/client.ts` 取 `getTypedHabitatClient`，**不要**从桶文件 `@freeanima/platform/habitat` 导入。
 

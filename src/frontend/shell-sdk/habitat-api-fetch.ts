@@ -2,19 +2,19 @@ import { createBearerFetch, type HabitatFetch } from "./remote-auth.ts";
 import { HABITAT_URL_KEY, REMOTE_AUTH_TOKEN_KEY } from "./settings/prefs-keys.ts";
 import { resolveHabitatApiOrigin } from "./habitat-api-origin.ts";
 
-type SatelliteShellBridge = {
+type PortalShellBridge = {
   habitatUrl?: string;
   habitatFetch?: HabitatFetch;
   remoteAuth?: { token?: string };
 };
 
-function satelliteShell(): SatelliteShellBridge | undefined {
+function portalShell(): PortalShellBridge | undefined {
   if (typeof window === "undefined") return undefined;
-  return (window as Window & { satelliteShell?: SatelliteShellBridge }).satelliteShell;
+  return (window as Window & { portalShell?: PortalShellBridge }).portalShell;
 }
 
 function resolveRemoteAuthToken(): string | undefined {
-  const fromShell = satelliteShell()?.remoteAuth?.token?.trim();
+  const fromShell = portalShell()?.remoteAuth?.token?.trim();
   if (fromShell) return fromShell;
   if (typeof localStorage === "undefined") return undefined;
   return localStorage.getItem(REMOTE_AUTH_TOKEN_KEY)?.trim() || undefined;
@@ -24,7 +24,7 @@ function resolveRemoteAuthToken(): string | undefined {
  * 优先在渲染进程内建 Bearer fetch（与栖息地 `resolveHabitatFetch` 顺序一致）。
  */
 export function resolveHabitatApiFetch(): HabitatFetch {
-  const shell = satelliteShell();
+  const shell = portalShell();
   const origin = resolveHabitatApiOrigin();
   const token = resolveRemoteAuthToken();
   if (token) return createBearerFetch(token, origin);

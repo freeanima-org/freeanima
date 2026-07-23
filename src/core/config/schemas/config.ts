@@ -25,17 +25,6 @@ export const mcpServerSchema = z
   })
   .passthrough();
 
-export const satelliteEntrySchema = z
-  .object({
-    enabled: z.boolean().optional(),
-    command: z.string().min(1).optional(),
-    args: z.array(z.string()).default([]),
-    env: z.record(z.string(), z.string()).optional(),
-  })
-  .passthrough();
-
-export type SatelliteEntryConfig = z.infer<typeof satelliteEntrySchema>;
-
 export const acpAgentSchema = z
   .object({
     command: z.string().optional(),
@@ -244,7 +233,6 @@ export const animaConfigSchema = z
     compression: compressionSchema.optional(),
     models: modelsConfigSchema.optional(),
     mcp_servers: z.record(z.string(), mcpServerSchema).optional(),
-    satellites: z.record(z.string(), satelliteEntrySchema).optional(),
     acp_agents: z.record(z.string(), acpAgentSchema).optional(),
     fallback_providers: z.array(fallbackProviderSchema).optional(),
     platforms: z.record(z.string(), z.unknown()).optional(),

@@ -11,20 +11,21 @@ import {
 } from "./platform-info.ts";
 
 describe("platform-info", () => {
-  test("parseRemotePlatformString accepts sap:app:instance", () => {
-    expect(parseRemotePlatformString("sap:chat:default")).toEqual({
+  test("parseRemotePlatformString accepts remote:app:instance", () => {
+    expect(parseRemotePlatformString("remote:chat:default")).toEqual({
       app_slug: "chat",
       instance_id_norm: "default",
     });
+    expect(parseRemotePlatformString("sap:chat:default")).toBeNull();
     expect(parseRemotePlatformString("discord:x")).toBeNull();
   });
 
-  test("buildPlatformInfo fills SAP satellite fields", () => {
-    const info = buildPlatformInfo("sap:chat:inst-1", {});
+  test("buildPlatformInfo fills outpost fields", () => {
+    const info = buildPlatformInfo("remote:chat:inst-1", {});
     expect(info).toMatchObject({
-      platform: "sap:chat:inst-1",
-      satellite_app_id: "chat",
-      satellite_instance_id: "inst-1",
+      platform: "remote:chat:inst-1",
+      outpost_app_id: "chat",
+      outpost_instance_id: "inst-1",
     });
   });
 
@@ -66,11 +67,11 @@ describe("platform-info", () => {
 
   test("isCronPlatformInfo detects cron", () => {
     expect(isCronPlatformInfo(buildPlatformInfo("cron", {}))).toBe(true);
-    expect(isCronPlatformInfo(buildPlatformInfo("sap:chat:x", {}))).toBe(false);
+    expect(isCronPlatformInfo(buildPlatformInfo("remote:chat:x", {}))).toBe(false);
   });
 
   test("isRemotePlatformString", () => {
-    expect(isRemotePlatformString("sap:chat:default")).toBe(true);
-    expect(isRemotePlatformString("sap:chat")).toBe(false);
+    expect(isRemotePlatformString("remote:chat:default")).toBe(true);
+    expect(isRemotePlatformString("remote:chat")).toBe(false);
   });
 });

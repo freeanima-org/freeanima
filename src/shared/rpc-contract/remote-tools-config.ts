@@ -1,15 +1,15 @@
 /// <reference lib="dom" />
 import { formatRemotePlatform } from "./naming.ts";
 
-export type DirectSatelliteConfig = {
+export type DirectOutpostConfig = {
   habitat_ws_url: string;
   app_id: string;
   instance_id?: string;
 };
 
-export async function loadDirectSatelliteConfig(
+export async function loadDirectOutpostConfig(
   configUrl = "/config.json",
-): Promise<DirectSatelliteConfig> {
+): Promise<DirectOutpostConfig> {
   const res = await fetch(configUrl);
   if (!res.ok) {
     throw new Error(`加载 config 失败: HTTP ${res.status}`);

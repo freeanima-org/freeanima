@@ -23,15 +23,15 @@ describe("platform_info schema", () => {
   });
 
   it("sap platformInfo derives satellite fields from three segments", () => {
-    const info = buildPlatformInfo("sap:chat:k7m");
+    const info = buildPlatformInfo("remote:chat:k7m");
     expect(info).toEqual({
-      platform: "sap:chat:k7m",
-      satellite_app_id: "chat",
-      satellite_instance_id: "k7m",
+      platform: "remote:chat:k7m",
+      outpost_app_id: "chat",
+      outpost_instance_id: "k7m",
     });
     expect(splitPlatformInfo(info)).toEqual({
-      platform: "sap:chat:k7m",
-      platform_extra: { satellite_app_id: "chat", satellite_instance_id: "k7m" },
+      platform: "remote:chat:k7m",
+      platform_extra: { outpost_app_id: "chat", outpost_instance_id: "k7m" },
     });
   });
 
@@ -46,10 +46,10 @@ describe("platform_info schema", () => {
   });
 
   it("sap platformInfo preserves capability_mask in platform_info", () => {
-    const info = buildPlatformInfo("sap:chat:k7m", {
+    const info = buildPlatformInfo("remote:chat:k7m", {
       capability_mask: { presets: ["sleep"] },
     });
-    expect(info?.platform).toBe("sap:chat:k7m");
+    expect(info?.platform).toBe("remote:chat:k7m");
     expect(splitPlatformInfo(info).platform_extra?.capability_mask).toEqual({
       presets: ["sleep"],
     });

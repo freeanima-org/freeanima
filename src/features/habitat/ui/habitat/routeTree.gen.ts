@@ -20,7 +20,7 @@ import { Route as SidebarSubjectsRouteImport } from "./routes/_sidebar/subjects"
 import { Route as SidebarSleepRouteImport } from "./routes/_sidebar/sleep";
 import { Route as SidebarSemanticMemoryRouteImport } from "./routes/_sidebar/semantic-memory";
 import { Route as SidebarSelfLayerRouteImport } from "./routes/_sidebar/self-layer";
-import { Route as SidebarSatellitesRouteImport } from "./routes/_sidebar/satellites";
+import { Route as SidebarOutpostsRouteImport } from "./routes/_sidebar/outposts";
 import { Route as SidebarMemoryRouteImport } from "./routes/_sidebar/memory";
 import { Route as SidebarMcpRouteImport } from "./routes/_sidebar/mcp";
 import { Route as SidebarLimbicMemoryRouteImport } from "./routes/_sidebar/limbic-memory";
@@ -89,9 +89,9 @@ const SidebarSelfLayerRoute = SidebarSelfLayerRouteImport.update({
   path: "/self-layer",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
-const SidebarSatellitesRoute = SidebarSatellitesRouteImport.update({
-  id: "/satellites",
-  path: "/satellites",
+const SidebarOutpostsRoute = SidebarOutpostsRouteImport.update({
+  id: "/outposts",
+  path: "/outposts",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
 const SidebarMemoryRoute = SidebarMemoryRouteImport.update({
@@ -175,7 +175,7 @@ export interface FileRoutesByFullPath {
   "/limbic-memory": typeof SidebarLimbicMemoryRoute;
   "/mcp": typeof SidebarMcpRoute;
   "/memory": typeof SidebarMemoryRoute;
-  "/satellites": typeof SidebarSatellitesRoute;
+  "/outposts": typeof SidebarOutpostsRoute;
   "/self-layer": typeof SidebarSelfLayerRoute;
   "/semantic-memory": typeof SidebarSemanticMemoryRoute;
   "/sleep": typeof SidebarSleepRoute;
@@ -200,7 +200,7 @@ export interface FileRoutesByTo {
   "/limbic-memory": typeof SidebarLimbicMemoryRoute;
   "/mcp": typeof SidebarMcpRoute;
   "/memory": typeof SidebarMemoryRoute;
-  "/satellites": typeof SidebarSatellitesRoute;
+  "/outposts": typeof SidebarOutpostsRoute;
   "/self-layer": typeof SidebarSelfLayerRoute;
   "/semantic-memory": typeof SidebarSemanticMemoryRoute;
   "/sleep": typeof SidebarSleepRoute;
@@ -228,7 +228,7 @@ export interface FileRoutesById {
   "/_sidebar/limbic-memory": typeof SidebarLimbicMemoryRoute;
   "/_sidebar/mcp": typeof SidebarMcpRoute;
   "/_sidebar/memory": typeof SidebarMemoryRoute;
-  "/_sidebar/satellites": typeof SidebarSatellitesRoute;
+  "/_sidebar/outposts": typeof SidebarOutpostsRoute;
   "/_sidebar/self-layer": typeof SidebarSelfLayerRoute;
   "/_sidebar/semantic-memory": typeof SidebarSemanticMemoryRoute;
   "/_sidebar/sleep": typeof SidebarSleepRoute;
@@ -256,7 +256,7 @@ export interface FileRouteTypes {
     | "/limbic-memory"
     | "/mcp"
     | "/memory"
-    | "/satellites"
+    | "/outposts"
     | "/self-layer"
     | "/semantic-memory"
     | "/sleep"
@@ -281,7 +281,7 @@ export interface FileRouteTypes {
     | "/limbic-memory"
     | "/mcp"
     | "/memory"
-    | "/satellites"
+    | "/outposts"
     | "/self-layer"
     | "/semantic-memory"
     | "/sleep"
@@ -308,7 +308,7 @@ export interface FileRouteTypes {
     | "/_sidebar/limbic-memory"
     | "/_sidebar/mcp"
     | "/_sidebar/memory"
-    | "/_sidebar/satellites"
+    | "/_sidebar/outposts"
     | "/_sidebar/self-layer"
     | "/_sidebar/semantic-memory"
     | "/_sidebar/sleep"
@@ -406,11 +406,11 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof SidebarSelfLayerRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
-    "/_sidebar/satellites": {
-      id: "/_sidebar/satellites";
-      path: "/satellites";
-      fullPath: "/satellites";
-      preLoaderRoute: typeof SidebarSatellitesRouteImport;
+    "/_sidebar/outposts": {
+      id: "/_sidebar/outposts";
+      path: "/outposts";
+      fullPath: "/outposts";
+      preLoaderRoute: typeof SidebarOutpostsRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
     "/_sidebar/memory": {
@@ -533,7 +533,7 @@ interface SidebarRouteRouteChildren {
   SidebarLimbicMemoryRoute: typeof SidebarLimbicMemoryRoute;
   SidebarMcpRoute: typeof SidebarMcpRoute;
   SidebarMemoryRoute: typeof SidebarMemoryRoute;
-  SidebarSatellitesRoute: typeof SidebarSatellitesRoute;
+  SidebarOutpostsRoute: typeof SidebarOutpostsRoute;
   SidebarSelfLayerRoute: typeof SidebarSelfLayerRoute;
   SidebarSemanticMemoryRoute: typeof SidebarSemanticMemoryRoute;
   SidebarSleepRoute: typeof SidebarSleepRoute;
@@ -555,7 +555,7 @@ const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
   SidebarLimbicMemoryRoute: SidebarLimbicMemoryRoute,
   SidebarMcpRoute: SidebarMcpRoute,
   SidebarMemoryRoute: SidebarMemoryRoute,
-  SidebarSatellitesRoute: SidebarSatellitesRoute,
+  SidebarOutpostsRoute: SidebarOutpostsRoute,
   SidebarSelfLayerRoute: SidebarSelfLayerRoute,
   SidebarSemanticMemoryRoute: SidebarSemanticMemoryRoute,
   SidebarSleepRoute: SidebarSleepRoute,

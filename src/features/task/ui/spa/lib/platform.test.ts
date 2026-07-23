@@ -8,9 +8,9 @@ describe("task platform", () => {
     delete (globalThis as { window?: Window }).window;
   });
 
-  it("isNativeShell reads satelliteShell flag", () => {
+  it("isNativeShell reads portalShell flag", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isNativeShell: true } as ShellApi,
+      portalShell: { isNativeShell: true } as ShellApi,
     } as unknown as Window;
     expect(isNativeShell()).toBe(true);
     (globalThis as { window: Window }).window = {} as unknown as Window;
@@ -19,7 +19,7 @@ describe("task platform", () => {
 
   it("isWebShell：Tauri 不是 web", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isTauri: true, isNativeShell: true } as ShellApi,
+      portalShell: { isTauri: true, isNativeShell: true } as ShellApi,
       location: {
         origin: "https://example.com",
         protocol: "https:",

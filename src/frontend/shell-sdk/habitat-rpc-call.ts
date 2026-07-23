@@ -2,13 +2,13 @@ import { getBundledHabitatRpcClient, type RpcClient } from "@freeanima/shared/ha
 
 let satelliteRpc: Promise<RpcClient> | null = null;
 
-export function whenSatelliteHabitatRpcReady(): Promise<RpcClient> {
+export function whenPortalHabitatRpcReady(): Promise<RpcClient> {
   satelliteRpc ??= getBundledHabitatRpcClient().whenReady();
   return satelliteRpc;
 }
 
-export async function satelliteHabitatRpcCall<T>(method: string, payload?: unknown): Promise<T> {
-  const rpc = await whenSatelliteHabitatRpcReady();
+export async function portalHabitatRpcCall<T>(method: string, payload?: unknown): Promise<T> {
+  const rpc = await whenPortalHabitatRpcReady();
   return rpc.request<T>(method, payload);
 }
 

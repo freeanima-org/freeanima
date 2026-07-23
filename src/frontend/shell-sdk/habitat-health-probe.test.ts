@@ -7,7 +7,7 @@ import {
 
 describe("habitat-health-probe", () => {
   afterEach(() => {
-    delete (globalThis as { satelliteShell?: unknown }).satelliteShell;
+    delete (globalThis as { portalShell?: unknown }).portalShell;
   });
 
   test("isHabitatHealthConnected", () => {
@@ -28,9 +28,9 @@ describe("habitat-health-probe", () => {
   test("formatHabitatHealthProbeFetchError：桌面壳 HTTPS 提示安装 mkcert CA", () => {
     (
       globalThis as {
-        satelliteShell?: { isTauri: boolean; primaryInput: "pointer" };
+        portalShell?: { isTauri: boolean; primaryInput: "pointer" };
       }
-    ).satelliteShell = {
+    ).portalShell = {
       isTauri: true,
       primaryInput: "pointer",
     };
@@ -42,9 +42,9 @@ describe("habitat-health-probe", () => {
   test("formatHabitatHealthProbeFetchError：移动壳 HTTPS 提示安装 CA", () => {
     (
       globalThis as {
-        satelliteShell?: { isTauri: boolean; isNativeShell: boolean; primaryInput: "touch" };
+        portalShell?: { isTauri: boolean; isNativeShell: boolean; primaryInput: "touch" };
       }
-    ).satelliteShell = {
+    ).portalShell = {
       isTauri: true,
       isNativeShell: true,
       primaryInput: "touch",

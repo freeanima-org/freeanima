@@ -46,7 +46,7 @@ export type ShellNativeAlertScheduleResult = { id: string };
 
 export type ShellNativeAlertCancelKey = { id?: string; tag?: string };
 
-/** Portal / Web 注入的 `window.satelliteShell` 桥接 */
+/** Portal / Web 注入的 `window.portalShell` 桥接 */
 export type ShellApi = {
   /** 打包原生壳（Tauri desktop / mobile） */
   isNativeShell?: boolean;
@@ -58,7 +58,7 @@ export type ShellApi = {
   primaryInput?: PrimaryInputKind;
   habitatUrl: string;
   habitatWsUrl: string;
-  /** 非 loopback Habitat 时的 Bearer / SAP connect 凭证 */
+  /** 非 loopback Habitat 时的 Bearer / Habitat connect 凭证 */
   remoteAuth?: RemoteAuthCredentials;
   /** 带 Bearer 的 Habitat REST fetch */
   habitatFetch?: HabitatFetch;
@@ -114,8 +114,8 @@ export type ShellApi = {
 
 declare global {
   interface Window {
-    satelliteShell?: ShellApi;
+    portalShell?: ShellApi;
   }
 }
 
-export type SatelliteShellModule = true;
+export type PortalShellModule = true;

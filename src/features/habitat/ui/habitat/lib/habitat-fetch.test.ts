@@ -15,10 +15,10 @@ type MockShell = {
 function setShell(shell: MockShell): void {
   (
     globalThis as unknown as {
-      window: { satelliteShell?: MockShell; location: { origin: string } };
+      window: { portalShell?: MockShell; location: { origin: string } };
     }
   ).window = {
-    satelliteShell: shell,
+    portalShell: shell,
     location: { origin: "http://127.0.0.1:4175" },
   };
 }

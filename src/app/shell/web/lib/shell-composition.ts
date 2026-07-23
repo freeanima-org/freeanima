@@ -25,7 +25,8 @@ export async function resolveShellBindings(): Promise<SettingsBinding[]> {
     return createMobileSettingsBindings(stores);
   }
 
-  if (kind === "tauri" || buildTarget === "desktop") {
+  // 桌面伴侣设置仅随 desktop 壳产物打包（getShellBuildTarget）
+  if (buildTarget === "desktop" || (kind === "tauri" && buildTarget !== "mobile")) {
     const [
       { createDesktopSettingsApis },
       { createDesktopSettingsBindings },

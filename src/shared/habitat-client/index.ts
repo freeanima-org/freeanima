@@ -15,7 +15,7 @@ export {
 } from "./subscribe.ts";
 export {
   getBundledHabitatClient,
-  getSatelliteHabitatClient,
+  getOutpostHabitatClient,
   resetBundledHabitatClientForTests,
   type BundledHabitatClientOptions,
 } from "./bundled.ts";

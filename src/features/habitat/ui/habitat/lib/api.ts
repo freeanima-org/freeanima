@@ -328,8 +328,8 @@ export async function getMcpStatus() {
   return hubCall(habitat().call("mcp.status", {}));
 }
 
-export async function getSatellitesStatus() {
-  return hubCall(habitat().call("src/satellites.status", {}));
+export async function getOutpostsStatus() {
+  return hubCall(habitat().call("outposts.status", {}));
 }
 
 export async function startMcp(name: string) {

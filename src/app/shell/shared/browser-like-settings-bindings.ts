@@ -6,8 +6,8 @@ import { chatSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/c
 import { alertSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/alert/alert-settings-section.ts";
 import { habitatConnectionSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/habitat-config/habitat-connection-section.ts";
 import { habitatConfigSettingsBindings } from "@freeanima/frontend/shell-ui/spa/settings/habitat-config/habitat-config-sections.ts";
-import { companionHabitatSettingsSection } from "@freeanima/satellites/companion/spa/settings/companion-settings-section.ts";
-import { createCompanionSettingsApi } from "@freeanima/satellites/companion/spa/settings/companion-settings-api.ts";
+import { companionHabitatSettingsSection } from "@freeanima/features/companion/ui/spa/settings/companion-settings-section.ts";
+import { createCompanionSettingsApi } from "@freeanima/features/companion/ui/spa/settings/companion-settings-api.ts";
 import type { SettingsStore } from "@freeanima/frontend/shell-sdk/settings";
 import type { ShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
 import type { ShellDebugConfig } from "@freeanima/frontend/shell-sdk/shell-debug-config";

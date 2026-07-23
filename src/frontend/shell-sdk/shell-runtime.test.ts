@@ -17,7 +17,7 @@ describe("shell-runtime", () => {
 
   it("getShellKind：Tauri isTauri", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isTauri: true } as ShellApi,
+      portalShell: { isTauri: true } as ShellApi,
       location: { origin: "https://example.com", protocol: "https:", hostname: "example.com" },
       navigator: { userAgent: "Mozilla/5.0" },
     } as unknown as Window;
@@ -39,7 +39,7 @@ describe("shell-runtime", () => {
   it("getShellKind：编译期 desktop 为 tauri", () => {
     setShellBuildTargetForTests("desktop");
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isNativeShell: true } as ShellApi,
+      portalShell: { isNativeShell: true } as ShellApi,
       location: { origin: "https://example.com", protocol: "https:", hostname: "example.com" },
       navigator: { userAgent: "Mozilla/5.0" },
     } as unknown as Window;
@@ -49,7 +49,7 @@ describe("shell-runtime", () => {
   it("getShellKind：编译期 mobile 为 tauri", () => {
     setShellBuildTargetForTests("mobile");
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isNativeShell: true } as ShellApi,
+      portalShell: { isNativeShell: true } as ShellApi,
       location: { origin: "https://example.com" },
       navigator: { userAgent: "Mozilla/5.0" },
     } as unknown as Window;
@@ -66,7 +66,7 @@ describe("shell-runtime", () => {
 
   it("isNativeShell 读 flag", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isNativeShell: true } as ShellApi,
+      portalShell: { isNativeShell: true } as ShellApi,
     } as unknown as Window;
     expect(isNativeShell()).toBe(true);
     (globalThis as { window: Window }).window = {} as unknown as Window;
@@ -75,7 +75,7 @@ describe("shell-runtime", () => {
 
   it("canOpenHabitatSettings：有 openHabitatSettings", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: {
+      portalShell: {
         openHabitatSettings: () => {},
       } as ShellApi,
     } as unknown as Window;
@@ -84,14 +84,14 @@ describe("shell-runtime", () => {
 
   it("canOpenHabitatSettings：Tauri packaged", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isTauri: true } as ShellApi,
+      portalShell: { isTauri: true } as ShellApi,
     } as unknown as Window;
     expect(canOpenHabitatSettings()).toBe(true);
   });
 
   it("shouldUseNativeShellNavigation：isNativeShell", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isNativeShell: true } as ShellApi,
+      portalShell: { isNativeShell: true } as ShellApi,
     } as unknown as Window;
     expect(shouldUseNativeShellNavigation()).toBe(true);
   });

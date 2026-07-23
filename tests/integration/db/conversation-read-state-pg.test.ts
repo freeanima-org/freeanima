@@ -12,7 +12,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 import { getTestEngine, testConv } from "../../helpers/pg-test.ts";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 describePg("conversation_read_state（用户未读）", () => {
   const prev = process.env.FREEANIMA_HOME;

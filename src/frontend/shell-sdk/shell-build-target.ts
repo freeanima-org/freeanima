@@ -39,7 +39,8 @@ export function shellWebDistDirName(target: ShellBuildTarget): string {
 
 /**
  * 读取编译期壳目标。
- * 优先测试覆盖，其次 Vite `define` 注入的 `__FREEANIMA_SHELL_TARGET__`，否则 `web`。
+ * 优先测试覆盖，其次 Vite `define` 注入的 `__FREEANIMA_SHELL_TARGET__`，
+ * 再次 `process.env.FREEANIMA_SHELL_TARGET`（bun/脚本构建），否则 `web`。
  */
 export function getShellBuildTarget(): ShellBuildTarget {
   if (testOverride) return testOverride;
@@ -52,6 +53,15 @@ export function getShellBuildTarget(): ShellBuildTarget {
     }
   } catch {
     /* bun 单测未 define 时可能 ReferenceError */
+  }
+  try {
+    const fromEnv =
+      typeof process !== "undefined" ? process.env?.FREEANIMA_SHELL_TARGET : undefined;
+    if (fromEnv != null && String(fromEnv).trim() !== "") {
+      return parseShellBuildTarget(fromEnv);
+    }
+  } catch {
+    /* 浏览器无 process */
   }
   return "web";
 }

@@ -102,7 +102,7 @@ describePg("cron", () => {
       conversation,
       masks: new MaskRegistry(),
       mcp: null,
-      satellite: null,
+      outpost: null,
       acp: getAcpManager(),
       host: "127.0.0.1",
       port: 2658,

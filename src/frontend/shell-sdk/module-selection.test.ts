@@ -54,7 +54,7 @@ describe("module-selection", () => {
   test("tasks 读写 listId（兼容旧 number）", () => {
     writeModuleSelection("tasks", { kind: "list", id: 42 }, ctx);
     expect(readModuleSelection("tasks", ctx)).toEqual({ kind: "list", id: 42 });
-    localStorage.setItem("freeanima.module-selection:http://127.0.0.1:2658/sap:user:tasks", "7");
+    localStorage.setItem("freeanima.module-selection:http://127.0.0.1:2658/remote:user:tasks", "7");
     expect(readModuleSelection("tasks", ctx)).toEqual({ kind: "list", id: 7 });
   });
 
@@ -91,7 +91,7 @@ describe("module-selection", () => {
 
   test("非法 JSON 返回 null", () => {
     localStorage.setItem(
-      "freeanima.module-selection:http://127.0.0.1:2658/sap:user:email",
+      "freeanima.module-selection:http://127.0.0.1:2658/remote:user:email",
       "not-json",
     );
     expect(readModuleSelection("email", ctx)).toBeNull();

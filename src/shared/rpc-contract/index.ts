@@ -561,10 +561,10 @@ export {
 } from "./conversation-stream-core.ts";
 
 export {
-  loadDirectSatelliteConfig,
+  loadDirectOutpostConfig,
   formatDirectPlatform,
   defaultChatPlatform,
-  type DirectSatelliteConfig,
+  type DirectOutpostConfig,
 } from "./remote-tools-config.ts";
 
 export {

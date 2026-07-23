@@ -31,7 +31,7 @@ After Habitat RPC `connect`, an unreachable local app calls:
 2. `tool.register` — publishes local tools
 3. Habitat later sends `tool.call` events; the app replies with `tool.result` / `tool.error`
 
-Routing key is **`instance_id`** (follows the connecting application, not the Portal shell). Tool names use the `remote_{app}_{instance}_{local}` form (legacy `sap_*` / `sap:*` still parsed for stored sessions).
+Routing key is **`instance_id`** (follows the connecting application, not the Portal shell). Tool names use the `remote_{app}_{instance}_{local}` form (legacy `remote_*` / `sap:*` still parsed for stored sessions).
 
 Server: [`src/platform/remote-tools/`](../../src/platform/remote-tools/). Client helper: `createRemoteToolsHabitatAttach` in `@freeanima/shared/rpc-contract`.
 

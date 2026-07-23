@@ -77,7 +77,7 @@ function conditionalGetCacheKey(method: string, payload: Record<string, unknown>
 }
 
 export function createHabitatClient(options: HabitatClientOptions) {
-  const profile = options.profile ?? "satellite";
+  const profile = options.profile ?? "outpost";
   const httpFetch = options.fetch ?? globalThis.fetch;
   /** GET JSON 条件请求：同 method+payload 记忆 ETag 与正文 */
   const conditionalGetCache = new Map<string, ConditionalGetCacheEntry>();

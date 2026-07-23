@@ -43,7 +43,7 @@ function bindTestRuntime() {
     engine: testEngine,
     conversation,
     mcp: null,
-    satellite: null,
+    outpost: null,
     acp: getAcpManager(),
     masks: new MaskRegistry(),
     host: "127.0.0.1",

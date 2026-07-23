@@ -27,8 +27,8 @@ describe("RemoteToolsManager routing", () => {
     ]);
     const wrongName = formatRemoteToolName(appId, instanceB, "scan_code");
     const route = manager.resolveToolCall("sid", wrongName, {
-      satellite_app_id: "pairprogramming",
-      satellite_instance_id: instanceA,
+      outpost_app_id: "pairprogramming",
+      outpost_instance_id: instanceA,
     });
     expect(route.kind).toBe("reject");
     if (route.kind === "reject") {

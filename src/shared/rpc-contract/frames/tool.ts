@@ -13,7 +13,7 @@ export type RemoteToolDefInput = z.infer<typeof sapToolDefInputSchema>;
 
 export const toolRegisterInputSchema = z.object({
   tools: z.array(sapToolDefInputSchema).min(1),
-  /** SAP satellite toolsets default to private (mask-only discovery) */
+  /** Outpost remote toolsets default to private (mask-only discovery) */
   private: z.boolean().default(true),
 });
 

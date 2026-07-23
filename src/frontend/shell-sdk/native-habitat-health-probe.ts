@@ -12,7 +12,7 @@ function habitatOrigin(habitatUrl: string): string {
 }
 
 function isTauriShell(): boolean {
-  return typeof window !== "undefined" && Boolean(window.satelliteShell?.isTauri);
+  return typeof window !== "undefined" && Boolean(window.portalShell?.isTauri);
 }
 
 /** Tauri 原生 HTTP：绕过 WebView CORS / AsyncDns（hosts 主机名） */

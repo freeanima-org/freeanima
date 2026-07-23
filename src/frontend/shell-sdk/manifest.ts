@@ -11,13 +11,6 @@ export const frontendManifestSchema = z.object({
       tools: z.boolean().optional(),
     })
     .optional(),
-  /** @deprecated use remoteTools */
-  sap: z
-    .object({
-      relay: z.boolean(),
-      tools: z.boolean().optional(),
-    })
-    .optional(),
 });
 
 export type FrontendManifest = z.infer<typeof frontendManifestSchema>;

@@ -1,4 +1,4 @@
-/** 移动 Tauri：注入 satelliteShell + 番茄钟小组件状态同步 */
+/** 移动 Tauri：注入 portalShell + 番茄钟小组件状态同步 */
 import { invoke } from "@tauri-apps/api/core";
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import {
@@ -86,7 +86,7 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
     },
   };
 
-  window.satelliteShell = shell;
+  window.portalShell = shell;
   if (nativeBuild) {
     window.dispatchEvent(new CustomEvent(NATIVE_BUILD_META_CHANGED_EVENT));
   }

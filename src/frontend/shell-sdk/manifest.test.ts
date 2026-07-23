@@ -10,7 +10,7 @@ describe("frontendManifestSchema", () => {
       version: "0.7.0",
       supportsDesktop: true,
       supportsMobile: true,
-      sap: { relay: false },
+      remoteTools: { tools: true },
     });
     expect(manifest.supportsDesktop).toBe(true);
     const json = toManifestJson(manifest);

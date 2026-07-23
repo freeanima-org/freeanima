@@ -3,7 +3,7 @@ import {
   generateRemoteInstanceIdCandidate,
   normalizeAppSlug,
 } from "@freeanima/shared/rpc-contract";
-import { getRemoteToolInstance, upsertRemoteToolInstance } from "@freeanima/core/db/pg/sap";
+import { getRemoteToolInstance, upsertRemoteToolInstance } from "@freeanima/core/db/pg/outpost";
 
 export type RemoteInstanceRecord = {
   instanceId: string;

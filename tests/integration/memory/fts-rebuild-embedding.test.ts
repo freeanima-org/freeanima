@@ -20,7 +20,7 @@ import {
 } from "../../helpers/integration-case.ts";
 import { createSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
 import { getActivePgTestContext, getTestEngine, seedSession } from "../../helpers/pg-test.ts";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 function minimalConfig() {
   const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));

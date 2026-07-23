@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-import { getInstallContext } from "../satellite-launch.ts";
+import { getInstallContext } from "../install-context.ts";
 
 /** 用于评估 monorepo Web dist 是否齐全/过期（启动不会据此自动 build） */
 export const WEB_DIST_REQUIRED_FILES = ["index.html"] as const;
@@ -29,7 +29,7 @@ export const WEB_SOURCE_WATCH_DIRS = [
   "src/features/chat/ui/spa",
   "src/features/task/ui/spa",
   "src/features/vault/ui/spa",
-  "src/satellites/companion/spa",
+  "src/features/companion/spa",
   "messages/en.json",
   "messages/zh-cn.json",
 ] as const;

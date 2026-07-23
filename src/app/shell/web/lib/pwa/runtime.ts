@@ -8,7 +8,7 @@ const INSTALL_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
 /** 浏览器 Web 壳（非 Tauri Portal），可启用 PWA 安装与 SW 更新 UX */
 export function isBrowserWebShell(): boolean {
   if (typeof window === "undefined") return false;
-  if (window.satelliteShell?.isTauri || window.satelliteShell?.isNativeShell) return false;
+  if (window.portalShell?.isTauri || window.portalShell?.isNativeShell) return false;
   if (isTauriRuntime()) return false;
   return true;
 }

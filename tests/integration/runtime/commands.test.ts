@@ -30,7 +30,7 @@ import {
 import { getAppRuntime } from "@freeanima/platform";
 import { getHomeChannel } from "@freeanima/platform/ports/home-channel";
 import { getHabitatRuntimeConfigDocument } from "@freeanima/core/db/pg";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import * as engineConversation from "@freeanima/runtime/conversation";
 import { patchConversationMeta } from "@freeanima/core/db/pg/conversation";
 

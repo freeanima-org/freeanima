@@ -6,6 +6,6 @@ export type ShellBridge = {
   remoteAuth?: { token?: string };
 };
 
-export function readSatelliteShell(): ShellBridge | undefined {
-  return (window as Window & { satelliteShell?: ShellBridge }).satelliteShell;
+export function readPortalShell(): ShellBridge | undefined {
+  return (window as Window & { portalShell?: ShellBridge }).portalShell;
 }

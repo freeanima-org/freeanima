@@ -15,7 +15,7 @@ export * from "./cron-jobs.ts";
 export * from "./cron-log.ts";
 export * from "./pipeline-step-run.ts";
 export * from "./auto-llm-runs.ts";
-export * from "./sap-instances.ts";
+export * from "./outpost-instances.ts";
 export * from "./service-api-tokens.ts";
 export * from "./habitat-runtime-config.ts";
 export * from "./entity/index.ts";

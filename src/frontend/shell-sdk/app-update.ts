@@ -334,7 +334,7 @@ export async function resolvePackagedUpdate(opts: {
 }
 
 export function resolveNativePackagedKind(): PackagedReleaseKind | null {
-  const shell = typeof window !== "undefined" ? window.satelliteShell : undefined;
+  const shell = typeof window !== "undefined" ? window.portalShell : undefined;
   if (!shell) return null;
   // 能力优先：有 applyPackagedUpdate 则按壳类型选产物
   if (typeof shell.applyPackagedUpdate !== "function") return null;

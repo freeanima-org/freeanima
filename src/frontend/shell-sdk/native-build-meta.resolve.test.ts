@@ -17,9 +17,9 @@ describe("native-build-meta.resolve", () => {
     globalThis.fetch = originalFetch;
   });
 
-  it("resolveAboutNativeBuildMeta 优先 satelliteShell.nativeBuild", async () => {
+  it("resolveAboutNativeBuildMeta 优先 portalShell.nativeBuild", async () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { nativeBuild: sampleMeta },
+      portalShell: { nativeBuild: sampleMeta },
     } as unknown as Window;
 
     const meta = await resolveAboutNativeBuildMeta();
@@ -35,7 +35,7 @@ describe("native-build-meta.resolve", () => {
         hostname: "tauri.localhost",
         href: "https://tauri.localhost/",
       },
-      satelliteShell: { isTauri: true, isNativeShell: true },
+      portalShell: { isTauri: true, isNativeShell: true },
       dispatchEvent: () => true,
     } as unknown as Window;
 
@@ -47,6 +47,6 @@ describe("native-build-meta.resolve", () => {
 
     const meta = await resolveAboutNativeBuildMeta();
     expect(meta?.version).toBe("0.8.4");
-    expect(window.satelliteShell?.nativeBuild?.version).toBe("0.8.4");
+    expect(window.portalShell?.nativeBuild?.version).toBe("0.8.4");
   });
 });

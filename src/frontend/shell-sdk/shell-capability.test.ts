@@ -25,7 +25,7 @@ describe("shell-capability", () => {
 
   function installWindow(shell?: ShellApi) {
     (globalThis as { window: Window }).window = {
-      ...(shell ? { satelliteShell: shell } : {}),
+      ...(shell ? { portalShell: shell } : {}),
       matchMedia: () =>
         ({
           matches: false,

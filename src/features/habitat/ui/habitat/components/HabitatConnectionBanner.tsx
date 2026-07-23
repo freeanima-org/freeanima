@@ -9,7 +9,7 @@ type Props = {
 };
 
 function openHabitatSettingsIfAvailable(): void {
-  window.satelliteShell?.openHabitatSettings?.();
+  window.portalShell?.openHabitatSettings?.();
 }
 
 export function HabitatConnectionBanner({ state, onRetry }: Props) {

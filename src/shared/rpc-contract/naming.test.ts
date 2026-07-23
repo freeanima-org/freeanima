@@ -27,7 +27,7 @@ describe("remote tools naming", () => {
   it("formats remote platform three segments", () => {
     expect(formatRemotePlatform("companion", "k7m")).toBe("remote:companion:k7m");
     expect(isRemotePlatform("remote:companion:k7m")).toBe(true);
-    expect(isRemotePlatform("sap:companion:k7m")).toBe(true);
+    expect(isRemotePlatform("sap:companion:k7m")).toBe(false);
     const parsed = parseRemotePlatform("remote:companion:k7m");
     expect(parsed.ok).toBe(true);
     if (parsed.ok) {
@@ -74,13 +74,10 @@ describe("remote tools naming", () => {
     }
   });
 
-  it("parses legacy sap_ / sap: names", () => {
-    const legacy = parseRemoteToolName("sap_companion_k7m_bubble");
-    expect(legacy.ok).toBe(true);
-    if (legacy.ok) {
-      expect(legacy.value.canonical).toBe("remote_companion_k7m_bubble");
-    }
-    expect(parseRemoteToolName("sap:companion:k7m:bubble").ok).toBe(true);
+  it("rejects legacy sap_ / sap: names", () => {
+    expect(parseRemoteToolName("sap_companion_k7m_bubble").ok).toBe(false);
+    expect(parseRemoteToolName("sap:companion:k7m:bubble").ok).toBe(false);
+    expect(isRemotePrefixedToolName("sap_companion_k7m_bubble")).toBe(false);
   });
 
   it("parses alias names", () => {

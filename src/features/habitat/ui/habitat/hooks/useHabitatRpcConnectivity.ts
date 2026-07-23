@@ -35,8 +35,7 @@ export async function probeHabitatHealth(
 async function probeHabitatHealthDefault(): Promise<boolean> {
   try {
     const origin = resolveApiOrigin();
-    const token =
-      typeof window !== "undefined" ? window.satelliteShell?.remoteAuth?.token : undefined;
+    const token = typeof window !== "undefined" ? window.portalShell?.remoteAuth?.token : undefined;
     const body = await probeHabitatHealthUrl(
       origin,
       omitUndefined({

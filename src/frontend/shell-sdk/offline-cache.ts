@@ -45,8 +45,8 @@ function readFallbackHubWs(): string {
 }
 
 export function resolveHabitatCacheScope(): string {
-  const shell = (globalThis.window as (Window & { satelliteShell?: ShellApi }) | undefined)
-    ?.satelliteShell;
+  const shell = (globalThis.window as (Window & { portalShell?: ShellApi }) | undefined)
+    ?.portalShell;
   let habitatScope: string;
   if (shell?.habitatWsUrl?.trim()) {
     habitatScope = resolveCacheScope(shell.habitatWsUrl);

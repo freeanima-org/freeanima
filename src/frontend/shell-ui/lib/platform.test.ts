@@ -25,21 +25,21 @@ describe("resolveSettingsChromePlatform", () => {
 });
 
 describe("resolveSettingsContentPlatform", () => {
-  const originalShell = globalThis.window?.satelliteShell;
+  const originalShell = globalThis.window?.portalShell;
 
   afterEach(() => {
     setShellBuildTargetForTests(null);
     if (originalShell !== undefined) {
-      (globalThis.window as TestWindow).satelliteShell = originalShell;
+      (globalThis.window as TestWindow).portalShell = originalShell;
     } else {
-      delete (globalThis.window as TestWindow).satelliteShell;
+      delete (globalThis.window as TestWindow).portalShell;
     }
   });
 
   test("Tauri desktop 壳为 desktop", () => {
     setShellBuildTargetForTests("desktop");
     setTestWindow({
-      satelliteShell: { isTauri: true, isNativeShell: true },
+      portalShell: { isTauri: true, isNativeShell: true },
     } as Partial<TestWindow>);
     expect(resolveSettingsContentPlatform()).toBe("desktop");
   });
@@ -47,7 +47,7 @@ describe("resolveSettingsContentPlatform", () => {
   test("Tauri mobile 壳为 mobile", () => {
     setShellBuildTargetForTests("mobile");
     setTestWindow({
-      satelliteShell: { isTauri: true, isNativeShell: true },
+      portalShell: { isTauri: true, isNativeShell: true },
     } as Partial<TestWindow>);
     expect(resolveSettingsContentPlatform()).toBe("mobile");
   });

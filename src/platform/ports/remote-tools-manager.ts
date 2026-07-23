@@ -1,13 +1,13 @@
 export type {
-  SatelliteInstanceStatus,
-  SatellitesStatusResponse,
+  OutpostInstanceStatus,
+  OutpostsStatusResponse,
 } from "@freeanima/capabilities/remote-tools";
 
-import type { SatellitesStatusResponse } from "@freeanima/capabilities/remote-tools";
+import type { OutpostsStatusResponse } from "@freeanima/capabilities/remote-tools";
 
-/** SAP satellite runtime management port */
+/** Outpost remote-tools runtime management port */
 export interface RemoteToolsManagerPort {
-  getStatus(): SatellitesStatusResponse;
+  getStatus(): OutpostsStatusResponse;
   touchHeartbeat(appId: string, instanceId: string): void;
   noteConnection(
     appId: string,

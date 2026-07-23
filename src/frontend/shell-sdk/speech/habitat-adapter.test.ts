@@ -85,7 +85,7 @@ beforeEach(() => {
 
   globalThis.window = {
     location: { origin: "http://192.168.1.10:2658", pathname: "/web/chat", port: "2658" },
-    satelliteShell: {
+    portalShell: {
       habitatUrl: "http://192.168.1.10:2658",
       remoteAuth: { token: "secret-token-min-16" },
     },

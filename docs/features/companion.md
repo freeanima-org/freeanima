@@ -4,7 +4,7 @@ title: Desktop Companion
 
 # Desktop Companion
 
-> **remote-tools attach host** in the Companion **overlay WebView** (first-party) — embedded by the desktop Portal shell for window/IPC/FS only. Target shell: **Tauri**（见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)）。Not managed via `config.yaml`, and **not** a separate Node sidecar process.
+> **Outpost** (前哨): **remote-tools attach host** in the Companion **overlay WebView** (first-party) — embedded by the desktop Portal shell for window/IPC/FS only. Target shell: **Tauri**（见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)）。Not managed via `config.yaml`, and **not** a separate Node sidecar process.
 
 The content pack (React + VRM) is embedded by the **desktop Tauri shell** (`src/app/shell/tauri`). The overlay connects with Habitat RPC, calls `remote_tools.attach`, and exposes local tools (`bubble`, `play_slot`) to the Agent. Product modules such as Chat use Habitat RPC only (no attach).
 
@@ -17,7 +17,7 @@ FreeAnima Portal (src/app/shell/tauri)
 │   ├── companion settings — settings in main window (Habitat RPC + asset HTTP)
 │   ├── chat — Chat SPA (Habitat RPC, no remote_tools.attach)
 │   └── habitat — Habitat WebView (Habitat RPC REST)
-└── Renderer — satelliteShell; overlay owns attach + tool runtime
+└── Renderer — portalShell; overlay owns attach + tool runtime
          ↕ Habitat RPC (+ remote_tools.attach in overlay only)
     anima service Habitat (companion_profile SSOT + assets + FBX→VRMA)
 ```
@@ -43,7 +43,7 @@ Tauri   ◄──IPC──────────► Settings         (show/hid
 Agent    ──Habitat RPC tool.call─► Overlay
 ```
 
-The content pack lives in [`src/satellites/companion/`](../../src/satellites/companion/) (`spa/` + `server/` + `shared/`). Habitat domain logic: [`src/features/companion/`](../../src/features/companion/).
+The content pack lives in [`src/features/companion/`](../../src/features/companion/) (`ui/spa/` + `server/` + `shared/`). Habitat domain logic: [`src/features/companion/`](../../src/features/companion/).
 
 |            | Chat / other product modules | Companion                                        |
 | ---------- | ---------------------------- | ------------------------------------------------ |
@@ -82,7 +82,7 @@ The repo **does not bundle** `.vrm` / `.vrma` files. **Habitat** is the SSOT: `c
 
 Settings → **Models** tab: list, import, delete, rename, switch current model. Upload goes to Habitat (`POST /rpc/v1/companion/model/upload`); host downloads missing files for overlay rendering.
 
-During development, files in `src/satellites/companion/public/models/` serve as fallback.
+During development, files in `src/features/companion/public/models/` serve as fallback.
 
 ### VRMA library and slots
 
@@ -100,7 +100,7 @@ FBX→VRMA runs on the **Habitat host** (`anima service`). Desktop installers no
 
 ```bash
 bun run --filter @freeanima/satellite-companion dev
-# or: bun src/satellites/companion/dev.ts
+# or: bun src/features/companion/dev.ts
 ```
 
 Uses an in-process HTTP server; runtime events use localhost WebSocket (`/api/runtime/ws`).

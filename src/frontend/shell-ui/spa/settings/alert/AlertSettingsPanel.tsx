@@ -101,11 +101,9 @@ export default function AlertSettingsPanel(_props: SettingsPanelProps) {
         <dd>
           {platform}
           {platform === "mobile" ? "（本机通知）" : null}
-          {platform === "desktop" && window.satelliteShell?.showNativeAlert
-            ? "（OS 原生通知）"
-            : null}
-          {platform === "mobile" && window.satelliteShell?.showNativeAlert
-            ? "（satelliteShell 原生通道）"
+          {platform === "desktop" && window.portalShell?.showNativeAlert ? "（OS 原生通知）" : null}
+          {platform === "mobile" && window.portalShell?.showNativeAlert
+            ? "（portalShell 原生通道）"
             : null}
         </dd>
         <dt className="text-muted-foreground">通知权限</dt>

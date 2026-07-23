@@ -4,7 +4,7 @@
 
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
-stylelint_globs := 'src/frontend/**/spa/**/*.css src/frontend/**/lib/**/*.css src/features/**/ui/**/*.css src/satellites/**/spa/**/*.css src/app/shell/tauri/**/spa/**/*.css src/app/shell/web/**/spa/**/*.css'
+stylelint_globs := 'src/frontend/**/spa/**/*.css src/frontend/**/lib/**/*.css src/features/**/ui/**/*.css src/features/companion/**/spa/**/*.css src/app/shell/tauri/**/spa/**/*.css src/app/shell/web/**/spa/**/*.css'
 
 default:
   @just --choose

@@ -16,7 +16,7 @@ import {
 } from "@freeanima/shared/rpc-contract";
 import { logCapability as logComponent } from "@freeanima/core/config";
 
-export type SatelliteConnection = {
+export type OutpostConnection = {
   appId: string;
   instanceId: string;
   sendEvent: (method: string, payload: unknown) => void;
@@ -28,7 +28,7 @@ type PendingToolCall = {
   reject: (error: Error) => void;
 };
 
-type RegisteredSapTool = {
+type RegisteredOutpostTool = {
   fullName: string;
   localName: string;
   appSlug: string;
@@ -43,7 +43,7 @@ type InstanceMeta = {
   httpUrl: string | null;
 };
 
-export type SatelliteInstanceStatus = {
+export type OutpostInstanceStatus = {
   app_id: string;
   app_slug: string;
   instance_id: string;
@@ -56,18 +56,18 @@ export type SatelliteInstanceStatus = {
   tools: string[];
 };
 
-export type SatellitesStatusResponse = {
+export type OutpostsStatusResponse = {
   instance_count: number;
   tool_count: number;
-  instances: SatelliteInstanceStatus[];
+  instances: OutpostInstanceStatus[];
 };
 
 const REMOTE_TOOL_CALL_TIMEOUT_MS = 60_000;
 
 export class RemoteToolsManager {
-  private readonly connections = new Map<string, SatelliteConnection>();
+  private readonly connections = new Map<string, OutpostConnection>();
   private readonly instanceMeta = new Map<string, InstanceMeta>();
-  private readonly toolIndex = new Map<string, RegisteredSapTool>();
+  private readonly toolIndex = new Map<string, RegisteredOutpostTool>();
   private readonly pendingCalls = new Map<string, PendingToolCall>();
   private readonly toolSetNames = new Map<string, string>();
   private readonly registeredToolDefs = new Map<string, RemoteToolDefInput[]>();
@@ -88,14 +88,14 @@ export class RemoteToolsManager {
       if (existing) return existing;
       return {
         name,
-        description: "SAP satellite tool guard",
+        description: "Outpost remote-tool guard",
         parameters: { type: "object", properties: {} },
         handler: () => this.rejectUnregisteredSapTool(name),
       };
     };
   }
 
-  registerConnection(key: string, conn: SatelliteConnection, opts?: { httpUrl?: string }): void {
+  registerConnection(key: string, conn: OutpostConnection, opts?: { httpUrl?: string }): void {
     this.connections.set(key, conn);
     this.noteConnection(conn.appId, conn.instanceId, omitUndefined({ httpUrl: opts?.httpUrl }));
   }
@@ -131,8 +131,8 @@ export class RemoteToolsManager {
     meta.lastHeartbeatAt = new Date().toISOString();
   }
 
-  getStatus(): SatellitesStatusResponse {
-    const instances: SatelliteInstanceStatus[] = [];
+  getStatus(): OutpostsStatusResponse {
+    const instances: OutpostInstanceStatus[] = [];
     let toolCount = 0;
 
     for (const [key, conn] of this.connections) {
@@ -217,7 +217,7 @@ export class RemoteToolsManager {
     this.registeredToolPrivate.set(key, opts?.private !== false);
 
     if (defs.length > 0) {
-      this.toolSets.registerToolSet(setName, `SAP satellite ${appId}/${instanceId}`, defs, {
+      this.toolSets.registerToolSet(setName, `Outpost ${appId}/${instanceId}`, defs, {
         private: opts?.private !== false,
       });
       this.toolSetNames.set(setName, setName);
@@ -260,7 +260,7 @@ export class RemoteToolsManager {
   ):
     | { kind: "habitat_local" }
     | { kind: "reject"; error: string }
-    | { kind: "satellite_proxy"; payload: ToolCallPayload } {
+    | { kind: "outpost_proxy"; payload: ToolCallPayload } {
     if (!isRemotePrefixedToolName(name)) {
       return { kind: "habitat_local" };
     }
@@ -270,14 +270,14 @@ export class RemoteToolsManager {
       return { kind: "reject", error: `invalid sap tool name: ${name}` };
     }
 
-    const satelliteAppId = platformExtra?.satellite_app_id;
-    const satelliteInstanceId = platformExtra?.satellite_instance_id;
-    if (typeof satelliteAppId !== "string" || typeof satelliteInstanceId !== "string") {
-      return { kind: "reject", error: "session has no satellite binding; sap tools forbidden" };
+    const outpostAppId = platformExtra?.outpost_app_id;
+    const outpostInstanceId = platformExtra?.outpost_instance_id;
+    if (typeof outpostAppId !== "string" || typeof outpostInstanceId !== "string") {
+      return { kind: "reject", error: "session has no outpost binding; remote tools forbidden" };
     }
 
-    const expectedApp = normalizeAppSlug(satelliteAppId);
-    const expectedInst = normalizeInstanceId(satelliteInstanceId);
+    const expectedApp = normalizeAppSlug(outpostAppId);
+    const expectedInst = normalizeInstanceId(outpostInstanceId);
     if (parsed.value.app_slug !== expectedApp || parsed.value.instance_id_norm !== expectedInst) {
       return {
         kind: "reject",
@@ -288,7 +288,7 @@ export class RemoteToolsManager {
     if (!this.isInstanceConnected(expectedApp, expectedInst)) {
       return {
         kind: "reject",
-        error: `satellite instance offline: ${expectedApp}/${expectedInst}`,
+        error: `outpost instance offline: ${expectedApp}/${expectedInst}`,
       };
     }
 
@@ -300,7 +300,7 @@ export class RemoteToolsManager {
       typeof platformExtra?.workspace_root === "string" ? platformExtra.workspace_root : undefined;
 
     return {
-      kind: "satellite_proxy",
+      kind: "outpost_proxy",
       payload: {
         call_id: randomUUID(),
         tool_name: parsed.value.canonical,
@@ -326,11 +326,11 @@ export class RemoteToolsManager {
       return toolError(route.error);
     }
 
-    const appSlug = normalizeAppSlug(String(platformExtra?.satellite_app_id ?? ""));
-    const instanceNorm = normalizeInstanceId(String(platformExtra?.satellite_instance_id ?? ""));
+    const appSlug = normalizeAppSlug(String(platformExtra?.outpost_app_id ?? ""));
+    const instanceNorm = normalizeInstanceId(String(platformExtra?.outpost_instance_id ?? ""));
     const conn = this.connections.get(`${appSlug}:${instanceNorm}`);
     if (!conn) {
-      return toolError(`satellite instance offline: ${appSlug}/${instanceNorm}`);
+      return toolError(`outpost instance offline: ${appSlug}/${instanceNorm}`);
     }
 
     const payload: ToolCallPayload = { ...route.payload, args };
@@ -401,7 +401,7 @@ export class RemoteToolsManager {
 
   private rejectUnregisteredSapTool(name: string): string {
     const conversationId = getToolConversationId() ?? "";
-    logComponent("satellite").warn("reject unregistered sap tool", { name, conversationId });
+    logComponent("outpost").warn("reject unregistered outpost tool", { name, conversationId });
     return toolError(`sap tool not registered: ${name}`);
   }
 

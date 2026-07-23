@@ -11,7 +11,7 @@
     "scripts/**/*.ts",
     "tests/**/*.ts",
     "messages/**/*.json",
-    "src/satellites/companion/shared/**/*.json"
+    "src/features/companion/shared/**/*.json"
   ],
   "exclude": ["node_modules", "**/dist/**", "**/.turbo/**", "scripts/codemod-freeanima-imports.ts"]
 }

@@ -15,7 +15,7 @@ import {
   setTokenizerEncodeForTest,
 } from "@freeanima/core/tokenizer/testing";
 import { computeStats, mergeStats, statsReport, getAppRuntime } from "@freeanima/platform";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testConv } from "../../helpers/pg-test.ts";
 
 function deps() {

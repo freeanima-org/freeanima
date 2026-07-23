@@ -85,7 +85,7 @@ export function createRemoteToolsServerHandlers(
       }
 
       if (!router.isRpcMethod(method)) {
-        throw new Error(`unknown SAP method: ${method}`);
+        throw new Error(`unknown remote-tools method: ${method}`);
       }
 
       switch (method) {
@@ -93,7 +93,7 @@ export function createRemoteToolsServerHandlers(
         case "remote_tools.detach":
           throw new Error("sap session methods are handled by Habitat RPC transport");
         default:
-          throw new Error(`unknown SAP method: ${String(method)}`);
+          throw new Error(`unknown remote-tools method: ${String(method)}`);
       }
     },
   };
@@ -132,7 +132,7 @@ export function attachSapWebSocket(
         const timer = setTimeout(() => {
           if (!satellitePendingRequests.has(id)) return;
           satellitePendingRequests.delete(id);
-          reject(new Error(`satellite request timed out: ${method}`));
+          reject(new Error(`outpost request timed out: ${method}`));
         }, SATELLITE_REQUEST_TIMEOUT_MS);
         satellitePendingRequests.set(id, { resolve, reject, timer });
         sendEnvelope({ kind: "req", id, method, payload: payload ?? {} });
@@ -238,7 +238,7 @@ export function attachSapWebSocket(
             id: envelope.id,
             ok: false,
             error: {
-              code: "sap_already_attached",
+              code: "outpost_already_attached",
               message: "remote-tools session already attached",
             },
           });
@@ -278,7 +278,7 @@ export function attachSapWebSocket(
             id: envelope.id,
             ok: false,
             error: {
-              code: "sap_attach_error",
+              code: "outpost_attach_error",
               message: e instanceof Error ? e.message : String(e),
             },
           });
@@ -301,7 +301,7 @@ export function attachSapWebSocket(
             id: envelope.id,
             ok: false,
             error: {
-              code: "sap_detach_error",
+              code: "outpost_detach_error",
               message: e instanceof Error ? e.message : String(e),
             },
           });
@@ -315,7 +315,7 @@ export function attachSapWebSocket(
           id: envelope.id,
           ok: false,
           error: {
-            code: "sap_not_attached",
+            code: "outpost_not_attached",
             message: "remote-tools session not attached; call remote_tools.attach first",
           },
         });

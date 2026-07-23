@@ -45,7 +45,7 @@ export function registerToolsetTools(toolSets: ToolSetRegistry): void {
         {
           name: "toolset_search",
           description:
-            "Search dynamically registered ToolSets (MCP/ACP/SAP) by keyword. Built-in ToolSets are listed in system prompt — use toolset_load directly.",
+            "Search dynamically registered ToolSets (MCP/ACP/Outpost) by keyword. Built-in ToolSets are listed in system prompt — use toolset_load directly.",
           parameters: {
             type: "object",
             properties: {

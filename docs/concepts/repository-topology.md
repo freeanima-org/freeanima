@@ -23,9 +23,9 @@ src/
 ├── kernel/          # 日志、事件总线、无业务依赖
 ├── core/            # 配置、PG schema、repos、LLM 工具
 ├── runtime/         # 对话轮次、目标、流水线
-├── platform/        # 组合根：Habitat、连接器、SAP、slash commands
+├── platform/        # 组合根：Habitat、连接器、remote-tools、slash commands
 ├── capabilities/    # acp, memory, tools, mcp-*, llm-openai, …
-├── features/        # chat, console, task, vault, diary, …
+├── features/        # chat, habitat, task, vault, diary, companion, …
 ├── shared/          # habitat-rpc, habitat-contract, rpc-contract, vault-crypto
 ├── frontend/        # ui-kit, shell-sdk, shell-ui
 ├── app/
@@ -33,9 +33,8 @@ src/
 │   └── shell/
 │       ├── tauri/   # Portal：src-tauri + bridge + spa
 │       └── web/     # 浏览器 / PWA
-└── satellites/      # companion（spa/ + lib/ + server/ 浏览器·dev host）
 
-内层 Vite SPA 根目录统一称 **`spa/`**（原 `app/`），与交付层 `src/app/` 区分。壳层/卫星的非 SPA 模块用 **`lib/`**（原内层 `src/`）。
+内层 Vite SPA 根目录统一称 **`spa/`**（原 `app/`），与交付层 `src/app/` 区分。壳层/Outpost 的非 SPA 模块用 **`lib/`**（原内层 `src/`）。
 ```
 
 ## Root-level (non-`src/`)

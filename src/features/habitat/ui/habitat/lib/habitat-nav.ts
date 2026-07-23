@@ -56,7 +56,7 @@ export function habitatNavGroups(): HabitatNavGroup[] {
         { to: "/commands", label: m.habitat_nav_commands() },
         { to: "/mcp", label: m.habitat_nav_mcp() },
         { to: "/acp", label: m.habitat_nav_acp() },
-        { to: "/satellites", label: m.habitat_nav_satellites() },
+        { to: "/outposts", label: m.habitat_nav_outposts() },
       ],
     },
   ];

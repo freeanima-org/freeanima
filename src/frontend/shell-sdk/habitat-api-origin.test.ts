@@ -14,10 +14,10 @@ afterEach(() => {
 });
 
 describe("resolveHabitatApiOrigin", () => {
-  it("prefers satelliteShell.habitatUrl", () => {
+  it("prefers portalShell.habitatUrl", () => {
     globalThis.window = {
       location: { origin: "http://192.168.1.10:2658", pathname: "/web/chat" },
-      satelliteShell: { habitatUrl: "https://habitat.example.com" },
+      portalShell: { habitatUrl: "https://habitat.example.com" },
     } as Window & typeof globalThis;
     expect(resolveHabitatApiOrigin()).toBe("https://habitat.example.com");
   });
@@ -26,7 +26,7 @@ describe("resolveHabitatApiOrigin", () => {
     globalThis.window = {
       location: { origin: "http://127.0.0.1:5000", pathname: "/web/chat", port: "5000" },
       document: { documentElement: { dataset: { shellUi: "1" } } },
-      satelliteShell: { habitatUrl: "" },
+      portalShell: { habitatUrl: "" },
     } as unknown as Window & typeof globalThis;
     expect(resolveHabitatApiOrigin()).toBe("http://127.0.0.1:5000");
   });
@@ -43,7 +43,7 @@ describe("resolveHabitatApiOrigin", () => {
     globalThis.window = {
       location: { origin: "http://127.0.0.1:5000", pathname: "/web/chat", port: "5000" },
       document: { documentElement: { dataset: { shellUi: "1" } } },
-      satelliteShell: { isTauri: true, isNativeShell: true, habitatUrl: "" },
+      portalShell: { isTauri: true, isNativeShell: true, habitatUrl: "" },
     } as unknown as Window & typeof globalThis;
     expect(resolveHabitatApiOrigin()).toBe(DEFAULT_HABITAT_ORIGIN);
   });

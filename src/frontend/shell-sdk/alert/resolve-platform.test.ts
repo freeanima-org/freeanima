@@ -27,7 +27,7 @@ describe("resolveAlertDisplayPlatform", () => {
   it("编译期 desktop 展示 desktop", () => {
     setShellBuildTargetForTests("desktop");
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isNativeShell: true, isTauri: true },
+      portalShell: { isNativeShell: true, isTauri: true },
       navigator: { userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
       location: { protocol: "https:", hostname: "tauri.localhost" },
     } as unknown as Window;
@@ -43,7 +43,7 @@ describe("resolveAlertDisplayPlatform", () => {
 
   it("Tauri touch 展示 mobile", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: {
+      portalShell: {
         isNativeShell: true,
         isTauri: true,
         primaryInput: "touch",
@@ -66,7 +66,7 @@ describe("resolveAlertDisplayPlatform", () => {
 
   it("web backend + showNativeAlert pointer 展示 desktop", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: {
+      portalShell: {
         primaryInput: "pointer",
         showNativeAlert: async () => {},
       },

@@ -20,10 +20,10 @@ describe("offline-cache", () => {
     expect(resolveCacheScope("  WS://127.0.0.1:2658/rpc/v1  ")).toBe("ws://127.0.0.1:2658/rpc/v1");
   });
 
-  test("resolveHabitatCacheScope prefers satelliteShell habitatWsUrl", () => {
+  test("resolveHabitatCacheScope prefers portalShell habitatWsUrl", () => {
     const prevWindow = globalThis.window;
     const shell = { habitatWsUrl: "ws://habitat.example/rpc/v1" };
-    globalThis.window = { satelliteShell: shell } as Window & typeof globalThis;
+    globalThis.window = { portalShell: shell } as Window & typeof globalThis;
     try {
       expect(resolveHabitatCacheScope()).toBe("ws://habitat.example/rpc/v1:user");
     } finally {

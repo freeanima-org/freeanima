@@ -12,14 +12,14 @@ type TauriWindow = Window & {
 };
 
 /**
- * 是否在 Tauri WebView 内（satelliteShell 注入前也可用）。
+ * 是否在 Tauri WebView 内（portalShell 注入前也可用）。
  * - IPC / withGlobalTauri 全局
  * - 自定义协议与 Tauri 2 默认主机名（含 *.localhost，排除光杆 localhost）
  */
 export function isTauriRuntime(): boolean {
   const w = runtimeWindow() as TauriWindow | undefined;
   if (!w) return false;
-  if (w.satelliteShell?.isTauri) return true;
+  if (w.portalShell?.isTauri) return true;
   if (w.__TAURI_INTERNALS__ || w.__TAURI__ || w.isTauri) return true;
   try {
     const { protocol, hostname } = w.location;
