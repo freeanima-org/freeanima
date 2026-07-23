@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-27 14:50+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -44,25 +44,26 @@ msgid "Guide — Usage and Maintenance"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:17
+#: docs/README.md:18
 #, no-wrap
 msgid ""
-"| Topic        | File                                   |\n"
-"| ------------ | -------------------------------------- |\n"
-"| Installation | [guide/install.md](guide/install.md)   |\n"
-"| Security     | [guide/security.md](guide/security.md) |\n"
-"| Database     | [guide/database.md](guide/database.md) |\n"
-"| Service      | [guide/service.md](guide/service.md)   |\n"
+"| Topic        | File                                         |\n"
+"| ------------ | -------------------------------------------- |\n"
+"| Installation | [guide/install.md](guide/install.md)         |\n"
+"| Security     | [guide/security.md](guide/security.md)       |\n"
+"| Database     | [guide/database.md](guide/database.md)       |\n"
+"| Service      | [guide/service.md](guide/service.md)         |\n"
+"| Habitat RPC  | [guide/habitat-rpc.md](guide/habitat-rpc.md) |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/README.md:18
+#: docs/README.md:19
 #, no-wrap
 msgid "Concepts — Core Ideas"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:31
+#: docs/README.md:32
 #, no-wrap
 msgid ""
 "| Topic           | File                                                       |\n"
@@ -79,49 +80,29 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/README.md:32
+#: docs/README.md:33
 #, no-wrap
 msgid "Features — Major Capabilities"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:37
+#: docs/README.md:39
 #, no-wrap
 msgid ""
-"| Topic      | File                                             |\n"
-"| ---------- | ------------------------------------------------ |\n"
-"| Mobile app | [features/mobile-app.md](features/mobile-app.md) |\n"
+"| Topic             | File                                             |\n"
+"| ----------------- | ------------------------------------------------ |\n"
+"| Mobile app        | [features/mobile-app.md](features/mobile-app.md) |\n"
+"| Desktop companion | [features/companion.md](features/companion.md)   |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/README.md:38
-#, no-wrap
-msgid "SAP — Satellite Application Protocol"
-msgstr ""
-
-#. type: Plain text
-#: docs/README.md:49
-#, no-wrap
-msgid ""
-"| Topic           | File                                             |\n"
-"| --------------- | ------------------------------------------------ |\n"
-"| Overview        | [sap/overview.md](sap/overview.md)               |\n"
-"| Transport       | [sap/transport.md](sap/transport.md)             |\n"
-"| RPC methods     | [sap/methods.md](sap/methods.md)                 |\n"
-"| Events          | [sap/events.md](sap/events.md)                   |\n"
-"| Tools           | [sap/tools.md](sap/tools.md)                     |\n"
-"| Satellite guide | [sap/satellite-guide.md](sap/satellite-guide.md) |\n"
-"| Security        | [sap/security-model.md](sap/security-model.md)   |\n"
-msgstr ""
-
-#. type: Title ##
-#: docs/README.md:50
+#: docs/README.md:40
 #, no-wrap
 msgid "Tools — Built-in Tools"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:54
+#: docs/README.md:44
 #, no-wrap
 msgid ""
 "| Topic         | File                                                             |\n"

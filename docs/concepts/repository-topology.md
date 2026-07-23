@@ -31,10 +31,9 @@ src/
 ├── app/
 │   ├── cli/         # `anima` CLI（无内层 src/）
 │   └── shell/
-│       ├── desktop/ # Electron：spa/（Vite 根）+ lib/（设置/桥接）
-│       ├── mobile/  # Capacitor
-│       └── web/     # 浏览器全壳层
-└── satellites/      # companion（spa/ + lib/ + server/ sidecar）
+│       ├── tauri/   # Portal：src-tauri + bridge + spa
+│       └── web/     # 浏览器 / PWA
+└── satellites/      # companion（spa/ + lib/ + server/ 浏览器·dev host）
 
 内层 Vite SPA 根目录统一称 **`spa/`**（原 `app/`），与交付层 `src/app/` 区分。壳层/卫星的非 SPA 模块用 **`lib/`**（原内层 `src/`）。
 ```

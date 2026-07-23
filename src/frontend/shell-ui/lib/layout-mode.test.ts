@@ -11,11 +11,11 @@ describe("resolveLayoutMode", () => {
     expect(resolveLayoutMode({ isNarrowViewport: false })).toBe("expanded");
   });
 
-  test("Electron 窄窗仍随视口为 compact", () => {
+  test("桌面窄窗仍随视口为 compact", () => {
     expect(resolveLayoutMode({ isNarrowViewport: true })).toBe("compact");
   });
 
-  test("Capacitor 宽屏随视口为 expanded", () => {
+  test("移动宽屏随视口为 expanded", () => {
     expect(resolveLayoutMode({ isNarrowViewport: false })).toBe("expanded");
   });
 

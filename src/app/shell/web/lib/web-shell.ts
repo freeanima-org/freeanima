@@ -51,7 +51,6 @@ export function normalizeWebHubUrl(raw: string): string {
 
 export function createWebShellStub(): ShellApi {
   return {
-    isElectron: false,
     habitatUrl: "",
     habitatWsUrl: "",
     windowRole: null,
@@ -66,7 +65,6 @@ export function buildWebShellFromRaw(habitatUrl: string, remoteAuthToken: string
   const habitatWsUrl = resolveHabitatRpcWsUrl(trimmedHub);
   const apiFields = buildShellApiFields(trimmedHub, habitatWsUrl, remoteAuthToken.trim());
   return {
-    isElectron: false,
     ...apiFields,
     windowRole: null,
     apiOrigin: null,

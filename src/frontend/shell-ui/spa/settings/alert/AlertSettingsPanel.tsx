@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import {
   deliverAlert,
   getAlertBackend,
-  isCapacitorShellRuntime,
   readAlertPermission,
   requestAlertPermission,
   resolveAlertDisplayPlatform,
@@ -26,15 +25,7 @@ export default function AlertSettingsPanel(_props: SettingsPanelProps) {
   const platform = backend ? resolveAlertDisplayPlatform(backend) : "—";
 
   useEffect(() => {
-    void (async () => {
-      let current = getAlertBackend();
-      if (current?.platform === "web" && isCapacitorShellRuntime()) {
-        const mod = await import("@freeanima/app/shell/web/lib/register-alert-backend.ts");
-        await mod.registerShellAlertBackend();
-        current = getAlertBackend();
-      }
-      setBackend(current);
-    })();
+    setBackend(getAlertBackend());
   }, []);
 
   useEffect(() => {
@@ -109,7 +100,7 @@ export default function AlertSettingsPanel(_props: SettingsPanelProps) {
         <dt className="text-muted-foreground">平台</dt>
         <dd>
           {platform}
-          {platform === "mobile" ? "（Capacitor 本机通知）" : null}
+          {platform === "mobile" ? "（本机通知）" : null}
           {platform === "desktop" && window.satelliteShell?.showNativeAlert
             ? "（OS 原生通知）"
             : null}

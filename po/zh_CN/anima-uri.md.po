@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wv 53\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: 2026-07-17 22:43+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -146,10 +146,10 @@ msgstr "数据持久化"
 #| "| `memory_remember` | Semantic memory CRUD during conversation                                                               |\n"
 #| "| Resident memory   | System prompt injection (not recall)                                                                   |\n"
 msgid ""
-"| Layer               | Stores                                         | Anima URI                                                 |\n"
-"| ------------------- | ---------------------------------------------- | --------------------------------------------------------- |\n"
+"| Layer                   | Stores                                         | Anima URI                                                 |\n"
+"| ----------------------- | ---------------------------------------------- | --------------------------------------------------------- |\n"
 "| PG / Habitat body / RPC | Entity **`id`** (e.g. pomodoro `task_item_id`) | **Never** as FK string                                    |\n"
-"| Shell UI            | —                                              | `formatAnimaUri` / `parseAnimaUri` / `openEntityResource` |\n"
+"| Shell UI                | —                                              | `formatAnimaUri` / `parseAnimaUri` / `openEntityResource` |\n"
 msgstr ""
 "| 能力              | 说明                                                                                                   |\n"
 "| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
@@ -206,7 +206,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/anima-uri.md:62
-msgid "Non-entity resources (conversation, semantic memory, …)"
+msgid "Non-entity resources (conversation, …)"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -220,8 +220,24 @@ msgid "Full Markdown click interception in Chat"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:63
+#: docs/concepts/anima-uri.md:64
 #, fuzzy
 #| msgid "Entity subjects: [`entity-model.md`](entity-model.md)"
 msgid "See also [`entity-model.md`](entity-model.md)."
 msgstr "实体主体：[`entity-model.md`](entity-model.md)"
+
+#. type: Title ##
+#: docs/concepts/anima-uri.md:65
+#, fuzzy, no-wrap
+#| msgid "Verify installation"
+msgid "Memory citations"
+msgstr "验证安装"
+
+#. type: Plain text
+#: docs/concepts/anima-uri.md:67
+msgid ""
+"Assistant/user message bodies cite entities with `[[anima:{id}]]` or "
+"`[[anima:{id}?component=semantic_memory]]`. Chat Markdown turns these into "
+"clickable anchors that call `openEntityResource` (default overlay for "
+"`semantic_memory`)."
+msgstr ""

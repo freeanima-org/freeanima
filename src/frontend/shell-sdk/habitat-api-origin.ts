@@ -7,7 +7,7 @@ export function resolveHabitatApiOrigin(): string {
   const shellHub = window.satelliteShell?.habitatUrl?.trim().replace(/\/$/, "");
   if (shellHub) return shellHub;
 
-  if (window.satelliteShell?.isElectron || window.satelliteShell?.isNativeShell) {
+  if (window.satelliteShell?.isNativeShell || window.satelliteShell?.isTauri) {
     return DEFAULT_HUB_ORIGIN;
   }
 

@@ -233,4 +233,4 @@ export async function advanceBubble() {
   return { current };
 }
 
-export { isElectron } from "./electron.ts";
+export { isPortalShell } from "./portal-shell.ts";

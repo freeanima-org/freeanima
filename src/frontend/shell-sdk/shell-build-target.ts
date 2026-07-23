@@ -1,6 +1,6 @@
 /**
  * 编译期壳目标（Vite `define` / `FREEANIMA_SHELL_TARGET`）。
- * 与运行时 `getShellKind()` 正交：前者固定产物形态，后者细分 Electron/Tauri/Capacitor。
+ * 与运行时 `getShellKind()` 正交：前者固定产物形态（desktop/mobile），后者为 web|tauri。
  */
 
 export type ShellBuildTarget = "web" | "desktop" | "mobile";

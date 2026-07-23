@@ -69,6 +69,6 @@ When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/
 
 **UI access:**
 
-- **Desktop / mobile bundled shell:** Chat and Habitat at `/chat`, `/habitat`/\*`inside the Electron/Capacitor app (not served from Habitat`:2658`unless`web.enabled`).
+- **Desktop / mobile Portal:** Chat and Habitat inside the Tauri app (not served from Habitat `:2658` unless `web.enabled`).
 - **`config.yaml` `web.enabled: true`:** browser UI at `http://<host>:2658/web/*` from Habitat when dist is present (see table above). `web` is bootstrap (not PG). Default Habitat URL in `/web/config.json` is the **page origin**.
 - **Local Web dev (`bun run dev:web`):** Vite from `:5000` with base `/web/` — Chat `http://127.0.0.1:5000/web/chat`, Habitat `…/web/habitat/dashboard`; `/hub` and `/mcp` proxied to `FREEANIMA_URL`. Browser Habitat defaults to page origin; `dev:hub` auto-fills token via `~/.anima/dev-web.token`.

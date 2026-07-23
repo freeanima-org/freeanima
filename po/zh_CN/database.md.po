@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,14 +16,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/companion.md:144 docs/features/mobile-app.md:49
-#: docs/guide/database.md:88 docs/guide/remote-access.md:192
+#: docs/features/mobile-app.md:47 docs/guide/database.md:97
+#: docs/guide/remote-access.md:194
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/database.md:1 messages/po4a/en.xml:612
+#: docs/guide/database.md:1 messages/po4a/en.xml:675
 #, no-wrap
 msgid "Database"
 msgstr "数据库"
@@ -82,14 +82,45 @@ msgstr ""
 "置中明文存放。路径约定见 [`security.md`](security.md#credential-"
 "responsibilities)。"
 
+#. type: Plain text
+#: docs/guide/database.md:25
+msgid ""
+"Optional pool overrides（见 [`src/core/db/pg/client.ts`](../../src/core/db/"
+"pg/client.ts)）:"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/database.md:31
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Capability        | Description                                                                                            |\n"
+#| "| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
+#| "| `memory_recall`   | Four sources: semantic / conversation / limbic / autobiographical; Top N; conversation returns snippet |\n"
+#| "| `sessions_search` | Session message search; returns snippet (not full content)                                             |\n"
+#| "| `memory_remember` | Semantic memory CRUD during conversation                                                               |\n"
+#| "| Resident memory   | System prompt injection (not recall)                                                                   |\n"
+msgid ""
+"| Env                              | Default | Notes                                                                     |\n"
+"| -------------------------------- | ------- | ------------------------------------------------------------------------- |\n"
+"| `FREEANIMA_PG_POOL_MAX`          | `10`    | 连接池上限，对齐部署 `max_connections`                                    |\n"
+"| `FREEANIMA_PG_POOL_IDLE_TIMEOUT` | `0`     | 秒；`0` = 关闭。Bun ≤1.3.14 勿设 `30`（会误杀长查询，见 troubleshooting） |\n"
+"| `FREEANIMA_PG_POOL_MAX_LIFETIME` | `0`     | 秒；`0` = 不限制连接寿命                                                  |\n"
+msgstr ""
+"| 能力              | 说明                                                                                                   |\n"
+"| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
+"| `memory_recall`   | 四源：semantic / conversation / limbic / autobiographical；Top N；conversation 返回 snippet            |\n"
+"| `sessions_search` | 会话消息搜索；返回 snippet（非全文）                                                                   |\n"
+"| `memory_remember` | 对话中语义记忆 CRUD                                                                                    |\n"
+"| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
+
 #. type: Title ##
-#: docs/guide/database.md:24
+#: docs/guide/database.md:32
 #, no-wrap
 msgid "Local Install (Debian)"
 msgstr "本地安装（Debian）"
 
 #. type: Fenced code block (bash)
-#: docs/guide/database.md:26
+#: docs/guide/database.md:34
 #, no-wrap
 msgid ""
 "# Install PostgreSQL, create anima db/user (requires sudo)\n"
@@ -105,7 +136,7 @@ msgstr ""
 "#   url: env(\"DATABASE_URL\")\n"
 
 #. type: Plain text
-#: docs/guide/database.md:35
+#: docs/guide/database.md:43
 msgid ""
 "Defaults: PostgreSQL 17, `localhost` only, `scram-sha-256`, dedicated "
 "`anima` database and user."
@@ -114,13 +145,13 @@ msgstr ""
 "户。"
 
 #. type: Title ##
-#: docs/guide/database.md:36
+#: docs/guide/database.md:44
 #, no-wrap
 msgid "Extensions (One-Time)"
 msgstr "扩展（一次性）"
 
 #. type: Plain text
-#: docs/guide/database.md:39
+#: docs/guide/database.md:47
 msgid ""
 "Full-text and vector search require PostgreSQL extensions. The app user "
 "usually cannot `CREATE EXTENSION`; run as superuser:"
@@ -129,7 +160,7 @@ msgstr ""
 "超级用户执行："
 
 #. type: Fenced code block (bash)
-#: docs/guide/database.md:40
+#: docs/guide/database.md:48
 #, no-wrap
 msgid ""
 "sudo apt install postgresql-17-pgvector   # match psql --version\n"
@@ -139,20 +170,20 @@ msgstr ""
 "sudo -u postgres psql -d anima -f core/scripts/ensure-pg-extensions.sql\n"
 
 #. type: Plain text
-#: docs/guide/database.md:46
+#: docs/guide/database.md:54
 msgid ""
 "Fresh Debian installs via `setup-postgres-debian.sh` handle extensions "
 "automatically."
 msgstr "通过 `setup-postgres-debian.sh` 全新安装的 Debian 会自动处理扩展。"
 
 #. type: Title ##
-#: docs/guide/database.md:47
+#: docs/guide/database.md:55
 #, no-wrap
 msgid "Schema Migrations"
 msgstr "Schema 迁移"
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:51
+#: docs/guide/database.md:59
 msgid ""
 "**Production (recommended):** When PostgreSQL is configured, `anima service` "
 "**auto-applies** pending schema migrations on startup."
@@ -161,12 +192,12 @@ msgstr ""
 "**待执行的 schema 迁移。"
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:51
+#: docs/guide/database.md:59
 msgid "**Manual:**"
 msgstr "**手动：**"
 
 #. type: Fenced code block (bash)
-#: docs/guide/database.md:52
+#: docs/guide/database.md:60
 #, no-wrap
 msgid ""
 "DATABASE_URL=\"postgresql://anima:…@127.0.0.1:5432/anima\" \\\n"
@@ -176,18 +207,18 @@ msgstr ""
 "  bun run db:migrate\n"
 
 #. type: Plain text
-#: docs/guide/database.md:58
+#: docs/guide/database.md:66
 msgid "Run after extensions are installed, or restart `anima service`."
 msgstr "安装扩展后执行，或重启 `anima service`。"
 
 #. type: Title ##
-#: docs/guide/database.md:59
+#: docs/guide/database.md:67
 #, no-wrap
 msgid "`auto_llm_runs` (audit)"
 msgstr "`auto_llm_runs`（审计）"
 
 #. type: Plain text
-#: docs/guide/database.md:62
+#: docs/guide/database.md:70
 msgid ""
 "Background LLM without user turns (cron agent, sleep pipeline stages) writes "
 "to `auto_llm_runs` instead of creating `conversations`. Retention (optional "
@@ -197,7 +228,7 @@ msgstr ""
 "创建 `conversations`。保留策略（可选 `config.yaml`）："
 
 #. type: Fenced code block (yaml)
-#: docs/guide/database.md:63
+#: docs/guide/database.md:71
 #, no-wrap
 msgid ""
 "auto_llm:\n"
@@ -209,7 +240,7 @@ msgstr ""
 "  per_run_kind_keep: 100\n"
 
 #. type: Plain text
-#: docs/guide/database.md:70
+#: docs/guide/database.md:78
 msgid ""
 "Purged during sleep-cycle step `conversation-cleanup` (after stale "
 "conversation cleanup). Cron script runs (`no_agent`) use `cron_log` only."
@@ -218,25 +249,25 @@ msgstr ""
 "本运行（`no_agent`）仅使用 `cron_log`。"
 
 #. type: Title ##
-#: docs/guide/database.md:71
+#: docs/guide/database.md:79
 #, no-wrap
 msgid "Backups"
 msgstr "备份"
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:76
+#: docs/guide/database.md:85
 msgid ""
 "**Migrations do not replace backups** — schedule regular full backups (e.g. "
 "`pg_dump`)."
 msgstr "**迁移不能替代备份** — 请定期安排全量备份（如 `pg_dump`）。"
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:76
+#: docs/guide/database.md:85
 msgid "Back up before destructive changes."
 msgstr "破坏性变更前先备份。"
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:76
+#: docs/guide/database.md:85
 msgid ""
 "Include `~/.anima/` (`FREEANIMA_HOME` overridable) in backup policy — see "
 "[`security.md`](security.md#data-persistence)."
@@ -244,21 +275,29 @@ msgstr ""
 "备份策略应包含 `~/.anima/`（可用 `FREEANIMA_HOME` 覆盖）——见 [`security.md`]"
 "(security.md#data-persistence)。"
 
+#. type: Bullet: '- '
+#: docs/guide/database.md:85
+msgid ""
+"Recommended local stack: hourly `pg_dump` + home tar (short retention), WAL "
+"archive (`archive_mode`), weekly `pg_basebackup` for PITR. Restore logical "
+"dumps as postgres superuser (`pg_restore --no-owner --no-acl --no-comments`)."
+msgstr ""
+
 #. type: Title ##
-#: docs/guide/database.md:77
+#: docs/guide/database.md:86
 #, no-wrap
 msgid "Integration Tests (Developers)"
 msgstr "集成测试（开发者）"
 
 #. type: Plain text
-#: docs/guide/database.md:80
+#: docs/guide/database.md:89
 msgid ""
 "Full integration tests require **Docker** for a temporary PostgreSQL "
 "instance:"
 msgstr "完整集成测试需要 **Docker** 提供临时 PostgreSQL 实例："
 
 #. type: Fenced code block (bash)
-#: docs/guide/database.md:81
+#: docs/guide/database.md:90
 #, fuzzy, no-wrap
 #| msgid ""
 #| "bun run test:integration\n"
@@ -271,33 +310,24 @@ msgstr ""
 "bun run test              # unit + integration in parallel\n"
 
 #. type: Plain text
-#: docs/guide/database.md:87
+#: docs/guide/database.md:96
 msgid "pre-commit `test:changed` does **not** run integration tests."
 msgstr "pre-commit 的 `test:changed` **不会**运行集成测试。"
 
 #. type: Plain text
-#: docs/guide/database.md:95
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Symptom                     | Check                                                          |\n"
-#| "| --------------------------- | -------------------------------------------------------------- |\n"
-#| "| Service fails on DB connect | `database.url`; PostgreSQL running; pass credentials readable  |\n"
-#| "| Migration fails             | Extensions installed; DB user has DDL privileges               |\n"
-#| "| FTS / vector recall empty   | `ensure-pg-extensions.sql` applied; `embedding` config enabled |\n"
+#: docs/guide/database.md:106
+#, no-wrap
 msgid ""
-"| Symptom                     | Check                                                                       |\n"
-"| --------------------------- | --------------------------------------------------------------------------- |\n"
-"| Service fails on DB connect | `database.url`; PostgreSQL running; pass credentials readable               |\n"
-"| Migration fails             | Extensions installed; DB user has DDL privileges                            |\n"
-"| FTS / keyword recall empty  | `ensure-pg-extensions.sql` applied (`pg_trgm`); jieba/FTS rebuild if needed |\n"
+"| Symptom                                             | Check                                                                                                                                                                   |\n"
+"| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Service fails on DB connect                         | `database.url`; PostgreSQL running; pass credentials readable; startup error message lists next steps (missing DB, auth, connection, extensions)                        |\n"
+"| `Idle timeout reached after 30s` on startup/migrate | Bun ≤1.3.14 会误杀进行中查询（[oven-sh/bun#30646](https://github.com/oven-sh/bun/issues/30646)）。确保 `FREEANIMA_PG_POOL_IDLE_TIMEOUT=0`（默认）或临时导出该变量后重启 |\n"
+"| Habitat 「未就绪」超时而进程仍在跑                  | 迁移在 HTTP listen **之前**；默认等 15min（`FREEANIMA_HUB_READY_TIMEOUT_MS`）。看 `journalctl --user -u anima -f`，勿中途 `stop`                                        |\n"
+"| Migration fails                                     | Extensions installed; DB user has DDL privileges；HNSW / 大批量 backfill 可能很慢，勿与上述 idle timeout 混淆                                                           |\n"
+"| FTS / keyword recall empty                          | `ensure-pg-extensions.sql` applied (`pg_trgm`); jieba/FTS rebuild if needed                                                                                             |\n"
 msgstr ""
-"| 现象                        | 排查                                                           |\n"
-"| --------------------------- | -------------------------------------------------------------- |\n"
-"| 服务 DB 连接失败            | `database.url`；PostgreSQL 是否运行；pass 凭证是否可读         |\n"
-"| 迁移失败                    | 扩展已安装；DB 用户是否有 DDL 权限                             |\n"
-"| FTS / 向量召回为空          | 已执行 `ensure-pg-extensions.sql`；已启用 `embedding` 配置     |\n"
 
 #. type: Plain text
-#: docs/guide/database.md:96
+#: docs/guide/database.md:107
 msgid "More deployment security: [`security.md`](security.md)."
 msgstr "更多部署安全事项：[`security.md`](security.md)。"

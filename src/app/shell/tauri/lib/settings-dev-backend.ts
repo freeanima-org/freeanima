@@ -81,7 +81,7 @@ function saveFileScope(scope: SettingsStorageScope, value: unknown): void {
   localStorage.setItem("freeanima.companion.config", JSON.stringify(value, null, 2));
 }
 
-/** 浏览器直接打开 desktop Vite 时的 localStorage 回退（Electron preload 未注入时） */
+/** 浏览器直接打开壳 Vite 时的 localStorage 回退（无 Tauri bridge 时） */
 export function createDesktopDevScopedBackend(): ScopedSettingsBackend {
   return {
     load: async (scope) => {

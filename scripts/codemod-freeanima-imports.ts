@@ -28,8 +28,8 @@ const PREFIX_REWRITES: [string, string][] = [
   // feature / app / shared 逻辑包
   ["@freeanima/feature-", "@freeanima/features/"],
   ["@freeanima/satellite-companion/", "@freeanima/satellites/companion/"],
-  ["@freeanima/app-desktop/", "@freeanima/app/shell/desktop/"],
-  ["@freeanima/app-mobile/", "@freeanima/app/shell/mobile/"],
+  ["@freeanima/app-desktop/", "@freeanima/app/shell/tauri/"],
+  ["@freeanima/app-mobile/", "@freeanima/app/shell/tauri/"],
   ["@freeanima/app-web/", "@freeanima/app/shell/web/"],
   ["@freeanima/habitat-api/", "@freeanima/features/habitat/habitat/habitat-api/"],
   ["@freeanima/habitat-contract/", "@freeanima/features/habitat/protocol/habitat-contract/"],
@@ -107,21 +107,10 @@ const EXACT_REWRITES: Record<string, string> = {
     "@freeanima/frontend/shell-ui/spa/bootstrap/sentry.ts",
   "@freeanima/frontend/shell-ui/mount": "@freeanima/frontend/shell-ui/spa/mount.tsx",
   "@freeanima/frontend/shell-ui/build": "@freeanima/frontend/shell-ui/build.ts",
-  "@freeanima/app/shell/desktop/companion-settings-api":
-    "@freeanima/app/shell/desktop/spa/companion-settings-api.ts",
-  "@freeanima/app/shell/desktop/settings-registry":
-    "@freeanima/app/shell/desktop/spa/settings-registry.ts",
-  "@freeanima/app/shell/desktop/settings-stores":
-    "@freeanima/app/shell/desktop/lib/settings-stores.ts",
-  "@freeanima/app/shell/mobile/settings-registry":
-    "@freeanima/app/shell/mobile/lib/settings-registry.ts",
-  "@freeanima/app/shell/mobile/settings-stores":
-    "@freeanima/app/shell/mobile/lib/settings-stores.ts",
-  "@freeanima/app/shell/mobile/capacitor-ready":
-    "@freeanima/app/shell/mobile/lib/capacitor-ready.ts",
-  "@freeanima/app/shell/mobile/native-build-meta-prefs":
-    "@freeanima/app/shell/mobile/lib/native-build-meta-prefs.ts",
-  "@freeanima/app/shell/mobile/mobile-shell": "@freeanima/app/shell/mobile/lib/mobile-shell.ts",
+  "@freeanima/app/shell/tauri/companion-settings-api":
+    "@freeanima/app/shell/tauri/spa/companion-settings-api.ts",
+  "@freeanima/app/shell/tauri/settings-registry":
+    "@freeanima/app/shell/tauri/spa/settings-registry.ts",
   "@freeanima/app/shell/web/static-server": "@freeanima/app/shell/web/lib/static-server.ts",
   "@freeanima/features/habitat/protocol/habitat-contract/display-util":
     "@freeanima/features/habitat/protocol/habitat-contract/display-util.ts",

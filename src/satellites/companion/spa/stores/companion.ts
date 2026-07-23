@@ -11,7 +11,7 @@ import {
   emitConfigChanged,
   isCompanionOverlay,
   setPointerActive as setShellPointerActive,
-} from "../lib/electron.ts";
+} from "../lib/portal-shell.ts";
 import type {
   CompanionBehavior,
   ModelEntry,

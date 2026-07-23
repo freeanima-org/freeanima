@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 11:54+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,21 +24,21 @@ msgid "Design Principles"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
-#: docs/guide/remote-access.md:10 messages/po4a/en.xml:590
-#: messages/po4a/en.xml:597
+#: docs/concepts/dream.md:10 docs/concepts/sleep.md:9
+#: docs/guide/remote-access.md:10 messages/po4a/en.xml:685
+#: messages/po4a/en.xml:692
 #, no-wrap
 msgid "Overview"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/dream.md:37 docs/concepts/sleep.md:32
+#: docs/concepts/dream.md:40 docs/concepts/sleep.md:33
 #, no-wrap
 msgid "Orchestration"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/sleep.md:1 messages/po4a/en.xml:605
+#: docs/concepts/sleep.md:1 messages/po4a/en.xml:700
 #, no-wrap
 msgid "Sleep"
 msgstr ""
@@ -99,22 +99,23 @@ msgid "Current State"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:31
+#: docs/concepts/sleep.md:32
 #, no-wrap
 msgid ""
-"| Mechanism              | Status         | Notes                                                             |\n"
-"| ---------------------- | -------------- | ----------------------------------------------------------------- |\n"
-"| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                         |\n"
-"| Session cleanup        | ✅ Implemented | Step `conversation-cleanup` before light-sleep in sleep-cycle DAG |\n"
-"| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                             |\n"
-"| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                         |\n"
-"| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                     |\n"
-"| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                      |\n"
-"| Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep    |\n"
+"| Mechanism              | Status         | Notes                                                                                                       |\n"
+"| ---------------------- | -------------- | ----------------------------------------------------------------------------------------------------------- |\n"
+"| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                                                                   |\n"
+"| Session cleanup        | ✅ Implemented | Step `conversation-cleanup` before light-sleep in sleep-cycle DAG                                           |\n"
+"| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                                                                       |\n"
+"| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                                                                   |\n"
+"| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                                                               |\n"
+"| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                                                                |\n"
+"| Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep                                              |\n"
+"| Temporal summary       | ✅ Implemented | Steps `temporal-summary-day` / `temporal-summary-cascade`; see [`temporal-summary.md`](temporal-summary.md) |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:35
+#: docs/concepts/sleep.md:36
 msgid ""
 "Sleep uses a **macro DAG** (`sleep-cycle` pipeline) orchestrated by "
 "`PipelineRunner` (`@freeanima/runtime/pipeline`). A single cron job triggers "
@@ -123,58 +124,58 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:37
+#: docs/concepts/sleep.md:38
 #, no-wrap
 msgid "**Light sleep** and **deep sleep** keep their **internal** multi-stage / multi-round sequencing inside `runLightSleep()` / `runDeepSleep()` — not promoted to macro DAG nodes.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:39
+#: docs/concepts/sleep.md:40
 msgid ""
-"Console (`/console`/dashboard/sleep`) supports **diagnostic** runs: full "
+"Habitat (`/habitat`/dashboard/sleep`) supports **diagnostic** runs: full "
 "cycle or individual steps (`force` skips dependency checks). **Deep sleep "
 "mode** (full vs incremental) can be selected before manual runs."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:41
+#: docs/concepts/sleep.md:42
 #, no-wrap
-msgid "**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Console → Cron** via each task's **Run history** button.\n"
+msgid "**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Habitat → Cron** via each task's **Run history** button.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:43
+#: docs/concepts/sleep.md:44
 msgid ""
 "Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-"
 "cycle_run.json` (SSOT for step status; no EventBus)."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/sleep.md:44
+#: docs/concepts/sleep.md:45
 #, no-wrap
 msgid "Light Sleep"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:52
+#: docs/concepts/sleep.md:53
 #, no-wrap
 msgid ""
 "| Attribute     | Value                                                                                         |\n"
 "| ------------- | --------------------------------------------------------------------------------------------- |\n"
-"| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Console diagnostics)                          |\n"
+"| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Habitat diagnostics)                          |\n"
 "| Scope         | Sessions with activity in previous calendar day (**excludes cron-platform sessions**)         |\n"
 "| Input         | Full day's **user conversations** (user+assistant, tools stripped), segmented by conversation |\n"
 "| Orchestration | Three stages sequential (separate LLM calls each)                                             |\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/sleep.md:53
+#: docs/concepts/sleep.md:54
 #, no-wrap
 msgid "Three Stages"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:61
+#: docs/concepts/sleep.md:62
 #, no-wrap
 msgid ""
 "| Stage              | Target                       | Purpose                                                                                  |\n"
@@ -186,25 +187,25 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:63
+#: docs/concepts/sleep.md:64
 #, no-wrap
 msgid "**Restraint principle:** Each stage LLM may judge \"nothing worth recording\" → no writes; program still runs subsequent stages.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:65
+#: docs/concepts/sleep.md:66
 #, no-wrap
 msgid "**Dedup (semantic):** Compare only against existing memories from same source sessions; cross-thread merging left to deep sleep.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/sleep.md:66
+#: docs/concepts/sleep.md:67
 #, no-wrap
 msgid "Deep Sleep"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:74
+#: docs/concepts/sleep.md:75
 #, no-wrap
 msgid ""
 "| Attribute  | Value                                                                                                                                                 |\n"
@@ -216,13 +217,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/sleep.md:75
+#: docs/concepts/sleep.md:76
 #, no-wrap
 msgid "Four Rounds"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:83
+#: docs/concepts/sleep.md:84
 #, no-wrap
 msgid ""
 "| Round | Intent                                                                  |\n"
@@ -234,92 +235,94 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:85
+#: docs/concepts/sleep.md:86
 #, no-wrap
 msgid "**Ordering rationale:** Clean problems first, then refine, then merge, then review pinned quality.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:87
+#: docs/concepts/sleep.md:88
 #, no-wrap
-msgid "**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Console manual runs default to full but can select incremental.\n"
+msgid "**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Habitat manual runs default to full but can select incremental.\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/sleep.md:88
+#: docs/concepts/sleep.md:89
 #, no-wrap
 msgid "Contradiction Definition (Exclusive)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:91
+#: docs/concepts/sleep.md:92
 msgid ""
 "Two memories semantically negate each other and cannot be explained by "
 "temporal change → contradiction."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:95
+#: docs/concepts/sleep.md:96
 msgid ""
 "✓ Contradiction: \"daughter born Year of Tiger\" vs \"daughter born Year of "
 "Goat\""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:95
+#: docs/concepts/sleep.md:96
 msgid ""
 "✗ Not contradiction: \"likes apples\" vs \"likes cherries\" (can coexist)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:95
+#: docs/concepts/sleep.md:96
 msgid ""
 "✗ Not contradiction (change): \"likes Python\" vs \"now prefers TypeScript\""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/sleep.md:96
+#: docs/concepts/sleep.md:97
 #, no-wrap
 msgid "Trigger Mechanism"
 msgstr ""
 
 #. type: Fenced code block (cron)
-#: docs/concepts/sleep.md:98
+#: docs/concepts/sleep.md:99
 #, no-wrap
 msgid "0 2 * * *  sleep-cycle   # builtin-sleep-cycle: conversation-cleanup → light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:103
+#: docs/concepts/sleep.md:104
 msgid "DAG (macro layer):"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/concepts/sleep.md:104
+#: docs/concepts/sleep.md:105
 #, no-wrap
 msgid ""
 "conversation-cleanup\n"
 "  └─► light-sleep\n"
-"        ├─► deep-sleep ──► memory-ref-sync (optional step)\n"
-"        ├─► dream (optional step)\n"
-"        └─► self-layer-refresh (optional step)\n"
+"        ├─► deep-sleep ──► memory-ref-sync\n"
+"        │              └─► temporal-summary-cascade\n"
+"        ├─► dream\n"
+"        ├─► self-layer-refresh\n"
+"        └─► temporal-summary-day\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/sleep.md:112
+#: docs/concepts/sleep.md:115
 #, no-wrap
 msgid "Session cleanup (pre-light-sleep)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:115
+#: docs/concepts/sleep.md:118
 msgid ""
 "Runs as the first sleep-cycle step before light-sleep scans yesterday's "
 "sessions."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:123
+#: docs/concepts/sleep.md:126
 #, no-wrap
 msgid ""
 "| Rule                                         | Action                        |\n"
@@ -332,64 +335,65 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:125
+#: docs/concepts/sleep.md:128
 #, no-wrap
 msgid "**Stale** means `conversations.updated_at` older than **24 hours** (wall-clock `timestamptz`, not CST day boundary). Recent empty sessions (e.g. satellite \"new conversation\" without a first message) are kept until the next night's run.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:127
+#: docs/concepts/sleep.md:130
 msgid "After downtime, the next scheduled run catches up."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:129
+#: docs/concepts/sleep.md:132
 #, no-wrap
 msgid "**Compression** stays session-scoped (turn-time `advanceCompressionMeta`); it is **not** a sleep-cycle step. Nightly consolidation does not replace per-conversation compression.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/sleep.md:130
+#: docs/concepts/sleep.md:133
 #, no-wrap
-msgid "Historical Day (Console)"
+msgid "Historical Day (Habitat)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:133
+#: docs/concepts/sleep.md:136
 msgid ""
 "For a single past CST calendar day (e.g. before go-live or after migration), "
-"use **Console → Sleep** (`/console`/dashboard/sleep`):"
+"use **Habitat → Sleep** (`/habitat`/dashboard/sleep`):"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/concepts/sleep.md:136
+#: docs/concepts/sleep.md:139
 msgid "Set **Day** to `YYYY-MM-DD`"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/concepts/sleep.md:136
+#: docs/concepts/sleep.md:139
 msgid ""
 "Run the **light-sleep** step (check **Force** to skip dependency checks if "
 "needed)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:138
+#: docs/concepts/sleep.md:141
 msgid ""
-"Each step run is logged in the **Pipeline history** table on the sleep page. "
-"Cross-session merge for that day still relies on a subsequent **deep-sleep** "
-"run. Cron-triggered cycle runs appear in **Console → Cron → Run history** on "
-"the sleep-cycle task."
+"Each step run is logged in the **Pipeline history** table on the sleep page "
+"(`pipeline_step_run.output`; deep-sleep rows include per-round summaries and "
+"change-log snapshots). Cross-session merge for that day still relies on a "
+"subsequent **deep-sleep** run. Cron-triggered cycle runs appear in **Habitat "
+"→ Cron → Run history** on the sleep-cycle task."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/sleep.md:139
+#: docs/concepts/sleep.md:142
 #, no-wrap
 msgid "Relationship to Existing Architecture"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/concepts/sleep.md:141
+#: docs/concepts/sleep.md:144
 #, no-wrap
 msgid ""
 "Conversation archive\n"
@@ -409,13 +413,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/sleep.md:158
+#: docs/concepts/sleep.md:161
 #, no-wrap
 msgid "`memory_remember` Tool"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:160
+#: docs/concepts/sleep.md:163
 msgid ""
 "In-conversation `memory_remember` is a convenience wrapper for creating "
 "semantic memory during dialogue. Soft deprecation via deprecate action; "

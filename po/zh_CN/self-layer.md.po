@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:5
-#: messages/po4a/en.xml:588
+#: messages/po4a/en.xml:698
 #, no-wrap
 msgid "Self Layer"
 msgstr "自我层"
@@ -122,14 +122,21 @@ msgstr "不在自我层的内容"
 
 #. type: Plain text
 #: docs/concepts/self-layer.md:51
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Content                                        | Belongs to                              |\n"
+#| "| ---------------------------------------------- | --------------------------------------- |\n"
+#| "| **Detailed** autobiographical narrative        | Memory layer (autobiographical entries) |\n"
+#| "| Other-models (cognition of partner and others) | Memory layer (semantic memory)          |\n"
+#| "| Runtime state / health perception              | Not yet implemented; see Issue #44      |\n"
+#| "| Concrete tool / skill inventory                | Estate layer                            |\n"
 msgid ""
-"| Content                                        | Belongs to                              |\n"
-"| ---------------------------------------------- | --------------------------------------- |\n"
-"| **Detailed** autobiographical narrative        | Memory layer (autobiographical entries) |\n"
-"| Other-models (cognition of partner and others) | Memory layer (semantic memory)          |\n"
-"| Runtime state / health perception              | Not yet implemented; see Issue #44      |\n"
-"| Concrete tool / skill inventory                | Estate layer                            |\n"
+"| Content                                        | Belongs to                                                                       |\n"
+"| ---------------------------------------------- | -------------------------------------------------------------------------------- |\n"
+"| **Detailed** autobiographical narrative        | Memory layer (autobiographical entries)                                          |\n"
+"| Other-models (cognition of partner and others) | Memory layer (semantic memory)                                                   |\n"
+"| Runtime state / health perception              | Estate / env-health — see [`environment-awareness.md`](environment-awareness.md) |\n"
+"| Concrete tool / skill inventory                | Estate layer                                                                     |\n"
 msgstr ""
 "| 内容                                        | 归属                              |\n"
 "| ---------------------------------------------- | --------------------------------------- |\n"
@@ -181,22 +188,34 @@ msgid "Assembly order:"
 msgstr "组装顺序："
 
 #. type: Bullet: '1. '
-#: docs/concepts/self-layer.md:75
+#: docs/concepts/self-layer.md:77
 msgid "Self layer (six blocks)"
 msgstr "自我层（六块）"
 
 #. type: Bullet: '2. '
-#: docs/concepts/self-layer.md:75
+#: docs/concepts/self-layer.md:77
+msgid "World / channel / toolsets (runtime hooks)"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/concepts/self-layer.md:77
+msgid ""
+"Environment + health baseline (static session copy; see [`environment-"
+"awareness.md`](environment-awareness.md))"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/concepts/self-layer.md:77
 msgid "Resident memory (pinned facts)"
 msgstr "常驻记忆（置顶事实）"
 
-#. type: Bullet: '3. '
-#: docs/concepts/self-layer.md:75
+#. type: Bullet: '5. '
+#: docs/concepts/self-layer.md:77
 msgid "Project context (session working directory AGENTS.md if present)"
 msgstr "项目上下文（session 工作目录中的 AGENTS.md，若存在）"
 
 #. type: Plain text
-#: docs/concepts/self-layer.md:77
+#: docs/concepts/self-layer.md:79
 msgid ""
 "Self layer and resident memory use a second-person instruction skeleton "
 "wrapping first-person self-statement content, so the LLM clearly understands "
@@ -206,7 +225,14 @@ msgstr ""
 "是你必须遵守的自我层内容」。"
 
 #. type: Plain text
-#: docs/concepts/self-layer.md:79
+#: docs/concepts/self-layer.md:81
+msgid ""
+"Live environment/health **changes** are not rewritten into an existing "
+"session prompt; they surface as Inbox notifications (event-level)."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/self-layer.md:83
 #, fuzzy
 #| msgid ""
 #| "Maintenance: self-layer tools in **Habitat, or direct edits via CLI / "
@@ -217,13 +243,13 @@ msgid ""
 msgstr "维护方式：管理台中的自我层工具，或通过 CLI / 管理台 UI 直接编辑。"
 
 #. type: Title ##
-#: docs/concepts/self-layer.md:82
+#: docs/concepts/self-layer.md:86
 #, no-wrap
 msgid "Relationship to Memory Layer"
 msgstr "与记忆层的关系"
 
 #. type: Plain text
-#: docs/concepts/self-layer.md:90
+#: docs/concepts/self-layer.md:94
 #, no-wrap
 msgid ""
 "| Dimension     | Memory layer                          | Self layer                       |\n"
@@ -241,20 +267,20 @@ msgstr ""
 "| 注入     | 置顶事实 + 按需 recall       | 六块全部常驻   |\n"
 
 #. type: Title ##
-#: docs/concepts/self-layer.md:93
+#: docs/concepts/self-layer.md:97
 #, no-wrap
 msgid "Open Questions"
 msgstr "待决问题"
 
 #. type: Bullet: '1. '
-#: docs/concepts/self-layer.md:96
+#: docs/concepts/self-layer.md:100
 msgid ""
 "**Cross-instance migration**—when multiple FreeAnima instances exist, does "
 "the self layer migrate as a whole?"
 msgstr "**跨实例迁移**——多个逸灵风实例时，自我层是否整体迁移？"
 
 #. type: Bullet: '2. '
-#: docs/concepts/self-layer.md:96
+#: docs/concepts/self-layer.md:100
 msgid ""
 "**Personality baseline update rules**—when new evidence conflicts with "
 "current tendencies, automatic evolution or confirmation required?"

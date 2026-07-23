@@ -1,10 +1,10 @@
-/** bundled 客户端（Electron / Tauri / Capacitor / 本地 Web dev）跨 origin 访问 Habitat REST */
+/** bundled 客户端（Tauri / 本地 Web dev）跨 origin 访问 Habitat REST */
 import { collectHttpCorsOrigins } from "@freeanima/core/config";
 import { getBootstrapHttpForProcess } from "@freeanima/platform/config/bootstrap-http-cache";
 
-/** Electron 本地静态服、Capacitor WebView、Tauri 自定义协议 origin */
+/** 本地 WebView / Tauri 自定义协议 origin */
 const ALLOWED_ORIGIN =
-  /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$|^capacitor:\/\/localhost$|^https?:\/\/tauri\.localhost(:\d+)?$|^tauri:\/\/localhost$/;
+  /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$|^https?:\/\/tauri\.localhost(:\d+)?$|^tauri:\/\/localhost$/;
 
 let extraOriginsCache: { origins: Set<string>; loadedAt: number } | null = null;
 let testExtraOrigins: Set<string> | null = null;

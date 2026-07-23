@@ -1,10 +1,10 @@
 /// <reference lib="dom" />
-import { getElectronApiOrigin, isElectron } from "./electron.ts";
+import { getPortalApiOrigin, isPortalShell } from "./portal-shell.ts";
 
-/** Electron / 浏览器 dev：解析 companion HTTP API 根地址 */
+/** Portal / 浏览器/dev：解析 companion HTTP API 根地址 */
 export async function resolveSidecarOrigin(_maxWaitMs = 45_000): Promise<string> {
-  const origin = getElectronApiOrigin();
-  if (isElectron() && origin) {
+  const origin = getPortalApiOrigin();
+  if (isPortalShell() && origin) {
     return origin;
   }
   return window.location.origin;

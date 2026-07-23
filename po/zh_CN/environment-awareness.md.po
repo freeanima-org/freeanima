@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-20 13:14+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: 2026-07-20 13:14+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -27,7 +27,7 @@ msgstr "环境变量"
 #: docs/concepts/environment-awareness.md:9
 #, no-wrap
 msgid ""
-"> Hub-process loop: collect environment + health markers → compare baseline → notify on change, stay quiet otherwise.\n"
+"> Habitat-process loop: collect environment + health markers → compare baseline → notify on change, stay quiet otherwise.\n"
 "> Related: [Issue #44](https://github.com/freeanima-org/freeanima/issues/44) (partner-facing health warning), [`self-layer.md`](self-layer.md), [`notifications.md`](notifications.md).\n"
 msgstr ""
 
@@ -77,7 +77,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/environment-awareness.md:22
-msgid "Schedule: every 5 minutes (`*/5 * * * *`), Hub cron, `no_agent`."
+msgid "Schedule: every 5 minutes (`*/5 * * * *`), Habitat cron, `no_agent`."
 msgstr ""
 
 #. type: Fenced code block (text)
@@ -111,13 +111,13 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/environment-awareness.md:38
 #, no-wrap
-msgid "**Environment:** hostname, OS, timezone label, Hub version, boot started_at, PostgreSQL / Redis status (`connected` | `error` | `not_configured`).\n"
+msgid "**Environment:** hostname, OS, timezone label, Habitat version, boot started_at, PostgreSQL / Redis status (`connected` | `error` | `not_configured`).\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/environment-awareness.md:40
 #, no-wrap
-msgid "**Health:** RSS band (256 MiB), MCP/ACP connection counts, disk free band for `FREEANIMA_HOME` (`<1GiB` | `1-2GiB` | `2-4GiB` | `4-8GiB` | `≥8GiB` | `unknown`).\n"
+msgid "**Health:** RSS band (512 MiB), MCP/ACP connection counts, disk free band for `FREEANIMA_HOME` (`<1GiB` | `1-2GiB` | `2-4GiB` | `4-8GiB` | `≥8GiB` | `unknown`).\n"
 msgstr ""
 
 #. type: Plain text
@@ -161,7 +161,7 @@ msgstr ""
 #: docs/concepts/environment-awareness.md:52
 #, no-wrap
 msgid "用户活跃统计 panel"
-msgstr ""
+msgstr "用户活跃统计 panel"
 
 #. type: Plain text
 #: docs/concepts/environment-awareness.md:55
@@ -175,7 +175,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/environment-awareness.md:56 docs/concepts/notifications.md:1
-#: docs/concepts/notifications.md:5 messages/po4a/en.xml:390
+#: docs/concepts/notifications.md:5 messages/po4a/en.xml:456
 #, no-wrap
 msgid "Notifications"
 msgstr "通知"
@@ -215,7 +215,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/environment-awareness.md:70
-msgid "Console health dashboard UI (Issue #21 epic item)"
+msgid "Habitat health dashboard UI (Issue #21 epic item)"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -226,7 +226,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/concepts/environment-awareness.md:70
 msgid ""
-"Hub HTTP `health.probe` / ACP process health checks (ops, not cognitive "
+"Habitat HTTP `health.probe` / ACP process health checks (ops, not cognitive "
 "baseline)"
 msgstr ""
 

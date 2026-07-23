@@ -17,7 +17,7 @@ export type BrowserLikeSettingsStores = {
   debug: SettingsStore<ShellDebugConfig>;
 };
 
-/** Web / Capacitor 等浏览器类壳层共用的设置 bindings（habitat + debug store 由调用方注入） */
+/** Web 等浏览器类壳层共用的设置 bindings（habitat + debug store 由调用方注入） */
 export function createBrowserLikeSettingsBindings(
   stores: BrowserLikeSettingsStores,
 ): SettingsBinding[] {

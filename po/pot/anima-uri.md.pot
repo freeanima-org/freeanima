@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -62,7 +62,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/concepts/anima-uri.md:20
 msgid ""
-"Structured FK in PG/Hub remain **numeric ids** — Anima URI is not a "
+"Structured FK in PG/Habitat remain **numeric ids** — Anima URI is not a "
 "persistence format"
 msgstr ""
 
@@ -126,10 +126,10 @@ msgstr ""
 #: docs/concepts/anima-uri.md:47
 #, no-wrap
 msgid ""
-"| Layer               | Stores                                         | Anima URI                                                 |\n"
-"| ------------------- | ---------------------------------------------- | --------------------------------------------------------- |\n"
-"| PG / Hub body / RPC | Entity **`id`** (e.g. pomodoro `task_item_id`) | **Never** as FK string                                    |\n"
-"| Shell UI            | —                                              | `formatAnimaUri` / `parseAnimaUri` / `openEntityResource` |\n"
+"| Layer                   | Stores                                         | Anima URI                                                 |\n"
+"| ----------------------- | ---------------------------------------------- | --------------------------------------------------------- |\n"
+"| PG / Habitat body / RPC | Entity **`id`** (e.g. pomodoro `task_item_id`) | **Never** as FK string                                    |\n"
+"| Shell UI                | —                                              | `formatAnimaUri` / `parseAnimaUri` / `openEntityResource` |\n"
 msgstr ""
 
 #. type: Plain text
@@ -178,7 +178,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/anima-uri.md:62
-msgid "Non-entity resources (conversation, semantic memory, …)"
+msgid "Non-entity resources (conversation, …)"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -192,6 +192,21 @@ msgid "Full Markdown click interception in Chat"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:63
+#: docs/concepts/anima-uri.md:64
 msgid "See also [`entity-model.md`](entity-model.md)."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/anima-uri.md:65
+#, no-wrap
+msgid "Memory citations"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/anima-uri.md:67
+msgid ""
+"Assistant/user message bodies cite entities with `[[anima:{id}]]` or "
+"`[[anima:{id}?component=semantic_memory]]`. Chat Markdown turns these into "
+"clickable anchors that call `openEntityResource` (default overlay for "
+"`semantic_memory`)."
 msgstr ""

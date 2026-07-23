@@ -46,16 +46,15 @@ export type ShellNativeAlertScheduleResult = { id: string };
 
 export type ShellNativeAlertCancelKey = { id?: string; tag?: string };
 
-/** 通用壳层桥接（Electron preload / Capacitor 注入 window.satelliteShell） */
+/** Portal / Web 注入的 `window.satelliteShell` 桥接 */
 export type ShellApi = {
-  isElectron: boolean;
-  /** Capacitor 等原生壳 */
+  /** 打包原生壳（Tauri desktop / mobile） */
   isNativeShell?: boolean;
-  /** 未来 Tauri 壳标记（Phase 2+）；getShellKind 认 "tauri" */
+  /** Tauri Portal；`getShellKind` 认 `"tauri"` */
   isTauri?: boolean;
   /** 原生壳构建元数据（desktop/mobile build 时 bake） */
   nativeBuild?: ComponentBuildMeta;
-  /** 主输入范式（可选；未设时 Electron→pointer，Capacitor→touch，Web→媒体查询） */
+  /** 主输入范式（可选；未设时 Web→媒体查询；Tauri bootstrap 显式注入） */
   primaryInput?: PrimaryInputKind;
   habitatUrl: string;
   habitatWsUrl: string;
@@ -65,19 +64,8 @@ export type ShellApi = {
   habitatFetch?: HabitatFetch;
   /** companion overlay/settings；其他前端为 null */
   windowRole?: CompanionWindowRole | null;
-  /** companion sidecar HTTP 根；其他前端为 null */
+  /** companion 浏览器/dev HTTP 根；Portal overlay 为 null */
   apiOrigin?: string | null;
-  /** Electron：订阅 companion runtime（bubble / play_slot）；返回取消函数
-   * @deprecated overlay 本地执行 tools 后不再需要；保留兼容 */
-  listenCompanionRuntime?: (handler: (message: CompanionRuntimeMessage) => void) => () => void;
-  /** Electron：点击气泡下一条（等价 POST /api/bubbles/advance）
-   * @deprecated 使用 overlay 本地 advanceBubbleLocal */
-  advanceCompanionBubble?: () => Promise<{
-    current: { id: string; text: string; createdAt: number } | null;
-  }>;
-  /** Electron：拉取当前 runtime 快照（订阅前补一次）
-   * @deprecated overlay 本地 runtime */
-  getCompanionRuntimeSnapshot?: () => Promise<CompanionRuntimeMessage>;
   /** overlay → main：上报 remote tools 连接状态（供设置页读取） */
   reportCompanionRemoteToolsStatus?: (status: {
     instance_id: string;
@@ -104,7 +92,7 @@ export type ShellApi = {
   emitConfigChanged?: () => Promise<void>;
   listenConfigChanged?: (handler: () => void) => () => void;
   listenServerError?: (handler: (message: string) => void) => () => void;
-  /** 原生壳 OS 通知（Electron 主进程 / Capacitor Local Notifications） */
+  /** 原生壳 OS 通知（Tauri desktop / mobile） */
   showNativeAlert?: (payload: ShellNativeAlertPayload) => Promise<void>;
   requestNativeAlertPermission?: () => Promise<ShellNativeAlertPermission>;
   /** 预登记本机提醒；与 cancelNativeAlert 成对 */
@@ -114,7 +102,7 @@ export type ShellApi = {
   cancelNativeAlert?: (key: ShellNativeAlertCancelKey) => Promise<void>;
   /** 原生壳：确认后下载 Releases 产物并覆盖安装（Desktop NSIS / Mobile APK） */
   applyPackagedUpdate?: (opts: { assetUrl: string; expectedSize?: number }) => Promise<void>;
-  /** 下载/安装进度（Desktop IPC / Mobile Capacitor 事件） */
+  /** 下载/安装进度（Tauri 事件） */
   onPackagedUpdateProgress?: (
     handler: (progress: {
       received: number;

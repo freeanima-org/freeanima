@@ -72,7 +72,6 @@ function createBrowserDevShellStub(habitatUrl = "", remoteAuthToken = ""): Shell
     : { habitatUrl: "", habitatWsUrl: "" };
 
   const shell: ShellApi = {
-    isElectron: false,
     windowRole: null,
     apiOrigin: null,
     habitatUrl: apiFields.habitatUrl,

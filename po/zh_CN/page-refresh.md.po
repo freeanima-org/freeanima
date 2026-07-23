@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wv 53\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: 2026-07-17 22:43+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -43,13 +43,26 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/page-refresh.md:15
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Capability        | Description                                                                                            |\n"
+#| "| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
+#| "| `memory_recall`   | Four sources: semantic / conversation / limbic / autobiographical; Top N; conversation returns snippet |\n"
+#| "| `sessions_search` | Session message search; returns snippet (not full content)                                             |\n"
+#| "| `memory_remember` | Semantic memory CRUD during conversation                                                               |\n"
+#| "| Resident memory   | System prompt injection (not recall)                                                                   |\n"
 msgid ""
-"| Verb        | When                                                       | What happens                                                                                                                   |\n"
-"| ----------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |\n"
+"| Verb        | When                                                           | What happens                                                                                                                   |\n"
+"| ----------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |\n"
 "| **sync**    | Habitat reconnect, tab visible again, Offline sync toast retry | Flush outbox; modules that flushed call `refreshAll` (see [offline platform](../guide/offline-platform.md))                    |\n"
-"| **refresh** | Header **Refresh** button or touch pull-to-refresh         | Re-run the page’s `reload*` / list fetch (online `withOfflineCache` already network-fetches). Same handler for button and pull |\n"
+"| **refresh** | Header **Refresh** button or touch pull-to-refresh             | Re-run the page’s `reload*` / list fetch (online `withOfflineCache` already network-fetches). Same handler for button and pull |\n"
 msgstr ""
+"| 能力              | 说明                                                                                                   |\n"
+"| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
+"| `memory_recall`   | 四源：semantic / conversation / limbic / autobiographical；Top N；conversation 返回 snippet            |\n"
+"| `sessions_search` | 会话消息搜索；返回 snippet（非全文）                                                                   |\n"
+"| `memory_remember` | 对话中语义记忆 CRUD                                                                                    |\n"
+"| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
 
 #. type: Title ##
 #: docs/features/page-refresh.md:16
@@ -85,15 +98,15 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/features/page-refresh.md:22
 msgid ""
-"**Out of scope**: Habitat fan-out for every CRUD entity; React Query; turning "
-"the offline-sync toast into a page refresh control."
+"**Out of scope**: Habitat fan-out for every CRUD entity; React Query; "
+"turning the offline-sync toast into a page refresh control."
 msgstr ""
 
 #. type: Title ##
 #: docs/features/page-refresh.md:23
 #, fuzzy, no-wrap
 #| msgid "Message"
-msgid "Page tiers"
+msgid "Page classes"
 msgstr "消息"
 
 #. type: Plain text
@@ -110,15 +123,15 @@ msgstr "消息"
 #| "| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |\n"
 #| "| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |\n"
 msgid ""
-"| Tier             | Pages                             | Auto                                                                   | Manual                                    |\n"
-"| ---------------- | --------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------- |\n"
-"| A Stream         | Chat                              | SAP stream + recovery poll                                             | Header refresh (existing)                 |\n"
-"| B Tier2 CRUD     | Task, Project, Diary              | Mount / selection cache-first; local write reload; sync → `refreshAll` | Header + pull-to-refresh                  |\n"
-"| C Hybrid         | Pomodoro                          | `pomodoro.active.changed`                                              | Offline `refreshAll` for config/stats     |\n"
-"| D Tier1 snapshot | Email, Notification, Dream, Vault | Mount / dependency load                                                | Header refresh (pull on list where wired) |\n"
-"| E Habitat        | Ops lists                         | Load on enter                                                          | Explicit refresh (existing)               |\n"
-"| F Settings       | Shell settings                    | Load on open                                                           | Re-read after save                        |\n"
-"| G Shell update   | PWA / installer                   | Update check                                                           | Reload / install ≠ business refresh       |\n"
+"| Class           | Pages                             | Auto                                                                   | Manual                                    |\n"
+"| --------------- | --------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------- |\n"
+"| A Stream        | Chat                              | SAP stream + recovery poll                                             | Header refresh (existing)                 |\n"
+"| B CRUD outbox   | Task, Project, Diary              | Mount / selection cache-first; local write reload; sync → `refreshAll` | Header + pull-to-refresh                  |\n"
+"| C Hybrid outbox | Pomodoro                          | `pomodoro.active.changed`                                              | Offline `refreshAll` for config/stats     |\n"
+"| D snapshot      | Email, Notification, Dream, Vault | Mount / dependency load                                                | Header refresh (pull on list where wired) |\n"
+"| E Habitat       | Ops lists                         | Load on enter                                                          | Explicit refresh (existing)               |\n"
+"| F Settings      | Shell settings                    | Load on open                                                           | Re-read after save                        |\n"
+"| G Shell update  | PWA / installer                   | Update check                                                           | Reload / install ≠ business refresh       |\n"
 msgstr ""
 "| 结构                           | 角色                                                                                                                          |\n"
 "| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |\n"

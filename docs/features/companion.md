@@ -96,17 +96,17 @@ FBX→VRMA runs on the **Habitat host** (`anima service`). Desktop installers no
 
 ## Development and run
 
-### Browser dev (no Electron)
+### Browser /dev companion host
 
 ```bash
 bun run --filter @freeanima/satellite-companion dev
 # or: bun src/satellites/companion/dev.ts
 ```
 
-Uses the same in-process HTTP server; runtime events use localhost WebSocket (`/api/runtime/ws`).
+Uses an in-process HTTP server; runtime events use localhost WebSocket (`/api/runtime/ws`).
 
-### Desktop (Electron)
+### Desktop (Tauri Portal)
 
-Desktop shell starts the companion host in-process (`startCompanionServer`) and loads the overlay from the host HTTP origin. Runtime events use Electron IPC (`companion:runtime`).
+The Portal overlay WebView hosts companion UI and `remote_tools.attach` (no Node sidecar). Window / IPC / FS come from Tauri commands. See [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md).
 
 See also: [Habitat RPC](../guide/habitat-rpc.md), [architecture companion section](../concepts/architecture.md#desktop-companion-habitat-ssot).

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-03 18:22+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:5
-#: messages/po4a/en.xml:588
+#: messages/po4a/en.xml:698
 #, no-wrap
 msgid "Self Layer"
 msgstr ""
@@ -103,12 +103,12 @@ msgstr ""
 #: docs/concepts/self-layer.md:51
 #, no-wrap
 msgid ""
-"| Content                                        | Belongs to                              |\n"
-"| ---------------------------------------------- | --------------------------------------- |\n"
-"| **Detailed** autobiographical narrative        | Memory layer (autobiographical entries) |\n"
-"| Other-models (cognition of partner and others) | Memory layer (semantic memory)          |\n"
-"| Runtime state / health perception              | Not yet implemented; see Issue #44      |\n"
-"| Concrete tool / skill inventory                | Estate layer                            |\n"
+"| Content                                        | Belongs to                                                                       |\n"
+"| ---------------------------------------------- | -------------------------------------------------------------------------------- |\n"
+"| **Detailed** autobiographical narrative        | Memory layer (autobiographical entries)                                          |\n"
+"| Other-models (cognition of partner and others) | Memory layer (semantic memory)                                                   |\n"
+"| Runtime state / health perception              | Estate / env-health — see [`environment-awareness.md`](environment-awareness.md) |\n"
+"| Concrete tool / skill inventory                | Estate layer                                                                     |\n"
 msgstr ""
 
 #. type: Title ##
@@ -147,22 +147,34 @@ msgid "Assembly order:"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/concepts/self-layer.md:75
+#: docs/concepts/self-layer.md:77
 msgid "Self layer (six blocks)"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/concepts/self-layer.md:75
-msgid "Resident memory (pinned facts)"
+#: docs/concepts/self-layer.md:77
+msgid "World / channel / toolsets (runtime hooks)"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/concepts/self-layer.md:75
+#: docs/concepts/self-layer.md:77
+msgid ""
+"Environment + health baseline (static session copy; see [`environment-"
+"awareness.md`](environment-awareness.md))"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/concepts/self-layer.md:77
+msgid "Resident memory (pinned facts)"
+msgstr ""
+
+#. type: Bullet: '5. '
+#: docs/concepts/self-layer.md:77
 msgid "Project context (session working directory AGENTS.md if present)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/self-layer.md:77
+#: docs/concepts/self-layer.md:79
 msgid ""
 "Self layer and resident memory use a second-person instruction skeleton "
 "wrapping first-person self-statement content, so the LLM clearly understands "
@@ -170,20 +182,27 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/self-layer.md:79
+#: docs/concepts/self-layer.md:81
 msgid ""
-"Maintenance: self-layer tools in Console, or direct edits via CLI / Console "
+"Live environment/health **changes** are not rewritten into an existing "
+"session prompt; they surface as Inbox notifications (event-level)."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/self-layer.md:83
+msgid ""
+"Maintenance: self-layer tools in Habitat, or direct edits via CLI / Habitat "
 "UI."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/self-layer.md:82
+#: docs/concepts/self-layer.md:86
 #, no-wrap
 msgid "Relationship to Memory Layer"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/self-layer.md:90
+#: docs/concepts/self-layer.md:94
 #, no-wrap
 msgid ""
 "| Dimension     | Memory layer                          | Self layer                       |\n"
@@ -195,20 +214,20 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/self-layer.md:93
+#: docs/concepts/self-layer.md:97
 #, no-wrap
 msgid "Open Questions"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/concepts/self-layer.md:96
+#: docs/concepts/self-layer.md:100
 msgid ""
 "**Cross-instance migration**—when multiple FreeAnima instances exist, does "
 "the self layer migrate as a whole?"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/concepts/self-layer.md:96
+#: docs/concepts/self-layer.md:100
 msgid ""
 "**Personality baseline update rules**—when new evidence conflicts with "
 "current tendencies, automatic evolution or confirmation required?"

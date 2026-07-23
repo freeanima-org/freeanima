@@ -20,4 +20,4 @@ export {
   scheduleLocalAlert,
 } from "./deliver.ts";
 export { createWebAlertBackend } from "./web-backend.ts";
-export { isCapacitorShellRuntime, resolveAlertDisplayPlatform } from "./resolve-platform.ts";
+export { resolveAlertDisplayPlatform } from "./resolve-platform.ts";

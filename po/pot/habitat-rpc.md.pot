@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,276 +17,182 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title #
-#: docs/sap/habitat-rpc.md:1 docs/sap/habitat-rpc.md:5
+#: docs/guide/habitat-rpc.md:1 docs/guide/habitat-rpc.md:5
 #, no-wrap
-msgid "Hub RPC"
+msgid "Habitat RPC"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:8
+#: docs/guide/habitat-rpc.md:8
 #, no-wrap
-msgid "**Hub RPC** (`HubRPC/1.0`) is the **single business channel** between Hub clients and the agent runtime. Transport:\n"
+msgid "**Habitat RPC** is the **single business channel** between Habitat clients and the agent runtime. The TypeScript constant is `HABITAT_RPC_VERSION`; the wire connect literal may still accept the historical value `\"HubRPC/1.0\"` for compatibility. Transport:\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/habitat-rpc.md:11
+#: docs/guide/habitat-rpc.md:11
 msgid ""
-"**WebSocket** — long-lived connection at **`/hub/rpc/v1`** (connect "
-"handshake + heartbeat; HubRPC `req`/`res`/`evt` envelope)"
+"**WebSocket** — long-lived connection at **`/rpc/v1`** (connect handshake + "
+"heartbeat; Habitat RPC `req`/`res`/`evt` envelope)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/habitat-rpc.md:11
+#: docs/guide/habitat-rpc.md:11
 msgid ""
-"**HTTP REST** — stateless GET/POST at **`/hub/rpc/v1/{method/path}`** (plain "
+"**HTTP REST** — stateless GET/POST at **`/rpc/v1/{method/path}`** (plain "
 "JSON body or query; `Authorization: Bearer`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:13
+#: docs/guide/habitat-rpc.md:13
 msgid ""
-"Implemented in [`src/shared/hub-rpc/`](../../src/shared/hub-rpc/) (WS "
-"envelope + HTTP REST helpers) and [`src/platform/hub/http-rest-router.ts`]"
-"(../../src/platform/hub/http-rest-router.ts) (HTTP adapter)."
+"Implemented in [`src/shared/habitat-rpc/`](../../src/shared/habitat-rpc/) "
+"(WS envelope + HTTP REST helpers) and [`src/platform/habitat/http-rest-"
+"router.ts`](../../src/platform/habitat/http-rest-router.ts) (HTTP adapter). "
+"Feature method schemas live under [`src/shared/rpc-contract/`](../../src/"
+"shared/rpc-contract/)."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:15
+#: docs/guide/habitat-rpc.md:15
 msgid ""
 "Binary HTTP methods (e.g. `tts.synthesize`, companion assets, TLS PEM/QR) "
-"use Hub RPC REST with registry `request` / `response` encoding. Public "
-"probes (`health.probe`, `tls.ca.*`) are Hub RPC methods with `auth: "
-"optional` — `GET /hub/rpc/v1/health/probe`, `GET /hub/rpc/v1/tls/ca`, etc."
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:17
-msgid ""
-"SAP (`SAP/1.0`) is a **session layer** on top of Hub RPC WebSocket: true "
-"satellites call `sap.attach` after connect; bundled SPA modules **never** "
-"attach."
+"use Habitat RPC REST with registry `request` / `response` encoding. Public "
+"probes (`health.probe`, `tls.ca.*`) are Habitat RPC methods with `auth: "
+"optional`."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/habitat-rpc.md:18
+#: docs/guide/habitat-rpc.md:16
+#, no-wrap
+msgid "Tools: MCP first, remote registration rare"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/habitat-rpc.md:23
+#, no-wrap
+msgid ""
+"| Situation                                                    | Mechanism                                                             |\n"
+"| ------------------------------------------------------------ | --------------------------------------------------------------------- |\n"
+"| Peer is dialable (has a stable inbound MCP/HTTP listener)    | **MCP** — expose tools to each other                                  |\n"
+"| Product UI (Chat, Task, Settings, …)                         | Habitat RPC only — **no** remote-tool attach                          |\n"
+"| Unreachable local app (no inbound listener Habitat can dial) | App **actively connects** and registers remote tools over Habitat RPC |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/habitat-rpc.md:25
+msgid ""
+"Desktop companion is the in-tree example of the third row. Future "
+"independent local apps may do the same without being a Portal shell."
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/habitat-rpc.md:26
+#, no-wrap
+msgid "Remote tool registration"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/habitat-rpc.md:29
+msgid "After Habitat RPC `connect`, an unreachable local app calls:"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/guide/habitat-rpc.md:33
+msgid ""
+"`remote_tools.attach` — registers with `app_id` + optional `instance_id` "
+"(omit on first register; Habitat assigns; same machine may have multiple "
+"instances)"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/guide/habitat-rpc.md:33
+msgid "`tool.register` — publishes local tools"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/guide/habitat-rpc.md:33
+msgid ""
+"Habitat later sends `tool.call` events; the app replies with `tool.result` / "
+"`tool.error`"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/habitat-rpc.md:35
+msgid ""
+"Routing key is **`instance_id`** (follows the connecting application, not "
+"the Portal shell). Tool names use the `remote_{app}_{instance}_{local}` form "
+"(legacy `sap_*` / `sap:*` still parsed for stored sessions)."
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/habitat-rpc.md:37
+msgid ""
+"Server: [`src/platform/remote-tools/`](../../src/platform/remote-tools/). "
+"Client helper: `createRemoteToolsHub` in `@freeanima/shared/rpc-contract`."
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/habitat-rpc.md:38
 #, no-wrap
 msgid "Endpoints"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/sap/habitat-rpc.md:20
+#: docs/guide/habitat-rpc.md:40
 #, no-wrap
 msgid ""
-"ws://{hub_host}:{port}/hub/rpc/v1              # WebSocket upgrade (HubRPC envelope)\n"
-"http://{hub_host}:{port}/hub/rpc/v1/task/list  # GET (read-only methods)\n"
-"http://{hub_host}:{port}/hub/rpc/v1/task/create # POST (write methods)\n"
+"ws://{hub_host}:{port}/rpc/v1\n"
+"http://{hub_host}:{port}/rpc/v1/task/list\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:27
+#: docs/guide/habitat-rpc.md:46
 msgid ""
-"Derive WS URL from HTTP: replace `http` with `ws`, append `/hub/rpc/v1`. "
-"Helpers: `resolveHubRpcWsUrl`, `buildHubRestRequest` in `@freeanima/shared/"
-"hub-rpc`."
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:29
-msgid ""
-"Hub route: [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-"
-"route.ts)."
+"Helpers: `resolveHabitatRpcWsUrl`, `buildHabitatRestRequest` in `@freeanima/"
+"shared/habitat-rpc`."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/habitat-rpc.md:30
-#, no-wrap
-msgid "HTTP REST mapping"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:33
-msgid ""
-"Hub method `domain.action` maps to path **`/hub/rpc/v1/domain/action`** "
-"(dots → slashes; camelCase preserved)."
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:41
-#, no-wrap
-msgid ""
-"| Kind           | HTTP     | Example                                                             |\n"
-"| -------------- | -------- | ------------------------------------------------------------------- |\n"
-"| Read-only      | **GET**  | `GET /hub/rpc/v1/task/list?subject_kind=user`                       |\n"
-"| Write          | **POST** | `POST /hub/rpc/v1/task/create` `{ subject_kind, title, … }`         |\n"
-"| By id (read)   | **GET**  | `GET /hub/rpc/v1/task/get/42?subject_kind=user`                     |\n"
-"| By id (write)  | **POST** | `POST /hub/rpc/v1/task/patch/42` `{ subject_kind, title?, … }`      |\n"
-"| Sensitive read | **POST** | `POST /hub/rpc/v1/vault/get/3` `{ subject_kind, include_secrets? }` |\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:43
-msgid ""
-"Route metadata is generated from [`hub-contract`](../../src/shared/hub-"
-"contract/) (`meta.http`: `verb`, `path`, `pathParams`). Wrong verb on a "
-"known path → **405**; legacy `POST /hub/rpc/v1` envelope → **410**."
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:45
-msgid ""
-"HTTP responses are **plain handler JSON** (not HubRPC `res` envelope). "
-"Errors: `{ \"error\": { \"code\", \"message\" } }` with 4xx/5xx status."
-msgstr ""
-
-#. type: Title ##
-#: docs/sap/habitat-rpc.md:46
-#, no-wrap
-msgid "WebSocket envelope kinds"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:55
-#, no-wrap
-msgid ""
-"| `kind`      | Direction    | Purpose                                                    |\n"
-"| ----------- | ------------ | ---------------------------------------------------------- |\n"
-"| `connect`   | Client → Hub | WS only: first frame; `protocol: HubRPC/1.0`, `auth_token` |\n"
-"| `connected` | Hub → Client | WS only: `session_id`, `heartbeat_interval_sec`            |\n"
-"| `req`       | Client → Hub | RPC (`id`, `method`, `payload`)                            |\n"
-"| `res`       | Hub → Client | RPC reply                                                  |\n"
-"| `evt`       | Both         | Async event (WS only; incl. `heartbeat`)                   |\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:57
-msgid ""
-"HTTP REST uses Bearer on each GET/POST unless the method declares `auth: "
-"optional` (e.g. `health.probe`, `tls.ca.*`). WebSocket uses `connect` frame "
-"`auth_token` (required)."
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:59
-msgid ""
-"Method contracts live in [`src/shared/hub-contract/registry/`](../../src/"
-"shared/hub-contract/registry/) (`transports: http | ws`; HTTP routes in "
-"`meta.http`). Handlers register via `feature/plugin.hub.rpc`."
-msgstr ""
-
-#. type: Title ##
-#: docs/sap/habitat-rpc.md:60
-#, no-wrap
-msgid "Authentication"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:63
-msgid ""
-"Every **WebSocket** connection must send a valid **service API token** in "
-"the `connect` payload (`auth_token`). **HTTP REST** uses `Authorization: "
-"Bearer fa_at_...` on each request unless the method registry marks `auth: "
-"optional` (public read-only probes only). The Hub verifies with "
-"`verifyServiceApiToken` ([`src/core/db/pg/service-api-token/`](../../src/"
-"core/db/pg/service-api-token/))."
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:65
-msgid ""
-"Bundled clients read the token from `window.satelliteShell.remoteAuth.token` "
-"(shell bridge), configured in client **Hub settings** (`/settings`). Hub `/"
-"web/config.json` does not include tokens."
-msgstr ""
-
-#. type: Title ##
-#: docs/sap/habitat-rpc.md:66
-#, no-wrap
-msgid "Binary HTTP methods"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:69
-msgid ""
-"Registry `meta.http` may set `request` / `response` encoding (default "
-"`json`):"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:75
-#, no-wrap
-msgid ""
-"| Encoding             | Use                                                                                                         |\n"
-"| -------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
-"| `response: raw`      | Handler returns `Response` (PEM, PNG, VRM, MPEG, octet-stream). Client: `callRaw()` or `fetchHubRestRaw()`. |\n"
-"| `request: multipart` | POST with `FormData` body (e.g. `companion.model.upload`).                                                  |\n"
-"| `request: raw`       | POST body read from `ctx.httpRequest` in handler.                                                           |\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:77
-msgid ""
-"Examples: `tts.synthesize` (JSON POST → MPEG stream), `companion.asset.get` "
-"(GET → VRM), `tls.ca` (GET → PEM)."
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:79
-msgid ""
-"Helpers: `hubRestUrl()`, `binaryHttpMeta()` / `rawPublicHttpMeta()` in hub-"
-"contract. JSON methods continue to use `hubClient.call()`."
-msgstr ""
-
-#. type: Title ##
-#: docs/sap/habitat-rpc.md:80
+#: docs/guide/habitat-rpc.md:47
 #, no-wrap
 msgid "Client profiles"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:86
+#: docs/guide/habitat-rpc.md:53
 #, no-wrap
 msgid ""
-"| Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |\n"
-"| ----------------- | ------------------------------------------------ | ------------ | ---------------------------------------------- |\n"
-"| Bundled SPA       | `getBundledHubRpcClient()` / `whenHubRpcReady()` | **No**       | Chat, task, notification, diary, email modules |\n"
-"| Satellite process | `createSatelliteHub()` in sap-contract           | **Yes**      | companion                                      |\n"
+"| Profile          | Attach                          | Typical consumer                                                |\n"
+"| ---------------- | ------------------------------- | --------------------------------------------------------------- |\n"
+"| Bundled SPA      | **No**                          | Chat, task, notification, diary, email                          |\n"
+"| Remote-tool host | **Yes** (`remote_tools.attach`) | companion (overlay WebView-host); future independent local apps |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:88
+#: docs/guide/habitat-rpc.md:55
 msgid ""
-"Bundled SPA shares **one** Hub RPC WebSocket per page load (for streaming, "
-"subscriptions, and WS fallback). **`hub-client.call()`** picks transport per "
-"method: **read-only** dual-transport methods default to **HTTP GET**; "
-"**writes** default to **WebSocket** (`dualTransportMeta` in hub-contract). "
-"WS failure on a read-only call falls back to the other channel when "
-"`fallback` is enabled."
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:90
-msgid ""
-"Satellite processes connect with Hub RPC, then `sap.attach` with `app_id` / "
-"`instance_id` before `tool.register` or instance-scoped methods."
+"Bundled SPA shares **one** Habitat RPC WebSocket per page load. Product "
+"modules pass a simple `platform` channel (e.g. `\"chat\"`), never a remote-"
+"tool `instance_id`."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/sap/habitat-rpc.md:91 docs/sap/transport.md:99 messages/po4a/en.xml:147
+#: docs/guide/habitat-rpc.md:56 messages/po4a/en.xml:210
 #, no-wrap
 msgid "Reconnect"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:94
+#: docs/guide/habitat-rpc.md:59
 msgid ""
-"Use `runHubRpcTransport` for connect, heartbeat, and exponential backoff "
-"(default 1s → 30s cap). On satellite detach or socket close, Hub unregisters "
-"tools for that instance."
+"Use `runHabitatRpcTransport` for connect, heartbeat, and exponential "
+"backoff. On detach or socket close, Habitat unregisters tools for that "
+"`instance_id`."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:95
+#: docs/guide/habitat-rpc.md:60
 msgid ""
-"See also: [transport.md](transport.md) (full state machine), [overview.md]"
-"(overview.md)."
+"See also: [`companion.md`](../features/companion.md), [`architecture.md`](../"
+"concepts/architecture.md)."
 msgstr ""

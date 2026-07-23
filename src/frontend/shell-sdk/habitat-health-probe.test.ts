@@ -5,7 +5,7 @@ import {
   isHabitatHealthConnected,
 } from "./habitat-health-probe.ts";
 
-describe("hub-health-probe", () => {
+describe("habitat-health-probe", () => {
   afterEach(() => {
     delete (globalThis as { satelliteShell?: unknown }).satelliteShell;
   });
@@ -26,8 +26,13 @@ describe("hub-health-probe", () => {
   });
 
   test("formatHabitatHealthProbeFetchError：桌面壳 HTTPS 提示安装 mkcert CA", () => {
-    (globalThis as { satelliteShell?: { isElectron: boolean } }).satelliteShell = {
-      isElectron: true,
+    (
+      globalThis as {
+        satelliteShell?: { isTauri: boolean; primaryInput: "pointer" };
+      }
+    ).satelliteShell = {
+      isTauri: true,
+      primaryInput: "pointer",
     };
     expect(
       formatHabitatHealthProbeFetchError(new TypeError("fetch failed"), "https://hub.lan:2659"),
@@ -35,8 +40,14 @@ describe("hub-health-probe", () => {
   });
 
   test("formatHabitatHealthProbeFetchError：移动壳 HTTPS 提示安装 CA", () => {
-    (globalThis as { satelliteShell?: { isNativeShell: boolean } }).satelliteShell = {
+    (
+      globalThis as {
+        satelliteShell?: { isTauri: boolean; isNativeShell: boolean; primaryInput: "touch" };
+      }
+    ).satelliteShell = {
+      isTauri: true,
       isNativeShell: true,
+      primaryInput: "touch",
     };
     expect(
       formatHabitatHealthProbeFetchError(new TypeError("fetch failed"), "https://hub.lan:2659"),

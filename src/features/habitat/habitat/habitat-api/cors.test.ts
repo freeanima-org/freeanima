@@ -13,7 +13,8 @@ describe("isBundledClientOrigin", () => {
     expect(isBundledClientOrigin("http://127.0.0.1:4175")).toBe(true);
     expect(isBundledClientOrigin("http://localhost")).toBe(true);
     expect(isBundledClientOrigin("https://localhost")).toBe(true);
-    expect(isBundledClientOrigin("capacitor://localhost")).toBe(true);
+    // 旧 Capacitor origin 已下线，不得再放行
+    expect(isBundledClientOrigin("capacitor://localhost")).toBe(false);
     expect(isBundledClientOrigin("http://tauri.localhost")).toBe(true);
     expect(isBundledClientOrigin("https://tauri.localhost")).toBe(true);
     expect(isBundledClientOrigin("tauri://localhost")).toBe(true);

@@ -3,7 +3,7 @@ import type { ShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
 
 import { needsHabitatSetup } from "./habitat-setup.ts";
 
-function stubShell(partial: Partial<ShellApi> & Pick<ShellApi, "isElectron">): ShellApi {
+function stubShell(partial: Partial<ShellApi> = {}): ShellApi {
   return {
     habitatUrl: "",
     habitatWsUrl: "",
@@ -17,7 +17,6 @@ describe("needsHabitatSetup", () => {
     expect(
       needsHabitatSetup(
         stubShell({
-          isElectron: false,
           habitatUrl: "http://127.0.0.1:2658",
           habitatWsUrl: "ws://127.0.0.1:2658/rpc/v1",
         }),
@@ -27,7 +26,6 @@ describe("needsHabitatSetup", () => {
     expect(
       needsHabitatSetup(
         stubShell({
-          isElectron: true,
           habitatUrl: "http://127.0.0.1:2658",
           habitatWsUrl: "ws://127.0.0.1:2658/rpc/v1",
         }),
@@ -37,7 +35,6 @@ describe("needsHabitatSetup", () => {
     expect(
       needsHabitatSetup(
         stubShell({
-          isElectron: false,
           isNativeShell: true,
           habitatUrl: "http://127.0.0.1:2658",
           habitatWsUrl: "ws://127.0.0.1:2658/rpc/v1",
@@ -48,7 +45,6 @@ describe("needsHabitatSetup", () => {
     expect(
       needsHabitatSetup(
         stubShell({
-          isElectron: false,
           habitatUrl: "http://127.0.0.1:2658",
           habitatWsUrl: "ws://127.0.0.1:2658/rpc/v1",
           remoteAuth: { token: "a".repeat(16) },
@@ -61,7 +57,6 @@ describe("needsHabitatSetup", () => {
     expect(
       needsHabitatSetup(
         stubShell({
-          isElectron: false,
           isNativeShell: true,
           remoteAuth: { token: "a".repeat(16) },
         }),

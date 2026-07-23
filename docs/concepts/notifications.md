@@ -50,11 +50,11 @@ Alert 分两档（同一契约，成对）：
 
 实现：`src/frontend/shell-sdk/alert/` + 各端 backend。
 
-| 端          | 即时通道                                                 | 预登记                                                                |
-| ----------- | -------------------------------------------------------- | --------------------------------------------------------------------- |
-| **desktop** | Electron 主进程 `Notification`（IPC `shell:alert:show`） | 主进程 timer（`shell:alert:schedule` / `cancel`）；`before-quit` 清表 |
-| **web**     | Web Notification API                                     | 页内 `setTimeout`（best-effort）                                      |
-| **mobile**  | Capacitor Local Notifications（`showNativeAlert`）       | 同一插件 `schedule({ at })` + `cancel`                                |
+| 端          | 即时通道                                    | 预登记                           |
+| ----------- | ------------------------------------------- | -------------------------------- |
+| **desktop** | Tauri 桌面通知（`showNativeAlert`）         | Tauri schedule / cancel          |
+| **web**     | Web Notification API                        | 页内 `setTimeout`（best-effort） |
+| **mobile**  | Tauri Android 本地通知（`showNativeAlert`） | schedule / cancel                |
 
 ---
 

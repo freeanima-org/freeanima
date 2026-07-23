@@ -1,4 +1,4 @@
-/** Electron 壳层桥接；浏览器 dev 模式下为 no-op */
+/** Portal（Tauri）壳层桥接；浏览器/dev 模式下多为 no-op */
 
 import type {
   CompanionWindowRole,
@@ -21,21 +21,23 @@ export function isSettingsView(): boolean {
   return getWindowRole() === "settings";
 }
 
-/** Electron 透明 overlay 伴侣窗（非设置窗） */
+/** Portal 透明 overlay 伴侣窗（非设置窗） */
 export function isCompanionOverlay(): boolean {
   if (isSettingsView()) return false;
   const params = new URLSearchParams(window.location.search);
   if (params.get("view") === "overlay") return true;
   if (getWindowRole() === "overlay") return true;
-  return isElectron();
+  return isPortalShell();
 }
 
 function shell(): ShellApi | undefined {
   return window.satelliteShell;
 }
 
-export function isElectron(): boolean {
-  return shell()?.isElectron === true;
+/** 是否在 Tauri Portal（含 companion overlay / 设置窗） */
+export function isPortalShell(): boolean {
+  const s = shell();
+  return Boolean(s?.isTauri || s?.isNativeShell);
 }
 
 export async function setClickThrough(ignore: boolean): Promise<void> {
@@ -53,7 +55,7 @@ export async function moveWindow(x: number, y: number): Promise<void> {
 export async function getPatrolScreen(): Promise<PatrolScreenInfo> {
   const api = shell();
   if (!api?.getPatrolScreen) {
-    throw new Error("not in electron");
+    throw new Error("not in portal shell");
   }
   return api.getPatrolScreen();
 }
@@ -113,6 +115,7 @@ export function isSettingsRoute(): boolean {
   return isSettingsView();
 }
 
-export function getElectronApiOrigin(): string | null {
+/** 浏览器/dev companion HTTP 根；Portal overlay 通常为 null */
+export function getPortalApiOrigin(): string | null {
   return shell()?.apiOrigin ?? null;
 }

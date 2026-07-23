@@ -23,7 +23,7 @@ export { isRemoteToolsConnected as isCompanionSapConnected } from "../../server/
 /** @deprecated 始终 false；状态见 ShellApi.getCompanionRemoteToolsStatus */
 export { isRemoteToolsConnected as isCompanionRemoteToolsConnected } from "../../server/sap/hub.ts";
 
-/** @deprecated server runtime 仅 browser-dev 遗留；Electron 用 overlay 本地 runtime */
+/** @deprecated server runtime 仅 browser-dev 遗留；Portal overlay 用本地 runtime */
 export { advanceBubble, bubbleState } from "../../server/runtime-state.ts";
 export {
   addRuntimeExternalListener,

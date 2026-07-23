@@ -13,4 +13,4 @@ title: Companion Settings
 
 Sidecar 本地 `~/.anima/companion/config.json` 仅为 **habitat-sync 缓存**，设置 UI 不直接读写。
 
-修改 Habitat profile 后，sidecar 通过 `companion.sync.pull` 同步到本机；overlay 通过 `emitConfigChanged` 刷新。
+修改 Habitat profile 后，本机缓存通过 `companion.sync.pull` 同步；overlay 通过 `emitConfigChanged` 刷新。

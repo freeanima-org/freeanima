@@ -1,7 +1,4 @@
 import type { WebUiConfigJson } from "@freeanima/frontend/shell-sdk/web-ui-config";
-import { isCapacitorShellCandidate } from "@freeanima/frontend/shell-sdk/capacitor-runtime";
-
-export { isCapacitorShellCandidate };
 
 export type ShellBridgeWindow = Window & {
   __freeanimaShellBridge?: { ready: Promise<void> };
@@ -29,11 +26,6 @@ declare global {
   }
 
   const __WEB_DEFAULT_HUB_URL__: string;
-}
-
-export function isCapacitorRuntime(): boolean {
-  const cap = (window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
-  return Boolean(cap?.isNativePlatform?.() ?? cap);
 }
 
 export function installShellBridgeReady(): () => void {

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { resolveApiOrigin } from "./habitat-origin.ts";
 
 function setWindow(
-  shell: { habitatUrl?: string; isElectron?: boolean; isNativeShell?: boolean } | undefined,
+  shell: { habitatUrl?: string; isTauri?: boolean; isNativeShell?: boolean } | undefined,
   origin = "http://localhost:4173",
 ): void {
   (

@@ -40,14 +40,14 @@ describe("shell-capability", () => {
     } as unknown as Window;
   }
 
-  it("Electron 窄窗仍为 pointer（与布局正交）", () => {
-    installWindow({ isElectron: true } as ShellApi);
+  it("桌面 Portal 窄窗仍为 pointer（与布局正交）", () => {
+    installWindow({ primaryInput: "pointer", isTauri: true, isNativeShell: true } as ShellApi);
     mockMedia(false);
     expect(hasFinePointerCapability()).toBe(true);
   });
 
-  it("Capacitor 宽屏（如 iPad）仍为 touch", () => {
-    installWindow({ isNativeShell: true, isElectron: false } as ShellApi);
+  it("移动 Portal 宽屏（如平板）仍为 touch", () => {
+    installWindow({ primaryInput: "touch", isTauri: true, isNativeShell: true } as ShellApi);
     mockMedia(true);
     expect(hasFinePointerCapability()).toBe(false);
   });
@@ -68,8 +68,8 @@ describe("shell-capability", () => {
     expect(hasEnterToSendCapability()).toBe(false);
   });
 
-  it("Capacitor 宽屏仍不 Enter 发送", () => {
-    installWindow({ isNativeShell: true, isElectron: false } as ShellApi);
+  it("移动 Portal 宽屏仍不 Enter 发送", () => {
+    installWindow({ primaryInput: "touch", isTauri: true, isNativeShell: true } as ShellApi);
     mockMedia(true);
     expect(hasEnterToSendCapability()).toBe(false);
   });

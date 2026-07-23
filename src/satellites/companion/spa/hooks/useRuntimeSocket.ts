@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { resolveSidecarOrigin } from "@freeanima/satellites/companion/spa/lib/sidecar.ts";
 import { runtimeWsUrl } from "@freeanima/satellites/companion/spa/lib/api.ts";
-import { isElectron } from "@freeanima/satellites/companion/spa/lib/electron.ts";
 import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
 import type { MotionSlotId } from "@freeanima/satellites/companion/shared/companion-schema.ts";
 import type { RuntimeWsMessage } from "@freeanima/satellites/companion/shared/constants.ts";
@@ -15,26 +14,12 @@ function applyRuntimeMessage(msg: RuntimeWsMessage): void {
   }
 }
 
+/** 浏览器/dev companion host 经 WebSocket 推 runtime；Portal overlay 走本地 runtime */
 export function useRuntimeSocket(enabled: boolean): void {
   const setRuntimeBubble = useCompanionStore((s) => s.setRuntimeBubble);
 
   useEffect(() => {
     if (!enabled) return;
-
-    const shell = window.satelliteShell;
-    if (isElectron() && shell?.listenCompanionRuntime) {
-      let cancelled = false;
-      const unsub = shell.listenCompanionRuntime((message) => {
-        applyRuntimeMessage(message as RuntimeWsMessage);
-      });
-      void shell.getCompanionRuntimeSnapshot?.().then((snap) => {
-        if (!cancelled && snap) applyRuntimeMessage(snap as RuntimeWsMessage);
-      });
-      return () => {
-        cancelled = true;
-        unsub();
-      };
-    }
 
     let ws: WebSocket | null = null;
     let cancelled = false;

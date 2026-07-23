@@ -52,20 +52,6 @@ function redirectToHubSetupIfNeeded(): void {
   window.history.replaceState(null, "", next);
 }
 
-export async function bootstrapElectronBridge(defaultHubUrl: string): Promise<void> {
-  if (window.satelliteShell?.isElectron) return;
-  window.satelliteShell = createWebShellStub();
-  if (!window.freeanimaScopedSettings) installScopedSettingsBridge();
-  const backend = createWebScopedBackend();
-  const raw = await backend.load(HABITAT_SETTINGS_SCOPE);
-  const parsed = parseShellClientConfig(raw);
-  if (parsed) {
-    installWebShellFromPrefs(parsed.habitatUrl, parsed.remoteAuthToken);
-  } else if (defaultHubUrl) {
-    window.satelliteShell = buildWebShellFromRaw(defaultHubUrl, "");
-  }
-}
-
 export async function bootstrapWebBridge(
   defaultHubUrl: string,
   options?: BootstrapWebBridgeOptions,

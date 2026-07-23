@@ -130,20 +130,20 @@ mkcert -CAROOT   # path to rootCA.pem on the Habitat host
 mkcert -install  # trust that CA on the Habitat host itself
 ```
 
-- **Desktop shell**: install `rootCA.pem` into the **OS** trust store (same machine as the desktop app). The Electron main process merges system CAs into Node TLS at startup so **Test connection** and companion Habitat HTTPS/WSS match Chromium. On the Habitat host after `mkcert -install`, no extra step is usually needed.
+- **Desktop shell**: install `rootCA.pem` into the **OS** trust store (same machine as the desktop app). Install the CA into the OS trust store so Tauri WebView / system TLS trust Habitat HTTPS. On the Habitat host after `mkcert -install`, no extra step is usually needed.
 - **iOS**: AirDrop/email `rootCA.pem` → install the profile → **Settings → General → About → Certificate Trust Settings** → enable full trust.
-- **Android**: optionally convert to DER, then **Settings → Security → Install CA certificate**. Capacitor APKs also need a build that trusts user CAs.
+- **Android**: optionally convert to DER, then **Settings → Security → Install CA certificate**. Tauri Android builds also need a build that trusts user CAs.
 
 Daily LAN access: **HTTP `:2658`** or **HTTPS `:2659` (after CA trust)**; for the public Internet use your own reverse proxy or VPN.
 
 ## 2. Client configuration
 
-**Desktop shell** (`src/app/shell/desktop`), **mobile shell** (`src/app/shell/mobile`), and **browser Web** are remote clients; they **do not read** Habitat `config.yaml` token.
+**Portal** (`src/app/shell/tauri`) and **browser Web** (`src/app/shell/web`) are remote clients; they **do not read** Habitat `config.yaml` token.
 
 | Client        | Storage                                              |
 | ------------- | ---------------------------------------------------- |
 | Desktop shell | `~/.anima-desktop/settings.json` (`habitat` section) |
-| Mobile shell  | Capacitor Preferences                                |
+| Mobile shell  | Tauri prefs / store                                  |
 | Browser Web   | localStorage (settings page)                         |
 
 Settings (all clients):

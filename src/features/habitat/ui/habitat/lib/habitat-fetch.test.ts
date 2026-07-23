@@ -8,7 +8,8 @@ type MockShell = {
   habitatUrl?: string;
   habitatFetch?: typeof fetch;
   remoteAuth?: { token?: string };
-  isElectron?: boolean;
+  isTauri?: boolean;
+  isNativeShell?: boolean;
 };
 
 function setShell(shell: MockShell): void {
@@ -42,7 +43,6 @@ describe("resolveHabitatFetch", () => {
     setShell({
       habitatUrl: "https://anima.example.com",
       remoteAuth: { token: "secret-token-min-16" },
-      isElectron: true,
     });
 
     await resolveHabitatFetch()("https://anima.example.com/rpc/v1/health/probe");
@@ -59,7 +59,6 @@ describe("resolveHabitatFetch", () => {
     setShell({
       habitatUrl: "http://127.0.0.1:2658",
       remoteAuth: { token: "secret-token-min-16" },
-      isElectron: true,
     });
 
     await resolveHabitatFetch()("http://127.0.0.1:2658/rpc/v1/health/probe");

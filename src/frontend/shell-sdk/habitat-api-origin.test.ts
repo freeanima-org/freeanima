@@ -39,11 +39,11 @@ describe("resolveHabitatApiOrigin", () => {
     expect(resolveHabitatApiOrigin()).toBe("http://192.168.1.10:2658");
   });
 
-  it("falls back to default for Electron shell without habitatUrl", () => {
+  it("falls back to default for Portal shell without habitatUrl", () => {
     globalThis.window = {
       location: { origin: "http://127.0.0.1:5000", pathname: "/web/chat", port: "5000" },
       document: { documentElement: { dataset: { shellUi: "1" } } },
-      satelliteShell: { isElectron: true, habitatUrl: "" },
+      satelliteShell: { isTauri: true, isNativeShell: true, habitatUrl: "" },
     } as unknown as Window & typeof globalThis;
     expect(resolveHabitatApiOrigin()).toBe(DEFAULT_HUB_ORIGIN);
   });

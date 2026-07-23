@@ -1,4 +1,4 @@
-/** Capacitor 路由（shell-ui SPA） */
+/** 移动壳路由（shell-ui SPA） */
 export const SETTINGS_PAGE = "/settings";
 export const CHAT_PAGE = "/chat";
 export const HABITAT_PAGE = "/habitat/dashboard";

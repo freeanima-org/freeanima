@@ -5,7 +5,7 @@ import { fbx2gltfCacheDir, platformBinaryNames, verifyFbx2gltfBinary } from "./f
 
 export { FBX_IMPORT_UNAVAILABLE_MSG };
 
-/** Electron 打包后 extraResources/bin；开发期与 electron 可执行文件同级 */
+/** 打包后 extraResources/bin；开发期与可执行文件同级 */
 export function installBinDir(): string {
   const fromEnv = process.env.COMPANION_BIN_DIR?.trim();
   if (fromEnv) return fromEnv;
