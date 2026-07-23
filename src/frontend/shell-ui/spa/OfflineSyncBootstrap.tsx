@@ -5,8 +5,10 @@ import {
   getGlobalOutboxSummary,
   type GlobalOutboxSummary,
 } from "@freeanima/frontend/shell-sdk/offline-module-cap";
+import { getOfflineModule } from "@freeanima/frontend/shell-sdk/offline-module-registry";
 import {
   isStaleOutboxOp,
+  removeOutboxOp,
   resetOutboxOpForRetry,
   resolveOutboxScope,
   type OfflineModuleId,
@@ -175,6 +177,24 @@ export function OfflineSyncBootstrap(): null {
     [refreshSummary],
   );
 
+  const handleDiscardOp = useCallback(
+    async (op: OfflineOutboxOp) => {
+      setBusy(true);
+      try {
+        const scope = resolveOutboxScope();
+        await removeOutboxOp(scope, op.id);
+        if (isHabitatFetchAvailable()) {
+          const adapter = getOfflineModule(op.moduleId);
+          await adapter?.refreshAll?.(scope);
+        }
+        refreshSummary();
+      } finally {
+        setBusy(false);
+      }
+    },
+    [refreshSummary],
+  );
+
   const issues = problemOps(summary);
   const showToast = shouldShowOfflineSyncToast(summary, habitatConnection);
 
@@ -191,29 +211,47 @@ export function OfflineSyncBootstrap(): null {
       failed: (count) => m.ui_offline_sync_failed({ count }),
       stale: (count) => m.ui_offline_sync_stale({ count }),
     });
+
+    if (firstIssue) {
+      showShellToast(SHELL_TOAST_IDS.offlineSync, message, {
+        ...(description != null ? { description } : {}),
+        action: {
+          label:
+            isStaleOutboxOp(firstIssue) && firstIssue.moduleId === "chat"
+              ? m.ui_outbox_force_send()
+              : m.ui_offline_sync_retry(),
+          onClick: () => {
+            if (!busy) void handleRetryOp(firstIssue);
+          },
+        },
+        cancel: {
+          label: m.ui_outbox_discard(),
+          onClick: () => {
+            if (!busy) void handleDiscardOp(firstIssue);
+          },
+        },
+      });
+      return;
+    }
+
     showShellToast(SHELL_TOAST_IDS.offlineSync, message, {
-      ...(description != null ? { description } : {}),
       action: {
         label: m.ui_offline_sync_retry_all(),
         onClick: () => {
           if (!busy) void handleRetryAll();
         },
       },
-      ...(firstIssue
-        ? {
-            cancel: {
-              label:
-                isStaleOutboxOp(firstIssue) && firstIssue.moduleId === "chat"
-                  ? m.ui_outbox_force_send()
-                  : m.ui_offline_sync_retry(),
-              onClick: () => {
-                if (!busy) void handleRetryOp(firstIssue);
-              },
-            },
-          }
-        : {}),
     });
-  }, [busy, handleRetryAll, handleRetryOp, habitatConnection, issues, showToast, summary]);
+  }, [
+    busy,
+    handleDiscardOp,
+    handleRetryAll,
+    handleRetryOp,
+    habitatConnection,
+    issues,
+    showToast,
+    summary,
+  ]);
 
   return null;
 }
