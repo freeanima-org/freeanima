@@ -1,14 +1,14 @@
 import { describe, expect, it } from "bun:test";
 
 import type { DiaryEntryRow } from "./format-diary.ts";
-import { entryDraftFromRow, isEntryDraftDirty, parseTagsText } from "./entry-draft-dirty.ts";
+import { entryDraftFromRow, isEntryDraftDirty } from "./entry-draft-dirty.ts";
 
 const baseEntry: DiaryEntryRow = {
   id: 1,
   title: "2026-01-01",
   summary: "",
   entry_at: "2026-01-01T12:00:00+08:00",
-  tags: ["a", "b"],
+  tag_ids: [1, 2],
   blocks: [
     {
       id: 10,
@@ -42,7 +42,7 @@ describe("entryDraftFromRow", () => {
         },
       ],
       entryDateLocal: "2026-01-01",
-      tagsText: "a, b",
+      tag_ids: [1, 2],
     });
   });
 });
@@ -94,13 +94,8 @@ describe("isEntryDraftDirty", () => {
     expect(isEntryDraftDirty({ ...baseline, entryDateLocal: "2026-01-02" }, baseline)).toBe(true);
   });
 
-  it("标签文案变更时返回 true", () => {
-    expect(isEntryDraftDirty({ ...baseline, tagsText: "b, a" }, baseline)).toBe(true);
-  });
-});
-
-describe("parseTagsText", () => {
-  it("解析中英文逗号分隔标签", () => {
-    expect(parseTagsText("工作, 紧急，个人")).toEqual(["工作", "紧急", "个人"]);
+  it("条目标签变更时返回 true", () => {
+    expect(isEntryDraftDirty({ ...baseline, tag_ids: [2, 1] }, baseline)).toBe(false);
+    expect(isEntryDraftDirty({ ...baseline, tag_ids: [1] }, baseline)).toBe(true);
   });
 });

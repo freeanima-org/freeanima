@@ -22,7 +22,7 @@ export const diaryEntryRowSchema = z.object({
   title: z.string(),
   summary: z.string(),
   entry_at: z.string(),
-  tags: z.array(z.string()),
+  tag_ids: z.array(z.number().int().positive()),
   blocks: z.array(diaryTextBlockSchema),
   created_at: z.string(),
   updated_at: z.string(),
@@ -34,7 +34,7 @@ export const diaryListInputSchema = z.object({
   subject_kind: notificationRecipientKindSchema,
   entry_after: z.string().optional(),
   entry_before: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  tag_ids: z.array(z.number().int().positive()).optional(),
   limit: z.number().int().positive().optional(),
   offset: z.number().int().nonnegative().optional(),
 });
@@ -52,6 +52,7 @@ export const diaryCreateInputSchema = z.object({
   summary: z.string().optional(),
   entry_at: z.string().min(1),
   tags: z.array(z.string()).optional(),
+  tag_ids: z.array(z.number().int().positive()).optional(),
   client_op_id: z.string().min(1).optional(),
 });
 export type DiaryCreateInput = z.infer<typeof diaryCreateInputSchema>;
@@ -76,6 +77,7 @@ export const diaryPatchInputSchema = z.object({
   summary: z.string().optional(),
   entry_at: z.string().min(1).optional(),
   tags: z.array(z.string()).optional(),
+  tag_ids: z.array(z.number().int().positive()).optional(),
   client_op_id: z.string().min(1).optional(),
 });
 export type DiaryPatchInput = z.infer<typeof diaryPatchInputSchema>;
@@ -104,7 +106,7 @@ export const diarySearchInputSchema = z.object({
   query: z.string().min(1),
   entry_after: z.string().optional(),
   entry_before: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  tag_ids: z.array(z.number().int().positive()).optional(),
   limit: z.number().int().positive().optional(),
 });
 export type DiarySearchInput = z.infer<typeof diarySearchInputSchema>;
@@ -242,7 +244,8 @@ export type DiarySuggestTagsInput = z.infer<typeof diarySuggestTagsInputSchema>;
 export const diarySuggestTagsOutputSchema = z.object({
   items: z.array(
     z.object({
-      tag: z.string(),
+      id: z.number().int().positive(),
+      title: z.string(),
       count: z.number().int().nonnegative(),
     }),
   ),

@@ -178,7 +178,7 @@ Structured journal entries for **user** and **agent** subjects:
 | ------- | -------------- | ------------- |
 | Entry   | `type=content` | `diary_entry` |
 
-Entries live in each subject's **`default_private_world_id`**. `body.entry_at` is the timeline sort key; optional `body.tags`. **Body text lives in child `content_block` rows** (`block_type: text`, `parent_id` → entry); the container entity `content` column is unused (empty after one-shot migration).
+Entries live in each subject's **`default_private_world_id`**. `body.entry_at` is the timeline sort key; optional top-level **`tag_ids`**（指向同 World 的 `tag` entity；历史 `body.tags` 字符串已迁移剥离）。**Body text lives in child `content_block` rows** (`block_type: text`, `parent_id` → entry); the container entity `content` column is unused (empty after one-shot migration).
 
 - **SAP:** `diary.*` + `diary.block*` — all take `subject_kind: user | agent`. `diary.append` adds a new text block; `diary.patch` updates metadata only; delete cascades blocks.
 - **UI:** shell `/diary` — multi text-block editor with drag reorder.

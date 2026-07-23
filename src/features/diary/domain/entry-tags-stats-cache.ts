@@ -18,7 +18,8 @@ function isSuggestionList(value: unknown): value is DiaryEntryTagSuggestion[] {
     (row) =>
       row != null &&
       typeof row === "object" &&
-      typeof (row as DiaryEntryTagSuggestion).tag === "string" &&
+      typeof (row as DiaryEntryTagSuggestion).id === "number" &&
+      typeof (row as DiaryEntryTagSuggestion).title === "string" &&
       typeof (row as DiaryEntryTagSuggestion).count === "number",
   );
 }

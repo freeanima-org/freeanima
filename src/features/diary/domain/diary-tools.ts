@@ -9,7 +9,14 @@ import {
   searchDiaryEntries,
   updateDiaryEntryByDate,
 } from "./entry-store.ts";
-import { entryPayload, parseTags, requireEntryByDate, toolDateKey } from "./diary-tool-helpers.ts";
+import {
+  entryPayload,
+  parseTagIds,
+  parseTags,
+  requireEntryByDate,
+  resolveFilterTagIds,
+  toolDateKey,
+} from "./diary-tool-helpers.ts";
 import { DIARY_TOOL_RETURNS } from "./return-schemas.ts";
 import { resolveDiaryToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 
@@ -43,8 +50,11 @@ async function handleAppend(args: Record<string, unknown>): Promise<string> {
 
 async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   const hasPatch =
-    args.tags !== undefined || args.title !== undefined || args.summary !== undefined;
-  if (!hasPatch) return toolError("at least one of tags, title, summary is required");
+    args.tags !== undefined ||
+    args.tag_ids !== undefined ||
+    args.title !== undefined ||
+    args.summary !== undefined;
+  if (!hasPatch) return toolError("at least one of tags, tag_ids, title, summary is required");
 
   const ctx = await storeContext(args, "write");
   if (typeof ctx === "string") return ctx;
@@ -60,6 +70,7 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
         title: args.title !== undefined ? String(args.title) : undefined,
         summary: args.summary !== undefined ? String(args.summary) : undefined,
         tags: parseTags(args.tags),
+        tag_ids: parseTagIds(args.tag_ids),
       }),
     );
     if (!item) return toolError(`diary entry not found for date ${resolved.dateKey}`);
@@ -118,12 +129,26 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
   if (typeof ctx === "string") return ctx;
 
   try {
+    const tags = parseTags(args.tags);
+    const rawTagIds = parseTagIds(args.tag_ids);
+    const tag_ids = await resolveFilterTagIds(ctx.worldId, {
+      ...(tags !== undefined ? { tags } : {}),
+      ...(rawTagIds !== undefined ? { tag_ids: rawTagIds } : {}),
+    });
+    if (tag_ids !== undefined && tag_ids.length === 0) {
+      return toolResult({
+        ok: true,
+        action: "list",
+        count: 0,
+        items: [],
+      });
+    }
     const items = await listDiaryEntries(
       ctx,
       omitUndefined({
         entry_after,
         entry_before,
-        tags: parseTags(args.tags),
+        tag_ids,
         limit,
         offset,
       }),
@@ -152,6 +177,20 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
   if (typeof ctx === "string") return ctx;
 
   try {
+    const tags = parseTags(args.tags);
+    const rawTagIds = parseTagIds(args.tag_ids);
+    const tag_ids = await resolveFilterTagIds(ctx.worldId, {
+      ...(tags !== undefined ? { tags } : {}),
+      ...(rawTagIds !== undefined ? { tag_ids: rawTagIds } : {}),
+    });
+    if (tag_ids !== undefined && tag_ids.length === 0) {
+      return toolResult({
+        ok: true,
+        action: "search",
+        count: 0,
+        items: [],
+      });
+    }
     const items = await searchDiaryEntries(
       ctx,
       omitUndefined({
@@ -160,7 +199,7 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
           args.entry_after != null ? String(args.entry_after).trim() || undefined : undefined,
         entry_before:
           args.entry_before != null ? String(args.entry_before).trim() || undefined : undefined,
-        tags: parseTags(args.tags),
+        tag_ids,
         limit,
       }),
     );
@@ -205,7 +244,7 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
         {
           name: "diary_update",
           description:
-            "Update diary entry metadata for a date (title/summary/tags; default today). Body text: use diary_append or content-block tools",
+            "Update diary entry metadata for a date (title/summary/tags/tag_ids; default today). Body text: use diary_append or content-block tools",
           exposeMcp: true,
           parameters: {
             type: "object",
@@ -215,6 +254,7 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
               title: { type: "string" },
               summary: { type: "string" },
               tags: { type: "array", items: { type: "string" } },
+              tag_ids: { type: "array", items: { type: "integer" } },
             },
           },
           handler: handleUpdate,
@@ -256,7 +296,16 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
               ...WORLD_ID_OPTIONAL,
               entry_after: { type: "string", description: "ISO8601 lower bound on entry_at" },
               entry_before: { type: "string", description: "ISO8601 upper bound on entry_at" },
-              tags: { type: "array", items: { type: "string" } },
+              tags: {
+                type: "array",
+                items: { type: "string" },
+                description: "Filter by tag titles (AND)",
+              },
+              tag_ids: {
+                type: "array",
+                items: { type: "integer" },
+                description: "Filter by tag entity ids (AND)",
+              },
               limit: { type: "integer", description: "Page size; default 20, max 500" },
               offset: { type: "integer", description: "Skip N rows; default 0" },
             },
@@ -275,7 +324,16 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
               query: { type: "string" },
               entry_after: { type: "string" },
               entry_before: { type: "string" },
-              tags: { type: "array", items: { type: "string" } },
+              tags: {
+                type: "array",
+                items: { type: "string" },
+                description: "Filter by tag titles (AND)",
+              },
+              tag_ids: {
+                type: "array",
+                items: { type: "integer" },
+                description: "Filter by tag entity ids (AND)",
+              },
               limit: { type: "integer" },
             },
             required: ["query"],

@@ -31,9 +31,11 @@ describe("parseDiaryEntrySearchFilters", () => {
     const parsed = parseDiaryEntrySearchFilters({
       entry_after: "2026-06-01T00:00:00+08:00",
       entry_before: "2026-06-30T23:59:59+08:00",
+      tag_ids: [7],
       tags: ["日常"],
     });
     expect(parsed.entry_after).toBe("2026-06-01T00:00:00+08:00");
+    expect(parsed.tag_ids).toEqual([7]);
     expect(parsed.tags).toEqual(["日常"]);
   });
 

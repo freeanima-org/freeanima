@@ -123,6 +123,7 @@ export async function createDiaryEntry(
     summary?: string;
     entry_at: string;
     tags?: string[];
+    tag_ids?: number[];
   },
 ): Promise<DiaryEntryRow> {
   ensureDiaryOfflineModule();
@@ -141,7 +142,9 @@ export async function appendDiaryEntry(
 export async function updateDiaryEntry(
   subjectKind: DiarySubjectKind,
   id: number,
-  patch: Partial<Pick<DiaryEntryRow, "title" | "summary" | "entry_at" | "tags">>,
+  patch: Partial<Pick<DiaryEntryRow, "title" | "summary" | "entry_at" | "tag_ids">> & {
+    tags?: string[];
+  },
 ): Promise<DiaryEntryRow> {
   ensureDiaryOfflineModule();
   return offlineUpdateDiaryEntry(subjectKind, id, patch);
@@ -200,7 +203,7 @@ export async function fetchDiaryBlockTemplates(
 export async function suggestDiaryTags(
   subjectKind: DiarySubjectKind,
   opts?: { query?: string; limit?: number },
-): Promise<Array<{ tag: string; count: number }>> {
+): Promise<Array<{ id: number; title: string; count: number }>> {
   const data = await habitat().call("diary.suggestTags", {
     subject_kind: subjectKind,
     ...(opts?.query != null && opts.query !== "" ? { query: opts.query } : {}),

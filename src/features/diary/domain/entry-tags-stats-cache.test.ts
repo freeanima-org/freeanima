@@ -17,7 +17,7 @@ describe("entry-tags-stats-cache", () => {
 
   it("进程内存旁路可读写", async () => {
     resetCacheMemoryForTests();
-    const items = [{ tag: "日常", count: 3 }];
+    const items = [{ id: 9, title: "日常", count: 3 }];
     await saveDiaryEntryTagsStatsCache(7, 10, items);
     await expect(loadDiaryEntryTagsStatsCache(7, 10)).resolves.toEqual(items);
     await expect(loadDiaryEntryTagsStatsCache(7, 5)).resolves.toBeNull();

@@ -16,7 +16,7 @@ const hubCall = mock(async (method: string, _payload: unknown) => {
         title: "online",
         summary: "",
         entry_at: "2026-07-12T00:00:00.000Z",
-        tags: [],
+        tag_ids: [],
         blocks: [],
         created_at: "2026-07-12T00:00:00.000Z",
         updated_at: "2026-07-12T00:00:00.000Z",

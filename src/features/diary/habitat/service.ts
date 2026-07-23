@@ -45,7 +45,7 @@ export async function serviceDiaryList(
     subject_kind: DiarySubjectKind;
     entry_after?: string;
     entry_before?: string;
-    tags?: string[];
+    tag_ids?: number[];
     limit?: number;
     offset?: number;
   },
@@ -57,7 +57,7 @@ export async function serviceDiaryList(
     omitUndefined({
       entry_after: input.entry_after,
       entry_before: input.entry_before,
-      tags: input.tags,
+      tag_ids: input.tag_ids,
       limit: input.limit,
       offset: input.offset,
     }),
@@ -74,6 +74,7 @@ export async function serviceDiaryCreate(
     summary?: string;
     entry_at: string;
     tags?: string[];
+    tag_ids?: number[];
     client_op_id?: string;
   },
 ) {
@@ -108,6 +109,7 @@ export async function serviceDiaryPatch(
     summary?: string;
     entry_at?: string;
     tags?: string[];
+    tag_ids?: number[];
   },
 ) {
   assertPg(deps);
@@ -147,7 +149,7 @@ export async function serviceDiarySearch(
     query: string;
     entry_after?: string;
     entry_before?: string;
-    tags?: string[];
+    tag_ids?: number[];
     limit?: number;
   },
 ) {
