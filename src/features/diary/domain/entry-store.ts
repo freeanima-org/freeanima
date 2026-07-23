@@ -18,7 +18,6 @@ import {
   createDiaryTextBlock,
   deleteAllDiaryTextBlocks,
   listDiaryTextBlocks,
-  listDiaryTextBlocksByParents,
   searchDiaryParentIdsByBlockText,
 } from "./text-blocks.ts";
 import type {
@@ -104,7 +103,10 @@ export async function findDiaryEntryByDay(
     ...dayRangeFilters(day),
     limit: 20,
   });
-  return items.find((row) => entryDayKey(row.entry_at) === day) ?? null;
+  const hit = items.find((row) => entryDayKey(row.entry_at) === day);
+  if (!hit) return null;
+  // list 不挂 blocks；按日查找需完整正文时再 get
+  return getDiaryEntry(ctx, hit.id);
 }
 
 function assertDiaryEntryInWorld(
@@ -113,23 +115,6 @@ function assertDiaryEntryInWorld(
 ): existing is NonNullable<typeof existing> {
   if (!existing || existing.primary_component !== DIARY_ENTRY_COMPONENT) return false;
   return existing.world_id === ctx.worldId;
-}
-
-async function attachBlocks(
-  ctx: DiaryStoreContext,
-  rows: Array<{
-    parsed: NonNullable<ReturnType<typeof asDiaryEntry>>;
-    created_at: Date;
-    updated_at: Date;
-  }>,
-): Promise<DiaryEntryRow[]> {
-  const byParent = await listDiaryTextBlocksByParents(
-    ctx,
-    rows.map((r) => r.parsed.id),
-  );
-  return rows.map(({ parsed, created_at, updated_at }) =>
-    toEntryRow(parsed, { created_at, updated_at }, byParent.get(parsed.id) ?? []),
-  );
 }
 
 export async function listDiaryEntries(
@@ -150,14 +135,15 @@ export async function listDiaryEntries(
     mode: "filter_only",
   });
 
-  const parsedRows = result.results
+  const items = result.results
     .map((row) => {
       const parsed = asDiaryEntry(row);
-      return parsed ? { parsed, created_at: row.created_at, updated_at: row.updated_at } : null;
+      return parsed
+        ? toEntryRow(parsed, { created_at: row.created_at, updated_at: row.updated_at }, [])
+        : null;
     })
-    .filter((row): row is NonNullable<typeof row> => row != null);
+    .filter((row): row is DiaryEntryRow => row != null);
 
-  const items = await attachBlocks(ctx, parsedRows);
   return items.toSorted(sortByEntryAtDesc);
 }
 
@@ -346,11 +332,12 @@ export async function searchDiaryEntries(
     byId.set(parsed.id, { parsed, created_at: row.created_at, updated_at: row.updated_at });
   }
 
-  const ordered = parentIds
+  return parentIds
     .map((id) => byId.get(id))
-    .filter((row): row is NonNullable<typeof row> => row != null);
-
-  return attachBlocks(ctx, ordered);
+    .filter((row): row is NonNullable<typeof row> => row != null)
+    .map(({ parsed, created_at, updated_at }) =>
+      toEntryRow(parsed, { created_at, updated_at }, []),
+    );
 }
 
 export function titleFromEntryAt(entryAt: string): string {

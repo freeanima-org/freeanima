@@ -135,6 +135,8 @@ import type {
   DiaryTemplateListOutput,
   DiaryTemplatePatchInput,
   DiaryTemplatePatchOutput,
+  DiarySuggestTagsInput,
+  DiarySuggestTagsOutput,
 } from "./frames/diary.ts";
 import type {
   CompanionConfigGetInput,
@@ -259,6 +261,7 @@ export const RPC_WIRE_METHODS = [
   "diary.templateCreate",
   "diary.templatePatch",
   "diary.templateDelete",
+  "diary.suggestTags",
   "vault.list",
   "vault.get",
   "vault.create",
@@ -362,6 +365,7 @@ export type RpcRouterInputs = {
   "diary.templateCreate": DiaryTemplateCreateInput;
   "diary.templatePatch": DiaryTemplatePatchInput;
   "diary.templateDelete": DiaryTemplateDeleteInput;
+  "diary.suggestTags": DiarySuggestTagsInput;
   "vault.list": VaultListInput;
   "vault.get": VaultGetInput;
   "vault.create": VaultCreateInput;
@@ -463,6 +467,7 @@ export type RpcRouterOutputs = {
   "diary.templateCreate": DiaryTemplateCreateOutput;
   "diary.templatePatch": DiaryTemplatePatchOutput;
   "diary.templateDelete": DiaryTemplateDeleteOutput;
+  "diary.suggestTags": DiarySuggestTagsOutput;
   "vault.list": VaultListOutput;
   "vault.get": VaultGetOutput;
   "vault.create": VaultCreateOutput;

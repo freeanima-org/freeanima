@@ -231,3 +231,20 @@ export const diaryTemplateDeleteInputSchema = z.object({
 export type DiaryTemplateDeleteInput = z.infer<typeof diaryTemplateDeleteInputSchema>;
 export const diaryTemplateDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type DiaryTemplateDeleteOutput = z.infer<typeof diaryTemplateDeleteOutputSchema>;
+
+/** 日记实体级 tags 建议（本 world 频次；默认 top10） */
+export const diarySuggestTagsInputSchema = z.object({
+  subject_kind: notificationRecipientKindSchema,
+  query: z.string().optional(),
+  limit: z.number().int().positive().max(50).optional(),
+});
+export type DiarySuggestTagsInput = z.infer<typeof diarySuggestTagsInputSchema>;
+export const diarySuggestTagsOutputSchema = z.object({
+  items: z.array(
+    z.object({
+      tag: z.string(),
+      count: z.number().int().nonnegative(),
+    }),
+  ),
+});
+export type DiarySuggestTagsOutput = z.infer<typeof diarySuggestTagsOutputSchema>;

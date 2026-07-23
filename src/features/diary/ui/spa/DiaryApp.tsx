@@ -9,6 +9,7 @@ import {
   deleteDiaryBlock,
   fetchDiaryBlockTemplates,
   fetchDiaryEntries,
+  getDiaryEntry,
   reorderDiaryBlocks,
   searchDiaryEntries,
   updateDiaryBlock,
@@ -31,6 +32,7 @@ import { m } from "@paraglide/messages";
 
 import { DiaryBlockTemplateDialog } from "./components/DiaryBlockTemplateDialog.tsx";
 import { EntryEditor, type EntrySaveStatus } from "./components/EntryEditor.tsx";
+import { EntryTagAddMenu, EntryTagChips } from "./components/EntryTagHeader.tsx";
 import { EntryTimeline, findEntryByDayLocal } from "./components/EntryTimeline.tsx";
 import {
   entryDraftFromRow,
@@ -110,20 +112,11 @@ export function DiaryApp() {
       setEntries(query ? items : sortEntries(items));
       setHasMore(!query && items.length >= DIARY_PAGE_SIZE);
       const currentSelectedId = selectedIdRef.current;
+      // list/search 不带 blocks：仅在选中项消失时清空；正文 draft 不由列表覆盖
       if (currentSelectedId != null && !items.some((e) => e.id === currentSelectedId)) {
         setSelectedId(null);
         setDraft(null);
         setDraftBaseline(null);
-      } else if (currentSelectedId != null) {
-        const fresh = items.find((e) => e.id === currentSelectedId);
-        if (fresh) {
-          const nextDraft = entryDraftFromRow(fresh);
-          setDraftBaseline(nextDraft);
-          setDraft((current) => {
-            if (!current || !isEntryDraftDirty(current, nextDraft)) return nextDraft;
-            return current;
-          });
-        }
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -262,6 +255,27 @@ export function DiaryApp() {
     setSaveStatus("idle");
   }, []);
 
+  /** 列表项仅元数据；打开编辑前按 id 拉完整 blocks */
+  const openEntryById = useCallback(
+    async (id: number): Promise<boolean> => {
+      try {
+        const full = await getDiaryEntry(subjectKind, id);
+        setEntries((prev) =>
+          applyEntryToList(prev, {
+            ...full,
+            blocks: [],
+          }),
+        );
+        openEntry(full);
+        return true;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e));
+        return false;
+      }
+    },
+    [openEntry, subjectKind],
+  );
+
   const persistDraft = useCallback(async (): Promise<boolean> => {
     if (!selectedEntry || !draft || !draftBaseline || writesDisabled) return true;
     if (!isEntryDraftDirty(draft, draftBaseline)) return true;
@@ -359,7 +373,12 @@ export function DiaryApp() {
         })),
       };
 
-      setEntries((prev) => applyEntryToList(prev, entry));
+      setEntries((prev) =>
+        applyEntryToList(prev, {
+          ...entry,
+          blocks: [],
+        }),
+      );
       if (selectedIdRef.current === selectedEntry.id && selectedEntry.id !== entry.id) {
         setSelectedId(entry.id);
       }
@@ -395,7 +414,7 @@ export function DiaryApp() {
     const todayEntry = findEntryByDayLocal(entries, today);
     if (todayEntry) {
       if (selectedIdRef.current !== todayEntry.id) {
-        openEntry(todayEntry);
+        return openEntryById(todayEntry.id);
       }
       return true;
     }
@@ -409,7 +428,15 @@ export function DiaryApp() {
         entry_at: dateLocalToEntryAtIso(today),
         tags: [],
       });
-      setEntries((prev) => sortEntries([item, ...prev]));
+      setEntries((prev) =>
+        sortEntries([
+          {
+            ...item,
+            blocks: [],
+          },
+          ...prev,
+        ]),
+      );
       openEntry(item);
       return true;
     } catch (e) {
@@ -417,8 +444,7 @@ export function DiaryApp() {
       if (msg.includes("already exists")) {
         const existing = findEntryByDayLocal(entries, today);
         if (existing) {
-          openEntry(existing);
-          return true;
+          return openEntryById(existing.id);
         }
       } else {
         setError(msg);
@@ -427,7 +453,7 @@ export function DiaryApp() {
     } finally {
       setCreating(false);
     }
-  }, [creating, entries, openEntry, subjectKind, writesDisabled]);
+  }, [creating, entries, openEntry, openEntryById, subjectKind, writesDisabled]);
 
   useEffect(() => {
     if (loading) return;
@@ -440,8 +466,8 @@ export function DiaryApp() {
 
     const todayEntry = findEntryByDayLocal(entries, defaultEntryDateLocal());
     if (todayEntry) {
-      openEntry(todayEntry);
       initialTodayOpenedRef.current = true;
+      void openEntryById(todayEntry.id);
       return;
     }
 
@@ -461,7 +487,7 @@ export function DiaryApp() {
     creating,
     entries,
     loading,
-    openEntry,
+    openEntryById,
     openTodayEntry,
     searchQuery,
     selectedId,
@@ -476,11 +502,10 @@ export function DiaryApp() {
     (id: number) => {
       void (async () => {
         await flushDraftSave();
-        const entry = entries.find((e) => e.id === id);
-        if (entry) openEntry(entry);
+        await openEntryById(id);
       })();
     },
-    [entries, flushDraftSave, openEntry],
+    [flushDraftSave, openEntryById],
   );
 
   const handleNewEntry = useCallback(() => {
@@ -567,22 +592,15 @@ export function DiaryApp() {
         disabled={refreshing || loading}
         onRefresh={handleManualRefresh}
       >
-        <div className="flex min-h-0 flex-1 flex-col gap-2">
-          <div className="min-h-0 flex-1 overflow-hidden">
-            <EntryTimeline items={entries} selectedId={selectedId} onSelect={selectEntryById} />
-          </div>
-          {!searchQuery.trim() && hasMore ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="shrink-0 self-center"
-              disabled={loadingMore || loading || refreshing}
-              onClick={() => void loadMore()}
-            >
-              {loadingMore ? <Spinner className="size-3.5" /> : "加载更多"}
-            </Button>
-          ) : null}
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <EntryTimeline
+            items={entries}
+            selectedId={selectedId}
+            onSelect={selectEntryById}
+            hasMore={!searchQuery.trim() && hasMore}
+            loadingMore={loadingMore}
+            onLoadMore={() => void loadMore()}
+          />
         </div>
       </PullToRefresh>
     </div>
@@ -599,6 +617,21 @@ export function DiaryApp() {
 
   const detailTitle = selectedEntry ? formatEntryDate(selectedEntry.entry_at) : "日记";
 
+  const detailHeaderExtra =
+    selectedEntry && draft ? (
+      writesDisabled ? (
+        <EntryTagChips tags={parseTagsText(draft.tagsText)} readOnly />
+      ) : (
+        <EntryTagChips
+          tags={parseTagsText(draft.tagsText)}
+          onRemove={(tag) => {
+            const next = parseTagsText(draft.tagsText).filter((t) => t !== tag);
+            setDraft({ ...draft, tagsText: next.join(", ") });
+          }}
+        />
+      )
+    ) : null;
+
   const detailActions =
     selectedEntry && draft && !writesDisabled ? (
       <div className="flex items-center gap-2">
@@ -609,6 +642,11 @@ export function DiaryApp() {
         ) : saveStatus === "error" ? (
           <span className="text-destructive text-xs">保存失败</span>
         ) : null}
+        <EntryTagAddMenu
+          subjectKind={subjectKind}
+          tagsText={draft.tagsText}
+          onTagsTextChange={(tagsText) => setDraft({ ...draft, tagsText })}
+        />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button type="button" variant="ghost" size="sm">
@@ -637,6 +675,7 @@ export function DiaryApp() {
     <>
       <ListDetailLayout
         detailTitle={detailTitle}
+        detailHeaderExtra={detailHeaderExtra}
         detailActions={detailActions}
         listTitle="日记"
         columnSplitKey="diary"

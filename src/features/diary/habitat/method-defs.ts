@@ -29,6 +29,8 @@ import {
   diaryTemplateListOutputSchema,
   diaryTemplatePatchInputSchema,
   diaryTemplatePatchOutputSchema,
+  diarySuggestTagsInputSchema,
+  diarySuggestTagsOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/diary";
 
 import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
@@ -108,5 +110,10 @@ export const diaryMethodDefs = {
     input: diaryTemplateDeleteInputSchema,
     output: diaryTemplateDeleteOutputSchema,
     meta: dualTransportMeta(false),
+  }),
+  "diary.suggestTags": defineHabitatMethod({
+    input: diarySuggestTagsInputSchema,
+    output: diarySuggestTagsOutputSchema,
+    meta: dualTransportMeta(true),
   }),
 } as const;

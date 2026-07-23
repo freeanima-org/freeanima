@@ -135,37 +135,6 @@ export async function listDiaryTextBlocks(
     .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }
 
-/** 同 world 内批量拉取 text 块，按 parent_id 分组 */
-export async function listDiaryTextBlocksByParents(
-  ctx: DiaryStoreContext,
-  parentIds: number[],
-): Promise<Map<number, DiaryTextBlock[]>> {
-  const map = new Map<number, DiaryTextBlock[]>();
-  for (const id of parentIds) map.set(id, []);
-  if (parentIds.length === 0) return map;
-
-  const result = await searchEntities({
-    world_id: ctx.worldId,
-    primary_component: CONTENT_BLOCK_COMPONENT,
-    filters: { block_type: "text" },
-    limit: 2000,
-    mode: "filter_only",
-    include_count: false,
-  });
-  const parentSet = new Set(parentIds);
-  for (const row of result.results) {
-    const block = mapHit(row);
-    if (!block || !parentSet.has(block.parent_id)) continue;
-    const list = map.get(block.parent_id);
-    if (list) list.push(block);
-    else map.set(block.parent_id, [block]);
-  }
-  for (const [, list] of map) {
-    list.sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
-  }
-  return map;
-}
-
 export async function createDiaryTextBlock(
   ctx: DiaryStoreContext,
   input: DiaryTextBlockCreateInput,

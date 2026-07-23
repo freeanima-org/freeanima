@@ -1,4 +1,5 @@
 import type { DiaryEntryRow, DiarySubjectKind, DiaryTextBlock } from "./format-diary.ts";
+export type { DiarySubjectKind };
 import { resolveHabitatCacheScope } from "@freeanima/frontend/shell-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache-first";
 import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
@@ -193,6 +194,18 @@ export async function fetchDiaryBlockTemplates(
   subjectKind: DiarySubjectKind,
 ): Promise<DiaryBlockTemplateRow[]> {
   const data = await habitat().call("diary.templateList", { subject_kind: subjectKind });
+  return data.items;
+}
+
+export async function suggestDiaryTags(
+  subjectKind: DiarySubjectKind,
+  opts?: { query?: string; limit?: number },
+): Promise<Array<{ tag: string; count: number }>> {
+  const data = await habitat().call("diary.suggestTags", {
+    subject_kind: subjectKind,
+    ...(opts?.query != null && opts.query !== "" ? { query: opts.query } : {}),
+    limit: opts?.limit ?? 10,
+  });
   return data.items;
 }
 

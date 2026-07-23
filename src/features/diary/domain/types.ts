@@ -21,7 +21,7 @@ export type DiaryEntryRow = {
   summary: string;
   entry_at: string;
   tags: string[];
-  /** 正文块；list/search 会批量挂载，create/get/append 必带 */
+  /** 正文块；list/search 恒为 []，get/create/append/update 带完整块 */
   blocks: DiaryTextBlock[];
   created_at: string;
   updated_at: string;

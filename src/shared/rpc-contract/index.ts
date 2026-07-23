@@ -346,6 +346,8 @@ export {
   diaryTemplatePatchOutputSchema,
   diaryTemplateDeleteInputSchema,
   diaryTemplateDeleteOutputSchema,
+  diarySuggestTagsInputSchema,
+  diarySuggestTagsOutputSchema,
 } from "./frames/diary.ts";
 export type {
   DiaryEntryRowPayload,
@@ -382,6 +384,8 @@ export type {
   DiaryTemplatePatchOutput,
   DiaryTemplateDeleteInput,
   DiaryTemplateDeleteOutput,
+  DiarySuggestTagsInput,
+  DiarySuggestTagsOutput,
 } from "./frames/diary.ts";
 
 export {
