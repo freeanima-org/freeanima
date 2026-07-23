@@ -46,7 +46,7 @@
   "email_copy_id_failed": "复制 ID 失败",
   "email_create_failed": "创建账户失败：{detail}",
   "email_delete_account": "删除账户",
-  "email_delete_confirm": "确定删除此邮件账户？本地已同步的邮件不会自动清除。",
+  "email_delete_confirm": "确定删除此邮件账户？本地已同步的邮件与线程也会一并清除，不会删除服务器上的邮件。",
   "email_delete_failed": "删除账户失败：{detail}",
   "email_delete_message": "删除邮件",
   "email_delete_message_confirm": "确定删除此邮件？将删除本地记录，并在可能时同步删除 IMAP。",

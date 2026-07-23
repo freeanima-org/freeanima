@@ -31,7 +31,7 @@ export {
   tagEmailMessage,
   upsertEmailMessage,
 } from "./message-store.ts";
-export { persistEmailAttachments } from "./attachment-store.ts";
+export { persistEmailAttachments, removeEmailAccountAttachments } from "./attachment-store.ts";
 export {
   registerEmailSyncPort,
   getEmailSyncPort,

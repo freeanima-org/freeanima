@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { homePath } from "@freeanima/core/config/paths";
@@ -7,8 +7,17 @@ import type { EmailMessageAttachmentMeta } from "@freeanima/core/db/schema/entit
 
 import type { ParsedEmailAttachment } from "./mime-parse.ts";
 
+function emailAccountAttachmentsRoot(accountId: number): string {
+  return homePath("email-attachments", String(accountId));
+}
+
 function emailAttachmentsRoot(accountId: number, messageId: number): string {
-  return homePath("email-attachments", String(accountId), String(messageId));
+  return join(emailAccountAttachmentsRoot(accountId), String(messageId));
+}
+
+/** 删除某账户下本地附件目录（不存在则忽略）。 */
+export async function removeEmailAccountAttachments(accountId: number): Promise<void> {
+  await rm(emailAccountAttachmentsRoot(accountId), { recursive: true, force: true });
 }
 
 function safeFilename(name: string, index: number): string {

@@ -256,7 +256,7 @@
   "email_save": "Save",
   "email_cancel": "Cancel",
   "email_delete_account": "Delete account",
-  "email_delete_confirm": "Delete this email account? Messages stored locally will remain until cleaned up separately.",
+  "email_delete_confirm": "Delete this email account? Locally synced messages and threads will also be removed. Remote mailbox is not affected.",
   "email_set_default_sender": "Set as default sender",
   "email_enable_account": "Enable",
   "email_disable_account": "Disable",

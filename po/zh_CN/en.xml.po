@@ -447,8 +447,8 @@ msgstr "删除账户"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:49
 #, no-wrap
-msgid "Delete this email account? Messages stored locally will remain until cleaned up separately."
-msgstr "确定删除此邮件账户？本地已同步的邮件不会自动清除。"
+msgid "Delete this email account? Locally synced messages and threads will also be removed. Remote mailbox is not affected."
+msgstr "确定删除此邮件账户？本地已同步的邮件与线程也会一并清除，不会删除服务器上的邮件。"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:50

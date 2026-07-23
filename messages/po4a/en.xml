@@ -46,7 +46,7 @@
   <msg id="email_copy_id_failed">Failed to copy ID</msg>
   <msg id="email_create_failed">Failed to create account: {detail}</msg>
   <msg id="email_delete_account">Delete account</msg>
-  <msg id="email_delete_confirm">Delete this email account? Messages stored locally will remain until cleaned up separately.</msg>
+  <msg id="email_delete_confirm">Delete this email account? Locally synced messages and threads will also be removed. Remote mailbox is not affected.</msg>
   <msg id="email_delete_failed">Failed to delete account: {detail}</msg>
   <msg id="email_delete_message">Delete message</msg>
   <msg id="email_delete_message_confirm">Delete this message locally and on IMAP when possible?</msg>
