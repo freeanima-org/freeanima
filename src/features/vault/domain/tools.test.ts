@@ -2,11 +2,18 @@ import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 
 const ensureAgentVaultConfigMock = mock(async () => ({}));
-const sealAgentVaultItemMock = mock(async () => ({
-  secrets_enc: "enc",
-  dek_wrapped: "dek",
-  custom_field_names: ["api"],
-}));
+const sealAgentVaultItemMock = mock(
+  async (_secrets: {
+    password?: string;
+    notes?: string;
+    totp?: string;
+    custom_fields?: { name: string; value: string; type: string }[];
+  }) => ({
+    secrets_enc: "enc",
+    dek_wrapped: "dek",
+    custom_field_names: ["api"],
+  }),
+);
 const openAgentVaultSecretsMock = mock(async () => ({ password: "old" }));
 
 const createVaultItemMock = mock(async () => ({
