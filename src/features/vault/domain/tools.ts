@@ -31,7 +31,9 @@ const ITEM_TYPES = new Set<VaultItemType>(["login", "secure_note", "card", "iden
 const SECRETS_TOOL_PROPERTY = {
   type: "object",
   description:
-    "Plaintext secret fields to seal into Agent vault (password, notes, totp, custom_fields). Never returned in tool results.",
+    "Plaintext secret fields to seal into Agent vault (password, notes, totp, custom_fields). " +
+    "Later use secrets[].field / browser_type secret.field with password/notes/totp or a custom_fields[].name. " +
+    "Never returned in tool results.",
   properties: {
     password: { type: "string" },
     notes: { type: "string" },
@@ -41,7 +43,10 @@ const SECRETS_TOOL_PROPERTY = {
       items: {
         type: "object",
         properties: {
-          name: { type: "string" },
+          name: {
+            type: "string",
+            description: "Field name later passed as secrets[].field / secret.field",
+          },
           value: { type: "string" },
           type: { type: "string", enum: ["text", "hidden", "boolean"] },
         },
@@ -96,9 +101,9 @@ function parseSecretsPayload(raw: unknown): VaultSecretsPayload | string {
   }
   const rec = raw as Record<string, unknown>;
   const out: VaultSecretsPayload = {};
-  if (rec.password != null) out.password = String(rec.password);
+  if (rec.password != null) out.password = String(rec.password).trim();
   if (rec.notes != null) out.notes = String(rec.notes);
-  if (rec.totp != null) out.totp = String(rec.totp);
+  if (rec.totp != null) out.totp = String(rec.totp).trim();
   if (rec.custom_fields != null) {
     if (!Array.isArray(rec.custom_fields)) {
       return toolError("secrets.custom_fields must be an array");
@@ -114,7 +119,7 @@ function parseSecretsPayload(raw: unknown): VaultSecretsPayload | string {
       const typeRaw = f.type != null ? String(f.type) : "text";
       const type =
         typeRaw === "hidden" || typeRaw === "boolean" || typeRaw === "text" ? typeRaw : "text";
-      fields.push({ name, value: String(f.value ?? ""), type });
+      fields.push({ name, value: String(f.value ?? "").trim(), type });
     }
     out.custom_fields = fields;
   }
@@ -337,7 +342,8 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "vault",
     "Vault metadata and Agent-library write tools (no secrets in tool results). " +
-      "Use terminal_run/code_execute secrets[] for subprocess credentials, or browser_type secret for form fields. " +
+      "Use terminal_run/code_execute secrets[] for subprocess credentials, or browser_type secret for form fields " +
+      "(field = password/notes/totp or a custom_field_names entry). " +
       "Default library: agent. " +
       "vault_create/vault_update/vault_delete are Habitat-only (not MCP).",
     attachToolReturns(
@@ -373,7 +379,9 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "vault_get_meta",
-          description: "Get one vault item metadata (no secrets)",
+          description:
+            "Get one vault item metadata (no secrets). custom_field_names lists names usable as " +
+            "secrets[].field / browser_type secret.field (same form as password).",
           exposeMcp: true,
           parameters: {
             type: "object",

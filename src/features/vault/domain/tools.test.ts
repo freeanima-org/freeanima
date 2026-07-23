@@ -217,6 +217,27 @@ describe("vault CRUD tools", () => {
     expect(createVaultItemMock).toHaveBeenCalled();
   });
 
+  it("vault_create trims credential values before seal", async () => {
+    if (!tools.getTool("vault_create")) registerVaultTools(tools);
+    await tools.getTool("vault_create")!.handler({
+      title: "Trim",
+      secrets: {
+        password: " tok\n",
+        notes: "  keep  ",
+        totp: " 123 ",
+        custom_fields: [{ name: "api", value: " val\n", type: "hidden" }],
+      },
+    });
+    expect(sealAgentVaultItemMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        password: "tok",
+        notes: "  keep  ",
+        totp: "123",
+        custom_fields: [expect.objectContaining({ name: "api", value: "val" })],
+      }),
+    );
+  });
+
   it("vault_create rejects user library", async () => {
     if (!tools.getTool("vault_create")) registerVaultTools(tools);
     const out = await tools.getTool("vault_create")!.handler({

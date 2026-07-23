@@ -224,15 +224,32 @@ export function resolveSecretField(
   secrets: VaultSecretsPayload,
   fieldPath: string,
 ): string | undefined {
-  if (fieldPath === "password" && typeof secrets.password === "string") return secrets.password;
-  if (fieldPath === "notes" && typeof secrets.notes === "string") return secrets.notes;
-  if (fieldPath === "totp" && typeof secrets.totp === "string") return secrets.totp;
+  // Built-in fields first (names take precedence over same-named custom_fields).
+  if (fieldPath === "password" && typeof secrets.password === "string") {
+    return secrets.password.trim();
+  }
+  if (fieldPath === "notes" && typeof secrets.notes === "string") {
+    // Preserve intentional leading/trailing whitespace in notes.
+    return secrets.notes;
+  }
+  if (fieldPath === "totp" && typeof secrets.totp === "string") {
+    return secrets.totp.trim();
+  }
+
+  // Flat name: same form as password — no custom_fields. prefix required.
+  const byName = secrets.custom_fields?.find((f) => f.name === fieldPath);
+  if (byName && typeof byName.value === "string") {
+    return byName.value.trim();
+  }
+
+  // Legacy index path (compat).
   const customMatch = /^custom_fields\.(\d+)\.value$/.exec(fieldPath);
   if (customMatch) {
     const idx = Number(customMatch[1]);
     const val = secrets.custom_fields?.[idx]?.value;
-    return typeof val === "string" ? val : undefined;
+    return typeof val === "string" ? val.trim() : undefined;
   }
+
   const direct = secrets[fieldPath];
-  return typeof direct === "string" ? direct : undefined;
+  return typeof direct === "string" ? direct.trim() : undefined;
 }
