@@ -77,6 +77,7 @@ export function injectTemporalPeerRollups(
       role: "assistant",
       name: TEMPORAL_SUMMARY_PEERS_ASSISTANT_NAME,
       content: wrapPeerRollupContent(inj.content),
+      timestamp: inj.at,
     };
     messages.splice(insertAt, 0, manifest);
   }

@@ -19,7 +19,8 @@ export function temporalBucketStartIso(atMs: number = Date.now()): string {
 export function temporalBucketEndIso(bucketStartIso: string): string {
   const startMs = Date.parse(bucketStartIso);
   if (Number.isNaN(startMs)) throw new Error(`invalid bucket: ${bucketStartIso}`);
-  return new Date(startMs + 30 * 60 * 1000).toISOString().replace(/\.\d{3}Z$/, "+08:00");
+  // 桶结束 = 下一半小时桶起点；须走 temporalBucketStartIso，勿把 UTC toISOString 的 Z 直接换成 +08:00
+  return temporalBucketStartIso(startMs + 30 * 60 * 1000);
 }
 
 /** CST calendar date YYYY-MM-DD for instant */
