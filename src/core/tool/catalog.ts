@@ -1,5 +1,5 @@
 import type { JsonSchemaObject } from "./registry.ts";
-import { tokenizeFtsQuery } from "@freeanima/core/util";
+import { omitUndefined, tokenizeFtsQuery } from "@freeanima/core/util";
 import type { ToolSetRegistry } from "./toolset.ts";
 
 export type ToolCatalogEntry = {
@@ -10,6 +10,8 @@ export type ToolCatalogEntry = {
 
 export type ToolCatalogMessageEntry = ToolCatalogEntry & {
   parameters: JsonSchemaObject;
+  /** Success return shape when ToolDef has returnSchema */
+  return_schema?: JsonSchemaObject;
 };
 
 export type SearchToolsetsCatalogHit = {
@@ -116,12 +118,15 @@ export function formatToolsForToolMessage(
   for (const name of names) {
     const def = registry.getTool(name);
     if (!def) continue;
-    out.push({
-      name: def.name,
-      description: def.description,
-      toolset: toolsetForName(registry, def.name),
-      parameters: def.parameters,
-    });
+    out.push(
+      omitUndefined({
+        name: def.name,
+        description: def.description,
+        toolset: toolsetForName(registry, def.name),
+        parameters: def.parameters,
+        return_schema: def.returnSchema,
+      }),
+    );
   }
   return out;
 }

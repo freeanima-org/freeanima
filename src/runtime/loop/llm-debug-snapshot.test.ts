@@ -64,13 +64,18 @@ describe("buildLlmDebugSnapshot", () => {
     expect(snapshot.invoke.system_prompt!.length).toBeLessThan(long.length);
   });
 
-  it("lists tool schemas", () => {
+  it("lists full tool schemas as sent to the provider", () => {
     const snapshot = buildLlmDebugSnapshot(
       [{ role: "user", content: "q" }],
       [
         {
           type: "function",
-          function: { name: "memory_recall", description: "recall memory" },
+          function: {
+            name: "memory_recall",
+            description:
+              'recall memory\n\nReturns (JSON Schema): {"type":"object","properties":{"items":{"type":"array"}}}',
+            parameters: { type: "object", properties: { query: { type: "string" } } },
+          },
         },
       ],
       "m",
@@ -79,7 +84,8 @@ describe("buildLlmDebugSnapshot", () => {
     );
 
     expect(snapshot.tool_count).toBe(1);
-    expect(snapshot.tools[0]?.name).toBe("memory_recall");
+    expect(snapshot.tools[0]?.function.name).toBe("memory_recall");
+    expect(snapshot.tools[0]?.function.description).toContain("Returns (JSON Schema):");
     expect(snapshot.turn_index).toBe(1);
     expect(snapshot.phase).toBe("final");
   });

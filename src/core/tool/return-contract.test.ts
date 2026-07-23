@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { z } from "zod";
 
+import { openaiFunctionSchema } from "./registry.ts";
 import {
   attachToolReturns,
   defineTextToolReturn,
@@ -64,5 +65,37 @@ describe("globalToolErrorContract", () => {
     const err = globalToolErrorContract();
     expect(err.error_example).toEqual({ error: "Example error message" });
     expect(err.error_schema.type).toBe("object");
+  });
+});
+
+describe("openaiFunctionSchema", () => {
+  it("appends return schema into description when ToolDef has returnSchema", () => {
+    const contract = defineToolReturn({
+      schema: z.object({ ok: z.boolean() }),
+      example: { ok: true },
+    });
+    const entry = openaiFunctionSchema({
+      name: "demo",
+      description: "d",
+      parameters: { type: "object", properties: {} },
+      handler: () => "{}",
+      ...contract,
+    });
+    expect(entry.function).not.toHaveProperty("return_schema");
+    expect(entry.function.description).toContain("d");
+    expect(entry.function.description).toContain("Returns (JSON Schema):");
+    expect(entry.function.description).toContain(JSON.stringify(contract.returnSchema));
+    expect(entry.function.name).toBe("demo");
+  });
+
+  it("leaves description unchanged when ToolDef has no returnSchema", () => {
+    const entry = openaiFunctionSchema({
+      name: "demo",
+      description: "d",
+      parameters: { type: "object", properties: {} },
+      handler: () => "{}",
+    });
+    expect(entry.function.description).toBe("d");
+    expect(entry.function).not.toHaveProperty("return_schema");
   });
 });

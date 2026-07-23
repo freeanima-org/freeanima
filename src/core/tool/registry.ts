@@ -36,6 +36,15 @@ export type ToolDef = {
   exposeMcp?: boolean;
 };
 
+/** Append return JSON Schema into description so models see it via standard tool fields. */
+export function descriptionWithReturnSchema(
+  description: string,
+  returnSchema: JsonSchemaObject | undefined,
+): string {
+  if (!returnSchema) return description;
+  return `${description}\n\nReturns (JSON Schema): ${JSON.stringify(returnSchema)}`;
+}
+
 /** Convert ToolDef to OpenAI Chat Completions `tools[]` entry */
 export function openaiFunctionSchema(t: ToolDef): {
   type: "function";
@@ -45,7 +54,7 @@ export function openaiFunctionSchema(t: ToolDef): {
     type: "function",
     function: {
       name: t.name,
-      description: t.description,
+      description: descriptionWithReturnSchema(t.description, t.returnSchema),
       parameters: t.parameters,
     },
   };

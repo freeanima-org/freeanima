@@ -20,10 +20,7 @@ export type LlmDebugInvokePreview = {
   turns: LlmDebugTurnPreview[];
 };
 
-export type LlmDebugToolPreview = {
-  name: string;
-  description?: string;
-};
+export type LlmDebugToolPreview = OpenAiToolSchema;
 
 export type LlmDebugRuntimeInjections = {
   passive_memory_context?: boolean;
@@ -103,19 +100,14 @@ export function buildLlmDebugSnapshot(
   phase: "initial" | "final",
 ): LlmDebugSnapshot {
   const invokeInput = storedMessagesToInvokeInput(messages);
-  const tools: LlmDebugToolPreview[] = toolSchemas.map((schema) =>
-    omitUndefined({
-      name: schema.function.name,
-      description: schema.function.description,
-    }),
-  );
 
   return {
     phase,
     turn_index: turnIndex,
     model,
-    tool_count: tools.length,
-    tools,
+    tool_count: toolSchemas.length,
+    /** Full OpenAI tools[] entries as sent to the provider. */
+    tools: toolSchemas,
     invoke: {
       ...(invokeInput.systemPrompt
         ? { system_prompt: truncateText(invokeInput.systemPrompt) }

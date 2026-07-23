@@ -1,4 +1,4 @@
-export { openaiFunctionSchema } from "./registry.ts";
+export { openaiFunctionSchema, descriptionWithReturnSchema } from "./registry.ts";
 export type {
   JsonSchemaObject,
   ToolArgs,

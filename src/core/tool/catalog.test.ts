@@ -54,4 +54,29 @@ describe("formatToolsForToolMessage", () => {
       properties: { path: { type: "string" } },
     });
   });
+
+  it("includes return_schema when ToolDef has returnSchema", () => {
+    const registry = new ToolSetRegistry();
+    const returnSchema = {
+      type: "object",
+      properties: { ok: { type: "boolean" } },
+    };
+    registry.registerToolSet("file", "files", [
+      {
+        name: "file_read",
+        description: "Read file",
+        parameters: { type: "object", properties: {} },
+        returnSchema,
+        handler: () => "ok",
+      },
+    ]);
+    const formatted = formatToolsForToolMessage(registry, ["file_read"]);
+    expect(formatted[0]?.return_schema).toEqual(returnSchema);
+  });
+
+  it("omits return_schema when ToolDef has none", () => {
+    const registry = testRegistry();
+    const formatted = formatToolsForToolMessage(registry, ["file_read"]);
+    expect(formatted[0]).not.toHaveProperty("return_schema");
+  });
 });

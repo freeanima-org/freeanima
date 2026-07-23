@@ -3,6 +3,7 @@ import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { JsonSchemaObject } from "@freeanima/core/tool";
+import { descriptionWithReturnSchema } from "@freeanima/core/tool";
 import { buildSystemPrompt } from "@freeanima/core/hooks/prompt";
 import { renderToolsetsSection } from "@freeanima/capabilities/tools/toolset-prompt";
 import { loadSelfLayerPrompt } from "@freeanima/capabilities/identity";
@@ -22,6 +23,7 @@ export type PromptDebugToolItem = {
   description: string;
   toolset?: string;
   parameters: JsonSchemaObject;
+  return_schema?: JsonSchemaObject;
 };
 
 export type PromptDebugResponse = {
@@ -91,9 +93,10 @@ function registryToolItems(deps: RuntimeDeps): PromptDebugToolItem[] {
   return toolSets.listTools().map((t) =>
     omitUndefined({
       name: t.name,
-      description: t.description,
+      description: descriptionWithReturnSchema(t.description, t.returnSchema),
       toolset: toolSetByName.get(t.name),
       parameters: t.parameters,
+      return_schema: t.returnSchema,
     }),
   );
 }
@@ -123,6 +126,7 @@ function conversationToolItems(
       toolset: toolSetByName.get(s.function.name),
       parameters: (s.function.parameters ??
         def?.parameters ?? { type: "object" }) as JsonSchemaObject,
+      return_schema: def?.returnSchema,
     });
   });
 }
