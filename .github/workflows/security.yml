@@ -5,7 +5,7 @@ on:
     branches: [main]
   pull_request:
   schedule:
-    # 每周一 05:23 UTC；仅 CodeQL 需定时，Gitleaks 随 schedule 一并跑无妨
+    # 每周一 05:23 UTC：仅 CodeQL 需要定时；Gitleaks 随 schedule 一并跑无妨
     - cron: "23 5 * * 1"
 
 jobs:
@@ -25,6 +25,8 @@ jobs:
 
   codeql:
     name: CodeQL
+    # PR/合入已有 CI 门禁；深度扫描仅周更，避免每次 PR 重复开销
+    if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
       actions: read
