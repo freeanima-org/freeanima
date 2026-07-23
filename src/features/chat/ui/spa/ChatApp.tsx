@@ -1916,11 +1916,7 @@ export function ChatApp() {
                 className="flex gap-2 items-end"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (streamVisible) {
-                    void stopStreaming();
-                  } else {
-                    void sendMessage();
-                  }
+                  void sendMessage();
                 }}
               >
                 <div
@@ -1970,7 +1966,6 @@ export function ChatApp() {
                     rows={1}
                     className="!min-h-9 h-9 max-h-48 w-full resize-none overflow-y-auto py-1.5 leading-5 [field-sizing:fixed]"
                     placeholder={m.habitat_chat_message_placeholder()}
-                    disabled={streamVisible}
                     onFocus={() => {
                       requestAnimationFrame(() => {
                         msgInputRef.current?.scrollIntoView({
@@ -1982,15 +1977,19 @@ export function ChatApp() {
                     onKeyDown={onInputKeydown}
                   />
                 </div>
+                <Button type="submit" disabled={!inputText.trim()}>
+                  {m.habitat_common_send()}
+                </Button>
                 {streamVisible ? (
-                  <Button type="submit" variant="destructive" disabled={!canSendOnline}>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    disabled={!canSendOnline}
+                    onClick={() => void stopStreaming()}
+                  >
                     {m.habitat_common_stop()}
                   </Button>
-                ) : (
-                  <Button type="submit" disabled={!inputText.trim()}>
-                    {m.habitat_common_send()}
-                  </Button>
-                )}
+                ) : null}
               </form>
             </div>
           </ListDetailLayout>

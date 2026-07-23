@@ -21,6 +21,7 @@ Chat 维护 **用户已读水位**（`conversation_read_state`，按 Habitat use
 
 - 发送先入 IndexedDB `outbox`（`moduleId: chat`），并乐观显示 user bubble（`sendStatus: pending`）。
 - 离线时可输入并发送；消息排队，Habitat 恢复后按 FIFO 重试。
+- **流式生成中**仍可输入并发送：消息入内存队列（不经 Habitat），当前 turn 结束后按 FIFO 自动发出。
 - 重试前调用 `conversation.tail` 对比入队时的 `expected_tail_pos`。
 - **tail 不一致**（会话已在别端继续）：标记 `stale`，默认不发送；用户可 **丢弃** 或 **仍要发送**（`force_tail`）。
 
