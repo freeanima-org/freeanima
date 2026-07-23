@@ -6,8 +6,8 @@ import {
 import { getLlmRuntime } from "@freeanima/core/llm";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 
-/** Wire Provider catalog lookup for compression context_window fallback */
-export function wireContextWindowLookup(): void {
+/** Bind Provider catalog lookup for compression context_window fallback */
+export function bindContextWindowLookup(): void {
   registerCatalogContextWindowLookup(async (model) => {
     try {
       const cfg = getActiveRuntimeConfig().data;

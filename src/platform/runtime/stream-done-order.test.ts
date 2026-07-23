@@ -8,7 +8,7 @@ import { MaskRegistry } from "@freeanima/features/task/domain/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
+import { bindOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import { parseYaml } from "@freeanima/platform/config";
@@ -21,7 +21,7 @@ import { initRuntimeContext } from "../context.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
-registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
+registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
 const testEngine = createEngine({
   catalog,
   config: testConfig,
@@ -29,15 +29,15 @@ const testEngine = createEngine({
   logger: createTestLogger(),
 });
 
-function wireTestRuntime() {
+function bindTestRuntime() {
   const kernel = createServiceKernel(testConfig);
   const conversation = createConversationService(catalog.toolSets);
-  getAcpManager().wireRegistries({
+  getAcpManager().bindRegistries({
     toolSets: catalog.toolSets,
     skills: catalog.skills,
     config: testConfig,
   });
-  getAcpManager().wireConversation(conversation);
+  getAcpManager().bindConversation(conversation);
   const runtime = createAppRuntime({
     kernel,
     engine: testEngine,
@@ -100,7 +100,7 @@ describe("sendMessageStream done order", () => {
       ),
     );
 
-    const app = wireTestRuntime();
+    const app = bindTestRuntime();
     for await (const ev of app.sendMessageStream("test-sid", "hello", "chat")) {
       eventOrder.push(ev.event);
     }

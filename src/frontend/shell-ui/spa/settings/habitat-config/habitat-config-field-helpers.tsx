@@ -91,7 +91,7 @@ export function readHabitatConfigRecord(
   return out;
 }
 
-export function HubConfigRecordEntryEditor({
+export function HabitatConfigRecordEntryEditor({
   label,
   value,
   onChange,

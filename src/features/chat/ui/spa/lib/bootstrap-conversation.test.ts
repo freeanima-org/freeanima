@@ -65,7 +65,7 @@ describe("runBootstrapConversation", () => {
     const result = await runBootstrapConversation({
       fetchConversations: async () => {
         fetches += 1;
-        return fetches === 1 ? [] : [{ id: "from-hub" }];
+        return fetches === 1 ? [] : [{ id: "from-habitat" }];
       },
       whenReady: async () => {},
       createConversation,
@@ -74,7 +74,7 @@ describe("runBootstrapConversation", () => {
     });
     expect(result).toBe("selected");
     expect(fetches).toBe(2);
-    expect(selectConversation).toHaveBeenCalledWith("from-hub");
+    expect(selectConversation).toHaveBeenCalledWith("from-habitat");
     expect(createConversation).not.toHaveBeenCalled();
   });
 

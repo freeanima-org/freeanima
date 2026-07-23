@@ -1,7 +1,7 @@
 import {
   createFullHabitatClient,
-  type HubCallOptions,
-  type HubCallRawOptions,
+  type HabitatCallOptions,
+  type HabitatCallRawOptions,
   type HabitatClientOptions,
 } from "@freeanima/shared/habitat-client";
 import {
@@ -9,27 +9,27 @@ import {
   type BundledHabitatClientOptions,
 } from "@freeanima/shared/habitat-client/bundled.ts";
 import {
-  ensureClientHubMethodRegistry,
-  resetClientHubMethodRegistryForTests,
+  ensureClientHabitatMethodRegistry,
+  resetClientHabitatMethodRegistryForTests,
 } from "./install-client-method-registry.ts";
-import type { HubMethod, HubMethodInputs, HubMethodOutputs } from "./habitat-router.ts";
+import type { HabitatMethod, HabitatMethodInputs, HabitatMethodOutputs } from "./habitat-router.ts";
 
-/** 带 HubMethod 类型推导的 Habitat client（类型 SSOT：platform/habitat/habitat-router） */
+/** 带 HabitatMethod 类型推导的 Habitat client（类型 SSOT：platform/habitat/habitat-router） */
 export function createTypedHabitatClient(options: HabitatClientOptions) {
-  ensureClientHubMethodRegistry();
+  ensureClientHabitatMethodRegistry();
   const client = createFullHabitatClient(options);
   return {
-    call<K extends HubMethod>(
+    call<K extends HabitatMethod>(
       method: K,
-      payload: HubMethodInputs[K],
-      opts?: HubCallOptions,
-    ): Promise<HubMethodOutputs[K]> {
-      return client.call(method, payload as never, opts) as Promise<HubMethodOutputs[K]>;
+      payload: HabitatMethodInputs[K],
+      opts?: HabitatCallOptions,
+    ): Promise<HabitatMethodOutputs[K]> {
+      return client.call(method, payload as never, opts) as Promise<HabitatMethodOutputs[K]>;
     },
-    callRaw<K extends HubMethod>(
+    callRaw<K extends HabitatMethod>(
       method: K,
-      payload: HubMethodInputs[K],
-      opts?: HubCallRawOptions,
+      payload: HabitatMethodInputs[K],
+      opts?: HabitatCallRawOptions,
     ): Promise<Response> {
       return client.callRaw(method, payload as never, opts);
     },
@@ -57,17 +57,15 @@ export function getTypedHabitatClient(
 }
 
 /** Habitat UI 用 typed client */
-export function getTypedConsoleHabitatClient(
-  options: BundledHabitatClientOptions,
-): TypedHabitatClient {
+export function getTypedHabitatUiClient(options: BundledHabitatClientOptions): TypedHabitatClient {
   return createTypedHabitatClient(
     resolveBundledHabitatClientOptions({ profile: "habitat", ...options }),
   );
 }
 
-/** @deprecated 测试重置 */
+/** 测试重置 typed Habitat client */
 export function resetTypedHabitatClientForTests(): void {
-  resetClientHubMethodRegistryForTests();
+  resetClientHabitatMethodRegistryForTests();
   typedSatelliteClient = null;
   typedSatelliteKey = "";
 }

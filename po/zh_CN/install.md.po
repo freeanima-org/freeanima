@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-23 14:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -309,7 +309,7 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:106
 #, no-wrap
-msgid "**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`hub_runtime_config`). Edit them in the Shell app under **Settings → Habitat 服务 → 服务配置**.\n"
+msgid "**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`habitat_runtime_config`). Edit them in the Shell app under **Settings → Habitat 服务 → 服务配置**.\n"
 msgstr ""
 
 #. type: Plain text
@@ -350,7 +350,7 @@ msgstr ""
 #: docs/guide/install.md:118
 #, fuzzy
 #| msgid ""
-#| "Default bind: `127.0.0.1:2658`（Habitat API：`/api`，Habitat RPC：`/hub/"
+#| "Default bind: `127.0.0.1:2658`（Habitat API：`/api`，Habitat RPC：`/rpc/"
 #| "rpc/v1`）。"
 msgid ""
 "Default bind: `127.0.0.1:2658`（Habitat API：`/api`，Habitat RPC：`/rpc/v1`；"
@@ -561,8 +561,8 @@ msgstr ""
 msgid ""
 "just dev            # Habitat random ≥10000 + Web from :5000; FREEANIMA_URL wires Vite proxy only\n"
 "# or two terminals:\n"
-"bun run dev:hub     # random ≥10000 (not production 2658); writes ~/.anima/dev-web.token\n"
-"FREEANIMA_URL=http://127.0.0.1:<hub-port> bun run dev:web   # default :5000; browser Habitat = page origin\n"
+"bun run dev:habitat     # random ≥10000 (not production 2658); writes ~/.anima/dev-web.token\n"
+"FREEANIMA_URL=http://127.0.0.1:<habitat-port> bun run dev:web   # default :5000; browser Habitat = page origin\n"
 msgstr ""
 
 #. type: Plain text
@@ -571,9 +571,9 @@ msgid ""
 "Browser Web defaults Habitat URL to the **page origin** (same in production "
 "Habitat-hosted `/web` and Vite). Dev injects Service API Token from `dev-"
 "web.token` automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves "
-"HTTPS using `~/.anima/tls` (Habitat stays plain HTTP). Source `dev:hub` also "
-"**ignores** `config.yaml` `web.enabled` / `web.host` / `web.port` — Habitat "
-"does not host `/web` dist; use Vite (`WEB_DEV_PORT`, default 5000)."
+"HTTPS using `~/.anima/tls` (Habitat stays plain HTTP). Source `dev:habitat` "
+"also **ignores** `config.yaml` `web.enabled` / `web.host` / `web.port` — "
+"Habitat does not host `/web` dist; use Vite (`WEB_DEV_PORT`, default 5000)."
 msgstr ""
 
 #. type: Plain text
@@ -587,7 +587,7 @@ msgstr ""
 #, no-wrap
 msgid ""
 "bun run build:web\n"
-"bun run dev:hub\n"
+"bun run dev:habitat\n"
 "# UI: http://127.0.0.1:2658/web/chat\n"
 msgstr ""
 

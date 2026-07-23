@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { ToolSetRegistry, toolResult } from "@freeanima/core/tool";
-import { createMcpBunHandler, isMcpPath } from "./hub.ts";
+import { createMcpBunHandler, isMcpPath } from "./http-server.ts";
 
 describe("isMcpPath", () => {
   it("matches /mcp paths", () => {

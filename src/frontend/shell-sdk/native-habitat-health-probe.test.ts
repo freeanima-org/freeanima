@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 describe("native-habitat-health-probe", () => {
-  test("shouldProbeHabitatHealthViaNativeHttp：同源 hub 为 false", async () => {
+  test("shouldProbeHabitatHealthViaNativeHttp：同源 Habitat 为 false", async () => {
     const prev = globalThis.window;
     (globalThis as { window: Window }).window = {
       location: { origin: "http://10.244.0.244:2658" },

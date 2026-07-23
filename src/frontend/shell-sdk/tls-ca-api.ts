@@ -1,7 +1,7 @@
-/** Habitat REST 默认 HTTP 端口（与 @freeanima/core/config DEFAULT_HUB_HTTP_PORT 保持一致） */
+/** Habitat REST 默认 HTTP 端口（与 @freeanima/core/config DEFAULT_HABITAT_HTTP_PORT 保持一致） */
 import { habitatTlsCaInfoUrl } from "@freeanima/shared/habitat-rpc";
 
-const DEFAULT_HUB_HTTP_PORT = 2658;
+const DEFAULT_HABITAT_HTTP_PORT = 2658;
 
 export type TlsCaInfo = {
   available: boolean;
@@ -31,7 +31,7 @@ function collectTlsCaInfoBases(habitatUrl?: string): string[] {
       const page = new URL(window.location.origin);
       if (page.protocol === "https:") {
         page.protocol = "http:";
-        if (!page.port || page.port === "2659") page.port = String(DEFAULT_HUB_HTTP_PORT);
+        if (!page.port || page.port === "2659") page.port = String(DEFAULT_HABITAT_HTTP_PORT);
         push(page.origin);
       }
     } catch {
@@ -43,18 +43,18 @@ function collectTlsCaInfoBases(habitatUrl?: string): string[] {
   if (trimmed) {
     push(trimmed);
     try {
-      const hub = new URL(trimmed);
-      if (hub.protocol === "https:") {
-        hub.protocol = "http:";
-        if (!hub.port || hub.port === "2659") hub.port = String(DEFAULT_HUB_HTTP_PORT);
-        push(hub.origin);
+      const parsed = new URL(trimmed);
+      if (parsed.protocol === "https:") {
+        parsed.protocol = "http:";
+        if (!parsed.port || parsed.port === "2659") parsed.port = String(DEFAULT_HABITAT_HTTP_PORT);
+        push(parsed.origin);
       }
     } catch {
       /* ignore */
     }
   }
 
-  push(`http://127.0.0.1:${DEFAULT_HUB_HTTP_PORT}`);
+  push(`http://127.0.0.1:${DEFAULT_HABITAT_HTTP_PORT}`);
   return bases;
 }
 

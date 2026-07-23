@@ -48,4 +48,4 @@ Use `tests/helpers/integration-case.ts` (`restoreIntegrationHome` + `flushCompre
 
 无 Docker 且未设隔离 URL 时：PG 用例 **skip**，**不要**改指日常库。
 
-Layout and CI wiring: [`tests/README.md`](../../tests/README.md).
+Layout and CI binding: [`tests/README.md`](../../tests/README.md).

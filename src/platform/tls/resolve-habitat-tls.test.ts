@@ -1,16 +1,16 @@
 import { describe, expect, test } from "bun:test";
 
-import { DEFAULT_HUB_TLS_PORT } from "@freeanima/core/config";
+import { DEFAULT_HABITAT_TLS_PORT } from "@freeanima/core/config";
 
 describe("resolveHabitatTlsListenConfig", () => {
   test("returns null when tls disabled", async () => {
-    const { resolveHabitatTlsListenConfig } = await import("./resolve-hub-tls.ts");
+    const { resolveHabitatTlsListenConfig } = await import("./resolve-habitat-tls.ts");
     const result = await resolveHabitatTlsListenConfig({ tls: { enabled: false } }, ["127.0.0.1"]);
     expect(result).toBeNull();
   });
 
   test("returns null when tls section missing", async () => {
-    const { resolveHabitatTlsListenConfig } = await import("./resolve-hub-tls.ts");
+    const { resolveHabitatTlsListenConfig } = await import("./resolve-habitat-tls.ts");
     const result = await resolveHabitatTlsListenConfig({}, ["127.0.0.1"]);
     expect(result).toBeNull();
   });
@@ -45,7 +45,7 @@ describe("resolveHabitatTlsListenConfig", () => {
       { encoding: "utf-8" },
     );
     expect(r.status).toBe(0);
-    const { resolveHabitatTlsListenConfig } = await import("./resolve-hub-tls.ts");
+    const { resolveHabitatTlsListenConfig } = await import("./resolve-habitat-tls.ts");
     const result = await resolveHabitatTlsListenConfig(
       {
         tls: {
@@ -57,7 +57,7 @@ describe("resolveHabitatTlsListenConfig", () => {
       },
       ["127.0.0.1", "192.168.1.5"],
     );
-    expect(result?.port).toBe(DEFAULT_HUB_TLS_PORT);
+    expect(result?.port).toBe(DEFAULT_HABITAT_TLS_PORT);
     expect(result?.material.source).toBe("existing");
     expect(result?.material.certPath).toBe(certPath);
     rmSync(dir, { recursive: true, force: true });

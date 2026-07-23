@@ -1,4 +1,4 @@
-/** Habitat wire 响应类型：与 service 内部快照 / 展示视图对齐 */
+/** Habitat 协议响应类型：与 service 内部快照 / 展示视图对齐 */
 
 export type {
   DisplayItem,

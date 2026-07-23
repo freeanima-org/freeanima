@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { X509Certificate } from "node:crypto";
 
-import { DEFAULT_HUB_HTTP_PORT } from "@freeanima/core/config";
+import { DEFAULT_HABITAT_HTTP_PORT } from "@freeanima/core/config";
 import { defaultHabitatTlsCertPath } from "@freeanima/platform/tls/habitat-tls-material";
 import {
   detectHabitatTlsIssuerKind,
@@ -21,7 +21,7 @@ export type TlsCaInfoResponse = {
   install_hint: string;
 };
 
-function buildHttpDownloadBase(request: Request, httpPort = DEFAULT_HUB_HTTP_PORT): string {
+function buildHttpDownloadBase(request: Request, httpPort = DEFAULT_HABITAT_HTTP_PORT): string {
   const url = new URL(request.url);
   url.protocol = "http:";
   url.port = String(httpPort);

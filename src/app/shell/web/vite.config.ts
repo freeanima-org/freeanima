@@ -28,7 +28,7 @@ const SHELL_TARGET = parseShellBuildTarget(process.env.FREEANIMA_SHELL_TARGET);
 const DIST_DIR = join(PKG_DIR, shellWebDistDirName(SHELL_TARGET));
 
 const PROXY_HABITAT = resolveProxyHabitatUrl();
-/** 仅 Vite proxy 目标；浏览器 hub_url 用页面 origin */
+/** 仅 Vite proxy 目标；浏览器用页面 origin */
 const PROXY_HABITAT_URL = PROXY_HABITAT.url;
 const PORT = Number(process.env.WEB_DEV_PORT ?? process.env.SHELL_DEV_PORT ?? DEFAULT_WEB_DEV_PORT);
 
@@ -63,16 +63,6 @@ function webDevPlugin(): Plugin {
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const path = req.url?.split("?")[0] ?? "";
-        // Legacy Console → Habitat（dev SPA 入口）
-        if (path === "/web/console" || path.startsWith("/web/console/")) {
-          const rest = path.slice("/web/console".length) || "/dashboard";
-          const suffix = rest === "/" ? "/dashboard" : rest;
-          const qs = req.url?.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
-          res.statusCode = 302;
-          res.setHeader("Location", `/web/habitat${suffix}${qs}`);
-          res.end();
-          return;
-        }
         if (path === "/web/config.json") {
           const token = readDevWebTokenPlaintext();
           res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -83,9 +73,6 @@ function webDevPlugin(): Plugin {
               // 空 = 浏览器用 location.origin（经 Vite /rpc proxy）
               habitat_url: "",
               habitat_ws_url: "",
-              // @deprecated 0.9.3 后删除 — dual-write
-              hub_url: "",
-              hub_ws_url: "",
               ui_version: UI_VERSION,
               web_build: DEV_WEB_BUILD,
               min_shell_version: "0.8.0",
@@ -202,7 +189,7 @@ export default defineConfig(({ command, mode }) => {
     },
     define: {
       // Web 默认同源；编译期常量仅作极端回退
-      __WEB_DEFAULT_HUB_URL__: JSON.stringify(""),
+      __WEB_DEFAULT_HABITAT_URL__: JSON.stringify(""),
       __WEB_UI_VERSION__: JSON.stringify(UI_VERSION),
       __FREEANIMA_SHELL_TARGET__: JSON.stringify(SHELL_TARGET),
     },

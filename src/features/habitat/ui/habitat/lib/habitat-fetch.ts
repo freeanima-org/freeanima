@@ -10,7 +10,7 @@ type HabitatFetchFn = (input: string | URL | Request, init?: RequestInit) => Pro
 
 export type { HabitatFetchFn };
 
-type HubShell = {
+type HabitatShell = {
   habitatUrl?: string;
   habitatFetch?: HabitatFetchFn;
   remoteAuth?: { token?: string };
@@ -21,7 +21,7 @@ let cachedFetchKey = "";
 
 function habitatFetchCacheKey(): string {
   const shell = (typeof window !== "undefined" ? window.satelliteShell : undefined) as
-    | HubShell
+    | HabitatShell
     | undefined;
   const origin = resolveApiOrigin();
   const token = shell?.remoteAuth?.token?.trim() ?? "";
@@ -47,7 +47,7 @@ export function resolveHabitatFetch(): HabitatFetchFn {
   }
 
   const shell = (typeof window !== "undefined" ? window.satelliteShell : undefined) as
-    | HubShell
+    | HabitatShell
     | undefined;
   const origin = resolveApiOrigin();
   const token = shell?.remoteAuth?.token?.trim() ?? "";

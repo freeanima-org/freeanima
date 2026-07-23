@@ -14,7 +14,7 @@ import {
   registerLlmStackConfigurator,
   resetLlmRuntimeForTests,
 } from "@freeanima/core/llm";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
+import { bindOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
 import {
   createConversationService,
   type ConversationService,
@@ -52,12 +52,12 @@ async function ensureIntegrationWorldContext(config: Config): Promise<void> {
 }
 
 function createTestEngine(config: Config): Engine {
-  registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
+  registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
   const llm = initLlmRuntime(config.data);
   return createEngine({ llm, config, logger: createTestLogger() });
 }
 
-function wireEngine(config: Config): Engine {
+function bindEngine(config: Config): Engine {
   const engine = createTestEngine(config);
   if (activeCtx) activeCtx.engine = engine;
   return engine;
@@ -147,7 +147,7 @@ export async function setupIntegrationHome(opts: {
   bindActiveRuntimeConfig(config);
   if (activeCtx) {
     activeCtx.config = config;
-    wireEngine(config);
+    bindEngine(config);
     return activeCtx;
   }
   return setupPgTestDb(opts.url, config);
@@ -169,7 +169,7 @@ export function appendIntegrationConfig(home: string, yaml: string): void {
     const config = FileConfig.open();
     activeCtx.config = config;
     bindActiveRuntimeConfig(config);
-    wireEngine(config);
+    bindEngine(config);
   }
 }
 

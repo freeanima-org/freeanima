@@ -13,7 +13,7 @@ function depsOf(deps: unknown): EmailRemoteToolsServerDeps {
   return deps as EmailRemoteToolsServerDeps;
 }
 
-export const emailHubRoutes = bindHabitatRouteHandlers(emailMethodDefs, {
+export const emailHabitatRoutes = bindHabitatRouteHandlers(emailMethodDefs, {
   "emailaccount.list": async (deps, input) =>
     service.serviceEmailAccountList(depsOf(deps).runtime.runtimeDeps(), input),
   "emailaccount.create": async (deps, input) =>

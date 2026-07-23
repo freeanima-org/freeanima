@@ -2,7 +2,7 @@ import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 
 import type { ServiceAuthContext } from "./auth-context.ts";
 import { isHabitatApiCorsPreflight, isSapWebSocketUpgrade } from "./remote-auth.ts";
-import { isOptionalAuthHubHttpRequest } from "@freeanima/platform/habitat/http-rest-auth.ts";
+import { isOptionalAuthHabitatHttpRequest } from "@freeanima/platform/habitat/http-rest-auth.ts";
 
 export const SERVICE_AUTH_UNAUTHORIZED = "Unauthorized";
 
@@ -33,7 +33,7 @@ function shouldSkipServiceAuth(req: Request): boolean {
 async function verifyBearerToken(
   req: Request,
 ): Promise<{ blocked: Response | null; auth: ServiceAuthContext | null }> {
-  const optional = isOptionalAuthHubHttpRequest(req);
+  const optional = isOptionalAuthHabitatHttpRequest(req);
   const token = parseBearerToken(req);
   if (!token) {
     if (optional) return { blocked: null, auth: null };

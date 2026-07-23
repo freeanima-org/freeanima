@@ -5,9 +5,9 @@ export {
   registerServiceTools,
   resetRegisterServiceToolsForTest,
 } from "./register.ts";
-export { wireEnginePorts } from "./wire-engine-ports.ts";
+export { bindEnginePorts } from "./bind-engine-ports.ts";
 export { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
-export { wireServicePorts } from "./wire-api.ts";
+export { bindServicePorts } from "./bind-api.ts";
 export {
   initRuntimeContext,
   getRuntimeContext,

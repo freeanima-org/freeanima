@@ -1,6 +1,6 @@
 import { Label } from "@freeanima/frontend/ui-kit";
 import {
-  HubConfigRecordEntryEditor,
+  HabitatConfigRecordEntryEditor,
   habitatConfigBoolField,
   habitatConfigNumberField,
   habitatConfigSelectClassName,
@@ -24,7 +24,7 @@ export const ADVANCED_SECTIONS = [
 ] as const;
 
 /** 以条目名为 key 的 record 段；保存时需整段替换才能删除条目。 */
-export const HUB_CONFIG_RECORD_SECTIONS = ["models", "acp_agents"] as const;
+export const HABITAT_CONFIG_RECORD_SECTIONS = ["models", "acp_agents"] as const;
 
 export type AdvancedSectionId = (typeof ADVANCED_SECTIONS)[number];
 
@@ -35,12 +35,12 @@ export const ADVANCED_SECTION_TITLES: Partial<Record<AdvancedSectionId, string>>
   weixin: "微信",
 };
 
-export type HubConfigRecordSectionId = (typeof HUB_CONFIG_RECORD_SECTIONS)[number];
+export type HabitatConfigRecordSectionId = (typeof HABITAT_CONFIG_RECORD_SECTIONS)[number];
 
 export function isHabitatConfigRecordSection(
   section: AdvancedSectionId,
-): section is HubConfigRecordSectionId {
-  return (HUB_CONFIG_RECORD_SECTIONS as readonly string[]).includes(section);
+): section is HabitatConfigRecordSectionId {
+  return (HABITAT_CONFIG_RECORD_SECTIONS as readonly string[]).includes(section);
 }
 
 function FirecrawlForm({
@@ -189,7 +189,7 @@ function ModelsForm({
   onChange: (v: Record<string, unknown>) => void;
 }) {
   return (
-    <HubConfigRecordEntryEditor
+    <HabitatConfigRecordEntryEditor
       label="model"
       value={value}
       onChange={onChange}
@@ -212,7 +212,7 @@ function AcpAgentsForm({
   onChange: (v: Record<string, unknown>) => void;
 }) {
   return (
-    <HubConfigRecordEntryEditor
+    <HabitatConfigRecordEntryEditor
       label="ACP"
       value={value}
       onChange={onChange}

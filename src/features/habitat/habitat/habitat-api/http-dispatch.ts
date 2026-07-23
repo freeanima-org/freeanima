@@ -1,8 +1,6 @@
 import {
   HABITAT_RPC_REST_PREFIX,
-  HABITAT_RPC_REST_PREFIX_LEGACY,
   isHabitatRpcPathname,
-  legacyRpcRedirectLocation,
 } from "@freeanima/shared/habitat-rpc/urls.ts";
 import { corsPreflightResponse } from "./cors.ts";
 import { isMcpPath } from "@freeanima/capabilities/mcp-server";
@@ -42,18 +40,6 @@ export function isHabitatProtectedHttpPath(pathname: string): boolean {
 
 export function isHabitatRpcPath(pathname: string): boolean {
   return isHabitatRpcPathname(pathname);
-}
-
-/**
- * 旧 `/hub/rpc/v1` HTTP → `/rpc/v1` 302（WS 不重定向，由双挂兼容）。
- * @deprecated 0.9.3 删除
- */
-export function legacyRpcHttpRedirect(req: Request): Response | null {
-  if (isSapWebSocketUpgrade(req)) return null;
-  const url = new URL(req.url);
-  const location = legacyRpcRedirectLocation(url);
-  if (!location) return null;
-  return Response.redirect(new URL(location, url.origin).toString(), 302);
 }
 
 /** OPTIONS 预检：在 service_auth 之前返回 CORS 204（bundled / Portal 直连） */
@@ -99,4 +85,4 @@ export function trySapWebSocketUpgrade(
   return undefined;
 }
 
-export { HABITAT_RPC_REST_PREFIX, HABITAT_RPC_REST_PREFIX_LEGACY };
+export { HABITAT_RPC_REST_PREFIX };

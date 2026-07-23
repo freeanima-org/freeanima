@@ -14,7 +14,6 @@ import {
   toolRegisterInputSchema,
   habitatRpcConnectPayloadSchema,
   HABITAT_RPC_VERSION,
-  HABITAT_RPC_VERSION_LEGACY,
 } from "@freeanima/shared/rpc-contract";
 
 describe("sap-contract envelopes", () => {
@@ -39,10 +38,10 @@ describe("sap-contract envelopes", () => {
 
   it("accepts legacy Habitat RPC connect protocol", () => {
     const payload = habitatRpcConnectPayloadSchema.parse({
-      protocol: HABITAT_RPC_VERSION_LEGACY,
+      protocol: HABITAT_RPC_VERSION,
       auth_token: "secret",
     });
-    expect(payload.protocol).toBe(HABITAT_RPC_VERSION_LEGACY);
+    expect(payload.protocol).toBe(HABITAT_RPC_VERSION);
   });
 
   it("validates remote_tools.attach payload", () => {
@@ -97,16 +96,16 @@ describe("sap-contract envelopes", () => {
     expect(parsed.server_info?.capability_mask?.presets[0]?.name).toBe("developer");
   });
 
-  it("accepts legacy hub_rpc_version in remote_tools.attach output", () => {
+  it("accepts legacy habitat_rpc_version in remote_tools.attach output", () => {
     const parsed = remoteToolsAttachOutputSchema.parse({
       instance_id: "k7m",
       features_enabled: [],
       server_info: {
         anima_version: "0.5.0",
-        hub_rpc_version: HABITAT_RPC_VERSION_LEGACY,
+        habitat_rpc_version: HABITAT_RPC_VERSION,
       },
     });
-    expect(parsed.server_info?.hub_rpc_version).toBe(HABITAT_RPC_VERSION_LEGACY);
+    expect(parsed.server_info?.habitat_rpc_version).toBe(HABITAT_RPC_VERSION);
   });
 
   it("maps sap stream events to console sse shape", () => {

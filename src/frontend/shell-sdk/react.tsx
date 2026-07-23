@@ -13,13 +13,11 @@ export {
   useEnterToSendCapability,
   useFinePointerCapability,
   useOpenHabitatSettingsCapability,
-  useOpenHubSettingsCapability,
   useShellKind,
   useTouchPrimaryCapability,
 } from "./shell-capability-react.tsx";
 export {
   canOpenHabitatSettings,
-  detectShellRuntimeKind,
   getShellKind,
   isNativeShell,
   isPackagedShell,

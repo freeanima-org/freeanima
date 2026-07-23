@@ -281,8 +281,8 @@ export function McpServersConfigEditor({ onSaved }: Props) {
     try {
       await replaceHabitatConfigSection("mcp_servers", draft);
       const restart = await showConfirm({
-        title: m.ui_hub_config_saved_restart_title(),
-        description: m.ui_hub_config_saved_restart_description({ section: "mcp_servers" }),
+        title: m.ui_habitat_config_saved_restart_title(),
+        description: m.ui_habitat_config_saved_restart_description({ section: "mcp_servers" }),
         confirmLabel: m.habitat_common_restart_service(),
       });
       if (restart) {

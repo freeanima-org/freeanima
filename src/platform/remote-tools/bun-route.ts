@@ -1,8 +1,5 @@
 import type { ServerWebSocket } from "bun";
-import {
-  HABITAT_RPC_REST_PREFIX,
-  HABITAT_RPC_REST_PREFIX_LEGACY,
-} from "@freeanima/shared/habitat-rpc/urls.ts";
+import { HABITAT_RPC_REST_PREFIX } from "@freeanima/shared/habitat-rpc/urls.ts";
 import type { RemoteToolsServerDeps } from "./ws-server.ts";
 import { attachSapWebSocket } from "./ws-server.ts";
 import { handleHttpHabitatRestRequestWithAuth } from "../habitat/http-rpc.ts";
@@ -16,15 +13,11 @@ function isWebSocketUpgrade(req: Request): boolean {
 }
 
 function isRpcRoot(pathname: string): boolean {
-  return pathname === HABITAT_RPC_REST_PREFIX || pathname === HABITAT_RPC_REST_PREFIX_LEGACY;
+  return pathname === HABITAT_RPC_REST_PREFIX;
 }
 
 function isRpcTree(pathname: string): boolean {
-  return (
-    pathname.startsWith(`${HABITAT_RPC_REST_PREFIX}/`) ||
-    pathname.startsWith(`${HABITAT_RPC_REST_PREFIX_LEGACY}/`) ||
-    isRpcRoot(pathname)
-  );
+  return pathname.startsWith(`${HABITAT_RPC_REST_PREFIX}/`) || isRpcRoot(pathname);
 }
 
 export function createSapBunHandlers(deps: RemoteToolsServerDeps): {

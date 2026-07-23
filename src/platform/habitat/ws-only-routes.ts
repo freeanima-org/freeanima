@@ -43,7 +43,7 @@ function ctxOf(ctx: unknown): RemoteToolsRequestContext {
   return ctx as RemoteToolsRequestContext;
 }
 
-export const wsOnlyHubRoutes = mergeFeatureRoutes([
+export const wsOnlyHabitatRoutes = mergeFeatureRoutes([
   defineHabitatRoute({
     method: "remote_tools.attach",
     input: remoteToolsAttachPayloadSchema,

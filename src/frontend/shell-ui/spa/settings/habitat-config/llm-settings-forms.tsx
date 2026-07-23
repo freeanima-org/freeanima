@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Textarea } from "@freeanima/frontend/ui-kit";
 import { Label } from "@freeanima/frontend/ui-kit/components/ui";
 import {
-  HubConfigRecordEntryEditor,
+  HabitatConfigRecordEntryEditor,
   habitatConfigNumberField,
   habitatConfigSelectClassName,
   hubConfigTextField,
@@ -269,7 +269,7 @@ export function LlmProvidersForm({
   testDisabled?: boolean;
 }) {
   return (
-    <HubConfigRecordEntryEditor
+    <HabitatConfigRecordEntryEditor
       label="provider"
       value={value}
       onChange={onChange}
@@ -325,7 +325,7 @@ export function LlmProfilesForm({
   onChange: (v: Record<string, unknown>) => void;
 }) {
   return (
-    <HubConfigRecordEntryEditor
+    <HabitatConfigRecordEntryEditor
       label="profile"
       value={value}
       onChange={onChange}

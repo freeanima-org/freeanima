@@ -7,20 +7,11 @@ export function whenSatelliteHabitatRpcReady(): Promise<RpcClient> {
   return satelliteRpc;
 }
 
-/** @deprecated 使用 {@link whenSatelliteHabitatRpcReady} */
-export const whenSatelliteHubRpcReady = whenSatelliteHabitatRpcReady;
-
 export async function satelliteHabitatRpcCall<T>(method: string, payload?: unknown): Promise<T> {
   const rpc = await whenSatelliteHabitatRpcReady();
   return rpc.request<T>(method, payload);
 }
 
-/** @deprecated 使用 {@link satelliteHabitatRpcCall} */
-export const satelliteHubRpcCall = satelliteHabitatRpcCall;
-
 export function resetSatelliteHabitatRpcForTests(): void {
   satelliteRpc = null;
 }
-
-/** @deprecated 使用 {@link resetSatelliteHabitatRpcForTests} */
-export const resetSatelliteHubRpcForTests = resetSatelliteHabitatRpcForTests;

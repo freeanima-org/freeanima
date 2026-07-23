@@ -17,7 +17,7 @@ import {
 
 type HabitatCfg = { habitatUrl: string; remoteAuthToken: string };
 
-const DEFAULT_HUB = "http://127.0.0.1:2658";
+const DEFAULT_HABITAT_URL = "http://127.0.0.1:2658";
 
 export type PomodoroWidgetPayload = {
   phase: string;
@@ -53,9 +53,9 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
   try {
     cfg = await invoke<HabitatCfg>("get_habitat_config");
   } catch {
-    cfg = { habitatUrl: DEFAULT_HUB, remoteAuthToken: "" };
+    cfg = { habitatUrl: DEFAULT_HABITAT_URL, remoteAuthToken: "" };
   }
-  const habitatUrl = (cfg.habitatUrl || DEFAULT_HUB).replace(/\/$/, "");
+  const habitatUrl = (cfg.habitatUrl || DEFAULT_HABITAT_URL).replace(/\/$/, "");
   const fields = buildShellApiFields(
     habitatUrl,
     resolveHabitatRpcWsUrl(habitatUrl),

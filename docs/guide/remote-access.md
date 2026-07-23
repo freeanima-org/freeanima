@@ -52,7 +52,7 @@ anima token revoke <token_id>
 
 Habitat Habitat RPC REST（需已认证 `full` token）：
 
-- `GET /rpc/v1/tokens/listForSubject?id=:id`（或 `hub().call("tokens.listForSubject", { id })`）
+- `GET /rpc/v1/tokens/listForSubject?id=:id`（或 `createTypedHabitatClient().call("tokens.listForSubject", { id })`）
 - `POST /rpc/v1/tokens/createForSubject` — body `{ "id": <subject_id>, "name": "desktop" }`，响应含一次性 `plaintext`
 - `POST /rpc/v1/tokens/revoke` — body `{ "id": <token_id> }`
 
@@ -151,7 +151,7 @@ Settings (all clients):
 1. **Habitat URL** — e.g. `http://192.168.1.10:2658` or `https://<lan-host>:2659` (Habitat root, **without** `/web`)
 2. **Habitat API Token** — `fa_at_...` from `anima token create`
 
-Browser Web: `/web/config.json` defaults Habitat to the **page origin** (production Habitat-hosted `/web` and Vite `dev:web`). Source `dev:hub` writes `~/.anima/dev-web.token`; Vite injects it as `remote_auth_token` so the first visit need not paste a token. Production Habitat never puts tokens in `config.json` — use `anima token create` and Habitat settings.
+Browser Web: `/web/config.json` defaults Habitat to the **page origin** (production Habitat-hosted `/web` and Vite `dev:web`). Source `dev:habitat` writes `~/.anima/dev-web.token`; Vite injects it as `remote_auth_token` so the first visit need not paste a token. Production Habitat never puts tokens in `config.json` — use `anima token create` and Habitat settings.
 
 Flow: open Habitat settings → fill → **Test connection** → Save. Desktop requires **restart desktop shell** after save.
 

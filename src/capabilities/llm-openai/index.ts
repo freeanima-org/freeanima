@@ -5,7 +5,7 @@ export {
 } from "./config.ts";
 export type { OpenAiCompatibleProviderConfig } from "./config.ts";
 export { OpenAiCompatibleBackend } from "./backend.ts";
-export { wireOpenAiCompatibleLlm } from "./llm-stack-configurator.ts";
+export { bindOpenAiCompatibleLlm } from "./llm-stack-configurator.ts";
 export {
   createOpenAiEmbeddingBatchClient,
   createOpenAiEmbeddingClient,

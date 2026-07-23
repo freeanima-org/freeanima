@@ -70,13 +70,3 @@ export function validateRuntimeConfigOnStartup(cfg: RuntimeConfig): void {
 
   warnDeprecatedTunnelConfig(parsed.data);
 }
-
-/** @deprecated 使用 validateRuntimeConfigOnStartup */
-export function validateFullConfigOnStartup(cfg: RuntimeConfig): void {
-  validateRuntimeConfigOnStartup(cfg);
-}
-
-/** @deprecated 使用 validateBootstrapOnStartup */
-export async function validateConfigOnStartup(): Promise<void> {
-  await validateBootstrapOnStartup();
-}

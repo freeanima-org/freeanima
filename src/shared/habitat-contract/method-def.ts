@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-import type { HubMethodMeta } from "./transport.ts";
+import type { HabitatMethodMeta } from "./transport.ts";
 import type { HttpRouteMeta, HttpRequestEncoding, HttpResponseEncoding } from "./http-route.ts";
 
 /** 单个 Habitat method 的契约定义 */
@@ -10,7 +10,7 @@ export type HabitatMethodDef<
 > = {
   input: I;
   output: O;
-  meta: HubMethodMeta;
+  meta: HabitatMethodMeta;
 };
 
 export function defineHabitatMethod<I extends z.ZodTypeAny, O extends z.ZodTypeAny>(
@@ -18,15 +18,6 @@ export function defineHabitatMethod<I extends z.ZodTypeAny, O extends z.ZodTypeA
 ): HabitatMethodDef<I, O> {
   return def;
 }
-
-/** @deprecated 0.9.3 后删除 — 请用 HabitatMethodDef */
-export type HubMethodDef<
-  I extends z.ZodTypeAny = z.ZodTypeAny,
-  O extends z.ZodTypeAny = z.ZodTypeAny,
-> = HabitatMethodDef<I, O>;
-
-/** @deprecated 0.9.3 后删除 — 请用 defineHabitatMethod */
-export const defineHubMethod = defineHabitatMethod;
 
 export type DualTransportMetaOptions = {
   http?: Partial<HttpRouteMeta>;
@@ -36,8 +27,8 @@ export type DualTransportMetaOptions = {
 export function dualTransportMeta(
   readOnly = true,
   options?: DualTransportMetaOptions,
-): HubMethodMeta {
-  const meta: HubMethodMeta = {
+): HabitatMethodMeta {
+  const meta: HabitatMethodMeta = {
     transports: ["http", "ws"],
     defaultByProfile: readOnly
       ? { habitat: "http", satellite: "http" }
@@ -51,7 +42,7 @@ export function dualTransportMeta(
 }
 
 /** 仅 HTTP 传输（REST /rpc/v1/{path}） */
-export function httpTransportMeta(): HubMethodMeta {
+export function httpTransportMeta(): HabitatMethodMeta {
   return {
     transports: ["http"],
     defaultByProfile: { habitat: "http", satellite: "http" },
@@ -60,7 +51,7 @@ export function httpTransportMeta(): HubMethodMeta {
 }
 
 /** WS-only（流式 / 卫星 / terminal） */
-export function wsOnlyMeta(): HubMethodMeta {
+export function wsOnlyMeta(): HabitatMethodMeta {
   return {
     transports: ["ws"],
     defaultByProfile: { habitat: "ws", satellite: "ws" },
@@ -69,7 +60,7 @@ export function wsOnlyMeta(): HubMethodMeta {
 }
 
 /** 仅 HTTP + 匿名可访问（health / TLS CA 等基础设施探活） */
-export function publicHttpMeta(): HubMethodMeta {
+export function publicHttpMeta(): HabitatMethodMeta {
   return {
     transports: ["http"],
     defaultByProfile: { habitat: "http", satellite: "http" },
@@ -79,7 +70,7 @@ export function publicHttpMeta(): HubMethodMeta {
 }
 
 /** publicHttpMeta + raw Response 响应（TLS PEM/QR 等） */
-export function rawPublicHttpMeta(): HubMethodMeta {
+export function rawPublicHttpMeta(): HabitatMethodMeta {
   return {
     ...publicHttpMeta(),
     httpOverrides: { response: "raw" },
@@ -92,11 +83,11 @@ export type BinaryHttpMetaOptions = {
   pathParams?: readonly string[];
   request?: HttpRequestEncoding;
   response?: HttpResponseEncoding;
-  auth?: HubMethodMeta["auth"];
+  auth?: HabitatMethodMeta["auth"];
 };
 
 /** 仅 HTTP + 非 JSON 请求/响应（companion 资产等） */
-export function binaryHttpMeta(options: BinaryHttpMetaOptions): HubMethodMeta {
+export function binaryHttpMeta(options: BinaryHttpMetaOptions): HabitatMethodMeta {
   const httpOverrides: Partial<HttpRouteMeta> = {
     verb: options.verb,
     path: options.path,

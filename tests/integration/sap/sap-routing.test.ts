@@ -4,14 +4,14 @@ import { formatRemoteToolName } from "@freeanima/shared/rpc-contract";
 import { RemoteToolsManager } from "@freeanima/capabilities/remote-tools";
 
 describe("sap strict routing integration", () => {
-  it("does not fall back to hub file_read for mismatched sap tool", () => {
+  it("does not fall back to habitat-local file_read for mismatched sap tool", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("file", "file", [
       {
         name: "file_read",
-        description: "hub local",
+        description: "habitat local",
         parameters: { type: "object", properties: {} },
-        handler: () => "hub executed",
+        handler: () => "habitat executed",
       },
     ]);
 
@@ -29,10 +29,10 @@ describe("sap strict routing integration", () => {
     expect(guard).toBeDefined();
     const result = guard!.handler({});
     expect(result).toContain("sap tool not registered");
-    expect(result).not.toBe("hub executed");
+    expect(result).not.toBe("habitat executed");
 
-    const hub = registry.getTool("file_read");
-    expect(hub?.handler({})).toBe("hub executed");
+    const localTool = registry.getTool("file_read");
+    expect(localTool?.handler({})).toBe("habitat executed");
   });
 
   it("returns toolError content for reject route", async () => {

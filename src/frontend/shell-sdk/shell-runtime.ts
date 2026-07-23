@@ -35,9 +35,6 @@ export function getShellKind(): ShellRuntimeKind {
   return "web";
 }
 
-/** @deprecated 使用 `getShellKind`；保留别名供 composition 过渡 */
-export const detectShellRuntimeKind = getShellKind;
-
 /** 是否为已打包原生壳（Tauri），非纯浏览器 Web */
 export function isPackagedShell(): boolean {
   return getShellKind() === "tauri";

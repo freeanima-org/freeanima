@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version:  6jb4\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-23 14:40+0800\n"
 "PO-Revision-Date: 2026-07-01 22:15+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -24,7 +24,7 @@ msgstr "Habitat RPC"
 #. type: Plain text
 #: docs/guide/habitat-rpc.md:8
 #, no-wrap
-msgid "**Habitat RPC** is the **single business channel** between Habitat clients and the agent runtime. The TypeScript constant is `HABITAT_RPC_VERSION`; the wire connect literal may still accept the historical value `\"HubRPC/1.0\"` for compatibility. Transport:\n"
+msgid "**Habitat RPC** is the **single business channel** between Habitat clients and the agent runtime. The TypeScript constant is `HABITAT_RPC_VERSION`. Transport:\n"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -141,7 +141,8 @@ msgstr ""
 #: docs/guide/habitat-rpc.md:37
 msgid ""
 "Server: [`src/platform/remote-tools/`](../../src/platform/remote-tools/). "
-"Client helper: `createRemoteToolsHub` in `@freeanima/shared/rpc-contract`."
+"Client helper: `createRemoteToolsHabitatAttach` in `@freeanima/shared/rpc-"
+"contract`."
 msgstr ""
 
 #. type: Title ##
@@ -155,8 +156,8 @@ msgstr "端点"
 #: docs/guide/habitat-rpc.md:40
 #, no-wrap
 msgid ""
-"ws://{hub_host}:{port}/rpc/v1\n"
-"http://{hub_host}:{port}/rpc/v1/task/list\n"
+"ws://{habitat_host}:{port}/rpc/v1\n"
+"http://{habitat_host}:{port}/rpc/v1/task/list\n"
 msgstr ""
 
 #. type: Plain text
@@ -170,8 +171,9 @@ msgid ""
 "Helpers: `resolveHabitatRpcWsUrl`, `buildHabitatRestRequest` in `@freeanima/"
 "shared/habitat-rpc`."
 msgstr ""
-"由 Habitat HTTP URL 推导：将 `http` 替换为 `ws`，去掉末尾斜杠，追加 `/hub/"
-"rpc/v1`。辅助函数：`@freeanima/hub-rpc` 中的 `resolveHabitatRpcWsUrl`。"
+"由 Habitat HTTP URL 推导：将 `http` 替换为 `ws`，去掉末尾斜杠，追加 `/rpc/"
+"v1`。辅助函数：`@freeanima/shared/habitat-rpc` 中的 "
+"`resolveHabitatRpcWsUrl`。"
 
 #. type: Title ##
 #: docs/guide/habitat-rpc.md:47
@@ -186,7 +188,7 @@ msgstr "客户端配置"
 #| "| Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |\n"
 #| "| ----------------- | ------------------------------------------------ | ------------ | ---------------------------------------------- |\n"
 #| "| Bundled SPA       | `getBundledHabitatRpcClient()` / `whenHabitatRpcReady()` | **No**       | Chat, task, notification, diary, email modules |\n"
-#| "| Satellite process | `createSatelliteHub()` in sap-contract           | **Yes**      | companion, pair-programming                    |\n"
+#| "| Satellite process | `createRemoteToolsHabitatAttach()` in sap-contract           | **Yes**      | companion, pair-programming                    |\n"
 msgid ""
 "| Profile          | Attach                          | Typical consumer                                                |\n"
 "| ---------------- | ------------------------------- | --------------------------------------------------------------- |\n"
@@ -196,7 +198,7 @@ msgstr ""
 "| 配置            | Package 入口                                      | `sap.attach` | 典型消费者                                   |\n"
 "| --------------- | ------------------------------------------------- | ------------ | -------------------------------------------- |\n"
 "| Bundled SPA     | `getBundledHabitatRpcClient()` / `whenHabitatRpcReady()`  | **否**       | 聊天室、任务、通知、日记、邮件等模块         |\n"
-"| Satellite 进程  | sap-contract 中的 `createSatelliteHub()`          | **是**       | companion、pair-programming                  |\n"
+"| Satellite 进程  | sap-contract 中的 `createRemoteToolsHabitatAttach()`          | **是**       | companion、pair-programming                  |\n"
 
 #. type: Plain text
 #: docs/guide/habitat-rpc.md:55

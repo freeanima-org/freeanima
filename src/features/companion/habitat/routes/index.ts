@@ -18,7 +18,7 @@ function ctxOf(ctx: unknown): RemoteToolsRequestContext {
   return ctx as RemoteToolsRequestContext;
 }
 
-export const companionHubRoutes = bindHabitatRouteHandlers(companionMethodDefs, {
+export const companionHabitatRoutes = bindHabitatRouteHandlers(companionMethodDefs, {
   "companion.config.get": async () => service.serviceCompanionConfigGet(),
   "companion.config.update": async (_deps, input) =>
     service.serviceCompanionConfigUpdate(service.serviceCompanionConfigUpdateOmit(input)),

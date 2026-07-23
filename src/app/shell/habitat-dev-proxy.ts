@@ -28,9 +28,9 @@ export function isBenignWsProxyLogMessage(msg: string): boolean {
 }
 
 /**
- * Vite `/rpc` `/mcp` proxy 目标（`/hub` 仅 legacy，0.9.3 删除）：
+ * Vite `/rpc` `/mcp` proxy 目标：
  * 1. `FREEANIMA_URL`
- * 2. `~/.anima/server.status.json`（dev:hub 写出的 port）
+ * 2. `~/.anima/server.status.json`（dev:habitat 写出的 port）
  * 3. 回退 `http://127.0.0.1:2658`
  */
 export function resolveProxyHabitatUrl(env: NodeJS.ProcessEnv = process.env): {
@@ -91,7 +91,7 @@ export function quietBenignWsProxyErrorsPlugin(): Plugin {
           error(msg, options) {
             if (typeof msg === "string" && isBenignWsProxyLogMessage(msg)) {
               const kind = /socket error/i.test(msg) ? "socket" : "proxy";
-              originalWarn(`[vite] hub ws ${kind} closed (benign race / peer hangup)`, options);
+              originalWarn(`[vite] Habitat ws ${kind} closed (benign race / peer hangup)`, options);
               return;
             }
             originalError(msg, options);
@@ -130,8 +130,6 @@ export function createHabitatDevProxyMap(
   const map: Record<string, ProxyOptions> = {
     "/rpc": opts,
     "/mcp": opts,
-    // @deprecated 0.9.3 删除 — 旧 /hub/rpc/v1 客户端
-    "/hub": opts,
   };
   for (const path of extraPaths) {
     map[path] = opts;

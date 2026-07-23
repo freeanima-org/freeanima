@@ -29,7 +29,7 @@ import {
 import { omitUndefined } from "@freeanima/core/util";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
-import { filterToolNamesByMask, resolveSleepMask } from "./mask-wire.ts";
+import { filterToolNamesByMask, resolveSleepMask } from "./mask-bind.ts";
 import { runAutoLlm } from "./auto-llm-run.ts";
 
 const LIGHT_SLEEP_MAX_TURNS = 50;
@@ -205,7 +205,7 @@ async function runTemporalSummaryTurn(
 }
 
 /** Register light/deep/autobiography/dream/temporal-summary LLM engines */
-export function registerMemoryEngineWires(deps: FullRuntimeDeps): void {
+export function registerMemoryEngines(deps: FullRuntimeDeps): void {
   registerLightSleepEngine((input) => runLightSleepTurn(deps, input));
   registerDeepSleepEngine((input) => runDeepSleepTurn(deps, input));
   registerAutobiographyEngine((input) => runAutobiographyTurn(deps, input));

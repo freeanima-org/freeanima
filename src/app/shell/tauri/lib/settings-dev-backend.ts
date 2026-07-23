@@ -4,7 +4,6 @@ import {
   COMPANION_VISIBLE_KEY,
   DEBUG_VCONSOLE_ENABLED_KEY,
   HABITAT_URL_KEY,
-  HABITAT_URL_KEY_LEGACY,
   LAUNCH_AT_LOGIN_KEY,
   readStoredHabitatUrl,
   REMOTE_AUTH_TOKEN_KEY,
@@ -41,7 +40,6 @@ function saveKvScope(scope: SettingsStorageScope, value: unknown): void {
   if (scope.id === "habitat") {
     const raw = value as { habitatUrl: string; remoteAuthToken: string; launchAtLogin?: boolean };
     localStorage.setItem(HABITAT_URL_KEY, raw.habitatUrl);
-    localStorage.removeItem(HABITAT_URL_KEY_LEGACY);
     localStorage.setItem(REMOTE_AUTH_TOKEN_KEY, raw.remoteAuthToken);
     if (typeof raw.launchAtLogin === "boolean") {
       localStorage.setItem(LAUNCH_AT_LOGIN_KEY, raw.launchAtLogin ? "1" : "0");

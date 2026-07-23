@@ -6,7 +6,7 @@ import { createNotificationPort } from "./runtime/notification-helpers.ts";
 import type { FullRuntimeDeps } from "./runtime/runtime-deps.ts";
 import type { Config } from "@freeanima/core/config";
 
-/** Composition root one-shot capability wiring (email sync / notification) */
+/** Composition root one-shot capability binding (email sync / notification) */
 export function registerServiceStores(deps: FullRuntimeDeps, config: Config): void {
   registerEmailSyncPort(emailSyncPortImpl);
   registerNotificationPort(createNotificationPort(deps, config));

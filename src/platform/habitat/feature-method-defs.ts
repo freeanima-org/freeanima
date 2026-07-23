@@ -10,7 +10,7 @@ import { tagMethodDefs } from "@freeanima/features/tag/habitat/method-defs.ts";
 import { taskMethodDefs } from "@freeanima/features/task/habitat/method-defs.ts";
 import { vaultMethodDefs } from "@freeanima/features/vault/habitat/method-defs.ts";
 
-/** 聚合各 feature hub/method-defs.ts（浏览器 client registry 安装用） */
+/** 聚合各 feature habitat/method-defs.ts（浏览器 client registry 安装用） */
 export const FEATURE_METHOD_DEFS = {
   ...chatMethodDefs,
   ...taskMethodDefs,

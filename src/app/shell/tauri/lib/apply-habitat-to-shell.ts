@@ -1,7 +1,7 @@
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import { buildShellApiFields, type ShellApi } from "@freeanima/frontend/shell-sdk";
 
-const DEFAULT_HUB = "http://127.0.0.1:2658";
+const DEFAULT_HABITAT_URL = "http://127.0.0.1:2658";
 
 /** 把已保存的栖息地配置同步到内存中的 satelliteShell（供 needsHabitatSetup / API 鉴权）。 */
 export function applyHabitatConfigToShell(
@@ -12,7 +12,7 @@ export function applyHabitatConfigToShell(
   const url =
     String(habitatUrl ?? "")
       .trim()
-      .replace(/\/$/, "") || DEFAULT_HUB;
+      .replace(/\/$/, "") || DEFAULT_HABITAT_URL;
   const fields = buildShellApiFields(
     url,
     resolveHabitatRpcWsUrl(url),

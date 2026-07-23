@@ -1,10 +1,10 @@
 import {
-  FIRST_HUB_TTS_CHUNK_MAX,
-  LATER_HUB_TTS_CHUNK_MAX,
-  LATER_HUB_TTS_CHUNK_MIN,
-  MIN_HUB_TTS_SPLIT_LEN,
-  SECOND_HUB_TTS_CHUNK_MAX,
-  SECOND_HUB_TTS_CHUNK_MIN,
+  FIRST_HABITAT_TTS_CHUNK_MAX,
+  LATER_HABITAT_TTS_CHUNK_MAX,
+  LATER_HABITAT_TTS_CHUNK_MIN,
+  MIN_HABITAT_TTS_SPLIT_LEN,
+  SECOND_HABITAT_TTS_CHUNK_MAX,
+  SECOND_HABITAT_TTS_CHUNK_MIN,
 } from "./constants.ts";
 import type { SpeechPlaybackAdapter } from "./adapter-types.ts";
 import { synthesizeSpeechViaHubStream } from "./tts-api.ts";
@@ -33,9 +33,9 @@ export function primeHabitatSpeechOutput(): void {
 type ChunkTier = { min: number; max: number };
 
 function chunkTier(index: number): ChunkTier {
-  if (index === 0) return { min: 1, max: FIRST_HUB_TTS_CHUNK_MAX };
-  if (index === 1) return { min: SECOND_HUB_TTS_CHUNK_MIN, max: SECOND_HUB_TTS_CHUNK_MAX };
-  return { min: LATER_HUB_TTS_CHUNK_MIN, max: LATER_HUB_TTS_CHUNK_MAX };
+  if (index === 0) return { min: 1, max: FIRST_HABITAT_TTS_CHUNK_MAX };
+  if (index === 1) return { min: SECOND_HABITAT_TTS_CHUNK_MIN, max: SECOND_HABITAT_TTS_CHUNK_MAX };
+  return { min: LATER_HABITAT_TTS_CHUNK_MIN, max: LATER_HABITAT_TTS_CHUNK_MAX };
 }
 
 function findCutIndex(text: string, tier: ChunkTier, preferEarly: boolean): number {
@@ -73,7 +73,7 @@ function takeTierChunk(remaining: string, tier: ChunkTier, preferEarly: boolean)
 export function splitTextForHabitatSpeech(text: string): string[] {
   const normalized = text.replace(/\s+/g, " ").trim();
   if (!normalized) return [];
-  if (normalized.length <= MIN_HUB_TTS_SPLIT_LEN) return [normalized];
+  if (normalized.length <= MIN_HABITAT_TTS_SPLIT_LEN) return [normalized];
 
   const chunks: string[] = [];
   let cursor = 0;

@@ -1,9 +1,9 @@
 import type { PomodoroActiveState } from "@freeanima/frontend/shell-sdk/pomodoro-active-types.ts";
 import type { PomodoroActiveBody } from "@freeanima/core/db/schema/entity";
 
-export type PomodoroActiveHubRow = PomodoroActiveBody & { id: number };
+export type PomodoroActiveHabitatRow = PomodoroActiveBody & { id: number };
 
-export function activeStateToHubBody(
+export function activeStateToHabitatBody(
   state: PomodoroActiveState,
   deviceId: string,
   updatedAtMs: number,
@@ -32,7 +32,7 @@ export function activeStateToHubBody(
   };
 }
 
-export function hubBodyToActiveState(body: PomodoroActiveBody): PomodoroActiveState {
+export function habitatBodyToActiveState(body: PomodoroActiveBody): PomodoroActiveState {
   return {
     phase: body.phase,
     runState: body.run_state,
@@ -52,7 +52,7 @@ export function hubBodyToActiveState(body: PomodoroActiveBody): PomodoroActiveSt
   };
 }
 
-export function hubRowMeta(row: PomodoroActiveHubRow): {
+export function habitatRowMeta(row: PomodoroActiveHabitatRow): {
   device_id: string;
   updated_at_ms: number;
 } {

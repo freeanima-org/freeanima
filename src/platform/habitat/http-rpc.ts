@@ -1,9 +1,9 @@
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 import {
-  getHubMethodDef,
-  resolveHubAuthPolicy,
-  type HubMethod,
+  getHabitatMethodDef,
+  resolveHabitatAuthPolicy,
+  type HabitatMethod,
 } from "@freeanima/shared/habitat-contract";
 
 import { handleHttpHabitatRestRequest } from "./http-rest-router.ts";
@@ -19,9 +19,9 @@ function parseBearerToken(req: Request): string | null {
 
 async function resolveHttpRestAuth(
   req: Request,
-  hubMethod: HubMethod,
+  hubMethod: HabitatMethod,
 ): Promise<RpcRequestAuthContext | null | Response> {
-  const optional = resolveHubAuthPolicy(getHubMethodDef(hubMethod).meta) === "optional";
+  const optional = resolveHabitatAuthPolicy(getHabitatMethodDef(hubMethod).meta) === "optional";
   const token = parseBearerToken(req);
   if (!token) {
     if (optional) return null;

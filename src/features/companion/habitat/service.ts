@@ -12,7 +12,7 @@ import type {
   CompanionMotionSetSlotInput,
 } from "../protocol/index.ts";
 import { buildClientCompanionConfig, listAssetDownloadUrls } from "../domain/client-config.ts";
-import { hubUrlFromEnv, loadCompanionConfig, saveCompanionConfig } from "../domain/config.ts";
+import { habitatUrlFromEnv, loadCompanionConfig, saveCompanionConfig } from "../domain/config.ts";
 import { migrateFromLocalDir } from "../domain/migrate.ts";
 import { deleteModel, renameModel, setActiveModel } from "../domain/model-registry.ts";
 import { importMotionUpload } from "../domain/motion-import.ts";
@@ -134,10 +134,10 @@ export async function serviceCompanionSyncPull(): Promise<{
 }> {
   assertPg();
   const cfg = await loadCompanionConfig();
-  const hubBase = hubUrlFromEnv();
+  const habitatBase = habitatUrlFromEnv();
   return {
     config: await buildClientCompanionConfig(),
-    asset_urls: listAssetDownloadUrls(hubBase, cfg),
+    asset_urls: listAssetDownloadUrls(habitatBase, cfg),
   };
 }
 

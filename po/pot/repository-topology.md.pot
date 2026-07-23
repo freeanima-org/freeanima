@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-23 14:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -121,7 +121,7 @@ msgstr ""
 #: docs/concepts/repository-topology.md:58
 msgid ""
 "Vite 壳层：`src/frontend/shell-ui/vite/paths.ts` 与别名（`@chat/*`、"
-"`@console/*` 等）；feature UI 在 `ui/spa/`。"
+"`@habitat/*` 等）；feature UI 在 `ui/spa/`。"
 msgstr ""
 
 #. type: Bullet: '- '

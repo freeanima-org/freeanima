@@ -18,7 +18,7 @@ describe("resolveAlertDisplayPlatform", () => {
   it("web backend + 手机浏览器直连 Habitat 保持 web", () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14; Mobile)" },
-      location: { origin: "https://hub.example.com" },
+      location: { origin: "https://habitat.example.com" },
     } as unknown as Window;
     const backend = { platform: "web" } as AlertBackend;
     expect(resolveAlertDisplayPlatform(backend)).toBe("web");

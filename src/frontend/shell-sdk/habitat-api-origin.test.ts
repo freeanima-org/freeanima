@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
-import { DEFAULT_HUB_ORIGIN, resolveHabitatApiOrigin } from "./habitat-api-origin.ts";
+import { DEFAULT_HABITAT_ORIGIN, resolveHabitatApiOrigin } from "./habitat-api-origin.ts";
 
 const prevWindow = globalThis.window;
 
@@ -17,9 +17,9 @@ describe("resolveHabitatApiOrigin", () => {
   it("prefers satelliteShell.habitatUrl", () => {
     globalThis.window = {
       location: { origin: "http://192.168.1.10:2658", pathname: "/web/chat" },
-      satelliteShell: { habitatUrl: "https://hub.example.com" },
+      satelliteShell: { habitatUrl: "https://habitat.example.com" },
     } as Window & typeof globalThis;
-    expect(resolveHabitatApiOrigin()).toBe("https://hub.example.com");
+    expect(resolveHabitatApiOrigin()).toBe("https://habitat.example.com");
   });
 
   it("uses location.origin for Web when shell habitatUrl is empty", () => {
@@ -45,6 +45,6 @@ describe("resolveHabitatApiOrigin", () => {
       document: { documentElement: { dataset: { shellUi: "1" } } },
       satelliteShell: { isTauri: true, isNativeShell: true, habitatUrl: "" },
     } as unknown as Window & typeof globalThis;
-    expect(resolveHabitatApiOrigin()).toBe(DEFAULT_HUB_ORIGIN);
+    expect(resolveHabitatApiOrigin()).toBe(DEFAULT_HABITAT_ORIGIN);
   });
 });

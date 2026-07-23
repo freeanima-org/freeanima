@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import { listHubMethods } from "@freeanima/shared/habitat-contract";
+import { listHabitatMethods } from "@freeanima/shared/habitat-contract";
 import { wsOnlyMethodDefs } from "@freeanima/shared/habitat-contract/registry/ws-only.ts";
-import { resetHubMethodRegistryForTests } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
+import { resetHabitatMethodRegistryForTests } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
 
 import type { RemoteToolsServerDeps } from "../remote-tools/types.ts";
 import { builtinFeaturePlugins } from "./builtin-plugins.ts";
-import { resetHubRouterForTests } from "../habitat/init.ts";
+import { resetHabitatRouterForTests } from "../habitat/init.ts";
 import { resetCompiledHttpRoutes } from "../habitat/http-rest-router.ts";
 import {
   getFeatureRpcHandler,
@@ -19,8 +19,8 @@ const WS_ONLY_DISPATCH_METHODS = new Set(Object.keys(wsOnlyMethodDefs));
 describe("registerFeatures", () => {
   test("registers feature RPC handler lookup", async () => {
     resetFeatureRegistryForTests();
-    resetHubMethodRegistryForTests();
-    resetHubRouterForTests();
+    resetHabitatMethodRegistryForTests();
+    resetHabitatRouterForTests();
     resetCompiledHttpRoutes();
     const deps = {} as RemoteToolsServerDeps;
     const ctx = {
@@ -51,15 +51,15 @@ describe("registerFeatures", () => {
     });
   });
 
-  test("builtin plugins register a handler for every hub-dispatch method", () => {
+  test("builtin plugins register a handler for every habitat-dispatch method", () => {
     resetFeatureRegistryForTests();
-    resetHubMethodRegistryForTests();
-    resetHubRouterForTests();
+    resetHabitatMethodRegistryForTests();
+    resetHabitatRouterForTests();
     resetCompiledHttpRoutes();
     registerFeatures(builtinFeaturePlugins);
 
     const missing: string[] = [];
-    for (const method of listHubMethods()) {
+    for (const method of listHabitatMethods()) {
       if (WS_ONLY_DISPATCH_METHODS.has(method)) continue;
       if (!getFeatureRpcHandler(method)) {
         missing.push(method);

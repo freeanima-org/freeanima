@@ -1,6 +1,5 @@
 import {
   HABITAT_RPC_REST_PREFIX,
-  HABITAT_RPC_REST_PREFIX_LEGACY,
   isHabitatRpcPathname,
 } from "@freeanima/shared/habitat-rpc/urls.ts";
 
@@ -48,7 +47,7 @@ function normalizeHeader(req: Request, name: string): string | null {
 
 export function isSapWebSocketUpgrade(req: Request): boolean {
   const url = new URL(req.url);
-  if (url.pathname !== HABITAT_RPC_REST_PREFIX && url.pathname !== HABITAT_RPC_REST_PREFIX_LEGACY) {
+  if (url.pathname !== HABITAT_RPC_REST_PREFIX) {
     return false;
   }
   const upgrade = normalizeHeader(req, "Upgrade");

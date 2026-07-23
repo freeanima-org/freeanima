@@ -21,7 +21,7 @@ export function registerFeatures(entries: FeaturePlugin[]): void {
 
   for (const plugin of entries) {
     plugins.push(plugin);
-    const rpc = plugin.habitat?.rpc ?? plugin.hub?.rpc;
+    const rpc = plugin.habitat?.rpc;
     if (rpc) {
       for (const [method, handler] of Object.entries(rpc)) {
         if (rpcHandlers.has(method)) {

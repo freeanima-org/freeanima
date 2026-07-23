@@ -8,22 +8,21 @@ import {
   matchPattern,
   resetCompiledHttpRoutes,
 } from "./http-rest-router.ts";
-import { initHubRouter, resetHubRouterForTests } from "./init.ts";
-import { resetHubMethodRegistryForTests } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
+import { initHabitatRouter, resetHabitatRouterForTests } from "./init.ts";
+import { resetHabitatMethodRegistryForTests } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
 
 describe("http-rest-router", () => {
   beforeAll(() => {
-    resetHubMethodRegistryForTests();
-    resetHubRouterForTests();
+    resetHabitatMethodRegistryForTests();
+    resetHabitatRouterForTests();
     resetCompiledHttpRoutes();
-    initHubRouter();
+    initHabitatRouter();
     compileHttpRoutesFromRegistry();
   });
 
   test("habitatRestRelativePath", () => {
     expect(habitatRestRelativePath("/rpc/v1/task/list")).toBe("task/list");
     expect(habitatRestRelativePath("/rpc/v1")).toBeNull();
-    expect(habitatRestRelativePath("/hub/rpc/v1/task/list")).toBe("task/list");
     expect(habitatRestRelativePath("/api/health")).toBeNull();
   });
 

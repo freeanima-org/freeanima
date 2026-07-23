@@ -4,7 +4,7 @@ title: Message gateway
 
 # 消息网关配置
 
-Discord / 微信（iLink）通道与全局网关选项保存在 PostgreSQL `hub_runtime_config`，**不要**写进 `~/.anima/config.yaml`。
+Discord / 微信（iLink）通道与全局网关选项保存在 PostgreSQL `habitat_runtime_config`，**不要**写进 `~/.anima/config.yaml`。
 
 ## 在哪里改
 

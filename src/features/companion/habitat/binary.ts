@@ -18,7 +18,7 @@ const companionAssetGetInputSchema = z.object({
 function requireHttpRequest(ctx: RemoteToolsRequestContext): Request {
   const httpRequest = (ctx as RemoteToolsRequestContext & { httpRequest?: Request }).httpRequest;
   if (!httpRequest) {
-    throw new Error("companion binary hub method requires HTTP request context");
+    throw new Error("companion binary habitat method requires HTTP request context");
   }
   return httpRequest;
 }

@@ -18,7 +18,7 @@ import type { ShellDebugConfig } from "./shell-debug-config.ts";
 
 export { desktopSettingsPath, getDesktopHomeDir } from "./desktop-settings-paths.ts";
 
-function readLegacyHubConfig(): ShellClientConfig | null {
+function readLegacyHabitatConfig(): ShellClientConfig | null {
   const legacyPath = legacyShellClientConfigPath();
   if (!existsSync(legacyPath)) return null;
   try {
@@ -46,7 +46,7 @@ export function loadShellSettings(desktopHome?: string): ShellSettings {
     }
   }
 
-  const legacyHabitat = readLegacyHubConfig();
+  const legacyHabitat = readLegacyHabitatConfig();
   if (legacyHabitat) {
     const migrated: ShellSettings = {
       habitat: legacyHabitat,

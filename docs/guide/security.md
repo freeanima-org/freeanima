@@ -69,20 +69,20 @@ Disk backup = data access. Protect backup media accordingly.
 
 ## Measures in Place
 
-| Measure                    | Description                                                                                                                                                                          |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Same-origin RPC            | TanStack Start server functions same-origin by default, no CORS whitelist needed                                                                                                     |
-| Config API secrets         | Habitat config GET returns secrets in cleartext (`api_key`, MCP `env` / `headers`, etc.). Legacy `"***"` on write-back is restored via `restoreMaskedSecrets`                        |
-| MCP config                 | `sanitizeConfigForApi` keeps MCP `env` / `headers` plaintext so Habitat MCP page can edit round-trip                                                                                 |
-| File path policy           | Shared `path-policy` for `file_*` tools: `/etc`, vault, ssh private keys, `/proc`/`/sys`, blocked devices                                                                            |
-| Terminal shell default off | `terminal_run` default `shell=false`; pass `shell=true` only when pipes/redirection are needed (friction, not a sandbox)                                                             |
-| Terminal command hard deny | Always-on catastrophic command policy (`terminal-command-policy`); cannot be disabled via env                                                                                        |
-| Slash commands             | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result                                               |
-| MCP default stdio          | Reduces port exposure                                                                                                                                                                |
-| Vault isolation            | LLM sees vault item metadata only, not decrypted fields                                                                                                                              |
-| Service API Token          | Habitat RPC REST `/rpc/v1/*` routes require `Authorization: Bearer fa_at_…` (`service_api_tokens` PG table); health probe/CORS/echo exempt. Legacy `/hub/rpc/v1/*` until after 0.9.3 |
-| CI secret scanning         | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                                                                        |
-| `.gitignore`               | `.env.*`, `config.yaml`, private key suffixes                                                                                                                                        |
+| Measure                    | Description                                                                                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Same-origin RPC            | TanStack Start server functions same-origin by default, no CORS whitelist needed                                                                              |
+| Config API secrets         | Habitat config GET returns secrets in cleartext (`api_key`, MCP `env` / `headers`, etc.). Legacy `"***"` on write-back is restored via `restoreMaskedSecrets` |
+| MCP config                 | `sanitizeConfigForApi` keeps MCP `env` / `headers` plaintext so Habitat MCP page can edit round-trip                                                          |
+| File path policy           | Shared `path-policy` for `file_*` tools: `/etc`, vault, ssh private keys, `/proc`/`/sys`, blocked devices                                                     |
+| Terminal shell default off | `terminal_run` default `shell=false`; pass `shell=true` only when pipes/redirection are needed (friction, not a sandbox)                                      |
+| Terminal command hard deny | Always-on catastrophic command policy (`terminal-command-policy`); cannot be disabled via env                                                                 |
+| Slash commands             | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result                        |
+| MCP default stdio          | Reduces port exposure                                                                                                                                         |
+| Vault isolation            | LLM sees vault item metadata only, not decrypted fields                                                                                                       |
+| Service API Token          | Habitat RPC REST `/rpc/v1/*` routes require `Authorization: Bearer fa_at_…` (`service_api_tokens` PG table); health probe/CORS/echo exempt.                   |
+| CI secret scanning         | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                                                 |
+| `.gitignore`               | `.env.*`, `config.yaml`, private key suffixes                                                                                                                 |
 
 ## Known Gaps (Documentation ≠ Fully Implemented)
 
@@ -149,7 +149,7 @@ The following are planned in code or docs—**deployers must not assume implemen
 2. Open Shell `/vault`; set User master password; migrate secrets from legacy pass if needed
 3. `chmod 700 ~/.anima` (includes `vault/agent-machine.key`)
 4. Bind `127.0.0.1` only, or ensure intranet isolation
-5. Review inbound MCP / ACP in Habitat UI (`/console/mcp`, ACP page); set `enabled: false` for untrusted external Servers
+5. Review inbound MCP / ACP in Habitat UI (`/habitat/mcp`, ACP page); set `enabled: false` for untrusted external Servers
 6. Regularly backup `~/.anima/` (and legacy `~/.password-store` if kept); encrypt backup media
 7. Do not commit `.env`, `config.yaml` to git
 8. Do not pass `shell=true` on `terminal_run` unless you intentionally need pipes/redirection

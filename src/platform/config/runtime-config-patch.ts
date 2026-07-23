@@ -7,10 +7,10 @@ import { isBootstrapConfigKey } from "@freeanima/core/config";
 import { runMigrations } from "@freeanima/core/db";
 import {
   getDb,
-  getHubRuntimeConfigDocument,
+  getHabitatRuntimeConfigDocument,
   initDatabase,
-  patchHubRuntimeConfigSection,
-  replaceHubRuntimeConfigSection,
+  patchHabitatRuntimeConfigSection,
+  replaceHabitatRuntimeConfigSection,
 } from "@freeanima/core/db/pg";
 
 import { loadBootstrapConfig } from "../boot/bootstrap.ts";
@@ -50,7 +50,7 @@ export async function patchRuntimeConfigSection(
   }
 
   await ensureDbFromBootstrap();
-  await patchHubRuntimeConfigSection(section, patch);
+  await patchHabitatRuntimeConfigSection(section, patch);
 }
 
 export async function replaceRuntimeConfigSection(
@@ -72,7 +72,7 @@ export async function replaceRuntimeConfigSection(
   }
 
   await ensureDbFromBootstrap();
-  await replaceHubRuntimeConfigSection(section, value);
+  await replaceHabitatRuntimeConfigSection(section, value);
 }
 
 export async function loadRuntimeConfigSection<T = unknown>(
@@ -84,7 +84,7 @@ export async function loadRuntimeConfigSection<T = unknown>(
     return value as T | undefined;
   } catch {
     await ensureDbFromBootstrap();
-    const document = await getHubRuntimeConfigDocument();
+    const document = await getHabitatRuntimeConfigDocument();
     return document[section] as T | undefined;
   }
 }

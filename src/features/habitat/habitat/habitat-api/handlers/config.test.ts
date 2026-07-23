@@ -6,7 +6,7 @@ import { sanitizeConfigForApi } from "@freeanima/platform/config";
 
 import { bindHabitatRuntimeContext } from "./runtime.ts";
 import { ApiHandlerError } from "./errors.ts";
-import { getHubConfig, getHubConfigSection } from "./config.ts";
+import { getHabitatConfig, getHabitatConfigSection } from "./config.ts";
 
 const runtimeSnapshot = {
   llm: {
@@ -33,36 +33,36 @@ function bindTestConsoleContext() {
   bindHabitatRuntimeContext(() => ctx);
 }
 
-describe("hub config handlers", () => {
+describe("habitat config handlers", () => {
   afterEach(() => {
     bindHabitatRuntimeContext();
   });
 
-  it("getHubConfig 返回含密钥明文的运行时配置快照", () => {
+  it("getHabitatConfig 返回含密钥明文的运行时配置快照", () => {
     bindTestConsoleContext();
-    const out = getHubConfig();
+    const out = getHabitatConfig();
     const llm = out.llm as Record<string, unknown>;
     const providers = llm.providers as Record<string, Record<string, unknown>>;
     expect(providers.main?.api_key).toBe("sk-secret");
     expect(llm.default_profile).toBe("chat");
   });
 
-  it("getHubConfigSection 按段读取配置", () => {
+  it("getHabitatConfigSection 按段读取配置", () => {
     bindTestConsoleContext();
-    const llm = getHubConfigSection("llm") as Record<string, unknown>;
+    const llm = getHabitatConfigSection("llm") as Record<string, unknown>;
     expect(llm.default_profile).toBe("chat");
   });
 
-  it("getHubConfigSection 对未写入的已知段返回空对象", () => {
+  it("getHabitatConfigSection 对未写入的已知段返回空对象", () => {
     bindTestConsoleContext();
-    expect(getHubConfigSection("gateway")).toEqual({});
-    expect(getHubConfigSection("tts")).toEqual({});
+    expect(getHabitatConfigSection("gateway")).toEqual({});
+    expect(getHabitatConfigSection("tts")).toEqual({});
   });
 
-  it("getHubConfigSection 拒绝 bootstrap 段", () => {
+  it("getHabitatConfigSection 拒绝 bootstrap 段", () => {
     bindTestConsoleContext();
     try {
-      getHubConfigSection("database");
+      getHabitatConfigSection("database");
       expect.unreachable();
     } catch (e) {
       expect(e).toBeInstanceOf(ApiHandlerError);
@@ -71,10 +71,10 @@ describe("hub config handlers", () => {
     }
   });
 
-  it("getHubConfigSection 对未知段返回 404", () => {
+  it("getHabitatConfigSection 对未知段返回 404", () => {
     bindTestConsoleContext();
     try {
-      getHubConfigSection("no_such_section");
+      getHabitatConfigSection("no_such_section");
       expect.unreachable();
     } catch (e) {
       expect(e).toBeInstanceOf(ApiHandlerError);

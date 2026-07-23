@@ -57,7 +57,7 @@ function parseArgs(argv: string[]): {
     } else if (arg === "--label" && argv[i + 1]) {
       const labelArg = argv[++i];
       if (labelArg !== undefined) label = labelArg;
-    } else if ((arg === "--habitat-url" || arg === "--hub-url" || arg === "--url") && argv[i + 1]) {
+    } else if ((arg === "--habitat-url" || arg === "--url") && argv[i + 1]) {
       const urlArg = argv[++i];
       if (urlArg !== undefined) habitatUrl = urlArg.replace(/\/api\/status\/?$/, "");
     } else if (arg === "--stage" && argv[i + 1]) {
@@ -68,14 +68,14 @@ function parseArgs(argv: string[]): {
   return { pid, label, habitatUrl, stage };
 }
 
-async function fetchStatusViaHubRpc(
-  hubUrl: string,
+async function fetchStatusViaHabitatRpc(
+  habitatUrl: string,
   token?: string,
 ): Promise<Record<string, unknown> | null> {
   const bearer = token?.trim() || process.env.FREEANIMA_REMOTE_AUTH_TOKEN?.trim();
   try {
     const options = bearer ? { authToken: bearer } : undefined;
-    const res = await fetchHabitatRestRaw(hubUrl, "status.get", {}, options);
+    const res = await fetchHabitatRestRaw(habitatUrl, "status.get", {}, options);
     return (await parseHabitatRestResponse(res)) as Record<string, unknown>;
   } catch {
     return null;
@@ -116,7 +116,7 @@ parts.push(`rss_kb=${rssKb}`);
 parts.push(`rss_mb=${rssMb}`);
 
 if (habitatUrl) {
-  const status = await fetchStatusViaHubRpc(habitatUrl);
+  const status = await fetchStatusViaHabitatRpc(habitatUrl);
   if (status) {
     if (typeof status.memory_kb === "number") {
       parts.push(`status_memory_kb=${status.memory_kb}`);

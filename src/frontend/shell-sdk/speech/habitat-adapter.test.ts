@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
 import { DEFAULT_SPEECH_PLAYBACK_CONFIG } from "./types.ts";
-import { FIRST_HUB_TTS_CHUNK_MAX } from "./constants.ts";
+import { FIRST_HABITAT_TTS_CHUNK_MAX } from "./constants.ts";
 import { setTtsAudioCacheForTests, TtsAudioCache } from "./tts-cache.ts";
 import { resetMpegPlayerStateForTests, stopMpegPlayback } from "./mpeg-player.ts";
 
@@ -110,12 +110,12 @@ afterEach(() => {
 });
 
 describe("splitTextForHabitatSpeech", () => {
-  it("首段不超过 FIRST_HUB_TTS_CHUNK_MAX", async () => {
+  it("首段不超过 FIRST_HABITAT_TTS_CHUNK_MAX", async () => {
     const { splitTextForHabitatSpeech } = await import("./habitat-adapter.ts");
     const long = `${"甲".repeat(80)}。${"乙".repeat(300)}。${"丙".repeat(500)}。`;
     const chunks = splitTextForHabitatSpeech(long);
     expect(chunks.length).toBeGreaterThan(1);
-    expect(chunks[0]?.length ?? 0).toBeLessThanOrEqual(FIRST_HUB_TTS_CHUNK_MAX);
+    expect(chunks[0]?.length ?? 0).toBeLessThanOrEqual(FIRST_HABITAT_TTS_CHUNK_MAX);
   });
 });
 
@@ -211,7 +211,7 @@ describe("createHabitatSpeechAdapter", () => {
       provider: "edge-tts",
     });
 
-    const longText = `${"甲".repeat(FIRST_HUB_TTS_CHUNK_MAX)}。${"乙".repeat(200)}。`;
+    const longText = `${"甲".repeat(FIRST_HABITAT_TTS_CHUNK_MAX)}。${"乙".repeat(200)}。`;
     const speakDone = new Promise<void>((resolve, reject) => {
       adapter.speak(longText, "zh-CN", resolve, reject);
     });

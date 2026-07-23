@@ -30,7 +30,7 @@ import {
 import { getActivePgTestContext } from "../../helpers/pg-test.ts";
 import { listNotifications } from "@freeanima/core/db/pg/notifications";
 import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
-import { wireServicePorts } from "@freeanima/platform";
+import { bindServicePorts } from "@freeanima/platform";
 import { FileConfig } from "@freeanima/platform/config/file-config.ts";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import { createConversationService } from "@freeanima/runtime/conversation";
@@ -108,7 +108,7 @@ describePg("cron", () => {
       port: 2658,
     };
     const runtime = createAppRuntime(fullDeps);
-    wireServicePorts(fullDeps);
+    bindServicePorts(fullDeps);
     initRuntimeContext(runtime);
     registerServiceStores(fullDeps, pg.config);
 

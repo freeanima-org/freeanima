@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-23 14:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,7 +32,7 @@ msgstr ""
 #: docs/guide/message-gateway.md:8
 msgid ""
 "Discord / 微信（iLink）通道与全局网关选项保存在 PostgreSQL "
-"`hub_runtime_config`，**不要**写进 `~/.anima/config.yaml`。"
+"`habitat_runtime_config`，**不要**写进 `~/.anima/config.yaml`。"
 msgstr ""
 
 #. type: Title ##

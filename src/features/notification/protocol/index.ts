@@ -1,4 +1,4 @@
-/** Notification Feature Habitat RPC wire types — SSOT: `@freeanima/shared/rpc-contract/feature-rpc` (subset). */
+/** Notification Feature Habitat RPC protocol types — SSOT: `@freeanima/shared/rpc-contract/feature-rpc` (subset). */
 export {
   notificationListInputSchema,
   notificationMarkReadInputSchema,

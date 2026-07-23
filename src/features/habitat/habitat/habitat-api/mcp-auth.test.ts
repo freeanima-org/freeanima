@@ -5,7 +5,7 @@ import { applyHttpAuth } from "./http-dispatch.ts";
 import { createServiceAuthVerifier } from "./service-auth.ts";
 
 describe("MCP /mcp service auth", () => {
-  it("isMcpPath matches hub endpoint", () => {
+  it("isMcpPath matches Habitat /mcp endpoint", () => {
     expect(isMcpPath("/mcp")).toBe(true);
   });
 

@@ -49,7 +49,7 @@ The content pack lives in [`src/satellites/companion/`](../../src/satellites/com
 | ---------- | ---------------------------- | ------------------------------------------------ |
 | UI         | Browser / shell Web UI       | Native transparent companion window + settings   |
 | Deployment | Bundled in shell             | Dynamic attach when Habitat token is configured  |
-| Wire       | Habitat RPC only (no attach) | Habitat RPC + `remote_tools.attach` in overlay   |
+| Protocol   | Habitat RPC only (no attach) | Habitat RPC + `remote_tools.attach` in overlay   |
 | Runtime    | —                            | Overlay-local tool runtime（browser-dev 同路径） |
 
 ## Features

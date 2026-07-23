@@ -293,7 +293,7 @@ export async function fetchLlmDebug(conversationId: string): Promise<{
 export async function loadConfig() {
   const shell = window.satelliteShell;
   if (shell?.habitatWsUrl) {
-    return { app_id: "chat", hub_ws_url: shell.habitatWsUrl };
+    return { app_id: "chat", habitat_ws_url: shell.habitatWsUrl };
   }
 
   if (shell?.isNativeShell) {
@@ -310,7 +310,7 @@ export async function loadConfig() {
   }
   return res.json() as Promise<{
     app_id: string;
-    hub_ws_url?: string;
+    habitat_ws_url?: string;
     instance_id?: string;
     relay_ws_url?: string;
   }>;

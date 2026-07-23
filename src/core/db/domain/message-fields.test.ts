@@ -19,7 +19,7 @@ describe("assistantReasoningText", () => {
 });
 
 describe("resolveMaxTurns", () => {
-  it("reads max_turns wire field", () => {
+  it("reads max_turns protocol field", () => {
     expect(resolveMaxTurns({ max_turns: 12 })).toBe(12);
   });
 

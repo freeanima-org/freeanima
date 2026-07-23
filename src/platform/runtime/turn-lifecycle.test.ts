@@ -5,7 +5,7 @@ import { MaskRegistry } from "@freeanima/features/task/domain/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
+import { bindOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import { parseYaml } from "@freeanima/platform/config";
@@ -18,7 +18,7 @@ import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
-registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
+registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
 const testEngine = createEngine({
   catalog,
   config: testConfig,
@@ -26,15 +26,15 @@ const testEngine = createEngine({
   logger: createTestLogger(),
 });
 
-function wireTestDeps(): FullRuntimeDeps {
+function bindTestDeps(): FullRuntimeDeps {
   const kernel = createServiceKernel(testConfig);
   const conversation = createConversationService(catalog.toolSets);
-  getAcpManager().wireRegistries({
+  getAcpManager().bindRegistries({
     toolSets: catalog.toolSets,
     skills: catalog.skills,
     config: testConfig,
   });
-  getAcpManager().wireConversation(conversation);
+  getAcpManager().bindConversation(conversation);
   return {
     kernel,
     engine: testEngine,
@@ -57,7 +57,7 @@ describe("turn-lifecycle", () => {
   });
 
   it("createTurnMessageCallbacks writes appendMessage", async () => {
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     const append = spyOn(deps.conversation, "appendMessage").mockResolvedValue();
     restores.push(append);
 
@@ -70,7 +70,7 @@ describe("turn-lifecycle", () => {
   });
 
   it("finalizeTurn calls finishTurn with skipMessageAppend", async () => {
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     const finish = spyOn(deps.conversation, "finishTurn").mockResolvedValue();
     restores.push(finish);
 
@@ -82,7 +82,7 @@ describe("turn-lifecycle", () => {
 
   it("runSimpleTurn goes beginTurn → run → finishTurn", async () => {
     const msgs = [{ role: "user" as const, content: "cron prompt" }];
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     restores.push(
       spyOn(conversationTitle, "triggerConversationTitleIfFirstTurn").mockResolvedValue(undefined),
       spyOn(deps.conversation, "beginTurn").mockResolvedValue([msgs, ["tool_a"], "cron prompt"]),
@@ -119,7 +119,7 @@ describe("turn-lifecycle", () => {
   });
 
   it("runSimpleTurn catches MaxTurnsExceeded", async () => {
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     restores.push(
       spyOn(conversationTitle, "triggerConversationTitleIfFirstTurn").mockResolvedValue(undefined),
       spyOn(deps.conversation, "beginTurn").mockResolvedValue([

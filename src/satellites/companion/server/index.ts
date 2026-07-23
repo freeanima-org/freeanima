@@ -11,7 +11,7 @@ import { SATELLITE_PORT_ATTEMPTS, SATELLITE_PORT_START } from "../shared/constan
 import { advanceBubble, bubbleState } from "./runtime-state.ts";
 import { handleRuntimeWsClose, handleRuntimeWsOpen, runtimeWsPayload } from "./runtime-ws.ts";
 import { createNodeHttpServer, listenServer, type DevMiddleware } from "./http/node-bridge.ts";
-import { syncCompanionFromHub } from "./habitat-sync.ts";
+import { syncCompanionFromHabitat } from "./habitat-sync.ts";
 
 export type StartCompanionServerOptions = {
   port?: number;
@@ -92,7 +92,7 @@ export async function startCompanionServer(
   opts: StartCompanionServerOptions = {},
 ): Promise<CompanionServerHandle> {
   ensureCompanionDataDir();
-  await syncCompanionFromHub();
+  await syncCompanionFromHabitat();
 
   const portStart = opts.port ?? Number(process.env.SATELLITE_PORT ?? SATELLITE_PORT_START);
   const portAttempts = opts.portAttempts ?? SATELLITE_PORT_ATTEMPTS;

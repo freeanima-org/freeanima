@@ -41,7 +41,7 @@ describe("tls-paths", () => {
   });
 });
 
-describe("ensureHubTlsMaterial", () => {
+describe("ensureHabitatTlsMaterial", () => {
   test("uses existing files when present and SAN covers bind hosts", async () => {
     const { mkdtempSync, rmSync } = await import("node:fs");
     const { join } = await import("node:path");
@@ -72,8 +72,8 @@ describe("ensureHubTlsMaterial", () => {
       { encoding: "utf-8" },
     );
     expect(r.status).toBe(0);
-    const { ensureHubTlsMaterial } = await import("./habitat-tls-material.ts");
-    const material = ensureHubTlsMaterial({
+    const { ensureHabitatTlsMaterial } = await import("./habitat-tls-material.ts");
+    const material = ensureHabitatTlsMaterial({
       certPath,
       keyPath,
       auto: true,

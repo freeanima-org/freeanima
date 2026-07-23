@@ -667,7 +667,7 @@ Digital Humans</msg>
   <msg id="settings_appearance_theme_ocean">Ocean</msg>
   <msg id="settings_appearance_theme_sunset">Sunset</msg>
   <msg id="settings_appearance_theme_violet">Violet</msg>
-  <msg id="settings_chat_llm_debug_hint">When on, each send captures invoke snapshots on the Habitat (Redis, 10 min TTL). Open Debug in Chat to fetch — not streamed over the wire.</msg>
+  <msg id="settings_chat_llm_debug_hint">When on, each send captures invoke snapshots on the Habitat (Redis, 10 min TTL). Open Debug in Chat to fetch — not streamed over Habitat RPC.</msg>
   <msg id="settings_chat_llm_debug_label">Enable LLM debug</msg>
   <msg id="sidebar_architecture">Architecture</msg>
   <msg id="sidebar_compression">Compression</msg>
@@ -705,8 +705,8 @@ Digital Humans</msg>
   <msg id="ui_common_close">Close</msg>
   <msg id="ui_common_confirm">OK</msg>
   <msg id="ui_common_notice">Notice</msg>
-  <msg id="ui_hub_config_saved_restart_description">"{section}" was saved to the Habitat database. Restart the habitat now to apply changes?</msg>
-  <msg id="ui_hub_config_saved_restart_title">Restart habitat?</msg>
+  <msg id="ui_habitat_config_saved_restart_description">"{section}" was saved to the Habitat database. Restart the habitat now to apply changes?</msg>
+  <msg id="ui_habitat_config_saved_restart_title">Restart habitat?</msg>
   <msg id="ui_network_offline">You are offline. Live Service features are unavailable; cached data may still be shown where available.</msg>
   <msg id="ui_offline_cached_hint"> · Showing cached data</msg>
   <msg id="ui_offline_readonly_mode">Offline read-only — edits are disabled until you're back online.</msg>

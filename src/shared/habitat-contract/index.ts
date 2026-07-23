@@ -1,29 +1,27 @@
 export type {
   HabitatClientProfile,
-  HubMethodMeta,
+  HabitatMethodMeta,
   TransportKind,
   HttpRouteMeta,
   HttpRequestEncoding,
   HttpResponseEncoding,
-  HubAuthPolicy,
+  HabitatAuthPolicy,
 } from "./transport.ts";
 export {
   resolveDefaultTransport,
   resolveFallbackTransport,
-  resolveHubAuthPolicy,
+  resolveHabitatAuthPolicy,
   resolveHttpRequestEncoding,
   resolveHttpResponseEncoding,
 } from "./transport.ts";
 
 export type {
   HabitatMethodDef,
-  HubMethodDef,
   DualTransportMetaOptions,
   BinaryHttpMetaOptions,
 } from "./method-def.ts";
 export {
   defineHabitatMethod,
-  defineHubMethod,
   dualTransportMeta,
   httpTransportMeta,
   wsOnlyMeta,
@@ -34,39 +32,31 @@ export {
 
 export {
   defineHabitatRoute,
-  defineHubRoute,
   defineHabitatRouteFromDef,
-  defineHubRouteFromDef,
   mergeFeatureRoutes,
   mergeHabitatRouteBundles,
-  mergeHubRouteBundles,
   bindHabitatRouteHandlers,
-  bindHubRouteHandlers,
   type HabitatRouteBundle,
-  type HubRouteBundle,
   type HabitatRouteHandler,
-  type HubRouteHandler,
   type HabitatRouteHandlersForDefs,
-  type HubRouteHandlersForDefs,
   type FeatureRouteBundle,
 } from "./route.ts";
 
 export {
   buildHttpRouteMeta,
   HTTP_ROUTE_OVERRIDES,
-  isReadOnlyHubMeta,
+  isReadOnlyHabitatMeta,
   coercePayloadForSchema,
 } from "./http-route.ts";
 
 export {
-  METHOD_REGISTRY,
-  getHubMethodDef,
-  getHubMethodHttpRoute,
-  isHubMethod,
-  listHubMethods,
-  type HubMethod,
-  type HubMethodInputs,
-  type HubMethodOutputs,
+  getHabitatMethodDef,
+  getHabitatMethodHttpRoute,
+  isHabitatMethod,
+  listHabitatMethods,
+  type HabitatMethod,
+  type HabitatMethodInputs,
+  type HabitatMethodOutputs,
 } from "./registry/index.ts";
 
 export * from "./schemas/habitat-schemas.ts";

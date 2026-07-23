@@ -12,12 +12,12 @@ app → platform → capabilities → runtime → core → kernel
 
 与运行时栈**并列**、由层依赖约定约束的目录：
 
-| Directory         | Import prefix（`@freeanima/*` → `src/*`） | Role                                                      |
-| ----------------- | ----------------------------------------- | --------------------------------------------------------- |
-| `src/shared/`     | `@freeanima/shared/habitat-rpc` 等        | Habitat method SSOT、多传输客户端、Habitat RPC wire、加密 |
-| `src/frontend/`   | `@freeanima/frontend/ui-kit` 等           | 壳层 UI 与集成 SDK                                        |
-| `features/`       | `@freeanima/features/{slug}/`             | 产品功能纵向模块（plugin + hub + protocol + ui + domain） |
-| `src/satellites/` | `@freeanima/satellites/companion/`        | **仅** remote-tools attach 型卫星壳（`companion`）        |
+| Directory         | Import prefix（`@freeanima/*` → `src/*`） | Role                                                          |
+| ----------------- | ----------------------------------------- | ------------------------------------------------------------- |
+| `src/shared/`     | `@freeanima/shared/habitat-rpc` 等        | Habitat method SSOT、多传输客户端、Habitat RPC protocol、加密 |
+| `src/frontend/`   | `@freeanima/frontend/ui-kit` 等           | 壳层 UI 与集成 SDK                                            |
+| `features/`       | `@freeanima/features/{slug}/`             | 产品功能纵向模块（plugin + habitat + protocol + ui + domain） |
+| `src/satellites/` | `@freeanima/satellites/companion/`        | **仅** remote-tools attach 型卫星壳（`companion`）            |
 
 | Layer            | Directory           | Package               | Responsibility                                                                         |
 | ---------------- | ------------------- | --------------------- | -------------------------------------------------------------------------------------- |
@@ -25,7 +25,7 @@ app → platform → capabilities → runtime → core → kernel
 | **core**         | `src/core/`         | `@freeanima/core`     | PG schema, `db/pg` repos, config, tool/LLM/compress/hooks                              |
 | **runtime**      | `runtime/`          | `@freeanima/runtime`  | Conversation, turn, loop, pipeline, Engine factory                                     |
 | **capabilities** | `src/capabilities/` | `capabilities-*` (8)  | acp, identity, llm-openai, mcp-client, mcp-server, memory, satellite, tools            |
-| **platform**     | `src/platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI wiring, feature registry                      |
+| **platform**     | `src/platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI binding, feature registry                     |
 | **app**          | `app/`              | CLI / shells          | CLI、desktop/mobile 壳（安装包内嵌 `web/dist`）；浏览器/PWA 仍由 Habitat `/web/*` 托管 |
 
 ### Habitat（habitat-rest）
@@ -33,18 +33,18 @@ app → platform → capabilities → runtime → core → kernel
 | 包名                          | 物理路径                                      | 说明                                                    |
 | ----------------------------- | --------------------------------------------- | ------------------------------------------------------- |
 | `@freeanima/feature-habitat`  | `features/habitat/`                           | Habitat feature（plugin、Habitat UI SSOT、build 工具）  |
-| `@freeanima/console-api`      | `features/habitat/habitat/habitat-api/`       | Habitat HTTP 服务（Habitat RPC REST 分发、静态 `/web`） |
-| `@freeanima/console-contract` | `features/habitat/protocol/habitat-contract/` | Habitat wire 类型                                       |
+| `@freeanima/habitat-api`      | `features/habitat/habitat/habitat-api/`       | Habitat HTTP 服务（Habitat RPC REST 分发、静态 `/web`） |
+| `@freeanima/habitat-contract` | `features/habitat/protocol/habitat-contract/` | Habitat protocol 类型                                   |
 
 Habitat UI 源码 SSOT：`features/habitat/ui/habitat/`。Paraglide/build 工具：`features/habitat/build/`。Shell 路由经 `@freeanima/feature-habitat/ui/spa`。
 
 ### Feature 模块（`features/<slug>/`）
 
-内置 plugin 在 [`src/platform/features/builtin-plugins.ts`](../../src/platform/features/builtin-plugins.ts) 注册；Habitat RPC 由 `features/*/habitat/routes/index.ts`（`defineHubRoute`）实现，经 [`src/platform/habitat/habitat-router.ts`](../../src/platform/habitat/habitat-router.ts) 聚合；[`src/platform/remote-tools/ws-server.ts`](../../src/platform/remote-tools/ws-server.ts) 经 `getFeatureRpcHandler` 分发（**非** remote-tools attach）。
+内置 plugin 在 [`src/platform/features/builtin-plugins.ts`](../../src/platform/features/builtin-plugins.ts) 注册；Habitat RPC 由 `features/*/habitat/routes/index.ts`（`defineHabitatRoute`）实现，经 [`src/platform/habitat/habitat-router.ts`](../../src/platform/habitat/habitat-router.ts) 聚合；[`src/platform/remote-tools/ws-server.ts`](../../src/platform/remote-tools/ws-server.ts) 经 `getFeatureRpcHandler` 分发（**非** remote-tools attach）。
 
-典型子目录：`plugin.ts`、`hub/`、`protocol/`（re-export `@freeanima/rpc-contract/feature-rpc`）、`ui/`、`domain/`。
+典型子目录：`plugin.ts`、`habitat/`、`protocol/`（re-export `@freeanima/rpc-contract/feature-rpc`）、`ui/`、`domain/`。
 
-chat / task / vault / diary / email / notification / dream / console 等产品面走 **Feature RPC**；`src/satellites/` 仅保留 companion。
+chat / task / vault / diary / email / notification / dream / habitat 等产品面走 **Feature RPC**；`src/satellites/` 仅保留 companion。
 
 ### `@freeanima/core` subpaths
 
@@ -68,35 +68,35 @@ Readable mirror of层依赖约定（**非**自动化脚本）。**When rules cha
 
 Dependency direction (high → low): `app` / `platform` / `features` → `capabilities` → `runtime` → `core` → `kernel`. Lower layers must not import higher layers.
 
-| Source directory                              | Allowed `@freeanima/*` (package root)                                                                                                                                                           | Explicitly forbidden                                                                                                                    |
-| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/kernel/`                                 | `kernel`, `kernel-*`                                                                                                                                                                            | all other workspace packages                                                                                                            |
-| `src/core/`                                   | `kernel`, `kernel-*`, `core`                                                                                                                                                                    | `runtime`, `capabilities-*`, `platform`, …                                                                                              |
-| `runtime/`                                    | `kernel`, `kernel-*`, `core`, `runtime`                                                                                                                                                         | **`platform`**, **`capabilities-*`**                                                                                                    |
-| `src/capabilities/<pkg>/`                     | `kernel`, `kernel-*`, `core`, **`src/core/db/pg`**, **`src/core/db/schema`**, own `capabilities-<pkg>`, `rpc-contract`                                                                          | **`runtime`**, **`platform`**, **other `capabilities-*`**, **`feature-*`**                                                              |
-| `src/platform/`, `app/`, `tests/`             | all workspace packages                                                                                                                                                                          | —                                                                                                                                       |
-| `features/habitat/habitat/habitat-api/`       | same as `src/platform/`（nested workspace package）                                                                                                                                             | —                                                                                                                                       |
-| `features/habitat/protocol/habitat-contract/` | `kernel`, `kernel-*`（devDeps：`platform`, `core`, `console-api` 仅类型解析）                                                                                                                   | **`platform`**, **`core`**, **`console-api`**                                                                                           |
-| `features/<slug>/`                            | `core`, `platform` (hub connectors), `admin-*` (console only), `rpc-contract`, `shell-sdk`, `ui-kit`, `vault-crypto`, `shared/companion-motion` (companion only), **other `feature-*`（无环）** | `runtime`, arbitrary `capabilities-*`；**禁止 feature 环依赖**                                                                          |
-| `src/satellites/<name>/`                      | `rpc-contract`, `shell-sdk`, `ui-kit`, `vault-crypto`, `kernel`, `kernel-*`, matching `feature-*` shim                                                                                          | **`shell-ui`**, **`admin-*`**, **`platform`**, **`core`**, **`runtime`**, **`capabilities-*`** — **only `companion` directory allowed** |
-| `src/shared/habitat-rpc/`                     | `kernel`, `kernel-*`, `habitat-rpc`                                                                                                                                                             | all other workspace packages                                                                                                            |
-| `src/shared/rpc-contract/`                    | `kernel`, `kernel-*`, `habitat-rpc`                                                                                                                                                             | all other workspace packages                                                                                                            |
-| `src/shared/vault-crypto/`                    | `kernel`, `kernel-*`, `vault-crypto`                                                                                                                                                            | all other workspace packages                                                                                                            |
-| `src/frontend/ui-kit/`                        | `kernel`, `kernel-*`                                                                                                                                                                            | **`rpc-contract`**, other workspace packages                                                                                            |
-| `src/frontend/shell-sdk/`                     | `kernel`, `kernel-*`, `habitat-rpc`, `vault-crypto`                                                                                                                                             | **`rpc-contract`**, other workspace packages                                                                                            |
-| `src/frontend/shell-ui/`                      | `ui-kit`, `shell-sdk`, `feature-*`, `satellite-*`, `kernel`, `kernel-*`                                                                                                                         | **`rpc-contract`**；禁止深路径 import `src/satellites/`（用 `@freeanima/feature-*/ui/*`）                                               |
+| Source directory                              | Allowed `@freeanima/*` (package root)                                                                                                                                     | Explicitly forbidden                                                                                                                    |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/kernel/`                                 | `kernel`, `kernel-*`                                                                                                                                                      | all other workspace packages                                                                                                            |
+| `src/core/`                                   | `kernel`, `kernel-*`, `core`                                                                                                                                              | `runtime`, `capabilities-*`, `platform`, …                                                                                              |
+| `runtime/`                                    | `kernel`, `kernel-*`, `core`, `runtime`                                                                                                                                   | **`platform`**, **`capabilities-*`**                                                                                                    |
+| `src/capabilities/<pkg>/`                     | `kernel`, `kernel-*`, `core`, **`src/core/db/pg`**, **`src/core/db/schema`**, own `capabilities-<pkg>`, `rpc-contract`                                                    | **`runtime`**, **`platform`**, **other `capabilities-*`**, **`feature-*`**                                                              |
+| `src/platform/`, `app/`, `tests/`             | all workspace packages                                                                                                                                                    | —                                                                                                                                       |
+| `features/habitat/habitat/habitat-api/`       | same as `src/platform/`（nested workspace package）                                                                                                                       | —                                                                                                                                       |
+| `features/habitat/protocol/habitat-contract/` | `kernel`, `kernel-*`（devDeps：`platform`, `core`, `habitat-api` 仅类型解析）                                                                                             | **`platform`**, **`core`**, **`habitat-api`**                                                                                           |
+| `features/<slug>/`                            | `core`, `platform` (habitat connectors), `rpc-contract`, `shell-sdk`, `ui-kit`, `vault-crypto`, `shared/companion-motion` (companion only), **other `feature-*`（无环）** | `runtime`, arbitrary `capabilities-*`；**禁止 feature 环依赖**                                                                          |
+| `src/satellites/<name>/`                      | `rpc-contract`, `shell-sdk`, `ui-kit`, `vault-crypto`, `kernel`, `kernel-*`, matching `feature-*` shim                                                                    | **`shell-ui`**, **`admin-*`**, **`platform`**, **`core`**, **`runtime`**, **`capabilities-*`** — **only `companion` directory allowed** |
+| `src/shared/habitat-rpc/`                     | `kernel`, `kernel-*`, `habitat-rpc`                                                                                                                                       | all other workspace packages                                                                                                            |
+| `src/shared/rpc-contract/`                    | `kernel`, `kernel-*`, `habitat-rpc`                                                                                                                                       | all other workspace packages                                                                                                            |
+| `src/shared/vault-crypto/`                    | `kernel`, `kernel-*`, `vault-crypto`                                                                                                                                      | all other workspace packages                                                                                                            |
+| `src/frontend/ui-kit/`                        | `kernel`, `kernel-*`                                                                                                                                                      | **`rpc-contract`**, other workspace packages                                                                                            |
+| `src/frontend/shell-sdk/`                     | `kernel`, `kernel-*`, `habitat-rpc`, `vault-crypto`                                                                                                                       | **`rpc-contract`**, other workspace packages                                                                                            |
+| `src/frontend/shell-ui/`                      | `ui-kit`, `shell-sdk`, `feature-*`, `satellite-*`, `kernel`, `kernel-*`                                                                                                   | **`rpc-contract`**；禁止深路径 import `src/satellites/`（用 `@freeanima/feature-*/ui/*`）                                               |
 
 Notes aligned with the checker:
 
 - **Scan scope**: `@freeanima/*` imports in `*.ts` / `*.tsx` **and** `dependencies` in each layer's `package.json`.
 - **Exemptions** (import scan only): paths under `tests/` or `test-helpers/`, `*.test.ts` / `*.spec.ts`, all `src/app/cli/` source files, and build path helpers (`features/habitat/build/*.ts`, selected `src/frontend/shell-ui/vite/*.ts`). Production code in other layers is still checked.
-- **Capabilities isolation**: `src/capabilities/<src>` must not depend on `@freeanima/capabilities-<other>` where `<other> ≠ <src>`，亦不可依赖任何 `feature-*`。产品域 SSOT 在 `features/*/domain/`；**platform / console-api / tests** 直接 import `@freeanima/feature-*/domain`。
+- **Capabilities isolation**: `src/capabilities/<src>` must not depend on `@freeanima/capabilities-<other>` where `<other> ≠ <src>`，亦不可依赖任何 `feature-*`。产品域 SSOT 在 `features/*/domain/`；**platform / habitat-api / tests** 直接 import `@freeanima/feature-*/domain`。
 - **Features 互引**：`features/<slug>` **可以**依赖其他 `@freeanima/feature-*`（如 task → tag）；**禁止环依赖**。优先直接 import，勿为「隔离」引入多余 DI。架构简单优先于为规则绕弯。
 - **Platform ↔ feature**: `@freeanima/feature-*` 在 `@freeanima/platform` 的 **`dependencies`** 中声明（register-tools、connectors、plugin 注册）。
 - **Satellites**: only **`companion`** under `src/satellites/`; product UIs live in `features/*/ui`. Do not import `platform`, `runtime`, `core`, or arbitrary `capabilities-*` — use [`src/shared/rpc-contract`](../../src/shared/rpc-contract/) + [`src/frontend/shell-sdk`](../../src/frontend/shell-sdk/) + [`src/frontend/ui-kit`](../../src/frontend/ui-kit/)。功能原型见 [`frontend-features.md`](frontend-features.md)。
 - **Tests**: production layers may use `@freeanima/platform` test helpers in test files / devDependencies; the checker skips exempt paths above.
 
-## Port wiring at composition root
+## Port binding at composition root
 
 Boot phases: [`src/platform/boot/`](../../src/platform/boot/). Entry: [`src/platform/serve.ts`](../../src/platform/serve.ts).
 

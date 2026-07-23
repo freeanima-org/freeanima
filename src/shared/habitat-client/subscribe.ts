@@ -1,37 +1,41 @@
 import type { HabitatClientProfile } from "@freeanima/shared/habitat-contract";
-import { getHubMethodDef, isHubMethod, type HubMethod } from "@freeanima/shared/habitat-contract";
+import {
+  getHabitatMethodDef,
+  isHabitatMethod,
+  type HabitatMethod,
+} from "@freeanima/shared/habitat-contract";
 import type { RpcClient } from "@freeanima/shared/habitat-rpc";
 
-import { createHabitatClient, type HubCallOptions, type HabitatClient } from "./client.ts";
+import { createHabitatClient, type HabitatCallOptions, type HabitatClient } from "./client.ts";
 
-export type HubSubscribeCallbacks<T> = {
+export type HabitatSubscribeCallbacks<T> = {
   onData?: (data: T) => void;
   onError?: (err: Error) => void;
   onComplete?: () => void;
 };
 
-export type HubSubscribeOptions = {
+export type HabitatSubscribeOptions = {
   transport?: "auto" | "http" | "ws";
   profile?: HabitatClientProfile;
 };
 
-export function createHubSubscriber(options: {
+export function createHabitatSubscriber(options: {
   httpOrigin: string;
   authToken?: string;
   fetch?: typeof fetch;
   getRpcClient: () => Promise<RpcClient>;
   profile?: HabitatClientProfile;
 }) {
-  function subscribe<K extends HubMethod>(
+  function subscribe<K extends HabitatMethod>(
     method: K,
     input: Record<string, unknown>,
-    callbacks: HubSubscribeCallbacks<unknown>,
-    _opts: HubSubscribeOptions = {},
+    callbacks: HabitatSubscribeCallbacks<unknown>,
+    _opts: HabitatSubscribeOptions = {},
   ): { unsubscribe: () => void } {
-    if (!isHubMethod(method)) {
-      throw new Error(`unknown hub method: ${method}`);
+    if (!isHabitatMethod(method)) {
+      throw new Error(`unknown habitat method: ${method}`);
     }
-    const def = getHubMethodDef(method);
+    const def = getHabitatMethodDef(method);
     def.input.parse(input);
 
     if (!def.meta.transports.includes("ws")) {
@@ -72,11 +76,12 @@ export function createHubSubscriber(options: {
 }
 
 export function createFullHabitatClient(
-  options: Parameters<typeof createHabitatClient>[0] & Parameters<typeof createHubSubscriber>[0],
-): HabitatClient & ReturnType<typeof createHubSubscriber> {
+  options: Parameters<typeof createHabitatClient>[0] &
+    Parameters<typeof createHabitatSubscriber>[0],
+): HabitatClient & ReturnType<typeof createHabitatSubscriber> {
   const api = createHabitatClient(options);
-  const sub = createHubSubscriber(options);
+  const sub = createHabitatSubscriber(options);
   return Object.assign(api, sub);
 }
 
-export type { HubCallOptions };
+export type { HabitatCallOptions };

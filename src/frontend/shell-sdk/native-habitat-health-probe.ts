@@ -1,6 +1,6 @@
 import type { HabitatHealthBody } from "./habitat-health-probe.ts";
 
-function hubOrigin(habitatUrl: string): string {
+function habitatOrigin(habitatUrl: string): string {
   try {
     const withScheme = /^https?:\/\//i.test(habitatUrl.trim())
       ? habitatUrl.trim()
@@ -38,7 +38,7 @@ export async function probeHabitatHealthViaNativeHttp(
 export async function shouldProbeHabitatHealthViaNativeHttp(habitatUrl: string): Promise<boolean> {
   if (!isTauriShell()) return false;
   const page = window.location.origin;
-  const hub = hubOrigin(habitatUrl);
-  if (page && hub && page === hub) return false;
+  const origin = habitatOrigin(habitatUrl);
+  if (page && origin && page === origin) return false;
   return true;
 }

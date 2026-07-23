@@ -46,7 +46,7 @@ describe("remote tools naming", () => {
     expect(resolveDefaultRemotePlatform("  ", "companion", "k7m")).toBeUndefined();
   });
 
-  it("validates hub instance ids", () => {
+  it("validates Habitat instance ids", () => {
     expect(isValidRemoteInstanceId("k7m")).toBe(true);
     expect(isValidRemoteInstanceId("ab")).toBe(false);
     expect(isValidRemoteInstanceId("uuid")).toBe(false);

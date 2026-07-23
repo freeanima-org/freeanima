@@ -20,7 +20,7 @@ function requireFullAuth(ctx: RemoteToolsRequestContext): ServiceAuthContext {
 }
 
 /** Habitat Habitat RPC：subject API token 管理 */
-export const tokensHubHandlers: Record<string, FeatureRpcHandler> = {
+export const tokensHabitatHandlers: Record<string, FeatureRpcHandler> = {
   "tokens.listForSubject": async (_deps, payload, ctx) => {
     requireFullAuth(ctx);
     const { id } = payload as { id: number };

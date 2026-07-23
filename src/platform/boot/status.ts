@@ -23,7 +23,7 @@ export function liveForeignPid(): number | null {
 }
 
 /**
- * 认领全局 server.pid：若已有存活外进程则不覆盖（支持同 home 多端口 dev:hub）。
+ * 认领全局 server.pid：若已有存活外进程则不覆盖（支持同 home 多端口 dev:habitat）。
  * @returns 是否由本进程持有/写入了 pid 文件
  */
 export function claimPidFileIfUnowned(): boolean {

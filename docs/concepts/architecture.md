@@ -10,15 +10,15 @@ System-level constraints and long-lived design principles.
 
 User-facing product terms (Chinese in [`i18n/glossary.md`](../../i18n/glossary.md)):
 
-| Role                                  | English          | Chinese    | Meaning                                                                                                                                                                          |
-| ------------------------------------- | ---------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Long-running process / connect target | **Habitat**      | **栖息地** | One process hosts **multiple digital lives** (`agent` subjects) and **human assets** (`user`); connect / token / restart target                                                  |
-| External connectors (class)           | **Portal**       | **入口**   | Shell, MCP clients, and similar ways in; not the Habitat itself                                                                                                                  |
-| Shell                                 | **Shell**        | **壳**     | A Portal (desktop / mobile / web window; SSH-like)                                                                                                                               |
-| Admin / inspect UI (legacy Habitat)   | **Habitat** (UI) | **栖息地** | Area under `/habitat/*`; "Open Habitat" vs "Connect to Habitat"                                                                                                                  |
-| Admin home page                       | **Dashboard**    | **仪表盘** | `/habitat/dashboard` only; other console routes keep their own labels                                                                                                            |
-| Message bridges                       | **Gateway**      | Gateway    | Discord / WeChat — **not** a Portal                                                                                                                                              |
-| Wire / code                           | —                | —          | Canonical：`/rpc/v1`、`HabitatRPC/1.0`、`habitat_*`、`habitat_runtime_config`、`dev:habitat`。Legacy（`/hub/rpc/v1`、`HubRPC/1.0`、`hub_*`、`dev:hub` 等）**至 0.9.3，其后删除** |
+| Role                                  | English          | Chinese           | Meaning                                                                                                                         |
+| ------------------------------------- | ---------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Long-running process / connect target | **Habitat**      | **栖息地**        | One process hosts **multiple digital lives** (`agent` subjects) and **human assets** (`user`); connect / token / restart target |
+| External connectors (class)           | **Portal**       | **入口**          | Shell, MCP clients, and similar ways in; not the Habitat itself                                                                 |
+| Shell                                 | **Shell**        | **壳**            | A Portal (desktop / mobile / web window; SSH-like)                                                                              |
+| Admin / inspect UI (legacy Habitat)   | **Habitat** (UI) | **栖息地**        | Area under `/habitat/*`; "Open Habitat" vs "Connect to Habitat"                                                                 |
+| Admin home page                       | **Dashboard**    | **仪表盘**        | `/habitat/dashboard` only; other Habitat routes keep their own labels                                                           |
+| Message bridges                       | **Gateway**      | Gateway           | Discord / WeChat — **not** a Portal                                                                                             |
+| Protocol / code identifiers           | —                | **协议/代码标识** | `/rpc/v1`、`HabitatRPC/1.0`、`habitat_*`、`habitat_runtime_config`、`dev:habitat`                                               |
 
 Verbs: **connect to Habitat** (URL + token); **open Habitat** (admin UI); **reach via a Portal** (Shell / MCP).
 
@@ -26,21 +26,16 @@ Estate **Body** (VM / OS / network under the four-layer model) is the cognitive 
 
 ### Habitat configuration (SSOT)
 
-User copy says Habitat. Canonical storage/RPC identifiers use `habitat_*` / `HabitatRPC/1.0` as of 0.9.3; dual-read legacy `hub_*` / `HubRPC/1.0` / `/hub/rpc/v1` until removed after 0.9.3.
+User copy says Habitat. Storage/RPC identifiers use `habitat_*` / `HabitatRPC/1.0` / `/rpc/v1`.
 
-| Layer         | Storage                                                                                   | Who reads/writes                                             |
-| ------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`, `web`)                               | `platform/boot` only; install/ops edit YAML                  |
-| **Runtime**   | PostgreSQL `habitat_runtime_config`（legacy table `hub_runtime_config` renamed in 0.9.3） | Engine, tools, Shell Habitat settings, Habitat UI `config.*` |
+| Layer         | Storage                                                     | Who reads/writes                                             |
+| ------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`, `web`) | `platform/boot` only; install/ops edit YAML                  |
+| **Runtime**   | PostgreSQL `habitat_runtime_config`                         | Engine, tools, Shell Habitat settings, Habitat UI `config.*` |
 
-### Legacy hub_* removal checklist（0.9.3 后）
+### Naming cleanup
 
-Remove in a follow-up PR after 0.9.3 ships:
-
-- `/hub/rpc/v1` and Vite `/hub` proxy (`HABITAT_RPC_REST_PREFIX_LEGACY`)
-- Protocol literal `HubRPC/1.0` dual-accept; dual-write `hub_url` / `hub_ws_url`
-- TS aliases (`defineHubRoute`, `hubRouter`, `plugin.hub`, …) and CLI `dev:hub` / `FREEANIMA_HUB_*`
-- localStorage `freeanima.hubUrl` read path
+Legacy `hub_*` / `console` protocol aliases and dual-write keys have been removed; use Habitat identifiers only.
 
 ## Core Principles
 
@@ -125,9 +120,9 @@ Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platfo
 
 | Layer            | Platform-native?                   | Location (current → target)                           | 数据通道                                |
 | ---------------- | ---------------------------------- | ----------------------------------------------------- | --------------------------------------- |
-| Shell（壳子维）  | Yes                                | `src/app/shell/tauri`, companion, Habitat wiring      | Tauri IPC / commands                    |
+| Shell（壳子维）  | Yes                                | `src/app/shell/tauri`, companion, Habitat binding     | Tauri IPC / commands                    |
 | Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                               | Habitat RPC（Feature RPC）              |
-| Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.hub.rpc`）       | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
+| Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.habitat.rpc`）   | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
 | Companion host   | Overlay WebView-host（第一方）     | `src/satellites/companion`（spa attach；壳薄 IPC/FS） | Habitat RPC + `remote_tools.attach`     |
 
 导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `getShellKind()` 锁 Shell 布局。交互（右键/长按/Enter）用 shell-sdk 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
@@ -138,13 +133,13 @@ Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platfo
 
 Habitat sidebar is grouped (not flat storage tables). Map new features onto these user-visible concepts:
 
-| Group        | Cognitive layer | Routes (representative)                             |
-| ------------ | --------------- | --------------------------------------------------- |
-| Runtime      | Estate + ops    | dashboard, config, cron                             |
-| Memory       | Memory          | memory hub, browse sub-routes, sleep, auto-llm-runs |
-| Self         | Self            | self-layer, system-prompt                           |
-| Estate       | Estate          | subjects, worlds                                    |
-| Capabilities | Estate (tools)  | tools, commands, mcp, acp, remote-tool instances    |
+| Group        | Cognitive layer | Routes (representative)                          |
+| ------------ | --------------- | ------------------------------------------------ |
+| Runtime      | Estate + ops    | dashboard, config, cron                          |
+| Memory       | Memory          | memory browse sub-routes, sleep, auto-llm-runs   |
+| Self         | Self            | self-layer, system-prompt                        |
+| Estate       | Estate          | subjects, worlds                                 |
+| Capabilities | Estate (tools)  | tools, commands, mcp, acp, remote-tool instances |
 
 FTS index maintenance is under Memory (not top-level). Do not add new flat nav items without mapping to a group above.
 
@@ -236,9 +231,9 @@ See [`guide/security.md`](../guide/security.md).
 
 ## Runtime Modes
 
-Production (standalone install CLI): `anima service` (systemd --user). Auto-restarts after crashes; only `systemctl stop` stops the service. Source-tree `anima` does **not** register `service` — use `bun run dev:hub` for local Habitat.
+Production (standalone install CLI): `anima service` (systemd --user). Auto-restarts after crashes; only `systemctl stop` stops the service. Source-tree `anima` does **not** register `service` — use `bun run dev:habitat` for local Habitat.
 
-- **hub / service**: long-running — Habitat HTTP (`/rpc/v1`), Discord / WeChat Gateway, cron
+- **Habitat / service**: long-running — Habitat HTTP (`/rpc/v1`), Discord / WeChat Gateway, cron
 - **UI**: `src/app/shell/tauri` + `web/dist-*` bundled SPA (Chat + Habitat); Habitat does not host `/habitat`
 
 ```bash
@@ -249,7 +244,7 @@ anima service status
 
 # monorepo / worktree
 just dev                         # Habitat (≥10000) + Vite Web (≥5000)
-bun run dev:hub                  # Habitat foreground (default random ≥10000; not 2658)
+bun run dev:habitat                  # Habitat foreground (default random ≥10000; not 2658)
 bun run dev:web                  # browser shell Vite HMR from :5000 (set FREEANIMA_URL)
 bun run build:web                # source deploy / Habitat /web: build dist before start
 ```
@@ -277,7 +272,7 @@ LLM view — flat tool list:
 
 - Connect to external MCP servers (separate processes)
 - Each server may register many fine-grained tools (single function calls)
-- Configure under Habitat runtime `mcp_servers` (PG `hub_runtime_config`); manage in **Habitat UI** `/habitat/mcp` (config + start/stop + tools). Shell Settings no longer edits this section.
+- Configure under Habitat runtime `mcp_servers` (PG `habitat_runtime_config`); manage in **Habitat UI** `/habitat/mcp` (config + start/stop + tools). Shell Settings no longer edits this section.
 
 ```yaml
 mcp_servers:
@@ -393,7 +388,7 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 | Chat    | Habitat RPC `/rpc/v1` (shared WS, no remote-tool attach) | `/web/chat`              |
 | Habitat | Habitat RPC `/rpc/v1` (WS + HTTP POST, same envelope)    | `/web/habitat/dashboard` |
 
-`/web/config.json` 提供 `hub_url`、`ui_version`、`min_shell_version`（浏览器/PWA 与壳调试用；原生壳 UI 版本随安装包）。
+`/web/config.json` 提供 `habitat_url`、`habitat_ws_url`、`ui_version`、`min_shell_version`（浏览器/PWA 与壳调试用；原生壳 UI 版本随安装包）。
 
 ## Events and Hooks (Summary)
 

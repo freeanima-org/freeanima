@@ -36,13 +36,13 @@ export type BundledSapStreamClient = {
 let bundledClient: BundledSapStreamClient | null = null;
 
 export function createBundledSapStreamClient(options?: {
-  hubRpcWsUrl?: string;
+  habitatRpcWsUrl?: string;
   habitatUrl?: string;
   authToken?: string;
   onConnectionStateChange?: (state: SapConnectionState) => void;
 }): BundledSapStreamClient {
   const hubRpc = getBundledHabitatRpcClient({
-    ...(options?.hubRpcWsUrl !== undefined ? { hubRpcWsUrl: options.hubRpcWsUrl } : {}),
+    ...(options?.habitatRpcWsUrl !== undefined ? { habitatRpcWsUrl: options.habitatRpcWsUrl } : {}),
     ...(options?.habitatUrl !== undefined ? { habitatUrl: options.habitatUrl } : {}),
     ...(options?.authToken !== undefined ? { authToken: options.authToken } : {}),
     ...(options?.onConnectionStateChange !== undefined

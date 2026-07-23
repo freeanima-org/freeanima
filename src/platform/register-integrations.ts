@@ -27,10 +27,10 @@ export function registerServiceIntegrations(opts: {
     config: opts.config,
   });
   const acp = getAcpManager();
-  acp.wireRegistries({ toolSets: opts.toolSets, skills: opts.skills, config: opts.config });
-  acp.wireConversation(opts.conversation);
-  acp.wireTaskQuery(createAcpTaskQueryPort());
-  acp.wireProgressDelivery(
+  acp.bindRegistries({ toolSets: opts.toolSets, skills: opts.skills, config: opts.config });
+  acp.bindConversation(opts.conversation);
+  acp.bindTaskQuery(createAcpTaskQueryPort());
+  acp.bindProgressDelivery(
     createAcpProgressDelivery({
       conversation: opts.conversation,
       bus: opts.kernel.eventBus,

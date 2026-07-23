@@ -15,7 +15,7 @@ import {
   getRemoteToolsServerDeps,
 } from "@freeanima/platform/remote-tools/runtime-context";
 import { RemoteInstanceRegistry } from "@freeanima/platform/remote-tools/instance-registry";
-import { HubSessionRegistry } from "@freeanima/platform/remote-tools/habitat-session-registry";
+import { HabitatSessionRegistry } from "@freeanima/platform/remote-tools/habitat-session-registry";
 import type { RemoteToolsManager } from "@freeanima/capabilities/remote-tools";
 
 import { bindHabitatRuntimeContext } from "@freeanima/features/habitat/habitat/habitat-api/handlers/runtime.ts";
@@ -60,7 +60,7 @@ describePg("service API tokens", () => {
         runtime,
         remoteToolsManager: runtime.fullDeps().satellite as RemoteToolsManager,
         instanceRegistry: new RemoteInstanceRegistry(false),
-        hubSessionRegistry: new HubSessionRegistry(),
+        hubSessionRegistry: new HabitatSessionRegistry(),
         animaVersion: "test",
         masks: runtime.fullDeps().masks,
       });

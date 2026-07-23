@@ -55,13 +55,13 @@ export function formatHabitatHealthProbeFetchError(err: unknown, habitatUrl?: st
     return "连接超时";
   }
   if (err instanceof TypeError) {
-    const httpsHub = habitatUrl?.trim().toLowerCase().startsWith("https://");
+    const httpsHabitat = habitatUrl?.trim().toLowerCase().startsWith("https://");
     const tauriShell = isTauriShellRuntime();
     const touchShell = isTouchNativeShellRuntime();
-    if (tauriShell && !touchShell && httpsHub) {
+    if (tauriShell && !touchShell && httpsHabitat) {
       return "网络错误：桌面壳 HTTPS 需在本机信任栖息地的 mkcert 根 CA（设置页下载 rootCA.pem 并导入系统），或暂用 http://…:2658";
     }
-    if (touchShell && httpsHub) {
+    if (touchShell && httpsHabitat) {
       return "网络错误：壳层内 HTTPS 需在手机「设置 → 安全」安装 mkcert 根 CA（rootCA.pem），并重新安装 APK；或暂用 http://…:2658";
     }
     if (tauriShell && !touchShell) {
@@ -136,7 +136,7 @@ export async function probeHabitatRpcWebSocket(
   const { resolveHabitatRpcWsUrl } = await import("@freeanima/shared/habitat-rpc/urls.ts");
   const base = habitatUrl.trim().replace(/\/$/, "");
   const wsUrl = resolveHabitatRpcWsUrl(base);
-  const httpsHub = base.toLowerCase().startsWith("https://");
+  const httpsHabitat = base.toLowerCase().startsWith("https://");
 
   await new Promise<void>((resolve, reject) => {
     let settled = false;
@@ -164,7 +164,7 @@ export async function probeHabitatRpcWebSocket(
     const timer = setTimeout(() => {
       finish(
         new Error(
-          httpsHub
+          httpsHabitat
             ? "Habitat RPC WebSocket 超时：原生 HTTP 探测已通，但壳内 wss 失败。请确认本机/手机已信任栖息地 TLS（mkcert 根 CA），或暂用 http://…:2658"
             : "Habitat RPC WebSocket 超时：原生 HTTP 探测已通，但壳内 ws 未连通（检查地址、防火墙与反向代理 WebSocket）",
         ),
@@ -174,7 +174,7 @@ export async function probeHabitatRpcWebSocket(
     ws.addEventListener("error", () => {
       finish(
         new Error(
-          httpsHub
+          httpsHabitat
             ? "Habitat RPC WebSocket 失败：测试连接的原生 HTTPS 可能已通，但 WebView 未信任该证书。请安装 mkcert 根 CA，或改用 http://…:2658"
             : "Habitat RPC WebSocket 失败：与「测试连接」原生 HTTP 路径不同，请检查 ws 地址与网络",
         ),

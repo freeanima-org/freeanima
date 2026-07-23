@@ -1,9 +1,13 @@
 import type { RpcMethod, RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import { getHubMethodDef, isHubMethod, type HubMethod } from "@freeanima/shared/habitat-contract";
+import {
+  getHabitatMethodDef,
+  isHabitatMethod,
+  type HabitatMethod,
+} from "@freeanima/shared/habitat-contract";
 import { getFeatureRpcHandler } from "../features/registry.ts";
 import type { RemoteToolsServerDeps } from "../remote-tools/types.ts";
 
-export type HubDispatchContext = RemoteToolsRequestContext & {
+export type HabitatDispatchContext = RemoteToolsRequestContext & {
   app_id: string;
   instance_id: string;
   /** HTTP REST 适配器注入；WS 无此字段 */
@@ -15,13 +19,13 @@ export async function habitatDispatch(
   deps: RemoteToolsServerDeps,
   method: string,
   payload: unknown,
-  ctx: HubDispatchContext,
+  ctx: HabitatDispatchContext,
 ): Promise<unknown> {
-  if (!isHubMethod(method)) {
-    throw new Error(`unknown hub method: ${method}`);
+  if (!isHabitatMethod(method)) {
+    throw new Error(`unknown habitat method: ${method}`);
   }
-  const hubMethod = method as HubMethod;
-  const def = getHubMethodDef(hubMethod);
+  const hubMethod = method as HabitatMethod;
+  const def = getHabitatMethodDef(hubMethod);
   const parsedInput = def.input.parse(payload);
 
   const featureHandler = getFeatureRpcHandler(hubMethod as RpcMethod);
@@ -29,5 +33,5 @@ export async function habitatDispatch(
     return featureHandler(deps, parsedInput, ctx);
   }
 
-  throw new Error(`no handler registered for hub method: ${method}`);
+  throw new Error(`no handler registered for habitat method: ${method}`);
 }

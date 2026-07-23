@@ -61,7 +61,7 @@ export function systemdUserAvailable(): boolean {
 
 /**
  * 停止 Habitat stack（anima.service）。
- * Satellite 使用 PartOf=anima.service，随 hub 一并关停。
+ * Satellite 使用 PartOf=anima.service，随 Habitat 一并关停。
  */
 export function stopHubStackViaSystemd(): ReturnType<typeof systemctl> | null {
   if (!systemdUserAvailable()) return null;

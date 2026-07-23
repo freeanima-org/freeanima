@@ -1,17 +1,17 @@
 export { buildBearerHeaders, createBearerFetch, habitatHttpFromWsUrl } from "./http-auth.ts";
 export {
   createHabitatClient,
-  HubTransportError,
-  type HubCallOptions,
-  type HubCallRawOptions,
+  HabitatTransportError,
+  type HabitatCallOptions,
+  type HabitatCallRawOptions,
   type HabitatClient,
   type HabitatClientOptions,
 } from "./client.ts";
 export {
   createFullHabitatClient,
-  createHubSubscriber,
-  type HubSubscribeCallbacks,
-  type HubSubscribeOptions,
+  createHabitatSubscriber,
+  type HabitatSubscribeCallbacks,
+  type HabitatSubscribeOptions,
 } from "./subscribe.ts";
 export {
   getBundledHabitatClient,

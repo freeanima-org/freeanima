@@ -1,58 +1,55 @@
-import type { HubMethodDef } from "../method-def.ts";
+import type { HabitatMethodDef } from "../method-def.ts";
 import {
   buildHttpRouteMeta,
-  isReadOnlyHubMeta,
+  isReadOnlyHabitatMeta,
   resolveHttpRequestEncoding,
   type HttpRouteMeta,
 } from "../http-route.ts";
-import { resolveHubAuthPolicy } from "../transport.ts";
+import { resolveHabitatAuthPolicy } from "../transport.ts";
 import { habitatMethodDefs } from "./habitat.ts";
 import { wsOnlyMethodDefs } from "./ws-only.ts";
 import {
-  getInstalledHubMethodDef,
-  installHubMethodRegistry,
-  isHubMethodRegistryInstalled,
-  isInstalledHubMethod,
-  listInstalledHubMethods,
-  resetHubMethodRegistryForTests,
+  getInstalledHabitatMethodDef,
+  installHabitatMethodRegistry,
+  isHabitatMethodRegistryInstalled,
+  isInstalledHabitatMethod,
+  listInstalledHabitatMethods,
+  resetHabitatMethodRegistryForTests,
 } from "./runtime.ts";
 
 /**
  * 编译期 fallback defs（habitat / ws-only）。
- * Feature method defs SSOT：features hub routes → platform hub-router → runtime registry。
+ * Feature method defs SSOT：features habitat routes → platform habitat-router → runtime registry。
  */
 export const STATIC_METHOD_REGISTRY = {
   ...wsOnlyMethodDefs,
   ...habitatMethodDefs,
 } as const;
 
-/** @deprecated 使用 getInstalledHubMethodDef；保留别名供过渡期 import */
-export const METHOD_REGISTRY = STATIC_METHOD_REGISTRY;
-
-function buildStaticHttpRouteRegistry(): Partial<Record<HubMethod, HttpRouteMeta>> {
+function buildStaticHttpRouteRegistry(): Partial<Record<HabitatMethod, HttpRouteMeta>> {
   const routeKeys = new Set<string>();
-  const routes: Partial<Record<HubMethod, HttpRouteMeta>> = {};
+  const routes: Partial<Record<HabitatMethod, HttpRouteMeta>> = {};
 
-  for (const method of Object.keys(STATIC_METHOD_REGISTRY) as StaticHubMethod[]) {
+  for (const method of Object.keys(STATIC_METHOD_REGISTRY) as StaticHabitatMethod[]) {
     const def = STATIC_METHOD_REGISTRY[method];
     const meta = def.meta;
     if (!meta.transports.includes("http")) continue;
 
-    const readOnly = isReadOnlyHubMeta(meta) || resolveHubAuthPolicy(meta) === "optional";
+    const readOnly = isReadOnlyHabitatMeta(meta) || resolveHabitatAuthPolicy(meta) === "optional";
     const http = buildHttpRouteMeta(method, def.input, readOnly, meta.httpOverrides);
-    if (resolveHubAuthPolicy(meta) === "optional" && meta.transports.includes("ws")) {
-      throw new Error(`hub method ${method}: auth optional requires http-only transport`);
+    if (resolveHabitatAuthPolicy(meta) === "optional" && meta.transports.includes("ws")) {
+      throw new Error(`habitat method ${method}: auth optional requires http-only transport`);
     }
     if (http.verb === "GET" && !readOnly && !meta.httpOverrides?.verb) {
-      throw new Error(`hub method ${method}: GET route requires readOnly meta`);
+      throw new Error(`habitat method ${method}: GET route requires readOnly meta`);
     }
     const requestEncoding = resolveHttpRequestEncoding(http);
     if (requestEncoding !== "json" && http.verb !== "POST") {
-      throw new Error(`hub method ${method}: non-json request requires POST verb`);
+      throw new Error(`habitat method ${method}: non-json request requires POST verb`);
     }
     const routeKey = `${http.verb}:${http.path}`;
     if (routeKeys.has(routeKey)) {
-      throw new Error(`duplicate hub http route: ${routeKey} (${method})`);
+      throw new Error(`duplicate habitat http route: ${routeKey} (${method})`);
     }
     routeKeys.add(routeKey);
     routes[method] = http;
@@ -63,52 +60,56 @@ function buildStaticHttpRouteRegistry(): Partial<Record<HubMethod, HttpRouteMeta
 
 const STATIC_HTTP_ROUTE_REGISTRY = buildStaticHttpRouteRegistry();
 
-export type StaticHubMethod = keyof typeof STATIC_METHOD_REGISTRY;
+export type StaticHabitatMethod = keyof typeof STATIC_METHOD_REGISTRY;
 
-export type HubMethod = string;
+export type HabitatMethod = string;
 
 /** shared habitat-client 运行时 payload；精确类型见 @freeanima/platform/habitat */
-export type HubMethodInputs = Record<string, unknown>;
+export type HabitatMethodInputs = Record<string, unknown>;
 
 /** shared habitat-client 运行时返回值；精确类型见 @freeanima/platform/habitat */
-export type HubMethodOutputs = unknown;
+export type HabitatMethodOutputs = unknown;
 
-export function isHubMethod(method: string): method is HubMethod {
-  if (isHubMethodRegistryInstalled()) {
-    return isInstalledHubMethod(method);
+export function isHabitatMethod(method: string): method is HabitatMethod {
+  if (isHabitatMethodRegistryInstalled()) {
+    return isInstalledHabitatMethod(method);
   }
   return method in STATIC_METHOD_REGISTRY;
 }
 
-export function getHubMethodDef(method: string): HubMethodDef {
-  if (isHubMethodRegistryInstalled()) {
-    const installed = getInstalledHubMethodDef(method);
+export function getHabitatMethodDef(method: string): HabitatMethodDef {
+  if (isHabitatMethodRegistryInstalled()) {
+    const installed = getInstalledHabitatMethodDef(method);
     if (installed) return installed;
   }
-  const def = STATIC_METHOD_REGISTRY[method as StaticHubMethod];
+  const def = STATIC_METHOD_REGISTRY[method as StaticHabitatMethod];
   if (!def) {
     throw new Error(
-      `unknown hub method: ${method} (install runtime registry via initHubRouter for feature methods)`,
+      `unknown habitat method: ${method} (install runtime registry via initHabitatRouter for feature methods)`,
     );
   }
-  const http = STATIC_HTTP_ROUTE_REGISTRY[method as StaticHubMethod];
+  const http = STATIC_HTTP_ROUTE_REGISTRY[method as StaticHabitatMethod];
   if (!http) return def;
   const { httpOverrides: _ignored, ...metaBase } = def.meta;
   return { ...def, meta: { ...metaBase, http } };
 }
 
-export function getHubMethodHttpRoute(method: HubMethod): HttpRouteMeta | undefined {
-  if (isHubMethodRegistryInstalled()) {
-    return getInstalledHubMethodDef(method)?.meta.http;
+export function getHabitatMethodHttpRoute(method: HabitatMethod): HttpRouteMeta | undefined {
+  if (isHabitatMethodRegistryInstalled()) {
+    return getInstalledHabitatMethodDef(method)?.meta.http;
   }
-  return STATIC_HTTP_ROUTE_REGISTRY[method as StaticHubMethod];
+  return STATIC_HTTP_ROUTE_REGISTRY[method as StaticHabitatMethod];
 }
 
-export function listHubMethods(): HubMethod[] {
-  if (isHubMethodRegistryInstalled()) {
-    return listInstalledHubMethods() as HubMethod[];
+export function listHabitatMethods(): HabitatMethod[] {
+  if (isHabitatMethodRegistryInstalled()) {
+    return listInstalledHabitatMethods() as HabitatMethod[];
   }
-  return Object.keys(STATIC_METHOD_REGISTRY) as HubMethod[];
+  return Object.keys(STATIC_METHOD_REGISTRY) as HabitatMethod[];
 }
 
-export { installHubMethodRegistry, resetHubMethodRegistryForTests, isHubMethodRegistryInstalled };
+export {
+  installHabitatMethodRegistry,
+  resetHabitatMethodRegistryForTests,
+  isHabitatMethodRegistryInstalled,
+};

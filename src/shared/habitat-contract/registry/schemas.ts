@@ -1,4 +1,4 @@
-/** Habitat Habitat wire schemas — migrated from habitat-api/api/schemas.ts */
+/** Habitat protocol schemas — migrated from habitat-api/api/schemas.ts */
 export {
   autobiographicalMemoryListBodySchema,
   createConversationBodySchema,

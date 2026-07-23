@@ -11,7 +11,7 @@ export function isHabitatRpcTimeoutError(err: unknown): boolean {
   return (
     err instanceof HabitatRpcTimeoutError ||
     (err instanceof Error &&
-      (err.message.includes("habitat_rpc_timeout") || err.message.includes("hub_rpc_timeout")))
+      (err.message.includes("habitat_rpc_timeout") || err.message.includes("habitat_rpc_timeout")))
   );
 }
 

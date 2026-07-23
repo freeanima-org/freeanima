@@ -10,7 +10,7 @@ function readShellToken(shell: ShellRemoteAuthSource | undefined): string | unde
   return token || undefined;
 }
 
-export function resolveShellConnectAuthToken(_hubUrl: string): string | undefined {
+export function resolveShellConnectAuthToken(_habitatUrl: string): string | undefined {
   if (typeof window === "undefined") return undefined;
   const win = window as Window & {
     satelliteShell?: ShellRemoteAuthSource;

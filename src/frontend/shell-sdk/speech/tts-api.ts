@@ -2,11 +2,11 @@ import { buildHabitatRestRequest } from "@freeanima/shared/habitat-rpc";
 
 import { resolveBinarySafeHabitatFetch } from "../habitat-api-fetch.ts";
 import { resolveHabitatApiOrigin } from "../habitat-api-origin.ts";
-import { MAX_HUB_TTS_TEXT_LENGTH } from "./constants.ts";
+import { MAX_HABITAT_TTS_TEXT_LENGTH } from "./constants.ts";
 import { buildTtsCacheKey, getTtsAudioCache } from "./tts-cache.ts";
 import { consumeMpegStream, playMpegBuffer } from "./mpeg-player.ts";
 
-export type HubTtsSynthesizeParams = {
+export type HabitatTtsSynthesizeParams = {
   text: string;
   lang?: string | null;
   voice?: string | null;
@@ -16,7 +16,7 @@ export type HubTtsSynthesizeParams = {
   volume?: number;
 };
 
-export type HubTtsSynthesizeResult = {
+export type HabitatTtsSynthesizeResult = {
   buffer: ArrayBuffer;
   fromCache: boolean;
   played: boolean;
@@ -27,13 +27,13 @@ function normalizeHubTtsText(text: string): string {
   if (!normalized) {
     throw new Error("朗读文本不能为空");
   }
-  if (normalized.length > MAX_HUB_TTS_TEXT_LENGTH) {
-    throw new Error(`朗读文本过长（最多 ${MAX_HUB_TTS_TEXT_LENGTH} 字）`);
+  if (normalized.length > MAX_HABITAT_TTS_TEXT_LENGTH) {
+    throw new Error(`朗读文本过长（最多 ${MAX_HABITAT_TTS_TEXT_LENGTH} 字）`);
   }
   return normalized;
 }
 
-async function postHubTtsSynthesize(params: HubTtsSynthesizeParams): Promise<Response> {
+async function postHubTtsSynthesize(params: HabitatTtsSynthesizeParams): Promise<Response> {
   const text = normalizeHubTtsText(params.text);
   // 不可用 resolveHabitatApiFetch / shell.habitatFetch：避免中间层损坏 MP3 字节
   const habitatFetch = resolveBinarySafeHabitatFetch();
@@ -80,9 +80,9 @@ async function postHubTtsSynthesize(params: HubTtsSynthesizeParams): Promise<Res
 }
 
 export async function synthesizeSpeechViaHubStream(
-  params: HubTtsSynthesizeParams,
+  params: HabitatTtsSynthesizeParams,
   options: { generation: number; play: boolean; onResponse?: () => void },
-): Promise<HubTtsSynthesizeResult> {
+): Promise<HabitatTtsSynthesizeResult> {
   const text = normalizeHubTtsText(params.text);
   const cacheParams = { ...params, text };
   const cacheKey = await buildTtsCacheKey(cacheParams);

@@ -20,7 +20,7 @@ function ctxAuth(ctx: unknown) {
   return (ctx as RemoteToolsRequestContext).auth;
 }
 
-export const projectHubRoutes = bindHabitatRouteHandlers(projectMethodDefs, {
+export const projectHabitatRoutes = bindHabitatRouteHandlers(projectMethodDefs, {
   "projectfolder.list": async (deps, input, ctx) =>
     service.serviceProjectfolderList(
       depsOf(deps).runtime.runtimeDeps(),

@@ -18,7 +18,7 @@ _deps:
 deps: _deps
 
 # ─── 开发（源码 / worktree）──────────────────────────────────────────
-# Habitat ≥10000 / Web :5000；见 scripts/dev.sh。可选 HABITAT_PORT（或 legacy HUB_PORT）/ WEB_DEV_PORT。
+# Habitat ≥10000 / Web :5000；见 scripts/dev.sh。可选 HABITAT_PORT / WEB_DEV_PORT。
 dev: _deps
   bash "{{justfile_directory()}}/scripts/dev.sh"
 
@@ -26,9 +26,6 @@ dev: _deps
 habitat *args: _deps
   bun run dev:habitat -- {{args}}
 
-# @deprecated 0.9.3 后删除 — 请用 `just habitat`
-hub *args: _deps
-  bun run dev:hub -- {{args}}
 
 # 仅 Vite Web（需已设 FREEANIMA_URL 或默认 proxy→2658）
 web *args: _deps

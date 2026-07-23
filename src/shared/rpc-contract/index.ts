@@ -1,15 +1,12 @@
 export {
-  RPC_WIRE_VERSION,
+  RPC_PROTOCOL_VERSION,
   parseRpcEnvelope,
   serializeRpcEnvelope,
   habitatRpcConnectPayloadSchema,
   habitatRpcConnectedPayloadSchema,
-  hubRpcConnectPayloadSchema,
-  hubRpcConnectedPayloadSchema,
   HABITAT_RPC_VERSION,
-  HABITAT_RPC_VERSION_LEGACY,
 } from "./protocol.ts";
-export type { RpcEnvelope, RpcWireError } from "./protocol.ts";
+export type { RpcEnvelope, RpcProtocolError } from "./protocol.ts";
 export { randomUuid } from "@freeanima/kernel/random-uuid.ts";
 
 export {
@@ -523,7 +520,7 @@ export type {
   TerminalEventMethod,
 } from "./frames/terminal.ts";
 
-export { defineRpcWireRouter, RPC_WIRE_METHODS } from "./router.ts";
+export { defineRpcProtocolRouter, RPC_PROTOCOL_METHODS } from "./router.ts";
 export type {
   RpcMethod,
   RpcRouterInputs,
@@ -536,7 +533,6 @@ export type {
 
 export {
   resolveHabitatHttpUrl,
-  resolveHubWsUrl,
   resolveHabitatRpcWsUrl,
   habitatHttpFromWsUrl,
   habitatHttpFromRpcWsUrl,
@@ -573,10 +569,9 @@ export {
 
 export {
   createRemoteToolsHabitatAttach,
-  createRemoteToolsHub,
-  type CreateRemoteToolsHubOptions,
-  type RemoteToolsHubHandle,
-} from "./remote-tools-hub.ts";
+  type CreateRemoteToolsAttachOptions,
+  type RemoteToolsAttachHandle,
+} from "./remote-tools-attach.ts";
 
 export {
   hasNewAssistantReply,

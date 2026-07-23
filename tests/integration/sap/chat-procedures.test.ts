@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import {
-  RPC_WIRE_METHODS,
+  RPC_PROTOCOL_METHODS,
   notificationListInputSchema,
   notificationMarkReadInputSchema,
   sessionAcpDockInputSchema,
@@ -10,11 +10,11 @@ import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts"
 
 describe("chat SAP procedures", () => {
   it("registers conversation.acpDock, conversation.commands, notification.*", () => {
-    expect(RPC_WIRE_METHODS).toContain("conversation.acpDock");
-    expect(RPC_WIRE_METHODS).toContain("conversation.commands");
-    expect(RPC_WIRE_METHODS).not.toContain("fridge.list");
-    expect(RPC_WIRE_METHODS).toContain("notification.list");
-    expect(RPC_WIRE_METHODS).toContain("notification.markRead");
+    expect(RPC_PROTOCOL_METHODS).toContain("conversation.acpDock");
+    expect(RPC_PROTOCOL_METHODS).toContain("conversation.commands");
+    expect(RPC_PROTOCOL_METHODS).not.toContain("fridge.list");
+    expect(RPC_PROTOCOL_METHODS).toContain("notification.list");
+    expect(RPC_PROTOCOL_METHODS).toContain("notification.markRead");
   });
 
   it("validates chat procedure inputs", () => {

@@ -5,7 +5,7 @@ import type { AutoLlmRunAppendInput } from "@freeanima/core/db/pg/auto-llm-run/t
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
+import { bindOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import { parseYaml } from "@freeanima/platform/config";
@@ -35,7 +35,7 @@ import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
-registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
+registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
 
 const testEngine = createEngine({
   catalog,
@@ -44,15 +44,15 @@ const testEngine = createEngine({
   logger: createTestLogger(),
 });
 
-function wireTestDeps(): FullRuntimeDeps {
+function bindTestDeps(): FullRuntimeDeps {
   const kernel = createServiceKernel(testConfig);
   const conversation = createConversationService(catalog.toolSets);
-  getAcpManager().wireRegistries({
+  getAcpManager().bindRegistries({
     toolSets: catalog.toolSets,
     skills: catalog.skills,
     config: testConfig,
   });
-  getAcpManager().wireConversation(conversation);
+  getAcpManager().bindConversation(conversation);
   return {
     kernel,
     engine: testEngine,
@@ -83,7 +83,7 @@ describe("runAutoLlm", () => {
     const appendMsg = spyOn(conv, "appendMessage").mockResolvedValue(undefined as never);
     restores.push(streamSpy, appendMsg);
 
-    const deps = wireTestDeps();
+    const deps = bindTestDeps();
     const result = await runAutoLlm(deps, {
       runName: "test-cron",
       runKind: "cron",

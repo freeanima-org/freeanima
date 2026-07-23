@@ -48,8 +48,7 @@ function resolveInitialSectionId(bindings: SettingsBinding[], platform: Settings
   if (fromQuery === "mcp_servers") {
     window.location.replace(resolveMcpServersRedirectUrl(window.location.pathname));
   }
-  const normalizedQuery =
-    fromQuery === "hub-runtime" ? "compression" : fromQuery === "hub" ? "habitat" : fromQuery;
+  const normalizedQuery = fromQuery;
   if (normalizedQuery && visible.some((b) => b.section.id === normalizedQuery)) {
     return normalizedQuery;
   }

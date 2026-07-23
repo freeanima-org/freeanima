@@ -24,11 +24,8 @@ describe("startWebStaticServer", () => {
     const cfg = (await fetch(`http://127.0.0.1:${port}/web/config.json`).then((r) => r.json())) as {
       habitat_url?: string;
       habitat_ws_url?: string;
-      hub_url?: string;
-      hub_ws_url?: string;
     };
-    expect(cfg.habitat_url ?? cfg.hub_url).toBe("https://anima.example.com");
-    expect(cfg.hub_url).toBe("https://anima.example.com");
+    expect(cfg.habitat_url).toBe("https://anima.example.com");
 
     const page = await fetch(`http://127.0.0.1:${port}/web/chat`);
     expect(page.ok).toBe(true);
@@ -55,17 +52,15 @@ describe("startWebStaticServer", () => {
       )) as {
         habitat_url?: string;
         habitat_ws_url?: string;
-        hub_url?: string;
-        hub_ws_url?: string;
       };
-      expect(cfg.habitat_url ?? cfg.hub_url).toBe(`http://127.0.0.1:${port}`);
-      expect(cfg.habitat_ws_url ?? cfg.hub_ws_url).toBe(`ws://127.0.0.1:${port}/rpc/v1`);
+      expect(cfg.habitat_url).toBe(`http://127.0.0.1:${port}`);
+      expect(cfg.habitat_ws_url).toBe(`ws://127.0.0.1:${port}/rpc/v1`);
     } finally {
       await handle.close();
     }
   });
 
-  test("falls back to index.html for deep console routes and serves root assets", async () => {
+  test("falls back to index.html for deep habitat routes and serves root assets", async () => {
     const dist = mkdtempSync(join(tmpdir(), "web-dist-"));
     const indexHtml =
       '<html><head><script src="/web/assets/main.js"></script></head><body>ok</body></html>';

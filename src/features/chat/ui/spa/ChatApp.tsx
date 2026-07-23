@@ -150,7 +150,7 @@ function openHabitatSettingsIfAvailable(): void {
 
 function isTransportFailureMessage(msg: string): boolean {
   return (
-    /timed out|websocket|habitat_rpc_timeout|hub_rpc_timeout|网络错误/i.test(msg) ||
+    /timed out|websocket|habitat_rpc_timeout|habitat_rpc_timeout|网络错误/i.test(msg) ||
     isRetriableOfflineWriteError(new Error(msg))
   );
 }

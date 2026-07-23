@@ -40,7 +40,7 @@ function collectOllamaBaseUrls(cfg: AnimaConfig): string[] {
 }
 
 /** Bind chat/embedding models to in-process tokenx estimate (no HF vocab preload). */
-export async function wireTokenizerRuntime(config: Config): Promise<void> {
+export async function bindTokenizerRuntime(config: Config): Promise<void> {
   const cfg = config.data;
   setResolveContext({ ollamaBaseUrls: collectOllamaBaseUrls(cfg) });
 
@@ -72,5 +72,5 @@ export async function wireTokenizerRuntime(config: Config): Promise<void> {
   }
 
   await Promise.all(tasks);
-  log.info("tokenizer runtime wired (tokenx estimate)");
+  log.info("tokenizer runtime bound (tokenx estimate)");
 }

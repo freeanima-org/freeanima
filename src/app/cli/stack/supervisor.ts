@@ -5,7 +5,7 @@ import { parseBindHosts } from "@freeanima/platform";
 import {
   resolveHabitatTlsListenConfig,
   toHabitatTlsBunOptions,
-} from "@freeanima/platform/tls/resolve-hub-tls";
+} from "@freeanima/platform/tls/resolve-habitat-tls";
 
 import { tryResolveWebDistDir } from "../web/dist-path.ts";
 
@@ -38,7 +38,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
   const webEnabled = options.skipTls ? false : yamlWebEnabled;
   if (options.skipTls) {
     console.log(
-      "[stack] skipTls/dev-hub：忽略 config.yaml web.enabled/host/port（UI 由 Vite WEB_DEV_PORT 提供，Habitat 不托管 /web）",
+      "[stack] skipTls/dev-habitat：忽略 config.yaml web.enabled/host/port（UI 由 Vite WEB_DEV_PORT 提供，Habitat 不托管 /web）",
     );
   }
 

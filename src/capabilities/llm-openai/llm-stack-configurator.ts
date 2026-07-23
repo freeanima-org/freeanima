@@ -8,7 +8,7 @@ import {
 } from "./index.ts";
 
 /** Register OpenAI compatible provider/backend with engine-llm */
-export function wireOpenAiCompatibleLlm(
+export function bindOpenAiCompatibleLlm(
   cfg: AnimaConfig,
   backends: BackendRegistry,
   providers: ProviderRegistry,

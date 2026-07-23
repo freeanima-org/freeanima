@@ -65,10 +65,10 @@ function installDevScopedSettingsBridge(): void {
 }
 
 function createBrowserDevShellStub(habitatUrl = "", remoteAuthToken = ""): ShellApi {
-  const trimmedHub = habitatUrl.replace(/\/$/, "");
-  const habitatWsUrl = trimmedHub ? resolveHabitatRpcWsUrl(trimmedHub) : "";
-  const apiFields = trimmedHub
-    ? buildShellApiFields(trimmedHub, habitatWsUrl, remoteAuthToken)
+  const trimmedHabitatUrl = habitatUrl.replace(/\/$/, "");
+  const habitatWsUrl = trimmedHabitatUrl ? resolveHabitatRpcWsUrl(trimmedHabitatUrl) : "";
+  const apiFields = trimmedHabitatUrl
+    ? buildShellApiFields(trimmedHabitatUrl, habitatWsUrl, remoteAuthToken)
     : { habitatUrl: "", habitatWsUrl: "" };
 
   const shell: ShellApi = {
@@ -77,7 +77,7 @@ function createBrowserDevShellStub(habitatUrl = "", remoteAuthToken = ""): Shell
     habitatUrl: apiFields.habitatUrl,
     habitatWsUrl: apiFields.habitatWsUrl,
     createFileInstanceStore: (appId) =>
-      browserRemoteInstanceStore(trimmedHub || "http://127.0.0.1:2658", appId),
+      browserRemoteInstanceStore(trimmedHabitatUrl || "http://127.0.0.1:2658", appId),
     emitConfigChanged: async () => {},
     listenConfigChanged: () => () => {},
   };

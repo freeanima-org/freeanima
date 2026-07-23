@@ -1,7 +1,7 @@
 import type { RuntimeConfigStore } from "@freeanima/platform/config";
 import { resolveLlmProviderApiKeys } from "@freeanima/platform/config";
-import { wireEmbeddingRuntime } from "../runtime/embedding-wire.ts";
-import { wireTokenizerRuntime } from "../runtime/tokenizer-wire.ts";
+import { bindEmbeddingRuntime } from "../runtime/embedding-bind.ts";
+import { bindTokenizerRuntime } from "../runtime/tokenizer-bind.ts";
 
 import { startupLog } from "./status.ts";
 
@@ -9,6 +9,6 @@ import { startupLog } from "./status.ts";
 export async function bootConfigSecretsPhase(config: RuntimeConfigStore): Promise<void> {
   startupLog("Resolving config secrets (vault/env)…");
   config.update(await resolveLlmProviderApiKeys(config.data));
-  wireEmbeddingRuntime(config);
-  await wireTokenizerRuntime(config);
+  bindEmbeddingRuntime(config);
+  await bindTokenizerRuntime(config);
 }

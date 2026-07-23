@@ -13,7 +13,7 @@ function depsOf(deps: unknown): DiaryRemoteToolsServerDeps {
   return deps as DiaryRemoteToolsServerDeps;
 }
 
-export const diaryHubRoutes = bindHabitatRouteHandlers(diaryMethodDefs, {
+export const diaryHabitatRoutes = bindHabitatRouteHandlers(diaryMethodDefs, {
   "diary.list": async (deps, input) =>
     service.serviceDiaryList(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "diary.create": async (deps, input) =>

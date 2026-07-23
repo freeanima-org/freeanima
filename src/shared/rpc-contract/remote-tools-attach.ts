@@ -9,7 +9,7 @@ import {
 import { sapClientFromRpc } from "./rpc-stream-client-from-rpc.ts";
 import { loadRemoteInstanceId } from "./instance-store.ts";
 
-export type CreateRemoteToolsHubOptions = {
+export type CreateRemoteToolsAttachOptions = {
   appId: string;
   habitatUrl: string;
   httpUrl?: string;
@@ -26,7 +26,7 @@ export type CreateRemoteToolsHubOptions = {
   remoteAuthToken?: string;
 };
 
-export type RemoteToolsHubHandle = {
+export type RemoteToolsAttachHandle = {
   getInstanceId(): string | null;
   isConnected(): boolean;
   whenConnected(): Promise<RpcStreamClient>;
@@ -41,7 +41,9 @@ function isStaleInstanceIdError(error: unknown): boolean {
 }
 
 /** Habitat RPC remote-tool host: connect, remote_tools.attach, optional tool.register. */
-export function createRemoteToolsHub(options: CreateRemoteToolsHubOptions): RemoteToolsHubHandle {
+export function createRemoteToolsHabitatAttach(
+  options: CreateRemoteToolsAttachOptions,
+): RemoteToolsAttachHandle {
   let transport: HabitatRpcTransportHandle | null = null;
   let streamClient: RpcStreamClient | null = null;
   let instanceId: string | null = null;
@@ -115,7 +117,7 @@ export function createRemoteToolsHub(options: CreateRemoteToolsHubOptions): Remo
     currentHttpUrl = httpUrl ?? currentHttpUrl;
     const authToken = options.remoteAuthToken?.trim();
     if (!authToken) {
-      throw new Error("remote tools hub requires remoteAuthToken");
+      throw new Error("remote tools attach requires remoteAuthToken");
     }
 
     transport = runHabitatRpcTransport({
@@ -165,6 +167,3 @@ export function createRemoteToolsHub(options: CreateRemoteToolsHubOptions): Remo
     },
   };
 }
-
-/** @deprecated alias — use createRemoteToolsHub */
-export const createRemoteToolsHabitatAttach = createRemoteToolsHub;

@@ -21,10 +21,4 @@ describe("resolveHabitatSubpath", () => {
     expect(resolveHabitatSubpath("/habitat/mcp")).toBe("/mcp");
     expect(resolveHabitatSubpath("/web/habitat/cron")).toBe("/cron");
   });
-
-  it("accepts legacy /console paths", () => {
-    expect(resolveHabitatSubpath("/console")).toBe("/dashboard");
-    expect(resolveHabitatSubpath("/console/mcp")).toBe("/mcp");
-    expect(resolveHabitatSubpath("/web/console/cron")).toBe("/cron");
-  });
 });

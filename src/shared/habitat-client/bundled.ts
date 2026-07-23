@@ -15,7 +15,7 @@ function satelliteShell(): SatelliteShell | undefined {
 }
 
 export type BundledHabitatClientOptions = {
-  hubRpcWsUrl?: string;
+  habitatRpcWsUrl?: string;
   habitatUrl?: string;
   authToken?: string;
   profile?: "habitat" | "satellite";
@@ -31,7 +31,7 @@ function resolveAuthToken(explicit?: string): string | undefined {
 }
 
 function resolveHabitatRpcWsUrl(options: BundledHabitatClientOptions): string {
-  if (options.hubRpcWsUrl?.trim()) return options.hubRpcWsUrl.trim();
+  if (options.habitatRpcWsUrl?.trim()) return options.habitatRpcWsUrl.trim();
   const shell = satelliteShell();
   if (shell?.habitatWsUrl?.trim()) return shell.habitatWsUrl.trim();
   const http = options.habitatUrl?.trim() || shell?.habitatUrl?.trim() || "http://127.0.0.1:2658";
@@ -46,7 +46,7 @@ export function resolveBundledHabitatClientOptions(
   const token = resolveAuthToken(options.authToken);
   const profile = options.profile ?? "satellite";
   const hubRpc = getBundledHabitatRpcClient({
-    hubRpcWsUrl: wsUrl,
+    habitatRpcWsUrl: wsUrl,
     ...(token !== undefined ? { authToken: token } : {}),
   });
   return {

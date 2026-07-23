@@ -22,10 +22,10 @@ function reloadWebShellFromPrefs(): void {
 }
 
 function shellExtras(
-  hubOrigin: string,
+  habitatOrigin: string,
 ): Pick<ShellApi, "createFileInstanceStore" | "emitConfigChanged" | "listenConfigChanged"> {
   return {
-    createFileInstanceStore: (appId) => browserRemoteInstanceStore(hubOrigin, appId),
+    createFileInstanceStore: (appId) => browserRemoteInstanceStore(habitatOrigin, appId),
     async emitConfigChanged(): Promise<void> {
       reloadWebShellFromPrefs();
       notifyShellConfigChanged();
@@ -60,15 +60,15 @@ export function createWebShellStub(): ShellApi {
 }
 
 export function buildWebShellFromRaw(habitatUrl: string, remoteAuthToken: string): ShellApi {
-  const trimmedHub = habitatUrl.trim().replace(/\/$/, "");
-  if (!trimmedHub) return createWebShellStub();
-  const habitatWsUrl = resolveHabitatRpcWsUrl(trimmedHub);
-  const apiFields = buildShellApiFields(trimmedHub, habitatWsUrl, remoteAuthToken.trim());
+  const trimmedHabitatUrl = habitatUrl.trim().replace(/\/$/, "");
+  if (!trimmedHabitatUrl) return createWebShellStub();
+  const habitatWsUrl = resolveHabitatRpcWsUrl(trimmedHabitatUrl);
+  const apiFields = buildShellApiFields(trimmedHabitatUrl, habitatWsUrl, remoteAuthToken.trim());
   return {
     ...apiFields,
     windowRole: null,
     apiOrigin: null,
-    ...shellExtras(trimmedHub),
+    ...shellExtras(trimmedHabitatUrl),
   };
 }
 

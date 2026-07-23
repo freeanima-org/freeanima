@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-23 14:47+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -768,8 +768,8 @@ msgstr ""
 #. type: Plain text
 #: docs/features/project.md:330
 msgid ""
-"Implementation target: `src/features/project/` (domain + hub + `ui/spa` + "
-"`plugin.ts`); schemas under `src/core/db/schema/entity/components/`; SAP "
+"Implementation target: `src/features/project/` (domain + habitat + `ui/spa` "
+"+ `plugin.ts`); schemas under `src/core/db/schema/entity/components/`; SAP "
 "frames under `src/shared/rpc-contract/frames/`."
 msgstr ""
 

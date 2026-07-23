@@ -9,7 +9,7 @@ import {
   companionMotionsDir,
   ensureCompanionDataDir,
 } from "./paths.ts";
-import { hubUrlFromConfig, remoteAuthTokenFromShell } from "./config.ts";
+import { habitatUrlFromConfig, remoteAuthTokenFromShell } from "./config.ts";
 
 type SyncPullResponse = {
   config: Record<string, unknown>;
@@ -28,7 +28,7 @@ type MigrateResponse = {
   imported_motions: number;
 };
 
-const MIGRATE_MARKER = join(companionHome(), ".hub-migrated");
+const MIGRATE_MARKER = join(companionHome(), ".habitat-migrated");
 
 function hubMigrateMarkerExists(): boolean {
   return existsSync(MIGRATE_MARKER);
@@ -74,12 +74,12 @@ function listDataFiles(dir: string, ext: string): string[] {
 async function hubRpcCall<T>(method: string, payload: Record<string, unknown> = {}): Promise<T> {
   const token = remoteAuthTokenFromShell();
   const options = token !== undefined ? { authToken: token } : undefined;
-  const res = await fetchHabitatRestRaw(hubUrlFromConfig(), method, payload, options);
+  const res = await fetchHabitatRestRaw(habitatUrlFromConfig(), method, payload, options);
   return (await parseHabitatRestResponse(res)) as T;
 }
 
 async function downloadAsset(url: string): Promise<void> {
-  const habitatUrl = hubUrlFromConfig();
+  const habitatUrl = habitatUrlFromConfig();
   const token = remoteAuthTokenFromShell();
   const headers: Record<string, string> = {};
   if (token) headers.authorization = `Bearer ${token}`;
@@ -106,7 +106,7 @@ async function uploadLocalFile(
   method: "companion.model.upload" | "companion.motion.import",
   filePath: string,
 ): Promise<boolean> {
-  const habitatUrl = hubUrlFromConfig().replace(/\/$/, "");
+  const habitatUrl = habitatUrlFromConfig().replace(/\/$/, "");
   const token = remoteAuthTokenFromShell();
   const bytes = readFileSync(filePath);
   const name = filePath.split(/[/\\]/).pop() ?? "upload.bin";
@@ -171,14 +171,13 @@ async function maybeMigrateLocalCompanionToHub(): Promise<void> {
 }
 
 /** 从 Habitat 拉取 companion 配置与缺失资产，写入本地 cache */
-export async function syncCompanionFromHub(): Promise<boolean> {
+export async function syncCompanionFromHabitat(): Promise<boolean> {
   await maybeMigrateLocalCompanionToHub();
   try {
     const result = await hubRpcCall<SyncPullResponse>("companion.sync.pull", {});
     ensureCompanionDataDir();
     const {
       habitat_url: _habitat,
-      hub_url: _hub,
       model_path: _mp,
       model_available: _ma,
       fbx_import_available: _fbx,

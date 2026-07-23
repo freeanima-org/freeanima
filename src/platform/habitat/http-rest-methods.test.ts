@@ -1,16 +1,16 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 
-import { getHubMethodDef } from "@freeanima/shared/habitat-contract";
-import { initHubRouter, resetHubRouterForTests } from "@freeanima/platform/habitat/init.ts";
-import { resetHubMethodRegistryForTests } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
+import { getHabitatMethodDef } from "@freeanima/shared/habitat-contract";
+import { initHabitatRouter, resetHabitatRouterForTests } from "@freeanima/platform/habitat/init.ts";
+import { resetHabitatMethodRegistryForTests } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
 
 import { buildHabitatRestRequest, isNonJsonHabitatHttpMethod } from "@freeanima/shared/habitat-rpc";
 
 describe("http-rest feature methods", () => {
   beforeAll(() => {
-    resetHubMethodRegistryForTests();
-    resetHubRouterForTests();
-    initHubRouter();
+    resetHabitatMethodRegistryForTests();
+    resetHabitatRouterForTests();
+    initHabitatRouter();
   });
 
   test("buildHabitatRestRequest GET tasklist.item.list", () => {
@@ -37,7 +37,7 @@ describe("http-rest feature methods", () => {
   });
 
   test("buildHabitatRestRequest GET diary.get path id", () => {
-    const http = getHubMethodDef("diary.get").meta.http!;
+    const http = getHabitatMethodDef("diary.get").meta.http!;
     expect(http.pathParams ?? []).toEqual(["id"]);
     const { url } = buildHabitatRestRequest("http://127.0.0.1:2658", "diary.get", {
       subject_kind: "agent",
@@ -47,7 +47,7 @@ describe("http-rest feature methods", () => {
   });
 
   test("buildHabitatRestRequest POST vault.get path id", () => {
-    const http = getHubMethodDef("vault.get").meta.http!;
+    const http = getHabitatMethodDef("vault.get").meta.http!;
     expect(http.verb).toBe("POST");
     const { url, init } = buildHabitatRestRequest("http://127.0.0.1:2658", "vault.get", {
       id: 3,

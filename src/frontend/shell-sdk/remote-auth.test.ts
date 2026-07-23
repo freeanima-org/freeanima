@@ -25,7 +25,7 @@ describe("remote-auth helpers", () => {
     expect(resolveConnectAuthToken("http://127.0.0.1:2658", "")).toBeUndefined();
   });
 
-  test("createBearerFetch adds Authorization for hub origin on loopback", async () => {
+  test("createBearerFetch adds Authorization for habitat origin on loopback", async () => {
     const originalFetch = globalThis.fetch;
     let seenAuth = "";
     globalThis.fetch = (async (_input, init) => {
@@ -53,8 +53,8 @@ describe("remote-auth helpers", () => {
       return new Response("ok", { status: 200 });
     }) as typeof fetch;
     try {
-      const habitatFetch = createBearerFetch("secret-token-min-16", "https://hub.example.com");
-      await habitatFetch(new Request("https://hub.example.com/api/status", { method: "GET" }));
+      const habitatFetch = createBearerFetch("secret-token-min-16", "https://habitat.example.com");
+      await habitatFetch(new Request("https://habitat.example.com/api/status", { method: "GET" }));
       expect(seenAuth).toBe("Bearer secret-token-min-16");
       expect(seenMethod).toBe("GET");
     } finally {

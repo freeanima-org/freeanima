@@ -55,9 +55,8 @@ export {
 } from "./remote-auth.ts";
 export {
   buildShellApiFields,
-  connectAuthTokenForHub,
+  connectAuthTokenForHabitat,
   habitatRequiresRemoteAuth,
-  hubRequiresRemoteAuth,
 } from "./shell-api-fields.ts";
 export type {
   BuildChannel,
@@ -180,8 +179,12 @@ export {
   effectivePhaseFinishedAtMs,
 } from "./pomodoro-phase-timing.ts";
 export { getPomodoroDeviceId, clearPomodoroDeviceIdForTest } from "./pomodoro-device-id.ts";
-export { activeStateToHubBody, hubBodyToActiveState, hubRowMeta } from "./pomodoro-active-hub.ts";
-export type { PomodoroActiveHubRow } from "./pomodoro-active-hub.ts";
+export {
+  activeStateToHabitatBody,
+  habitatBodyToActiveState,
+  habitatRowMeta,
+} from "./pomodoro-active-store.ts";
+export type { PomodoroActiveHabitatRow } from "./pomodoro-active-store.ts";
 export {
   applyLocalPomodoroActive,
   buildHubActivePayload,

@@ -77,7 +77,7 @@ export function readLocalCache(): CompanionConfig | null {
   }
 }
 
-export function hubUrlFromEnv(): string {
+export function habitatUrlFromEnv(): string {
   const fromEnv = process.env.FREEANIMA_URL?.trim();
   if (fromEnv) return fromEnv.replace(/\/$/, "");
   return "http://127.0.0.1:2658";

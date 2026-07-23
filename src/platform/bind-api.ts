@@ -17,7 +17,7 @@ import type { FullRuntimeDeps } from "./runtime/runtime-deps.ts";
 import type { CronJob } from "@freeanima/platform/connectors/cron/models";
 
 /** Register platform API ports after AppRuntime deps are available */
-export function wireServicePorts(deps: FullRuntimeDeps): void {
+export function bindServicePorts(deps: FullRuntimeDeps): void {
   registerToolConversationResolver(getToolConversationId);
   registerOnConversationCloseBeforeNew((conversationId) =>
     onConversationCloseBeforeNew(deps, conversationId),

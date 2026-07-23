@@ -17,7 +17,7 @@ describe("chat browser SAP client", () => {
 
   it("getBundledRpcStreamClient exposes subscribe and stream helpers", () => {
     const client = getBundledRpcStreamClient({
-      hubRpcWsUrl: "ws://127.0.0.1:2658/rpc/v1",
+      habitatRpcWsUrl: "ws://127.0.0.1:2658/rpc/v1",
     });
     expect(client.getClient()).toBeNull();
     expect(typeof client.subscribeConversationEvents).toBe("function");
