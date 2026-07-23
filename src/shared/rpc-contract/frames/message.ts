@@ -70,8 +70,12 @@ const llmDebugSnapshotSchema = z
     tool_count: z.number(),
     tools: z.array(
       z.object({
-        name: z.string(),
-        description: z.string().optional(),
+        type: z.literal("function"),
+        function: z.object({
+          name: z.string(),
+          description: z.string().optional(),
+          parameters: z.record(z.string(), z.unknown()).optional(),
+        }),
       }),
     ),
     invoke: z.object({
@@ -146,7 +150,14 @@ export type LlmDebugSnapshotPayload = {
   turn_index: number;
   model: string;
   tool_count: number;
-  tools: Array<{ name: string; description?: string }>;
+  tools: Array<{
+    type: "function";
+    function: {
+      name: string;
+      description?: string;
+      parameters?: Record<string, unknown>;
+    };
+  }>;
   invoke: {
     system_prompt?: string;
     turns: LlmDebugTurnPreview[];

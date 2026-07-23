@@ -37,7 +37,14 @@ export type LlmDebugSnapshotPayload = {
   turn_index: number;
   model: string;
   tool_count: number;
-  tools: Array<{ name: string; description?: string }>;
+  tools: Array<{
+    type: "function";
+    function: {
+      name: string;
+      description?: string;
+      parameters?: Record<string, unknown>;
+    };
+  }>;
   invoke: {
     system_prompt?: string;
     turns: Array<{

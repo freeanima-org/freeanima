@@ -18,6 +18,7 @@ const toolCatalogMessageEntrySchema = z.object({
   description: z.string(),
   toolset: z.string(),
   parameters: z.record(z.string(), z.unknown()),
+  return_schema: z.record(z.string(), z.unknown()).optional(),
 });
 
 const okPathSchema = z.object({ ok: z.literal(true), path: z.string() });

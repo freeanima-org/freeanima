@@ -41,14 +41,12 @@ function ToolRow({ tool }: { tool: ToolPreview }) {
   return (
     <Collapsible>
       <CollapsibleTrigger className="w-full rounded border px-2 py-1 text-left text-xs font-mono font-medium hover:bg-muted/40">
-        {tool.name}
+        {tool.function.name}
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-1 px-2 pb-1">
-        {tool.description ? (
-          <p className="text-xs text-muted-foreground whitespace-pre-wrap">{tool.description}</p>
-        ) : (
-          <p className="text-xs text-muted-foreground">—</p>
-        )}
+        <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words rounded border bg-muted/30 p-2 font-mono text-[11px] leading-relaxed">
+          {JSON.stringify(tool, null, 2)}
+        </pre>
       </CollapsibleContent>
     </Collapsible>
   );
@@ -155,7 +153,7 @@ function SnapshotView({ snapshot }: { snapshot: LlmDebugSnapshotPayload | undefi
       {snapshot.tools.length > 0 ? (
         <NestedSection title={`${m.chat_llm_debug_tools()} (${snapshot.tools.length})`}>
           {snapshot.tools.map((tool) => (
-            <ToolRow key={tool.name} tool={tool} />
+            <ToolRow key={tool.function.name} tool={tool} />
           ))}
         </NestedSection>
       ) : null}
