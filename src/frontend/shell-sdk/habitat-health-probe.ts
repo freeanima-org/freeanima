@@ -29,28 +29,24 @@ function probeAbortSignal(timeoutMs: number, external?: AbortSignal): AbortSigna
   return controller.signal;
 }
 
-function isElectronShellRuntime(): boolean {
-  if (typeof process !== "undefined" && Boolean(process.versions?.electron)) return true;
-  return Boolean(
-    (globalThis as { satelliteShell?: { isElectron?: boolean } }).satelliteShell?.isElectron,
-  );
-}
-
 function isTauriShellRuntime(): boolean {
   return Boolean(
     (globalThis as { satelliteShell?: { isTauri?: boolean } }).satelliteShell?.isTauri,
   );
 }
 
-function isNativeMobileShellRuntime(): boolean {
+function isTouchNativeShellRuntime(): boolean {
   const shell = (
     globalThis as {
-      satelliteShell?: { isNativeShell?: boolean; isTauri?: boolean; isElectron?: boolean };
+      satelliteShell?: {
+        isNativeShell?: boolean;
+        isTauri?: boolean;
+        primaryInput?: "pointer" | "touch";
+      };
     }
   ).satelliteShell;
-  // Tauri / Electron 桌面也带 isNativeShell，勿套用移动端文案
-  if (shell?.isTauri || shell?.isElectron) return false;
-  return Boolean(shell?.isNativeShell);
+  if (!shell?.isNativeShell && !shell?.isTauri) return false;
+  return shell.primaryInput === "touch";
 }
 
 /** 供单测；将 fetch/网络失败映射为设置页可读文案 */
@@ -60,19 +56,18 @@ export function formatHabitatHealthProbeFetchError(err: unknown, habitatUrl?: st
   }
   if (err instanceof TypeError) {
     const httpsHub = habitatUrl?.trim().toLowerCase().startsWith("https://");
-    const electronShell = isElectronShellRuntime();
     const tauriShell = isTauriShellRuntime();
-    const nativeShell = isNativeMobileShellRuntime();
-    if ((electronShell || tauriShell) && httpsHub) {
+    const touchShell = isTouchNativeShellRuntime();
+    if (tauriShell && !touchShell && httpsHub) {
       return "网络错误：桌面壳 HTTPS 需在本机信任栖息地的 mkcert 根 CA（设置页下载 rootCA.pem 并导入系统），或暂用 http://…:2658";
     }
-    if (nativeShell && httpsHub) {
+    if (touchShell && httpsHub) {
       return "网络错误：壳层内 HTTPS 需在手机「设置 → 安全」安装 mkcert 根 CA（rootCA.pem），并重新安装 APK；或暂用 http://…:2658";
     }
-    if (tauriShell) {
+    if (tauriShell && !touchShell) {
       return "网络错误（请检查栖息地地址与本机 hosts；WebView 对自定义域名可能解析失败，可先用 IP 验证）";
     }
-    if (nativeShell) {
+    if (touchShell) {
       return "网络错误（请检查栖息地地址、ZeroTier 是否在线，以及栖息地是否监听 0.0.0.0）";
     }
     return "网络错误（请检查栖息地地址与网络）";
@@ -94,21 +89,11 @@ export async function probeHabitatHealthUrl(
   const timeoutMs = options?.timeoutMs ?? HABITAT_HEALTH_PROBE_TIMEOUT_MS;
   const healthUrl = habitatHealthProbeUrl(base);
   try {
-    const { probeHabitatHealthViaCapacitorHttp, shouldProbeHubHealthViaCapacitorHttp } =
+    const { probeHabitatHealthViaNativeHttp, shouldProbeHabitatHealthViaNativeHttp } =
       await import("./native-habitat-health-probe.ts");
-    if (await shouldProbeHubHealthViaCapacitorHttp(base)) {
-      try {
-        return await probeHabitatHealthViaCapacitorHttp(healthUrl, headers, timeoutMs);
-      } catch (nativeErr) {
-        // Tauri 原生探测失败时不要回退 WebView fetch（hosts / AsyncDns 仍会失败，掩盖真实错误）
-        if (
-          typeof window !== "undefined" &&
-          (window as Window & { satelliteShell?: { isTauri?: boolean } }).satelliteShell?.isTauri
-        ) {
-          throw nativeErr;
-        }
-        /* CapacitorHttp 失败时回退 fetch（androidScheme http + Habitat CORS localhost） */
-      }
+    if (await shouldProbeHabitatHealthViaNativeHttp(base)) {
+      // Tauri 原生探测失败时不要回退 WebView fetch（hosts / AsyncDns 仍会失败，掩盖真实错误）
+      return await probeHabitatHealthViaNativeHttp(healthUrl, headers, timeoutMs);
     }
     const res = await fetch(healthUrl, {
       headers,

@@ -64,7 +64,6 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
   const nativeBuild = await loadTauriNativeBuildMetaFromAssets();
 
   const shell: ShellApi = {
-    isElectron: false,
     isTauri: true,
     isNativeShell: true,
     primaryInput: "touch",

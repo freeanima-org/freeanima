@@ -38,7 +38,12 @@ function purgeStaleCargoTargetIfNeeded(): void {
   let hit = false;
   try {
     const probe = Bun.spawnSync(
-      ["rg", "-l", "shell/desktop/tauri|shell/mobile/(android|tauri)", cargoTargetDir],
+      [
+        "rg",
+        "-l",
+        "shell/desktop/(electron|tauri)|shell/mobile/(android|tauri|capacitor)",
+        cargoTargetDir,
+      ],
       { stdout: "pipe", stderr: "pipe" },
     );
     hit = probe.exitCode === 0;

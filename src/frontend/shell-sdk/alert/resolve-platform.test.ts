@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
 import { setShellBuildTargetForTests } from "../shell-build-target.ts";
-import { isCapacitorShellRuntime, resolveAlertDisplayPlatform } from "./resolve-platform.ts";
+import { resolveAlertDisplayPlatform } from "./resolve-platform.ts";
 import type { AlertBackend } from "./types.ts";
 
 describe("resolveAlertDisplayPlatform", () => {
@@ -22,7 +22,6 @@ describe("resolveAlertDisplayPlatform", () => {
     } as unknown as Window;
     const backend = { platform: "web" } as AlertBackend;
     expect(resolveAlertDisplayPlatform(backend)).toBe("web");
-    expect(isCapacitorShellRuntime()).toBe(false);
   });
 
   it("编译期 desktop 展示 desktop", () => {

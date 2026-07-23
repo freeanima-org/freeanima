@@ -22,7 +22,7 @@ import {
 } from "@freeanima/satellites/companion/shared/companion-schema.ts";
 import { setMotionSlot } from "@freeanima/satellites/companion/spa/lib/api.ts";
 import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
-import { emitConfigChanged } from "@freeanima/satellites/companion/spa/lib/electron.ts";
+import { emitConfigChanged } from "@freeanima/satellites/companion/spa/lib/portal-shell.ts";
 
 type AddModalProps = {
   slot: MotionSlotId;

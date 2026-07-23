@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-11 00:02+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,22 +37,22 @@ msgstr ""
 #: docs/features/companion-settings.md:13
 #, no-wrap
 msgid ""
-"| 层级                              | 内容                                                        | 存取                                          |\n"
-"| --------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |\n"
-"| **Hub PG**（`companion_profile`） | 行为、模型、动作库、槽位                                    | 设置 → Hub 服务 → 桌面伴侣；经 Hub RPC / HTTP |\n"
-"| **本机**                          | 窗口显隐（`companion-shell` scope）、SAP 运行时状态（只读） | 设置 → 本机 → 桌面伴侣                        |\n"
+"| 层级                                  | 内容                                                        | 存取                                                  |\n"
+"| ------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------- |\n"
+"| **Habitat PG**（`companion_profile`） | 行为、模型、动作库、槽位                                    | 设置 → Habitat 服务 → 桌面伴侣；经 Habitat RPC / HTTP |\n"
+"| **本机**                              | 窗口显隐（`companion-shell` scope）、SAP 运行时状态（只读） | 设置 → 本机 → 桌面伴侣                                |\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/features/companion-settings.md:15
 msgid ""
-"Sidecar 本地 `~/.anima/companion/config.json` 仅为 **hub-sync 缓存**，设置 "
-"UI 不直接读写。"
+"Sidecar 本地 `~/.anima/companion/config.json` 仅为 **habitat-sync 缓存**，设"
+"置 UI 不直接读写。"
 msgstr ""
 
 #. type: Plain text
 #: docs/features/companion-settings.md:16
 msgid ""
-"修改 Hub profile 后，sidecar 通过 `companion.sync.pull` 同步到本机；overlay "
-"通过 `emitConfigChanged` 刷新。"
+"修改 Habitat profile 后，本机缓存通过 `companion.sync.pull` 同步；overlay 通"
+"过 `emitConfigChanged` 刷新。"
 msgstr ""

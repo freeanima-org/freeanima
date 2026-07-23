@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: 2026-07-06 10:30+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -38,22 +38,17 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/repository-topology.md:16
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Port                      | Role                                                                  |\n"
-#| "| ------------------------- | --------------------------------------------------------------------- |\n"
-#| "| `EntityStorePort.list`    | Structural filters; stable sort                                       |\n"
-#| "| `EntitySearchPort.search` | Hard filters + optional text query; hybrid FTS/trigram/vector via RRF |\n"
+#, no-wrap
 msgid ""
-"| Package           | Path            | Role                                                                         |\n"
-"| ----------------- | --------------- | ---------------------------------------------------------------------------- |\n"
-"| `freeanima`       | repository root | Habitat runtime, CLI, capabilities, features, shells — **one `package.json`**    |\n"
-"| `@freeanima/site` | `site/`         | Astro/Starlight 文档站（**独立** `package.json` + `bun.lock`，非 workspace） |\n"
+"| Package           | Path            | Role                                                                          |\n"
+"| ----------------- | --------------- | ----------------------------------------------------------------------------- |\n"
+"| `freeanima`       | repository root | Habitat runtime, CLI, capabilities, features, shells — **one `package.json`** |\n"
+"| `@freeanima/site` | `site/`         | Astro/Starlight 文档站（**独立** `package.json` + `bun.lock`，非 workspace）  |\n"
 msgstr ""
-"| 端口                      | 作用                                                                  |\n"
-"| ------------------------- | --------------------------------------------------------------------- |\n"
-"| `EntityStorePort.list`    | 结构过滤；稳定排序                                                      |\n"
-"| `EntitySearchPort.search` | 硬过滤 + 可选文本查询；经 RRF 混合 FTS/trigram/vector                 |\n"
+"| Package           | Path            | Role                                                                          |\n"
+"| ----------------- | --------------- | ----------------------------------------------------------------------------- |\n"
+"| `freeanima`       | repository root | Habitat runtime, CLI, capabilities, features, shells — **one `package.json`** |\n"
+"| `@freeanima/site` | `site/`         | Astro/Starlight 文档站（**独立** `package.json` + `bun.lock`，非 workspace）  |\n"
 
 #. type: Plain text
 #: docs/concepts/repository-topology.md:18
@@ -61,6 +56,8 @@ msgid ""
 "根目录 **无** `workspaces`；`site/` 与产品依赖图分离，内容（`docs/`、`po/`、"
 "`messages/`）仍与产品同仓。"
 msgstr ""
+"根目录 **无** `workspaces`；`site/` 与产品依赖图分离，内容（`docs/`、`po/`、"
+"`messages/`）仍与产品同仓。"
 
 #. type: Title ##
 #: docs/concepts/repository-topology.md:19
@@ -79,27 +76,43 @@ msgid ""
 "├── platform/        # 组合根：Habitat、连接器、SAP、slash commands\n"
 "├── capabilities/    # acp, memory, tools, mcp-*, llm-openai, …\n"
 "├── features/        # chat, console, task, vault, diary, …\n"
-"├── shared/          # hub-rpc, hub-contract, sap-contract, vault-crypto\n"
+"├── shared/          # habitat-rpc, habitat-contract, rpc-contract, vault-crypto\n"
 "├── frontend/        # ui-kit, shell-sdk, shell-ui\n"
 "├── app/\n"
 "│   ├── cli/         # `anima` CLI（无内层 src/）\n"
 "│   └── shell/\n"
-"│       ├── desktop/ # Electron：spa/（Vite 根）+ lib/（设置/桥接）\n"
-"│       ├── mobile/  # Capacitor\n"
-"│       └── web/     # 浏览器全壳层\n"
-"└── satellites/      # companion（spa/ + lib/ + server/ sidecar）\n"
+"│       ├── tauri/   # Portal：src-tauri + bridge + spa\n"
+"│       └── web/     # 浏览器 / PWA\n"
+"└── satellites/      # companion（spa/ + lib/ + server/ 浏览器·dev host）\n"
 "\n"
 "内层 Vite SPA 根目录统一称 **`spa/`**（原 `app/`），与交付层 `src/app/` 区分。壳层/卫星的非 SPA 模块用 **`lib/`**（原内层 `src/`）。\n"
 msgstr ""
+"src/\n"
+"├── kernel/          # 日志、事件总线、无业务依赖\n"
+"├── core/            # 配置、PG schema、repos、LLM 工具\n"
+"├── runtime/         # 对话轮次、目标、流水线\n"
+"├── platform/        # 组合根：Habitat、连接器、SAP、slash commands\n"
+"├── capabilities/    # acp, memory, tools, mcp-*, llm-openai, …\n"
+"├── features/        # chat, console, task, vault, diary, …\n"
+"├── shared/          # habitat-rpc, habitat-contract, rpc-contract, vault-crypto\n"
+"├── frontend/        # ui-kit, shell-sdk, shell-ui\n"
+"├── app/\n"
+"│   ├── cli/         # `anima` CLI（无内层 src/）\n"
+"│   └── shell/\n"
+"│       ├── tauri/   # Portal：src-tauri + bridge + spa\n"
+"│       └── web/     # 浏览器 / PWA\n"
+"└── satellites/      # companion（spa/ + lib/ + server/ 浏览器·dev host）\n"
+"\n"
+"内层 Vite SPA 根目录统一称 **`spa/`**（原 `app/`），与交付层 `src/app/` 区分。壳层/卫星的非 SPA 模块用 **`lib/`**（原内层 `src/`）。\n"
 
 #. type: Title ##
-#: docs/concepts/repository-topology.md:42
+#: docs/concepts/repository-topology.md:41
 #, no-wrap
 msgid "Root-level (non-`src/`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/repository-topology.md:53
+#: docs/concepts/repository-topology.md:52
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| `kind`      | Layer   | Purpose                                                                   |\n"
@@ -129,85 +142,95 @@ msgstr ""
 "| `evt`       | 双层    | 异步事件                                                                  |\n"
 
 #. type: Title ##
-#: docs/concepts/repository-topology.md:54
+#: docs/concepts/repository-topology.md:53
 #, no-wrap
 msgid "Module resolution"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/repository-topology.md:59
+#: docs/concepts/repository-topology.md:58
 msgid ""
 "TypeScript：`tsconfig.json` 单一配置；`@freeanima/*` 通过 "
 "`compilerOptions.paths` 映射到 `src/**`。"
 msgstr ""
+"TypeScript：`tsconfig.json` 单一配置；`@freeanima/*` 通过 "
+"`compilerOptions.paths` 映射到 `src/**`。"
 
 #. type: Bullet: '- '
-#: docs/concepts/repository-topology.md:59
+#: docs/concepts/repository-topology.md:58
 msgid ""
 "Vite 壳层：`src/frontend/shell-ui/vite/paths.ts` 与别名（`@chat/*`、"
 "`@console/*` 等）；feature UI 在 `ui/spa/`。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/repository-topology.md:59
+#: docs/concepts/repository-topology.md:58
 msgid "产品无 workspace 子 `package.json`；`site/` 为兄弟目录独立包。"
-msgstr ""
+msgstr "产品无 workspace 子 `package.json`；`site/` 为兄弟目录独立包。"
 
 #. type: Title ##
-#: docs/concepts/repository-topology.md:60
+#: docs/concepts/repository-topology.md:59
 #, no-wrap
 msgid "护栏"
-msgstr ""
+msgstr "护栏"
 
 #. type: Bullet: '- '
-#: docs/concepts/repository-topology.md:66
+#: docs/concepts/repository-topology.md:65
 msgid ""
 "`tsconfig.base.json` paths：`@freeanima/*`、`@paraglide/*`（与 Vite `module-"
 "aliases.ts` 手动对齐）。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/repository-topology.md:66
+#: docs/concepts/repository-topology.md:65
 msgid ""
 "[`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md)：目录层依"
 "赖约定（`src/<layer>/` 前缀）。"
 msgstr ""
+"[`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md)：目录层依"
+"赖约定（`src/<layer>/` 前缀）。"
 
 #. type: Bullet: '- '
-#: docs/concepts/repository-topology.md:66
+#: docs/concepts/repository-topology.md:65
 msgid "已移除 `check-package-cycles.ts`（单包无 workspace 图）。"
-msgstr ""
+msgstr "已移除 `check-package-cycles.ts`（单包无 workspace 图）。"
 
 #. type: Bullet: '- '
-#: docs/concepts/repository-topology.md:66
+#: docs/concepts/repository-topology.md:65
 msgid ""
 "分发形态仅 **source** 与 **Linux standalone**（`build:cli:executable`）；无 "
 "npm/`@freeanima/cli` 发布，无产品 Docker 镜像。"
 msgstr ""
+"分发形态仅 **source** 与 **Linux standalone**（`build:cli:executable`）；无 "
+"npm/`@freeanima/cli` 发布，无产品 Docker 镜像。"
 
 #. type: Title ##
-#: docs/concepts/repository-topology.md:67
+#: docs/concepts/repository-topology.md:66
 #, no-wrap
 msgid "文档站 i18n"
-msgstr ""
+msgstr "文档站 i18n"
 
 #. type: Plain text
-#: docs/concepts/repository-topology.md:70
+#: docs/concepts/repository-topology.md:69
 msgid ""
 "中文 **PO 译文冻结**（`po/zh_CN/` 保留、不再要求 agent 同步）；"
 "`docs/.generated/zh_CN/` **不入库**，site 构建时 `i18n:po4a` 从 PO 生成。PR/"
 "`bun run check` **不跑**翻译校验。详见 [`.agent/rules/i18n.md`](../.agent/"
 "rules/i18n.md)。"
 msgstr ""
+"中文 **PO 译文冻结**（`po/zh_CN/` 保留、不再要求 agent 同步）；"
+"`docs/.generated/zh_CN/` **不入库**，site 构建时 `i18n:po4a` 从 PO 生成。PR/"
+"`bun run check` **不跑**翻译校验。详见 [`.agent/rules/i18n.md`](../.agent/"
+"rules/i18n.md)。"
 
 #. type: Title ##
-#: docs/concepts/repository-topology.md:71
+#: docs/concepts/repository-topology.md:70
 #, no-wrap
 msgid "文档站构建"
-msgstr ""
+msgstr "文档站构建"
 
 #. type: Fenced code block (bash)
-#: docs/concepts/repository-topology.md:73
+#: docs/concepts/repository-topology.md:72
 #, no-wrap
 msgid ""
 "# 产品\n"
@@ -216,10 +239,17 @@ msgid ""
 "# 文档站（独立 lock）\n"
 "cd site && bun install && bun run build\n"
 msgstr ""
+"# 产品\n"
+"bun install && bun run check\n"
+"\n"
+"# 文档站（独立 lock）\n"
+"cd site && bun install && bun run build\n"
 
 #. type: Plain text
-#: docs/concepts/repository-topology.md:81
+#: docs/concepts/repository-topology.md:80
 msgid ""
 "site `prebuild` 会调用根目录 `i18n:po4a` 与 `paraglide:compile`（共享 `docs/"
 "` / `messages/` SSOT）。"
 msgstr ""
+"site `prebuild` 会调用根目录 `i18n:po4a` 与 `paraglide:compile`（共享 `docs/"
+"` / `messages/` SSOT）。"

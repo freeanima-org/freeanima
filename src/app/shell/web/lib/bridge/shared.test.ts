@@ -1,37 +1,33 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
-import { isCapacitorRuntime, isCapacitorShellCandidate } from "./shared.ts";
+import { applyWebUiConfig } from "./shared.ts";
 
 describe("shell-bridge shared", () => {
   afterEach(() => {
     delete (globalThis as { window?: Window }).window;
   });
 
-  it("isCapacitorShellCandidate 桌面浏览器为 false", () => {
+  it("applyWebUiConfig：同源 hub_url 用页面 origin", () => {
     (globalThis as { window: Window }).window = {
-      navigator: { userAgent: "Mozilla/5.0 (X11; Linux x86_64)" },
+      location: { origin: "http://127.0.0.1:5000" },
     } as unknown as Window;
 
-    expect(isCapacitorShellCandidate()).toBe(false);
+    const cfg = applyWebUiConfig({
+      habitat_url: "http://127.0.0.1:5000",
+    } as Parameters<typeof applyWebUiConfig>[0]);
+    expect(cfg.sameOrigin).toBe(true);
+    expect(cfg.habitatUrl).toBe("http://127.0.0.1:5000");
   });
 
-  it("远程 Habitat 手机 UA 无 Capacitor 不为候选", () => {
+  it("applyWebUiConfig：跨 origin hub 保留地址", () => {
     (globalThis as { window: Window }).window = {
-      navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14)" },
-      location: { origin: "https://hub.example.com" },
+      location: { origin: "http://127.0.0.1:5000" },
     } as unknown as Window;
 
-    expect(isCapacitorRuntime()).toBe(false);
-    expect(isCapacitorShellCandidate()).toBe(false);
-  });
-
-  it("薄壳 localhost 无 window.Capacitor 仍为候选", () => {
-    (globalThis as { window: Window }).window = {
-      navigator: { userAgent: "Mozilla/5.0 (Linux; Android 14)" },
-      location: { origin: "http://localhost" },
-    } as unknown as Window;
-
-    expect(isCapacitorRuntime()).toBe(false);
-    expect(isCapacitorShellCandidate()).toBe(true);
+    const cfg = applyWebUiConfig({
+      habitat_url: "http://10.0.0.2:2658",
+    } as Parameters<typeof applyWebUiConfig>[0]);
+    expect(cfg.sameOrigin).toBe(false);
+    expect(cfg.habitatUrl).toBe("http://10.0.0.2:2658");
   });
 });

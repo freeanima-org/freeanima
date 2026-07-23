@@ -15,7 +15,7 @@ import {
   uploadMotionFile,
 } from "@freeanima/satellites/companion/spa/lib/api.ts";
 import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
-import { emitConfigChanged } from "@freeanima/satellites/companion/spa/lib/electron.ts";
+import { emitConfigChanged } from "@freeanima/satellites/companion/spa/lib/portal-shell.ts";
 import {
   COMPANION_WINDOW_HEIGHT,
   COMPANION_WINDOW_WIDTH,

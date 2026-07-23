@@ -1,0 +1,80 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"PO-Revision-Date: 2026-07-23 13:39+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Yaml Front Matter Hash Value: title
+#: docs/features/tauri-companion-acceptance.md:1
+#, no-wrap
+msgid "Tauri Companion Acceptance"
+msgstr ""
+
+#. type: Title #
+#: docs/features/tauri-companion-acceptance.md:5
+#: docs/features/tauri-companion-éªæ¶.md:5
+#, no-wrap
+msgid "Tauri Companion 验收清单（Phase 3）"
+msgstr "Tauri Companion 验收清单（Phase 3）"
+
+#. type: Plain text
+#: docs/features/tauri-companion-acceptance.md:8
+#: docs/features/tauri-companion-éªæ¶.md:8
+msgid "人工验收（Agent 无法替代）："
+msgstr "人工验收（Agent 无法替代）："
+
+#. type: Plain text
+#: docs/features/tauri-companion-acceptance.md:14
+#: docs/features/tauri-companion-éªæ¶.md:14
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| `kind`      | Layer   | Purpose                                                                   |\n"
+#| "| ----------- | ------- | ------------------------------------------------------------------------- |\n"
+#| "| `connect`   | Habitat RPC | `protocol: HubRPC/1.0`, `auth_token`                                      |\n"
+#| "| `connected` | Habitat RPC | `session_id`, `heartbeat_interval_sec`                                    |\n"
+#| "| `req`       | Both    | RPC (`id`, `method`, `payload`) — incl. `sap.attach`, `conversation.*`, … |\n"
+#| "| `res`       | Both    | RPC response                                                              |\n"
+#| "| `evt`       | Both    | Async event                                                               |\n"
+msgid ""
+"| 平台               | VRM 渲染 | 透明窗 | 局部 click-through | 巡逻/拖拽 | remote_tools bubble |\n"
+"| ------------------ | -------- | ------ | ------------------ | --------- | ------------------- |\n"
+"| Windows (WebView2) |          |        |                    |           |                     |\n"
+"| macOS (WKWebView)  |          |        |                    |           |                     |\n"
+"| Linux (WebKitGTK)  |          |        |                    |           |                     |\n"
+msgstr ""
+"| `kind`      | 层      | 用途                                                                      |\n"
+"| ----------- | ------- | ------------------------------------------------------------------------- |\n"
+"| `connect`   | Habitat RPC | `protocol: HubRPC/1.0`、`auth_token`                                      |\n"
+"| `connected` | Habitat RPC | `session_id`、`heartbeat_interval_sec`                                    |\n"
+"| `req`       | 双层    | RPC（`id`、`method`、`payload`）— 含 `sap.attach`、`conversation.*` 等    |\n"
+"| `res`       | 双层    | RPC 响应                                                                  |\n"
+"| `evt`       | 双层    | 异步事件                                                                  |\n"
+
+#. type: Plain text
+#: docs/features/tauri-companion-acceptance.md:16
+#: docs/features/tauri-companion-éªæ¶.md:16
+msgid ""
+"开发：`just web`（另终端）+ `just tauri`；overlay 默认 `http://"
+"127.0.0.1:4176/?view=overlay`。"
+msgstr ""
+"开发：`just web`（另终端）+ `just tauri`；overlay 默认 `http://"
+"127.0.0.1:4176/?view=overlay`。"
+
+#. type: Plain text
+#: docs/features/tauri-companion-acceptance.md:17
+#: docs/features/tauri-companion-éªæ¶.md:17
+msgid ""
+"打包资源：`scripts/prepare-tauri-desktop-ui.ts` → `src-tauri/companion-dist/"
+"`。"
+msgstr ""

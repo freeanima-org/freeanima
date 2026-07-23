@@ -201,7 +201,7 @@ export default defineConfig(({ command, mode }) => {
       "shell-bridge": join(PKG_DIR, "spa", "shell-bridge.ts"),
     },
     define: {
-      // Web 默认同源；编译期常量仅作极端回退（Electron 等非 Web 路径）
+      // Web 默认同源；编译期常量仅作极端回退
       __WEB_DEFAULT_HUB_URL__: JSON.stringify(""),
       __WEB_UI_VERSION__: JSON.stringify(UI_VERSION),
       __FREEANIMA_SHELL_TARGET__: JSON.stringify(SHELL_TARGET),

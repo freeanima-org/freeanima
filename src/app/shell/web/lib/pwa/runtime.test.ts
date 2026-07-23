@@ -3,21 +3,19 @@ import { describe, expect, it } from "bun:test";
 import { isBrowserWebShell, isStandalonePwa, readInstallDismissed } from "./runtime.ts";
 
 describe("pwa runtime", () => {
-  it("isBrowserWebShell 在 Electron 下为 false", () => {
+  it("isBrowserWebShell 在 Tauri Portal 下为 false", () => {
     const prev = globalThis.window;
     globalThis.window = {
-      satelliteShell: { isElectron: true },
-    } as Window & typeof globalThis.window;
+      satelliteShell: { isTauri: true, isNativeShell: true },
+    } as unknown as Window & typeof globalThis.window;
     expect(isBrowserWebShell()).toBe(false);
     globalThis.window = prev;
   });
 
-  it("isBrowserWebShell 在 Tauri 下为 false", () => {
+  it("isBrowserWebShell 在普通浏览器下为 true", () => {
     const prev = globalThis.window;
-    globalThis.window = {
-      satelliteShell: { isTauri: true },
-    } as Window & typeof globalThis.window;
-    expect(isBrowserWebShell()).toBe(false);
+    globalThis.window = {} as unknown as Window & typeof globalThis.window;
+    expect(isBrowserWebShell()).toBe(true);
     globalThis.window = prev;
   });
 
@@ -41,7 +39,7 @@ describe("pwa runtime", () => {
         matches: query.includes("standalone"),
         media: query,
       }),
-    } as Window & typeof globalThis.window;
+    } as unknown as Window & typeof globalThis.window;
     expect(isStandalonePwa()).toBe(true);
     globalThis.window = prev;
   });

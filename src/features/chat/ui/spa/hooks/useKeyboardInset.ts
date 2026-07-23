@@ -12,7 +12,7 @@ function readInnerHeight(): number {
   return typeof window !== "undefined" ? window.innerHeight : 0;
 }
 
-/** Tauri Android / 移动 Web：依赖 visualViewport；无 Capacitor Keyboard 插件。 */
+/** Tauri Android / 移动 Web：依赖 visualViewport。 */
 function shouldUseVisualViewportOnly(): boolean {
   const buildTarget = getShellBuildTarget();
   return buildTarget === "mobile" || isTauriRuntime();

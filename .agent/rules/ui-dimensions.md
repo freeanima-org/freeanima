@@ -7,18 +7,18 @@
 
 | 维度                   | 管什么                                  | 取值                              | 判断方式                                                     | 可变性                           |
 | ---------------------- | --------------------------------------- | --------------------------------- | ------------------------------------------------------------ | -------------------------------- |
-| **壳子** (shell)       | 能力（原生 API、文件、推送、通知、IPC） | `web` / `capacitor` / `electron`  | 构建时 + runtime flag                                        | 固定                             |
+| **壳子** (shell)       | 能力（原生 API、文件、推送、通知、IPC） | `web` / `tauri`                   | 构建时 + runtime flag（`getShellKind`）                      | 固定                             |
 | **布局** (layout)      | 渲染（宽屏/窄屏视觉、导航 IA）          | `compact`（窄）/ `expanded`（宽） | CSS `matchMedia`                                             | 实时可变                         |
-| **交互** (interaction) | 输入模式                                | `touch` / `pointer`               | `primaryInput` → 壳默认 → `(pointer: fine)`+`(hover: hover)` | 主范式相对固定；媒体查询可跟外设 |
+| **交互** (interaction) | 输入模式                                | `touch` / `pointer`               | `primaryInput` → 媒体查询 `(pointer: fine)`+`(hover: hover)` | 主范式相对固定；媒体查询可跟外设 |
 
 文档口语「移动布局 / 桌面布局」分别对应 `compact` / `expanded`。
 
 ## 核心原则
 
 - 三个维度**正交**：任意一个不能推导另外两个
-- **禁止** `isMobile = isCapacitor()` 这类混写
+- **禁止** `isMobile = getShellKind() === "tauri"` 这类混写
 - **禁止**单个 `isMobile` / `isDesktop` 变量同时控制布局和交互
-- 组件按职责选用对应维 API；不要手写 `satelliteShell.isElectron && matchMedia(...)` 组合驱动交互
+- 组件按职责选用对应维 API；不要手写 `satelliteShell.isTauri && matchMedia(...)` 组合驱动交互
 
 ## 分层职责
 
@@ -26,13 +26,11 @@
 
 能力调用走封装；组件不直接用壳类型驱动布局或交互：
 
-| API                                                           | 用途                            |
-| ------------------------------------------------------------- | ------------------------------- |
-| `getShellKind()` / `useShellKind()`                           | 一元壳类型                      |
-| `canOpenHabitatSettings()` / `useOpenHubSettingsCapability()` | 是否展示 Habitat 设置入口       |
-| `shouldUseNativeShellNavigation()`                            | hash 路由 / 保存后进模块        |
-| `isCapacitorShellRuntime()` / `isCapacitorNativePlatform()`   | Capacitor 能力                  |
-| `isCapacitorShellCandidate()`                                 | **仅** bootstrap / 薄壳探测内部 |
+| API                                                           | 用途                        |
+| ------------------------------------------------------------- | --------------------------- |
+| `getShellKind()` / `useShellKind()`                           | 一元壳类型（`web`/`tauri`） |
+| `canOpenHabitatSettings()` / `useOpenHubSettingsCapability()` | 是否展示 Habitat 设置入口   |
+| `shouldUseNativeShellNavigation()`                            | hash 路由 / 保存后进模块    |
 
 壳不支持的能力返回 `null`/`false`，组件自行降级。
 
@@ -71,15 +69,15 @@
 - touch：大点击区域（≥44px）、无 hover 态、长按 / ActionSheet
 - pointer：常规点击、hover、右键 ContextMenu
 - Pad 接外接键盘后**交互维不变**（仍为 touch），不因外设改 UI 策略
-- 键盘弹出的**触发判断**归交互；Capacitor Keyboard resize 等差异走壳能力（如 `useKeyboardInset()` 内部自判）
+- 键盘弹出的**触发判断**归交互；WebView resize 差异走壳能力（如 `useKeyboardInset()` 内部自判）
 
 ### Pad 设备定位
 
-| 维度 | 值                                                           |
-| ---- | ------------------------------------------------------------ |
-| 壳子 | `web` 或 `capacitor`（取决于访问方式）                       |
-| 布局 | 由屏幕实时决定（横屏→expanded，竖屏→compact）                |
-| 交互 | **touch**（固定；`primaryInput: "touch"` 或 Capacitor 默认） |
+| 维度 | 值                                            |
+| ---- | --------------------------------------------- |
+| 壳子 | `web` 或 `tauri`（取决于访问方式）            |
+| 布局 | 由屏幕实时决定（横屏→expanded，竖屏→compact） |
+| 交互 | **touch**（固定；`primaryInput: "touch"`）    |
 
 ## 包与 import
 
@@ -89,26 +87,22 @@
 
 ## 旧名 → 新名
 
-| 旧名                              | 新名                                                      |
-| --------------------------------- | --------------------------------------------------------- |
-| `isMobileLayoutViewport`          | `isCompactLayoutViewport`                                 |
-| `useMobileLayout`                 | `useCompactLayout`                                        |
-| `MOBILE_LAYOUT_MQ`                | `COMPACT_LAYOUT_MQ`                                       |
-| `isMobileCapacitorShellCandidate` | `isCapacitorShellCandidate`                               |
-| `isMobileCapacitorBridgeExpected` | `isCapacitorBridgeExpected`                               |
-| `isMobileShellRuntime`            | `isCapacitorPackagedShell`（≈ `isCapacitorShellRuntime`） |
-| `detectPlatform`                  | `detectSettingsChromePlatform`                            |
-| `isMobileDebugConsoleEnabled`     | `isNativeDebugConsoleEnabled`                             |
+| 旧名                          | 新名                           |
+| ----------------------------- | ------------------------------ |
+| `isMobileLayoutViewport`      | `isCompactLayoutViewport`      |
+| `useMobileLayout`             | `useCompactLayout`             |
+| `MOBILE_LAYOUT_MQ`            | `COMPACT_LAYOUT_MQ`            |
+| `detectPlatform`              | `detectSettingsChromePlatform` |
+| `isMobileDebugConsoleEnabled` | `isNativeDebugConsoleEnabled`  |
 
 ## 禁止 / 允许（速查）
 
-| 禁止                                              | 允许                                                    |
-| ------------------------------------------------- | ------------------------------------------------------- |
-| 用 `isElectron` / `isNativeShell` 锁 Shell 主布局 | `useLayoutMode()` / `useDrawerNav()`                    |
-| 用视口断点决定右键 vs 长按                        | `useContextMenuCapability` / `useActionSheetCapability` |
-| 用布局+壳组合决定 Enter 发送                      | `useEnterToSendCapability()`                            |
-| 手写三处不同的 Habitat 设置可见性                 | `canOpenHabitatSettings()`                              |
-| 把 `isCapacitorShellCandidate` 当布局             | 仅 bootstrap / 路由壳探测                               |
+| 禁止                                                  | 允许                                                    |
+| ----------------------------------------------------- | ------------------------------------------------------- |
+| 用 `getShellKind()` / `isNativeShell` 锁 Shell 主布局 | `useLayoutMode()` / `useDrawerNav()`                    |
+| 用视口断点决定右键 vs 长按                            | `useContextMenuCapability` / `useActionSheetCapability` |
+| 用布局+壳组合决定 Enter 发送                          | `useEnterToSendCapability()`                            |
+| 手写三处不同的 Habitat 设置可见性                     | `canOpenHabitatSettings()`                              |
 
 ## 代码入口
 

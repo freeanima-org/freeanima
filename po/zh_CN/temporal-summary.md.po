@@ -26,7 +26,7 @@ msgstr "记忆存储（摘要）"
 #: docs/concepts/temporal-summary.md:5
 #, no-wrap
 msgid "Temporal Summary（时间摘要）"
-msgstr ""
+msgstr "Temporal Summary（时间摘要）"
 
 #. type: Plain text
 #: docs/concepts/temporal-summary.md:9

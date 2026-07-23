@@ -1,4 +1,4 @@
-import { isCompanionOverlay } from "@freeanima/satellites/companion/spa/lib/electron.ts";
+import { isCompanionOverlay } from "@freeanima/satellites/companion/spa/lib/portal-shell.ts";
 import {
   COMPANION_WINDOW_HEIGHT,
   COMPANION_WINDOW_WIDTH,

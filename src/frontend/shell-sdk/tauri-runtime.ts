@@ -25,7 +25,7 @@ export function isTauriRuntime(): boolean {
     const { protocol, hostname } = w.location;
     if (protocol === "tauri:") return true;
     if (hostname === "tauri.localhost" || hostname === "ipc.localhost") return true;
-    // Tauri 2 自定义协议常见 *.localhost；Capacitor 薄壳是光杆 localhost
+    // Tauri 2 自定义协议常见 *.localhost
     if (hostname.endsWith(".localhost") && hostname !== "localhost") return true;
   } catch {
     /* ignore */

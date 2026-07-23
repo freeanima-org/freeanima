@@ -1,4 +1,4 @@
-/** Capacitor / electron-store 键名 */
+/** 壳层 prefs 键名（Web localStorage / Tauri store） */
 /** 新键；读时仍兼容 freeanima.hubUrl */
 export const HABITAT_URL_KEY = "freeanima.habitatUrl";
 /** @deprecated 0.9.3 删除 */

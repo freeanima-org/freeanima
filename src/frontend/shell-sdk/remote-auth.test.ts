@@ -62,7 +62,7 @@ describe("remote-auth helpers", () => {
     }
   });
 
-  test("createBearerFetch 可注入底层 fetch（绕过 CapacitorHttp patch）", async () => {
+  test("createBearerFetch 可注入底层 fetch", async () => {
     let calledCustom = false;
     const customFetch: import("./remote-auth.ts").HabitatFetch = async () => {
       calledCustom = true;

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,10 +45,10 @@ msgstr ""
 #: docs/features/page-refresh.md:15
 #, no-wrap
 msgid ""
-"| Verb        | When                                                       | What happens                                                                                                                   |\n"
-"| ----------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |\n"
-"| **sync**    | Hub reconnect, tab visible again, Offline sync toast retry | Flush outbox; modules that flushed call `refreshAll` (see [offline platform](../guide/offline-platform.md))                    |\n"
-"| **refresh** | Header **Refresh** button or touch pull-to-refresh         | Re-run the page’s `reload*` / list fetch (online `withOfflineCache` already network-fetches). Same handler for button and pull |\n"
+"| Verb        | When                                                           | What happens                                                                                                                   |\n"
+"| ----------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |\n"
+"| **sync**    | Habitat reconnect, tab visible again, Offline sync toast retry | Flush outbox; modules that flushed call `refreshAll` (see [offline platform](../guide/offline-platform.md))                    |\n"
+"| **refresh** | Header **Refresh** button or touch pull-to-refresh             | Re-run the page’s `reload*` / list fetch (online `withOfflineCache` already network-fetches). Same handler for button and pull |\n"
 msgstr ""
 
 #. type: Title ##
@@ -84,29 +84,29 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/features/page-refresh.md:22
 msgid ""
-"**Out of scope**: Hub fan-out for every CRUD entity; React Query; turning "
-"the offline-sync toast into a page refresh control."
+"**Out of scope**: Habitat fan-out for every CRUD entity; React Query; "
+"turning the offline-sync toast into a page refresh control."
 msgstr ""
 
 #. type: Title ##
 #: docs/features/page-refresh.md:23
 #, no-wrap
-msgid "Page tiers"
+msgid "Page classes"
 msgstr ""
 
 #. type: Plain text
 #: docs/features/page-refresh.md:34
 #, no-wrap
 msgid ""
-"| Tier             | Pages                             | Auto                                                                   | Manual                                    |\n"
-"| ---------------- | --------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------- |\n"
-"| A Stream         | Chat                              | SAP stream + recovery poll                                             | Header refresh (existing)                 |\n"
-"| B Tier2 CRUD     | Task, Project, Diary              | Mount / selection cache-first; local write reload; sync → `refreshAll` | Header + pull-to-refresh                  |\n"
-"| C Hybrid         | Pomodoro                          | `pomodoro.active.changed`                                              | Offline `refreshAll` for config/stats     |\n"
-"| D Tier1 snapshot | Email, Notification, Dream, Vault | Mount / dependency load                                                | Header refresh (pull on list where wired) |\n"
-"| E Console        | Ops lists                         | Load on enter                                                          | Explicit refresh (existing)               |\n"
-"| F Settings       | Shell settings                    | Load on open                                                           | Re-read after save                        |\n"
-"| G Shell update   | PWA / installer                   | Update check                                                           | Reload / install ≠ business refresh       |\n"
+"| Class           | Pages                             | Auto                                                                   | Manual                                    |\n"
+"| --------------- | --------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------- |\n"
+"| A Stream        | Chat                              | SAP stream + recovery poll                                             | Header refresh (existing)                 |\n"
+"| B CRUD outbox   | Task, Project, Diary              | Mount / selection cache-first; local write reload; sync → `refreshAll` | Header + pull-to-refresh                  |\n"
+"| C Hybrid outbox | Pomodoro                          | `pomodoro.active.changed`                                              | Offline `refreshAll` for config/stats     |\n"
+"| D snapshot      | Email, Notification, Dream, Vault | Mount / dependency load                                                | Header refresh (pull on list where wired) |\n"
+"| E Habitat       | Ops lists                         | Load on enter                                                          | Explicit refresh (existing)               |\n"
+"| F Settings      | Shell settings                    | Load on open                                                           | Re-read after save                        |\n"
+"| G Shell update  | PWA / installer                   | Update check                                                           | Reload / install ≠ business refresh       |\n"
 msgstr ""
 
 #. type: Title ##
@@ -125,7 +125,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/features/page-refresh.md:39
-msgid "Copy: `m.console_common_refresh` / `m.console_common_refreshing`."
+msgid "Copy: `m.habitat_common_refresh` / `m.habitat_common_refreshing`."
 msgstr ""
 
 #. type: Bullet: '- '

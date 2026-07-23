@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,33 +15,24 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Title ##
-#: docs/features/companion.md:144 docs/features/mobile-app.md:49
-#: docs/guide/database.md:88 docs/guide/remote-access.md:192
-#, no-wrap
-msgid "Troubleshooting"
-msgstr "故障排查"
-
 #. type: Content of: <messages><msg>
 #: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
-#: messages/po4a/en.xml:621
+#: messages/po4a/en.xml:684
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr "移动端 APP（Android）"
 
 #. type: Plain text
 #: docs/features/mobile-app.md:7
-#, fuzzy, no-wrap
-#| msgid "> Capacitor **薄壳** + Habitat `/web/*` 远程 UI（与浏览器/PWA 同一产物）。  \n"
-msgid "> Capacitor 壳 + **安装包内** `web/dist`（与浏览器/PWA 同源产物；本地加载）。  \n"
-msgstr "> Capacitor **薄壳** + Habitat `/web/*` 远程 UI（与浏览器/PWA 同一产物）。  \n"
+#, no-wrap
+msgid "> Portal：**Tauri Android**（`src/app/shell/tauri/`）+ 包内 `dist-mobile` / `ui/web`。  \n"
+msgstr ""
 
 #. type: Plain text
 #: docs/features/mobile-app.md:9
-#, fuzzy, no-wrap
-#| msgid "> Package: [`src/app/shell/mobile/`](../../src/app/shell/mobile/)\n"
-msgid "> Package: [`src/app/shell/mobile/`](../../src/app/shell/mobile/)\n"
-msgstr "> 包路径：[`src/app/shell/mobile/`](../../src/app/shell/mobile/)\n"
+#, no-wrap
+msgid "> Shell rules: [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md).\n"
+msgstr ""
 
 #. type: Title ##
 #: docs/features/mobile-app.md:10
@@ -61,13 +52,13 @@ msgstr "范围"
 #| "| Habitat config | APP **Habitat settings**（Preferences）或 bootstrap 首次配置 |\n"
 #| "| Habitat duties | `/api` REST + `/rpc/v1` WebSocket                    |\n"
 msgid ""
-"| Item       | Description                                                 |\n"
-"| ---------- | ----------------------------------------------------------- |\n"
-"| Platform   | **Android only** sideload (APK); iOS later                  |\n"
-"| UI         | APK 内 `www/web`（`build:web` → `sync-mobile-www`）         |\n"
-"| Modules    | Chat + Habitat（本地 shell-ui）                             |\n"
-"| Habitat config | APP **设置 → 连接**（Preferences）；无独立 bootstrap Habitat 页 |\n"
-"| Habitat duties | Habitat RPC REST `/rpc/v1` + WebSocket；**不**托管壳内 SPA  |\n"
+"| Item           | Description                                                |\n"
+"| -------------- | ---------------------------------------------------------- |\n"
+"| Platform       | **Android** sideload (APK); iOS later                      |\n"
+"| UI             | APK 内 WebView 加载 `prepare-tauri-ui` 拷入的 `ui/web`     |\n"
+"| Modules        | Chat + Habitat（本地 shell-ui）                            |\n"
+"| Habitat config | APP **设置 → 连接**（Rust prefs / `app_config_dir`）       |\n"
+"| Habitat duties | Habitat RPC REST `/rpc/v1` + WebSocket；**不**托管壳内 SPA |\n"
 msgstr ""
 "| 项目       | 说明                                                           |\n"
 "| ---------- | -------------------------------------------------------------- |\n"
@@ -78,7 +69,7 @@ msgstr ""
 "| Habitat 职责   | `/api` REST + `/rpc/v1` WebSocket                          |\n"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:20 docs/sap/overview.md:17
+#: docs/features/mobile-app.md:20
 #, no-wrap
 msgid "Topology"
 msgstr "拓扑"
@@ -104,16 +95,16 @@ msgstr "拓扑"
 msgid ""
 "flowchart LR\n"
 "  Phone[Android WebView]\n"
-"  Local[\"www/web 本地 SPA\"]\n"
+"  Local[\"ui/web 本地 SPA\"]\n"
 "  Chat[\"/web/chat\"]\n"
-"  Habitat[\"/web/habitat\"]\n"
-"  Habitat[Anima Service]\n"
+"  HabitatUI[\"/web/habitat\"]\n"
+"  HabitatSvc[Anima Service]\n"
 "\n"
 "  Phone --> Local\n"
 "  Local --> Chat\n"
-"  Local --> Habitat\n"
-"  Chat -->|Habitat RPC Bearer| Habitat\n"
-"  Habitat -->|Habitat RPC Bearer| Habitat\n"
+"  Local --> HabitatUI\n"
+"  Chat -->|Habitat RPC Bearer| HabitatSvc\n"
+"  HabitatUI -->|Habitat RPC Bearer| HabitatSvc\n"
 msgstr ""
 "flowchart LR\n"
 "  Phone[Android WebView]\n"
@@ -134,18 +125,15 @@ msgstr ""
 #: docs/features/mobile-app.md:38
 #, fuzzy
 #| msgid ""
-#| "Mobile REST **connects directly** to Habitat (no desktop Electron `/api` "
-#| "proxy); requires a **Service API Token** and Habitat CORS for Capacitor "
 #| "origin (`https://localhost`). Routes use hash (`#/chat`) for WebView "
 #| "debugging."
 msgid ""
-"Mobile REST **connects directly** to Habitat (no local REST proxy); requires a "
-"**Service API Token** and Habitat CORS for Capacitor origin（`http://localhost`；"
-"`androidScheme: http`）。"
+"Mobile REST **connects directly** to Habitat (no local REST proxy); requires "
+"a **Service API Token** and Habitat CORS for the WebView origin."
 msgstr ""
-"移动端 REST **直连** Habitat（无桌面 Electron `/api` 代理）；需要 **Service API "
-"Token** 以及 Habitat 对 Capacitor 源（`https://localhost`）的 CORS。路由使用 hash"
-"（`#/chat`）以便 WebView 调试。"
+"移动端 REST **直连** Habitat（无桌面 Tauri `/api` 代理）；需要 **Service API "
+"Token** 以及 Habitat 对 WebView 源（`https://localhost`）的 CORS。路由使用 "
+"hash（`#/chat`）以便 WebView 调试。"
 
 #. type: Title ##
 #: docs/features/mobile-app.md:39
@@ -166,14 +154,13 @@ msgstr ""
 
 #. type: Bullet: '2. '
 #: docs/features/mobile-app.md:46
-msgid "首次启动未配置 Token → 进入 **设置 → 连接**："
-msgstr ""
+msgid "First launch without Token → **设置 → 连接**:"
+msgstr "First launch without Token → **设置 → 连接**:"
 
 #. type: Bullet: '   - '
 #: docs/features/mobile-app.md:46
 msgid ""
-"Habitat URL（`http://<PC-IP>:2658` 或本地 HTTPS `https://<host>:2659`；勿用 "
-"`127.0.0.1`）"
+"Habitat URL（`http://<PC-IP>:2658` or HTTPS；avoid `127.0.0.1` on phone）"
 msgstr ""
 
 #. type: Bullet: '   - '
@@ -185,150 +172,95 @@ msgstr "服务 API 令牌（`fa_at_...`，创建时仅打印一次）"
 
 #. type: Bullet: '3. '
 #: docs/features/mobile-app.md:46
-msgid "**测试连接** → **保存并进入** → 本地 `/web/chat`。"
-msgstr ""
+msgid "**测试连接** → **保存并进入** → local `/web/chat`."
+msgstr "**测试连接** → **保存并进入** → local `/web/chat`."
+
+#. type: Title ##
+#: docs/features/mobile-app.md:47 docs/guide/database.md:97
+#: docs/guide/remote-access.md:194
+#, no-wrap
+msgid "Troubleshooting"
+msgstr "故障排查"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:48
-msgid ""
-"Non-loopback Habitat URL requires token; REST uses `Authorization: Bearer`; SAP "
-"sends `auth_token` in `connect` frame."
-msgstr ""
-"非回环 Habitat URL 需要 token；REST 使用 `Authorization: Bearer`；Habitat RPC 在 "
-"`connect` 帧发送 `auth_token`。"
-
-#. type: Plain text
-#: docs/features/mobile-app.md:63
+#: docs/features/mobile-app.md:60
 #, no-wrap
 msgid ""
-"| Symptom                                         | Common cause                                                                                                             |\n"
-"| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |\n"
-"| Keyboard covers chat input                      | WebView not resizing; need `adjustResize` + `@capacitor/keyboard`; `cap sync` after Web changes                          |\n"
-"| Chat input unresponsive                         | No selected conversation (first install should auto-create); or SAP disconnected                                         |\n"
-"| Habitat load failed / Failed to fetch           | Habitat not `--host 0.0.0.0`, wrong token, firewall; Chrome Remote Debugging for Bearer header                               |\n"
-"| 测试连接「网络错误」、浏览器同地址正常          | 需 **Capacitor 原生 HTTP**（`CapacitorHttp`）或可信 HTTPS；自签 CA 另需 APK 信任用户 CA                                  |\n"
-"| 连接测试成功，但压缩/LLM 等报 `config.get` 超时 | 旧路径经 WebSocket 拉全量配置且 3s 超时；现已改为 `config.getSection` + HTTP 双传输。仍超时则查 WS 半开连接或 Habitat 不可达 |\n"
-"| ZeroTier / 虚拟网卡 IP                          | 确认手机 ZeroTier 在线；Habitat `http.host: 0.0.0.0`；`allowed_hosts` 含该 IP；壳层 Habitat URL **勿带尾斜杠**，HTTP 用 `:2658`  |\n"
-"| Not Found                                       | Avoid legacy paths; use SPA `/web/habitat/dashboard`                                                                     |\n"
-"| TTS / 朗读无声                                  | 默认 Edge TTS 需 Habitat 出网；Habitat 设置 → 语音 → 试听。若用 Web Speech 需 HTTPS 安全上下文                                   |\n"
-"| UI 与发版不一致                                 | UI 随 **APK**；需重装/发新包。浏览器 Habitat `/web` 另有独立部署链                                                           |\n"
-"| 安装失败「签名冲突」                            | 已装旧 APK 与新版证书不同；卸载 `FreeAnima` 后重装。CI 固定签名后同 channel 可覆盖升级                                   |\n"
+"| Symptom                                       | Common cause                                                                                      |\n"
+"| --------------------------------------------- | ------------------------------------------------------------------------------------------------- |\n"
+"| Keyboard covers chat input                    | WebView not resizing; rely on `visualViewport` inset (visualViewport only)               |\n"
+"| Chat input unresponsive                       | No selected conversation; or Habitat RPC disconnected                                             |\n"
+"| Habitat load failed / Failed to fetch         | Habitat not `--host 0.0.0.0`, wrong token, firewall                                               |\n"
+"| 测试连接「网络错误」、浏览器同地址正常        | 壳内 HTTPS 需信任 mkcert 根 CA（`network_security_config` 已信任用户 CA）；或暂用 `http://…:2658` |\n"
+"| 测试连接成功，实际「连接已断开」              | 测试含原生 HTTP + WebSocket；仍断连则查 token / WS 代理                                           |\n"
+"| `Read-only file system` on save               | Fixed: prefs write to app private config dir                                                      |\n"
+"| ZeroTier / 虚拟网卡 IP                        | Phone ZeroTier online; Habitat `http.host: 0.0.0.0`; shell URL without trailing slash             |\n"
+"| Install `NO_CERTIFICATES` / version downgrade | Pack signs APK; uninstall old canary build then reinstall                               |\n"
+"| 安装失败「签名冲突」                          | Uninstall `org.freeanima.app` then reinstall                                                      |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:64
+#: docs/features/mobile-app.md:61
 #, no-wrap
 msgid "Debugging"
 msgstr "调试"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:67
-msgid "Settings → **Debug** (desktop and mobile share shell-ui panel):"
-msgstr "设置 → **调试**（桌面与移动端共用 shell-ui 面板）："
-
-#. type: Plain text
-#: docs/features/mobile-app.md:73
-#, no-wrap
+#: docs/features/mobile-app.md:64
 msgid ""
-"| Capability | Desktop           | Mobile                                      |\n"
-"| ---------- | ----------------- | ------------------------------------------- |\n"
-"| Sentry     | DSN in settings   | Same                                        |\n"
-"| DevTools   | F12 / dev package | Debug APK + USB → Chrome `chrome://inspect` |\n"
-"| Habitat    | Electron DevTools | vConsole (settings toggle)                  |\n"
-msgstr ""
-"| 能力 | 桌面              | 移动端                                        |\n"
-"| ---------- | -------------------- | --------------------------------------------- |\n"
-"| Sentry     | 设置中的 DSN      | 相同                                          |\n"
-"| DevTools   | F12 / dev 包    | Debug APK + USB → Chrome `chrome://inspect`   |\n"
-"| Habitat    | Electron DevTools    | vConsole（设置开关）                    |\n"
-
-#. type: Plain text
-#: docs/features/mobile-app.md:75
-msgid ""
-"`bun run debug:android`：`build:mobile:debug` + 安装；inspect 目标为本地 "
-"SPA。"
+"`bun run debug:android` / `just android`：Tauri Android debug。Chrome "
+"`chrome://inspect` 连 WebView。"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:76
+#: docs/features/mobile-app.md:65
 #, no-wrap
 msgid "Build and sideload"
 msgstr "构建与侧载"
 
 #. type: Fenced code block (bash)
-#: docs/features/mobile-app.md:78
+#: docs/features/mobile-app.md:67
 #, no-wrap
 msgid ""
-"bun run build:mobile\n"
-"cd src/app/shell/mobile && bunx cap sync android\n"
+"just install-android\n"
+"just install-android-tauri -- --init   # 首次\n"
+"just pack-android                      # → dist/freeanima-mobile-tauri-android.apk（有设备则尝试 adb 安装）\n"
 msgstr ""
-"bun run build:mobile\n"
-"cd src/app/shell/mobile && bunx cap sync android\n"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:84
+#: docs/features/mobile-app.md:74
 msgid ""
-"`www/` 含完整 `web/` SPA（gitignore）。前端改动需重新 `build:mobile`（或 "
-"sync）再出 APK。"
+"Release asset name on GitHub: `freeanima-mobile-android.apk`（same contents, "
+"CI copies from Tauri dist）。"
 msgstr ""
-
-#. type: Plain text
-#: docs/features/mobile-app.md:86
-msgid "Debug full flow: `bun run debug:android`"
-msgstr "调试完整流程：`bun run debug:android`"
-
-#. type: Plain text
-#: docs/features/mobile-app.md:88
-#, no-wrap
-msgid "**Sideload 升级**：GitHub Release 的 `freeanima-mobile-android.apk`（canary / release）由 CI 用固定 upload 密钥签名，同 channel 内可覆盖安装。若曾安装旧版未固定签名的 APK，或轮换密钥后，需先**卸载** `FreeAnima`（`org.freeanima.app`）再安装。本地 `debug:android` 为 `org.freeanima.app.dev`，与正式包可并存。\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/features/mobile-app.md:90
-#, fuzzy
-#| msgid ""
-#| "Package README: [`src/app/shell/mobile/README.md`](../../src/app/shell/"
-#| "mobile/README.md)"
-msgid ""
-"Package README: [`src/app/shell/mobile/README.md`](../../src/app/shell/"
-"mobile/README.md)"
-msgstr ""
-"包 README：[`src/app/shell/mobile/README.md`](../../src/app/shell/mobile/"
-"README.md)"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:91
+#: docs/features/mobile-app.md:75
 #, no-wrap
 msgid "vs desktop shell"
 msgstr "与桌面壳层对比"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:100
+#: docs/features/mobile-app.md:82
 #, fuzzy, no-wrap
 #| msgid ""
-#| "|              | Electron `src/app/shell/desktop`                          | Capacitor `src/app/shell/mobile`                |\n"
-#| "| ------------ | ----------------------------------------------- | ------------------------------------- |\n"
-#| "| Injection    | preload → `window.satelliteShell`               | `shell-bridge.js` → same-shaped API   |\n"
-#| "| Habitat config   | Habitat settings → `~/.anima-desktop/settings.json` | Habitat settings → Preferences            |\n"
-#| "| Debug/Sentry | Settings → Debug → same file `debug`            | Settings → Debug → Preferences        |\n"
-#| "| REST         | Local static `/api` proxy (same origin)         | Direct `hubUrl/api/*` (CORS + Bearer) |\n"
-#| "| instance_id  | File `~/.anima/satellites/chat/`                | Preferences                           |\n"
-#| "| Content      | chat + admin + companion                        | chat + admin                          |\n"
+#| "| Round | Intent                                                                  |\n"
+#| "| ----- | ----------------------------------------------------------------------- |\n"
+#| "| 1     | Contradiction detection + expiry marking                                |\n"
+#| "| 2     | Split multi-fact entries                                                |\n"
+#| "| 3     | Dedup merge similar entries                                             |\n"
+#| "| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |\n"
 msgid ""
-"|              | Electron `src/app/shell/desktop`      | Capacitor `src/app/shell/mobile`             |\n"
-"| ------------ | ------------------------------------- | -------------------------------------------- |\n"
-"| Injection    | preload → `window.satelliteShell`     | Habitat SPA `bootstrap-capacitor` → API          |\n"
-"| Habitat config   | 设置 → 连接 → 桌面 prefs              | 设置 → 连接 → Preferences                    |\n"
-"| Debug/Sentry | Settings → Debug                      | Settings → Debug                             |\n"
-"| REST         | Direct `hubUrl/rpc/v1/*` (Bearer) | Direct `hubUrl/rpc/v1/*` (CORS + Bearer) |\n"
-"| instance_id  | File `~/.anima/satellites/chat/`      | Preferences                                  |\n"
-"| Content      | 安装包内 web/dist + companion         | 安装包内 web/dist                            |\n"
+"|                | Desktop Tauri                        | Android Tauri                       |\n"
+"| -------------- | ------------------------------------ | ----------------------------------- |\n"
+"| Injection      | `bootstrap-tauri-desktop` → ShellApi | `bootstrap-tauri-mobile` → ShellApi |\n"
+"| Habitat config | 设置 → 连接 → `~/.anima` prefs       | 设置 → 连接 → app config dir        |\n"
+"| Companion      | overlay WebView                      | n/a（番茄钟小组件 MVP）             |\n"
+"| REST / RPC     | Direct Habitat + Bearer / WS         | Same                                |\n"
 msgstr ""
-"|             | Electron `src/app/shell/desktop`                      | Capacitor `src/app/shell/mobile`               |\n"
-"| ----------- | ------------------------------------------- | ------------------------------------ |\n"
-"| 注入   | preload → `window.satelliteShell`           | `shell-bridge.js` → 同形 API  |\n"
-"| Habitat 配置  | Habitat 设置 → `~/.anima-desktop/settings.json` | Habitat 设置 → Preferences       |\n"
-"| 调试/Sentry| 设置 → 调试 → 同文件 `debug`      | 设置 → 调试 → Preferences       |\n"
-"| REST        | 本地静态 `/api` 代理（同源）     | 直连 `hubUrl/api/*`（CORS + Bearer）|\n"
-"| instance_id | 文件 `~/.anima/satellites/chat/`            | Preferences                          |\n"
-"| 内容     | chat + admin + companion                    | chat + admin                         |\n"
+"| 轮次 | 意图                                   |\n"
+"| ----- | ---------------------------------------- |\n"
+"| 1     | 矛盾检测 + 过期标记 |\n"
+"| 2     | 拆分多事实条目                 |\n"
+"| 3     | 去重合并相似条目              |\n"
+"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"

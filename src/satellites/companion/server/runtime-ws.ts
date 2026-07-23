@@ -50,7 +50,7 @@ export function broadcastRuntime(message: RuntimeWsMessage): void {
   }
 }
 
-/** Electron main 等注册：旁路 localhost WS，向 overlay 推送 runtime */
+/** 可选注册：旁路 localhost WS，向 overlay 推送 runtime（浏览器/dev） */
 export function addRuntimeExternalListener(listener: RuntimeExternalListener): () => void {
   externalListeners.add(listener);
   return () => {

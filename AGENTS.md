@@ -74,7 +74,7 @@ bun run build:web
 - Habitat API（**生产**）：`http://127.0.0.1:2658/rpc/v1`（standalone `anima service`；`web.enabled` 且已有 dist 时托管 `/web/*`）
 - Habitat API（**源码/dev:habitat**）：默认随机 **≥10000**（避开 2658/2659）；多 worktree 并行友好
 - Web 形态：standalone / 源码部署须先有 `build:web`（打包时强制；源码部署手动）；dev 用 `dev:habitat` + `dev:web`（HMR，不依赖落盘）
-- 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `src/app/shell/desktop` / `mobile` / `web`（web 仅本地调试）
+- 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `src/app/shell/tauri`（Portal）与 `src/app/shell/web`（浏览器调试）
 - Dev UI：`bun run dev:web` → `http://127.0.0.1:5000/web/chat`（若 `http.tls`/`DEV_HTTPS` 则为 `https://…`；Habitat：`/web/habitat/dashboard`）；浏览器默认 Habitat = **页面 origin**（Vite `/rpc` proxy；legacy `/hub` 至 0.9.3）；`dev:habitat` 自动写入 `~/.anima/dev-web.token` 供 Vite 注入 token；**忽略** yaml `web.*`（Habitat 不托管 dist）
 - 开发 TLS：若 `http.tls.enabled` / `DEV_HTTPS=1`，由 **Vite HTTPS** 终止（复用 `~/.anima/tls`），Habitat 仅明文（`skipTls`）；与 `http` 覆盖对称，dev 亦覆盖 `web.enabled/host/port`
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)

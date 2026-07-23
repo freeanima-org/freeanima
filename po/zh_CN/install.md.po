@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:618
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:681
 #, no-wrap
 msgid "Installation"
 msgstr "安装"
@@ -66,19 +66,20 @@ msgstr ""
 #: docs/guide/install.md:18
 #, fuzzy
 #| msgid ""
-#| "All paths run the same `anima service` runtime (Habitat REST `/api` + Habitat RPC "
-#| "`/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. "
-#| "Redis powers EventBus and task context; it **degrades silently** when "
-#| "unavailable — Docker and production setups should still run it."
+#| "All paths run the same `anima service` runtime (Habitat REST `/api` + "
+#| "Habitat RPC `/rpc/v1` + engine). PostgreSQL with **pgvector** is "
+#| "**required**. Redis powers EventBus and task context; it **degrades "
+#| "silently** when unavailable — Docker and production setups should still "
+#| "run it."
 msgid ""
-"Both paths run the same `anima service` runtime (Habitat REST `/api` + Habitat RPC `/"
-"hub/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis "
-"powers EventBus and task context; it **degrades silently** when unavailable "
-"— production setups should still run it."
+"Both paths run the same `anima service` runtime (Habitat REST `/api` + "
+"Habitat RPC `/rpc/v1` + engine). PostgreSQL with **pgvector** is "
+"**required**. Redis powers EventBus and task context; it **degrades "
+"silently** when unavailable — production setups should still run it."
 msgstr ""
-"所有路径运行相同的 `anima service` 运行时（Habitat REST `/api` + SAP `/sap/v1` + "
-"engine）。带 **pgvector** 的 PostgreSQL **必需**。Redis 支撑 EventBus 与任务"
-"上下文，不可用时**静默降级** — Docker 与生产环境仍应运行 Redis。"
+"所有路径运行相同的 `anima service` 运行时（Habitat REST `/api` + SAP `/sap/"
+"v1` + engine）。带 **pgvector** 的 PostgreSQL **必需**。Redis 支撑 EventBus "
+"与任务上下文，不可用时**静默降级** — Docker 与生产环境仍应运行 Redis。"
 
 #. type: Title ##
 #: docs/guide/install.md:19
@@ -134,6 +135,11 @@ msgid ""
 "Standalone tarball 内含单文件可执行文件 `anima`；版本、service build-meta、"
 "migrations 与 Web UI 均嵌入该二进制。"
 msgstr ""
+"Release publishes 三端产物（与 canary 对称）：`anima-linux-x64.tar.gz`、"
+"`freeanima-desktop-windows-x64-setup.exe`、`freeanima-mobile-android.apk`"
+"（CI 固定 upload 签名；本地 `debug:android` 仍为默认 debug 签名）。"
+"Standalone tarball 内含单文件可执行文件 `anima`；版本、service build-meta、"
+"migrations 与 Web UI 均嵌入该二进制。"
 
 #. type: Title ###
 #: docs/guide/install.md:36
@@ -152,7 +158,7 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:44
 msgid "Canary（`main` 滚动 Pre-release tag `canary`）或 pin 版本："
-msgstr ""
+msgstr "Canary（`main` 滚动 Pre-release tag `canary`）或 pin 版本："
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:45
@@ -168,6 +174,8 @@ msgid ""
 "国内网络可指定公共 GitHub 反代（`PROXY=none|ghproxy-net|gh-proxy-com|ghfast-"
 "top`，默认 `none`）："
 msgstr ""
+"国内网络可指定公共 GitHub 反代（`PROXY=none|ghproxy-net|gh-proxy-com|ghfast-"
+"top`，默认 `none`）："
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:52
@@ -181,13 +189,15 @@ msgstr ""
 #: docs/guide/install.md:58
 msgid ""
 "可选环境变量：`FREEANIMA_INSTALL_PREFIX`（默认 `~/.anima/standalone`）、"
-"`FREEANIMA_HOME`（默认 `~/.anima`，决定 `bin` shim 位置）。"
+"`FREEANIMA_HOME`（默认 `~/.anima`，数据目录）。"
 msgstr ""
+"可选环境变量：`FREEANIMA_INSTALL_PREFIX`（默认 `~/.anima/standalone`）、"
+"`FREEANIMA_HOME`（默认 `~/.anima`，数据目录）。"
 
 #. type: Plain text
 #: docs/guide/install.md:60
 msgid "备用（不依赖站点发布）："
-msgstr ""
+msgstr "备用（不依赖站点发布）："
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:61
@@ -204,9 +214,8 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:66
-msgid ""
-"Install prefix 只需要 **一个** `anima` 文件。Do not unpack into a git "
-"checkout. Ensure `~/.anima/bin` is on `PATH`."
+#, no-wrap
+msgid "Install prefix keeps versioned binaries as `anima_<version>` plus an `anima` symlink to the current version (up to 7 versions retained). Do not unpack into a git checkout. Ensure `~/.local/bin` is on `PATH`.\n"
 msgstr ""
 
 #. type: Plain text
@@ -220,43 +229,48 @@ msgstr ""
 msgid ""
 "mkdir -p ~/.anima/standalone && cd ~/.anima/standalone\n"
 "tar -xzf /path/to/anima-linux-x64.tar.gz\n"
-"mkdir -p ~/.anima/bin && ln -sf \"$PWD/anima\" ~/.anima/bin/anima\n"
+"# assume extracted file is ./anima — rename to versioned file then link\n"
+"mv anima anima_0.9.2\n"
+"ln -sfn anima_0.9.2 anima\n"
+"mkdir -p ~/.local/bin && ln -sfn \"$PWD/anima\" ~/.local/bin/anima\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:76
+#: docs/guide/install.md:79
 msgid ""
 "Or from a checkout: `just install-cli` (builds then installs to the same "
 "default prefix)."
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:78
-msgid "Installed standalone 可用内置升级换轨："
-msgstr ""
+#: docs/guide/install.md:81
+msgid "Installed standalone 可用内置升级换轨与本机版本切换："
+msgstr "Installed standalone 可用内置升级换轨与本机版本切换："
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:79
+#: docs/guide/install.md:82
 #, no-wrap
 msgid ""
 "anima upgrade --channel canary   # 跟随 canary tip\n"
 "anima upgrade --channel release  # 切回稳定轨 tip\n"
+"anima versions                   # 列出本机 anima_*（* = current）\n"
+"anima versions use 0.9.2         # 切换 current symlink\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:85
+#: docs/guide/install.md:90
 #, no-wrap
 msgid "**Mobile Android APK**（`freeanima-mobile-android.apk`）：从 GitHub Release（`canary` 或版本 tag）下载 sideload。CI 使用固定 upload 签名，同 channel 内可覆盖升级。若曾安装旧版未固定签名的包，或密钥轮换后，需先卸载 `FreeAnima`（`org.freeanima.app`）再安装。\n"
-msgstr ""
+msgstr "**Mobile Android APK**（`freeanima-mobile-android.apk`）：从 GitHub Release（`canary` 或版本 tag）下载 sideload。CI 使用固定 upload 签名，同 channel 内可覆盖升级。若曾安装旧版未固定签名的包，或密钥轮换后，需先卸载 `FreeAnima`（`org.freeanima.app`）再安装。\n"
 
 #. type: Title ###
-#: docs/guide/install.md:86
+#: docs/guide/install.md:91
 #, no-wrap
 msgid "2. Configure"
 msgstr "2. 配置"
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:88
+#: docs/guide/install.md:93
 #, fuzzy, no-wrap
 #| msgid ""
 #| "mkdir -p ~/.anima\n"
@@ -273,7 +287,7 @@ msgstr ""
 "cp config.example.yaml ~/.anima/config.yaml   # from repo clone, or write manually\n"
 
 #. type: Plain text
-#: docs/guide/install.md:96
+#: docs/guide/install.md:101
 #, fuzzy
 #| msgid "Minimum production settings in `~/.anima/config.yaml`:"
 msgid ""
@@ -281,25 +295,25 @@ msgid ""
 msgstr "`~/.anima/config.yaml` 最低生产配置："
 
 #. type: Bullet: '- '
-#: docs/guide/install.md:99
+#: docs/guide/install.md:104
 msgid "**`database.url`** — PostgreSQL connection string (required)"
 msgstr "**`database.url`** — PostgreSQL 连接字符串（必需）"
 
 #. type: Bullet: '- '
-#: docs/guide/install.md:99
+#: docs/guide/install.md:104
 msgid ""
-"**`web.enabled`** — Habitat hosts `/web/*` when dist exists (optional; defaults "
-"to on if omitted)"
+"**`web.enabled`** — Habitat hosts `/web/*` when dist exists (optional; "
+"defaults to on if omitted)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:101
+#: docs/guide/install.md:106
 #, no-wrap
 msgid "**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`hub_runtime_config`). Edit them in the Shell app under **Settings → Habitat 服务 → 服务配置**.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:103
+#: docs/guide/install.md:108
 #, fuzzy
 #| msgid ""
 #| "Production **must** set `database.url`. Prefer Vault or `env()` for "
@@ -314,13 +328,13 @@ msgstr ""
 "responsibilities)。"
 
 #. type: Title ###
-#: docs/guide/install.md:104
+#: docs/guide/install.md:109
 #, no-wrap
 msgid "3. Start the service"
 msgstr "3. 启动服务"
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:106
+#: docs/guide/install.md:111
 #, no-wrap
 msgid ""
 "anima service start              # background (systemd user unit when available)\n"
@@ -333,29 +347,29 @@ msgstr ""
 
 #
 #. type: Plain text
-#: docs/guide/install.md:113
+#: docs/guide/install.md:118
 #, fuzzy
 #| msgid ""
-#| "Default bind: `127.0.0.1:2658`（Habitat API：`/api`，Habitat RPC：`/hub/rpc/"
-#| "v1`）。"
+#| "Default bind: `127.0.0.1:2658`（Habitat API：`/api`，Habitat RPC：`/hub/"
+#| "rpc/v1`）。"
 msgid ""
-"Default bind: `127.0.0.1:2658`（Habitat API：`/api`，Habitat RPC：`/rpc/v1`；Web "
-"UI：`/web/*` when `config.yaml` `web.enabled`)."
+"Default bind: `127.0.0.1:2658`（Habitat API：`/api`，Habitat RPC：`/rpc/v1`；"
+"Web UI：`/web/*` when `config.yaml` `web.enabled`)."
 msgstr "默认绑定：`127.0.0.1:2658`（Habitat API：`/api`，SAP：`/sap/v1`）。"
 
 #. type: Title ###
-#: docs/guide/install.md:114
+#: docs/guide/install.md:119
 #, no-wrap
 msgid "4. Upgrade"
 msgstr "4. 升级"
 
 #. type: Plain text
-#: docs/guide/install.md:117
+#: docs/guide/install.md:122
 msgid "Installed standalone (independent prefix, e.g. `~/.anima/standalone`):"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:118
+#: docs/guide/install.md:123
 #, no-wrap
 msgid ""
 "anima upgrade                 # 当前 bake channel 内升级（release：semver；canary：commit）\n"
@@ -366,94 +380,96 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:127
-msgid ""
-"升级时 Habitat 在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进"
-"制瞬间短暂停服并自动拉起。未运行 service 时仅覆盖 `prefix/anima`，不会自动启"
-"动。"
-msgstr ""
+#: docs/guide/install.md:132
+#, no-wrap
+msgid "升级时 Habitat 在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进制瞬间短暂停服并自动拉起。未运行 service 时仅写入新的 `anima_<version>` 并切换 `anima` symlink，不会自动启动。\n"
+msgstr "升级时 Habitat 在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进制瞬间短暂停服并自动拉起。未运行 service 时仅写入新的 `anima_<version>` 并切换 `anima` symlink，不会自动启动。\n"
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:128
+#: docs/guide/install.md:133
 #, no-wrap
-msgid "anima service restart   # 手动升级二进制后若未自动拉起时使用\n"
+msgid ""
+"anima service restart   # 手动升级二进制后若未自动拉起时使用\n"
+"anima versions use <id> # 回退到本机已保留的旧版本（同样会按需停/启 service）\n"
 msgstr ""
+"anima service restart   # 手动升级二进制后若未自动拉起时使用\n"
+"anima versions use <id> # 回退到本机已保留的旧版本（同样会按需停/启 service）\n"
 
 #. type: Plain text
-#: docs/guide/install.md:133
+#: docs/guide/install.md:139
 msgid ""
 "Re-run the curl installer to reinstall/overwrite the same prefix, or from a "
 "checkout rebuild and reinstall (never into the repo):"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:134
+#: docs/guide/install.md:140
 #, no-wrap
 msgid "just install-cli\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:139
+#: docs/guide/install.md:145
 msgid "`dist/anima-executable/` is build staging only — not a runtime prefix."
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/install.md:140
+#: docs/guide/install.md:146
 #, no-wrap
 msgid "Build from a checkout"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:143
+#: docs/guide/install.md:149
 msgid ""
 "Always runs `build:web` before compiling the binary (embeds current Web "
 "dist):"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:144
+#: docs/guide/install.md:150
 #, no-wrap
 msgid ""
 "bun run build:cli:executable\n"
 "# → dist/anima-executable/ (staging)\n"
 "just install-cli\n"
-"# → ~/.anima/standalone/ + ~/.anima/bin/anima\n"
+"# → ~/.anima/standalone/anima_<version> + anima symlink + ~/.local/bin/anima\n"
 "anima --version\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:153
+#: docs/guide/install.md:159
 msgid ""
 "Override prefix: `FREEANIMA_INSTALL_PREFIX=/opt/freeanima just install-cli` "
 "or `bun scripts/install-cli.ts --prefix /opt/freeanima --skip-build`."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/install.md:156
+#: docs/guide/install.md:162
 #, no-wrap
 msgid "Source (repository)"
 msgstr "源码（仓库）"
 
 #. type: Plain text
-#: docs/guide/install.md:159
+#: docs/guide/install.md:165
 msgid "For development, unreleased fixes, or running from a git checkout."
 msgstr "用于开发、未发布修复或从 git checkout 运行。"
 
 #. type: Title ###
-#: docs/guide/install.md:160
+#: docs/guide/install.md:166
 #, no-wrap
 msgid "1. Clone and install dependencies"
 msgstr "1. 克隆并安装依赖"
 
 #. type: Plain text
-#: docs/guide/install.md:163
+#: docs/guide/install.md:169
 #, fuzzy, no-wrap
 #| msgid "**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended)\n"
 msgid "**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended) · [just](https://github.com/casey/just) (for `just install-cli`)\n"
 msgstr "**前置条件：** Bun >= 1.3.14 · PostgreSQL（pgvector）· Redis（推荐）· Vault（推荐）\n"
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:164
+#: docs/guide/install.md:170
 #, no-wrap
 msgid ""
 "git clone https://github.com/freeanima-org/freeanima.git\n"
@@ -465,19 +481,19 @@ msgstr ""
 "bun install\n"
 
 #. type: Title ###
-#: docs/guide/install.md:170
+#: docs/guide/install.md:176
 #, no-wrap
 msgid "2. Run the CLI from the checkout"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:173
+#: docs/guide/install.md:179
 msgid ""
 "Do **not** symlink source `cli.ts` into a global bin. Use package scripts:"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:174
+#: docs/guide/install.md:180
 #, fuzzy, no-wrap
 #| msgid ""
 #| "bun run anima -- --help\n"
@@ -492,29 +508,29 @@ msgstr ""
 "bun app/cli/cli.ts --help\n"
 
 #. type: Plain text
-#: docs/guide/install.md:180
+#: docs/guide/install.md:186
 msgid ""
 "To install a **standalone** binary into an independent prefix (default "
 "`~/.anima/standalone`) for a PATH `anima` command:"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:181
+#: docs/guide/install.md:187
 #, no-wrap
 msgid ""
 "just install-cli\n"
-"# ensure ~/.anima/bin is on PATH\n"
+"# ensure ~/.local/bin is on PATH\n"
 "anima --version\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/install.md:187
+#: docs/guide/install.md:193
 #, no-wrap
 msgid "3. Configure and start"
 msgstr "3. 配置并启动"
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:189
+#: docs/guide/install.md:195
 #, fuzzy, no-wrap
 #| msgid ""
 #| "mkdir -p ~/.anima\n"
@@ -534,13 +550,13 @@ msgstr ""
 "anima service start --foreground\n"
 
 #. type: Plain text
-#: docs/guide/install.md:196
+#: docs/guide/install.md:202
 #, no-wrap
 msgid "**Dev** (Habitat + Vite HMR; never auto-builds Web). Prefer `just dev` for multi-worktree:\n"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:197
+#: docs/guide/install.md:203
 #, no-wrap
 msgid ""
 "just dev            # Habitat random ≥10000 + Web from :5000; FREEANIMA_URL wires Vite proxy only\n"
@@ -550,22 +566,24 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:205
+#: docs/guide/install.md:211
 msgid ""
-"Browser Web defaults Habitat URL to the **page origin** (same in production Habitat-"
-"hosted `/web` and Vite). Dev injects Service API Token from `dev-web.token` "
-"automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves HTTPS "
-"using `~/.anima/tls` (Habitat stays plain HTTP)."
+"Browser Web defaults Habitat URL to the **page origin** (same in production "
+"Habitat-hosted `/web` and Vite). Dev injects Service API Token from `dev-"
+"web.token` automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves "
+"HTTPS using `~/.anima/tls` (Habitat stays plain HTTP). Source `dev:hub` also "
+"**ignores** `config.yaml` `web.enabled` / `web.host` / `web.port` — Habitat "
+"does not host `/web` dist; use Vite (`WEB_DEV_PORT`, default 5000)."
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:207
+#: docs/guide/install.md:213
 #, no-wrap
 msgid "**Source deploy** (Habitat hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `build:web`. Source-tree `anima` has no `service` command.\n"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:208
+#: docs/guide/install.md:214
 #, no-wrap
 msgid ""
 "bun run build:web\n"
@@ -574,13 +592,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/install.md:214
+#: docs/guide/install.md:220
 #, no-wrap
 msgid "4. Development checks"
 msgstr "4. 开发检查"
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:216
+#: docs/guide/install.md:222
 #, fuzzy, no-wrap
 #| msgid ""
 #| "bun run check    # typecheck + lint + dep-check + format + changed unit tests\n"
@@ -593,7 +611,7 @@ msgstr ""
 "bun run test     # full unit + integration (integration uses Docker for temp PG)\n"
 
 #. type: Plain text
-#: docs/guide/install.md:222
+#: docs/guide/install.md:228
 #, fuzzy
 #| msgid ""
 #| "**link:global** (`bun run link:global`): upgrade manually — `git pull`, "
@@ -607,20 +625,20 @@ msgstr ""
 "install`，然后重启服务。`anima upgrade` 与 `/upgrade` 仅打印说明。\n"
 
 #. type: Title ##
-#: docs/guide/install.md:225
+#: docs/guide/install.md:231
 #, no-wrap
 msgid "Verify installation"
 msgstr "验证安装"
 
 #. type: Plain text
-#: docs/guide/install.md:228
+#: docs/guide/install.md:234
 msgid ""
 "Requires the **standalone** `anima` binary (`anima service` is not on the "
 "source-tree CLI)."
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:229
+#: docs/guide/install.md:235
 #, no-wrap
 msgid ""
 "anima service start\n"
@@ -632,7 +650,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:239
+#: docs/guide/install.md:245
 msgid ""
 "If status fails, check PostgreSQL connectivity, that migrations completed "
 "([`database.md`](database.md#troubleshooting)), and that a valid Service API "
@@ -642,13 +660,13 @@ msgstr ""
 "(database.md#troubleshooting)），以及是否已配置有效的 Service API Token。"
 
 #. type: Title ##
-#: docs/guide/install.md:240
+#: docs/guide/install.md:246
 #, no-wrap
 msgid "Next steps"
 msgstr "后续步骤"
 
 #. type: Bullet: '1. '
-#: docs/guide/install.md:246
+#: docs/guide/install.md:252
 #, fuzzy
 #| msgid ""
 #| "**Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not "
@@ -661,7 +679,7 @@ msgstr ""
 "**Habitat（[`security.md`](security.md)）"
 
 #. type: Bullet: '2. '
-#: docs/guide/install.md:246
+#: docs/guide/install.md:252
 #, fuzzy
 #| msgid ""
 #| "**Remote access** — optional Cloudflare Tunnel + Service API Token for "
@@ -674,7 +692,7 @@ msgstr ""
 "管理台（[`remote-access.md`](remote-access.md)）"
 
 #. type: Bullet: '3. '
-#: docs/guide/install.md:246
+#: docs/guide/install.md:252
 msgid ""
 "**Database** — backups, extensions, manual migrations if needed "
 "([`database.md`](database.md))"
@@ -682,13 +700,13 @@ msgstr ""
 "**数据库** — 备份、扩展、必要时手动迁移（[`database.md`](database.md)）"
 
 #. type: Bullet: '4. '
-#: docs/guide/install.md:246
+#: docs/guide/install.md:252
 msgid ""
 "**Operations** — start/stop, memory metrics ([`service.md`](service.md))"
 msgstr "**运维** — 启停、内存指标（[`service.md`](service.md)）"
 
 #. type: Bullet: '5. '
-#: docs/guide/install.md:246
+#: docs/guide/install.md:252
 msgid ""
 "**Architecture** — memory pipeline, self layer, tools ([`../concepts/"
 "architecture.md`](../concepts/architecture.md))"

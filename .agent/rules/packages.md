@@ -1,6 +1,6 @@
 # Package naming (RFC #1)
 
-> **单包迁移（2026）**：逻辑包名（`@freeanima/*`）仍通过 `tsconfig.json` paths 解析；物理上根 `package.json` 承载产品依赖；`site/` 为**独立**文档站（自有 `package.json` + `bun.lock`，非 workspace）。**例外**：`src/app/shell/mobile/package.json` 为 Capacitor CLI stub（`cap sync` 必需），不含产品依赖。目录拓扑见 [`docs/concepts/repository-topology.md`](../docs/concepts/repository-topology.md)。
+> **单包迁移（2026）**：逻辑包名（`@freeanima/*`）仍通过 `tsconfig.json` paths 解析；物理上根 `package.json` 承载产品依赖；`site/` 为**独立**文档站（自有 `package.json` + `bun.lock`，非 workspace）。目录拓扑见 [`docs/concepts/repository-topology.md`](../docs/concepts/repository-topology.md)。
 
 Workspace package names reflect the layer topology in [`code-layers.md`](code-layers.md):
 

@@ -5,7 +5,6 @@ import { applyHabitatConfigToShell } from "./apply-habitat-to-shell.ts";
 
 function stubShell(): ShellApi {
   return {
-    isElectron: false,
     habitatUrl: "http://127.0.0.1:2658",
     habitatWsUrl: "ws://127.0.0.1:2658/rpc/v1",
     createFileInstanceStore: () => ({ load: () => null, save: () => {} }),

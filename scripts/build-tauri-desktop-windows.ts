@@ -9,7 +9,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const TARGET = "x86_64-pc-windows-msvc";
-/** 与 Electron artifactName / release 资产一致：无空格 */
+/** 与历史 Desktop release 资产命名一致：无空格 */
 const DIST_SETUP_NAME = "freeanima-desktop-tauri-windows-x64-setup.exe";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const tauriDir = join(root, "src/app/shell/tauri");
@@ -52,7 +52,7 @@ function ensureCrossWindowsToolchain(): void {
   process.exit(1);
 }
 
-/** Tauri NSIS 文件名跟 productName，空格改成 `-`（对齐 Electron FreeAnima-Desktop-*.exe） */
+/** Tauri NSIS 文件名跟 productName，空格改成 `-`（对齐 FreeAnima-Desktop-*.exe） */
 function normalizeNsisInstallerName(): string | null {
   if (!existsSync(nsisOut)) return null;
   const setup = readdirSync(nsisOut).find((n) => n.endsWith("-setup.exe"));

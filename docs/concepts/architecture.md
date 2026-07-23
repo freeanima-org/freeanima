@@ -123,14 +123,14 @@ Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platfo
 
 ### Platform UI layering (legacy paths — migrating to features/\*)
 
-| Layer            | Platform-native?                   | Location (current → target)                                                | 数据通道                                |
-| ---------------- | ---------------------------------- | -------------------------------------------------------------------------- | --------------------------------------- |
-| Shell（壳子维）  | Yes                                | `src/app/shell/desktop`, `src/app/shell/mobile`, companion, Habitat wiring | preload/IPC                             |
-| Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                                                    | Habitat RPC（Feature RPC）              |
-| Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.hub.rpc`）                            | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
-| Companion host   | Overlay WebView-host（第一方）     | `src/satellites/companion`（spa attach；壳薄 IPC/FS）                      | Habitat RPC + `remote_tools.attach`     |
+| Layer            | Platform-native?                   | Location (current → target)                           | 数据通道                                |
+| ---------------- | ---------------------------------- | ----------------------------------------------------- | --------------------------------------- |
+| Shell（壳子维）  | Yes                                | `src/app/shell/tauri`, companion, Habitat wiring      | Tauri IPC / commands                    |
+| Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                               | Habitat RPC（Feature RPC）              |
+| Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.hub.rpc`）       | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
+| Companion host   | Overlay WebView-host（第一方）     | `src/satellites/companion`（spa attach；壳薄 IPC/FS） | Habitat RPC + `remote_tools.attach`     |
 
-导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `isElectron` / `getShellKind()` 锁 Shell 布局。交互（右键/长按/Enter）用 shell-sdk 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
+导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `getShellKind()` 锁 Shell 布局。交互（右键/长按/Enter）用 shell-sdk 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
 
 **边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Habitat。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于 Habitat 拨不到的本地应用（今日 companion：**第一方 overlay WebView-host** 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）。产品面（Chat 等）**不做** attach。可拨号对端的工具走 **MCP**。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/guide/habitat-rpc.md`](../guide/habitat-rpc.md)。
 
@@ -239,7 +239,7 @@ See [`guide/security.md`](../guide/security.md).
 Production (standalone install CLI): `anima service` (systemd --user). Auto-restarts after crashes; only `systemctl stop` stops the service. Source-tree `anima` does **not** register `service` — use `bun run dev:hub` for local Habitat.
 
 - **hub / service**: long-running — Habitat HTTP (`/rpc/v1`), Discord / WeChat Gateway, cron
-- **UI**: `src/app/shell/desktop` / `src/app/shell/mobile` bundled SPA (Chat + Habitat); Habitat does not host `/habitat`
+- **UI**: `src/app/shell/tauri` + `web/dist-*` bundled SPA (Chat + Habitat); Habitat does not host `/habitat`
 
 ```bash
 # standalone install
@@ -350,27 +350,27 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 
 ## Client UI（web/dist SSOT + 原生壳打包）
 
-**Portal Shell 目标运行时**：**Tauri**（Rust 主进程 + 系统 WebView；桌面与 Android 统一壳层）。过渡期保留 Electron（桌面）与 Capacitor（Android）双轨发版，直至功能对等后下线。壳规则：[`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)。**禁止**为 companion 再打 Node sidecar；`remote_tools.attach` 在第一方 overlay WebView（见 Desktop companion）。
+**Portal Shell 运行时**：**Tauri**（Rust 主进程 + 系统 WebView；桌面与 Android 统一壳层）。壳规则：[`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)。**禁止**为 companion 再打 Node sidecar；`remote_tools.attach` 在第一方 overlay WebView（见 Desktop companion）。
 
 **UI 源码产物**：`src/app/shell/web/dist`（`base: /web/`）。
 
-| 客户端       | UI 加载                                                                                                               | 更新方式                                                                                                                                                                              |
-| ------------ | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 浏览器 / PWA | Habitat 托管 `/web/*`（`config.yaml` `web.enabled`，或 `anima web start`）                                            | Service Worker 提示新版本后**手动重载**（不自动刷新）；**不**跟 GitHub 包通道                                                                                                         |
-| Desktop      | **安装包内** `vendor/shell-ui`（本地 static `/web/*`）；调试可用 `DESKTOP_SHELL_VITE_URL` 或 `DESKTOP_UI_MODE=remote` | 按 bake `channel` 查 GitHub（`release`=stable latest + semver；`canary`=tag `canary` + commit）；用户确认后 NSIS 覆盖；可切换 `release`⇄`canary`；About 可选公共 gh-proxy（默认直连） |
-| Mobile APK   | **安装包内** Capacitor `www/web`（本地同源）；Habitat 仅 API                                                          | 同上轨语义；有 APK asset 才提示；确认后系统安装器覆盖；可切换轨；同上代理选择                                                                                                         |
-| Standalone   | 嵌入 Web UI 的单文件 `anima`                                                                                          | `anima upgrade` / `--channel release\|canary` / `--proxy …`；`dev` / 源码安装不可换轨；curl 安装脚本可用 `PROXY=…`                                                                    |
+| 客户端       | UI 加载                                                                    | 更新方式                                                                                                                                                                              |
+| ------------ | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 浏览器 / PWA | Habitat 托管 `/web/*`（`config.yaml` `web.enabled`，或 `anima web start`） | Service Worker 提示新版本后**手动重载**（不自动刷新）；**不**跟 GitHub 包通道                                                                                                         |
+| Desktop      | **安装包内** `ui/web`（`prepare-tauri-ui`）；调试可用 Tauri dev            | 按 bake `channel` 查 GitHub（`release`=stable latest + semver；`canary`=tag `canary` + commit）；用户确认后 NSIS 覆盖；可切换 `release`⇄`canary`；About 可选公共 gh-proxy（默认直连） |
+| Mobile APK   | **安装包内** `ui/web`（本地同源）；Habitat 仅 API                          | 同上轨语义；有 APK asset 才提示；确认后系统安装器覆盖；可切换轨；同上代理选择                                                                                                         |
+| Standalone   | 嵌入 Web UI 的单文件 `anima`                                               | `anima upgrade` / `--channel release\|canary` / `--proxy …`；`dev` / 源码安装不可换轨；curl 安装脚本可用 `PROXY=…`                                                                    |
 
-壳层保留原生能力（Tauri commands / Electron preload / Capacitor Preferences·Keyboard 等过渡实现）。**无壳内 UI OTA**：原生端不从 Habitat 热替换 SPA。允许**用户确认后**的安装包级覆盖（Desktop 安装包 / Mobile APK / Standalone `anima upgrade` → 独立前缀如 `~/.anima/standalone`）。分发轨 SSOT 为安装包 bake 的 `build-meta.channel`（`release` / `canary` / `dev`）。Habitat 配置统一走 settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
+壳层保留原生能力（Tauri commands / prefs / 通知等）。**无壳内 UI OTA**：原生端不从 Habitat 热替换 SPA。允许**用户确认后**的安装包级覆盖（Desktop 安装包 / Mobile APK / Standalone `anima upgrade` → 独立前缀如 `~/.anima/standalone`）。分发轨 SSOT 为安装包 bake 的 `build-meta.channel`（`release` / `canary` / `dev`）。Habitat 配置统一走 settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
 
 ### 两层模型
 
-| 层                   | 驱动                                              | 职责                                                                                         |
-| -------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **交互与原生能力层** | 壳运行时（Tauri / Electron·Capacitor 过渡 / Web） | 存储、IPC、Habitat 连接后端、settings registry **内容**、hash 路由、长按 vs 右键、滑动手势等 |
-| **布局层**           | **仅视口断点**（壳不锁定底栏/顶栏）               | 窄/中/宽三档；列表 drawer / 并列 / 三栏；settings **chrome**（tabs vs 侧栏）                 |
+| 层                   | 驱动                                | 职责                                                                                         |
+| -------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------- |
+| **交互与原生能力层** | 壳运行时（Tauri / Web）             | 存储、IPC、Habitat 连接后端、settings registry **内容**、hash 路由、长按 vs 右键、滑动手势等 |
+| **布局层**           | **仅视口断点**（壳不锁定底栏/顶栏） | 窄/中/宽三档；列表 drawer / 并列 / 三栏；settings **chrome**（tabs vs 侧栏）                 |
 
-手机端通常只有窄档，但 **手机端 ≠ 窄布局**；Electron / 浏览器窗口可以是窄、中、宽任意档。
+手机端通常只有窄档，但 **手机端 ≠ 窄布局**；Portal / 浏览器窗口可以是窄、中、宽任意档。
 
 ### 布局层断点
 
@@ -382,11 +382,11 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 
 `resolveLayoutMode()`：窄 → `compact`，中宽 → `expanded`（URL / `config.json` 可覆盖）。`detectSettingsChromePlatform()` 跟布局粗档（设置页 chrome）；settings 字段差异由壳子维 `resolveShellBindings()` / `getShellKind()` 决定。
 
-| 客户端       | UI 加载                                                        | 壳发版                                         |
-| ------------ | -------------------------------------------------------------- | ---------------------------------------------- |
-| 浏览器 / PWA | Habitat `/web/*`                                               | 随 Habitat / `anima upgrade`                   |
-| Desktop      | 安装包内本地 `/web/*`（默认）；`DESKTOP_UI_MODE=remote` 调试用 | **Tauri** 安装包（目标）；过渡期 Electron 并行 |
-| Mobile APK   | 安装包内本地 `/web/*`                                          | **Tauri** Android（目标）；过渡期 Capacitor    |
+| 客户端       | UI 加载                       | 壳发版                       |
+| ------------ | ----------------------------- | ---------------------------- |
+| 浏览器 / PWA | Habitat `/web/*`              | 随 Habitat / `anima upgrade` |
+| Desktop      | 安装包内本地 `/web/*`（默认） | **Tauri** 安装包             |
+| Mobile APK   | 安装包内本地 `/web/*`         | **Tauri** Android            |
 
 | Module  | Connection                                               | Notes                    |
 | ------- | -------------------------------------------------------- | ------------------------ |
@@ -407,14 +407,14 @@ Complementary: Pipeline Runner handles scheduled multi-step background work; Hoo
 
 The desktop companion is an **unreachable local app** that **actively connects** to Habitat and registers remote tools in the **first-party overlay WebView** (shell provides window/IPC/FS only — **not** a Node sidecar), with a split boundary:
 
-| Concern                             | Habitat (`src/features/companion/`)              | Local install                                      |
-| ----------------------------------- | ------------------------------------------------ | -------------------------------------------------- |
-| Behavior, slots, active model       | `companion_profile` entity + Habitat RPC         | Cache in `~/.anima/companion/config.json`          |
-| VRM / VRMA library                  | Files on Habitat host + content-hash metadata    | Lazy download to desktop cache                     |
-| FBX → VRMA                          | Habitat service only                             | Not bundled in desktop installer                   |
-| Settings UI                         | Habitat RPC + `/rpc/v1/companion/*` upload       | Desktop Settings section (not Habitat)             |
-| VRM render, float window, patrol    | —                                                | Tauri（目标）/ Electron（过渡）shell + overlay SPA |
-| Agent tools (`bubble`, `play_slot`) | Habitat RPC `tool.*` after `remote_tools.attach` | Overlay WebView-host 执行（本地 runtime）          |
+| Concern                             | Habitat (`src/features/companion/`)              | Local install                             |
+| ----------------------------------- | ------------------------------------------------ | ----------------------------------------- |
+| Behavior, slots, active model       | `companion_profile` entity + Habitat RPC         | Cache in `~/.anima/companion/config.json` |
+| VRM / VRMA library                  | Files on Habitat host + content-hash metadata    | Lazy download to desktop cache            |
+| FBX → VRMA                          | Habitat service only                             | Not bundled in desktop installer          |
+| Settings UI                         | Habitat RPC + `/rpc/v1/companion/*` upload       | Desktop Settings section (not Habitat)    |
+| VRM render, float window, patrol    | —                                                | Tauri Portal shell + overlay SPA          |
+| Agent tools (`bubble`, `play_slot`) | Habitat RPC `tool.*` after `remote_tools.attach` | Overlay WebView-host 执行（本地 runtime） |
 
 **Remote tools ≠ Portal / MCP**: Portal shells and Chat/Settings use Habitat RPC for UI only. Dialable peers expose tools via **MCP**. Remote-tool attach exists solely when Habitat cannot dial the app (companion overlay today; future independent local apps). Routing uses `instance_id` (same machine may have multiple instances). See [`companion.md`](../features/companion.md)、[`habitat-rpc.md`](../guide/habitat-rpc.md).
 

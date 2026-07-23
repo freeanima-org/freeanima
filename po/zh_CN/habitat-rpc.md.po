@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version:  6jb4\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: 2026-07-01 22:15+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -16,248 +16,58 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title #
-#: docs/sap/habitat-rpc.md:1 docs/sap/habitat-rpc.md:5
+#: docs/guide/habitat-rpc.md:1 docs/guide/habitat-rpc.md:5
 #, no-wrap
 msgid "Habitat RPC"
 msgstr "Habitat RPC"
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:8
+#: docs/guide/habitat-rpc.md:8
 #, no-wrap
-msgid "**Habitat RPC** (`HubRPC/1.0`) is the **single business channel** between Habitat clients and the agent runtime. Transport:\n"
+msgid "**Habitat RPC** is the **single business channel** between Habitat clients and the agent runtime. The TypeScript constant is `HABITAT_RPC_VERSION`; the wire connect literal may still accept the historical value `\"HubRPC/1.0\"` for compatibility. Transport:\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/habitat-rpc.md:11
+#: docs/guide/habitat-rpc.md:11
 msgid ""
-"**WebSocket** — long-lived connection at **`/rpc/v1`** (connect "
-"handshake + heartbeat; HubRPC `req`/`res`/`evt` envelope)"
+"**WebSocket** — long-lived connection at **`/rpc/v1`** (connect handshake + "
+"heartbeat; Habitat RPC `req`/`res`/`evt` envelope)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/habitat-rpc.md:11
+#: docs/guide/habitat-rpc.md:11
 msgid ""
 "**HTTP REST** — stateless GET/POST at **`/rpc/v1/{method/path}`** (plain "
 "JSON body or query; `Authorization: Bearer`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:13
+#: docs/guide/habitat-rpc.md:13
 msgid ""
-"Implemented in [`src/shared/hub-rpc/`](../../src/shared/hub-rpc/) (WS "
-"envelope + HTTP REST helpers) and [`src/platform/hub/http-rest-router.ts`]"
-"(../../src/platform/hub/http-rest-router.ts) (HTTP adapter)."
+"Implemented in [`src/shared/habitat-rpc/`](../../src/shared/habitat-rpc/) "
+"(WS envelope + HTTP REST helpers) and [`src/platform/habitat/http-rest-"
+"router.ts`](../../src/platform/habitat/http-rest-router.ts) (HTTP adapter). "
+"Feature method schemas live under [`src/shared/rpc-contract/`](../../src/"
+"shared/rpc-contract/)."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:15
+#: docs/guide/habitat-rpc.md:15
 msgid ""
 "Binary HTTP methods (e.g. `tts.synthesize`, companion assets, TLS PEM/QR) "
 "use Habitat RPC REST with registry `request` / `response` encoding. Public "
 "probes (`health.probe`, `tls.ca.*`) are Habitat RPC methods with `auth: "
-"optional` — `GET /rpc/v1/health/probe`, `GET /rpc/v1/tls/ca`, etc."
+"optional`."
 msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:17
-#, fuzzy
-#| msgid ""
-#| "SAP (`SAP/1.0`) is a **session layer** on top of Habitat RPC: true satellites "
-#| "call `sap.attach` after connect; bundled SPA modules **never** attach."
-msgid ""
-"SAP (`SAP/1.0`) is a **session layer** on top of Habitat RPC WebSocket: true "
-"satellites call `sap.attach` after connect; bundled SPA modules **never** "
-"attach."
-msgstr ""
-"SAP（`SAP/1.0`）是 Habitat RPC 之上的**会话层**：真正的卫星在 connect 后调用 "
-"`sap.attach`；壳内 bundled SPA 模块**从不** attach。"
 
 #. type: Title ##
-#: docs/sap/habitat-rpc.md:18
-#, fuzzy, no-wrap
-#| msgid "Endpoint"
-msgid "Endpoints"
-msgstr "端点"
-
-#. type: Fenced code block (text)
-#: docs/sap/habitat-rpc.md:20
+#: docs/guide/habitat-rpc.md:16
 #, no-wrap
-msgid ""
-"ws://{hub_host}:{port}/rpc/v1              # WebSocket upgrade (HubRPC envelope)\n"
-"http://{hub_host}:{port}/rpc/v1/task/list  # GET (read-only methods)\n"
-"http://{hub_host}:{port}/rpc/v1/task/create # POST (write methods)\n"
+msgid "Tools: MCP first, remote registration rare"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:27
-#, fuzzy
-#| msgid ""
-#| "Derive from Habitat HTTP URL: replace `http` with `ws`, strip trailing slash, "
-#| "append `/rpc/v1`. Helpers: `resolveHabitatRpcWsUrl` in `@freeanima/hub-"
-#| "rpc`."
-msgid ""
-"Derive WS URL from HTTP: replace `http` with `ws`, append `/rpc/v1`. "
-"Helpers: `resolveHabitatRpcWsUrl`, `buildHabitatRestRequest` in `@freeanima/shared/"
-"hub-rpc`."
-msgstr ""
-"由 Habitat HTTP URL 推导：将 `http` 替换为 `ws`，去掉末尾斜杠，追加 `/hub/rpc/"
-"v1`。辅助函数：`@freeanima/hub-rpc` 中的 `resolveHabitatRpcWsUrl`。"
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:29
-#, fuzzy
-#| msgid ""
-#| "Habitat route: [`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
-#| "route.ts)."
-msgid ""
-"Habitat route: [`src/platform/sap/bun-route.ts`](../../src/platform/sap/bun-"
-"route.ts)."
-msgstr ""
-"Habitat 路由：[`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
-"route.ts)。"
-
-#. type: Title ##
-#: docs/sap/habitat-rpc.md:30
-#, no-wrap
-msgid "HTTP REST mapping"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:33
-msgid ""
-"Habitat method `domain.action` maps to path **`/rpc/v1/domain/action`** "
-"(dots → slashes; camelCase preserved)."
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:41
-#, no-wrap
-msgid ""
-"| Kind           | HTTP     | Example                                                             |\n"
-"| -------------- | -------- | ------------------------------------------------------------------- |\n"
-"| Read-only      | **GET**  | `GET /rpc/v1/task/list?subject_kind=user`                       |\n"
-"| Write          | **POST** | `POST /rpc/v1/task/create` `{ subject_kind, title, … }`         |\n"
-"| By id (read)   | **GET**  | `GET /rpc/v1/task/get/42?subject_kind=user`                     |\n"
-"| By id (write)  | **POST** | `POST /rpc/v1/task/patch/42` `{ subject_kind, title?, … }`      |\n"
-"| Sensitive read | **POST** | `POST /rpc/v1/vault/get/3` `{ subject_kind, include_secrets? }` |\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:43
-msgid ""
-"Route metadata is generated from [`hub-contract`](../../src/shared/hub-"
-"contract/) (`meta.http`: `verb`, `path`, `pathParams`). Wrong verb on a "
-"known path → **405**; legacy `POST /rpc/v1` envelope → **410**."
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:45
-msgid ""
-"HTTP responses are **plain handler JSON** (not HubRPC `res` envelope). "
-"Errors: `{ \"error\": { \"code\", \"message\" } }` with 4xx/5xx status."
-msgstr ""
-
-#. type: Title ##
-#: docs/sap/habitat-rpc.md:46
-#, fuzzy, no-wrap
-#| msgid "Envelope kinds"
-msgid "WebSocket envelope kinds"
-msgstr "信封类型"
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:55
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| `kind`      | Direction    | Purpose                                           |\n"
-#| "| ----------- | ------------ | ------------------------------------------------- |\n"
-#| "| `connect`   | Client → Habitat | First frame; `protocol: HubRPC/1.0`, `auth_token` |\n"
-#| "| `connected` | Habitat → Client | `session_id`, `heartbeat_interval_sec`            |\n"
-#| "| `req`       | Client → Habitat | RPC (`id`, `method`, `payload`)                   |\n"
-#| "| `res`       | Habitat → Client | RPC reply                                         |\n"
-#| "| `evt`       | Both         | Async event (incl. `heartbeat`)                   |\n"
-msgid ""
-"| `kind`      | Direction    | Purpose                                                    |\n"
-"| ----------- | ------------ | ---------------------------------------------------------- |\n"
-"| `connect`   | Client → Habitat | WS only: first frame; `protocol: HubRPC/1.0`, `auth_token` |\n"
-"| `connected` | Habitat → Client | WS only: `session_id`, `heartbeat_interval_sec`            |\n"
-"| `req`       | Client → Habitat | RPC (`id`, `method`, `payload`)                            |\n"
-"| `res`       | Habitat → Client | RPC reply                                                  |\n"
-"| `evt`       | Both         | Async event (WS only; incl. `heartbeat`)                   |\n"
-msgstr ""
-"| `kind`      | 方向         | 用途                                              |\n"
-"| ----------- | ------------ | ------------------------------------------------- |\n"
-"| `connect`   | Client → Habitat | 首帧；`protocol: HubRPC/1.0`、`auth_token`        |\n"
-"| `connected` | Habitat → Client | `session_id`、`heartbeat_interval_sec`            |\n"
-"| `req`       | Client → Habitat | RPC（`id`、`method`、`payload`）                  |\n"
-"| `res`       | Habitat → Client | RPC 回复                                          |\n"
-"| `evt`       | 双向         | 异步事件（含 `heartbeat`）                        |\n"
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:57
-msgid ""
-"HTTP REST uses Bearer on each GET/POST unless the method declares `auth: "
-"optional` (e.g. `health.probe`, `tls.ca.*`). WebSocket uses `connect` frame "
-"`auth_token` (required)."
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:59
-msgid ""
-"Method contracts live in [`src/shared/hub-contract/registry/`](../../src/"
-"shared/hub-contract/registry/) (`transports: http | ws`; HTTP routes in "
-"`meta.http`). Handlers register via `feature/plugin.hub.rpc`."
-msgstr ""
-
-#. type: Title ##
-#: docs/sap/habitat-rpc.md:60
-#, no-wrap
-msgid "Authentication"
-msgstr "认证"
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:63
-#, fuzzy
-#| msgid ""
-#| "Every connection must send a valid **service API token** in the `connect` "
-#| "payload (`auth_token`). The Habitat verifies it with `verifyServiceApiToken` "
-#| "([`core/src/db/pg/service-api-token/`](../../core/src/db/pg/service-api-"
-#| "token/))."
-msgid ""
-"Every **WebSocket** connection must send a valid **service API token** in "
-"the `connect` payload (`auth_token`). **HTTP REST** uses `Authorization: "
-"Bearer fa_at_...` on each request unless the method registry marks `auth: "
-"optional` (public read-only probes only). The Habitat verifies with "
-"`verifyServiceApiToken` ([`src/core/db/pg/service-api-token/`](../../src/"
-"core/db/pg/service-api-token/))."
-msgstr ""
-"每次连接必须在 `connect` 载荷（`auth_token`）中发送有效的**服务 API 令牌**。"
-"Habitat 通过 `verifyServiceApiToken` 验证（[`core/src/db/pg/service-api-token/`]"
-"(../../core/src/db/pg/service-api-token/)）。"
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:65
-msgid ""
-"Bundled clients read the token from `window.satelliteShell.remoteAuth.token` "
-"(shell bridge), configured in client **Habitat settings** (`/settings`). Habitat `/"
-"web/config.json` does not include tokens."
-msgstr ""
-
-#. type: Title ##
-#: docs/sap/habitat-rpc.md:66
-#, fuzzy, no-wrap
-#| msgid "SAP methods"
-msgid "Binary HTTP methods"
-msgstr "SAP 方法"
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:69
-msgid ""
-"Registry `meta.http` may set `request` / `response` encoding (default "
-"`json`):"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:75
+#: docs/guide/habitat-rpc.md:23
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Capability        | Description                                                                                            |\n"
@@ -267,11 +77,11 @@ msgstr ""
 #| "| `memory_remember` | Semantic memory CRUD during conversation                                                               |\n"
 #| "| Resident memory   | System prompt injection (not recall)                                                                   |\n"
 msgid ""
-"| Encoding             | Use                                                                                                         |\n"
-"| -------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
-"| `response: raw`      | Handler returns `Response` (PEM, PNG, VRM, MPEG, octet-stream). Client: `callRaw()` or `fetchHabitatRestRaw()`. |\n"
-"| `request: multipart` | POST with `FormData` body (e.g. `companion.model.upload`).                                                  |\n"
-"| `request: raw`       | POST body read from `ctx.httpRequest` in handler.                                                           |\n"
+"| Situation                                                    | Mechanism                                                             |\n"
+"| ------------------------------------------------------------ | --------------------------------------------------------------------- |\n"
+"| Peer is dialable (has a stable inbound MCP/HTTP listener)    | **MCP** — expose tools to each other                                  |\n"
+"| Product UI (Chat, Task, Settings, …)                         | Habitat RPC only — **no** remote-tool attach                          |\n"
+"| Unreachable local app (no inbound listener Habitat can dial) | App **actively connects** and registers remote tools over Habitat RPC |\n"
 msgstr ""
 "| 能力              | 说明                                                                                                   |\n"
 "| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
@@ -281,27 +91,96 @@ msgstr ""
 "| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:77
+#: docs/guide/habitat-rpc.md:25
 msgid ""
-"Examples: `tts.synthesize` (JSON POST → MPEG stream), `companion.asset.get` "
-"(GET → VRM), `tls.ca` (GET → PEM)."
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:79
-msgid ""
-"Helpers: `habitatRestUrl()`, `binaryHttpMeta()` / `rawPublicHttpMeta()` in hub-"
-"contract. JSON methods continue to use `hubClient.call()`."
+"Desktop companion is the in-tree example of the third row. Future "
+"independent local apps may do the same without being a Portal shell."
 msgstr ""
 
 #. type: Title ##
-#: docs/sap/habitat-rpc.md:80
+#: docs/guide/habitat-rpc.md:26
+#, fuzzy, no-wrap
+#| msgid "Agent tools (sidecar registration)"
+msgid "Remote tool registration"
+msgstr "Agent 工具（sidecar 注册）"
+
+#. type: Plain text
+#: docs/guide/habitat-rpc.md:29
+msgid "After Habitat RPC `connect`, an unreachable local app calls:"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/guide/habitat-rpc.md:33
+msgid ""
+"`remote_tools.attach` — registers with `app_id` + optional `instance_id` "
+"(omit on first register; Habitat assigns; same machine may have multiple "
+"instances)"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/guide/habitat-rpc.md:33
+msgid "`tool.register` — publishes local tools"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/guide/habitat-rpc.md:33
+msgid ""
+"Habitat later sends `tool.call` events; the app replies with `tool.result` / "
+"`tool.error`"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/habitat-rpc.md:35
+msgid ""
+"Routing key is **`instance_id`** (follows the connecting application, not "
+"the Portal shell). Tool names use the `remote_{app}_{instance}_{local}` form "
+"(legacy `sap_*` / `sap:*` still parsed for stored sessions)."
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/habitat-rpc.md:37
+msgid ""
+"Server: [`src/platform/remote-tools/`](../../src/platform/remote-tools/). "
+"Client helper: `createRemoteToolsHub` in `@freeanima/shared/rpc-contract`."
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/habitat-rpc.md:38
+#, fuzzy, no-wrap
+#| msgid "Endpoint"
+msgid "Endpoints"
+msgstr "端点"
+
+#. type: Fenced code block (text)
+#: docs/guide/habitat-rpc.md:40
+#, no-wrap
+msgid ""
+"ws://{hub_host}:{port}/rpc/v1\n"
+"http://{hub_host}:{port}/rpc/v1/task/list\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/habitat-rpc.md:46
+#, fuzzy
+#| msgid ""
+#| "Derive from Habitat HTTP URL: replace `http` with `ws`, strip trailing "
+#| "slash, append `/rpc/v1`. Helpers: `resolveHabitatRpcWsUrl` in `@freeanima/"
+#| "hub-rpc`."
+msgid ""
+"Helpers: `resolveHabitatRpcWsUrl`, `buildHabitatRestRequest` in `@freeanima/"
+"shared/habitat-rpc`."
+msgstr ""
+"由 Habitat HTTP URL 推导：将 `http` 替换为 `ws`，去掉末尾斜杠，追加 `/hub/"
+"rpc/v1`。辅助函数：`@freeanima/hub-rpc` 中的 `resolveHabitatRpcWsUrl`。"
+
+#. type: Title ##
+#: docs/guide/habitat-rpc.md:47
 #, no-wrap
 msgid "Client profiles"
 msgstr "客户端配置"
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:86
+#: docs/guide/habitat-rpc.md:53
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |\n"
@@ -309,10 +188,10 @@ msgstr "客户端配置"
 #| "| Bundled SPA       | `getBundledHabitatRpcClient()` / `whenHabitatRpcReady()` | **No**       | Chat, task, notification, diary, email modules |\n"
 #| "| Satellite process | `createSatelliteHub()` in sap-contract           | **Yes**      | companion, pair-programming                    |\n"
 msgid ""
-"| Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |\n"
-"| ----------------- | ------------------------------------------------ | ------------ | ---------------------------------------------- |\n"
-"| Bundled SPA       | `getBundledHabitatRpcClient()` / `whenHabitatRpcReady()` | **No**       | Chat, task, notification, diary, email modules |\n"
-"| Satellite process | `createSatelliteHub()` in sap-contract           | **Yes**      | companion                                      |\n"
+"| Profile          | Attach                          | Typical consumer                                                |\n"
+"| ---------------- | ------------------------------- | --------------------------------------------------------------- |\n"
+"| Bundled SPA      | **No**                          | Chat, task, notification, diary, email                          |\n"
+"| Remote-tool host | **Yes** (`remote_tools.attach`) | companion (overlay WebView-host); future independent local apps |\n"
 msgstr ""
 "| 配置            | Package 入口                                      | `sap.attach` | 典型消费者                                   |\n"
 "| --------------- | ------------------------------------------------- | ------------ | -------------------------------------------- |\n"
@@ -320,46 +199,39 @@ msgstr ""
 "| Satellite 进程  | sap-contract 中的 `createSatelliteHub()`          | **是**       | companion、pair-programming                  |\n"
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:88
+#: docs/guide/habitat-rpc.md:55
 msgid ""
-"Bundled SPA shares **one** Habitat RPC WebSocket per page load (for streaming, "
-"subscriptions, and WS fallback). **`hub-client.call()`** picks transport per "
-"method: **read-only** dual-transport methods default to **HTTP GET**; "
-"**writes** default to **WebSocket** (`dualTransportMeta` in hub-contract). "
-"WS failure on a read-only call falls back to the other channel when "
-"`fallback` is enabled."
+"Bundled SPA shares **one** Habitat RPC WebSocket per page load. Product "
+"modules pass a simple `platform` channel (e.g. `\"chat\"`), never a remote-"
+"tool `instance_id`."
 msgstr ""
-
-#. type: Plain text
-#: docs/sap/habitat-rpc.md:90
-msgid ""
-"Satellite processes connect with Habitat RPC, then `sap.attach` with `app_id` / "
-"`instance_id` before `tool.register` or instance-scoped methods."
-msgstr ""
-"Satellite 进程先通过 Habitat RPC 连接，再以 `app_id` / `instance_id` 调用 "
-"`sap.attach`，之后方可 `tool.register` 或使用实例范围的方法。"
 
 #. type: Content of: <messages><msg>
-#: docs/sap/habitat-rpc.md:91 docs/sap/transport.md:99 messages/po4a/en.xml:147
+#: docs/guide/habitat-rpc.md:56 messages/po4a/en.xml:210
 #, no-wrap
 msgid "Reconnect"
 msgstr "重连"
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:94
+#: docs/guide/habitat-rpc.md:59
+#, fuzzy
+#| msgid ""
+#| "Use `runHubRpcTransport` for connect, heartbeat, and exponential backoff "
+#| "(default 1s → 30s cap). On satellite detach or socket close, Habitat "
+#| "unregisters tools for that instance."
 msgid ""
-"Use `runHubRpcTransport` for connect, heartbeat, and exponential backoff "
-"(default 1s → 30s cap). On satellite detach or socket close, Habitat unregisters "
-"tools for that instance."
+"Use `runHabitatRpcTransport` for connect, heartbeat, and exponential "
+"backoff. On detach or socket close, Habitat unregisters tools for that "
+"`instance_id`."
 msgstr ""
 "使用 `runHubRpcTransport` 处理 connect、心跳与指数退避重连（默认 1s → 上限 "
 "30s）。卫星 detach 或 socket 关闭时，Habitat 注销该实例的工具。"
 
 #. type: Plain text
-#: docs/sap/habitat-rpc.md:95
+#: docs/guide/habitat-rpc.md:60
+#, fuzzy
+#| msgid "See [`architecture.md`](../concepts/architecture.md#session-goal)."
 msgid ""
-"See also: [transport.md](transport.md) (full state machine), [overview.md]"
-"(overview.md)."
-msgstr ""
-"另见：[transport.md](transport.md)（完整状态机）、[overview.md]"
-"(overview.md)。"
+"See also: [`companion.md`](../features/companion.md), [`architecture.md`](../"
+"concepts/architecture.md)."
+msgstr "参见 [`architecture.md`](../concepts/architecture.md#session-goal)。"

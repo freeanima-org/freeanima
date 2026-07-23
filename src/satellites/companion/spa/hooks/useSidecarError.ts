@@ -1,11 +1,14 @@
 import { useEffect } from "react";
-import { isElectron, listenServerError } from "@freeanima/satellites/companion/spa/lib/electron.ts";
+import {
+  isPortalShell,
+  listenServerError,
+} from "@freeanima/satellites/companion/spa/lib/portal-shell.ts";
 import { useCompanionStore } from "@freeanima/satellites/companion/spa/stores/companion.ts";
 
-/** Electron 生产包：监听主进程服务致命错误并写入 store */
+/** Portal：监听壳层服务致命错误并写入 store */
 export function useSidecarError(fallbackMessage?: string): void {
   useEffect(() => {
-    if (!isElectron()) return;
+    if (!isPortalShell()) return;
     let off: (() => void) | undefined;
     void listenServerError((msg) => {
       useCompanionStore.setState({

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-10 23:57+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,7 +24,7 @@ msgid "Design Principles"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/time-perception.md:1 messages/po4a/en.xml:627
+#: docs/concepts/time-perception.md:1 messages/po4a/en.xml:701
 #, no-wrap
 msgid "Time Perception"
 msgstr ""
@@ -261,7 +261,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/time-perception.md:87
-msgid "❌ Do not show time prefix in Console"
+msgid "❌ Do not show time prefix in Habitat"
 msgstr ""
 
 #. type: Bullet: '- '

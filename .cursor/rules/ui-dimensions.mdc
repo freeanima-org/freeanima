@@ -10,7 +10,7 @@ alwaysApply: false
 
 硬禁止：
 
-1. 禁止 `isMobile = isCapacitor()` 或用壳类型锁主布局
+1. 禁止 `isMobile = getShellKind() === "tauri"` 或用壳类型锁主布局
 2. 禁止单个 `isMobile`/`isDesktop` 同时管布局与交互
 3. 禁止用视口断点决定右键/长按/Enter 发送
 

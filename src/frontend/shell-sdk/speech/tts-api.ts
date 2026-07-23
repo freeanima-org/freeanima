@@ -35,7 +35,7 @@ function normalizeHubTtsText(text: string): string {
 
 async function postHubTtsSynthesize(params: HubTtsSynthesizeParams): Promise<Response> {
   const text = normalizeHubTtsText(params.text);
-  // 不可用 resolveHabitatApiFetch / shell.habitatFetch：CapacitorHttp patch 会损坏 MP3 字节
+  // 不可用 resolveHabitatApiFetch / shell.habitatFetch：避免中间层损坏 MP3 字节
   const habitatFetch = resolveBinarySafeHabitatFetch();
   const { url, init } = buildHabitatRestRequest(resolveHabitatApiOrigin(), "tts.synthesize", {
     text,

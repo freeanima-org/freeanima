@@ -11,16 +11,14 @@ function readFinePointerFromMedia(): boolean {
 
 function readShellPrimaryInput(): PrimaryInputKind | null {
   const shell = typeof window !== "undefined" ? window.satelliteShell : undefined;
-  const explicit = (shell as { primaryInput?: PrimaryInputKind } | undefined)?.primaryInput;
+  const explicit = shell?.primaryInput;
   if (explicit === "pointer" || explicit === "touch") return explicit;
-  if (shell?.isElectron) return "pointer";
-  if (shell?.isNativeShell && !shell.isElectron) return "touch";
   return null;
 }
 
 /**
  * 主输入是否为精确指针（鼠标/触控板）。
- * 与 `useLayoutMode()` / 视口宽度无关——iPad 宽屏仍为 touch；Electron 窄窗仍为 pointer。
+ * 与 `useLayoutMode()` / 视口宽度无关——iPad 宽屏仍为 touch；桌面窄窗仍为 pointer。
  */
 export function hasFinePointerCapability(): boolean {
   if (typeof window === "undefined") return false;

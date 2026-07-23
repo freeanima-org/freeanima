@@ -3,7 +3,7 @@ const DEFAULT_HUB_ORIGIN = "http://127.0.0.1:2658";
 /** 静态壳页面 origin 不含 Habitat REST，需回退到默认 Habitat 地址 */
 function isBundledShellWithoutApiOrigin(): boolean {
   if (typeof window === "undefined") return false;
-  if (window.satelliteShell?.isElectron || window.satelliteShell?.isNativeShell) {
+  if (window.satelliteShell?.isNativeShell || window.satelliteShell?.isTauri) {
     return true;
   }
   return document.documentElement?.dataset?.shellUi === "1";

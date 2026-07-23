@@ -16,7 +16,7 @@ import {
   openSettings,
   setClickThrough,
   setPointerActive,
-} from "@freeanima/satellites/companion/spa/lib/electron.ts";
+} from "@freeanima/satellites/companion/spa/lib/portal-shell.ts";
 import { companionDebug } from "@freeanima/satellites/companion/spa/lib/companion-debug.ts";
 import { useRef } from "react";
 

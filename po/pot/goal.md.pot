@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title #
-#: docs/concepts/architecture.md:293 docs/features/goal.md:1
+#: docs/concepts/architecture.md:336 docs/features/goal.md:1
 #: docs/features/goal.md:5
 #, no-wrap
 msgid "Session Goal"
@@ -64,7 +64,7 @@ msgstr ""
 #. type: Plain text
 #: docs/features/goal.md:24
 #, no-wrap
-msgid "On **Chat**, terminal commands (`/goal status`, pause/resume/clear, `/subgoal` list, etc.) run via Hub RPC `conversation.command` and show in a result panel or toast — they do not flash through the message stream. Setting a goal (`/goal <description>`) and `/retry` still use `message.send` so the LLM turn streams into the conversation. Discord/Weixin keep the existing slash → stream reply path.\n"
+msgid "On **Chat**, terminal commands (`/goal status`, pause/resume/clear, `/subgoal` list, etc.) run via Habitat RPC `conversation.command` and show in a result panel or toast — they do not flash through the message stream. Setting a goal (`/goal <description>`) and `/retry` still use `message.send` so the LLM turn streams into the conversation. Discord/Weixin keep the existing slash → stream reply path.\n"
 msgstr ""
 
 #. type: Title ##

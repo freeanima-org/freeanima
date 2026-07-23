@@ -92,10 +92,10 @@ just install-cli   # or: bun run install-cli
 
 ## Client UI
 
-聊天室与管理台由 **desktop / mobile 壳层**（`src/app/shell/desktop`、`src/app/shell/mobile`）提供 bundled SPA。Habitat 托管 API / SAP；`web.enabled` 且已有 dist 时托管 `/web/*`：
+聊天室与管理台由 **Portal 壳**（`src/app/shell/tauri`）与 **Web 壳**（`src/app/shell/web`）提供 SPA。Habitat 托管 API；`web.enabled` 且已有 dist 时托管 `/web/*`：
 
-- API：`http://127.0.0.1:2658/api`
-- Dev：`bun run dev:hub` + `bun run dev:web` → `http://127.0.0.1:4173/web/chat`（Habitat：`/web/habitat/dashboard`）
+- API：`http://127.0.0.1:2658/rpc/v1`
+- Dev：`just habitat` + `just web` → `http://127.0.0.1:5000/web/chat`（Habitat：`/web/habitat/dashboard`）
 
 ## First-deploy security checklist
 

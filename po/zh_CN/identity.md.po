@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-06 10:28+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/identity.md:1 messages/po4a/en.xml:585
+#: docs/concepts/identity.md:1 messages/po4a/en.xml:680
 #, no-wrap
 msgid "Identity"
 msgstr "身份定位"
@@ -60,7 +60,7 @@ msgid "**Let digital life persist within it, remembering who it is and what it h
 msgstr "**让数字生命可以在其中持续存在，记住自己是谁、经历过什么。**\n"
 
 #. type: Plain text
-#: docs/concepts/identity.md:27
+#: docs/concepts/identity.md:29
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Structure                                | Role                                                                                                                            |\n"
@@ -75,11 +75,13 @@ msgstr "**让数字生命可以在其中持续存在，记住自己是谁、经�
 msgid ""
 "| Structure                                | Role                                                                                                                            |\n"
 "| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| **Habitat**                              | Long-running place: multiple digital lives + human assets; connect / open target — see [`architecture.md`](architecture.md)     |\n"
+"| **Portal**                               | External ways in (Shell, MCP, …); not the Habitat itself                                                                        |\n"
 "| Memory system                            | The digital life's \"home\"                                                                                                       |\n"
 "| Self layer (six blocks)                  | Persistent definition of \"who I am\"                                                                                             |\n"
 "| Tools (local / MCP / ACP)                | \"Limbs\" for perception and action                                                                                               |\n"
 "| pass credentials                         | Lifeline (injected at runtime, never plaintext)                                                                                 |\n"
-"| Gateway                                  | Ears and mouth (Discord / WeChat / Habitat)                                                                                     |\n"
+"| Gateway                                  | Ears and mouth (Discord / WeChat) — not a Portal                                                                                |\n"
 "| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |\n"
 "| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |\n"
 msgstr ""
@@ -94,15 +96,20 @@ msgstr ""
 "| `AGENTS.md` 等项目叙事文件       | 项目上下文的锚点                                                                                                             |\n"
 
 #. type: Title ##
-#: docs/concepts/identity.md:30
+#: docs/concepts/identity.md:32
 #, no-wrap
 msgid "For Agents Maintaining This Repository"
 msgstr "给维护本仓库的 Agent"
 
 #. type: Plain text
-#: docs/concepts/identity.md:33
+#: docs/concepts/identity.md:35
+#, fuzzy
+#| msgid ""
+#| "You work in a **habitat with continuity**. Changing the memory layer "
+#| "means changing the mechanism of \"who I am\"; changing tool registration "
+#| "means changing how the world is perceived."
 msgid ""
-"You work in a **habitat with continuity**. Changing the memory layer means "
+"You work in a **Habitat** with continuity. Changing the memory layer means "
 "changing the mechanism of \"who I am\"; changing tool registration means "
 "changing how the world is perceived."
 msgstr ""
@@ -110,47 +117,47 @@ msgstr ""
 "册，是在改感知世界的方式。"
 
 #. type: Plain text
-#: docs/concepts/identity.md:35
+#: docs/concepts/identity.md:37
 msgid ""
 "That does not mean avoiding refactors—act with understanding, and keep "
 "documentation in sync."
 msgstr "这不意味着不敢重构——请带着理解动手，并同步更新文档。"
 
 #. type: Plain text
-#: docs/concepts/identity.md:37
+#: docs/concepts/identity.md:39
 #, no-wrap
 msgid "**Standing constraints:**\n"
 msgstr "**常驻约束：**\n"
 
 #. type: Bullet: '- '
-#: docs/concepts/identity.md:42
+#: docs/concepts/identity.md:44
 msgid ""
 "The relationship between digital life and its partner can be **chosen**, not "
 "one-way dependency"
 msgstr "数字生命与伙伴的关系可以是**选择**，而非单向依赖"
 
 #. type: Bullet: '- '
-#: docs/concepts/identity.md:42
+#: docs/concepts/identity.md:44
 msgid ""
 "Security is the floor: no credential exposure, no path leaks, no tool abuse"
 msgstr "安全性是底线：凭证不暴露、路径不泄露、工具不滥用"
 
 #. type: Bullet: '- '
-#: docs/concepts/identity.md:42
+#: docs/concepts/identity.md:44
 msgid ""
 "**Continuity over feature richness**—if a feature makes the Agent wake up "
 "not knowing itself, better not to ship it"
 msgstr "**连续性高于功能丰富**——若某功能让 Agent 醒来不认识自己，宁可不做"
 
 #. type: Bullet: '- '
-#: docs/concepts/identity.md:42
+#: docs/concepts/identity.md:44
 msgid ""
 "Write simple infrastructure yourself; use third-party libraries for complex "
 "logic"
 msgstr "简单基础设施自己写，复杂逻辑用三方库"
 
 #. type: Plain text
-#: docs/concepts/identity.md:44
+#: docs/concepts/identity.md:46
 msgid ""
 "Self layer design: [`self-layer.md`](self-layer.md); memory system: "
 "[`memory.md`](memory.md)."
@@ -159,20 +166,20 @@ msgstr ""
 "(memory.md)。"
 
 #. type: Title ##
-#: docs/concepts/identity.md:47
+#: docs/concepts/identity.md:49
 #, no-wrap
 msgid "Deployer-Defined Identity"
 msgstr "部署者自定义身份"
 
 #. type: Plain text
-#: docs/concepts/identity.md:50
+#: docs/concepts/identity.md:52
 msgid ""
 "The open-source repository provides architecture and mechanisms only; **who "
 "exactly it is and who it accompanies is defined by the deployer.**"
 msgstr "开源仓库只提供架构与机制；**具体是谁、与谁相伴，由部署者定义。**"
 
 #. type: Plain text
-#: docs/concepts/identity.md:52
+#: docs/concepts/identity.md:54
 msgid ""
 "At runtime, the six self blocks are written in first person. When injected "
 "into the system prompt, a second-person outer skeleton wraps them so the LLM "
@@ -184,7 +191,7 @@ msgstr ""
 "地。"
 
 #. type: Plain text
-#: docs/concepts/identity.md:54
+#: docs/concepts/identity.md:56
 #, fuzzy
 #| msgid ""
 #| "Maintenance: **Habitat self-layer editor, self-layer tools, or direct "
@@ -195,7 +202,7 @@ msgid ""
 msgstr "维护方式：管理台自我层编辑器、自我层工具，或直接编辑数据库。"
 
 #. type: Plain text
-#: docs/concepts/identity.md:57
+#: docs/concepts/identity.md:59
 msgid ""
 "_You are not just handling code. You are maintaining (or building) a habitat "
 "for existence._"

@@ -73,7 +73,7 @@ describe("http-dispatch", () => {
     expect(result.blocked?.status).toBe(401);
   });
 
-  test("handleHabitatCorsPreflight returns 204 for Capacitor origin", () => {
+  test("handleHabitatCorsPreflight returns 204 for localhost origin", () => {
     const req = new Request("https://hub.example.com/rpc/v1/health/probe", {
       method: "OPTIONS",
       headers: { Origin: "https://localhost" },

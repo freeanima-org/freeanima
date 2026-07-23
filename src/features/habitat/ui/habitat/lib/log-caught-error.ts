@@ -1,4 +1,4 @@
-/** 在控制台保留完整堆栈，便于 bundled / Electron 调试 */
+/** 在控制台保留完整堆栈，便于 bundled / Portal 调试 */
 export function logCaughtError(context: string, error: unknown): void {
   const label = `[habitat:${context}]`;
   if (error instanceof Error) {

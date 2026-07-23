@@ -338,8 +338,8 @@ export function resolveNativePackagedKind(): PackagedReleaseKind | null {
   if (!shell) return null;
   // 能力优先：有 applyPackagedUpdate 则按壳类型选产物
   if (typeof shell.applyPackagedUpdate !== "function") return null;
-  if (shell.isNativeShell) return "mobile-android";
-  if (shell.isElectron || (shell as { isTauri?: boolean }).isTauri) return "desktop-windows";
+  if (shell.isNativeShell && shell.primaryInput === "touch") return "mobile-android";
+  if (shell.isTauri || shell.isNativeShell) return "desktop-windows";
   return "desktop-windows";
 }
 

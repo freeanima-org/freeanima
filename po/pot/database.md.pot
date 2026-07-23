@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,14 +17,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/companion.md:144 docs/features/mobile-app.md:49
-#: docs/guide/database.md:88 docs/guide/remote-access.md:192
+#: docs/features/mobile-app.md:47 docs/guide/database.md:97
+#: docs/guide/remote-access.md:194
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/guide/database.md:1 messages/po4a/en.xml:612
+#: docs/guide/database.md:1 messages/po4a/en.xml:675
 #, no-wrap
 msgid "Database"
 msgstr ""
@@ -73,14 +73,32 @@ msgid ""
 "(security.md#credential-responsibilities)."
 msgstr ""
 
+#. type: Plain text
+#: docs/guide/database.md:25
+msgid ""
+"Optional pool overrides（见 [`src/core/db/pg/client.ts`](../../src/core/db/"
+"pg/client.ts)）:"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/database.md:31
+#, no-wrap
+msgid ""
+"| Env                              | Default | Notes                                                                     |\n"
+"| -------------------------------- | ------- | ------------------------------------------------------------------------- |\n"
+"| `FREEANIMA_PG_POOL_MAX`          | `10`    | 连接池上限，对齐部署 `max_connections`                                    |\n"
+"| `FREEANIMA_PG_POOL_IDLE_TIMEOUT` | `0`     | 秒；`0` = 关闭。Bun ≤1.3.14 勿设 `30`（会误杀长查询，见 troubleshooting） |\n"
+"| `FREEANIMA_PG_POOL_MAX_LIFETIME` | `0`     | 秒；`0` = 不限制连接寿命                                                  |\n"
+msgstr ""
+
 #. type: Title ##
-#: docs/guide/database.md:24
+#: docs/guide/database.md:32
 #, no-wrap
 msgid "Local Install (Debian)"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/database.md:26
+#: docs/guide/database.md:34
 #, no-wrap
 msgid ""
 "# Install PostgreSQL, create anima db/user (requires sudo)\n"
@@ -91,27 +109,27 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:35
+#: docs/guide/database.md:43
 msgid ""
 "Defaults: PostgreSQL 17, `localhost` only, `scram-sha-256`, dedicated "
 "`anima` database and user."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/database.md:36
+#: docs/guide/database.md:44
 #, no-wrap
 msgid "Extensions (One-Time)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:39
+#: docs/guide/database.md:47
 msgid ""
 "Full-text and vector search require PostgreSQL extensions. The app user "
 "usually cannot `CREATE EXTENSION`; run as superuser:"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/database.md:40
+#: docs/guide/database.md:48
 #, no-wrap
 msgid ""
 "sudo apt install postgresql-17-pgvector   # match psql --version\n"
@@ -119,32 +137,32 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:46
+#: docs/guide/database.md:54
 msgid ""
 "Fresh Debian installs via `setup-postgres-debian.sh` handle extensions "
 "automatically."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/database.md:47
+#: docs/guide/database.md:55
 #, no-wrap
 msgid "Schema Migrations"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:51
+#: docs/guide/database.md:59
 msgid ""
 "**Production (recommended):** When PostgreSQL is configured, `anima service` "
 "**auto-applies** pending schema migrations on startup."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:51
+#: docs/guide/database.md:59
 msgid "**Manual:**"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/database.md:52
+#: docs/guide/database.md:60
 #, no-wrap
 msgid ""
 "DATABASE_URL=\"postgresql://anima:…@127.0.0.1:5432/anima\" \\\n"
@@ -152,18 +170,18 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:58
+#: docs/guide/database.md:66
 msgid "Run after extensions are installed, or restart `anima service`."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/database.md:59
+#: docs/guide/database.md:67
 #, no-wrap
 msgid "`auto_llm_runs` (audit)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:62
+#: docs/guide/database.md:70
 msgid ""
 "Background LLM without user turns (cron agent, sleep pipeline stages) writes "
 "to `auto_llm_runs` instead of creating `conversations`. Retention (optional "
@@ -171,7 +189,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/guide/database.md:63
+#: docs/guide/database.md:71
 #, no-wrap
 msgid ""
 "auto_llm:\n"
@@ -180,52 +198,60 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:70
+#: docs/guide/database.md:78
 msgid ""
 "Purged during sleep-cycle step `conversation-cleanup` (after stale "
 "conversation cleanup). Cron script runs (`no_agent`) use `cron_log` only."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/database.md:71
+#: docs/guide/database.md:79
 #, no-wrap
 msgid "Backups"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:76
+#: docs/guide/database.md:85
 msgid ""
 "**Migrations do not replace backups** — schedule regular full backups (e.g. "
 "`pg_dump`)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:76
+#: docs/guide/database.md:85
 msgid "Back up before destructive changes."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:76
+#: docs/guide/database.md:85
 msgid ""
 "Include `~/.anima/` (`FREEANIMA_HOME` overridable) in backup policy — see "
 "[`security.md`](security.md#data-persistence)."
 msgstr ""
 
+#. type: Bullet: '- '
+#: docs/guide/database.md:85
+msgid ""
+"Recommended local stack: hourly `pg_dump` + home tar (short retention), WAL "
+"archive (`archive_mode`), weekly `pg_basebackup` for PITR. Restore logical "
+"dumps as postgres superuser (`pg_restore --no-owner --no-acl --no-comments`)."
+msgstr ""
+
 #. type: Title ##
-#: docs/guide/database.md:77
+#: docs/guide/database.md:86
 #, no-wrap
 msgid "Integration Tests (Developers)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:80
+#: docs/guide/database.md:89
 msgid ""
 "Full integration tests require **Docker** for a temporary PostgreSQL "
 "instance:"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/database.md:81
+#: docs/guide/database.md:90
 #, no-wrap
 msgid ""
 "bun run test:integration\n"
@@ -233,22 +259,24 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:87
+#: docs/guide/database.md:96
 msgid "pre-commit `test:changed` does **not** run integration tests."
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:95
+#: docs/guide/database.md:106
 #, no-wrap
 msgid ""
-"| Symptom                     | Check                                                                       |\n"
-"| --------------------------- | --------------------------------------------------------------------------- |\n"
-"| Service fails on DB connect | `database.url`; PostgreSQL running; pass credentials readable               |\n"
-"| Migration fails             | Extensions installed; DB user has DDL privileges                            |\n"
-"| FTS / keyword recall empty  | `ensure-pg-extensions.sql` applied (`pg_trgm`); jieba/FTS rebuild if needed |\n"
+"| Symptom                                             | Check                                                                                                                                                                   |\n"
+"| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Service fails on DB connect                         | `database.url`; PostgreSQL running; pass credentials readable; startup error message lists next steps (missing DB, auth, connection, extensions)                        |\n"
+"| `Idle timeout reached after 30s` on startup/migrate | Bun ≤1.3.14 会误杀进行中查询（[oven-sh/bun#30646](https://github.com/oven-sh/bun/issues/30646)）。确保 `FREEANIMA_PG_POOL_IDLE_TIMEOUT=0`（默认）或临时导出该变量后重启 |\n"
+"| Habitat 「未就绪」超时而进程仍在跑                  | 迁移在 HTTP listen **之前**；默认等 15min（`FREEANIMA_HUB_READY_TIMEOUT_MS`）。看 `journalctl --user -u anima -f`，勿中途 `stop`                                        |\n"
+"| Migration fails                                     | Extensions installed; DB user has DDL privileges；HNSW / 大批量 backfill 可能很慢，勿与上述 idle timeout 混淆                                                           |\n"
+"| FTS / keyword recall empty                          | `ensure-pg-extensions.sql` applied (`pg_trgm`); jieba/FTS rebuild if needed                                                                                             |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:96
+#: docs/guide/database.md:107
 msgid "More deployment security: [`security.md`](security.md)."
 msgstr ""

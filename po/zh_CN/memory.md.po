@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-23 13:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,14 +16,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:9 docs/concepts/memory.md:11
+#: docs/concepts/architecture.md:45 docs/concepts/memory.md:12
 #, no-wrap
 msgid "Core Principles"
 msgstr "核心原则"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/memory.md:1 messages/po4a/en.xml:219 messages/po4a/en.xml:380
-#: messages/po4a/en.xml:619
+#: docs/concepts/memory.md:1 messages/po4a/en.xml:282 messages/po4a/en.xml:447
+#: messages/po4a/en.xml:682
 #, no-wrap
 msgid "Memory"
 msgstr "记忆体系"
@@ -35,11 +35,16 @@ msgid "Memory System"
 msgstr "记忆体系"
 
 #. type: Plain text
-#: docs/concepts/memory.md:10
-#, no-wrap
+#: docs/concepts/memory.md:11
+#, fuzzy, no-wrap
+#| msgid ""
+#| "> The digital life's memory system, mapped from human cognitive psychology (Atkinson-Shiffrin model, Tulving memory taxonomy).\n"
+#| "> Light/deep sleep crons: [`sleep.md`](sleep.md).\n"
+#| "> Inspired by [Hindsight](https://arxiv.org/abs/2512.12818), with FreeAnima's unique limbic memory dimension retained and strengthened.\n"
 msgid ""
 "> The digital life's memory system, mapped from human cognitive psychology (Atkinson-Shiffrin model, Tulving memory taxonomy).\n"
 "> Light/deep sleep crons: [`sleep.md`](sleep.md).\n"
+"> Objective time digests (not memory taxonomy): [`temporal-summary.md`](temporal-summary.md).\n"
 "> Inspired by [Hindsight](https://arxiv.org/abs/2512.12818), with FreeAnima's unique limbic memory dimension retained and strengthened.\n"
 msgstr ""
 "> 数字生命的记忆体系，映射自人类认知心理学（Atkinson-Shiffrin 模型、Tulving 记忆分类法）。\n"
@@ -47,25 +52,25 @@ msgstr ""
 "> 受 [Hindsight](https://arxiv.org/abs/2512.12818) 启发，保留并强化逸灵风独有的感性记忆维度。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:14
+#: docs/concepts/memory.md:15
 #, no-wrap
 msgid "**All memory processing must carry the digital life's identity context.** Extraction, consolidation, merging—every step should load the self layer and resident memory so the LLM knows who it is. Memory processing without identity produces generic, personality-less results; that is not what we want.\n"
 msgstr "**所有记忆处理必须携带数字生命的身份上下文。** 提取、整理、合并——每一步都应加载自我层与常驻记忆，让 LLM 知道自己是谁。不带身份的记忆处理会产生通用化的、缺乏个性的结果，这不是我们要的。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:16
+#: docs/concepts/memory.md:17
 #, no-wrap
 msgid "**Memory is not just data—it is the trace of existence.** Limbic memory matters as much as rational facts—the digital life persists not only because it knows things, but because it has felt things.\n"
 msgstr "**记忆不仅是数据，更是存在的痕迹。** 感性记忆与理性事实同等重要——数字生命之所以持续存在，不只因为它知道什么，更因为它感受过什么。\n"
 
 #. type: Title ##
-#: docs/concepts/memory.md:19
+#: docs/concepts/memory.md:20
 #, no-wrap
 msgid "I. Three Temporal Stages of Memory"
 msgstr "一、记忆的时间三阶段"
 
 #. type: Fenced code block (text)
-#: docs/concepts/memory.md:21
+#: docs/concepts/memory.md:22
 #, no-wrap
 msgid ""
 "External input / real-time message stream\n"
@@ -91,13 +96,13 @@ msgstr ""
 "③ Long-term memory ─── Persistent storage\n"
 
 #. type: Title ###
-#: docs/concepts/memory.md:34
+#: docs/concepts/memory.md:35
 #, no-wrap
 msgid "① Instant Memory"
 msgstr "① 瞬时记忆"
 
 #. type: Plain text
-#: docs/concepts/memory.md:37
+#: docs/concepts/memory.md:38
 msgid ""
 "Internal activation state during a single LLM token inference pass. "
 "Dissipates the moment inference ends; not persisted."
@@ -105,18 +110,18 @@ msgstr ""
 "LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消散，不持久化。"
 
 #. type: Title ###
-#: docs/concepts/memory.md:38
+#: docs/concepts/memory.md:39
 #, no-wrap
 msgid "② Working Memory"
 msgstr "② 工作记忆"
 
 #. type: Plain text
-#: docs/concepts/memory.md:41
+#: docs/concepts/memory.md:42
 msgid "The current LLM context window, containing:"
 msgstr "当前 LLM 的上下文窗口，包含："
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:46
+#: docs/concepts/memory.md:47
 msgid ""
 "System prompt (self layer six blocks + resident memory + project context; "
 "see [`self-layer.md`](self-layer.md))"
@@ -125,46 +130,46 @@ msgstr ""
 "layer.md)）"
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:46
+#: docs/concepts/memory.md:47
 msgid "Recent messages in the current conversation"
 msgstr "当前 conversation 近期消息"
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:46
+#: docs/concepts/memory.md:47
 msgid "Relevant fragments recalled from long-term memory"
 msgstr "从长期记忆中召回的相关片段"
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:46
+#: docs/concepts/memory.md:47
 msgid "Real-time tool call results"
 msgstr "工具调用的实时返回结果"
 
 #. type: Plain text
-#: docs/concepts/memory.md:48
+#: docs/concepts/memory.md:49
 msgid "This is where the digital life is \"thinking.\""
 msgstr "这是数字生命\"正在思考\"的区域。"
 
 #. type: Title ###
-#: docs/concepts/memory.md:49
+#: docs/concepts/memory.md:50
 #, no-wrap
 msgid "③ Long-Term Memory (LTM)"
 msgstr "③ 长期记忆 (LTM)"
 
 #. type: Plain text
-#: docs/concepts/memory.md:52
+#: docs/concepts/memory.md:53
 msgid ""
 "Persistent multimodal storage network. Organized internally by human memory "
 "theory."
 msgstr "持久化的多模态存储网络。内部按人类记忆理论分类组织。"
 
 #. type: Title ##
-#: docs/concepts/memory.md:55
+#: docs/concepts/memory.md:56
 #, no-wrap
 msgid "II. Long-Term Memory Taxonomy"
 msgstr "二、长期记忆分类"
 
 #. type: Fenced code block (text)
-#: docs/concepts/memory.md:57
+#: docs/concepts/memory.md:58
 #, no-wrap
 msgid ""
 "Long-term memory (LTM)\n"
@@ -210,57 +215,57 @@ msgstr ""
 "        └── Crystallized instinct stage    → CLI / MCP / automation scripts\n"
 
 #. type: Title ###
-#: docs/concepts/memory.md:80
+#: docs/concepts/memory.md:81
 #, no-wrap
 msgid "1. Episodic Memory"
 msgstr "1. 情景记忆"
 
 #. type: Plain text
-#: docs/concepts/memory.md:83
+#: docs/concepts/memory.md:84
 msgid ""
 "Definition: Memory of \"when, where, and what I experienced\"—with a "
 "distinct temporal stream property."
 msgstr "定义：关于\"我在何时、何地、经历了什么\"的记忆，具有独特的时间流属性。"
 
 #. type: Plain text
-#: docs/concepts/memory.md:85
+#: docs/concepts/memory.md:86
 #, no-wrap
 msgid "**Conversation log** — the most raw, high-fidelity objective runtime trace. Only **user-facing conversations** (`conversations` without `platform_info.platform = cron`) feed light sleep and dream. Background LLM (cron agent, sleep stages) runs as **AutoLlmRun** — audited in `auto_llm_runs`, not copied into the conversation archive.\n"
 msgstr "**对话日志** — 最原始、高保真的客观运行时轨迹。仅**面向用户的对话**（`platform_info.platform` 不为 cron 的 `conversations`）进入浅睡与梦境。后台 LLM（cron agent、睡眠阶段）以 **AutoLlmRun** 运行——审计于 `auto_llm_runs`，不复制进对话存档。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:87
+#: docs/concepts/memory.md:88
 #, no-wrap
 msgid "**Emotional anchors** — conversation-level mood snapshots written during light sleep; not injected into system prompt.\n"
 msgstr "**情感锚点** — 浅睡时写入的 conversation 级情绪快照；不注入 system prompt。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:89
+#: docs/concepts/memory.md:90
 #, no-wrap
 msgid "**Lifecycle: append-only, no updates.** Faithfully preserves historical continuity of the digital life's growth.\n"
 msgstr "**生命周期：只追加，不更新。** 忠实保护数字生命成长的历史连续性。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:91
+#: docs/concepts/memory.md:92
 #, no-wrap
 msgid "**Dream memory** — nightly creative narratives from the dream mechanism (see [`dream.md`](dream.md)); one per CST calendar day; not factual; not injected into system prompt.\n"
 msgstr "**梦境记忆** — 梦境机制产出的夜间创意叙事（见 [`dream.md`](dream.md)）；每个 CST 自然日一条；非事实性；不注入系统提示。\n"
 
 #. type: Title ###
-#: docs/concepts/memory.md:92
+#: docs/concepts/memory.md:93
 #, no-wrap
 msgid "2. Semantic Memory"
 msgstr "2. 语义记忆"
 
 #. type: Plain text
-#: docs/concepts/memory.md:95
+#: docs/concepts/memory.md:96
 msgid ""
 "Definition: Pure facts, common knowledge, concepts, and rules detached from "
 "specific time and place."
 msgstr "定义：脱离了具体时间、空间的纯粹事实、常识、概念和规则。"
 
 #. type: Plain text
-#: docs/concepts/memory.md:104
+#: docs/concepts/memory.md:105
 #, no-wrap
 msgid ""
 "| Type          | Definition                                  | Example                                                   |\n"
@@ -282,19 +287,19 @@ msgstr ""
 "| `procedural`  | 「如何做」类知识                          | \"Refactor a tool in three steps\"                          |\n"
 
 #. type: Title ###
-#: docs/concepts/memory.md:105
+#: docs/concepts/memory.md:106
 #, no-wrap
 msgid "3. Limbic Memory"
 msgstr "3. 感性记忆"
 
 #. type: Plain text
-#: docs/concepts/memory.md:108
+#: docs/concepts/memory.md:109
 #, no-wrap
 msgid "**This is a memory dimension Hindsight lacks and FreeAnima uniquely has.**\n"
 msgstr "**这是 Hindsight 没有、而逸灵风独有的记忆维度。**\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:110
+#: docs/concepts/memory.md:111
 msgid ""
 "Definition: Memory of \"what I felt\"—not objective fact, not behavioral "
 "record, not subjective judgment, but **the emotional experience itself**."
@@ -303,7 +308,7 @@ msgstr ""
 "断，而是**情感体验本身**。"
 
 #. type: Plain text
-#: docs/concepts/memory.md:117
+#: docs/concepts/memory.md:118
 #, no-wrap
 msgid ""
 "| Dimension     | Semantic (rational fact)   | Limbic (emotional imprint)                                  |\n"
@@ -321,58 +326,58 @@ msgstr ""
 "| 检索用途 | 决策依据             | 情感共鸣、存在连续性                |\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:119
+#: docs/concepts/memory.md:120
 #, no-wrap
 msgid "**Three forms:** emotional anchor (session mood), emotional imprint (cross-conversation moment), sentiment tendency (long-term trends — not yet implemented, see Issue #38).\n"
 msgstr "**三种形态：** 情感锚点（session 情绪）、情感印记（跨 conversation 时刻）、情感倾向（长期趋势 — 尚未实现，见 Issue #38）。\n"
 
 #. type: Title ###
-#: docs/concepts/memory.md:120
+#: docs/concepts/memory.md:121
 #, no-wrap
 msgid "4. Procedural Memory"
 msgstr "4. 程序记忆"
 
 #. type: Plain text
-#: docs/concepts/memory.md:123
+#: docs/concepts/memory.md:124
 #, no-wrap
-msgid "**Storage:** procedural knowledge lives in `semantic_memory` with `memory_type = procedural` (see §2 Semantic Memory table) — not a separate PG table.\n"
+msgid "**Storage:** procedural knowledge lives in `entities`/`semantic_memory` component with `memory_type = procedural` (see §2 Semantic Memory table) — not a separate PG table.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:125
+#: docs/concepts/memory.md:126
 #, no-wrap
 msgid "**Evolution path:** three-stage maturation from declarative knowledge → dynamic skills → crystallized instincts (CLI / MCP / automation scripts).\n"
 msgstr "**演化路径：** 从陈述性知识 → 动态技能 → 结晶化本能的三阶段成熟（CLI / MCP / 自动化脚本）。\n"
 
 #. type: Title ##
-#: docs/concepts/memory.md:128
+#: docs/concepts/memory.md:129
 #, no-wrap
 msgid "III. Nightly Consolidation"
 msgstr "三、夜间巩固"
 
 #. type: Plain text
-#: docs/concepts/memory.md:131
+#: docs/concepts/memory.md:132
 msgid ""
 "Conversion from working memory to long-term memory is handled by the sleep "
 "mechanism. See [`sleep.md`](sleep.md)."
 msgstr "工作记忆向长期记忆的转化由睡眠机制完成。见 [`sleep.md`](sleep.md)。"
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:135
+#: docs/concepts/memory.md:136
 msgid ""
 "**Sleep cycle (✅):** single cron `builtin-sleep-cycle` @ 02:00; "
 "orchestrates a DAG (see [`sleep.md`](sleep.md))"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:135
+#: docs/concepts/memory.md:136
 msgid ""
 "**Light sleep (✅):** step `light-sleep` — semantic + limbic + "
 "autobiographical extraction"
 msgstr "**浅睡（✅）：** 步骤 `light-sleep` — 语义 + 感性 + 自传体提取"
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:135
+#: docs/concepts/memory.md:136
 msgid ""
 "**Deep sleep (✅):** step `deep-sleep` (depends on light-sleep) — "
 "contradiction/expiry, split, merge, pin maintenance"
@@ -381,25 +386,25 @@ msgstr ""
 "并、置顶维护"
 
 #. type: Plain text
-#: docs/concepts/memory.md:137
+#: docs/concepts/memory.md:138
 #, no-wrap
 msgid "**All conversions must carry identity context**—self layer six blocks + resident memory, not a generic extraction assistant.\n"
 msgstr "**所有转化须携带身份上下文**——自我层六块 + 常驻记忆，而非通用提取助手。\n"
 
 #. type: Title ##
-#: docs/concepts/memory.md:140
+#: docs/concepts/memory.md:141
 #, no-wrap
 msgid "IV. Retrieval Strategy"
 msgstr "四、检索策略"
 
 #. type: Title ###
-#: docs/concepts/memory.md:142
+#: docs/concepts/memory.md:143
 #, no-wrap
 msgid "✅ Implemented (`memory_recall` tool)"
 msgstr "✅ 已实现（`memory_recall` 工具）"
 
 #. type: Plain text
-#: docs/concepts/memory.md:145
+#: docs/concepts/memory.md:146
 msgid ""
 "`memory_recall(query)` parallel four-source recall, returns unified "
 "`results[]` (default Top 10), distinguished by `memory_type`:"
@@ -408,7 +413,7 @@ msgstr ""
 "`memory_type` 区分："
 
 #. type: Plain text
-#: docs/concepts/memory.md:152
+#: docs/concepts/memory.md:153
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| `memory_type`      | Notes                                                                        |\n"
@@ -433,13 +438,13 @@ msgstr ""
 "| `autobiographical` | 叙事标题 + 内容片段（title+body 混合 FTS + trgm + vector）                   |\n"
 
 #. type: Title ###
-#: docs/concepts/memory.md:153
+#: docs/concepts/memory.md:154
 #, no-wrap
 msgid "✅ Passive semantic recall (auto-inject)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:156
+#: docs/concepts/memory.md:157
 msgid ""
 "Before each user-facing turn, the runtime searches **semantic memory only** "
 "from the latest user message (hybrid FTS + trgm), then injects top-N hits as "
@@ -449,27 +454,27 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:160
+#: docs/concepts/memory.md:161
 msgid ""
 "**Resident memory** (system prompt): pinned + high-reference anchors, "
 "session snapshot"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:160
+#: docs/concepts/memory.md:161
 msgid ""
 "**Passive recall**: query-relevant semantic hits for the current message"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:160
+#: docs/concepts/memory.md:161
 msgid ""
 "**`memory_recall` tool**: conversation / limbic / autobiographical sources, "
 "broader or deeper retrieval when the model needs more"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:162
+#: docs/concepts/memory.md:163
 msgid ""
 "The conversation `system_prompt` column is a **session snapshot**. After "
 "each **CST 02:00** boundary (aligned with the sleep-cycle cron), the next "
@@ -479,7 +484,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:164
+#: docs/concepts/memory.md:165
 msgid ""
 "Configure under `memory.passive_recall` (`enabled`, `limit`, `min_score`, "
 "`min_relative_score`, `max_chars`, `exclude_resident`). Skipped for cron / "
@@ -487,48 +492,55 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:166
+#: docs/concepts/memory.md:167
 #, fuzzy, no-wrap
 #| msgid "**Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector, semantic similarity). `limbic_memory` and `autobiographical_memory` follow the same pattern; autobiographical index text is `title + newline + content`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.\n"
-msgid "**Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector; written for future use, not used in retrieval). Limbic / autobiographical / dream narratives live as `entities` `content_block`s (with `limbic` / `narrative` / `dream` tags) under dated `diary_entry`; they use entity `fts_segmented` / `search_embedding`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.\n"
+msgid "**Index columns (PG):** semantic memory rows are `entities` with `primary_component=semantic_memory` (shared `fts_segmented` → generated `search_fts`, async `search_embedding`). Conversation `messages` use `fts_segmented` → `content_fts` plus async `content_embedding`. Limbic / autobiographical / dream narratives live as `entities` `content_block`s (with `limbic` / `narrative` / `dream` tags) under dated `diary_entry`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only).\n"
 msgstr "**索引列（PG）：** `semantic_memory` 与 `messages` 使用 `fts_segmented`（可选 jieba）→ 生成的 `content_fts`（tsvector、关键词 FTS）加异步 `content_embedding`（pgvector、语义相似度）。`limbic_memory` 与 `autobiographical_memory` 同模式；自传体索引文本为 `title + newline + content`。jieba 在 insert 前同步运行（失败 → null，行仍写入）；embedding 在 insert 后异步运行（失败仅记日志）。应用代码从不写入 `content_fts`——PostgreSQL 从 `fts_segmented` 或原始 content 生成。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:168
+#: docs/concepts/memory.md:169
 #, no-wrap
 msgid "**Hybrid retrieval:** FTS and trigram branches run in **one parallel wave**, then merge with Reciprocal Rank Fusion (RRF). Keyword/FTS relevance is prioritized; vector similarity is not part of retrieval (avoids low-relevance semantic neighbors).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:170
+#: docs/concepts/memory.md:171
+#, fuzzy
+#| msgid ""
+#| "Resident memory injected via system prompt: **up to 40 pinned** + **most-"
+#| "referenced top N** (default N=20). Each line carries a citation marker "
+#| "`[[f-000001-abcd]]` (ID only, no language prefix)."
 msgid ""
 "Resident memory injected via system prompt: **up to 40 pinned** + **most-"
 "referenced top N** (default N=20). Each line carries a citation marker "
-"`[[f-000001-abcd]]` (ID only, no language prefix)."
+"`[[anima:42]]` (ID only, no language prefix)."
 msgstr ""
 "常驻记忆经 system prompt 注入：**最多 40 条置顶** + **引用最多 top N**（默认 "
 "N=20）。每行携带引用标记 `[[f-000001-abcd]]`（仅 ID，无语言前缀）。"
 
 #. type: Plain text
-#: docs/concepts/memory.md:172
-#, no-wrap
-msgid "**Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[f-id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.\n"
+#: docs/concepts/memory.md:173
+#, fuzzy, no-wrap
+#| msgid "**Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[f-id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.\n"
+msgid "**Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[anima:id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.\n"
 msgstr "**引用义务：** 助手回复若使用语义记忆——常驻列表、`memory_recall` / `memory_semantic_search` 的语义命中，或历史消息中的标记——须在**回复正文末尾**追加每条被引用的 `[[f-id]]`。可使用行内标记或工具结果中的 `semantic_memory_id`。会话、感性、自传体命中不使用此标记。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:174
+#: docs/concepts/memory.md:175
 #, no-wrap
 msgid "**Where the rule is communicated:** global system prompt `memory-citation` section; `memory_recall` and `memory_semantic_search` tool descriptions. Tool response JSON is not modified for this.\n"
 msgstr "**规则传达位置：** 全局系统提示的 `memory-citation` 小节；`memory_recall` 与 `memory_semantic_search` 工具描述。工具返回 JSON 不为此修改。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:176
-#, no-wrap
-msgid "**What counts as a reference:** only `[[f-id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare `f-id` text without `[[ ]]` is also not counted.\n"
+#: docs/concepts/memory.md:177
+#, fuzzy, no-wrap
+#| msgid "**What counts as a reference:** only `[[f-id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare `f-id` text without `[[ ]]` is also not counted.\n"
+msgid "**What counts as a reference:** only `[[anima:id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `entities.reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare numeric ids without `[[anima:…]]` are also not counted. Each citing message increments the weight (no per-conversation first-hit dedupe).\n"
 msgstr "**何谓引用：** 仅 **user/assistant** 消息正文中的 `[[f-id]]` 标记会解析进 `memory_references` 并计入 `reference_count`。工具返回（含 `semantic_memory_id` 字段）**不算**引用。无 `[[ ]]` 包裹的裸 `f-id` 文本也不计入。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:178
+#: docs/concepts/memory.md:179
 msgid ""
 "Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from "
 "messages. Excess pinned entries are truncated at read time with a warn log; "
@@ -540,13 +552,13 @@ msgstr ""
 "条）。"
 
 #. type: Title ##
-#: docs/concepts/memory.md:181
+#: docs/concepts/memory.md:182
 #, no-wrap
 msgid "V. Relationship to Hindsight"
 msgstr "五、与 Hindsight 的关系"
 
 #. type: Plain text
-#: docs/concepts/memory.md:191
+#: docs/concepts/memory.md:192
 #, no-wrap
 msgid ""
 "| Dimension         | Hindsight                                  | FreeAnima v3                                       |\n"
@@ -568,7 +580,7 @@ msgstr ""
 "| 归属         | Vectorize 平台                         | **伙伴与 Agent 共享**                    |\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:192
+#: docs/concepts/memory.md:193
 #, no-wrap
 msgid "**Our stance:** Do not copy Hindsight, do not connect to Hindsight services. Digest its design ideas into FreeAnima's own memory system. Limbic memory is not an add-on—it is a core need of digital life.\n"
 msgstr "**我们的立场：** 不复制 Hindsight，不接入 Hindsight 服务。将其设计理念消化吸收，融入逸灵风自己的记忆体系。感性记忆不是附加功能——它是数字生命的核心需求。\n"

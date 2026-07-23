@@ -56,7 +56,7 @@ export function legacyRpcHttpRedirect(req: Request): Response | null {
   return Response.redirect(new URL(location, url.origin).toString(), 302);
 }
 
-/** OPTIONS 预检：在 service_auth 之前返回 CORS 204（Capacitor / Electron 直连） */
+/** OPTIONS 预检：在 service_auth 之前返回 CORS 204（bundled / Portal 直连） */
 export function handleHabitatCorsPreflight(req: Request): Response | null {
   if (req.method !== "OPTIONS") return null;
   if (!isHabitatProtectedHttpPath(new URL(req.url).pathname)) return null;

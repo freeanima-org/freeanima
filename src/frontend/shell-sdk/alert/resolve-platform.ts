@@ -7,11 +7,6 @@ function runtimeWindow(): Window | undefined {
   return (globalThis as { window?: Window }).window;
 }
 
-/** @deprecated Capacitor 已移除；恒为 false，保留 API 避免大范围改动。 */
-export function isCapacitorShellRuntime(): boolean {
-  return false;
-}
-
 /** 设置页「平台」展示：backend 已正确注册时沿用；web 时按壳能力再判一次。 */
 export function resolveAlertDisplayPlatform(
   backend: AlertBackend | null | undefined,

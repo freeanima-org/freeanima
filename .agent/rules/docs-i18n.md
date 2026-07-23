@@ -2,6 +2,8 @@
 
 > **PAUSED（文档站翻译维护）**：改 `docs/**/*.md` 时**仅维护英文**；**不必**填 `po/zh_CN/*.po`。`po/` 中现有译文冻结保留；`docs/.generated/zh_CN/` 由 `i18n:po4a` 在构建时生成，**不入库**（见 `.gitignore`）。恢复流程见 [`i18n.md`](i18n.md)。
 >
+> 若英文 docs 大改（如壳层下线 Electron/Capacitor），仍建议跑一次 `bun run i18n:po4a`，并删除已无 master 的孤儿 PO/POT，以免 `docs/.generated` 残留旧壳叙述。
+>
 > Pipeline overview: [`i18n.md`](i18n.md). Terminology: [`i18n/glossary.md`](../../i18n/glossary.md).
 
 ## When to read

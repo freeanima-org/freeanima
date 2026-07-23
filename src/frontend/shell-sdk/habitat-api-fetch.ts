@@ -21,9 +21,7 @@ function resolveRemoteAuthToken(): string | undefined {
 }
 
 /**
- * 优先在渲染进程内建 Bearer fetch，避免 Electron preload 经 contextBridge
- * 返回的 Response 被结构化克隆后丢失 `.text()` / `.json()`。
- * （与栖息地 `resolveHabitatFetch` 顺序一致。）
+ * 优先在渲染进程内建 Bearer fetch（与栖息地 `resolveHabitatFetch` 顺序一致）。
  */
 export function resolveHabitatApiFetch(): HabitatFetch {
   const shell = satelliteShell();
@@ -35,23 +33,12 @@ export function resolveHabitatApiFetch(): HabitatFetch {
 }
 
 /**
- * CapacitorHttp 全局 patch 的 fetch 会把非 JSON POST 响应当文本，破坏 audio/mpeg。
- * TTS 等二进制须走 CapacitorWebFetch（原生 WebView fetch），由栖息地 CORS 放行 localhost。
+ * TTS 等二进制响应用原生 WebView fetch（勿经会损坏 MP3 字节的中间层）。
  */
 export function resolveBinarySafeHabitatFetch(): HabitatFetch {
   const origin = resolveHabitatApiOrigin();
   const token = resolveRemoteAuthToken();
-  const baseFetch = resolveCapacitorWebFetch();
-  if (token) return createBearerFetch(token, origin, baseFetch);
-  return baseFetch;
-}
-
-function resolveCapacitorWebFetch(): HabitatFetch {
-  if (typeof window === "undefined") return fetch;
-  const webFetch = (window as Window & { CapacitorWebFetch?: HabitatFetch }).CapacitorWebFetch;
-  if (typeof webFetch === "function") {
-    return (input, init) => webFetch(input, init);
-  }
+  if (token) return createBearerFetch(token, origin, fetch);
   return fetch;
 }
 
