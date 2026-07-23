@@ -312,10 +312,12 @@ export async function* runStream(
   for (let turn = 0; turn < maxTurns; turn++) {
     checkShouldStop(opts);
     // Run beforeLlmCall hook; modules (e.g. notifications) may modify messages before LLM inference
+    const llmDebugExtras: Record<string, unknown> = {};
     if (opts?.hookRegistry) {
       await opts.hookRegistry.run(beforeLlmCall, {
         conversationId: getToolConversationId() ?? "",
         messages: messages as BeforeLlmCallContext["messages"],
+        ...(opts.llm_debug ? { llm_debug: true as const, llmDebugExtras } : {}),
       });
     }
 
@@ -323,10 +325,24 @@ export async function* runStream(
       if (turn === 0) {
         yield {
           event: "llm_debug",
-          data: buildLlmDebugSnapshot(messages, toolSchemas, model, turn, "initial"),
+          data: buildLlmDebugSnapshot(
+            messages,
+            toolSchemas,
+            model,
+            turn,
+            "initial",
+            llmDebugExtras,
+          ),
         };
       }
-      lastDebugSnapshot = buildLlmDebugSnapshot(messages, toolSchemas, model, turn, "final");
+      lastDebugSnapshot = buildLlmDebugSnapshot(
+        messages,
+        toolSchemas,
+        model,
+        turn,
+        "final",
+        llmDebugExtras,
+      );
     }
 
     const buffer: string[] = [];

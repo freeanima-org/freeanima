@@ -25,6 +25,7 @@ type LlmDebugPanelProps = {
 
 type TurnPreview = LlmDebugSnapshotPayload["invoke"]["turns"][number];
 type ToolPreview = LlmDebugSnapshotPayload["tools"][number];
+type PassiveHit = NonNullable<LlmDebugSnapshotPayload["passive_recall"]>["fts"][number];
 
 function NestedSection({ title, children }: { title: ReactNode; children: ReactNode }) {
   return (
@@ -99,6 +100,98 @@ function TurnRow({ turn, index }: { turn: TurnPreview; index: number }) {
   );
 }
 
+function HitList({ hits }: { hits: PassiveHit[] }) {
+  if (hits.length === 0) {
+    return <p className="text-xs text-muted-foreground">—</p>;
+  }
+  return (
+    <ul className="space-y-1">
+      {hits.map((hit, i) => (
+        <li
+          key={`${hit.id}-${i}`}
+          className="rounded border bg-muted/30 px-2 py-1 font-mono text-[11px] leading-relaxed"
+        >
+          <div className="flex flex-wrap gap-2 text-muted-foreground">
+            <span>#{i + 1}</span>
+            <span>id={hit.id}</span>
+            <span>score={hit.score.toFixed(4)}</span>
+          </div>
+          <div className="mt-0.5 whitespace-pre-wrap break-words text-foreground">
+            {hit.content_preview}
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function PassiveRecallView({
+  trace,
+}: {
+  trace: NonNullable<LlmDebugSnapshotPayload["passive_recall"]>;
+}) {
+  return (
+    <div className="space-y-2 text-xs">
+      <div className="space-y-1 rounded border bg-muted/20 px-2 py-2 font-mono text-[11px]">
+        <div>
+          <span className="text-muted-foreground">{m.chat_llm_debug_passive_query()}: </span>
+          {trace.query || "—"}
+        </div>
+        <div>
+          <span className="text-muted-foreground">{m.chat_llm_debug_passive_tsquery()}: </span>
+          {trace.tsquery ?? "—"}
+        </div>
+        <div>
+          <span className="text-muted-foreground">{m.chat_llm_debug_passive_thresholds()}: </span>
+          min={trace.min_score} · relative={trace.min_relative_score} · effective=
+          {trace.effective_min_score.toFixed(4)}
+        </div>
+        <div>
+          <span className="text-muted-foreground">{m.chat_llm_debug_passive_elapsed()}: </span>
+          {trace.elapsed_ms} ms
+        </div>
+        {trace.skipped_reason ? (
+          <div>
+            <span className="text-muted-foreground">{m.chat_llm_debug_passive_skipped()}: </span>
+            {trace.skipped_reason}
+          </div>
+        ) : null}
+        {trace.excluded_resident_ids.length > 0 ? (
+          <div>
+            <span className="text-muted-foreground">
+              {m.chat_llm_debug_passive_excluded_resident()}:{" "}
+            </span>
+            {trace.excluded_resident_ids.join(", ")}
+          </div>
+        ) : null}
+      </div>
+
+      <NestedSection title={`${m.chat_llm_debug_passive_channel_fts()} (${trace.fts.length})`}>
+        <HitList hits={trace.fts} />
+      </NestedSection>
+      <NestedSection title={`${m.chat_llm_debug_passive_channel_trgm()} (${trace.trgm.length})`}>
+        <HitList hits={trace.trgm} />
+      </NestedSection>
+      <NestedSection title={`${m.chat_llm_debug_passive_merged()} (${trace.merged.length})`}>
+        <HitList hits={trace.merged} />
+      </NestedSection>
+      <NestedSection
+        title={`${m.chat_llm_debug_passive_after_score()} (${trace.after_score_filter.length})`}
+      >
+        <HitList hits={trace.after_score_filter} />
+      </NestedSection>
+      <NestedSection
+        title={`${m.chat_llm_debug_passive_after_resident()} (${trace.after_resident_filter.length})`}
+      >
+        <HitList hits={trace.after_resident_filter} />
+      </NestedSection>
+      <NestedSection title={`${m.chat_llm_debug_passive_injected()} (${trace.injected.length})`}>
+        <HitList hits={trace.injected} />
+      </NestedSection>
+    </div>
+  );
+}
+
 function SnapshotView({ snapshot }: { snapshot: LlmDebugSnapshotPayload | undefined }) {
   if (!snapshot) {
     return <p className="text-sm text-muted-foreground">{m.chat_llm_debug_empty()}</p>;
@@ -138,6 +231,12 @@ function SnapshotView({ snapshot }: { snapshot: LlmDebugSnapshotPayload | undefi
             <Badge>notification_context</Badge>
           ) : null}
         </div>
+      ) : null}
+
+      {snapshot.passive_recall ? (
+        <NestedSection title={m.chat_llm_debug_passive_recall()}>
+          <PassiveRecallView trace={snapshot.passive_recall} />
+        </NestedSection>
       ) : null}
 
       <NestedSection title={m.chat_llm_debug_system_prompt()}>

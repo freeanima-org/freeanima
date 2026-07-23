@@ -135,4 +135,41 @@ describe("memoryRecallSearch", () => {
     expect(out.limit).toBe(5);
     expect(out.results.length).toBe(5);
   });
+
+  it("memory_types restricts which sources are queried", async () => {
+    const now = new Date("2026-05-26T12:00:00+08:00");
+    searchSemanticMemoryFtsMock.mockImplementation((async () => [
+      {
+        id: "f-000001-abcd",
+        content: "compression semantic only",
+        type: "world",
+        pinned: false,
+        rank: 0.9,
+        source_conversations: [],
+        observed_at: now,
+        occurred_at: null,
+        status: "active",
+      },
+    ]) as never);
+    searchMessagesFtsMock.mockImplementation((async () => [
+      {
+        message_id: "msg-001",
+        conversation_id: "sid",
+        role: "user",
+        content: "compression conversation",
+        timestamp: now.toISOString(),
+        rank: 0.8,
+      },
+    ]) as never);
+
+    const out = await memoryRecallSearch("compression", {
+      limit: 10,
+      memory_types: ["semantic"],
+    });
+    expect(out.results.every((r) => r.memory_type === "semantic")).toBe(true);
+    expect(searchSemanticMemoryFtsMock).toHaveBeenCalled();
+    expect(searchMessagesFtsMock).not.toHaveBeenCalled();
+    expect(searchLimbicMemoryFtsMock).not.toHaveBeenCalled();
+    expect(searchAutobiographicalMemoryFtsMock).not.toHaveBeenCalled();
+  });
 });

@@ -23,10 +23,10 @@ import {
 
 const FTS_SYNTAX =
   "PG search syntax (to_tsquery simple):\n" +
-  "- **Space**-separated words default to **AND** (all must match)\n" +
-  "- **OR** for broad recall: `preference OR concise` (becomes |)\n" +
-  "- **AND** / **NOT**: `Free AND Anima`, `Free NOT Anima`\n" +
-  '- **Quotes** for phrases / CJK: `"Free Anima"`, `preference` (CJK matches by character **proximity**)';
+  "- **Space**-separated words default to **OR** (any word may match)\n" +
+  "- **AND** for stricter match: `Free AND Anima`\n" +
+  "- **OR** / **NOT**: `preference OR concise`, `Free NOT Anima`\n" +
+  '- **Quotes** for phrases / CJK: `"Free Anima"`, `preference` (short CJK = character **proximity**; long CJK = bigram OR)';
 
 function asInt(value: unknown, defaultVal: number, min: number, max: number): number {
   if (value == null || value === undefined) return defaultVal;
@@ -54,7 +54,7 @@ export function registerConversationTools(toolSets: ToolSetRegistry): void {
             properties: {
               query: {
                 type: "string",
-                description: "Search keywords. Default space=AND; use OR for broad recall",
+                description: "Search keywords. Default space=OR; use AND for strict match",
               },
               session: {
                 type: "string",

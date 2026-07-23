@@ -17,6 +17,10 @@ export type ToolAfterCallEffect = {
 export type BeforeLlmCallContext = {
   conversationId: string;
   messages: StoredMessage[];
+  /** When true, handlers may fill llmDebugExtras for the next llm_debug snapshot */
+  llm_debug?: boolean;
+  /** Opaque bag; passive recall writes `passive_recall` when llm_debug */
+  llmDebugExtras?: Record<string, unknown>;
 };
 
 export const toolAfterCall = createHook<ToolAfterCallContext, ToolAfterCallEffect>(

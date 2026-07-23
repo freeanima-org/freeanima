@@ -32,18 +32,23 @@ function numberField(
   label: string,
   value: number | "",
   onChange: (v: number | "") => void,
+  opts?: { min?: number; max?: number; step?: number; hint?: string },
 ): ReactNode {
   return (
     <div className="space-y-1">
       <Label className="text-sm">{label}</Label>
       <Input
         type="number"
+        min={opts?.min}
+        max={opts?.max}
+        step={opts?.step}
         value={value}
         onChange={(e) => {
           const raw = e.target.value;
           onChange(raw === "" ? "" : Number(raw));
         }}
       />
+      {opts?.hint ? <p className="text-xs text-muted-foreground">{opts.hint}</p> : null}
     </div>
   );
 }
@@ -85,6 +90,9 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
     enabled: true,
     limit: 5,
     max_chars: 2000,
+    min_score: 0.016,
+    min_relative_score: 0.55,
+    exclude_resident: true,
   });
 
   const load = useCallback(async () => {
@@ -110,6 +118,10 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
           enabled: recall?.enabled !== false,
           limit: typeof recall?.limit === "number" ? recall.limit : 5,
           max_chars: typeof recall?.max_chars === "number" ? recall.max_chars : 2000,
+          min_score: typeof recall?.min_score === "number" ? recall.min_score : 0.016,
+          min_relative_score:
+            typeof recall?.min_relative_score === "number" ? recall.min_relative_score : 0.55,
+          exclude_resident: recall?.exclude_resident !== false,
         });
         setConfig({});
       } else if (configKey === "llm") {
@@ -177,6 +189,9 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
           enabled: memoryRecall.enabled,
           limit: memoryRecall.limit,
           max_chars: memoryRecall.max_chars,
+          min_score: memoryRecall.min_score,
+          min_relative_score: memoryRecall.min_relative_score,
+          exclude_resident: memoryRecall.exclude_resident,
         },
       });
       await afterSave("memory");
@@ -254,6 +269,34 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
             {numberField("注入字符上限", memoryRecall.max_chars, (v) =>
               setMemoryRecall((m) => ({ ...m, max_chars: v === "" ? 2000 : v })),
             )}
+            {numberField(
+              "最低分数",
+              memoryRecall.min_score,
+              (v) => setMemoryRecall((m) => ({ ...m, min_score: v === "" ? 0.016 : v })),
+              {
+                min: 0,
+                step: 0.001,
+                hint: "绝对门槛（RRF 分）。参考：0.016≈单路第1名弱相关（默认）；0.008 更松；0.03 偏严只留强相关；0 关闭绝对过滤。一般先动「相对最高分比例」。",
+              },
+            )}
+            {numberField(
+              "相对最高分比例",
+              memoryRecall.min_relative_score,
+              (v) => setMemoryRecall((m) => ({ ...m, min_relative_score: v === "" ? 0.55 : v })),
+              {
+                min: 0,
+                max: 1,
+                step: 0.01,
+                hint: "保留分数 ≥ 本轮最高分×此比例。参考：0.7 严选；0.55 默认；0.35 宽松；0 只靠绝对门槛。召回偏少优先降到 0.35。",
+              },
+            )}
+            <FormToggle
+              className="w-full"
+              label="排除常驻记忆"
+              hint="已在 system prompt 常驻列表中的语义记忆不再重复注入"
+              checked={memoryRecall.exclude_resident}
+              onChange={(exclude_resident) => setMemoryRecall((m) => ({ ...m, exclude_resident }))}
+            />
             <Button type="button" disabled={saving} onClick={() => void saveMemory()}>
               保存记忆配置
             </Button>

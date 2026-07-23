@@ -37,6 +37,10 @@ function asSnapshot(payload: Record<string, unknown>): LlmDebugSnapshotPayload |
       LlmDebugSnapshotPayload["runtime_injections"]
     >;
   }
+  const passive = payload.passive_recall;
+  if (passive && typeof passive === "object") {
+    snapshot.passive_recall = passive as NonNullable<LlmDebugSnapshotPayload["passive_recall"]>;
+  }
   return snapshot;
 }
 

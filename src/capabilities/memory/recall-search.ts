@@ -20,6 +20,24 @@ import { searchDialogue } from "./search.ts";
 
 export type MemoryRecallHitType = "semantic" | "conversation" | "limbic" | "autobiographical";
 
+export const MEMORY_RECALL_HIT_TYPES: readonly MemoryRecallHitType[] = [
+  "semantic",
+  "conversation",
+  "limbic",
+  "autobiographical",
+] as const;
+
+const MEMORY_RECALL_HIT_TYPE_SET = new Set<string>(MEMORY_RECALL_HIT_TYPES);
+
+export function isMemoryRecallHitType(value: string): value is MemoryRecallHitType {
+  return MEMORY_RECALL_HIT_TYPE_SET.has(value);
+}
+
+function resolveRecallTypes(types?: readonly MemoryRecallHitType[]): Set<MemoryRecallHitType> {
+  if (!types || types.length === 0) return new Set(MEMORY_RECALL_HIT_TYPES);
+  return new Set(types);
+}
+
 export type SemanticRecallHit = {
   memory_type: "semantic";
   score: number;
@@ -184,54 +202,79 @@ function mapCandidateToHit(
 
 export async function memoryRecallSearch(
   query: string,
-  opts?: { limit?: number },
+  opts?: { limit?: number; memory_types?: readonly MemoryRecallHitType[] },
 ): Promise<MemoryRecallResult> {
   const q = query.trim();
   const limit = Math.max(1, Math.min(20, opts?.limit ?? 10));
   const pool = candidateLimit(limit);
+  const wanted = resolveRecallTypes(opts?.memory_types);
 
   validateFtsQueryInput(q);
 
   const [semanticRows, conversationRows, limbicRows, autobiographicalRows] = await Promise.all([
-    searchSemanticMemoryFts(q, { limit: pool }),
-    searchDialogue(q, { limit: pool }).catch(() => []),
-    searchLimbicMemoryFts(q, { limit: pool }).catch(() => []),
-    searchAutobiographicalMemoryFts(q, { limit: pool }).catch(() => []),
+    wanted.has("semantic")
+      ? searchSemanticMemoryFts(q, { limit: pool })
+      : Promise.resolve([] as SemanticFtsHit[]),
+    wanted.has("conversation")
+      ? searchDialogue(q, { limit: pool }).catch(() => [])
+      : Promise.resolve([]),
+    wanted.has("limbic")
+      ? searchLimbicMemoryFts(q, { limit: pool }).catch(() => [])
+      : Promise.resolve([]),
+    wanted.has("autobiographical")
+      ? searchAutobiographicalMemoryFts(q, { limit: pool }).catch(() => [])
+      : Promise.resolve([]),
   ]);
 
-  const semanticList: RecallCandidate[] = semanticRows.map((row) => ({
-    docKey: semanticMemoryDocKey(row.id),
-    memory_type: "semantic",
-    semantic: row,
-  }));
+  const lists: RecallCandidate[][] = [];
 
-  const conversationList: RecallCandidate[] = conversationRows.map((row) => ({
-    docKey: messageDocKey(row.message_id),
-    memory_type: "conversation",
-    conversation: {
-      conversation_id: row.conversation_id,
-      message_id: row.message_id,
-      role: row.role,
-      timestamp: row.timestamp,
-      content: row.content,
-    },
-  }));
+  if (wanted.has("semantic")) {
+    lists.push(
+      semanticRows.map((row) => ({
+        docKey: semanticMemoryDocKey(row.id),
+        memory_type: "semantic" as const,
+        semantic: row,
+      })),
+    );
+  }
 
-  const limbicList: RecallCandidate[] = limbicRows.map((row) => ({
-    docKey: limbicDocKey(row.id),
-    memory_type: "limbic",
-    limbic: row,
-  }));
+  if (wanted.has("conversation")) {
+    lists.push(
+      conversationRows.map((row) => ({
+        docKey: messageDocKey(row.message_id),
+        memory_type: "conversation" as const,
+        conversation: {
+          conversation_id: row.conversation_id,
+          message_id: row.message_id,
+          role: row.role,
+          timestamp: row.timestamp,
+          content: row.content,
+        },
+      })),
+    );
+  }
 
-  const autobiographicalList: RecallCandidate[] = autobiographicalRows.map((row) => ({
-    docKey: autobiographicalDocKey(row.id),
-    memory_type: "autobiographical",
-    autobiographical: row,
-  }));
+  if (wanted.has("limbic")) {
+    lists.push(
+      limbicRows.map((row) => ({
+        docKey: limbicDocKey(row.id),
+        memory_type: "limbic" as const,
+        limbic: row,
+      })),
+    );
+  }
 
-  const merged = rrfMerge([semanticList, conversationList, limbicList, autobiographicalList], {
-    limit,
-  });
+  if (wanted.has("autobiographical")) {
+    lists.push(
+      autobiographicalRows.map((row) => ({
+        docKey: autobiographicalDocKey(row.id),
+        memory_type: "autobiographical" as const,
+        autobiographical: row,
+      })),
+    );
+  }
+
+  const merged = rrfMerge(lists, { limit });
 
   const results = merged.map((row) => mapCandidateToHit(q, row as RecallCandidate, row.score));
 

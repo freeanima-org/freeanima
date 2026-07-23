@@ -246,6 +246,84 @@ msgid "No passive_memory_context injection detected."
 msgstr "未检测到 passive_memory_context 注入。"
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml
+#, no-wrap
+msgid "Passive recall"
+msgstr "被动回忆检索"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml
+#, no-wrap
+msgid "Query"
+msgstr "查询"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml
+#, no-wrap
+msgid "tsquery"
+msgstr "tsquery"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml
+#, no-wrap
+msgid "Thresholds"
+msgstr "分数门槛"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml
+#, no-wrap
+msgid "FTS channel"
+msgstr "FTS 路"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml
+#, no-wrap
+msgid "Trigram channel"
+msgstr "Trigram 路"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml
+#, no-wrap
+msgid "RRF merged"
+msgstr "RRF 合并"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml
+#, no-wrap
+msgid "After score filter"
+msgstr "分数过滤后"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml
+#, no-wrap
+msgid "After exclude_resident"
+msgstr "排除常驻后"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml
+#, no-wrap
+msgid "Excluded resident ids"
+msgstr "已排除常驻 id"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml
+#, no-wrap
+msgid "Injected"
+msgstr "最终注入"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml
+#, no-wrap
+msgid "Skipped"
+msgstr "跳过原因"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml
+#, no-wrap
+msgid "Elapsed"
+msgstr "耗时"
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:13 messages/po4a/en.xml:556
 #, no-wrap
 msgid "System prompt"

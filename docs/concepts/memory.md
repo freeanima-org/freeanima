@@ -157,7 +157,7 @@ Before each user-facing turn, the runtime searches **semantic memory only** from
 
 - **Resident memory** (system prompt): pinned + high-reference anchors, session snapshot
 - **Passive recall**: query-relevant semantic hits for the current message
-- **`memory_recall` tool**: conversation / limbic / autobiographical sources, broader or deeper retrieval when the model needs more
+- **`memory_recall` tool**: conversation / limbic / autobiographical sources, broader or deeper retrieval when the model needs more; optional `memory_types` to restrict sources (default: all four)
 
 The conversation `system_prompt` column is a **session snapshot**. After each **CST 02:00** boundary (aligned with the sleep-cycle cron), the next user message rebuilds it in full (resident memory, world/channel context, toolsets, self layer, project `AGENTS.md`) via `ensureSystemPromptFresh` in `beginTurnPrepare`; mid-turn tool loops are not interrupted.
 
@@ -165,7 +165,7 @@ Configure under `memory.passive_recall` (`enabled`, `limit`, `min_score`, `min_r
 
 **Index columns (PG):** semantic memory rows are `entities` with `primary_component=semantic_memory` (shared `fts_segmented` → generated `search_fts`, async `search_embedding`). Conversation `messages` use `fts_segmented` → `content_fts` plus async `content_embedding`. Limbic / autobiographical / dream narratives live as `entities` `content_block`s (with `limbic` / `narrative` / `dream` tags) under dated `diary_entry`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only).
 
-**Hybrid retrieval:** FTS and trigram branches run in **one parallel wave**, then merge with Reciprocal Rank Fusion (RRF). Keyword/FTS relevance is prioritized; vector similarity is not part of retrieval (avoids low-relevance semantic neighbors).
+**Hybrid retrieval:** FTS and trigram branches run in **one parallel wave**, then merge with Reciprocal Rank Fusion (RRF). Auto-built FTS queries join tokens with **OR** (space-separated / jieba segments); explicit `AND`/`OR`/`NOT` still work; unquoted CJK longer than two characters uses **bigram-OR** (so NL questions like「你的邮箱是啥？」can hit「邮箱」), while quoted phrases keep full adjacency. Keyword/FTS relevance is prioritized; vector similarity is not part of retrieval (avoids low-relevance semantic neighbors).
 
 Resident memory injected via system prompt: **up to 40 pinned** + **most-referenced top N** (default N=20). Each line carries a citation marker `[[anima:42]]` (ID only, no language prefix).
 

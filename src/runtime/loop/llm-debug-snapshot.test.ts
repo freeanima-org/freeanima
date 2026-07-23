@@ -64,6 +64,29 @@ describe("buildLlmDebugSnapshot", () => {
     expect(snapshot.invoke.system_prompt!.length).toBeLessThan(long.length);
   });
 
+  it("attaches passive_recall extras when provided", () => {
+    const messages: StoredMessage[] = [{ role: "user", content: "你的邮箱是啥？" }];
+    const snapshot = buildLlmDebugSnapshot(messages, [], "m", 0, "initial", {
+      passive_recall: {
+        query: "你的邮箱是啥？",
+        tsquery: "(邮 <-> 箱)",
+        effective_min_score: 0.016,
+        min_score: 0.016,
+        min_relative_score: 0.55,
+        fts: [{ id: 1, score: 0.2, content_preview: "邮箱…" }],
+        trgm: [],
+        merged: [{ id: 1, score: 0.016, content_preview: "邮箱…" }],
+        after_score_filter: [{ id: 1, score: 0.016, content_preview: "邮箱…" }],
+        after_resident_filter: [{ id: 1, score: 0.016, content_preview: "邮箱…" }],
+        excluded_resident_ids: [],
+        injected: [{ id: 1, score: 0.016, content_preview: "邮箱…" }],
+        elapsed_ms: 12,
+      },
+    });
+    expect(snapshot.passive_recall?.query).toBe("你的邮箱是啥？");
+    expect(snapshot.passive_recall?.fts).toHaveLength(1);
+  });
+
   it("lists full tool schemas as sent to the provider", () => {
     const snapshot = buildLlmDebugSnapshot(
       [{ role: "user", content: "q" }],
