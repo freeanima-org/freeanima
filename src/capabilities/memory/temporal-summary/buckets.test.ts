@@ -2,8 +2,10 @@ import { describe, expect, it } from "bun:test";
 
 import {
   injectTemporalPeerRollups,
+  listClosedBucketsToday,
   peerRollRedisKey,
   peerRollSourcesFp,
+  temporalBucketEndIso,
   temporalBucketStartIso,
   type TimelinePeerInject,
 } from "./index.ts";
@@ -14,6 +16,24 @@ describe("temporal-summary buckets", () => {
     // 2026-07-18 06:15 CST = 2026-07-17 22:15 UTC
     const ms = Date.parse("2026-07-17T22:15:00.000Z");
     expect(temporalBucketStartIso(ms)).toBe("2026-07-18T06:00+08:00");
+  });
+
+  it("temporalBucketEndIso is start + 30min in CST (not UTC Z relabeled as +08:00)", () => {
+    const start = "2026-07-18T06:00+08:00";
+    const end = temporalBucketEndIso(start);
+    expect(end).toBe("2026-07-18T06:30+08:00");
+    expect(Date.parse(end) - Date.parse(start)).toBe(30 * 60 * 1000);
+  });
+
+  it("listClosedBucketsToday uses correct bucket end (not −8h)", () => {
+    // 2026-07-18 07:00 CST = 2026-07-17 23:00 UTC → 06:00 与 06:30 已闭合，07:00 未闭合
+    const nowMs = Date.parse("2026-07-17T23:00:00.000Z");
+    const closed = listClosedBucketsToday(nowMs);
+    expect(closed).toContain("2026-07-18T06:00+08:00");
+    expect(closed).toContain("2026-07-18T06:30+08:00");
+    expect(closed).not.toContain("2026-07-18T07:00+08:00");
+    // 旧 bug：end 早 8h 会把 14:00+ 也算闭合；此处不应出现下午桶
+    expect(closed).not.toContain("2026-07-18T14:00+08:00");
   });
 
   it("peerRollSourcesFp is order-independent for same set", () => {
@@ -59,7 +79,32 @@ describe("timeline inject", () => {
     expect(messages[2] && "name" in messages[2] ? messages[2].name : "").toBe(
       "temporal_summary_peers",
     );
+    expect(messages[2] && "timestamp" in messages[2] ? messages[2].timestamp : "").toBe(
+      "2026-07-18T06:30:00.000Z",
+    );
     expect(messages[3]?.role).toBe("user");
+  });
+
+  it("keeps multi-bucket injects chronological when they share the same message gap", () => {
+    const messages: StoredMessage[] = [
+      { role: "user", content: "hi", timestamp: "2026-07-18T05:00:00.000Z" },
+      { role: "user", content: "later", timestamp: "2026-07-18T08:00:00.000Z" },
+    ];
+    const injects: TimelinePeerInject[] = [
+      { at: "2026-07-18T07:00:00.000Z", content: "later peers" },
+      { at: "2026-07-18T06:00:00.000Z", content: "earlier peers" },
+    ];
+    injectTemporalPeerRollups(messages, injects);
+    expect(messages.length).toBe(4);
+    const names = messages.map((m) => ("name" in m ? m.name : undefined));
+    expect(names[1]).toBe("temporal_summary_peers");
+    expect(names[2]).toBe("temporal_summary_peers");
+    expect(messages[1] && "timestamp" in messages[1] ? messages[1].timestamp : "").toBe(
+      "2026-07-18T06:00:00.000Z",
+    );
+    expect(messages[2] && "timestamp" in messages[2] ? messages[2].timestamp : "").toBe(
+      "2026-07-18T07:00:00.000Z",
+    );
   });
 
   it("never inserts peer block before leading system prompt", () => {
