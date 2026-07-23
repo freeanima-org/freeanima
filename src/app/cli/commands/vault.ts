@@ -44,7 +44,7 @@ export function registerVaultCommand(program: Command): void {
     .command("get")
     .description("Read agent vault field (stdout, for scripts)")
     .argument("<id>", "vault_item entity id")
-    .argument("<field>", "field path, e.g. password or custom_fields.0.value")
+    .argument("<field>", "field name, e.g. password or a custom field name")
     .action(async (idRaw: string, field: string) => {
       const id = Number(idRaw);
       if (!Number.isFinite(id) || id <= 0) {

@@ -33,7 +33,9 @@ export type SubprocessSecretRef = VaultSecretRef & {
 
 const SECRET_FIELD_PROPERTY = {
   type: "string",
-  description: 'Secret field path, default "password" (e.g. custom_fields.0.value)',
+  description:
+    'Field name (default "password"): "password" / "notes" / "totp", or a name from the item\'s ' +
+    "custom_field_names — same form for all; do not use custom_fields.N.value paths.",
 } as const;
 
 const SECRET_ID_PROPERTY = { type: "integer", description: "Vault item id" } as const;
@@ -43,13 +45,14 @@ export const SECRET_TOOL_PROPERTY = {
   type: "object",
   description:
     "Vault secret to type into the input (never returned in tool results). " +
-    "Discover items via vault_list/vault_search/vault_get_meta first. Uses agent library. " +
-    "Mutually exclusive with text.",
+    "Discover items via vault_list/vault_search/vault_get_meta first (use custom_field_names as field). " +
+    "Uses agent library. Mutually exclusive with text.",
   properties: {
     id: SECRET_ID_PROPERTY,
     field: {
       type: "string",
-      description: 'Secret field path (e.g. "password", "custom_fields.0.value")',
+      description:
+        'Field name: "password" / "notes" / "totp", or a custom_field_names entry (e.g. "api_token")',
     },
   },
   required: ["id", "field"],
@@ -60,7 +63,8 @@ export const SECRETS_TOOL_PROPERTY = {
   type: "array",
   description:
     "Per-call vault secrets injected only into this subprocess env (never Habitat process.env, never tool results). " +
-    "Discover items via vault_list/vault_search/vault_get_meta first. Default subject_kind=agent.",
+    "Discover items via vault_list/vault_search/vault_get_meta first; set field to password/notes/totp " +
+    "or a custom_field_names entry (flat name, no path). Default subject_kind=agent.",
   items: {
     type: "object",
     properties: {
