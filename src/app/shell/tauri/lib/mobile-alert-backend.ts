@@ -3,10 +3,10 @@ import type { AlertBackend } from "@freeanima/frontend/shell-sdk/alert/types.ts"
 
 import { createDesktopAlertBackend } from "./desktop-alert-backend.ts";
 
-/** Tauri 移动壳：与桌面相同走 satelliteShell 原生通知，platform 标记 mobile。 */
+/** Tauri 移动壳：与桌面相同走 portalShell 原生通知，platform 标记 mobile。 */
 export function createMobileAlertBackend(): AlertBackend {
   const native = createDesktopAlertBackend();
-  if (native.platform === "desktop" && window.satelliteShell?.showNativeAlert) {
+  if (native.platform === "desktop" && window.portalShell?.showNativeAlert) {
     return { ...native, platform: "mobile" };
   }
   return {

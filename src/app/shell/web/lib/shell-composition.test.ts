@@ -23,7 +23,7 @@ describe("getShellKind", () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (X11; Linux x86_64)" },
       location: { origin: "https://habitat.example.com" },
-      satelliteShell: { isNativeShell: true },
+      portalShell: { isNativeShell: true },
     } as unknown as Window;
 
     expect(getShellKind()).toBe("web");
@@ -34,7 +34,7 @@ describe("getShellKind", () => {
     (globalThis as { window: Window }).window = {
       navigator: { userAgent: "Mozilla/5.0 (X11; Linux x86_64)" },
       location: { origin: "https://habitat.example.com" },
-      satelliteShell: { isNativeShell: true, isTauri: true },
+      portalShell: { isNativeShell: true, isTauri: true },
     } as unknown as Window;
 
     expect(getShellKind()).toBe("tauri");

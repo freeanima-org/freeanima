@@ -12,7 +12,7 @@ export type AppRuntimeContext = {
   engine: ServiceEnginePort;
   masks: MaskRegistryPort;
   mcp: McpManagerPort | null;
-  satellite: RemoteToolsManagerPort | null;
+  outpost: RemoteToolsManagerPort | null;
   acp: AcpManagerPort;
   host: string;
   port: number;

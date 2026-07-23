@@ -94,17 +94,14 @@ async function bootstrapShellBridge(): Promise<void> {
     installDevScopedSettingsBridge();
   }
 
-  if (!window.satelliteShell) {
-    window.satelliteShell = createBrowserDevShellStub();
+  if (!window.portalShell) {
+    window.portalShell = createBrowserDevShellStub();
     try {
       const backend = createDesktopDevScopedBackend();
       const raw = await backend.load(HABITAT_SETTINGS_SCOPE);
       const parsed = parseShellClientConfig(raw);
       if (parsed?.habitatUrl) {
-        window.satelliteShell = createBrowserDevShellStub(
-          parsed.habitatUrl,
-          parsed.remoteAuthToken,
-        );
+        window.portalShell = createBrowserDevShellStub(parsed.habitatUrl, parsed.remoteAuthToken);
       }
     } catch {
       /* 开发回退：Habitat 未配置时保留 stub */

@@ -66,7 +66,7 @@ import {
   updateSemanticMemoryPinned,
 } from "../habitat-api/handlers/memory.ts";
 import { getPromptDebug } from "../habitat-api/handlers/prompt.ts";
-import { getSatellitesStatus } from "../habitat-api/handlers/satellites.ts";
+import { getOutpostsStatus } from "../habitat-api/handlers/outposts.ts";
 import { listSelfBlocks } from "../habitat-api/handlers/self.ts";
 import {
   getSleepPipelineStatus,
@@ -361,9 +361,9 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     ),
   ),
   defineHabitatRouteFromDef(
-    "src/satellites.status",
-    habitatMethodDefs["src/satellites.status"],
-    wrapConsoleLegacyHandler(() => getSatellitesStatus()),
+    "outposts.status",
+    habitatMethodDefs["outposts.status"],
+    wrapConsoleLegacyHandler(() => getOutpostsStatus()),
   ),
   defineHabitatRouteFromDef(
     "acp.status",

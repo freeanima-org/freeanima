@@ -8,9 +8,9 @@ describe("tauri-runtime", () => {
     delete (globalThis as { window?: Window }).window;
   });
 
-  it("isTauriRuntime：satelliteShell.isTauri", () => {
+  it("isTauriRuntime：portalShell.isTauri", () => {
     (globalThis as { window: Window }).window = {
-      satelliteShell: { isTauri: true } as ShellApi,
+      portalShell: { isTauri: true } as ShellApi,
       location: { protocol: "https:", hostname: "example.com" },
     } as unknown as Window;
     expect(isTauriRuntime()).toBe(true);

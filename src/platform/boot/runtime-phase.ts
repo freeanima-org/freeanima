@@ -3,7 +3,7 @@ import {
   invalidateSelfLayerPromptCache,
   loadSelfLayerPrompt,
 } from "@freeanima/capabilities/identity";
-import { listAllSapInstances } from "@freeanima/core/db/pg/sap";
+import { listAllOutpostInstances } from "@freeanima/core/db/pg/outpost";
 
 import { createAppRuntime, type AppRuntime } from "../runtime/app-runtime.ts";
 import { bindServicePorts } from "../bind-api.ts";
@@ -43,7 +43,7 @@ export async function bootRuntimePhase(
   runtimeRef: { current: AppRuntime | null },
   acpSessionUpdatedRef?: { handler: ((sid: string) => void) | null },
 ): Promise<RuntimePhaseResult> {
-  const { kernel, engine, conversation, catalog, masks, mcp, satellite, acp } = phase;
+  const { kernel, engine, conversation, catalog, masks, mcp, outpost, acp } = phase;
 
   startupLog("Initializing AppRuntime / EventBus…");
   const runtime = createAppRuntime({
@@ -52,7 +52,7 @@ export async function bootRuntimePhase(
     conversation,
     masks,
     mcp,
-    satellite,
+    outpost,
     acp,
     host,
     port,
@@ -96,7 +96,7 @@ export async function bootRuntimePhase(
   initHabitatRouter();
   registerFeatures(builtinFeaturePlugins);
 
-  satellite.loadSessionPlatformExtra = async (conversationId) => {
+  outpost.loadSessionPlatformExtra = async (conversationId) => {
     const meta = await conversation.loadConversationMeta(conversationId);
     if (!isConversationMeta(meta)) return;
     return meta.platform_extra;
@@ -104,7 +104,7 @@ export async function bootRuntimePhase(
 
   bindRemoteToolsServerDeps({
     runtime,
-    remoteToolsManager: satellite,
+    remoteToolsManager: outpost,
     instanceRegistry: await createRemoteInstanceRegistry(),
     hubSessionRegistry: new HabitatSessionRegistry(),
     animaVersion: ANIMA_VERSION,
@@ -117,7 +117,7 @@ export async function bootRuntimePhase(
 async function createRemoteInstanceRegistry(): Promise<RemoteInstanceRegistry> {
   const registry = new RemoteInstanceRegistry(true);
   try {
-    const rows = await listAllSapInstances();
+    const rows = await listAllOutpostInstances();
     registry.hydrate(
       rows.map((row) => ({
         instanceId: row.instance_id,

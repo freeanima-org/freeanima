@@ -119,7 +119,7 @@ export async function serve(
     const http = httpHooks;
     let tlsPort: number | null = null;
     if (http) {
-      startupLog("Starting Habitat HTTP (API + SAP)…");
+      startupLog("Starting Habitat HTTP (API + Habitat RPC)…");
       const started = await http.start(bindHosts, port, opts.httpListen);
       servers = started.handles;
       tlsPort = started.tlsPort;

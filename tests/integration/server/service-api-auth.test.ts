@@ -58,7 +58,7 @@ describePg("service API tokens", () => {
       runtime.markStarted();
       bindRemoteToolsServerDeps({
         runtime,
-        remoteToolsManager: runtime.fullDeps().satellite as RemoteToolsManager,
+        remoteToolsManager: runtime.fullDeps().outpost as RemoteToolsManager,
         instanceRegistry: new RemoteInstanceRegistry(false),
         hubSessionRegistry: new HabitatSessionRegistry(),
         animaVersion: "test",

@@ -4,7 +4,7 @@ import type { HttpRouteMeta } from "./http-route.ts";
 export type TransportKind = "http" | "ws";
 
 /** 客户端 profile：决定 dual method 的 default transport */
-export type HabitatClientProfile = "habitat" | "satellite";
+export type HabitatClientProfile = "habitat" | "outpost";
 
 export type { HttpRouteMeta, HttpRequestEncoding, HttpResponseEncoding } from "./http-route.ts";
 export { resolveHttpRequestEncoding, resolveHttpResponseEncoding } from "./http-route.ts";
@@ -14,7 +14,7 @@ export type HabitatAuthPolicy = "required" | "optional";
 
 export type HabitatMethodMeta = {
   transports: readonly TransportKind[];
-  /** habitat / satellite profile 下的默认传输 */
+  /** habitat / outpost profile 下的默认传输 */
   defaultByProfile: Record<HabitatClientProfile, TransportKind>;
   /** 传输层失败时是否尝试备用通道（写操作默认 false） */
   fallback?: boolean;

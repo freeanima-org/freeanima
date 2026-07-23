@@ -53,9 +53,6 @@ export const PATHS = {
   get habitatDevBuildDir() {
     return homePath("runtime", "console-dev-build");
   },
-  get satellitesRuntimeDir() {
-    return homePath("runtime", "satellites");
-  },
   get binDir() {
     return homePath("bin");
   },

@@ -5,7 +5,7 @@ describe("native-habitat-health-probe", () => {
     const prev = globalThis.window;
     (globalThis as { window: Window }).window = {
       location: { origin: "http://10.244.0.244:2658" },
-      satelliteShell: { isTauri: true, isNativeShell: true },
+      portalShell: { isTauri: true, isNativeShell: true },
     } as unknown as Window;
     try {
       const { shouldProbeHabitatHealthViaNativeHttp } =
@@ -20,7 +20,7 @@ describe("native-habitat-health-probe", () => {
     const prev = globalThis.window;
     (globalThis as { window: Window }).window = {
       location: { origin: "http://localhost:5000" },
-      satelliteShell: { isNativeShell: false },
+      portalShell: { isNativeShell: false },
     } as unknown as Window;
     try {
       const { shouldProbeHabitatHealthViaNativeHttp } =

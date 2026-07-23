@@ -12,7 +12,7 @@ const tauriDir = join(root, "src/app/shell/tauri");
 
 process.env.COMPANION_OVERLAY_URL ??= "http://127.0.0.1:4176/?view=overlay";
 
-const companion = spawn("bun", ["src/satellites/companion/dev.ts"], {
+const companion = spawn("bun", ["src/features/companion/dev.ts"], {
   cwd: root,
   stdio: "inherit",
   env: process.env,

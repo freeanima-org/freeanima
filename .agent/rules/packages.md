@@ -4,17 +4,17 @@
 
 Workspace package names reflect the layer topology in [`code-layers.md`](code-layers.md):
 
-| Shape            | Pattern                          | Example                                                             |
-| ---------------- | -------------------------------- | ------------------------------------------------------------------- |
-| Layer aggregate  | `@freeanima/{layer}`             | `kernel`, `core`, `runtime`, `platform`                             |
-| Capability pack  | `@freeanima/capabilities-{slug}` | `capabilities-memory`, `capabilities-tools`                         |
-| Feature module   | `@freeanima/feature-{slug}`      | `feature-chat`, `feature-habitat`                                   |
-| Shared protocol  | `@freeanima/shared/{name}`       | `habitat-rpc`, `habitat-client`, `habitat-contract`, `rpc-contract` |
-| Frontend shell   | `@freeanima/{name}`              | `ui-kit`, `shell-sdk`, `shell-ui`（`src/frontend/`）                |
-| Entry            | CLI app (`src/app/cli`)          | Source / standalone entry（逻辑名可仍标 `@freeanima/cli` 安装前缀） |
-| Satellite        | `@freeanima/satellite-{slug}`    | `satellite-companion`（`src/satellites/` 白名单）                   |
-| Habitat protocol | feature protocol                 | `src/features/habitat/protocol/habitat-contract/`                   |
-| Habitat REST     | feature habitat-api              | `src/features/habitat/habitat/habitat-api/`                         |
+| Shape             | Pattern                           | Example                                                             |
+| ----------------- | --------------------------------- | ------------------------------------------------------------------- |
+| Layer aggregate   | `@freeanima/{layer}`              | `kernel`, `core`, `runtime`, `platform`                             |
+| Capability pack   | `@freeanima/capabilities-{slug}`  | `capabilities-memory`, `capabilities-tools`                         |
+| Feature module    | `@freeanima/feature-{slug}`       | `feature-chat`, `feature-habitat`                                   |
+| Shared protocol   | `@freeanima/shared/{name}`        | `habitat-rpc`, `habitat-client`, `habitat-contract`, `rpc-contract` |
+| Frontend shell    | `@freeanima/{name}`               | `ui-kit`, `shell-sdk`, `shell-ui`（`src/frontend/`）                |
+| Entry             | CLI app (`src/app/cli`)           | Source / standalone entry（逻辑名可仍标 `@freeanima/cli` 安装前缀） |
+| Companion Outpost | `@freeanima/features/companion/*` | overlay UI + thin server under `src/features/companion/`            |
+| Habitat protocol  | feature protocol                  | `src/features/habitat/protocol/habitat-contract/`                   |
+| Habitat REST      | feature habitat-api               | `src/features/habitat/habitat/habitat-api/`                         |
 
 ## Valid layer packages
 

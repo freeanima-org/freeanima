@@ -31,8 +31,8 @@ export function dualTransportMeta(
   const meta: HabitatMethodMeta = {
     transports: ["http", "ws"],
     defaultByProfile: readOnly
-      ? { habitat: "http", satellite: "http" }
-      : { habitat: "ws", satellite: "ws" },
+      ? { habitat: "http", outpost: "http" }
+      : { habitat: "ws", outpost: "ws" },
     fallback: readOnly,
   };
   if (options?.http) {
@@ -45,16 +45,16 @@ export function dualTransportMeta(
 export function httpTransportMeta(): HabitatMethodMeta {
   return {
     transports: ["http"],
-    defaultByProfile: { habitat: "http", satellite: "http" },
+    defaultByProfile: { habitat: "http", outpost: "http" },
     fallback: false,
   };
 }
 
-/** WS-only（流式 / 卫星 / terminal） */
+/** WS-only（流式 / outpost / terminal） */
 export function wsOnlyMeta(): HabitatMethodMeta {
   return {
     transports: ["ws"],
-    defaultByProfile: { habitat: "ws", satellite: "ws" },
+    defaultByProfile: { habitat: "ws", outpost: "ws" },
     fallback: false,
   };
 }
@@ -63,7 +63,7 @@ export function wsOnlyMeta(): HabitatMethodMeta {
 export function publicHttpMeta(): HabitatMethodMeta {
   return {
     transports: ["http"],
-    defaultByProfile: { habitat: "http", satellite: "http" },
+    defaultByProfile: { habitat: "http", outpost: "http" },
     fallback: false,
     auth: "optional",
   };
@@ -97,7 +97,7 @@ export function binaryHttpMeta(options: BinaryHttpMetaOptions): HabitatMethodMet
   if (options.response) httpOverrides.response = options.response;
   return {
     transports: ["http"],
-    defaultByProfile: { habitat: "http", satellite: "http" },
+    defaultByProfile: { habitat: "http", outpost: "http" },
     fallback: false,
     ...(options.auth !== undefined ? { auth: options.auth } : {}),
     httpOverrides,

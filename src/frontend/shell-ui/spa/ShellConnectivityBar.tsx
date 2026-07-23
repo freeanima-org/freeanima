@@ -15,7 +15,7 @@ import { m } from "@paraglide/messages";
 import { resolveConnectivityNotice } from "./connectivity-notice.ts";
 
 function openHabitatSettingsIfAvailable(): void {
-  window.satelliteShell?.openHabitatSettings?.();
+  window.portalShell?.openHabitatSettings?.();
 }
 
 export function ShellConnectivityBar(): null {

@@ -15,7 +15,7 @@ import { createProject } from "@freeanima/features/project/domain";
 import { createTag, listTags } from "@freeanima/features/tag/domain";
 import { getEntity } from "@freeanima/core/db/pg/entity";
 import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testAgentWorldId } from "../../helpers/world-context.ts";
 import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
 

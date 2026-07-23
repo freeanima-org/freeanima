@@ -31,7 +31,7 @@ export type EnginePhaseResult = {
   catalog: EngineCatalog;
   masks: MaskRegistry;
   mcp: MCPManager;
-  satellite: RemoteToolsManager;
+  outpost: RemoteToolsManager;
   acp: ReturnType<typeof getAcpManager>;
 };
 
@@ -65,8 +65,8 @@ export function bootEnginePhase(
   });
 
   const mcp = new MCPManager(catalog.toolSets, config);
-  const satellite = new RemoteToolsManager(catalog.toolSets);
-  satellite.installToolRouting();
+  const outpost = new RemoteToolsManager(catalog.toolSets);
+  outpost.installToolRouting();
   const acp = getAcpManager();
 
   return {
@@ -76,7 +76,7 @@ export function bootEnginePhase(
     catalog,
     masks,
     mcp,
-    satellite,
+    outpost,
     acp,
   };
 }

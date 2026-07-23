@@ -41,19 +41,19 @@ export function createTypedHabitatClient(options: HabitatClientOptions) {
 
 export type TypedHabitatClient = ReturnType<typeof createTypedHabitatClient>;
 
-let typedSatelliteClient: TypedHabitatClient | null = null;
-let typedSatelliteKey = "";
+let typedOutpostClient: TypedHabitatClient | null = null;
+let typedOutpostKey = "";
 
-/** Satellite UI 用 typed client（与 getSatelliteHabitatClient 共享 shell 解析） */
+/** Outpost/Portal UI 用 typed client（与 getOutpostHabitatClient 共享 shell 解析） */
 export function getTypedHabitatClient(
   options: BundledHabitatClientOptions = {},
 ): TypedHabitatClient {
-  const resolved = resolveBundledHabitatClientOptions({ profile: "satellite", ...options });
-  const key = `${resolved.httpOrigin}\0${resolved.authToken ?? ""}\0satellite`;
-  if (typedSatelliteClient && typedSatelliteKey === key) return typedSatelliteClient;
-  typedSatelliteClient = createTypedHabitatClient(resolved);
-  typedSatelliteKey = key;
-  return typedSatelliteClient;
+  const resolved = resolveBundledHabitatClientOptions({ profile: "outpost", ...options });
+  const key = `${resolved.httpOrigin}\0${resolved.authToken ?? ""}\0outpost`;
+  if (typedOutpostClient && typedOutpostKey === key) return typedOutpostClient;
+  typedOutpostClient = createTypedHabitatClient(resolved);
+  typedOutpostKey = key;
+  return typedOutpostClient;
 }
 
 /** Habitat UI 用 typed client */
@@ -66,6 +66,6 @@ export function getTypedHabitatUiClient(options: BundledHabitatClientOptions): T
 /** 测试重置 typed Habitat client */
 export function resetTypedHabitatClientForTests(): void {
   resetClientHabitatMethodRegistryForTests();
-  typedSatelliteClient = null;
-  typedSatelliteKey = "";
+  typedOutpostClient = null;
+  typedOutpostKey = "";
 }

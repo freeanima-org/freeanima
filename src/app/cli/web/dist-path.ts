@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { getInstallContext } from "../satellite-launch.ts";
+import { getInstallContext } from "../install-context.ts";
 import { getRegisteredEmbeddedWebDist, materializeEmbeddedWebDist } from "./web-dist-embedded.ts";
 
 const DIST_CANDIDATES = ["src/app/shell/web/dist"] as const;

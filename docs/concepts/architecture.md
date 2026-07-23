@@ -14,6 +14,7 @@ User-facing product terms (Chinese in [`i18n/glossary.md`](../../i18n/glossary.m
 | ------------------------------------- | ---------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | Long-running process / connect target | **Habitat**      | **栖息地**        | One process hosts **multiple digital lives** (`agent` subjects) and **human assets** (`user`); connect / token / restart target |
 | External connectors (class)           | **Portal**       | **入口**          | Shell, MCP clients, and similar ways in; not the Habitat itself                                                                 |
+| Remote-tool registrant                | **Outpost**      | **前哨**          | Unreachable local app that `remote_tools.attach` (Portal-embedded companion or standalone tool); **not** a Portal               |
 | Shell                                 | **Shell**        | **壳**            | A Portal (desktop / mobile / web window; SSH-like)                                                                              |
 | Admin / inspect UI (legacy Habitat)   | **Habitat** (UI) | **栖息地**        | Area under `/habitat/*`; "Open Habitat" vs "Connect to Habitat"                                                                 |
 | Admin home page                       | **Dashboard**    | **仪表盘**        | `/habitat/dashboard` only; other Habitat routes keep their own labels                                                           |
@@ -108,7 +109,7 @@ Entity deep links / overlay / clipboard use **Anima URI** (`anima:{id}?component
 
 ### Repository layout (Phase 0 — revised)
 
-Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Habitat adapter + domain + `plugin.ts`). Habitat uses the **same module shape** as chat/task — not a separate admin-\* stack. `src/satellites/` is legacy naming; do not add new products there.
+Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Habitat adapter + domain + `plugin.ts`). Habitat uses the **same module shape** as chat/task — not a separate admin-\* stack. `src/features/companion/` is legacy naming; do not add new products there.
 
 **End state:** Habitat RPC per feature; business methods use `POST|WS /rpc/v1` (same envelope). Public health/TLS probes and binary methods (e.g. `tts.synthesize`) are Habitat RPC REST with `auth: optional` or Bearer as declared in registry.
 
@@ -118,12 +119,12 @@ Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platfo
 
 ### Platform UI layering (legacy paths — migrating to features/\*)
 
-| Layer            | Platform-native?                   | Location (current → target)                           | 数据通道                                |
-| ---------------- | ---------------------------------- | ----------------------------------------------------- | --------------------------------------- |
-| Shell（壳子维）  | Yes                                | `src/app/shell/tauri`, companion, Habitat binding     | Tauri IPC / commands                    |
-| Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                               | Habitat RPC（Feature RPC）              |
-| Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.habitat.rpc`）   | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
-| Companion host   | Overlay WebView-host（第一方）     | `src/satellites/companion`（spa attach；壳薄 IPC/FS） | Habitat RPC + `remote_tools.attach`     |
+| Layer            | Platform-native?                   | Location (current → target)                                   | 数据通道                                |
+| ---------------- | ---------------------------------- | ------------------------------------------------------------- | --------------------------------------- |
+| Shell（壳子维）  | Yes                                | `src/app/shell/tauri`, companion, Habitat binding             | Tauri IPC / commands                    |
+| Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                                       | Habitat RPC（Feature RPC）              |
+| Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.habitat.rpc`）           | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
+| Companion host   | Overlay WebView-host（第一方）     | `src/features/companion/companion`（spa attach；壳薄 IPC/FS） | Habitat RPC + `remote_tools.attach`     |
 
 导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `getShellKind()` 锁 Shell 布局。交互（右键/长按/Enter）用 shell-sdk 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
 

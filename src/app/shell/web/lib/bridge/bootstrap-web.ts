@@ -57,7 +57,7 @@ export async function bootstrapWebBridge(
   options?: BootstrapWebBridgeOptions,
 ): Promise<void> {
   installScopedSettingsBridge();
-  window.satelliteShell = createWebShellStub();
+  window.portalShell = createWebShellStub();
   const backend = createWebScopedBackend();
   const raw = await backend.load(HABITAT_SETTINGS_SCOPE);
   const parsed = parseShellClientConfig(raw);
@@ -81,11 +81,11 @@ export async function bootstrapWebBridge(
   } else if (parsed) {
     installWebShellFromPrefs(parsed.habitatUrl, parsed.remoteAuthToken);
   } else if (defaultHubUrl) {
-    window.satelliteShell = buildWebShellFromRaw(defaultHubUrl, prefsToken || autoToken);
+    window.portalShell = buildWebShellFromRaw(defaultHubUrl, prefsToken || autoToken);
   }
 
   redirectToHubSetupIfNeeded();
-  if (window.satelliteShell?.remoteAuth?.token?.trim()) {
+  if (window.portalShell?.remoteAuth?.token?.trim()) {
     window.dispatchEvent(new CustomEvent("freeanima:shell-config-changed"));
   }
 }

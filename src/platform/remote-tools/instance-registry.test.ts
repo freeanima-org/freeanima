@@ -49,6 +49,6 @@ describe("RemoteInstanceRegistry.resolveConnect", () => {
     const result = await registry.resolveConnect({ appId: "chat", instanceId: "too-long" });
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error).toContain("invalid SAP instance_id");
+    expect(result.error).toContain("invalid outpost instance_id");
   });
 });

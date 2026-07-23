@@ -118,7 +118,7 @@ export function writePomodoroActiveState(
         new CustomEvent("freeanima:pomodoro-active-changed", { detail: { subjectKind: kind } }),
       );
       // Tauri 移动：同步主屏小组件快照（失败忽略）
-      if (window.satelliteShell?.isTauri) {
+      if (window.portalShell?.isTauri) {
         const remainingMs =
           state.phaseEndsAt != null
             ? Math.max(0, state.phaseEndsAt - Date.now())

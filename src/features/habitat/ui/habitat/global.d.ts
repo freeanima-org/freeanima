@@ -2,7 +2,7 @@ import type { ShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
 
 declare global {
   interface Window {
-    satelliteShell?: ShellApi;
+    portalShell?: ShellApi;
   }
 }
 

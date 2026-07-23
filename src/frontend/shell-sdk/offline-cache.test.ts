@@ -43,7 +43,7 @@ describe("satellite-sdk offline-cache", () => {
     resetSubjectScopeForTest();
     const prevWindow = globalThis.window;
     const shell = { habitatWsUrl: "ws://habitat.example/rpc/v1" };
-    globalThis.window = { satelliteShell: shell } as Window & typeof globalThis;
+    globalThis.window = { portalShell: shell } as Window & typeof globalThis;
     try {
       expect(resolveHabitatCacheScope()).toBe("ws://habitat.example/rpc/v1:user");
       setSubjectKind("agent");

@@ -10,7 +10,7 @@ import {
   updateCompression,
   upsertConversationMeta,
 } from "@freeanima/core/db/pg/conversation";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,

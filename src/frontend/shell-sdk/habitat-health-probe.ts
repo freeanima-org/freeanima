@@ -30,21 +30,19 @@ function probeAbortSignal(timeoutMs: number, external?: AbortSignal): AbortSigna
 }
 
 function isTauriShellRuntime(): boolean {
-  return Boolean(
-    (globalThis as { satelliteShell?: { isTauri?: boolean } }).satelliteShell?.isTauri,
-  );
+  return Boolean((globalThis as { portalShell?: { isTauri?: boolean } }).portalShell?.isTauri);
 }
 
 function isTouchNativeShellRuntime(): boolean {
   const shell = (
     globalThis as {
-      satelliteShell?: {
+      portalShell?: {
         isNativeShell?: boolean;
         isTauri?: boolean;
         primaryInput?: "pointer" | "touch";
       };
     }
-  ).satelliteShell;
+  ).portalShell;
   if (!shell?.isNativeShell && !shell?.isTauri) return false;
   return shell.primaryInput === "touch";
 }

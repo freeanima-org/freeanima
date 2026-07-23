@@ -268,7 +268,7 @@ export const habitatMethodDefs = {
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "src/satellites.status": defineHabitatMethod({
+  "outposts.status": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),

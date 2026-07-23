@@ -8,10 +8,10 @@ function setWindow(
 ): void {
   (
     globalThis as unknown as {
-      window: { satelliteShell?: unknown; location: { origin: string } };
+      window: { portalShell?: unknown; location: { origin: string } };
     }
   ).window = {
-    satelliteShell: shell,
+    portalShell: shell,
     location: { origin },
   };
   document.documentElement.dataset.shellUi = "1";
@@ -37,7 +37,7 @@ describe("resolveApiOrigin", () => {
     expect(resolveApiOrigin()).toBe("http://127.0.0.1:2658");
   });
 
-  test("优先使用 satelliteShell.habitatUrl", () => {
+  test("优先使用 portalShell.habitatUrl", () => {
     setWindow({ habitatUrl: "http://127.0.0.1:2658/" });
     expect(resolveApiOrigin()).toBe("http://127.0.0.1:2658");
   });

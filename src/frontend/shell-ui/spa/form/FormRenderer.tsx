@@ -93,8 +93,8 @@ export function FormRenderer({
       await store.save(parsed);
       setStatus("已保存");
       if (sectionId === "debug") notifyDebugConfigChanged();
-      if (window.satelliteShell?.emitConfigChanged) {
-        await window.satelliteShell.emitConfigChanged();
+      if (window.portalShell?.emitConfigChanged) {
+        await window.portalShell.emitConfigChanged();
       }
       return true;
     } catch (e) {

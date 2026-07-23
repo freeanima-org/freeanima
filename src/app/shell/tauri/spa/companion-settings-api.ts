@@ -1,4 +1,4 @@
-import { createCompanionSettingsApi } from "@freeanima/satellites/companion/spa/settings/companion-settings-api.ts";
+import { createCompanionSettingsApi } from "@freeanima/features/companion/ui/spa/settings/companion-settings-api.ts";
 
 export type DesktopSettingsApis = {
   companion: ReturnType<typeof createCompanionSettingsApi>;

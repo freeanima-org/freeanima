@@ -33,7 +33,7 @@
   - `eslint/eqeqeq` — always `===` / `!==` (`null` checks may use `== null` / `!= null`).
   - `eslint/no-promise-executor-return` — Promise executor must not return a value; use block body (`{ setTimeout(resolve, ms); }`).
   - `unicorn/explicit-length-check` — use `.length > 0` / `.length === 0`, not truthy `.length`.
-- **React**（feature-habitat / ui-kit / satellites override）: `react/rules-of-hooks` error；`react/exhaustive-deps` warn。
+- **React**（feature-habitat / ui-kit / companion override）: `react/rules-of-hooks` error；`react/exhaustive-deps` warn。
 - **Disable 纪律**（oxlint + review 把关）:
   - `oxlint-disable` / `eslint-disable` 行须含 `-- reason`
   - 禁止 `ts-ignore` / `ts-nocheck`；`ts-expect-error` 须同行说明

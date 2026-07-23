@@ -106,7 +106,7 @@
       }
     },
     {
-      "files": ["src/satellites/**/*.{ts,tsx}"],
+      "files": ["src/features/companion/**/*.{ts,tsx}"],
       "plugins": ["react"],
       "env": {
         "browser": true

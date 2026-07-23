@@ -8,7 +8,7 @@ import {
 import { normalizeShellClientConfig, type ShellClientConfig } from "@freeanima/frontend/shell-sdk";
 
 import { createDesktopScopedBackend, testScopedSettings } from "./settings-ipc-backend.ts";
-import type { CompanionShellSettings } from "@freeanima/satellites/companion/spa/settings/companion-shell-settings.ts";
+import type { CompanionShellSettings } from "@freeanima/features/companion/ui/spa/settings/companion-shell-settings.ts";
 
 export type DesktopGeneralSettings = ShellClientConfig & {
   launchAtLogin: boolean;

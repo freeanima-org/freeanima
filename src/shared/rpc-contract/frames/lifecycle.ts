@@ -11,9 +11,5 @@ export type {
   RemoteToolsDetachOutput,
 } from "./remote-tools-session.ts";
 
-export {
-  capabilityMaskPresetSchema,
-  heartbeatPayloadSchema,
-  SAP_LEGACY_VERSION,
-} from "./lifecycle-remote.ts";
+export { capabilityMaskPresetSchema, heartbeatPayloadSchema } from "./lifecycle-remote.ts";
 export type { HeartbeatPayload } from "./lifecycle-remote.ts";

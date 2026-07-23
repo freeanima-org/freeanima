@@ -27,7 +27,7 @@ const ALLOW_PREFIX = [
   "**http://",
   "`anima ",
   "`chmod ",
-  "[`src/satellites/",
+  "[`src/features/companion/",
   "[`packages/",
 ];
 const ALLOW = new Set([

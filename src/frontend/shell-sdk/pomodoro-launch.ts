@@ -9,7 +9,7 @@ function resolveShellBasepath(): string {
 /** 在 Shell 模块间导航（Web pathname / 原生 hash 路由）。 */
 export function navigateShellModulePath(pathWithSearch: string): void {
   const path = pathWithSearch.startsWith("/") ? pathWithSearch : `/${pathWithSearch}`;
-  const native = Boolean(window.satelliteShell?.isNativeShell);
+  const native = Boolean(window.portalShell?.isNativeShell);
 
   if (native) {
     const nextHash = path.startsWith("#") ? path : `#${path}`;
@@ -50,7 +50,7 @@ export function readPomodoroLaunchParamsFromLocation(): PomodoroLaunchParams {
 }
 
 export function clearPomodoroLaunchParamsFromUrl(): void {
-  const native = Boolean(window.satelliteShell?.isNativeShell);
+  const native = Boolean(window.portalShell?.isNativeShell);
   if (native) {
     const hash = window.location.hash;
     if (!hash.includes("?")) return;

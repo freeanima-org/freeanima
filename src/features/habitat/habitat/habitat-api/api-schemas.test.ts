@@ -25,7 +25,7 @@ describe("api/schemas", () => {
 
   it("requires platform on create conversation", () => {
     expect(createConversationBodySchema.safeParse({}).success).toBe(false);
-    expect(createConversationBodySchema.safeParse({ platform: "sap:chat:test" }).success).toBe(
+    expect(createConversationBodySchema.safeParse({ platform: "remote:chat:test" }).success).toBe(
       true,
     );
   });

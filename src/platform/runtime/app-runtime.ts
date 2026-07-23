@@ -55,7 +55,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   readonly conversation: ConversationService;
   readonly masks: MaskRegistryPort;
   readonly mcp: McpManagerPort | null;
-  readonly satellite: RemoteToolsManagerPort | null;
+  readonly outpost: RemoteToolsManagerPort | null;
   readonly acp: AcpManagerPort;
   readonly host: string;
   readonly port: number;
@@ -66,7 +66,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     this.conversation = input.conversation;
     this.masks = input.masks;
     this.mcp = input.mcp;
-    this.satellite = input.satellite;
+    this.outpost = input.outpost;
     this.acp = input.acp;
     this.host = input.host;
     this.port = input.port;
@@ -79,7 +79,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
       conversation: this.conversation,
       masks: this.masks,
       mcp: this.mcp,
-      satellite: this.satellite,
+      outpost: this.outpost,
       acp: this.acp,
       host: this.host,
       port: this.port,

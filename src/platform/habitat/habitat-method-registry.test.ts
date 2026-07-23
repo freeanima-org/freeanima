@@ -47,7 +47,7 @@ describe("habitat method registry (runtime SSOT)", () => {
     const def = getHabitatMethodDef("conversation.list");
     expect(def.meta.transports).toEqual(["http", "ws"]);
     expect(resolveDefaultTransport(def.meta, "habitat")).toBe("http");
-    expect(resolveDefaultTransport(def.meta, "satellite")).toBe("http");
+    expect(resolveDefaultTransport(def.meta, "outpost")).toBe("http");
     expect(resolveFallbackTransport(def.meta, "http")).toBe("ws");
     expect(def.meta.http).toEqual({ verb: "GET", path: "conversation/list" });
   });

@@ -1,4 +1,4 @@
-/** Tauri Portal：注入 window.satelliteShell（主窗 + companion overlay） */
+/** Tauri Portal：注入 window.portalShell（主窗 + companion overlay） */
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
@@ -125,7 +125,7 @@ export async function bootstrapTauriBridge(): Promise<void> {
     },
   };
 
-  window.satelliteShell = shell;
+  window.portalShell = shell;
   if (nativeBuild) {
     window.dispatchEvent(new CustomEvent(NATIVE_BUILD_META_CHANGED_EVENT));
   }

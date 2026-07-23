@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 
-export const OFFLINE_DB_NAME = "freeanima-satellite-cache";
+export const OFFLINE_DB_NAME = "freeanima-portal-cache";
 export const OFFLINE_DB_VERSION = 3;
 
 export const OFFLINE_KV_STORE = "kv";

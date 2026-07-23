@@ -41,7 +41,7 @@ function writeDismissedKey(key: string): void {
 function formatUpdateErrorMessage(err: unknown): string {
   const message = err instanceof Error ? err.message : String(err);
   const detail = m.ui_shell_update_failed_detail({ message });
-  if (typeof window.satelliteShell?.applyPackagedUpdate === "function") {
+  if (typeof window.portalShell?.applyPackagedUpdate === "function") {
     return `${detail} ${m.ui_shell_update_log_hint()}`;
   }
   return detail;
@@ -109,14 +109,14 @@ export function ShellUpdateBanner(): null {
       try {
         const meta = await resolveAboutNativeBuildMeta();
         const channel: BuildChannel =
-          meta?.channel ?? window.satelliteShell?.nativeBuild?.channel ?? "dev";
+          meta?.channel ?? window.portalShell?.nativeBuild?.channel ?? "dev";
         if (!isSwitchableChannel(channel)) {
           if (manual) setPhase("none");
           else setPhase("idle");
           setUpdate(null);
           return;
         }
-        const local = meta?.version ?? window.satelliteShell?.nativeBuild?.version ?? "0.0.0";
+        const local = meta?.version ?? window.portalShell?.nativeBuild?.version ?? "0.0.0";
         const localCommit = meta?.git?.commit_full ?? meta?.git?.commit;
         const intent = detail?.intent ?? "check";
         const targetChannel = detail?.targetChannel;
@@ -237,7 +237,7 @@ export function ShellUpdateBanner(): null {
       action: {
         label: switching ? m.ui_shell_channel_switch_install() : m.ui_shell_update_install(),
         onClick: () => {
-          const apply = window.satelliteShell?.applyPackagedUpdate;
+          const apply = window.portalShell?.applyPackagedUpdate;
           if (!apply) {
             setPhase("failed");
             setError(m.ui_shell_update_failed());
@@ -245,7 +245,7 @@ export function ShellUpdateBanner(): null {
           }
           setApplyProgress(null);
           setPhase("applying");
-          const unsub = window.satelliteShell?.onPackagedUpdateProgress?.((progress) => {
+          const unsub = window.portalShell?.onPackagedUpdateProgress?.((progress) => {
             setApplyProgress({
               received: progress.received,
               total: progress.total,

@@ -20,7 +20,7 @@ let cachedFetch: HabitatFetchFn | undefined;
 let cachedFetchKey = "";
 
 function habitatFetchCacheKey(): string {
-  const shell = (typeof window !== "undefined" ? window.satelliteShell : undefined) as
+  const shell = (typeof window !== "undefined" ? window.portalShell : undefined) as
     | HabitatShell
     | undefined;
   const origin = resolveApiOrigin();
@@ -46,7 +46,7 @@ export function resolveHabitatFetch(): HabitatFetchFn {
     return cachedFetch;
   }
 
-  const shell = (typeof window !== "undefined" ? window.satelliteShell : undefined) as
+  const shell = (typeof window !== "undefined" ? window.portalShell : undefined) as
     | HabitatShell
     | undefined;
   const origin = resolveApiOrigin();

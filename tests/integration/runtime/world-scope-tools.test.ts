@@ -21,7 +21,7 @@ import {
 } from "@freeanima/capabilities/tools/notification";
 import { createNotificationPort } from "@freeanima/platform/runtime/notification-helpers";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testAgentWorldId, testUserWorldId } from "../../helpers/world-context.ts";
 import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
 import type { RuntimeDeps } from "@freeanima/platform/runtime/runtime-deps";

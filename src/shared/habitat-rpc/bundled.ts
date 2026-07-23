@@ -34,7 +34,7 @@ let cachedConnectionState: HabitatRpcConnectionState = "connecting";
 const connectionStateListeners = new Set<(state: HabitatRpcConnectionState) => void>();
 let foregroundWatchInstalled = false;
 
-import { readSatelliteShell } from "./shell-bridge.ts";
+import { readPortalShell } from "./shell-bridge.ts";
 
 function broadcastConnectionState(state: HabitatRpcConnectionState): void {
   cachedConnectionState = state;
@@ -91,7 +91,7 @@ export async function reconnectHabitatRpc(opts?: ReconnectOptions): Promise<RpcC
 }
 
 function resolveAuthToken(explicit?: string): string {
-  const fromShell = readSatelliteShell()?.remoteAuth?.token?.trim();
+  const fromShell = readPortalShell()?.remoteAuth?.token?.trim();
   if (explicit?.trim()) return explicit.trim();
   if (fromShell) return fromShell;
   throw new Error("Habitat RPC requires auth_token");
@@ -109,7 +109,7 @@ function resolveHubUrl(options: BundledHabitatRpcClientOptions): string {
   if (options.habitatUrl?.trim()) return options.habitatUrl.trim().replace(/\/$/, "");
   if (options.habitatRpcWsUrl?.trim())
     return habitatHttpFromRpcWsUrl(options.habitatRpcWsUrl.trim());
-  const shell = readSatelliteShell();
+  const shell = readPortalShell();
   if (shell?.habitatUrl?.trim()) return shell.habitatUrl.trim().replace(/\/$/, "");
   if (shell?.habitatWsUrl?.trim()) return habitatHttpFromRpcWsUrl(shell.habitatWsUrl.trim());
   return "http://127.0.0.1:2658";

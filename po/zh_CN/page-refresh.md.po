@@ -31,7 +31,7 @@ msgstr ""
 #. type: Plain text
 #: docs/features/page-refresh.md:8
 msgid ""
-"Satellite UI keeps data fresh with two distinct verbs. Do not conflate them "
+"Outpost/Portal UI keeps data fresh with two distinct verbs. Do not conflate them "
 "with PWA / installer “reload”, which updates shell assets only."
 msgstr ""
 

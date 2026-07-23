@@ -8,12 +8,12 @@ import type {
 } from "@freeanima/frontend/shell-sdk/alert/types.ts";
 
 function shellNativeAlertAvailable(): boolean {
-  const shell = window.satelliteShell;
+  const shell = window.portalShell;
   return Boolean(shell?.showNativeAlert && shell.requestNativeAlertPermission);
 }
 
 function shellScheduleAvailable(): boolean {
-  const shell = window.satelliteShell;
+  const shell = window.portalShell;
   return Boolean(shell?.scheduleNativeAlert && shell.cancelNativeAlert);
 }
 
@@ -38,7 +38,7 @@ export function createDesktopAlertBackend(): AlertBackend {
     };
   }
 
-  const shell = window.satelliteShell;
+  const shell = window.portalShell;
   const requestPerm = shell?.requestNativeAlertPermission;
   const showAlert = shell?.showNativeAlert;
   if (!shell || !requestPerm || !showAlert) {

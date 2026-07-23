@@ -18,7 +18,7 @@
 - 三个维度**正交**：任意一个不能推导另外两个
 - **禁止** `isMobile = getShellKind() === "tauri"` 这类混写
 - **禁止**单个 `isMobile` / `isDesktop` 变量同时控制布局和交互
-- 组件按职责选用对应维 API；不要手写 `satelliteShell.isTauri && matchMedia(...)` 组合驱动交互
+- 组件按职责选用对应维 API；不要手写 `portalShell.isTauri && matchMedia(...)` 组合驱动交互
 
 ## 分层职责
 

@@ -12,10 +12,10 @@ const DRY_RUN = process.argv.includes("--dry-run");
 /** 按前缀长度降序；先匹配更长规则 */
 const PREFIX_REWRITES: [string, string][] = [
   // 短作用域别名
-  ["@/", "@freeanima/satellites/companion/spa/"],
+  ["@/", "@freeanima/features/companion/ui/spa/"],
   ["@chat/", "@freeanima/features/chat/ui/spa/"],
   ["@console/", "@freeanima/features/habitat/ui/habitat/"],
-  ["@shared/", "@freeanima/satellites/companion/shared/"],
+  ["@shared/", "@freeanima/features/companion/shared/"],
   ["@task/", "@freeanima/features/task/ui/spa/"],
   // capabilities 复合名（先于 capabilities- 单段）
   ["@freeanima/capabilities-tools/", "@freeanima/capabilities/tools/"],
@@ -27,7 +27,7 @@ const PREFIX_REWRITES: [string, string][] = [
   ["@freeanima/capabilities-acp/", "@freeanima/capabilities/acp/"],
   // feature / app / shared 逻辑包
   ["@freeanima/feature-", "@freeanima/features/"],
-  ["@freeanima/satellite-companion/", "@freeanima/satellites/companion/"],
+  ["@freeanima/satellite-companion/", "@freeanima/features/companion/"],
   ["@freeanima/app-desktop/", "@freeanima/app/shell/tauri/"],
   ["@freeanima/app-mobile/", "@freeanima/app/shell/tauri/"],
   ["@freeanima/app-web/", "@freeanima/app/shell/web/"],
@@ -49,7 +49,7 @@ const PREFIX_REWRITES: [string, string][] = [
   ["@freeanima/capabilities-memory", "@freeanima/capabilities/memory"],
   ["@freeanima/capabilities-acp", "@freeanima/capabilities/acp"],
   ["@freeanima/capabilities-identity", "@freeanima/capabilities/identity"],
-  ["@freeanima/satellite-companion", "@freeanima/satellites/companion/lib"],
+  ["@freeanima/satellite-companion", "@freeanima/features/companion/lib"],
   ["@freeanima/habitat-api", "@freeanima/features/habitat/habitat/habitat-api"],
   ["@freeanima/habitat-api", "@freeanima/features/habitat/habitat/habitat-api"],
   ["@freeanima/habitat-contract", "@freeanima/features/habitat/protocol/habitat-contract"],
@@ -74,18 +74,16 @@ const EXACT_REWRITES: Record<string, string> = {
   "@freeanima/frontend/ui-kit/ui/acp": "@freeanima/frontend/ui-kit/ui/AcpProgressDock.tsx",
   "@freeanima/frontend/ui-kit/globals.css": "@freeanima/frontend/ui-kit/styles/globals.css",
   "@freeanima/frontend/ui-kit/form": "@freeanima/frontend/ui-kit/form/FormFieldset.tsx",
-  "@freeanima/satellites/companion/settings-section":
-    "@freeanima/satellites/companion/spa/settings/companion-settings-section.ts",
-  "@freeanima/satellites/companion/settings-panel":
-    "@freeanima/satellites/companion/spa/settings/CompanionSettingsSection.tsx",
-  "@freeanima/satellites/companion/settings-api":
-    "@freeanima/satellites/companion/spa/settings/companion-settings-api.ts",
-  "@freeanima/satellites/companion/manifest":
-    "@freeanima/satellites/companion/lib/exports/manifest.ts",
-  "@freeanima/satellites/companion/desktop":
-    "@freeanima/satellites/companion/lib/exports/desktop.ts",
-  "@freeanima/satellites/companion/mobile": "@freeanima/satellites/companion/lib/exports/mobile.ts",
-  "@freeanima/satellites/companion/build": "@freeanima/satellites/companion/lib/exports/build.ts",
+  "@freeanima/features/companion/settings-section":
+    "@freeanima/features/companion/ui/spa/settings/companion-settings-section.ts",
+  "@freeanima/features/companion/settings-panel":
+    "@freeanima/features/companion/ui/spa/settings/CompanionSettingsSection.tsx",
+  "@freeanima/features/companion/settings-api":
+    "@freeanima/features/companion/ui/spa/settings/companion-settings-api.ts",
+  "@freeanima/features/companion/manifest": "@freeanima/features/companion/lib/exports/manifest.ts",
+  "@freeanima/features/companion/desktop": "@freeanima/features/companion/lib/exports/desktop.ts",
+  "@freeanima/features/companion/mobile": "@freeanima/features/companion/lib/exports/mobile.ts",
+  "@freeanima/features/companion/build": "@freeanima/features/companion/lib/exports/build.ts",
   "@freeanima/features/habitat/ui/habitat/i18n":
     "@freeanima/features/habitat/ui/habitat/lib/i18n.ts",
   "@freeanima/features/habitat/ui/habitat/router":

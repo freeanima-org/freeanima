@@ -79,7 +79,7 @@ export function buildWebShell(habitatUrl: string, remoteAuthToken: string): Shel
 
 export function installWebShellFromPrefs(habitatUrl: string, remoteAuthToken: string): ShellApi {
   const shell = buildWebShellFromRaw(habitatUrl, remoteAuthToken);
-  window.satelliteShell = shell;
+  window.portalShell = shell;
   return shell;
 }
 
@@ -95,5 +95,5 @@ export async function testWebHabitatConnection(
 
 /** Web 壳层：localStorage / 构建默认值中均未配置 Habitat API Token */
 export function webNeedsHubSetupFromConfig(): boolean {
-  return !window.satelliteShell?.remoteAuth?.token?.trim();
+  return !window.portalShell?.remoteAuth?.token?.trim();
 }

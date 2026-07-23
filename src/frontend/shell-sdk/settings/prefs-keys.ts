@@ -7,7 +7,7 @@ export const LAUNCH_AT_LOGIN_KEY = "freeanima.launchAtLogin";
 export const COMPANION_VISIBLE_KEY = "freeanima.companionVisible";
 
 export function sapInstanceKey(appId: string): string {
-  return `freeanima.sap.instance.${appId}`;
+  return `freeanima.outpost.instance.${appId}`;
 }
 
 /** localStorage：栖息地 URL */

@@ -15,7 +15,7 @@ import { worldConfigBodySchema } from "@freeanima/core/db/schema";
 import { omitUndefined } from "@freeanima/core/util";
 import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
 import { testUserWorldId } from "../../helpers/world-context.ts";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
 
 function testCfg() {

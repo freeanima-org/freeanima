@@ -8,7 +8,7 @@ import {
 
 import { getAppRuntime } from "@freeanima/platform";
 import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 describePg("sendMessageStream", () => {
   const prev = process.env.FREEANIMA_HOME;

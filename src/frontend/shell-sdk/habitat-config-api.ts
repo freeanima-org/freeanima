@@ -4,7 +4,7 @@ import { resolveHabitatApiFetch } from "./habitat-api-fetch.ts";
 
 function habitatRpc() {
   return getBundledHabitatClient({
-    profile: "satellite",
+    profile: "outpost",
     fetch: resolveHabitatApiFetch() as typeof fetch,
   });
 }

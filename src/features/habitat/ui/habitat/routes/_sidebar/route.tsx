@@ -42,7 +42,7 @@ function HabitatSidebarNav() {
 }
 
 function HabitatLayout() {
-  const shell = window.satelliteShell;
+  const shell = window.portalShell;
   const probeEnabled = isPackagedShell();
   const { state, retry } = useHabitatRpcConnectivity(probeEnabled);
   const pathname = useRouterState({ select: (s) => s.location.pathname });

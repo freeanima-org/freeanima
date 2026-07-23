@@ -3,7 +3,7 @@ import { buildShellApiFields, type ShellApi } from "@freeanima/frontend/shell-sd
 
 const DEFAULT_HABITAT_URL = "http://127.0.0.1:2658";
 
-/** 把已保存的栖息地配置同步到内存中的 satelliteShell（供 needsHabitatSetup / API 鉴权）。 */
+/** 把已保存的栖息地配置同步到内存中的 portalShell（供 needsHabitatSetup / API 鉴权）。 */
 export function applyHabitatConfigToShell(
   shell: ShellApi,
   habitatUrl: string,

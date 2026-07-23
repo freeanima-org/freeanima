@@ -17,7 +17,7 @@ import {
   findAwaitingClarifyInMessages,
 } from "@freeanima/capabilities/tools/clarify";
 import { executeCommand, getCommand } from "@freeanima/platform/slash-commands";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 describePg("clarify session", () => {
   const prevHome = process.env.FREEANIMA_HOME;

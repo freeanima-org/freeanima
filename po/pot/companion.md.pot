@@ -54,7 +54,7 @@ msgid ""
 "│   ├── companion settings — settings in main window (Habitat RPC + asset HTTP)\n"
 "│   ├── chat — Chat SPA (Habitat RPC, no remote_tools.attach)\n"
 "│   └── habitat — Habitat WebView (Habitat RPC REST)\n"
-"└── Renderer — satelliteShell; overlay owns attach + tool runtime\n"
+"└── Renderer — portalShell; overlay owns attach + tool runtime\n"
 "         ↕ Habitat RPC (+ remote_tools.attach in overlay only)\n"
 "    anima service Habitat (companion_profile SSOT + assets + FBX→VRMA)\n"
 msgstr ""
@@ -106,7 +106,7 @@ msgstr ""
 #. type: Plain text
 #: docs/features/companion.md:47
 msgid ""
-"The content pack lives in [`src/satellites/companion/`](../../src/satellites/"
+"The content pack lives in [`src/features/companion/`](../../src/features/companion/"
 "companion/) (`spa/` + `server/` + `shared/`). Habitat domain logic: [`src/"
 "features/companion/`](../../src/features/companion/)."
 msgstr ""
@@ -247,7 +247,7 @@ msgstr ""
 #. type: Plain text
 #: docs/features/companion.md:86
 msgid ""
-"During development, files in `src/satellites/companion/public/models/` serve "
+"During development, files in `src/features/companion/public/models/` serve "
 "as fallback."
 msgstr ""
 
@@ -303,7 +303,7 @@ msgstr ""
 #, no-wrap
 msgid ""
 "bun run --filter @freeanima/satellite-companion dev\n"
-"# or: bun src/satellites/companion/dev.ts\n"
+"# or: bun src/features/companion/dev.ts\n"
 msgstr ""
 
 #. type: Plain text

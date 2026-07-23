@@ -2,8 +2,8 @@ import {
   desktopGeneralSettingsSection,
   type SettingsBinding,
 } from "@freeanima/frontend/shell-sdk/settings";
-import { companionClientSettingsSection } from "@freeanima/satellites/companion/spa/settings/companion-client-settings-section.ts";
-import { companionHabitatSettingsSection } from "@freeanima/satellites/companion/spa/settings/companion-settings-section.ts";
+import { companionClientSettingsSection } from "@freeanima/features/companion/ui/spa/settings/companion-client-settings-section.ts";
+import { companionHabitatSettingsSection } from "@freeanima/features/companion/ui/spa/settings/companion-settings-section.ts";
 import { shellModulesSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/modules-section.ts";
 import { aboutSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/about/about-section.ts";
 import { appearanceSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/appearance/appearance-section.ts";

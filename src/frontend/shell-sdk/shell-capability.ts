@@ -10,7 +10,7 @@ function readFinePointerFromMedia(): boolean {
 }
 
 function readShellPrimaryInput(): PrimaryInputKind | null {
-  const shell = typeof window !== "undefined" ? window.satelliteShell : undefined;
+  const shell = typeof window !== "undefined" ? window.portalShell : undefined;
   const explicit = shell?.primaryInput;
   if (explicit === "pointer" || explicit === "touch") return explicit;
   return null;

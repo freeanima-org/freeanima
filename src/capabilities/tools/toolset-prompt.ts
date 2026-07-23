@@ -3,7 +3,7 @@ import type { ToolSetRegistry } from "@freeanima/core/tool";
 const PROMPT_CODE_FENCE_LANG = "md";
 
 const TOOLSETS_FRAME =
-  "Built-in and connected ToolSets are listed below. Load any set with toolset_load. For dynamically registered tools (MCP/ACP/SAP) whose names you don't know, use toolset_search first to find the ToolSet, then load it.";
+  "Built-in and connected ToolSets are listed below. Load any set with toolset_load. For dynamically registered tools (MCP/ACP/Outpost) whose names you don't know, use toolset_search first to find the ToolSet, then load it.";
 
 function wrapPromptSection(heading: string, inner: string, frame?: string): string {
   const body = inner.trim();

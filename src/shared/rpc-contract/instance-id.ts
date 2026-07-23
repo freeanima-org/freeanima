@@ -19,7 +19,7 @@ export function generateRemoteInstanceIdCandidate(): string {
 export function assertRemoteInstanceId(instanceId: string): string {
   const norm = instanceId.trim().toLowerCase();
   if (!REMOTE_INSTANCE_ID_PATTERN.test(norm)) {
-    throw new Error(`invalid SAP instance_id: ${instanceId}`);
+    throw new Error(`invalid outpost instance_id: ${instanceId}`);
   }
   return norm;
 }

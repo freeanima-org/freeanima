@@ -15,7 +15,7 @@ import {
 } from "../../helpers/integration-case.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testAgentWorldId } from "../../helpers/world-context.ts";
 
 function testCfg() {

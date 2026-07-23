@@ -15,8 +15,8 @@ export type ParsedRemotePlatform = {
 export const REMOTE_INSTANCE_ID_PATTERN = /^[a-z0-9]{3}$/;
 
 const INSTANCE_NORM_RE = /^([a-z0-9]{3,64})_(.+)$/;
-const PLATFORM_PREFIXES = ["remote", "sap"] as const;
-const TOOL_UNDERSCORE_PREFIXES = ["remote_", "sap_"] as const;
+const PLATFORM_PREFIXES = ["remote"] as const;
+const TOOL_UNDERSCORE_PREFIXES = ["remote_"] as const;
 
 export function normalizeAppSlug(appId: string): string {
   return appId.trim().toLowerCase().replace(/[-_]/g, "");
@@ -103,12 +103,7 @@ export function formatRemoteToolNameAlias(
 }
 
 export function isRemotePrefixedToolName(name: string): boolean {
-  return (
-    name.startsWith("remote_") ||
-    name.startsWith("remote:") ||
-    name.startsWith("sap_") ||
-    name.startsWith("sap:")
-  );
+  return name.startsWith("remote_") || name.startsWith("remote:");
 }
 
 export function parseRemoteToolName(

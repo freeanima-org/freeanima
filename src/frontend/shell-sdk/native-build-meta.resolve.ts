@@ -8,25 +8,25 @@ import { isTauriRuntime } from "./tauri-runtime.ts";
 
 export const NATIVE_BUILD_META_CHANGED_EVENT = "freeanima:native-build-meta";
 
-function readNativeBuildFromSatelliteShell(): ComponentBuildMeta | undefined {
-  return window.satelliteShell?.nativeBuild;
+function readNativeBuildFromPortalShell(): ComponentBuildMeta | undefined {
+  return window.portalShell?.nativeBuild;
 }
 
-function attachNativeBuildToSatelliteShell(meta: ComponentBuildMeta): void {
-  if (!window.satelliteShell) return;
-  window.satelliteShell = { ...window.satelliteShell, nativeBuild: meta };
+function attachNativeBuildToPortalShell(meta: ComponentBuildMeta): void {
+  if (!window.portalShell) return;
+  window.portalShell = { ...window.portalShell, nativeBuild: meta };
   window.dispatchEvent(new CustomEvent(NATIVE_BUILD_META_CHANGED_EVENT));
 }
 
 /** 设置 → 关于：解析 native shell 构建信息（Tauri 从 index 内联 + /web/native-build-meta.json） */
 export async function resolveAboutNativeBuildMeta(): Promise<ComponentBuildMeta | null> {
-  const fromShellEarly = readNativeBuildFromSatelliteShell();
+  const fromShellEarly = readNativeBuildFromPortalShell();
   if (fromShellEarly) return fromShellEarly;
 
   if (typeof window !== "undefined" && isTauriRuntime()) {
     const meta = await loadTauriNativeBuildMetaFromAssets();
     if (meta) {
-      attachNativeBuildToSatelliteShell(meta);
+      attachNativeBuildToPortalShell(meta);
       return meta;
     }
   }
@@ -39,11 +39,11 @@ export async function resolveAboutNativeBuildMeta(): Promise<ComponentBuildMeta 
     } catch {
       /* ignore */
     }
-    const afterBridge = readNativeBuildFromSatelliteShell();
+    const afterBridge = readNativeBuildFromPortalShell();
     if (afterBridge) return afterBridge;
   }
 
-  return readNativeBuildFromSatelliteShell() ?? null;
+  return readNativeBuildFromPortalShell() ?? null;
 }
 
 /** @internal 测试：从 define 解析 */

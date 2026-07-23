@@ -4,7 +4,7 @@ import { omitUndefined } from "@freeanima/core/util";
 
 import { normalizePgTimestamp } from "./timestamp.ts";
 
-/** Gateway channels (non-SAP) */
+/** Gateway channels (non-remote-tool) */
 export const GATEWAY_PLATFORMS = ["discord", "weixin", "cron"] as const;
 
 export type GatewayPlatform = (typeof GATEWAY_PLATFORMS)[number];
@@ -18,7 +18,7 @@ export function isGatewayPlatform(value: string): value is GatewayPlatform {
 export function isRemotePlatformString(platform: string): boolean {
   const parts = platform.split(":");
   const prefix = parts[0];
-  if (parts.length !== 3 || (prefix !== "remote" && prefix !== "sap")) return false;
+  if (parts.length !== 3 || prefix !== "remote") return false;
   return !!parts[1]?.trim() && !!parts[2]?.trim();
 }
 
@@ -38,8 +38,8 @@ const remotePlatformInfoSchema = z.looseObject({
   platform: z
     .string()
     .refine((p) => isRemotePlatformString(p), { message: "invalid remote platform" }),
-  satellite_app_id: z.string().optional(),
-  satellite_instance_id: z.string().optional(),
+  outpost_app_id: z.string().optional(),
+  outpost_instance_id: z.string().optional(),
   workspace_root: z.string().optional(),
   workspace_gitignore: z.boolean().optional(),
   workspace_show_hidden: z.boolean().optional(),
@@ -187,8 +187,8 @@ export function buildPlatformInfo(
   if (isRemotePlatformString(platform)) {
     const parsed = parseRemotePlatformString(platform);
     if (parsed) {
-      merged.satellite_app_id ??= parsed.app_slug;
-      merged.satellite_instance_id ??= parsed.instance_id_norm;
+      merged.outpost_app_id ??= parsed.app_slug;
+      merged.outpost_instance_id ??= parsed.instance_id_norm;
     }
   }
   return platformInfoSchema.parse(merged);

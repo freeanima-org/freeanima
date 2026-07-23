@@ -1,5 +1,5 @@
 export {
   RemoteToolsManager,
-  type SatelliteInstanceStatus,
-  type SatellitesStatusResponse,
+  type OutpostInstanceStatus,
+  type OutpostsStatusResponse,
 } from "./manager.ts";

@@ -14,7 +14,7 @@ function stubWindow(shell: ShellStub): void {
     configurable: true,
     writable: true,
     value: {
-      satelliteShell: shell,
+      portalShell: shell,
       location: { origin: "http://127.0.0.1:2658" },
     },
   });

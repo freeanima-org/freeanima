@@ -16,7 +16,7 @@ export function resolveAlertDisplayPlatform(
   if (buildTarget === "mobile") return "mobile";
 
   const w = runtimeWindow();
-  const shell = w?.satelliteShell;
+  const shell = w?.portalShell;
   if (backend?.platform && backend.platform !== "web") {
     if (
       backend.platform === "mobile" &&

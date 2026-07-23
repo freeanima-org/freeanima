@@ -14,7 +14,7 @@ import { runWithToolContext } from "@freeanima/runtime/loop";
 import * as engine from "@freeanima/runtime/loop";
 import * as llm from "@freeanima/core/llm";
 import { resolveExecutableToolNames } from "@freeanima/runtime/conversation";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 describePg("tool catalog lazy load", () => {
   const prev = process.env.FREEANIMA_HOME;

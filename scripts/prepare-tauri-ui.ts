@@ -17,7 +17,7 @@ import {
 } from "@freeanima/frontend/shell-sdk/shell-build-target.ts";
 import { resolveBuildChannelFromEnv } from "@freeanima/core/config/build-meta.ts";
 import { resolveNativeBuildMeta } from "@freeanima/app/shell/shared/resolve-native-build-meta.ts";
-import { buildCompanionApp } from "@freeanima/satellites/companion/lib/exports/build.ts";
+import { buildCompanionApp } from "@freeanima/features/companion/lib/exports/build.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const target: ShellBuildTarget =
@@ -193,6 +193,7 @@ console.log(`[prepare-tauri] shell-ui → ${uiWeb} (${target})`);
 
 if (target === "desktop") {
   console.log("[prepare-tauri] build companion…");
+  process.env.FREEANIMA_SHELL_TARGET = "desktop";
   const companionDist = await buildCompanionApp({ minify: true });
   if (existsSync(companionResource)) rmSync(companionResource, { recursive: true });
   mkdirSync(dirname(companionResource), { recursive: true });

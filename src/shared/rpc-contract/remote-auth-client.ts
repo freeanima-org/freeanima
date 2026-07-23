@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-/** 浏览器壳层 service API token：从 window.satelliteShell 解析 SAP connect token */
+/** 浏览器壳层 service API token：从 window.portalShell 解析 Habitat connect token */
 
 type ShellRemoteAuthSource = {
   remoteAuth?: { token?: string | null } | null;
@@ -13,7 +13,7 @@ function readShellToken(shell: ShellRemoteAuthSource | undefined): string | unde
 export function resolveShellConnectAuthToken(_habitatUrl: string): string | undefined {
   if (typeof window === "undefined") return undefined;
   const win = window as Window & {
-    satelliteShell?: ShellRemoteAuthSource;
+    portalShell?: ShellRemoteAuthSource;
   };
-  return readShellToken(win.satelliteShell);
+  return readShellToken(win.portalShell);
 }

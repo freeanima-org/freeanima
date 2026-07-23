@@ -11,7 +11,7 @@ import { isConversationMeta } from "@freeanima/core/db/domain";
 import { existsSync } from "node:fs";
 import { DEFAULT_CONVERSATION_TOOLSETS } from "@freeanima/core/tool";
 import { registerServiceTools } from "@freeanima/platform";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { getConversationTools } from "@freeanima/core/db/pg/conversation";
 import * as conversationPg from "@freeanima/core/db/pg/conversation";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";

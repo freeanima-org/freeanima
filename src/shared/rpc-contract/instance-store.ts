@@ -12,7 +12,7 @@ export async function loadRemoteInstanceId(store?: RemoteInstanceStore): Promise
   return result instanceof Promise ? result : result;
 }
 
-const STORAGE_PREFIX = "freeanima.sap.instance.";
+const STORAGE_PREFIX = "freeanima.outpost.instance.";
 
 export function browserRemoteInstanceStoreKey(habitatOrigin: string, appId: string): string {
   return `${STORAGE_PREFIX}${habitatOrigin}|${appId}`;
