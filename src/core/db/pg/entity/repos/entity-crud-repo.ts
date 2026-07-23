@@ -228,6 +228,35 @@ export async function deleteTaskItemsByListId(
   return deleted;
 }
 
+/** 按 account_id 批量删除 email_message / email_thread（仅本地；分页直至清空） */
+export async function deleteEmailEntitiesByAccountId(
+  world_id: number,
+  account_id: number,
+  page_size = 200,
+): Promise<number> {
+  const db = getDb();
+  const pageSize = Math.max(1, Math.min(500, page_size));
+  let deleted = 0;
+  while (true) {
+    const rows = await db
+      .delete(entities)
+      .where(
+        sql`${entities.id} IN (
+          SELECT id FROM ${entities}
+          WHERE ${entities.world_id} = ${world_id}
+            AND ${entities.primary_component} IN ('email_message', 'email_thread')
+            AND ${entities.body}->>'account_id' = ${String(account_id)}
+          ORDER BY ${entities.id}
+          LIMIT ${pageSize}
+        )`,
+      )
+      .returning({ id: entities.id });
+    deleted += rows.length;
+    if (rows.length < pageSize) break;
+  }
+  return deleted;
+}
+
 function buildListConditions(opts?: Omit<EntityListOpts, "offset" | "limit">) {
   const conditions = [];
   if (opts?.world_id != null) {

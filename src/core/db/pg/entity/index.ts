@@ -6,6 +6,7 @@ export {
   updateEntity,
   deleteEntity,
   deleteTaskItemsByListId,
+  deleteEmailEntitiesByAccountId,
   listEntities,
   countEntities,
   countEntitiesByBodyListId,

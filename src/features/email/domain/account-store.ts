@@ -3,15 +3,16 @@ import {
   asEmailAccount,
   type EmailAccountBody,
 } from "@freeanima/core/db/schema/entity";
-import { assertEntityInWorld } from "@freeanima/core/db/pg/entity";
-
 import {
+  assertEntityInWorld,
   createEntity,
+  deleteEmailEntitiesByAccountId,
   deleteEntity,
   getEntity,
   listEntities,
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
+import { removeEmailAccountAttachments } from "./attachment-store.ts";
 import type { EmailAccountCreateInput, EmailAccountRow, EmailAccountUpdateInput } from "./types.ts";
 
 function normalizeTags(tags: string[] | undefined): string[] {
@@ -199,6 +200,8 @@ export async function updateEmailAccount(
 
 export async function deleteEmailAccountRow(worldId: number, id: number): Promise<boolean> {
   await assertEntityInWorld(id, worldId);
+  await deleteEmailEntitiesByAccountId(worldId, id);
+  await removeEmailAccountAttachments(id);
   const ok = await deleteEntity(id);
   if (ok) await normalizeDefaultSender(worldId);
   return ok;

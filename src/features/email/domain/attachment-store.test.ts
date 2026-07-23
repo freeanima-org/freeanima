@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { access, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { persistEmailAttachments } from "./attachment-store.ts";
+import { persistEmailAttachments, removeEmailAccountAttachments } from "./attachment-store.ts";
 
 describe("persistEmailAttachments", () => {
   let home: string | undefined;
@@ -42,5 +42,27 @@ describe("persistEmailAttachments", () => {
     expect(meta[1]?.filename).toBe(".._.._evil.pdf");
     expect(await readFile(meta[0]!.path, "utf8")).toBe("hello");
     expect(await readFile(meta[1]!.path)).toEqual(Buffer.from("pdf"));
+  });
+
+  test("removeEmailAccountAttachments deletes account attachment tree", async () => {
+    home = await mkdtemp(join(tmpdir(), "anima-email-att-rm-"));
+    process.env.FREEANIMA_HOME = home;
+
+    const meta = await persistEmailAttachments(11, 21, [
+      {
+        filename: "a.txt",
+        content_type: "text/plain",
+        size: 1,
+        content: Buffer.from("a"),
+      },
+    ]);
+    const accountRoot = join(home, "email-attachments", "11");
+    await access(meta[0]!.path);
+
+    await removeEmailAccountAttachments(11);
+    await expect(access(accountRoot)).rejects.toThrow();
+
+    // 目录不存在时不应抛错
+    await removeEmailAccountAttachments(11);
   });
 });

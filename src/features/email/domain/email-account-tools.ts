@@ -143,7 +143,8 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
         },
         {
           name: "email_delete_account",
-          description: "Delete an email account entity.",
+          description:
+            "Delete an email account and its locally synced messages/threads. Does not delete mail on the remote server.",
           parameters: {
             type: "object",
             properties: {
