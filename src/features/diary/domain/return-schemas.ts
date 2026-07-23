@@ -48,6 +48,11 @@ const exampleEntry = {
   updated_at: "2026-06-29T21:00:00+08:00",
 };
 
+const exampleEntryMeta = {
+  ...exampleEntry,
+  blocks: [] as typeof exampleEntry.blocks,
+};
+
 export const DIARY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
   diary_append: defineToolReturn({
     schema: z.object({ ok: z.literal(true), action: z.literal("append"), item: diaryEntrySchema }),
@@ -76,7 +81,7 @@ export const DIARY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       count: z.number(),
       items: z.array(diaryEntrySchema),
     }),
-    example: { ok: true, action: "list", count: 1, items: [exampleEntry] },
+    example: { ok: true, action: "list", count: 1, items: [exampleEntryMeta] },
   }),
   diary_search: defineToolReturn({
     schema: z.object({
@@ -85,6 +90,6 @@ export const DIARY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       count: z.number(),
       items: z.array(diaryEntrySchema),
     }),
-    example: { ok: true, action: "search", count: 1, items: [exampleEntry] },
+    example: { ok: true, action: "search", count: 1, items: [exampleEntryMeta] },
   }),
 };

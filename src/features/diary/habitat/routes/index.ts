@@ -44,4 +44,6 @@ export const diaryHubRoutes = bindHabitatRouteHandlers(diaryMethodDefs, {
     service.serviceDiaryTemplatePatch(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "diary.templateDelete": async (deps, input) =>
     service.serviceDiaryTemplateDelete(depsOf(deps).runtime.runtimeDeps(), input),
+  "diary.suggestTags": async (deps, input) =>
+    service.serviceDiarySuggestTags(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
 });

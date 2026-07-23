@@ -248,7 +248,7 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
         {
           name: "diary_list",
           description:
-            "List diary entries (default entry_at DESC, limit 20) with optional date/tag filters and offset pagination",
+            "List diary entries (default entry_at DESC, limit 20) with optional date/tag filters and offset pagination. items.blocks is always []; use diary_get for body text",
           exposeMcp: true,
           parameters: {
             type: "object",
@@ -265,7 +265,8 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "diary_search",
-          description: "Hybrid search diary entries by text query",
+          description:
+            "Hybrid search diary entries by text query. items.blocks is always []; use diary_get for body text",
           exposeMcp: true,
           parameters: {
             type: "object",
