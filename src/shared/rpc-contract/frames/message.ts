@@ -145,6 +145,30 @@ export type LlmDebugTurnPreview = {
   tool_calls?: Array<{ id: string; name: string; arguments: string }>;
 };
 
+/** Passive recall channel/filter trace for LLM debug panel */
+export type PassiveRecallDebugHit = {
+  id: number;
+  score: number;
+  content_preview: string;
+};
+
+export type PassiveRecallDebugTrace = {
+  query: string;
+  tsquery: string | null;
+  effective_min_score: number;
+  min_score: number;
+  min_relative_score: number;
+  fts: PassiveRecallDebugHit[];
+  trgm: PassiveRecallDebugHit[];
+  merged: PassiveRecallDebugHit[];
+  after_score_filter: PassiveRecallDebugHit[];
+  after_resident_filter: PassiveRecallDebugHit[];
+  excluded_resident_ids: number[];
+  injected: PassiveRecallDebugHit[];
+  skipped_reason?: string;
+  elapsed_ms: number;
+};
+
 export type LlmDebugSnapshotPayload = {
   phase: "initial" | "final";
   turn_index: number;
@@ -166,6 +190,7 @@ export type LlmDebugSnapshotPayload = {
     passive_memory_context?: boolean;
     notification_context?: boolean;
   };
+  passive_recall?: PassiveRecallDebugTrace;
 };
 
 export type StreamApiLikeEvent =

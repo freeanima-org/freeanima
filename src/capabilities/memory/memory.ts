@@ -4,7 +4,11 @@ import { formatFtsToolError, isFtsQueryError } from "@freeanima/core/util";
 import { MEMORY_TOOL_RETURNS } from "./return-schemas.ts";
 import { rememberFromArgs } from "./semantic-memory-tools.ts";
 import { MEMORY_SEMANTIC_CITATION_TOOL_HINT } from "./memory-reference.ts";
-import { memoryRecallSearch } from "./recall-search.ts";
+import {
+  isMemoryRecallHitType,
+  memoryRecallSearch,
+  type MemoryRecallHitType,
+} from "./recall-search.ts";
 
 function asFloat(value: unknown, defaultVal: number): number {
   if (value == null || value === undefined) return defaultVal;
@@ -12,12 +16,25 @@ function asFloat(value: unknown, defaultVal: number): number {
   return Number.isNaN(n) ? defaultVal : n;
 }
 
+function parseMemoryTypes(value: unknown): MemoryRecallHitType[] | undefined {
+  if (value == null) return undefined;
+  if (!Array.isArray(value)) return undefined;
+  const out: MemoryRecallHitType[] = [];
+  for (const item of value) {
+    const s = String(item ?? "").trim();
+    if (!s) continue;
+    if (!isMemoryRecallHitType(s)) return undefined;
+    out.push(s);
+  }
+  return out.length > 0 ? out : undefined;
+}
+
 const FTS_SYNTAX =
   "PG search syntax (to_tsquery simple):\n" +
-  "- **Space**-separated terms default to **AND** (all must match)\n" +
-  "- **OR** for broader recall: `preference OR concise` (becomes |)\n" +
-  "- **AND** / **NOT**: `Free AND Anima`, `Free NOT Anima`\n" +
-  '- **Double quotes** for phrases / CJK tokens: `"Free Anima"`, `preference` (CJK matches **adjacent** characters)';
+  "- **Space**-separated terms default to **OR** (any term may match)\n" +
+  "- **AND** for stricter match: `preference AND concise`\n" +
+  "- **OR** / **NOT**: `preference OR concise`, `Free NOT Anima`\n" +
+  '- **Double quotes** for phrases / CJK tokens: `"Free Anima"`, `preference` (short CJK matches **adjacent** characters; long CJK uses bigram OR)';
 
 export function registerMemoryCoreTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
@@ -72,6 +89,7 @@ export function registerMemoryCoreTools(toolSets: ToolSetRegistry): void {
             "Unified memory search: semantic memories, conversation messages, limbic memories, autobiographical narratives.\n" +
             "Related semantic memories are auto-injected before each user turn; use this for other memory types or deeper retrieval.\n" +
             "Cross-type reranking returns top N (default 10) in results; use memory_type to distinguish.\n" +
+            "Optional memory_types filters which sources to search (default: all four).\n" +
             "Session hits return snippets only; full context via conversation_scroll; in-conversation search via conversation_search.\n" +
             "Structured semantic filters via memory_semantic_search.\n\n" +
             FTS_SYNTAX +
@@ -83,9 +101,18 @@ export function registerMemoryCoreTools(toolSets: ToolSetRegistry): void {
               query: {
                 type: "string",
                 description:
-                  'Search keywords. Default space=AND; use OR for broad recall; CJK phrase proximity. Examples: "preference concise", "preference OR concise", "Free Anima"',
+                  'Search keywords. Default space=OR; use AND for strict match; CJK phrase proximity. Examples: "preference concise", "preference AND concise", "Free Anima"',
               },
               limit: { type: "number", description: "Max results, default 10, cap 20" },
+              memory_types: {
+                type: "array",
+                items: {
+                  type: "string",
+                  enum: ["semantic", "conversation", "limbic", "autobiographical"],
+                },
+                description:
+                  'Restrict sources (default: all). Example: ["semantic"] for facts only',
+              },
             },
             required: ["query"],
           },
@@ -94,9 +121,18 @@ export function registerMemoryCoreTools(toolSets: ToolSetRegistry): void {
             if (!query) return toolError("query is required");
 
             const limit = Math.max(1, Math.min(20, asFloat(args.limit, 10)));
+            const memory_types = parseMemoryTypes(args.memory_types);
+            if (args.memory_types != null && memory_types === undefined) {
+              return toolError(
+                "memory_types must be an array of semantic|conversation|limbic|autobiographical",
+              );
+            }
 
             try {
-              const result = await memoryRecallSearch(query, { limit });
+              const result = await memoryRecallSearch(query, {
+                limit,
+                ...(memory_types ? { memory_types } : {}),
+              });
               return toolResult(result);
             } catch (e) {
               if (isFtsQueryError(e)) return toolError(formatFtsToolError(e));

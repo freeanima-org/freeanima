@@ -198,6 +198,31 @@ describe("memory search", () => {
     expect(conversation && "content" in conversation).toBe(false);
   });
 
+  it("memory_recall memory_types filters sources", async () => {
+    await createSemanticMemoryMock({ content: "FreeAnima memory pipeline uses compression" });
+    searchMessagesFtsMock.mockImplementation(async () => [
+      {
+        message_id: "msg-001",
+        content: "Discussing compression algorithms",
+        role: "user",
+        conversation_id: "20260526_120000_abcd",
+        timestamp: "2026-05-26T12:00:00+08:00",
+        rank: 0.1,
+      },
+    ]);
+
+    const out = await toolSets.getTool("memory_recall")!.handler({
+      query: "compression",
+      memory_types: ["semantic"],
+    });
+    const parsed = JSON.parse(out) as {
+      results: Array<{ memory_type: string }>;
+    };
+    expect(parsed.results.length).toBeGreaterThan(0);
+    expect(parsed.results.every((r) => r.memory_type === "semantic")).toBe(true);
+    expect(searchMessagesFtsMock).not.toHaveBeenCalled();
+  });
+
   it("memory_recall returns friendly FTS validation error", async () => {
     const out = await toolSets.getTool("memory_recall")!.handler({ query: "退烧 OR" });
     expect(out).toContain("修改建议");

@@ -58,6 +58,22 @@ export type LlmDebugSnapshotPayload = {
     passive_memory_context?: boolean;
     notification_context?: boolean;
   };
+  passive_recall?: {
+    query: string;
+    tsquery: string | null;
+    effective_min_score: number;
+    min_score: number;
+    min_relative_score: number;
+    fts: Array<{ id: number; score: number; content_preview: string }>;
+    trgm: Array<{ id: number; score: number; content_preview: string }>;
+    merged: Array<{ id: number; score: number; content_preview: string }>;
+    after_score_filter: Array<{ id: number; score: number; content_preview: string }>;
+    after_resident_filter: Array<{ id: number; score: number; content_preview: string }>;
+    excluded_resident_ids: number[];
+    injected: Array<{ id: number; score: number; content_preview: string }>;
+    skipped_reason?: string;
+    elapsed_ms: number;
+  };
 };
 
 export type LlmDebugSnapshots = {

@@ -3,6 +3,7 @@ import type { OpenAiToolSchema, StoredMessage } from "@freeanima/core/db/domain"
 import { PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME } from "@freeanima/core/llm/runtime-system-turn";
 import { storedMessagesToInvokeInput } from "@freeanima/core/llm/llm-adapt";
 import { omitUndefined } from "@freeanima/core/util";
+import type { PassiveRecallDebugTrace } from "@freeanima/shared/rpc-contract/frames/message";
 
 export const LLM_DEBUG_CONTENT_MAX = 8_000;
 
@@ -35,6 +36,7 @@ export type LlmDebugSnapshot = {
   tools: LlmDebugToolPreview[];
   invoke: LlmDebugInvokePreview;
   runtime_injections?: LlmDebugRuntimeInjections;
+  passive_recall?: PassiveRecallDebugTrace;
 };
 
 function truncateText(text: string, max = LLM_DEBUG_CONTENT_MAX): string {
@@ -91,6 +93,11 @@ function detectRuntimeInjections(messages: StoredMessage[]): LlmDebugRuntimeInje
   });
 }
 
+function asPassiveRecallTrace(value: unknown): PassiveRecallDebugTrace | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  return value as PassiveRecallDebugTrace;
+}
+
 /** Build ephemeral LLM invoke preview (post beforeLlmCall hooks). */
 export function buildLlmDebugSnapshot(
   messages: StoredMessage[],
@@ -98,10 +105,12 @@ export function buildLlmDebugSnapshot(
   model: string,
   turnIndex: number,
   phase: "initial" | "final",
+  extras?: Record<string, unknown>,
 ): LlmDebugSnapshot {
   const invokeInput = storedMessagesToInvokeInput(messages);
+  const passive_recall = asPassiveRecallTrace(extras?.passive_recall);
 
-  return {
+  return omitUndefined({
     phase,
     turn_index: turnIndex,
     model,
@@ -115,5 +124,6 @@ export function buildLlmDebugSnapshot(
       turns: invokeInput.turns.map(previewTurn),
     },
     runtime_injections: detectRuntimeInjections(messages),
-  };
+    passive_recall,
+  });
 }

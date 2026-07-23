@@ -80,7 +80,7 @@ export function assertValidTsQueryString(tsquery: string): void {
     throw new FtsQueryError(
       "invalid_tsquery_structure",
       "检索词之间缺少 AND/OR 连接",
-      "空格默认 AND；OR 组内多词如 方向 摇摆 表示同时包含两词",
+      "空格默认 OR；显式运算符组内多词如 方向 摇摆 仍表示 AND（同时包含）",
     );
   }
 

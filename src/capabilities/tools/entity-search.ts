@@ -23,10 +23,10 @@ import type { EntityType } from "@freeanima/core/db/schema";
 
 const FTS_SYNTAX =
   "PG search syntax (to_tsquery simple):\n" +
-  "- **Space**-separated terms default to **AND** (all must match)\n" +
-  "- **OR** for broader recall: `deploy OR release`\n" +
-  "- **AND** / **NOT**: `task AND urgent`, `task NOT done`\n" +
-  '- **Double quotes** for phrases / CJK tokens: `"部署任务"`';
+  "- **Space**-separated terms default to **OR** (any term may match)\n" +
+  "- **AND** for stricter match: `task AND urgent`\n" +
+  "- **OR** / **NOT**: `deploy OR release`, `task NOT done`\n" +
+  '- **Double quotes** for phrases / CJK tokens: `"部署任务"` (short CJK = proximity; long CJK = bigram OR)';
 
 function asFloat(value: unknown, defaultVal: number): number {
   if (value == null || value === undefined) return defaultVal;
