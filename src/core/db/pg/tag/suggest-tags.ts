@@ -10,6 +10,13 @@ export type TagSuggestion = {
   count: number;
 };
 
+/**
+ * 外层 tag 行的 id。必须写死 schema 限定名：
+ * 放进 SELECT 相关子查询时，`${entities.id}` 会被展成未限定 `"id"`，
+ * 在 `FROM entities AS d` 内会错误绑定到 d.id，导致 count 恒为 0。
+ */
+const OUTER_TAG_ID = sql.raw(`"entities"."id"`);
+
 /** 本 world 指定 primary_component 实体 tag_ids 引用频次；无 query 时 topN，有 query 时 ILIKE title */
 export async function suggestTagsByPrimaryComponent(
   worldId: number,
@@ -27,7 +34,7 @@ export async function suggestTagsByPrimaryComponent(
       SELECT 1 FROM ${entities} AS d
       WHERE d.world_id = ${worldId}
         AND d.primary_component = ${primaryComponent}
-        AND d.tag_ids @> ARRAY[${entities.id}]::bigint[]
+        AND d.tag_ids @> ARRAY[${OUTER_TAG_ID}]::bigint[]
     )`,
   ];
   if (query) {
@@ -39,7 +46,7 @@ export async function suggestTagsByPrimaryComponent(
     SELECT count(*)::int FROM ${entities} AS d
     WHERE d.world_id = ${worldId}
       AND d.primary_component = ${primaryComponent}
-      AND d.tag_ids @> ARRAY[${entities.id}]::bigint[]
+      AND d.tag_ids @> ARRAY[${OUTER_TAG_ID}]::bigint[]
   )`;
 
   const rows = await db
@@ -55,7 +62,7 @@ export async function suggestTagsByPrimaryComponent(
       SELECT count(*) FROM ${entities} AS d
       WHERE d.world_id = ${worldId}
         AND d.primary_component = ${primaryComponent}
-        AND d.tag_ids @> ARRAY[${entities.id}]::bigint[]
+        AND d.tag_ids @> ARRAY[${OUTER_TAG_ID}]::bigint[]
     ) DESC`,
       sql`${entities.title} ASC`,
     )

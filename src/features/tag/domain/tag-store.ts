@@ -14,7 +14,6 @@ import {
 } from "@freeanima/core/db/pg/entity";
 import { and, eq, ne, sql } from "drizzle-orm";
 
-import { loadTagSuggestStatsCache, saveTagSuggestStatsCache } from "./tag-suggest-cache.ts";
 import type { TagCreateInput, TagRow, TagSearchOpts, TagUpdateInput } from "./types.ts";
 
 function normalizeTitle(title: string): string {
@@ -292,16 +291,8 @@ export async function suggestTags(
 ): Promise<TagSuggestion[]> {
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
   const query = opts?.query?.trim() ?? "";
-
-  // 仅缓存「无 query」的常用统计；带搜索词仍实时查库
-  if (!query) {
-    const cached = await loadTagSuggestStatsCache(worldId, primaryComponent, limit);
-    if (cached) return cached;
-
-    const items = await suggestTagsByPrimaryComponent(worldId, primaryComponent, { limit });
-    await saveTagSuggestStatsCache(worldId, primaryComponent, limit, items);
-    return items;
-  }
-
-  return suggestTagsByPrimaryComponent(worldId, primaryComponent, { query, limit });
+  return suggestTagsByPrimaryComponent(worldId, primaryComponent, {
+    ...(query ? { query } : {}),
+    limit,
+  });
 }
