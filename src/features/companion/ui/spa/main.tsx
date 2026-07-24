@@ -43,17 +43,18 @@ function ClickThroughManager() {
   const ignoringRef = useRef(false);
 
   useEffect(() => {
-    if (!isCompanionOverlay() || !characterReady) return;
+    // 无模型 / 未 ready 也要跑：默认穿透，否则全屏 overlay 会挡下层点击
+    if (!isCompanionOverlay()) return;
 
     let cleanupCursor: (() => void) | undefined;
-    ignoringRef.current = false;
-    void setClickThrough(false);
+    ignoringRef.current = true;
+    void setClickThrough(true);
 
     void listenCursorPosition((pos) => {
       // 拖拽中不跑 hitTest：pointerActive 时整窗已可点，避免每 50ms 扫 AABB
       let onInteractive = pointerActive;
       if (!pointerActive) {
-        const onCharacter = hitTestFn ? hitTestFn(pos.x, pos.y) : false;
+        const onCharacter = characterReady && hitTestFn ? hitTestFn(pos.x, pos.y) : false;
         const bubbleEl = document.querySelector(".companion-text-bubble");
         const onBubble =
           bubbleEl instanceof HTMLElement &&
@@ -73,7 +74,7 @@ function ClickThroughManager() {
 
     return () => {
       cleanupCursor?.();
-      void setClickThrough(false);
+      void setClickThrough(true);
       void setPointerActive(false);
     };
   }, [hitTestFn, characterReady, pointerActive]);
@@ -144,6 +145,7 @@ function CompanionWindow() {
   if (loading) {
     return (
       <div className="companion-overlay flex items-center justify-center">
+        <ClickThroughManager />
         <Spinner className="size-6 text-primary" aria-label="加载中" />
       </div>
     );
