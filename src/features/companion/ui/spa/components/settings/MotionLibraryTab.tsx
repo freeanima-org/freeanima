@@ -203,7 +203,7 @@ export function MotionLibraryTab() {
           <CardContent className="flex flex-col gap-2 p-3">
             <CardTitle className="text-sm font-medium">预览</CardTitle>
             <p className="text-[10px] text-foreground/45">
-              {COMPANION_WINDOW_WIDTH}×{COMPANION_WINDOW_HEIGHT} 与伴侣窗一致；拖拽可旋转视角
+              {COMPANION_WINDOW_WIDTH}×{COMPANION_WINDOW_HEIGHT} 与角色显示比例一致；拖拽可旋转视角
             </p>
             {!previewEntry ? (
               <div

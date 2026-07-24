@@ -89,6 +89,10 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
           paddingX: 1.06,
           topHeadroomRatio: 0.36,
           bottomMarginRatio: 0.03,
+          canvasHeight: height,
+          footprintHeight: height,
+          fitWidth: true,
+          framingAspect: width / Math.max(height, 1),
         });
 
         controls = new OrbitControls(camera, canvas);

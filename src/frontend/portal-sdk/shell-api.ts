@@ -90,6 +90,10 @@ export type ShellApi = {
   openSettings?: () => Promise<void>;
   getCompanionVisible?: () => Promise<boolean>;
   setCompanionVisible?: (visible: boolean) => Promise<void>;
+  /** 设置页 → overlay：入队文字气泡（测试 / 调试） */
+  enqueueCompanionBubble?: (text: string) => Promise<void>;
+  /** overlay：监听入队气泡请求 */
+  listenCompanionBubble?: (handler: (text: string) => void) => () => void;
   emitConfigChanged?: () => Promise<void>;
   listenConfigChanged?: (handler: () => void) => () => void;
   listenServerError?: (handler: (message: string) => void) => () => void;

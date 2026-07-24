@@ -41,6 +41,8 @@ html[data-companion-view="settings"] #root {
   border: 1px solid rgba(255, 255, 255, 0.12);
   max-width: 280px;
   word-break: break-word;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .startup-panel {
@@ -49,34 +51,14 @@ html[data-companion-view="settings"] #root {
   max-width: 320px;
 }
 
-.companion-stage-web {
-  position: fixed;
-  z-index: 5;
-  pointer-events: auto;
-  cursor: grab;
-  overflow: visible;
-  box-sizing: border-box;
-}
-
-.companion-stage-web:active {
-  cursor: grabbing;
-}
-
-.companion-stage-web canvas {
-  display: block;
-  position: absolute;
-  inset: 0;
-}
-
-/** 全屏 overlay 内的角色舞台（160×260）；气泡可溢出到舞台外 */
+/** 全屏 WebGL 容器；角色以屏内坐标放置（不再用 160×260 DOM 位移） */
 .companion-stage {
   position: absolute;
-  left: 0;
-  top: 0;
+  inset: 0;
   z-index: 5;
   pointer-events: auto;
   cursor: grab;
-  overflow: visible;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -88,6 +70,8 @@ html[data-companion-view="settings"] #root {
   display: block;
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .motion-preview-canvas {

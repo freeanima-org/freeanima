@@ -18,9 +18,22 @@ import { VrmAnimationPlayer, type MotionBindConfig } from "./VrmAnimationPlayer.
 import { resolveCompanionAssetUrl } from "@freeanima/features/companion/ui/spa/lib/sidecar-asset-url.ts";
 import { loadCompanionAssetBlobUrl } from "@freeanima/features/companion/ui/spa/lib/model-cache.ts";
 import type { MotionSlotId } from "@freeanima/features/companion/shared/companion-schema.ts";
+import {
+  CHARACTER_FOOTPRINT_HEIGHT,
+  CHARACTER_FOOTPRINT_WIDTH,
+} from "@freeanima/features/companion/shared/constants.ts";
 import { VRMLookAtQuaternionProxy } from "@pixiv/three-vrm-animation";
 
 const LOOK_AT_PROXY_NAME = "lookAtQuaternionProxy";
+
+/** 全屏 overlay 下限制 DPR，避免整屏 ×2 填充满载 */
+const MAX_PIXEL_RATIO = 1;
+/** 气泡锚点：头顶再上抬的屏幕边距（px） */
+const BUBBLE_ABOVE_TOP_PX = 14;
+/** 命中粗滤屏幕 AABB 外扩（px） */
+const HIT_SCREEN_PAD_PX = 16;
+/** 粗滤 AABB 刷新间隔 */
+const HIT_BOUNDS_TTL_MS = 100;
 
 function attachLookAtQuaternionProxy(vrm: VRM): void {
   if (!vrm.lookAt) return;
@@ -41,34 +54,65 @@ export type TravelState = {
   kind: LocomotionKind;
 };
 
+export type ScreenPointPx = { x: number; y: number };
+
 export class VrmBackend implements CharacterBackend {
   private scene: THREE.Scene;
-  private camera: THREE.PerspectiveCamera;
+  /** 全屏伴侣用正交：屏内平移不产生透视变形 */
+  private camera: THREE.OrthographicCamera;
   private renderer: THREE.WebGLRenderer;
+  /** 屏内平移 */
+  private displayRoot = new THREE.Group();
+  /**
+   * 取景中心枢轴（保持 scale=1）。
+   * 勿对 VRM 祖先做非 1 缩放——SpringBone 重力会失效（头发/裙子平摊）。
+   * 屏幕身高用 camera.zoom 控制。
+   */
+  private scalePivot = new THREE.Group();
   private vrm: VRM | null = null;
   private clock = new THREE.Clock();
   private travelMoving = false;
   private displayHeading = 0;
   private animationId: number | null = null;
   private basePosition = new THREE.Vector3();
-  private hitBox = new THREE.Box3();
-  private hitSphere = new THREE.Sphere();
   private bodyPicker = new VrmBodyPicker();
   private animationPlayer = new VrmAnimationPlayer();
   private framing: VrmFramingState | null = null;
   private facingOffsetY = 0;
   private travelKind: LocomotionKind = "walk";
   private loadGeneration = 0;
+  /** 角色 footprint 左上角（窗内 CSS 像素） */
+  private screenPos: ScreenPointPx = { x: 0, y: 0 };
+  private canvasSize = { width: CHARACTER_FOOTPRINT_WIDTH, height: CHARACTER_FOOTPRINT_HEIGHT };
+  private canvasRect: DOMRect | null = null;
+  private screenPosDirty = true;
+  private projectTmp = new THREE.Vector3();
+  private headBox = new THREE.Box3();
+  private hitBox = new THREE.Box3();
+  private hitCorner = new THREE.Vector3();
+  private hitScreen = { left: 0, right: 0, top: 0, bottom: 0 };
+  private hitBoundsAtMs = 0;
+  private bubbleTracking = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(
-      30,
-      canvas.clientWidth / canvas.clientHeight,
+    this.displayRoot.add(this.scalePivot);
+    this.scene.add(this.displayRoot);
+
+    const aspect =
+      canvas.clientWidth / canvas.clientHeight ||
+      CHARACTER_FOOTPRINT_WIDTH / CHARACTER_FOOTPRINT_HEIGHT;
+    const halfH = 1.2;
+    this.camera = new THREE.OrthographicCamera(
+      -halfH * aspect,
+      halfH * aspect,
+      halfH,
+      -halfH,
       0.1,
-      20,
+      100,
     );
-    this.camera.position.set(0, 1.2, 2.2);
+    this.camera.position.set(0, 1.2, 10);
+    this.camera.lookAt(0, 1.2, 0);
 
     this.renderer = new THREE.WebGLRenderer({
       canvas,
@@ -76,14 +120,17 @@ export class VrmBackend implements CharacterBackend {
       antialias: true,
       premultipliedAlpha: true,
     });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO));
     this.renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
     this.renderer.setClearColor(0x000000, 0);
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.refreshCanvasRect();
 
     const light = new THREE.DirectionalLight(0xffffff, 1.2);
     light.position.set(1, 2, 2);
     this.scene.add(light);
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.35));
   }
 
   async load(source: string, motionConfig: MotionBindConfig): Promise<void> {
@@ -104,10 +151,12 @@ export class VrmBackend implements CharacterBackend {
 
     VRMUtils.rotateVRM0(vrm);
     this.facingOffsetY = resolveFacingOffsetY(vrm.meta?.metaVersion);
-    this.scene.add(vrm.scene);
+    this.scalePivot.add(vrm.scene);
     this.vrm = vrm;
     this.framing = null;
     this.refitCamera(vrm, true);
+    this.screenPosDirty = true;
+    this.applyScreenPosition();
     this.setEmotion("neutral", 1);
     attachLookAtQuaternionProxy(vrm);
 
@@ -144,8 +193,6 @@ export class VrmBackend implements CharacterBackend {
   private async resolveMotionUrl(path: string): Promise<string> {
     const remote = await resolveCompanionAssetUrl(path);
     const blob = await loadCompanionAssetBlobUrl(remote);
-    // blob URL 由调用方生命周期管理较难；短生命周期动画片段由 GC 回收 revoke 可接受
-    // （播放器会缓存 clip，不重复拉同一 file）
     return blob.url;
   }
 
@@ -172,6 +219,8 @@ export class VrmBackend implements CharacterBackend {
         this.animationPlayer.resumeFromLocomotion();
         this.refitCamera(this.vrm, false, false);
       }
+      this.screenPosDirty = true;
+      this.applyScreenPosition();
     } else if (this.travelMoving && this.vrm && this.useVrmaLocomotion(state.kind)) {
       this.animationPlayer.playLocomotion(state.kind);
     }
@@ -181,20 +230,133 @@ export class VrmBackend implements CharacterBackend {
     this.animationPlayer.resumeFromLocomotion();
   }
 
+  setScreenPosition(x: number, y: number): void {
+    this.screenPos = { x: Math.round(x), y: Math.round(y) };
+    this.screenPosDirty = true;
+    this.applyScreenPosition();
+  }
+
+  getScreenPosition(): ScreenPointPx {
+    return { ...this.screenPos };
+  }
+
+  setBubbleTracking(enabled: boolean): void {
+    this.bubbleTracking = enabled;
+  }
+
+  /**
+   * 气泡锚点：头骨子树 AABB 最高点（含发饰/头发）投影，再上抬边距。
+   */
+  getHeadScreenPosition(): ScreenPointPx | null {
+    if (!this.vrm || !this.bubbleTracking) return null;
+    const rect = this.ensureCanvasRect();
+    if (rect.width <= 0 || rect.height <= 0) return null;
+
+    const head = this.vrm.humanoid?.getNormalizedBoneNode("head");
+    if (head) {
+      this.headBox.setFromObject(head);
+      if (this.headBox.isEmpty()) {
+        head.getWorldPosition(this.projectTmp);
+      } else {
+        this.projectTmp.set(
+          (this.headBox.min.x + this.headBox.max.x) / 2,
+          this.headBox.max.y,
+          (this.headBox.min.z + this.headBox.max.z) / 2,
+        );
+      }
+    } else {
+      this.hitBox.setFromObject(this.scalePivot);
+      this.projectTmp.set(
+        (this.hitBox.min.x + this.hitBox.max.x) / 2,
+        this.hitBox.max.y,
+        (this.hitBox.min.z + this.hitBox.max.z) / 2,
+      );
+    }
+
+    this.projectTmp.project(this.camera);
+    return {
+      x: rect.left + (this.projectTmp.x * 0.5 + 0.5) * rect.width,
+      y: rect.top + (-this.projectTmp.y * 0.5 + 0.5) * rect.height - BUBBLE_ABOVE_TOP_PX,
+    };
+  }
+
+  private refreshCanvasRect(): void {
+    this.canvasRect = this.renderer.domElement.getBoundingClientRect();
+  }
+
+  private ensureCanvasRect(): DOMRect {
+    if (!this.canvasRect || this.canvasRect.width <= 0) {
+      this.refreshCanvasRect();
+    }
+    return this.canvasRect ?? this.renderer.domElement.getBoundingClientRect();
+  }
+
   private refitCamera(vrm: VRM, reposition: boolean, traveling = false): void {
     if (reposition || !this.framing) {
+      // 暂时放到世界原点算 grounding，再挂回 scalePivot
+      if (vrm.scene.parent !== this.scene) {
+        this.scene.add(vrm.scene);
+      }
       const { basePosition, framing } = computeVrmFraming(vrm);
       this.framing = framing;
       this.basePosition.copy(basePosition);
-      vrm.scene.position.copy(this.basePosition);
+
+      this.scalePivot.position.set(framing.centerX, framing.lookAtY, 0);
+      this.scalePivot.add(vrm.scene);
+      vrm.scene.position.set(
+        basePosition.x - framing.centerX,
+        basePosition.y - framing.lookAtY,
+        basePosition.z,
+      );
     }
     if (this.framing) {
+      // 正交近距取景；全屏靠 camera.zoom 缩到 footprint 高（不缩放 VRM、无角落透视）
       applyVrmCameraFraming(this.camera, this.framing, {
         paddingX: 1.06,
         topHeadroomRatio: traveling ? 0.32 : 0.36,
         bottomMarginRatio: traveling ? 0.14 : 0.03,
+        fitWidth: false,
       });
+      this.screenPosDirty = true;
     }
+  }
+
+  private applyScreenPosition(): void {
+    if (!this.vrm || !this.framing || !this.screenPosDirty) return;
+
+    const rect = this.ensureCanvasRect();
+    const canvasW = rect.width > 0 ? rect.width : this.canvasSize.width;
+    const canvasH = rect.height > 0 ? rect.height : this.canvasSize.height;
+    if (canvasW <= 0 || canvasH <= 0) return;
+
+    const halfH = this.framing.viewHalfH;
+    const aspect = canvasW / canvasH;
+    // zoom<1 → 视锥变大 → 角色在屏上变小；模型世界尺度保持 1
+    const zoom = CHARACTER_FOOTPRINT_HEIGHT / canvasH;
+    this.scalePivot.scale.set(1, 1, 1);
+    this.camera.left = -halfH * aspect;
+    this.camera.right = halfH * aspect;
+    this.camera.top = halfH;
+    this.camera.bottom = -halfH;
+    this.camera.zoom = zoom;
+    this.camera.position.set(this.framing.centerX, this.framing.lookAtY, 10);
+    this.camera.lookAt(this.framing.centerX, this.framing.lookAtY, 0);
+    this.camera.updateProjectionMatrix();
+
+    const targetCx = this.screenPos.x + CHARACTER_FOOTPRINT_WIDTH / 2;
+    const targetCy = this.screenPos.y + CHARACTER_FOOTPRINT_HEIGHT / 2;
+    const localCx = targetCx - rect.left;
+    const localCy = targetCy - rect.top;
+
+    const visibleHalfH = halfH / zoom;
+    const visibleHalfW = visibleHalfH * aspect;
+
+    const ndcX = (localCx - canvasW / 2) / (canvasW / 2);
+    const ndcY = -((localCy - canvasH / 2) / (canvasH / 2));
+
+    this.displayRoot.position.set(ndcX * visibleHalfW, ndcY * visibleHalfH, 0);
+    this.screenPosDirty = false;
+    this.hitBoundsAtMs = 0;
   }
 
   setEmotion(emotion: EmotionKind, weight = 1): void {
@@ -225,8 +387,6 @@ export class VrmBackend implements CharacterBackend {
   private applyPose(delta: number): void {
     if (!this.vrm) return;
 
-    this.vrm.scene.position.copy(this.basePosition);
-
     if (!this.travelMoving) {
       this.displayHeading = THREE.MathUtils.lerp(this.displayHeading, 0, 1 - Math.exp(-10 * delta));
       if (Math.abs(this.displayHeading) < 0.002) {
@@ -235,6 +395,7 @@ export class VrmBackend implements CharacterBackend {
     }
 
     this.vrm.scene.rotation.y = this.facingOffsetY + this.displayHeading;
+    this.applyScreenPosition();
 
     if (
       this.travelMoving &&
@@ -247,43 +408,49 @@ export class VrmBackend implements CharacterBackend {
     this.animationPlayer.update(delta);
   }
 
-  hitTest(screenX: number, screenY: number): boolean {
+  private refreshHitScreenBoundsIfNeeded(): boolean {
     if (!this.vrm) return false;
-
-    const canvas = this.renderer.domElement;
-    const rect = canvas.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) return false;
-
-    const marginX = rect.width * 0.08;
-    const marginTop = rect.height * 0.04;
-    const marginBottom = rect.height * 0.06;
-    if (
-      screenX < rect.left + marginX ||
-      screenX > rect.right - marginX ||
-      screenY < rect.top + marginTop ||
-      screenY > rect.bottom - marginBottom
-    ) {
-      return false;
-    }
-
-    const x = ((screenX - rect.left) / rect.width) * 2 - 1;
-    const y = -((screenY - rect.top) / rect.height) * 2 + 1;
-
-    this.hitBox.setFromObject(this.vrm.scene);
-    this.hitBox.getBoundingSphere(this.hitSphere);
-
-    const ndc = new THREE.Vector3(x, y, 0.5);
-    ndc.unproject(this.camera);
-    const dir = ndc.sub(this.camera.position).normalize();
-    if (Math.abs(dir.y) < 1e-4) {
+    const now = performance.now();
+    if (now - this.hitBoundsAtMs < HIT_BOUNDS_TTL_MS && this.hitBoundsAtMs > 0) {
       return true;
     }
-    const dist = (this.hitSphere.center.y - this.camera.position.y) / dir.y;
-    const point = this.camera.position.clone().add(dir.multiplyScalar(dist));
+    this.hitBoundsAtMs = now;
+    this.hitBox.setFromObject(this.displayRoot);
+    if (this.hitBox.isEmpty()) return false;
 
-    const expanded = this.hitSphere.clone();
-    expanded.radius *= 1.35;
-    return expanded.containsPoint(point);
+    const rect = this.ensureCanvasRect();
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    const { min, max } = this.hitBox;
+    for (let i = 0; i < 8; i++) {
+      this.hitCorner.set(i & 1 ? max.x : min.x, i & 2 ? max.y : min.y, i & 4 ? max.z : min.z);
+      this.hitCorner.project(this.camera);
+      const sx = rect.left + (this.hitCorner.x * 0.5 + 0.5) * rect.width;
+      const sy = rect.top + (-this.hitCorner.y * 0.5 + 0.5) * rect.height;
+      minX = Math.min(minX, sx);
+      maxX = Math.max(maxX, sx);
+      minY = Math.min(minY, sy);
+      maxY = Math.max(maxY, sy);
+    }
+    this.hitScreen.left = minX - HIT_SCREEN_PAD_PX;
+    this.hitScreen.right = maxX + HIT_SCREEN_PAD_PX;
+    this.hitScreen.top = minY - HIT_SCREEN_PAD_PX;
+    this.hitScreen.bottom = maxY + HIT_SCREEN_PAD_PX;
+    return true;
+  }
+
+  /** click-through：只用屏幕 AABB，避免每 50ms mesh 射线（悬浮卡顿主因） */
+  hitTest(screenX: number, screenY: number): boolean {
+    if (!this.vrm) return false;
+    if (!this.refreshHitScreenBoundsIfNeeded()) return false;
+    return (
+      screenX >= this.hitScreen.left &&
+      screenX <= this.hitScreen.right &&
+      screenY >= this.hitScreen.top &&
+      screenY <= this.hitScreen.bottom
+    );
   }
 
   pickBodyZone(screenX: number, screenY: number): BodyZone | null {
@@ -294,16 +461,21 @@ export class VrmBackend implements CharacterBackend {
       this.renderer.domElement,
       screenX,
       screenY,
+      this.ensureCanvasRect(),
     );
   }
 
   resize(width: number, height: number): void {
     if (width <= 0 || height <= 0) return;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.camera.aspect = width / height;
+    this.canvasSize = { width, height };
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO));
     this.renderer.setSize(width, height, false);
+    this.refreshCanvasRect();
+    this.screenPosDirty = true;
+    this.hitBoundsAtMs = 0;
     if (this.vrm) {
       this.refitCamera(this.vrm, false);
+      this.applyScreenPosition();
     }
   }
 
@@ -325,15 +497,14 @@ export class VrmBackend implements CharacterBackend {
   private clearCharacterFromScene(): void {
     this.animationPlayer.dispose();
     if (this.vrm) {
+      this.scalePivot.remove(this.vrm.scene);
       this.scene.remove(this.vrm.scene);
       VRMUtils.deepDispose(this.vrm.scene);
       this.vrm = null;
     }
-    const extras = this.scene.children.filter((child) => !(child instanceof THREE.Light));
-    for (const child of extras) {
-      this.scene.remove(child);
-      VRMUtils.deepDispose(child);
-    }
+    this.scalePivot.scale.set(1, 1, 1);
+    this.camera.zoom = 1;
+    this.camera.updateProjectionMatrix();
   }
 
   private startRenderLoop(): void {

@@ -12,6 +12,6 @@ title: Tauri Companion 验收
 | macOS (WKWebView)  |          |        |                    |           |                     |
 | Linux (WebKitGTK)  |          |        |                    |           |                     |
 
-开发：`just dev web`（另终端）+ `just dev tauri`；overlay 为工作区全屏透明窗（角色舞台 160×260）。
+开发：`just dev web`（另终端）+ `just dev tauri`；overlay 为工作区全屏透明窗（全屏 WebGL，角色 footprint 160×260）。
 
 打包资源：`scripts/prepare-tauri-ui.ts` → `src-tauri/ui/companion/`（`frontendDist`，`WebviewUrl::App`；勿再用 `file://` resources）。
