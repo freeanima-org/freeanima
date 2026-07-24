@@ -43,6 +43,10 @@ fn default_anima_home_dirname() -> &'static str {
   option_env!("FREEANIMA_DEFAULT_HOME_DIRNAME").unwrap_or(".anima")
 }
 
+fn product_display_name() -> &'static str {
+  option_env!("FREEANIMA_PRODUCT_NAME").unwrap_or("FreeAnima")
+}
+
 fn anima_home() -> std::path::PathBuf {
   if let Ok(h) = std::env::var("FREEANIMA_HOME") {
     return std::path::PathBuf::from(h);
@@ -632,7 +636,7 @@ fn build_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
   let _tray = TrayIconBuilder::new()
     .icon(icon)
     .menu(&menu)
-    .tooltip("FreeAnima")
+    .tooltip(product_display_name())
     .on_menu_event(|app, event| match event.id.as_ref() {
       "show" => {
         if let Some(w) = app.get_webview_window("main") {

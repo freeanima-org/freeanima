@@ -16,6 +16,10 @@ import {
   type ShellBuildTarget,
 } from "@freeanima/client/portal-sdk/shell-build-target.ts";
 import { resolveBuildChannelFromEnv } from "@freeanima/host/core/config/build-meta.ts";
+import {
+  resolveDesktopShellIdentity,
+  resolveMobileShellIdentity,
+} from "@freeanima/host/core/config/shell-identity.ts";
 import { resolveNativeBuildMeta } from "@freeanima/app/shell/shared/resolve-native-build-meta.ts";
 import { buildCompanionApp } from "@freeanima/features/companion/lib/exports/build.ts";
 import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
@@ -61,10 +65,23 @@ function purgeStaleCargoTargetIfNeeded(): void {
 
 purgeStaleCargoTargetIfNeeded();
 
+const buildChannel = resolveBuildChannelFromEnv("dev");
+const splashProductName =
+  target === "mobile"
+    ? resolveMobileShellIdentity(buildChannel).appName
+    : resolveDesktopShellIdentity(buildChannel).productName;
+
 const BOOT_HEAD = `<style id="fa-boot-style">html,body{margin:0;height:100%;background:#0a0a0b;color:#c8c8cc;font-family:system-ui,sans-serif}#fa-boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;letter-spacing:.04em;user-select:none;pointer-events:none;z-index:2147483646}#fa-boot strong{font-size:1.25rem;font-weight:600;color:#eee}#fa-boot span{font-size:.8rem;opacity:.55}#root{position:relative;z-index:1;min-height:100%}</style>`;
 
 /** 仅 markup；隐藏脚本必须在 #root 之后执行（见 injectBootSplash）。 */
-const BOOT_MARKUP = `<div id="fa-boot"><strong>FreeAnima</strong><span>正在启动…</span></div>`;
+function bootMarkup(productName: string): string {
+  const safe = productName
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+  return `<div id="fa-boot"><strong>${safe}</strong><span>正在启动…</span></div>`;
+}
 
 /**
  * 启动画面隐藏逻辑。
@@ -92,9 +109,11 @@ const BOOT_HIDE_SCRIPT = `<script>
 })();
 </script>`;
 
-function injectBootSplash(indexPath: string): void {
+function injectBootSplash(indexPath: string, productName: string): void {
   let html = readFileSync(indexPath, "utf-8");
   if (html.includes('id="fa-boot"')) return;
+
+  const markup = bootMarkup(productName);
 
   if (html.includes("</head>")) {
     html = html.replace("</head>", `${BOOT_HEAD}</head>`);
@@ -102,9 +121,9 @@ function injectBootSplash(indexPath: string): void {
 
   // markup 放 body 开头（尽早显示）；hide 脚本放在 #root 之后，避免同步脚本拿不到 root。
   if (html.includes("<body>")) {
-    html = html.replace("<body>", `<body>${BOOT_MARKUP}`);
+    html = html.replace("<body>", `<body>${markup}`);
   } else if (html.includes('<div id="root"></div>')) {
-    html = html.replace('<div id="root"></div>', `${BOOT_MARKUP}<div id="root"></div>`);
+    html = html.replace('<div id="root"></div>', `${markup}<div id="root"></div>`);
   } else {
     console.warn("[prepare-tauri] skip splash: body/#root not found");
     return;
@@ -132,7 +151,7 @@ function readTauriProductVersion(): string | undefined {
 }
 
 function writeNativeBuildMeta(destDir: string): void {
-  const channel = resolveBuildChannelFromEnv("dev");
+  const channel = buildChannel;
   const version =
     process.env.FREEANIMA_BUILD_VERSION?.trim() ||
     process.env.DESKTOP_SHELL_VERSION?.trim() ||
@@ -185,7 +204,7 @@ if (existsSync(uiRoot)) rmSync(uiRoot, { recursive: true });
 mkdirSync(uiWeb, { recursive: true });
 cpSync(webDist, uiWeb, { recursive: true });
 if (target === "desktop") {
-  injectBootSplash(join(uiWeb, "index.html"));
+  injectBootSplash(join(uiWeb, "index.html"), splashProductName);
 }
 writeNativeBuildMeta(uiWeb);
 writeFileSync(
