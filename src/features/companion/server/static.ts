@@ -36,8 +36,8 @@ function fileResponse(filePath: string): Response {
   return withCors(new Response(body, headers ? { headers } : {}));
 }
 
-/** 模型 / 动作 / public 资源（Vite dev 时仍由 sidecar 提供） */
-export function serveSidecarAsset(pathname: string): Response | null {
+/** 模型 / 动作 / public 资源（companion/dev 本地 HTTP 仍提供） */
+export function serveCompanionPublicAsset(pathname: string): Response | null {
   const rel = pathname === "/" ? "/index.html" : pathname;
 
   if (rel.startsWith("/models/")) {
@@ -64,8 +64,8 @@ export function serveStatic(pathname: string): Response {
   const rel = pathname === "/" ? "/index.html" : pathname;
   const DIST_DIR = distDir();
 
-  const sidecar = serveSidecarAsset(pathname);
-  if (sidecar) return sidecar;
+  const publicAsset = serveCompanionPublicAsset(pathname);
+  if (publicAsset) return publicAsset;
 
   if (!existsSync(DIST_DIR)) {
     return jsonResponse(

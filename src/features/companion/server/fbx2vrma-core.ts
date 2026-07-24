@@ -1,5 +1,5 @@
 /**
- * FBX → VRMA 进程内转换（sidecar 直接 import，不 spawn 子进程）。
+ * FBX → VRMA 进程内转换（Habitat / companion 进程内 import，不 spawn 子进程）。
  */
 // @ts-expect-error fbx2vrma-converter 为 CJS 包
 import FBXToVRMAConverter from "fbx2vrma-converter/fbx2vrma-converter.js";
@@ -10,7 +10,7 @@ function createConverter(): ConverterInstance {
   return new FBXToVRMAConverter();
 }
 
-/** 进程内转换（sidecar 导入路径） */
+/** 进程内转换 */
 export async function convertFbxToVrmaFiles(
   inputPath: string,
   outputPath: string,

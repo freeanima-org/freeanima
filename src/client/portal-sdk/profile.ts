@@ -25,15 +25,16 @@ export type BundledSpaDesktopProfile = {
   defaultPort?: number;
 };
 
-export type EmbeddedSidecarDesktopProfile = {
-  embedMode: "embedded-sidecar";
+/** Portal 内嵌伴侣浮层（VRM overlay WebView；非独立 Node 进程） */
+export type EmbeddedOverlayDesktopProfile = {
+  embedMode: "embedded-overlay";
   distSubdir: string;
   windows: DesktopWindowSpec[];
   defaultPort: number;
   portAttempts: number;
 };
 
-export type DesktopProfile = BundledSpaDesktopProfile | EmbeddedSidecarDesktopProfile;
+export type DesktopProfile = BundledSpaDesktopProfile | EmbeddedOverlayDesktopProfile;
 
 export type MobileProfile = {
   embedMode: "bundled-spa" | "unsupported";

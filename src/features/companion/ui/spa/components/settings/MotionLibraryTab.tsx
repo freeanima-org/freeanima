@@ -109,7 +109,7 @@ export function MotionLibraryTab() {
           共 {library.length} 个动作。导入后在此列表显示；「动作槽位」Tab 用于绑定播放分组。
           {fbxImportAvailable
             ? " 支持 .vrma / .fbx，或包含 vrma、fbx 的 .zip。"
-            : " 支持 .vrma 或含 vrma 的 .zip；FBX 需 sidecar 已安装 FBX2glTF。"}
+            : " 支持 .vrma 或含 vrma 的 .zip；FBX 需 Habitat 主机已安装 FBX2glTF。"}
         </p>
         <Button asChild className="w-full" disabled={importing}>
           <label className="cursor-pointer">

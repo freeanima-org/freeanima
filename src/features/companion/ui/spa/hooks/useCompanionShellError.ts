@@ -5,8 +5,8 @@ import {
 } from "@freeanima/features/companion/ui/spa/lib/portal-shell.ts";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 
-/** Portal：监听壳层服务致命错误并写入 store */
-export function useSidecarError(fallbackMessage?: string): void {
+/** Portal：监听壳层致命错误并写入 store */
+export function useCompanionShellError(fallbackMessage?: string): void {
   useEffect(() => {
     if (!isPortalShell()) return;
     let off: (() => void) | undefined;

@@ -192,14 +192,16 @@ export type HabitatRestErrorBody = {
 
 export async function throwHabitatRestError(res: Response): Promise<never> {
   const text = await res.text();
+  let parsed: unknown;
   try {
-    const parsed = JSON.parse(text) as Partial<HabitatRestErrorBody>;
-    const message = parsed.error?.message ?? (text || `HTTP ${res.status}`);
-    throw new Error(message);
-  } catch (e) {
-    if (e instanceof Error && e.message !== text) throw e;
-    throw new Error(text || `HTTP ${res.status}`, { cause: e });
+    parsed = text ? JSON.parse(text) : null;
+  } catch {
+    throw new Error(text || `HTTP ${res.status}`);
   }
+  const errBody = parsed as Partial<HabitatRestErrorBody> | null;
+  const message =
+    errBody?.error?.message ?? (typeof parsed === "string" ? parsed : text || `HTTP ${res.status}`);
+  throw new Error(message);
 }
 
 export async function fetchHabitatRestRaw(

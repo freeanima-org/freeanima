@@ -1,4 +1,4 @@
-/** Rollup entryFileNames：sidecar shell-bridge 与主入口均带 content hash */
+/** Rollup entryFileNames：shell-bridge 与主入口均带 content hash */
 export function shellEntryFileNames(chunkInfo: { name?: string }): string {
   if (chunkInfo.name === "shell-bridge") return "assets/shell-bridge-[hash].js";
   return "assets/[name]-[hash].js";

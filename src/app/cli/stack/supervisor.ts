@@ -18,7 +18,7 @@ export type ServiceStackOptions = {
   skipTls?: boolean;
 };
 
-/** Habitat 就绪后打印 Web 托管提示（无 sidecar） */
+/** Habitat 就绪后打印 Web 托管提示 */
 async function onHubReady(hubPort: number, webHostedByHub: boolean): Promise<void> {
   if (webHostedByHub) {
     console.log(`[stack] Web UI http://127.0.0.1:${hubPort}/web/chat（由 Habitat 托管）`);

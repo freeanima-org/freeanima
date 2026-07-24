@@ -3,7 +3,6 @@ import { disposeVrmBackend, getVrmBackend } from "./VrmBackend.ts";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 import { loadCachedModelSource } from "@freeanima/features/companion/ui/spa/lib/model-cache.ts";
 import { measureCharacterViewportSize } from "@freeanima/features/companion/ui/spa/lib/canvas-metrics.ts";
-import { resolveCompanionAssetUrl } from "@freeanima/features/companion/ui/spa/lib/sidecar-asset-url.ts";
 
 type Props = {
   modelPath: string;
@@ -11,10 +10,6 @@ type Props = {
   onModelLoaded?: () => void;
   onModelError?: (message: string) => void;
 };
-
-async function resolveModelUrl(modelPath: string): Promise<string> {
-  return resolveCompanionAssetUrl(modelPath);
-}
 
 export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelError }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -95,8 +90,7 @@ export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelErr
 
     void (async () => {
       try {
-        const remoteUrl = await resolveModelUrl(modelPath);
-        const cached = await loadCachedModelSource(remoteUrl);
+        const cached = await loadCachedModelSource(modelPath);
         revokeModelUrl = cached.revoke;
         if (cancelled) return;
 

@@ -14,8 +14,8 @@ export function installBinDir(): string {
   return dirname(process.execPath);
 }
 
-/** sidecar 资源根（含 server/、node_modules/） */
-export function sidecarRuntimeDir(): string {
+/** companion 包资源根（含 server/、node_modules/） */
+export function companionRuntimeDir(): string {
   return companionPackageRoot();
 }
 
@@ -25,7 +25,7 @@ function devCompanionRoot(): string {
 
 function kitDirCandidates(): string[] {
   return [
-    join(sidecarRuntimeDir(), "node_modules", "fbx2vrma-converter"),
+    join(companionRuntimeDir(), "node_modules", "fbx2vrma-converter"),
     join(devCompanionRoot(), "node_modules", "fbx2vrma-converter"),
   ];
 }

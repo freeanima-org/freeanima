@@ -15,7 +15,6 @@ import {
 import { resolveFacingOffsetY } from "./vrm-facing.ts";
 import { VrmBodyPicker } from "./VrmBodyPicker.ts";
 import { VrmAnimationPlayer, type MotionBindConfig } from "./VrmAnimationPlayer.ts";
-import { resolveCompanionAssetUrl } from "@freeanima/features/companion/ui/spa/lib/sidecar-asset-url.ts";
 import { loadCompanionAssetBlobUrl } from "@freeanima/features/companion/ui/spa/lib/model-cache.ts";
 import type { MotionSlotId } from "@freeanima/features/companion/shared/companion-schema.ts";
 import {
@@ -191,8 +190,7 @@ export class VrmBackend implements CharacterBackend {
   }
 
   private async resolveMotionUrl(path: string): Promise<string> {
-    const remote = await resolveCompanionAssetUrl(path);
-    const blob = await loadCompanionAssetBlobUrl(remote);
+    const blob = await loadCompanionAssetBlobUrl(path);
     return blob.url;
   }
 

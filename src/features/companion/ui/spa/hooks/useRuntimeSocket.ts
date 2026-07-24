@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { resolveSidecarOrigin } from "@freeanima/features/companion/ui/spa/lib/sidecar.ts";
+import { resolveCompanionDevOrigin } from "@freeanima/features/companion/ui/spa/lib/companion-local.ts";
 import { runtimeWsUrl } from "@freeanima/features/companion/ui/spa/lib/api.ts";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 import type { MotionSlotId } from "@freeanima/features/companion/shared/companion-schema.ts";
@@ -14,7 +14,7 @@ function applyRuntimeMessage(msg: RuntimeWsMessage): void {
   }
 }
 
-/** 浏览器/dev companion host 经 WebSocket 推 runtime；Portal overlay 走本地 runtime */
+/** companion/dev 本地 HTTP 经 WebSocket 推 runtime；Portal overlay 走本地 runtime（不连此 WS） */
 export function useRuntimeSocket(enabled: boolean): void {
   const setRuntimeBubble = useCompanionStore((s) => s.setRuntimeBubble);
 
@@ -28,7 +28,7 @@ export function useRuntimeSocket(enabled: boolean): void {
     const connect = async (): Promise<void> => {
       if (cancelled) return;
       try {
-        const origin = await resolveSidecarOrigin();
+        const origin = await resolveCompanionDevOrigin();
         if (cancelled) return;
         ws = new WebSocket(runtimeWsUrl(origin));
 

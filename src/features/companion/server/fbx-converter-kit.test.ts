@@ -2,13 +2,13 @@ import { describe, expect, it } from "bun:test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { installBinDir, resolveFbx2gltfBinary, sidecarRuntimeDir } from "./fbx-converter-kit.ts";
+import { companionRuntimeDir, installBinDir, resolveFbx2gltfBinary } from "./fbx-converter-kit.ts";
 import { fbx2gltfBinaryName } from "./fbx2gltf-shared.ts";
 
 describe("fbx-converter-kit", () => {
-  it("安装目录找 FBX2glTF；sidecar 资源根含 node_modules", () => {
+  it("安装目录找 FBX2glTF；companion 资源根含 node_modules", () => {
     const bin = join(tmpdir(), `companion-fbx-kit-${Date.now()}`);
-    const runtime = join(bin, "resources", "sidecar");
+    const runtime = join(bin, "resources", "companion");
     mkdirSync(join(runtime, "node_modules", "fbx2vrma-converter"), { recursive: true });
     const fbx2gltfName =
       process.platform === "win32"
@@ -33,7 +33,7 @@ describe("fbx-converter-kit", () => {
     try {
       expect(installBinDir()).toBe(bin);
       expect(resolveFbx2gltfBinary()).toBe(join(bin, fbx2gltfName));
-      expect(sidecarRuntimeDir()).toBe(join(prevDir, ".."));
+      expect(companionRuntimeDir()).toBe(join(prevDir, ".."));
     } finally {
       if (prevHome === undefined) {
         delete process.env.FREEANIMA_HOME;
