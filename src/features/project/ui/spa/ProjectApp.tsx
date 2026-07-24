@@ -263,6 +263,7 @@ export function ProjectApp() {
   const [sheetItems, setSheetItems] = useState<ActionSheetItem[] | null>(null);
   const [deleteFolderTarget, setDeleteFolderTarget] = useState<ProjectFolderRow | null>(null);
   const [deleteProjectTarget, setDeleteProjectTarget] = useState<ProjectRow | null>(null);
+  const [deleteTaskTarget, setDeleteTaskTarget] = useState<TaskItemRow | null>(null);
   const [moveToListItem, setMoveToListItem] = useState<TaskItemRow | null>(null);
   const [moveToProjectItem, setMoveToProjectItem] = useState<TaskItemRow | null>(null);
   const [taskListsForMove, setTaskListsForMove] = useState<TaskListRow[]>([]);
@@ -508,7 +509,14 @@ export function ProjectApp() {
     applySavedItem(saved);
   };
 
-  const handleDeleteTask = async (item: TaskItemRow) => {
+  const handleDeleteTask = (item: TaskItemRow) => {
+    setDeleteTaskTarget(item);
+  };
+
+  const confirmDeleteTask = async () => {
+    const item = deleteTaskTarget;
+    if (!item) return;
+    setDeleteTaskTarget(null);
     await deleteProjectTask(subjectKind, item.id);
     setTasks((prev) => prev.filter((t) => t.id !== item.id));
     if (detailItem?.id === item.id) closeTaskDetail();
@@ -590,7 +598,7 @@ export function ProjectApp() {
         onToggleComplete: () => void handleToggleComplete(item),
         onMoveToList: () => void openMoveToListPicker(item),
         onMoveToProject: () => void openMoveToProjectPicker(item),
-        onDelete: () => void handleDeleteTask(item),
+        onDelete: () => handleDeleteTask(item),
       };
       if (item.status === "pending") {
         handlers.onStartPomodoro = () => launchPomodoroForTask({ id: item.id, title: item.title });
@@ -1036,6 +1044,20 @@ export function ProjectApp() {
           });
         }}
         onCancel={() => setDeleteProjectTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={deleteTaskTarget != null}
+        title="删除确认"
+        description={
+          deleteTaskTarget
+            ? `确定删除任务「${deleteTaskTarget.title}」？此操作不可恢复。`
+            : undefined
+        }
+        confirmLabel="删除"
+        variant="error"
+        onConfirm={() => void confirmDeleteTask()}
+        onCancel={() => setDeleteTaskTarget(null)}
       />
     </div>
   );

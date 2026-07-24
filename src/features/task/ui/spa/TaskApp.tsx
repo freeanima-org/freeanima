@@ -162,6 +162,8 @@ export function TaskApp() {
   const [itemMenu, setItemMenu] = useState<ItemMenuState | null>(null);
   const [sheetMenu, setSheetMenu] = useState<SheetMenuState | null>(null);
   const [listToDelete, setListToDelete] = useState<TaskListRow | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<TaskItemRow | null>(null);
+  const [smartListToDelete, setSmartListToDelete] = useState<SmartListRow | null>(null);
   const [childNamePrompt, setChildNamePrompt] = useState<ChildNamePromptState | null>(null);
   const [childNamePromptValue, setChildNamePromptValue] = useState("");
 
@@ -927,7 +929,14 @@ export function TaskApp() {
     }
   };
 
-  const handleDeleteItem = async (item: TaskItemRow) => {
+  const handleDeleteItem = (item: TaskItemRow) => {
+    setItemToDelete(item);
+  };
+
+  const confirmDeleteItem = async () => {
+    const item = itemToDelete;
+    if (!item) return;
+    setItemToDelete(null);
     try {
       await deleteTaskItem(item.id);
       setSelectedItemIds((prev) => {
@@ -1156,8 +1165,14 @@ export function TaskApp() {
     }
   };
 
-  const handleDeleteSmartList = async (row: SmartListRow) => {
-    if (row.id == null) return;
+  const handleDeleteSmartList = (row: SmartListRow) => {
+    setSmartListToDelete(row);
+  };
+
+  const confirmDeleteSmartList = async () => {
+    const row = smartListToDelete;
+    if (!row || row.id == null) return;
+    setSmartListToDelete(null);
     try {
       await deleteSmartList(row.id);
       const smartRows = await fetchSmartLists();
@@ -1720,6 +1735,32 @@ export function TaskApp() {
           variant="error"
           onConfirm={() => void confirmDeleteList()}
           onCancel={() => setListToDelete(null)}
+        />
+
+        <ConfirmDialog
+          open={itemToDelete != null}
+          title="删除确认"
+          description={
+            itemToDelete ? `确定删除任务「${itemToDelete.title}」？此操作不可恢复。` : undefined
+          }
+          confirmLabel="删除"
+          variant="error"
+          onConfirm={() => void confirmDeleteItem()}
+          onCancel={() => setItemToDelete(null)}
+        />
+
+        <ConfirmDialog
+          open={smartListToDelete != null}
+          title="删除确认"
+          description={
+            smartListToDelete
+              ? `确定删除智能清单「${smartListToDelete.title}」？此操作不可恢复。`
+              : undefined
+          }
+          confirmLabel="删除"
+          variant="error"
+          onConfirm={() => void confirmDeleteSmartList()}
+          onCancel={() => setSmartListToDelete(null)}
         />
       </TaskDndRoot>
 

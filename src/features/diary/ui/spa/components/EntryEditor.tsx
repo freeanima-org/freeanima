@@ -15,7 +15,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronDownIcon, ChevronRightIcon, GripVerticalIcon, Trash2Icon } from "lucide-react";
-import { Button, Input, Textarea } from "@freeanima/frontend/ui-kit";
+import { useTouchPrimaryCapability } from "@freeanima/frontend/shell-sdk/react";
+import { Button, Input, Textarea, cn } from "@freeanima/frontend/ui-kit";
+import { ConfirmDialog } from "@freeanima/frontend/ui-kit/composite";
 
 import type { BlockDraft, EntryDraft } from "../lib/entry-draft-dirty.ts";
 import {
@@ -45,6 +47,8 @@ function SortableBlock({
   onChange: (patch: Partial<Pick<BlockDraft, "title" | "content" | "tag_ids">>) => void;
   onDelete: () => void;
 }) {
+  const touchPrimary = useTouchPrimaryCapability();
+  const hoverReveal = touchPrimary ? "" : "opacity-0 group-hover:opacity-100";
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.id,
     disabled: readOnly,
@@ -57,6 +61,7 @@ function SortableBlock({
   const semanticLabel = semanticLabelOf(block.components);
   const blockReadOnly = readOnly || semanticLabel != null;
   const [collapsed, setCollapsed] = useState(() => isBlockCollapsed(block.id));
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const toggleCollapsed = () => {
     const next = !collapsed;
@@ -118,7 +123,11 @@ function SortableBlock({
         {!blockReadOnly && !collapsed ? (
           <button
             type="button"
-            className="text-muted-foreground h-6 w-6 shrink-0 cursor-grab touch-none opacity-0 group-hover:opacity-100"
+            className={cn(
+              "text-muted-foreground shrink-0 cursor-grab touch-none",
+              touchPrimary ? "flex h-9 w-9 items-center justify-center" : "h-6 w-6",
+              hoverReveal,
+            )}
             aria-label="拖拽排序"
             {...attributes}
             {...listeners}
@@ -131,9 +140,13 @@ function SortableBlock({
             type="button"
             variant="ghost"
             size="sm"
-            className="text-muted-foreground h-7 w-7 shrink-0 p-0 opacity-0 group-hover:opacity-100"
+            className={cn(
+              "text-muted-foreground shrink-0 p-0",
+              touchPrimary ? "h-9 w-9" : "h-7 w-7",
+              hoverReveal,
+            )}
             aria-label="删除块"
-            onClick={onDelete}
+            onClick={() => setConfirmDeleteOpen(true)}
           >
             <Trash2Icon className="size-3.5" />
           </Button>
@@ -162,6 +175,19 @@ function SortableBlock({
           </div>
         </>
       ) : null}
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="删除确认"
+        description="确定删除该正文块？未保存前仍可放弃编辑恢复。"
+        confirmLabel="删除"
+        variant="error"
+        onConfirm={() => {
+          setConfirmDeleteOpen(false);
+          onDelete();
+        }}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
     </div>
   );
 }

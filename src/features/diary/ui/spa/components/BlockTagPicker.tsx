@@ -1,7 +1,8 @@
 import { useEffect, useState, type JSX } from "react";
 import { PlusIcon, TagIcon, XIcon } from "lucide-react";
 
-import { Button, Input } from "@freeanima/frontend/ui-kit";
+import { useTouchPrimaryCapability } from "@freeanima/frontend/shell-sdk/react";
+import { Button, Input, cn } from "@freeanima/frontend/ui-kit";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -26,6 +27,7 @@ export function BlockTagPicker({
   alwaysShowTrigger = false,
   readOnly = false,
 }: BlockTagPickerProps): JSX.Element | null {
+  const touchPrimary = useTouchPrimaryCapability();
   const [pool, setPool] = useState<TagRow[]>([]);
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -107,7 +109,10 @@ export function BlockTagPicker({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="text-muted-foreground h-7 gap-1 px-2 text-xs opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100"
+                className={cn(
+                  "text-muted-foreground h-7 gap-1 px-2 text-xs data-[state=open]:opacity-100",
+                  touchPrimary ? "" : "opacity-0 group-hover:opacity-100",
+                )}
                 aria-label="管理标签"
               >
                 <TagIcon className="size-3.5" />
