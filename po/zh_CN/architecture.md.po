@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 14:55+0800\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/architecture.md:1 docs/features/companion.md:11
-#: messages/po4a/en.xml:672
+#: messages/po4a/en.xml:685
 #, no-wrap
 msgid "Architecture"
 msgstr "架构"
@@ -47,7 +47,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:22
+#: docs/concepts/architecture.md:23
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Structure                                | Role                                                                                                                            |\n"
@@ -60,15 +60,16 @@ msgstr ""
 #| "| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |\n"
 #| "| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |\n"
 msgid ""
-"| Role                                  | English          | Chinese    | Meaning                                                                                                                                                                          |\n"
-"| ------------------------------------- | ---------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| Long-running process / connect target | **Habitat**      | **栖息地** | One process hosts **multiple digital lives** (`agent` subjects) and **human assets** (`user`); connect / token / restart target                                                  |\n"
-"| External connectors (class)           | **Portal**       | **入口**   | Shell, MCP clients, and similar ways in; not the Habitat itself                                                                                                                  |\n"
-"| Shell                                 | **Shell**        | **壳**     | A Portal (desktop / mobile / web window; SSH-like)                                                                                                                               |\n"
-"| Admin / inspect UI (legacy Habitat)   | **Habitat** (UI) | **栖息地** | Area under `/habitat/*`; \"Open Habitat\" vs \"Connect to Habitat\"                                                                                                                  |\n"
-"| Admin home page                       | **Dashboard**    | **仪表盘** | `/habitat/dashboard` only; other Habitat routes keep their own labels                                                                                                            |\n"
-"| Message bridges                       | **Gateway**      | Gateway    | Discord / WeChat — **not** a Portal                                                                                                                                              |\n"
-"| Protocol / code identifiers           | —                | **协议/代码标识** | `/rpc/v1`、`HabitatRPC/1.0`、`habitat_*`、`habitat_runtime_config`、`dev:habitat` |\n"
+"| Role                                  | English          | Chinese           | Meaning                                                                                                                         |\n"
+"| ------------------------------------- | ---------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Long-running process / connect target | **Habitat**      | **栖息地**        | One process hosts **multiple digital lives** (`agent` subjects) and **human assets** (`user`); connect / token / restart target |\n"
+"| External connectors (class)           | **Portal**       | **入口**          | Shell, MCP clients, and similar ways in; not the Habitat itself                                                                 |\n"
+"| Remote-tool registrant                | **Outpost**      | **前哨**          | Unreachable local app that `remote_tools.attach` (Portal-embedded companion or standalone tool); **not** a Portal               |\n"
+"| Shell                                 | **Shell**        | **壳**            | A Portal (desktop / mobile / web window; SSH-like)                                                                              |\n"
+"| Admin / inspect UI (legacy Habitat)   | **Habitat** (UI) | **栖息地**        | Area under `/habitat/*`; \"Open Habitat\" vs \"Connect to Habitat\"                                                                 |\n"
+"| Admin home page                       | **Dashboard**    | **仪表盘**        | `/habitat/dashboard` only; other Habitat routes keep their own labels                                                           |\n"
+"| Message bridges                       | **Gateway**      | Gateway           | Discord / WeChat — **not** a Portal                                                                                             |\n"
+"| Protocol / code identifiers           | —                | **协议/代码标识** | `/rpc/v1`、`HabitatRPC/1.0`、`habitat_*`、`habitat_runtime_config`、`dev:habitat`                                               |\n"
 msgstr ""
 "| 结构                           | 角色                                                                                                                          |\n"
 "| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |\n"
@@ -81,59 +82,59 @@ msgstr ""
 "| `AGENTS.md` 等项目叙事文件       | 项目上下文的锚点                                                                                                             |\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:24
+#: docs/concepts/architecture.md:25
 msgid ""
 "Verbs: **connect to Habitat** (URL + token); **open Habitat** (admin UI); "
 "**reach via a Portal** (Shell / MCP)."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:26
+#: docs/concepts/architecture.md:27
 msgid ""
 "Estate **Body** (VM / OS / network under the four-layer model) is the "
 "cognitive \"what I run on\" for a subject — **not** the Habitat process name."
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/architecture.md:27
+#: docs/concepts/architecture.md:28
 #, fuzzy, no-wrap
 #| msgid "Configuration"
 msgid "Habitat configuration (SSOT)"
 msgstr "配置"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:30
+#: docs/concepts/architecture.md:31
 msgid ""
 "User copy says Habitat. Storage/RPC identifiers use `habitat_*` / "
 "`HabitatRPC/1.0` / `/rpc/v1`."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:35
+#: docs/concepts/architecture.md:36
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Method         | Schema                                                            | Returns                                        |\n"
 #| "| -------------- | ----------------------------------------------------------------- | ---------------------------------------------- |\n"
 #| "| `message.send` | [`message.ts`](../../packages/sap-contract/src/frames/message.ts) | `{ stream_id }`; stream events follow on `evt` |\n"
 msgid ""
-"| Layer         | Storage                                                                                   | Who reads/writes                                             |\n"
-"| ------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------ |\n"
-"| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`, `web`)                               | `platform/boot` only; install/ops edit YAML                  |\n"
-"| **Runtime**   | PostgreSQL `habitat_runtime_config`                                                                 | Engine, tools, Shell Habitat settings, Habitat UI `config.*` |\n"
+"| Layer         | Storage                                                     | Who reads/writes                                             |\n"
+"| ------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |\n"
+"| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`, `web`) | `platform/boot` only; install/ops edit YAML                  |\n"
+"| **Runtime**   | PostgreSQL `habitat_runtime_config`                         | Engine, tools, Shell Habitat settings, Habitat UI `config.*` |\n"
 msgstr ""
 "| 方法           | Schema                                                            | 返回值                                         |\n"
 "| -------------- | ----------------------------------------------------------------- | ---------------------------------------------- |\n"
 "| `message.send` | [`message.ts`](../../packages/sap-contract/src/frames/message.ts) | `{ stream_id }`；后续流事件通过 `evt` 推送     |\n"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:36
+#: docs/concepts/architecture.md:37
 #, fuzzy, no-wrap
 #| msgid "Naming Rationale"
 msgid "Naming cleanup"
 msgstr "命名说明"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:39
+#: docs/concepts/architecture.md:40
 msgid ""
 "Legacy `hub_*` / `console` protocol aliases and dual-write keys have been "
 "removed; use Habitat identifiers only."
@@ -458,11 +459,11 @@ msgstr ""
 #| "| **Habitat 前端         | **Habitat embed                  | `platform/feature-console` + `ui-kit` + `shell-sdk`       | REST `/api`          |\n"
 #| "| SAP 产品面         | Satellite apps               | `satellites/*` + `sap-contract` + `ui-kit` + `shell-sdk` | Habitat RPC + SAP attach |\n"
 msgid ""
-"| Layer            | Platform-native?                   | Location (current → target)                           | 数据通道                                |\n"
-"| ---------------- | ---------------------------------- | ----------------------------------------------------- | --------------------------------------- |\n"
-"| Shell（壳子维）  | Yes                                | `src/app/shell/tauri`, companion, Habitat binding      | Tauri IPC / commands                    |\n"
-"| Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                               | Habitat RPC（Feature RPC）              |\n"
-"| Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.habitat.rpc`）       | Habitat RPC（WS + HTTP POST `/rpc/v1`） |\n"
+"| Layer            | Platform-native?                   | Location (current → target)                                   | 数据通道                                |\n"
+"| ---------------- | ---------------------------------- | ------------------------------------------------------------- | --------------------------------------- |\n"
+"| Shell（壳子维）  | Yes                                | `src/app/shell/tauri`, companion, Habitat binding             | Tauri IPC / commands                    |\n"
+"| Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                                       | Habitat RPC（Feature RPC）              |\n"
+"| Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.habitat.rpc`）           | Habitat RPC（WS + HTTP POST `/rpc/v1`） |\n"
 "| Companion host   | Overlay WebView-host（第一方）     | `src/features/companion/companion`（spa attach；壳薄 IPC/FS） | Habitat RPC + `remote_tools.attach`     |\n"
 msgstr ""
 "| Layer            | Platform-native?                   | Location (current → target)                                                | 数据通道                                |\n"
@@ -521,13 +522,13 @@ msgstr "管理台侧栏分组展示（非扁平存储表）。新功能应映射
 #| "| Estate       | Estate          | subjects, worlds                                    |\n"
 #| "| Capabilities | Estate (tools)  | tools, commands, mcp, acp, satellites               |\n"
 msgid ""
-"| Group        | Cognitive layer | Routes (representative)                             |\n"
-"| ------------ | --------------- | --------------------------------------------------- |\n"
-"| Runtime      | Estate + ops    | dashboard, config, cron                             |\n"
-"| Memory       | Memory          | memory browse sub-routes, sleep, auto-llm-runs |\n"
-"| Self         | Self            | self-layer, system-prompt                           |\n"
-"| Estate       | Estate          | subjects, worlds                                    |\n"
-"| Capabilities | Estate (tools)  | tools, commands, mcp, acp, remote-tool instances    |\n"
+"| Group        | Cognitive layer | Routes (representative)                          |\n"
+"| ------------ | --------------- | ------------------------------------------------ |\n"
+"| Runtime      | Estate + ops    | dashboard, config, cron                          |\n"
+"| Memory       | Memory          | memory browse sub-routes, sleep, auto-llm-runs   |\n"
+"| Self         | Self            | self-layer, system-prompt                        |\n"
+"| Estate       | Estate          | subjects, worlds                                 |\n"
+"| Capabilities | Estate (tools)  | tools, commands, mcp, acp, remote-tool instances |\n"
 msgstr ""
 "| 分组         | 认知层          | 路由（代表）                                        |\n"
 "| ------------ | --------------- | --------------------------------------------------- |\n"
@@ -829,9 +830,14 @@ msgstr "LLM **永远看不到密钥值**——仅见保险库条目元数据与 
 
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:230
+#, fuzzy
+#| msgid ""
+#| "Runtime resolution: `vault(\"item_id\", \"field\")` and `env(\"KEY\")` in "
+#| "config; Shell `/vault` for management"
 msgid ""
-"Runtime resolution: `vault(\"item_id\", \"field\")` and `env(\"KEY\")` in "
-"config; Shell `/vault` for management"
+"Bootstrap `config.yaml` (cold start, before PG): plaintext or `env(\"KEY\")` "
+"only — **not** `vault()`. Runtime PG config: `vault(\"item_id\", \"field\")` "
+"and `env(\"KEY\")`; Shell `/vault` for management"
 msgstr ""
 "运行时解析：config 中的 `vault(\"item_id\", \"field\")` 与 `env(\"KEY\")`；管"
 "理见 Shell `/vault`"
@@ -866,8 +872,8 @@ msgstr "运行模式"
 msgid ""
 "Production (standalone install CLI): `anima service` (systemd --user). Auto-"
 "restarts after crashes; only `systemctl stop` stops the service. Source-tree "
-"`anima` does **not** register `service` — use `bun run dev:habitat` for "
-"local Habitat."
+"`anima` does **not** register `service` — use `just dev habitat` for local "
+"Habitat."
 msgstr ""
 "生产环境：`anima service`（systemd --user）。崩溃后自动重启；只有 `systemctl "
 "stop` 才会停止服务。"
@@ -915,9 +921,9 @@ msgid ""
 "\n"
 "# monorepo / worktree\n"
 "just dev                         # Habitat (≥10000) + Vite Web (≥5000)\n"
-"bun run dev:habitat                  # Habitat foreground (default random ≥10000; not 2658)\n"
-"bun run dev:web                  # browser shell Vite HMR from :5000 (set FREEANIMA_URL)\n"
-"bun run build:web                # source deploy / Habitat /web: build dist before start\n"
+"just dev habitat                  # Habitat foreground (default random ≥10000; not 2658)\n"
+"just dev web                  # browser shell Vite HMR from :5000 (set FREEANIMA_URL)\n"
+"just pack web                # source deploy / Habitat /web: build dist before start\n"
 msgstr ""
 "anima service start          # background (systemd user unit when available)\n"
 "anima service start --foreground\n"

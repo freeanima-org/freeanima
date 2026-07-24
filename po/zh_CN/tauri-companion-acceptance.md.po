@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
 "PO-Revision-Date: 2026-07-23 13:39+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -64,9 +64,13 @@ msgstr ""
 #. type: Plain text
 #: docs/features/tauri-companion-acceptance.md:16
 #: docs/features/tauri-companion-éªæ¶.md:16
+#, fuzzy
+#| msgid ""
+#| "开发：`just web`（另终端）+ `just tauri`；overlay 默认 `http://"
+#| "127.0.0.1:4176/?view=overlay`。"
 msgid ""
-"开发：`just web`（另终端）+ `just tauri`；overlay 默认 `http://"
-"127.0.0.1:4176/?view=overlay`。"
+"开发：`just dev web`（另终端）+ `just dev tauri`；overlay 为工作区全屏透明窗"
+"（角色舞台 160×260）。"
 msgstr ""
 "开发：`just web`（另终端）+ `just tauri`；overlay 默认 `http://"
 "127.0.0.1:4176/?view=overlay`。"
@@ -75,6 +79,6 @@ msgstr ""
 #: docs/features/tauri-companion-acceptance.md:17
 #: docs/features/tauri-companion-éªæ¶.md:17
 msgid ""
-"打包资源：`scripts/prepare-tauri-desktop-ui.ts` → `src-tauri/companion-dist/"
-"`。"
+"打包资源：`scripts/prepare-tauri-ui.ts` → `src-tauri/ui/companion/`"
+"（`frontendDist`，`WebviewUrl::App`；勿再用 `file://` resources）。"
 msgstr ""

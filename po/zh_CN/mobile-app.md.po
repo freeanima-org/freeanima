@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 14:39+0800\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
-#: messages/po4a/en.xml:684
+#: messages/po4a/en.xml:697
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr "移动端 APP（Android）"
@@ -176,7 +176,7 @@ msgid "**测试连接** → **保存并进入** → local `/web/chat`."
 msgstr "**测试连接** → **保存并进入** → local `/web/chat`."
 
 #. type: Title ##
-#: docs/features/mobile-app.md:47 docs/guide/database.md:97
+#: docs/features/mobile-app.md:47 docs/guide/database.md:98
 #: docs/guide/remote-access.md:194
 #, no-wrap
 msgid "Troubleshooting"
@@ -208,8 +208,8 @@ msgstr "调试"
 #. type: Plain text
 #: docs/features/mobile-app.md:64
 msgid ""
-"`bun run debug:android` / `just android`：Tauri Android debug。Chrome "
-"`chrome://inspect` 连 WebView。"
+"`just dev tauri-android`：Tauri Android debug。Chrome `chrome://inspect` 连 "
+"WebView。"
 msgstr ""
 
 #. type: Title ##
@@ -222,9 +222,9 @@ msgstr "构建与侧载"
 #: docs/features/mobile-app.md:67
 #, no-wrap
 msgid ""
-"just install-android\n"
-"just install-android-tauri -- --init   # 首次\n"
-"just pack-android                      # → dist/freeanima-mobile-tauri-android.apk（有设备则尝试 adb 安装）\n"
+"just install android\n"
+"just install tauri-android -- --init   # 首次\n"
+"just pack tauri-android                      # → dist/freeanima-mobile-tauri-android.apk（有设备则尝试 adb 安装）\n"
 msgstr ""
 
 #. type: Plain text

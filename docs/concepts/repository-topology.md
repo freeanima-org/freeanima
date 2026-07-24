@@ -60,7 +60,7 @@ src/
 - `tsconfig.base.json` paths：`@freeanima/*`、`@paraglide/*`（与 Vite `module-aliases.ts` 手动对齐）。
 - [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md)：目录层依赖约定（`src/<layer>/` 前缀）。
 - 已移除 `check-package-cycles.ts`（单包无 workspace 图）。
-- 分发形态仅 **source** 与 **Linux standalone**（`build:cli:executable`）；无 npm/`@freeanima/cli` 发布，无产品 Docker 镜像。
+- 分发形态仅 **source** 与 **Linux standalone**（`just pack cli`）；无 npm/`@freeanima/cli` 发布，无产品 Docker 镜像。
 
 ## 文档站 i18n
 

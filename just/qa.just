@@ -62,8 +62,8 @@ test-unit: _deps
   bun test src --pass-with-no-tests
 
 [no-cd]
-test-integration: _deps
-  bun scripts/run-integration-tests.ts
+test-integration *args: _deps
+  bun scripts/run-integration-tests.ts {{args}}
 
 [no-cd]
 test-changed: _deps

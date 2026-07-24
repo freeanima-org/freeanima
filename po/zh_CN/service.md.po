@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 14:39+0800\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/service.md:1 messages/po4a/en.xml:659 messages/po4a/en.xml:699
+#: docs/guide/service.md:1 messages/po4a/en.xml:672 messages/po4a/en.xml:712
 #, no-wrap
 msgid "Service"
 msgstr "服务"
@@ -93,19 +93,15 @@ msgstr ""
 
 #. type: Fenced code block (bash)
 #: docs/guide/service.md:24
-#, fuzzy, no-wrap
-#| msgid ""
-#| "curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/api/status | jq '.memory_kb, .memory_detail'\n"
-#| "grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status\n"
-#| "bun run memory:sample -- --url http://127.0.0.1:2658/api/status --stage full\n"
+#, no-wrap
 msgid ""
 "curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/rpc/v1/status/get | jq '.memory_kb, .memory_detail'\n"
 "grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status\n"
-"just memory-sample -- --habitat-url http://127.0.0.1:2658 --stage full\n"
+"just misc memory-sample -- --habitat-url http://127.0.0.1:2658 --stage full\n"
 msgstr ""
-"curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/api/status | jq '.memory_kb, .memory_detail'\n"
+"curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/rpc/v1/status/get | jq '.memory_kb, .memory_detail'\n"
 "grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status\n"
-"bun run memory:sample -- --url http://127.0.0.1:2658/api/status --stage full\n"
+"just misc memory-sample -- --habitat-url http://127.0.0.1:2658 --stage full\n"
 
 #. type: Title ##
 #: docs/guide/service.md:30
@@ -116,26 +112,17 @@ msgstr "开发与运行"
 
 #. type: Plain text
 #: docs/guide/service.md:36
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Capability        | Description                                                                                            |\n"
-#| "| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
-#| "| `memory_recall`   | Four sources: semantic / conversation / limbic / autobiographical; Top N; conversation returns snippet |\n"
-#| "| `sessions_search` | Session message search; returns snippet (not full content)                                             |\n"
-#| "| `memory_remember` | Semantic memory CRUD during conversation                                                               |\n"
-#| "| Resident memory   | System prompt injection (not recall)                                                                   |\n"
+#, no-wrap
 msgid ""
-"| Mode                    | How to run Habitat                                                                                                               |\n"
-"| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| **Monorepo / worktree** | `bun run dev:habitat` (default random port ≥10000; optional `--port` / `--strict-port`; source `anima` has **no** `service` command) |\n"
-"| **Standalone install**  | `anima service start` / `stop` / `status` (systemd user unit; **2658** / TLS **2659**)                                           |\n"
+"| Mode                    | How to run Habitat                                                                                                                |\n"
+"| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| **Monorepo / worktree** | `just dev habitat` (default random port ≥10000; optional `--port` / `--strict-port`; source `anima` has **no** `service` command) |\n"
+"| **Standalone install**  | `anima service start` / `stop` / `status` (systemd user unit; **2658** / TLS **2659**)                                            |\n"
 msgstr ""
-"| 能力              | 说明                                                                                                   |\n"
-"| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
-"| `memory_recall`   | 四源：semantic / conversation / limbic / autobiographical；Top N；conversation 返回 snippet            |\n"
-"| `sessions_search` | 会话消息搜索；返回 snippet（非全文）                                                                   |\n"
-"| `memory_remember` | 对话中语义记忆 CRUD                                                                                    |\n"
-"| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
+"| 模式                    | 如何运行 Habitat                                                                                                                  |\n"
+"| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| **Monorepo / worktree** | `just dev habitat`（默认随机端口 ≥10000；可选 `--port` / `--strict-port`；源码树 `anima` **无** `service` 命令）                  |\n"
+"| **Standalone install**  | `anima service start` / `stop` / `status`（systemd user unit；**2658** / TLS **2659**）                                           |\n"
 
 #. type: Plain text
 #: docs/guide/service.md:38
@@ -152,14 +139,7 @@ msgstr "常用命令"
 
 #. type: Fenced code block (bash)
 #: docs/guide/service.md:41
-#, fuzzy, no-wrap
-#| msgid ""
-#| "anima service start          # background (systemd user unit when available)\n"
-#| "anima service start --foreground\n"
-#| "anima service status\n"
-#| "anima service stop\n"
-#| "anima service restart\n"
-#| "anima web start --foreground # standalone Web static server (default :2659; production: web.enabled + service stack)\n"
+#, no-wrap
 msgid ""
 "# --- standalone install CLI only ---\n"
 "anima service start          # background (systemd user unit when available)\n"
@@ -171,15 +151,21 @@ msgid ""
 "\n"
 "# --- monorepo / worktree ---\n"
 "just dev                     # Habitat (≥10000) + Vite Web (≥5000); proxy via FREEANIMA_URL\n"
-"bun run dev:habitat              # Habitat foreground; default random ≥10000; skip Habitat TLS (Vite may HTTPS)\n"
-"bun run dev:web              # Vite HMR from :5000 (set FREEANIMA_URL to Habitat); browser Habitat = page origin\n"
+"just dev habitat              # Habitat foreground; default random ≥10000; skip Habitat TLS (Vite may HTTPS)\n"
+"just dev web              # Vite HMR from :5000 (set FREEANIMA_URL to Habitat); browser Habitat = page origin\n"
 msgstr ""
+"# --- standalone install CLI only ---\n"
 "anima service start          # background (systemd user unit when available)\n"
 "anima service start --foreground\n"
 "anima service status\n"
 "anima service stop\n"
 "anima service restart\n"
-"anima web start --foreground # standalone Web static server (default :2659; production: web.enabled + service stack)\n"
+"anima web start --foreground # standalone Web static server (default :2660; production: web.enabled + service stack)\n"
+"\n"
+"# --- monorepo / worktree ---\n"
+"just dev                     # Habitat (≥10000) + Vite Web (≥5000); proxy via FREEANIMA_URL\n"
+"just dev habitat              # Habitat foreground; default random ≥10000; skip Habitat TLS (Vite may HTTPS)\n"
+"just dev web              # Vite HMR from :5000 (set FREEANIMA_URL to Habitat); browser Habitat = page origin\n"
 
 #. type: Plain text
 #: docs/guide/service.md:57
@@ -206,33 +192,25 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/service.md:65
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Capability        | Description                                                                                            |\n"
-#| "| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
-#| "| `memory_recall`   | Four sources: semantic / conversation / limbic / autobiographical; Top N; conversation returns snippet |\n"
-#| "| `sessions_search` | Session message search; returns snippet (not full content)                                             |\n"
-#| "| `memory_remember` | Semantic memory CRUD during conversation                                                               |\n"
-#| "| Resident memory   | System prompt injection (not recall)                                                                   |\n"
+#, no-wrap
 msgid ""
-"| Mode               | When to `build:web`                          | UI                                                      |\n"
-"| ------------------ | -------------------------------------------- | ------------------------------------------------------- |\n"
-"| Standalone release | Forced during `bun run build:cli:executable` | Embedded, served at `/web/*`                            |\n"
-"| Source deploy      | Run `bun run build:web` before start         | Habitat `/web/*` when `web.enabled`                     |\n"
-"| Dev                | Not required                                 | `just dev` / `dev:habitat` + `dev:web` → Web **:5000+** HMR |\n"
+"| Mode               | When to `just pack web`          | UI                                                                    |\n"
+"| ------------------ | -------------------------------- | --------------------------------------------------------------------- |\n"
+"| Standalone release | Forced during `just pack cli`    | Embedded, served at `/web/*`                                          |\n"
+"| Source deploy      | Run `just pack web` before start | Habitat `/web/*` when `web.enabled`                                   |\n"
+"| Dev                | Not required                     | `just dev` / `just dev habitat` + `just dev web` → Web **:5000+** HMR |\n"
 msgstr ""
-"| 能力              | 说明                                                                                                   |\n"
-"| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
-"| `memory_recall`   | 四源：semantic / conversation / limbic / autobiographical；Top N；conversation 返回 snippet            |\n"
-"| `sessions_search` | 会话消息搜索；返回 snippet（非全文）                                                                   |\n"
-"| `memory_remember` | 对话中语义记忆 CRUD                                                                                    |\n"
-"| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
+"| 模式               | 何时 `just pack web`             | UI                                                                    |\n"
+"| ------------------ | -------------------------------- | --------------------------------------------------------------------- |\n"
+"| Standalone release | `just pack cli` 时强制           | 嵌入，经 `/web/*` 提供                                                |\n"
+"| Source deploy      | 启动前执行 `just pack web`       | `web.enabled` 时 Habitat `/web/*`                                     |\n"
+"| Dev                | 不需要                           | `just dev` / `just dev habitat` + `just dev web` → Web **:5000+** HMR |\n"
 
 #. type: Plain text
 #: docs/guide/service.md:67
 #, fuzzy, no-wrap
 #| msgid "When `web.enabled: true`, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. For standalone static hosting without the Habitat process, use `anima web start --foreground` (default `:2659`).\n"
-msgid "When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. For standalone static hosting without the Habitat process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `dev:habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
+msgid "When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. For standalone static hosting without the Habitat process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `just dev habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
 msgstr "启用 `web.enabled: true` 时，栈由 Habitat 在 `http://<host>:2658/web/*` 提供浏览器 Web UI（无独立 API 代理）。客户端在 **Habitat 设置** 中保存 Habitat URL 与**服务 API 令牌**（`fa_at_...`）。若无需 Habitat 进程单独托管静态资源，使用 `anima web start --foreground`（默认 `:2659`）。\n"
 
 #. type: Plain text
@@ -272,18 +250,13 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/service.md:74
-#, fuzzy
-#| msgid ""
-#| "**Local Web dev (`bun run dev:web`):** Vite on `:4173` with base `/web/` "
-#| "— Chat `http://127.0.0.1:4173/web/chat`, **Habitat `http://127.0.0.1:4173/"
-#| "web/admin/dashboard`; Habitat still provides REST `/api/*` and Habitat "
-#| "RPC `/rpc/v1`."
 msgid ""
-"**Local Web dev (`bun run dev:web`):** Vite from `:5000` with base `/web/` — "
+"**Local Web dev (`just dev web`):** Vite from `:5000` with base `/web/` — "
 "Chat `http://127.0.0.1:5000/web/chat`, Habitat `…/web/habitat/dashboard`; `/"
 "rpc` and `/mcp` proxied to `FREEANIMA_URL`. Browser Habitat defaults to page "
-"origin; `dev:habitat` auto-fills token via `~/.anima/dev-web.token`."
+"origin; `just dev habitat` auto-fills token via `~/.anima/dev-web.token`."
 msgstr ""
-"**本地 Web 开发（`bun run dev:web`）：** Vite 运行在 `:4173`，base 为 `/web/`"
-"——聊天室 `http://127.0.0.1:4173/web/chat`，管理台 `http://127.0.0.1:4173/web/"
-"admin/dashboard`；Habitat 仍提供 REST `/api/*` 与 Habitat RPC `/rpc/v1`。"
+"**本地 Web 开发（`just dev web`）：** Vite 从 `:5000` 起，base 为 `/web/`——聊"
+"天室 `http://127.0.0.1:5000/web/chat`，Habitat `…/web/habitat/dashboard`；`/"
+"rpc` 与 `/mcp` 代理到 `FREEANIMA_URL`。浏览器 Habitat 默认页面 origin；`just "
+"dev habitat` 通过 `~/.anima/dev-web.token` 自动注入 token。"
