@@ -15,10 +15,12 @@ CI / 本地 release profile 优先级：**构建速度 > 体积 > 运行速度**
 
 **身份与数据目录**（由 `FREEANIMA_BUILD_CHANNEL` 派生；未设 ⇒ `dev`）：
 
-| Channel          | Bundle id                  | 壳默认 home    |
-| ---------------- | -------------------------- | -------------- |
-| canary / release | `com.freeanima.portal`     | `~/.anima`     |
-| dev              | `com.freeanima.portal.dev` | `~/.anima-dev` |
+| Channel          | Bundle id                  | productName     | Windows 默认安装目录           | 壳默认 home    |
+| ---------------- | -------------------------- | --------------- | ------------------------------ | -------------- |
+| canary / release | `com.freeanima.portal`     | `FreeAnima`     | `%LOCALAPPDATA%\FreeAnima`     | `~/.anima`     |
+| dev              | `com.freeanima.portal.dev` | `FreeAnima Dev` | `%LOCALAPPDATA%\FreeAnima Dev` | `~/.anima-dev` |
+
+NSIS 安装目录 = `productName`（无独立 installDir）。`just pack tauri-windows` 按当前 `productName` 选取 setup，并在构建前清除同目录旧 `*-setup.exe`，避免误拷 `FreeAnima_*.exe` 到 `dist/`。请安装与 channel 对应的 setup（dev 安装器文件名含 `FreeAnima Dev` / `FreeAnima-Dev`）。
 
 打包/开发脚本经 `scripts/apply-tauri-shell-identity.ts` 写出 `--config` 合并层；`FREEANIMA_HOME` 仍可覆盖壳 home。Habitat/CLI 数据目录不受此表影响（仍 `~/.anima` 或 `FREEANIMA_HOME`）。
 
