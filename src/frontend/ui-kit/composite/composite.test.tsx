@@ -11,6 +11,7 @@ mock.module("@paraglide/messages", () => ({
 
 const { ConfirmDialog } = await import("./ConfirmDialog.tsx");
 const { ActionSheet } = await import("./ActionSheet.tsx");
+const { ContextMenu } = await import("./ContextMenu.tsx");
 const { EmptyState } = await import("./EmptyState.tsx");
 const { StatusAlert } = await import("./StatusAlert.tsx");
 const { TaskItemTagStrip } = await import("./TaskItemTagStrip.tsx");
@@ -63,6 +64,27 @@ describe("composite components", () => {
       ),
     ).not.toThrow();
     expect(clicked).toBe(false);
+  });
+
+  it("ContextMenu with empty items renders children only", () => {
+    const html = renderToStaticMarkup(
+      createElement(ContextMenu, {
+        items: [],
+        children: createElement("button", { type: "button" }, "Row"),
+      }),
+    );
+    expect(html).toContain("Row");
+  });
+
+  it("ContextMenu mounts with items (Radix Content 走 Portal)", () => {
+    expect(() =>
+      renderToStaticMarkup(
+        createElement(ContextMenu, {
+          items: [{ label: "Edit", onClick: () => {} }],
+          children: createElement("button", { type: "button" }, "Row"),
+        }),
+      ),
+    ).not.toThrow();
   });
 
   it("EmptyState renders message", () => {

@@ -1,6 +1,7 @@
-import type { MouseEvent } from "react";
+import type { ReactElement } from "react";
 import { Button } from "@freeanima/frontend/ui-kit";
-import { EmptyState } from "@freeanima/frontend/ui-kit/composite";
+import { ContextMenu, EmptyState } from "@freeanima/frontend/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
 import { m } from "@paraglide/messages";
 import { Inbox, MoreHorizontal, Plus, Send } from "lucide-react";
 
@@ -18,11 +19,12 @@ type EmailAccountSidebarProps = {
   activeFolder: EmailMailboxFolder;
   writesDisabled: boolean;
   useActionSheet: boolean;
+  contextMenuEnabled?: boolean;
+  contextMenuItemsForAccount?: (account: EmailAccountRow) => ActionSheetItem[];
   onSelectFolder: (account: EmailAccountRow, folder: EmailMailboxFolder) => void;
   onAdd: () => void;
   onEdit: (account: EmailAccountRow) => void;
-  onOpenMenu: (account: EmailAccountRow, e?: MouseEvent) => void;
-  onOpenContextMenu: (e: MouseEvent, account: EmailAccountRow) => void;
+  onOpenMenu: (account: EmailAccountRow) => void;
 };
 
 export function EmailAccountSidebar({
@@ -31,11 +33,12 @@ export function EmailAccountSidebar({
   activeFolder,
   writesDisabled,
   useActionSheet,
+  contextMenuEnabled = false,
+  contextMenuItemsForAccount,
   onSelectFolder,
   onAdd,
   onEdit,
   onOpenMenu,
-  onOpenContextMenu,
 }: EmailAccountSidebarProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-2">
@@ -61,35 +64,40 @@ export function EmailAccountSidebar({
         <ul className="space-y-3">
           {accounts.map((account) => {
             const selected = activeAccountId === account.id;
-            return (
-              <li key={account.id} className={account.enabled ? "" : "opacity-60"}>
-                <div className="group mb-1 flex items-center gap-1 px-1">
+            const menuItems = contextMenuItemsForAccount?.(account) ?? [];
+            const header: ReactElement = (
+              <div className="group mb-1 flex items-center gap-1 px-1">
+                <button
+                  type="button"
+                  className="min-w-0 flex-1 truncate text-left text-xs font-medium"
+                  onDoubleClick={useActionSheet ? undefined : () => onEdit(account)}
+                  title={account.address}
+                >
+                  {accountLabel(account)}
+                </button>
+                {useActionSheet ? (
                   <button
                     type="button"
-                    className="min-w-0 flex-1 truncate text-left text-xs font-medium"
-                    onDoubleClick={useActionSheet ? undefined : () => onEdit(account)}
-                    onContextMenu={(e) => onOpenContextMenu(e, account)}
-                    title={account.address}
-                  >
-                    {accountLabel(account)}
-                  </button>
-                  <button
-                    type="button"
-                    className={`text-muted-foreground hover:text-foreground flex shrink-0 items-center justify-center ${
-                      useActionSheet
-                        ? "min-h-9 min-w-9"
-                        : "min-h-7 min-w-7 opacity-70 group-hover:opacity-100"
-                    }`}
+                    className="text-muted-foreground hover:text-foreground flex min-h-9 min-w-9 shrink-0 items-center justify-center"
                     aria-label={m.email_account_actions()}
                     disabled={writesDisabled}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onOpenMenu(account, e);
+                      onOpenMenu(account);
                     }}
                   >
                     <MoreHorizontal className="size-3.5" />
                   </button>
-                </div>
+                ) : null}
+              </div>
+            );
+            return (
+              <li key={account.id} className={account.enabled ? "" : "opacity-60"}>
+                {contextMenuEnabled && !useActionSheet && menuItems.length > 0 ? (
+                  <ContextMenu items={menuItems}>{header}</ContextMenu>
+                ) : (
+                  header
+                )}
                 <ul className="space-y-0.5 pl-1">
                   <li>
                     <button

@@ -2,9 +2,11 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button, Checkbox, Input } from "@freeanima/frontend/ui-kit";
+import { ContextMenu } from "@freeanima/frontend/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
 import { useDrawerNav } from "@freeanima/frontend/ui-kit/layout";
 import { SearchIcon } from "lucide-react";
-import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactElement, type ReactNode } from "react";
 
 import { LIST_ROOT_DND_ID, listDndId } from "../lib/dnd-ids.ts";
 import type { TaskListRow } from "../lib/api.ts";
@@ -40,7 +42,8 @@ type ListSidebarProps = {
   onNewListNameChange: (value: string) => void;
   onNewFolderNameChange: (value: string) => void;
   onOpenListMenu: (list: TaskListRow) => void;
-  onOpenListContextMenu: (e: MouseEvent, list: TaskListRow) => void;
+  contextMenuEnabled?: boolean;
+  contextMenuItemsForList?: ((list: TaskListRow) => ActionSheetItem[]) | undefined;
   onEditList: (list: TaskListRow) => void;
 };
 
@@ -49,22 +52,24 @@ function SortableTreeRow({
   expanded,
   selected,
   useActionSheet,
+  contextMenuEnabled,
+  contextMenuItems,
   onToggleExpand,
   onSelectList,
   onSelectFolder,
   onOpenMenu,
-  onContextMenu,
   onEdit,
 }: {
   node: ListTreeNode;
   expanded: boolean;
   selected: boolean;
   useActionSheet: boolean;
+  contextMenuEnabled: boolean;
+  contextMenuItems?: ActionSheetItem[] | undefined;
   onToggleExpand: () => void;
   onSelectList: () => void;
   onSelectFolder: () => void;
   onOpenMenu: () => void;
-  onContextMenu: (e: MouseEvent) => void;
   onEdit: () => void;
 }) {
   const { list, depth } = node;
@@ -92,7 +97,7 @@ function SortableTreeRow({
     paddingLeft: `${8 + depth * 16}px`,
   };
 
-  return (
+  const row: ReactElement = (
     <div
       ref={setNodeRef}
       style={style}
@@ -102,7 +107,6 @@ function SortableTreeRow({
         isDragging ? "opacity-50" : "",
         isTaskDropTarget || isFolderIntoTarget ? "ring-primary bg-primary/10 ring-2" : "",
       ].join(" ")}
-      onContextMenu={onContextMenu}
       onDoubleClick={useActionSheet ? undefined : onEdit}
       {...attributes}
       {...listeners}
@@ -178,6 +182,11 @@ function SortableTreeRow({
       ) : null}
     </div>
   );
+
+  if (contextMenuEnabled && !useActionSheet && contextMenuItems && contextMenuItems.length > 0) {
+    return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
+  }
+  return row;
 }
 
 function ClosedListRow({
@@ -185,26 +194,27 @@ function ClosedListRow({
   depth,
   selected,
   useActionSheet,
+  contextMenuEnabled,
+  contextMenuItems,
   onSelect,
   onOpenMenu,
-  onContextMenu,
 }: {
   list: TaskListRow;
   depth: number;
   selected: boolean;
   useActionSheet: boolean;
+  contextMenuEnabled: boolean;
+  contextMenuItems?: ActionSheetItem[] | undefined;
   onSelect: () => void;
   onOpenMenu: () => void;
-  onContextMenu: (e: MouseEvent) => void;
 }) {
-  return (
+  const row: ReactElement = (
     <div
       style={{ paddingLeft: `${8 + depth * 16}px` }}
       className={[
         "group flex min-h-11 items-center gap-0.5 rounded-lg py-1 pr-1 text-sm opacity-70",
         selected ? "bg-primary/15 font-medium opacity-100" : "hover:bg-muted",
       ].join(" ")}
-      onContextMenu={onContextMenu}
     >
       <span className="min-w-6 shrink-0" aria-hidden />
       <span className="min-w-8 shrink-0" aria-hidden />
@@ -250,22 +260,29 @@ function ClosedListRow({
       ) : null}
     </div>
   );
+
+  if (contextMenuEnabled && !useActionSheet && contextMenuItems && contextMenuItems.length > 0) {
+    return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
+  }
+  return row;
 }
 
 function ClosedListsSection({
   closedLists,
   selectedListId,
   useActionSheet,
+  contextMenuEnabled,
+  contextMenuItemsForList,
   onSelectList,
   onOpenListMenu,
-  onOpenListContextMenu,
 }: {
   closedLists: TaskListRow[];
   selectedListId: number | null;
   useActionSheet: boolean;
+  contextMenuEnabled: boolean;
+  contextMenuItemsForList?: ((list: TaskListRow) => ActionSheetItem[]) | undefined;
   onSelectList: (id: number) => void;
   onOpenListMenu: (list: TaskListRow) => void;
-  onOpenListContextMenu: (e: MouseEvent, list: TaskListRow) => void;
 }) {
   const rows = sortedArchivedLists(closedLists);
 
@@ -278,9 +295,10 @@ function ClosedListsSection({
           depth={0}
           selected={selectedListId === list.id}
           useActionSheet={useActionSheet}
+          contextMenuEnabled={contextMenuEnabled}
+          contextMenuItems={contextMenuItemsForList?.(list)}
           onSelect={() => onSelectList(list.id)}
           onOpenMenu={() => onOpenListMenu(list)}
-          onContextMenu={(e) => onOpenListContextMenu(e, list)}
         />
       ))}
     </>
@@ -308,7 +326,8 @@ export function ListSidebar({
   onNewListNameChange,
   onNewFolderNameChange,
   onOpenListMenu,
-  onOpenListContextMenu,
+  contextMenuEnabled = false,
+  contextMenuItemsForList,
   onEditList,
 }: ListSidebarProps) {
   const useDrawer = useDrawerNav();
@@ -402,11 +421,12 @@ export function ListSidebar({
                     : selectedListId === node.list.id
                 }
                 useActionSheet={useActionSheet}
+                contextMenuEnabled={contextMenuEnabled}
+                contextMenuItems={contextMenuItemsForList?.(node.list)}
                 onToggleExpand={() => toggleExpand(node.list.id)}
                 onSelectList={() => onSelectList(node.list.id)}
                 onSelectFolder={() => onSelectFolder(node.list.id)}
                 onOpenMenu={() => onOpenListMenu(node.list)}
-                onContextMenu={(e) => onOpenListContextMenu(e, node.list)}
                 onEdit={() => onEditList(node.list)}
               />
             ))}
@@ -425,9 +445,10 @@ export function ListSidebar({
                     closedLists={closedLists}
                     selectedListId={selectedListId}
                     useActionSheet={useActionSheet}
+                    contextMenuEnabled={contextMenuEnabled}
+                    contextMenuItemsForList={contextMenuItemsForList}
                     onSelectList={onSelectList}
                     onOpenListMenu={onOpenListMenu}
-                    onOpenListContextMenu={onOpenListContextMenu}
                   />
                 ) : null}
               </div>

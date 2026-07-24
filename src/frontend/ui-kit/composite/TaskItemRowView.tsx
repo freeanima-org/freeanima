@@ -1,4 +1,4 @@
-import type { CSSProperties, MouseEvent, Ref } from "react";
+import type { CSSProperties, ReactElement, Ref } from "react";
 
 import { Button } from "../components/ui/button.tsx";
 import { Checkbox } from "../components/ui/checkbox.tsx";
@@ -8,7 +8,9 @@ import {
   resolveTaskTagTitles,
   type TaskItemDisplay,
 } from "../lib/task-item-display.ts";
+import { ContextMenu } from "./ContextMenu.tsx";
 import { TaskItemTagStrip } from "./TaskItemTagStrip.tsx";
+import type { ActionSheetItem } from "./types.ts";
 import { useLongPress } from "./useLongPress.ts";
 
 export type TaskItemRowViewProps = {
@@ -18,6 +20,9 @@ export type TaskItemRowViewProps = {
   disabled?: boolean;
   selectionMode?: boolean;
   useActionSheet: boolean;
+  /** pointer 路径：Radix Context Menu 菜单项；与 ActionSheet 共享同一套构建逻辑 */
+  contextMenuItems?: ActionSheetItem[] | undefined;
+  contextMenuEnabled?: boolean;
   secondaryLine?: string | null;
   showEntityId?: boolean;
   /** id → 标题；用于行内展示标签（缺省不渲染标签条） */
@@ -32,7 +37,6 @@ export type TaskItemRowViewProps = {
   onToggleComplete: () => void;
   onEdit: () => void;
   onOpenMenu: () => void;
-  onContextMenu: (e: MouseEvent) => void;
   onSelectItem?: (shiftKey: boolean) => void;
   onLongPress?: () => void;
 };
@@ -44,6 +48,8 @@ export function TaskItemRowView({
   disabled = false,
   selectionMode = false,
   useActionSheet,
+  contextMenuItems,
+  contextMenuEnabled = false,
   secondaryLine,
   showEntityId = false,
   tagTitleById = null,
@@ -56,7 +62,6 @@ export function TaskItemRowView({
   onToggleComplete,
   onEdit,
   onOpenMenu,
-  onContextMenu,
   onSelectItem,
   onLongPress,
 }: TaskItemRowViewProps) {
@@ -65,23 +70,17 @@ export function TaskItemRowView({
     onTrigger: () => onLongPress?.(),
   });
 
-  const handleContextMenu = (e: MouseEvent) => {
-    if (longPressEnabled && useActionSheet && !selectionMode) {
-      longPress.onContextMenu(e);
-      return;
-    }
-    onContextMenu(e);
-  };
-
   const canDrag = dragListeners != null && !selectionMode && !disabled;
   const tagTitles = resolveTaskTagTitles(item.tag_ids, tagTitleById);
+  const pointerMenu =
+    contextMenuEnabled && !useActionSheet && !selectionMode && (contextMenuItems?.length ?? 0) > 0;
 
   const handleSelectClick = (e: { shiftKey: boolean; preventDefault?: () => void }) => {
     e.preventDefault?.();
     onSelectItem?.(e.shiftKey);
   };
 
-  return (
+  const row: ReactElement = (
     <li
       ref={rowRef}
       style={rowStyle}
@@ -95,7 +94,7 @@ export function TaskItemRowView({
         selected ? "bg-primary/20 ring-primary/40 ring-1 ring-inset" : "",
         active && !selected ? "ring-primary/30 bg-primary/5 ring-1 ring-inset" : "",
       ].join(" ")}
-      onContextMenu={handleContextMenu}
+      onContextMenu={useActionSheet && !selectionMode ? longPress.onContextMenu : undefined}
       onTouchStart={longPress.onTouchStart}
       onTouchEnd={longPress.onTouchEnd}
       onTouchMove={longPress.onTouchMove}
@@ -197,4 +196,9 @@ export function TaskItemRowView({
       ) : null}
     </li>
   );
+
+  if (pointerMenu && contextMenuItems) {
+    return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
+  }
+  return row;
 }

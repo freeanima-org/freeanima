@@ -18,7 +18,6 @@ import {
 import {
   ActionSheet,
   ConfirmDialog,
-  ContextMenu,
   ModuleScopeBar,
   PullToRefresh,
   QuickAddBar,
@@ -31,7 +30,7 @@ import {
   useThreeColumnLayoutMode,
 } from "@freeanima/frontend/ui-kit/layout";
 import { m } from "@paraglide/messages";
-import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { registerProjectOfflineModule } from "./lib/offline-store.ts";
 
@@ -99,11 +98,6 @@ import {
 } from "@freeanima/features/task/ui/spa/lib/task-tag-filter.ts";
 import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-detail-dirty.ts";
 import { fetchTags } from "@freeanima/features/tag/ui/spa/lib/api.ts";
-
-type MenuState =
-  | { kind: "folder"; x: number; y: number; folder: ProjectFolderRow }
-  | { kind: "project"; x: number; y: number; project: ProjectRow }
-  | { kind: "task"; x: number; y: number; item: TaskItemRow };
 
 function menuToSheet(items: ProjectMenuItem[]): ActionSheetItem[] {
   return items.map((item) => ({
@@ -259,7 +253,6 @@ export function ProjectApp() {
     });
   }, [setDetailItem, subjectKind]);
 
-  const [contextMenu, setContextMenu] = useState<MenuState | null>(null);
   const [sheetItems, setSheetItems] = useState<ActionSheetItem[] | null>(null);
   const [deleteFolderTarget, setDeleteFolderTarget] = useState<ProjectFolderRow | null>(null);
   const [deleteProjectTarget, setDeleteProjectTarget] = useState<ProjectRow | null>(null);
@@ -525,7 +518,6 @@ export function ProjectApp() {
 
   const openMoveToListPicker = useCallback(
     async (item: TaskItemRow) => {
-      setContextMenu(null);
       setSheetItems(null);
       try {
         setTaskListsForMove(await fetchTaskListsForMove(subjectKind));
@@ -543,7 +535,6 @@ export function ProjectApp() {
 
   const openMoveToProjectPicker = useCallback(
     async (item: TaskItemRow) => {
-      setContextMenu(null);
       setSheetItems(null);
       try {
         setProjectsForMove(await fetchProjectsForMove(subjectKind));
@@ -746,43 +737,31 @@ export function ProjectApp() {
   };
 
   const openTaskMenuSheet = (item: TaskItemRow) => {
-    setContextMenu(null);
     setSheetItems(menuToSheet(buildTaskMenuForItem(item)));
   };
 
-  const openContextMenuAt = (e: MouseEvent, state: MenuState) => {
-    if (useActionSheet) return;
-    if (!contextMenuEnabled) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setSheetItems(null);
-    setContextMenu({ ...state, x: e.clientX, y: e.clientY });
-  };
+  const contextMenuItemsForFolder = (folder: ProjectFolderRow): ActionSheetItem[] =>
+    menuToSheet(
+      buildFolderMenuItems(folder, {
+        onEdit: openFolderEditor,
+        onCreateChildFolder: (f) => setChildFolderParentId(f.id),
+        onDelete: (f) => setDeleteFolderTarget(f),
+      }),
+    );
 
-  const contextMenuItems: ActionSheetItem[] = useMemo(() => {
-    if (!contextMenu) return [];
-    if (contextMenu.kind === "folder") {
-      return menuToSheet(
-        buildFolderMenuItems(contextMenu.folder, {
-          onEdit: openFolderEditor,
-          onCreateChildFolder: (f) => setChildFolderParentId(f.id),
-          onDelete: (f) => setDeleteFolderTarget(f),
-        }),
-      );
-    }
-    if (contextMenu.kind === "project") {
-      return menuToSheet(
-        buildProjectMenuItems(contextMenu.project, {
-          onEdit: openProjectEditor,
-          onDelete: (p) => setDeleteProjectTarget(p),
-          onStatusChange: (p, status) => void handleProjectStatus(p.id, status),
-          hideCompleted,
-          onToggleHideCompleted: toggleHideCompleted,
-        }),
-      );
-    }
-    return menuToSheet(buildTaskMenuForItem(contextMenu.item));
-  }, [buildTaskMenuForItem, contextMenu, hideCompleted]);
+  const contextMenuItemsForProject = (project: ProjectRow): ActionSheetItem[] =>
+    menuToSheet(
+      buildProjectMenuItems(project, {
+        onEdit: openProjectEditor,
+        onDelete: (p) => setDeleteProjectTarget(p),
+        onStatusChange: (p, status) => void handleProjectStatus(p.id, status),
+        hideCompleted,
+        onToggleHideCompleted: toggleHideCompleted,
+      }),
+    );
+
+  const contextMenuItemsForItem = (item: TaskItemRow): ActionSheetItem[] =>
+    menuToSheet(buildTaskMenuForItem(item));
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -853,12 +832,9 @@ export function ProjectApp() {
                   onNewProjectTitleChange={setNewProjectTitle}
                   onOpenFolderMenu={openFolderMenuSheet}
                   onOpenProjectMenu={openProjectMenuSheet}
-                  onFolderContextMenu={(e, folder) =>
-                    openContextMenuAt(e, { kind: "folder", folder, x: 0, y: 0 })
-                  }
-                  onProjectContextMenu={(e, project) =>
-                    openContextMenuAt(e, { kind: "project", project, x: 0, y: 0 })
-                  }
+                  contextMenuEnabled={contextMenuEnabled}
+                  contextMenuItemsForFolder={contextMenuItemsForFolder}
+                  contextMenuItemsForProject={contextMenuItemsForProject}
                   onEditFolder={openFolderEditor}
                   onEditProject={openProjectEditor}
                 />
@@ -897,9 +873,8 @@ export function ProjectApp() {
                     onToggleComplete={(item) => void handleToggleComplete(item)}
                     onEdit={openTaskDetail}
                     onOpenItemMenu={openTaskMenuSheet}
-                    onOpenItemContextMenu={(e, item) =>
-                      openContextMenuAt(e, { kind: "task", item, x: 0, y: 0 })
-                    }
+                    contextMenuEnabled={contextMenuEnabled}
+                    contextMenuItemsForItem={contextMenuItemsForItem}
                     onReorderPending={(ordered) => void persistProjectTaskOrder(ordered)}
                   />
                 </PullToRefresh>
@@ -926,15 +901,6 @@ export function ProjectApp() {
           }
         />
       )}
-
-      {contextMenu ? (
-        <ContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          items={contextMenuItems}
-          onClose={() => setContextMenu(null)}
-        />
-      ) : null}
 
       {sheetItems ? <ActionSheet items={sheetItems} onClose={() => setSheetItems(null)} /> : null}
 

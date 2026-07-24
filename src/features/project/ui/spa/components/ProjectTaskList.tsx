@@ -17,7 +17,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { EmptyState, TaskItemRowView } from "@freeanima/frontend/ui-kit/composite";
-import { useMemo, useState, type MouseEvent } from "react";
+import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+import { useMemo, useState } from "react";
 
 import type { TaskItemRow } from "../lib/api.ts";
 
@@ -39,13 +40,14 @@ type ProjectTaskListProps = {
   activeItemId?: number | null;
   hideCompleted?: boolean;
   useActionSheet: boolean;
+  contextMenuEnabled?: boolean;
   disabled?: boolean;
   writesDisabled?: boolean;
   tagTitleById?: ReadonlyMap<number, string> | null;
   onToggleComplete: (item: TaskItemRow) => void;
   onEdit: (item: TaskItemRow) => void;
   onOpenItemMenu: (item: TaskItemRow) => void;
-  onOpenItemContextMenu: (e: MouseEvent, item: TaskItemRow) => void;
+  contextMenuItemsForItem?: ((item: TaskItemRow) => ActionSheetItem[]) | undefined;
   onReorderPending: (ordered: TaskItemRow[]) => void;
 };
 
@@ -55,22 +57,24 @@ function SortableProjectTaskRow({
   disabled,
   sortable,
   useActionSheet,
+  contextMenuEnabled,
+  contextMenuItems,
   tagTitleById = null,
   onToggleComplete,
   onEdit,
   onOpenMenu,
-  onContextMenu,
 }: {
   item: TaskItemRow;
   active: boolean;
   disabled: boolean;
   sortable: boolean;
   useActionSheet: boolean;
+  contextMenuEnabled: boolean;
+  contextMenuItems?: ActionSheetItem[] | undefined;
   tagTitleById?: ReadonlyMap<number, string> | null;
   onToggleComplete: () => void;
   onEdit: () => void;
   onOpenMenu: () => void;
-  onContextMenu: (e: MouseEvent) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: taskDndId(item.id),
@@ -83,6 +87,8 @@ function SortableProjectTaskRow({
       active={active}
       disabled={disabled}
       useActionSheet={useActionSheet}
+      contextMenuEnabled={contextMenuEnabled}
+      contextMenuItems={contextMenuItems}
       showEntityId
       tagTitleById={tagTitleById}
       {...(sortable && !disabled
@@ -98,7 +104,6 @@ function SortableProjectTaskRow({
       onToggleComplete={onToggleComplete}
       onEdit={onEdit}
       onOpenMenu={onOpenMenu}
-      onContextMenu={onContextMenu}
       onLongPress={onOpenMenu}
     />
   );
@@ -109,13 +114,14 @@ export function ProjectTaskList({
   activeItemId,
   hideCompleted = false,
   useActionSheet,
+  contextMenuEnabled = false,
   disabled = false,
   writesDisabled = false,
   tagTitleById = null,
   onToggleComplete,
   onEdit,
   onOpenItemMenu,
-  onOpenItemContextMenu,
+  contextMenuItemsForItem,
   onReorderPending,
 }: ProjectTaskListProps) {
   const pending = useMemo(() => items.filter((i) => i.status === "pending"), [items]);
@@ -174,11 +180,12 @@ export function ProjectTaskList({
                 disabled={disabled}
                 sortable={sortable}
                 useActionSheet={useActionSheet}
+                contextMenuEnabled={contextMenuEnabled}
+                contextMenuItems={contextMenuItemsForItem?.(item)}
                 tagTitleById={tagTitleById}
                 onToggleComplete={() => onToggleComplete(item)}
                 onEdit={() => onEdit(item)}
                 onOpenMenu={() => onOpenItemMenu(item)}
-                onContextMenu={(e) => onOpenItemContextMenu(e, item)}
               />
             ))}
           </ul>
@@ -196,13 +203,14 @@ export function ProjectTaskList({
                   active={activeItemId === item.id}
                   disabled={disabled}
                   useActionSheet={useActionSheet}
+                  contextMenuEnabled={contextMenuEnabled}
+                  contextMenuItems={contextMenuItemsForItem?.(item)}
                   showEntityId
                   tagTitleById={tagTitleById}
                   longPressEnabled={useActionSheet}
                   onToggleComplete={() => onToggleComplete(item)}
                   onEdit={() => onEdit(item)}
                   onOpenMenu={() => onOpenItemMenu(item)}
-                  onContextMenu={(e) => onOpenItemContextMenu(e, item)}
                   onLongPress={() => onOpenItemMenu(item)}
                 />
               ))}
@@ -221,7 +229,6 @@ export function ProjectTaskList({
               onToggleComplete={() => {}}
               onEdit={() => {}}
               onOpenMenu={() => {}}
-              onContextMenu={() => {}}
             />
           </div>
         ) : null}

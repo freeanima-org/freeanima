@@ -5,7 +5,7 @@ import {
   useMemo,
   useRef,
   useState,
-  type MouseEvent,
+  type ReactElement,
 } from "react";
 import { Alert, AlertDescription, Button, Input, Spinner } from "@freeanima/frontend/ui-kit";
 import {
@@ -70,8 +70,6 @@ function formatWhen(iso: string): string {
 }
 
 type ListFilter = "unread" | "all";
-type AccountMenuState = { account: EmailAccountRow; x: number; y: number };
-type MessageMenuState = { message: EmailMessageRow; x: number; y: number };
 type SheetMenuState = { title?: string; items: ActionSheetItem[] };
 type FormState = { mode: "create" | "edit"; account?: EmailAccountRow | null };
 
@@ -109,8 +107,6 @@ export function EmailApp() {
   const [syncNotice, setSyncNotice] = useState("");
   const [formState, setFormState] = useState<FormState | null>(null);
   const [replyMessage, setReplyMessage] = useState<EmailMessageRow | null>(null);
-  const [accountMenu, setAccountMenu] = useState<AccountMenuState | null>(null);
-  const [messageMenu, setMessageMenu] = useState<MessageMenuState | null>(null);
   const [sheetMenu, setSheetMenu] = useState<SheetMenuState | null>(null);
   const [deleteAccountTarget, setDeleteAccountTarget] = useState<EmailAccountRow | null>(null);
   const [deleteMessageTarget, setDeleteMessageTarget] = useState<EmailMessageRow | null>(null);
@@ -465,63 +461,15 @@ export function EmailApp() {
     return items;
   };
 
-  const openAccountMenu = (account: EmailAccountRow, e?: MouseEvent) => {
-    if (useActionSheet) {
-      setSheetMenu({ title: accountLabel(account), items: accountMenuItems(account) });
-      return;
-    }
-    let x = e?.clientX ?? 0;
-    let y = e?.clientY ?? 0;
-    const target = e?.currentTarget;
-    if (target instanceof HTMLElement) {
-      const rect = target.getBoundingClientRect();
-      x = rect.left;
-      y = rect.bottom + 4;
-    }
-    setMessageMenu(null);
-    setSheetMenu(null);
-    setAccountMenu({ account, x, y });
+  const openAccountMenu = (account: EmailAccountRow) => {
+    setSheetMenu({ title: accountLabel(account), items: accountMenuItems(account) });
   };
 
-  const openMessageMenu = (message: EmailMessageRow, e?: MouseEvent) => {
-    if (useActionSheet) {
-      setSheetMenu({
-        title: message.subject || m.habitat_email_no_subject(),
-        items: messageMenuItems(message),
-      });
-      return;
-    }
-    let x = e?.clientX ?? 0;
-    let y = e?.clientY ?? 0;
-    const target = e?.currentTarget;
-    if (target instanceof HTMLElement) {
-      const rect = target.getBoundingClientRect();
-      x = rect.left;
-      y = rect.bottom + 4;
-    }
-    setAccountMenu(null);
-    setSheetMenu(null);
-    setMessageMenu({ message, x, y });
-  };
-
-  const openAccountContextMenu = (e: MouseEvent, account: EmailAccountRow) => {
-    if (useActionSheet) return;
-    if (!contextMenuEnabled) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setMessageMenu(null);
-    setSheetMenu(null);
-    setAccountMenu({ account, x: e.clientX, y: e.clientY });
-  };
-
-  const openMessageContextMenu = (e: MouseEvent, message: EmailMessageRow) => {
-    if (useActionSheet) return;
-    if (!contextMenuEnabled) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setAccountMenu(null);
-    setSheetMenu(null);
-    setMessageMenu({ message, x: e.clientX, y: e.clientY });
+  const openMessageMenu = (message: EmailMessageRow) => {
+    setSheetMenu({
+      title: message.subject || m.habitat_email_no_subject(),
+      items: messageMenuItems(message),
+    });
   };
 
   const confirmDeleteAccount = async () => {
@@ -612,8 +560,9 @@ export function EmailApp() {
           onRefresh={handleManualRefresh}
         >
           <ul className="divide-border divide-y">
-            {messages.map((message) => (
-              <li key={message.id}>
+            {messages.map((message) => {
+              const menuItems = messageMenuItems(message);
+              const row: ReactElement = (
                 <div
                   className={`group hover:bg-muted/60 flex w-full items-stretch ${
                     selectedMessageId === message.id
@@ -625,7 +574,6 @@ export function EmailApp() {
                     type="button"
                     className="min-w-0 flex-1 px-3 py-3 text-left"
                     onClick={() => void openMessage(message)}
-                    onContextMenu={(e) => openMessageContextMenu(e, message)}
                   >
                     <div className="flex items-start gap-2">
                       {activeFolder === "inbox" ? (
@@ -651,24 +599,31 @@ export function EmailApp() {
                       </div>
                     </div>
                   </button>
-                  <button
-                    type="button"
-                    className={`text-muted-foreground hover:text-foreground flex shrink-0 items-center justify-center ${
-                      useActionSheet
-                        ? "min-h-11 min-w-11"
-                        : "min-h-9 min-w-9 opacity-70 group-hover:opacity-100"
-                    }`}
-                    aria-label={m.email_message_actions()}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openMessageMenu(message, e);
-                    }}
-                  >
-                    <MoreHorizontal className="size-4" />
-                  </button>
+                  {useActionSheet ? (
+                    <button
+                      type="button"
+                      className="text-muted-foreground hover:text-foreground flex min-h-11 min-w-11 shrink-0 items-center justify-center"
+                      aria-label={m.email_message_actions()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openMessageMenu(message);
+                      }}
+                    >
+                      <MoreHorizontal className="size-4" />
+                    </button>
+                  ) : null}
                 </div>
-              </li>
-            ))}
+              );
+              return (
+                <li key={message.id}>
+                  {contextMenuEnabled && !useActionSheet && menuItems.length > 0 ? (
+                    <ContextMenu items={menuItems}>{row}</ContextMenu>
+                  ) : (
+                    row
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </PullToRefresh>
       )}
@@ -783,11 +738,12 @@ export function EmailApp() {
               activeFolder={activeFolder}
               writesDisabled={writesDisabled}
               useActionSheet={useActionSheet}
+              contextMenuEnabled={contextMenuEnabled}
+              contextMenuItemsForAccount={accountMenuItems}
               onSelectFolder={(account, folder) => void selectFolder(account, folder)}
               onAdd={() => setFormState({ mode: "create" })}
               onEdit={(account) => setFormState({ mode: "edit", account })}
               onOpenMenu={openAccountMenu}
-              onOpenContextMenu={openAccountContextMenu}
             />
           }
           middle={messageList}
@@ -843,24 +799,6 @@ export function EmailApp() {
         disabled={writesDisabled}
         onClose={() => setReplyMessage(null)}
       />
-
-      {accountMenu ? (
-        <ContextMenu
-          x={accountMenu.x}
-          y={accountMenu.y}
-          items={accountMenuItems(accountMenu.account)}
-          onClose={() => setAccountMenu(null)}
-        />
-      ) : null}
-
-      {messageMenu ? (
-        <ContextMenu
-          x={messageMenu.x}
-          y={messageMenu.y}
-          items={messageMenuItems(messageMenu.message)}
-          onClose={() => setMessageMenu(null)}
-        />
-      ) : null}
 
       {sheetMenu ? (
         <ActionSheet
