@@ -45,6 +45,7 @@
         "marked": "^18.0.5",
         "nodemailer": "^9.0.3",
         "openai": "^6.45.0",
+        "otpauth": "^9.5.1",
         "qrcode": "^1.5.4",
         "react": "^19.2.7",
         "react-dom": "^19.2.7",
@@ -657,6 +658,8 @@
     "@monogrid/gainmap-js": ["@monogrid/gainmap-js@3.4.0", "https://registry.npmmirror.com/@monogrid/gainmap-js/-/gainmap-js-3.4.0.tgz", { "dependencies": { "promise-worker-transferable": "^1.0.4" }, "peerDependencies": { "three": ">= 0.159.0" } }, "sha512-2Z0FATFHaoYJ8b+Y4y4Hgfn3FRFwuU5zRrk+9dFWp4uGAdHGqVEdP7HP+gLA3X469KXHmfupJaUbKo1b/aDKIg=="],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@0.2.12", "https://registry.npmmirror.com/@napi-rs/wasm-runtime/-/wasm-runtime-0.2.12.tgz", { "dependencies": { "@emnapi/core": "^1.4.3", "@emnapi/runtime": "^1.4.3", "@tybys/wasm-util": "^0.10.0" } }, "sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ=="],
+
+    "@noble/hashes": ["@noble/hashes@2.2.0", "https://registry.npmmirror.com/@noble/hashes/-/hashes-2.2.0.tgz", {}, "sha512-IYqDGiTXab6FniAgnSdZwgWbomxpy9FtYvLKs7wCUs2a8RkITG+DFGO1DM9cr+E3/RgADRpFjrKVaJ1z6sjtEg=="],
 
     "@node-rs/jieba": ["@node-rs/jieba@2.0.1", "https://registry.npmmirror.com/@node-rs/jieba/-/jieba-2.0.1.tgz", { "optionalDependencies": { "@node-rs/jieba-android-arm-eabi": "2.0.1", "@node-rs/jieba-android-arm64": "2.0.1", "@node-rs/jieba-darwin-arm64": "2.0.1", "@node-rs/jieba-darwin-x64": "2.0.1", "@node-rs/jieba-freebsd-x64": "2.0.1", "@node-rs/jieba-linux-arm-gnueabihf": "2.0.1", "@node-rs/jieba-linux-arm64-gnu": "2.0.1", "@node-rs/jieba-linux-arm64-musl": "2.0.1", "@node-rs/jieba-linux-x64-gnu": "2.0.1", "@node-rs/jieba-linux-x64-musl": "2.0.1", "@node-rs/jieba-wasm32-wasi": "2.0.1", "@node-rs/jieba-win32-arm64-msvc": "2.0.1", "@node-rs/jieba-win32-ia32-msvc": "2.0.1", "@node-rs/jieba-win32-x64-msvc": "2.0.1" } }, "sha512-tnfzXOMqzVQF2dSKMhPC9HrHzzWmN6KheL/zYtGenhOpq/bCKHJWVASSggEnHlkmHgXGeIJHR2N/IuPzewz1BQ=="],
 
@@ -2413,6 +2416,8 @@
     "oniguruma-to-es": ["oniguruma-to-es@4.3.6", "https://registry.npmmirror.com/oniguruma-to-es/-/oniguruma-to-es-4.3.6.tgz", { "dependencies": { "oniguruma-parser": "^0.12.2", "regex": "^6.1.0", "regex-recursion": "^6.0.2" } }, "sha512-csuQ9x3Yr0cEIs/Zgx/OEt9iBw9vqIunAPQkx19R/fiMq2oGVTgcMqO/V3Ybqefr1TBvosI6jU539ksaBULJyA=="],
 
     "openai": ["openai@6.45.0", "https://registry.npmmirror.com/openai/-/openai-6.45.0.tgz", { "peerDependencies": { "@aws-sdk/credential-provider-node": ">=3.972.0 <4", "@smithy/hash-node": ">=4.3.0 <5", "@smithy/signature-v4": ">=5.4.0 <6", "ws": "^8.18.0", "zod": "^3.25 || ^4.0" }, "optionalPeers": ["@aws-sdk/credential-provider-node", "@smithy/hash-node", "@smithy/signature-v4", "ws", "zod"] }, "sha512-5DQVNErssk0afNpTTHUm/qZPU4iKR9OYdNid8Ib4puq4gHNNvGWZht2zY4h9a8JMF949Ik6m8gQutllVPbjdnw=="],
+
+    "otpauth": ["otpauth@9.5.1", "https://registry.npmmirror.com/otpauth/-/otpauth-9.5.1.tgz", { "dependencies": { "@noble/hashes": "2.2.0" } }, "sha512-fJmDAHc8wImfqqqOXIlBvT1dEKrZK0Cmb2VEgScpNTolCz0PHh6ExUZGv4sLtOsWNaHCQlD+rRqaPgnoxFoZjQ=="],
 
     "own-keys": ["own-keys@1.0.1", "https://registry.npmmirror.com/own-keys/-/own-keys-1.0.1.tgz", { "dependencies": { "get-intrinsic": "^1.2.6", "object-keys": "^1.1.1", "safe-push-apply": "^1.0.0" } }, "sha512-qFOyK5PjiWZd+QQIh+1jhdb9LpxTF0qs7Pm8o5QHYZ0M3vKqSqzsZaEB6oWlxZ+q2sJBMI/Ktgd2N5ZwQoRHfg=="],
 

@@ -34,7 +34,7 @@ export type SubprocessSecretRef = VaultSecretRef & {
 const SECRET_FIELD_PROPERTY = {
   type: "string",
   description:
-    'Field name (default "password"): "password" / "notes" / "totp", or a name from the item\'s ' +
+    'Field name (default "password"): "password" / "notes" / "totp" (current TOTP code), or a name from the item\'s ' +
     "custom_field_names — same form for all; do not use custom_fields.N.value paths.",
 } as const;
 
@@ -52,7 +52,7 @@ export const SECRET_TOOL_PROPERTY = {
     field: {
       type: "string",
       description:
-        'Field name: "password" / "notes" / "totp", or a custom_field_names entry (e.g. "api_token")',
+        'Field name: "password" / "notes" / "totp" (current TOTP code), or a custom_field_names entry (e.g. "api_token")',
     },
   },
   required: ["id", "field"],
@@ -64,6 +64,7 @@ export const SECRETS_TOOL_PROPERTY = {
   description:
     "Per-call vault secrets injected only into this subprocess env (never Habitat process.env, never tool results). " +
     "Discover items via vault_list/vault_search/vault_get_meta first; set field to password/notes/totp " +
+    "(totp → current code) " +
     "or a custom_field_names entry (flat name, no path). Default subject_kind=agent.",
   items: {
     type: "object",

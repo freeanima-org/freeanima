@@ -32,7 +32,11 @@ export const vaultSecretsViewSchema = z.record(z.string(), z.unknown());
 export type VaultSecretsViewPayload = z.infer<typeof vaultSecretsViewSchema>;
 
 export const vaultItemDetailRowSchema = vaultItemMetaRowSchema.extend({
+  /** Agent 库：Habitat 解密后的明文（仅 Agent） */
   secrets: vaultSecretsViewSchema.optional(),
+  /** User 库：密文，客户端用主密码解开 */
+  secrets_enc: z.string().optional(),
+  dek_wrapped: z.string().optional(),
 });
 
 export type VaultItemDetailRowPayload = z.infer<typeof vaultItemDetailRowSchema>;
@@ -61,10 +65,10 @@ export const vaultListInputSchema = z.object({
 });
 export type VaultListInput = z.infer<typeof vaultListInputSchema>;
 export const vaultListOutputSchema = z.object({
-  items: z.array(vaultItemMetaRowSchema),
+  // include_secrets 时 User 库行可带 secrets_enc/dek_wrapped（改密 rewrap 用）
+  items: z.array(vaultItemDetailRowSchema),
 });
 export type VaultListOutput = z.infer<typeof vaultListOutputSchema>;
-
 export const vaultGetInputSchema = z.object({
   subject_kind: vaultSubjectKindSchema.optional(),
   id: z.number().int().positive(),

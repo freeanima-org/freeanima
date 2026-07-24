@@ -64,7 +64,7 @@ Disk backup = data access. Protect backup media accordingly.
 
 1. **Discover** — `vault_list` / `vault_search` / `vault_get_meta` (metadata only; never plaintext in tool results).
 2. **Write (Agent library)** — `vault_create` / `vault_update` / `vault_delete` in Habitat chat only (not MCP). create/update accept plaintext `secrets` to seal on Habitat; results return metadata only. User library: Vault UI.
-3. **Use** — pass `secrets: [{ id, env_name, field?, subject_kind? }]` on the same `terminal_run` or `code_execute` call that needs the credential (e.g. `GH_TOKEN` for `gh`); or `secret: { id, field }` on `browser_type` for form fields.
+3. **Use** — pass `secrets: [{ id, env_name, field?, subject_kind? }]` on the same `terminal_run` or `code_execute` call that needs the credential (e.g. `GH_TOKEN` for `gh`); or `secret: { id, field }` on `browser_type` for form fields. For `field: "totp"`, the resolved value is the **current TOTP code** (RFC 6238), not the stored Base32 secret.
 4. **Scope** — plaintext is decrypted for that call only (`secrets[]` → child `env`; `browser_type` `secret` → Camofox type payload). It is **not** written to Habitat `process.env` and **not** returned in tool results. Default `shell=false`: use argv form (`printenv GH_TOKEN`, `gh …`), not `echo $VAR`.
 
 ## Measures in Place

@@ -24,6 +24,7 @@ type VaultRpcMethod =
   | "vault.delete"
   | "vault.crypto.get"
   | "vault.crypto.init"
+  | "vault.crypto.change"
   | "vault.ensureAgent";
 
 async function vaultRequest<T>(
@@ -130,6 +131,36 @@ export async function initVaultCryptoConfig(
     verifier: input.verifier,
   });
   return data.config;
+}
+
+export async function changeVaultCryptoConfig(input: {
+  salt: string;
+  verifier: string;
+  rewrapped: Array<{ id: number; dek_wrapped: string }>;
+}): Promise<void> {
+  await vaultRequest("vault.crypto.change", {
+    subject_kind: "user",
+    salt: input.salt,
+    verifier: input.verifier,
+    rewrapped: input.rewrapped,
+  });
+}
+
+/** User 改密用：列出带 dek_wrapped 的条目（不含解密明文） */
+export async function fetchVaultWrappedDeks(
+  subjectKind: SubjectKind,
+): Promise<Array<{ id: number; dek_wrapped: string }>> {
+  const data = await vaultRequest<VaultListOutput>("vault.list", {
+    subject_kind: subjectKind,
+    limit: 10_000,
+    include_secrets: true,
+  });
+  return data.items
+    .filter(
+      (item): item is typeof item & { dek_wrapped: string } =>
+        typeof item.dek_wrapped === "string" && item.dek_wrapped.length > 0,
+    )
+    .map((item) => ({ id: item.id, dek_wrapped: item.dek_wrapped }));
 }
 
 export async function ensureAgentVaultConfig(): Promise<VaultConfigRowPayload> {

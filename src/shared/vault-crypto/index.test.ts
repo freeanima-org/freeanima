@@ -3,6 +3,8 @@ import { describe, expect, test } from "bun:test";
 import {
   createVerifier,
   deriveMasterKey,
+  generateTotpCode,
+  normalizeTotpSecret,
   randomSalt,
   resolveSecretField,
   verifyMasterKey,
@@ -25,11 +27,59 @@ describe("vault-crypto", () => {
   });
 });
 
+describe("normalizeTotpSecret", () => {
+  test("去空格与大小写归一", () => {
+    expect(normalizeTotpSecret(" jbsw y3dp ehpk 3pxp ")).toBe("JBSWY3DPEHPK3PXP");
+  });
+
+  test("解析 otpauth URI", () => {
+    expect(
+      normalizeTotpSecret(
+        "otpauth://totp/Example:user@ex.com?secret=JBSWY3DPEHPK3PXP&issuer=Example",
+      ),
+    ).toBe("JBSWY3DPEHPK3PXP");
+  });
+
+  test("无效 URI / 空串", () => {
+    expect(normalizeTotpSecret("")).toBe("");
+    expect(normalizeTotpSecret("otpauth://totp/x?issuer=y")).toBe("");
+  });
+});
+
+describe("generateTotpCode", () => {
+  // RFC 6238 Appendix B seed "12345678901234567890" 的 Base32
+  const rfcSeedB32 = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ";
+
+  test("RFC 6238 SHA1 8 位向量", () => {
+    const vectors: Array<{ tSec: number; code: string }> = [
+      { tSec: 59, code: "94287082" },
+      { tSec: 1_111_111_109, code: "07081804" },
+      { tSec: 1_111_111_111, code: "14050471" },
+      { tSec: 1_234_567_890, code: "89005924" },
+      { tSec: 2_000_000_000, code: "69279037" },
+      { tSec: 20_000_000_000, code: "65353130" },
+    ];
+    for (const { tSec, code } of vectors) {
+      const result = generateTotpCode(rfcSeedB32, tSec * 1000, { digits: 8 });
+      expect(result?.code).toBe(code);
+      expect(result?.period).toBe(30);
+      expect(result?.periodRemaining).toBeGreaterThan(0);
+      expect(result?.periodRemaining).toBeLessThanOrEqual(30);
+    }
+  });
+
+  test("无效密钥返回 null", () => {
+    expect(generateTotpCode("!!!")).toBeNull();
+    expect(generateTotpCode("")).toBeNull();
+  });
+});
+
 describe("resolveSecretField", () => {
   const secrets: VaultSecretsPayload = {
     password: " pass\n",
     notes: "  keep spaces  ",
-    totp: " 123456 ",
+    // RFC seed；在 t=59s 时 8 位码为 94287082，默认 6 位为后 6 位截断… 实际是 mod 10^6
+    totp: "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
     custom_fields: [
       { name: "github_pat", value: "ghp_xxx\n", type: "hidden" },
       { name: "api_token", value: " tok ", type: "text" },
@@ -41,9 +91,22 @@ describe("resolveSecretField", () => {
   test("内置字段与 custom 均用裸名；凭据 trim、notes 保留空白", () => {
     expect(resolveSecretField(secrets, "password")).toBe("pass");
     expect(resolveSecretField(secrets, "notes")).toBe("  keep spaces  ");
-    expect(resolveSecretField(secrets, "totp")).toBe("123456");
     expect(resolveSecretField(secrets, "github_pat")).toBe("ghp_xxx");
     expect(resolveSecretField(secrets, "api_token")).toBe("tok");
+  });
+
+  test("totp 返回当前动态码而非密钥原文", () => {
+    // 固定 t=59s → 8 位 94287082 → 6 位 287082
+    const at59 = generateTotpCode(secrets.totp!, 59_000);
+    expect(at59?.code).toBe("287082");
+    // resolveSecretField 用 Date.now()；用 generateTotpCode 对照即可验证语义已切换
+    const live = resolveSecretField(secrets, "totp");
+    expect(live).toMatch(/^\d{6}$/);
+    expect(live).not.toBe(secrets.totp);
+  });
+
+  test("无效 totp 密钥返回 undefined", () => {
+    expect(resolveSecretField({ totp: "!!!" }, "totp")).toBeUndefined();
   });
 
   test("同名 custom 取第一个；保留字优先于同名 custom", () => {

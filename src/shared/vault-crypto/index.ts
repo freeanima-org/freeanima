@@ -1,3 +1,5 @@
+import { generateTotpCode } from "./totp.ts";
+
 export type VaultCustomField = {
   name: string;
   value: string;
@@ -11,6 +13,8 @@ export type VaultSecretsPayload = {
   custom_fields?: VaultCustomField[];
   [key: string]: unknown;
 };
+
+export { generateTotpCode, normalizeTotpSecret, type TotpCodeResult } from "./totp.ts";
 
 const PBKDF2_ITERATIONS = 600_000;
 const AES_GCM_IV_BYTES = 12;
@@ -233,7 +237,9 @@ export function resolveSecretField(
     return secrets.notes;
   }
   if (fieldPath === "totp" && typeof secrets.totp === "string") {
-    return secrets.totp.trim();
+    // 注入/解析返回当前动态码；编辑 UI 应读 secrets.totp 原文密钥。
+    const result = generateTotpCode(secrets.totp);
+    return result?.code;
   }
 
   // Flat name: same form as password — no custom_fields. prefix required.

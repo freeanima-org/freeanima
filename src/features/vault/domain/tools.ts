@@ -8,6 +8,7 @@ import {
   sealAgentVaultItem,
 } from "@freeanima/platform/connectors/vault";
 import type { VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
+import { normalizeTotpSecret } from "@freeanima/shared/vault-crypto";
 
 import {
   createVaultItem,
@@ -33,11 +34,16 @@ const SECRETS_TOOL_PROPERTY = {
   description:
     "Plaintext secret fields to seal into Agent vault (password, notes, totp, custom_fields). " +
     "Later use secrets[].field / browser_type secret.field with password/notes/totp or a custom_fields[].name. " +
+    "totp stores the Base32 shared secret (otpauth URI accepted); resolving field=totp yields the current TOTP code. " +
     "Never returned in tool results.",
   properties: {
     password: { type: "string" },
     notes: { type: "string" },
-    totp: { type: "string" },
+    totp: {
+      type: "string",
+      description:
+        "Base32 TOTP secret or otpauth:// URI (stored encrypted; field=totp resolves to current code)",
+    },
     custom_fields: {
       type: "array",
       items: {
@@ -103,7 +109,10 @@ function parseSecretsPayload(raw: unknown): VaultSecretsPayload | string {
   const out: VaultSecretsPayload = {};
   if (rec.password != null) out.password = String(rec.password).trim();
   if (rec.notes != null) out.notes = String(rec.notes);
-  if (rec.totp != null) out.totp = String(rec.totp).trim();
+  if (rec.totp != null) {
+    const totp = normalizeTotpSecret(String(rec.totp));
+    if (totp) out.totp = totp;
+  }
   if (rec.custom_fields != null) {
     if (!Array.isArray(rec.custom_fields)) {
       return toolError("secrets.custom_fields must be an array");

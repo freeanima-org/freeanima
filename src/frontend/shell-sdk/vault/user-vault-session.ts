@@ -2,7 +2,9 @@ import {
   createVerifier,
   deriveMasterKey,
   openVaultSecrets,
+  randomSalt,
   resolveSecretField,
+  rewrapAllDekWrapped,
   sealVaultSecrets,
   verifyMasterKey,
   type VaultSecretsPayload,
@@ -19,6 +21,14 @@ export type UserVaultUnlockInput = {
 };
 
 export type UserVaultSessionState = "locked" | "unlocked";
+
+export type MasterPasswordChangePrep = {
+  salt: string;
+  verifier: string;
+  rewrapped: Array<{ id: number; dek_wrapped: string }>;
+  /** Habitat crypto.change 成功后调用，切换会话主密钥 */
+  commit: () => void;
+};
 
 const DEFAULT_TIMEOUT_MS = 15 * 60 * 1000;
 
@@ -82,17 +92,21 @@ export class UserVaultSession {
     this.scheduleTimeout();
   }
 
+  async openSecrets(secretsEnc: string, dekWrapped: string): Promise<VaultSecretsPayload> {
+    if (!this.masterKey) {
+      throw new Error("vault_locked");
+    }
+    this.touchActivity();
+    return openVaultSecrets(secretsEnc, dekWrapped, this.masterKey);
+  }
+
   async resolveSecret(
     _itemId: number,
     field: string,
     secretsEnc: string,
     dekWrapped: string,
   ): Promise<string | undefined> {
-    if (!this.masterKey) {
-      throw new Error("vault_locked");
-    }
-    this.touchActivity();
-    const secrets = await openVaultSecrets(secretsEnc, dekWrapped, this.masterKey);
+    const secrets = await this.openSecrets(secretsEnc, dekWrapped);
     return resolveSecretField(secrets as VaultSecretsPayload, field);
   }
 
@@ -111,6 +125,43 @@ export class UserVaultSession {
     const masterKey = await deriveMasterKey(masterPassword, salt);
     const verifier = await createVerifier(masterKey);
     return { verifier };
+  }
+
+  /** 校验当前主密码是否匹配配置（改密前确认） */
+  async verifyCurrentPassword(
+    masterPassword: string,
+    salt: string,
+    verifier: string,
+  ): Promise<boolean> {
+    const key = await deriveMasterKey(masterPassword, salt);
+    return verifyMasterKey(key, verifier);
+  }
+
+  /**
+   * 准备改密：用当前会话主密钥 unwrap，再用新主密码 wrap。
+   * 须在 Habitat `vault.crypto.change` 成功后调用返回的 `commit()`。
+   */
+  async prepareMasterPasswordChange(
+    newPassword: string,
+    items: Array<{ id: number; dek_wrapped: string }>,
+  ): Promise<MasterPasswordChangePrep> {
+    if (!this.masterKey) {
+      throw new Error("vault_locked");
+    }
+    this.touchActivity();
+    const salt = randomSalt();
+    const newKey = await deriveMasterKey(newPassword, salt);
+    const verifier = await createVerifier(newKey);
+    const rewrapped = await rewrapAllDekWrapped(items, this.masterKey, newKey);
+    return {
+      salt,
+      verifier,
+      rewrapped,
+      commit: () => {
+        this.masterKey = newKey;
+        this.scheduleTimeout();
+      },
+    };
   }
 
   private scheduleTimeout(): void {
