@@ -41,12 +41,12 @@ const docMoves: Record<string, string> = {
   "/docs/features/diary/": "/docs/modules/diary/",
   "/docs/features/goal/": "/docs/modules/goal/",
   "/docs/features/mobile-app/": "/docs/modules/mobile-app/",
-  "/docs/features/page-refresh/": "/docs/modules/page-refresh/",
+  "/docs/features/page-refresh/": "/docs/aspects/page-refresh/",
   "/docs/features/project/": "/docs/modules/project/",
   "/docs/features/tauri-companion-acceptance/": "/docs/modules/companion/",
   "/docs/features/tauri-companion-%E9%AA%8C%E6%94%B6/": "/docs/modules/companion/",
 
-  // guide → ops / modules
+  // guide → ops / modules / aspects
   "/docs/guide/database/": "/docs/ops/database/",
   "/docs/guide/habitat-rpc/": "/docs/ops/habitat-rpc/",
   "/docs/guide/install/": "/docs/ops/install/",
@@ -54,7 +54,11 @@ const docMoves: Record<string, string> = {
   "/docs/guide/remote-access/": "/docs/ops/remote-access/",
   "/docs/guide/security/": "/docs/ops/security/",
   "/docs/guide/service/": "/docs/ops/service/",
-  "/docs/guide/offline-platform/": "/docs/modules/offline-platform/",
+  "/docs/guide/offline-platform/": "/docs/aspects/offline-platform/",
+
+  // modules → aspects (data-plane split)
+  "/docs/modules/offline-platform/": "/docs/aspects/offline-platform/",
+  "/docs/modules/page-refresh/": "/docs/aspects/page-refresh/",
 
   // tools renames
   "/docs/tools/browser-camofox/": "/docs/tools/browser/",

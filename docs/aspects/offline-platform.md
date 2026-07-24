@@ -4,6 +4,8 @@ title: Offline Platform
 
 # 离线平台
 
+> Parent aspect: [Portal data plane](portal-data-plane.md)（Portal↔Habitat 数据面；统一原则与最佳实践见该文）。
+
 FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier 编号）：
 
 | 能力          | 叫法                     | 机制                      | 模块                                   |
@@ -95,4 +97,4 @@ create flush 成功后，本地世界里不得再以「裸 temp id」作为查�
 
 ## Sync vs page refresh
 
-`offline-sync` / `OfflineSyncBootstrap` 负责 **sync**（重连与可见时 flush + 有 outbox 模块的 `refreshAll`）。用户点「刷新」或下拉刷新是 **refresh**（当前页重新拉取视图），二者职责分离。产品页矩阵与交互约定见 [`docs/modules/page-refresh.md`](page-refresh.md)。
+`offline-sync` / `OfflineSyncBootstrap` 负责 **sync**（重连与可见时 flush + 有 outbox 模块的 `refreshAll`）。用户点「刷新」或下拉刷新是 **refresh**（当前页重新拉取视图），二者职责分离。产品页矩阵与交互约定见 [Page refresh](page-refresh.md)。

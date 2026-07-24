@@ -6,7 +6,7 @@ title: Documentation Index
 
 For **FreeAnima users** and the Habitat agent (`freeanima_docs` ToolSet). Contributor rules: [`.agent/rules/`](../.agent/rules/README.md). Tasks: [GitHub Issues](https://github.com/freeanima-org/freeanima/issues).
 
-**Agent tip:** `toolset_load(["freeanima_docs"])` then prefer `freeanima_docs_get` on `README.md`, or `freeanima_docs_list` with a path `prefix` (`product/`, `cognition/`, `modules/`, `tools/`, `ops/`).
+**Agent tip:** `toolset_load(["freeanima_docs"])` then prefer `freeanima_docs_get` on `README.md`, or `freeanima_docs_list` with a path `prefix` (`product/`, `cognition/`, `aspects/`, `modules/`, `tools/`, `ops/`).
 
 ## Product — framing and data model
 
@@ -32,18 +32,24 @@ For **FreeAnima users** and the Habitat agent (`freeanima_docs` ToolSet). Contri
 | Environment awareness | [cognition/environment-awareness.md](cognition/environment-awareness.md) |
 | Notifications         | [cognition/notifications.md](cognition/notifications.md)                 |
 
+## Aspects — cross-cutting design planes
+
+| Topic             | File                                                         |
+| ----------------- | ------------------------------------------------------------ |
+| Portal data plane | [aspects/portal-data-plane.md](aspects/portal-data-plane.md) |
+| Offline platform  | [aspects/offline-platform.md](aspects/offline-platform.md)   |
+| Page refresh      | [aspects/page-refresh.md](aspects/page-refresh.md)           |
+
 ## Modules — product capabilities
 
-| Topic             | File                                                       |
-| ----------------- | ---------------------------------------------------------- |
-| Chat              | [modules/chat.md](modules/chat.md)                         |
-| Desktop companion | [modules/companion.md](modules/companion.md)               |
-| Diary             | [modules/diary.md](modules/diary.md)                       |
-| Session goal      | [modules/goal.md](modules/goal.md)                         |
-| Project           | [modules/project.md](modules/project.md)                   |
-| Mobile app        | [modules/mobile-app.md](modules/mobile-app.md)             |
-| Offline platform  | [modules/offline-platform.md](modules/offline-platform.md) |
-| Page refresh      | [modules/page-refresh.md](modules/page-refresh.md)         |
+| Topic             | File                                           |
+| ----------------- | ---------------------------------------------- |
+| Chat              | [modules/chat.md](modules/chat.md)             |
+| Desktop companion | [modules/companion.md](modules/companion.md)   |
+| Diary             | [modules/diary.md](modules/diary.md)           |
+| Session goal      | [modules/goal.md](modules/goal.md)             |
+| Project           | [modules/project.md](modules/project.md)       |
+| Mobile app        | [modules/mobile-app.md](modules/mobile-app.md) |
 
 ## Tools — built-in ToolSets
 

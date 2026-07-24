@@ -762,5 +762,7 @@
   "sidebar_product": "Product",
   "sidebar_project": "Project",
   "sidebar_remote_access": "Remote access",
-  "sidebar_temporal_summary": "Temporal summary"
+  "sidebar_temporal_summary": "Temporal summary",
+  "sidebar_aspects": "Aspects",
+  "sidebar_portal_data_plane": "Portal data plane"
 }

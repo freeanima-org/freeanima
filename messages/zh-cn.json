@@ -762,5 +762,7 @@
   "ui_shell_update_proxy_ghfast_top": "ghfast.top",
   "ui_shell_update_proxy_ghproxy_net": "ghproxy.net",
   "ui_shell_update_proxy_label": "下载代理",
-  "ui_shell_update_proxy_none": "直连（GitHub）"
+  "ui_shell_update_proxy_none": "直连（GitHub）",
+  "sidebar_aspects": "切面",
+  "sidebar_portal_data_plane": "Portal 数据面"
 }

@@ -43,6 +43,15 @@ export const starlightSidebar = [
         ],
       },
       {
+        ...t(m.sidebar_aspects),
+        collapsed: true,
+        items: [
+          { ...t(m.sidebar_portal_data_plane), link: "/docs/aspects/portal-data-plane/" },
+          { ...t(m.sidebar_offline_platform), link: "/docs/aspects/offline-platform/" },
+          { ...t(m.sidebar_page_refresh), link: "/docs/aspects/page-refresh/" },
+        ],
+      },
+      {
         ...t(m.sidebar_modules),
         collapsed: true,
         items: [
@@ -52,8 +61,6 @@ export const starlightSidebar = [
           { ...t(m.sidebar_goal), link: "/docs/modules/goal/" },
           { ...t(m.sidebar_project), link: "/docs/modules/project/" },
           { ...t(m.sidebar_mobile_app), link: "/docs/modules/mobile-app/" },
-          { ...t(m.sidebar_offline_platform), link: "/docs/modules/offline-platform/" },
-          { ...t(m.sidebar_page_refresh), link: "/docs/modules/page-refresh/" },
         ],
       },
       {

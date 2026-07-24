@@ -95,6 +95,7 @@ just misc memory-sample -- --habitat-url http://127.0.0.1:<habitat> --stage full
 | [`docs/cognition/temporal-summary.md`](docs/cognition/temporal-summary.md)           | Objective time digests (day/month/year; peer rollup)              |
 | [`docs/product/`](docs/product/)                                                     | Product framing (architecture, identity, entity model)            |
 | [`docs/cognition/`](docs/cognition/)                                                 | Cognitive mechanisms (memory, sleep, self layer, etc.)            |
+| [`docs/aspects/`](docs/aspects/)                                                     | Cross-cutting design planes (Portal data plane, offline, refresh) |
 | [`docs/modules/`](docs/modules/)                                                     | Product capability modules (chat, companion, project, …)          |
 | [`docs/ops/`](docs/ops/)                                                             | Deploy, secure, connect Habitat                                   |
 | [`docs/ops/habitat-rpc.md`](docs/ops/habitat-rpc.md)                                 | Habitat RPC transport + remote tool registration                  |
@@ -163,7 +164,7 @@ Tool tables, module trees, API lists **are not maintained in docs** — use regi
 - Principle / direction corrections: triage per [Principle & direction maintenance](#principle--direction-maintenance) — product framing → `docs/product/`; cognition → `docs/cognition/`; implementation constraints → `.agent/rules/`; bootstrap summary → `AGENTS.md`
 - New topic >50 lines and long-lived → `docs/` or `.agent/rules/`; actionable items → GitHub Issue
 - Close Issue when task done; do not keep completed items in docs
-- **docs layout** (optimized for `freeanima_docs` ToolSet path prefixes): product framing → `docs/product/`; cognition → `docs/cognition/`; capability modules → `docs/modules/`; built-in ToolSets → `docs/tools/`; deploy/secure/connect → `docs/ops/`; IDE/agent implementation rules → `.agent/rules/` (not in docs corpus). No acceptance checklists in `docs/`.
+- **docs layout** (optimized for `freeanima_docs` ToolSet path prefixes): product framing → `docs/product/`; cognition → `docs/cognition/`; cross-cutting aspects → `docs/aspects/`; capability modules → `docs/modules/`; built-in ToolSets → `docs/tools/`; deploy/secure/connect → `docs/ops/`; IDE/agent implementation rules → `.agent/rules/` (not in docs corpus). No acceptance checklists in `docs/`.
 
 ## What each file must not contain
 
