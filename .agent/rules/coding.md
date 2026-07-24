@@ -90,16 +90,16 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 ## Security and continuity
 
 - Credentials and secrets never in git / logs / tool return values
-- Memory and self-layer changes need extra care — [`docs/concepts/identity.md`](../../docs/concepts/identity.md)
+- Memory and self-layer changes need extra care — [`docs/product/identity.md`](../../docs/product/identity.md)
 - Continuity over feature pile-up; simple infra in-house, complex logic via mature third-party libs
 
 ## 横切审查清单（重构 / 大改后）
 
-| 领域   | 检查项                                                                                                                           |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| 安全   | 凭证路径不入 log / tool 返回；Habitat REST 输入校验；memory/self-layer 变更对照 [`identity.md`](../../docs/concepts/identity.md) |
-| 性能   | PG 查询热点（`src/host/core/db/pg`）；EventBus/Redis；流式 merge（`src/host/core/provider/stream-tools.ts`）                     |
-| 可测性 | colocated 单测 + `tests/integration/` 覆盖 boot / Habitat RPC 路径 gaps                                                          |
+| 领域   | 检查项                                                                                                                          |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| 安全   | 凭证路径不入 log / tool 返回；Habitat REST 输入校验；memory/self-layer 变更对照 [`identity.md`](../../docs/product/identity.md) |
+| 性能   | PG 查询热点（`src/host/core/db/pg`）；EventBus/Redis；流式 merge（`src/host/core/provider/stream-tools.ts`）                    |
+| 可测性 | colocated 单测 + `tests/integration/` 覆盖 boot / Habitat RPC 路径 gaps                                                         |
 
 **New PG domain**: `src/host/core/db/schema/{domain}` → repos in `src/host/core/db/pg/{domain}/` → barrel `index.ts` + `types.ts` → consumers import `@freeanima/host/core/db/pg/{domain}`。
 
@@ -125,7 +125,7 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 - **Forbidden**: a migration that `DROP TABLE` legacy data without an in-file backfill in the same migration; a separate manual script as the **only** migration path (scripts may exist for dry-run / repair, but production path must be the migration SQL).
 - One-off repair scripts (`scripts/*.ts`) are for operator recovery or idempotent re-runs after the fact — not a substitute for the migration chain.
 
-Table shapes SSOT: [`src/host/core/db/schema/`](../../src/host/core/db/schema/). User ops (install, backup): [`docs/guide/database.md`](../../docs/guide/database.md).
+Table shapes SSOT: [`src/host/core/db/schema/`](../../src/host/core/db/schema/). User ops (install, backup): [`docs/ops/database.md`](../../docs/ops/database.md).
 
 Repository query conventions (ORM vs `db.execute`, DbRow typing): [`drizzle-db.md`](drizzle-db.md).
 

@@ -17,31 +17,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/recall-flow.md:1 messages/po4a/en.xml:529
+#: docs/cognition/recall-flow.md:1 messages/po4a/en.xml:529
 #, no-wrap
 msgid "Recall Flow"
 msgstr ""
 
 #. type: Title #
-#: docs/concepts/recall-flow.md:5
+#: docs/cognition/recall-flow.md:5
 #, no-wrap
 msgid "Unified Recall Retrieval"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:8
+#: docs/cognition/recall-flow.md:8
 #, no-wrap
 msgid "> **v1 ✅ Implemented:** `memory_recall(query)` four-source unified recall, returns `results[]` (distinguished by `memory_type`).\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/recall-flow.md:9
+#: docs/cognition/recall-flow.md:9
 #, no-wrap
 msgid "v1 Implemented"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:17
+#: docs/cognition/recall-flow.md:17
 #, no-wrap
 msgid ""
 "| Capability        | Description                                                                                            |\n"
@@ -53,13 +53,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/recall-flow.md:18
+#: docs/cognition/recall-flow.md:18
 #, no-wrap
 msgid "Four Sources"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:26
+#: docs/cognition/recall-flow.md:26
 #, no-wrap
 msgid ""
 "| `memory_type`      | Content type                          |\n"
@@ -71,13 +71,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/recall-flow.md:27
+#: docs/cognition/recall-flow.md:27
 #, no-wrap
 msgid "Resident Memory"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:30
+#: docs/cognition/recall-flow.md:30
 msgid ""
 "Separate from recall: **pinned** semantic memories plus **most-referenced** "
 "entries are always injected into the system prompt. LLM cites memory ID "
@@ -85,20 +85,20 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/recall-flow.md:31
+#: docs/cognition/recall-flow.md:31
 #, no-wrap
 msgid "Relationship to Self Layer"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:34
+#: docs/cognition/recall-flow.md:34
 msgid ""
 "Self layer (six blocks) is **not** retrieved via `memory_recall`—it is "
 "always in the system prompt."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:39
+#: docs/cognition/recall-flow.md:39
 #, no-wrap
 msgid ""
 "| Layer        | Injection                 | Reason                                            |\n"
@@ -108,13 +108,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/recall-flow.md:40
+#: docs/cognition/recall-flow.md:40
 #, no-wrap
 msgid "Future Direction"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:43
+#: docs/cognition/recall-flow.md:43
 msgid ""
 "Unified recall extending to resource layer (tools, skills, assets) with "
 "preset weighting is tracked in [Issue #47](https://github.com/freeanima-org/"
@@ -122,13 +122,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/recall-flow.md:44
+#: docs/cognition/recall-flow.md:44
 #, no-wrap
 msgid "Naming Rationale"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:46
+#: docs/cognition/recall-flow.md:46
 msgid ""
 "In cognitive psychology, **Recall** is actively pulling stored information "
 "from memory—retrieving what you already stored. Even when scope extends to "

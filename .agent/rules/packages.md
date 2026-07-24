@@ -1,6 +1,6 @@
 # Package naming (RFC #1)
 
-> **单包 + Phase 1 host/client**：逻辑名经 `tsconfig` paths；物理根 `package.json`；拓扑见 [`repository-topology.md`](../docs/concepts/repository-topology.md)。
+> **单包 + Phase 1 host/client**：逻辑名经 `tsconfig` paths；物理根 `package.json`；拓扑见 [`repository-topology.md`](../.agent/rules/repository-topology.md)。
 
 | Shape      | Pattern                                    | Example                                                    |
 | ---------- | ------------------------------------------ | ---------------------------------------------------------- |

@@ -1,7 +1,7 @@
 # Compression (l-point v5.1)
 
 > Runtime context compression: PG `messages` **fully append-only**; only the **four-segment view** sent to the LLM is trimmed.
-> User-facing overview: [`docs/concepts/compression.md`](../../docs/concepts/compression.md).
+> User-facing overview: [`docs/cognition/compression.md`](../../docs/cognition/compression.md).
 
 ## Design Principles
 
@@ -107,8 +107,8 @@ Legacy meta **read-time migration** (`parseCompressionState`):
 | `runtime/src/loop/engine.ts`                      | Emergency call site                                                                           |
 | `src/host/platform/service/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy                                                            |
 
-Manual: `/compress` (`--force` ignores hysteresis). `/summarize` — manual collapse when idle (`l2=l3=l4`), incremental summary merge, awaits summary LLM (see [`docs/concepts/compression.md`](../../docs/concepts/compression.md)).
+Manual: `/compress` (`--force` ignores hysteresis). `/summarize` — manual collapse when idle (`l2=l3=l4`), incremental summary merge, awaits summary LLM (see [`docs/cognition/compression.md`](../../docs/cognition/compression.md)).
 
 Mid-turn: do not fold incomplete turns into summary; idle `/summarize` may leave empty raw. Automatic `deriveBoundariesFromL4` still requires a valid non-empty raw when advancing during an open turn.
 
-Compression **does not** trigger semantic memory extraction; light sleep cron runs independently (see [`docs/concepts/sleep.md`](../../docs/concepts/sleep.md)).
+Compression **does not** trigger semantic memory extraction; light sleep cron runs independently (see [`docs/cognition/sleep.md`](../../docs/cognition/sleep.md)).

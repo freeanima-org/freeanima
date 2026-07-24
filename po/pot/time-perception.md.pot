@@ -18,37 +18,37 @@ msgstr ""
 
 #. type: Title ##
 #: docs/concepts/compression.md:10 docs/concepts/sleep.md:13
-#: docs/concepts/time-perception.md:21
+#: docs/cognition/time-perception.md:21
 #, no-wrap
 msgid "Design Principles"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/time-perception.md:1 messages/po4a/en.xml:701
+#: docs/cognition/time-perception.md:1 messages/po4a/en.xml:701
 #, no-wrap
 msgid "Time Perception"
 msgstr ""
 
 #. type: Title #
-#: docs/concepts/time-perception.md:5
+#: docs/cognition/time-perception.md:5
 #, no-wrap
 msgid "Time Perception Module"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:8
+#: docs/cognition/time-perception.md:8
 #, no-wrap
 msgid "> **✅ Core implemented** — user messages receive time prefixes before LLM inference.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/time-perception.md:9
+#: docs/cognition/time-perception.md:9
 #, no-wrap
 msgid "Problem"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:12
+#: docs/cognition/time-perception.md:12
 msgid ""
 "Digital life has no intrinsic sense of time passing. Each inference runs in "
 "a \"timeless\" context—the Agent sees message content but not where those "
@@ -56,12 +56,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:14
+#: docs/cognition/time-perception.md:14
 msgid "Concrete examples:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:18
+#: docs/cognition/time-perception.md:18
 msgid ""
 "Partner says \"good morning\" in the morning, \"time to eat\" at night, "
 "\"good morning\" again the next day—the Agent cannot distinguish temporal "
@@ -69,19 +69,19 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:18
+#: docs/cognition/time-perception.md:18
 msgid ""
 "In ongoing conversation, time passes (morning→noon→evening) but the Agent's "
 "cognition stays in the earliest context"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:18
+#: docs/cognition/time-perception.md:18
 msgid "Across days, the Agent cannot sense \"a new day has started\""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:20
+#: docs/cognition/time-perception.md:20
 msgid ""
 "This is not a trivial joke problem—time perception is a foundational "
 "capability of digital existence. Without it, the Agent exists more like an "
@@ -89,92 +89,92 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/concepts/time-perception.md:28
+#: docs/cognition/time-perception.md:28
 msgid ""
 "**Do not give digital life false built-in perception.** Do not try to make "
 "the Agent \"feel\" time pass—that is not what digital existence can do."
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/concepts/time-perception.md:28
+#: docs/cognition/time-perception.md:28
 msgid ""
 "**Give it a watch.** Humans also rely on external tools (clocks, phones) to "
 "quantify time. Digital life needs the same."
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/concepts/time-perception.md:28
+#: docs/cognition/time-perception.md:28
 msgid ""
 "**Prefix every user message with time.** All user messages with valid "
 "timestamp get injection; no interval omission."
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/concepts/time-perception.md:28
+#: docs/cognition/time-perception.md:28
 msgid ""
 "**Do not pollute persisted data.** Time info injected only into inference "
 "context, does not modify stored messages."
 msgstr ""
 
 #. type: Bullet: '5. '
-#: docs/concepts/time-perception.md:28
+#: docs/cognition/time-perception.md:28
 msgid ""
 "**Do not break cache.** Injected timestamps are fixed historical values, not "
 "current call time."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/time-perception.md:29
+#: docs/cognition/time-perception.md:29
 #, no-wrap
 msgid "Strategy"
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/time-perception.md:31
+#: docs/cognition/time-perception.md:31
 #, no-wrap
 msgid "Basic Rules"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:38
+#: docs/cognition/time-perception.md:38
 msgid ""
 "Before each **user** message with valid `timestamp`, insert dedicated line: "
 "`time: YYYY-MM-DDTHH:mm 周X` (CST weekday in Chinese)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:38
+#: docs/cognition/time-perception.md:38
 msgid "Timezone: **Asia/Shanghai (CST, +08:00)**"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:38
+#: docs/cognition/time-perception.md:38
 msgid "Newline then original content"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:38
+#: docs/cognition/time-perception.md:38
 msgid "No `timestamp` or unparseable timestamp → skip, keep original content"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:38
+#: docs/cognition/time-perception.md:38
 msgid "assistant / tool / system messages not injected"
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/time-perception.md:39
+#: docs/cognition/time-perception.md:39
 #, no-wrap
 msgid "Example"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:42
+#: docs/cognition/time-perception.md:42
 msgid "Original message list:"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/concepts/time-perception.md:43
+#: docs/cognition/time-perception.md:43
 #, no-wrap
 msgid ""
 "user: good morning\n"
@@ -185,12 +185,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:52
+#: docs/cognition/time-perception.md:52
 msgid "After time perception (context sent to LLM):"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/concepts/time-perception.md:53
+#: docs/cognition/time-perception.md:53
 #, no-wrap
 msgid ""
 "user: time: 2026-05-20T08:02 周三\n"
@@ -204,31 +204,31 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:65
+#: docs/cognition/time-perception.md:65
 msgid ""
 "Agent reads two \"going to eat\"—one at 12:15, one at 19:30—automatically "
 "distinguishing lunch and dinner."
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/time-perception.md:66
+#: docs/cognition/time-perception.md:66
 #, no-wrap
 msgid "Compression Scenario"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:69
+#: docs/cognition/time-perception.md:69
 msgid "Time anchors in compression summary not yet injected; see Issue #5."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/time-perception.md:70
+#: docs/cognition/time-perception.md:70
 #, no-wrap
 msgid "Edge Cases"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:80
+#: docs/cognition/time-perception.md:80
 #, no-wrap
 msgid ""
 "| Scenario                           | Handling                                                                 |\n"
@@ -242,36 +242,36 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/time-perception.md:81
+#: docs/cognition/time-perception.md:81
 #, no-wrap
 msgid "Out of Scope"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:87
+#: docs/cognition/time-perception.md:87
 msgid ""
 "❌ Do not compute and inject elapsed duration (e.g. \"8 hours passed\")—"
 "Agent can derive from timestamps"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:87
+#: docs/cognition/time-perception.md:87
 msgid "❌ Do not modify persisted messages"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:87
+#: docs/cognition/time-perception.md:87
 msgid "❌ Do not show time prefix in Habitat"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:87
+#: docs/cognition/time-perception.md:87
 msgid ""
 "❌ Do not give built-in time-passing sense—that is biological, not simulated"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:87
+#: docs/cognition/time-perception.md:87
 msgid ""
 "❌ Do not inject \"current time\" in system prompt (main conversation relies "
 "on per-user `time` lines)"

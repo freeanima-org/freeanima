@@ -27,7 +27,7 @@ UI 管线：`messages/en.json` → `messages/po4a/en.xml` → po4a + `po/zh_CN/e
 用户可在消息后追加一行缩小范围，例如：
 
 - `scope: po/zh_CN/companion.md.po`
-- `scope: docs/features/diary.md`
+- `scope: docs/modules/diary.md`
 - `scope: en.xml.po`
 
 未指定 scope 时：扫描全部 PO，优先处理未译 + fuzzy 最多的文件。

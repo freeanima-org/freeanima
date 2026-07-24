@@ -129,7 +129,7 @@ function buildStartupMessage(
         "下一步：",
         `  1. 用超级用户创建数据库，例如：sudo -u postgres createdb -O <用户> ${dbName}`,
         "  2. 或将 config.yaml 中 database.url 改为已有数据库名",
-        "  3. 完整安装步骤见 docs/guide/database.md 与 scripts/setup-postgres-debian.sh",
+        "  3. 完整安装步骤见 docs/ops/database.md 与 scripts/setup-postgres-debian.sh",
       ].join("\n");
     case "auth_failed":
       return [
@@ -137,7 +137,7 @@ function buildStartupMessage(
         "下一步：",
         "  1. 核对 config.yaml 中 database.url 的用户名与密码",
         "  2. 若使用 env() / vault()，确认环境变量或 Vault 条目可读且值正确",
-        "  3. 详见 docs/guide/database.md",
+        "  3. 详见 docs/ops/database.md",
       ].join("\n");
     case "connection_refused":
       return [
@@ -146,14 +146,14 @@ function buildStartupMessage(
         "  1. 确认 PostgreSQL 服务已启动（例如 systemctl status postgresql）",
         "  2. 核对 database.url 中的 host 与 port",
         "  3. Debian 本机安装可参考 scripts/setup-postgres-debian.sh",
-        "  4. 详见 docs/guide/database.md",
+        "  4. 详见 docs/ops/database.md",
       ].join("\n");
     case "extension_missing":
       return [
         `数据库 "${dbName}" 缺少必需扩展（pg_trgm / vector）。`,
         "下一步：",
         `  1. 以超级用户执行：sudo -u postgres psql -d ${dbName} -f src/host/core/scripts/ensure-pg-extensions.sql`,
-        "  2. 详见 docs/guide/database.md",
+        "  2. 详见 docs/ops/database.md",
       ].join("\n");
   }
 }
@@ -167,7 +167,7 @@ function buildStartupMessageFromChain(
     return [
       "PostgreSQL 启动检查失败。",
       `原因摘要：${summarizeRootError(chain)}`,
-      "详见 docs/guide/database.md 的 Troubleshooting。",
+      "详见 docs/ops/database.md 的 Troubleshooting。",
     ].join("\n");
   }
   return buildStartupMessage(issue, opts);

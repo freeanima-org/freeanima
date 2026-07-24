@@ -16,19 +16,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:1 messages/po4a/en.xml:457
+#: docs/cognition/dream.md:1 messages/po4a/en.xml:457
 #, no-wrap
 msgid "Dream"
 msgstr "梦境"
 
 #. type: Title #
-#: docs/concepts/dream.md:5
+#: docs/cognition/dream.md:5
 #, no-wrap
 msgid "Dream Mechanism"
 msgstr "梦境机制"
 
 #. type: Plain text
-#: docs/concepts/dream.md:9
+#: docs/cognition/dream.md:9
 #, no-wrap
 msgid ""
 "> Nightly creative narratives generated after light sleep; not factual memory.\n"
@@ -36,7 +36,7 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:10 docs/concepts/sleep.md:9
+#: docs/cognition/dream.md:10 docs/concepts/sleep.md:9
 #: docs/guide/remote-access.md:10 messages/po4a/en.xml:622
 #: messages/po4a/en.xml:629
 #, no-wrap
@@ -44,7 +44,7 @@ msgid "Overview"
 msgstr "概述"
 
 #. type: Plain text
-#: docs/concepts/dream.md:13
+#: docs/cognition/dream.md:13
 msgid ""
 "Dreaming is the digital life's **imaginative** counterpart to memory "
 "consolidation. It does not extract facts or update semantic inventory—it "
@@ -55,13 +55,13 @@ msgstr ""
 "是根据当日的情绪基调与随机情景片段，生成超现实的第一人称叙事。"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:14 messages/po4a/en.xml:461
+#: docs/cognition/dream.md:14 messages/po4a/en.xml:461
 #, no-wrap
 msgid "Trigger"
 msgstr "触发"
 
 #. type: Plain text
-#: docs/concepts/dream.md:21
+#: docs/cognition/dream.md:21
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Condition                                                            | Result                     |\n"
@@ -83,7 +83,7 @@ msgstr ""
 "| 至少有一条当日产生的强度足够的感性锚点                        | 生成梦境                   |\n"
 
 #. type: Plain text
-#: docs/concepts/dream.md:23
+#: docs/cognition/dream.md:23
 msgid ""
 "Trigger is **purely emotion-driven** (no random dice). Session activity is "
 "**not** required; episodic fragments may be empty."
@@ -92,13 +92,13 @@ msgstr ""
 "为空。"
 
 #. type: Title ##
-#: docs/concepts/dream.md:24
+#: docs/cognition/dream.md:24
 #, no-wrap
 msgid "Input"
 msgstr "输入"
 
 #. type: Bullet: '1. '
-#: docs/concepts/dream.md:28
+#: docs/cognition/dream.md:28
 #, fuzzy
 #| msgid ""
 #| "**Emotional tone** — top 3 `limbic_memory` rows whose `created_at` falls "
@@ -115,7 +115,7 @@ msgstr ""
 "0.5`，按强度降序。"
 
 #. type: Bullet: '2. '
-#: docs/concepts/dream.md:28
+#: docs/cognition/dream.md:28
 #, fuzzy
 #| msgid ""
 #| "**Episodic fragments** — random sample of user/assistant messages from "
@@ -129,37 +129,37 @@ msgstr ""
 "限约 4k 字符；当日无 conversation 更新时省略。"
 
 #. type: Plain text
-#: docs/concepts/dream.md:30
+#: docs/cognition/dream.md:30
 msgid "Light sleep stage 2 must complete first so limbic anchors exist."
 msgstr "须先完成浅睡第 2 阶段，以确保感性锚点已写入。"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:31 messages/po4a/en.xml:61
+#: docs/cognition/dream.md:31 messages/po4a/en.xml:61
 #, no-wrap
 msgid "Output"
 msgstr "输出"
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:37
+#: docs/cognition/dream.md:37
 msgid ""
 "Ensure agent default private world diary for CST `dream_day` (create empty "
 "shell if missing)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:37
+#: docs/cognition/dream.md:37
 msgid ""
 "Insert `content_block` (`block_type: text`) with components `content_block` "
 "+ `dream`."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:37
+#: docs/cognition/dream.md:37
 msgid "Append-only; content is not updated after creation."
 msgstr "仅追加；创建后内容不更新。"
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:37
+#: docs/cognition/dream.md:37
 #, fuzzy
 #| msgid ""
 #| "Does **not** create notification inbox entries (see [`notifications.md`]"
@@ -169,27 +169,27 @@ msgstr ""
 "**不会**创建通知收件箱条目（见 [`notifications.md`](notifications.md)）。"
 
 #. type: Plain text
-#: docs/concepts/dream.md:39
+#: docs/cognition/dream.md:39
 msgid ""
 "Legacy `dream_memory` / `dream_entry` rows are backfilled and removed in "
 "Drizzle migration `20260717180000_memory_bricks_to_diary`."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/dream.md:40 docs/concepts/sleep.md:32
+#: docs/cognition/dream.md:40 docs/concepts/sleep.md:32
 #, no-wrap
 msgid "Orchestration"
 msgstr "编排"
 
 #. type: Plain text
-#: docs/concepts/dream.md:43
+#: docs/cognition/dream.md:43
 #, fuzzy
 #| msgid "Sleep-cycle DAG node `dream`:"
 msgid "Sleep-cycle DAG node `dream` (unchanged topology):"
 msgstr "睡眠周期 DAG 节点 `dream`："
 
 #. type: Fenced code block (text)
-#: docs/concepts/dream.md:44
+#: docs/cognition/dream.md:44
 #, fuzzy, no-wrap
 #| msgid ""
 #| "light-sleep\n"
@@ -208,13 +208,13 @@ msgstr ""
 "  └─► self-layer-refresh\n"
 
 #. type: Title ##
-#: docs/concepts/dream.md:51
+#: docs/cognition/dream.md:51
 #, no-wrap
 msgid "Tools & UI"
 msgstr "工具与 UI"
 
 #. type: Plain text
-#: docs/concepts/dream.md:57
+#: docs/cognition/dream.md:57
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Port                      | Role                                                                  |\n"
@@ -233,28 +233,28 @@ msgstr ""
 "| `EntitySearchPort.search` | 硬过滤 + 可选文本查询；经 RRF 混合 FTS/trigram/vector                 |\n"
 
 #. type: Plain text
-#: docs/concepts/dream.md:59
+#: docs/cognition/dream.md:59
 msgid "No independent `/dream` Shell module or `dream` ToolSet."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/dream.md:60
+#: docs/cognition/dream.md:60
 #, no-wrap
 msgid "Design Notes"
 msgstr "设计说明"
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:64
+#: docs/cognition/dream.md:64
 msgid "Dreams are **not** injected into system prompt or resident memory."
 msgstr "梦境**不会**注入系统提示或常驻记忆。"
 
 #. type: Bullet: '- '
-#: docs/concepts/dream.md:64
+#: docs/cognition/dream.md:64
 msgid "Accuracy is explicitly **not** a goal; association and metaphor are."
 msgstr "准确性明确**不是**目标；联想与隐喻才是。"
 
 #. type: Plain text
-#: docs/concepts/dream.md:65
+#: docs/cognition/dream.md:65
 #, fuzzy
 #| msgid "See also: [`sleep.md`](sleep.md), [`memory.md`](memory.md)."
 msgid ""

@@ -17,14 +17,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title #
-#: docs/concepts/environment-awareness.md:1
-#: docs/concepts/environment-awareness.md:5
+#: docs/cognition/environment-awareness.md:1
+#: docs/cognition/environment-awareness.md:5
 #, no-wrap
 msgid "Environment Awareness"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/environment-awareness.md:9
+#: docs/cognition/environment-awareness.md:9
 #, no-wrap
 msgid ""
 "> Habitat-process loop: collect environment + health markers → compare baseline → notify on change, stay quiet otherwise.\n"
@@ -32,13 +32,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/environment-awareness.md:10
+#: docs/cognition/environment-awareness.md:10
 #, no-wrap
 msgid "Two channels"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/environment-awareness.md:16
+#: docs/cognition/environment-awareness.md:16
 #, no-wrap
 msgid ""
 "| Channel                        | Cadence                                           | Role                                                                    |\n"
@@ -48,7 +48,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/environment-awareness.md:18
+#: docs/cognition/environment-awareness.md:18
 msgid ""
 "Session prompts are **not** rewritten on every change — live awareness is "
 "event-level. The next day-boundary (or new session) picks up the updated "
@@ -56,18 +56,18 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/environment-awareness.md:19
+#: docs/cognition/environment-awareness.md:19
 #, no-wrap
 msgid "Loop (`builtin-env-health`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/environment-awareness.md:22
+#: docs/cognition/environment-awareness.md:22
 msgid "Schedule: every 5 minutes (`*/5 * * * *`), Habitat cron, `no_agent`."
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/concepts/environment-awareness.md:23
+#: docs/cognition/environment-awareness.md:23
 #, no-wrap
 msgid ""
 "collect markers (banded)\n"
@@ -78,48 +78,48 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/environment-awareness.md:32
+#: docs/cognition/environment-awareness.md:32
 msgid "Implementation: `src/platform/runtime/env-health/`."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/environment-awareness.md:34
+#: docs/cognition/environment-awareness.md:34
 #, no-wrap
 msgid "**Storage:** baseline is **KV** (no TTL) via `connectors/redis` — Redis when configured; otherwise `~/.anima/env-health-baseline.json`. On first Redis hit after an old file exists, migrate once and delete the file. Do not confuse with **Cache** (`anima:cache:*`, TTL) used by 用户活跃统计.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/environment-awareness.md:35
+#: docs/cognition/environment-awareness.md:35
 #, no-wrap
 msgid "v1 markers (after banding)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/environment-awareness.md:38
+#: docs/cognition/environment-awareness.md:38
 #, no-wrap
 msgid "**Environment:** hostname, OS, timezone label, Habitat version, boot started_at, PostgreSQL / Redis status (`connected` | `error` | `not_configured`).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/environment-awareness.md:40
+#: docs/cognition/environment-awareness.md:40
 #, no-wrap
 msgid "**Health:** RSS band (512 MiB), MCP/ACP connection counts, disk free band for `FREEANIMA_HOME` (`<1GiB` | `1-2GiB` | `2-4GiB` | `4-8GiB` | `≥8GiB` | `unknown`).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/environment-awareness.md:42
+#: docs/cognition/environment-awareness.md:42
 msgid ""
 "Continuous metrics are banded so minor jitter does not spam notifications."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/environment-awareness.md:43
+#: docs/cognition/environment-awareness.md:43
 #, no-wrap
 msgid "System prompt sections"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/environment-awareness.md:49
+#: docs/cognition/environment-awareness.md:49
 #, no-wrap
 msgid ""
 "| Hook id               | Order | Content                                                                |\n"
@@ -129,18 +129,18 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/environment-awareness.md:51
+#: docs/cognition/environment-awareness.md:51
 msgid "Registered in `register-prompt-hooks.ts`."
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/environment-awareness.md:52
+#: docs/cognition/environment-awareness.md:52
 #, no-wrap
 msgid "用户活跃统计 panel"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/environment-awareness.md:55
+#: docs/cognition/environment-awareness.md:55
 msgid ""
 "User-side dialogue density only (新开 / 更新会话、用户消息 — not agent/tool "
 "traffic). CST calendar windows: 今天 / 昨天 / 前天 / 近 7·30·90 天 / 近 1 "
@@ -150,63 +150,63 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/environment-awareness.md:56 docs/concepts/notifications.md:1
+#: docs/cognition/environment-awareness.md:56 docs/concepts/notifications.md:1
 #: docs/concepts/notifications.md:5 messages/po4a/en.xml:456
 #, no-wrap
 msgid "Notifications"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/environment-awareness.md:62
+#: docs/cognition/environment-awareness.md:62
 msgid "Recipients: **user and agent**"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/environment-awareness.md:62
+#: docs/cognition/environment-awareness.md:62
 msgid "`source_kind: system`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/environment-awareness.md:62
+#: docs/cognition/environment-awareness.md:62
 msgid "`source_ref: env-health:<sortedChangedKeys>:<fingerprint>`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/environment-awareness.md:62
+#: docs/cognition/environment-awareness.md:62
 msgid ""
 "If both recipients already have that `source_ref`, skip create (dedupe) but "
 "still refresh baseline"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/environment-awareness.md:64
+#: docs/cognition/environment-awareness.md:64
 msgid "The user-activity panel does **not** emit change notifications."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/environment-awareness.md:65
+#: docs/cognition/environment-awareness.md:65
 #, no-wrap
 msgid "Not this module"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/environment-awareness.md:70
+#: docs/cognition/environment-awareness.md:70
 msgid "Habitat health dashboard UI (Issue #21 epic item)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/environment-awareness.md:70
+#: docs/cognition/environment-awareness.md:70
 msgid "Scene awareness (dialogue atmosphere)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/environment-awareness.md:70
+#: docs/cognition/environment-awareness.md:70
 msgid ""
 "Habitat HTTP `health.probe` / ACP process health checks (ops, not cognitive "
 "baseline)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/environment-awareness.md:70
+#: docs/cognition/environment-awareness.md:70
 msgid "Recent-memory / cross-session summary injection"
 msgstr ""

@@ -42,10 +42,10 @@ describe("registerServiceTools", () => {
     expect(names.has("clarify")).toBe(true);
     expect(names.has("email_list_accounts")).toBe(true);
     expect(names.has("email_send")).toBe(true);
-    expect(names.has("docs_list")).toBe(true);
-    expect(names.has("docs_get")).toBe(true);
-    expect(names.has("docs_search")).toBe(true);
-    expect(toolSets.getToolSet("docs") != null).toBe(true);
+    expect(names.has("freeanima_docs_list")).toBe(true);
+    expect(names.has("freeanima_docs_get")).toBe(true);
+    expect(names.has("freeanima_docs_search")).toBe(true);
+    expect(toolSets.getToolSet("freeanima_docs") != null).toBe(true);
   });
 
   it("is idempotent", () => {

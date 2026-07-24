@@ -1,0 +1,199 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"PO-Revision-Date: 2026-07-24 16:28+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title #
+#: docs/tools/browser.md:1 docs/tools/browser.md:5
+#, no-wrap
+msgid "Camofox Browser Profile & Session"
+msgstr ""
+
+#. type: Plain text
+#: docs/tools/browser.md:8
+#, no-wrap
+msgid "> Browser tools talk to Camofox over HTTP. **Profile** holds login state; **session** is a work line under that profile.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/tools/browser.md:10
+msgid ""
+"Configure under Habitat settings → Advanced → **browser** / **camofox** "
+"(`browser.camofox.*` in `~/.anima/config.yaml`)."
+msgstr ""
+
+#. type: Title ##
+#: docs/tools/browser.md:11
+#, fuzzy, no-wrap
+#| msgid "Active sessions"
+msgid "Profile vs session"
+msgstr "活跃会话"
+
+#. type: Plain text
+#: docs/tools/browser.md:17
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Attribute  | Value                                                                                                                                                 |\n"
+#| "| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| Trigger    | Sleep-cycle step `deep-sleep` (after light-sleep in DAG)                                                                                              |\n"
+#| "| Target     | All active semantic memory                                                                                                                            |\n"
+#| "| Operations | Contradiction detection + expiry marking, split, dedup merge, pin quality review—four sequential rounds                                               |\n"
+#| "| Mode       | **Incremental** (scheduled Tue–Sun): skip quiet rounds when nothing was `updated` in 24h; **Full** (scheduled Mon + manual): all rounds on full store |\n"
+msgid ""
+"| Concept     | Config / field                                                            | What it owns                                               |\n"
+"| ----------- | ------------------------------------------------------------------------- | ---------------------------------------------------------- |\n"
+"| **Profile** | Camofox `userId` (`user_id`, or derived when `managed_persistence`)       | Cookies, login, local storage — “who is browsing”          |\n"
+"| **Session** | Camofox `sessionKey` (`session_key`, or derived per Habitat conversation) | Tab / task line under that profile — create and adopt tabs |\n"
+msgstr ""
+"| 属性  | 值                                                                                                |\n"
+"| ---------- | ---------------------------------------------------------------------------------------------------- |\n"
+"| 触发    | sleep-cycle 步骤 `deep-sleep`（DAG 中在 light-sleep 之后）                                             |\n"
+"| 目标     | 全部 active 语义记忆                                                                           |\n"
+"| 操作 | 矛盾检测 + 过期标记、拆分、去重合并、置顶维护——四轮顺序执行 |\n"
+
+#. type: Plain text
+#: docs/tools/browser.md:19
+msgid ""
+"One profile can have many sessions. Same profile + different sessions share "
+"login state but keep separate tab lines."
+msgstr ""
+
+#. type: Plain text
+#: docs/tools/browser.md:21
+msgid ""
+"Habitat `conversationId` is only the in-process map key for the cached "
+"Camofox session object; it is not Camofox’s `sessionKey` itself (often "
+"derived from it)."
+msgstr ""
+
+#. type: Title ##
+#: docs/tools/browser.md:22
+#, no-wrap
+msgid "Resolution order"
+msgstr ""
+
+#. type: Plain text
+#: docs/tools/browser.md:25
+msgid "When a Habitat conversation first opens a Camofox session:"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/tools/browser.md:29
+msgid ""
+"**`user_id` set** → use that profile; `session_key` if set, else `task_` + "
+"conversation id prefix. Ignores `managed_persistence`."
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/tools/browser.md:29
+msgid ""
+"Else **`managed_persistence` not false** (default **true**) → stable "
+"`userId` from `~/.anima/browser_auth/camofox`; `sessionKey` derived per "
+"conversation."
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/tools/browser.md:29
+msgid ""
+"Else (`managed_persistence: false`) → ephemeral random `userId` — no "
+"persistent profile."
+msgstr ""
+
+#. type: Plain text
+#: docs/tools/browser.md:31
+msgid ""
+"`session_key` alone does nothing; it only applies when `user_id` is set."
+msgstr ""
+
+#. type: Title ##
+#: docs/tools/browser.md:32
+#, no-wrap
+msgid "Fields"
+msgstr ""
+
+#. type: Plain text
+#: docs/tools/browser.md:42
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Method            | Schema                                                                                                      |\n"
+#| "| ----------------- | ----------------------------------------------------------------------------------------------------------- |\n"
+#| "| `terminal.attach` | [`terminal.ts`](../../packages/sap-contract/src/frames/terminal.ts) — optional `cwd`; returns `terminal_id` |\n"
+#| "| `terminal.write`  | `terminal_id`, `data`                                                                                       |\n"
+#| "| `terminal.resize` | `terminal_id`, `cols`, `rows`                                                                               |\n"
+#| "| `terminal.close`  | `terminal_id`                                                                                               |\n"
+msgid ""
+"| Field                 | Default (when unset) | Meaning                                                                  |\n"
+"| --------------------- | -------------------- | ------------------------------------------------------------------------ |\n"
+"| `base_url`            | (required for tools) | Camofox REST base URL                                                    |\n"
+"| `timeout_ms`          | `30000`              | Per-request HTTP timeout                                                 |\n"
+"| `managed_persistence` | `true`               | Reuse a stable local profile when `user_id` is unset                     |\n"
+"| `adopt_existing_tab`  | `true`               | After restart, try to adopt an existing tab for the same profile/session |\n"
+"| `user_id`             | unset                | Explicit Camofox profile id (highest priority)                           |\n"
+"| `session_key`         | unset                | Explicit session key under that profile (only with `user_id`)            |\n"
+msgstr ""
+"| 方法              | Schema                                                                                                      |\n"
+"| ----------------- | ----------------------------------------------------------------------------------------------------------- |\n"
+"| `terminal.attach` | [`terminal.ts`](../../packages/sap-contract/src/frames/terminal.ts) — 可选 `cwd`；返回 `terminal_id`      |\n"
+"| `terminal.write`  | `terminal_id`、`data`                                                                                       |\n"
+"| `terminal.resize` | `terminal_id`、`cols`、`rows`                                                                               |\n"
+"| `terminal.close`  | `terminal_id`                                                                                               |\n"
+
+#. type: Plain text
+#: docs/tools/browser.md:44
+msgid ""
+"Unset booleans are treated as **on** (`!== false`). Set explicitly to "
+"`false` to disable."
+msgstr ""
+
+#. type: Title ##
+#: docs/tools/browser.md:45
+#, no-wrap
+msgid "Recommended setups"
+msgstr ""
+
+#. type: Plain text
+#: docs/tools/browser.md:52
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Capability        | Description                                                                                            |\n"
+#| "| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
+#| "| `memory_recall`   | Four sources: semantic / conversation / limbic / autobiographical; Top N; conversation returns snippet |\n"
+#| "| `sessions_search` | Session message search; returns snippet (not full content)                                             |\n"
+#| "| `memory_remember` | Semantic memory CRUD during conversation                                                               |\n"
+#| "| Resident memory   | System prompt injection (not recall)                                                                   |\n"
+msgid ""
+"| Goal                                      | Config                                                                 |\n"
+"| ----------------------------------------- | ---------------------------------------------------------------------- |\n"
+"| Remember logins on this Habitat (default) | Leave fields unset, or `managed_persistence: true`                     |\n"
+"| Ephemeral browsing (no shared login)      | `managed_persistence: false`                                           |\n"
+"| Share / pin a Camofox profile             | Set `user_id`; add `session_key` only if you need a fixed session line |\n"
+msgstr ""
+"| 能力              | 说明                                                                                                   |\n"
+"| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
+"| `memory_recall`   | 四源：semantic / conversation / limbic / autobiographical；Top N；conversation 返回 snippet            |\n"
+"| `sessions_search` | 会话消息搜索；返回 snippet（非全文）                                                                   |\n"
+"| `memory_remember` | 对话中语义记忆 CRUD                                                                                    |\n"
+"| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
+
+#. type: Title ##
+#: docs/tools/browser.md:53
+#, no-wrap
+msgid "See also"
+msgstr ""
+
+#. type: Plain text
+#: docs/tools/browser.md:55
+msgid "Implementation: `src/capabilities/tools/browser-camofox.ts`."
+msgstr ""

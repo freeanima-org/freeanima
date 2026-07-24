@@ -17,26 +17,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/architecture.md:1 docs/features/companion.md:11
+#: docs/concepts/architecture.md:1 docs/modules/companion.md:11
 #: messages/po4a/en.xml:685
 #, no-wrap
 msgid "Architecture"
 msgstr ""
 
 #. type: Title #
-#: docs/features/companion.md:1 docs/features/companion.md:5
+#: docs/modules/companion.md:1 docs/modules/companion.md:5
 #, no-wrap
 msgid "Desktop Companion"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:8
+#: docs/modules/companion.md:8
 #, no-wrap
 msgid "> **Outpost** (前哨): **remote-tools attach host** in the Companion **overlay WebView** (first-party) — embedded by the desktop Portal shell for window/IPC/FS only. Target shell: **Tauri**（见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)）。Not managed via `config.yaml`, and **not** a separate Node sidecar process.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:10
+#: docs/modules/companion.md:10
 msgid ""
 "The content pack (React + VRM) is embedded by the **desktop Tauri shell** "
 "(`src/app/shell/tauri`). Packaged overlay loads from `frontendDist` `ui/"
@@ -47,7 +47,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/features/companion.md:13
+#: docs/modules/companion.md:13
 #, no-wrap
 msgid ""
 "FreeAnima Portal (src/app/shell/tauri)\n"
@@ -62,13 +62,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:25
+#: docs/modules/companion.md:25
 #, no-wrap
 msgid "Habitat vs local boundary"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:33
+#: docs/modules/companion.md:33
 #, no-wrap
 msgid ""
 "| Layer              | Location                     | Responsibility                                                                                                                                                                   |\n"
@@ -80,13 +80,13 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:35
+#: docs/modules/companion.md:35
 msgid ""
 "Management is in **Settings only** — Habitat has no companion admin page."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:37
+#: docs/modules/companion.md:37
 msgid ""
 "On host start: Habitat config wins; `~/.anima/companion/config.json` on the "
 "desktop is an **offline cache**. Legacy local data is migrated once to "
@@ -95,7 +95,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/features/companion.md:38
+#: docs/modules/companion.md:38
 #, no-wrap
 msgid ""
 "Settings ──Habitat RPC/HTTP──► features/companion (Habitat)\n"
@@ -106,7 +106,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:47
+#: docs/modules/companion.md:47
 msgid ""
 "The content pack lives in [`src/features/companion/`](../../src/features/"
 "companion/) (`ui/spa/` + `server/` + `shared/`). Habitat domain logic: [`src/"
@@ -114,7 +114,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:54
+#: docs/modules/companion.md:54
 #, no-wrap
 msgid ""
 "|            | Chat / other product modules | Companion                                        |\n"
@@ -126,20 +126,20 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/features/companion.md:55 messages/po4a/en.xml:690
+#: docs/modules/companion.md:55 messages/po4a/en.xml:690
 #, no-wrap
 msgid "Features"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 msgid ""
 "VRM avatar rendering (Three.js + `@pixiv/three-vrm`); VRM 1.0 and 0.x auto "
 "orientation correction"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 msgid ""
 "**Motion slots**: five slots — `idle`, `rest`, `walk`, `climb`, `in_place`; "
 "each slot binds 0..n VRMA clips; play by id or random; empty slot = no "
@@ -147,54 +147,54 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 msgid ""
 "**Speech bubble**: one-way text queue; user click advances; no auto-dismiss; "
 "pushed by Habitat Agent via companion `bubble` tool"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 msgid ""
 "Transparent always-on-top **work-area fullscreen** overlay; character stage "
 "160×260 positioned inside; avatar/bubble clickable, empty area click-through"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 msgid ""
 "**Local interaction**: drag moves the stage (not the OS window); click body "
 "to play random motion from `in_place` slot"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 msgid ""
 "**Patrol** (Settings → Behavior tab): idle patrol, double-click patrol, "
 "corner pause, patrol speed, return-to-start on launch, etc."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 msgid ""
 "System tray: show/hide companion, **Settings…** (open settings window), quit"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 msgid ""
 "Settings tabs: **General** / **Behavior** / **Models** / **Motion slots** / "
 "**Motion library**"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:66
+#: docs/modules/companion.md:66
 #, no-wrap
 msgid "Agent tools (host registration)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:72
+#: docs/modules/companion.md:72
 #, no-wrap
 msgid ""
 "| Tool        | Parameters                           | Description                            |\n"
@@ -204,27 +204,27 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:74
+#: docs/modules/companion.md:74
 msgid ""
 "Periodic content (e.g. scheduled jokes) is configured on **anima service / "
 "scheduled tasks**; the Agent calls `bubble`. Companion has no built-in timer."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:76
+#: docs/modules/companion.md:76
 msgid ""
 "Settings → Companion client section shows **instance id** and **remote tools "
 "connected**（overlay 上报 / ShellApi；无 token 时跳过 attach）。"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:77
+#: docs/modules/companion.md:77
 #, no-wrap
 msgid "Models and motions"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:80
+#: docs/modules/companion.md:80
 msgid ""
 "The repo **does not bundle** `.vrm` / `.vrma` files. **Habitat** is the "
 "SSOT: `companion_profile` entity in PostgreSQL plus files on the Habitat "
@@ -233,13 +233,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:81
+#: docs/modules/companion.md:81
 #, no-wrap
 msgid "VRM models"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:84
+#: docs/modules/companion.md:84
 msgid ""
 "Settings → **Models** tab: list, import, delete, rename, switch current "
 "model. Upload goes to Habitat (`POST /rpc/v1/companion/model/upload`); host "
@@ -247,20 +247,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:86
+#: docs/modules/companion.md:86
 msgid ""
 "During development, files in `src/features/companion/public/models/` serve "
 "as fallback."
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:87
+#: docs/modules/companion.md:87
 #, no-wrap
 msgid "VRMA library and slots"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:90
+#: docs/modules/companion.md:90
 msgid ""
 "Settings → **Motion library** tab: import VRMA, FBX, or ZIP (FBX is "
 "converted on **Habitat**, not on desktop). **Motion slots** tab assigns "
@@ -268,20 +268,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:92
+#: docs/modules/companion.md:92
 msgid ""
 "Unbound slots play no animation; patrol still moves the window; walk/climb "
 "VRMA play only when bound."
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:93
+#: docs/modules/companion.md:93
 #, no-wrap
 msgid "FBX import"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:96
+#: docs/modules/companion.md:96
 msgid ""
 "FBX→VRMA runs on the **Habitat host** (`anima service`). Desktop installers "
 "no longer bundle `fbx2vrma-converter` or FBX2glTF. On the Habitat machine "
@@ -289,38 +289,38 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:97
+#: docs/modules/companion.md:97
 #, no-wrap
 msgid "Development and run"
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:99
+#: docs/modules/companion.md:99
 #, no-wrap
 msgid "Browser /dev companion host"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/features/companion.md:101
+#: docs/modules/companion.md:101
 #, no-wrap
 msgid "bun src/features/companion/dev.ts\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:106
+#: docs/modules/companion.md:106
 msgid ""
 "Uses an in-process HTTP server; runtime events use localhost WebSocket (`/"
 "api/runtime/ws`)."
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:107
+#: docs/modules/companion.md:107
 #, no-wrap
 msgid "Desktop (Tauri Portal)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:110
+#: docs/modules/companion.md:110
 msgid ""
 "The Portal overlay WebView hosts companion UI and `remote_tools.attach` (no "
 "Node sidecar). Window / IPC / FS come from Tauri commands. See [`.agent/"
@@ -328,7 +328,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:111
+#: docs/modules/companion.md:111
 msgid ""
 "See also: [Habitat RPC](../guide/habitat-rpc.md), [architecture companion "
 "section](../concepts/architecture.md#desktop-companion-habitat-ssot)."

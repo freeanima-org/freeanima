@@ -153,10 +153,18 @@ export function resolveDocsCorpus(): DocsCorpus | { error: string } {
   return cachedCorpus;
 }
 
-export function listDocs(corpus: DocsCorpus): DocsListEntry[] {
-  return [...corpus.byPath.values()]
+export function listDocs(corpus: DocsCorpus, prefix?: string): DocsListEntry[] {
+  const normalizedPrefix = prefix?.trim().replaceAll("\\", "/") ?? "";
+  const entries = [...corpus.byPath.values()]
+    .filter((d) => (normalizedPrefix.length === 0 ? true : d.path.startsWith(normalizedPrefix)))
     .map((d) => ({ path: d.path, title: d.title }))
     .toSorted((a, b) => a.path.localeCompare(b.path));
+  const readmeIdx = entries.findIndex((d) => d.path === "README.md");
+  if (readmeIdx > 0) {
+    const [readme] = entries.splice(readmeIdx, 1);
+    if (readme) entries.unshift(readme);
+  }
+  return entries;
 }
 
 export function getDoc(

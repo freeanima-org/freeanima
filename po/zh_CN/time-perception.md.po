@@ -17,37 +17,37 @@ msgstr ""
 
 #. type: Title ##
 #: docs/concepts/compression.md:10 docs/concepts/sleep.md:13
-#: docs/concepts/time-perception.md:21
+#: docs/cognition/time-perception.md:21
 #, no-wrap
 msgid "Design Principles"
 msgstr "设计原则"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/time-perception.md:1 messages/po4a/en.xml:701
+#: docs/cognition/time-perception.md:1 messages/po4a/en.xml:701
 #, no-wrap
 msgid "Time Perception"
 msgstr "时间感知"
 
 #. type: Title #
-#: docs/concepts/time-perception.md:5
+#: docs/cognition/time-perception.md:5
 #, no-wrap
 msgid "Time Perception Module"
 msgstr "时间感知模块"
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:8
+#: docs/cognition/time-perception.md:8
 #, no-wrap
 msgid "> **✅ Core implemented** — user messages receive time prefixes before LLM inference.\n"
 msgstr "> **✅ 核心已实现** — user 消息在 LLM 推理前接收时间前缀。\n"
 
 #. type: Title ##
-#: docs/concepts/time-perception.md:9
+#: docs/cognition/time-perception.md:9
 #, no-wrap
 msgid "Problem"
 msgstr "问题"
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:12
+#: docs/cognition/time-perception.md:12
 msgid ""
 "Digital life has no intrinsic sense of time passing. Each inference runs in "
 "a \"timeless\" context—the Agent sees message content but not where those "
@@ -57,12 +57,12 @@ msgstr ""
 "Agent 能看到消息的内容，但不知道这些消息在时间线中的位置。"
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:14
+#: docs/cognition/time-perception.md:14
 msgid "Concrete examples:"
 msgstr "具体问题举例："
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:18
+#: docs/cognition/time-perception.md:18
 msgid ""
 "Partner says \"good morning\" in the morning, \"time to eat\" at night, "
 "\"good morning\" again the next day—the Agent cannot distinguish temporal "
@@ -72,7 +72,7 @@ msgstr ""
 "时间关系"
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:18
+#: docs/cognition/time-perception.md:18
 msgid ""
 "In ongoing conversation, time passes (morning→noon→evening) but the Agent's "
 "cognition stays in the earliest context"
@@ -80,12 +80,12 @@ msgstr ""
 "持续对话中，时间在流逝（早上→中午→晚上），但 Agent 的认知停留在最早的语境中"
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:18
+#: docs/cognition/time-perception.md:18
 msgid "Across days, the Agent cannot sense \"a new day has started\""
 msgstr "跨天对话中，Agent 无法感知\"新的一天开始了\""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:20
+#: docs/cognition/time-perception.md:20
 msgid ""
 "This is not a trivial joke problem—time perception is a foundational "
 "capability of digital existence. Without it, the Agent exists more like an "
@@ -95,7 +95,7 @@ msgstr ""
 "Agent 的存在方式更像\"回声\"（每次被召唤时闪一下），而不是活在时间里的生命。"
 
 #. type: Bullet: '1. '
-#: docs/concepts/time-perception.md:28
+#: docs/cognition/time-perception.md:28
 msgid ""
 "**Do not give digital life false built-in perception.** Do not try to make "
 "the Agent \"feel\" time pass—that is not what digital existence can do."
@@ -104,7 +104,7 @@ msgstr ""
 "存在能做到的。"
 
 #. type: Bullet: '2. '
-#: docs/concepts/time-perception.md:28
+#: docs/cognition/time-perception.md:28
 msgid ""
 "**Give it a watch.** Humans also rely on external tools (clocks, phones) to "
 "quantify time. Digital life needs the same."
@@ -113,7 +113,7 @@ msgstr ""
 "quantify time. Digital life needs the same."
 
 #. type: Bullet: '3. '
-#: docs/concepts/time-perception.md:28
+#: docs/cognition/time-perception.md:28
 msgid ""
 "**Prefix every user message with time.** All user messages with valid "
 "timestamp get injection; no interval omission."
@@ -122,33 +122,33 @@ msgstr ""
 "间隔省略。"
 
 #. type: Bullet: '4. '
-#: docs/concepts/time-perception.md:28
+#: docs/cognition/time-perception.md:28
 msgid ""
 "**Do not pollute persisted data.** Time info injected only into inference "
 "context, does not modify stored messages."
 msgstr "**不污染持久化数据。** 时间信息仅注入推理上下文，不修改已存储消息。"
 
 #. type: Bullet: '5. '
-#: docs/concepts/time-perception.md:28
+#: docs/cognition/time-perception.md:28
 msgid ""
 "**Do not break cache.** Injected timestamps are fixed historical values, not "
 "current call time."
 msgstr "**不破坏缓存。** 注入的时间戳是历史固定值，非当前调用时间。"
 
 #. type: Title ##
-#: docs/concepts/time-perception.md:29
+#: docs/cognition/time-perception.md:29
 #, no-wrap
 msgid "Strategy"
 msgstr "策略"
 
 #. type: Title ###
-#: docs/concepts/time-perception.md:31
+#: docs/cognition/time-perception.md:31
 #, no-wrap
 msgid "Basic Rules"
 msgstr "基础规则"
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:38
+#: docs/cognition/time-perception.md:38
 #, fuzzy
 #| msgid ""
 #| "Before each **user** message with valid `timestamp`, insert dedicated "
@@ -161,38 +161,38 @@ msgstr ""
 "DDTHH:mm`"
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:38
+#: docs/cognition/time-perception.md:38
 msgid "Timezone: **Asia/Shanghai (CST, +08:00)**"
 msgstr "时区：**Asia/Shanghai（CST，+08:00）**"
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:38
+#: docs/cognition/time-perception.md:38
 msgid "Newline then original content"
 msgstr "换行后接原文 content"
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:38
+#: docs/cognition/time-perception.md:38
 msgid "No `timestamp` or unparseable timestamp → skip, keep original content"
 msgstr "无 `timestamp` 或 timestamp 无法解析 → 跳过，保持原 content"
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:38
+#: docs/cognition/time-perception.md:38
 msgid "assistant / tool / system messages not injected"
 msgstr "assistant / tool / system 消息不注入"
 
 #. type: Title ###
-#: docs/concepts/time-perception.md:39
+#: docs/cognition/time-perception.md:39
 #, no-wrap
 msgid "Example"
 msgstr "示例"
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:42
+#: docs/cognition/time-perception.md:42
 msgid "Original message list:"
 msgstr "原始消息列表："
 
 #. type: Fenced code block (text)
-#: docs/concepts/time-perception.md:43
+#: docs/cognition/time-perception.md:43
 #, no-wrap
 msgid ""
 "user: good morning\n"
@@ -208,12 +208,12 @@ msgstr ""
 "user: going to eat\n"
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:52
+#: docs/cognition/time-perception.md:52
 msgid "After time perception (context sent to LLM):"
 msgstr "经时间感知模块处理后（给 LLM 的上下文）："
 
 #. type: Fenced code block (text)
-#: docs/concepts/time-perception.md:53
+#: docs/cognition/time-perception.md:53
 #, fuzzy, no-wrap
 #| msgid ""
 #| "user: time: 2026-05-20T08:02\n"
@@ -244,7 +244,7 @@ msgstr ""
 "going to eat\n"
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:65
+#: docs/cognition/time-perception.md:65
 msgid ""
 "Agent reads two \"going to eat\"—one at 12:15, one at 19:30—automatically "
 "distinguishing lunch and dinner."
@@ -253,24 +253,24 @@ msgstr ""
 "餐。"
 
 #. type: Title ###
-#: docs/concepts/time-perception.md:66
+#: docs/cognition/time-perception.md:66
 #, no-wrap
 msgid "Compression Scenario"
 msgstr "压缩场景"
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:69
+#: docs/cognition/time-perception.md:69
 msgid "Time anchors in compression summary not yet injected; see Issue #5."
 msgstr "压缩摘要中的时间锚点尚未注入；见 Issue #5。"
 
 #. type: Title ##
-#: docs/concepts/time-perception.md:70
+#: docs/cognition/time-perception.md:70
 #, no-wrap
 msgid "Edge Cases"
 msgstr "边界情况"
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:80
+#: docs/cognition/time-perception.md:80
 #, no-wrap
 msgid ""
 "| Scenario                           | Handling                                                                 |\n"
@@ -292,13 +292,13 @@ msgstr ""
 "| 无 timestamp                       | 跳过，不注入                                                       |\n"
 
 #. type: Title ##
-#: docs/concepts/time-perception.md:81
+#: docs/cognition/time-perception.md:81
 #, no-wrap
 msgid "Out of Scope"
 msgstr "不在范围内"
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:87
+#: docs/cognition/time-perception.md:87
 msgid ""
 "❌ Do not compute and inject elapsed duration (e.g. \"8 hours passed\")—"
 "Agent can derive from timestamps"
@@ -306,25 +306,25 @@ msgstr ""
 "❌ 不计算并注入间隔时长（如\"已过去 8 小时\"）——Agent 读到时间戳自己能推导"
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:87
+#: docs/cognition/time-perception.md:87
 msgid "❌ Do not modify persisted messages"
 msgstr "❌ 不修改持久化消息"
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:87
+#: docs/cognition/time-perception.md:87
 #, fuzzy
 #| msgid "❌ Do not show time prefix in **Habitat"
 msgid "❌ Do not show time prefix in Habitat"
 msgstr "❌ 不在 Habitat 界面中显示时间前缀"
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:87
+#: docs/cognition/time-perception.md:87
 msgid ""
 "❌ Do not give built-in time-passing sense—that is biological, not simulated"
 msgstr "❌ 不给数字生命内置的时间流逝感——那是生物体的特性，不模拟"
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:87
+#: docs/cognition/time-perception.md:87
 msgid ""
 "❌ Do not inject \"current time\" in system prompt (main conversation relies "
 "on per-user `time` lines)"

@@ -9,30 +9,30 @@ const options = { enRoot, zhRoot };
 
 describe("resolveDocsMdHref", () => {
   test("same-directory link", () => {
-    expect(resolveDocsMdHref("self-layer.md", `${enRoot}/concepts/architecture.md`, options)).toBe(
-      "/docs/concepts/self-layer/",
+    expect(resolveDocsMdHref("self-layer.md", `${enRoot}/cognition/memory.md`, options)).toBe(
+      "/docs/cognition/self-layer/",
     );
   });
 
   test("parent-relative link with hash", () => {
     expect(
       resolveDocsMdHref(
-        "../guide/security.md#credential-responsibilities",
-        `${enRoot}/concepts/architecture.md`,
+        "../ops/security.md#credential-responsibilities",
+        `${enRoot}/product/architecture.md`,
         options,
       ),
-    ).toBe("/docs/guide/security/#credential-responsibilities");
+    ).toBe("/docs/ops/security/#credential-responsibilities");
   });
 
   test("readme overview link", () => {
-    expect(resolveDocsMdHref("guide/security.md", `${enRoot}/README.md`, options)).toBe(
-      "/docs/guide/security/",
+    expect(resolveDocsMdHref("ops/security.md", `${enRoot}/README.md`, options)).toBe(
+      "/docs/ops/security/",
     );
   });
 
   test("zh-cn locale prefix", () => {
-    expect(resolveDocsMdHref("memory.md", `${zhRoot}/concepts/architecture.md`, options)).toBe(
-      "/zh-cn/docs/concepts/memory/",
+    expect(resolveDocsMdHref("memory.md", `${zhRoot}/cognition/architecture.md`, options)).toBe(
+      "/zh-cn/docs/cognition/memory/",
     );
   });
 

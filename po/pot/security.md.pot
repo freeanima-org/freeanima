@@ -17,20 +17,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
+#: docs/ops/security.md:1 docs/tools/execute-code-runtimes.md:60
 #: messages/po4a/en.xml:707 messages/po4a/en.xml:710
 #, no-wrap
 msgid "Security"
 msgstr ""
 
 #. type: Title #
-#: docs/guide/security.md:5
+#: docs/ops/security.md:5
 #, no-wrap
 msgid "FreeAnima Security"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:9
+#: docs/ops/security.md:9
 #, no-wrap
 msgid ""
 "> Adopted principles: [architecture.md](../concepts/architecture.md).\n"
@@ -38,18 +38,18 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:10
+#: docs/ops/security.md:10
 #, no-wrap
 msgid "Trust Model (Required Reading for Open-Source Deployment)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:13
+#: docs/ops/security.md:13
 msgid "FreeAnima is designed for **single-user local / intranet** deployment:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:17
+#: docs/ops/security.md:17
 msgid ""
 "Habitat RPC REST (`/rpc/v1/*` except health probe/CORS/echo) requires a "
 "**Service API Token** (`Authorization: Bearer fa_at_…`); create with `anima "
@@ -59,27 +59,27 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:17
+#: docs/ops/security.md:17
 msgid ""
 "Default bind is `127.0.0.1`; for LAN access, assess CORS and network "
 "isolation yourself."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:17
+#: docs/ops/security.md:17
 msgid ""
 "**Do not** expose the service to the public internet without TLS and token-"
 "protected clients (see [`remote-access.md`](remote-access.md))."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:18
+#: docs/ops/security.md:18
 #, no-wrap
 msgid "Credential Responsibilities"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:28
+#: docs/ops/security.md:28
 #, no-wrap
 msgid ""
 "| Rule                     | Description                                                                                                                                                                                       |\n"
@@ -93,7 +93,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:30
+#: docs/ops/security.md:30
 msgid ""
 "`config.yaml` is **bootstrap only** (read before PostgreSQL is up). Secrets "
 "there support plaintext or `env(\"KEY\")` — **not** `vault()` (Vault items "
@@ -106,13 +106,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/security.md:31
+#: docs/ops/security.md:31
 #, no-wrap
 msgid "Vault trust boundaries"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:38
+#: docs/ops/security.md:38
 #, no-wrap
 msgid ""
 "| Surface    | User library                                                    | Agent library                                                   |\n"
@@ -123,13 +123,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:39
+#: docs/ops/security.md:39
 #, no-wrap
 msgid "Data Persistence"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:46
+#: docs/ops/security.md:46
 #, no-wrap
 msgid ""
 "| Path                               | Content                  | Encryption                      |\n"
@@ -140,18 +140,18 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:48
+#: docs/ops/security.md:48
 msgid "Disk backup = data access. Protect backup media accordingly."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:49
+#: docs/ops/security.md:49
 #, no-wrap
 msgid "LLM Tool Risks"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:62
+#: docs/ops/security.md:62
 #, no-wrap
 msgid ""
 "| Capability                                                 | Risk                                                                                                                                                                                                                                                                                                           |\n"
@@ -168,20 +168,20 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/security.md:63
+#: docs/ops/security.md:63
 #, no-wrap
 msgid "Agent vault usage"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/guide/security.md:69
+#: docs/ops/security.md:69
 msgid ""
 "**Discover** — `vault_list` / `vault_search` / `vault_get_meta` (metadata "
 "only; never plaintext in tool results)."
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/guide/security.md:69
+#: docs/ops/security.md:69
 msgid ""
 "**Write (Agent library)** — `vault_create` / `vault_update` / `vault_delete` "
 "in Habitat chat only. create/update accept plaintext `secrets` to seal on "
@@ -190,7 +190,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/guide/security.md:69
+#: docs/ops/security.md:69
 msgid ""
 "**Use** — pass `secrets: [{ id, env_name, field?, subject_kind? }]` on the "
 "same `terminal_run` or `code_execute` call that needs the credential (e.g. "
@@ -200,7 +200,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/guide/security.md:69
+#: docs/ops/security.md:69
 msgid ""
 "**Scope** — plaintext is decrypted for that call only (`secrets[]` → child "
 "`env`; `browser_type` `secret` → Camofox type payload). It is **not** "
@@ -210,13 +210,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:70
+#: docs/ops/security.md:70
 #, no-wrap
 msgid "Measures in Place"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:86
+#: docs/ops/security.md:86
 #, no-wrap
 msgid ""
 "| Measure                    | Description                                                                                                                                                   |\n"
@@ -236,20 +236,20 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:87
+#: docs/ops/security.md:87
 #, no-wrap
 msgid "Known Gaps (Documentation ≠ Fully Implemented)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:90
+#: docs/ops/security.md:90
 msgid ""
 "The following are planned in code or docs—**deployers must not assume "
 "implemented**:"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:102
+#: docs/ops/security.md:102
 #, no-wrap
 msgid ""
 "| Priority | Item                                              | Status                                               |\n"
@@ -266,13 +266,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:103
+#: docs/ops/security.md:103
 #, no-wrap
 msgid "Threat Sources"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:112
+#: docs/ops/security.md:112
 #, no-wrap
 msgid ""
 "| Code  | Name                | Description                                                      |\n"
@@ -285,13 +285,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:113
+#: docs/ops/security.md:113
 #, no-wrap
 msgid "Security Matrix"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/security.md:123
+#: docs/ops/security.md:123
 #, no-wrap
 msgid ""
 "| Module             | A External                                                 | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |\n"
@@ -305,44 +305,44 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:124
+#: docs/ops/security.md:124
 #, no-wrap
 msgid "Proposals Pending Review"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/security.md:126
+#: docs/ops/security.md:126
 #, no-wrap
 msgid "P0 — File path safety (landed)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:130
+#: docs/ops/security.md:130
 msgid ""
 "Read/write/delete/search deny: `/etc/`, `/proc/`, `~/.ssh/` private keys, "
 "vault under `FREEANIMA_HOME`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:130
+#: docs/ops/security.md:130
 msgid "Optional `FREEANIMA_READ_SAFE_ROOT` still **P1**"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/security.md:131
+#: docs/ops/security.md:131
 #, no-wrap
 msgid "P0 — Shell execution + command hard deny (landed)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:136
+#: docs/ops/security.md:136
 msgid ""
 "`terminal_run` default `shell=false`; pass `shell=true` only for pipes/"
 "redirection (not a sandbox)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:136
+#: docs/ops/security.md:136
 msgid ""
 "Always-on deny for catastrophic `rm`/`rmdir`, `mkfs*`, `dd of=/dev/…`, fork "
 "bombs, power commands, recursive chmod/chown on `/` or `$HOME`, destructive "
@@ -350,45 +350,45 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:136
+#: docs/ops/security.md:136
 msgid "`code_execute` remains argv-only (no shell); **not** a process sandbox"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/security.md:137
+#: docs/ops/security.md:137
 #, no-wrap
 msgid "P1 — Runtime / Gateway"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:141
+#: docs/ops/security.md:141
 msgid "Unix socket `chmod 600` + optional handshake token"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:141
+#: docs/ops/security.md:141
 msgid "Write safe root default cwd (`FREEANIMA_WRITE_SAFE_ROOT`)"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/security.md:142
+#: docs/ops/security.md:142
 #, no-wrap
 msgid "P2 — Config Redaction Maintenance"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/security.md:145
+#: docs/ops/security.md:145
 msgid "When adding secret fields, sync config sanitization in platform"
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/security.md:146
+#: docs/ops/security.md:146
 #, no-wrap
 msgid "First-Deployment Security Checklist"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/guide/security.md:155
+#: docs/ops/security.md:155
 msgid ""
 "Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/"
 "config.yaml`; use `env()` for bootstrap secrets — **do not** write plaintext "
@@ -396,43 +396,43 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/guide/security.md:155
+#: docs/ops/security.md:155
 msgid ""
 "Open Shell `/vault`; set User master password; migrate secrets from legacy "
 "pass if needed"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/guide/security.md:155
+#: docs/ops/security.md:155
 msgid "`chmod 700 ~/.anima` (includes `vault/agent-machine.key`)"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/guide/security.md:155
+#: docs/ops/security.md:155
 msgid "Bind `127.0.0.1` only, or ensure intranet isolation"
 msgstr ""
 
 #. type: Bullet: '5. '
-#: docs/guide/security.md:155
+#: docs/ops/security.md:155
 msgid ""
 "Review inbound MCP / ACP in Habitat UI (`/habitat/mcp`, ACP page); set "
 "`enabled: false` for untrusted external Servers"
 msgstr ""
 
 #. type: Bullet: '6. '
-#: docs/guide/security.md:155
+#: docs/ops/security.md:155
 msgid ""
 "Regularly backup `~/.anima/` (and legacy `~/.password-store` if kept); "
 "encrypt backup media"
 msgstr ""
 
 #. type: Bullet: '7. '
-#: docs/guide/security.md:155
+#: docs/ops/security.md:155
 msgid "Do not commit `.env`, `config.yaml` to git"
 msgstr ""
 
 #. type: Bullet: '8. '
-#: docs/guide/security.md:155
+#: docs/ops/security.md:155
 msgid ""
 "Do not pass `shell=true` on `terminal_run` unless you intentionally need "
 "pipes/redirection"

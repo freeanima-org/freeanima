@@ -16,33 +16,33 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title #
-#: docs/guide/habitat-rpc.md:1 docs/guide/habitat-rpc.md:5
+#: docs/ops/habitat-rpc.md:1 docs/ops/habitat-rpc.md:5
 #, no-wrap
 msgid "Habitat RPC"
 msgstr "Habitat RPC"
 
 #. type: Plain text
-#: docs/guide/habitat-rpc.md:8
+#: docs/ops/habitat-rpc.md:8
 #, no-wrap
 msgid "**Habitat RPC** is the **single business channel** between Habitat clients and the agent runtime. The TypeScript constant is `HABITAT_RPC_VERSION`. Transport:\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/habitat-rpc.md:11
+#: docs/ops/habitat-rpc.md:11
 msgid ""
 "**WebSocket** — long-lived connection at **`/rpc/v1`** (connect handshake + "
 "heartbeat; Habitat RPC `req`/`res`/`evt` envelope)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/habitat-rpc.md:11
+#: docs/ops/habitat-rpc.md:11
 msgid ""
 "**HTTP REST** — stateless GET/POST at **`/rpc/v1/{method/path}`** (plain "
 "JSON body or query; `Authorization: Bearer`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/habitat-rpc.md:13
+#: docs/ops/habitat-rpc.md:13
 msgid ""
 "Implemented in [`src/shared/habitat-rpc/`](../../src/shared/habitat-rpc/) "
 "(WS envelope + HTTP REST helpers) and [`src/platform/habitat/http-rest-"
@@ -52,7 +52,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/habitat-rpc.md:15
+#: docs/ops/habitat-rpc.md:15
 msgid ""
 "Binary HTTP methods (e.g. `tts.synthesize`, companion assets, TLS PEM/QR) "
 "use Habitat RPC REST with registry `request` / `response` encoding. Public "
@@ -61,13 +61,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/habitat-rpc.md:16
+#: docs/ops/habitat-rpc.md:16
 #, no-wrap
 msgid "Tools: MCP first, remote registration rare"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/habitat-rpc.md:23
+#: docs/ops/habitat-rpc.md:23
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Capability        | Description                                                                                            |\n"
@@ -91,26 +91,26 @@ msgstr ""
 "| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
 
 #. type: Plain text
-#: docs/guide/habitat-rpc.md:25
+#: docs/ops/habitat-rpc.md:25
 msgid ""
 "Desktop companion is the in-tree example of the third row. Future "
 "independent local apps may do the same without being a Portal shell."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/habitat-rpc.md:26
+#: docs/ops/habitat-rpc.md:26
 #, fuzzy, no-wrap
 #| msgid "Agent tools (sidecar registration)"
 msgid "Remote tool registration"
 msgstr "Agent 工具（sidecar 注册）"
 
 #. type: Plain text
-#: docs/guide/habitat-rpc.md:29
+#: docs/ops/habitat-rpc.md:29
 msgid "After Habitat RPC `connect`, an unreachable local app calls:"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/guide/habitat-rpc.md:33
+#: docs/ops/habitat-rpc.md:33
 msgid ""
 "`remote_tools.attach` — registers with `app_id` + optional `instance_id` "
 "(omit on first register; Habitat assigns; same machine may have multiple "
@@ -118,19 +118,19 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/guide/habitat-rpc.md:33
+#: docs/ops/habitat-rpc.md:33
 msgid "`tool.register` — publishes local tools"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/guide/habitat-rpc.md:33
+#: docs/ops/habitat-rpc.md:33
 msgid ""
 "Habitat later sends `tool.call` events; the app replies with `tool.result` / "
 "`tool.error`"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/habitat-rpc.md:35
+#: docs/ops/habitat-rpc.md:35
 msgid ""
 "Routing key is **`instance_id`** (follows the connecting application, not "
 "the Portal shell). Tool names use the `remote_{app}_{instance}_{local}` form "
@@ -138,7 +138,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/habitat-rpc.md:37
+#: docs/ops/habitat-rpc.md:37
 msgid ""
 "Server: [`src/platform/remote-tools/`](../../src/platform/remote-tools/). "
 "Client helper: `createRemoteToolsHabitatAttach` in `@freeanima/shared/rpc-"
@@ -146,14 +146,14 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/habitat-rpc.md:38
+#: docs/ops/habitat-rpc.md:38
 #, fuzzy, no-wrap
 #| msgid "Endpoint"
 msgid "Endpoints"
 msgstr "端点"
 
 #. type: Fenced code block (text)
-#: docs/guide/habitat-rpc.md:40
+#: docs/ops/habitat-rpc.md:40
 #, no-wrap
 msgid ""
 "ws://{habitat_host}:{port}/rpc/v1\n"
@@ -161,7 +161,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/habitat-rpc.md:46
+#: docs/ops/habitat-rpc.md:46
 #, fuzzy
 #| msgid ""
 #| "Derive from Habitat HTTP URL: replace `http` with `ws`, strip trailing "
@@ -176,13 +176,13 @@ msgstr ""
 "`resolveHabitatRpcWsUrl`。"
 
 #. type: Title ##
-#: docs/guide/habitat-rpc.md:47
+#: docs/ops/habitat-rpc.md:47
 #, no-wrap
 msgid "Client profiles"
 msgstr "客户端配置"
 
 #. type: Plain text
-#: docs/guide/habitat-rpc.md:53
+#: docs/ops/habitat-rpc.md:53
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Profile           | Package entry                                    | `sap.attach` | Typical consumer                               |\n"
@@ -201,7 +201,7 @@ msgstr ""
 "| Satellite 进程  | sap-contract 中的 `createRemoteToolsHabitatAttach()`          | **是**       | companion、pair-programming                  |\n"
 
 #. type: Plain text
-#: docs/guide/habitat-rpc.md:55
+#: docs/ops/habitat-rpc.md:55
 msgid ""
 "Bundled SPA shares **one** Habitat RPC WebSocket per page load. Product "
 "modules pass a simple `platform` channel (e.g. `\"chat\"`), never a remote-"
@@ -209,13 +209,13 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/guide/habitat-rpc.md:56 messages/po4a/en.xml:223
+#: docs/ops/habitat-rpc.md:56 messages/po4a/en.xml:223
 #, no-wrap
 msgid "Reconnect"
 msgstr "重连"
 
 #. type: Plain text
-#: docs/guide/habitat-rpc.md:59
+#: docs/ops/habitat-rpc.md:59
 #, fuzzy
 #| msgid ""
 #| "Use `runHubRpcTransport` for connect, heartbeat, and exponential backoff "
@@ -230,7 +230,7 @@ msgstr ""
 "30s）。卫星 detach 或 socket 关闭时，Habitat 注销该实例的工具。"
 
 #. type: Plain text
-#: docs/guide/habitat-rpc.md:60
+#: docs/ops/habitat-rpc.md:60
 #, fuzzy
 #| msgid "See [`architecture.md`](../concepts/architecture.md#session-goal)."
 msgid ""
