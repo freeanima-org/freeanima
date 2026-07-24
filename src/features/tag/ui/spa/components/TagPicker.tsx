@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useState, type JSX, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type JSX,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { PlusIcon, TagIcon } from "lucide-react";
 
 import { Button, Input, cn } from "@freeanima/frontend/ui-kit";
@@ -51,6 +59,26 @@ type TagPickerProps = {
   triggerIcon?: ReactNode;
 };
 
+/** -1 = 输入框；0..itemCount-1 = 候选项；itemCount = 添加按钮（若有） */
+export function navTargetCount(itemCount: number, showCreate: boolean): number {
+  return itemCount + (showCreate ? 1 : 0);
+}
+
+export function moveNavIndex(
+  current: number,
+  delta: 1 | -1,
+  itemCount: number,
+  showCreate: boolean,
+): number {
+  const targets = navTargetCount(itemCount, showCreate);
+  if (targets === 0) return -1;
+  // 输入框(-1) 与 0..targets-1 组成环形
+  const span = targets + 1;
+  const from = current < 0 ? -1 : Math.min(current, targets - 1);
+  const next = ((((from + 1 + delta) % span) + span) % span) - 1;
+  return next;
+}
+
 function mergePool(
   prev: TagRow[],
   next: Array<{ id: number; title: string; sort_order?: number }>,
@@ -93,6 +121,9 @@ export function TagPicker({
   const [items, setItems] = useState<ListRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** -1 = 输入框；其余见 moveNavIndex */
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const selected = useMemo(() => new Set(tagIds), [tagIds]);
   const titleById = useMemo(() => new Map(pool.map((t) => [t.id, t.title])), [pool]);
@@ -168,6 +199,16 @@ export function TagPicker({
   const visibleItems =
     mode === "append" ? mergedItems.filter((row) => !selected.has(row.id)) : mergedItems;
 
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [open, q, visibleItems.length, showCreate, loading]);
+
+  useEffect(() => {
+    if (activeIndex < 0 || !open) return;
+    const el = document.querySelector<HTMLElement>(`[data-tag-picker-nav="${activeIndex}"]`);
+    el?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex, open]);
+
   function remember(tag: TagKnown): void {
     onTagKnown?.(tag);
     setPool((prev) => mergePool(prev, [tag]));
@@ -212,6 +253,50 @@ export function TagPicker({
     onChange(tagIds.filter((id) => id !== tagId));
   }
 
+  function activateNavTarget(index: number): void {
+    if (index < 0) {
+      if (showCreate) void createAndPick(q);
+      return;
+    }
+    if (index < visibleItems.length) {
+      const row = visibleItems[index];
+      if (!row) return;
+      if (mode === "append") {
+        pick(row.id);
+      } else {
+        toggle(row.id, !selected.has(row.id));
+      }
+      return;
+    }
+    if (showCreate && index === visibleItems.length) {
+      void createAndPick(q);
+    }
+  }
+
+  function onPickerKeyDown(e: KeyboardEvent<HTMLElement>): void {
+    const itemCount = loading ? 0 : visibleItems.length;
+    const createVisible = !loading && showCreate;
+
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      e.stopPropagation();
+      const delta = e.key === "ArrowDown" ? 1 : -1;
+      setActiveIndex((prev) => moveNavIndex(prev, delta, itemCount, createVisible));
+      // 焦点留在输入框，避免 Radix 菜单项抢焦点干扰自管高亮
+      inputRef.current?.focus();
+      return;
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      activateNavTarget(activeIndex);
+      return;
+    }
+
+    e.stopPropagation();
+  }
+
   if (chipsOnly) {
     if (readOnly) return <TagChips tagIds={tagIds} titleById={titleById} readOnly />;
     return <TagChips tagIds={tagIds} titleById={titleById} onRemove={remove} />;
@@ -227,13 +312,19 @@ export function TagPicker({
 
   const defaultLabel = hasTags && mode === "multi" ? "标签" : "添加标签";
   const label = triggerLabel ?? defaultLabel;
+  const createIndex = visibleItems.length;
+  /** 不用仅依赖 focus:bg-accent，以免与 Radix 焦点样式混淆 */
+  const highlightClass = "bg-accent text-accent-foreground data-[tag-nav-active]:bg-accent";
 
   const menu = (
     <DropdownMenu
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next) setQuery("");
+        if (!next) {
+          setQuery("");
+          setActiveIndex(-1);
+        }
       }}
       modal={false}
     >
@@ -261,20 +352,16 @@ export function TagPicker({
         align={align}
         className="w-72 p-2"
         onCloseAutoFocus={(e) => e.preventDefault()}
+        onKeyDownCapture={onPickerKeyDown}
       >
         <Input
+          ref={inputRef}
           className="h-8"
           value={query}
           placeholder="搜索或新建…"
           aria-label="搜索或新建标签"
           onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && showCreate) {
-              e.preventDefault();
-              void createAndPick(q);
-            }
-            e.stopPropagation();
-          }}
+          onKeyDown={onPickerKeyDown}
           onClick={(e) => e.stopPropagation()}
         />
         <p className="text-muted-foreground mt-2 mb-1 px-1 text-[11px] font-medium tracking-wide uppercase">
@@ -289,8 +376,14 @@ export function TagPicker({
             </p>
           ) : null}
           {!loading && mode === "append"
-            ? visibleItems.map((row) => (
-                <DropdownMenuItem key={row.id} onSelect={() => pick(row.id)}>
+            ? visibleItems.map((row, index) => (
+                <DropdownMenuItem
+                  key={row.id}
+                  data-tag-picker-nav={index}
+                  data-tag-nav-active={activeIndex === index ? "" : undefined}
+                  className={cn(activeIndex === index && highlightClass)}
+                  onSelect={() => pick(row.id)}
+                >
                   <span className="min-w-0 flex-1 truncate">{row.title}</span>
                   {row.count != null ? (
                     <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
@@ -301,9 +394,12 @@ export function TagPicker({
               ))
             : null}
           {!loading && mode === "multi"
-            ? visibleItems.map((row) => (
+            ? visibleItems.map((row, index) => (
                 <DropdownMenuCheckboxItem
                   key={row.id}
+                  data-tag-picker-nav={index}
+                  data-tag-nav-active={activeIndex === index ? "" : undefined}
+                  className={cn(activeIndex === index && highlightClass)}
                   checked={selected.has(row.id)}
                   onCheckedChange={(checked) => toggle(row.id, checked === true)}
                   onSelect={(e) => e.preventDefault()}
@@ -321,7 +417,12 @@ export function TagPicker({
             <>
               {visibleItems.length > 0 ? <DropdownMenuSeparator /> : null}
               <DropdownMenuItem
-                className="text-foreground gap-2"
+                data-tag-picker-nav={createIndex}
+                data-tag-nav-active={activeIndex === createIndex ? "" : undefined}
+                className={cn(
+                  "text-foreground gap-2",
+                  activeIndex === createIndex && highlightClass,
+                )}
                 onSelect={() => void createAndPick(q)}
               >
                 <PlusIcon className="size-3.5 shrink-0" />
