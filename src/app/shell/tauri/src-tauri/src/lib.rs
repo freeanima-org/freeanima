@@ -1,5 +1,10 @@
 //! FreeAnima Portal — Tauri host（桌面：主窗 + companion；移动：单 WebView + 小组件）。
 
+#[cfg(all(desktop, target_os = "windows"))]
+mod packaged_update;
+#[cfg(mobile)]
+mod apk_installer_plugin;
+
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, State};
@@ -230,7 +235,15 @@ fn companion_url(app: &AppHandle) -> WebviewUrl {
         return WebviewUrl::External(url);
       }
     }
+    eprintln!(
+      "[companion] companion-dist 资源目录存在但缺少 index.html: {}",
+      index.display()
+    );
+  } else {
+    eprintln!("[companion] 未能解析 companion-dist 资源目录");
   }
+  // Dev：Vite companion 默认端口；打包态不应落到此处（见 prepare-tauri-ui）。
+  eprintln!("[companion] 回退 COMPANION_OVERLAY_URL / http://127.0.0.1:4176/?view=overlay");
   WebviewUrl::External(
     "http://127.0.0.1:4176/?view=overlay"
       .parse()
@@ -515,6 +528,25 @@ fn instance_json_path(app: &AppHandle, app_id: &str) -> Result<std::path::PathBu
   }
 }
 
+/// Desktop Windows：下载 NSIS 并静默安装。非 Windows 返回错误。
+#[tauri::command]
+#[cfg(desktop)]
+fn apply_packaged_update(
+  app: AppHandle,
+  asset_url: String,
+  expected_size: Option<u64>,
+) -> Result<(), String> {
+  #[cfg(target_os = "windows")]
+  {
+    packaged_update::apply_windows_packaged_update(&app, &asset_url, expected_size)
+  }
+  #[cfg(not(target_os = "windows"))]
+  {
+    let _ = (app, asset_url, expected_size);
+    Err("当前桌面平台不支持覆盖安装（仅 Windows NSIS）".into())
+  }
+}
+
 #[tauri::command]
 async fn probe_habitat_health(
   url: String,
@@ -574,7 +606,12 @@ fn build_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
   let quit = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
   let menu = Menu::with_items(app, &[&show, &settings, &quit])?;
 
+  let icon = app
+    .default_window_icon()
+    .cloned()
+    .ok_or("缺少默认窗口图标，无法创建托盘")?;
   let _tray = TrayIconBuilder::new()
+    .icon(icon)
     .menu(&menu)
     .tooltip("FreeAnima")
     .on_menu_event(|app, event| match event.id.as_ref() {
@@ -653,6 +690,7 @@ pub fn run() {
         instance_load,
         instance_save,
         probe_habitat_health,
+        apply_packaged_update,
       ])
       .setup(|app| {
         build_tray(app.handle())?;
@@ -681,6 +719,7 @@ pub fn run() {
   #[cfg(mobile)]
   {
     builder = builder
+      .plugin(apk_installer_plugin::init())
       .invoke_handler(tauri::generate_handler![
         get_habitat_config,
         set_habitat_config,

@@ -15,8 +15,8 @@ import {
 import { resolveFacingOffsetY } from "./vrm-facing.ts";
 import { VrmBodyPicker } from "./VrmBodyPicker.ts";
 import { VrmAnimationPlayer, type MotionBindConfig } from "./VrmAnimationPlayer.ts";
-import { resolveSidecarOrigin } from "@freeanima/features/companion/ui/spa/lib/sidecar.ts";
-import { encodeSidecarPath } from "@freeanima/features/companion/ui/spa/lib/sidecar-asset-url.ts";
+import { resolveCompanionAssetUrl } from "@freeanima/features/companion/ui/spa/lib/sidecar-asset-url.ts";
+import { loadCompanionAssetBlobUrl } from "@freeanima/features/companion/ui/spa/lib/model-cache.ts";
 import type { MotionSlotId } from "@freeanima/features/companion/shared/companion-schema.ts";
 import { VRMLookAtQuaternionProxy } from "@pixiv/three-vrm-animation";
 
@@ -142,14 +142,11 @@ export class VrmBackend implements CharacterBackend {
   }
 
   private async resolveMotionUrl(path: string): Promise<string> {
-    if (path.startsWith("http://") || path.startsWith("https://")) {
-      return path;
-    }
-    if (path.startsWith("/")) {
-      const base = await resolveSidecarOrigin();
-      return `${base}${encodeSidecarPath(path)}`;
-    }
-    return path;
+    const remote = await resolveCompanionAssetUrl(path);
+    const blob = await loadCompanionAssetBlobUrl(remote);
+    // blob URL 由调用方生命周期管理较难；短生命周期动画片段由 GC 回收 revoke 可接受
+    // （播放器会缓存 clip，不重复拉同一 file）
+    return blob.url;
   }
 
   private useVrmaLocomotion(kind: LocomotionKind): boolean {

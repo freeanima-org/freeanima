@@ -29,6 +29,11 @@ type RemoteToolsStatusPayload = {
 
 const DEFAULT_HABITAT_URL = "http://127.0.0.1:2658";
 
+function isWindowsDesktop(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Win/i.test(navigator.platform) || /Windows/i.test(navigator.userAgent);
+}
+
 function detectWindowRole(): CompanionWindowRole | null {
   const q = new URLSearchParams(window.location.search);
   const view = q.get("view");
@@ -123,6 +128,39 @@ export async function bootstrapTauriBridge(): Promise<void> {
       applyHabitatConfigToShell(shell, c.habitatUrl, c.remoteAuthToken ?? "");
       notifyShellConfigChanged();
     },
+    ...(isWindowsDesktop()
+      ? {
+          applyPackagedUpdate: async (opts: { assetUrl: string; expectedSize?: number }) => {
+            await invoke("apply_packaged_update", {
+              assetUrl: opts.assetUrl,
+              expectedSize: opts.expectedSize ?? null,
+            });
+          },
+          onPackagedUpdateProgress: (
+            handler: (progress: {
+              received: number;
+              total: number | null;
+              phase?: "downloading" | "installing";
+            }) => void,
+          ) => {
+            let unlisten: (() => void) | undefined;
+            void listen<{
+              received: number;
+              total: number | null;
+              phase?: "downloading" | "installing";
+            }>("shell:packaged-update-progress", (ev) => {
+              handler({
+                received: ev.payload.received,
+                total: ev.payload.total,
+                ...(ev.payload.phase != null ? { phase: ev.payload.phase } : {}),
+              });
+            }).then((u) => {
+              unlisten = u;
+            });
+            return () => unlisten?.();
+          },
+        }
+      : {}),
   };
 
   window.portalShell = shell;

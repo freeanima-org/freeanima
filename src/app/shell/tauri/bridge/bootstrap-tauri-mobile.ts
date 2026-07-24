@@ -63,6 +63,14 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
   );
   const nativeBuild = await loadTauriNativeBuildMetaFromAssets();
 
+  const packagedUpdateProgressHandlers = new Set<
+    (progress: {
+      received: number;
+      total: number | null;
+      phase?: "downloading" | "installing";
+    }) => void
+  >();
+
   const shell: ShellApi = {
     isTauri: true,
     isNativeShell: true,
@@ -83,6 +91,22 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
       const c = await invoke<HabitatCfg>("get_habitat_config");
       applyHabitatConfigToShell(shell, c.habitatUrl, c.remoteAuthToken ?? "");
       notifyShellConfigChanged();
+    },
+    applyPackagedUpdate: async (opts: { assetUrl: string; expectedSize?: number }) => {
+      const { installApkFromUrl } = await import("../lib/apk-installer.ts");
+      await installApkFromUrl(opts.assetUrl, {
+        onProgress: (progress) => {
+          for (const handler of packagedUpdateProgressHandlers) {
+            handler(progress);
+          }
+        },
+      });
+    },
+    onPackagedUpdateProgress: (handler) => {
+      packagedUpdateProgressHandlers.add(handler);
+      return () => {
+        packagedUpdateProgressHandlers.delete(handler);
+      };
     },
   };
 

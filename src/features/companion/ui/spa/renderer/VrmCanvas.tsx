@@ -3,7 +3,7 @@ import { disposeVrmBackend, getVrmBackend } from "./VrmBackend.ts";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 import { loadCachedModelSource } from "@freeanima/features/companion/ui/spa/lib/model-cache.ts";
 import { measureCharacterViewportSize } from "@freeanima/features/companion/ui/spa/lib/canvas-metrics.ts";
-import { resolveSidecarOrigin } from "@freeanima/features/companion/ui/spa/lib/sidecar.ts";
+import { resolveCompanionAssetUrl } from "@freeanima/features/companion/ui/spa/lib/sidecar-asset-url.ts";
 
 type Props = {
   modelPath: string;
@@ -13,14 +13,7 @@ type Props = {
 };
 
 async function resolveModelUrl(modelPath: string): Promise<string> {
-  if (modelPath.startsWith("http://") || modelPath.startsWith("https://")) {
-    return modelPath;
-  }
-  if (modelPath.startsWith("/")) {
-    const base = await resolveSidecarOrigin();
-    return `${base}${modelPath}`;
-  }
-  return modelPath;
+  return resolveCompanionAssetUrl(modelPath);
 }
 
 export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelError }: Props) {
