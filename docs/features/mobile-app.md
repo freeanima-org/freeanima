@@ -60,14 +60,14 @@ Mobile REST **connects directly** to Habitat (no local REST proxy); requires a *
 
 ## Debugging
 
-`just dev android`：Tauri Android debug。Chrome `chrome://inspect` 连 WebView。
+`just dev tauri-android`：Tauri Android debug。Chrome `chrome://inspect` 连 WebView。
 
 ## Build and sideload
 
 ```bash
 just install android
-just install android-tauri -- --init   # 首次
-just pack android                      # → dist/freeanima-mobile-tauri-android.apk（有设备则尝试 adb 安装）
+just install tauri-android -- --init   # 首次
+just pack tauri-android                      # → dist/freeanima-mobile-tauri-android.apk（有设备则尝试 adb 安装）
 ```
 
 Release asset name on GitHub: `freeanima-mobile-android.apk`（same contents, CI copies from Tauri dist）。

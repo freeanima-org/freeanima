@@ -10,8 +10,6 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, State};
 
 #[cfg(desktop)]
-use tauri::path::BaseDirectory;
-#[cfg(desktop)]
 use tauri::{PhysicalPosition, WebviewUrl, WebviewWindowBuilder};
 #[cfg(desktop)]
 use tauri::menu::{Menu, MenuItem};
@@ -221,34 +219,16 @@ impl Default for ShellState {
 }
 
 #[cfg(desktop)]
-fn companion_url(app: &AppHandle) -> WebviewUrl {
+fn companion_url(_app: &AppHandle) -> WebviewUrl {
   if let Ok(overlay) = std::env::var("COMPANION_OVERLAY_URL") {
     if let Ok(parsed) = overlay.parse() {
       return WebviewUrl::External(parsed);
     }
   }
-  if let Ok(dir) = app.path().resolve("companion-dist", BaseDirectory::Resource) {
-    let index = dir.join("index.html");
-    if index.exists() {
-      if let Ok(mut url) = url::Url::from_file_path(&index) {
-        url.set_query(Some("view=overlay"));
-        return WebviewUrl::External(url);
-      }
-    }
-    eprintln!(
-      "[companion] companion-dist 资源目录存在但缺少 index.html: {}",
-      index.display()
-    );
-  } else {
-    eprintln!("[companion] 未能解析 companion-dist 资源目录");
-  }
-  // Dev：Vite companion 默认端口；打包态不应落到此处（见 prepare-tauri-ui）。
-  eprintln!("[companion] 回退 COMPANION_OVERLAY_URL / http://127.0.0.1:4176/?view=overlay");
-  WebviewUrl::External(
-    "http://127.0.0.1:4176/?view=overlay"
-      .parse()
-      .expect("companion overlay url"),
-  )
+  // 打包：与主窗同 custom protocol（frontendDist `companion/`），IPC / ES module 可用。
+  // 切勿用 file:// 加载 bundle resources — Windows WebView2 下常空窗（仅 DWM 虚线框）且 invoke 失败，
+  // remote_tools.attach 也不会跑。Dev：`just dev tauri` 注入 COMPANION_OVERLAY_URL → :4176。
+  WebviewUrl::App(std::path::PathBuf::from("companion/index.html"))
 }
 
 #[cfg(desktop)]
@@ -257,16 +237,39 @@ fn webview_browser_args() -> &'static str {
 }
 
 #[cfg(desktop)]
+fn fit_companion_to_work_area(app: &AppHandle) -> Result<(), String> {
+  let win = app
+    .get_webview_window("companion")
+    .ok_or_else(|| "companion window not found".to_string())?;
+  let monitor = win
+    .current_monitor()
+    .map_err(|e| e.to_string())?
+    .or_else(|| app.primary_monitor().ok().flatten())
+    .ok_or_else(|| "no monitor".to_string())?;
+  let area = monitor.work_area();
+  win
+    .set_position(tauri::Position::Physical(area.position))
+    .map_err(|e| e.to_string())?;
+  win
+    .set_size(tauri::Size::Physical(area.size))
+    .map_err(|e| e.to_string())?;
+  Ok(())
+}
+
+#[cfg(desktop)]
 fn ensure_companion(app: &AppHandle) -> Result<(), String> {
   if app.get_webview_window("companion").is_some() {
-    return Ok(());
+    return fit_companion_to_work_area(app);
   }
   let url = companion_url(app);
+  // 工作区全屏透明 overlay；角色 160×260 在 SPA 内绝对定位（气泡可溢出）
   let mut builder = WebviewWindowBuilder::new(app, "companion", url)
     .title("")
     .inner_size(COMPANION_W, COMPANION_H)
     .resizable(false)
     .decorations(false)
+    // Windows：shadow(true) 会给无边框窗画 1px 白边/虚线外框；Electron 侧 hasShadow:false
+    .shadow(false)
     .transparent(true)
     .always_on_top(true)
     .skip_taskbar(true)
@@ -276,7 +279,7 @@ fn ensure_companion(app: &AppHandle) -> Result<(), String> {
     builder = builder.additional_browser_args(webview_browser_args());
   }
   builder.build().map_err(|e| e.to_string())?;
-  Ok(())
+  fit_companion_to_work_area(app)
 }
 
 #[tauri::command]
@@ -389,29 +392,45 @@ fn get_patrol_screen(app: AppHandle) -> Result<PatrolScreenInfo, String> {
   let win = app
     .get_webview_window("companion")
     .ok_or_else(|| "companion window not found".to_string())?;
-  let size = win.outer_size().map_err(|e| e.to_string())?;
-  let monitor = win
-    .current_monitor()
-    .map_err(|e| e.to_string())?
-    .ok_or_else(|| "no monitor".to_string())?;
-  let area = monitor.work_area();
+  let scale = win.scale_factor().map_err(|e| e.to_string())?;
+  let scale = if scale > 0.0 { scale } else { 1.0 };
+  let size = win.inner_size().map_err(|e| e.to_string())?;
+  // overlay 已铺满工作区：巡逻坐标系 = 窗内 CSS 像素；window_* = 角色舞台尺寸
   Ok(PatrolScreenInfo {
-    avail_left: area.position.x,
-    avail_top: area.position.y,
-    avail_width: area.size.width,
-    avail_height: area.size.height,
-    window_width: size.width,
-    window_height: size.height,
+    avail_left: 0,
+    avail_top: 0,
+    avail_width: (size.width as f64 / scale).round().max(0.0) as u32,
+    avail_height: (size.height as f64 / scale).round().max(0.0) as u32,
+    window_width: COMPANION_W.round().max(1.0) as u32,
+    window_height: COMPANION_H.round().max(1.0) as u32,
   })
 }
 
+/// 返回相对 companion 窗的 CSS 像素坐标（与 `getBoundingClientRect` / hitTest 一致）。
+/// 切勿直接回屏幕物理坐标——否则 hitTest 恒 false，窗体会一直 `ignore_cursor`。
 #[cfg(desktop)]
 #[tauri::command]
-fn get_cursor_position() -> ScreenPoint {
+fn get_cursor_position(app: AppHandle) -> ScreenPoint {
   use mouse_position::mouse_position::Mouse;
-  match Mouse::get_mouse_position() {
-    Mouse::Position { x, y } => ScreenPoint { x, y },
-    Mouse::Error => ScreenPoint { x: 0, y: 0 },
+  let Mouse::Position { x, y } = Mouse::get_mouse_position() else {
+    return ScreenPoint { x: 0, y: 0 };
+  };
+  let Some(win) = app.get_webview_window("companion") else {
+    return ScreenPoint { x, y };
+  };
+  let Ok(pos) = win.outer_position() else {
+    return ScreenPoint { x: 0, y: 0 };
+  };
+  let scale = win.scale_factor().unwrap_or(1.0);
+  if scale <= 0.0 {
+    return ScreenPoint { x: 0, y: 0 };
+  }
+  // mouse_position / outer_position：物理像素；WebView hitTest：CSS 逻辑像素
+  let local_x = ((x as f64) - (pos.x as f64)) / scale;
+  let local_y = ((y as f64) - (pos.y as f64)) / scale;
+  ScreenPoint {
+    x: local_x.round() as i32,
+    y: local_y.round() as i32,
   }
 }
 
@@ -711,6 +730,23 @@ pub fn run() {
           if let tauri::WindowEvent::CloseRequested { api, .. } = event {
             api.prevent_close();
             let _ = window.hide();
+          }
+        }
+        // Windows：透明无边框窗失焦时 DWM 可能画出错误边框/标题条；1px 抖动强制重绘（迁自 Electron）
+        #[cfg(windows)]
+        if window.label() == "companion" {
+          if let tauri::WindowEvent::Focused(false) = event {
+            let _ = window.set_title("");
+            if let Ok(size) = window.inner_size() {
+              let _ = window.set_size(tauri::Size::Physical(tauri::PhysicalSize {
+                width: size.width,
+                height: size.height.saturating_add(1),
+              }));
+              let _ = window.set_size(tauri::Size::Physical(tauri::PhysicalSize {
+                width: size.width,
+                height: size.height,
+              }));
+            }
           }
         }
       });

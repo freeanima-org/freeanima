@@ -39,6 +39,11 @@ function detectWindowRole(): CompanionWindowRole | null {
   const view = q.get("view");
   if (view === "overlay") return "overlay";
   if (view === "settings") return "settings";
+  // 打包态 WebviewUrl::App("companion/index.html") 无 query；靠路径识别 overlay
+  const path = window.location.pathname.replace(/\\/g, "/");
+  if (/(^|\/)companion\/index\.html$/i.test(path) || /(^|\/)companion\/?$/i.test(path)) {
+    return "overlay";
+  }
   return null;
 }
 

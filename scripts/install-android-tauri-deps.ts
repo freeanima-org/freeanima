@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 
 const checkOnly = process.argv.includes("--check");
 const doInit = process.argv.includes("--init");
-const HINT = "just install android-tauri\n  # 缺工程：just install android-tauri -- --init";
+const HINT = "just install tauri-android\n  # 缺工程：just install tauri-android -- --init";
 
 const ANDROID_TARGETS = [
   "aarch64-linux-android",
@@ -135,7 +135,7 @@ if (!existsSync(androidGen)) {
   } else {
     console.error(
       "[install-android-tauri] 尚未生成 Android 工程。请执行：\n" +
-        "  just install android-tauri -- --init\n" +
+        "  just install tauri-android -- --init\n" +
         "或：\n" +
         "  cd src/app/shell/tauri && bunx tauri android init",
     );
@@ -148,5 +148,5 @@ if (!existsSync(androidGen)) {
 run("bun", ["scripts/patch-tauri-android.ts"], "patch-tauri-android", root);
 run("bun", ["scripts/generate-brand-icons.ts"], "brand-icons", root);
 
-console.log("[install-android-tauri] 完成。下一步：just pack android");
+console.log("[install-android-tauri] 完成。下一步：just pack tauri-android");
 process.exit(0);

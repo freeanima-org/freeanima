@@ -2,7 +2,6 @@ import { StrictMode, useCallback, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { Spinner } from "@freeanima/frontend/ui-kit";
 import { CharacterViewport } from "@freeanima/features/companion/ui/spa/components/CharacterViewport.tsx";
-import { TextBubbleOverlay } from "@freeanima/features/companion/ui/spa/components/TextBubbleOverlay.tsx";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 import {
   onCharacterModelReady,
@@ -35,6 +34,12 @@ async function bootstrapCompanionShell(): Promise<void> {
   await bootstrapTauriBridge();
 }
 
+function pointInElement(el: Element | null, x: number, y: number): boolean {
+  if (!el) return false;
+  const r = el.getBoundingClientRect();
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+
 function ClickThroughManager() {
   const hitTestFn = useCompanionStore((s) => s.hitTestFn);
   const characterReady = useCompanionStore((s) => s.characterReady);
@@ -42,13 +47,22 @@ function ClickThroughManager() {
   const ignoringRef = useRef(false);
 
   useEffect(() => {
-    if (!isCompanionOverlay() || !hitTestFn || !characterReady) return;
+    if (!isCompanionOverlay() || !characterReady) return;
 
     let cleanupCursor: (() => void) | undefined;
+    ignoringRef.current = false;
+    void setClickThrough(false);
 
     void listenCursorPosition((pos) => {
-      const onCharacter = hitTestFn(pos.x, pos.y);
-      const shouldIgnore = pointerActive ? false : !onCharacter;
+      const onCharacter = hitTestFn ? hitTestFn(pos.x, pos.y) : false;
+      const onBubble = pointInElement(
+        document.querySelector(".companion-text-bubble"),
+        pos.x,
+        pos.y,
+      );
+      const onStartup = pointInElement(document.querySelector(".startup-panel"), pos.x, pos.y);
+      const onInteractive = onCharacter || onBubble || onStartup;
+      const shouldIgnore = pointerActive ? false : !onInteractive;
       if (shouldIgnore !== ignoringRef.current) {
         ignoringRef.current = shouldIgnore;
         companionDebug("点击穿透", {
@@ -56,6 +70,7 @@ function ClickThroughManager() {
           x: Math.round(pos.x),
           y: Math.round(pos.y),
           onCharacter,
+          onBubble,
         });
         void setClickThrough(shouldIgnore);
       }
@@ -144,15 +159,12 @@ function CompanionWindow() {
   return (
     <div className="companion-overlay">
       <ClickThroughManager />
-      <div className="relative w-full h-full">
-        <TextBubbleOverlay />
-        <CharacterViewport
-          modelPath={modelPath}
-          configRevision={configRevision}
-          onModelError={onModelError}
-          onModelLoaded={onModelLoaded}
-        />
-      </div>
+      <CharacterViewport
+        modelPath={modelPath}
+        configRevision={configRevision}
+        onModelError={onModelError}
+        onModelLoaded={onModelLoaded}
+      />
 
       {!characterReady && !modelPath ? (
         <div className="absolute inset-x-2 top-1/3 z-10 startup-panel text-center text-xs leading-relaxed">

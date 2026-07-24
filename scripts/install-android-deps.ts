@@ -106,5 +106,7 @@ if (probe.status !== 0) {
   process.exit(1);
 }
 console.log(`[install-android] ${probe.stdout?.trim()}`);
-console.log("[install-android] 完成。下一步：just install android-tauri && just pack android");
+console.log(
+  "[install-android] 完成。下一步：just install tauri-android && just pack tauri-android",
+);
 process.exit(0);

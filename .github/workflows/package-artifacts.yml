@@ -190,7 +190,7 @@ jobs:
           key: tauri-linux
 
       - name: Build Tauri desktop (Linux host)
-        run: just pack tauri
+        run: just pack tauri-linux
 
       - name: Collect bundle
         run: |
@@ -253,7 +253,7 @@ jobs:
         run: bash scripts/setup-android-sdk.sh
 
       - name: Install Tauri Android deps
-        run: just install android-tauri -- --init
+        run: just install tauri-android -- --init
 
       - name: Build Tauri APK
         env:
@@ -268,7 +268,7 @@ jobs:
           source scripts/android-env.sh
           # shellcheck source=scripts/export-android-signing-env.sh
           source scripts/export-android-signing-env.sh
-          just pack android
+          just pack tauri-android
           mkdir -p dist
           cp dist/freeanima-mobile-tauri-android.apk dist/freeanima-mobile-android.apk
           ls -lh dist/freeanima-mobile-android.apk

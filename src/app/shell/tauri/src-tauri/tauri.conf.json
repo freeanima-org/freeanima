@@ -40,7 +40,6 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": ["companion-dist/"],
     "android": {
       "minSdkVersion": 26
     },

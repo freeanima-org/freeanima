@@ -24,5 +24,5 @@ tauri: _deps
 
 # Android Tauri 调试
 [no-cd]
-android: _deps
+tauri-android: _deps
   bun scripts/dev-tauri-mobile.ts

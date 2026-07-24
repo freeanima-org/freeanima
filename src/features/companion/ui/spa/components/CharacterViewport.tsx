@@ -1,5 +1,6 @@
 import { useRef, type PointerEvent } from "react";
 import { VrmCanvas } from "@freeanima/features/companion/ui/spa/renderer/VrmCanvas.tsx";
+import { TextBubbleOverlay } from "@freeanima/features/companion/ui/spa/components/TextBubbleOverlay.tsx";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 import {
   enterPatrolMode,
@@ -9,11 +10,7 @@ import {
 } from "@freeanima/features/companion/ui/spa/stores/character.ts";
 import { getVrmBackend } from "@freeanima/features/companion/ui/spa/renderer/VrmBackend.ts";
 import { companionDebug } from "@freeanima/features/companion/ui/spa/lib/companion-debug.ts";
-import {
-  getWindowPosition,
-  isCompanionOverlay,
-  moveWindow,
-} from "@freeanima/features/companion/ui/spa/lib/portal-shell.ts";
+import { isCompanionOverlay } from "@freeanima/features/companion/ui/spa/lib/portal-shell.ts";
 import {
   COMPANION_WINDOW_HEIGHT,
   COMPANION_WINDOW_WIDTH,
@@ -44,11 +41,6 @@ export function CharacterViewport({
     clientY: number;
     stageX: number;
     stageY: number;
-    winX: number;
-    winY: number;
-    winReady: boolean;
-    accumDx: number;
-    accumDy: number;
   } | null>(null);
   const draggingRef = useRef(false);
   const lastClickRef = useRef<{ timeMs: number; x: number; y: number } | null>(null);
@@ -89,23 +81,8 @@ export function CharacterViewport({
       clientY: event.clientY,
       stageX: origin.x,
       stageY: origin.y,
-      winX: 0,
-      winY: 0,
-      winReady: !isCompanionOverlay(),
-      accumDx: 0,
-      accumDy: 0,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
-
-    if (isCompanionOverlay()) {
-      void getWindowPosition().then(({ x, y }) => {
-        const down = pointerDownRef.current;
-        if (!down) return;
-        down.winX = x;
-        down.winY = y;
-        down.winReady = true;
-      });
-    }
   };
 
   const onPointerMove = (event: PointerEvent<HTMLDivElement>): void => {
@@ -118,19 +95,11 @@ export function CharacterViewport({
       draggingRef.current = true;
     }
 
-    if (isCompanionOverlay() && draggingRef.current && down.winReady) {
-      down.accumDx += event.movementX;
-      down.accumDy += event.movementY;
-      void moveWindow(down.winX + Math.round(down.accumDx), down.winY + Math.round(down.accumDy));
-      return;
-    }
-
-    if (!isCompanionOverlay() && draggingRef.current) {
-      moveCompanionStage(
-        down.stageX + (event.clientX - down.clientX),
-        down.stageY + (event.clientY - down.clientY),
-      );
-    }
+    // 全屏 overlay / 浏览器：一律移动舞台 CSS 坐标（避免 movementX×DPI 半距）
+    moveCompanionStage(
+      down.stageX + (event.clientX - down.clientX),
+      down.stageY + (event.clientY - down.clientY),
+    );
   };
 
   const onPointerUp = (event: PointerEvent<HTMLDivElement>): void => {
@@ -152,9 +121,7 @@ export function CharacterViewport({
     const moved = Math.hypot(event.clientX - down.clientX, event.clientY - down.clientY);
     draggingRef.current = false;
     useCompanionStore.getState().setPointerActive(false);
-    if (isCompanionOverlay()) {
-      void syncCompanionWindowPosition();
-    }
+    void syncCompanionWindowPosition();
     if (moved > DRAG_THRESHOLD_PX) {
       companionDebug("pointerup 视为拖拽", { moved: Math.round(moved) });
       lastClickRef.current = null;
@@ -205,15 +172,14 @@ export function CharacterViewport({
   return (
     <div
       id={COMPANION_STAGE_ID}
-      className={webMode ? "companion-stage-web" : "absolute inset-0 pointer-events-auto"}
-      style={
-        webMode ? { width: COMPANION_WINDOW_WIDTH, height: COMPANION_WINDOW_HEIGHT } : undefined
-      }
+      className={webMode ? "companion-stage-web" : "companion-stage"}
+      style={{ width: COMPANION_WINDOW_WIDTH, height: COMPANION_WINDOW_HEIGHT }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
+      <TextBubbleOverlay />
       <VrmCanvas
         modelPath={modelPath}
         configRevision={configRevision}

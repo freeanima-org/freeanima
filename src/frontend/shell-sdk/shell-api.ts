@@ -84,6 +84,7 @@ export type ShellApi = {
   moveWindow?: (x: number, y: number) => Promise<void>;
   getPatrolScreen?: () => Promise<PatrolScreenInfo>;
   getWindowPosition?: () => Promise<ScreenPoint>;
+  /** Overlay：光标相对 companion 窗的 CSS 像素（供 hitTest）；非屏幕绝对坐标 */
   listenCursorPosition?: (handler: (pos: ScreenPoint) => void) => () => void;
   startWindowDrag?: () => Promise<void>;
   openSettings?: () => Promise<void>;
