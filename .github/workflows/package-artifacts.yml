@@ -113,12 +113,27 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache cargo (Windows cross)
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src/app/shell/tauri/src-tauri
+          key: tauri-windows-xwin
+
+      - name: Cache cargo-xwin
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/cargo-xwin
+            ~/.xwin
+          key: cargo-xwin-${{ runner.os }}-${{ hashFiles('scripts/install-tauri-windows-toolchain.ts') }}
+          restore-keys: |
+            cargo-xwin-${{ runner.os }}-
 
       - name: Install Windows cross toolchain
         run: bun scripts/install-tauri-windows-toolchain.ts --apt
-
-      - name: 安装 companion FBX 工具
-        run: bun run setup:fbx
 
       - name: 构建 FreeAnima Desktop Tauri Windows（Linux 交叉编译）
         env:
@@ -169,6 +184,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src/app/shell/tauri/src-tauri
+          key: tauri-linux
 
       - name: Build Tauri desktop (Linux host)
         run: bun run package:tauri
@@ -179,20 +195,11 @@ jobs:
           mkdir -p dist
           bundle="$(find src/app/shell/tauri/src-tauri/target/release/bundle -type f -name '*.AppImage' | head -1 || true)"
           if [[ -z "$bundle" ]]; then
-            bundle="$(find src/app/shell/tauri/src-tauri/target/release/bundle -type f -name '*.deb' | head -1 || true)"
-          fi
-          if [[ -z "$bundle" ]]; then
-            echo "No AppImage/deb found; listing bundle dir" >&2
+            echo "No AppImage found; listing bundle dir" >&2
             find src/app/shell/tauri/src-tauri/target/release/bundle -type f | head -50 >&2 || true
             exit 1
           fi
-          # Release 固定文件名（deb 也拷成 .AppImage 名会误导；优先 AppImage）
-          if [[ "$bundle" == *.AppImage ]]; then
-            cp "$bundle" dist/freeanima-desktop-tauri-linux.AppImage
-          else
-            cp "$bundle" dist/freeanima-desktop-tauri-linux.AppImage
-            echo "warn: used non-AppImage as AppImage artifact name: $bundle" >&2
-          fi
+          cp "$bundle" dist/freeanima-desktop-tauri-linux.AppImage
           ls -la dist/
 
       - uses: actions/upload-artifact@v7
@@ -227,6 +234,14 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      - name: Cache cargo (Android)
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src/app/shell/tauri/src-tauri
+          key: tauri-android
 
       - uses: ./.github/actions/cache-android-sdk
 

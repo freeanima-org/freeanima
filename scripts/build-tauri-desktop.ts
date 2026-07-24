@@ -30,7 +30,9 @@ const prep = spawnSync("bun", ["scripts/prepare-tauri-ui.ts"], {
 });
 if (prep.status !== 0) process.exit(prep.status ?? 1);
 
-const build = spawnSync("bunx", ["tauri", "build"], {
+// 只打 CI/发布实际收集的格式，避免 targets=all 白打 deb/rpm
+const bundles = process.platform === "linux" ? ["--bundles", "appimage"] : [];
+const build = spawnSync("bunx", ["tauri", "build", ...bundles], {
   cwd: tauriDir,
   stdio: "inherit",
   shell: true,

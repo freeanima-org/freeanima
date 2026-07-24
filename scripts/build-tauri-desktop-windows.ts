@@ -83,21 +83,25 @@ const prep = spawnSync("bun", ["scripts/prepare-tauri-ui.ts"], {
 });
 if (prep.status !== 0) process.exit(prep.status ?? 1);
 
-// ring 交叉编译会产生海量 -Wunsafe-buffer-usage，易撑爆 CI 日志并掩盖真错误；
-// 限并行降低 clang 峰值内存（xwin + ring 易 OOM）。
+// ring 交叉会产生海量 -Wunsafe-buffer-usage，易撑爆 CI 日志；
+// 默认 4 并行（速度优先）；若 xwin+ring OOM，可设 CARGO_BUILD_JOBS=2。
 const buildEnv = {
   ...process.env,
-  CARGO_BUILD_JOBS: process.env.CARGO_BUILD_JOBS?.trim() || "2",
+  CARGO_BUILD_JOBS: process.env.CARGO_BUILD_JOBS?.trim() || "4",
   CFLAGS: [process.env.CFLAGS, "-Wno-unsafe-buffer-usage", "-w"].filter(Boolean).join(" "),
   CXXFLAGS: [process.env.CXXFLAGS, "-Wno-unsafe-buffer-usage", "-w"].filter(Boolean).join(" "),
 };
 
-const build = spawnSync("bunx", ["tauri", "build", "--runner", "cargo-xwin", "--target", TARGET], {
-  cwd: tauriDir,
-  stdio: "inherit",
-  shell: true,
-  env: buildEnv,
-});
+const build = spawnSync(
+  "bunx",
+  ["tauri", "build", "--runner", "cargo-xwin", "--target", TARGET, "--bundles", "nsis"],
+  {
+    cwd: tauriDir,
+    stdio: "inherit",
+    shell: true,
+    env: buildEnv,
+  },
+);
 if (build.status !== 0) process.exit(build.status ?? 1);
 
 copyInstallerToDist();
