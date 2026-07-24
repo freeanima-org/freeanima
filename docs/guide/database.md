@@ -66,9 +66,10 @@ Run after extensions are installed, or restart `anima service`.
 
 ## `auto_llm_runs` (audit)
 
-Background LLM without user turns (cron agent, sleep pipeline stages) writes to `auto_llm_runs` instead of creating `conversations`. Retention (optional `config.yaml`):
+Background LLM without user turns (cron agent, sleep pipeline stages) writes to `auto_llm_runs` instead of creating `conversations`. Retention (Habitat runtime / Shell **Settings → Habitat 服务 → 服务配置** `auto_llm`):
 
 ```yaml
+# habitat_runtime_config fragment (not config.yaml)
 auto_llm:
   retention_days: 30
   per_run_kind_keep: 100

@@ -11,7 +11,6 @@ export const runtimeConfigSchema = animaConfigSchema
     database: true,
     http: true,
     redis: true,
-    web: true,
   })
   .partial()
   .passthrough();

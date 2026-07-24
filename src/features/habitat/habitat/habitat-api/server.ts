@@ -119,10 +119,10 @@ function createApiFetchHandler(runtime: ApiServerRuntime) {
         isWebStaticPath(pathname) &&
         (req.method === "GET" || req.method === "HEAD")
       ) {
-        return new Response(
-          "Web UI 未托管：请在 ~/.anima/config.yaml 设置 web.enabled: true，并确认已 just pack web",
-          { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } },
-        );
+        return new Response("Web UI 未托管：请先 just pack web，并确认 dist 存在后重启 Habitat", {
+          status: 503,
+          headers: { "content-type": "text/plain; charset=utf-8" },
+        });
       }
 
       if (webStatic && pathname === "/favicon.ico" && req.method === "GET") {

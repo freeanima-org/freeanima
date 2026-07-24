@@ -1,5 +1,4 @@
 import { logStartupError } from "@freeanima/platform/logging";
-import { isBootstrapWebHostingEnabled } from "@freeanima/core/config";
 import { loadBootstrapConfig } from "@freeanima/platform/config/bootstrap.ts";
 import { parseBindHosts } from "@freeanima/platform";
 import {
@@ -31,15 +30,12 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
   const bootstrap = loadBootstrapConfig();
   const bootstrapHttp = bootstrap.http;
   /**
-   * 源码 `dev:habitat`（skipTls）：覆盖 config.yaml `web.*`——Habitat 不托管 dist，
+   * 源码 `dev:habitat`（skipTls）：Habitat 不托管 dist，
    * UI 由 `dev:web`（Vite :5000，可 HTTPS）提供；与 http 侧 skipTls 对称。
    */
-  const yamlWebEnabled = isBootstrapWebHostingEnabled(bootstrap);
-  const webEnabled = options.skipTls ? false : yamlWebEnabled;
+  const webEnabled = !options.skipTls;
   if (options.skipTls) {
-    console.log(
-      "[stack] skipTls/dev-habitat：忽略 config.yaml web.enabled/host/port（UI 由 Vite WEB_DEV_PORT 提供，Habitat 不托管 /web）",
-    );
+    console.log("[stack] skipTls/dev-habitat：Habitat 不托管 /web（UI 由 Vite WEB_DEV_PORT 提供）");
   }
 
   let webStatic: {
@@ -67,9 +63,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
           minShellVersion: "0.8.0",
         };
       } else {
-        console.warn(
-          "[stack] config.yaml web.enabled 已开启（或缺省开启）但未找到 Web dist，Habitat 将不托管 /web（请先 just pack web）",
-        );
+        console.warn("[stack] 未找到 Web dist，Habitat 将不托管 /web（请先 just pack web）");
       }
     } catch (err) {
       logStartupError("[stack] Web dist 解析失败，继续启动 Habitat（不托管 /web）", err);

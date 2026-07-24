@@ -6,7 +6,7 @@ title: Camofox Browser Profile & Session
 
 > Browser tools talk to Camofox over HTTP. **Profile** holds login state; **session** is a work line under that profile.
 
-Configure under Habitat settings → Advanced → **browser** / **camofox** (`browser.camofox.*` in `~/.anima/config.yaml`).
+Configure under Habitat settings → Advanced → **browser** / **camofox** (`browser.camofox.*` in `habitat_runtime_config`).
 
 ## Profile vs session
 

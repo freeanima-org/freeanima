@@ -87,9 +87,7 @@ Production install uses standalone \`anima service\` (systemd). Source CLI has n
   console.log(`dev-habitat · starting Habitat in foreground…`);
   console.log(`  address: http://${host.split(",")[0]?.trim() || host}:${port}`);
   console.log(`  http override: CLI --host/--port；Habitat TLS skipped (Vite may terminate HTTPS)`);
-  console.log(
-    `  web override: Habitat ignores config.yaml web.* (UI via just dev web / WEB_DEV_PORT)`,
-  );
+  console.log(`  web: Habitat 不托管 /web（UI via just dev web / WEB_DEV_PORT）`);
   console.log(`  tip: anima service is only on the standalone install CLI; TLS via Vite if needed`);
 
   process.env[FREEANIMA_DEV_HABITAT_ENV] = "1";

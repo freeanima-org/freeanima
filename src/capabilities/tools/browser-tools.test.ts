@@ -90,7 +90,7 @@ describe("browser tools", () => {
     expect(ts?.tools.map((t) => t.name).toSorted()).toEqual([...BROWSER_TOOLS].toSorted());
   });
 
-  it("isCamofoxConfigured reads browser.camofox.base_url from config.yaml", () => {
+  it("isCamofoxConfigured reads browser.camofox.base_url from runtime config", () => {
     expect(isCamofoxConfigured()).toBe(true);
     bindBrowserToolsConfig(Config.fromSnapshot(browserConfig()));
     expect(isCamofoxConfigured()).toBe(false);
@@ -106,7 +106,7 @@ describe("browser tools", () => {
     bindBrowserToolsConfig(Config.fromSnapshot(browserConfig()));
     const out = await toolSets.getTool("browser_navigate")!.handler({ url: "https://example.com" });
     const data = JSON.parse(out);
-    expect(data.error).toContain("config.yaml");
+    expect(data.error).toContain("Habitat 服务配置");
   });
 
   it("browser_click requires ref", async () => {

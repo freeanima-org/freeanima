@@ -111,7 +111,7 @@ async function camofoxFetch(
   const cfg = resolveConfig();
   if (!cfg.baseUrl) {
     throw new Error(
-      "Camofox not configured. Set browser.camofox.base_url in ~/.anima/config.yaml.",
+      "Camofox not configured. Set browser.camofox.base_url in Habitat 服务配置（runtime）。",
     );
   }
   const timeoutMs = init.timeoutMs ?? cfg.timeoutMs;
@@ -356,7 +356,7 @@ export function resetCamofoxSessionsForTests(): void {
 export async function camofoxNavigate(conversationId: string, url: string): Promise<string> {
   if (!isCamofoxConfigured()) {
     return toolError(
-      "Camofox not configured. Set browser.camofox.base_url in ~/.anima/config.yaml.",
+      "Camofox not configured. Set browser.camofox.base_url in Habitat 服务配置（runtime）。",
     );
   }
   try {
@@ -405,7 +405,7 @@ export async function camofoxNavigate(conversationId: string, url: string): Prom
 export async function camofoxSnapshot(conversationId: string, full = false): Promise<string> {
   if (!isCamofoxConfigured()) {
     return toolError(
-      "Camofox not configured. Set browser.camofox.base_url in ~/.anima/config.yaml.",
+      "Camofox not configured. Set browser.camofox.base_url in Habitat 服务配置（runtime）。",
     );
   }
   try {

@@ -25,9 +25,7 @@ import {
 } from "./systemd-unit.ts";
 import { printServiceRunningStatus } from "./output/service-status-display.ts";
 import { waitForHabitatReadyOrWarn } from "./wait-habitat-ready.ts";
-import { isBootstrapWebHostingEnabled } from "@freeanima/core/config";
 import { validateBootstrapOnStartup } from "@freeanima/platform/config";
-import { loadBootstrapConfig } from "@freeanima/platform/config/bootstrap.ts";
 import { runServiceStack } from "./stack/supervisor.ts";
 import { probeWebHealth } from "./web/web-runtime.ts";
 
@@ -175,9 +173,7 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
   const pid = isServerAlive();
 
   if (httpUp) {
-    const bootstrap = loadBootstrapConfig();
-    const webEnabled = isBootstrapWebHostingEnabled(bootstrap);
-    const webUp = webEnabled ? await probeWebHealth(resolveProbeHost(host), port) : false;
+    const webUp = await probeWebHealth(resolveProbeHost(host), port);
     printServiceRunningStatus({
       body,
       statusFile,
@@ -190,14 +186,11 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
       healthMs,
       systemd: sd,
       pidOverride: pid,
-      web: webEnabled
-        ? {
-            running: webUp,
-            host: resolveProbeHost(host),
-            port,
-            publicUrl: bootstrap.web?.public_url ?? null,
-          }
-        : null,
+      web: {
+        running: webUp,
+        host: resolveProbeHost(host),
+        port,
+      },
     });
     return;
   }

@@ -5,7 +5,6 @@ export * from "./schemas/http.ts";
 export * from "./schemas/http-ports.ts";
 export * from "./http-origins.ts";
 export * from "./http-bind.ts";
-export * from "./schemas/web.ts";
 export * from "./llm-config.ts";
 export * from "./compression-config.ts";
 export * from "./paths.ts";

@@ -48,7 +48,7 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
             if (!url) return toolError("url is required");
             if (!isCamofoxConfigured()) {
               return toolError(
-                "Camofox not configured. Set browser.camofox.base_url in ~/.anima/config.yaml.",
+                "Camofox not configured. Set browser.camofox.base_url in Habitat 服务配置（runtime）。",
               );
             }
             return camofoxNavigate(sessionKey(), url);
