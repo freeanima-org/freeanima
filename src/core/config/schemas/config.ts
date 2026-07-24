@@ -73,15 +73,19 @@ const firecrawlSchema = z.object({
 const camofoxBrowserSchema = z.object({
   /** Camofox REST base URL (browser.camofox.base_url) */
   base_url: z.string().optional(),
-  /** Single HTTP request timeout (ms), default 30000 */
+  /** Single HTTP request timeout (ms); default 30000 when unset */
   timeout_ms: z.number().int().positive().optional(),
-  /** Enable profile-level persistent browser profile (reuse userId across tasks) */
+  /**
+   * Persist a local Camofox profile (stable userId) across conversations.
+   * Default true when unset; set false for ephemeral random userId.
+   * See docs/tools/browser-camofox.md.
+   */
   managed_persistence: z.boolean().optional(),
-  /** Try to adopt existing Camofox tab after process restart */
+  /** Adopt existing Camofox tab after process restart; default true when unset */
   adopt_existing_tab: z.boolean().optional(),
-  /** Externally specified Camofox userId (shared browser profile) */
+  /** Explicit Camofox userId (shared browser profile); overrides managed_persistence when set */
   user_id: z.string().optional(),
-  /** Externally specified conversationKey */
+  /** Explicit Camofox sessionKey; only applied when user_id is set */
   session_key: z.string().optional(),
 });
 

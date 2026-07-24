@@ -72,8 +72,9 @@ function resolveConfig(): CamofoxConfig {
   return omitUndefined({
     baseUrl: getCamofoxUrl(),
     timeoutMs,
-    managedPersistence: Boolean(block.managed_persistence),
-    adoptExistingTab: Boolean(block.adopt_existing_tab),
+    // unset → true（与设置页一致）；显式 false 才关闭
+    managedPersistence: block.managed_persistence !== false,
+    adoptExistingTab: block.adopt_existing_tab !== false,
     userId: typeof block.user_id === "string" ? block.user_id.trim() : undefined,
     sessionKey: typeof block.session_key === "string" ? block.session_key.trim() : undefined,
   });
