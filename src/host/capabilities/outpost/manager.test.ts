@@ -1,21 +1,35 @@
 import { describe, expect, it } from "bun:test";
 import { ToolSetRegistry } from "@freeanima/host/core/tool";
-import { formatRemoteToolName, normalizeAppSlug } from "@freeanima/shared/rpc-contract";
+import { runWithToolContext } from "@freeanima/host/core/tool/tool-context";
+import { formatRemoteToolName } from "@freeanima/shared/rpc-contract";
 import { RemoteToolsManager } from "./manager.ts";
 
-describe("RemoteToolsManager routing", () => {
+describe("RemoteToolsManager bind-at-register", () => {
   const appId = "pair-programming";
   const instanceA = "a1b";
   const instanceB = "c2d";
 
-  it("routes by tool name when conversation has no outpost binding", () => {
-    const manager = new RemoteToolsManager(new ToolSetRegistry());
-    const name = formatRemoteToolName(appId, instanceA, "scan_code");
-    manager.registerConnection(manager.connectionKey(appId, instanceA), {
+  function stubConn(
+    manager: RemoteToolsManager,
+    instanceId: string,
+    sendEvent: (method: string, payload: unknown) => void = () => {},
+  ): void {
+    manager.registerConnection(manager.connectionKey(appId, instanceId), {
       appId,
-      instanceId: instanceA,
-      sendEvent: () => {},
+      instanceId,
+      sendEvent,
       sendRequest: async () => ({}),
+    });
+  }
+
+  it("dispatches tool.call on the connection bound at register", async () => {
+    const registry = new ToolSetRegistry();
+    const manager = new RemoteToolsManager(registry);
+    const events: Array<{ method: string; payload: unknown }> = [];
+    stubConn(manager, instanceA, (method, payload) => {
+      events.push({ method, payload });
+      const callId = (payload as { call_id: string }).call_id;
+      manager.handleToolResult(callId, "ok");
     });
     manager.registerTools(appId, instanceA, [
       {
@@ -26,31 +40,53 @@ describe("RemoteToolsManager routing", () => {
       },
     ]);
 
-    const route = manager.resolveToolCall("sid", name, undefined);
-    expect(route.kind).toBe("outpost_proxy");
-    if (route.kind === "outpost_proxy") {
-      expect(route.appSlug).toBe(normalizeAppSlug(appId));
-      expect(route.instanceNorm).toBe(instanceA);
-    }
-  });
-
-  it("rejects when target instance is offline even without binding", () => {
-    const manager = new RemoteToolsManager(new ToolSetRegistry());
     const name = formatRemoteToolName(appId, instanceA, "scan_code");
-    const route = manager.resolveToolCall("sid", name, undefined);
-    expect(route.kind).toBe("reject");
-    if (route.kind === "reject") {
-      expect(route.error).toContain("outpost instance offline");
-    }
+    const tool = registry.getTool(name);
+    expect(tool).toBeDefined();
+    const result = await runWithToolContext("sid", () => tool!.handler({ path: "/tmp" }), {
+      tools: registry,
+    });
+    expect(result).toBe("ok");
+    expect(events).toHaveLength(1);
+    expect(events[0]?.method).toBe("tool.call");
+    const payload = events[0]?.payload as {
+      tool_name: string;
+      local_name: string;
+      conversation_id: string;
+      args: Record<string, unknown>;
+    };
+    expect(payload.tool_name).toBe(name);
+    expect(payload.local_name).toBe("scan_code");
+    expect(payload.conversation_id).toBe("sid");
+    expect(payload.args).toEqual({ path: "/tmp" });
   });
 
-  it("allows cross-conversation call when session binding differs from tool instance", () => {
-    const manager = new RemoteToolsManager(new ToolSetRegistry());
-    manager.registerConnection(manager.connectionKey(appId, instanceB), {
-      appId,
-      instanceId: instanceB,
-      sendEvent: () => {},
-      sendRequest: async () => ({}),
+  it("skips registerTools when instance has no connection", () => {
+    const registry = new ToolSetRegistry();
+    const manager = new RemoteToolsManager(registry);
+    const registered = manager.registerTools(appId, instanceA, [
+      {
+        local_name: "scan_code",
+        description: "scan",
+        parameters: { type: "object", properties: {} },
+        return_kind: "text",
+      },
+    ]);
+    expect(registered).toEqual([]);
+    expect(registry.getTool(formatRemoteToolName(appId, instanceA, "scan_code"))).toBeUndefined();
+  });
+
+  it("sends to the tool's bound instance even if another instance is also connected", async () => {
+    const registry = new ToolSetRegistry();
+    const manager = new RemoteToolsManager(registry);
+    const targets: string[] = [];
+    stubConn(manager, instanceA, (_method, payload) => {
+      targets.push("A");
+      manager.handleToolResult((payload as { call_id: string }).call_id, "from-A");
+    });
+    stubConn(manager, instanceB, (_method, payload) => {
+      targets.push("B");
+      manager.handleToolResult((payload as { call_id: string }).call_id, "from-B");
     });
     manager.registerTools(appId, instanceB, [
       {
@@ -60,32 +96,42 @@ describe("RemoteToolsManager routing", () => {
         return_kind: "text",
       },
     ]);
-    const toolName = formatRemoteToolName(appId, instanceB, "scan_code");
-    const route = manager.resolveToolCall("sid", toolName, {
-      outpost_app_id: "pairprogramming",
-      outpost_instance_id: instanceA,
-    });
-    expect(route.kind).toBe("outpost_proxy");
-    if (route.kind === "outpost_proxy") {
-      expect(route.instanceNorm).toBe(instanceB);
-    }
+
+    const name = formatRemoteToolName(appId, instanceB, "scan_code");
+    const tool = registry.getTool(name)!;
+    const result = await runWithToolContext("sid", () => tool.handler({}), { tools: registry });
+    expect(result).toBe("from-B");
+    expect(targets).toEqual(["B"]);
   });
 
-  it("allows habitat_local for non-sap tools", () => {
-    const manager = new RemoteToolsManager(new ToolSetRegistry());
-    expect(manager.resolveToolCall("sid", "toolset_search", {}).kind).toBe("habitat_local");
+  it("returns offline after connection unregister removes tools", async () => {
+    const registry = new ToolSetRegistry();
+    const manager = new RemoteToolsManager(registry);
+    manager.installToolRouting();
+    const key = manager.connectionKey(appId, instanceA);
+    stubConn(manager, instanceA);
+    manager.registerTools(appId, instanceA, [
+      {
+        local_name: "scan_code",
+        description: "scan",
+        parameters: { type: "object", properties: {} },
+        return_kind: "text",
+      },
+    ]);
+    const name = formatRemoteToolName(appId, instanceA, "scan_code");
+    expect(registry.getTool(name)?.description).not.toBe("Outpost remote-tool guard");
+
+    manager.unregisterConnection(key);
+    const guard = registry.getTool(name);
+    expect(guard?.description).toBe("Outpost remote-tool guard");
+    const result = guard!.handler({});
+    expect(result).toContain("sap tool not registered");
   });
 
   it("reports connected instance status and tools", () => {
     const manager = new RemoteToolsManager(new ToolSetRegistry());
     const instanceId = "k7m";
-    const key = manager.connectionKey(appId, instanceId);
-    manager.registerConnection(key, {
-      appId,
-      instanceId,
-      sendEvent: () => {},
-      sendRequest: async () => ({}),
-    });
+    stubConn(manager, instanceId);
     manager.registerTools(appId, instanceId, [
       {
         local_name: "scan_code",

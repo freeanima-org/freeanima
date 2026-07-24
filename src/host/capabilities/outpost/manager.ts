@@ -14,7 +14,6 @@ import {
   isRemotePrefixedToolName,
   normalizeAppSlug,
   normalizeInstanceId,
-  parseRemoteToolName,
   remoteToolsetId,
   type RemoteToolDefInput,
   type ToolCallPayload,
@@ -36,6 +35,7 @@ type PendingToolCall = {
 type RegisteredOutpostTool = {
   fullName: string;
   localName: string;
+  connectionKey: string;
   appSlug: string;
   instanceNorm: string;
 };
@@ -190,6 +190,15 @@ export class RemoteToolsManager {
     tools: RemoteToolDefInput[],
     opts?: { private?: boolean },
   ): string[] {
+    const key = this.connectionKey(appId, instanceId);
+    if (!this.connections.has(key)) {
+      logComponent("outpost").warn("registerTools skipped: no connection", {
+        appId,
+        instanceId,
+      });
+      return [];
+    }
+
     const appSlug = normalizeAppSlug(appId);
     const instanceNorm = normalizeInstanceId(instanceId);
     const setName = remoteToolsetId(appId, instanceId);
@@ -200,7 +209,8 @@ export class RemoteToolsManager {
 
     for (const tool of tools) {
       const fullName = formatRemoteToolName(appId, instanceId, tool.local_name);
-      const handler: ToolHandler = (args) => this.invokeRegisteredTool(fullName, args);
+      const localName = tool.local_name;
+      const handler: ToolHandler = (args) => this.dispatchBoundTool(key, fullName, localName, args);
       defs.push({
         name: fullName,
         description: tool.description,
@@ -210,14 +220,14 @@ export class RemoteToolsManager {
       });
       this.toolIndex.set(fullName, {
         fullName,
-        localName: tool.local_name,
+        localName,
+        connectionKey: key,
         appSlug,
         instanceNorm,
       });
       registered.push(fullName);
     }
 
-    const key = this.connectionKey(appId, instanceId);
     this.registeredToolDefs.set(key, tools);
     this.registeredToolPrivate.set(key, opts?.private !== false);
 
@@ -258,112 +268,6 @@ export class RemoteToolsManager {
     this.registeredToolPrivate.delete(key);
   }
 
-  resolveToolCall(
-    conversationId: string,
-    name: string,
-    platformExtra: Record<string, unknown> | undefined,
-  ):
-    | { kind: "habitat_local" }
-    | { kind: "reject"; error: string }
-    | { kind: "outpost_proxy"; payload: ToolCallPayload; appSlug: string; instanceNorm: string } {
-    if (!isRemotePrefixedToolName(name)) {
-      return { kind: "habitat_local" };
-    }
-
-    const parsed = parseRemoteToolName(name);
-    if (!parsed.ok) {
-      return { kind: "reject", error: `invalid sap tool name: ${name}` };
-    }
-
-    // 路由以工具名中的 app/instance 为准；会话 outpost 绑定非必须（允许跨对话调用已注册前哨工具）
-    const appSlug = parsed.value.app_slug;
-    const instanceNorm = parsed.value.instance_id_norm;
-
-    const boundAppId = platformExtra?.outpost_app_id;
-    const boundInstanceId = platformExtra?.outpost_instance_id;
-    if (typeof boundAppId === "string" && typeof boundInstanceId === "string") {
-      const expectedApp = normalizeAppSlug(boundAppId);
-      const expectedInst = normalizeInstanceId(boundInstanceId);
-      if (appSlug !== expectedApp || instanceNorm !== expectedInst) {
-        logComponent("outpost").debug("cross-conversation remote tool call", {
-          conversationId,
-          tool: name,
-          session: `${expectedApp}/${expectedInst}`,
-          target: `${appSlug}/${instanceNorm}`,
-        });
-      }
-    }
-
-    if (!this.isInstanceConnected(appSlug, instanceNorm)) {
-      return {
-        kind: "reject",
-        error: `outpost instance offline: ${appSlug}/${instanceNorm}`,
-      };
-    }
-
-    if (!this.hasRegisteredTool(parsed.value.canonical)) {
-      return { kind: "reject", error: `sap tool not registered: ${name}` };
-    }
-
-    const workspaceRoot =
-      typeof platformExtra?.workspace_root === "string" ? platformExtra.workspace_root : undefined;
-
-    return {
-      kind: "outpost_proxy",
-      appSlug,
-      instanceNorm,
-      payload: {
-        call_id: randomUUID(),
-        tool_name: parsed.value.canonical,
-        local_name: parsed.value.local_name,
-        args: {},
-        conversation_id: conversationId,
-        workspace_root: workspaceRoot,
-      },
-    };
-  }
-
-  async callToolViaSatellite(
-    conversationId: string,
-    name: string,
-    args: Record<string, unknown>,
-    platformExtra: Record<string, unknown> | undefined,
-  ): Promise<string> {
-    const route = this.resolveToolCall(conversationId, name, platformExtra);
-    if (route.kind === "habitat_local") {
-      throw new Error(`expected sap tool, got habitat_local: ${name}`);
-    }
-    if (route.kind === "reject") {
-      return toolError(route.error);
-    }
-
-    const conn = this.connections.get(`${route.appSlug}:${route.instanceNorm}`);
-    if (!conn) {
-      return toolError(`outpost instance offline: ${route.appSlug}/${route.instanceNorm}`);
-    }
-
-    const payload: ToolCallPayload = { ...route.payload, args };
-    return new Promise<string>((resolve, reject) => {
-      const timer = setTimeout(() => {
-        if (!this.pendingCalls.has(payload.call_id)) return;
-        this.pendingCalls.delete(payload.call_id);
-        resolve(toolError(`remote tool call timed out after ${REMOTE_TOOL_CALL_TIMEOUT_MS}ms`));
-      }, REMOTE_TOOL_CALL_TIMEOUT_MS);
-
-      this.pendingCalls.set(payload.call_id, {
-        resolve: (content) => {
-          clearTimeout(timer);
-          resolve(content);
-        },
-        reject: (error) => {
-          clearTimeout(timer);
-          reject(error);
-        },
-      });
-      conn.sendEvent("tool.call", payload);
-    });
-  }
-
   handleToolResult(callId: string, content: string): void {
     const pending = this.pendingCalls.get(callId);
     if (!pending) return;
@@ -387,8 +291,11 @@ export class RemoteToolsManager {
     this.toolSetNames.delete(setName);
   }
 
-  private async invokeRegisteredTool(
+  /** 注册时绑定的通道；调用只查 live connection，不做工具名/会话二次路由 */
+  private async dispatchBoundTool(
+    connectionKey: string,
     fullName: string,
+    localName: string,
     args: Record<string, unknown>,
   ): Promise<string> {
     const conversationId = getToolConversationId() ?? "";
@@ -396,16 +303,43 @@ export class RemoteToolsManager {
       return toolError("sap tool requires active conversation context");
     }
 
-    const meta = await this.loadSessionPlatformExtra(conversationId);
-    const route = this.resolveToolCall(conversationId, fullName, meta);
-    if (route.kind === "reject") {
-      return toolError(route.error);
-    }
-    if (route.kind === "habitat_local") {
-      return toolError(`unexpected habitat_local for sap tool: ${fullName}`);
+    const conn = this.connections.get(connectionKey);
+    if (!conn) {
+      return toolError(`outpost instance offline: ${connectionKey}`);
     }
 
-    return this.callToolViaSatellite(conversationId, fullName, args, meta);
+    const meta = await this.loadSessionPlatformExtra(conversationId);
+    const workspaceRoot =
+      typeof meta?.workspace_root === "string" ? meta.workspace_root : undefined;
+
+    const payload: ToolCallPayload = omitUndefined({
+      call_id: randomUUID(),
+      tool_name: fullName,
+      local_name: localName,
+      args,
+      conversation_id: conversationId,
+      workspace_root: workspaceRoot,
+    });
+
+    return new Promise<string>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        if (!this.pendingCalls.has(payload.call_id)) return;
+        this.pendingCalls.delete(payload.call_id);
+        resolve(toolError(`remote tool call timed out after ${REMOTE_TOOL_CALL_TIMEOUT_MS}ms`));
+      }, REMOTE_TOOL_CALL_TIMEOUT_MS);
+
+      this.pendingCalls.set(payload.call_id, {
+        resolve: (content) => {
+          clearTimeout(timer);
+          resolve(content);
+        },
+        reject: (error) => {
+          clearTimeout(timer);
+          reject(error);
+        },
+      });
+      conn.sendEvent("tool.call", payload);
+    });
   }
 
   private rejectUnregisteredSapTool(name: string): string {
@@ -414,7 +348,7 @@ export class RemoteToolsManager {
     return toolError(`sap tool not registered: ${name}`);
   }
 
-  /** Injected by platform composition root */
+  /** 仅用于 payload.workspace_root；不参与路由。由 platform composition root 注入 */
   loadSessionPlatformExtra: (
     conversationId: string,
   ) => Promise<Record<string, unknown> | undefined> = async () => {};
