@@ -7,10 +7,15 @@ import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
+
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const tauriDir = join(root, "src/app/shell/tauri");
 
 process.env.COMPANION_OVERLAY_URL ??= "http://127.0.0.1:4176/?view=overlay";
+
+const identity = applyTauriShellIdentity({ target: "desktop" });
+process.env.FREEANIMA_BUILD_CHANNEL ??= identity.channel;
 
 const companion = spawn("bun", ["src/features/companion/dev.ts"], {
   cwd: root,
@@ -18,7 +23,7 @@ const companion = spawn("bun", ["src/features/companion/dev.ts"], {
   env: process.env,
 });
 
-const tauri = spawn("bunx", ["tauri", "dev"], {
+const tauri = spawn("bunx", ["tauri", "dev", "--config", identity.configArg], {
   cwd: tauriDir,
   stdio: "inherit",
   env: process.env,

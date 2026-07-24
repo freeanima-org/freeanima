@@ -13,6 +13,15 @@
 打包：`just pack tauri-linux` / `just pack tauri-windows` / `just pack tauri-android`。
 CI / 本地 release profile 优先级：**构建速度 > 体积 > 运行速度**（无 fat LTO；详见 [`release.md`](release.md)「Tauri 打包加速约定」）。
 
+**身份与数据目录**（由 `FREEANIMA_BUILD_CHANNEL` 派生；未设 ⇒ `dev`）：
+
+| Channel          | Bundle id                  | 壳默认 home    |
+| ---------------- | -------------------------- | -------------- |
+| canary / release | `com.freeanima.portal`     | `~/.anima`     |
+| dev              | `com.freeanima.portal.dev` | `~/.anima-dev` |
+
+打包/开发脚本经 `scripts/apply-tauri-shell-identity.ts` 写出 `--config` 合并层；`FREEANIMA_HOME` 仍可覆盖壳 home。Habitat/CLI 数据目录不受此表影响（仍 `~/.anima` 或 `FREEANIMA_HOME`）。
+
 ## 强制策略
 
 1. **产品逻辑 TypeScript-only**（Habitat / features）；壳主进程 **Rust only** — 不在壳内跑 Node/Bun 业务进程。

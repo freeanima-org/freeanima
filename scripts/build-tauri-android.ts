@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Tauri Android APK → dist/freeanima-mobile-tauri-android.apk
+ * Tauri Android APK → dist/ 双写（版本化 + freeanima-mobile-android.apk + legacy tauri 别名）
  * 依赖：just install android + just install tauri-android
  */
 import { cpSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
@@ -10,11 +10,12 @@ import { fileURLToPath } from "node:url";
 
 import { tryAdbInstallApk } from "./try-adb-install-apk.ts";
 import { ensureApkSigned } from "./sign-android-apk.ts";
+import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
+import { emitPackArtifact } from "./emit-pack-artifact.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const tauriDir = join(root, "src/app/shell/tauri");
 const androidGen = join(tauriDir, "src-tauri/gen/android");
-const distApk = join(root, "dist/freeanima-mobile-tauri-android.apk");
 
 function scoreApkPath(p: string): number {
   return (
@@ -92,12 +93,22 @@ const prep = spawnSync("bun", ["scripts/prepare-tauri-ui.ts"], {
 });
 if (prep.status !== 0) process.exit(prep.status ?? 1);
 
-const build = spawnSync("bunx", ["tauri", "android", "build", "--apk"], {
-  cwd: tauriDir,
-  stdio: "inherit",
-  shell: true,
-  env: process.env,
-});
+const identity = applyTauriShellIdentity({ target: "mobile" });
+const buildEnv = {
+  ...process.env,
+  FREEANIMA_BUILD_CHANNEL: identity.channel,
+};
+
+const build = spawnSync(
+  "bunx",
+  ["tauri", "android", "build", "--apk", "--config", identity.configArg],
+  {
+    cwd: tauriDir,
+    stdio: "inherit",
+    shell: true,
+    env: buildEnv,
+  },
+);
 if (build.status !== 0) process.exit(build.status ?? 1);
 
 const apk =
@@ -110,12 +121,23 @@ if (!apk) {
   process.exit(1);
 }
 
-mkdirSync(dirname(distApk), { recursive: true });
-cpSync(apk, distApk);
-console.log(`[pack tauri-android] ${apk}`);
-console.log(`[pack tauri-android] → ${distApk}`);
+const emitted = emitPackArtifact({
+  kind: "mobile-android-apk",
+  sourcePath: apk,
+  logPrefix: "[pack tauri-android]",
+});
+console.log(`[pack tauri-android] source: ${apk}`);
+// 签名与 adb 走 stable（updater 名）或 legacy 本地名
+const distApk = emitted.aliasPaths[0] ?? emitted.stablePath;
 if (!ensureApkSigned(distApk, "[pack tauri-android]")) {
   process.exit(1);
+}
+// 签名可能只改了 distApk；同步回其它副本
+for (const dest of [emitted.versionedPath, emitted.stablePath, ...emitted.aliasPaths]) {
+  if (dest !== distApk) {
+    mkdirSync(dirname(dest), { recursive: true });
+    cpSync(distApk, dest);
+  }
 }
 tryAdbInstallApk(distApk, "[pack tauri-android]");
 process.exit(0);

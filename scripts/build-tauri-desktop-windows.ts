@@ -3,14 +3,15 @@
  * Linux/macOS → Windows Tauri NSIS 交叉编译。
  * 依赖：rustup target x86_64-pc-windows-msvc、cargo-xwin、nsis（makensis）、lld/clang。
  */
-import { cpSync, existsSync, mkdirSync, readdirSync, renameSync } from "node:fs";
+import { existsSync, readdirSync, renameSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
+import { emitPackArtifact } from "./emit-pack-artifact.ts";
+
 const TARGET = "x86_64-pc-windows-msvc";
-/** 与历史 Desktop release 资产命名一致：无空格 */
-const DIST_SETUP_NAME = "freeanima-desktop-tauri-windows-x64-setup.exe";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const tauriDir = join(root, "src/app/shell/tauri");
 const nsisOut = join(tauriDir, "src-tauri/target", TARGET, "release/bundle/nsis");
@@ -66,13 +67,16 @@ function normalizeNsisInstallerName(): string | null {
 
 function copyInstallerToDist(): void {
   const setup = normalizeNsisInstallerName();
-  if (!setup) return;
-  const distDir = join(root, "dist");
-  mkdirSync(distDir, { recursive: true });
-  const dest = join(distDir, DIST_SETUP_NAME);
-  cpSync(join(nsisOut, setup), dest);
+  if (!setup) {
+    console.error("[pack tauri-windows] 未找到 NSIS setup.exe");
+    process.exit(1);
+  }
+  emitPackArtifact({
+    kind: "desktop-windows-nsis",
+    sourcePath: join(nsisOut, setup),
+    logPrefix: "[pack tauri-windows]",
+  });
   console.log(`[pack tauri-windows] nsis: ${setup}`);
-  console.log(`[pack tauri-windows] → ${dest}`);
 }
 
 ensureCrossWindowsToolchain();
@@ -83,10 +87,13 @@ const prep = spawnSync("bun", ["scripts/prepare-tauri-ui.ts"], {
 });
 if (prep.status !== 0) process.exit(prep.status ?? 1);
 
+const identity = applyTauriShellIdentity({ target: "desktop" });
+
 // ring 交叉会产生海量 -Wunsafe-buffer-usage，易撑爆 CI 日志；
 // 默认 4 并行（速度优先）；若 xwin+ring OOM，可设 CARGO_BUILD_JOBS=2。
 const buildEnv = {
   ...process.env,
+  FREEANIMA_BUILD_CHANNEL: identity.channel,
   CARGO_BUILD_JOBS: process.env.CARGO_BUILD_JOBS?.trim() || "4",
   CFLAGS: [process.env.CFLAGS, "-Wno-unsafe-buffer-usage", "-w"].filter(Boolean).join(" "),
   CXXFLAGS: [process.env.CXXFLAGS, "-Wno-unsafe-buffer-usage", "-w"].filter(Boolean).join(" "),
@@ -94,7 +101,18 @@ const buildEnv = {
 
 const build = spawnSync(
   "bunx",
-  ["tauri", "build", "--runner", "cargo-xwin", "--target", TARGET, "--bundles", "nsis"],
+  [
+    "tauri",
+    "build",
+    "--runner",
+    "cargo-xwin",
+    "--target",
+    TARGET,
+    "--bundles",
+    "nsis",
+    "--config",
+    identity.configArg,
+  ],
   {
     cwd: tauriDir,
     stdio: "inherit",

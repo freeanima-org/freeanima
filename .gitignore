@@ -72,3 +72,4 @@ gettextization.failed.po
 **/src-tauri/companion-dist/
 **/src-tauri/ui/
 **/src-tauri/gen/
+**/src-tauri/tauri.conf.identity.generated.json

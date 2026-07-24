@@ -39,16 +39,20 @@ fn default_companion_visible() -> bool {
   true
 }
 
+fn default_anima_home_dirname() -> &'static str {
+  option_env!("FREEANIMA_DEFAULT_HOME_DIRNAME").unwrap_or(".anima")
+}
+
 fn anima_home() -> std::path::PathBuf {
   if let Ok(h) = std::env::var("FREEANIMA_HOME") {
     return std::path::PathBuf::from(h);
   }
   let mut h = dirs_next_home();
-  h.push(".anima");
+  h.push(default_anima_home_dirname());
   h
 }
 
-/// 桌面：`~/.anima`；移动：应用私有 config 目录（Android 上 HOME 常为只读）。
+/// 桌面：`~/.anima`（channel=dev 时为 `~/.anima-dev`，可用 FREEANIMA_HOME 覆盖）；移动：应用私有 config 目录。
 fn shell_prefs_path(app: &AppHandle) -> Result<std::path::PathBuf, String> {
   #[cfg(mobile)]
   {
@@ -88,7 +92,7 @@ fn load_shell_prefs_from(path: &std::path::Path) -> PersistedShellPrefs {
 }
 
 fn load_shell_prefs() -> PersistedShellPrefs {
-  // 无 AppHandle 时（进程启动）：桌面可读 ~/.anima；移动端先默认，setup 再从 app_config_dir 覆盖。
+  // 无 AppHandle 时（进程启动）：桌面可读壳 home；移动端先默认，setup 再从 app_config_dir 覆盖。
   #[cfg(mobile)]
   {
     return PersistedShellPrefs {
@@ -534,13 +538,8 @@ fn instance_json_path(app: &AppHandle, app_id: &str) -> Result<std::path::PathBu
   #[cfg(desktop)]
   {
     let _ = app;
-    let home = std::env::var("FREEANIMA_HOME").unwrap_or_else(|_| {
-      let mut h = dirs_next_home();
-      h.push(".anima");
-      h.to_string_lossy().into_owned()
-    });
     Ok(
-      std::path::PathBuf::from(home)
+      anima_home()
         .join("satellites")
         .join(app_id)
         .join("instance.json"),

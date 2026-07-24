@@ -56,7 +56,7 @@ Mobile REST **connects directly** to Habitat (no local REST proxy); requires a *
 | `Read-only file system` on save               | Fixed: prefs write to app private config dir                                                      |
 | ZeroTier / 虚拟网卡 IP                        | Phone ZeroTier online; Habitat `http.host: 0.0.0.0`; shell URL without trailing slash             |
 | Install `NO_CERTIFICATES` / version downgrade | Pack signs APK; uninstall old canary build then reinstall                                         |
-| 安装失败「签名冲突」                          | Uninstall `org.freeanima.app` then reinstall                                                      |
+| 安装失败「签名冲突」                          | Uninstall `com.freeanima.portal`（或旧包 `org.freeanima.app`） then reinstall                     |
 
 ## Debugging
 
@@ -67,10 +67,10 @@ Mobile REST **connects directly** to Habitat (no local REST proxy); requires a *
 ```bash
 just install android
 just install tauri-android -- --init   # 首次
-just pack tauri-android                      # → dist/freeanima-mobile-tauri-android.apk（有设备则尝试 adb 安装）
+just pack tauri-android                      # → dist/ 双写：版本化名 + freeanima-mobile-android.apk（及 legacy tauri 别名；有设备则尝试 adb 安装）
 ```
 
-Release asset name on GitHub: `freeanima-mobile-android.apk`（same contents, CI copies from Tauri dist）。
+Release asset name on GitHub: `freeanima-mobile-android.apk`（updater 固定名）；同 Release 另附带 `freeanima-mobile-android-{ver}-{channel}.apk`。
 
 ## vs desktop shell
 
