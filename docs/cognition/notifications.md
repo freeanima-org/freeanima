@@ -12,18 +12,25 @@ PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron 
 
 ## Alert（本机提醒，本机-only）
 
-**不走 Habitat RPC、不写 PG、不跨设备同步。** 各 shell 端在启动时注册 `AlertBackend`（web / desktop / mobile）。Feature 通过 `portal-sdk/alert` 使用**当前设备**系统通知通道。
+**不写 PG、不做跨设备认领。** 各 shell 端在启动时注册 `AlertBackend`（web / desktop / mobile）。产品提醒统一经 `portal-sdk/local-reminder` 的 **`deliverLocalReminder`**：
+
+| 本机条件                                        | 通道                                    |
+| ----------------------------------------------- | --------------------------------------- |
+| desktop 且伴侣窗口显示（`getCompanionVisible`） | `enqueueCompanionBubble`（不弹本机 OS） |
+| 否则（含 web / mobile）                         | `deliverAlert`（系统通知）              |
+
+多端策略为**宽松**：各 Portal 独立提醒；伴侣打开 ≠ 人在旁，**不**因此压制手机/Web。同端在源路由 focused 时可用 `suppressOsWhenFocused` 压制 OS。伴侣气泡**不**视为已读/ack。
 
 Alert 分两档（同一契约，成对）：
 
-| 档         | API                                           | 含义                             |
-| ---------- | --------------------------------------------- | -------------------------------- |
-| **即时**   | `deliverAlert` / `AlertBackend.show`          | 现在立刻弹                       |
-| **预登记** | `scheduleLocalAlert` / `cancelScheduledAlert` | 在未来时刻本机弹；**必须可取消** |
+| 档         | API                                              | 含义                             |
+| ---------- | ------------------------------------------------ | -------------------------------- |
+| **即时**   | `deliverLocalReminder` → `deliverAlert` / bubble | 现在立刻提示                     |
+| **预登记** | `scheduleLocalAlert` / `cancelScheduledAlert`    | 在未来时刻本机弹；**必须可取消** |
 
 硬约束：**schedule ⊕ cancel 成对**。只登记不能取消 = 不可用（暂停/手动中止后仍会到点骚扰）。同 `tag` 再 `schedule` = replace（先 cancel 再登记）；`cancel` 对不存在的 id/tag **幂等成功**。
 
-**不是** Habitat 后台进程 / Inbox。任务到期「inbox→本机弹」可后续复用同一 `schedule` API。
+用户 Inbox 新建经 `notification.subscribeInbox` → `notification.created` 推到各端，再走 `deliverLocalReminder`。Chat 未读会话数上升同理（`ChatUnreadShellWatcher`）。
 
 ### 三壳 durability
 
@@ -35,26 +42,26 @@ Alert 分两档（同一契约，成对）：
 
 ### 番茄钟
 
-**例外（Habitat 同步，非 Alert）**：运行中活跃态（`pomodoro_active` + `pomodoro.active.*`）跨端 **last-write-wins**；**阶段结束系统通知仍仅本机**。多端同步靠 `put` / `clear` 后的 `pomodoro.active.changed`；重连与页面可见时 `active.get` 兜底，**不作周期轮询**。
+**例外（Habitat 同步，非 Alert）**：运行中活跃态（`pomodoro_active` + `pomodoro.active.*`）跨端 **last-write-wins**；**阶段结束本机提醒仍仅本机**（`deliverLocalReminder`）。多端同步靠 `put` / `clear` 后的 `pomodoro.active.changed`；重连与页面可见时 `active.get` 兜底，**不作周期轮询**。
 
-阶段开始 / 继续时 `scheduleLocalAlert`（`phaseEndsAt`）；暂停、**手动取消进行中会话**（`runPhaseAbort`）、阶段完成等路径 `cancelScheduledAlert`。状态机推进仍由 `PomodoroShellWatcher`（或重开后 catch-up）负责；预登记只保证提醒。
+阶段开始 / 继续时：伴侣**未**显示则 `scheduleLocalAlert`（`phaseEndsAt`）；伴侣显示时**不**预登记（OS 定时器无法走气泡），靠 `PomodoroShellWatcher` 即时路径气泡。暂停、**手动取消进行中会话**（`runPhaseAbort`）、阶段完成等路径 `cancelScheduledAlert`。伴侣显隐切换时重新 sync 预登记。
 
-| 事件                      | Inbox |               Alert               | SSOT                |
-| ------------------------- | :---: | :-------------------------------: | ------------------- |
-| 任务到期/提醒             |   ✓   | 可选（后续：本机读 inbox 后弹窗） | `task_item` + inbox |
-| Agent `notification_send` |   ✓   |               可选                | inbox               |
-| Chat 新消息               |   ✗   |             ✓（后续）             | `conversation`      |
-| 番茄钟阶段结束            |   ✗   |      ✓（预登记 + 即时兜底）       | `pomodoro_session`  |
+| 事件                      | Inbox |             本机提醒             | SSOT                |
+| ------------------------- | :---: | :------------------------------: | ------------------- |
+| 任务到期/提醒             |   ✓   | ✓（user inbox → subscribeInbox） | `task_item` + inbox |
+| Agent `notification_send` |   ✓   |   ✓（仅 user 行触发本机提醒）    | inbox               |
+| Chat 未读上升             |   ✗   |   ✓（`deliverLocalReminder`）    | `conversation`      |
+| 番茄钟阶段结束            |   ✗   |    ✓（伴侣气泡或预登记+即时）    | `pomodoro_session`  |
 
 番茄钟阶段结束**不写 inbox**；会话历史由 `pomodoro_session` entity 承担。
 
-实现：`src/client/portal-sdk/alert/` + 各端 backend。
+实现：`src/client/portal-sdk/local-reminder.ts` + `portal-sdk/alert/` + 各端 backend。
 
-| 端          | 即时通道                                    | 预登记                           |
-| ----------- | ------------------------------------------- | -------------------------------- |
-| **desktop** | Tauri 桌面通知（`showNativeAlert`）         | Tauri schedule / cancel          |
-| **web**     | Web Notification API                        | 页内 `setTimeout`（best-effort） |
-| **mobile**  | Tauri Android 本地通知（`showNativeAlert`） | schedule / cancel                |
+| 端          | 即时通道（无伴侣 / 非 desktop）                | 预登记                           |
+| ----------- | ---------------------------------------------- | -------------------------------- |
+| **desktop** | 伴侣气泡或 Tauri 桌面通知（`showNativeAlert`） | process；伴侣可见时跳过          |
+| **web**     | Web Notification API                           | 页内 `setTimeout`（best-effort） |
+| **mobile**  | Tauri Android 本地通知（`showNativeAlert`）    | schedule / cancel                |
 
 ---
 
@@ -150,6 +157,7 @@ Included in default conversation toolsets when registered.
 - `notification.list` — requires `recipient_kind` + optional `recipient_id`
 - `notification.markRead`
 - `notification.recipients` — configured subject ids for UI tabs
+- `notification.subscribeInbox` — WS；用户 Inbox 新建推送 `notification.created`（本机提醒）
 
 No SAP create RPC in v1; writes are Habitat-internal + tools.
 

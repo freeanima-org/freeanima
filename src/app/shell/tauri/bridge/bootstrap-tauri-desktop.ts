@@ -125,7 +125,10 @@ export async function bootstrapTauriBridge(): Promise<void> {
     getWindowPosition: () => invoke<ScreenPoint>("get_companion_position"),
     startWindowDrag: () => invoke("start_companion_drag"),
     getCompanionVisible: () => invoke<boolean>("get_companion_visible"),
-    setCompanionVisible: (visible) => invoke("set_companion_visible", { visible }),
+    setCompanionVisible: async (visible) => {
+      await invoke("set_companion_visible", { visible });
+      notifyShellConfigChanged();
+    },
     enqueueCompanionBubble: async (text) => {
       const { emit } = await import("@tauri-apps/api/event");
       await emit("companion:enqueue-bubble", { text });
@@ -259,6 +262,7 @@ export async function bootstrapTauriBridge(): Promise<void> {
       if (scope.kind === "kv" && scope.id === "companion-shell") {
         const visible = (value as { visible?: boolean }).visible !== false;
         await invoke("set_companion_visible", { visible });
+        notifyShellConfigChanged();
       }
     },
     test: async (scope, value) => {
