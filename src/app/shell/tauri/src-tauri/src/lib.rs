@@ -6,6 +6,8 @@ mod packaged_update;
 mod apk_installer_plugin;
 
 use serde::{Deserialize, Serialize};
+#[cfg(desktop)]
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, State};
 
@@ -23,6 +25,9 @@ const COMPANION_W: f64 = 160.0;
 const COMPANION_H: f64 = 260.0;
 const DEFAULT_HABITAT: &str = "http://127.0.0.1:2658";
 const SHELL_PREFS_FILE: &str = "desktop-shell.json";
+
+#[cfg(desktop)]
+static IS_QUITTING: AtomicBool = AtomicBool::new(false);
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
@@ -648,7 +653,15 @@ fn build_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
         let _ = open_settings(app.clone());
       }
       "quit" => {
-        app.exit(0);
+        IS_QUITTING.store(true, Ordering::SeqCst);
+        for label in ["main", "companion"] {
+          if let Some(w) = app.get_webview_window(label) {
+            let _ = w.hide();
+            let _ = w.close();
+          }
+        }
+        app.cleanup_before_exit();
+        std::process::exit(0);
       }
       _ => {}
     })
@@ -732,8 +745,10 @@ pub fn run() {
       .on_window_event(|window, event| {
         if window.label() == "main" {
           if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-            api.prevent_close();
-            let _ = window.hide();
+            if !IS_QUITTING.load(Ordering::SeqCst) {
+              api.prevent_close();
+              let _ = window.hide();
+            }
           }
         }
         // Windows：透明无边框窗失焦时 DWM 可能画出错误边框/标题条；1px 抖动强制重绘（迁自 Electron）

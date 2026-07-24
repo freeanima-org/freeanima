@@ -34,6 +34,34 @@ function isWindowsDesktop(): boolean {
   return /Win/i.test(navigator.platform) || /Windows/i.test(navigator.userAgent);
 }
 
+/** Windows 上 disable 时注册表 Run 值本就不存在会报 os error 2，视为已关闭。 */
+function isAutostartAlreadyDisabledError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return /os error 2|找不到指定的文件|not found/i.test(msg);
+}
+
+async function syncLaunchAtLogin(desired: boolean): Promise<void> {
+  let current = false;
+  try {
+    current = await invoke<boolean>("plugin:autostart|is_enabled");
+  } catch {
+    current = false;
+  }
+  if (desired === current) return;
+  try {
+    if (desired) {
+      await invoke("plugin:autostart|enable");
+    } else {
+      await invoke("plugin:autostart|disable");
+    }
+  } catch (e) {
+    if (!desired && isAutostartAlreadyDisabledError(e)) return;
+    throw new Error(`开机自启动设置失败：${e instanceof Error ? e.message : String(e)}`, {
+      cause: e,
+    });
+  }
+}
+
 function detectWindowRole(): CompanionWindowRole | null {
   const q = new URLSearchParams(window.location.search);
   const view = q.get("view");
@@ -224,17 +252,7 @@ export async function bootstrapTauriBridge(): Promise<void> {
         applyHabitatConfigToShell(shell, raw.habitatUrl, raw.remoteAuthToken);
         notifyShellConfigChanged();
         if (typeof raw.launchAtLogin === "boolean") {
-          try {
-            if (raw.launchAtLogin) {
-              await invoke("plugin:autostart|enable");
-            } else {
-              await invoke("plugin:autostart|disable");
-            }
-          } catch (e) {
-            throw new Error(`开机自启动设置失败：${e instanceof Error ? e.message : String(e)}`, {
-              cause: e,
-            });
-          }
+          await syncLaunchAtLogin(raw.launchAtLogin);
         }
         return;
       }
