@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 14:47+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: 2026-07-10 23:57+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -36,7 +36,7 @@ msgstr ""
 #| "(../concepts/entity-model.md) `diary_entry` component."
 msgid ""
 "Structured project management for FreeAnima, based on the [Unified Entity "
-"Model](../concepts/entity-model.md)."
+"Model](../product/entity-model.md)."
 msgstr ""
 "面向用户与 Agent 的结构化日记，基于[统一实体模型](../concepts/entity-"
 "model.md)的 `diary_entry` 组件。"
@@ -506,7 +506,7 @@ msgstr ""
 #. type: Plain text
 #: docs/modules/project.md:161
 msgid ""
-"Aligned with [entity-model Shell scope](../concepts/entity-model.md#shell-ui-"
+"Aligned with [entity-model Shell scope](../product/entity-model.md#app-ui-"
 "global-subject-scope):"
 msgstr ""
 
@@ -616,7 +616,7 @@ msgstr ""
 #: docs/modules/project.md:198
 msgid ""
 "Same diary may link to multiple projects. Requires future "
-"`memory_references` / relationship table per [entity-model](../concepts/"
+"`memory_references` / relationship table per [entity-model](../product/"
 "entity-model.md#future-migration-map-not-executed-yet)."
 msgstr ""
 
@@ -879,9 +879,14 @@ msgstr ""
 
 #. type: Plain text
 #: docs/modules/project.md:288
+#, fuzzy
+#| msgid ""
+#| "卫星壳 Project UI 走 IndexedDB 快照 + outbox（与 Diary / Task 同级）。写 "
+#| "RPC 支持可选 `client_op_id` 幂等；详见 [`offline-platform.md`](../guide/"
+#| "offline-platform.md)。"
 msgid ""
 "卫星壳 Project UI 走 IndexedDB 快照 + outbox（与 Diary / Task 同级）。写 RPC "
-"支持可选 `client_op_id` 幂等；详见 [`offline-platform.md`](../guide/offline-"
+"支持可选 `client_op_id` 幂等；详见 [`offline-platform.md`](offline-"
 "platform.md)。"
 msgstr ""
 "卫星壳 Project UI 走 IndexedDB 快照 + outbox（与 Diary / Task 同级）。写 RPC "
@@ -1006,13 +1011,15 @@ msgstr ""
 #: docs/modules/project.md:330
 msgid ""
 "Implementation target: `src/features/project/` (domain + habitat + `ui/spa` "
-"+ `plugin.ts`); schemas under `src/core/db/schema/entity/components/`; SAP "
-"frames under `src/shared/rpc-contract/frames/`."
+"+ `plugin.ts`); schemas under `src/host/core/db/schema/entity/components/`; "
+"SAP frames under `src/shared/rpc-contract/frames/`."
 msgstr ""
 
 #. type: Plain text
 #: docs/modules/project.md:331
+#, fuzzy
+#| msgid "Entity subjects: [`entity-model.md`](entity-model.md)"
 msgid ""
-"See also [entity-model — Project module](../concepts/entity-model.md#project-"
+"See also [entity-model — Project module](../product/entity-model.md#project-"
 "module-v1-spec)."
-msgstr ""
+msgstr "实体主体：[`entity-model.md`](entity-model.md)"

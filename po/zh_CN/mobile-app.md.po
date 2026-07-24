@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/modules/mobile-app.md:1 docs/modules/mobile-app.md:5
-#: messages/po4a/en.xml:697
+#: messages/po4a/en.xml:685
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr "移动端 APP（Android）"
@@ -56,7 +56,7 @@ msgid ""
 "| -------------- | ---------------------------------------------------------- |\n"
 "| Platform       | **Android** sideload (APK); iOS later                      |\n"
 "| UI             | APK 内 WebView 加载 `prepare-tauri-ui` 拷入的 `ui/web`     |\n"
-"| Modules        | Chat + Habitat（本地 shell-ui）                            |\n"
+"| Modules        | Chat + Habitat（本地 app-ui）                              |\n"
 "| Habitat config | APP **设置 → 连接**（Rust prefs / `app_config_dir`）       |\n"
 "| Habitat duties | Habitat RPC REST `/rpc/v1` + WebSocket；**不**托管壳内 SPA |\n"
 msgstr ""
@@ -143,10 +143,15 @@ msgstr "Habitat 设置"
 
 #. type: Bullet: '1. '
 #: docs/modules/mobile-app.md:46
+#, fuzzy
+#| msgid ""
+#| "Home PC: `anima service start --host 0.0.0.0`, create a Service API Token "
+#| "(`anima token create --subject-id 1 --name bootstrap`; see [`remote-"
+#| "access.md`](../guide/remote-access.md))."
 msgid ""
 "Home PC: `anima service start --host 0.0.0.0`, create a Service API Token "
 "(`anima token create --subject-id 1 --name bootstrap`; see [`remote-"
-"access.md`](../guide/remote-access.md))."
+"access.md`](../ops/remote-access.md))."
 msgstr ""
 "家用 PC：`anima service start --host 0.0.0.0`，创建 Service API Token"
 "（`anima token create --subject-id 1 --name bootstrap`；见 [`remote-"
@@ -176,8 +181,8 @@ msgid "**测试连接** → **保存并进入** → local `/web/chat`."
 msgstr "**测试连接** → **保存并进入** → local `/web/chat`."
 
 #. type: Title ##
-#: docs/modules/mobile-app.md:47 docs/guide/database.md:98
-#: docs/guide/remote-access.md:194
+#: docs/modules/mobile-app.md:47 docs/ops/database.md:99
+#: docs/ops/remote-access.md:193
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
@@ -196,7 +201,7 @@ msgid ""
 "| `Read-only file system` on save               | Fixed: prefs write to app private config dir                                                      |\n"
 "| ZeroTier / 虚拟网卡 IP                        | Phone ZeroTier online; Habitat `http.host: 0.0.0.0`; shell URL without trailing slash             |\n"
 "| Install `NO_CERTIFICATES` / version downgrade | Pack signs APK; uninstall old canary build then reinstall                                         |\n"
-"| 安装失败「签名冲突」                          | Uninstall `org.freeanima.app` then reinstall                                                      |\n"
+"| 安装失败「签名冲突」                          | Uninstall `com.freeanima.portal`（或旧包 `org.freeanima.app`） then reinstall                     |\n"
 msgstr ""
 
 #. type: Title ##
@@ -224,14 +229,14 @@ msgstr "构建与侧载"
 msgid ""
 "just install android\n"
 "just install tauri-android -- --init   # 首次\n"
-"just pack tauri-android                      # → dist/freeanima-mobile-tauri-android.apk（有设备则尝试 adb 安装）\n"
+"just pack tauri-android                      # → dist/ 双写：版本化名 + freeanima-mobile-android.apk（及 legacy tauri 别名；有设备则尝试 adb 安装）\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/modules/mobile-app.md:74
 msgid ""
-"Release asset name on GitHub: `freeanima-mobile-android.apk`（same contents, "
-"CI copies from Tauri dist）。"
+"Release asset name on GitHub: `freeanima-mobile-android.apk`（updater 固定"
+"名）；同 Release 另附带 `freeanima-mobile-android-{ver}-{channel}.apk`。"
 msgstr ""
 
 #. type: Title ##

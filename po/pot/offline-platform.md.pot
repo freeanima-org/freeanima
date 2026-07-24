@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 14:39+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -76,7 +76,7 @@ msgstr ""
 #. type: Title ##
 #: docs/modules/offline-platform.md:32
 #, no-wrap
-msgid "平台原语（shell-sdk）"
+msgid "平台原语（portal-sdk）"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -323,7 +323,7 @@ msgstr ""
 
 #. type: Bullet: '5. '
 #: docs/modules/offline-platform.md:93
-msgid "更新 `docs/guide/remote-access.md`（若边界变化）"
+msgid "更新 `docs/ops/remote-access.md`（若边界变化）"
 msgstr ""
 
 #. type: Plain text
@@ -342,6 +342,6 @@ msgstr ""
 msgid ""
 "`offline-sync` / `OfflineSyncBootstrap` 负责 **sync**（重连与可见时 flush + "
 "有 outbox 模块的 `refreshAll`）。用户点「刷新」或下拉刷新是 **refresh**（当前"
-"页重新拉取视图），二者职责分离。产品页矩阵与交互约定见 [`docs/features/page-"
-"refresh.md`](../features/page-refresh.md)。"
+"页重新拉取视图），二者职责分离。产品页矩阵与交互约定见 [`docs/modules/page-"
+"refresh.md`](page-refresh.md)。"
 msgstr ""

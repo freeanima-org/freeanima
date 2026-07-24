@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,22 +17,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:10 docs/concepts/sleep.md:9
-#: docs/ops/remote-access.md:10 messages/po4a/en.xml:698
-#: messages/po4a/en.xml:705
+#: docs/cognition/dream.md:10 docs/cognition/sleep.md:9
+#: docs/ops/remote-access.md:10 messages/po4a/en.xml:690
+#: messages/po4a/en.xml:701
 #, no-wrap
 msgid "Overview"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:47 docs/guide/database.md:98
-#: docs/ops/remote-access.md:194
+#: docs/modules/mobile-app.md:47 docs/ops/database.md:99
+#: docs/ops/remote-access.md:193
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
 
-#. type: Yaml Front Matter Hash Value: title
-#: docs/ops/remote-access.md:1
+#. type: Content of: <messages><msg>
+#: docs/ops/remote-access.md:1 messages/po4a/en.xml:696
 #, no-wrap
 msgid "Remote access"
 msgstr ""
@@ -55,16 +55,16 @@ msgstr ""
 #: docs/ops/remote-access.md:22
 #, no-wrap
 msgid ""
-"| Layer                    | Role                                                                                                                                   |\n"
-"| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| **Service API Token**    | 绑定 `user` / `agent` subject；Habitat RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer                 |\n"
-"| **CLI bootstrap**        | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                                          |\n"
-"| **`http.host`**          | Habitat listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                                            |\n"
-"| **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出客户端访问用的名称）；变更后 `auto: true` 时重启自动重签                      |\n"
-"| **`http.cors_origins`**  | Explicit cross-origin browser origins (`just dev web`, split UI/API reverse proxy)                                                     |\n"
-"| **Client settings**      | Desktop / mobile shell / **browser Web** fill Habitat URL and token in **Habitat settings**                                            |\n"
-"| **Remote UI**            | 浏览器/PWA 从 Habitat `/web/*` 加载；Desktop/Mobile 默认安装包内本地 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |\n"
-"| **PWA**                  | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                                            |\n"
+"| Layer                    | Role                                                                                                                                  |\n"
+"| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| **Service API Token**    | 绑定 `user` / `agent` subject；Habitat RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer                |\n"
+"| **CLI bootstrap**        | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                                         |\n"
+"| **`http.host`**          | Habitat listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                                           |\n"
+"| **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出客户端访问用的名称）；变更后 `auto: true` 时重启自动重签                     |\n"
+"| **`http.cors_origins`**  | Explicit cross-origin browser origins (`just dev web`, split UI/API reverse proxy)                                                    |\n"
+"| **Client settings**      | Desktop / mobile shell / **browser Web** fill Habitat URL and token in **Habitat settings**                                           |\n"
+"| **Remote UI**            | 浏览器/PWA 从 Habitat `/web/*` 加载；Desktop/Mobile 默认安装包内本地 UI；见 [`architecture.md`](../product/architecture.md) Client UI |\n"
+"| **PWA**                  | `/web/*` 支持 manifest + Service Worker；布局跟视口（phone ≠ 必 compact；宽屏可为 expanded）                                          |\n"
 msgstr ""
 
 #. type: Plain text
@@ -129,8 +129,8 @@ msgstr ""
 #: docs/ops/remote-access.md:36
 msgid ""
 "**业务快照（IndexedDB）**：Chat / Task / Project / Notification / Diary / "
-"Email / Dream / Pomodoro（config/历史）及 Habitat UI 部分只读页由 `shell-sdk/"
-"offline-cache` 做 **在线栖息地优先 / 离线 snapshot**；**outbox 模块**"
+"Email / Dream / Pomodoro（config/历史）及 Habitat UI 部分只读页由 `portal-"
+"sdk/offline-cache` 做 **在线栖息地优先 / 离线 snapshot**；**outbox 模块**"
 "（Diary、Task、Project）在线写直连 Habitat（`preferOnlineWrite`），离线或网络"
 "失败走 outbox；Chat send / Pomodoro 仍有各自 outbox 路径；详见 [`offline-"
 "platform.md`](offline-platform.md)。"
@@ -292,7 +292,9 @@ msgstr ""
 
 #. type: Plain text
 #: docs/ops/remote-access.md:94
-msgid "CORS is **not** derived from `web.public_url`."
+msgid ""
+"CORS is configured only via `http.cors_origins` (not derived from other "
+"URLs)."
 msgstr ""
 
 #. type: Title ###
@@ -541,7 +543,7 @@ msgstr ""
 #: docs/ops/remote-access.md:185
 msgid ""
 "**Inbound** (Habitat connects to external MCP servers): runtime "
-"`mcp_servers` (`src/capabilities/mcp-client`); manage in Habitat UI `/"
+"`mcp_servers` (`src/host/capabilities/mcp-client`); manage in Habitat UI `/"
 "habitat/mcp`"
 msgstr ""
 
@@ -549,7 +551,7 @@ msgstr ""
 #: docs/ops/remote-access.md:185
 msgid ""
 "**Outbound** (external agents call Habitat tools): `/mcp` endpoint (`src/"
-"capabilities/mcp-server`)"
+"host/capabilities/mcp-server`)"
 msgstr ""
 
 #. type: Title ##
@@ -559,18 +561,17 @@ msgid "Operations"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/remote-access.md:193
+#: docs/ops/remote-access.md:192
 #, no-wrap
 msgid ""
-"| Command                          | Description                                  |\n"
-"| -------------------------------- | -------------------------------------------- |\n"
-"| `anima token create/list/revoke` | Service API Token 管理（CLI，直连 PG）       |\n"
-"| `anima web start --foreground`   | Standalone Web static server (debug, `/web`) |\n"
-"| `anima service status`           | Habitat stack status                         |\n"
+"| Command                          | Description                            |\n"
+"| -------------------------------- | -------------------------------------- |\n"
+"| `anima token create/list/revoke` | Service API Token 管理（CLI，直连 PG） |\n"
+"| `anima service status`           | Habitat stack status                   |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/remote-access.md:203
+#: docs/ops/remote-access.md:202
 #, no-wrap
 msgid ""
 "| Symptom                | Check                                                                    |\n"
@@ -583,18 +584,18 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/remote-access.md:204
+#: docs/ops/remote-access.md:203
 #, no-wrap
 msgid "Related docs"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/remote-access.md:207
-msgid "Mobile: [`mobile-app.md`](../features/mobile-app.md)"
+#: docs/ops/remote-access.md:206
+msgid "Mobile: [`mobile-app.md`](../modules/mobile-app.md)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/remote-access.md:207
+#: docs/ops/remote-access.md:206
 msgid ""
-"Desktop companion Habitat source: [`companion.md`](../features/companion.md)"
+"Desktop companion Habitat source: [`companion.md`](../modules/companion.md)"
 msgstr ""

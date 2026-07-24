@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/cognition/compression.md:1 messages/po4a/en.xml:673
+#: docs/cognition/compression.md:1 messages/po4a/en.xml:666
 #, no-wrap
 msgid "Compression"
 msgstr ""
@@ -37,8 +37,8 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/cognition/compression.md:10 docs/concepts/sleep.md:13
-#: docs/concepts/time-perception.md:21
+#: docs/cognition/compression.md:10 docs/cognition/sleep.md:13
+#: docs/cognition/time-perception.md:21
 #, no-wrap
 msgid "Design Principles"
 msgstr ""
@@ -85,7 +85,7 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/cognition/compression.md:32 docs/features/goal.md:40
+#: docs/cognition/compression.md:32 docs/modules/goal.md:40
 #, no-wrap
 msgid "Configuration"
 msgstr ""
@@ -93,13 +93,15 @@ msgstr ""
 #. type: Plain text
 #: docs/cognition/compression.md:35
 msgid ""
-"Adjust in `config.yaml` (full example: repo root `config.example.yaml`):"
+"Adjust in Habitat runtime (`habitat_runtime_config`; Shell **Settings → "
+"Habitat 服务 → 服务配置**):"
 msgstr ""
 
 #. type: Fenced code block (yaml)
 #: docs/cognition/compression.md:36
 #, no-wrap
 msgid ""
+"# habitat_runtime_config fragment (not config.yaml)\n"
 "models:\n"
 "  deepseek-v4-flash:\n"
 "    context_window: 1000000\n"
@@ -116,7 +118,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/compression.md:58
+#: docs/cognition/compression.md:59
 #, no-wrap
 msgid ""
 "| Setting             | Default | Description                         |\n"
@@ -128,13 +130,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/cognition/compression.md:59
+#: docs/cognition/compression.md:60
 #, no-wrap
 msgid "Token counting"
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/compression.md:62
+#: docs/cognition/compression.md:63
 msgid ""
 "Compression and embedding batch packing use **heuristic token estimates** "
 "(`tokenx` in-process, id `__estimate__:tokenx`), not full HuggingFace "
@@ -143,60 +145,60 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/cognition/compression.md:63
+#: docs/cognition/compression.md:64
 #, no-wrap
 msgid "Context window resolution (token mode)"
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/compression.md:66
+#: docs/cognition/compression.md:67
 msgid "Priority when estimating compression budget:"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/cognition/compression.md:71
-msgid "`models.<model>.context_window` in `config.yaml`"
+#: docs/cognition/compression.md:72
+msgid "`models.<model>.context_window` in Habitat runtime config"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/cognition/compression.md:71
+#: docs/cognition/compression.md:72
 msgid "`compression.default_context_window` (applies to all models)"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/cognition/compression.md:71
+#: docs/cognition/compression.md:72
 msgid ""
 "Provider `/models` catalog `contextWindow` (when Habitat has registered "
 "lookup)"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/cognition/compression.md:71
+#: docs/cognition/compression.md:72
 msgid ""
 "Message-count fallback (`max_rounds` thresholds) when none of the above apply"
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/compression.md:73
+#: docs/cognition/compression.md:74
 msgid ""
 "Per-model config always wins over dynamically fetched catalog values; "
-"catalog is read-only and never written back to `config.yaml`."
+"catalog is read-only and never written back to runtime config."
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/compression.md:75
+#: docs/cognition/compression.md:76
 msgid ""
 "Without any context window source, compression falls back to message-count "
 "triggers."
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/compression.md:77
+#: docs/cognition/compression.md:78
 msgid "Force compression in chat: `/compress` (`--force` ignores hysteresis)."
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/compression.md:79
+#: docs/cognition/compression.md:80
 msgid ""
 "Manual summarize (Cursor-style): `/summarize` collapses history into the "
 "runtime summary without waiting for automatic thresholds. When the turn is "
@@ -208,13 +210,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/cognition/compression.md:80
+#: docs/cognition/compression.md:81
 #, no-wrap
 msgid "Mid-turn protection vs empty raw"
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/compression.md:83
+#: docs/cognition/compression.md:84
 msgid ""
 "Automatic boundary derivation keeps a non-empty raw segment (with a leading "
 "user message) so turns can continue while usage-based compression runs. That "
@@ -226,13 +228,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/cognition/compression.md:84
+#: docs/cognition/compression.md:85
 #, no-wrap
 msgid "Relationship to Memory Pipeline"
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/compression.md:86
+#: docs/cognition/compression.md:87
 msgid ""
 "Compression and light/deep sleep run **independently**: compression manages "
 "the current conversation's LLM window; memory extraction runs nightly from "

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,17 +16,17 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Title ##
-#: docs/concepts/architecture.md:151 docs/tools/execute-code.md:9
-#, no-wrap
-msgid "Background"
-msgstr ""
-
 #. type: Content of: <messages><msg>
-#: docs/guide/security.md:1 docs/tools/execute-code.md:60
-#: messages/po4a/en.xml:694 messages/po4a/en.xml:697
+#: docs/ops/security.md:1 docs/tools/execute-code.md:60
+#: messages/po4a/en.xml:703 messages/po4a/en.xml:706
 #, no-wrap
 msgid "Security"
+msgstr ""
+
+#. type: Title ##
+#: docs/product/architecture.md:148 docs/tools/execute-code.md:9
+#, no-wrap
+msgid "Background"
 msgstr ""
 
 #. type: Yaml Front Matter Hash Value: title
@@ -144,7 +144,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/tools/execute-code.md:66
-msgid "Always `shell: false` (see [`security.md`](../guide/security.md))"
+msgid "Always `shell: false` (see [`security.md`](../ops/security.md))"
 msgstr ""
 
 #. type: Bullet: '- '

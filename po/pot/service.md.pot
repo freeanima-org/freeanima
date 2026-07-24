@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/ops/service.md:1 messages/po4a/en.xml:672 messages/po4a/en.xml:712
+#: docs/ops/service.md:1 messages/po4a/en.xml:647 messages/po4a/en.xml:708
 #, no-wrap
 msgid "Service"
 msgstr ""
@@ -122,7 +122,6 @@ msgid ""
 "anima service status\n"
 "anima service stop\n"
 "anima service restart\n"
-"anima web start --foreground # standalone Web static server (default :2660; production: web.enabled + service stack)\n"
 "\n"
 "# --- monorepo / worktree ---\n"
 "just dev                     # Habitat (≥10000) + Vite Web (≥5000); proxy via FREEANIMA_URL\n"
@@ -131,65 +130,64 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/service.md:57
+#: docs/ops/service.md:56
 msgid ""
 "`anima.service` is a **single-unit stack**: Habitat (`:2658`, REST + SAP + "
-"bundled `/web` when `web.enabled` and dist exists) managed by one foreground "
-"supervisor."
+"bundled `/web` when dist exists) managed by one foreground supervisor."
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/service.md:59
+#: docs/ops/service.md:58
 #, no-wrap
-msgid "**Web build is never triggered by `service start` / `anima web start`.** Paths:\n"
+msgid "**Web build is never triggered by `service start`.** Paths:\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/service.md:65
+#: docs/ops/service.md:64
 #, no-wrap
 msgid ""
 "| Mode               | When to `just pack web`          | UI                                                                    |\n"
 "| ------------------ | -------------------------------- | --------------------------------------------------------------------- |\n"
 "| Standalone release | Forced during `just pack cli`    | Embedded, served at `/web/*`                                          |\n"
-"| Source deploy      | Run `just pack web` before start | Habitat `/web/*` when `web.enabled`                                   |\n"
+"| Source deploy      | Run `just pack web` before start | Habitat `/web/*` whenever dist exists                                 |\n"
 "| Dev                | Not required                     | `just dev` / `just dev habitat` + `just dev web` → Web **:5000+** HMR |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/service.md:67
+#: docs/ops/service.md:66
 #, no-wrap
-msgid "When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. For standalone static hosting without the Habitat process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `just dev habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
+msgid "When Web dist (`src/app/shell/web/dist` or embedded) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `just dev habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/service.md:69
+#: docs/ops/service.md:68
 #, no-wrap
 msgid "**Startup order:** Habitat must pass `GET /rpc/v1/health/probe` (`status: ok`) before `serve()` `onReady` hooks run. `anima service start` waits up to **15 minutes** by default (`FREEANIMA_HABITAT_READY_TIMEOUT_MS`) because schema migrations run **before** HTTP listen. Remote-tool host disconnects are retried by `@freeanima/shared/rpc-contract` transport (exponential backoff).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/service.md:71
+#: docs/ops/service.md:70
 #, no-wrap
 msgid "**UI access:**\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/service.md:74
+#: docs/ops/service.md:73
 msgid ""
 "**Desktop / mobile Portal:** Chat and Habitat inside the Tauri app (not "
-"served from Habitat `:2658` unless `web.enabled`)."
+"served from Habitat `:2658` unless dist is present and Habitat is hosting `/"
+"web`)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/service.md:74
+#: docs/ops/service.md:73
 msgid ""
-"**`config.yaml` `web.enabled: true`:** browser UI at `http://<host>:2658/web/"
-"*` from Habitat when dist is present (see table above). `web` is bootstrap "
-"(not PG). Default Habitat URL in `/web/config.json` is the **page origin**."
+"**Browser / PWA:** `http://<host>:2658/web/*` from Habitat when dist is "
+"present. Default Habitat URL in `/web/config.json` is the **page origin**."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/service.md:74
+#: docs/ops/service.md:73
 msgid ""
 "**Local Web dev (`just dev web`):** Vite from `:5000` with base `/web/` — "
 "Chat `http://127.0.0.1:5000/web/chat`, Habitat `…/web/habitat/dashboard`; `/"

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,15 +16,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Title ##
-#: docs/concepts/architecture.md:41 docs/cognition/memory.md:12
-#, no-wrap
-msgid "Core Principles"
-msgstr ""
-
 #. type: Content of: <messages><msg>
 #: docs/cognition/memory.md:1 messages/po4a/en.xml:295 messages/po4a/en.xml:460
-#: messages/po4a/en.xml:695
+#: messages/po4a/en.xml:682
 #, no-wrap
 msgid "Memory"
 msgstr ""
@@ -43,6 +37,12 @@ msgid ""
 "> Light/deep sleep crons: [`sleep.md`](sleep.md).\n"
 "> Objective time digests (not memory taxonomy): [`temporal-summary.md`](temporal-summary.md).\n"
 "> Inspired by [Hindsight](https://arxiv.org/abs/2512.12818), with FreeAnima's unique limbic memory dimension retained and strengthened.\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/cognition/memory.md:12 docs/product/architecture.md:42
+#, no-wrap
+msgid "Core Principles"
 msgstr ""
 
 #. type: Plain text

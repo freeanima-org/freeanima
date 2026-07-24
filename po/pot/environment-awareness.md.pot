@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,7 +79,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/cognition/environment-awareness.md:32
-msgid "Implementation: `src/platform/runtime/env-health/`."
+msgid "Implementation: `src/host/platform/service/env-health/`."
 msgstr ""
 
 #. type: Plain text
@@ -146,12 +146,13 @@ msgid ""
 "traffic). CST calendar windows: 今天 / 昨天 / 前天 / 近 7·30·90 天 / 近 1 "
 "年. Excludes `debug` and `cron`. Refreshes with system-prompt day boundary; "
 "same CST day reuses Cache (`anima:cache:user-activity-stats`). "
-"Implementation: `src/platform/runtime/user-activity-stats/`."
+"Implementation: `src/host/platform/service/user-activity-stats/`."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/cognition/environment-awareness.md:56 docs/concepts/notifications.md:1
-#: docs/concepts/notifications.md:5 messages/po4a/en.xml:456
+#: docs/cognition/environment-awareness.md:56 docs/cognition/notifications.md:1
+#: docs/cognition/notifications.md:5 messages/po4a/en.xml:469
+#: messages/po4a/en.xml:687
 #, no-wrap
 msgid "Notifications"
 msgstr ""

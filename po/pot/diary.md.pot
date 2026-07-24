@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/modules/diary.md:1 docs/modules/diary.md:5 messages/po4a/en.xml:716
+#: docs/modules/diary.md:1 docs/modules/diary.md:5 messages/po4a/en.xml:669
+#: messages/po4a/en.xml:726
 #, no-wrap
 msgid "Diary"
 msgstr ""
@@ -26,7 +27,7 @@ msgstr ""
 #: docs/modules/diary.md:8
 msgid ""
 "Structured diary for users and Agents, based on the [Unified Entity Model]"
-"(../concepts/entity-model.md) `diary_entry` **container** plus child "
+"(../product/entity-model.md) `diary_entry` **container** plus child "
 "`content_block` (text) bricks."
 msgstr ""
 
@@ -65,15 +66,15 @@ msgstr ""
 #: docs/modules/diary.md:25
 msgid ""
 "User and Agent diaries live in the **default private world** of subjects "
-"resolved from `config.yaml` **`worlds.user_subject_id` / "
-"`agent_subject_id`** (boot-time `ResolvedWorldContext`)."
+"resolved from boot-time `ResolvedWorldContext` / "
+"`habitat_runtime_config.worlds` (`user_subject_id` / `agent_subject_id`)."
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/modules/diary.md:25
 msgid ""
 "Shell header **User / Agent** toggle selects which subject's diary to view "
-"(see [`entity-model.md`](../concepts/entity-model.md) global Subject scope)."
+"(see [`entity-model.md`](../product/entity-model.md) global Subject scope)."
 msgstr ""
 
 #. type: Bullet: '- '

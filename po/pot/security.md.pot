@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,8 +17,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/ops/security.md:1 docs/tools/execute-code-runtimes.md:60
-#: messages/po4a/en.xml:707 messages/po4a/en.xml:710
+#: docs/ops/security.md:1 docs/tools/execute-code.md:60
+#: messages/po4a/en.xml:703 messages/po4a/en.xml:706
 #, no-wrap
 msgid "Security"
 msgstr ""
@@ -33,7 +33,7 @@ msgstr ""
 #: docs/ops/security.md:9
 #, no-wrap
 msgid ""
-"> Adopted principles: [architecture.md](../concepts/architecture.md).\n"
+"> Adopted principles: [architecture.md](../product/architecture.md).\n"
 "> Security review and implementation items: [GitHub Issue #33](https://github.com/freeanima-org/freeanima/issues/33), [#46](https://github.com/freeanima-org/freeanima/issues/46).\n"
 msgstr ""
 
@@ -79,7 +79,7 @@ msgid "Credential Responsibilities"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/security.md:28
+#: docs/ops/security.md:27
 #, no-wrap
 msgid ""
 "| Rule                     | Description                                                                                                                                                                                       |\n"
@@ -87,13 +87,12 @@ msgid ""
 "| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI                                  |\n"
 "| Never commit secrets     | Do not write API keys, tokens, DB passwords into git. Bootstrap `config.yaml`: use `env()` (or keep secrets out of the file). Runtime LLM/MCP settings live in PG — use `vault()` / `env()` there |\n"
 "| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`                                               |\n"
-"| CLI plaintext output     | `anima vault get` prints Agent-library field plaintext to stdout; do not redirect to shared logs                                                                                                  |\n"
 "| User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                                                  |\n"
 "| Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                                                           |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/security.md:30
+#: docs/ops/security.md:29
 msgid ""
 "`config.yaml` is **bootstrap only** (read before PostgreSQL is up). Secrets "
 "there support plaintext or `env(\"KEY\")` — **not** `vault()` (Vault items "
@@ -106,13 +105,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/ops/security.md:31
+#: docs/ops/security.md:30
 #, no-wrap
 msgid "Vault trust boundaries"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/security.md:38
+#: docs/ops/security.md:37
 #, no-wrap
 msgid ""
 "| Surface    | User library                                                    | Agent library                                                   |\n"
@@ -123,13 +122,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/security.md:39
+#: docs/ops/security.md:38
 #, no-wrap
 msgid "Data Persistence"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/security.md:46
+#: docs/ops/security.md:45
 #, no-wrap
 msgid ""
 "| Path                               | Content                  | Encryption                      |\n"
@@ -140,18 +139,18 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/security.md:48
+#: docs/ops/security.md:47
 msgid "Disk backup = data access. Protect backup media accordingly."
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/security.md:49
+#: docs/ops/security.md:48
 #, no-wrap
 msgid "LLM Tool Risks"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/security.md:62
+#: docs/ops/security.md:61
 #, no-wrap
 msgid ""
 "| Capability                                                 | Risk                                                                                                                                                                                                                                                                                                           |\n"
@@ -161,27 +160,27 @@ msgid ""
 "| `code_execute`                                             | No shell (Bun/Node argv). Optional `secrets[]` same as `terminal_run`. Arbitrary JS can still use `node:fs`—not a container sandbox                                                                                                                                                                            |\n"
 "| `browser_type`                                             | Optional `secret` decrypts one Vault field and types it into the page; tool result redacts `typed` as `***` (never plaintext)                                                                                                                                                                                  |\n"
 "| MCP tools                                                  | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                                                                                                                                                                                                          |\n"
-"| Capability mask (Mask)                                     | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `src/features/task/domain/mask/`                                                                                                                                                                               |\n"
+"| Capability mask (Mask)                                     | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `src/host/core/mask/`                                                                                                                                                                                          |\n"
 "| ACP (Cursor)                                               | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                                                                                                                                                                                                       |\n"
 "| `vault_list` / `vault_search` / `vault_get_meta`           | Vault metadata only; no secret values. Habitat-only (not MCP)                                                                                                                                                                                                                                                  |\n"
 "| `vault_create` / `vault_update` / `vault_delete`           | Habitat-only (not MCP). create/update seal plaintext into **Agent** library only; tool results are metadata only. User library writes stay in Vault UI                                                                                                                                                         |\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/ops/security.md:63
+#: docs/ops/security.md:62
 #, no-wrap
 msgid "Agent vault usage"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/ops/security.md:69
+#: docs/ops/security.md:68
 msgid ""
 "**Discover** — `vault_list` / `vault_search` / `vault_get_meta` (metadata "
 "only; never plaintext in tool results)."
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/ops/security.md:69
+#: docs/ops/security.md:68
 msgid ""
 "**Write (Agent library)** — `vault_create` / `vault_update` / `vault_delete` "
 "in Habitat chat only. create/update accept plaintext `secrets` to seal on "
@@ -190,7 +189,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/ops/security.md:69
+#: docs/ops/security.md:68
 msgid ""
 "**Use** — pass `secrets: [{ id, env_name, field?, subject_kind? }]` on the "
 "same `terminal_run` or `code_execute` call that needs the credential (e.g. "
@@ -200,7 +199,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/ops/security.md:69
+#: docs/ops/security.md:68
 msgid ""
 "**Scope** — plaintext is decrypted for that call only (`secrets[]` → child "
 "`env`; `browser_type` `secret` → Camofox type payload). It is **not** "
@@ -210,13 +209,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/security.md:70
+#: docs/ops/security.md:69
 #, no-wrap
 msgid "Measures in Place"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/security.md:86
+#: docs/ops/security.md:85
 #, no-wrap
 msgid ""
 "| Measure                    | Description                                                                                                                                                   |\n"
@@ -236,20 +235,20 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/security.md:87
+#: docs/ops/security.md:86
 #, no-wrap
 msgid "Known Gaps (Documentation ≠ Fully Implemented)"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/security.md:90
+#: docs/ops/security.md:89
 msgid ""
 "The following are planned in code or docs—**deployers must not assume "
 "implemented**:"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/security.md:102
+#: docs/ops/security.md:101
 #, no-wrap
 msgid ""
 "| Priority | Item                                              | Status                                               |\n"
@@ -266,13 +265,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/security.md:103
+#: docs/ops/security.md:102
 #, no-wrap
 msgid "Threat Sources"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/security.md:112
+#: docs/ops/security.md:111
 #, no-wrap
 msgid ""
 "| Code  | Name                | Description                                                      |\n"
@@ -285,13 +284,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/security.md:113
+#: docs/ops/security.md:112
 #, no-wrap
 msgid "Security Matrix"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/security.md:123
+#: docs/ops/security.md:122
 #, no-wrap
 msgid ""
 "| Module             | A External                                                 | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |\n"
@@ -305,44 +304,44 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/security.md:124
+#: docs/ops/security.md:123
 #, no-wrap
 msgid "Proposals Pending Review"
 msgstr ""
 
 #. type: Title ###
-#: docs/ops/security.md:126
+#: docs/ops/security.md:125
 #, no-wrap
 msgid "P0 — File path safety (landed)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:130
+#: docs/ops/security.md:129
 msgid ""
 "Read/write/delete/search deny: `/etc/`, `/proc/`, `~/.ssh/` private keys, "
 "vault under `FREEANIMA_HOME`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:130
+#: docs/ops/security.md:129
 msgid "Optional `FREEANIMA_READ_SAFE_ROOT` still **P1**"
 msgstr ""
 
 #. type: Title ###
-#: docs/ops/security.md:131
+#: docs/ops/security.md:130
 #, no-wrap
 msgid "P0 — Shell execution + command hard deny (landed)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:136
+#: docs/ops/security.md:135
 msgid ""
 "`terminal_run` default `shell=false`; pass `shell=true` only for pipes/"
 "redirection (not a sandbox)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:136
+#: docs/ops/security.md:135
 msgid ""
 "Always-on deny for catastrophic `rm`/`rmdir`, `mkfs*`, `dd of=/dev/…`, fork "
 "bombs, power commands, recursive chmod/chown on `/` or `$HOME`, destructive "
@@ -350,45 +349,45 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:136
+#: docs/ops/security.md:135
 msgid "`code_execute` remains argv-only (no shell); **not** a process sandbox"
 msgstr ""
 
 #. type: Title ###
-#: docs/ops/security.md:137
+#: docs/ops/security.md:136
 #, no-wrap
 msgid "P1 — Runtime / Gateway"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:141
+#: docs/ops/security.md:140
 msgid "Unix socket `chmod 600` + optional handshake token"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:141
+#: docs/ops/security.md:140
 msgid "Write safe root default cwd (`FREEANIMA_WRITE_SAFE_ROOT`)"
 msgstr ""
 
 #. type: Title ###
-#: docs/ops/security.md:142
+#: docs/ops/security.md:141
 #, no-wrap
 msgid "P2 — Config Redaction Maintenance"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:145
+#: docs/ops/security.md:144
 msgid "When adding secret fields, sync config sanitization in platform"
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/security.md:146
+#: docs/ops/security.md:145
 #, no-wrap
 msgid "First-Deployment Security Checklist"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid ""
 "Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/"
 "config.yaml`; use `env()` for bootstrap secrets — **do not** write plaintext "
@@ -396,43 +395,43 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid ""
 "Open Shell `/vault`; set User master password; migrate secrets from legacy "
 "pass if needed"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid "`chmod 700 ~/.anima` (includes `vault/agent-machine.key`)"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid "Bind `127.0.0.1` only, or ensure intranet isolation"
 msgstr ""
 
 #. type: Bullet: '5. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid ""
 "Review inbound MCP / ACP in Habitat UI (`/habitat/mcp`, ACP page); set "
 "`enabled: false` for untrusted external Servers"
 msgstr ""
 
 #. type: Bullet: '6. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid ""
 "Regularly backup `~/.anima/` (and legacy `~/.password-store` if kept); "
 "encrypt backup media"
 msgstr ""
 
 #. type: Bullet: '7. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid "Do not commit `.env`, `config.yaml` to git"
 msgstr ""
 
 #. type: Bullet: '8. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid ""
 "Do not pass `shell=true` on `terminal_run` unless you intentionally need "
 "pipes/redirection"

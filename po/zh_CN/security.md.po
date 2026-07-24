@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,8 +16,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/ops/security.md:1 docs/tools/execute-code-runtimes.md:60
-#: messages/po4a/en.xml:707 messages/po4a/en.xml:710
+#: docs/ops/security.md:1 docs/tools/execute-code.md:60
+#: messages/po4a/en.xml:703 messages/po4a/en.xml:706
 #, no-wrap
 msgid "Security"
 msgstr "安全"
@@ -30,9 +30,12 @@ msgstr "逸灵风安全"
 
 #. type: Plain text
 #: docs/ops/security.md:9
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "> Adopted principles: [architecture.md](../concepts/architecture.md).\n"
+#| "> Security review and implementation items: [GitHub Issue #33](https://github.com/freeanima-org/freeanima/issues/33), [#46](https://github.com/freeanima-org/freeanima/issues/46).\n"
 msgid ""
-"> Adopted principles: [architecture.md](../concepts/architecture.md).\n"
+"> Adopted principles: [architecture.md](../product/architecture.md).\n"
 "> Security review and implementation items: [GitHub Issue #33](https://github.com/freeanima-org/freeanima/issues/33), [#46](https://github.com/freeanima-org/freeanima/issues/46).\n"
 msgstr ""
 "> 已采纳原则：[architecture.md](../concepts/architecture.md)。\n"
@@ -82,7 +85,7 @@ msgid "Credential Responsibilities"
 msgstr "凭证职责"
 
 #. type: Plain text
-#: docs/ops/security.md:28
+#: docs/ops/security.md:27
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Rule                     | Description                                                                                                                                                      |\n"
@@ -99,7 +102,6 @@ msgid ""
 "| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI                                  |\n"
 "| Never commit secrets     | Do not write API keys, tokens, DB passwords into git. Bootstrap `config.yaml`: use `env()` (or keep secrets out of the file). Runtime LLM/MCP settings live in PG — use `vault()` / `env()` there |\n"
 "| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`                                               |\n"
-"| CLI plaintext output     | `anima vault get` prints Agent-library field plaintext to stdout; do not redirect to shared logs                                                                                                  |\n"
 "| User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                                                  |\n"
 "| Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                                                           |\n"
 msgstr ""
@@ -113,7 +115,7 @@ msgstr ""
 "| Chat User 库解锁 | **v1 仅 bundled Chat**（`src/app/shell/web` / desktop / mobile）；Discord / 微信网关无法解锁 User 库                                          |\n"
 
 #. type: Plain text
-#: docs/ops/security.md:30
+#: docs/ops/security.md:29
 #, fuzzy
 #| msgid ""
 #| "`config.yaml` supports `vault(\"item_id\", \"field\")` (Agent library, "
@@ -135,13 +137,13 @@ msgstr ""
 "Chat 会话。"
 
 #. type: Title ###
-#: docs/ops/security.md:31
+#: docs/ops/security.md:30
 #, no-wrap
 msgid "Vault trust boundaries"
 msgstr "Vault 信任边界"
 
 #. type: Plain text
-#: docs/ops/security.md:38
+#: docs/ops/security.md:37
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Surface | User library                | Agent library                         |\n"
@@ -163,13 +165,13 @@ msgstr ""
 "| Shell  | 客户端主密码在内存          | Habitat 经 loopback SAP 解密              |\n"
 
 #. type: Title ##
-#: docs/ops/security.md:39
+#: docs/ops/security.md:38
 #, no-wrap
 msgid "Data Persistence"
 msgstr "数据持久化"
 
 #. type: Plain text
-#: docs/ops/security.md:46
+#: docs/ops/security.md:45
 #, no-wrap
 msgid ""
 "| Path                               | Content                  | Encryption                      |\n"
@@ -185,18 +187,18 @@ msgstr ""
 "| `~/.anima/weixin/`                 | 微信同步状态             | 无                              |\n"
 
 #. type: Plain text
-#: docs/ops/security.md:48
+#: docs/ops/security.md:47
 msgid "Disk backup = data access. Protect backup media accordingly."
 msgstr "磁盘备份 = 数据访问。请妥善保护备份介质。"
 
 #. type: Title ##
-#: docs/ops/security.md:49
+#: docs/ops/security.md:48
 #, no-wrap
 msgid "LLM Tool Risks"
 msgstr "LLM 工具风险"
 
 #. type: Plain text
-#: docs/ops/security.md:62
+#: docs/ops/security.md:61
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Capability                    | Risk                                                                                                                          |\n"
@@ -217,7 +219,7 @@ msgid ""
 "| `code_execute`                                             | No shell (Bun/Node argv). Optional `secrets[]` same as `terminal_run`. Arbitrary JS can still use `node:fs`—not a container sandbox                                                                                                                                                                            |\n"
 "| `browser_type`                                             | Optional `secret` decrypts one Vault field and types it into the page; tool result redacts `typed` as `***` (never plaintext)                                                                                                                                                                                  |\n"
 "| MCP tools                                                  | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                                                                                                                                                                                                          |\n"
-"| Capability mask (Mask)                                     | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `src/features/task/domain/mask/`                                                                                                                                                                               |\n"
+"| Capability mask (Mask)                                     | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `src/host/core/mask/`                                                                                                                                                                                          |\n"
 "| ACP (Cursor)                                               | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                                                                                                                                                                                                       |\n"
 "| `vault_list` / `vault_search` / `vault_get_meta`           | Vault metadata only; no secret values. Habitat-only (not MCP)                                                                                                                                                                                                                                                  |\n"
 "| `vault_create` / `vault_update` / `vault_delete`           | Habitat-only (not MCP). create/update seal plaintext into **Agent** library only; tool results are metadata only. User library writes stay in Vault UI                                                                                                                                                         |\n"
@@ -234,20 +236,20 @@ msgstr ""
 "| `vault_inject_env`            | 向子进程注入运行时 env；工具结果仅 ack；User 库需 Chat 解锁                                   |\n"
 
 #. type: Title ###
-#: docs/ops/security.md:63
+#: docs/ops/security.md:62
 #, no-wrap
 msgid "Agent vault usage"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/ops/security.md:69
+#: docs/ops/security.md:68
 msgid ""
 "**Discover** — `vault_list` / `vault_search` / `vault_get_meta` (metadata "
 "only; never plaintext in tool results)."
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/ops/security.md:69
+#: docs/ops/security.md:68
 msgid ""
 "**Write (Agent library)** — `vault_create` / `vault_update` / `vault_delete` "
 "in Habitat chat only. create/update accept plaintext `secrets` to seal on "
@@ -256,7 +258,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/ops/security.md:69
+#: docs/ops/security.md:68
 msgid ""
 "**Use** — pass `secrets: [{ id, env_name, field?, subject_kind? }]` on the "
 "same `terminal_run` or `code_execute` call that needs the credential (e.g. "
@@ -266,7 +268,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/ops/security.md:69
+#: docs/ops/security.md:68
 msgid ""
 "**Scope** — plaintext is decrypted for that call only (`secrets[]` → child "
 "`env`; `browser_type` `secret` → Camofox type payload). It is **not** "
@@ -276,13 +278,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/security.md:70
+#: docs/ops/security.md:69
 #, no-wrap
 msgid "Measures in Place"
 msgstr "已有措施"
 
 #. type: Plain text
-#: docs/ops/security.md:86
+#: docs/ops/security.md:85
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Measure                 | Description                                                                                                                            |\n"
@@ -327,20 +329,20 @@ msgstr ""
 "| `.gitignore`         | `.env.*`、`config.yaml`、私钥后缀                                                                                         |\n"
 
 #. type: Title ##
-#: docs/ops/security.md:87
+#: docs/ops/security.md:86
 #, no-wrap
 msgid "Known Gaps (Documentation ≠ Fully Implemented)"
 msgstr "已知缺口（文档 ≠ 已完全实现）"
 
 #. type: Plain text
-#: docs/ops/security.md:90
+#: docs/ops/security.md:89
 msgid ""
 "The following are planned in code or docs—**deployers must not assume "
 "implemented**:"
 msgstr "以下在代码或文档中规划，**部署者请勿假设已实现**："
 
 #. type: Plain text
-#: docs/ops/security.md:102
+#: docs/ops/security.md:101
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Priority | Item                                                  | Status                              |\n"
@@ -376,13 +378,13 @@ msgstr ""
 "| P3     | 会话磁盘加密                                          | 无                           |\n"
 
 #. type: Title ##
-#: docs/ops/security.md:103
+#: docs/ops/security.md:102
 #, no-wrap
 msgid "Threat Sources"
 msgstr "威胁来源"
 
 #. type: Plain text
-#: docs/ops/security.md:112
+#: docs/ops/security.md:111
 #, no-wrap
 msgid ""
 "| Code  | Name                | Description                                                      |\n"
@@ -402,13 +404,13 @@ msgstr ""
 "| **E** | 数据安全   | 对话泄露、密钥泄露、记忆篡改        |\n"
 
 #. type: Title ##
-#: docs/ops/security.md:113
+#: docs/ops/security.md:112
 #, no-wrap
 msgid "Security Matrix"
 msgstr "安全矩阵"
 
 #. type: Plain text
-#: docs/ops/security.md:123
+#: docs/ops/security.md:122
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Module           | A External                                                 | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |\n"
@@ -438,41 +440,41 @@ msgstr ""
 "| **MCP / ACP**    | SSE 认证未定义      | 恶意参数                                                        | 错误委托         | Server 被攻陷   | 上下文含敏感数据 |\n"
 
 #. type: Title ##
-#: docs/ops/security.md:124
+#: docs/ops/security.md:123
 #, no-wrap
 msgid "Proposals Pending Review"
 msgstr "待评审提案"
 
 #. type: Title ###
-#: docs/ops/security.md:126
+#: docs/ops/security.md:125
 #, fuzzy, no-wrap
 #| msgid "P0 — file_read_file Path Safety"
 msgid "P0 — File path safety (landed)"
 msgstr "P0 — file_read_file 路径安全"
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:130
+#: docs/ops/security.md:129
 msgid ""
 "Read/write/delete/search deny: `/etc/`, `/proc/`, `~/.ssh/` private keys, "
 "vault under `FREEANIMA_HOME`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:130
+#: docs/ops/security.md:129
 #, fuzzy
 #| msgid "Optional `FREEANIMA_READ_SAFE_ROOT`"
 msgid "Optional `FREEANIMA_READ_SAFE_ROOT` still **P1**"
 msgstr "可选 `FREEANIMA_READ_SAFE_ROOT`"
 
 #. type: Title ###
-#: docs/ops/security.md:131
+#: docs/ops/security.md:130
 #, fuzzy, no-wrap
 #| msgid "P0 — Shell Execution Policy"
 msgid "P0 — Shell execution + command hard deny (landed)"
 msgstr "P0 — Shell 执行策略"
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:136
+#: docs/ops/security.md:135
 #, fuzzy
 #| msgid "`FREEANIMA_ALLOW_SHELL=true` required for shell pipes"
 msgid ""
@@ -481,7 +483,7 @@ msgid ""
 msgstr "`FREEANIMA_ALLOW_SHELL=true` 才允许 shell 管道"
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:136
+#: docs/ops/security.md:135
 msgid ""
 "Always-on deny for catastrophic `rm`/`rmdir`, `mkfs*`, `dd of=/dev/…`, fork "
 "bombs, power commands, recursive chmod/chown on `/` or `$HOME`, destructive "
@@ -489,46 +491,46 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:136
+#: docs/ops/security.md:135
 msgid "`code_execute` remains argv-only (no shell); **not** a process sandbox"
 msgstr ""
 
 #. type: Title ###
-#: docs/ops/security.md:137
+#: docs/ops/security.md:136
 #, no-wrap
 msgid "P1 — Runtime / Gateway"
 msgstr "P1 — 运行时 / Gateway"
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:141
+#: docs/ops/security.md:140
 msgid "Unix socket `chmod 600` + optional handshake token"
 msgstr "Unix socket `chmod 600` + 可选握手 token"
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:141
+#: docs/ops/security.md:140
 msgid "Write safe root default cwd (`FREEANIMA_WRITE_SAFE_ROOT`)"
 msgstr "写安全根默认 cwd（`FREEANIMA_WRITE_SAFE_ROOT`）"
 
 #. type: Title ###
-#: docs/ops/security.md:142
+#: docs/ops/security.md:141
 #, no-wrap
 msgid "P2 — Config Redaction Maintenance"
 msgstr "P2 — 配置脱敏维护"
 
 #. type: Bullet: '- '
-#: docs/ops/security.md:145
+#: docs/ops/security.md:144
 msgid "When adding secret fields, sync config sanitization in platform"
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/security.md:146
+#: docs/ops/security.md:145
 #, no-wrap
 msgid "First-Deployment Security Checklist"
 msgstr "首次部署安全清单"
 
 #
 #. type: Bullet: '1. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 #, fuzzy
 #| msgid ""
 #| "Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/"
@@ -543,24 +545,24 @@ msgstr ""
 "config.yaml`；**勿**在 config 中写明文密钥"
 
 #. type: Bullet: '2. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid ""
 "Open Shell `/vault`; set User master password; migrate secrets from legacy "
 "pass if needed"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid "`chmod 700 ~/.anima` (includes `vault/agent-machine.key`)"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid "Bind `127.0.0.1` only, or ensure intranet isolation"
 msgstr "仅 bind `127.0.0.1`，或确保内网隔离"
 
 #. type: Bullet: '5. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 #, fuzzy
 #| msgid ""
 #| "Review `mcp_servers` / `acp_agents` config; set `enabled: false` for "
@@ -574,7 +576,7 @@ msgstr ""
 
 #
 #. type: Bullet: '6. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid ""
 "Regularly backup `~/.anima/` (and legacy `~/.password-store` if kept); "
 "encrypt backup media"
@@ -582,12 +584,12 @@ msgstr ""
 "定期备份 `~/.anima/`（若保留则含遗留 `~/.password-store`）；备份介质加密存储"
 
 #. type: Bullet: '7. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid "Do not commit `.env`, `config.yaml` to git"
 msgstr "勿将 `.env`、`config.yaml` 提交到 git"
 
 #. type: Bullet: '8. '
-#: docs/ops/security.md:155
+#: docs/ops/security.md:154
 msgid ""
 "Do not pass `shell=true` on `terminal_run` unless you intentionally need "
 "pipes/redirection"

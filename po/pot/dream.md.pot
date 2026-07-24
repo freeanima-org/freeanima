@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-17 22:43+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/cognition/dream.md:1 messages/po4a/en.xml:457
+#: docs/cognition/dream.md:1 messages/po4a/en.xml:537 messages/po4a/en.xml:671
 #, no-wrap
 msgid "Dream"
 msgstr ""
@@ -37,9 +37,9 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/cognition/dream.md:10 docs/concepts/sleep.md:9
-#: docs/guide/remote-access.md:10 messages/po4a/en.xml:622
-#: messages/po4a/en.xml:629
+#: docs/cognition/dream.md:10 docs/cognition/sleep.md:9
+#: docs/ops/remote-access.md:10 messages/po4a/en.xml:690
+#: messages/po4a/en.xml:701
 #, no-wrap
 msgid "Overview"
 msgstr ""
@@ -54,7 +54,7 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/cognition/dream.md:14 messages/po4a/en.xml:461
+#: docs/cognition/dream.md:14 messages/po4a/en.xml:541
 #, no-wrap
 msgid "Trigger"
 msgstr ""
@@ -104,7 +104,7 @@ msgid "Light sleep stage 2 must complete first so limbic anchors exist."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/cognition/dream.md:31 messages/po4a/en.xml:61
+#: docs/cognition/dream.md:31 messages/po4a/en.xml:137
 #, no-wrap
 msgid "Output"
 msgstr ""
@@ -141,7 +141,7 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/cognition/dream.md:40 docs/concepts/sleep.md:32
+#: docs/cognition/dream.md:40 docs/cognition/sleep.md:33
 #, no-wrap
 msgid "Orchestration"
 msgstr ""
@@ -202,5 +202,5 @@ msgstr ""
 #: docs/cognition/dream.md:65
 msgid ""
 "See also: [`sleep.md`](sleep.md), [`memory.md`](memory.md), [`entity-"
-"model.md`](entity-model.md)."
+"model.md`](../product/entity-model.md)."
 msgstr ""

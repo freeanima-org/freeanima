@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,7 +32,7 @@ msgstr ""
 #: docs/tools/browser.md:10
 msgid ""
 "Configure under Habitat settings → Advanced → **browser** / **camofox** "
-"(`browser.camofox.*` in `~/.anima/config.yaml`)."
+"(`browser.camofox.*` in `habitat_runtime_config`)."
 msgstr ""
 
 #. type: Title ##
@@ -157,5 +157,5 @@ msgstr ""
 
 #. type: Plain text
 #: docs/tools/browser.md:55
-msgid "Implementation: `src/capabilities/tools/browser-camofox.ts`."
+msgid "Implementation: `src/host/capabilities/tools/browser-camofox.ts`."
 msgstr ""

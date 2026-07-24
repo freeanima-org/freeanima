@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,28 +17,28 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/concepts/compression.md:10 docs/cognition/sleep.md:13
-#: docs/concepts/time-perception.md:21
+#: docs/cognition/compression.md:10 docs/cognition/sleep.md:13
+#: docs/cognition/time-perception.md:21
 #, no-wrap
 msgid "Design Principles"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:10 docs/cognition/sleep.md:9
-#: docs/guide/remote-access.md:10 messages/po4a/en.xml:685
-#: messages/po4a/en.xml:692
+#: docs/cognition/dream.md:10 docs/cognition/sleep.md:9
+#: docs/ops/remote-access.md:10 messages/po4a/en.xml:690
+#: messages/po4a/en.xml:701
 #, no-wrap
 msgid "Overview"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/dream.md:40 docs/cognition/sleep.md:33
+#: docs/cognition/dream.md:40 docs/cognition/sleep.md:33
 #, no-wrap
 msgid "Orchestration"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/cognition/sleep.md:1 messages/po4a/en.xml:700
+#: docs/cognition/sleep.md:1 messages/po4a/en.xml:709
 #, no-wrap
 msgid "Sleep"
 msgstr ""
@@ -118,9 +118,10 @@ msgstr ""
 #: docs/cognition/sleep.md:36
 msgid ""
 "Sleep uses a **macro DAG** (`sleep-cycle` pipeline) orchestrated by "
-"`PipelineRunner` (`@freeanima/runtime/pipeline`). A single cron job triggers "
-"the full cycle; step order and dependencies are explicit in code ([`src/"
-"platform/boot/sleep-cycle.ts`](../../src/platform/boot/sleep-cycle.ts))."
+"`PipelineRunner` (`@freeanima/host/engine/pipeline`). A single cron job "
+"triggers the full cycle; step order and dependencies are explicit in code "
+"([`src/host/platform/boot/sleep-cycle.ts`](../../src/host/platform/boot/"
+"sleep-cycle.ts))."
 msgstr ""
 
 #. type: Plain text

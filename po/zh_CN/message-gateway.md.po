@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wv 53\n"
-"POT-Creation-Date: 2026-07-23 14:39+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: 2026-07-17 22:43+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -15,12 +15,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Yaml Front Matter Hash Value: title
-#: docs/ops/message-gateway.md:1
-#, fuzzy, no-wrap
-#| msgid "Message"
+#. type: Content of: <messages><msg>
+#: docs/ops/message-gateway.md:1 messages/po4a/en.xml:683
+#, no-wrap
 msgid "Message gateway"
-msgstr "消息"
+msgstr "消息网关"
 
 #. type: Title #
 #: docs/ops/message-gateway.md:5

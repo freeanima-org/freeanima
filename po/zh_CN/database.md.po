@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,14 +16,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:47 docs/ops/database.md:98
-#: docs/guide/remote-access.md:194
+#: docs/modules/mobile-app.md:47 docs/ops/database.md:99
+#: docs/ops/remote-access.md:193
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
 
 #. type: Content of: <messages><msg>
-#: docs/ops/database.md:1 messages/po4a/en.xml:688
+#: docs/ops/database.md:1 messages/po4a/en.xml:668
 #, no-wrap
 msgid "Database"
 msgstr "数据库"
@@ -36,10 +36,14 @@ msgstr "PostgreSQL 安装与运维"
 
 #. type: Plain text
 #: docs/ops/database.md:10
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "> FreeAnima uses PostgreSQL for conversation archives, semantic memory, self layer, and related data.\n"
+#| "> Related concepts: [`memory.md`](../concepts/memory.md), [`sleep.md`](../concepts/sleep.md).\n"
+#| "> Security and credentials: [`security.md`](security.md).\n"
 msgid ""
 "> FreeAnima uses PostgreSQL for conversation archives, semantic memory, self layer, and related data.\n"
-"> Related concepts: [`memory.md`](../concepts/memory.md), [`sleep.md`](../concepts/sleep.md).\n"
+"> Related concepts: [`memory.md`](../cognition/memory.md), [`sleep.md`](../cognition/sleep.md).\n"
 "> Security and credentials: [`security.md`](security.md).\n"
 msgstr ""
 "> 逸灵风使用 PostgreSQL 存储对话存档、语义记忆、自我层及相关数据。\n"
@@ -95,8 +99,8 @@ msgstr ""
 #. type: Plain text
 #: docs/ops/database.md:25
 msgid ""
-"Optional pool overrides（见 [`src/core/db/pg/client.ts`](../../src/core/db/"
-"pg/client.ts)）:"
+"Optional pool overrides（见 [`src/host/core/db/pg/client.ts`](../../src/host/"
+"core/db/pg/client.ts)）:"
 msgstr ""
 
 #. type: Plain text
@@ -229,18 +233,28 @@ msgstr "`auto_llm_runs`（审计）"
 
 #. type: Plain text
 #: docs/ops/database.md:70
+#, fuzzy
+#| msgid ""
+#| "Background LLM without user turns (cron agent, sleep pipeline stages) "
+#| "writes to `auto_llm_runs` instead of creating `conversations`. Retention "
+#| "(optional `config.yaml`):"
 msgid ""
 "Background LLM without user turns (cron agent, sleep pipeline stages) writes "
-"to `auto_llm_runs` instead of creating `conversations`. Retention (optional "
-"`config.yaml`):"
+"to `auto_llm_runs` instead of creating `conversations`. Retention (Habitat "
+"runtime / Shell **Settings → Habitat 服务 → 服务配置** `auto_llm`):"
 msgstr ""
 "无用户轮次的后台 LLM（cron agent、睡眠流水线阶段）写入 `auto_llm_runs`，而非"
 "创建 `conversations`。保留策略（可选 `config.yaml`）："
 
 #. type: Fenced code block (yaml)
 #: docs/ops/database.md:71
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "auto_llm:\n"
+#| "  retention_days: 30\n"
+#| "  per_run_kind_keep: 100\n"
 msgid ""
+"# habitat_runtime_config fragment (not config.yaml)\n"
 "auto_llm:\n"
 "  retention_days: 30\n"
 "  per_run_kind_keep: 100\n"
@@ -250,7 +264,7 @@ msgstr ""
 "  per_run_kind_keep: 100\n"
 
 #. type: Plain text
-#: docs/ops/database.md:78
+#: docs/ops/database.md:79
 msgid ""
 "Purged during sleep-cycle step `conversation-cleanup` (after stale "
 "conversation cleanup). Cron script runs (`no_agent`) use `cron_log` only."
@@ -259,25 +273,25 @@ msgstr ""
 "本运行（`no_agent`）仅使用 `cron_log`。"
 
 #. type: Title ##
-#: docs/ops/database.md:79
+#: docs/ops/database.md:80
 #, no-wrap
 msgid "Backups"
 msgstr "备份"
 
 #. type: Bullet: '- '
-#: docs/ops/database.md:85
+#: docs/ops/database.md:86
 msgid ""
 "**Migrations do not replace backups** — schedule regular full backups (e.g. "
 "`pg_dump`)."
 msgstr "**迁移不能替代备份** — 请定期安排全量备份（如 `pg_dump`）。"
 
 #. type: Bullet: '- '
-#: docs/ops/database.md:85
+#: docs/ops/database.md:86
 msgid "Back up before destructive changes."
 msgstr "破坏性变更前先备份。"
 
 #. type: Bullet: '- '
-#: docs/ops/database.md:85
+#: docs/ops/database.md:86
 msgid ""
 "Include `~/.anima/` (`FREEANIMA_HOME` overridable) in backup policy — see "
 "[`security.md`](security.md#data-persistence)."
@@ -286,7 +300,7 @@ msgstr ""
 "(security.md#data-persistence)。"
 
 #. type: Bullet: '- '
-#: docs/ops/database.md:85
+#: docs/ops/database.md:86
 msgid ""
 "Recommended local stack: hourly `pg_dump` + home tar (short retention), WAL "
 "archive (`archive_mode`), weekly `pg_basebackup` for PITR. Restore logical "
@@ -294,20 +308,20 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/database.md:86
+#: docs/ops/database.md:87
 #, no-wrap
 msgid "Integration Tests (Developers)"
 msgstr "集成测试（开发者）"
 
 #. type: Plain text
-#: docs/ops/database.md:89
+#: docs/ops/database.md:90
 msgid ""
 "Full integration tests require **Docker** for a temporary PostgreSQL "
 "instance:"
 msgstr "完整集成测试需要 **Docker** 提供临时 PostgreSQL 实例："
 
 #. type: Fenced code block (bash)
-#: docs/ops/database.md:90
+#: docs/ops/database.md:91
 #, no-wrap
 msgid ""
 "just qa test-integration\n"
@@ -319,12 +333,12 @@ msgstr ""
 "just test              # unit + integration（串行）\n"
 
 #. type: Plain text
-#: docs/ops/database.md:97
+#: docs/ops/database.md:98
 msgid "pre-commit `just qa test-changed` does **not** run integration tests."
 msgstr "pre-commit 的 `just qa test-changed` **不会**运行集成测试。"
 
 #. type: Plain text
-#: docs/ops/database.md:107
+#: docs/ops/database.md:108
 #, no-wrap
 msgid ""
 "| Symptom                                             | Check                                                                                                                                                                   |\n"
@@ -337,6 +351,6 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/database.md:108
+#: docs/ops/database.md:109
 msgid "More deployment security: [`security.md`](security.md)."
 msgstr "更多部署安全事项：[`security.md`](security.md)。"
