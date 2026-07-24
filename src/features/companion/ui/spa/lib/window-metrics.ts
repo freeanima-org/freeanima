@@ -1,4 +1,6 @@
 export {
+  CHARACTER_FOOTPRINT_HEIGHT,
+  CHARACTER_FOOTPRINT_WIDTH,
   COMPANION_WINDOW_HEIGHT,
   COMPANION_WINDOW_WIDTH,
   COMPANION_PORT_MAX,
@@ -30,16 +32,16 @@ export function readScreenWorkArea(): ScreenRect {
   };
 }
 
-/** 在当前垂直高度上左右两端来回巡逻 */
+/** 在当前垂直高度上左右两端来回巡逻（坐标 = footprint 左上角） */
 export function buildHorizontalPatrolWaypoints(
   screen: ScreenRect,
-  window: WindowSize,
+  footprint: WindowSize,
   laneY: number,
 ): ScreenPoint[] {
   const minX = screen.availLeft;
-  const maxX = Math.max(minX, screen.availLeft + screen.availWidth - window.width);
+  const maxX = Math.max(minX, screen.availLeft + screen.availWidth - footprint.width);
   const minY = screen.availTop;
-  const maxY = Math.max(minY, screen.availTop + screen.availHeight - window.height);
+  const maxY = Math.max(minY, screen.availTop + screen.availHeight - footprint.height);
   const y = clamp(laneY, minY, maxY);
 
   if (maxX <= minX) {
@@ -52,16 +54,16 @@ export function buildHorizontalPatrolWaypoints(
   ];
 }
 
-/** 水平巡逻时窗口左上角可移动范围（Y 固定为 laneY） */
+/** 水平巡逻时 footprint 左上角可移动范围（Y 固定为 laneY） */
 export function patrolBoundsForHorizontal(
   screen: ScreenRect,
-  window: WindowSize,
+  footprint: WindowSize,
   laneY: number,
 ): PatrolBounds {
   const minX = screen.availLeft;
-  const maxX = Math.max(minX, screen.availLeft + screen.availWidth - window.width);
+  const maxX = Math.max(minX, screen.availLeft + screen.availWidth - footprint.width);
   const minY = screen.availTop;
-  const maxY = Math.max(minY, screen.availTop + screen.availHeight - window.height);
+  const maxY = Math.max(minY, screen.availTop + screen.availHeight - footprint.height);
   const y = clamp(laneY, minY, maxY);
   return { minX, minY: y, maxX, maxY: y };
 }
@@ -72,11 +74,11 @@ export function buildHomeCorner(screen: ScreenRect): ScreenPoint {
 }
 
 /** 沿工作区内边缘四角顺时针巡逻：左上 → 右上 → 右下 → 左下 */
-export function buildPerimeterWaypoints(screen: ScreenRect, window: WindowSize): ScreenPoint[] {
+export function buildPerimeterWaypoints(screen: ScreenRect, footprint: WindowSize): ScreenPoint[] {
   const minX = screen.availLeft;
   const minY = screen.availTop;
-  const maxX = Math.max(minX, screen.availLeft + screen.availWidth - window.width);
-  const maxY = Math.max(minY, screen.availTop + screen.availHeight - window.height);
+  const maxX = Math.max(minX, screen.availLeft + screen.availWidth - footprint.width);
+  const maxY = Math.max(minY, screen.availTop + screen.availHeight - footprint.height);
 
   if (maxX <= minX && maxY <= minY) {
     return [{ x: minX, y: minY }];
@@ -95,9 +97,9 @@ export function buildPerimeterWaypoints(screen: ScreenRect, window: WindowSize):
   });
 }
 
-/** 工作区中心（窗口左上角坐标，物理/逻辑像素与 patrol 一致） */
-export function buildWorkAreaCenter(screen: ScreenRect, window: WindowSize): ScreenPoint {
-  const bounds = patrolBoundsFromWaypoints(buildPerimeterWaypoints(screen, window));
+/** 工作区中心（footprint 左上角坐标，与 patrol 一致） */
+export function buildWorkAreaCenter(screen: ScreenRect, footprint: WindowSize): ScreenPoint {
+  const bounds = patrolBoundsFromWaypoints(buildPerimeterWaypoints(screen, footprint));
   if (!bounds) {
     return { x: screen.availLeft, y: screen.availTop };
   }

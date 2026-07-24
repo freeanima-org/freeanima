@@ -98,6 +98,20 @@ export async function bootstrapTauriBridge(): Promise<void> {
     startWindowDrag: () => invoke("start_companion_drag"),
     getCompanionVisible: () => invoke<boolean>("get_companion_visible"),
     setCompanionVisible: (visible) => invoke("set_companion_visible", { visible }),
+    enqueueCompanionBubble: async (text) => {
+      const { emit } = await import("@tauri-apps/api/event");
+      await emit("companion:enqueue-bubble", { text });
+    },
+    listenCompanionBubble: (handler) => {
+      let unlisten: (() => void) | undefined;
+      void listen<{ text: string }>("companion:enqueue-bubble", (ev) => {
+        const text = typeof ev.payload?.text === "string" ? ev.payload.text : "";
+        if (text.trim()) handler(text);
+      }).then((u) => {
+        unlisten = u;
+      });
+      return () => unlisten?.();
+    },
     listenConfigChanged: (handler) => {
       let unlisten: (() => void) | undefined;
       void listen("shell:config-changed", () => {

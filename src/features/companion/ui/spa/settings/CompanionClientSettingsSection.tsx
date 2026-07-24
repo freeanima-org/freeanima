@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@freeanima/frontend/ui-kit";
+import { Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
 import { FormToggle } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
 import type { SettingsPanelProps } from "@freeanima/frontend/portal-sdk/settings";
 import { fetchSidecarRuntimeFields } from "@freeanima/features/companion/ui/spa/lib/api.ts";
@@ -7,11 +7,15 @@ import type { CompanionShellSettings } from "./companion-shell-settings.ts";
 
 export type { CompanionShellSettings };
 
+const TEST_BUBBLE_TEXT = "这是一条测试气泡。点击气泡可切换到下一条或关闭。";
+
 export default function CompanionClientSettingsSection({ store }: SettingsPanelProps) {
   const [visible, setVisible] = useState(true);
   const [ready, setReady] = useState(false);
   const [instanceId, setInstanceId] = useState("");
   const [sapConnected, setSapConnected] = useState(false);
+  const [testingBubble, setTestingBubble] = useState(false);
+  const [testError, setTestError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,6 +59,28 @@ export default function CompanionClientSettingsSection({ store }: SettingsPanelP
     void store.save({ visible: checked });
   };
 
+  const onTestBubble = async (): Promise<void> => {
+    const shell = window.portalShell;
+    if (!shell?.enqueueCompanionBubble) {
+      setTestError("当前环境不支持向伴侣窗推送气泡");
+      return;
+    }
+    setTestingBubble(true);
+    setTestError(null);
+    try {
+      if (!visible) {
+        setVisible(true);
+        await store?.save({ visible: true });
+        await shell.setCompanionVisible?.(true);
+      }
+      await shell.enqueueCompanionBubble(TEST_BUBBLE_TEXT);
+    } catch (e) {
+      setTestError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setTestingBubble(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <FormToggle
@@ -64,6 +90,23 @@ export default function CompanionClientSettingsSection({ store }: SettingsPanelP
         disabled={!ready || !store}
         onChange={onVisibleChange}
       />
+
+      <div className="flex flex-col gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-fit"
+          disabled={!ready || testingBubble || !window.portalShell?.enqueueCompanionBubble}
+          onClick={() => void onTestBubble()}
+        >
+          {testingBubble ? "发送中…" : "测试文字气泡"}
+        </Button>
+        <p className="text-xs text-muted-foreground">
+          在桌面伴侣角色上方显示一条测试气泡（需伴侣窗口已显示）
+        </p>
+        {testError ? <p className="text-xs text-destructive">{testError}</p> : null}
+      </div>
 
       <Card className="gap-0 border bg-muted/30 py-0 shadow-none">
         <CardContent className="flex flex-col gap-1 px-4 py-3 text-xs text-muted-foreground">

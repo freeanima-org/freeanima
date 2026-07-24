@@ -4,22 +4,24 @@ import { TextBubbleOverlay } from "@freeanima/features/companion/ui/spa/componen
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 import {
   enterPatrolMode,
-  moveCompanionStage,
+  setCharacterScreenPosition,
   recordInteraction,
   syncCompanionWindowPosition,
 } from "@freeanima/features/companion/ui/spa/stores/character.ts";
 import { getVrmBackend } from "@freeanima/features/companion/ui/spa/renderer/VrmBackend.ts";
 import { companionDebug } from "@freeanima/features/companion/ui/spa/lib/companion-debug.ts";
-import { isCompanionOverlay } from "@freeanima/features/companion/ui/spa/lib/portal-shell.ts";
-import {
-  COMPANION_WINDOW_HEIGHT,
-  COMPANION_WINDOW_WIDTH,
-} from "@freeanima/features/companion/ui/spa/lib/window-metrics.ts";
 
 const DRAG_THRESHOLD_PX = 8;
 const DOUBLE_CLICK_MS = 400;
 const DOUBLE_CLICK_DIST_PX = 16;
 const COMPANION_STAGE_ID = "companion-stage";
+
+function readCharacterOrigin(): { x: number; y: number } {
+  const backend = useCompanionStore.getState().backendRef.current;
+  const pos = backend?.getScreenPosition?.();
+  if (pos) return pos;
+  return { x: 0, y: 0 };
+}
 
 type Props = {
   modelPath: string;
@@ -49,13 +51,6 @@ export function CharacterViewport({
     return !hitTestFn || hitTestFn(clientX, clientY);
   };
 
-  const readStageOrigin = (): { x: number; y: number } => {
-    const el = document.getElementById(COMPANION_STAGE_ID);
-    if (!el) return { x: 0, y: 0 };
-    const rect = el.getBoundingClientRect();
-    return { x: rect.left, y: rect.top };
-  };
-
   const isDoubleClick = (clientX: number, clientY: number): boolean => {
     const last = lastClickRef.current;
     const now = performance.now();
@@ -72,10 +67,14 @@ export function CharacterViewport({
       companionDebug("pointerdown 忽略", { button: event.button, characterReady });
       return;
     }
+    // 全屏容器：仅在角色（或后续拖拽中）上开始交互
+    if (!onCharacterHit(event.clientX, event.clientY)) {
+      return;
+    }
     useCompanionStore.getState().setPointerActive(true);
     recordInteraction();
     draggingRef.current = false;
-    const origin = readStageOrigin();
+    const origin = readCharacterOrigin();
     pointerDownRef.current = {
       clientX: event.clientX,
       clientY: event.clientY,
@@ -95,8 +94,7 @@ export function CharacterViewport({
       draggingRef.current = true;
     }
 
-    // 全屏 overlay / 浏览器：一律移动舞台 CSS 坐标（避免 movementX×DPI 半距）
-    moveCompanionStage(
+    setCharacterScreenPosition(
       down.stageX + (event.clientX - down.clientX),
       down.stageY + (event.clientY - down.clientY),
     );
@@ -167,25 +165,22 @@ export function CharacterViewport({
     }
   };
 
-  const webMode = !isCompanionOverlay();
-
   return (
     <div
       id={COMPANION_STAGE_ID}
-      className={webMode ? "companion-stage-web" : "companion-stage"}
-      style={{ width: COMPANION_WINDOW_WIDTH, height: COMPANION_WINDOW_HEIGHT }}
+      className="companion-stage"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      <TextBubbleOverlay />
       <VrmCanvas
         modelPath={modelPath}
         configRevision={configRevision}
         {...(onModelLoaded !== undefined ? { onModelLoaded } : {})}
         {...(onModelError !== undefined ? { onModelError } : {})}
       />
+      <TextBubbleOverlay />
     </div>
   );
 }

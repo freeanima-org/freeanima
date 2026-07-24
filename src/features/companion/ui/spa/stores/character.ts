@@ -6,8 +6,8 @@ import {
   clampPatrolPosition,
   patrolBoundsForHorizontal,
   readScreenWorkArea,
-  COMPANION_WINDOW_HEIGHT,
-  COMPANION_WINDOW_WIDTH,
+  CHARACTER_FOOTPRINT_HEIGHT,
+  CHARACTER_FOOTPRINT_WIDTH,
   type PatrolBounds,
   type ScreenPoint,
   type ScreenRect,
@@ -55,8 +55,6 @@ let patrolPathRefresh: Promise<ScreenPoint[]> | null = null;
 let startupWalkPending = true;
 let introWalkActive = false;
 
-const COMPANION_STAGE_ID = "companion-stage";
-
 function getBackend() {
   return useCompanionStore.getState().backendRef.current;
 }
@@ -65,22 +63,14 @@ function isTraveling(): boolean {
   return useCharacterStore.getState().patrolling || introWalkActive;
 }
 
-function companionStageElement(): HTMLElement | null {
-  return document.getElementById(COMPANION_STAGE_ID);
-}
-
 async function syncWindowPositionFromShell(): Promise<ScreenPoint> {
-  // 全屏 overlay：角色舞台在窗内定位，不再读 OS 窗坐标
   return readCurrentPositionSync();
 }
 
 function readCurrentPositionSync(): ScreenPoint {
   if (currentPosition) return currentPosition;
-  const el = companionStageElement();
-  if (el) {
-    const rect = el.getBoundingClientRect();
-    return { x: Math.round(rect.left), y: Math.round(rect.top) };
-  }
+  const fromBackend = getBackend()?.getScreenPosition?.();
+  if (fromBackend) return fromBackend;
   return { x: 0, y: 0 };
 }
 
@@ -88,23 +78,28 @@ function defaultWebCompanionPosition(): ScreenPoint {
   return patrolPoints[0] ?? { x: 0, y: 0 };
 }
 
-export function moveCompanionStage(x: number, y: number): void {
-  const el = companionStageElement();
-  if (!el) return;
+function footprintSize(): { width: number; height: number } {
+  return { width: CHARACTER_FOOTPRINT_WIDTH, height: CHARACTER_FOOTPRINT_HEIGHT };
+}
+
+/** 设置角色 footprint 左上角（窗内 CSS）；全屏 canvas 内屏坐标，不再移 DOM 舞台 */
+export function setCharacterScreenPosition(x: number, y: number): void {
   const maxX = Math.max(
     0,
-    (typeof window !== "undefined" ? window.innerWidth : 0) - COMPANION_WINDOW_WIDTH,
+    (typeof window !== "undefined" ? window.innerWidth : 0) - CHARACTER_FOOTPRINT_WIDTH,
   );
   const maxY = Math.max(
     0,
-    (typeof window !== "undefined" ? window.innerHeight : 0) - COMPANION_WINDOW_HEIGHT,
+    (typeof window !== "undefined" ? window.innerHeight : 0) - CHARACTER_FOOTPRINT_HEIGHT,
   );
   const cx = Math.round(Math.min(maxX, Math.max(0, x)));
   const cy = Math.round(Math.min(maxY, Math.max(0, y)));
-  el.style.left = `${cx}px`;
-  el.style.top = `${cy}px`;
   currentPosition = { x: cx, y: cy };
+  getBackend()?.setScreenPosition?.(cx, cy);
 }
+
+/** @deprecated 使用 setCharacterScreenPosition */
+export const moveCompanionStage = setCharacterScreenPosition;
 
 async function readPatrolScreenAndWindow(): Promise<{
   screen: ScreenRect;
@@ -124,7 +119,7 @@ async function readPatrolScreenAndWindow(): Promise<{
   }
   return {
     screen: readScreenWorkArea(),
-    window: { width: COMPANION_WINDOW_WIDTH, height: COMPANION_WINDOW_HEIGHT },
+    window: footprintSize(),
   };
 }
 
@@ -162,7 +157,7 @@ function nextPatrolPoint(): ScreenPoint {
 
 function applyPosition(point: ScreenPoint): void {
   const clamped = clampPatrolPosition(point, patrolBounds);
-  moveCompanionStage(clamped.x, clamped.y);
+  setCharacterScreenPosition(clamped.x, clamped.y);
   currentPosition = clamped;
 }
 
@@ -328,7 +323,7 @@ function tickPatrolTimer(): void {
 
 export function syncCompanionStagePosition(): void {
   const point = currentPosition ?? defaultWebCompanionPosition();
-  moveCompanionStage(point.x, point.y);
+  setCharacterScreenPosition(point.x, point.y);
 }
 
 export function onCharacterModelReady(): void {
@@ -349,10 +344,7 @@ async function readStartupSpawnPoint(): Promise<ScreenPoint> {
       { width: bounds.windowWidth, height: bounds.windowHeight },
     );
   }
-  return buildWorkAreaCenter(readScreenWorkArea(), {
-    width: COMPANION_WINDOW_WIDTH,
-    height: COMPANION_WINDOW_HEIGHT,
-  });
+  return buildWorkAreaCenter(readScreenWorkArea(), footprintSize());
 }
 
 async function runStartupWalkToHome(): Promise<void> {
@@ -390,12 +382,13 @@ export function recordInteraction(): void {
 }
 
 export async function syncCompanionWindowPosition(): Promise<void> {
-  // 兼容旧名：拖拽结束后把 currentPosition 与舞台 DOM 对齐
-  const el = companionStageElement();
-  if (el) {
-    const rect = el.getBoundingClientRect();
-    currentPosition = { x: Math.round(rect.left), y: Math.round(rect.top) };
+  const fromBackend = getBackend()?.getScreenPosition?.();
+  if (fromBackend) {
+    currentPosition = fromBackend;
+    return;
   }
+  if (currentPosition) return;
+  currentPosition = { x: 0, y: 0 };
 }
 
 export const useCharacterStore = create<CharacterState>((set) => ({

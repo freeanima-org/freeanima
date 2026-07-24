@@ -16,7 +16,6 @@ import {
   setClickThrough,
   setPointerActive,
 } from "@freeanima/features/companion/ui/spa/lib/portal-shell.ts";
-import { companionDebug } from "@freeanima/features/companion/ui/spa/lib/companion-debug.ts";
 import { useRef } from "react";
 import {
   isTauriMobileUserAgent,
@@ -54,24 +53,21 @@ function ClickThroughManager() {
     void setClickThrough(false);
 
     void listenCursorPosition((pos) => {
-      const onCharacter = hitTestFn ? hitTestFn(pos.x, pos.y) : false;
-      const onBubble = pointInElement(
-        document.querySelector(".companion-text-bubble"),
-        pos.x,
-        pos.y,
-      );
-      const onStartup = pointInElement(document.querySelector(".startup-panel"), pos.x, pos.y);
-      const onInteractive = onCharacter || onBubble || onStartup;
-      const shouldIgnore = pointerActive ? false : !onInteractive;
+      // 拖拽中不跑 hitTest：pointerActive 时整窗已可点，避免每 50ms 扫 AABB
+      let onInteractive = pointerActive;
+      if (!pointerActive) {
+        const onCharacter = hitTestFn ? hitTestFn(pos.x, pos.y) : false;
+        const bubbleEl = document.querySelector(".companion-text-bubble");
+        const onBubble =
+          bubbleEl instanceof HTMLElement &&
+          bubbleEl.style.visibility !== "hidden" &&
+          pointInElement(bubbleEl, pos.x, pos.y);
+        const onStartup = pointInElement(document.querySelector(".startup-panel"), pos.x, pos.y);
+        onInteractive = onCharacter || onBubble || onStartup;
+      }
+      const shouldIgnore = !onInteractive;
       if (shouldIgnore !== ignoringRef.current) {
         ignoringRef.current = shouldIgnore;
-        companionDebug("点击穿透", {
-          ignore: shouldIgnore,
-          x: Math.round(pos.x),
-          y: Math.round(pos.y),
-          onCharacter,
-          onBubble,
-        });
         void setClickThrough(shouldIgnore);
       }
     }).then((off) => {

@@ -57,8 +57,8 @@ The content pack lives in [`src/features/companion/`](../../src/features/compani
 - VRM avatar rendering (Three.js + `@pixiv/three-vrm`); VRM 1.0 and 0.x auto orientation correction
 - **Motion slots**: five slots — `idle`, `rest`, `walk`, `climb`, `in_place`; each slot binds 0..n VRMA clips; play by id or random; empty slot = no animation
 - **Speech bubble**: one-way text queue; user click advances; no auto-dismiss; pushed by Habitat Agent via companion `bubble` tool
-- Transparent always-on-top **work-area fullscreen** overlay; character stage 160×260 positioned inside; avatar/bubble clickable, empty area click-through
-- **Local interaction**: drag moves the stage (not the OS window); click body to play random motion from `in_place` slot
+- Transparent always-on-top **work-area fullscreen** overlay; **fullscreen WebGL canvas**; character placed by in-window screen coordinates (footprint 160×260 for standing scale / patrol margins); avatar/bubble clickable, empty area click-through
+- **Local interaction**: drag moves the character screen position (not the OS window); click body to play random motion from `in_place` slot
 - **Patrol** (Settings → Behavior tab): idle patrol, double-click patrol, corner pause, patrol speed, return-to-start on launch, etc.
 - System tray: show/hide companion, **Settings…** (open settings window), quit
 - Settings tabs: **General** / **Behavior** / **Models** / **Motion slots** / **Motion library**

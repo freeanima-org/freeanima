@@ -38,6 +38,7 @@ export const companionDesktopExport: FrontendDesktopExport = {
       {
         id: "overlay",
         kind: "overlay",
+        // 元数据占位：运行时由壳 fit 为工作区全屏；数值为角色 footprint
         width: COMPANION_WINDOW_WIDTH,
         height: COMPANION_WINDOW_HEIGHT,
         transparent: true,

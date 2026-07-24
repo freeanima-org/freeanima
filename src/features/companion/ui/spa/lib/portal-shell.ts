@@ -111,6 +111,16 @@ export async function listenServerError(handler: (message: string) => void): Pro
   return api.listenServerError(handler);
 }
 
+export async function enqueueCompanionBubble(text: string): Promise<void> {
+  await shell()?.enqueueCompanionBubble?.(text);
+}
+
+export function listenCompanionBubble(handler: (text: string) => void): () => void {
+  const api = shell();
+  if (!api?.listenCompanionBubble) return () => {};
+  return api.listenCompanionBubble(handler);
+}
+
 export function isSettingsRoute(): boolean {
   return isSettingsView();
 }

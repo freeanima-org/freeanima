@@ -4,7 +4,12 @@ import {
   type CompanionRemoteToolsStatus,
   type RemoteToolsHostHandle,
 } from "../lib/remote-tools-host.ts";
-import { setRuntimeBubbleListener, setRuntimePlayHandler } from "../lib/runtime-local.ts";
+import {
+  enqueueBubble,
+  setRuntimeBubbleListener,
+  setRuntimePlayHandler,
+} from "../lib/runtime-local.ts";
+import { listenCompanionBubble } from "../lib/portal-shell.ts";
 import { useCompanionStore } from "../stores/companion.ts";
 import type { MotionSlotId } from "@freeanima/features/companion/shared/companion-schema.ts";
 
@@ -44,10 +49,18 @@ export function useRemoteToolsHost(enabled: boolean): void {
     };
 
     start();
-    const unsub = window.portalShell?.listenConfigChanged?.(start);
+    const unsubConfig = window.portalShell?.listenConfigChanged?.(start);
+    const unsubBubble = listenCompanionBubble((text) => {
+      try {
+        enqueueBubble(text);
+      } catch {
+        /* 空文本等由 enqueueBubble 抛出，测试按钮已 trim */
+      }
+    });
 
     return () => {
-      unsub?.();
+      unsubConfig?.();
+      unsubBubble();
       handleRef.current?.stop();
       handleRef.current = null;
       setRuntimeBubbleListener(null);

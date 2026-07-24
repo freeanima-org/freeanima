@@ -25,7 +25,7 @@ CI / 本地 release profile 优先级：**构建速度 > 体积 > 运行速度**
 ## Companion（桌面）
 
 - 主窗：app-ui（Chat / Settings）。
-- overlay：**工作区全屏**透明 always-on-top；角色舞台 160×260 在窗内绝对定位；局部 click-through（角色/气泡）；巡逻/拖拽移动舞台而非 OS 窗。
+- overlay：**工作区全屏**透明 always-on-top；**全屏 WebGL**；角色以窗内屏坐标放置（footprint 160×260 用于站立尺度/巡逻边距）；局部 click-through（角色 mesh / 气泡）；巡逻/拖拽移动角色屏坐标而非 OS 窗。
 - overlay SPA 打入 `frontendDist` 的 `ui/companion/`，打包态用 `WebviewUrl::App`（与主窗同协议）；**禁止** `file://` 加载 resources（Windows 空窗 / IPC 失败）。
 - Dev：`COMPANION_OVERLAY_URL` → Vite `:4176`（`just dev tauri`）。
 - overlay 自持 Habitat RPC + `remote_tools.attach`；**无** localhost Node HTTP host。

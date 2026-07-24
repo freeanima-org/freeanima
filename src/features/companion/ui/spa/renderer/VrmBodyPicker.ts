@@ -64,18 +64,44 @@ export class VrmBodyPicker {
   private raycaster = new THREE.Raycaster();
   private ndc = new THREE.Vector2();
 
+  private setRayFromScreen(
+    camera: THREE.Camera,
+    canvas: HTMLCanvasElement,
+    screenX: number,
+    screenY: number,
+    canvasRect?: DOMRect,
+  ): boolean {
+    const rect = canvasRect ?? canvas.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return false;
+    this.ndc.x = ((screenX - rect.left) / rect.width) * 2 - 1;
+    this.ndc.y = -((screenY - rect.top) / rect.height) * 2 + 1;
+    this.raycaster.setFromCamera(this.ndc, camera);
+    return true;
+  }
+
+  /** 屏幕坐标是否命中角色 mesh（供 click-through / 点击共用） */
+  hitTest(
+    vrm: VRM,
+    camera: THREE.Camera,
+    canvas: HTMLCanvasElement,
+    screenX: number,
+    screenY: number,
+    canvasRect?: DOMRect,
+  ): boolean {
+    if (!this.setRayFromScreen(camera, canvas, screenX, screenY, canvasRect)) return false;
+    // 只要有交点即可；阈值 1 时 three 仍会扫完全部 mesh，粗滤在 Backend 侧
+    return this.raycaster.intersectObject(vrm.scene, true).length > 0;
+  }
+
   pickBodyZone(
     vrm: VRM,
     camera: THREE.Camera,
     canvas: HTMLCanvasElement,
     screenX: number,
     screenY: number,
+    canvasRect?: DOMRect,
   ): BodyZone | null {
-    const rect = canvas.getBoundingClientRect();
-    this.ndc.x = ((screenX - rect.left) / rect.width) * 2 - 1;
-    this.ndc.y = -((screenY - rect.top) / rect.height) * 2 + 1;
-
-    this.raycaster.setFromCamera(this.ndc, camera);
+    if (!this.setRayFromScreen(camera, canvas, screenX, screenY, canvasRect)) return null;
     const hits = this.raycaster.intersectObject(vrm.scene, true);
     if (hits.length === 0) return null;
 

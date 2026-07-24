@@ -17,6 +17,7 @@ use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 
 #[cfg(desktop)]
+/// 角色 footprint（逻辑 px）；OS overlay 窗为工作区全屏，此值仅作巡逻边距 / 初始占位
 const COMPANION_W: f64 = 160.0;
 #[cfg(desktop)]
 const COMPANION_H: f64 = 260.0;
@@ -262,7 +263,7 @@ fn ensure_companion(app: &AppHandle) -> Result<(), String> {
     return fit_companion_to_work_area(app);
   }
   let url = companion_url(app);
-  // 工作区全屏透明 overlay；角色 160×260 在 SPA 内绝对定位（气泡可溢出）
+  // 工作区全屏透明 overlay；SPA 内全屏 WebGL，角色以屏内 footprint 坐标放置
   let mut builder = WebviewWindowBuilder::new(app, "companion", url)
     .title("")
     .inner_size(COMPANION_W, COMPANION_H)
@@ -395,7 +396,7 @@ fn get_patrol_screen(app: AppHandle) -> Result<PatrolScreenInfo, String> {
   let scale = win.scale_factor().map_err(|e| e.to_string())?;
   let scale = if scale > 0.0 { scale } else { 1.0 };
   let size = win.inner_size().map_err(|e| e.to_string())?;
-  // overlay 已铺满工作区：巡逻坐标系 = 窗内 CSS 像素；window_* = 角色舞台尺寸
+  // overlay 已铺满工作区：巡逻坐标系 = 窗内 CSS 像素；window_* = 角色 footprint
   Ok(PatrolScreenInfo {
     avail_left: 0,
     avail_top: 0,

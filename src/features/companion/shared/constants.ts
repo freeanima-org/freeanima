@@ -21,9 +21,16 @@ export const COMPANION_PORT_START = 4176;
 export const COMPANION_PORT_ATTEMPTS = 10;
 export const COMPANION_PORT_MAX = COMPANION_PORT_START + COMPANION_PORT_ATTEMPTS - 1;
 
-/** companion 角色舞台尺寸（逻辑 px）；overlay OS 窗为工作区全屏 */
-export const COMPANION_WINDOW_WIDTH = 160;
-export const COMPANION_WINDOW_HEIGHT = 260;
+/**
+ * 角色显示 footprint（逻辑 px）：站立目标屏幕身高 / 巡逻边距。
+ * Overlay OS 窗为工作区全屏；WebGL 亦全屏，角色以屏内坐标放置。
+ */
+export const CHARACTER_FOOTPRINT_WIDTH = 160;
+export const CHARACTER_FOOTPRINT_HEIGHT = 260;
+
+/** @deprecated 使用 CHARACTER_FOOTPRINT_*；保留别名以免外部引用断裂 */
+export const COMPANION_WINDOW_WIDTH = CHARACTER_FOOTPRINT_WIDTH;
+export const COMPANION_WINDOW_HEIGHT = CHARACTER_FOOTPRINT_HEIGHT;
 
 /** companion 设置窗口尺寸（逻辑 px） */
 export const SETTINGS_WINDOW_WIDTH = 840;
