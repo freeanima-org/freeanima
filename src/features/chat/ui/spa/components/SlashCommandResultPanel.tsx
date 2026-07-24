@@ -1,4 +1,4 @@
-import { Button } from "@freeanima/frontend/ui-kit";
+import { Button } from "@freeanima/ui-kit";
 import { m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 
 export type SlashCommandResultPanelProps = {

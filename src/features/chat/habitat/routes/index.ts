@@ -1,16 +1,16 @@
 import { randomUUID } from "node:crypto";
 
-import { omitUndefined } from "@freeanima/core/util";
-import { resolveNotificationRecipients } from "@freeanima/core/config";
+import { omitUndefined } from "@freeanima/host/core/util";
+import { resolveNotificationRecipients } from "@freeanima/host/core/config";
 import {
   countUnreadConversations,
   getConversationLastReadPos,
   getLastMessageRole,
   getMaxMessagePos,
   markConversationRead,
-} from "@freeanima/core/db/pg/conversation";
-import { getConversationUpdatedAt } from "@freeanima/core/db/pg/conversation/repos/conversation-repo.ts";
-import type { RemoteToolsServerDeps } from "@freeanima/platform/remote-tools/types";
+} from "@freeanima/host/core/db/pg/conversation";
+import { getConversationUpdatedAt } from "@freeanima/host/core/db/pg/conversation/repos/conversation-repo.ts";
+import type { RemoteToolsServerDeps } from "@freeanima/host/capabilities/outpost/transport/types";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 import type { RpcRouterOutputs } from "@freeanima/shared/rpc-contract";
 import { type RemoteToolsRequestContext } from "../../protocol/index.ts";
@@ -41,15 +41,15 @@ function resolveUserSubjectId(deps: ChatHubDeps): string {
 }
 
 async function loadServiceSessions() {
-  return import("@freeanima/platform/runtime/service-conversations");
+  return import("@freeanima/host/platform/service/service-conversations");
 }
 
 async function loadServiceAcpDock() {
-  return import("@freeanima/platform/runtime/service-acp-dock");
+  return import("@freeanima/host/platform/service/service-acp-dock");
 }
 
 async function loadServiceStatus() {
-  return import("@freeanima/platform/runtime/service-status");
+  return import("@freeanima/host/platform/service/service-status");
 }
 
 export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {

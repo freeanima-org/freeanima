@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
-import { ToolSetRegistry } from "@freeanima/core/tool";
+import { ToolSetRegistry } from "@freeanima/host/core/tool";
 
 const ensureAgentVaultConfigMock = mock(async () => ({}));
 const sealAgentVaultItemMock = mock(
@@ -60,7 +60,7 @@ const getVaultItemMock = mock(async () => ({
 
 const resolveVaultToolWorldMock = mock(async () => 7);
 
-mock.module("@freeanima/platform/connectors/vault", () => ({
+mock.module("@freeanima/host/capabilities/connectors/vault", () => ({
   ensureAgentVaultConfig: ensureAgentVaultConfigMock,
   sealAgentVaultItem: sealAgentVaultItemMock,
   openAgentVaultSecrets: openAgentVaultSecretsMock,

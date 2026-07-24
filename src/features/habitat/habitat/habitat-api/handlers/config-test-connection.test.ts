@@ -11,9 +11,9 @@ mock.module("./config-test-gateway-probes.ts", () => ({
   },
 }));
 
-import { Config } from "@freeanima/core/config";
-import type { AppRuntimeContext } from "@freeanima/platform/ports/app-runtime-context";
-import { sanitizeConfigForApi } from "@freeanima/platform/config";
+import { Config } from "@freeanima/host/core/config";
+import type { AppRuntimeContext } from "@freeanima/host/platform/ports/app-runtime-context";
+import { sanitizeConfigForApi } from "@freeanima/host/platform/config";
 
 import { bindHabitatRuntimeContext } from "./runtime.ts";
 import { pickConfigString, testConfigConnection } from "./config-test-connection.ts";

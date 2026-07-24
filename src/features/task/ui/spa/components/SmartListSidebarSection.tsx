@@ -1,6 +1,6 @@
-import { Button } from "@freeanima/frontend/ui-kit";
-import { ContextMenu, EntityIdLabel } from "@freeanima/frontend/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+import { Button } from "@freeanima/ui-kit";
+import { ContextMenu, EntityIdLabel } from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { useRef, type ReactElement, type TouchEvent } from "react";
 
 import type { SmartListRow } from "../lib/api.ts";

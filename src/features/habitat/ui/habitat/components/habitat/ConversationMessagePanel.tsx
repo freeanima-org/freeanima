@@ -1,7 +1,7 @@
 import { marked } from "marked";
 import { useMemo } from "react";
-import type { DisplayItem } from "@freeanima/platform/ports/schemas/display";
-import { Button, Spinner } from "@freeanima/frontend/ui-kit";
+import type { DisplayItem } from "@freeanima/shared/rpc-contract/frames/display.ts";
+import { Button, Spinner } from "@freeanima/ui-kit";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { ToolBlockBubble } from "./ToolBlockBubble.tsx";
 

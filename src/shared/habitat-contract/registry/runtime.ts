@@ -87,7 +87,7 @@ export function resetHabitatMethodRegistryForTests(): void {
   installed = false;
 }
 
-/** 编译期类型占位；完整 union 见 @freeanima/platform/habitat/habitat-router */
+/** 编译期类型占位；完整 union 见 @freeanima/host/platform/habitat/habitat-router */
 export type RuntimeHabitatMethod = string;
 
 export type RuntimeHabitatMethodInputs = Record<string, unknown>;

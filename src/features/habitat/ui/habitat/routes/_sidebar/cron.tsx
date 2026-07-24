@@ -12,8 +12,8 @@ import {
   TableBody,
   TableCell,
   TableRow,
-} from "@freeanima/frontend/ui-kit";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+} from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import {
   getCronJobs,
   pauseCronJob,

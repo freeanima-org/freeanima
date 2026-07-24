@@ -28,7 +28,7 @@ collect markers (banded)
   → changed? notify user+agent (source_ref dedupe) → save baseline
 ```
 
-Implementation: `src/platform/runtime/env-health/`.
+Implementation: `src/host/platform/service/env-health/`.
 
 **Storage:** baseline is **KV** (no TTL) via `connectors/redis` — Redis when configured; otherwise `~/.anima/env-health-baseline.json`. On first Redis hit after an old file exists, migrate once and delete the file. Do not confuse with **Cache** (`anima:cache:*`, TTL) used by 用户活跃统计.
 
@@ -51,7 +51,7 @@ Registered in `register-prompt-hooks.ts`.
 
 ### 用户活跃统计 panel
 
-User-side dialogue density only (新开 / 更新会话、用户消息 — not agent/tool traffic). CST calendar windows: 今天 / 昨天 / 前天 / 近 7·30·90 天 / 近 1 年. Excludes `debug` and `cron`. Refreshes with system-prompt day boundary; same CST day reuses Cache (`anima:cache:user-activity-stats`). Implementation: `src/platform/runtime/user-activity-stats/`.
+User-side dialogue density only (新开 / 更新会话、用户消息 — not agent/tool traffic). CST calendar windows: 今天 / 昨天 / 前天 / 近 7·30·90 天 / 近 1 年. Excludes `debug` and `cron`. Refreshes with system-prompt day boundary; same CST day reuses Cache (`anima:cache:user-activity-stats`). Implementation: `src/host/platform/service/user-activity-stats/`.
 
 ## Notifications
 

@@ -1,6 +1,6 @@
-import { parseShellClientConfig } from "@freeanima/frontend/portal-sdk/shell-client-config";
-import type { SettingsStorageScope } from "@freeanima/frontend/portal-sdk/settings";
-import { HABITAT_SETTINGS_SCOPE } from "@freeanima/frontend/portal-sdk/settings";
+import { parseShellClientConfig } from "@freeanima/client/portal-sdk/shell-client-config";
+import type { SettingsStorageScope } from "@freeanima/client/portal-sdk/settings";
+import { HABITAT_SETTINGS_SCOPE } from "@freeanima/client/portal-sdk/settings";
 
 import { createWebScopedBackend } from "../settings-local-backend.ts";
 import {

@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeEach, expect, it } from "bun:test";
 
-import { getEntity } from "@freeanima/core/db/pg/entity";
+import { getEntity } from "@freeanima/host/core/db/pg/entity";
 import {
   appendDiaryEntry,
   createDiaryEntry,

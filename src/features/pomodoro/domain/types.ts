@@ -5,7 +5,7 @@ import type {
   PomodoroPhase,
   PomodoroConfigBody,
   PomodoroSessionBody,
-} from "@freeanima/core/db/schema/entity";
+} from "@freeanima/host/core/db/schema/entity";
 
 export type PomodoroSubjectKind = z.infer<typeof notificationRecipientKindSchema>;
 

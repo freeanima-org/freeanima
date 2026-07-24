@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { DIARY_ENTRY_COMPONENT, TASK_ITEM_COMPONENT } from "@freeanima/core/db/schema";
+import { DIARY_ENTRY_COMPONENT, TASK_ITEM_COMPONENT } from "@freeanima/host/core/db/schema";
 
 import { moveNavIndex, navTargetCount } from "./TagPicker.tsx";
 

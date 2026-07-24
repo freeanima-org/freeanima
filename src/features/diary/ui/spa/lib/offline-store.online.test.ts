@@ -1,12 +1,18 @@
-import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
-const realGate = await import("@freeanima/frontend/portal-sdk/habitat-fetch-gate");
-const gateOriginal = {
-  isHabitatFetchAvailable: realGate.isHabitatFetchAvailable,
-  isNetworkOnline: realGate.isNetworkOnline,
-  isHabitatConnected: realGate.isHabitatConnected,
-  shellWritesDisabledFromState: realGate.shellWritesDisabledFromState,
-};
+import * as habitatFetchGate from "@freeanima/client/portal-sdk/habitat-fetch-gate";
+import * as habitatTypedClient from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
+import {
+  listOutboxOps,
+  resolveOutboxScope,
+  setOfflineOutboxBackendForTests,
+} from "@freeanima/client/portal-sdk/offline-outbox";
+import { setSatelliteOfflineCacheBackendForTests } from "@freeanima/client/portal-sdk/offline-cache";
+import { resetOfflineModuleRegistryForTests } from "@freeanima/client/portal-sdk/offline-module-registry";
+import { resetTempIdAllocatorForTests } from "@freeanima/client/portal-sdk/offline-temp-id";
+import { resetTypedHabitatClientForTests } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
+
+import { offlineCreateDiaryEntry } from "./offline-store.ts";
 
 const hubCall = mock(async (method: string, _payload: unknown) => {
   if (method === "diary.create") {
@@ -26,36 +32,23 @@ const hubCall = mock(async (method: string, _payload: unknown) => {
   throw new Error(`unexpected ${method}`);
 });
 
-mock.module("@freeanima/frontend/portal-sdk/habitat-fetch-gate", () => ({
-  ...gateOriginal,
-  isHabitatFetchAvailable: () => true,
-}));
-
-mock.module("@freeanima/platform/habitat/client.ts", () => ({
-  getTypedHabitatClient: () => ({ call: hubCall }),
-}));
-
-afterAll(() => {
-  mock.module("@freeanima/frontend/portal-sdk/habitat-fetch-gate", () => gateOriginal);
-});
-
-const { listOutboxOps, resolveOutboxScope, setOfflineOutboxBackendForTests } =
-  await import("@freeanima/frontend/portal-sdk/offline-outbox");
-const { setSatelliteOfflineCacheBackendForTests } =
-  await import("@freeanima/frontend/portal-sdk/offline-cache");
-const { resetOfflineModuleRegistryForTests } =
-  await import("@freeanima/frontend/portal-sdk/offline-module-registry");
-const { resetTempIdAllocatorForTests } =
-  await import("@freeanima/frontend/portal-sdk/offline-temp-id");
-const { offlineCreateDiaryEntry } = await import("./offline-store.ts");
-
 describe("diary online write-through", () => {
   beforeEach(() => {
     setOfflineOutboxBackendForTests(new Map());
     setSatelliteOfflineCacheBackendForTests(new Map());
     resetOfflineModuleRegistryForTests();
     resetTempIdAllocatorForTests();
+    resetTypedHabitatClientForTests();
     hubCall.mockClear();
+    spyOn(habitatFetchGate, "isHabitatFetchAvailable").mockReturnValue(true);
+    spyOn(habitatTypedClient, "getTypedHabitatClient").mockReturnValue({
+      call: hubCall,
+    } as never);
+  });
+
+  afterEach(() => {
+    mock.restore();
+    resetTypedHabitatClientForTests();
   });
 
   it("Habitat 可用时 create 直连且不入 outbox", async () => {

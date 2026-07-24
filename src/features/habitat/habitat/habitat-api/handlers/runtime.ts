@@ -1,5 +1,5 @@
-import type { AppRuntimeContext } from "@freeanima/platform/ports/app-runtime-context";
-import { getAppRuntime as defaultGetAppRuntime } from "@freeanima/platform/ports";
+import type { AppRuntimeContext } from "@freeanima/host/platform/ports/app-runtime-context";
+import { getAppRuntime as defaultGetAppRuntime } from "@freeanima/host/platform/ports";
 
 type AppRuntimeContextAccessor = () => AppRuntimeContext;
 

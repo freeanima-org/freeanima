@@ -7,30 +7,30 @@ import {
   setDbForTest,
   type Db,
   type SqlClient,
-} from "@freeanima/core/db/pg";
-import { createEngine } from "@freeanima/runtime";
+} from "@freeanima/host/core/db/pg";
+import { createEngine } from "@freeanima/host/engine";
 import {
   initLlmRuntime,
   registerLlmStackConfigurator,
   resetLlmRuntimeForTests,
-} from "@freeanima/core/llm";
-import { bindOpenAiCompatibleLlm } from "@freeanima/capabilities/llm-openai";
+} from "@freeanima/host/core/llm";
+import { bindOpenAiCompatibleLlm } from "@freeanima/host/capabilities/llm-openai";
 import {
   createConversationService,
   type ConversationService,
-} from "@freeanima/runtime/conversation";
-import { appendMessage, upsertConversationMeta } from "@freeanima/core/db/pg/conversation";
-import { FileConfig } from "@freeanima/platform/config/file-config.ts";
-import { type Config } from "@freeanima/platform/config";
-import { bindActiveRuntimeConfig } from "@freeanima/core/config";
-import { bindResolvedWorldContext } from "@freeanima/core/config/world-context";
-import { ensureWorldSubjects } from "@freeanima/core/db/pg/entity/subject-world";
-import { createTestLogger } from "@freeanima/kernel/logging/testing";
-import type { StoredMessage, ConversationMetaMessage } from "@freeanima/core/db/domain";
-import { relations } from "@freeanima/core/db/schema";
+} from "@freeanima/host/engine/conversation";
+import { appendMessage, upsertConversationMeta } from "@freeanima/host/core/db/pg/conversation";
+import { FileConfig } from "@freeanima/host/platform/config/file-config.ts";
+import { type Config } from "@freeanima/host/platform/config";
+import { bindActiveRuntimeConfig } from "@freeanima/host/core/config";
+import { bindResolvedWorldContext } from "@freeanima/host/core/config/world-context";
+import { ensureWorldSubjects } from "@freeanima/host/core/db/pg/entity/subject-world";
+import { createTestLogger } from "@freeanima/host/kernel/logging/testing";
+import type { StoredMessage, ConversationMetaMessage } from "@freeanima/host/core/db/domain";
+import { relations } from "@freeanima/host/core/db/schema";
 import { drizzle } from "drizzle-orm/bun-sql/postgres";
 import { SQL } from "bun";
-import type { Engine } from "@freeanima/runtime";
+import type { Engine } from "@freeanima/host/engine";
 
 export type PgTestContext = {
   sql: SqlClient;

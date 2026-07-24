@@ -1,5 +1,5 @@
-import type { SubjectKind } from "@freeanima/core/config";
-import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
+import type { SubjectKind } from "@freeanima/host/core/config";
+import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
 
 export function resolveVaultWorldId(subject_kind: SubjectKind): number {
   const ctx = getResolvedWorldContext();

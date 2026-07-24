@@ -3,7 +3,7 @@
  * 源码运行时 embeds 为空、runtimeMeta 为 null；
  * `build:cli:executable` 经 Bun 插件替换为本文件并注入 type: "file" 与 meta 常量。
  */
-import type { ComponentBuildMeta } from "@freeanima/core/config/build-meta.parse";
+import type { ComponentBuildMeta } from "@freeanima/host/core/config/build-meta.parse";
 
 export type StandaloneEmbedFile = {
   kind: "migration" | "web" | "docs";

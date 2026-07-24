@@ -1,6 +1,6 @@
-import type { ToolSetRegistry } from "@freeanima/core/tool";
-import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
-import { omitUndefined } from "@freeanima/core/util";
+import type { ToolSetRegistry } from "@freeanima/host/core/tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/host/core/tool";
+import { omitUndefined } from "@freeanima/host/core/util";
 
 import {
   appendDiaryEntryByDate,

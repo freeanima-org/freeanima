@@ -1,8 +1,4 @@
-import {
-  getParentId,
-  getSiblings,
-  isDescendant,
-} from "@freeanima/frontend/ui-kit/lib/task-list-tree.ts";
+import { getParentId, getSiblings, isDescendant } from "@freeanima/ui-kit/lib/task-list-tree.ts";
 
 import type { TaskListRow } from "./api.ts";
 import { isListRootDndId, parseListDndId } from "./dnd-ids.ts";

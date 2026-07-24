@@ -10,16 +10,16 @@
 
 import { SQL } from "bun";
 
-import type { AnimaConfig } from "@freeanima/core/config/schemas/config.ts";
-import { bindResolvedWorldContext } from "@freeanima/core/config/world-context.ts";
-import { ensureWorldSubjects } from "@freeanima/core/db/pg/entity/subject-world.ts";
+import type { AnimaConfig } from "@freeanima/host/core/config/schemas/config.ts";
+import { bindResolvedWorldContext } from "@freeanima/host/core/config/world-context.ts";
+import { ensureWorldSubjects } from "@freeanima/host/core/db/pg/entity/subject-world.ts";
 import {
   createTaskItem,
   getDefaultTaskList,
   listTaskItems,
   updateTaskItem,
 } from "@freeanima/features/task/domain/index.ts";
-import { initDatabase } from "@freeanima/core/db/pg/index.ts";
+import { initDatabase } from "@freeanima/host/core/db/pg/index.ts";
 
 const MINIMAL_CONFIG = {
   llm: { default_profile: "chat", providers: {}, profiles: {} },
@@ -84,7 +84,7 @@ async function main(): Promise<void> {
   }
 
   const sql = new SQL(url);
-  const { closeDb } = await import("@freeanima/core/db/pg/index.ts");
+  const { closeDb } = await import("@freeanima/host/core/db/pg/index.ts");
   initDatabase({ getDatabaseUrl: () => url });
 
   try {

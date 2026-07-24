@@ -16,18 +16,18 @@
 
 ## Same-package mock exports (prefer in unit tests)
 
-| Tier                       | Packages                                                                                                                         | Usage                                                                                                         |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Tier 1 in-memory adapters  | `@freeanima/kernel/logging/null`、`/memory`、`/testing`；`@freeanima/kernel/eventbus/testing`；`@freeanima/kernel/hooks/testing` | `createNullSink`, `createTestLogger`, `createTestEventBus`, `createTestHookRegistry`                          |
-| Tier 2 singleton injection | `@freeanima/platform/connectors/redis`；`@freeanima/core/db/pg`（`setDbForTest`）                                                | `setXForTest` / `resetXForTest`; `afterEach` must reset；PG 域函数用 `mock.module("@freeanima/core/db/pg/…")` |
-| Tier 3 composite factories | optional `@freeanima/{pkg}/testing`                                                                                              | Tier 1 only, e.g. `createTestLogger`                                                                          |
-| Domain mocks               | `{pkg}/src/test-helpers/`                                                                                                        | when package has no port (e.g. `MockBackend`)                                                                 |
+| Tier                       | Packages                                                                                                                                        | Usage                                                                                                              |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Tier 1 in-memory adapters  | `@freeanima/host/kernel/logging/null`、`/memory`、`/testing`；`@freeanima/host/kernel/eventbus/testing`；`@freeanima/host/kernel/hooks/testing` | `createNullSink`, `createTestLogger`, `createTestEventBus`, `createTestHookRegistry`                               |
+| Tier 2 singleton injection | `@freeanima/host/capabilities/connectors/redis`；`@freeanima/host/core/db/pg`（`setDbForTest`）                                                 | `setXForTest` / `resetXForTest`; `afterEach` must reset；PG 域函数用 `mock.module("@freeanima/host/core/db/pg/…")` |
+| Tier 3 composite factories | optional `@freeanima/{pkg}/testing`                                                                                                             | Tier 1 only, e.g. `createTestLogger`                                                                               |
+| Domain mocks               | `{pkg}/src/test-helpers/`                                                                                                                       | when package has no port (e.g. `MockBackend`)                                                                      |
 
 Unit tests **must not** `import` `tests/helpers/log-isolation.ts` or write `config.yaml`; inject `Config.fromSnapshot()` (or bind package-specific config) and use `createNullSink` / `createMemorySink` for logging.
 
 ## Temp directory cleanup
 
-- Prefer `@freeanima/core/util/temp-dir` helpers: `createTempDir(prefix)` + `removeTempDir(path)`（或 `removeManagedAnimaTmpPath`，用于 `anima-cwd-*` / `anima-exec-*`）。**勿**从 `@freeanima/core/util` 桶导入（桶不含 Node 专用 API，避免浏览器拉取 `node:path`）。
+- Prefer `@freeanima/host/core/util/temp-dir` helpers: `createTempDir(prefix)` + `removeTempDir(path)`（或 `removeManagedAnimaTmpPath`，用于 `anima-cwd-*` / `anima-exec-*`）。**勿**从 `@freeanima/host/core/util` 桶导入（桶不含 Node 专用 API，避免浏览器拉取 `node:path`）。
 - Any `mkdtemp` / `createTempDir` in unit tests **must** pair with `afterEach` / `afterAll` / `try/finally` cleanup via `removeTempDir`.
 - Integration tests **must** use `beginIntegrationCase` + `restoreIntegrationHome`; do not call `beginLogIsolation` alone without teardown. `restoreIntegrationHome` deletes the temp `FREEANIMA_HOME` and conversation `anima-cwd-*` dirs under `/tmp`.
 

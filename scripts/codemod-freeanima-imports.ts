@@ -18,13 +18,13 @@ const PREFIX_REWRITES: [string, string][] = [
   ["@shared/", "@freeanima/features/companion/shared/"],
   ["@task/", "@freeanima/features/task/ui/spa/"],
   // capabilities 复合名（先于 capabilities- 单段）
-  ["@freeanima/capabilities-tools/", "@freeanima/capabilities/tools/"],
-  ["@freeanima/capabilities-satellite/", "@freeanima/capabilities/remote-tools/"],
-  ["@freeanima/capabilities-llm-openai/", "@freeanima/capabilities/llm-openai/"],
-  ["@freeanima/capabilities-mcp-client/", "@freeanima/capabilities/mcp-client/"],
-  ["@freeanima/capabilities-mcp-server/", "@freeanima/capabilities/mcp-server/"],
-  ["@freeanima/capabilities-memory/", "@freeanima/capabilities/memory/"],
-  ["@freeanima/capabilities-acp/", "@freeanima/capabilities/acp/"],
+  ["@freeanima/capabilities-tools/", "@freeanima/host/capabilities/tools/"],
+  ["@freeanima/capabilities-satellite/", "@freeanima/host/capabilities/outpost/"],
+  ["@freeanima/capabilities-llm-openai/", "@freeanima/host/capabilities/llm-openai/"],
+  ["@freeanima/capabilities-mcp-client/", "@freeanima/host/capabilities/mcp-client/"],
+  ["@freeanima/capabilities-mcp-server/", "@freeanima/host/capabilities/mcp-server/"],
+  ["@freeanima/capabilities-memory/", "@freeanima/host/capabilities/memory/"],
+  ["@freeanima/capabilities-acp/", "@freeanima/host/capabilities/acp/"],
   // feature / app / shared 逻辑包
   ["@freeanima/feature-", "@freeanima/features/"],
   ["@freeanima/satellite-companion/", "@freeanima/features/companion/"],
@@ -33,29 +33,29 @@ const PREFIX_REWRITES: [string, string][] = [
   ["@freeanima/app-web/", "@freeanima/app/shell/web/"],
   ["@freeanima/habitat-api/", "@freeanima/features/habitat/habitat/habitat-api/"],
   ["@freeanima/habitat-contract/", "@freeanima/features/habitat/protocol/habitat-contract/"],
-  ["@freeanima/ui-kit/", "@freeanima/frontend/ui-kit/"],
-  ["@freeanima/frontend/app-ui/", "@freeanima/frontend/app-ui/"],
-  ["@freeanima/frontend/portal-sdk/", "@freeanima/frontend/portal-sdk/"],
-  ["@freeanima/platform/commands/", "@freeanima/platform/slash-commands/"],
+  ["@freeanima/ui-kit/", "@freeanima/ui-kit/"],
+  ["@freeanima/client/app-frame/", "@freeanima/client/app-frame/"],
+  ["@freeanima/client/portal-sdk/", "@freeanima/client/portal-sdk/"],
+  ["@freeanima/host/platform/commands/", "@freeanima/host/capabilities/tools/slash-commands/"],
   ["@freeanima/admin-api/", "@freeanima/features/habitat/habitat/habitat-api/"],
   ["@freeanima/admin-contract/", "@freeanima/features/habitat/protocol/habitat-contract/"],
   ["@freeanima/vault-crypto/", "@freeanima/shared/vault-crypto/"],
   // bare imports（精确匹配，无尾斜杠）
-  ["@freeanima/capabilities-tools", "@freeanima/capabilities/tools"],
-  ["@freeanima/capabilities-satellite", "@freeanima/capabilities/remote-tools"],
-  ["@freeanima/capabilities-llm-openai", "@freeanima/capabilities/llm-openai"],
-  ["@freeanima/capabilities-mcp-client", "@freeanima/capabilities/mcp-client"],
-  ["@freeanima/capabilities-mcp-server", "@freeanima/capabilities/mcp-server"],
-  ["@freeanima/capabilities-memory", "@freeanima/capabilities/memory"],
-  ["@freeanima/capabilities-acp", "@freeanima/capabilities/acp"],
-  ["@freeanima/capabilities-identity", "@freeanima/capabilities/identity"],
+  ["@freeanima/capabilities-tools", "@freeanima/host/capabilities/tools"],
+  ["@freeanima/capabilities-satellite", "@freeanima/host/capabilities/outpost"],
+  ["@freeanima/capabilities-llm-openai", "@freeanima/host/capabilities/llm-openai"],
+  ["@freeanima/capabilities-mcp-client", "@freeanima/host/capabilities/mcp-client"],
+  ["@freeanima/capabilities-mcp-server", "@freeanima/host/capabilities/mcp-server"],
+  ["@freeanima/capabilities-memory", "@freeanima/host/capabilities/memory"],
+  ["@freeanima/capabilities-acp", "@freeanima/host/capabilities/acp"],
+  ["@freeanima/capabilities-identity", "@freeanima/host/capabilities/self"],
   ["@freeanima/satellite-companion", "@freeanima/features/companion/lib"],
   ["@freeanima/habitat-api", "@freeanima/features/habitat/habitat/habitat-api"],
   ["@freeanima/habitat-api", "@freeanima/features/habitat/habitat/habitat-api"],
   ["@freeanima/habitat-contract", "@freeanima/features/habitat/protocol/habitat-contract"],
-  ["@freeanima/ui-kit", "@freeanima/frontend/ui-kit"],
-  ["@freeanima/frontend/app-ui", "@freeanima/frontend/app-ui/lib"],
-  ["@freeanima/frontend/portal-sdk", "@freeanima/frontend/portal-sdk"],
+  ["@freeanima/ui-kit", "@freeanima/ui-kit"],
+  ["@freeanima/client/app-frame", "@freeanima/client/app-frame/lib"],
+  ["@freeanima/client/portal-sdk", "@freeanima/client/portal-sdk"],
   ["@freeanima/admin-api", "@freeanima/features/habitat/habitat/habitat-api"],
   ["@freeanima/admin-contract", "@freeanima/features/habitat/protocol/habitat-contract"],
   ["@freeanima/vault-crypto", "@freeanima/shared/vault-crypto"],
@@ -68,12 +68,11 @@ const PREFIX_REWRITES: [string, string][] = [
 
 /** 旧 tsconfig override → 物理路径（前缀替换之后应用） */
 const EXACT_REWRITES: Record<string, string> = {
-  "@freeanima/frontend/ui-kit/ui/use-acp-progress-dock":
-    "@freeanima/frontend/ui-kit/ui/useAcpProgressDock.ts",
-  "@freeanima/frontend/ui-kit/ui/acp-types": "@freeanima/frontend/ui-kit/ui/acp-dock-types.ts",
-  "@freeanima/frontend/ui-kit/ui/acp": "@freeanima/frontend/ui-kit/ui/AcpProgressDock.tsx",
-  "@freeanima/frontend/ui-kit/globals.css": "@freeanima/frontend/ui-kit/styles/globals.css",
-  "@freeanima/frontend/ui-kit/form": "@freeanima/frontend/ui-kit/form/FormFieldset.tsx",
+  "@freeanima/ui-kit/ui/use-acp-progress-dock": "@freeanima/ui-kit/ui/useAcpProgressDock.ts",
+  "@freeanima/ui-kit/ui/acp-types": "@freeanima/ui-kit/ui/acp-dock-types.ts",
+  "@freeanima/ui-kit/ui/acp": "@freeanima/ui-kit/ui/AcpProgressDock.tsx",
+  "@freeanima/ui-kit/globals.css": "@freeanima/ui-kit/styles/globals.css",
+  "@freeanima/ui-kit/form": "@freeanima/ui-kit/form/FormFieldset.tsx",
   "@freeanima/features/companion/settings-section":
     "@freeanima/features/companion/ui/spa/settings/companion-settings-section.ts",
   "@freeanima/features/companion/settings-panel":
@@ -88,16 +87,16 @@ const EXACT_REWRITES: Record<string, string> = {
     "@freeanima/features/habitat/ui/habitat/lib/i18n.ts",
   "@freeanima/features/habitat/ui/habitat/router":
     "@freeanima/features/habitat/ui/habitat/router.tsx",
-  "@freeanima/kernel/logging/console": "@freeanima/kernel/logging/sinks/console.ts",
-  "@freeanima/kernel/logging/file": "@freeanima/kernel/logging/sinks/file.ts",
-  "@freeanima/kernel/logging/memory": "@freeanima/kernel/logging/sinks/memory.ts",
-  "@freeanima/kernel/logging/null": "@freeanima/kernel/logging/sinks/null.ts",
-  "@freeanima/frontend/app-ui/settings": "@freeanima/frontend/app-ui/lib/settings.ts",
-  "@freeanima/frontend/app-ui/sentry-test": "@freeanima/frontend/app-ui/lib/sentry-test.ts",
-  "@freeanima/frontend/app-ui/bootstrap/sentry":
-    "@freeanima/frontend/app-ui/spa/bootstrap/sentry.ts",
-  "@freeanima/frontend/app-ui/mount": "@freeanima/frontend/app-ui/spa/mount.tsx",
-  "@freeanima/frontend/app-ui/build": "@freeanima/frontend/app-ui/build.ts",
+  "@freeanima/host/kernel/logging/console": "@freeanima/host/kernel/logging/sinks/console.ts",
+  "@freeanima/host/kernel/logging/file": "@freeanima/host/kernel/logging/sinks/file.ts",
+  "@freeanima/host/kernel/logging/memory": "@freeanima/host/kernel/logging/sinks/memory.ts",
+  "@freeanima/host/kernel/logging/null": "@freeanima/host/kernel/logging/sinks/null.ts",
+  "@freeanima/client/app-frame/settings": "@freeanima/client/app-frame/lib/settings.ts",
+  "@freeanima/client/app-frame/sentry-test": "@freeanima/client/app-frame/lib/sentry-test.ts",
+  "@freeanima/client/app-frame/bootstrap/sentry":
+    "@freeanima/client/app-frame/spa/bootstrap/sentry.ts",
+  "@freeanima/client/app-frame/mount": "@freeanima/client/app-frame/spa/mount.tsx",
+  "@freeanima/client/app-frame/build": "@freeanima/client/app-frame/build.ts",
   "@freeanima/app/shell/tauri/companion-settings-api":
     "@freeanima/app/shell/tauri/spa/companion-settings-api.ts",
   "@freeanima/app/shell/tauri/settings-registry":
@@ -109,21 +108,22 @@ const EXACT_REWRITES: Record<string, string> = {
     "@freeanima/features/habitat/protocol/habitat-contract/date-json.ts",
   "@freeanima/shared/habitat-contract/schemas/habitat-schemas":
     "@freeanima/shared/habitat-contract/schemas/habitat-schemas.ts",
-  "@freeanima/capabilities/acp/schemas/acp-jsonrpc":
-    "@freeanima/capabilities/acp/schemas/acp-jsonrpc.ts",
-  "@freeanima/capabilities/llm-openai/stream-tools":
-    "@freeanima/capabilities/llm-openai/stream-tools.ts",
-  "@freeanima/capabilities/llm-openai/messages": "@freeanima/capabilities/llm-openai/messages.ts",
-  "@freeanima/capabilities/llm-openai/usage": "@freeanima/capabilities/llm-openai/usage.ts",
-  "@freeanima/frontend/ui-kit/lib/merge-draft-after-save":
-    "@freeanima/frontend/ui-kit/lib/merge-draft-after-save.ts",
-  "@freeanima/frontend/ui-kit/lib/copy-text": "@freeanima/frontend/ui-kit/lib/copy-text.ts",
-  "@freeanima/frontend/ui-kit/lib/utils": "@freeanima/frontend/ui-kit/lib/utils.ts",
-  "@freeanima/core/tool/conversation-port": "@freeanima/core/tool/conversation-port.ts",
-  "@freeanima/platform/bind-hosts": "@freeanima/platform/bind-hosts.ts",
-  "@freeanima/platform/alive": "@freeanima/platform/alive.ts",
-  "@freeanima/kernel/random-uuid": "@freeanima/kernel/random-uuid.ts",
-  "@freeanima/frontend/portal-sdk/react": "@freeanima/frontend/portal-sdk/react.tsx",
+  "@freeanima/host/capabilities/acp/schemas/acp-jsonrpc":
+    "@freeanima/host/capabilities/acp/schemas/acp-jsonrpc.ts",
+  "@freeanima/host/capabilities/llm-openai/stream-tools":
+    "@freeanima/host/capabilities/llm-openai/stream-tools.ts",
+  "@freeanima/host/capabilities/llm-openai/messages":
+    "@freeanima/host/capabilities/llm-openai/messages.ts",
+  "@freeanima/host/capabilities/llm-openai/usage":
+    "@freeanima/host/capabilities/llm-openai/usage.ts",
+  "@freeanima/ui-kit/lib/merge-draft-after-save": "@freeanima/ui-kit/lib/merge-draft-after-save.ts",
+  "@freeanima/ui-kit/lib/copy-text": "@freeanima/ui-kit/lib/copy-text.ts",
+  "@freeanima/ui-kit/lib/utils": "@freeanima/ui-kit/lib/utils.ts",
+  "@freeanima/host/core/tool/conversation-port": "@freeanima/host/core/tool/conversation-port.ts",
+  "@freeanima/host/platform/bind-hosts": "@freeanima/host/platform/bind-hosts.ts",
+  "@freeanima/host/platform/alive": "@freeanima/host/platform/alive.ts",
+  "@freeanima/host/kernel/random-uuid": "@freeanima/host/kernel/random-uuid.ts",
+  "@freeanima/client/portal-sdk/react": "@freeanima/client/portal-sdk/react.tsx",
   "@freeanima/features/habitat/build/paraglide-compile":
     "@freeanima/features/habitat/build/paraglide-compile.ts",
   "@freeanima/features/habitat/build/build-utils":
@@ -131,7 +131,7 @@ const EXACT_REWRITES: Record<string, string> = {
   "@freeanima/features/chat/ui/spa/styles.css": "@freeanima/features/chat/ui/spa/styles.css",
   "@freeanima/features/habitat/ui/habitat/styles.css":
     "@freeanima/features/habitat/ui/habitat/styles.css",
-  "@freeanima/frontend/ui-kit/styles.css": "@freeanima/frontend/ui-kit/styles.css",
+  "@freeanima/ui-kit/styles.css": "@freeanima/ui-kit/styles.css",
 };
 
 const IMPORT_SPEC_RE =

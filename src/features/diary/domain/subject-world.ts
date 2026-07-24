@@ -1,4 +1,4 @@
-import { resolveSubjectWorldId } from "@freeanima/core/config";
+import { resolveSubjectWorldId } from "@freeanima/host/core/config";
 import type { DiarySubjectKind } from "./types.ts";
 
 export async function resolveDiaryWorldId(kind: DiarySubjectKind): Promise<number> {

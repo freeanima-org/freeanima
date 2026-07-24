@@ -1,4 +1,4 @@
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/host/core/util";
 import { logApiError } from "../api-logging.ts";
 
 export class ApiHandlerError extends Error {

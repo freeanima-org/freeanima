@@ -10,7 +10,7 @@ import {
   FormToggle,
   Input,
   Spinner,
-} from "@freeanima/frontend/ui-kit";
+} from "@freeanima/ui-kit";
 import { m } from "@paraglide/messages";
 
 import {

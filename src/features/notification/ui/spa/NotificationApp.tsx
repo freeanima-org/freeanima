@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/portal-sdk/react.tsx";
+import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Alert,
   AlertDescription,
@@ -8,7 +8,7 @@ import {
   Card,
   CardContent,
   Spinner,
-} from "@freeanima/frontend/ui-kit";
+} from "@freeanima/ui-kit";
 import { m } from "@paraglide/messages";
 
 import {

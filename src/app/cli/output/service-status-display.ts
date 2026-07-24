@@ -1,5 +1,8 @@
-import { parseBindHosts } from "@freeanima/platform/bind-hosts.ts";
-import { formatBuildMetaLines, parseComponentBuildMeta } from "@freeanima/core/config/build-meta";
+import { parseBindHosts } from "@freeanima/host/platform/bind-hosts.ts";
+import {
+  formatBuildMetaLines,
+  parseComponentBuildMeta,
+} from "@freeanima/host/core/config/build-meta";
 import { prettyDuration, writeStatusLine } from "./status.ts";
 
 type MemoryDetail = {

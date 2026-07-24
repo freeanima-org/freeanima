@@ -1,12 +1,12 @@
 import {
   buildTaskFocusSegmentPayloads,
   primaryTaskItemIdFromSegments,
-} from "@freeanima/frontend/portal-sdk/pomodoro-focus-segments.ts";
-import type { PomodoroActiveState } from "@freeanima/frontend/portal-sdk/pomodoro-active-types.ts";
+} from "@freeanima/client/portal-sdk/pomodoro-focus-segments.ts";
+import type { PomodoroActiveState } from "@freeanima/client/portal-sdk/pomodoro-active-types.ts";
 import {
   actualDurationMs,
   effectiveFinishedAtIso,
-} from "@freeanima/frontend/portal-sdk/pomodoro-phase-timing.ts";
+} from "@freeanima/client/portal-sdk/pomodoro-phase-timing.ts";
 
 import { phaseCompletionKey } from "./timer-engine.ts";
 import type { PomodoroTaskFocusSegmentInput } from "./api.ts";

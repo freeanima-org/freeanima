@@ -4,15 +4,15 @@ import {
   WEB_URL_PREFIX,
   type WebStaticOptions,
 } from "./web-static.ts";
-import { createMcpBunHandler, isMcpPath } from "@freeanima/capabilities/mcp-server";
-import { HABITAT_BASE_PATH } from "@freeanima/platform/ports/constants";
-import type { HabitatTlsBunOptions } from "@freeanima/platform/tls/resolve-habitat-tls";
+import { createMcpBunHandler, isMcpPath } from "@freeanima/host/capabilities/mcp-server";
+import { HABITAT_BASE_PATH } from "@freeanima/host/platform/ports/constants";
+import type { HabitatTlsBunOptions } from "@freeanima/host/platform/tls/resolve-habitat-tls";
 import { bindHabitatApiLogging } from "./api-logging.ts";
 import { bindHabitatRuntimeContext, habitatCtx } from "./handlers/runtime.ts";
 import { applyCorsToResponse } from "./cors.ts";
 import { broadcastWsReconnect, shutdownAdmin } from "./shutdown.ts";
-import { getRemoteToolsServerDeps } from "@freeanima/platform/remote-tools/runtime-context";
-import { createSapBunHandlers } from "@freeanima/platform/remote-tools/bun-route";
+import { getRemoteToolsServerDeps } from "@freeanima/host/capabilities/outpost/transport/runtime-context";
+import { createSapBunHandlers } from "@freeanima/host/capabilities/outpost/transport/bun-route";
 import { createServiceAuthVerifier, type ServiceAuthVerifier } from "./service-auth.ts";
 import {
   applyHttpAuth,
@@ -204,7 +204,7 @@ export async function startApiHttpServers(
   port: number,
   options: ApiServerOptions = {},
 ): Promise<ApiServerStartResult> {
-  const { coalesceBindHosts } = await import("@freeanima/platform/bind-hosts.ts");
+  const { coalesceBindHosts } = await import("@freeanima/host/platform/bind-hosts.ts");
   const bindHosts = coalesceBindHosts(hosts);
   const runtime = prepareApiServerRuntime(options);
   const handles: ApiServerHandle[] = [];

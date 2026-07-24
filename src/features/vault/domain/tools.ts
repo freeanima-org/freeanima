@@ -1,12 +1,12 @@
-import type { VaultItemType } from "@freeanima/core/db/schema/entity";
-import type { ToolSetRegistry } from "@freeanima/core/tool";
-import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
-import { omitUndefined } from "@freeanima/core/util";
+import type { VaultItemType } from "@freeanima/host/core/db/schema/entity";
+import type { ToolSetRegistry } from "@freeanima/host/core/tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/host/core/tool";
+import { omitUndefined } from "@freeanima/host/core/util";
 import {
   ensureAgentVaultConfig,
   openAgentVaultSecrets,
   sealAgentVaultItem,
-} from "@freeanima/platform/connectors/vault";
+} from "@freeanima/host/capabilities/connectors/vault";
 import type { VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
 import { normalizeTotpSecret } from "@freeanima/shared/vault-crypto";
 

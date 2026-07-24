@@ -1,5 +1,5 @@
-import type { SettingsStorageScope } from "@freeanima/frontend/portal-sdk/settings";
-import type { ScopedSettingsBackend } from "@freeanima/frontend/portal-sdk/settings";
+import type { SettingsStorageScope } from "@freeanima/client/portal-sdk/settings";
+import type { ScopedSettingsBackend } from "@freeanima/client/portal-sdk/settings";
 import {
   COMPANION_VISIBLE_KEY,
   DEBUG_VCONSOLE_ENABLED_KEY,
@@ -7,11 +7,11 @@ import {
   LAUNCH_AT_LOGIN_KEY,
   readStoredHabitatUrl,
   REMOTE_AUTH_TOKEN_KEY,
-} from "@freeanima/frontend/portal-sdk/settings";
+} from "@freeanima/client/portal-sdk/settings";
 import {
   parseShellDebugConfig,
   type ShellDebugConfig,
-} from "@freeanima/frontend/portal-sdk/shell-debug-config";
+} from "@freeanima/client/portal-sdk/shell-debug-config";
 
 function loadKvScope(scope: SettingsStorageScope): unknown {
   if (scope.kind !== "kv") throw new Error("dev backend 不支持 file scope");

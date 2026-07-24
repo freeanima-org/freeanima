@@ -1,8 +1,8 @@
-import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
+import { verifyServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
 
 import type { ServiceAuthContext } from "./auth-context.ts";
 import { isHabitatApiCorsPreflight, isSapWebSocketUpgrade } from "./remote-auth.ts";
-import { isOptionalAuthHabitatHttpRequest } from "@freeanima/platform/habitat/http-rest-auth.ts";
+import { isOptionalAuthHabitatHttpRequest } from "@freeanima/host/platform/habitat/http-rest-auth.ts";
 
 export const SERVICE_AUTH_UNAUTHORIZED = "Unauthorized";
 

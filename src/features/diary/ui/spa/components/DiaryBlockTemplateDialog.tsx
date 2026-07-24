@@ -1,15 +1,15 @@
 import { useEffect, useState, type JSX } from "react";
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 
-import { Button, Input } from "@freeanima/frontend/ui-kit";
+import { Button, Input } from "@freeanima/ui-kit";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@freeanima/frontend/ui-kit/components/ui/dialog.tsx";
-import { ConfirmDialog } from "@freeanima/frontend/ui-kit/composite";
+} from "@freeanima/ui-kit/components/ui/dialog.tsx";
+import { ConfirmDialog } from "@freeanima/ui-kit/composite";
 
 import type { DiaryBlockTemplateRow } from "../lib/api.ts";
 import {

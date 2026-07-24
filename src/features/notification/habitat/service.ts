@@ -2,15 +2,15 @@ import type {
   NotificationCreateInput,
   NotificationRecipientKind,
   NotificationReadFilter,
-} from "@freeanima/core/db/pg/notifications/types";
-import type { NotificationRow } from "@freeanima/core/db/schema/rows";
-import { DEFAULT_NOTIFICATION_RECIPIENT_ID } from "@freeanima/core/db/pg/notifications/types";
+} from "@freeanima/host/core/db/pg/notifications/types";
+import type { NotificationRow } from "@freeanima/host/core/db/schema/rows";
+import { DEFAULT_NOTIFICATION_RECIPIENT_ID } from "@freeanima/host/core/db/pg/notifications/types";
 import {
   countNotifications,
   createNotification as createPgNotification,
   listNotifications as listPgNotifications,
   markNotificationRead as markPgNotificationRead,
-} from "@freeanima/core/db/pg/notifications";
+} from "@freeanima/host/core/db/pg/notifications";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 export type NotificationListResult = {

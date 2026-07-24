@@ -2,7 +2,7 @@ import { Client } from "discord.js";
 import {
   ILINK_BASE_URL,
   notifyStart,
-} from "@freeanima/platform/connectors/gateway/weixin/ilink-api.ts";
+} from "@freeanima/host/capabilities/connectors/gateway/weixin/ilink-api.ts";
 
 const PROBE_TIMEOUT_MS = 15_000;
 

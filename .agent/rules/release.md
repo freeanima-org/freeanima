@@ -122,7 +122,7 @@ There is **no** npm package publish and **no** Docker image publish.
 
 ## Prohibited
 
-- Do not hardcode `X.Y.Z` in business code; use `import { ANIMA_VERSION } from "@freeanima/platform"` (or expose via health/status).
+- Do not hardcode `X.Y.Z` in business code; use `import { ANIMA_VERSION } from "@freeanima/host/platform"` (or expose via health/status).
 - Do not maintain `version` in workspace sub-package `package.json`.
 - Do not manually edit `CHANGELOG.md` or `[Unreleased]`; release notes come from commits and Release Please.
 - Do not run oxfmt on `CHANGELOG.md`; it is excluded in [`.oxfmtrc.jsonc`](../../.oxfmtrc.jsonc) `ignorePatterns`. Release Please writes `*` list markers (conventional-changelog default); do not convert them locally.

@@ -9,7 +9,7 @@ import {
   FormField,
   Input,
   Spinner,
-} from "@freeanima/frontend/ui-kit";
+} from "@freeanima/ui-kit";
 
 export function ChangeMasterPasswordDialog({
   open,

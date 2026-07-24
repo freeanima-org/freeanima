@@ -8,7 +8,7 @@
 | 概念                      | 是什么                                                            | 代码                                                                         |
 | ------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | **Shell（壳）**           | Portal 运行时宿主（browser / Tauri；形态 web / desktop / mobile） | `src/app/shell/*`；`portal-sdk` 的 `getShellKind` / `ShellApi` / buildTarget |
-| **app frame（应用布局）** | 模块左栏 Rail / 底栏 Tabs、设置页 chrome                          | `src/frontend/app-ui`（`AppFrame`）；跟视口，**不是** Shell                  |
+| **app frame（应用布局）** | 模块左栏 Rail / 底栏 Tabs、设置页 chrome                          | `src/client/app-frame`（`AppFrame`）；跟视口，**不是** Shell                 |
 
 禁止把 app frame 叫作 Shell；禁止用 Shell 类型推导 Rail/底栏。
 
@@ -91,7 +91,7 @@
 
 ## 包与 import
 
-- features / app-ui：从 `@freeanima/frontend/portal-sdk`（及 `/react`）取壳与交互；从 `@freeanima/frontend/ui-kit/layout` 取布局
+- features / app-ui：从 `@freeanima/client/portal-sdk`（及 `/react`）取壳与交互；从 `@freeanima/ui-kit/layout` 取布局
 - **禁止**为壳判断 import `app/shell/web`
 - `ui-kit` **不**导出壳判定（`isNativeShell` 在 portal-sdk）
 
@@ -119,7 +119,7 @@
 
 ## 代码入口
 
-- 壳：[`src/frontend/portal-sdk/shell-runtime.ts`](../../src/frontend/portal-sdk/shell-runtime.ts)
-- 交互：[`src/frontend/portal-sdk/shell-capability.ts`](../../src/frontend/portal-sdk/shell-capability.ts)
-- 布局：[`src/frontend/ui-kit/layout/viewport.ts`](../../src/frontend/ui-kit/layout/viewport.ts)、[`app-ui/spa/layout-mode.ts`](../../src/frontend/app-ui/spa/layout-mode.ts)
-- 应用布局根：[`app-ui/spa/main/AppFrame.tsx`](../../src/frontend/app-ui/spa/main/AppFrame.tsx)
+- 壳：[`src/client/portal-sdk/shell-runtime.ts`](../../src/client/portal-sdk/shell-runtime.ts)
+- 交互：[`src/client/portal-sdk/shell-capability.ts`](../../src/client/portal-sdk/shell-capability.ts)
+- 布局：[`src/ui-kit/layout/viewport.ts`](../../src/ui-kit/layout/viewport.ts)、[`app-ui/spa/layout-mode.ts`](../../src/client/app-frame/spa/layout-mode.ts)
+- 应用布局根：[`app-ui/spa/main/AppFrame.tsx`](../../src/client/app-frame/spa/main/AppFrame.tsx)

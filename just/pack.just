@@ -60,7 +60,7 @@ tauri-ui target="desktop": _deps
 # app-ui 独立构建（CI）
 [no-cd]
 app-ui: _deps
-  bun src/frontend/app-ui/build.ts
+  bun src/client/app-frame/build.ts
 
 # 品牌图标
 [no-cd]

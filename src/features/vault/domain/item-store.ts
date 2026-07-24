@@ -2,15 +2,15 @@ import {
   VAULT_ITEM_COMPONENT,
   asVaultItem,
   type VaultItemType,
-} from "@freeanima/core/db/schema/entity";
+} from "@freeanima/host/core/db/schema/entity";
 import {
   createEntity,
   deleteEntity,
   getEntity,
   searchEntities,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
-import { assertEntityInWorld } from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/pg/entity";
+import { assertEntityInWorld } from "@freeanima/host/core/db/pg/entity";
 
 export type VaultItemRow = {
   id: number;

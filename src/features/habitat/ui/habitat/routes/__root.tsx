@@ -1,5 +1,5 @@
 import { Outlet, createRootRoute } from "@tanstack/react-router";
-import { BrandLockup } from "@freeanima/frontend/ui-kit";
+import { BrandLockup } from "@freeanima/ui-kit";
 
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 

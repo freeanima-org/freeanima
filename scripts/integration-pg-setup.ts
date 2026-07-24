@@ -66,8 +66,12 @@ function ensurePgExtensions(url: string): void {
 
 async function runMigrations(url: string): Promise<void> {
   ensurePgExtensions(url);
-  const { initDatabase, getDb, closeDb } = await import(join(repoRoot, "src/core/db/pg/client.ts"));
-  const { runMigrations: applyMigrations } = await import(join(repoRoot, "src/core/db/index.ts"));
+  const { initDatabase, getDb, closeDb } = await import(
+    join(repoRoot, "src/host/core/db/pg/client.ts")
+  );
+  const { runMigrations: applyMigrations } = await import(
+    join(repoRoot, "src/host/core/db/index.ts")
+  );
   initDatabase({ getDatabaseUrl: () => url });
   try {
     await applyMigrations(getDb());

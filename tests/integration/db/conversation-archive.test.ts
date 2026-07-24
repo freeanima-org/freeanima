@@ -1,13 +1,13 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { eq } from "drizzle-orm";
-import { isConversationMeta } from "@freeanima/core/db/domain";
-import { conversations, messages } from "@freeanima/core/db/schema";
-import { getDb } from "@freeanima/core/db/pg";
+import { isConversationMeta } from "@freeanima/host/core/db/domain";
+import { conversations, messages } from "@freeanima/host/core/db/schema";
+import { getDb } from "@freeanima/host/core/db/pg";
 import {
   appendMessage,
   getConversationMetaLite,
   upsertConversationMeta,
-} from "@freeanima/core/db/pg/conversation";
+} from "@freeanima/host/core/db/pg/conversation";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import {
   archiveConversation,
@@ -16,7 +16,7 @@ import {
   listConversationSummaries,
   loadConversationMeta,
   unarchiveConversation,
-} from "@freeanima/runtime/conversation";
+} from "@freeanima/host/engine/conversation";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,

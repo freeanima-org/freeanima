@@ -1,9 +1,9 @@
-import { isBootstrapConfigKey, isRuntimeConfigSectionKey } from "@freeanima/core/config";
+import { isBootstrapConfigKey, isRuntimeConfigSectionKey } from "@freeanima/host/core/config";
 import {
   sanitizeConfigForApi,
   isPatchableRuntimeConfig,
   restoreMaskedSecrets,
-} from "@freeanima/platform/config";
+} from "@freeanima/host/platform/config";
 import { ApiHandlerError } from "./errors.ts";
 import { habitatCtx } from "./runtime.ts";
 
@@ -54,7 +54,7 @@ export async function patchHabitatConfigSection(section: string, patch: Record<s
   const config = requirePatchableConfig();
   const restored = restoreMaskedSecrets(patch, existingSection(config, section));
   await config.patchSection(section, restored);
-  return sanitizeConfigForApi(config.data as import("@freeanima/core/config").RuntimeConfig);
+  return sanitizeConfigForApi(config.data as import("@freeanima/host/core/config").RuntimeConfig);
 }
 
 export async function replaceHabitatConfigSection(section: string, value: Record<string, unknown>) {
@@ -66,5 +66,5 @@ export async function replaceHabitatConfigSection(section: string, value: Record
   const config = requirePatchableConfig();
   const restored = restoreMaskedSecrets(value, existingSection(config, section));
   await config.replaceSection(section, restored);
-  return sanitizeConfigForApi(config.data as import("@freeanima/core/config").RuntimeConfig);
+  return sanitizeConfigForApi(config.data as import("@freeanima/host/core/config").RuntimeConfig);
 }

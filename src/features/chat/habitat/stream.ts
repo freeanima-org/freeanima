@@ -1,12 +1,12 @@
-import { isConversationMeta } from "@freeanima/core/db/domain";
+import { isConversationMeta } from "@freeanima/host/core/db/domain";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import type { RemoteToolsServerDeps } from "@freeanima/platform/remote-tools/types";
+import type { RemoteToolsServerDeps } from "@freeanima/host/capabilities/outpost/transport/types";
 
 import { rememberLlmDebugFromStreamPayload } from "./llm-debug-cache.ts";
 import { streamSessionRegistry } from "./stream-session-registry.ts";
 
 async function loadStreamBridge() {
-  return import("@freeanima/platform/remote-tools/stream-bridge");
+  return import("@freeanima/host/capabilities/outpost/transport/stream-bridge");
 }
 
 export async function resolveConversationPlatform(

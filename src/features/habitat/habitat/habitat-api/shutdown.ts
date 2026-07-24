@@ -1,5 +1,5 @@
 import type { ServerWebSocket } from "bun";
-import { closeAllTerminalSessions } from "@freeanima/platform/remote-tools/terminal-session";
+import { closeAllTerminalSessions } from "@freeanima/host/capabilities/outpost/transport/terminal-session";
 
 export type TerminalWsData = {
   conversationId?: string;

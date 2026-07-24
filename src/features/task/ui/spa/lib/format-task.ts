@@ -5,5 +5,5 @@ export {
   mergeDateTimeLocal,
   dateLocalToIso,
   todayDateLocalValue,
-} from "@freeanima/frontend/ui-kit/lib/datetime-local.ts";
-export { priorityDot } from "@freeanima/frontend/ui-kit/lib/task-item-display.ts";
+} from "@freeanima/ui-kit/lib/datetime-local.ts";
+export { priorityDot } from "@freeanima/ui-kit/lib/task-item-display.ts";

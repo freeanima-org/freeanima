@@ -1,7 +1,7 @@
-import type { SubjectKind } from "@freeanima/core/config";
-import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
-import { resolveDefaultPrivateWorldForSubject } from "@freeanima/core/db/pg/entity";
-import type { VaultItemType } from "@freeanima/core/db/schema/entity";
+import type { SubjectKind } from "@freeanima/host/core/config";
+import type { VerifiedServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
+import { resolveDefaultPrivateWorldForSubject } from "@freeanima/host/core/db/pg/entity";
+import type { VaultItemType } from "@freeanima/host/core/db/schema/entity";
 import {
   createVaultItem,
   deleteVaultItem,
@@ -18,13 +18,13 @@ import { ensureVaultConfig, getVaultConfig, updateVaultConfig } from "../domain/
 import { defaultVaultSubjectForShell, resolveVaultWorldId } from "../domain/vault-world.ts";
 import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 import type { VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/host/core/util";
 
-import { isPostgresPrimary } from "@freeanima/core/db/pg";
+import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 async function loadAgentVaultConnector() {
-  return import("@freeanima/platform/connectors/vault");
+  return import("@freeanima/host/capabilities/connectors/vault");
 }
 
 function assertPg(_deps: RuntimeDeps): void {

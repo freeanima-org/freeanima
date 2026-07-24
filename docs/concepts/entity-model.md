@@ -123,7 +123,7 @@ Habitat startup binds **`ResolvedWorldContext`** (`createTypedHabitatClient().ca
 | `/diary`         | subject default private world via `subject_kind` | none (inherits header)         |
 | `/vault`         | default **user** library; optional Agent view    | User: master password lock     |
 
-SAP task/email methods accept optional `subject_kind` (defaults: task `user`, email `agent`). Satellites read the shell scope via **`useSubjectScope()`** from `@freeanima/frontend/portal-sdk`; Habitat REST entity search uses **`resolveWorldIdForSubject()`** with the same scope.
+SAP task/email methods accept optional `subject_kind` (defaults: task `user`, email `agent`). Satellites read the shell scope via **`useSubjectScope()`** from `@freeanima/client/portal-sdk`; Habitat REST entity search uses **`resolveWorldIdForSubject()`** with the same scope.
 
 Future multi-world browse (e.g. diary calendar aggregation across worlds) should add **module-scoped** filters or Habitat tooling — not a speculative arbitrary world picker.
 

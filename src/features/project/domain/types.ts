@@ -1,4 +1,4 @@
-import type { ProjectStatus } from "@freeanima/core/db/schema/entity";
+import type { ProjectStatus } from "@freeanima/host/core/db/schema/entity";
 
 export type {
   ProjectFolderRowPayload as ProjectFolderRow,

@@ -1,6 +1,6 @@
-import { registerEmbeddedMigrations } from "@freeanima/core/db";
-import { registerStandaloneRuntimeMeta } from "@freeanima/core/config/standalone-runtime-meta";
-import { registerEmbeddedDocs } from "@freeanima/capabilities/tools/docs-embedded";
+import { registerEmbeddedMigrations } from "@freeanima/host/core/db";
+import { registerStandaloneRuntimeMeta } from "@freeanima/host/core/config/standalone-runtime-meta";
+import { registerEmbeddedDocs } from "@freeanima/host/capabilities/tools/docs-embedded";
 import { registerEmbeddedWebDist } from "./web/web-dist-embedded.ts";
 import { standaloneEmbeds, standaloneRuntimeMeta } from "./standalone-embeds.ts";
 

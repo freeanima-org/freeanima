@@ -1,4 +1,4 @@
-import { EMAIL_MESSAGE_COMPONENT, asEmailMessage } from "@freeanima/core/db/schema/entity";
+import { EMAIL_MESSAGE_COMPONENT, asEmailMessage } from "@freeanima/host/core/db/schema/entity";
 
 import {
   createEntity,
@@ -6,7 +6,7 @@ import {
   getEntity,
   searchEntities,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/pg/entity";
 import { worldIdForAccount } from "./email-world.ts";
 import { refreshThreadAggregates } from "./thread-store.ts";
 import type { EmailMessageListOpts, EmailMessageRow, EmailMessageUpsertInput } from "./types.ts";
@@ -215,7 +215,7 @@ export async function tagEmailMessage(id: number, tags: string[]): Promise<Email
 
 export async function setEmailMessageAttachments(
   id: number,
-  attachments: import("@freeanima/core/db/schema/entity").EmailMessageAttachmentMeta[],
+  attachments: import("@freeanima/host/core/db/schema/entity").EmailMessageAttachmentMeta[],
 ): Promise<EmailMessageRow | null> {
   const row = await getEntity(id);
   if (!row) return null;

@@ -1,9 +1,9 @@
 @import "tailwindcss";
-@import "@freeanima/frontend/ui-kit/styles/globals.css";
+@import "@freeanima/ui-kit/styles/globals.css";
 @source "./**/*.{tsx,ts}";
-@source "../../../../../src/frontend/ui-kit/**/*.{tsx,ts}";
+@source "../../../../../src/ui-kit/**/*.{tsx,ts}";
 
-@import "@freeanima/frontend/ui-kit/styles.css";
+@import "@freeanima/ui-kit/styles.css";
 
 .md-content {
   line-height: 1.6;

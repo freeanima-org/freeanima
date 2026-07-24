@@ -1,4 +1,4 @@
-import { bridgeSessionUpdates } from "@freeanima/platform/remote-tools/stream-bridge";
+import { bridgeSessionUpdates } from "@freeanima/host/capabilities/outpost/transport/stream-bridge";
 import { habitatCtx } from "./runtime.ts";
 
 export async function fetchConversationAcpDock(conversationId: string) {

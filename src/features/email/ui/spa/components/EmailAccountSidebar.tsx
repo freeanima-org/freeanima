@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
-import { Button } from "@freeanima/frontend/ui-kit";
-import { ContextMenu, EmptyState } from "@freeanima/frontend/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+import { Button } from "@freeanima/ui-kit";
+import { ContextMenu, EmptyState } from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { m } from "@paraglide/messages";
 import { Inbox, MoreHorizontal, Plus, Send } from "lucide-react";
 

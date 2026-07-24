@@ -1,4 +1,4 @@
-import { getEntity } from "@freeanima/core/db/pg/entity";
+import { getEntity } from "@freeanima/host/core/db/pg/entity";
 
 export async function worldIdForAccount(accountId: number): Promise<number> {
   const row = await getEntity(accountId);

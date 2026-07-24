@@ -1,4 +1,4 @@
-import type { TaskItemPriority } from "@freeanima/core/db/schema/entity";
+import type { TaskItemPriority } from "@freeanima/host/core/db/schema/entity";
 import { ensureTagsByTitles } from "@freeanima/features/tag/domain";
 
 import type { TaskItemRow, TaskListRow } from "./types.ts";

@@ -2,13 +2,13 @@ import {
   POMODORO_ACTIVE_COMPONENT,
   asPomodoroActive,
   type PomodoroActiveBody,
-} from "@freeanima/core/db/schema/entity";
+} from "@freeanima/host/core/db/schema/entity";
 import {
   createEntity,
   deleteEntity,
   searchEntities,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/pg/entity";
 
 import type { PomodoroStoreContext } from "./types.ts";
 

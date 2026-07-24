@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import type { CompanionProfileBody } from "@freeanima/core/db/schema/entity";
+import type { CompanionProfileBody } from "@freeanima/host/core/db/schema/entity";
 import { mergeBehavior } from "./behavior.ts";
 import { getOrCreateCompanionProfile, saveCompanionProfile } from "./profile-store.ts";
 import { companionConfigPath, ensureCompanionDataDir } from "./paths.ts";

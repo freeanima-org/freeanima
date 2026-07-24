@@ -1,8 +1,5 @@
-import {
-  isTauriMobileUserAgent,
-  isTauriRuntime,
-} from "@freeanima/frontend/portal-sdk/tauri-runtime";
-import { registerVaultRpcHandlers } from "@freeanima/frontend/portal-sdk";
+import { isTauriMobileUserAgent, isTauriRuntime } from "@freeanima/client/portal-sdk/tauri-runtime";
+import { registerVaultRpcHandlers } from "@freeanima/client/portal-sdk";
 
 import { applyWebUiConfig, fetchWebUiConfig, installShellBridgeReady } from "./bridge/shared.ts";
 

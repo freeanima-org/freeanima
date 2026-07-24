@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { flushOfflineModule } from "@freeanima/frontend/portal-sdk/offline-sync";
-import { resolveOutboxScope } from "@freeanima/frontend/portal-sdk/offline-outbox";
+import { flushOfflineModule } from "@freeanima/client/portal-sdk/offline-sync";
+import { resolveOutboxScope } from "@freeanima/client/portal-sdk/offline-outbox";
 
 import { POMODORO_OUTBOX_MODULE_ID } from "../lib/pomodoro-offline-store.ts";
 

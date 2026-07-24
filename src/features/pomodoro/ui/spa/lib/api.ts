@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
-import { resolveHabitatCacheScope } from "@freeanima/frontend/portal-sdk/offline-cache";
-import { withOfflineCache } from "@freeanima/frontend/portal-sdk/offline-cache-first";
-import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
+import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
+import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 import { registerPomodoroOfflineModule } from "./pomodoro-offline-adapter.ts";
 

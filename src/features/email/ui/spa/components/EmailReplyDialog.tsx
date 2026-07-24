@@ -10,7 +10,7 @@ import {
   Input,
   Spinner,
   Textarea,
-} from "@freeanima/frontend/ui-kit";
+} from "@freeanima/ui-kit";
 import { m } from "@paraglide/messages";
 
 import { sendEmailMessage, type EmailMessageRow } from "../lib/api.ts";

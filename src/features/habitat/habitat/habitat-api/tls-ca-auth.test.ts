@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { isOptionalAuthHabitatHttpRequest } from "@freeanima/platform/habitat/http-rest-auth.ts";
+import { isOptionalAuthHabitatHttpRequest } from "@freeanima/host/platform/habitat/http-rest-auth.ts";
 
 describe("tls-ca auth via registry", () => {
   test("tls.ca paths are optional auth", () => {

@@ -1,6 +1,6 @@
-import { isPostgresPrimary } from "@freeanima/core/db/pg";
-import { omitUndefined } from "@freeanima/core/util";
-import { resolveSubjectWorldId, type SubjectKind } from "@freeanima/core/config";
+import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
+import { omitUndefined } from "@freeanima/host/core/util";
+import { resolveSubjectWorldId, type SubjectKind } from "@freeanima/host/core/config";
 import {
   applyProviderPreset,
   createEmailAccount,
@@ -108,7 +108,8 @@ export async function serviceEmailAccountCreate(
   const { subject_kind, ...raw } = input;
   const withPreset = applyProviderPreset(raw);
   const hosts = requireCompleteEmailHosts(withPreset);
-  const { assertEmailPasswordResolvable } = await import("@freeanima/platform/connectors/email");
+  const { assertEmailPasswordResolvable } =
+    await import("@freeanima/host/capabilities/connectors/email");
   await assertEmailPasswordResolvable({ password: withPreset.password });
   const account = await createEmailAccount(
     emailWorldId(subject_kind),
@@ -159,7 +160,8 @@ export async function serviceEmailAccountPatch(
     withPreset.imap_port != null;
   const hosts = touchesHosts ? requireCompleteEmailHosts(withPreset) : null;
   if (withPreset.password) {
-    const { assertEmailPasswordResolvable } = await import("@freeanima/platform/connectors/email");
+    const { assertEmailPasswordResolvable } =
+      await import("@freeanima/host/capabilities/connectors/email");
     await assertEmailPasswordResolvable({ password: withPreset.password });
   }
   const account = await updateEmailAccount(
@@ -232,7 +234,7 @@ export async function serviceEmailMessageMarkRead(
   input: { subject_kind?: SubjectKind; id: number },
 ) {
   assertPg(deps);
-  const { markAsRead } = await import("@freeanima/platform/connectors/email");
+  const { markAsRead } = await import("@freeanima/host/capabilities/connectors/email");
   await markAsRead(input.id);
   return { ok: true as const };
 }
@@ -242,7 +244,7 @@ export async function serviceEmailMessageMarkUnread(
   input: { subject_kind?: SubjectKind; id: number },
 ) {
   assertPg(deps);
-  const { markAsUnread } = await import("@freeanima/platform/connectors/email");
+  const { markAsUnread } = await import("@freeanima/host/capabilities/connectors/email");
   await markAsUnread(input.id);
   return { ok: true as const };
 }
@@ -252,7 +254,7 @@ export async function serviceEmailMessageDelete(
   input: { subject_kind?: SubjectKind; id: number },
 ) {
   assertPg(deps);
-  const { deleteEmail } = await import("@freeanima/platform/connectors/email");
+  const { deleteEmail } = await import("@freeanima/host/capabilities/connectors/email");
   await deleteEmail(input.id);
   return { ok: true as const };
 }
@@ -270,7 +272,7 @@ export async function serviceEmailSend(
   },
 ) {
   assertPg(deps);
-  const { sendEmail } = await import("@freeanima/platform/connectors/email");
+  const { sendEmail } = await import("@freeanima/host/capabilities/connectors/email");
   const { subject_kind: _subjectKind, ...sendInput } = input;
   return sendEmail(omitUndefined(sendInput));
 }
@@ -281,7 +283,7 @@ export async function serviceEmailSync(
 ) {
   assertPg(deps);
   const { syncEmailAccount, syncAllEmailAccounts } =
-    await import("@freeanima/platform/connectors/email");
+    await import("@freeanima/host/capabilities/connectors/email");
   if (input.account_id != null) {
     return {
       results: [await syncEmailAccount(input.account_id, omitUndefined({ limit: input.limit }))],

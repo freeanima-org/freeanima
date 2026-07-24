@@ -1,11 +1,11 @@
-import type { ContentBlockType } from "@freeanima/core/db/schema/entity";
+import type { ContentBlockType } from "@freeanima/host/core/db/schema/entity";
 import {
   contentBlockTypeSchema,
   DREAM_COMPONENT,
   LIMBIC_COMPONENT,
   NARRATIVE_COMPONENT,
   SEMANTIC_REF_COMPONENT,
-} from "@freeanima/core/db/schema/entity";
+} from "@freeanima/host/core/db/schema/entity";
 
 import type {
   ContentBlockLimbicInput,

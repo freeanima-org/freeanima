@@ -1,4 +1,4 @@
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/host/core/util";
 
 import {
   getPomodoroConfig,
@@ -14,10 +14,10 @@ import {
   clearPomodoroActive,
 } from "../domain/index.ts";
 import type { PomodoroSubjectKind } from "../domain/index.ts";
-import type { PomodoroActiveBody } from "@freeanima/core/db/schema/entity";
+import type { PomodoroActiveBody } from "@freeanima/host/core/db/schema/entity";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
-import { isPostgresPrimary } from "@freeanima/core/db/pg";
+import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
 
 function assertPg(_deps: RuntimeDeps): void {
   if (!isPostgresPrimary()) {

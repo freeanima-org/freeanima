@@ -1,5 +1,5 @@
-import { logComponent } from "@freeanima/platform/logging";
-import type { MessagingPort } from "@freeanima/platform/ports/messaging-port";
+import { logComponent } from "@freeanima/host/platform/logging";
+import type { MessagingPort } from "@freeanima/host/platform/ports/messaging-port";
 
 /** 关停时等待 engine 排空的最短时长（避免 dev 重启时过短超时） */
 export const MIN_GRACEFUL_DRAIN_MS = 15_000;

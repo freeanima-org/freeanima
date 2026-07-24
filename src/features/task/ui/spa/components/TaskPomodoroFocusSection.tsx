@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FormFieldLabel } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+import { FormFieldLabel } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 
 import { fetchTaskPomodoroFocus, type TaskPomodoroFocusRow } from "../lib/pomodoro-focus-api.ts";
 

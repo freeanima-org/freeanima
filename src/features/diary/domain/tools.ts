@@ -1,4 +1,4 @@
-import type { ToolSetRegistry } from "@freeanima/core/tool";
+import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 
 import { registerDiaryTools as registerDiaryToolSet } from "./diary-tools.ts";
 

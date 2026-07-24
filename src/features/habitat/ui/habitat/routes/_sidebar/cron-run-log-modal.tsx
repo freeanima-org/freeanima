@@ -12,8 +12,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@freeanima/frontend/ui-kit";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+} from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { listCronLogs } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";

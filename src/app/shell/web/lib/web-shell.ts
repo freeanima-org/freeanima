@@ -1,12 +1,9 @@
 import { browserRemoteInstanceStore } from "@freeanima/shared/rpc-contract";
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
-import { buildShellApiFields } from "@freeanima/frontend/portal-sdk/shell-api-fields";
-import { normalizeShellClientConfig } from "@freeanima/frontend/portal-sdk/shell-client-config";
-import type { ShellApi } from "@freeanima/frontend/portal-sdk/shell-api";
-import {
-  readStoredHabitatUrl,
-  REMOTE_AUTH_TOKEN_KEY,
-} from "@freeanima/frontend/portal-sdk/settings";
+import { buildShellApiFields } from "@freeanima/client/portal-sdk/shell-api-fields";
+import { normalizeShellClientConfig } from "@freeanima/client/portal-sdk/shell-client-config";
+import type { ShellApi } from "@freeanima/client/portal-sdk/shell-api";
+import { readStoredHabitatUrl, REMOTE_AUTH_TOKEN_KEY } from "@freeanima/client/portal-sdk/settings";
 
 export const SHELL_CONFIG_CHANGED_EVENT = "freeanima:shell-config-changed";
 
@@ -87,7 +84,7 @@ export async function testWebHabitatConnection(
   habitatUrl: string,
   remoteAuthToken: string,
 ): Promise<void> {
-  const { testHabitatHealthConnection } = await import("@freeanima/frontend/portal-sdk");
+  const { testHabitatHealthConnection } = await import("@freeanima/client/portal-sdk");
   const normalized = normalizeWebHubUrl(habitatUrl);
   const token = remoteAuthToken.trim();
   await testHabitatHealthConnection(normalized, token || undefined);

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import type { ShellApi } from "@freeanima/frontend/portal-sdk";
+import type { ShellApi } from "@freeanima/client/portal-sdk";
 
 import { isCompactLayoutViewport, isNativeShell, isWebShell } from "./platform.ts";
 

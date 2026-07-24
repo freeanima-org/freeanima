@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useHabitatConnection, useNetworkOnline } from "@freeanima/frontend/portal-sdk/react.tsx";
+import { useHabitatConnection, useNetworkOnline } from "@freeanima/client/portal-sdk/react.tsx";
 import { subscribeConversationInbox } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import { useChatUnreadStore } from "@freeanima/features/chat/ui/spa/stores/chat-unread.ts";
 

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { useLongPress, type LongPressCoords } from "@freeanima/frontend/ui-kit/composite";
+import { useLongPress, type LongPressCoords } from "@freeanima/ui-kit/composite";
 
 export type MessageMenuCoords = LongPressCoords;
 

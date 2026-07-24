@@ -34,6 +34,6 @@ Outpost/Portal UI keeps data fresh with two distinct verbs. Do not conflate them
 
 ## Implementation notes
 
-- Shared pull gesture: `@freeanima/frontend/ui-kit/composite` `PullToRefresh` (touch-only; ignore starts near the left edge to avoid drawer swipe conflicts).
+- Shared pull gesture: `@freeanima/ui-kit/composite` `PullToRefresh` (touch-only; ignore starts near the left edge to avoid drawer swipe conflicts).
 - Copy: `m.habitat_common_refresh` / `m.habitat_common_refreshing`.
 - Follow-up (not required here): soft refresh of the focused module only on visibility with an empty outbox.

@@ -12,9 +12,9 @@ import {
   Input,
   Spinner,
   Textarea,
-} from "@freeanima/frontend/ui-kit";
-import { ConfirmDialog, ActionSheet, toast } from "@freeanima/frontend/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+} from "@freeanima/ui-kit";
+import { ConfirmDialog, ActionSheet, toast } from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { AcpProgressDock } from "@freeanima/features/chat/ui/spa/components/AcpProgressDock.tsx";
 import { SlashCommandResultPanel } from "@freeanima/features/chat/ui/spa/components/SlashCommandResultPanel.tsx";
 import { ToolBlockBubble } from "@freeanima/features/chat/ui/spa/components/ToolBlockBubble.tsx";
@@ -22,7 +22,7 @@ import {
   ChatMessageBubble,
   findLastUserMessageIndex,
 } from "@freeanima/features/chat/ui/spa/components/ChatMessageBubble.tsx";
-import { openEntityResource } from "@freeanima/frontend/app-ui/spa/features/open-entity-resource.ts";
+import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { ConversationListItem as ConversationListRow } from "@freeanima/features/chat/ui/spa/components/ConversationListItem.tsx";
 import { useAcpProgressDock } from "@freeanima/features/chat/ui/spa/hooks/useAcpProgressDock.ts";
 import { useEdgeSwipeOpen } from "@freeanima/features/chat/ui/spa/hooks/useEdgeSwipeOpen.ts";
@@ -45,12 +45,8 @@ import {
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import { useChatUnreadStore } from "@freeanima/features/chat/ui/spa/stores/chat-unread.ts";
 import { runBootstrapConversation } from "@freeanima/features/chat/ui/spa/lib/bootstrap-conversation.ts";
-import {
-  ListDetailLayout,
-  useDrawerNav,
-  useCompactLayout,
-} from "@freeanima/frontend/ui-kit/layout";
-import { omitUndefined } from "@freeanima/core/util";
+import { ListDetailLayout, useDrawerNav, useCompactLayout } from "@freeanima/ui-kit/layout";
+import { omitUndefined } from "@freeanima/host/core/util";
 import {
   reconnectHabitat,
   useActionSheetCapability,
@@ -60,7 +56,7 @@ import {
   useHabitatConnection,
   useNetworkOnline,
   useOpenHabitatSettingsCapability,
-} from "@freeanima/frontend/portal-sdk/react.tsx";
+} from "@freeanima/client/portal-sdk/react.tsx";
 import { initAppLocale, m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@freeanima/features/chat/ui/spa/lib/input-draft.ts";
 import {
@@ -76,7 +72,7 @@ import {
   readModuleSelection,
   subscribeSubjectKind,
   writeModuleSelection,
-} from "@freeanima/frontend/portal-sdk";
+} from "@freeanima/client/portal-sdk";
 import { MessageActionBar } from "@freeanima/features/chat/ui/spa/components/MessageActionBar.tsx";
 import { useSpeechPlayback } from "@freeanima/features/chat/ui/spa/hooks/useSpeechPlayback.ts";
 import { markdownToPlainText } from "@freeanima/features/chat/ui/spa/lib/speech/plain-text.ts";
@@ -95,10 +91,10 @@ import {
   type ChatStreamFlushHandlers,
 } from "@freeanima/features/chat/ui/spa/lib/offline-stream-adapter.ts";
 import type { DisplayItem, StreamApiEvent } from "@freeanima/features/chat/ui/spa/lib/types.ts";
-import { registerChatStreamContextFactory } from "@freeanima/frontend/app-ui/spa/OfflineSyncBootstrap.tsx";
-import { resolveOutboxScope } from "@freeanima/frontend/portal-sdk/offline-outbox";
-import { flushOfflineModule } from "@freeanima/frontend/portal-sdk/offline-sync";
-import { isRetriableOfflineWriteError } from "@freeanima/frontend/portal-sdk/prefer-online-write";
+import { registerChatStreamContextFactory } from "@freeanima/client/portal-sdk/chat-stream-context.ts";
+import { resolveOutboxScope } from "@freeanima/client/portal-sdk/offline-outbox";
+import { flushOfflineModule } from "@freeanima/client/portal-sdk/offline-sync";
+import { isRetriableOfflineWriteError } from "@freeanima/client/portal-sdk/prefer-online-write";
 import {
   filterUndeliveredOutbox,
   isOutboxDeliveredOnDisplay,

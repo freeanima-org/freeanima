@@ -1,6 +1,6 @@
-import { resolveHttpBindHost } from "@freeanima/core/config";
-import { loadBootstrapConfig } from "@freeanima/platform/config/bootstrap.ts";
-import { DEFAULT_BIND_HOST } from "@freeanima/platform/bind-hosts.ts";
+import { resolveHttpBindHost } from "@freeanima/host/core/config";
+import { loadBootstrapConfig } from "@freeanima/host/platform/config/bootstrap.ts";
+import { DEFAULT_BIND_HOST } from "@freeanima/host/platform/bind-hosts.ts";
 
 /** `anima service` 监听地址：CLI `--host` 优先，否则 `http.host` */
 export function resolveServiceBindHost(cliHost?: string): string {

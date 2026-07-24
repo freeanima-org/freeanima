@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "bun:test";
 import { readFileSync, existsSync, mkdirSync, writeFileSync, realpathSync } from "node:fs";
 import { join } from "node:path";
-import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
+import { createTempDir, removeTempDir } from "@freeanima/host/core/util/temp-dir";
 import { renderSystemdUnit } from "./systemd-unit.ts";
 import { ensureUnitFile } from "./service-cmd.ts";
 import * as serviceCommon from "./service-common.ts";
@@ -10,7 +10,7 @@ import {
   coalesceBindHosts,
   resolveProbeHost,
   DEFAULT_BIND_HOST,
-} from "@freeanima/platform/bind-hosts.ts";
+} from "@freeanima/host/platform/bind-hosts.ts";
 
 describe("bind hosts", () => {
   it("parseBindHosts splits comma-separated addresses", () => {

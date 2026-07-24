@@ -1,9 +1,9 @@
 import { useEffect, useState, type JSX } from "react";
-import { Spinner } from "@freeanima/frontend/ui-kit";
-import { EntityIdLabel } from "@freeanima/frontend/ui-kit/composite";
-import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { Spinner } from "@freeanima/ui-kit";
+import { EntityIdLabel } from "@freeanima/ui-kit/composite";
+import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
-import type { EntityOverlayProps } from "@freeanima/frontend/app-ui/spa/features/entity-overlay-registry.ts";
+import type { EntityOverlayProps } from "@freeanima/client/portal-sdk/entity-overlay-registry.ts";
 
 type SemanticMemoryView = {
   id: number;

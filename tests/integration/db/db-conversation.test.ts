@@ -1,6 +1,6 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import type { ConversationMessage } from "@freeanima/core/db/domain";
-import { pingDatabase } from "@freeanima/core/db/pg";
+import type { ConversationMessage } from "@freeanima/host/core/db/domain";
+import { pingDatabase } from "@freeanima/host/core/db/pg";
 import {
   appendMessage,
   getConversationMeta,
@@ -9,7 +9,7 @@ import {
   shiftMessagePositions,
   updateCompression,
   upsertConversationMeta,
-} from "@freeanima/core/db/pg/conversation";
+} from "@freeanima/host/core/db/pg/conversation";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {

@@ -1,10 +1,6 @@
 /** Portal（Tauri）壳层桥接；浏览器/dev 模式下多为 no-op */
 
-import type {
-  CompanionWindowRole,
-  PatrolScreenInfo,
-  ShellApi,
-} from "@freeanima/frontend/portal-sdk";
+import type { CompanionWindowRole, PatrolScreenInfo, ShellApi } from "@freeanima/client/portal-sdk";
 import type { ScreenPoint } from "./window-metrics.ts";
 
 export type { PatrolScreenInfo, CompanionWindowRole };

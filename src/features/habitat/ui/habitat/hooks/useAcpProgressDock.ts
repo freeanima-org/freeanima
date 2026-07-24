@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import {
   useAcpProgressDock as useSharedAcpProgressDock,
   type AcpProgressDockOptions,
-} from "@freeanima/frontend/ui-kit/ui/useAcpProgressDock.ts";
+} from "@freeanima/ui-kit/ui/useAcpProgressDock.ts";
 import {
   getConversationAcpDock,
   subscribeConversationEvents,

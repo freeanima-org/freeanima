@@ -11,7 +11,7 @@ import {
   narrativeBodySchema,
   semanticRefBodySchema,
   type ContentBlockType,
-} from "@freeanima/core/db/schema/entity";
+} from "@freeanima/host/core/db/schema/entity";
 import {
   assertEntityInWorld,
   assertSameWorldReferent,
@@ -20,8 +20,8 @@ import {
   getEntity,
   searchEntities,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
-import { omitUndefined } from "@freeanima/core/util";
+} from "@freeanima/host/core/db/pg/entity";
+import { omitUndefined } from "@freeanima/host/core/util";
 
 import type {
   ContentBlockCreateInput,

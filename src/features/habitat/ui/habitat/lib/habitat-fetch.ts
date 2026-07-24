@@ -1,7 +1,7 @@
 import {
   createBearerFetch,
   shouldAttachRemoteAuth,
-} from "@freeanima/frontend/portal-sdk/remote-auth";
+} from "@freeanima/client/portal-sdk/remote-auth";
 
 import { apiPath } from "./api-path.ts";
 import { resolveApiOrigin } from "./habitat-origin.ts";

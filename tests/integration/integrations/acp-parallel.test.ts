@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
-import { AcpClientPool } from "@freeanima/capabilities/acp/client-pool.ts";
-import { AcpTaskScheduler } from "@freeanima/capabilities/acp/task-scheduler.ts";
-import type { ACPClient } from "@freeanima/capabilities/acp/client.ts";
+import { AcpClientPool } from "@freeanima/host/capabilities/acp/client-pool.ts";
+import { AcpTaskScheduler } from "@freeanima/host/capabilities/acp/task-scheduler.ts";
+import type { ACPClient } from "@freeanima/host/capabilities/acp/client.ts";
 
 function mockClient(): ACPClient {
   return {

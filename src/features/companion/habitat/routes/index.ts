@@ -1,4 +1,4 @@
-import type { RemoteToolsServerDeps } from "@freeanima/platform/remote-tools/types";
+import type { RemoteToolsServerDeps } from "@freeanima/host/capabilities/outpost/transport/types";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 

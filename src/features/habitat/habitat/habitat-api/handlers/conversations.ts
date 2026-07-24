@@ -1,5 +1,5 @@
 import { habitatCtx } from "./runtime.ts";
-import { isConversationMeta } from "@freeanima/core/db/domain";
+import { isConversationMeta } from "@freeanima/host/core/db/domain";
 import {
   createConversationBodySchema,
   patchTitleBodySchema,

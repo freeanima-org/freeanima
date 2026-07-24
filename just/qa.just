@@ -8,6 +8,7 @@ check: _deps
   bunx tsgo -p tsconfig.json
   bunx oxlint .
   bun scripts/check-import-depth.ts
+  bun scripts/check-layer-deps.ts
   bun scripts/check-pg-sql-arrays.ts --self-test
   bun scripts/check-pg-sql-arrays.ts
   bun scripts/stylelint.ts
@@ -20,6 +21,7 @@ pre-commit: _deps
   bunx tsgo -p tsconfig.json
   bunx oxlint .
   bun scripts/check-import-depth.ts
+  bun scripts/check-layer-deps.ts
   bunx oxfmt --check .
   bun test src --pass-with-no-tests --changed
 

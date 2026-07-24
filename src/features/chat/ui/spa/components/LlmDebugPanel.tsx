@@ -9,7 +9,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@freeanima/frontend/ui-kit";
+} from "@freeanima/ui-kit";
 import type {
   LlmDebugSnapshotPayload,
   LlmDebugSnapshots,

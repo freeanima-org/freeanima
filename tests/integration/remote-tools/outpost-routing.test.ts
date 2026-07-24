@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { ToolSetRegistry, toolError } from "@freeanima/core/tool";
+import { ToolSetRegistry, toolError } from "@freeanima/host/core/tool";
 import { formatRemoteToolName } from "@freeanima/shared/rpc-contract";
-import { RemoteToolsManager } from "@freeanima/capabilities/remote-tools";
+import { RemoteToolsManager } from "@freeanima/host/capabilities/outpost";
 
 describe("sap strict routing integration", () => {
   it("does not fall back to habitat-local file_read for unregistered sap tool", () => {

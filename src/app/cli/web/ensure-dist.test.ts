@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { mkdirSync, utimesSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
+import { createTempDir, removeTempDir } from "@freeanima/host/core/util/temp-dir";
 
 import {
   assessMonorepoWebDist,
@@ -114,7 +114,7 @@ describe("ensure-web-dist", () => {
     touch(join(dist, "manifest.webmanifest"), distTime);
     touch(join(dist, "sw.js"), distTime);
 
-    const sourceRoot = join(root, "src/frontend/ui-kit/composite");
+    const sourceRoot = join(root, "src/ui-kit/composite");
     mkdirSync(sourceRoot, { recursive: true });
     touch(join(sourceRoot, "ContextMenu.tsx"), distTime + 1000);
 

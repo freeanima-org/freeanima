@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Badge, Button, Card, CardContent, Spinner } from "@freeanima/frontend/ui-kit";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { Badge, Button, Card, CardContent, Spinner } from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { useHabitatConversationsStore } from "@freeanima/features/habitat/ui/habitat/stores/habitat-conversations.ts";

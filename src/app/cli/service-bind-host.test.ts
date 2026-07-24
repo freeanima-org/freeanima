@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, afterEach } from "bun:test";
 
 import { resolveServiceBindHost } from "./service-bind-host.ts";
-import * as bootstrapModule from "@freeanima/platform/config/bootstrap.ts";
+import * as bootstrapModule from "@freeanima/host/platform/config/bootstrap.ts";
 
 describe("resolveServiceBindHost", () => {
   afterEach(() => {

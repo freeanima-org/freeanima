@@ -1,4 +1,4 @@
-import { bindEnginePorts } from "@freeanima/platform";
+import { bindEnginePorts } from "@freeanima/host/platform";
 
 bindEnginePorts();
 

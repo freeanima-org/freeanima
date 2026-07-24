@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { SettingsPanelProps } from "@freeanima/frontend/portal-sdk/settings";
+import type { SettingsPanelProps } from "@freeanima/client/portal-sdk/settings";
 
 import { SettingsPanel } from "../components/SettingsPanel.tsx";
 import { useCompanionStore } from "../stores/companion.ts";

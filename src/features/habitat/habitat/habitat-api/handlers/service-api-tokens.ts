@@ -3,8 +3,8 @@ import {
   getServiceApiTokenById,
   listServiceApiTokensBySubject,
   revokeServiceApiToken,
-} from "@freeanima/core/db/pg/service-api-token";
-import type { FeatureRpcHandler } from "@freeanima/platform/features";
+} from "@freeanima/host/core/db/pg/service-api-token";
+import type { FeatureRpcHandler } from "@freeanima/host/platform/features";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 
 import { authHasScope, type ServiceAuthContext } from "../auth-context.ts";

@@ -20,12 +20,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@freeanima/frontend/ui-kit";
-import {
-  FormField,
-  FormFieldLabel,
-  FormFieldset,
-} from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+} from "@freeanima/ui-kit";
+import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import {
   getSleepPipelineStatus,
   listPipelineStepRuns,

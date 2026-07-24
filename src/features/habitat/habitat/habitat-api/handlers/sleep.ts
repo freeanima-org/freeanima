@@ -1,4 +1,4 @@
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/host/core/util";
 import { habitatCtx } from "./runtime.ts";
 import { ApiHandlerError } from "./errors.ts";
 

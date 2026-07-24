@@ -1,5 +1,5 @@
-import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/core/db/pg/entity";
-import { toolError } from "@freeanima/core/tool";
+import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/host/core/db/pg/entity";
+import { toolError } from "@freeanima/host/core/tool";
 
 import { parseWorldId } from "./task-tool-helpers.ts";
 

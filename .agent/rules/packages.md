@@ -1,51 +1,31 @@
 # Package naming (RFC #1)
 
-> **单包迁移（2026）**：逻辑包名（`@freeanima/*`）仍通过 `tsconfig.json` paths 解析；物理上根 `package.json` 承载产品依赖；`site/` 为**独立**文档站（自有 `package.json` + `bun.lock`，非 workspace）。目录拓扑见 [`docs/concepts/repository-topology.md`](../docs/concepts/repository-topology.md)。
+> **单包 + Phase 1 host/client**：逻辑名经 `tsconfig` paths；物理根 `package.json`；拓扑见 [`repository-topology.md`](../docs/concepts/repository-topology.md)。
 
-Workspace package names reflect the layer topology in [`code-layers.md`](code-layers.md):
+| Shape      | Pattern                                    | Example                                                    |
+| ---------- | ------------------------------------------ | ---------------------------------------------------------- |
+| Host layer | `@freeanima/host/{layer}`                  | `host/kernel`, `host/core`, `host/engine`, `host/platform` |
+| Capability | `@freeanima/host/capabilities/{slug}`      | `self`, `memory`, `tools`, `outpost`, `connectors`, …      |
+| Feature    | `@freeanima/features/{slug}/…`             | `features/chat/…`                                          |
+| Shared     | `@freeanima/shared/{name}`                 | `habitat-rpc`, `rpc-contract`                              |
+| UI kit     | `@freeanima/ui-kit`                        | 设计系统（顶层，∥ shared）                                 |
+| Client     | `@freeanima/client/{portal-sdk,app-frame}` | Portal chrome                                              |
+| Entry      | `src/app/cli`, `src/app/shell`             | CLI / Portal 宿主                                          |
 
-| Shape             | Pattern                           | Example                                                             |
-| ----------------- | --------------------------------- | ------------------------------------------------------------------- |
-| Layer aggregate   | `@freeanima/{layer}`              | `kernel`, `core`, `runtime`, `platform`                             |
-| Capability pack   | `@freeanima/capabilities-{slug}`  | `capabilities-memory`, `capabilities-tools`                         |
-| Feature module    | `@freeanima/feature-{slug}`       | `feature-chat`, `feature-habitat`                                   |
-| Shared protocol   | `@freeanima/shared/{name}`        | `habitat-rpc`, `habitat-client`, `habitat-contract`, `rpc-contract` |
-| Frontend          | `@freeanima/frontend/{name}`      | `ui-kit`, `portal-sdk`, `app-ui`（`src/frontend/`）                 |
-| Entry             | CLI app (`src/app/cli`)           | Source / standalone entry（逻辑名可仍标 `@freeanima/cli` 安装前缀） |
-| Companion Outpost | `@freeanima/features/companion/*` | overlay UI + thin server under `src/features/companion/`            |
-| Habitat protocol  | feature protocol                  | `src/features/habitat/protocol/habitat-contract/`                   |
-| Habitat REST      | feature habitat-api               | `src/features/habitat/habitat/habitat-api/`                         |
+## Valid paths（摘要）
 
-## Valid layer packages
+| Prefix                           | Notes                                                                                                         |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `@freeanima/host/kernel`         | logging, hooks, eventbus                                                                                      |
+| `@freeanima/host/core`           | db, config, mask, i18n, tool, llm, …                                                                          |
+| `@freeanima/host/engine`         | conversation, turn, loop, goal, pipeline（原 runtime）                                                        |
+| `@freeanima/host/capabilities/*` | self（原 identity）、outpost（原 remote-tools）、connectors（原 platform/connectors）、tools(+slash-commands) |
+| `@freeanima/host/platform`       | boot, ports, habitat router, `service/`（原 platform/runtime）                                                |
+| `@freeanima/ui-kit`              | React 设计系统                                                                                                |
+| `@freeanima/client/portal-sdk`   | Shell/Habitat 客户端 + typed client                                                                           |
+| `@freeanima/client/app-frame`    | AppFrame SPA                                                                                                  |
+| `@freeanima/shared/*`            | 无 React 契约                                                                                                 |
 
-| Package                              | Layer / dir  | Notes                                                                                       |
-| ------------------------------------ | ------------ | ------------------------------------------------------------------------------------------- |
-| `@freeanima/kernel`                  | kernel       | subpaths: `/logging`, `/hooks`, `/eventbus`                                                 |
-| `@freeanima/core`                    | core         | subpaths: `/db`, `/repos`, `/tool`, `/llm`, …                                               |
-| `@freeanima/runtime`                 | runtime      | subpaths: `/conversation`, `/turn`, `/loop`, `/goal`, `/pipeline`                           |
-| `@freeanima/platform`                | platform     | subpaths: `/ports`, `/config`, `/connectors/*`, `/features/*`                               |
-| `capabilities-*`                     | capabilities | 8 packs（acp, identity, llm-openai, mcp-client, mcp-server, memory, satellite, tools）      |
-| `feature-*`                          | features     | plugin + habitat + protocol + ui + domain                                                   |
-| CLI (`src/app/cli`)                  | entry        | 源码入口；standalone `package.json` name 仍可为 `@freeanima/cli`（非 npm 包）               |
-| `@freeanima/ui-kit`                  | frontend     | 共享 React UI（shadcn + composite）                                                         |
-| `@freeanima/shared/habitat-rpc`      | shared       | Habitat RPC 传输（connect / req / res / evt）                                               |
-| `@freeanima/shared/habitat-contract` | shared       | Habitat method SSOT（Zod + 静态 transport 元信息）                                          |
-| `@freeanima/shared/habitat-client`   | shared       | Habitat 多传输客户端（call / subscribe + HTTP/WS dispatch）                                 |
-| `@freeanima/rpc-contract`            | shared       | Habitat RPC feature protocol + remote tools protocol；`./satellite`、`./feature-rpc` 子入口 |
-| `@freeanima/frontend/portal-sdk`     | frontend     | Portal 客户端 SDK：Shell 能力、settings、Habitat 连通、offline（依赖 habitat-rpc）          |
-| `@freeanima/frontend/app-ui`         | frontend     | 应用布局 SPA（`AppFrame`：Rail / 底栏 / 设置 chrome）；≠ Portal Shell                       |
+**Deprecated import prefixes**（勿在新代码使用）: `@freeanima/frontend/*`、`@freeanima/runtime`、`@freeanima/capabilities/identity`、`@freeanima/capabilities/remote-tools`、裸 `@freeanima/platform`（应 `@freeanima/host/platform`）、`@freeanima/core`（应 `@freeanima/host/core`）。
 
-**Deprecated prefixes** (must not appear in new packages): `engine-*`, `life-*`, `storage-*`, `mechanism-*`, `orchestration-*`, `service-*`, `connectors-*`, `feature-habitat`（已移除；用 `feature-habitat`）。
-
-Layer dependency rules: [`code-layers.md`](code-layers.md).
-
-## `@freeanima/ui-kit` exports
-
-| Subpath               | 用途                                                               |
-| --------------------- | ------------------------------------------------------------------ |
-| `.`                   | FormField、ListDetailLayout、viewport hooks、shadcn 原语 re-export |
-| `./globals.css`       | Tailwind v4 + shadcn 主题 CSS 变量（各 app `styles.css` 引入）     |
-| `./components/ui`     | shadcn 原语（Button、Dialog、Card…）                               |
-| `./composite`         | ConfirmDialog、ActionSheet、StatusAlert、EmptyState                |
-| `./form` / `./layout` | 表单与列表/详情布局                                                |
-| `./styles.css`        | safe-area 等共享样式                                               |
+Layer rules: [`code-layers.md`](code-layers.md)。

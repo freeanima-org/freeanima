@@ -4,7 +4,7 @@ import {
   CONTENT_BLOCK_COMPONENT,
   diaryBlockTemplateBodySchema,
   diaryBlockTemplatePresetSchema,
-} from "@freeanima/core/db/schema/entity";
+} from "@freeanima/host/core/db/schema/entity";
 
 describe("diary_block_template preset", () => {
   test("preset 与模板名分层：body 只含 preset", () => {

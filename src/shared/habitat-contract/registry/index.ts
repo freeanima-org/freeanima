@@ -64,10 +64,10 @@ export type StaticHabitatMethod = keyof typeof STATIC_METHOD_REGISTRY;
 
 export type HabitatMethod = string;
 
-/** shared habitat-client 运行时 payload；精确类型见 @freeanima/platform/habitat */
+/** shared habitat-client 运行时 payload；精确类型见 @freeanima/host/platform/habitat */
 export type HabitatMethodInputs = Record<string, unknown>;
 
-/** shared habitat-client 运行时返回值；精确类型见 @freeanima/platform/habitat */
+/** shared habitat-client 运行时返回值；精确类型见 @freeanima/host/platform/habitat */
 export type HabitatMethodOutputs = unknown;
 
 export function isHabitatMethod(method: string): method is HabitatMethod {

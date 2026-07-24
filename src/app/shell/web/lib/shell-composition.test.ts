@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
-import { setShellBuildTargetForTests } from "@freeanima/frontend/portal-sdk/shell-build-target.ts";
+import { setShellBuildTargetForTests } from "@freeanima/client/portal-sdk/shell-build-target.ts";
 
 import { getShellKind } from "./shell-composition.ts";
 

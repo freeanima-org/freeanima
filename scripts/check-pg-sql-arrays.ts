@@ -11,7 +11,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const REPO_ROOT = join(import.meta.dir, "..");
-const SCAN_ROOT = join(REPO_ROOT, "src/core/db/pg");
+const SCAN_ROOT = join(REPO_ROOT, "src/host/core/db/pg");
 const SOURCE_EXT = /\.(ts|tsx)$/;
 
 /** sql`…` / drizzleSql`…` 模板（非嵌套扫描；够用） */

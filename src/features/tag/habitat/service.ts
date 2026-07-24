@@ -1,8 +1,8 @@
-import type { SubjectKind } from "@freeanima/core/config";
-import { resolveSubjectWorldId } from "@freeanima/core/config/world-context";
-import { isPostgresPrimary } from "@freeanima/core/db/pg";
-import { omitUndefined } from "@freeanima/core/util";
-import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
+import type { SubjectKind } from "@freeanima/host/core/config";
+import { resolveSubjectWorldId } from "@freeanima/host/core/config/world-context";
+import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
+import { omitUndefined } from "@freeanima/host/core/util";
+import type { VerifiedServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
 import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 
 import {

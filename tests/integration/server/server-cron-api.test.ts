@@ -8,8 +8,12 @@ import {
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createJob, initCronModule, stopCronModule } from "@freeanima/platform/connectors/cron";
-import { getAppRuntime } from "@freeanima/platform";
+import {
+  createJob,
+  initCronModule,
+  stopCronModule,
+} from "@freeanima/host/capabilities/connectors/cron";
+import { getAppRuntime } from "@freeanima/host/platform";
 import {
   listCronJobs,
   pauseCronJob,

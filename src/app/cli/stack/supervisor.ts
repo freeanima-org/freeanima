@@ -1,10 +1,10 @@
-import { logStartupError } from "@freeanima/platform/logging";
-import { loadBootstrapConfig } from "@freeanima/platform/config/bootstrap.ts";
-import { parseBindHosts } from "@freeanima/platform";
+import { logStartupError } from "@freeanima/host/platform/logging";
+import { loadBootstrapConfig } from "@freeanima/host/platform/config/bootstrap.ts";
+import { parseBindHosts } from "@freeanima/host/platform";
 import {
   resolveHabitatTlsListenConfig,
   toHabitatTlsBunOptions,
-} from "@freeanima/platform/tls/resolve-habitat-tls";
+} from "@freeanima/host/platform/tls/resolve-habitat-tls";
 
 import { tryResolveWebDistDir } from "../web/dist-path.ts";
 
@@ -51,7 +51,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
       if (distDir) {
         let uiVersion: string | undefined;
         try {
-          const { readAppVersion } = await import("@freeanima/core/config/version");
+          const { readAppVersion } = await import("@freeanima/host/core/config/version");
           uiVersion = readAppVersion().trim();
         } catch {
           /* ignore */
@@ -71,7 +71,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
     }
   }
 
-  const { serve } = await import("@freeanima/platform");
+  const { serve } = await import("@freeanima/host/platform");
   const { startHubHttpServers, closeHttpServers, waitForDrainWithTimeout } =
     await import("@freeanima/features/habitat/habitat/habitat-api");
 

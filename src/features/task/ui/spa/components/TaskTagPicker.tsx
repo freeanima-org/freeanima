@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 
-import { TASK_ITEM_COMPONENT } from "@freeanima/core/db/schema";
+import { TASK_ITEM_COMPONENT } from "@freeanima/host/core/db/schema";
 import { TagPicker, type TagKnown } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 
 /** @deprecated 请用 TagKnown；保留兼容 TaskApp / ProjectApp */

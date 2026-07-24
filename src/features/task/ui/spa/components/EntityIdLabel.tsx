@@ -1,1 +1,1 @@
-export { EntityIdLabel } from "@freeanima/frontend/ui-kit/composite";
+export { EntityIdLabel } from "@freeanima/ui-kit/composite";

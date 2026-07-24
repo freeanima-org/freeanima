@@ -21,7 +21,7 @@ database:
 
 Production **must** set `database.url`. Prefer `env("DATABASE_URL")` over plaintext passwords in `config.yaml` (Vault is unavailable at cold start). Path conventions: [`security.md`](security.md#credential-responsibilities).
 
-Optional pool overrides（见 [`src/core/db/pg/client.ts`](../../src/core/db/pg/client.ts)）:
+Optional pool overrides（见 [`src/host/core/db/pg/client.ts`](../../src/host/core/db/pg/client.ts)）:
 
 | Env                              | Default | Notes                                                                     |
 | -------------------------------- | ------- | ------------------------------------------------------------------------- |

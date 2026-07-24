@@ -3,9 +3,9 @@ import {
   asCompanionProfile,
   companionProfileBodySchema,
   type CompanionProfileBody,
-} from "@freeanima/core/db/schema/entity";
-import { resolveSubjectWorldId } from "@freeanima/core/config";
-import { createEntity, listEntities, updateEntity } from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/schema/entity";
+import { resolveSubjectWorldId } from "@freeanima/host/core/config";
+import { createEntity, listEntities, updateEntity } from "@freeanima/host/core/db/pg/entity";
 import { DEFAULT_BEHAVIOR, emptyMotionSlots } from "./types.ts";
 import { mergeBehavior } from "./behavior.ts";
 

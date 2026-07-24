@@ -5,7 +5,7 @@
 import type { BunPlugin } from "bun";
 import { realpathSync } from "node:fs";
 
-import type { ComponentBuildMeta } from "@freeanima/core/config/build-meta.parse";
+import type { ComponentBuildMeta } from "@freeanima/host/core/config/build-meta.parse";
 
 export type StandaloneEmbedInput = {
   kind: "migration" | "web" | "docs";
@@ -50,7 +50,7 @@ export function createStandaloneEmbedPlugin(opts: {
         }
 
         const contents = `/** AUTO-INJECTED by scripts/standalone-embed-plugin.ts during just pack cli */
-import type { ComponentBuildMeta } from "@freeanima/core/config/build-meta.parse";
+import type { ComponentBuildMeta } from "@freeanima/host/core/config/build-meta.parse";
 
 export type StandaloneEmbedFile = {
   kind: "migration" | "web" | "docs";

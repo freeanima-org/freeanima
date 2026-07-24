@@ -4,7 +4,11 @@ import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { closeDb, initDatabase, upsertHabitatRuntimeConfigDocument } from "@freeanima/core/db/pg";
+import {
+  closeDb,
+  initDatabase,
+  upsertHabitatRuntimeConfigDocument,
+} from "@freeanima/host/core/db/pg";
 import { describePg, pgTestUrl } from "../../helpers/pg-test-gate.ts";
 import { beginLogIsolation } from "../../helpers/log-isolation.ts";
 import { restoreIntegrationHome } from "../../helpers/integration-case.ts";

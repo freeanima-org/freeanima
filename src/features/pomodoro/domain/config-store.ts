@@ -3,9 +3,9 @@ import {
   POMODORO_CONFIG_COMPONENT,
   asPomodoroConfig,
   type PomodoroConfigBody,
-} from "@freeanima/core/db/schema/entity";
-import { createEntity, searchEntities, updateEntity } from "@freeanima/core/db/pg/entity";
-import { omitUndefined } from "@freeanima/core/util";
+} from "@freeanima/host/core/db/schema/entity";
+import { createEntity, searchEntities, updateEntity } from "@freeanima/host/core/db/pg/entity";
+import { omitUndefined } from "@freeanima/host/core/util";
 
 import type { PomodoroConfigRow, PomodoroStoreContext } from "./types.ts";
 

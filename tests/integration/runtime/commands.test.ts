@@ -8,10 +8,10 @@ import {
 } from "../../helpers/integration-case.ts";
 import type { PgTestContext } from "../../helpers/pg-test.ts";
 
-import { isConversationMeta } from "@freeanima/core/db/domain";
+import { isConversationMeta } from "@freeanima/host/core/db/domain";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
+import { createTempDir, removeTempDir } from "@freeanima/host/core/util/temp-dir";
 import {
   getTestEngine,
   seedSession,
@@ -26,13 +26,13 @@ import {
   isUpgradeResult,
   resolveCommand,
   commandNeedsPreAck,
-} from "@freeanima/platform/slash-commands";
-import { getAppRuntime } from "@freeanima/platform";
-import { getHomeChannel } from "@freeanima/platform/ports/home-channel";
-import { getHabitatRuntimeConfigDocument } from "@freeanima/core/db/pg";
+} from "@freeanima/host/capabilities/tools/slash-commands";
+import { getAppRuntime } from "@freeanima/host/platform";
+import { getHomeChannel } from "@freeanima/host/platform/ports/home-channel";
+import { getHabitatRuntimeConfigDocument } from "@freeanima/host/core/db/pg";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
-import * as engineConversation from "@freeanima/runtime/conversation";
-import { patchConversationMeta } from "@freeanima/core/db/pg/conversation";
+import * as engineConversation from "@freeanima/host/engine/conversation";
+import { patchConversationMeta } from "@freeanima/host/core/db/pg/conversation";
 
 async function patchMetaForTest(
   conversationId: string,

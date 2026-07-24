@@ -16,7 +16,7 @@
 
 | 层                                            | 必须改                                                                                                       |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `src/core/db`                                 | entity component 或专用表 + migration                                                                        |
+| `src/host/core/db`                            | entity component 或专用表 + migration                                                                        |
 | `src/features/<slug>/domain`                  | 域逻辑 SSOT                                                                                                  |
 | `rpc-contract`                                | `feature-rpc/frames/<domain>.ts` + router 子集                                                               |
 | `src/features/<slug>/habitat/routes/index.ts` | Habitat RPC handler（`defineHabitatRoute`）                                                                  |
@@ -68,10 +68,10 @@
 1. 在 `src/features/<slug>/habitat/method-defs.ts` 增加 method 定义
 2. 在 `src/shared/rpc-contract/feature-rpc/frames/` 增加 schema（若尚未存在）
 3. 在 `src/features/<slug>/habitat/routes/index.ts` 用 `bindHabitatRouteHandlers` 绑定 handler（**禁止** import `habitat-client`）
-4. 在 `src/platform/habitat/habitat-router.ts` import 该 feature routes bundle
-5. Feature UI `api.ts` 使用 `@freeanima/platform/habitat/client.ts` 的 `getTypedHabitatClient` / `call` / `subscribe`
+4. 在 `src/host/platform/habitat/habitat-router.ts` import 该 feature routes bundle
+5. Feature UI `api.ts` 使用 `@freeanima/host/platform/habitat/client.ts` 的 `getTypedHabitatClient` / `call` / `subscribe`
 
-远程工具专用 method（`tool.*` / `remote_tools.attach` / terminal）在 [`src/platform/remote-tools/ws-server.ts`](../../src/platform/remote-tools/ws-server.ts)。
+远程工具专用 method（`tool.*` / `remote_tools.attach` / terminal）在 [`src/host/capabilities/outpost/transport/ws-server.ts`](../../src/host/capabilities/outpost/transport/ws-server.ts)。
 
 ## 前端包依赖速查
 
@@ -82,6 +82,6 @@
 | `app-ui`       | ui-kit、portal-sdk、feature-\*                               | rpc-contract、深路径绕过 feature 边界                              |
 | `feature-*` UI | habitat-client、habitat-contract（类型）、portal-sdk、ui-kit | 在 `habitat/routes` 使用 habitat-client；`platform/habitat` 桶文件 |
 
-**typed Habitat client**：前端 UI 只能从 `@freeanima/platform/habitat/client.ts` 取 `getTypedHabitatClient`，**不要**从桶文件 `@freeanima/platform/habitat` 导入。
+**typed Habitat client**：前端 UI 只能从 `@freeanima/host/platform/habitat/client.ts` 取 `getTypedHabitatClient`，**不要**从桶文件 `@freeanima/host/platform/habitat` 导入。
 
 UI 样式与复合组件约定 → [`frontend-ui.md`](frontend-ui.md)。详见 [`docs/guide/habitat-rpc.md`](../../docs/guide/habitat-rpc.md)。

@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from "bun:test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
+import { createTempDir, removeTempDir } from "@freeanima/host/core/util/temp-dir";
 import { tryResolveWebDistDir } from "./dist-path.ts";
 import { registerEmbeddedWebDist } from "./web-dist-embedded.ts";
 

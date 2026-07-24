@@ -1,8 +1,8 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { bindActiveRuntimeConfig } from "@freeanima/platform/config";
-import { parseYaml } from "@freeanima/platform/config";
-import { animaConfigSchema } from "@freeanima/core/config";
-import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
+import { bindActiveRuntimeConfig } from "@freeanima/host/platform/config";
+import { parseYaml } from "@freeanima/host/platform/config";
+import { animaConfigSchema } from "@freeanima/host/core/config";
+import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
 import {
   awaitPendingEmbeddingsForTest,
   getFtsCoverageStats,
@@ -10,15 +10,15 @@ import {
   registerEmbedTextFn,
   resetEmbedTextFnForTest,
   resetPendingEmbeddingsForTest,
-} from "@freeanima/core/db/pg";
-import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/core/db/schema";
+} from "@freeanima/host/core/db/pg";
+import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/host/core/db/schema";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { createSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
+import { createSemanticMemory } from "@freeanima/host/core/db/pg/semantic-memory";
 import { getActivePgTestContext, getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 

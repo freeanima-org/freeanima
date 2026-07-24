@@ -15,9 +15,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@freeanima/frontend/ui-kit";
-import { FormField } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+} from "@freeanima/ui-kit";
+import { FormField } from "@freeanima/ui-kit/form/FormFieldset.tsx";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
 import { listAutoLlmRuns } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";

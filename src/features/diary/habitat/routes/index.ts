@@ -1,4 +1,4 @@
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/host/core/util";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { diaryMethodDefs } from "../method-defs.ts";

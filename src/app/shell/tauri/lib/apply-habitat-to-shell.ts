@@ -1,5 +1,5 @@
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
-import { buildShellApiFields, type ShellApi } from "@freeanima/frontend/portal-sdk";
+import { buildShellApiFields, type ShellApi } from "@freeanima/client/portal-sdk";
 
 const DEFAULT_HABITAT_URL = "http://127.0.0.1:2658";
 

@@ -1,7 +1,7 @@
 import { useDraggable } from "@dnd-kit/core";
-import { Badge } from "@freeanima/frontend/ui-kit";
-import { TaskItemRowView } from "@freeanima/frontend/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+import { Badge } from "@freeanima/ui-kit";
+import { TaskItemRowView } from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { useState } from "react";
 
 import { taskDndId } from "../lib/dnd-ids.ts";

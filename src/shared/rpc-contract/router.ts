@@ -1,6 +1,6 @@
 /**
  * Remote-tools WS 帧级 router 类型（outpost attach 路径）。
- * 完整 Habitat method 列表与 transport meta 以 `@freeanima/platform/habitat/habitat-router` 为 SSOT。
+ * 完整 Habitat method 列表与 transport meta 以 `@freeanima/host/platform/habitat/habitat-router` 为 SSOT。
  */
 import type {
   MessageInterruptInput,

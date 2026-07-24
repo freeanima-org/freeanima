@@ -8,8 +8,8 @@ import {
   CardTitle,
   Input,
   Spinner,
-} from "@freeanima/frontend/ui-kit";
-import { showConfirm } from "@freeanima/frontend/ui-kit/composite";
+} from "@freeanima/ui-kit";
+import { showConfirm } from "@freeanima/ui-kit/composite";
 import {
   deleteMotion,
   renameMotion,

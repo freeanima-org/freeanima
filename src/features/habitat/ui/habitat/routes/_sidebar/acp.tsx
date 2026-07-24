@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Badge, Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import {
   getAcpStatus,
   startAllAcp,

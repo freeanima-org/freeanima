@@ -1,7 +1,7 @@
-import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
-import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/core/db/pg/entity";
-import { omitUndefined } from "@freeanima/core/util";
-import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/host/core/tool";
+import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/host/core/db/pg/entity";
+import { omitUndefined } from "@freeanima/host/core/util";
+import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 
 import {
   createTag,

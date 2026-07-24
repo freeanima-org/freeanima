@@ -1,4 +1,4 @@
-import { z } from "@freeanima/core/tool";
+import { z } from "@freeanima/host/core/tool";
 
 import type { listEmailAccountRows } from "./account-store.ts";
 import type { getEmailMessageRow } from "./message-store.ts";

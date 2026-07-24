@@ -16,7 +16,7 @@ User-facing product terms (Chinese in [`i18n/glossary.md`](../../i18n/glossary.m
 | External connectors (class)           | **Portal**       | **入口**          | Shell, MCP clients, and similar ways in; not the Habitat itself                                                                 |
 | Remote-tool registrant                | **Outpost**      | **前哨**          | Unreachable local app that `remote_tools.attach` (Portal-embedded companion or standalone tool); **not** a Portal               |
 | Shell                                 | **Shell**        | **壳**            | A Portal (desktop / mobile / web window; SSH-like). **Not** app frame (Rail / bottom nav / settings chrome)                     |
-| app frame                             | **app frame**    | **应用布局**      | SPA chrome in `src/frontend/app-ui` (`AppFrame`); viewport-driven; orthogonal to Shell                                          |
+| app frame                             | **app frame**    | **应用布局**      | SPA chrome in `src/client/app-frame` (`AppFrame`); viewport-driven; orthogonal to Shell                                         |
 | Admin / inspect UI (legacy Habitat)   | **Habitat** (UI) | **栖息地**        | Area under `/habitat/*`; "Open Habitat" vs "Connect to Habitat"                                                                 |
 | Admin home page                       | **Dashboard**    | **仪表盘**        | `/habitat/dashboard` only; other Habitat routes keep their own labels                                                           |
 | Message bridges                       | **Gateway**      | Gateway           | Discord / WeChat — **not** a Portal                                                                                             |
@@ -108,28 +108,28 @@ Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed
 
 Entity deep links / overlay / clipboard use **Anima URI** (`anima:{id}?component=…&present=…`). Structured persistence still uses numeric entity ids. See [`anima-uri.md`](anima-uri.md).
 
-### Repository layout (Phase 0 — revised)
+### Repository layout (Phase 1 — host/client)
 
-Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Habitat adapter + domain + `plugin.ts`). Habitat uses the **same module shape** as chat/task — not a separate admin-\* stack. `src/features/companion/` is legacy naming; do not add new products there.
+Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Habitat adapter + domain + `plugin.ts`). Habitat 管理台 uses the **same module shape** as chat/task — not a separate admin-\* stack. `src/features/companion/` is legacy naming; do not add new products there.
 
 **End state:** Habitat RPC per feature; business methods use `POST|WS /rpc/v1` (same envelope). Public health/TLS probes and binary methods (e.g. `tts.synthesize`) are Habitat RPC REST with `auth: optional` or Bearer as declared in registry.
 
 Authoritative spec: [`repository-topology.md`](repository-topology.md).
 
-Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platform/` (boot + routers). Frontend: `src/frontend/` (`ui-kit`, `portal-sdk`, `app-ui`). Portal Shell hosts: `src/app/shell/{tauri,web}`.
+Host stack: `src/host/{kernel,core,engine,capabilities,platform}`。Client: `src/client/{portal-sdk,app-frame}`。Design system: `src/ui-kit/`（与 `shared/` 并列）。Portal Shell: `src/app/shell/{tauri,web}`。
 
-### Platform UI layering (legacy paths — migrating to features/\*)
+### Platform UI layering
 
-| Layer           | Platform-native?                   | Location (current → target)                                   | 数据通道                                |
+| Layer           | Platform-native?                   | Location                                                      | 数据通道                                |
 | --------------- | ---------------------------------- | ------------------------------------------------------------- | --------------------------------------- |
 | Shell（壳子维） | Yes                                | `src/app/shell/tauri`, companion, Habitat binding             | Tauri IPC / commands                    |
-| app frame       | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/app-ui`（`AppFrame`）                           | Habitat RPC（Feature RPC）              |
-| Habitat 前端    | Shell embed                        | `src/features/habitat`（UI + `plugin.habitat.rpc`）           | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
+| app frame       | 布局跟视口；设置 chrome 跟布局粗档 | `src/client/app-frame`（`AppFrame`）                          | Habitat RPC（Feature RPC）              |
+| Habitat 前端    | Shell embed（普通 feature）        | `src/features/habitat`（UI + `plugin.habitat.rpc`）           | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
 | Companion host  | Overlay WebView-host（第一方）     | `src/features/companion/companion`（spa attach；壳薄 IPC/FS） | Habitat RPC + `remote_tools.attach`     |
 
 导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `getShellKind()` 锁应用布局。交互（右键/长按/Enter）用 `portal-sdk` 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
 
-**边界**：`app-ui` 与 `src/features/*/ui` 通过 `portal-sdk` + Feature RPC 访问 Habitat。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于 Habitat 拨不到的本地应用（今日 companion：**第一方 overlay WebView-host** 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）。产品面（Chat 等）**不做** attach。可拨号对端的工具走 **MCP**。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/guide/habitat-rpc.md`](../guide/habitat-rpc.md)。
+**边界**：`app-frame` 与 `src/features/*/ui` 通过 `portal-sdk` + Feature RPC 访问 Habitat。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于 Habitat 拨不到的本地应用（今日 companion：**第一方 overlay WebView-host** 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）。产品面（Chat 等）**不做** attach。可拨号对端的工具走 **MCP**。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/guide/habitat-rpc.md`](../guide/habitat-rpc.md)。
 
 ### Habitat navigation ↔ cognitive layers
 
@@ -365,7 +365,7 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 | Concept       | What                                                                | Code                                                                         |
 | ------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | **Shell**     | Portal host runtime（browser / Tauri；形态 web / desktop / mobile） | `src/app/shell/*`；`portal-sdk` 中 `getShellKind` / `ShellApi` / buildTarget |
-| **app frame** | SPA chrome：模块左栏 Rail / 底栏 Tabs、设置页 chrome                | `src/frontend/app-ui`（`AppFrame`）；跟视口，**不**由壳类型锁定              |
+| **app frame** | SPA chrome：模块左栏 Rail / 底栏 Tabs、设置页 chrome                | `src/client/app-frame`（`AppFrame`）；跟视口，**不**由壳类型锁定             |
 
 ### 三维度模型（壳子 / 布局 / 交互）
 

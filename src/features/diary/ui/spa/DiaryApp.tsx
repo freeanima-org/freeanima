@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/portal-sdk/react.tsx";
-import { subscribeIdMappings } from "@freeanima/frontend/portal-sdk/offline-id-map";
+import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
+import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
 import { registerDiaryOfflineModule } from "./lib/offline-store.ts";
 import {
   countDiaryPendingOps,
@@ -16,17 +16,17 @@ import {
   updateDiaryEntry,
   type DiaryBlockTemplateRow,
 } from "./lib/api.ts";
-import { mergeDraftAfterSave } from "@freeanima/frontend/ui-kit/lib/merge-draft-after-save.ts";
-import { Button, Input, Spinner } from "@freeanima/frontend/ui-kit";
-import { PullToRefresh } from "@freeanima/frontend/ui-kit/composite";
-import { ListDetailLayout } from "@freeanima/frontend/ui-kit/layout";
+import { mergeDraftAfterSave } from "@freeanima/ui-kit/lib/merge-draft-after-save.ts";
+import { Button, Input, Spinner } from "@freeanima/ui-kit";
+import { PullToRefresh } from "@freeanima/ui-kit/composite";
+import { ListDetailLayout } from "@freeanima/ui-kit/layout";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@freeanima/frontend/ui-kit/components/ui/dropdown-menu.tsx";
+} from "@freeanima/ui-kit/components/ui/dropdown-menu.tsx";
 import { PlusIcon } from "lucide-react";
 import { m } from "@paraglide/messages";
 

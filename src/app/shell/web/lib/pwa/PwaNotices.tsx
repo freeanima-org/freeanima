@@ -1,9 +1,5 @@
-import { COMPACT_LAYOUT_MQ } from "@freeanima/frontend/ui-kit/layout";
-import {
-  dismissShellToast,
-  showShellToast,
-  SHELL_TOAST_IDS,
-} from "@freeanima/frontend/ui-kit/composite";
+import { COMPACT_LAYOUT_MQ } from "@freeanima/ui-kit/layout";
+import { dismissShellToast, showShellToast, SHELL_TOAST_IDS } from "@freeanima/ui-kit/composite";
 import { useEffect, useRef, useState } from "react";
 
 import { m } from "@paraglide/messages";

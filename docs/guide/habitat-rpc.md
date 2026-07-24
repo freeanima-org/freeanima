@@ -9,7 +9,7 @@ title: Habitat RPC
 - **WebSocket** — long-lived connection at **`/rpc/v1`** (connect handshake + heartbeat; Habitat RPC `req`/`res`/`evt` envelope)
 - **HTTP REST** — stateless GET/POST at **`/rpc/v1/{method/path}`** (plain JSON body or query; `Authorization: Bearer`)
 
-Implemented in [`src/shared/habitat-rpc/`](../../src/shared/habitat-rpc/) (WS envelope + HTTP REST helpers) and [`src/platform/habitat/http-rest-router.ts`](../../src/platform/habitat/http-rest-router.ts) (HTTP adapter). Feature method schemas live under [`src/shared/rpc-contract/`](../../src/shared/rpc-contract/).
+Implemented in [`src/shared/habitat-rpc/`](../../src/shared/habitat-rpc/) (WS envelope + HTTP REST helpers) and [`src/host/platform/habitat/http-rest-router.ts`](../../src/host/platform/habitat/http-rest-router.ts) (HTTP adapter). Feature method schemas live under [`src/shared/rpc-contract/`](../../src/shared/rpc-contract/).
 
 Binary HTTP methods (e.g. `tts.synthesize`, companion assets, TLS PEM/QR) use Habitat RPC REST with registry `request` / `response` encoding. Public probes (`health.probe`, `tls.ca.*`) are Habitat RPC methods with `auth: optional`.
 
@@ -35,7 +35,7 @@ Routing key is **`instance_id`** (follows the connecting application, not the Po
 
 **Call routing:** Habitat resolves the target from the **tool name** (`app_slug` + `instance_id`). Session `outpost_app_id` / `outpost_instance_id` is optional metadata (e.g. which outpost opened the chat); it is **not** required to invoke remote tools. Any conversation may call a registered remote tool when that instance is online.
 
-Server: [`src/capabilities/remote-tools/`](../../src/capabilities/remote-tools/). Client helper: `createRemoteToolsHabitatAttach` in `@freeanima/shared/rpc-contract`.
+Server: [`src/host/capabilities/outpost/`](../../src/host/capabilities/outpost/). Client helper: `createRemoteToolsHabitatAttach` in `@freeanima/shared/rpc-contract`.
 
 ## Endpoints
 

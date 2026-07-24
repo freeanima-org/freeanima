@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Button } from "@freeanima/frontend/ui-kit";
-import { copyText } from "@freeanima/frontend/ui-kit/lib/copy-text.ts";
+import { Button } from "@freeanima/ui-kit";
+import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 import { generateTotpCode } from "@freeanima/shared/vault-crypto";
 import type { VaultItemMetaRowPayload } from "@freeanima/shared/rpc-contract";
 

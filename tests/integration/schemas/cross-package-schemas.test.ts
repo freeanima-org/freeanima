@@ -1,18 +1,21 @@
 import { describe, it, expect } from "bun:test";
-import { cronJobDataSchema } from "@freeanima/platform/connectors/cron";
+import { cronJobDataSchema } from "@freeanima/host/capabilities/connectors/cron";
 import {
   eventPayloadSchemas,
   conversationUpdatedPayloadSchema,
-} from "@freeanima/capabilities/memory/schemas/event-payloads";
-import { factExtractionSchema } from "@freeanima/capabilities/memory/schemas/fact-extraction";
-import { filterRecallableMessages } from "@freeanima/capabilities/memory";
-import { toolArgsSchema, toolErrorSchema } from "@freeanima/core/tool";
-import { parseCompressionState, clarifyToolAwaitingResultSchema } from "@freeanima/core/db/domain";
-import { jsonRpcMessageSchema } from "@freeanima/capabilities/acp/schemas/acp-jsonrpc.ts";
+} from "@freeanima/host/capabilities/memory/schemas/event-payloads";
+import { factExtractionSchema } from "@freeanima/host/capabilities/memory/schemas/fact-extraction";
+import { filterRecallableMessages } from "@freeanima/host/capabilities/memory";
+import { toolArgsSchema, toolErrorSchema } from "@freeanima/host/core/tool";
+import {
+  parseCompressionState,
+  clarifyToolAwaitingResultSchema,
+} from "@freeanima/host/core/db/domain";
+import { jsonRpcMessageSchema } from "@freeanima/host/capabilities/acp/schemas/acp-jsonrpc.ts";
 import {
   weixinContextTokensSchema,
   weixinSyncSchema,
-} from "@freeanima/platform/connectors/gateway/schemas/weixin";
+} from "@freeanima/host/capabilities/connectors/gateway/schemas/weixin";
 
 describe("schemas/cron", () => {
   it("parses minimal cron job", () => {

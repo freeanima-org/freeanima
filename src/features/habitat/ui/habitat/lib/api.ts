@@ -1,13 +1,13 @@
 import type {
   ConversationSummary,
   ServiceSnapshot,
-} from "@freeanima/platform/ports/schemas/snapshot";
+} from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
 import { resetBundledHabitatClientForTests } from "@freeanima/shared/habitat-client";
 import {
   readOfflineCache,
   resolveCacheScope,
   writeOfflineCache,
-} from "@freeanima/frontend/portal-sdk/offline-cache";
+} from "@freeanima/client/portal-sdk/offline-cache";
 import { reviveDates } from "@freeanima/features/habitat/protocol/habitat-contract/date-json.ts";
 
 import { getHabitatRpcClient } from "./habitat-client.ts";
@@ -368,7 +368,7 @@ export async function stopAllAcp() {
   return hubCall(habitat().call("acp.stopAll", {}));
 }
 
-export type EntityRow = import("@freeanima/core/db/pg/entity/types").EntityRow;
+export type EntityRow = import("@freeanima/host/core/db/pg/entity/types").EntityRow;
 
 type EntityListResponse = { items: EntityRow[]; total: number };
 
@@ -405,9 +405,8 @@ export async function updateWorldEntity(
     grants?: WorldGrantInput[];
   },
 ) {
-  return hubCall(
-    habitat().call("entity.worldsPatch", { id: String(id), ...body }),
-  ) as Promise<EntityRow>;
+  const payload = { id: String(id), ...body };
+  return hubCall(habitat().call("entity.worldsPatch", payload as never)) as Promise<EntityRow>;
 }
 
 export async function listSubjectEntities(opts?: { offset?: number; limit?: number }) {

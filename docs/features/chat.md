@@ -50,4 +50,4 @@ Chat 维护 **用户已读水位**（`conversation_read_state`，按 Habitat use
 
 ## 与离线平台（Stream outbox）
 
-Outbox 布局与 [`portal-sdk/offline-outbox`](../../src/frontend/portal-sdk/offline-outbox.ts) 对齐；Chat flush 走 WS 流式 `message.send`，非通用 Habitat RPC 单次响应。
+Outbox 布局与 [`portal-sdk/offline-outbox`](../../src/client/portal-sdk/offline-outbox.ts) 对齐；Chat flush 走 WS 流式 `message.send`，非通用 Habitat RPC 单次响应。

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { Button, Input } from "@freeanima/frontend/ui-kit";
-import { useCompactLayout } from "@freeanima/frontend/ui-kit/layout";
+import { Button, Input } from "@freeanima/ui-kit";
+import { useCompactLayout } from "@freeanima/ui-kit/layout";
 
 type ProjectPickerRow = {
   id: number;

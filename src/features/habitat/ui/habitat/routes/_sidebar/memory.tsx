@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
-import type { ServiceSnapshot } from "@freeanima/platform/ports/schemas/snapshot";
-import { Badge, Button, Card, CardContent, Input, Spinner } from "@freeanima/frontend/ui-kit";
-import { FormField, FormFieldset } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
-import { cn } from "@freeanima/frontend/ui-kit/lib/utils.ts";
+import type { ServiceSnapshot } from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
+import { Badge, Button, Card, CardContent, Input, Spinner } from "@freeanima/ui-kit";
+import { FormField, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
+import { cn } from "@freeanima/ui-kit/lib/utils.ts";
 import { useMemo, useState } from "react";
 import { formatMemoryRecallOutput } from "@freeanima/features/habitat/ui/habitat/components/habitat/format-memory-recall-output.ts";
 import {

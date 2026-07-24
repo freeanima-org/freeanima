@@ -9,7 +9,7 @@ import {
 } from "react";
 import { PlusIcon, TagIcon } from "lucide-react";
 
-import { Button, Input, cn } from "@freeanima/frontend/ui-kit";
+import { Button, Input, cn } from "@freeanima/ui-kit";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@freeanima/frontend/ui-kit/components/ui/dropdown-menu.tsx";
+} from "@freeanima/ui-kit/components/ui/dropdown-menu.tsx";
 
 import {
   createTag,

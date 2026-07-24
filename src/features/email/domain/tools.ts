@@ -1,4 +1,4 @@
-import type { ToolSetRegistry } from "@freeanima/core/tool";
+import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 
 import { registerEmailAccountTools } from "./email-account-tools.ts";
 import type { EmailToolIo } from "./email-tool-helpers.ts";

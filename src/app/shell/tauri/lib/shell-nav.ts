@@ -1,7 +1,7 @@
-import { shouldUseNativeShellNavigation } from "@freeanima/frontend/portal-sdk/shell-runtime.ts";
+import { shouldUseNativeShellNavigation } from "@freeanima/client/portal-sdk/shell-runtime.ts";
 
 /** 移动壳使用 hash 路由（#/chat），避免 WebView 对 /chat 等路径返回 404 */
-export { shouldUseNativeShellNavigation as isNativeShellNavigation } from "@freeanima/frontend/portal-sdk/shell-runtime.ts";
+export { shouldUseNativeShellNavigation as isNativeShellNavigation } from "@freeanima/client/portal-sdk/shell-runtime.ts";
 
 export function readShellPath(): string {
   if (shouldUseNativeShellNavigation() || window.location.hash.startsWith("#/")) {
