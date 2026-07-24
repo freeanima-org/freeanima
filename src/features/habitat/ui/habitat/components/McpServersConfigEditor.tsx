@@ -6,7 +6,7 @@ import {
   fetchHabitatConfigSection,
   replaceHabitatConfigSection,
   restartHabitatService,
-} from "@freeanima/frontend/shell-sdk/habitat-config-api";
+} from "@freeanima/frontend/portal-sdk/habitat-config-api";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 import {

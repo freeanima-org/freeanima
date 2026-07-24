@@ -1,4 +1,4 @@
-/** 与 shell-sdk/settings/prefs-keys 对齐 */
+/** 与 portal-sdk/settings/prefs-keys 对齐 */
 export const HABITAT_URL_KEY = "freeanima.habitatUrl";
 export const REMOTE_AUTH_TOKEN_KEY = "freeanima.remoteAuthToken";
 export const NATIVE_BUILD_META_KEY = "freeanima.nativeBuildMeta";

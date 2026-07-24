@@ -6,7 +6,7 @@ function isBundledShellWithoutApiOrigin(): boolean {
   if (window.portalShell?.isNativeShell || window.portalShell?.isTauri) {
     return true;
   }
-  return document.documentElement?.dataset?.shellUi === "1";
+  return document.documentElement?.dataset?.appUi === "1";
 }
 
 /** Habitat REST 根（bundled 客户端读 portalShell.habitatUrl，直连 Habitat） */

@@ -1,4 +1,4 @@
-import { formatAnimaUri } from "@freeanima/frontend/shell-sdk/anima-uri.ts";
+import { formatAnimaUri } from "@freeanima/frontend/portal-sdk/anima-uri.ts";
 
 type EntityIdLabelProps = {
   id: number;

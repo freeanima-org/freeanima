@@ -3,9 +3,9 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {
   registerAlertBackend,
   resetAlertBackendForTest,
-} from "@freeanima/frontend/shell-sdk/alert";
-import type { AlertBackend, AlertPayload } from "@freeanima/frontend/shell-sdk/alert/types.ts";
-import type { PomodoroActiveState } from "@freeanima/frontend/shell-sdk/pomodoro-active-types.ts";
+} from "@freeanima/frontend/portal-sdk/alert";
+import type { AlertBackend, AlertPayload } from "@freeanima/frontend/portal-sdk/alert/types.ts";
+import type { PomodoroActiveState } from "@freeanima/frontend/portal-sdk/pomodoro-active-types.ts";
 
 import type { PomodoroConfigRow } from "./api.ts";
 import {

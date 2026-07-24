@@ -10,7 +10,7 @@ Workspace package names reflect the layer topology in [`code-layers.md`](code-la
 | Capability pack   | `@freeanima/capabilities-{slug}`  | `capabilities-memory`, `capabilities-tools`                         |
 | Feature module    | `@freeanima/feature-{slug}`       | `feature-chat`, `feature-habitat`                                   |
 | Shared protocol   | `@freeanima/shared/{name}`        | `habitat-rpc`, `habitat-client`, `habitat-contract`, `rpc-contract` |
-| Frontend shell    | `@freeanima/{name}`               | `ui-kit`, `shell-sdk`, `shell-ui`（`src/frontend/`）                |
+| Frontend          | `@freeanima/frontend/{name}`      | `ui-kit`, `portal-sdk`, `app-ui`（`src/frontend/`）                 |
 | Entry             | CLI app (`src/app/cli`)           | Source / standalone entry（逻辑名可仍标 `@freeanima/cli` 安装前缀） |
 | Companion Outpost | `@freeanima/features/companion/*` | overlay UI + thin server under `src/features/companion/`            |
 | Habitat protocol  | feature protocol                  | `src/features/habitat/protocol/habitat-contract/`                   |
@@ -32,8 +32,8 @@ Workspace package names reflect the layer topology in [`code-layers.md`](code-la
 | `@freeanima/shared/habitat-contract` | shared       | Habitat method SSOT（Zod + 静态 transport 元信息）                                          |
 | `@freeanima/shared/habitat-client`   | shared       | Habitat 多传输客户端（call / subscribe + HTTP/WS dispatch）                                 |
 | `@freeanima/rpc-contract`            | shared       | Habitat RPC feature protocol + remote tools protocol；`./satellite`、`./feature-rpc` 子入口 |
-| `@freeanima/shell-sdk`               | frontend     | 壳层 manifest/settings/Habitat 连通（依赖 habitat-rpc）                                     |
-| `@freeanima/shell-ui`                | frontend     | 壳层 SPA                                                                                    |
+| `@freeanima/frontend/portal-sdk`     | frontend     | Portal 客户端 SDK：Shell 能力、settings、Habitat 连通、offline（依赖 habitat-rpc）          |
+| `@freeanima/frontend/app-ui`         | frontend     | 应用布局 SPA（`AppFrame`：Rail / 底栏 / 设置 chrome）；≠ Portal Shell                       |
 
 **Deprecated prefixes** (must not appear in new packages): `engine-*`, `life-*`, `storage-*`, `mechanism-*`, `orchestration-*`, `service-*`, `connectors-*`, `feature-habitat`（已移除；用 `feature-habitat`）。
 

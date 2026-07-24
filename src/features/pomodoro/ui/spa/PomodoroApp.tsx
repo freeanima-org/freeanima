@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { requestAlertPermission } from "@freeanima/frontend/shell-sdk/alert";
-import { switchWorkFocusTask } from "@freeanima/frontend/shell-sdk/pomodoro-focus-segments.ts";
+import { requestAlertPermission } from "@freeanima/frontend/portal-sdk/alert";
+import { switchWorkFocusTask } from "@freeanima/frontend/portal-sdk/pomodoro-focus-segments.ts";
 import {
   clearPomodoroLaunchParamsFromUrl,
   getSubjectKind,
   readPomodoroLaunchParamsFromLocation,
-} from "@freeanima/frontend/shell-sdk";
+} from "@freeanima/frontend/portal-sdk";
 import {
   getPomodoroSyncSnapshot,
   subscribePomodoroSync,
-} from "@freeanima/frontend/shell-sdk/pomodoro-sync-local.ts";
+} from "@freeanima/frontend/portal-sdk/pomodoro-sync-local.ts";
 import {
   useHabitatConnection,
   useNetworkOnline,
   useSubjectScope,
   SubjectScopeToggle,
-} from "@freeanima/frontend/shell-sdk/react.tsx";
+} from "@freeanima/frontend/portal-sdk/react.tsx";
 import {
   Alert,
   AlertDescription,
@@ -28,7 +28,7 @@ import {
   Switch,
 } from "@freeanima/frontend/ui-kit";
 import { useCompactLayout } from "@freeanima/frontend/ui-kit/layout";
-import { openEntityResource } from "@freeanima/frontend/shell-ui/spa/features/open-entity-resource.ts";
+import { openEntityResource } from "@freeanima/frontend/app-ui/spa/features/open-entity-resource.ts";
 import { randomUuid } from "@freeanima/shared/rpc-contract";
 
 import { TaskPickerDialog } from "./components/TaskPickerDialog.tsx";
@@ -51,7 +51,7 @@ import {
   runPhaseAbort,
   runPhaseComplete,
 } from "./lib/pomodoro-sync.ts";
-import { preferOnlineWrite } from "@freeanima/frontend/shell-sdk/prefer-online-write";
+import { preferOnlineWrite } from "@freeanima/frontend/portal-sdk/prefer-online-write";
 import { syncPomodoroPhaseLocalAlert } from "./lib/pomodoro-phase-alert.ts";
 import {
   createInitialActiveState,

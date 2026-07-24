@@ -73,8 +73,8 @@
   @apply text-muted-foreground;
 }
 
-/* 嵌入移动端壳时 safe-area 由 .shell-layout-compact > main 承担 */
-.shell-layout-compact .chat-app {
+/* 嵌入移动端壳时 safe-area 由 .app-layout-compact > main 承担 */
+.app-layout-compact .chat-app {
   padding: 0;
   box-sizing: border-box;
 }
@@ -92,7 +92,7 @@
     z-index: 1;
     padding-bottom: max(0.5rem, var(--sab));
   }
-  .shell-layout-compact .chat-compose {
+  .app-layout-compact .chat-compose {
     padding-bottom: 0.5rem;
   }
   .chat-bubble {

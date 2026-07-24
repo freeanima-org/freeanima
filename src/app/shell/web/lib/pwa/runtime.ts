@@ -1,4 +1,4 @@
-import { isTauriRuntime } from "@freeanima/frontend/shell-sdk/tauri-runtime";
+import { isTauriRuntime } from "@freeanima/frontend/portal-sdk/tauri-runtime";
 
 const STANDALONE_QUERY = "(display-mode: standalone)";
 const INSTALL_DISMISS_KEY = "freeanima.pwa.installDismissedAt";

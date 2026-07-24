@@ -27,7 +27,7 @@ src/
 ├── capabilities/    # acp, memory, tools, mcp-*, llm-openai, …
 ├── features/        # chat, habitat, task, vault, diary, companion, …
 ├── shared/          # habitat-rpc, habitat-contract, rpc-contract, vault-crypto
-├── frontend/        # ui-kit, shell-sdk, shell-ui
+├── frontend/        # ui-kit, portal-sdk, app-ui
 ├── app/
 │   ├── cli/         # `anima` CLI（无内层 src/）
 │   └── shell/
@@ -52,7 +52,7 @@ src/
 ## Module resolution
 
 - TypeScript：`tsconfig.json` 单一配置；`@freeanima/*` 通过 `compilerOptions.paths` 映射到 `src/**`。
-- Vite 壳层：`src/frontend/shell-ui/vite/paths.ts` 与别名（`@chat/*`、`@habitat/*` 等）；feature UI 在 `ui/spa/`。
+- Vite 壳层：`src/frontend/app-ui/vite/paths.ts` 与别名（`@chat/*`、`@habitat/*` 等）；feature UI 在 `ui/spa/`。
 - 产品无 workspace 子 `package.json`；`site/` 为兄弟目录独立包。
 
 ## 护栏

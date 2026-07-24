@@ -1,4 +1,4 @@
-/** GitHub Release 公共反代（与 install.sh / shell-sdk 同 id 表） */
+/** GitHub Release 公共反代（与 install.sh / portal-sdk 同 id 表） */
 
 export const GITHUB_RELEASE_PROXY_IDS = [
   "none",

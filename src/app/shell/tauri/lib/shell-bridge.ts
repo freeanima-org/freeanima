@@ -1,12 +1,12 @@
 import { browserRemoteInstanceStore } from "@freeanima/shared/rpc-contract";
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
-import { testHabitatHealthConnection } from "@freeanima/frontend/shell-sdk";
-import { buildShellApiFields } from "@freeanima/frontend/shell-sdk/shell-api-fields";
-import type { ShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
-import { parseShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
-import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
-import type { ScopedSettingsBackend } from "@freeanima/frontend/shell-sdk/settings";
-import { HABITAT_SETTINGS_SCOPE } from "@freeanima/frontend/shell-sdk/settings";
+import { testHabitatHealthConnection } from "@freeanima/frontend/portal-sdk";
+import { buildShellApiFields } from "@freeanima/frontend/portal-sdk/shell-api-fields";
+import type { ShellApi } from "@freeanima/frontend/portal-sdk/shell-api";
+import { parseShellClientConfig } from "@freeanima/frontend/portal-sdk/shell-client-config";
+import type { SettingsStorageScope } from "@freeanima/frontend/portal-sdk/settings";
+import type { ScopedSettingsBackend } from "@freeanima/frontend/portal-sdk/settings";
+import { HABITAT_SETTINGS_SCOPE } from "@freeanima/frontend/portal-sdk/settings";
 
 import { createDesktopDevScopedBackend } from "./settings-dev-backend.ts";
 
@@ -88,7 +88,7 @@ function createBrowserDevShellStub(habitatUrl = "", remoteAuthToken = ""): Shell
 
 async function bootstrapShellBridge(): Promise<void> {
   const finish = installShellBridgeReady();
-  document.documentElement.dataset.shellUi = "1";
+  document.documentElement.dataset.appUi = "1";
 
   if (!window.freeanimaScopedSettings) {
     installDevScopedSettingsBridge();

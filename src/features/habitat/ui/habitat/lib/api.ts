@@ -7,7 +7,7 @@ import {
   readOfflineCache,
   resolveCacheScope,
   writeOfflineCache,
-} from "@freeanima/frontend/shell-sdk/offline-cache";
+} from "@freeanima/frontend/portal-sdk/offline-cache";
 import { reviveDates } from "@freeanima/features/habitat/protocol/habitat-contract/date-json.ts";
 
 import { getHabitatRpcClient } from "./habitat-client.ts";

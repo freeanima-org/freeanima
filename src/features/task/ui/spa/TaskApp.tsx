@@ -3,12 +3,12 @@ import {
   readModuleSelection,
   writeModuleSelection,
   launchPomodoroForTask,
-} from "@freeanima/frontend/shell-sdk";
-import type { TaskModuleSelection } from "@freeanima/frontend/shell-sdk";
-import { isHabitatFetchAvailable } from "@freeanima/frontend/shell-sdk/habitat-fetch-gate";
-import { subscribeIdMappings } from "@freeanima/frontend/shell-sdk/offline-id-map";
-import { isTempId } from "@freeanima/frontend/shell-sdk/offline-temp-id";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
+} from "@freeanima/frontend/portal-sdk";
+import type { TaskModuleSelection } from "@freeanima/frontend/portal-sdk";
+import { isHabitatFetchAvailable } from "@freeanima/frontend/portal-sdk/habitat-fetch-gate";
+import { subscribeIdMappings } from "@freeanima/frontend/portal-sdk/offline-id-map";
+import { isTempId } from "@freeanima/frontend/portal-sdk/offline-temp-id";
+import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/portal-sdk/react.tsx";
 import {
   Alert,
   AlertDescription,

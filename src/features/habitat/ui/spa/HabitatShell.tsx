@@ -17,7 +17,7 @@ import "@freeanima/features/habitat/ui/habitat/styles.css";
 
 initHabitatLocale();
 
-/** Embedded Habitat SPA inside shell-ui. */
+/** Embedded Habitat SPA inside app-ui. */
 export function HabitatShell() {
   const shellPath = useRouterState({ select: (s) => s.location.pathname });
   const shellNavigate = useNavigate();

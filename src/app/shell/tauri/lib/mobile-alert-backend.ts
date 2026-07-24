@@ -1,5 +1,5 @@
-import { createWebAlertBackend } from "@freeanima/frontend/shell-sdk/alert/web-backend.ts";
-import type { AlertBackend } from "@freeanima/frontend/shell-sdk/alert/types.ts";
+import { createWebAlertBackend } from "@freeanima/frontend/portal-sdk/alert/web-backend.ts";
+import type { AlertBackend } from "@freeanima/frontend/portal-sdk/alert/types.ts";
 
 import { createDesktopAlertBackend } from "./desktop-alert-backend.ts";
 

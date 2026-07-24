@@ -51,7 +51,7 @@ Anima URI is a **Shell/UI locator protocol**, not a database foreign key. User-a
 
 Each displayable component may `registerEntityOverlay(component, OverlayComponent)`.  
 `present=overlay` → resolve component (default `primary_component`) → look up registry → `EntityOverlayHost`.  
-`present=navigate` → map component → Shell path (e.g. `task_item` → `/tasks?item=…`) via `navigateShellModulePath`.
+`present=navigate` → map component → Shell path (e.g. `task_item` → `/tasks?item=…`) via `navigateAppModulePath`.
 
 ## Out of scope (for now)
 

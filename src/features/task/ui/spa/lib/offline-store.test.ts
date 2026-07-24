@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 
-import { writeOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache";
-import { setIdMapping } from "@freeanima/frontend/shell-sdk/offline-id-map";
+import { writeOfflineCache } from "@freeanima/frontend/portal-sdk/offline-cache";
+import { setIdMapping } from "@freeanima/frontend/portal-sdk/offline-id-map";
 import {
   enqueueOutboxOp,
   listOutboxOps,
   resolveOutboxScope,
   setOfflineOutboxBackendForTests,
-} from "@freeanima/frontend/shell-sdk/offline-outbox";
-import { resetOfflineModuleRegistryForTests } from "@freeanima/frontend/shell-sdk/offline-module-registry";
-import { resetTempIdAllocatorForTests } from "@freeanima/frontend/shell-sdk/offline-temp-id";
+} from "@freeanima/frontend/portal-sdk/offline-outbox";
+import { resetOfflineModuleRegistryForTests } from "@freeanima/frontend/portal-sdk/offline-module-registry";
+import { resetTempIdAllocatorForTests } from "@freeanima/frontend/portal-sdk/offline-temp-id";
 
 import type { TaskItemRow, TaskListRow } from "./api.ts";
 import {

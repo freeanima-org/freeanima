@@ -6,7 +6,7 @@
 
 | 层级     | 做法                                      | 位置                               |
 | -------- | ----------------------------------------- | ---------------------------------- |
-| **基元** | `@freeanima/ui-kit` shadcn 原语 + variant | 各 satellite / admin / shell-ui    |
+| **基元** | `@freeanima/ui-kit` shadcn 原语 + variant | 各 satellite / admin / app-ui      |
 | **结构** | 表单/布局封装                             | `@freeanima/ui-kit/form`、`layout` |
 | **复合** | 跨域重复交互模式                          | `@freeanima/ui-kit/composite`      |
 | **领域** | 产品专属 UI                               | 各业务包本地                       |
@@ -15,10 +15,10 @@
 
 - **主题变量唯一定义处**：[`src/frontend/ui-kit/styles/globals.css`](../../src/frontend/ui-kit/styles/globals.css)（`:root` / `.dark`；强调色变体 `.dark[data-color-theme="…"]`）
 - 各 SPA `styles.css`：`@import "tailwindcss"` + `@import "@freeanima/frontend/ui-kit/styles/globals.css"` + `@source`；需要 safe-area 时 `@import "@freeanima/frontend/ui-kit/styles.css"`
-- **壳 UI**：[`shell-ui/spa/styles.css`](../../src/frontend/shell-ui/spa/styles.css) 用 `@source "../../../../src/**/*.{tsx,ts}"` 扫整棵 `src`（含各 feature SPA）；独立 SPA（如 chat 自己的 `styles.css`）仍各自 `@source`
+- **app-ui**：[`app-ui/spa/styles.css`](../../src/frontend/app-ui/spa/styles.css) 用 `@source "../../../../src/**/*.{tsx,ts}"` 扫整棵 `src`（含各 feature SPA）；独立 SPA（如 chat 自己的 `styles.css`）仍各自 `@source`
 - **禁止**在 `globals.css` 以外用 `var(--background)`、`var(--muted)` 等写背景/边框/文字色；改用 Tailwind class 或 `@apply bg-background` 等
 - **布局类裸 CSS**（`shared-safe-area.css`）只放 position、safe-area（`--sat` 等），**不放主题色**
-- 暗色：根节点 `.dark`（shadcn 约定）；强调色用 `data-color-theme`（`neutral` / `ocean` / `forest` / `sunset` / `violet`，本机偏好见 `shell-sdk/color-theme`），**禁止** DaisyUI `data-theme`
+- 暗色：根节点 `.dark`（shadcn 约定）；强调色用 `data-color-theme`（`neutral` / `ocean` / `forest` / `sunset` / `violet`，本机偏好见 `portal-sdk/color-theme`），**禁止** DaisyUI `data-theme`
 
 ## 基元约定
 
@@ -60,4 +60,4 @@
 
 - DaisyUI class / `--color-base-*` / `data-theme`
 - 在 `ui-kit` 内 import `rpc-contract`、Habitat API
-- 在 `shell-ui` 内深路径 import satellite 源码（走 package export）
+- 在 `app-ui` 内深路径 import satellite 源码（走 package export）

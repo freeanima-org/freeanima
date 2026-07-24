@@ -1,5 +1,5 @@
-import { getShellBuildTarget } from "@freeanima/frontend/shell-sdk/shell-build-target.ts";
-import { isTauriRuntime } from "@freeanima/frontend/shell-sdk/tauri-runtime";
+import { getShellBuildTarget } from "@freeanima/frontend/portal-sdk/shell-build-target.ts";
+import { isTauriRuntime } from "@freeanima/frontend/portal-sdk/tauri-runtime";
 import { useEffect, useState } from "react";
 
 import {

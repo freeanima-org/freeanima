@@ -9,7 +9,8 @@
 | **Habitat**         | **栖息地**  | Long-running process + admin UI; connect vs open by verb                                                    |
 | **Portal**          | **入口**    | Class name: Shell, MCP, and similar external connectors into Habitat                                        |
 | **Outpost**         | **前哨**    | Remote-tool registrant: unreachable local app that `remote_tools.attach`（Portal 内嵌或独立工具；≠ Portal） |
-| Shell               | 壳          | A Portal (desktop / mobile / web); not the Habitat itself                                                   |
+| Shell               | 壳          | A Portal (desktop / mobile / web); **not** Habitat; **not** app frame (侧栏/底栏/设置 chrome)               |
+| app frame           | 应用布局    | SPA chrome：模块 Rail/底栏、设置页 tabs↔侧栏；代码在 `app-ui`（`AppFrame`）；跟视口，非 Shell               |
 | Chat                | 聊天室      | Chat room UI                                                                                                |
 | Conversation        | 对话        | User-facing term; not “Session” in Habitat UI                                                               |
 | Dashboard           | 仪表盘      | Habitat UI page at `/habitat/dashboard` only                                                                |

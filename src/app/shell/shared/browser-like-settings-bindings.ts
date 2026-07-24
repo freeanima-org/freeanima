@@ -1,16 +1,19 @@
-import { debugSettingsSection, type SettingsBinding } from "@freeanima/frontend/shell-sdk/settings";
-import { shellModulesSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/modules-section.ts";
-import { aboutSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/about/about-section.ts";
-import { appearanceSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/appearance/appearance-section.ts";
-import { chatSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/chat/chat-section.ts";
-import { alertSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/alert/alert-settings-section.ts";
-import { habitatConnectionSettingsSection } from "@freeanima/frontend/shell-ui/spa/settings/habitat-config/habitat-connection-section.ts";
-import { habitatConfigSettingsBindings } from "@freeanima/frontend/shell-ui/spa/settings/habitat-config/habitat-config-sections.ts";
+import {
+  debugSettingsSection,
+  type SettingsBinding,
+} from "@freeanima/frontend/portal-sdk/settings";
+import { shellModulesSettingsSection } from "@freeanima/frontend/app-ui/spa/settings/modules-section.ts";
+import { aboutSettingsSection } from "@freeanima/frontend/app-ui/spa/settings/about/about-section.ts";
+import { appearanceSettingsSection } from "@freeanima/frontend/app-ui/spa/settings/appearance/appearance-section.ts";
+import { chatSettingsSection } from "@freeanima/frontend/app-ui/spa/settings/chat/chat-section.ts";
+import { alertSettingsSection } from "@freeanima/frontend/app-ui/spa/settings/alert/alert-settings-section.ts";
+import { habitatConnectionSettingsSection } from "@freeanima/frontend/app-ui/spa/settings/habitat-config/habitat-connection-section.ts";
+import { habitatConfigSettingsBindings } from "@freeanima/frontend/app-ui/spa/settings/habitat-config/habitat-config-sections.ts";
 import { companionHabitatSettingsSection } from "@freeanima/features/companion/ui/spa/settings/companion-settings-section.ts";
 import { createCompanionSettingsApi } from "@freeanima/features/companion/ui/spa/settings/companion-settings-api.ts";
-import type { SettingsStore } from "@freeanima/frontend/shell-sdk/settings";
-import type { ShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config";
-import type { ShellDebugConfig } from "@freeanima/frontend/shell-sdk/shell-debug-config";
+import type { SettingsStore } from "@freeanima/frontend/portal-sdk/settings";
+import type { ShellClientConfig } from "@freeanima/frontend/portal-sdk/shell-client-config";
+import type { ShellDebugConfig } from "@freeanima/frontend/portal-sdk/shell-debug-config";
 
 export type BrowserLikeSettingsStores = {
   habitat: SettingsStore<ShellClientConfig>;

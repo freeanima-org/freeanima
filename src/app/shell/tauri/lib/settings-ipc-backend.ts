@@ -1,5 +1,5 @@
-import type { SettingsStorageScope } from "@freeanima/frontend/shell-sdk/settings";
-import type { ScopedSettingsBackend } from "@freeanima/frontend/shell-sdk/settings";
+import type { SettingsStorageScope } from "@freeanima/frontend/portal-sdk/settings";
+import type { ScopedSettingsBackend } from "@freeanima/frontend/portal-sdk/settings";
 
 type ScopedSettingsBridge = ScopedSettingsBackend & {
   test(scope: SettingsStorageScope, value: unknown): Promise<unknown>;

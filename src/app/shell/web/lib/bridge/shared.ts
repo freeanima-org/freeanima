@@ -1,4 +1,4 @@
-import type { WebUiConfigJson } from "@freeanima/frontend/shell-sdk/web-ui-config";
+import type { WebUiConfigJson } from "@freeanima/frontend/portal-sdk/web-ui-config";
 
 export type ShellBridgeWindow = Window & {
   __freeanimaShellBridge?: { ready: Promise<void> };
@@ -9,9 +9,9 @@ export type ShellBridgeWindow = Window & {
 };
 
 export type ScopedSettingsBridge =
-  import("@freeanima/frontend/shell-sdk/settings").ScopedSettingsBackend & {
+  import("@freeanima/frontend/portal-sdk/settings").ScopedSettingsBackend & {
     test(
-      scope: import("@freeanima/frontend/shell-sdk/settings").SettingsStorageScope,
+      scope: import("@freeanima/frontend/portal-sdk/settings").SettingsStorageScope,
       value: unknown,
     ): Promise<unknown>;
   };
@@ -47,7 +47,7 @@ export async function fetchWebUiConfig(): Promise<WebUiConfigJson | null> {
     const configPath = `${import.meta.env.BASE_URL}config.json`.replace(/\/{2,}/g, "/");
     const res = await fetch(configPath, { cache: "no-store" });
     if (!res.ok) return null;
-    const { parseWebUiConfigJson } = await import("@freeanima/frontend/shell-sdk/web-ui-config");
+    const { parseWebUiConfigJson } = await import("@freeanima/frontend/portal-sdk/web-ui-config");
     return parseWebUiConfigJson(await res.json());
   } catch {
     return null;

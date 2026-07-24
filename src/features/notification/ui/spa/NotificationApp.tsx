@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
+import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/portal-sdk/react.tsx";
 import {
   Alert,
   AlertDescription,

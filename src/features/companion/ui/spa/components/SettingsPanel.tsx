@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Button, Card, CardContent, Spinner } from "@freeanima/frontend/ui-kit";
-import type { SettingsSectionDeps } from "@freeanima/frontend/shell-sdk/settings";
+import type { SettingsSectionDeps } from "@freeanima/frontend/portal-sdk/settings";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 import { SettingsTabs } from "./settings/SettingsTabs.tsx";
 import { BehaviorTab } from "./settings/BehaviorTab.tsx";

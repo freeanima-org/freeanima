@@ -1,4 +1,4 @@
-import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
+import { getSubjectKind } from "@freeanima/frontend/portal-sdk";
 
 const EXPANDED_KEY_PREFIX = "task:folder-expanded";
 

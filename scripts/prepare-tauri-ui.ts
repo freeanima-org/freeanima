@@ -14,7 +14,7 @@ import {
   parseShellBuildTarget,
   shellWebDistDirName,
   type ShellBuildTarget,
-} from "@freeanima/frontend/shell-sdk/shell-build-target.ts";
+} from "@freeanima/frontend/portal-sdk/shell-build-target.ts";
 import { resolveBuildChannelFromEnv } from "@freeanima/core/config/build-meta.ts";
 import { resolveNativeBuildMeta } from "@freeanima/app/shell/shared/resolve-native-build-meta.ts";
 import { buildCompanionApp } from "@freeanima/features/companion/lib/exports/build.ts";
@@ -192,7 +192,7 @@ writeFileSync(
   `<!doctype html><meta http-equiv="refresh" content="0;url=web/index.html" /><script>location.replace("web/index.html"+location.hash)</script>\n`,
   "utf-8",
 );
-console.log(`[prepare-tauri] shell-ui → ${uiWeb} (${target})`);
+console.log(`[prepare-tauri] app-ui → ${uiWeb} (${target})`);
 
 if (target === "desktop") {
   console.log("[prepare-tauri] build companion…");

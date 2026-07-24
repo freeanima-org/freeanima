@@ -157,7 +157,7 @@ Existing `smart_list` entities and built-in presets (Today, Tomorrow, etc.) rema
 
 ## Subject scope (User / Agent)
 
-Aligned with [entity-model Shell scope](../concepts/entity-model.md#shell-ui-global-subject-scope):
+Aligned with [entity-model Shell scope](../concepts/entity-model.md#app-ui-global-subject-scope):
 
 - `project_folder` and `project` live in the **current subject's default private world**
 - Habitat RPC methods accept optional `subject_kind: user | agent` (default `user`, same as tasks)

@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { fetchHabitatConfig } from "@freeanima/frontend/shell-sdk/habitat-config-api";
-import { createSpeechAdapter } from "@freeanima/frontend/shell-sdk/speech/create-adapter";
+import { fetchHabitatConfig } from "@freeanima/frontend/portal-sdk/habitat-config-api";
+import { createSpeechAdapter } from "@freeanima/frontend/portal-sdk/speech/create-adapter";
 import {
   DEFAULT_SPEECH_PLAYBACK_CONFIG,
   parseSpeechConfigFromHub,
   type SpeechPlaybackConfig,
-} from "@freeanima/frontend/shell-sdk/speech/types";
-import { getWebSpeechUnsupportedReason } from "@freeanima/frontend/shell-sdk/speech/web-speech-support";
-import { consumeLastHubSpeechError } from "@freeanima/frontend/shell-sdk/speech/habitat-adapter";
+} from "@freeanima/frontend/portal-sdk/speech/types";
+import { getWebSpeechUnsupportedReason } from "@freeanima/frontend/portal-sdk/speech/web-speech-support";
+import { consumeLastHubSpeechError } from "@freeanima/frontend/portal-sdk/speech/habitat-adapter";
 import { getAppLocale, m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import { createSpeechPlaybackController } from "@freeanima/features/chat/ui/spa/lib/speech/controller.ts";
 import type { SpeechPlaybackAdapter } from "@freeanima/features/chat/ui/spa/lib/speech/types.ts";

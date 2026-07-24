@@ -2,30 +2,30 @@ import {
   readOfflineCache,
   resolveHabitatCacheScope,
   writeOfflineCache,
-} from "@freeanima/frontend/shell-sdk/offline-cache";
-import { getIdMapping, resolveIdFields } from "@freeanima/frontend/shell-sdk/offline-id-map";
+} from "@freeanima/frontend/portal-sdk/offline-cache";
+import { getIdMapping, resolveIdFields } from "@freeanima/frontend/portal-sdk/offline-id-map";
 import {
   registerOfflineModule,
   registerOfflineModuleCap,
-} from "@freeanima/frontend/shell-sdk/offline-module-registry";
-import type { RpcModuleAdapter } from "@freeanima/frontend/shell-sdk/offline-module-types";
+} from "@freeanima/frontend/portal-sdk/offline-module-registry";
+import type { RpcModuleAdapter } from "@freeanima/frontend/portal-sdk/offline-module-types";
 import {
   enqueueOutboxOp,
   listOutboxOps,
   removeOutboxOp,
   resolveOutboxScope,
   type OfflineOutboxOp,
-} from "@freeanima/frontend/shell-sdk/offline-outbox";
+} from "@freeanima/frontend/portal-sdk/offline-outbox";
 import {
   flushOfflineModule,
   recordFlushIdMapping,
-} from "@freeanima/frontend/shell-sdk/offline-sync";
+} from "@freeanima/frontend/portal-sdk/offline-sync";
 import {
   allocateTempId,
   isTempId,
   seedTempIdAllocatorFromIdMap,
-} from "@freeanima/frontend/shell-sdk/offline-temp-id";
-import { preferOnlineWrite } from "@freeanima/frontend/shell-sdk/prefer-online-write";
+} from "@freeanima/frontend/portal-sdk/offline-temp-id";
+import { preferOnlineWrite } from "@freeanima/frontend/portal-sdk/prefer-online-write";
 import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 import { randomUuid } from "@freeanima/shared/rpc-contract";
 
@@ -259,7 +259,7 @@ function mergePatchIntoCreate(
 async function flushDiaryOp(
   op: OfflineOutboxOp,
   scope: string,
-): Promise<import("@freeanima/frontend/shell-sdk/offline-module-types").FlushOpOutcome> {
+): Promise<import("@freeanima/frontend/portal-sdk/offline-module-types").FlushOpOutcome> {
   try {
     const result = (await habitat().call(op.method as never, op.payload as never)) as {
       item?: DiaryEntryRow | DiaryTextBlock;

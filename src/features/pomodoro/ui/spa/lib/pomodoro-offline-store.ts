@@ -4,7 +4,7 @@ import {
   removeOutboxOp,
   resolveOutboxScope,
   type OfflineOutboxOp,
-} from "@freeanima/frontend/shell-sdk/offline-outbox";
+} from "@freeanima/frontend/portal-sdk/offline-outbox";
 
 import type { PomodoroActiveStatePayload } from "@freeanima/shared/rpc-contract/frames/pomodoro";
 import { randomUuid } from "@freeanima/shared/rpc-contract";

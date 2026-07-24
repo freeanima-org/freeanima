@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { getUnreadConversationCount } from "@freeanima/features/chat/ui/spa/lib/api.ts";
-import { isHabitatFetchAvailable } from "@freeanima/frontend/shell-sdk/habitat-fetch-gate";
+import { isHabitatFetchAvailable } from "@freeanima/frontend/portal-sdk/habitat-fetch-gate";
 
 type ChatUnreadState = {
   unreadConversationCount: number;

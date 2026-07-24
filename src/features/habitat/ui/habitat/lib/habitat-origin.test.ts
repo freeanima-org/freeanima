@@ -14,7 +14,7 @@ function setWindow(
     portalShell: shell,
     location: { origin },
   };
-  document.documentElement.dataset.shellUi = "1";
+  document.documentElement.dataset.appUi = "1";
 }
 
 describe("resolveApiOrigin", () => {
@@ -32,7 +32,7 @@ describe("resolveApiOrigin", () => {
     (globalThis as typeof globalThis & { document: Document }).document = originalDocument;
   });
 
-  test("shell-ui 无 habitatUrl 时回退默认 Habitat，而非页面 origin", () => {
+  test("app-ui 无 habitatUrl 时回退默认 Habitat，而非页面 origin", () => {
     setWindow(undefined);
     expect(resolveApiOrigin()).toBe("http://127.0.0.1:2658");
   });
@@ -43,7 +43,7 @@ describe("resolveApiOrigin", () => {
   });
 
   test("非 bundled 壳仍回退 location.origin", () => {
-    delete document.documentElement.dataset.shellUi;
+    delete document.documentElement.dataset.appUi;
     (
       globalThis as unknown as {
         window: { location: { origin: string } };

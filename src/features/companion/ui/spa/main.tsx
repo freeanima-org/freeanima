@@ -21,7 +21,7 @@ import { useRef } from "react";
 import {
   isTauriMobileUserAgent,
   isTauriRuntime,
-} from "@freeanima/frontend/shell-sdk/tauri-runtime";
+} from "@freeanima/frontend/portal-sdk/tauri-runtime";
 
 async function bootstrapCompanionShell(): Promise<void> {
   if (!isTauriRuntime()) return;

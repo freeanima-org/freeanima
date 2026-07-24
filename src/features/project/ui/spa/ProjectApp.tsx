@@ -1,10 +1,10 @@
-import { launchPomodoroForTask } from "@freeanima/frontend/shell-sdk";
+import { launchPomodoroForTask } from "@freeanima/frontend/portal-sdk";
 import {
   readModuleSelection,
   writeModuleSelection,
-} from "@freeanima/frontend/shell-sdk/module-selection.ts";
-import { subscribeIdMappings } from "@freeanima/frontend/shell-sdk/offline-id-map";
-import { SubjectScopeToggle, useSubjectScope } from "@freeanima/frontend/shell-sdk/react.tsx";
+} from "@freeanima/frontend/portal-sdk/module-selection.ts";
+import { subscribeIdMappings } from "@freeanima/frontend/portal-sdk/offline-id-map";
+import { SubjectScopeToggle, useSubjectScope } from "@freeanima/frontend/portal-sdk/react.tsx";
 import {
   Button,
   Dialog,
@@ -88,7 +88,7 @@ import {
 import {
   useActionSheetCapability,
   useContextMenuCapability,
-} from "@freeanima/frontend/shell-sdk/react.tsx";
+} from "@freeanima/frontend/portal-sdk/react.tsx";
 import { TaskTagFilterBar } from "@freeanima/features/task/ui/spa/components/TaskTagFilterBar.tsx";
 import type { TagKnown as TaskTagKnown } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 import {

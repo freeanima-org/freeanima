@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { whenPortalHabitatRpcReady } from "@freeanima/frontend/shell-sdk/habitat-rpc-call";
+import { whenPortalHabitatRpcReady } from "@freeanima/frontend/portal-sdk/habitat-rpc-call";
 import type { ClientCompanionConfig } from "@freeanima/features/companion/shared/constants.ts";
 
 export type HabitatCompanionConfig = Omit<

@@ -4,10 +4,10 @@
 
 ## 工程位置
 
-| 路径                      | 作用                                              |
-| ------------------------- | ------------------------------------------------- |
-| `src/app/shell/tauri/`    | 统一 Portal：`src-tauri` + bridge + lib/spa       |
-| `src/frontend/shell-sdk/` | `ShellApi` / `getShellKind()`（`web` \| `tauri`） |
+| 路径                       | 作用                                              |
+| -------------------------- | ------------------------------------------------- |
+| `src/app/shell/tauri/`     | 统一 Portal：`src-tauri` + bridge + lib/spa       |
+| `src/frontend/portal-sdk/` | `ShellApi` / `getShellKind()`（`web` \| `tauri`） |
 
 开发：`just dev tauri`（桌面）；`just dev tauri-android`（移动）。
 打包：`just pack tauri-linux` / `just pack tauri-windows` / `just pack tauri-android`。
@@ -24,7 +24,7 @@ CI / 本地 release profile 优先级：**构建速度 > 体积 > 运行速度**
 
 ## Companion（桌面）
 
-- 主窗：shell-ui（Chat / Settings）。
+- 主窗：app-ui（Chat / Settings）。
 - overlay：**工作区全屏**透明 always-on-top；角色舞台 160×260 在窗内绝对定位；局部 click-through（角色/气泡）；巡逻/拖拽移动舞台而非 OS 窗。
 - overlay SPA 打入 `frontendDist` 的 `ui/companion/`，打包态用 `WebviewUrl::App`（与主窗同协议）；**禁止** `file://` 加载 resources（Windows 空窗 / IPC 失败）。
 - Dev：`COMPANION_OVERLAY_URL` → Vite `:4176`（`just dev tauri`）。

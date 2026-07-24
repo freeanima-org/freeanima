@@ -2,7 +2,7 @@
 @import "@freeanima/frontend/ui-kit/styles/globals.css";
 @source "./**/*.{tsx,ts}";
 @source "../../../../src/frontend/ui-kit/**/*.{tsx,ts}";
-@source "../../../../src/frontend/shell-sdk/**/*.{tsx,ts}";
+@source "../../../../src/frontend/portal-sdk/**/*.{tsx,ts}";
 @import "@freeanima/frontend/ui-kit/styles.css";
 
 .app-main-padding {
@@ -78,7 +78,7 @@
   font-family: inherit;
 }
 
-.shell-layout-compact .admin-app {
+.app-layout-compact .admin-app {
   padding: 0;
   box-sizing: border-box;
 }

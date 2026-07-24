@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import {
   parseShellBuildTarget,
   shellWebDistDirName,
-} from "@freeanima/frontend/shell-sdk/shell-build-target.ts";
+} from "@freeanima/frontend/portal-sdk/shell-build-target.ts";
 import {
   createComponentBuildMeta,
   isShipChannel,

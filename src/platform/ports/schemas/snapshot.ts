@@ -1,6 +1,6 @@
 /** AppRuntime internal snapshot types */
 
-import type { ComponentBuildMeta } from "@freeanima/frontend/shell-sdk/build-meta";
+import type { ComponentBuildMeta } from "@freeanima/frontend/portal-sdk/build-meta";
 
 export type HealthSnapshot = {
   status: "ok";
