@@ -73,3 +73,21 @@ export const tagSetOnEntityOutputSchema = z.object({
   tag_ids: z.array(z.number().int().positive()),
 });
 export type TagSetOnEntityOutput = z.infer<typeof tagSetOnEntityOutputSchema>;
+
+/** 按引用实体 primary_component 的常用 tags 建议（本 world 频次；默认 top10） */
+export const tagSuggestInputSchema = z.object({
+  subject_kind: tagSubjectKindSchema,
+  primary_component: z.string().min(1),
+  query: z.string().optional(),
+  limit: z.number().int().positive().max(50).optional(),
+});
+export type TagSuggestInput = z.infer<typeof tagSuggestInputSchema>;
+export const tagSuggestionItemSchema = z.object({
+  id: z.number().int().positive(),
+  title: z.string(),
+  count: z.number().int().nonnegative(),
+});
+export const tagSuggestOutputSchema = z.object({
+  items: z.array(tagSuggestionItemSchema),
+});
+export type TagSuggestOutput = z.infer<typeof tagSuggestOutputSchema>;

@@ -11,6 +11,7 @@ import {
   listTags,
   searchTags,
   setEntityTagIds,
+  suggestTags,
   updateTag,
 } from "../domain/index.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
@@ -63,6 +64,26 @@ export async function serviceTagSearch(
   assertPg(deps);
   const { subject_kind, ...opts } = input;
   return searchTags(await tagWorldIdForAuth(auth, subject_kind), omitUndefined(opts));
+}
+
+export async function serviceTagSuggest(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    primary_component: string;
+    query?: string;
+    limit?: number;
+  },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const { subject_kind, primary_component, ...opts } = input;
+  const items = await suggestTags(
+    await tagWorldIdForAuth(auth, subject_kind),
+    primary_component,
+    omitUndefined(opts),
+  );
+  return { items };
 }
 
 export async function serviceTagCreate(

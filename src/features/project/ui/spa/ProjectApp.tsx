@@ -90,7 +90,7 @@ import {
   useContextMenuCapability,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
 import { TaskTagFilterBar } from "@freeanima/features/task/ui/spa/components/TaskTagFilterBar.tsx";
-import type { TaskTagKnown } from "@freeanima/features/task/ui/spa/components/TaskTagPicker.tsx";
+import type { TagKnown as TaskTagKnown } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 import {
   collectTagsFromTaskItems,
   findUnresolvedTaskTagIds,

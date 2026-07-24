@@ -1,0 +1,348 @@
+import { useEffect, useMemo, useState, type JSX, type ReactNode } from "react";
+import { PlusIcon, TagIcon } from "lucide-react";
+
+import { Button, Input, cn } from "@freeanima/frontend/ui-kit";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@freeanima/frontend/ui-kit/components/ui/dropdown-menu.tsx";
+
+import {
+  createTag,
+  fetchTags,
+  searchTags,
+  suggestTags,
+  type TagKnown,
+  type TagRow,
+  type TagSuggestion,
+} from "../lib/api.ts";
+import { TagChips } from "./TagChips.tsx";
+
+export type { TagKnown };
+
+type ListRow = {
+  id: number;
+  title: string;
+  count?: number;
+};
+
+type TagPickerProps = {
+  primaryComponent: string;
+  tagIds: number[];
+  onChange: (tagIds: number[]) => void;
+  mode: "append" | "multi";
+  readOnly?: boolean;
+  onTagKnown?: (tag: TagKnown) => void;
+  /** 仅「添加标签」触发器（chips 另处渲染） */
+  triggerOnly?: boolean;
+  /** 仅 chips，不含触发器 */
+  chipsOnly?: boolean;
+  /** 无标签时仍渲染（日记块 hover/触控入口） */
+  alwaysShowTrigger?: boolean;
+  /** 无标签且未 alwaysShowTrigger 时整组件不渲染（日记块默认） */
+  hideWhenEmpty?: boolean;
+  triggerClassName?: string;
+  align?: "start" | "end";
+  triggerLabel?: string;
+  triggerIcon?: ReactNode;
+};
+
+function mergePool(
+  prev: TagRow[],
+  next: Array<{ id: number; title: string; sort_order?: number }>,
+): TagRow[] {
+  const map = new Map(prev.map((t) => [t.id, t]));
+  for (const row of next) {
+    const existing = map.get(row.id);
+    map.set(row.id, {
+      id: row.id,
+      title: row.title,
+      sort_order: row.sort_order ?? existing?.sort_order ?? 0,
+      created_at: existing?.created_at ?? "",
+      updated_at: existing?.updated_at ?? "",
+    });
+  }
+  return [...map.values()].toSorted(
+    (a, b) => a.sort_order - b.sort_order || a.title.localeCompare(b.title) || a.id - b.id,
+  );
+}
+
+export function TagPicker({
+  primaryComponent,
+  tagIds,
+  onChange,
+  mode,
+  readOnly = false,
+  onTagKnown,
+  triggerOnly = false,
+  chipsOnly = false,
+  alwaysShowTrigger = false,
+  hideWhenEmpty = false,
+  triggerClassName,
+  align = "start",
+  triggerLabel,
+  triggerIcon,
+}: TagPickerProps): JSX.Element | null {
+  const [pool, setPool] = useState<TagRow[]>([]);
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [items, setItems] = useState<ListRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const selected = useMemo(() => new Set(tagIds), [tagIds]);
+  const titleById = useMemo(() => new Map(pool.map((t) => [t.id, t.title])), [pool]);
+  const hasTags = tagIds.length > 0;
+  const q = query.trim();
+  const tagIdsKey = tagIds.join(",");
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchTags()
+      .then((tags) => {
+        if (!cancelled) setPool(tags);
+      })
+      .catch(() => {
+        /* chip 无标题时回退 #id */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tagIdsKey]);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    const timer = setTimeout(
+      () => {
+        setLoading(true);
+        setError(null);
+        const load = q
+          ? searchTags(q, { limit: 30 }).then((rows) =>
+              rows.map((row): ListRow => ({ id: row.id, title: row.title })),
+            )
+          : suggestTags(primaryComponent, { limit: 10 }).then((rows: TagSuggestion[]) =>
+              rows.map((row): ListRow => ({ id: row.id, title: row.title, count: row.count })),
+            );
+        void load
+          .then((rows) => {
+            if (cancelled) return;
+            setItems(rows);
+            setPool((prev) => mergePool(prev, rows));
+          })
+          .catch((err) => {
+            if (!cancelled) setError(err instanceof Error ? err.message : String(err));
+          })
+          .finally(() => {
+            if (!cancelled) setLoading(false);
+          });
+      },
+      q ? 200 : 0,
+    );
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [open, q, primaryComponent]);
+
+  const showCreate =
+    q.length > 0 &&
+    !items.some((row) => row.title.toLowerCase() === q.toLowerCase()) &&
+    !pool.some((row) => row.title.toLowerCase() === q.toLowerCase());
+
+  const mergedItems: ListRow[] = (() => {
+    if (!q) return items;
+    const lower = q.toLowerCase();
+    const fromPool = pool
+      .filter((row) => row.title.toLowerCase().includes(lower))
+      .map((row): ListRow => ({ id: row.id, title: row.title }));
+    const seen = new Set(items.map((row) => row.id));
+    const extras = fromPool.filter((row) => !seen.has(row.id));
+    return extras.length > 0 ? [...items, ...extras] : items;
+  })();
+
+  const visibleItems =
+    mode === "append" ? mergedItems.filter((row) => !selected.has(row.id)) : mergedItems;
+
+  function remember(tag: TagKnown): void {
+    onTagKnown?.(tag);
+    setPool((prev) => mergePool(prev, [tag]));
+  }
+
+  function pick(id: number): void {
+    if (selected.has(id)) {
+      if (mode === "append") setOpen(false);
+      return;
+    }
+    onChange([...tagIds, id]);
+    if (mode === "append") {
+      setQuery("");
+      setOpen(false);
+    }
+  }
+
+  function toggle(id: number, checked: boolean): void {
+    if (checked) {
+      if (!tagIds.includes(id)) onChange([...tagIds, id]);
+      return;
+    }
+    onChange(tagIds.filter((x) => x !== id));
+  }
+
+  async function createAndPick(title: string): Promise<void> {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    setError(null);
+    try {
+      const item = await createTag(trimmed);
+      remember({ id: item.id, title: item.title });
+      if (!selected.has(item.id)) onChange([...tagIds, item.id]);
+      setQuery("");
+      if (mode === "append") setOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  function remove(tagId: number): void {
+    onChange(tagIds.filter((id) => id !== tagId));
+  }
+
+  if (chipsOnly) {
+    if (readOnly) return <TagChips tagIds={tagIds} titleById={titleById} readOnly />;
+    return <TagChips tagIds={tagIds} titleById={titleById} onRemove={remove} />;
+  }
+
+  if (readOnly) {
+    return hasTags ? <TagChips tagIds={tagIds} titleById={titleById} readOnly /> : null;
+  }
+
+  if (hideWhenEmpty && !hasTags && !alwaysShowTrigger) {
+    return null;
+  }
+
+  const defaultLabel = hasTags && mode === "multi" ? "标签" : "添加标签";
+  const label = triggerLabel ?? defaultLabel;
+
+  const menu = (
+    <DropdownMenu
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) setQuery("");
+      }}
+      modal={false}
+    >
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className={cn(
+            mode === "multi" ? "text-muted-foreground h-7 gap-1 px-2 text-xs" : undefined,
+            triggerClassName,
+          )}
+          aria-label={label}
+        >
+          {triggerIcon ??
+            (mode === "multi" ? (
+              <TagIcon className="size-3.5" />
+            ) : (
+              <PlusIcon className="size-3.5" />
+            ))}
+          {label}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align={align}
+        className="w-72 p-2"
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
+        <Input
+          className="h-8"
+          value={query}
+          placeholder="搜索或新建…"
+          aria-label="搜索或新建标签"
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && showCreate) {
+              e.preventDefault();
+              void createAndPick(q);
+            }
+            e.stopPropagation();
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+        <p className="text-muted-foreground mt-2 mb-1 px-1 text-[11px] font-medium tracking-wide uppercase">
+          {q ? "搜索结果" : "常用标签"}
+        </p>
+        <div className="max-h-60 overflow-y-auto">
+          {error ? <p className="text-destructive px-1 py-1 text-xs">{error}</p> : null}
+          {loading ? <p className="text-muted-foreground px-1 py-2 text-xs">加载中…</p> : null}
+          {!loading && visibleItems.length === 0 && !showCreate ? (
+            <p className="text-muted-foreground px-1 py-2 text-xs">
+              {q ? "无匹配标签" : "暂无常用标签，输入以搜索或新建"}
+            </p>
+          ) : null}
+          {!loading && mode === "append"
+            ? visibleItems.map((row) => (
+                <DropdownMenuItem key={row.id} onSelect={() => pick(row.id)}>
+                  <span className="min-w-0 flex-1 truncate">{row.title}</span>
+                  {row.count != null ? (
+                    <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+                      {row.count}
+                    </span>
+                  ) : null}
+                </DropdownMenuItem>
+              ))
+            : null}
+          {!loading && mode === "multi"
+            ? visibleItems.map((row) => (
+                <DropdownMenuCheckboxItem
+                  key={row.id}
+                  checked={selected.has(row.id)}
+                  onCheckedChange={(checked) => toggle(row.id, checked === true)}
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  <span className="min-w-0 flex-1 truncate">{row.title}</span>
+                  {row.count != null ? (
+                    <span className="text-muted-foreground ml-auto shrink-0 text-xs tabular-nums">
+                      {row.count}
+                    </span>
+                  ) : null}
+                </DropdownMenuCheckboxItem>
+              ))
+            : null}
+          {showCreate ? (
+            <>
+              {visibleItems.length > 0 ? <DropdownMenuSeparator /> : null}
+              <DropdownMenuItem
+                className="text-foreground gap-2"
+                onSelect={() => void createAndPick(q)}
+              >
+                <PlusIcon className="size-3.5 shrink-0" />
+                <span className="min-w-0 truncate">添加「{q}」</span>
+              </DropdownMenuItem>
+            </>
+          ) : null}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  if (triggerOnly) return menu;
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+        <TagChips tagIds={tagIds} titleById={titleById} onRemove={remove} />
+        {menu}
+      </div>
+      {error && !open ? <p className="text-destructive text-xs">{error}</p> : null}
+    </div>
+  );
+}

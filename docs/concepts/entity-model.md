@@ -138,10 +138,12 @@ Future multi-world browse (e.g. diary calendar aggregation across worlds) should
 - **名称**在 entity `title`；body 仅 `sort_order` / `client_op_id`
 - 任意 content entity 通过顶层 **`tag_ids`** 挂载标签；含义由「实体类型 + 标签」组合自然产生（不做语义空间区分）
 - 同 World 内 title（trim 后）唯一；删除标签时从该 World 所有实体的 `tag_ids` 剔除
-- **Habitat RPC：** `tag.list` / `tag.search` / `tag.create` / `tag.patch` / `tag.delete` / `tag.setOnEntity`
+- **Habitat RPC：** `tag.list` / `tag.search` / `tag.suggest` / `tag.create` / `tag.patch` / `tag.delete` / `tag.setOnEntity`
 - **LLM ToolSet：** `tag`（`tag_list` / `tag_search` / `tag_create` / `tag_update` / `tag_delete` / `tag_set_on_entity`）
 - **搜索：** `EntitySearchOpts.tag_ids`（或 `task_item` filters.`tag_ids`）为数组包含过滤（AND）
-- **UI 试点：** 任务详情 TagPicker + 列表按标签筛选；其他模块后续接入
+- **挂标签 UI：** 共享 `TagPicker`（`features/tag/ui`）— 常用（`tag.suggest` 按目标实体 `primary_component` 频次）+ 搜索（`tag.search`）+ 新建；日记条目 / 日记块 / 任务详情共用
+- **列表筛选 UI：** 任务/项目等本地 FilterBar（从当前列表收集已有 tag chips），**不是**挂标签交互，不接入 `TagPicker`、不暴露新建
+- **兼容：** `diary.suggestTags` 仍可用，内部委托同一频次查询（固定 `diary_entry`）
 
 ## Project module (v1 spec)
 

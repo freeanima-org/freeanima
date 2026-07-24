@@ -5,6 +5,14 @@ import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 export type TagRow = TagRowPayload;
 
+export type TagSuggestion = {
+  id: number;
+  title: string;
+  count: number;
+};
+
+export type TagKnown = { id: number; title: string };
+
 function habitat() {
   return getTypedHabitatClient();
 }
@@ -16,6 +24,32 @@ function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
 export async function fetchTags(): Promise<TagRow[]> {
   const data = await habitat().call("tag.list", withSubjectKind({}));
   return data.tags;
+}
+
+export async function searchTags(query: string, opts?: { limit?: number }): Promise<TagRow[]> {
+  const data = await habitat().call(
+    "tag.search",
+    withSubjectKind({
+      query,
+      ...(opts?.limit != null ? { limit: opts.limit } : {}),
+    }),
+  );
+  return data.tags;
+}
+
+export async function suggestTags(
+  primaryComponent: string,
+  opts?: { query?: string; limit?: number },
+): Promise<TagSuggestion[]> {
+  const data = await habitat().call(
+    "tag.suggest",
+    withSubjectKind({
+      primary_component: primaryComponent,
+      ...(opts?.query != null ? { query: opts.query } : {}),
+      ...(opts?.limit != null ? { limit: opts.limit } : {}),
+    }),
+  );
+  return data.items;
 }
 
 export async function createTag(title: string): Promise<TagRow> {

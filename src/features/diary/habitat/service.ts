@@ -18,14 +18,11 @@ import {
   type DiaryBlockTemplatePreset,
   type DiarySubjectKind,
 } from "../domain/index.ts";
-import {
-  loadDiaryEntryTagsStatsCache,
-  saveDiaryEntryTagsStatsCache,
-} from "../domain/entry-tags-stats-cache.ts";
 
+import { DIARY_ENTRY_COMPONENT } from "@freeanima/core/db/schema";
 import { isPostgresPrimary } from "@freeanima/core/db/pg";
-import { suggestDiaryEntryTags } from "@freeanima/core/db/pg/diary";
 import { omitUndefined } from "@freeanima/core/util";
+import { suggestTags } from "@freeanima/features/tag/domain/index.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 function assertPg(_deps: RuntimeDeps): void {
@@ -316,19 +313,10 @@ export async function serviceDiarySuggestTags(
 ) {
   assertPg(deps);
   const ctx = await storeContext(deps, input.subject_kind);
-  const limit = Math.max(1, Math.min(50, input.limit ?? 10));
-  const query = input.query?.trim() ?? "";
-
-  // 仅缓存「无 query」的常用统计；带搜索词仍实时查库
-  if (!query) {
-    const cached = await loadDiaryEntryTagsStatsCache(ctx.worldId, limit);
-    if (cached) return { items: cached };
-
-    const items = await suggestDiaryEntryTags(ctx.worldId, { limit });
-    await saveDiaryEntryTagsStatsCache(ctx.worldId, limit, items);
-    return { items };
-  }
-
-  const items = await suggestDiaryEntryTags(ctx.worldId, { query, limit });
+  const items = await suggestTags(
+    ctx.worldId,
+    DIARY_ENTRY_COMPONENT,
+    omitUndefined({ query: input.query, limit: input.limit }),
+  );
   return { items };
 }
