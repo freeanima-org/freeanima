@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,17 +16,17 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Title #
-#: docs/concepts/architecture.md:336 docs/modules/goal.md:1
-#: docs/modules/goal.md:5
+#. type: Title ##
+#: docs/cognition/compression.md:32 docs/modules/goal.md:40
 #, no-wrap
-msgid "Session Goal"
+msgid "Configuration"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/compression.md:32 docs/modules/goal.md:40
+#: docs/modules/goal.md:1 docs/modules/goal.md:5
+#: docs/product/architecture.md:333
 #, no-wrap
-msgid "Configuration"
+msgid "Session Goal"
 msgstr ""
 
 #. type: Plain text
@@ -142,9 +142,8 @@ msgstr ""
 #. type: Plain text
 #: docs/modules/goal.md:43
 msgid ""
-"Optional `goal_judge` in `~/.anima/config.yaml` `llm.profiles` (see "
-"[`config.example.yaml`](../../config.example.yaml)). Falls back to "
-"`llm.default_profile` when unset."
+"Optional `goal_judge` in Habitat runtime `llm.profiles` (Shell **Settings → "
+"Habitat 服务 → 服务配置**). Falls back to `llm.default_profile` when unset."
 msgstr ""
 
 #. type: Plain text
@@ -178,5 +177,5 @@ msgstr ""
 
 #. type: Plain text
 #: docs/modules/goal.md:51
-msgid "See [`architecture.md`](../concepts/architecture.md#session-goal)."
+msgid "See [`architecture.md`](../product/architecture.md#session-goal)."
 msgstr ""

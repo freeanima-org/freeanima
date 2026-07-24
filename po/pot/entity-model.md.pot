@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,8 +32,8 @@ msgstr ""
 #: docs/product/entity-model.md:8
 msgid ""
 "FreeAnima stores most structured business data in a single **`entities`** "
-"table. Self layer remains physically isolated in [`self_blocks`](self-"
-"layer.md)."
+"table. Self layer remains physically isolated in [`self_blocks`](../"
+"cognition/self-layer.md)."
 msgstr ""
 
 #. type: Title ##
@@ -150,8 +150,8 @@ msgstr ""
 #: docs/product/entity-model.md:53
 msgid ""
 "**Notifications** use subject entity ids as `recipient_id` (see "
-"[`notifications.md`](notifications.md)); ids come from boot-time "
-"**`ResolvedWorldContext`** (and are persisted to "
+"[`notifications.md`](../cognition/notifications.md)); ids come from boot-"
+"time **`ResolvedWorldContext`** (and are persisted to "
 "`habitat_runtime_config.worlds`)."
 msgstr ""
 
@@ -160,7 +160,7 @@ msgstr ""
 msgid ""
 "**Service API Token**（`service_api_tokens` 表）绑定 subject entity id；"
 "Habitat REST/SAP/MCP 从 Bearer token 解析调用方身份。见 [`remote-access.md`]"
-"(../guide/remote-access.md)。"
+"(../ops/remote-access.md)。"
 msgstr ""
 
 #. type: Title ###
@@ -297,8 +297,8 @@ msgstr ""
 #: docs/product/entity-model.md:84
 msgid ""
 "Do not confuse with semantic memory **`type=world`** (fact classification in "
-"[`memory.md`](memory.md)) — that becomes `body.memory_kind=world` after "
-"future migration."
+"[`memory.md`](../cognition/memory.md)) — that becomes "
+"`body.memory_kind=world` after future migration."
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -436,8 +436,8 @@ msgstr ""
 msgid ""
 "SAP task/email methods accept optional `subject_kind` (defaults: task "
 "`user`, email `agent`). Satellites read the shell scope via "
-"**`useSubjectScope()`** from `@freeanima/shell-sdk`; Habitat REST entity "
-"search uses **`resolveWorldIdForSubject()`** with the same scope."
+"**`useSubjectScope()`** from `@freeanima/client/portal-sdk`; Habitat REST "
+"entity search uses **`resolveWorldIdForSubject()`** with the same scope."
 msgstr ""
 
 #. type: Plain text
@@ -568,7 +568,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/product/entity-model.md:160
-msgid "Full spec: [`docs/features/project.md`](../features/project.md)."
+msgid "Full spec: [`docs/modules/project.md`](../modules/project.md)."
 msgstr ""
 
 #. type: Title ##
@@ -678,7 +678,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/product/entity-model.md:190
-msgid "See [`docs/features/diary.md`](../features/diary.md)."
+msgid "See [`docs/modules/diary.md`](../modules/diary.md)."
 msgstr ""
 
 #. type: Title ##
@@ -816,7 +816,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/product/entity-model.md:237
-msgid "See [`docs/concepts/dream.md`](dream.md)."
+msgid "See [`docs/cognition/dream.md`](../cognition/dream.md)."
 msgstr ""
 
 #. type: Title ##
@@ -902,7 +902,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/product/entity-model.md:261 messages/po4a/en.xml:222
-#: messages/po4a/en.xml:234 messages/po4a/en.xml:638
+#: messages/po4a/en.xml:234 messages/po4a/en.xml:613
 #, no-wrap
 msgid "Search"
 msgstr ""
@@ -945,8 +945,8 @@ msgstr ""
 #. type: Plain text
 #: docs/product/entity-model.md:277
 msgid ""
-"See memory hybrid search in [`memory.md`](memory.md) for FTS operator "
-"syntax; entity search reuses the same query builder."
+"See memory hybrid search in [`memory.md`](../cognition/memory.md) for FTS "
+"operator syntax; entity search reuses the same query builder."
 msgstr ""
 
 #. type: Plain text
@@ -972,7 +972,7 @@ msgid ""
 "| `autobiographical_memory`      | `content_block` + `narrative`（parent = dated `diary_entry`；**done**）                                                    |\n"
 "| `limbic_memory`                | `content_block` + `limbic`（parent = dated `diary_entry`；**done**）                                                       |\n"
 "| `diary_entry` single body      | Container + child `content_block`s (**done**; migration clears container `content`)                                        |\n"
-"| Global temporal digests        | `primary_component=temporal_summary`（day/month/year；见 [`temporal-summary.md`](temporal-summary.md)）                    |\n"
+"| Global temporal digests        | `primary_component=temporal_summary`（day/month/year；见 [`temporal-summary.md`](../cognition/temporal-summary.md)）       |\n"
 "| `tasks` (legacy)               | `task_item` (when explicitly migrated)                                                                                     |\n"
 "| `config.yaml email.accounts`   | `email_account` (see [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)) |\n"
 "| `memory_references`            | relationship table (future)                                                                                                |\n"

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 14:39+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: 2026-07-10 23:57+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -99,8 +99,9 @@ msgstr ""
 
 #. type: Title ##
 #: docs/modules/offline-platform.md:32
-#, no-wrap
-msgid "平台原语（shell-sdk）"
+#, fuzzy, no-wrap
+#| msgid "平台原语（shell-sdk）"
+msgid "平台原语（portal-sdk）"
 msgstr "平台原语（shell-sdk）"
 
 #. type: Bullet: '- '
@@ -379,7 +380,9 @@ msgstr ""
 
 #. type: Bullet: '5. '
 #: docs/modules/offline-platform.md:93
-msgid "更新 `docs/guide/remote-access.md`（若边界变化）"
+#, fuzzy
+#| msgid "更新 `docs/guide/remote-access.md`（若边界变化）"
+msgid "更新 `docs/ops/remote-access.md`（若边界变化）"
 msgstr "更新 `docs/guide/remote-access.md`（若边界变化）"
 
 #. type: Plain text
@@ -396,11 +399,17 @@ msgstr "自我层刷新"
 
 #. type: Plain text
 #: docs/modules/offline-platform.md:98
+#, fuzzy
+#| msgid ""
+#| "`offline-sync` / `OfflineSyncBootstrap` 负责 **sync**（重连与可见时 flush "
+#| "+ 有 outbox 模块的 `refreshAll`）。用户点「刷新」或下拉刷新是 **refresh**"
+#| "（当前页重新拉取视图），二者职责分离。产品页矩阵与交互约定见 [`docs/"
+#| "features/page-refresh.md`](../features/page-refresh.md)。"
 msgid ""
 "`offline-sync` / `OfflineSyncBootstrap` 负责 **sync**（重连与可见时 flush + "
 "有 outbox 模块的 `refreshAll`）。用户点「刷新」或下拉刷新是 **refresh**（当前"
-"页重新拉取视图），二者职责分离。产品页矩阵与交互约定见 [`docs/features/page-"
-"refresh.md`](../features/page-refresh.md)。"
+"页重新拉取视图），二者职责分离。产品页矩阵与交互约定见 [`docs/modules/page-"
+"refresh.md`](page-refresh.md)。"
 msgstr ""
 "`offline-sync` / `OfflineSyncBootstrap` 负责 **sync**（重连与可见时 flush + "
 "有 outbox 模块的 `refreshAll`）。用户点「刷新」或下拉刷新是 **refresh**（当前"

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,8 +16,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Yaml Front Matter Hash Value: title
-#: docs/modules/page-refresh.md:1
+#. type: Content of: <messages><msg>
+#: docs/modules/page-refresh.md:1 messages/po4a/en.xml:691
 #, no-wrap
 msgid "Page refresh"
 msgstr ""
@@ -47,7 +47,7 @@ msgstr ""
 msgid ""
 "| Verb        | When                                                           | What happens                                                                                                                   |\n"
 "| ----------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |\n"
-"| **sync**    | Habitat reconnect, tab visible again, Offline sync toast retry | Flush outbox; modules that flushed call `refreshAll` (see [offline platform](../guide/offline-platform.md))                    |\n"
+"| **sync**    | Habitat reconnect, tab visible again, Offline sync toast retry | Flush outbox; modules that flushed call `refreshAll` (see [offline platform](offline-platform.md))                             |\n"
 "| **refresh** | Header **Refresh** button or touch pull-to-refresh             | Re-run the page’s `reload*` / list fetch (online `withOfflineCache` already network-fetches). Same handler for button and pull |\n"
 msgstr ""
 
@@ -118,9 +118,8 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/modules/page-refresh.md:39
 msgid ""
-"Shared pull gesture: `@freeanima/frontend/ui-kit/composite` `PullToRefresh` "
-"(touch-only; ignore starts near the left edge to avoid drawer swipe "
-"conflicts)."
+"Shared pull gesture: `@freeanima/ui-kit/composite` `PullToRefresh` (touch-"
+"only; ignore starts near the left edge to avoid drawer swipe conflicts)."
 msgstr ""
 
 #. type: Bullet: '- '

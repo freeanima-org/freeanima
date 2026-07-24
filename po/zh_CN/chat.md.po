@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: 2026-07-10 23:57+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/modules/chat.md:1 messages/po4a/en.xml:445 messages/po4a/en.xml:450
-#: messages/po4a/en.xml:728
+#: messages/po4a/en.xml:663 messages/po4a/en.xml:725
 #, no-wrap
 msgid "Chat"
 msgstr "聊天室"
@@ -208,8 +208,13 @@ msgstr "与离线平台（Stream outbox）"
 
 #. type: Plain text
 #: docs/modules/chat.md:53
+#, fuzzy
+#| msgid ""
+#| "Outbox 布局与 [`shell-sdk/offline-outbox`](../../src/frontend/shell-sdk/"
+#| "offline-outbox.ts) 对齐；Chat flush 走 WS 流式 `message.send`，非通用 "
+#| "Habitat RPC 单次响应。"
 msgid ""
-"Outbox 布局与 [`shell-sdk/offline-outbox`](../../src/frontend/shell-sdk/"
+"Outbox 布局与 [`portal-sdk/offline-outbox`](../../src/client/portal-sdk/"
 "offline-outbox.ts) 对齐；Chat flush 走 WS 流式 `message.send`，非通用 "
 "Habitat RPC 单次响应。"
 msgstr ""

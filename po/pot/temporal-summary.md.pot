@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-20 13:14+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,11 +33,11 @@ msgstr ""
 #, no-wrap
 msgid ""
 "> Objective, indiscriminate digests of conversation activity over time buckets.\n"
-"> Related: [`memory.md`](memory.md), [`sleep.md`](sleep.md), [`diary.md`](../features/diary.md), [`compression.md`](compression.md), [`entity-model.md`](entity-model.md).\n"
+"> Related: [`memory.md`](memory.md), [`sleep.md`](sleep.md), [`diary.md`](../modules/diary.md), [`compression.md`](compression.md), [`entity-model.md`](../product/entity-model.md).\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/cognition/temporal-summary.md:10 docs/sap/tools.md:11
+#: docs/cognition/temporal-summary.md:10
 #, no-wrap
 msgid "Naming"
 msgstr ""
@@ -272,7 +272,7 @@ msgid "**Forbidden:** putting today peers in system prompt; per-turn tail replac
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/cognition/temporal-summary.md:100 messages/po4a/en.xml:102
+#: docs/cognition/temporal-summary.md:100 messages/po4a/en.xml:177
 #, no-wrap
 msgid "Config"
 msgstr ""
@@ -280,8 +280,8 @@ msgstr ""
 #. type: Plain text
 #: docs/cognition/temporal-summary.md:103
 msgid ""
-"`memory.temporal_summary` in runtime config / `config.example.yaml`: "
-"`enabled`, char caps, `redis_key_prefix`."
+"`memory.temporal_summary` in Habitat runtime config "
+"(`habitat_runtime_config`): `enabled`, char caps, `redis_key_prefix`."
 msgstr ""
 
 #. type: Title ##

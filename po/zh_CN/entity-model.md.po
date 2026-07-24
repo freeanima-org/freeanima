@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: 2026-06-29 14:00+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -29,10 +29,15 @@ msgstr "统一实体模型（v0.8）"
 
 #. type: Plain text
 #: docs/product/entity-model.md:8
+#, fuzzy
+#| msgid ""
+#| "FreeAnima stores most structured business data in a single **`entities`** "
+#| "table. Self layer remains physically isolated in [`self_blocks`](self-"
+#| "layer.md)."
 msgid ""
 "FreeAnima stores most structured business data in a single **`entities`** "
-"table. Self layer remains physically isolated in [`self_blocks`](self-"
-"layer.md)."
+"table. Self layer remains physically isolated in [`self_blocks`](../"
+"cognition/self-layer.md)."
 msgstr ""
 "逸灵风将大部分结构化业务数据存入单一 **`entities`** 表。自我层在物理上仍隔离"
 "于 [`self_blocks`](self-layer.md)。"
@@ -197,8 +202,8 @@ msgstr ""
 #| "`worlds.user_subject_id` / `agent_subject_id`)."
 msgid ""
 "**Notifications** use subject entity ids as `recipient_id` (see "
-"[`notifications.md`](notifications.md)); ids come from boot-time "
-"**`ResolvedWorldContext`** (and are persisted to "
+"[`notifications.md`](../cognition/notifications.md)); ids come from boot-"
+"time **`ResolvedWorldContext`** (and are persisted to "
 "`habitat_runtime_config.worlds`)."
 msgstr ""
 "**通知**以 subject 实体 id 作为 `recipient_id`（见 [`notifications.md`]"
@@ -210,7 +215,7 @@ msgstr ""
 msgid ""
 "**Service API Token**（`service_api_tokens` 表）绑定 subject entity id；"
 "Habitat REST/SAP/MCP 从 Bearer token 解析调用方身份。见 [`remote-access.md`]"
-"(../guide/remote-access.md)。"
+"(../ops/remote-access.md)。"
 msgstr ""
 
 #. type: Title ###
@@ -358,10 +363,15 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/product/entity-model.md:84
+#, fuzzy
+#| msgid ""
+#| "Do not confuse with semantic memory **`type=world`** (fact classification "
+#| "in [`memory.md`](memory.md)) — that becomes `body.memory_kind=world` "
+#| "after future migration."
 msgid ""
 "Do not confuse with semantic memory **`type=world`** (fact classification in "
-"[`memory.md`](memory.md)) — that becomes `body.memory_kind=world` after "
-"future migration."
+"[`memory.md`](../cognition/memory.md)) — that becomes "
+"`body.memory_kind=world` after future migration."
 msgstr ""
 "勿与语义记忆 **`type=world`**（[`memory.md`](memory.md) 中的事实分类）混淆——"
 "未来迁移后将变为 `body.memory_kind=world`。"
@@ -542,8 +552,8 @@ msgstr ""
 msgid ""
 "SAP task/email methods accept optional `subject_kind` (defaults: task "
 "`user`, email `agent`). Satellites read the shell scope via "
-"**`useSubjectScope()`** from `@freeanima/shell-sdk`; Habitat REST entity "
-"search uses **`resolveWorldIdForSubject()`** with the same scope."
+"**`useSubjectScope()`** from `@freeanima/client/portal-sdk`; Habitat REST "
+"entity search uses **`resolveWorldIdForSubject()`** with the same scope."
 msgstr ""
 
 #. type: Plain text
@@ -702,7 +712,7 @@ msgstr ""
 #: docs/product/entity-model.md:160
 #, fuzzy
 #| msgid "See [`docs/features/diary.md`](../features/diary.md)."
-msgid "Full spec: [`docs/features/project.md`](../features/project.md)."
+msgid "Full spec: [`docs/modules/project.md`](../modules/project.md)."
 msgstr "详见 [`docs/features/diary.md`](../features/diary.md)。"
 
 #. type: Title ##
@@ -840,7 +850,9 @@ msgstr "**LLM：** ToolSet `diary`——仅 agent 私有 world。"
 
 #. type: Plain text
 #: docs/product/entity-model.md:190
-msgid "See [`docs/features/diary.md`](../features/diary.md)."
+#, fuzzy
+#| msgid "See [`docs/features/diary.md`](../features/diary.md)."
+msgid "See [`docs/modules/diary.md`](../modules/diary.md)."
 msgstr "详见 [`docs/features/diary.md`](../features/diary.md)。"
 
 #. type: Title ##
@@ -1005,7 +1017,9 @@ msgstr ""
 #
 #. type: Plain text
 #: docs/product/entity-model.md:237
-msgid "See [`docs/concepts/dream.md`](dream.md)."
+#, fuzzy
+#| msgid "See [`docs/concepts/dream.md`](dream.md)."
+msgid "See [`docs/cognition/dream.md`](../cognition/dream.md)."
 msgstr "详见 [`docs/features/diary.md`](../features/diary.md)。"
 
 #. type: Title ##
@@ -1106,7 +1120,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/product/entity-model.md:261 messages/po4a/en.xml:222
-#: messages/po4a/en.xml:234 messages/po4a/en.xml:638
+#: messages/po4a/en.xml:234 messages/po4a/en.xml:613
 #, no-wrap
 msgid "Search"
 msgstr "查询"
@@ -1160,9 +1174,13 @@ msgstr "**工具 / API：** `entity_search`（LLM/MCP）与 `GET|POST /api/entit
 
 #. type: Plain text
 #: docs/product/entity-model.md:277
+#, fuzzy
+#| msgid ""
+#| "See memory hybrid search in [`memory.md`](memory.md) for FTS operator "
+#| "syntax; entity search reuses the same query builder."
 msgid ""
-"See memory hybrid search in [`memory.md`](memory.md) for FTS operator "
-"syntax; entity search reuses the same query builder."
+"See memory hybrid search in [`memory.md`](../cognition/memory.md) for FTS "
+"operator syntax; entity search reuses the same query builder."
 msgstr ""
 "FTS 操作符语法见 [`memory.md`](memory.md) 中的混合搜索；实体搜索复用同一查询"
 "构建器。"
@@ -1202,7 +1220,7 @@ msgid ""
 "| `autobiographical_memory`      | `content_block` + `narrative`（parent = dated `diary_entry`；**done**）                                                    |\n"
 "| `limbic_memory`                | `content_block` + `limbic`（parent = dated `diary_entry`；**done**）                                                       |\n"
 "| `diary_entry` single body      | Container + child `content_block`s (**done**; migration clears container `content`)                                        |\n"
-"| Global temporal digests        | `primary_component=temporal_summary`（day/month/year；见 [`temporal-summary.md`](temporal-summary.md)）                    |\n"
+"| Global temporal digests        | `primary_component=temporal_summary`（day/month/year；见 [`temporal-summary.md`](../cognition/temporal-summary.md)）       |\n"
 "| `tasks` (legacy)               | `task_item` (when explicitly migrated)                                                                                     |\n"
 "| `config.yaml email.accounts`   | `email_account` (see [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)) |\n"
 "| `memory_references`            | relationship table (future)                                                                                                |\n"

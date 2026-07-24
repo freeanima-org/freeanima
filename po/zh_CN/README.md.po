@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,24 +29,35 @@ msgstr "文档/"
 
 #. type: Plain text
 #: docs/README.md:8
+#, fuzzy
+#| msgid ""
+#| "For **FreeAnima users** — self-hosted deployment, talking to a digital "
+#| "life, configuring tools and memory. Contributor rules: [`.agent/rules/`]"
+#| "(../.agent/rules/README.md). Tasks: [GitHub Issues](https://github.com/"
+#| "freeanima-org/freeanima/issues)."
 msgid ""
-"For **FreeAnima users** — self-hosted deployment, talking to a digital life, "
-"configuring tools and memory. Contributor rules: [`.agent/rules/`](../.agent/"
-"rules/README.md). Tasks: [GitHub Issues](https://github.com/freeanima-org/"
-"freeanima/issues)."
+"For **FreeAnima users** and the Habitat agent (`freeanima_docs` ToolSet). "
+"Contributor rules: [`.agent/rules/`](../.agent/rules/README.md). Tasks: "
+"[GitHub Issues](https://github.com/freeanima-org/freeanima/issues)."
 msgstr ""
 "面向 **逸灵风用户**——自托管部署、与数字人类对话、配置工具与记忆。贡献者规则"
 "见 [`.agent/rules/`](../.agent/rules/README.md)。任务见 [GitHub Issues]"
 "(https://github.com/freeanima-org/freeanima/issues)。"
 
-#. type: Title ##
-#: docs/README.md:9
+#. type: Plain text
+#: docs/README.md:10
 #, no-wrap
-msgid "Guide — Usage and Maintenance"
-msgstr "指南 — 使用与运维"
+msgid "**Agent tip:** `toolset_load([\"freeanima_docs\"])` then prefer `freeanima_docs_get` on `README.md`, or `freeanima_docs_list` with a path `prefix` (`product/`, `cognition/`, `modules/`, `tools/`, `ops/`).\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/README.md:11
+#, no-wrap
+msgid "Product — framing and data model"
+msgstr ""
 
 #. type: Plain text
-#: docs/README.md:18
+#: docs/README.md:19
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Topic        | File                                   |\n"
@@ -56,13 +67,12 @@ msgstr "指南 — 使用与运维"
 #| "| Database     | [guide/database.md](guide/database.md) |\n"
 #| "| Service      | [guide/service.md](guide/service.md)   |\n"
 msgid ""
-"| Topic        | File                                         |\n"
-"| ------------ | -------------------------------------------- |\n"
-"| Installation | [guide/install.md](guide/install.md)         |\n"
-"| Security     | [guide/security.md](guide/security.md)       |\n"
-"| Database     | [guide/database.md](guide/database.md)       |\n"
-"| Service      | [guide/service.md](guide/service.md)         |\n"
-"| Habitat RPC  | [guide/habitat-rpc.md](guide/habitat-rpc.md) |\n"
+"| Topic        | File                                               |\n"
+"| ------------ | -------------------------------------------------- |\n"
+"| Architecture | [product/architecture.md](product/architecture.md) |\n"
+"| Identity     | [product/identity.md](product/identity.md)         |\n"
+"| Entity model | [product/entity-model.md](product/entity-model.md) |\n"
+"| Anima URI    | [product/anima-uri.md](product/anima-uri.md)       |\n"
 msgstr ""
 "| 主题         | 文件                                   |\n"
 "| ------------ | -------------------------------------- |\n"
@@ -72,26 +82,40 @@ msgstr ""
 "| 服务         | [guide/service.md](guide/service.md)   |\n"
 
 #. type: Title ##
-#: docs/README.md:19
-#, no-wrap
-msgid "Concepts — Core Ideas"
-msgstr "概念 — 核心思想"
+#: docs/README.md:20
+#, fuzzy, no-wrap
+#| msgid "This is where the digital life is \"thinking.\""
+msgid "Cognition — how the digital life thinks"
+msgstr "这是数字生命\"正在思考\"的区域。"
 
 #. type: Plain text
-#: docs/README.md:32
-#, no-wrap
+#: docs/README.md:34
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Topic           | File                                                       |\n"
+#| "| --------------- | ---------------------------------------------------------- |\n"
+#| "| Architecture    | [concepts/architecture.md](concepts/architecture.md)       |\n"
+#| "| Entity model    | [concepts/entity-model.md](concepts/entity-model.md)       |\n"
+#| "| Identity        | [concepts/identity.md](concepts/identity.md)               |\n"
+#| "| Self layer      | [concepts/self-layer.md](concepts/self-layer.md)           |\n"
+#| "| Memory          | [concepts/memory.md](concepts/memory.md)                   |\n"
+#| "| Compression     | [concepts/compression.md](concepts/compression.md)         |\n"
+#| "| Sleep           | [concepts/sleep.md](concepts/sleep.md)                     |\n"
+#| "| Time perception | [concepts/time-perception.md](concepts/time-perception.md) |\n"
+#| "| Recall flow     | [concepts/recall-flow.md](concepts/recall-flow.md)         |\n"
 msgid ""
-"| Topic           | File                                                       |\n"
-"| --------------- | ---------------------------------------------------------- |\n"
-"| Architecture    | [concepts/architecture.md](concepts/architecture.md)       |\n"
-"| Entity model    | [concepts/entity-model.md](concepts/entity-model.md)       |\n"
-"| Identity        | [concepts/identity.md](concepts/identity.md)               |\n"
-"| Self layer      | [concepts/self-layer.md](concepts/self-layer.md)           |\n"
-"| Memory          | [concepts/memory.md](concepts/memory.md)                   |\n"
-"| Compression     | [concepts/compression.md](concepts/compression.md)         |\n"
-"| Sleep           | [concepts/sleep.md](concepts/sleep.md)                     |\n"
-"| Time perception | [concepts/time-perception.md](concepts/time-perception.md) |\n"
-"| Recall flow     | [concepts/recall-flow.md](concepts/recall-flow.md)         |\n"
+"| Topic                 | File                                                                     |\n"
+"| --------------------- | ------------------------------------------------------------------------ |\n"
+"| Memory                | [cognition/memory.md](cognition/memory.md)                               |\n"
+"| Compression           | [cognition/compression.md](cognition/compression.md)                     |\n"
+"| Sleep                 | [cognition/sleep.md](cognition/sleep.md)                                 |\n"
+"| Dream                 | [cognition/dream.md](cognition/dream.md)                                 |\n"
+"| Self layer            | [cognition/self-layer.md](cognition/self-layer.md)                       |\n"
+"| Time perception       | [cognition/time-perception.md](cognition/time-perception.md)             |\n"
+"| Temporal summary      | [cognition/temporal-summary.md](cognition/temporal-summary.md)           |\n"
+"| Recall flow           | [cognition/recall-flow.md](cognition/recall-flow.md)                     |\n"
+"| Environment awareness | [cognition/environment-awareness.md](cognition/environment-awareness.md) |\n"
+"| Notifications         | [cognition/notifications.md](cognition/notifications.md)                 |\n"
 msgstr ""
 "| 主题     | 文件                                                       |\n"
 "| -------- | ---------------------------------------------------------- |\n"
@@ -106,47 +130,106 @@ msgstr ""
 "| 回忆检索 | [concepts/recall-flow.md](concepts/recall-flow.md)         |\n"
 
 #. type: Title ##
-#: docs/README.md:33
-#, no-wrap
-msgid "Features — Major Capabilities"
+#: docs/README.md:35
+#, fuzzy, no-wrap
+#| msgid "Features — Major Capabilities"
+msgid "Modules — product capabilities"
 msgstr "功能 — 主要能力"
 
 #. type: Plain text
-#: docs/README.md:39
+#: docs/README.md:47
 #, fuzzy, no-wrap
 #| msgid ""
-#| "| Topic      | File                                             |\n"
-#| "| ---------- | ------------------------------------------------ |\n"
-#| "| Mobile app | [features/mobile-app.md](features/mobile-app.md) |\n"
+#| "| Topic           | File                                                       |\n"
+#| "| --------------- | ---------------------------------------------------------- |\n"
+#| "| Architecture    | [concepts/architecture.md](concepts/architecture.md)       |\n"
+#| "| Entity model    | [concepts/entity-model.md](concepts/entity-model.md)       |\n"
+#| "| Identity        | [concepts/identity.md](concepts/identity.md)               |\n"
+#| "| Self layer      | [concepts/self-layer.md](concepts/self-layer.md)           |\n"
+#| "| Memory          | [concepts/memory.md](concepts/memory.md)                   |\n"
+#| "| Compression     | [concepts/compression.md](concepts/compression.md)         |\n"
+#| "| Sleep           | [concepts/sleep.md](concepts/sleep.md)                     |\n"
+#| "| Time perception | [concepts/time-perception.md](concepts/time-perception.md) |\n"
+#| "| Recall flow     | [concepts/recall-flow.md](concepts/recall-flow.md)         |\n"
 msgid ""
-"| Topic             | File                                             |\n"
-"| ----------------- | ------------------------------------------------ |\n"
-"| Mobile app        | [features/mobile-app.md](features/mobile-app.md) |\n"
-"| Desktop companion | [features/companion.md](features/companion.md)   |\n"
+"| Topic             | File                                                       |\n"
+"| ----------------- | ---------------------------------------------------------- |\n"
+"| Chat              | [modules/chat.md](modules/chat.md)                         |\n"
+"| Desktop companion | [modules/companion.md](modules/companion.md)               |\n"
+"| Diary             | [modules/diary.md](modules/diary.md)                       |\n"
+"| Session goal      | [modules/goal.md](modules/goal.md)                         |\n"
+"| Project           | [modules/project.md](modules/project.md)                   |\n"
+"| Mobile app        | [modules/mobile-app.md](modules/mobile-app.md)             |\n"
+"| Offline platform  | [modules/offline-platform.md](modules/offline-platform.md) |\n"
+"| Page refresh      | [modules/page-refresh.md](modules/page-refresh.md)         |\n"
 msgstr ""
-"| 主题   | 文件                                             |\n"
-"| ------ | ------------------------------------------------ |\n"
-"| 移动应用 | [features/mobile-app.md](features/mobile-app.md) |\n"
+"| 主题     | 文件                                                       |\n"
+"| -------- | ---------------------------------------------------------- |\n"
+"| 架构     | [concepts/architecture.md](concepts/architecture.md)       |\n"
+"| 实体模型 | [concepts/entity-model.md](concepts/entity-model.md)       |\n"
+"| 身份定位 | [concepts/identity.md](concepts/identity.md)               |\n"
+"| 自我层   | [concepts/self-layer.md](concepts/self-layer.md)           |\n"
+"| 记忆     | [concepts/memory.md](concepts/memory.md)                   |\n"
+"| 压缩     | [concepts/compression.md](concepts/compression.md)         |\n"
+"| 睡眠     | [concepts/sleep.md](concepts/sleep.md)                     |\n"
+"| 时间感知 | [concepts/time-perception.md](concepts/time-perception.md) |\n"
+"| 回忆检索 | [concepts/recall-flow.md](concepts/recall-flow.md)         |\n"
 
 #. type: Title ##
-#: docs/README.md:40
-#, no-wrap
-msgid "Tools — Built-in Tools"
+#: docs/README.md:48
+#, fuzzy, no-wrap
+#| msgid "Tools — Built-in Tools"
+msgid "Tools — built-in ToolSets"
 msgstr "工具 — 内置工具"
 
 #. type: Plain text
-#: docs/README.md:45
+#: docs/README.md:55
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Topic         | File                                                             |\n"
 #| "| ------------- | ---------------------------------------------------------------- |\n"
 #| "| Code runtimes | [tools/execute-code-runtimes.md](tools/execute-code-runtimes.md) |\n"
 msgid ""
-"| Topic           | File                                                             |\n"
-"| --------------- | ---------------------------------------------------------------- |\n"
-"| Code runtimes   | [tools/execute-code-runtimes.md](tools/execute-code-runtimes.md) |\n"
-"| Camofox browser | [tools/browser-camofox.md](tools/browser-camofox.md)             |\n"
+"| Topic           | File                                               |\n"
+"| --------------- | -------------------------------------------------- |\n"
+"| freeanima_docs  | [tools/freeanima-docs.md](tools/freeanima-docs.md) |\n"
+"| Code runtimes   | [tools/execute-code.md](tools/execute-code.md)     |\n"
+"| Camofox browser | [tools/browser.md](tools/browser.md)               |\n"
 msgstr ""
 "| 主题         | 文件                                                               |\n"
 "| ------------ | ------------------------------------------------------------------ |\n"
 "| 代码执行运行时 | [tools/execute-code-runtimes.md](tools/execute-code-runtimes.md) |\n"
+
+#. type: Title ##
+#: docs/README.md:56
+#, no-wrap
+msgid "Ops — deploy, secure, connect"
+msgstr ""
+
+#. type: Plain text
+#: docs/README.md:66
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Topic        | File                                   |\n"
+#| "| ------------ | -------------------------------------- |\n"
+#| "| Installation | [guide/install.md](guide/install.md)   |\n"
+#| "| Security     | [guide/security.md](guide/security.md) |\n"
+#| "| Database     | [guide/database.md](guide/database.md) |\n"
+#| "| Service      | [guide/service.md](guide/service.md)   |\n"
+msgid ""
+"| Topic           | File                                             |\n"
+"| --------------- | ------------------------------------------------ |\n"
+"| Installation    | [ops/install.md](ops/install.md)                 |\n"
+"| Service         | [ops/service.md](ops/service.md)                 |\n"
+"| Security        | [ops/security.md](ops/security.md)               |\n"
+"| Database        | [ops/database.md](ops/database.md)               |\n"
+"| Remote access   | [ops/remote-access.md](ops/remote-access.md)     |\n"
+"| Habitat RPC     | [ops/habitat-rpc.md](ops/habitat-rpc.md)         |\n"
+"| Message gateway | [ops/message-gateway.md](ops/message-gateway.md) |\n"
+msgstr ""
+"| 主题         | 文件                                   |\n"
+"| ------------ | -------------------------------------- |\n"
+"| 安装         | [guide/install.md](guide/install.md)   |\n"
+"| 安全         | [guide/security.md](guide/security.md) |\n"
+"| 数据库       | [guide/database.md](guide/database.md) |\n"
+"| 服务         | [guide/service.md](guide/service.md)   |\n"

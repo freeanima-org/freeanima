@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,13 +14,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-#. type: Content of: <messages><msg>
-#: docs/concepts/architecture.md:1 docs/modules/companion.md:11
-#: messages/po4a/en.xml:685
-#, no-wrap
-msgid "Architecture"
-msgstr "架构"
 
 #. type: Title #
 #: docs/modules/companion.md:1 docs/modules/companion.md:5
@@ -31,7 +24,7 @@ msgstr "桌面伴侣"
 #. type: Plain text
 #: docs/modules/companion.md:8
 #, no-wrap
-msgid "> **Outpost** (前哨): **remote-tools attach host** in the Companion **overlay WebView** (first-party) — embedded by the desktop Portal shell for window/IPC/FS only. Target shell: **Tauri**（见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)）。Not managed via `config.yaml`, and **not** a separate Node sidecar process.\n"
+msgid "> **桌面伴侣** / **Companion**：产品功能。**伴侣浮层**（companion overlay）：Portal 透明 VRM 窗（`embedded-overlay`）。**Outpost**（前哨）：overlay 内 `remote_tools.attach` 角色。Target shell: **Tauri**（见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)）。Not managed via `config.yaml`；**禁止**再打独立 Node sidecar。\n"
 msgstr ""
 
 #. type: Plain text
@@ -44,6 +37,13 @@ msgid ""
 "`remote_tools.attach`, and exposes local tools (`bubble`, `play_slot`) to "
 "the Agent. Product modules such as Chat use Habitat RPC only (no attach)."
 msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/modules/companion.md:11 docs/product/architecture.md:1
+#: messages/po4a/en.xml:661
+#, no-wrap
+msgid "Architecture"
+msgstr "架构"
 
 #. type: Fenced code block (text)
 #: docs/modules/companion.md:13
@@ -98,7 +98,7 @@ msgid ""
 "| Layer              | Location                     | Responsibility                                                                                                                                                                   |\n"
 "| ------------------ | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
 "| **Habitat SSOT**   | `src/features/companion/`    | `companion_profile` entity (behavior, slots, library meta); VRM/VRMA files under `~/.anima/companion/` on Habitat host; FBX→VRMA conversion; Settings read/write via Habitat RPC |\n"
-"| **Settings UI**    | Desktop Settings → Companion | Habitat RPC (`companion.config.*`, model/motion CRUD); upload via `POST /rpc/v1/companion/model/upload` and `/companion/motion/import`                                           |\n"
+"| **Settings UI**    | Desktop Settings → Companion | Habitat RPC（`getTypedHabitatClient`：`call` / multipart `callRaw`；`companion.config.*`、model/motion CRUD、asset.get）                                                         |\n"
 "| **Companion host** | overlay SPA (`spa/`)         | `remote_tools.attach`, tool execution, local runtime (bubble/play); optional thin HTTP for static assets + `companion.sync.pull` cache                                           |\n"
 "| **Tauri host**     | `src/app/shell/tauri/`       | Transparent window, click-through, tray, show/hide + FS / prefs IPC                                                                                                              |\n"
 msgstr ""
@@ -175,7 +175,7 @@ msgstr ""
 "| Runtime    | —                            | Overlay-local tool runtime（browser-dev 同路径） |\n"
 
 #. type: Content of: <messages><msg>
-#: docs/modules/companion.md:55 messages/po4a/en.xml:690
+#: docs/modules/companion.md:55 messages/po4a/en.xml:674
 #, no-wrap
 msgid "Features"
 msgstr "功能"
@@ -218,8 +218,10 @@ msgstr ""
 #| "Transparent always-on-top companion window (160×260); avatar area "
 #| "clickable, empty area click-through"
 msgid ""
-"Transparent always-on-top **work-area fullscreen** overlay; character stage "
-"160×260 positioned inside; avatar/bubble clickable, empty area click-through"
+"Transparent always-on-top **work-area fullscreen** overlay; **fullscreen "
+"WebGL canvas**; character placed by in-window screen coordinates (footprint "
+"160×260 for standing scale / patrol margins); avatar/bubble clickable, empty "
+"area click-through"
 msgstr "透明置顶伴侣窗口（160×260）；形象区域可点击，空白区域点击穿透"
 
 #. type: Bullet: '- '
@@ -229,8 +231,8 @@ msgstr "透明置顶伴侣窗口（160×260）；形象区域可点击，空白�
 #| "**Local interaction**: drag to move window; click body to play random "
 #| "motion from `in_place` slot"
 msgid ""
-"**Local interaction**: drag moves the stage (not the OS window); click body "
-"to play random motion from `in_place` slot"
+"**Local interaction**: drag moves the character screen position (not the OS "
+"window); click body to play random motion from `in_place` slot"
 msgstr "**本地交互**：拖拽移动窗口；点击身体从 `in_place` 槽随机播放动作"
 
 #. type: Bullet: '- '
@@ -421,14 +423,60 @@ msgstr ""
 #. type: Plain text
 #: docs/modules/companion.md:110
 msgid ""
-"The Portal overlay WebView hosts companion UI and `remote_tools.attach` (no "
-"Node sidecar). Window / IPC / FS come from Tauri commands. See [`.agent/"
-"rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)."
+"The Portal companion overlay WebView hosts companion UI and "
+"`remote_tools.attach`（`embedMode: embedded-overlay`；禁止 Node sidecar）。"
+"Window / IPC / FS come from Tauri commands. See [`.agent/rules/tauri-"
+"shell.md`](../../.agent/rules/tauri-shell.md)."
+msgstr ""
+
+#. type: Title ##
+#: docs/modules/companion.md:111
+#, fuzzy, no-wrap
+#| msgid "Settings"
+msgid "Settings storage"
+msgstr "设置"
+
+#. type: Plain text
+#: docs/modules/companion.md:114
+msgid "Companion config has two storage layers:"
 msgstr ""
 
 #. type: Plain text
-#: docs/modules/companion.md:111
+#: docs/modules/companion.md:119
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Field              | Role                                             |\n"
+#| "| ------------------ | ------------------------------------------------ |\n"
+#| "| `command` / `args` | Process to run (required for managed satellites) |\n"
+#| "| `env`              | Extra environment variables                      |\n"
 msgid ""
-"See also: [Habitat RPC](../guide/habitat-rpc.md), [architecture companion "
-"section](../concepts/architecture.md#desktop-companion-habitat-ssot)."
+"| Layer                                | Content                                                                             | Access                                                |\n"
+"| ------------------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------------- |\n"
+"| **Habitat PG** (`companion_profile`) | Behavior, models, motion library, slots                                             | Settings → Habitat → Companion via Habitat RPC / HTTP |\n"
+"| **Local device**                     | Window visibility (`companion-shell` scope), Habitat RPC runtime status (read-only) | Settings → local → Companion                          |\n"
+msgstr ""
+"| 字段               | 作用                                             |\n"
+"| ------------------ | ------------------------------------------------ |\n"
+"| `command` / `args` | 要运行的进程（托管卫星必填）                     |\n"
+"| `env`              | 额外环境变量                                     |\n"
+
+#. type: Plain text
+#: docs/modules/companion.md:121
+msgid ""
+"Local `~/.anima/companion/config.json` is only a **habitat-sync cache**; the "
+"settings UI does not read/write it directly."
+msgstr ""
+
+#. type: Plain text
+#: docs/modules/companion.md:123
+msgid ""
+"After Habitat profile changes, the local cache syncs via "
+"`companion.sync.pull`; the overlay refreshes through `emitConfigChanged`."
+msgstr ""
+
+#. type: Plain text
+#: docs/modules/companion.md:124
+msgid ""
+"See also: [Habitat RPC](../ops/habitat-rpc.md), [architecture companion "
+"section](../product/architecture.md#desktop-companion-habitat-ssot)."
 msgstr ""

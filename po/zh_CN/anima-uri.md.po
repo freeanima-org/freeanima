@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wv 53\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: 2026-07-17 22:43+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -15,8 +15,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Title #
+#. type: Content of: <messages><msg>
 #: docs/product/anima-uri.md:1 docs/product/anima-uri.md:5
+#: messages/po4a/en.xml:660
 #, no-wrap
 msgid "Anima URI"
 msgstr ""
@@ -189,7 +190,7 @@ msgstr ""
 #: docs/product/anima-uri.md:55
 msgid ""
 "`present=navigate` → map component → Shell path (e.g. `task_item` → `/tasks?"
-"item=…`) via `navigateShellModulePath`."
+"item=…`) via `navigateAppModulePath`."
 msgstr ""
 
 #. type: Title ##

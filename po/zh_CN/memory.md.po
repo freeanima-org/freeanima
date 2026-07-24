@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,15 +15,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Title ##
-#: docs/concepts/architecture.md:41 docs/cognition/memory.md:12
-#, no-wrap
-msgid "Core Principles"
-msgstr "核心原则"
-
 #. type: Content of: <messages><msg>
 #: docs/cognition/memory.md:1 messages/po4a/en.xml:295 messages/po4a/en.xml:460
-#: messages/po4a/en.xml:695
+#: messages/po4a/en.xml:682
 #, no-wrap
 msgid "Memory"
 msgstr "记忆体系"
@@ -50,6 +44,12 @@ msgstr ""
 "> 数字生命的记忆体系，映射自人类认知心理学（Atkinson-Shiffrin 模型、Tulving 记忆分类法）。\n"
 "> 浅睡/深睡 cron：[`sleep.md`](sleep.md)。\n"
 "> 受 [Hindsight](https://arxiv.org/abs/2512.12818) 启发，保留并强化逸灵风独有的感性记忆维度。\n"
+
+#. type: Title ##
+#: docs/cognition/memory.md:12 docs/product/architecture.md:42
+#, no-wrap
+msgid "Core Principles"
+msgstr "核心原则"
 
 #. type: Plain text
 #: docs/cognition/memory.md:15

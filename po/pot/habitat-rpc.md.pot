@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,8 +16,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Title #
-#: docs/ops/habitat-rpc.md:1 docs/ops/habitat-rpc.md:5
+#. type: Content of: <messages><msg>
+#: docs/ops/habitat-rpc.md:1 docs/ops/habitat-rpc.md:5 messages/po4a/en.xml:678
 #, no-wrap
 msgid "Habitat RPC"
 msgstr ""
@@ -46,10 +46,10 @@ msgstr ""
 #: docs/ops/habitat-rpc.md:13
 msgid ""
 "Implemented in [`src/shared/habitat-rpc/`](../../src/shared/habitat-rpc/) "
-"(WS envelope + HTTP REST helpers) and [`src/platform/habitat/http-rest-"
-"router.ts`](../../src/platform/habitat/http-rest-router.ts) (HTTP adapter). "
-"Feature method schemas live under [`src/shared/rpc-contract/`](../../src/"
-"shared/rpc-contract/)."
+"(WS envelope + HTTP REST helpers) and [`src/host/platform/habitat/http-rest-"
+"router.ts`](../../src/host/platform/habitat/http-rest-router.ts) (HTTP "
+"adapter). Feature method schemas live under [`src/shared/rpc-contract/`]"
+"(../../src/shared/rpc-contract/)."
 msgstr ""
 
 #. type: Plain text
@@ -126,20 +126,26 @@ msgstr ""
 
 #. type: Plain text
 #: docs/ops/habitat-rpc.md:37
+#, no-wrap
+msgid "**Call routing:** On `tool.register`, Habitat binds each tool handler to that Outpost connection (`instance_id`). Invoking a registered tool sends `tool.call` on that bound channel — no session `outpost_*` check and no re-parse of the tool name for routing. Disconnect unregisters the toolset. Session `outpost_app_id` / `outpost_instance_id` remains optional metadata (e.g. which outpost opened the chat). `workspace_root` may still be taken from conversation meta for the payload only.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ops/habitat-rpc.md:39
 msgid ""
-"Server: [`src/platform/remote-tools/`](../../src/platform/remote-tools/). "
-"Client helper: `createRemoteToolsHabitatAttach` in `@freeanima/shared/rpc-"
-"contract`."
+"Server: [`src/host/capabilities/outpost/`](../../src/host/capabilities/"
+"outpost/). Client helper: `createRemoteToolsHabitatAttach` in `@freeanima/"
+"shared/rpc-contract`."
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/habitat-rpc.md:38
+#: docs/ops/habitat-rpc.md:40
 #, no-wrap
 msgid "Endpoints"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/ops/habitat-rpc.md:40
+#: docs/ops/habitat-rpc.md:42
 #, no-wrap
 msgid ""
 "ws://{habitat_host}:{port}/rpc/v1\n"
@@ -147,20 +153,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/habitat-rpc.md:46
+#: docs/ops/habitat-rpc.md:48
 msgid ""
 "Helpers: `resolveHabitatRpcWsUrl`, `buildHabitatRestRequest` in `@freeanima/"
 "shared/habitat-rpc`."
 msgstr ""
 
 #. type: Title ##
-#: docs/ops/habitat-rpc.md:47
+#: docs/ops/habitat-rpc.md:49
 #, no-wrap
 msgid "Client profiles"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/habitat-rpc.md:53
+#: docs/ops/habitat-rpc.md:55
 #, no-wrap
 msgid ""
 "| Profile          | Attach                          | Typical consumer                                                |\n"
@@ -170,7 +176,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/habitat-rpc.md:55
+#: docs/ops/habitat-rpc.md:57
 msgid ""
 "Bundled SPA shares **one** Habitat RPC WebSocket per page load. Product "
 "modules pass a simple `platform` channel (e.g. `\"chat\"`), never a remote-"
@@ -178,13 +184,13 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/ops/habitat-rpc.md:56 messages/po4a/en.xml:223
+#: docs/ops/habitat-rpc.md:58 messages/po4a/en.xml:223
 #, no-wrap
 msgid "Reconnect"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/habitat-rpc.md:59
+#: docs/ops/habitat-rpc.md:61
 msgid ""
 "Use `runHabitatRpcTransport` for connect, heartbeat, and exponential "
 "backoff. On detach or socket close, Habitat unregisters tools for that "
@@ -192,8 +198,8 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/habitat-rpc.md:60
+#: docs/ops/habitat-rpc.md:62
 msgid ""
-"See also: [`companion.md`](../features/companion.md), [`architecture.md`](../"
-"concepts/architecture.md)."
+"See also: [`companion.md`](../modules/companion.md), [`architecture.md`](../"
+"product/architecture.md)."
 msgstr ""

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/modules/chat.md:1 messages/po4a/en.xml:445 messages/po4a/en.xml:450
-#: messages/po4a/en.xml:728
+#: messages/po4a/en.xml:663 messages/po4a/en.xml:725
 #, no-wrap
 msgid "Chat"
 msgstr ""
@@ -187,7 +187,7 @@ msgstr ""
 #. type: Plain text
 #: docs/modules/chat.md:53
 msgid ""
-"Outbox 布局与 [`shell-sdk/offline-outbox`](../../src/frontend/shell-sdk/"
+"Outbox 布局与 [`portal-sdk/offline-outbox`](../../src/client/portal-sdk/"
 "offline-outbox.ts) 对齐；Chat flush 走 WS 流式 `message.send`，非通用 "
 "Habitat RPC 单次响应。"
 msgstr ""

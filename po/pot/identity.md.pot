@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-24 16:28+0800\n"
+"POT-Creation-Date: 2026-07-25 07:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/product/identity.md:1 messages/po4a/en.xml:693
+#: docs/product/identity.md:1 messages/po4a/en.xml:680
 #, no-wrap
 msgid "Identity"
 msgstr ""
@@ -130,8 +130,8 @@ msgstr ""
 #. type: Plain text
 #: docs/product/identity.md:46
 msgid ""
-"Self layer design: [`self-layer.md`](self-layer.md); memory system: "
-"[`memory.md`](memory.md)."
+"Self layer design: [`self-layer.md`](../cognition/self-layer.md); memory "
+"system: [`memory.md`](../cognition/memory.md)."
 msgstr ""
 
 #. type: Title ##
