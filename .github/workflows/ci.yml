@@ -62,8 +62,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: ./.github/actions/build-site
-  build-shell-ui:
-    name: Build shell-ui
+  build-app-ui:
+    name: Build app-ui
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -74,7 +74,7 @@ jobs:
       - uses: ./.github/actions/setup-bun
       - uses: ./.github/actions/setup-just
       - uses: ./.github/actions/setup-anima-home
-      - run: just pack shell-ui
+      - run: just pack app-ui
   # 暂停 Blackbox E2E（commit status `freeanima/blackbox`）：不再向 freeanima-testing 发 dispatch。
   # 恢复：删除 `if: false`，取消注释下方原条件。
   blackbox-dispatch:

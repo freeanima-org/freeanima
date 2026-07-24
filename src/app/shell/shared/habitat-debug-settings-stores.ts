@@ -4,12 +4,12 @@ import {
   HABITAT_SETTINGS_SCOPE,
   type ScopedSettingsBackend,
   type SettingsStore,
-} from "@freeanima/frontend/shell-sdk/settings";
+} from "@freeanima/frontend/portal-sdk/settings";
 import {
   normalizeShellClientConfig,
   type ShellClientConfig,
   type ShellDebugConfig,
-} from "@freeanima/frontend/shell-sdk";
+} from "@freeanima/frontend/portal-sdk";
 
 export type HabitatDebugSettingsStores = {
   habitat: SettingsStore<ShellClientConfig>;

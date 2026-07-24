@@ -4,7 +4,7 @@ title: Notifications
 
 # Notifications
 
-代码里 **`notification*`** 指 **Inbox（收件箱）**；瞬时提醒使用 **`alert*`** 命名空间（`shell-sdk/alert`），二者概念分离。
+代码里 **`notification*`** 指 **Inbox（收件箱）**；瞬时提醒使用 **`alert*`** 命名空间（`portal-sdk/alert`），二者概念分离。
 
 ## Inbox（收件箱）
 
@@ -12,7 +12,7 @@ PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron 
 
 ## Alert（本机提醒，本机-only）
 
-**不走 Habitat RPC、不写 PG、不跨设备同步。** 各 shell 端在启动时注册 `AlertBackend`（web / desktop / mobile）。Feature 通过 `shell-sdk/alert` 使用**当前设备**系统通知通道。
+**不走 Habitat RPC、不写 PG、不跨设备同步。** 各 shell 端在启动时注册 `AlertBackend`（web / desktop / mobile）。Feature 通过 `portal-sdk/alert` 使用**当前设备**系统通知通道。
 
 Alert 分两档（同一契约，成对）：
 
@@ -48,7 +48,7 @@ Alert 分两档（同一契约，成对）：
 
 番茄钟阶段结束**不写 inbox**；会话历史由 `pomodoro_session` entity 承担。
 
-实现：`src/frontend/shell-sdk/alert/` + 各端 backend。
+实现：`src/frontend/portal-sdk/alert/` + 各端 backend。
 
 | 端          | 即时通道                                    | 预登记                           |
 | ----------- | ------------------------------------------- | -------------------------------- |

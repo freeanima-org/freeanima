@@ -2,14 +2,14 @@ import {
   readOfflineCache,
   setSatelliteOfflineCacheBackendForTests,
   writeOfflineCache,
-} from "@freeanima/frontend/shell-sdk/offline-cache";
+} from "@freeanima/frontend/portal-sdk/offline-cache";
 
 import type { ConversationListItem, DisplayItem } from "./types.ts";
 
 export {
   resolveHabitatCacheScope,
   resolveCacheScope,
-} from "@freeanima/frontend/shell-sdk/offline-cache";
+} from "@freeanima/frontend/portal-sdk/offline-cache";
 
 /** 单测注入内存后端 */
 export function setOfflineCacheBackendForTests(map: Map<string, unknown> | null): void {

@@ -7,7 +7,7 @@ import {
   resolveOutboxScope,
   type ChatSendOutboxPayload,
   type OfflineOutboxOp,
-} from "@freeanima/frontend/shell-sdk/offline-outbox";
+} from "@freeanima/frontend/portal-sdk/offline-outbox";
 
 export type OutboxSendStatus = "pending" | "sending" | "failed" | "stale";
 

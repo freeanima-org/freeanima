@@ -1,4 +1,4 @@
-import type { ShellApi } from "@freeanima/frontend/shell-sdk/shell-api";
+import type { ShellApi } from "@freeanima/frontend/portal-sdk/shell-api";
 
 declare global {
   interface Window {

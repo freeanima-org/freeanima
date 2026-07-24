@@ -7,7 +7,7 @@
 1. 是否需要用户可见的产品 CRUD + 实时 Habitat WS？→ **原型 A（Feature RPC）**
 2. 是否需要不可达本机的远程工具反向调用？→ **原型 A′（remote tools host）** — 仅 Habitat 拨不到的本地应用（今日 companion Outpost；亦可未来独立工具）
 3. 是否是运维/配置/记忆管理类 UI（Habitat）？→ **原型 B（Habitat RPC）** — 与原型 A 相同 protocol
-4. 是否仅是壳层设置（Habitat URL、debug）？→ **原型 C（shell-sdk settings）**
+4. 是否仅是壳层设置（Habitat URL、debug）？→ **原型 C（portal-sdk settings）**
 5. 对端可拨号的工具？→ **MCP**（不要用远程工具注册）
 
 ## 原型 A — Feature RPC 产品面
@@ -22,9 +22,9 @@
 | `src/features/<slug>/habitat/routes/index.ts` | Habitat RPC handler（`defineHabitatRoute`）                                                                  |
 | `src/features/<slug>/ui`                      | 产品 UI（`@freeanima/feature-<slug>/ui/*`）                                                                  |
 | `platform`                                    | `src/features/<slug>/plugin.ts` 注册 + 必要时 `service-*` 薄适配                                             |
-| `shell-ui`                                    | 路由 lazy-load `@freeanima/feature-<slug>/ui/spa`；壳 CSS 已 `@source` 整棵 `src`，一般不必再按 feature 登记 |
+| `app-ui`                                      | 路由 lazy-load `@freeanima/feature-<slug>/ui/spa`；壳 CSS 已 `@source` 整棵 `src`，一般不必再按 feature 登记 |
 
-**不要**：在 `shell-ui` 内 `import @freeanima/shared/rpc-contract`；在 capabilities 内 import platform；新建独立 satellites 树做产品面；产品面不做 `remote_tools.attach`。
+**不要**：在 `app-ui` 内 `import @freeanima/shared/rpc-contract`；在 capabilities 内 import platform；新建独立 satellites 树做产品面；产品面不做 `remote_tools.attach`。
 
 ## 原型 A′ — 远程工具宿主（不可达本地应用）
 
@@ -58,7 +58,7 @@
 
 | 层                         | 必须改             |
 | -------------------------- | ------------------ |
-| `shell-sdk/settings`       | section 注册       |
+| `portal-sdk/settings`      | section 注册       |
 | `src/app/shell/tauri\|web` | 原生 IPC（若需要） |
 
 ## Habitat RPC / Feature method 模块化
@@ -75,12 +75,12 @@
 
 ## 前端包依赖速查
 
-| 包             | 允许                                                        | 禁止                                                               |
-| -------------- | ----------------------------------------------------------- | ------------------------------------------------------------------ |
-| `ui-kit`       | react                                                       | rpc-contract、workspace                                            |
-| `shell-sdk`    | kernel\*、habitat-rpc、vault-crypto                         | rpc-contract                                                       |
-| `shell-ui`     | ui-kit、shell-sdk、feature-\*                               | rpc-contract、深路径绕过 feature 边界                              |
-| `feature-*` UI | habitat-client、habitat-contract（类型）、shell-sdk、ui-kit | 在 `habitat/routes` 使用 habitat-client；`platform/habitat` 桶文件 |
+| 包             | 允许                                                         | 禁止                                                               |
+| -------------- | ------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `ui-kit`       | react                                                        | rpc-contract、workspace                                            |
+| `portal-sdk`   | kernel\*、habitat-rpc、vault-crypto                          | rpc-contract                                                       |
+| `app-ui`       | ui-kit、portal-sdk、feature-\*                               | rpc-contract、深路径绕过 feature 边界                              |
+| `feature-*` UI | habitat-client、habitat-contract（类型）、portal-sdk、ui-kit | 在 `habitat/routes` 使用 habitat-client；`platform/habitat` 桶文件 |
 
 **typed Habitat client**：前端 UI 只能从 `@freeanima/platform/habitat/client.ts` 取 `getTypedHabitatClient`，**不要**从桶文件 `@freeanima/platform/habitat` 导入。
 

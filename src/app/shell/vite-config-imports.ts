@@ -2,14 +2,14 @@
 export { createComponentBuildMeta, isShipChannel } from "../../core/config/build-meta.ts";
 export type { BuildChannel, ComponentBuildMeta } from "../../core/config/build-meta.ts";
 export { resolveHabitatRpcWsUrl } from "../../shared/habitat-rpc/urls.ts";
-export { nativeBuildMetaDefine } from "../../frontend/shell-sdk/native-build-meta.ts";
+export { nativeBuildMetaDefine } from "../../frontend/portal-sdk/native-build-meta.ts";
 export {
   parseShellBuildTarget,
   shellWebDistDirName,
-} from "../../frontend/shell-sdk/shell-build-target.ts";
-export { shellEntryFileNames } from "../../frontend/shell-ui/vite/entry-file-names.ts";
-export { createShellViteInlineConfig } from "../../frontend/shell-ui/vite/run-build.ts";
-export { shellBridgeHtmlPlugin } from "../../frontend/shell-ui/vite/shell-bridge-html.ts";
+} from "../../frontend/portal-sdk/shell-build-target.ts";
+export { shellEntryFileNames } from "../../frontend/app-ui/vite/entry-file-names.ts";
+export { createShellViteInlineConfig } from "../../frontend/app-ui/vite/run-build.ts";
+export { shellBridgeHtmlPlugin } from "../../frontend/app-ui/vite/shell-bridge-html.ts";
 export {
   createHabitatDevProxyMap,
   quietBenignWsProxyErrorsPlugin,

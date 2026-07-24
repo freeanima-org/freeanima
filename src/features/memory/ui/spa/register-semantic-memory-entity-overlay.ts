@@ -1,4 +1,4 @@
-import { registerEntityOverlay } from "@freeanima/frontend/shell-ui/spa/features/entity-overlay-registry.ts";
+import { registerEntityOverlay } from "@freeanima/frontend/app-ui/spa/features/entity-overlay-registry.ts";
 
 import { SemanticMemoryEntityOverlay } from "./SemanticMemoryEntityOverlay.tsx";
 

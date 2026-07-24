@@ -1,9 +1,9 @@
-import { registerAlertBackend } from "@freeanima/frontend/shell-sdk/alert";
-import { getShellBuildTarget } from "@freeanima/frontend/shell-sdk/shell-build-target.ts";
+import { registerAlertBackend } from "@freeanima/frontend/portal-sdk/alert";
+import { getShellBuildTarget } from "@freeanima/frontend/portal-sdk/shell-build-target.ts";
 import {
   isTauriMobileUserAgent,
   isTauriRuntime,
-} from "@freeanima/frontend/shell-sdk/tauri-runtime";
+} from "@freeanima/frontend/portal-sdk/tauri-runtime";
 
 /** 按运行时注册本机 Alert backend（不跨端）。 */
 export async function registerShellAlertBackend(): Promise<void> {

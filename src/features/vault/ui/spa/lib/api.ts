@@ -10,7 +10,7 @@ import type {
   VaultPatchPlainInput,
   VaultSecretsViewPayload,
 } from "@freeanima/shared/rpc-contract";
-import type { SubjectKind } from "@freeanima/frontend/shell-sdk";
+import type { SubjectKind } from "@freeanima/frontend/portal-sdk";
 import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 type VaultRpcMethod =

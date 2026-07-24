@@ -10,7 +10,7 @@ import {
   useContextMenuCapability,
   useFinePointerCapability,
   useTouchPrimaryCapability,
-} from "@freeanima/frontend/shell-sdk/react.tsx";
+} from "@freeanima/frontend/portal-sdk/react.tsx";
 
 /** 纯浏览器 Web 壳（非 Tauri） */
 export function isWebShell(): boolean {

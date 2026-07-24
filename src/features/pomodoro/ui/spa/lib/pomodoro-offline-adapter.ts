@@ -1,15 +1,15 @@
-import { readOfflineCache, writeOfflineCache } from "@freeanima/frontend/shell-sdk/offline-cache";
+import { readOfflineCache, writeOfflineCache } from "@freeanima/frontend/portal-sdk/offline-cache";
 import {
   registerOfflineModule,
   registerOfflineModuleCap,
-} from "@freeanima/frontend/shell-sdk/offline-module-registry";
-import type { RpcModuleAdapter } from "@freeanima/frontend/shell-sdk/offline-module-types";
+} from "@freeanima/frontend/portal-sdk/offline-module-registry";
+import type { RpcModuleAdapter } from "@freeanima/frontend/portal-sdk/offline-module-types";
 import {
   listOutboxOps,
   resolveOutboxScope,
   type OfflineOutboxOp,
-} from "@freeanima/frontend/shell-sdk/offline-outbox";
-import { flushOfflineModule } from "@freeanima/frontend/shell-sdk/offline-sync";
+} from "@freeanima/frontend/portal-sdk/offline-outbox";
+import { flushOfflineModule } from "@freeanima/frontend/portal-sdk/offline-sync";
 import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 
 import { POMODORO_OUTBOX_MODULE_ID } from "./pomodoro-offline-store.ts";
@@ -53,7 +53,7 @@ export function compactPomodoroOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[]
 async function flushPomodoroOp(
   op: OfflineOutboxOp,
   _scope: string,
-): Promise<import("@freeanima/frontend/shell-sdk/offline-module-types").FlushOpOutcome> {
+): Promise<import("@freeanima/frontend/portal-sdk/offline-module-types").FlushOpOutcome> {
   const habitatClient = getTypedHabitatClient();
   try {
     await habitatClient.call(op.method as "pomodoro.config.update", {

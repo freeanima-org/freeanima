@@ -1,14 +1,14 @@
-import { deliverAlert } from "@freeanima/frontend/shell-sdk/alert";
-import type { PomodoroActiveState } from "@freeanima/frontend/shell-sdk/pomodoro-active-types.ts";
+import { deliverAlert } from "@freeanima/frontend/portal-sdk/alert";
+import type { PomodoroActiveState } from "@freeanima/frontend/portal-sdk/pomodoro-active-types.ts";
 import {
   applyLocalPomodoroActive,
   buildHubActivePayload,
   getPomodoroSyncMeta,
   mergeRemoteActive,
-} from "@freeanima/frontend/shell-sdk/pomodoro-sync-local.ts";
-import { readPomodoroActiveState } from "@freeanima/frontend/shell-sdk/pomodoro-active.ts";
-import { getHabitatRpcConnectionState } from "@freeanima/frontend/shell-sdk/habitat-connection.ts";
-import { preferOnlineWrite } from "@freeanima/frontend/shell-sdk/prefer-online-write";
+} from "@freeanima/frontend/portal-sdk/pomodoro-sync-local.ts";
+import { readPomodoroActiveState } from "@freeanima/frontend/portal-sdk/pomodoro-active.ts";
+import { getHabitatRpcConnectionState } from "@freeanima/frontend/portal-sdk/habitat-connection.ts";
+import { preferOnlineWrite } from "@freeanima/frontend/portal-sdk/prefer-online-write";
 
 import {
   abortPomodoroSession,

@@ -13,7 +13,7 @@ title: Mobile app (Android)
 | -------------- | ---------------------------------------------------------- |
 | Platform       | **Android** sideload (APK); iOS later                      |
 | UI             | APK 内 WebView 加载 `prepare-tauri-ui` 拷入的 `ui/web`     |
-| Modules        | Chat + Habitat（本地 shell-ui）                            |
+| Modules        | Chat + Habitat（本地 app-ui）                              |
 | Habitat config | APP **设置 → 连接**（Rust prefs / `app_config_dir`）       |
 | Habitat duties | Habitat RPC REST `/rpc/v1` + WebSocket；**不**托管壳内 SPA |
 

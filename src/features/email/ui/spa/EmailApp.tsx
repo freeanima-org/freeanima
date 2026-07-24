@@ -29,8 +29,8 @@ import {
   useNetworkOnline,
   useSubjectScope,
   SubjectScopeToggle,
-} from "@freeanima/frontend/shell-sdk/react.tsx";
-import { readModuleSelection, writeModuleSelection } from "@freeanima/frontend/shell-sdk";
+} from "@freeanima/frontend/portal-sdk/react.tsx";
+import { readModuleSelection, writeModuleSelection } from "@freeanima/frontend/portal-sdk";
 import { copyText } from "@freeanima/frontend/ui-kit/lib/copy-text.ts";
 import { m } from "@paraglide/messages";
 import { MoreHorizontal } from "lucide-react";

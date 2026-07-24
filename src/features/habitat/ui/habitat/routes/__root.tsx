@@ -13,7 +13,7 @@ function RootComponent() {
 
 function isEmbeddedShell(): boolean {
   if (new URLSearchParams(window.location.search).get("embed") === "1") return true;
-  return document.documentElement.dataset.shellUi === "1";
+  return document.documentElement.dataset.appUi === "1";
 }
 
 function AppShell() {

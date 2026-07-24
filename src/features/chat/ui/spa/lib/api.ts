@@ -4,7 +4,7 @@ import type {
   DisplayItem,
   StreamApiEvent,
 } from "./types.ts";
-import { isHabitatFetchAvailable } from "@freeanima/frontend/shell-sdk/habitat-fetch-gate";
+import { isHabitatFetchAvailable } from "@freeanima/frontend/portal-sdk/habitat-fetch-gate";
 import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 import { getChatRpcStreamClient, chatPlatform } from "./habitat-stream-client.ts";
 import { m } from "./i18n.ts";

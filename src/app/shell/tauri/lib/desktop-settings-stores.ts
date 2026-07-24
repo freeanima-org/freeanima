@@ -4,8 +4,8 @@ import {
   HABITAT_SETTINGS_SCOPE,
   parseHabitatClientSettings,
   type SettingsStore,
-} from "@freeanima/frontend/shell-sdk/settings";
-import { normalizeShellClientConfig, type ShellClientConfig } from "@freeanima/frontend/shell-sdk";
+} from "@freeanima/frontend/portal-sdk/settings";
+import { normalizeShellClientConfig, type ShellClientConfig } from "@freeanima/frontend/portal-sdk";
 
 import { createDesktopScopedBackend, testScopedSettings } from "./settings-ipc-backend.ts";
 import type { CompanionShellSettings } from "@freeanima/features/companion/ui/spa/settings/companion-shell-settings.ts";

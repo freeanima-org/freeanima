@@ -1,9 +1,9 @@
-import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
+import { getSubjectKind } from "@freeanima/frontend/portal-sdk";
 import {
   readOfflineCache,
   resolveHabitatCacheScope,
   writeOfflineCache,
-} from "@freeanima/frontend/shell-sdk/offline-cache";
+} from "@freeanima/frontend/portal-sdk/offline-cache";
 
 import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
 

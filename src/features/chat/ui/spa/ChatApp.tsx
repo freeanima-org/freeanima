@@ -22,7 +22,7 @@ import {
   ChatMessageBubble,
   findLastUserMessageIndex,
 } from "@freeanima/features/chat/ui/spa/components/ChatMessageBubble.tsx";
-import { openEntityResource } from "@freeanima/frontend/shell-ui/spa/features/open-entity-resource.ts";
+import { openEntityResource } from "@freeanima/frontend/app-ui/spa/features/open-entity-resource.ts";
 import { ConversationListItem as ConversationListRow } from "@freeanima/features/chat/ui/spa/components/ConversationListItem.tsx";
 import { useAcpProgressDock } from "@freeanima/features/chat/ui/spa/hooks/useAcpProgressDock.ts";
 import { useEdgeSwipeOpen } from "@freeanima/features/chat/ui/spa/hooks/useEdgeSwipeOpen.ts";
@@ -60,7 +60,7 @@ import {
   useHabitatConnection,
   useNetworkOnline,
   useOpenHabitatSettingsCapability,
-} from "@freeanima/frontend/shell-sdk/react.tsx";
+} from "@freeanima/frontend/portal-sdk/react.tsx";
 import { initAppLocale, m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@freeanima/features/chat/ui/spa/lib/input-draft.ts";
 import {
@@ -76,7 +76,7 @@ import {
   readModuleSelection,
   subscribeSubjectKind,
   writeModuleSelection,
-} from "@freeanima/frontend/shell-sdk";
+} from "@freeanima/frontend/portal-sdk";
 import { MessageActionBar } from "@freeanima/features/chat/ui/spa/components/MessageActionBar.tsx";
 import { useSpeechPlayback } from "@freeanima/features/chat/ui/spa/hooks/useSpeechPlayback.ts";
 import { markdownToPlainText } from "@freeanima/features/chat/ui/spa/lib/speech/plain-text.ts";
@@ -95,10 +95,10 @@ import {
   type ChatStreamFlushHandlers,
 } from "@freeanima/features/chat/ui/spa/lib/offline-stream-adapter.ts";
 import type { DisplayItem, StreamApiEvent } from "@freeanima/features/chat/ui/spa/lib/types.ts";
-import { registerChatStreamContextFactory } from "@freeanima/frontend/shell-ui/spa/OfflineSyncBootstrap.tsx";
-import { resolveOutboxScope } from "@freeanima/frontend/shell-sdk/offline-outbox";
-import { flushOfflineModule } from "@freeanima/frontend/shell-sdk/offline-sync";
-import { isRetriableOfflineWriteError } from "@freeanima/frontend/shell-sdk/prefer-online-write";
+import { registerChatStreamContextFactory } from "@freeanima/frontend/app-ui/spa/OfflineSyncBootstrap.tsx";
+import { resolveOutboxScope } from "@freeanima/frontend/portal-sdk/offline-outbox";
+import { flushOfflineModule } from "@freeanima/frontend/portal-sdk/offline-sync";
+import { isRetriableOfflineWriteError } from "@freeanima/frontend/portal-sdk/prefer-online-write";
 import {
   filterUndeliveredOutbox,
   isOutboxDeliveredOnDisplay,

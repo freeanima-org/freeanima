@@ -34,8 +34,8 @@ const PREFIX_REWRITES: [string, string][] = [
   ["@freeanima/habitat-api/", "@freeanima/features/habitat/habitat/habitat-api/"],
   ["@freeanima/habitat-contract/", "@freeanima/features/habitat/protocol/habitat-contract/"],
   ["@freeanima/ui-kit/", "@freeanima/frontend/ui-kit/"],
-  ["@freeanima/shell-ui/", "@freeanima/frontend/shell-ui/"],
-  ["@freeanima/shell-sdk/", "@freeanima/frontend/shell-sdk/"],
+  ["@freeanima/frontend/app-ui/", "@freeanima/frontend/app-ui/"],
+  ["@freeanima/frontend/portal-sdk/", "@freeanima/frontend/portal-sdk/"],
   ["@freeanima/platform/commands/", "@freeanima/platform/slash-commands/"],
   ["@freeanima/admin-api/", "@freeanima/features/habitat/habitat/habitat-api/"],
   ["@freeanima/admin-contract/", "@freeanima/features/habitat/protocol/habitat-contract/"],
@@ -54,8 +54,8 @@ const PREFIX_REWRITES: [string, string][] = [
   ["@freeanima/habitat-api", "@freeanima/features/habitat/habitat/habitat-api"],
   ["@freeanima/habitat-contract", "@freeanima/features/habitat/protocol/habitat-contract"],
   ["@freeanima/ui-kit", "@freeanima/frontend/ui-kit"],
-  ["@freeanima/shell-ui", "@freeanima/frontend/shell-ui/lib"],
-  ["@freeanima/shell-sdk", "@freeanima/frontend/shell-sdk"],
+  ["@freeanima/frontend/app-ui", "@freeanima/frontend/app-ui/lib"],
+  ["@freeanima/frontend/portal-sdk", "@freeanima/frontend/portal-sdk"],
   ["@freeanima/admin-api", "@freeanima/features/habitat/habitat/habitat-api"],
   ["@freeanima/admin-contract", "@freeanima/features/habitat/protocol/habitat-contract"],
   ["@freeanima/vault-crypto", "@freeanima/shared/vault-crypto"],
@@ -93,12 +93,12 @@ const EXACT_REWRITES: Record<string, string> = {
   "@freeanima/kernel/logging/file": "@freeanima/kernel/logging/sinks/file.ts",
   "@freeanima/kernel/logging/memory": "@freeanima/kernel/logging/sinks/memory.ts",
   "@freeanima/kernel/logging/null": "@freeanima/kernel/logging/sinks/null.ts",
-  "@freeanima/frontend/shell-ui/settings": "@freeanima/frontend/shell-ui/lib/settings.ts",
-  "@freeanima/frontend/shell-ui/sentry-test": "@freeanima/frontend/shell-ui/lib/sentry-test.ts",
-  "@freeanima/frontend/shell-ui/bootstrap/sentry":
-    "@freeanima/frontend/shell-ui/spa/bootstrap/sentry.ts",
-  "@freeanima/frontend/shell-ui/mount": "@freeanima/frontend/shell-ui/spa/mount.tsx",
-  "@freeanima/frontend/shell-ui/build": "@freeanima/frontend/shell-ui/build.ts",
+  "@freeanima/frontend/app-ui/settings": "@freeanima/frontend/app-ui/lib/settings.ts",
+  "@freeanima/frontend/app-ui/sentry-test": "@freeanima/frontend/app-ui/lib/sentry-test.ts",
+  "@freeanima/frontend/app-ui/bootstrap/sentry":
+    "@freeanima/frontend/app-ui/spa/bootstrap/sentry.ts",
+  "@freeanima/frontend/app-ui/mount": "@freeanima/frontend/app-ui/spa/mount.tsx",
+  "@freeanima/frontend/app-ui/build": "@freeanima/frontend/app-ui/build.ts",
   "@freeanima/app/shell/tauri/companion-settings-api":
     "@freeanima/app/shell/tauri/spa/companion-settings-api.ts",
   "@freeanima/app/shell/tauri/settings-registry":
@@ -124,7 +124,7 @@ const EXACT_REWRITES: Record<string, string> = {
   "@freeanima/platform/bind-hosts": "@freeanima/platform/bind-hosts.ts",
   "@freeanima/platform/alive": "@freeanima/platform/alive.ts",
   "@freeanima/kernel/random-uuid": "@freeanima/kernel/random-uuid.ts",
-  "@freeanima/frontend/shell-sdk/react": "@freeanima/frontend/shell-sdk/react.tsx",
+  "@freeanima/frontend/portal-sdk/react": "@freeanima/frontend/portal-sdk/react.tsx",
   "@freeanima/features/habitat/build/paraglide-compile":
     "@freeanima/features/habitat/build/paraglide-compile.ts",
   "@freeanima/features/habitat/build/build-utils":

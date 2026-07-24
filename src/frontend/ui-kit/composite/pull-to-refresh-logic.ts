@@ -29,7 +29,7 @@ export function shouldTriggerRefresh(
   return pullDistance >= thresholdPx;
 }
 
-/** Mirror shell fine-pointer check without importing shell-sdk into ui-kit. */
+/** Mirror shell fine-pointer check without importing portal-sdk into ui-kit. */
 export function detectTouchPrimaryInput(
   matchMediaFn: (query: string) => { matches: boolean } = (q) => window.matchMedia(q),
 ): boolean {

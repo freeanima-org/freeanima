@@ -18,7 +18,7 @@ import { companionConfigPath, ensureCompanionDataDir } from "./paths.ts";
 import { PLACEHOLDER_MODEL_PATH } from "./model-path.ts";
 import { motionManifest } from "../shared/motion-manifest.ts";
 import { migrateModelFiles, migrateMotionLibraryFiles } from "./asset-migration.ts";
-import { loadShellClientConfig } from "@freeanima/frontend/shell-sdk/shell-client-config-node";
+import { loadShellClientConfig } from "@freeanima/frontend/portal-sdk/shell-client-config-node";
 
 export type CompanionConfig = CompanionConfigV2;
 

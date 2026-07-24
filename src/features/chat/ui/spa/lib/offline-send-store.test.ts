@@ -9,7 +9,7 @@ import {
   releaseChatSend,
   resetChatSendClaimsForTests,
 } from "./offline-send-store.ts";
-import { setOfflineOutboxBackendForTests } from "@freeanima/frontend/shell-sdk/offline-outbox";
+import { setOfflineOutboxBackendForTests } from "@freeanima/frontend/portal-sdk/offline-outbox";
 
 describe("chat send claim", () => {
   afterEach(() => {

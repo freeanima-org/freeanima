@@ -2,17 +2,17 @@ import { omitUndefined } from "@freeanima/core/util";
 import {
   registerOfflineModule,
   registerOfflineModuleCap,
-} from "@freeanima/frontend/shell-sdk/offline-module-registry";
+} from "@freeanima/frontend/portal-sdk/offline-module-registry";
 import type {
   StreamFlushContext,
   StreamModuleAdapter,
-} from "@freeanima/frontend/shell-sdk/offline-module-types";
-import { flushOfflineModule } from "@freeanima/frontend/shell-sdk/offline-sync";
+} from "@freeanima/frontend/portal-sdk/offline-module-types";
+import { flushOfflineModule } from "@freeanima/frontend/portal-sdk/offline-sync";
 import {
   resolveOutboxScope,
   type ChatSendOutboxPayload,
   type OfflineOutboxOp,
-} from "@freeanima/frontend/shell-sdk/offline-outbox";
+} from "@freeanima/frontend/portal-sdk/offline-outbox";
 
 import { getConversationTail, subscribeMessageStream } from "./api.ts";
 import type { StreamApiEvent } from "./types.ts";

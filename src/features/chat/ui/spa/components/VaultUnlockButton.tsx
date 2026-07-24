@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getUserVaultSession } from "@freeanima/frontend/shell-sdk/react.tsx";
+import { getUserVaultSession } from "@freeanima/frontend/portal-sdk/react.tsx";
 import {
   Button,
   Dialog,
@@ -16,7 +16,7 @@ import { getVaultCryptoConfig } from "@freeanima/features/chat/ui/spa/lib/vault-
 
 /** bundled Shell Chat（/web/chat）内专用 User 库解锁控件；主密码不进消息流 */
 export function isBundledShellChat(): boolean {
-  return typeof document !== "undefined" && document.documentElement.dataset.shellUi === "1";
+  return typeof document !== "undefined" && document.documentElement.dataset.appUi === "1";
 }
 
 export function VaultUnlockButton({

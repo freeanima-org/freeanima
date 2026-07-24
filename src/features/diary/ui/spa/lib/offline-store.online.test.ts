@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
 
-const realGate = await import("@freeanima/frontend/shell-sdk/habitat-fetch-gate");
+const realGate = await import("@freeanima/frontend/portal-sdk/habitat-fetch-gate");
 const gateOriginal = {
   isHabitatFetchAvailable: realGate.isHabitatFetchAvailable,
   isNetworkOnline: realGate.isNetworkOnline,
@@ -26,7 +26,7 @@ const hubCall = mock(async (method: string, _payload: unknown) => {
   throw new Error(`unexpected ${method}`);
 });
 
-mock.module("@freeanima/frontend/shell-sdk/habitat-fetch-gate", () => ({
+mock.module("@freeanima/frontend/portal-sdk/habitat-fetch-gate", () => ({
   ...gateOriginal,
   isHabitatFetchAvailable: () => true,
 }));
@@ -36,17 +36,17 @@ mock.module("@freeanima/platform/habitat/client.ts", () => ({
 }));
 
 afterAll(() => {
-  mock.module("@freeanima/frontend/shell-sdk/habitat-fetch-gate", () => gateOriginal);
+  mock.module("@freeanima/frontend/portal-sdk/habitat-fetch-gate", () => gateOriginal);
 });
 
 const { listOutboxOps, resolveOutboxScope, setOfflineOutboxBackendForTests } =
-  await import("@freeanima/frontend/shell-sdk/offline-outbox");
+  await import("@freeanima/frontend/portal-sdk/offline-outbox");
 const { setSatelliteOfflineCacheBackendForTests } =
-  await import("@freeanima/frontend/shell-sdk/offline-cache");
+  await import("@freeanima/frontend/portal-sdk/offline-cache");
 const { resetOfflineModuleRegistryForTests } =
-  await import("@freeanima/frontend/shell-sdk/offline-module-registry");
+  await import("@freeanima/frontend/portal-sdk/offline-module-registry");
 const { resetTempIdAllocatorForTests } =
-  await import("@freeanima/frontend/shell-sdk/offline-temp-id");
+  await import("@freeanima/frontend/portal-sdk/offline-temp-id");
 const { offlineCreateDiaryEntry } = await import("./offline-store.ts");
 
 describe("diary online write-through", () => {

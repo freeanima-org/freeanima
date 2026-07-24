@@ -4,11 +4,11 @@ import {
   clearPomodoroActiveStateForTest,
   readPomodoroActiveState,
   writePomodoroActiveState,
-} from "@freeanima/frontend/shell-sdk/pomodoro-active.ts";
+} from "@freeanima/frontend/portal-sdk/pomodoro-active.ts";
 import {
   resetSubjectScopeForTest,
   setSubjectKind,
-} from "@freeanima/frontend/shell-sdk/subject-scope-store.ts";
+} from "@freeanima/frontend/portal-sdk/subject-scope-store.ts";
 
 import { createInitialActiveState } from "./timer-engine.ts";
 import type { PomodoroConfigRow } from "./api.ts";

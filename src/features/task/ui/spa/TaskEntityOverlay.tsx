@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type JSX } from "react";
 import { Spinner } from "@freeanima/frontend/ui-kit";
 import { EntityIdLabel } from "@freeanima/frontend/ui-kit/composite";
 
-import type { EntityOverlayProps } from "@freeanima/frontend/shell-ui/spa/features/entity-overlay-registry.ts";
+import type { EntityOverlayProps } from "@freeanima/frontend/app-ui/spa/features/entity-overlay-registry.ts";
 
 import { fetchTaskItemById, updateTaskItem, type TaskItemRow } from "./lib/api.ts";
 import { TaskDetailPanel } from "./components/TaskDetailPanel.tsx";

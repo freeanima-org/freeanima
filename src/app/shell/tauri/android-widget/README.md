@@ -2,8 +2,8 @@
 
 数据流：
 
-1. shell-ui / pomodoro 调用 `invoke("set_pomodoro_widget_state", …)`
-2. Rust MobileState 持有快照；后续写入 SharedPreferences 键 `freeanima.pomodoro.widget`（与 shell-sdk pomodoro-active 语义对齐）
+1. app-ui / pomodoro 调用 `invoke("set_pomodoro_widget_state", …)`
+2. Rust MobileState 持有快照；后续写入 SharedPreferences 键 `freeanima.pomodoro.widget`（与 portal-sdk pomodoro-active 语义对齐）
 3. Receiver + GlanceAppWidget 读键并 `updateAll`
 
 `tauri android init` 生成工程后，将实现并入 `app/src/main/java/...`，并在 AndroidManifest 注册：

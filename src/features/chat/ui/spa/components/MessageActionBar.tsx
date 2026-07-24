@@ -1,5 +1,5 @@
-import type { SpeechUnsupportedReason } from "@freeanima/frontend/shell-sdk/speech/adapter-types";
-import { primeHabitatSpeechOutput } from "@freeanima/frontend/shell-sdk/speech/habitat-adapter";
+import type { SpeechUnsupportedReason } from "@freeanima/frontend/portal-sdk/speech/adapter-types";
+import { primeHabitatSpeechOutput } from "@freeanima/frontend/portal-sdk/speech/habitat-adapter";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@freeanima/frontend/ui-kit";
 import { copyText } from "@freeanima/frontend/ui-kit/lib/copy-text.ts";

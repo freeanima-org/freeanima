@@ -1,14 +1,14 @@
 import {
   isTauriMobileUserAgent,
   isTauriRuntime,
-} from "@freeanima/frontend/shell-sdk/tauri-runtime";
-import { registerVaultRpcHandlers } from "@freeanima/frontend/shell-sdk";
+} from "@freeanima/frontend/portal-sdk/tauri-runtime";
+import { registerVaultRpcHandlers } from "@freeanima/frontend/portal-sdk";
 
 import { applyWebUiConfig, fetchWebUiConfig, installShellBridgeReady } from "./bridge/shared.ts";
 
 async function bootstrapShellBridge(): Promise<void> {
   const finish = installShellBridgeReady();
-  document.documentElement.dataset.shellUi = "1";
+  document.documentElement.dataset.appUi = "1";
 
   try {
     if (isTauriRuntime()) {

@@ -4,7 +4,7 @@ import { HABITAT_RPC_REST_PREFIX } from "@freeanima/shared/habitat-rpc/urls.ts";
 
 export type BearerFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
-/** 最小 Bearer fetch 辅助（不依赖 shell-sdk，避免循环依赖） */
+/** 最小 Bearer fetch 辅助（不依赖 portal-sdk，避免循环依赖） */
 export function buildBearerHeaders(token: string): Record<string, string> {
   return { Authorization: `Bearer ${token.trim()}` };
 }

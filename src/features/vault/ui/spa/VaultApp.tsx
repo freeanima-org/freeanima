@@ -6,7 +6,7 @@ import {
   useNetworkOnline,
   useSubjectScope,
   VAULT_UI_SCOPE,
-} from "@freeanima/frontend/shell-sdk/react.tsx";
+} from "@freeanima/frontend/portal-sdk/react.tsx";
 import { Button, Card, CardContent, Input, Spinner } from "@freeanima/frontend/ui-kit";
 import { ConfirmDialog, EmptyState, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 import { ListDetailLayout } from "@freeanima/frontend/ui-kit/layout";

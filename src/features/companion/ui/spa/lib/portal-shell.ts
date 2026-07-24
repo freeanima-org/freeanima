@@ -4,7 +4,7 @@ import type {
   CompanionWindowRole,
   PatrolScreenInfo,
   ShellApi,
-} from "@freeanima/frontend/shell-sdk";
+} from "@freeanima/frontend/portal-sdk";
 import type { ScreenPoint } from "./window-metrics.ts";
 
 export type { PatrolScreenInfo, CompanionWindowRole };

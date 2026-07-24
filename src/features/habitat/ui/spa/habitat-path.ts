@@ -21,7 +21,7 @@ function shellBasepathFromViteBase(baseUrl: string): string | undefined {
   return raw;
 }
 
-/** Habitat SPA base when embedded in shell-ui (Habitat `/web/habitat`, desktop `/habitat`). */
+/** Habitat SPA base when embedded in app-ui (Habitat `/web/habitat`, desktop `/habitat`). */
 export function resolveEmbeddedHabitatBasepath(): string {
   const shellBase = shellBasepathFromViteBase(import.meta.env?.BASE_URL ?? "/");
   return shellBase ? `${shellBase}/habitat` : "/habitat";

@@ -1,6 +1,6 @@
 # just pack …
 # 产物：web / cli / tauri-linux|windows|android
-# 部件：tauri-ui / shell-ui / brand-icons
+# 部件：tauri-ui / app-ui / brand-icons
 import '_common.just'
 
 [private]
@@ -57,10 +57,10 @@ tauri-android: _deps _ensure-tauri-android
 tauri-ui target="desktop": _deps
   bun scripts/prepare-tauri-ui.ts {{target}}
 
-# shell-ui 独立构建（CI）
+# app-ui 独立构建（CI）
 [no-cd]
-shell-ui: _deps
-  bun src/frontend/shell-ui/build.ts
+app-ui: _deps
+  bun src/frontend/app-ui/build.ts
 
 # 品牌图标
 [no-cd]

@@ -1,4 +1,4 @@
-/** Node / CLI 侧 build-meta 解析（与 shell-sdk/build-meta.ts 保持同步） */
+/** Node / CLI 侧 build-meta 解析（与 portal-sdk/build-meta.ts 保持同步） */
 
 export type BuildChannel = "release" | "canary" | "dev";
 

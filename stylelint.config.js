@@ -37,7 +37,7 @@ export default {
           /\btext-base-content\b/,
         ],
         "/^(background|background-color|border(-.*)?|color|fill|stroke)$/": [
-          /^var\(--(?!sat|sar|sab|sal|shell-bottom-nav-h|radius)/,
+          /^var\(--(?!sat|sar|sab|sal|app-bottom-nav-h|radius)/,
         ],
       },
       {

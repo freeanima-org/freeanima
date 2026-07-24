@@ -1,4 +1,4 @@
-import type { SettingsSection } from "@freeanima/frontend/shell-sdk/settings";
+import type { SettingsSection } from "@freeanima/frontend/portal-sdk/settings";
 
 export const companionClientSettingsSection: SettingsSection = {
   id: "companion-client",

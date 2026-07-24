@@ -2,7 +2,7 @@ import {
   readOfflineCache,
   resolveHabitatCacheScope,
   writeOfflineCache,
-} from "@freeanima/frontend/shell-sdk/offline-cache";
+} from "@freeanima/frontend/portal-sdk/offline-cache";
 import type {
   NotificationListInput,
   NotificationListOutput,

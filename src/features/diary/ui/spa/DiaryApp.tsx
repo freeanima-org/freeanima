@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/shell-sdk/react.tsx";
-import { subscribeIdMappings } from "@freeanima/frontend/shell-sdk/offline-id-map";
+import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/portal-sdk/react.tsx";
+import { subscribeIdMappings } from "@freeanima/frontend/portal-sdk/offline-id-map";
 import { registerDiaryOfflineModule } from "./lib/offline-store.ts";
 import {
   countDiaryPendingOps,

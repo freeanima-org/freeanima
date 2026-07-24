@@ -1,4 +1,4 @@
-import { getSubjectKind } from "@freeanima/frontend/shell-sdk";
+import { getSubjectKind } from "@freeanima/frontend/portal-sdk";
 import type { TagRowPayload } from "@freeanima/shared/rpc-contract/frames/tag.ts";
 
 import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";

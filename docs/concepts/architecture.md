@@ -15,7 +15,8 @@ User-facing product terms (Chinese in [`i18n/glossary.md`](../../i18n/glossary.m
 | Long-running process / connect target | **Habitat**      | **栖息地**        | One process hosts **multiple digital lives** (`agent` subjects) and **human assets** (`user`); connect / token / restart target |
 | External connectors (class)           | **Portal**       | **入口**          | Shell, MCP clients, and similar ways in; not the Habitat itself                                                                 |
 | Remote-tool registrant                | **Outpost**      | **前哨**          | Unreachable local app that `remote_tools.attach` (Portal-embedded companion or standalone tool); **not** a Portal               |
-| Shell                                 | **Shell**        | **壳**            | A Portal (desktop / mobile / web window; SSH-like)                                                                              |
+| Shell                                 | **Shell**        | **壳**            | A Portal (desktop / mobile / web window; SSH-like). **Not** app frame (Rail / bottom nav / settings chrome)                     |
+| app frame                             | **app frame**    | **应用布局**      | SPA chrome in `src/frontend/app-ui` (`AppFrame`); viewport-driven; orthogonal to Shell                                          |
 | Admin / inspect UI (legacy Habitat)   | **Habitat** (UI) | **栖息地**        | Area under `/habitat/*`; "Open Habitat" vs "Connect to Habitat"                                                                 |
 | Admin home page                       | **Dashboard**    | **仪表盘**        | `/habitat/dashboard` only; other Habitat routes keep their own labels                                                           |
 | Message bridges                       | **Gateway**      | Gateway           | Discord / WeChat — **not** a Portal                                                                                             |
@@ -115,20 +116,20 @@ Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol
 
 Authoritative spec: [`repository-topology.md`](repository-topology.md).
 
-Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platform/` (boot + routers). Shell host: `src/frontend/` (`ui-kit`, `shell-sdk`, `shell-ui`).
+Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/platform/` (boot + routers). Frontend: `src/frontend/` (`ui-kit`, `portal-sdk`, `app-ui`). Portal Shell hosts: `src/app/shell/{tauri,web}`.
 
 ### Platform UI layering (legacy paths — migrating to features/\*)
 
-| Layer            | Platform-native?                   | Location (current → target)                                   | 数据通道                                |
-| ---------------- | ---------------------------------- | ------------------------------------------------------------- | --------------------------------------- |
-| Shell（壳子维）  | Yes                                | `src/app/shell/tauri`, companion, Habitat binding             | Tauri IPC / commands                    |
-| Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                                       | Habitat RPC（Feature RPC）              |
-| Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.habitat.rpc`）           | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
-| Companion host   | Overlay WebView-host（第一方）     | `src/features/companion/companion`（spa attach；壳薄 IPC/FS） | Habitat RPC + `remote_tools.attach`     |
+| Layer           | Platform-native?                   | Location (current → target)                                   | 数据通道                                |
+| --------------- | ---------------------------------- | ------------------------------------------------------------- | --------------------------------------- |
+| Shell（壳子维） | Yes                                | `src/app/shell/tauri`, companion, Habitat binding             | Tauri IPC / commands                    |
+| app frame       | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/app-ui`（`AppFrame`）                           | Habitat RPC（Feature RPC）              |
+| Habitat 前端    | Shell embed                        | `src/features/habitat`（UI + `plugin.habitat.rpc`）           | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
+| Companion host  | Overlay WebView-host（第一方）     | `src/features/companion/companion`（spa attach；壳薄 IPC/FS） | Habitat RPC + `remote_tools.attach`     |
 
-导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `getShellKind()` 锁 Shell 布局。交互（右键/长按/Enter）用 shell-sdk 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
+导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `getShellKind()` 锁应用布局。交互（右键/长按/Enter）用 `portal-sdk` 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
 
-**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Habitat。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于 Habitat 拨不到的本地应用（今日 companion：**第一方 overlay WebView-host** 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）。产品面（Chat 等）**不做** attach。可拨号对端的工具走 **MCP**。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/guide/habitat-rpc.md`](../guide/habitat-rpc.md)。
+**边界**：`app-ui` 与 `src/features/*/ui` 通过 `portal-sdk` + Feature RPC 访问 Habitat。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于 Habitat 拨不到的本地应用（今日 companion：**第一方 overlay WebView-host** 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）。产品面（Chat 等）**不做** attach。可拨号对端的工具走 **MCP**。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/guide/habitat-rpc.md`](../guide/habitat-rpc.md)。
 
 ### Habitat navigation ↔ cognitive layers
 
@@ -359,24 +360,32 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 
 壳层保留原生能力（Tauri commands / prefs / 通知等）。**无壳内 UI OTA**：原生端不从 Habitat 热替换 SPA。允许**用户确认后**的安装包级覆盖（Desktop 安装包 / Mobile APK / Standalone `anima upgrade` → 独立前缀如 `~/.anima/standalone`）。分发轨 SSOT 为安装包 bake 的 `build-meta.channel`（`release` / `canary` / `dev`）。Habitat 配置统一走 settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
 
-### 两层模型
+### Shell vs app frame
 
-| 层                   | 驱动                                | 职责                                                                                         |
-| -------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------- |
-| **交互与原生能力层** | 壳运行时（Tauri / Web）             | 存储、IPC、Habitat 连接后端、settings registry **内容**、hash 路由、长按 vs 右键、滑动手势等 |
-| **布局层**           | **仅视口断点**（壳不锁定底栏/顶栏） | 窄/中/宽三档；列表 drawer / 并列 / 三栏；settings **chrome**（tabs vs 侧栏）                 |
+| Concept       | What                                                                | Code                                                                         |
+| ------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| **Shell**     | Portal host runtime（browser / Tauri；形态 web / desktop / mobile） | `src/app/shell/*`；`portal-sdk` 中 `getShellKind` / `ShellApi` / buildTarget |
+| **app frame** | SPA chrome：模块左栏 Rail / 底栏 Tabs、设置页 chrome                | `src/frontend/app-ui`（`AppFrame`）；跟视口，**不**由壳类型锁定              |
 
-手机端通常只有窄档，但 **手机端 ≠ 窄布局**；Portal / 浏览器窗口可以是窄、中、宽任意档。
+### 三维度模型（壳子 / 布局 / 交互）
+
+| 维度     | 驱动                                                       | 职责                                                                               |
+| -------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| **壳子** | `getShellKind()`（`web`/`tauri`）+ `getShellBuildTarget()` | 存储、IPC、Habitat 连接、settings **内容**字段、原生能力                           |
+| **布局** | **仅视口断点**（壳不锁底栏/左栏）                          | compact / expanded；列表 drawer / 并列 / 三栏；settings **chrome**（tabs vs 侧栏） |
+| **交互** | `primaryInput`（touch / pointer）                          | 长按 vs 右键、Enter 发送等                                                         |
+
+手机端通常只有窄档，但 **手机端 ≠ 窄布局**；Portal / 浏览器窗口可以是窄或宽任意档。标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
 
 ### 布局层断点
 
-| 档位 | 视口        | 布局粗档            | Nav IA      | 页内     |
-| ---- | ----------- | ------------------- | ----------- | -------- |
-| 窄   | ≤1023px     | `compact` 移动布局  | 底栏 + More | drawer   |
-| 中   | 1024–1279px | `expanded` 桌面布局 | 顶栏全模块  | 两栏并列 |
-| 宽   | ≥1280px     | `expanded` 桌面布局 | 顶栏全模块  | 三栏并列 |
+| 档位 | 视口                      | 布局粗档   | Nav IA      | 页内                |
+| ---- | ------------------------- | ---------- | ----------- | ------------------- |
+| 窄   | &lt; 768px（Tailwind md） | `compact`  | 底栏 + More | drawer              |
+| 中   | 768–1027px                | `expanded` | 左侧 Rail   | 两栏（清单 drawer） |
+| 宽   | ≥ 1028px                  | `expanded` | 左侧 Rail   | 三栏并列            |
 
-`resolveLayoutMode()`：窄 → `compact`，中宽 → `expanded`（URL / `config.json` 可覆盖）。`detectSettingsChromePlatform()` 跟布局粗档（设置页 chrome）；settings 字段差异由壳子维 `resolveShellBindings()` / `getShellKind()` 决定。
+`resolveLayoutMode()`：窄 → `compact`，中宽 → `expanded`（URL / `config.json` 可覆盖）。`detectSettingsChromePlatform()` 跟布局粗档（设置页 chrome）；settings 字段差异由壳子维 `resolveShellBindings()` / `getShellKind()` / `getShellBuildTarget()` 决定。
 
 | 客户端       | UI 加载                       | 壳发版                       |
 | ------------ | ----------------------------- | ---------------------------- |

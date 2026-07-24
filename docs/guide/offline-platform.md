@@ -29,7 +29,7 @@ FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier �
 | 用户拉视图   | refresh                         | 页头刷新 / pull-to-refresh                            | 与 sync 职责分离                            |
 | 连接状态 UI  | connectivity                    | `connectivity-notice` / `ShellConnectivityBar`        | 断网 vs Habitat 未连；**不是** outbox       |
 
-## 平台原语（shell-sdk）
+## 平台原语（portal-sdk）
 
 - `offline-cache` — snapshot KV
 - `offline-outbox` — 跨模块写队列
