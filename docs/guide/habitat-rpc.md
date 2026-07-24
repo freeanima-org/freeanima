@@ -33,7 +33,9 @@ After Habitat RPC `connect`, an unreachable local app calls:
 
 Routing key is **`instance_id`** (follows the connecting application, not the Portal shell). Tool names use the `remote_{app}_{instance}_{local}` form (legacy `remote_*` / `sap:*` still parsed for stored sessions).
 
-Server: [`src/platform/remote-tools/`](../../src/platform/remote-tools/). Client helper: `createRemoteToolsHabitatAttach` in `@freeanima/shared/rpc-contract`.
+**Call routing:** Habitat resolves the target from the **tool name** (`app_slug` + `instance_id`). Session `outpost_app_id` / `outpost_instance_id` is optional metadata (e.g. which outpost opened the chat); it is **not** required to invoke remote tools. Any conversation may call a registered remote tool when that instance is online.
+
+Server: [`src/capabilities/remote-tools/`](../../src/capabilities/remote-tools/). Client helper: `createRemoteToolsHabitatAttach` in `@freeanima/shared/rpc-contract`.
 
 ## Endpoints
 

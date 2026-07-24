@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { ToolSetRegistry } from "@freeanima/core/tool";
-import { formatRemoteToolName } from "@freeanima/shared/rpc-contract";
+import { formatRemoteToolName, normalizeAppSlug } from "@freeanima/shared/rpc-contract";
 import { RemoteToolsManager } from "./manager.ts";
 
 describe("RemoteToolsManager routing", () => {
@@ -8,15 +8,50 @@ describe("RemoteToolsManager routing", () => {
   const instanceA = "a1b";
   const instanceB = "c2d";
 
-  it("rejects sap tools when conversation has no satellite binding", () => {
+  it("routes by tool name when conversation has no outpost binding", () => {
+    const manager = new RemoteToolsManager(new ToolSetRegistry());
+    const name = formatRemoteToolName(appId, instanceA, "scan_code");
+    manager.registerConnection(manager.connectionKey(appId, instanceA), {
+      appId,
+      instanceId: instanceA,
+      sendEvent: () => {},
+      sendRequest: async () => ({}),
+    });
+    manager.registerTools(appId, instanceA, [
+      {
+        local_name: "scan_code",
+        description: "scan",
+        parameters: { type: "object", properties: {} },
+        return_kind: "text",
+      },
+    ]);
+
+    const route = manager.resolveToolCall("sid", name, undefined);
+    expect(route.kind).toBe("outpost_proxy");
+    if (route.kind === "outpost_proxy") {
+      expect(route.appSlug).toBe(normalizeAppSlug(appId));
+      expect(route.instanceNorm).toBe(instanceA);
+    }
+  });
+
+  it("rejects when target instance is offline even without binding", () => {
     const manager = new RemoteToolsManager(new ToolSetRegistry());
     const name = formatRemoteToolName(appId, instanceA, "scan_code");
     const route = manager.resolveToolCall("sid", name, undefined);
     expect(route.kind).toBe("reject");
+    if (route.kind === "reject") {
+      expect(route.error).toContain("outpost instance offline");
+    }
   });
 
-  it("rejects sap tool instance mismatch", () => {
+  it("allows cross-conversation call when session binding differs from tool instance", () => {
     const manager = new RemoteToolsManager(new ToolSetRegistry());
+    manager.registerConnection(manager.connectionKey(appId, instanceB), {
+      appId,
+      instanceId: instanceB,
+      sendEvent: () => {},
+      sendRequest: async () => ({}),
+    });
     manager.registerTools(appId, instanceB, [
       {
         local_name: "scan_code",
@@ -25,14 +60,14 @@ describe("RemoteToolsManager routing", () => {
         return_kind: "text",
       },
     ]);
-    const wrongName = formatRemoteToolName(appId, instanceB, "scan_code");
-    const route = manager.resolveToolCall("sid", wrongName, {
+    const toolName = formatRemoteToolName(appId, instanceB, "scan_code");
+    const route = manager.resolveToolCall("sid", toolName, {
       outpost_app_id: "pairprogramming",
       outpost_instance_id: instanceA,
     });
-    expect(route.kind).toBe("reject");
-    if (route.kind === "reject") {
-      expect(route.error).toContain("binding mismatch");
+    expect(route.kind).toBe("outpost_proxy");
+    if (route.kind === "outpost_proxy") {
+      expect(route.instanceNorm).toBe(instanceB);
     }
   });
 
