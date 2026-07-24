@@ -4,6 +4,8 @@ title: Page refresh
 
 # Page refresh (sync vs refresh)
 
+> Parent aspect: [Portal data plane](portal-data-plane.md).
+
 Outpost/Portal UI keeps data fresh with two distinct verbs. Do not conflate them with PWA / installer “reload”, which updates shell assets only.
 
 ## Verbs
@@ -18,7 +20,7 @@ Outpost/Portal UI keeps data fresh with two distinct verbs. Do not conflate them
 - **Limited auto**: keep sync + existing live channels (chat `stream.*`, `conversation.updated`, `pomodoro.active.changed`). No global list polling. No unconditional `refreshAll` of every module on visibility when the outbox is empty.
 - **Manual refresh required** on product list surfaces so multi-device / agent edits can be pulled on demand.
 - **Interaction dimension** (see [ui-dimensions](../../.agent/rules/ui-dimensions.md)): pointer uses a header button; touch also gets pull-to-refresh on the primary list. Shell kind does not lock the affordance.
-- **Out of scope**: Habitat fan-out for every CRUD entity; React Query; turning the offline-sync toast into a page refresh control.
+- **Out of scope**: Habitat fan-out for every CRUD entity; adopting the React Query **library** (self-owned hooks on the [Portal data plane](portal-data-plane.md) are fine); turning the offline-sync toast into a page refresh control.
 
 ## Page classes
 

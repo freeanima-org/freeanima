@@ -284,7 +284,7 @@ Entity type: `content`. Text fields use entity columns where noted.
 
 ## Offline (CRUD outbox)
 
-卫星壳 Project UI 走 IndexedDB 快照 + outbox（与 Diary / Task 同级）。写 RPC 支持可选 `client_op_id` 幂等；详见 [`offline-platform.md`](offline-platform.md)。
+卫星壳 Project UI 走 IndexedDB 快照 + outbox（与 Diary / Task 同级）。写 RPC 支持可选 `client_op_id` 幂等；详见 [`offline-platform.md`](../aspects/offline-platform.md)。
 
 ---
 

@@ -30,11 +30,17 @@ export const collections = {
       base: docsRoot,
       pattern: [
         "README.md",
+        "product/**/*.{md,mdx}",
+        "cognition/**/*.{md,mdx}",
+        "aspects/**/*.{md,mdx}",
+        "modules/**/*.{md,mdx}",
+        "ops/**/*.{md,mdx}",
+        "tools/**/*.{md,mdx}",
+        // legacy prefixes (redirects / frozen trees)
         "guide/**/*.{md,mdx}",
         "concepts/**/*.{md,mdx}",
         "features/**/*.{md,mdx}",
         "sap/**/*.{md,mdx}",
-        "tools/**/*.{md,mdx}",
         ".generated/zh_CN/**/*.{md,mdx}",
       ],
       generateId: ({ entry }) => docsEntryId(entry),
