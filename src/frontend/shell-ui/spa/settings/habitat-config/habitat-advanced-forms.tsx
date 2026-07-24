@@ -69,25 +69,46 @@ function BrowserForm({
   return (
     <div className="space-y-4">
       <p className="text-sm font-medium">camofox</p>
+      <p className="text-xs text-muted-foreground">
+        Profile ≈ userId（登录态）；Session ≈
+        session_key（同一档案下的任务线）。关闭持久化则每次临时档案。
+      </p>
       {hubConfigTextField("base_url", String(camofox.base_url ?? ""), (v) =>
         setCamofox({ base_url: v }),
       )}
       {habitatConfigNumberField(
         "timeout_ms",
-        typeof camofox.timeout_ms === "number" ? camofox.timeout_ms : "",
+        typeof camofox.timeout_ms === "number" ? camofox.timeout_ms : 30_000,
         (v) => setCamofox({ timeout_ms: v === "" ? undefined : v }),
+        { hint: "单次 HTTP 超时（毫秒），默认 30000" },
       )}
-      {habitatConfigBoolField("managed_persistence", camofox.managed_persistence !== false, (v) =>
-        setCamofox({ managed_persistence: v }),
+      {habitatConfigBoolField(
+        "managed_persistence",
+        camofox.managed_persistence !== false,
+        (v) => setCamofox({ managed_persistence: v }),
+        "默认开。本机复用稳定 userId，登录态可跨对话保留；关闭则每次临时档案。",
       )}
-      {habitatConfigBoolField("adopt_existing_tab", Boolean(camofox.adopt_existing_tab), (v) =>
-        setCamofox({ adopt_existing_tab: v }),
+      {habitatConfigBoolField(
+        "adopt_existing_tab",
+        camofox.adopt_existing_tab !== false,
+        (v) => setCamofox({ adopt_existing_tab: v }),
+        "默认开。重启后尝试认领同档案已有 tab",
       )}
-      {hubConfigTextField("user_id", String(camofox.user_id ?? ""), (v) =>
-        setCamofox({ user_id: v }),
+      {hubConfigTextField(
+        "user_id",
+        String(camofox.user_id ?? ""),
+        (v) => setCamofox({ user_id: v }),
+        {
+          hint: "显式档案 ID；一旦填写则优先于 managed_persistence",
+        },
       )}
-      {hubConfigTextField("session_key", String(camofox.session_key ?? ""), (v) =>
-        setCamofox({ session_key: v }),
+      {hubConfigTextField(
+        "session_key",
+        String(camofox.session_key ?? ""),
+        (v) => setCamofox({ session_key: v }),
+        {
+          hint: "仅在填写 user_id 时生效；同一档案下的会话键，缺省按对话派生",
+        },
       )}
     </div>
   );

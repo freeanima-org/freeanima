@@ -39,6 +39,7 @@ For **FreeAnima users** — self-hosted deployment, talking to a digital life, c
 
 ## Tools — Built-in Tools
 
-| Topic         | File                                                             |
-| ------------- | ---------------------------------------------------------------- |
-| Code runtimes | [tools/execute-code-runtimes.md](tools/execute-code-runtimes.md) |
+| Topic           | File                                                             |
+| --------------- | ---------------------------------------------------------------- |
+| Code runtimes   | [tools/execute-code-runtimes.md](tools/execute-code-runtimes.md) |
+| Camofox browser | [tools/browser-camofox.md](tools/browser-camofox.md)             |
