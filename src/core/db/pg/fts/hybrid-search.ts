@@ -78,15 +78,28 @@ export async function hybridSearchMessages(
   if (!q) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
+  const fallback = getFtsTrgmFallbackWhenHitsLt(getActiveRuntimeConfig().data);
 
-  const pool = candidateLimit(limit, 0);
-  const [ftsHits, trgmHits] = await Promise.all([
-    searchMessagesFtsRaw(q, { ...opts, limit: pool }),
-    searchMessagesTrgm(q, { ...opts, limit: pool }),
-  ]);
+  let ftsHits: Awaited<ReturnType<typeof searchMessagesFtsRaw>>;
+  let trgmHits: Awaited<ReturnType<typeof searchMessagesTrgm>>;
+  let mergePool: number;
+
+  // fallback=0：始终并行；否则先 FTS，再按真实命中数决定 trgm 候选池
+  if (fallback === 0) {
+    mergePool = candidateLimit(limit, 0);
+    [ftsHits, trgmHits] = await Promise.all([
+      searchMessagesFtsRaw(q, { ...opts, limit: mergePool }),
+      searchMessagesTrgm(q, { ...opts, limit: mergePool }),
+    ]);
+  } else {
+    const ftsPool = Math.max(limit * 3, 20);
+    ftsHits = await searchMessagesFtsRaw(q, { ...opts, limit: ftsPool });
+    mergePool = candidateLimit(limit, ftsHits.length);
+    trgmHits = await searchMessagesTrgm(q, { ...opts, limit: mergePool });
+  }
 
   const ftsRanked = ftsHits.map((h) => ({ ...h, docKey: messageDocKey(h.id) }));
-  const merged = rrfMerge([ftsRanked, trgmHits], { limit: pool });
+  const merged = rrfMerge([ftsRanked, trgmHits], { limit: Math.max(mergePool, ftsHits.length) });
 
   return merged.slice(0, limit).map((row) => ({
     message_id: row.id,
