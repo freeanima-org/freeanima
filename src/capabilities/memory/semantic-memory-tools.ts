@@ -386,7 +386,6 @@ export const semanticMemoryToolDefs: ToolDef[] = [
   },
   {
     name: "memory_semantic_search",
-    exposeMcp: true,
     description:
       "Structured semantic memory search: FTS query plus type/status/source_conversations filters. Returns active by default.\n\n" +
       MEMORY_SEMANTIC_CITATION_TOOL_HINT,

@@ -169,7 +169,7 @@ Missing or invalid token → HTTP `401` or Habitat RPC connection closed.
 
 ## 4. MCP outbound (external agents query Habitat data)
 
-Habitat serves Streamable HTTP MCP Server at **`/mcp`**, exposing read-only tools from ToolSets with `expose_mcp: true` (e.g. `memory_recall`, `conversation_search`). External MCP clients (Cursor, Claude Desktop, etc.) connect **without LLM relay**.
+Habitat serves Streamable HTTP MCP Server at **`/mcp`**, exposing tools with `exposeMcp: true`. Current outbound surface is **task item** tools only (`task_*`: create/update/complete/uncomplete/delete/get/list/search); task lists, projects, and folders stay Habitat-only. Other ToolSets remain available inside Habitat chat but are not listed on `/mcp`. External MCP clients (Cursor, Claude Desktop, etc.) connect **without LLM relay**.
 
 ```yaml
 # External agent example (Cursor mcp.json, etc.)

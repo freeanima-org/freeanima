@@ -224,7 +224,6 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
           name: "diary_append",
           description:
             "Append a new text block to a diary entry for date (creates empty entry if missing; default date is today)",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -245,7 +244,6 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
           name: "diary_update",
           description:
             "Update diary entry metadata for a date (title/summary/tags/tag_ids; default today). Body text: use diary_append or content-block tools",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -262,7 +260,6 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
         {
           name: "diary_delete",
           description: "Delete diary entry for a date (default today)",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -275,7 +272,6 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
         {
           name: "diary_get",
           description: "Get diary entry for a date (default today)",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -289,7 +285,6 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
           name: "diary_list",
           description:
             "List diary entries (default entry_at DESC, limit 20) with optional date/tag filters and offset pagination. items.blocks is always []; use diary_get for body text",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -316,7 +311,6 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
           name: "diary_search",
           description:
             "Hybrid search diary entries by text query. items.blocks is always []; use diary_get for body text",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
