@@ -72,10 +72,11 @@ export function EntryTimeline({
   loadingMore?: boolean;
   onLoadMore?: () => void;
 }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const onLoadMoreRef = useRef(onLoadMore);
   onLoadMoreRef.current = onLoadMore;
+  const loadingMoreRef = useRef(loadingMore);
+  loadingMoreRef.current = loadingMore;
   const [titleById, setTitleById] = useState<Map<number, string>>(() => new Map());
 
   useEffect(() => {
@@ -92,23 +93,23 @@ export function EntryTimeline({
     };
   }, []);
 
+  // 滚动在外层 PullToRefresh；此处不用自身作 IO root（高度随内容涨时 sentinel 会常驻可见）。
   useEffect(() => {
-    if (!hasMore || !onLoadMore) return;
-    const root = scrollRef.current;
+    if (!hasMore || !onLoadMoreRef.current) return;
     const sentinel = sentinelRef.current;
-    if (!root || !sentinel) return;
+    if (!sentinel) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
-        if (loadingMore) return;
+        if (loadingMoreRef.current) return;
         onLoadMoreRef.current?.();
       },
-      { root, rootMargin: "80px", threshold: 0 },
+      { root: null, rootMargin: "80px", threshold: 0 },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, loadingMore, items.length, onLoadMore]);
+  }, [hasMore, items.length]);
 
   const groups = groupEntriesByDate(items);
   if (groups.length === 0) {
@@ -116,7 +117,7 @@ export function EntryTimeline({
   }
 
   return (
-    <div ref={scrollRef} className="flex h-full min-h-0 flex-col gap-1 overflow-y-auto">
+    <div className="flex flex-col gap-1">
       {groups.map((group) => (
         <button
           key={group.item.id}
