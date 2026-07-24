@@ -92,7 +92,15 @@ export function matchNsisSetupForProduct(
       matches,
     };
   }
-  return { ok: true, name: matches[0]! };
+  const only = matches[0];
+  if (!only) {
+    return {
+      ok: false,
+      reason: `未找到 productName=${JSON.stringify(productName)} 的 NSIS setup`,
+      matches,
+    };
+  }
+  return { ok: true, name: only };
 }
 
 function resolveNsisInstallerName(productName: string): string {
