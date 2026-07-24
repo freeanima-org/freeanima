@@ -49,7 +49,7 @@
 - **List-Detail**：宽屏左右分栏，窄屏堆叠 + 路由切换（`ListDetailLayout`）
 - **Grid-List**：宽屏多列网格，窄屏单列列表
 - **Modal-Sheet**：宽屏居中 Dialog，窄屏底部 Sheet / ActionSheet（呈现由布局决定；触发手势归交互）
-- **Sidebar-Drawer**：宽屏固定侧边栏，窄屏汉堡 + Drawer
+- **Sidebar-Drawer**：宽屏固定侧边栏，窄屏汉堡 + Drawer。壳 **compact** 下 viewport-fixed 层（如 `list-detail-drawer-*`）须避让 `--shell-bottom-nav-h`（与 Notice/More 同约定）；勿抬 z-index 盖住底栏
 
 设置页 chrome（tabs vs 侧栏）：`detectSettingsChromePlatform()`（跟布局粗档）。  
 设置 section 字段：`resolveSettingsContentPlatform()`（跟壳子维）。
