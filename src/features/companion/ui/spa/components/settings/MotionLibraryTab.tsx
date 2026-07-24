@@ -9,6 +9,7 @@ import {
   Input,
   Spinner,
 } from "@freeanima/frontend/ui-kit";
+import { showConfirm } from "@freeanima/frontend/ui-kit/composite";
 import {
   deleteMotion,
   renameMotion,
@@ -85,6 +86,20 @@ export function MotionLibraryTab() {
     } finally {
       setImporting(false);
     }
+  };
+
+  const onDelete = async (entry: MotionLibraryEntry): Promise<void> => {
+    const ok = await showConfirm({
+      title: "删除确认",
+      description: `确定删除动作「${entry.name}」？此操作不可恢复。`,
+      confirmLabel: "删除",
+      variant: "error",
+    });
+    if (!ok) return;
+    await deleteMotion(entry.id);
+    await refreshConfig();
+    await emitConfigChanged();
+    if (previewId === entry.id) setPreviewId(null);
   };
 
   return (
@@ -167,14 +182,7 @@ export function MotionLibraryTab() {
                             variant="ghost"
                             size="sm"
                             className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                            onClick={() =>
-                              void deleteMotion(m.id)
-                                .then(() => refreshConfig())
-                                .then(() => emitConfigChanged())
-                                .then(() => {
-                                  if (previewId === m.id) setPreviewId(null);
-                                })
-                            }
+                            onClick={() => void onDelete(m)}
                           >
                             删除
                           </Button>

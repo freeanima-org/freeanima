@@ -8,7 +8,7 @@ import {
   VAULT_UI_SCOPE,
 } from "@freeanima/frontend/shell-sdk/react.tsx";
 import { Button, Card, CardContent, Input, Spinner, Textarea } from "@freeanima/frontend/ui-kit";
-import { EmptyState, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { ConfirmDialog, EmptyState, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
 import { ListDetailLayout } from "@freeanima/frontend/ui-kit/layout";
 import { m } from "@paraglide/messages";
 import type {
@@ -179,6 +179,7 @@ export function VaultApp() {
   const [userSetupMode, setUserSetupMode] = useState(false);
   const [detailSecrets, setDetailSecrets] = useState("");
   const [selectionSubjectKind, setSelectionSubjectKind] = useState(subjectKind);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   // subject 切换时在 render 阶段清空选中，避免详情 effect 用旧 ID 打到新 world
   if (selectionSubjectKind !== subjectKind) {
@@ -366,6 +367,7 @@ export function VaultApp() {
 
   const handleDeleteItem = async () => {
     if (!selectedId || writesDisabled) return;
+    setConfirmDeleteOpen(false);
     setActionLoading(true);
     setError("");
     try {
@@ -466,7 +468,7 @@ export function VaultApp() {
               size="sm"
               variant="destructive"
               disabled={writesDisabled || actionLoading}
-              onClick={() => void handleDeleteItem()}
+              onClick={() => setConfirmDeleteOpen(true)}
             >
               删除
             </Button>
@@ -610,6 +612,18 @@ export function VaultApp() {
           )}
         </div>
       </ListDetailLayout>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="删除确认"
+        description={
+          selectedItem ? `确定删除保险库条目「${selectedItem.title}」？此操作不可恢复。` : undefined
+        }
+        confirmLabel="删除"
+        variant="error"
+        onConfirm={() => void handleDeleteItem()}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
     </div>
   );
 }

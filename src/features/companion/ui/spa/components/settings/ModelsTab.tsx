@@ -9,6 +9,7 @@ import {
   Input,
   Spinner,
 } from "@freeanima/frontend/ui-kit";
+import { showConfirm } from "@freeanima/frontend/ui-kit/composite";
 import {
   deleteModel,
   renameModel,
@@ -39,6 +40,19 @@ export function ModelsTab() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const onDelete = async (id: string, name: string): Promise<void> => {
+    const ok = await showConfirm({
+      title: "删除确认",
+      description: `确定删除模型「${name}」？此操作不可恢复。`,
+      confirmLabel: "删除",
+      variant: "error",
+    });
+    if (!ok) return;
+    await deleteModel(id);
+    await refreshConfig();
+    await emitConfigChanged();
   };
 
   return (
@@ -109,11 +123,7 @@ export function ModelsTab() {
                     variant="ghost"
                     size="sm"
                     className="h-7 self-start px-2 text-xs text-destructive hover:text-destructive"
-                    onClick={() =>
-                      void deleteModel(m.id)
-                        .then(() => refreshConfig())
-                        .then(() => emitConfigChanged())
-                    }
+                    onClick={() => void onDelete(m.id, m.name)}
                   >
                     删除
                   </Button>

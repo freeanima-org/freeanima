@@ -22,19 +22,19 @@
 
 ## 基元约定
 
-| 场景         | 推荐做法                                                                                                  |
-| ------------ | --------------------------------------------------------------------------------------------------------- |
-| 按钮         | `<Button variant="…" size="…">`                                                                           |
-| 表单输入     | `<Input>` / `<Textarea>` / `<Select>`；**默认不自动聚焦**，需要时用 `focusOnMount`                        |
-| 对话框/Sheet | `DialogContent` / `SheetContent` 默认 `onOpenAutoFocus` 阻止聚焦；确需打开时聚焦用 `onOpenAutoFocus` 覆盖 |
-| 加载         | `<Spinner>`                                                                                               |
-| 空态         | `<EmptyState>`                                                                                            |
-| 错误/提示    | `<StatusAlert>`                                                                                           |
-| 确认对话框   | `<ConfirmDialog>` / `<Dialog>`                                                                            |
+| 场景         | 推荐做法                                                                                                                                                                                           |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 按钮         | `<Button variant="…" size="…">`                                                                                                                                                                    |
+| 表单输入     | `<Input>` / `<Textarea>` / `<Select>`；**默认不自动聚焦**，需要时用 `focusOnMount`                                                                                                                 |
+| 对话框/Sheet | `DialogContent` / `SheetContent` 默认 `onOpenAutoFocus` 阻止聚焦；确需打开时聚焦用 `onOpenAutoFocus` 覆盖                                                                                          |
+| 加载         | `<Spinner>`                                                                                                                                                                                        |
+| 空态         | `<EmptyState>`                                                                                                                                                                                     |
+| 错误/提示    | `<StatusAlert>`                                                                                                                                                                                    |
+| 确认对话框   | `<ConfirmDialog>` / `showConfirm`；**不可恢复删除必须**二次确认（`variant="error"`）；确认钮**不做默认聚焦/默认选中**（沿用 Dialog/Sheet 默认 `onOpenAutoFocus` 阻止；禁止给确认钮加 `autoFocus`） |
 
 ## 复合组件
 
-从 `@freeanima/ui-kit/composite` 导入：`ConfirmDialog`、`ActionSheet`、`EmptyState`、`StatusAlert`、`PullToRefresh`。
+从 `@freeanima/ui-kit/composite` 导入：`ConfirmDialog`、`showConfirm`、`ActionSheet`、`EmptyState`、`StatusAlert`、`PullToRefresh`。禁止 `window.confirm`。
 
 ## 静态检查
 
