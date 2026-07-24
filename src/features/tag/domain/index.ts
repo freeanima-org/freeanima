@@ -9,6 +9,7 @@ export {
   updateTag,
   deleteTag,
   setEntityTagIds,
+  suggestTags,
 } from "./tag-store.ts";
 
 export { registerTagTools } from "./tools.ts";

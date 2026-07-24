@@ -1,44 +1,35 @@
+import { DIARY_ENTRY_COMPONENT } from "@freeanima/core/db/schema";
+import type { TagSuggestion } from "@freeanima/core/db/pg/tag";
+
 import {
-  REDIS_CACHE_KEY_PREFIX,
-  cacheGetJson,
-  cacheSetJson,
-} from "@freeanima/platform/connectors/redis";
-import type { DiaryEntryTagSuggestion } from "@freeanima/core/db/pg/diary";
+  TAG_SUGGEST_STATS_CACHE_TTL_SECONDS,
+  loadTagSuggestStatsCache,
+  saveTagSuggestStatsCache,
+  tagSuggestStatsCacheKey,
+} from "@freeanima/features/tag/domain/tag-suggest-cache.ts";
 
-/** 日记实体级常用 tags 统计缓存（可丢弃）TTL：1 天 */
-export const DIARY_ENTRY_TAGS_STATS_CACHE_TTL_SECONDS = 24 * 60 * 60;
+/** @deprecated 请用 TAG_SUGGEST_STATS_CACHE_TTL_SECONDS */
+export const DIARY_ENTRY_TAGS_STATS_CACHE_TTL_SECONDS = TAG_SUGGEST_STATS_CACHE_TTL_SECONDS;
 
+/** @deprecated 请用 tagSuggestStatsCacheKey(worldId, "diary_entry", limit) */
 export function diaryEntryTagsStatsCacheKey(worldId: number, limit: number): string {
-  return `${REDIS_CACHE_KEY_PREFIX}diary-entry-tags:world:${worldId}:top:${limit}`;
+  return tagSuggestStatsCacheKey(worldId, DIARY_ENTRY_COMPONENT, limit);
 }
 
-function isSuggestionList(value: unknown): value is DiaryEntryTagSuggestion[] {
-  if (!Array.isArray(value)) return false;
-  return value.every(
-    (row) =>
-      row != null &&
-      typeof row === "object" &&
-      typeof (row as DiaryEntryTagSuggestion).id === "number" &&
-      typeof (row as DiaryEntryTagSuggestion).title === "string" &&
-      typeof (row as DiaryEntryTagSuggestion).count === "number",
-  );
-}
-
-/** 读无 query 的常用 tags 统计缓存 */
+/** @deprecated 请用 loadTagSuggestStatsCache */
 export async function loadDiaryEntryTagsStatsCache(
   worldId: number,
   limit: number,
-): Promise<DiaryEntryTagSuggestion[] | null> {
-  const raw = await cacheGetJson<unknown>(diaryEntryTagsStatsCacheKey(worldId, limit));
-  if (!isSuggestionList(raw)) return null;
-  return raw;
+): Promise<TagSuggestion[] | null> {
+  return loadTagSuggestStatsCache(worldId, DIARY_ENTRY_COMPONENT, limit);
 }
 
+/** @deprecated 请用 saveTagSuggestStatsCache */
 export async function saveDiaryEntryTagsStatsCache(
   worldId: number,
   limit: number,
-  items: DiaryEntryTagSuggestion[],
-  ttlSeconds: number = DIARY_ENTRY_TAGS_STATS_CACHE_TTL_SECONDS,
+  items: TagSuggestion[],
+  ttlSeconds: number = TAG_SUGGEST_STATS_CACHE_TTL_SECONDS,
 ): Promise<void> {
-  await cacheSetJson(diaryEntryTagsStatsCacheKey(worldId, limit), items, ttlSeconds);
+  await saveTagSuggestStatsCache(worldId, DIARY_ENTRY_COMPONENT, limit, items, ttlSeconds);
 }

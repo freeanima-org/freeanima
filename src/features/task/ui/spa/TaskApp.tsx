@@ -47,7 +47,7 @@ import { SortableTaskList } from "./components/SortableTaskList.tsx";
 import { TaskDetailPanel } from "./components/TaskDetailPanel.tsx";
 import { TaskDndRoot } from "./components/TaskDndRoot.tsx";
 import { ThreeColumnLayout } from "@freeanima/frontend/ui-kit/layout";
-import type { TaskTagKnown } from "./components/TaskTagPicker.tsx";
+import type { TagKnown as TaskTagKnown } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 import { findUnresolvedTaskTagIds } from "./lib/task-tag-filter.ts";
 import { fetchTags } from "@freeanima/features/tag/ui/spa/lib/api.ts";
 import {

@@ -29,6 +29,12 @@ export const tagHabitatRoutes = bindHabitatRouteHandlers(tagMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "tag.suggest": async (deps, input, ctx) =>
+    service.serviceTagSuggest(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
   "tag.create": async (deps, input, ctx) =>
     service.serviceTagCreate(
       depsOf(deps).runtime.runtimeDeps(),

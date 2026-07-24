@@ -11,7 +11,9 @@ import {
 
 describe("entry-tags-stats-cache", () => {
   it("key / TTL 约定", () => {
-    expect(diaryEntryTagsStatsCacheKey(1, 10)).toBe("anima:cache:diary-entry-tags:world:1:top:10");
+    expect(diaryEntryTagsStatsCacheKey(1, 10)).toBe(
+      "anima:cache:tag-suggest:diary_entry:world:1:top:10",
+    );
     expect(DIARY_ENTRY_TAGS_STATS_CACHE_TTL_SECONDS).toBe(86400);
   });
 

@@ -7,11 +7,12 @@ import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/t
 
 import { taskAttributionLabel } from "../lib/task-attribution.ts";
 import { TaskPomodoroFocusSection } from "./TaskPomodoroFocusSection.tsx";
-import { TaskTagPicker, type TaskTagKnown } from "./TaskTagPicker.tsx";
+import { TaskTagPicker } from "./TaskTagPicker.tsx";
 import { EntityIdLabel } from "./EntityIdLabel.tsx";
+import type { TagKnown } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 
 export type { DetailSaveStatus };
-export type { TaskTagKnown };
+export type TaskTagKnown = TagKnown;
 
 export type TaskDetailPanelProps<T extends TaskItemRowPayload = TaskItemRowPayload> = {
   item: T;

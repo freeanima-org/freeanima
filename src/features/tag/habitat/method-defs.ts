@@ -12,6 +12,8 @@ import {
   tagSearchOutputSchema,
   tagSetOnEntityInputSchema,
   tagSetOnEntityOutputSchema,
+  tagSuggestInputSchema,
+  tagSuggestOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/tag";
 
 export const tagMethodDefs = {
@@ -23,6 +25,11 @@ export const tagMethodDefs = {
   "tag.search": defineHabitatMethod({
     input: tagSearchInputSchema,
     output: tagSearchOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "tag.suggest": defineHabitatMethod({
+    input: tagSuggestInputSchema,
+    output: tagSuggestOutputSchema,
     meta: dualTransportMeta(true),
   }),
   "tag.create": defineHabitatMethod({

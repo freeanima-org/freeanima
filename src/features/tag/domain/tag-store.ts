@@ -2,6 +2,7 @@ import { entities } from "@freeanima/core/db/schema";
 import { TAG_COMPONENT, asTag } from "@freeanima/core/db/schema/entity";
 import { assertEntityInWorld } from "@freeanima/core/db/pg/entity";
 import { getDb } from "@freeanima/core/db/pg/client";
+import { suggestTagsByPrimaryComponent, type TagSuggestion } from "@freeanima/core/db/pg/tag";
 import { omitUndefined } from "@freeanima/core/util";
 import {
   createEntity,
@@ -13,6 +14,7 @@ import {
 } from "@freeanima/core/db/pg/entity";
 import { and, eq, ne, sql } from "drizzle-orm";
 
+import { loadTagSuggestStatsCache, saveTagSuggestStatsCache } from "./tag-suggest-cache.ts";
 import type { TagCreateInput, TagRow, TagSearchOpts, TagUpdateInput } from "./types.ts";
 
 function normalizeTitle(title: string): string {
@@ -281,4 +283,25 @@ export async function setEntityTagIds(
   const row = await updateEntity({ id: entityId, tag_ids: unique });
   if (!row) throw new Error(`entity not found: ${entityId}`);
   return { entity_id: entityId, tag_ids: [...row.tag_ids] };
+}
+
+export async function suggestTags(
+  worldId: number,
+  primaryComponent: string,
+  opts?: { query?: string; limit?: number },
+): Promise<TagSuggestion[]> {
+  const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
+  const query = opts?.query?.trim() ?? "";
+
+  // 仅缓存「无 query」的常用统计；带搜索词仍实时查库
+  if (!query) {
+    const cached = await loadTagSuggestStatsCache(worldId, primaryComponent, limit);
+    if (cached) return cached;
+
+    const items = await suggestTagsByPrimaryComponent(worldId, primaryComponent, { limit });
+    await saveTagSuggestStatsCache(worldId, primaryComponent, limit, items);
+    return items;
+  }
+
+  return suggestTagsByPrimaryComponent(worldId, primaryComponent, { query, limit });
 }
