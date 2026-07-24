@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version:  6jb4\n"
-"POT-Creation-Date: 2026-07-23 14:40+0800\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
 "PO-Revision-Date: 2026-07-01 22:15+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -134,7 +134,7 @@ msgstr ""
 msgid ""
 "Routing key is **`instance_id`** (follows the connecting application, not "
 "the Portal shell). Tool names use the `remote_{app}_{instance}_{local}` form "
-"(legacy `sap_*` / `sap:*` still parsed for stored sessions)."
+"(legacy `remote_*` / `sap:*` still parsed for stored sessions)."
 msgstr ""
 
 #. type: Plain text
@@ -209,7 +209,7 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/guide/habitat-rpc.md:56 messages/po4a/en.xml:210
+#: docs/guide/habitat-rpc.md:56 messages/po4a/en.xml:223
 #, no-wrap
 msgid "Reconnect"
 msgstr "重连"

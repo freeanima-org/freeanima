@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 14:39+0800\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:681
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:694
 #, no-wrap
 msgid "Installation"
 msgstr "安装"
@@ -50,10 +50,10 @@ msgstr "选择安装方式"
 #| "| **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars               |\n"
 #| "| **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | Vault / `env()` (recommended) |\n"
 msgid ""
-"| Path           | Best for                                  | Bun on host | PostgreSQL  | Redis                  | Secrets                       |\n"
-"| -------------- | ----------------------------------------- | ----------- | ----------- | ---------------------- | ----------------------------- |\n"
-"| **Source**     | Contributors, day-to-day development      | Required    | You install | Optional (recommended) | Vault / `env()` (recommended) |\n"
-"| **Standalone** | Production / self-host without a checkout | Not needed  | You install | Optional (recommended) | Vault / `env()` (recommended) |\n"
+"| Path           | Best for                                  | Bun on host | PostgreSQL  | Redis                  | Secrets                            |\n"
+"| -------------- | ----------------------------------------- | ----------- | ----------- | ---------------------- | ---------------------------------- |\n"
+"| **Source**     | Contributors, day-to-day development      | Required    | You install | Optional (recommended) | Bootstrap: `env()`; runtime: Vault |\n"
+"| **Standalone** | Production / self-host without a checkout | Not needed  | You install | Optional (recommended) | Bootstrap: `env()`; runtime: Vault |\n"
 msgstr ""
 "| 路径               | 适用场景                                   | PostgreSQL  | Redis                  | 密钥                          |\n"
 "| ------------------ | ------------------------------------------ | ----------- | ---------------------- | ----------------------------- |\n"
@@ -98,12 +98,12 @@ msgstr "共用前置条件"
 #| "| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                         |\n"
 #| "| **Vault**      | Recommended for npm/source — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |\n"
 msgid ""
-"| Component      | Version / notes                                                                                                        |\n"
-"| -------------- | ---------------------------------------------------------------------------------------------------------------------- |\n"
-"| **Bun**        | >= 1.3.14 — required for **source** installs ([bun.sh](https://bun.sh)); not required for standalone binaries          |\n"
-"| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                   |\n"
-"| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                          |\n"
-"| **Vault**      | Recommended — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |\n"
+"| Component      | Version / notes                                                                                                                                           |\n"
+"| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| **Bun**        | >= 1.3.14 — required for **source** installs ([bun.sh](https://bun.sh)); not required for standalone binaries                                             |\n"
+"| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                                                      |\n"
+"| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                                             |\n"
+"| **Vault**      | Recommended for runtime secrets after Habitat is up; bootstrap `config.yaml` uses `env()` only ([`security.md`](security.md#credential-responsibilities)) |\n"
 msgstr ""
 "| 组件           | 版本 / 说明                                                                                                                           |\n"
 "| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |\n"
@@ -131,13 +131,13 @@ msgstr ""
 msgid ""
 "Release publishes 三端产物（与 canary 对称）：`anima-linux-x64.tar.gz`、"
 "`freeanima-desktop-windows-x64-setup.exe`、`freeanima-mobile-android.apk`"
-"（CI 固定 upload 签名；本地 `debug:android` 仍为默认 debug 签名）。"
+"（CI 固定 upload 签名；本地 `just dev tauri-android` 仍为默认 debug 签名）。"
 "Standalone tarball 内含单文件可执行文件 `anima`；版本、service build-meta、"
 "migrations 与 Web UI 均嵌入该二进制。"
 msgstr ""
 "Release publishes 三端产物（与 canary 对称）：`anima-linux-x64.tar.gz`、"
 "`freeanima-desktop-windows-x64-setup.exe`、`freeanima-mobile-android.apk`"
-"（CI 固定 upload 签名；本地 `debug:android` 仍为默认 debug 签名）。"
+"（CI 固定 upload 签名；本地 `just dev tauri-android` 仍为默认 debug 签名）。"
 "Standalone tarball 内含单文件可执行文件 `anima`；版本、service build-meta、"
 "migrations 与 Web UI 均嵌入该二进制。"
 
@@ -238,7 +238,7 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:79
 msgid ""
-"Or from a checkout: `just install-cli` (builds then installs to the same "
+"Or from a checkout: `just install cli` (builds then installs to the same "
 "default prefix)."
 msgstr ""
 
@@ -320,8 +320,9 @@ msgstr ""
 #| "passwords instead of plaintext in config. Path conventions: "
 #| "[`security.md`](security.md#credential-responsibilities)."
 msgid ""
-"Prefer Vault or `env()` for secrets. See [`security.md`]"
-"(security.md#credential-responsibilities)."
+"Prefer `env()` for bootstrap secrets in `config.yaml` (Vault is unavailable "
+"before PostgreSQL). Use Vault / `vault()` for runtime secrets in PG. See "
+"[`security.md`](security.md#credential-responsibilities)."
 msgstr ""
 "生产环境**必须**设置 `database.url`。密码优先使用 Vault 或 `env()`，避免在配"
 "置中明文存放。路径约定见 [`security.md`](security.md#credential-"
@@ -405,7 +406,7 @@ msgstr ""
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:140
 #, no-wrap
-msgid "just install-cli\n"
+msgid "just install cli\n"
 msgstr ""
 
 #. type: Plain text
@@ -422,7 +423,7 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:149
 msgid ""
-"Always runs `build:web` before compiling the binary (embeds current Web "
+"Always runs `just pack web` before compiling the binary (embeds current Web "
 "dist):"
 msgstr ""
 
@@ -430,9 +431,9 @@ msgstr ""
 #: docs/guide/install.md:150
 #, no-wrap
 msgid ""
-"bun run build:cli:executable\n"
+"just pack cli\n"
 "# → dist/anima-executable/ (staging)\n"
-"just install-cli\n"
+"just install cli\n"
 "# → ~/.anima/standalone/anima_<version> + anima symlink + ~/.local/bin/anima\n"
 "anima --version\n"
 msgstr ""
@@ -440,7 +441,7 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:159
 msgid ""
-"Override prefix: `FREEANIMA_INSTALL_PREFIX=/opt/freeanima just install-cli` "
+"Override prefix: `FREEANIMA_INSTALL_PREFIX=/opt/freeanima just install cli` "
 "or `bun scripts/install-cli.ts --prefix /opt/freeanima --skip-build`."
 msgstr ""
 
@@ -465,7 +466,7 @@ msgstr "1. 克隆并安装依赖"
 #: docs/guide/install.md:169
 #, fuzzy, no-wrap
 #| msgid "**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended)\n"
-msgid "**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended) · [just](https://github.com/casey/just) (for `just install-cli`)\n"
+msgid "**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended) · [just](https://github.com/casey/just) (for `just install cli`)\n"
 msgstr "**前置条件：** Bun >= 1.3.14 · PostgreSQL（pgvector）· Redis（推荐）· Vault（推荐）\n"
 
 #. type: Fenced code block (bash)
@@ -489,23 +490,16 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/install.md:179
 msgid ""
-"Do **not** symlink source `cli.ts` into a global bin. Use package scripts:"
+"Do **not** symlink source `cli.ts` into a global bin. From the checkout:"
 msgstr ""
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:180
-#, fuzzy, no-wrap
-#| msgid ""
-#| "bun run anima -- --help\n"
-#| "# or\n"
-#| "bun app/cli/cli.ts --help\n"
+#, no-wrap
 msgid ""
-"bun run anima -- --help\n"
-"bun run service start --foreground\n"
+"bun src/app/cli/cli.ts -- --help\n"
+"just dev\n"
 msgstr ""
-"bun run anima -- --help\n"
-"# or\n"
-"bun app/cli/cli.ts --help\n"
 
 #. type: Plain text
 #: docs/guide/install.md:186
@@ -518,7 +512,7 @@ msgstr ""
 #: docs/guide/install.md:187
 #, no-wrap
 msgid ""
-"just install-cli\n"
+"just install cli\n"
 "# ensure ~/.local/bin is on PATH\n"
 "anima --version\n"
 msgstr ""
@@ -561,8 +555,8 @@ msgstr ""
 msgid ""
 "just dev            # Habitat random ≥10000 + Web from :5000; FREEANIMA_URL wires Vite proxy only\n"
 "# or two terminals:\n"
-"bun run dev:habitat     # random ≥10000 (not production 2658); writes ~/.anima/dev-web.token\n"
-"FREEANIMA_URL=http://127.0.0.1:<habitat-port> bun run dev:web   # default :5000; browser Habitat = page origin\n"
+"just dev habitat     # random ≥10000 (not production 2658); writes ~/.anima/dev-web.token\n"
+"FREEANIMA_URL=http://127.0.0.1:<habitat-port> just dev web   # default :5000; browser Habitat = page origin\n"
 msgstr ""
 
 #. type: Plain text
@@ -571,23 +565,24 @@ msgid ""
 "Browser Web defaults Habitat URL to the **page origin** (same in production "
 "Habitat-hosted `/web` and Vite). Dev injects Service API Token from `dev-"
 "web.token` automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves "
-"HTTPS using `~/.anima/tls` (Habitat stays plain HTTP). Source `dev:habitat` "
-"also **ignores** `config.yaml` `web.enabled` / `web.host` / `web.port` — "
-"Habitat does not host `/web` dist; use Vite (`WEB_DEV_PORT`, default 5000)."
+"HTTPS using `~/.anima/tls` (Habitat stays plain HTTP). Source `just dev "
+"habitat` also **ignores** `config.yaml` `web.enabled` / `web.host` / "
+"`web.port` — Habitat does not host `/web` dist; use Vite (`WEB_DEV_PORT`, "
+"default 5000)."
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:213
 #, no-wrap
-msgid "**Source deploy** (Habitat hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `build:web`. Source-tree `anima` has no `service` command.\n"
+msgid "**Source deploy** (Habitat hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `just pack web`. Source-tree `anima` has no `service` command.\n"
 msgstr ""
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:214
 #, no-wrap
 msgid ""
-"bun run build:web\n"
-"bun run dev:habitat\n"
+"just pack web\n"
+"just dev habitat\n"
 "# UI: http://127.0.0.1:2658/web/chat\n"
 msgstr ""
 
@@ -599,30 +594,22 @@ msgstr "4. 开发检查"
 
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:222
-#, fuzzy, no-wrap
-#| msgid ""
-#| "bun run check    # typecheck + lint + dep-check + format + changed unit tests\n"
-#| "bun run test     # full unit + integration (integration uses Docker for temp PG)\n"
+#, no-wrap
 msgid ""
-"bun run check    # typecheck + lint + format + changed unit tests\n"
-"bun run test     # full unit + integration (integration may use Docker for temp PG)\n"
+"just check    # typecheck + lint + format + changed unit tests\n"
+"just test     # full unit + integration (integration may use Docker for temp PG)\n"
 msgstr ""
-"bun run check    # typecheck + lint + dep-check + format + changed unit tests\n"
-"bun run test     # full unit + integration (integration uses Docker for temp PG)\n"
+"just check    # typecheck + lint + format + changed unit tests\n"
+"just test     # full unit + integration (integration may use Docker for temp PG)\n"
 
 #. type: Plain text
 #: docs/guide/install.md:228
-#, fuzzy
-#| msgid ""
-#| "**link:global** (`bun run link:global`): upgrade manually — `git pull`, "
-#| "`bun install`, then restart the service. `anima upgrade` and `/upgrade` "
-#| "print instructions only.\n"
 msgid ""
 "Upgrade manually: `git pull`, `bun install`, then restart the service. "
 "`anima upgrade` / `/upgrade` print instructions only."
 msgstr ""
-"**link:global**（`bun run link:global`）：手动升级——`git pull`、`bun "
-"install`，然后重启服务。`anima upgrade` 与 `/upgrade` 仅打印说明。\n"
+"手动升级——`git pull`、`bun install`，然后重启服务。`anima upgrade` 与 `/"
+"upgrade` 仅打印说明。"
 
 #. type: Title ##
 #: docs/guide/install.md:231
@@ -672,8 +659,8 @@ msgstr "后续步骤"
 #| "**Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not "
 #| "expose **Habitat without auth ([`security.md`](security.md))"
 msgid ""
-"**Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not "
-"expose Habitat without auth ([`security.md`](security.md))"
+"**Security** — bootstrap `env()` + runtime Vault, `chmod 700 ~/.anima`, do "
+"not expose Habitat without auth ([`security.md`](security.md))"
 msgstr ""
 "**安全** — 密钥使用 Vault / `env()`、`chmod 700 ~/.anima`、无认证勿暴露 "
 "**Habitat（[`security.md`](security.md)）"

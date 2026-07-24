@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -135,12 +135,17 @@ msgid "Tools — Built-in Tools"
 msgstr "工具 — 内置工具"
 
 #. type: Plain text
-#: docs/README.md:44
-#, no-wrap
+#: docs/README.md:45
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Topic         | File                                                             |\n"
+#| "| ------------- | ---------------------------------------------------------------- |\n"
+#| "| Code runtimes | [tools/execute-code-runtimes.md](tools/execute-code-runtimes.md) |\n"
 msgid ""
-"| Topic         | File                                                             |\n"
-"| ------------- | ---------------------------------------------------------------- |\n"
-"| Code runtimes | [tools/execute-code-runtimes.md](tools/execute-code-runtimes.md) |\n"
+"| Topic           | File                                                             |\n"
+"| --------------- | ---------------------------------------------------------------- |\n"
+"| Code runtimes   | [tools/execute-code-runtimes.md](tools/execute-code-runtimes.md) |\n"
+"| Camofox browser | [tools/browser-camofox.md](tools/browser-camofox.md)             |\n"
 msgstr ""
 "| 主题         | 文件                                                               |\n"
 "| ------------ | ------------------------------------------------------------------ |\n"

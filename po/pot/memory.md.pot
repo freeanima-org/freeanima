@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,14 +17,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:45 docs/concepts/memory.md:12
+#: docs/concepts/architecture.md:41 docs/concepts/memory.md:12
 #, no-wrap
 msgid "Core Principles"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/memory.md:1 messages/po4a/en.xml:282 messages/po4a/en.xml:447
-#: messages/po4a/en.xml:682
+#: docs/concepts/memory.md:1 messages/po4a/en.xml:295 messages/po4a/en.xml:460
+#: messages/po4a/en.xml:695
 #, no-wrap
 msgid "Memory"
 msgstr ""
@@ -398,7 +398,8 @@ msgstr ""
 #: docs/concepts/memory.md:161
 msgid ""
 "**`memory_recall` tool**: conversation / limbic / autobiographical sources, "
-"broader or deeper retrieval when the model needs more"
+"broader or deeper retrieval when the model needs more; optional "
+"`memory_types` to restrict sources (default: all four)"
 msgstr ""
 
 #. type: Plain text
@@ -428,7 +429,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/memory.md:169
 #, no-wrap
-msgid "**Hybrid retrieval:** FTS and trigram branches run in **one parallel wave**, then merge with Reciprocal Rank Fusion (RRF). Keyword/FTS relevance is prioritized; vector similarity is not part of retrieval (avoids low-relevance semantic neighbors).\n"
+msgid "**Hybrid retrieval:** FTS and trigram branches run in **one parallel wave**, then merge with Reciprocal Rank Fusion (RRF). Auto-built FTS queries join tokens with **OR** (space-separated / jieba segments); explicit `AND`/`OR`/`NOT` still work; unquoted CJK longer than two characters uses **bigram-OR** (so NL questions like「你的邮箱是啥？」can hit「邮箱」), while quoted phrases keep full adjacency. Keyword/FTS relevance is prioritized; vector similarity is not part of retrieval (avoids low-relevance semantic neighbors).\n"
 msgstr ""
 
 #. type: Plain text

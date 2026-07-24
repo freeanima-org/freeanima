@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { setupIntegrationPg } from "./integration-pg-setup.ts";
 
 const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
-const label = "test:integration";
+const label = "qa test-integration";
 const standaloneBin = join(repoRoot, "dist/anima-executable/anima");
 
 function ensureStandaloneBuilt(): void {
@@ -55,7 +55,9 @@ try {
 }
 
 const workers = parallelWorkers();
-const testArgs = ["test", "tests/integration", "--pass-with-no-tests", `--parallel=${workers}`];
+const paths = process.argv.slice(2);
+const testPaths = paths.length > 0 ? paths : ["tests/integration"];
+const testArgs = ["test", ...testPaths, "--pass-with-no-tests", `--parallel=${workers}`];
 console.log(`[${label}] bun ${testArgs.join(" ")}`);
 
 try {

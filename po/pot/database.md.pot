@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 13:39+0800\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,14 +17,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:47 docs/guide/database.md:97
+#: docs/features/mobile-app.md:47 docs/guide/database.md:98
 #: docs/guide/remote-access.md:194
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/guide/database.md:1 messages/po4a/en.xml:675
+#: docs/guide/database.md:1 messages/po4a/en.xml:688
 #, no-wrap
 msgid "Database"
 msgstr ""
@@ -61,16 +61,16 @@ msgstr ""
 msgid ""
 "database:\n"
 "  url: postgresql://user:pass@localhost:5432/anima\n"
-"  # or use env() / vault():\n"
+"  # or use env() (bootstrap cannot resolve vault() — Vault lives in PG):\n"
 "  # url: env(\"DATABASE_URL\")\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:23
 msgid ""
-"Production **must** set `database.url`. Prefer Vault or `env()` for "
-"passwords instead of plaintext in config. Path conventions: [`security.md`]"
-"(security.md#credential-responsibilities)."
+"Production **must** set `database.url`. Prefer `env(\"DATABASE_URL\")` over "
+"plaintext passwords in `config.yaml` (Vault is unavailable at cold start). "
+"Path conventions: [`security.md`](security.md#credential-responsibilities)."
 msgstr ""
 
 #. type: Plain text
@@ -166,7 +166,7 @@ msgstr ""
 #, no-wrap
 msgid ""
 "DATABASE_URL=\"postgresql://anima:…@127.0.0.1:5432/anima\" \\\n"
-"  bun run db:migrate\n"
+"  just db migrate\n"
 msgstr ""
 
 #. type: Plain text
@@ -254,29 +254,30 @@ msgstr ""
 #: docs/guide/database.md:90
 #, no-wrap
 msgid ""
-"bun run test:integration\n"
-"bun run test              # unit + integration（串行）\n"
+"just qa test-integration\n"
+"just qa test-integration -- tests/integration/memory/foo.test.ts\n"
+"just test              # unit + integration（串行）\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:96
-msgid "pre-commit `test:changed` does **not** run integration tests."
+#: docs/guide/database.md:97
+msgid "pre-commit `just qa test-changed` does **not** run integration tests."
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:106
+#: docs/guide/database.md:107
 #, no-wrap
 msgid ""
 "| Symptom                                             | Check                                                                                                                                                                   |\n"
 "| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| Service fails on DB connect                         | `database.url`; PostgreSQL running; pass credentials readable; startup error message lists next steps (missing DB, auth, connection, extensions)                        |\n"
+"| Service fails on DB connect                         | `database.url`; PostgreSQL running; `env()` refs resolvable if used; startup error message lists next steps (missing DB, auth, connection, extensions)                  |\n"
 "| `Idle timeout reached after 30s` on startup/migrate | Bun ≤1.3.14 会误杀进行中查询（[oven-sh/bun#30646](https://github.com/oven-sh/bun/issues/30646)）。确保 `FREEANIMA_PG_POOL_IDLE_TIMEOUT=0`（默认）或临时导出该变量后重启 |\n"
-"| Habitat 「未就绪」超时而进程仍在跑                  | 迁移在 HTTP listen **之前**；默认等 15min（`FREEANIMA_HABITAT_READY_TIMEOUT_MS`）。看 `journalctl --user -u anima -f`，勿中途 `stop`                                        |\n"
+"| Habitat 「未就绪」超时而进程仍在跑                  | 迁移在 HTTP listen **之前**；默认等 15min（`FREEANIMA_HABITAT_READY_TIMEOUT_MS`）。看 `journalctl --user -u anima -f`，勿中途 `stop`                                    |\n"
 "| Migration fails                                     | Extensions installed; DB user has DDL privileges；HNSW / 大批量 backfill 可能很慢，勿与上述 idle timeout 混淆                                                           |\n"
 "| FTS / keyword recall empty                          | `ensure-pg-extensions.sql` applied (`pg_trgm`); jieba/FTS rebuild if needed                                                                                             |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:107
+#: docs/guide/database.md:108
 msgid "More deployment security: [`security.md`](security.md)."
 msgstr ""

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 14:55+0800\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/architecture.md:1 docs/features/companion.md:11
-#: messages/po4a/en.xml:672
+#: messages/po4a/en.xml:685
 #, no-wrap
 msgid "Architecture"
 msgstr ""
@@ -32,14 +32,16 @@ msgstr ""
 #. type: Plain text
 #: docs/features/companion.md:8
 #, no-wrap
-msgid "> **remote-tools attach host** in the Companion **overlay WebView** (first-party) — embedded by the desktop Portal shell for window/IPC/FS only. Target shell: **Tauri**（见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)）。Not managed via `config.yaml`, and **not** a separate Node sidecar process.\n"
+msgid "> **Outpost** (前哨): **remote-tools attach host** in the Companion **overlay WebView** (first-party) — embedded by the desktop Portal shell for window/IPC/FS only. Target shell: **Tauri**（见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)）。Not managed via `config.yaml`, and **not** a separate Node sidecar process.\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/features/companion.md:10
 msgid ""
 "The content pack (React + VRM) is embedded by the **desktop Tauri shell** "
-"(`src/app/shell/tauri`). The overlay connects with Habitat RPC, calls "
+"(`src/app/shell/tauri`). Packaged overlay loads from `frontendDist` `ui/"
+"companion/` via `WebviewUrl::App` (same custom protocol as the main window — "
+"**not** `file://` resources). The overlay connects with Habitat RPC, calls "
 "`remote_tools.attach`, and exposes local tools (`bubble`, `play_slot`) to "
 "the Agent. Product modules such as Chat use Habitat RPC only (no attach)."
 msgstr ""
@@ -50,7 +52,7 @@ msgstr ""
 msgid ""
 "FreeAnima Portal (src/app/shell/tauri)\n"
 "├── Tauri (Rust) — tray / multi-window + prefs / IPC\n"
-"│   ├── companion overlay — transparent always-on-top; VRM + remote_tools.attach\n"
+"│   ├── companion overlay — work-area fullscreen transparent; VRM stage + remote_tools.attach\n"
 "│   ├── companion settings — settings in main window (Habitat RPC + asset HTTP)\n"
 "│   ├── chat — Chat SPA (Habitat RPC, no remote_tools.attach)\n"
 "│   └── habitat — Habitat WebView (Habitat RPC REST)\n"
@@ -106,8 +108,8 @@ msgstr ""
 #. type: Plain text
 #: docs/features/companion.md:47
 msgid ""
-"The content pack lives in [`src/features/companion/`](../../src/features/companion/"
-"companion/) (`spa/` + `server/` + `shared/`). Habitat domain logic: [`src/"
+"The content pack lives in [`src/features/companion/`](../../src/features/"
+"companion/) (`ui/spa/` + `server/` + `shared/`). Habitat domain logic: [`src/"
 "features/companion/`](../../src/features/companion/)."
 msgstr ""
 
@@ -124,7 +126,7 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/features/companion.md:55 messages/po4a/en.xml:677
+#: docs/features/companion.md:55 messages/po4a/en.xml:690
 #, no-wrap
 msgid "Features"
 msgstr ""
@@ -154,15 +156,15 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/features/companion.md:65
 msgid ""
-"Transparent always-on-top companion window (160×260); avatar area clickable, "
-"empty area click-through"
+"Transparent always-on-top **work-area fullscreen** overlay; character stage "
+"160×260 positioned inside; avatar/bubble clickable, empty area click-through"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/features/companion.md:65
 msgid ""
-"**Local interaction**: drag to move window; click body to play random motion "
-"from `in_place` slot"
+"**Local interaction**: drag moves the stage (not the OS window); click body "
+"to play random motion from `in_place` slot"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -283,7 +285,7 @@ msgstr ""
 msgid ""
 "FBX→VRMA runs on the **Habitat host** (`anima service`). Desktop installers "
 "no longer bundle `fbx2vrma-converter` or FBX2glTF. On the Habitat machine "
-"run `bun run setup:fbx` if FBX conversion is needed."
+"run `just misc setup-fbx` if FBX conversion is needed."
 msgstr ""
 
 #. type: Title ##
@@ -301,26 +303,24 @@ msgstr ""
 #. type: Fenced code block (bash)
 #: docs/features/companion.md:101
 #, no-wrap
-msgid ""
-"bun run --filter @freeanima/satellite-companion dev\n"
-"# or: bun src/features/companion/dev.ts\n"
+msgid "bun src/features/companion/dev.ts\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:107
+#: docs/features/companion.md:106
 msgid ""
 "Uses an in-process HTTP server; runtime events use localhost WebSocket (`/"
 "api/runtime/ws`)."
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:108
+#: docs/features/companion.md:107
 #, no-wrap
 msgid "Desktop (Tauri Portal)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:111
+#: docs/features/companion.md:110
 msgid ""
 "The Portal overlay WebView hosts companion UI and `remote_tools.attach` (no "
 "Node sidecar). Window / IPC / FS come from Tauri commands. See [`.agent/"
@@ -328,7 +328,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:112
+#: docs/features/companion.md:111
 msgid ""
 "See also: [Habitat RPC](../guide/habitat-rpc.md), [architecture companion "
 "section](../concepts/architecture.md#desktop-companion-habitat-ssot)."

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 14:39+0800\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/service.md:1 messages/po4a/en.xml:659 messages/po4a/en.xml:699
+#: docs/guide/service.md:1 messages/po4a/en.xml:672 messages/po4a/en.xml:712
 #, no-wrap
 msgid "Service"
 msgstr ""
@@ -81,7 +81,7 @@ msgstr ""
 msgid ""
 "curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/rpc/v1/status/get | jq '.memory_kb, .memory_detail'\n"
 "grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status\n"
-"just memory-sample -- --habitat-url http://127.0.0.1:2658 --stage full\n"
+"just misc memory-sample -- --habitat-url http://127.0.0.1:2658 --stage full\n"
 msgstr ""
 
 #. type: Title ##
@@ -94,10 +94,10 @@ msgstr ""
 #: docs/guide/service.md:36
 #, no-wrap
 msgid ""
-"| Mode                    | How to run Habitat                                                                                                               |\n"
-"| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| **Monorepo / worktree** | `bun run dev:habitat` (default random port ≥10000; optional `--port` / `--strict-port`; source `anima` has **no** `service` command) |\n"
-"| **Standalone install**  | `anima service start` / `stop` / `status` (systemd user unit; **2658** / TLS **2659**)                                           |\n"
+"| Mode                    | How to run Habitat                                                                                                                |\n"
+"| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| **Monorepo / worktree** | `just dev habitat` (default random port ≥10000; optional `--port` / `--strict-port`; source `anima` has **no** `service` command) |\n"
+"| **Standalone install**  | `anima service start` / `stop` / `status` (systemd user unit; **2658** / TLS **2659**)                                            |\n"
 msgstr ""
 
 #. type: Plain text
@@ -126,8 +126,8 @@ msgid ""
 "\n"
 "# --- monorepo / worktree ---\n"
 "just dev                     # Habitat (≥10000) + Vite Web (≥5000); proxy via FREEANIMA_URL\n"
-"bun run dev:habitat              # Habitat foreground; default random ≥10000; skip Habitat TLS (Vite may HTTPS)\n"
-"bun run dev:web              # Vite HMR from :5000 (set FREEANIMA_URL to Habitat); browser Habitat = page origin\n"
+"just dev habitat              # Habitat foreground; default random ≥10000; skip Habitat TLS (Vite may HTTPS)\n"
+"just dev web              # Vite HMR from :5000 (set FREEANIMA_URL to Habitat); browser Habitat = page origin\n"
 msgstr ""
 
 #. type: Plain text
@@ -148,17 +148,17 @@ msgstr ""
 #: docs/guide/service.md:65
 #, no-wrap
 msgid ""
-"| Mode               | When to `build:web`                          | UI                                                      |\n"
-"| ------------------ | -------------------------------------------- | ------------------------------------------------------- |\n"
-"| Standalone release | Forced during `bun run build:cli:executable` | Embedded, served at `/web/*`                            |\n"
-"| Source deploy      | Run `bun run build:web` before start         | Habitat `/web/*` when `web.enabled`                     |\n"
-"| Dev                | Not required                                 | `just dev` / `dev:habitat` + `dev:web` → Web **:5000+** HMR |\n"
+"| Mode               | When to `just pack web`          | UI                                                                    |\n"
+"| ------------------ | -------------------------------- | --------------------------------------------------------------------- |\n"
+"| Standalone release | Forced during `just pack cli`    | Embedded, served at `/web/*`                                          |\n"
+"| Source deploy      | Run `just pack web` before start | Habitat `/web/*` when `web.enabled`                                   |\n"
+"| Dev                | Not required                     | `just dev` / `just dev habitat` + `just dev web` → Web **:5000+** HMR |\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/service.md:67
 #, no-wrap
-msgid "When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. For standalone static hosting without the Habitat process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `dev:habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
+msgid "When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. For standalone static hosting without the Habitat process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `just dev habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
 msgstr ""
 
 #. type: Plain text
@@ -191,8 +191,8 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/guide/service.md:74
 msgid ""
-"**Local Web dev (`bun run dev:web`):** Vite from `:5000` with base `/web/` — "
+"**Local Web dev (`just dev web`):** Vite from `:5000` with base `/web/` — "
 "Chat `http://127.0.0.1:5000/web/chat`, Habitat `…/web/habitat/dashboard`; `/"
 "rpc` and `/mcp` proxied to `FREEANIMA_URL`. Browser Habitat defaults to page "
-"origin; `dev:habitat` auto-fills token via `~/.anima/dev-web.token`."
+"origin; `just dev habitat` auto-fills token via `~/.anima/dev-web.token`."
 msgstr ""

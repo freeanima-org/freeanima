@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 14:39+0800\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,14 +17,14 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/dream.md:10 docs/concepts/sleep.md:9
-#: docs/guide/remote-access.md:10 messages/po4a/en.xml:685
-#: messages/po4a/en.xml:692
+#: docs/guide/remote-access.md:10 messages/po4a/en.xml:698
+#: messages/po4a/en.xml:705
 #, no-wrap
 msgid "Overview"
 msgstr "概述"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:47 docs/guide/database.md:97
+#: docs/features/mobile-app.md:47 docs/guide/database.md:98
 #: docs/guide/remote-access.md:194
 #, no-wrap
 msgid "Troubleshooting"
@@ -53,18 +53,7 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:22
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Layer                   | Role                                                                                                        |\n"
-#| "| ----------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
-#| "| **Service API Token**   | 绑定 `user` / `agent` subject；REST `Authorization: Bearer`；SAP `connect.auth_token`；MCP `/mcp` 同 Bearer |\n"
-#| "| **CLI bootstrap**       | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                               |\n"
-#| "| **cloudflared**         | Outbound tunnel；single hostname → Habitat `127.0.0.1:2658`（API + Web UI at `/web`）                           |\n"
-#| "| **`http.host`**         | Habitat listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                     |\n"
-#| "| **`http.cors_origins`** | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy); independent of Tunnel          |\n"
-#| "| **Client settings**     | desktop / mobile shell / **browser Web** fill Habitat URL and token in **Habitat settings**                       |\n"
-#| "| **Remote UI**           | Desktop / Mobile 默认从 Habitat `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |\n"
-#| "| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                 |\n"
+#, no-wrap
 msgid ""
 "| Layer                    | Role                                                                                                                                   |\n"
 "| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |\n"
@@ -72,21 +61,21 @@ msgid ""
 "| **CLI bootstrap**        | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                                          |\n"
 "| **`http.host`**          | Habitat listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                                            |\n"
 "| **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出客户端访问用的名称）；变更后 `auto: true` 时重启自动重签                      |\n"
-"| **`http.cors_origins`**  | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy)                                                            |\n"
+"| **`http.cors_origins`**  | Explicit cross-origin browser origins (`just dev web`, split UI/API reverse proxy)                                                     |\n"
 "| **Client settings**      | Desktop / mobile shell / **browser Web** fill Habitat URL and token in **Habitat settings**                                            |\n"
 "| **Remote UI**            | 浏览器/PWA 从 Habitat `/web/*` 加载；Desktop/Mobile 默认安装包内本地 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |\n"
 "| **PWA**                  | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                                            |\n"
 msgstr ""
-"| 层级                   | 作用                                                                                                            |\n"
-"| ----------------------- | --------------------------------------------------------------------------------------------------------------- |\n"
-"| **Service API Token**   | 绑定 `user` / `agent` subject；REST `Authorization: Bearer`；SAP `connect.auth_token`；MCP `/mcp` 同上 |\n"
-"| **CLI bootstrap**       | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                   |\n"
-"| **cloudflared**         | 出站隧道；single hostname → Habitat `127.0.0.1:2658`（API + Web UI 位于 `/web`）                                    |\n"
-"| **`http.host`**         | Habitat 监听绑定（IP 或可解析主机名）；默认 `127.0.0.1`；局域网用 `0.0.0.0`                                          |\n"
-"| **`http.cors_origins`** | 显式跨源浏览器 origin（dev:web、分离式 UI/API 反向代理）；独立于 Tunnel                                         |\n"
-"| **客户端设置**          | desktop / mobile shell / **浏览器 Web** 在 **Habitat 设置** 中填写 Habitat URL 与 token                               |\n"
-"| **远程 UI**             | Desktop / Mobile 默认从 Habitat `/web/*` 加载 UI；见 [`architecture.md`](../concepts/architecture.md) 的 Client UI |\n"
-"| **PWA**                 | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 `compact` 布局                                   |\n"
+"| 层级                     | 作用                                                                                                                                   |\n"
+"| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| **Service API Token**    | 绑定 `user` / `agent` subject；Habitat RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer                 |\n"
+"| **CLI bootstrap**        | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                                          |\n"
+"| **`http.host`**          | Habitat 监听绑定（IP 或可解析主机名）；默认 `127.0.0.1`；局域网用 `0.0.0.0`                                                            |\n"
+"| **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出客户端访问用的名称）；变更后 `auto: true` 时重启自动重签                      |\n"
+"| **`http.cors_origins`**  | 显式跨源浏览器 origin（`just dev web`、分离式 UI/API 反向代理）                                                                        |\n"
+"| **客户端设置**           | Desktop / mobile shell / **浏览器 Web** 在 **Habitat 设置** 中填写 Habitat URL 与 token                                                |\n"
+"| **远程 UI**              | 浏览器/PWA 从 Habitat `/web/*` 加载；Desktop/Mobile 默认安装包内本地 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |\n"
+"| **PWA**                  | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                                            |\n"
 
 #. type: Plain text
 #: docs/guide/remote-access.md:24
@@ -544,10 +533,11 @@ msgstr ""
 #: docs/guide/remote-access.md:155
 msgid ""
 "Browser Web: `/web/config.json` defaults Habitat to the **page origin** "
-"(production Habitat-hosted `/web` and Vite `dev:web`). Source `dev:habitat` "
-"writes `~/.anima/dev-web.token`; Vite injects it as `remote_auth_token` so "
-"the first visit need not paste a token. Production Habitat never puts tokens "
-"in `config.json` — use `anima token create` and Habitat settings."
+"(production Habitat-hosted `/web` and Vite `just dev web`). Source `just dev "
+"habitat` writes `~/.anima/dev-web.token`; Vite injects it as "
+"`remote_auth_token` so the first visit need not paste a token. Production "
+"Habitat never puts tokens in `config.json` — use `anima token create` and "
+"Habitat settings."
 msgstr ""
 
 #. type: Plain text
@@ -604,11 +594,19 @@ msgstr "5. MCP 出站（外部 Agent 查询 Habitat 数据）"
 
 #. type: Plain text
 #: docs/guide/remote-access.md:173
+#, fuzzy
+#| msgid ""
+#| "Habitat serves Streamable HTTP MCP Server at **`/mcp`**, exposing read-"
+#| "only tools from ToolSets with `expose_mcp: true` (e.g. `memory_recall`, "
+#| "`conversation_search`). External MCP clients (Cursor, Claude Desktop, "
+#| "etc.) connect **without LLM relay**."
 msgid ""
-"Habitat serves Streamable HTTP MCP Server at **`/mcp`**, exposing read-only "
-"tools from ToolSets with `expose_mcp: true` (e.g. `memory_recall`, "
-"`conversation_search`). External MCP clients (Cursor, Claude Desktop, etc.) "
-"connect **without LLM relay**."
+"Habitat serves Streamable HTTP MCP Server at **`/mcp`**, exposing tools with "
+"`exposeMcp: true`. Current outbound surface is **task item** tools only "
+"(`task_*`: create/update/complete/uncomplete/delete/get/list/search); task "
+"lists, projects, and folders stay Habitat-only. Other ToolSets remain "
+"available inside Habitat chat but are not listed on `/mcp`. External MCP "
+"clients (Cursor, Claude Desktop, etc.) connect **without LLM relay**."
 msgstr ""
 "Habitat 在 **`/mcp`** 提供 Streamable HTTP MCP Server，暴露 `expose_mcp: "
 "true` 的 ToolSet 中的只读工具（如 `memory_recall`、`conversation_search`）。"

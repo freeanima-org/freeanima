@@ -15,7 +15,7 @@ title: Remote access
 | **CLI bootstrap**        | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                                          |
 | **`http.host`**          | Habitat listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                                            |
 | **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出客户端访问用的名称）；变更后 `auto: true` 时重启自动重签                      |
-| **`http.cors_origins`**  | Explicit cross-origin browser origins (dev:web, split UI/API reverse proxy)                                                            |
+| **`http.cors_origins`**  | Explicit cross-origin browser origins (`just dev web`, split UI/API reverse proxy)                                                     |
 | **Client settings**      | Desktop / mobile shell / **browser Web** fill Habitat URL and token in **Habitat settings**                                            |
 | **Remote UI**            | 浏览器/PWA 从 Habitat `/web/*` 加载；Desktop/Mobile 默认安装包内本地 UI；见 [`architecture.md`](../concepts/architecture.md) Client UI |
 | **PWA**                  | `/web/*` 支持 manifest + Service Worker；手机浏览器与 APK 共用 compact 布局                                                            |
@@ -151,7 +151,7 @@ Settings (all clients):
 1. **Habitat URL** — e.g. `http://192.168.1.10:2658` or `https://<lan-host>:2659` (Habitat root, **without** `/web`)
 2. **Habitat API Token** — `fa_at_...` from `anima token create`
 
-Browser Web: `/web/config.json` defaults Habitat to the **page origin** (production Habitat-hosted `/web` and Vite `dev:web`). Source `dev:habitat` writes `~/.anima/dev-web.token`; Vite injects it as `remote_auth_token` so the first visit need not paste a token. Production Habitat never puts tokens in `config.json` — use `anima token create` and Habitat settings.
+Browser Web: `/web/config.json` defaults Habitat to the **page origin** (production Habitat-hosted `/web` and Vite `just dev web`). Source `just dev habitat` writes `~/.anima/dev-web.token`; Vite injects it as `remote_auth_token` so the first visit need not paste a token. Production Habitat never puts tokens in `config.json` — use `anima token create` and Habitat settings.
 
 Flow: open Habitat settings → fill → **Test connection** → Save. Desktop requires **restart desktop shell** after save.
 

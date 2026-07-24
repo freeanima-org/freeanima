@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-23 14:39+0800\n"
+"POT-Creation-Date: 2026-07-24 16:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
-#: messages/po4a/en.xml:694 messages/po4a/en.xml:697
+#: messages/po4a/en.xml:707 messages/po4a/en.xml:710
 #, no-wrap
 msgid "Security"
 msgstr ""
@@ -82,26 +82,27 @@ msgstr ""
 #: docs/guide/security.md:28
 #, no-wrap
 msgid ""
-"| Rule                     | Description                                                                                                                                                          |\n"
-"| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI     |\n"
-"| Never commit secrets     | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git; runtime LLM/MCP settings live in PG — use `vault()` / `env()` references there too |\n"
-"| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`                  |\n"
-"| CLI plaintext output     | `anima vault get` prints Agent-library field plaintext to stdout; do not redirect to shared logs                                                                     |\n"
-"| User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                     |\n"
-"| Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                              |\n"
+"| Rule                     | Description                                                                                                                                                                                       |\n"
+"| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI                                  |\n"
+"| Never commit secrets     | Do not write API keys, tokens, DB passwords into git. Bootstrap `config.yaml`: use `env()` (or keep secrets out of the file). Runtime LLM/MCP settings live in PG — use `vault()` / `env()` there |\n"
+"| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`                                               |\n"
+"| CLI plaintext output     | `anima vault get` prints Agent-library field plaintext to stdout; do not redirect to shared logs                                                                                                  |\n"
+"| User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                                                  |\n"
+"| Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                                                           |\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/security.md:30
 msgid ""
-"`config.yaml` supports `vault(\"item_id\", \"field\")` (Agent library, "
-"Habitat headless) and `env(\"KEY\")` for secrets; values are injected at "
-"runtime. Agent tools that need CLI credentials pass per-call `secrets[]` on "
-"`terminal_run` / `code_execute` (child env only). Browser form fields use "
-"`browser_type` `secret` (typed into the page; never echoed in tool results). "
-"User-library resolution still requires an unlocked Chat session on the "
-"client."
+"`config.yaml` is **bootstrap only** (read before PostgreSQL is up). Secrets "
+"there support plaintext or `env(\"KEY\")` — **not** `vault()` (Vault items "
+"live in PG). After Habitat is connected, runtime config in PG may use "
+"`vault(\"item_id\", \"field\")` and `env(\"KEY\")`. Agent tools that need "
+"CLI credentials pass per-call `secrets[]` on `terminal_run` / `code_execute` "
+"(child env only). Browser form fields use `browser_type` `secret` (typed "
+"into the page; never echoed in tool results). User-library resolution still "
+"requires an unlocked Chat session on the client."
 msgstr ""
 
 #. type: Title ###
@@ -162,7 +163,7 @@ msgid ""
 "| MCP tools                                                  | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                                                                                                                                                                                                          |\n"
 "| Capability mask (Mask)                                     | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `src/features/task/domain/mask/`                                                                                                                                                                               |\n"
 "| ACP (Cursor)                                               | Default **auto-approve** all `session/request_permission` (`allow-once`)                                                                                                                                                                                                                                       |\n"
-"| `vault_list` / `vault_search` / `vault_get_meta`           | Vault metadata only; no secret values (MCP-exposed)                                                                                                                                                                                                                                                            |\n"
+"| `vault_list` / `vault_search` / `vault_get_meta`           | Vault metadata only; no secret values. Habitat-only (not MCP)                                                                                                                                                                                                                                                  |\n"
 "| `vault_create` / `vault_update` / `vault_delete`           | Habitat-only (not MCP). create/update seal plaintext into **Agent** library only; tool results are metadata only. User library writes stay in Vault UI                                                                                                                                                         |\n"
 msgstr ""
 
@@ -183,8 +184,9 @@ msgstr ""
 #: docs/guide/security.md:69
 msgid ""
 "**Write (Agent library)** — `vault_create` / `vault_update` / `vault_delete` "
-"in Habitat chat only (not MCP). create/update accept plaintext `secrets` to "
-"seal on Habitat; results return metadata only. User library: Vault UI."
+"in Habitat chat only. create/update accept plaintext `secrets` to seal on "
+"Habitat; results return metadata only. User library: Vault UI. (Entire vault "
+"ToolSet is not MCP-exposed.)"
 msgstr ""
 
 #. type: Bullet: '3. '
@@ -193,7 +195,8 @@ msgid ""
 "**Use** — pass `secrets: [{ id, env_name, field?, subject_kind? }]` on the "
 "same `terminal_run` or `code_execute` call that needs the credential (e.g. "
 "`GH_TOKEN` for `gh`); or `secret: { id, field }` on `browser_type` for form "
-"fields."
+"fields. For `field: \"totp\"`, the resolved value is the **current TOTP "
+"code** (RFC 6238), not the stored Base32 secret."
 msgstr ""
 
 #. type: Bullet: '4. '
@@ -216,20 +219,20 @@ msgstr ""
 #: docs/guide/security.md:86
 #, no-wrap
 msgid ""
-"| Measure                    | Description                                                                                                                                                                          |\n"
-"| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |\n"
-"| Same-origin RPC            | TanStack Start server functions same-origin by default, no CORS whitelist needed                                                                                                     |\n"
-"| Config API secrets         | Habitat config GET returns secrets in cleartext (`api_key`, MCP `env` / `headers`, etc.). Legacy `\"***\"` on write-back is restored via `restoreMaskedSecrets`                        |\n"
-"| MCP config                 | `sanitizeConfigForApi` keeps MCP `env` / `headers` plaintext so Habitat MCP page can edit round-trip                                                                                 |\n"
-"| File path policy           | Shared `path-policy` for `file_*` tools: `/etc`, vault, ssh private keys, `/proc`/`/sys`, blocked devices                                                                            |\n"
-"| Terminal shell default off | `terminal_run` default `shell=false`; pass `shell=true` only when pipes/redirection are needed (friction, not a sandbox)                                                             |\n"
-"| Terminal command hard deny | Always-on catastrophic command policy (`terminal-command-policy`); cannot be disabled via env                                                                                        |\n"
-"| Slash commands             | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result                                               |\n"
-"| MCP default stdio          | Reduces port exposure                                                                                                                                                                |\n"
-"| Vault isolation            | LLM sees vault item metadata only, not decrypted fields                                                                                                                              |\n"
-"| Service API Token          | Habitat RPC REST `/rpc/v1/*` routes require `Authorization: Bearer fa_at_…` (`service_api_tokens` PG table); health probe/CORS/echo exempt. |\n"
-"| CI secret scanning         | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                                                                        |\n"
-"| `.gitignore`               | `.env.*`, `config.yaml`, private key suffixes                                                                                                                                        |\n"
+"| Measure                    | Description                                                                                                                                                   |\n"
+"| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Same-origin RPC            | TanStack Start server functions same-origin by default, no CORS whitelist needed                                                                              |\n"
+"| Config API secrets         | Habitat config GET returns secrets in cleartext (`api_key`, MCP `env` / `headers`, etc.). Legacy `\"***\"` on write-back is restored via `restoreMaskedSecrets` |\n"
+"| MCP config                 | `sanitizeConfigForApi` keeps MCP `env` / `headers` plaintext so Habitat MCP page can edit round-trip                                                          |\n"
+"| File path policy           | Shared `path-policy` for `file_*` tools: `/etc`, vault, ssh private keys, `/proc`/`/sys`, blocked devices                                                     |\n"
+"| Terminal shell default off | `terminal_run` default `shell=false`; pass `shell=true` only when pipes/redirection are needed (friction, not a sandbox)                                      |\n"
+"| Terminal command hard deny | Always-on catastrophic command policy (`terminal-command-policy`); cannot be disabled via env                                                                 |\n"
+"| Slash commands             | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result                        |\n"
+"| MCP default stdio          | Reduces port exposure                                                                                                                                         |\n"
+"| Vault isolation            | LLM sees vault item metadata only, not decrypted fields                                                                                                       |\n"
+"| Service API Token          | Habitat RPC REST `/rpc/v1/*` routes require `Authorization: Bearer fa_at_…` (`service_api_tokens` PG table); health probe/CORS/echo exempt.                   |\n"
+"| CI secret scanning         | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                                                 |\n"
+"| `.gitignore`               | `.env.*`, `config.yaml`, private key suffixes                                                                                                                 |\n"
 msgstr ""
 
 #. type: Title ##
@@ -388,8 +391,8 @@ msgstr ""
 #: docs/guide/security.md:155
 msgid ""
 "Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/"
-"config.yaml`; use `vault()` / `env()` — **do not** write plaintext secrets "
-"in config"
+"config.yaml`; use `env()` for bootstrap secrets — **do not** write plaintext "
+"secrets in config; `vault()` is for PG runtime config after Habitat is up"
 msgstr ""
 
 #. type: Bullet: '2. '

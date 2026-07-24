@@ -69,7 +69,7 @@ export function serveStatic(pathname: string): Response {
 
   if (!existsSync(DIST_DIR)) {
     return jsonResponse(
-      { error: "UI not built; run `bun run dev` (Vite) or `bun run build`" },
+      { error: "UI not built; run `just dev web` (Vite) or `just pack web`" },
       503,
     );
   }

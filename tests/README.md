@@ -30,14 +30,15 @@ tests/
 ```bash
 just qa test-unit          # bun test src
 just qa test-integration   # integration（无 Docker 时 PG 用例跳过）
+just qa test-integration -- tests/integration/memory/foo.test.ts  # 子集
 just test               # unit 后 integration（串行）
 just qa test-changed       # pre-commit：src 内变更的单元测试
-just check              # typecheck + lint + format + test:changed
+just check              # typecheck + lint + format + test-changed
 ```
 
-- 有 Docker 时，[`scripts/integration-pg-setup.ts`](../scripts/integration-pg-setup.ts) 会建模板库并注入 `ANIMA_TEST_PG_URL`；`test:integration` 默认 `--parallel`（每 worker 克隆独立库，**无 clearPgTables**）。
+- 有 Docker 时，[`scripts/integration-pg-setup.ts`](../scripts/integration-pg-setup.ts) 会建模板库并注入 `ANIMA_TEST_PG_URL`；`just qa test-integration` 默认 `--parallel`（每 worker 克隆独立库，**无 clearPgTables**）。
 - **禁止**把 `ANIMA_TEST_PG_URL` 指到日常 `~/.anima` / `config.yaml` 同 host:port（护栏 skip + throw）；细则见 [`.agent/rules/testing.md`](../.agent/rules/testing.md)。
-- Before opening a PR, run full `just test` occasionally, not only `test:changed`.
+- Before opening a PR, run full `just test` occasionally, not only `just qa test-changed`.
 
 ## Main repo ↔ testing-repo binding
 
