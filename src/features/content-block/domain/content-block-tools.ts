@@ -369,7 +369,6 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
           name: "content_block_create",
           description:
             "Create a content_block under a container (parent_id = diary_entry). Optional limbic/narrative/semantic_ref/dream attach semantic components.",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -394,7 +393,6 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
           name: "content_block_update",
           description:
             "Update content_block fields / semantic components. Pass limbic/narrative/semantic_ref null to clear that component.",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -417,7 +415,6 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
         {
           name: "content_block_delete",
           description: "Delete a content_block by id",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: { id: { type: "integer" } },
@@ -428,7 +425,6 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
         {
           name: "content_block_get",
           description: "Get a content_block by id",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: { id: { type: "integer" } },
@@ -440,7 +436,6 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
           name: "content_block_list",
           description:
             "List content_blocks under a container (parent_id required), ordered by sort_order. Optional block_type / component (limbic|narrative|semantic_ref|dream) filters.",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -462,7 +457,6 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
           name: "content_block_search",
           description:
             "Hybrid search content_blocks by title/content. Optional parent_id, block_type, component filters.",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -483,7 +477,6 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
         {
           name: "content_block_reorder",
           description: "Batch update sort_order for content_blocks: items=[{id, sort_order}, …]",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {

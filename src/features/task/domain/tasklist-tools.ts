@@ -163,7 +163,6 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
         {
           name: "tasklist_list",
           description: "List all task lists in caller default world",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -180,7 +179,6 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
         {
           name: "tasklist_create",
           description: "Create a new task list",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -204,7 +202,6 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
         {
           name: "tasklist_update",
           description: "Update task list name or settings",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -234,7 +231,6 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
           name: "tasklist_delete",
           description:
             "Delete a task list (default inbox cannot be deleted). Deleting a folder removes all sub-folders and moves contained lists to root.",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -251,7 +247,6 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
         {
           name: "tasklist_search",
           description: "Hybrid search task lists by name in caller default world",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {

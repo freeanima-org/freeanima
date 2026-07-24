@@ -67,7 +67,6 @@ export function registerTagTools(toolSets: ToolSetRegistry): void {
         {
           name: "tag_list",
           description: "List tags in the world (sorted)",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: { ...WORLD_ID_OPTIONAL },
@@ -87,7 +86,6 @@ export function registerTagTools(toolSets: ToolSetRegistry): void {
         {
           name: "tag_search",
           description: "Search tags by title text",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -119,7 +117,6 @@ export function registerTagTools(toolSets: ToolSetRegistry): void {
         {
           name: "tag_create",
           description: "Create a tag in the world (title unique per world)",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -149,7 +146,6 @@ export function registerTagTools(toolSets: ToolSetRegistry): void {
         {
           name: "tag_update",
           description: "Update tag title or sort_order",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -187,7 +183,6 @@ export function registerTagTools(toolSets: ToolSetRegistry): void {
         {
           name: "tag_delete",
           description: "Delete a tag and remove it from all entities in the world",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: { ...WORLD_ID_OPTIONAL, id: { type: "integer" } },
@@ -209,7 +204,6 @@ export function registerTagTools(toolSets: ToolSetRegistry): void {
         {
           name: "tag_set_on_entity",
           description: "Replace tag_ids on an entity (same world; empty array clears)",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {

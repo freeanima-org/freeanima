@@ -80,7 +80,6 @@ export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
       [
         {
           name: "entity_search",
-          exposeMcp: true,
           description:
             "Search entities by text (FTS + trigram) with structured filters.\n" +
             "Default scope: caller subject private world. Use global=true for cross-world search within caller permissions.\n" +

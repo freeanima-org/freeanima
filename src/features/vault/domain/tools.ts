@@ -354,13 +354,12 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
       "Use terminal_run/code_execute secrets[] for subprocess credentials, or browser_type secret for form fields " +
       "(field = password/notes/totp or a custom_field_names entry). " +
       "Default library: agent. " +
-      "vault_create/vault_update/vault_delete are Habitat-only (not MCP).",
+      "Vault tools are Habitat-only (not MCP).",
     attachToolReturns(
       [
         {
           name: "vault_list",
           description: "List vault item metadata (no secrets)",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -374,7 +373,6 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
         {
           name: "vault_search",
           description: "Search vault items by metadata (no secrets)",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -391,7 +389,6 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
           description:
             "Get one vault item metadata (no secrets). custom_field_names lists names usable as " +
             "secrets[].field / browser_type secret.field (same form as password).",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {

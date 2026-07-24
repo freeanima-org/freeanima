@@ -77,7 +77,6 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
         {
           name: "project_list",
           description: "List projects (optional folder_id or status filter)",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -107,7 +106,6 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
         {
           name: "project_get",
           description: "Get project by id",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: { ...WORLD_ID_OPTIONAL, id: { type: "integer" } },
@@ -125,7 +123,6 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
         {
           name: "project_create",
           description: "Create a project; start_at/end_at optional (omit or null if unset)",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -175,7 +172,6 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
         {
           name: "project_patch",
           description: "Update project fields, content, or terminal status",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {
@@ -219,7 +215,6 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
         {
           name: "project_delete",
           description: "Delete project; tasks return to Backlog",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: { ...WORLD_ID_OPTIONAL, id: { type: "integer" } },
@@ -241,7 +236,6 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
         {
           name: "projectfolder_list",
           description: "List project folders",
-          exposeMcp: true,
           parameters: { type: "object", properties: { ...WORLD_ID_OPTIONAL } },
           handler: async (args) => {
             const worldId = await resolveWorld(args);
@@ -262,7 +256,6 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
         {
           name: "projectfolder_create",
           description: "Create a project folder",
-          exposeMcp: true,
           parameters: {
             type: "object",
             properties: {

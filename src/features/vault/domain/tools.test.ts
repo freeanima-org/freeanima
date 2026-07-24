@@ -186,18 +186,23 @@ describe("vault CRUD tools", () => {
     }
   });
 
-  it("registers write tools without exposeMcp", () => {
+  it("registers vault tools without exposeMcp", () => {
     if (!tools.getTool("vault_create")) registerVaultTools(tools);
-    for (const name of ["vault_create", "vault_update", "vault_delete"] as const) {
+    for (const name of [
+      "vault_list",
+      "vault_search",
+      "vault_get_meta",
+      "vault_create",
+      "vault_update",
+      "vault_delete",
+    ] as const) {
       const t = tools.getTool(name);
       expect(t, name).toBeTruthy();
       expect(t!.exposeMcp === true, name).toBe(false);
     }
-    expect(tools.getTool("vault_list")!.exposeMcp).toBe(true);
     const mcpNames = new Set(tools.listMcpExposedTools().map((t) => t.name));
+    expect(mcpNames.has("vault_list")).toBe(false);
     expect(mcpNames.has("vault_create")).toBe(false);
-    expect(mcpNames.has("vault_update")).toBe(false);
-    expect(mcpNames.has("vault_delete")).toBe(false);
   });
 
   it("vault_create seals and returns metadata only", async () => {

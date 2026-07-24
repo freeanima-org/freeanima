@@ -84,7 +84,6 @@ export function registerMemoryCoreTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "memory_recall",
-          exposeMcp: true,
           description:
             "Unified memory search: semantic memories, conversation messages, limbic memories, autobiographical narratives.\n" +
             "Related semantic memories are auto-injected before each user turn; use this for other memory types or deeper retrieval.\n" +
