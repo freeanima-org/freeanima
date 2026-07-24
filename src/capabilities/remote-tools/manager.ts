@@ -260,7 +260,7 @@ export class RemoteToolsManager {
   ):
     | { kind: "habitat_local" }
     | { kind: "reject"; error: string }
-    | { kind: "outpost_proxy"; payload: ToolCallPayload } {
+    | { kind: "outpost_proxy"; payload: ToolCallPayload; appSlug: string; instanceNorm: string } {
     if (!isRemotePrefixedToolName(name)) {
       return { kind: "habitat_local" };
     }
@@ -270,25 +270,29 @@ export class RemoteToolsManager {
       return { kind: "reject", error: `invalid sap tool name: ${name}` };
     }
 
-    const outpostAppId = platformExtra?.outpost_app_id;
-    const outpostInstanceId = platformExtra?.outpost_instance_id;
-    if (typeof outpostAppId !== "string" || typeof outpostInstanceId !== "string") {
-      return { kind: "reject", error: "session has no outpost binding; remote tools forbidden" };
+    // 路由以工具名中的 app/instance 为准；会话 outpost 绑定非必须（允许跨对话调用已注册前哨工具）
+    const appSlug = parsed.value.app_slug;
+    const instanceNorm = parsed.value.instance_id_norm;
+
+    const boundAppId = platformExtra?.outpost_app_id;
+    const boundInstanceId = platformExtra?.outpost_instance_id;
+    if (typeof boundAppId === "string" && typeof boundInstanceId === "string") {
+      const expectedApp = normalizeAppSlug(boundAppId);
+      const expectedInst = normalizeInstanceId(boundInstanceId);
+      if (appSlug !== expectedApp || instanceNorm !== expectedInst) {
+        logComponent("outpost").debug("cross-conversation remote tool call", {
+          conversationId,
+          tool: name,
+          session: `${expectedApp}/${expectedInst}`,
+          target: `${appSlug}/${instanceNorm}`,
+        });
+      }
     }
 
-    const expectedApp = normalizeAppSlug(outpostAppId);
-    const expectedInst = normalizeInstanceId(outpostInstanceId);
-    if (parsed.value.app_slug !== expectedApp || parsed.value.instance_id_norm !== expectedInst) {
+    if (!this.isInstanceConnected(appSlug, instanceNorm)) {
       return {
         kind: "reject",
-        error: `sap tool binding mismatch: tool=${name} session=${expectedApp}/${expectedInst}`,
-      };
-    }
-
-    if (!this.isInstanceConnected(expectedApp, expectedInst)) {
-      return {
-        kind: "reject",
-        error: `outpost instance offline: ${expectedApp}/${expectedInst}`,
+        error: `outpost instance offline: ${appSlug}/${instanceNorm}`,
       };
     }
 
@@ -301,6 +305,8 @@ export class RemoteToolsManager {
 
     return {
       kind: "outpost_proxy",
+      appSlug,
+      instanceNorm,
       payload: {
         call_id: randomUUID(),
         tool_name: parsed.value.canonical,
@@ -326,11 +332,9 @@ export class RemoteToolsManager {
       return toolError(route.error);
     }
 
-    const appSlug = normalizeAppSlug(String(platformExtra?.outpost_app_id ?? ""));
-    const instanceNorm = normalizeInstanceId(String(platformExtra?.outpost_instance_id ?? ""));
-    const conn = this.connections.get(`${appSlug}:${instanceNorm}`);
+    const conn = this.connections.get(`${route.appSlug}:${route.instanceNorm}`);
     if (!conn) {
-      return toolError(`outpost instance offline: ${appSlug}/${instanceNorm}`);
+      return toolError(`outpost instance offline: ${route.appSlug}/${route.instanceNorm}`);
     }
 
     const payload: ToolCallPayload = { ...route.payload, args };
