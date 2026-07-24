@@ -35,14 +35,14 @@ UI 管线：`messages/en.json` → `messages/po4a/en.xml` → po4a + `po/zh_CN/e
 ## 工作流
 
 1. **确认英文源**：对应 `docs/**/*.md` 或 `messages/en.json` 必须为英文；若源含中文，先英文化再跑 po4a。
-2. **同步 msgid**：`bun run i18n:po4a`
+2. **同步 msgid**：`just i18n po4a`
 3. **填 PO**：在 `po/zh_CN/*.po` 写 `msgstr`、清除 `#, fuzzy`；术语遵循 glossary；代码块 fence / 命令 / 路径不译；表格列数与 `msgid` 一致。
 4. **再跑管线与检查**：
    ```bash
-   bun run i18n:po4a
-   bun run i18n:docs:check:strict
-   bun run docs:i18n:check
-   bun run i18n:docs:generated:check
+   just i18n po4a
+   just i18n po-health-strict
+   just i18n docs-check
+   just i18n docs-generated-check
    bun scripts/check-paraglide-messages.ts
    ```
 5. **汇报**：处理了哪些 PO/doc、各文件 `msgfmt --statistics` 结果、剩余未译/fuzzy 计数。
@@ -57,7 +57,7 @@ msgattrib --untranslated --no-obsolete po/zh_CN/<master>.po | head -40
 
 ## UI 变更额外步骤
 
-若改了 `messages/en.json`：`bun run paraglide:compile`（或 site prebuild）。
+若改了 `messages/en.json`：`just i18n paraglide`（或 site prebuild）。
 
 ## 常见错误
 

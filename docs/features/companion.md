@@ -92,15 +92,14 @@ Unbound slots play no animation; patrol still moves the window; walk/climb VRMA 
 
 ### FBX import
 
-FBX→VRMA runs on the **Habitat host** (`anima service`). Desktop installers no longer bundle `fbx2vrma-converter` or FBX2glTF. On the Habitat machine run `bun run setup:fbx` if FBX conversion is needed.
+FBX→VRMA runs on the **Habitat host** (`anima service`). Desktop installers no longer bundle `fbx2vrma-converter` or FBX2glTF. On the Habitat machine run `just misc setup-fbx` if FBX conversion is needed.
 
 ## Development and run
 
 ### Browser /dev companion host
 
 ```bash
-bun run --filter @freeanima/satellite-companion dev
-# or: bun src/features/companion/dev.ts
+bun src/features/companion/dev.ts
 ```
 
 Uses an in-process HTTP server; runtime events use localhost WebSocket (`/api/runtime/ws`).

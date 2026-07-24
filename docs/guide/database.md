@@ -59,7 +59,7 @@ Fresh Debian installs via `setup-postgres-debian.sh` handle extensions automatic
 
 ```bash
 DATABASE_URL="postgresql://anima:…@127.0.0.1:5432/anima" \
-  bun run db:migrate
+  just db migrate
 ```
 
 Run after extensions are installed, or restart `anima service`.
@@ -88,8 +88,8 @@ Purged during sleep-cycle step `conversation-cleanup` (after stale conversation 
 Full integration tests require **Docker** for a temporary PostgreSQL instance:
 
 ```bash
-bun run test:integration
-bun run test              # unit + integration（串行）
+just qa test-integration
+just test              # unit + integration（串行）
 ```
 
 pre-commit `test:changed` does **not** run integration tests.

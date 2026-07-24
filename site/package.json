@@ -6,9 +6,9 @@
   "scripts": {
     "paraglide": "paraglide-js compile --project ../project.inlang --outdir ../messages/paraglide",
     "sync-install": "cp ../scripts/install.sh public/install",
-    "predev": "bun run sync-install && cd .. && bun run i18n:po4a && bun run paraglide:compile",
+    "predev": "bun run sync-install && cd .. && bun scripts/i18n-po4a.ts && bun scripts/paraglide-compile.ts",
     "dev": "astro dev",
-    "prebuild": "bun run sync-install && cd .. && bun run i18n:po4a && bun run paraglide:compile",
+    "prebuild": "bun run sync-install && cd .. && bun scripts/i18n-po4a.ts && bun scripts/paraglide-compile.ts",
     "build": "astro build",
     "preview": "astro preview"
   },

@@ -5,7 +5,7 @@
 
 ## Global view
 
-`freeanima` (FreeAnima) is an agent runtime: **product / Habitat logic is TypeScript-only**; **Portal Shell** is **Tauri**（Rust host + shared `web/dist-*` UI）。Product name for the long-running process is **Habitat**（栖息地）; Shell / MCP are **Portal**（入口）. Source: `bun run dev:habitat`；standalone: `anima service`（协议侧仍为 Habitat RPC `/rpc/v1` + MCP `/mcp` + engine）; UI from `src/app/shell/tauri` + `src/app/shell/web`. Naming: [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming + [`i18n/glossary.md`](i18n/glossary.md). Shell rules: [`.agent/rules/tauri-shell.md`](.agent/rules/tauri-shell.md).
+`freeanima` (FreeAnima) is an agent runtime: **product / Habitat logic is TypeScript-only**; **Portal Shell** is **Tauri**（Rust host + shared `web/dist-*` UI）。Product name for the long-running process is **Habitat**（栖息地）; Shell / MCP are **Portal**（入口）. Source: `just dev` / `just dev habitat`；standalone: `anima service`（协议侧仍为 Habitat RPC `/rpc/v1` + MCP `/mcp` + engine）; UI from `src/app/shell/tauri` + `src/app/shell/web`. Naming: [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming + [`i18n/glossary.md`](i18n/glossary.md). Shell rules: [`.agent/rules/tauri-shell.md`](.agent/rules/tauri-shell.md).
 
 | Capability     | Highlights                                                                                                                                                                                                                                                        |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -30,7 +30,7 @@ Directional heuristics for _what_ FreeAnima should feel like. Mechanisms and cog
 
 How agents should _shape_ changes. Hard checks and conventions → [`.agent/rules/`](.agent/rules/README.md) — related, but not a 1:1 rule list.
 
-- **Testability by design** — Structure code so behavior can be verified: colocated unit tests for package logic, integration tests when boundaries cross packages or touch real persistence; design for injection and clear seams — see [`.agent/rules/testing.md`](.agent/rules/testing.md). **PG integration 禁止**把 `ANIMA_TEST_PG_URL` 指到与日常 `~/.anima/config.yaml` **同 host:port** 的库（护栏 skip + throw）；须经 `bun run test:integration`（Docker 临时 PG、模板库克隆、无 `clearPgTables`）或等价隔离实例。
+- **Testability by design** — Structure code so behavior can be verified: colocated unit tests for package logic, integration tests when boundaries cross packages or touch real persistence; design for injection and clear seams — see [`.agent/rules/testing.md`](.agent/rules/testing.md). **PG integration 禁止**把 `ANIMA_TEST_PG_URL` 指到与日常 `~/.anima/config.yaml` **同 host:port** 的库（护栏 skip + throw）；须经 `just qa test-integration`（Docker 临时 PG、模板库克隆、无 `clearPgTables`）或等价隔离实例。
 - **Elegant, minimal architecture** — Prefer the **simplest correct structure**; readable boundaries beat clever indirection. The repository is in an active reshaping phase — optimize for the **end-state codebase**; large refactors and breaking changes are acceptable when clarity wins.
 - **No speculative layering** — Do not introduce abstractions, extension points, or parallel APIs for **unused or far-future** needs; add structure when a second real consumer exists, not when imagining one.
 - **Portal shell = Tauri** — Shell host is **Rust** (Tauri); do **not** bundle a Node sidecar for companion. Habitat / features stay TypeScript. Rules → [`.agent/rules/tauri-shell.md`](.agent/rules/tauri-shell.md).
@@ -49,33 +49,31 @@ How agents should _shape_ changes. Hard checks and conventions → [`.agent/rule
 
 ## Common commands
 
-日常优先 `just`（见根目录 [`Justfile`](Justfile)；`just --list`）。`package.json` scripts 只保留 CI / husky / 构建链所需入口。
+日常优先 `just`（见根 [`Justfile`](Justfile) + [`just/`](just/) 模块；`just --list` / `just pack --list`）。根 [`package.json`](package.json) **仅** `prepare`（husky）；业务入口不走 `bun run`。
 
 ```bash
 bun install
-just                  # 列出配方
-just dev              # Habitat（≥10000）+ Web（:5000）；多 worktree 友好
-just habitat / just web (legacy: just habitat)   # 分进程
-just check            # PR 前质量门禁
-just test / just test-changed
-just fmt / just lint-fix
-just db-generate / just db-migrate   # 需 DATABASE_URL
-just build-web / just install-cli
-just memory-sample -- --habitat-url http://127.0.0.1:<habitat> --stage full
+just                         # 交互选配方
+just --list                  # 顶层：dev / check / pack / qa / …
+just dev                     # Habitat（≥10000）+ Web（:5000）；多 worktree 友好
+just dev habitat / just dev web / just dev tauri / just dev android
+just check                   # PR 前质量门禁（= just qa check；≠ 全量 CI）
+just fmt / just test         # 顶层短别名 → qa::
+just qa typecheck / just qa lint / just qa test-changed
+just db generate / just db migrate   # 需 DATABASE_URL
+just pack web / just pack cli / just pack tauri / just pack android
+just install cli / just install tauri-linux -- --apt
+just misc memory-sample -- --habitat-url http://127.0.0.1:<habitat> --stage full
 
-# CI / hook 仍用 bun run（勿删这些 package.json 名）
-bun run check
-bun run typecheck && bun run lint && bun run test:changed
-bun run dev:habitat && bun run dev:web
-bun run build:web
-# anima service … # 仅 standalone 安装版 CLI
+# standalone 安装版 CLI（源码 tree 的 anima 无 service）
+# anima service …
 ```
 
 - Habitat API（**生产**）：`http://127.0.0.1:2658/rpc/v1`（standalone `anima service`；`web.enabled` 且已有 dist 时托管 `/web/*`）
-- Habitat API（**源码/dev:habitat**）：默认随机 **≥10000**（避开 2658/2659）；多 worktree 并行友好
-- Web 形态：standalone / 源码部署须先有 `build:web`（打包时强制；源码部署手动）；dev 用 `dev:habitat` + `dev:web`（HMR，不依赖落盘）
+- Habitat API（**源码 / just dev habitat**）：默认随机 **≥10000**（避开 2658/2659）；多 worktree 并行友好
+- Web 形态：standalone / 源码部署须先有 `just pack web`（打包时强制；源码部署手动）；dev 用 `just dev` / `just dev habitat` + `just dev web`（HMR，不依赖落盘）
 - 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `src/app/shell/tauri`（Portal）与 `src/app/shell/web`（浏览器调试）
-- Dev UI：`bun run dev:web` → `http://127.0.0.1:5000/web/chat`（若 `http.tls`/`DEV_HTTPS` 则为 `https://…`；Habitat：`/web/habitat/dashboard`）；浏览器默认 Habitat = **页面 origin**（Vite `/rpc` proxy；legacy `/rpc` 至 0.9.3）；`dev:habitat` 自动写入 `~/.anima/dev-web.token` 供 Vite 注入 token；**忽略** yaml `web.*`（Habitat 不托管 dist）
+- Dev UI：`just dev web` → `http://127.0.0.1:5000/web/chat`（若 `http.tls`/`DEV_HTTPS` 则为 `https://…`；Habitat：`/web/habitat/dashboard`）；浏览器默认 Habitat = **页面 origin**（Vite `/rpc` proxy；legacy `/rpc` 至 0.9.3）；`just dev habitat` 自动写入 `~/.anima/dev-web.token` 供 Vite 注入 token；**忽略** yaml `web.*`（Habitat 不托管 dist）
 - 开发 TLS：若 `http.tls.enabled` / `DEV_HTTPS=1`，由 **Vite HTTPS** 终止（复用 `~/.anima/tls`），Habitat 仅明文（`skipTls`）；与 `http` 覆盖对称，dev 亦覆盖 `web.enabled/host/port`
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)
 - PG ops (install, backup): [`docs/guide/database.md`](docs/guide/database.md)

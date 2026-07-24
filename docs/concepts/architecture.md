@@ -232,7 +232,7 @@ See [`guide/security.md`](../guide/security.md).
 
 ## Runtime Modes
 
-Production (standalone install CLI): `anima service` (systemd --user). Auto-restarts after crashes; only `systemctl stop` stops the service. Source-tree `anima` does **not** register `service` — use `bun run dev:habitat` for local Habitat.
+Production (standalone install CLI): `anima service` (systemd --user). Auto-restarts after crashes; only `systemctl stop` stops the service. Source-tree `anima` does **not** register `service` — use `just dev habitat` for local Habitat.
 
 - **Habitat / service**: long-running — Habitat HTTP (`/rpc/v1`), Discord / WeChat Gateway, cron
 - **UI**: `src/app/shell/tauri` + `web/dist-*` bundled SPA (Chat + Habitat); Habitat does not host `/habitat`
@@ -245,9 +245,9 @@ anima service status
 
 # monorepo / worktree
 just dev                         # Habitat (≥10000) + Vite Web (≥5000)
-bun run dev:habitat                  # Habitat foreground (default random ≥10000; not 2658)
-bun run dev:web                  # browser shell Vite HMR from :5000 (set FREEANIMA_URL)
-bun run build:web                # source deploy / Habitat /web: build dist before start
+just dev habitat                  # Habitat foreground (default random ≥10000; not 2658)
+just dev web                  # browser shell Vite HMR from :5000 (set FREEANIMA_URL)
+just pack web                # source deploy / Habitat /web: build dist before start
 ```
 
 ## Tool Architecture (Three Layers)

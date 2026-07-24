@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * 开发：可选起 companion static，再 tauri dev。
- * 需：已 bun install、Rust、系统 WebView；主窗默认连 Vite :5000（先 just web）。
+ * 需：已 bun install、Rust、系统 WebView；主窗默认连 Vite :5000（先 just dev web）。
  */
 import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";

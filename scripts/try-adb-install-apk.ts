@@ -54,7 +54,7 @@ export function tryAdbInstallApk(
 
   const adb = resolveAdb();
   if (!adb) {
-    console.log(`${logPrefix} 未找到 adb，跳过安装（可 just install-android）`);
+    console.log(`${logPrefix} 未找到 adb，跳过安装（可 just install android）`);
     return { status: "skipped", reason: "no-adb" };
   }
 

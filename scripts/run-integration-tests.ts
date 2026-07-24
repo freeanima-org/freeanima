@@ -12,13 +12,13 @@ const standaloneBin = join(repoRoot, "dist/anima-executable/anima");
 function ensureStandaloneBuilt(): void {
   if (existsSync(standaloneBin)) return;
   console.log(`[${label}] building linux standalone for integration tests…`);
-  const result = spawnSync("bun", ["run", "build:cli:executable"], {
+  const result = spawnSync("bun", ["scripts/build-cli-executable.ts"], {
     cwd: repoRoot,
     stdio: "inherit",
     env: process.env,
   });
   if (result.status !== 0) {
-    throw new Error("build:cli:executable failed before integration tests");
+    throw new Error("just pack cli / build-cli-executable failed before integration tests");
   }
 }
 

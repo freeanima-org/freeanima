@@ -24,15 +24,15 @@ Verify from the shell (business API requires a Service API Token — see [`remot
 ```bash
 curl -s -H "Authorization: Bearer <fa_at_...>" http://127.0.0.1:2658/rpc/v1/status/get | jq '.memory_kb, .memory_detail'
 grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status
-just memory-sample -- --habitat-url http://127.0.0.1:2658 --stage full
+just misc memory-sample -- --habitat-url http://127.0.0.1:2658 --stage full
 ```
 
 ## Development vs production
 
-| Mode                    | How to run Habitat                                                                                                                   |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Monorepo / worktree** | `bun run dev:habitat` (default random port ≥10000; optional `--port` / `--strict-port`; source `anima` has **no** `service` command) |
-| **Standalone install**  | `anima service start` / `stop` / `status` (systemd user unit; **2658** / TLS **2659**)                                               |
+| Mode                    | How to run Habitat                                                                                                                |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Monorepo / worktree** | `just dev habitat` (default random port ≥10000; optional `--port` / `--strict-port`; source `anima` has **no** `service` command) |
+| **Standalone install**  | `anima service start` / `stop` / `status` (systemd user unit; **2658** / TLS **2659**)                                            |
 
 Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.md)。
 
@@ -49,21 +49,21 @@ anima web start --foreground # standalone Web static server (default :2660; prod
 
 # --- monorepo / worktree ---
 just dev                     # Habitat (≥10000) + Vite Web (≥5000); proxy via FREEANIMA_URL
-bun run dev:habitat              # Habitat foreground; default random ≥10000; skip Habitat TLS (Vite may HTTPS)
-bun run dev:web              # Vite HMR from :5000 (set FREEANIMA_URL to Habitat); browser Habitat = page origin
+just dev habitat              # Habitat foreground; default random ≥10000; skip Habitat TLS (Vite may HTTPS)
+just dev web              # Vite HMR from :5000 (set FREEANIMA_URL to Habitat); browser Habitat = page origin
 ```
 
 `anima.service` is a **single-unit stack**: Habitat (`:2658`, REST + SAP + bundled `/web` when `web.enabled` and dist exists) managed by one foreground supervisor.
 
 **Web build is never triggered by `service start` / `anima web start`.** Paths:
 
-| Mode               | When to `build:web`                          | UI                                                          |
-| ------------------ | -------------------------------------------- | ----------------------------------------------------------- |
-| Standalone release | Forced during `bun run build:cli:executable` | Embedded, served at `/web/*`                                |
-| Source deploy      | Run `bun run build:web` before start         | Habitat `/web/*` when `web.enabled`                         |
-| Dev                | Not required                                 | `just dev` / `dev:habitat` + `dev:web` → Web **:5000+** HMR |
+| Mode               | When to `just pack web`          | UI                                                                    |
+| ------------------ | -------------------------------- | --------------------------------------------------------------------- |
+| Standalone release | Forced during `just pack cli`    | Embedded, served at `/web/*`                                          |
+| Source deploy      | Run `just pack web` before start | Habitat `/web/*` when `web.enabled`                                   |
+| Dev                | Not required                     | `just dev` / `just dev habitat` + `just dev web` → Web **:5000+** HMR |
 
-When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. For standalone static hosting without the Habitat process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `dev:habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.
+When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. For standalone static hosting without the Habitat process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `just dev habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.
 
 **Startup order:** Habitat must pass `GET /rpc/v1/health/probe` (`status: ok`) before `serve()` `onReady` hooks run. `anima service start` waits up to **15 minutes** by default (`FREEANIMA_HABITAT_READY_TIMEOUT_MS`) because schema migrations run **before** HTTP listen. Remote-tool host disconnects are retried by `@freeanima/shared/rpc-contract` transport (exponential backoff).
 
@@ -71,4 +71,4 @@ When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/
 
 - **Desktop / mobile Portal:** Chat and Habitat inside the Tauri app (not served from Habitat `:2658` unless `web.enabled`).
 - **`config.yaml` `web.enabled: true`:** browser UI at `http://<host>:2658/web/*` from Habitat when dist is present (see table above). `web` is bootstrap (not PG). Default Habitat URL in `/web/config.json` is the **page origin**.
-- **Local Web dev (`bun run dev:web`):** Vite from `:5000` with base `/web/` — Chat `http://127.0.0.1:5000/web/chat`, Habitat `…/web/habitat/dashboard`; `/rpc` and `/mcp` proxied to `FREEANIMA_URL`. Browser Habitat defaults to page origin; `dev:habitat` auto-fills token via `~/.anima/dev-web.token`.
+- **Local Web dev (`just dev web`):** Vite from `:5000` with base `/web/` — Chat `http://127.0.0.1:5000/web/chat`, Habitat `…/web/habitat/dashboard`; `/rpc` and `/mcp` proxied to `FREEANIMA_URL`. Browser Habitat defaults to page origin; `just dev habitat` auto-fills token via `~/.anima/dev-web.token`.

@@ -101,7 +101,7 @@ function webDevPlugin(): Plugin {
         );
         if (PROXY_HABITAT.source === "default") {
           console.warn(
-            "[dev:web] FREEANIMA_URL unset and no server.status.json — proxy defaults to http://127.0.0.1:2658; set FREEANIMA_URL or run just dev / dev:habitat",
+            "[dev:web] FREEANIMA_URL unset and no server.status.json — proxy defaults to http://127.0.0.1:2658; set FREEANIMA_URL or run just dev / just dev habitat",
           );
         } else if (PROXY_HABITAT.source === "status") {
           console.info(

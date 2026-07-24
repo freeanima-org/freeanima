@@ -64,16 +64,16 @@ src/
 
 ## 文档站 i18n
 
-中文 **PO 译文冻结**（`po/zh_CN/` 保留、不再要求 agent 同步）；`docs/.generated/zh_CN/` **不入库**，site 构建时 `i18n:po4a` 从 PO 生成。PR/`bun run check` **不跑**翻译校验。详见 [`.agent/rules/i18n.md`](../.agent/rules/i18n.md)。
+中文 **PO 译文冻结**（`po/zh_CN/` 保留、不再要求 agent 同步）；`docs/.generated/zh_CN/` **不入库**，site 构建时 `just i18n po4a` 从 PO 生成。PR/`just check` **不跑**翻译校验。详见 [`.agent/rules/i18n.md`](../.agent/rules/i18n.md)。
 
 ## 文档站构建
 
 ```bash
 # 产品
-bun install && bun run check
+bun install && just check
 
 # 文档站（独立 lock）
 cd site && bun install && bun run build
 ```
 
-site `prebuild` 会调用根目录 `i18n:po4a` 与 `paraglide:compile`（共享 `docs/` / `messages/` SSOT）。
+site `prebuild` 会直调根目录 `bun scripts/i18n-po4a.ts` 与 `bun scripts/paraglide-compile.ts`（共享 `docs/` / `messages/` SSOT）。

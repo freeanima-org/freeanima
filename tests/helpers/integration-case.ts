@@ -118,7 +118,7 @@ export async function syncIntegrationSelfLayer(
 function ensureProcessIsolatedDb(): string {
   if (processDbUrl) return processDbUrl;
   if (!pgTestUrl) {
-    throw new Error("ANIMA_TEST_PG_URL is not set; run bun run test:integration");
+    throw new Error("ANIMA_TEST_PG_URL is not set; run just qa test-integration");
   }
   processDbSlug = `p_${randomUUID().replace(/-/g, "").slice(0, 12)}`;
   processDbUrl = createIsolatedTestDb(processDbSlug);

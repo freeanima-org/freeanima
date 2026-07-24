@@ -36,11 +36,12 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-just
       - uses: ./.github/actions/setup-anima-home
-      - run: bun run typecheck
-      - run: bun run lint
+      - run: just qa typecheck
+      - run: just qa lint
       - name: Build Linux standalone
-        run: bun run build:cli:executable
+        run: just pack cli
       - name: Smoke standalone
         run: bun scripts/smoke-standalone-tiktoken.ts
       - run: bun scripts/run-ci-tests.ts
@@ -71,8 +72,9 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-just
       - uses: ./.github/actions/setup-anima-home
-      - run: bun run build:shell-ui
+      - run: just pack shell-ui
   # 暂停 Blackbox E2E（commit status `freeanima/blackbox`）：不再向 freeanima-testing 发 dispatch。
   # 恢复：删除 `if: false`，取消注释下方原条件。
   blackbox-dispatch:

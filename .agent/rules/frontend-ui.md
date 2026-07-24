@@ -38,7 +38,7 @@
 
 ## 静态检查
 
-- `bun run stylelint`：DaisyUI 遗留 token + 主题色裸 `var()`（见根目录 `stylelint.config.js`）
+- `just qa stylelint`：DaisyUI 遗留 token + 主题色裸 `var()`（见根目录 `stylelint.config.js`）
 
 ## 平台（壳子 × 布局 × 交互）
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * Tauri Android APK → dist/freeanima-mobile-tauri-android.apk
- * 依赖：just install-android + just install-android-tauri
+ * 依赖：just install android + just install android-tauri
  */
 import { cpSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -65,9 +65,7 @@ function findApk(dir: string): string | null {
 }
 
 if (!existsSync(androidGen)) {
-  console.error(
-    "[package:android:tauri] 尚未 gen/android。请先：just install-android-tauri -- --init",
-  );
+  console.error("[pack android] 尚未 gen/android。请先：just install android-tauri -- --init");
   process.exit(1);
 }
 
@@ -77,14 +75,14 @@ const patch = spawnSync("bun", ["scripts/patch-tauri-android.ts"], {
 });
 if (patch.status !== 0) process.exit(patch.status ?? 1);
 
-console.log("[package:android:tauri] brand icons…");
+console.log("[pack android] brand icons…");
 const brand = spawnSync("bun", ["scripts/generate-brand-icons.ts"], {
   cwd: root,
   stdio: "inherit",
 });
 if (brand.status !== 0) process.exit(brand.status ?? 1);
 
-console.log("[package:android:tauri] prepare mobile ui…");
+console.log("[pack android] prepare mobile ui…");
 const prep = spawnSync("bun", ["scripts/prepare-tauri-ui.ts"], {
   cwd: root,
   stdio: "inherit",
@@ -106,16 +104,16 @@ const apk =
   findApk(join(tauriDir, "src-tauri/target"));
 
 if (!apk) {
-  console.error("[package:android:tauri] 未找到生成的 APK");
+  console.error("[pack android] 未找到生成的 APK");
   process.exit(1);
 }
 
 mkdirSync(dirname(distApk), { recursive: true });
 cpSync(apk, distApk);
-console.log(`[package:android:tauri] ${apk}`);
-console.log(`[package:android:tauri] → ${distApk}`);
-if (!ensureApkSigned(distApk, "[package:android:tauri]")) {
+console.log(`[pack android] ${apk}`);
+console.log(`[pack android] → ${distApk}`);
+if (!ensureApkSigned(distApk, "[pack android]")) {
   process.exit(1);
 }
-tryAdbInstallApk(distApk, "[package:android:tauri]");
+tryAdbInstallApk(distApk, "[pack android]");
 process.exit(0);

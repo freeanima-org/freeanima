@@ -29,8 +29,9 @@ Release Please defaults to `feat` / `fix` / `deps` as releasable commit triggers
 ```bash
 bun -p "require('./package.json').version"
 # Or after build:
-bun run anima -- service status   # reads version from status file / health API
+bun src/app/cli/cli.ts -- --help
 ./dist/anima-executable/anima --version
+# standalone install: anima service status
 ```
 
 ## Release Flow (Release PR)
@@ -103,19 +104,19 @@ Canary `nextVersion`：有 open Release PR（`autorelease: pending`）则取其 
 
 ## Linux standalone（本地）
 
-After Release PR merge，`package-artifacts` 会执行 `bun run build:cli:executable` 并打包上传。本地：
+After Release PR merge，`package-artifacts` 会执行 `just pack cli` 并打包上传。本地：
 
 ```bash
-bun run build:cli:executable   # 默认 channel=dev；CI 设 FREEANIMA_BUILD_CHANNEL
+just pack cli   # 默认 channel=dev；CI 设 FREEANIMA_BUILD_CHANNEL
 ./dist/anima-executable/anima --version
 ```
 
 **Runtime install modes:**
 
-| Mode           | How to run                                                 |
-| -------------- | ---------------------------------------------------------- |
-| **source**     | `bun install` + `bun run link:global` (or `bun run anima`) |
-| **standalone** | Unpack Release tarball; run `./anima`                      |
+| Mode           | How to run                                            |
+| -------------- | ----------------------------------------------------- |
+| **source**     | `bun install` + `bun src/app/cli/cli.ts` / `just dev` |
+| **standalone** | Unpack Release tarball; run `./anima`                 |
 
 There is **no** npm package publish and **no** Docker image publish.
 

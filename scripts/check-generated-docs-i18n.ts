@@ -25,7 +25,7 @@ function collectGenerated(dir: string): string[] {
 }
 
 if (!existsSync(generatedZhRoot)) {
-  console.error("check-generated-docs-i18n: missing docs/.generated/zh_CN/; run bun run i18n:po4a");
+  console.error("check-generated-docs-i18n: missing docs/.generated/zh_CN/; run just i18n po4a");
   process.exit(1);
 }
 

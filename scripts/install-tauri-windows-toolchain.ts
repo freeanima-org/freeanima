@@ -11,7 +11,7 @@ import { spawnSync } from "node:child_process";
 const TARGET = "x86_64-pc-windows-msvc";
 const withApt = process.argv.includes("--apt");
 const checkOnly = process.argv.includes("--check");
-const HINT = "just install-tauri-windows\n  # 或缺系统包：just install-tauri-windows -- --apt";
+const HINT = "just install tauri-windows\n  # 或缺系统包：just install tauri-windows -- --apt";
 
 function which(cmd: string): boolean {
   return spawnSync("sh", ["-c", `command -v ${cmd}`], { stdio: "ignore" }).status === 0;
@@ -143,7 +143,7 @@ if (ok("cargo", ["xwin", "--version"])) {
     console.error(
       `[install-tauri-windows] 缺少：${missing.join(", ")}\n` +
         `  sudo apt-get install -y ${missing.join(" ")}\n` +
-        `或：just install-tauri-windows -- --apt`,
+        `或：just install tauri-windows -- --apt`,
     );
     process.exit(1);
   } else if (process.platform === "darwin") {
@@ -156,5 +156,5 @@ if (ok("cargo", ["xwin", "--version"])) {
 }
 
 ensureLlvmLibOnPath();
-console.log("[install-tauri-windows] 完成。下一步：just pack-tauri-windows");
+console.log("[install-tauri-windows] 完成。下一步：just pack tauri-windows");
 process.exit(0);

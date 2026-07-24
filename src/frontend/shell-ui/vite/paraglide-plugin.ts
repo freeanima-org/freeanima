@@ -32,7 +32,7 @@ function paraglideOutputFiles(paraglideDir: string): string[] {
   return files;
 }
 
-/** 输出是否齐全且不老于 message catalogs（避免与 bun run paraglide:compile 重复） */
+/** 输出是否齐全且不老于 message catalogs（避免与 just i18n paraglide 重复） */
 export function paraglideNeedsCompile(projectRoot: string, paraglideDir: string): boolean {
   const runtimeJs = join(paraglideDir, "runtime.js");
   if (!existsSync(runtimeJs)) return true;
@@ -67,7 +67,7 @@ function invalidateParaglideModules(server: ViteDevServer, paraglideDir: string)
   }
 }
 
-/** 构建前按需编译 Paraglide（已由 paraglide:compile 预热则可跳过） */
+/** 构建前按需编译 Paraglide（已由 just i18n paraglide 预热则可跳过） */
 export function paraglideCompilePlugin(paraglideDir: string, projectRoot = REPO_ROOT): Plugin {
   const compileIfNeeded = (force = false): void => {
     if (!force && !paraglideNeedsCompile(projectRoot, paraglideDir)) return;

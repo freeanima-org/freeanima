@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 
 const withApt = process.argv.includes("--apt");
 const checkOnly = process.argv.includes("--check");
-const HINT = "just install-android\n  # 或缺 JDK：just install-android -- --apt";
+const HINT = "just install android\n  # 或缺 JDK：just install android -- --apt";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const setupSdk = join(root, "scripts/setup-android-sdk.sh");
@@ -83,7 +83,7 @@ if (!javaOk()) {
     console.error(
       "[install-android] 未找到 java。Debian：\n" +
         "  sudo apt-get install -y openjdk-21-jdk\n" +
-        "或：just install-android -- --apt",
+        "或：just install android -- --apt",
     );
     process.exit(1);
   }
@@ -106,5 +106,5 @@ if (probe.status !== 0) {
   process.exit(1);
 }
 console.log(`[install-android] ${probe.stdout?.trim()}`);
-console.log("[install-android] 完成。下一步：just install-android-tauri && just pack-android");
+console.log("[install-android] 完成。下一步：just install android-tauri && just pack android");
 process.exit(0);

@@ -31,7 +31,7 @@ Data directory: `~/.anima/` (override with `FREEANIMA_HOME`). Back it up with yo
 
 ## Standalone (Linux x64)
 
-Release publishes 三端产物（与 canary 对称）：`anima-linux-x64.tar.gz`、`freeanima-desktop-windows-x64-setup.exe`、`freeanima-mobile-android.apk`（CI 固定 upload 签名；本地 `debug:android` 仍为默认 debug 签名）。Standalone tarball 内含单文件可执行文件 `anima`；版本、service build-meta、migrations 与 Web UI 均嵌入该二进制。
+Release publishes 三端产物（与 canary 对称）：`anima-linux-x64.tar.gz`、`freeanima-desktop-windows-x64-setup.exe`、`freeanima-mobile-android.apk`（CI 固定 upload 签名；本地 `just dev android` 仍为默认 debug 签名）。Standalone tarball 内含单文件可执行文件 `anima`；版本、service build-meta、migrations 与 Web UI 均嵌入该二进制。
 
 ### 1. Install (recommended)
 
@@ -75,7 +75,7 @@ ln -sfn anima_0.9.2 anima
 mkdir -p ~/.local/bin && ln -sfn "$PWD/anima" ~/.local/bin/anima
 ```
 
-Or from a checkout: `just install-cli` (builds then installs to the same default prefix).
+Or from a checkout: `just install cli` (builds then installs to the same default prefix).
 
 Installed standalone 可用内置升级换轨与本机版本切换：
 
@@ -138,24 +138,24 @@ anima versions use <id> # 回退到本机已保留的旧版本（同样会按需
 Re-run the curl installer to reinstall/overwrite the same prefix, or from a checkout rebuild and reinstall (never into the repo):
 
 ```bash
-just install-cli
+just install cli
 ```
 
 `dist/anima-executable/` is build staging only — not a runtime prefix.
 
 ### Build from a checkout
 
-Always runs `build:web` before compiling the binary (embeds current Web dist):
+Always runs `just pack web` before compiling the binary (embeds current Web dist):
 
 ```bash
-bun run build:cli:executable
+just pack cli
 # → dist/anima-executable/ (staging)
-just install-cli
+just install cli
 # → ~/.anima/standalone/anima_<version> + anima symlink + ~/.local/bin/anima
 anima --version
 ```
 
-Override prefix: `FREEANIMA_INSTALL_PREFIX=/opt/freeanima just install-cli` or `bun scripts/install-cli.ts --prefix /opt/freeanima --skip-build`.
+Override prefix: `FREEANIMA_INSTALL_PREFIX=/opt/freeanima just install cli` or `bun scripts/install-cli.ts --prefix /opt/freeanima --skip-build`.
 
 ---
 
@@ -165,7 +165,7 @@ For development, unreleased fixes, or running from a git checkout.
 
 ### 1. Clone and install dependencies
 
-**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended) · [just](https://github.com/casey/just) (for `just install-cli`)
+**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended) · [just](https://github.com/casey/just) (for `just install cli`)
 
 ```bash
 git clone https://github.com/freeanima-org/freeanima.git
@@ -175,17 +175,17 @@ bun install
 
 ### 2. Run the CLI from the checkout
 
-Do **not** symlink source `cli.ts` into a global bin. Use package scripts:
+Do **not** symlink source `cli.ts` into a global bin. From the checkout:
 
 ```bash
-bun run anima -- --help
-bun run service start --foreground
+bun src/app/cli/cli.ts -- --help
+just dev
 ```
 
 To install a **standalone** binary into an independent prefix (default `~/.anima/standalone`) for a PATH `anima` command:
 
 ```bash
-just install-cli
+just install cli
 # ensure ~/.local/bin is on PATH
 anima --version
 ```
@@ -203,25 +203,25 @@ cp config.example.yaml ~/.anima/config.yaml
 ```bash
 just dev            # Habitat random ≥10000 + Web from :5000; FREEANIMA_URL wires Vite proxy only
 # or two terminals:
-bun run dev:habitat     # random ≥10000 (not production 2658); writes ~/.anima/dev-web.token
-FREEANIMA_URL=http://127.0.0.1:<habitat-port> bun run dev:web   # default :5000; browser Habitat = page origin
+just dev habitat     # random ≥10000 (not production 2658); writes ~/.anima/dev-web.token
+FREEANIMA_URL=http://127.0.0.1:<habitat-port> just dev web   # default :5000; browser Habitat = page origin
 ```
 
-Browser Web defaults Habitat URL to the **page origin** (same in production Habitat-hosted `/web` and Vite). Dev injects Service API Token from `dev-web.token` automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves HTTPS using `~/.anima/tls` (Habitat stays plain HTTP). Source `dev:habitat` also **ignores** `config.yaml` `web.enabled` / `web.host` / `web.port` — Habitat does not host `/web` dist; use Vite (`WEB_DEV_PORT`, default 5000).
+Browser Web defaults Habitat URL to the **page origin** (same in production Habitat-hosted `/web` and Vite). Dev injects Service API Token from `dev-web.token` automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves HTTPS using `~/.anima/tls` (Habitat stays plain HTTP). Source `just dev habitat` also **ignores** `config.yaml` `web.enabled` / `web.host` / `web.port` — Habitat does not host `/web` dist; use Vite (`WEB_DEV_PORT`, default 5000).
 
-**Source deploy** (Habitat hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `build:web`. Source-tree `anima` has no `service` command.
+**Source deploy** (Habitat hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `just pack web`. Source-tree `anima` has no `service` command.
 
 ```bash
-bun run build:web
-bun run dev:habitat
+just pack web
+just dev habitat
 # UI: http://127.0.0.1:2658/web/chat
 ```
 
 ### 4. Development checks
 
 ```bash
-bun run check    # typecheck + lint + format + changed unit tests
-bun run test     # full unit + integration (integration may use Docker for temp PG)
+just check    # typecheck + lint + format + changed unit tests
+just test     # full unit + integration (integration may use Docker for temp PG)
 ```
 
 Upgrade manually: `git pull`, `bun install`, then restart the service. `anima upgrade` / `/upgrade` print instructions only.

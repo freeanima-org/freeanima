@@ -1,8 +1,8 @@
 # Docs i18n (AI agent rules)
 
-> **PAUSED（文档站翻译维护）**：改 `docs/**/*.md` 时**仅维护英文**；**不必**填 `po/zh_CN/*.po`。`po/` 中现有译文冻结保留；`docs/.generated/zh_CN/` 由 `i18n:po4a` 在构建时生成，**不入库**（见 `.gitignore`）。恢复流程见 [`i18n.md`](i18n.md)。
+> **PAUSED（文档站翻译维护）**：改 `docs/**/*.md` 时**仅维护英文**；**不必**填 `po/zh_CN/*.po`。`po/` 中现有译文冻结保留；`docs/.generated/zh_CN/` 由 `just i18n po4a` 在构建时生成，**不入库**（见 `.gitignore`）。恢复流程见 [`i18n.md`](i18n.md)。
 >
-> 若英文 docs 大改（如壳层下线 Electron/Capacitor），仍建议跑一次 `bun run i18n:po4a`，并删除已无 master 的孤儿 PO/POT，以免 `docs/.generated` 残留旧壳叙述。
+> 若英文 docs 大改（如壳层下线 Electron/Capacitor），仍建议跑一次 `just i18n po4a`，并删除已无 master 的孤儿 PO/POT，以免 `docs/.generated` 残留旧壳叙述。
 >
 > Pipeline overview: [`i18n.md`](i18n.md). Terminology: [`i18n/glossary.md`](../../i18n/glossary.md).
 
@@ -25,7 +25,7 @@ po4a uses **text + markdown** options (`markdown`, `yfm_keys=title`, `yfm_lenien
 | API names, paths, commands: backticks; explanatory prose in separate sentences                   | Shorter translatable segments                 |
 | No complex HTML or MDX in `docs/`                                                                | Starlight collection is plain Markdown        |
 
-Run `bun run docs:i18n:check` before PR when touching docs **only after docs i18n is resumed** (currently paused).
+Run `just i18n docs-check` before PR when touching docs **only after docs i18n is resumed** (currently paused).
 
 ## PO workflow (paused — do not run on routine doc edits)
 
@@ -43,7 +43,7 @@ Run `bun run docs:i18n:check` before PR when touching docs **only after docs i18
 ## Agent workflow
 
 1. Edit English in `docs/` (and `messages/en.json` for UI strings).
-2. Run `bun run i18n:po4a` — updates POT/PO stubs.
+2. Run `just i18n po4a` — updates POT/PO stubs.
 3. Fill empty/fuzzy `msgstr` in the relevant PO file(s).
-4. Run `bun run i18n:po4a` again → `bun run i18n:docs:check` → `bun run docs:i18n:check` → `bun run i18n:docs:generated:check`.
-5. UI changes: `bun run paraglide:compile` and `bun scripts/check-paraglide-messages.ts`.
+4. Run `just i18n po4a` again → `just i18n po-health` → `just i18n docs-check` → `just i18n docs-generated-check`.
+5. UI changes: `just i18n paraglide` and `bun scripts/check-paraglide-messages.ts`.

@@ -44,7 +44,7 @@ async function seedRuntimeConfig(url: string): Promise<void> {
 function assertStandaloneBuilt(): void {
   if (existsSync(standaloneBin)) return;
   throw new Error(
-    "dist/anima-executable/anima 不存在；请先运行 `bun run build:cli:executable`（CI Quality 作业会在集成测试前构建）",
+    "dist/anima-executable/anima 不存在；请先运行 `just pack cli`（CI Quality 作业会在集成测试前构建）",
   );
 }
 

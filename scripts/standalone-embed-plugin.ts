@@ -49,7 +49,7 @@ export function createStandaloneEmbedPlugin(opts: {
           );
         }
 
-        const contents = `/** AUTO-INJECTED by scripts/standalone-embed-plugin.ts during build:cli:executable */
+        const contents = `/** AUTO-INJECTED by scripts/standalone-embed-plugin.ts during just pack cli */
 import type { ComponentBuildMeta } from "@freeanima/core/config/build-meta.parse";
 
 export type StandaloneEmbedFile = {

@@ -24,6 +24,6 @@ if ! command -v java >/dev/null 2>&1; then
   exit 1
 fi
 if ! command -v adb >/dev/null 2>&1; then
-  echo "未找到 adb，请运行: bun run setup:sdk" >&2
+  echo "未找到 adb，请运行: just install android" >&2
   exit 1
 fi

@@ -4,14 +4,14 @@
 
 - Full type annotations on new and touched code
 - **Relative imports must include `.ts` / `.tsx` suffix** (oxlint `import/extensions`)
-- **Relative import depth**（`bun run import-depth`）：`src/`、`scripts/`、`tests/` 内相对路径最多 `../../`（禁止 `../../../` 及以上）；禁止 `../src/` 形式（跨目录引用 `src/` 须用 `@freeanima/*`）
+- **Relative import depth**（`bun scripts/check-import-depth.ts`）：`src/`、`scripts/`、`tests/` 内相对路径最多 `../../`（禁止 `../../../` 及以上）；禁止 `../src/` 形式（跨目录引用 `src/` 须用 `@freeanima/*`）
 - **Base compiler flags** ([`tsconfig.base.json`](../../tsconfig.base.json)): `strict`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noImplicitOverride`, `allowUnreachableCode: false`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`
-- **Paraglide types**: [`types/paraglide-messages.generated.d.ts`](../../types/paraglide-messages.generated.d.ts) is generated from `messages/en.json` (`bun scripts/gen-paraglide-message-types.ts`; optional via `bun run i18n:check:all`)
+- **Paraglide types**: [`types/paraglide-messages.generated.d.ts`](../../types/paraglide-messages.generated.d.ts) is generated from `messages/en.json` (`bun scripts/gen-paraglide-message-types.ts`; optional via `just i18n check`)
 - **Optional props**: with `exactOptionalPropertyTypes`, do not pass `prop: undefined` — use `omitUndefined()` from `@freeanima/core/util` or conditional spread
 
 ## Lint (oxlint)
 
-- **Commands**: `bun run lint`（含 type-aware，`options.typeAware: true`）；`bun run lint:fix`；纳入 `bun run check`。
+- **Commands**: `just qa lint`（含 type-aware，`options.typeAware: true`）；`just qa lint-fix`；纳入 `just check`。
 - **依赖**: `oxlint` + `oxlint-tsgolint`（type-aware 规则需 TS 语义）。
 - **Config**: [`.oxlintrc.json`](../../.oxlintrc.json) — `correctness` 与 `suspicious` 为 error；type-aware 下显式启用的 `typescript/*` 见下。
 - **Type-aware error 规则**（勿随意 disable）:
@@ -108,8 +108,8 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 | Step | Command / action                              | Output                                                                |
 | ---- | --------------------------------------------- | --------------------------------------------------------------------- |
 | 1    | Change Drizzle schema (`src/core/db/schema/`) | TypeScript SSOT                                                       |
-| 2    | `DATABASE_URL=… bun run db:generate`          | `src/core/migrations/{ts}_{name}/migration.sql` + **`snapshot.json`** |
-| 3    | `DATABASE_URL=… bun run db:migrate`           | PG applies DDL; production may auto-migrate on `anima service` start  |
+| 2    | `DATABASE_URL=… just db generate`             | `src/core/migrations/{ts}_{name}/migration.sql` + **`snapshot.json`** |
+| 3    | `DATABASE_URL=… just db migrate`              | PG applies DDL; production may auto-migrate on `anima service` start  |
 
 **Forbidden**:
 
