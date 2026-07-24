@@ -146,6 +146,7 @@ if (!existsSync(androidGen)) {
 }
 
 run("bun", ["scripts/patch-tauri-android.ts"], "patch-tauri-android", root);
+run("bun", ["scripts/generate-brand-icons.ts"], "brand-icons", root);
 
 console.log("[install-android-tauri] 完成。下一步：just pack-android");
 process.exit(0);

@@ -46,7 +46,20 @@ export async function fetchCompanionConfig(): Promise<CompanionConfig> {
   return wrapHabitatConfig(cfg);
 }
 
-/** Overlay 运行时：从本地 sidecar 读取 instance_id / sap / 缓存配置 */
+/** Overlay 运行时：Portal 壳走 Habitat RPC；无壳时才回退 sidecar（dev HTTP）。 */
+export async function fetchOverlayCompanionConfig(): Promise<CompanionConfig> {
+  const shell = window.portalShell;
+  if (shell?.isNativeShell || shell?.isTauri) {
+    return loadHabitatCompanionSettingsConfig();
+  }
+  try {
+    return await fetchSidecarRuntimeConfig();
+  } catch {
+    return loadHabitatCompanionSettingsConfig();
+  }
+}
+
+/** @deprecated Overlay 请用 fetchOverlayCompanionConfig */
 export async function fetchSidecarRuntimeConfig(): Promise<CompanionConfig> {
   const base = await resolveSidecarOrigin();
   const res = await fetch(`${base}/api/config`);

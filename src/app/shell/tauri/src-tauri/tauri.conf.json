@@ -43,6 +43,11 @@
     "resources": ["companion-dist/"],
     "android": {
       "minSdkVersion": 26
+    },
+    "windows": {
+      "nsis": {
+        "installerHooks": "./windows/hooks.nsh"
+      }
     }
   },
   "plugins": {}

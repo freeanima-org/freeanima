@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import {
-  fetchSidecarRuntimeConfig,
+  fetchOverlayCompanionConfig,
   loadHabitatCompanionSettingsConfig,
   resetSidecarOriginCache,
   saveSettings,
@@ -169,7 +169,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   async init() {
     set({ loading: true, error: null });
     try {
-      const cfg = await fetchSidecarRuntimeConfig();
+      const cfg = await fetchOverlayCompanionConfig();
       get().applyConfig(cfg);
     } catch (e) {
       set({
@@ -195,7 +195,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   async refreshConfig() {
     try {
       const cfg = isCompanionOverlay()
-        ? await fetchSidecarRuntimeConfig()
+        ? await fetchOverlayCompanionConfig()
         : await loadHabitatCompanionSettingsConfig();
       get().applyConfig(cfg);
     } catch (e) {

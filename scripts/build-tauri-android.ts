@@ -77,6 +77,13 @@ const patch = spawnSync("bun", ["scripts/patch-tauri-android.ts"], {
 });
 if (patch.status !== 0) process.exit(patch.status ?? 1);
 
+console.log("[package:android:tauri] brand icons…");
+const brand = spawnSync("bun", ["scripts/generate-brand-icons.ts"], {
+  cwd: root,
+  stdio: "inherit",
+});
+if (brand.status !== 0) process.exit(brand.status ?? 1);
+
 console.log("[package:android:tauri] prepare mobile ui…");
 const prep = spawnSync("bun", ["scripts/prepare-tauri-ui.ts"], {
   cwd: root,

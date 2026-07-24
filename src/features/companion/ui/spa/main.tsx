@@ -19,6 +19,21 @@ import {
 } from "@freeanima/features/companion/ui/spa/lib/portal-shell.ts";
 import { companionDebug } from "@freeanima/features/companion/ui/spa/lib/companion-debug.ts";
 import { useRef } from "react";
+import {
+  isTauriMobileUserAgent,
+  isTauriRuntime,
+} from "@freeanima/frontend/shell-sdk/tauri-runtime";
+
+async function bootstrapCompanionShell(): Promise<void> {
+  if (!isTauriRuntime()) return;
+  if (isTauriMobileUserAgent()) {
+    // companion overlay 仅桌面；移动不应加载本 SPA
+    return;
+  }
+  const { bootstrapTauriBridge } =
+    await import("@freeanima/app/shell/tauri/bridge/bootstrap-tauri-desktop.ts");
+  await bootstrapTauriBridge();
+}
 
 function ClickThroughManager() {
   const hitTestFn = useCompanionStore((s) => s.hitTestFn);
@@ -165,8 +180,15 @@ function CompanionWindow() {
 
 const rootEl = document.getElementById("root");
 if (rootEl === null) throw new Error("root element not found");
-createRoot(rootEl).render(
-  <StrictMode>
-    <CompanionWindow />
-  </StrictMode>,
-);
+
+void bootstrapCompanionShell()
+  .catch((err) => {
+    console.error("[companion] portalShell bootstrap failed", err);
+  })
+  .finally(() => {
+    createRoot(rootEl).render(
+      <StrictMode>
+        <CompanionWindow />
+      </StrictMode>,
+    );
+  });
