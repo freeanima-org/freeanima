@@ -9,6 +9,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
 
+import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
+
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const tauriDir = join(root, "src/app/shell/tauri");
 const androidDir = join(tauriDir, "src-tauri/gen/android");
@@ -22,10 +24,16 @@ if (!existsSync(androidDir)) {
   process.exit(1);
 }
 
-const r = spawnSync("bunx", ["tauri", "android", "dev"], {
+const identity = applyTauriShellIdentity({ target: "mobile" });
+const env = {
+  ...process.env,
+  FREEANIMA_BUILD_CHANNEL: identity.channel,
+};
+
+const r = spawnSync("bunx", ["tauri", "android", "dev", "--config", identity.configArg], {
   cwd: tauriDir,
   stdio: "inherit",
   shell: true,
-  env: process.env,
+  env,
 });
 process.exit(r.status ?? 1);

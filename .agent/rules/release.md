@@ -72,11 +72,14 @@ Specify version in commit body with `Release-As: x.y.z` (see [Release Please doc
 
 正式 Release（`vX.Y.Z`）与 canary Pre-release **共用** [`.github/workflows/package-artifacts.yml`](../../.github/workflows/package-artifacts.yml)：在 **ubuntu-latest** 上构建并上传三端产物（Windows Desktop 为 Linux 交叉编译，不再使用 Windows runner）。
 
-| 产物                     | 文件名（与 updater 匹配）                                   |
-| ------------------------ | ----------------------------------------------------------- |
-| Linux standalone         | `anima-linux-x64.tar.gz`                                    |
-| Desktop Windows NSIS     | `freeanima-desktop-windows-x64-setup.exe`                   |
-| Mobile Android debug APK | `freeanima-mobile-android.apk`（暂不签名，`assembleDebug`） |
+| 产物                   | 固定名（updater）                         | 版本化名（同目录另写一份）                                |
+| ---------------------- | ----------------------------------------- | --------------------------------------------------------- |
+| Linux standalone       | `anima-linux-x64.tar.gz`                  | `anima-linux-x64-{ver}-{channel}.tar.gz`                  |
+| Desktop Windows NSIS   | `freeanima-desktop-windows-x64-setup.exe` | `freeanima-desktop-windows-x64-{ver}-{channel}-setup.exe` |
+| Desktop Linux AppImage | `freeanima-desktop-tauri-linux.AppImage`  | `freeanima-desktop-tauri-linux-{ver}-{channel}.AppImage`  |
+| Mobile Android APK     | `freeanima-mobile-android.apk`            | `freeanima-mobile-android-{ver}-{channel}.apk`            |
+
+`just pack *` 经 [`pack-artifact-names.ts`](../../src/host/core/config/pack-artifact-names.ts) **双写**：版本化主名 + 固定别名（updater / 文档 curl）。`{ver}` 来自 `FREEANIMA_BUILD_VERSION` 或根 `package.json`（`+` → `.`）。本地未设 channel 时为 `dev`。
 
 差异仅 **channel / 版本号 / 发布目标**：
 
@@ -98,7 +101,7 @@ Canary `nextVersion`：有 open Release PR（`autorelease: pending`）则取其 
 
 **本地构建默认 `channel=dev`**（未设 `FREEANIMA_BUILD_CHANNEL` 时）。CI 必须显式设置 `release` / `canary`。构建版本可用 `FREEANIMA_BUILD_VERSION` 覆盖（不改根 `package.json`）。
 
-**分发轨（build-meta `channel`）**：`release` / `canary` / `dev`。`dev` **不可**换轨、不参与 GitHub 包更新；Desktop/Mobile 在 `dev` 下使用独立 appId（`org.freeanima.desktop.dev` / `org.freeanima.app.dev`），避免覆盖正式安装。Standalone / Desktop / Mobile 在轨内检查更新；可在 `release`⇄`canary` 间切换。浏览器仅 PWA，不走 GitHub 包通道。
+**分发轨（build-meta `channel`）**：`release` / `canary` / `dev`。`dev` **不可**换轨、不参与 GitHub 包更新；Desktop/Mobile 在 `dev` 下使用独立 appId（`com.freeanima.portal.dev`），避免覆盖正式安装（`com.freeanima.portal`）；壳默认 home 为 `~/.anima-dev`（正式轨 `~/.anima`，均可用 `FREEANIMA_HOME` 覆盖）。Standalone / Desktop / Mobile 在轨内检查更新；可在 `release`⇄`canary` 间切换。浏览器仅 PWA，不走 GitHub 包通道。
 
 发布使用组织 secret **`FREEANIMA_CI`**。
 

@@ -29,6 +29,7 @@ import {
   createTiktokenWasmPlugin,
   resolveTiktokenWasmPath,
 } from "./tiktoken-wasm-plugin.ts";
+import { emitPackArtifact } from "./emit-pack-artifact.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const OUT_DIR = join(ROOT, "dist/anima-executable");
@@ -154,6 +155,21 @@ async function main(): Promise<void> {
   console.log(`executable ready: ${outfile}`);
   console.log(`  try: ${outfile} --version`);
   console.log(`  try: ${outfile} service status`);
+
+  const tarballStaging = join(OUT_DIR, ".pack-tarball");
+  rmSync(tarballStaging, { recursive: true, force: true });
+  mkdirSync(tarballStaging, { recursive: true });
+  const stagedAnima = join(tarballStaging, "anima");
+  cpSync(outfile, stagedAnima);
+  const rawTar = join(OUT_DIR, "anima-linux-x64.staging.tar.gz");
+  await $`tar -czf ${rawTar} -C ${tarballStaging} anima`.cwd(ROOT);
+  rmSync(tarballStaging, { recursive: true, force: true });
+  emitPackArtifact({
+    kind: "standalone-linux-tarball",
+    sourcePath: rawTar,
+    logPrefix: "[pack cli]",
+  });
+  rmSync(rawTar, { force: true });
 }
 
 await main();

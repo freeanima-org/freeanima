@@ -10,6 +10,9 @@ import { existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 
+import { resolveBuildChannelFromEnv } from "@freeanima/host/core/config/build-meta.ts";
+import { resolveMobileShellIdentity } from "@freeanima/host/core/config/shell-identity.ts";
+
 export type TryAdbInstallResult =
   | { status: "skipped"; reason: string }
   | { status: "installed"; deviceCount: number }
@@ -80,8 +83,13 @@ export function tryAdbInstallApk(
   let exitCode = first.status;
   if (needReplace) {
     if (combined.trim()) process.stdout.write(combined);
-    console.warn(`${logPrefix} 覆盖安装失败，卸载 org.freeanima.app 后重装…`);
-    spawnSync(adb, ["uninstall", "org.freeanima.app"], { stdio: "inherit" });
+    const channel = resolveBuildChannelFromEnv("dev");
+    const appId = resolveMobileShellIdentity(channel).applicationId;
+    // 顺带卸旧包名（org.freeanima.app → com.freeanima.portal 迁移）
+    for (const pkg of [appId, "org.freeanima.app"]) {
+      console.warn(`${logPrefix} 覆盖安装失败，卸载 ${pkg} 后重装…`);
+      spawnSync(adb, ["uninstall", pkg], { stdio: "inherit" });
+    }
     exitCode = spawnSync(adb, ["install", apkPath], { stdio: "inherit" }).status;
   } else if (combined.trim()) {
     process.stdout.write(combined);

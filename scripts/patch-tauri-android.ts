@@ -14,7 +14,7 @@ const manifestPath = join(androidMain, "AndroidManifest.xml");
 const xmlDir = join(androidMain, "res/xml");
 const nscPath = join(xmlDir, "network_security_config.xml");
 const pluginSrcDir = join(root, "src/app/shell/tauri/android-plugins/apk-installer");
-const pluginKtDest = join(androidMain, "java/org/freeanima/app/apk/ApkInstallerPlugin.kt");
+const pluginKtDest = join(androidMain, "java/com/freeanima/portal/apk/ApkInstallerPlugin.kt");
 const filePathsDest = join(xmlDir, "file_paths.xml");
 
 const NSC = `<?xml version="1.0" encoding="utf-8"?>

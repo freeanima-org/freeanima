@@ -11,25 +11,26 @@ export type MobileShellIdentity = {
   appName: string;
 };
 
+/** 正式 / canary / release：对齐 freeanima.com reverse-DNS，不以 `.app` 结尾 */
 const DESKTOP_RELEASE: DesktopShellIdentity = {
-  appId: "org.freeanima.desktop",
-  productName: "FreeAnima Desktop",
-  executableName: "FreeAnima-Desktop",
+  appId: "com.freeanima.portal",
+  productName: "FreeAnima",
+  executableName: "FreeAnima",
 };
 
 const DESKTOP_DEV: DesktopShellIdentity = {
-  appId: "org.freeanima.desktop.dev",
-  productName: "FreeAnima Desktop Dev",
-  executableName: "FreeAnima-Desktop-Dev",
+  appId: "com.freeanima.portal.dev",
+  productName: "FreeAnima Dev",
+  executableName: "FreeAnima-Dev",
 };
 
 const MOBILE_RELEASE: MobileShellIdentity = {
-  applicationId: "org.freeanima.app",
+  applicationId: "com.freeanima.portal",
   appName: "FreeAnima",
 };
 
 const MOBILE_DEV: MobileShellIdentity = {
-  applicationId: "org.freeanima.app.dev",
+  applicationId: "com.freeanima.portal.dev",
   appName: "FreeAnima Dev",
 };
 

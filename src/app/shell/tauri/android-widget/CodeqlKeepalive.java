@@ -1,4 +1,4 @@
-package org.freeanima.app.widget;
+package com.freeanima.portal.widget;
 
 /**
  * CodeQL / Code Quality 在启用 java-kotlin 语言时需要可抽取源码。

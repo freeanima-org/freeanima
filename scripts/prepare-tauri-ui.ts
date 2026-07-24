@@ -18,6 +18,7 @@ import {
 import { resolveBuildChannelFromEnv } from "@freeanima/host/core/config/build-meta.ts";
 import { resolveNativeBuildMeta } from "@freeanima/app/shell/shared/resolve-native-build-meta.ts";
 import { buildCompanionApp } from "@freeanima/features/companion/lib/exports/build.ts";
+import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const target: ShellBuildTarget =
@@ -222,3 +223,8 @@ if (target === "desktop") {
   }
   console.log("[prepare-tauri] skip companion (mobile)");
 }
+
+applyTauriShellIdentity({
+  target: target === "mobile" ? "mobile" : "desktop",
+  srcTauri,
+});

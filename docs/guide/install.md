@@ -31,7 +31,7 @@ Data directory: `~/.anima/` (override with `FREEANIMA_HOME`). Back it up with yo
 
 ## Standalone (Linux x64)
 
-Release publishes 三端产物（与 canary 对称）：`anima-linux-x64.tar.gz`、`freeanima-desktop-windows-x64-setup.exe`、`freeanima-mobile-android.apk`（CI 固定 upload 签名；本地 `just dev tauri-android` 仍为默认 debug 签名）。Standalone tarball 内含单文件可执行文件 `anima`；版本、service build-meta、migrations 与 Web UI 均嵌入该二进制。
+Release publishes 三端产物（与 canary 对称）：updater 固定名 `anima-linux-x64.tar.gz`、`freeanima-desktop-windows-x64-setup.exe`、`freeanima-mobile-android.apk`（另附同内容的 `{ver}-{channel}` 版本化文件名）。CI 固定 upload 签名；本地 `just dev tauri-android` 仍为默认 debug 签名。Standalone tarball 内含单文件可执行文件 `anima`；版本、service build-meta、migrations 与 Web UI 均嵌入该二进制。
 
 ### 1. Install (recommended)
 
@@ -86,7 +86,7 @@ anima versions                   # 列出本机 anima_*（* = current）
 anima versions use 0.9.2         # 切换 current symlink
 ```
 
-**Mobile Android APK**（`freeanima-mobile-android.apk`）：从 GitHub Release（`canary` 或版本 tag）下载 sideload。CI 使用固定 upload 签名，同 channel 内可覆盖升级。若曾安装旧版未固定签名的包，或密钥轮换后，需先卸载 `FreeAnima`（`org.freeanima.app`）再安装。
+**Mobile Android APK**（`freeanima-mobile-android.apk`）：从 GitHub Release（`canary` 或版本 tag）下载 sideload。CI 使用固定 upload 签名，同 channel 内可覆盖升级。若曾安装旧版未固定签名的包、密钥轮换后、或从旧包名 `org.freeanima.app` 迁移，需先卸载后再安装（正式包名 `com.freeanima.portal`；本地 dev 包为 `com.freeanima.portal.dev`）。
 
 ### 2. Configure
 

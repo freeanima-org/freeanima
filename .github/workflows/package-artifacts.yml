@@ -89,14 +89,15 @@ jobs:
       - name: Pack artifact
         run: |
           set -euo pipefail
-          cd dist/anima-executable
-          tar -czf ../../anima-linux-x64.tar.gz anima
-          ls -lh ../../anima-linux-x64.tar.gz
+          ls -lh dist/anima-linux-x64*.tar.gz
+          test -f dist/anima-linux-x64.tar.gz
 
       - uses: actions/upload-artifact@v7
         with:
           name: package-linux-standalone
-          path: anima-linux-x64.tar.gz
+          path: |
+            dist/anima-linux-x64.tar.gz
+            dist/anima-linux-x64-*.tar.gz
           if-no-files-found: error
 
   desktop-windows:
@@ -145,20 +146,15 @@ jobs:
       - name: 收集安装包
         run: |
           set -euo pipefail
-          mkdir -p dist
-          installer="dist/freeanima-desktop-tauri-windows-x64-setup.exe"
-          if [[ ! -f "$installer" ]]; then
-            echo "missing $installer" >&2
-            ls -la dist/ >&2 || true
-            exit 1
-          fi
-          cp "$installer" dist/freeanima-desktop-windows-x64-setup.exe
           ls -la dist/
+          test -f dist/freeanima-desktop-windows-x64-setup.exe
 
       - uses: actions/upload-artifact@v7
         with:
           name: package-desktop-windows
-          path: dist/freeanima-desktop-windows-x64-setup.exe
+          path: |
+            dist/freeanima-desktop-windows-x64-setup.exe
+            dist/freeanima-desktop-windows-x64-*-setup.exe
           if-no-files-found: error
 
   desktop-tauri:
@@ -195,20 +191,15 @@ jobs:
       - name: Collect bundle
         run: |
           set -euo pipefail
-          mkdir -p dist
-          bundle="$(find src/app/shell/tauri/src-tauri/target/release/bundle -type f -name '*.AppImage' | head -1 || true)"
-          if [[ -z "$bundle" ]]; then
-            echo "No AppImage found; listing bundle dir" >&2
-            find src/app/shell/tauri/src-tauri/target/release/bundle -type f | head -50 >&2 || true
-            exit 1
-          fi
-          cp "$bundle" dist/freeanima-desktop-tauri-linux.AppImage
           ls -la dist/
+          test -f dist/freeanima-desktop-tauri-linux.AppImage
 
       - uses: actions/upload-artifact@v7
         with:
           name: package-desktop-tauri
-          path: dist/freeanima-desktop-tauri-linux.AppImage
+          path: |
+            dist/freeanima-desktop-tauri-linux.AppImage
+            dist/freeanima-desktop-tauri-linux-*.AppImage
           if-no-files-found: error
 
   mobile-android:
@@ -269,14 +260,15 @@ jobs:
           # shellcheck source=scripts/export-android-signing-env.sh
           source scripts/export-android-signing-env.sh
           just pack tauri-android
-          mkdir -p dist
-          cp dist/freeanima-mobile-tauri-android.apk dist/freeanima-mobile-android.apk
-          ls -lh dist/freeanima-mobile-android.apk
+          ls -lh dist/freeanima-mobile-android*.apk
+          test -f dist/freeanima-mobile-android.apk
 
       - uses: actions/upload-artifact@v7
         with:
           name: package-mobile-android
-          path: dist/freeanima-mobile-android.apk
+          path: |
+            dist/freeanima-mobile-android.apk
+            dist/freeanima-mobile-android-*.apk
           if-no-files-found: error
 
   publish:
@@ -324,9 +316,13 @@ jobs:
           body: ${{ inputs.release_body }}
           files: |
             artifacts/anima-linux-x64.tar.gz
+            artifacts/anima-linux-x64-*.tar.gz
             artifacts/freeanima-desktop-tauri-linux.AppImage
+            artifacts/freeanima-desktop-tauri-linux-*.AppImage
             artifacts/freeanima-desktop-windows-x64-setup.exe
+            artifacts/freeanima-desktop-windows-x64-*-setup.exe
             artifacts/freeanima-mobile-android.apk
+            artifacts/freeanima-mobile-android-*.apk
           fail_on_unmatched_files: true
 
       - name: Publish / update Release (preserve body)
@@ -341,7 +337,11 @@ jobs:
           token: ${{ secrets.FREEANIMA_CI }}
           files: |
             artifacts/anima-linux-x64.tar.gz
+            artifacts/anima-linux-x64-*.tar.gz
             artifacts/freeanima-desktop-tauri-linux.AppImage
+            artifacts/freeanima-desktop-tauri-linux-*.AppImage
             artifacts/freeanima-desktop-windows-x64-setup.exe
+            artifacts/freeanima-desktop-windows-x64-*-setup.exe
             artifacts/freeanima-mobile-android.apk
+            artifacts/freeanima-mobile-android-*.apk
           fail_on_unmatched_files: true

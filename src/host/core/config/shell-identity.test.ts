@@ -28,20 +28,20 @@ describe("resolveBuildVersionFromEnv", () => {
 
 describe("shell-identity", () => {
   it("keeps release/canary on production identity", () => {
-    expect(resolveDesktopShellIdentity("release").appId).toBe("org.freeanima.desktop");
-    expect(resolveDesktopShellIdentity("canary").productName).toBe("FreeAnima Desktop");
-    expect(resolveMobileShellIdentity("release").applicationId).toBe("org.freeanima.app");
+    expect(resolveDesktopShellIdentity("release").appId).toBe("com.freeanima.portal");
+    expect(resolveDesktopShellIdentity("canary").productName).toBe("FreeAnima");
+    expect(resolveMobileShellIdentity("release").applicationId).toBe("com.freeanima.portal");
     expect(resolveMobileShellIdentity("canary").appName).toBe("FreeAnima");
   });
 
   it("uses separate identity for dev", () => {
     expect(resolveDesktopShellIdentity("dev")).toEqual({
-      appId: "org.freeanima.desktop.dev",
-      productName: "FreeAnima Desktop Dev",
-      executableName: "FreeAnima-Desktop-Dev",
+      appId: "com.freeanima.portal.dev",
+      productName: "FreeAnima Dev",
+      executableName: "FreeAnima-Dev",
     });
     expect(resolveMobileShellIdentity("dev")).toEqual({
-      applicationId: "org.freeanima.app.dev",
+      applicationId: "com.freeanima.portal.dev",
       appName: "FreeAnima Dev",
     });
   });

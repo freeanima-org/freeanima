@@ -6,7 +6,7 @@ use tauri::{
 };
 
 #[cfg(target_os = "android")]
-const PLUGIN_IDENTIFIER: &str = "org.freeanima.app.apk";
+const PLUGIN_IDENTIFIER: &str = "com.freeanima.portal.apk";
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
   PluginBuilder::new("apk-installer")

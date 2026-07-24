@@ -1,4 +1,4 @@
-package org.freeanima.app.apk
+package com.freeanima.portal.apk
 
 import android.app.Activity
 import android.content.Intent
