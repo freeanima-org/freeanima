@@ -16,25 +16,25 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Yaml Front Matter Hash Value: title
-#: docs/guide/offline-platform.md:1
+#: docs/modules/offline-platform.md:1
 #, fuzzy, no-wrap
 #| msgid "Platform"
 msgid "Offline Platform"
 msgstr "平台"
 
 #. type: Title #
-#: docs/guide/offline-platform.md:5
+#: docs/modules/offline-platform.md:5
 #, no-wrap
 msgid "离线平台"
 msgstr "离线平台"
 
 #. type: Plain text
-#: docs/guide/offline-platform.md:8
+#: docs/modules/offline-platform.md:8
 msgid "FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier 编号）："
 msgstr "FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier 编号）："
 
 #. type: Plain text
-#: docs/guide/offline-platform.md:15
+#: docs/modules/offline-platform.md:15
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Round | Intent                                                                  |\n"
@@ -59,18 +59,18 @@ msgstr ""
 "| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
 
 #. type: Plain text
-#: docs/guide/offline-platform.md:17
+#: docs/modules/offline-platform.md:17
 msgid "可写模块统一用 `offlineWritable: true` 标记（outbox 模块）。"
 msgstr "可写模块统一用 `offlineWritable: true` 标记（outbox 模块）。"
 
 #. type: Title ##
-#: docs/guide/offline-platform.md:18
+#: docs/modules/offline-platform.md:18
 #, no-wrap
 msgid "词表"
 msgstr "词表"
 
 #. type: Plain text
-#: docs/guide/offline-platform.md:31
+#: docs/modules/offline-platform.md:31
 #, no-wrap
 msgid ""
 "| 概念         | 叫法                            | 代码                                                  | 含义                                        |\n"
@@ -98,35 +98,35 @@ msgstr ""
 "| 连接状态 UI  | connectivity                    | `connectivity-notice` / `ShellConnectivityBar`        | 断网 vs Habitat 未连；**不是** outbox       |\n"
 
 #. type: Title ##
-#: docs/guide/offline-platform.md:32
+#: docs/modules/offline-platform.md:32
 #, no-wrap
 msgid "平台原语（shell-sdk）"
 msgstr "平台原语（shell-sdk）"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:42
+#: docs/modules/offline-platform.md:42
 msgid "`offline-cache` — snapshot KV"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:42
+#: docs/modules/offline-platform.md:42
 msgid "`offline-outbox` — 跨模块写队列"
 msgstr "`offline-outbox` — 跨模块写队列"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:42
+#: docs/modules/offline-platform.md:42
 msgid ""
 "`offline-id-map` / `offline-temp-id` — 本地负 id → server id；"
 "`subscribeIdMappings` 供 UI remap"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:42
+#: docs/modules/offline-platform.md:42
 msgid "`offline-module-registry` — Rpc / Stream 双适配器注册"
 msgstr "`offline-module-registry` — Rpc / Stream 双适配器注册"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:42
+#: docs/modules/offline-platform.md:42
 msgid ""
 "`offline-sync` — 重连/可见时 orchestrator flush + refreshAll；flush 锁尾触"
 "发；compact 后删除被吸收的 IDB op"
@@ -135,7 +135,7 @@ msgstr ""
 "发；compact 后删除被吸收的 IDB op"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:42
+#: docs/modules/offline-platform.md:42
 msgid ""
 "`offline-cache-first` — `withOfflineCache()`：**在线栖息地优先** / 离线只读快"
 "照（可与 IDB 并行读作失败回退）"
@@ -144,7 +144,7 @@ msgstr ""
 "照（可与 IDB 并行读作失败回退）"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:42
+#: docs/modules/offline-platform.md:42
 msgid ""
 "`prefer-online-write` — `preferOnlineWrite()`：在线写优先 Habitat RPC；仅网"
 "络/传输失败回退 outbox；业务错误直接抛出"
@@ -153,7 +153,7 @@ msgstr ""
 "络/传输失败回退 outbox；业务错误直接抛出"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:42
+#: docs/modules/offline-platform.md:42
 msgid ""
 "`habitat-fetch-gate` — `isHabitatFetchAvailable()`：断网 **或** Habitat 非 "
 "`connected` 时不发起 Habitat RPC 读/flush，只读 IndexedDB 快照"
@@ -162,26 +162,26 @@ msgstr ""
 "`connected` 时不发起 Habitat RPC 读/flush，只读 IndexedDB 快照"
 
 #. type: Title ##
-#: docs/guide/offline-platform.md:43
+#: docs/modules/offline-platform.md:43
 #, no-wrap
 msgid "在线栖息地优先 / 离线本地优先"
 msgstr "在线栖息地优先 / 离线本地优先"
 
 #. type: Plain text
-#: docs/guide/offline-platform.md:46
+#: docs/modules/offline-platform.md:46
 msgid ""
 "`isHabitatFetchAvailable()` = `navigator.onLine !== false` **且** "
 "`getHabitatRpcConnectionState() === \"connected\"`。"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/offline-platform.md:47
+#: docs/modules/offline-platform.md:47
 #, no-wrap
 msgid "读"
 msgstr "读"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:52
+#: docs/modules/offline-platform.md:52
 msgid ""
 "栖息地可用：必打 Habitat（缓存命中不短路）；成功后异步写回本地 KV；fetch 失败"
 "回退快照"
@@ -190,25 +190,25 @@ msgstr ""
 "回退快照"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:52
+#: docs/modules/offline-platform.md:52
 msgid "栖息地不可用：只读本地；无缓存则抛 offlineError"
 msgstr "栖息地不可用：只读本地；无缓存则抛 offlineError"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:52
+#: docs/modules/offline-platform.md:52
 msgid ""
 "snapshot / outbox 模块 list·get：优先 `withOfflineCache()`；手写路径须同语义"
 msgstr ""
 "snapshot / outbox 模块 list·get：优先 `withOfflineCache()`；手写路径须同语义"
 
 #. type: Title ###
-#: docs/guide/offline-platform.md:53
+#: docs/modules/offline-platform.md:53
 #, no-wrap
 msgid "写（全体 outbox 模块：在线不入 outbox）"
 msgstr "写（全体 outbox 模块：在线不入 outbox）"
 
 #. type: Plain text
-#: docs/guide/offline-platform.md:60
+#: docs/modules/offline-platform.md:60
 #, no-wrap
 msgid ""
 "| 形状          | 模块                   | 在线                                                                                                                      | 离线 / 传输失败                                              |\n"
@@ -219,12 +219,12 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:63
+#: docs/modules/offline-platform.md:63
 msgid "业务校验 / 尾冲突等错误抛给 UI，不进「可自动重试」队列"
 msgstr "业务校验 / 尾冲突等错误抛给 UI，不进「可自动重试」队列"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:63
+#: docs/modules/offline-platform.md:63
 msgid ""
 "模块接线：gate / 错误分流认 sdk（`preferOnlineWrite` / "
 "`isRetriableOfflineWriteError`）；不抽泛型 CRUD 框架"
@@ -233,13 +233,13 @@ msgstr ""
 "`isRetriableOfflineWriteError`）；不抽泛型 CRUD 框架"
 
 #. type: Title ###
-#: docs/guide/offline-platform.md:64
+#: docs/modules/offline-platform.md:64
 #, no-wrap
 msgid "Flush / 同步 UI"
 msgstr "Flush / 同步 UI"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:71
+#: docs/modules/offline-platform.md:71
 msgid ""
 "`flushOfflineModule` / `flushAllOfflineModules`：gate 为 false 时 no-op，重连"
 "后由 `OfflineSyncBootstrap` 触发；flush 锁尾触发"
@@ -248,12 +248,12 @@ msgstr ""
 "后由 `OfflineSyncBootstrap` 触发；flush 锁尾触发"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:71
+#: docs/modules/offline-platform.md:71
 msgid "自动 flush 连续失败达到 5 次后停止重试"
 msgstr "自动 flush 连续失败达到 5 次后停止重试"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:71
+#: docs/modules/offline-platform.md:71
 msgid ""
 "**Bootstrap toast**：展示 **failed / stale**（任意连接状态）；纯 **pending** "
 "仅在 Habitat **未** `connected` 时展示。`connected` 下正常排队/在线直发不得弹"
@@ -264,21 +264,21 @@ msgstr ""
 "「重新连接并全部重试」"
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:71
+#: docs/modules/offline-platform.md:71
 msgid ""
 "失败/冲突 toast：单条 **重试** + **丢弃**；「重连并全部重试」仅用于未连接时的"
 "纯 pending toast"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/offline-platform.md:71
+#: docs/modules/offline-platform.md:71
 msgid ""
 "chat 流式 flush 在离开聊天页时回退到 headless context，全局 bar 仍可 flush"
 msgstr ""
 "chat 流式 flush 在离开聊天页时回退到 headless context，全局 bar 仍可 flush"
 
 #. type: Plain text
-#: docs/guide/offline-platform.md:73
+#: docs/modules/offline-platform.md:73
 msgid ""
 "写 RPC 可选 `client_op_id`；flush 重试使用同一 id；create 响应含完整 `item` "
 "供 id-map 写入。"
@@ -287,18 +287,18 @@ msgstr ""
 "供 id-map 写入。"
 
 #. type: Title ##
-#: docs/guide/offline-platform.md:74
+#: docs/modules/offline-platform.md:74
 #, no-wrap
 msgid "Temp id 生命周期契约（CRUD outbox）"
 msgstr "Temp id 生命周期契约（CRUD outbox）"
 
 #. type: Plain text
-#: docs/guide/offline-platform.md:77
+#: docs/modules/offline-platform.md:77
 msgid "create flush 成功后，本地世界里不得再以「裸 temp id」作为查找键："
 msgstr "create flush 成功后，本地世界里不得再以「裸 temp id」作为查找键："
 
 #. type: Bullet: '1. '
-#: docs/guide/offline-platform.md:83
+#: docs/modules/offline-platform.md:83
 msgid ""
 "**Lookup 前解析**：update / delete / append 若传入 temp id，先经 "
 "`getIdMapping` 解析再查本地列表"
@@ -307,7 +307,7 @@ msgstr ""
 "`getIdMapping` 解析再查本地列表"
 
 #. type: Bullet: '2. '
-#: docs/guide/offline-platform.md:83
+#: docs/modules/offline-platform.md:83
 msgid ""
 "**Flush 后立刻 rewrite KV**：create 成功写 id-map 的同时，把本地列表中的 "
 "temp 行改成 server id（不要只靠 `refreshAll` 丢掉 temp）"
@@ -316,19 +316,19 @@ msgstr ""
 "temp 行改成 server id（不要只靠 `refreshAll` 丢掉 temp）"
 
 #. type: Bullet: '3. '
-#: docs/guide/offline-platform.md:83
+#: docs/modules/offline-platform.md:83
 msgid ""
 "**UI remap**：订阅 `subscribeIdMappings`，把选中态 / 列表中的 temp 换成 real"
 msgstr ""
 "**UI remap**：订阅 `subscribeIdMappings`，把选中态 / 列表中的 temp 换成 real"
 
 #. type: Bullet: '4. '
-#: docs/guide/offline-platform.md:83
+#: docs/modules/offline-platform.md:83
 msgid "**Compact 持久化**：`compactOutbox` 吸收的原始 op 必须从 IDB 删除"
 msgstr "**Compact 持久化**：`compactOutbox` 吸收的原始 op 必须从 IDB 删除"
 
 #. type: Bullet: '5. '
-#: docs/guide/offline-platform.md:83
+#: docs/modules/offline-platform.md:83
 msgid ""
 "**Allocator seed**：写前 `seedTempIdAllocatorFromIdMap`，避免刷新后复用仍映射"
 "中的负 id"
@@ -337,7 +337,7 @@ msgstr ""
 "中的负 id"
 
 #. type: Plain text
-#: docs/guide/offline-platform.md:85
+#: docs/modules/offline-platform.md:85
 msgid ""
 "在线 write-through create 不产生 temp id，不受本契约约束。Pomodoro（Hybrid）"
 "不使用 temp entity id；session 用 `client_op_id` 幂等。"
@@ -346,30 +346,30 @@ msgstr ""
 "不使用 temp entity id；session 用 `client_op_id` 幂等。"
 
 #. type: Title ##
-#: docs/guide/offline-platform.md:86
+#: docs/modules/offline-platform.md:86
 #, no-wrap
 msgid "接入清单"
 msgstr "接入清单"
 
 #. type: Bullet: '1. '
-#: docs/guide/offline-platform.md:93
+#: docs/modules/offline-platform.md:93
 msgid "Habitat 写 RPC 支持 `client_op_id`（若尚未有）"
 msgstr "Habitat 写 RPC 支持 `client_op_id`（若尚未有）"
 
 #. type: Bullet: '2. '
-#: docs/guide/offline-platform.md:93
+#: docs/modules/offline-platform.md:93
 msgid "实现 `features/<slug>/ui/spa/lib/offline-store.ts`（或 stream adapter）"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/guide/offline-platform.md:93
+#: docs/modules/offline-platform.md:93
 msgid ""
 "`registerOfflineModule(adapter)` + "
 "`registerOfflineModuleCap({ offlineWritable: true })`"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/guide/offline-platform.md:93
+#: docs/modules/offline-platform.md:93
 msgid ""
 "`api.ts`：读走 `withOfflineCache`（或同语义）；写委托 offline-store，入口包 "
 "`preferOnlineWrite`"
@@ -378,24 +378,24 @@ msgstr ""
 "`preferOnlineWrite`"
 
 #. type: Bullet: '5. '
-#: docs/guide/offline-platform.md:93
+#: docs/modules/offline-platform.md:93
 msgid "更新 `docs/guide/remote-access.md`（若边界变化）"
 msgstr "更新 `docs/guide/remote-access.md`（若边界变化）"
 
 #. type: Plain text
-#: docs/guide/offline-platform.md:95
+#: docs/modules/offline-platform.md:95
 msgid "冲突策略：单设备；flush 后 refreshAll，以 Habitat 为准。"
 msgstr "冲突策略：单设备；flush 后 refreshAll，以 Habitat 为准。"
 
 #. type: Title ##
-#: docs/guide/offline-platform.md:96
+#: docs/modules/offline-platform.md:96
 #, fuzzy, no-wrap
 #| msgid "Self layer refresh"
 msgid "Sync vs page refresh"
 msgstr "自我层刷新"
 
 #. type: Plain text
-#: docs/guide/offline-platform.md:98
+#: docs/modules/offline-platform.md:98
 msgid ""
 "`offline-sync` / `OfflineSyncBootstrap` 负责 **sync**（重连与可见时 flush + "
 "有 outbox 模块的 `refreshAll`）。用户点「刷新」或下拉刷新是 **refresh**（当前"

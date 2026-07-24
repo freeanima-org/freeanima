@@ -10,7 +10,7 @@
 
 _A runtime for persistently existing digital life — not just another agent toolkit._
 
-[Docs](https://freeanima.com/docs/) · [Architecture](docs/concepts/architecture.md) · [Security](docs/guide/security.md) · [Issues](https://github.com/freeanima-org/freeanima/issues) · [Website](https://freeanima.com)
+[Docs](https://freeanima.com/docs/) · [Architecture](docs/product/architecture.md) · [Security](docs/ops/security.md) · [Issues](https://github.com/freeanima-org/freeanima/issues) · [Website](https://freeanima.com)
 
 </div>
 
@@ -46,22 +46,22 @@ flowchart TB
   consciousness --> self --> memory --> estate
 ```
 
-Full blueprint: [`docs/concepts/architecture.md`](docs/concepts/architecture.md)
+Full blueprint: [`docs/product/architecture.md`](docs/product/architecture.md)
 
 ## Documentation
 
-| Audience              | Entry                                                                                                 |
-| --------------------- | ----------------------------------------------------------------------------------------------------- |
-| **Docs site**         | [freeanima.com/docs](https://freeanima.com/docs/) · [中文文档](https://freeanima.com/zh-cn/docs/)     |
-| **Repo index**        | [`docs/README.md`](docs/README.md)                                                                    |
-| Deployers / visitors  | [`docs/guide/install.md`](docs/guide/install.md) · [`docs/guide/security.md`](docs/guide/security.md) |
-| AI agents             | [`AGENTS.md`](AGENTS.md) · [`.agent/rules/`](.agent/rules/README.md)                                  |
-| Architecture          | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                      |
-| Digital-life identity | [`docs/concepts/identity.md`](docs/concepts/identity.md)                                              |
+| Audience              | Entry                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------- |
+| **Docs site**         | [freeanima.com/docs](https://freeanima.com/docs/) · [中文文档](https://freeanima.com/zh-cn/docs/) |
+| **Repo index**        | [`docs/README.md`](docs/README.md)                                                                |
+| Deployers / visitors  | [`docs/ops/install.md`](docs/ops/install.md) · [`docs/ops/security.md`](docs/ops/security.md)     |
+| AI agents             | [`AGENTS.md`](AGENTS.md) · [`.agent/rules/`](.agent/rules/README.md)                              |
+| Architecture          | [`docs/product/architecture.md`](docs/product/architecture.md)                                    |
+| Digital-life identity | [`docs/product/identity.md`](docs/product/identity.md)                                            |
 
 ## Quick start
 
-Two runtime modes — **Linux standalone** (recommended for self-host) or **source** (development). Full steps: [`docs/guide/install.md`](docs/guide/install.md).
+Two runtime modes — **Linux standalone** (recommended for self-host) or **source** (development). Full steps: [`docs/ops/install.md`](docs/ops/install.md).
 
 ```bash
 # Standalone (Linux x64; no Bun on host)
@@ -76,7 +76,7 @@ anima --version
 # curl -fsSL https://freeanima.com/install | PROXY=ghproxy-net bash
 ```
 
-Then configure `~/.anima/config.yaml` (at least `database.url`) and run `anima service start`. See [`docs/guide/install.md`](docs/guide/install.md), [`docs/guide/database.md`](docs/guide/database.md), [`docs/guide/security.md`](docs/guide/security.md).
+Then configure `~/.anima/config.yaml` (at least `database.url`) and run `anima service start`. See [`docs/ops/install.md`](docs/ops/install.md), [`docs/ops/database.md`](docs/ops/database.md), [`docs/ops/security.md`](docs/ops/security.md).
 
 **Source / contributors** (requires Bun ≥ 1.3.14):
 
@@ -103,7 +103,7 @@ just install cli
 2. `chmod 700 ~/.anima`
 3. Default bind is `127.0.0.1` only; add your own auth before exposing to the public internet
 4. Review MCP/ACP config; set `enabled: false` on untrusted external servers
-5. HTTP / Habitat have **no built-in authentication** — see [`docs/guide/security.md`](docs/guide/security.md)
+5. HTTP / Habitat have **no built-in authentication** — see [`docs/ops/security.md`](docs/ops/security.md)
 
 ## Open-source statement
 

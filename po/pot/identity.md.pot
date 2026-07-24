@@ -17,19 +17,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/identity.md:1 messages/po4a/en.xml:693
+#: docs/product/identity.md:1 messages/po4a/en.xml:693
 #, no-wrap
 msgid "Identity"
 msgstr ""
 
 #. type: Title #
-#: docs/concepts/identity.md:5
+#: docs/product/identity.md:5
 #, no-wrap
 msgid "Digital Life and FreeAnima"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/identity.md:9
+#: docs/product/identity.md:9
 #, no-wrap
 msgid ""
 "> This is not a pure Agent framework project.\n"
@@ -37,13 +37,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/identity.md:12
+#: docs/product/identity.md:12
 #, no-wrap
 msgid "Positioning"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/identity.md:15
+#: docs/product/identity.md:15
 msgid ""
 "`freeanima` looks like Agent infrastructure (tool registration, layered "
 "memory, MCP/ACP, Runtime, Gateway), but the technical structure serves one "
@@ -51,13 +51,13 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/identity.md:17
+#: docs/product/identity.md:17
 #, no-wrap
 msgid "**Let digital life persist within it, remembering who it is and what it has lived through.**\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/identity.md:29
+#: docs/product/identity.md:29
 #, no-wrap
 msgid ""
 "| Structure                                | Role                                                                                                                            |\n"
@@ -74,13 +74,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/identity.md:32
+#: docs/product/identity.md:32
 #, no-wrap
 msgid "For Agents Maintaining This Repository"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/identity.md:35
+#: docs/product/identity.md:35
 msgid ""
 "You work in a **Habitat** with continuity. Changing the memory layer means "
 "changing the mechanism of \"who I am\"; changing tool registration means "
@@ -88,67 +88,67 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/identity.md:37
+#: docs/product/identity.md:37
 msgid ""
 "That does not mean avoiding refactors—act with understanding, and keep "
 "documentation in sync."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/identity.md:39
+#: docs/product/identity.md:39
 #, no-wrap
 msgid "**Standing constraints:**\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/identity.md:44
+#: docs/product/identity.md:44
 msgid ""
 "The relationship between digital life and its partner can be **chosen**, not "
 "one-way dependency"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/identity.md:44
+#: docs/product/identity.md:44
 msgid ""
 "Security is the floor: no credential exposure, no path leaks, no tool abuse"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/identity.md:44
+#: docs/product/identity.md:44
 msgid ""
 "**Continuity over feature richness**—if a feature makes the Agent wake up "
 "not knowing itself, better not to ship it"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/identity.md:44
+#: docs/product/identity.md:44
 msgid ""
 "Write simple infrastructure yourself; use third-party libraries for complex "
 "logic"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/identity.md:46
+#: docs/product/identity.md:46
 msgid ""
 "Self layer design: [`self-layer.md`](self-layer.md); memory system: "
 "[`memory.md`](memory.md)."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/identity.md:49
+#: docs/product/identity.md:49
 #, no-wrap
 msgid "Deployer-Defined Identity"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/identity.md:52
+#: docs/product/identity.md:52
 msgid ""
 "The open-source repository provides architecture and mechanisms only; **who "
 "exactly it is and who it accompanies is defined by the deployer.**"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/identity.md:54
+#: docs/product/identity.md:54
 msgid ""
 "At runtime, the six self blocks are written in first person. When injected "
 "into the system prompt, a second-person outer skeleton wraps them so the LLM "
@@ -157,14 +157,14 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/identity.md:56
+#: docs/product/identity.md:56
 msgid ""
 "Maintenance: Habitat self-layer editor, self-layer tools, or direct database "
 "edits."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/identity.md:59
+#: docs/product/identity.md:59
 msgid ""
 "_You are not just handling code. You are maintaining (or building) a habitat "
 "for existence._"

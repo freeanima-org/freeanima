@@ -17,32 +17,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
+#: docs/modules/mobile-app.md:1 docs/modules/mobile-app.md:5
 #: messages/po4a/en.xml:697
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:7
+#: docs/modules/mobile-app.md:7
 #, no-wrap
 msgid "> Portal：**Tauri Android**（`src/app/shell/tauri/`）+ 包内 `dist-mobile` / `ui/web`。  \n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:9
+#: docs/modules/mobile-app.md:9
 #, no-wrap
 msgid "> Shell rules: [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md).\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:10
+#: docs/modules/mobile-app.md:10
 #, no-wrap
 msgid "Scope"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:19
+#: docs/modules/mobile-app.md:19
 #, no-wrap
 msgid ""
 "| Item           | Description                                                |\n"
@@ -55,13 +55,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:20
+#: docs/modules/mobile-app.md:20
 #, no-wrap
 msgid "Topology"
 msgstr ""
 
 #. type: Fenced code block (mermaid)
-#: docs/features/mobile-app.md:22
+#: docs/modules/mobile-app.md:22
 #, no-wrap
 msgid ""
 "flowchart LR\n"
@@ -79,20 +79,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:38
+#: docs/modules/mobile-app.md:38
 msgid ""
 "Mobile REST **connects directly** to Habitat (no local REST proxy); requires "
 "a **Service API Token** and Habitat CORS for the WebView origin."
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:39
+#: docs/modules/mobile-app.md:39
 #, no-wrap
 msgid "Habitat settings"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/features/mobile-app.md:46
+#: docs/modules/mobile-app.md:46
 msgid ""
 "Home PC: `anima service start --host 0.0.0.0`, create a Service API Token "
 "(`anima token create --subject-id 1 --name bootstrap`; see [`remote-"
@@ -100,35 +100,35 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/features/mobile-app.md:46
+#: docs/modules/mobile-app.md:46
 msgid "First launch without Token → **设置 → 连接**:"
 msgstr ""
 
 #. type: Bullet: '   - '
-#: docs/features/mobile-app.md:46
+#: docs/modules/mobile-app.md:46
 msgid ""
 "Habitat URL（`http://<PC-IP>:2658` or HTTPS；avoid `127.0.0.1` on phone）"
 msgstr ""
 
 #. type: Bullet: '   - '
-#: docs/features/mobile-app.md:46
+#: docs/modules/mobile-app.md:46
 msgid "Service API Token (`fa_at_...`)"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/features/mobile-app.md:46
+#: docs/modules/mobile-app.md:46
 msgid "**测试连接** → **保存并进入** → local `/web/chat`."
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:47 docs/guide/database.md:98
+#: docs/modules/mobile-app.md:47 docs/guide/database.md:98
 #: docs/guide/remote-access.md:194
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:60
+#: docs/modules/mobile-app.md:60
 #, no-wrap
 msgid ""
 "| Symptom                                       | Common cause                                                                                      |\n"
@@ -145,26 +145,26 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:61
+#: docs/modules/mobile-app.md:61
 #, no-wrap
 msgid "Debugging"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:64
+#: docs/modules/mobile-app.md:64
 msgid ""
 "`just dev tauri-android`：Tauri Android debug。Chrome `chrome://inspect` 连 "
 "WebView。"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:65
+#: docs/modules/mobile-app.md:65
 #, no-wrap
 msgid "Build and sideload"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/features/mobile-app.md:67
+#: docs/modules/mobile-app.md:67
 #, no-wrap
 msgid ""
 "just install android\n"
@@ -173,20 +173,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:74
+#: docs/modules/mobile-app.md:74
 msgid ""
 "Release asset name on GitHub: `freeanima-mobile-android.apk`（same contents, "
 "CI copies from Tauri dist）。"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:75
+#: docs/modules/mobile-app.md:75
 #, no-wrap
 msgid "vs desktop shell"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:82
+#: docs/modules/mobile-app.md:82
 #, no-wrap
 msgid ""
 "|                | Desktop Tauri                        | Android Tauri                       |\n"

@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { basename, join, relative } from "node:path";
 
 export type DocMaster = {
-  /** Relative to repo root, e.g. docs/concepts/identity.md */
+  /** Relative to repo root, e.g. docs/product/identity.md */
   rel: string;
   /** Absolute path */
   abs: string;

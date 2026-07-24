@@ -20,6 +20,6 @@ alwaysApply: true
    - 壳子/布局/交互三维度 → `ui-dimensions.md`
    - Portal 壳 Tauri → `tauri-shell.md`
    - `docs/**` or `po/zh_CN/*.po` → `docs-i18n.md`
-3. Product architecture (cognitive layers, tools, Gateway) → [`docs/concepts/architecture.md`](../../docs/concepts/architecture.md).
+3. Product architecture (cognitive layers, tools, Gateway) → [`docs/product/architecture.md`](../../docs/product/architecture.md).
 4. Code overrides docs when they conflict.
 5. When correcting or refining direction, principles, or philosophy, update the matching doc layer per `AGENTS.md` "Principle & direction maintenance" — same task/PR as code; do not leave changes code-only.

@@ -16,32 +16,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/features/mobile-app.md:1 docs/features/mobile-app.md:5
+#: docs/modules/mobile-app.md:1 docs/modules/mobile-app.md:5
 #: messages/po4a/en.xml:697
 #, no-wrap
 msgid "Mobile app (Android)"
 msgstr "移动端 APP（Android）"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:7
+#: docs/modules/mobile-app.md:7
 #, no-wrap
 msgid "> Portal：**Tauri Android**（`src/app/shell/tauri/`）+ 包内 `dist-mobile` / `ui/web`。  \n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:9
+#: docs/modules/mobile-app.md:9
 #, no-wrap
 msgid "> Shell rules: [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md).\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:10
+#: docs/modules/mobile-app.md:10
 #, no-wrap
 msgid "Scope"
 msgstr "范围"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:19
+#: docs/modules/mobile-app.md:19
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Item       | Description                                              |\n"
@@ -69,13 +69,13 @@ msgstr ""
 "| Habitat 职责   | `/api` REST + `/rpc/v1` WebSocket                          |\n"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:20
+#: docs/modules/mobile-app.md:20
 #, no-wrap
 msgid "Topology"
 msgstr "拓扑"
 
 #. type: Fenced code block (mermaid)
-#: docs/features/mobile-app.md:22
+#: docs/modules/mobile-app.md:22
 #, fuzzy, no-wrap
 #| msgid ""
 #| "flowchart LR\n"
@@ -122,7 +122,7 @@ msgstr ""
 "  **Habitat -->|REST Bearer| Habitat\n"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:38
+#: docs/modules/mobile-app.md:38
 #, fuzzy
 #| msgid ""
 #| "origin (`https://localhost`). Routes use hash (`#/chat`) for WebView "
@@ -136,13 +136,13 @@ msgstr ""
 "hash（`#/chat`）以便 WebView 调试。"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:39
+#: docs/modules/mobile-app.md:39
 #, no-wrap
 msgid "Habitat settings"
 msgstr "Habitat 设置"
 
 #. type: Bullet: '1. '
-#: docs/features/mobile-app.md:46
+#: docs/modules/mobile-app.md:46
 msgid ""
 "Home PC: `anima service start --host 0.0.0.0`, create a Service API Token "
 "(`anima token create --subject-id 1 --name bootstrap`; see [`remote-"
@@ -153,37 +153,37 @@ msgstr ""
 "access.md`](../guide/remote-access.md)）。"
 
 #. type: Bullet: '2. '
-#: docs/features/mobile-app.md:46
+#: docs/modules/mobile-app.md:46
 msgid "First launch without Token → **设置 → 连接**:"
 msgstr "First launch without Token → **设置 → 连接**:"
 
 #. type: Bullet: '   - '
-#: docs/features/mobile-app.md:46
+#: docs/modules/mobile-app.md:46
 msgid ""
 "Habitat URL（`http://<PC-IP>:2658` or HTTPS；avoid `127.0.0.1` on phone）"
 msgstr ""
 
 #. type: Bullet: '   - '
-#: docs/features/mobile-app.md:46
+#: docs/modules/mobile-app.md:46
 #, fuzzy
 #| msgid "Service API Token (`fa_at_...`, printed once at creation)"
 msgid "Service API Token (`fa_at_...`)"
 msgstr "服务 API 令牌（`fa_at_...`，创建时仅打印一次）"
 
 #. type: Bullet: '3. '
-#: docs/features/mobile-app.md:46
+#: docs/modules/mobile-app.md:46
 msgid "**测试连接** → **保存并进入** → local `/web/chat`."
 msgstr "**测试连接** → **保存并进入** → local `/web/chat`."
 
 #. type: Title ##
-#: docs/features/mobile-app.md:47 docs/guide/database.md:98
+#: docs/modules/mobile-app.md:47 docs/guide/database.md:98
 #: docs/guide/remote-access.md:194
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:60
+#: docs/modules/mobile-app.md:60
 #, no-wrap
 msgid ""
 "| Symptom                                       | Common cause                                                                                      |\n"
@@ -200,26 +200,26 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:61
+#: docs/modules/mobile-app.md:61
 #, no-wrap
 msgid "Debugging"
 msgstr "调试"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:64
+#: docs/modules/mobile-app.md:64
 msgid ""
 "`just dev tauri-android`：Tauri Android debug。Chrome `chrome://inspect` 连 "
 "WebView。"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:65
+#: docs/modules/mobile-app.md:65
 #, no-wrap
 msgid "Build and sideload"
 msgstr "构建与侧载"
 
 #. type: Fenced code block (bash)
-#: docs/features/mobile-app.md:67
+#: docs/modules/mobile-app.md:67
 #, no-wrap
 msgid ""
 "just install android\n"
@@ -228,20 +228,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/mobile-app.md:74
+#: docs/modules/mobile-app.md:74
 msgid ""
 "Release asset name on GitHub: `freeanima-mobile-android.apk`（same contents, "
 "CI copies from Tauri dist）。"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/mobile-app.md:75
+#: docs/modules/mobile-app.md:75
 #, no-wrap
 msgid "vs desktop shell"
 msgstr "与桌面壳层对比"
 
 #. type: Plain text
-#: docs/features/mobile-app.md:82
+#: docs/modules/mobile-app.md:82
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Round | Intent                                                                  |\n"

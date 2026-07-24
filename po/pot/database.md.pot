@@ -17,26 +17,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/features/mobile-app.md:47 docs/guide/database.md:98
+#: docs/features/mobile-app.md:47 docs/ops/database.md:98
 #: docs/guide/remote-access.md:194
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/guide/database.md:1 messages/po4a/en.xml:688
+#: docs/ops/database.md:1 messages/po4a/en.xml:688
 #, no-wrap
 msgid "Database"
 msgstr ""
 
 #. type: Title #
-#: docs/guide/database.md:5
+#: docs/ops/database.md:5
 #, no-wrap
 msgid "PostgreSQL Setup and Operations"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:10
+#: docs/ops/database.md:10
 #, no-wrap
 msgid ""
 "> FreeAnima uses PostgreSQL for conversation archives, semantic memory, self layer, and related data.\n"
@@ -45,18 +45,18 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/database.md:11
+#: docs/ops/database.md:11
 #, no-wrap
 msgid "Connection Configuration"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:14
+#: docs/ops/database.md:14
 msgid "Set the database URL in `config.yaml`:"
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/guide/database.md:15
+#: docs/ops/database.md:15
 #, no-wrap
 msgid ""
 "database:\n"
@@ -66,7 +66,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:23
+#: docs/ops/database.md:23
 msgid ""
 "Production **must** set `database.url`. Prefer `env(\"DATABASE_URL\")` over "
 "plaintext passwords in `config.yaml` (Vault is unavailable at cold start). "
@@ -74,14 +74,14 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:25
+#: docs/ops/database.md:25
 msgid ""
 "Optional pool overrides（见 [`src/core/db/pg/client.ts`](../../src/core/db/"
 "pg/client.ts)）:"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:31
+#: docs/ops/database.md:31
 #, no-wrap
 msgid ""
 "| Env                              | Default | Notes                                                                     |\n"
@@ -92,13 +92,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/database.md:32
+#: docs/ops/database.md:32
 #, no-wrap
 msgid "Local Install (Debian)"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/database.md:34
+#: docs/ops/database.md:34
 #, no-wrap
 msgid ""
 "# Install PostgreSQL, create anima db/user (requires sudo)\n"
@@ -109,27 +109,27 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:43
+#: docs/ops/database.md:43
 msgid ""
 "Defaults: PostgreSQL 17, `localhost` only, `scram-sha-256`, dedicated "
 "`anima` database and user."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/database.md:44
+#: docs/ops/database.md:44
 #, no-wrap
 msgid "Extensions (One-Time)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:47
+#: docs/ops/database.md:47
 msgid ""
 "Full-text and vector search require PostgreSQL extensions. The app user "
 "usually cannot `CREATE EXTENSION`; run as superuser:"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/database.md:48
+#: docs/ops/database.md:48
 #, no-wrap
 msgid ""
 "sudo apt install postgresql-17-pgvector   # match psql --version\n"
@@ -137,32 +137,32 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:54
+#: docs/ops/database.md:54
 msgid ""
 "Fresh Debian installs via `setup-postgres-debian.sh` handle extensions "
 "automatically."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/database.md:55
+#: docs/ops/database.md:55
 #, no-wrap
 msgid "Schema Migrations"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:59
+#: docs/ops/database.md:59
 msgid ""
 "**Production (recommended):** When PostgreSQL is configured, `anima service` "
 "**auto-applies** pending schema migrations on startup."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:59
+#: docs/ops/database.md:59
 msgid "**Manual:**"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/database.md:60
+#: docs/ops/database.md:60
 #, no-wrap
 msgid ""
 "DATABASE_URL=\"postgresql://anima:…@127.0.0.1:5432/anima\" \\\n"
@@ -170,18 +170,18 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:66
+#: docs/ops/database.md:66
 msgid "Run after extensions are installed, or restart `anima service`."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/database.md:67
+#: docs/ops/database.md:67
 #, no-wrap
 msgid "`auto_llm_runs` (audit)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:70
+#: docs/ops/database.md:70
 msgid ""
 "Background LLM without user turns (cron agent, sleep pipeline stages) writes "
 "to `auto_llm_runs` instead of creating `conversations`. Retention (optional "
@@ -189,7 +189,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/guide/database.md:71
+#: docs/ops/database.md:71
 #, no-wrap
 msgid ""
 "auto_llm:\n"
@@ -198,39 +198,39 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:78
+#: docs/ops/database.md:78
 msgid ""
 "Purged during sleep-cycle step `conversation-cleanup` (after stale "
 "conversation cleanup). Cron script runs (`no_agent`) use `cron_log` only."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/database.md:79
+#: docs/ops/database.md:79
 #, no-wrap
 msgid "Backups"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:85
+#: docs/ops/database.md:85
 msgid ""
 "**Migrations do not replace backups** — schedule regular full backups (e.g. "
 "`pg_dump`)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:85
+#: docs/ops/database.md:85
 msgid "Back up before destructive changes."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:85
+#: docs/ops/database.md:85
 msgid ""
 "Include `~/.anima/` (`FREEANIMA_HOME` overridable) in backup policy — see "
 "[`security.md`](security.md#data-persistence)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:85
+#: docs/ops/database.md:85
 msgid ""
 "Recommended local stack: hourly `pg_dump` + home tar (short retention), WAL "
 "archive (`archive_mode`), weekly `pg_basebackup` for PITR. Restore logical "
@@ -238,20 +238,20 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/database.md:86
+#: docs/ops/database.md:86
 #, no-wrap
 msgid "Integration Tests (Developers)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:89
+#: docs/ops/database.md:89
 msgid ""
 "Full integration tests require **Docker** for a temporary PostgreSQL "
 "instance:"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/database.md:90
+#: docs/ops/database.md:90
 #, no-wrap
 msgid ""
 "just qa test-integration\n"
@@ -260,12 +260,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:97
+#: docs/ops/database.md:97
 msgid "pre-commit `just qa test-changed` does **not** run integration tests."
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:107
+#: docs/ops/database.md:107
 #, no-wrap
 msgid ""
 "| Symptom                                             | Check                                                                                                                                                                   |\n"
@@ -278,6 +278,6 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/database.md:108
+#: docs/ops/database.md:108
 msgid "More deployment security: [`security.md`](security.md)."
 msgstr ""

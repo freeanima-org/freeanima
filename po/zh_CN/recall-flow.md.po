@@ -16,31 +16,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/recall-flow.md:1 messages/po4a/en.xml:529
+#: docs/cognition/recall-flow.md:1 messages/po4a/en.xml:529
 #, no-wrap
 msgid "Recall Flow"
 msgstr "回忆流程"
 
 #. type: Title #
-#: docs/concepts/recall-flow.md:5
+#: docs/cognition/recall-flow.md:5
 #, no-wrap
 msgid "Unified Recall Retrieval"
 msgstr "统一 Recall 检索"
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:8
+#: docs/cognition/recall-flow.md:8
 #, no-wrap
 msgid "> **v1 ✅ Implemented:** `memory_recall(query)` four-source unified recall, returns `results[]` (distinguished by `memory_type`).\n"
 msgstr "> **v1 ✅ 已实现：** `memory_recall(query)` 四源统一召回，返回 `results[]`（以 `memory_type` 区分）。\n"
 
 #. type: Title ##
-#: docs/concepts/recall-flow.md:9
+#: docs/cognition/recall-flow.md:9
 #, no-wrap
 msgid "v1 Implemented"
 msgstr "v1 已实现"
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:17
+#: docs/cognition/recall-flow.md:17
 #, no-wrap
 msgid ""
 "| Capability        | Description                                                                                            |\n"
@@ -58,13 +58,13 @@ msgstr ""
 "| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
 
 #. type: Title ###
-#: docs/concepts/recall-flow.md:18
+#: docs/cognition/recall-flow.md:18
 #, no-wrap
 msgid "Four Sources"
 msgstr "四源"
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:26
+#: docs/cognition/recall-flow.md:26
 #, no-wrap
 msgid ""
 "| `memory_type`      | Content type                          |\n"
@@ -82,13 +82,13 @@ msgstr ""
 "| `autobiographical` | 叙事标题 + 内容片段              |\n"
 
 #. type: Title ###
-#: docs/concepts/recall-flow.md:27
+#: docs/cognition/recall-flow.md:27
 #, no-wrap
 msgid "Resident Memory"
 msgstr "常驻记忆"
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:30
+#: docs/cognition/recall-flow.md:30
 msgid ""
 "Separate from recall: **pinned** semantic memories plus **most-referenced** "
 "entries are always injected into the system prompt. LLM cites memory ID "
@@ -98,13 +98,13 @@ msgstr ""
 "LLM 在回复中标注记忆 ID 标记；引用计数通过夜间 cron 同步。"
 
 #. type: Title ##
-#: docs/concepts/recall-flow.md:31
+#: docs/cognition/recall-flow.md:31
 #, no-wrap
 msgid "Relationship to Self Layer"
 msgstr "与自我层的关系"
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:34
+#: docs/cognition/recall-flow.md:34
 msgid ""
 "Self layer (six blocks) is **not** retrieved via `memory_recall`—it is "
 "always in the system prompt."
@@ -112,7 +112,7 @@ msgstr ""
 "自我层（六块）**不**通过 `memory_recall` 检索——始终位于 system prompt 中。"
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:39
+#: docs/cognition/recall-flow.md:39
 #, no-wrap
 msgid ""
 "| Layer        | Injection                 | Reason                                            |\n"
@@ -126,13 +126,13 @@ msgstr ""
 "| 记忆层 | 按需 `memory_recall` | 体量大、动态，需要时再搜                |\n"
 
 #. type: Title ##
-#: docs/concepts/recall-flow.md:40
+#: docs/cognition/recall-flow.md:40
 #, no-wrap
 msgid "Future Direction"
 msgstr "未来方向"
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:43
+#: docs/cognition/recall-flow.md:43
 msgid ""
 "Unified recall extending to resource layer (tools, skills, assets) with "
 "preset weighting is tracked in [Issue #47](https://github.com/freeanima-org/"
@@ -142,13 +142,13 @@ msgstr ""
 "(https://github.com/freeanima-org/freeanima/issues/47)。非当前运行时行为。"
 
 #. type: Title ##
-#: docs/concepts/recall-flow.md:44
+#: docs/cognition/recall-flow.md:44
 #, no-wrap
 msgid "Naming Rationale"
 msgstr "命名说明"
 
 #. type: Plain text
-#: docs/concepts/recall-flow.md:46
+#: docs/cognition/recall-flow.md:46
 msgid ""
 "In cognitive psychology, **Recall** is actively pulling stored information "
 "from memory—retrieving what you already stored. Even when scope extends to "

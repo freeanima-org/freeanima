@@ -16,77 +16,77 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title #
-#: docs/concepts/anima-uri.md:1 docs/concepts/anima-uri.md:5
+#: docs/product/anima-uri.md:1 docs/product/anima-uri.md:5
 #, no-wrap
 msgid "Anima URI"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:8
+#: docs/product/anima-uri.md:8
 msgid ""
 "Stable, parseable entity locators for Shell UI (deep links, overlay, "
 "clipboard) and **future** Markdown / rich-text click handling."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:10
+#: docs/product/anima-uri.md:10
 #, no-wrap
 msgid "**Scheme:** `anima:` (no `//`). Example:\n"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/concepts/anima-uri.md:11
+#: docs/product/anima-uri.md:11
 #, no-wrap
 msgid "anima:42?component=task_item&present=overlay\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/anima-uri.md:15
+#: docs/product/anima-uri.md:15
 #, fuzzy, no-wrap
 #| msgid "Notifications"
 msgid "Motivation"
 msgstr "通知"
 
 #. type: Bullet: '- '
-#: docs/concepts/anima-uri.md:20
+#: docs/product/anima-uri.md:20
 msgid ""
 "Recognize and open entities from **text** (Markdown, notices) later via "
 "`openEntityResource`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/anima-uri.md:20
+#: docs/product/anima-uri.md:20
 msgid "Share / deep-link / cross-module open today"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/anima-uri.md:20
+#: docs/product/anima-uri.md:20
 msgid ""
 "Structured FK in PG/Habitat remain **numeric ids** — Anima URI is not a "
 "persistence format"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:22
+#: docs/product/anima-uri.md:22
 msgid ""
 "This task ships: grammar + `parse`/`format` + overlay registry + `task_item` "
 "sample. **Not yet:** Chat Markdown link interception."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/anima-uri.md:23
+#: docs/product/anima-uri.md:23
 #, no-wrap
 msgid "Grammar"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/concepts/anima-uri.md:25
+#: docs/product/anima-uri.md:25
 #, no-wrap
 msgid "anima:{id}[?component={component}][&present=navigate|overlay]\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:34
+#: docs/product/anima-uri.md:34
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Attribute  | Value                                                                                                                                                 |\n"
@@ -109,19 +109,19 @@ msgstr ""
 "| 操作 | 矛盾检测 + 过期标记、拆分、去重合并、置顶维护——四轮顺序执行 |\n"
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:36
+#: docs/product/anima-uri.md:36
 #, no-wrap
 msgid "**No short aliases** (e.g. `task` is invalid). Values must be full component names.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:38
+#: docs/product/anima-uri.md:38
 #, no-wrap
 msgid "**Do not use** `anima://…` as the normative form (id would be mis-parsed as URL host; `anima://42:task_item` is an invalid URL).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:40
+#: docs/product/anima-uri.md:40
 msgid ""
 "Same `id` with different `component=` can open **different** overlays "
 "(entity may carry multiple `components[]`). Registry key is the component "
@@ -129,14 +129,14 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/anima-uri.md:41
+#: docs/product/anima-uri.md:41
 #, fuzzy, no-wrap
 #| msgid "Data Persistence"
 msgid "Layering vs persistence"
 msgstr "数据持久化"
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:47
+#: docs/product/anima-uri.md:47
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Capability        | Description                                                                                            |\n"
@@ -159,7 +159,7 @@ msgstr ""
 "| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:49
+#: docs/product/anima-uri.md:49
 msgid ""
 "Anima URI is a **Shell/UI locator protocol**, not a database foreign key. "
 "User-authored body text that happens to contain `anima:…` is content, not a "
@@ -167,74 +167,74 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/anima-uri.md:50
+#: docs/product/anima-uri.md:50
 #, fuzzy, no-wrap
 #| msgid "Orchestration"
 msgid "Overlay registration"
 msgstr "编排"
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:52
+#: docs/product/anima-uri.md:52
 #, no-wrap
 msgid "Each displayable component may `registerEntityOverlay(component, OverlayComponent)`.  \n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:53
+#: docs/product/anima-uri.md:53
 #, no-wrap
 msgid "`present=overlay` → resolve component (default `primary_component`) → look up registry → `EntityOverlayHost`.  \n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:55
+#: docs/product/anima-uri.md:55
 msgid ""
 "`present=navigate` → map component → Shell path (e.g. `task_item` → `/tasks?"
 "item=…`) via `navigateShellModulePath`."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/anima-uri.md:56
+#: docs/product/anima-uri.md:56
 #, fuzzy, no-wrap
 #| msgid "Out of Scope"
 msgid "Out of scope (for now)"
 msgstr "不在范围内"
 
 #. type: Bullet: '- '
-#: docs/concepts/anima-uri.md:62
+#: docs/product/anima-uri.md:62
 msgid "OS protocol / intent handlers for `anima:`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/anima-uri.md:62
+#: docs/product/anima-uri.md:62
 msgid "Non-entity resources (conversation, …)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/anima-uri.md:62
+#: docs/product/anima-uri.md:62
 msgid "Storing Anima URI strings in FK fields"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/anima-uri.md:62
+#: docs/product/anima-uri.md:62
 msgid "Full Markdown click interception in Chat"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:64
+#: docs/product/anima-uri.md:64
 #, fuzzy
 #| msgid "Entity subjects: [`entity-model.md`](entity-model.md)"
 msgid "See also [`entity-model.md`](entity-model.md)."
 msgstr "实体主体：[`entity-model.md`](entity-model.md)"
 
 #. type: Title ##
-#: docs/concepts/anima-uri.md:65
+#: docs/product/anima-uri.md:65
 #, fuzzy, no-wrap
 #| msgid "Verify installation"
 msgid "Memory citations"
 msgstr "验证安装"
 
 #. type: Plain text
-#: docs/concepts/anima-uri.md:67
+#: docs/product/anima-uri.md:67
 msgid ""
 "Assistant/user message bodies cite entities with `[[anima:{id}]]` or "
 "`[[anima:{id}?component=semantic_memory]]`. Chat Markdown turns these into "

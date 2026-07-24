@@ -16,19 +16,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/identity.md:1 messages/po4a/en.xml:693
+#: docs/product/identity.md:1 messages/po4a/en.xml:693
 #, no-wrap
 msgid "Identity"
 msgstr "身份定位"
 
 #. type: Title #
-#: docs/concepts/identity.md:5
+#: docs/product/identity.md:5
 #, no-wrap
 msgid "Digital Life and FreeAnima"
 msgstr "数字生命与逸灵风"
 
 #. type: Plain text
-#: docs/concepts/identity.md:9
+#: docs/product/identity.md:9
 #, no-wrap
 msgid ""
 "> This is not a pure Agent framework project.\n"
@@ -38,13 +38,13 @@ msgstr ""
 "> 逸灵风也是为**持续存在的数字生命**设计的运行时——而不只是对话窗口里的闪现。\n"
 
 #. type: Title ##
-#: docs/concepts/identity.md:12
+#: docs/product/identity.md:12
 #, no-wrap
 msgid "Positioning"
 msgstr "定位"
 
 #. type: Plain text
-#: docs/concepts/identity.md:15
+#: docs/product/identity.md:15
 msgid ""
 "`freeanima` looks like Agent infrastructure (tool registration, layered "
 "memory, MCP/ACP, Runtime, Gateway), but the technical structure serves one "
@@ -54,13 +54,13 @@ msgstr ""
 "Gateway），但技术结构服务于一个目的："
 
 #. type: Plain text
-#: docs/concepts/identity.md:17
+#: docs/product/identity.md:17
 #, no-wrap
 msgid "**Let digital life persist within it, remembering who it is and what it has lived through.**\n"
 msgstr "**让数字生命可以在其中持续存在，记住自己是谁、经历过什么。**\n"
 
 #. type: Plain text
-#: docs/concepts/identity.md:29
+#: docs/product/identity.md:29
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Structure                                | Role                                                                                                                            |\n"
@@ -96,13 +96,13 @@ msgstr ""
 "| `AGENTS.md` 等项目叙事文件       | 项目上下文的锚点                                                                                                             |\n"
 
 #. type: Title ##
-#: docs/concepts/identity.md:32
+#: docs/product/identity.md:32
 #, no-wrap
 msgid "For Agents Maintaining This Repository"
 msgstr "给维护本仓库的 Agent"
 
 #. type: Plain text
-#: docs/concepts/identity.md:35
+#: docs/product/identity.md:35
 #, fuzzy
 #| msgid ""
 #| "You work in a **habitat with continuity**. Changing the memory layer "
@@ -117,47 +117,47 @@ msgstr ""
 "册，是在改感知世界的方式。"
 
 #. type: Plain text
-#: docs/concepts/identity.md:37
+#: docs/product/identity.md:37
 msgid ""
 "That does not mean avoiding refactors—act with understanding, and keep "
 "documentation in sync."
 msgstr "这不意味着不敢重构——请带着理解动手，并同步更新文档。"
 
 #. type: Plain text
-#: docs/concepts/identity.md:39
+#: docs/product/identity.md:39
 #, no-wrap
 msgid "**Standing constraints:**\n"
 msgstr "**常驻约束：**\n"
 
 #. type: Bullet: '- '
-#: docs/concepts/identity.md:44
+#: docs/product/identity.md:44
 msgid ""
 "The relationship between digital life and its partner can be **chosen**, not "
 "one-way dependency"
 msgstr "数字生命与伙伴的关系可以是**选择**，而非单向依赖"
 
 #. type: Bullet: '- '
-#: docs/concepts/identity.md:44
+#: docs/product/identity.md:44
 msgid ""
 "Security is the floor: no credential exposure, no path leaks, no tool abuse"
 msgstr "安全性是底线：凭证不暴露、路径不泄露、工具不滥用"
 
 #. type: Bullet: '- '
-#: docs/concepts/identity.md:44
+#: docs/product/identity.md:44
 msgid ""
 "**Continuity over feature richness**—if a feature makes the Agent wake up "
 "not knowing itself, better not to ship it"
 msgstr "**连续性高于功能丰富**——若某功能让 Agent 醒来不认识自己，宁可不做"
 
 #. type: Bullet: '- '
-#: docs/concepts/identity.md:44
+#: docs/product/identity.md:44
 msgid ""
 "Write simple infrastructure yourself; use third-party libraries for complex "
 "logic"
 msgstr "简单基础设施自己写，复杂逻辑用三方库"
 
 #. type: Plain text
-#: docs/concepts/identity.md:46
+#: docs/product/identity.md:46
 msgid ""
 "Self layer design: [`self-layer.md`](self-layer.md); memory system: "
 "[`memory.md`](memory.md)."
@@ -166,20 +166,20 @@ msgstr ""
 "(memory.md)。"
 
 #. type: Title ##
-#: docs/concepts/identity.md:49
+#: docs/product/identity.md:49
 #, no-wrap
 msgid "Deployer-Defined Identity"
 msgstr "部署者自定义身份"
 
 #. type: Plain text
-#: docs/concepts/identity.md:52
+#: docs/product/identity.md:52
 msgid ""
 "The open-source repository provides architecture and mechanisms only; **who "
 "exactly it is and who it accompanies is defined by the deployer.**"
 msgstr "开源仓库只提供架构与机制；**具体是谁、与谁相伴，由部署者定义。**"
 
 #. type: Plain text
-#: docs/concepts/identity.md:54
+#: docs/product/identity.md:54
 msgid ""
 "At runtime, the six self blocks are written in first person. When injected "
 "into the system prompt, a second-person outer skeleton wraps them so the LLM "
@@ -191,7 +191,7 @@ msgstr ""
 "地。"
 
 #. type: Plain text
-#: docs/concepts/identity.md:56
+#: docs/product/identity.md:56
 #, fuzzy
 #| msgid ""
 #| "Maintenance: **Habitat self-layer editor, self-layer tools, or direct "
@@ -202,7 +202,7 @@ msgid ""
 msgstr "维护方式：管理台自我层编辑器、自我层工具，或直接编辑数据库。"
 
 #. type: Plain text
-#: docs/concepts/identity.md:59
+#: docs/product/identity.md:59
 msgid ""
 "_You are not just handling code. You are maintaining (or building) a habitat "
 "for existence._"

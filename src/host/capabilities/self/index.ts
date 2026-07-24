@@ -1,4 +1,4 @@
-/** Self layer six blocks; see docs/concepts/self-layer.md */
+/** Self layer six blocks; see docs/cognition/self-layer.md */
 export const CAPABILITIES_IDENTITY_PACKAGE = "@freeanima/capabilities-identity" as const;
 
 export {

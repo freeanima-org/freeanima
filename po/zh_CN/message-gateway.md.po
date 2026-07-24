@@ -16,20 +16,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Yaml Front Matter Hash Value: title
-#: docs/guide/message-gateway.md:1
+#: docs/ops/message-gateway.md:1
 #, fuzzy, no-wrap
 #| msgid "Message"
 msgid "Message gateway"
 msgstr "消息"
 
 #. type: Title #
-#: docs/guide/message-gateway.md:5
+#: docs/ops/message-gateway.md:5
 #, no-wrap
 msgid "消息网关配置"
 msgstr "消息网关配置"
 
 #. type: Plain text
-#: docs/guide/message-gateway.md:8
+#: docs/ops/message-gateway.md:8
 #, fuzzy
 #| msgid ""
 #| "Discord / 微信（iLink）通道与全局网关选项保存在 PostgreSQL "
@@ -42,18 +42,18 @@ msgstr ""
 "`habitat_runtime_config`，**不要**写进 `~/.anima/config.yaml`。"
 
 #. type: Title ##
-#: docs/guide/message-gateway.md:9
+#: docs/ops/message-gateway.md:9
 #, no-wrap
 msgid "在哪里改"
 msgstr "在哪里改"
 
 #. type: Plain text
-#: docs/guide/message-gateway.md:12
+#: docs/ops/message-gateway.md:12
 msgid "Shell → **Habitat 服务** → **服务配置**："
 msgstr "Shell → **Habitat 服务** → **服务配置**："
 
 #. type: Plain text
-#: docs/guide/message-gateway.md:18
+#: docs/ops/message-gateway.md:18
 #, no-wrap
 msgid ""
 "| 段                      | 作用                                            |\n"
@@ -69,7 +69,7 @@ msgstr ""
 "| **微信** (`weixin`)     | iLink token、`base_url`、账号字段、启用开关     |\n"
 
 #. type: Plain text
-#: docs/guide/message-gateway.md:20
+#: docs/ops/message-gateway.md:20
 msgid ""
 "敏感字段支持明文、`vault(\"id\",\"field\")` 或 `env(\"KEY\")`。微信亦可仅用环"
 "境变量 `WEIXIN_ILINK_TOKEN`。"
@@ -78,13 +78,13 @@ msgstr ""
 "境变量 `WEIXIN_ILINK_TOKEN`。"
 
 #. type: Title ##
-#: docs/guide/message-gateway.md:21
+#: docs/ops/message-gateway.md:21
 #, no-wrap
 msgid "启用与生效"
 msgstr "启用与生效"
 
 #. type: Bullet: '- '
-#: docs/guide/message-gateway.md:25
+#: docs/ops/message-gateway.md:25
 msgid ""
 "`enabled: false`：即使有 token 也不启动该通道（默认有 token 且未禁用则启"
 "动）。"
@@ -93,7 +93,7 @@ msgstr ""
 "动）。"
 
 #. type: Bullet: '- '
-#: docs/guide/message-gateway.md:25
+#: docs/ops/message-gateway.md:25
 msgid ""
 "保存后需 **重启 Habitat / anima service** 才会重新 `discoverPlatforms`；当前"
 "不支持热重载。"
@@ -102,39 +102,39 @@ msgstr ""
 "不支持热重载。"
 
 #. type: Title ##
-#: docs/guide/message-gateway.md:26
+#: docs/ops/message-gateway.md:26
 #, no-wrap
 msgid "测试连接"
 msgstr "测试连接"
 
 #. type: Plain text
-#: docs/guide/message-gateway.md:29
+#: docs/ops/message-gateway.md:29
 msgid "Discord / 微信段提供「测试连接」："
 msgstr "Discord / 微信段提供「测试连接」："
 
 #. type: Bullet: '- '
-#: docs/guide/message-gateway.md:32
+#: docs/ops/message-gateway.md:32
 msgid "Discord：临时 Bot `login`，成功后立即断开。"
 msgstr "Discord：临时 Bot `login`，成功后立即断开。"
 
 #. type: Bullet: '- '
-#: docs/guide/message-gateway.md:32
+#: docs/ops/message-gateway.md:32
 msgid "微信：调用 iLink `notifyStart`（与 adapter 启动探测一致）。"
 msgstr "微信：调用 iLink `notifyStart`（与 adapter 启动探测一致）。"
 
 #. type: Plain text
-#: docs/guide/message-gateway.md:34
+#: docs/ops/message-gateway.md:34
 msgid "表单里 token 显示为 `***` 时，探测会回退到已保存的未脱敏值。"
 msgstr "表单里 token 显示为 `***` 时，探测会回退到已保存的未脱敏值。"
 
 #. type: Title ##
-#: docs/guide/message-gateway.md:35
+#: docs/ops/message-gateway.md:35
 #, no-wrap
 msgid "安全"
 msgstr "安全"
 
 #. type: Plain text
-#: docs/guide/message-gateway.md:37
+#: docs/ops/message-gateway.md:37
 msgid ""
 "Gateway token 放 Vault 或 env；Discord / WeChat **不能**解锁 User vault。见 "
 "[`security.md`](security.md)。"

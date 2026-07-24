@@ -32,6 +32,6 @@ database:
 # --- 以下运行时段请通过 Shell「Habitat 服务设置」编辑；勿再写入 config.yaml ---
 #
 # llm / compression / memory / mcp_servers / acp_agents / embedding / worlds …
-# memory.temporal_summary：时间摘要（半小时 tick、全局天/月/年、peer Redis）；见 docs/concepts/temporal-summary.md
-# 消息网关：gateway / discord / weixin（见 docs/guide/message-gateway.md）
+# memory.temporal_summary：时间摘要（半小时 tick、全局天/月/年、peer Redis）；见 docs/cognition/temporal-summary.md
+# 消息网关：gateway / discord / weixin（见 docs/ops/message-gateway.md）
 # 完整示例见仓库 git 历史中的 config.example.yaml（迁移前版本）

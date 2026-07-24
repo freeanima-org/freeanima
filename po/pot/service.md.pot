@@ -17,31 +17,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/service.md:1 messages/po4a/en.xml:672 messages/po4a/en.xml:712
+#: docs/ops/service.md:1 messages/po4a/en.xml:672 messages/po4a/en.xml:712
 #, no-wrap
 msgid "Service"
 msgstr ""
 
 #. type: Title #
-#: docs/guide/service.md:5
+#: docs/ops/service.md:5
 #, no-wrap
 msgid "Service operations"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:8
+#: docs/ops/service.md:8
 #, no-wrap
 msgid "> Runtime status, memory metrics, and common commands.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/service.md:9
+#: docs/ops/service.md:9
 #, no-wrap
 msgid "Status and memory metrics"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:12
+#: docs/ops/service.md:12
 msgid ""
 "`anima service status` and `createTypedHabitatClient().call(\"status.get\")` "
 "(REST `GET /rpc/v1/status/get`) report process memory under `memory_kb` and "
@@ -49,7 +49,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:19
+#: docs/ops/service.md:19
 #, no-wrap
 msgid ""
 "| Field / label                 | Source                                                 | Meaning                                                             |\n"
@@ -61,7 +61,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:21
+#: docs/ops/service.md:21
 msgid ""
 "On Bun + JavaScriptCore, `heap (jsc)` can be **much larger than** `rss "
 "(phys)`. Use RSS for “how much RAM does anima use?” Use heap trends (over "
@@ -69,14 +69,14 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:23
+#: docs/ops/service.md:23
 msgid ""
 "Verify from the shell (business API requires a Service API Token — see "
 "[`remote-access.md`](remote-access.md)):"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/service.md:24
+#: docs/ops/service.md:24
 #, no-wrap
 msgid ""
 "curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/rpc/v1/status/get | jq '.memory_kb, .memory_detail'\n"
@@ -85,13 +85,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/service.md:30
+#: docs/ops/service.md:30
 #, no-wrap
 msgid "Development vs production"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:36
+#: docs/ops/service.md:36
 #, no-wrap
 msgid ""
 "| Mode                    | How to run Habitat                                                                                                                |\n"
@@ -101,19 +101,19 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:38
+#: docs/ops/service.md:38
 msgid ""
 "Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.md)。"
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/service.md:39
+#: docs/ops/service.md:39
 #, no-wrap
 msgid "Common commands"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/service.md:41
+#: docs/ops/service.md:41
 #, no-wrap
 msgid ""
 "# --- standalone install CLI only ---\n"
@@ -131,7 +131,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:57
+#: docs/ops/service.md:57
 msgid ""
 "`anima.service` is a **single-unit stack**: Habitat (`:2658`, REST + SAP + "
 "bundled `/web` when `web.enabled` and dist exists) managed by one foreground "
@@ -139,13 +139,13 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:59
+#: docs/ops/service.md:59
 #, no-wrap
 msgid "**Web build is never triggered by `service start` / `anima web start`.** Paths:\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:65
+#: docs/ops/service.md:65
 #, no-wrap
 msgid ""
 "| Mode               | When to `just pack web`          | UI                                                                    |\n"
@@ -156,32 +156,32 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:67
+#: docs/ops/service.md:67
 #, no-wrap
 msgid "When `config.yaml` has `web.enabled: true` (absent defaults to on) and `src/app/shell/web/dist` (or embedded dist) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. For standalone static hosting without the Habitat process, use `anima web start --foreground` (default `:2660`) after dist exists. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `just dev habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:69
+#: docs/ops/service.md:69
 #, no-wrap
 msgid "**Startup order:** Habitat must pass `GET /rpc/v1/health/probe` (`status: ok`) before `serve()` `onReady` hooks run. `anima service start` waits up to **15 minutes** by default (`FREEANIMA_HABITAT_READY_TIMEOUT_MS`) because schema migrations run **before** HTTP listen. Remote-tool host disconnects are retried by `@freeanima/shared/rpc-contract` transport (exponential backoff).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:71
+#: docs/ops/service.md:71
 #, no-wrap
 msgid "**UI access:**\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/service.md:74
+#: docs/ops/service.md:74
 msgid ""
 "**Desktop / mobile Portal:** Chat and Habitat inside the Tauri app (not "
 "served from Habitat `:2658` unless `web.enabled`)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/service.md:74
+#: docs/ops/service.md:74
 msgid ""
 "**`config.yaml` `web.enabled: true`:** browser UI at `http://<host>:2658/web/"
 "*` from Habitat when dist is present (see table above). `web` is bootstrap "
@@ -189,7 +189,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/service.md:74
+#: docs/ops/service.md:74
 msgid ""
 "**Local Web dev (`just dev web`):** Vite from `:5000` with base `/web/` — "
 "Chat `http://127.0.0.1:5000/web/chat`, Habitat `…/web/habitat/dashboard`; `/"

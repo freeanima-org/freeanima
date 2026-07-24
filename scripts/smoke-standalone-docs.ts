@@ -97,26 +97,26 @@ async function assertEmbeddedCorpusWithoutDiskDocs(): Promise<void> {
   const registry = new ToolSetRegistry();
   registerDocsTools(registry);
 
-  const list = JSON.parse(await requireTool(registry, "docs_list").handler({}));
+  const list = JSON.parse(await requireTool(registry, "freeanima_docs_list").handler({}));
   if (list.total !== embeds.length) {
-    throw new Error(`docs_list total=${list.total}, expected ${embeds.length}`);
+    throw new Error(`freeanima_docs_list total=${list.total}, expected ${embeds.length}`);
   }
-  if (!list.docs.some((d: { path: string }) => d.path === "concepts/architecture.md")) {
-    throw new Error("docs_list missing concepts/architecture.md");
+  if (!list.docs.some((d: { path: string }) => d.path === "product/architecture.md")) {
+    throw new Error("freeanima_docs_list missing product/architecture.md");
   }
 
   const get = JSON.parse(
-    await requireTool(registry, "docs_get").handler({ path: "concepts/architecture.md" }),
+    await requireTool(registry, "freeanima_docs_get").handler({ path: "product/architecture.md" }),
   );
   if (!String(get.content).includes(DOC_NEEDLE)) {
-    throw new Error("docs_get content missing expected architecture marker");
+    throw new Error("freeanima_docs_get content missing expected architecture marker");
   }
 
   const search = JSON.parse(
-    await requireTool(registry, "docs_search").handler({ query: "Habitat Portal" }),
+    await requireTool(registry, "freeanima_docs_search").handler({ query: "Habitat Portal" }),
   );
   if (search.total < 1) {
-    throw new Error(`docs_search expected hits, got total=${search.total}`);
+    throw new Error(`freeanima_docs_search expected hits, got total=${search.total}`);
   }
 
   console.log(
@@ -172,10 +172,10 @@ async function assertLiveStandaloneRegistersDocsTools(): Promise<void> {
       tools?: { items?: Array<{ name: string }> };
     };
     const names = new Set((body.tools?.items ?? []).map((t) => t.name));
-    for (const n of ["docs_list", "docs_get", "docs_search"]) {
+    for (const n of ["freeanima_docs_list", "freeanima_docs_get", "freeanima_docs_search"]) {
       if (!names.has(n)) throw new Error(`live standalone missing tool ${n}`);
     }
-    console.log("ok: live standalone registers docs_list/docs_get/docs_search");
+    console.log("ok: live standalone registers freeanima_docs_* tools");
   } finally {
     stopChild(child);
     await sleep(300);

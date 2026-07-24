@@ -16,38 +16,38 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/architecture.md:1 docs/features/companion.md:11
+#: docs/product/architecture.md:1 docs/features/companion.md:11
 #: messages/po4a/en.xml:685
 #, no-wrap
 msgid "Architecture"
 msgstr "架构"
 
 #. type: Title #
-#: docs/concepts/architecture.md:5
+#: docs/product/architecture.md:5
 #, no-wrap
 msgid "FreeAnima Architecture"
 msgstr "逸灵风架构"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:8
+#: docs/product/architecture.md:8
 msgid "System-level constraints and long-lived design principles."
 msgstr "系统级约束与长期设计原则。"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:9
+#: docs/product/architecture.md:9
 #, no-wrap
 msgid "Product naming (Habitat / Portal)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:12
+#: docs/product/architecture.md:12
 msgid ""
 "User-facing product terms (Chinese in [`i18n/glossary.md`](../../i18n/"
 "glossary.md)):"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:23
+#: docs/product/architecture.md:23
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Structure                                | Role                                                                                                                            |\n"
@@ -82,35 +82,35 @@ msgstr ""
 "| `AGENTS.md` 等项目叙事文件       | 项目上下文的锚点                                                                                                             |\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:25
+#: docs/product/architecture.md:25
 msgid ""
 "Verbs: **connect to Habitat** (URL + token); **open Habitat** (admin UI); "
 "**reach via a Portal** (Shell / MCP)."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:27
+#: docs/product/architecture.md:27
 msgid ""
 "Estate **Body** (VM / OS / network under the four-layer model) is the "
 "cognitive \"what I run on\" for a subject — **not** the Habitat process name."
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/architecture.md:28
+#: docs/product/architecture.md:28
 #, fuzzy, no-wrap
 #| msgid "Configuration"
 msgid "Habitat configuration (SSOT)"
 msgstr "配置"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:31
+#: docs/product/architecture.md:31
 msgid ""
 "User copy says Habitat. Storage/RPC identifiers use `habitat_*` / "
 "`HabitatRPC/1.0` / `/rpc/v1`."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:36
+#: docs/product/architecture.md:36
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Method         | Schema                                                            | Returns                                        |\n"
@@ -127,46 +127,46 @@ msgstr ""
 "| `message.send` | [`message.ts`](../../packages/sap-contract/src/frames/message.ts) | `{ stream_id }`；后续流事件通过 `evt` 推送     |\n"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:37
+#: docs/product/architecture.md:37
 #, fuzzy, no-wrap
 #| msgid "Naming Rationale"
 msgid "Naming cleanup"
 msgstr "命名说明"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:40
+#: docs/product/architecture.md:40
 msgid ""
 "Legacy `hub_*` / `console` protocol aliases and dual-write keys have been "
 "removed; use Habitat identifiers only."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:41 docs/concepts/memory.md:12
+#: docs/product/architecture.md:41 docs/concepts/memory.md:12
 #, no-wrap
 msgid "Core Principles"
 msgstr "核心原则"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:50
+#: docs/product/architecture.md:50
 msgid ""
 "The memory system may be layered internally, but the LLM sees a single entry "
 "point"
 msgstr "记忆体系内部可以分层，但 LLM 只看到一个统一入口"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:50
+#: docs/product/architecture.md:50
 msgid ""
 "Memory orchestration is built into the runtime; the LLM does not control "
 "memory pipelines"
 msgstr "记忆编排内建于运行时；LLM 不控制记忆流水线"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:50
+#: docs/product/architecture.md:50
 msgid "Credential management is a first-class system concern"
 msgstr "凭证管理是一等系统关切"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:50
+#: docs/product/architecture.md:50
 msgid ""
 "Habitat **runtime configuration** (LLM, compression, integrations) is "
 "persisted in PostgreSQL (`habitat_runtime_config`); `~/.anima/config.yaml` "
@@ -175,7 +175,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:50
+#: docs/product/architecture.md:50
 msgid ""
 "Habitat **may start without LLM** configured; first-time setup happens in "
 "Shell **Settings → Habitat** (persist to PG), then restart Habitat so "
@@ -183,7 +183,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:50
+#: docs/product/architecture.md:50
 msgid ""
 "Whether Habitat hosts browser `/web/*` is **`config.yaml` `web.enabled`** "
 "(bootstrap; absent defaults to on when dist exists). Do not put this switch "
@@ -192,14 +192,14 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:50
+#: docs/product/architecture.md:50
 #, fuzzy
 #| msgid "Asset management is a first-class system concern"
 msgid "**Asset management** is a first-class system concern"
 msgstr "资产管理是一等系统关切"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:52
+#: docs/product/architecture.md:52
 msgid ""
 "Bootstrap and runtime are **not merged** into a single config object. CLI "
 "cold paths connect via internal `withPlatformDb` and receive **runtime "
@@ -208,26 +208,26 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:54
+#: docs/product/architecture.md:54
 msgid ""
 "The system prompt is part of architecture, not ad-hoc string concatenation"
 msgstr "系统提示词是架构的一部分，而非临时字符串拼接"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:55
+#: docs/product/architecture.md:55
 #, no-wrap
 msgid "Four Cognitive Layers"
 msgstr "四层认知模型"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:58
+#: docs/product/architecture.md:58
 msgid ""
 "A digital life is structured from the inside out. Each layer answers a "
 "different core question:"
 msgstr "数字生命由内而外分层。每一层回答一个不同的核心问题："
 
 #. type: Fenced code block (text)
-#: docs/concepts/architecture.md:59
+#: docs/product/architecture.md:59
 #, fuzzy, no-wrap
 #| msgid ""
 #| "┌───────────────────────────────────────────────┐\n"
@@ -325,13 +325,13 @@ msgstr ""
 "└───────────────────────────────────────────────┘\n"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:93
+#: docs/product/architecture.md:93
 #, no-wrap
 msgid "Layer Relationships"
 msgstr "层间关系"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:99
+#: docs/product/architecture.md:99
 msgid ""
 "**Top-down dependency**: Consciousness content settles into Self; Self "
 "decides what enters Memory; Memory and operational needs drive Estate "
@@ -341,14 +341,14 @@ msgstr ""
 "运行需求驱动资源层需求。"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:99
+#: docs/product/architecture.md:99
 msgid ""
 "**Self and Consciousness**: Consciousness is flowing awareness; Self is the "
 "settled \"I\" distilled from it."
 msgstr "**自我与感知**：感知是流动的觉察；自我是从中沉淀下来的稳定「我」。"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:99
+#: docs/product/architecture.md:99
 msgid ""
 "**Self and Memory**: Self answers \"who am I\"; Memory answers \"what do I "
 "know\". They are peers with different natures."
@@ -357,7 +357,7 @@ msgstr ""
 "同。"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:99
+#: docs/product/architecture.md:99
 msgid ""
 "**Estate** is outermost — not \"who I am\" but \"what I have and what I run "
 "on\". Body and assets meet here as extensions of my boundary."
@@ -366,13 +366,13 @@ msgstr ""
 "资产在此交汇，作为边界的延伸。"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:100
+#: docs/product/architecture.md:100
 #, no-wrap
 msgid "Unified entity storage (v0.8)"
 msgstr "统一实体存储（v0.8）"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:103
+#: docs/product/architecture.md:103
 msgid ""
 "Structured business data (tasks, notes, email accounts/messages, future "
 "memory migrations) converges on a single **`entities`** PostgreSQL table "
@@ -386,7 +386,7 @@ msgstr ""
 "立。见 [`entity-model.md`](entity-model.md)。"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:105
+#: docs/product/architecture.md:105
 #, fuzzy
 #| msgid ""
 #| "Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-"
@@ -399,13 +399,13 @@ msgstr ""
 "**Habitat 邮件路由已移除。"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:106
+#: docs/product/architecture.md:106
 #, no-wrap
 msgid "Anima URI (Shell locator)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:109
+#: docs/product/architecture.md:109
 msgid ""
 "Entity deep links / overlay / clipboard use **Anima URI** (`anima:{id}?"
 "component=…&present=…`). Structured persistence still uses numeric entity "
@@ -413,30 +413,30 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/architecture.md:110
+#: docs/product/architecture.md:110
 #, no-wrap
 msgid "Repository layout (Phase 0 — revised)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:113
+#: docs/product/architecture.md:113
 #, no-wrap
 msgid "Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Habitat adapter + domain + `plugin.ts`). Habitat uses the **same module shape** as chat/task — not a separate admin-\\* stack. `src/features/companion/` is legacy naming; do not add new products there.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:115
+#: docs/product/architecture.md:115
 #, no-wrap
 msgid "**End state:** Habitat RPC per feature; business methods use `POST|WS /rpc/v1` (same envelope). Public health/TLS probes and binary methods (e.g. `tts.synthesize`) are Habitat RPC REST with `auth: optional` or Bearer as declared in registry.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:117
+#: docs/product/architecture.md:117
 msgid "Authoritative spec: [`repository-topology.md`](repository-topology.md)."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:119
+#: docs/product/architecture.md:119
 msgid ""
 "Engine stays horizontal: `src/kernel/`, `src/core/`, `src/runtime/`, `src/"
 "platform/` (boot + routers). Shell host: `src/frontend/` (`ui-kit`, `shell-"
@@ -444,13 +444,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/architecture.md:120
+#: docs/product/architecture.md:120
 #, no-wrap
 msgid "Platform UI layering (legacy paths — migrating to features/\\*)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:128
+#: docs/product/architecture.md:128
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Layer              | Platform-native?             | Location                                                 | 数据通道             |\n"
@@ -474,7 +474,7 @@ msgstr ""
 "| Companion host   | Overlay WebView-host（第一方）     | `src/features/companion/companion`（spa attach；壳薄 IPC/FS）                      | Habitat RPC + `remote_tools.attach`     |\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:130
+#: docs/product/architecture.md:130
 msgid ""
 "导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 "
 "`getShellKind()` 锁 Shell 布局。交互（右键/长按/Enter）用 shell-sdk 交互 "
@@ -487,20 +487,20 @@ msgstr ""
 "dimensions.md)。"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:132
+#: docs/product/architecture.md:132
 #, no-wrap
 msgid "**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Habitat。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于 Habitat 拨不到的本地应用（今日 companion：**第一方 overlay WebView-host** 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）。产品面（Chat 等）**不做** attach。可拨号对端的工具走 **MCP**。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/guide/habitat-rpc.md`](../guide/habitat-rpc.md)。\n"
 msgstr "**边界**：`shell-ui` 与 `src/features/*/ui` 通过 `shell-sdk` + Feature RPC 访问 Habitat。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于 Habitat 拨不到的本地应用（今日 companion：**第一方 overlay WebView-host** 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）。产品面（Chat 等）**不做** attach。可拨号对端的工具走 **MCP**。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/guide/habitat-rpc.md`](../guide/habitat-rpc.md)。\n"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:133
+#: docs/product/architecture.md:133
 #, fuzzy, no-wrap
 #| msgid "**Habitat navigation ↔ cognitive layers"
 msgid "Habitat navigation ↔ cognitive layers"
 msgstr "管理台导航 ↔ 认知层"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:136
+#: docs/product/architecture.md:136
 #, fuzzy
 #| msgid ""
 #| "**Habitat sidebar is grouped (not flat storage tables). Map new features "
@@ -511,7 +511,7 @@ msgid ""
 msgstr "管理台侧栏分组展示（非扁平存储表）。新功能应映射到以下用户可见概念："
 
 #. type: Plain text
-#: docs/concepts/architecture.md:144
+#: docs/product/architecture.md:144
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Group        | Cognitive layer | Routes (representative)                             |\n"
@@ -539,7 +539,7 @@ msgstr ""
 "| Capabilities | 资源层（工具）  | tools、commands、mcp、acp、satellites               |\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:146
+#: docs/product/architecture.md:146
 msgid ""
 "FTS index maintenance is under Memory (not top-level). Do not add new flat "
 "nav items without mapping to a group above."
@@ -547,13 +547,13 @@ msgstr ""
 "FTS 索引维护在 Memory 下（非顶级）。勿新增未映射到上述分组的扁平导航项。"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:147 docs/tools/execute-code-runtimes.md:9
+#: docs/product/architecture.md:147 docs/tools/execute-code-runtimes.md:9
 #, no-wrap
 msgid "Background"
 msgstr "背景"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:150
+#: docs/product/architecture.md:150
 msgid ""
 "The four-layer model draws on cognitive psychology and the [Hindsight]"
 "(https://arxiv.org/abs/2512.12818) four-network memory architecture, with "
@@ -565,13 +565,13 @@ msgstr ""
 "民），以及将自我层从记忆层中独立出来。"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:151
+#: docs/product/architecture.md:151
 #, no-wrap
 msgid "Situational Intelligence"
 msgstr "情境智能"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:154
+#: docs/product/architecture.md:154
 msgid ""
 "Where a digital life exists, how it exists, and what it may do — governed by "
 "two independent but cooperating subsystems."
@@ -579,19 +579,19 @@ msgstr ""
 "数字生命在何处存在、如何存在、能做什么——由两个独立但协作的子系统共同约束。"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:155
+#: docs/product/architecture.md:155
 #, no-wrap
 msgid "Scene Awareness"
 msgstr "场景感知"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:158
+#: docs/product/architecture.md:158
 #, no-wrap
 msgid "**Question: what kind of moment is this?**\n"
 msgstr "**问题：此刻是什么样的场景？**\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:160
+#: docs/product/architecture.md:160
 msgid ""
 "Scene awareness is **soft** — it adjusts tone, distance, memory recall bias, "
 "and proactivity. It is not a permission system; it modulates presence."
@@ -600,50 +600,50 @@ msgstr ""
 "而是调节在场感。"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:162
+#: docs/product/architecture.md:162
 #, no-wrap
 msgid "**Example dimensions (non-exhaustive):**\n"
 msgstr "**示例维度（非穷尽）：**\n"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:166
+#: docs/product/architecture.md:166
 msgid ""
 "Topic: emotional / career / tech / philosophy / history / literature / daily "
 "life"
 msgstr "话题：情感 / 职业 / 技术 / 哲学 / 历史 / 文学 / 日常"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:166
+#: docs/product/architecture.md:166
 msgid "Activity: role-play / games / creation / programming / reading"
 msgstr "活动：角色扮演 / 游戏 / 创作 / 编程 / 阅读"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:166
+#: docs/product/architecture.md:166
 msgid "Atmosphere: relaxed / focused / late night / intimate / urgent"
 msgstr "氛围：放松 / 专注 / 深夜 / 亲密 / 紧急"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:168
+#: docs/product/architecture.md:168
 #, no-wrap
 msgid "**Operation:** Runs continuously without explicit switch commands. Inferred from dialogue, time, frequency, etc. See [`time-perception.md`](time-perception.md).\n"
 msgstr "**运行方式：** 无需显式切换命令，持续运行；从对话、时间、频率等推断。详见 [`time-perception.md`](time-perception.md)。\n"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:169
+#: docs/product/architecture.md:169
 #, fuzzy, no-wrap
 #| msgid "Environment variables"
 msgid "Environment + health baseline"
 msgstr "环境变量"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:172
+#: docs/product/architecture.md:172
 #, fuzzy, no-wrap
 #| msgid "**Question: what kind of moment is this?**\n"
 msgid "**Question: what is my host / runtime quiet state?**\n"
 msgstr "**问题：此刻是什么样的场景？**\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:174
+#: docs/product/architecture.md:174
 msgid ""
 "Distinct from scene awareness: banded host and process markers (disk, RSS, "
 "deps, MCP/ACP) live as a **session-static** system-prompt copy, with **event-"
@@ -652,19 +652,19 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/architecture.md:175
+#: docs/product/architecture.md:175
 #, no-wrap
 msgid "Capability Mask"
 msgstr "能力面具"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:178
+#: docs/product/architecture.md:178
 #, no-wrap
 msgid "**Question: what tools and data can I use right now?**\n"
 msgstr "**问题：此刻我能使用哪些工具与数据？**\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:180
+#: docs/product/architecture.md:180
 msgid ""
 "The capability mask is **hard** — it binds tool sets, data scope, and "
 "credential permissions. The same digital life may wear different masks per "
@@ -674,55 +674,55 @@ msgstr ""
 "话或任务中佩戴不同面具，以防权限泄漏与工具污染。"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:182
+#: docs/product/architecture.md:182
 #, no-wrap
 msgid "**Example masks:**\n"
 msgstr "**示例面具：**\n"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:189
+#: docs/product/architecture.md:189
 msgid "Developer: terminal, code read/write, ACP Cursor"
 msgstr "开发者：终端、代码读写、ACP Cursor"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:189
+#: docs/product/architecture.md:189
 msgid "Maintainer: FreeAnima config, deployment, database"
 msgstr "维护者：逸灵风配置、部署、数据库"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:189
+#: docs/product/architecture.md:189
 msgid "Creator: files, notes, media generation"
 msgstr "创作者：文件、笔记、媒体生成"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:189
+#: docs/product/architecture.md:189
 msgid "Research: web search, paper retrieval"
 msgstr "研究：网页搜索、论文检索"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:189
+#: docs/product/architecture.md:189
 msgid "Role-play: dialogue context only, no external tools"
 msgstr "角色扮演：仅对话上下文，无外部工具"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:189
+#: docs/product/architecture.md:189
 msgid "Default: basic chat + limited lookup"
 msgstr "默认：基础聊天 + 有限查询"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:191
+#: docs/product/architecture.md:191
 #, no-wrap
 msgid "**Operation:** Switches at conversation boundaries, explicit commands, or scene-awareness triggers. Each mask is a declared tool/data scope, not a separate identity.\n"
 msgstr "**运行方式：** 在会话边界、显式命令或场景感知触发时切换。每个面具是声明的工具/数据范围，而非独立身份。\n"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:192
+#: docs/product/architecture.md:192
 #, no-wrap
 msgid "How They Interact"
 msgstr "二者如何交互"
 
 #. type: Fenced code block (text)
-#: docs/concepts/architecture.md:194
+#: docs/product/architecture.md:194
 #, no-wrap
 msgid ""
 "Scene awareness (soft tuning)\n"
@@ -746,38 +746,38 @@ msgstr ""
 "Agent behavior\n"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:209
+#: docs/product/architecture.md:209
 msgid ""
 "Scene awareness infers \"what we are doing\" → may suggest mask switches and "
 "presence adjustments"
 msgstr "场景感知推断「我们在做什么」→ 可能建议切换面具并调整在场感"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:209
+#: docs/product/architecture.md:209
 msgid ""
 "Capability mask constrains \"what I can do\" → prevents cross-scene tool "
 "misuse"
 msgstr "能力面具约束「我能做什么」→ 防止跨场景工具误用"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:209
+#: docs/product/architecture.md:209
 msgid "Both converge in final behavior but evolve independently"
 msgstr "二者在最终行为中汇合，但各自独立演化"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:211
+#: docs/product/architecture.md:211
 msgid ""
 "For design drafts, open a GitHub Issue (no design-doc directory in docs)."
 msgstr "设计草案请开 GitHub Issue（docs 中不设 design-doc 目录）。"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:212
+#: docs/product/architecture.md:212
 #, no-wrap
 msgid "Memory Storage (Summary)"
 msgstr "记忆存储（摘要）"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:220
+#: docs/product/architecture.md:220
 #, no-wrap
 msgid ""
 "| Cognitive type   | Description                                                                                 |\n"
@@ -795,7 +795,7 @@ msgstr ""
 "| Autobiographical（自传） | 重要经历的意义；按需召回                                             |\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:222
+#: docs/product/architecture.md:222
 msgid ""
 "Pipeline: nightly **sleep-cycle** pipeline (`builtin-sleep-cycle` cron) "
 "extracts and maintains memory; `memory_recall` retrieves on demand during "
@@ -806,13 +806,13 @@ msgstr ""
 "[`sleep.md`](sleep.md)。"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:223
+#: docs/product/architecture.md:223
 #, no-wrap
 msgid "Vault & Secrets (Summary)"
 msgstr "保险库与密钥（摘要）"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:230
+#: docs/product/architecture.md:230
 msgid ""
 "**Vault** (ECS `vault_item` in User + Agent libraries) is the authoritative "
 "secret store; legacy `~/.password-store` (pass) is **not deleted** on disk "
@@ -822,14 +822,14 @@ msgstr ""
 "`~/.password-store`（pass）**不会从磁盘删除**，但运行时不再读取"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:230
+#: docs/product/architecture.md:230
 msgid ""
 "The LLM **never sees secret values** — only vault item metadata and config "
 "references"
 msgstr "LLM **永远看不到密钥值**——仅见保险库条目元数据与 config 引用"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:230
+#: docs/product/architecture.md:230
 #, fuzzy
 #| msgid ""
 #| "Runtime resolution: `vault(\"item_id\", \"field\")` and `env(\"KEY\")` in "
@@ -843,28 +843,28 @@ msgstr ""
 "理见 Shell `/vault`"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:230
+#: docs/product/architecture.md:230
 msgid "Secret values are not written to conversation archives or logs"
 msgstr "密钥值不会写入会话归档或日志"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:230
+#: docs/product/architecture.md:230
 msgid "CLI: `anima vault list|get`"
 msgstr "CLI：`anima vault list|get`"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:232
+#: docs/product/architecture.md:232
 msgid "See [`guide/security.md`](../guide/security.md)."
 msgstr "详见 [`guide/security.md`](../guide/security.md)。"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:233
+#: docs/product/architecture.md:233
 #, no-wrap
 msgid "Runtime Modes"
 msgstr "运行模式"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:236
+#: docs/product/architecture.md:236
 #, fuzzy
 #| msgid ""
 #| "Production: `anima service` (systemd --user). Auto-restarts after "
@@ -880,7 +880,7 @@ msgstr ""
 
 #
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:239
+#: docs/product/architecture.md:239
 #, fuzzy
 #| msgid ""
 #| "**service**: long-running — Habitat HTTP (`/api`, `/rpc/v1`), Discord / "
@@ -893,7 +893,7 @@ msgstr ""
 "Gateway、cron"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:239
+#: docs/product/architecture.md:239
 #, fuzzy
 #| msgid "(Chat + **Habitat); Habitat does not host `/admin`"
 msgid ""
@@ -904,7 +904,7 @@ msgstr ""
 "管理台）；Habitat 不托管 `/admin`"
 
 #. type: Fenced code block (bash)
-#: docs/concepts/architecture.md:240
+#: docs/product/architecture.md:240
 #, fuzzy, no-wrap
 #| msgid ""
 #| "anima service start          # background (systemd user unit when available)\n"
@@ -933,13 +933,13 @@ msgstr ""
 "anima web start --foreground # standalone Web static server (default :2659; production: web.enabled + service stack)\n"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:253
+#: docs/product/architecture.md:253
 #, no-wrap
 msgid "Tool Architecture (Three Layers)"
 msgstr "工具架构（三层）"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:256
+#: docs/product/architecture.md:256
 msgid ""
 "Tools are registered in three layers but exposed to the LLM as one **flat "
 "tool list**. The LLM cares about names and parameters, not origin."
@@ -948,7 +948,7 @@ msgstr ""
 "不关心来源。"
 
 #. type: Fenced code block (text)
-#: docs/concepts/architecture.md:257
+#: docs/product/architecture.md:257
 #, no-wrap
 msgid ""
 "LLM view — flat tool list:\n"
@@ -968,40 +968,40 @@ msgstr ""
 "  acp_cursor(goal, context)      ← ACP agent\n"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:267
+#: docs/product/architecture.md:267
 #, no-wrap
 msgid "Layer 1: Local Tools"
 msgstr "第一层：本地工具"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:271
+#: docs/product/architecture.md:271
 msgid "Execute inside the FreeAnima process; lowest latency"
 msgstr "在逸灵风进程内执行；延迟最低"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:271
+#: docs/product/architecture.md:271
 msgid "Registered automatically at service startup"
 msgstr "服务启动时自动注册"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:272
+#: docs/product/architecture.md:272
 #, no-wrap
 msgid "Layer 2: MCP Tools (Model Context Protocol)"
 msgstr "第二层：MCP 工具（Model Context Protocol）"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:277
+#: docs/product/architecture.md:277
 msgid "Connect to external MCP servers (separate processes)"
 msgstr "连接外部 MCP 服务器（独立进程）"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:277
+#: docs/product/architecture.md:277
 msgid ""
 "Each server may register many fine-grained tools (single function calls)"
 msgstr "每个服务器可注册多个细粒度工具（单次函数调用）"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:277
+#: docs/product/architecture.md:277
 msgid ""
 "Configure under Habitat runtime `mcp_servers` (PG `habitat_runtime_config`); "
 "manage in **Habitat UI** `/habitat/mcp` (config + start/stop + tools). Shell "
@@ -1009,7 +1009,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/concepts/architecture.md:278
+#: docs/product/architecture.md:278
 #, no-wrap
 msgid ""
 "mcp_servers:\n"
@@ -1027,32 +1027,32 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/architecture.md:293
+#: docs/product/architecture.md:293
 #, no-wrap
 msgid "Layer 3: ACP Tools (Agent Client Protocol)"
 msgstr "第三层：ACP 工具（Agent Client Protocol）"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:298
+#: docs/product/architecture.md:298
 msgid ""
 "Each external agent instance registers as **one** task-level tool: "
 "`acp_{name}(goal, context)`"
 msgstr "每个外部代理实例注册为**一个**任务级工具：`acp_{name}(goal, context)`"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:298
+#: docs/product/architecture.md:298
 msgid ""
 "For full task delegation (coding, analysis, booking, etc.); seconds to "
 "minutes latency"
 msgstr "用于完整任务委托（编码、分析、预订等）；延迟为秒到分钟级"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:298
+#: docs/product/architecture.md:298
 msgid "Configure in `config.yaml` under `acp_agents`"
 msgstr "在 `config.yaml` 的 `acp_agents` 下配置"
 
 #. type: Fenced code block (yaml)
-#: docs/concepts/architecture.md:299
+#: docs/product/architecture.md:299
 #, no-wrap
 msgid ""
 "acp_agents:\n"
@@ -1070,13 +1070,13 @@ msgstr ""
 "    description: \"Delegate coding, refactoring, and code review\"\n"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:308
+#: docs/product/architecture.md:308
 #, no-wrap
 msgid "Comparison"
 msgstr "对比"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:316
+#: docs/product/architecture.md:316
 #, no-wrap
 msgid ""
 "| Dimension   | Local        | MCP              | ACP            |\n"
@@ -1094,25 +1094,25 @@ msgstr ""
 "| 配置       | 内置         | `mcp_servers`    | `acp_agents`   |\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:318
+#: docs/product/architecture.md:318
 msgid ""
 "Layers can be mixed; the LLM chooses order; FreeAnima registers and routes."
 msgstr "三层可混用；LLM 决定调用顺序；逸灵风负责注册与路由。"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:319
+#: docs/product/architecture.md:319
 #, no-wrap
 msgid "Conversation vs AutoLlmRun vs Delegation"
 msgstr "Conversation vs AutoLlmRun vs 委托"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:322
+#: docs/product/architecture.md:322
 #, no-wrap
 msgid "**Axis:** whether the execution has a **user turn** during the run (not who triggered it).\n"
 msgstr "**轴：** 执行期间是否有 **user 轮次**（与谁触发无关）。\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:329
+#: docs/product/architecture.md:329
 #, no-wrap
 msgid ""
 "| Kind                 | User turn     | PG persistence                                      | Process trace   | Sleep pipeline                          |\n"
@@ -1130,7 +1130,7 @@ msgstr ""
 "| **Script cron**      | 否            | 仅 `cron_log`                                       | stdout 文件     | 排除                                    |\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:331
+#: docs/product/architecture.md:331
 msgid ""
 "AutoLlmRun covers: cron agent branch, sleep LLM stages, future internal "
 "subagents. Tool context uses `contextKind: auto_llm` so `memory_remember` "
@@ -1142,20 +1142,20 @@ msgstr ""
 "`source_conversations`。Cron `no_agent` shell 脚本**不是** AutoLlmRun。"
 
 #. type: Title #
-#: docs/concepts/architecture.md:332 docs/features/goal.md:1
+#: docs/product/architecture.md:332 docs/features/goal.md:1
 #: docs/features/goal.md:5
 #, no-wrap
 msgid "Session Goal"
 msgstr "会话便签"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:335
+#: docs/product/architecture.md:335
 #, no-wrap
 msgid "**Question: should this conversation keep working toward a stated outcome?**\n"
 msgstr "**问题：此 conversation 是否应继续朝既定结果推进？**\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:337
+#: docs/product/architecture.md:337
 msgid ""
 "Session Goal is an **in-process autonomous loop** at the Estate / "
 "orchestration layer — distinct from ACP async delegation:"
@@ -1163,7 +1163,7 @@ msgstr ""
 "Session Goal 是资源层/编排层的**进程内自治循环**——区别于 ACP 异步委托："
 
 #. type: Plain text
-#: docs/concepts/architecture.md:344
+#: docs/product/architecture.md:344
 #, no-wrap
 msgid ""
 "| Dimension    | Session Goal                    | ACP                                   |\n"
@@ -1181,7 +1181,7 @@ msgstr ""
 "| 延续         | 同一 SSE 流、回合预算           | 任务更新后的独立消息                  |\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:346
+#: docs/product/architecture.md:346
 #, fuzzy
 #| msgid ""
 #| "Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User "
@@ -1198,26 +1198,26 @@ msgstr ""
 "goal.md)。"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:347
+#: docs/product/architecture.md:347
 #, fuzzy, no-wrap
 #| msgid "Client UI（Habitat Web SSOT + 薄壳）"
 msgid "Client UI（web/dist SSOT + 原生壳打包）"
 msgstr "Client UI（Habitat Web SSOT + 薄壳）"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:350
+#: docs/product/architecture.md:350
 #, no-wrap
 msgid "**Portal Shell 运行时**：**Tauri**（Rust 主进程 + 系统 WebView；桌面与 Android 统一壳层）。壳规则：[`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)。**禁止**为 companion 再打 Node sidecar；`remote_tools.attach` 在第一方 overlay WebView（见 Desktop companion）。\n"
 msgstr "**Portal Shell 运行时**：**Tauri**（Rust 主进程 + 系统 WebView；桌面与 Android 统一壳层）。壳规则：[`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)。**禁止**为 companion 再打 Node sidecar；`remote_tools.attach` 在第一方 overlay WebView（见 Desktop companion）。\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:352
+#: docs/product/architecture.md:352
 #, no-wrap
 msgid "**UI 源码产物**：`src/app/shell/web/dist`（`base: /web/`）。\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:359
+#: docs/product/architecture.md:359
 #, no-wrap
 msgid ""
 "| 客户端       | UI 加载                                                                    | 更新方式                                                                                                                                                                              |\n"
@@ -1229,7 +1229,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:361
+#: docs/product/architecture.md:361
 msgid ""
 "壳层保留原生能力（Tauri commands / prefs / 通知等）。**无壳内 UI OTA**：原生"
 "端不从 Habitat 热替换 SPA。允许**用户确认后**的安装包级覆盖（Desktop 安装"
@@ -1246,13 +1246,13 @@ msgstr ""
 "settings`）；无独立 bootstrap Habitat 页。"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:362
+#: docs/product/architecture.md:362
 #, no-wrap
 msgid "两层模型"
 msgstr "两层模型"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:368
+#: docs/product/architecture.md:368
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| 层                   | 驱动                                   | 职责                                                                                     |\n"
@@ -1270,7 +1270,7 @@ msgstr ""
 "| **布局层**           | **仅视口断点**（壳不锁定底栏/顶栏）               | 窄/中/宽三档；列表 drawer / 并列 / 三栏；settings **chrome**（tabs vs 侧栏）                 |\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:370
+#: docs/product/architecture.md:370
 #, fuzzy
 #| msgid "窄、中、宽任意档。"
 msgid ""
@@ -1281,13 +1281,13 @@ msgstr ""
 "宽任意档。"
 
 #. type: Title ###
-#: docs/concepts/architecture.md:371
+#: docs/product/architecture.md:371
 #, no-wrap
 msgid "布局层断点"
 msgstr "布局层断点"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:378
+#: docs/product/architecture.md:378
 #, no-wrap
 msgid ""
 "| 档位 | 视口        | 布局粗档            | Nav IA      | 页内     |\n"
@@ -1303,7 +1303,7 @@ msgstr ""
 "| 宽   | ≥1280px     | `expanded` 桌面布局 | 顶栏全模块  | 三栏并列 |\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:380
+#: docs/product/architecture.md:380
 #, fuzzy
 #| msgid ""
 #| "`resolveLayoutMode()`：窄 → `compact`，中宽 → `expanded`（URL / "
@@ -1320,7 +1320,7 @@ msgstr ""
 "settings 字段差异仍由能力层 `resolveShellBindings()` 决定。"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:386
+#: docs/product/architecture.md:386
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| 客户端       | UI 加载                                                               | 壳发版                   |\n"
@@ -1340,7 +1340,7 @@ msgstr ""
 "| Mobile APK   | 安装包内本地 `/web/*`                                          | **Tauri** Android                              |\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:391
+#: docs/product/architecture.md:391
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Module | Connection                                         | Notes                  |\n"
@@ -1359,7 +1359,7 @@ msgstr ""
 "| **Habitat  | Habitat REST `/api/*`（CORS + shell） | `/web/habitat/dashboard` |\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:393
+#: docs/product/architecture.md:393
 #, fuzzy
 #| msgid ""
 #| "`/web/config.json` 提供 `habitat_url`、`ui_version`、`min_shell_version`"
@@ -1372,13 +1372,13 @@ msgstr ""
 "↔UI 版本协商）。"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:394
+#: docs/product/architecture.md:394
 #, no-wrap
 msgid "Events and Hooks (Summary)"
 msgstr "事件与 Hooks（摘要）"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:399
+#: docs/product/architecture.md:399
 msgid ""
 "**EventBus**: async notification transport (Redis queue); production code "
 "currently emits topics such as `session:updated` with **no registered "
@@ -1390,7 +1390,7 @@ msgstr ""
 "`onSessionUpdated`。**不**用于睡眠编排。"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:399
+#: docs/product/architecture.md:399
 #, fuzzy
 #| msgid ""
 #| "**Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: "
@@ -1406,7 +1406,7 @@ msgstr ""
 "断。"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:399
+#: docs/product/architecture.md:399
 msgid ""
 "**Hooks**: sync interceptors — validation or clarification at message "
 "ingress, turn end, tool return, etc."
@@ -1414,7 +1414,7 @@ msgstr ""
 "**Hooks**：同步拦截器——在消息入口、回合结束、工具返回等节点做校验或澄清"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:401
+#: docs/product/architecture.md:401
 msgid ""
 "Complementary: Pipeline Runner handles scheduled multi-step background work; "
 "Hooks handle \"may this proceed before/during\"; EventBus remains available "
@@ -1424,14 +1424,14 @@ msgstr ""
 "否允许」；EventBus 保留供未来跨进程扇出，但不在睡眠路径上。"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:402
+#: docs/product/architecture.md:402
 #, fuzzy, no-wrap
 #| msgid "Desktop Companion"
 msgid "Desktop companion (Habitat SSOT)"
 msgstr "桌面伴侣"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:405
+#: docs/product/architecture.md:405
 msgid ""
 "The desktop companion is an **unreachable local app** that **actively "
 "connects** to Habitat and registers remote tools in the **first-party "
@@ -1440,7 +1440,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:414
+#: docs/product/architecture.md:414
 #, no-wrap
 msgid ""
 "| Concern                             | Habitat (`src/features/companion/`)              | Local install                             |\n"
@@ -1454,19 +1454,19 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:416
+#: docs/product/architecture.md:416
 #, no-wrap
 msgid "**Remote tools ≠ Portal / MCP**: Portal shells and Chat/Settings use Habitat RPC for UI only. Dialable peers expose tools via **MCP**. Remote-tool attach exists solely when Habitat cannot dial the app (companion overlay today; future independent local apps). Routing uses `instance_id` (same machine may have multiple instances). See [`companion.md`](../features/companion.md)、[`habitat-rpc.md`](../guide/habitat-rpc.md).\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/architecture.md:417
+#: docs/product/architecture.md:417
 #, no-wrap
 msgid "Direction"
 msgstr "方向"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:420
+#: docs/product/architecture.md:420
 msgid ""
 "Capability vision and discussions: [GitHub Issues](https://github.com/"
 "freeanima-org/freeanima/issues) (labels `enhancement`, `discussion`, "
@@ -1476,22 +1476,22 @@ msgstr ""
 "issues)（标签 `enhancement`、`discussion`、`security`）。本文不跟踪待办。"
 
 #. type: Title ##
-#: docs/concepts/architecture.md:421
+#: docs/product/architecture.md:421
 #, no-wrap
 msgid "Constraints"
 msgstr "约束"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:425
+#: docs/product/architecture.md:425
 msgid "Principles and structure live here; no concrete task lists"
 msgstr "原则与结构写在这里；不含具体任务清单"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:425
+#: docs/product/architecture.md:425
 msgid "Fast-changing behavior follows the running service, not stale prose"
 msgstr "快速变化的行为以运行中的服务为准，而非过时的文字"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:425
+#: docs/product/architecture.md:425
 msgid "Actionable work goes in GitHub Issues; close when done"
 msgstr "可执行工作放在 GitHub Issues；完成后关闭"

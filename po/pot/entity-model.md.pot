@@ -17,19 +17,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Yaml Front Matter Hash Value: title
-#: docs/concepts/entity-model.md:1
+#: docs/product/entity-model.md:1
 #, no-wrap
 msgid "Entity Model"
 msgstr ""
 
 #. type: Title #
-#: docs/concepts/entity-model.md:5
+#: docs/product/entity-model.md:5
 #, no-wrap
 msgid "Unified Entity Model (v0.8)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:8
+#: docs/product/entity-model.md:8
 msgid ""
 "FreeAnima stores most structured business data in a single **`entities`** "
 "table. Self layer remains physically isolated in [`self_blocks`](self-"
@@ -37,13 +37,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:9
+#: docs/product/entity-model.md:9
 #, no-wrap
 msgid "Hierarchy: subject → world → content"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:16
+#: docs/product/entity-model.md:16
 #, no-wrap
 msgid ""
 "| Layer       | Entity type     | Role                                                |\n"
@@ -54,7 +54,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:18
+#: docs/product/entity-model.md:18
 msgid ""
 "Subjects do **not** belong to a world. Each subject may have exactly **one "
 "default private world** (exclusive, auto-created on subject creation). "
@@ -63,13 +63,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:19
+#: docs/product/entity-model.md:19
 #, no-wrap
 msgid "Two orthogonal classifications"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:25
+#: docs/product/entity-model.md:25
 #, no-wrap
 msgid ""
 "| Layer           | Cardinality              | Purpose                                                    |\n"
@@ -79,7 +79,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:27
+#: docs/product/entity-model.md:27
 msgid ""
 "Component fields live in **`body` JSONB** at the top level. "
 "**`primary_component`** records the creation entry (usually immutable); list "
@@ -87,13 +87,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:28
+#: docs/product/entity-model.md:28
 #, no-wrap
 msgid "`entities` table"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:43
+#: docs/product/entity-model.md:43
 #, no-wrap
 msgid ""
 "| Column                          | Role                                                        |\n"
@@ -112,26 +112,26 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:45
+#: docs/product/entity-model.md:45
 #, no-wrap
 msgid "**Not in v0.8 bootstrap:** relationship table, World nesting/mount, graph DB (PostgreSQL AGE). Subject↔world grants live in `world_config.grants` (no separate permission table).\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:46
+#: docs/product/entity-model.md:46
 #, no-wrap
 msgid "Subject (`agent` / `user`)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:53
+#: docs/product/entity-model.md:53
 msgid ""
 "Identity is **`type`** plus `agent_config` or `user_config` primary "
 "component."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:53
+#: docs/product/entity-model.md:53
 msgid ""
 "Subjects are **not** scoped by `world_id` in a membership sense; row "
 "`world_id` stays at bootstrap root (`ENTITY_ROOT_WORLD_ID`) as a table "
@@ -139,7 +139,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:53
+#: docs/product/entity-model.md:53
 msgid ""
 "**`agent_config` / `user_config` body**: `default_private_world_id` — the "
 "subject's single default private world (auto-created on subject create; "
@@ -147,7 +147,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:53
+#: docs/product/entity-model.md:53
 msgid ""
 "**Notifications** use subject entity ids as `recipient_id` (see "
 "[`notifications.md`](notifications.md)); ids come from boot-time "
@@ -156,7 +156,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:53
+#: docs/product/entity-model.md:53
 msgid ""
 "**Service API Token**（`service_api_tokens` 表）绑定 subject entity id；"
 "Habitat REST/SAP/MCP 从 Bearer token 解析调用方身份。见 [`remote-access.md`]"
@@ -164,20 +164,20 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/entity-model.md:54
+#: docs/product/entity-model.md:54
 #, no-wrap
 msgid "Boot-time ensure (`worlds` config)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:57
+#: docs/product/entity-model.md:57
 msgid ""
 "Habitat startup runs **`ensureWorldSubjects()`** once (after migrations, "
 "before engine):"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:64
+#: docs/product/entity-model.md:64
 msgid ""
 "**Optional override**: if `habitat_runtime_config.worlds.user_subject_id` / "
 "`agent_subject_id` (or legacy `notifications`) are set, ensures those entity "
@@ -185,7 +185,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:64
+#: docs/product/entity-model.md:64
 msgid ""
 "**Unconfigured**: discovers the lowest-id entity of `type=user` / "
 "`type=agent`; if none exist, creates them with the next serial id (not fixed "
@@ -193,78 +193,78 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:64
+#: docs/product/entity-model.md:64
 msgid ""
 "Ensures each subject has a **default private world** "
 "(`default_private_world_id`); private world ids are **not fixed**."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:64
+#: docs/product/entity-model.md:64
 msgid ""
 "If resolved ids differ from config (including when unset), **persists** them "
 "back to `habitat_runtime_config.worlds` so the next boot is stable."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:64
+#: docs/product/entity-model.md:64
 msgid ""
 "Binds **`ResolvedWorldContext`** in memory: `user_subject_id`, "
 "`agent_subject_id`, `user_world_id`, `agent_world_id`."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:64
+#: docs/product/entity-model.md:64
 msgid ""
 "Type conflict (configured id exists but wrong `type`) **aborts service "
 "startup**."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:66
+#: docs/product/entity-model.md:66
 msgid ""
 "Legacy SQL bootstrap seeds (public world id=1, Inbox id=2) are removed by "
 "migration; default data is **code-owned**, not migration-seeded."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:67
+#: docs/product/entity-model.md:67
 #, no-wrap
 msgid "World namespace"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:76
+#: docs/product/entity-model.md:76
 msgid ""
 "**`type: world`** entities are logical containers (permission/list boundary)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:76
+#: docs/product/entity-model.md:76
 msgid "Visibility, owner, and grants live in **`world_config` body**:"
 msgstr ""
 
 #. type: Bullet: '  - '
-#: docs/concepts/entity-model.md:76
+#: docs/product/entity-model.md:76
 msgid "`private: false` — public world"
 msgstr ""
 
 #. type: Bullet: '  - '
-#: docs/concepts/entity-model.md:76
+#: docs/product/entity-model.md:76
 msgid ""
 "`private: true` + `owner_subject_id` — private world owned by an `agent` or "
 "`user` entity"
 msgstr ""
 
 #. type: Bullet: '  - '
-#: docs/concepts/entity-model.md:76
+#: docs/product/entity-model.md:76
 msgid ""
 "`default_private: true` — marks the subject's **exclusive** default private "
 "world (at most one per `owner_subject_id`)"
 msgstr ""
 
 #. type: Bullet: '  - '
-#: docs/concepts/entity-model.md:76
+#: docs/product/entity-model.md:76
 msgid ""
 "`grants: [{ subject_id, permission: \"read\" | \"write\" }]` — explicit "
 "subject grants (**write includes read**; `subject_id` must not equal owner). "
@@ -272,12 +272,12 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:76
+#: docs/product/entity-model.md:76
 msgid "**Access rules** (MCP / LLM tools via `resolveToolWorld`):"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:81
+#: docs/product/entity-model.md:81
 #, no-wrap
 msgid ""
 "  | World   | Read                   | Write                    |\n"
@@ -287,14 +287,14 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:84
+#: docs/product/entity-model.md:84
 msgid ""
 "Owner always has full access without a grant row. Cross-world tool calls "
 "must use grants — open-source builds must not special-case subject ids."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:84
+#: docs/product/entity-model.md:84
 msgid ""
 "Do not confuse with semantic memory **`type=world`** (fact classification in "
 "[`memory.md`](memory.md)) — that becomes `body.memory_kind=world` after "
@@ -302,32 +302,32 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:85 messages/po4a/en.xml:355
+#: docs/product/entity-model.md:85 messages/po4a/en.xml:355
 #: messages/po4a/en.xml:406
 #, no-wrap
 msgid "Content"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:89
+#: docs/product/entity-model.md:89
 msgid ""
 "**`world_id`** is the sole namespace key; access boundary is inherited from "
 "the owning world."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:89
+#: docs/product/entity-model.md:89
 msgid "Content entities do not store a separate owner column."
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/entity-model.md:90
+#: docs/product/entity-model.md:90
 #, no-wrap
 msgid "UI location: Anima URI"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:93
+#: docs/product/entity-model.md:93
 msgid ""
 "Shell UI locates entities with **Anima URI** (`anima:{id}?component=…`), not "
 "by storing URI strings in PG. FK fields remain numeric ids (e.g. "
@@ -337,18 +337,18 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:94
+#: docs/product/entity-model.md:94
 #, no-wrap
 msgid "Task module (first consumer)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:97
+#: docs/product/entity-model.md:97
 msgid "TickTick-style lists and items map to:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:103
+#: docs/product/entity-model.md:103
 #, no-wrap
 msgid ""
 "| Concept     | Entity         | Component      |\n"
@@ -359,7 +359,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:105
+#: docs/product/entity-model.md:105
 msgid ""
 "Items reference their list via `body.list_id` (entity id). Task items store "
 "**title** and **content** on entity columns; **tags** 使用顶层 `tag_ids`（指"
@@ -374,7 +374,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:107
+#: docs/product/entity-model.md:107
 msgid ""
 "Task/list **LLM 工具**默认在 **agent subject 专属 private world** 操作，多数"
 "调用可省略 `world_id`；按 `id` / `list_id` 操作时从实体反查 world 并校验 "
@@ -383,13 +383,13 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:109
+#: docs/product/entity-model.md:109
 #, no-wrap
 msgid "**Folders** (`body.is_folder: true`) are container nodes in the sidebar tree only — they cannot hold tasks directly (`tasklist.item.create` / `task.moveToList` reject `list_id` pointing at a folder). Child lists and sub-folders reference a parent folder via `body.parent_id` (entity id of a folder, or omitted/null at root). Nesting must not form cycles. **Folders cannot be archived** — only deleted. Deleting a folder recursively removes all sub-folders and moves every contained list to root (`parent_id: null`); list task items are kept. List **`body.closed: true`** means archived (lists only): hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })` only; **any other mutation on an archived list or its tasks** (rename, move, edit, complete, …) returns `清单已归档`. Deleting a non-folder list removes its task items when `cascade` is true (default). `sort_order` is scoped among siblings sharing the same `parent_id`.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:111
+#: docs/product/entity-model.md:111
 msgid ""
 "LLM ToolSets: `@freeanima/feature-task/domain` — `task` (item CRUD + "
 "`task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via "
@@ -400,13 +400,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/entity-model.md:112
+#: docs/product/entity-model.md:112
 #, no-wrap
 msgid "Shell UI: global Subject scope"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:115
+#: docs/product/entity-model.md:115
 msgid ""
 "Habitat startup binds **`ResolvedWorldContext`** "
 "(`createTypedHabitatClient().call(\"worlds.context\")` / `GET /rpc/v1/worlds/"
@@ -417,7 +417,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:125
+#: docs/product/entity-model.md:125
 #, no-wrap
 msgid ""
 "| Surface          | World binding                                    | Control                        |\n"
@@ -432,7 +432,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:127
+#: docs/product/entity-model.md:127
 msgid ""
 "SAP task/email methods accept optional `subject_kind` (defaults: task "
 "`user`, email `agent`). Satellites read the shell scope via "
@@ -441,7 +441,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:129
+#: docs/product/entity-model.md:129
 msgid ""
 "Future multi-world browse (e.g. diary calendar aggregation across worlds) "
 "should add **module-scoped** filters or Habitat tooling — not a speculative "
@@ -449,20 +449,20 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:130
+#: docs/product/entity-model.md:130
 #, no-wrap
 msgid "Tag module（轻语义）"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:133
+#: docs/product/entity-model.md:133
 msgid ""
 "标签是独立 content entity，**per-World 扁平池**（无 scope/命名空间、无层级、"
 "无全局池）："
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:137
+#: docs/product/entity-model.md:137
 #, no-wrap
 msgid ""
 "| Concept | Entity         | Component |\n"
@@ -471,47 +471,47 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:147
+#: docs/product/entity-model.md:147
 msgid "**名称**在 entity `title`；body 仅 `sort_order` / `client_op_id`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:147
+#: docs/product/entity-model.md:147
 msgid ""
 "任意 content entity 通过顶层 **`tag_ids`** 挂载标签；含义由「实体类型 + 标"
 "签」组合自然产生（不做语义空间区分）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:147
+#: docs/product/entity-model.md:147
 msgid ""
 "同 World 内 title（trim 后）唯一；删除标签时从该 World 所有实体的 `tag_ids` "
 "剔除"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:147
+#: docs/product/entity-model.md:147
 msgid ""
 "**Habitat RPC：** `tag.list` / `tag.search` / `tag.suggest` / `tag.create` / "
 "`tag.patch` / `tag.delete` / `tag.setOnEntity`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:147
+#: docs/product/entity-model.md:147
 msgid ""
 "**LLM ToolSet：** `tag`（`tag_list` / `tag_search` / `tag_create` / "
 "`tag_update` / `tag_delete` / `tag_set_on_entity`）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:147
+#: docs/product/entity-model.md:147
 msgid ""
 "**搜索：** `EntitySearchOpts.tag_ids`（或 `task_item` filters.`tag_ids`）为数"
 "组包含过滤（AND）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:147
+#: docs/product/entity-model.md:147
 msgid ""
 "**挂标签 UI：** 共享 `TagPicker`（`features/tag/ui`）— 常用（`tag.suggest` 按"
 "目标实体 `primary_component` 频次）+ 搜索（`tag.search`）+ 新建；日记条目 / "
@@ -519,27 +519,27 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:147
+#: docs/product/entity-model.md:147
 msgid ""
 "**列表筛选 UI：** 任务/项目等本地 FilterBar（从当前列表收集已有 tag chips），"
 "**不是**挂标签交互，不接入 `TagPicker`、不暴露新建"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:147
+#: docs/product/entity-model.md:147
 msgid ""
 "**兼容：** `diary.suggestTags` 仍可用，内部委托同一频次查询（固定 "
 "`diary_entry`）"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:148
+#: docs/product/entity-model.md:148
 #, no-wrap
 msgid "Project module (v1 spec)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:151
+#: docs/product/entity-model.md:151
 msgid ""
 "Project management uses a **separate folder tree** from task-list folders. "
 "Tasks belong to either the task module (Backlog, `project_id` null) or "
@@ -547,7 +547,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:156
+#: docs/product/entity-model.md:156
 #, no-wrap
 msgid ""
 "| Concept        | Entity         | Component        |\n"
@@ -557,7 +557,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:158
+#: docs/product/entity-model.md:158
 msgid ""
 "`task_item.body.project_id` links items to a project. Optional project "
 "background notes use entity `content` (not `body`). Smart Lists in the task "
@@ -567,23 +567,23 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:160
+#: docs/product/entity-model.md:160
 msgid "Full spec: [`docs/features/project.md`](../features/project.md)."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:161
+#: docs/product/entity-model.md:161
 #, no-wrap
 msgid "Email module (Estate)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:164
+#: docs/product/entity-model.md:164
 msgid "Email accounts, threads, and mirrored messages map to:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:170
+#: docs/product/entity-model.md:170
 #, no-wrap
 msgid ""
 "| Concept | Entity         | Component       |\n"
@@ -594,7 +594,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:172
+#: docs/product/entity-model.md:172
 msgid ""
 "Accounts store SMTP/IMAP settings and sync cursor in `body.sync`. Messages "
 "store IMAP UID in `body.imap_uid`; human-readable subject uses entity "
@@ -615,7 +615,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:174
+#: docs/product/entity-model.md:174
 msgid ""
 "LLM ToolSets: `@freeanima/feature-email/domain` — `email-account` (account "
 "entities) and `email` (sync, send/receive, search); load via `toolset_load`. "
@@ -626,18 +626,18 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:175
+#: docs/product/entity-model.md:175
 #, no-wrap
 msgid "Diary module"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:178
+#: docs/product/entity-model.md:178
 msgid "Structured journal entries for **user** and **agent** subjects:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:182
+#: docs/product/entity-model.md:182
 #, no-wrap
 msgid ""
 "| Concept | Entity         | Component     |\n"
@@ -646,7 +646,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:184
+#: docs/product/entity-model.md:184
 msgid ""
 "Entries live in each subject's **`default_private_world_id`**. "
 "`body.entry_at` is the timeline sort key; optional top-level **`tag_ids`**"
@@ -657,7 +657,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:188
+#: docs/product/entity-model.md:188
 msgid ""
 "**SAP:** `diary.*` + `diary.block*` — all take `subject_kind: user | agent`. "
 "`diary.append` adds a new text block; `diary.patch` updates metadata only; "
@@ -665,30 +665,30 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:188
+#: docs/product/entity-model.md:188
 msgid "**UI:** shell `/diary` — multi text-block editor with drag reorder."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:188
+#: docs/product/entity-model.md:188
 msgid ""
 "**LLM:** ToolSet `diary` — caller subject private world by default; optional "
 "`world_id`. Block-level edits also via ToolSet `content-block`."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:190
+#: docs/product/entity-model.md:190
 msgid "See [`docs/features/diary.md`](../features/diary.md)."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:191
+#: docs/product/entity-model.md:191
 #, no-wrap
 msgid "Content block"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:194
+#: docs/product/entity-model.md:194
 msgid ""
 "Reusable content bricks for **containers** (diary, notes, …). `block_type` "
 "is technical only; semantics attach via `components[]` tags (not a nested "
@@ -697,7 +697,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:198
+#: docs/product/entity-model.md:198
 #, no-wrap
 msgid ""
 "| Concept | Entity         | Component       |\n"
@@ -706,7 +706,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:206
+#: docs/product/entity-model.md:206
 #, no-wrap
 msgid ""
 "| Body / column     | Role                                                             |\n"
@@ -719,14 +719,14 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:208
+#: docs/product/entity-model.md:208
 msgid ""
 "Optional semantic components on the same row (`components[]`; fields merge "
 "into flat `body`):"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:216
+#: docs/product/entity-model.md:216
 #, no-wrap
 msgid ""
 "| Component         | `body` fields                                                                                       |\n"
@@ -739,13 +739,13 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:218
+#: docs/product/entity-model.md:218
 #, no-wrap
 msgid "**Container end-state:** `diary_entry` is the only content-block container. Dream / limbic / autobiographical memories are `content_block` rows with the matching semantic tag under the dated diary for that CST day (agent default private world for sleep writes).\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:221
+#: docs/product/entity-model.md:221
 msgid ""
 "**LLM:** ToolSet `content-block` (`@freeanima/features/content-block/"
 "domain`) — `content_block_create` / `update` / `delete` / `get` / `list` / "
@@ -756,27 +756,27 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:221
+#: docs/product/entity-model.md:221
 msgid ""
 "**Search filters:** `parent_id`, `block_type`, `client_op_id` (whitelist "
 "shared by `entity_search` / store)."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:222
+#: docs/product/entity-model.md:222
 #, no-wrap
 msgid "Dream (sleep pipeline)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:225
+#: docs/product/entity-model.md:225
 msgid ""
 "Nightly creative narratives (append-only, at most one dream block per diary "
 "day):"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:229
+#: docs/product/entity-model.md:229
 #, no-wrap
 msgid ""
 "| Concept | Entity         | Components                |\n"
@@ -785,7 +785,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:231
+#: docs/product/entity-model.md:231
 msgid ""
 "Writes go to the **agent** subject's **`default_private_world_id`**: ensure "
 "that day's `diary_entry`, then insert a text `content_block` tagged `dream`. "
@@ -794,46 +794,46 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:235
+#: docs/product/entity-model.md:235
 msgid ""
 "**Read:** `diary_get` / `content_block_list` / `content_block_search` with "
 "`component=dream`."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:235
+#: docs/product/entity-model.md:235
 msgid ""
 "**UI:** Shell `/diary` shows dream blocks with a read-only「梦境」label (no "
 "independent `/dream` module)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:235
+#: docs/product/entity-model.md:235
 msgid ""
 "**LLM:** No dedicated `dream` ToolSet; sleep `runDream` still generates "
 "blocks."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:237
+#: docs/product/entity-model.md:237
 msgid "See [`docs/concepts/dream.md`](dream.md)."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:238
+#: docs/product/entity-model.md:238
 #, no-wrap
 msgid "Vault module (Estate)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:241
+#: docs/product/entity-model.md:241
 msgid ""
 "Encrypted credentials in two libraries (**User** + **Agent**), ECS "
 "components `vault_config` + `vault_item`:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:246
+#: docs/product/entity-model.md:246
 #, no-wrap
 msgid ""
 "| Concept | Entity         | Component      |\n"
@@ -843,7 +843,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:251
+#: docs/product/entity-model.md:251
 #, no-wrap
 msgid ""
 "| Library | Crypto mode       | Decrypt location              | Headless inject                     |\n"
@@ -853,28 +853,28 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:253
+#: docs/product/entity-model.md:253
 msgid ""
 "Privacy fields live in `body.secrets_enc` + `body.dek_wrapped`; metadata "
 "(title, url, username, custom field **names**) is plaintext for search."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:258
+#: docs/product/entity-model.md:258
 msgid ""
 "**SAP:** `vault.*` — Shell defaults `subject_kind: user`; ToolSet defaults "
 "agent world."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:258
+#: docs/product/entity-model.md:258
 msgid ""
 "**UI:** shell `/vault` (`@freeanima/satellite-vault`); bundled Chat has a "
 "dedicated master-password unlock (not a chat message)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:258
+#: docs/product/entity-model.md:258
 msgid ""
 "**LLM:** ToolSet `vault` — Habitat-only (not MCP): metadata list/search/get; "
 "`vault_create` / `vault_update` / `vault_delete` (Agent library seal for "
@@ -885,7 +885,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/entity-model.md:258
+#: docs/product/entity-model.md:258
 msgid ""
 "**Config:** Runtime PG settings may use `vault(\"item_id\", \"field\")` "
 "(Agent library) or `env(\"KEY\")` (legacy `credential()` removed). Bootstrap "
@@ -894,28 +894,28 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:260
+#: docs/product/entity-model.md:260
 msgid ""
 "Legacy pass (`~/.password-store`) is **not** deleted on disk; migrate "
 "entries manually via Shell UI."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/entity-model.md:261 messages/po4a/en.xml:222
+#: docs/product/entity-model.md:261 messages/po4a/en.xml:222
 #: messages/po4a/en.xml:234 messages/po4a/en.xml:638
 #, no-wrap
 msgid "Search"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:264
+#: docs/product/entity-model.md:264
 msgid ""
 "Entity **list** (deterministic browse) and **search** (relevance ranking) "
 "are separate ports:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:269
+#: docs/product/entity-model.md:269
 #, no-wrap
 msgid ""
 "| Port                      | Role                                                           |\n"
@@ -925,44 +925,44 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:271
+#: docs/product/entity-model.md:271
 #, no-wrap
 msgid "**Scope:** default `world_id`; `global: true` requires an explicit accessible-world allowlist (`resolveWorldsAccessibleBySubject`: public + owned private + grant-readable worlds).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:273
+#: docs/product/entity-model.md:273
 #, no-wrap
 msgid "**Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tag_ids`, `due_today`). Top-level `tag_ids` filter applies across components. Arbitrary JSONPath is forbidden.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:275
+#: docs/product/entity-model.md:275
 #, no-wrap
 msgid "**Tools / API:** `entity_search` (LLM/MCP) and `createTypedHabitatClient().call(\"entity.searchGet\")` / `createTypedHabitatClient().call(\"entity.searchPost\")` (REST `GET /rpc/v1/entity/searchGet` | `POST /rpc/v1/entity/searchPost`) share `EntitySearchPort`. Task UI search box uses the same Habitat RPC endpoint.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:277
+#: docs/product/entity-model.md:277
 msgid ""
 "See memory hybrid search in [`memory.md`](memory.md) for FTS operator "
 "syntax; entity search reuses the same query builder."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:279
+#: docs/product/entity-model.md:279
 #, no-wrap
 msgid "**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Habitat **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/entity-model.md:280
+#: docs/product/entity-model.md:280
 #, no-wrap
 msgid "Future migration map"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:293
+#: docs/product/entity-model.md:293
 #, no-wrap
 msgid ""
 "| Legacy table                   | Target                                                                                                                     |\n"
@@ -979,6 +979,6 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/entity-model.md:294
+#: docs/product/entity-model.md:294
 msgid "See [`architecture.md`](architecture.md) for cognitive-layer context."
 msgstr ""

@@ -16,20 +16,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title #
-#: docs/concepts/architecture.md:336 docs/features/goal.md:1
-#: docs/features/goal.md:5
+#: docs/concepts/architecture.md:336 docs/modules/goal.md:1
+#: docs/modules/goal.md:5
 #, no-wrap
 msgid "Session Goal"
 msgstr "会话便签"
 
 #. type: Title ##
-#: docs/concepts/compression.md:32 docs/features/goal.md:40
+#: docs/concepts/compression.md:32 docs/modules/goal.md:40
 #, no-wrap
 msgid "Configuration"
 msgstr "配置"
 
 #. type: Plain text
-#: docs/features/goal.md:8
+#: docs/modules/goal.md:8
 msgid ""
 "Session Goal lets you set a persistent objective for a single conversation. "
 "After each turn, an independent **judge model** decides whether the goal is "
@@ -41,13 +41,13 @@ msgstr ""
 "耗尽，或用户暂停/清除。"
 
 #. type: Title ##
-#: docs/features/goal.md:9
+#: docs/modules/goal.md:9
 #, no-wrap
 msgid "Commands"
 msgstr "命令"
 
 #. type: Plain text
-#: docs/features/goal.md:22
+#: docs/modules/goal.md:22
 #, no-wrap
 msgid ""
 "| Command                | Description                                           |\n"
@@ -75,25 +75,25 @@ msgstr ""
 "| `/subgoal clear`      | 清除全部子目标                                 |\n"
 
 #. type: Plain text
-#: docs/features/goal.md:24
+#: docs/modules/goal.md:24
 #, no-wrap
 msgid "On **Chat**, terminal commands (`/goal status`, pause/resume/clear, `/subgoal` list, etc.) run via Habitat RPC `conversation.command` and show in a result panel or toast — they do not flash through the message stream. Setting a goal (`/goal <description>`) and `/retry` still use `message.send` so the LLM turn streams into the conversation. Discord/Weixin keep the existing slash → stream reply path.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/goal.md:25
+#: docs/modules/goal.md:25
 #, no-wrap
 msgid "Workflow"
 msgstr "工作流"
 
 #. type: Bullet: '1. '
-#: docs/features/goal.md:33
+#: docs/modules/goal.md:33
 msgid ""
 "User runs `/goal …` → writes `conversations.goal` and triggers engine run."
 msgstr "用户执行 `/goal …` → 写入 `conversations.goal` 并触发 engine 运行。"
 
 #. type: Bullet: '2. '
-#: docs/features/goal.md:33
+#: docs/modules/goal.md:33
 msgid ""
 "After each assistant reply → **goal judge** reads goal, subgoals, recent "
 "dialogue, last reply."
@@ -102,12 +102,12 @@ msgstr ""
 "回复。"
 
 #. type: Bullet: '3. '
-#: docs/features/goal.md:33
+#: docs/modules/goal.md:33
 msgid "Judge outputs strict JSON: `{\"done\": boolean, \"reason\": \"...\"}`."
 msgstr "评判输出严格 JSON：`{\"done\": boolean, \"reason\": \"...\"}`。"
 
 #. type: Bullet: '4. '
-#: docs/features/goal.md:33
+#: docs/modules/goal.md:33
 msgid ""
 "`done: false` → inject user-role continuation (e.g. `↻ Continuing toward "
 "goal (3/20): …`), continue next turn in same SSE stream."
@@ -116,25 +116,25 @@ msgstr ""
 "`），在同一 SSE 流中继续下一轮。"
 
 #. type: Bullet: '5. '
-#: docs/features/goal.md:33
+#: docs/modules/goal.md:33
 msgid "`done: true` → mark completed, stop continuation."
 msgstr "`done: true` → 标记完成，停止续写。"
 
 #. type: Bullet: '6. '
-#: docs/features/goal.md:33
+#: docs/modules/goal.md:33
 msgid ""
 "User message mid-run preempts current continuation; after that turn, re-"
 "judge; continues if not paused."
 msgstr "运行中用户消息会抢占当前续写；该轮结束后重新评判；未暂停则继续。"
 
 #. type: Title ##
-#: docs/features/goal.md:34
+#: docs/modules/goal.md:34
 #, no-wrap
 msgid "Judge conservative policy"
 msgstr "评判保守策略"
 
 #. type: Bullet: '- '
-#: docs/features/goal.md:39
+#: docs/modules/goal.md:39
 msgid ""
 "**Pass**: assistant clearly confirms completion, shows final deliverable, or "
 "states blocker needing user input (reason explains)."
@@ -143,14 +143,14 @@ msgstr ""
 "明）。"
 
 #. type: Bullet: '- '
-#: docs/features/goal.md:39
+#: docs/modules/goal.md:39
 msgid ""
 "**Fail**: vague progress, plan only without evidence; implied completion "
 "does not count."
 msgstr "**不通过**：进展模糊、仅有计划而无证据；隐含完成不算。"
 
 #. type: Bullet: '- '
-#: docs/features/goal.md:39
+#: docs/modules/goal.md:39
 msgid ""
 "**Judge unavailable**: call or parse failure **pauses** the goal (`status: "
 "paused`), logs a warn, and appends a visible status line to the conversation "
@@ -159,7 +159,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/goal.md:43
+#: docs/modules/goal.md:43
 msgid ""
 "Optional `goal_judge` in `~/.anima/config.yaml` `llm.profiles` (see "
 "[`config.example.yaml`](../../config.example.yaml)). Falls back to "
@@ -170,7 +170,7 @@ msgstr ""
 "`llm.default_profile`。"
 
 #. type: Plain text
-#: docs/features/goal.md:45
+#: docs/modules/goal.md:45
 msgid ""
 "Judge calls use OpenAI-compatible `response_format: json_object` and "
 "`thinking: { type: \"disabled\" }` (via `params.extra`), plus "
@@ -179,26 +179,26 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/goal.md:46
+#: docs/modules/goal.md:46
 #, no-wrap
 msgid "vs ACP"
 msgstr "与 ACP 对比"
 
 #. type: Bullet: '- '
-#: docs/features/goal.md:50
+#: docs/modules/goal.md:50
 msgid ""
 "**Goal**: in-conversation synchronous continuation loop; orchestrated by "
 "platform turn lifecycle."
 msgstr "**Goal**：对话内同步续写循环；由平台轮次生命周期编排。"
 
 #. type: Bullet: '- '
-#: docs/features/goal.md:50
+#: docs/modules/goal.md:50
 msgid ""
 "**ACP**: external agent async task; callback triggers separate turn on "
 "completion."
 msgstr "**ACP**：外部 agent 异步任务；回调在完成后触发独立轮次。"
 
 #. type: Plain text
-#: docs/features/goal.md:51
+#: docs/modules/goal.md:51
 msgid "See [`architecture.md`](../concepts/architecture.md#session-goal)."
 msgstr "参见 [`architecture.md`](../concepts/architecture.md#session-goal)。"

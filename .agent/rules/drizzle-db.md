@@ -8,11 +8,11 @@ Repository query patterns for `@freeanima/host/core/db/pg`. Schema DDL and migra
 
 ## Scope
 
-| In scope                                           | Out of scope                                                                                |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `src/host/core/db/pg/` repository / FTS query code | Migration DDL (`db:generate`, `snapshot.json`) — see [`coding.md`](coding.md)               |
-| ORM query patterns, type safety, dynamic filters   | Product memory pipeline — see [`docs/concepts/memory.md`](../../docs/concepts/memory.md)    |
-| Repo transform (non-trivial joins)                 | User PG install, backup, ops — see [`docs/guide/database.md`](../../docs/guide/database.md) |
+| In scope                                           | Out of scope                                                                               |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `src/host/core/db/pg/` repository / FTS query code | Migration DDL (`db:generate`, `snapshot.json`) — see [`coding.md`](coding.md)              |
+| ORM query patterns, type safety, dynamic filters   | Product memory pipeline — see [`docs/cognition/memory.md`](../../docs/cognition/memory.md) |
+| Repo transform (non-trivial joins)                 | User PG install, backup, ops — see [`docs/ops/database.md`](../../docs/ops/database.md)    |
 
 Driver: `drizzle-orm/bun-sql/postgres` via [`src/host/core/db/pg/client.ts`](../../src/host/core/db/pg/client.ts).
 

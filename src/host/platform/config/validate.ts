@@ -13,7 +13,7 @@ import { PATHS } from "./paths.ts";
 function warnDeprecatedTunnelConfig(cfg: RuntimeConfig): void {
   if (!("tunnel" in cfg) || (cfg as Record<string, unknown>).tunnel == null) return;
   console.warn(
-    "[config] tunnel 配置段已废弃并忽略：可从配置中删除，并可移除 ~/.anima/cloudflared 与 ~/.anima/bin/cloudflared；远程暴露请改用局域网、本地 HTTPS 或自建反向代理（见 docs/guide/remote-access.md）",
+    "[config] tunnel 配置段已废弃并忽略：可从配置中删除，并可移除 ~/.anima/cloudflared 与 ~/.anima/bin/cloudflared；远程暴露请改用局域网、本地 HTTPS 或自建反向代理（见 docs/ops/remote-access.md）",
   );
 }
 
@@ -51,7 +51,7 @@ export async function validateBootstrapOnStartup(): Promise<void> {
 
   if ("tunnel" in record && record.tunnel != null) {
     console.warn(
-      "[config] tunnel 配置段已废弃并忽略：可从 config.yaml 删除，并可移除 ~/.anima/cloudflared 与 ~/.anima/bin/cloudflared；远程暴露请改用局域网、本地 HTTPS 或自建反向代理（见 docs/guide/remote-access.md）",
+      "[config] tunnel 配置段已废弃并忽略：可从 config.yaml 删除，并可移除 ~/.anima/cloudflared 与 ~/.anima/bin/cloudflared；远程暴露请改用局域网、本地 HTTPS 或自建反向代理（见 docs/ops/remote-access.md）",
     );
   }
 }

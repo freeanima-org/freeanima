@@ -17,32 +17,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Yaml Front Matter Hash Value: title
-#: docs/features/page-refresh.md:1
+#: docs/modules/page-refresh.md:1
 #, no-wrap
 msgid "Page refresh"
 msgstr ""
 
 #. type: Title #
-#: docs/features/page-refresh.md:5
+#: docs/modules/page-refresh.md:5
 #, no-wrap
 msgid "Page refresh (sync vs refresh)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/page-refresh.md:8
+#: docs/modules/page-refresh.md:8
 msgid ""
 "Outpost/Portal UI keeps data fresh with two distinct verbs. Do not conflate "
 "them with PWA / installer “reload”, which updates shell assets only."
 msgstr ""
 
 #. type: Title ##
-#: docs/features/page-refresh.md:9
+#: docs/modules/page-refresh.md:9
 #, no-wrap
 msgid "Verbs"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/page-refresh.md:15
+#: docs/modules/page-refresh.md:15
 #, no-wrap
 msgid ""
 "| Verb        | When                                                           | What happens                                                                                                                   |\n"
@@ -52,13 +52,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/page-refresh.md:16
+#: docs/modules/page-refresh.md:16
 #, no-wrap
 msgid "Principles"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/page-refresh.md:22
+#: docs/modules/page-refresh.md:22
 msgid ""
 "**Limited auto**: keep sync + existing live channels (chat `stream.*`, "
 "`conversation.updated`, `pomodoro.active.changed`). No global list polling. "
@@ -67,14 +67,14 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/page-refresh.md:22
+#: docs/modules/page-refresh.md:22
 msgid ""
 "**Manual refresh required** on product list surfaces so multi-device / agent "
 "edits can be pulled on demand."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/page-refresh.md:22
+#: docs/modules/page-refresh.md:22
 msgid ""
 "**Interaction dimension** (see [ui-dimensions](../../.agent/rules/ui-"
 "dimensions.md)): pointer uses a header button; touch also gets pull-to-"
@@ -82,20 +82,20 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/page-refresh.md:22
+#: docs/modules/page-refresh.md:22
 msgid ""
 "**Out of scope**: Habitat fan-out for every CRUD entity; React Query; "
 "turning the offline-sync toast into a page refresh control."
 msgstr ""
 
 #. type: Title ##
-#: docs/features/page-refresh.md:23
+#: docs/modules/page-refresh.md:23
 #, no-wrap
 msgid "Page classes"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/page-refresh.md:34
+#: docs/modules/page-refresh.md:34
 #, no-wrap
 msgid ""
 "| Class           | Pages                             | Auto                                                                   | Manual                                    |\n"
@@ -110,13 +110,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/page-refresh.md:35
+#: docs/modules/page-refresh.md:35
 #, no-wrap
 msgid "Implementation notes"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/page-refresh.md:39
+#: docs/modules/page-refresh.md:39
 msgid ""
 "Shared pull gesture: `@freeanima/frontend/ui-kit/composite` `PullToRefresh` "
 "(touch-only; ignore starts near the left edge to avoid drawer swipe "
@@ -124,12 +124,12 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/page-refresh.md:39
+#: docs/modules/page-refresh.md:39
 msgid "Copy: `m.habitat_common_refresh` / `m.habitat_common_refreshing`."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/page-refresh.md:39
+#: docs/modules/page-refresh.md:39
 msgid ""
 "Follow-up (not required here): soft refresh of the focused module only on "
 "visibility with an empty outbox."

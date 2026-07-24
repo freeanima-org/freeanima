@@ -17,14 +17,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Title ##
-#: docs/concepts/compression.md:10 docs/concepts/sleep.md:13
+#: docs/concepts/compression.md:10 docs/cognition/sleep.md:13
 #: docs/concepts/time-perception.md:21
 #, no-wrap
 msgid "Design Principles"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:10 docs/concepts/sleep.md:9
+#: docs/concepts/dream.md:10 docs/cognition/sleep.md:9
 #: docs/guide/remote-access.md:10 messages/po4a/en.xml:685
 #: messages/po4a/en.xml:692
 #, no-wrap
@@ -32,31 +32,31 @@ msgid "Overview"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/dream.md:40 docs/concepts/sleep.md:33
+#: docs/concepts/dream.md:40 docs/cognition/sleep.md:33
 #, no-wrap
 msgid "Orchestration"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/sleep.md:1 messages/po4a/en.xml:700
+#: docs/cognition/sleep.md:1 messages/po4a/en.xml:700
 #, no-wrap
 msgid "Sleep"
 msgstr ""
 
 #. type: Title #
-#: docs/concepts/sleep.md:5
+#: docs/cognition/sleep.md:5
 #, no-wrap
 msgid "Sleep Mechanism"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:8
+#: docs/cognition/sleep.md:8
 #, no-wrap
 msgid "> Light Sleep is the incremental extraction channel (semantic + limbic + autobiographical); Deep Sleep optimizes semantic memory inventory.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:12
+#: docs/cognition/sleep.md:12
 msgid ""
 "Sleep is the digital life's memory consolidation mechanism—analogous to "
 "human sleep where the brain replays daytime experiences, converts short-term "
@@ -65,41 +65,41 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/concepts/sleep.md:19
+#: docs/cognition/sleep.md:19
 msgid ""
 "**Internal mechanism, no trace** — Sleep runs in background, does not write "
 "to conversations, does not affect conversation flow"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/concepts/sleep.md:19
+#: docs/cognition/sleep.md:19
 msgid ""
 "**Do not copy human rhythm literally** — Triggered by system need (cron), "
 "not real-time"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/concepts/sleep.md:19
+#: docs/cognition/sleep.md:19
 msgid ""
 "**Two-tier layering** — Light sleep (incremental writes), deep sleep "
 "(semantic inventory optimization)"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/concepts/sleep.md:19
+#: docs/cognition/sleep.md:19
 msgid ""
 "**Identity context** — All memory processing must carry **self layer six "
 "blocks** + resident memory (see [`self-layer.md`](self-layer.md))"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/sleep.md:20
+#: docs/cognition/sleep.md:20
 #, no-wrap
 msgid "Current State"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:32
+#: docs/cognition/sleep.md:32
 #, no-wrap
 msgid ""
 "| Mechanism              | Status         | Notes                                                                                                       |\n"
@@ -115,7 +115,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:36
+#: docs/cognition/sleep.md:36
 msgid ""
 "Sleep uses a **macro DAG** (`sleep-cycle` pipeline) orchestrated by "
 "`PipelineRunner` (`@freeanima/runtime/pipeline`). A single cron job triggers "
@@ -124,13 +124,13 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:38
+#: docs/cognition/sleep.md:38
 #, no-wrap
 msgid "**Light sleep** and **deep sleep** keep their **internal** multi-stage / multi-round sequencing inside `runLightSleep()` / `runDeepSleep()` — not promoted to macro DAG nodes.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:40
+#: docs/cognition/sleep.md:40
 msgid ""
 "Habitat (`/habitat`/dashboard/sleep`) supports **diagnostic** runs: full "
 "cycle or individual steps (`force` skips dependency checks). **Deep sleep "
@@ -138,26 +138,26 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:42
+#: docs/cognition/sleep.md:42
 #, no-wrap
 msgid "**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Habitat → Cron** via each task's **Run history** button.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:44
+#: docs/cognition/sleep.md:44
 msgid ""
 "Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-"
 "cycle_run.json` (SSOT for step status; no EventBus)."
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/sleep.md:45
+#: docs/cognition/sleep.md:45
 #, no-wrap
 msgid "Light Sleep"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:53
+#: docs/cognition/sleep.md:53
 #, no-wrap
 msgid ""
 "| Attribute     | Value                                                                                         |\n"
@@ -169,13 +169,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/sleep.md:54
+#: docs/cognition/sleep.md:54
 #, no-wrap
 msgid "Three Stages"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:62
+#: docs/cognition/sleep.md:62
 #, no-wrap
 msgid ""
 "| Stage              | Target                       | Purpose                                                                                  |\n"
@@ -187,25 +187,25 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:64
+#: docs/cognition/sleep.md:64
 #, no-wrap
 msgid "**Restraint principle:** Each stage LLM may judge \"nothing worth recording\" → no writes; program still runs subsequent stages.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:66
+#: docs/cognition/sleep.md:66
 #, no-wrap
 msgid "**Dedup (semantic):** Compare only against existing memories from same source sessions; cross-thread merging left to deep sleep.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/sleep.md:67
+#: docs/cognition/sleep.md:67
 #, no-wrap
 msgid "Deep Sleep"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:75
+#: docs/cognition/sleep.md:75
 #, no-wrap
 msgid ""
 "| Attribute  | Value                                                                                                                                                 |\n"
@@ -217,13 +217,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/sleep.md:76
+#: docs/cognition/sleep.md:76
 #, no-wrap
 msgid "Four Rounds"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:84
+#: docs/cognition/sleep.md:84
 #, no-wrap
 msgid ""
 "| Round | Intent                                                                  |\n"
@@ -235,68 +235,68 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:86
+#: docs/cognition/sleep.md:86
 #, no-wrap
 msgid "**Ordering rationale:** Clean problems first, then refine, then merge, then review pinned quality.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:88
+#: docs/cognition/sleep.md:88
 #, no-wrap
 msgid "**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Habitat manual runs default to full but can select incremental.\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/sleep.md:89
+#: docs/cognition/sleep.md:89
 #, no-wrap
 msgid "Contradiction Definition (Exclusive)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:92
+#: docs/cognition/sleep.md:92
 msgid ""
 "Two memories semantically negate each other and cannot be explained by "
 "temporal change → contradiction."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:96
+#: docs/cognition/sleep.md:96
 msgid ""
 "✓ Contradiction: \"daughter born Year of Tiger\" vs \"daughter born Year of "
 "Goat\""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:96
+#: docs/cognition/sleep.md:96
 msgid ""
 "✗ Not contradiction: \"likes apples\" vs \"likes cherries\" (can coexist)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:96
+#: docs/cognition/sleep.md:96
 msgid ""
 "✗ Not contradiction (change): \"likes Python\" vs \"now prefers TypeScript\""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/sleep.md:97
+#: docs/cognition/sleep.md:97
 #, no-wrap
 msgid "Trigger Mechanism"
 msgstr ""
 
 #. type: Fenced code block (cron)
-#: docs/concepts/sleep.md:99
+#: docs/cognition/sleep.md:99
 #, no-wrap
 msgid "0 2 * * *  sleep-cycle   # builtin-sleep-cycle: conversation-cleanup → light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:104
+#: docs/cognition/sleep.md:104
 msgid "DAG (macro layer):"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/concepts/sleep.md:105
+#: docs/cognition/sleep.md:105
 #, no-wrap
 msgid ""
 "conversation-cleanup\n"
@@ -309,20 +309,20 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/concepts/sleep.md:115
+#: docs/cognition/sleep.md:115
 #, no-wrap
 msgid "Session cleanup (pre-light-sleep)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:118
+#: docs/cognition/sleep.md:118
 msgid ""
 "Runs as the first sleep-cycle step before light-sleep scans yesterday's "
 "sessions."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:126
+#: docs/cognition/sleep.md:126
 #, no-wrap
 msgid ""
 "| Rule                                         | Action                        |\n"
@@ -335,49 +335,49 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:128
+#: docs/cognition/sleep.md:128
 #, no-wrap
 msgid "**Stale** means `conversations.updated_at` older than **24 hours** (wall-clock `timestamptz`, not CST day boundary). Recent empty sessions (e.g. satellite \"new conversation\" without a first message) are kept until the next night's run.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:130
+#: docs/cognition/sleep.md:130
 msgid "After downtime, the next scheduled run catches up."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:132
+#: docs/cognition/sleep.md:132
 #, no-wrap
 msgid "**Compression** stays session-scoped (turn-time `advanceCompressionMeta`); it is **not** a sleep-cycle step. Nightly consolidation does not replace per-conversation compression.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/sleep.md:133
+#: docs/cognition/sleep.md:133
 #, no-wrap
 msgid "Historical Day (Habitat)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:136
+#: docs/cognition/sleep.md:136
 msgid ""
 "For a single past CST calendar day (e.g. before go-live or after migration), "
 "use **Habitat → Sleep** (`/habitat`/dashboard/sleep`):"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/concepts/sleep.md:139
+#: docs/cognition/sleep.md:139
 msgid "Set **Day** to `YYYY-MM-DD`"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/concepts/sleep.md:139
+#: docs/cognition/sleep.md:139
 msgid ""
 "Run the **light-sleep** step (check **Force** to skip dependency checks if "
 "needed)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:141
+#: docs/cognition/sleep.md:141
 msgid ""
 "Each step run is logged in the **Pipeline history** table on the sleep page "
 "(`pipeline_step_run.output`; deep-sleep rows include per-round summaries and "
@@ -387,13 +387,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/sleep.md:142
+#: docs/cognition/sleep.md:142
 #, no-wrap
 msgid "Relationship to Existing Architecture"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/concepts/sleep.md:144
+#: docs/cognition/sleep.md:144
 #, no-wrap
 msgid ""
 "Conversation archive\n"
@@ -413,13 +413,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/concepts/sleep.md:161
+#: docs/cognition/sleep.md:161
 #, no-wrap
 msgid "`memory_remember` Tool"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:163
+#: docs/cognition/sleep.md:163
 msgid ""
 "In-conversation `memory_remember` is a convenience wrapper for creating "
 "semantic memory during dialogue. Soft deprecation via deprecate action; "

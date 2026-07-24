@@ -16,26 +16,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/architecture.md:1 docs/features/companion.md:11
+#: docs/concepts/architecture.md:1 docs/modules/companion.md:11
 #: messages/po4a/en.xml:685
 #, no-wrap
 msgid "Architecture"
 msgstr "架构"
 
 #. type: Title #
-#: docs/features/companion.md:1 docs/features/companion.md:5
+#: docs/modules/companion.md:1 docs/modules/companion.md:5
 #, no-wrap
 msgid "Desktop Companion"
 msgstr "桌面伴侣"
 
 #. type: Plain text
-#: docs/features/companion.md:8
+#: docs/modules/companion.md:8
 #, no-wrap
 msgid "> **Outpost** (前哨): **remote-tools attach host** in the Companion **overlay WebView** (first-party) — embedded by the desktop Portal shell for window/IPC/FS only. Target shell: **Tauri**（见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)）。Not managed via `config.yaml`, and **not** a separate Node sidecar process.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:10
+#: docs/modules/companion.md:10
 msgid ""
 "The content pack (React + VRM) is embedded by the **desktop Tauri shell** "
 "(`src/app/shell/tauri`). Packaged overlay loads from `frontendDist` `ui/"
@@ -46,7 +46,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/features/companion.md:13
+#: docs/modules/companion.md:13
 #, fuzzy, no-wrap
 #| msgid ""
 #| "│   ├── companion overlay — transparent always-on-top, VRM / speech bubble\n"
@@ -78,14 +78,14 @@ msgstr ""
 "    anima service Habitat\n"
 
 #. type: Title ###
-#: docs/features/companion.md:25
+#: docs/modules/companion.md:25
 #, fuzzy, no-wrap
 #| msgid "Trust boundary"
 msgid "Habitat vs local boundary"
 msgstr "信任边界"
 
 #. type: Plain text
-#: docs/features/companion.md:33
+#: docs/modules/companion.md:33
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Attribute  | Value                                                                                                                                                 |\n"
@@ -109,13 +109,13 @@ msgstr ""
 "| 操作 | 矛盾检测 + 过期标记、拆分、去重合并、置顶维护——四轮顺序执行 |\n"
 
 #. type: Plain text
-#: docs/features/companion.md:35
+#: docs/modules/companion.md:35
 msgid ""
 "Management is in **Settings only** — Habitat has no companion admin page."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:37
+#: docs/modules/companion.md:37
 msgid ""
 "On host start: Habitat config wins; `~/.anima/companion/config.json` on the "
 "desktop is an **offline cache**. Legacy local data is migrated once to "
@@ -124,7 +124,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/features/companion.md:38
+#: docs/modules/companion.md:38
 #, no-wrap
 msgid ""
 "Settings ──Habitat RPC/HTTP──► features/companion (Habitat)\n"
@@ -135,7 +135,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:47
+#: docs/modules/companion.md:47
 #, fuzzy
 #| msgid ""
 #| "The content pack lives in [`satellites/companion/`](../../satellites/"
@@ -151,7 +151,7 @@ msgstr ""
 "exports.md)。"
 
 #. type: Plain text
-#: docs/features/companion.md:54
+#: docs/modules/companion.md:54
 #, fuzzy, no-wrap
 #| msgid ""
 #| "|             | Chat / pair programming              | Companion                                            |\n"
@@ -175,13 +175,13 @@ msgstr ""
 "| Runtime    | —                            | Overlay-local tool runtime（browser-dev 同路径） |\n"
 
 #. type: Content of: <messages><msg>
-#: docs/features/companion.md:55 messages/po4a/en.xml:690
+#: docs/modules/companion.md:55 messages/po4a/en.xml:690
 #, no-wrap
 msgid "Features"
 msgstr "功能"
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 msgid ""
 "VRM avatar rendering (Three.js + `@pixiv/three-vrm`); VRM 1.0 and 0.x auto "
 "orientation correction"
@@ -189,7 +189,7 @@ msgstr ""
 "VRM 形象渲染（Three.js + `@pixiv/three-vrm`）；VRM 1.0 与 0.x 自动朝向校正"
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 msgid ""
 "**Motion slots**: five slots — `idle`, `rest`, `walk`, `climb`, `in_place`; "
 "each slot binds 0..n VRMA clips; play by id or random; empty slot = no "
@@ -199,7 +199,7 @@ msgstr ""
 "定 0..n 个 VRMA 片段；按 id 或随机播放；空槽 = 无动画"
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 #, fuzzy
 #| msgid ""
 #| "**Speech bubble**: one-way text queue; user click advances; no auto-"
@@ -212,7 +212,7 @@ msgstr ""
 "`companion.bubble` 工具推送"
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 #, fuzzy
 #| msgid ""
 #| "Transparent always-on-top companion window (160×260); avatar area "
@@ -223,7 +223,7 @@ msgid ""
 msgstr "透明置顶伴侣窗口（160×260）；形象区域可点击，空白区域点击穿透"
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 #, fuzzy
 #| msgid ""
 #| "**Local interaction**: drag to move window; click body to play random "
@@ -234,7 +234,7 @@ msgid ""
 msgstr "**本地交互**：拖拽移动窗口；点击身体从 `in_place` 槽随机播放动作"
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 msgid ""
 "**Patrol** (Settings → Behavior tab): idle patrol, double-click patrol, "
 "corner pause, patrol speed, return-to-start on launch, etc."
@@ -243,27 +243,27 @@ msgstr ""
 "回到起点等"
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 msgid ""
 "System tray: show/hide companion, **Settings…** (open settings window), quit"
 msgstr "系统托盘：显示/隐藏伴侣、**设置…**（打开设置窗口）、退出"
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:65
+#: docs/modules/companion.md:65
 msgid ""
 "Settings tabs: **General** / **Behavior** / **Models** / **Motion slots** / "
 "**Motion library**"
 msgstr "设置标签页：**常规** / **行为** / **模型** / **动作槽位** / **动作库**"
 
 #. type: Title ##
-#: docs/features/companion.md:66
+#: docs/modules/companion.md:66
 #, fuzzy, no-wrap
 #| msgid "Agent tools (sidecar registration)"
 msgid "Agent tools (host registration)"
 msgstr "Agent 工具（sidecar 注册）"
 
 #. type: Plain text
-#: docs/features/companion.md:72
+#: docs/modules/companion.md:72
 #, no-wrap
 msgid ""
 "| Tool        | Parameters                           | Description                            |\n"
@@ -277,7 +277,7 @@ msgstr ""
 "| `play_slot` | `slot: string`；`motion_id?: string` | 播放动作槽位；`motion_id` 可选 |\n"
 
 #. type: Plain text
-#: docs/features/companion.md:74
+#: docs/modules/companion.md:74
 msgid ""
 "Periodic content (e.g. scheduled jokes) is configured on **anima service / "
 "scheduled tasks**; the Agent calls `bubble`. Companion has no built-in timer."
@@ -286,20 +286,20 @@ msgstr ""
 "`bubble`。伴侣无内置定时器。"
 
 #. type: Plain text
-#: docs/features/companion.md:76
+#: docs/modules/companion.md:76
 msgid ""
 "Settings → Companion client section shows **instance id** and **remote tools "
 "connected**（overlay 上报 / ShellApi；无 token 时跳过 attach）。"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:77
+#: docs/modules/companion.md:77
 #, no-wrap
 msgid "Models and motions"
 msgstr "模型与动作"
 
 #. type: Plain text
-#: docs/features/companion.md:80
+#: docs/modules/companion.md:80
 msgid ""
 "The repo **does not bundle** `.vrm` / `.vrma` files. **Habitat** is the "
 "SSOT: `companion_profile` entity in PostgreSQL plus files on the Habitat "
@@ -308,13 +308,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:81
+#: docs/modules/companion.md:81
 #, no-wrap
 msgid "VRM models"
 msgstr "VRM 模型"
 
 #. type: Plain text
-#: docs/features/companion.md:84
+#: docs/modules/companion.md:84
 #, fuzzy
 #| msgid ""
 #| "Settings → **Models** tab: list, import, delete, rename, switch current "
@@ -328,7 +328,7 @@ msgstr ""
 "`~/.anima/companion/models/`。"
 
 #. type: Plain text
-#: docs/features/companion.md:86
+#: docs/modules/companion.md:86
 #, fuzzy
 #| msgid ""
 #| "During development, files in `satellites/companion/public/models/` serve "
@@ -339,13 +339,13 @@ msgid ""
 msgstr "开发期间，`satellites/companion/public/models/` 中的文件作为回退。"
 
 #. type: Title ###
-#: docs/features/companion.md:87
+#: docs/modules/companion.md:87
 #, no-wrap
 msgid "VRMA library and slots"
 msgstr "VRMA 库与槽位"
 
 #. type: Plain text
-#: docs/features/companion.md:90
+#: docs/modules/companion.md:90
 #, fuzzy
 #| msgid ""
 #| "Settings → **Motion library** tab: import VRMA ZIP or single files; "
@@ -360,7 +360,7 @@ msgstr ""
 "配动作。预览支持鼠标拖拽旋转视角。"
 
 #. type: Plain text
-#: docs/features/companion.md:92
+#: docs/modules/companion.md:92
 #, fuzzy
 #| msgid ""
 #| "Motion files: `~/.anima/companion/motions/`. Unbound slots play no "
@@ -374,13 +374,13 @@ msgstr ""
 "口；walk/climb VRMA 仅在绑定后播放。"
 
 #. type: Title ###
-#: docs/features/companion.md:93
+#: docs/modules/companion.md:93
 #, no-wrap
 msgid "FBX import"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:96
+#: docs/modules/companion.md:96
 msgid ""
 "FBX→VRMA runs on the **Habitat host** (`anima service`). Desktop installers "
 "no longer bundle `fbx2vrma-converter` or FBX2glTF. On the Habitat machine "
@@ -388,38 +388,38 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:97
+#: docs/modules/companion.md:97
 #, no-wrap
 msgid "Development and run"
 msgstr "开发与运行"
 
 #. type: Title ###
-#: docs/features/companion.md:99
+#: docs/modules/companion.md:99
 #, fuzzy, no-wrap
 msgid "Browser /dev companion host"
 msgstr "浏览器开发（无 Portal）"
 
 #. type: Fenced code block (bash)
-#: docs/features/companion.md:101
+#: docs/modules/companion.md:101
 #, no-wrap
 msgid "bun src/features/companion/dev.ts\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:106
+#: docs/modules/companion.md:106
 msgid ""
 "Uses an in-process HTTP server; runtime events use localhost WebSocket (`/"
 "api/runtime/ws`)."
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:107
+#: docs/modules/companion.md:107
 #, no-wrap
 msgid "Desktop (Tauri Portal)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:110
+#: docs/modules/companion.md:110
 msgid ""
 "The Portal overlay WebView hosts companion UI and `remote_tools.attach` (no "
 "Node sidecar). Window / IPC / FS come from Tauri commands. See [`.agent/"
@@ -427,7 +427,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:111
+#: docs/modules/companion.md:111
 msgid ""
 "See also: [Habitat RPC](../guide/habitat-rpc.md), [architecture companion "
 "section](../concepts/architecture.md#desktop-companion-habitat-ssot)."

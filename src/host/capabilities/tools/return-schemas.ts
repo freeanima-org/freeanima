@@ -425,29 +425,29 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     example: { ok: true, name: "my-skill", message: "Skill 'my-skill' deleted" },
   }),
 
-  docs_list: defineToolReturn({
+  freeanima_docs_list: defineToolReturn({
     schema: z.object({
       docs: z.array(z.object({ path: z.string(), title: z.string() })),
       total: z.number(),
     }),
     example: {
-      docs: [{ path: "concepts/architecture.md", title: "Architecture" }],
+      docs: [{ path: "product/architecture.md", title: "Architecture" }],
       total: 1,
     },
   }),
-  docs_get: defineToolReturn({
+  freeanima_docs_get: defineToolReturn({
     schema: z.object({
       path: z.string(),
       title: z.string(),
       content: z.string(),
     }),
     example: {
-      path: "concepts/architecture.md",
+      path: "product/architecture.md",
       title: "Architecture",
       content: "---\ntitle: Architecture\n---\n\n# FreeAnima Architecture\n",
     },
   }),
-  docs_search: defineToolReturn({
+  freeanima_docs_search: defineToolReturn({
     schema: z.object({
       query: z.string(),
       hits: z.array(
@@ -464,7 +464,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       query: "memory",
       hits: [
         {
-          path: "concepts/memory.md",
+          path: "cognition/memory.md",
           title: "Memory",
           snippet: "…semantic memory and FTS retrieval…",
           matches: 3,

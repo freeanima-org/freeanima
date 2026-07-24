@@ -77,7 +77,7 @@ const camofoxBrowserSchema = z.object({
   /**
    * Persist a local Camofox profile (stable userId) across conversations.
    * Default true when unset; set false for ephemeral random userId.
-   * See docs/tools/browser-camofox.md.
+   * See docs/tools/browser.md.
    */
   managed_persistence: z.boolean().optional(),
   /** Adopt existing Camofox tab after process restart; default true when unset */

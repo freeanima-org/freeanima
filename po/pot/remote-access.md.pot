@@ -18,7 +18,7 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/dream.md:10 docs/concepts/sleep.md:9
-#: docs/guide/remote-access.md:10 messages/po4a/en.xml:698
+#: docs/ops/remote-access.md:10 messages/po4a/en.xml:698
 #: messages/po4a/en.xml:705
 #, no-wrap
 msgid "Overview"
@@ -26,25 +26,25 @@ msgstr ""
 
 #. type: Title ##
 #: docs/features/mobile-app.md:47 docs/guide/database.md:98
-#: docs/guide/remote-access.md:194
+#: docs/ops/remote-access.md:194
 #, no-wrap
 msgid "Troubleshooting"
 msgstr ""
 
 #. type: Yaml Front Matter Hash Value: title
-#: docs/guide/remote-access.md:1
+#: docs/ops/remote-access.md:1
 #, no-wrap
 msgid "Remote access"
 msgstr ""
 
 #. type: Title #
-#: docs/guide/remote-access.md:5
+#: docs/ops/remote-access.md:5
 #, no-wrap
 msgid "Remote access (Service API Token + LAN / local HTTPS)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:9
+#: docs/ops/remote-access.md:9
 #, no-wrap
 msgid ""
 "> Habitat 业务 API（Habitat RPC `POST|WS /rpc/v1` + MCP）须带 **per-subject Service API Token**（`Authorization: Bearer fa_at_...` 或 WS `connect.auth_token`）。\n"
@@ -52,7 +52,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:22
+#: docs/ops/remote-access.md:22
 #, no-wrap
 msgid ""
 "| Layer                    | Role                                                                                                                                   |\n"
@@ -68,20 +68,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:24
+#: docs/ops/remote-access.md:24
 msgid ""
 "公网暴露不在产品内置范围内：请使用局域网、`http.tls` 本地 HTTPS，或自行搭建反"
 "向代理 / VPN。旧版 `tunnel` 配置段已废弃并忽略。"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/remote-access.md:25
+#: docs/ops/remote-access.md:25
 #, no-wrap
 msgid "PWA（浏览器 Web）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:36
+#: docs/ops/remote-access.md:36
 msgid ""
 "**Secure context**：Service Worker 需要 HTTPS 或 `localhost`。局域网可用 "
 "Habitat 本地 HTTPS（`:2659`）或自建 TLS 终止。浏览器 **Web Speech** 朗读同样"
@@ -90,7 +90,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:36
+#: docs/ops/remote-access.md:36
 msgid ""
 "**Service Worker vs 安装**：SW 在普通浏览器标签页访问 `/web/*` 时即注册（生产"
 "构建）；**不要求**「添加到主屏幕」。安装仅改变启动方式（独立窗口），离线能力"
@@ -98,14 +98,14 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:36
+#: docs/ops/remote-access.md:36
 msgid ""
 "**安装（可选）**：手机浏览器访问 `/web/chat`，Chrome / Safari 支持「添加到主"
 "屏幕」；生产构建会显示安装引导条（compact 布局、非已安装态）。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:36
+#: docs/ops/remote-access.md:36
 msgid ""
 "**更新**：Habitat 部署新 Web 静态产物后，已安装 PWA 会提示「新版本可用」；点"
 "击重新加载后生效（不会自动刷新）。壳层 JS 由 Workbox precache，生产环境会定"
@@ -115,18 +115,18 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:36
+#: docs/ops/remote-access.md:36
 msgid "**离线边界（两层）**："
 msgstr ""
 
 #. type: Bullet: '  - '
-#: docs/guide/remote-access.md:36
+#: docs/ops/remote-access.md:36
 msgid ""
 "**壳层（SW）**：仅缓存 JS/CSS/HTML 等静态资源，保证断网时页面框架可加载。"
 msgstr ""
 
 #. type: Bullet: '  - '
-#: docs/guide/remote-access.md:36
+#: docs/ops/remote-access.md:36
 msgid ""
 "**业务快照（IndexedDB）**：Chat / Task / Project / Notification / Diary / "
 "Email / Dream / Pomodoro（config/历史）及 Habitat UI 部分只读页由 `shell-sdk/"
@@ -137,7 +137,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:36
+#: docs/ops/remote-access.md:36
 msgid ""
 "**离线边界**：浏览器 `offline` 时 snapshot 模块只读展示快照；"
 "**offlineWritable** 模块（Diary、Task、Project、Chat、Pomodoro）仍可本地编辑"
@@ -145,27 +145,27 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:36
+#: docs/ops/remote-access.md:36
 msgid ""
 "**存储**：SW 缓存、localStorage（Habitat 设置）、IndexedDB（业务快照）互不冲"
 "突；清除站点数据会同时删除三者。"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:38
+#: docs/ops/remote-access.md:38
 msgid ""
 "Registry 标记 `auth: optional` 的 Habitat RPC 方法（如 `health.probe`、"
 "`tls.ca.*`）与 CORS 预检可不带 Bearer；其余 `/rpc/v1/*` 与 MCP 须 Bearer。"
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:39
+#: docs/ops/remote-access.md:39
 #, no-wrap
 msgid "1. 创建 token（冷启动）"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/remote-access.md:41
+#: docs/ops/remote-access.md:41
 #, no-wrap
 msgid ""
 "anima token create --subject-id 1 --name bootstrap\n"
@@ -173,12 +173,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:47
+#: docs/ops/remote-access.md:47
 msgid "列出 / 撤销："
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/remote-access.md:48
+#: docs/ops/remote-access.md:48
 #, no-wrap
 msgid ""
 "anima token list --subject-id 1\n"
@@ -186,43 +186,43 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:54
+#: docs/ops/remote-access.md:54
 msgid "Habitat Habitat RPC REST（需已认证 `full` token）："
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:58
+#: docs/ops/remote-access.md:58
 msgid ""
 "`GET /rpc/v1/tokens/listForSubject?id=:id`（或 "
 "`createTypedHabitatClient().call(\"tokens.listForSubject\", { id })`）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:58
+#: docs/ops/remote-access.md:58
 msgid ""
 "`POST /rpc/v1/tokens/createForSubject` — body `{ \"id\": <subject_id>, "
 "\"name\": \"desktop\" }`，响应含一次性 `plaintext`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:58
+#: docs/ops/remote-access.md:58
 msgid "`POST /rpc/v1/tokens/revoke` — body `{ \"id\": <token_id> }`"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/remote-access.md:59
+#: docs/ops/remote-access.md:59
 #, no-wrap
 msgid "Listen address (`http.host`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:62
+#: docs/ops/remote-access.md:62
 #, no-wrap
 msgid "Default bind is `127.0.0.1:2658` (loopback only). For LAN access via `http://<PC-IP>:2658/web` or a local hostname such as `http://galaxy:2658/web`, set:\n"
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/guide/remote-access.md:63
+#: docs/ops/remote-access.md:63
 #, no-wrap
 msgid ""
 "http:\n"
@@ -230,7 +230,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:69
+#: docs/ops/remote-access.md:69
 msgid ""
 "Multiple binds (distinct interfaces only — not client-facing aliases). Use "
 "`0.0.0.0` instead of listing every IP; do not mix `0.0.0.0` with specific "
@@ -239,7 +239,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/guide/remote-access.md:70
+#: docs/ops/remote-access.md:70
 #, no-wrap
 msgid ""
 "http:\n"
@@ -249,40 +249,40 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:78
+#: docs/ops/remote-access.md:78
 msgid ""
 "CLI `--host` overrides config for a single run / systemd unit write. After "
 "changing `http.host`, run `anima service restart`."
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:80
+#: docs/ops/remote-access.md:80
 #, no-wrap
 msgid "LAN: `http://<PC-IP>:2658/web/chat` with `http.host: 0.0.0.0` (or `anima service start --host 0.0.0.0`); clients set Habitat URL to `http://<PC-IP>:2658` (no `/web` suffix).\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/remote-access.md:81
+#: docs/ops/remote-access.md:81
 #, no-wrap
 msgid "Cross-origin (`http.cors_origins`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:84
+#: docs/ops/remote-access.md:84
 msgid ""
 "When the browser UI and Habitat API share the same origin (e.g. Habitat `/"
 "web` + same-host `/api`), **no CORS config is needed**."
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:86
+#: docs/ops/remote-access.md:86
 msgid ""
 "Add origins only for **cross-origin** cases (e.g. Vite dev server, external "
 "reverse proxy splitting UI and API):"
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/guide/remote-access.md:87
+#: docs/ops/remote-access.md:87
 #, no-wrap
 msgid ""
 "http:\n"
@@ -291,24 +291,24 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:94
+#: docs/ops/remote-access.md:94
 msgid "CORS is **not** derived from `web.public_url`."
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/remote-access.md:95
+#: docs/ops/remote-access.md:95
 #, no-wrap
 msgid "Habitat 本地 HTTPS（双端口，可选）"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:98
+#: docs/ops/remote-access.md:98
 msgid ""
 "Habitat 可在 **独立端口** 提供原生 TLS（`Bun.serve`），与默认 HTTP 并行："
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:103
+#: docs/ops/remote-access.md:103
 #, no-wrap
 msgid ""
 "| 端口     | 协议  | 用途                                                                                      |\n"
@@ -318,12 +318,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:105
+#: docs/ops/remote-access.md:105
 msgid "启用（`~/.anima/config.yaml` bootstrap 段）："
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/guide/remote-access.md:106
+#: docs/ops/remote-access.md:106
 #, no-wrap
 msgid ""
 "http:\n"
@@ -338,7 +338,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:120
+#: docs/ops/remote-access.md:120
 msgid ""
 "**`auto: true`**（默认）：首次启动在 `~/.anima/tls/` 自动生成 cert/key（优先 "
 "**mkcert**，否则 **openssl 自签**）；SAN 含 `localhost`、`127.0.0.1`、`::1`、"
@@ -348,20 +348,20 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:120
+#: docs/ops/remote-access.md:120
 msgid ""
 "**探活**：`anima service status` 与 `GET /rpc/v1/health/probe` 仍走 HTTP "
 "`:2658`。"
 msgstr ""
 
 #. type: Title ####
-#: docs/guide/remote-access.md:121
+#: docs/ops/remote-access.md:121
 #, no-wrap
 msgid "mkcert root CA on clients (optional)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:124
+#: docs/ops/remote-access.md:124
 msgid ""
 "The Habitat server certificate lives on the Habitat host. Browsers, "
 "**desktop shell**, and mobile APKs need the **mkcert root CA** "
@@ -370,7 +370,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:127
+#: docs/ops/remote-access.md:127
 msgid ""
 "**设置 → 连接** (`/web/settings?section=habitat`): download **rootCA.pem** "
 "and a **QR code** (QR points at the HTTP `:2658` download URL so you can "
@@ -378,14 +378,14 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:127
+#: docs/ops/remote-access.md:127
 msgid ""
 "If HTTPS pages still fail to load scripts, open settings via **`http://"
 "<host>:2658/web/settings?section=habitat`** first."
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/remote-access.md:128
+#: docs/ops/remote-access.md:128
 #, no-wrap
 msgid ""
 "mkcert -CAROOT   # path to rootCA.pem on the Habitat host\n"
@@ -393,7 +393,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:136
+#: docs/ops/remote-access.md:136
 msgid ""
 "**Desktop shell**: install `rootCA.pem` into the **OS** trust store (same "
 "machine as the desktop app). Install the CA into the OS trust store so Tauri "
@@ -402,14 +402,14 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:136
+#: docs/ops/remote-access.md:136
 msgid ""
 "**iOS**: AirDrop/email `rootCA.pem` → install the profile → **Settings → "
 "General → About → Certificate Trust Settings** → enable full trust."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:136
+#: docs/ops/remote-access.md:136
 msgid ""
 "**Android**: optionally convert to DER, then **Settings → Security → Install "
 "CA certificate**. Tauri Android builds also need a build that trusts user "
@@ -417,26 +417,26 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:138
+#: docs/ops/remote-access.md:138
 msgid ""
 "Daily LAN access: **HTTP `:2658`** or **HTTPS `:2659` (after CA trust)**; "
 "for the public Internet use your own reverse proxy or VPN."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:139
+#: docs/ops/remote-access.md:139
 #, no-wrap
 msgid "2. Client configuration"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:142
+#: docs/ops/remote-access.md:142
 #, no-wrap
 msgid "**Portal** (`src/app/shell/tauri`) and **browser Web** (`src/app/shell/web`) are remote clients; they **do not read** Habitat `config.yaml` token.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:148
+#: docs/ops/remote-access.md:148
 #, no-wrap
 msgid ""
 "| Client        | Storage                                              |\n"
@@ -447,24 +447,24 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:150
+#: docs/ops/remote-access.md:150
 msgid "Settings (all clients):"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/guide/remote-access.md:153
+#: docs/ops/remote-access.md:153
 msgid ""
 "**Habitat URL** — e.g. `http://192.168.1.10:2658` or `https://<lan-"
 "host>:2659` (Habitat root, **without** `/web`)"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/guide/remote-access.md:153
+#: docs/ops/remote-access.md:153
 msgid "**Habitat API Token** — `fa_at_...` from `anima token create`"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:155
+#: docs/ops/remote-access.md:155
 msgid ""
 "Browser Web: `/web/config.json` defaults Habitat to the **page origin** "
 "(production Habitat-hosted `/web` and Vite `just dev web`). Source `just dev "
@@ -475,20 +475,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:157
+#: docs/ops/remote-access.md:157
 msgid ""
 "Flow: open Habitat settings → fill → **Test connection** → Save. Desktop "
 "requires **restart desktop shell** after save."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:158
+#: docs/ops/remote-access.md:158
 #, no-wrap
 msgid "3. Authentication behavior"
 msgstr ""
 
 #. type: Fenced code block (text)
-#: docs/guide/remote-access.md:160
+#: docs/ops/remote-access.md:160
 #, no-wrap
 msgid ""
 "REST:  Authorization: Bearer fa_at_<prefix>_<secret>\n"
@@ -497,25 +497,25 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:167
+#: docs/ops/remote-access.md:167
 msgid ""
 "`/web/*` static assets skip service auth; `/api` and `/mcp` require Bearer "
 "token."
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:169
+#: docs/ops/remote-access.md:169
 msgid "Missing or invalid token → HTTP `401` or Habitat RPC connection closed."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:170
+#: docs/ops/remote-access.md:170
 #, no-wrap
 msgid "4. MCP outbound (external agents query Habitat data)"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:173
+#: docs/ops/remote-access.md:173
 msgid ""
 "Habitat serves Streamable HTTP MCP Server at **`/mcp`**, exposing tools with "
 "`exposeMcp: true`. Current outbound surface is **task item** tools only "
@@ -526,7 +526,7 @@ msgid ""
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/guide/remote-access.md:174
+#: docs/ops/remote-access.md:174
 #, no-wrap
 msgid ""
 "# External agent example (Cursor mcp.json, etc.)\n"
@@ -538,7 +538,7 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:185
+#: docs/ops/remote-access.md:185
 msgid ""
 "**Inbound** (Habitat connects to external MCP servers): runtime "
 "`mcp_servers` (`src/capabilities/mcp-client`); manage in Habitat UI `/"
@@ -546,20 +546,20 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:185
+#: docs/ops/remote-access.md:185
 msgid ""
 "**Outbound** (external agents call Habitat tools): `/mcp` endpoint (`src/"
 "capabilities/mcp-server`)"
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:186
+#: docs/ops/remote-access.md:186
 #, no-wrap
 msgid "Operations"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:193
+#: docs/ops/remote-access.md:193
 #, no-wrap
 msgid ""
 "| Command                          | Description                                  |\n"
@@ -570,7 +570,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:203
+#: docs/ops/remote-access.md:203
 #, no-wrap
 msgid ""
 "| Symptom                | Check                                                                    |\n"
@@ -583,18 +583,18 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/remote-access.md:204
+#: docs/ops/remote-access.md:204
 #, no-wrap
 msgid "Related docs"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:207
+#: docs/ops/remote-access.md:207
 msgid "Mobile: [`mobile-app.md`](../features/mobile-app.md)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/remote-access.md:207
+#: docs/ops/remote-access.md:207
 msgid ""
 "Desktop companion Habitat source: [`companion.md`](../features/companion.md)"
 msgstr ""

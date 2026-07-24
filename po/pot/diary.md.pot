@@ -17,13 +17,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/features/diary.md:1 docs/features/diary.md:5 messages/po4a/en.xml:716
+#: docs/modules/diary.md:1 docs/modules/diary.md:5 messages/po4a/en.xml:716
 #, no-wrap
 msgid "Diary"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:8
+#: docs/modules/diary.md:8
 msgid ""
 "Structured diary for users and Agents, based on the [Unified Entity Model]"
 "(../concepts/entity-model.md) `diary_entry` **container** plus child "
@@ -31,13 +31,13 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/diary.md:9
+#: docs/modules/diary.md:9
 #, no-wrap
 msgid "vs memory system"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:17
+#: docs/modules/diary.md:17
 #, no-wrap
 msgid ""
 "| Capability | Diary                                              | Memory bricks (limbic / narrative / dream)                               |\n"
@@ -49,20 +49,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:19
+#: docs/modules/diary.md:19
 msgid ""
 "Diary UI labels semantic bricks（梦境 / 情绪 / 自传）as read-only sections "
 "in the day entry."
 msgstr ""
 
 #. type: Title ##
-#: docs/features/diary.md:20
+#: docs/modules/diary.md:20
 #, no-wrap
 msgid "User / Agent isolation"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:25
+#: docs/modules/diary.md:25
 msgid ""
 "User and Agent diaries live in the **default private world** of subjects "
 "resolved from `config.yaml` **`worlds.user_subject_id` / "
@@ -70,14 +70,14 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:25
+#: docs/modules/diary.md:25
 msgid ""
 "Shell header **User / Agent** toggle selects which subject's diary to view "
 "(see [`entity-model.md`](../concepts/entity-model.md) global Subject scope)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:25
+#: docs/modules/diary.md:25
 msgid ""
 "LLM tools (ToolSet `diary`) default to the **caller subject's private "
 "world** (conversation LLM → agent world); optional **`world_id`** overrides "
@@ -85,80 +85,80 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/diary.md:26
+#: docs/modules/diary.md:26
 #, no-wrap
 msgid "Data shape"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:29
+#: docs/modules/diary.md:29
 #, no-wrap
 msgid "**Container** (`diary_entry`):\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:34
+#: docs/modules/diary.md:34
 msgid ""
 "`body.entry_at` — ISO 8601, when the diary entry occurred (**unique per "
 "day** per subject private world)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:34
+#: docs/modules/diary.md:34
 msgid ""
 "`tag_ids` — optional tags（顶层 `entities.tag_ids`，指向同 World 的 `tag` "
 "entity）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:34
+#: docs/modules/diary.md:34
 msgid "`title` / `summary` — entity columns"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:34
+#: docs/modules/diary.md:34
 msgid ""
 "container **`content` is not used for body text** (kept empty after "
 "migration)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:36
+#: docs/modules/diary.md:36
 #, no-wrap
 msgid "**Blocks** (`content_block`, `block_type: text`):\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:43
+#: docs/modules/diary.md:43
 msgid "`body.parent_id` → diary entry id"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:43
+#: docs/modules/diary.md:43
 msgid "`body.sort_order` — view order (no semantic precedence)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:43
+#: docs/modules/diary.md:43
 msgid "text lives in the block's `content` column"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:43
+#: docs/modules/diary.md:43
 msgid ""
 "optional `title` (entity column) — user-editable block heading; empty means "
 "no heading weight in UI"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:43
+#: docs/modules/diary.md:43
 msgid ""
 "optional `tag_ids` (entity column) — unified entity tags（与日记容器同一模"
 "型）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:43
+#: docs/modules/diary.md:43
 msgid ""
 "semantic component tags on the block (`dream` / `limbic` / `narrative`) "
 "render as read-only labels（梦境 / 情绪 / 自传）beside the title; they are "
@@ -166,64 +166,64 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:45
+#: docs/modules/diary.md:45
 #, no-wrap
 msgid "**日记块模板** (`diary_block_template` entity, subject private world):\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:51
+#: docs/modules/diary.md:51
 msgid "`entities.title` = **模板名称**（列表/管理显示）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:51
+#: docs/modules/diary.md:51
 msgid ""
 "`entities.content` / `entities.tag_ids` stay empty — do **not** store insert "
 "payload there"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:51
+#: docs/modules/diary.md:51
 msgid ""
 "`body.preset` = `{ title, content, components, tag_ids }` applied when "
 "inserting a new text block"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:51
+#: docs/modules/diary.md:51
 msgid ""
 "SAP: `diary.templateList` / `templateCreate` / `templatePatch` / "
 "`templateDelete`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:51
+#: docs/modules/diary.md:51
 msgid "Empty world lazy-seeds「今日回顾」「运动」"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:53
+#: docs/modules/diary.md:53
 msgid ""
 "UI also persists per-block expand/collapse in localStorage (default "
 "expanded)."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:55
+#: docs/modules/diary.md:55
 msgid ""
 "One-shot migration: Habitat `runMigrations` moves legacy diary `content` "
 "into the first text block and clears the container column."
 msgstr ""
 
 #. type: Title ##
-#: docs/features/diary.md:56
+#: docs/modules/diary.md:56
 #, no-wrap
 msgid "Agent tools (ToolSet `diary`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:59
+#: docs/modules/diary.md:59
 msgid ""
 "Load via `toolset_load` with `diary`. Tools locate entries by **`date` (YYYY-"
 "MM-DD)**；**default today** (CST noon `…T12:00:00+08:00`)；**no "
@@ -233,7 +233,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:68
+#: docs/modules/diary.md:68
 #, no-wrap
 msgid ""
 "| Tool           | Description                                                                               |\n"
@@ -247,36 +247,36 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:70
+#: docs/modules/diary.md:70
 msgid "Fine-grained block CRUD / reorder: ToolSet `content-block`."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:72
+#: docs/modules/diary.md:72
 #, no-wrap
 msgid "**vs SAP/UI**: Shell `/diary` uses SAP `diary.*` / `diary.block*` located by entity **`id`**; Agent ToolSet uses **`date`** uniformly.\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/diary.md:73
+#: docs/modules/diary.md:73
 #, no-wrap
 msgid "SAP methods"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:76
+#: docs/modules/diary.md:76
 msgid "UI satellite `@freeanima/satellite-diary` (`/diary`) calls SAP:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:80
+#: docs/modules/diary.md:80
 msgid ""
 "`diary.list` / `diary.create` / `diary.append` / `diary.patch` / "
 "`diary.delete` / `diary.get` / `diary.search`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:80
+#: docs/modules/diary.md:80
 msgid ""
 "`diary.blockCreate` / `diary.blockPatch` / `diary.blockDelete` / "
 "`diary.blockReorder` (text only; create/patch accept optional `title` / "
@@ -284,48 +284,48 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:80
+#: docs/modules/diary.md:80
 msgid ""
 "`diary.templateList` / `diary.templateCreate` / `diary.templatePatch` / "
 "`diary.templateDelete`（日记块模板；`name` ≠ `preset`）"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/diary.md:82
+#: docs/modules/diary.md:82
 msgid "All methods require `subject_kind: user | agent`."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:88
+#: docs/modules/diary.md:88
 msgid ""
 "`diary.list` defaults to **`entry_at DESC`**, `limit=20`, supports `offset` "
 "pagination"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:88
+#: docs/modules/diary.md:88
 msgid ""
 "`diary.create` optional `content` → first text block (container `content` "
 "stays empty)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:88
+#: docs/modules/diary.md:88
 msgid "`diary.append` → new trailing text block"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:88
+#: docs/modules/diary.md:88
 msgid "`diary.patch` → container metadata only"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:88
+#: docs/modules/diary.md:88
 msgid "`diary.delete` → cascade-delete child blocks"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/diary.md:88
+#: docs/modules/diary.md:88
 msgid ""
 "`diary.template*` → CRUD for `diary_block_template`（模板名 `name` + 插入载"
 "荷 `preset`）"

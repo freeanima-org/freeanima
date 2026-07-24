@@ -16,20 +16,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/features/chat.md:1 messages/po4a/en.xml:445 messages/po4a/en.xml:450
+#: docs/modules/chat.md:1 messages/po4a/en.xml:445 messages/po4a/en.xml:450
 #: messages/po4a/en.xml:728
 #, no-wrap
 msgid "Chat"
 msgstr "聊天室"
 
 #. type: Title #
-#: docs/features/chat.md:5
+#: docs/modules/chat.md:5
 #, no-wrap
 msgid "Chat — 离线发送与多端冲突"
 msgstr "Chat — 离线发送与多端冲突"
 
 #. type: Plain text
-#: docs/features/chat.md:8
+#: docs/modules/chat.md:8
 msgid ""
 "Chat SPA 支持 **离线写入 outbox**、上线后 **自动重试**，并通过 Habitat 侧幂等"
 "与 tail CAS 避免重复发送与陈旧消息。"
@@ -38,13 +38,13 @@ msgstr ""
 "与 tail CAS 避免重复发送与陈旧消息。"
 
 #. type: Title ##
-#: docs/features/chat.md:9
+#: docs/modules/chat.md:9
 #, no-wrap
 msgid "用户未读"
 msgstr "用户未读"
 
 #. type: Plain text
-#: docs/features/chat.md:12
+#: docs/modules/chat.md:12
 msgid ""
 "Chat 维护 **用户已读水位**（`conversation_read_state`，按 Habitat user "
 "subject）："
@@ -53,12 +53,12 @@ msgstr ""
 "subject）："
 
 #. type: Bullet: '- '
-#: docs/features/chat.md:17
+#: docs/modules/chat.md:17
 msgid "会话未读：存在 `role=assistant` 且 `pos > last_read_pos` 的消息。"
 msgstr "会话未读：存在 `role=assistant` 且 `pos > last_read_pos` 的消息。"
 
 #. type: Bullet: '- '
-#: docs/features/chat.md:17
+#: docs/modules/chat.md:17
 msgid ""
 "`conversation.list` 返回 `unread`；`conversation.unreadCount` 返回未归档未读"
 "会话数（Shell 角标）。"
@@ -67,14 +67,14 @@ msgstr ""
 "会话数（Shell 角标）。"
 
 #. type: Bullet: '- '
-#: docs/features/chat.md:17
+#: docs/modules/chat.md:17
 msgid ""
 "打开会话或正在查看时流式结束后调用 `conversation.markRead`（水位单调升高）。"
 msgstr ""
 "打开会话或正在查看时流式结束后调用 `conversation.markRead`（水位单调升高）。"
 
 #. type: Bullet: '- '
-#: docs/features/chat.md:17
+#: docs/modules/chat.md:17
 msgid ""
 "`conversation.subscribeInbox`（WS）在任意会话更新时推送 "
 "`conversation.updated`，供列表与角标刷新。"
@@ -83,18 +83,18 @@ msgstr ""
 "`conversation.updated`，供列表与角标刷新。"
 
 #. type: Plain text
-#: docs/features/chat.md:19
+#: docs/modules/chat.md:19
 msgid "用户自己发送的消息不构成未读；不做 agent 未读分区。"
 msgstr "用户自己发送的消息不构成未读；不做 agent 未读分区。"
 
 #. type: Title ##
-#: docs/features/chat.md:20
+#: docs/modules/chat.md:20
 #, no-wrap
 msgid "客户端"
 msgstr "客户端"
 
 #. type: Bullet: '- '
-#: docs/features/chat.md:27
+#: docs/modules/chat.md:27
 msgid ""
 "发送先入 IndexedDB `outbox`（`moduleId: chat`），并乐观显示 user bubble"
 "（`sendStatus: pending`）。"
@@ -103,24 +103,24 @@ msgstr ""
 "（`sendStatus: pending`）。"
 
 #. type: Bullet: '- '
-#: docs/features/chat.md:27
+#: docs/modules/chat.md:27
 msgid "离线时可输入并发送；消息排队，Habitat 恢复后按 FIFO 重试。"
 msgstr "离线时可输入并发送；消息排队，Habitat 恢复后按 FIFO 重试。"
 
 #. type: Bullet: '- '
-#: docs/features/chat.md:27
+#: docs/modules/chat.md:27
 msgid ""
 "**流式生成中**仍可输入并发送：消息入内存队列（不经 Habitat），当前 turn 结束"
 "后按 FIFO 自动发出。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/chat.md:27
+#: docs/modules/chat.md:27
 msgid "重试前调用 `conversation.tail` 对比入队时的 `expected_tail_pos`。"
 msgstr "重试前调用 `conversation.tail` 对比入队时的 `expected_tail_pos`。"
 
 #. type: Bullet: '- '
-#: docs/features/chat.md:27
+#: docs/modules/chat.md:27
 msgid ""
 "**tail 不一致**（会话已在别端继续）：标记 `stale`，默认不发送；用户可 **丢弃"
 "** 或 **仍要发送**（`force_tail`）。"
@@ -129,18 +129,18 @@ msgstr ""
 "** 或 **仍要发送**（`force_tail`）。"
 
 #. type: Title ##
-#: docs/features/chat.md:28
+#: docs/modules/chat.md:28
 #, no-wrap
 msgid "Habitat 协议"
 msgstr "Habitat 协议"
 
 #. type: Plain text
-#: docs/features/chat.md:31
+#: docs/modules/chat.md:31
 msgid "`message.send` 可选字段："
 msgstr "`message.send` 可选字段："
 
 #. type: Plain text
-#: docs/features/chat.md:37
+#: docs/modules/chat.md:37
 #, no-wrap
 msgid ""
 "| 字段                | 说明                                 |\n"
@@ -156,34 +156,34 @@ msgstr ""
 "| `force_tail`        | 跳过 CAS，追加到当前末尾             |\n"
 
 #. type: Plain text
-#: docs/features/chat.md:39
+#: docs/modules/chat.md:39
 msgid "`conversation.tail` 返回 `{ tail_pos, tail_role?, updated_at? }`。"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/chat.md:41
+#: docs/modules/chat.md:41
 msgid "流错误 `code`："
 msgstr "流错误 `code`："
 
 #. type: Bullet: '- '
-#: docs/features/chat.md:43
+#: docs/modules/chat.md:43
 msgid "`tail_conflict` — CAS 失败"
 msgstr "`tail_conflict` — CAS 失败"
 
 #. type: Plain text
-#: docs/features/chat.md:45
+#: docs/modules/chat.md:45
 msgid "幂等短路（`client_op_id` 已提供时）："
 msgstr "幂等短路（`client_op_id` 已提供时）："
 
 #. type: Bullet: '- '
-#: docs/features/chat.md:48
+#: docs/modules/chat.md:48
 msgid ""
 "turn **已完成**（该 user 后已有非空 assistant）→ 直接 `accepted` + `done`"
 msgstr ""
 "turn **已完成**（该 user 后已有非空 assistant）→ 直接 `accepted` + `done`"
 
 #. type: Bullet: '- '
-#: docs/features/chat.md:48
+#: docs/modules/chat.md:48
 msgid ""
 "turn **进行中**（同 `client_op_id` 已占用）→ 直接 `accepted` + `done`，**不 "
 "preempt / 不重跑**（避免弱网下在线发送与 outbox flush 并发触发两轮）"
@@ -192,7 +192,7 @@ msgstr ""
 "preempt / 不重跑**（避免弱网下在线发送与 outbox flush 并发触发两轮）"
 
 #. type: Plain text
-#: docs/features/chat.md:50
+#: docs/modules/chat.md:50
 msgid ""
 "客户端：在线 `dispatchSend` 期间对 outbox op 做进程内 claim，flush preflight "
 "跳过已 claim 的条目；`flushOfflineModule` 与全局 sync 共用锁。"
@@ -201,13 +201,13 @@ msgstr ""
 "跳过已 claim 的条目；`flushOfflineModule` 与全局 sync 共用锁。"
 
 #. type: Title ##
-#: docs/features/chat.md:51
+#: docs/modules/chat.md:51
 #, no-wrap
 msgid "与离线平台（Stream outbox）"
 msgstr "与离线平台（Stream outbox）"
 
 #. type: Plain text
-#: docs/features/chat.md:53
+#: docs/modules/chat.md:53
 msgid ""
 "Outbox 布局与 [`shell-sdk/offline-outbox`](../../src/frontend/shell-sdk/"
 "offline-outbox.ts) 对齐；Chat flush 走 WS 流式 `message.send`，非通用 "
