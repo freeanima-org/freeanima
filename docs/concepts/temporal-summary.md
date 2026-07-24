@@ -99,7 +99,7 @@ When assembling messages for viewer `V`:
 
 ## Config
 
-`memory.temporal_summary` in runtime config / `config.example.yaml`: `enabled`, char caps, `redis_key_prefix`.
+`memory.temporal_summary` in Habitat runtime config (`habitat_runtime_config`): `enabled`, char caps, `redis_key_prefix`.
 
 ## Sleep relationship
 

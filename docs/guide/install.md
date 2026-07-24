@@ -100,9 +100,8 @@ cp /path/to/freeanima-checkout/config.example.yaml ~/.anima/config.yaml
 Minimum production settings in `~/.anima/config.yaml` (**bootstrap only**):
 
 - **`database.url`** — PostgreSQL connection string (required)
-- **`web.enabled`** — Habitat hosts `/web/*` when dist exists (optional; defaults to on if omitted)
 
-**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`habitat_runtime_config`). Edit them in the Shell app under **Settings → Habitat 服务 → 服务配置**.
+**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`habitat_runtime_config`). Edit them in the Shell app under **Settings → Habitat 服务 → 服务配置**. Habitat hosts `/web/*` whenever Web dist is present (no bootstrap switch).
 
 Prefer `env()` for bootstrap secrets in `config.yaml` (Vault is unavailable before PostgreSQL). Use Vault / `vault()` for runtime secrets in PG. See [`security.md`](security.md#credential-responsibilities).
 
@@ -114,7 +113,7 @@ anima service start --foreground # debug — logs to stdout
 anima service status
 ```
 
-Default bind: `127.0.0.1:2658`（Habitat API：`/api`，Habitat RPC：`/rpc/v1`；Web UI：`/web/*` when `config.yaml` `web.enabled`).
+Default bind: `127.0.0.1:2658`（Habitat API：`/api`，Habitat RPC：`/rpc/v1`；Web UI：`/web/*` when dist exists).
 
 ### 4. Upgrade
 
@@ -195,7 +194,7 @@ anima --version
 ```bash
 mkdir -p ~/.anima
 cp config.example.yaml ~/.anima/config.yaml
-# configure database + LLM (see database.md, security.md)
+# configure database (bootstrap); LLM in Shell Habitat 服务配置 (see database.md, security.md)
 ```
 
 **Dev** (Habitat + Vite HMR; never auto-builds Web). Prefer `just dev` for multi-worktree:
@@ -207,9 +206,9 @@ just dev habitat     # random ≥10000 (not production 2658); writes ~/.anima/de
 FREEANIMA_URL=http://127.0.0.1:<habitat-port> just dev web   # default :5000; browser Habitat = page origin
 ```
 
-Browser Web defaults Habitat URL to the **page origin** (same in production Habitat-hosted `/web` and Vite). Dev injects Service API Token from `dev-web.token` automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves HTTPS using `~/.anima/tls` (Habitat stays plain HTTP). Source `just dev habitat` also **ignores** `config.yaml` `web.enabled` / `web.host` / `web.port` — Habitat does not host `/web` dist; use Vite (`WEB_DEV_PORT`, default 5000).
+Browser Web defaults Habitat URL to the **page origin** (same in production Habitat-hosted `/web` and Vite). Dev injects Service API Token from `dev-web.token` automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves HTTPS using `~/.anima/tls` (Habitat stays plain HTTP). Source `just dev habitat` does **not** host `/web` dist — use Vite (`WEB_DEV_PORT`, default 5000).
 
-**Source deploy** (Habitat hosts `/web/*` when `config.yaml` `web.enabled`): build Web first, then start — startup does not run `just pack web`. Source-tree `anima` has no `service` command.
+**Source deploy** (Habitat hosts `/web/*` when dist exists): build Web first, then start — startup does not run `just pack web`. Source-tree `anima` has no `service` command.
 
 ```bash
 just pack web

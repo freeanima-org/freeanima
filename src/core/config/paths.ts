@@ -23,9 +23,6 @@ export const PATHS = {
   get pidFile() {
     return homePath("server.pid");
   },
-  get webPidFile() {
-    return homePath("web.pid");
-  },
   get statusFile() {
     return homePath("server.status.json");
   },

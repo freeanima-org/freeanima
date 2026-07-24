@@ -30,10 +30,10 @@ Estate **Body** (VM / OS / network under the four-layer model) is the cognitive 
 
 User copy says Habitat. Storage/RPC identifiers use `habitat_*` / `HabitatRPC/1.0` / `/rpc/v1`.
 
-| Layer         | Storage                                                     | Who reads/writes                                             |
-| ------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
-| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`, `web`) | `platform/boot` only; install/ops edit YAML                  |
-| **Runtime**   | PostgreSQL `habitat_runtime_config`                         | Engine, tools, Shell Habitat settings, Habitat UI `config.*` |
+| Layer         | Storage                                              | Who reads/writes                                             |
+| ------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
+| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`) | `platform/boot` only; install/ops edit YAML                  |
+| **Runtime**   | PostgreSQL `habitat_runtime_config`                  | Engine, tools, Shell Habitat settings, Habitat UI `config.*` |
 
 ### Naming cleanup
 
@@ -44,9 +44,9 @@ Legacy `hub_*` / `console` protocol aliases and dual-write keys have been remove
 - The memory system may be layered internally, but the LLM sees a single entry point
 - Memory orchestration is built into the runtime; the LLM does not control memory pipelines
 - Credential management is a first-class system concern
-- Habitat **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL (`habitat_runtime_config`); `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`, `web`) for cold start — not editable via Shell or Habitat UI API
+- Habitat **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL (`habitat_runtime_config`); `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`) for cold start — not editable via Shell or Habitat UI API
 - Habitat **may start without LLM** configured; first-time setup happens in Shell **Settings → Habitat** (persist to PG), then restart Habitat so registries rebuild. Missing `llm` must not block cold start.
-- Whether Habitat hosts browser `/web/*` is **`config.yaml` `web.enabled`** (bootstrap; absent defaults to on when dist exists). Do not put this switch in PG — empty runtime would otherwise block the Settings UI that configures that runtime.
+- Habitat **hosts browser `/web/*` whenever Web dist is present** (no config switch; run `just pack web` for source deploy). Source `just dev habitat` skips hosting so Vite serves the UI.
 - **Asset management** is a first-class system concern
 
 Bootstrap and runtime are **not merged** into a single config object. CLI cold paths connect via internal `withPlatformDb` and receive **runtime only**. Legacy runtime keys in `config.yaml` are ignored (optional startup warn).
@@ -227,7 +227,6 @@ Pipeline: nightly **sleep-cycle** pipeline (`builtin-sleep-cycle` cron) extracts
 - The LLM **never sees secret values** — only vault item metadata and config references
 - Bootstrap `config.yaml` (cold start, before PG): plaintext or `env("KEY")` only — **not** `vault()`. Runtime PG config: `vault("item_id", "field")` and `env("KEY")`; Shell `/vault` for management
 - Secret values are not written to conversation archives or logs
-- CLI: `anima vault list|get`
 
 See [`guide/security.md`](../guide/security.md).
 
@@ -295,9 +294,10 @@ mcp_servers:
 
 - Each external agent instance registers as **one** task-level tool: `acp_{name}(goal, context)`
 - For full task delegation (coding, analysis, booking, etc.); seconds to minutes latency
-- Configure in `config.yaml` under `acp_agents`
+- Configure under Habitat runtime `acp_agents` (PG `habitat_runtime_config`); edit in Shell **Settings → Habitat 服务 → 服务配置**
 
 ```yaml
+# habitat_runtime_config fragment (not config.yaml)
 acp_agents:
   cursor:
     command: ~/.local/bin/agent
@@ -351,12 +351,12 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 
 **UI 源码产物**：`src/app/shell/web/dist`（`base: /web/`）。
 
-| 客户端       | UI 加载                                                                    | 更新方式                                                                                                                                                                              |
-| ------------ | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 浏览器 / PWA | Habitat 托管 `/web/*`（`config.yaml` `web.enabled`，或 `anima web start`） | Service Worker 提示新版本后**手动重载**（不自动刷新）；**不**跟 GitHub 包通道                                                                                                         |
-| Desktop      | **安装包内** `ui/web`（`prepare-tauri-ui`）；调试可用 Tauri dev            | 按 bake `channel` 查 GitHub（`release`=stable latest + semver；`canary`=tag `canary` + commit）；用户确认后 NSIS 覆盖；可切换 `release`⇄`canary`；About 可选公共 gh-proxy（默认直连） |
-| Mobile APK   | **安装包内** `ui/web`（本地同源）；Habitat 仅 API                          | 同上轨语义；有 APK asset 才提示；确认后系统安装器覆盖；可切换轨；同上代理选择                                                                                                         |
-| Standalone   | 嵌入 Web UI 的单文件 `anima`                                               | `anima upgrade` / `--channel release\|canary` / `--proxy …`；`dev` / 源码安装不可换轨；curl 安装脚本可用 `PROXY=…`                                                                    |
+| 客户端       | UI 加载                                                         | 更新方式                                                                                                                                                                              |
+| ------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 浏览器 / PWA | Habitat 托管 `/web/*`（有 dist 时始终托管）                     | Service Worker 提示新版本后**手动重载**（不自动刷新）；**不**跟 GitHub 包通道                                                                                                         |
+| Desktop      | **安装包内** `ui/web`（`prepare-tauri-ui`）；调试可用 Tauri dev | 按 bake `channel` 查 GitHub（`release`=stable latest + semver；`canary`=tag `canary` + commit）；用户确认后 NSIS 覆盖；可切换 `release`⇄`canary`；About 可选公共 gh-proxy（默认直连） |
+| Mobile APK   | **安装包内** `ui/web`（本地同源）；Habitat 仅 API               | 同上轨语义；有 APK asset 才提示；确认后系统安装器覆盖；可切换轨；同上代理选择                                                                                                         |
+| Standalone   | 嵌入 Web UI 的单文件 `anima`                                    | `anima upgrade` / `--channel release\|canary` / `--proxy …`；`dev` / 源码安装不可换轨；curl 安装脚本可用 `PROXY=…`                                                                    |
 
 壳层保留原生能力（Tauri commands / prefs / 通知等）。**无壳内 UI OTA**：原生端不从 Habitat 热替换 SPA。允许**用户确认后**的安装包级覆盖（Desktop 安装包 / Mobile APK / Standalone `anima upgrade` → 独立前缀如 `~/.anima/standalone`）。分发轨 SSOT 为安装包 bake 的 `build-meta.channel`（`release` / `canary` / `dev`）。Habitat 配置统一走 settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
 

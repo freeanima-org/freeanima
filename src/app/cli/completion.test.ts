@@ -26,18 +26,22 @@ describe("shell completion", () => {
   it("source CLI omits service", () => {
     const bash = generateCompletion("bash", buildProgram({ standalone: false }));
     expect(bash).not.toContain("_service()");
-    for (const token of ["vault", "completion", "upgrade", "versions"]) {
+    for (const token of ["completion", "upgrade", "versions", "token"]) {
       expect(bash).toContain(token);
     }
+    expect(bash).not.toContain("vault");
+    expect(bash).not.toContain("_web()");
   });
 
   it("covers top-level commands when standalone", () => {
     const bash = generateCompletion("bash", buildProgram({ standalone: true }));
     const zsh = generateCompletion("zsh", buildProgram({ standalone: true }));
-    for (const token of ["service", "vault", "completion", "upgrade", "versions"]) {
+    for (const token of ["service", "completion", "upgrade", "versions", "token"]) {
       expect(bash).toContain(token);
       expect(zsh).toContain(token);
     }
+    expect(bash).not.toContain("vault");
+    expect(zsh).not.toContain("vault");
   });
 
   it("includes service actions and flags when standalone", () => {
@@ -47,12 +51,5 @@ describe("shell completion", () => {
     }
     // action at COMP_CWORD==2 (anima service <TAB>)
     expect(bash).toMatch(/_service\(\)[\s\S]*COMP_CWORD == 2/);
-  });
-
-  it("includes vault subcommands", () => {
-    const bash = generateCompletion("bash", buildProgram({ standalone: false }));
-    for (const token of ["list", "get"]) {
-      expect(bash).toContain(token);
-    }
   });
 });

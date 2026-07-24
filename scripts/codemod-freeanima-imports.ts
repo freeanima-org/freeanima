@@ -88,7 +88,6 @@ const EXACT_REWRITES: Record<string, string> = {
     "@freeanima/features/habitat/ui/habitat/lib/i18n.ts",
   "@freeanima/features/habitat/ui/habitat/router":
     "@freeanima/features/habitat/ui/habitat/router.tsx",
-  "@freeanima/platform/commands/vault-cli": "@freeanima/platform/slash-commands/vault-cli.ts",
   "@freeanima/kernel/logging/console": "@freeanima/kernel/logging/sinks/console.ts",
   "@freeanima/kernel/logging/file": "@freeanima/kernel/logging/sinks/file.ts",
   "@freeanima/kernel/logging/memory": "@freeanima/kernel/logging/sinks/memory.ts",

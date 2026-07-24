@@ -31,9 +31,10 @@ Compression path: when usage exceeds thresholds, older messages move into summar
 
 ## Configuration
 
-Adjust in `config.yaml` (full example: repo root `config.example.yaml`):
+Adjust in Habitat runtime (`habitat_runtime_config`; Shell **Settings → Habitat 服务 → 服务配置**):
 
 ```yaml
+# habitat_runtime_config fragment (not config.yaml)
 models:
   deepseek-v4-flash:
     context_window: 1000000
@@ -64,12 +65,12 @@ Compression and embedding batch packing use **heuristic token estimates** (`toke
 
 Priority when estimating compression budget:
 
-1. `models.<model>.context_window` in `config.yaml`
+1. `models.<model>.context_window` in Habitat runtime config
 2. `compression.default_context_window` (applies to all models)
 3. Provider `/models` catalog `contextWindow` (when Habitat has registered lookup)
 4. Message-count fallback (`max_rounds` thresholds) when none of the above apply
 
-Per-model config always wins over dynamically fetched catalog values; catalog is read-only and never written back to `config.yaml`.
+Per-model config always wins over dynamically fetched catalog values; catalog is read-only and never written back to runtime config.
 
 Without any context window source, compression falls back to message-count triggers.
 

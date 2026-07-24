@@ -19,7 +19,7 @@ Diary UI labels semantic bricks（梦境 / 情绪 / 自传）as read-only sectio
 
 ## User / Agent isolation
 
-- User and Agent diaries live in the **default private world** of subjects resolved from `config.yaml` **`worlds.user_subject_id` / `agent_subject_id`** (boot-time `ResolvedWorldContext`).
+- User and Agent diaries live in the **default private world** of subjects resolved from boot-time `ResolvedWorldContext` / `habitat_runtime_config.worlds` (`user_subject_id` / `agent_subject_id`).
 - Shell header **User / Agent** toggle selects which subject's diary to view (see [`entity-model.md`](../concepts/entity-model.md) global Subject scope).
 - LLM tools (ToolSet `diary`) default to the **caller subject's private world** (conversation LLM → agent world); optional **`world_id`** overrides (e.g. `user_world_id` from system prompt).
 

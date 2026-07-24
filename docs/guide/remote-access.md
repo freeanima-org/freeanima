@@ -90,7 +90,7 @@ http:
     - http://127.0.0.1:4173
 ```
 
-CORS is **not** derived from `web.public_url`.
+CORS is configured only via `http.cors_origins` (not derived from other URLs).
 
 ### Habitat 本地 HTTPS（双端口，可选）
 
@@ -185,11 +185,10 @@ mcpServers:
 
 ## Operations
 
-| Command                          | Description                                  |
-| -------------------------------- | -------------------------------------------- |
-| `anima token create/list/revoke` | Service API Token 管理（CLI，直连 PG）       |
-| `anima web start --foreground`   | Standalone Web static server (debug, `/web`) |
-| `anima service status`           | Habitat stack status                         |
+| Command                          | Description                            |
+| -------------------------------- | -------------------------------------- |
+| `anima token create/list/revoke` | Service API Token 管理（CLI，直连 PG） |
+| `anima service status`           | Habitat stack status                   |
 
 ## Troubleshooting
 

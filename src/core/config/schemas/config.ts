@@ -2,7 +2,6 @@ import { z } from "zod";
 import { llmConfigSchema } from "./llm-config.ts";
 import { embeddingConfigSchema } from "./embedding.ts";
 import { httpConfigSchema } from "./http.ts";
-import { webConfigSchema } from "./web.ts";
 import { notificationsConfigSchema } from "./notifications.ts";
 import { worldsConfigSchema } from "./worlds.ts";
 import { memoryConfigSchema } from "./memory-config.ts";
@@ -253,7 +252,6 @@ export const animaConfigSchema = z
     weixin: weixinConfigSchema,
     push: sectionSchema.optional(),
     http: httpConfigSchema,
-    web: webConfigSchema,
     notifications: notificationsConfigSchema,
     worlds: worldsConfigSchema,
     tts: ttsConfigSchema,

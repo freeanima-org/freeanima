@@ -76,7 +76,6 @@ export function printServiceRunningStatus(opts: {
     running: boolean;
     host: string;
     port: number;
-    publicUrl: string | null;
   } | null;
 }): void {
   const api = opts.body ?? {};
@@ -126,7 +125,6 @@ export function printServiceRunningStatus(opts: {
     printSection("web");
     printField("running", opts.web.running ? "yes" : "no");
     printField("http", `http://${opts.web.host}:${opts.web.port}/web/chat`);
-    if (opts.web.publicUrl) printField("public", opts.web.publicUrl);
   }
 
   const config = (api.config as Record<string, unknown>) ?? {};

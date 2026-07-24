@@ -2,11 +2,9 @@ import { ANIMA_VERSION } from "@freeanima/platform";
 import { Command } from "commander";
 
 import { registerServiceCommand } from "./commands/service.ts";
-import { registerVaultCommand } from "./commands/vault.ts";
 import { registerCompletionCommand } from "./commands/completion.ts";
 import { registerUpgradeCommand } from "./commands/upgrade.ts";
 import { registerVersionsCommand } from "./commands/versions.ts";
-import { registerWebCommand } from "./commands/web.ts";
 import { registerTokenCommand } from "./commands/token.ts";
 import { isStandaloneCli } from "./is-standalone-cli.ts";
 
@@ -27,10 +25,8 @@ export function buildProgram(opts: BuildProgramOptions = {}): Command {
     registerServiceCommand(program);
   }
 
-  registerVaultCommand(program);
   registerUpgradeCommand(program);
   registerVersionsCommand(program);
-  registerWebCommand(program);
   registerTokenCommand(program);
   registerCompletionCommand(program);
 

@@ -138,7 +138,7 @@ Repository query conventions (ORM vs `db.execute`, DbRow typing): [`drizzle-db.m
 ## LLM profile 回退
 
 - 内置场景 id：`chat` / `summary` / `reflect`（`PROFILE_*` 常量）
-- 请求场景 profile 时，若 `config.yaml` 的 `llm.profiles` **未配置**该 id，**必须回退**到 `llm.default_profile`
+- 请求场景 profile 时，若 runtime（`habitat_runtime_config`）的 `llm.profiles` **未配置**该 id，**必须回退**到 `llm.default_profile`
 - 回退 SSOT：`ProfileRegistry.resolve()`（运行时）、`resolveConfiguredProfileId()` / `getProfileHopModel()`（读配置）；调用方仍传场景常量，勿在各功能点手写 fallback
 
 ## Release

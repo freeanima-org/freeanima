@@ -290,7 +290,7 @@ async function cmdSummarize(ctx: CommandContext): Promise<CommandResult> {
     };
 
   if (!r.enabled) {
-    return asToast("Session compression not enabled (config.yaml → compression.enabled)");
+    return asToast("Session compression not enabled（Habitat 服务配置 → compression.enabled）");
   }
 
   if (r.error === "empty") {
@@ -332,7 +332,7 @@ async function cmdCompress(ctx: CommandContext): Promise<CommandResult> {
   > &
     CompressionAnalysis & { updated?: boolean };
   if (!r.enabled) {
-    return asToast("Session compression not enabled (config.yaml → compression.enabled)");
+    return asToast("Session compression not enabled（Habitat 服务配置 → compression.enabled）");
   }
   const cfg = getCompressionConfig();
   const lines = [
