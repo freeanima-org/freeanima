@@ -20,7 +20,7 @@ _A runtime for persistently existing digital life — not just another agent too
 
 FreeAnima is not a generic agent framework. It is a **runtime designed for digital beings that persist** — remembering who they are and what they have lived through.
 
-The technical stack (layered memory, self layer, flat tool registry, Gateway, pass credentials) exists to serve one purpose: **continuity of existence**, not feature checklists.
+The technical stack (layered memory, self layer, flat tool registry, Gateway, Vault) exists to serve one purpose: **continuity of existence**, not feature checklists.
 
 ## Capabilities
 
@@ -30,7 +30,7 @@ The technical stack (layered memory, self layer, flat tool registry, Gateway, pa
 | **Self layer**  | Six-block persistent identity (`self_blocks`)                                                          |
 | **Tools**       | Flat registry: local / MCP / ACP; capability masks                                                     |
 | **Gateway**     | Discord · WeChat · Chat                                                                                |
-| **Credentials** | pass (GPG) injection; LLM sees paths, not values                                                       |
+| **Credentials** | Vault (User/Agent libraries); runtime `vault()` / `env()`; LLM sees metadata, not values               |
 | **Runtime**     | Bun Habitat: Habitat RPC REST/WS `/rpc/v1` + SAP `/sap/v1` + Pipeline Runner (sleep, cron)             |
 
 ## Architecture at a glance

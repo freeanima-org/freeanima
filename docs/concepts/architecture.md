@@ -224,7 +224,7 @@ Pipeline: nightly **sleep-cycle** pipeline (`builtin-sleep-cycle` cron) extracts
 
 - **Vault** (ECS `vault_item` in User + Agent libraries) is the authoritative secret store; legacy `~/.password-store` (pass) is **not deleted** on disk but is no longer read at runtime
 - The LLM **never sees secret values** — only vault item metadata and config references
-- Runtime resolution: `vault("item_id", "field")` and `env("KEY")` in config; Shell `/vault` for management
+- Bootstrap `config.yaml` (cold start, before PG): plaintext or `env("KEY")` only — **not** `vault()`. Runtime PG config: `vault("item_id", "field")` and `env("KEY")`; Shell `/vault` for management
 - Secret values are not written to conversation archives or logs
 - CLI: `anima vault list|get`
 
