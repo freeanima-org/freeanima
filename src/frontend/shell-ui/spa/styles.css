@@ -159,3 +159,13 @@ html[data-shell-ui="1"] body {
 .shell-bottom-nav-item:active {
   opacity: 0.7;
 }
+
+/**
+ * compact 壳底栏之上：viewport-fixed 的 list-detail drawer 须抬 bottom，
+ * 否则 footer/输入会被 z-[60] 底栏盖住（与 Notice/More 同模式）。
+ * medium/expanded 无底栏，勿套用 --shell-bottom-nav-h。
+ */
+.shell-layout-compact .list-detail-drawer-overlay,
+.shell-layout-compact .list-detail-drawer-panel {
+  bottom: calc(var(--shell-bottom-nav-h) + var(--sab));
+}
