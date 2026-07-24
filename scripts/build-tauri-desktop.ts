@@ -14,8 +14,8 @@ function ensureLinuxWebkitDeps(): void {
   });
   if (check.status === 0) return;
   console.error(
-    "[package:tauri] 缺少 Linux WebKitGTK 开发库。请安装：\n" +
-      "  just install-tauri-linux -- --apt\n" +
+    "[pack tauri] 缺少 Linux WebKitGTK 开发库。请安装：\n" +
+      "  just install tauri-linux -- --apt\n" +
       "  # 或 sudo apt-get install -y libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev \\\n" +
       "  #   libsoup-3.0-dev libappindicator3-dev librsvg2-dev patchelf",
   );

@@ -120,7 +120,7 @@ function createApiFetchHandler(runtime: ApiServerRuntime) {
         (req.method === "GET" || req.method === "HEAD")
       ) {
         return new Response(
-          "Web UI 未托管：请在 ~/.anima/config.yaml 设置 web.enabled: true，并确认已 bun run build:web",
+          "Web UI 未托管：请在 ~/.anima/config.yaml 设置 web.enabled: true，并确认已 just pack web",
           { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } },
         );
       }

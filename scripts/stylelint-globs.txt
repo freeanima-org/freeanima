@@ -1,0 +1,6 @@
+src/frontend/**/spa/**/*.css
+src/frontend/**/lib/**/*.css
+src/features/**/ui/**/*.css
+src/features/companion/**/spa/**/*.css
+src/app/shell/tauri/**/spa/**/*.css
+src/app/shell/web/**/spa/**/*.css

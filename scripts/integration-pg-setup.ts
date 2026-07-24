@@ -42,7 +42,7 @@ export function assertNotDailyPgUrl(url: string): void {
   if (!daily || !test) return;
   if (daily.host === test.host && daily.port === test.port) {
     throw new Error(
-      `ANIMA_TEST_PG_URL host:port (${test.host}:${test.port}) matches daily ~/.anima/config.yaml — refusing to touch it. Use bun run test:integration (Docker).`,
+      `ANIMA_TEST_PG_URL host:port (${test.host}:${test.port}) matches daily ~/.anima/config.yaml — refusing to touch it. Use just qa test-integration (Docker).`,
     );
   }
 }

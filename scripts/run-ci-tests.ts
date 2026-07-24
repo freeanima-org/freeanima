@@ -14,26 +14,26 @@ const paraglideMessagesJs = join(repoRoot, "messages/paraglide/messages.js");
 function ensureParaglideCompiled(): void {
   if (existsSync(paraglideMessagesJs)) return;
   console.log(`[${label}] compiling paraglide messages…`);
-  const result = spawnSync("bun", ["run", "paraglide:compile"], {
+  const result = spawnSync("bun", ["scripts/paraglide-compile.ts"], {
     cwd: repoRoot,
     stdio: "inherit",
     env: process.env,
   });
   if (result.status !== 0) {
-    throw new Error("paraglide:compile failed before unit tests");
+    throw new Error("paraglide-compile failed before unit tests");
   }
 }
 
 function ensureStandaloneBuilt(): void {
   if (existsSync(standaloneBin)) return;
   console.log(`[${label}] building linux standalone for integration tests…`);
-  const result = spawnSync("bun", ["run", "build:cli:executable"], {
+  const result = spawnSync("bun", ["scripts/build-cli-executable.ts"], {
     cwd: repoRoot,
     stdio: "inherit",
     env: process.env,
   });
   if (result.status !== 0) {
-    throw new Error("build:cli:executable failed before integration tests");
+    throw new Error("build-cli-executable failed before integration tests");
   }
 }
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * 安装 / 校验本机 `just pack-tauri`（Linux）WebKitGTK 开发库。
+ * 安装 / 校验本机 `just pack tauri`（Linux）WebKitGTK 开发库。
  *
  *   bun scripts/install-tauri-linux-deps.ts
  *   bun scripts/install-tauri-linux-deps.ts --apt
@@ -10,7 +10,7 @@ import { spawnSync } from "node:child_process";
 
 const withApt = process.argv.includes("--apt");
 const checkOnly = process.argv.includes("--check");
-const HINT = "just install-tauri-linux -- --apt";
+const HINT = "just install tauri-linux -- --apt";
 
 const PKGS = [
   "libwebkit2gtk-4.1-dev",
@@ -57,7 +57,7 @@ console.log(`[install-tauri-linux] 缺少包：${PKGS.join(" ")}`);
 if (withApt) {
   run("sudo", ["apt-get", "update", "-qq"], "sudo apt-get update");
   run("sudo", ["apt-get", "install", "-y", ...PKGS], `sudo apt-get install -y ${PKGS.join(" ")}`);
-  console.log("[install-tauri-linux] 完成。下一步：just pack-tauri");
+  console.log("[install-tauri-linux] 完成。下一步：just pack tauri");
   process.exit(0);
 }
 

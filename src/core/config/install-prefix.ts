@@ -65,7 +65,7 @@ export function assertSafeStandaloneInstallPrefix(
       : resolveMonorepoRoot(opts?.cwd ?? process.cwd());
   if (isPathInsideMonorepo(resolved, monorepoRoot)) {
     throw new Error(
-      `拒绝安装到 monorepo 内（${resolved}）。请设置 FREEANIMA_INSTALL_PREFIX 或 just install-cli 装到独立前缀（默认 ~/.anima/standalone）。`,
+      `拒绝安装到 monorepo 内（${resolved}）。请设置 FREEANIMA_INSTALL_PREFIX 或 just install cli 装到独立前缀（默认 ~/.anima/standalone）。`,
     );
   }
 }

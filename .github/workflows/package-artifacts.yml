@@ -77,10 +77,11 @@ jobs:
           fetch-depth: 0
 
       - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-just
       - uses: ./.github/actions/setup-anima-home
 
       - name: Build Linux standalone
-        run: bun run build:cli:executable
+        run: just pack cli
 
       - name: Smoke standalone (off build-machine tiktoken path)
         run: bun scripts/smoke-standalone-tiktoken.ts
@@ -110,6 +111,7 @@ jobs:
           fetch-depth: 0
 
       - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-just
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -133,12 +135,12 @@ jobs:
             cargo-xwin-${{ runner.os }}-
 
       - name: Install Windows cross toolchain
-        run: bun scripts/install-tauri-windows-toolchain.ts --apt
+        run: just install tauri-windows -- --apt
 
       - name: 构建 FreeAnima Desktop Tauri Windows（Linux 交叉编译）
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
-        run: bun run package:tauri:windows
+        run: just pack tauri-windows
 
       - name: 收集安装包
         run: |
@@ -171,6 +173,7 @@ jobs:
           fetch-depth: 0
 
       - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-just
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -187,7 +190,7 @@ jobs:
           key: tauri-linux
 
       - name: Build Tauri desktop (Linux host)
-        run: bun run package:tauri
+        run: just pack tauri
 
       - name: Collect bundle
         run: |
@@ -220,6 +223,7 @@ jobs:
           fetch-depth: 0
 
       - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-just
 
       - name: Setup JDK 21
         uses: actions/setup-java@v5
@@ -249,7 +253,7 @@ jobs:
         run: bash scripts/setup-android-sdk.sh
 
       - name: Install Tauri Android deps
-        run: bun scripts/install-android-tauri-deps.ts --init
+        run: just install android-tauri -- --init
 
       - name: Build Tauri APK
         env:
@@ -264,7 +268,7 @@ jobs:
           source scripts/android-env.sh
           # shellcheck source=scripts/export-android-signing-env.sh
           source scripts/export-android-signing-env.sh
-          bun run package:android
+          just pack android
           mkdir -p dist
           cp dist/freeanima-mobile-tauri-android.apk dist/freeanima-mobile-android.apk
           ls -lh dist/freeanima-mobile-android.apk

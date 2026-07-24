@@ -2,10 +2,10 @@
 /**
  * Sample anima service process RSS (VmRSS) and Habitat RPC status.get snapshot.
  *
- *   just memory-sample -- --label idle
- *   just memory-sample -- --pid 12345 --label after-chat
- *   just memory-sample -- --habitat-url http://127.0.0.1:2658
- *   just memory-sample -- --habitat-url http://127.0.0.1:2658 --stage full
+ *   just misc memory-sample -- --label idle
+ *   just misc memory-sample -- --pid 12345 --label after-chat
+ *   just misc memory-sample -- --habitat-url http://127.0.0.1:2658
+ *   just misc memory-sample -- --habitat-url http://127.0.0.1:2658 --stage full
  */
 
 import { readFileSync } from "node:fs";

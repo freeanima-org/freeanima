@@ -8,9 +8,9 @@
 | **Cross-package integration** | `tests/integration/`                                                    | PG, Redis, temp dirs, `beginIntegrationCase`             | —                                                                                       |
 | **Black-box E2E**             | [freeanima-testing](https://github.com/freeanima-org/freeanima-testing) | Compose + Playwright; PR dispatch async                  | —                                                                                       |
 
-- pre-commit: `bun run test:changed` (**unit only**, changed)
-- Before PR push: `bun run test` (unit + integration; black-box in freeanima-testing)
-- Before PR push: `bun run check` includes `stylelint`（手写 CSS 主题色规范，见 [frontend-ui.md](frontend-ui.md)）
+- pre-commit: `just qa pre-commit`（含 `just qa test-changed`，**unit only**）
+- Before PR push: `just test` / `just qa test`（unit + integration；black-box in freeanima-testing）
+- Before PR push: `just check` includes `stylelint`（手写 CSS 主题色规范，见 [frontend-ui.md](frontend-ui.md)）
 - Single-package logic → colocated unit tests; multi-package or real persistence → `tests/integration/`
 - New features need tests (minimal viable); mock external deps; real LLM / network excluded from CI by default
 
@@ -37,11 +37,11 @@ Use `tests/helpers/integration-case.ts` (`restoreIntegrationHome` + `flushCompre
 
 ### PG：必须用隔离库（硬禁止指日常库）
 
-`bun run test:integration` 起 Docker 临时 PG → 建迁移好的模板库 `anima_it_template` → 每个测试进程克隆 `anima_it_*` 独立库（**不再** `clearPgTables`）。`--parallel` 默认开启（`FREEANIMA_TEST_PARALLEL` 可覆盖）。
+`just qa test-integration` 起 Docker 临时 PG → 建迁移好的模板库 `anima_it_template` → 每个测试进程克隆 `anima_it_*` 独立库（**不再** `clearPgTables`）。`--parallel` 默认开启（`FREEANIMA_TEST_PARALLEL` 可覆盖）。
 
 | 允许                                                        | 禁止                                                                         |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `bun run test:integration`（Docker 随机高位端口）           | 把 `ANIMA_TEST_PG_URL` 指到与 `~/.anima/config.yaml` **同 host:port** 的实例 |
+| `just qa test-integration`（Docker 随机高位端口）           | 把 `ANIMA_TEST_PG_URL` 指到与 `~/.anima/config.yaml` **同 host:port** 的实例 |
 | 自起 Docker / 空实例（端口 ≠ 日常）再设 `ANIMA_TEST_PG_URL` | `bun test tests/integration/...` 复用 `just dev` / 日常库                    |
 
 护栏：同 host:port 时 `describePg` **整包 skip**，且 `setupIntegrationPg` / `createIsolatedTestDb` **直接 throw**（零副作用）。

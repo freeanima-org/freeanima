@@ -163,12 +163,13 @@ function writeNativeBuildMeta(destDir: string): void {
   console.log(`[prepare-tauri] native-build-meta → ${path} (${meta.version} / ${meta.channel})`);
 }
 
-const buildScript = target === "mobile" ? "build:web:mobile" : "build:web:desktop";
-console.log(`[prepare-tauri] target=${target} ${buildScript}…`);
-const web = Bun.spawnSync(["bun", "run", buildScript], {
+process.env.FREEANIMA_SHELL_TARGET = target;
+console.log(`[prepare-tauri] target=${target} build-web…`);
+const web = Bun.spawnSync(["bun", "scripts/build-web.ts"], {
   cwd: root,
   stdout: "inherit",
   stderr: "inherit",
+  env: process.env,
 });
 if (web.exitCode !== 0) process.exit(web.exitCode ?? 1);
 

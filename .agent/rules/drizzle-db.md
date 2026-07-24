@@ -60,7 +60,7 @@ sql`e.val = ANY(${pgTextArray(ids)})`;
 sql`(${entities.body}->'source_conversations') ?| ${pgTextArray(ids)}`;
 ```
 
-静态检查：`bun run pg-sql-arrays`（`scripts/check-pg-sql-arrays.ts`，纳入 `bun run check`）。
+静态检查：`bun scripts/check-pg-sql-arrays.ts`（`scripts/check-pg-sql-arrays.ts`，纳入 `just check`）。
 
 ---
 

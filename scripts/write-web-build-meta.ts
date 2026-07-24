@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * 按 FREEANIMA_SHELL_TARGET 向对应 web outDir 写入 build-meta.json。
- * 供 `package.json` `build:web` 在 vite build 之后调用。
+ * 供 `scripts/build-web.ts`（just pack web）在 vite build 之后调用。
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";

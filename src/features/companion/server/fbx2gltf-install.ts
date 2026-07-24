@@ -137,7 +137,7 @@ export async function ensureFbx2gltf(options?: { strict?: boolean }): Promise<bo
     const ok = await downloadFbx2gltf(binaryName, destPath);
     if (!ok || !findFbx2gltfBinary()) {
       warn(
-        "FBX2glTF 自动安装失败；请执行 bun run setup:fbx，或从 GitHub facebookincubator/FBX2glTF v0.9.7 手动下载",
+        "FBX2glTF 自动安装失败；请执行 just misc setup-fbx，或从 GitHub facebookincubator/FBX2glTF v0.9.7 手动下载",
       );
       return false;
     }

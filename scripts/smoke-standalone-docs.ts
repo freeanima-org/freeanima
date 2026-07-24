@@ -2,7 +2,7 @@
 /**
  * standalone 打包冒烟：docs 嵌入 + 无磁盘 docs/ 时 docs_* 工具可读。
  *
- * 用法（在 build:cli:executable 之后）：
+ * 用法（在 just pack cli 之后）：
  *   bun scripts/smoke-standalone-docs.ts
  */
 import { existsSync, readFileSync } from "node:fs";
@@ -67,7 +67,7 @@ async function waitForHealth(port: number, timeoutMs = 120_000): Promise<void> {
 
 function assertBinaryHasEmbeddedDocs(): void {
   if (!existsSync(BIN)) {
-    throw new Error(`missing ${BIN}; run bun run build:cli:executable first`);
+    throw new Error(`missing ${BIN}; run just pack cli first`);
   }
   const blob = readFileSync(BIN);
   if (!blob.includes(DOC_NEEDLE)) {

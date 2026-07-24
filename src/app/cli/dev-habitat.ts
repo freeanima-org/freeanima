@@ -2,9 +2,9 @@
 /**
  * 源码 / worktree 本机起 Habitat（前台）。不经 anima service / systemd。
  *
- *   bun run dev:habitat
- *   bun run dev:habitat -- --port 12001
- *   bun run dev:habitat -- --port 12001 --strict-port
+ *   just dev habitat
+ *   just dev habitat -- --port 12001
+ *   just dev habitat -- --port 12001 --strict-port
  *
  * 默认随机 ≥10000 闲口（避开生产 2658/2659）。TLS 由 Vite 终止，本进程不绑 Habitat TLS。
  */
@@ -43,11 +43,11 @@ async function main(): Promise<void> {
       "after",
       `
 Examples:
-  bun run dev:habitat
-  bun run dev:habitat -- --port 12001
-  bun run dev:habitat -- --port 12001 --strict-port
+  just dev habitat
+  just dev habitat -- --port 12001
+  just dev habitat -- --port 12001 --strict-port
 
-Dev defaults: random port ≥${DEV_HABITAT_PORT_MIN} (not 2658/2659). Pair with bun run dev:web (Vite proxy).
+Dev defaults: random port ≥${DEV_HABITAT_PORT_MIN} (not 2658/2659). Pair with just dev web (Vite proxy).
 Production install uses standalone \`anima service\` (systemd). Source CLI has no \`service\` command.
 `,
     )
@@ -88,7 +88,7 @@ Production install uses standalone \`anima service\` (systemd). Source CLI has n
   console.log(`  address: http://${host.split(",")[0]?.trim() || host}:${port}`);
   console.log(`  http override: CLI --host/--port；Habitat TLS skipped (Vite may terminate HTTPS)`);
   console.log(
-    `  web override: Habitat ignores config.yaml web.* (UI via bun run dev:web / WEB_DEV_PORT)`,
+    `  web override: Habitat ignores config.yaml web.* (UI via just dev web / WEB_DEV_PORT)`,
   );
   console.log(`  tip: anima service is only on the standalone install CLI; TLS via Vite if needed`);
 

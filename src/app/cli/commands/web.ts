@@ -24,7 +24,7 @@ export function registerWebCommand(program: Command): void {
       "after",
       `
 生产环境推荐 \`web.enabled: true\` 后随 \`anima service start\` 一并启动。
-启动不会自动 build：源码部署请先 \`bun run build:web\`；开发请用 \`bun run dev:web\`（Vite HMR）。
+启动不会自动 build：源码部署请先 \`just pack web\`；开发请用 \`just dev web\`（Vite HMR）。
 `,
     )
     .action(

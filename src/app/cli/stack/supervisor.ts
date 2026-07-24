@@ -50,7 +50,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
   } | null = null;
   if (webEnabled) {
     try {
-      // 启动从不自动 build：源码部署须先 bun run build:web；standalone 打包时已嵌入
+      // 启动从不自动 build：源码部署须先 just pack web；standalone 打包时已嵌入
       const distDir = tryResolveWebDistDir();
       if (distDir) {
         let uiVersion: string | undefined;
@@ -68,7 +68,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
         };
       } else {
         console.warn(
-          "[stack] config.yaml web.enabled 已开启（或缺省开启）但未找到 Web dist，Habitat 将不托管 /web（请先 bun run build:web）",
+          "[stack] config.yaml web.enabled 已开启（或缺省开启）但未找到 Web dist，Habitat 将不托管 /web（请先 just pack web）",
         );
       }
     } catch (err) {

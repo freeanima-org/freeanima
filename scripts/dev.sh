@@ -28,14 +28,14 @@ export WEB_DEV_PORT="${WEB_DEV_PORT:-5000}"
 
 echo "dev · Habitat ${FREEANIMA_URL} · Web from :${WEB_DEV_PORT} (proxy only; browser habitat = page origin)"
 
-bun run dev:habitat -- --port "${habitat_port}" --strict-port &
+bun src/app/cli/dev-habitat.ts --port "${habitat_port}" --strict-port &
 habitat_pid=$!
-bun run dev:web &
+bun scripts/dev-web.ts &
 web_pid=$!
 
 cleanup() {
   trap - EXIT INT TERM
-  # 负 pid = 杀整个进程组（含 bun run → bun/node 孙进程）
+  # 负 pid = 杀整个进程组（含 bun → vite/habitat 孙进程）
   kill -TERM -- -"$habitat_pid" -"$web_pid" 2>/dev/null || true
   wait "$habitat_pid" "$web_pid" 2>/dev/null || true
   # 仍存活则强杀（个别子进程忽略 TERM 时）

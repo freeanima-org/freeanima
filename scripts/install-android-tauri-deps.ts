@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * 安装 / 校验 Tauri Android 额外依赖（Rust Android targets、NDK、android gen）。
- * 需先具备 Android SDK（just install-android）。
+ * 需先具备 Android SDK（just install android）。
  *
  *   bun scripts/install-android-tauri-deps.ts
  *   bun scripts/install-android-tauri-deps.ts --init   # 缺失时执行 tauri android init
@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 
 const checkOnly = process.argv.includes("--check");
 const doInit = process.argv.includes("--init");
-const HINT = "just install-android-tauri\n  # 缺工程：just install-android-tauri -- --init";
+const HINT = "just install android-tauri\n  # 缺工程：just install android-tauri -- --init";
 
 const ANDROID_TARGETS = [
   "aarch64-linux-android",
@@ -113,7 +113,7 @@ if (!which("rustup")) {
 if (!ndkPresent()) {
   const sdkmanager = join(sdkHome(), "cmdline-tools/latest/bin/sdkmanager");
   if (!existsSync(sdkmanager)) {
-    console.error("[install-android-tauri] 未找到 sdkmanager。请先：just install-android");
+    console.error("[install-android-tauri] 未找到 sdkmanager。请先：just install android");
     process.exit(1);
   }
   // 安装较新的 NDK；具体版本由 sdkmanager 解析
@@ -135,7 +135,7 @@ if (!existsSync(androidGen)) {
   } else {
     console.error(
       "[install-android-tauri] 尚未生成 Android 工程。请执行：\n" +
-        "  just install-android-tauri -- --init\n" +
+        "  just install android-tauri -- --init\n" +
         "或：\n" +
         "  cd src/app/shell/tauri && bunx tauri android init",
     );
@@ -148,5 +148,5 @@ if (!existsSync(androidGen)) {
 run("bun", ["scripts/patch-tauri-android.ts"], "patch-tauri-android", root);
 run("bun", ["scripts/generate-brand-icons.ts"], "brand-icons", root);
 
-console.log("[install-android-tauri] 完成。下一步：just pack-android");
+console.log("[install-android-tauri] 完成。下一步：just pack android");
 process.exit(0);

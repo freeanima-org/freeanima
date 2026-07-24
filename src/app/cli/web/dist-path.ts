@@ -52,5 +52,5 @@ export function resolveWebDistDir(explicit?: string): string {
   if (explicit?.trim()) {
     throw new Error(`Web dist 不存在或缺少 index.html: ${explicit.trim()}`);
   }
-  throw new Error("未找到 Web dist。请在仓库根目录运行: bun run build:web");
+  throw new Error("未找到 Web dist。请在仓库根目录运行: just pack web");
 }

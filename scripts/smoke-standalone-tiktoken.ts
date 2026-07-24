@@ -2,7 +2,7 @@
 /**
  * standalone 冒烟：离开构建机 tiktoken 路径后仍能启动。
  *
- * 用法（在 build:cli:executable 之后）：
+ * 用法（在 just pack cli 之后）：
  *   bun scripts/smoke-standalone-tiktoken.ts
  */
 import { renameSync, existsSync } from "node:fs";
@@ -34,7 +34,7 @@ function run(bin: string, args: string[]): void {
 
 function main(): void {
   if (!existsSync(BIN)) {
-    throw new Error(`missing ${BIN}; run bun run build:cli:executable first`);
+    throw new Error(`missing ${BIN}; run just pack cli first`);
   }
 
   const wasmPath = resolveTiktokenWasmPath(ROOT);

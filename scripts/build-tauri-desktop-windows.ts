@@ -45,9 +45,9 @@ function ensureCrossWindowsToolchain(): void {
 
   if (missing.length === 0) return;
   console.error(
-    "[package:tauri:windows] 交叉编译工具链不完整：\n" +
+    "[pack tauri-windows] 交叉编译工具链不完整：\n" +
       missing.map((m) => `  - ${m}`).join("\n") +
-      "\n请先：just install-tauri-windows\n  # 或缺系统包：just install-tauri-windows -- --apt",
+      "\n请先：just install tauri-windows\n  # 或缺系统包：just install tauri-windows -- --apt",
   );
   process.exit(1);
 }
@@ -71,8 +71,8 @@ function copyInstallerToDist(): void {
   mkdirSync(distDir, { recursive: true });
   const dest = join(distDir, DIST_SETUP_NAME);
   cpSync(join(nsisOut, setup), dest);
-  console.log(`[package:tauri:windows] nsis: ${setup}`);
-  console.log(`[package:tauri:windows] → ${dest}`);
+  console.log(`[pack tauri-windows] nsis: ${setup}`);
+  console.log(`[pack tauri-windows] → ${dest}`);
 }
 
 ensureCrossWindowsToolchain();

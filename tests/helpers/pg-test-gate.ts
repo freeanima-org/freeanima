@@ -59,7 +59,7 @@ const guardBlocked = pgTestUrl ? isDailyDbUrl(pgTestUrl) : false;
 if (guardBlocked) {
   console.warn(
     "[pg-test-gate] WARN: ANIMA_TEST_PG_URL 与日常 config.yaml database.url 的 host:port 相同，" +
-      "PG 集成测试已全部 skip 以保护日常数据。请改用 Docker 临时库（bun run test:integration）。",
+      "PG 集成测试已全部 skip 以保护日常数据。请改用 Docker 临时库（just qa test-integration）。",
   );
 }
 

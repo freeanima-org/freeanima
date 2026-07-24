@@ -6,7 +6,8 @@
  * - version / service build-meta / migration.sql / Web dist 均嵌入二进制
  *
  * 用法：
- *   bun run build:cli:executable
+ *   just pack cli
+ *   bun scripts/build-cli-executable.ts
  *   ./dist/anima-executable/anima --version
  */
 import { $ } from "bun";
@@ -44,7 +45,7 @@ async function ensureWebDist(): Promise<void> {
     const { assessMonorepoWebDist } = await import("@freeanima/app/cli/web/ensure-dist.ts");
     const assessment = assessMonorepoWebDist(ROOT, WEB_DIST_DIR);
     if (!assessment.needsRebuild) {
-      console.log("Web dist up to date — skip build:web（FREEANIMA_FORCE_WEB_BUILD=1 可强制）");
+      console.log("Web dist up to date — skip pack web（FREEANIMA_FORCE_WEB_BUILD=1 可强制）");
       return;
     }
     if (assessment.stale) {
@@ -55,9 +56,9 @@ async function ensureWebDist(): Promise<void> {
   }
 
   console.log("building Web dist for embed…");
-  await $`bun run build:web`;
+  await $`bun scripts/build-web.ts`.cwd(ROOT);
   if (!existsSync(WEB_DIST_INDEX)) {
-    throw new Error("build:web 完成后仍缺少 src/app/shell/web/dist/index.html");
+    throw new Error("pack web 完成后仍缺少 src/app/shell/web/dist/index.html");
   }
 }
 
@@ -79,7 +80,7 @@ function listMigrationEmbeds(): StandaloneEmbedInput[] {
 
 function listWebEmbeds(): StandaloneEmbedInput[] {
   if (!existsSync(WEB_DIST_INDEX)) {
-    throw new Error(`Web dist 缺失（${WEB_DIST_DIR}）。请先 bun run build:web`);
+    throw new Error(`Web dist 缺失（${WEB_DIST_DIR}）。请先 just pack web`);
   }
   const files: StandaloneEmbedInput[] = [];
   for (const rel of new Glob("**/*").scanSync({ cwd: WEB_DIST_DIR, onlyFiles: true })) {

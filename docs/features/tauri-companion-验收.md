@@ -12,6 +12,6 @@ title: Tauri Companion 验收
 | macOS (WKWebView)  |          |        |                    |           |                     |
 | Linux (WebKitGTK)  |          |        |                    |           |                     |
 
-开发：`just web`（另终端）+ `just tauri`；overlay 默认 `http://127.0.0.1:4176/?view=overlay`。
+开发：`just dev web`（另终端）+ `just dev tauri`；overlay 默认 `http://127.0.0.1:4176/?view=overlay`。
 
 打包资源：`scripts/prepare-tauri-desktop-ui.ts` → `src-tauri/companion-dist/`。

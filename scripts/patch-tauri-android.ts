@@ -34,7 +34,7 @@ const NSC = `<?xml version="1.0" encoding="utf-8"?>
 
 if (!existsSync(manifestPath)) {
   console.error(
-    `[patch-tauri-android] 缺少 ${manifestPath}，请先：just install-android-tauri -- --init`,
+    `[patch-tauri-android] 缺少 ${manifestPath}，请先：just install android-tauri -- --init`,
   );
   process.exit(1);
 }

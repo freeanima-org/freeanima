@@ -4,7 +4,7 @@
  * 写入 `anima_<version>`，`anima` symlink 指向当前版，并在 `~/.local/bin/anima` 放置 PATH shim。
  *
  * 用法：
- *   just install-cli
+ *   just install cli
  *   bun scripts/install-cli.ts [--prefix DIR] [--skip-build]
  */
 import { existsSync } from "node:fs";
@@ -49,7 +49,7 @@ PATH 入口: ~/.local/bin/anima
 
 function requireStaging(): void {
   if (!existsSync(STAGING_ANIMA)) {
-    throw new Error(`缺少构建产物 ${STAGING_ANIMA}。请先执行: just build-cli`);
+    throw new Error(`缺少构建产物 ${STAGING_ANIMA}。请先执行: just pack cli`);
   }
 }
 
@@ -57,7 +57,7 @@ async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (!args.skipBuild) {
     console.log(
-      "提示: 完整流程请用 `just install-cli`（会先 build-cli）。--skip-build 仅重装已有 dist。",
+      "提示: 完整流程请用 `just install cli`（会先 just pack cli）。--skip-build 仅重装已有 dist。",
     );
   }
 
