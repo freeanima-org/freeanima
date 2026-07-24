@@ -1,10 +1,13 @@
-import { and, eq, inArray, sql as drizzleSql } from "drizzle-orm";
+import { and, eq, inArray, ne, notExists, sql as drizzleSql } from "drizzle-orm";
 import { memoryReferences, messages, entities, conversations } from "@freeanima/core/db/schema";
 import { formatCstIso } from "@freeanima/core/util";
 import type { RecordMessageReferencesInput } from "../types.ts";
 import {
   parseMemoryReferenceMarkers,
   memoryReferenceWeight,
+  MEMORY_REFERENCE_DECAY_DAYS,
+  MEMORY_REFERENCE_RECENT_WEIGHT,
+  MEMORY_REFERENCE_STALE_WEIGHT,
 } from "@freeanima/core/db/pg/memory-reference/markers";
 
 import { getDb } from "../../client.ts";
@@ -143,20 +146,48 @@ export async function syncAllReferenceCounts(): Promise<{ updated: number; rebui
   const db = getDb();
   const now = new Date(formatCstIso());
 
-  // 全表按 memory_references 重算（每条引用计一次 + 30 天权重）；无引用者置 0
-  await db.update(entities).set({
-    reference_count: drizzleSql`COALESCE((
-      SELECT SUM(
+  // 集合式重算：先按 memory_references 聚合写入，再清零无引用且 count≠0 的行
+  const weightAgg = db
+    .select({
+      entity_id: memoryReferences.entity_id,
+      w: drizzleSql<number>`SUM(
         CASE
-          WHEN mr.created_at >= NOW() - INTERVAL '30 days' THEN 2.0
-          ELSE 1.0
+          WHEN ${memoryReferences.created_at} >= NOW() - (${MEMORY_REFERENCE_DECAY_DAYS} * INTERVAL '1 day')
+          THEN ${MEMORY_REFERENCE_RECENT_WEIGHT}::float8
+          ELSE ${MEMORY_REFERENCE_STALE_WEIGHT}::float8
         END
-      )::float8
-      FROM memory_references mr
-      WHERE mr.entity_id = ${entities.id}
-    ), 0)`,
-    updated_at: now,
-  });
+      )::float8`.as("w"),
+    })
+    .from(memoryReferences)
+    .groupBy(memoryReferences.entity_id)
+    .as("ref_weights");
+
+  await db
+    .update(entities)
+    .set({
+      reference_count: drizzleSql`${weightAgg.w}`,
+      updated_at: now,
+    })
+    .from(weightAgg)
+    .where(eq(entities.id, weightAgg.entity_id));
+
+  await db
+    .update(entities)
+    .set({
+      reference_count: 0,
+      updated_at: now,
+    })
+    .where(
+      and(
+        ne(entities.reference_count, 0),
+        notExists(
+          db
+            .select({ one: drizzleSql`1` })
+            .from(memoryReferences)
+            .where(eq(memoryReferences.entity_id, entities.id)),
+        ),
+      ),
+    );
 
   const countRows = await db
     .select({ count: drizzleSql<number>`count(*)::int` })

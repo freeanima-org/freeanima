@@ -113,9 +113,11 @@ export async function searchMessagesTrgm(
 
   const db = getDb();
   const rankExpr = sql<number>`similarity(${msgContent}, ${q})`.as("rank");
+  // `<%` + word_similarity_threshold 可走 idx_messages_content_trgm（gin_trgm_ops）
   const conditions = [
     isNotNull(messages.content_fts),
-    sql`word_similarity(${msgContent}, ${q}) >= ${minSim}`,
+    sql`set_config('pg_trgm.word_similarity_threshold', ${String(minSim)}, true) IS NOT NULL`,
+    sql`${msgContent} <% ${q}`,
     notLike(messages.conversation_id, "debug-%"),
   ];
   if (conversation_id) {
