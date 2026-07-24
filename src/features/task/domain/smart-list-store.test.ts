@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
-import { SMART_LIST_COMPONENT } from "@freeanima/core/db/schema/entity";
+import { SMART_LIST_COMPONENT } from "@freeanima/host/core/db/schema/entity";
 
 describe("listSmartListsMerged", () => {
   afterEach(() => {
@@ -7,7 +7,7 @@ describe("listSmartListsMerged", () => {
   });
 
   test("合并内置 preset 与自定义 entity，均含 filters", async () => {
-    const entityMod = await import("@freeanima/core/db/pg/entity");
+    const entityMod = await import("@freeanima/host/core/db/pg/entity");
     spyOn(entityMod, "listEntities").mockImplementation(async () => [
       {
         id: 42,

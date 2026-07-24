@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
-import { getSubjectKind } from "@freeanima/frontend/portal-sdk/subject-scope-store.ts";
-import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getSubjectKind } from "@freeanima/client/portal-sdk/subject-scope-store.ts";
+import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 export type PomodoroTaskPickRow = {
   id: number;

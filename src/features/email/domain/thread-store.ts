@@ -1,11 +1,11 @@
-import { EMAIL_THREAD_COMPONENT, asEmailThread } from "@freeanima/core/db/schema/entity";
+import { EMAIL_THREAD_COMPONENT, asEmailThread } from "@freeanima/host/core/db/schema/entity";
 
 import {
   createEntity,
   getEntity,
   searchEntities,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/pg/entity";
 import { worldIdForAccount, worldIdForThread } from "./email-world.ts";
 import type { EmailThreadListOpts, EmailThreadRow, EmailThreadUpsertInput } from "./types.ts";
 

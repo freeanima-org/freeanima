@@ -1,12 +1,12 @@
 import { describe, expect, mock, test } from "bun:test";
 
-import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
+import type { VerifiedServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
 
 const verifyServiceApiToken = mock(
   async (_raw: string): Promise<VerifiedServiceApiToken | null> => null,
 );
 
-mock.module("@freeanima/core/db/pg/service-api-token", () => ({
+mock.module("@freeanima/host/core/db/pg/service-api-token", () => ({
   verifyServiceApiToken,
 }));
 

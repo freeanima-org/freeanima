@@ -3,7 +3,7 @@ import {
   PROJECT_COMPONENT,
   TASK_ITEM_COMPONENT,
   TASK_LIST_COMPONENT,
-} from "@freeanima/core/db/schema/entity";
+} from "@freeanima/host/core/db/schema/entity";
 
 function entityRow(id: number, primary: string, body: Record<string, unknown>, title = "x") {
   return {
@@ -30,7 +30,7 @@ describe("updateTaskItem ownership XOR", () => {
   });
 
   test("移入项目时清空 list_id", async () => {
-    const entityMod = await import("@freeanima/core/db/pg/entity");
+    const entityMod = await import("@freeanima/host/core/db/pg/entity");
     spyOn(entityMod, "getEntity").mockImplementation(async (id: number) => {
       if (id === 1) {
         return entityRow(1, TASK_ITEM_COMPONENT, {
@@ -102,7 +102,7 @@ describe("updateTaskItem ownership XOR", () => {
   });
 
   test("离开项目未传 list_id 时拒绝", async () => {
-    const entityMod = await import("@freeanima/core/db/pg/entity");
+    const entityMod = await import("@freeanima/host/core/db/pg/entity");
     spyOn(entityMod, "getEntity").mockResolvedValue(
       entityRow(1, TASK_ITEM_COMPONENT, {
         list_id: null,
@@ -129,7 +129,7 @@ describe("releaseTasksFromProject", () => {
   });
 
   test("释放时写入默认清单 list_id", async () => {
-    const entityMod = await import("@freeanima/core/db/pg/entity");
+    const entityMod = await import("@freeanima/host/core/db/pg/entity");
     spyOn(entityMod, "listEntities").mockResolvedValue([
       entityRow(
         2,
@@ -188,7 +188,7 @@ describe("updateProject terminal release_tasks", () => {
   });
 
   test("终态默认不释放任务", async () => {
-    const entityMod = await import("@freeanima/core/db/pg/entity");
+    const entityMod = await import("@freeanima/host/core/db/pg/entity");
     spyOn(entityMod, "getEntity").mockResolvedValue(
       entityRow(
         10,

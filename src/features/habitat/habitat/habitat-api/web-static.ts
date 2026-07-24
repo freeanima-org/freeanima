@@ -1,7 +1,7 @@
 import { existsSync, statSync } from "node:fs";
 import { extname, join, normalize } from "node:path";
 
-import { readBuildMetaFile, type ComponentBuildMeta } from "@freeanima/core/config/build-meta";
+import { readBuildMetaFile, type ComponentBuildMeta } from "@freeanima/host/core/config/build-meta";
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 
 /** Web UI 在 Habitat 上的 URL 前缀 */

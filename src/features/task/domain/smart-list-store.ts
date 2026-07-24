@@ -1,14 +1,14 @@
-import { SMART_LIST_COMPONENT, asSmartList } from "@freeanima/core/db/schema/entity";
-import type { TaskItemSearchFilters } from "@freeanima/core/db/schema";
-import { assertEntityInWorld } from "@freeanima/core/db/pg/entity";
-import { omitUndefined } from "@freeanima/core/util";
+import { SMART_LIST_COMPONENT, asSmartList } from "@freeanima/host/core/db/schema/entity";
+import type { TaskItemSearchFilters } from "@freeanima/host/core/db/schema";
+import { assertEntityInWorld } from "@freeanima/host/core/db/pg/entity";
+import { omitUndefined } from "@freeanima/host/core/util";
 import {
   createEntity,
   deleteEntity,
   getEntity,
   listEntities,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/pg/entity";
 
 import { listBuiltinSmartListRows } from "./smart-list-presets.ts";
 import type { SmartListRow } from "./types.ts";

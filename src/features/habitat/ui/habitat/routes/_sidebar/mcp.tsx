@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Badge, Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import {
   getMcpStatus,

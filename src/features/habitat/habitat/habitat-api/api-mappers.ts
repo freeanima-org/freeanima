@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/runtime/loop";
+import type { StreamEvent } from "@freeanima/host/engine/loop";
 import type { StreamApiEvent } from "@freeanima/features/habitat/habitat/habitat-api/api";
 
 export function mapStreamEventToApi(ev: StreamEvent): StreamApiEvent {

@@ -1,8 +1,8 @@
-import { PROJECT_COMPONENT, asProject } from "@freeanima/core/db/schema/entity";
+import { PROJECT_COMPONENT, asProject } from "@freeanima/host/core/db/schema/entity";
 import {
   countPendingTaskItemsGroupedByProjectId,
   listEntities,
-} from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/pg/entity";
 
 import type { ProjectListOpts } from "./types.ts";
 

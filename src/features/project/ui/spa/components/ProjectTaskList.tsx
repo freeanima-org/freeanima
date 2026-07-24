@@ -16,8 +16,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { EmptyState, TaskItemRowView } from "@freeanima/frontend/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+import { EmptyState, TaskItemRowView } from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { useMemo, useState } from "react";
 
 import type { TaskItemRow } from "../lib/api.ts";

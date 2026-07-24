@@ -2,9 +2,9 @@ import {
   POMODORO_SESSION_COMPONENT,
   asPomodoroSession,
   type PomodoroPhase,
-} from "@freeanima/core/db/schema/entity";
-import { createEntity, searchEntities } from "@freeanima/core/db/pg/entity";
-import { formatCstIso } from "@freeanima/core/util";
+} from "@freeanima/host/core/db/schema/entity";
+import { createEntity, searchEntities } from "@freeanima/host/core/db/pg/entity";
+import { formatCstIso } from "@freeanima/host/core/util";
 
 import { createPomodoroTaskFocusSegments } from "./focus-store.ts";
 import type {

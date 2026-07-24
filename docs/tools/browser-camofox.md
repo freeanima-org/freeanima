@@ -52,4 +52,4 @@ Unset booleans are treated as **on** (`!== false`). Set explicitly to `false` to
 
 ## See also
 
-Implementation: `src/capabilities/tools/browser-camofox.ts`.
+Implementation: `src/host/capabilities/tools/browser-camofox.ts`.

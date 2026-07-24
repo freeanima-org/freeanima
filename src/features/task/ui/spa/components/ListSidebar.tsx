@@ -1,10 +1,10 @@
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Button, Checkbox, Input } from "@freeanima/frontend/ui-kit";
-import { ContextMenu } from "@freeanima/frontend/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
-import { useDrawerNav } from "@freeanima/frontend/ui-kit/layout";
+import { Button, Checkbox, Input } from "@freeanima/ui-kit";
+import { ContextMenu } from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
+import { useDrawerNav } from "@freeanima/ui-kit/layout";
 import { SearchIcon } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactElement, type ReactNode } from "react";
 
@@ -17,7 +17,7 @@ import {
   sortedArchivedLists,
   writeExpandedFolders,
   type ListTreeNode,
-} from "@freeanima/frontend/ui-kit/lib/task-list-tree.ts";
+} from "@freeanima/ui-kit/lib/task-list-tree.ts";
 import { useTaskDndUi } from "./TaskDndRoot.tsx";
 import { EntityIdLabel } from "./EntityIdLabel.tsx";
 

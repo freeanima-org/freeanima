@@ -1,5 +1,5 @@
-import type { FrontendDesktopExport } from "@freeanima/frontend/portal-sdk";
-import { getShellBuildTarget } from "@freeanima/frontend/portal-sdk/shell-build-target.ts";
+import type { FrontendDesktopExport } from "@freeanima/client/portal-sdk";
+import { getShellBuildTarget } from "@freeanima/client/portal-sdk/shell-build-target.ts";
 
 import { startCompanionServer } from "../../server/index.ts";
 import {

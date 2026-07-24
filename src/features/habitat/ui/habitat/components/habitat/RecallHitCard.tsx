@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Badge, Card, CardContent } from "@freeanima/frontend/ui-kit";
+import { Badge, Card, CardContent } from "@freeanima/ui-kit";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { memoryTypeLabel } from "@freeanima/features/habitat/ui/habitat/lib/habitat-status.ts";

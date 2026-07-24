@@ -1,5 +1,5 @@
-import { Button } from "@freeanima/frontend/ui-kit";
-import { canOpenHabitatSettings } from "@freeanima/frontend/portal-sdk/shell-runtime.ts";
+import { Button } from "@freeanima/ui-kit";
+import { canOpenHabitatSettings } from "@freeanima/client/portal-sdk/shell-runtime.ts";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import type { HabitatRpcConnectionState } from "@freeanima/features/habitat/ui/habitat/hooks/useHabitatRpcConnectivity.ts";
 

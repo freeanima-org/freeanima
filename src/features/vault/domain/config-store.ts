@@ -2,8 +2,13 @@ import {
   VAULT_CONFIG_COMPONENT,
   asVaultConfig,
   type VaultConfigBody,
-} from "@freeanima/core/db/schema/entity";
-import { createEntity, getEntity, listEntities, updateEntity } from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/schema/entity";
+import {
+  createEntity,
+  getEntity,
+  listEntities,
+  updateEntity,
+} from "@freeanima/host/core/db/pg/entity";
 
 const CONFIG_TITLE = "__vault_config__";
 

@@ -8,7 +8,7 @@ import {
 import {
   createSemanticMemory,
   searchSemanticMemoryFts,
-} from "@freeanima/core/db/pg/semantic-memory";
+} from "@freeanima/host/core/db/pg/semantic-memory";
 
 describePg("recall hybrid PG", () => {
   const prev = process.env.FREEANIMA_HOME;

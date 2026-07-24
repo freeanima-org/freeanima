@@ -48,7 +48,7 @@ Alert 分两档（同一契约，成对）：
 
 番茄钟阶段结束**不写 inbox**；会话历史由 `pomodoro_session` entity 承担。
 
-实现：`src/frontend/portal-sdk/alert/` + 各端 backend。
+实现：`src/client/portal-sdk/alert/` + 各端 backend。
 
 | 端          | 即时通道                                    | 预登记                           |
 | ----------- | ------------------------------------------- | -------------------------------- |

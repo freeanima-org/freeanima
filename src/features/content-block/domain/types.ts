@@ -2,7 +2,7 @@ import type {
   ContentBlockType,
   NarrativeSignificance,
   NarrativeStatus,
-} from "@freeanima/core/db/schema/entity";
+} from "@freeanima/host/core/db/schema/entity";
 
 export type ContentBlockLimbicInput = {
   valence: number;

@@ -1,4 +1,4 @@
-import { getRepoRoot } from "@freeanima/core/config/repo-root";
+import { getRepoRoot } from "@freeanima/host/core/config/repo-root";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

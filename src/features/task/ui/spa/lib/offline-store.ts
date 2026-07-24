@@ -1,35 +1,35 @@
-import { getSubjectKind } from "@freeanima/frontend/portal-sdk";
-import { getIdMapping, resolveIdFields } from "@freeanima/frontend/portal-sdk/offline-id-map";
+import { getSubjectKind } from "@freeanima/client/portal-sdk";
+import { getIdMapping, resolveIdFields } from "@freeanima/client/portal-sdk/offline-id-map";
 import {
   registerOfflineModule,
   registerOfflineModuleCap,
-} from "@freeanima/frontend/portal-sdk/offline-module-registry";
-import type { RpcModuleAdapter } from "@freeanima/frontend/portal-sdk/offline-module-types";
+} from "@freeanima/client/portal-sdk/offline-module-registry";
+import type { RpcModuleAdapter } from "@freeanima/client/portal-sdk/offline-module-types";
 import {
   enqueueOutboxOp,
   listOutboxOps,
   removeOutboxOp,
   resolveOutboxScope,
   type OfflineOutboxOp,
-} from "@freeanima/frontend/portal-sdk/offline-outbox";
+} from "@freeanima/client/portal-sdk/offline-outbox";
 import {
   flushOfflineModule,
   recordFlushIdMapping,
-} from "@freeanima/frontend/portal-sdk/offline-sync";
+} from "@freeanima/client/portal-sdk/offline-sync";
 import {
   allocateTempId,
   isTempId,
   seedTempIdAllocatorFromIdMap,
-} from "@freeanima/frontend/portal-sdk/offline-temp-id";
-import { preferOnlineWrite } from "@freeanima/frontend/portal-sdk/prefer-online-write";
-import { formatCstIso } from "@freeanima/core/util/time";
-import { omitUndefined } from "@freeanima/core/util";
+} from "@freeanima/client/portal-sdk/offline-temp-id";
+import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-write";
+import { formatCstIso } from "@freeanima/host/core/util/time";
+import { omitUndefined } from "@freeanima/host/core/util";
 import { nextPrependSortOrder } from "@freeanima/features/task/domain/sort-order.ts";
 import type {
   TaskItemRowPayload,
   TaskListRowPayload,
 } from "@freeanima/shared/rpc-contract/frames/task.ts";
-import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import { randomUuid } from "@freeanima/shared/rpc-contract";
 
 import {
@@ -565,7 +565,7 @@ function shouldRefreshAllTaskItems(methods: Set<string>): boolean {
 async function flushTaskOp(
   op: OfflineOutboxOp,
   scope: string,
-): Promise<import("@freeanima/frontend/portal-sdk/offline-module-types").FlushOpOutcome> {
+): Promise<import("@freeanima/client/portal-sdk/offline-module-types").FlushOpOutcome> {
   try {
     const result = (await habitat().call(op.method as "tasklist.create", op.payload as never)) as {
       item?: TaskListRow | TaskItemRow;

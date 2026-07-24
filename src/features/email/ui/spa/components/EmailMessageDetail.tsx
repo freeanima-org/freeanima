@@ -1,5 +1,5 @@
-import { Button, Spinner } from "@freeanima/frontend/ui-kit";
-import { EntityIdLabel } from "@freeanima/frontend/ui-kit/composite";
+import { Button, Spinner } from "@freeanima/ui-kit";
+import { EntityIdLabel } from "@freeanima/ui-kit/composite";
 import { m } from "@paraglide/messages";
 
 import type { EmailMessageRow } from "../lib/api.ts";

@@ -7,7 +7,7 @@ import {
   type OutboxSendStatus,
   updateChatSendText,
 } from "@freeanima/features/chat/ui/spa/lib/offline-send-store.ts";
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/host/core/util";
 
 type OutboxState = {
   entries: Record<string, ChatOutboxEntry>;

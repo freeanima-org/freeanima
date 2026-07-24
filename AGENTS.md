@@ -7,13 +7,13 @@
 
 `freeanima` (FreeAnima) is an agent runtime: **product / Habitat logic is TypeScript-only**; **Portal Shell** is **Tauri**（Rust host + shared `web/dist-*` UI）。Product name for the long-running process is **Habitat**（栖息地）; Shell / MCP are **Portal**（入口）. Source: `just dev` / `just dev habitat`；standalone: `anima service`（协议侧仍为 Habitat RPC `/rpc/v1` + MCP `/mcp` + engine）; UI from `src/app/shell/tauri` + `src/app/shell/web`. Naming: [`docs/concepts/architecture.md`](docs/concepts/architecture.md) Product naming + [`i18n/glossary.md`](i18n/glossary.md). Shell rules: [`.agent/rules/tauri-shell.md`](.agent/rules/tauri-shell.md).
 
-| Capability     | Highlights                                                                                                                                                                                                                                                        |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                                                                                                               |
-| Tools          | Local / MCP / ACP flat registration; MCP client `src/capabilities/mcp-client/`、MCP server `/mcp` `src/capabilities/mcp-server/`；unreachable local apps may register remote tools over Habitat RPC；tools `src/capabilities/tools/`、ACP `src/capabilities/acp/` |
-| Secrets        | Vault (User/Agent libraries); bootstrap `env()`；runtime `vault()` / `env()`; LLM **sees metadata, not values**                                                                                                                                                   |
-| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                                                                                                            |
-| Code layout    | 产品代码在 `src/`（`features/`、`app/shell/`、`platform/` 等）— 见 [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)；Desktop/Mobile 安装包内嵌 `web/dist`，浏览器/PWA 用 Habitat `/web/*`                                           |
+| Capability     | Highlights                                                                                                                                                                                                                                                                            |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                                                                                                                                   |
+| Tools          | Local / MCP / ACP flat registration; MCP client `src/host/capabilities/mcp-client/`、MCP server `/mcp` `src/host/capabilities/mcp-server/`；unreachable local apps may register remote tools over Habitat RPC；tools `src/host/capabilities/tools/`、ACP `src/host/capabilities/acp/` |
+| Secrets        | Vault (User/Agent libraries); bootstrap `env()`；runtime `vault()` / `env()`; LLM **sees metadata, not values**                                                                                                                                                                       |
+| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                                                                                                                                |
+| Code layout    | 产品代码在 `src/`（`host/`、`client/`、`ui-kit/`、`features/`、`shared/`、`app/shell/`）— 见 [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)；Desktop/Mobile 安装包内嵌 `web/dist`，浏览器/PWA 用 Habitat `/web/*`                                     |
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 
@@ -83,21 +83,21 @@ just misc memory-sample -- --habitat-url http://127.0.0.1:<habitat> --stage full
 
 ## Doc map
 
-| File                                                                               | Role                                                             |
-| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| [`AGENTS.md`](AGENTS.md)                                                           | Bootstrap protocol, product & code principles (this file)        |
-| [`.agent/rules/`](.agent/rules/README.md)                                          | Implementation constraints (layers, tests, coding, DB, packages) |
-| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues)                 | Actionable tasks and discussions                                 |
-| [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                   | Architecture principles and direction                            |
-| [`docs/concepts/environment-awareness.md`](docs/concepts/environment-awareness.md) | Environment + health baseline (session prompt + change notify)   |
-| [`docs/concepts/anima-uri.md`](docs/concepts/anima-uri.md)                         | Anima URI（entity 定位 / overlay；id 入库、URI 在 UI）           |
-| [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)     | Repo layout Phase 0 audit; shared/frontend migration target      |
-| [`docs/concepts/temporal-summary.md`](docs/concepts/temporal-summary.md)           | Objective time digests (day/month/year; peer rollup)             |
-| [`docs/concepts/`](docs/concepts/)                                                 | Core concepts (memory, self layer, etc.)                         |
-| [`docs/guide/`](docs/guide/)                                                       | Usage and maintenance (security, database ops)                   |
-| [`docs/features/`](docs/features/)                                                 | Major product capabilities                                       |
-| [`docs/guide/habitat-rpc.md`](docs/guide/habitat-rpc.md)                           | Habitat RPC transport + remote tool registration                 |
-| [`docs/tools/`](docs/tools/)                                                       | General/minor built-in tools                                     |
+| File                                                                               | Role                                                              |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| [`AGENTS.md`](AGENTS.md)                                                           | Bootstrap protocol, product & code principles (this file)         |
+| [`.agent/rules/`](.agent/rules/README.md)                                          | Implementation constraints (layers, tests, coding, DB, packages)  |
+| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues)                 | Actionable tasks and discussions                                  |
+| [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                   | Architecture principles and direction                             |
+| [`docs/concepts/environment-awareness.md`](docs/concepts/environment-awareness.md) | Environment + health baseline (session prompt + change notify)    |
+| [`docs/concepts/anima-uri.md`](docs/concepts/anima-uri.md)                         | Anima URI（entity 定位 / overlay；id 入库、URI 在 UI）            |
+| [`docs/concepts/repository-topology.md`](docs/concepts/repository-topology.md)     | Repo layout Phase 1 host/client；ui-kit∥shared；i18n site/ui/host |
+| [`docs/concepts/temporal-summary.md`](docs/concepts/temporal-summary.md)           | Objective time digests (day/month/year; peer rollup)              |
+| [`docs/concepts/`](docs/concepts/)                                                 | Core concepts (memory, self layer, etc.)                          |
+| [`docs/guide/`](docs/guide/)                                                       | Usage and maintenance (security, database ops)                    |
+| [`docs/features/`](docs/features/)                                                 | Major product capabilities                                        |
+| [`docs/guide/habitat-rpc.md`](docs/guide/habitat-rpc.md)                           | Habitat RPC transport + remote tool registration                  |
+| [`docs/tools/`](docs/tools/)                                                       | General/minor built-in tools                                      |
 
 ---
 
@@ -137,23 +137,23 @@ When sources conflict: **implemented behavior** follows code (and topic docs tha
 
 ## Docs to update when code changes
 
-| Change type                                                | Update                                                                                                                                                                                   |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PG schema / DDL                                            | [`src/core/db/schema/`](src/core/db/schema/) + [`.agent/rules/coding.md`](.agent/rules/coding.md) — **include data backfill in the same migration SQL when dropping or renaming tables** |
-| PG query conventions (ORM vs execute)                      | [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md) — queries in `src/core/db/pg/`; capabilities use `@freeanima/core/db/pg/*` directly (no `engine.repos`)                       |
-| PG ops (install, backup, migrate UX)                       | [`docs/guide/database.md`](docs/guide/database.md) · [`docs/guide/remote-access.md`](docs/guide/remote-access.md) for Token / LAN                                                        |
-| Layer deps / composition root / Registry                   | [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md)                                                                                                                             |
-| Test strategy / mock tiers                                 | [`.agent/rules/testing.md`](.agent/rules/testing.md) + [`tests/README.md`](tests/README.md)                                                                                              |
-| Memory pipeline / retrieval                                | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                                                                                                                      |
-| Security / threat surface                                  | [`docs/guide/security.md`](docs/guide/security.md) + architecture                                                                                                                        |
-| Architecture principles                                    | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                                                                                                         |
-| Principle / direction / philosophy correction (any source) | Triage per [Principle & direction maintenance](#principle--direction-maintenance); same PR as code                                                                                       |
-| New RFC package / rename                                   | [`.agent/rules/packages.md`](.agent/rules/packages.md)                                                                                                                                   |
-| Release                                                    | [`.agent/rules/release.md`](.agent/rules/release.md)                                                                                                                                     |
-| Portal 壳（Tauri）打包 / ShellApi / 双轨发版               | [`.agent/rules/tauri-shell.md`](.agent/rules/tauri-shell.md)                                                                                                                             |
-| Compression algorithm                                      | [`.agent/rules/compression.md`](.agent/rules/compression.md)                                                                                                                             |
-| UI / docs i18n (Paraglide, po4a, PO)                       | [`.agent/rules/i18n.md`](.agent/rules/i18n.md)                                                                                                                                           |
-| Task done                                                  | close corresponding GitHub Issue; user-visible changes use Conventional Commits                                                                                                          |
+| Change type                                                | Update                                                                                                                                                                                             |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PG schema / DDL                                            | [`src/host/core/db/schema/`](src/host/core/db/schema/) + [`.agent/rules/coding.md`](.agent/rules/coding.md) — **include data backfill in the same migration SQL when dropping or renaming tables** |
+| PG query conventions (ORM vs execute)                      | [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md) — queries in `src/host/core/db/pg/`; capabilities use `@freeanima/host/core/db/pg/*` directly (no `engine.repos`)                       |
+| PG ops (install, backup, migrate UX)                       | [`docs/guide/database.md`](docs/guide/database.md) · [`docs/guide/remote-access.md`](docs/guide/remote-access.md) for Token / LAN                                                                  |
+| Layer deps / composition root / Registry                   | [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md)                                                                                                                                       |
+| Test strategy / mock tiers                                 | [`.agent/rules/testing.md`](.agent/rules/testing.md) + [`tests/README.md`](tests/README.md)                                                                                                        |
+| Memory pipeline / retrieval                                | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                                                                                                                                |
+| Security / threat surface                                  | [`docs/guide/security.md`](docs/guide/security.md) + architecture                                                                                                                                  |
+| Architecture principles                                    | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                                                                                                                   |
+| Principle / direction / philosophy correction (any source) | Triage per [Principle & direction maintenance](#principle--direction-maintenance); same PR as code                                                                                                 |
+| New RFC package / rename                                   | [`.agent/rules/packages.md`](.agent/rules/packages.md)                                                                                                                                             |
+| Release                                                    | [`.agent/rules/release.md`](.agent/rules/release.md)                                                                                                                                               |
+| Portal 壳（Tauri）打包 / ShellApi / 双轨发版               | [`.agent/rules/tauri-shell.md`](.agent/rules/tauri-shell.md)                                                                                                                                       |
+| Compression algorithm                                      | [`.agent/rules/compression.md`](.agent/rules/compression.md)                                                                                                                                       |
+| UI / docs i18n (Paraglide, po4a, PO)                       | [`.agent/rules/i18n.md`](.agent/rules/i18n.md)                                                                                                                                                     |
+| Task done                                                  | close corresponding GitHub Issue; user-visible changes use Conventional Commits                                                                                                                    |
 
 Tool tables, module trees, API lists **are not maintained in docs** — use registration code and service router as source of truth.
 

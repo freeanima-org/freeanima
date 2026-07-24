@@ -1,6 +1,6 @@
 /** bundled 客户端（Tauri / 本地 Web dev）跨 origin 访问 Habitat REST */
-import { collectHttpCorsOrigins } from "@freeanima/core/config";
-import { getBootstrapHttpForProcess } from "@freeanima/platform/config/bootstrap-http-cache";
+import { collectHttpCorsOrigins } from "@freeanima/host/core/config";
+import { getBootstrapHttpForProcess } from "@freeanima/host/platform/config/bootstrap-http-cache";
 
 /** 本地 WebView / Tauri 自定义协议 origin */
 const ALLOWED_ORIGIN =

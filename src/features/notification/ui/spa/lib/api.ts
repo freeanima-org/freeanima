@@ -2,7 +2,7 @@ import {
   readOfflineCache,
   resolveHabitatCacheScope,
   writeOfflineCache,
-} from "@freeanima/frontend/portal-sdk/offline-cache";
+} from "@freeanima/client/portal-sdk/offline-cache";
 import type {
   NotificationListInput,
   NotificationListOutput,
@@ -10,7 +10,7 @@ import type {
   NotificationRecipientsOutput,
 } from "@freeanima/shared/rpc-contract";
 
-import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 export type NotificationRow = NotificationListOutput["items"][number];
 

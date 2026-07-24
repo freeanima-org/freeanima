@@ -1,4 +1,4 @@
-import { Button } from "@freeanima/frontend/ui-kit";
+import { Button } from "@freeanima/ui-kit";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 
 type MemoryListPaginationProps = {

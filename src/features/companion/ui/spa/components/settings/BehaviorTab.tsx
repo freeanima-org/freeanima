@@ -1,9 +1,5 @@
-import { Card, CardContent, Input } from "@freeanima/frontend/ui-kit";
-import {
-  FormFieldLabel,
-  FormFieldset,
-  FormToggle,
-} from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
+import { Card, CardContent, Input } from "@freeanima/ui-kit";
+import { FormFieldLabel, FormFieldset, FormToggle } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 import type { CompanionBehavior } from "@freeanima/features/companion/shared/companion-schema.ts";
 

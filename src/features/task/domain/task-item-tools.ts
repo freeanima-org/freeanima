@@ -1,8 +1,8 @@
-import { asTaskItem } from "@freeanima/core/db/schema/entity";
-import type { ToolSetRegistry } from "@freeanima/core/tool";
-import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
-import { getEntity } from "@freeanima/core/db/pg/entity";
-import { omitUndefined } from "@freeanima/core/util";
+import { asTaskItem } from "@freeanima/host/core/db/schema/entity";
+import type { ToolSetRegistry } from "@freeanima/host/core/tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/host/core/tool";
+import { getEntity } from "@freeanima/host/core/db/pg/entity";
+import { omitUndefined } from "@freeanima/host/core/util";
 
 import {
   completeTaskItem,

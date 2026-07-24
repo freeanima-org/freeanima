@@ -6,7 +6,7 @@ describe("listTaskItems filters", () => {
   });
 
   test("传 filters 时走 filter_only 搜索", async () => {
-    const entityMod = await import("@freeanima/core/db/pg/entity");
+    const entityMod = await import("@freeanima/host/core/db/pg/entity");
     const searchSpy = spyOn(entityMod, "searchEntities").mockImplementation(async () => ({
       query: null,
       limit: 500,
@@ -30,7 +30,7 @@ describe("listTaskItems filters", () => {
   });
 
   test("传 project_id 时按项目过滤且不加 in_backlog", async () => {
-    const entityMod = await import("@freeanima/core/db/pg/entity");
+    const entityMod = await import("@freeanima/host/core/db/pg/entity");
     const searchSpy = spyOn(entityMod, "searchEntities").mockImplementation(async () => ({
       query: null,
       limit: 500,
@@ -58,7 +58,7 @@ describe("searchTaskItems filters", () => {
   });
 
   test("传 project_id 时写入 hybrid filters", async () => {
-    const entityMod = await import("@freeanima/core/db/pg/entity");
+    const entityMod = await import("@freeanima/host/core/db/pg/entity");
     const searchSpy = spyOn(entityMod, "searchEntities").mockImplementation(async () => ({
       query: "foo",
       limit: 30,

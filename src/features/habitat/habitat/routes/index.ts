@@ -1,14 +1,14 @@
 import type { z } from "zod";
 
-import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
+import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
 import {
   createServiceApiTokenWithSecret,
   getServiceApiTokenById,
   listServiceApiTokensBySubject,
   revokeServiceApiToken,
-} from "@freeanima/core/db/pg/service-api-token";
-import { omitUndefined } from "@freeanima/core/util";
-import type { HabitatDispatchContext } from "@freeanima/platform/habitat/dispatch.ts";
+} from "@freeanima/host/core/db/pg/service-api-token";
+import { omitUndefined } from "@freeanima/host/core/util";
+import type { HabitatDispatchContext } from "@freeanima/host/platform/habitat/dispatch.ts";
 import { habitatMethodDefs } from "@freeanima/shared/habitat-contract/registry/habitat.ts";
 import {
   defineHabitatRouteFromDef,

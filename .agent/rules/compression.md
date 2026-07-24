@@ -96,16 +96,16 @@ Legacy meta **read-time migration** (`parseCompressionState`):
 
 ## Implementation Entry Points
 
-| Module                                       | Responsibility                                                                                |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `src/core/compress/compressor.ts`            | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |
-| `src/core/compress/compression-config.ts`    | Config and unified `context_window` resolution (config > default > catalog)                   |
-| `src/core/compress/compression-summary.ts`   | Summary LLM                                                                                   |
-| `src/core/compress/compression-tool-loop.ts` | `isInToolLoop`                                                                                |
-| `runtime/src/turn/summarize-conversation.ts` | `summarizeConversation` (manual `/summarize`)                                                 |
-| `runtime/src/conversation/conversation.ts`   | `recompressConversation`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression`            |
-| `runtime/src/loop/engine.ts`                 | Emergency call site                                                                           |
-| `src/platform/runtime/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy                                                            |
+| Module                                            | Responsibility                                                                                |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `src/host/core/compress/compressor.ts`            | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |
+| `src/host/core/compress/compression-config.ts`    | Config and unified `context_window` resolution (config > default > catalog)                   |
+| `src/host/core/compress/compression-summary.ts`   | Summary LLM                                                                                   |
+| `src/host/core/compress/compression-tool-loop.ts` | `isInToolLoop`                                                                                |
+| `runtime/src/turn/summarize-conversation.ts`      | `summarizeConversation` (manual `/summarize`)                                                 |
+| `runtime/src/conversation/conversation.ts`        | `recompressConversation`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression`            |
+| `runtime/src/loop/engine.ts`                      | Emergency call site                                                                           |
+| `src/host/platform/service/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy                                                            |
 
 Manual: `/compress` (`--force` ignores hysteresis). `/summarize` — manual collapse when idle (`l2=l3=l4`), incremental summary merge, awaits summary LLM (see [`docs/concepts/compression.md`](../../docs/concepts/compression.md)).
 

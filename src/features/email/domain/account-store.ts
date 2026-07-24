@@ -2,7 +2,7 @@ import {
   EMAIL_ACCOUNT_COMPONENT,
   asEmailAccount,
   type EmailAccountBody,
-} from "@freeanima/core/db/schema/entity";
+} from "@freeanima/host/core/db/schema/entity";
 import {
   assertEntityInWorld,
   createEntity,
@@ -11,7 +11,7 @@ import {
   getEntity,
   listEntities,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/pg/entity";
 import { removeEmailAccountAttachments } from "./attachment-store.ts";
 import type { EmailAccountCreateInput, EmailAccountRow, EmailAccountUpdateInput } from "./types.ts";
 

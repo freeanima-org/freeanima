@@ -1,10 +1,10 @@
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/host/core/util";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 import {
   POMODORO_ACTIVE_CHANGED_EVENT,
   type PomodoroActiveChangedEvent,
 } from "@freeanima/shared/rpc-contract/frames/pomodoro";
-import type { RemoteToolsServerDeps } from "@freeanima/platform/remote-tools/types";
+import type { RemoteToolsServerDeps } from "@freeanima/host/capabilities/outpost/transport/types";
 
 import { pomodoroMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";

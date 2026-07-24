@@ -1,4 +1,4 @@
-import type { ToolSetRegistry } from "@freeanima/core/tool";
+import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 
 import { registerTaskItemTools } from "./task-item-tools.ts";
 import { registerTaskListTools } from "./tasklist-tools.ts";

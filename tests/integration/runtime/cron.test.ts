@@ -26,21 +26,21 @@ import {
   stopCronModule,
   computeNextRunAt,
   readOutputRef,
-} from "@freeanima/platform/connectors/cron";
+} from "@freeanima/host/capabilities/connectors/cron";
 import { getActivePgTestContext } from "../../helpers/pg-test.ts";
-import { listNotifications } from "@freeanima/core/db/pg/notifications";
-import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
-import { bindServicePorts } from "@freeanima/platform";
-import { FileConfig } from "@freeanima/platform/config/file-config.ts";
-import { createServiceKernel } from "@freeanima/platform/bootstrap";
-import { createConversationService } from "@freeanima/runtime/conversation";
-import { MaskRegistry } from "@freeanima/features/task/domain/mask";
-import { getAcpManager } from "@freeanima/capabilities/acp";
-import { createAppRuntime } from "@freeanima/platform/runtime/app-runtime";
-import { initRuntimeContext } from "@freeanima/platform/runtime/runtime-context";
-import { registerServiceStores } from "@freeanima/platform";
-import { registerCronNotify } from "@freeanima/platform/ports/cron-notify";
-import { notifyBothRecipients } from "@freeanima/platform/runtime/notification-helpers";
+import { listNotifications } from "@freeanima/host/core/db/pg/notifications";
+import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
+import { bindServicePorts } from "@freeanima/host/platform";
+import { FileConfig } from "@freeanima/host/platform/config/file-config.ts";
+import { createServiceKernel } from "@freeanima/host/platform/bootstrap";
+import { createConversationService } from "@freeanima/host/engine/conversation";
+import { MaskRegistry } from "@freeanima/host/core/mask";
+import { getAcpManager } from "@freeanima/host/capabilities/acp";
+import { createAppRuntime } from "@freeanima/host/platform/service/app-runtime";
+import { initRuntimeContext } from "@freeanima/host/platform/service/runtime-context";
+import { registerServiceStores } from "@freeanima/host/platform";
+import { registerCronNotify } from "@freeanima/host/platform/ports/cron-notify";
+import { notifyBothRecipients } from "@freeanima/host/platform/service/notification-helpers";
 
 describePg("cron", () => {
   let home: string;
@@ -124,7 +124,7 @@ describePg("cron", () => {
     });
 
     const { notifyCronResult, shouldNotifyCronJobResult } =
-      await import("@freeanima/platform/ports/cron-notify");
+      await import("@freeanima/host/platform/ports/cron-notify");
     const quiet = new CronJob({
       id: "t-quiet",
       name: "quiet-job",

@@ -1,7 +1,7 @@
-import { installErrorLogHandlers, logStartupError } from "@freeanima/platform/logging";
+import { installErrorLogHandlers, logStartupError } from "@freeanima/host/platform/logging";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync, spawn } from "node:child_process";
-import { isServerAlive, readStatusFile } from "@freeanima/platform/alive.ts";
+import { isServerAlive, readStatusFile } from "@freeanima/host/platform/alive.ts";
 import {
   apiGet,
   checkServerAlive,
@@ -16,7 +16,7 @@ import {
   writeStatusLine,
 } from "./service-common.ts";
 
-import { REPO_ROOT } from "@freeanima/platform";
+import { REPO_ROOT } from "@freeanima/host/platform";
 import {
   renderSystemdUnit,
   systemdUserAvailable,
@@ -25,7 +25,7 @@ import {
 } from "./systemd-unit.ts";
 import { printServiceRunningStatus } from "./output/service-status-display.ts";
 import { waitForHabitatReadyOrWarn } from "./wait-habitat-ready.ts";
-import { validateBootstrapOnStartup } from "@freeanima/platform/config";
+import { validateBootstrapOnStartup } from "@freeanima/host/platform/config";
 import { runServiceStack } from "./stack/supervisor.ts";
 import { probeWebHealth } from "./web/web-runtime.ts";
 

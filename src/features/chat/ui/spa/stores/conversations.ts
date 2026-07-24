@@ -24,7 +24,7 @@ import {
   writeCachedConversations,
   writeCachedMessages,
 } from "@freeanima/features/chat/ui/spa/lib/offline-cache.ts";
-import { isHabitatFetchAvailable } from "@freeanima/frontend/portal-sdk/habitat-fetch-gate";
+import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
 import { getConversationTail } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import { sortConversationsByUpdatedAt } from "@freeanima/features/chat/ui/spa/lib/sort-conversations.ts";
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";

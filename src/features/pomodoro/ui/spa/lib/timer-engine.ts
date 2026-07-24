@@ -1,13 +1,13 @@
 import type { PomodoroConfigRow } from "./api.ts";
 
-import type { PomodoroActiveState } from "@freeanima/frontend/portal-sdk/pomodoro-active-types.ts";
-import { openWorkFocusSegment } from "@freeanima/frontend/portal-sdk/pomodoro-focus-segments.ts";
+import type { PomodoroActiveState } from "@freeanima/client/portal-sdk/pomodoro-active-types.ts";
+import { openWorkFocusSegment } from "@freeanima/client/portal-sdk/pomodoro-focus-segments.ts";
 import { randomUuid } from "@freeanima/shared/rpc-contract";
 export {
   actualDurationMs,
   effectiveFinishedAtIso,
   effectivePhaseFinishedAtMs,
-} from "@freeanima/frontend/portal-sdk/pomodoro-phase-timing.ts";
+} from "@freeanima/client/portal-sdk/pomodoro-phase-timing.ts";
 
 export type { PomodoroActiveState };
 export type PomodoroPhase = PomodoroActiveState["phase"];

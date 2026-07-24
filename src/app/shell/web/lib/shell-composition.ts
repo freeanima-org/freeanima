@@ -1,9 +1,6 @@
-import type { SettingsBinding } from "@freeanima/frontend/portal-sdk/settings";
-import {
-  getShellKind,
-  type ShellRuntimeKind,
-} from "@freeanima/frontend/portal-sdk/shell-runtime.ts";
-import { getShellBuildTarget } from "@freeanima/frontend/portal-sdk/shell-build-target.ts";
+import type { SettingsBinding } from "@freeanima/client/portal-sdk/settings";
+import { getShellKind, type ShellRuntimeKind } from "@freeanima/client/portal-sdk/shell-runtime.ts";
+import { getShellBuildTarget } from "@freeanima/client/portal-sdk/shell-build-target.ts";
 
 import { createWebSettingsBindings } from "./settings-registry.ts";
 import { createWebSettingsStores } from "./settings-stores.ts";

@@ -2,8 +2,8 @@ import { createHash } from "node:crypto";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { homePath } from "@freeanima/core/config/paths";
-import type { EmailMessageAttachmentMeta } from "@freeanima/core/db/schema/entity";
+import { homePath } from "@freeanima/host/core/config/paths";
+import type { EmailMessageAttachmentMeta } from "@freeanima/host/core/db/schema/entity";
 
 import type { ParsedEmailAttachment } from "./mime-parse.ts";
 

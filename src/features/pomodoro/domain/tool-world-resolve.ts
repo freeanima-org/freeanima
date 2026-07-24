@@ -1,4 +1,4 @@
-import { resolveSubjectWorldId } from "@freeanima/core/config";
+import { resolveSubjectWorldId } from "@freeanima/host/core/config";
 import type { PomodoroSubjectKind } from "./types.ts";
 
 export const WORLD_ID_OPTIONAL = {

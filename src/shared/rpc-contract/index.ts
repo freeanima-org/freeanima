@@ -7,7 +7,7 @@ export {
   HABITAT_RPC_VERSION,
 } from "./protocol.ts";
 export type { RpcEnvelope, RpcProtocolError } from "./protocol.ts";
-export { randomUuid } from "@freeanima/kernel/random-uuid.ts";
+export { randomUuid } from "@freeanima/host/kernel/random-uuid.ts";
 
 export {
   normalizeAppSlug,

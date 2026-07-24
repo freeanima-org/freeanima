@@ -1,4 +1,4 @@
-import type { SettingsSection } from "@freeanima/frontend/portal-sdk/settings";
+import type { SettingsSection } from "@freeanima/client/portal-sdk/settings";
 
 const companionHubPanelLoad = () =>
   import("@freeanima/features/companion/ui/spa/settings/CompanionSettingsSection.tsx");

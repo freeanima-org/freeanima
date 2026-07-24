@@ -1,6 +1,6 @@
 import { simpleParser, type AddressObject, type ParsedMail } from "mailparser";
 
-import type { EmailContentType } from "@freeanima/core/db/schema/entity";
+import type { EmailContentType } from "@freeanima/host/core/db/schema/entity";
 
 export type ParsedEmailAttachment = {
   filename: string;

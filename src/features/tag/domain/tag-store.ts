@@ -1,9 +1,9 @@
-import { entities } from "@freeanima/core/db/schema";
-import { TAG_COMPONENT, asTag } from "@freeanima/core/db/schema/entity";
-import { assertEntityInWorld } from "@freeanima/core/db/pg/entity";
-import { getDb } from "@freeanima/core/db/pg/client";
-import { suggestTagsByPrimaryComponent, type TagSuggestion } from "@freeanima/core/db/pg/tag";
-import { omitUndefined } from "@freeanima/core/util";
+import { entities } from "@freeanima/host/core/db/schema";
+import { TAG_COMPONENT, asTag } from "@freeanima/host/core/db/schema/entity";
+import { assertEntityInWorld } from "@freeanima/host/core/db/pg/entity";
+import { getDb } from "@freeanima/host/core/db/pg/client";
+import { suggestTagsByPrimaryComponent, type TagSuggestion } from "@freeanima/host/core/db/pg/tag";
+import { omitUndefined } from "@freeanima/host/core/util";
 import {
   createEntity,
   deleteEntity,
@@ -11,7 +11,7 @@ import {
   listEntities,
   searchEntities,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/pg/entity";
 import { and, eq, ne, sql } from "drizzle-orm";
 
 import type { TagCreateInput, TagRow, TagSearchOpts, TagUpdateInput } from "./types.ts";

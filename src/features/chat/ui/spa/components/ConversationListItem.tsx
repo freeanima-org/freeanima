@@ -1,6 +1,6 @@
 import { useRef, type ReactElement } from "react";
-import { ContextMenu, useLongPress } from "@freeanima/frontend/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+import { ContextMenu, useLongPress } from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import type { ConversationListItem as ConversationListEntry } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 
 type ConversationListItemProps = {

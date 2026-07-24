@@ -1,7 +1,7 @@
-import { mountShellUi } from "@freeanima/frontend/app-ui/spa/mount.tsx";
+import { mountShellUi } from "@freeanima/client/app-frame/spa/mount.tsx";
 
 // oxlint-disable-next-line import/no-unassigned-import -- Vite side-effect stylesheet
-import "@freeanima/frontend/app-ui/spa/styles.css";
+import "@freeanima/client/app-frame/spa/styles.css";
 
 import { PwaNotices } from "../lib/pwa/PwaNotices.tsx";
 import { registerShellAlertBackend } from "../lib/register-alert-backend.ts";

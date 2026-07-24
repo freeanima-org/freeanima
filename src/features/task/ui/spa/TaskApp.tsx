@@ -3,12 +3,12 @@ import {
   readModuleSelection,
   writeModuleSelection,
   launchPomodoroForTask,
-} from "@freeanima/frontend/portal-sdk";
-import type { TaskModuleSelection } from "@freeanima/frontend/portal-sdk";
-import { isHabitatFetchAvailable } from "@freeanima/frontend/portal-sdk/habitat-fetch-gate";
-import { subscribeIdMappings } from "@freeanima/frontend/portal-sdk/offline-id-map";
-import { isTempId } from "@freeanima/frontend/portal-sdk/offline-temp-id";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/frontend/portal-sdk/react.tsx";
+} from "@freeanima/client/portal-sdk";
+import type { TaskModuleSelection } from "@freeanima/client/portal-sdk";
+import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
+import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
+import { isTempId } from "@freeanima/client/portal-sdk/offline-temp-id";
+import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Alert,
   AlertDescription,
@@ -20,7 +20,7 @@ import {
   DialogTitle,
   Input,
   Spinner,
-} from "@freeanima/frontend/ui-kit";
+} from "@freeanima/ui-kit";
 
 import {
   ActionSheet,
@@ -30,8 +30,8 @@ import {
   PullToRefresh,
   QuickAddBar,
   useDetailPanelState,
-} from "@freeanima/frontend/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+} from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { m } from "@paraglide/messages";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
 import { ListSidebar } from "./components/ListSidebar.tsx";
@@ -41,12 +41,12 @@ import {
   BuiltinSmartListSection,
   CustomSmartListSection,
 } from "./components/SmartListSidebarSection.tsx";
-import { MoveToListPicker } from "@freeanima/frontend/ui-kit/composite";
+import { MoveToListPicker } from "@freeanima/ui-kit/composite";
 import { MoveToProjectPicker } from "./components/MoveToProjectPicker.tsx";
 import { SortableTaskList } from "./components/SortableTaskList.tsx";
 import { TaskDetailPanel } from "./components/TaskDetailPanel.tsx";
 import { TaskDndRoot } from "./components/TaskDndRoot.tsx";
-import { ThreeColumnLayout } from "@freeanima/frontend/ui-kit/layout";
+import { ThreeColumnLayout } from "@freeanima/ui-kit/layout";
 import type { TagKnown as TaskTagKnown } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 import { findUnresolvedTaskTagIds } from "./lib/task-tag-filter.ts";
 import { fetchTags } from "@freeanima/features/tag/ui/spa/lib/api.ts";
@@ -107,7 +107,7 @@ import {
   isCompletedOnlyFilters,
   smartListRowKey,
 } from "./lib/task-smart-list-utils.ts";
-import { getParentId, getSiblings } from "@freeanima/frontend/ui-kit/lib/task-list-tree.ts";
+import { getParentId, getSiblings } from "@freeanima/ui-kit/lib/task-list-tree.ts";
 import { sortOrderUpdates, applySortOrderUpdates } from "./lib/reorder.ts";
 import {
   buildItemMenuItems,

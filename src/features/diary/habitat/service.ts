@@ -19,9 +19,9 @@ import {
   type DiarySubjectKind,
 } from "../domain/index.ts";
 
-import { DIARY_ENTRY_COMPONENT } from "@freeanima/core/db/schema";
-import { isPostgresPrimary } from "@freeanima/core/db/pg";
-import { omitUndefined } from "@freeanima/core/util";
+import { DIARY_ENTRY_COMPONENT } from "@freeanima/host/core/db/schema";
+import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
+import { omitUndefined } from "@freeanima/host/core/util";
 import { suggestTags } from "@freeanima/features/tag/domain/index.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 

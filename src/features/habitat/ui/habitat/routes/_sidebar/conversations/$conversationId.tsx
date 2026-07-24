@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Badge, Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { StoredMessagePanel } from "@freeanima/features/habitat/ui/habitat/components/habitat/ConversationMessagePanel.tsx";
 import { AcpProgressDock } from "@freeanima/features/habitat/ui/habitat/components/AcpProgressDock.tsx";
 import { useAcpProgressDock } from "@freeanima/features/habitat/ui/habitat/hooks/useAcpProgressDock.ts";

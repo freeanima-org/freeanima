@@ -1,8 +1,8 @@
-import type { SpeechUnsupportedReason } from "@freeanima/frontend/portal-sdk/speech/adapter-types";
-import { primeHabitatSpeechOutput } from "@freeanima/frontend/portal-sdk/speech/habitat-adapter";
+import type { SpeechUnsupportedReason } from "@freeanima/client/portal-sdk/speech/adapter-types";
+import { primeHabitatSpeechOutput } from "@freeanima/client/portal-sdk/speech/habitat-adapter";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "@freeanima/frontend/ui-kit";
-import { copyText } from "@freeanima/frontend/ui-kit/lib/copy-text.ts";
+import { Button } from "@freeanima/ui-kit";
+import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 import { m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 
 const COPY_FEEDBACK_MS = 3000;

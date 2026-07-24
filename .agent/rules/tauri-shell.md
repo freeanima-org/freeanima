@@ -4,10 +4,10 @@
 
 ## 工程位置
 
-| 路径                       | 作用                                              |
-| -------------------------- | ------------------------------------------------- |
-| `src/app/shell/tauri/`     | 统一 Portal：`src-tauri` + bridge + lib/spa       |
-| `src/frontend/portal-sdk/` | `ShellApi` / `getShellKind()`（`web` \| `tauri`） |
+| 路径                     | 作用                                              |
+| ------------------------ | ------------------------------------------------- |
+| `src/app/shell/tauri/`   | 统一 Portal：`src-tauri` + bridge + lib/spa       |
+| `src/client/portal-sdk/` | `ShellApi` / `getShellKind()`（`web` \| `tauri`） |
 
 开发：`just dev tauri`（桌面）；`just dev tauri-android`（移动）。
 打包：`just pack tauri-linux` / `just pack tauri-windows` / `just pack tauri-android`。

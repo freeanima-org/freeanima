@@ -1,4 +1,4 @@
-import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/core/tool";
+import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/host/core/tool";
 
 const taskItemSchema = z.object({
   id: z.number(),

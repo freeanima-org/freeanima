@@ -1,5 +1,5 @@
 import { randomUuid } from "@freeanima/shared/rpc-contract";
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/host/core/util";
 import {
   enqueueOutboxOp,
   listOutboxOps,
@@ -7,7 +7,7 @@ import {
   resolveOutboxScope,
   type ChatSendOutboxPayload,
   type OfflineOutboxOp,
-} from "@freeanima/frontend/portal-sdk/offline-outbox";
+} from "@freeanima/client/portal-sdk/offline-outbox";
 
 export type OutboxSendStatus = "pending" | "sending" | "failed" | "stale";
 

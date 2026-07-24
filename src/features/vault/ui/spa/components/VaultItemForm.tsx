@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, FormField, Input, Spinner, Textarea } from "@freeanima/frontend/ui-kit";
+import { Button, FormField, Input, Spinner, Textarea } from "@freeanima/ui-kit";
 import { normalizeTotpSecret } from "@freeanima/shared/vault-crypto";
 
 export type VaultItemFormValues = {

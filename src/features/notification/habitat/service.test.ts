@@ -2,9 +2,9 @@ import { describe, expect, it, mock, beforeEach } from "bun:test";
 import type {
   NotificationCreateInput,
   NotificationListOpts,
-} from "@freeanima/core/db/pg/notifications/types";
-import type { NotificationRow } from "@freeanima/core/db/schema/rows";
-import { DEFAULT_NOTIFICATION_RECIPIENT_ID } from "@freeanima/core/db/pg/notifications/types";
+} from "@freeanima/host/core/db/pg/notifications/types";
+import type { NotificationRow } from "@freeanima/host/core/db/schema/rows";
+import { DEFAULT_NOTIFICATION_RECIPIENT_ID } from "@freeanima/host/core/db/pg/notifications/types";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 const rows = new Map<string, NotificationRow>();
@@ -65,7 +65,7 @@ const markPgNotificationReadMock = mock(async (id: string): Promise<Notification
   return updated;
 });
 
-mock.module("@freeanima/core/db/pg/notifications", () => ({
+mock.module("@freeanima/host/core/db/pg/notifications", () => ({
   createNotification: createPgNotificationMock,
   listNotifications: listPgNotificationsMock,
   countNotifications: countNotificationsMock,

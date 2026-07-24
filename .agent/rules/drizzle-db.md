@@ -1,32 +1,32 @@
 # Drizzle / PostgreSQL query conventions
 
-Repository query patterns for `@freeanima/core/db/pg`. Schema DDL and migrations → [`coding.md`](coding.md) § PG migrations.
+Repository query patterns for `@freeanima/host/core/db/pg`. Schema DDL and migrations → [`coding.md`](coding.md) § PG migrations.
 
-**Conflict priority**: implementation in `src/core/db/pg/` > this file.
+**Conflict priority**: implementation in `src/host/core/db/pg/` > this file.
 
 ---
 
 ## Scope
 
-| In scope                                         | Out of scope                                                                                |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| `src/core/db/pg/` repository / FTS query code    | Migration DDL (`db:generate`, `snapshot.json`) — see [`coding.md`](coding.md)               |
-| ORM query patterns, type safety, dynamic filters | Product memory pipeline — see [`docs/concepts/memory.md`](../../docs/concepts/memory.md)    |
-| Repo transform (non-trivial joins)               | User PG install, backup, ops — see [`docs/guide/database.md`](../../docs/guide/database.md) |
+| In scope                                           | Out of scope                                                                                |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `src/host/core/db/pg/` repository / FTS query code | Migration DDL (`db:generate`, `snapshot.json`) — see [`coding.md`](coding.md)               |
+| ORM query patterns, type safety, dynamic filters   | Product memory pipeline — see [`docs/concepts/memory.md`](../../docs/concepts/memory.md)    |
+| Repo transform (non-trivial joins)                 | User PG install, backup, ops — see [`docs/guide/database.md`](../../docs/guide/database.md) |
 
-Driver: `drizzle-orm/bun-sql/postgres` via [`src/core/db/pg/client.ts`](../../src/core/db/pg/client.ts).
+Driver: `drizzle-orm/bun-sql/postgres` via [`src/host/core/db/pg/client.ts`](../../src/host/core/db/pg/client.ts).
 
 Pool（`FREEANIMA_PG_POOL_*`）：`idleTimeout` **默认 0**。Bun ≤1.3.14 会把进行中的查询误杀为 `ERR_POSTGRES_IDLE_TIMEOUT`（[oven-sh/bun#30646](https://github.com/oven-sh/bun/issues/30646)）；勿在未确认 Bun 已修复前把默认改回 30。
 
 Bun SQL `prepare` **保持默认 true**。设 `prepare: false` 时 jsonb 参数会变成 `[object Object]`（`entities.body` 等插入失败）。并发偶发 `ERR_POSTGRES_UNSUPPORTED_INTEGER_SIZE`（[oven-sh/bun#16774](https://github.com/oven-sh/bun/issues/16774)）是驱动竞态，**不能**用关 prepare 规避。
 
-PG repository 实现位于 `src/core/db/pg/`（按域分子目录）；schema / row 类型 SSOT 在 `@freeanima/core/db`。`src/capabilities/*` 可直接 import `@freeanima/core/db/pg/*` 与 `@freeanima/core/db/schema`（见 [`code-layers.md`](code-layers.md)）。
+PG repository 实现位于 `src/host/core/db/pg/`（按域分子目录）；schema / row 类型 SSOT 在 `@freeanima/host/core/db`。`src/host/capabilities/*` 可直接 import `@freeanima/host/core/db/pg/*` 与 `@freeanima/host/core/db/schema`（见 [`code-layers.md`](code-layers.md)）。
 
 ---
 
 ## Decision tree: ORM only
 
-All queries in `src/core/db/pg/` and `tests/integration/` use Drizzle ORM — **`db.execute` is forbidden**（约定；review 把关）。
+All queries in `src/host/core/db/pg/` and `tests/integration/` use Drizzle ORM — **`db.execute` is forbidden**（约定；review 把关）。
 
 | Tier                         | When                                                                              | How                                                                                      |
 | ---------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
@@ -43,12 +43,12 @@ Do **not** use `drizzleSql.raw` with user-controlled input.
 
 `drizzle-orm/bun-sql` **不能**把 JS `string[]` 可靠绑成 PostgreSQL `text[]`。在 `sql` / `drizzleSql` 片段里写 `ANY(${ids})`、`?| ${ids}`、`?& ${ids}`、`&& ${ids}`（`ids: string[]`）会把参数绑成标量，运行时报错（典型：`op ANY/ALL (array) requires array on right side`）。
 
-| Prefer                                                                         | When                               |
-| ------------------------------------------------------------------------------ | ---------------------------------- |
-| `inArray(column, ids)`                                                         | 普通列 IN / = ANY（Tier 1）        |
-| `pgTextArray(ids)` → [`utils/pg-sql.ts`](../../src/core/db/pg/utils/pg-sql.ts) | 必须在 `sql` 里用 `ANY` / jsonb `? | `/ array`&&` |
-| `IN (${sql.join(ids.map((id) => sql`${id}`), sql`, `)})`                       | 标量展开，无数组参数               |
-| `ARRAY[${one}]::text[]`                                                        | 单元素字面量（如 `components @>`） |
+| Prefer                                                                              | When                               |
+| ----------------------------------------------------------------------------------- | ---------------------------------- |
+| `inArray(column, ids)`                                                              | 普通列 IN / = ANY（Tier 1）        |
+| `pgTextArray(ids)` → [`utils/pg-sql.ts`](../../src/host/core/db/pg/utils/pg-sql.ts) | 必须在 `sql` 里用 `ANY` / jsonb `? | `/ array`&&` |
+| `IN (${sql.join(ids.map((id) => sql`${id}`), sql`, `)})`                            | 标量展开，无数组参数               |
+| `ARRAY[${one}]::text[]`                                                             | 单元素字面量（如 `components @>`） |
 
 ```typescript
 // bad
@@ -75,13 +75,13 @@ export type SelfBlockRow = typeof selfBlocks.$inferSelect;
 // or re-export from core/src/db/schema/rows/
 ```
 
-Thin exports live in [`src/core/db/schema/rows/`](../../src/core/db/schema/rows/). Ports re-export these types; **no per-table mapper** for 1:1 CRUD.
+Thin exports live in [`src/host/core/db/schema/rows/`](../../src/host/core/db/schema/rows/). Ports re-export these types; **no per-table mapper** for 1:1 CRUD.
 
 Patch objects: `Partial<typeof {table}.$inferInsert>`.
 
 ### Time columns
 
-Use [`pgTimestamptz`](../../src/core/db/schema/columns/pg-timestamptz.ts) in schema — application code reads/writes **`Date`**. JSON API boundary: Habitat RPC REST serializes `Date` → ISO string; Habitat `unwrap()` calls [`reviveDates`](../../src/core/util/date-json.ts).
+Use [`pgTimestamptz`](../../src/host/core/db/schema/columns/pg-timestamptz.ts) in schema — application code reads/writes **`Date`**. JSON API boundary: Habitat RPC REST serializes `Date` → ISO string; Habitat `unwrap()` calls [`reviveDates`](../../src/host/core/util/date-json.ts).
 
 Column names: **`created_at` / `updated_at`** (no `created` / `updated` aliases).
 
@@ -95,7 +95,7 @@ FTS / hybrid SELECT use Drizzle `getColumns(table)` or snake_case column refs al
 
 ### Non-trivial transform
 
-Conversation/message assembly lives in [`conversation/transform.ts`](../../src/core/db/pg/conversation/transform.ts) and [`message-transform.ts`](../../src/core/db/pg/conversation/message-transform.ts) — not separate mapper directories.
+Conversation/message assembly lives in [`conversation/transform.ts`](../../src/host/core/db/pg/conversation/transform.ts) and [`message-transform.ts`](../../src/host/core/db/pg/conversation/message-transform.ts) — not separate mapper directories.
 
 ---
 
@@ -103,15 +103,15 @@ Conversation/message assembly lives in [`conversation/transform.ts`](../../src/c
 
 Link to source — do not maintain function inventories here.
 
-| Pattern                                         | Reference                                                                                                                                                               |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Simple CRUD (select / insert / update / delete) | [`semantic-crud-repo.ts`](../../src/core/db/pg/semantic-memory/repos/semantic-crud-repo.ts) — `createSemanticMemory`                                                    |
-| Count via ORM                                   | [`message-repo.ts`](../../src/core/db/pg/conversation/repos/message-repo.ts) — `countMessages`                                                                          |
-| Dynamic filters (`buildListConditions` + `and`) | [`entity-crud-repo.ts`](../../src/core/db/pg/entity/repos/entity-crud-repo.ts); [`semantic-filters.ts`](../../src/core/db/pg/semantic-memory/repos/semantic-filters.ts) |
-| Bun-safe `text[]` (`pgTextArray`)               | [`utils/pg-sql.ts`](../../src/core/db/pg/utils/pg-sql.ts) — `ANY` / jsonb `?                                                                                            | `/ array`&&` |
-| FTS / hybrid search (sql subquery in ORM)       | [`fts/hybrid-raw.ts`](../../src/core/db/pg/fts/hybrid-raw.ts), [`fts/hybrid-search.ts`](../../src/core/db/pg/fts/hybrid-search.ts)                                      |
-| Entity hybrid search (`searchEntities`)         | [`entity/search/entity-search-repo.ts`](../../src/core/db/pg/entity/search/entity-search-repo.ts) — FTS + trgm + vector → RRF                                           |
-| Conversation meta transform                     | [`conversation/transform.ts`](../../src/core/db/pg/conversation/transform.ts)                                                                                           |
+| Pattern                                         | Reference                                                                                                                                                                         |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Simple CRUD (select / insert / update / delete) | [`semantic-crud-repo.ts`](../../src/host/core/db/pg/semantic-memory/repos/semantic-crud-repo.ts) — `createSemanticMemory`                                                         |
+| Count via ORM                                   | [`message-repo.ts`](../../src/host/core/db/pg/conversation/repos/message-repo.ts) — `countMessages`                                                                               |
+| Dynamic filters (`buildListConditions` + `and`) | [`entity-crud-repo.ts`](../../src/host/core/db/pg/entity/repos/entity-crud-repo.ts); [`semantic-filters.ts`](../../src/host/core/db/pg/semantic-memory/repos/semantic-filters.ts) |
+| Bun-safe `text[]` (`pgTextArray`)               | [`utils/pg-sql.ts`](../../src/host/core/db/pg/utils/pg-sql.ts) — `ANY` / jsonb `?                                                                                                 | `/ array`&&` |
+| FTS / hybrid search (sql subquery in ORM)       | [`fts/hybrid-raw.ts`](../../src/host/core/db/pg/fts/hybrid-raw.ts), [`fts/hybrid-search.ts`](../../src/host/core/db/pg/fts/hybrid-search.ts)                                      |
+| Entity hybrid search (`searchEntities`)         | [`entity/search/entity-search-repo.ts`](../../src/host/core/db/pg/entity/search/entity-search-repo.ts) — FTS + trgm + vector → RRF                                                |
+| Conversation meta transform                     | [`conversation/transform.ts`](../../src/host/core/db/pg/conversation/transform.ts)                                                                                                |
 
 **检索与索引**：任何热路径使用 `<=>` / `word_similarity` / `similarity` 的表列，必须同步有 HNSW 或 `gin_trgm_ops`（可在 generate 后的 migration SQL 追加；见 entities / limbic / autobiographical）。表达式唯一索引（email IMAP 等）必须对应 SQL 点查，禁止 `limit N` 扫表 + JS 过滤。
 
@@ -127,13 +127,13 @@ Link to source — do not maintain function inventories here.
 
 Domain search wrappers (`searchTaskItems`, `searchDiaryEntries`, `searchVaultItems`, …) map rows but keep hybrid order unless filtering drops items (e.g. closed task lists).
 
-Table shapes: [`src/core/db/schema/`](../../src/core/db/schema/). Row / input types: [`src/core/db/pg/*/types.ts`](../../src/core/db/pg/) + [`src/core/db/schema/rows/`](../../src/core/db/schema/rows/).
+Table shapes: [`src/host/core/db/schema/`](../../src/host/core/db/schema/). Row / input types: [`src/host/core/db/pg/*/types.ts`](../../src/host/core/db/pg/) + [`src/host/core/db/schema/rows/`](../../src/host/core/db/schema/rows/).
 
 ---
 
 ## Forbidden (new code)
 
-- `db.execute` anywhere under `src/core/db/pg/` or `tests/integration/`
+- `db.execute` anywhere under `src/host/core/db/pg/` or `tests/integration/`
 - `drizzleSql.raw` with user-controlled input
 - 在 `sql` 片段中把 JS `string[]` 直接绑给 `ANY` / `?|` / `?&` / array `&&`（须 `pgTextArray` 或标量展开；见上节）
 - `WHERE true ${rawFragment}` string stitching — use `and(...conditions)` (legacy repos may still use fragments; migrate when touched)

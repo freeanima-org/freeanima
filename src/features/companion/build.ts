@@ -1,11 +1,11 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { getShellBuildTarget } from "@freeanima/frontend/portal-sdk/shell-build-target.ts";
+import { getShellBuildTarget } from "@freeanima/client/portal-sdk/shell-build-target.ts";
 import {
   runSatelliteViteBuild,
   type SatelliteViteOptions,
-} from "../../frontend/app-ui/vite/satellite-vite.ts";
+} from "../../client/app-frame/vite/satellite-vite.ts";
 
 const PKG_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(PKG_DIR, "..", "..", "..");

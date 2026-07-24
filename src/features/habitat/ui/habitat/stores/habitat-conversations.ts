@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { DisplayItem } from "@freeanima/platform/ports/schemas/display";
-import type { ConversationSummary } from "@freeanima/platform/ports/schemas/snapshot";
+import type { DisplayItem } from "@freeanima/shared/rpc-contract/frames/display.ts";
+import type { ConversationSummary } from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
 import {
   getConversationInfo,
   getStoredMessages,

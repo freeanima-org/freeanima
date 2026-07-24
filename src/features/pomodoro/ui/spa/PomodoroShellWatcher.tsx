@@ -1,16 +1,16 @@
 import { useEffect, useRef } from "react";
-import { getSubjectKind } from "@freeanima/frontend/portal-sdk/subject-scope-store.ts";
+import { getSubjectKind } from "@freeanima/client/portal-sdk/subject-scope-store.ts";
 import {
   useHabitatConnection,
   useNetworkOnline,
   useSubjectScope,
-} from "@freeanima/frontend/portal-sdk/react.tsx";
+} from "@freeanima/client/portal-sdk/react.tsx";
 import {
   getPomodoroSyncSnapshot,
   subscribePomodoroSync,
-} from "@freeanima/frontend/portal-sdk/pomodoro-sync-local.ts";
-import { readPomodoroActiveState } from "@freeanima/frontend/portal-sdk/pomodoro-active.ts";
-import { whenPortalHabitatRpcReady } from "@freeanima/frontend/portal-sdk/habitat-rpc-call";
+} from "@freeanima/client/portal-sdk/pomodoro-sync-local.ts";
+import { readPomodoroActiveState } from "@freeanima/client/portal-sdk/pomodoro-active.ts";
+import { whenPortalHabitatRpcReady } from "@freeanima/client/portal-sdk/habitat-rpc-call";
 import {
   POMODORO_ACTIVE_CHANGED_EVENT,
   pomodoroActiveChangedEventSchema,

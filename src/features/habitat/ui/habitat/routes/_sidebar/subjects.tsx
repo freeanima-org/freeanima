@@ -25,9 +25,9 @@ import {
   TableHeader,
   TableRow,
   Textarea,
-} from "@freeanima/frontend/ui-kit";
-import { FormField, FormFieldset } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+} from "@freeanima/ui-kit";
+import { FormField, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import {

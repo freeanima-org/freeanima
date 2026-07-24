@@ -2,10 +2,10 @@ import {
   TASK_LIST_COMPONENT,
   asTaskList,
   type TaskListBody,
-} from "@freeanima/core/db/schema/entity";
-import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/core/db/pg/entity";
-import { withAdvisoryXactLock, type DbSession } from "@freeanima/core/db/pg";
-import { omitUndefined } from "@freeanima/core/util";
+} from "@freeanima/host/core/db/schema/entity";
+import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/host/core/db/pg/entity";
+import { withAdvisoryXactLock, type DbSession } from "@freeanima/host/core/db/pg";
+import { omitUndefined } from "@freeanima/host/core/util";
 import {
   createEntity,
   deleteEntity,
@@ -14,7 +14,7 @@ import {
   listEntities,
   searchEntities,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/pg/entity";
 
 import type {
   TaskListCreateInput,

@@ -10,17 +10,17 @@ import { readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { bindActiveRuntimeConfig } from "@freeanima/platform/config/index.ts";
-import { bindResolvedWorldContext } from "@freeanima/core/config/world-context.ts";
-import { omitUndefined } from "@freeanima/core/util/omit-undefined.ts";
-import { ensureWorldSubjects } from "@freeanima/core/db/pg/entity/subject-world.ts";
+import { bindActiveRuntimeConfig } from "@freeanima/host/platform/config/index.ts";
+import { bindResolvedWorldContext } from "@freeanima/host/core/config/world-context.ts";
+import { omitUndefined } from "@freeanima/host/core/util/omit-undefined.ts";
+import { ensureWorldSubjects } from "@freeanima/host/core/db/pg/entity/subject-world.ts";
 import {
   createEmailAccount,
   findEmailAccountByAddressAndHost,
 } from "@freeanima/features/email/domain/index.ts";
-import { FileConfig } from "@freeanima/platform/config/file-config.ts";
-import { parseYaml } from "@freeanima/platform/config/yaml.ts";
-import { initDatabase, closeDb } from "@freeanima/core/db/pg/index.ts";
+import { FileConfig } from "@freeanima/host/platform/config/file-config.ts";
+import { parseYaml } from "@freeanima/host/platform/config/yaml.ts";
+import { initDatabase, closeDb } from "@freeanima/host/core/db/pg/index.ts";
 
 type LegacyAccount = {
   id: string;

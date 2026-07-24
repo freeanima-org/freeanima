@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/host/core/util";
 
 export const messageSendInputSchema = z.object({
   conversation_id: z.string().min(1),

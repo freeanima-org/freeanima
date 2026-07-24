@@ -3,8 +3,8 @@ import {
   countUnreadConversations,
   listConversationSummariesPage,
   markConversationRead,
-} from "@freeanima/core/db/pg/conversation";
-import { resolveNotificationRecipients } from "@freeanima/core/config";
+} from "@freeanima/host/core/db/pg/conversation";
+import { resolveNotificationRecipients } from "@freeanima/host/core/config";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,

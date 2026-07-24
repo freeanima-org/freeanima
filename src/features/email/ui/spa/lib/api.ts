@@ -1,11 +1,11 @@
-import { getSubjectKind } from "@freeanima/frontend/portal-sdk";
+import { getSubjectKind } from "@freeanima/client/portal-sdk";
 import {
   readOfflineCache,
   resolveHabitatCacheScope,
   writeOfflineCache,
-} from "@freeanima/frontend/portal-sdk/offline-cache";
+} from "@freeanima/client/portal-sdk/offline-cache";
 
-import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 export type EmailAccountRow = {
   id: number;

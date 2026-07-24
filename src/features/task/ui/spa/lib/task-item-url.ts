@@ -1,4 +1,4 @@
-import type { AnimaPresent } from "@freeanima/frontend/portal-sdk/anima-uri.ts";
+import type { AnimaPresent } from "@freeanima/client/portal-sdk/anima-uri.ts";
 
 const ITEM_PARAM = "item";
 const PRESENT_PARAM = "present";

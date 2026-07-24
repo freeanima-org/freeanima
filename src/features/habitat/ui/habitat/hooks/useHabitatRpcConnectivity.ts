@@ -5,7 +5,7 @@ import {
   isHabitatHealthConnected,
   HABITAT_HEALTH_PROBE_TIMEOUT_MS,
   probeHabitatHealthUrl,
-} from "@freeanima/frontend/portal-sdk/habitat-health-probe";
+} from "@freeanima/client/portal-sdk/habitat-health-probe";
 import { hubApiFetch } from "@freeanima/features/habitat/ui/habitat/lib/habitat-fetch.ts";
 import { resetApiClientCache } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { resolveApiOrigin } from "@freeanima/features/habitat/ui/habitat/lib/habitat-origin.ts";

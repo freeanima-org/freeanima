@@ -14,8 +14,8 @@ import {
   parseShellBuildTarget,
   shellWebDistDirName,
   type ShellBuildTarget,
-} from "@freeanima/frontend/portal-sdk/shell-build-target.ts";
-import { resolveBuildChannelFromEnv } from "@freeanima/core/config/build-meta.ts";
+} from "@freeanima/client/portal-sdk/shell-build-target.ts";
+import { resolveBuildChannelFromEnv } from "@freeanima/host/core/config/build-meta.ts";
 import { resolveNativeBuildMeta } from "@freeanima/app/shell/shared/resolve-native-build-meta.ts";
 import { buildCompanionApp } from "@freeanima/features/companion/lib/exports/build.ts";
 

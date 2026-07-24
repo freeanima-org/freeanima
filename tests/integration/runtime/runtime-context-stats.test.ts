@@ -1,4 +1,4 @@
-import { computeStats, statsReport, getAppRuntime } from "@freeanima/platform";
+import { computeStats, statsReport, getAppRuntime } from "@freeanima/host/platform";
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
@@ -8,13 +8,13 @@ import {
 } from "../../helpers/integration-case.ts";
 import { getTestEngine, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
-import { FALLBACK_TOKENIZER_REPO } from "@freeanima/core/tokenizer";
+import { FALLBACK_TOKENIZER_REPO } from "@freeanima/host/core/tokenizer";
 import {
   bindModelToFallbackForTest,
   ensureFallbackTokenizer,
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
-} from "@freeanima/core/tokenizer/testing";
+} from "@freeanima/host/core/tokenizer/testing";
 
 describePg("runtime context stats", () => {
   const prev = process.env.FREEANIMA_HOME;

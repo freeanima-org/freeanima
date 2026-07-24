@@ -1,31 +1,31 @@
 import type { PgTestContext } from "./pg-test.ts";
-import { flushCompressionSummaries } from "@freeanima/runtime/turn";
-import { createConversationService } from "@freeanima/runtime/conversation";
-import { createServiceKernel } from "@freeanima/platform/bootstrap";
+import { flushCompressionSummaries } from "@freeanima/host/engine/turn";
+import { createConversationService } from "@freeanima/host/engine/conversation";
+import { createServiceKernel } from "@freeanima/host/platform/bootstrap";
 import {
   createAppRuntime,
   initRuntimeContext,
   bindServicePorts,
   registerSystemPromptHooks,
-} from "@freeanima/platform";
-import { getAcpManager } from "@freeanima/capabilities/acp";
-import { MaskRegistry } from "@freeanima/features/task/domain/mask";
-import { initMaskSystem } from "@freeanima/platform/runtime/mask-bind";
+} from "@freeanima/host/platform";
+import { getAcpManager } from "@freeanima/host/capabilities/acp";
+import { MaskRegistry } from "@freeanima/host/core/mask";
+import { initMaskSystem } from "@freeanima/host/platform/service/mask-bind";
 import {
   registerServiceTools,
   registerServiceStores,
   resetRegisterServiceToolsForTest,
-} from "@freeanima/platform";
-import { invalidateSelfLayerPromptCache } from "@freeanima/capabilities/identity";
-import { upsertSelfBlock } from "@freeanima/core/db/pg/self-layer";
+} from "@freeanima/host/platform";
+import { invalidateSelfLayerPromptCache } from "@freeanima/host/capabilities/self";
+import { upsertSelfBlock } from "@freeanima/host/core/db/pg/self-layer";
 
 import { randomUUID } from "node:crypto";
-import { removeManagedAnimaTmpPath, removeTempDir } from "@freeanima/core/util/temp-dir";
-import { conversations } from "@freeanima/core/db/schema";
+import { removeManagedAnimaTmpPath, removeTempDir } from "@freeanima/host/core/util/temp-dir";
+import { conversations } from "@freeanima/host/core/db/schema";
 import { isNotNull } from "drizzle-orm";
 
-import { bindHomeChannelConfig } from "@freeanima/platform/ports/home-channel";
-import { getDb } from "@freeanima/core/db/pg";
+import { bindHomeChannelConfig } from "@freeanima/host/platform/ports/home-channel";
+import { getDb } from "@freeanima/host/core/db/pg";
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
 import { pgTestUrl } from "./pg-test-gate.ts";
 import { getActivePgTestContext } from "./pg-test.ts";

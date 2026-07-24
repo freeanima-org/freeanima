@@ -6,16 +6,16 @@ import {
   PROJECT_COMPONENT,
   TASK_LIST_COMPONENT,
   type EntityRow,
-} from "@freeanima/core/db/schema/entity";
-import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/core/db/pg/entity";
-import { formatCstIso, omitUndefined } from "@freeanima/core/util";
+} from "@freeanima/host/core/db/schema/entity";
+import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/host/core/db/pg/entity";
+import { formatCstIso, omitUndefined } from "@freeanima/host/core/util";
 import {
   createEntity,
   deleteEntity,
   getEntity,
   searchEntities,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/pg/entity";
 
 import { assertListAcceptsTasks, assertTaskListNotArchived } from "./list-store.ts";
 import { nextPrependSortOrder } from "./sort-order.ts";

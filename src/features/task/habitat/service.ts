@@ -1,4 +1,4 @@
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/host/core/util";
 import {
   completeTaskItem,
   createTaskItem,
@@ -20,13 +20,13 @@ import {
   updateTaskList,
   updateSmartList,
 } from "../domain/index.ts";
-import type { TaskItemSearchFilters } from "@freeanima/core/db/schema";
-import type { SubjectKind } from "@freeanima/core/config";
-import { resolveSubjectWorldId } from "@freeanima/core/config/world-context";
-import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
+import type { TaskItemSearchFilters } from "@freeanima/host/core/db/schema";
+import type { SubjectKind } from "@freeanima/host/core/config";
+import { resolveSubjectWorldId } from "@freeanima/host/core/config/world-context";
+import type { VerifiedServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
 import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 
-import { isPostgresPrimary } from "@freeanima/core/db/pg";
+import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 function assertPg(_deps: RuntimeDeps): void {

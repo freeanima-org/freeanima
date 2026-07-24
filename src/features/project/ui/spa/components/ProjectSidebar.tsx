@@ -1,9 +1,9 @@
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Button, Checkbox, Input } from "@freeanima/frontend/ui-kit";
-import { ContextMenu, EntityIdLabel } from "@freeanima/frontend/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+import { Button, Checkbox, Input } from "@freeanima/ui-kit";
+import { ContextMenu, EntityIdLabel } from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
 
 import type { ProjectFolderRow, ProjectRow } from "../lib/api.ts";

@@ -3,8 +3,8 @@
 import "./standalone-embed-boot.ts";
 import { buildProgram, ANIMA_VERSION } from "./program.ts";
 import { printCliError } from "./output/errors.ts";
-import { formatCliVersion } from "@freeanima/core/config/cli-install";
-import { resolveServiceBuildMeta } from "@freeanima/platform/runtime/service-build-meta";
+import { formatCliVersion } from "@freeanima/host/core/config/cli-install";
+import { resolveServiceBuildMeta } from "@freeanima/host/platform/service/service-build-meta";
 import { isStandaloneCli } from "./is-standalone-cli.ts";
 
 const argv = process.argv;

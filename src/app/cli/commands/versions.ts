@@ -6,7 +6,7 @@ import {
   CLI_UPGRADE_HINT_SOURCE,
   CLI_UPGRADE_HINT_STANDALONE_UNSAFE_PREFIX,
   getCliInstallKind,
-} from "@freeanima/core/config/cli-install";
+} from "@freeanima/host/core/config/cli-install";
 import {
   assertSafeStandaloneInstallPrefix,
   getCurrentVersionId,
@@ -14,9 +14,9 @@ import {
   listInstalledVersions,
   resolveStandalonePrefixFromExec,
   setCurrentVersion,
-} from "@freeanima/core/config/install-prefix";
-import { resolveMonorepoRoot } from "@freeanima/core/config/repo-root";
-import { isServerAlive } from "@freeanima/platform/alive.ts";
+} from "@freeanima/host/core/config/install-prefix";
+import { resolveMonorepoRoot } from "@freeanima/host/core/config/repo-root";
+import { isServerAlive } from "@freeanima/host/platform/alive.ts";
 
 function exitWith(code: number): never {
   process.exit(code);

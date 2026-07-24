@@ -8,7 +8,7 @@ import {
   SHELL_CONFIG_CHANGED_EVENT,
   testWebHabitatConnection,
 } from "./web-shell.ts";
-import { notifyDebugConfigChanged } from "@freeanima/frontend/app-ui/spa/debug-config-events.ts";
+import { notifyDebugConfigChanged } from "@freeanima/client/app-frame/spa/debug-config-events.ts";
 
 export type WebSettingsStores = HabitatDebugSettingsStores;
 

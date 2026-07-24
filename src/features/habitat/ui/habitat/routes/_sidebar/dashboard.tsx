@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import type { DependencyStatus, ServiceSnapshot } from "@freeanima/platform/ports/schemas/snapshot";
-import { Badge, Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
-import { ConfirmDialog, showAlert, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import type {
+  DependencyStatus,
+  ServiceSnapshot,
+} from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
+import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
+import { ConfirmDialog, showAlert, StatusAlert } from "@freeanima/ui-kit/composite";
 import { useState } from "react";
 import { getStatus, restartService } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";

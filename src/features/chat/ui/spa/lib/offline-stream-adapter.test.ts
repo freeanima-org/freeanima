@@ -11,7 +11,7 @@ const { buildHeadlessChatStreamFlushContext, chatStreamAdapter } =
   await import("@freeanima/features/chat/ui/spa/lib/offline-stream-adapter.ts");
 const { claimChatSend, resetChatSendClaimsForTests } =
   await import("@freeanima/features/chat/ui/spa/lib/offline-send-store.ts");
-import type { OfflineOutboxOp } from "@freeanima/frontend/portal-sdk/offline-outbox.ts";
+import type { OfflineOutboxOp } from "@freeanima/client/portal-sdk/offline-outbox.ts";
 
 describe("buildHeadlessChatStreamFlushContext", () => {
   it("提供不依赖 ChatApp 的 stream flush context", () => {

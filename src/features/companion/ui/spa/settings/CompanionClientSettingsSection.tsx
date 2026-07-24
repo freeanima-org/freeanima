@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
-import { FormToggle } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
-import type { SettingsPanelProps } from "@freeanima/frontend/portal-sdk/settings";
+import { Button, Card, CardContent } from "@freeanima/ui-kit";
+import { FormToggle } from "@freeanima/ui-kit/form/FormFieldset.tsx";
+import type { SettingsPanelProps } from "@freeanima/client/portal-sdk/settings";
 import { fetchSidecarRuntimeFields } from "@freeanima/features/companion/ui/spa/lib/api.ts";
 import type { CompanionShellSettings } from "./companion-shell-settings.ts";
 

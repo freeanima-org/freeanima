@@ -1,4 +1,4 @@
-import type { ToolSetRegistry } from "@freeanima/core/tool";
+import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 
 import { registerContentBlockToolSet } from "./content-block-tools.ts";
 

@@ -1,5 +1,5 @@
-import type { TaskItemPriority } from "@freeanima/core/db/schema/entity";
-import type { TaskItemSearchFilters } from "@freeanima/core/db/schema";
+import type { TaskItemPriority } from "@freeanima/host/core/db/schema/entity";
+import type { TaskItemSearchFilters } from "@freeanima/host/core/db/schema";
 
 export type {
   TaskItemRowPayload as TaskItemRow,

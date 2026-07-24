@@ -15,9 +15,9 @@ import {
   installVersionedBinary,
   migrateFlatAnimaFileIfNeeded,
   resolveInstallPrefixFromEnv,
-} from "@freeanima/core/config/install-prefix";
-import { resolveMonorepoRoot } from "@freeanima/core/config/repo-root";
-import { readAppVersion } from "@freeanima/core/config/version";
+} from "@freeanima/host/core/config/install-prefix";
+import { resolveMonorepoRoot } from "@freeanima/host/core/config/repo-root";
+import { readAppVersion } from "@freeanima/host/core/config/version";
 
 const ROOT = resolveMonorepoRoot(import.meta.dir) ?? join(import.meta.dir, "..");
 const STAGING_ANIMA = join(ROOT, "dist/anima-executable/anima");

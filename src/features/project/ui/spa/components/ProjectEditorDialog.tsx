@@ -9,8 +9,8 @@ import {
   Input,
   Label,
   Textarea,
-} from "@freeanima/frontend/ui-kit";
-import { DatePickerInput } from "@freeanima/frontend/ui-kit/form/DatePickerInput.tsx";
+} from "@freeanima/ui-kit";
+import { DatePickerInput } from "@freeanima/ui-kit/form/DatePickerInput.tsx";
 
 import type { ProjectFolderRow, ProjectRow } from "../lib/api.ts";
 import { dateLocalToIso, isoToDateLocalValue } from "../lib/format-task.ts";

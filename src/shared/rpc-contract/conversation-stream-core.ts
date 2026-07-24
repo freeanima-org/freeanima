@@ -4,7 +4,7 @@ import { mapSapStreamMethodToApi, streamEventMethods } from "./frames/message.ts
 import type { ConversationCreateInput, ConversationListInput } from "./frames/conversation.ts";
 import { formatRemotePlatform } from "./naming.ts";
 import { HABITAT_RPC_MESSAGE_SEND_TIMEOUT_MS } from "@freeanima/shared/habitat-rpc";
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/host/core/util";
 
 export type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;

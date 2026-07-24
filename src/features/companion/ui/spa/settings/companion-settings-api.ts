@@ -1,4 +1,4 @@
-import type { CompanionSettingsApi } from "@freeanima/frontend/portal-sdk/settings";
+import type { CompanionSettingsApi } from "@freeanima/client/portal-sdk/settings";
 import {
   deleteModel,
   fetchMotionLibrary,

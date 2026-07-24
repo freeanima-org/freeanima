@@ -1,6 +1,6 @@
-import type { SubjectKind } from "@freeanima/core/config";
-import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/core/db/pg/entity";
-import { toolError } from "@freeanima/core/tool";
+import type { SubjectKind } from "@freeanima/host/core/config";
+import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/host/core/db/pg/entity";
+import { toolError } from "@freeanima/host/core/tool";
 
 import { defaultVaultSubjectForTools, resolveVaultWorldId } from "./vault-world.ts";
 

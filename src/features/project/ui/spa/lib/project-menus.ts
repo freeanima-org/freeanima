@@ -1,4 +1,4 @@
-import { copyText } from "@freeanima/frontend/ui-kit/lib/copy-text.ts";
+import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 
 import type { TaskItemRow } from "./api.ts";
 

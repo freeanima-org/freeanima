@@ -2,7 +2,7 @@ import {
   cacheGetJson,
   cacheSetJson,
   REDIS_CACHE_KEY_PREFIX,
-} from "@freeanima/platform/connectors/redis";
+} from "@freeanima/host/capabilities/connectors/redis";
 import type { LlmDebugSnapshotPayload } from "@freeanima/shared/rpc-contract/frames/message";
 
 /** 滚动覆盖：每次写入重置 TTL */

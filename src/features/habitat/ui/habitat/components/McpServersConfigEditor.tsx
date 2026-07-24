@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { Button, Input, Label, Textarea } from "@freeanima/frontend/ui-kit";
-import { FormToggle } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
-import { showConfirm, StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { Button, Input, Label, Textarea } from "@freeanima/ui-kit";
+import { FormToggle } from "@freeanima/ui-kit/form/FormFieldset.tsx";
+import { showConfirm, StatusAlert } from "@freeanima/ui-kit/composite";
 import {
   fetchHabitatConfigSection,
   replaceHabitatConfigSection,
   restartHabitatService,
-} from "@freeanima/frontend/portal-sdk/habitat-config-api";
+} from "@freeanima/client/portal-sdk/habitat-config-api";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 import {

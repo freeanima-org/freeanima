@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getUserVaultSession } from "@freeanima/frontend/portal-sdk/react.tsx";
+import { getUserVaultSession } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Button,
   Dialog,
@@ -10,7 +10,7 @@ import {
   Input,
   Spinner,
   cn,
-} from "@freeanima/frontend/ui-kit";
+} from "@freeanima/ui-kit";
 
 import { getVaultCryptoConfig } from "@freeanima/features/chat/ui/spa/lib/vault-unlock-api.ts";
 

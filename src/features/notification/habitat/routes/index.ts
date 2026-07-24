@@ -1,6 +1,6 @@
-import { omitUndefined } from "@freeanima/core/util";
-import type { NotificationRow as PgNotificationRow } from "@freeanima/core/db/schema/rows";
-import { resolveNotificationRecipients } from "@freeanima/core/config";
+import { omitUndefined } from "@freeanima/host/core/util";
+import type { NotificationRow as PgNotificationRow } from "@freeanima/host/core/db/schema/rows";
+import { resolveNotificationRecipients } from "@freeanima/host/core/config";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 import type { NotificationRow } from "@freeanima/shared/rpc-contract/frames/notification";
 

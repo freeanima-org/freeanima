@@ -7,11 +7,11 @@ import type {
 } from "@freeanima/shared/rpc-contract/frames/project";
 import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task";
 
-import { resolveHabitatCacheScope } from "@freeanima/frontend/portal-sdk/offline-cache";
-import { withOfflineCache } from "@freeanima/frontend/portal-sdk/offline-cache-first";
-import { isHabitatFetchAvailable } from "@freeanima/frontend/portal-sdk/habitat-fetch-gate";
-import { isTempId } from "@freeanima/frontend/portal-sdk/offline-temp-id";
-import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
+import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
+import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
+import { isTempId } from "@freeanima/client/portal-sdk/offline-temp-id";
+import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 import {
   offlineCreateProject,

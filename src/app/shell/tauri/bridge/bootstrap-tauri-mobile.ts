@@ -6,10 +6,10 @@ import {
   testHabitatHealthConnection,
   type RemoteInstanceStore,
   type ShellApi,
-} from "@freeanima/frontend/portal-sdk";
-import { loadTauriNativeBuildMetaFromAssets } from "@freeanima/frontend/portal-sdk/native-build-meta.read";
-import { NATIVE_BUILD_META_CHANGED_EVENT } from "@freeanima/frontend/portal-sdk/native-build-meta.resolve";
-import type { ShellNativeAlertPayload } from "@freeanima/frontend/portal-sdk/shell-api.ts";
+} from "@freeanima/client/portal-sdk";
+import { loadTauriNativeBuildMetaFromAssets } from "@freeanima/client/portal-sdk/native-build-meta.read";
+import { NATIVE_BUILD_META_CHANGED_EVENT } from "@freeanima/client/portal-sdk/native-build-meta.resolve";
+import type { ShellNativeAlertPayload } from "@freeanima/client/portal-sdk/shell-api.ts";
 import {
   applyHabitatConfigToShell,
   notifyShellConfigChanged,

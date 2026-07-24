@@ -1,12 +1,12 @@
 import { browserRemoteInstanceStore } from "@freeanima/shared/rpc-contract";
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
-import { testHabitatHealthConnection } from "@freeanima/frontend/portal-sdk";
-import { buildShellApiFields } from "@freeanima/frontend/portal-sdk/shell-api-fields";
-import type { ShellApi } from "@freeanima/frontend/portal-sdk/shell-api";
-import { parseShellClientConfig } from "@freeanima/frontend/portal-sdk/shell-client-config";
-import type { SettingsStorageScope } from "@freeanima/frontend/portal-sdk/settings";
-import type { ScopedSettingsBackend } from "@freeanima/frontend/portal-sdk/settings";
-import { HABITAT_SETTINGS_SCOPE } from "@freeanima/frontend/portal-sdk/settings";
+import { testHabitatHealthConnection } from "@freeanima/client/portal-sdk";
+import { buildShellApiFields } from "@freeanima/client/portal-sdk/shell-api-fields";
+import type { ShellApi } from "@freeanima/client/portal-sdk/shell-api";
+import { parseShellClientConfig } from "@freeanima/client/portal-sdk/shell-client-config";
+import type { SettingsStorageScope } from "@freeanima/client/portal-sdk/settings";
+import type { ScopedSettingsBackend } from "@freeanima/client/portal-sdk/settings";
+import { HABITAT_SETTINGS_SCOPE } from "@freeanima/client/portal-sdk/settings";
 
 import { createDesktopDevScopedBackend } from "./settings-dev-backend.ts";
 

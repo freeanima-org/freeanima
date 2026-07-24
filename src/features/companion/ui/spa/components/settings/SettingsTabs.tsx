@@ -1,4 +1,4 @@
-import { Tabs, TabsList, TabsTrigger } from "@freeanima/frontend/ui-kit";
+import { Tabs, TabsList, TabsTrigger } from "@freeanima/ui-kit";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 
 const TAB_IDS = ["behavior", "models", "library", "slots"] as const;

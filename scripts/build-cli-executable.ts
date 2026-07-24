@@ -18,7 +18,7 @@ import { dirname, join } from "node:path";
 import {
   createComponentBuildMeta,
   resolveBuildChannelFromEnv,
-} from "@freeanima/core/config/build-meta";
+} from "@freeanima/host/core/config/build-meta";
 import {
   createStandaloneEmbedPlugin,
   type StandaloneEmbedInput,
@@ -34,7 +34,7 @@ const ROOT = join(import.meta.dir, "..");
 const OUT_DIR = join(ROOT, "dist/anima-executable");
 const CLI_ENTRY = join(ROOT, "src/app/cli/cli.ts");
 const EMBEDS_MODULE = join(ROOT, "src/app/cli/standalone-embeds.ts");
-const MIGRATIONS_DIR = join(ROOT, "src/core/migrations");
+const MIGRATIONS_DIR = join(ROOT, "src/host/core/migrations");
 const WEB_DIST_DIR = join(ROOT, "src/app/shell/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
 const DOCS_DIR = join(ROOT, "docs");

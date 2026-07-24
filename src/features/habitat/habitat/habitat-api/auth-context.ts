@@ -1,4 +1,4 @@
-import type { VerifiedServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
+import type { VerifiedServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
 
 export type ServiceAuthContext = VerifiedServiceApiToken;
 

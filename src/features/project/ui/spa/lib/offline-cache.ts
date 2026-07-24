@@ -1,8 +1,8 @@
-import { readOfflineCache, writeOfflineCache } from "@freeanima/frontend/portal-sdk/offline-cache";
+import { readOfflineCache, writeOfflineCache } from "@freeanima/client/portal-sdk/offline-cache";
 
 import type { ProjectFolderRow, ProjectRow, TaskItemRow } from "./api.ts";
 
-export { resolveHabitatCacheScope } from "@freeanima/frontend/portal-sdk/offline-cache";
+export { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 
 const NAMESPACE = "project";
 

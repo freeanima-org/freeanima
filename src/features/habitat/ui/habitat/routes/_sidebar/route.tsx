@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
-import { isPackagedShell } from "@freeanima/frontend/portal-sdk/shell-runtime.ts";
+import { isPackagedShell } from "@freeanima/client/portal-sdk/shell-runtime.ts";
 import { HabitatConnectionBanner } from "@freeanima/features/habitat/ui/habitat/components/HabitatConnectionBanner.tsx";
 import { ResponsiveSidebarLayout } from "@freeanima/features/habitat/ui/habitat/components/ResponsiveSidebarLayout.tsx";
 import { useHabitatRpcConnectivity } from "@freeanima/features/habitat/ui/habitat/hooks/useHabitatRpcConnectivity.ts";

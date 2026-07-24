@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { getTypedHabitatUiClient } from "@freeanima/platform/habitat/client.ts";
+import { getTypedHabitatUiClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 import { resolveApiOrigin } from "./habitat-origin.ts";
 import { resolveHabitatFetch } from "./habitat-fetch.ts";

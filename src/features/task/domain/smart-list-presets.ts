@@ -1,4 +1,4 @@
-import type { TaskItemSearchFilters } from "@freeanima/core/db/schema";
+import type { TaskItemSearchFilters } from "@freeanima/host/core/db/schema";
 
 export const SMART_LIST_PRESETS = [
   "due_today",

@@ -4,11 +4,11 @@ import type {
   DisplayItem,
   StreamApiEvent,
 } from "./types.ts";
-import { isHabitatFetchAvailable } from "@freeanima/frontend/portal-sdk/habitat-fetch-gate";
-import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
+import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
+import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import { getChatRpcStreamClient, chatPlatform } from "./habitat-stream-client.ts";
 import { m } from "./i18n.ts";
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/host/core/util";
 
 type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;

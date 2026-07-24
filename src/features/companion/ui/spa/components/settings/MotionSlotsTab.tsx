@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   Spinner,
-} from "@freeanima/frontend/ui-kit";
+} from "@freeanima/ui-kit";
 import type {
   MotionLibraryEntry,
   MotionSlotId,

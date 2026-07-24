@@ -1,10 +1,10 @@
 import { describe, it, expect } from "bun:test";
-import { Config } from "@freeanima/platform/config";
-import { parseYaml } from "@freeanima/platform/config";
-import { animaConfigSchema } from "@freeanima/core/config";
-import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
-import { getAcpManager, registerAcpTools } from "@freeanima/capabilities/acp";
-import { createEngineCatalog } from "@freeanima/runtime";
+import { Config } from "@freeanima/host/platform/config";
+import { parseYaml } from "@freeanima/host/platform/config";
+import { animaConfigSchema } from "@freeanima/host/core/config";
+import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
+import { getAcpManager, registerAcpTools } from "@freeanima/host/capabilities/acp";
+import { createEngineCatalog } from "@freeanima/host/engine";
 
 function emptyConfig() {
   const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));

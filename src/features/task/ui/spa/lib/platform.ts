@@ -1,8 +1,4 @@
-import {
-  isCompactLayoutViewport,
-  useCompactLayout,
-  useDrawerNav,
-} from "@freeanima/frontend/ui-kit/layout";
+import { isCompactLayoutViewport, useCompactLayout, useDrawerNav } from "@freeanima/ui-kit/layout";
 import {
   getShellKind,
   isNativeShell,
@@ -10,7 +6,7 @@ import {
   useContextMenuCapability,
   useFinePointerCapability,
   useTouchPrimaryCapability,
-} from "@freeanima/frontend/portal-sdk/react.tsx";
+} from "@freeanima/client/portal-sdk/react.tsx";
 
 /** 纯浏览器 Web 壳（非 Tauri） */
 export function isWebShell(): boolean {

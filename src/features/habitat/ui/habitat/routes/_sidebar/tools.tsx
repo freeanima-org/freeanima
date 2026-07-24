@@ -3,7 +3,7 @@ import type {
   ToolsStatusResponse,
   ToolsStatusToolItem,
 } from "@freeanima/features/habitat/protocol/habitat-contract/api/response-types.ts";
-import { Badge, Button, Card, CardContent } from "@freeanima/frontend/ui-kit";
+import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
 import { useMemo, useState } from "react";
 import { getToolsStatus } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";

@@ -1,9 +1,9 @@
-import { withPlatformDb } from "@freeanima/platform/config";
+import { withPlatformDb } from "@freeanima/host/platform/config";
 import {
   createServiceApiTokenWithSecret,
   listServiceApiTokensBySubject,
   revokeServiceApiToken,
-} from "@freeanima/core/db/pg/service-api-token";
+} from "@freeanima/host/core/db/pg/service-api-token";
 import type { Command } from "commander";
 
 import { printCliError } from "../output/errors.ts";

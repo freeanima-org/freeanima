@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, it } from "bun:test";
 import { access, mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { getEntity } from "@freeanima/core/db/pg/entity";
+import { getEntity } from "@freeanima/host/core/db/pg/entity";
 import {
   createEmailAccount,
   deleteEmailAccountRow,

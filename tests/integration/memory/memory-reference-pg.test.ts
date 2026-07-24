@@ -9,18 +9,18 @@ import {
   appendMessage,
   deleteConversation,
   upsertConversationMeta,
-} from "@freeanima/core/db/pg/conversation";
+} from "@freeanima/host/core/db/pg/conversation";
 import {
   countReferencesBySemanticMemory,
   formatMemoryReferenceMarker,
   syncAllReferenceCounts,
-} from "@freeanima/core/db/pg/memory-reference";
+} from "@freeanima/host/core/db/pg/memory-reference";
 import {
   createSemanticMemory,
   deprecateSemanticMemory,
   getSemanticMemory,
   listResidentSemanticMemory,
-} from "@freeanima/core/db/pg/semantic-memory";
+} from "@freeanima/host/core/db/pg/semantic-memory";
 
 async function seedSessionMeta(conversationId: string): Promise<void> {
   await upsertConversationMeta(conversationId, {
@@ -100,7 +100,8 @@ describePg("memory_references PG", () => {
   });
 
   it("listResident caps pinned at RESIDENT_PINNED_MAX", async () => {
-    const { RESIDENT_PINNED_MAX } = await import("@freeanima/core/db/pg/semantic-memory/types");
+    const { RESIDENT_PINNED_MAX } =
+      await import("@freeanima/host/core/db/pg/semantic-memory/types");
 
     for (let i = 0; i < RESIDENT_PINNED_MAX + 2; i++) {
       await createSemanticMemory({

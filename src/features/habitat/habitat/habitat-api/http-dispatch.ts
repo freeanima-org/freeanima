@@ -3,7 +3,7 @@ import {
   isHabitatRpcPathname,
 } from "@freeanima/shared/habitat-rpc/urls.ts";
 import { corsPreflightResponse } from "./cors.ts";
-import { isMcpPath } from "@freeanima/capabilities/mcp-server";
+import { isMcpPath } from "@freeanima/host/capabilities/mcp-server";
 import type { ServiceAuthContext } from "./auth-context.ts";
 import { isSapWebSocketUpgrade } from "./remote-auth.ts";
 import type { ServiceAuthVerifier } from "./service-auth.ts";

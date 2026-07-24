@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
-import { TASK_LIST_COMPONENT } from "@freeanima/core/db/schema/entity";
+import { TASK_LIST_COMPONENT } from "@freeanima/host/core/db/schema/entity";
 
 describe("listTaskLists", () => {
   afterEach(() => {
@@ -7,7 +7,7 @@ describe("listTaskLists", () => {
   });
 
   test("list 不查询 item_count（次要数据走 stats）", async () => {
-    const entityMod = await import("@freeanima/core/db/pg/entity");
+    const entityMod = await import("@freeanima/host/core/db/pg/entity");
     const grouped = spyOn(entityMod, "countPendingTaskItemsGroupedByListId");
     spyOn(entityMod, "listEntities").mockResolvedValue([
       {
@@ -43,7 +43,7 @@ describe("listTaskLists", () => {
   });
 
   test("ensureDefaultTaskListForWorld 不调用 list 全量计数", async () => {
-    const entityMod = await import("@freeanima/core/db/pg/entity");
+    const entityMod = await import("@freeanima/host/core/db/pg/entity");
     const grouped = spyOn(entityMod, "countPendingTaskItemsGroupedByListId");
     spyOn(entityMod, "countPendingTaskItemsByListId");
     spyOn(entityMod, "listEntities").mockResolvedValue([
@@ -81,8 +81,8 @@ describe("listTaskLists", () => {
   });
 
   test("ensure 无默认箱时在 advisory lock 内 createEntity", async () => {
-    const entityMod = await import("@freeanima/core/db/pg/entity");
-    const pgMod = await import("@freeanima/core/db/pg");
+    const entityMod = await import("@freeanima/host/core/db/pg/entity");
+    const pgMod = await import("@freeanima/host/core/db/pg");
     spyOn(pgMod, "withAdvisoryXactLock").mockImplementation(async (_ns, _key, fn) =>
       fn(null as never),
     );
@@ -129,7 +129,7 @@ describe("listTaskListStats", () => {
   });
 
   test("用一次 GROUP BY 填充 counts，跳过文件夹", async () => {
-    const entityMod = await import("@freeanima/core/db/pg/entity");
+    const entityMod = await import("@freeanima/host/core/db/pg/entity");
     const grouped = spyOn(entityMod, "countPendingTaskItemsGroupedByListId").mockResolvedValue(
       new Map([
         [10, 3],

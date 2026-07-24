@@ -9,13 +9,16 @@ import {
 
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { getAppRuntime } from "@freeanima/platform";
-import { SELF_BLOCK_KEYS } from "@freeanima/core/db/pg/self-layer/types";
-import { createAutobiographicalMemory } from "@freeanima/core/db/pg/autobiographical-memory";
-import { createLimbicMemory } from "@freeanima/core/db/pg/limbic-memory";
-import { createSemanticMemory, getSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
-import { upsertSelfBlock } from "@freeanima/core/db/pg/self-layer";
-import { countSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
+import { getAppRuntime } from "@freeanima/host/platform";
+import { SELF_BLOCK_KEYS } from "@freeanima/host/core/db/pg/self-layer/types";
+import { createAutobiographicalMemory } from "@freeanima/host/core/db/pg/autobiographical-memory";
+import { createLimbicMemory } from "@freeanima/host/core/db/pg/limbic-memory";
+import {
+  createSemanticMemory,
+  getSemanticMemory,
+} from "@freeanima/host/core/db/pg/semantic-memory";
+import { upsertSelfBlock } from "@freeanima/host/core/db/pg/self-layer";
+import { countSemanticMemory } from "@freeanima/host/core/db/pg/semantic-memory";
 import { getTestEngine, getActivePgTestContext, seedSession } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 

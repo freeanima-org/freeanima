@@ -1,5 +1,5 @@
-import { isPostgresPrimary } from "@freeanima/core/db/pg";
-import { omitUndefined } from "@freeanima/core/util";
+import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
+import { omitUndefined } from "@freeanima/host/core/util";
 import type {
   CompanionClientConfigPayload,
   CompanionConfigUpdateInput,

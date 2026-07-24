@@ -2,8 +2,8 @@ import {
   POMODORO_TASK_FOCUS_COMPONENT,
   asPomodoroTaskFocus,
   type PomodoroPhase,
-} from "@freeanima/core/db/schema/entity";
-import { createEntity, searchEntities } from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/schema/entity";
+import { createEntity, searchEntities } from "@freeanima/host/core/db/pg/entity";
 
 import type {
   PomodoroStoreContext,

@@ -7,7 +7,7 @@ import {
   useState,
   type ReactElement,
 } from "react";
-import { Alert, AlertDescription, Button, Input, Spinner } from "@freeanima/frontend/ui-kit";
+import { Alert, AlertDescription, Button, Input, Spinner } from "@freeanima/ui-kit";
 import {
   ActionSheet,
   ConfirmDialog,
@@ -15,13 +15,13 @@ import {
   EmptyState,
   PullToRefresh,
   StatusAlert,
-} from "@freeanima/frontend/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+} from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import {
   ThreeColumnLayout,
   useDrawerNav,
   useThreeColumnLayoutMode,
-} from "@freeanima/frontend/ui-kit/layout";
+} from "@freeanima/ui-kit/layout";
 import {
   useActionSheetCapability,
   useContextMenuCapability,
@@ -29,9 +29,9 @@ import {
   useNetworkOnline,
   useSubjectScope,
   SubjectScopeToggle,
-} from "@freeanima/frontend/portal-sdk/react.tsx";
-import { readModuleSelection, writeModuleSelection } from "@freeanima/frontend/portal-sdk";
-import { copyText } from "@freeanima/frontend/ui-kit/lib/copy-text.ts";
+} from "@freeanima/client/portal-sdk/react.tsx";
+import { readModuleSelection, writeModuleSelection } from "@freeanima/client/portal-sdk";
+import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 import { m } from "@paraglide/messages";
 import { MoreHorizontal } from "lucide-react";
 

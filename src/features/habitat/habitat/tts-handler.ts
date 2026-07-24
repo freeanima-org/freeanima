@@ -1,6 +1,6 @@
-import { streamEdgeTtsAudio } from "@freeanima/core/tts/edge-synthesize";
-import { assertNotShuttingDown } from "@freeanima/platform/ports";
-import type { FeatureRpcHandler } from "@freeanima/platform/features";
+import { streamEdgeTtsAudio } from "@freeanima/host/core/tts/edge-synthesize";
+import { assertNotShuttingDown } from "@freeanima/host/platform/ports";
+import type { FeatureRpcHandler } from "@freeanima/host/platform/features";
 
 import { ApiHandlerError } from "./habitat-api/handlers/errors.ts";
 

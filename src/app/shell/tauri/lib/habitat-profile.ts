@@ -1,6 +1,6 @@
-import type { FrontendDesktopExport } from "@freeanima/frontend/portal-sdk";
-import type { FrontendManifest } from "@freeanima/frontend/portal-sdk";
-import { readMonorepoVersion } from "@freeanima/frontend/portal-sdk/version";
+import type { FrontendDesktopExport } from "@freeanima/client/portal-sdk";
+import type { FrontendManifest } from "@freeanima/client/portal-sdk";
+import { readMonorepoVersion } from "@freeanima/client/portal-sdk/version";
 
 const APP_ID = "habitat";
 

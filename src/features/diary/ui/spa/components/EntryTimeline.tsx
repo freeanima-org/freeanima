@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { DiaryEntryRow } from "../lib/format-diary.ts";
-import { EmptyState } from "@freeanima/frontend/ui-kit/composite";
-import { Spinner } from "@freeanima/frontend/ui-kit";
+import { EmptyState } from "@freeanima/ui-kit/composite";
+import { Spinner } from "@freeanima/ui-kit";
 import { fetchTags } from "@freeanima/features/tag/ui/spa/lib/api.ts";
 import {
   dateLocalToEntryAtIso,

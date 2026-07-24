@@ -5,8 +5,8 @@ import {
   registerEmbedTextFn,
   resetEmbedTextFnForTest,
   resetPendingEmbeddingsForTest,
-} from "@freeanima/core/db/pg";
-import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/core/db/schema";
+} from "@freeanima/host/core/db/pg";
+import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/host/core/db/schema";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -16,7 +16,7 @@ import {
 import {
   createSemanticMemory,
   searchSemanticMemoryFts,
-} from "@freeanima/core/db/pg/semantic-memory";
+} from "@freeanima/host/core/db/pg/semantic-memory";
 
 function fixedEmbedding(value = 0.25): number[] {
   return Array.from({ length: SEMANTIC_EMBEDDING_DIMENSIONS }, () => value);

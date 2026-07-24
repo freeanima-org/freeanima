@@ -1,0 +1,70 @@
+import {
+  DEFAULT_HABITAT_TLS_PORT,
+  PATHS,
+  type HttpConfig,
+  type HttpTlsConfigFields,
+  collectHttpAllowedHosts,
+} from "@freeanima/host/core/config";
+import { omitUndefined } from "@freeanima/host/core/util";
+import { resolveValue } from "@freeanima/host/platform/config";
+
+import {
+  defaultHabitatTlsCertPath,
+  defaultHabitatTlsKeyPath,
+  ensureHabitatTlsMaterial,
+  type HabitatTlsMaterial,
+} from "./habitat-tls-material.ts";
+
+export type ResolvedHabitatTlsListenConfig = {
+  enabled: true;
+  port: number;
+  material: HabitatTlsMaterial;
+};
+
+async function resolveOptionalConfigString(value: string | undefined): Promise<string | undefined> {
+  if (value === undefined || value.trim() === "") return undefined;
+  return resolveValue(value);
+}
+
+export async function resolveHabitatTlsListenConfig(
+  http: HttpConfig | undefined,
+  bindHosts: string[],
+): Promise<ResolvedHabitatTlsListenConfig | null> {
+  const tls: HttpTlsConfigFields | undefined = http?.tls ?? undefined;
+  if (!tls?.enabled) return null;
+
+  const certRaw = (await resolveOptionalConfigString(tls.cert)) ?? defaultHabitatTlsCertPath();
+  const keyRaw = (await resolveOptionalConfigString(tls.key)) ?? defaultHabitatTlsKeyPath();
+  const passphrase = await resolveOptionalConfigString(tls.passphrase);
+
+  const material = ensureHabitatTlsMaterial({
+    certPath: certRaw,
+    keyPath: keyRaw,
+    auto: tls.auto ?? true,
+    bindHosts,
+    allowedHosts: collectHttpAllowedHosts(http),
+    ...(passphrase ? { passphrase } : {}),
+  });
+
+  return {
+    enabled: true,
+    port: tls.port ?? DEFAULT_HABITAT_TLS_PORT,
+    material,
+  };
+}
+
+export type HabitatTlsBunOptions = {
+  key: ReturnType<typeof Bun.file>;
+  cert: ReturnType<typeof Bun.file>;
+  passphrase?: string;
+};
+
+export function toHabitatTlsBunOptions(material: HabitatTlsMaterial): HabitatTlsBunOptions {
+  return omitUndefined({
+    key: Bun.file(material.keyPath),
+    cert: Bun.file(material.certPath),
+    ...(material.passphrase ? { passphrase: material.passphrase } : {}),
+  });
+}
+
+export { PATHS };

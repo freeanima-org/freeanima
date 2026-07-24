@@ -2,7 +2,7 @@ import {
   DetailPanelShell,
   TaskDetailEditor,
   type DetailSaveStatus,
-} from "@freeanima/frontend/ui-kit/composite";
+} from "@freeanima/ui-kit/composite";
 import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task.ts";
 
 import { taskAttributionLabel } from "../lib/task-attribution.ts";

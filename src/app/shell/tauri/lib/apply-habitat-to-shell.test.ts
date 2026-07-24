@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { ShellApi } from "@freeanima/frontend/portal-sdk/shell-api";
+import type { ShellApi } from "@freeanima/client/portal-sdk/shell-api";
 
 import { applyHabitatConfigToShell } from "./apply-habitat-to-shell.ts";
 

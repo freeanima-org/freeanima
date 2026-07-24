@@ -1,7 +1,7 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
-import type { AutobiographicalMemoryRow } from "@freeanima/core/db/schema/rows";
+import type { AutobiographicalMemoryRow } from "@freeanima/host/core/db/schema/rows";
 import {
   Badge,
   Button,
@@ -14,13 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
   Spinner,
-} from "@freeanima/frontend/ui-kit";
-import {
-  FormField,
-  FormFieldLabel,
-  FormFieldset,
-} from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+} from "@freeanima/ui-kit";
+import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
 import { listAutobiographicalMemories } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";

@@ -8,8 +8,8 @@ import {
   DialogTitle,
   Input,
   Label,
-} from "@freeanima/frontend/ui-kit";
-import { isDescendant } from "@freeanima/frontend/ui-kit/lib/task-list-tree.ts";
+} from "@freeanima/ui-kit";
+import { isDescendant } from "@freeanima/ui-kit/lib/task-list-tree.ts";
 
 import type { TaskListRow } from "../lib/api.ts";
 

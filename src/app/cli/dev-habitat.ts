@@ -8,7 +8,7 @@
  *
  * 默认随机 ≥10000 闲口（避开生产 2658/2659）。TLS 由 Vite 终止，本进程不绑 Habitat TLS。
  */
-import { installErrorLogHandlers, logStartupError } from "@freeanima/platform/logging";
+import { installErrorLogHandlers, logStartupError } from "@freeanima/host/platform/logging";
 import { Command } from "commander";
 
 import { resolveServiceBindHost } from "./service-bind-host.ts";

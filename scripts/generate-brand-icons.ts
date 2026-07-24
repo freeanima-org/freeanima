@@ -164,7 +164,7 @@ async function main(): Promise<void> {
     writePng(join(ANDROID_RES, folder, "splash.png"), await renderSplash(w, h));
   }
 
-  writePng(join(ROOT, "src/frontend/ui-kit/brand/app-icon.png"), await renderIcon(64));
+  writePng(join(ROOT, "src/ui-kit/brand/app-icon.png"), await renderIcon(64));
 
   console.log("brand:icons — done");
 }

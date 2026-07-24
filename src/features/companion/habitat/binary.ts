@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { z } from "zod";
 
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import type { RemoteToolsServerDeps } from "@freeanima/platform/remote-tools/types";
+import type { RemoteToolsServerDeps } from "@freeanima/host/capabilities/outpost/transport/types";
 
 import { ApiHandlerError } from "../../habitat/habitat/habitat-api/handlers/errors.ts";
 import { resolveAssetFilePath } from "../domain/client-config.ts";

@@ -2,14 +2,14 @@ import {
   DEFAULT_EMBEDDING_DIMENSIONS,
   getResolvedEmbeddingConfig,
   type AnimaConfig,
-} from "@freeanima/core/config";
-import { createOpenAiEmbeddingClient } from "@freeanima/capabilities/llm-openai";
-import { createOpenAiClientFromParsed } from "@freeanima/capabilities/llm-openai/client.ts";
-import { fetchModelCatalog } from "@freeanima/capabilities/llm-openai/catalog.ts";
-import { parseOpenAiCompatibleContext } from "@freeanima/capabilities/llm-openai/context.ts";
-import { OPENAI_COMPATIBLE_BACKEND_ID } from "@freeanima/core/config/schemas/llm-config.ts";
-import { resolveValue } from "@freeanima/platform/config/resolve.ts";
-import { CONFIG_MASKED_SECRET } from "@freeanima/platform/config";
+} from "@freeanima/host/core/config";
+import { createOpenAiEmbeddingClient } from "@freeanima/host/capabilities/llm-openai";
+import { createOpenAiClientFromParsed } from "@freeanima/host/capabilities/llm-openai/client.ts";
+import { fetchModelCatalog } from "@freeanima/host/capabilities/llm-openai/catalog.ts";
+import { parseOpenAiCompatibleContext } from "@freeanima/host/capabilities/llm-openai/context.ts";
+import { OPENAI_COMPATIBLE_BACKEND_ID } from "@freeanima/host/core/config/schemas/llm-config.ts";
+import { resolveValue } from "@freeanima/host/platform/config/resolve.ts";
+import { CONFIG_MASKED_SECRET } from "@freeanima/host/platform/config";
 import { z } from "zod";
 
 import { ApiHandlerError } from "./errors.ts";

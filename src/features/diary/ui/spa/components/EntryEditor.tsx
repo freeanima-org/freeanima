@@ -15,9 +15,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronDownIcon, ChevronRightIcon, GripVerticalIcon, Trash2Icon } from "lucide-react";
-import { useTouchPrimaryCapability } from "@freeanima/frontend/portal-sdk/react";
-import { Button, Input, Textarea, cn } from "@freeanima/frontend/ui-kit";
-import { ConfirmDialog } from "@freeanima/frontend/ui-kit/composite";
+import { useTouchPrimaryCapability } from "@freeanima/client/portal-sdk/react";
+import { Button, Input, Textarea, cn } from "@freeanima/ui-kit";
+import { ConfirmDialog } from "@freeanima/ui-kit/composite";
 
 import type { BlockDraft, EntryDraft } from "../lib/entry-draft-dirty.ts";
 import {

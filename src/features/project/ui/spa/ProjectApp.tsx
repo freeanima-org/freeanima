@@ -1,10 +1,10 @@
-import { launchPomodoroForTask } from "@freeanima/frontend/portal-sdk";
+import { launchPomodoroForTask } from "@freeanima/client/portal-sdk";
 import {
   readModuleSelection,
   writeModuleSelection,
-} from "@freeanima/frontend/portal-sdk/module-selection.ts";
-import { subscribeIdMappings } from "@freeanima/frontend/portal-sdk/offline-id-map";
-import { SubjectScopeToggle, useSubjectScope } from "@freeanima/frontend/portal-sdk/react.tsx";
+} from "@freeanima/client/portal-sdk/module-selection.ts";
+import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
+import { SubjectScopeToggle, useSubjectScope } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Button,
   Dialog,
@@ -14,7 +14,7 @@ import {
   DialogTitle,
   Input,
   Spinner,
-} from "@freeanima/frontend/ui-kit";
+} from "@freeanima/ui-kit";
 import {
   ActionSheet,
   ConfirmDialog,
@@ -22,19 +22,19 @@ import {
   PullToRefresh,
   QuickAddBar,
   useDetailPanelState,
-} from "@freeanima/frontend/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+} from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import {
   ThreeColumnLayout,
   useDrawerNav,
   useThreeColumnLayoutMode,
-} from "@freeanima/frontend/ui-kit/layout";
+} from "@freeanima/ui-kit/layout";
 import { m } from "@paraglide/messages";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { registerProjectOfflineModule } from "./lib/offline-store.ts";
 
-import { MoveToListPicker } from "@freeanima/frontend/ui-kit/composite";
+import { MoveToListPicker } from "@freeanima/ui-kit/composite";
 import { MoveToProjectPicker } from "./components/MoveToProjectPicker.tsx";
 import {
   ProjectEditorDialog,
@@ -88,7 +88,7 @@ import {
 import {
   useActionSheetCapability,
   useContextMenuCapability,
-} from "@freeanima/frontend/portal-sdk/react.tsx";
+} from "@freeanima/client/portal-sdk/react.tsx";
 import { TaskTagFilterBar } from "@freeanima/features/task/ui/spa/components/TaskTagFilterBar.tsx";
 import type { TagKnown as TaskTagKnown } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 import {

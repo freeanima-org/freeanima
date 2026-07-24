@@ -3,16 +3,16 @@ import {
   asDiaryEntry,
   type DiaryEntryBody,
   type DiaryEntrySearchFilters,
-} from "@freeanima/core/db/schema/entity";
-import { formatCstIso, omitUndefined } from "@freeanima/core/util";
+} from "@freeanima/host/core/db/schema/entity";
+import { formatCstIso, omitUndefined } from "@freeanima/host/core/util";
 import {
   createEntity,
   deleteEntity,
   getEntity,
   searchEntities,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
-import { ensureDiaryEntryForDay as ensureDiaryEntryForDayCore } from "@freeanima/core/db/pg/diary";
+} from "@freeanima/host/core/db/pg/entity";
+import { ensureDiaryEntryForDay as ensureDiaryEntryForDayCore } from "@freeanima/host/core/db/pg/diary";
 import { ensureTagsByTitles } from "@freeanima/features/tag/domain";
 
 import {

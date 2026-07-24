@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "@tanstack/react-router";
-import { blockNativeDialogs, ConfirmPromptHost } from "@freeanima/frontend/ui-kit/composite";
+import { blockNativeDialogs, ConfirmPromptHost } from "@freeanima/ui-kit/composite";
 import { initHabitatLocale } from "./lib/i18n.ts";
 import { getRouter } from "./router.tsx";
 

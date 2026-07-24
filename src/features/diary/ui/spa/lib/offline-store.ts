@@ -2,31 +2,31 @@ import {
   readOfflineCache,
   resolveHabitatCacheScope,
   writeOfflineCache,
-} from "@freeanima/frontend/portal-sdk/offline-cache";
-import { getIdMapping, resolveIdFields } from "@freeanima/frontend/portal-sdk/offline-id-map";
+} from "@freeanima/client/portal-sdk/offline-cache";
+import { getIdMapping, resolveIdFields } from "@freeanima/client/portal-sdk/offline-id-map";
 import {
   registerOfflineModule,
   registerOfflineModuleCap,
-} from "@freeanima/frontend/portal-sdk/offline-module-registry";
-import type { RpcModuleAdapter } from "@freeanima/frontend/portal-sdk/offline-module-types";
+} from "@freeanima/client/portal-sdk/offline-module-registry";
+import type { RpcModuleAdapter } from "@freeanima/client/portal-sdk/offline-module-types";
 import {
   enqueueOutboxOp,
   listOutboxOps,
   removeOutboxOp,
   resolveOutboxScope,
   type OfflineOutboxOp,
-} from "@freeanima/frontend/portal-sdk/offline-outbox";
+} from "@freeanima/client/portal-sdk/offline-outbox";
 import {
   flushOfflineModule,
   recordFlushIdMapping,
-} from "@freeanima/frontend/portal-sdk/offline-sync";
+} from "@freeanima/client/portal-sdk/offline-sync";
 import {
   allocateTempId,
   isTempId,
   seedTempIdAllocatorFromIdMap,
-} from "@freeanima/frontend/portal-sdk/offline-temp-id";
-import { preferOnlineWrite } from "@freeanima/frontend/portal-sdk/prefer-online-write";
-import { getTypedHabitatClient } from "@freeanima/platform/habitat/client.ts";
+} from "@freeanima/client/portal-sdk/offline-temp-id";
+import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-write";
+import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import { randomUuid } from "@freeanima/shared/rpc-contract";
 
 import type { DiaryEntryRow, DiarySubjectKind, DiaryTextBlock } from "./format-diary.ts";
@@ -259,7 +259,7 @@ function mergePatchIntoCreate(
 async function flushDiaryOp(
   op: OfflineOutboxOp,
   scope: string,
-): Promise<import("@freeanima/frontend/portal-sdk/offline-module-types").FlushOpOutcome> {
+): Promise<import("@freeanima/client/portal-sdk/offline-module-types").FlushOpOutcome> {
   try {
     const result = (await habitat().call(op.method as never, op.payload as never)) as {
       item?: DiaryEntryRow | DiaryTextBlock;

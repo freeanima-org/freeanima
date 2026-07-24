@@ -1,6 +1,6 @@
 import { StrictMode, useCallback, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { Spinner } from "@freeanima/frontend/ui-kit";
+import { Spinner } from "@freeanima/ui-kit";
 import { CharacterViewport } from "@freeanima/features/companion/ui/spa/components/CharacterViewport.tsx";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 import {
@@ -17,10 +17,7 @@ import {
   setPointerActive,
 } from "@freeanima/features/companion/ui/spa/lib/portal-shell.ts";
 import { useRef } from "react";
-import {
-  isTauriMobileUserAgent,
-  isTauriRuntime,
-} from "@freeanima/frontend/portal-sdk/tauri-runtime";
+import { isTauriMobileUserAgent, isTauriRuntime } from "@freeanima/client/portal-sdk/tauri-runtime";
 
 async function bootstrapCompanionShell(): Promise<void> {
   if (!isTauriRuntime()) return;

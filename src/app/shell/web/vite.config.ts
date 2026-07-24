@@ -214,8 +214,10 @@ export default defineConfig(({ command, mode }) => {
       inline.build?.rolldownOptions?.output &&
       !Array.isArray(inline.build.rolldownOptions.output)
     ) {
-      inline.build.rolldownOptions.output.entryFileNames = (chunkInfo) =>
-        shellEntryFileNames(chunkInfo);
+      inline.build.rolldownOptions.output.entryFileNames = (chunkInfo: {
+        name: string;
+        isEntry?: boolean;
+      }) => shellEntryFileNames(chunkInfo);
     }
     inline.plugins = [...(inline.plugins ?? []), shellBridgeHtmlPlugin(DIST_DIR, "/web/")];
     return inline;

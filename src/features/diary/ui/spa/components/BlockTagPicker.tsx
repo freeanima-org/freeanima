@@ -1,8 +1,8 @@
 import type { JSX } from "react";
 
-import { CONTENT_BLOCK_COMPONENT } from "@freeanima/core/db/schema";
-import { useTouchPrimaryCapability } from "@freeanima/frontend/portal-sdk/react";
-import { cn } from "@freeanima/frontend/ui-kit";
+import { CONTENT_BLOCK_COMPONENT } from "@freeanima/host/core/db/schema";
+import { useTouchPrimaryCapability } from "@freeanima/client/portal-sdk/react";
+import { cn } from "@freeanima/ui-kit";
 import { TagPicker } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 
 type BlockTagPickerProps = {

@@ -13,7 +13,7 @@ import {
   getBoundAcpSession,
   readAcpTasks,
   removeAcpTaskEntry,
-} from "@freeanima/capabilities/acp";
+} from "@freeanima/host/capabilities/acp";
 
 describePg("acp acp_tasks binding", () => {
   let animaSid: string;

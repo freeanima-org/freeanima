@@ -3,9 +3,9 @@ import {
   PROJECT_FOLDER_COMPONENT,
   asProject,
   asProjectFolder,
-} from "@freeanima/core/db/schema/entity";
-import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/core/db/pg/entity";
-import { omitUndefined } from "@freeanima/core/util";
+} from "@freeanima/host/core/db/schema/entity";
+import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/host/core/db/pg/entity";
+import { omitUndefined } from "@freeanima/host/core/util";
 import {
   createEntity,
   deleteEntity,
@@ -13,7 +13,7 @@ import {
   listEntities,
   searchEntities,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/pg/entity";
 
 import type {
   ProjectFolderCreateInput,

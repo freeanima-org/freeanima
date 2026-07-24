@@ -2,12 +2,12 @@ import {
   TASK_ITEM_COMPONENT,
   TASK_LIST_COMPONENT,
   asTaskList,
-} from "@freeanima/core/db/schema/entity";
+} from "@freeanima/host/core/db/schema/entity";
 import {
   countEntitiesSearch,
   countPendingTaskItemsGroupedByListId,
   listEntities,
-} from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/pg/entity";
 
 import { type SmartListPreset } from "./smart-list-presets.ts";
 import { listSmartListsMerged } from "./smart-list-store.ts";

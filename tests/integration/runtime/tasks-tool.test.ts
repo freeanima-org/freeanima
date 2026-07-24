@@ -7,17 +7,17 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { runWithToolContext } from "@freeanima/runtime/loop";
-import { ToolSetRegistry } from "@freeanima/core/tool";
-import { getProfileHopModel } from "@freeanima/platform/config";
+import { runWithToolContext } from "@freeanima/host/engine/loop";
+import { ToolSetRegistry } from "@freeanima/host/core/tool";
+import { getProfileHopModel } from "@freeanima/host/platform/config";
 import { registerTaskTools, getDefaultTaskList } from "@freeanima/features/task/domain";
 import { createProject } from "@freeanima/features/project/domain";
 import { createTag, listTags } from "@freeanima/features/tag/domain";
-import { getEntity } from "@freeanima/core/db/pg/entity";
+import { getEntity } from "@freeanima/host/core/db/pg/entity";
 import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testAgentWorldId } from "../../helpers/world-context.ts";
-import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
+import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
 
 function testCfg() {
   const ctx = getActivePgTestContext();

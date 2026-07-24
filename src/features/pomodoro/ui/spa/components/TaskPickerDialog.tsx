@@ -8,7 +8,7 @@ import {
   DialogTitle,
   Input,
   Spinner,
-} from "@freeanima/frontend/ui-kit";
+} from "@freeanima/ui-kit";
 
 import { searchPendingTasksForPicker, type PomodoroTaskPickRow } from "../lib/task-picker-api.ts";
 

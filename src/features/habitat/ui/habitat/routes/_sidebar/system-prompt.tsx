@@ -1,6 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import type { ConversationSummary } from "@freeanima/platform/ports/schemas/snapshot";
+import type { ConversationSummary } from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
 import type { PromptDebugResponse } from "@freeanima/features/habitat/protocol/habitat-contract/api/response-types.ts";
 import {
   Badge,
@@ -17,10 +17,10 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@freeanima/frontend/ui-kit";
+} from "@freeanima/ui-kit";
 import { useEffect, useMemo, useState } from "react";
-import { FormField } from "@freeanima/frontend/ui-kit/form/FormFieldset.tsx";
-import { StatusAlert } from "@freeanima/frontend/ui-kit/composite";
+import { FormField } from "@freeanima/ui-kit/form/FormFieldset.tsx";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import {
   getPromptDebug,
   listConversations,

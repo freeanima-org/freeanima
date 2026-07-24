@@ -3,7 +3,7 @@ import {
   DIARY_BLOCK_TEMPLATE_COMPONENT,
   asDiaryBlockTemplate,
   diaryBlockTemplatePresetSchema,
-} from "@freeanima/core/db/schema/entity";
+} from "@freeanima/host/core/db/schema/entity";
 import {
   assertEntityInWorld,
   createEntity,
@@ -11,8 +11,8 @@ import {
   getEntity,
   listEntities,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
-import { omitUndefined } from "@freeanima/core/util";
+} from "@freeanima/host/core/db/pg/entity";
+import { omitUndefined } from "@freeanima/host/core/util";
 
 import type {
   DiaryBlockTemplateCreateInput,

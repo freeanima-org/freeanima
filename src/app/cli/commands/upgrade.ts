@@ -2,30 +2,30 @@ import type { Command } from "commander";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 
-import { applyStandaloneUpgrade } from "@freeanima/core/config/app-update/apply-standalone-upgrade";
+import { applyStandaloneUpgrade } from "@freeanima/host/core/config/app-update/apply-standalone-upgrade";
 import {
   isGithubReleaseProxyId,
   type GithubReleaseProxyId,
-} from "@freeanima/core/config/app-update/github-release-proxy";
+} from "@freeanima/host/core/config/app-update/github-release-proxy";
 import {
   isSwitchableChannel,
   normalizeBuildChannel,
   type BuildChannel,
-} from "@freeanima/core/config/build-meta";
+} from "@freeanima/host/core/config/build-meta";
 import {
   CLI_UPGRADE_HINT_SOURCE,
   CLI_UPGRADE_HINT_STANDALONE_UNSAFE_PREFIX,
   getCliInstallKind,
-} from "@freeanima/core/config/cli-install";
+} from "@freeanima/host/core/config/cli-install";
 import {
   assertSafeStandaloneInstallPrefix,
   isPathInsideMonorepo,
   resolveStandalonePrefixFromExec,
-} from "@freeanima/core/config/install-prefix";
-import { readAppVersion } from "@freeanima/core/config/version";
-import { getStandaloneRuntimeMeta } from "@freeanima/core/config/standalone-runtime-meta";
-import { resolveMonorepoRoot } from "@freeanima/core/config/repo-root";
-import { isServerAlive } from "@freeanima/platform/alive.ts";
+} from "@freeanima/host/core/config/install-prefix";
+import { readAppVersion } from "@freeanima/host/core/config/version";
+import { getStandaloneRuntimeMeta } from "@freeanima/host/core/config/standalone-runtime-meta";
+import { resolveMonorepoRoot } from "@freeanima/host/core/config/repo-root";
+import { isServerAlive } from "@freeanima/host/platform/alive.ts";
 
 function tryStopService(animaPath: string): void {
   console.error("正在停止 service（若在运行）…");

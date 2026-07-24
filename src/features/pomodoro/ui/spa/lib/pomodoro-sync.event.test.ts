@@ -5,10 +5,10 @@ import {
   clearPomodoroSyncMetaForTest,
   getPomodoroSyncMeta,
   getPomodoroSyncSnapshot,
-} from "@freeanima/frontend/portal-sdk/pomodoro-sync-local.ts";
-import { clearPomodoroActiveStateForTest } from "@freeanima/frontend/portal-sdk/pomodoro-active.ts";
-import type { PomodoroActiveState } from "@freeanima/frontend/portal-sdk/pomodoro-active-types.ts";
-import type { PomodoroActiveBody } from "@freeanima/core/db/schema/entity";
+} from "@freeanima/client/portal-sdk/pomodoro-sync-local.ts";
+import { clearPomodoroActiveStateForTest } from "@freeanima/client/portal-sdk/pomodoro-active.ts";
+import type { PomodoroActiveState } from "@freeanima/client/portal-sdk/pomodoro-active-types.ts";
+import type { PomodoroActiveBody } from "@freeanima/host/core/db/schema/entity";
 
 import { applyPomodoroActiveChangedEvent } from "./pomodoro-sync.ts";
 

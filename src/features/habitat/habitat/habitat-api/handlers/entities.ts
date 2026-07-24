@@ -1,4 +1,4 @@
-import { omitUndefined } from "@freeanima/core/util";
+import { omitUndefined } from "@freeanima/host/core/util";
 import {
   AGENT_CONFIG_COMPONENT,
   ENTITY_ROOT_WORLD_ID,
@@ -6,8 +6,8 @@ import {
   WORLD_CONFIG_COMPONENT,
   worldConfigBodySchema,
   type WorldGrant,
-} from "@freeanima/core/db/schema";
-import type { EntityRow, EntitySearchHit } from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/schema";
+import type { EntityRow, EntitySearchHit } from "@freeanima/host/core/db/pg/entity";
 import {
   buildWorldConfigBody,
   countEntities,
@@ -19,7 +19,7 @@ import {
   resolveWorldsAccessibleBySubject,
   searchEntities as searchEntitiesPg,
   updateEntity,
-} from "@freeanima/core/db/pg/entity";
+} from "@freeanima/host/core/db/pg/entity";
 
 import { ApiHandlerError } from "./errors.ts";
 import type { ServiceAuthContext } from "../auth-context.ts";

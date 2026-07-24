@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Input } from "@freeanima/frontend/ui-kit";
+import { Input } from "@freeanima/ui-kit";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 
 export type McpToolListItem = {
