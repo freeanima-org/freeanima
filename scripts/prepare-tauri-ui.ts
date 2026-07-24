@@ -3,7 +3,7 @@
  * 打包前：按 target 构建 web → `src/app/shell/tauri/src-tauri/ui/web`。
  *
  * FREEANIMA_TAURI_TARGET=desktop|mobile（默认 desktop）
- * - desktop：dist-desktop + companion-dist + 启动 splash
+ * - desktop：dist-desktop + ui/companion（frontendDist，非 file:// resources）+ 启动 splash
  * - mobile：dist-mobile，无 companion
  */
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -28,9 +28,11 @@ const srcTauri = join(root, "src/app/shell/tauri/src-tauri");
 const webDist = join(root, "src/app/shell/web", shellWebDistDirName(target));
 const uiRoot = join(srcTauri, "ui");
 const uiWeb = join(uiRoot, "web");
-const companionResource = join(srcTauri, "companion-dist");
+const companionUi = join(uiRoot, "companion");
 const tauriConfPath = join(srcTauri, "tauri.conf.json");
 const cargoTargetDir = join(srcTauri, "target");
+/** 历史 resources 占位；desktop 已迁入 frontendDist，清理以免误用 file:// */
+const legacyCompanionResource = join(srcTauri, "companion-dist");
 
 /** 目录迁移后 Cargo/Tauri 缓存仍可能引用已删的 desktop/tauri 路径，导致 plugin permissions 读失败。 */
 function purgeStaleCargoTargetIfNeeded(): void {
@@ -196,14 +198,27 @@ if (target === "desktop") {
   console.log("[prepare-tauri] build companion…");
   process.env.FREEANIMA_SHELL_TARGET = "desktop";
   const companionDist = await buildCompanionApp({ minify: true });
-  if (existsSync(companionResource)) rmSync(companionResource, { recursive: true });
-  mkdirSync(dirname(companionResource), { recursive: true });
-  cpSync(companionDist, companionResource, { recursive: true });
-  console.log(`[prepare-tauri] companion → ${companionResource}`);
+  if (existsSync(companionUi)) rmSync(companionUi, { recursive: true });
+  mkdirSync(dirname(companionUi), { recursive: true });
+  cpSync(companionDist, companionUi, { recursive: true });
+  if (!existsSync(join(companionUi, "index.html"))) {
+    console.error(`[prepare-tauri] missing ${companionUi}/index.html`);
+    process.exit(1);
+  }
+  // 清理历史 resources/companion-dist，避免打包再嵌入空/旧资源
+  if (existsSync(legacyCompanionResource)) {
+    rmSync(legacyCompanionResource, { recursive: true });
+    mkdirSync(legacyCompanionResource, { recursive: true });
+    writeFileSync(join(legacyCompanionResource, ".gitkeep"), "");
+  }
+  console.log(`[prepare-tauri] companion → ${companionUi} (frontendDist)`);
 } else {
-  // tauri.conf.json 固定 resources: companion-dist/；mobile 无伴侣内容，放空目录满足打包。
-  if (existsSync(companionResource)) rmSync(companionResource, { recursive: true });
-  mkdirSync(companionResource, { recursive: true });
-  writeFileSync(join(companionResource, ".gitkeep"), "");
-  console.log(`[prepare-tauri] companion-dist placeholder → ${companionResource}`);
+  // mobile 无伴侣窗；若仍残留 companion-dist，保持空占位以免旧配置踩坑
+  if (existsSync(companionUi)) rmSync(companionUi, { recursive: true });
+  if (existsSync(legacyCompanionResource)) {
+    rmSync(legacyCompanionResource, { recursive: true });
+    mkdirSync(legacyCompanionResource, { recursive: true });
+    writeFileSync(join(legacyCompanionResource, ".gitkeep"), "");
+  }
+  console.log("[prepare-tauri] skip companion (mobile)");
 }

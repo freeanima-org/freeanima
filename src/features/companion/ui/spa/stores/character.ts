@@ -14,9 +14,7 @@ import {
 } from "@freeanima/features/companion/ui/spa/lib/window-metrics.ts";
 import {
   getPatrolScreen,
-  getWindowPosition,
   isCompanionOverlay,
-  moveWindow,
 } from "@freeanima/features/companion/ui/spa/lib/portal-shell.ts";
 import {
   interpolateJourneyPoint,
@@ -72,11 +70,7 @@ function companionStageElement(): HTMLElement | null {
 }
 
 async function syncWindowPositionFromShell(): Promise<ScreenPoint> {
-  if (isCompanionOverlay()) {
-    const point = await getWindowPosition();
-    currentPosition = point;
-    return point;
-  }
+  // 全屏 overlay：角色舞台在窗内定位，不再读 OS 窗坐标
   return readCurrentPositionSync();
 }
 
@@ -97,9 +91,19 @@ function defaultWebCompanionPosition(): ScreenPoint {
 export function moveCompanionStage(x: number, y: number): void {
   const el = companionStageElement();
   if (!el) return;
-  el.style.left = `${Math.round(x)}px`;
-  el.style.top = `${Math.round(y)}px`;
-  currentPosition = { x: Math.round(x), y: Math.round(y) };
+  const maxX = Math.max(
+    0,
+    (typeof window !== "undefined" ? window.innerWidth : 0) - COMPANION_WINDOW_WIDTH,
+  );
+  const maxY = Math.max(
+    0,
+    (typeof window !== "undefined" ? window.innerHeight : 0) - COMPANION_WINDOW_HEIGHT,
+  );
+  const cx = Math.round(Math.min(maxX, Math.max(0, x)));
+  const cy = Math.round(Math.min(maxY, Math.max(0, y)));
+  el.style.left = `${cx}px`;
+  el.style.top = `${cy}px`;
+  currentPosition = { x: cx, y: cy };
 }
 
 async function readPatrolScreenAndWindow(): Promise<{
@@ -158,11 +162,7 @@ function nextPatrolPoint(): ScreenPoint {
 
 function applyPosition(point: ScreenPoint): void {
   const clamped = clampPatrolPosition(point, patrolBounds);
-  if (isCompanionOverlay()) {
-    void moveWindow(clamped.x, clamped.y);
-  } else {
-    moveCompanionStage(clamped.x, clamped.y);
-  }
+  moveCompanionStage(clamped.x, clamped.y);
   currentPosition = clamped;
 }
 
@@ -327,7 +327,6 @@ function tickPatrolTimer(): void {
 }
 
 export function syncCompanionStagePosition(): void {
-  if (isCompanionOverlay()) return;
   const point = currentPosition ?? defaultWebCompanionPosition();
   moveCompanionStage(point.x, point.y);
 }
@@ -391,8 +390,12 @@ export function recordInteraction(): void {
 }
 
 export async function syncCompanionWindowPosition(): Promise<void> {
-  if (!isCompanionOverlay()) return;
-  await syncWindowPositionFromShell();
+  // 兼容旧名：拖拽结束后把 currentPosition 与舞台 DOM 对齐
+  const el = companionStageElement();
+  if (el) {
+    const rect = el.getBoundingClientRect();
+    currentPosition = { x: Math.round(rect.left), y: Math.round(rect.top) };
+  }
 }
 
 export const useCharacterStore = create<CharacterState>((set) => ({

@@ -21,7 +21,7 @@ export const COMPANION_PORT_START = 4176;
 export const COMPANION_PORT_ATTEMPTS = 10;
 export const COMPANION_PORT_MAX = COMPANION_PORT_START + COMPANION_PORT_ATTEMPTS - 1;
 
-/** companion overlay 窗口尺寸（逻辑 px） */
+/** companion 角色舞台尺寸（逻辑 px）；overlay OS 窗为工作区全屏 */
 export const COMPANION_WINDOW_WIDTH = 160;
 export const COMPANION_WINDOW_HEIGHT = 260;
 

@@ -18,7 +18,7 @@ export function TextBubbleOverlay() {
   return (
     <button
       type="button"
-      className="companion-text-bubble absolute left-1/2 -translate-x-1/2 bottom-full mb-2 max-w-[90%] text-left cursor-pointer"
+      className="companion-text-bubble absolute left-1/2 -translate-x-1/2 bottom-full mb-2 text-left cursor-pointer"
       onClick={advanceBubbleOnClick}
       title={pending > 1 ? `还有 ${pending - 1} 条，点击下一条` : "点击下一条"}
     >

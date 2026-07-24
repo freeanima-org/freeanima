@@ -1,4 +1,6 @@
 # just pack …
+# 产物：web / cli / tauri-linux|windows|android
+# 部件：tauri-ui / shell-ui / brand-icons
 import '_common.just'
 
 [private]
@@ -18,8 +20,10 @@ _ensure-android:
 
 [private]
 [no-cd]
-_ensure-android-tauri: _ensure-android
+_ensure-tauri-android: _ensure-android
   bun scripts/install-android-tauri-deps.ts --check
+
+# ─── 产物 ───────────────────────────────────────────
 
 # Web UI dist（paraglide + vite）
 [no-cd]
@@ -31,24 +35,9 @@ web: _deps
 cli: _deps
   bun scripts/build-cli-executable.ts
 
-# shell-ui 独立构建（CI）
+# Tauri 本机 Linux 安装包（需 WebKitGTK）
 [no-cd]
-shell-ui: _deps
-  bun src/frontend/shell-ui/build.ts
-
-# Tauri UI 准备（desktop|mobile）
-[no-cd]
-prepare-ui target="desktop": _deps
-  bun scripts/prepare-tauri-ui.ts {{target}}
-
-# 品牌图标
-[no-cd]
-brand-icons: _deps
-  bun scripts/generate-brand-icons.ts
-
-# Tauri 本机安装包（Linux 需 WebKitGTK）
-[no-cd]
-tauri: _deps _ensure-tauri-linux
+tauri-linux: _deps _ensure-tauri-linux
   bun scripts/build-tauri-desktop.ts
 
 # Tauri Windows NSIS 交叉编译
@@ -58,5 +47,22 @@ tauri-windows: _deps _ensure-tauri-windows
 
 # Tauri Android APK → dist/freeanima-mobile-tauri-android.apk
 [no-cd]
-android: _deps _ensure-android-tauri
+tauri-android: _deps _ensure-tauri-android
   bun scripts/build-tauri-android.ts
+
+# ─── 部件 / CI ──────────────────────────────────────
+
+# Tauri frontendDist 准备（desktop|mobile）；脚本 prepare-tauri-ui.ts
+[no-cd]
+tauri-ui target="desktop": _deps
+  bun scripts/prepare-tauri-ui.ts {{target}}
+
+# shell-ui 独立构建（CI）
+[no-cd]
+shell-ui: _deps
+  bun src/frontend/shell-ui/build.ts
+
+# 品牌图标
+[no-cd]
+brand-icons: _deps
+  bun scripts/generate-brand-icons.ts

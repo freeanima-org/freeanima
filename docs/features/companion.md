@@ -6,14 +6,14 @@ title: Desktop Companion
 
 > **Outpost** (前哨): **remote-tools attach host** in the Companion **overlay WebView** (first-party) — embedded by the desktop Portal shell for window/IPC/FS only. Target shell: **Tauri**（见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)）。Not managed via `config.yaml`, and **not** a separate Node sidecar process.
 
-The content pack (React + VRM) is embedded by the **desktop Tauri shell** (`src/app/shell/tauri`). The overlay connects with Habitat RPC, calls `remote_tools.attach`, and exposes local tools (`bubble`, `play_slot`) to the Agent. Product modules such as Chat use Habitat RPC only (no attach).
+The content pack (React + VRM) is embedded by the **desktop Tauri shell** (`src/app/shell/tauri`). Packaged overlay loads from `frontendDist` `ui/companion/` via `WebviewUrl::App` (same custom protocol as the main window — **not** `file://` resources). The overlay connects with Habitat RPC, calls `remote_tools.attach`, and exposes local tools (`bubble`, `play_slot`) to the Agent. Product modules such as Chat use Habitat RPC only (no attach).
 
 ## Architecture
 
 ```text
 FreeAnima Portal (src/app/shell/tauri)
 ├── Tauri (Rust) — tray / multi-window + prefs / IPC
-│   ├── companion overlay — transparent always-on-top; VRM + remote_tools.attach
+│   ├── companion overlay — work-area fullscreen transparent; VRM stage + remote_tools.attach
 │   ├── companion settings — settings in main window (Habitat RPC + asset HTTP)
 │   ├── chat — Chat SPA (Habitat RPC, no remote_tools.attach)
 │   └── habitat — Habitat WebView (Habitat RPC REST)
@@ -57,8 +57,8 @@ The content pack lives in [`src/features/companion/`](../../src/features/compani
 - VRM avatar rendering (Three.js + `@pixiv/three-vrm`); VRM 1.0 and 0.x auto orientation correction
 - **Motion slots**: five slots — `idle`, `rest`, `walk`, `climb`, `in_place`; each slot binds 0..n VRMA clips; play by id or random; empty slot = no animation
 - **Speech bubble**: one-way text queue; user click advances; no auto-dismiss; pushed by Habitat Agent via companion `bubble` tool
-- Transparent always-on-top companion window (160×260); avatar area clickable, empty area click-through
-- **Local interaction**: drag to move window; click body to play random motion from `in_place` slot
+- Transparent always-on-top **work-area fullscreen** overlay; character stage 160×260 positioned inside; avatar/bubble clickable, empty area click-through
+- **Local interaction**: drag moves the stage (not the OS window); click body to play random motion from `in_place` slot
 - **Patrol** (Settings → Behavior tab): idle patrol, double-click patrol, corner pause, patrol speed, return-to-start on launch, etc.
 - System tray: show/hide companion, **Settings…** (open settings window), quit
 - Settings tabs: **General** / **Behavior** / **Models** / **Motion slots** / **Motion library**

@@ -56,12 +56,12 @@ bun install
 just                         # 交互选配方
 just --list                  # 顶层：dev / check / pack / qa / …
 just dev                     # Habitat（≥10000）+ Web（:5000）；多 worktree 友好
-just dev habitat / just dev web / just dev tauri / just dev android
+just dev habitat / just dev web / just dev tauri / just dev tauri-android
 just check                   # PR 前质量门禁（= just qa check；≠ 全量 CI）
 just fmt / just test         # 顶层短别名 → qa::
 just qa typecheck / just qa lint / just qa test-changed
 just db generate / just db migrate   # 需 DATABASE_URL
-just pack web / just pack cli / just pack tauri / just pack android
+just pack web / just pack cli / just pack tauri-linux / just pack tauri-windows / just pack tauri-android
 just install cli / just install tauri-linux -- --apt
 just misc memory-sample -- --habitat-url http://127.0.0.1:<habitat> --stage full
 

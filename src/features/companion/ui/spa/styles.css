@@ -54,7 +54,7 @@ html[data-companion-view="settings"] #root {
   z-index: 5;
   pointer-events: auto;
   cursor: grab;
-  overflow: hidden;
+  overflow: visible;
   box-sizing: border-box;
 }
 
@@ -63,6 +63,28 @@ html[data-companion-view="settings"] #root {
 }
 
 .companion-stage-web canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+/** 全屏 overlay 内的角色舞台（160×260）；气泡可溢出到舞台外 */
+.companion-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  pointer-events: auto;
+  cursor: grab;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.companion-stage:active {
+  cursor: grabbing;
+}
+
+.companion-stage canvas {
   display: block;
   position: absolute;
   inset: 0;
