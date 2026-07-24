@@ -10,6 +10,7 @@ import {
   isNonJsonHabitatHttpMethod,
   parseHabitatRestResponse,
   parseQueryToPayload,
+  throwHabitatRestError,
 } from "./http-rest.ts";
 
 describe("http-rest", () => {
@@ -60,6 +61,31 @@ describe("http-rest", () => {
   test("parseHabitatRestResponse rejects 304", async () => {
     await expect(parseHabitatRestResponse(new Response(null, { status: 304 }))).rejects.toThrow(
       /304/,
+    );
+  });
+
+  test("throwHabitatRestError uses plain-text body (e.g. Unauthorized)", async () => {
+    const err = await throwHabitatRestError(new Response("Unauthorized", { status: 401 })).catch(
+      (e: unknown) => e,
+    );
+    expect(err).toBeInstanceOf(Error);
+    expect(err).not.toBeInstanceOf(SyntaxError);
+    expect((err as Error).message).toBe("Unauthorized");
+  });
+
+  test("throwHabitatRestError prefers JSON error.message", async () => {
+    await expect(
+      throwHabitatRestError(
+        new Response(JSON.stringify({ error: { code: "bad", message: "模型无效" } }), {
+          status: 400,
+        }),
+      ),
+    ).rejects.toThrow("模型无效");
+  });
+
+  test("throwHabitatRestError empty body falls back to HTTP status", async () => {
+    await expect(throwHabitatRestError(new Response("", { status: 502 }))).rejects.toThrow(
+      "HTTP 502",
     );
   });
 });

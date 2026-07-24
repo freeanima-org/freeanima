@@ -30,7 +30,7 @@ export function getCompanionDesktopExport(): FrontendDesktopExport | null {
 export const companionDesktopExport: FrontendDesktopExport = {
   manifest: getCompanionManifest(),
   profile: {
-    embedMode: "embedded-sidecar",
+    embedMode: "embedded-overlay",
     distSubdir: "companion",
     defaultPort: COMPANION_PORT_START,
     portAttempts: COMPANION_PORT_ATTEMPTS,

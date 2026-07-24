@@ -4,7 +4,7 @@ title: Desktop Companion
 
 # Desktop Companion
 
-> **Outpost** (前哨): **remote-tools attach host** in the Companion **overlay WebView** (first-party) — embedded by the desktop Portal shell for window/IPC/FS only. Target shell: **Tauri**（见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)）。Not managed via `config.yaml`, and **not** a separate Node sidecar process.
+> **桌面伴侣** / **Companion**：产品功能。**伴侣浮层**（companion overlay）：Portal 透明 VRM 窗（`embedded-overlay`）。**Outpost**（前哨）：overlay 内 `remote_tools.attach` 角色。Target shell: **Tauri**（见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)）。Not managed via `config.yaml`；**禁止**再打独立 Node sidecar。
 
 The content pack (React + VRM) is embedded by the **desktop Tauri shell** (`src/app/shell/tauri`). Packaged overlay loads from `frontendDist` `ui/companion/` via `WebviewUrl::App` (same custom protocol as the main window — **not** `file://` resources). The overlay connects with Habitat RPC, calls `remote_tools.attach`, and exposes local tools (`bubble`, `play_slot`) to the Agent. Product modules such as Chat use Habitat RPC only (no attach).
 
@@ -27,7 +27,7 @@ FreeAnima Portal (src/app/shell/tauri)
 | Layer              | Location                     | Responsibility                                                                                                                                                                   |
 | ------------------ | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Habitat SSOT**   | `src/features/companion/`    | `companion_profile` entity (behavior, slots, library meta); VRM/VRMA files under `~/.anima/companion/` on Habitat host; FBX→VRMA conversion; Settings read/write via Habitat RPC |
-| **Settings UI**    | Desktop Settings → Companion | Habitat RPC (`companion.config.*`, model/motion CRUD); upload via `POST /rpc/v1/companion/model/upload` and `/companion/motion/import`                                           |
+| **Settings UI**    | Desktop Settings → Companion | Habitat RPC（`getTypedHabitatClient`：`call` / multipart `callRaw`；`companion.config.*`、model/motion CRUD、asset.get）                                                         |
 | **Companion host** | overlay SPA (`spa/`)         | `remote_tools.attach`, tool execution, local runtime (bubble/play); optional thin HTTP for static assets + `companion.sync.pull` cache                                           |
 | **Tauri host**     | `src/app/shell/tauri/`       | Transparent window, click-through, tray, show/hide + FS / prefs IPC                                                                                                              |
 
@@ -106,7 +106,7 @@ Uses an in-process HTTP server; runtime events use localhost WebSocket (`/api/ru
 
 ### Desktop (Tauri Portal)
 
-The Portal overlay WebView hosts companion UI and `remote_tools.attach` (no Node sidecar). Window / IPC / FS come from Tauri commands. See [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md).
+The Portal companion overlay WebView hosts companion UI and `remote_tools.attach`（`embedMode: embedded-overlay`；禁止 Node sidecar）。Window / IPC / FS come from Tauri commands. See [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md).
 
 ## Settings storage
 

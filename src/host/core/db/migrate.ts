@@ -26,8 +26,8 @@ function hasMigrationSqlFiles(dir: string): boolean {
 
 /** 旁路 migrations/（含 SQL）；否则 Monorepo `src/host/core/migrations`；standalone 优先走嵌入物化 */
 export function resolveMigrationsFolder(repoRoot = getRepoRoot()): string {
-  const sidecar = join(repoRoot, "migrations");
-  if (hasMigrationSqlFiles(sidecar)) return sidecar;
+  const repoMigrations = join(repoRoot, "migrations");
+  if (hasMigrationSqlFiles(repoMigrations)) return repoMigrations;
   const monorepo = join(repoRoot, "src/host/core", "migrations");
   if (hasMigrationSqlFiles(monorepo) || existsSync(monorepo)) return monorepo;
   return DEFAULT_MIGRATIONS_FOLDER;

@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { whenPortalHabitatRpcReady } from "@freeanima/client/portal-sdk/habitat-rpc-call";
+import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import type { ClientCompanionConfig } from "@freeanima/features/companion/shared/constants.ts";
 
 export type HabitatCompanionConfig = Omit<
@@ -12,10 +12,7 @@ export type HabitatCompanionConfig = Omit<
 
 export type CompanionHabitatConfigResponse = { config: HabitatCompanionConfig };
 
+/** Companion UI 统一 Habitat client（JSON → call；multipart/raw → callRaw） */
 export function getCompanionHabitatClient() {
-  return {
-    call<T = unknown>(method: string, payload?: unknown): Promise<T> {
-      return whenPortalHabitatRpcReady().then((rpc) => rpc.request<T>(method, payload));
-    },
-  };
+  return getTypedHabitatClient();
 }

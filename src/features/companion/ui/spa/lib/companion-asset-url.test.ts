@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
-import { encodeSidecarPath, resolveCompanionAssetUrl } from "./sidecar-asset-url.ts";
+import {
+  encodeCompanionAssetPath,
+  parseCompanionAssetPath,
+  resolveCompanionAssetUrl,
+} from "./companion-asset-url.ts";
 
 function stubPortalShell(habitatUrl: string): void {
   // bun test 无 DOM window；仅注入 resolveHubBaseUrl 所需字段
@@ -13,9 +17,26 @@ afterEach(() => {
   delete (globalThis as { window?: unknown }).window;
 });
 
-describe("encodeSidecarPath", () => {
+describe("encodeCompanionAssetPath", () => {
   it("编码路径段并保留斜杠", () => {
-    expect(encodeSidecarPath("/models/foo bar.vrm")).toBe("/models/foo%20bar.vrm");
+    expect(encodeCompanionAssetPath("/models/foo bar.vrm")).toBe("/models/foo%20bar.vrm");
+  });
+});
+
+describe("parseCompanionAssetPath", () => {
+  it("解析 models / motions", () => {
+    expect(parseCompanionAssetPath("/models/demo.vrm")).toEqual({
+      kind: "models",
+      fileName: "demo.vrm",
+    });
+    expect(parseCompanionAssetPath("motions/walk.vrma")).toEqual({
+      kind: "motions",
+      fileName: "walk.vrma",
+    });
+  });
+
+  it("绝对 URL 返回 null", () => {
+    expect(parseCompanionAssetPath("https://cdn.example/a.vrm")).toBeNull();
   });
 });
 

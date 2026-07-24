@@ -27,7 +27,7 @@ NSIS 安装目录 = `productName`（无独立 installDir）。`just pack tauri-w
 ## 强制策略
 
 1. **产品逻辑 TypeScript-only**（Habitat / features）；壳主进程 **Rust only** — 不在壳内跑 Node/Bun 业务进程。
-2. **禁止 Node sidecar**：companion `remote_tools.attach` 在 **overlay WebView**；壳只提供窗 / IPC / FS / 通知。
+2. **禁止 Node sidecar**：companion `remote_tools.attach` 在 **伴侣浮层**（`embedded-overlay` WebView）；壳只提供窗 / IPC / FS / 通知。
 3. **`ShellApi` 注入**：`isTauri: true`、`isNativeShell: true`；桌面 `primaryInput: "pointer"`；移动 `primaryInput: "touch"`。
 4. **禁止**用 `getShellKind() === "tauri"` 锁布局（三维度规则 → [`ui-dimensions.md`](ui-dimensions.md)）。
 5. 编译期壳目标：`FREEANIMA_SHELL_TARGET=desktop|mobile` → `dist-desktop` / `dist-mobile`；打包前 `scripts/prepare-tauri-ui.ts` 拷入 `src-tauri/ui/web`。

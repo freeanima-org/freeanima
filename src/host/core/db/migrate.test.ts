@@ -6,7 +6,7 @@ import { resolveMigrationsFolder, resolveMigrationsFolderForRun } from "./migrat
 import { registerEmbeddedMigrations } from "./migrations-embedded.ts";
 
 describe("resolveMigrationsFolder", () => {
-  it("prefers sidecar migrations/ layout when it has SQL", () => {
+  it("prefers repo-root migrations/ layout when it has SQL", () => {
     const root = createTempDir("freeanima-migrations-root-");
     try {
       const published = join(root, "migrations");
@@ -21,7 +21,7 @@ describe("resolveMigrationsFolder", () => {
     }
   });
 
-  it("ignores empty sidecar and uses monorepo migrations", () => {
+  it("ignores empty repo-root migrations/ and uses monorepo migrations", () => {
     const root = createTempDir("freeanima-migrations-root-");
     try {
       const published = join(root, "migrations");

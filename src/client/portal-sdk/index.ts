@@ -18,7 +18,7 @@ export type {
   BundledSpaDesktopProfile,
   DesktopProfile,
   DesktopWindowSpec,
-  EmbeddedSidecarDesktopProfile,
+  EmbeddedOverlayDesktopProfile,
   FrontendDesktopExport,
   FrontendMobileExport,
   MobileProfile,

@@ -7,7 +7,7 @@ import {
   onCharacterModelReady,
   startPatrolWatcher,
 } from "@freeanima/features/companion/ui/spa/stores/character.ts";
-import { useSidecarError } from "@freeanima/features/companion/ui/spa/hooks/useSidecarError.ts";
+import { useCompanionShellError } from "@freeanima/features/companion/ui/spa/hooks/useCompanionShellError.ts";
 import {
   isCompanionOverlay,
   listenConfigChanged,
@@ -96,7 +96,7 @@ function CompanionWindow() {
     setCharacterReady,
   } = useCompanionStore();
 
-  useSidecarError();
+  useCompanionShellError();
 
   const onModelLoaded = useCallback(() => {
     setCharacterReady(true);

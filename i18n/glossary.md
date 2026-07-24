@@ -9,6 +9,8 @@
 | **Habitat**         | **栖息地**  | Long-running process + admin UI; connect vs open by verb                                                    |
 | **Portal**          | **入口**    | Class name: Shell, MCP, and similar external connectors into Habitat                                        |
 | **Outpost**         | **前哨**    | Remote-tool registrant: unreachable local app that `remote_tools.attach`（Portal 内嵌或独立工具；≠ Portal） |
+| Desktop Companion   | 桌面伴侣    | Product feature（VRM 角色 + 设置）；代码 feature `companion`；**≠** 已消除的 Node sidecar                   |
+| companion overlay   | 伴侣浮层    | Portal 透明 VRM 窗（`embedMode: embedded-overlay` / window `kind: overlay`）；设置在主窗，不叫「伴侣窗口」  |
 | Shell               | 壳          | A Portal (desktop / mobile / web); **not** Habitat; **not** app frame (侧栏/底栏/设置 chrome)               |
 | app frame           | 应用布局    | SPA chrome：模块 Rail/底栏、设置页 tabs↔侧栏；代码在 `app-ui`（`AppFrame`）；跟视口，非 Shell               |
 | Chat                | 聊天室      | Chat room UI                                                                                                |

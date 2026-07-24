@@ -129,7 +129,7 @@ Host stack: `src/host/{kernel,core,engine,capabilities,platform}`。Client: `src
 
 导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `getShellKind()` 锁应用布局。交互（右键/长按/Enter）用 `portal-sdk` 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
 
-**边界**：`app-frame` 与 `src/features/*/ui` 通过 `portal-sdk` + Feature RPC 访问 Habitat。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于 Habitat 拨不到的本地应用（今日 companion：**第一方 overlay WebView-host** 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）。产品面（Chat 等）**不做** attach。可拨号对端的工具走 **MCP**。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md)。
+**边界**：`app-frame` 与 `src/features/*/ui` 通过 `portal-sdk` + Feature RPC 访问 Habitat。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于 Habitat 拨不到的本地应用（今日 companion：**第一方伴侣浮层** / `embedded-overlay` 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）。产品面（Chat 等）**不做** attach。可拨号对端的工具走 **MCP**。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md)。
 
 ### Habitat navigation ↔ cognitive layers
 
@@ -347,7 +347,7 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 
 ## Client UI（web/dist SSOT + 原生壳打包）
 
-**Portal Shell 运行时**：**Tauri**（Rust 主进程 + 系统 WebView；桌面与 Android 统一壳层）。壳规则：[`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)。**禁止**为 companion 再打 Node sidecar；`remote_tools.attach` 在第一方 overlay WebView（见 Desktop companion）。
+**Portal Shell 运行时**：**Tauri**（Rust 主进程 + 系统 WebView；桌面与 Android 统一壳层）。壳规则：[`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)。**禁止**为 companion 再打 Node sidecar；`remote_tools.attach` 在第一方伴侣浮层（见 Desktop companion）。
 
 **UI 源码产物**：`src/app/shell/web/dist`（`base: /web/`）。
 
@@ -410,7 +410,7 @@ Complementary: Pipeline Runner handles scheduled multi-step background work; Hoo
 
 ## Desktop companion (Habitat SSOT)
 
-The desktop companion is an **unreachable local app** that **actively connects** to Habitat and registers remote tools in the **first-party overlay WebView** (shell provides window/IPC/FS only — **not** a Node sidecar), with a split boundary:
+The desktop companion（桌面伴侣）is an **unreachable local app** that **actively connects** to Habitat and registers remote tools in the **first-party companion overlay**（伴侣浮层 / `embedded-overlay`；shell provides window/IPC/FS only — **not** a Node sidecar), with a split boundary:
 
 | Concern                             | Habitat (`src/features/companion/`)              | Local install                             |
 | ----------------------------------- | ------------------------------------------------ | ----------------------------------------- |

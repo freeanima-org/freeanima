@@ -28,16 +28,16 @@
 
 ## 原型 A′ — 远程工具宿主（不可达本地应用）
 
-**示例**：companion（**overlay WebView-host**：`createRemoteToolsHabitatAttach` 在第一方 overlay 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）
+**示例**：companion（**伴侣浮层** / `embedded-overlay`：`createRemoteToolsHabitatAttach` 在第一方 overlay 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）
 
 | 层                          | 必须改                                                                  |
 | --------------------------- | ----------------------------------------------------------------------- |
 | `rpc-contract`              | `remote-tools/` + `frames/*` attach / tool schema                       |
-| `src/features/companion/ui` | Outpost overlay UI + 可选极薄静态服（**禁止** Node sidecar）            |
+| `src/features/companion/ui` | 伴侣浮层 UI + 可选 companion/dev 本地 HTTP（**禁止** Node sidecar）     |
 | 桌面壳                      | 透明窗 / click-through / 托盘 / FS；产品面仍走 Feature RPC，不做 attach |
 
 **不要**：为 Chat/Task 等产品面新建 Outpost attach 或 `remote_tools.attach`；能 MCP 解决的不要走远程工具注册。  
-**允许**：Companion 等原型 A′ 的**第一方 overlay** 内 `remote_tools.attach`（WebView-host）。**禁止**：Chat 等产品面 attach；禁止为 attach 再起 Node sidecar。
+**允许**：Companion 等原型 A′ 的**第一方伴侣浮层**内 `remote_tools.attach`（WebView-host）。**禁止**：Chat 等产品面 attach；禁止为 attach 再起 Node sidecar。
 
 ## 原型 B — Habitat 运维面（Habitat RPC）
 

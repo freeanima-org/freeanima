@@ -2,7 +2,6 @@ import { create } from "zustand";
 import {
   fetchOverlayCompanionConfig,
   loadHabitatCompanionSettingsConfig,
-  resetSidecarOriginCache,
   saveSettings,
   uploadModel as uploadModelApi,
   type CompanionConfig,
@@ -153,10 +152,6 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
 
   applyConfig(cfg) {
     const prev = get();
-    const habitatChanged = prev.habitatUrl !== cfg.habitat_url;
-    if (habitatChanged) {
-      resetSidecarOriginCache();
-    }
     const modelPath = cfg.model_available ? cfg.model_path : "";
     const modelChanged = prev.modelPath !== modelPath;
     set({

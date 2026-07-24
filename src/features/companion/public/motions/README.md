@@ -42,7 +42,7 @@ BOOTH 官方链接**需要登录**，无法无账号静默下载。若你自行�
 COMPANION_VRMA_ZIP_URL=https://example.com/VRMA_MotionPack.zip
 ```
 
-sidecar 启动时会尝试下载；设置页也会出现「从镜像自动下载」按钮。
+Habitat / companion 同步时会尝试下载；设置页也会出现「从镜像自动下载」按钮。
 
 ## 巡逻走路 / 攀爬（可选）
 
@@ -52,6 +52,6 @@ sidecar 启动时会尝试下载；设置页也会出现「从镜像自动下载
 
 - 站点：<https://www.mixamo.com/>
 - 下载：**FBX**、**Without Skin**、勾选 **In Place**
-- 在设置中通过动作库导入 FBX，sidecar 会转换为 `.vrma`
+- 在设置中通过动作库导入 FBX，Habitat 会转换为 `.vrma`
 
 许可以各资源商品页为准；导入后仅保存在本机 `~/.anima/companion/motions/`。

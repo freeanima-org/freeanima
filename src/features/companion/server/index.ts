@@ -6,7 +6,7 @@ import { companionPackageRoot } from "./companion-root.ts";
 import { corsPreflight, jsonResponse } from "./http/cors.ts";
 import { clientCompanionConfig } from "./config-response.ts";
 import { ensureCompanionDataDir } from "./paths.ts";
-import { serveSidecarAsset, serveStatic, setStaticDistDir } from "./static.ts";
+import { serveCompanionPublicAsset, serveStatic, setStaticDistDir } from "./static.ts";
 import { COMPANION_PORT_ATTEMPTS, COMPANION_PORT_START } from "../shared/constants.ts";
 import { advanceBubble, bubbleState } from "./runtime-state.ts";
 import { handleRuntimeWsClose, handleRuntimeWsOpen, runtimeWsPayload } from "./runtime-ws.ts";
@@ -44,9 +44,9 @@ function isAddrInUse(error: unknown): boolean {
   );
 }
 
-function announceSidecarPort(port: number): void {
-  process.stderr.write(`companion-sidecar-port:${port}\n`);
-  console.log(`companion outpost http://127.0.0.1:${port}`);
+function announceCompanionDevPort(port: number): void {
+  process.stderr.write(`companion-dev-port:${port}\n`);
+  console.log(`companion dev http://127.0.0.1:${port}`);
 }
 
 export function getCompanionHttpUrl(): string {
@@ -76,9 +76,9 @@ export async function route(req: Request): Promise<Response> {
     return jsonResponse({ ok: true, app: "companion" });
   }
 
-  const sidecarAsset = serveSidecarAsset(url.pathname);
-  if (sidecarAsset) {
-    return sidecarAsset;
+  const publicAsset = serveCompanionPublicAsset(url.pathname);
+  if (publicAsset) {
+    return publicAsset;
   }
 
   if (process.env.SATELLITE_VITE_DEV === "1") {
@@ -152,7 +152,7 @@ export async function startCompanionServer(
       const boundPort = await listenServer(httpServer, port, host);
       activeHttpUrl = `http://${host}:${boundPort}`;
       if (opts.announce !== false) {
-        announceSidecarPort(boundPort);
+        announceCompanionDevPort(boundPort);
       }
 
       return {

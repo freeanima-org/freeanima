@@ -14,7 +14,6 @@ import {
   COMPANION_WINDOW_WIDTH,
 } from "@freeanima/features/companion/ui/spa/lib/window-metrics.ts";
 import { loadCachedModelSource } from "@freeanima/features/companion/ui/spa/lib/model-cache.ts";
-import { resolveCompanionAssetUrl } from "@freeanima/features/companion/ui/spa/lib/sidecar-asset-url.ts";
 import {
   applyVrmCameraFraming,
   computeVrmFraming,
@@ -69,8 +68,7 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
 
     void (async () => {
       try {
-        const modelUrl = await resolveCompanionAssetUrl(modelPath);
-        const cached = await loadCachedModelSource(modelUrl);
+        const cached = await loadCachedModelSource(modelPath);
         revokeModel = cached.revoke;
         if (disposed) return;
 
@@ -103,8 +101,7 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
         controls.maxPolarAngle = (150 * Math.PI) / 180;
         controls.update();
 
-        const motionUrl = await resolveCompanionAssetUrl(`${motionManifest.baseUrl}/${motionFile}`);
-        const motionBlob = await loadCachedModelSource(motionUrl);
+        const motionBlob = await loadCachedModelSource(`${motionManifest.baseUrl}/${motionFile}`);
         const animLoader = new GLTFLoader();
         animLoader.register((parser) => new VRMAnimationLoaderPlugin(parser));
         const motionGltf = await animLoader.loadAsync(motionBlob.url);
