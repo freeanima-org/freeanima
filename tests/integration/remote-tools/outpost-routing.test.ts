@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { ToolSetRegistry, toolError } from "@freeanima/host/core/tool";
+import { ToolSetRegistry } from "@freeanima/host/core/tool";
 import { formatRemoteToolName } from "@freeanima/shared/rpc-contract";
 import { RemoteToolsManager } from "@freeanima/host/capabilities/outpost";
 
-describe("sap strict routing integration", () => {
-  it("does not fall back to habitat-local file_read for unregistered sap tool", () => {
+describe("outpost bind-at-register integration", () => {
+  it("does not fall back to habitat-local file_read for unregistered remote tool", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("file", "file", [
       {
@@ -18,18 +18,8 @@ describe("sap strict routing integration", () => {
     const manager = new RemoteToolsManager(registry);
     manager.installToolRouting();
 
-    const sapName = formatRemoteToolName("companion", "a1b", "file_read");
-    // 会话绑定可与工具 instance 不同；离线仍 reject，且不得回落到同名本地工具
-    const route = manager.resolveToolCall("sid", sapName, {
-      outpost_app_id: "companion",
-      outpost_instance_id: "c2d",
-    });
-    expect(route.kind).toBe("reject");
-    if (route.kind === "reject") {
-      expect(route.error).toContain("outpost instance offline");
-    }
-
-    const guard = registry.getTool(sapName);
+    const remoteName = formatRemoteToolName("companion", "a1b", "file_read");
+    const guard = registry.getTool(remoteName);
     expect(guard).toBeDefined();
     const result = guard!.handler({});
     expect(result).toContain("sap tool not registered");
@@ -39,10 +29,19 @@ describe("sap strict routing integration", () => {
     expect(localTool?.handler({})).toBe("habitat executed");
   });
 
-  it("returns toolError when target outpost is offline", async () => {
-    const manager = new RemoteToolsManager(new ToolSetRegistry());
+  it("does not register tools without a live connection", () => {
+    const registry = new ToolSetRegistry();
+    const manager = new RemoteToolsManager(registry);
     const name = formatRemoteToolName("companion", "k7m", "x");
-    const out = await manager.callToolViaSatellite("sid", name, {}, undefined);
-    expect(out).toBe(toolError("outpost instance offline: companion/k7m"));
+    const registered = manager.registerTools("companion", "k7m", [
+      {
+        local_name: "x",
+        description: "x",
+        parameters: { type: "object", properties: {} },
+        return_kind: "text",
+      },
+    ]);
+    expect(registered).toEqual([]);
+    expect(registry.getTool(name)).toBeUndefined();
   });
 });
