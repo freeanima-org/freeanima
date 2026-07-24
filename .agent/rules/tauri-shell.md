@@ -10,7 +10,8 @@
 | `src/frontend/shell-sdk/` | `ShellApi` / `getShellKind()`（`web` \| `tauri`） |
 
 开发：`just tauri` / `bun run dev:tauri`（桌面）；`just android` / `bun run debug:android`（移动）。  
-打包：`just pack-tauri` / `just pack-tauri-windows`；`just pack-android`（Tauri APK）。
+打包：`just pack-tauri` / `just pack-tauri-windows`；`just pack-android`（Tauri APK）。  
+CI / 本地 release profile 优先级：**构建速度 > 体积 > 运行速度**（无 fat LTO；详见 [`release.md`](release.md)「Tauri 打包加速约定」）。
 
 ## 强制策略
 

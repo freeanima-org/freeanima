@@ -86,7 +86,14 @@ Specify version in commit body with `Release-As: x.y.z` (see [Release Please doc
 
 Canary `nextVersion`：有 open Release PR（`autorelease: pending`）则取其 `package.json.version`，否则回退 [`.release-please-manifest.json`](../../.release-please-manifest.json)。Body 含 `sha: <full>`，供 canary 轨按 commit 检测更新。
 
-手动重打：[`package-manual.yml`](../../.github/workflows/package-manual.yml)。
+手动重打：在 Actions 触发 [`canary.yml`](../../.github/workflows/canary.yml) 的 `workflow_dispatch`（可选 `ref`），走同一套 `package-artifacts`。
+
+**Tauri 打包加速约定**（优先级：构建速度 > 体积 > 运行速度）：
+
+- portal `[profile.release]`：`lto = false`、`codegen-units = 16`、`opt-level = 2`、`strip = true`（canary/release 共用）
+- Linux 只打 AppImage、Windows 只打 NSIS（脚本 `--bundles`）
+- 三端 job 均挂 `Swatinem/rust-cache`，**`key` 按平台区分**（`tauri-linux` / `tauri-windows-xwin` / `tauri-android`），避免并行覆盖
+- Windows 交叉另缓存 `cargo-xwin` 与 `~/.xwin`
 
 **本地构建默认 `channel=dev`**（未设 `FREEANIMA_BUILD_CHANNEL` 时）。CI 必须显式设置 `release` / `canary`。构建版本可用 `FREEANIMA_BUILD_VERSION` 覆盖（不改根 `package.json`）。
 
@@ -127,9 +134,8 @@ There is **no** npm package publish and **no** Docker image publish.
 | `release-please-config.json`              | Release Please strategy and changelog sections                                           |
 | `.release-please-manifest.json`           | Published version manifest                                                               |
 | `.github/workflows/release.yml`           | release-please + 调用 package-artifacts                                                  |
-| `.github/workflows/canary.yml`            | main 滚动 canary Pre-release                                                             |
+| `.github/workflows/canary.yml`            | main 滚动 canary Pre-release；手动重打用 workflow_dispatch                               |
 | `.github/workflows/package-artifacts.yml` | 共用三端打包（Linux / Desktop 交叉 / Mobile debug APK）                                  |
-| `.github/workflows/package-manual.yml`    | 手动重打                                                                                 |
 | `scripts/resolve-canary-version.ts`       | canary 版本串                                                                            |
 | `scripts/build-cli-executable.ts`         | Standalone build                                                                         |
 | `CHANGELOG.md`                            | New version section appended on Release PR merge; excluded from oxfmt (`*` list markers) |
