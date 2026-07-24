@@ -591,16 +591,14 @@ export function DiaryApp() {
         disabled={refreshing || loading}
         onRefresh={handleManualRefresh}
       >
-        <div className="min-h-0 flex-1 overflow-hidden">
-          <EntryTimeline
-            items={entries}
-            selectedId={selectedId}
-            onSelect={selectEntryById}
-            hasMore={!searchQuery.trim() && hasMore}
-            loadingMore={loadingMore}
-            onLoadMore={() => void loadMore()}
-          />
-        </div>
+        <EntryTimeline
+          items={entries}
+          selectedId={selectedId}
+          onSelect={selectEntryById}
+          hasMore={!searchQuery.trim() && hasMore}
+          loadingMore={loadingMore}
+          onLoadMore={() => void loadMore()}
+        />
       </PullToRefresh>
     </div>
   );
