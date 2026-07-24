@@ -3,10 +3,13 @@ import type { NotificationRow as PgNotificationRow } from "@freeanima/host/core/
 import { resolveNotificationRecipients } from "@freeanima/host/core/config";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 import type { NotificationRow } from "@freeanima/shared/rpc-contract/frames/notification";
+import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 
 import { notificationMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
+import { notificationSessionPumps } from "../session-pumps.ts";
+import { pumpUserNotificationInbox } from "../stream.ts";
 
 type NotificationRemoteToolsServerDeps = {
   runtime: { runtimeDeps(): RuntimeDeps };
@@ -14,6 +17,10 @@ type NotificationRemoteToolsServerDeps = {
 
 function depsOf(deps: unknown): NotificationRemoteToolsServerDeps {
   return deps as NotificationRemoteToolsServerDeps;
+}
+
+function ctxOf(ctx: unknown): RemoteToolsRequestContext {
+  return ctx as RemoteToolsRequestContext;
 }
 
 function serializeNotificationRow(row: PgNotificationRow): NotificationRow {
@@ -66,5 +73,18 @@ export const notificationHabitatRoutes = bindHabitatRouteHandlers(notificationMe
       user_subject_id: user.id,
       agent_subject_id: agent.id,
     };
+  },
+  "notification.subscribeInbox": async (_deps, _input, ctx) => {
+    const sapCtx = ctxOf(ctx);
+    const sessionPumps = notificationSessionPumps();
+    const pumpKey = `${sapCtx.app_id}:${sapCtx.instance_id}:notification-inbox`;
+    if (!sessionPumps.has(pumpKey)) {
+      const controller = new AbortController();
+      sessionPumps.set(pumpKey, controller);
+      void pumpUserNotificationInbox(sapCtx, controller.signal).finally(() => {
+        sessionPumps.delete(pumpKey);
+      });
+    }
+    return { ok: true as const };
   },
 });

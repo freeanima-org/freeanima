@@ -12,6 +12,7 @@ import {
   markNotificationRead as markPgNotificationRead,
 } from "@freeanima/host/core/db/pg/notifications";
 import type { RuntimeDeps } from "./runtime-deps.ts";
+import { emitUserNotificationCreated } from "./user-inbox-events.ts";
 
 export type NotificationListResult = {
   items: NotificationRow[];
@@ -65,8 +66,17 @@ export async function createNotification(
   _deps: RuntimeDeps,
   input: NotificationCreateInput,
 ): Promise<NotificationRow> {
-  return createPgNotification({
+  const row = await createPgNotification({
     ...input,
     recipient_id: resolveRecipientId(input.recipient_id),
   });
+  if (row.recipient_kind === "user") {
+    emitUserNotificationCreated({
+      id: row.id,
+      title: row.title,
+      body: row.body,
+      created_at: row.created_at.toISOString(),
+    });
+  }
+  return row;
 }

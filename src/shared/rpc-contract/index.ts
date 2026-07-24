@@ -295,6 +295,9 @@ export {
   notificationMarkReadInputSchema,
   notificationMarkReadOutputSchema,
   notificationRecipientsOutputSchema,
+  notificationSubscribeInboxInputSchema,
+  notificationSubscribeInboxOutputSchema,
+  notificationCreatedEventSchema,
 } from "./frames/notification.ts";
 export type {
   NotificationRecipientKind,
@@ -306,6 +309,9 @@ export type {
   NotificationMarkReadInput,
   NotificationMarkReadOutput,
   NotificationRecipientsOutput,
+  NotificationSubscribeInboxInput,
+  NotificationSubscribeInboxOutput,
+  NotificationCreatedEvent,
 } from "./frames/notification.ts";
 
 export {

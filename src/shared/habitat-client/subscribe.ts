@@ -46,11 +46,19 @@ export function createHabitatSubscriber(options: {
     void (async () => {
       try {
         const rpc = await options.getRpcClient();
-        if (method === "conversation.subscribe") {
+        if (
+          method === "conversation.subscribe" ||
+          method === "conversation.subscribeInbox" ||
+          method === "notification.subscribeInbox"
+        ) {
           await rpc.request(method, input);
         }
         const eventMethod =
-          method === "conversation.subscribe" ? "conversation.updated" : String(method);
+          method === "conversation.subscribe" || method === "conversation.subscribeInbox"
+            ? "conversation.updated"
+            : method === "notification.subscribeInbox"
+              ? "notification.created"
+              : String(method);
         const off = rpc.onEvent(eventMethod, (payload) => {
           if (!cancelled) callbacks.onData?.(payload);
         });

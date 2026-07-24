@@ -1,4 +1,4 @@
-import { deliverAlert } from "@freeanima/client/portal-sdk/alert";
+import { deliverLocalReminder } from "@freeanima/client/portal-sdk/local-reminder.ts";
 import type { PomodoroActiveState } from "@freeanima/client/portal-sdk/pomodoro-active-types.ts";
 import {
   applyLocalPomodoroActive,
@@ -245,16 +245,14 @@ export async function runPhaseComplete(options: {
   await persistPhaseEnd(state, subjectKind, false);
 
   if (deliverAlerts && (config.notify_on_phase_end || config.sound_enabled)) {
-    void deliverAlert(
-      {
-        title: `${phaseLabel(state.phase)}结束`,
-        body: state.phase === "work" ? "休息一下" : "准备下一轮专注",
-        tag: completedTag,
-        sound: config.sound_enabled,
-        silent: !config.notify_on_phase_end,
-      },
-      { sourceRoute: "/pomodoro", suppressOsWhenFocused: true },
-    );
+    void deliverLocalReminder({
+      title: `${phaseLabel(state.phase)}结束`,
+      body: state.phase === "work" ? "休息一下" : "准备下一轮专注",
+      tag: completedTag,
+      sound: config.sound_enabled,
+      silent: !config.notify_on_phase_end,
+      sourceRoute: "/pomodoro",
+    });
   }
 
   return "ok";

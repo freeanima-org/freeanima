@@ -103,6 +103,8 @@ import type {
   NotificationMarkReadInput,
   NotificationMarkReadOutput,
   NotificationRecipientsOutput,
+  NotificationSubscribeInboxInput,
+  NotificationSubscribeInboxOutput,
 } from "./frames/notification.ts";
 import type {
   DiaryAppendInput,
@@ -284,6 +286,7 @@ export const RPC_PROTOCOL_METHODS = [
   "notification.list",
   "notification.markRead",
   "notification.recipients",
+  "notification.subscribeInbox",
   "companion.config.get",
   "companion.config.update",
   "companion.model.setActive",
@@ -388,6 +391,7 @@ export type RpcRouterInputs = {
   "notification.list": NotificationListInput;
   "notification.markRead": NotificationMarkReadInput;
   "notification.recipients": Record<string, never>;
+  "notification.subscribeInbox": NotificationSubscribeInboxInput;
   "companion.config.get": CompanionConfigGetInput;
   "companion.config.update": CompanionConfigUpdateInput;
   "companion.model.setActive": CompanionModelSetActiveInput;
@@ -490,6 +494,7 @@ export type RpcRouterOutputs = {
   "notification.list": NotificationListOutput;
   "notification.markRead": NotificationMarkReadOutput;
   "notification.recipients": NotificationRecipientsOutput;
+  "notification.subscribeInbox": NotificationSubscribeInboxOutput;
   "companion.config.get": CompanionConfigGetOutput;
   "companion.config.update": CompanionConfigUpdateOutput;
   "companion.model.setActive": CompanionModelSetActiveOutput;

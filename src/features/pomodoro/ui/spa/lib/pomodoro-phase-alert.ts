@@ -1,4 +1,5 @@
 import { cancelScheduledAlert, scheduleLocalAlert } from "@freeanima/client/portal-sdk/alert";
+import { isCompanionReminderPreferred } from "@freeanima/client/portal-sdk/local-reminder.ts";
 import type { PomodoroActiveState } from "@freeanima/client/portal-sdk/pomodoro-active-types.ts";
 
 import type { PomodoroConfigRow } from "./api.ts";
@@ -41,6 +42,7 @@ export async function cancelPomodoroPhaseAlert(state: PomodoroActiveState): Prom
 
 /**
  * 按 active 状态同步本机预登记：running+phaseEndsAt → schedule；否则 cancel。
+ * companion 可见时不 schedule（OS 定时器无法走气泡；即时路径由 deliverLocalReminder 气泡）。
  * `config` 为 null 时只 cancel、不 schedule。
  */
 export async function syncPomodoroPhaseLocalAlert(
@@ -63,6 +65,11 @@ export async function syncPomodoroPhaseLocalAlert(
   }
 
   if (!config || !shouldNotify(config)) {
+    await cancelPomodoroPhaseAlert(next);
+    return;
+  }
+
+  if (await isCompanionReminderPreferred()) {
     await cancelPomodoroPhaseAlert(next);
     return;
   }

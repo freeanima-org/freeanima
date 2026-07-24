@@ -17,6 +17,7 @@ import { useAppBottomNavLayout } from "../lib/use-app-bottom-nav-layout.ts";
 import { AppModuleRail } from "./AppModuleRail.tsx";
 import { PomodoroShellWatcher } from "@freeanima/features/pomodoro/ui/spa/PomodoroShellWatcher.tsx";
 import { ChatUnreadShellWatcher } from "@freeanima/features/chat/ui/spa/ChatUnreadShellWatcher.tsx";
+import { NotificationReminderShellWatcher } from "@freeanima/features/notification/ui/spa/NotificationReminderShellWatcher.tsx";
 import { AppNavUnreadBadge } from "./AppNavUnreadBadge.tsx";
 
 function useNavActive(match: string): boolean {
@@ -179,6 +180,7 @@ export function AppFrame() {
       <AppModuleVisibilityGuard />
       <PomodoroShellWatcher />
       <ChatUnreadShellWatcher />
+      <NotificationReminderShellWatcher />
       {isCompactLayout(layoutMode) ? <CompactAppFrame /> : <ExpandedAppFrame />}
     </SubjectScopeProvider>
   );

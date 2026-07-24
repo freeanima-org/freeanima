@@ -17,6 +17,7 @@ import {
 } from "@freeanima/shared/rpc-contract/frames/pomodoro";
 
 import { fetchPomodoroConfig } from "./lib/api.ts";
+import { syncPomodoroPhaseLocalAlert } from "./lib/pomodoro-phase-alert.ts";
 import {
   applyPomodoroActiveChangedEvent,
   flushPomodoroOutbox,
@@ -70,6 +71,26 @@ export function PomodoroShellWatcher() {
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [subjectKind]);
+
+  /** 伴侣显隐变化：可见则取消 OS 预登记；隐藏则按当前阶段重新 schedule */
+  useEffect(() => {
+    const shell = window.portalShell;
+    if (!shell?.listenConfigChanged) return;
+    return shell.listenConfigChanged(() => {
+      void (async () => {
+        const active =
+          getPomodoroSyncSnapshot(subjectKind).active ??
+          readPomodoroActiveState(undefined, subjectKind);
+        if (!active || active.runState !== "running") return;
+        try {
+          const config = await fetchPomodoroConfig(subjectKind);
+          await syncPomodoroPhaseLocalAlert(active, active, config);
+        } catch {
+          /* 忽略：下次 tick / 配置变更再试 */
+        }
+      })();
+    });
   }, [subjectKind]);
 
   useEffect(() => {

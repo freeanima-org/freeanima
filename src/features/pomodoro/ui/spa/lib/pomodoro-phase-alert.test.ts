@@ -117,4 +117,25 @@ describe("syncPomodoroPhaseLocalAlert", () => {
     expect(cancelled).toContain(pomodoroPhaseAlertTag(running));
     expect(scheduled).toHaveLength(1);
   });
+
+  test("companion 可见时不 schedule", async () => {
+    const { scheduled, cancelled } = mockBackend();
+    const prevWindow = globalThis.window;
+    (globalThis as { window?: Window }).window = {
+      portalShell: {
+        getCompanionVisible: async () => true,
+        enqueueCompanionBubble: async () => undefined,
+      },
+    } as unknown as Window;
+    try {
+      const state = runningState();
+      await syncPomodoroPhaseLocalAlert(null, state, baseConfig);
+      expect(scheduled).toHaveLength(0);
+      expect(wasPomodoroPhaseAlertScheduled(pomodoroPhaseAlertTag(state))).toBe(false);
+      expect(cancelled).toContain(pomodoroPhaseAlertTag(state));
+    } finally {
+      if (prevWindow) (globalThis as { window?: Window }).window = prevWindow;
+      else delete (globalThis as { window?: Window }).window;
+    }
+  });
 });

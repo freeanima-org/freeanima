@@ -4,10 +4,16 @@ import {
   notificationMarkReadInputSchema,
   notificationMarkReadOutputSchema,
   notificationRecipientsOutputSchema,
+  notificationSubscribeInboxInputSchema,
+  notificationSubscribeInboxOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/notification";
 import { z } from "zod";
 
-import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
+import {
+  defineHabitatMethod,
+  dualTransportMeta,
+  wsOnlyMeta,
+} from "@freeanima/shared/habitat-contract";
 
 const emptyInputSchema = z.object({}).passthrough();
 
@@ -26,5 +32,10 @@ export const notificationMethodDefs = {
     input: emptyInputSchema,
     output: notificationRecipientsOutputSchema,
     meta: dualTransportMeta(true),
+  }),
+  "notification.subscribeInbox": defineHabitatMethod({
+    input: notificationSubscribeInboxInputSchema,
+    output: notificationSubscribeInboxOutputSchema,
+    meta: wsOnlyMeta(),
   }),
 } as const;

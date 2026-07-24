@@ -62,3 +62,24 @@ export const notificationRecipientsOutputSchema = z.object({
 });
 
 export type NotificationRecipientsOutput = z.infer<typeof notificationRecipientsOutputSchema>;
+
+export const notificationSubscribeInboxInputSchema = z.object({});
+
+export type NotificationSubscribeInboxInput = z.infer<typeof notificationSubscribeInboxInputSchema>;
+
+export const notificationSubscribeInboxOutputSchema = z.object({
+  ok: z.literal(true),
+});
+
+export type NotificationSubscribeInboxOutput = z.infer<
+  typeof notificationSubscribeInboxOutputSchema
+>;
+
+export const notificationCreatedEventSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  body: z.string(),
+  created_at: z.string(),
+});
+
+export type NotificationCreatedEvent = z.infer<typeof notificationCreatedEventSchema>;

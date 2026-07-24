@@ -217,3 +217,6 @@ export {
   type HabitatMethodInputs,
   type HabitatMethodOutputs,
 } from "./habitat-typed-client.ts";
+
+export type { LocalReminderChannel, LocalReminderInput } from "./local-reminder.ts";
+export { deliverLocalReminder, isCompanionReminderPreferred } from "./local-reminder.ts";
