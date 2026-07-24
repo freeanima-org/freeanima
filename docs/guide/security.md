@@ -17,16 +17,16 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 
 ## Credential Responsibilities
 
-| Rule                     | Description                                                                                                                                                          |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI     |
-| Never commit secrets     | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git; runtime LLM/MCP settings live in PG — use `vault()` / `env()` references there too |
-| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`                  |
-| CLI plaintext output     | `anima vault get` prints Agent-library field plaintext to stdout; do not redirect to shared logs                                                                     |
-| User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                     |
-| Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                              |
+| Rule                     | Description                                                                                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI                                  |
+| Never commit secrets     | Do not write API keys, tokens, DB passwords into git. Bootstrap `config.yaml`: use `env()` (or keep secrets out of the file). Runtime LLM/MCP settings live in PG — use `vault()` / `env()` there |
+| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`                                               |
+| CLI plaintext output     | `anima vault get` prints Agent-library field plaintext to stdout; do not redirect to shared logs                                                                                                  |
+| User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                                                  |
+| Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                                                           |
 
-`config.yaml` supports `vault("item_id", "field")` (Agent library, Habitat headless) and `env("KEY")` for secrets; values are injected at runtime. Agent tools that need CLI credentials pass per-call `secrets[]` on `terminal_run` / `code_execute` (child env only). Browser form fields use `browser_type` `secret` (typed into the page; never echoed in tool results). User-library resolution still requires an unlocked Chat session on the client.
+`config.yaml` is **bootstrap only** (read before PostgreSQL is up). Secrets there support plaintext or `env("KEY")` — **not** `vault()` (Vault items live in PG). After Habitat is connected, runtime config in PG may use `vault("item_id", "field")` and `env("KEY")`. Agent tools that need CLI credentials pass per-call `secrets[]` on `terminal_run` / `code_execute` (child env only). Browser form fields use `browser_type` `secret` (typed into the page; never echoed in tool results). User-library resolution still requires an unlocked Chat session on the client.
 
 ### Vault trust boundaries
 
@@ -145,7 +145,7 @@ The following are planned in code or docs—**deployers must not assume implemen
 
 ## First-Deployment Security Checklist
 
-1. Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/config.yaml`; use `vault()` / `env()` — **do not** write plaintext secrets in config
+1. Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/config.yaml`; use `env()` for bootstrap secrets — **do not** write plaintext secrets in config; `vault()` is for PG runtime config after Habitat is up
 2. Open Shell `/vault`; set User master password; migrate secrets from legacy pass if needed
 3. `chmod 700 ~/.anima` (includes `vault/agent-machine.key`)
 4. Bind `127.0.0.1` only, or ensure intranet isolation

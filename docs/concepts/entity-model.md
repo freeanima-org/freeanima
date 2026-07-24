@@ -252,7 +252,7 @@ Privacy fields live in `body.secrets_enc` + `body.dek_wrapped`; metadata (title,
 - **SAP:** `vault.*` — Shell defaults `subject_kind: user`; ToolSet defaults agent world.
 - **UI:** shell `/vault` (`@freeanima/satellite-vault`); bundled Chat has a dedicated master-password unlock (not a chat message).
 - **LLM:** ToolSet `vault` — metadata list/search/get (MCP); `vault_create` / `vault_update` / `vault_delete` Habitat-only (Agent library seal for create/update); credentials via `terminal_run` / `code_execute` `secrets[]` (child env only) or `browser_type` `secret` (typed into page; redacted in tool results); never plaintext secrets in tool results or Habitat `process.env`.
-- **Config:** `vault("item_id", "field")` resolves Agent library at Habitat boot (legacy `credential()` removed).
+- **Config:** Runtime PG settings may use `vault("item_id", "field")` (Agent library) or `env("KEY")` (legacy `credential()` removed). Bootstrap `config.yaml` cannot resolve `vault()` — use `env()` or plaintext before PostgreSQL is up.
 
 Legacy pass (`~/.password-store`) is **not** deleted on disk; migrate entries manually via Shell UI.
 

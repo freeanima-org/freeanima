@@ -9,21 +9,21 @@ title: Installation
 
 ## Choose a path
 
-| Path           | Best for                                  | Bun on host | PostgreSQL  | Redis                  | Secrets                       |
-| -------------- | ----------------------------------------- | ----------- | ----------- | ---------------------- | ----------------------------- |
-| **Source**     | Contributors, day-to-day development      | Required    | You install | Optional (recommended) | Vault / `env()` (recommended) |
-| **Standalone** | Production / self-host without a checkout | Not needed  | You install | Optional (recommended) | Vault / `env()` (recommended) |
+| Path           | Best for                                  | Bun on host | PostgreSQL  | Redis                  | Secrets                            |
+| -------------- | ----------------------------------------- | ----------- | ----------- | ---------------------- | ---------------------------------- |
+| **Source**     | Contributors, day-to-day development      | Required    | You install | Optional (recommended) | Bootstrap: `env()`; runtime: Vault |
+| **Standalone** | Production / self-host without a checkout | Not needed  | You install | Optional (recommended) | Bootstrap: `env()`; runtime: Vault |
 
 Both paths run the same `anima service` runtime (Habitat REST `/api` + Habitat RPC `/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers EventBus and task context; it **degrades silently** when unavailable — production setups should still run it.
 
 ## Shared prerequisites
 
-| Component      | Version / notes                                                                                                        |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **Bun**        | >= 1.3.14 — required for **source** installs ([bun.sh](https://bun.sh)); not required for standalone binaries          |
-| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                   |
-| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                          |
-| **Vault**      | Recommended — API keys and DB URLs stay out of config files ([`security.md`](security.md#credential-responsibilities)) |
+| Component      | Version / notes                                                                                                                                           |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Bun**        | >= 1.3.14 — required for **source** installs ([bun.sh](https://bun.sh)); not required for standalone binaries                                             |
+| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                                                      |
+| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                                             |
+| **Vault**      | Recommended for runtime secrets after Habitat is up; bootstrap `config.yaml` uses `env()` only ([`security.md`](security.md#credential-responsibilities)) |
 
 Data directory: `~/.anima/` (override with `FREEANIMA_HOME`). Back it up with your database.
 
@@ -104,7 +104,7 @@ Minimum production settings in `~/.anima/config.yaml` (**bootstrap only**):
 
 **Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`habitat_runtime_config`). Edit them in the Shell app under **Settings → Habitat 服务 → 服务配置**.
 
-Prefer Vault or `env()` for secrets. See [`security.md`](security.md#credential-responsibilities).
+Prefer `env()` for bootstrap secrets in `config.yaml` (Vault is unavailable before PostgreSQL). Use Vault / `vault()` for runtime secrets in PG. See [`security.md`](security.md#credential-responsibilities).
 
 ### 3. Start the service
 
@@ -245,7 +245,7 @@ If status fails, check PostgreSQL connectivity, that migrations completed ([`dat
 
 ## Next steps
 
-1. **Security** — Vault / `env()` for secrets, `chmod 700 ~/.anima`, do not expose Habitat without auth ([`security.md`](security.md))
+1. **Security** — bootstrap `env()` + runtime Vault, `chmod 700 ~/.anima`, do not expose Habitat without auth ([`security.md`](security.md))
 2. **Remote access** — Service API Token + LAN / local HTTPS for personal mobile/remote Habitat ([`remote-access.md`](remote-access.md))
 3. **Database** — backups, extensions, manual migrations if needed ([`database.md`](database.md))
 4. **Operations** — start/stop, memory metrics ([`service.md`](service.md))

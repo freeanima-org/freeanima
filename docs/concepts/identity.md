@@ -22,7 +22,7 @@ title: Identity
 | Memory system                            | The digital life's "home"                                                                                                       |
 | Self layer (six blocks)                  | Persistent definition of "who I am"                                                                                             |
 | Tools (local / MCP / ACP)                | "Limbs" for perception and action                                                                                               |
-| pass credentials                         | Lifeline (injected at runtime, never plaintext)                                                                                 |
+| Vault                                    | Lifeline (runtime injection; LLM sees metadata, never plaintext)                                                                |
 | Gateway                                  | Ears and mouth (Discord / WeChat) — not a Portal                                                                                |
 | EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |
 | Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |
