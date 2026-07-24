@@ -13,12 +13,7 @@ import {
   Spinner,
   Textarea,
 } from "@freeanima/frontend/ui-kit";
-import {
-  ConfirmDialog,
-  ActionSheet,
-  ContextMenu,
-  toast,
-} from "@freeanima/frontend/ui-kit/composite";
+import { ConfirmDialog, ActionSheet, toast } from "@freeanima/frontend/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
 import { AcpProgressDock } from "@freeanima/features/chat/ui/spa/components/AcpProgressDock.tsx";
 import { SlashCommandResultPanel } from "@freeanima/features/chat/ui/spa/components/SlashCommandResultPanel.tsx";
@@ -232,7 +227,6 @@ export function ChatApp() {
   const writesDisabled = shellWritesDisabled;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [menuConversationId, setMenuConversationId] = useState<string | null>(null);
-  const [convPointerMenu, setConvPointerMenu] = useState<{ x: number; y: number } | null>(null);
   const [convSheetOpen, setConvSheetOpen] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -355,25 +349,13 @@ export function ChatApp() {
 
   const closeConversationMenu = useCallback(() => {
     setMenuConversationId(null);
-    setConvPointerMenu(null);
     setConvSheetOpen(false);
   }, []);
 
-  const openConversationMenu = useCallback(
-    (conversationId: string, coords?: { x: number; y: number }) => {
-      setMenuConversationId(conversationId);
-      if (useActionSheet) {
-        setConvSheetOpen(true);
-        setConvPointerMenu(null);
-        return;
-      }
-      if (coords && contextMenuEnabled) {
-        setConvPointerMenu(coords);
-        setConvSheetOpen(false);
-      }
-    },
-    [useActionSheet, contextMenuEnabled],
-  );
+  const openConversationMenu = useCallback((conversationId: string) => {
+    setMenuConversationId(conversationId);
+    setConvSheetOpen(true);
+  }, []);
 
   const headerTitle = currentId
     ? conversationLabel(
@@ -858,11 +840,12 @@ export function ChatApp() {
 
   const startConversation = () => void newConversation();
 
-  const startRename = () => {
-    const s = conversations.find((x) => x.id === menuConversationId);
+  const startRename = (id: string) => {
+    const s = conversations.find((x) => x.id === id);
+    setMenuConversationId(id);
     setRenameText((s && s.title) || "");
     setShowRenameDialog(true);
-    closeConversationMenu();
+    setConvSheetOpen(false);
     requestAnimationFrame(() => renameInputRef.current?.focus());
   };
 
@@ -873,10 +856,11 @@ export function ChatApp() {
     }
     setShowRenameDialog(false);
     setRenameText("");
+    setMenuConversationId(null);
   };
 
-  const startDelete = () => {
-    setDeleteTargetId(menuConversationId);
+  const startDelete = (id: string) => {
+    setDeleteTargetId(id);
     setShowDeleteDialog(true);
     closeConversationMenu();
   };
@@ -889,17 +873,13 @@ export function ChatApp() {
     setDeleteTargetId(null);
   };
 
-  const handleArchive = async () => {
-    const id = menuConversationId;
-    if (!id) return;
+  const handleArchive = async (id: string) => {
     closeConversationMenu();
     const nextId = await archiveConversationFn(id);
     writeConversationToUrl(nextId);
   };
 
-  const handleUnarchive = async () => {
-    const id = menuConversationId;
-    if (!id) return;
+  const handleUnarchive = async (id: string) => {
     closeConversationMenu();
     await unarchiveConversationFn(id);
   };
@@ -908,18 +888,23 @@ export function ChatApp() {
     void setShowArchived(!showArchived);
   };
 
+  const conversationMenuItemsFor = (id: string): ActionSheetItem[] => {
+    const conv = conversations.find((s) => s.id === id);
+    return [
+      { label: m.habitat_common_rename(), onClick: () => startRename(id) },
+      ...(conv?.archivedAt
+        ? [{ label: m.chat_unarchive(), onClick: () => void handleUnarchive(id) }]
+        : [{ label: m.chat_archive(), onClick: () => void handleArchive(id) }]),
+      {
+        label: m.chat_delete(),
+        danger: true,
+        onClick: () => startDelete(id),
+      },
+    ];
+  };
+
   const conversationMenuItems: ActionSheetItem[] = menuConversationId
-    ? [
-        { label: m.habitat_common_rename(), onClick: startRename },
-        ...(contextConversation?.archivedAt
-          ? [{ label: m.chat_unarchive(), onClick: () => void handleUnarchive() }]
-          : [{ label: m.chat_archive(), onClick: () => void handleArchive() }]),
-        {
-          label: m.chat_delete(),
-          danger: true,
-          onClick: startDelete,
-        },
-      ]
+    ? conversationMenuItemsFor(menuConversationId)
     : [];
 
   const renderConversationItem = (s: ConversationListItem, faded = false) => (
@@ -932,6 +917,7 @@ export function ChatApp() {
       unread={s.unread === true && s.id !== currentId}
       useActionSheet={useActionSheet}
       contextMenuEnabled={contextMenuEnabled}
+      contextMenuItems={conversationMenuItemsFor(s.id)}
       onNavigate={(id) => void navigateToConversation(id)}
       onOpenMenu={openConversationMenu}
     />
@@ -2001,15 +1987,6 @@ export function ChatApp() {
           loading={llmDebugLoading}
         />
       </div>
-
-      {convPointerMenu && conversationMenuItems.length > 0 ? (
-        <ContextMenu
-          x={convPointerMenu.x}
-          y={convPointerMenu.y}
-          items={conversationMenuItems}
-          onClose={closeConversationMenu}
-        />
-      ) : null}
 
       {convSheetOpen && conversationMenuItems.length > 0 ? (
         <ActionSheet

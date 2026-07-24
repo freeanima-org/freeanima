@@ -34,7 +34,10 @@
 
 ## 复合组件
 
-从 `@freeanima/ui-kit/composite` 导入：`ConfirmDialog`、`showConfirm`、`ActionSheet`、`EmptyState`、`StatusAlert`、`PullToRefresh`。禁止 `window.confirm`。
+从 `@freeanima/ui-kit/composite` 导入：`ConfirmDialog`、`showConfirm`、`ActionSheet`、`ContextMenu`、`EmptyState`、`StatusAlert`、`PullToRefresh`。禁止 `window.confirm`。
+
+- **ContextMenu**（pointer）：基于 shadcn/Radix Context Menu，自带视口碰撞规避；与 ActionSheet 共享 `ActionSheetItem[]`。**禁止**再自研 `fixed` + 裸坐标快捷菜单。
+- touch 路径仍用 `ActionSheet`（见 [ui-dimensions.md](ui-dimensions.md)）；交互状态机按模态分机，仅共享会话数据（目标 + items）。
 
 ## 静态检查
 

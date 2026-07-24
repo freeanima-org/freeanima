@@ -1,7 +1,8 @@
 import { useDraggable } from "@dnd-kit/core";
 import { Badge } from "@freeanima/frontend/ui-kit";
 import { TaskItemRowView } from "@freeanima/frontend/ui-kit/composite";
-import { useState, type MouseEvent } from "react";
+import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+import { useState } from "react";
 
 import { taskDndId } from "../lib/dnd-ids.ts";
 import type { TaskItemRow } from "../lib/api.ts";
@@ -12,13 +13,14 @@ type CompletedTaskListProps = {
   listNameForItem?: (item: TaskItemRow) => string | null;
   activeItemId?: number | null;
   useActionSheet: boolean;
+  contextMenuEnabled?: boolean;
   selectionMode: boolean;
   selectedIds: ReadonlySet<number>;
   tagTitleById?: ReadonlyMap<number, string> | null;
   onToggleComplete: (item: TaskItemRow) => void;
   onEdit: (item: TaskItemRow) => void;
   onOpenItemMenu: (item: TaskItemRow) => void;
-  onOpenItemContextMenu: (e: MouseEvent, item: TaskItemRow) => void;
+  contextMenuItemsForItem?: ((item: TaskItemRow) => ActionSheetItem[]) | undefined;
   onSelectItem: (itemId: number, shiftKey: boolean) => void;
   onLongPressSelect: (itemId: number) => void;
 };
@@ -28,6 +30,8 @@ function CompletedDraggableRow({
   sortable,
   listName,
   useActionSheet,
+  contextMenuEnabled,
+  contextMenuItems,
   active,
   selectionMode,
   selected,
@@ -35,7 +39,6 @@ function CompletedDraggableRow({
   onToggleComplete,
   onEdit,
   onOpenMenu,
-  onContextMenu,
   onSelectItem,
   onLongPressSelect,
 }: {
@@ -43,6 +46,8 @@ function CompletedDraggableRow({
   sortable: boolean;
   listName: string | null;
   useActionSheet: boolean;
+  contextMenuEnabled: boolean;
+  contextMenuItems?: ActionSheetItem[] | undefined;
   active: boolean;
   selectionMode: boolean;
   selected: boolean;
@@ -50,7 +55,6 @@ function CompletedDraggableRow({
   onToggleComplete: () => void;
   onEdit: () => void;
   onOpenMenu: () => void;
-  onContextMenu: (e: MouseEvent) => void;
   onSelectItem: (shiftKey: boolean) => void;
   onLongPressSelect: () => void;
 }) {
@@ -66,6 +70,8 @@ function CompletedDraggableRow({
       selected={selected}
       selectionMode={selectionMode}
       useActionSheet={useActionSheet}
+      contextMenuEnabled={contextMenuEnabled}
+      contextMenuItems={contextMenuItems}
       secondaryLine={listName}
       showEntityId={!selectionMode}
       tagTitleById={tagTitleById}
@@ -78,7 +84,6 @@ function CompletedDraggableRow({
       onToggleComplete={onToggleComplete}
       onEdit={onEdit}
       onOpenMenu={onOpenMenu}
-      onContextMenu={onContextMenu}
       onSelectItem={onSelectItem}
       onLongPress={onLongPressSelect}
     />
@@ -91,13 +96,14 @@ export function CompletedTaskList({
   listNameForItem,
   activeItemId,
   useActionSheet,
+  contextMenuEnabled = false,
   selectionMode,
   selectedIds,
   tagTitleById = null,
   onToggleComplete,
   onEdit,
   onOpenItemMenu,
-  onOpenItemContextMenu,
+  contextMenuItemsForItem,
   onSelectItem,
   onLongPressSelect,
 }: CompletedTaskListProps) {
@@ -129,13 +135,14 @@ export function CompletedTaskList({
               listName={listNameForItem?.(item) ?? null}
               active={activeItemId === item.id}
               useActionSheet={useActionSheet}
+              contextMenuEnabled={contextMenuEnabled}
+              contextMenuItems={contextMenuItemsForItem?.(item)}
               selectionMode={selectionMode}
               selected={selectedIds.has(item.id)}
               tagTitleById={tagTitleById}
               onToggleComplete={() => onToggleComplete(item)}
               onEdit={() => onEdit(item)}
               onOpenMenu={() => onOpenItemMenu(item)}
-              onContextMenu={(e) => onOpenItemContextMenu(e, item)}
               onSelectItem={(shiftKey) => onSelectItem(item.id, shiftKey)}
               onLongPressSelect={() => onLongPressSelect(item.id)}
             />

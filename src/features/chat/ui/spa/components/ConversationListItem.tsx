@@ -1,5 +1,6 @@
-import { useRef } from "react";
-import { useLongPress } from "@freeanima/frontend/ui-kit/composite";
+import { useRef, type ReactElement } from "react";
+import { ContextMenu, useLongPress } from "@freeanima/frontend/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
 import type { ConversationListItem as ConversationListEntry } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 
 type ConversationListItemProps = {
@@ -10,8 +11,9 @@ type ConversationListItemProps = {
   unread?: boolean;
   useActionSheet: boolean;
   contextMenuEnabled: boolean;
+  contextMenuItems: ActionSheetItem[];
   onNavigate: (conversationId: string) => void;
-  onOpenMenu: (conversationId: string, coords?: { x: number; y: number }) => void;
+  onOpenMenu: (conversationId: string) => void;
 };
 
 export function ConversationListItem({
@@ -22,6 +24,7 @@ export function ConversationListItem({
   unread = false,
   useActionSheet,
   contextMenuEnabled,
+  contextMenuItems,
   onNavigate,
   onOpenMenu,
 }: ConversationListItemProps) {
@@ -43,7 +46,7 @@ export function ConversationListItem({
     void onNavigate(conversation.id);
   };
 
-  return (
+  const row: ReactElement = (
     <div
       className={[
         "session-item group flex min-h-10 items-center gap-1",
@@ -52,16 +55,6 @@ export function ConversationListItem({
       ].join(" ")}
       onClick={handleClick}
       {...(useActionSheet ? longPress : {})}
-      onContextMenu={
-        useActionSheet
-          ? undefined
-          : (e) => {
-              if (!contextMenuEnabled) return;
-              e.preventDefault();
-              e.stopPropagation();
-              onOpenMenu(conversation.id, { x: e.clientX, y: e.clientY });
-            }
-      }
     >
       <div
         className={[
@@ -76,4 +69,9 @@ export function ConversationListItem({
       ) : null}
     </div>
   );
+
+  if (contextMenuEnabled && !useActionSheet && contextMenuItems.length > 0) {
+    return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
+  }
+  return row;
 }

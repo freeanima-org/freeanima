@@ -1,6 +1,7 @@
 import { Button } from "@freeanima/frontend/ui-kit";
-import { EntityIdLabel } from "@freeanima/frontend/ui-kit/composite";
-import { useRef, type MouseEvent, type TouchEvent } from "react";
+import { ContextMenu, EntityIdLabel } from "@freeanima/frontend/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+import { useRef, type ReactElement, type TouchEvent } from "react";
 
 import type { SmartListRow } from "../lib/api.ts";
 import { smartListRowKey } from "../lib/task-smart-list-utils.ts";
@@ -23,8 +24,9 @@ type CustomSmartListSectionProps = {
   inboxSelected: boolean;
   onSelectSmartList: (row: SmartListRow) => void;
   onCreateSmartList: () => void;
-  onOpenSmartListContextMenu: (e: MouseEvent, row: SmartListRow) => void;
   onOpenSmartListMenu: (row: SmartListRow) => void;
+  contextMenuEnabled?: boolean;
+  contextMenuItemsForSmartList?: ((row: SmartListRow) => ActionSheetItem[]) | undefined;
   useActionSheet: boolean;
 };
 
@@ -68,17 +70,19 @@ function CustomSmartListRow({
   selected,
   count,
   onSelect,
-  onContextMenu,
   onOpenMenu,
   useActionSheet,
+  contextMenuEnabled,
+  contextMenuItems,
 }: {
   row: SmartListRow;
   selected: boolean;
   count: number | undefined;
   onSelect: () => void;
-  onContextMenu: (e: MouseEvent) => void;
   onOpenMenu: () => void;
   useActionSheet: boolean;
+  contextMenuEnabled: boolean;
+  contextMenuItems?: ActionSheetItem[] | undefined;
 }) {
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -97,14 +101,13 @@ function CustomSmartListRow({
     }, 450);
   };
 
-  return (
+  const button: ReactElement = (
     <button
       type="button"
       className={`hover:bg-muted flex w-full min-w-0 items-center gap-1 rounded-md px-2 py-1.5 text-left text-sm ${
         selected ? "bg-muted font-medium" : ""
       }`}
       onClick={onSelect}
-      onContextMenu={onContextMenu}
       onTouchStart={handleTouchStart}
       onTouchEnd={clearLongPress}
       onTouchMove={clearLongPress}
@@ -114,6 +117,11 @@ function CustomSmartListRow({
       <SidebarMeta id={row.id} count={count} />
     </button>
   );
+
+  if (contextMenuEnabled && !useActionSheet && contextMenuItems && contextMenuItems.length > 0) {
+    return <ContextMenu items={contextMenuItems}>{button}</ContextMenu>;
+  }
+  return button;
 }
 
 export function BuiltinSmartListSection({
@@ -166,8 +174,9 @@ export function CustomSmartListSection({
   inboxSelected,
   onSelectSmartList,
   onCreateSmartList,
-  onOpenSmartListContextMenu,
   onOpenSmartListMenu,
+  contextMenuEnabled = false,
+  contextMenuItemsForSmartList,
   useActionSheet,
 }: CustomSmartListSectionProps) {
   const customRows = smartLists.filter((row) => row.id != null);
@@ -199,9 +208,10 @@ export function CustomSmartListSection({
               selected={!inboxSelected && selectedKey === key}
               count={itemCounts.get(key)}
               onSelect={() => onSelectSmartList(row)}
-              onContextMenu={(e) => onOpenSmartListContextMenu(e, row)}
               onOpenMenu={() => onOpenSmartListMenu(row)}
               useActionSheet={useActionSheet}
+              contextMenuEnabled={contextMenuEnabled}
+              contextMenuItems={contextMenuItemsForSmartList?.(row)}
             />
           );
         })

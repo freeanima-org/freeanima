@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   readModuleSelection,
   writeModuleSelection,
@@ -25,7 +25,6 @@ import {
 import {
   ActionSheet,
   ConfirmDialog,
-  ContextMenu,
   EmptyState,
   ModuleScopeBar,
   PullToRefresh,
@@ -118,9 +117,6 @@ import {
 import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-detail-dirty.ts";
 import { normalizeTaskItemRows } from "./lib/normalize-task-item.ts";
 
-type ListMenuState = { x: number; y: number; listId: number };
-type SmartListMenuState = { x: number; y: number; smartListId: number };
-type ItemMenuState = { x: number; y: number; itemId: number };
 type SheetMenuState = { title?: string; items: ActionSheetItem[] };
 type ChildNamePromptState = { kind: "list" | "folder"; parentId: number };
 
@@ -157,9 +153,6 @@ export function TaskApp() {
 
   const [listEditor, setListEditor] = useState<TaskListRow | null>(null);
 
-  const [listMenu, setListMenu] = useState<ListMenuState | null>(null);
-  const [smartListMenu, setSmartListMenu] = useState<SmartListMenuState | null>(null);
-  const [itemMenu, setItemMenu] = useState<ItemMenuState | null>(null);
   const [sheetMenu, setSheetMenu] = useState<SheetMenuState | null>(null);
   const [listToDelete, setListToDelete] = useState<TaskListRow | null>(null);
   const [itemToDelete, setItemToDelete] = useState<TaskItemRow | null>(null);
@@ -539,9 +532,6 @@ export function TaskApp() {
         return { ...prev, id: serverId };
       });
 
-      setItemMenu((prev) =>
-        prev && prev.itemId === tempId ? { ...prev, itemId: serverId } : prev,
-      );
       setMovePickerItemIds((prev) => (prev?.includes(tempId) ? prev.map(remapId) : prev));
       setMoveProjectItemIds((prev) => (prev?.includes(tempId) ? prev.map(remapId) : prev));
     });
@@ -972,8 +962,6 @@ export function TaskApp() {
     (itemIds: number[]) => {
       if (itemIds.length === 0) return;
       setSheetMenu(null);
-      setItemMenu(null);
-      setListMenu(null);
       closeDetailSheet();
       window.setTimeout(() => setMovePickerItemIds(itemIds), 0);
     },
@@ -999,8 +987,6 @@ export function TaskApp() {
       const ids = Array.isArray(itemIds) ? itemIds : [itemIds];
       if (ids.length === 0) return;
       setSheetMenu(null);
-      setItemMenu(null);
-      setListMenu(null);
       closeDetailSheet();
       try {
         setProjectsForMove(await fetchProjectsForMove());
@@ -1251,31 +1237,7 @@ export function TaskApp() {
     </>
   );
 
-  const menuList = listMenu ? lists.find((l) => l.id === listMenu.listId) : null;
-  const menuSmartList = smartListMenu
-    ? smartLists.find((row) => row.id === smartListMenu.smartListId)
-    : null;
-  const menuItem = itemMenu
-    ? (items.find((i) => i.id === itemMenu.itemId) ??
-      searchHits.find((i) => i.id === itemMenu.itemId))
-    : null;
-
-  const listMenuItems: ActionSheetItem[] = menuList
-    ? buildListMenuItems(menuList, menuHandlers)
-    : [];
-
-  const smartListMenuItems: ActionSheetItem[] = menuSmartList
-    ? buildSmartListMenuItems(menuSmartList, smartListMenuHandlers)
-    : [];
-
-  const itemMenuItems: ActionSheetItem[] = menuItem
-    ? buildItemMenuItems(menuItem, itemHandlers, { listArchived: selectedList?.closed === true })
-    : [];
-
   const openListMenuSheet = (list: TaskListRow) => {
-    setItemMenu(null);
-    setListMenu(null);
-    setSmartListMenu(null);
     setSheetMenu({
       title: list.name,
       items: buildListMenuItems(list, menuHandlers),
@@ -1283,9 +1245,6 @@ export function TaskApp() {
   };
 
   const openSmartListMenuSheet = (row: SmartListRow) => {
-    setItemMenu(null);
-    setListMenu(null);
-    setSmartListMenu(null);
     setSheetMenu({
       title: row.title,
       items: buildSmartListMenuItems(row, smartListMenuHandlers),
@@ -1293,9 +1252,6 @@ export function TaskApp() {
   };
 
   const openItemMenuSheet = (item: TaskItemRow) => {
-    setListMenu(null);
-    setSmartListMenu(null);
-    setItemMenu(null);
     setSheetMenu({
       title: item.title,
       items: buildItemMenuItems(item, itemHandlers, {
@@ -1304,39 +1260,14 @@ export function TaskApp() {
     });
   };
 
-  const openListContextMenu = (e: MouseEvent, list: TaskListRow) => {
-    if (useActionSheet) return;
-    if (!contextMenuEnabled) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setItemMenu(null);
-    setSmartListMenu(null);
-    setSheetMenu(null);
-    setListMenu({ x: e.clientX, y: e.clientY, listId: list.id });
-  };
+  const contextMenuItemsForList = (list: TaskListRow): ActionSheetItem[] =>
+    buildListMenuItems(list, menuHandlers);
 
-  const openSmartListContextMenu = (e: MouseEvent, row: SmartListRow) => {
-    if (row.id == null) return;
-    if (useActionSheet) return;
-    if (!contextMenuEnabled) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setItemMenu(null);
-    setListMenu(null);
-    setSheetMenu(null);
-    setSmartListMenu({ x: e.clientX, y: e.clientY, smartListId: row.id });
-  };
+  const contextMenuItemsForSmartList = (row: SmartListRow): ActionSheetItem[] =>
+    buildSmartListMenuItems(row, smartListMenuHandlers);
 
-  const openItemContextMenu = (e: MouseEvent, item: TaskItemRow) => {
-    if (useActionSheet) return;
-    if (!contextMenuEnabled) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setListMenu(null);
-    setSmartListMenu(null);
-    setSheetMenu(null);
-    setItemMenu({ x: e.clientX, y: e.clientY, itemId: item.id });
-  };
+  const contextMenuItemsForItem = (item: TaskItemRow): ActionSheetItem[] =>
+    buildItemMenuItems(item, itemHandlers, { listArchived: selectedList?.closed === true });
 
   const showMiddleContent = selection != null && !(loading && lists.length === 0);
 
@@ -1442,8 +1373,9 @@ export function TaskApp() {
                       inboxSelected={inboxSelected}
                       onSelectSmartList={selectSmartList}
                       onCreateSmartList={() => setSmartListEditor(null)}
-                      onOpenSmartListContextMenu={openSmartListContextMenu}
                       onOpenSmartListMenu={openSmartListMenuSheet}
+                      contextMenuEnabled={contextMenuEnabled}
+                      contextMenuItemsForSmartList={contextMenuItemsForSmartList}
                       useActionSheet={useActionSheet}
                     />
                   }
@@ -1465,7 +1397,8 @@ export function TaskApp() {
                   onNewListNameChange={setNewListName}
                   onNewFolderNameChange={setNewFolderName}
                   onOpenListMenu={openListMenuSheet}
-                  onOpenListContextMenu={openListContextMenu}
+                  contextMenuEnabled={contextMenuEnabled}
+                  contextMenuItemsForList={contextMenuItemsForList}
                   onEditList={openListEditor}
                 />
               </div>
@@ -1573,7 +1506,8 @@ export function TaskApp() {
                           onToggleComplete={(item) => void toggleComplete(item)}
                           onEdit={openTaskDetail}
                           onOpenItemMenu={openItemMenuSheet}
-                          onOpenItemContextMenu={openItemContextMenu}
+                          contextMenuEnabled={contextMenuEnabled}
+                          contextMenuItemsForItem={contextMenuItemsForItem}
                           onSelectItem={handleSelectItem}
                           onLongPressSelect={enterSelectionWithItem}
                         />
@@ -1590,7 +1524,8 @@ export function TaskApp() {
                           onToggleComplete={(item) => void toggleComplete(item)}
                           onEdit={openTaskDetail}
                           onOpenItemMenu={openItemMenuSheet}
-                          onOpenItemContextMenu={openItemContextMenu}
+                          contextMenuEnabled={contextMenuEnabled}
+                          contextMenuItemsForItem={contextMenuItemsForItem}
                           onSelectItem={handleSelectItem}
                           onLongPressSelect={enterSelectionWithItem}
                         />
@@ -1609,7 +1544,8 @@ export function TaskApp() {
                           onToggleComplete={(item) => void toggleComplete(item)}
                           onEdit={openTaskDetail}
                           onOpenItemMenu={openItemMenuSheet}
-                          onOpenItemContextMenu={openItemContextMenu}
+                          contextMenuEnabled={contextMenuEnabled}
+                          contextMenuItemsForItem={contextMenuItemsForItem}
                           onSelectItem={handleSelectItem}
                           onLongPressSelect={enterSelectionWithItem}
                         />
@@ -1635,33 +1571,6 @@ export function TaskApp() {
             }
           />
         </div>
-
-        {listMenu ? (
-          <ContextMenu
-            x={listMenu.x}
-            y={listMenu.y}
-            items={listMenuItems}
-            onClose={() => setListMenu(null)}
-          />
-        ) : null}
-
-        {smartListMenu ? (
-          <ContextMenu
-            x={smartListMenu.x}
-            y={smartListMenu.y}
-            items={smartListMenuItems}
-            onClose={() => setSmartListMenu(null)}
-          />
-        ) : null}
-
-        {itemMenu ? (
-          <ContextMenu
-            x={itemMenu.x}
-            y={itemMenu.y}
-            items={itemMenuItems}
-            onClose={() => setItemMenu(null)}
-          />
-        ) : null}
 
         {sheetMenu ? (
           <ActionSheet

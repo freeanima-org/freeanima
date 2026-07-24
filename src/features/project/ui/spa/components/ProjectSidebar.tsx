@@ -2,8 +2,9 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button, Checkbox, Input } from "@freeanima/frontend/ui-kit";
-import { EntityIdLabel } from "@freeanima/frontend/ui-kit/composite";
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { ContextMenu, EntityIdLabel } from "@freeanima/frontend/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/frontend/ui-kit/composite";
+import { useEffect, useMemo, useState, type ReactElement } from "react";
 
 import type { ProjectFolderRow, ProjectRow } from "../lib/api.ts";
 import {
@@ -33,6 +34,9 @@ type ProjectSidebarProps = {
   newProjectTitle: string;
   writesDisabled: boolean;
   useActionSheet: boolean;
+  contextMenuEnabled?: boolean;
+  contextMenuItemsForFolder?: (folder: ProjectFolderRow) => ActionSheetItem[];
+  contextMenuItemsForProject?: (project: ProjectRow) => ActionSheetItem[];
   onSelectProject: (id: number) => void;
   onSelectFolder: (id: number) => void;
   onCreateFolder: () => void;
@@ -41,8 +45,6 @@ type ProjectSidebarProps = {
   onNewProjectTitleChange: (value: string) => void;
   onOpenFolderMenu: (folder: ProjectFolderRow) => void;
   onOpenProjectMenu: (project: ProjectRow) => void;
-  onFolderContextMenu: (e: MouseEvent, folder: ProjectFolderRow) => void;
-  onProjectContextMenu: (e: MouseEvent, project: ProjectRow) => void;
   onEditFolder: (folder: ProjectFolderRow) => void;
   onEditProject: (project: ProjectRow) => void;
 };
@@ -53,14 +55,14 @@ function SortableTreeRow({
   selectedProjectId,
   selectedFolderId,
   useActionSheet,
+  contextMenuEnabled,
+  contextMenuItems,
   writesDisabled,
   onToggleExpand,
   onSelectProject,
   onSelectFolder,
   onOpenFolderMenu,
   onOpenProjectMenu,
-  onFolderContextMenu,
-  onProjectContextMenu,
   onEditFolder,
   onEditProject,
 }: {
@@ -69,14 +71,14 @@ function SortableTreeRow({
   selectedProjectId: number | null;
   selectedFolderId: number | null;
   useActionSheet: boolean;
+  contextMenuEnabled: boolean;
+  contextMenuItems?: ActionSheetItem[] | undefined;
   writesDisabled: boolean;
   onToggleExpand: () => void;
   onSelectProject: (id: number) => void;
   onSelectFolder: (id: number) => void;
   onOpenFolderMenu: (folder: ProjectFolderRow) => void;
   onOpenProjectMenu: (project: ProjectRow) => void;
-  onFolderContextMenu: (e: MouseEvent, folder: ProjectFolderRow) => void;
-  onProjectContextMenu: (e: MouseEvent, project: ProjectRow) => void;
   onEditFolder: (folder: ProjectFolderRow) => void;
   onEditProject: (project: ProjectRow) => void;
 }) {
@@ -114,7 +116,7 @@ function SortableTreeRow({
     const showBeforeLine = dragging && overFolderId === folder.id && folderDropIntent === "before";
     const showAfterLine = dragging && overFolderId === folder.id && folderDropIntent === "after";
 
-    return (
+    const row: ReactElement = (
       <div
         ref={setNodeRef}
         style={style}
@@ -124,7 +126,6 @@ function SortableTreeRow({
           isDragging ? "opacity-50" : "",
           isFolderIntoTarget ? "ring-primary bg-primary/10 ring-2" : "",
         ].join(" ")}
-        onContextMenu={(e) => onFolderContextMenu(e, folder)}
         onDoubleClick={useActionSheet ? undefined : () => onEditFolder(folder)}
         {...attributes}
         {...listeners}
@@ -176,6 +177,11 @@ function SortableTreeRow({
         ) : null}
       </div>
     );
+
+    if (contextMenuEnabled && !useActionSheet && contextMenuItems && contextMenuItems.length > 0) {
+      return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
+    }
+    return row;
   }
 
   const project = node.project;
@@ -183,7 +189,7 @@ function SortableTreeRow({
   const showBeforeLine = dragging && overProjectId === project.id && projectDropIntent === "before";
   const showAfterLine = dragging && overProjectId === project.id && projectDropIntent === "after";
 
-  return (
+  const row: ReactElement = (
     <div
       ref={setNodeRef}
       style={style}
@@ -192,7 +198,6 @@ function SortableTreeRow({
         selected ? "bg-primary/15 font-medium" : "hover:bg-muted",
         isDragging ? "opacity-50" : "",
       ].join(" ")}
-      onContextMenu={(e) => onProjectContextMenu(e, project)}
       onDoubleClick={useActionSheet ? undefined : () => onEditProject(project)}
       {...attributes}
       {...listeners}
@@ -234,34 +239,40 @@ function SortableTreeRow({
       ) : null}
     </div>
   );
+
+  if (contextMenuEnabled && !useActionSheet && contextMenuItems && contextMenuItems.length > 0) {
+    return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
+  }
+  return row;
 }
 
 function InactiveProjectRow({
   project,
   selected,
   useActionSheet,
+  contextMenuEnabled,
+  contextMenuItems,
   writesDisabled,
   onSelect,
   onOpenMenu,
-  onContextMenu,
   onEdit,
 }: {
   project: ProjectRow;
   selected: boolean;
   useActionSheet: boolean;
+  contextMenuEnabled: boolean;
+  contextMenuItems?: ActionSheetItem[] | undefined;
   writesDisabled: boolean;
   onSelect: () => void;
   onOpenMenu: () => void;
-  onContextMenu: (e: MouseEvent) => void;
   onEdit: () => void;
 }) {
-  return (
+  const row: ReactElement = (
     <div
       className={[
         "group flex min-h-11 items-center gap-0.5 rounded-lg py-1 pr-1 text-sm opacity-70",
         selected ? "bg-primary/15 font-medium opacity-100" : "hover:bg-muted",
       ].join(" ")}
-      onContextMenu={onContextMenu}
       onDoubleClick={useActionSheet ? undefined : onEdit}
     >
       <span className="min-w-6 shrink-0" aria-hidden />
@@ -295,6 +306,11 @@ function InactiveProjectRow({
       ) : null}
     </div>
   );
+
+  if (contextMenuEnabled && !useActionSheet && contextMenuItems && contextMenuItems.length > 0) {
+    return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
+  }
+  return row;
 }
 
 export function ProjectSidebar(props: ProjectSidebarProps) {
@@ -303,6 +319,7 @@ export function ProjectSidebar(props: ProjectSidebarProps) {
   const [expandedFolderIds, setExpandedFolderIds] = useState(() =>
     readExpandedProjectFolders(props.subjectKind),
   );
+  const contextMenuEnabled = props.contextMenuEnabled === true;
 
   useEffect(() => {
     setExpandedFolderIds(readExpandedProjectFolders(props.subjectKind));
@@ -357,28 +374,34 @@ export function ProjectSidebar(props: ProjectSidebarProps) {
           >
             {isRootDropTarget ? "移到顶级" : dragging ? "项目（拖到此处移到顶级）" : "项目"}
           </div>
-          {visibleNodes.map((node) => (
-            <SortableTreeRow
-              key={node.kind === "folder" ? `f-${node.folder.id}` : `p-${node.project.id}`}
-              node={node}
-              expanded={node.kind === "folder" ? expandedFolderIds.has(node.folder.id) : false}
-              selectedProjectId={props.selectedProjectId}
-              selectedFolderId={props.selectedFolderId}
-              useActionSheet={props.useActionSheet}
-              writesDisabled={props.writesDisabled}
-              onToggleExpand={() => {
-                if (node.kind === "folder") toggleExpand(node.folder.id);
-              }}
-              onSelectProject={props.onSelectProject}
-              onSelectFolder={props.onSelectFolder}
-              onOpenFolderMenu={props.onOpenFolderMenu}
-              onOpenProjectMenu={props.onOpenProjectMenu}
-              onFolderContextMenu={props.onFolderContextMenu}
-              onProjectContextMenu={props.onProjectContextMenu}
-              onEditFolder={props.onEditFolder}
-              onEditProject={props.onEditProject}
-            />
-          ))}
+          {visibleNodes.map((node) => {
+            const contextMenuItems =
+              node.kind === "folder"
+                ? props.contextMenuItemsForFolder?.(node.folder)
+                : props.contextMenuItemsForProject?.(node.project);
+            return (
+              <SortableTreeRow
+                key={node.kind === "folder" ? `f-${node.folder.id}` : `p-${node.project.id}`}
+                node={node}
+                expanded={node.kind === "folder" ? expandedFolderIds.has(node.folder.id) : false}
+                selectedProjectId={props.selectedProjectId}
+                selectedFolderId={props.selectedFolderId}
+                useActionSheet={props.useActionSheet}
+                contextMenuEnabled={contextMenuEnabled}
+                {...(contextMenuItems ? { contextMenuItems } : {})}
+                writesDisabled={props.writesDisabled}
+                onToggleExpand={() => {
+                  if (node.kind === "folder") toggleExpand(node.folder.id);
+                }}
+                onSelectProject={props.onSelectProject}
+                onSelectFolder={props.onSelectFolder}
+                onOpenFolderMenu={props.onOpenFolderMenu}
+                onOpenProjectMenu={props.onOpenProjectMenu}
+                onEditFolder={props.onEditFolder}
+                onEditProject={props.onEditProject}
+              />
+            );
+          })}
           {props.inactiveProjects.length > 0 ? (
             <div className="border/60 mt-2 space-y-1 border-t pt-2">
               <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 py-1 text-xs">
@@ -390,19 +413,23 @@ export function ProjectSidebar(props: ProjectSidebarProps) {
                 显示非活跃
               </label>
               {props.showInactive
-                ? props.inactiveProjects.map((project) => (
-                    <InactiveProjectRow
-                      key={project.id}
-                      project={project}
-                      selected={props.selectedProjectId === project.id}
-                      useActionSheet={props.useActionSheet}
-                      writesDisabled={props.writesDisabled}
-                      onSelect={() => props.onSelectProject(project.id)}
-                      onOpenMenu={() => props.onOpenProjectMenu(project)}
-                      onContextMenu={(e) => props.onProjectContextMenu(e, project)}
-                      onEdit={() => props.onEditProject(project)}
-                    />
-                  ))
+                ? props.inactiveProjects.map((project) => {
+                    const contextMenuItems = props.contextMenuItemsForProject?.(project);
+                    return (
+                      <InactiveProjectRow
+                        key={project.id}
+                        project={project}
+                        selected={props.selectedProjectId === project.id}
+                        useActionSheet={props.useActionSheet}
+                        contextMenuEnabled={contextMenuEnabled}
+                        {...(contextMenuItems ? { contextMenuItems } : {})}
+                        writesDisabled={props.writesDisabled}
+                        onSelect={() => props.onSelectProject(project.id)}
+                        onOpenMenu={() => props.onOpenProjectMenu(project)}
+                        onEdit={() => props.onEditProject(project)}
+                      />
+                    );
+                  })
                 : null}
             </div>
           ) : null}
