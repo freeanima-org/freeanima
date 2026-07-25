@@ -3,7 +3,7 @@ import { SkillRegistry } from "@freeanima/host/core/skill";
 import { ToolSetRegistry } from "@freeanima/host/core/tool";
 import { Config } from "@freeanima/host/platform/config";
 import { parseYaml } from "@freeanima/host/platform/config";
-import { animaConfigSchema } from "@freeanima/host/core/config";
+import { runtimeConfigSchema } from "@freeanima/host/core/config";
 import { bindBrowserToolsConfig, resetBrowserToolsConfigForTest } from "./browser-camofox.ts";
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "bun:test";
 import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
@@ -55,7 +55,7 @@ function browserConfig(baseUrl?: string) {
       ? "browser:\n  camofox: {}\n"
       : `browser:\n  camofox:\n    base_url: ${baseUrl}\n`;
   const raw = parseYaml(`${MINIMAL_LLM_YAML}\n${browser}`);
-  const parsed = animaConfigSchema.safeParse(raw);
+  const parsed = runtimeConfigSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.message);
   return parsed.data;
 }

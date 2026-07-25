@@ -11,7 +11,7 @@ import { createLogger } from "@freeanima/host/kernel/logging";
 import { createMemorySink } from "@freeanima/host/kernel/logging/sinks/memory";
 import { createServiceKernel } from "@freeanima/host/platform/bootstrap";
 import { parseYaml } from "@freeanima/host/platform/config";
-import { animaConfigSchema } from "@freeanima/host/core/config";
+import { runtimeConfigSchema } from "@freeanima/host/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
 import { getAcpManager } from "@freeanima/host/capabilities/acp";
 import {
@@ -23,7 +23,7 @@ import {
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 const catalog = createEngineCatalog();
-const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
+const testConfig = Config.fromSnapshot(runtimeConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
 registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
 const testEngine = createEngine({
   catalog,

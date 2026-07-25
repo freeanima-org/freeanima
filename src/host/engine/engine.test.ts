@@ -11,7 +11,7 @@ import {
 import { SkillRegistry } from "@freeanima/host/core/skill";
 import { ToolSetRegistry } from "@freeanima/host/core/tool";
 import { MockBackend } from "@freeanima/host/core/provider/test-helpers/mock-backend";
-import { Config, type AnimaConfig } from "@freeanima/host/core/config";
+import { Config, type RuntimeConfig } from "@freeanima/host/core/config";
 import { createTestLogger } from "@freeanima/host/kernel/logging/testing";
 import { Engine } from "./engine.ts";
 
@@ -31,7 +31,7 @@ const testCfg = {
       },
     },
   },
-} as AnimaConfig;
+} as RuntimeConfig;
 
 describe("Engine", () => {
   it("composes catalog and llm component group", () => {

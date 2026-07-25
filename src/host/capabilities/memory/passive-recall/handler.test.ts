@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, mock } from "bun:test";
 
 import type { StoredMessage } from "@freeanima/host/core/db/domain";
 import type { BeforeLlmCallContext } from "@freeanima/host/core/hooks/loop";
-import type { AnimaConfig } from "@freeanima/host/core/config";
+import type { RuntimeConfig } from "@freeanima/host/core/config";
 import {
   bindActiveRuntimeConfig,
   Config,
@@ -52,7 +52,7 @@ const baseConfig = {
     },
     profiles: { chat: { chain: [{ provider: "main", model: "m" }] } },
   },
-} as AnimaConfig;
+} as RuntimeConfig;
 
 function bindTestConfig(enabled = true): void {
   bindActiveRuntimeConfig(

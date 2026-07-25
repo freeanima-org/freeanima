@@ -1,5 +1,5 @@
 import { ensureTokenizer, setResolveContext } from "@freeanima/host/core/tokenizer";
-import type { AnimaConfig, Config } from "@freeanima/host/core/config";
+import type { RuntimeConfig, Config } from "@freeanima/host/core/config";
 import {
   getDefaultProviderBaseUrl,
   getProfileHopModel,
@@ -11,7 +11,7 @@ import { PROFILE_CHAT } from "@freeanima/host/core/provider";
 
 const log = logComponent("tokenizer");
 
-function collectOllamaBaseUrls(cfg: AnimaConfig): string[] {
+function collectOllamaBaseUrls(cfg: RuntimeConfig): string[] {
   const urls: string[] = [];
   const seen = new Set<string>();
 

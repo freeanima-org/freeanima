@@ -19,7 +19,7 @@ import {
 } from "./status.ts";
 
 type McpServersConfig = NonNullable<
-  import("@freeanima/host/core/config").AnimaConfig["mcp_servers"]
+  import("@freeanima/host/core/config").RuntimeConfig["mcp_servers"]
 >;
 
 function formatMcpError(err: unknown): string {

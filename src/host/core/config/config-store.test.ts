@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
-import type { AnimaConfig } from "./schemas/config.ts";
+import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 import {
   bindActiveRuntimeConfig,
   Config,
@@ -16,7 +16,7 @@ const snapshot = {
     },
     profiles: { chat: { chain: [{ provider: "main", model: "m" }] } },
   },
-} as AnimaConfig;
+} as RuntimeConfig;
 
 describe("Config store", () => {
   afterEach(() => {
@@ -25,7 +25,7 @@ describe("Config store", () => {
 
   it("fromSnapshot exposes data and update replaces snapshot", () => {
     const cfg = Config.fromSnapshot(snapshot);
-    expect(cfg.data.llm.default_profile).toBe("chat");
+    expect(cfg.data.llm?.default_profile ?? "").toBe("chat");
     cfg.update({ ...snapshot, compression: { default_context_window: 32_000 } });
     expect(cfg.data.compression?.default_context_window).toBe(32_000);
   });

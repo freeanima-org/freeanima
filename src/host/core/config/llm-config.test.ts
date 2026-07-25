@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { Config } from "@freeanima/host/core/config";
-import { animaConfigSchema } from "@freeanima/host/core/config";
+import { runtimeConfigSchema } from "@freeanima/host/core/config";
 import {
   getLlmConfig,
   getProfileHopModel,
@@ -11,7 +11,7 @@ import {
 } from "./llm-config.ts";
 import { llmConfigSchema } from "./schemas/llm-config.ts";
 
-const CHAT_ONLY_SNAPSHOT = animaConfigSchema.parse({
+const CHAT_ONLY_SNAPSHOT = runtimeConfigSchema.parse({
   llm: {
     default_profile: "chat",
     providers: {
@@ -53,7 +53,7 @@ describe("resolveConfiguredProfileId", () => {
 
 describe("LLM optional at cold start", () => {
   it("tryGetLlmConfig / isLlmConfigured handle missing llm", () => {
-    const empty = {} as import("@freeanima/host/core/config").AnimaConfig;
+    const empty = {} as import("@freeanima/host/core/config").RuntimeConfig;
     expect(tryGetLlmConfig(empty)).toBeUndefined();
     expect(isLlmConfigured(empty)).toBe(false);
     expect(() => getLlmConfig(empty)).toThrow(LLM_NOT_CONFIGURED_MESSAGE);
@@ -63,7 +63,7 @@ describe("LLM optional at cold start", () => {
   it("isLlmConfigured is false for empty profiles", () => {
     const cfg = {
       llm: { default_profile: "chat", providers: {}, profiles: {} },
-    } as import("@freeanima/host/core/config").AnimaConfig;
+    } as import("@freeanima/host/core/config").RuntimeConfig;
     expect(isLlmConfigured(cfg)).toBe(false);
   });
 

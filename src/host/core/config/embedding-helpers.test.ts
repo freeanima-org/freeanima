@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import type { AnimaConfig } from "./schemas/config.ts";
+import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 import {
   DEFAULT_EMBEDDING_QUERY_TIMEOUT_MS,
   getEmbeddingQueryTimeoutMs,
@@ -13,7 +13,7 @@ const base = {
     providers: {},
     profiles: {},
   },
-} as AnimaConfig;
+} as RuntimeConfig;
 
 describe("embedding query timeout config", () => {
   it("defaults query timeout to 800ms", () => {

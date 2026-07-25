@@ -1,6 +1,10 @@
 import { describe, expect, it } from "bun:test";
 
-import { isRuntimeConfigSectionKey } from "./runtime-config.ts";
+import {
+  isRuntimeConfigSectionKey,
+  parseRuntimeConfig,
+  runtimeConfigSchema,
+} from "./runtime-config.ts";
 
 describe("isRuntimeConfigSectionKey", () => {
   it("识别已知运行时段", () => {
@@ -13,5 +17,32 @@ describe("isRuntimeConfigSectionKey", () => {
     expect(isRuntimeConfigSectionKey("database")).toBe(false);
     expect(isRuntimeConfigSectionKey("http")).toBe(false);
     expect(isRuntimeConfigSectionKey("no_such_section")).toBe(false);
+  });
+});
+
+describe("runtimeConfigSchema", () => {
+  it("接受运行时段", () => {
+    const parsed = runtimeConfigSchema.safeParse({
+      compression: { enabled: true },
+      llm: {
+        default_profile: "chat",
+        providers: {},
+        profiles: { chat: { chain: [{ provider: "p", model: "m" }] } },
+      },
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("parseRuntimeConfig 剥离 bootstrap 键", () => {
+    const next = parseRuntimeConfig({
+      database: { url: "postgres://x" },
+      http: { host: "0.0.0.0" },
+      redis: { url: "redis://x" },
+      compression: { enabled: false },
+    });
+    expect(next.compression).toEqual({ enabled: false });
+    expect((next as Record<string, unknown>).database).toBeUndefined();
+    expect((next as Record<string, unknown>).http).toBeUndefined();
+    expect((next as Record<string, unknown>).redis).toBeUndefined();
   });
 });

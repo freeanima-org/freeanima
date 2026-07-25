@@ -716,8 +716,8 @@
   <msg id="ui_common_close">Close</msg>
   <msg id="ui_common_confirm">OK</msg>
   <msg id="ui_common_notice">Notice</msg>
-  <msg id="ui_habitat_config_saved_restart_description">"{section}" was saved to the Habitat database. Restart the habitat now to apply changes?</msg>
-  <msg id="ui_habitat_config_saved_restart_title">Restart habitat?</msg>
+  <msg id="ui_habitat_config_saved_applied_description">"{section}" was saved and applied in memory (no restart needed).</msg>
+  <msg id="ui_habitat_config_saved_applied_title">Saved</msg>
   <msg id="ui_network_offline">You are offline. Live Service features are unavailable; cached data may still be shown where available.</msg>
   <msg id="ui_offline_cached_hint"> · Showing cached data</msg>
   <msg id="ui_offline_readonly_mode">Offline read-only — edits are disabled until you're back online.</msg>

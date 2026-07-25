@@ -6,11 +6,11 @@ import { Config } from "@freeanima/host/platform/config";
 import { registerCoreTools } from "@freeanima/host/capabilities/tools";
 import { ToolSetRegistry } from "@freeanima/host/core/tool";
 import { parseYaml } from "@freeanima/host/platform/config";
-import { animaConfigSchema } from "@freeanima/host/core/config";
+import { runtimeConfigSchema } from "@freeanima/host/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
 
 function testConfig() {
-  const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
+  const parsed = runtimeConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
   if (!parsed.success) throw new Error(parsed.error.message);
   return Config.fromSnapshot(parsed.data);
 }

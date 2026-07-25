@@ -7,7 +7,7 @@ import {
   type ResolvedSpeechConfig,
   type TtsProvider,
 } from "./schemas/tts.ts";
-import type { AnimaConfig } from "./schemas/config.ts";
+import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 
 export type { ResolvedSpeechConfig };
 
@@ -31,7 +31,7 @@ function parseProvider(raw: unknown): TtsProvider {
   return DEFAULT_TTS_PROVIDER;
 }
 
-export function getResolvedSpeechConfig(cfg: AnimaConfig): ResolvedSpeechConfig {
+export function getResolvedSpeechConfig(cfg: RuntimeConfig): ResolvedSpeechConfig {
   const tts = cfg.tts ?? {};
   const lang = tts.lang?.trim() || null;
   const voiceName = tts.voice_name?.trim() || null;
@@ -50,6 +50,6 @@ export function getResolvedSpeechConfig(cfg: AnimaConfig): ResolvedSpeechConfig 
   };
 }
 
-export function isSpeechPlaybackEnabled(cfg: AnimaConfig): boolean {
+export function isSpeechPlaybackEnabled(cfg: RuntimeConfig): boolean {
   return getResolvedSpeechConfig(cfg).enabled;
 }

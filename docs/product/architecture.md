@@ -52,11 +52,20 @@ Legacy `hub_*` / `console` protocol aliases and dual-write keys have been remove
 - Memory orchestration is built into the runtime; the LLM does not control memory pipelines
 - Credential management is a first-class system concern
 - Habitat **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL (`habitat_runtime_config`); `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`) for cold start — not editable via Shell or Habitat UI API
-- Habitat **may start without LLM** configured; first-time setup happens in Shell **Settings → Habitat** (persist to PG), then restart Habitat so registries rebuild. Missing `llm` must not block cold start.
+- Habitat **may start without LLM** configured; first-time setup happens in Shell **Settings → Habitat** (persist to PG). Saving runtime config **hot-applies in memory** (no Habitat restart). Missing `llm` must not block cold start.
 - Habitat **hosts browser `/web/*` whenever Web dist is present** (no config switch; run `just pack web` for source deploy). Source `just dev habitat` skips hosting so Vite serves the UI.
 - **Asset management** is a first-class system concern
 
-Bootstrap and runtime are **not merged** into a single config object. CLI cold paths connect via internal `withPlatformDb` and receive **runtime only**. Legacy runtime keys in `config.yaml` are ignored (optional startup warn).
+Bootstrap and runtime are **not merged** into a single config object (no `AnimaConfig` / `animaConfigSchema` supersets). Types: `bootstrapConfigSchema` vs `runtimeConfigSchema` / `Config.data: RuntimeConfig`. CLI cold paths connect via internal `withPlatformDb` and receive **runtime only**. Legacy runtime keys in `config.yaml` are ignored (optional startup warn).
+
+### Runtime config: live vs transferred
+
+| Kind            | Sections (examples)                                                                                                           | After UI save                                                                     |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| **Live**        | `compression`, `memory`, `fts`, `cjk`, `clarify`, `browser`, `firecrawl`, `models`, `tts`, `auto_llm`, gateway `tool_display` | Consumers read `Config.data` each use; snapshot update is enough                  |
+| **Transferred** | `llm`, `i18n`, `embedding`, `mcp_servers`, `acp_agents`, `discord` / `weixin` / `gateway` platforms, `worlds`                 | Snapshot update **plus** section apply (re-init registries / reconnect / re-bind) |
+| **Bootstrap**   | `database`, `http`, `redis`                                                                                                   | Edit YAML; **process restart** required                                           |
+| **Hard / rare** | `eventbus` (queue already built)                                                                                              | Prefer process restart if changing `key_prefix` etc.                              |
 
 - The system prompt is part of architecture, not ad-hoc string concatenation
 

@@ -3,7 +3,7 @@ import {
   getActiveRuntimeConfig,
   getProfileHopModel,
   getRuntimeLogger,
-  type AnimaConfig,
+  type RuntimeConfig,
 } from "@freeanima/host/core/config";
 import type { Logger } from "@freeanima/host/kernel/logging";
 import { PROFILE_CHAT, ProviderError } from "@freeanima/host/core/provider";
@@ -53,7 +53,7 @@ export class EngineTurnInterrupted extends Error {
 type EngineOpts = {
   max_turns?: number;
   model?: string;
-  config?: AnimaConfig;
+  config?: RuntimeConfig;
   logger?: Logger;
   /** Injected LLM runtime; falls back to initLlmRuntime() singleton when omitted */
   llm?: LlmRuntime;

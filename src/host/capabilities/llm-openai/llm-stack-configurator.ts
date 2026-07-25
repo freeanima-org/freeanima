@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "@freeanima/host/core/config";
+import type { RuntimeConfig } from "@freeanima/host/core/config";
 import { tryGetLlmConfig } from "@freeanima/host/core/config";
 import type { BackendRegistry, ProviderRegistry } from "@freeanima/host/core/provider";
 import {
@@ -9,7 +9,7 @@ import {
 
 /** Register OpenAI compatible provider/backend with engine-llm */
 export function bindOpenAiCompatibleLlm(
-  cfg: AnimaConfig,
+  cfg: RuntimeConfig,
   backends: BackendRegistry,
   providers: ProviderRegistry,
 ): void {

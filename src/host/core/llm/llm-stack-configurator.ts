@@ -1,8 +1,8 @@
-import type { AnimaConfig } from "@freeanima/host/core/config";
+import type { RuntimeConfig } from "@freeanima/host/core/config";
 import type { BackendRegistry, ProviderRegistry } from "@freeanima/host/core/provider";
 
 export type LlmStackConfigurator = (
-  cfg: AnimaConfig,
+  cfg: RuntimeConfig,
   backends: BackendRegistry,
   providers: ProviderRegistry,
 ) => void;
@@ -18,7 +18,7 @@ export function unregisterLlmStackConfigurator(): void {
 }
 
 export function applyLlmStackConfigurator(
-  cfg: AnimaConfig,
+  cfg: RuntimeConfig,
   backends: BackendRegistry,
   providers: ProviderRegistry,
 ): void {

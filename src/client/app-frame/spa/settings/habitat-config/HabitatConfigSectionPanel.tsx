@@ -2,14 +2,13 @@ import type { ReactNode } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { Button, Card, CardContent, Input } from "@freeanima/ui-kit";
 import { Label } from "@freeanima/ui-kit/components/ui";
-import { StatusAlert, showConfirm } from "@freeanima/ui-kit/composite";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { FormToggle } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import type { SettingsPanelProps } from "@freeanima/client/portal-sdk/settings";
 import {
   fetchHabitatConfigSection,
   patchHabitatConfigSection,
   replaceHabitatConfigSection,
-  restartHabitatService,
 } from "@freeanima/client/portal-sdk/habitat-config-api";
 
 import { m as uiMessages } from "@paraglide/messages";
@@ -78,6 +77,7 @@ function advancedTestConfig(
 export default function HabitatConfigSectionPanel({ configKey }: Props) {
   const [config, setConfig] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState("");
+  const [savedHint, setSavedHint] = useState("");
   const [saving, setSaving] = useState(false);
   const [advancedDraft, setAdvancedDraft] = useState<Record<string, unknown>>({});
 
@@ -146,18 +146,7 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
 
   const afterSave = useCallback(
     async (section: string) => {
-      const restart = await showConfirm({
-        title: uiMessages.ui_habitat_config_saved_restart_title(),
-        description: uiMessages.ui_habitat_config_saved_restart_description({ section }),
-        confirmLabel: uiMessages.habitat_common_restart_service(),
-      });
-      if (restart) {
-        try {
-          await restartHabitatService();
-        } catch (e) {
-          setError(e instanceof Error ? e.message : String(e));
-        }
-      }
+      setSavedHint(uiMessages.ui_habitat_config_saved_applied_description({ section }));
       await load();
     },
     [load],
@@ -166,6 +155,7 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
   const saveCompression = async () => {
     setSaving(true);
     setError("");
+    setSavedHint("");
     try {
       await patchHabitatConfigSection("compression", {
         enabled: compression.enabled,
@@ -183,6 +173,7 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
   const saveMemory = async () => {
     setSaving(true);
     setError("");
+    setSavedHint("");
     try {
       await patchHabitatConfigSection("memory", {
         passive_recall: {
@@ -206,6 +197,7 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
     if (!isAdvancedSectionKey(configKey)) return;
     setSaving(true);
     setError("");
+    setSavedHint("");
     try {
       if (isHabitatConfigRecordSection(configKey)) {
         await replaceHabitatConfigSection(configKey, advancedDraft);
@@ -231,6 +223,7 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
   return (
     <div className="space-y-4">
       {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
+      {savedHint ? <StatusAlert variant="success">{savedHint}</StatusAlert> : null}
 
       {configKey === "compression" ? (
         <Card className="bg-muted py-0">
@@ -320,7 +313,9 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
           saving={saving}
           onSavingChange={setSaving}
           onError={setError}
-          onSaved={load}
+          onSaved={async () => {
+            await afterSave("tts");
+          }}
         />
       ) : null}
 

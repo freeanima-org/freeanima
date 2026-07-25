@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { AnimaConfig } from "./schemas/config.ts";
+import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 import {
   getContextWindow,
   getEffectiveTokenBudget,
@@ -21,7 +21,7 @@ const cfg = {
   models: {
     "deepseek-v4-flash": { context_window: 1_000_000 },
   },
-} as AnimaConfig;
+} as RuntimeConfig;
 
 describe("resolveContextWindowWithSource", () => {
   it("prefers per-model config", () => {
@@ -35,20 +35,20 @@ describe("resolveContextWindowWithSource", () => {
   });
 
   it("falls back to catalog when config tiers unset", () => {
-    const bare = { models: {} } as AnimaConfig;
+    const bare = { models: {} } as RuntimeConfig;
     const r = resolveContextWindowWithSource(bare, "gpt-4", { catalogFallback: 128_000 });
     expect(r).toEqual({ window: 128_000, source: "catalog" });
   });
 
   it("returns null when no source available", () => {
-    const r = resolveContextWindowWithSource({} as AnimaConfig, "gpt-4");
+    const r = resolveContextWindowWithSource({} as RuntimeConfig, "gpt-4");
     expect(r).toEqual({ window: null, source: null });
   });
 });
 
 describe("getContextWindow catalog fallback", () => {
   it("uses catalogFallback after config tiers", () => {
-    const bare = { models: {} } as AnimaConfig;
+    const bare = { models: {} } as RuntimeConfig;
     expect(getContextWindow(bare, "m", { catalogFallback: 64_000 })).toBe(64_000);
   });
 });
@@ -59,7 +59,7 @@ describe("getEffectiveTokenBudget", () => {
   });
 
   it("honors catalog fallback", () => {
-    const bare = { compression: { reserved_tokens: 8192 } } as AnimaConfig;
+    const bare = { compression: { reserved_tokens: 8192 } } as RuntimeConfig;
     expect(getEffectiveTokenBudget(bare, "m", { catalogFallback: 20_000 })).toBe(20_000 - 8192);
   });
 });

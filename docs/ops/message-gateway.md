@@ -21,7 +21,7 @@ Shell → **Habitat 服务** → **服务配置**：
 ## 启用与生效
 
 - `enabled: false`：即使有 token 也不启动该通道（默认有 token 且未禁用则启动）。
-- 保存后需 **重启 Habitat / anima service** 才会重新 `discoverPlatforms`；当前不支持热重载。
+- 保存后 **热 apply**：停止现有 adapter 并重新 `discoverPlatforms` / `startPlatforms`，无需重启 Habitat。
 
 ## 测试连接
 

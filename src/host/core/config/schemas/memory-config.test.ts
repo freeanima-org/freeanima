@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import type { AnimaConfig } from "./config.ts";
+import type { RuntimeConfig } from "./runtime-config.ts";
 import { resolvePassiveRecallConfig } from "./memory-config.ts";
 
 const base = {
@@ -9,7 +9,7 @@ const base = {
     providers: {},
     profiles: {},
   },
-} as AnimaConfig;
+} as RuntimeConfig;
 
 describe("resolvePassiveRecallConfig", () => {
   it("returns defaults when passive_recall unset", () => {

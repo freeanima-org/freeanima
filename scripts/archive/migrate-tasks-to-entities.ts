@@ -10,7 +10,7 @@
 
 import { SQL } from "bun";
 
-import type { AnimaConfig } from "@freeanima/host/core/config/schemas/config.ts";
+import type { RuntimeConfig } from "@freeanima/host/core/config/schemas/runtime-config.ts";
 import { bindResolvedWorldContext } from "@freeanima/host/core/config/world-context.ts";
 import { ensureWorldSubjects } from "@freeanima/host/core/db/pg/entity/subject-world.ts";
 import {
@@ -23,7 +23,7 @@ import { initDatabase } from "@freeanima/host/core/db/pg/index.ts";
 
 const MINIMAL_CONFIG = {
   llm: { default_profile: "chat", providers: {}, profiles: {} },
-} as AnimaConfig;
+} as RuntimeConfig;
 
 async function resolveUserTaskWorldId(): Promise<number> {
   const ctx = await ensureWorldSubjects(MINIMAL_CONFIG);

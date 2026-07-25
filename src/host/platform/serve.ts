@@ -145,6 +145,14 @@ export async function serve(
     await opts.onReady?.();
     scheduleDebugSessionCleanup(enginePhase.conversation);
 
+    const { bindRuntimeConfigApplyDeps } = await import("./config/runtime-config-apply.ts");
+    bindRuntimeConfigApplyDeps({
+      getMcp: () => enginePhase?.mcp ?? null,
+      getEngine: () => enginePhase?.engine ?? null,
+      getMessaging: () => runtime,
+      getPlatformsRef: () => platformsRef,
+    });
+
     startAsyncIntegrations({
       mcp: enginePhase.mcp,
       acp: enginePhase.acp,

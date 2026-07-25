@@ -2,7 +2,7 @@ import { ToolSetRegistry } from "@freeanima/host/core/tool";
 import {
   bindActiveRuntimeConfig,
   resetActiveConfigForTest,
-  animaConfigSchema,
+  runtimeConfigSchema,
 } from "@freeanima/host/core/config";
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from "bun:test";
 import { writeFileSync } from "node:fs";
@@ -39,7 +39,7 @@ describe("local tools", () => {
   const prevHome = process.env.FREEANIMA_HOME;
 
   beforeAll(() => {
-    const parsed = animaConfigSchema.safeParse(parseYaml(MIN_CONFIG));
+    const parsed = runtimeConfigSchema.safeParse(parseYaml(MIN_CONFIG));
     if (!parsed.success) throw new Error(parsed.error.message);
     registerCoreTools(tools, Config.fromSnapshot(parsed.data));
   });
@@ -48,7 +48,7 @@ describe("local tools", () => {
     home = createTempDir("anima-local-");
     cwd = createTempDir("anima-cwd-");
     process.env.FREEANIMA_HOME = home;
-    const parsed = animaConfigSchema.safeParse(parseYaml(MIN_CONFIG));
+    const parsed = runtimeConfigSchema.safeParse(parseYaml(MIN_CONFIG));
     if (!parsed.success) throw new Error(parsed.error.message);
     bindActiveRuntimeConfig(Config.fromSnapshot(parsed.data));
   });

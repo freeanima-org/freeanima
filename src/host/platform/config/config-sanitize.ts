@@ -1,4 +1,3 @@
-import type { AnimaConfig } from "@freeanima/host/core/config";
 import type { RuntimeConfig } from "@freeanima/host/core/config";
 
 /**
@@ -47,6 +46,6 @@ function sanitizeRecord(obj: Record<string, unknown>): Record<string, unknown> {
 }
 
 /** Runtime config snapshot for HTTP / Habitat（密钥明文；含 MCP env/headers） */
-export function sanitizeConfigForApi(cfg: RuntimeConfig | AnimaConfig): Record<string, unknown> {
+export function sanitizeConfigForApi(cfg: RuntimeConfig): Record<string, unknown> {
   return sanitizeRecord(cfg as Record<string, unknown>);
 }

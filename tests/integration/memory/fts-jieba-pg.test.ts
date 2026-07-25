@@ -1,7 +1,7 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { bindActiveRuntimeConfig } from "@freeanima/host/platform/config";
 import { parseYaml } from "@freeanima/host/platform/config";
-import { animaConfigSchema } from "@freeanima/host/core/config";
+import { runtimeConfigSchema } from "@freeanima/host/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
 import { rebuildAllFtsSegments, resetJiebaForTest } from "@freeanima/host/core/db/pg";
 import { describePg } from "../../helpers/pg-test-gate.ts";
@@ -17,7 +17,7 @@ import {
 } from "@freeanima/host/core/db/pg/semantic-memory";
 
 function minimalConfig() {
-  const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
+  const parsed = runtimeConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
   if (!parsed.success) throw new Error(parsed.error.message);
   return parsed.data;
 }

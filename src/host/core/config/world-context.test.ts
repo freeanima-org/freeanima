@@ -7,13 +7,13 @@ import {
   resetResolvedWorldContextForTest,
   resolveSubjectWorldId,
 } from "./resolved-world-context.ts";
-import type { AnimaConfig } from "./schemas/config.ts";
+import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 
 describe("resolveWorldSubjectIds", () => {
   it("returns empty when unset", () => {
     const config = {
       llm: { default_profile: "chat", providers: {}, profiles: {} },
-    } as AnimaConfig;
+    } as RuntimeConfig;
     expect(resolveWorldSubjectIds(config)).toEqual({});
   });
 
@@ -22,7 +22,7 @@ describe("resolveWorldSubjectIds", () => {
       llm: { default_profile: "chat", providers: {}, profiles: {} },
       worlds: { user_subject_id: 5, agent_subject_id: 6 },
       notifications: { user_subject_id: 1, agent_subject_id: 2 },
-    } as AnimaConfig;
+    } as RuntimeConfig;
     expect(resolveWorldSubjectIds(config)).toEqual({
       user_subject_id: 5,
       agent_subject_id: 6,
@@ -33,7 +33,7 @@ describe("resolveWorldSubjectIds", () => {
     const config = {
       llm: { default_profile: "chat", providers: {}, profiles: {} },
       worlds: { user_subject_id: 5 },
-    } as AnimaConfig;
+    } as RuntimeConfig;
     expect(resolveWorldSubjectIds(config)).toEqual({
       user_subject_id: 5,
     });

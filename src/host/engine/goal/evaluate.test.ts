@@ -1,6 +1,6 @@
 import { describe, it, expect, spyOn, afterEach } from "bun:test";
 import * as goalJudge from "@freeanima/host/core/llm/goal-judge";
-import { Config, animaConfigSchema } from "@freeanima/host/core/config";
+import { Config, runtimeConfigSchema } from "@freeanima/host/core/config";
 import type { LlmRuntime } from "@freeanima/host/core/llm";
 import { createTestLogger } from "@freeanima/host/kernel/logging/testing";
 import { evaluateGoalAfterTurn, type GoalRuntimeDeps } from "./evaluate.ts";
@@ -21,7 +21,7 @@ function createMemoryConversation(): ConversationPort {
 }
 
 const testConfig = Config.fromSnapshot(
-  animaConfigSchema.parse({
+  runtimeConfigSchema.parse({
     llm: {
       default_profile: "chat",
       providers: {

@@ -1,12 +1,12 @@
-import type { AnimaConfig } from "@freeanima/host/core/config";
+import type { RuntimeConfig } from "@freeanima/host/core/config";
 import { resolveValue } from "./resolve.ts";
 
 /** Expand env/vault references in llm.providers.*.api_key */
-export async function resolveLlmProviderApiKeys(cfg: AnimaConfig): Promise<AnimaConfig> {
+export async function resolveLlmProviderApiKeys(cfg: RuntimeConfig): Promise<RuntimeConfig> {
   const llm = cfg.llm;
   if (!llm?.providers) return cfg;
 
-  const providers: AnimaConfig["llm"]["providers"] = {};
+  const providers: NonNullable<RuntimeConfig["llm"]>["providers"] = {};
   for (const [id, provider] of Object.entries(llm.providers)) {
     providers[id] = {
       ...provider,
@@ -16,7 +16,7 @@ export async function resolveLlmProviderApiKeys(cfg: AnimaConfig): Promise<Anima
   return {
     ...cfg,
     llm: {
-      ...cfg.llm,
+      ...llm,
       providers,
     },
   };

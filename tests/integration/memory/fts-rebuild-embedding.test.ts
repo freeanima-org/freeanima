@@ -1,7 +1,7 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { bindActiveRuntimeConfig } from "@freeanima/host/platform/config";
 import { parseYaml } from "@freeanima/host/platform/config";
-import { animaConfigSchema } from "@freeanima/host/core/config";
+import { runtimeConfigSchema } from "@freeanima/host/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
 import {
   awaitPendingEmbeddingsForTest,
@@ -23,7 +23,7 @@ import { getActivePgTestContext, getTestEngine, seedSession } from "../../helper
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 function minimalConfig() {
-  const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
+  const parsed = runtimeConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
   if (!parsed.success) throw new Error(parsed.error.message);
   return parsed.data;
 }

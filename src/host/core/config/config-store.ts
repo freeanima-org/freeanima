@@ -1,24 +1,23 @@
-import type { AnimaConfig } from "./schemas/config.ts";
 import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 
 let activeRuntimeConfig: Config | null = null;
 
-/** In-memory config container (no file I/O) */
+/** In-memory runtime config container (no file I/O); bootstrap 不进入此对象 */
 export class Config {
-  constructor(protected snapshot: AnimaConfig | RuntimeConfig) {}
+  constructor(protected snapshot: RuntimeConfig) {}
 
-  /** Current config snapshot; runtime fields exposed as AnimaConfig for call-site compat */
-  get data(): AnimaConfig {
-    return this.snapshot as AnimaConfig;
+  /** Current runtime config snapshot */
+  get data(): RuntimeConfig {
+    return this.snapshot;
   }
 
   /** Replace in-memory snapshot (reload / test inject / patch) */
-  update(snapshot: AnimaConfig | RuntimeConfig): void {
+  update(snapshot: RuntimeConfig): void {
     this.snapshot = snapshot;
   }
 
   /** Unit / integration tests without disk */
-  static fromSnapshot(snapshot: AnimaConfig | RuntimeConfig): Config {
+  static fromSnapshot(snapshot: RuntimeConfig): Config {
     return new Config(snapshot);
   }
 }
