@@ -7,7 +7,7 @@ import { logComponent } from "@freeanima/host/platform/logging";
 import { certSanCoversRequired, readCertSanNames } from "./cert-san.ts";
 import { buildOpenSslSubjectAltName, collectTlsSanNames, expandConfigPath } from "./tls-paths.ts";
 
-export type HabitatTlsMaterialSource = "existing" | "mkcert" | "self-signed";
+export type HabitatTlsMaterialSource = "existing" | "mkcert" | "self-signed" | "acme";
 
 export type HabitatTlsMaterial = {
   certPath: string;

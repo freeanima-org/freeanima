@@ -18,6 +18,38 @@ describe("httpTlsConfigSchema", () => {
     });
     expect(parsed.success).toBe(true);
   });
+
+  test("accepts acme with email and domains", () => {
+    const parsed = httpTlsConfigSchema.safeParse({
+      enabled: true,
+      acme: {
+        email: "you@example.com",
+        domains: ["anima.example.com"],
+        challenge_port: 80,
+        staging: true,
+      },
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  test("rejects acme missing email", () => {
+    const parsed = httpTlsConfigSchema.safeParse({
+      enabled: true,
+      acme: { domains: ["anima.example.com"] },
+    });
+    expect(parsed.success).toBe(false);
+  });
+
+  test("rejects acme bare IP domain", () => {
+    const parsed = httpTlsConfigSchema.safeParse({
+      enabled: true,
+      acme: {
+        email: "you@example.com",
+        domains: ["203.0.113.10"],
+      },
+    });
+    expect(parsed.success).toBe(false);
+  });
 });
 
 describe("httpConfigSchema", () => {

@@ -13,7 +13,7 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 
 - Habitat RPC REST (`/rpc/v1/*` except health probe/CORS/echo) requires a **Service API Token** (`Authorization: Bearer fa_at_…`); create with `anima token create`. Binding `127.0.0.1` limits network exposure but does not replace token auth — any local process that can reach the port still needs a valid token for business routes.
 - Default bind is `127.0.0.1`; for LAN access, assess CORS and network isolation yourself.
-- **Do not** expose the service to the public internet without TLS and token-protected clients (see [`remote-access.md`](remote-access.md)).
+- **Do not** expose the service to the public internet without TLS and token-protected clients (see [`remote-access.md`](remote-access.md)）。可选 `http.tls.acme`（Let's Encrypt HTTP-01，公网 `:80` challenge + `:2659` HTTPS）仍须 Token；不替代防火墙 / 反向代理 harden。
 
 ## Credential Responsibilities
 

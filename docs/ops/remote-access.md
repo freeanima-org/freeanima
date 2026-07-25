@@ -15,12 +15,13 @@ title: Remote access
 | **CLI bootstrap**        | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                                         |
 | **`http.host`**          | Habitat listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                                           |
 | **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出客户端访问用的名称）；变更后 `auto: true` 时重启自动重签                     |
+| **`http.tls.acme`**      | 可选 Let's Encrypt（HTTP-01）；公网域名指向本机时签发公信证书并自动续期（与局域网 mkcert 二选一，配置了 acme 则优先）                 |
 | **`http.cors_origins`**  | Explicit cross-origin browser origins (`just dev web`, split UI/API reverse proxy)                                                    |
 | **Client settings**      | Desktop / mobile shell / **browser Web** fill Habitat URL and token in **Habitat settings**                                           |
 | **Remote UI**            | 浏览器/PWA 从 Habitat `/web/*` 加载；Desktop/Mobile 默认安装包内本地 UI；见 [`architecture.md`](../product/architecture.md) Client UI |
 | **PWA**                  | `/web/*` 支持 manifest + Service Worker；布局跟视口（phone ≠ 必 compact；宽屏可为 expanded）                                          |
 
-公网暴露不在产品内置范围内：请使用局域网、`http.tls` 本地 HTTPS，或自行搭建反向代理 / VPN。旧版 `tunnel` 配置段已废弃并忽略。
+默认仍建议局域网、`http.tls` 本地 HTTPS（mkcert）、VPN 或反向代理。可选原生 **Let's Encrypt**（`http.tls.acme`，HTTP-01）便于有公网域名的部署；**不替代** harden / WAF / 最小暴露面。旧版 `tunnel` 配置段已废弃并忽略。
 
 ### PWA（浏览器 Web）
 
@@ -115,12 +116,35 @@ http:
     auto: true
 ```
 
-- **`auto: true`**（默认）：首次启动在 `~/.anima/tls/` 自动生成 cert/key（优先 **mkcert**，否则 **openssl 自签**）；SAN 含 `localhost`、`127.0.0.1`、`::1`、`http.host` 中的 bind 地址（跳过 `0.0.0.0`）及 **`http.allowed_hosts`**。配置变更导致 SAN 不足时，**重启 Habitat 会自动删除旧证书并重签**（`auto: false` 时仅告警，不覆盖手动证书）。
+- **`auto: true`**（默认）：首次启动在 `~/.anima/tls/` 自动生成 cert/key（优先 **mkcert**，否则 **openssl 自签**）；SAN 含 `localhost`、`127.0.0.1`、`::1`、`http.host` 中的 bind 地址（跳过 `0.0.0.0`）及 **`http.allowed_hosts`**。配置变更导致 SAN 不足时，**重启 Habitat 会自动删除旧证书并重签**（`auto: false` 时仅告警，不覆盖手动证书）。启用 **`http.tls.acme`** 时忽略 `auto`（见下）。
 - **探活**：`anima service status` 与 `GET /rpc/v1/health/probe` 仍走 HTTP `:2658`。
+
+#### 可选：Let's Encrypt（公网域名）
+
+有公网 IP、且域名 A/AAAA 指向本机时，可在 bootstrap 配置 ACME（**HTTP-01**，默认监听 **:80**）：
+
+```yaml
+http:
+  host: 0.0.0.0
+  tls:
+    enabled: true
+    port: 2659
+    acme:
+      email: you@example.com
+      domains:
+        - anima.example.com
+      # challenge_port: 80
+      # staging: false   # 调试时可 true（LE staging）
+```
+
+- 证书写入 `~/.anima/tls/cert.pem` + `key.pem`（fullchain）；账号存 `~/.anima/tls/acme-account.json`（0600）。
+- 启动时若证书覆盖 `domains` 且剩余有效期 **> 30 天** 则复用；否则签发/续期。进程内约每 12h 检查，续期成功后重载 HTTPS `:2659`（HTTP `:2658` 与 challenge 服不变）。
+- Let's Encrypt **不签裸 IP**；客户端用 `https://<domain>:2659`（或自行反代到 443）。公信 CA，**无需**安装 mkcert 根 CA。
+- `:80` 须公网可达（常见需 root / `CAP_NET_BIND_SERVICE`，或确保端口未被占用）。
 
 #### mkcert root CA on clients (optional)
 
-The Habitat server certificate lives on the Habitat host. Browsers, **desktop shell**, and mobile APKs need the **mkcert root CA** (`rootCA.pem`, not `cert.pem`) in the OS trust store for HTTPS `:2659` without warnings:
+The Habitat server certificate lives on the Habitat host. Browsers, **desktop shell**, and mobile APKs need the **mkcert root CA** (`rootCA.pem`, not `cert.pem`) in the OS trust store for HTTPS `:2659` without warnings（**Let's Encrypt 证书跳过本步**）：
 
 - **设置 → 连接** (`/web/settings?section=habitat`): download **rootCA.pem** and a **QR code** (QR points at the HTTP `:2658` download URL so you can scan before trusting HTTPS).
 - If HTTPS pages still fail to load scripts, open settings via **`http://<host>:2658/web/settings?section=habitat`** first.
@@ -134,7 +158,7 @@ mkcert -install  # trust that CA on the Habitat host itself
 - **iOS**: AirDrop/email `rootCA.pem` → install the profile → **Settings → General → About → Certificate Trust Settings** → enable full trust.
 - **Android**: optionally convert to DER, then **Settings → Security → Install CA certificate**. Tauri Android builds also need a build that trusts user CAs.
 
-Daily LAN access: **HTTP `:2658`** or **HTTPS `:2659` (after CA trust)**; for the public Internet use your own reverse proxy or VPN.
+Daily LAN access: **HTTP `:2658`** or **HTTPS `:2659` (after CA trust for mkcert)**。公网域名 + `http.tls.acme`：`https://<domain>:2659`。仍可用反向代理或 VPN 做 harden。
 
 ## 2. Client configuration
 

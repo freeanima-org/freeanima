@@ -45,12 +45,23 @@ export function HabitatTlsCaTrustCard({ habitatUrl }: Props) {
     <Card className="bg-muted py-0">
       <CardContent className="gap-4 py-4">
         <div className="space-y-1">
-          <h3 className="text-sm font-medium">局域网 HTTPS 信任</h3>
+          <h3 className="text-sm font-medium">
+            {info.kind === "letsencrypt" ? "HTTPS 证书（Let's Encrypt）" : "局域网 HTTPS 信任"}
+          </h3>
           <p className="text-xs text-muted-foreground">
-            桌面壳 / 手机访问 <code className="text-xs">https://…:2659</code>{" "}
-            时若「测试连接」失败或控制台报证书错误，须先将 Habitat 的 mkcert 根 CA
-            装入本机系统信任库。请用 <strong>HTTP 端口</strong> 下载（下方链接已自动使用{" "}
-            <code className="text-xs">:2658</code>）。
+            {info.kind === "letsencrypt" ? (
+              <>
+                公网域名证书由 Let's Encrypt 签发，浏览器与桌面壳默认信任，无需安装根
+                CA。请用域名访问 <code className="text-xs">https://…:2659</code>。
+              </>
+            ) : (
+              <>
+                桌面壳 / 手机访问 <code className="text-xs">https://…:2659</code>{" "}
+                时若「测试连接」失败或控制台报证书错误，须先将 Habitat 的 mkcert 根 CA
+                装入本机系统信任库。请用 <strong>HTTP 端口</strong> 下载（下方链接已自动使用{" "}
+                <code className="text-xs">:2658</code>）。
+              </>
+            )}
           </p>
         </div>
 

@@ -5,7 +5,7 @@ const DEFAULT_HABITAT_HTTP_PORT = 2658;
 
 export type TlsCaInfo = {
   available: boolean;
-  kind: "mkcert" | "self-signed" | "missing";
+  kind: "mkcert" | "self-signed" | "letsencrypt" | "missing";
   issuer: string | null;
   download_url: string;
   qr_url: string;

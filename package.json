@@ -96,6 +96,7 @@
     "@tanstack/react-router": "^1.170.17",
     "@tauri-apps/api": "^2.10.1",
     "@xterm/addon-fit": "^0.11.0",
+    "acme-client": "^5.4.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "commander": "^15.0.0",

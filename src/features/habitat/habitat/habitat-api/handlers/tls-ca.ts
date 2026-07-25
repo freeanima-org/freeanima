@@ -77,6 +77,19 @@ export async function getTlsCaInfo(request: Request): Promise<TlsCaInfoResponse>
     };
   }
 
+  if (kind === "letsencrypt") {
+    return {
+      available: false,
+      kind,
+      issuer,
+      download_url: downloadUrl,
+      qr_url: qrUrl,
+      filename: "rootCA.pem",
+      install_hint:
+        "当前栖息地使用 Let's Encrypt 公信证书，客户端操作系统已默认信任，无需安装 mkcert 根 CA。请用域名访问 HTTPS 端口（如 https://your.domain:2659）。",
+    };
+  }
+
   return {
     available: false,
     kind,

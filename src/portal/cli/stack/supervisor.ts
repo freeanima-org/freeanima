@@ -5,6 +5,7 @@ import {
   resolveHabitatTlsListenConfig,
   toHabitatTlsBunOptions,
 } from "@freeanima/host/platform/tls/resolve-habitat-tls";
+import { startAcmeRenewalScheduler } from "@freeanima/host/platform/tls/acme";
 
 import { tryResolveWebDistDir } from "../web/dist-path.ts";
 
@@ -83,6 +84,39 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
     console.log("[stack] skipTls：不绑 Habitat TLS（开发由 Vite HTTPS 终止；Habitat 仅明文 HTTP）");
   }
 
+  let reloadTls:
+    | ((tls: { port: number; tls: ReturnType<typeof toHabitatTlsBunOptions> }) => Promise<void>)
+    | null = null;
+  let stopAcmeRenewal: (() => void) | null = null;
+
+  if (tlsListen?.acme) {
+    const acme = tlsListen.acme;
+    console.log(
+      `[stack] ACME HTTP-01 challenge http://0.0.0.0:${acme.challengePort}/.well-known/acme-challenge/（domains: ${acme.domains.join(", ")}）`,
+    );
+    const renewal = startAcmeRenewalScheduler({
+      email: acme.email,
+      domains: acme.domains,
+      certPath: tlsListen.material.certPath,
+      keyPath: tlsListen.material.keyPath,
+      staging: acme.staging,
+      onRenewed: async (material) => {
+        console.log("[stack] ACME 证书已续期，正在重载 HTTPS…");
+        if (!reloadTls || !tlsListen) return;
+        await reloadTls({
+          port: tlsListen.port,
+          tls: toHabitatTlsBunOptions({
+            certPath: material.certPath,
+            keyPath: material.keyPath,
+            source: "acme",
+          }),
+        });
+        console.log(`[stack] Habitat HTTPS 已用新证书重载（:${tlsListen.port}）`);
+      },
+    });
+    stopAcmeRenewal = () => renewal.stop();
+  }
+
   await serve(options.host, options.port, {
     foreground: true,
     ...(tlsListen ? { httpListen: { tls: tlsListen } } : {}),
@@ -100,9 +134,21 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
               }
             : {}),
         });
+        reloadTls = result.reloadTls ?? null;
         return { handles: result.handles, tlsPort: result.tlsPort };
       },
-      close: closeHttpServers,
+      close: async (handles, timeoutMs) => {
+        stopAcmeRenewal?.();
+        stopAcmeRenewal = null;
+        if (tlsListen?.acme) {
+          try {
+            await tlsListen.acme.challengeServer.close();
+          } catch (err) {
+            logStartupError("[stack] 关闭 ACME challenge 服失败", err);
+          }
+        }
+        await closeHttpServers(handles, timeoutMs);
+      },
       waitForDrain: waitForDrainWithTimeout,
     },
     onReady: () => {
