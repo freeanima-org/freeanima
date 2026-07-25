@@ -29,7 +29,7 @@ Release Please defaults to `feat` / `fix` / `deps` as releasable commit triggers
 ```bash
 bun -p "require('./package.json').version"
 # Or after build:
-bun src/app/cli/cli.ts -- --help
+bun src/portal/cli/cli.ts -- --help
 ./dist/anima-executable/anima --version
 # standalone install: anima service status
 ```
@@ -116,10 +116,10 @@ just pack cli   # 默认 channel=dev；CI 设 FREEANIMA_BUILD_CHANNEL
 
 **Runtime install modes:**
 
-| Mode           | How to run                                            |
-| -------------- | ----------------------------------------------------- |
-| **source**     | `bun install` + `bun src/app/cli/cli.ts` / `just dev` |
-| **standalone** | Unpack Release tarball; run `./anima`                 |
+| Mode           | How to run                                               |
+| -------------- | -------------------------------------------------------- |
+| **source**     | `bun install` + `bun src/portal/cli/cli.ts` / `just dev` |
+| **standalone** | Unpack Release tarball; run `./anima`                    |
 
 There is **no** npm package publish and **no** Docker image publish.
 

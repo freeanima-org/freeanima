@@ -1,7 +1,9 @@
 import {
   VAULT_ITEM_COMPONENT,
   asVaultItem,
+  type VaultImportRefs,
   type VaultItemType,
+  type VaultUriEntry,
 } from "@freeanima/host/core/db/schema/entity";
 import {
   createEntity,
@@ -19,11 +21,13 @@ export type VaultItemRow = {
   content: string;
   item_type: VaultItemType;
   url?: string;
+  uris?: VaultUriEntry[];
   username?: string;
   tags: string[];
   secrets_enc: string;
   dek_wrapped: string;
   custom_field_names: string[];
+  import_refs?: VaultImportRefs;
   created_at: string;
   updated_at: string;
 };
@@ -38,11 +42,13 @@ export type VaultItemCreateInput = {
   content?: string;
   item_type?: VaultItemType;
   url?: string;
+  uris?: VaultUriEntry[];
   username?: string;
   tags?: string[];
   secrets_enc: string;
   dek_wrapped: string;
   custom_field_names?: string[];
+  import_refs?: VaultImportRefs;
 };
 
 export type VaultItemUpdateInput = {
@@ -51,11 +57,13 @@ export type VaultItemUpdateInput = {
   content?: string;
   item_type?: VaultItemType;
   url?: string;
+  uris?: VaultUriEntry[];
   username?: string;
   tags?: string[];
   secrets_enc?: string;
   dek_wrapped?: string;
   custom_field_names?: string[];
+  import_refs?: VaultImportRefs;
   /** 改密 rewrap 等：跳过顶层 entities.revisions 归档 */
   skip_revision?: boolean;
 };
@@ -73,21 +81,35 @@ function normalizeTags(tags: string[] | undefined): string[] {
   return out;
 }
 
+function normalizeUris(uris: VaultUriEntry[] | undefined): VaultUriEntry[] | undefined {
+  if (!uris?.length) return undefined;
+  const out: VaultUriEntry[] = [];
+  for (const raw of uris) {
+    const uri = raw.uri.trim();
+    if (!uri) continue;
+    out.push({ uri, match: raw.match ?? "domain" });
+  }
+  return out.length > 0 ? out : undefined;
+}
+
 function toRow(
   parsed: NonNullable<ReturnType<typeof asVaultItem>>,
   meta: { created_at: Date; updated_at: Date },
 ): VaultItemRow {
+  const uris = normalizeUris(parsed.uris);
   return {
     id: parsed.id,
     title: parsed.title,
     content: parsed.content,
     item_type: parsed.item_type,
     ...(parsed.url !== undefined ? { url: parsed.url } : {}),
+    ...(uris !== undefined ? { uris } : {}),
     ...(parsed.username !== undefined ? { username: parsed.username } : {}),
     tags: parsed.tags ?? [],
     secrets_enc: parsed.secrets_enc,
     dek_wrapped: parsed.dek_wrapped,
     custom_field_names: parsed.custom_field_names ?? [],
+    ...(parsed.import_refs !== undefined ? { import_refs: parsed.import_refs } : {}),
     created_at: meta.created_at.toISOString(),
     updated_at: meta.updated_at.toISOString(),
   };
@@ -164,14 +186,17 @@ export async function createVaultItem(
   worldId: number,
   input: VaultItemCreateInput,
 ): Promise<VaultItemRow> {
+  const uris = normalizeUris(input.uris);
   const body = {
     item_type: input.item_type ?? "login",
     url: input.url,
+    ...(uris !== undefined ? { uris } : {}),
     username: input.username,
     tags: normalizeTags(input.tags),
     secrets_enc: input.secrets_enc,
     dek_wrapped: input.dek_wrapped,
     custom_field_names: input.custom_field_names ?? [],
+    ...(input.import_refs !== undefined ? { import_refs: input.import_refs } : {}),
   };
   const created = await createEntity({
     type: "content",
@@ -196,9 +221,12 @@ export async function updateVaultItem(
   if (!existing) return null;
   const parsed = asVaultItem(existing);
   if (!parsed) return null;
+  const nextUris =
+    input.uris !== undefined ? normalizeUris(input.uris) : normalizeUris(parsed.uris);
   const body = {
     item_type: input.item_type ?? parsed.item_type,
     url: input.url !== undefined ? input.url : parsed.url,
+    ...(nextUris !== undefined ? { uris: nextUris } : {}),
     username: input.username !== undefined ? input.username : parsed.username,
     tags: input.tags !== undefined ? normalizeTags(input.tags) : (parsed.tags ?? []),
     secrets_enc: input.secrets_enc ?? parsed.secrets_enc,
@@ -207,6 +235,11 @@ export async function updateVaultItem(
       input.custom_field_names !== undefined
         ? input.custom_field_names
         : (parsed.custom_field_names ?? []),
+    ...(input.import_refs !== undefined
+      ? { import_refs: input.import_refs }
+      : parsed.import_refs !== undefined
+        ? { import_refs: parsed.import_refs }
+        : {}),
   };
   const updated = await updateEntity({
     id: input.id,

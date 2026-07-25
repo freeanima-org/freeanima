@@ -19,7 +19,7 @@ export function isStandaloneExecutable(argv1 = process.argv[1]): boolean {
 }
 
 export const CLI_UPGRADE_HINT_SOURCE =
-  "源码安装不支持自动 upgrade。请手动执行：git pull、bun install，然后重启服务（anima service restart）。开发用 bun src/app/cli/cli.ts 或 just dev；本机常驻请 just install cli。";
+  "源码安装不支持自动 upgrade。请手动执行：git pull、bun install，然后重启服务（anima service restart）。开发用 bun src/portal/cli/cli.ts 或 just dev；本机常驻请 just install cli。";
 
 export const CLI_UPGRADE_HINT_STANDALONE_UNSAFE_PREFIX =
   "当前 standalone 前缀不安全（位于 monorepo / 构建 staging）。请用 just install cli 装到 ~/.anima/standalone 后再 upgrade。";
@@ -51,7 +51,7 @@ export function getCliInstallKind(scriptPath?: string): CliInstallKind {
   if (!scriptPath && isStandaloneExecutable()) return "standalone";
   if (scriptPath && isStandaloneExecutable(scriptPath)) return "standalone";
   const resolved = resolveAnimaScriptPath(scriptPath);
-  if (resolved.endsWith("/src/app/cli/cli.ts")) return "source";
+  if (resolved.endsWith("/src/portal/cli/cli.ts")) return "source";
   // symlink → cli.ts 等仍算源码；standalone 由 bunfs argv 识别
   return "source";
 }

@@ -32,7 +32,7 @@ msgstr ""
 #: docs/modules/companion.md:10
 msgid ""
 "The content pack (React + VRM) is embedded by the **desktop Tauri shell** "
-"(`src/app/shell/tauri`). Packaged overlay loads from `frontendDist` `ui/"
+"(`src/portal/app/tauri`). Packaged overlay loads from `frontendDist` `ui/"
 "companion/` via `WebviewUrl::App` (same custom protocol as the main window — "
 "**not** `file://` resources). The overlay connects with Habitat RPC, calls "
 "`remote_tools.attach`, and exposes local tools (`bubble`, `play_slot`) to "
@@ -50,7 +50,7 @@ msgstr ""
 #: docs/modules/companion.md:13
 #, no-wrap
 msgid ""
-"FreeAnima Portal (src/app/shell/tauri)\n"
+"FreeAnima Portal (src/portal/app/tauri)\n"
 "├── Tauri (Rust) — tray / multi-window + prefs / IPC\n"
 "│   ├── companion overlay — work-area fullscreen transparent; VRM stage + remote_tools.attach\n"
 "│   ├── companion settings — settings in main window (Habitat RPC + asset HTTP)\n"
@@ -76,7 +76,7 @@ msgid ""
 "| **Habitat SSOT**   | `src/features/companion/`    | `companion_profile` entity (behavior, slots, library meta); VRM/VRMA files under `~/.anima/companion/` on Habitat host; FBX→VRMA conversion; Settings read/write via Habitat RPC |\n"
 "| **Settings UI**    | Desktop Settings → Companion | Habitat RPC（`getTypedHabitatClient`：`call` / multipart `callRaw`；`companion.config.*`、model/motion CRUD、asset.get）                                                         |\n"
 "| **Companion host** | overlay SPA (`spa/`)         | `remote_tools.attach`, tool execution, local runtime (bubble/play); optional thin HTTP for static assets + `companion.sync.pull` cache                                           |\n"
-"| **Tauri host**     | `src/app/shell/tauri/`       | Transparent window, click-through, tray, show/hide + FS / prefs IPC                                                                                                              |\n"
+"| **Tauri host**     | `src/portal/app/tauri/`       | Transparent window, click-through, tray, show/hide + FS / prefs IPC                                                                                                              |\n"
 msgstr ""
 
 #. type: Plain text

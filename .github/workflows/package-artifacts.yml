@@ -122,7 +122,7 @@ jobs:
       - name: Cache cargo (Windows cross)
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: src/app/shell/tauri/src-tauri
+          workspaces: src/portal/app/tauri/src-tauri
           key: tauri-windows-xwin
 
       - name: Cache cargo-xwin
@@ -182,7 +182,7 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: src/app/shell/tauri/src-tauri
+          workspaces: src/portal/app/tauri/src-tauri
           key: tauri-linux
 
       - name: Build Tauri desktop (Linux host)
@@ -223,8 +223,8 @@ jobs:
           java-version: "21"
           cache: gradle
           cache-dependency-path: |
-            src/app/shell/tauri/src-tauri/gen/android/**/*.gradle*
-            src/app/shell/tauri/src-tauri/gen/android/gradle/wrapper/gradle-wrapper.properties
+            src/portal/app/tauri/src-tauri/gen/android/**/*.gradle*
+            src/portal/app/tauri/src-tauri/gen/android/gradle/wrapper/gradle-wrapper.properties
             bun.lock
 
       - name: Install Rust
@@ -235,7 +235,7 @@ jobs:
       - name: Cache cargo (Android)
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: src/app/shell/tauri/src-tauri
+          workspaces: src/portal/app/tauri/src-tauri
           key: tauri-android
 
       - uses: ./.github/actions/cache-android-sdk

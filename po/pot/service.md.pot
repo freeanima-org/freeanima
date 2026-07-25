@@ -156,7 +156,7 @@ msgstr ""
 #. type: Plain text
 #: docs/ops/service.md:66
 #, no-wrap
-msgid "When Web dist (`src/app/shell/web/dist` or embedded) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `just dev habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
+msgid "When Web dist (`src/portal/app/web/dist` or embedded) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `just dev habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
 msgstr ""
 
 #. type: Plain text

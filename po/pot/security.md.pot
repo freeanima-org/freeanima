@@ -88,7 +88,7 @@ msgid ""
 "| Never commit secrets     | Do not write API keys, tokens, DB passwords into git. Bootstrap `config.yaml`: use `env()` (or keep secrets out of the file). Runtime LLM/MCP settings live in PG — use `vault()` / `env()` there |\n"
 "| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`                                               |\n"
 "| User master password     | Set only in Shell `/vault` or bundled Chat unlock box; **never** sent as a chat message or stored in PG messages                                                                                  |\n"
-"| Chat User vault unlock   | **v1 bundled Chat only** (`src/app/shell/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                                                           |\n"
+"| Chat User vault unlock   | **v1 bundled Chat only** (`src/portal/app/web` / desktop / mobile); Discord / WeChat gateways cannot unlock User library                                                                           |\n"
 msgstr ""
 
 #. type: Plain text

@@ -177,7 +177,7 @@ bun install
 Do **not** symlink source `cli.ts` into a global bin. From the checkout:
 
 ```bash
-bun src/app/cli/cli.ts -- --help
+bun src/portal/cli/cli.ts -- --help
 just dev
 ```
 

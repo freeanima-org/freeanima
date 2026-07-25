@@ -66,3 +66,8 @@ app-ui: _deps
 [no-cd]
 brand-icons: _deps
   bun scripts/generate-brand-icons.ts
+
+# Vault 浏览器扩展（MV3 → dist/browser-extension）
+[no-cd]
+browser-extension: _deps
+  bun scripts/build-browser-extension.ts

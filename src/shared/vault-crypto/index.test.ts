@@ -126,4 +126,16 @@ describe("resolveSecretField", () => {
   test("未知字段返回 undefined", () => {
     expect(resolveSecretField(secrets, "missing")).toBeUndefined();
   });
+
+  test("card / identity 嵌套路径", () => {
+    const nested: VaultSecretsPayload = {
+      card: { number: "4111", code: "123" },
+      identity: { email: " a@b.c ", first_name: "Ada" },
+    };
+    expect(resolveSecretField(nested, "card.number")).toBe("4111");
+    expect(resolveSecretField(nested, "card.code")).toBe("123");
+    expect(resolveSecretField(nested, "identity.email")).toBe("a@b.c");
+    expect(resolveSecretField(nested, "identity.first_name")).toBe("Ada");
+    expect(resolveSecretField(nested, "card.missing")).toBeUndefined();
+  });
 });

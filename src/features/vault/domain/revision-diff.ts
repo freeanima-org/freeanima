@@ -3,11 +3,13 @@ import type { EntityRevision } from "@freeanima/host/core/db/schema/entity";
 export const VAULT_REVISION_CHANGED_FIELDS = [
   "title",
   "url",
+  "uris",
   "username",
   "tags",
   "content",
   "item_type",
   "custom_field_names",
+  "import_refs",
   "secrets",
 ] as const;
 
@@ -18,10 +20,12 @@ export type VaultRevisionCompareView = {
   title: string;
   content: string;
   url?: string;
+  uris_json?: string;
   username?: string;
   tags: string[];
   item_type?: string;
   custom_field_names: string[];
+  import_refs_json?: string;
   secrets_enc?: string;
 };
 
@@ -70,6 +74,10 @@ export function vaultCompareViewFromEntity(row: {
   if (username !== undefined) out.username = username;
   if (item_type !== undefined) out.item_type = item_type;
   if (secrets_enc !== undefined) out.secrets_enc = secrets_enc;
+  if (row.body.uris !== undefined) out.uris_json = JSON.stringify(row.body.uris);
+  if (row.body.import_refs !== undefined) {
+    out.import_refs_json = JSON.stringify(row.body.import_refs);
+  }
   return out;
 }
 
@@ -92,12 +100,16 @@ export function diffVaultRevisionFields(
   const changed: VaultRevisionChangedField[] = [];
   if (older.title !== newer.title) changed.push("title");
   if ((older.url ?? "") !== (newer.url ?? "")) changed.push("url");
+  if ((older.uris_json ?? "") !== (newer.uris_json ?? "")) changed.push("uris");
   if ((older.username ?? "") !== (newer.username ?? "")) changed.push("username");
   if (JSON.stringify(older.tags) !== JSON.stringify(newer.tags)) changed.push("tags");
   if (older.content !== newer.content) changed.push("content");
   if ((older.item_type ?? "") !== (newer.item_type ?? "")) changed.push("item_type");
   if (JSON.stringify(older.custom_field_names) !== JSON.stringify(newer.custom_field_names)) {
     changed.push("custom_field_names");
+  }
+  if ((older.import_refs_json ?? "") !== (newer.import_refs_json ?? "")) {
+    changed.push("import_refs");
   }
   if ((older.secrets_enc ?? "") !== (newer.secrets_enc ?? "")) changed.push("secrets");
   return changed;

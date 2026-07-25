@@ -13,5 +13,11 @@
     "messages/**/*.json",
     "src/features/companion/shared/**/*.json"
   ],
-  "exclude": ["node_modules", "**/dist/**", "**/.turbo/**", "scripts/codemod-freeanima-imports.ts"]
+  "exclude": [
+    "node_modules",
+    "**/dist/**",
+    "**/.turbo/**",
+    "scripts/codemod-freeanima-imports.ts",
+    "src/portal/extension/**"
+  ]
 }

@@ -16,7 +16,7 @@ import {
 } from "@freeanima/host/core/config/shell-identity.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const srcTauriDefault = join(root, "src/app/shell/tauri/src-tauri");
+const srcTauriDefault = join(root, "src/portal/app/tauri/src-tauri");
 
 export const TAURI_IDENTITY_OVERLAY_NAME = "tauri.conf.identity.generated.json";
 

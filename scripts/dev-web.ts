@@ -10,4 +10,4 @@ const root = join(import.meta.dir, "..");
 await $`bun ${join(root, "scripts/paraglide-compile.ts")}`.cwd(root);
 
 const viteArgs = process.argv.slice(2);
-await $`bunx vite ${viteArgs}`.cwd(join(root, "src/app/shell/web"));
+await $`bunx vite ${viteArgs}`.cwd(join(root, "src/portal/app/web"));

@@ -50,7 +50,7 @@ else
   echo "Android SDK packages already present, skipping sdkmanager install"
 fi
 
-PROP_DIR="$(cd "$(dirname "$0")/.." && pwd)/src/app/shell/tauri/src-tauri/gen/android"
+PROP_DIR="$(cd "$(dirname "$0")/.." && pwd)/src/portal/app/tauri/src-tauri/gen/android"
 if [ -d "$PROP_DIR" ]; then
   printf 'sdk.dir=%s\n' "$SDK" >"$PROP_DIR/local.properties"
   echo "Wrote $PROP_DIR/local.properties (sdk.dir=$SDK)"

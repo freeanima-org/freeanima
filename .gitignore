@@ -52,6 +52,7 @@ coverage/
 .coverage-shards/
 
 .tanstack/
+.wxt/
 
 # po4a / gettext
 site/i18n/.generated/

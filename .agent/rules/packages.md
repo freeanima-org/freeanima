@@ -2,15 +2,15 @@
 
 > **单包 + Phase 1 host/client**：逻辑名经 `tsconfig` paths；物理根 `package.json`；拓扑见 [`repository-topology.md`](../.agent/rules/repository-topology.md)。
 
-| Shape      | Pattern                                    | Example                                                    |
-| ---------- | ------------------------------------------ | ---------------------------------------------------------- |
-| Host layer | `@freeanima/host/{layer}`                  | `host/kernel`, `host/core`, `host/engine`, `host/platform` |
-| Capability | `@freeanima/host/capabilities/{slug}`      | `self`, `memory`, `tools`, `outpost`, `connectors`, …      |
-| Feature    | `@freeanima/features/{slug}/…`             | `features/chat/…`                                          |
-| Shared     | `@freeanima/shared/{name}`                 | `habitat-rpc`, `rpc-contract`                              |
-| UI kit     | `@freeanima/ui-kit`                        | 设计系统（顶层，∥ shared）                                 |
-| Client     | `@freeanima/client/{portal-sdk,app-frame}` | Portal chrome                                              |
-| Entry      | `src/app/cli`, `src/app/shell`             | CLI / Portal 宿主                                          |
+| Shape      | Pattern                                                    | Example                                                    |
+| ---------- | ---------------------------------------------------------- | ---------------------------------------------------------- |
+| Host layer | `@freeanima/host/{layer}`                                  | `host/kernel`, `host/core`, `host/engine`, `host/platform` |
+| Capability | `@freeanima/host/capabilities/{slug}`                      | `self`, `memory`, `tools`, `outpost`, `connectors`, …      |
+| Feature    | `@freeanima/features/{slug}/…`                             | `features/chat/…`                                          |
+| Shared     | `@freeanima/shared/{name}`                                 | `habitat-rpc`, `rpc-contract`                              |
+| UI kit     | `@freeanima/ui-kit`                                        | 设计系统（顶层，∥ shared）                                 |
+| Client     | `@freeanima/client/{portal-sdk,app-frame}`                 | Portal chrome                                              |
+| Entry      | `src/portal/cli`, `src/portal/app`, `src/portal/extension` | CLI / Portal 宿主 / Vault 浏览器扩展                       |
 
 ## Valid paths（摘要）
 

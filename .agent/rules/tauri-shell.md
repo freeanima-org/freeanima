@@ -6,7 +6,7 @@
 
 | 路径                     | 作用                                              |
 | ------------------------ | ------------------------------------------------- |
-| `src/app/shell/tauri/`   | 统一 Portal：`src-tauri` + bridge + lib/spa       |
+| `src/portal/app/tauri/`  | 统一 Portal：`src-tauri` + bridge + lib/spa       |
 | `src/client/portal-sdk/` | `ShellApi` / `getShellKind()`（`web` \| `tauri`） |
 
 开发：`just dev tauri`（桌面）；`just dev tauri-android`（移动）。

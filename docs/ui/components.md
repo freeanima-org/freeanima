@@ -17,7 +17,7 @@ Visual tokens → [foundations.md](foundations.md). Dimension axes → [dimensio
 | UI component                    | A React building block at one of the layers above                                    | —                             |
 | UI element / slot piece         | Presentational part inside a pattern (title text, badge, icon) — not its own package | Inside a component or pattern |
 | App chrome                      | **app frame** (not Shell)                                                            | `src/client/app-frame`        |
-| Host                            | **Shell**                                                                            | `src/app/shell/*`             |
+| Host                            | **Shell**                                                                            | `src/portal/app/*`            |
 
 ## Layers
 
@@ -28,7 +28,7 @@ Visual tokens → [foundations.md](foundations.md). Dimension axes → [dimensio
 | **Composite** | Cross-feature interaction patterns (`ConfirmDialog`, `ActionSheet`, `ContextMenu`, `EmptyState`, …) | `ui-kit/composite`             |
 | **Domain**    | Product-specific screens and fields                                                                 | `features/<slug>/ui`           |
 | **app frame** | Module rail / tabs / settings host                                                                  | `client/app-frame`             |
-| **Shell**     | Portal host, IPC, bridge                                                                            | `app/shell`                    |
+| **Shell**     | Portal host, IPC, bridge                                                                            | `portal/app`                   |
 
 Dependency direction: `app-frame` → `features/*/ui` → `{ui-kit, portal-sdk}` → shared. `ui-kit` must not import Habitat RPC / `rpc-contract`.
 

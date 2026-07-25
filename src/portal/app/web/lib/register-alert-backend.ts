@@ -9,14 +9,14 @@ export async function registerShellAlertBackend(): Promise<void> {
 
   if (tauri && (buildTarget === "mobile" || isTauriMobileUserAgent())) {
     const { createMobileAlertBackend } =
-      await import("@freeanima/app/shell/tauri/lib/mobile-alert-backend.ts");
+      await import("@freeanima/portal/app/tauri/lib/mobile-alert-backend.ts");
     registerAlertBackend(createMobileAlertBackend());
     return;
   }
 
   if (buildTarget === "desktop" || tauri) {
     const { createDesktopAlertBackend } =
-      await import("@freeanima/app/shell/tauri/lib/desktop-alert-backend.ts");
+      await import("@freeanima/portal/app/tauri/lib/desktop-alert-backend.ts");
     registerAlertBackend(createDesktopAlertBackend());
     return;
   }

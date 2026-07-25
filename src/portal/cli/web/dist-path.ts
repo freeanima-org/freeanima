@@ -3,11 +3,11 @@ import { join } from "node:path";
 import { getInstallContext } from "../install-context.ts";
 import { getRegisteredEmbeddedWebDist, materializeEmbeddedWebDist } from "./web-dist-embedded.ts";
 
-const DIST_CANDIDATES = ["src/app/shell/web/dist"] as const;
+const DIST_CANDIDATES = ["src/portal/app/web/dist"] as const;
 
 /** monorepo 内 Web dist 目录（不存在时返回 null） */
 export function resolveMonorepoWebDistDir(monorepoRoot: string): string | null {
-  const dist = join(monorepoRoot, "src/app/shell/web/dist");
+  const dist = join(monorepoRoot, "src/portal/app/web/dist");
   if (existsSync(join(dist, "index.html"))) return dist;
   return null;
 }

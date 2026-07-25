@@ -5,7 +5,7 @@
 
 ## Global view
 
-`freeanima` (FreeAnima) is an agent runtime: **product / Habitat logic is TypeScript-only**; **Portal Shell** is **Tauri**（Rust host + shared `web/dist-*` UI）。Product name for the long-running process is **Habitat**（栖息地）; Shell / MCP are **Portal**（入口）. Source: `just dev` / `just dev habitat`；standalone: `anima service`（协议侧仍为 Habitat RPC `/rpc/v1` + MCP `/mcp` + engine）; UI from `src/app/shell/tauri` + `src/app/shell/web`. Naming: [`docs/product/architecture.md`](docs/product/architecture.md) Product naming + [`i18n/glossary.md`](i18n/glossary.md). Shell rules: [`.agent/rules/tauri-shell.md`](.agent/rules/tauri-shell.md).
+`freeanima` (FreeAnima) is an agent runtime: **product / Habitat logic is TypeScript-only**; **Portal Shell** is **Tauri**（Rust host + shared `web/dist-*` UI）。Product name for the long-running process is **Habitat**（栖息地）; **Portal**（入口）四形态：application（Shell）/ browser（扩展）/ mcp（`/mcp`）/ cli。Source: `just dev` / `just dev habitat`；standalone: `anima service`（协议侧仍为 Habitat RPC `/rpc/v1` + MCP `/mcp` + engine）; UI from `src/portal/app/tauri` + `src/portal/app/web`. Naming: [`docs/product/architecture.md`](docs/product/architecture.md) Product naming + [`i18n/glossary.md`](i18n/glossary.md)；入口模块 [`docs/modules/portal.md`](docs/modules/portal.md)。Shell rules: [`.agent/rules/tauri-shell.md`](.agent/rules/tauri-shell.md).
 
 | Capability     | Highlights                                                                                                                                                                                                                                                                            |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -13,7 +13,7 @@
 | Tools          | Local / MCP / ACP flat registration; MCP client `src/host/capabilities/mcp-client/`、MCP server `/mcp` `src/host/capabilities/mcp-server/`；unreachable local apps may register remote tools over Habitat RPC；tools `src/host/capabilities/tools/`、ACP `src/host/capabilities/acp/` |
 | Secrets        | Vault (User/Agent libraries); bootstrap `env()`；runtime `vault()` / `env()`; LLM **sees metadata, not values**                                                                                                                                                                       |
 | Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                                                                                                                                |
-| Code layout    | 产品代码在 `src/`（`host/`、`client/`、`ui-kit/`、`features/`、`shared/`、`app/shell/`）— 见 [`.agent/rules/repository-topology.md`](.agent/rules/repository-topology.md)；Desktop/Mobile 安装包内嵌 `web/dist`，浏览器/PWA 用 Habitat `/web/*`                                       |
+| Code layout    | 产品代码在 `src/`（`host/`、`client/`、`ui-kit/`、`features/`、`shared/`、`portal/{app,extension,cli}/`）— 见 [`.agent/rules/repository-topology.md`](.agent/rules/repository-topology.md)；Desktop/Mobile 安装包内嵌 `web/dist`，浏览器/PWA 用 Habitat `/web/*`                      |
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 
@@ -22,7 +22,7 @@
 Directional heuristics for _what_ FreeAnima should feel like. Mechanisms and cognitive architecture live in [`docs/product/`](docs/product/) and [`docs/cognition/`](docs/cognition/) — related, but not a 1:1 rule list.
 
 - **Platform-native UX** — Mobile and desktop are **separate interaction and layout designs**, not one responsive skin stretched across form factors. Shared contracts (API, Habitat RPC, settings keys) may exist; presentation and interaction patterns should fit each dimension value. **Shell** = Portal 宿主（browser/Tauri；形态 web/desktop/mobile），**≠** 侧栏/底栏/设置 chrome（那是 **app frame** / 应用布局）。**Three orthogonal dimensions**（规范 [`docs/ui/`](docs/ui/README.md)；Agent API [`.agent/rules/ui-dimensions.md`](.agent/rules/ui-dimensions.md)）：**壳子**（能力）、**布局**（`compact`/`expanded` 视口）、**交互**（`pointer`/`touch`）。视觉 / 组件 / 交互均按三维适配。壳**不**锁布局。Phone 通常窄，但 **phone ≠ 窄布局**。
-- **Habitat & Portal** — User copy: **栖息地 / Habitat** = long-running place (multi digital life + human assets); **入口 / Portal** = Shell、MCP 等外部连接。协议/代码标识仍写 Habitat（`/rpc/v1`）。见 [`docs/product/architecture.md`](docs/product/architecture.md) Product naming、[`i18n/glossary.md`](i18n/glossary.md)。
+- **Habitat & Portal** — User copy: **栖息地 / Habitat** = long-running place (multi digital life + human assets); **入口 / Portal** = 四形态（应用 Shell / 浏览器扩展 / MCP `/mcp` / CLI）。协议/代码标识仍写 Habitat（`/rpc/v1`）。见 [`docs/product/architecture.md`](docs/product/architecture.md) Product naming、[`i18n/glossary.md`](i18n/glossary.md)、[`docs/modules/portal.md`](docs/modules/portal.md)。
 - **Tools: MCP first, remote registration rare** — Dialable peers exchange tools via **MCP**. Only unreachable local apps (no stable inbound listener; e.g. desktop companion) **actively connect** to Habitat and register remote tools over Habitat RPC (`instance_id` routes `tool.call`). Product UI uses Habitat RPC only — never remote-tool attach. See architecture Client UI / companion sections.
 - **Concept convergence over feature sprawl** — As capabilities grow, **resist cognitive overload**: keep a small set of core concepts visible and stable; new features should map onto existing mental models rather than multiplying parallel abstractions in the UI.
 
@@ -72,7 +72,7 @@ just misc memory-sample -- --habitat-url http://127.0.0.1:<habitat> --stage full
 - Habitat API（**生产**）：`http://127.0.0.1:2658/rpc/v1`（standalone `anima service`；有 dist 时托管 `/web/*`）
 - Habitat API（**源码 / just dev habitat**）：默认随机 **≥10000**（避开 2658/2659）；多 worktree 并行友好
 - Web 形态：standalone / 源码部署须先有 `just pack web`（打包时强制；源码部署手动）；dev 用 `just dev` / `just dev habitat` + `just dev web`（HMR，不依赖落盘）
-- 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `src/app/shell/tauri`（Portal）与 `src/app/shell/web`（浏览器调试）
+- 桌面/移动/浏览器开发客户端：聊天室 + 管理台 UI 在 `src/portal/app/tauri`（Portal）与 `src/portal/app/web`（浏览器调试）
 - Dev UI：`just dev web` → `http://127.0.0.1:5000/web/chat`（若 `http.tls`/`DEV_HTTPS` 则为 `https://…`；Habitat：`/web/habitat/dashboard`）；浏览器默认 Habitat = **页面 origin**（Vite `/rpc` proxy；legacy `/rpc` 至 0.9.3）；`just dev habitat` 自动写入 `~/.anima/dev-web.token` 供 Vite 注入 token；dev-habitat **不托管** dist（UI 走 Vite）
 - 开发 TLS：若 `http.tls.enabled` / `DEV_HTTPS=1`，由 **Vite HTTPS** 终止（复用 `~/.anima/tls`），Habitat 仅明文（`skipTls`）；与 `http` 覆盖对称
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)

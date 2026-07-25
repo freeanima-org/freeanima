@@ -18,7 +18,8 @@
     "**/dist/**",
     "**/coverage/**",
     "**/www/**",
-    "src/features/habitat/ui/habitat/routes/routeTree.gen.ts"
+    "src/features/habitat/ui/habitat/routes/routeTree.gen.ts",
+    "src/portal/extension/**"
   ],
   "rules": {
     "import/extensions": [

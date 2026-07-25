@@ -56,10 +56,10 @@
 
 **示例**：Habitat URL、remote auth、debug section
 
-| 层                         | 必须改             |
-| -------------------------- | ------------------ |
-| `portal-sdk/settings`      | section 注册       |
-| `src/app/shell/tauri\|web` | 原生 IPC（若需要） |
+| 层                          | 必须改             |
+| --------------------------- | ------------------ |
+| `portal-sdk/settings`       | section 注册       |
+| `src/portal/app/tauri\|web` | 原生 IPC（若需要） |
 
 ## Habitat RPC / Feature method 模块化
 

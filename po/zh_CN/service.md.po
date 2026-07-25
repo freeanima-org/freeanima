@@ -227,7 +227,7 @@ msgstr ""
 #: docs/ops/service.md:66
 #, fuzzy, no-wrap
 #| msgid "When `web.enabled: true`, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. For standalone static hosting without the Habitat process, use `anima web start --foreground` (default `:2659`).\n"
-msgid "When Web dist (`src/app/shell/web/dist` or embedded) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `just dev habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
+msgid "When Web dist (`src/portal/app/web/dist` or embedded) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `just dev habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
 msgstr "启用 `web.enabled: true` 时，栈由 Habitat 在 `http://<host>:2658/web/*` 提供浏览器 Web UI（无独立 API 代理）。客户端在 **Habitat 设置** 中保存 Habitat URL 与**服务 API 令牌**（`fa_at_...`）。若无需 Habitat 进程单独托管静态资源，使用 `anima web start --foreground`（默认 `:2659`）。\n"
 
 #. type: Plain text

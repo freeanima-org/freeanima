@@ -6,15 +6,38 @@ const vaultSubjectKindSchema = notificationRecipientKindSchema;
 
 export const vaultItemTypeSchema = z.enum(["login", "secure_note", "card", "identity", "custom"]);
 
+export const vaultUriMatchSchema = z.enum([
+  "domain",
+  "host",
+  "starts_with",
+  "exact",
+  "regex",
+  "never",
+]);
+export type VaultUriMatch = z.infer<typeof vaultUriMatchSchema>;
+
+export const vaultUriEntrySchema = z.object({
+  uri: z.string().min(1),
+  match: vaultUriMatchSchema.default("domain"),
+});
+export type VaultUriEntryPayload = z.infer<typeof vaultUriEntrySchema>;
+
+export const vaultImportRefsSchema = z.object({
+  bitwarden: z.string().min(1).optional(),
+});
+export type VaultImportRefsPayload = z.infer<typeof vaultImportRefsSchema>;
+
 export const vaultItemMetaRowSchema = z.object({
   id: z.number().int().positive(),
   title: z.string(),
   content: z.string(),
   item_type: vaultItemTypeSchema,
   url: z.string().optional(),
+  uris: z.array(vaultUriEntrySchema).optional(),
   username: z.string().optional(),
   tags: z.array(z.string()),
   custom_field_names: z.array(z.string()),
+  import_refs: vaultImportRefsSchema.optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -86,11 +109,13 @@ export const vaultCreateInputSchema = z.object({
   content: z.string().optional(),
   item_type: vaultItemTypeSchema.optional(),
   url: z.string().optional(),
+  uris: z.array(vaultUriEntrySchema).optional(),
   username: z.string().optional(),
   tags: z.array(z.string()).optional(),
   secrets_enc: z.string().min(1),
   dek_wrapped: z.string().min(1),
   custom_field_names: z.array(z.string()).optional(),
+  import_refs: vaultImportRefsSchema.optional(),
 });
 export type VaultCreateInput = z.infer<typeof vaultCreateInputSchema>;
 export const vaultCreateOutputSchema = z.object({ item: vaultItemMetaRowSchema });
@@ -103,11 +128,13 @@ export const vaultPatchInputSchema = z.object({
   content: z.string().optional(),
   item_type: vaultItemTypeSchema.optional(),
   url: z.string().optional(),
+  uris: z.array(vaultUriEntrySchema).optional(),
   username: z.string().optional(),
   tags: z.array(z.string()).optional(),
   secrets_enc: z.string().min(1).optional(),
   dek_wrapped: z.string().min(1).optional(),
   custom_field_names: z.array(z.string()).optional(),
+  import_refs: vaultImportRefsSchema.optional(),
 });
 export type VaultPatchInput = z.infer<typeof vaultPatchInputSchema>;
 export const vaultPatchOutputSchema = z.object({ item: vaultItemMetaRowSchema });
@@ -182,11 +209,13 @@ export type VaultHistoryListInput = z.infer<typeof vaultHistoryListInputSchema>;
 export const vaultHistoryChangedFieldSchema = z.enum([
   "title",
   "url",
+  "uris",
   "username",
   "tags",
   "content",
   "item_type",
   "custom_field_names",
+  "import_refs",
   "secrets",
 ]);
 
@@ -224,9 +253,11 @@ export const vaultCreatePlainInputSchema = z.object({
   content: z.string().optional(),
   item_type: vaultItemTypeSchema.optional(),
   url: z.string().optional(),
+  uris: z.array(vaultUriEntrySchema).optional(),
   username: z.string().optional(),
   tags: z.array(z.string()).optional(),
   secrets: vaultSecretsViewSchema,
+  import_refs: vaultImportRefsSchema.optional(),
 });
 export type VaultCreatePlainInput = z.infer<typeof vaultCreatePlainInputSchema>;
 
@@ -237,9 +268,11 @@ export const vaultPatchPlainInputSchema = z.object({
   content: z.string().optional(),
   item_type: vaultItemTypeSchema.optional(),
   url: z.string().optional(),
+  uris: z.array(vaultUriEntrySchema).optional(),
   username: z.string().optional(),
   tags: z.array(z.string()).optional(),
   secrets: vaultSecretsViewSchema.optional(),
+  import_refs: vaultImportRefsSchema.optional(),
 });
 export type VaultPatchPlainInput = z.infer<typeof vaultPatchPlainInputSchema>;
 export const vaultCreatePlainOutputSchema = z.object({ item: vaultItemMetaRowSchema });

@@ -138,13 +138,14 @@ Daily LAN access: **HTTP `:2658`** or **HTTPS `:2659` (after CA trust)**; for th
 
 ## 2. Client configuration
 
-**Portal** (`src/app/shell/tauri`) and **browser Web** (`src/app/shell/web`) are remote clients; they **do not read** Habitat `config.yaml` token.
+**Portal** (`src/portal/app/tauri`) and **browser Web** (`src/portal/app/web`) are remote clients; they **do not read** Habitat `config.yaml` token.
 
-| Client        | Storage                                              |
-| ------------- | ---------------------------------------------------- |
-| Desktop shell | `~/.anima-desktop/settings.json` (`habitat` section) |
-| Mobile shell  | Tauri prefs / store                                  |
-| Browser Web   | localStorage (settings page)                         |
+| Client           | Storage                                              |
+| ---------------- | ---------------------------------------------------- |
+| Desktop shell    | `~/.anima-desktop/settings.json` (`habitat` section) |
+| Mobile shell     | Tauri prefs / store                                  |
+| Browser Web      | localStorage (settings page)                         |
+| Vault 浏览器扩展 | 扩展选项页 → `chrome.storage.local`                  |
 
 Settings (all clients):
 
@@ -154,6 +155,8 @@ Settings (all clients):
 Browser Web: `/web/config.json` defaults Habitat to the **page origin** (production Habitat-hosted `/web` and Vite `just dev web`). Source `just dev habitat` writes `~/.anima/dev-web.token`; Vite injects it as `remote_auth_token` so the first visit need not paste a token. Production Habitat never puts tokens in `config.json` — use `anima token create` and Habitat settings.
 
 Flow: open Habitat settings → fill → **Test connection** → Save. Desktop requires **restart desktop shell** after save.
+
+**Vault 浏览器扩展（浏览器形态入口）：** 选项页填写同一组 URL + Token → 测试连接 → 用用户库主密码解锁。RPC 仅 HTTP REST（background）；见 [`docs/modules/portal.md`](../modules/portal.md)、[`docs/modules/vault.md`](../modules/vault.md)（`just pack browser-extension`）。
 
 ## 3. Authentication behavior
 

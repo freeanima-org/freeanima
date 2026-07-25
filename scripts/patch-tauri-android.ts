@@ -9,11 +9,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const androidMain = join(root, "src/app/shell/tauri/src-tauri/gen/android/app/src/main");
+const androidMain = join(root, "src/portal/app/tauri/src-tauri/gen/android/portal/src/main");
 const manifestPath = join(androidMain, "AndroidManifest.xml");
 const xmlDir = join(androidMain, "res/xml");
 const nscPath = join(xmlDir, "network_security_config.xml");
-const pluginSrcDir = join(root, "src/app/shell/tauri/android-plugins/apk-installer");
+const pluginSrcDir = join(root, "src/portal/app/tauri/android-plugins/apk-installer");
 const pluginKtDest = join(androidMain, "java/com/freeanima/portal/apk/ApkInstallerPlugin.kt");
 const filePathsDest = join(xmlDir, "file_paths.xml");
 
