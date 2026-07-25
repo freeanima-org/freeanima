@@ -61,7 +61,14 @@ export function EmailReplyDialog({
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!open || !message) return;
+    if (!open) return;
+    if (!message) {
+      setTo("");
+      setSubject("");
+      setBody("");
+      setError("");
+      return;
+    }
     setTo(extractAddress(message.from));
     setSubject(replySubject(message.subject));
     setBody(quotedBody(message));
@@ -69,7 +76,7 @@ export function EmailReplyDialog({
   }, [open, message]);
 
   const onSubmit = async () => {
-    if (!message || disabled) return;
+    if (disabled || accountId == null) return;
     const trimmedTo = to.trim();
     if (!trimmedTo) {
       setError(m.email_reply_to_required());
@@ -79,9 +86,9 @@ export function EmailReplyDialog({
     setError("");
     try {
       await sendEmailMessage({
-        ...(accountId != null ? { account_id: accountId } : {}),
+        account_id: accountId,
         to: trimmedTo,
-        subject: subject.trim() || replySubject(message.subject),
+        subject: subject.trim() || (message ? replySubject(message.subject) : ""),
         body,
       });
       onClose();
@@ -97,7 +104,7 @@ export function EmailReplyDialog({
     <Dialog open={open} onOpenChange={(next) => (!next ? onClose() : undefined)}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{m.email_reply()}</DialogTitle>
+          <DialogTitle>{message ? m.email_reply() : m.email_compose()}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-3 py-2">
           <FormField label={m.email_reply_to()}>

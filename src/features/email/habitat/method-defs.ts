@@ -7,14 +7,32 @@ import {
   emailAccountListOutputSchema,
   emailAccountPatchInputSchema,
   emailAccountPatchOutputSchema,
+  emailDraftSaveInputSchema,
+  emailDraftSaveOutputSchema,
+  emailDraftSendInputSchema,
+  emailDraftSendOutputSchema,
+  emailMailboxCreateInputSchema,
+  emailMailboxCreateOutputSchema,
+  emailMailboxDeleteInputSchema,
+  emailMailboxDeleteOutputSchema,
+  emailMailboxListInputSchema,
+  emailMailboxListOutputSchema,
+  emailMailboxRenameInputSchema,
+  emailMailboxRenameOutputSchema,
   emailMessageDeleteInputSchema,
   emailMessageDeleteOutputSchema,
   emailMessageListInputSchema,
   emailMessageListOutputSchema,
+  emailMessageMarkFlaggedInputSchema,
+  emailMessageMarkFlaggedOutputSchema,
   emailMessageMarkReadInputSchema,
   emailMessageMarkReadOutputSchema,
+  emailMessageMarkUnflaggedInputSchema,
+  emailMessageMarkUnflaggedOutputSchema,
   emailMessageMarkUnreadInputSchema,
   emailMessageMarkUnreadOutputSchema,
+  emailMessageMoveInputSchema,
+  emailMessageMoveOutputSchema,
   emailMessageReadInputSchema,
   emailMessageReadOutputSchema,
   emailMessageSearchInputSchema,
@@ -29,7 +47,19 @@ import {
   emailThreadListOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/email";
 
-import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
+import {
+  defineHabitatMethod,
+  dualTransportMeta,
+  type HabitatMethodMeta,
+} from "@freeanima/shared/habitat-contract";
+import {
+  HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS,
+  HABITAT_RPC_EMAIL_SYNC_TIMEOUT_MS,
+} from "@freeanima/shared/habitat-rpc";
+
+function writeMeta(timeoutMs: number): HabitatMethodMeta {
+  return { ...dualTransportMeta(false), timeoutMs };
+}
 
 export const emailMethodDefs = {
   "emailaccount.list": defineHabitatMethod({
@@ -70,17 +100,32 @@ export const emailMethodDefs = {
   "email.message.markRead": defineHabitatMethod({
     input: emailMessageMarkReadInputSchema,
     output: emailMessageMarkReadOutputSchema,
-    meta: dualTransportMeta(false),
+    meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
   }),
   "email.message.markUnread": defineHabitatMethod({
     input: emailMessageMarkUnreadInputSchema,
     output: emailMessageMarkUnreadOutputSchema,
-    meta: dualTransportMeta(false),
+    meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
   }),
   "email.message.delete": defineHabitatMethod({
     input: emailMessageDeleteInputSchema,
     output: emailMessageDeleteOutputSchema,
-    meta: dualTransportMeta(false),
+    meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
+  }),
+  "email.message.move": defineHabitatMethod({
+    input: emailMessageMoveInputSchema,
+    output: emailMessageMoveOutputSchema,
+    meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
+  }),
+  "email.message.markFlagged": defineHabitatMethod({
+    input: emailMessageMarkFlaggedInputSchema,
+    output: emailMessageMarkFlaggedOutputSchema,
+    meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
+  }),
+  "email.message.markUnflagged": defineHabitatMethod({
+    input: emailMessageMarkUnflaggedInputSchema,
+    output: emailMessageMarkUnflaggedOutputSchema,
+    meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
   }),
   "email.message.search": defineHabitatMethod({
     input: emailMessageSearchInputSchema,
@@ -90,12 +135,42 @@ export const emailMethodDefs = {
   "email.send": defineHabitatMethod({
     input: emailSendInputSchema,
     output: emailSendOutputSchema,
-    meta: dualTransportMeta(false),
+    meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
   }),
   "email.sync": defineHabitatMethod({
     input: emailSyncInputSchema,
     output: emailSyncOutputSchema,
-    meta: dualTransportMeta(false),
+    meta: writeMeta(HABITAT_RPC_EMAIL_SYNC_TIMEOUT_MS),
+  }),
+  "email.mailbox.list": defineHabitatMethod({
+    input: emailMailboxListInputSchema,
+    output: emailMailboxListOutputSchema,
+    meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
+  }),
+  "email.mailbox.create": defineHabitatMethod({
+    input: emailMailboxCreateInputSchema,
+    output: emailMailboxCreateOutputSchema,
+    meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
+  }),
+  "email.mailbox.rename": defineHabitatMethod({
+    input: emailMailboxRenameInputSchema,
+    output: emailMailboxRenameOutputSchema,
+    meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
+  }),
+  "email.mailbox.delete": defineHabitatMethod({
+    input: emailMailboxDeleteInputSchema,
+    output: emailMailboxDeleteOutputSchema,
+    meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
+  }),
+  "email.draft.save": defineHabitatMethod({
+    input: emailDraftSaveInputSchema,
+    output: emailDraftSaveOutputSchema,
+    meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
+  }),
+  "email.draft.send": defineHabitatMethod({
+    input: emailDraftSendInputSchema,
+    output: emailDraftSendOutputSchema,
+    meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
   }),
   "emailthread.list": defineHabitatMethod({
     input: emailThreadListInputSchema,

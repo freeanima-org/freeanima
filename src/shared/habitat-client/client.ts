@@ -21,6 +21,8 @@ export type HabitatCallOptions = {
   transport?: "auto" | TransportKind;
   profile?: HabitatClientProfile;
   signal?: AbortSignal;
+  /** WS request 超时；省略时用 method meta.timeoutMs 或默认 3s */
+  timeoutMs?: number;
 };
 
 export type HabitatCallRawOptions = HabitatCallOptions & {
@@ -85,15 +87,21 @@ export function createHabitatClient(options: HabitatClientOptions) {
   async function callViaWs<K extends HabitatMethod>(
     method: K,
     payload: HabitatMethodInputs[K],
+    timeoutMs?: number,
   ): Promise<HabitatMethodOutputs[K]> {
     const rpc = await options.getRpcClient();
-    return rpc.request(method, payload) as Promise<HabitatMethodOutputs[K]>;
+    return rpc.request(
+      method,
+      payload,
+      timeoutMs !== undefined ? { timeoutMs } : undefined,
+    ) as Promise<HabitatMethodOutputs[K]>;
   }
 
   async function callViaHttp<K extends HabitatMethod>(
     method: K,
     payload: HabitatMethodInputs[K],
     signal?: AbortSignal,
+    timeoutMs?: number,
   ): Promise<HabitatMethodOutputs[K]> {
     if (isNonJsonHabitatHttpMethod(method)) {
       throw new Error(`habitat method ${method} requires callRaw() for non-JSON HTTP`);
@@ -108,9 +116,17 @@ export function createHabitatClient(options: HabitatClientOptions) {
       options.authToken,
       cached?.etag ? { ifNoneMatch: cached.etag } : undefined,
     );
+    const timeoutSignal =
+      signal == null && timeoutMs != null && timeoutMs > 0
+        ? AbortSignal.timeout(timeoutMs)
+        : undefined;
     const res = await httpFetch(url, {
       ...init,
-      ...(signal !== undefined ? { signal } : {}),
+      ...(signal !== undefined
+        ? { signal }
+        : timeoutSignal !== undefined
+          ? { signal: timeoutSignal }
+          : {}),
     });
     const def = getHabitatMethodDef(method);
     if (res.status === 304) {
@@ -132,12 +148,13 @@ export function createHabitatClient(options: HabitatClientOptions) {
     payload: HabitatMethodInputs[K],
     transport: TransportKind,
     signal?: AbortSignal,
+    timeoutMs?: number,
   ): Promise<HabitatMethodOutputs[K]> {
     try {
       if (transport === "ws") {
-        return await callViaWs(method, payload);
+        return await callViaWs(method, payload, timeoutMs);
       }
-      return await callViaHttp(method, payload, signal);
+      return await callViaHttp(method, payload, signal, timeoutMs);
     } catch (err) {
       throw transport === "ws"
         ? new HabitatTransportError("ws", err instanceof Error ? err.message : String(err), err)
@@ -165,8 +182,10 @@ export function createHabitatClient(options: HabitatClientOptions) {
       throw new Error(`transport ${forced} not allowed for ${method}`);
     }
 
+    const timeoutMs = opts.timeoutMs ?? def.meta.timeoutMs;
+
     try {
-      return await callOne(method, payload, forced, opts.signal);
+      return await callOne(method, payload, forced, opts.signal, timeoutMs);
     } catch (primaryErr) {
       const canFallback =
         def.meta.fallback !== false &&
@@ -175,7 +194,7 @@ export function createHabitatClient(options: HabitatClientOptions) {
         opts.transport !== "http";
       const fallback = canFallback ? resolveFallbackTransport(def.meta, forced) : null;
       if (fallback && isTransportFailure(primaryErr)) {
-        return callOne(method, payload, fallback, opts.signal);
+        return callOne(method, payload, fallback, opts.signal, timeoutMs);
       }
       throw primaryErr;
     }

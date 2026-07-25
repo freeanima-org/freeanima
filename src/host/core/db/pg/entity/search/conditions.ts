@@ -380,6 +380,30 @@ function buildEmailMessageBodyConditions(
   if (filters.from) {
     conditions.push(sql`${entities.body}->>'from' ILIKE ${`%${filters.from}%`}`);
   }
+  if (filters.to) {
+    conditions.push(sql`${entities.body}->>'to' ILIKE ${`%${filters.to}%`}`);
+  }
+  if (filters.subject) {
+    conditions.push(sql`${entities.title} ILIKE ${`%${filters.subject}%`}`);
+  }
+  if (filters.flagged != null) {
+    if (filters.flagged) {
+      conditions.push(sql`${entities.body}->'flags' ? ${"\\Flagged"}`);
+    } else {
+      conditions.push(sql`NOT (${entities.body}->'flags' ? ${"\\Flagged"})`);
+    }
+  }
+  if (filters.has_attachment != null) {
+    if (filters.has_attachment) {
+      conditions.push(
+        sql`jsonb_array_length(coalesce(${entities.body}->'attachments', '[]'::jsonb)) > 0`,
+      );
+    } else {
+      conditions.push(
+        sql`jsonb_array_length(coalesce(${entities.body}->'attachments', '[]'::jsonb)) = 0`,
+      );
+    }
+  }
   if (filters.since) {
     conditions.push(
       sql`(${entities.body}->>'sent_at')::timestamptz >= ${filters.since}::timestamptz`,

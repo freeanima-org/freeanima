@@ -8,6 +8,7 @@ export {
   getEmailAccountRow,
   listEmailAccountRows,
   listEnabledEmailAccountRows,
+  listAllEnabledEmailAccountRows,
   resolveEmailAccountRow,
   updateEmailAccount,
 } from "./account-store.ts";
@@ -24,11 +25,14 @@ export {
   deleteEmailMessageRow,
   findEmailMessageByImapUid,
   getEmailMessageRow,
+  listEmailMessageImapRefs,
   listEmailMessages,
   markEmailMessageRead,
   searchEmailMessages,
   setEmailMessageAttachments,
   tagEmailMessage,
+  updateEmailMessageFlags,
+  updateEmailMessageMailbox,
   upsertEmailMessage,
 } from "./message-store.ts";
 export { persistEmailAttachments, removeEmailAccountAttachments } from "./attachment-store.ts";
@@ -51,3 +55,17 @@ export {
   type EmailProviderId,
   type EmailProviderPreset,
 } from "./provider-presets.ts";
+export {
+  collectFlagRefreshUids,
+  defaultSyncMailboxPaths,
+  getMailboxCursor,
+  inferSpecialUseFromPath,
+  isMessageFlagged,
+  mailboxesToSync,
+  normalizeAccountSync,
+  resolveSpecialMailboxes,
+  setMailboxCursor,
+  specialUseFromImapFlags,
+  type ListedMailbox,
+  type NormalizedEmailAccountSync,
+} from "./sync-state.ts";

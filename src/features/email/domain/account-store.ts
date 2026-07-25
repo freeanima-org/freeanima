@@ -13,6 +13,7 @@ import {
   updateEntity,
 } from "@freeanima/host/core/db/pg/entity";
 import { removeEmailAccountAttachments } from "./attachment-store.ts";
+import { normalizeAccountSync } from "./sync-state.ts";
 import type { EmailAccountCreateInput, EmailAccountRow, EmailAccountUpdateInput } from "./types.ts";
 
 function normalizeTags(tags: string[] | undefined): string[] {
@@ -49,7 +50,18 @@ function toAccountRow(
     enabled: row.enabled ?? true,
     desc: row.desc,
     tags: row.tags ?? [],
-    sync: row.sync,
+    ...(row.sync
+      ? {
+          sync: normalizeAccountSync(
+            row.sync,
+          ) as import("@freeanima/host/core/db/schema/entity").EmailAccountSync,
+        }
+      : {}),
+    ...(row.mailbox_paths !== undefined ? { mailbox_paths: row.mailbox_paths } : {}),
+    ...(row.sent_mailbox !== undefined ? { sent_mailbox: row.sent_mailbox } : {}),
+    ...(row.trash_mailbox !== undefined ? { trash_mailbox: row.trash_mailbox } : {}),
+    ...(row.drafts_mailbox !== undefined ? { drafts_mailbox: row.drafts_mailbox } : {}),
+    ...(row.delete_policy !== undefined ? { delete_policy: row.delete_policy } : {}),
     created_at: meta.created_at.toISOString(),
     updated_at: meta.updated_at.toISOString(),
   };
@@ -134,7 +146,7 @@ export async function createEmailAccount(
     enabled: input.enabled ?? true,
     desc: input.desc,
     tags: normalizeTags(input.tags),
-    sync: { mailbox: "INBOX" },
+    sync: { mailboxes: { INBOX: { special_use: "inbox" } } },
   };
 
   const row = await createEntity({
@@ -177,7 +189,20 @@ export async function updateEmailAccount(
     desc: input.desc ?? existing.desc,
     tags: input.tags != null ? normalizeTags(input.tags) : existing.tags,
     sync: input.sync ?? existing.sync,
+    mailbox_paths: input.mailbox_paths ?? existing.mailbox_paths,
+    delete_policy: input.delete_policy ?? existing.delete_policy,
   };
+  const mergedRecord = merged as Record<string, unknown>;
+  for (const key of ["sent_mailbox", "trash_mailbox", "drafts_mailbox"] as const) {
+    const value = input[key];
+    if (value === null) {
+      delete mergedRecord[key];
+    } else if (value !== undefined) {
+      mergedRecord[key] = value;
+    } else if (existing[key] !== undefined) {
+      mergedRecord[key] = existing[key];
+    }
+  }
 
   const row = await updateEntity({
     id: input.id,
@@ -185,7 +210,7 @@ export async function updateEmailAccount(
       display_name: input.display_name ?? existing.display_name,
       address: merged.address,
     }),
-    body: merged,
+    body: mergedRecord,
   });
   if (!row) return null;
 
@@ -238,4 +263,21 @@ export async function listEnabledEmailAccountRows(
   const accounts = (await listEmailAccountRows(worldId)).filter((a) => a.enabled);
   if (accounts.length === 0) throw new Error("No enabled email accounts configured");
   return accounts;
+}
+
+/** 跨所有 world 列出已启用邮箱账户（内置 cron / IDLE） */
+export async function listAllEnabledEmailAccountRows(): Promise<EmailAccountRow[]> {
+  const rows = await listEntities({
+    primary_component: EMAIL_ACCOUNT_COMPONENT,
+    limit: 500,
+  });
+  return rows
+    .map((row) => {
+      const parsed = asEmailAccount(row);
+      return parsed
+        ? toAccountRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
+        : null;
+    })
+    .filter((row): row is EmailAccountRow => row != null && row.enabled)
+    .toSorted((a, b) => a.id - b.id);
 }

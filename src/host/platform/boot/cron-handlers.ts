@@ -22,11 +22,8 @@ export function registerBootCronHandlers(engine: Engine): void {
   });
 
   registerCronBuiltinHandler("builtin-email-sync-all", async () => {
-    const { syncAllEmailAccounts } = await import("@freeanima/host/capabilities/connectors/email");
-    const { getResolvedWorldContext } = await import("@freeanima/host/core/config/world-context");
-    const worldId = getResolvedWorldContext().agent_world_id;
-    const results = await syncAllEmailAccounts({ worldId, limit: 100 });
-    return JSON.stringify({ ok: true, results });
+    const { runEmailSyncAllScheduled } = await import("./email-sync-handler.ts");
+    return runEmailSyncAllScheduled();
   });
 
   registerCronBuiltinHandler("builtin-task-reminders", async () => {

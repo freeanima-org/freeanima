@@ -35,6 +35,7 @@ export const emailMessageRowSchema = z.object({
   cc: z.string().nullable(),
   sent_at: z.string(),
   unread: z.boolean(),
+  flagged: z.boolean().optional(),
   direction: z.enum(["inbound", "outbound"]),
   imap_uid: z.number().nullable(),
   tags: z.array(z.string()),
@@ -86,6 +87,7 @@ export const emailMessageListInputSchema = z.object({
   subject_kind: emailSubjectKindSchema,
   account_id: z.number().int().positive().optional(),
   thread_id: z.number().int().positive().optional(),
+  mailbox: z.string().min(1).optional(),
   unread: z.boolean().optional(),
   direction: z.enum(["inbound", "outbound"]).optional(),
   limit: z.number().int().positive().optional(),
@@ -178,9 +180,15 @@ export type EmailThreadListOutput = z.infer<typeof emailThreadListOutputSchema>;
 
 export const emailMessageSearchInputSchema = z.object({
   subject_kind: emailSubjectKindSchema,
-  query: z.string().min(1),
+  query: z.string().optional(),
   account_id: z.number().int().positive().optional(),
+  mailbox: z.string().min(1).optional(),
   from: z.string().min(1).optional(),
+  to: z.string().min(1).optional(),
+  subject: z.string().min(1).optional(),
+  unread: z.boolean().optional(),
+  flagged: z.boolean().optional(),
+  has_attachment: z.boolean().optional(),
   sent_after: z.string().optional(),
   sent_before: z.string().optional(),
   limit: z.number().int().positive().optional(),
@@ -259,3 +267,111 @@ export const emailAccountDeleteInputSchema = z.object({
 export type EmailAccountDeleteInput = z.infer<typeof emailAccountDeleteInputSchema>;
 export const emailAccountDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type EmailAccountDeleteOutput = z.infer<typeof emailAccountDeleteOutputSchema>;
+
+export const emailMailboxInfoSchema = z.object({
+  path: z.string(),
+  name: z.string().optional(),
+  special_use: z.array(z.string()).optional(),
+  subscribed: z.boolean().optional(),
+});
+
+export const emailMailboxListInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  account_id: z.number().int().positive(),
+});
+export type EmailMailboxListInput = z.infer<typeof emailMailboxListInputSchema>;
+export const emailMailboxListOutputSchema = z.object({
+  mailboxes: z.array(emailMailboxInfoSchema),
+});
+export type EmailMailboxListOutput = z.infer<typeof emailMailboxListOutputSchema>;
+
+export const emailMailboxCreateInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  account_id: z.number().int().positive(),
+  path: z.string().min(1),
+});
+export type EmailMailboxCreateInput = z.infer<typeof emailMailboxCreateInputSchema>;
+export const emailMailboxCreateOutputSchema = z.object({
+  ok: z.literal(true),
+  path: z.string(),
+  mailboxes: z.array(emailMailboxInfoSchema),
+});
+export type EmailMailboxCreateOutput = z.infer<typeof emailMailboxCreateOutputSchema>;
+
+export const emailMailboxRenameInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  account_id: z.number().int().positive(),
+  from: z.string().min(1),
+  to: z.string().min(1),
+});
+export type EmailMailboxRenameInput = z.infer<typeof emailMailboxRenameInputSchema>;
+export const emailMailboxRenameOutputSchema = z.object({
+  ok: z.literal(true),
+  from: z.string(),
+  to: z.string(),
+  mailboxes: z.array(emailMailboxInfoSchema),
+});
+export type EmailMailboxRenameOutput = z.infer<typeof emailMailboxRenameOutputSchema>;
+
+export const emailMailboxDeleteInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  account_id: z.number().int().positive(),
+  path: z.string().min(1),
+});
+export type EmailMailboxDeleteInput = z.infer<typeof emailMailboxDeleteInputSchema>;
+export const emailMailboxDeleteOutputSchema = z.object({
+  ok: z.literal(true),
+  path: z.string(),
+  mailboxes: z.array(emailMailboxInfoSchema),
+});
+export type EmailMailboxDeleteOutput = z.infer<typeof emailMailboxDeleteOutputSchema>;
+
+export const emailMessageMoveInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  id: z.number().int().positive(),
+  target_mailbox: z.string().min(1),
+});
+export type EmailMessageMoveInput = z.infer<typeof emailMessageMoveInputSchema>;
+export const emailMessageMoveOutputSchema = z.object({
+  ok: z.literal(true),
+  imap_uid: z.number().nullable(),
+});
+export type EmailMessageMoveOutput = z.infer<typeof emailMessageMoveOutputSchema>;
+
+export const emailMessageMarkFlaggedInputSchema = emailMessageMarkReadInputSchema;
+export type EmailMessageMarkFlaggedInput = z.infer<typeof emailMessageMarkFlaggedInputSchema>;
+export const emailMessageMarkFlaggedOutputSchema = emailMessageMarkReadOutputSchema;
+export type EmailMessageMarkFlaggedOutput = z.infer<typeof emailMessageMarkFlaggedOutputSchema>;
+
+export const emailMessageMarkUnflaggedInputSchema = emailMessageMarkReadInputSchema;
+export type EmailMessageMarkUnflaggedInput = z.infer<typeof emailMessageMarkUnflaggedInputSchema>;
+export const emailMessageMarkUnflaggedOutputSchema = emailMessageMarkReadOutputSchema;
+export type EmailMessageMarkUnflaggedOutput = z.infer<typeof emailMessageMarkUnflaggedOutputSchema>;
+
+export const emailDraftSaveInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  account_id: z.number().int().positive().optional(),
+  message_id: z.number().int().positive().optional(),
+  to: z.string().optional(),
+  subject: z.string(),
+  body: z.string(),
+});
+export type EmailDraftSaveInput = z.infer<typeof emailDraftSaveInputSchema>;
+export const emailDraftSaveOutputSchema = z.object({
+  ok: z.literal(true),
+  message_entity_id: z.number().int().positive(),
+  imap_uid: z.number().nullable(),
+});
+export type EmailDraftSaveOutput = z.infer<typeof emailDraftSaveOutputSchema>;
+
+export const emailDraftSendInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  message_id: z.number().int().positive(),
+});
+export type EmailDraftSendInput = z.infer<typeof emailDraftSendInputSchema>;
+export const emailDraftSendOutputSchema = z.object({
+  ok: z.literal(true),
+  messageId: z.string(),
+  message_entity_id: z.number().int().positive(),
+});
+export type EmailDraftSendOutput = z.infer<typeof emailDraftSendOutputSchema>;

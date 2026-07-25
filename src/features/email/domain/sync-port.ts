@@ -2,7 +2,7 @@ import type { EmailSyncResult } from "./types.ts";
 
 export type EmailSyncPort = {
   syncAccount: (accountId: number, opts?: { limit?: number }) => Promise<EmailSyncResult>;
-  syncAll: (opts: { worldId: number; limit?: number }) => Promise<EmailSyncResult[]>;
+  syncAll: (opts?: { worldId?: number; limit?: number }) => Promise<EmailSyncResult[]>;
 };
 
 let emailSyncPort: EmailSyncPort | null = null;

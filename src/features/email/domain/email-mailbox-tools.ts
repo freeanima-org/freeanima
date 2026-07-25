@@ -26,8 +26,17 @@ const MAILBOX_TOOL_NAMES = [
   "email_search",
   "email_read",
   "email_mark_read",
+  "email_mark_flagged",
+  "email_mark_unflagged",
   "email_delete",
+  "email_move",
   "email_send",
+  "email_save_draft",
+  "email_send_draft",
+  "email_mailbox_list",
+  "email_mailbox_create",
+  "email_mailbox_rename",
+  "email_mailbox_delete",
   "email_thread_list",
   "email_tag",
 ] as const;
@@ -86,6 +95,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               ...WORLD_ID_OPTIONAL,
               account_id: { type: "number" },
               thread_id: { type: "number" },
+              mailbox: { type: "string" },
               unread: { type: "boolean" },
               limit: { type: "number" },
             },
@@ -104,6 +114,8 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
                 omitUndefined({
                   account_id: accountId,
                   thread_id: parseAccountId(args.thread_id),
+                  imap_mailbox:
+                    args.mailbox != null ? String(args.mailbox).trim() || undefined : undefined,
                   unread: args.unread != null ? Boolean(args.unread) : undefined,
                   limit: args.limit != null ? Number(args.limit) : undefined,
                 }),
@@ -120,7 +132,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
         {
           name: "email_search",
           description:
-            "Hybrid search synced email messages. Optional from / sent_after / sent_before filters combine with query (AND).",
+            "Search synced email messages. Query optional — omit for filter-only listing. Supports mailbox/to/subject/flagged/has_attachment/unread filters.",
           parameters: {
             type: "object",
             properties: {
@@ -128,10 +140,21 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               query: { type: "string" },
               account_id: { type: "number" },
               thread_id: { type: "number" },
+              mailbox: { type: "string" },
               unread: { type: "boolean" },
+              flagged: { type: "boolean" },
+              has_attachment: { type: "boolean" },
               from: {
                 type: "string",
                 description: "Filter by sender address (substring match, case-insensitive).",
+              },
+              to: {
+                type: "string",
+                description: "Filter by recipient address (substring match, case-insensitive).",
+              },
+              subject: {
+                type: "string",
+                description: "Filter by subject/title (substring match, case-insensitive).",
               },
               sent_after: {
                 type: "string",
@@ -143,11 +166,9 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               },
               limit: { type: "number" },
             },
-            required: ["query"],
           },
           handler: async (args) => {
-            const query = String(args.query ?? "").trim();
-            if (!query) return toolError("query is required");
+            const query = args.query != null ? String(args.query).trim() : "";
             try {
               const accountId = parseAccountId(args.account_id);
               const worldId = await resolveEmailToolWorld({
@@ -159,11 +180,19 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               const messages = await searchEmailMessages(
                 worldId,
                 omitUndefined({
-                  query,
+                  ...(query ? { query } : {}),
                   account_id: accountId,
                   thread_id: parseAccountId(args.thread_id),
+                  mailbox:
+                    args.mailbox != null ? String(args.mailbox).trim() || undefined : undefined,
                   unread: args.unread != null ? Boolean(args.unread) : undefined,
+                  flagged: args.flagged != null ? Boolean(args.flagged) : undefined,
+                  has_attachment:
+                    args.has_attachment != null ? Boolean(args.has_attachment) : undefined,
                   from: args.from != null ? String(args.from).trim() || undefined : undefined,
+                  to: args.to != null ? String(args.to).trim() || undefined : undefined,
+                  subject:
+                    args.subject != null ? String(args.subject).trim() || undefined : undefined,
                   since:
                     args.sent_after != null
                       ? String(args.sent_after).trim() || undefined
@@ -237,6 +266,70 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           },
         },
         {
+          name: "email_mark_flagged",
+          description: "Mark a synced email as flagged/starred (entity + IMAP).",
+          parameters: {
+            type: "object",
+            properties: { message_id: { type: "number" } },
+            required: ["message_id"],
+          },
+          handler: async (args) => {
+            const messageId = parseMessageId(args.message_id);
+            if (messageId == null) return toolError("message_id is required");
+            try {
+              const { markAsFlagged } =
+                await import("@freeanima/host/capabilities/connectors/email");
+              return toolResult(await markAsFlagged(messageId));
+            } catch (err) {
+              return toolError(errMsg(err));
+            }
+          },
+        },
+        {
+          name: "email_mark_unflagged",
+          description: "Remove flagged/starred from a synced email (entity + IMAP).",
+          parameters: {
+            type: "object",
+            properties: { message_id: { type: "number" } },
+            required: ["message_id"],
+          },
+          handler: async (args) => {
+            const messageId = parseMessageId(args.message_id);
+            if (messageId == null) return toolError("message_id is required");
+            try {
+              const { markAsUnflagged } =
+                await import("@freeanima/host/capabilities/connectors/email");
+              return toolResult(await markAsUnflagged(messageId));
+            } catch (err) {
+              return toolError(errMsg(err));
+            }
+          },
+        },
+        {
+          name: "email_move",
+          description: "Move a synced email to another IMAP mailbox.",
+          parameters: {
+            type: "object",
+            properties: {
+              message_id: { type: "number" },
+              target_mailbox: { type: "string" },
+            },
+            required: ["message_id", "target_mailbox"],
+          },
+          handler: async (args) => {
+            const messageId = parseMessageId(args.message_id);
+            if (messageId == null) return toolError("message_id is required");
+            const targetMailbox = String(args.target_mailbox ?? "").trim();
+            if (!targetMailbox) return toolError("target_mailbox is required");
+            try {
+              const { moveMessage } = await import("@freeanima/host/capabilities/connectors/email");
+              return toolResult(await moveMessage(messageId, targetMailbox));
+            } catch (err) {
+              return toolError(errMsg(err));
+            }
+          },
+        },
+        {
           name: "email_delete",
           description: "Delete a synced email (entity + IMAP when applicable).",
           parameters: {
@@ -292,6 +385,159 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
                 }),
               );
               return toolResult(result);
+            } catch (err) {
+              return toolError(errMsg(err));
+            }
+          },
+        },
+        {
+          name: "email_save_draft",
+          description: "Save or update a draft (APPEND to Drafts mailbox with \\Draft).",
+          parameters: {
+            type: "object",
+            properties: {
+              ...WORLD_ID_OPTIONAL,
+              account_id: { type: "number" },
+              message_id: { type: "number" },
+              to: { type: "string" },
+              subject: { type: "string" },
+              body: { type: "string" },
+            },
+            required: ["subject", "body"],
+          },
+          handler: async (args) => {
+            try {
+              const { saveDraft } = await import("@freeanima/host/capabilities/connectors/email");
+              return toolResult(
+                await saveDraft(
+                  omitUndefined({
+                    account_id: parseAccountId(args.account_id),
+                    message_id: parseAccountId(args.message_id),
+                    to: args.to != null ? String(args.to) : undefined,
+                    subject: String(args.subject ?? ""),
+                    body: String(args.body ?? ""),
+                  }),
+                ),
+              );
+            } catch (err) {
+              return toolError(errMsg(err));
+            }
+          },
+        },
+        {
+          name: "email_send_draft",
+          description: "Send a saved draft via SMTP and remove it from Drafts.",
+          parameters: {
+            type: "object",
+            properties: { message_id: { type: "number" } },
+            required: ["message_id"],
+          },
+          handler: async (args) => {
+            const messageId = parseMessageId(args.message_id);
+            if (messageId == null) return toolError("message_id is required");
+            try {
+              const { sendDraft } = await import("@freeanima/host/capabilities/connectors/email");
+              return toolResult(await sendDraft(messageId));
+            } catch (err) {
+              return toolError(errMsg(err));
+            }
+          },
+        },
+        {
+          name: "email_mailbox_list",
+          description: "List IMAP mailboxes for an account.",
+          parameters: {
+            type: "object",
+            properties: {
+              account_id: { type: "number" },
+            },
+            required: ["account_id"],
+          },
+          handler: async (args) => {
+            const accountId = parseAccountId(args.account_id);
+            if (accountId == null) return toolError("account_id is required");
+            try {
+              const { listMailboxesForAccount } =
+                await import("@freeanima/host/capabilities/connectors/email");
+              const mailboxes = await listMailboxesForAccount(accountId);
+              return toolResult({ mailboxes, count: mailboxes.length });
+            } catch (err) {
+              return toolError(errMsg(err));
+            }
+          },
+        },
+        {
+          name: "email_mailbox_create",
+          description: "Create an IMAP mailbox.",
+          parameters: {
+            type: "object",
+            properties: {
+              account_id: { type: "number" },
+              path: { type: "string" },
+            },
+            required: ["account_id", "path"],
+          },
+          handler: async (args) => {
+            const accountId = parseAccountId(args.account_id);
+            if (accountId == null) return toolError("account_id is required");
+            const path = String(args.path ?? "").trim();
+            if (!path) return toolError("path is required");
+            try {
+              const { createMailbox } =
+                await import("@freeanima/host/capabilities/connectors/email");
+              return toolResult(await createMailbox(accountId, path));
+            } catch (err) {
+              return toolError(errMsg(err));
+            }
+          },
+        },
+        {
+          name: "email_mailbox_rename",
+          description: "Rename an IMAP mailbox.",
+          parameters: {
+            type: "object",
+            properties: {
+              account_id: { type: "number" },
+              from: { type: "string" },
+              to: { type: "string" },
+            },
+            required: ["account_id", "from", "to"],
+          },
+          handler: async (args) => {
+            const accountId = parseAccountId(args.account_id);
+            if (accountId == null) return toolError("account_id is required");
+            const from = String(args.from ?? "").trim();
+            const to = String(args.to ?? "").trim();
+            if (!from || !to) return toolError("from and to are required");
+            try {
+              const { renameMailbox } =
+                await import("@freeanima/host/capabilities/connectors/email");
+              return toolResult(await renameMailbox(accountId, from, to));
+            } catch (err) {
+              return toolError(errMsg(err));
+            }
+          },
+        },
+        {
+          name: "email_mailbox_delete",
+          description: "Delete an IMAP mailbox.",
+          parameters: {
+            type: "object",
+            properties: {
+              account_id: { type: "number" },
+              path: { type: "string" },
+            },
+            required: ["account_id", "path"],
+          },
+          handler: async (args) => {
+            const accountId = parseAccountId(args.account_id);
+            if (accountId == null) return toolError("account_id is required");
+            const path = String(args.path ?? "").trim();
+            if (!path) return toolError("path is required");
+            try {
+              const { deleteMailbox } =
+                await import("@freeanima/host/capabilities/connectors/email");
+              return toolResult(await deleteMailbox(accountId, path));
             } catch (err) {
               return toolError(errMsg(err));
             }

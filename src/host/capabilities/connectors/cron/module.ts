@@ -79,6 +79,7 @@ export async function ensureBuiltinCronJobs(): Promise<void> {
   await _ensureBuiltinTaskRemindersCronJob();
   await ensureBuiltinEnvHealthCronJob();
   await ensureBuiltinTemporalSummaryTickCronJob();
+  await ensureBuiltinEmailSyncAllCronJob();
 }
 
 async function _ensureBuiltinSleepCycleCronJob(): Promise<void> {
@@ -132,6 +133,21 @@ async function ensureBuiltinTemporalSummaryTickCronJob(): Promise<void> {
     id,
     name: "temporal-summary-tick",
     schedule: "*/30 * * * *",
+    prompt: "",
+    no_agent: true,
+    timeout_sec: 1800,
+  });
+  const job = await getJob(id);
+  if (!job || !handles) return;
+  if (scheduleChanged) handles.reregister(job);
+}
+
+async function ensureBuiltinEmailSyncAllCronJob(): Promise<void> {
+  const id = "builtin-email-sync-all";
+  const scheduleChanged = await upsertBuiltinCronJob({
+    id,
+    name: "email-sync-all",
+    schedule: "*/5 * * * *",
     prompt: "",
     no_agent: true,
     timeout_sec: 1800,

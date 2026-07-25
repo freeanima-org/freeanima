@@ -92,6 +92,24 @@ import type {
   EmailMessageReadOutput,
   EmailMessageSearchInput,
   EmailMessageSearchOutput,
+  EmailMessageMoveInput,
+  EmailMessageMoveOutput,
+  EmailMessageMarkFlaggedInput,
+  EmailMessageMarkFlaggedOutput,
+  EmailMessageMarkUnflaggedInput,
+  EmailMessageMarkUnflaggedOutput,
+  EmailMailboxListInput,
+  EmailMailboxListOutput,
+  EmailMailboxCreateInput,
+  EmailMailboxCreateOutput,
+  EmailMailboxRenameInput,
+  EmailMailboxRenameOutput,
+  EmailMailboxDeleteInput,
+  EmailMailboxDeleteOutput,
+  EmailDraftSaveInput,
+  EmailDraftSaveOutput,
+  EmailDraftSendInput,
+  EmailDraftSendOutput,
   EmailSyncInput,
   EmailSyncOutput,
   EmailThreadListInput,
@@ -281,6 +299,10 @@ export const RPC_PROTOCOL_METHODS = [
   "email.message.read",
   "email.message.markRead",
   "email.message.search",
+  "email.message.move",
+  "email.message.markFlagged",
+  "email.mailbox.list",
+  "email.draft.save",
   "email.sync",
   "emailthread.list",
   "notification.list",
@@ -386,6 +408,15 @@ export type RpcRouterInputs = {
   "email.message.read": EmailMessageReadInput;
   "email.message.markRead": EmailMessageMarkReadInput;
   "email.message.search": EmailMessageSearchInput;
+  "email.message.move": EmailMessageMoveInput;
+  "email.message.markFlagged": EmailMessageMarkFlaggedInput;
+  "email.message.markUnflagged": EmailMessageMarkUnflaggedInput;
+  "email.mailbox.list": EmailMailboxListInput;
+  "email.mailbox.create": EmailMailboxCreateInput;
+  "email.mailbox.rename": EmailMailboxRenameInput;
+  "email.mailbox.delete": EmailMailboxDeleteInput;
+  "email.draft.save": EmailDraftSaveInput;
+  "email.draft.send": EmailDraftSendInput;
   "email.sync": EmailSyncInput;
   "emailthread.list": EmailThreadListInput;
   "notification.list": NotificationListInput;
@@ -489,6 +520,15 @@ export type RpcRouterOutputs = {
   "email.message.read": EmailMessageReadOutput;
   "email.message.markRead": EmailMessageMarkReadOutput;
   "email.message.search": EmailMessageSearchOutput;
+  "email.message.move": EmailMessageMoveOutput;
+  "email.message.markFlagged": EmailMessageMarkFlaggedOutput;
+  "email.message.markUnflagged": EmailMessageMarkUnflaggedOutput;
+  "email.mailbox.list": EmailMailboxListOutput;
+  "email.mailbox.create": EmailMailboxCreateOutput;
+  "email.mailbox.rename": EmailMailboxRenameOutput;
+  "email.mailbox.delete": EmailMailboxDeleteOutput;
+  "email.draft.save": EmailDraftSaveOutput;
+  "email.draft.send": EmailDraftSendOutput;
   "email.sync": EmailSyncOutput;
   "emailthread.list": EmailThreadListOutput;
   "notification.list": NotificationListOutput;

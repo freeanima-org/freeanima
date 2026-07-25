@@ -150,7 +150,9 @@ export async function listEmailMessages(
   const filters: Record<string, unknown> = {};
   if (opts.account_id != null) filters.account_id = opts.account_id;
   if (opts.thread_id != null) filters.thread_id = opts.thread_id;
+  if (opts.imap_mailbox != null) filters.imap_mailbox = opts.imap_mailbox;
   if (opts.unread != null) filters.unread = opts.unread;
+  if (opts.flagged != null) filters.flagged = opts.flagged;
   if (opts.direction != null) filters.direction = opts.direction;
   if (opts.tags?.length) filters.tags = opts.tags;
   if (opts.since) filters.since = opts.since;
@@ -228,14 +230,82 @@ export async function setEmailMessageAttachments(
   return toMessageRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
 }
 
+export async function listEmailMessageImapRefs(
+  accountId: number,
+  mailbox: string,
+): Promise<Array<{ id: number; imap_uid: number; thread_id: number }>> {
+  const worldId = await worldIdForAccount(accountId);
+  const result = await searchEntities({
+    world_id: worldId,
+    primary_component: EMAIL_MESSAGE_COMPONENT,
+    filters: { account_id: accountId, imap_mailbox: mailbox },
+    limit: 5000,
+    mode: "filter_only",
+    include_count: false,
+    projection: "list",
+  });
+
+  const refs: Array<{ id: number; imap_uid: number; thread_id: number }> = [];
+  for (const row of result.results) {
+    const parsed = asEmailMessage(row);
+    if (!parsed?.imap_uid) continue;
+    refs.push({ id: parsed.id, imap_uid: parsed.imap_uid, thread_id: parsed.thread_id });
+  }
+  return refs;
+}
+
+export async function updateEmailMessageFlags(
+  id: number,
+  input: { unread: boolean; flags: string[] },
+): Promise<EmailMessageRow | null> {
+  const row = await getEntity(id);
+  if (!row) return null;
+  const parsed = asEmailMessage(row);
+  if (!parsed) return null;
+  const updated = await updateEntity({
+    id,
+    body: { ...parsed, unread: input.unread, flags: input.flags },
+  });
+  if (!updated) return null;
+  const next = asEmailMessage(updated);
+  if (!next) return null;
+  await refreshThreadAggregates(next.thread_id);
+  return toMessageRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
+}
+
+export async function updateEmailMessageMailbox(
+  id: number,
+  input: { imap_mailbox: string; imap_uid?: number | null },
+): Promise<EmailMessageRow | null> {
+  const row = await getEntity(id);
+  if (!row) return null;
+  const parsed = asEmailMessage(row);
+  if (!parsed) return null;
+  const body = {
+    ...parsed,
+    imap_mailbox: input.imap_mailbox,
+    ...(input.imap_uid !== undefined ? { imap_uid: input.imap_uid ?? undefined } : {}),
+  };
+  const updated = await updateEntity({ id, body });
+  if (!updated) return null;
+  const next = asEmailMessage(updated);
+  if (!next) return null;
+  return toMessageRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
+}
+
 export async function searchEmailMessages(
   worldId: number,
   input: {
-    query: string;
+    query?: string;
     account_id?: number;
     thread_id?: number;
+    mailbox?: string;
     unread?: boolean;
     from?: string;
+    to?: string;
+    subject?: string;
+    flagged?: boolean;
+    has_attachment?: boolean;
     since?: string;
     before?: string;
     limit?: number;
@@ -244,18 +314,24 @@ export async function searchEmailMessages(
   const filters: Record<string, unknown> = {};
   if (input.account_id != null) filters.account_id = input.account_id;
   if (input.thread_id != null) filters.thread_id = input.thread_id;
+  if (input.mailbox) filters.imap_mailbox = input.mailbox;
   if (input.unread != null) filters.unread = input.unread;
   if (input.from) filters.from = input.from;
+  if (input.to) filters.to = input.to;
+  if (input.subject) filters.subject = input.subject;
+  if (input.flagged != null) filters.flagged = input.flagged;
+  if (input.has_attachment != null) filters.has_attachment = input.has_attachment;
   if (input.since) filters.since = input.since;
   if (input.before) filters.before = input.before;
 
+  const query = input.query?.trim() ?? "";
   const result = await searchEntities({
     world_id: worldId,
     primary_component: EMAIL_MESSAGE_COMPONENT,
-    query: input.query,
+    ...(query ? { query } : {}),
     ...(Object.keys(filters).length > 0 ? { filters } : {}),
     limit: input.limit ?? 30,
-    mode: "hybrid",
+    mode: query ? "hybrid" : "filter_only",
   });
 
   return result.results

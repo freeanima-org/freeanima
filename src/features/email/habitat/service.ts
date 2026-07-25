@@ -201,6 +201,7 @@ export async function serviceEmailMessageList(
     subject_kind?: SubjectKind;
     account_id?: number;
     thread_id?: number;
+    mailbox?: string;
     unread?: boolean;
     direction?: "inbound" | "outbound";
     limit?: number;
@@ -208,8 +209,14 @@ export async function serviceEmailMessageList(
   },
 ) {
   assertPg(deps);
-  const { subject_kind, ...listInput } = input;
-  const messages = await listEmailMessages(emailWorldId(subject_kind), listInput);
+  const { subject_kind, mailbox, ...listInput } = input;
+  const messages = await listEmailMessages(
+    emailWorldId(subject_kind),
+    omitUndefined({
+      ...listInput,
+      ...(mailbox ? { imap_mailbox: mailbox } : {}),
+    }),
+  );
   return { messages: await Promise.all(messages.map((m) => toMessagePayload(m))) };
 }
 
@@ -311,9 +318,15 @@ export async function serviceEmailMessageSearch(
   deps: RuntimeDeps,
   input: {
     subject_kind?: SubjectKind;
-    query: string;
+    query?: string;
     account_id?: number;
+    mailbox?: string;
     from?: string;
+    to?: string;
+    subject?: string;
+    unread?: boolean;
+    flagged?: boolean;
+    has_attachment?: boolean;
     sent_after?: string;
     sent_before?: string;
     limit?: number;
@@ -330,4 +343,99 @@ export async function serviceEmailMessageSearch(
     }),
   );
   return { messages: await Promise.all(messages.map((m) => toMessagePayload(m))) };
+}
+
+export async function serviceEmailMailboxList(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; account_id: number },
+) {
+  assertPg(deps);
+  const { listMailboxesForAccount } = await import("@freeanima/host/capabilities/connectors/email");
+  const mailboxes = await listMailboxesForAccount(input.account_id);
+  return { mailboxes };
+}
+
+export async function serviceEmailMailboxCreate(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; account_id: number; path: string },
+) {
+  assertPg(deps);
+  const { createMailbox } = await import("@freeanima/host/capabilities/connectors/email");
+  const result = await createMailbox(input.account_id, input.path);
+  return { ok: true as const, path: result.path, mailboxes: result.mailboxes };
+}
+
+export async function serviceEmailMailboxRename(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; account_id: number; from: string; to: string },
+) {
+  assertPg(deps);
+  const { renameMailbox } = await import("@freeanima/host/capabilities/connectors/email");
+  const result = await renameMailbox(input.account_id, input.from, input.to);
+  return { ok: true as const, from: result.from, to: result.to, mailboxes: result.mailboxes };
+}
+
+export async function serviceEmailMailboxDelete(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; account_id: number; path: string },
+) {
+  assertPg(deps);
+  const { deleteMailbox } = await import("@freeanima/host/capabilities/connectors/email");
+  const result = await deleteMailbox(input.account_id, input.path);
+  return { ok: true as const, path: result.path, mailboxes: result.mailboxes };
+}
+
+export async function serviceEmailMessageMove(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number; target_mailbox: string },
+) {
+  assertPg(deps);
+  const { moveMessage } = await import("@freeanima/host/capabilities/connectors/email");
+  return moveMessage(input.id, input.target_mailbox);
+}
+
+export async function serviceEmailMessageMarkFlagged(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+) {
+  assertPg(deps);
+  const { markAsFlagged } = await import("@freeanima/host/capabilities/connectors/email");
+  await markAsFlagged(input.id);
+  return { ok: true as const };
+}
+
+export async function serviceEmailMessageMarkUnflagged(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+) {
+  assertPg(deps);
+  const { markAsUnflagged } = await import("@freeanima/host/capabilities/connectors/email");
+  await markAsUnflagged(input.id);
+  return { ok: true as const };
+}
+
+export async function serviceEmailDraftSave(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    account_id?: number;
+    message_id?: number;
+    to?: string;
+    subject: string;
+    body: string;
+  },
+) {
+  assertPg(deps);
+  const { saveDraft } = await import("@freeanima/host/capabilities/connectors/email");
+  const { subject_kind: _subjectKind, ...draftInput } = input;
+  return saveDraft(omitUndefined(draftInput));
+}
+
+export async function serviceEmailDraftSend(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; message_id: number },
+) {
+  assertPg(deps);
+  const { sendDraft } = await import("@freeanima/host/capabilities/connectors/email");
+  return sendDraft(input.message_id);
 }
