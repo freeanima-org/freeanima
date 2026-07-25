@@ -20,6 +20,7 @@ function entityRow(id: number, primary: string, body: Record<string, unknown>, t
     reference_count: 0,
     tag_ids: [],
     revisions: [],
+    deleted_at: null,
     created_at: new Date("2026-01-01T00:00:00Z"),
     updated_at: new Date("2026-01-01T00:00:00Z"),
   };

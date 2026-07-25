@@ -14,7 +14,7 @@ export function entitySearchTextForWrite(input: {
   summary: string;
   content: string;
   body: Record<string, unknown>;
-  primary_component: string;
+  primary_component: string | null;
 }): string {
   const parts = [input.title, input.summary, input.content].map((s) => s.trim()).filter(Boolean);
   if (

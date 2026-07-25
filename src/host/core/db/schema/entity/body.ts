@@ -2,6 +2,26 @@ import { z } from "zod";
 
 import { componentBodySchema, isKnownComponent, type ComponentId } from "./components/index.ts";
 
+/** 从 body 去掉仅属于被删 component 的字段（其它剩余组件仍需要的键保留）。 */
+export function stripRemovedComponentBodyFields(
+  body: Record<string, unknown>,
+  removed: ComponentId,
+  remaining: readonly string[],
+): Record<string, unknown> {
+  const parsed = componentBodySchema(removed).safeParse(body);
+  if (!parsed.success) return { ...body };
+  const next = { ...body };
+  for (const key of Object.keys(parsed.data as Record<string, unknown>)) {
+    const stillNeeded = remaining.some((tag) => {
+      if (!isKnownComponent(tag)) return false;
+      const other = componentBodySchema(tag).safeParse(body);
+      return other.success && key in (other.data as Record<string, unknown>);
+    });
+    if (!stillNeeded) delete next[key];
+  }
+  return next;
+}
+
 export function validateEntityBody(components: string[], body: unknown): Record<string, unknown> {
   const parsedBody = z.record(z.string(), z.unknown()).parse(body ?? {});
   const merged: Record<string, unknown> = { ...parsedBody };

@@ -52,7 +52,7 @@ function hitPayload(row: {
   id: number;
   type: EntityType;
   world_id: number;
-  primary_component: string;
+  primary_component: string | null;
   title: string;
   summary: string;
   snippet?: string;

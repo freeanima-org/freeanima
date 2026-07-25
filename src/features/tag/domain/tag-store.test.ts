@@ -25,6 +25,7 @@ function entityRow(
     reference_count: 0,
     tag_ids: opts?.tag_ids ?? [],
     revisions: [],
+    deleted_at: null,
     created_at: new Date("2026-01-01T00:00:00Z"),
     updated_at: new Date("2026-01-01T00:00:00Z"),
   };

@@ -3,6 +3,7 @@ export * from "../frames/conversation.ts";
 export * from "../frames/message.ts";
 export * from "../frames/task.ts";
 export * from "../frames/tag.ts";
+export * from "../frames/entity.ts";
 export * from "../frames/vault.ts";
 export * from "../frames/diary.ts";
 export * from "../frames/pomodoro.ts";

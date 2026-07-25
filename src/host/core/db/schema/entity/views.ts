@@ -70,7 +70,8 @@ export type EntityRow = {
   type: z.infer<typeof entityTypeSchema>;
   world_id: number;
   components: string[];
-  primary_component: string;
+  /** 空壳时为 null */
+  primary_component: string | null;
   title: string;
   summary: string;
   content: string;
@@ -80,6 +81,8 @@ export type EntityRow = {
   tag_ids: number[];
   /** 顶层版本快照；list projection 可能为空数组 */
   revisions: EntityRevision[];
+  /** 软删时间；null 表示存活 */
+  deleted_at: Date | null;
   created_at: Date;
   updated_at: Date;
 };
@@ -102,6 +105,7 @@ export const entityRowSelectColumns = {
   reference_count: entities.reference_count,
   tag_ids: entities.tag_ids,
   revisions: entities.revisions,
+  deleted_at: entities.deleted_at,
   created_at: entities.created_at,
   updated_at: entities.updated_at,
 } as const;
@@ -119,6 +123,7 @@ export const entityListSelectColumns = {
   pinned: entities.pinned,
   reference_count: entities.reference_count,
   tag_ids: entities.tag_ids,
+  deleted_at: entities.deleted_at,
   created_at: entities.created_at,
   updated_at: entities.updated_at,
 } as const;
@@ -135,7 +140,7 @@ export function mapEntityRow(
     type: typeParsed,
     world_id: row.world_id,
     components: [...row.components],
-    primary_component: row.primary_component,
+    primary_component: row.primary_component ?? null,
     title: row.title ?? "",
     summary: row.summary ?? "",
     content: row.content ?? "",
@@ -144,6 +149,7 @@ export function mapEntityRow(
     reference_count: row.reference_count ?? 0,
     tag_ids: [...(row.tag_ids ?? [])],
     revisions: parseEntityRevisions("revisions" in row ? row.revisions : []),
+    deleted_at: row.deleted_at ?? null,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };

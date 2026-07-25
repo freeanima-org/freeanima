@@ -29,7 +29,8 @@ export type EntityRevisionPrimaryComponent = (typeof ENTITY_REVISION_PRIMARY_COM
 
 const revisionAllowlist = new Set<string>(ENTITY_REVISION_PRIMARY_COMPONENTS);
 
-export function isEntityRevisionPrimaryComponent(primary: string): boolean {
+export function isEntityRevisionPrimaryComponent(primary: string | null | undefined): boolean {
+  if (primary == null) return false;
   return revisionAllowlist.has(primary);
 }
 

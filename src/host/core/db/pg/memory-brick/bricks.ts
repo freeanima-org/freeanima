@@ -86,7 +86,7 @@ function mapBrick(row: {
   reference_count: number;
   created_at: Date;
   updated_at: Date;
-  primary_component: string;
+  primary_component: string | null;
 }): MemoryBrickRow | null {
   if (row.primary_component !== CONTENT_BLOCK_COMPONENT) return null;
   const parsed = asContentBlock({
@@ -103,6 +103,7 @@ function mapBrick(row: {
     reference_count: row.reference_count,
     tag_ids: [],
     revisions: [],
+    deleted_at: null,
     created_at: row.created_at,
     updated_at: row.updated_at,
   });

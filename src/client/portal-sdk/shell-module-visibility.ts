@@ -7,6 +7,7 @@ export type ShellModuleId =
   | "pomodoro"
   | "email"
   | "diary"
+  | "entity"
   | "vault"
   | "notifications"
   | "habitat"
@@ -19,6 +20,7 @@ export const SHELL_MODULE_IDS: ShellModuleId[] = [
   "pomodoro",
   "email",
   "diary",
+  "entity",
   "vault",
   "notifications",
   "habitat",
@@ -115,6 +117,7 @@ export function resolveShellModuleIdFromPath(pathname: string): ShellModuleId | 
   if (path.startsWith("/pomodoro")) return "pomodoro";
   if (path.startsWith("/email")) return "email";
   if (path.startsWith("/diary")) return "diary";
+  if (path.startsWith("/entity")) return "entity";
   if (path.startsWith("/vault")) return "vault";
   if (path.startsWith("/notifications")) return "notifications";
   if (path.startsWith("/habitat") || path.startsWith("/console")) return "habitat";
@@ -129,6 +132,7 @@ const MODULE_DEFAULT_PATH: Record<ShellModuleId, string> = {
   pomodoro: "/pomodoro",
   email: "/email",
   diary: "/diary",
+  entity: "/entity",
   vault: "/vault",
   notifications: "/notifications",
   habitat: "/habitat/dashboard",

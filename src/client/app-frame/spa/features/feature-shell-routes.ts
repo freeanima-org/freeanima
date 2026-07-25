@@ -44,6 +44,12 @@ export function registerFeaturePluginShellRoutes(): void {
       load: lazyNamedComponent(() => import("@freeanima/features/vault/ui/spa"), "VaultApp"),
     },
     {
+      featureId: "entity",
+      path: "/entity",
+      navLabel: "Entity",
+      load: lazyNamedComponent(() => import("@freeanima/features/entity/ui/spa"), "EntityApp"),
+    },
+    {
       featureId: "notification",
       path: "/notifications",
       navLabel: "Notifications",

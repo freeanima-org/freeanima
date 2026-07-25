@@ -43,14 +43,23 @@ export type EntityUpdateInput = {
   revisions?: EntityRevision[];
 };
 
+export type EntityDeletedFilter = "alive" | "deleted" | "all";
+
 export type EntityListOpts = {
   world_id?: number;
   type?: EntityType;
   types?: EntityType[];
   primary_component?: string;
   component?: string;
+  /** 默认 alive（排除软删）；deleted=仅回收站；all=含软删 */
+  deleted?: EntityDeletedFilter;
+  /** 空壳：components 长度为 0 */
+  empty_shell?: boolean;
   limit?: number;
   offset?: number;
+  /** 默认 id；Entity 模块列表用 updated_at */
+  order_by?: "id" | "updated_at" | "deleted_at";
+  order_dir?: "asc" | "desc";
 };
 
 export type EntitySearchMode = "hybrid" | "filter_only";
@@ -87,7 +96,18 @@ export type EntitySearchOpts = {
    * `list`：不拉 content（email/vault 列表）；默认 `full`。
    */
   projection?: "full" | "list";
+  /** 默认 alive；deleted=仅回收站；all=含软删 */
+  deleted?: EntityDeletedFilter;
+  empty_shell?: boolean;
 };
+
+export type EntityGetOpts = {
+  /** 默认 false：软删实体视为不存在 */
+  include_deleted?: boolean;
+};
+
+/** 软删保留天数（满期后物理 purge） */
+export const ENTITY_SOFT_DELETE_RETENTION_DAYS = 30;
 
 export type EntitySearchHit = EntityRow & {
   rank?: number;

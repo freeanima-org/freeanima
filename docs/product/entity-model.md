@@ -23,7 +23,7 @@ Subjects do **not** belong to a world. Each subject may have exactly **one defau
 | **Entity type** | 4 fixed values           | Architecture boundary: `content`, `world`, `agent`, `user` |
 | **Components**  | Dynamic, many per entity | Functional markers: `task_list`, `task_item`, …            |
 
-Component fields live in **`body` JSONB** at the top level. **`primary_component`** records the creation entry (usually immutable); list views route by primary component.
+Component fields live in **`body` JSONB** at the top level. **`primary_component`** records the creation entry / module routing facet; it may become **null** when the entity has no components left (empty shell). List views still route by primary when present.
 
 ## `entities` table
 
@@ -33,15 +33,36 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 | `type`                          | One of four entity types                                    |
 | `world_id`                      | Native owning World (FK → `entities.id`)                    |
 | `components`                    | `text[]` component tags                                     |
-| `primary_component`             | Main component for module routing                           |
+| `primary_component`             | Main component for module routing（空壳时为 null）          |
 | `title` / `summary` / `content` | Shared text columns (all components may use)                |
 | `body`                          | JSONB component payload                                     |
 | `pinned`                        | Entity-level pin（任意 component）                          |
 | `reference_count`               | `[[anima:id]]` 引用权重和                                   |
 | `tag_ids`                       | 关联 `primary_component=tag` 的 entity id 数组（per-World） |
+| `deleted_at`                    | Soft-delete timestamp；null = alive                         |
 | `created_at` / `updated_at`     | Timestamps                                                  |
 
 **Not in v0.8 bootstrap:** relationship table, World nesting/mount, graph DB (PostgreSQL AGE). Subject↔world grants live in `world_config.grants` (no separate permission table).
+
+## Deletion semantics
+
+三种正交操作（**勿**用「第 N 层」表述；代码与 UI 只用下列名字）：
+
+| 操作                   | 含义                                                                                                                                                                                       | 典型 API                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| **remove**（容器移除） | 只改 membership（FK / `tag_ids` / 未来 pool `members[]`）；**不**删组件、不写 `deleted_at`                                                                                                 | `task.move*`、`tag.setOnEntity`、项目 release、未来 `entity.remove` |
+| **deleteComponent**    | 从 entity 去掉某个 component 并清理对应 body 字段；必要时按 `COMPONENT_PRIMARY_PRIORITY` 提升 `primary_component`；删光则空壳（`components=[]`，`primary_component=null`），**不**自动软删 | `entity.deleteComponent` / `deleteEntityComponent`                  |
+| **deleteEntity**       | 软删：写 `deleted_at`；默认 list/search 不可见；进 Entity 模块回收站                                                                                                                       | `entity.delete` / 各模块 `*.delete`（语义为软删）                   |
+| **restore**            | 清除 `deleted_at`；**不**自动恢复原容器 membership                                                                                                                                         | `entity.restore` / `restoreEntity`                                  |
+| **purge**              | 物理 `DELETE`；睡眠 cleanup 清理 `deleted_at` 满 **30 天** 的行                                                                                                                            | `purgeSoftDeletedEntities`（内部）                                  |
+
+补充规则：
+
+- **容器移除不自动 deleteComponent**（例：从池子 remove 一项，该项上的 `picks_item` 等组件仍保留）。
+- **归档 ≠ 回收站**：`task_list.closed`、project `status`、semantic `deprecated` 是产品态，与 `deleted_at` 正交。
+- **禁止软删**：`type` ∈ `agent` \| `user` \| `world`；默认 Inbox（`is_default`）清单仍不可删。
+- 空壳由主人在 Entity 模块或工具侧决定：补组件、或 `deleteEntity`。
+- Shell **Entity** 模块（[`docs/modules/entity.md`](../modules/entity.md)）：分页列出存活实体（`updated_at` 倒序）+ 回收站。
 
 ## Subject (`agent` / `user`)
 
@@ -105,7 +126,7 @@ Items reference their list via `body.list_id` (entity id). Task items store **ti
 
 Task/list **LLM 工具**默认在 **agent subject 专属 private world** 操作，多数调用可省略 `world_id`；按 `id` / `list_id` 操作时从实体反查 world 并校验 caller 权限。**MCP** 工具默认 scope 为 token 绑定 subject 的 private world。Shell SAP/REST 仍通过 `subject_kind` 选择 user/agent world（见下表）。
 
-**Folders** (`body.is_folder: true`) are container nodes in the sidebar tree only — they cannot hold tasks directly (`tasklist.item.create` / `task.moveToList` reject `list_id` pointing at a folder). Child lists and sub-folders reference a parent folder via `body.parent_id` (entity id of a folder, or omitted/null at root). Nesting must not form cycles. **Folders cannot be archived** — only deleted. Deleting a folder recursively removes all sub-folders and moves every contained list to root (`parent_id: null`); list task items are kept. List **`body.closed: true`** means archived (lists only): hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })` only; **any other mutation on an archived list or its tasks** (rename, move, edit, complete, …) returns `清单已归档`. Deleting a non-folder list removes its task items when `cascade` is true (default). `sort_order` is scoped among siblings sharing the same `parent_id`.
+**Folders** (`body.is_folder: true`) are container nodes in the sidebar tree only — they cannot hold tasks directly (`tasklist.item.create` / `task.moveToList` reject `list_id` pointing at a folder). Child lists and sub-folders reference a parent folder via `body.parent_id` (entity id of a folder, or omitted/null at root). Nesting must not form cycles. **Folders cannot be archived** — only deleted. Deleting a folder recursively removes all sub-folders and moves every contained list to root (`parent_id: null`); list task items are kept. List **`body.closed: true`** means archived (lists only): hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })` only; **any other mutation on an archived list or its tasks** (rename, move, edit, complete, …) returns `清单已归档`. Deleting a non-folder list soft-deletes its task items when `cascade` is true (default). `sort_order` is scoped among siblings sharing the same `parent_id`.
 
 LLM ToolSets: `@freeanima/feature-task/domain` — `task` (item CRUD + `task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via `toolset_load`. `task_search` searches all lists when `list_id` is omitted. Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration ([`scripts/archive/migrate-tasks-to-entities.ts`](../../scripts/archive/migrate-tasks-to-entities.ts)).
 

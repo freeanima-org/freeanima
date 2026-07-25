@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Bell,
   BookOpen,
+  Boxes,
   FolderKanban,
   LayoutDashboard,
   ListTodo,
@@ -63,6 +64,7 @@ export function appNavItems(): AppNavItem[] {
     navItem("pomodoro", "/pomodoro", "/pomodoro", shellNavLabel(m.habitat_nav_pomodoro), Timer),
     navItem("email", "/email", "/email", shellNavLabel(m.habitat_nav_email), Mail),
     navItem("diary", "/diary", "/diary", shellNavLabel(m.habitat_nav_diary), BookOpen),
+    navItem("entity", "/entity", "/entity", shellNavLabel(m.habitat_nav_entity), Boxes),
     navItem("vault", "/vault", "/vault", shellNavLabel(m.habitat_nav_vault), Lock),
     navItem(
       "notifications",

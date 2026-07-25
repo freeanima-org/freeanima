@@ -40,7 +40,11 @@ const CONTAINER_COMPONENTS = new Set<string>([DIARY_ENTRY_COMPONENT]);
 
 async function assertContainer(parentId: number, worldId: number): Promise<void> {
   const parent = await getEntity(parentId);
-  if (!parent || !CONTAINER_COMPONENTS.has(parent.primary_component)) {
+  if (
+    !parent ||
+    parent.primary_component == null ||
+    !CONTAINER_COMPONENTS.has(parent.primary_component)
+  ) {
     throw new Error("parent must be diary_entry");
   }
   await assertEntityInWorld(parentId, worldId);
@@ -119,7 +123,7 @@ function mapHit(row: {
   reference_count: number;
   created_at: Date;
   updated_at: Date;
-  primary_component: string;
+  primary_component: string | null;
 }): ContentBlockRow | null {
   if (row.primary_component !== CONTENT_BLOCK_COMPONENT) return null;
   const parsed = asContentBlock({
@@ -136,6 +140,7 @@ function mapHit(row: {
     reference_count: row.reference_count,
     tag_ids: [],
     revisions: [],
+    deleted_at: null,
     created_at: row.created_at,
     updated_at: row.updated_at,
   });

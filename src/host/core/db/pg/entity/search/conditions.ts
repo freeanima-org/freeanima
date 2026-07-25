@@ -1,4 +1,4 @@
-import { and, eq, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
+import { and, eq, gte, inArray, isNotNull, isNull, lte, sql, type SQL } from "drizzle-orm";
 import {
   CONTENT_BLOCK_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
@@ -467,6 +467,16 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
 
 export function buildEntitySearchConditions(opts: EntitySearchOpts): SQL[] {
   const conditions = [...resolveWorldScope(opts)];
+
+  const deleted = opts.deleted ?? "alive";
+  if (deleted === "alive") {
+    conditions.push(isNull(entities.deleted_at));
+  } else if (deleted === "deleted") {
+    conditions.push(isNotNull(entities.deleted_at));
+  }
+  if (opts.empty_shell) {
+    conditions.push(sql`cardinality(${entities.components}) = 0`);
+  }
 
   if (opts.type != null) {
     conditions.push(eq(entities.type, opts.type));
