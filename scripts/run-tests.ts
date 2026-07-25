@@ -15,6 +15,7 @@ try {
   teardown = await setupIntegrationPg();
 } catch (err) {
   const msg = err instanceof Error ? err.message : String(err);
+  delete process.env.ANIMA_TEST_PG_URL;
   console.warn(`[${label}] ${msg}\n[${label}] continuing (PG integration tests will be skipped)`);
 }
 

@@ -62,6 +62,8 @@ try {
   teardown = await setupIntegrationPg();
 } catch (err) {
   const msg = err instanceof Error ? err.message : String(err);
+  // 模板库未就绪时清掉 URL，避免 describePg 误跑并对半成品库 DROP DATABASE 卡住
+  delete process.env.ANIMA_TEST_PG_URL;
   console.warn(`[${label}] ${msg}\n[${label}] continuing (PG integration tests will be skipped)`);
 }
 
