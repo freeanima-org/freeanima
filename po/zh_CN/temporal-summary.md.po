@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-25 07:29+0800\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
 "PO-Revision-Date: 2026-07-20 13:14+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -182,12 +182,12 @@ msgstr "对话"
 #| "| 3 Autobiographical | Autobiographical narrative   | Record what experiences meant to the digital life                                        |\n"
 #| "| 3b                 | Autobiography summary (self) | Compress narratives into grouped self-layer outline (title-only bullets by significance) |\n"
 msgid ""
-"| Step               | Trigger                                                  | Output                                                     |\n"
-"| ------------------ | -------------------------------------------------------- | ---------------------------------------------------------- |\n"
-"| Conversation chunk | `builtin-temporal-summary-tick` `*/30`                   | Append chunk if new messages                               |\n"
-"| Peer rollup        | Same tick / on assemble for **closed** buckets           | One merged peer digest per viewer source-set → Redis cache |\n"
-"| Global day         | Sleep step `temporal-summary-day` (after light-sleep)    | Overwrite global `day` entity for sleep day                |\n"
-"| Month / year       | Sleep step `temporal-summary-cascade` (after deep-sleep) | Month on month-end; year on Dec 31                         |\n"
+"| Step               | Trigger                                                      | Output                                                     |\n"
+"| ------------------ | ------------------------------------------------------------ | ---------------------------------------------------------- |\n"
+"| Conversation chunk | in-process `Bun.cron` `builtin-temporal-summary-tick` `*/30` | Append chunk if new messages                               |\n"
+"| Peer rollup        | Same tick / on assemble for **closed** buckets               | One merged peer digest per viewer source-set → Redis cache |\n"
+"| Global day         | Sleep step `temporal-summary-day` (after light-sleep)        | Overwrite global `day` entity for sleep day                |\n"
+"| Month / year       | Sleep step `temporal-summary-cascade` (after deep-sleep)     | Month on month-end; year on Dec 31                         |\n"
 msgstr ""
 "| 阶段              | 目标                       | 用途                                                                                  |\n"
 "| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |\n"
@@ -320,7 +320,7 @@ msgid "**Forbidden:** putting today peers in system prompt; per-turn tail replac
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/cognition/temporal-summary.md:100 messages/po4a/en.xml:177
+#: docs/cognition/temporal-summary.md:100 messages/po4a/en.xml:204
 #, no-wrap
 msgid "Config"
 msgstr "配置"

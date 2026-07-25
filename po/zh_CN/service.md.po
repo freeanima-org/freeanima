@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-25 07:29+0800\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/ops/service.md:1 messages/po4a/en.xml:647 messages/po4a/en.xml:708
+#: docs/ops/service.md:1 messages/po4a/en.xml:675 messages/po4a/en.xml:738
 #, no-wrap
 msgid "Service"
 msgstr "服务"
@@ -33,14 +33,23 @@ msgstr "服务运维"
 msgid "> Runtime status, memory metrics, and common commands.\n"
 msgstr "> 运行时状态、内存指标与常用命令。\n"
 
+#. type: Plain text
+#: docs/ops/service.md:10
+msgid ""
+"In Habitat chat, the agent can load ToolSet **`ops`** "
+"(`toolset_load([\"ops\"])`) for on-demand health/status, sanitized config, "
+"and partner-confirmed config patch / restart — see [`docs/tools/ops.md`](../"
+"tools/ops.md)."
+msgstr ""
+
 #. type: Title ##
-#: docs/ops/service.md:9
+#: docs/ops/service.md:11
 #, no-wrap
 msgid "Status and memory metrics"
 msgstr "状态与内存指标"
 
 #. type: Plain text
-#: docs/ops/service.md:12
+#: docs/ops/service.md:14
 #, fuzzy
 #| msgid ""
 #| "`anima service status` and `/api/status` report process memory under "
@@ -54,7 +63,7 @@ msgstr ""
 "报告进程内存。"
 
 #. type: Plain text
-#: docs/ops/service.md:19
+#: docs/ops/service.md:21
 #, no-wrap
 msgid ""
 "| Field / label                 | Source                                                 | Meaning                                                             |\n"
@@ -72,7 +81,7 @@ msgstr ""
 "| `virtual` / `vm_size_kb`      | Linux `VmSize`                                         | 预留的虚拟地址空间（Gigacage 隔离区）；非实际 RAM 占用              |\n"
 
 #. type: Plain text
-#: docs/ops/service.md:21
+#: docs/ops/service.md:23
 msgid ""
 "On Bun + JavaScriptCore, `heap (jsc)` can be **much larger than** `rss "
 "(phys)`. Use RSS for “how much RAM does anima use?” Use heap trends (over "
@@ -83,7 +92,7 @@ msgstr ""
 "RSS 做绝对值对比。"
 
 #. type: Plain text
-#: docs/ops/service.md:23
+#: docs/ops/service.md:25
 msgid ""
 "Verify from the shell (business API requires a Service API Token — see "
 "[`remote-access.md`](remote-access.md)):"
@@ -92,7 +101,7 @@ msgstr ""
 "(remote-access.md)）："
 
 #. type: Fenced code block (bash)
-#: docs/ops/service.md:24
+#: docs/ops/service.md:26
 #, no-wrap
 msgid ""
 "curl -s -H \"Authorization: Bearer <fa_at_...>\" http://127.0.0.1:2658/rpc/v1/status/get | jq '.memory_kb, .memory_detail'\n"
@@ -104,14 +113,14 @@ msgstr ""
 "just misc memory-sample -- --habitat-url http://127.0.0.1:2658 --stage full\n"
 
 #. type: Title ##
-#: docs/ops/service.md:30
+#: docs/ops/service.md:32
 #, fuzzy, no-wrap
 #| msgid "Development and run"
 msgid "Development vs production"
 msgstr "开发与运行"
 
 #. type: Plain text
-#: docs/ops/service.md:36
+#: docs/ops/service.md:38
 #, no-wrap
 msgid ""
 "| Mode                    | How to run Habitat                                                                                                                |\n"
@@ -125,20 +134,20 @@ msgstr ""
 "| **Standalone install**  | `anima service start` / `stop` / `status`（systemd user unit；**2658** / TLS **2659**）                                           |\n"
 
 #. type: Plain text
-#: docs/ops/service.md:38
+#: docs/ops/service.md:40
 msgid ""
 "Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.md)。"
 msgstr ""
 "Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.md)。"
 
 #. type: Title ##
-#: docs/ops/service.md:39
+#: docs/ops/service.md:41
 #, no-wrap
 msgid "Common commands"
 msgstr "常用命令"
 
 #. type: Fenced code block (bash)
-#: docs/ops/service.md:41
+#: docs/ops/service.md:43
 #, fuzzy, no-wrap
 #| msgid ""
 #| "# --- standalone install CLI only ---\n"
@@ -180,7 +189,7 @@ msgstr ""
 "just dev web              # Vite HMR from :5000 (set FREEANIMA_URL to Habitat); browser Habitat = page origin\n"
 
 #. type: Plain text
-#: docs/ops/service.md:56
+#: docs/ops/service.md:58
 #, fuzzy
 #| msgid ""
 #| "`anima.service` is a **single-unit stack**: Habitat (`:2658`, REST + SAP "
@@ -196,13 +205,13 @@ msgstr ""
 "会禁用旧版 `anima-tunnel.service`。"
 
 #. type: Plain text
-#: docs/ops/service.md:58
+#: docs/ops/service.md:60
 #, no-wrap
 msgid "**Web build is never triggered by `service start`.** Paths:\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/ops/service.md:64
+#: docs/ops/service.md:66
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Mode               | When to `just pack web`          | UI                                                                    |\n"
@@ -224,28 +233,28 @@ msgstr ""
 "| Dev                | 不需要                           | `just dev` / `just dev habitat` + `just dev web` → Web **:5000+** HMR |\n"
 
 #. type: Plain text
-#: docs/ops/service.md:66
+#: docs/ops/service.md:68
 #, fuzzy, no-wrap
 #| msgid "When `web.enabled: true`, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. For standalone static hosting without the Habitat process, use `anima web start --foreground` (default `:2659`).\n"
 msgid "When Web dist (`src/portal/app/web/dist` or embedded) is present, the stack serves browser Web UI at `http://<host>:2658/web/*` from Habitat (no separate API proxy). Clients store Habitat URL and **Service API Token** (`fa_at_...`) in **Habitat settings**. Optional Habitat native TLS listens on **`https://<host>:2659`** when `http.tls.enabled: true` (see [`remote-access.md`](remote-access.md)) — **production only**; source `just dev habitat` skips Habitat TLS and lets Vite terminate HTTPS when enabled.\n"
 msgstr "启用 `web.enabled: true` 时，栈由 Habitat 在 `http://<host>:2658/web/*` 提供浏览器 Web UI（无独立 API 代理）。客户端在 **Habitat 设置** 中保存 Habitat URL 与**服务 API 令牌**（`fa_at_...`）。若无需 Habitat 进程单独托管静态资源，使用 `anima web start --foreground`（默认 `:2659`）。\n"
 
 #. type: Plain text
-#: docs/ops/service.md:68
+#: docs/ops/service.md:70
 #, fuzzy, no-wrap
 #| msgid "**Startup order:** Habitat must pass `GET /api/health` (`status: ok`) before Tunnel sidecars start (`serve()` `onReady` → stack supervisor). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).\n"
 msgid "**Startup order:** Habitat must pass `GET /rpc/v1/health/probe` (`status: ok`) before `serve()` `onReady` hooks run. `anima service start` waits up to **15 minutes** by default (`FREEANIMA_HABITAT_READY_TIMEOUT_MS`) because schema migrations run **before** HTTP listen. Remote-tool host disconnects are retried by `@freeanima/shared/rpc-contract` transport (exponential backoff).\n"
 msgstr "**启动顺序：** Habitat 须先通过 `GET /api/health`（`status: ok`），再启动 Web/Tunnel 边车（`serve()` `onReady` → 栈 supervisor）。SAP 断线由 `@freeanima/sap-contract` 传输层自动重试（指数退避）。\n"
 
 #. type: Plain text
-#: docs/ops/service.md:70
+#: docs/ops/service.md:72
 #, fuzzy, no-wrap
 #| msgid "**UI access (two modes):**\n"
 msgid "**UI access:**\n"
 msgstr "**UI 访问（两种模式）：**\n"
 
 #. type: Bullet: '- '
-#: docs/ops/service.md:73
+#: docs/ops/service.md:75
 #, fuzzy
 #| msgid ""
 #| "**Desktop / mobile bundled shell:** Chat and **Habitat at `/chat`, `/"
@@ -259,14 +268,14 @@ msgstr ""
 "habitat/*`（除非 `web.enabled`，否则不由 Habitat `:2658` 提供）。"
 
 #. type: Bullet: '- '
-#: docs/ops/service.md:73
+#: docs/ops/service.md:75
 msgid ""
 "**Browser / PWA:** `http://<host>:2658/web/*` from Habitat when dist is "
 "present. Default Habitat URL in `/web/config.json` is the **page origin**."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/ops/service.md:73
+#: docs/ops/service.md:75
 msgid ""
 "**Local Web dev (`just dev web`):** Vite from `:5000` with base `/web/` — "
 "Chat `http://127.0.0.1:5000/web/chat`, Habitat `…/web/habitat/dashboard`; `/"

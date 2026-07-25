@@ -1,0 +1,106 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
+"PO-Revision-Date: 2026-07-25 22:36+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Content of: <messages><msg>
+#: docs/cognition/notifications.md:139 docs/modules/email.md:19
+#: docs/tools/ops.md:13 messages/po4a/en.xml:31 messages/po4a/en.xml:282
+#: messages/po4a/en.xml:734 messages/po4a/en.xml:742
+#, no-wrap
+msgid "Tools"
+msgstr "工具"
+
+#. type: Title #
+#: docs/modules/email.md:1
+#, fuzzy, no-wrap
+#| msgid "Email module (Estate)"
+msgid "Email module"
+msgstr "邮件模块（资源层）"
+
+#. type: Plain text
+#: docs/modules/email.md:4
+msgid ""
+"Habitat-backed IMAP/SMTP mail client (`/email`). Entity model: [`docs/"
+"product/entity-model.md`](../product/entity-model.md) (Email module)."
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/modules/email.md:5 messages/po4a/en.xml:486
+#, no-wrap
+msgid "Capabilities"
+msgstr "能力"
+
+#. type: Bullet: '- '
+#: docs/modules/email.md:14
+msgid ""
+"Multi-mailbox sync (INBOX / Sent / Drafts / Trash + custom); LIST + SPECIAL-"
+"USE"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/email.md:14
+msgid "Flags: `\\Seen` / `\\Flagged` write-back and FLAGS refresh on sync"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/email.md:14
+msgid "Send: SMTP + APPEND Sent; drafts in Drafts mailbox"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/email.md:14
+msgid "Delete: move to Trash (default); mailbox CREATE/RENAME/DELETE"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/email.md:14
+msgid ""
+"IDLE on inbox + cron `builtin-email-sync-all` every 5m across **all worlds** "
+"(enabled accounts); auto-sync new inbox subjects → one user notification; "
+"manual `email.sync` does not notify"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/email.md:14
+msgid "Local hybrid search (synced messages only)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/email.md:14
+msgid "List multi-select: mark read/unread, star, move, delete (serial RPC)"
+msgstr ""
+
+#. type: Title ##
+#: docs/modules/email.md:15
+#, fuzzy, no-wrap
+#| msgid "RPC Methods"
+msgid "Habitat RPC (selected)"
+msgstr "RPC 方法"
+
+#. type: Plain text
+#: docs/modules/email.md:18
+msgid ""
+"`email.mailbox.list|create|rename|delete`, `email.message.list|read|markRead|"
+"markUnread|markFlagged|markUnflagged|move|delete|search`, `email.send`, "
+"`email.draft.save|send`, `email.sync`, `emailaccount.*`."
+msgstr ""
+
+#. type: Plain text
+#: docs/modules/email.md:21
+msgid ""
+"ToolSets `email-account` and `email` (`email_sync`, `email_list`, "
+"`email_search`, `email_mark_read`, `email_mark_flagged`, `email_move`, …)."
+msgstr ""

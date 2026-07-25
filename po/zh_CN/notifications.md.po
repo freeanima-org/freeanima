@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-25 07:29+0800\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
 "PO-Revision-Date: 2026-06-29 14:00+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -15,26 +15,32 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:122
+#: docs/cognition/notifications.md:158 docs/ui/components.md:80
+#: docs/ui/dimensions.md:89 docs/ui/foundations.md:165 docs/ui/overview.md:35
+#: docs/ui/patterns.md:158
+#, no-wrap
+msgid "Related"
+msgstr "相关文档"
+
 #. type: Content of: <messages><msg>
 #: docs/cognition/environment-awareness.md:56 docs/cognition/notifications.md:1
-#: docs/cognition/notifications.md:5 messages/po4a/en.xml:469
-#: messages/po4a/en.xml:687
+#: docs/cognition/notifications.md:5 messages/po4a/en.xml:497
+#: messages/po4a/en.xml:716
 #, no-wrap
 msgid "Notifications"
 msgstr "通知"
 
 #. type: Plain text
 #: docs/cognition/notifications.md:8
-#, fuzzy
-#| msgid ""
-#| "代码里 **`notification*`** 指 **Inbox（收件箱）**；瞬时提醒使用 "
-#| "**`alert*`** 命名空间（`shell-sdk/alert`），二者概念分离。"
 msgid ""
-"代码里 **`notification*`** 指 **Inbox（收件箱）**；瞬时提醒使用 **`alert*`** "
-"命名空间（`portal-sdk/alert`），二者概念分离。"
+"代码里 **`notification*`** 指 **Inbox（收件箱）**；瞬时打断使用 "
+"**`alert*`** / `deliverLocalReminder`。产品上的 **通知 / 提醒 / 本机打断** 三"
+"分法、任务 due vs 多提醒、Habitat **睡到下次** 时间发现、壳层 Attention 集中"
+"订阅 → 切面 [`notification-and-reminder.md`](../aspects/notification-and-"
+"reminder.md)。"
 msgstr ""
-"代码里 **`notification*`** 指 **Inbox（收件箱）**；瞬时提醒使用 **`alert*`** "
-"命名空间（`shell-sdk/alert`），二者概念分离。"
 
 #. type: Title ##
 #: docs/cognition/notifications.md:9
@@ -43,11 +49,17 @@ msgid "Inbox（收件箱）"
 msgstr "Inbox（收件箱）"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:12 docs/cognition/notifications.md:71
+#: docs/cognition/notifications.md:12
+#, fuzzy
+#| msgid ""
+#| "PG-backed in-app inbox for **user** and **agent** subjects (entity "
+#| "model). Cron results, task due reminders, and LLM tools write here; Shell "
+#| "UI lists and marks read via SAP."
 msgid ""
 "PG-backed in-app inbox for **user** and **agent** subjects (entity model). "
-"Cron results, task due reminders, and LLM tools write here; Shell UI lists "
-"and marks read via SAP."
+"Cron job results, **task due** (target), env/health changes, and LLM tools "
+"write here; Shell UI lists and marks read via SAP. Advance task reminders "
+"are **not** Inbox rows — see the aspect."
 msgstr ""
 "面向 **user** 与 **agent** 主体（实体模型）的 PG 应用内收件箱。Cron 结果、任"
 "务到期提醒与 LLM 工具写入此处；Shell UI 通过 SAP 列出并标记已读。"
@@ -132,7 +144,9 @@ msgstr ""
 msgid ""
 "用户 Inbox 新建经 `notification.subscribeInbox` → `notification.created` 推到"
 "各端，再走 `deliverLocalReminder`。Chat 未读会话数上升同理"
-"（`ChatUnreadShellWatcher`）。"
+"（`ChatUnreadShellWatcher`）。`subscribeInbox` 的 pump 与 chat 一样绑定 "
+"Habitat RPC **WS 会话**（断线 abort，重连后可重建）；勿用进程级单例 Map，否则"
+"重连后推送会静默丢失而 `notification.list` 仍正常。"
 msgstr ""
 
 #. type: Title ###
@@ -189,7 +203,7 @@ msgstr ""
 "进仍由 `PomodoroShellWatcher`（或重开后 catch-up）负责；预登记只保证提醒。"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:55
+#: docs/cognition/notifications.md:56
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Round | Intent                                                                  |\n"
@@ -199,12 +213,13 @@ msgstr ""
 #| "| 3     | Dedup merge similar entries                                             |\n"
 #| "| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |\n"
 msgid ""
-"| 事件                      | Inbox |             本机提醒             | SSOT                |\n"
-"| ------------------------- | :---: | :------------------------------: | ------------------- |\n"
-"| 任务到期/提醒             |   ✓   | ✓（user inbox → subscribeInbox） | `task_item` + inbox |\n"
-"| Agent `notification_send` |   ✓   |   ✓（仅 user 行触发本机提醒）    | inbox               |\n"
-"| Chat 未读上升             |   ✗   |   ✓（`deliverLocalReminder`）    | `conversation`      |\n"
-"| 番茄钟阶段结束            |   ✗   |    ✓（伴侣气泡或预登记+即时）    | `pomodoro_session`  |\n"
+"| 事件                       |      Inbox（目标）       |          本机打断           | SSOT                  |\n"
+"| -------------------------- | :----------------------: | :-------------------------: | --------------------- |\n"
+"| 任务**到期** due           | ✓（该 World 的 subject） | 可经 `notification.created` | `task_item` + inbox   |\n"
+"| 任务**提前提醒**（可多条） |            ✗             |    ✓（直达，不经 Inbox）    | `task_item` reminders |\n"
+"| `notification_send`        |            ✓             |  按收件 subject 需要打断时  | inbox                 |\n"
+"| Chat 未读上升              |            ✗             |              ✓              | `conversation`        |\n"
+"| 番茄钟阶段结束             |            ✗             |              ✓              | `pomodoro_session`    |\n"
 msgstr ""
 "| 轮次 | 意图                                   |\n"
 "| ----- | ---------------------------------------- |\n"
@@ -214,14 +229,18 @@ msgstr ""
 "| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:57
+#: docs/cognition/notifications.md:58
+#, fuzzy
+#| msgid ""
+#| "番茄钟阶段结束**不写 inbox**；会话历史由 `pomodoro_session` entity 承担。"
 msgid ""
-"番茄钟阶段结束**不写 inbox**；会话历史由 `pomodoro_session` entity 承担。"
+"上表为目标态；现状 gap 见切面。番茄钟阶段结束**不写 inbox**；会话历史由 "
+"`pomodoro_session` entity 承担。"
 msgstr ""
 "番茄钟阶段结束**不写 inbox**；会话历史由 `pomodoro_session` entity 承担。"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:59
+#: docs/cognition/notifications.md:60
 #, fuzzy
 #| msgid "实现：`src/frontend/shell-sdk/alert/` + 各端 backend。"
 msgid ""
@@ -230,7 +249,7 @@ msgid ""
 msgstr "实现：`src/frontend/shell-sdk/alert/` + 各端 backend。"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:65
+#: docs/cognition/notifications.md:66
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| 端          | 即时通道                                                 | 预登记                                                                |\n"
@@ -252,18 +271,33 @@ msgstr ""
 "| **mobile**  | Tauri Android 本地通知（`showNativeAlert`）              | schedule / cancel                                                    |\n"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:69
+#: docs/cognition/notifications.md:70
 msgid "（以下为 Inbox 专章，保留原行为说明。）"
 msgstr "（以下为 Inbox 专章，保留原行为说明。）"
 
-#. type: Title ##
+#. type: Plain text
 #: docs/cognition/notifications.md:72
+#, fuzzy
+#| msgid ""
+#| "PG-backed in-app inbox for **user** and **agent** subjects (entity "
+#| "model). Cron results, task due reminders, and LLM tools write here; Shell "
+#| "UI lists and marks read via SAP."
+msgid ""
+"PG-backed in-app inbox for **user** and **agent** subjects (entity model). "
+"Cron job results, task **due**, env/health, and LLM tools write here; Shell "
+"UI lists and marks read via SAP. Advance reminders are not Inbox rows."
+msgstr ""
+"面向 **user** 与 **agent** 主体（实体模型）的 PG 应用内收件箱。Cron 结果、任"
+"务到期提醒与 LLM 工具写入此处；Shell UI 通过 SAP 列出并标记已读。"
+
+#. type: Title ##
+#: docs/cognition/notifications.md:73
 #, no-wrap
 msgid "Recipients"
 msgstr "收件人"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:75
+#: docs/cognition/notifications.md:76
 msgid ""
 "Subject entity ids are bound at Habitat boot into **`ResolvedWorldContext`** "
 "and persisted to `habitat_runtime_config.worlds` (see [`entity-model.md`](../"
@@ -272,12 +306,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/notifications.md:77
+#: docs/cognition/notifications.md:78
 msgid "Optional override (advanced; rarely needed):"
 msgstr ""
 
 #. type: Fenced code block (yaml)
-#: docs/cognition/notifications.md:78
+#: docs/cognition/notifications.md:79
 #, fuzzy, no-wrap
 #| msgid ""
 #| "# habitat_runtime_config (Shell → Habitat 服务设置 → worlds)，或冷启动后由 boot 自动回写\n"
@@ -296,21 +330,21 @@ msgstr ""
 "  agent_subject_id: 110 # type=agent entity\n"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:86
+#: docs/cognition/notifications.md:87
 msgid ""
 "Legacy `notifications.user_subject_id` / `agent_subject_id` are still read "
 "as fallback when `worlds` is unset."
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/notifications.md:88
+#: docs/cognition/notifications.md:89
 msgid ""
 "`user_world_id` / `agent_world_id` are derived at Habitat boot from each "
 "subject's `default_private_world_id`."
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/notifications.md:90
+#: docs/cognition/notifications.md:91
 #, fuzzy
 #| msgid ""
 #| "Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` "
@@ -324,7 +358,7 @@ msgstr ""
 "串）。未配置的安装默认使用 subject id `1` / `2`。"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:98
+#: docs/cognition/notifications.md:100
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Writer                                  | Typical recipient     |\n"
@@ -334,13 +368,14 @@ msgstr ""
 #| "| Task due reminder                       | agent                 |\n"
 #| "| `notification_send` tool                | user / agent / both   |\n"
 msgid ""
-"| Writer                                  | Typical recipient                            |\n"
-"| --------------------------------------- | -------------------------------------------- |\n"
-"| Cron success (when `notify_on_success`) | **both** user + agent                        |\n"
-"| Cron failure                            | **both** user + agent                        |\n"
-"| Task due reminder                       | user                                         |\n"
-"| Env/health baseline change              | **both** user + agent (`builtin-env-health`) |\n"
-"| `notification_send` tool                | user / agent / both; optional `subject_id`   |\n"
+"| Writer                                  | Typical recipient                             |\n"
+"| --------------------------------------- | --------------------------------------------- |\n"
+"| Cron success (when `notify_on_success`) | **both** user + agent                         |\n"
+"| Cron failure                            | **both** user + agent                         |\n"
+"| Task **due** (target)                   | subject of the task’s World                   |\n"
+"| Env/health baseline change              | **both** user + agent (`builtin-env-health`)  |\n"
+"| In-process builtin failure              | **both** user + agent（无 cron_log 时的替代） |\n"
+"| `notification_send` tool                | user / agent / both; optional `subject_id`    |\n"
 msgstr ""
 "| 写入方                                  | 典型收件人            |\n"
 "| --------------------------------------- | --------------------- |\n"
@@ -350,18 +385,18 @@ msgstr ""
 "| `notification_send` 工具                | user / agent / both   |\n"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:100
+#: docs/cognition/notifications.md:102
 msgid "Dream pipeline **does not** create notifications (reminder removed)."
 msgstr "梦境流水线**不会**创建通知（提醒已移除）。"
 
 #. type: Title ##
-#: docs/cognition/notifications.md:101
+#: docs/cognition/notifications.md:103
 #, no-wrap
 msgid "Agent consciousness"
 msgstr "Agent 意识"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:104
+#: docs/cognition/notifications.md:106
 msgid ""
 "Unread agent notifications are injected at inference time via a runtime-only "
 "**`assistant(name=notification_context)`** turn immediately before the last "
@@ -372,26 +407,26 @@ msgstr ""
 "息之前。它们**不会**持久化到对话消息中。"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:106
+#: docs/cognition/notifications.md:108
 msgid ""
 "The inject block includes a **Handling protocol** (three-way triage by "
 "whether action is needed — not by `source_kind`)."
 msgstr "注入块包含**处理协议**（按是否需要行动三分流——而非按 `source_kind`）。"
 
 #. type: Title ###
-#: docs/cognition/notifications.md:107
+#: docs/cognition/notifications.md:109
 #, no-wrap
 msgid "Agent handling protocol"
 msgstr "Agent 处理协议"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:110
+#: docs/cognition/notifications.md:112
 msgid ""
 "For each injected `[id:…]` line, classify by content (not by writer/source):"
 msgstr "对每条注入的 `[id:…]` 行，按内容分类（而非按写入方/来源）："
 
 #. type: Plain text
-#: docs/cognition/notifications.md:116
+#: docs/cognition/notifications.md:118
 #, no-wrap
 msgid ""
 "| Category                          | Action                          | Mark read                                       |\n"
@@ -407,7 +442,7 @@ msgstr ""
 "| **需行动，耗时/不确定**           | 长任务前先询问用户              | 批准并处理前**不要**标记已读                    |\n"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:118
+#: docs/cognition/notifications.md:120
 msgid ""
 "Unmarked unread items are re-injected on the next user turn. Use "
 "`notification_list(recipient=agent, read_filter=unread)` if the inject block "
@@ -417,19 +452,19 @@ msgstr ""
 "`notification_list(recipient=agent, read_filter=unread)`。"
 
 #. type: Title ##
-#: docs/cognition/notifications.md:119
+#: docs/cognition/notifications.md:121
 #, fuzzy, no-wrap
 #| msgid "ToolSet `notification`:"
 msgid "LLM tools (ToolSet `notification`)"
 msgstr "ToolSet `notification`："
 
 #. type: Plain text
-#: docs/cognition/notifications.md:122
+#: docs/cognition/notifications.md:124
 msgid "Load via `toolset_load` with `notification`."
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/notifications.md:128
+#: docs/cognition/notifications.md:130
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Condition                                                            | Result                     |\n"
@@ -451,141 +486,107 @@ msgstr ""
 "| 至少有一条当日产生的强度足够的感性锚点                        | 生成梦境                   |\n"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:130
+#: docs/cognition/notifications.md:132
 msgid ""
 "`subject_id` must be the configured `user_subject_id` or `agent_subject_id` "
 "from system prompt / `ResolvedWorldContext`."
 msgstr ""
 
 #. type: Title ##
-#: docs/cognition/notifications.md:131
-#, no-wrap
-msgid "Task reminder scan"
+#: docs/cognition/notifications.md:133
+#, fuzzy, no-wrap
+#| msgid "Task reminder scan"
+msgid "Task due / reminder discovery"
 msgstr "任务提醒扫描"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:134
-msgid ""
-"Builtin cron `builtin-task-reminders` runs **every minute** (`* * * * *`)."
-msgstr "内置 cron `builtin-task-reminders` **每分钟**运行（`* * * * *`）。"
-
-#. type: Plain text
 #: docs/cognition/notifications.md:136
-msgid "For each pending `task_item`:"
-msgstr "对每个待处理的 `task_item`："
-
-#. type: Bullet: '1. '
-#: docs/cognition/notifications.md:140
-msgid "**Trigger time**: `remind_at` if set, else `due_at`; if neither, skip."
-msgstr ""
-"**触发时间**：若设置了 `remind_at` 则用之，否则 `due_at`；两者皆无则跳过。"
-
-#. type: Bullet: '2. '
-#: docs/cognition/notifications.md:140
-msgid ""
-"**Send** when `trigger <= now` and `last_notified_at` is absent or "
-"`last_notified_at < trigger` (entity JSONB field on schedulable body)."
-msgstr ""
-"**发送**条件：`trigger <= now` 且 `last_notified_at` 缺失或 "
-"`last_notified_at < trigger`（可调度 body 上的实体 JSONB 字段）。"
-
-#. type: Bullet: '3. '
-#: docs/cognition/notifications.md:140
-msgid ""
-"**After send**: patch `last_notified_at` on the task entity; do not rely on "
-"day-based `source_ref` dedup alone."
-msgstr ""
-"**发送后**：在任务实体上 patch `last_notified_at`；不要仅依赖基于日的 "
-"`source_ref` 去重。"
-
-#. type: Plain text
-#: docs/cognition/notifications.md:142
 #, no-wrap
-msgid "**Product rule (confirmed)**: one trigger per task per scan — **remind first, else due**; not separate notifications for both when both are set.\n"
-msgstr "**产品规则（已确认）**：每次扫描每个任务仅一次触发——**先 remind，否则 due**；两者皆设时不分别发送两条通知。\n"
+msgid "**Target** (see [notification-and-reminder](../aspects/notification-and-reminder.md)): Habitat **sleep-until-next** (one next-fire timer). **Due** → Inbox for the entity’s World subject; **advance reminders** → local interrupt only. Do **not** use PG `cron_jobs` / `cron_log` for discovery.\n"
+msgstr ""
 
 #. type: Plain text
-#: docs/cognition/notifications.md:144
-msgid ""
-"Task reminders are delivered to the **user** inbox via cron (Shell UI / "
-"SAP), not injected into agent context and not duplicated by "
-"`notification_send`."
+#: docs/cognition/notifications.md:138
+#, no-wrap
+msgid "**Current code:** `builtin-task-reminders` runs via in-process `Bun.cron` (`* * * * *`, no PG cron row / no empty-scan `cron_log`). Still transitional vs sleep-until-next; single `remind_at` with remind-else-due writes the user Inbox; scan walks `user_world_id` only.\n"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/cognition/notifications.md:145 messages/po4a/en.xml:31
-#: messages/po4a/en.xml:255 messages/po4a/en.xml:704 messages/po4a/en.xml:712
+#: docs/cognition/notifications.md:139 docs/modules/email.md:19
+#: docs/tools/ops.md:13 messages/po4a/en.xml:31 messages/po4a/en.xml:282
+#: messages/po4a/en.xml:734 messages/po4a/en.xml:742
 #, no-wrap
 msgid "Tools"
 msgstr "工具"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:148
+#: docs/cognition/notifications.md:142
 msgid "ToolSet `notification`:"
 msgstr "ToolSet `notification`："
 
 #. type: Bullet: '- '
-#: docs/cognition/notifications.md:152
+#: docs/cognition/notifications.md:146
 msgid "`notification_send`"
 msgstr "`notification_send`"
 
 #. type: Bullet: '- '
-#: docs/cognition/notifications.md:152
+#: docs/cognition/notifications.md:146
 msgid "`notification_list`"
 msgstr "`notification_list`"
 
 #. type: Bullet: '- '
-#: docs/cognition/notifications.md:152
+#: docs/cognition/notifications.md:146
 msgid "`notification_mark_read` — `id` or `ids` (batch, max 20)"
 msgstr "`notification_mark_read` — `id` 或 `ids`（批量，最多 20）"
 
 #. type: Plain text
-#: docs/cognition/notifications.md:154
+#: docs/cognition/notifications.md:148
 msgid "Included in default conversation toolsets when registered."
 msgstr "注册后包含在默认对话 toolset 中。"
 
 #. type: Title ##
-#: docs/cognition/notifications.md:155
+#: docs/cognition/notifications.md:149
 #, no-wrap
 msgid "SAP (read)"
 msgstr "SAP（读）"
 
 #. type: Bullet: '- '
-#: docs/cognition/notifications.md:161
+#: docs/cognition/notifications.md:155
 msgid ""
 "`notification.list` — requires `recipient_kind` + optional `recipient_id`"
 msgstr "`notification.list` — 需要 `recipient_kind` + 可选 `recipient_id`"
 
 #. type: Bullet: '- '
-#: docs/cognition/notifications.md:161
+#: docs/cognition/notifications.md:155
 msgid "`notification.markRead`"
 msgstr "`notification.markRead`"
 
 #. type: Bullet: '- '
-#: docs/cognition/notifications.md:161
+#: docs/cognition/notifications.md:155
 msgid "`notification.recipients` — configured subject ids for UI tabs"
 msgstr "`notification.recipients` — UI 标签页用的已配置主体 id"
 
 #. type: Bullet: '- '
-#: docs/cognition/notifications.md:161
+#: docs/cognition/notifications.md:155
 msgid ""
 "`notification.subscribeInbox` — WS；用户 Inbox 新建推送 "
 "`notification.created`（本机提醒）"
 msgstr ""
 
 #. type: Plain text
-#: docs/cognition/notifications.md:163
+#: docs/cognition/notifications.md:157
 msgid "No SAP create RPC in v1; writes are Habitat-internal + tools."
 msgstr "v1 无 SAP 创建 RPC；写入由 Habitat 内部 + 工具完成。"
 
-#. type: Title ##
-#: docs/cognition/notifications.md:164
-#, no-wrap
-msgid "Related"
-msgstr "相关文档"
+#. type: Bullet: '- '
+#: docs/cognition/notifications.md:161
+msgid ""
+"Aspect (Notification / Reminder / Alert, Attention hub): [`notification-and-"
+"reminder.md`](../aspects/notification-and-reminder.md)"
+msgstr ""
 
 #. type: Bullet: '- '
-#: docs/cognition/notifications.md:166
+#: docs/cognition/notifications.md:161
 #, fuzzy
 #| msgid "Entity subjects: [`entity-model.md`](entity-model.md)"
 msgid "Entity subjects: [`entity-model.md`](../product/entity-model.md)"

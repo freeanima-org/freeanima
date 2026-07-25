@@ -32,6 +32,10 @@ export default defineConfig({
         project: "../project.inlang",
         outdir: "../messages/paraglide",
       }),
+      paraglideVitePlugin({
+        project: "../project.site.inlang",
+        outdir: "../messages/paraglide-site",
+      }),
     ],
     resolve: {
       alias: {
@@ -40,6 +44,12 @@ export default defineConfig({
         ),
         "@paraglide/runtime": fileURLToPath(
           new URL("../messages/paraglide/runtime.js", import.meta.url),
+        ),
+        "@paraglide-site/messages": fileURLToPath(
+          new URL("../messages/paraglide-site/messages.js", import.meta.url),
+        ),
+        "@paraglide-site/runtime": fileURLToPath(
+          new URL("../messages/paraglide-site/runtime.js", import.meta.url),
         ),
       },
     },

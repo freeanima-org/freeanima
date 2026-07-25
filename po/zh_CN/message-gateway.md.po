@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wv 53\n"
-"POT-Creation-Date: 2026-07-25 07:29+0800\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
 "PO-Revision-Date: 2026-07-17 22:43+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/ops/message-gateway.md:1 messages/po4a/en.xml:683
+#: docs/ops/message-gateway.md:1 messages/po4a/en.xml:712
 #, no-wrap
 msgid "Message gateway"
 msgstr "消息网关"
@@ -94,11 +94,9 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/ops/message-gateway.md:25
 msgid ""
-"保存后需 **重启 Habitat / anima service** 才会重新 `discoverPlatforms`；当前"
-"不支持热重载。"
+"保存后 **热 apply**：停止现有 adapter 并重新 `discoverPlatforms` / "
+"`startPlatforms`，无需重启 Habitat。"
 msgstr ""
-"保存后需 **重启 Habitat / anima service** 才会重新 `discoverPlatforms`；当前"
-"不支持热重载。"
 
 #. type: Title ##
 #: docs/ops/message-gateway.md:26

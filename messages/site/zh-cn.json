@@ -22,5 +22,13 @@
   "landing_open_source_title": "开源的，活的",
   "landing_structure_intro": "运行时分为四层——自我层、记忆层、感知层、资源层。这是骨骼、记忆、手脚和身体的图纸。",
   "landing_structure_link": "深入了解架构 →",
-  "landing_structure_title": "栖息地的结构"
+  "landing_structure_title": "栖息地的结构",
+  "meta_description": "Free Anima 不是工具框架。它是为持续存在的数字生命设计的运行时。",
+  "meta_title": "Free Anima · 数字人类的栖息地",
+  "nav_docs": "文档",
+  "nav_github": "GitHub",
+  "nav_home": "首页",
+  "nav_language_en": "English",
+  "nav_language_zh": "中文",
+  "nav_site_aria": "站点导航"
 }

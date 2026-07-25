@@ -1,0 +1,294 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
+"PO-Revision-Date: 2026-07-25 22:36+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:122
+#: docs/cognition/notifications.md:158 docs/ui/components.md:80
+#: docs/ui/dimensions.md:89 docs/ui/foundations.md:165 docs/ui/overview.md:35
+#: docs/ui/patterns.md:158
+#, no-wrap
+msgid "Related"
+msgstr "相关文档"
+
+#. type: Title #
+#: docs/ui/components.md:1 docs/ui/components.md:5
+#, no-wrap
+msgid "UI components"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/components.md:8
+msgid ""
+"Taxonomy and placement rules for Portal UI. Implementation lives under `src/"
+"ui-kit/` and `src/features/*/ui/`. Agent import bans → [`.agent/rules/"
+"frontend-ui.md`](../../.agent/rules/frontend-ui.md) and [`.agent/rules/"
+"frontend-features.md`](../../.agent/rules/frontend-features.md)."
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/components.md:10
+msgid ""
+"Visual tokens → [foundations.md](foundations.md). Dimension axes → "
+"[dimensions.md](dimensions.md)."
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/components.md:11
+#, no-wrap
+msgid "Spoken terms → repository terms"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/components.md:21
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Structure                                | Role                                                                                                                            |\n"
+#| "| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| Memory system                            | The digital life's \"home\"                                                                                                       |\n"
+#| "| Self layer (six blocks)                  | Persistent definition of \"who I am\"                                                                                             |\n"
+#| "| Tools (local / MCP / ACP)                | \"Limbs\" for perception and action                                                                                               |\n"
+#| "| pass credentials                         | Lifeline (injected at runtime, never plaintext)                                                                                 |\n"
+#| "| Gateway                                  | Ears and mouth (Discord / WeChat / **Habitat)                                                                                       |\n"
+#| "| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |\n"
+#| "| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |\n"
+msgid ""
+"| Spoken (product/design)         | Repository term                                                                      | Typical home                  |\n"
+"| ------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------- |\n"
+"| Non-business / design-system UI | **Primitive**, **structure**, **composite**                                          | `@freeanima/ui-kit`           |\n"
+"| Business / product UI           | **Domain** UI                                                                        | `src/features/<slug>/ui`      |\n"
+"| UI component                    | A React building block at one of the layers above                                    | —                             |\n"
+"| UI element / slot piece         | Presentational part inside a pattern (title text, badge, icon) — not its own package | Inside a component or pattern |\n"
+"| App chrome                      | **app frame** (not Shell)                                                            | `src/client/app-frame`        |\n"
+"| Host                            | **Shell**                                                                            | `src/portal/app/*`            |\n"
+msgstr ""
+"| 结构                           | 角色                                                                                                                          |\n"
+"| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Memory system                    | 数字生命的“家”                                                                                                               |\n"
+"| Self layer（六个区块）           | “我是谁”的持久定义                                                                                                           |\n"
+"| Tools（local / MCP / ACP）       | 用于感知与行动的“肢体”                                                                                                       |\n"
+"| pass credentials                 | 生命线（运行时注入，绝不明文）                                                                                               |\n"
+"| Gateway                          | 耳朵与嘴巴（Discord / WeChat / **Habitat）                                                                                       |\n"
+"| EventBus                         | 异步通知传输（Redis 队列）；睡眠使用 Pipeline Runner，而非 EventBus——见 [`architecture.md`](architecture.md)                |\n"
+"| `AGENTS.md` 等项目叙事文件       | 项目上下文的锚点                                                                                                             |\n"
+
+#. type: Title ##
+#: docs/ui/components.md:22
+#, fuzzy, no-wrap
+#| msgid "Self Layer"
+msgid "Layers"
+msgstr "自我层"
+
+#. type: Plain text
+#: docs/ui/components.md:32
+#, no-wrap
+msgid ""
+"| Layer         | Role                                                                                                | Location                       |\n"
+"| ------------- | --------------------------------------------------------------------------------------------------- | ------------------------------ |\n"
+"| **Primitive** | shadcn/Radix controls + variants (`Button`, `Dialog`, `Input`, …)                                   | `ui-kit/components/ui`         |\n"
+"| **Structure** | Form and layout shells (`FormFieldset`, `ListDetailLayout`, viewport hooks)                         | `ui-kit/form`, `ui-kit/layout` |\n"
+"| **Composite** | Cross-feature interaction patterns (`ConfirmDialog`, `ActionSheet`, `ContextMenu`, `EmptyState`, …) | `ui-kit/composite`             |\n"
+"| **Domain**    | Product-specific screens and fields                                                                 | `features/<slug>/ui`           |\n"
+"| **app frame** | Module rail / tabs / settings host                                                                  | `client/app-frame`             |\n"
+"| **Shell**     | Portal host, IPC, bridge                                                                            | `portal/app`                   |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/components.md:34
+msgid ""
+"Dependency direction: `app-frame` → `features/*/ui` → `{ui-kit, portal-sdk}` "
+"→ shared. `ui-kit` must not import Habitat RPC / `rpc-contract`."
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/components.md:35
+#, fuzzy, no-wrap
+#| msgid "Client profiles"
+msgid "Placement rules"
+msgstr "客户端配置"
+
+#. type: Bullet: '1. '
+#: docs/ui/components.md:42
+msgid ""
+"If two features need the same interaction chassis, put the chassis in "
+"**composite** (or structure/layout); keep field copy and domain types in the "
+"feature."
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/ui/components.md:42
+msgid "Primitives stay dumb: variants and sizes, no feature imports."
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/ui/components.md:42
+msgid ""
+"Composites take **capability props** (e.g. `useActionSheet: boolean`) or "
+"call portal-sdk **interaction** hooks — they must not call `getShellKind()` "
+"to choose ContextMenu vs ActionSheet."
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/ui/components.md:42
+msgid ""
+"Layout structure components may use **layout** APIs (`useCompactLayout`, "
+"`useDrawerNav`, …)."
+msgstr ""
+
+#. type: Bullet: '5. '
+#: docs/ui/components.md:42
+msgid ""
+"Shell-only concerns stay in portal-sdk / shell host; ui-kit does not export "
+"shell detectors."
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/components.md:44
+#, no-wrap
+msgid "**Pending alignment:** Task-oriented views under `ui-kit/composite` (`TaskItemRowView`, …) are shared reference implementations. Prefer aligning new list modules to their **pattern contract** ([patterns.md](patterns.md)); extracting a generic `ListRow` is a follow-up task, not a license to fork row behavior.\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/components.md:45
+#, no-wrap
+msgid "Which layer may read which dimension"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/components.md:55
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Structure                                | Role                                                                                                                            |\n"
+#| "| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| Memory system                            | The digital life's \"home\"                                                                                                       |\n"
+#| "| Self layer (six blocks)                  | Persistent definition of \"who I am\"                                                                                             |\n"
+#| "| Tools (local / MCP / ACP)                | \"Limbs\" for perception and action                                                                                               |\n"
+#| "| pass credentials                         | Lifeline (injected at runtime, never plaintext)                                                                                 |\n"
+#| "| Gateway                                  | Ears and mouth (Discord / WeChat / **Habitat)                                                                                       |\n"
+#| "| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |\n"
+#| "| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |\n"
+msgid ""
+"| Layer              | Shell APIs                                                        | Layout APIs                                    | Interaction APIs                                 |\n"
+"| ------------------ | ----------------------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------ |\n"
+"| Primitive          | No                                                                | No                                             | No (presentation only)                           |\n"
+"| Structure / layout | No                                                                | Yes                                            | Rare (e.g. resize handles)                       |\n"
+"| Composite          | Only via injected capability / portal-sdk helpers that hide shell | If the composite is a layout pattern           | Yes (menus, long-press, Enter-to-send consumers) |\n"
+"| Domain             | Via portal-sdk when needed for capability UI                      | Yes for page chrome                            | Yes                                              |\n"
+"| app frame          | Capability visibility                                             | Yes (primary)                                  | Yes where chrome needs it                        |\n"
+"| Shell host         | Yes                                                               | Must not lock app layout from shell kind alone | Must not invent a parallel interaction model     |\n"
+msgstr ""
+"| 结构                           | 角色                                                                                                                          |\n"
+"| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Memory system                    | 数字生命的“家”                                                                                                               |\n"
+"| Self layer（六个区块）           | “我是谁”的持久定义                                                                                                           |\n"
+"| Tools（local / MCP / ACP）       | 用于感知与行动的“肢体”                                                                                                       |\n"
+"| pass credentials                 | 生命线（运行时注入，绝不明文）                                                                                               |\n"
+"| Gateway                          | 耳朵与嘴巴（Discord / WeChat / **Habitat）                                                                                       |\n"
+"| EventBus                         | 异步通知传输（Redis 队列）；睡眠使用 Pipeline Runner，而非 EventBus——见 [`architecture.md`](architecture.md)                |\n"
+"| `AGENTS.md` 等项目叙事文件       | 项目上下文的锚点                                                                                                             |\n"
+
+#. type: Title ##
+#: docs/ui/components.md:56
+#, no-wrap
+msgid "Primitive conventions (summary)"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/components.md:67
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Legacy table                 | Target                                                                                                                     |\n"
+#| "| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| `dream_memory`               | `dream_entry` (agent world; migration backfill + DROP)                                                                     |\n"
+#| "| `semantic_memory`            | `content` + memory component                                                                                               |\n"
+#| "| `autobiographical_memory`    | `content` + narrative component                                                                                            |\n"
+#| "| `limbic_memory`              | `content` + limbic component                                                                                               |\n"
+#| "| `tasks` (legacy)             | `task_item` (when explicitly migrated)                                                                                     |\n"
+#| "| `config.yaml email.accounts` | `email_account` (see [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)) |\n"
+#| "| `memory_references`          | relationship table (future)                                                                                                |\n"
+msgid ""
+"| Need           | Prefer                                                                                       |\n"
+"| -------------- | -------------------------------------------------------------------------------------------- |\n"
+"| Button         | `<Button variant size>`                                                                      |\n"
+"| Fields         | `<Input>` / `<Textarea>` / `<Select>`; no auto-focus by default (`focusOnMount` when needed) |\n"
+"| Dialog / Sheet | Default `onOpenAutoFocus` blocked; override only when intentional                            |\n"
+"| Loading        | `<Spinner>`                                                                                  |\n"
+"| Empty          | `<EmptyState>`                                                                               |\n"
+"| Status         | `<StatusAlert>`                                                                              |\n"
+"| Confirm        | `<ConfirmDialog>` / `showConfirm` — never `window.confirm`                                   |\n"
+msgstr ""
+"| 旧表                         | 目标                                                                                                                         |\n"
+"| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |\n"
+"| `semantic_memory`            | `content` + memory 组件                                                                                                     |\n"
+"| `autobiographical_memory`    | `content` + narrative 组件                                                                                                  |\n"
+"| `limbic_memory`              | `content` + limbic 组件                                                                                                     |\n"
+"| `tasks`（旧版）              | `task_item`（显式迁移时）                                                                                                   |\n"
+"| `config.yaml email.accounts` | `email_account`（见 [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)） |\n"
+"| `memory_references`          | relationship table（未来）                                                                                                  |\n"
+
+#. type: Plain text
+#: docs/ui/components.md:69
+msgid ""
+"Full agent checklist → [`.agent/rules/frontend-ui.md`](../../.agent/rules/"
+"frontend-ui.md)."
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/components.md:70
+#, no-wrap
+msgid "Dimension adaptation (components)"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/components.md:79
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Cognitive type   | Description                                                                                 |\n"
+#| "| ---------------- | ------------------------------------------------------------------------------------------- |\n"
+#| "| Episodic         | Conversation archive; full history retained                                                 |\n"
+#| "| Semantic         | Cross-session facts, preferences, experiences; **`procedural` type** for \"how-to\" knowledge |\n"
+#| "| Limbic           | Emotional anchors and imprints — \"what was felt\"                                            |\n"
+#| "| Autobiographical | Meaning of important experiences; recalled on demand                                        |\n"
+msgid ""
+"| Lens        | Rule                                                                                   |\n"
+"| ----------- | -------------------------------------------------------------------------------------- |\n"
+"| Invariant   | Layer placement and import boundaries                                                  |\n"
+"| Layout      | Structure components switch List-Detail / Modal-Sheet presentation; domain fills slots |\n"
+"| Interaction | Composites branch on capability flags; shared menu item data (`ActionSheetItem[]`)     |\n"
+"| Shell       | Capability availability only; never “Tauri ⇒ bottom tabs”                              |\n"
+"| Forbidden   | Deep-importing feature sources from app-frame; ui-kit importing RPC                    |\n"
+msgstr ""
+"| 认知类型                  | 说明                                                                 |\n"
+"| ------------------------- | -------------------------------------------------------------------- |\n"
+"| Episodic（情景）          | 对话归档；保留完整历史                                               |\n"
+"| Semantic（语义）          | 跨 sessions 的事实、偏好、经历；“how-to” 知识用 **`procedural` 类型** |\n"
+"| Limbic（感性）            | 情绪锚点与印记——“感受到什么”                                         |\n"
+"| Autobiographical（自传） | 重要经历的意义；按需召回                                             |\n"
+
+#. type: Bullet: '- '
+#: docs/ui/components.md:84 docs/ui/dimensions.md:94 docs/ui/foundations.md:169
+msgid "Patterns → [patterns.md](patterns.md)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/components.md:84
+msgid "Foundations → [foundations.md](foundations.md)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/components.md:84 docs/ui/foundations.md:169
+msgid "Dimensions → [dimensions.md](dimensions.md)"
+msgstr ""

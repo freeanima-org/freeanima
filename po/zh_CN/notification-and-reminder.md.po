@@ -1,0 +1,428 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
+"PO-Revision-Date: 2026-07-25 22:36+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title #
+#: docs/aspects/notification-and-reminder.md:1
+#: docs/aspects/notification-and-reminder.md:5
+#, fuzzy, no-wrap
+#| msgid "`notification_send`"
+msgid "Notification and reminder"
+msgstr "`notification_send`"
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:8
+msgid ""
+"Cross-cutting aspect for **durable inbox items**, **scheduled reminders**, "
+"and **local interrupts** (companion bubble / OS alert). Sibling to the "
+"[Portal data plane](portal-data-plane.md) (live channels) and [page refresh]"
+"(page-refresh.md) (no global list polling for attention)."
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:10
+msgid ""
+"This is **not** a product module. Feature modules (task, chat, pomodoro, "
+"notification UI) link here when they fire attention events."
+msgstr ""
+
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:11
+#, fuzzy, no-wrap
+#| msgid "Threat Sources"
+msgid "Three concepts"
+msgstr "威胁来源"
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:18
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Field              | Role                                             |\n"
+#| "| ------------------ | ------------------------------------------------ |\n"
+#| "| `command` / `args` | Process to run (required for managed satellites) |\n"
+#| "| `env`              | Extra environment variables                      |\n"
+msgid ""
+"| Concept                     | Meaning                                                   | Persistence                             | Client delivery                                                            |\n"
+"| --------------------------- | --------------------------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------- |\n"
+"| **Notification**            | Inbox row: listable, mark-read, owned by a subject        | PG (`notification*`)                    | Habitat RPC WS `notification.created` (may also trigger a local interrupt) |\n"
+"| **Reminder**                | “Ring once at this time” intent; a task may have **many** | On the domain entity (not an Inbox row) | Lightweight WS event → **only** local interrupt                            |\n"
+"| **Local interrupt (Alert)** | Channel: companion bubble or OS notification              | Not in PG; device-local                 | `deliverLocalReminder` (`portal-sdk`)                                      |\n"
+msgstr ""
+"| 字段               | 作用                                             |\n"
+"| ------------------ | ------------------------------------------------ |\n"
+"| `command` / `args` | 要运行的进程（托管卫星必填）                     |\n"
+"| `env`              | 额外环境变量                                     |\n"
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:20
+msgid ""
+"Companion speech bubble is the preferred **Alert** channel on desktop when "
+"the companion window is visible. Bubble click is **not** Inbox ack."
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:22
+msgid ""
+"Code namespaces today: Inbox = `notification*`; interrupt = `alert*` / "
+"`deliverLocalReminder`. Reminder (product) is the scheduled intent; do not "
+"conflate it with Inbox."
+msgstr ""
+
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:23
+#, fuzzy, no-wrap
+#| msgid "World namespace"
+msgid "World ownership"
+msgstr "World 命名空间"
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:26
+msgid ""
+"Deliver notifications to the **subject of the World that owns the entity**. "
+"Do not hard-code “user only / never agent”. A `task_item` in the agent World "
+"fires a due **Notification** to the agent subject; the same rule applies to "
+"the user World."
+msgstr ""
+
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:27
+#, no-wrap
+msgid "Task rules (target)"
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:36
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Dimension         | Hindsight                                  | FreeAnima v3                                       |\n"
+#| "| ----------------- | ------------------------------------------ | -------------------------------------------------- |\n"
+#| "| Fact taxonomy     | World / Experience / Opinion / Observation | ✅ Adopted, plus Preference / Procedural / Imprint |\n"
+#| "| Limbic memory     | ❌ Missing                                 | ✅ Imprint + emotional anchors                     |\n"
+#| "| Entity graph      | ✅ Full                                    | Not yet implemented (Issue #39)                    |\n"
+#| "| Reflect synthesis | ✅ Cross-memory reasoning                  | ✅ Light + deep sleep crons                        |\n"
+#| "| External service  | Yes (cloud/Docker)                         | No (local-first)                                   |\n"
+#| "| Ownership         | Vectorize platform                         | **Shared by partner and Agent**                    |\n"
+msgid ""
+"| Event                                            | Notification (Inbox)       | Reminder → Alert                               |\n"
+"| ------------------------------------------------ | -------------------------- | ---------------------------------------------- |\n"
+"| Task **due**                                     | Yes (that World’s subject) | May also interrupt via `notification.created`  |\n"
+"| Advance reminders (e.g. 7d / 3d / 1d before due) | **No**                     | **Yes** only                                   |\n"
+"| `notification_send` tool                         | Yes (by target / subject)  | Interrupt for subjects that need a device ring |\n"
+"| Chat unread rise                                 | No                         | Yes                                            |\n"
+"| Pomodoro phase end                               | No                         | Yes                                            |\n"
+msgstr ""
+"| 维度         | Hindsight                                  | FreeAnima v3                                       |\n"
+"| ----------------- | ------------------------------------------ | -------------------------------------------------- |\n"
+"| 事实分类     | World / Experience / Opinion / Observation | ✅ 已采纳，另加 Preference / Procedural / Imprint |\n"
+"| 感性记忆     | ❌ 缺失                                 | ✅ 印记 + 情感锚点                     |\n"
+"| 实体图谱      | ✅ 完整                                    | 尚未实现（Issue #39）                    |\n"
+"| 反思综合 | ✅ 跨记忆推理                  | ✅ 浅睡 + 深睡 cron                        |\n"
+"| 外部服务  | 是（云/Docker）                         | 否（local-first）                                   |\n"
+"| 归属         | Vectorize 平台                         | **伙伴与 Agent 共享**                    |\n"
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:38
+msgid ""
+"Do **not** merge “remind else due” into a single Inbox write. Due and "
+"advance reminders are different products."
+msgstr ""
+
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:39
+#, no-wrap
+msgid "Time discovery (Habitat): sleep-until-next"
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:42
+#, no-wrap
+msgid "**Target:** discover due / reminder fire times with an **in-process sleep-until-next** loop. Do **not** use the PG cron job table (`builtin-task-reminders`, `cron_jobs` / `cron_log`) for this path.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:44
+#, fuzzy
+#| msgid "Semantic memory"
+msgid "Semantics:"
+msgstr "语义记忆"
+
+#. type: Fenced code block (text)
+#: docs/aspects/notification-and-reminder.md:45
+#, no-wrap
+msgid ""
+"loop:\n"
+"  process all already-due dues and reminders\n"
+"  query earliest next fire time\n"
+"  if none → disarm; wake again on task mutation\n"
+"  else arm a single timer for that delay\n"
+"  on fire → process → reschedule\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:60
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Attribute  | Value                                                                                                                                                 |\n"
+#| "| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| Trigger    | Sleep-cycle step `deep-sleep` (after light-sleep in DAG)                                                                                              |\n"
+#| "| Target     | All active semantic memory                                                                                                                            |\n"
+#| "| Operations | Contradiction detection + expiry marking, split, dedup merge, pin quality review—four sequential rounds                                               |\n"
+#| "| Mode       | **Incremental** (scheduled Tue–Sun): skip quiet rounds when nothing was `updated` in 24h; **Full** (scheduled Mon + manual): all rounds on full store |\n"
+msgid ""
+"| Rule             | Detail                                                                                                                                                                 |\n"
+"| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| How many timers? | **At most one** next-fire arm — not one timer per timed row                                                                                                            |\n"
+"| Implementation   | Equivalent to `while { work; sleep(next) }` on the Habitat event loop via **one** delayed timer (e.g. `setTimeout`); do not block the process with a synchronous sleep |\n"
+"| On mutation      | Creating/patching `due_at` / reminders **cancels and recomputes** the next wake                                                                                        |\n"
+"| Empty idle       | No cron_log spam; stay asleep until the next real fire or a mutation                                                                                                   |\n"
+msgstr ""
+"| 属性  | 值                                                                                                |\n"
+"| ---------- | ---------------------------------------------------------------------------------------------------- |\n"
+"| 触发    | sleep-cycle 步骤 `deep-sleep`（DAG 中在 light-sleep 之后）                                             |\n"
+"| 目标     | 全部 active 语义记忆                                                                           |\n"
+"| 操作 | 矛盾检测 + 过期标记、拆分、去重合并、置顶维护——四轮顺序执行 |\n"
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:62
+msgid ""
+"Other builtins (sleep cycle, env-health, user Agent cron jobs) may keep the "
+"existing cron-table machinery. This aspect only moves **task due / reminder "
+"discovery** off that path."
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:64
+msgid ""
+"Portal must **not** poll Inbox or task lists to implement attention. See "
+"[page refresh](page-refresh.md) “Limited auto”."
+msgstr ""
+
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:65
+#, no-wrap
+msgid "Delivery: WebSocket, not Portal polling"
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:72
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Attribute  | Value                                                                                                                                                 |\n"
+#| "| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| Trigger    | Sleep-cycle step `deep-sleep` (after light-sleep in DAG)                                                                                              |\n"
+#| "| Target     | All active semantic memory                                                                                                                            |\n"
+#| "| Operations | Contradiction detection + expiry marking, split, dedup merge, pin quality review—four sequential rounds                                               |\n"
+#| "| Mode       | **Incremental** (scheduled Tue–Sun): skip quiet rounds when nothing was `updated` in 24h; **Full** (scheduled Mon + manual): all rounds on full store |\n"
+msgid ""
+"| Stage                | Mechanism                                                                                                                               |\n"
+"| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Time discovery       | Habitat in-process sleep-until-next                                                                                                     |\n"
+"| Push to Portal       | Existing Habitat RPC **WebSocket** events                                                                                               |\n"
+"| Known local deadline | Optional `scheduleLocalAlert` (e.g. pomodoro); when companion is visible, prefer the immediate path (OS timers cannot drive the bubble) |\n"
+msgstr ""
+"| 属性  | 值                                                                                                |\n"
+"| ---------- | ---------------------------------------------------------------------------------------------------- |\n"
+"| 触发    | sleep-cycle 步骤 `deep-sleep`（DAG 中在 light-sleep 之后）                                             |\n"
+"| 目标     | 全部 active 语义记忆                                                                           |\n"
+"| 操作 | 矛盾检测 + 过期标记、拆分、去重合并、置顶维护——四轮顺序执行 |\n"
+
+#. type: Fenced code block (mermaid)
+#: docs/aspects/notification-and-reminder.md:73
+#, no-wrap
+msgid ""
+"flowchart LR\n"
+"  Mut[\"task due or reminder change\"] --> Arm[\"recompute one next timer\"]\n"
+"  Boot[\"Habitat boot\"] --> Arm\n"
+"  Arm -->|\"sleep until next\"| Fire[\"process due subset\"]\n"
+"  Fire -->|\"due\"| Inbox[\"Notification\"]\n"
+"  Fire -->|\"advance reminder\"| Ev[\"WS reminder event\"]\n"
+"  Fire --> Arm\n"
+"  Inbox --> Shell[\"shell Attention\"]\n"
+"  Ev --> Shell\n"
+"  Shell --> Alert[\"deliverLocalReminder\"]\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:86
+#, no-wrap
+msgid "Where listening lives (Attention hub)"
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:95
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| #   | Block                 | Content                                                                                                    | Update frequency                                     |\n"
+#| "| --- | --------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |\n"
+#| "| 1   | Existence anchor      | What I am, origin, non-negotiable bottom line                                                              | Almost never (requires explicit force to update)     |\n"
+#| "| 2   | Self model            | Identity, capability boundaries, expression style, belonging                                               | Slow change (periodic review + major events)         |\n"
+#| "| 3   | Personality baseline  | Communication style, conflict patterns, default trust                                                      | Semi-stable (slow evolution from long-term evidence) |\n"
+#| "| 4   | Direction             | Long-term intent, current focus, growth direction, things not to do                                        | Active declaration + periodic review                 |\n"
+#| "| 5   | Metacognition         | How to think, how to remember, four-layer architecture and presence                                        | Slow change                                          |\n"
+#| "| 6   | Autobiography summary | Key turning points / self-discovery outline (grouped by significance; granularity decreases with distance) | Maintained automatically by sleep cron               |\n"
+msgid ""
+"| Layer                         | Owns                                                                                                                            | Does not own                   |\n"
+"| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |\n"
+"| Habitat sleep-until-next      | Time discovery; due → Inbox; advance reminder → event                                                                           | Portal UI                      |\n"
+"| Habitat RPC session (one WS)  | Durable link; all `subscribe*` pumps bound to the **same** session map (abort on disconnect)                                    | Per-feature second sockets     |\n"
+"| **Shell Attention (central)** | Main-window AppFrame (or one portal-sdk entry): ensure subscriptions while connected; route events; call `deliverLocalReminder` | Module list UIs                |\n"
+"| Module handlers (registered)  | Map chat / inbox / pomodoro / future task-reminder events → `LocalReminderInput`                                                | Own WebSocket or list polling  |\n"
+"| Companion overlay             | Render bubble via shell IPC                                                                                                     | Inbox / reminder bus subscribe |\n"
+msgstr ""
+"| #   | 块                 | 内容                                                                                                    | 更新频率                                     |\n"
+"| --- | --------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |\n"
+"| 1   | 存在锚点      | 我是什么、起源、不可妥协的底线                                                              | 几乎不变（需显式 force 才更新）     |\n"
+"| 2   | 自我模型            | 身份、能力边界、表达风格、归属                                               | 缓慢变化（定期回顾 + 重大事件）         |\n"
+"| 3   | 人格基线  | 沟通风格、冲突模式、默认信任                                                      | 半稳定（长期证据缓慢演化） |\n"
+"| 4   | 方向             | 长期意图、当前焦点、成长方向、不做之事                                        | 主动声明 + 定期回顾                 |\n"
+"| 5   | 元认知         | 如何思考、如何记忆、四层架构与在场感                                        | 缓慢变化                                          |\n"
+"| 6   | 自传概括 | 关键转折点 / 自我发现概要（按重要性分组；距现在越远粒度越粗） | 由 sleep cron 自动维护               |\n"
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:97
+msgid ""
+"Main window close is hide-not-destroy on desktop; shell subscriptions should "
+"keep running while the process lives."
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:99
+msgid ""
+"Today `PomodoroShellWatcher`, `ChatUnreadShellWatcher`, and "
+"`NotificationReminderShellWatcher` sit side by side on AppFrame with "
+"duplicated connect gates — target is one Attention registration surface; "
+"refactor is follow-up."
+msgstr ""
+
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:100
+#, no-wrap
+msgid "Module map (target)"
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:109
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Scenario                           | Handling                                                                 |\n"
+#| "| ---------------------------------- | ------------------------------------------------------------------------ |\n"
+#| "| Overnight (22:30 → next day 09:15) | Each user message has full `YYYY-MM-DDTHH:mm`                            |\n"
+#| "| Multiple user messages same day    | Each gets prefix (no interval omission)                                  |\n"
+#| "| Long gap (travel/holiday)          | Messages after return still injected by respective timestamp             |\n"
+#| "| Brand new conversation             | First user message also prefixed                                         |\n"
+#| "| After compression                  | Compression summary time anchor TBD; subsequent messages inject normally |\n"
+#| "| No timestamp                       | Skip, no injection                                                       |\n"
+msgid ""
+"| Event                              | Notification        | Local interrupt                             |\n"
+"| ---------------------------------- | ------------------- | ------------------------------------------- |\n"
+"| Task due                           | Yes (World subject) | Via inbox created and/or explicit interrupt |\n"
+"| Task advance reminders             | No                  | Yes (direct)                                |\n"
+"| Agent / system `notification_send` | Yes                 | Per product (user rows typically interrupt) |\n"
+"| Chat unread rise                   | No                  | Yes                                         |\n"
+"| Pomodoro phase end                 | No                  | Yes                                         |\n"
+msgstr ""
+"| 场景                           | 处理                                                                 |\n"
+"| ---------------------------------- | ------------------------------------------------------------------------ |\n"
+"| 跨夜（22:30 → 次日 09:15） | 每条 user 消息含完整 `YYYY-MM-DDTHH:mm`                            |\n"
+"| 同日多条 user 消息    | 每条都加前缀（无间隔省略）                                  |\n"
+"| 长间隔（旅行/假期）          | 返回后消息仍按各自 timestamp 注入             |\n"
+"| 全新对话             | 首条 user 消息也加前缀                                         |\n"
+"| 压缩后                  | 压缩摘要时间锚点待定；后续消息正常注入 |\n"
+"| 无 timestamp                       | 跳过，不注入                                                       |\n"
+
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:110
+#, no-wrap
+msgid "Current gaps (code vs this aspect)"
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:113
+msgid "Documented so agents do not treat today’s behavior as the end state:"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/aspects/notification-and-reminder.md:119
+msgid ""
+"`builtin-task-reminders` (and sleep-cycle / env-health / temporal-summary-"
+"tick) use **in-process `Bun.cron`** — not PG `cron_jobs` / `cron_log`. On "
+"**any** failure (throw or `{ ok: false }`), Habitat writes Inbox to **both** "
+"user and agent subjects (no run history otherwise). **Sleep-until-next** for "
+"sparse task dues is still a follow-up (today still wakes every minute in-"
+"process; empty task scans stay quiet)."
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/aspects/notification-and-reminder.md:119
+msgid ""
+"Single `remind_at` field; scan uses **remind-else-due** and writes the "
+"**user** Inbox for both — conflates Notification and Reminder, and ignores "
+"World ownership."
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/aspects/notification-and-reminder.md:119
+msgid "Scan only walks `user_world_id`."
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/aspects/notification-and-reminder.md:119
+msgid "Shell attention is three independent watchers, not one hub."
+msgstr ""
+
+#. type: Bullet: '5. '
+#: docs/aspects/notification-and-reminder.md:119
+msgid "No multi-reminder model (7d / 3d / 1d) yet."
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/notification-and-reminder.md:121
+msgid ""
+"Inbox protocol, tools, and agent inject details remain in "
+"[`notifications.md`](../cognition/notifications.md). Alert channel details "
+"remain there under Alert / `deliverLocalReminder`."
+msgstr ""
+
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:122
+#: docs/cognition/notifications.md:158 docs/ui/components.md:80
+#: docs/ui/dimensions.md:89 docs/ui/foundations.md:165 docs/ui/overview.md:35
+#: docs/ui/patterns.md:158
+#, no-wrap
+msgid "Related"
+msgstr "相关文档"
+
+#. type: Bullet: '- '
+#: docs/aspects/notification-and-reminder.md:126
+msgid ""
+"Inbox / SAP / tools: [`notifications.md`](../cognition/notifications.md)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/aspects/notification-and-reminder.md:126
+msgid ""
+"Live channels / refresh: [portal-data-plane](portal-data-plane.md), [page-"
+"refresh](page-refresh.md)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/aspects/notification-and-reminder.md:126
+#, fuzzy
+#| msgid ""
+#| "Desktop companion Habitat source: [`companion.md`](../features/"
+#| "companion.md)"
+msgid "Companion bubble UI: [`companion.md`](../modules/companion.md)"
+msgstr "桌面伴侣 Habitat 来源：[`companion.md`](../features/companion.md)"

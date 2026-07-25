@@ -1,0 +1,494 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
+"PO-Revision-Date: 2026-07-25 22:36+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:122
+#: docs/cognition/notifications.md:158 docs/ui/components.md:80
+#: docs/ui/dimensions.md:89 docs/ui/foundations.md:165 docs/ui/overview.md:35
+#: docs/ui/patterns.md:158
+#, no-wrap
+msgid "Related"
+msgstr "相关文档"
+
+#. type: Title #
+#: docs/ui/patterns.md:1 docs/ui/patterns.md:5
+#, fuzzy, no-wrap
+#| msgid "Integration Tests (Developers)"
+msgid "Interaction patterns"
+msgstr "集成测试（开发者）"
+
+#. type: Plain text
+#: docs/ui/patterns.md:8
+msgid ""
+"Reusable interaction contracts so modules (task, chat, email, …) share one "
+"UX language. Prefer existing `@freeanima/ui-kit/composite` implementations "
+"over parallel menus, rows, or confirms."
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:10
+msgid ""
+"Dimensions → [dimensions.md](dimensions.md). Components → [components.md]"
+"(components.md). Visuals → [foundations.md](foundations.md)."
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/patterns.md:11
+#, no-wrap
+msgid "Pattern card template"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:14
+msgid "Every pattern documents:"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/ui/patterns.md:22
+msgid "**Intent** — when to use"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/ui/patterns.md:22
+msgid "**Slots** — required/optional UI parts"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/ui/patterns.md:22
+msgid ""
+"**States** — default, hover, selected, active, dragging, selectionMode, "
+"disabled, …"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/ui/patterns.md:22
+msgid ""
+"**Dimension adaptation** — invariant / layout / interaction / shell (N/A if "
+"none)"
+msgstr ""
+
+#. type: Bullet: '5. '
+#: docs/ui/patterns.md:22
+msgid "**Implementation** — code entry (or “pending extraction”)"
+msgstr ""
+
+#. type: Bullet: '6. '
+#: docs/ui/patterns.md:22
+msgid "**Forbidden** — anti-patterns"
+msgstr ""
+
+#. type: Bullet: '7. '
+#: docs/ui/patterns.md:22
+msgid "**Compliance** — reference / pending extraction / pending alignment"
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/patterns.md:25
+#, no-wrap
+msgid "DataListRow"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:28
+#, no-wrap
+msgid "**Intent:** Primary row in a data list (tasks, mail threads, …): title, actions, selection, optional drag, overflow menu.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:30
+#, no-wrap
+msgid "**Slots:**\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:40
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Method            | Schema                                                                                                      |\n"
+#| "| ----------------- | ----------------------------------------------------------------------------------------------------------- |\n"
+#| "| `terminal.attach` | [`terminal.ts`](../../packages/sap-contract/src/frames/terminal.ts) — optional `cwd`; returns `terminal_id` |\n"
+#| "| `terminal.write`  | `terminal_id`, `data`                                                                                       |\n"
+#| "| `terminal.resize` | `terminal_id`, `cols`, `rows`                                                                               |\n"
+#| "| `terminal.close`  | `terminal_id`                                                                                               |\n"
+msgid ""
+"| Slot                         | Role                                                                    |\n"
+"| ---------------------------- | ----------------------------------------------------------------------- |\n"
+"| Leading control              | Complete checkbox, or selection glyph in `selectionMode`                |\n"
+"| Title                        | Primary truncated text                                                  |\n"
+"| Secondary line / tags / meta | Optional muted line, tags, due date, entity id                          |\n"
+"| Persistent actions           | Always-visible controls needed without hover (e.g. touch ⋯)             |\n"
+"| Hover actions                | Pointer-only revealed controls (`group-hover`) when used                |\n"
+"| Overflow menu source         | Shared `ActionSheetItem[]` for ContextMenu and ActionSheet              |\n"
+"| Drag handle                  | Prefer **whole-row** drag listeners; no separate handle unless required |\n"
+msgstr ""
+"| 方法              | Schema                                                                                                      |\n"
+"| ----------------- | ----------------------------------------------------------------------------------------------------------- |\n"
+"| `terminal.attach` | [`terminal.ts`](../../packages/sap-contract/src/frames/terminal.ts) — 可选 `cwd`；返回 `terminal_id`      |\n"
+"| `terminal.write`  | `terminal_id`、`data`                                                                                       |\n"
+"| `terminal.resize` | `terminal_id`、`cols`、`rows`                                                                               |\n"
+"| `terminal.close`  | `terminal_id`                                                                                               |\n"
+
+#. type: Plain text
+#: docs/ui/patterns.md:42
+#, fuzzy, no-wrap
+#| msgid "**UI access (two modes):**\n"
+msgid "**States:**\n"
+msgstr "**UI 访问（两种模式）：**\n"
+
+#. type: Plain text
+#: docs/ui/patterns.md:52
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Legacy table                 | Target                                                                                                                     |\n"
+#| "| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| `dream_memory`               | `dream_entry` (agent world; migration backfill + DROP)                                                                     |\n"
+#| "| `semantic_memory`            | `content` + memory component                                                                                               |\n"
+#| "| `autobiographical_memory`    | `content` + narrative component                                                                                            |\n"
+#| "| `limbic_memory`              | `content` + limbic component                                                                                               |\n"
+#| "| `tasks` (legacy)             | `task_item` (when explicitly migrated)                                                                                     |\n"
+#| "| `config.yaml email.accounts` | `email_account` (see [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)) |\n"
+#| "| `memory_references`          | relationship table (future)                                                                                                |\n"
+msgid ""
+"| State         | Visual / behavior                                                                 |\n"
+"| ------------- | --------------------------------------------------------------------------------- |\n"
+"| default       | Row chrome; `min-h-11`                                                            |\n"
+"| hover         | `hover:bg-muted` (pointer); must not be the only way to discover actions on touch |\n"
+"| active        | Current detail target (subtle ring/bg) when not selected                          |\n"
+"| selected      | Stronger primary tint + ring; used in multi-select                                |\n"
+"| selectionMode | Checkbox → selection glyph; click toggles; disable drag/menus                     |\n"
+"| dragging      | Reduced opacity; grab cursor when draggable                                       |\n"
+"| disabled      | Controls disabled; no drag                                                        |\n"
+msgstr ""
+"| 旧表                         | 目标                                                                                                                         |\n"
+"| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |\n"
+"| `semantic_memory`            | `content` + memory 组件                                                                                                     |\n"
+"| `autobiographical_memory`    | `content` + narrative 组件                                                                                                  |\n"
+"| `limbic_memory`              | `content` + limbic 组件                                                                                                     |\n"
+"| `tasks`（旧版）              | `task_item`（显式迁移时）                                                                                                   |\n"
+"| `config.yaml email.accounts` | `email_account`（见 [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)） |\n"
+"| `memory_references`          | relationship table（未来）                                                                                                  |\n"
+
+#. type: Plain text
+#: docs/ui/patterns.md:54 docs/ui/patterns.md:78 docs/ui/patterns.md:102
+#: docs/ui/patterns.md:124
+#, fuzzy, no-wrap
+#| msgid "**Design principles:**\n"
+msgid "**Dimension adaptation:**\n"
+msgstr "**设计原则：**\n"
+
+#. type: Plain text
+#: docs/ui/patterns.md:62
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Module           | A External                                                 | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |\n"
+#| "| ---------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |\n"
+#| "| **Runtime**      | Default 127.0.0.1 bind                                     | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |\n"
+#| "| **Gateway**      | Token in Vault / env                                       | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |\n"
+#| "| **CLI / Tools**  | Local shell compromised                                    | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |\n"
+#| "| **HTTP / **Habitat** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |\n"
+#| "| **MCP / ACP**    | SSE auth undefined                                         | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |\n"
+#| "| **Vault**        | Agent machine key file permissions                         | Metadata-only tools; inject ack                                     | Wrong item inject         | Web Crypto         | User MP never in PG messages       |\n"
+msgid ""
+"| Lens        | Adaptation                                                                                                                                                                                                  |\n"
+"| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Invariant   | Same slot contract across modules; do not ship a second row component per breakpoint                                                                                                                        |\n"
+"| Layout      | Outer List-Detail / columns change; **row slots stay the same** in compact and expanded                                                                                                                     |\n"
+"| Interaction | **pointer:** hover bg; right-click `ContextMenu` when enabled; optional hover-revealed actions. **touch:** no hover-only actions; persistent ⋯ (or equivalent); long-press → ActionSheet; hit targets ≥44px |\n"
+"| Shell       | N/A                                                                                                                                                                                                         |\n"
+"| Forbidden   | `getShellKind()` to choose menu type; viewport width to choose ContextMenu vs ActionSheet; custom `fixed` coordinate menus                                                                                  |\n"
+msgstr ""
+"| 模块             | A 外网              | B LLM 注入                                                      | C Agent 过失     | D 依赖链        | E 数据           |\n"
+"| ---------------- | ------------------- | --------------------------------------------------------------- | ---------------- | --------------- | ---------------- |\n"
+"| **Runtime**      | 默认 127.0.0.1 bind | MaxTurnsExceeded                                                | 缺口：速率限制   | llm client 漏洞 | PG 无加密        |\n"
+"| **Gateway**      | Token 在 pass       | 恶意消息                                                        | 错误回复敏感信息 | SDK 漏洞        | —                |\n"
+"| **CLI / Tools**  | 本地 shell 被攻陷   | file_read_file 部分 deny（**P0 扩展中**）；shell=True（**P0**） | rm -rf 等        | —               | 日志可能含对话   |\n"
+"| **HTTP / **Habitat** | 非 loopback 须 `remote_auth` Bearer | BFF 不直连 LLM 参数                                             | config 展示      | Vue/axios       | SSE 明文         |\n"
+"| **MCP / ACP**    | SSE 认证未定义      | 恶意参数                                                        | 错误委托         | Server 被攻陷   | 上下文含敏感数据 |\n"
+
+#. type: Plain text
+#: docs/ui/patterns.md:64
+#, no-wrap
+msgid "**Implementation:** Reference — [`TaskItemRowView.tsx`](../../src/ui-kit/composite/TaskItemRowView.tsx) (+ list wrapper `TaskItemListView`). Capability flags: `useActionSheet`, `contextMenuEnabled`, drag attrs/listeners from parent.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:66
+#, no-wrap
+msgid "**Compliance:** Reference implementation (task-shaped). **Pending extraction:** domain-agnostic `ListRow` chassis. **Pending alignment:** other modules’ custom rows that diverge on menus/selection/drag.\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/patterns.md:69
+#, no-wrap
+msgid "OverflowMenu"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:72
+#, no-wrap
+msgid "**Intent:** Secondary actions on an object without cluttering the row.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:74
+#, no-wrap
+msgid "**Slots:** Item list (`ActionSheetItem[]`: label, action, destructive flag, …); optional trigger (⋯).\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:76
+#, no-wrap
+msgid "**States:** Closed / open; destructive items styled distinctly; disabled when `selectionMode` or row disabled.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:86
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Attribute  | Value                                                                                                                                                 |\n"
+#| "| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| Trigger    | Sleep-cycle step `deep-sleep` (after light-sleep in DAG)                                                                                              |\n"
+#| "| Target     | All active semantic memory                                                                                                                            |\n"
+#| "| Operations | Contradiction detection + expiry marking, split, dedup merge, pin quality review—four sequential rounds                                               |\n"
+#| "| Mode       | **Incremental** (scheduled Tue–Sun): skip quiet rounds when nothing was `updated` in 24h; **Full** (scheduled Mon + manual): all rounds on full store |\n"
+msgid ""
+"| Lens        | Adaptation                                                                                                                                |\n"
+"| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| Invariant   | One item builder; both surfaces consume the same array                                                                                    |\n"
+"| Layout      | ActionSheet may present as bottom sheet; ContextMenu is anchored — presentation details follow primitives                                 |\n"
+"| Interaction | **pointer:** `ContextMenu`. **touch:** `ActionSheet` + long-press and/or ⋯. Separate state machines; shared session data (target + items) |\n"
+"| Shell       | N/A                                                                                                                                       |\n"
+"| Forbidden   | Parallel hand-rolled menus; `window.confirm` inside menu actions for irreversible deletes (use ConfirmDestructive)                        |\n"
+msgstr ""
+"| 属性  | 值                                                                                                |\n"
+"| ---------- | ---------------------------------------------------------------------------------------------------- |\n"
+"| 触发    | sleep-cycle 步骤 `deep-sleep`（DAG 中在 light-sleep 之后）                                             |\n"
+"| 目标     | 全部 active 语义记忆                                                                           |\n"
+"| 操作 | 矛盾检测 + 过期标记、拆分、去重合并、置顶维护——四轮顺序执行 |\n"
+
+#. type: Plain text
+#: docs/ui/patterns.md:88
+#, no-wrap
+msgid "**Implementation:** `@freeanima/ui-kit/composite` — `ContextMenu`, `ActionSheet`, `useLongPress`.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:90 docs/ui/patterns.md:114
+#, no-wrap
+msgid "**Compliance:** Reference.\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/patterns.md:93
+#, no-wrap
+msgid "ConfirmDestructive"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:96
+#, no-wrap
+msgid "**Intent:** Confirm irreversible or high-risk actions (delete, purge).\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:98
+#, no-wrap
+msgid "**Slots:** Title, description, cancel, confirm (destructive/error variant).\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:100
+#, no-wrap
+msgid "**States:** Open/closed; confirm button must **not** be default-focused or “easy Enter” default.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:110
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Round | Intent                                                                  |\n"
+#| "| ----- | ----------------------------------------------------------------------- |\n"
+#| "| 1     | Contradiction detection + expiry marking                                |\n"
+#| "| 2     | Split multi-fact entries                                                |\n"
+#| "| 3     | Dedup merge similar entries                                             |\n"
+#| "| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |\n"
+msgid ""
+"| Lens        | Adaptation                                                                   |\n"
+"| ----------- | ---------------------------------------------------------------------------- |\n"
+"| Invariant   | Second confirmation for irreversible delete; `showConfirm` / `ConfirmDialog` |\n"
+"| Layout      | Dialog vs Sheet presentation may follow ModalSheetPresent                    |\n"
+"| Interaction | Same confirm semantics on pointer and touch                                  |\n"
+"| Shell       | N/A                                                                          |\n"
+"| Forbidden   | `window.confirm`; `autoFocus` on confirm                                     |\n"
+msgstr ""
+"| 轮次 | 意图                                   |\n"
+"| ----- | ---------------------------------------- |\n"
+"| 1     | 矛盾检测 + 过期标记 |\n"
+"| 2     | 拆分多事实条目                 |\n"
+"| 3     | 去重合并相似条目              |\n"
+"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
+
+#. type: Plain text
+#: docs/ui/patterns.md:112
+#, no-wrap
+msgid "**Implementation:** `ConfirmDialog`, `showConfirm` from `@freeanima/ui-kit/composite`.\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/patterns.md:117
+#, no-wrap
+msgid "ModalSheetPresent"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:120
+#, no-wrap
+msgid "**Intent:** Modal content presentation that tracks **layout**, not shell.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:122
+#, no-wrap
+msgid "**Slots:** Title, body, footer actions; optional close.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:132
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Cognitive type   | Description                                                                                 |\n"
+#| "| ---------------- | ------------------------------------------------------------------------------------------- |\n"
+#| "| Episodic         | Conversation archive; full history retained                                                 |\n"
+#| "| Semantic         | Cross-session facts, preferences, experiences; **`procedural` type** for \"how-to\" knowledge |\n"
+#| "| Limbic           | Emotional anchors and imprints — \"what was felt\"                                            |\n"
+#| "| Autobiographical | Meaning of important experiences; recalled on demand                                        |\n"
+msgid ""
+"| Lens        | Adaptation                                                                            |\n"
+"| ----------- | ------------------------------------------------------------------------------------- |\n"
+"| Invariant   | Same content model                                                                    |\n"
+"| Layout      | **expanded:** centered `Dialog`. **compact:** bottom `Sheet` / sheet-like surface     |\n"
+"| Interaction | Opening gesture is separate (button vs long-press); do not conflate with presentation |\n"
+"| Shell       | N/A                                                                                   |\n"
+"| Forbidden   | `getShellKind() === \"tauri\"` ⇒ Sheet                                                  |\n"
+msgstr ""
+"| 认知类型                  | 说明                                                                 |\n"
+"| ------------------------- | -------------------------------------------------------------------- |\n"
+"| Episodic（情景）          | 对话归档；保留完整历史                                               |\n"
+"| Semantic（语义）          | 跨 sessions 的事实、偏好、经历；“how-to” 知识用 **`procedural` 类型** |\n"
+"| Limbic（感性）            | 情绪锚点与印记——“感受到什么”                                         |\n"
+"| Autobiographical（自传） | 重要经历的意义；按需召回                                             |\n"
+
+#. type: Plain text
+#: docs/ui/patterns.md:134
+#, no-wrap
+msgid "**Implementation:** shadcn `Dialog` / `Sheet`; pickers such as `MoveToListPicker` follow the same idea.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:136
+#, no-wrap
+msgid "**Compliance:** Reference (with **pending alignment** on ad-hoc z-index values).\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/patterns.md:139
+#, no-wrap
+msgid "Candidates (later)"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/patterns.md:142
+msgid "Document when stabilizing a second consumer:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/patterns.md:148
+msgid "QuickAddBar"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/patterns.md:148
+msgid ""
+"PullToRefresh (see also [page refresh](../aspects/page-refresh.md) — pointer "
+"header button vs touch pull)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/patterns.md:148
+msgid "ListDetail / ThreeColumn page chassis"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/patterns.md:148
+msgid "EmptyState / StatusAlert surfaces as full pattern cards"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/patterns.md:148
+msgid "ModuleScopeBar / DetailPanelShell"
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/patterns.md:149
+#, no-wrap
+msgid "New UI checklist"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/patterns.md:157
+msgid ""
+"[ ] Chose a pattern (or extended the catalog) instead of inventing a "
+"parallel gesture"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/patterns.md:157
+msgid "[ ] Documented dimension adaptation (layout + interaction at minimum)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/patterns.md:157
+msgid "[ ] Menus share one item list; no fixed-position DIY menus"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/patterns.md:157
+msgid "[ ] Irreversible actions use ConfirmDestructive"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/patterns.md:157
+msgid "[ ] Touch paths do not depend on hover-only affordances"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/patterns.md:157
+msgid "[ ] Shell kind does not lock layout or menu type"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/patterns.md:161
+msgid ""
+"Page refresh verbs → [aspects/page-refresh.md](../aspects/page-refresh.md)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/patterns.md:161
+msgid ""
+"Agent UI rules → [`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-"
+"ui.md)"
+msgstr ""

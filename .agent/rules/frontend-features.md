@@ -84,4 +84,4 @@
 
 **typed Habitat client**：前端 UI 只能从 `@freeanima/host/platform/habitat/client.ts` 取 `getTypedHabitatClient`，**不要**从桶文件 `@freeanima/host/platform/habitat` 导入。
 
-UI/UX 规范 → [`docs/ui/`](../../docs/ui/README.md)；Agent 硬约束 → [`frontend-ui.md`](frontend-ui.md)。详见 [`docs/ops/habitat-rpc.md`](../../docs/ops/habitat-rpc.md)。
+UI/UX 规范 → [`docs/ui/`](../../docs/ui/overview.md)；Agent 硬约束 → [`frontend-ui.md`](frontend-ui.md)。详见 [`docs/ops/habitat-rpc.md`](../../docs/ops/habitat-rpc.md)。

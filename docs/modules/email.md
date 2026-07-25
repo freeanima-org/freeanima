@@ -1,3 +1,7 @@
+---
+title: Email module
+---
+
 # Email module
 
 Habitat-backed IMAP/SMTP mail client (`/email`). Entity model: [`docs/product/entity-model.md`](../product/entity-model.md) (Email module).

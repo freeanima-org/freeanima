@@ -7,7 +7,7 @@ alwaysApply: false
 
 # UI 三维度
 
-编辑匹配文件前：产品规范 [`docs/ui/`](../../docs/ui/README.md)（尤其 [dimensions](../../docs/ui/dimensions.md)）；Agent API/禁止项 [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
+编辑匹配文件前：产品规范 [`docs/ui/`](../../docs/ui/overview.md)（尤其 [dimensions](../../docs/ui/dimensions.md)）；Agent API/禁止项 [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
 
 硬禁止：
 

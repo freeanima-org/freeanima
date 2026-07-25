@@ -13,7 +13,7 @@ Detailed implementation constraints for AI agents working in this repository. St
 | [`code-layers.md`](code-layers.md)                 | Six-layer deps, composition root, Registry injection                                         |
 | [`repository-topology.md`](repository-topology.md) | Repo layout Phase 0 audit; shared/frontend migration; checker rewrite spec                   |
 | [`frontend-features.md`](frontend-features.md)     | 前端功能原型 A/B/C、Feature RPC vs Habitat 通道、新功能 touch 清单                           |
-| [`frontend-ui.md`](frontend-ui.md)                 | shadcn/ui-kit 硬约束；链 [`docs/ui/`](../../docs/ui/README.md) 设计规范                      |
+| [`frontend-ui.md`](frontend-ui.md)                 | shadcn/ui-kit 硬约束；链 [`docs/ui/`](../../docs/ui/overview.md) 设计规范                    |
 | [`ui-dimensions.md`](ui-dimensions.md)             | 壳/布局/交互 API 与禁止项；产品叙述见 [`docs/ui/dimensions.md`](../../docs/ui/dimensions.md) |
 | [`release.md`](release.md)                         | SemVer, Conventional Commits, Release Please, Linux standalone                               |
 | [`tauri-shell.md`](tauri-shell.md)                 | Portal 壳（Tauri）：工程位置、禁止 Node sidecar、ShellApi、双轨发版                          |
