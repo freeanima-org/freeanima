@@ -6,6 +6,7 @@ import {
   formatHttpBindHosts,
   parseHttpBindHostInput,
   resolveHttpBindHost,
+  resolveHttpPort,
 } from "./http-bind.ts";
 
 describe("parseHttpBindHostInput", () => {
@@ -63,5 +64,16 @@ describe("resolveHttpBindHost", () => {
     expect(resolveHttpBindHost(undefined, { host: ["127.0.0.1", "10.244.0.2"] })).toBe(
       formatHttpBindHosts(["127.0.0.1", "10.244.0.2"]),
     );
+  });
+});
+
+describe("resolveHttpPort", () => {
+  test("CLI overrides config", () => {
+    expect(resolveHttpPort(19000, { port: 2658 })).toBe(19000);
+  });
+
+  test("falls back to config then default", () => {
+    expect(resolveHttpPort(undefined, { port: 18080 })).toBe(18080);
+    expect(resolveHttpPort(undefined, undefined)).toBe(2658);
   });
 });

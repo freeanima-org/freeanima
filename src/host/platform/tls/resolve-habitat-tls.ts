@@ -1,8 +1,8 @@
 import {
   DEFAULT_HABITAT_TLS_PORT,
   PATHS,
+  resolveHttpTlsMode,
   type HttpConfig,
-  type HttpTlsAcmeConfig,
   type HttpTlsConfigFields,
   collectHttpAllowedHosts,
 } from "@freeanima/host/core/config";
@@ -33,17 +33,13 @@ export type ResolvedHabitatTlsListenConfig = {
   enabled: true;
   port: number;
   material: HabitatTlsMaterial;
-  /** ACME 启用时存在；challenge 服已启动，调用方负责续期调度与 stop */
+  /** mode=acme 时存在；challenge 服已启动，调用方负责续期调度与 stop */
   acme?: ResolvedHabitatTlsAcmeRuntime;
 };
 
 async function resolveOptionalConfigString(value: string | undefined): Promise<string | undefined> {
   if (value === undefined || value.trim() === "") return undefined;
   return resolveValue(value);
-}
-
-function isAcmeConfigured(acme: HttpTlsAcmeConfig | undefined): acme is HttpTlsAcmeConfig {
-  return acme != null && acme.domains.length > 0 && acme.email.trim().length > 0;
 }
 
 export async function resolveHabitatTlsListenConfig(
@@ -53,12 +49,17 @@ export async function resolveHabitatTlsListenConfig(
   const tls: HttpTlsConfigFields | undefined = http?.tls ?? undefined;
   if (!tls?.enabled) return null;
 
+  const mode = resolveHttpTlsMode(tls.mode);
   const certRaw = (await resolveOptionalConfigString(tls.cert)) ?? defaultHabitatTlsCertPath();
   const keyRaw = (await resolveOptionalConfigString(tls.key)) ?? defaultHabitatTlsKeyPath();
   const passphrase = await resolveOptionalConfigString(tls.passphrase);
-  const acmeCfg = tls.acme;
+  const httpsPort = tls.port ?? DEFAULT_HABITAT_TLS_PORT;
 
-  if (isAcmeConfigured(acmeCfg)) {
+  if (mode === "acme") {
+    const acmeCfg = tls.acme;
+    if (!acmeCfg) {
+      throw new Error("http.tls.mode=acme 时须配置 http.tls.acme");
+    }
     const challengePort = acmeCfg.challenge_port ?? 80;
     const staging = acmeCfg.staging === true;
     const domains = acmeCfg.domains.map((d) => d.trim());
@@ -73,7 +74,7 @@ export async function resolveHabitatTlsListenConfig(
       });
       return {
         enabled: true,
-        port: tls.port ?? DEFAULT_HABITAT_TLS_PORT,
+        port: httpsPort,
         material: {
           ...material,
           ...(passphrase ? { passphrase } : {}),
@@ -95,7 +96,7 @@ export async function resolveHabitatTlsListenConfig(
   const material = ensureHabitatTlsMaterial({
     certPath: certRaw,
     keyPath: keyRaw,
-    auto: tls.auto ?? true,
+    mkcert: mode === "mkcert",
     bindHosts,
     allowedHosts: collectHttpAllowedHosts(http),
     ...(passphrase ? { passphrase } : {}),
@@ -103,7 +104,7 @@ export async function resolveHabitatTlsListenConfig(
 
   return {
     enabled: true,
-    port: tls.port ?? DEFAULT_HABITAT_TLS_PORT,
+    port: httpsPort,
     material,
   };
 }

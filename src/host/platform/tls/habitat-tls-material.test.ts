@@ -76,7 +76,7 @@ describe("ensureHabitatTlsMaterial", () => {
     const material = ensureHabitatTlsMaterial({
       certPath,
       keyPath,
-      auto: true,
+      mkcert: true,
       bindHosts: ["127.0.0.1"],
     });
     expect(material.source).toBe("existing");

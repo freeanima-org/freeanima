@@ -14,14 +14,16 @@ title: Remote access
 | **Service API Token**    | 绑定 `user` / `agent` subject；Habitat RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer                |
 | **CLI bootstrap**        | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                                         |
 | **`http.host`**          | Habitat listen bind (IP or resolvable hostname); default `127.0.0.1`; use `0.0.0.0` for LAN                                           |
-| **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出客户端访问用的名称）；变更后 `auto: true` 时重启自动重签                     |
-| **`http.tls.acme`**      | 可选 Let's Encrypt（HTTP-01）；公网域名指向本机时签发公信证书并自动续期（与局域网 mkcert 二选一，配置了 acme 则优先）                 |
-| **`http.cors_origins`**  | Explicit cross-origin browser origins (`just dev web`, split UI/API reverse proxy)                                                    |
+| **`http.port`**          | HTTP 监听端口（默认 **2658**）；CLI `--port` 优先                                                                                     |
+| **`http.tls.port`**      | HTTPS 监听端口（默认 **2659**）                                                                                                       |
+| **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出）；`mode=mkcert` 时变更后重启自动重签                                       |
+| **`http.tls.mode`**      | 证书来源：`mkcert`（默认）/ `acme` / `manual`                                                                                         |
+| **`http.tls.acme`**      | `mode=acme` 时必填：Let's Encrypt HTTP-01（email + domains）                                                                          |
 | **Client settings**      | Desktop / mobile shell / **browser Web** fill Habitat URL and token in **Habitat settings**                                           |
 | **Remote UI**            | 浏览器/PWA 从 Habitat `/web/*` 加载；Desktop/Mobile 默认安装包内本地 UI；见 [`architecture.md`](../product/architecture.md) Client UI |
 | **PWA**                  | `/web/*` 支持 manifest + Service Worker；布局跟视口（phone ≠ 必 compact；宽屏可为 expanded）                                          |
 
-默认仍建议局域网、`http.tls` 本地 HTTPS（mkcert）、VPN 或反向代理。可选原生 **Let's Encrypt**（`http.tls.acme`，HTTP-01）便于有公网域名的部署；**不替代** harden / WAF / 最小暴露面。旧版 `tunnel` 配置段已废弃并忽略。
+默认仍建议局域网、`http.tls.mode: mkcert`、VPN 或反向代理。可选 `mode: acme`（Let's Encrypt HTTP-01）便于有公网域名的部署；**不替代** harden / WAF / 最小暴露面。旧版 `tunnel` 配置段已废弃并忽略。
 
 ### PWA（浏览器 Web）
 
@@ -79,19 +81,7 @@ CLI `--host` overrides config for a single run / systemd unit write. After chang
 
 LAN: `http://<PC-IP>:2658/web/chat` with `http.host: 0.0.0.0` (or `anima service start --host 0.0.0.0`); clients set Habitat URL to `http://<PC-IP>:2658` (no `/web` suffix).
 
-### Cross-origin (`http.cors_origins`)
-
-When the browser UI and Habitat API share the same origin (e.g. Habitat `/web` + same-host `/api`), **no CORS config is needed**.
-
-Add origins only for **cross-origin** cases (e.g. Vite dev server, external reverse proxy splitting UI and API):
-
-```yaml
-http:
-  cors_origins:
-    - http://127.0.0.1:4173
-```
-
-CORS is configured only via `http.cors_origins` (not derived from other URLs).
+Browser UI should use **same origin** as Habitat API（Habitat `/web`，或 Vite 代理到本机 Habitat）。跨源浏览器 UI 不再支持可配置 CORS；桌面壳本机 loopback / Tauri origin 仍内置放行。
 
 ### Habitat 本地 HTTPS（双端口，可选）
 
@@ -107,17 +97,20 @@ Habitat 可在 **独立端口** 提供原生 TLS（`Bun.serve`），与默认 HT
 ```yaml
 http:
   host: 0.0.0.0
+  port: 2658
   allowed_hosts:
     - feng-vm.lan
     - 10.200.200.10
   tls:
     enabled: true
     port: 2659
-    auto: true
+    mode: mkcert
 ```
 
-- **`auto: true`**（默认）：首次启动在 `~/.anima/tls/` 自动生成 cert/key（优先 **mkcert**，否则 **openssl 自签**）；SAN 含 `localhost`、`127.0.0.1`、`::1`、`http.host` 中的 bind 地址（跳过 `0.0.0.0`）及 **`http.allowed_hosts`**。配置变更导致 SAN 不足时，**重启 Habitat 会自动删除旧证书并重签**（`auto: false` 时仅告警，不覆盖手动证书）。启用 **`http.tls.acme`** 时忽略 `auto`（见下）。
-- **探活**：`anima service status` 与 `GET /rpc/v1/health/probe` 仍走 HTTP `:2658`。
+- **`http.port`** / **`http.tls.port`**：分别配置 HTTP 与 HTTPS 端口（默认 2658 / 2659）。CLI `--port` 覆盖 `http.port`。
+- **`mode: mkcert`**（默认）：首次启动在 `~/.anima/tls/` 自动生成 cert/key（优先 **mkcert**，否则 **openssl 自签**）；SAN 含 `localhost`、`127.0.0.1`、`::1`、`http.host` 中的 bind 地址（跳过 `0.0.0.0`）及 **`http.allowed_hosts`**。配置变更导致 SAN 不足时，**重启 Habitat 会自动删除旧证书并重签**。
+- **`mode: manual`**：须指定 `cert` / `key`（可选 `passphrase`）；不自动重签。
+- **探活**：`anima service status` 与 `GET /rpc/v1/health/probe` 仍走 HTTP（默认 `:2658`）。
 
 #### 可选：Let's Encrypt（公网域名）
 
@@ -129,6 +122,7 @@ http:
   tls:
     enabled: true
     port: 2659
+    mode: acme
     acme:
       email: you@example.com
       domains:
@@ -158,7 +152,7 @@ mkcert -install  # trust that CA on the Habitat host itself
 - **iOS**: AirDrop/email `rootCA.pem` → install the profile → **Settings → General → About → Certificate Trust Settings** → enable full trust.
 - **Android**: optionally convert to DER, then **Settings → Security → Install CA certificate**. Tauri Android builds also need a build that trusts user CAs.
 
-Daily LAN access: **HTTP `:2658`** or **HTTPS `:2659` (after CA trust for mkcert)**。公网域名 + `http.tls.acme`：`https://<domain>:2659`。仍可用反向代理或 VPN 做 harden。
+Daily LAN access: **HTTP `:2658`** or **HTTPS `:2659` (after CA trust for mkcert)**。公网域名 + `mode: acme`：`https://<domain>:2659`。仍可用反向代理或 VPN 做 harden。
 
 ## 2. Client configuration
 
@@ -219,13 +213,13 @@ mcpServers:
 
 ## Troubleshooting
 
-| Symptom                | Check                                                                    |
-| ---------------------- | ------------------------------------------------------------------------ |
-| Cannot reach Habitat   | Is Habitat running? `anima service status`; check `http.host` / firewall |
-| 401                    | Client token valid; run `anima token list --subject-id <id>`             |
-| Local OK, remote fails | Remote requests need Bearer / SAP auth_token                             |
-| CORS error in browser  | Add UI origin to `http.cors_origins`, or use Habitat `/web` same-origin  |
-| 401 after token change | Update client settings; revoke old tokens if needed                      |
+| Symptom                | Check                                                                                  |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| Cannot reach Habitat   | Is Habitat running? `anima service status`; check `http.host` / firewall               |
+| 401                    | Client token valid; run `anima token list --subject-id <id>`                           |
+| Local OK, remote fails | Remote requests need Bearer / SAP auth_token                                           |
+| CORS error in browser  | Use Habitat `/web` same-origin (or Vite proxy); cross-origin browser UI is unsupported |
+| 401 after token change | Update client settings; revoke old tokens if needed                                    |
 
 ## Related docs
 

@@ -11,8 +11,6 @@ import {
 import { bindHomeChannelConfig } from "@freeanima/host/platform/ports/home-channel";
 import { bindActiveRuntimeConfig } from "@freeanima/host/core/config";
 
-import { bindBootstrapHttpForProcess } from "../config/bootstrap-http-cache.ts";
-import { loadBootstrapConfig } from "../config/bootstrap.ts";
 import { claimPidFileIfUnowned, startupLog } from "./status.ts";
 
 export type ConfigPhaseResult = Record<string, never>;
@@ -21,7 +19,6 @@ export type ConfigPhaseResult = Record<string, never>;
 export async function bootConfigPhase(): Promise<ConfigPhaseResult> {
   startupLog("Validating config.yaml (bootstrap)…");
   await validateBootstrapOnStartup();
-  bindBootstrapHttpForProcess(loadBootstrapConfig().http);
   bindEnginePorts();
   bindCapabilityInjection();
 

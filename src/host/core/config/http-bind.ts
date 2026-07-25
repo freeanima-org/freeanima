@@ -1,4 +1,5 @@
 import type { HttpConfig } from "./schemas/http.ts";
+import { DEFAULT_HABITAT_HTTP_PORT } from "./schemas/http-ports.ts";
 
 export const DEFAULT_HTTP_BIND_HOST = "127.0.0.1";
 
@@ -39,5 +40,17 @@ export function resolveHttpBindHost(
   if (fromCli) return fromCli;
   const fromConfig = collectHttpBindHosts(http);
   if (fromConfig.length > 0) return formatHttpBindHosts(fromConfig);
+  return fallback;
+}
+
+/** CLI `--port` 优先，否则读 `http.port`，最后回退默认 2658 */
+export function resolveHttpPort(
+  cliPort: number | undefined,
+  http?: HttpConfig | null,
+  fallback = DEFAULT_HABITAT_HTTP_PORT,
+): number {
+  if (cliPort != null && Number.isFinite(cliPort) && cliPort > 0) return Math.trunc(cliPort);
+  const fromConfig = http?.port;
+  if (fromConfig != null && fromConfig > 0) return fromConfig;
   return fallback;
 }

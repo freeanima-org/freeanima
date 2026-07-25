@@ -50,9 +50,9 @@ describe("resolveHabitatTlsListenConfig", () => {
       {
         tls: {
           enabled: true,
+          mode: "manual",
           cert: certPath,
           key: keyPath,
-          auto: false,
         },
       },
       ["127.0.0.1", "192.168.1.5"],

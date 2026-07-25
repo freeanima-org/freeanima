@@ -19,7 +19,8 @@ export type HabitatTlsMaterial = {
 export type EnsureHabitatTlsMaterialOptions = {
   certPath: string;
   keyPath: string;
-  auto: boolean;
+  /** true：缺失时优先 mkcert、否则 openssl；false：须提供 cert/key */
+  mkcert: boolean;
   bindHosts: string[];
   allowedHosts?: string[];
   passphrase?: string;
@@ -136,7 +137,7 @@ function existingMaterialCoversSan(
 }
 
 /**
- * 确保 Habitat TLS cert/key 存在；auto 时优先 mkcert，fallback openssl 自签。
+ * 确保 Habitat TLS cert/key 存在；mkcert=true 时优先 mkcert，fallback openssl 自签。
  */
 export function ensureHabitatTlsMaterial(
   options: EnsureHabitatTlsMaterialOptions,
@@ -151,8 +152,8 @@ export function ensureHabitatTlsMaterial(
     return { certPath, keyPath, source: "existing", ...(passphrase ? { passphrase } : {}) };
   }
 
-  if (tlsFilesReadable(certPath, keyPath) && !options.auto) {
-    logComponent("startup").warn("Habitat TLS 证书 SAN 未覆盖当前配置，auto=false 不会自动重签", {
+  if (tlsFilesReadable(certPath, keyPath) && !options.mkcert) {
+    logComponent("startup").warn("Habitat TLS 证书 SAN 未覆盖当前配置，mkcert=false 不会自动重签", {
       cert: certPath,
       requiredSan,
     });
@@ -167,8 +168,8 @@ export function ensureHabitatTlsMaterial(
     removeTlsFiles(certPath, keyPath);
   }
 
-  if (!options.auto) {
-    throw new Error(`TLS 证书或私钥不存在（auto=false）：cert=${certPath} key=${keyPath}`);
+  if (!options.mkcert) {
+    throw new Error(`TLS 证书或私钥不存在（mkcert=false）：cert=${certPath} key=${keyPath}`);
   }
 
   const sanNames = requiredSan;
