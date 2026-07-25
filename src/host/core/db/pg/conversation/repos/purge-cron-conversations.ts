@@ -31,12 +31,15 @@ export async function purgeCronConversations(): Promise<PurgeCronConversationsRe
   const idSet = new Set<string>(ids);
   const db = getDb();
 
+  const now = new Date();
   await db
-    .delete(entities)
+    .update(entities)
+    .set({ deleted_at: now, updated_at: now })
     .where(
       and(
         sql`${entities.components} @> ARRAY[${LIMBIC_COMPONENT}]::text[]`,
         sql`${entities.body}->>'conversation_id' = ANY(${pgTextArray(ids)})`,
+        sql`${entities.deleted_at} IS NULL`,
       ),
     );
 

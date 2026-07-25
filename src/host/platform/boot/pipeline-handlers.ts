@@ -18,6 +18,10 @@ import {
 } from "@freeanima/host/capabilities/self";
 import { purgeStaleAutoLlmRuns } from "@freeanima/host/core/db/pg/auto-llm-run";
 import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
+import {
+  ENTITY_SOFT_DELETE_RETENTION_DAYS,
+  purgeSoftDeletedEntities,
+} from "@freeanima/host/core/db/pg/entity";
 import { getPipelineRunner, type PipelineStepTrigger } from "@freeanima/host/engine/pipeline";
 import { cleanupStaleConversations } from "@freeanima/host/engine/conversation";
 import type { Engine } from "@freeanima/host/engine";
@@ -39,12 +43,19 @@ export function registerSleepPipeline(engine: Engine): void {
     const retentionDays = autoLlmCfg?.retention_days ?? 30;
     const perRunKindKeep = autoLlmCfg?.per_run_kind_keep ?? 100;
     let autoLlmPurged = { deleted: 0 };
+    let entitiesPurged = 0;
     if (isPostgresPrimary() && retentionDays > 0) {
       const olderThan = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
       autoLlmPurged = await purgeStaleAutoLlmRuns({
         olderThan,
         perRunKindKeep,
       });
+    }
+    if (isPostgresPrimary() && ENTITY_SOFT_DELETE_RETENTION_DAYS > 0) {
+      const entityOlderThan = new Date(
+        Date.now() - ENTITY_SOFT_DELETE_RETENTION_DAYS * 24 * 60 * 60 * 1000,
+      );
+      entitiesPurged = await purgeSoftDeletedEntities({ olderThan: entityOlderThan });
     }
 
     const sample_ids = result.ids.slice(0, 20);
@@ -55,6 +66,7 @@ export function registerSleepPipeline(engine: Engine): void {
         sample_ids,
         cron_sessions_purged: cronPurge.deleted,
         auto_llm_runs_purged: autoLlmPurged.deleted,
+        soft_deleted_entities_purged: entitiesPurged,
       },
     };
   });

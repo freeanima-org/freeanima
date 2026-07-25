@@ -1,10 +1,13 @@
-import { and, count, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { entities, entityTypeSchema } from "@freeanima/host/core/db/schema";
 import {
   mergeComponentBody,
   mapEntityRow,
   entityRowSelectColumns,
+  isKnownComponent,
+  pickPromotedPrimaryComponent,
   primaryComponentSchema,
+  stripRemovedComponentBodyFields,
   validateEntityBody,
   entitySearchTextForWrite,
   isEntityRevisionPrimaryComponent,
@@ -13,7 +16,13 @@ import {
   snapshotEntityRevision,
   type EntityRowSelect,
 } from "@freeanima/host/core/db/schema/entity";
-import type { EntityCreateInput, EntityListOpts, EntityRow, EntityUpdateInput } from "../types.ts";
+import type {
+  EntityCreateInput,
+  EntityGetOpts,
+  EntityListOpts,
+  EntityRow,
+  EntityUpdateInput,
+} from "../types.ts";
 
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleEntityEmbedding, clearEntityEmbedding } from "../../embedding/entity-embedding.ts";
@@ -128,14 +137,17 @@ export async function createEntityAtId(input: EntityCreateAtIdInput): Promise<En
   return mapRow(row);
 }
 
-export async function getEntity(id: number): Promise<EntityRow | null> {
+export async function getEntity(id: number, opts?: EntityGetOpts): Promise<EntityRow | null> {
   const db = getDb();
   const [row] = await db
     .select(entityRowSelectColumns)
     .from(entities)
     .where(eq(entities.id, id))
     .limit(1);
-  return row ? mapRow(row) : null;
+  if (!row) return null;
+  const mapped = mapRow(row);
+  if (!opts?.include_deleted && mapped.deleted_at != null) return null;
+  return mapped;
 }
 
 export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow | null> {
@@ -242,7 +254,50 @@ export async function restoreEntityRevision(
   });
 }
 
+export class EntityDeleteError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "EntityDeleteError";
+  }
+}
+
+/**
+ * 软删实体（写 deleted_at）。agent/user/world 拒绝。
+ * 已软删时幂等返回 true。
+ */
 export async function deleteEntity(id: number): Promise<boolean> {
+  const existing = await getEntity(id, { include_deleted: true });
+  if (!existing) return false;
+  if (existing.deleted_at != null) return true;
+  if (existing.type === "agent" || existing.type === "user" || existing.type === "world") {
+    throw new EntityDeleteError(`cannot soft-delete entity type=${existing.type}`);
+  }
+  const now = new Date();
+  const db = getDb();
+  const result = await db
+    .update(entities)
+    .set({ deleted_at: now, updated_at: now })
+    .where(and(eq(entities.id, id), isNull(entities.deleted_at)))
+    .returning({ id: entities.id });
+  return result.length > 0;
+}
+
+/** 从回收站恢复（清 deleted_at）；不恢复容器 membership。 */
+export async function restoreEntity(id: number): Promise<EntityRow | null> {
+  const existing = await getEntity(id, { include_deleted: true });
+  if (!existing || existing.deleted_at == null) return existing;
+  const now = new Date();
+  const db = getDb();
+  const [row] = await db
+    .update(entities)
+    .set({ deleted_at: null, updated_at: now })
+    .where(eq(entities.id, id))
+    .returning(entityRowSelectColumns);
+  return row ? mapRow(row) : null;
+}
+
+/** 物理删除一行（仅 purge / 内部清理）。 */
+export async function purgeEntity(id: number): Promise<boolean> {
   const db = getDb();
   const result = await db
     .delete(entities)
@@ -251,7 +306,135 @@ export async function deleteEntity(id: number): Promise<boolean> {
   return result.length > 0;
 }
 
-/** 按 list_id 批量删除 task_item（分页直至清空，避免 500 截断） */
+/** 物理清理 deleted_at 早于 olderThan 的软删实体。 */
+export async function purgeSoftDeletedEntities(opts: {
+  olderThan: Date;
+  page_size?: number;
+}): Promise<number> {
+  const db = getDb();
+  const pageSize = Math.max(1, Math.min(500, opts.page_size ?? 200));
+  let purged = 0;
+  while (true) {
+    const rows = await db
+      .delete(entities)
+      .where(
+        sql`${entities.id} IN (
+          SELECT id FROM ${entities}
+          WHERE ${entities.deleted_at} IS NOT NULL
+            AND ${entities.deleted_at} < ${opts.olderThan}
+          ORDER BY ${entities.deleted_at}
+          LIMIT ${pageSize}
+        )`,
+      )
+      .returning({ id: entities.id });
+    purged += rows.length;
+    if (rows.length < pageSize) break;
+  }
+  return purged;
+}
+
+/**
+ * 删除 entity 上的某个 component；必要时提升 primary；可变成空壳。
+ * 不自动软删。
+ */
+export async function deleteEntityComponent(
+  id: number,
+  component: string,
+): Promise<EntityRow | null> {
+  if (!isKnownComponent(component)) {
+    throw new EntityDeleteError(`unknown component: ${component}`);
+  }
+  const existing = await getEntity(id);
+  if (!existing) return null;
+  if (!existing.components.includes(component)) return existing;
+
+  const remaining = existing.components.filter((c) => c !== component);
+  const nextBody = stripRemovedComponentBodyFields(existing.body, component, remaining);
+  const nextPrimary =
+    existing.primary_component === component
+      ? pickPromotedPrimaryComponent(remaining)
+      : existing.primary_component != null && remaining.includes(existing.primary_component)
+        ? existing.primary_component
+        : pickPromotedPrimaryComponent(remaining);
+
+  if (remaining.length > 0) {
+    validateEntityBody(remaining, nextBody);
+  }
+
+  const now = new Date();
+  const indexText = entitySearchTextForWrite({
+    title: existing.title,
+    summary: existing.summary,
+    content: existing.content,
+    body: nextBody,
+    primary_component: nextPrimary,
+  });
+  const fts_segmented = await resolveFtsSegmentedForWrite(indexText);
+  await clearEntityEmbedding(id);
+
+  const db = getDb();
+  const [row] = await db
+    .update(entities)
+    .set({
+      components: remaining,
+      primary_component: nextPrimary,
+      body: nextBody,
+      fts_segmented,
+      updated_at: now,
+    })
+    .where(eq(entities.id, id))
+    .returning(entityRowSelectColumns);
+  if (row) scheduleEntityEmbedding(row.id, indexText);
+  return row ? mapRow(row) : null;
+}
+
+export type EntityReferenceHit = {
+  entity_id: number;
+  via: string;
+};
+
+/** 扫描已知引用面（body FK / tag_ids）；供 deleteEntity 前确认。 */
+export async function collectEntityReferences(id: number): Promise<EntityReferenceHit[]> {
+  const db = getDb();
+  const hits: EntityReferenceHit[] = [];
+  const idStr = String(id);
+
+  const fkRows = await db
+    .select({ id: entities.id, body: entities.body, tag_ids: entities.tag_ids })
+    .from(entities)
+    .where(
+      and(
+        isNull(entities.deleted_at),
+        sql`${entities.id} <> ${id}`,
+        sql`(
+          ${entities.body}->>'list_id' = ${idStr}
+          OR ${entities.body}->>'project_id' = ${idStr}
+          OR ${entities.body}->>'parent_id' = ${idStr}
+          OR ${entities.body}->>'folder_id' = ${idStr}
+          OR ${entities.body}->>'account_id' = ${idStr}
+          OR ${entities.tag_ids} @> ARRAY[${id}]::bigint[]
+        )`,
+      ),
+    )
+    .limit(200);
+
+  for (const row of fkRows) {
+    const body = (row.body ?? {}) as Record<string, unknown>;
+    if (String(body.list_id ?? "") === idStr) hits.push({ entity_id: row.id, via: "body.list_id" });
+    if (String(body.project_id ?? "") === idStr)
+      hits.push({ entity_id: row.id, via: "body.project_id" });
+    if (String(body.parent_id ?? "") === idStr)
+      hits.push({ entity_id: row.id, via: "body.parent_id" });
+    if (String(body.folder_id ?? "") === idStr)
+      hits.push({ entity_id: row.id, via: "body.folder_id" });
+    if (String(body.account_id ?? "") === idStr)
+      hits.push({ entity_id: row.id, via: "body.account_id" });
+    if ((row.tag_ids ?? []).includes(id)) hits.push({ entity_id: row.id, via: "tag_ids" });
+  }
+  return hits;
+}
+
+/** 按 list_id 批量软删 task_item（分页直至清空，避免 500 截断） */
 export async function deleteTaskItemsByListId(
   world_id: number,
   list_id: number,
@@ -259,16 +442,19 @@ export async function deleteTaskItemsByListId(
 ): Promise<number> {
   const db = getDb();
   const pageSize = Math.max(1, Math.min(500, page_size));
+  const now = new Date();
   let deleted = 0;
   while (true) {
     const rows = await db
-      .delete(entities)
+      .update(entities)
+      .set({ deleted_at: now, updated_at: now })
       .where(
         sql`${entities.id} IN (
           SELECT id FROM ${entities}
           WHERE ${entities.world_id} = ${world_id}
             AND ${entities.primary_component} = 'task_item'
             AND ${entities.body}->>'list_id' = ${String(list_id)}
+            AND ${entities.deleted_at} IS NULL
           ORDER BY ${entities.id}
           LIMIT ${pageSize}
         )`,
@@ -280,7 +466,7 @@ export async function deleteTaskItemsByListId(
   return deleted;
 }
 
-/** 按 account_id 批量删除 email_message / email_thread（仅本地；分页直至清空） */
+/** 按 account_id 批量软删 email_message / email_thread（仅本地；分页直至清空） */
 export async function deleteEmailEntitiesByAccountId(
   world_id: number,
   account_id: number,
@@ -288,16 +474,19 @@ export async function deleteEmailEntitiesByAccountId(
 ): Promise<number> {
   const db = getDb();
   const pageSize = Math.max(1, Math.min(500, page_size));
+  const now = new Date();
   let deleted = 0;
   while (true) {
     const rows = await db
-      .delete(entities)
+      .update(entities)
+      .set({ deleted_at: now, updated_at: now })
       .where(
         sql`${entities.id} IN (
           SELECT id FROM ${entities}
           WHERE ${entities.world_id} = ${world_id}
             AND ${entities.primary_component} IN ('email_message', 'email_thread')
             AND ${entities.body}->>'account_id' = ${String(account_id)}
+            AND ${entities.deleted_at} IS NULL
           ORDER BY ${entities.id}
           LIMIT ${pageSize}
         )`,
@@ -309,8 +498,16 @@ export async function deleteEmailEntitiesByAccountId(
   return deleted;
 }
 
-function buildListConditions(opts?: Omit<EntityListOpts, "offset" | "limit">) {
+function buildListConditions(
+  opts?: Omit<EntityListOpts, "offset" | "limit" | "order_by" | "order_dir">,
+) {
   const conditions = [];
+  const deleted = opts?.deleted ?? "alive";
+  if (deleted === "alive") {
+    conditions.push(isNull(entities.deleted_at));
+  } else if (deleted === "deleted") {
+    conditions.push(isNotNull(entities.deleted_at));
+  }
   if (opts?.world_id != null) {
     conditions.push(eq(entities.world_id, opts.world_id));
   }
@@ -326,7 +523,17 @@ function buildListConditions(opts?: Omit<EntityListOpts, "offset" | "limit">) {
   if (opts?.component) {
     conditions.push(sql`${entities.components} @> ARRAY[${opts.component}]::text[]`);
   }
+  if (opts?.empty_shell) {
+    conditions.push(sql`cardinality(${entities.components}) = 0`);
+  }
   return conditions.length > 0 ? and(...conditions) : undefined;
+}
+
+function listOrderBy(opts?: EntityListOpts) {
+  const dir = opts?.order_dir === "asc" ? asc : desc;
+  if (opts?.order_by === "updated_at") return dir(entities.updated_at);
+  if (opts?.order_by === "deleted_at") return dir(entities.deleted_at);
+  return asc(entities.id);
 }
 
 export async function listEntities(
@@ -341,14 +548,14 @@ export async function listEntities(
     .select(entityRowSelectColumns)
     .from(entities)
     .where(where)
-    .orderBy(entities.id)
+    .orderBy(listOrderBy(opts))
     .limit(limit)
     .offset(offset);
   return rows.map(mapRow);
 }
 
 export async function countEntities(
-  opts?: Omit<EntityListOpts, "offset" | "limit">,
+  opts?: Omit<EntityListOpts, "offset" | "limit" | "order_by" | "order_dir">,
 ): Promise<number> {
   const db = getDb();
   const where = buildListConditions(opts);
@@ -365,6 +572,7 @@ export async function countEntitiesByBodyListId(listId: number, world_id: number
       and(
         eq(entities.world_id, world_id),
         eq(entities.primary_component, "task_item"),
+        isNull(entities.deleted_at),
         sql`${entities.body}->>'list_id' = ${String(listId)}`,
         sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
       ),
@@ -387,6 +595,7 @@ export async function countPendingTaskItemsByListId(
       and(
         eq(entities.world_id, world_id),
         eq(entities.primary_component, "task_item"),
+        isNull(entities.deleted_at),
         sql`${entities.body}->>'list_id' = ${String(listId)}`,
         sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
         pendingTaskItemStatusWhere,
@@ -411,6 +620,7 @@ export async function countPendingTaskItemsGroupedByListId(
       and(
         eq(entities.world_id, world_id),
         eq(entities.primary_component, "task_item"),
+        isNull(entities.deleted_at),
         sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
         pendingTaskItemStatusWhere,
       ),
@@ -442,6 +652,7 @@ export async function countPendingTaskItemsGroupedByProjectId(
       and(
         eq(entities.world_id, world_id),
         eq(entities.primary_component, "task_item"),
+        isNull(entities.deleted_at),
         sql`${entities.body}->>'project_id' IS NOT NULL`,
         sql`${entities.body}->>'project_id' <> ''`,
         pendingTaskItemStatusWhere,

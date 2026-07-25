@@ -100,7 +100,7 @@ A digital life is structured from the inside out. Each layer answers a different
 
 ### Unified entity storage (v0.8)
 
-Structured business data (tasks, notes, email accounts/messages, future memory migrations) converges on a single **`entities`** PostgreSQL table with component tags (`task_list`, `task_item`, `email_account`, …). Self layer [`self_blocks`](../cognition/self-layer.md) stays physically separate. See [`entity-model.md`](entity-model.md).
+Structured business data (tasks, notes, email accounts/messages, future memory migrations) converges on a single **`entities`** PostgreSQL table with component tags (`task_list`, `task_item`, `email_account`, …). Self layer [`self_blocks`](../cognition/self-layer.md) stays physically separate. See [`entity-model.md`](entity-model.md)（remove / deleteComponent / deleteEntity 软删与回收站；Shell Entity 模块见 [`../modules/entity.md`](../modules/entity.md)）。
 
 Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed); legacy Habitat email route removed.
 

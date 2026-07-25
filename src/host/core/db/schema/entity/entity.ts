@@ -17,7 +17,8 @@ export const entities = pgTable(
     type: text("type").notNull(),
     world_id: bigint("world_id", { mode: "number" }).notNull(),
     components: text("components").array().notNull().default([]),
-    primary_component: text("primary_component").notNull(),
+    /** 空壳（无组件）时为 null */
+    primary_component: text("primary_component"),
     title: text("title").notNull().default(""),
     summary: text("summary").notNull().default(""),
     content: text("content").notNull().default(""),
@@ -33,6 +34,8 @@ export const entities = pgTable(
      * 见 docs/aspects/entity-revisions.md
      */
     revisions: jsonb("revisions").$type<unknown[]>().notNull().default([]),
+    /** 软删时间；非 null 表示在回收站，默认列表/检索排除 */
+    deleted_at: pgTimestamptz("deleted_at"),
     fts_segmented: text("fts_segmented"),
     search_embedding: vector("search_embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
     search_fts: tsvector("search_fts").generatedAlwaysAs(
@@ -69,6 +72,7 @@ export const entities = pgTable(
       t.updated_at.desc(),
     ),
     index("idx_entities_tag_ids").using("gin", t.tag_ids),
+    index("idx_entities_deleted_at").on(t.deleted_at),
     // HNSW / gin_trgm / body 表达式索引：见 migrations 追加 SQL（drizzle-kit 难表达 opclass / partial）
   ],
 );

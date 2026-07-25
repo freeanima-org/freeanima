@@ -23,6 +23,7 @@ describe("listSmartListsMerged", () => {
         reference_count: 0,
         tag_ids: [],
         revisions: [],
+        deleted_at: null,
         created_at: new Date("2024-06-01T00:00:00.000Z"),
         updated_at: new Date("2024-06-01T00:00:00.000Z"),
       },

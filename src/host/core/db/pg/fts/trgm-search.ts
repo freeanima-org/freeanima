@@ -78,6 +78,7 @@ export async function searchSemanticMemoryTrgm(
       reference_count: r.reference_count ?? 0,
       tag_ids: [],
       revisions: [],
+      deleted_at: null,
       created_at: r.created_at,
       updated_at: r.updated_at,
     };

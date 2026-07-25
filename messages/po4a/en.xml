@@ -479,6 +479,7 @@
   <msg id="habitat_nav_tasks">✅ Tasks</msg>
   <msg id="habitat_nav_tools">🔧 Tools</msg>
   <msg id="habitat_nav_vault">🔐 Vault</msg>
+  <msg id="habitat_nav_entity">📦 Entity</msg>
   <msg id="habitat_nav_worlds">🌍 Worlds</msg>
   <msg id="habitat_outposts_app_id">App ID</msg>
   <msg id="habitat_outposts_connected_at">Connected</msg>

@@ -70,6 +70,60 @@ export type ComponentId = (typeof COMPONENT_IDS)[number];
 
 export const primaryComponentSchema = z.enum(COMPONENT_IDS);
 
+/**
+ * 删除 primary 后提升用：数字越小越优先成为新的 primary_component。
+ * 未列出的已知组件默认 500。
+ */
+export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
+  [WORLD_CONFIG_COMPONENT]: 10,
+  [AGENT_CONFIG_COMPONENT]: 10,
+  [USER_CONFIG_COMPONENT]: 10,
+  [TASK_LIST_COMPONENT]: 20,
+  [SMART_LIST_COMPONENT]: 25,
+  [TASK_ITEM_COMPONENT]: 30,
+  [PROJECT_FOLDER_COMPONENT]: 35,
+  [PROJECT_COMPONENT]: 40,
+  [TAG_COMPONENT]: 45,
+  [DIARY_ENTRY_COMPONENT]: 50,
+  [DIARY_BLOCK_TEMPLATE_COMPONENT]: 55,
+  [CONTENT_BLOCK_COMPONENT]: 60,
+  [LIMBIC_COMPONENT]: 70,
+  [NARRATIVE_COMPONENT]: 71,
+  [DREAM_COMPONENT]: 72,
+  [SEMANTIC_MEMORY_COMPONENT]: 80,
+  [SEMANTIC_REF_COMPONENT]: 81,
+  [TEMPORAL_SUMMARY_COMPONENT]: 85,
+  [EMAIL_ACCOUNT_COMPONENT]: 90,
+  [EMAIL_THREAD_COMPONENT]: 91,
+  [EMAIL_MESSAGE_COMPONENT]: 92,
+  [VAULT_CONFIG_COMPONENT]: 100,
+  [VAULT_ITEM_COMPONENT]: 101,
+  [POMODORO_CONFIG_COMPONENT]: 110,
+  [POMODORO_SESSION_COMPONENT]: 111,
+  [POMODORO_TASK_FOCUS_COMPONENT]: 112,
+  [POMODORO_ACTIVE_COMPONENT]: 113,
+  [COMPANION_PROFILE_COMPONENT]: 120,
+};
+
+const DEFAULT_COMPONENT_PRIORITY = 500;
+
+/** 在剩余组件中选出应提升为 primary 的组件；无剩余返回 null（空壳）。 */
+export function pickPromotedPrimaryComponent(components: readonly string[]): ComponentId | null {
+  const known = components.filter(isKnownComponent);
+  const first = known[0];
+  if (first == null) return null;
+  let best: ComponentId = first;
+  let bestPri = COMPONENT_PRIMARY_PRIORITY[best] ?? DEFAULT_COMPONENT_PRIORITY;
+  for (const c of known.slice(1)) {
+    const pri = COMPONENT_PRIMARY_PRIORITY[c] ?? DEFAULT_COMPONENT_PRIORITY;
+    if (pri < bestPri) {
+      best = c;
+      bestPri = pri;
+    }
+  }
+  return best;
+}
+
 const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [WORLD_CONFIG_COMPONENT]: worldConfigBodySchema,
   [AGENT_CONFIG_COMPONENT]: agentConfigBodySchema,
