@@ -8,6 +8,9 @@ runs:
       run: |
         mkdir -p "${{ runner.temp }}/anima-home"
         cat > "${{ runner.temp }}/anima-home/config.yaml" <<'EOF'
+        database:
+          # 占位：勿与 ANIMA_TEST_PG_URL（CI service :5432）同 host:port，否则 PG 护栏会拒绝
+          url: postgres://ci:ci@127.0.0.1:1/ci_unused
         llm:
           default_profile: chat
           providers:

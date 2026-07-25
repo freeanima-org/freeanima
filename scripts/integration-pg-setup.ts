@@ -5,7 +5,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
-const dbRoot = join(repoRoot, "src/core");
+const dbRoot = join(repoRoot, "src/host/core");
 const TEMPLATE_DB = "anima_it_template";
 
 function parseHostPort(url: string): { host: string; port: string } | null {
@@ -109,8 +109,9 @@ export function createIsolatedTestDb(fileSlug: string): string {
   const base = getContainerBaseUrl();
   assertNotDailyPgUrl(base);
   const dbName = `anima_it_${fileSlug}`;
+  // FORCE DROP 偶发卡在 ProcSignalBarrier；加 timeout 避免整次 CI 挂死
   execSync(
-    `psql "${base}" -v ON_ERROR_STOP=1 -c "DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)"`,
+    `timeout 15s psql "${base}" -v ON_ERROR_STOP=1 -c "DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)"`,
     {
       stdio: "ignore",
     },
@@ -127,7 +128,7 @@ export function dropIsolatedTestDb(fileSlug: string): void {
     const base = getContainerBaseUrl();
     assertNotDailyPgUrl(base);
     const dbName = `anima_it_${fileSlug}`;
-    execSync(`psql "${base}" -c "DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)"`, {
+    execSync(`timeout 15s psql "${base}" -c "DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)"`, {
       stdio: "ignore",
     });
   } catch {
