@@ -124,4 +124,4 @@ Not implemented by this doc. Advance when pain is real (no speculative QueryClie
 
 - [Remote access](../ops/remote-access.md) — PWA vs business offline boundary
 - [Habitat RPC](../ops/habitat-rpc.md) — transport
-- [UI dimensions](../../.agent/rules/ui-dimensions.md) — pointer vs touch refresh affordances
+- [UI dimensions](../ui/dimensions.md) (agent API: [ui-dimensions rules](../../.agent/rules/ui-dimensions.md)) — pointer vs touch refresh affordances
