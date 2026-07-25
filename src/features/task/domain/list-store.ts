@@ -178,7 +178,7 @@ async function dissolveFolderTree(folderId: number, worldId: number): Promise<vo
       await dissolveFolderTree(childId, worldId);
       await deleteEntity(childId);
     } else {
-      await updateEntity({ id: childId, body: { parent_id: null } });
+      await updateEntity({ id: childId, body: { parent_id: null }, skip_revision: true });
     }
   }
 }

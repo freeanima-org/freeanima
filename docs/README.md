@@ -51,6 +51,7 @@ Agent hard bans / API quick reference → [`.agent/rules/frontend-ui.md`](../.ag
 | Portal data plane | [aspects/portal-data-plane.md](aspects/portal-data-plane.md) |
 | Offline platform  | [aspects/offline-platform.md](aspects/offline-platform.md)   |
 | Page refresh      | [aspects/page-refresh.md](aspects/page-refresh.md)           |
+| Entity revisions  | [aspects/entity-revisions.md](aspects/entity-revisions.md)   |
 
 ## Modules — product capabilities
 

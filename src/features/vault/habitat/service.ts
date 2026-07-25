@@ -6,8 +6,10 @@ import {
   createVaultItem,
   deleteVaultItem,
   getVaultItem,
+  listVaultItemRevisions,
   listVaultItems,
   listVaultItemsWithWrappedDek,
+  restoreVaultItemRevision,
   searchVaultItems,
   toVaultItemMeta,
   updateVaultItem,
@@ -21,6 +23,7 @@ import type { VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
 import { omitUndefined } from "@freeanima/host/core/util";
 
 import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
+import { getEntity, updateEntity } from "@freeanima/host/core/db/pg/entity";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 async function loadAgentVaultConnector() {
@@ -99,10 +102,19 @@ export async function serviceVaultList(
       include_secrets: input.include_secrets,
     }),
   );
+  if (!input.include_secrets) {
+    return { items: items.map((row) => toMetaPayload(row)) };
+  }
+  const wrapped = await listVaultItemsWithWrappedDek(worldId);
+  const revisionById = new Map(wrapped.map((w) => [w.id, w.revision_deks] as const));
   return {
-    items: items.map((row) =>
-      input.include_secrets && "secrets_enc" in row ? row : toMetaPayload(row),
-    ),
+    items: items.map((row) => {
+      if (!("secrets_enc" in row)) return toMetaPayload(row);
+      return {
+        ...row,
+        revision_deks: revisionById.get(row.id) ?? [],
+      };
+    }),
   };
 }
 
@@ -309,6 +321,35 @@ export async function serviceVaultSearch(
   return { items: items.map((row) => toMetaPayload(row)) };
 }
 
+export async function serviceVaultHistoryList(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const revisions = await listVaultItemRevisions(
+    await vaultWorldIdForAuth(auth, input.subject_kind),
+    input.id,
+  );
+  if (!revisions) throw new Error("NOT_FOUND");
+  return { revisions };
+}
+
+export async function serviceVaultHistoryRestore(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number; revision_index: number },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const item = await restoreVaultItemRevision(
+    await vaultWorldIdForAuth(auth, input.subject_kind),
+    input.id,
+    input.revision_index,
+  );
+  if (!item) throw new Error("NOT_FOUND");
+  return { item: toMetaPayload(item) };
+}
+
 export async function serviceVaultCryptoGet(
   deps: RuntimeDeps,
   input: { subject_kind?: SubjectKind },
@@ -350,10 +391,14 @@ export async function serviceVaultCryptoInit(
 export async function serviceVaultCryptoChange(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
-    salt?: string;
+    subject_kind?: SubjectKind | undefined;
+    salt?: string | undefined;
     verifier: string;
-    rewrapped: Array<{ id: number; dek_wrapped: string }>;
+    rewrapped: Array<{
+      id: number;
+      dek_wrapped: string;
+      revision_deks?: string[] | undefined;
+    }>;
   },
   auth: VerifiedServiceApiToken,
 ) {
@@ -375,9 +420,22 @@ export async function serviceVaultCryptoChange(
     }),
   );
   for (const row of input.rewrapped) {
-    const updated = await updateVaultItem(worldId, {
+    const entity = await getEntity(row.id);
+    if (!entity) throw new Error("NOT_FOUND");
+    const revision_deks = row.revision_deks ?? [];
+    const nextRevisions = entity.revisions.map((rev, index) => {
+      const nextDek = revision_deks[index];
+      if (nextDek === undefined) return rev;
+      return {
+        ...rev,
+        body: { ...rev.body, dek_wrapped: nextDek },
+      };
+    });
+    const updated = await updateEntity({
       id: row.id,
-      dek_wrapped: row.dek_wrapped,
+      body: { dek_wrapped: row.dek_wrapped },
+      revisions: nextRevisions,
+      skip_revision: true,
     });
     if (!updated) throw new Error("NOT_FOUND");
   }

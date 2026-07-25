@@ -25,7 +25,7 @@ export type UserVaultSessionState = "locked" | "unlocked";
 export type MasterPasswordChangePrep = {
   salt: string;
   verifier: string;
-  rewrapped: Array<{ id: number; dek_wrapped: string }>;
+  rewrapped: Array<{ id: number; dek_wrapped: string; revision_deks: string[] }>;
   /** Habitat crypto.change 成功后调用，切换会话主密钥 */
   commit: () => void;
 };
@@ -143,7 +143,7 @@ export class UserVaultSession {
    */
   async prepareMasterPasswordChange(
     newPassword: string,
-    items: Array<{ id: number; dek_wrapped: string }>,
+    items: Array<{ id: number; dek_wrapped: string; revision_deks?: string[] }>,
   ): Promise<MasterPasswordChangePrep> {
     if (!this.masterKey) {
       throw new Error("vault_locked");
@@ -152,7 +152,32 @@ export class UserVaultSession {
     const salt = randomSalt();
     const newKey = await deriveMasterKey(newPassword, salt);
     const verifier = await createVerifier(newKey);
-    const rewrapped = await rewrapAllDekWrapped(items, this.masterKey, newKey);
+    const flat: Array<{ id: number; dek_wrapped: string }> = [];
+    const layout: Array<{ id: number; revisionCount: number }> = [];
+    for (const item of items) {
+      flat.push({ id: item.id, dek_wrapped: item.dek_wrapped });
+      const revision_deks = item.revision_deks ?? [];
+      for (const dek of revision_deks) {
+        flat.push({ id: item.id, dek_wrapped: dek });
+      }
+      layout.push({ id: item.id, revisionCount: revision_deks.length });
+    }
+    const flatRewrapped = await rewrapAllDekWrapped(flat, this.masterKey, newKey);
+    const rewrapped: Array<{ id: number; dek_wrapped: string; revision_deks: string[] }> = [];
+    let offset = 0;
+    for (const entry of layout) {
+      const current = flatRewrapped[offset];
+      if (!current) throw new Error("vault_rewrap_mismatch");
+      offset += 1;
+      const revision_deks: string[] = [];
+      for (let i = 0; i < entry.revisionCount; i++) {
+        const rev = flatRewrapped[offset];
+        if (!rev) throw new Error("vault_rewrap_mismatch");
+        revision_deks.push(rev.dek_wrapped);
+        offset += 1;
+      }
+      rewrapped.push({ id: entry.id, dek_wrapped: current.dek_wrapped, revision_deks });
+    }
     return {
       salt,
       verifier,

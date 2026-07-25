@@ -4,6 +4,7 @@ export {
   createEntityAtId,
   getEntity,
   updateEntity,
+  restoreEntityRevision,
   deleteEntity,
   deleteTaskItemsByListId,
   deleteEmailEntitiesByAccountId,

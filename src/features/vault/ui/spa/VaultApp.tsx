@@ -33,6 +33,7 @@ import { newUserVaultSalt } from "./lib/crypto-client.ts";
 import { ChangeMasterPasswordDialog } from "./components/ChangeMasterPasswordDialog.tsx";
 import { VaultItemDetail, type VaultDetailSecrets } from "./components/VaultItemDetail.tsx";
 import { VaultItemForm, type VaultItemFormValues } from "./components/VaultItemForm.tsx";
+import { VaultItemHistoryDialog } from "./components/VaultItemHistoryDialog.tsx";
 
 function LockScreen({
   loading,
@@ -149,6 +150,7 @@ export function VaultApp() {
   const [editExistingSecrets, setEditExistingSecrets] = useState<VaultSecretsPayload | undefined>();
   const [selectionSubjectKind, setSelectionSubjectKind] = useState(subjectKind);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [changePasswordError, setChangePasswordError] = useState("");
 
@@ -587,6 +589,15 @@ export function VaultApp() {
                 type="button"
                 size="sm"
                 variant="outline"
+                disabled={writesDisabled || actionLoading || (isUserVault && !userUnlocked)}
+                onClick={() => setHistoryOpen(true)}
+              >
+                历史
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
                 disabled={writesDisabled || actionLoading}
                 onClick={() => void openEdit()}
               >
@@ -740,6 +751,20 @@ export function VaultApp() {
         onConfirm={() => void handleDeleteItem()}
         onCancel={() => setConfirmDeleteOpen(false)}
       />
+
+      {selectedItem ? (
+        <VaultItemHistoryDialog
+          open={historyOpen}
+          subjectKind={subjectKind}
+          itemId={selectedItem.id}
+          itemTitle={selectedItem.title}
+          disabled={writesDisabled || actionLoading}
+          onOpenChange={setHistoryOpen}
+          onRestored={async () => {
+            await reload();
+          }}
+        />
+      ) : null}
 
       <ChangeMasterPasswordDialog
         open={changePasswordOpen}

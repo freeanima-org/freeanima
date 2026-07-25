@@ -7,6 +7,10 @@ import {
   primaryComponentSchema,
   validateEntityBody,
   entitySearchTextForWrite,
+  isEntityRevisionPrimaryComponent,
+  pushEntityRevision,
+  shouldRecordEntityRevision,
+  snapshotEntityRevision,
   type EntityRowSelect,
 } from "@freeanima/host/core/db/schema/entity";
 import type { EntityCreateInput, EntityListOpts, EntityRow, EntityUpdateInput } from "../types.ts";
@@ -64,6 +68,7 @@ export async function createEntity(
       pinned: input.pinned ?? false,
       reference_count: input.reference_count ?? 0,
       tag_ids: input.tag_ids ?? [],
+      revisions: [],
       fts_segmented,
       created_at: input.created_at ?? now,
       updated_at: input.updated_at ?? input.created_at ?? now,
@@ -103,6 +108,7 @@ export async function createEntityAtId(input: EntityCreateAtIdInput): Promise<En
       content,
       body,
       tag_ids: input.tag_ids ?? [],
+      revisions: [],
       fts_segmented,
       created_at: now,
       updated_at: now,
@@ -147,6 +153,8 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
   const nextTitle = input.title !== undefined ? input.title.trim() : existing.title;
   const nextSummary = input.summary !== undefined ? input.summary.trim() : existing.summary;
   const nextContent = input.content !== undefined ? input.content : existing.content;
+  const nextPinned = input.pinned !== undefined ? input.pinned : existing.pinned;
+  const nextTagIds = input.tag_ids !== undefined ? input.tag_ids : existing.tag_ids;
   const indexText = entitySearchTextForWrite({
     title: nextTitle,
     summary: nextSummary,
@@ -164,9 +172,30 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
   if (input.summary !== undefined) patch.summary = nextSummary;
   if (input.content !== undefined) patch.content = nextContent;
   if (input.world_id !== undefined) patch.world_id = input.world_id;
-  if (input.pinned !== undefined) patch.pinned = input.pinned;
+  if (input.pinned !== undefined) patch.pinned = nextPinned;
   if (input.reference_count !== undefined) patch.reference_count = input.reference_count;
-  if (input.tag_ids !== undefined) patch.tag_ids = input.tag_ids;
+  if (input.tag_ids !== undefined) patch.tag_ids = nextTagIds;
+
+  if (input.revisions !== undefined) {
+    patch.revisions = input.revisions;
+  } else if (
+    !input.skip_revision &&
+    isEntityRevisionPrimaryComponent(existing.primary_component) &&
+    shouldRecordEntityRevision(input)
+  ) {
+    patch.revisions = pushEntityRevision(
+      existing.revisions,
+      snapshotEntityRevision({
+        title: existing.title,
+        summary: existing.summary,
+        content: existing.content,
+        body: existing.body,
+        tag_ids: existing.tag_ids,
+        pinned: existing.pinned,
+        updated_at: existing.updated_at,
+      }),
+    );
+  }
 
   const textChanged =
     input.title !== undefined ||
@@ -188,6 +217,29 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
     scheduleEntityEmbedding(row.id, indexText);
   }
   return row ? mapRow(row) : null;
+}
+
+/**
+ * 将 entities.revisions[index] 恢复为当前态（会先归档当前）。
+ * 越界返回 null。
+ */
+export async function restoreEntityRevision(
+  id: number,
+  revisionIndex: number,
+): Promise<EntityRow | null> {
+  const existing = await getEntity(id);
+  if (!existing) return null;
+  const revision = existing.revisions[revisionIndex];
+  if (!revision) return null;
+  return updateEntity({
+    id,
+    title: revision.title,
+    summary: revision.summary,
+    content: revision.content,
+    body: revision.body,
+    tag_ids: revision.tag_ids,
+    pinned: revision.pinned,
+  });
 }
 
 export async function deleteEntity(id: number): Promise<boolean> {
