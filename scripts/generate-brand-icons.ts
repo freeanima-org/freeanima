@@ -7,11 +7,10 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import pngToIco from "png-to-ico";
 import sharp from "sharp";
+import { resolveTauriAndroidMain } from "./tauri-android-gen-paths.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const APP_ICON_PNG = join(ROOT, "brand/app-icon.png");
-
-const ANDROID_RES = join(ROOT, "src/portal/app/tauri/src-tauri/gen/android/portal/src/main/res");
 
 const BG_DARK = "#0a0a0b";
 const BG_NAVY = "#0d1628";
@@ -149,19 +148,30 @@ async function main(): Promise<void> {
   await writeIco([png32, png128, png256], join(tauriIcons, "icon.ico"));
   writeIcns(buf1024, join(tauriIcons, "icon.icns"));
 
-  for (const [folder, size] of Object.entries(MIPMAP_LAUNCHER)) {
-    const base = join(ANDROID_RES, folder);
-    const icon = await renderIcon(size);
-    writePng(join(base, "ic_launcher.png"), icon);
-    writePng(join(base, "ic_launcher_round.png"), icon);
-  }
+  const androidMain = resolveTauriAndroidMain(ROOT);
+  if (androidMain) {
+    const androidRes = join(androidMain, "res");
+    for (const [folder, size] of Object.entries(MIPMAP_LAUNCHER)) {
+      const base = join(androidRes, folder);
+      const icon = await renderIcon(size);
+      writePng(join(base, "ic_launcher.png"), icon);
+      writePng(join(base, "ic_launcher_round.png"), icon);
+    }
 
-  for (const [folder, size] of Object.entries(MIPMAP_FOREGROUND)) {
-    writePng(join(ANDROID_RES, folder, "ic_launcher_foreground.png"), await renderForeground(size));
-  }
+    for (const [folder, size] of Object.entries(MIPMAP_FOREGROUND)) {
+      writePng(
+        join(androidRes, folder, "ic_launcher_foreground.png"),
+        await renderForeground(size),
+      );
+    }
 
-  for (const [folder, { w, h }] of Object.entries(SPLASH_SIZES)) {
-    writePng(join(ANDROID_RES, folder, "splash.png"), await renderSplash(w, h));
+    for (const [folder, { w, h }] of Object.entries(SPLASH_SIZES)) {
+      writePng(join(androidRes, folder, "splash.png"), await renderSplash(w, h));
+    }
+  } else {
+    console.log(
+      "brand:icons — skip Android mipmap/splash（尚无 gen/android；init 后请再跑 just brand-icons）",
+    );
   }
 
   writePng(join(ROOT, "src/ui-kit/brand/app-icon.png"), await renderIcon(64));

@@ -7,9 +7,16 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveTauriAndroidMain } from "./tauri-android-gen-paths.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const androidMain = join(root, "src/portal/app/tauri/src-tauri/gen/android/portal/src/main");
+const androidMain = resolveTauriAndroidMain(root);
+if (!androidMain) {
+  console.error(
+    "[patch-tauri-android] 缺少 gen/android/*/src/main/AndroidManifest.xml，请先：just install tauri-android -- --init",
+  );
+  process.exit(1);
+}
 const manifestPath = join(androidMain, "AndroidManifest.xml");
 const xmlDir = join(androidMain, "res/xml");
 const nscPath = join(xmlDir, "network_security_config.xml");
@@ -31,13 +38,6 @@ const NSC = `<?xml version="1.0" encoding="utf-8"?>
     </base-config>
 </network-security-config>
 `;
-
-if (!existsSync(manifestPath)) {
-  console.error(
-    `[patch-tauri-android] 缺少 ${manifestPath}，请先：just install tauri-android -- --init`,
-  );
-  process.exit(1);
-}
 
 mkdirSync(xmlDir, { recursive: true });
 writeFileSync(nscPath, NSC, "utf-8");
