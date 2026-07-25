@@ -130,7 +130,7 @@ Definition: Memory of "what I felt"—not objective fact, not behavioral record,
 
 Conversion from working memory to long-term memory is handled by the sleep mechanism. See [`sleep.md`](sleep.md).
 
-- **Sleep cycle (✅):** single cron `builtin-sleep-cycle` @ 02:00; orchestrates a DAG (see [`sleep.md`](sleep.md))
+- **Sleep cycle (✅):** in-process `Bun.cron` `builtin-sleep-cycle` @ 02:00; orchestrates a DAG (see [`sleep.md`](sleep.md))
 - **Light sleep (✅):** step `light-sleep` — semantic + limbic + autobiographical extraction
 - **Deep sleep (✅):** step `deep-sleep` (depends on light-sleep) — contradiction/expiry, split, merge, pin maintenance
 

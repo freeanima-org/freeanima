@@ -3,14 +3,9 @@ import { CronJob } from "./models.ts";
 import {
   createCronJobRow,
   deleteCronJobRow,
-  ensureBuiltinCronJobs,
   getCronHandleManager,
   getJob,
-  initCronModule,
-  isCronModuleInitialized,
   loadAllJobs,
-  resetCronModuleForTests,
-  stopCronModule,
   updateCronJobRow,
 } from "./module.ts";
 import { parseSchedule } from "./schedule.ts";
@@ -97,7 +92,15 @@ export {
   stopCronModule,
   resetCronModuleForTests,
   isCronModuleInitialized,
-};
+  getInprocessBuiltinStatus,
+  isInprocessBuiltinId,
+  listInprocessBuiltinStatuses,
+} from "./module.ts";
+export {
+  INPROCESS_BUILTIN_DEFS,
+  type InprocessBuiltinDef,
+  type InprocessBuiltinRuntime,
+} from "./inprocess-builtins.ts";
 
 export { cronJobDataSchema, cronJobsFileSchema, type CronJobData } from "./schema.ts";
 export { CronJob } from "./models.ts";

@@ -83,24 +83,24 @@ just misc memory-sample -- --habitat-url http://127.0.0.1:<habitat> --stage full
 
 ## Doc map
 
-| File                                                                                 | Role                                                                |
-| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| [`AGENTS.md`](AGENTS.md)                                                             | Bootstrap protocol, product & code principles (this file)           |
-| [`.agent/rules/`](.agent/rules/README.md)                                            | Implementation constraints (layers, tests, coding, DB, packages)    |
-| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues)                   | Actionable tasks and discussions                                    |
-| [`docs/product/architecture.md`](docs/product/architecture.md)                       | Architecture principles and direction                               |
-| [`docs/cognition/environment-awareness.md`](docs/cognition/environment-awareness.md) | Environment + health baseline (session prompt + change notify)      |
-| [`docs/product/anima-uri.md`](docs/product/anima-uri.md)                             | Anima URI（entity 定位 / overlay；id 入库、URI 在 UI）              |
-| [`.agent/rules/repository-topology.md`](.agent/rules/repository-topology.md)         | Repo layout Phase 1 host/client；ui-kit∥shared；i18n site/ui/host   |
-| [`docs/cognition/temporal-summary.md`](docs/cognition/temporal-summary.md)           | Objective time digests (day/month/year; peer rollup)                |
-| [`docs/product/`](docs/product/)                                                     | Product framing (architecture, identity, entity model)              |
-| [`docs/cognition/`](docs/cognition/)                                                 | Cognitive mechanisms (memory, sleep, self layer, etc.)              |
-| [`docs/ui/`](docs/ui/README.md)                                                      | UI/UX design system (dimensions, foundations, components, patterns) |
-| [`docs/aspects/`](docs/aspects/)                                                     | Cross-cutting design planes (Portal data plane, offline, refresh)   |
-| [`docs/modules/`](docs/modules/)                                                     | Product capability modules (chat, companion, project, …)            |
-| [`docs/ops/`](docs/ops/)                                                             | Deploy, secure, connect Habitat                                     |
-| [`docs/ops/habitat-rpc.md`](docs/ops/habitat-rpc.md)                                 | Habitat RPC transport + remote tool registration                    |
-| [`docs/tools/`](docs/tools/)                                                         | Built-in ToolSets (browser, execute-code, freeanima_docs, …)        |
+| File                                                                                 | Role                                                                              |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| [`AGENTS.md`](AGENTS.md)                                                             | Bootstrap protocol, product & code principles (this file)                         |
+| [`.agent/rules/`](.agent/rules/README.md)                                            | Implementation constraints (layers, tests, coding, DB, packages)                  |
+| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues)                   | Actionable tasks and discussions                                                  |
+| [`docs/product/architecture.md`](docs/product/architecture.md)                       | Architecture principles and direction                                             |
+| [`docs/cognition/environment-awareness.md`](docs/cognition/environment-awareness.md) | Environment + health baseline (session prompt + change notify)                    |
+| [`docs/product/anima-uri.md`](docs/product/anima-uri.md)                             | Anima URI（entity 定位 / overlay；id 入库、URI 在 UI）                            |
+| [`.agent/rules/repository-topology.md`](.agent/rules/repository-topology.md)         | Repo layout Phase 1 host/client；ui-kit∥shared；i18n site/ui/host                 |
+| [`docs/cognition/temporal-summary.md`](docs/cognition/temporal-summary.md)           | Objective time digests (day/month/year; peer rollup)                              |
+| [`docs/product/`](docs/product/)                                                     | Product framing (architecture, identity, entity model)                            |
+| [`docs/cognition/`](docs/cognition/)                                                 | Cognitive mechanisms (memory, sleep, self layer, etc.)                            |
+| [`docs/ui/`](docs/ui/README.md)                                                      | UI/UX design system (dimensions, foundations, components, patterns)               |
+| [`docs/aspects/`](docs/aspects/)                                                     | Cross-cutting design planes (data plane, offline, refresh, notification/reminder) |
+| [`docs/modules/`](docs/modules/)                                                     | Product capability modules (chat, companion, project, …)                          |
+| [`docs/ops/`](docs/ops/)                                                             | Deploy, secure, connect Habitat                                                   |
+| [`docs/ops/habitat-rpc.md`](docs/ops/habitat-rpc.md)                                 | Habitat RPC transport + remote tool registration                                  |
+| [`docs/tools/`](docs/tools/)                                                         | Built-in ToolSets (browser, execute-code, freeanima_docs, …)                      |
 
 ---
 

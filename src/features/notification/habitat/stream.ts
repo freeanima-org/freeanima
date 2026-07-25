@@ -10,11 +10,18 @@ async function* bridgeUserNotificationCreated(
 ): AsyncGenerator<{ method: string; payload: Record<string, unknown> }> {
   const queue: UserNotificationCreatedPayload[] = [];
   let wake: (() => void) | null = null;
-  const unwatch = watchUserNotificationCreated((payload) => {
-    queue.push(payload);
+  const kick = (): void => {
     wake?.();
     wake = null;
+  };
+  const unwatch = watchUserNotificationCreated((payload) => {
+    queue.push(payload);
+    kick();
   });
+  const onAbort = (): void => {
+    kick();
+  };
+  signal.addEventListener("abort", onAbort);
   try {
     while (!signal.aborted) {
       if (queue.length === 0) {
@@ -36,6 +43,7 @@ async function* bridgeUserNotificationCreated(
       };
     }
   } finally {
+    signal.removeEventListener("abort", onAbort);
     unwatch();
   }
 }

@@ -17,7 +17,7 @@ Outpost/Portal UI keeps data fresh with two distinct verbs. Do not conflate them
 
 ## Principles
 
-- **Limited auto**: keep sync + existing live channels (chat `stream.*`, `conversation.updated`, `pomodoro.active.changed`). No global list polling. No unconditional `refreshAll` of every module on visibility when the outbox is empty.
+- **Limited auto**: keep sync + existing live channels (chat `stream.*`, `conversation.updated`, `pomodoro.active.changed`, `notification.created`). No global list polling for attention or lists. No unconditional `refreshAll` of every module on visibility when the outbox is empty. Attention routing → [Notification and reminder](notification-and-reminder.md).
 - **Manual refresh required** on product list surfaces so multi-device / agent edits can be pulled on demand.
 - **Interaction dimension** (see [UI dimensions](../ui/dimensions.md), agent API in [ui-dimensions](../../.agent/rules/ui-dimensions.md)): pointer uses a header button; touch also gets pull-to-refresh on the primary list. Shell kind does not lock the affordance. Pattern note → [UI patterns](../ui/patterns.md) (PullToRefresh candidate / DataListRow sibling surfaces).
 - **Out of scope**: Habitat fan-out for every CRUD entity; adopting the React Query **library** (self-owned hooks on the [Portal data plane](portal-data-plane.md) are fine); turning the offline-sync toast into a page refresh control.

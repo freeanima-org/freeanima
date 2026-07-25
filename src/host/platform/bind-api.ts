@@ -3,7 +3,9 @@ import { registerStatsReport } from "@freeanima/host/platform/ports/conversation
 import { registerCronUseCases } from "@freeanima/host/platform/ports/cron-use-cases";
 import {
   formatCronNotificationText,
+  formatInprocessBuiltinFailureText,
   registerCronNotify,
+  registerInprocessBuiltinFailureNotify,
 } from "@freeanima/host/platform/ports/cron-notify";
 import { registerOnConversationCloseBeforeNew } from "@freeanima/host/platform/ports/conversation-close";
 import { getToolConversationId } from "@freeanima/host/core/tool";
@@ -32,6 +34,15 @@ export function bindServicePorts(deps: FullRuntimeDeps): void {
       body,
       source_kind: "cron",
       source_ref: `${job.id}:${job.run_count}:${payload.success ? "ok" : "fail"}`,
+    });
+  });
+  registerInprocessBuiltinFailureNotify(async (payload) => {
+    const { title, body } = formatInprocessBuiltinFailureText(payload);
+    await notifyBothRecipients(deps, deps.engine.config, {
+      title,
+      body,
+      source_kind: "system",
+      source_ref: `inprocess:${payload.id}:${payload.run_count}:fail`,
     });
   });
   registerRunSimpleTurn((opts) => runSimpleTurn(deps, opts));

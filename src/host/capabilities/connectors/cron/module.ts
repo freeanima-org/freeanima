@@ -7,7 +7,13 @@ import {
   updateCronJob,
   upsertBuiltinCronJob,
 } from "@freeanima/host/core/db/pg/cron";
+import { logComponent } from "@freeanima/host/platform/logging";
 import { CronHandleManager } from "./handle-manager.ts";
+import {
+  purgeInprocessBuiltinRowsFromPg,
+  startInprocessBuiltins,
+  stopInprocessBuiltins,
+} from "./inprocess-builtins.ts";
 import { CronJob } from "./models.ts";
 import { runJobById } from "./runner.ts";
 
@@ -26,11 +32,17 @@ export async function initCronModule(): Promise<void> {
   if (handles) return;
   handles = new CronHandleManager((jobId) => runJobById(jobId));
   await ensureBuiltinCronJobs();
+  const purged = await purgeInprocessBuiltinRowsFromPg();
+  if (purged > 0) {
+    logComponent("cron").info(`purged ${purged} legacy inprocess builtin row(s) from cron_jobs`);
+  }
   const jobs = await loadAllJobs();
   handles.syncAll(jobs);
+  startInprocessBuiltins();
 }
 
 export function stopCronModule(): void {
+  stopInprocessBuiltins();
   handles?.stopAll();
   handles = null;
 }
@@ -39,6 +51,12 @@ export function stopCronModule(): void {
 export function resetCronModuleForTests(): void {
   stopCronModule();
 }
+
+export {
+  getInprocessBuiltinStatus,
+  isInprocessBuiltinId,
+  listInprocessBuiltinStatuses,
+} from "./inprocess-builtins.ts";
 
 export async function loadAllJobs(): Promise<CronJob[]> {
   if (!handles) return [];
@@ -74,72 +92,9 @@ export function rowToPatch(job: CronJob): CronJobUpdateInput {
   };
 }
 
+/** PG cron_jobs 仅保留仍需任务表的 builtin（如 email-sync）；其余见 inprocess-builtins */
 export async function ensureBuiltinCronJobs(): Promise<void> {
-  await _ensureBuiltinSleepCycleCronJob();
-  await _ensureBuiltinTaskRemindersCronJob();
-  await ensureBuiltinEnvHealthCronJob();
-  await ensureBuiltinTemporalSummaryTickCronJob();
   await ensureBuiltinEmailSyncAllCronJob();
-}
-
-async function _ensureBuiltinSleepCycleCronJob(): Promise<void> {
-  const id = "builtin-sleep-cycle";
-  const scheduleChanged = await upsertBuiltinCronJob({
-    id,
-    name: "sleep-cycle",
-    schedule: "0 2 * * *",
-    prompt: "",
-    no_agent: true,
-    timeout_sec: 7200,
-  });
-  const job = await getJob(id);
-  if (!job || !handles) return;
-  if (scheduleChanged) handles.reregister(job);
-}
-
-async function _ensureBuiltinTaskRemindersCronJob(): Promise<void> {
-  const id = "builtin-task-reminders";
-  const scheduleChanged = await upsertBuiltinCronJob({
-    id,
-    name: "task-reminders",
-    schedule: "* * * * *",
-    prompt: "",
-    no_agent: true,
-    timeout_sec: 600,
-  });
-  const job = await getJob(id);
-  if (!job || !handles) return;
-  if (scheduleChanged) handles.reregister(job);
-}
-
-async function ensureBuiltinEnvHealthCronJob(): Promise<void> {
-  const id = "builtin-env-health";
-  const scheduleChanged = await upsertBuiltinCronJob({
-    id,
-    name: "env-health",
-    schedule: "*/5 * * * *",
-    prompt: "",
-    no_agent: true,
-    timeout_sec: 120,
-  });
-  const job = await getJob(id);
-  if (!job || !handles) return;
-  if (scheduleChanged) handles.reregister(job);
-}
-
-async function ensureBuiltinTemporalSummaryTickCronJob(): Promise<void> {
-  const id = "builtin-temporal-summary-tick";
-  const scheduleChanged = await upsertBuiltinCronJob({
-    id,
-    name: "temporal-summary-tick",
-    schedule: "*/30 * * * *",
-    prompt: "",
-    no_agent: true,
-    timeout_sec: 1800,
-  });
-  const job = await getJob(id);
-  if (!job || !handles) return;
-  if (scheduleChanged) handles.reregister(job);
 }
 
 async function ensureBuiltinEmailSyncAllCronJob(): Promise<void> {

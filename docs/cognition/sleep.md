@@ -21,7 +21,7 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 
 | Mechanism              | Status         | Notes                                                                                                       |
 | ---------------------- | -------------- | ----------------------------------------------------------------------------------------------------------- |
-| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                                                                   |
+| Sleep cycle pipeline   | ✅ Implemented | In-process `Bun.cron` `builtin-sleep-cycle` @ 02:00 CST（不经 PG `cron_jobs`）                              |
 | Session cleanup        | ✅ Implemented | Step `conversation-cleanup` before light-sleep in sleep-cycle DAG                                           |
 | Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                                                                       |
 | Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                                                                   |
@@ -38,7 +38,7 @@ Sleep uses a **macro DAG** (`sleep-cycle` pipeline) orchestrated by `PipelineRun
 
 Habitat (`/habitat`/dashboard/sleep`) supports **diagnostic** runs: full cycle or individual steps (`force` skips dependency checks). **Deep sleep mode** (full vs incremental) can be selected before manual runs.
 
-**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Habitat → Cron** via each task's **Run history** button.
+**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). Sleep-cycle scheduling is **in-process `Bun.cron`** (not listed under Habitat → Cron / `cron_log`); diagnostics remain on the Sleep dashboard.
 
 Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.json` (SSOT for step status; no EventBus).
 
@@ -97,7 +97,7 @@ Two memories semantically negate each other and cannot be explained by temporal 
 ## Trigger Mechanism
 
 ```cron
-0 2 * * *  sleep-cycle   # builtin-sleep-cycle: conversation-cleanup → light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync
+0 2 * * *  sleep-cycle   # in-process Bun.cron builtin-sleep-cycle: conversation-cleanup → light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync
 ```
 
 DAG (macro layer):

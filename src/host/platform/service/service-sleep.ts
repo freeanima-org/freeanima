@@ -6,7 +6,12 @@ import type {
 import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
 import { listPipelineStepRuns as listPgPipelineStepRuns } from "@freeanima/host/core/db/pg/pipeline";
 import { listCronLogs as listPgCronLogs } from "@freeanima/host/core/db/pg/cron";
-import { buildSleepSummary, type SleepSummary } from "@freeanima/host/capabilities/memory";
+import { getInprocessBuiltinStatus } from "@freeanima/host/capabilities/connectors/cron";
+import {
+  buildSleepSummary,
+  SLEEP_CYCLE_JOB_ID,
+  type SleepSummary,
+} from "@freeanima/host/capabilities/memory";
 import type { PipelineRunState } from "@freeanima/host/engine/pipeline";
 
 import {
@@ -24,15 +29,28 @@ let sleepStepRunning = false;
 
 export async function getSleepSummary(): Promise<SleepSummary> {
   const { jobs } = await listCronJobs();
-  return buildSleepSummary(
-    jobs.map((j) => ({
-      id: j.id,
-      name: j.name,
-      paused: j.paused,
-      run_count: j.run_count,
-      last_run_at: j.last_run_at > 0 ? new Date(j.last_run_at * 1000).toISOString() : null,
-    })),
-  );
+  const mapped = jobs.map((j) => ({
+    id: j.id,
+    name: j.name,
+    paused: j.paused,
+    run_count: j.run_count,
+    last_run_at: j.last_run_at > 0 ? new Date(j.last_run_at * 1000).toISOString() : null,
+  }));
+  // sleep-cycle 已迁出 cron_jobs，从进程内 Bun.cron 状态注入
+  const sleepInprocess = getInprocessBuiltinStatus(SLEEP_CYCLE_JOB_ID);
+  if (sleepInprocess && !mapped.some((j) => j.id === SLEEP_CYCLE_JOB_ID)) {
+    mapped.push({
+      id: sleepInprocess.id,
+      name: sleepInprocess.name,
+      paused: sleepInprocess.paused,
+      run_count: sleepInprocess.run_count,
+      last_run_at:
+        sleepInprocess.last_run_at > 0
+          ? new Date(sleepInprocess.last_run_at * 1000).toISOString()
+          : null,
+    });
+  }
+  return buildSleepSummary(mapped);
 }
 
 export async function listPipelineStepRuns(

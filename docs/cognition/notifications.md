@@ -4,11 +4,11 @@ title: Notifications
 
 # Notifications
 
-代码里 **`notification*`** 指 **Inbox（收件箱）**；瞬时提醒使用 **`alert*`** 命名空间（`portal-sdk/alert`），二者概念分离。
+代码里 **`notification*`** 指 **Inbox（收件箱）**；瞬时打断使用 **`alert*`** / `deliverLocalReminder`。产品上的 **通知 / 提醒 / 本机打断** 三分法、任务 due vs 多提醒、Habitat **睡到下次** 时间发现、壳层 Attention 集中订阅 → 切面 [`notification-and-reminder.md`](../aspects/notification-and-reminder.md)。
 
 ## Inbox（收件箱）
 
-PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron results, task due reminders, and LLM tools write here; Shell UI lists and marks read via SAP.
+PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron job results, **task due** (target), env/health changes, and LLM tools write here; Shell UI lists and marks read via SAP. Advance task reminders are **not** Inbox rows — see the aspect.
 
 ## Alert（本机提醒，本机-only）
 
@@ -30,7 +30,7 @@ Alert 分两档（同一契约，成对）：
 
 硬约束：**schedule ⊕ cancel 成对**。只登记不能取消 = 不可用（暂停/手动中止后仍会到点骚扰）。同 `tag` 再 `schedule` = replace（先 cancel 再登记）；`cancel` 对不存在的 id/tag **幂等成功**。
 
-用户 Inbox 新建经 `notification.subscribeInbox` → `notification.created` 推到各端，再走 `deliverLocalReminder`。Chat 未读会话数上升同理（`ChatUnreadShellWatcher`）。
+用户 Inbox 新建经 `notification.subscribeInbox` → `notification.created` 推到各端，再走 `deliverLocalReminder`。Chat 未读会话数上升同理（`ChatUnreadShellWatcher`）。`subscribeInbox` 的 pump 与 chat 一样绑定 Habitat RPC **WS 会话**（断线 abort，重连后可重建）；勿用进程级单例 Map，否则重连后推送会静默丢失而 `notification.list` 仍正常。
 
 ### 三壳 durability
 
@@ -46,14 +46,15 @@ Alert 分两档（同一契约，成对）：
 
 阶段开始 / 继续时：伴侣**未**显示则 `scheduleLocalAlert`（`phaseEndsAt`）；伴侣显示时**不**预登记（OS 定时器无法走气泡），靠 `PomodoroShellWatcher` 即时路径气泡。暂停、**手动取消进行中会话**（`runPhaseAbort`）、阶段完成等路径 `cancelScheduledAlert`。伴侣显隐切换时重新 sync 预登记。
 
-| 事件                      | Inbox |             本机提醒             | SSOT                |
-| ------------------------- | :---: | :------------------------------: | ------------------- |
-| 任务到期/提醒             |   ✓   | ✓（user inbox → subscribeInbox） | `task_item` + inbox |
-| Agent `notification_send` |   ✓   |   ✓（仅 user 行触发本机提醒）    | inbox               |
-| Chat 未读上升             |   ✗   |   ✓（`deliverLocalReminder`）    | `conversation`      |
-| 番茄钟阶段结束            |   ✗   |    ✓（伴侣气泡或预登记+即时）    | `pomodoro_session`  |
+| 事件                       |      Inbox（目标）       |          本机打断           | SSOT                  |
+| -------------------------- | :----------------------: | :-------------------------: | --------------------- |
+| 任务**到期** due           | ✓（该 World 的 subject） | 可经 `notification.created` | `task_item` + inbox   |
+| 任务**提前提醒**（可多条） |            ✗             |    ✓（直达，不经 Inbox）    | `task_item` reminders |
+| `notification_send`        |            ✓             |  按收件 subject 需要打断时  | inbox                 |
+| Chat 未读上升              |            ✗             |              ✓              | `conversation`        |
+| 番茄钟阶段结束             |            ✗             |              ✓              | `pomodoro_session`    |
 
-番茄钟阶段结束**不写 inbox**；会话历史由 `pomodoro_session` entity 承担。
+上表为目标态；现状 gap 见切面。番茄钟阶段结束**不写 inbox**；会话历史由 `pomodoro_session` entity 承担。
 
 实现：`src/client/portal-sdk/local-reminder.ts` + `portal-sdk/alert/` + 各端 backend。
 
@@ -67,7 +68,7 @@ Alert 分两档（同一契约，成对）：
 
 （以下为 Inbox 专章，保留原行为说明。）
 
-PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron results, task due reminders, and LLM tools write here; Shell UI lists and marks read via SAP.
+PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron job results, task **due**, env/health, and LLM tools write here; Shell UI lists and marks read via SAP. Advance reminders are not Inbox rows.
 
 ## Recipients
 
@@ -88,13 +89,14 @@ Legacy `notifications.user_subject_id` / `agent_subject_id` are still read as fa
 
 Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` (entity id string from `ResolvedWorldContext`).
 
-| Writer                                  | Typical recipient                            |
-| --------------------------------------- | -------------------------------------------- |
-| Cron success (when `notify_on_success`) | **both** user + agent                        |
-| Cron failure                            | **both** user + agent                        |
-| Task due reminder                       | user                                         |
-| Env/health baseline change              | **both** user + agent (`builtin-env-health`) |
-| `notification_send` tool                | user / agent / both; optional `subject_id`   |
+| Writer                                  | Typical recipient                             |
+| --------------------------------------- | --------------------------------------------- |
+| Cron success (when `notify_on_success`) | **both** user + agent                         |
+| Cron failure                            | **both** user + agent                         |
+| Task **due** (target)                   | subject of the task’s World                   |
+| Env/health baseline change              | **both** user + agent (`builtin-env-health`)  |
+| In-process builtin failure              | **both** user + agent（无 cron_log 时的替代） |
+| `notification_send` tool                | user / agent / both; optional `subject_id`    |
 
 Dream pipeline **does not** create notifications (reminder removed).
 
@@ -128,19 +130,11 @@ Load via `toolset_load` with `notification`.
 
 `subject_id` must be the configured `user_subject_id` or `agent_subject_id` from system prompt / `ResolvedWorldContext`.
 
-## Task reminder scan
+## Task due / reminder discovery
 
-Builtin cron `builtin-task-reminders` runs **every minute** (`* * * * *`).
+**Target** (see [notification-and-reminder](../aspects/notification-and-reminder.md)): Habitat **sleep-until-next** (one next-fire timer). **Due** → Inbox for the entity’s World subject; **advance reminders** → local interrupt only. Do **not** use PG `cron_jobs` / `cron_log` for discovery.
 
-For each pending `task_item`:
-
-1. **Trigger time**: `remind_at` if set, else `due_at`; if neither, skip.
-2. **Send** when `trigger <= now` and `last_notified_at` is absent or `last_notified_at < trigger` (entity JSONB field on schedulable body).
-3. **After send**: patch `last_notified_at` on the task entity; do not rely on day-based `source_ref` dedup alone.
-
-**Product rule (confirmed)**: one trigger per task per scan — **remind first, else due**; not separate notifications for both when both are set.
-
-Task reminders are delivered to the **user** inbox via cron (Shell UI / SAP), not injected into agent context and not duplicated by `notification_send`.
+**Current code:** `builtin-task-reminders` runs via in-process `Bun.cron` (`* * * * *`, no PG cron row / no empty-scan `cron_log`). Still transitional vs sleep-until-next; single `remind_at` with remind-else-due writes the user Inbox; scan walks `user_world_id` only.
 
 ## Tools
 
@@ -163,4 +157,5 @@ No SAP create RPC in v1; writes are Habitat-internal + tools.
 
 ## Related
 
+- Aspect (Notification / Reminder / Alert, Attention hub): [`notification-and-reminder.md`](../aspects/notification-and-reminder.md)
 - Entity subjects: [`entity-model.md`](../product/entity-model.md)

@@ -51,3 +51,42 @@ export function formatCronNotificationText(
     body: `Cron job '${job.name}' failed:\n${err}`,
   };
 }
+
+/** 进程内 builtin（无 cron_log）失败 → Inbox；由 platform bind 到 notifyBothRecipients */
+export type InprocessBuiltinFailurePayload = {
+  id: string;
+  name: string;
+  error: string;
+  run_count: number;
+};
+
+export type InprocessBuiltinFailureNotifyFn = (
+  payload: InprocessBuiltinFailurePayload,
+) => Promise<void>;
+
+let inprocessFailureNotify: InprocessBuiltinFailureNotifyFn | null = null;
+
+export function registerInprocessBuiltinFailureNotify(fn: InprocessBuiltinFailureNotifyFn): void {
+  inprocessFailureNotify = fn;
+}
+
+export function unregisterInprocessBuiltinFailureNotify(): void {
+  inprocessFailureNotify = null;
+}
+
+export async function notifyInprocessBuiltinFailure(
+  payload: InprocessBuiltinFailurePayload,
+): Promise<void> {
+  if (!inprocessFailureNotify) return;
+  await inprocessFailureNotify(payload);
+}
+
+export function formatInprocessBuiltinFailureText(payload: InprocessBuiltinFailurePayload): {
+  title: string;
+  body: string;
+} {
+  return {
+    title: `Builtin failed: ${payload.name}`,
+    body: `In-process builtin '${payload.id}' failed:\n${payload.error}`,
+  };
+}

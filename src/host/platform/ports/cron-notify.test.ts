@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { CronJob } from "@freeanima/host/capabilities/connectors/cron/models";
-import { shouldNotifyCronJobResult } from "./cron-notify.ts";
+import { formatInprocessBuiltinFailureText, shouldNotifyCronJobResult } from "./cron-notify.ts";
 
 describe("shouldNotifyCronJobResult", () => {
   const job = new CronJob({ id: "j1", name: "test", schedule: "1h" });
@@ -15,5 +15,19 @@ describe("shouldNotifyCronJobResult", () => {
 
   it("always notifies failure", () => {
     expect(shouldNotifyCronJobResult({ ...job, notify_on_success: false }, false)).toBe(true);
+  });
+});
+
+describe("formatInprocessBuiltinFailureText", () => {
+  it("titles with builtin name", () => {
+    const text = formatInprocessBuiltinFailureText({
+      id: "builtin-env-health",
+      name: "env-health",
+      error: "disk full",
+      run_count: 3,
+    });
+    expect(text.title).toBe("Builtin failed: env-health");
+    expect(text.body).toContain("builtin-env-health");
+    expect(text.body).toContain("disk full");
   });
 });
