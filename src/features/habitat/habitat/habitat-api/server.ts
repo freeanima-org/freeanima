@@ -34,11 +34,15 @@ export type ApiServerOptions = {
 export type ApiServerStartResult = {
   handles: ApiServerHandle[];
   tlsPort: number | null;
+  /** 用新证书重启 HTTPS 监听（HTTP 不变）；无 TLS 时为 undefined */
+  reloadTls?: (tlsListen: ApiServerTlsOptions) => Promise<void>;
 };
 
 export type ApiServerHandle = {
   port: number;
   close: () => void | Promise<void>;
+  /** 仅停监听（TLS 热重载）；不触发 admin/ws 广播 */
+  stopListen?: () => void | Promise<void>;
 };
 
 type ApiServerRuntime = {
@@ -187,6 +191,9 @@ function startApiServerOnHost(
       shutdownAdmin();
       void server.stop(true);
     },
+    stopListen: () => {
+      void server.stop(true);
+    },
   };
 }
 
@@ -215,6 +222,7 @@ export async function startApiHttpServers(
 
   const tlsListen = options.tlsListen;
   let tlsPort: number | null = null;
+  const tlsHandleStart = handles.length;
   if (tlsListen) {
     tlsPort = tlsListen.port;
     for (const host of bindHosts) {
@@ -222,7 +230,23 @@ export async function startApiHttpServers(
     }
   }
 
-  return { handles, tlsPort };
+  const reloadTls =
+    tlsListen != null
+      ? async (next: ApiServerTlsOptions): Promise<void> => {
+          const oldTls = handles.splice(tlsHandleStart);
+          await Promise.all(oldTls.map((h) => Promise.resolve(h.stopListen?.() ?? h.close())));
+          for (const host of bindHosts) {
+            handles.push(startApiServerOnHost(host, next.port, runtime, next.tls));
+          }
+          tlsPort = next.port;
+        }
+      : undefined;
+
+  return {
+    handles,
+    tlsPort,
+    ...(reloadTls ? { reloadTls } : {}),
+  };
 }
 
 /** @alias startApiHttpServer */

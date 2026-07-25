@@ -5,7 +5,7 @@ import { X509Certificate } from "node:crypto";
 import { expandConfigPath } from "./tls-paths.ts";
 import { defaultHabitatTlsCertPath } from "./habitat-tls-material.ts";
 
-export type HabitatTlsIssuerKind = "mkcert" | "self-signed" | "missing";
+export type HabitatTlsIssuerKind = "mkcert" | "self-signed" | "letsencrypt" | "missing";
 
 function commandAvailable(name: string): boolean {
   const r = spawnSync("command", ["-v", name], { encoding: "utf-8", shell: true });
@@ -46,6 +46,9 @@ export function detectHabitatTlsIssuerKind(
     const pem = readFileSync(certPath, "utf-8");
     const cert = new X509Certificate(pem);
     const issuer = cert.issuer.toLowerCase();
+    if (issuer.includes("let's encrypt") || issuer.includes("letsencrypt")) {
+      return "letsencrypt";
+    }
     if (issuer.includes("mkcert")) return "mkcert";
     return "self-signed";
   } catch {

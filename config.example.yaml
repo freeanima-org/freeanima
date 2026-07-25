@@ -21,9 +21,16 @@ database:
 #   tls:
 #     enabled: true          # 额外监听 HTTPS :2659（HTTP :2658 不变）
 #     port: 2659
-#     auto: true             # 缺失 cert/key 时自动生成（优先 mkcert，fallback openssl 自签）
+#     auto: true             # 缺失 cert/key 时自动生成（优先 mkcert，fallback openssl 自签；启用 acme 时忽略）
 #     # cert: ~/.anima/tls/cert.pem
 #     # key: ~/.anima/tls/key.pem
+#     # 可选公网域名 Let's Encrypt（HTTP-01；与局域网 mkcert 二选一优先 acme）
+#     # acme:
+#     #   email: you@example.com
+#     #   domains:
+#     #     - anima.example.com
+#     #   # challenge_port: 80   # 须公网可达
+#     #   # staging: false
 
 # Redis（EventBus / 任务上下文；不可用时静默降级，可选）
 # redis:

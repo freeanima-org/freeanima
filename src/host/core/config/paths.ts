@@ -62,6 +62,10 @@ export const PATHS = {
   get tlsKeyFile() {
     return homePath("tls", "key.pem");
   },
+  /** ACME / Let's Encrypt 账号（URL + 私钥 PEM） */
+  get tlsAcmeAccountFile() {
+    return homePath("tls", "acme-account.json");
+  },
   get vaultAgentMachineKey() {
     return homePath("vault", "agent-machine.key");
   },
