@@ -21,6 +21,7 @@ import type { Config } from "@freeanima/host/core/config";
 import type { SkillRegistry } from "@freeanima/host/core/skill";
 import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 import { registerMemoryTools } from "@freeanima/host/capabilities/memory";
+import { registerOpsTools } from "./service/ops-tools.ts";
 
 let registeredCatalog: { toolSets: ToolSetRegistry; skills: SkillRegistry } | null = null;
 
@@ -45,6 +46,7 @@ export function registerServiceTools(opts: {
   });
   registerClarifyTool(opts.toolSets);
   registerCronjobTool(opts.toolSets);
+  registerOpsTools(opts.toolSets);
   registerNotificationTools(opts.toolSets);
   registerTaskTools(opts.toolSets);
   registerProjectTools(opts.toolSets);

@@ -6,6 +6,8 @@ title: Service
 
 > Runtime status, memory metrics, and common commands.
 
+In Habitat chat, the agent can load ToolSet **`ops`** (`toolset_load(["ops"])`) for on-demand health/status, sanitized config, and partner-confirmed config patch / restart — see [`docs/tools/ops.md`](../tools/ops.md).
+
 ## Status and memory metrics
 
 `anima service status` and `createTypedHabitatClient().call("status.get")` (REST `GET /rpc/v1/status/get`) report process memory under `memory_kb` and `memory_detail`.
