@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import { Argument } from "commander";
 import { runServiceCommand, type ServiceArgs } from "../service-cmd.ts";
-import { resolveServiceBindHost } from "../service-bind-host.ts";
+import { resolveServiceBindHost, resolveServicePort } from "../service-bind-host.ts";
 
 const SERVICE_ACTIONS = ["start", "stop", "restart", "status"] as const;
 
@@ -19,7 +19,7 @@ export function registerServiceCommand(program: Command): void {
       "--host <host>",
       "Listen address (overrides http.host in config; comma-separated for multiple binds)",
     )
-    .option("--port <port>", "Listen port", "2658")
+    .option("--port <port>", "Listen port (overrides http.port in config; default 2658)")
     .addHelpText(
       "after",
       `
@@ -32,15 +32,22 @@ systemd (default):
   and runs systemctl --user enable --now anima
 `,
     )
-    .action(async (action: string, opts: { foreground?: boolean; host?: string; port: string }) => {
-      const args: ServiceArgs = {
-        action,
-        foreground: Boolean(opts.foreground),
-        host: resolveServiceBindHost(opts.host),
-        port: parseInt(opts.port, 10),
-      };
-      await runServiceCommand(args);
-    });
+    .action(
+      async (action: string, opts: { foreground?: boolean; host?: string; port?: string }) => {
+        const portRaw = opts.port?.trim();
+        const cliPort = portRaw != null && portRaw !== "" ? parseInt(portRaw, 10) : undefined;
+        if (cliPort != null && (!Number.isFinite(cliPort) || cliPort <= 0)) {
+          throw new Error(`Invalid --port: ${opts.port}`);
+        }
+        const args: ServiceArgs = {
+          action,
+          foreground: Boolean(opts.foreground),
+          host: resolveServiceBindHost(opts.host),
+          port: resolveServicePort(cliPort),
+        };
+        await runServiceCommand(args);
+      },
+    );
 }
 
 export { SERVICE_ACTIONS };

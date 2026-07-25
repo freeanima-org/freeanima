@@ -2,21 +2,6 @@ import { z } from "zod";
 
 import { DEFAULT_HABITAT_TLS_PORT } from "./http-ports.ts";
 
-/** 完整 origin（scheme://host[:port]，无 path） */
-export const httpCorsOriginSchema = z
-  .string()
-  .url()
-  .refine(
-    (value) => {
-      try {
-        return new URL(value).origin === value;
-      } catch {
-        return false;
-      }
-    },
-    { message: "须为完整 origin（无 path）" },
-  );
-
 const httpBindHostEntrySchema = z.string().min(1);
 
 /** ACME / Let's Encrypt 域名（拒绝裸 IP） */
@@ -45,25 +30,78 @@ export const httpTlsAcmeConfigSchema = z.object({
   staging: z.boolean().optional(),
 });
 
+export const httpTlsModeSchema = z.enum(["mkcert", "acme", "manual"]);
+
+export type HttpTlsMode = z.infer<typeof httpTlsModeSchema>;
+
+/** 未写 mode 时默认 mkcert */
+export function resolveHttpTlsMode(mode: HttpTlsMode | undefined): HttpTlsMode {
+  return mode ?? "mkcert";
+}
+
 export const httpTlsConfigSchema = z
   .object({
     /** 为 true 时在独立端口启动 HTTPS（默认 false） */
     enabled: z.boolean().optional(),
-    /** TLS 监听端口（默认 2659，与 HTTP 2658 分离） */
+    /** HTTPS 监听端口（默认 2659，与 HTTP 端口分离） */
     port: z.number().int().positive().optional(),
-    /** 缺失 cert/key 时自动生成（默认 true；启用 acme 时忽略） */
-    auto: z.boolean().optional(),
-    /** 证书 PEM 路径（支持 env("PATH")） */
+    /**
+     * 证书来源（默认 mkcert）：
+     * - mkcert：缺失时优先 mkcert，否则 openssl 自签
+     * - acme：Let's Encrypt HTTP-01（须配 acme）
+     * - manual：须提供 cert/key
+     */
+    mode: httpTlsModeSchema.optional(),
+    /** 证书 PEM 路径（支持 env("PATH")）；manual 必填，其它模式可选覆盖默认路径 */
     cert: z.string().min(1).optional(),
-    /** 私钥 PEM 路径（支持 env("PATH")） */
+    /** 私钥 PEM 路径（支持 env("PATH")）；manual 必填 */
     key: z.string().min(1).optional(),
     /** 加密私钥 passphrase（支持 env("KEY")） */
     passphrase: z.string().optional(),
-    /**
-     * 可选 Let's Encrypt（HTTP-01）。配置后优先于 mkcert/openssl 自签；
-     * 需公网域名 A/AAAA 指向本机，且 challenge_port（默认 80）可达。
-     */
+    /** mode=acme 时必填 */
     acme: httpTlsAcmeConfigSchema.optional(),
+  })
+  .superRefine((data, ctx) => {
+    const mode = resolveHttpTlsMode(data.mode);
+    if (mode === "manual") {
+      if (!data.cert?.trim()) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["cert"],
+          message: "mode=manual 时须指定 cert",
+        });
+      }
+      if (!data.key?.trim()) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["key"],
+          message: "mode=manual 时须指定 key",
+        });
+      }
+    }
+    if (mode === "acme") {
+      if (!data.acme) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["acme"],
+          message: "mode=acme 时须配置 acme（email + domains）",
+        });
+      }
+    }
+    if (mode === "mkcert" && data.acme != null) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["acme"],
+        message: "mode=mkcert 时不要配置 acme；请改用 mode=acme",
+      });
+    }
+    if (mode === "manual" && data.acme != null) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["acme"],
+        message: "mode=manual 时不要配置 acme；请改用 mode=acme",
+      });
+    }
   })
   .optional();
 
@@ -74,14 +112,14 @@ export const httpConfigSchema = z
      * 字符串支持逗号分隔；数组可写多个 bind。未设时默认 127.0.0.1（仅本机）。
      */
     host: z.union([httpBindHostEntrySchema, z.array(httpBindHostEntrySchema)]).optional(),
-    /** Habitat REST 跨域允许的浏览器 origin（dev:web 等）；经 Habitat /web 同源访问时通常留空 */
-    cors_origins: z.array(httpCorsOriginSchema).optional(),
+    /** HTTP 监听端口（默认 2658）；CLI `--port` 优先 */
+    port: z.number().int().positive().optional(),
     /**
      * TLS 证书 SAN 额外主机名 / IP（如局域网 mDNS 名）；与 `http.host` bind 地址合并。
      * `http.host: 0.0.0.0` 时建议在此列出客户端访问用的主机名与 IP。
      */
     allowed_hosts: z.array(httpBindHostEntrySchema).optional(),
-    /** Habitat 原生 TLS（独立端口；HTTP 端口不变） */
+    /** Habitat 原生 TLS（独立 HTTPS 端口；HTTP 端口不变） */
     tls: httpTlsConfigSchema,
   })
   .optional();
