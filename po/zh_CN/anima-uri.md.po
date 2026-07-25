@@ -20,7 +20,7 @@ msgstr ""
 #: messages/po4a/en.xml:660
 #, no-wrap
 msgid "Anima URI"
-msgstr ""
+msgstr "Anima URI"
 
 #. type: Plain text
 #: docs/product/anima-uri.md:8

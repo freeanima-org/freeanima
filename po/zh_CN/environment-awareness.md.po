@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-25 07:29+0800\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
 "PO-Revision-Date: 2026-07-20 13:14+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -77,7 +77,9 @@ msgstr ""
 
 #. type: Plain text
 #: docs/cognition/environment-awareness.md:22
-msgid "Schedule: every 5 minutes (`*/5 * * * *`), Habitat cron, `no_agent`."
+msgid ""
+"Schedule: every 5 minutes (`*/5 * * * *`), Habitat **in-process `Bun.cron`** "
+"(not PG `cron_jobs` / `cron_log`)."
 msgstr ""
 
 #. type: Fenced code block (text)
@@ -175,8 +177,8 @@ msgstr ""
 
 #. type: Content of: <messages><msg>
 #: docs/cognition/environment-awareness.md:56 docs/cognition/notifications.md:1
-#: docs/cognition/notifications.md:5 messages/po4a/en.xml:469
-#: messages/po4a/en.xml:687
+#: docs/cognition/notifications.md:5 messages/po4a/en.xml:497
+#: messages/po4a/en.xml:716
 #, no-wrap
 msgid "Notifications"
 msgstr "通知"

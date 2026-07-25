@@ -1,0 +1,554 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
+"PO-Revision-Date: 2026-07-25 22:36+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:122
+#: docs/cognition/notifications.md:158 docs/ui/components.md:80
+#: docs/ui/dimensions.md:89 docs/ui/foundations.md:165 docs/ui/overview.md:35
+#: docs/ui/patterns.md:158
+#, no-wrap
+msgid "Related"
+msgstr "相关文档"
+
+#. type: Bullet: '- '
+#: docs/ui/components.md:84 docs/ui/dimensions.md:94 docs/ui/foundations.md:169
+msgid "Patterns → [patterns.md](patterns.md)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/components.md:84 docs/ui/foundations.md:169
+msgid "Dimensions → [dimensions.md](dimensions.md)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:94 docs/ui/foundations.md:169
+msgid "Components → [components.md](components.md)"
+msgstr ""
+
+#. type: Title #
+#: docs/ui/foundations.md:1 docs/ui/foundations.md:5
+#, no-wrap
+msgid "Visual foundations"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:8
+msgid ""
+"Visual language for Portal UI. Token **values** are defined only in [`src/ui-"
+"kit/styles/globals.css`](../../src/ui-kit/styles/globals.css). This page "
+"defines **intent, usage, and dimension adaptation**. Stack: Tailwind CSS v4 "
+"+ shadcn/ui (`@freeanima/ui-kit`). DaisyUI is **not** used."
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:10
+msgid ""
+"Each section uses the [dimension adaptation template]"
+"(dimensions.md#dimension-adaptation-template)."
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:12
+msgid ""
+"Agent bans (raw CSS vars, DaisyUI tokens) → [`.agent/rules/frontend-ui.md`]"
+"(../../.agent/rules/frontend-ui.md)."
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/foundations.md:13
+#, no-wrap
+msgid "Color and theme"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:16
+#, no-wrap
+msgid "**Intent:** Semantic surfaces and text, not ad-hoc hex. Dark mode via root `.dark`. Accent variants on dark via `data-color-theme` (`neutral` default, `ocean` / `forest` / `sunset` / `violet`) from local preference (`portal-sdk/color-theme`).\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:18
+#, no-wrap
+msgid "**Usage:** Tailwind semantic classes (`bg-background`, `text-muted-foreground`, `bg-primary`, `border-border`, …). Prefer `@apply` with those utilities over raw `var(--background)` outside `globals.css`.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:26
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Attribute  | Value                                                                                                                                                 |\n"
+#| "| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| Trigger    | Sleep-cycle step `deep-sleep` (after light-sleep in DAG)                                                                                              |\n"
+#| "| Target     | All active semantic memory                                                                                                                            |\n"
+#| "| Operations | Contradiction detection + expiry marking, split, dedup merge, pin quality review—four sequential rounds                                               |\n"
+#| "| Mode       | **Incremental** (scheduled Tue–Sun): skip quiet rounds when nothing was `updated` in 24h; **Full** (scheduled Mon + manual): all rounds on full store |\n"
+msgid ""
+"| Lens        | Adaptation                                                                                                                                 |\n"
+"| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |\n"
+"| Invariant   | Semantic token names; light/dark pairs; destructive for irreversible risk                                                                  |\n"
+"| Layout      | N/A (same palette); chrome may use `sidebar-*` tokens                                                                                      |\n"
+"| Interaction | Hover/active tints (`hover:bg-muted`, `bg-primary/20` selection) only when pointer can hover; touch must not rely on hover-only color cues |\n"
+"| Shell       | Accent theme is **local client preference**, not Shell kind; do not ship a separate palette per shell                                      |\n"
+"| Forbidden   | DaisyUI `data-theme` / `--color-base-*`; choosing colors from `getShellKind()`                                                             |\n"
+msgstr ""
+"| 属性  | 值                                                                                                |\n"
+"| ---------- | ---------------------------------------------------------------------------------------------------- |\n"
+"| 触发    | sleep-cycle 步骤 `deep-sleep`（DAG 中在 light-sleep 之后）                                             |\n"
+"| 目标     | 全部 active 语义记忆                                                                           |\n"
+"| 操作 | 矛盾检测 + 过期标记、拆分、去重合并、置顶维护——四轮顺序执行 |\n"
+
+#. type: Plain text
+#: docs/ui/foundations.md:28
+#, no-wrap
+msgid "**Pending alignment:** Feature-local one-off colors that bypass semantic tokens.\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/foundations.md:29
+#, no-wrap
+msgid "Typography"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:32
+#, no-wrap
+msgid "**Intent:** Clear hierarchy — page/panel title, body, secondary, meta/label.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:34
+#, no-wrap
+msgid "**Usage (current practice):** Panel titles often `text-lg font-semibold` or `text-sm font-semibold`; body `text-sm`; secondary/meta `text-xs text-muted-foreground`; truncate long titles with `truncate`.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:42
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Capability        | Description                                                                                            |\n"
+#| "| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
+#| "| `memory_recall`   | Four sources: semantic / conversation / limbic / autobiographical; Top N; conversation returns snippet |\n"
+#| "| `sessions_search` | Session message search; returns snippet (not full content)                                             |\n"
+#| "| `memory_remember` | Semantic memory CRUD during conversation                                                               |\n"
+#| "| Resident memory   | System prompt injection (not recall)                                                                   |\n"
+msgid ""
+"| Lens        | Adaptation                                                                                    |\n"
+"| ----------- | --------------------------------------------------------------------------------------------- |\n"
+"| Invariant   | Hierarchy roles (title / body / secondary / meta)                                             |\n"
+"| Layout      | Compact may hide or shorten secondary lines; do not invent a second type scale per breakpoint |\n"
+"| Interaction | Enlarge **hit targets** with spacing/min-height, not by breaking the type scale               |\n"
+"| Shell       | N/A                                                                                           |\n"
+"| Forbidden   | Different font stacks per shell                                                               |\n"
+msgstr ""
+"| 能力              | 说明                                                                                                   |\n"
+"| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
+"| `memory_recall`   | 四源：semantic / conversation / limbic / autobiographical；Top N；conversation 返回 snippet            |\n"
+"| `sessions_search` | 会话消息搜索；返回 snippet（非全文）                                                                   |\n"
+"| `memory_remember` | 对话中语义记忆 CRUD                                                                                    |\n"
+"| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
+
+#. type: Title ##
+#: docs/ui/foundations.md:43
+#, no-wrap
+msgid "Spacing and density"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:46
+#, no-wrap
+msgid "**Intent:** Consistent padding and control heights; touch-friendly targets without sparse pointer UIs.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:48
+#, no-wrap
+msgid "**Usage:** Control heights `h-8` / `h-9` / `h-10`; list rows often `min-h-11` + `px-1 py-1`; panel headers `p-3`.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:56
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Content                                        | Belongs to                              |\n"
+#| "| ---------------------------------------------- | --------------------------------------- |\n"
+#| "| **Detailed** autobiographical narrative        | Memory layer (autobiographical entries) |\n"
+#| "| Other-models (cognition of partner and others) | Memory layer (semantic memory)          |\n"
+#| "| Runtime state / health perception              | Not yet implemented; see Issue #44      |\n"
+#| "| Concrete tool / skill inventory                | Estate layer                            |\n"
+msgid ""
+"| Lens        | Adaptation                                                                                                               |\n"
+"| ----------- | ------------------------------------------------------------------------------------------------------------------------ |\n"
+"| Invariant   | Spacing scale via Tailwind; shared row/control heights where possible                                                    |\n"
+"| Layout      | Compact chrome must clear bottom nav (`--app-bottom-nav-h`); denser chrome, not denser unsafe hits                       |\n"
+"| Interaction | **touch:** minimum ~44px hit target (`min-h-11`); **pointer:** may use denser icon buttons if hover/menu still reachable |\n"
+"| Shell       | Safe-area insets via shell/host (`shared-safe-area.css`); not a second density system                                    |\n"
+"| Forbidden   | `getShellKind()` to pick padding                                                                                         |\n"
+msgstr ""
+"| 内容                                        | 归属                              |\n"
+"| ---------------------------------------------- | --------------------------------------- |\n"
+"| **详细**自传叙事        | 记忆层（自传体条目） |\n"
+"| 他者模型（对伙伴及他人的认知） | 记忆层（语义记忆）          |\n"
+"| 运行态 / 健康感知              | 尚未实现；见 Issue #44      |\n"
+"| 具体工具 / 技能清单                | 资源层                            |\n"
+
+#. type: Title ##
+#: docs/ui/foundations.md:57
+#, no-wrap
+msgid "Radius"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:60
+#, no-wrap
+msgid "**Intent:** Soft but consistent corners from `--radius` (and sm/md/lg/xl derivatives in `@theme`).\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:62
+#, no-wrap
+msgid "**Usage:** Controls/menus often `rounded-md` / `rounded-sm`; rows/Dialogs `rounded-lg`; pills/switches `rounded-full`; compact sheets may use larger top radius (`rounded-t-2xl`).\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:70
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Round | Intent                                                                  |\n"
+#| "| ----- | ----------------------------------------------------------------------- |\n"
+#| "| 1     | Contradiction detection + expiry marking                                |\n"
+#| "| 2     | Split multi-fact entries                                                |\n"
+#| "| 3     | Dedup merge similar entries                                             |\n"
+#| "| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |\n"
+msgid ""
+"| Lens        | Adaptation                                                                     |\n"
+"| ----------- | ------------------------------------------------------------------------------ |\n"
+"| Invariant   | Radius tokens; map control vs surface roles                                    |\n"
+"| Layout      | Sheet/drawer presentation may use larger top radius; Dialog stays `rounded-lg` |\n"
+"| Interaction | N/A                                                                            |\n"
+"| Shell       | N/A                                                                            |\n"
+"| Forbidden   | One-off `rounded-[13px]` sprawl (**pending alignment** where present)          |\n"
+msgstr ""
+"| 轮次 | 意图                                   |\n"
+"| ----- | ---------------------------------------- |\n"
+"| 1     | 矛盾检测 + 过期标记 |\n"
+"| 2     | 拆分多事实条目                 |\n"
+"| 3     | 去重合并相似条目              |\n"
+"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
+
+#. type: Title ##
+#: docs/ui/foundations.md:71
+#, fuzzy, no-wrap
+#| msgid "stored and live differ"
+msgid "Border and dividers"
+msgstr "stored 与 live 不一致"
+
+#. type: Plain text
+#: docs/ui/foundations.md:74
+#, no-wrap
+msgid "**Intent:** Separate regions with `border-border`; prefer list separators or muted backgrounds over card-in-card stacks.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:82
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Round | Intent                                                                  |\n"
+#| "| ----- | ----------------------------------------------------------------------- |\n"
+#| "| 1     | Contradiction detection + expiry marking                                |\n"
+#| "| 2     | Split multi-fact entries                                                |\n"
+#| "| 3     | Dedup merge similar entries                                             |\n"
+#| "| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |\n"
+msgid ""
+"| Lens        | Adaptation                                                                           |\n"
+"| ----------- | ------------------------------------------------------------------------------------ |\n"
+"| Invariant   | `border-border` / `border-input` for controls                                        |\n"
+"| Layout      | Expanded multi-column uses column borders; compact drawers use edge borders + shadow |\n"
+"| Interaction | N/A                                                                                  |\n"
+"| Shell       | N/A                                                                                  |\n"
+"| Forbidden   | Decorative multi-border chrome without information structure                         |\n"
+msgstr ""
+"| 轮次 | 意图                                   |\n"
+"| ----- | ---------------------------------------- |\n"
+"| 1     | 矛盾检测 + 过期标记 |\n"
+"| 2     | 拆分多事实条目                 |\n"
+"| 3     | 去重合并相似条目              |\n"
+"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
+
+#. type: Title ##
+#: docs/ui/foundations.md:83
+#, no-wrap
+msgid "Shadow and elevation"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:86
+#, no-wrap
+msgid "**Intent:** Elevation signals overlay/stacking, not decoration.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:88
+#, no-wrap
+msgid "**Usage:** Controls `shadow-xs`; overlays/drawers `shadow-lg` sparingly.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:96
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Round | Intent                                                                  |\n"
+#| "| ----- | ----------------------------------------------------------------------- |\n"
+#| "| 1     | Contradiction detection + expiry marking                                |\n"
+#| "| 2     | Split multi-fact entries                                                |\n"
+#| "| 3     | Dedup merge similar entries                                             |\n"
+#| "| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |\n"
+msgid ""
+"| Lens        | Adaptation                                                |\n"
+"| ----------- | --------------------------------------------------------- |\n"
+"| Invariant   | Prefer semantic elevation steps; avoid stacked glow       |\n"
+"| Layout      | Drawer/Sheet/Dialog use elevation; list rows usually flat |\n"
+"| Interaction | N/A                                                       |\n"
+"| Shell       | N/A                                                       |\n"
+"| Forbidden   | Glow-as-brand; multi-layer shadows for idle chrome        |\n"
+msgstr ""
+"| 轮次 | 意图                                   |\n"
+"| ----- | ---------------------------------------- |\n"
+"| 1     | 矛盾检测 + 过期标记 |\n"
+"| 2     | 拆分多事实条目                 |\n"
+"| 3     | 去重合并相似条目              |\n"
+"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
+
+#. type: Title ##
+#: docs/ui/foundations.md:97
+#, no-wrap
+msgid "Iconography"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:100
+#, no-wrap
+msgid "**Intent:** Lucide icons; default size aligned with controls (`size-4` common).\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:107
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Round | Intent                                                                  |\n"
+#| "| ----- | ----------------------------------------------------------------------- |\n"
+#| "| 1     | Contradiction detection + expiry marking                                |\n"
+#| "| 2     | Split multi-fact entries                                                |\n"
+#| "| 3     | Dedup merge similar entries                                             |\n"
+#| "| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |\n"
+msgid ""
+"| Lens        | Adaptation                                                      |\n"
+"| ----------- | --------------------------------------------------------------- |\n"
+"| Invariant   | Icon set and default size                                       |\n"
+"| Layout      | N/A                                                             |\n"
+"| Interaction | Enlarge **button hit box**, not the global icon size, for touch |\n"
+"| Shell       | N/A                                                             |\n"
+msgstr ""
+"| 轮次 | 意图                                   |\n"
+"| ----- | ---------------------------------------- |\n"
+"| 1     | 矛盾检测 + 过期标记 |\n"
+"| 2     | 拆分多事实条目                 |\n"
+"| 3     | 去重合并相似条目              |\n"
+"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
+
+#. type: Title ##
+#: docs/ui/foundations.md:108
+#, fuzzy, no-wrap
+#| msgid "Notifications"
+msgid "Motion"
+msgstr "通知"
+
+#. type: Plain text
+#: docs/ui/foundations.md:111
+#, no-wrap
+msgid "**Intent:** Transitions for open/close and state change (Radix/shadcn animate). Motion clarifies hierarchy; it is not ornament.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:119
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Round | Intent                                                                  |\n"
+#| "| ----- | ----------------------------------------------------------------------- |\n"
+#| "| 1     | Contradiction detection + expiry marking                                |\n"
+#| "| 2     | Split multi-fact entries                                                |\n"
+#| "| 3     | Dedup merge similar entries                                             |\n"
+#| "| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |\n"
+msgid ""
+"| Lens        | Adaptation                                                         |\n"
+"| ----------- | ------------------------------------------------------------------ |\n"
+"| Invariant   | Prefer existing animate utilities                                  |\n"
+"| Layout      | Sheet slide vs Dialog zoom follows presentation                    |\n"
+"| Interaction | Do not depend on hover transitions for essential feedback on touch |\n"
+"| Shell       | N/A                                                                |\n"
+"| Forbidden   | Meaningless glow pulses                                            |\n"
+msgstr ""
+"| 轮次 | 意图                                   |\n"
+"| ----- | ---------------------------------------- |\n"
+"| 1     | 矛盾检测 + 过期标记 |\n"
+"| 2     | 拆分多事实条目                 |\n"
+"| 3     | 去重合并相似条目              |\n"
+"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
+
+#. type: Title ##
+#: docs/ui/foundations.md:120
+#, no-wrap
+msgid "Focus and keyboard"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:123
+#, no-wrap
+msgid "**Intent:** Visible `focus-visible` rings (`ring` / `ring-ring`). Dialogs/Sheets default to **blocking** auto-focus on open; confirm actions must not receive default focus.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:131
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Cognitive type   | Description                                                                                 |\n"
+#| "| ---------------- | ------------------------------------------------------------------------------------------- |\n"
+#| "| Episodic         | Conversation archive; full history retained                                                 |\n"
+#| "| Semantic         | Cross-session facts, preferences, experiences; **`procedural` type** for \"how-to\" knowledge |\n"
+#| "| Limbic           | Emotional anchors and imprints — \"what was felt\"                                            |\n"
+#| "| Autobiographical | Meaning of important experiences; recalled on demand                                        |\n"
+msgid ""
+"| Lens        | Adaptation                                                                             |\n"
+"| ----------- | -------------------------------------------------------------------------------------- |\n"
+"| Invariant   | Focus rings; no stealth focus traps on destructive confirms                            |\n"
+"| Layout      | N/A                                                                                    |\n"
+"| Interaction | Keyboard users need visible focus; Enter-to-send is interaction capability, not layout |\n"
+"| Shell       | External keyboard does not flip touch→pointer strategy                                 |\n"
+"| Forbidden   | `autoFocus` on destructive confirm buttons                                             |\n"
+msgstr ""
+"| 认知类型                  | 说明                                                                 |\n"
+"| ------------------------- | -------------------------------------------------------------------- |\n"
+"| Episodic（情景）          | 对话归档；保留完整历史                                               |\n"
+"| Semantic（语义）          | 跨 sessions 的事实、偏好、经历；“how-to” 知识用 **`procedural` 类型** |\n"
+"| Limbic（感性）            | 情绪锚点与印记——“感受到什么”                                         |\n"
+"| Autobiographical（自传） | 重要经历的意义；按需召回                                             |\n"
+
+#. type: Title ##
+#: docs/ui/foundations.md:132
+#, no-wrap
+msgid "Disabled and opacity"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:135
+#, no-wrap
+msgid "**Intent:** `disabled:opacity-50` + `pointer-events-none` on controls; completed/softened content may use `opacity-60`.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:140
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Capability | Desktop           | Mobile                                      |\n"
+#| "| ---------- | ----------------- | ------------------------------------------- |\n"
+#| "| Sentry     | DSN in settings   | Same                                        |\n"
+#| "| DevTools   | F12 / dev package | Debug APK + USB → Chrome `chrome://inspect` |\n"
+msgid ""
+"| Lens                         | Adaptation                  |\n"
+"| ---------------------------- | --------------------------- |\n"
+"| Invariant                    | Disabled affordance pattern |\n"
+"| Layout / Interaction / Shell | N/A                         |\n"
+msgstr ""
+"| 能力 | 桌面              | 移动端                                        |\n"
+"| ---------- | -------------------- | --------------------------------------------- |\n"
+"| Sentry     | 设置中的 DSN      | 相同                                          |\n"
+"| DevTools   | F12 / dev 包    | Debug APK + USB → Chrome `chrome://inspect`   |\n"
+"| Habitat    | Tauri DevTools    | vConsole（设置开关）                    |\n"
+
+#. type: Title ##
+#: docs/ui/foundations.md:141
+#, no-wrap
+msgid "Scrollbars and safe area"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:144
+#, no-wrap
+msgid "**Intent:** Global thin scrollbar styles (`ui-kit` scrollbar CSS). Safe-area CSS variables for notched devices; layout chrome clears bottom nav height.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:152
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Attribute  | Value                                                                                                                                                 |\n"
+#| "| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |\n"
+#| "| Trigger    | Sleep-cycle step `deep-sleep` (after light-sleep in DAG)                                                                                              |\n"
+#| "| Target     | All active semantic memory                                                                                                                            |\n"
+#| "| Operations | Contradiction detection + expiry marking, split, dedup merge, pin quality review—four sequential rounds                                               |\n"
+#| "| Mode       | **Incremental** (scheduled Tue–Sun): skip quiet rounds when nothing was `updated` in 24h; **Full** (scheduled Mon + manual): all rounds on full store |\n"
+msgid ""
+"| Lens        | Adaptation                                                                                                                                 |\n"
+"| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |\n"
+"| Invariant   | Shared scrollbar look                                                                                                                      |\n"
+"| Layout      | Compact fixed layers respect `--app-bottom-nav-h`                                                                                          |\n"
+"| Interaction | Pull-to-refresh ignores starts near left edge (drawer conflict) — see [patterns](patterns.md) / [page refresh](../aspects/page-refresh.md) |\n"
+"| Shell       | Safe-area and keyboard inset host differences                                                                                              |\n"
+"| Forbidden   | Theme colors inside safe-area-only CSS files                                                                                               |\n"
+msgstr ""
+"| 属性  | 值                                                                                                |\n"
+"| ---------- | ---------------------------------------------------------------------------------------------------- |\n"
+"| 触发    | sleep-cycle 步骤 `deep-sleep`（DAG 中在 light-sleep 之后）                                             |\n"
+"| 目标     | 全部 active 语义记忆                                                                           |\n"
+"| 操作 | 矛盾检测 + 过期标记、拆分、去重合并、置顶维护——四轮顺序执行 |\n"
+
+#. type: Title ##
+#: docs/ui/foundations.md:153
+#, no-wrap
+msgid "z-index"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:156
+#, no-wrap
+msgid "**Intent:** Stable stacking for menus, sheets, toasts. Prefer shared conventions over magic numbers.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/foundations.md:164
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Round | Intent                                                                  |\n"
+#| "| ----- | ----------------------------------------------------------------------- |\n"
+#| "| 1     | Contradiction detection + expiry marking                                |\n"
+#| "| 2     | Split multi-fact entries                                                |\n"
+#| "| 3     | Dedup merge similar entries                                             |\n"
+#| "| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |\n"
+msgid ""
+"| Lens        | Adaptation                                                                 |\n"
+"| ----------- | -------------------------------------------------------------------------- |\n"
+"| Invariant   | Overlay above chrome; do not cover bottom nav by raising z-index           |\n"
+"| Layout      | Sheet/Dialog/Drawer stacking                                               |\n"
+"| Interaction | Context menu / ActionSheet above content                                   |\n"
+"| Shell       | N/A                                                                        |\n"
+"| Forbidden   | Ad-hoc `z-[9999]` (**pending alignment** where present, e.g. some pickers) |\n"
+msgstr ""
+"| 轮次 | 意图                                   |\n"
+"| ----- | ---------------------------------------- |\n"
+"| 1     | 矛盾检测 + 过期标记 |\n"
+"| 2     | 拆分多事实条目                 |\n"
+"| 3     | 去重合并相似条目              |\n"
+"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"

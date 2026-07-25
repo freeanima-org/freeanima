@@ -1,6 +1,6 @@
 # 前端 UI — Agent 硬约束（shadcn / Tailwind v4）
 
-> **UI/UX 规范 SSOT** → [`docs/ui/`](../../docs/ui/README.md)（dimensions / foundations / components / patterns）。  
+> **UI/UX 规范 SSOT** → [`docs/ui/`](../../docs/ui/overview.md)（dimensions / foundations / components / patterns）。  
 > 三维度 API → [`ui-dimensions.md`](ui-dimensions.md)。  
 > 功能原型与包边界 → [`frontend-features.md`](frontend-features.md)。  
 > 样式栈：**Tailwind CSS v4 + shadcn/ui**（`@freeanima/ui-kit`）。**禁止 DaisyUI。**

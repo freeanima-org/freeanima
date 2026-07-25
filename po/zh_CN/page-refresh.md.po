@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wv 53\n"
-"POT-Creation-Date: 2026-07-25 07:29+0800\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
 "PO-Revision-Date: 2026-07-17 22:43+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -16,32 +16,38 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/modules/page-refresh.md:1 messages/po4a/en.xml:691
+#: docs/aspects/page-refresh.md:1 messages/po4a/en.xml:720
 #, no-wrap
 msgid "Page refresh"
 msgstr "页面刷新"
 
 #. type: Title #
-#: docs/modules/page-refresh.md:5
+#: docs/aspects/page-refresh.md:5
 #, no-wrap
 msgid "Page refresh (sync vs refresh)"
 msgstr ""
 
 #. type: Plain text
-#: docs/modules/page-refresh.md:8
+#: docs/aspects/page-refresh.md:8
+#, no-wrap
+msgid "> Parent aspect: [Portal data plane](portal-data-plane.md).\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/aspects/page-refresh.md:10
 msgid ""
 "Outpost/Portal UI keeps data fresh with two distinct verbs. Do not conflate "
 "them with PWA / installer “reload”, which updates shell assets only."
 msgstr ""
 
 #. type: Title ##
-#: docs/modules/page-refresh.md:9
+#: docs/aspects/page-refresh.md:11
 #, no-wrap
 msgid "Verbs"
 msgstr ""
 
 #. type: Plain text
-#: docs/modules/page-refresh.md:15
+#: docs/aspects/page-refresh.md:17
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Capability        | Description                                                                                            |\n"
@@ -64,52 +70,57 @@ msgstr ""
 "| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
 
 #. type: Title ##
-#: docs/modules/page-refresh.md:16
+#: docs/aspects/page-refresh.md:18
 #, fuzzy, no-wrap
 #| msgid "Core Principles"
 msgid "Principles"
 msgstr "核心原则"
 
 #. type: Bullet: '- '
-#: docs/modules/page-refresh.md:22
+#: docs/aspects/page-refresh.md:24
 msgid ""
 "**Limited auto**: keep sync + existing live channels (chat `stream.*`, "
-"`conversation.updated`, `pomodoro.active.changed`). No global list polling. "
-"No unconditional `refreshAll` of every module on visibility when the outbox "
-"is empty."
+"`conversation.updated`, `pomodoro.active.changed`, `notification.created`). "
+"No global list polling for attention or lists. No unconditional `refreshAll` "
+"of every module on visibility when the outbox is empty. Attention routing → "
+"[Notification and reminder](notification-and-reminder.md)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/modules/page-refresh.md:22
+#: docs/aspects/page-refresh.md:24
 msgid ""
 "**Manual refresh required** on product list surfaces so multi-device / agent "
 "edits can be pulled on demand."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/modules/page-refresh.md:22
+#: docs/aspects/page-refresh.md:24
 msgid ""
-"**Interaction dimension** (see [ui-dimensions](../../.agent/rules/ui-"
-"dimensions.md)): pointer uses a header button; touch also gets pull-to-"
-"refresh on the primary list. Shell kind does not lock the affordance."
+"**Interaction dimension** (see [UI dimensions](../ui/dimensions.md), agent "
+"API in [ui-dimensions](../../.agent/rules/ui-dimensions.md)): pointer uses a "
+"header button; touch also gets pull-to-refresh on the primary list. Shell "
+"kind does not lock the affordance. Pattern note → [UI patterns](../ui/"
+"patterns.md) (PullToRefresh candidate / DataListRow sibling surfaces)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/modules/page-refresh.md:22
+#: docs/aspects/page-refresh.md:24
 msgid ""
-"**Out of scope**: Habitat fan-out for every CRUD entity; React Query; "
-"turning the offline-sync toast into a page refresh control."
+"**Out of scope**: Habitat fan-out for every CRUD entity; adopting the React "
+"Query **library** (self-owned hooks on the [Portal data plane](portal-data-"
+"plane.md) are fine); turning the offline-sync toast into a page refresh "
+"control."
 msgstr ""
 
 #. type: Title ##
-#: docs/modules/page-refresh.md:23
+#: docs/aspects/page-refresh.md:25
 #, fuzzy, no-wrap
 #| msgid "Message"
 msgid "Page classes"
 msgstr "消息"
 
 #. type: Plain text
-#: docs/modules/page-refresh.md:34
+#: docs/aspects/page-refresh.md:36
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Structure                                | Role                                                                                                                            |\n"
@@ -143,26 +154,27 @@ msgstr ""
 "| `AGENTS.md` 等项目叙事文件       | 项目上下文的锚点                                                                                                             |\n"
 
 #. type: Title ##
-#: docs/modules/page-refresh.md:35
+#: docs/aspects/page-refresh.md:37
 #, fuzzy, no-wrap
 #| msgid "Documentation Index"
 msgid "Implementation notes"
 msgstr "文档索引"
 
 #. type: Bullet: '- '
-#: docs/modules/page-refresh.md:39
+#: docs/aspects/page-refresh.md:41
 msgid ""
 "Shared pull gesture: `@freeanima/ui-kit/composite` `PullToRefresh` (touch-"
-"only; ignore starts near the left edge to avoid drawer swipe conflicts)."
+"only; ignore starts near the left edge to avoid drawer swipe conflicts). "
+"Visual/hit-target norms → [UI foundations](../ui/foundations.md)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/modules/page-refresh.md:39
+#: docs/aspects/page-refresh.md:41
 msgid "Copy: `m.habitat_common_refresh` / `m.habitat_common_refreshing`."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/modules/page-refresh.md:39
+#: docs/aspects/page-refresh.md:41
 msgid ""
 "Follow-up (not required here): soft refresh of the focused module only on "
 "visibility with an empty outbox."

@@ -1,0 +1,337 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title ##
+#: docs/aspects/notification-and-reminder.md:122
+#: docs/cognition/notifications.md:158 docs/ui/components.md:80
+#: docs/ui/dimensions.md:89 docs/ui/foundations.md:165 docs/ui/overview.md:35
+#: docs/ui/patterns.md:158
+#, no-wrap
+msgid "Related"
+msgstr ""
+
+#. type: Title ##
+#: docs/product/architecture.md:381 docs/ui/dimensions.md:11
+#, no-wrap
+msgid "Shell vs app frame"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/components.md:84 docs/ui/dimensions.md:94 docs/ui/foundations.md:169
+msgid "Patterns → [patterns.md](patterns.md)"
+msgstr ""
+
+#. type: Yaml Front Matter Hash Value: title
+#: docs/ui/dimensions.md:1
+#, no-wrap
+msgid "UI dimensions"
+msgstr ""
+
+#. type: Title #
+#: docs/ui/dimensions.md:5
+#, no-wrap
+msgid "UI dimensions (shell / layout / interaction)"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:8
+msgid ""
+"Portal UI is designed along **three orthogonal dimensions**. Visual "
+"foundations, components, and interaction patterns all adapt through this "
+"lens. Phone size does **not** imply compact layout; Tauri does **not** imply "
+"touch."
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:10
+msgid ""
+"Agent API tables and hard bans → [`.agent/rules/ui-dimensions.md`]"
+"(../../.agent/rules/ui-dimensions.md). Implementation entry points are "
+"listed there; this page is the product narrative."
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:17
+#, no-wrap
+msgid ""
+"| Concept       | What it is                                                                  | Code                                                                       |\n"
+"| ------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------- |\n"
+"| **Shell**     | Portal runtime host (browser / Tauri; build targets web / desktop / mobile) | `src/portal/app/*`; `portal-sdk` (`getShellKind`, `ShellApi`, buildTarget) |\n"
+"| **app frame** | Module rail / bottom tabs, settings chrome                                  | `src/client/app-frame` (`AppFrame`); follows **viewport**, not Shell       |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:19
+msgid ""
+"Do not call app frame “Shell”. Do not derive rail vs bottom tabs from Shell "
+"kind."
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/dimensions.md:20
+#, no-wrap
+msgid "The three dimensions"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:27
+#, no-wrap
+msgid ""
+"| Dimension       | Controls                                     | Values                          | How decided                                              | Stability                              |\n"
+"| --------------- | -------------------------------------------- | ------------------------------- | -------------------------------------------------------- | -------------------------------------- |\n"
+"| **Shell**       | Capabilities (native APIs, files, push, IPC) | `web` / `tauri` (+ buildTarget) | Build + runtime (`getShellKind` / `getShellBuildTarget`) | Fixed per install                      |\n"
+"| **Layout**      | Presentation (wide/narrow chrome, nav IA)    | `compact` / `expanded`          | CSS `matchMedia` (viewport)                              | Changes with window size               |\n"
+"| **Interaction** | Input paradigm                               | `touch` / `pointer`             | `primaryInput` → `(pointer: fine)` + `(hover: hover)`    | Usually stable; can follow peripherals |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:29
+msgid ""
+"Colloquial “mobile layout / desktop layout” means `compact` / `expanded` — "
+"not phone shell / desktop shell."
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/dimensions.md:30
+#, no-wrap
+msgid "Core rules"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:36
+msgid "Dimensions are **orthogonal**: none may imply the other two."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:36
+msgid ""
+"Forbidden: `isMobile = getShellKind() === \"tauri\"` (or similar mixes)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:36
+msgid ""
+"Forbidden: one `isMobile` / `isDesktop` flag driving both layout and "
+"interaction."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:36
+msgid ""
+"Components pick APIs by responsibility; do not hand-roll `isTauri && "
+"matchMedia(...)` to choose menus."
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/dimensions.md:37
+#, no-wrap
+msgid "What each dimension drives"
+msgstr ""
+
+#. type: Title ###
+#: docs/ui/dimensions.md:39
+#, no-wrap
+msgid "Shell → capabilities (`portal-sdk`)"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:42
+msgid ""
+"Use for: file/FS bridges, notifications, Habitat settings visibility, hash "
+"navigation quirks, keyboard inset / safe-area host differences."
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:44
+msgid ""
+"Do **not** use Shell kind to lock main nav (rail vs tabs), hover "
+"affordances, or Enter-to-send."
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:46
+msgid "Unsupported capabilities return `null` / `false`; UI degrades."
+msgstr ""
+
+#. type: Title ###
+#: docs/ui/dimensions.md:47
+#, no-wrap
+msgid "Layout → app frame and page structure"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:50
+msgid ""
+"Use for: compact bottom nav + drawer vs expanded rail + multi-column; Dialog "
+"vs Sheet **presentation**; list-detail stacking; settings chrome (tabs vs "
+"sidebar via `detectSettingsChromePlatform()`)."
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:52
+msgid "Common layout patterns:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:57
+msgid ""
+"**List-Detail** — side-by-side when expanded; stack + route when compact "
+"(`ListDetailLayout`)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:57
+msgid "**Grid-List** — multi-column vs single column"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:57
+msgid ""
+"**Modal-Sheet** — centered Dialog when expanded; bottom Sheet when compact "
+"(presentation = layout; gesture = interaction)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:57
+msgid ""
+"**Sidebar-Drawer** — fixed sidebar vs hamburger + drawer; compact viewport-"
+"fixed layers must clear `--app-bottom-nav-h`"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:59
+msgid ""
+"Settings **section fields** may follow shell "
+"(`resolveSettingsContentPlatform()`); settings **chrome** follows layout."
+msgstr ""
+
+#. type: Title ###
+#: docs/ui/dimensions.md:60
+#, no-wrap
+msgid "Interaction → input paradigm"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:63
+msgid ""
+"Use for: ContextMenu vs ActionSheet / long-press; hover-revealed actions; "
+"Enter send vs newline; minimum hit targets."
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:65
+msgid "Conventions:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:70
+msgid ""
+"**touch** — hit targets ≥44px; no hover-only affordances; long-press / "
+"ActionSheet"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:70
+msgid "**pointer** — hover, right-click ContextMenu"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:70
+msgid ""
+"External keyboard on a pad does **not** flip interaction to pointer; "
+"strategy stays touch"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:70
+msgid ""
+"Keyboard-open **detection** is interaction; WebView resize differences may "
+"use shell helpers (e.g. `useKeyboardInset`)"
+msgstr ""
+
+#. type: Title ###
+#: docs/ui/dimensions.md:71
+#, no-wrap
+msgid "Pad example"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:78
+#, no-wrap
+msgid ""
+"| Dimension   | Value                                                    |\n"
+"| ----------- | -------------------------------------------------------- |\n"
+"| Shell       | `web` or `tauri` (how the user opened Portal)            |\n"
+"| Layout      | Live viewport (landscape → expanded, portrait → compact) |\n"
+"| Interaction | **touch** (`primaryInput: \"touch\"`)                      |\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/ui/dimensions.md:79
+#, no-wrap
+msgid "Dimension adaptation template"
+msgstr ""
+
+#. type: Plain text
+#: docs/ui/dimensions.md:82
+msgid "When specifying visuals, components, or patterns, document:"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/ui/dimensions.md:88
+msgid "**Dimension-invariant** — shared contract"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/ui/dimensions.md:88
+msgid "**By layout** — compact vs expanded (or N/A)"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/ui/dimensions.md:88
+msgid "**By interaction** — pointer vs touch (or N/A)"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/ui/dimensions.md:88
+msgid "**By shell** — capability-only differences (or N/A)"
+msgstr ""
+
+#. type: Bullet: '5. '
+#: docs/ui/dimensions.md:88
+msgid ""
+"**Forbidden mixes** — e.g. Shell deciding hover; viewport width deciding "
+"ContextMenu vs ActionSheet"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:94
+msgid "Visual foundations → [foundations.md](foundations.md)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:94 docs/ui/foundations.md:169
+msgid "Components → [components.md](components.md)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/ui/dimensions.md:94
+msgid ""
+"Agent rules → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-"
+"dimensions.md)"
+msgstr ""

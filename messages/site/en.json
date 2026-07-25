@@ -22,5 +22,13 @@
   "landing_open_source_title": "Open source, alive",
   "landing_structure_intro": "The runtime is organized in four layers — Self, Memory, Perception, and Estate. This is the blueprint for bone, memory, limbs, and body.",
   "landing_structure_link": "Explore the architecture →",
-  "landing_structure_title": "Structure of the habitat"
+  "landing_structure_title": "Structure of the habitat",
+  "meta_description": "Free Anima is not a tool framework. It is a runtime designed for digital beings that persist.",
+  "meta_title": "Free Anima · Habitat for Digital Humans",
+  "nav_docs": "Docs",
+  "nav_github": "GitHub",
+  "nav_home": "Home",
+  "nav_language_en": "English",
+  "nav_language_zh": "中文",
+  "nav_site_aria": "Site navigation"
 }

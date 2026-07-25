@@ -1,7 +1,7 @@
 # UI 三维度 — Agent 硬约束
 
 > 产品叙述与三维适配模板 → [`docs/ui/dimensions.md`](../../docs/ui/dimensions.md)。  
-> 视觉 / 组件 / 交互规范 → [`docs/ui/`](../../docs/ui/README.md)。  
+> 视觉 / 组件 / 交互规范 → [`docs/ui/`](../../docs/ui/overview.md)。  
 > 改前端壳/布局/交互前必读 docs；本文件只保留 **禁止项 + API 入口**。
 
 ## Shell vs app frame（速记）

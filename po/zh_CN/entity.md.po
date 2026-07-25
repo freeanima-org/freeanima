@@ -1,0 +1,122 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
+"PO-Revision-Date: 2026-07-25 22:36+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Yaml Front Matter Hash Value: title
+#: docs/modules/entity.md:1
+#, fuzzy, no-wrap
+#| msgid "Entity model"
+msgid "Entity module"
+msgstr "实体模型"
+
+#. type: Title #
+#: docs/modules/entity.md:5
+#, no-wrap
+msgid "Entity（实体浏览器）"
+msgstr ""
+
+#. type: Plain text
+#: docs/modules/entity.md:8
+msgid "跨模块浏览当前 subject world 内全部 `entities` 行，并管理软删回收站。"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/modules/entity.md:9 messages/po4a/en.xml:671
+#, no-wrap
+msgid "Shell"
+msgstr "壳"
+
+#. type: Bullet: '- '
+#: docs/modules/entity.md:14
+msgid "路径：`/entity`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/entity.md:14
+msgid "导航：模块 id `entity`（`habitat_nav_entity`）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/entity.md:14
+msgid ""
+"范围：跟随 Shell **User / Agent**（`subject_kind` → 对应 private world）"
+msgstr ""
+
+#. type: Title ##
+#: docs/modules/entity.md:15
+#, no-wrap
+msgid "视图"
+msgstr ""
+
+#. type: Plain text
+#: docs/modules/entity.md:21
+#, no-wrap
+msgid ""
+"| Tab    | 数据                     | 排序              |\n"
+"| ------ | ------------------------ | ----------------- |\n"
+"| 全部   | `deleted_at IS NULL`     | `updated_at DESC` |\n"
+"| 回收站 | `deleted_at IS NOT NULL` | `deleted_at DESC` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/modules/entity.md:23
+msgid ""
+"行字段：id、title、primary_component、components、时间戳。存活行可 "
+"**deleteEntity**（软删）；回收站可 **restore**。满 30 天由睡眠 cleanup "
+"**purge** 物理删除。"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/modules/entity.md:24 docs/ops/habitat-rpc.md:1
+#: docs/ops/habitat-rpc.md:5 messages/po4a/en.xml:707
+#, no-wrap
+msgid "Habitat RPC"
+msgstr "Habitat RPC"
+
+#. type: Plain text
+#: docs/modules/entity.md:33
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Round | Intent                                                                  |\n"
+#| "| ----- | ----------------------------------------------------------------------- |\n"
+#| "| 1     | Contradiction detection + expiry marking                                |\n"
+#| "| 2     | Split multi-fact entries                                                |\n"
+#| "| 3     | Dedup merge similar entries                                             |\n"
+#| "| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |\n"
+msgid ""
+"| Method                   | 作用                                           |\n"
+"| ------------------------ | ---------------------------------------------- |\n"
+"| `entity.list`            | 存活实体分页                                   |\n"
+"| `entity.trash.list`      | 回收站分页                                     |\n"
+"| `entity.delete`          | 软删；无 `force` 且存在引用时返回 `references` |\n"
+"| `entity.restore`         | 从回收站恢复                                   |\n"
+"| `entity.deleteComponent` | 删除单个 component                             |\n"
+msgstr ""
+"| 轮次 | 意图                                   |\n"
+"| ----- | ---------------------------------------- |\n"
+"| 1     | 矛盾检测 + 过期标记 |\n"
+"| 2     | 拆分多事实条目                 |\n"
+"| 3     | 去重合并相似条目              |\n"
+"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
+
+#. type: Plain text
+#: docs/modules/entity.md:34
+#, fuzzy
+#| msgid "Entity subjects: [`entity-model.md`](entity-model.md)"
+msgid ""
+"删除语义总表见 [`entity-model.md`](../product/entity-model.md)「Deletion "
+"semantics」。"
+msgstr "实体主体：[`entity-model.md`](entity-model.md)"

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-07-25 07:29+0800\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
 "PO-Revision-Date: 2026-07-24 16:28+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -14,6 +14,12 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title ##
+#: docs/aspects/portal-data-plane.md:125 docs/tools/browser.md:53
+#, no-wrap
+msgid "See also"
+msgstr ""
 
 #. type: Title #
 #: docs/tools/browser.md:1 docs/tools/browser.md:5
@@ -186,12 +192,6 @@ msgstr ""
 "| `sessions_search` | 会话消息搜索；返回 snippet（非全文）                                                                   |\n"
 "| `memory_remember` | 对话中语义记忆 CRUD                                                                                    |\n"
 "| Resident memory   | system prompt 注入（非 recall）                                                                        |\n"
-
-#. type: Title ##
-#: docs/tools/browser.md:53
-#, no-wrap
-msgid "See also"
-msgstr ""
 
 #. type: Plain text
 #: docs/tools/browser.md:55

@@ -6,6 +6,6 @@ import { $ } from "bun";
 import { join } from "node:path";
 
 const root = join(import.meta.dir, "..");
-await $`bunx paraglide-js compile --project ./project.inlang.site --outdir ./messages/paraglide-site`.cwd(
+await $`bunx paraglide-js compile --project ./project.site.inlang --outdir ./messages/paraglide-site`.cwd(
   root,
 );

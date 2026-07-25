@@ -36,6 +36,7 @@ export const collections = {
         "modules/**/*.{md,mdx}",
         "ops/**/*.{md,mdx}",
         "tools/**/*.{md,mdx}",
+        "ui/**/*.{md,mdx}",
         // legacy prefixes (redirects / frozen trees)
         "guide/**/*.{md,mdx}",
         "concepts/**/*.{md,mdx}",

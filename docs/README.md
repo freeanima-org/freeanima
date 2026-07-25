@@ -36,7 +36,7 @@ For **FreeAnima users** and the Habitat agent (`freeanima_docs` ToolSet). Contri
 
 | Topic                | File                                   |
 | -------------------- | -------------------------------------- |
-| Index                | [ui/README.md](ui/README.md)           |
+| Index                | [ui/overview.md](ui/overview.md)       |
 | Dimensions           | [ui/dimensions.md](ui/dimensions.md)   |
 | Visual foundations   | [ui/foundations.md](ui/foundations.md) |
 | Components           | [ui/components.md](ui/components.md)   |

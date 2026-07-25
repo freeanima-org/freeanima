@@ -136,7 +136,7 @@ Host stack: `src/host/{kernel,core,engine,capabilities,platform}`。Client: `src
 
 ### Platform UI layering
 
-UI/UX design system (dimensions, visual foundations, components, interaction patterns) → [`docs/ui/`](../ui/README.md). Agent hard bans / API → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md), [`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md).
+UI/UX design system (dimensions, visual foundations, components, interaction patterns) → [`docs/ui/`](../ui/overview.md). Agent hard bans / API → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md), [`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md).
 
 | Layer           | Platform-native?                                             | Location                                                            | Data path                               |
 | --------------- | ------------------------------------------------------------ | ------------------------------------------------------------------- | --------------------------------------- |

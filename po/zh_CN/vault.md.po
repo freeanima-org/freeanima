@@ -1,0 +1,194 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-25 22:36+0800\n"
+"PO-Revision-Date: 2026-07-25 22:36+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Bullet: '- '
+#: docs/modules/portal.md:43 docs/modules/vault.md:37
+msgid ""
+"构建：`just pack browser-extension` → `dist/browser-extension/chrome-mv3`"
+msgstr ""
+
+#. type: Title ##
+#: docs/modules/portal.md:44 docs/modules/vault.md:40
+#, no-wrap
+msgid "相关"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/portal.md:48 docs/modules/vault.md:45
+msgid "远程 Token：[`docs/ops/remote-access.md`](../ops/remote-access.md)"
+msgstr ""
+
+#. type: Yaml Front Matter Hash Value: title
+#: docs/modules/vault.md:1
+#, fuzzy, no-wrap
+#| msgid "🔐 Vault"
+msgid "Vault"
+msgstr "🔐 凭证库"
+
+#. type: Title #
+#: docs/modules/vault.md:5
+#, no-wrap
+msgid "Vault（保险库）"
+msgstr ""
+
+#. type: Plain text
+#: docs/modules/vault.md:8
+msgid ""
+"用户与 Agent 的加密凭据库。权威存储为 ECS `vault_item` / `vault_config`"
+"（User + Agent 两个 private world）。"
+msgstr ""
+
+#. type: Title ##
+#: docs/modules/vault.md:9
+#, no-wrap
+msgid "双库"
+msgstr ""
+
+#. type: Plain text
+#: docs/modules/vault.md:15
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Port                      | Role                                                                  |\n"
+#| "| ------------------------- | --------------------------------------------------------------------- |\n"
+#| "| `EntityStorePort.list`    | Structural filters; stable sort                                       |\n"
+#| "| `EntitySearchPort.search` | Hard filters + optional text query; hybrid FTS/trigram/vector via RRF |\n"
+msgid ""
+"| 库    | 模式                                            | 解密位置                  | 典型用途                         |\n"
+"| ----- | ----------------------------------------------- | ------------------------- | -------------------------------- |\n"
+"| User  | `master_password`                               | Portal / 浏览器扩展客户端 | 人类密码、TOTP、卡片             |\n"
+"| Agent | `machine`（`~/.anima/vault/agent-machine.key`） | Habitat                   | 工具 `secrets[]`、`vault()` 配置 |\n"
+msgstr ""
+"| 端口                      | 作用                                                                  |\n"
+"| ------------------------- | --------------------------------------------------------------------- |\n"
+"| `EntityStorePort.list`    | 结构过滤；稳定排序                                                      |\n"
+"| `EntitySearchPort.search` | 硬过滤 + 可选文本查询；经 RRF 混合 FTS/trigram/vector                 |\n"
+
+#. type: Plain text
+#: docs/modules/vault.md:17
+msgid ""
+"LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / `code_execute` "
+"`secrets[]` 或 `browser_type` `secret`。"
+msgstr ""
+
+#. type: Title ##
+#: docs/modules/vault.md:18
+#, no-wrap
+msgid "条目模型（摘要）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/vault.md:24
+msgid "类型：`login` | `secure_note` | `card` | `identity` | `custom`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/vault.md:24
+msgid ""
+"明文 meta：`title`、`url`、`uris[]`（`uri` + `match`）、`username`、`tags`、"
+"`import_refs`（如 `bitwarden` UUID）、`custom_field_names`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/vault.md:24
+msgid ""
+"密文：`secrets_enc` + `dek_wrapped`；载荷含 `password` / `totp` / `notes` / "
+"`custom_fields` / `card` / `identity`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/vault.md:24
+msgid ""
+"`url` 为主展示 URI；`uris` 供 Bitwarden 式匹配（`domain` / `host` / "
+"`starts_with` / `exact` / `regex` / `never`）。无 `uris` 时对 `url` 做 "
+"domain 匹配"
+msgstr ""
+
+#. type: Title ##
+#: docs/modules/vault.md:25
+#, fuzzy, no-wrap
+#| msgid "Shell"
+msgid "Shell UI"
+msgstr "壳"
+
+#. type: Bullet: '- '
+#: docs/modules/vault.md:29
+msgid "路由：`/vault`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/vault.md:29
+msgid ""
+"解锁 / 改密 / CRUD；用户库导入 **Bitwarden 未加密 JSON**（按 "
+"`import_refs.bitwarden` 幂等 upsert；可选「仅新建」）"
+msgstr ""
+
+#. type: Title ##
+#: docs/modules/vault.md:30
+#, no-wrap
+msgid "浏览器扩展（浏览器形态入口）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/vault.md:37
+msgid "入口：`src/portal/extension`（WXT MV3；`runtime/` + `features/vault/`）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/vault.md:37
+msgid "开发：`just dev browser-extension`（或 `bunx wxt`）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/vault.md:37
+msgid ""
+"连接：扩展 **直连 Habitat**（Bearer `fa_at_…`），HTTP REST only；主密码仅扩展"
+"内存会话（默认 15 分钟）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/vault.md:37
+msgid ""
+"能力：按 URL 匹配填充、弹窗、保存提示、密码生成、右键菜单、快捷键、卡片/身份"
+"填充"
+msgstr ""
+
+#. type: Plain text
+#: docs/modules/vault.md:39
+msgid ""
+"加载未打包扩展：Chrome → 扩展程序 → 开发者模式 → 加载已解压的扩展程序 → 选择 "
+"`dist/browser-extension/chrome-mv3`。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/vault.md:45
+msgid "Portal 四形态：[`docs/modules/portal.md`](portal.md)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/vault.md:45
+msgid ""
+"架构与凭证原则：[`docs/product/architecture.md`](../product/"
+"architecture.md)、[`docs/ops/security.md`](../ops/security.md)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/modules/vault.md:45
+#, fuzzy
+#| msgid "Entity subjects: [`entity-model.md`](entity-model.md)"
+msgid ""
+"Entity 模型：[`docs/product/entity-model.md`](../product/entity-model.md)"
+msgstr "实体主体：[`entity-model.md`](entity-model.md)"
