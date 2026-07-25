@@ -28,5 +28,11 @@ describe("task/email SAP search procedures", () => {
       account_id: 1,
       limit: 10,
     });
+    emailMessageSearchInputSchema.parse({
+      subject_kind: "agent",
+      mailbox: "INBOX",
+      flagged: true,
+      limit: 10,
+    });
   });
 });

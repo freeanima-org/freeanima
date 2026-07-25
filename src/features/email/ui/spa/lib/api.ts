@@ -6,6 +6,7 @@ import {
 } from "@freeanima/client/portal-sdk/offline-cache";
 
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
+import { omitUndefined } from "@freeanima/host/core/util";
 
 export type EmailAccountRow = {
   id: number;
@@ -21,6 +22,13 @@ export type EmailAccountRow = {
   tags: string[];
   created_at: string;
   updated_at: string;
+};
+
+export type EmailMailboxInfo = {
+  path: string;
+  name?: string | undefined;
+  special_use?: string[] | undefined;
+  subscribed?: boolean | undefined;
 };
 
 export type EmailProviderPreset = {
@@ -46,7 +54,9 @@ export type EmailMessageRow = {
   to: string;
   sent_at: string;
   unread: boolean;
+  flagged: boolean;
   direction: "inbound" | "outbound";
+  imap_mailbox?: string;
   tags: string[];
 };
 
@@ -62,7 +72,9 @@ function toUiMessage(row: {
   to: string;
   sent_at: string;
   unread: boolean;
+  flagged?: boolean | undefined;
   direction: "inbound" | "outbound";
+  imap_uid?: number | null;
   tags: string[];
 }): EmailMessageRow {
   return {
@@ -76,6 +88,7 @@ function toUiMessage(row: {
     to: row.to,
     sent_at: row.sent_at,
     unread: row.unread,
+    flagged: row.flagged === true,
     direction: row.direction,
     tags: row.tags,
     ...(row.content_type != null ? { content_type: row.content_type } : {}),
@@ -125,24 +138,6 @@ function accountsCacheId(): string {
   return `accounts:${getSubjectKind()}`;
 }
 
-function messagesCacheId(input: {
-  account_id?: number;
-  thread_id?: number;
-  unread?: boolean;
-  direction?: "inbound" | "outbound";
-  limit?: number;
-}): string {
-  return `messages:${JSON.stringify(input)}`;
-}
-
-function messageCacheId(id: number): string {
-  return `message:${getSubjectKind()}:${id}`;
-}
-
-function searchCacheId(input: { query: string; account_id?: number; limit?: number }): string {
-  return `search:${JSON.stringify(input)}`;
-}
-
 async function invalidateAccountsCache(): Promise<void> {
   const scope = resolveHabitatCacheScope();
   await writeOfflineCache(scope, "email", accountsCacheId(), null as unknown as EmailAccountRow[]);
@@ -184,46 +179,70 @@ export async function deleteEmailAccount(id: number): Promise<void> {
   await invalidateAccountsCache();
 }
 
+export async function fetchEmailMailboxes(accountId: number): Promise<EmailMailboxInfo[]> {
+  const data = await habitat().call(
+    "email.mailbox.list",
+    withSubjectKind({ account_id: accountId }),
+  );
+  return data.mailboxes;
+}
+
+export async function createEmailMailbox(
+  accountId: number,
+  path: string,
+): Promise<EmailMailboxInfo[]> {
+  const data = await habitat().call(
+    "email.mailbox.create",
+    withSubjectKind({ account_id: accountId, path }),
+  );
+  return data.mailboxes;
+}
+
+export async function renameEmailMailbox(
+  accountId: number,
+  from: string,
+  to: string,
+): Promise<EmailMailboxInfo[]> {
+  const data = await habitat().call(
+    "email.mailbox.rename",
+    withSubjectKind({ account_id: accountId, from, to }),
+  );
+  return data.mailboxes;
+}
+
+export async function deleteEmailMailbox(
+  accountId: number,
+  path: string,
+): Promise<EmailMailboxInfo[]> {
+  const data = await habitat().call(
+    "email.mailbox.delete",
+    withSubjectKind({ account_id: accountId, path }),
+  );
+  return data.mailboxes;
+}
+
 export async function fetchEmailMessages(input: {
   account_id?: number;
   thread_id?: number;
+  mailbox?: string;
   unread?: boolean;
+  flagged?: boolean;
   direction?: "inbound" | "outbound";
   limit?: number;
 }): Promise<EmailMessageRow[]> {
-  const scope = resolveHabitatCacheScope();
-  const cacheId = messagesCacheId(input);
-  const cached = await readOfflineCache<EmailMessageRow[]>(scope, "email", cacheId);
-  try {
-    const data = await habitat().call("email.message.list", withSubjectKind(input));
-    const messages = data.messages.map(toUiMessage);
-    void writeOfflineCache(scope, "email", cacheId, messages);
-    return messages;
-  } catch (err) {
-    if (cached) return cached;
-    throw err;
-  }
+  const data = await habitat().call("email.message.list", withSubjectKind(omitUndefined(input)));
+  return data.messages.map(toUiMessage);
 }
 
 export async function readEmailMessage(
   id: number,
   opts: { raw?: boolean } = {},
 ): Promise<EmailMessageRow> {
-  const scope = resolveHabitatCacheScope();
-  const cacheId = `${messageCacheId(id)}:raw=${opts.raw === true ? 1 : 0}`;
-  const cached = await readOfflineCache<EmailMessageRow>(scope, "email", cacheId);
-  try {
-    const data = await habitat().call(
-      "email.message.read",
-      withSubjectKind({ id, ...(opts.raw === true ? { raw: true } : {}) }),
-    );
-    const message = toUiMessage(data.message);
-    void writeOfflineCache(scope, "email", cacheId, message);
-    return message;
-  } catch (err) {
-    if (cached) return cached;
-    throw err;
-  }
+  const data = await habitat().call(
+    "email.message.read",
+    withSubjectKind({ id, ...(opts.raw === true ? { raw: true } : {}) }),
+  );
+  return toUiMessage(data.message);
 }
 
 export async function markEmailMessageRead(id: number): Promise<void> {
@@ -232,6 +251,21 @@ export async function markEmailMessageRead(id: number): Promise<void> {
 
 export async function markEmailMessageUnread(id: number): Promise<void> {
   await habitat().call("email.message.markUnread", withSubjectKind({ id }));
+}
+
+export async function markEmailMessageFlagged(id: number): Promise<void> {
+  await habitat().call("email.message.markFlagged", withSubjectKind({ id }));
+}
+
+export async function markEmailMessageUnflagged(id: number): Promise<void> {
+  await habitat().call("email.message.markUnflagged", withSubjectKind({ id }));
+}
+
+export async function moveEmailMessage(id: number, targetMailbox: string): Promise<void> {
+  await habitat().call(
+    "email.message.move",
+    withSubjectKind({ id, target_mailbox: targetMailbox }),
+  );
 }
 
 export async function deleteEmailMessage(id: number): Promise<void> {
@@ -246,7 +280,7 @@ export async function sendEmailMessage(input: {
   cc?: string;
   bcc?: string;
 }): Promise<{ messageId: string; account_id: number; message_entity_id: number }> {
-  const data = await habitat().call("email.send", withSubjectKind(input));
+  const data = await habitat().call("email.send", withSubjectKind(omitUndefined(input)));
   return {
     messageId: data.messageId,
     account_id: data.account_id,
@@ -254,11 +288,23 @@ export async function sendEmailMessage(input: {
   };
 }
 
+export async function saveEmailDraft(input: {
+  account_id?: number;
+  message_id?: number;
+  to?: string;
+  subject: string;
+  body: string;
+}): Promise<{ message_entity_id: number }> {
+  const data = await habitat().call("email.draft.save", withSubjectKind(omitUndefined(input)));
+  return { message_entity_id: data.message_entity_id };
+}
+
 export type EmailSyncResult = {
   account_id: number;
   upserted_messages: number;
   upserted_threads: number;
   highest_uid: number | null;
+  new_subjects?: string[];
   error?: string;
 };
 
@@ -268,7 +314,7 @@ export async function syncEmailAccount(
 ): Promise<EmailSyncResult[]> {
   const data = await habitat().call(
     "email.sync",
-    withSubjectKind({ account_id: accountId, limit }),
+    withSubjectKind(omitUndefined({ account_id: accountId, limit })),
   );
   const results = data.results;
   const failed = results.filter((row) => row.error);
@@ -284,28 +330,22 @@ export async function syncEmailAccount(
   }));
 }
 
-export async function searchEmailMessages(input: {
-  query: string;
+export type EmailSearchInput = {
+  query?: string;
   account_id?: number;
+  mailbox?: string;
+  from?: string;
+  to?: string;
+  subject?: string;
+  unread?: boolean;
+  flagged?: boolean;
+  has_attachment?: boolean;
+  sent_after?: string;
+  sent_before?: string;
   limit?: number;
-}): Promise<EmailMessageRow[]> {
-  const scope = resolveHabitatCacheScope();
-  const cacheId = searchCacheId(input);
-  const cached = await readOfflineCache<EmailMessageRow[]>(scope, "email", cacheId);
-  try {
-    const data = await habitat().call(
-      "email.message.search",
-      withSubjectKind({
-        query: input.query,
-        account_id: input.account_id,
-        limit: input.limit,
-      }),
-    );
-    const messages = data.messages.map(toUiMessage);
-    void writeOfflineCache(scope, "email", cacheId, messages);
-    return messages;
-  } catch (err) {
-    if (cached) return cached;
-    throw err;
-  }
+};
+
+export async function searchEmailMessages(input: EmailSearchInput): Promise<EmailMessageRow[]> {
+  const data = await habitat().call("email.message.search", withSubjectKind(omitUndefined(input)));
+  return data.messages.map(toUiMessage);
 }

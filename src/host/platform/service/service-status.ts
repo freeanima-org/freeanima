@@ -315,6 +315,13 @@ export async function runCronJobNow(
 
 export async function ensureBuiltinCronJobsRegistered(): Promise<void> {
   await ensureBuiltinCronJobs();
+  try {
+    const { startEmailIdleForAllEnabledAccounts } =
+      await import("@freeanima/host/capabilities/connectors/email");
+    void startEmailIdleForAllEnabledAccounts();
+  } catch {
+    // IDLE 非关键路径；账号未就绪时忽略
+  }
 }
 
 function mapCommandInfo(c: {

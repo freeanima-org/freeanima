@@ -4,6 +4,12 @@ export const HABITAT_RPC_DEFAULT_REQUEST_TIMEOUT_MS = 3_000;
 /** message.send 首包 ack（stream_id）超时 */
 export const HABITAT_RPC_MESSAGE_SEND_TIMEOUT_MS = 10_000;
 
+/** email.sync / 多箱 IMAP 同步（含 FLAGS 刷新） */
+export const HABITAT_RPC_EMAIL_SYNC_TIMEOUT_MS = 120_000;
+
+/** email 写路径涉及 IMAP 的操作（mailbox CRUD / move / append 等） */
+export const HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS = 60_000;
+
 /** WS 无任何 inbound 超过此时间则主动断连重连 */
 export const HABITAT_RPC_LIVENESS_SILENCE_MS = 10_000;
 

@@ -9,7 +9,12 @@ export type {
 /** Entity store row (includes credential path fields not exposed on Habitat RPC protocol). */
 export type EmailAccountRow = import("@freeanima/shared/rpc-contract").EmailAccountRowPayload & {
   password: string;
-  sync: EmailAccountBody["sync"];
+  sync?: import("@freeanima/host/core/db/schema/entity").EmailAccountSync;
+  mailbox_paths?: string[];
+  sent_mailbox?: string;
+  trash_mailbox?: string;
+  drafts_mailbox?: string;
+  delete_policy?: "move_to_trash" | "expunge";
 };
 
 export type EmailThreadRow = import("@freeanima/shared/rpc-contract").EmailThreadRowPayload;
@@ -58,6 +63,11 @@ export type EmailAccountUpdateInput = {
   desc?: string;
   tags?: string[];
   sync?: EmailAccountBody["sync"];
+  mailbox_paths?: string[];
+  sent_mailbox?: string | null;
+  trash_mailbox?: string | null;
+  drafts_mailbox?: string | null;
+  delete_policy?: "move_to_trash" | "expunge";
 };
 
 export type EmailThreadUpsertInput = {
@@ -99,7 +109,9 @@ export type EmailMessageUpsertInput = {
 export type EmailMessageListOpts = {
   account_id?: number;
   thread_id?: number;
+  imap_mailbox?: string;
   unread?: boolean;
+  flagged?: boolean;
   direction?: "inbound" | "outbound";
   tags?: string[];
   since?: string;
@@ -121,6 +133,8 @@ export type EmailSyncResult = {
   upserted_messages: number;
   upserted_threads: number;
   highest_uid: number | null;
+  /** 本次新入库的收件箱邮件标题（用于自动同步通知） */
+  new_subjects: string[];
   error?: string;
 };
 

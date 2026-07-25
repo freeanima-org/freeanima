@@ -2,6 +2,7 @@ import { z } from "@freeanima/host/core/tool";
 
 import type { listEmailAccountRows } from "./account-store.ts";
 import type { getEmailMessageRow } from "./message-store.ts";
+import { isMessageFlagged } from "./sync-state.ts";
 import {
   applyProviderPreset,
   requireCompleteEmailHosts,
@@ -156,6 +157,7 @@ export async function messagePayload(
     cc: message.cc,
     sent_at: message.sent_at,
     unread: message.unread,
+    flagged: isMessageFlagged(message.flags ?? []),
     direction: message.direction,
     imap_uid: message.imap_uid,
     tags: message.tags,

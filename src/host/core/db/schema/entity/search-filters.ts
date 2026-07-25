@@ -94,6 +94,10 @@ export const emailMessageSearchFiltersSchema = z
     direction: emailDirectionSchema.optional(),
     tags: z.array(z.string()).optional(),
     from: z.string().min(1).optional(),
+    to: z.string().min(1).optional(),
+    subject: z.string().min(1).optional(),
+    flagged: z.boolean().optional(),
+    has_attachment: z.boolean().optional(),
     since: z.string().optional(),
     before: z.string().optional(),
   })
