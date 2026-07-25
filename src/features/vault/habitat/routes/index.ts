@@ -65,6 +65,18 @@ export const vaultHabitatRoutes = bindHabitatRouteHandlers(vaultMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "vault.history.list": async (deps, input, ctx) =>
+    service.serviceVaultHistoryList(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
+  "vault.history.restore": async (deps, input, ctx) =>
+    service.serviceVaultHistoryRestore(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
   "vault.crypto.get": async (deps, input, ctx) =>
     service.serviceVaultCryptoGet(
       depsOf(deps).runtime.runtimeDeps(),
@@ -78,11 +90,7 @@ export const vaultHabitatRoutes = bindHabitatRouteHandlers(vaultMethodDefs, {
       ctxAuth(ctx),
     ),
   "vault.crypto.change": async (deps, input, ctx) =>
-    service.serviceVaultCryptoChange(
-      depsOf(deps).runtime.runtimeDeps(),
-      omitUndefined(input),
-      ctxAuth(ctx),
-    ),
+    service.serviceVaultCryptoChange(depsOf(deps).runtime.runtimeDeps(), input, ctxAuth(ctx)),
   "vault.ensureAgent": async (deps, input, ctx) =>
     service.serviceVaultEnsureAgent(depsOf(deps).runtime.runtimeDeps(), input, ctxAuth(ctx)),
 });

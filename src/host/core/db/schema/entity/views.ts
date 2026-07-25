@@ -63,6 +63,7 @@ import {
   type PomodoroActiveBody,
   type WorldConfigBody,
 } from "./components/index.ts";
+import { parseEntityRevisions, type EntityRevision } from "./revisions.ts";
 
 export type EntityRow = {
   id: number;
@@ -77,6 +78,8 @@ export type EntityRow = {
   pinned: boolean;
   reference_count: number;
   tag_ids: number[];
+  /** 顶层版本快照；list projection 可能为空数组 */
+  revisions: EntityRevision[];
   created_at: Date;
   updated_at: Date;
 };
@@ -98,11 +101,12 @@ export const entityRowSelectColumns = {
   pinned: entities.pinned,
   reference_count: entities.reference_count,
   tag_ids: entities.tag_ids,
+  revisions: entities.revisions,
   created_at: entities.created_at,
   updated_at: entities.updated_at,
 } as const;
 
-/** 邮件/vault 等列表：不拉 content（正文另走 get） */
+/** 邮件/vault 等列表：不拉 content / revisions（正文与历史另走 get） */
 export const entityListSelectColumns = {
   id: entities.id,
   type: entities.type,
@@ -123,7 +127,7 @@ export type EntityRowSelect = Pick<EntitySelect, keyof typeof entityRowSelectCol
 export type EntityListRowSelect = Pick<EntitySelect, keyof typeof entityListSelectColumns>;
 
 export function mapEntityRow(
-  row: EntityRowSelect | (EntityListRowSelect & { content?: string }),
+  row: EntityRowSelect | (EntityListRowSelect & { content?: string; revisions?: unknown }),
 ): EntityRow {
   const typeParsed = entityTypeSchema.parse(row.type);
   return {
@@ -139,6 +143,7 @@ export function mapEntityRow(
     pinned: row.pinned ?? false,
     reference_count: row.reference_count ?? 0,
     tag_ids: [...(row.tag_ids ?? [])],
+    revisions: parseEntityRevisions("revisions" in row ? row.revisions : []),
     created_at: row.created_at,
     updated_at: row.updated_at,
   };

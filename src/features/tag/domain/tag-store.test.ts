@@ -24,6 +24,7 @@ function entityRow(
     pinned: false,
     reference_count: 0,
     tag_ids: opts?.tag_ids ?? [],
+    revisions: [],
     created_at: new Date("2026-01-01T00:00:00Z"),
     updated_at: new Date("2026-01-01T00:00:00Z"),
   };

@@ -251,7 +251,9 @@ Encrypted credentials in two libraries (**User** + **Agent**), ECS components `v
 
 Privacy fields live in `body.secrets_enc` + `body.dek_wrapped`; metadata (title, url, username, custom field **names**) is plaintext for search.
 
-- **SAP:** `vault.*` — Shell defaults `subject_kind: user`; ToolSet defaults agent world.
+**Revisions:** vault items participate in the entity-level `entities.revisions` allowlist (max 10 snapshots on substantive update). Shell `/vault` can list history and restore; see [`docs/aspects/entity-revisions.md`](../aspects/entity-revisions.md). Master-password change must rewrap current and historical `dek_wrapped`.
+
+- **SAP:** `vault.*` — Shell defaults `subject_kind: user`; ToolSet defaults agent world. History: `vault.history.list` / `vault.history.restore` (not exposed to LLM ToolSet).
 - **UI:** shell `/vault` (`@freeanima/satellite-vault`); bundled Chat has a dedicated master-password unlock (not a chat message).
 - **LLM:** ToolSet `vault` — Habitat-only (not MCP): metadata list/search/get; `vault_create` / `vault_update` / `vault_delete` (Agent library seal for create/update); credentials via `terminal_run` / `code_execute` `secrets[]` (child env only) or `browser_type` `secret` (typed into page; redacted in tool results); never plaintext secrets in tool results or Habitat `process.env`.
 - **Config:** Runtime PG settings may use `vault("item_id", "field")` (Agent library) or `env("KEY")` (legacy `credential()` removed). Bootstrap `config.yaml` cannot resolve `vault()` — use `env()` or plaintext before PostgreSQL is up.

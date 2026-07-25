@@ -15,6 +15,10 @@ import {
   vaultEnsureAgentOutputSchema,
   vaultGetInputSchema,
   vaultGetOutputSchema,
+  vaultHistoryListInputSchema,
+  vaultHistoryListOutputSchema,
+  vaultHistoryRestoreInputSchema,
+  vaultHistoryRestoreOutputSchema,
   vaultListInputSchema,
   vaultListOutputSchema,
   vaultPatchInputSchema,
@@ -67,6 +71,16 @@ export const vaultMethodDefs = {
     input: vaultSearchInputSchema,
     output: vaultSearchOutputSchema,
     meta: dualTransportMeta(true),
+  }),
+  "vault.history.list": defineHabitatMethod({
+    input: vaultHistoryListInputSchema,
+    output: vaultHistoryListOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "vault.history.restore": defineHabitatMethod({
+    input: vaultHistoryRestoreInputSchema,
+    output: vaultHistoryRestoreOutputSchema,
+    meta: dualTransportMeta(false),
   }),
   "vault.crypto.get": defineHabitatMethod({
     input: vaultCryptoGetInputSchema,

@@ -8,12 +8,24 @@ export {
   updateVaultItem,
   deleteVaultItem,
   listVaultItemsWithWrappedDek,
+  listVaultItemRevisions,
+  restoreVaultItemRevision,
   toVaultItemMeta,
   type VaultItemRow,
   type VaultItemMetaRow,
   type VaultItemCreateInput,
   type VaultItemUpdateInput,
+  type VaultItemRevisionMeta,
+  type VaultWrappedDekRow,
 } from "./item-store.ts";
+
+export {
+  diffVaultRevisionFields,
+  vaultCompareViewFromEntity,
+  vaultCompareViewFromRevision,
+  type VaultRevisionChangedField,
+  type VaultRevisionCompareView,
+} from "./revision-diff.ts";
 
 export {
   resolveVaultWorldId,

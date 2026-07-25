@@ -22,6 +22,8 @@ type VaultRpcMethod =
   | "vault.patch"
   | "vault.patchPlain"
   | "vault.delete"
+  | "vault.history.list"
+  | "vault.history.restore"
   | "vault.crypto.get"
   | "vault.crypto.init"
   | "vault.crypto.change"
@@ -136,7 +138,7 @@ export async function initVaultCryptoConfig(
 export async function changeVaultCryptoConfig(input: {
   salt: string;
   verifier: string;
-  rewrapped: Array<{ id: number; dek_wrapped: string }>;
+  rewrapped: Array<{ id: number; dek_wrapped: string; revision_deks?: string[] }>;
 }): Promise<void> {
   await vaultRequest("vault.crypto.change", {
     subject_kind: "user",
@@ -149,7 +151,7 @@ export async function changeVaultCryptoConfig(input: {
 /** User 改密用：列出带 dek_wrapped 的条目（不含解密明文） */
 export async function fetchVaultWrappedDeks(
   subjectKind: SubjectKind,
-): Promise<Array<{ id: number; dek_wrapped: string }>> {
+): Promise<Array<{ id: number; dek_wrapped: string; revision_deks: string[] }>> {
   const data = await vaultRequest<VaultListOutput>("vault.list", {
     subject_kind: subjectKind,
     limit: 10_000,
@@ -160,7 +162,46 @@ export async function fetchVaultWrappedDeks(
       (item): item is typeof item & { dek_wrapped: string } =>
         typeof item.dek_wrapped === "string" && item.dek_wrapped.length > 0,
     )
-    .map((item) => ({ id: item.id, dek_wrapped: item.dek_wrapped }));
+    .map((item) => ({
+      id: item.id,
+      dek_wrapped: item.dek_wrapped,
+      revision_deks: item.revision_deks ?? [],
+    }));
+}
+
+export async function listVaultItemHistory(
+  subjectKind: SubjectKind,
+  id: number,
+): Promise<
+  Array<{
+    index: number;
+    captured_at: string;
+    title: string;
+    changed_fields: string[];
+  }>
+> {
+  const data = await vaultRequest<{
+    revisions: Array<{
+      index: number;
+      captured_at: string;
+      title: string;
+      changed_fields: string[];
+    }>;
+  }>("vault.history.list", { subject_kind: subjectKind, id });
+  return data.revisions;
+}
+
+export async function restoreVaultItemHistory(
+  subjectKind: SubjectKind,
+  id: number,
+  revisionIndex: number,
+): Promise<VaultItemMetaRowPayload> {
+  const data = await vaultRequest<{ item: VaultItemMetaRowPayload }>("vault.history.restore", {
+    subject_kind: subjectKind,
+    id,
+    revision_index: revisionIndex,
+  });
+  return data.item;
 }
 
 export async function ensureAgentVaultConfig(): Promise<VaultConfigRowPayload> {

@@ -37,6 +37,8 @@ export const vaultItemDetailRowSchema = vaultItemMetaRowSchema.extend({
   /** User 库：密文，客户端用主密码解开 */
   secrets_enc: z.string().optional(),
   dek_wrapped: z.string().optional(),
+  /** 改密 rewrap：与 entities.revisions 同序的历史 dek_wrapped */
+  revision_deks: z.array(z.string()).optional(),
 });
 
 export type VaultItemDetailRowPayload = z.infer<typeof vaultItemDetailRowSchema>;
@@ -162,12 +164,54 @@ export const vaultCryptoChangeInputSchema = z.object({
     z.object({
       id: z.number().int().positive(),
       dek_wrapped: z.string().min(1),
+      /** 与 entities.revisions 同序的历史 dek_wrapped */
+      revision_deks: z.array(z.string().min(1)).optional(),
     }),
   ),
 });
 export type VaultCryptoChangeInput = z.infer<typeof vaultCryptoChangeInputSchema>;
 export const vaultCryptoChangeOutputSchema = z.object({ ok: z.literal(true) });
 export type VaultCryptoChangeOutput = z.infer<typeof vaultCryptoChangeOutputSchema>;
+
+export const vaultHistoryListInputSchema = z.object({
+  subject_kind: vaultSubjectKindSchema.optional(),
+  id: z.number().int().positive(),
+});
+export type VaultHistoryListInput = z.infer<typeof vaultHistoryListInputSchema>;
+
+export const vaultHistoryChangedFieldSchema = z.enum([
+  "title",
+  "url",
+  "username",
+  "tags",
+  "content",
+  "item_type",
+  "custom_field_names",
+  "secrets",
+]);
+
+export const vaultHistoryRevisionMetaSchema = z.object({
+  index: z.number().int().nonnegative(),
+  captured_at: z.string(),
+  title: z.string(),
+  /** 相对更新一版（index0→当前；index i→revisions[i-1]）变动的字段 */
+  changed_fields: z.array(vaultHistoryChangedFieldSchema),
+});
+export type VaultHistoryRevisionMetaPayload = z.infer<typeof vaultHistoryRevisionMetaSchema>;
+
+export const vaultHistoryListOutputSchema = z.object({
+  revisions: z.array(vaultHistoryRevisionMetaSchema),
+});
+export type VaultHistoryListOutput = z.infer<typeof vaultHistoryListOutputSchema>;
+
+export const vaultHistoryRestoreInputSchema = z.object({
+  subject_kind: vaultSubjectKindSchema.optional(),
+  id: z.number().int().positive(),
+  revision_index: z.number().int().nonnegative(),
+});
+export type VaultHistoryRestoreInput = z.infer<typeof vaultHistoryRestoreInputSchema>;
+export const vaultHistoryRestoreOutputSchema = z.object({ item: vaultItemMetaRowSchema });
+export type VaultHistoryRestoreOutput = z.infer<typeof vaultHistoryRestoreOutputSchema>;
 
 export const vaultEnsureAgentInputSchema = z.object({});
 export type VaultEnsureAgentInput = z.infer<typeof vaultEnsureAgentInputSchema>;

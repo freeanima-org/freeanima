@@ -19,6 +19,8 @@ export type EntityCreateInput = {
   updated_at?: Date;
 };
 
+import type { EntityRevision } from "@freeanima/host/core/db/schema/entity";
+
 export type EntityUpdateInput = {
   id: number;
   world_id?: number;
@@ -30,6 +32,15 @@ export type EntityUpdateInput = {
   pinned?: boolean;
   reference_count?: number;
   tag_ids?: number[];
+  /**
+   * true 时跳过 entities.revisions 归档（改密 rewrap、纯结构挂接等）。
+   * 见 docs/aspects/entity-revisions.md
+   */
+  skip_revision?: boolean;
+  /**
+   * 显式替换 revisions 数组（须配合 skip_revision，例如改密写回历史 dek_wrapped）。
+   */
+  revisions?: EntityRevision[];
 };
 
 export type EntityListOpts = {

@@ -28,6 +28,11 @@ export const entities = pgTable(
     reference_count: real("reference_count").notNull().default(0),
     /** 关联 tag entity id（primary_component=tag）；per-World 标签池 */
     tag_ids: bigint("tag_ids", { mode: "number" }).array().notNull().default([]),
+    /**
+     * Entity 版本快照（顶层；白名单 primary_component 在 updateEntity 时自动写入）。
+     * 见 docs/aspects/entity-revisions.md
+     */
+    revisions: jsonb("revisions").$type<unknown[]>().notNull().default([]),
     fts_segmented: text("fts_segmented"),
     search_embedding: vector("search_embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
     search_fts: tsvector("search_fts").generatedAlwaysAs(

@@ -7,6 +7,7 @@ import {
   createEntity,
   deleteEntity,
   getEntity,
+  restoreEntityRevision,
   searchEntities,
   updateEntity,
 } from "@freeanima/host/core/db/pg/entity";
@@ -55,6 +56,8 @@ export type VaultItemUpdateInput = {
   secrets_enc?: string;
   dek_wrapped?: string;
   custom_field_names?: string[];
+  /** 改密 rewrap 等：跳过顶层 entities.revisions 归档 */
+  skip_revision?: boolean;
 };
 
 function normalizeTags(tags: string[] | undefined): string[] {
@@ -210,6 +213,7 @@ export async function updateVaultItem(
     ...(input.title !== undefined ? { title: input.title.trim().slice(0, 500) } : {}),
     ...(input.content !== undefined ? { content: input.content.trim() } : {}),
     body,
+    ...(input.skip_revision ? { skip_revision: true } : {}),
   });
   if (!updated) return null;
   const next = asVaultItem(updated);
@@ -217,16 +221,80 @@ export async function updateVaultItem(
   return toRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
 }
 
+import {
+  diffVaultRevisionFields,
+  vaultCompareViewFromEntity,
+  vaultCompareViewFromRevision,
+} from "./revision-diff.ts";
+
+export type VaultItemRevisionMeta = {
+  index: number;
+  captured_at: string;
+  title: string;
+  changed_fields: ReturnType<typeof diffVaultRevisionFields>;
+};
+
+export async function listVaultItemRevisions(
+  worldId: number,
+  id: number,
+): Promise<VaultItemRevisionMeta[] | null> {
+  await assertEntityInWorld(id, worldId);
+  const row = await getEntity(id);
+  if (!row || !asVaultItem(row)) return null;
+  const currentView = vaultCompareViewFromEntity(row);
+  return row.revisions.map((rev, index) => {
+    const newerRev = index === 0 ? null : row.revisions[index - 1];
+    const newerView = newerRev == null ? currentView : vaultCompareViewFromRevision(newerRev);
+    const olderView = vaultCompareViewFromRevision(rev);
+    return {
+      index,
+      captured_at: rev.captured_at,
+      title: rev.title,
+      changed_fields: diffVaultRevisionFields(olderView, newerView),
+    };
+  });
+}
+
+export async function restoreVaultItemRevision(
+  worldId: number,
+  id: number,
+  revisionIndex: number,
+): Promise<VaultItemRow | null> {
+  await assertEntityInWorld(id, worldId);
+  const updated = await restoreEntityRevision(id, revisionIndex);
+  if (!updated) return null;
+  const parsed = asVaultItem(updated);
+  if (!parsed) return null;
+  return toRow(parsed, { created_at: updated.created_at, updated_at: updated.updated_at });
+}
+
+export type VaultWrappedDekRow = {
+  id: number;
+  dek_wrapped: string;
+  revision_deks: string[];
+};
+
+export async function listVaultItemsWithWrappedDek(worldId: number): Promise<VaultWrappedDekRow[]> {
+  const result = await searchEntities({
+    world_id: worldId,
+    primary_component: VAULT_ITEM_COMPONENT,
+    limit: 10_000,
+    mode: "filter_only",
+    include_count: false,
+  });
+  const out: VaultWrappedDekRow[] = [];
+  for (const row of result.results) {
+    const parsed = asVaultItem(row);
+    if (!parsed?.dek_wrapped) continue;
+    const revision_deks = row.revisions
+      .map((rev) => rev.body.dek_wrapped)
+      .filter((v): v is string => typeof v === "string" && v.length > 0);
+    out.push({ id: parsed.id, dek_wrapped: parsed.dek_wrapped, revision_deks });
+  }
+  return out;
+}
+
 export async function deleteVaultItem(worldId: number, id: number): Promise<boolean> {
   await assertEntityInWorld(id, worldId);
   return deleteEntity(id);
-}
-
-export async function listVaultItemsWithWrappedDek(
-  worldId: number,
-): Promise<Array<{ id: number; dek_wrapped: string }>> {
-  const rows = await listVaultItems(worldId, { include_secrets: true, limit: 10_000 });
-  return rows
-    .filter((r): r is VaultItemRow => "dek_wrapped" in r && typeof r.dek_wrapped === "string")
-    .map((r) => ({ id: r.id, dek_wrapped: r.dek_wrapped }));
 }
