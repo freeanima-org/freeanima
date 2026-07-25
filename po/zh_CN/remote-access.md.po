@@ -509,8 +509,8 @@ msgstr "3. 客户端配置"
 #. type: Plain text
 #: docs/ops/remote-access.md:142
 #, fuzzy, no-wrap
-msgid "**Portal** (`src/app/shell/tauri`) and **browser Web** (`src/app/shell/web`) are remote clients; they **do not read** Habitat `config.yaml` token.\n"
-msgstr "**桌面壳层**（`src/app/shell/tauri`）、**移动壳层**（`src/app/shell/tauri`）与 **浏览器 Web**（`web.enabled` + Tunnel 或局域网 `:2659`）为远程客户端；它们**不读取** Habitat `config.yaml` 中的 token。\n"
+msgid "**Portal** (`src/portal/app/tauri`) and **browser Web** (`src/portal/app/web`) are remote clients; they **do not read** Habitat `config.yaml` token.\n"
+msgstr "**桌面壳层**（`src/portal/app/tauri`）、**移动壳层**（`src/portal/app/tauri`）与 **浏览器 Web**（`web.enabled` + Tunnel 或局域网 `:2659`）为远程客户端；它们**不读取** Habitat `config.yaml` 中的 token。\n"
 
 #. type: Plain text
 #: docs/ops/remote-access.md:148

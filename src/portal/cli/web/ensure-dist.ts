@@ -19,7 +19,7 @@ const SKIP_DIR_NAMES = new Set([".git", ".vite-app-web", "dist", "node_modules"]
 
 /** 影响 Web 静态产物的源码目录（相对 monorepo 根） */
 export const WEB_SOURCE_WATCH_DIRS = [
-  "src/app/shell/web",
+  "src/portal/app/web",
   "src/client/portal-sdk",
   "src/client/app-frame",
   "src/ui-kit",

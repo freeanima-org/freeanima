@@ -67,8 +67,8 @@ function layerOf(rel: string): string {
     if (rel.includes("/ui/")) return "feature-ui";
     return "feature-server";
   }
-  if (rel.startsWith("src/app/shell/")) return "client";
-  if (rel.startsWith("src/app/cli/")) return "host";
+  if (rel.startsWith("src/portal/app/") || rel.startsWith("src/portal/extension/")) return "client";
+  if (rel.startsWith("src/portal/cli/")) return "host";
   return "other";
 }
 

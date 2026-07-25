@@ -9,7 +9,9 @@
     "@inlang/plugin-message-format": "^4.4.0",
     "@splicemood/lcov-to-cobertura": "^0.1.1",
     "@tailwindcss/vite": "^4.3.2",
+    "@tauri-apps/cli": "^2.10.1",
     "@types/bun": "^1.3.14",
+    "@types/chrome": "^0.2.2",
     "@types/mailparser": "^3.4.6",
     "@types/node": "^26.1.1",
     "@types/nodemailer": "^8.0.1",
@@ -31,14 +33,14 @@
     "sharp": "^0.35.3",
     "stylelint": "^17.14.0",
     "tailwindcss": "^4.3.2",
-    "@tauri-apps/cli": "^2.10.1",
     "typescript": "^7.0.2",
     "vite": "^8.1.4",
     "vite-plugin-pwa": "^1.3.0",
-    "workbox-window": "^7.4.1"
+    "workbox-window": "^7.4.1",
+    "wxt": "^0.20.27"
   },
   "bin": {
-    "anima": "./src/app/cli/cli.ts"
+    "anima": "./src/portal/cli/cli.ts"
   },
   "description": "逸灵风 Free Anima (TypeScript)",
   "license": "MIT",

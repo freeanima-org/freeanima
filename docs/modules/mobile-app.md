@@ -4,7 +4,7 @@ title: Mobile app (Android)
 
 # Mobile app (Android)
 
-> Portal：**Tauri Android**（`src/app/shell/tauri/`）+ 包内 `dist-mobile` / `ui/web`。  
+> Portal：**Tauri Android**（`src/portal/app/tauri/`）+ 包内 `dist-mobile` / `ui/web`。  
 > Shell rules: [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md).
 
 ## Scope

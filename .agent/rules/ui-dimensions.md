@@ -8,7 +8,7 @@
 
 | 概念          | 是什么                    | 代码                                 |
 | ------------- | ------------------------- | ------------------------------------ |
-| **Shell**     | Portal 运行时宿主         | `src/app/shell/*`；`portal-sdk`      |
+| **Shell**     | Portal 运行时宿主         | `src/portal/app/*`；`portal-sdk`     |
 | **app frame** | Rail / 底栏 / 设置 chrome | `src/client/app-frame`（`AppFrame`） |
 
 禁止把 app frame 叫作 Shell；禁止用 Shell 类型推导 Rail/底栏。
@@ -22,7 +22,7 @@
 | 用布局+壳组合决定 Enter 发送                     | `useEnterToSendCapability()`                            |
 | 手写多处不同的 Habitat 设置可见性                | `canOpenHabitatSettings()`                              |
 | 单个 `isMobile` / `isDesktop` 同时锁布局和交互   | 按维选用下表 API                                        |
-| 为壳判断 import `app/shell/web`                  | `@freeanima/client/portal-sdk`（及 `/react`）           |
+| 为壳判断 import `portal/app/web`                 | `@freeanima/client/portal-sdk`（及 `/react`）           |
 | `ui-kit` 导出壳判定                              | 壳判定仅 portal-sdk                                     |
 
 ## API 速查

@@ -30,6 +30,7 @@ import {
   type VaultSecretsViewPayload,
 } from "./lib/api.ts";
 import { newUserVaultSalt } from "./lib/crypto-client.ts";
+import { BitwardenImportDialog } from "./components/BitwardenImportDialog.tsx";
 import { ChangeMasterPasswordDialog } from "./components/ChangeMasterPasswordDialog.tsx";
 import { VaultItemDetail, type VaultDetailSecrets } from "./components/VaultItemDetail.tsx";
 import { VaultItemForm, type VaultItemFormValues } from "./components/VaultItemForm.tsx";
@@ -153,6 +154,7 @@ export function VaultApp() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [changePasswordError, setChangePasswordError] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
 
   if (selectionSubjectKind !== subjectKind) {
     setSelectionSubjectKind(subjectKind);
@@ -312,7 +314,9 @@ export function VaultApp() {
         await createVaultItem("user", {
           title: values.title,
           item_type: "login",
-          ...(values.url ? { url: values.url } : {}),
+          ...(values.url
+            ? { url: values.url, uris: [{ uri: values.url, match: "domain" as const }] }
+            : {}),
           ...(values.username ? { username: values.username } : {}),
           secrets_enc: sealed.secrets_enc,
           dek_wrapped: sealed.dek_wrapped,
@@ -322,7 +326,9 @@ export function VaultApp() {
         await createVaultItemPlain({
           title: values.title,
           item_type: "login",
-          ...(values.url ? { url: values.url } : {}),
+          ...(values.url
+            ? { url: values.url, uris: [{ uri: values.url, match: "domain" as const }] }
+            : {}),
           ...(values.username ? { username: values.username } : {}),
           secrets: secrets as VaultSecretsViewPayload,
         });
@@ -382,6 +388,7 @@ export function VaultApp() {
           id: selectedItem.id,
           title: values.title,
           url: values.url,
+          uris: values.url ? [{ uri: values.url, match: "domain" }] : [],
           username: values.username,
           secrets_enc: sealed.secrets_enc,
           dek_wrapped: sealed.dek_wrapped,
@@ -392,6 +399,7 @@ export function VaultApp() {
           id: selectedItem.id,
           title: values.title,
           url: values.url,
+          uris: values.url ? [{ uri: values.url, match: "domain" }] : [],
           username: values.username,
           secrets: secrets as VaultSecretsViewPayload,
         });
@@ -526,6 +534,15 @@ export function VaultApp() {
         ) : null}
         {isUserVault ? (
           <>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={writesDisabled || actionLoading || !userUnlocked}
+              onClick={() => setImportOpen(true)}
+            >
+              导入 Bitwarden
+            </Button>
             <Button
               type="button"
               size="sm"
@@ -772,6 +789,16 @@ export function VaultApp() {
         error={changePasswordError}
         onOpenChange={setChangePasswordOpen}
         onSubmit={(input) => void handleChangeMasterPassword(input)}
+      />
+
+      <BitwardenImportDialog
+        open={importOpen}
+        subjectKind={subjectKind}
+        disabled={writesDisabled || actionLoading || !userUnlocked}
+        onOpenChange={setImportOpen}
+        onDone={async () => {
+          await reload();
+        }}
       />
     </div>
   );

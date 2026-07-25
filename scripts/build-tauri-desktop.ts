@@ -9,7 +9,7 @@ import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
 import { emitPackArtifact } from "./emit-pack-artifact.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const tauriDir = join(root, "src/app/shell/tauri");
+const tauriDir = join(root, "src/portal/app/tauri");
 const bundleRoot = join(tauriDir, "src-tauri/target/release/bundle");
 
 function ensureLinuxWebkitDeps(): void {

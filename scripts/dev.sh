@@ -17,7 +17,7 @@ cd "$ROOT"
 habitat_port="${HABITAT_PORT:-}"
 if [[ -z "$habitat_port" ]]; then
   habitat_port="$(bun -e '
-    import { pickRandomAvailableTcpPort, DEV_HABITAT_PORT_MIN } from "./src/app/cli/tcp-port-available.ts";
+    import { pickRandomAvailableTcpPort, DEV_HABITAT_PORT_MIN } from "./src/portal/cli/tcp-port-available.ts";
     const p = await pickRandomAvailableTcpPort("127.0.0.1", DEV_HABITAT_PORT_MIN);
     process.stdout.write(String(p));
   ')"
@@ -28,7 +28,7 @@ export WEB_DEV_PORT="${WEB_DEV_PORT:-5000}"
 
 echo "dev · Habitat ${FREEANIMA_URL} · Web from :${WEB_DEV_PORT} (proxy only; browser habitat = page origin)"
 
-bun src/app/cli/dev-habitat.ts --port "${habitat_port}" --strict-port &
+bun src/portal/cli/dev-habitat.ts --port "${habitat_port}" --strict-port &
 habitat_pid=$!
 bun scripts/dev-web.ts &
 web_pid=$!

@@ -76,7 +76,7 @@ describe("ensure-web-dist", () => {
     touch(join(dist, "manifest.webmanifest"), distTime);
     touch(join(dist, "sw.js"), distTime);
 
-    const sourceRoot = join(root, "src/app/shell/web");
+    const sourceRoot = join(root, "src/portal/app/web");
     mkdirSync(sourceRoot, { recursive: true });
     touch(join(sourceRoot, "vite.config.ts"), distTime + 1000);
 
@@ -96,7 +96,7 @@ describe("ensure-web-dist", () => {
     touch(join(dist, "manifest.webmanifest"), distTime);
     touch(join(dist, "sw.js"), distTime);
 
-    const sourceRoot = join(root, "src/app/shell/web");
+    const sourceRoot = join(root, "src/portal/app/web");
     mkdirSync(sourceRoot, { recursive: true });
     touch(join(sourceRoot, "vite.config.ts"), distTime - 1000);
 

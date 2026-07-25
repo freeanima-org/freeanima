@@ -10,7 +10,7 @@ default: _deps
 # 仅 Habitat（可附加：just dev habitat -- --port 12001）
 [no-cd]
 habitat *args: _deps
-  bun src/app/cli/dev-habitat.ts {{args}}
+  bun src/portal/cli/dev-habitat.ts {{args}}
 
 # 仅 Vite Web
 [no-cd]
@@ -26,3 +26,8 @@ tauri: _deps
 [no-cd]
 tauri-android: _deps
   bun scripts/dev-tauri-mobile.ts
+
+# Vault 浏览器扩展（WXT；Chrome 加载 .output/chrome-mv3）
+[no-cd]
+browser-extension *args: _deps
+  bunx wxt {{args}}

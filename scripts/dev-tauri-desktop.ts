@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const tauriDir = join(root, "src/app/shell/tauri");
+const tauriDir = join(root, "src/portal/app/tauri");
 
 process.env.COMPANION_OVERLAY_URL ??= "http://127.0.0.1:4176/?view=overlay";
 

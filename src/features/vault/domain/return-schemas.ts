@@ -6,9 +6,18 @@ const vaultItemMetaSchema = z.object({
   content: z.string(),
   item_type: z.enum(["login", "secure_note", "card", "identity", "custom"]),
   url: z.string().optional(),
+  uris: z
+    .array(
+      z.object({
+        uri: z.string(),
+        match: z.enum(["domain", "host", "starts_with", "exact", "regex", "never"]).optional(),
+      }),
+    )
+    .optional(),
   username: z.string().optional(),
   tags: z.array(z.string()),
   custom_field_names: z.array(z.string()),
+  import_refs: z.object({ bitwarden: z.string().optional() }).optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });

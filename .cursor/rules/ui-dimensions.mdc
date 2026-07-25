@@ -1,6 +1,7 @@
 ---
 description: UI 三维度正交（壳子/布局/交互）— 改前端前必读
-globs: src/frontend/**/*,src/features/**/ui/**/*,src/app/shell/**/*,src/satellites/**/spa/**/*
+globs: src/client/**/*,src/features/**/ui/**/*,src/portal/app/**/*,src/portal/extension/**/*,src/ui-kit/**/*
+
 alwaysApply: false
 ---
 

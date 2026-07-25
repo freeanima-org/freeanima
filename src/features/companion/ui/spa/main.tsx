@@ -26,7 +26,7 @@ async function bootstrapCompanionShell(): Promise<void> {
     return;
   }
   const { bootstrapTauriBridge } =
-    await import("@freeanima/app/shell/tauri/bridge/bootstrap-tauri-desktop.ts");
+    await import("@freeanima/portal/app/tauri/bridge/bootstrap-tauri-desktop.ts");
   await bootstrapTauriBridge();
 }
 

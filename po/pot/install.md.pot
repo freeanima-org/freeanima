@@ -404,7 +404,7 @@ msgstr ""
 #: docs/ops/install.md:179
 #, no-wrap
 msgid ""
-"bun src/app/cli/cli.ts -- --help\n"
+"bun src/portal/cli/cli.ts -- --help\n"
 "just dev\n"
 msgstr ""
 

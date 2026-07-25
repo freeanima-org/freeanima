@@ -15,8 +15,8 @@ export async function resolveShellBindings(): Promise<SettingsBinding[]> {
 
   if (kind === "tauri" && buildTarget === "mobile") {
     const [{ createMobileSettingsBindings }, { createMobileSettingsStores }] = await Promise.all([
-      import("@freeanima/app/shell/tauri/lib/mobile-settings-registry.ts"),
-      import("@freeanima/app/shell/tauri/lib/mobile-settings-stores.ts"),
+      import("@freeanima/portal/app/tauri/lib/mobile-settings-registry.ts"),
+      import("@freeanima/portal/app/tauri/lib/mobile-settings-stores.ts"),
     ]);
     const stores = createMobileSettingsStores();
     return createMobileSettingsBindings(stores);
@@ -29,9 +29,9 @@ export async function resolveShellBindings(): Promise<SettingsBinding[]> {
       { createDesktopSettingsBindings },
       { createDesktopSettingsStores },
     ] = await Promise.all([
-      import("@freeanima/app/shell/tauri/spa/companion-settings-api.ts"),
-      import("@freeanima/app/shell/tauri/spa/settings-registry.ts"),
-      import("@freeanima/app/shell/tauri/lib/desktop-settings-stores.ts"),
+      import("@freeanima/portal/app/tauri/spa/companion-settings-api.ts"),
+      import("@freeanima/portal/app/tauri/spa/settings-registry.ts"),
+      import("@freeanima/portal/app/tauri/lib/desktop-settings-stores.ts"),
     ]);
     const stores = createDesktopSettingsStores();
     const apis = createDesktopSettingsApis();

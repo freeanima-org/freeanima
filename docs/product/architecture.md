@@ -10,19 +10,26 @@ System-level constraints and long-lived design principles.
 
 User-facing product terms (Chinese in [`i18n/glossary.md`](../../i18n/glossary.md)):
 
-| Role                                  | English          | Chinese           | Meaning                                                                                                                         |
-| ------------------------------------- | ---------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Long-running process / connect target | **Habitat**      | **栖息地**        | One process hosts **multiple digital lives** (`agent` subjects) and **human assets** (`user`); connect / token / restart target |
-| External connectors (class)           | **Portal**       | **入口**          | Shell, MCP clients, and similar ways in; not the Habitat itself                                                                 |
-| Remote-tool registrant                | **Outpost**      | **前哨**          | Unreachable local app that `remote_tools.attach` (Portal-embedded companion or standalone tool); **not** a Portal               |
-| Shell                                 | **Shell**        | **壳**            | A Portal (desktop / mobile / web window; SSH-like). **Not** app frame (Rail / bottom nav / settings chrome)                     |
-| app frame                             | **app frame**    | **应用布局**      | SPA chrome in `src/client/app-frame` (`AppFrame`); viewport-driven; orthogonal to Shell                                         |
-| Admin / inspect UI (legacy Habitat)   | **Habitat** (UI) | **栖息地**        | Area under `/habitat/*`; "Open Habitat" vs "Connect to Habitat"                                                                 |
-| Admin home page                       | **Dashboard**    | **仪表盘**        | `/habitat/dashboard` only; other Habitat routes keep their own labels                                                           |
-| Message bridges                       | **Gateway**      | Gateway           | Discord / WeChat — **not** a Portal                                                                                             |
-| Protocol / code identifiers           | —                | **协议/代码标识** | `/rpc/v1`、`HabitatRPC/1.0`、`habitat_*`、`habitat_runtime_config`、`dev:habitat`                                               |
+| Role                                  | English          | Chinese            | Meaning                                                                                                                         |
+| ------------------------------------- | ---------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| Long-running process / connect target | **Habitat**      | **栖息地**         | One process hosts **multiple digital lives** (`agent` subjects) and **human assets** (`user`); connect / token / restart target |
+| External connectors (class)           | **Portal**       | **入口**           | Class of ways into Habitat; four **forms**: application / browser / mcp / cli                                                   |
+| Portal form                           | —                | **入口形态**       | Realization kind of a Portal                                                                                                    |
+| Application-form Portal               | **Shell**        | **壳** / 应用形态  | Form `application` — windowed SPA（desktop / mobile / web）。**Not** app frame                                                  |
+| Browser-form Portal                   | —                | **浏览器形态入口** | Form `browser` — browser extension（MV3）；`src/portal/extension`；**not** Web Shell                                            |
+| MCP-form Portal                       | **MCP**          | **MCP 形态入口**   | Form `mcp` — Habitat `/mcp`（`mcp-server`）。Inbound `mcp-client` is **not** a Portal                                           |
+| CLI-form Portal                       | **CLI**          | **CLI 形态入口**   | Form `cli` — `anima` CLI；`src/portal/cli`                                                                                      |
+| Remote-tool registrant                | **Outpost**      | **前哨**           | Unreachable local app that `remote_tools.attach` (Portal-embedded companion or standalone tool); **not** a Portal               |
+| Shell                                 | **Shell**        | **壳**             | Application-form Portal（desktop / mobile / web）。**Not** Habitat; **not** app frame; **not** browser Portal                   |
+| app frame                             | **app frame**    | **应用布局**       | SPA chrome in `src/client/app-frame` (`AppFrame`); viewport-driven; orthogonal to Shell                                         |
+| Admin / inspect UI (legacy Habitat)   | **Habitat** (UI) | **栖息地**         | Area under `/habitat/*`; "Open Habitat" vs "Connect to Habitat"                                                                 |
+| Admin home page                       | **Dashboard**    | **仪表盘**         | `/habitat/dashboard` only; other Habitat routes keep their own labels                                                           |
+| Message bridges                       | **Gateway**      | Gateway            | Discord / WeChat — **not** a Portal                                                                                             |
+| Protocol / code identifiers           | —                | **协议/代码标识**  | `/rpc/v1`、`HabitatRPC/1.0`、`habitat_*`、`habitat_runtime_config`、`dev:habitat`                                               |
 
-Verbs: **connect to Habitat** (URL + token); **open Habitat** (admin UI); **reach via a Portal** (Shell / MCP).
+Verbs: **connect to Habitat** (URL + token); **open Habitat** (admin UI); **reach via a Portal** (Shell / browser extension / MCP / CLI).
+
+Code layout: `src/portal/{app,extension,cli}`；MCP-form implementation stays in `src/host/capabilities/mcp-server`. See [`docs/modules/portal.md`](../modules/portal.md).
 
 Estate **Body** (VM / OS / network under the four-layer model) is the cognitive "what I run on" for a subject — **not** the Habitat process name.
 
@@ -116,7 +123,7 @@ Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol
 
 Authoritative spec: [`repository-topology.md`](repository-topology.md).
 
-Host stack: `src/host/{kernel,core,engine,capabilities,platform}`。Client: `src/client/{portal-sdk,app-frame}`。Design system: `src/ui-kit/`（与 `shared/` 并列）。Portal Shell: `src/app/shell/{tauri,web}`。
+Host stack: `src/host/{kernel,core,engine,capabilities,platform}`。Client: `src/client/{portal-sdk,app-frame}`。Design system: `src/ui-kit/`（与 `shared/` 并列）。Portal Shell: `src/portal/app/{tauri,web}`。
 
 ### Platform UI layering
 
@@ -124,7 +131,7 @@ UI/UX design system (dimensions, visual foundations, components, interaction pat
 
 | Layer           | Platform-native?                                             | Location                                                            | Data path                               |
 | --------------- | ------------------------------------------------------------ | ------------------------------------------------------------------- | --------------------------------------- |
-| Shell（壳子维） | Yes                                                          | `src/app/shell/tauri`, companion, Habitat binding                   | Tauri IPC / commands                    |
+| Shell（壳子维） | Yes                                                          | `src/portal/app/tauri`, companion, Habitat binding                  | Tauri IPC / commands                    |
 | app frame       | Layout follows viewport; settings chrome follows layout band | `src/client/app-frame`（`AppFrame`）                                | Habitat RPC（Feature RPC）              |
 | Habitat UI      | Shell embed（ordinary feature）                              | `src/features/habitat`（UI + `plugin.habitat.rpc`）                 | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
 | Companion host  | Overlay WebView-host（first-party）                          | `src/features/companion/companion`（spa attach；thin shell IPC/FS） | Habitat RPC + `remote_tools.attach`     |
@@ -237,7 +244,7 @@ See [`ops/security.md`](../ops/security.md).
 Production (standalone install CLI): `anima service` (systemd --user). Auto-restarts after crashes; only `systemctl stop` stops the service. Source-tree `anima` does **not** register `service` — use `just dev habitat` for local Habitat.
 
 - **Habitat / service**: long-running — Habitat HTTP (`/rpc/v1`), Discord / WeChat Gateway, cron
-- **UI**: `src/app/shell/tauri` + `web/dist-*` bundled SPA (Chat + Habitat); Habitat does not host `/habitat`
+- **UI**: `src/portal/app/tauri` + `web/dist-*` bundled SPA (Chat + Habitat); Habitat does not host `/habitat`
 
 ```bash
 # standalone install
@@ -351,7 +358,7 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 
 **Portal Shell 运行时**：**Tauri**（Rust 主进程 + 系统 WebView；桌面与 Android 统一壳层）。壳规则：[`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)。**禁止**为 companion 再打 Node sidecar；`remote_tools.attach` 在第一方伴侣浮层（见 Desktop companion）。
 
-**UI 源码产物**：`src/app/shell/web/dist`（`base: /web/`）。
+**UI 源码产物**：`src/portal/app/web/dist`（`base: /web/`）。
 
 | 客户端       | UI 加载                                                         | 更新方式                                                                                                                                                                              |
 | ------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -364,10 +371,10 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 
 ### Shell vs app frame
 
-| Concept       | What                                                                | Code                                                                         |
-| ------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| **Shell**     | Portal host runtime（browser / Tauri；形态 web / desktop / mobile） | `src/app/shell/*`；`portal-sdk` 中 `getShellKind` / `ShellApi` / buildTarget |
-| **app frame** | SPA chrome：模块左栏 Rail / 底栏 Tabs、设置页 chrome                | `src/client/app-frame`（`AppFrame`）；跟视口，**不**由壳类型锁定             |
+| Concept       | What                                                                | Code                                                                          |
+| ------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| **Shell**     | Portal host runtime（browser / Tauri；形态 web / desktop / mobile） | `src/portal/app/*`；`portal-sdk` 中 `getShellKind` / `ShellApi` / buildTarget |
+| **app frame** | SPA chrome：模块左栏 Rail / 底栏 Tabs、设置页 chrome                | `src/client/app-frame`（`AppFrame`）；跟视口，**不**由壳类型锁定              |
 
 ### 三维度模型（壳子 / 布局 / 交互）
 

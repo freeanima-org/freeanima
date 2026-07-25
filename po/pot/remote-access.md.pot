@@ -434,7 +434,7 @@ msgstr ""
 #. type: Plain text
 #: docs/ops/remote-access.md:142
 #, no-wrap
-msgid "**Portal** (`src/app/shell/tauri`) and **browser Web** (`src/app/shell/web`) are remote clients; they **do not read** Habitat `config.yaml` token.\n"
+msgid "**Portal** (`src/portal/app/tauri`) and **browser Web** (`src/portal/app/web`) are remote clients; they **do not read** Habitat `config.yaml` token.\n"
 msgstr ""
 
 #. type: Plain text

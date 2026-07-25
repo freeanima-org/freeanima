@@ -62,10 +62,12 @@ function toMetaPayload(row: VaultItemMetaRow | VaultItemRow) {
     title: row.title,
     content: row.content,
     item_type: row.item_type,
-    url: row.url,
-    username: row.username,
+    ...(row.url !== undefined ? { url: row.url } : {}),
+    ...(row.uris !== undefined ? { uris: row.uris } : {}),
+    ...(row.username !== undefined ? { username: row.username } : {}),
     tags: row.tags,
     custom_field_names: row.custom_field_names,
+    ...(row.import_refs !== undefined ? { import_refs: row.import_refs } : {}),
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
@@ -164,17 +166,22 @@ export async function serviceVaultCreate(
     content?: string;
     item_type?: VaultItemType;
     url?: string;
+    uris?: VaultItemRow["uris"];
     username?: string;
     tags?: string[];
     secrets_enc: string;
     dek_wrapped: string;
     custom_field_names?: string[];
+    import_refs?: VaultItemRow["import_refs"];
   },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   const { subject_kind, ...createInput } = input;
-  const item = await createVaultItem(await vaultWorldIdForAuth(auth, subject_kind), createInput);
+  const item = await createVaultItem(
+    await vaultWorldIdForAuth(auth, subject_kind),
+    omitUndefined(createInput),
+  );
   return { item: toMetaPayload(item) };
 }
 
@@ -186,9 +193,11 @@ export async function serviceVaultCreatePlain(
     content?: string;
     item_type?: VaultItemType;
     url?: string;
+    uris?: VaultItemRow["uris"];
     username?: string;
     tags?: string[];
     secrets: VaultSecretsPayload;
+    import_refs?: VaultItemRow["import_refs"];
   },
   auth: VerifiedServiceApiToken,
 ) {
@@ -206,11 +215,13 @@ export async function serviceVaultCreatePlain(
       content: input.content,
       item_type: input.item_type,
       url: input.url,
+      uris: input.uris,
       username: input.username,
       tags: input.tags,
       secrets_enc: sealed.secrets_enc,
       dek_wrapped: sealed.dek_wrapped,
       custom_field_names: sealed.custom_field_names,
+      import_refs: input.import_refs,
     }),
   );
   return { item: toMetaPayload(item) };
@@ -225,20 +236,22 @@ export async function serviceVaultPatch(
     content?: string;
     item_type?: VaultItemType;
     url?: string;
+    uris?: VaultItemRow["uris"];
     username?: string;
     tags?: string[];
     secrets_enc?: string;
     dek_wrapped?: string;
     custom_field_names?: string[];
+    import_refs?: VaultItemRow["import_refs"];
   },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   const { id, subject_kind, ...patch } = input;
-  const item = await updateVaultItem(await vaultWorldIdForAuth(auth, subject_kind), {
-    id,
-    ...patch,
-  });
+  const item = await updateVaultItem(
+    await vaultWorldIdForAuth(auth, subject_kind),
+    omitUndefined({ id, ...patch }),
+  );
   if (!item) throw new Error("NOT_FOUND");
   return { item: toMetaPayload(item) };
 }
@@ -252,9 +265,11 @@ export async function serviceVaultPatchPlain(
     content?: string;
     item_type?: VaultItemType;
     url?: string;
+    uris?: VaultItemRow["uris"];
     username?: string;
     tags?: string[];
     secrets?: VaultSecretsPayload;
+    import_refs?: VaultItemRow["import_refs"];
   },
   auth: VerifiedServiceApiToken,
 ) {
@@ -267,7 +282,7 @@ export async function serviceVaultPatchPlain(
   await ensureAgentVaultConfig(worldId);
 
   const { id, subject_kind: _kind, secrets, ...metaPatch } = input;
-  const patch: Parameters<typeof updateVaultItem>[1] = { id, ...metaPatch };
+  const patch: Parameters<typeof updateVaultItem>[1] = omitUndefined({ id, ...metaPatch });
 
   if (secrets) {
     const existing = await getVaultItem(worldId, id, { include_secrets: true });

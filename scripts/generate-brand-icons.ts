@@ -11,7 +11,7 @@ import sharp from "sharp";
 const ROOT = join(import.meta.dir, "..");
 const APP_ICON_PNG = join(ROOT, "brand/app-icon.png");
 
-const ANDROID_RES = join(ROOT, "src/app/shell/tauri/src-tauri/gen/android/app/src/main/res");
+const ANDROID_RES = join(ROOT, "src/portal/app/tauri/src-tauri/gen/android/portal/src/main/res");
 
 const BG_DARK = "#0a0a0b";
 const BG_NAVY = "#0d1628";
@@ -117,7 +117,7 @@ async function main(): Promise<void> {
 
   const faviconDests = [
     join(ROOT, "site/public/favicon.png"),
-    join(ROOT, "src/app/shell/web/spa/public/favicon.png"),
+    join(ROOT, "src/portal/app/web/spa/public/favicon.png"),
     join(ROOT, "src/features/habitat/ui/habitat/public/favicon.png"),
   ];
   const favicon32 = await renderIcon(32);
@@ -125,14 +125,14 @@ async function main(): Promise<void> {
     writePng(dest, favicon32);
   }
 
-  writePng(join(ROOT, "src/app/shell/web/spa/public/icons/icon-192.png"), await renderIcon(192));
-  writePng(join(ROOT, "src/app/shell/web/spa/public/icons/icon-512.png"), await renderIcon(512));
+  writePng(join(ROOT, "src/portal/app/web/spa/public/icons/icon-192.png"), await renderIcon(192));
+  writePng(join(ROOT, "src/portal/app/web/spa/public/icons/icon-512.png"), await renderIcon(512));
   writePng(
-    join(ROOT, "src/app/shell/web/spa/public/icons/icon-512-maskable.png"),
+    join(ROOT, "src/portal/app/web/spa/public/icons/icon-512-maskable.png"),
     await renderMaskable(512),
   );
 
-  const tauriIcons = join(ROOT, "src/app/shell/tauri/src-tauri/icons");
+  const tauriIcons = join(ROOT, "src/portal/app/tauri/src-tauri/icons");
   const png32 = join(tauriIcons, "32x32.png");
   const png128 = join(tauriIcons, "128x128.png");
   const png256 = join(tauriIcons, "256x256.png");

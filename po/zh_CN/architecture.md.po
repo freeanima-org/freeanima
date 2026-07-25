@@ -454,7 +454,7 @@ msgstr ""
 msgid ""
 "Host stack: `src/host/{kernel,core,engine,capabilities,platform}`。Client: "
 "`src/client/{portal-sdk,app-frame}`。Design system: `src/ui-kit/`（与 "
-"`shared/` 并列）。Portal Shell: `src/app/shell/{tauri,web}`。"
+"`shared/` 并列）。Portal Shell: `src/portal/app/{tauri,web}`。"
 msgstr ""
 
 #. type: Title ###
@@ -476,14 +476,14 @@ msgstr "平台连接"
 msgid ""
 "| Layer           | Platform-native?                   | Location                                                      | 数据通道                                |\n"
 "| --------------- | ---------------------------------- | ------------------------------------------------------------- | --------------------------------------- |\n"
-"| Shell（壳子维） | Yes                                | `src/app/shell/tauri`, companion, Habitat binding             | Tauri IPC / commands                    |\n"
+"| Shell（壳子维） | Yes                                | `src/portal/app/tauri`, companion, Habitat binding             | Tauri IPC / commands                    |\n"
 "| app frame       | 布局跟视口；设置 chrome 跟布局粗档 | `src/client/app-frame`（`AppFrame`）                          | Habitat RPC（Feature RPC）              |\n"
 "| Habitat 前端    | Shell embed（普通 feature）        | `src/features/habitat`（UI + `plugin.habitat.rpc`）           | Habitat RPC（WS + HTTP POST `/rpc/v1`） |\n"
 "| Companion host  | Overlay WebView-host（第一方）     | `src/features/companion/companion`（spa attach；壳薄 IPC/FS） | Habitat RPC + `remote_tools.attach`     |\n"
 msgstr ""
 "| Layer            | Platform-native?                   | Location (current → target)                                                | 数据通道                                |\n"
 "| ---------------- | ---------------------------------- | -------------------------------------------------------------------------- | --------------------------------------- |\n"
-"| Shell（壳子维）  | Yes                                | `src/app/shell/tauri`, companion, Habitat binding | Tauri IPC / commands                    |\n"
+"| Shell（壳子维）  | Yes                                | `src/portal/app/tauri`, companion, Habitat binding | Tauri IPC / commands                    |\n"
 "| Shared SPA shell | 布局跟视口；设置 chrome 跟布局粗档 | `src/frontend/shell-ui`                                                    | Habitat RPC（Feature RPC）              |\n"
 "| Habitat 前端     | Shell embed                        | `src/features/habitat`（UI + `plugin.habitat.rpc`）                            | Habitat RPC（WS + HTTP POST `/rpc/v1`） |\n"
 "| Companion host   | Overlay WebView-host（第一方）     | `src/features/companion/companion`（spa attach；壳薄 IPC/FS）                      | Habitat RPC + `remote_tools.attach`     |\n"
@@ -923,10 +923,10 @@ msgstr ""
 #, fuzzy
 #| msgid "(Chat + **Habitat); Habitat does not host `/admin`"
 msgid ""
-"**UI**: `src/app/shell/tauri` + `web/dist-*` bundled SPA (Chat + Habitat); "
+"**UI**: `src/portal/app/tauri` + `web/dist-*` bundled SPA (Chat + Habitat); "
 "Habitat does not host `/habitat`"
 msgstr ""
-"**UI**：`src/app/shell/tauri` / `src/app/shell/tauri` bundled SPA（聊天室 + "
+"**UI**：`src/portal/app/tauri` / `src/portal/app/tauri` bundled SPA（聊天室 + "
 "管理台）；Habitat 不托管 `/admin`"
 
 #. type: Fenced code block (bash)
@@ -1243,7 +1243,7 @@ msgstr "**Portal Shell 运行时**：**Tauri**（Rust 主进程 + 系统 WebView
 #. type: Plain text
 #: docs/product/architecture.md:353
 #, no-wrap
-msgid "**UI 源码产物**：`src/app/shell/web/dist`（`base: /web/`）。\n"
+msgid "**UI 源码产物**：`src/portal/app/web/dist`（`base: /web/`）。\n"
 msgstr ""
 
 #. type: Plain text
@@ -1294,7 +1294,7 @@ msgstr ""
 msgid ""
 "| Concept       | What                                                                | Code                                                                         |\n"
 "| ------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------- |\n"
-"| **Shell**     | Portal host runtime（browser / Tauri；形态 web / desktop / mobile） | `src/app/shell/*`；`portal-sdk` 中 `getShellKind` / `ShellApi` / buildTarget |\n"
+"| **Shell**     | Portal host runtime（browser / Tauri；形态 web / desktop / mobile） | `src/portal/app/*`；`portal-sdk` 中 `getShellKind` / `ShellApi` / buildTarget |\n"
 "| **app frame** | SPA chrome：模块左栏 Rail / 底栏 Tabs、设置页 chrome                | `src/client/app-frame`（`AppFrame`）；跟视口，**不**由壳类型锁定             |\n"
 msgstr ""
 "| 能力              | 说明                                                                                                   |\n"

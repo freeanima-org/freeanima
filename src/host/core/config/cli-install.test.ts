@@ -22,7 +22,9 @@ describe("cli-install", () => {
 
   it("isStandaloneExecutable detects bunfs argv when probing paths", () => {
     expect(isStandaloneExecutable("/$bunfs/root/anima")).toBe(true);
-    expect(isStandaloneExecutable("/home/feng/workspace/freeanima/src/app/cli/cli.ts")).toBe(false);
+    expect(isStandaloneExecutable("/home/feng/workspace/freeanima/src/portal/cli/cli.ts")).toBe(
+      false,
+    );
   });
 
   it("isStandaloneExecutable uses Bun.isStandaloneExecutable for process argv", () => {
@@ -37,7 +39,7 @@ describe("cli-install", () => {
     mkdirSync(join(dir, "cli", "src", "app", "cli"), { recursive: true });
     writeFileSync(cliPath, "#!/usr/bin/env bun\n");
     process.argv[1] = cliPath;
-    // path must end with /src/app/cli/cli.ts — use real layout suffix
+    // path must end with /src/portal/cli/cli.ts — use real layout suffix
     const linked = join(dir, "src", "app", "cli", "cli.ts");
     mkdirSync(join(dir, "src", "app", "cli"), { recursive: true });
     writeFileSync(linked, "#!/usr/bin/env bun\n");

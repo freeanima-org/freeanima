@@ -14,5 +14,5 @@ const root = join(import.meta.dir, "..");
 await $`bunx paraglide-js compile --project ./project.inlang --outdir ./messages/paraglide`.cwd(
   root,
 );
-await $`bunx vite build`.cwd(join(root, "src/app/shell/web"));
+await $`bunx vite build`.cwd(join(root, "src/portal/app/web"));
 await $`bun ${join(root, "scripts/write-web-build-meta.ts")}`.cwd(root);

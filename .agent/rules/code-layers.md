@@ -7,7 +7,7 @@
 Host 纵向栈（高 → 低）：
 
 ```
-app/cli → platform → capabilities → engine → core → kernel
+portal/cli → platform → capabilities → engine → core → kernel
 ```
 
 并列轴：
@@ -29,7 +29,7 @@ app/cli → platform → capabilities → engine → core → kernel
 | **platform**     | `src/host/platform/`     | 组合根；`service/` = AppRuntime（原 `platform/runtime/`）                             |
 | **ui-kit**       | `src/ui-kit/`            | React 设计系统                                                                        |
 | **client**       | `src/client/`            | portal-sdk、app-frame                                                                 |
-| **app**          | `src/app/`               | CLI、shell                                                                            |
+| **portal**       | `src/portal/`            | 入口：`app`（Shell）/ `extension` / `cli`；MCP 形态在 host `mcp-server`               |
 
 ### Feature 模块
 

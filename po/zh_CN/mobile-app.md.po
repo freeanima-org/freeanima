@@ -25,7 +25,7 @@ msgstr "移动端 APP（Android）"
 #. type: Plain text
 #: docs/modules/mobile-app.md:7
 #, no-wrap
-msgid "> Portal：**Tauri Android**（`src/app/shell/tauri/`）+ 包内 `dist-mobile` / `ui/web`。  \n"
+msgid "> Portal：**Tauri Android**（`src/portal/app/tauri/`）+ 包内 `dist-mobile` / `ui/web`。  \n"
 msgstr ""
 
 #. type: Plain text

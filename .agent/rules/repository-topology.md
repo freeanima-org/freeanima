@@ -32,21 +32,25 @@ src/
 ├── ui-kit/               # 设计系统（与 shared 并列；仅 client 消费者；无协议）
 ├── features/<slug>/      # 纵向：ui + domain + habitat + protocol + plugin
 ├── shared/               # 无 React：habitat-rpc/client/contract、rpc-contract、vault-crypto
-└── app/
-    ├── cli/              # anima CLI
-    └── shell/{tauri,web} # Portal 宿主
+└── portal/               # 入口实现（四形态；见 docs/modules/portal.md）
+    ├── app/{tauri,web}   # 应用形态 = Shell
+    ├── extension/        # 浏览器形态（MV3；runtime/ + features/*）
+    └── cli/              # CLI 形态（anima）
 ```
+
+MCP 形态入口实现在 `host/capabilities/mcp-server`（**不在** `portal/`）。
 
 **Habitat 管理台** = 普通 `features/habitat`（与 chat/task 同形），不为它单开目录或 i18n catalog。
 
 ### 依赖方向（CI：`bun scripts/check-layer-deps.ts`）
 
 ```
-app/cli, features(server) → platform → capabilities → engine → core → kernel
+portal/cli, features(server) → platform → capabilities → engine → core → kernel
 shared → kernel（无 React）
 ui-kit → kernel（极少）；仅 client 侧引用
 features/*/ui → ui-kit + client/portal-sdk + shared（及暂允许的 host/core 类型/工具）
 client/app-frame → features/*/ui + portal-sdk + ui-kit
+portal/app、portal/extension → client 层（同原 shell）
 host ↛ client / ui-kit（platform habitat client re-export 为过渡豁免）
 ```
 

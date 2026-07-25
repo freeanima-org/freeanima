@@ -33,17 +33,17 @@ import { emitPackArtifact } from "./emit-pack-artifact.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const OUT_DIR = join(ROOT, "dist/anima-executable");
-const CLI_ENTRY = join(ROOT, "src/app/cli/cli.ts");
-const EMBEDS_MODULE = join(ROOT, "src/app/cli/standalone-embeds.ts");
+const CLI_ENTRY = join(ROOT, "src/portal/cli/cli.ts");
+const EMBEDS_MODULE = join(ROOT, "src/portal/cli/standalone-embeds.ts");
 const MIGRATIONS_DIR = join(ROOT, "src/host/core/migrations");
-const WEB_DIST_DIR = join(ROOT, "src/app/shell/web/dist");
+const WEB_DIST_DIR = join(ROOT, "src/portal/app/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
 const DOCS_DIR = join(ROOT, "docs");
 
 async function ensureWebDist(): Promise<void> {
   const force = process.env.FREEANIMA_FORCE_WEB_BUILD === "1";
   if (!force && existsSync(WEB_DIST_INDEX)) {
-    const { assessMonorepoWebDist } = await import("@freeanima/app/cli/web/ensure-dist.ts");
+    const { assessMonorepoWebDist } = await import("@freeanima/portal/cli/web/ensure-dist.ts");
     const assessment = assessMonorepoWebDist(ROOT, WEB_DIST_DIR);
     if (!assessment.needsRebuild) {
       console.log("Web dist up to date — skip pack web（FREEANIMA_FORCE_WEB_BUILD=1 可强制）");
@@ -59,7 +59,7 @@ async function ensureWebDist(): Promise<void> {
   console.log("building Web dist for embed…");
   await $`bun scripts/build-web.ts`.cwd(ROOT);
   if (!existsSync(WEB_DIST_INDEX)) {
-    throw new Error("pack web 完成后仍缺少 src/app/shell/web/dist/index.html");
+    throw new Error("pack web 完成后仍缺少 src/portal/app/web/dist/index.html");
   }
 }
 

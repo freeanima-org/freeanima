@@ -28,9 +28,9 @@ const PREFIX_REWRITES: [string, string][] = [
   // feature / app / shared 逻辑包
   ["@freeanima/feature-", "@freeanima/features/"],
   ["@freeanima/satellite-companion/", "@freeanima/features/companion/"],
-  ["@freeanima/app-desktop/", "@freeanima/app/shell/tauri/"],
-  ["@freeanima/app-mobile/", "@freeanima/app/shell/tauri/"],
-  ["@freeanima/app-web/", "@freeanima/app/shell/web/"],
+  ["@freeanima/app-desktop/", "@freeanima/portal/app/tauri/"],
+  ["@freeanima/app-mobile/", "@freeanima/portal/app/tauri/"],
+  ["@freeanima/app-web/", "@freeanima/portal/app/web/"],
   ["@freeanima/habitat-api/", "@freeanima/features/habitat/habitat/habitat-api/"],
   ["@freeanima/habitat-contract/", "@freeanima/features/habitat/protocol/habitat-contract/"],
   ["@freeanima/ui-kit/", "@freeanima/ui-kit/"],
@@ -97,11 +97,11 @@ const EXACT_REWRITES: Record<string, string> = {
     "@freeanima/client/app-frame/spa/bootstrap/sentry.ts",
   "@freeanima/client/app-frame/mount": "@freeanima/client/app-frame/spa/mount.tsx",
   "@freeanima/client/app-frame/build": "@freeanima/client/app-frame/build.ts",
-  "@freeanima/app/shell/tauri/companion-settings-api":
-    "@freeanima/app/shell/tauri/spa/companion-settings-api.ts",
-  "@freeanima/app/shell/tauri/settings-registry":
-    "@freeanima/app/shell/tauri/spa/settings-registry.ts",
-  "@freeanima/app/shell/web/static-server": "@freeanima/app/shell/web/lib/static-server.ts",
+  "@freeanima/portal/app/tauri/companion-settings-api":
+    "@freeanima/portal/app/tauri/spa/companion-settings-api.ts",
+  "@freeanima/portal/app/tauri/settings-registry":
+    "@freeanima/portal/app/tauri/spa/settings-registry.ts",
+  "@freeanima/portal/app/web/static-server": "@freeanima/portal/app/web/lib/static-server.ts",
   "@freeanima/features/habitat/protocol/habitat-contract/display-util":
     "@freeanima/features/habitat/protocol/habitat-contract/display-util.ts",
   "@freeanima/features/habitat/protocol/habitat-contract/date-json":

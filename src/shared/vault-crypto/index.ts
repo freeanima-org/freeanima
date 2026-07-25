@@ -6,11 +6,43 @@ export type VaultCustomField = {
   type: "text" | "hidden" | "boolean";
 };
 
+export type VaultCardSecrets = {
+  brand?: string;
+  number?: string;
+  code?: string;
+  cardholder?: string;
+  exp_month?: string;
+  exp_year?: string;
+};
+
+export type VaultIdentitySecrets = {
+  title?: string;
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
+  username?: string;
+  company?: string;
+  ssn?: string;
+  passport_number?: string;
+  license_number?: string;
+  email?: string;
+  phone?: string;
+  address1?: string;
+  address2?: string;
+  address3?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+  country?: string;
+};
+
 export type VaultSecretsPayload = {
   password?: string;
   notes?: string;
   totp?: string;
   custom_fields?: VaultCustomField[];
+  card?: VaultCardSecrets;
+  identity?: VaultIdentitySecrets;
   [key: string]: unknown;
 };
 
@@ -224,6 +256,15 @@ export function extractCustomFieldNames(secrets: VaultSecretsPayload): string[] 
   return fields.map((f) => f.name).filter(Boolean);
 }
 
+function nestedSecretString(
+  group: Record<string, unknown> | undefined,
+  key: string,
+): string | undefined {
+  if (!group) return undefined;
+  const val = group[key];
+  return typeof val === "string" ? val.trim() : undefined;
+}
+
 export function resolveSecretField(
   secrets: VaultSecretsPayload,
   fieldPath: string,
@@ -240,6 +281,18 @@ export function resolveSecretField(
     // 注入/解析返回当前动态码；编辑 UI 应读 secrets.totp 原文密钥。
     const result = generateTotpCode(secrets.totp);
     return result?.code;
+  }
+
+  const cardMatch = /^card\.(.+)$/.exec(fieldPath);
+  if (cardMatch?.[1]) {
+    return nestedSecretString(secrets.card as Record<string, unknown> | undefined, cardMatch[1]);
+  }
+  const identityMatch = /^identity\.(.+)$/.exec(fieldPath);
+  if (identityMatch?.[1]) {
+    return nestedSecretString(
+      secrets.identity as Record<string, unknown> | undefined,
+      identityMatch[1],
+    );
   }
 
   // Flat name: same form as password — no custom_fields. prefix required.

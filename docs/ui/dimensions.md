@@ -10,10 +10,10 @@ Agent API tables and hard bans → [`.agent/rules/ui-dimensions.md`](../../.agen
 
 ## Shell vs app frame
 
-| Concept       | What it is                                                                  | Code                                                                      |
-| ------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| **Shell**     | Portal runtime host (browser / Tauri; build targets web / desktop / mobile) | `src/app/shell/*`; `portal-sdk` (`getShellKind`, `ShellApi`, buildTarget) |
-| **app frame** | Module rail / bottom tabs, settings chrome                                  | `src/client/app-frame` (`AppFrame`); follows **viewport**, not Shell      |
+| Concept       | What it is                                                                  | Code                                                                       |
+| ------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **Shell**     | Portal runtime host (browser / Tauri; build targets web / desktop / mobile) | `src/portal/app/*`; `portal-sdk` (`getShellKind`, `ShellApi`, buildTarget) |
+| **app frame** | Module rail / bottom tabs, settings chrome                                  | `src/client/app-frame` (`AppFrame`); follows **viewport**, not Shell       |
 
 Do not call app frame “Shell”. Do not derive rail vs bottom tabs from Shell kind.
 
