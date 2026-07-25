@@ -21,7 +21,7 @@
 
 Directional heuristics for _what_ FreeAnima should feel like. Mechanisms and cognitive architecture live in [`docs/product/`](docs/product/) and [`docs/cognition/`](docs/cognition/) — related, but not a 1:1 rule list.
 
-- **Platform-native UX** — Mobile and desktop are **separate interaction and layout designs**, not one responsive skin stretched across form factors. Shared contracts (API, Habitat RPC, settings keys) may exist; presentation and interaction patterns should fit each dimension value. **Shell** = Portal 宿主（browser/Tauri；形态 web/desktop/mobile），**≠** 侧栏/底栏/设置 chrome（那是 **app frame** / 应用布局，`app-ui`）。**Three orthogonal dimensions**（详见 [`.agent/rules/ui-dimensions.md`](.agent/rules/ui-dimensions.md)）：**壳子**（`getShellKind` / Shell API：存储、IPC、通知等原生能力）、**布局**（视口-only：`< md` → `compact` 底栏+drawer；`≥ md` → `expanded` 左栏+三栏）、**交互**（`pointer`/`touch`：右键 vs 长按、Enter 发送等）。壳**不**锁布局（Tauri 窄窗可用底栏；移动宽屏可用左栏）。`detectSettingsChromePlatform()` 仅设置页 chrome（tabs vs 侧栏），跟布局粗档。Phone 通常窄，但 **phone ≠ 窄布局**。
+- **Platform-native UX** — Mobile and desktop are **separate interaction and layout designs**, not one responsive skin stretched across form factors. Shared contracts (API, Habitat RPC, settings keys) may exist; presentation and interaction patterns should fit each dimension value. **Shell** = Portal 宿主（browser/Tauri；形态 web/desktop/mobile），**≠** 侧栏/底栏/设置 chrome（那是 **app frame** / 应用布局）。**Three orthogonal dimensions**（规范 [`docs/ui/`](docs/ui/README.md)；Agent API [`.agent/rules/ui-dimensions.md`](.agent/rules/ui-dimensions.md)）：**壳子**（能力）、**布局**（`compact`/`expanded` 视口）、**交互**（`pointer`/`touch`）。视觉 / 组件 / 交互均按三维适配。壳**不**锁布局。Phone 通常窄，但 **phone ≠ 窄布局**。
 - **Habitat & Portal** — User copy: **栖息地 / Habitat** = long-running place (multi digital life + human assets); **入口 / Portal** = Shell、MCP 等外部连接。协议/代码标识仍写 Habitat（`/rpc/v1`）。见 [`docs/product/architecture.md`](docs/product/architecture.md) Product naming、[`i18n/glossary.md`](i18n/glossary.md)。
 - **Tools: MCP first, remote registration rare** — Dialable peers exchange tools via **MCP**. Only unreachable local apps (no stable inbound listener; e.g. desktop companion) **actively connect** to Habitat and register remote tools over Habitat RPC (`instance_id` routes `tool.call`). Product UI uses Habitat RPC only — never remote-tool attach. See architecture Client UI / companion sections.
 - **Concept convergence over feature sprawl** — As capabilities grow, **resist cognitive overload**: keep a small set of core concepts visible and stable; new features should map onto existing mental models rather than multiplying parallel abstractions in the UI.
@@ -83,23 +83,24 @@ just misc memory-sample -- --habitat-url http://127.0.0.1:<habitat> --stage full
 
 ## Doc map
 
-| File                                                                                 | Role                                                              |
-| ------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| [`AGENTS.md`](AGENTS.md)                                                             | Bootstrap protocol, product & code principles (this file)         |
-| [`.agent/rules/`](.agent/rules/README.md)                                            | Implementation constraints (layers, tests, coding, DB, packages)  |
-| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues)                   | Actionable tasks and discussions                                  |
-| [`docs/product/architecture.md`](docs/product/architecture.md)                       | Architecture principles and direction                             |
-| [`docs/cognition/environment-awareness.md`](docs/cognition/environment-awareness.md) | Environment + health baseline (session prompt + change notify)    |
-| [`docs/product/anima-uri.md`](docs/product/anima-uri.md)                             | Anima URI（entity 定位 / overlay；id 入库、URI 在 UI）            |
-| [`.agent/rules/repository-topology.md`](.agent/rules/repository-topology.md)         | Repo layout Phase 1 host/client；ui-kit∥shared；i18n site/ui/host |
-| [`docs/cognition/temporal-summary.md`](docs/cognition/temporal-summary.md)           | Objective time digests (day/month/year; peer rollup)              |
-| [`docs/product/`](docs/product/)                                                     | Product framing (architecture, identity, entity model)            |
-| [`docs/cognition/`](docs/cognition/)                                                 | Cognitive mechanisms (memory, sleep, self layer, etc.)            |
-| [`docs/aspects/`](docs/aspects/)                                                     | Cross-cutting design planes (Portal data plane, offline, refresh) |
-| [`docs/modules/`](docs/modules/)                                                     | Product capability modules (chat, companion, project, …)          |
-| [`docs/ops/`](docs/ops/)                                                             | Deploy, secure, connect Habitat                                   |
-| [`docs/ops/habitat-rpc.md`](docs/ops/habitat-rpc.md)                                 | Habitat RPC transport + remote tool registration                  |
-| [`docs/tools/`](docs/tools/)                                                         | Built-in ToolSets (browser, execute-code, freeanima_docs, …)      |
+| File                                                                                 | Role                                                                |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| [`AGENTS.md`](AGENTS.md)                                                             | Bootstrap protocol, product & code principles (this file)           |
+| [`.agent/rules/`](.agent/rules/README.md)                                            | Implementation constraints (layers, tests, coding, DB, packages)    |
+| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues)                   | Actionable tasks and discussions                                    |
+| [`docs/product/architecture.md`](docs/product/architecture.md)                       | Architecture principles and direction                               |
+| [`docs/cognition/environment-awareness.md`](docs/cognition/environment-awareness.md) | Environment + health baseline (session prompt + change notify)      |
+| [`docs/product/anima-uri.md`](docs/product/anima-uri.md)                             | Anima URI（entity 定位 / overlay；id 入库、URI 在 UI）              |
+| [`.agent/rules/repository-topology.md`](.agent/rules/repository-topology.md)         | Repo layout Phase 1 host/client；ui-kit∥shared；i18n site/ui/host   |
+| [`docs/cognition/temporal-summary.md`](docs/cognition/temporal-summary.md)           | Objective time digests (day/month/year; peer rollup)                |
+| [`docs/product/`](docs/product/)                                                     | Product framing (architecture, identity, entity model)              |
+| [`docs/cognition/`](docs/cognition/)                                                 | Cognitive mechanisms (memory, sleep, self layer, etc.)              |
+| [`docs/ui/`](docs/ui/README.md)                                                      | UI/UX design system (dimensions, foundations, components, patterns) |
+| [`docs/aspects/`](docs/aspects/)                                                     | Cross-cutting design planes (Portal data plane, offline, refresh)   |
+| [`docs/modules/`](docs/modules/)                                                     | Product capability modules (chat, companion, project, …)            |
+| [`docs/ops/`](docs/ops/)                                                             | Deploy, secure, connect Habitat                                     |
+| [`docs/ops/habitat-rpc.md`](docs/ops/habitat-rpc.md)                                 | Habitat RPC transport + remote tool registration                    |
+| [`docs/tools/`](docs/tools/)                                                         | Built-in ToolSets (browser, execute-code, freeanima_docs, …)        |
 
 ---
 
@@ -112,6 +113,7 @@ Corrections or refinements to direction, principles, philosophy, or agent behavi
 | Change nature                                                       | Where to write                                                                                                            | Examples                                                  |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | Product / cognitive architecture, long-lived design direction       | [`docs/product/architecture.md`](docs/product/architecture.md) → topic doc when needed (`memory.md`, `identity.md`, etc.) | Four-layer model, memory pipeline principles              |
+| UI/UX design system (visual, components, interaction patterns)      | [`docs/ui/`](docs/ui/README.md) — Agent hard bans stay in `.agent/rules/frontend-ui.md` / `ui-dimensions.md`              | Dimensions, DataListRow, foundations                      |
 | Agent implementation constraints (coding, testing, layers, release) | [`.agent/rules/*.md`](.agent/rules/README.md) — matching topic file                                                       | Drizzle query conventions, layer deps, test mock strategy |
 | Bootstrap summary, high-level principles, doc-map-level changes     | [`AGENTS.md`](AGENTS.md) — keep brief; link to detail docs                                                                | New product/code principle, conflict-priority adjustment  |
 
@@ -153,6 +155,7 @@ When sources conflict: **implemented behavior** follows code (and topic docs tha
 | New RFC package / rename                                   | [`.agent/rules/packages.md`](.agent/rules/packages.md)                                                                                                                                             |
 | Release                                                    | [`.agent/rules/release.md`](.agent/rules/release.md)                                                                                                                                               |
 | Portal 壳（Tauri）打包 / ShellApi / 双轨发版               | [`.agent/rules/tauri-shell.md`](.agent/rules/tauri-shell.md)                                                                                                                                       |
+| UI/UX design system / interaction patterns                 | [`docs/ui/`](docs/ui/README.md) + [`.agent/rules/frontend-ui.md`](.agent/rules/frontend-ui.md) / [`ui-dimensions.md`](.agent/rules/ui-dimensions.md)                                               |
 | Compression algorithm                                      | [`.agent/rules/compression.md`](.agent/rules/compression.md)                                                                                                                                       |
 | UI / docs i18n (Paraglide, po4a, PO)                       | [`.agent/rules/i18n.md`](.agent/rules/i18n.md)                                                                                                                                                     |
 | Task done                                                  | close corresponding GitHub Issue; user-visible changes use Conventional Commits                                                                                                                    |
@@ -161,10 +164,10 @@ Tool tables, module trees, API lists **are not maintained in docs** — use regi
 
 ## Maintenance conventions
 
-- Principle / direction corrections: triage per [Principle & direction maintenance](#principle--direction-maintenance) — product framing → `docs/product/`; cognition → `docs/cognition/`; implementation constraints → `.agent/rules/`; bootstrap summary → `AGENTS.md`
+- Principle / direction corrections: triage per [Principle & direction maintenance](#principle--direction-maintenance) — product framing → `docs/product/`; cognition → `docs/cognition/`; UI/UX → `docs/ui/`; implementation constraints → `.agent/rules/`; bootstrap summary → `AGENTS.md`
 - New topic >50 lines and long-lived → `docs/` or `.agent/rules/`; actionable items → GitHub Issue
 - Close Issue when task done; do not keep completed items in docs
-- **docs layout** (optimized for `freeanima_docs` ToolSet path prefixes): product framing → `docs/product/`; cognition → `docs/cognition/`; cross-cutting aspects → `docs/aspects/`; capability modules → `docs/modules/`; built-in ToolSets → `docs/tools/`; deploy/secure/connect → `docs/ops/`; IDE/agent implementation rules → `.agent/rules/` (not in docs corpus). No acceptance checklists in `docs/`.
+- **docs layout** (optimized for `freeanima_docs` ToolSet path prefixes): product framing → `docs/product/`; cognition → `docs/cognition/`; UI/UX → `docs/ui/`; cross-cutting aspects → `docs/aspects/`; capability modules → `docs/modules/`; built-in ToolSets → `docs/tools/`; deploy/secure/connect → `docs/ops/`; IDE/agent implementation rules → `.agent/rules/` (not in docs corpus). No acceptance checklists in `docs/`.
 
 ## What each file must not contain
 

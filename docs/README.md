@@ -6,7 +6,7 @@ title: Documentation Index
 
 For **FreeAnima users** and the Habitat agent (`freeanima_docs` ToolSet). Contributor rules: [`.agent/rules/`](../.agent/rules/README.md). Tasks: [GitHub Issues](https://github.com/freeanima-org/freeanima/issues).
 
-**Agent tip:** `toolset_load(["freeanima_docs"])` then prefer `freeanima_docs_get` on `README.md`, or `freeanima_docs_list` with a path `prefix` (`product/`, `cognition/`, `aspects/`, `modules/`, `tools/`, `ops/`).
+**Agent tip:** `toolset_load(["freeanima_docs"])` then prefer `freeanima_docs_get` on `README.md`, or `freeanima_docs_list` with a path `prefix` (`product/`, `cognition/`, `ui/`, `aspects/`, `modules/`, `tools/`, `ops/`).
 
 ## Product — framing and data model
 
@@ -31,6 +31,18 @@ For **FreeAnima users** and the Habitat agent (`freeanima_docs` ToolSet). Contri
 | Recall flow           | [cognition/recall-flow.md](cognition/recall-flow.md)                     |
 | Environment awareness | [cognition/environment-awareness.md](cognition/environment-awareness.md) |
 | Notifications         | [cognition/notifications.md](cognition/notifications.md)                 |
+
+## UI / UX — design system
+
+| Topic                | File                                   |
+| -------------------- | -------------------------------------- |
+| Index                | [ui/README.md](ui/README.md)           |
+| Dimensions           | [ui/dimensions.md](ui/dimensions.md)   |
+| Visual foundations   | [ui/foundations.md](ui/foundations.md) |
+| Components           | [ui/components.md](ui/components.md)   |
+| Interaction patterns | [ui/patterns.md](ui/patterns.md)       |
+
+Agent hard bans / API quick reference → [`.agent/rules/frontend-ui.md`](../.agent/rules/frontend-ui.md), [`.agent/rules/ui-dimensions.md`](../.agent/rules/ui-dimensions.md).
 
 ## Aspects — cross-cutting design planes
 

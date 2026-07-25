@@ -1,63 +1,77 @@
-# 前端 UI 规范（shadcn / Tailwind v4）
+# 前端 UI — Agent 硬约束（shadcn / Tailwind v4）
 
-> 与 [`frontend-features.md`](frontend-features.md) 包边界规则配合。样式栈：**Tailwind CSS v4 + shadcn/ui**（`@freeanima/ui-kit`）。
+> **UI/UX 规范 SSOT** → [`docs/ui/`](../../docs/ui/README.md)（dimensions / foundations / components / patterns）。  
+> 三维度 API → [`ui-dimensions.md`](ui-dimensions.md)。  
+> 功能原型与包边界 → [`frontend-features.md`](frontend-features.md)。  
+> 样式栈：**Tailwind CSS v4 + shadcn/ui**（`@freeanima/ui-kit`）。**禁止 DaisyUI。**
 
-## 分层
+视觉 / 组件 / 交互均须按壳·布局·交互三维适配（见 docs）；本文件只保留实现禁令与落点。
 
-| 层级     | 做法                                      | 位置                               |
-| -------- | ----------------------------------------- | ---------------------------------- |
-| **基元** | `@freeanima/ui-kit` shadcn 原语 + variant | 各 satellite / admin / app-ui      |
-| **结构** | 表单/布局封装                             | `@freeanima/ui-kit/form`、`layout` |
-| **复合** | 跨域重复交互模式                          | `@freeanima/ui-kit/composite`      |
-| **领域** | 产品专属 UI                               | 各业务包本地                       |
+## 分层 → 代码（速查）
+
+| 层级 | 位置                                  |
+| ---- | ------------------------------------- |
+| 基元 | `@freeanima/ui-kit` → `components/ui` |
+| 结构 | `@freeanima/ui-kit/form`、`layout`    |
+| 复合 | `@freeanima/ui-kit/composite`         |
+| 领域 | `features/*/ui`                       |
+
+详解 → [`docs/ui/components.md`](../../docs/ui/components.md)。
 
 ## 主题与 CSS
 
-- **主题变量唯一定义处**：[`src/ui-kit/styles/globals.css`](../../src/ui-kit/styles/globals.css)（`:root` / `.dark`；强调色变体 `.dark[data-color-theme="…"]`）
-- 各 SPA `styles.css`：`@import "tailwindcss"` + `@import "@freeanima/ui-kit/styles/globals.css"` + `@source`；需要 safe-area 时 `@import "@freeanima/ui-kit/styles.css"`
-- **app-ui**：[`app-ui/spa/styles.css`](../../src/client/app-frame/spa/styles.css) 用 `@source "../../../../src/**/*.{tsx,ts}"` 扫整棵 `src`（含各 feature SPA）；独立 SPA（如 chat 自己的 `styles.css`）仍各自 `@source`
-- **禁止**在 `globals.css` 以外用 `var(--background)`、`var(--muted)` 等写背景/边框/文字色；改用 Tailwind class 或 `@apply bg-background` 等
-- **布局类裸 CSS**（`shared-safe-area.css`）只放 position、safe-area（`--sat` 等），**不放主题色**
-- 暗色：根节点 `.dark`（shadcn 约定）；强调色用 `data-color-theme`（`neutral` / `ocean` / `forest` / `sunset` / `violet`，本机偏好见 `portal-sdk/color-theme`），**禁止** DaisyUI `data-theme`
+- Token SSOT：[`src/ui-kit/styles/globals.css`](../../src/ui-kit/styles/globals.css)（`:root` / `.dark`；强调色 `.dark[data-color-theme="…"]`）
+- SPA：`@import "tailwindcss"` + `@import "@freeanima/ui-kit/styles/globals.css"` + `@source`；safe-area 时再 `@import "@freeanima/ui-kit/styles.css"`
+- app-frame styles：`@source` 扫整棵 `src`（见 `app-frame/spa/styles.css`）
+- **禁止**在 `globals.css` 外裸写 `var(--background)` 等主题色；用 Tailwind class / `@apply bg-background`
+- 布局裸 CSS（`shared-safe-area.css`）只放 position / safe-area，**不放主题色**
+- 暗色：根节点 `.dark`；强调色 `data-color-theme`（`neutral` / `ocean` / `forest` / `sunset` / `violet`）— **禁止** DaisyUI `data-theme`
 
-## 基元约定
+语义与三维适配 → [`docs/ui/foundations.md`](../../docs/ui/foundations.md)。
 
-| 场景         | 推荐做法                                                                                                                                                                                           |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 按钮         | `<Button variant="…" size="…">`                                                                                                                                                                    |
-| 表单输入     | `<Input>` / `<Textarea>` / `<Select>`；**默认不自动聚焦**，需要时用 `focusOnMount`                                                                                                                 |
-| 对话框/Sheet | `DialogContent` / `SheetContent` 默认 `onOpenAutoFocus` 阻止聚焦；确需打开时聚焦用 `onOpenAutoFocus` 覆盖                                                                                          |
-| 加载         | `<Spinner>`                                                                                                                                                                                        |
-| 空态         | `<EmptyState>`                                                                                                                                                                                     |
-| 错误/提示    | `<StatusAlert>`                                                                                                                                                                                    |
-| 确认对话框   | `<ConfirmDialog>` / `showConfirm`；**不可恢复删除必须**二次确认（`variant="error"`）；确认钮**不做默认聚焦/默认选中**（沿用 Dialog/Sheet 默认 `onOpenAutoFocus` 阻止；禁止给确认钮加 `autoFocus`） |
+## 基元 / 复合（必须遵守）
 
-## 复合组件
+| 场景         | 做法                                                                                        |
+| ------------ | ------------------------------------------------------------------------------------------- |
+| 按钮         | `<Button variant size>`                                                                     |
+| 表单         | `<Input>` / `<Textarea>` / `<Select>`；默认不自动聚焦（`focusOnMount`）                     |
+| Dialog/Sheet | 默认 `onOpenAutoFocus` 阻止聚焦                                                             |
+| 空态 / 错误  | `<EmptyState>` / `<StatusAlert>`                                                            |
+| 确认         | `<ConfirmDialog>` / `showConfirm`；不可恢复删除二次确认；确认钮**禁止** `autoFocus`         |
+| 菜单         | pointer → `ContextMenu`；touch → `ActionSheet`；共享 `ActionSheetItem[]`                    |
+| 列表行       | 对齐 [`docs/ui/patterns.md`](../../docs/ui/patterns.md) DataListRow；参考 `TaskItemRowView` |
 
-从 `@freeanima/ui-kit/composite` 导入：`ConfirmDialog`、`showConfirm`、`ActionSheet`、`ContextMenu`、`EmptyState`、`StatusAlert`、`PullToRefresh`。禁止 `window.confirm`。
+从 `@freeanima/ui-kit/composite` 导入：`ConfirmDialog`、`showConfirm`、`ActionSheet`、`ContextMenu`、`EmptyState`、`StatusAlert`、`PullToRefresh`。
 
-- **ContextMenu**（pointer）：基于 shadcn/Radix Context Menu，自带视口碰撞规避；与 ActionSheet 共享 `ActionSheetItem[]`。**禁止**再自研 `fixed` + 裸坐标快捷菜单。
-- touch 路径仍用 `ActionSheet`（见 [ui-dimensions.md](ui-dimensions.md)）；交互状态机按模态分机，仅共享会话数据（目标 + items）。
+- **禁止** `window.confirm`
+- **禁止**自研 `fixed` + 裸坐标快捷菜单
+- **禁止**用壳类型或视口宽度选择 ContextMenu vs ActionSheet（用交互 capability）
+
+## 模式 → 代码
+
+| 模式               | 落点                                                       |
+| ------------------ | ---------------------------------------------------------- |
+| DataListRow        | `ui-kit/composite/TaskItemRowView`（参考；通用抽离另任务） |
+| OverflowMenu       | `ContextMenu` / `ActionSheet` / `useLongPress`             |
+| ConfirmDestructive | `ConfirmDialog` / `showConfirm`                            |
+| ModalSheetPresent  | `Dialog` / `Sheet`；布局维切换呈现                         |
+| PullToRefresh      | `PullToRefresh`；见 `docs/aspects/page-refresh.md`         |
 
 ## 静态检查
 
-- `just qa stylelint`：DaisyUI 遗留 token + 主题色裸 `var()`（见根目录 `stylelint.config.js`）
+- `just qa stylelint`：DaisyUI 遗留 token + 主题色裸 `var()`（`stylelint.config.js`）
 
-## 平台（壳子 × 布局 × 交互）
+## 其它速记
 
-三维度正交标准与 API → [**`ui-dimensions.md`**](ui-dimensions.md)。本文件只保留 DaisyUI / 基元约定。
-
-速记：
-
-- 布局：`useLayoutMode` / `useCompactLayout` / `useDrawerNav`（视口断点）
+- 布局：`useLayoutMode` / `useCompactLayout` / `useDrawerNav`
 - 交互：`useContextMenuCapability` / `useActionSheetCapability` / `useEnterToSendCapability`
-- 壳：`getShellKind` / `canOpenHabitatSettings`；**禁止**用壳类型锁主布局
-- 多列布局可传 `columnSplitKey` 拖拽列宽（`freeanima:column-splits:<key>`）
-- Shell 模块可见性：`shell-module-visibility.ts`；`chat` / `settings` 不可关
-- `ListDetailLayout` drawer 颜色用 Tailwind class，不在 `shared-safe-area.css` 写主题色
+- 壳：`getShellKind` / `canOpenHabitatSettings`；**禁止**用壳锁主布局
+- 多列：`columnSplitKey` → `freeanima:column-splits:<key>`
+- 模块可见性：`shell-module-visibility.ts`；`chat` / `settings` 不可关
+- `ListDetailLayout` drawer 颜色用 Tailwind class，不在 safe-area CSS 写主题色
 
 ## 禁止
 
 - DaisyUI class / `--color-base-*` / `data-theme`
 - 在 `ui-kit` 内 import `rpc-contract`、Habitat API
-- 在 `app-ui` 内深路径 import satellite 源码（走 package export）
+- 在 app-frame 内深路径 import feature 源码（走 package export）

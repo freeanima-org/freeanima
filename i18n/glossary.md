@@ -12,7 +12,13 @@
 | Desktop Companion   | 桌面伴侣      | Product feature（VRM 角色 + 设置）；代码 feature `companion`；**≠** 已消除的 Node sidecar                   |
 | companion overlay   | 伴侣浮层      | Portal 透明 VRM 窗（`embedMode: embedded-overlay` / window `kind: overlay`）；设置在主窗，不叫「伴侣窗口」  |
 | Shell               | 壳            | A Portal (desktop / mobile / web); **not** Habitat; **not** app frame (侧栏/底栏/设置 chrome)               |
-| app frame           | 应用布局      | SPA chrome：模块 Rail/底栏、设置页 tabs↔侧栏；代码在 `app-ui`（`AppFrame`）；跟视口，非 Shell               |
+| app frame           | 应用布局      | SPA chrome：模块 Rail/底栏、设置页 tabs↔侧栏；代码在 `app-frame`（`AppFrame`）；跟视口，非 Shell            |
+| design system (UI)  | 设计系统      | Portal UI norms under `docs/ui/`; implementation `@freeanima/ui-kit`                                        |
+| primitive (UI)      | 基元          | shadcn/ui-kit control (`Button`, `Dialog`, …); see `docs/ui/components.md`                                  |
+| structure (UI)      | 结构          | ui-kit form/layout shells                                                                                   |
+| composite (UI)      | 复合          | Cross-feature interaction chassis in `ui-kit/composite`                                                     |
+| domain UI           | 领域 UI       | Feature-local product UI under `features/*/ui`                                                              |
+| UI dimensions       | UI 三维度     | Orthogonal shell / layout / interaction; `docs/ui/dimensions.md`                                            |
 | Chat                | 聊天室        | Chat room UI                                                                                                |
 | Conversation        | 对话          | User-facing term; not “Session” in Habitat UI                                                               |
 | Dashboard           | 仪表盘        | Habitat UI page at `/habitat/dashboard` only                                                                |

@@ -26,6 +26,7 @@ Then use:
 | ------------ | ------------------------------------------- |
 | `product/`   | What is FreeAnima / data model?             |
 | `cognition/` | How does memory, sleep, self, time work?    |
+| `ui/`        | Visual foundations, components, UX patterns |
 | `aspects/`   | Cross-cutting design planes (data, sync, …) |
 | `modules/`   | What product capabilities exist?            |
 | `tools/`     | Built-in ToolSet boundaries                 |

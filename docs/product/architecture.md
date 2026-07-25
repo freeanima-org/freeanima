@@ -120,16 +120,18 @@ Host stack: `src/host/{kernel,core,engine,capabilities,platform}`。Client: `src
 
 ### Platform UI layering
 
-| Layer           | Platform-native?                   | Location                                                      | 数据通道                                |
-| --------------- | ---------------------------------- | ------------------------------------------------------------- | --------------------------------------- |
-| Shell（壳子维） | Yes                                | `src/app/shell/tauri`, companion, Habitat binding             | Tauri IPC / commands                    |
-| app frame       | 布局跟视口；设置 chrome 跟布局粗档 | `src/client/app-frame`（`AppFrame`）                          | Habitat RPC（Feature RPC）              |
-| Habitat 前端    | Shell embed（普通 feature）        | `src/features/habitat`（UI + `plugin.habitat.rpc`）           | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
-| Companion host  | Overlay WebView-host（第一方）     | `src/features/companion/companion`（spa attach；壳薄 IPC/FS） | Habitat RPC + `remote_tools.attach`     |
+UI/UX design system (dimensions, visual foundations, components, interaction patterns) → [`docs/ui/`](../ui/README.md). Agent hard bans / API → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md), [`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md).
 
-导航与主布局**必须**用 `useLayoutMode()` / 视口断点（布局维），**禁止**用 `getShellKind()` 锁应用布局。交互（右键/长按/Enter）用 `portal-sdk` 交互 API。三维度标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
+| Layer           | Platform-native?                                             | Location                                                            | Data path                               |
+| --------------- | ------------------------------------------------------------ | ------------------------------------------------------------------- | --------------------------------------- |
+| Shell（壳子维） | Yes                                                          | `src/app/shell/tauri`, companion, Habitat binding                   | Tauri IPC / commands                    |
+| app frame       | Layout follows viewport; settings chrome follows layout band | `src/client/app-frame`（`AppFrame`）                                | Habitat RPC（Feature RPC）              |
+| Habitat UI      | Shell embed（ordinary feature）                              | `src/features/habitat`（UI + `plugin.habitat.rpc`）                 | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
+| Companion host  | Overlay WebView-host（first-party）                          | `src/features/companion/companion`（spa attach；thin shell IPC/FS） | Habitat RPC + `remote_tools.attach`     |
 
-**边界**：`app-frame` 与 `src/features/*/ui` 通过 `portal-sdk` + Feature RPC 访问 Habitat。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于 Habitat 拨不到的本地应用（今日 companion：**第一方伴侣浮层** / `embedded-overlay` 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）。产品面（Chat 等）**不做** attach。可拨号对端的工具走 **MCP**。详见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md)。
+Navigation and main layout **must** use `useLayoutMode()` / viewport breakpoints (layout dimension). **Do not** lock app layout with `getShellKind()`. Interaction (context menu / long-press / Enter-to-send) uses `portal-sdk` interaction APIs. Visual, component, and pattern norms all adapt through the same three dimensions.
+
+**Boundaries:** `app-frame` and `src/features/*/ui` reach Habitat via `portal-sdk` + Feature RPC. **Remote tool registration** (`remote_tools.attach` + `tool.*`) is only for local apps Habitat cannot dial (today: companion **first-party overlay** / `embedded-overlay`; shell provides window/IPC/FS only; **no** Node sidecar). Product surfaces (Chat, etc.) do **not** attach. Dialable peers use **MCP**. See [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md), [`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md).
 
 ### Habitat navigation ↔ cognitive layers
 
@@ -375,7 +377,7 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 | **布局** | **仅视口断点**（壳不锁底栏/左栏）                          | compact / expanded；列表 drawer / 并列 / 三栏；settings **chrome**（tabs vs 侧栏） |
 | **交互** | `primaryInput`（touch / pointer）                          | 长按 vs 右键、Enter 发送等                                                         |
 
-手机端通常只有窄档，但 **手机端 ≠ 窄布局**；Portal / 浏览器窗口可以是窄或宽任意档。标准 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。
+手机端通常只有窄档，但 **手机端 ≠ 窄布局**；Portal / 浏览器窗口可以是窄或宽任意档。标准 → [`docs/ui/dimensions.md`](../ui/dimensions.md)（Agent API → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)）。
 
 ### 布局层断点
 
