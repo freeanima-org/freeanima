@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { animaConfigSchema, Config } from "@freeanima/host/core/config";
+import { runtimeConfigSchema, Config } from "@freeanima/host/core/config";
 import { bindActiveRuntimeConfig, resetActiveConfigForTest } from "@freeanima/host/core/config";
 
 import { buildFtsTsQuery } from "./query.ts";
 import { resetJiebaForTest } from "./segment.ts";
 
 function minimalConfig() {
-  return animaConfigSchema.parse({
+  return runtimeConfigSchema.parse({
     llm: {
       default_profile: "chat",
       providers: {

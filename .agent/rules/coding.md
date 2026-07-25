@@ -77,6 +77,12 @@ Additional rules:
 
 Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
+## Habitat config schemas
+
+- **禁止**再引入合并 bootstrap + runtime 的超集 schema（历史 `animaConfigSchema` / `AnimaConfig` 已删除）
+- Bootstrap：`bootstrapConfigSchema`（`database` / `http` / `redis`，YAML）
+- Runtime：`runtimeConfigSchema` + `Config.data: RuntimeConfig`（PG）；UI 保存后走 section apply（live 读 vs transferred re-bind 见 [`docs/product/architecture.md`](../../docs/product/architecture.md)）
+
 ## 全栈 snake_case（PG / repos / protocol）
 
 - **Drizzle TS 属性名 = PG 列名 = snake_case**（例：`block_key: text("block_key")`）；禁止 `blockKey: text("block_key")`

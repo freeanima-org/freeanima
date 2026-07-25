@@ -1,5 +1,5 @@
 import { DEFAULT_EMBEDDING_DIMENSIONS, type ResolvedEmbeddingConfig } from "./schemas/embedding.ts";
-import type { AnimaConfig } from "./schemas/config.ts";
+import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 
 export type { ResolvedEmbeddingConfig };
 
@@ -30,7 +30,7 @@ function resolveEmbeddingBaseUrl(raw: string | undefined): string {
 }
 
 /** Whether vector search is enabled (embedding configured and not explicitly disabled) */
-export function isEmbeddingEnabled(cfg: AnimaConfig): boolean {
+export function isEmbeddingEnabled(cfg: RuntimeConfig): boolean {
   const embedding = cfg.embedding;
   if (embedding?.enabled === false) return false;
   const model = embedding?.model?.trim();
@@ -38,7 +38,7 @@ export function isEmbeddingEnabled(cfg: AnimaConfig): boolean {
   return true;
 }
 
-export function getResolvedEmbeddingConfig(cfg: AnimaConfig): ResolvedEmbeddingConfig | null {
+export function getResolvedEmbeddingConfig(cfg: RuntimeConfig): ResolvedEmbeddingConfig | null {
   if (!isEmbeddingEnabled(cfg)) return null;
   const embedding = cfg.embedding ?? {};
   const model = embedding.model?.trim();
@@ -61,13 +61,13 @@ export function getResolvedEmbeddingConfig(cfg: AnimaConfig): ResolvedEmbeddingC
 }
 
 /** Query-time embed deadline (fail-open); independent of write-path timeout_ms */
-export function getEmbeddingQueryTimeoutMs(cfg: AnimaConfig): number {
+export function getEmbeddingQueryTimeoutMs(cfg: RuntimeConfig): number {
   const raw = cfg.embedding?.query_timeout_ms;
   if (typeof raw === "number" && raw > 0) return raw;
   return DEFAULT_EMBEDDING_QUERY_TIMEOUT_MS;
 }
 
-export function getEmbeddingConfigSnapshot(cfg: AnimaConfig): EmbeddingConfigSnapshot {
+export function getEmbeddingConfigSnapshot(cfg: RuntimeConfig): EmbeddingConfigSnapshot {
   const resolved = getResolvedEmbeddingConfig(cfg);
   return {
     enabled: resolved != null,

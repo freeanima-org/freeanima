@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "./schemas/config.ts";
+import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 
 export type ModelConfig = {
   context_window?: number;
@@ -18,7 +18,7 @@ export type ResolvedCompressionConfig = {
 
 const DEFAULT_RESERVED = 8192;
 
-export function getCompressionConfig(cfg: AnimaConfig): ResolvedCompressionConfig {
+export function getCompressionConfig(cfg: RuntimeConfig): ResolvedCompressionConfig {
   const comp = cfg.compression ?? {};
   return {
     enabled: comp.enabled !== false,
@@ -33,8 +33,8 @@ export function getCompressionConfig(cfg: AnimaConfig): ResolvedCompressionConfi
   };
 }
 
-export function getModelsConfig(cfg: AnimaConfig): Record<string, ModelConfig> {
-  const models = (cfg as AnimaConfig & { models?: Record<string, ModelConfig> }).models;
+export function getModelsConfig(cfg: RuntimeConfig): Record<string, ModelConfig> {
+  const models = (cfg as RuntimeConfig & { models?: Record<string, ModelConfig> }).models;
   if (!models || typeof models !== "object") return {};
   return models;
 }
@@ -52,7 +52,7 @@ export type ContextWindowResolveOpts = {
 
 /** Resolve context window with source label (config > default > catalog > null) */
 export function resolveContextWindowWithSource(
-  cfg: AnimaConfig,
+  cfg: RuntimeConfig,
   model: string,
   opts?: ContextWindowResolveOpts,
 ): ResolvedContextWindow {
@@ -74,20 +74,20 @@ export function resolveContextWindowWithSource(
 
 /** Model context window; null when unset (fallback to message-count mode) */
 export function getContextWindow(
-  cfg: AnimaConfig,
+  cfg: RuntimeConfig,
   model: string,
   opts?: ContextWindowResolveOpts,
 ): number | null {
   return resolveContextWindowWithSource(cfg, model, opts).window;
 }
 
-export function budgetFromContextWindow(cfg: AnimaConfig, window: number): number {
+export function budgetFromContextWindow(cfg: RuntimeConfig, window: number): number {
   const { reservedTokens } = getCompressionConfig(cfg);
   return Math.max(4096, window - reservedTokens);
 }
 
 export function getEffectiveTokenBudget(
-  cfg: AnimaConfig,
+  cfg: RuntimeConfig,
   model: string,
   opts?: ContextWindowResolveOpts,
 ): number | null {
@@ -97,7 +97,7 @@ export function getEffectiveTokenBudget(
 }
 
 export function usesTokenCompression(
-  cfg: AnimaConfig,
+  cfg: RuntimeConfig,
   model: string,
   opts?: ContextWindowResolveOpts,
 ): boolean {

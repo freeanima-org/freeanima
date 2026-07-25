@@ -1,5 +1,5 @@
 import type { NotificationRecipientKind } from "@freeanima/host/core/db/pg/notifications/types";
-import type { AnimaConfig } from "./schemas/config.ts";
+import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 import { getResolvedWorldContext } from "./resolved-world-context.ts";
 import { resolveWorldSubjectIds } from "./worlds.ts";
 
@@ -14,7 +14,9 @@ export type ResolvedNotificationRecipients = {
 };
 
 /** 从 ResolvedWorldContext（boot 后）或 config worlds/legacy 解析通知收件主体 */
-export function resolveNotificationRecipients(config: AnimaConfig): ResolvedNotificationRecipients {
+export function resolveNotificationRecipients(
+  config: RuntimeConfig,
+): ResolvedNotificationRecipients {
   try {
     const ctx = getResolvedWorldContext();
     return {

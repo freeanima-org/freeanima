@@ -1,28 +1,71 @@
-import { animaConfigSchema } from "./config.ts";
+import { z } from "zod";
+
+import { embeddingConfigSchema } from "./embedding.ts";
+import { memoryConfigSchema } from "./memory-config.ts";
+import { notificationsConfigSchema } from "./notifications.ts";
+import { ttsConfigSchema } from "./tts.ts";
+import { worldsConfigSchema } from "./worlds.ts";
+import { llmConfigSchema } from "./llm-config.ts";
 import {
-  BOOTSTRAP_CONFIG_KEYS,
-  isBootstrapConfigKey,
-  type BootstrapConfigKey,
-} from "../bootstrap-config.ts";
+  acpAgentSchema,
+  autoLlmConfigSchema,
+  browserSchema,
+  cjkConfigSchema,
+  clarifySchema,
+  compressionSchema,
+  discordConfigSchema,
+  eventbusConfigSchema,
+  fallbackProviderSchema,
+  firecrawlSchema,
+  ftsConfigSchema,
+  gatewayConfigSchema,
+  i18nConfigSchema,
+  mcpServerSchema,
+  modelsConfigSchema,
+  sectionSchema,
+  weixinConfigSchema,
+} from "./config.ts";
+import { BOOTSTRAP_CONFIG_KEYS } from "../bootstrap-config.ts";
 
-/** Habitat 运行时配置（PG habitat_runtime_config）；不含 bootstrap 段 */
-export const runtimeConfigSchema = animaConfigSchema
-  .omit({
-    database: true,
-    http: true,
-    redis: true,
-  })
-  .partial()
-  .passthrough();
+/**
+ * Habitat 运行时配置（PG habitat_runtime_config）。
+ * 不含 bootstrap 段（database / http / redis）；禁止再引入与 bootstrap 合并的超集 schema。
+ */
+const runtimeConfigObjectSchema = z.object({
+  i18n: i18nConfigSchema,
+  llm: llmConfigSchema,
+  firecrawl: firecrawlSchema.optional(),
+  browser: browserSchema.optional(),
+  clarify: clarifySchema.optional(),
+  compression: compressionSchema.optional(),
+  models: modelsConfigSchema.optional(),
+  mcp_servers: z.record(z.string(), mcpServerSchema).optional(),
+  acp_agents: z.record(z.string(), acpAgentSchema).optional(),
+  fallback_providers: z.array(fallbackProviderSchema).optional(),
+  platforms: z.record(z.string(), z.unknown()).optional(),
+  memory: memoryConfigSchema.optional(),
+  cjk: cjkConfigSchema,
+  fts: ftsConfigSchema,
+  embedding: embeddingConfigSchema,
+  eventbus: eventbusConfigSchema,
+  gateway: gatewayConfigSchema,
+  auto_llm: autoLlmConfigSchema,
+  discord: discordConfigSchema,
+  weixin: weixinConfigSchema,
+  push: sectionSchema.optional(),
+  notifications: notificationsConfigSchema,
+  worlds: worldsConfigSchema,
+  tts: ttsConfigSchema,
+});
 
-export type RuntimeConfig = import("zod").z.infer<typeof runtimeConfigSchema>;
+export const runtimeConfigSchema = runtimeConfigObjectSchema.partial().passthrough();
 
-type AnimaConfigKey = keyof typeof animaConfigSchema.shape;
+export type RuntimeConfig = z.infer<typeof runtimeConfigSchema>;
 
-/** 已知运行时段（schema 定义，不含 bootstrap）；未写入 PG 时 getSection 应返回 {} */
-export const RUNTIME_CONFIG_SECTION_KEYS = (
-  Object.keys(animaConfigSchema.shape) as AnimaConfigKey[]
-).filter((key): key is Exclude<AnimaConfigKey, BootstrapConfigKey> => !isBootstrapConfigKey(key));
+/** 已知运行时段；未写入 PG 时 getSection 应返回 {} */
+export const RUNTIME_CONFIG_SECTION_KEYS = Object.keys(runtimeConfigObjectSchema.shape) as Array<
+  keyof typeof runtimeConfigObjectSchema.shape
+>;
 
 export type RuntimeConfigSectionKey = (typeof RUNTIME_CONFIG_SECTION_KEYS)[number];
 

@@ -11,7 +11,7 @@ import { bindOpenAiCompatibleLlm } from "@freeanima/host/capabilities/llm-openai
 import { createTestLogger } from "@freeanima/host/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/host/platform/bootstrap";
 import { parseYaml } from "@freeanima/host/platform/config";
-import { animaConfigSchema } from "@freeanima/host/core/config";
+import { runtimeConfigSchema } from "@freeanima/host/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
 import { getAcpManager } from "@freeanima/host/capabilities/acp";
 import { registerBuiltins } from "@freeanima/host/capabilities/tools/slash-commands";
@@ -19,7 +19,7 @@ import * as goal from "@freeanima/host/engine/goal";
 import * as turnLifecycle from "./turn-lifecycle.ts";
 
 const catalog = createEngineCatalog();
-const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
+const testConfig = Config.fromSnapshot(runtimeConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
 registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
 const testEngine = createEngine({
   catalog,

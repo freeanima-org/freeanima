@@ -9,6 +9,7 @@ import {
   patchHabitatRuntimeConfigSection,
   replaceHabitatRuntimeConfigSection,
 } from "@freeanima/host/core/db/pg";
+import { applyRuntimeConfigSection } from "./runtime-config-apply.ts";
 
 export type PatchableRuntimeConfig = Config & {
   patchSection(section: string, patch: Record<string, unknown>): Promise<RuntimeConfig>;
@@ -27,7 +28,7 @@ export function isPatchableRuntimeConfig(config: Config): config is PatchableRun
 /** PG habitat_runtime_config 运行时配置存储 */
 export class RuntimeConfigStore extends Config implements PatchableRuntimeConfig {
   private constructor(snapshot: RuntimeConfig) {
-    super(snapshot as import("@freeanima/host/core/config").AnimaConfig);
+    super(snapshot);
   }
 
   static async loadSnapshot(): Promise<RuntimeConfig> {
@@ -42,7 +43,8 @@ export class RuntimeConfigStore extends Config implements PatchableRuntimeConfig
 
   async reload(): Promise<RuntimeConfig> {
     const next = await RuntimeConfigStore.loadSnapshot();
-    this.update(next as import("@freeanima/host/core/config").AnimaConfig);
+    this.update(next);
+    await applyRuntimeConfigSection(this, "*");
     return next;
   }
 
@@ -52,7 +54,8 @@ export class RuntimeConfigStore extends Config implements PatchableRuntimeConfig
     }
     const document = await patchHabitatRuntimeConfigSection(section, patch);
     const next = parseRuntimeConfig(document);
-    this.update(next as import("@freeanima/host/core/config").AnimaConfig);
+    this.update(next);
+    await applyRuntimeConfigSection(this, section);
     return next;
   }
 
@@ -62,7 +65,8 @@ export class RuntimeConfigStore extends Config implements PatchableRuntimeConfig
     }
     const document = await replaceHabitatRuntimeConfigSection(section, value);
     const next = parseRuntimeConfig(document);
-    this.update(next as import("@freeanima/host/core/config").AnimaConfig);
+    this.update(next);
+    await applyRuntimeConfigSection(this, section);
     return next;
   }
 }

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { AnimaConfig } from "./config.ts";
+import type { RuntimeConfig } from "./runtime-config.ts";
 
 export const passiveRecallConfigSchema = z.object({
   enabled: z.boolean().optional(),
@@ -48,7 +48,7 @@ export const DEFAULT_PASSIVE_RECALL_MIN_SCORE = 0.016;
 /** Keep hits within this fraction of the top hybrid score */
 export const DEFAULT_PASSIVE_RECALL_MIN_RELATIVE_SCORE = 0.55;
 
-export function resolvePassiveRecallConfig(cfg: AnimaConfig): ResolvedPassiveRecallConfig {
+export function resolvePassiveRecallConfig(cfg: RuntimeConfig): ResolvedPassiveRecallConfig {
   const raw = cfg.memory?.passive_recall as PassiveRecallConfigInput | undefined;
   return {
     enabled: raw?.enabled ?? true,

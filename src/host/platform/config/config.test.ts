@@ -1,13 +1,13 @@
 import { describe, it, expect } from "bun:test";
 import { Config } from "@freeanima/host/core/config";
 import { parseYaml } from "./yaml.ts";
-import { animaConfigSchema } from "@freeanima/host/core/config";
+import { runtimeConfigSchema } from "@freeanima/host/core/config";
 import { expandConfigEnv } from "./env-expand.ts";
 import { getProfileHopModel } from "./llm-config.ts";
 import { MINIMAL_LLM_YAML } from "./test-helpers/minimal-llm-config.ts";
 
 function parseMinimalConfig() {
-  const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
+  const parsed = runtimeConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
   if (!parsed.success) throw new Error(parsed.error.message);
   return parsed.data;
 }
@@ -16,7 +16,7 @@ describe("service-config", () => {
   it("loads llm profiles and resolves default model", () => {
     const config = Config.fromSnapshot(parseMinimalConfig());
     expect(getProfileHopModel(config.data, "chat")).toBe("test-model");
-    expect(config.data.llm.default_profile).toBe("chat");
+    expect(config.data.llm?.default_profile ?? "").toBe("chat");
   });
 
   it("loads firecrawl with llm block", () => {
@@ -30,7 +30,7 @@ describe("service-config", () => {
   it("expands ${VAR} in config values via expandConfigEnv", () => {
     process.env.TEST_LLM_MODEL = "env-model";
     const expanded = expandConfigEnv(MINIMAL_LLM_YAML.replace("test-model", "${TEST_LLM_MODEL}"));
-    const parsed = animaConfigSchema.safeParse(parseYaml(expanded));
+    const parsed = runtimeConfigSchema.safeParse(parseYaml(expanded));
     expect(parsed.success).toBe(true);
     if (parsed.success) {
       const config = Config.fromSnapshot(parsed.data);

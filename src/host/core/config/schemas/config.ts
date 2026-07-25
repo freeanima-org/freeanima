@@ -1,11 +1,4 @@
 import { z } from "zod";
-import { llmConfigSchema } from "./llm-config.ts";
-import { embeddingConfigSchema } from "./embedding.ts";
-import { httpConfigSchema } from "./http.ts";
-import { notificationsConfigSchema } from "./notifications.ts";
-import { worldsConfigSchema } from "./worlds.ts";
-import { memoryConfigSchema } from "./memory-config.ts";
-import { ttsConfigSchema } from "./tts.ts";
 
 export const mcpServerSchema = z
   .object({
@@ -57,15 +50,13 @@ export const acpAgentSchema = z
   })
   .passthrough();
 
-const fallbackProviderSchema = z.object({
+export const fallbackProviderSchema = z.object({
   provider: z.string().optional(),
   model: z.string().optional(),
   base_url: z.string().optional(),
 });
 
-const memorySchema = memoryConfigSchema;
-
-const firecrawlSchema = z.object({
+export const firecrawlSchema = z.object({
   api_url: z.string().optional(),
 });
 
@@ -88,11 +79,11 @@ const camofoxBrowserSchema = z.object({
   session_key: z.string().optional(),
 });
 
-const browserSchema = z.object({
+export const browserSchema = z.object({
   camofox: camofoxBrowserSchema.optional(),
 });
 
-const clarifySchema = z.object({
+export const clarifySchema = z.object({
   timeout_sec: z.number().int().min(60).optional(),
   max_items: z.number().int().min(1).max(10).optional(),
 });
@@ -127,16 +118,6 @@ export type FtsConfigInput = z.infer<typeof ftsConfigSchema>;
 
 export type DatabaseConfigInput = z.infer<typeof databaseConfigSchema>;
 
-const redisConfigSchema = z
-  .object({
-    url: z.string().optional(),
-    host: z.string().optional(),
-    port: z.number().int().positive().optional(),
-    password: z.string().optional(),
-    db: z.number().int().nonnegative().optional(),
-  })
-  .optional();
-
 export const eventbusConfigSchema = z
   .object({
     backend: z.enum(["redis"]).optional(),
@@ -150,7 +131,7 @@ const modelEntrySchema = z.object({
   context_window: z.number().int().positive().optional(),
 });
 
-const compressionSchema = z.object({
+export const compressionSchema = z.object({
   enabled: z.boolean().optional(),
   max_rounds: z.number().int().positive().optional(),
   default_context_window: z.number().int().positive().optional(),
@@ -165,7 +146,7 @@ const compressionSchema = z.object({
 
 export const modelsConfigSchema = z.record(z.string(), modelEntrySchema);
 
-const sectionSchema = z.object({}).passthrough();
+export const sectionSchema = z.object({}).passthrough();
 
 /** 与 gateway tool-display 模式对齐（core 不依赖 platform） */
 export const gatewayToolDisplaySchema = z.enum([
@@ -215,7 +196,7 @@ export const weixinConfigSchema = z
   .passthrough()
   .optional();
 
-const autoLlmConfigSchema = z
+export const autoLlmConfigSchema = z
   .object({
     retention_days: z.number().int().positive().optional(),
     per_run_kind_keep: z.number().int().nonnegative().optional(),
@@ -238,39 +219,6 @@ export type DiscordConfigInput = z.infer<typeof discordConfigSchema>;
 export type WeixinConfigInput = z.infer<typeof weixinConfigSchema>;
 export type GatewayConfigInput = z.infer<typeof gatewayConfigSchema>;
 
-export const animaConfigSchema = z
-  .object({
-    i18n: i18nConfigSchema,
-    llm: llmConfigSchema,
-    firecrawl: firecrawlSchema.optional(),
-    browser: browserSchema.optional(),
-    clarify: clarifySchema.optional(),
-    compression: compressionSchema.optional(),
-    models: modelsConfigSchema.optional(),
-    mcp_servers: z.record(z.string(), mcpServerSchema).optional(),
-    acp_agents: z.record(z.string(), acpAgentSchema).optional(),
-    fallback_providers: z.array(fallbackProviderSchema).optional(),
-    platforms: z.record(z.string(), z.unknown()).optional(),
-    memory: memorySchema.optional(),
-    cjk: cjkConfigSchema,
-    fts: ftsConfigSchema,
-    embedding: embeddingConfigSchema,
-    database: databaseConfigSchema.optional(),
-    eventbus: eventbusConfigSchema,
-    redis: redisConfigSchema,
-    gateway: gatewayConfigSchema,
-    auto_llm: autoLlmConfigSchema,
-    discord: discordConfigSchema,
-    weixin: weixinConfigSchema,
-    push: sectionSchema.optional(),
-    http: httpConfigSchema,
-    notifications: notificationsConfigSchema,
-    worlds: worldsConfigSchema,
-    tts: ttsConfigSchema,
-  })
-  .passthrough();
-
-export type AnimaConfig = z.infer<typeof animaConfigSchema>;
 export type { LlmConfig } from "./llm-config.ts";
 export {
   llmConfigSchema,

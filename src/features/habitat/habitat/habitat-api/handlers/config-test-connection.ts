@@ -1,7 +1,7 @@
 import {
   DEFAULT_EMBEDDING_DIMENSIONS,
   getResolvedEmbeddingConfig,
-  type AnimaConfig,
+  type RuntimeConfig,
 } from "@freeanima/host/core/config";
 import { createOpenAiEmbeddingClient } from "@freeanima/host/capabilities/llm-openai";
 import { createOpenAiClientFromParsed } from "@freeanima/host/capabilities/llm-openai/client.ts";
@@ -34,8 +34,8 @@ export const configTestConnectionOutputSchema = z.object({
 export type ConfigTestConnectionInput = z.infer<typeof configTestConnectionInputSchema>;
 export type ConfigTestConnectionResult = z.infer<typeof configTestConnectionOutputSchema>;
 
-function runtimeConfig(): AnimaConfig {
-  return habitatCtx().engine.config.data as AnimaConfig;
+function runtimeConfig(): RuntimeConfig {
+  return habitatCtx().engine.config.data as RuntimeConfig;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

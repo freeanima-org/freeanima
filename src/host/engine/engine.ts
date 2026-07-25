@@ -65,7 +65,8 @@ export function resetEngineRuntimeForTests(): void {
 export class Engine {
   constructor(
     readonly catalog: EngineCatalog,
-    readonly llm: EngineLlm,
+    /** 可被 runtime config 热 apply 替换（initLlmRuntime 后写回） */
+    public llm: EngineLlm,
     readonly config: Config,
     readonly logger: Logger,
   ) {}

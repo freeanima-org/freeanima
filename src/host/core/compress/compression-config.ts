@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "../config/schemas/config.ts";
+import type { RuntimeConfig } from "../config/schemas/runtime-config.ts";
 import { getActiveRuntimeConfig } from "../config/config-store.ts";
 import {
   getCompressionConfig as resolveCompressionConfig,
@@ -13,21 +13,21 @@ import {
 
 export type { ModelConfig, ResolvedCompressionConfig };
 
-function activeData(): AnimaConfig {
+function activeData(): RuntimeConfig {
   return getActiveRuntimeConfig().data;
 }
 
-export function getCompressionConfig(cfg: AnimaConfig = activeData()): ResolvedCompressionConfig {
+export function getCompressionConfig(cfg: RuntimeConfig = activeData()): ResolvedCompressionConfig {
   return resolveCompressionConfig(cfg);
 }
 
-export function getModelsConfig(cfg: AnimaConfig = activeData()): Record<string, ModelConfig> {
+export function getModelsConfig(cfg: RuntimeConfig = activeData()): Record<string, ModelConfig> {
   return resolveModelsConfig(cfg);
 }
 
 export function getContextWindow(
   model: string,
-  cfg: AnimaConfig = activeData(),
+  cfg: RuntimeConfig = activeData(),
   opts?: ContextWindowResolveOpts,
 ): number | null {
   return resolveContextWindow(cfg, model, opts);
@@ -35,7 +35,7 @@ export function getContextWindow(
 
 export function getEffectiveTokenBudget(
   model: string,
-  cfg: AnimaConfig = activeData(),
+  cfg: RuntimeConfig = activeData(),
   opts?: ContextWindowResolveOpts,
 ): number | null {
   return resolveEffectiveTokenBudget(cfg, model, opts);
@@ -43,7 +43,7 @@ export function getEffectiveTokenBudget(
 
 export function usesTokenCompression(
   model: string,
-  cfg: AnimaConfig = activeData(),
+  cfg: RuntimeConfig = activeData(),
   opts?: ContextWindowResolveOpts,
 ): boolean {
   return resolveUsesTokenCompression(cfg, model, opts);

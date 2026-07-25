@@ -15,7 +15,7 @@ import {
 export type HabitatConfigSectionKey = "compression" | "memory" | "llm" | "tts" | AdvancedSectionId;
 
 const HABITAT_CONFIG_DESCRIPTION =
-  "保存在栖息地数据库，影响全体客户端；修改后可能需要重启 anima service。";
+  "保存在栖息地数据库，影响全体客户端；保存后立即在内存中生效，无需重启。";
 
 const HABITAT_CONFIG_SECTION_DEFS: Array<{
   id: HabitatConfigSectionKey;

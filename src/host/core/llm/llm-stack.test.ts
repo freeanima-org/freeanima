@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from "bun:test";
 import { bindOpenAiCompatibleLlm } from "@freeanima/host/capabilities/llm-openai";
 import { createLlmRuntime } from "./llm-stack.ts";
 import { registerLlmStackConfigurator } from "./llm-stack-configurator.ts";
-import type { AnimaConfig } from "@freeanima/host/core/config";
+import type { RuntimeConfig } from "@freeanima/host/core/config";
 
 const testCfg = {
   llm: {
@@ -20,7 +20,7 @@ const testCfg = {
       },
     },
   },
-} as AnimaConfig;
+} as RuntimeConfig;
 
 beforeAll(() => {
   registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
@@ -35,7 +35,7 @@ describe("createLlmRuntime", () => {
   });
 
   it("allows missing llm for Habitat cold start", () => {
-    const rt = createLlmRuntime({} as AnimaConfig);
+    const rt = createLlmRuntime({} as RuntimeConfig);
     expect(rt.backends.has("openai_compatible")).toBe(true);
     expect(rt.profiles.list()).toEqual([]);
     expect(() => rt.profiles.resolve()).toThrow(/LLM 未配置/);

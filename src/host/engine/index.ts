@@ -14,7 +14,7 @@ export {
   resetActiveConfigForTest,
   registerRuntimeLogger,
   resetRuntimeLoggerForTest,
-  type AnimaConfig,
+  type RuntimeConfig,
 } from "@freeanima/host/core/config";
 export { runMigrations } from "@freeanima/host/core/db";
 export { getTokenizerBindingSnapshot } from "@freeanima/host/core/tokenizer";

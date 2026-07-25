@@ -1,4 +1,4 @@
-import type { AnimaConfig, Config } from "@freeanima/host/core/config";
+import type { RuntimeConfig, Config } from "@freeanima/host/core/config";
 import {
   getActiveRuntimeConfig,
   isPatchableRuntimeConfig,
@@ -54,7 +54,7 @@ function mergePlatformSectionIntoActive(platform: string, patch: Record<string, 
       ? { ...(data[platform] as Record<string, unknown>) }
       : {};
   data[platform] = { ...existing, ...patch };
-  config.update(data as AnimaConfig);
+  config.update(data as RuntimeConfig);
 }
 
 export async function setHomeChannel(

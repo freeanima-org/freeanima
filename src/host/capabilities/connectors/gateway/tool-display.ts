@@ -1,6 +1,6 @@
 import type { ConversationMetaLoadResult } from "@freeanima/host/core/db/domain";
 import { isConversationMeta } from "@freeanima/host/core/db/domain";
-import type { AnimaConfig } from "@freeanima/host/core/config";
+import type { RuntimeConfig } from "@freeanima/host/core/config";
 
 export const TOOL_DISPLAY_MODES = [
   "hidden",
@@ -29,7 +29,7 @@ export function parseToolDisplayMode(value: string | undefined): ToolDisplayMode
 
 export function resolveToolDisplayMode(
   meta: ConversationMetaLoadResult | null | undefined,
-  config?: AnimaConfig,
+  config?: RuntimeConfig,
 ): ToolDisplayMode {
   if (meta != null && isConversationMeta(meta)) {
     const sessionMode = parseToolDisplayMode(
@@ -47,8 +47,8 @@ const HANDOFF_DEFAULTS: Record<string, boolean> = {
   weixin: false,
 };
 
-export function resolveConversationHandoffOnNew(platform: string, config?: AnimaConfig): boolean {
-  const section = config?.[platform as keyof AnimaConfig] as
+export function resolveConversationHandoffOnNew(platform: string, config?: RuntimeConfig): boolean {
+  const section = config?.[platform as keyof RuntimeConfig] as
     | { session_handoff_on_new?: boolean }
     | undefined;
   if (typeof section?.session_handoff_on_new === "boolean") {

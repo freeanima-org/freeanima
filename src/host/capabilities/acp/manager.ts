@@ -689,6 +689,18 @@ export class AcpManager {
     return { ok: true, action: "start" };
   }
 
+  /**
+   * 热重载：停掉已连接 agent（不置 closed），再按当前 config 启动 enabled。
+   * 与 stopAll（关机）不同，之后仍可 start。
+   */
+  async reloadEnabledFromConfig(): Promise<AcpControlResult> {
+    const names = [...new Set([...this.clientPools.keys(), ...this.schedulers.keys()])];
+    for (const name of names) {
+      await this.stopAgent(name);
+    }
+    return this.startAll();
+  }
+
   async stopAll(): Promise<AcpControlResult> {
     this.closed = true;
     this.stopProgressTicker();

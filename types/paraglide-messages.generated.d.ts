@@ -750,8 +750,8 @@ type ParaglideMessageExports = {
   readonly ui_common_close: ParaglideMessageFn;
   readonly ui_common_confirm: ParaglideMessageFn;
   readonly ui_common_notice: ParaglideMessageFn;
-  readonly ui_habitat_config_saved_restart_description: ParaglideMessageFn;
-  readonly ui_habitat_config_saved_restart_title: ParaglideMessageFn;
+  readonly ui_habitat_config_saved_applied_description: ParaglideMessageFn;
+  readonly ui_habitat_config_saved_applied_title: ParaglideMessageFn;
   readonly ui_network_offline: ParaglideMessageFn;
   readonly ui_offline_cached_hint: ParaglideMessageFn;
   readonly ui_offline_readonly_mode: ParaglideMessageFn;
@@ -1551,8 +1551,8 @@ declare module "*/messages/paraglide/messages.js" {
   export const ui_common_close: ParaglideMessageFn;
   export const ui_common_confirm: ParaglideMessageFn;
   export const ui_common_notice: ParaglideMessageFn;
-  export const ui_habitat_config_saved_restart_description: ParaglideMessageFn;
-  export const ui_habitat_config_saved_restart_title: ParaglideMessageFn;
+  export const ui_habitat_config_saved_applied_description: ParaglideMessageFn;
+  export const ui_habitat_config_saved_applied_title: ParaglideMessageFn;
   export const ui_network_offline: ParaglideMessageFn;
   export const ui_offline_cached_hint: ParaglideMessageFn;
   export const ui_offline_readonly_mode: ParaglideMessageFn;

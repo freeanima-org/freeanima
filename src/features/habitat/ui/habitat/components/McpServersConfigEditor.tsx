@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Button, Input, Label, Textarea } from "@freeanima/ui-kit";
 import { FormToggle } from "@freeanima/ui-kit/form/FormFieldset.tsx";
-import { showConfirm, StatusAlert } from "@freeanima/ui-kit/composite";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 import {
   fetchHabitatConfigSection,
   replaceHabitatConfigSection,
-  restartHabitatService,
 } from "@freeanima/client/portal-sdk/habitat-config-api";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
@@ -217,6 +216,7 @@ export function McpServersConfigEditor({ onSaved }: Props) {
   const [draft, setDraft] = useState<Record<string, unknown>>({});
   const [loadError, setLoadError] = useState("");
   const [saveError, setSaveError] = useState("");
+  const [savedHint, setSavedHint] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newName, setNewName] = useState("");
@@ -278,20 +278,10 @@ export function McpServersConfigEditor({ onSaved }: Props) {
   const save = async () => {
     setSaving(true);
     setSaveError("");
+    setSavedHint("");
     try {
       await replaceHabitatConfigSection("mcp_servers", draft);
-      const restart = await showConfirm({
-        title: m.ui_habitat_config_saved_restart_title(),
-        description: m.ui_habitat_config_saved_restart_description({ section: "mcp_servers" }),
-        confirmLabel: m.habitat_common_restart_service(),
-      });
-      if (restart) {
-        try {
-          await restartHabitatService();
-        } catch (e) {
-          setSaveError(e instanceof Error ? e.message : String(e));
-        }
-      }
+      setSavedHint(m.ui_habitat_config_saved_applied_description({ section: "mcp_servers" }));
       await load();
       await onSaved();
     } catch (e) {
@@ -317,6 +307,7 @@ export function McpServersConfigEditor({ onSaved }: Props) {
       <div className="mt-4 space-y-4">
         {loadError ? <StatusAlert variant="error">{loadError}</StatusAlert> : null}
         {saveError ? <StatusAlert variant="error">{saveError}</StatusAlert> : null}
+        {savedHint ? <StatusAlert variant="success">{savedHint}</StatusAlert> : null}
         {loading ? (
           <p className="text-sm text-muted-foreground">{m.habitat_common_loading()}</p>
         ) : (

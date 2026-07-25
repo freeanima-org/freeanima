@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "@freeanima/host/core/config";
+import type { RuntimeConfig } from "@freeanima/host/core/config";
 
 export type ResolvedTemporalSummaryConfig = {
   enabled: boolean;
@@ -24,7 +24,7 @@ export type TemporalSummaryConfigInput = {
   peer_roll_ttl_seconds?: number;
 };
 
-export function resolveTemporalSummaryConfig(cfg: AnimaConfig): ResolvedTemporalSummaryConfig {
+export function resolveTemporalSummaryConfig(cfg: RuntimeConfig): ResolvedTemporalSummaryConfig {
   const raw = (cfg.memory as { temporal_summary?: TemporalSummaryConfigInput } | undefined)
     ?.temporal_summary;
   return {

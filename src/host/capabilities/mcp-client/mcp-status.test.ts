@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { Config } from "@freeanima/host/platform/config";
 import { parseYaml } from "@freeanima/host/platform/config";
-import { animaConfigSchema } from "@freeanima/host/core/config";
+import { runtimeConfigSchema } from "@freeanima/host/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
 import { sanitizeMcpConfig, isMcpServerEnabled } from "./status.ts";
 import { ToolSetRegistry } from "@freeanima/host/core/tool";
@@ -23,7 +23,7 @@ function mcpTestConfig() {
       "    enabled: false",
     ].join("\n"),
   );
-  const parsed = animaConfigSchema.safeParse(raw);
+  const parsed = runtimeConfigSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.message);
   return Config.fromSnapshot(parsed.data);
 }

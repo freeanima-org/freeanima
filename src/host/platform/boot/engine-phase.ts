@@ -48,7 +48,9 @@ export function bootEnginePhase(
 
   initLlmRuntime(config.data);
   if (!isLlmConfigured(config.data)) {
-    logComponent("startup").warn("LLM 未配置；请在 Shell 设置 → Habitat 服务中配置后重启服务");
+    logComponent("startup").warn(
+      "LLM 未配置；请在 Shell 设置 → Habitat 服务中配置（保存后热生效）",
+    );
   }
   bindContextWindowLookup();
   const logger = createServiceLogger();

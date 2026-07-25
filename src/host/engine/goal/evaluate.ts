@@ -1,6 +1,6 @@
 import { isConversationMeta, type StoredMessage } from "@freeanima/host/core/db/domain";
 import { parseAwaitingClarify, conversationGoalSchema } from "@freeanima/host/core/db/domain";
-import type { AnimaConfig } from "@freeanima/host/core/config";
+import type { RuntimeConfig } from "@freeanima/host/core/config";
 import { getProfileHopModel } from "@freeanima/host/core/config";
 import { judgeGoal } from "@freeanima/host/core/llm/goal-judge";
 import { PROFILE_GOAL_JUDGE } from "@freeanima/host/core/provider";
@@ -19,7 +19,7 @@ import { patchConversationGoal, readConversationGoal } from "./store.ts";
 export type GoalRuntimeDeps = {
   conversation: ConversationPort;
   llm: LlmRuntime;
-  config: AnimaConfig;
+  config: RuntimeConfig;
   logger: Logger;
 };
 
@@ -164,7 +164,7 @@ export async function evaluateGoalAfterTurn(
 
 export function toGoalRuntimeDeps(deps: {
   conversation: ConversationPort;
-  engine: { llm: LlmRuntime; config: { data: AnimaConfig }; logger: Logger };
+  engine: { llm: LlmRuntime; config: { data: RuntimeConfig }; logger: Logger };
 }): GoalRuntimeDeps {
   return {
     conversation: deps.conversation,

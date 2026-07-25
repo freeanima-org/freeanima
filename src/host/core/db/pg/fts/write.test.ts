@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import {
-  animaConfigSchema,
+  runtimeConfigSchema,
   Config,
   bindActiveRuntimeConfig,
   resetActiveConfigForTest,
@@ -18,7 +18,7 @@ import { resolveFtsSegmentedForWrite } from "./write.ts";
 
 function jiebaEnabledConfig(): Config {
   return Config.fromSnapshot(
-    animaConfigSchema.parse({
+    runtimeConfigSchema.parse({
       llm: {
         default_profile: "chat",
         providers: {

@@ -32,12 +32,16 @@ export { patchRuntimeConfigSection, loadRuntimeConfigSection } from "./runtime-c
 export { validateBootstrapOnStartup, validateRuntimeConfigOnStartup } from "./validate.ts";
 export { resolveLlmProviderApiKeys } from "./llm-resolve.ts";
 export {
-  animaConfigSchema,
+  bindRuntimeConfigApplyDeps,
+  applyRuntimeConfigSection,
+  resetRuntimeConfigApplyDepsForTest,
+  TRANSFERRED_RUNTIME_SECTIONS,
+} from "./runtime-config-apply.ts";
+export {
+  runtimeConfigSchema,
   acpAgentSchema,
   mcpServerSchema,
-  type AnimaConfig,
   type RuntimeConfig,
-  runtimeConfigSchema,
   type LlmConfig,
   OPENAI_COMPATIBLE_BACKEND_ID,
   llmConfigSchema,

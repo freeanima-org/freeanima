@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { Config } from "@freeanima/host/core/config";
 import { parseYaml } from "@freeanima/host/platform/config";
-import { animaConfigSchema } from "@freeanima/host/core/config";
+import { runtimeConfigSchema } from "@freeanima/host/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
 import { createTestAcpManager } from "./test-helpers/manager.ts";
 import type { AcpProgressDeliveryPort } from "./ports/progress-delivery.ts";
@@ -10,7 +10,7 @@ function acpMinimalConfig() {
   const raw = parseYaml(
     [MINIMAL_LLM_YAML.trim(), "acp_agents:", "  cursor:", "    command: echo"].join("\n"),
   );
-  const parsed = animaConfigSchema.safeParse(raw);
+  const parsed = runtimeConfigSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.message);
   return Config.fromSnapshot(parsed.data);
 }
