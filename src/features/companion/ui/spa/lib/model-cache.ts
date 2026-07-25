@@ -1,7 +1,9 @@
 import { getCompanionHabitatClient } from "./habitat-client.ts";
 import { parseCompanionAssetPath } from "./companion-asset-url.ts";
 
-const CACHE_NAME = "companion-vrm-v1";
+const CACHE_NAME = "companion-vrm-v2";
+/** Cache API 仅支持 http(s)；用稳定伪 origin，不绑定 Habitat host/port */
+const CACHE_ORIGIN = "https://companion-asset.invalid";
 
 export type CachedModelSource = {
   url: string;
@@ -34,9 +36,12 @@ async function fetchCompanionAssetResponse(pathOrUrl: string): Promise<Response>
   });
 }
 
-function cacheKeyFor(pathOrUrl: string): string {
+/** Cache API 用的稳定 https key（相对路径 → 伪 URL；绝对 http(s) 原样） */
+export function cacheKeyFor(pathOrUrl: string): string {
   const parsed = parseCompanionAssetPath(pathOrUrl);
-  if (parsed) return `companion-asset:${parsed.kind}/${parsed.fileName}`;
+  if (parsed) {
+    return `${CACHE_ORIGIN}/${parsed.kind}/${encodeURIComponent(parsed.fileName)}`;
+  }
   return pathOrUrl;
 }
 
@@ -73,6 +78,10 @@ export async function loadCachedModelSource(pathOrUrl: string): Promise<CachedMo
     throw new Error(`模型下载失败 (HTTP ${res.status})`);
   }
 
-  await cache.put(cacheKey, res.clone());
+  try {
+    await cache.put(cacheKey, res.clone());
+  } catch {
+    // 写入失败不阻断加载（例如个别环境对 Response 的限制）
+  }
   return blobUrlFromResponse(res);
 }
