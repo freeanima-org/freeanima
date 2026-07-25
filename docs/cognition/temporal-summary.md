@@ -56,12 +56,12 @@ Unique on `(window, period_start)` for global rows (expression unique index).
 
 ## Generation
 
-| Step               | Trigger                                                  | Output                                                     |
-| ------------------ | -------------------------------------------------------- | ---------------------------------------------------------- |
-| Conversation chunk | `builtin-temporal-summary-tick` `*/30`                   | Append chunk if new messages                               |
-| Peer rollup        | Same tick / on assemble for **closed** buckets           | One merged peer digest per viewer source-set → Redis cache |
-| Global day         | Sleep step `temporal-summary-day` (after light-sleep)    | Overwrite global `day` entity for sleep day                |
-| Month / year       | Sleep step `temporal-summary-cascade` (after deep-sleep) | Month on month-end; year on Dec 31                         |
+| Step               | Trigger                                                      | Output                                                     |
+| ------------------ | ------------------------------------------------------------ | ---------------------------------------------------------- |
+| Conversation chunk | in-process `Bun.cron` `builtin-temporal-summary-tick` `*/30` | Append chunk if new messages                               |
+| Peer rollup        | Same tick / on assemble for **closed** buckets               | One merged peer digest per viewer source-set → Redis cache |
+| Global day         | Sleep step `temporal-summary-day` (after light-sleep)        | Overwrite global `day` entity for sleep day                |
+| Month / year       | Sleep step `temporal-summary-cascade` (after deep-sleep)     | Month on month-end; year on Dec 31                         |
 
 Identity context (self + resident) must ride with LLM summarization calls.
 

@@ -10,6 +10,8 @@ This is **not** a product feature module (unlike Chat or Diary). Sibling docs un
 
 Related terms: **Portal data plane** (EN) / **Portal 数据面** (zh); also “data-flow aspect”.
 
+Attention (Inbox vs reminder vs local interrupt, Habitat sleep-until-next, shell Attention hub) → [Notification and reminder](notification-and-reminder.md).
+
 ## Why this aspect exists
 
 Today the pieces below often evolve feature-by-feature. Without one vocabulary and one set of defaults, DX and UX suffer: full-list reloads after small writes, mixed cache meanings, hand-rolled loading state, and confusion between “offline” and “outbox pending”.

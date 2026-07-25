@@ -4,6 +4,7 @@ import type { RemoteToolsServerDeps } from "./types.ts";
 export type { RemoteToolsServerDeps } from "./types.ts";
 import { bindVaultShellSendRequest } from "@freeanima/host/capabilities/connectors/vault";
 import { bindChatSessionPumps } from "@freeanima/features/chat/habitat/session-pumps";
+import { bindNotificationSessionPumps } from "@freeanima/features/notification/habitat/session-pumps";
 import {
   remoteToolsAttachPayloadSchema,
   defineRpcProtocolRouter,
@@ -34,6 +35,7 @@ export function createRemoteToolsServerHandlers(
   sessionPumps: Map<string, AbortController>,
 ): RemoteToolsServerHandlers {
   bindChatSessionPumps(sessionPumps);
+  bindNotificationSessionPumps(sessionPumps);
   const router = defineRpcProtocolRouter();
 
   const handlers: RemoteToolsServerHandlers = {

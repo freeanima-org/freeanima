@@ -60,8 +60,14 @@ export {
   unregisterCronNotify,
   shouldNotifyCronJobResult,
   formatCronNotificationText,
+  notifyInprocessBuiltinFailure,
+  registerInprocessBuiltinFailureNotify,
+  unregisterInprocessBuiltinFailureNotify,
+  formatInprocessBuiltinFailureText,
   type CronNotifyFn,
   type CronNotifyPayload,
+  type InprocessBuiltinFailureNotifyFn,
+  type InprocessBuiltinFailurePayload,
 } from "./cron-notify.ts";
 export { CHAT_PLATFORM_PATTERN, HABITAT_BASE_PATH } from "./constants.ts";
 export type {

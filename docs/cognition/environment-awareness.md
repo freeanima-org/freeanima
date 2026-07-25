@@ -18,7 +18,7 @@ Session prompts are **not** rewritten on every change — live awareness is even
 
 ## Loop (`builtin-env-health`)
 
-Schedule: every 5 minutes (`*/5 * * * *`), Habitat cron, `no_agent`.
+Schedule: every 5 minutes (`*/5 * * * *`), Habitat **in-process `Bun.cron`** (not PG `cron_jobs` / `cron_log`).
 
 ```text
 collect markers (banded)
