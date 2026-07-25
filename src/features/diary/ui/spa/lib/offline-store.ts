@@ -177,13 +177,26 @@ async function mergeServerList(
   subjectKind: DiarySubjectKind,
   serverItems: DiaryEntryRow[],
 ): Promise<DiaryEntryRow[]> {
-  const tempIds = await pendingTempEntryIds(scope);
-  if (tempIds.size === 0) return serverItems;
   const local = await readLocalList(scope, subjectKind);
-  const serverIds = new Set(serverItems.map((e) => e.id));
+  const localById = new Map(local.map((e) => [e.id, e]));
+  // diary.list 故意不带 blocks（空数组=未加载）；勿覆盖本地已缓存的块
+  const withBlocks = serverItems.map((server) => {
+    const prev = localById.get(server.id);
+    if (!prev || server.blocks.length > 0 || prev.blocks.length === 0) return server;
+    return {
+      ...server,
+      blocks: prev.blocks.map((b) =>
+        b.parent_id === server.id ? b : { ...b, parent_id: server.id },
+      ),
+    };
+  });
+
+  const tempIds = await pendingTempEntryIds(scope);
+  if (tempIds.size === 0) return withBlocks;
+  const serverIds = new Set(withBlocks.map((e) => e.id));
   const pendingTemps = local.filter((e) => tempIds.has(e.id) && !serverIds.has(e.id));
-  if (pendingTemps.length === 0) return serverItems;
-  return [...pendingTemps, ...serverItems].toSorted((a, b) => b.entry_at.localeCompare(a.entry_at));
+  if (pendingTemps.length === 0) return withBlocks;
+  return [...pendingTemps, ...withBlocks].toSorted((a, b) => b.entry_at.localeCompare(a.entry_at));
 }
 
 export async function reconcileServerDiaryList(
@@ -641,11 +654,12 @@ export async function offlineUpdateDiaryBlock(
   patch: { content?: string; title?: string; tag_ids?: number[]; sort_order?: number },
 ): Promise<DiaryTextBlock> {
   const scope = resolveOutboxScope();
+  const resolvedId = await resolveEntityId(scope, id);
   const list = await readLocalList(scope, subjectKind);
   let parent: DiaryEntryRow | undefined;
   let block: DiaryTextBlock | undefined;
   for (const entry of list) {
-    const found = entry.blocks.find((b) => b.id === id);
+    const found = entry.blocks.find((b) => b.id === resolvedId || b.id === id);
     if (found) {
       parent = entry;
       block = found;
@@ -653,17 +667,21 @@ export async function offlineUpdateDiaryBlock(
     }
   }
   if (!parent || !block) throw new Error("diary block not found locally");
+  const localParent = parent;
+  const localBlock = block;
+  const localBlockId = localBlock.id;
 
   const doOffline = async (): Promise<DiaryTextBlock> => {
     const now = new Date().toISOString();
     const updatedBlock: DiaryTextBlock = {
-      ...block,
+      ...localBlock,
       ...patch,
+      id: localBlockId,
       updated_at: now,
     };
     await upsertLocalEntry(scope, subjectKind, {
-      ...parent,
-      blocks: parent.blocks.map((b) => (b.id === id ? updatedBlock : b)),
+      ...localParent,
+      blocks: localParent.blocks.map((b) => (b.id === localBlockId ? updatedBlock : b)),
       updated_at: now,
     });
 
@@ -674,7 +692,7 @@ export async function offlineUpdateDiaryBlock(
       method: "diary.blockPatch",
       payload: {
         subject_kind: subjectKind,
-        id,
+        id: resolvedId,
         client_op_id: opId,
         ...patch,
       },
@@ -684,7 +702,7 @@ export async function offlineUpdateDiaryBlock(
     return updatedBlock;
   };
 
-  if (await unresolvedTempId(scope, id)) {
+  if (await unresolvedTempId(scope, resolvedId)) {
     return doOffline();
   }
 
@@ -692,15 +710,15 @@ export async function offlineUpdateDiaryBlock(
     const opId = randomUuid();
     const data = await habitat().call("diary.blockPatch", {
       subject_kind: subjectKind,
-      id,
+      id: resolvedId,
       client_op_id: opId,
       ...patch,
     });
-    const entry = await findLocalEntry(scope, subjectKind, parent.id);
+    const entry = await findLocalEntry(scope, subjectKind, localParent.id);
     if (entry) {
       await upsertLocalEntry(scope, subjectKind, {
         ...entry,
-        blocks: entry.blocks.map((b) => (b.id === id ? data.item : b)),
+        blocks: entry.blocks.map((b) => (b.id === localBlockId ? data.item : b)),
         updated_at: new Date().toISOString(),
       });
     }

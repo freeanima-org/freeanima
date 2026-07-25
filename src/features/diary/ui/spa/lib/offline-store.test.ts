@@ -11,21 +11,37 @@ import {
 import { resetOfflineModuleRegistryForTests } from "@freeanima/client/portal-sdk/offline-module-registry";
 import { resetTempIdAllocatorForTests } from "@freeanima/client/portal-sdk/offline-temp-id";
 
-import type { DiaryEntryRow } from "./format-diary.ts";
+import type { DiaryEntryRow, DiaryTextBlock } from "./format-diary.ts";
 import {
   offlineCreateDiaryEntry,
+  offlineUpdateDiaryBlock,
   offlineUpdateDiaryEntry,
   reconcileServerDiaryList,
 } from "./offline-store.ts";
 
-function row(id: number, entryAt: string): DiaryEntryRow {
+function textBlock(id: number, parentId: number, content: string, entryAt: string): DiaryTextBlock {
+  return {
+    id,
+    title: "",
+    content,
+    sort_order: 0,
+    parent_id: parentId,
+    client_op_id: null,
+    components: ["content_block"],
+    tag_ids: [],
+    created_at: entryAt,
+    updated_at: entryAt,
+  };
+}
+
+function row(id: number, entryAt: string, blocks: DiaryTextBlock[] = []): DiaryEntryRow {
   return {
     id,
     title: `t${id}`,
     summary: "",
     entry_at: entryAt,
     tag_ids: [],
-    blocks: [],
+    blocks,
     created_at: entryAt,
     updated_at: entryAt,
   };
@@ -68,6 +84,19 @@ describe("reconcileServerDiaryList", () => {
     const merged = await reconcileServerDiaryList("user", serverItems);
 
     expect(merged.map((e) => e.id)).toEqual([11]);
+  });
+
+  it("diary.list 空 blocks 不覆盖本地已缓存的块", async () => {
+    const scope = resolveOutboxScope();
+    const entryAt = "2026-07-12T00:00:00.000Z";
+    const localBlocks = [textBlock(101, 10, "块一", entryAt), textBlock(102, 10, "块二", entryAt)];
+    await writeOfflineCache(scope, "diary", "list:user", [row(10, entryAt, localBlocks)]);
+
+    const merged = await reconcileServerDiaryList("user", [row(10, entryAt)]);
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0]!.blocks.map((b) => b.id)).toEqual([101, 102]);
+    expect(merged[0]!.blocks.map((b) => b.content)).toEqual(["块一", "块二"]);
   });
 });
 
@@ -125,5 +154,33 @@ describe("offlineUpdateDiaryEntry temp id resolve", () => {
     const ops = await listOutboxOps(scope, "diary");
     const patch = ops.find((op) => op.method === "diary.patch");
     expect(patch?.payload.id).toBe(serverId);
+  });
+});
+
+describe("offlineUpdateDiaryBlock temp id resolve", () => {
+  beforeEach(() => {
+    setOfflineOutboxBackendForTests(new Map());
+    resetOfflineModuleRegistryForTests();
+    resetTempIdAllocatorForTests();
+  });
+
+  it("blockCreate flush 后本地只剩 server id 时，仍可用 temp id 更新内容", async () => {
+    const scope = resolveOutboxScope();
+    const entryAt = "2026-07-12T12:00:00+08:00";
+    const tempBlockId = -5;
+    const serverBlockId = 201;
+    const parentId = 10;
+    await writeOfflineCache(scope, "diary", "list:user", [
+      row(parentId, entryAt, [textBlock(serverBlockId, parentId, "旧内容", entryAt)]),
+    ]);
+    await setIdMapping(scope, "diary", tempBlockId, serverBlockId);
+
+    const updated = await offlineUpdateDiaryBlock("user", tempBlockId, { content: "新内容" });
+    expect(updated.id).toBe(serverBlockId);
+    expect(updated.content).toBe("新内容");
+
+    const ops = await listOutboxOps(scope, "diary");
+    const patch = ops.find((op) => op.method === "diary.blockPatch");
+    expect(patch?.payload.id).toBe(serverBlockId);
   });
 });
