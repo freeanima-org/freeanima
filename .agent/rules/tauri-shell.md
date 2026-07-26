@@ -32,6 +32,7 @@ NSIS 安装目录 = `productName`（无独立 installDir）。`just pack tauri-w
 4. **禁止**用 `getShellKind() === "tauri"` 锁布局（三维度规则 → [`ui-dimensions.md`](ui-dimensions.md)）。
 5. 编译期壳目标：`FREEANIMA_SHELL_TARGET=desktop|mobile` → `dist-desktop` / `dist-mobile`；打包前 `scripts/prepare-tauri-ui.ts` 拷入 `src-tauri/ui/web`。
 6. Habitat URL + token 存壳 prefs（Rust `desktop-shell.json` / Tauri store）。
+7. **原生 HTTP TLS 须用 OS 信任库**：`reqwest` 使用 `rustls-tls-native-roots`（读系统/用户 CA，含 mkcert `-install`）。**禁止**仅 `rustls-tls` / webpki-roots——否则壳「测试连接」对已装 mkcert 的 HTTPS 仍失败，而浏览器/WebView 正常（Electron 时代曾合并 system CA，同级约束）。
 
 ## Companion（桌面）
 

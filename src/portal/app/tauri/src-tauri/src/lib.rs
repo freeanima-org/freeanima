@@ -609,7 +609,20 @@ async fn probe_habitat_health(
   if let Some(t) = token.as_deref().map(str::trim).filter(|s| !s.is_empty()) {
     req = req.bearer_auth(t);
   }
-  let res = req.send().await.map_err(|e| format!("网络错误：{e}"))?;
+  let res = req.send().await.map_err(|e| {
+    let msg = e.to_string();
+    // rustls 校验失败时常含 certificate / UnknownIssuer；提示与 OS 信任库对齐
+    if msg.to_ascii_lowercase().contains("certificate")
+      || msg.contains("UnknownIssuer")
+      || msg.contains("invalid peer certificate")
+    {
+      format!(
+        "网络错误（TLS 证书未被壳原生 HTTP 信任）：{msg}。请确认本机已安装栖息地 mkcert 根 CA，或暂用 http://…:2658"
+      )
+    } else {
+      format!("网络错误：{msg}")
+    }
+  })?;
   let status = res.status();
   if !status.is_success() {
     return Err(format!("HTTP {}", status.as_u16()));

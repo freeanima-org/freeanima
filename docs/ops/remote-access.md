@@ -148,7 +148,7 @@ mkcert -CAROOT   # path to rootCA.pem on the Habitat host
 mkcert -install  # trust that CA on the Habitat host itself
 ```
 
-- **Desktop shell**: install `rootCA.pem` into the **OS** trust store (same machine as the desktop app). Install the CA into the OS trust store so Tauri WebView / system TLS trust Habitat HTTPS. On the Habitat host after `mkcert -install`, no extra step is usually needed.
+- **Desktop shell**: install `rootCA.pem` into the **OS** trust store (same machine as the desktop app). Install the CA into the OS trust store so Tauri WebView **and** shell native HTTP (`probe_habitat_health` via `reqwest` + OS roots) trust Habitat HTTPS. On the Habitat host after `mkcert -install`, no extra step is usually needed. If the system browser reaches `https://…:2659` but the shell「测试连接」fails with a TLS/certificate error, treat it as a shell TLS-trust bug (native HTTP must use the OS trust store), not “CA not installed”.
 - **iOS**: AirDrop/email `rootCA.pem` → install the profile → **Settings → General → About → Certificate Trust Settings** → enable full trust.
 - **Android**: optionally convert to DER, then **Settings → Security → Install CA certificate**. Tauri Android builds also need a build that trusts user CAs.
 
