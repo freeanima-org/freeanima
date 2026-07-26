@@ -33,6 +33,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
               subject_kind: { type: "string", enum: ["user", "agent"] },
               world_id: WORLD_ID_OPTIONAL,
             },
+            required: ["subject_kind"],
           },
           handler: async (args) => {
             const ctx = await storeContext(args);
@@ -58,6 +59,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
               notify_on_phase_end: { type: "boolean" },
               sound_enabled: { type: "boolean" },
             },
+            required: ["subject_kind"],
           },
           handler: async (args) => {
             const ctx = await storeContext(args);
@@ -107,6 +109,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
               title: { type: "string" },
             },
             required: [
+              "subject_kind",
               "phase",
               "started_at",
               "finished_at",
@@ -161,6 +164,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
               world_id: WORLD_ID_OPTIONAL,
               limit: { type: "number" },
             },
+            required: ["subject_kind"],
           },
           handler: async (args) => {
             const ctx = await storeContext(args);
@@ -180,6 +184,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
               world_id: WORLD_ID_OPTIONAL,
               period: { type: "string", enum: ["today", "week"] },
             },
+            required: ["subject_kind"],
           },
           handler: async (args) => {
             const ctx = await storeContext(args);

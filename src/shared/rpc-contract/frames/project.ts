@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { notificationRecipientKindSchema } from "./notification.ts";
 
-const projectSubjectKindSchema = notificationRecipientKindSchema.default("user");
+const projectSubjectKindSchema = notificationRecipientKindSchema;
 
 export const projectStatusSchema = z.enum(["active", "completed", "cancelled", "on_hold"]);
 

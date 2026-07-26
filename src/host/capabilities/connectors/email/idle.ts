@@ -5,7 +5,7 @@ import {
 } from "@freeanima/features/email/domain";
 import { normalizeAccountSync } from "@freeanima/features/email/domain/sync-state";
 
-import { collectNewMailSubjects, notifyNewMailSubjects } from "./new-mail-notify.ts";
+import { notifyNewMailFromSyncResults } from "./new-mail-notify.ts";
 
 import { withImapAccount } from "./imap-client.ts";
 import { syncEmailAccount } from "./sync.ts";
@@ -35,8 +35,7 @@ function scheduleSync(accountId: number): void {
       syncDebounce.delete(accountId);
       void syncEmailAccount(accountId)
         .then(async (result) => {
-          const subjects = collectNewMailSubjects([result]);
-          await notifyNewMailSubjects(subjects);
+          await notifyNewMailFromSyncResults([result]);
         })
         .catch(() => {});
     }, 1500),

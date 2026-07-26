@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { notificationRecipientKindSchema } from "./notification.ts";
 
-const emailSubjectKindSchema = notificationRecipientKindSchema.default("agent");
+const emailSubjectKindSchema = notificationRecipientKindSchema;
 
 export const emailAccountRowSchema = z.object({
   id: z.number().int().positive(),
@@ -213,7 +213,7 @@ export const emailProviderPresetSchema = z.object({
 export type EmailProviderPresetPayload = z.infer<typeof emailProviderPresetSchema>;
 
 export const emailProviderListInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema.optional(),
+  subject_kind: emailSubjectKindSchema,
 });
 export type EmailProviderListInput = z.infer<typeof emailProviderListInputSchema>;
 export const emailProviderListOutputSchema = z.object({

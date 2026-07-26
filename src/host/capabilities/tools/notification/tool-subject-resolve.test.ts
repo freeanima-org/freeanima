@@ -1,25 +1,48 @@
-import { describe, expect, it } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 
 import { bindResolvedWorldContext } from "@freeanima/host/core/config/world-context";
-import { resolveNotificationSendTargets } from "./tool-subject-resolve.ts";
+import {
+  resolveNotificationListSubject,
+  resolveNotificationSendTargets,
+} from "./tool-subject-resolve.ts";
+
+const CTX = {
+  user_subject_id: 10,
+  agent_subject_id: 20,
+  user_world_id: 100,
+  agent_world_id: 200,
+} as const;
 
 describe("notification tool subject resolve", () => {
-  bindResolvedWorldContext({
-    user_subject_id: 10,
-    agent_subject_id: 20,
-    user_world_id: 100,
-    agent_world_id: 200,
+  beforeEach(() => {
+    bindResolvedWorldContext({ ...CTX });
   });
 
-  it("send without subject_id defaults target both", async () => {
+  it("send without target or subject_id errors", async () => {
+    const err = await resolveNotificationSendTargets({
+      title: "t",
+      body: "b",
+    });
+    expect(typeof err).toBe("string");
+    expect(String(err)).toContain("target or subject_id is required");
+  });
+
+  it("send with target both", async () => {
     const targets = await resolveNotificationSendTargets({
       title: "t",
       body: "b",
+      target: "both",
     });
     expect(targets).toEqual([
       { recipient_kind: "user", recipient_id: "10" },
       { recipient_kind: "agent", recipient_id: "20" },
     ]);
+  });
+
+  it("list without recipient or subject_id errors", async () => {
+    const err = await resolveNotificationListSubject({});
+    expect(typeof err).toBe("string");
+    expect(String(err)).toContain("recipient or subject_id is required");
   });
 
   it("rejects unknown subject_id", async () => {

@@ -17,7 +17,7 @@ import {
   type VaultItemRow,
 } from "../domain/item-store.ts";
 import { ensureVaultConfig, getVaultConfig, updateVaultConfig } from "../domain/config-store.ts";
-import { defaultVaultSubjectForShell, resolveVaultWorldId } from "../domain/vault-world.ts";
+import { resolveVaultWorldId } from "../domain/vault-world.ts";
 import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 import type { VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
 import { omitUndefined } from "@freeanima/host/core/util";
@@ -43,8 +43,11 @@ function assertSubjectKindMatches(auth: RpcRequestAuthContext, subject_kind?: Su
   throw new Error("FORBIDDEN_SUBJECT");
 }
 
-function resolveSubjectKind(subject_kind?: SubjectKind): SubjectKind {
-  return subject_kind ?? defaultVaultSubjectForShell();
+function resolveSubjectKind(subject_kind: SubjectKind | undefined): SubjectKind {
+  if (subject_kind !== "user" && subject_kind !== "agent") {
+    throw new Error("subject_kind is required (user|agent)");
+  }
+  return subject_kind;
 }
 
 async function vaultWorldIdForAuth(
@@ -202,7 +205,7 @@ export async function serviceVaultCreatePlain(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const kind = input.subject_kind ?? "agent";
+  const kind = resolveSubjectKind(input.subject_kind);
   assertSubjectKindMatches(auth, kind);
   const worldId = resolveVaultWorldId(kind);
   const { ensureAgentVaultConfig, sealAgentVaultItem } = await loadAgentVaultConnector();
@@ -274,7 +277,7 @@ export async function serviceVaultPatchPlain(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const kind = input.subject_kind ?? "agent";
+  const kind = resolveSubjectKind(input.subject_kind);
   assertSubjectKindMatches(auth, kind);
   const worldId = resolveVaultWorldId(kind);
   const { ensureAgentVaultConfig, openAgentVaultSecrets, sealAgentVaultItem } =

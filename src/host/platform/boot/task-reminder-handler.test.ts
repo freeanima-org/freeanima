@@ -1,10 +1,19 @@
 import { describe, expect, it } from "bun:test";
 
+import { bindResolvedWorldContext } from "@freeanima/host/core/config/world-context";
 import {
+  recipientForTaskWorld,
   shouldSendTaskReminder,
   taskReminderSourceRef,
   triggerMs,
 } from "./task-reminder-handler.ts";
+
+bindResolvedWorldContext({
+  user_world_id: 10,
+  agent_world_id: 20,
+  user_subject_id: 1,
+  agent_subject_id: 2,
+});
 
 describe("triggerMs", () => {
   it("prefers remind_at over due_at", () => {
@@ -59,5 +68,21 @@ describe("taskReminderSourceRef", () => {
   it("includes trigger iso", () => {
     const ms = Date.parse("2026-06-28T10:00:00.000Z");
     expect(taskReminderSourceRef(42, ms)).toBe("task_item:42:trigger:2026-06-28T10:00:00.000Z");
+  });
+});
+
+describe("recipientForTaskWorld", () => {
+  const port = {
+    getUserRecipient: () => ({ kind: "user" as const, id: "1" }),
+    getAgentRecipient: () => ({ kind: "agent" as const, id: "2" }),
+  };
+
+  it("maps user and agent worlds", () => {
+    expect(recipientForTaskWorld(10, port)).toEqual({ kind: "user", id: "1" });
+    expect(recipientForTaskWorld(20, port)).toEqual({ kind: "agent", id: "2" });
+  });
+
+  it("returns null for unknown world", () => {
+    expect(recipientForTaskWorld(99, port)).toBeNull();
   });
 });

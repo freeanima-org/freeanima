@@ -116,17 +116,17 @@ For each injected `[id:…]` line, classify by content (not by writer/source):
 | **Action needed, quick**          | Handle within ~3 tool rounds    | `notification_mark_read` that id after done     |
 | **Action needed, slow/uncertain** | Ask the user before a long task | Do **not** mark read until approved and handled |
 
-Unmarked unread items are re-injected on the next user turn. Use `notification_list(recipient=agent, read_filter=unread)` if the inject block is truncated.
+Unmarked unread items are re-injected on the next user turn. Use `notification_list(recipient=agent, read_filter=unread)` (recipient or `subject_id` required) if the inject block is truncated.
 
 ## LLM tools (ToolSet `notification`)
 
 Load via `toolset_load` with `notification`.
 
-| Tool                     | Scope parameter                                                          |
-| ------------------------ | ------------------------------------------------------------------------ |
-| `notification_send`      | Optional `subject_id` (overrides `target`); default `target=both`        |
-| `notification_list`      | Optional `subject_id` (overrides `recipient`); default `recipient=agent` |
-| `notification_mark_read` | Notification id only (global)                                            |
+| Tool                     | Scope parameter                                                                                                         |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `notification_send`      | Optional `subject_id` (overrides `target`); **`target` required** when `subject_id` omitted (`user` / `agent` / `both`) |
+| `notification_list`      | Optional `subject_id` (overrides `recipient`); **`recipient` required** when `subject_id` omitted (`user` / `agent`)    |
+| `notification_mark_read` | Notification id only (global)                                                                                           |
 
 `subject_id` must be the configured `user_subject_id` or `agent_subject_id` from system prompt / `ResolvedWorldContext`.
 

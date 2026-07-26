@@ -57,6 +57,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               account_id: { type: "number" },
               limit: { type: "number" },
             },
+            required: ["subject_kind"],
           },
           handler: async (args) => {
             try {
@@ -99,6 +100,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               unread: { type: "boolean" },
               limit: { type: "number" },
             },
+            required: ["subject_kind"],
           },
           handler: async (args) => {
             try {
@@ -166,6 +168,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               },
               limit: { type: "number" },
             },
+            required: ["subject_kind"],
           },
           handler: async (args) => {
             const query = args.query != null ? String(args.query).trim() : "";
@@ -361,7 +364,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               cc: { type: "string" },
               bcc: { type: "string" },
             },
-            required: ["to", "subject", "body"],
+            required: ["subject_kind", "to", "subject", "body"],
           },
           handler: async (args) => {
             const accountId = parseAccountId(args.account_id);
@@ -403,7 +406,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               subject: { type: "string" },
               body: { type: "string" },
             },
-            required: ["subject", "body"],
+            required: ["subject_kind", "subject", "body"],
           },
           handler: async (args) => {
             try {
@@ -554,6 +557,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               has_unread: { type: "boolean" },
               limit: { type: "number" },
             },
+            required: ["subject_kind"],
           },
           handler: async (args) => {
             try {

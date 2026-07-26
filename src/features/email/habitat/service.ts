@@ -22,7 +22,10 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-function emailWorldId(kind: SubjectKind = "agent"): number {
+function emailWorldId(kind: SubjectKind | undefined): number {
+  if (kind !== "user" && kind !== "agent") {
+    throw new Error("subject_kind is required (user|agent)");
+  }
   return resolveSubjectWorldId(kind);
 }
 

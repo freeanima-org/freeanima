@@ -1,10 +1,11 @@
+import { getResolvedWorldContext } from "@freeanima/host/core/config";
 import { getNotificationPort } from "@freeanima/host/capabilities/tools/notification";
 import type { EmailSyncResult } from "@freeanima/features/email/domain";
 
 const MAX_SUBJECTS_IN_BODY = 15;
 const MAX_SUBJECT_CHARS = 120;
 
-/** 将自动同步拿到的新邮件标题汇总成一条用户通知 */
+/** 将自动同步拿到的新邮件标题汇总成一条通知 */
 export function buildNewMailNotificationContent(subjects: string[]): {
   title: string;
   body: string;
@@ -37,21 +38,52 @@ export function collectNewMailSubjects(results: EmailSyncResult[]): string[] {
   return subjects;
 }
 
-/** 向用户收件箱写入新邮件汇总通知（手动同步勿调用） */
-export async function notifyNewMailSubjects(subjects: string[]): Promise<boolean> {
-  if (subjects.length === 0) return false;
+export type NewMailSubjectBucket = {
+  kind: "user" | "agent";
+  subjects: string[];
+};
+
+/** 按账户所属 world 将新信主题分到 user / agent 桶 */
+export function bucketNewMailSubjectsByWorld(results: EmailSyncResult[]): NewMailSubjectBucket[] {
+  const ctx = getResolvedWorldContext();
+  const userSubjects: string[] = [];
+  const agentSubjects: string[] = [];
+  for (const result of results) {
+    if (result.new_subjects.length === 0) continue;
+    if (result.world_id === ctx.user_world_id) {
+      userSubjects.push(...result.new_subjects);
+    } else if (result.world_id === ctx.agent_world_id) {
+      agentSubjects.push(...result.new_subjects);
+    }
+  }
+  const out: NewMailSubjectBucket[] = [];
+  if (userSubjects.length > 0) out.push({ kind: "user", subjects: userSubjects });
+  if (agentSubjects.length > 0) out.push({ kind: "agent", subjects: agentSubjects });
+  return out;
+}
+
+/** 按账户 world 写入对应 subject 收件箱（手动同步勿调用） */
+export async function notifyNewMailFromSyncResults(results: EmailSyncResult[]): Promise<boolean> {
+  const buckets = bucketNewMailSubjectsByWorld(results);
+  if (buckets.length === 0) return false;
   const port = getNotificationPort();
   if (!port) return false;
-  const user = port.getUserRecipient();
-  const { title, body } = buildNewMailNotificationContent(subjects);
-  await port.create({
-    recipient_kind: user.kind,
-    recipient_id: user.id,
-    title,
-    body,
-    source_kind: "cron",
-    source_ref: `email-sync:${Date.now()}`,
-    payload: { kind: "email_new_mail", count: subjects.length },
-  });
-  return true;
+
+  const now = Date.now();
+  let wrote = false;
+  for (const bucket of buckets) {
+    const recipient = bucket.kind === "user" ? port.getUserRecipient() : port.getAgentRecipient();
+    const { title, body } = buildNewMailNotificationContent(bucket.subjects);
+    await port.create({
+      recipient_kind: recipient.kind,
+      recipient_id: recipient.id,
+      title,
+      body,
+      source_kind: "cron",
+      source_ref: `email-sync:${bucket.kind}:${now}`,
+      payload: { kind: "email_new_mail", count: bucket.subjects.length },
+    });
+    wrote = true;
+  }
+  return wrote;
 }

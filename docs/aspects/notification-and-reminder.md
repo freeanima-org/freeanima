@@ -112,10 +112,10 @@ Today `PomodoroShellWatcher`, `ChatUnreadShellWatcher`, and `NotificationReminde
 Documented so agents do not treat today’s behavior as the end state:
 
 1. `builtin-task-reminders` (and sleep-cycle / env-health / temporal-summary-tick) use **in-process `Bun.cron`** — not PG `cron_jobs` / `cron_log`. On **any** failure (throw or `{ ok: false }`), Habitat writes Inbox to **both** user and agent subjects (no run history otherwise). **Sleep-until-next** for sparse task dues is still a follow-up (today still wakes every minute in-process; empty task scans stay quiet).
-2. Single `remind_at` field; scan uses **remind-else-due** and writes the **user** Inbox for both — conflates Notification and Reminder, and ignores World ownership.
-3. Scan only walks `user_world_id`.
-4. Shell attention is three independent watchers, not one hub.
-5. No multi-reminder model (7d / 3d / 1d) yet.
+2. Single `remind_at` field; scan still uses **remind-else-due** into Inbox (conflates Notification and Reminder). Delivery is **full-table** and routed by `task_item.world_id` to the owning subject (email auto-sync likewise routes by account world).
+3. Shell attention is three independent watchers, not one hub.
+4. No multi-reminder model (7d / 3d / 1d) yet.
+5. Local interrupt (WS / OS / bubble) still fires only for **user** Inbox rows; agent Inbox is inject / list only.
 
 Inbox protocol, tools, and agent inject details remain in [`notifications.md`](../cognition/notifications.md). Alert channel details remain there under Alert / `deliverLocalReminder`.
 

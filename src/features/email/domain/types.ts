@@ -130,6 +130,8 @@ export type EmailThreadListOpts = {
 
 export type EmailSyncResult = {
   account_id: number;
+  /** 账户所属 world（自动同步通知按此路由收件人） */
+  world_id: number;
   upserted_messages: number;
   upserted_threads: number;
   highest_uid: number | null;

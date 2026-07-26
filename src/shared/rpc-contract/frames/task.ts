@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { notificationRecipientKindSchema } from "./notification.ts";
 
-const taskSubjectKindSchema = notificationRecipientKindSchema.default("user");
+const taskSubjectKindSchema = notificationRecipientKindSchema;
 
 const taskPrioritySchema = z.enum(["high", "medium", "low", "none"]);
 const taskStatusSchema = z.enum(["pending", "completed"]);

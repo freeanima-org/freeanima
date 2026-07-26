@@ -11,17 +11,9 @@ import {
   updateTaskList,
 } from "./list-store.ts";
 import { TASK_TOOL_RETURNS } from "./return-schemas.ts";
-import { listPayload, WORLD_ID_TOOL_PROPERTY } from "./task-tool-helpers.ts";
-import { resolveTaskToolWorld } from "./tool-world-resolve.ts";
+import { listPayload } from "./task-tool-helpers.ts";
+import { resolveTaskToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 import type { TaskListUpdateInput } from "./types.ts";
-
-const WORLD_ID_OPTIONAL = {
-  world_id: {
-    ...WORLD_ID_TOOL_PROPERTY,
-    description:
-      "Optional world override; defaults to caller subject private world (MCP token subject or agent subject for LLM)",
-  },
-} as const;
 
 async function handleListLists(args: Record<string, unknown>): Promise<string> {
   const worldId = await resolveTaskToolWorld({ args });
@@ -172,7 +164,7 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
                 description: "Include archived (closed) lists when true",
               },
             },
-            required: [],
+            required: ["subject_kind"],
           },
           handler: handleListLists,
         },
@@ -195,7 +187,7 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
                 description: "Parent folder entity id; omit for root level",
               },
             },
-            required: ["name"],
+            required: ["subject_kind", "name"],
           },
           handler: handleListCreate,
         },
@@ -223,7 +215,7 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
                 description: "Parent folder id; null to move to root",
               },
             },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: handleListUpdate,
         },
@@ -240,7 +232,7 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
                 description: "Delete contained task items when true",
               },
             },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: handleListDelete,
         },
@@ -254,7 +246,7 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
               query: { type: "string", description: "Search keywords" },
               limit: { type: "integer", description: "Max results, default 30, cap 50" },
             },
-            required: ["query"],
+            required: ["subject_kind", "query"],
           },
           handler: handleListSearch,
         },

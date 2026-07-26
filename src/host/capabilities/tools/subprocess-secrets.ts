@@ -1,4 +1,5 @@
 import type { SubjectKind } from "@freeanima/host/core/config";
+import { getResolvedWorldContext } from "@freeanima/host/core/config";
 import { getToolConversationId } from "@freeanima/host/core/tool/tool-context";
 import { toolError } from "@freeanima/host/core/tool";
 import { omitUndefined } from "@freeanima/host/core/util";
@@ -6,7 +7,6 @@ import {
   resolveAgentVaultSecret,
   resolveUserVaultSecret,
 } from "@freeanima/host/capabilities/connectors/vault";
-import { defaultVaultSubjectForTools } from "@freeanima/features/vault/domain/vault-world";
 import {
   resolveVaultToolWorld,
   SUBJECT_KIND_TOOL_PROPERTY,
@@ -46,7 +46,7 @@ export const SECRET_TOOL_PROPERTY = {
   description:
     "Vault secret to type into the input (never returned in tool results). " +
     "Discover items via vault_list/vault_search/vault_get_meta first (use custom_field_names as field). " +
-    "Uses agent library. Mutually exclusive with text.",
+    "Mutually exclusive with text. World resolved from vault item id.",
   properties: {
     id: SECRET_ID_PROPERTY,
     field: {
@@ -65,7 +65,8 @@ export const SECRETS_TOOL_PROPERTY = {
     "Per-call vault secrets injected only into this subprocess env (never Habitat process.env, never tool results). " +
     "Discover items via vault_list/vault_search/vault_get_meta first; set field to password/notes/totp " +
     "(totp → current code) " +
-    "or a custom_field_names entry (flat name, no path). Default subject_kind=agent.",
+    "or a custom_field_names entry (flat name, no path). " +
+    "Pass subject_kind (user|agent) when needed; world_id optional override.",
   items: {
     type: "object",
     properties: {
@@ -79,9 +80,9 @@ export const SECRETS_TOOL_PROPERTY = {
   },
 } as const;
 
-function parseSubjectKind(raw: unknown): SubjectKind {
+function parseSubjectKind(raw: unknown): SubjectKind | undefined {
   if (raw === "user" || raw === "agent") return raw;
-  return defaultVaultSubjectForTools();
+  return undefined;
 }
 
 function parseVaultSecretFields(
@@ -140,9 +141,8 @@ export async function resolveVaultSecretValue(
   ref: VaultSecretRef,
 ): Promise<{ value: string } | string> {
   const field = (ref.field ?? "password").trim() || "password";
-  const subjectKind = ref.subject_kind ?? defaultVaultSubjectForTools();
   const args: Record<string, unknown> = omitUndefined({
-    subject_kind: subjectKind,
+    subject_kind: ref.subject_kind,
     world_id: ref.world_id,
   });
   const worldId = await resolveVaultToolWorld({
@@ -151,6 +151,14 @@ export async function resolveVaultSecretValue(
     access: "write",
   });
   if (typeof worldId === "string") return worldId;
+
+  let subjectKind = ref.subject_kind;
+  if (subjectKind == null) {
+    const ctx = getResolvedWorldContext();
+    if (worldId === ctx.user_world_id) subjectKind = "user";
+    else if (worldId === ctx.agent_world_id) subjectKind = "agent";
+    else return toolError("subject_kind is required (user|agent) when world cannot be inferred");
+  }
 
   try {
     let value: string;

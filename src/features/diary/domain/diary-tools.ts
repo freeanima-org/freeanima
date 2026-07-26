@@ -21,7 +21,7 @@ import { DIARY_TOOL_RETURNS } from "./return-schemas.ts";
 import { resolveDiaryToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 
 async function storeContext(args: Record<string, unknown>, access: "read" | "write" = "read") {
-  const worldId = await resolveDiaryToolWorld(args, access);
+  const worldId = await resolveDiaryToolWorld({ args, access });
   if (typeof worldId === "string") return worldId;
   return { worldId };
 }
@@ -236,7 +236,7 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
                 description: "Tags when creating a new entry for this date",
               },
             },
-            required: ["content"],
+            required: ["subject_kind", "content"],
           },
           handler: handleAppend,
         },
@@ -266,6 +266,7 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
               ...WORLD_ID_OPTIONAL,
               date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
             },
+            required: ["subject_kind"],
           },
           handler: handleDelete,
         },
@@ -278,6 +279,7 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
               ...WORLD_ID_OPTIONAL,
               date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
             },
+            required: ["subject_kind"],
           },
           handler: handleGet,
         },
@@ -330,7 +332,7 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
               },
               limit: { type: "integer" },
             },
-            required: ["query"],
+            required: ["subject_kind", "query"],
           },
           handler: handleSearch,
         },

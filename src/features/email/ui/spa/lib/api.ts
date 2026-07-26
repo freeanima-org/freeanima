@@ -301,6 +301,7 @@ export async function saveEmailDraft(input: {
 
 export type EmailSyncResult = {
   account_id: number;
+  world_id?: number;
   upserted_messages: number;
   upserted_threads: number;
   highest_uid: number | null;
