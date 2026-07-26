@@ -1,3 +1,5 @@
+import type { SubjectKind } from "@freeanima/host/core/config";
+import { resolveSubjectWorldId } from "@freeanima/host/core/config";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/host/core/tool";
 import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/host/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/host/core/util";
@@ -20,6 +22,11 @@ const WORLD_ID_TOOL_PROPERTY = {
   description: "Owning world id (see system prompt: user_world_id / agent_world_id)",
 } as const;
 
+function parseSubjectKind(raw: unknown): SubjectKind | undefined {
+  if (raw === "user" || raw === "agent") return raw;
+  return undefined;
+}
+
 function parseWorldId(raw: unknown): number | null {
   const id = Number(raw);
   return Number.isFinite(id) && id > 0 ? Math.floor(id) : null;
@@ -32,11 +39,18 @@ async function resolveProjectToolWorld(opts: {
 }): Promise<number | string> {
   try {
     const explicit = parseWorldId(opts.args.world_id);
-    return await resolveToolWorld({
-      ...(explicit != null ? { explicitWorldId: explicit } : {}),
-      ...(opts.entityId != null ? { entityId: opts.entityId } : {}),
-      access: opts.access ?? "read",
-    });
+    const subjectKind = parseSubjectKind(opts.args.subject_kind);
+    const access = opts.access ?? "read";
+    if (explicit != null) {
+      return await resolveToolWorld({ explicitWorldId: explicit, access });
+    }
+    if (opts.entityId != null && opts.entityId > 0) {
+      return await resolveToolWorld({ entityId: opts.entityId, access });
+    }
+    if (subjectKind == null) {
+      return toolError("subject_kind is required (user|agent) when world_id omitted");
+    }
+    return resolveSubjectWorldId(subjectKind);
   } catch (e) {
     const msg = e instanceof ToolWorldAccessError ? e.message : String(e);
     return toolError(msg);
@@ -46,7 +60,13 @@ async function resolveProjectToolWorld(opts: {
 const WORLD_ID_OPTIONAL = {
   world_id: {
     ...WORLD_ID_TOOL_PROPERTY,
-    description: "Optional world override; defaults to caller subject private world",
+    description: "Optional world override; otherwise subject_kind selects the private world",
+  },
+  subject_kind: {
+    type: "string",
+    enum: ["user", "agent"],
+    description:
+      "Owning subject: user or agent (required unless world_id or entity id resolves world)",
   },
 } as const;
 
@@ -84,6 +104,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
               folder_id: { type: "integer" },
               status: { type: "string", enum: ["active", "completed", "cancelled", "on_hold"] },
             },
+            required: ["subject_kind"],
           },
           handler: async (args) => {
             const worldId = await resolveWorld(args);
@@ -109,7 +130,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: { ...WORLD_ID_OPTIONAL, id: { type: "integer" } },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: async (args) => {
             const id = Number(args.id);
@@ -140,7 +161,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
               folder_id: { type: "integer" },
               product_tag: { type: "string" },
             },
-            required: ["title"],
+            required: ["subject_kind", "title"],
           },
           handler: async (args) => {
             const worldId = await resolveWorld(args, "write");
@@ -218,7 +239,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: { ...WORLD_ID_OPTIONAL, id: { type: "integer" } },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: async (args) => {
             const id = Number(args.id);
@@ -236,7 +257,11 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
         {
           name: "projectfolder_list",
           description: "List project folders",
-          parameters: { type: "object", properties: { ...WORLD_ID_OPTIONAL } },
+          parameters: {
+            type: "object",
+            properties: { ...WORLD_ID_OPTIONAL },
+            required: ["subject_kind"],
+          },
           handler: async (args) => {
             const worldId = await resolveWorld(args);
             if (typeof worldId === "string") return worldId;
@@ -263,7 +288,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
               name: { type: "string" },
               parent_id: { type: "integer" },
             },
-            required: ["name"],
+            required: ["subject_kind", "name"],
           },
           handler: async (args) => {
             const worldId = await resolveWorld(args, "write");

@@ -57,7 +57,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
               desc: { type: "string" },
               tags: { type: "array", items: { type: "string" } },
             },
-            required: ["password", "address"],
+            required: ["subject_kind", "password", "address"],
           },
           handler: async (args) => {
             try {
@@ -99,7 +99,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
               desc: { type: "string" },
               tags: { type: "array", items: { type: "string" } },
             },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: async (args) => {
             const id = parseMessageId(args.id);
@@ -128,6 +128,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
           parameters: {
             type: "object",
             properties: { ...WORLD_ID_OPTIONAL },
+            required: ["subject_kind"],
           },
           handler: async (args) => {
             try {
@@ -151,7 +152,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
               ...WORLD_ID_OPTIONAL,
               id: { type: "number" },
             },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: async (args) => {
             const id = parseMessageId(args.id);

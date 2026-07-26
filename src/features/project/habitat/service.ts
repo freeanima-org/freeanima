@@ -33,8 +33,11 @@ function assertSubjectKindMatches(auth: RpcRequestAuthContext, subject_kind?: Su
   throw new Error("FORBIDDEN_SUBJECT");
 }
 
-function resolveSubjectKind(subject_kind?: SubjectKind): SubjectKind {
-  return subject_kind ?? "user";
+function resolveSubjectKind(subject_kind: SubjectKind | undefined): SubjectKind {
+  if (subject_kind !== "user" && subject_kind !== "agent") {
+    throw new Error("subject_kind is required (user|agent)");
+  }
+  return subject_kind;
 }
 
 async function projectWorldIdForAuth(

@@ -353,7 +353,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
     "Vault metadata and Agent-library write tools (no secrets in tool results). " +
       "Use terminal_run/code_execute secrets[] for subprocess credentials, or browser_type secret for form fields " +
       "(field = password/notes/totp or a custom_field_names entry). " +
-      "Default library: agent. " +
+      "Pass subject_kind (user|agent); world_id optional. " +
       "Vault tools are Habitat-only (not MCP).",
     attachToolReturns(
       [
@@ -367,6 +367,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
               tags: { type: "array", items: { type: "string" } },
               limit: { type: "integer" },
             },
+            required: ["subject_kind"],
           },
           handler: handleList,
         },
@@ -380,7 +381,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
               query: { type: "string" },
               limit: { type: "integer" },
             },
-            required: ["query"],
+            required: ["subject_kind", "query"],
           },
           handler: handleSearch,
         },
@@ -395,7 +396,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
               ...WORLD_AND_SUBJECT,
               id: { type: "integer" },
             },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: handleGetMeta,
         },
@@ -410,7 +411,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
               ...META_WRITE_PROPERTIES,
               secrets: SECRETS_TOOL_PROPERTY,
             },
-            required: ["title"],
+            required: ["subject_kind", "title"],
           },
           handler: handleCreate,
         },
@@ -426,7 +427,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
               ...META_WRITE_PROPERTIES,
               secrets: SECRETS_TOOL_PROPERTY,
             },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: handleUpdate,
         },
@@ -439,7 +440,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
               ...WORLD_AND_SUBJECT,
               id: { type: "integer" },
             },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: handleDelete,
         },

@@ -36,8 +36,13 @@ export const WORLD_ID_TOOL_PROPERTY = {
 export const WORLD_ID_OPTIONAL = {
   world_id: {
     ...WORLD_ID_TOOL_PROPERTY,
+    description: "Optional world override; otherwise subject_kind selects the private world",
+  },
+  subject_kind: {
+    type: "string",
+    enum: ["user", "agent"],
     description:
-      "Optional world override; defaults to caller subject private world (MCP token subject or agent subject for LLM)",
+      "Owning subject: user or agent (required unless world_id or entity id resolves world)",
   },
 } as const;
 

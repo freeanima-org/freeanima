@@ -21,9 +21,8 @@ import {
   parseTagIds,
   resolveToolTagIds,
   TASK_PRIORITIES,
-  WORLD_ID_TOOL_PROPERTY,
 } from "./task-tool-helpers.ts";
-import { resolveTaskToolWorld } from "./tool-world-resolve.ts";
+import { resolveTaskToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 import type { TaskItemUpdateInput } from "./types.ts";
 
 async function resolveListId(worldId: number, raw: unknown): Promise<number | null> {
@@ -307,14 +306,6 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
   }
 }
 
-const WORLD_ID_OPTIONAL = {
-  world_id: {
-    ...WORLD_ID_TOOL_PROPERTY,
-    description:
-      "Optional world override; defaults to caller subject private world (MCP token subject or agent subject for LLM)",
-  },
-} as const;
-
 const TASK_ITEM_TOOL_NAMES = [
   "task_create",
   "task_update",
@@ -329,7 +320,7 @@ const TASK_ITEM_TOOL_NAMES = [
 export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "task",
-    "Task items (CRUD and hybrid search). Load toolset `tasklist` for list management. world_id optional; id/list_id/project_id scopes infer world.",
+    "Task items (CRUD and hybrid search). Load toolset `tasklist` for list management. Pass subject_kind (user|agent); world_id optional; id/list_id/project_id may infer world.",
     attachToolReturns(
       [
         {
@@ -366,7 +357,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               due_at: { type: "string", description: "Due time ISO8601" },
               remind_at: { type: "string", description: "Reminder time ISO8601" },
             },
-            required: ["title"],
+            required: ["subject_kind", "title"],
           },
           handler: handleCreate,
         },
@@ -397,7 +388,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               remind_at: { type: "string" },
               sort_order: { type: "integer" },
             },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: handleUpdate,
         },
@@ -408,7 +399,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: { id: { type: "integer" } },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: (args) => handleComplete(args, false),
         },
@@ -419,7 +410,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: { id: { type: "integer" } },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: (args) => handleComplete(args, true),
         },
@@ -430,7 +421,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: { id: { type: "integer" } },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: handleDelete,
         },
@@ -441,7 +432,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: { id: { type: "integer" } },
-            required: ["id"],
+            required: ["subject_kind", "id"],
           },
           handler: handleGet,
         },
@@ -463,7 +454,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               tag_ids: { type: "array", items: { type: "integer" } },
               limit: { type: "integer" },
             },
-            required: [],
+            required: ["subject_kind"],
           },
           handler: handleList,
         },
@@ -488,7 +479,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               status: { type: "string", enum: ["pending", "completed", "all"] },
               limit: { type: "integer", description: "Max results, default 30, cap 50" },
             },
-            required: ["query"],
+            required: ["subject_kind", "query"],
           },
           handler: handleSearch,
         },

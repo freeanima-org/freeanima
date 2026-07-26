@@ -27,10 +27,6 @@ export {
   type VaultRevisionCompareView,
 } from "./revision-diff.ts";
 
-export {
-  resolveVaultWorldId,
-  defaultVaultSubjectForTools,
-  defaultVaultSubjectForShell,
-} from "./vault-world.ts";
+export { resolveVaultWorldId } from "./vault-world.ts";
 
 export { registerVaultTools } from "./tools.ts";

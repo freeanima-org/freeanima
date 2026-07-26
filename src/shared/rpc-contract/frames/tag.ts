@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { notificationRecipientKindSchema } from "./notification.ts";
 
-const tagSubjectKindSchema = notificationRecipientKindSchema.default("user");
+const tagSubjectKindSchema = notificationRecipientKindSchema;
 
 export const tagRowSchema = z.object({
   id: z.number().int().positive(),

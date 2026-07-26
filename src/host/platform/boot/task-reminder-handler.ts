@@ -3,6 +3,7 @@ import { getResolvedWorldContext } from "@freeanima/host/core/config";
 import { searchEntities, updateEntity } from "@freeanima/host/core/db/pg/entity";
 import { formatCstIso } from "@freeanima/host/core/util";
 import { getNotificationPort } from "@freeanima/host/capabilities/tools/notification";
+import type { NotificationRecipientRef } from "@freeanima/host/capabilities/tools/notification";
 
 export type TaskReminderSchedulable = {
   due_at?: string | null;
@@ -53,18 +54,29 @@ function buildReminderBody(item: TaskReminderSchedulable & { title: string }): s
   return [dueLine, remindLine].filter(Boolean).join("\n") || item.title;
 }
 
-/** 扫描到期/提醒时间已到的 pending 任务，向 user 主体发通知（last_notified_at 去重） */
+/** 将 task 所属 world 映射到通知收件人；未知 world 返回 null */
+export function recipientForTaskWorld(
+  worldId: number,
+  port: {
+    getUserRecipient(): NotificationRecipientRef;
+    getAgentRecipient(): NotificationRecipientRef;
+  },
+): NotificationRecipientRef | null {
+  const ctx = getResolvedWorldContext();
+  if (worldId === ctx.user_world_id) return port.getUserRecipient();
+  if (worldId === ctx.agent_world_id) return port.getAgentRecipient();
+  return null;
+}
+
+/** 全表扫描到期/提醒已到的 pending 任务，按 entity world 写对应 subject Inbox */
 export async function runTaskReminderScan(): Promise<string> {
   const port = getNotificationPort();
   if (!port) {
     return JSON.stringify({ ok: false, error: "notification port unavailable" });
   }
 
-  const user = port.getUserRecipient();
   const now = Date.now();
-  const userWorldId = getResolvedWorldContext().user_world_id;
   const search = await searchEntities({
-    world_id: userWorldId,
     primary_component: TASK_ITEM_COMPONENT,
     filters: { status: "pending" },
     limit: 500,
@@ -72,6 +84,7 @@ export async function runTaskReminderScan(): Promise<string> {
   });
 
   let sent = 0;
+  let skippedUnknownWorld = 0;
   for (const row of search.results) {
     const item = asTaskItem(row);
     if (!item || item.status === "completed") continue;
@@ -80,12 +93,19 @@ export async function runTaskReminderScan(): Promise<string> {
 
     const at = triggerMs(schedulable);
     if (at == null) continue;
+
+    const recipient = recipientForTaskWorld(row.world_id, port);
+    if (!recipient) {
+      skippedUnknownWorld += 1;
+      continue;
+    }
+
     const body = buildReminderBody(schedulable);
     const sourceRef = taskReminderSourceRef(item.id, at);
 
     await port.create({
-      recipient_kind: user.kind,
-      recipient_id: user.id,
+      recipient_kind: recipient.kind,
+      recipient_id: recipient.id,
       title: `任务到期：${item.title}`,
       body,
       source_kind: "system",
@@ -100,5 +120,10 @@ export async function runTaskReminderScan(): Promise<string> {
     sent += 1;
   }
 
-  return JSON.stringify({ ok: true, sent, scanned: search.results.length });
+  return JSON.stringify({
+    ok: true,
+    sent,
+    scanned: search.results.length,
+    skipped_unknown_world: skippedUnknownWorld,
+  });
 }

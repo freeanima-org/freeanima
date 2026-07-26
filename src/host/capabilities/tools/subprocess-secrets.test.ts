@@ -25,10 +25,6 @@ mock.module("@freeanima/features/vault/domain/tool-world-resolve", () => ({
   },
 }));
 
-mock.module("@freeanima/features/vault/domain/vault-world", () => ({
-  defaultVaultSubjectForTools: () => "agent" as const,
-}));
-
 const { parseSecretArg, parseSecretsArg, resolveSubprocessSecrets, resolveVaultSecretValue } =
   await import("./subprocess-secrets.ts");
 const { buildSubprocessEnv } = await import("./subprocess-env.ts");
@@ -70,8 +66,20 @@ describe("parseSecretsArg", () => {
     expect(out).toContain("secrets must be an array");
   });
 
-  it("parses refs with defaults", () => {
+  it("parses refs without inventing subject_kind", () => {
     const out = parseSecretsArg([{ id: 12, env_name: "GH_TOKEN" }]);
+    expect(Array.isArray(out)).toBe(true);
+    if (!Array.isArray(out)) return;
+    expect(out).toEqual([
+      {
+        id: 12,
+        env_name: "GH_TOKEN",
+      },
+    ]);
+  });
+
+  it("keeps explicit subject_kind", () => {
+    const out = parseSecretsArg([{ id: 12, env_name: "GH_TOKEN", subject_kind: "agent" }]);
     expect(Array.isArray(out)).toBe(true);
     if (!Array.isArray(out)) return;
     expect(out).toEqual([

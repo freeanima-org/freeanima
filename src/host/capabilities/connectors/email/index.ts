@@ -28,8 +28,9 @@ export {
 } from "./sync.ts";
 export {
   buildNewMailNotificationContent,
+  bucketNewMailSubjectsByWorld,
   collectNewMailSubjects,
-  notifyNewMailSubjects,
+  notifyNewMailFromSyncResults,
 } from "./new-mail-notify.ts";
 export { createMailbox, renameMailbox, deleteMailbox } from "./mailbox-ops.ts";
 export { sendEmail, type SendEmailInput, type SaveDraftInput } from "./send.ts";

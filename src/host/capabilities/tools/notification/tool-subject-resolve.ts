@@ -53,7 +53,10 @@ export async function resolveNotificationSendTargets(
     return [one];
   }
 
-  const target = String(args.target ?? "both").trim();
+  if (args.target == null || String(args.target).trim() === "") {
+    return toolError("target or subject_id is required");
+  }
+  const target = String(args.target).trim();
   if (target !== "user" && target !== "agent" && target !== "both") {
     return toolError("target must be user, agent, or both");
   }
@@ -79,7 +82,10 @@ export async function resolveNotificationListSubject(
     return resolveExplicitSubject(explicitId);
   }
 
-  const recipientKind = String(args.recipient ?? "agent").trim();
+  if (args.recipient == null || String(args.recipient).trim() === "") {
+    return toolError("recipient or subject_id is required");
+  }
+  const recipientKind = String(args.recipient).trim();
   if (recipientKind !== "user" && recipientKind !== "agent") {
     return toolError("recipient must be user or agent");
   }

@@ -245,10 +245,25 @@ export async function syncEmailAccount(
   opts: { limit?: number } = {},
 ): Promise<EmailSyncResult> {
   const limit = opts.limit ?? 500;
+  let worldId = 0;
+  try {
+    worldId = await worldIdForAccount(accountId);
+  } catch {
+    return {
+      account_id: accountId,
+      world_id: 0,
+      upserted_messages: 0,
+      upserted_threads: 0,
+      highest_uid: null,
+      new_subjects: [],
+      error: "account not found or disabled",
+    };
+  }
   const account = await getEmailAccountRow(accountId);
   if (!account || !account.enabled) {
     return {
       account_id: accountId,
+      world_id: worldId,
       upserted_messages: 0,
       upserted_threads: 0,
       highest_uid: null,
@@ -319,6 +334,7 @@ export async function syncEmailAccount(
   } catch (err) {
     return {
       account_id: accountId,
+      world_id: worldId,
       upserted_messages: upsertedMessages,
       upserted_threads: upsertedThreads,
       highest_uid: highestUid,
@@ -329,6 +345,7 @@ export async function syncEmailAccount(
 
   return {
     account_id: accountId,
+    world_id: worldId,
     upserted_messages: upsertedMessages,
     upserted_threads: upsertedThreads,
     highest_uid: highestUid,

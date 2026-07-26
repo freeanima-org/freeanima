@@ -31,7 +31,7 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
         {
           name: "notification_send",
           description:
-            "Send an in-app notification to the configured user and/or agent subject. Task due/reminder cron writes to the user inbox; do not send duplicate task reminders.",
+            "Send an in-app notification to the configured user and/or agent subject. Task due/reminder cron routes by task world; do not send duplicate task reminders.",
           parameters: {
             type: "object",
             properties: {
@@ -41,7 +41,8 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
               target: {
                 type: "string",
                 enum: ["user", "agent", "both"],
-                description: "Recipient subject when subject_id omitted, default both",
+                description:
+                  "Recipient subject when subject_id omitted (required unless subject_id)",
               },
             },
             required: ["title", "body"],
@@ -86,7 +87,7 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
         {
           name: "notification_list",
           description:
-            "List notifications for the agent or user inbox. Default recipient=agent, read_filter=unread. Use when the injected notification block is truncated or you need to re-check unread items.",
+            "List notifications for the agent or user inbox. recipient or subject_id required; read_filter defaults to unread. Use when the injected notification block is truncated or you need to re-check unread items.",
           parameters: {
             type: "object",
             properties: {
@@ -94,7 +95,8 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
               recipient: {
                 type: "string",
                 enum: ["user", "agent"],
-                description: "Which subject inbox when subject_id omitted, default agent",
+                description:
+                  "Which subject inbox when subject_id omitted (required unless subject_id)",
               },
               read_filter: {
                 type: "string",
