@@ -105,6 +105,13 @@ export type ShellApi = {
     payload: ShellNativeAlertPayload & { at: Date | number },
   ) => Promise<ShellNativeAlertScheduleResult>;
   cancelNativeAlert?: (key: ShellNativeAlertCancelKey) => Promise<void>;
+  /**
+   * 应用图标未读合计角标（桌面 Dock/任务栏；Web 走 Badging API）。
+   * `0` 清除。Android 暂无原生 launcher badge（见 tauri-shell 文档 gap）。
+   */
+  setAppBadgeCount?: (count: number) => Promise<void>;
+  /** 桌面：任务栏/Dock 闪烁请求用户注意（托盘无独立闪烁 API 时同用此路径） */
+  requestAppAttention?: () => Promise<void>;
   /** 原生壳：确认后下载 Releases 产物并覆盖安装（Desktop NSIS / Mobile APK） */
   applyPackagedUpdate?: (opts: { assetUrl: string; expectedSize?: number }) => Promise<void>;
   /** 下载/安装进度（Tauri 事件） */

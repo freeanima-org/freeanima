@@ -47,6 +47,19 @@ export async function getNotificationRecipients(): Promise<NotificationRecipient
   return habitat().call("notification.recipients", {});
 }
 
+/** 用户 Inbox 未读条数（Shell 导航角标；不走 offline cache） */
+export async function getUnreadNotificationCount(): Promise<number> {
+  const recipients = await habitat().call("notification.recipients", {});
+  const result = await habitat().call("notification.list", {
+    recipient_kind: "user",
+    recipient_id: recipients.user_subject_id,
+    read_filter: "unread",
+    offset: 0,
+    limit: 1,
+  });
+  return result.total;
+}
+
 /** 用户 Inbox 新建推送（本机提醒） */
 export function subscribeUserNotificationInbox(
   onCreated: (event: NotificationCreatedEvent) => void,

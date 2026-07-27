@@ -12,11 +12,9 @@ import {
   type StoredMessagesResponse,
   interruptMessageStream,
   listConversations,
-  markConversationRead,
   setConversationTitle,
   unarchiveConversation as unarchiveConversationApi,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
-import { useChatUnreadStore } from "@freeanima/features/chat/ui/spa/stores/chat-unread.ts";
 import {
   readCachedConversations,
   readCachedMessages,
@@ -167,9 +165,6 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       hasMoreBefore: false,
       fromPos: null,
       loadingOlder: false,
-      conversations: get().conversations.map((c) =>
-        c.id === id && c.unread ? { ...c, unread: false } : c,
-      ),
     });
     const scope = resolveHabitatCacheScope();
     const cached = await readCachedMessages(scope, id);
@@ -186,13 +181,6 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       set({ ...page, loading: false });
       void writeCachedMessages(scope, id, page.display);
       void get().resolveExpectedTailPos(id, true);
-      void markConversationRead(id)
-        .then(() => {
-          void useChatUnreadStore.getState().refreshCount();
-        })
-        .catch((e) => {
-          console.error("markConversationRead:", e);
-        });
     } catch (e) {
       console.error("selectSession messages:", e);
       set({ loading: false });

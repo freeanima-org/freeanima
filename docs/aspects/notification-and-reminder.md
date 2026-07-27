@@ -95,7 +95,13 @@ flowchart LR
 
 Main window close is hide-not-destroy on desktop; shell subscriptions should keep running while the process lives.
 
-Today `PomodoroShellWatcher`, `ChatUnreadShellWatcher`, and `NotificationReminderShellWatcher` sit side by side on AppFrame with duplicated connect gates — target is one Attention registration surface; refactor is follow-up.
+Today `PomodoroShellWatcher`, `ChatUnreadShellWatcher`, `NotificationReminderShellWatcher`, and `AppAttentionShellWatcher` sit side by side on AppFrame with duplicated connect gates — target is one Attention registration surface; refactor is follow-up.
+
+**Module nav badges** (side rail / bottom tabs): Chat = user unread conversation count; Bell = user Inbox unread count. Each is independent.
+
+**App icon badge** (desktop Dock / taskbar overlay; Web Badging API when available) = chat unread + notification unread sum, driven by `AppAttentionShellWatcher` via `ShellApi.setAppBadgeCount`. Unread rise while unfocused → `requestAppAttention` (taskbar flash). Tray tooltip shows the total on desktop.
+
+**Android launcher badge**: no mature Tauri plugin; ShortcutBadger would require in-tree Kotlin. Documented gap — follow-up. Mobile may try WebView `navigator.setAppBadge` best-effort only.
 
 ## Module map (target)
 
@@ -113,7 +119,7 @@ Documented so agents do not treat today’s behavior as the end state:
 
 1. `builtin-task-reminders` (and sleep-cycle / env-health / temporal-summary-tick) use **in-process `Bun.cron`** — not PG `cron_jobs` / `cron_log`. On **any** failure (throw or `{ ok: false }`), Habitat writes Inbox to **both** user and agent subjects (no run history otherwise). **Sleep-until-next** for sparse task dues is still a follow-up (today still wakes every minute in-process; empty task scans stay quiet).
 2. Single `remind_at` field; scan still uses **remind-else-due** into Inbox (conflates Notification and Reminder). Delivery is **full-table** and routed by `task_item.world_id` to the owning subject (email auto-sync likewise routes by account world).
-3. Shell attention is three independent watchers, not one hub.
+3. Shell attention is multiple independent watchers (`Pomodoro` / `ChatUnread` / `NotificationReminder` / `AppAttention`), not one hub. Nav badges and desktop app-icon badge are shipped; Android launcher badge is still a gap.
 4. No multi-reminder model (7d / 3d / 1d) yet.
 5. Local interrupt (WS / OS / bubble) still fires only for **user** Inbox rows; agent Inbox is inject / list only.
 

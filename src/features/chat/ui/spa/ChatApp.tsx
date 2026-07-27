@@ -41,9 +41,9 @@ import {
   runConversationCommand,
   subscribeConversationUpdates,
   subscribeConversationInbox,
-  markConversationRead,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import { useChatUnreadStore } from "@freeanima/features/chat/ui/spa/stores/chat-unread.ts";
+import { useViewportConversationRead } from "@freeanima/features/chat/ui/spa/hooks/use-viewport-conversation-read.ts";
 import { runBootstrapConversation } from "@freeanima/features/chat/ui/spa/lib/bootstrap-conversation.ts";
 import { ListDetailLayout, useDrawerNav, useCompactLayout } from "@freeanima/ui-kit/layout";
 import { omitUndefined } from "@freeanima/host/core/util";
@@ -237,6 +237,7 @@ export function ChatApp() {
   const sendingRef = useRef(false);
   const msgAreaRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
+  const readSentinelRef = useViewportConversationRead(currentId, display.length, msgAreaRef);
   const msgInputRef = useRef<HTMLTextAreaElement>(null);
   const [inputText, setInputText] = useState(() =>
     loadInputDraft(readConversationFromUrl() ?? null),
@@ -910,7 +911,7 @@ export function ChatApp() {
       label={conversationLabel(s)}
       active={s.id === currentId}
       faded={faded}
-      unread={s.unread === true && s.id !== currentId}
+      unread={s.unread === true}
       useActionSheet={useActionSheet}
       contextMenuEnabled={contextMenuEnabled}
       contextMenuItems={conversationMenuItemsFor(s.id)}
@@ -1010,13 +1011,7 @@ export function ChatApp() {
           streamingConversationId: null,
           streamText: "",
         });
-        if (useConversationsStore.getState().currentId === conversationId) {
-          void markConversationRead(conversationId)
-            .then(() => useChatUnreadStore.getState().refreshCount())
-            .catch(() => undefined);
-        } else {
-          void useChatUnreadStore.getState().refreshCount();
-        }
+        void useChatUnreadStore.getState().refreshCount();
       },
       onError: (conversationId: string, msg: string) => {
         for (const entry of Object.values(useOutboxStore.getState().entries)) {
@@ -1859,6 +1854,9 @@ export function ChatApp() {
                     </div>
                   </div>
                 )
+              ) : null}
+              {currentId ? (
+                <div ref={readSentinelRef} className="h-px w-full shrink-0" aria-hidden />
               ) : null}
             </div>
 

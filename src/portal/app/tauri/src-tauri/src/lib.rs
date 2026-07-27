@@ -511,6 +511,60 @@ fn show_native_alert(app: AppHandle, payload: NativeAlertPayload) -> Result<(), 
   Ok(())
 }
 
+/// 应用图标未读合计；桌面 Dock/任务栏。Android 无 launcher badge（follow-up）。
+#[cfg(desktop)]
+#[tauri::command]
+fn set_app_badge_count(app: AppHandle, count: u32) -> Result<(), String> {
+  let window = app
+    .get_webview_window("main")
+    .ok_or_else(|| "main window missing".to_string())?;
+  let n = i64::from(count);
+  // macOS / Linux / iOS：数字角标；Windows 忽略此调用（走 overlay）
+  let _ = window.set_badge_count(if count > 0 { Some(n) } else { None });
+  #[cfg(target_os = "windows")]
+  {
+    if count > 0 {
+      if let Some(icon) = app.default_window_icon().cloned() {
+        let _ = window.set_overlay_icon(Some(icon));
+      }
+    } else {
+      let _ = window.set_overlay_icon(None);
+    }
+  }
+  if let Some(tray) = app.tray_by_id("main") {
+    let tip = if count > 0 {
+      format!("{} · {} 未读", product_display_name(), count)
+    } else {
+      product_display_name().to_string()
+    };
+    let _ = tray.set_tooltip(Some(&tip));
+  }
+  Ok(())
+}
+
+#[cfg(desktop)]
+#[tauri::command]
+fn request_app_attention(app: AppHandle) -> Result<(), String> {
+  let window = app
+    .get_webview_window("main")
+    .ok_or_else(|| "main window missing".to_string())?;
+  let focused = window.is_focused().unwrap_or(true);
+  if focused {
+    return Ok(());
+  }
+  let _ = window.request_user_attention(Some(tauri::UserAttentionType::Informational));
+  Ok(())
+}
+
+#[cfg(desktop)]
+#[tauri::command]
+fn clear_app_attention(app: AppHandle) -> Result<(), String> {
+  if let Some(window) = app.get_webview_window("main") {
+    let _ = window.request_user_attention(None);
+  }
+  Ok(())
+}
+
 #[tauri::command]
 fn instance_load(app: AppHandle, app_id: String) -> Result<Option<String>, String> {
   let path = instance_json_path(&app, &app_id)?;
@@ -651,7 +705,7 @@ fn build_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     .default_window_icon()
     .cloned()
     .ok_or("缺少默认窗口图标，无法创建托盘")?;
-  let _tray = TrayIconBuilder::new()
+  let _tray = TrayIconBuilder::with_id("main")
     .icon(icon)
     .menu(&menu)
     .tooltip(product_display_name())
@@ -736,6 +790,9 @@ pub fn run() {
         report_remote_tools_status,
         get_remote_tools_status,
         show_native_alert,
+        set_app_badge_count,
+        request_app_attention,
+        clear_app_attention,
         instance_load,
         instance_save,
         probe_habitat_health,
@@ -762,6 +819,9 @@ pub fn run() {
               api.prevent_close();
               let _ = window.hide();
             }
+          }
+          if let tauri::WindowEvent::Focused(true) = event {
+            let _ = window.request_user_attention(None);
           }
         }
         // Windows：透明无边框窗失焦时 DWM 可能画出错误边框/标题条；1px 抖动强制重绘（迁自 Electron）
