@@ -1,6 +1,6 @@
 import { formatCstIso, omitUndefined } from "@freeanima/host/core/util";
 
-import { getResolvedWorldContext } from "@freeanima/host/core/config";
+import { resolveSubjectWorldId, type SubjectKind } from "@freeanima/host/core/config";
 import {
   deriveThreadKey,
   deleteEmailMessageRow,
@@ -19,6 +19,10 @@ import nodemailer from "nodemailer";
 
 export type SendEmailInput = {
   account_id?: number;
+  /** 缺 account_id 时必填（或提供 world_id） */
+  subject_kind?: SubjectKind;
+  /** 缺 account_id 时可选显式 world；优先于 subject_kind */
+  world_id?: number;
   to: string;
   subject: string;
   body: string;
@@ -28,11 +32,32 @@ export type SendEmailInput = {
 
 export type SaveDraftInput = {
   account_id?: number;
+  /** 缺 account_id 时必填（或提供 world_id） */
+  subject_kind?: SubjectKind;
+  /** 缺 account_id 时可选显式 world；优先于 subject_kind */
+  world_id?: number;
   to?: string;
   subject: string;
   body: string;
   message_id?: number;
 };
+
+async function resolveWorldForSend(input: {
+  account_id?: number;
+  subject_kind?: SubjectKind;
+  world_id?: number;
+}): Promise<number> {
+  if (input.account_id != null) {
+    return worldIdForAccount(input.account_id);
+  }
+  if (input.world_id != null && Number.isFinite(input.world_id) && input.world_id > 0) {
+    return Math.floor(input.world_id);
+  }
+  if (input.subject_kind === "user" || input.subject_kind === "agent") {
+    return resolveSubjectWorldId(input.subject_kind);
+  }
+  throw new Error("subject_kind is required (user|agent) when account_id omitted");
+}
 
 function resolveSentMailbox(account: NonNullable<Awaited<ReturnType<typeof getEmailAccountRow>>>) {
   return account.sent_mailbox ?? "Sent";
@@ -126,10 +151,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{
   account_id: number;
   message_entity_id: number;
 }> {
-  const worldId =
-    input.account_id != null
-      ? await worldIdForAccount(input.account_id)
-      : getResolvedWorldContext().agent_world_id;
+  const worldId = await resolveWorldForSend(input);
   const account = await resolveEmailAccountRow(worldId, input.account_id);
   const pass = await resolveEmailAccountPassword(account);
 
@@ -217,10 +239,7 @@ export async function saveDraft(input: SaveDraftInput): Promise<{
   message_entity_id: number;
   imap_uid: number | null;
 }> {
-  const worldId =
-    input.account_id != null
-      ? await worldIdForAccount(input.account_id)
-      : getResolvedWorldContext().agent_world_id;
+  const worldId = await resolveWorldForSend(input);
   const account = await resolveEmailAccountRow(worldId, input.account_id);
   const draftsMailbox = resolveDraftsMailbox(account);
   const sentAt = formatCstIso();

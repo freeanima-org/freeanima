@@ -368,18 +368,22 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           },
           handler: async (args) => {
             const accountId = parseAccountId(args.account_id);
-            if (accountId != null) {
-              const worldId = await resolveEmailToolWorld({
-                args,
-                accountId,
-                access: "write",
-              });
-              if (typeof worldId === "string") return worldId;
-            }
+            const worldId = await resolveEmailToolWorld({
+              args,
+              ...(accountId != null ? { accountId } : {}),
+              access: "write",
+            });
+            if (typeof worldId === "string") return worldId;
+            const subjectKind =
+              args.subject_kind === "user" || args.subject_kind === "agent"
+                ? args.subject_kind
+                : undefined;
             try {
               const result = await io.sendEmail(
                 omitUndefined({
                   account_id: accountId,
+                  subject_kind: subjectKind,
+                  world_id: accountId == null ? worldId : undefined,
                   to: String(args.to ?? ""),
                   subject: String(args.subject ?? ""),
                   body: String(args.body ?? ""),
@@ -409,12 +413,25 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
             required: ["subject_kind", "subject", "body"],
           },
           handler: async (args) => {
+            const accountId = parseAccountId(args.account_id);
+            const worldId = await resolveEmailToolWorld({
+              args,
+              ...(accountId != null ? { accountId } : {}),
+              access: "write",
+            });
+            if (typeof worldId === "string") return worldId;
+            const subjectKind =
+              args.subject_kind === "user" || args.subject_kind === "agent"
+                ? args.subject_kind
+                : undefined;
             try {
               const { saveDraft } = await import("@freeanima/host/capabilities/connectors/email");
               return toolResult(
                 await saveDraft(
                   omitUndefined({
-                    account_id: parseAccountId(args.account_id),
+                    account_id: accountId,
+                    subject_kind: subjectKind,
+                    world_id: accountId == null ? worldId : undefined,
                     message_id: parseAccountId(args.message_id),
                     to: args.to != null ? String(args.to) : undefined,
                     subject: String(args.subject ?? ""),
