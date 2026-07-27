@@ -29,11 +29,11 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 
 ## 浏览器扩展（浏览器形态入口）
 
-- 入口：`src/portal/extension`（WXT MV3；`runtime/` + `features/vault/`）
+- 入口：`src/portal/extension`（WXT MV3；`runtime/` + `features/vault/`；工具栏图标在 `public/icon-*.png`）
 - 构建：`just pack browser-extension` → `dist/browser-extension/chrome-mv3`
 - 开发：`just dev browser-extension`（或 `bunx wxt`）
-- 连接：扩展 **直连 Habitat**（Bearer `fa_at_…`），HTTP REST only；主密码仅扩展内存会话（默认 15 分钟）
-- 能力：按 URL 匹配填充、弹窗、保存提示、密码生成、右键菜单、快捷键、卡片/身份填充
+- 连接：扩展 **直连 Habitat**（Bearer `fa_at_…`），HTTP REST only；解锁态保存在扩展进程内，并经 `chrome.storage.session` 跨 service worker 回收恢复（**最多 8 小时**；**浏览器关闭后清除**，需重输主密码）
+- 能力：按 URL 匹配填充、弹窗列表、**新建/编辑/删除**（多 URI）、保存提示、密码生成、右键菜单、快捷键、卡片/身份填充
 
 加载未打包扩展：Chrome → 扩展程序 → 开发者模式 → 加载已解压的扩展程序 → 选择 `dist/browser-extension/chrome-mv3`。
 

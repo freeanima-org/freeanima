@@ -1,17 +1,36 @@
-import { sendBg, type ExtVaultListItem } from "../../runtime/messages.ts";
+import {
+  sendBg,
+  type ExtVaultEditorItem,
+  type ExtVaultListItem,
+  type VaultItemType,
+  type VaultUriMatch,
+} from "../../runtime/messages.ts";
 import { loadSettings, saveSettings } from "../../runtime/settings.ts";
 
 type TabId = "vault" | "generator" | "options";
+type Screen = { kind: "main" } | { kind: "editor"; itemId: number | null };
+
+const URI_MATCHES: Array<{ value: VaultUriMatch; label: string }> = [
+  { value: "domain", label: "域名" },
+  { value: "host", label: "主机" },
+  { value: "starts_with", label: "前缀" },
+  { value: "exact", label: "精确" },
+  { value: "regex", label: "正则" },
+  { value: "never", label: "从不" },
+];
 
 const rootEl = document.getElementById("root");
 if (!rootEl) throw new Error("missing #root");
 
 let activeTab: TabId = "vault";
+let screen: Screen = { kind: "main" };
 let allItems: ExtVaultListItem[] = [];
 let searchQuery = "";
 let typeFilter = "all";
 let openMenuId: number | null = null;
 let listError = "";
+let editorError = "";
+let editorDraft: ExtVaultEditorItem | null = null;
 let genPassword = "";
 let genLength = 16;
 let genUpper = true;
@@ -73,16 +92,22 @@ async function copyField(id: number, field: "username" | "password" | "totp"): P
   void renderShell();
 }
 
-async function refreshVaultList(): Promise<void> {
+async function refreshVaultList(): Promise<"ok" | "vault_locked" | "error"> {
   const tabUrl = await activeTabUrl();
   const listRes = await sendBg({ type: "list_for_tab", tab_url: tabUrl });
   if (!listRes.ok) {
+    if (listRes.error === "vault_locked") {
+      listError = "";
+      allItems = [];
+      return "vault_locked";
+    }
     listError = listRes.error;
     allItems = [];
-    return;
+    return "error";
   }
   listError = "";
   allItems = "items" in listRes ? listRes.items : [];
+  return "ok";
 }
 
 async function regeneratePassword(): Promise<void> {
@@ -95,6 +120,280 @@ async function regeneratePassword(): Promise<void> {
     symbols: genSymbols,
   });
   if (res.ok && "password" in res) genPassword = res.password;
+}
+
+function emptyEditorDraft(tabUrl: string): ExtVaultEditorItem {
+  const uri = tabUrl.startsWith("http") ? tabUrl : "";
+  let title = "";
+  if (uri) {
+    try {
+      title = new URL(uri).hostname;
+    } catch {
+      title = "";
+    }
+  }
+  return {
+    title,
+    item_type: "login",
+    username: "",
+    url: uri,
+    uris: uri ? [{ uri, match: "domain" }] : [{ uri: "", match: "domain" }],
+    tags: [],
+    content: "",
+    password: "",
+    notes: "",
+    totp: "",
+  };
+}
+
+function matchSelect(selected: VaultUriMatch): string {
+  return URI_MATCHES.map(
+    (m) =>
+      `<option value="${m.value}" ${selected === m.value ? "selected" : ""}>${m.label}</option>`,
+  ).join("");
+}
+
+function renderUriRows(uris: ExtVaultEditorItem["uris"]): string {
+  const rows = uris.length > 0 ? uris : [{ uri: "", match: "domain" as const }];
+  return rows
+    .map(
+      (u, i) => `
+      <div class="uri-row" data-uri-row="${i}">
+        <input type="url" class="uri-input" data-uri="${i}" value="${escapeHtml(u.uri)}" placeholder="https://…" />
+        <select data-uri-match="${i}" aria-label="匹配方式">${matchSelect(u.match)}</select>
+        <button type="button" class="icon-btn" data-uri-remove="${i}" title="删除">×</button>
+      </div>`,
+    )
+    .join("");
+}
+
+function renderEditorBody(draft: ExtVaultEditorItem): string {
+  const isNew = draft.id == null;
+  const type = draft.item_type;
+  return `
+    <div class="header">
+      <div class="header-actions">
+        <button type="button" class="icon-btn" id="editor-back" title="返回">←</button>
+      </div>
+      <h1>${isNew ? "新建条目" : "编辑条目"}</h1>
+      <div class="header-actions">
+        ${!isNew ? `<button type="button" class="icon-btn danger-text" id="editor-delete" title="删除">🗑</button>` : `<span style="width:32px"></span>`}
+      </div>
+    </div>
+    <div class="main">
+      <div class="main-scroll editor-form">
+        <div class="field">
+          <label for="ed-type">类型</label>
+          <select id="ed-type">
+            <option value="login" ${type === "login" ? "selected" : ""}>登录</option>
+            <option value="secure_note" ${type === "secure_note" ? "selected" : ""}>安全笔记</option>
+            <option value="card" ${type === "card" ? "selected" : ""}>卡片</option>
+            <option value="identity" ${type === "identity" ? "selected" : ""}>身份</option>
+            <option value="custom" ${type === "custom" ? "selected" : ""}>自定义</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="ed-title">标题</label>
+          <input id="ed-title" type="text" value="${escapeHtml(draft.title)}" />
+        </div>
+        ${
+          type === "login" || type === "custom"
+            ? `<div class="field">
+                <label for="ed-user">用户名</label>
+                <input id="ed-user" type="text" autocomplete="username" value="${escapeHtml(draft.username)}" />
+              </div>
+              <div class="field">
+                <label for="ed-pass">密码</label>
+                <div class="input-row">
+                  <input id="ed-pass" type="password" autocomplete="new-password" value="${escapeHtml(draft.password)}" />
+                  <button type="button" class="btn secondary" id="ed-gen-pass">生成</button>
+                </div>
+              </div>
+              <div class="field">
+                <label for="ed-totp">TOTP 密钥</label>
+                <input id="ed-totp" type="text" value="${escapeHtml(draft.totp)}" placeholder="可选" />
+              </div>`
+            : ""
+        }
+        <div class="field">
+          <label>URI（多平台可添加多条）</label>
+          <div id="uri-list">${renderUriRows(draft.uris)}</div>
+          <button type="button" class="btn secondary" id="ed-add-uri" style="margin-top:6px">添加 URI</button>
+        </div>
+        <div class="field">
+          <label for="ed-notes">${type === "secure_note" ? "笔记" : "备注"}</label>
+          <textarea id="ed-notes" rows="3">${escapeHtml(draft.notes)}</textarea>
+        </div>
+        <div class="field">
+          <label for="ed-tags">标签（逗号分隔）</label>
+          <input id="ed-tags" type="text" value="${escapeHtml(draft.tags.join(", "))}" />
+        </div>
+        ${editorError ? `<div class="error">${escapeHtml(editorError)}</div>` : ""}
+        <div class="row">
+          <button type="button" class="btn" id="editor-save">保存</button>
+          <button type="button" class="btn secondary" id="editor-cancel">取消</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function readEditorForm(base: ExtVaultEditorItem): ExtVaultEditorItem {
+  const item_type = ((document.getElementById("ed-type") as HTMLSelectElement | null)?.value ??
+    base.item_type) as VaultItemType;
+  const title = (document.getElementById("ed-title") as HTMLInputElement | null)?.value ?? "";
+  const username = (document.getElementById("ed-user") as HTMLInputElement | null)?.value ?? "";
+  const password = (document.getElementById("ed-pass") as HTMLInputElement | null)?.value ?? "";
+  const totp = (document.getElementById("ed-totp") as HTMLInputElement | null)?.value ?? "";
+  const notes = (document.getElementById("ed-notes") as HTMLTextAreaElement | null)?.value ?? "";
+  const tagsRaw = (document.getElementById("ed-tags") as HTMLInputElement | null)?.value ?? "";
+  const uriInputs = [...document.querySelectorAll<HTMLInputElement>("[data-uri]")];
+  const uris = uriInputs.map((input) => {
+    const i = Number(input.getAttribute("data-uri"));
+    const matchEl = document.querySelector<HTMLSelectElement>(`[data-uri-match="${i}"]`);
+    return {
+      uri: input.value.trim(),
+      match: (matchEl?.value ?? "domain") as VaultUriMatch,
+    };
+  });
+  return {
+    ...base,
+    item_type,
+    title,
+    username,
+    password,
+    totp,
+    notes,
+    tags: tagsRaw
+      .split(/[,，]/)
+      .map((t) => t.trim())
+      .filter(Boolean),
+    uris,
+    url: uris.find((u) => u.uri)?.uri ?? "",
+  };
+}
+
+async function openEditor(itemId: number | null): Promise<void> {
+  editorError = "";
+  if (itemId == null) {
+    editorDraft = emptyEditorDraft(await activeTabUrl());
+  } else {
+    const res = await sendBg({ type: "get_item", item_id: itemId });
+    if (!res.ok || !("editor" in res)) {
+      editorError = res.ok ? "加载失败" : res.error;
+      editorDraft = emptyEditorDraft("");
+      if (editorDraft) editorDraft.id = itemId;
+    } else {
+      editorDraft = res.editor;
+    }
+  }
+  screen = { kind: "editor", itemId };
+  await renderEditor();
+}
+
+async function closeEditor(): Promise<void> {
+  screen = { kind: "main" };
+  editorDraft = null;
+  editorError = "";
+  activeTab = "vault";
+  await renderShell(true);
+}
+
+async function renderEditor(): Promise<void> {
+  if (!editorDraft) {
+    await closeEditor();
+    return;
+  }
+  rootEl.innerHTML = `<div class="shell">${renderEditorBody(editorDraft)}</div>`;
+  bindEditorEvents();
+}
+
+function bindEditorEvents(): void {
+  if (!editorDraft) return;
+  document.getElementById("editor-back")?.addEventListener("click", () => {
+    void closeEditor();
+  });
+  document.getElementById("editor-cancel")?.addEventListener("click", () => {
+    void closeEditor();
+  });
+  document.getElementById("ed-type")?.addEventListener("change", () => {
+    if (!editorDraft) return;
+    editorDraft = readEditorForm(editorDraft);
+    void renderEditor();
+  });
+  document.getElementById("ed-add-uri")?.addEventListener("click", () => {
+    if (!editorDraft) return;
+    editorDraft = readEditorForm(editorDraft);
+    editorDraft.uris = [...editorDraft.uris, { uri: "", match: "domain" }];
+    void renderEditor();
+  });
+  for (const btn of rootEl.querySelectorAll<HTMLButtonElement>("[data-uri-remove]")) {
+    btn.addEventListener("click", () => {
+      if (!editorDraft) return;
+      editorDraft = readEditorForm(editorDraft);
+      const i = Number(btn.getAttribute("data-uri-remove"));
+      editorDraft.uris = editorDraft.uris.filter((_, idx) => idx !== i);
+      if (editorDraft.uris.length === 0) {
+        editorDraft.uris = [{ uri: "", match: "domain" }];
+      }
+      void renderEditor();
+    });
+  }
+  document.getElementById("ed-gen-pass")?.addEventListener("click", () => {
+    void (async () => {
+      const res = await sendBg({
+        type: "generate_password",
+        length: 20,
+        upper: true,
+        lower: true,
+        digits: true,
+        symbols: true,
+      });
+      if (!res.ok || !("password" in res) || !editorDraft) return;
+      editorDraft = readEditorForm(editorDraft);
+      editorDraft.password = res.password;
+      void renderEditor();
+    })();
+  });
+  document.getElementById("editor-save")?.addEventListener("click", () => {
+    void (async () => {
+      if (!editorDraft) return;
+      const draft = readEditorForm(editorDraft);
+      editorDraft = draft;
+      editorError = "";
+      const res = await sendBg({
+        type: "save_item",
+        ...(draft.id != null ? { id: draft.id } : {}),
+        title: draft.title,
+        item_type: draft.item_type,
+        username: draft.username,
+        url: draft.url,
+        uris: draft.uris.filter((u) => u.uri),
+        tags: draft.tags,
+        password: draft.password,
+        notes: draft.notes,
+        totp: draft.totp,
+      });
+      if (!res.ok) {
+        editorError = res.error;
+        void renderEditor();
+        return;
+      }
+      await closeEditor();
+    })();
+  });
+  document.getElementById("editor-delete")?.addEventListener("click", () => {
+    void (async () => {
+      if (!editorDraft?.id) return;
+      if (!confirm("确定删除该条目？此操作不可恢复。")) return;
+      const res = await sendBg({ type: "delete_item", item_id: editorDraft.id });
+      if (!res.ok) {
+        editorError = res.error;
+        void renderEditor();
+        return;
+      }
+      await closeEditor();
+    })();
+  });
 }
 
 function renderGate(html: string): void {
@@ -146,6 +445,7 @@ function renderVaultBody(): string {
         ${
           openMenuId === item.id
             ? `<div class="menu">
+                <button type="button" data-edit="${item.id}">编辑</button>
                 <button type="button" data-copy-user="${item.id}">复制用户名</button>
                 <button type="button" data-copy-pass="${item.id}">复制密码</button>
                 <button type="button" data-copy-totp="${item.id}">复制验证码</button>
@@ -160,6 +460,7 @@ function renderVaultBody(): string {
     <div class="header">
       <h1>密码库</h1>
       <div class="header-actions">
+        <button type="button" class="icon-btn" id="new-item" title="新建">＋</button>
         <button type="button" class="icon-btn" id="lock" title="锁定">🔒</button>
       </div>
     </div>
@@ -241,7 +542,7 @@ async function renderOptionsBody(): Promise<string> {
     </div>
     <div class="main">
       <div class="main-scroll">
-        <p class="muted">直连 Habitat；主密码仅保存在扩展内存（约 15 分钟）。</p>
+        <p class="muted">直连 Habitat。解锁态最多保留 8 小时，或浏览器关闭后需重新输入主密码。</p>
         <div class="field">
           <label for="opt-url">Habitat URL</label>
           <input id="opt-url" type="url" value="${escapeHtml(settings.habitat_url)}" placeholder="http://127.0.0.1:2658" />
@@ -265,7 +566,16 @@ function bindTabs(): void {
     btn.addEventListener("click", () => {
       activeTab = btn.dataset.tab as TabId;
       openMenuId = null;
-      void renderShell();
+      void (async () => {
+        if (activeTab === "vault") {
+          const status = await sendBg({ type: "get_status" });
+          if (status.ok && "unlocked" in status && !status.unlocked) {
+            await render();
+            return;
+          }
+        }
+        await renderShell();
+      })();
     });
   }
 }
@@ -273,6 +583,9 @@ function bindTabs(): void {
 function bindVaultEvents(): void {
   document.getElementById("lock")?.addEventListener("click", () => {
     void sendBg({ type: "lock" }).then(() => render());
+  });
+  document.getElementById("new-item")?.addEventListener("click", () => {
+    void openEditor(null);
   });
   const search = document.getElementById("search") as HTMLInputElement | null;
   search?.addEventListener("input", () => {
@@ -303,6 +616,12 @@ function bindVaultEvents(): void {
   for (const el of rootEl.querySelectorAll<HTMLElement>("[data-fill]")) {
     el.addEventListener("click", () => {
       void fillItem(Number(el.getAttribute("data-fill")));
+    });
+  }
+  for (const el of rootEl.querySelectorAll<HTMLElement>("[data-edit]")) {
+    el.addEventListener("click", (e) => {
+      e.stopPropagation();
+      void openEditor(Number(el.getAttribute("data-edit")));
     });
   }
   for (const el of rootEl.querySelectorAll<HTMLElement>("[data-copy-pass]")) {
@@ -420,7 +739,11 @@ function bindOptionsEvents(): void {
 
 async function renderShell(reloadList = true): Promise<void> {
   if (activeTab === "vault" && reloadList) {
-    await refreshVaultList();
+    const listState = await refreshVaultList();
+    if (listState === "vault_locked") {
+      await render();
+      return;
+    }
   }
   if (activeTab === "generator" && !genPassword) {
     await regeneratePassword();
@@ -465,9 +788,11 @@ async function render(): Promise<void> {
   }
 
   if (!status.unlocked) {
+    screen = { kind: "main" };
+    editorDraft = null;
     renderGate(`
       <h1>解锁保险库</h1>
-      <p class="muted">输入用户库主密码（仅保存在扩展内存）</p>
+      <p class="muted">输入用户库主密码。解锁后最多保留 8 小时；关闭浏览器后需重新输入。</p>
       <div class="field">
         <label for="mp">主密码</label>
         <input id="mp" type="password" autocomplete="current-password" />
@@ -482,7 +807,7 @@ async function render(): Promise<void> {
       activeTab = "options";
       void renderShell(false);
     });
-    document.getElementById("unlock")?.addEventListener("click", () => {
+    const doUnlock = (): void => {
       void (async () => {
         const mp = (document.getElementById("mp") as HTMLInputElement | null)?.value ?? "";
         const res = await sendBg({ type: "unlock", master_password: mp });
@@ -494,7 +819,24 @@ async function render(): Promise<void> {
         activeTab = "vault";
         await renderShell(true);
       })();
+    };
+    document.getElementById("unlock")?.addEventListener("click", doUnlock);
+    document.getElementById("mp")?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        doUnlock();
+      }
     });
+    document.getElementById("mp")?.focus();
+    return;
+  }
+
+  if (screen.kind === "editor") {
+    if (!editorDraft) {
+      await openEditor(screen.itemId);
+      return;
+    }
+    await renderEditor();
     return;
   }
 

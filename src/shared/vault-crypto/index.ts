@@ -97,6 +97,7 @@ export async function deriveMasterKey(
   masterPassword: string,
   saltB64: string,
   iterations = PBKDF2_ITERATIONS,
+  opts?: { extractable?: boolean },
 ): Promise<CryptoKey> {
   const crypto = getCrypto();
   const baseKey = await crypto.subtle.importKey(
@@ -115,7 +116,7 @@ export async function deriveMasterKey(
     },
     baseKey,
     { name: "AES-GCM", length: 256 },
-    false,
+    opts?.extractable === true,
     ["encrypt", "decrypt", "wrapKey", "unwrapKey"],
   );
 }
