@@ -6,6 +6,7 @@ import type {
   AlertScheduleKey,
   AlertScheduleResult,
 } from "@freeanima/client/portal-sdk/alert/types.ts";
+import type { ShellNativeAlertPermission } from "@freeanima/client/portal-sdk/shell-api.ts";
 
 function shellNativeAlertAvailable(): boolean {
   const shell = window.portalShell;
@@ -15,6 +16,13 @@ function shellNativeAlertAvailable(): boolean {
 function shellScheduleAvailable(): boolean {
   const shell = window.portalShell;
   return Boolean(shell?.scheduleNativeAlert && shell.cancelNativeAlert);
+}
+
+function mapShellPermission(result: ShellNativeAlertPermission): AlertPermissionState {
+  if (result === "granted") return "granted";
+  if (result === "denied") return "denied";
+  if (result === "default") return "default";
+  return "unsupported";
 }
 
 function toNativePayload(payload: AlertPayload) {
@@ -40,6 +48,7 @@ export function createDesktopAlertBackend(): AlertBackend {
 
   const shell = window.portalShell;
   const requestPerm = shell?.requestNativeAlertPermission;
+  const readPerm = shell?.readNativeAlertPermission;
   const showAlert = shell?.showNativeAlert;
   if (!shell || !requestPerm || !showAlert) {
     return {
@@ -55,23 +64,26 @@ export function createDesktopAlertBackend(): AlertBackend {
   return {
     platform: "desktop",
     scheduleDurability: useNativeSchedule ? "process" : webFallback.scheduleDurability,
-    readPermission(): Promise<AlertPermissionState> {
-      if (shellNativeAlertAvailable()) {
-        return requestPerm().then((result) => {
-          if (result === "granted") return "granted";
-          if (result === "denied") return "denied";
-          return "unsupported";
-        });
+    async readPermission(): Promise<AlertPermissionState> {
+      if (readPerm) {
+        return mapShellPermission(await readPerm());
       }
+      // 旧壳无 read：不主动弹窗，回退 web 探测
       return webFallback.readPermission();
     },
     async requestPermission(): Promise<AlertPermissionState> {
-      const result = await requestPerm();
-      if (result === "granted") return "granted";
-      if (result === "denied") return "denied";
-      return "unsupported";
+      return mapShellPermission(await requestPerm());
     },
     async show(payload: AlertPayload): Promise<void> {
+      let perm = readPerm
+        ? mapShellPermission(await readPerm())
+        : await webFallback.readPermission();
+      if (perm === "default") {
+        perm = mapShellPermission(await requestPerm());
+      }
+      if (perm === "denied" || perm === "unsupported") {
+        return;
+      }
       await showAlert(toNativePayload(payload));
     },
     async schedule(payload: AlertPayload, at: Date): Promise<AlertScheduleResult> {

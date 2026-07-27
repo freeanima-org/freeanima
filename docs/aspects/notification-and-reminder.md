@@ -16,9 +16,35 @@ This is **not** a product module. Feature modules (task, chat, pomodoro, notific
 | **Reminder**                | “Ring once at this time” intent; a task may have **many** | On the domain entity (not an Inbox row) | Lightweight WS event → **only** local interrupt                            |
 | **Local interrupt (Alert)** | Channel: companion bubble or OS notification              | Not in PG; device-local                 | `deliverLocalReminder` (`portal-sdk`)                                      |
 
+### 中文词汇对照
+
+口语易混；对齐规范词：
+
+| 口语常说                       | 规范词                | 一句话                                    |
+| ------------------------------ | --------------------- | ----------------------------------------- |
+| 收件箱 / 站内通知              | **Notification**      | 可列表、可标已读；落 PG                   |
+| 到点提醒 / 闹钟意图            | **Reminder**          | 挂在实体上的「到点响」；**不是** Inbox 行 |
+| 手机弹窗 / 系统通知 / 伴侣气泡 | **Alert**（本机打断） | 只在本机；经 `deliverLocalReminder`       |
+
+口诀：**Notification = 收件箱；Reminder = 闹钟意图；Alert = 真响到设备上。**
+
+上游（番茄钟、Inbox 新建、聊天未读、未来任务 Reminder 事件）只**共用** Alert 通道，不各自发明 OS 弹窗。
+
 Companion speech bubble is the preferred **Alert** channel on desktop when the companion window is visible. Bubble click is **not** Inbox ack.
 
 Code namespaces today: Inbox = `notification*`; interrupt = `alert*` / `deliverLocalReminder`. Reminder (product) is the scheduled intent; do not conflate it with Inbox.
+
+### Device Alert（Android OS）
+
+Portal 壳在 Android 上弹出系统通知的约定（与 Reminder / Inbox 调度无关）：
+
+| 项      | 约定                                                                                                                                 |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 权限    | Runtime `POST_NOTIFICATIONS`；经 `ShellApi.readNativeAlertPermission` / `requestNativeAlertPermission`；**禁止** stub 为恒 `granted` |
+| Channel | `freeanima.reminders`：`Importance::High`（优先横幅 / heads-up）+ `Visibility::Public`（锁屏可见内容）+ vibration                    |
+| 展示    | `show_native_alert` 绑定上述 channel；上游一律走 `deliverLocalReminder` → `AlertBackend`                                             |
+
+iOS / 桌面不强制同一 channel API；桌面权限由 OS 会话模型处理（插件侧常为 Granted）。
 
 ## World ownership
 

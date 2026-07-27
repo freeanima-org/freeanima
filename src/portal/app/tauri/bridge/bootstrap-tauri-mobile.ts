@@ -9,7 +9,10 @@ import {
 } from "@freeanima/client/portal-sdk";
 import { loadTauriNativeBuildMetaFromAssets } from "@freeanima/client/portal-sdk/native-build-meta.read";
 import { NATIVE_BUILD_META_CHANGED_EVENT } from "@freeanima/client/portal-sdk/native-build-meta.resolve";
-import type { ShellNativeAlertPayload } from "@freeanima/client/portal-sdk/shell-api.ts";
+import type {
+  ShellNativeAlertPayload,
+  ShellNativeAlertPermission,
+} from "@freeanima/client/portal-sdk/shell-api.ts";
 import {
   applyHabitatConfigToShell,
   notifyShellConfigChanged,
@@ -86,7 +89,10 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
       window.location.hash = "#/settings";
     },
     showNativeAlert: (payload: ShellNativeAlertPayload) => invoke("show_native_alert", { payload }),
-    requestNativeAlertPermission: async () => "granted" as const,
+    readNativeAlertPermission: () =>
+      invoke<ShellNativeAlertPermission>("read_native_alert_permission"),
+    requestNativeAlertPermission: () =>
+      invoke<ShellNativeAlertPermission>("request_native_alert_permission"),
     // Android：无成熟 launcher badge；WebView Badging API 尽力而为
     setAppBadgeCount: async (count: number) => {
       const n = Math.max(0, Math.floor(count));

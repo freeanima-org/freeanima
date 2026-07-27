@@ -48,6 +48,9 @@
 | offline sync        | 离线同步       | Reconnect/visibility flush + module `refreshAll`（`OfflineSyncBootstrap`）                                    |
 | Portal data plane   | Portal 数据面  | Cross-cutting Portal↔Habitat data consistency aspect（`docs/aspects/portal-data-plane.md`）；亦称数据流切面   |
 | aspect（docs）      | 切面           | `docs/aspects/`：设计/功能横切面，≠ `docs/modules/` 具名产品能力                                              |
+| Notification        | 通知（收件箱） | Inbox 行；可列表/标已读；落 PG。三分法见 `docs/aspects/notification-and-reminder.md`                          |
+| Reminder            | 提醒（意图）   | 「到点响」挂在实体上；**不是** Inbox 行                                                                       |
+| Alert               | 本机打断       | 伴侣气泡或系统通知；只在本机；`deliverLocalReminder`                                                          |
 | flush               | flush          | Push outbox ops to Habitat；code identifier keep English                                                      |
 | refresh（page）     | 刷新           | User-driven re-fetch of current view；≠ sync                                                                  |
 | connectivity        | 连接状态       | Network / Habitat link UI（`ShellConnectivityBar`）；≠ outbox                                                 |

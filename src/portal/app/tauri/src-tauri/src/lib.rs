@@ -181,6 +181,58 @@ pub struct NativeAlertPayload {
   pub silent: Option<bool>,
 }
 
+/// Android 本机提醒 channel：High（优先横幅）+ Public（锁屏可见）。
+#[cfg(target_os = "android")]
+const NATIVE_ALERT_CHANNEL_ID: &str = "freeanima.reminders";
+
+fn map_native_alert_permission(
+  state: tauri::plugin::PermissionState,
+) -> &'static str {
+  use tauri::plugin::PermissionState;
+  match state {
+    PermissionState::Granted => "granted",
+    PermissionState::Denied => "denied",
+    PermissionState::Prompt | PermissionState::PromptWithRationale => "default",
+  }
+}
+
+#[cfg(target_os = "android")]
+fn ensure_native_alert_channel(app: &AppHandle) -> Result<(), String> {
+  use tauri_plugin_notification::{
+    Channel, Importance, NotificationExt, Visibility,
+  };
+  let channel = Channel::builder(NATIVE_ALERT_CHANNEL_ID, "提醒")
+    .description("本机瞬时提醒（番茄钟、收件箱、聊天等）")
+    .importance(Importance::High)
+    .visibility(Visibility::Public)
+    .vibration(true)
+    .build();
+  app
+    .notification()
+    .create_channel(channel)
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn read_native_alert_permission(app: AppHandle) -> Result<String, String> {
+  use tauri_plugin_notification::NotificationExt;
+  let state = app
+    .notification()
+    .permission_state()
+    .map_err(|e| e.to_string())?;
+  Ok(map_native_alert_permission(state).to_string())
+}
+
+#[tauri::command]
+fn request_native_alert_permission(app: AppHandle) -> Result<String, String> {
+  use tauri_plugin_notification::NotificationExt;
+  let state = app
+    .notification()
+    .request_permission()
+    .map_err(|e| e.to_string())?;
+  Ok(map_native_alert_permission(state).to_string())
+}
+
 struct ShellState {
   #[cfg(desktop)]
   companion_visible: Mutex<bool>,
@@ -502,9 +554,15 @@ fn get_remote_tools_status(state: State<'_, ShellState>) -> RemoteToolsStatus {
 #[tauri::command]
 fn show_native_alert(app: AppHandle, payload: NativeAlertPayload) -> Result<(), String> {
   use tauri_plugin_notification::NotificationExt;
+  #[cfg(target_os = "android")]
+  ensure_native_alert_channel(&app)?;
   let mut n = app.notification().builder().title(payload.title);
   if let Some(body) = payload.body {
     n = n.body(body);
+  }
+  #[cfg(target_os = "android")]
+  {
+    n = n.channel_id(NATIVE_ALERT_CHANNEL_ID);
   }
   n.show().map_err(|e| e.to_string())?;
   let _ = payload.silent;
@@ -790,6 +848,8 @@ pub fn run() {
         report_remote_tools_status,
         get_remote_tools_status,
         show_native_alert,
+        read_native_alert_permission,
+        request_native_alert_permission,
         set_app_badge_count,
         request_app_attention,
         clear_app_attention,
@@ -855,6 +915,8 @@ pub fn run() {
         set_pomodoro_widget_state,
         get_pomodoro_widget_state,
         show_native_alert,
+        read_native_alert_permission,
+        request_native_alert_permission,
         instance_load,
         instance_save,
         probe_habitat_health,

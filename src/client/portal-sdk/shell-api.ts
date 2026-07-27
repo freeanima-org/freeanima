@@ -40,7 +40,7 @@ export type ShellNativeAlertPayload = {
   requireInteraction?: boolean;
 };
 
-export type ShellNativeAlertPermission = "granted" | "denied" | "unsupported";
+export type ShellNativeAlertPermission = "granted" | "denied" | "default" | "unsupported";
 
 export type ShellNativeAlertScheduleResult = { id: string };
 
@@ -99,6 +99,8 @@ export type ShellApi = {
   listenServerError?: (handler: (message: string) => void) => () => void;
   /** 原生壳 OS 通知（Tauri desktop / mobile） */
   showNativeAlert?: (payload: ShellNativeAlertPayload) => Promise<void>;
+  /** 读取本机通知权限，不弹系统授权框 */
+  readNativeAlertPermission?: () => Promise<ShellNativeAlertPermission>;
   requestNativeAlertPermission?: () => Promise<ShellNativeAlertPermission>;
   /** 预登记本机提醒；与 cancelNativeAlert 成对 */
   scheduleNativeAlert?: (
