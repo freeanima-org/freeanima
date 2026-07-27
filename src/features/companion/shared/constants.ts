@@ -58,7 +58,7 @@ export type ClientCompanionConfig = {
   model_available: boolean;
   remote_tools_connected: boolean;
   fbx_import_available: boolean;
-  active_model_id: string;
+  active_object_file_id: number | null;
   models: ModelEntry[];
   motion_library: MotionLibraryEntry[];
   motion_slots: MotionSlotsConfig;

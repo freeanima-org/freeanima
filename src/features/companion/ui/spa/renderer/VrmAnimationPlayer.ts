@@ -96,18 +96,18 @@ export class VrmAnimationPlayer {
   private collectFiles(motionConfig: MotionBindConfig): Set<string> {
     const files = new Set<string>();
     for (const entry of motionConfig.library) {
-      files.add(entry.file);
+      files.add(`/motions/${entry.object_file_id}.vrma`);
     }
     for (const ids of Object.values(motionConfig.slots)) {
       for (const ref of ids) {
-        const entry = motionConfig.library.find((e) => e.id === ref);
-        if (entry) files.add(entry.file);
-        else if (ref.endsWith(".vrma")) files.add(ref);
+        files.add(`/motions/${ref}.vrma`);
       }
     }
     for (const slot of ["walk", "climb"] as const) {
       const resolved = resolveLocomotionMotion(slot, motionConfig.slots, motionConfig.library);
-      if (resolved?.file) files.add(resolved.file);
+      if (resolved?.file) {
+        files.add(resolved.file.startsWith("/") ? resolved.file : `/motions/${resolved.file}`);
+      }
     }
     return files;
   }
@@ -124,7 +124,8 @@ export class VrmAnimationPlayer {
     for (const file of files) {
       if (target.has(file)) continue;
       try {
-        const url = await resolveUrl(`${manifest.baseUrl}/${file}`);
+        const path = file.startsWith("/") ? file : `${manifest.baseUrl}/${file}`;
+        const url = await resolveUrl(path);
         const gltf = await loader.loadAsync(url);
         const animations = gltf.userData.vrmAnimations as VRMAnimation[] | undefined;
         const vrma = animations?.[0];

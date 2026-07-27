@@ -1,63 +1,55 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
-import { habitatRpcRestPrefix } from "@freeanima/shared/habitat-rpc";
 import type { CompanionClientConfigPayload } from "@freeanima/shared/rpc-contract/frames/companion";
+import {
+  companionModelCacheFileName,
+  companionMotionCacheFileName,
+  sortCompanionEntries,
+} from "@freeanima/host/core/config/schemas/companion.ts";
+import { getObjectFile } from "@freeanima/features/object-storage/domain";
 import { activeModelPath, habitatUrlFromEnv, loadCompanionConfig } from "./config.ts";
 import { fbxImportAvailable } from "./fbx-converter-kit.ts";
-import { isModelPathAvailable } from "./model-path.ts";
-import { scanModelsOnDisk } from "./model-registry.ts";
-import { syncLibraryFromDisk } from "./motion-library.ts";
-import { companionModelsDir, companionMotionsDir } from "./paths.ts";
 
 export async function buildClientCompanionConfig(): Promise<CompanionClientConfigPayload> {
-  await scanModelsOnDisk();
-  await syncLibraryFromDisk();
   const cfg = await loadCompanionConfig();
+  const models = sortCompanionEntries(cfg.models);
+  const motion_library = sortCompanionEntries(cfg.motion_library);
   const model_path = activeModelPath(cfg);
+  const activeId = cfg.active_object_file_id;
+  const model_available = activeId != null ? (await getObjectFile(activeId)) != null : false;
   return {
     ...cfg,
+    models,
+    motion_library,
     habitat_url: habitatUrlFromEnv(),
     model_path,
-    model_available: isModelPathAvailable(model_path),
+    model_available,
     fbx_import_available: fbxImportAvailable(),
   };
 }
 
-export function companionAssetUrl(
-  kind: "models" | "motions",
-  fileName: string,
-  habitatBase: string,
-): string {
-  const base = habitatBase.replace(/\/$/, "");
-  return `${base}${habitatRpcRestPrefix()}/companion/assets/${kind}/${encodeURIComponent(fileName)}`;
-}
+export type CompanionSyncAsset = {
+  kind: "models" | "motions";
+  file_name: string;
+  object_file_id: number;
+};
 
-export function listAssetDownloadUrls(
-  _habitatBase: string,
+/** sync.pull：按 object_file_id 拉字节；file_name 仅本机缓存名 */
+export function listSyncAssets(
   cfg: Awaited<ReturnType<typeof loadCompanionConfig>>,
-): string[] {
-  const urls: string[] = [];
+): CompanionSyncAsset[] {
+  const assets: CompanionSyncAsset[] = [];
   for (const model of cfg.models) {
-    const fileName = model.path.replace(/^\/models\//, "");
-    if (fileName)
-      urls.push(
-        `${habitatRpcRestPrefix()}/companion/assets/models/${encodeURIComponent(fileName)}`,
-      );
+    assets.push({
+      kind: "models",
+      file_name: companionModelCacheFileName(model.object_file_id),
+      object_file_id: model.object_file_id,
+    });
   }
   for (const motion of cfg.motion_library) {
-    if (motion.file) {
-      urls.push(
-        `${habitatRpcRestPrefix()}/companion/assets/motions/${encodeURIComponent(motion.file)}`,
-      );
-    }
+    assets.push({
+      kind: "motions",
+      file_name: companionMotionCacheFileName(motion.object_file_id),
+      object_file_id: motion.object_file_id,
+    });
   }
-  return urls;
-}
-
-export function resolveAssetFilePath(kind: "models" | "motions", fileName: string): string | null {
-  const safe = fileName.replace(/[/\\]/g, "");
-  if (!safe || safe !== fileName) return null;
-  const dir = kind === "models" ? companionModelsDir() : companionMotionsDir();
-  const path = join(dir, safe);
-  return existsSync(path) ? path : null;
+  return assets;
 }

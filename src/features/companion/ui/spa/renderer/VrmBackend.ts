@@ -15,7 +15,7 @@ import {
 import { resolveFacingOffsetY } from "./vrm-facing.ts";
 import { VrmBodyPicker } from "./VrmBodyPicker.ts";
 import { VrmAnimationPlayer, type MotionBindConfig } from "./VrmAnimationPlayer.ts";
-import { loadCompanionAssetBlobUrl } from "@freeanima/features/companion/ui/spa/lib/model-cache.ts";
+import { loadCachedModelSource } from "@freeanima/features/companion/ui/spa/lib/model-cache.ts";
 import type { MotionSlotId } from "@freeanima/features/companion/shared/companion-schema.ts";
 import {
   CHARACTER_FOOTPRINT_HEIGHT,
@@ -92,6 +92,8 @@ export class VrmBackend implements CharacterBackend {
   private hitScreen = { left: 0, right: 0, top: 0, bottom: 0 };
   private hitBoundsAtMs = 0;
   private bubbleTracking = false;
+  /** VRMA blob: URL 回收（Cache API + createObjectURL） */
+  private motionUrlRevokes: Array<() => void> = [];
 
   constructor(canvas: HTMLCanvasElement) {
     this.scene = new THREE.Scene();
@@ -170,6 +172,7 @@ export class VrmBackend implements CharacterBackend {
 
   async reloadAnimations(motionConfig: MotionBindConfig): Promise<void> {
     if (!this.vrm) return;
+    this.revokeMotionUrls();
     await this.animationPlayer.reload(
       this.vrm,
       (path) => this.resolveMotionUrl(path),
@@ -190,8 +193,14 @@ export class VrmBackend implements CharacterBackend {
   }
 
   private async resolveMotionUrl(path: string): Promise<string> {
-    const blob = await loadCompanionAssetBlobUrl(path);
-    return blob.url;
+    const cached = await loadCachedModelSource(path);
+    this.motionUrlRevokes.push(cached.revoke);
+    return cached.url;
+  }
+
+  private revokeMotionUrls(): void {
+    for (const revoke of this.motionUrlRevokes) revoke();
+    this.motionUrlRevokes = [];
   }
 
   private useVrmaLocomotion(kind: LocomotionKind): boolean {
@@ -494,6 +503,7 @@ export class VrmBackend implements CharacterBackend {
 
   private clearCharacterFromScene(): void {
     this.animationPlayer.dispose();
+    this.revokeMotionUrls();
     if (this.vrm) {
       this.scalePivot.remove(this.vrm.scene);
       this.scene.remove(this.vrm.scene);

@@ -70,9 +70,9 @@ export type SettingsBinding<T = unknown> = {
 /** companion 非配置持久化操作（模型/动作经 Habitat RPC） */
 export type CompanionSettingsApi = {
   uploadModel(file: File): Promise<void>;
-  setActiveModel(id: string): Promise<void>;
-  renameModel(id: string, name: string): Promise<void>;
-  deleteModel(id: string): Promise<void>;
+  setActiveModel(objectFileId: number): Promise<void>;
+  renameModel(objectFileId: number, name: string): Promise<void>;
+  deleteModel(objectFileId: number): Promise<void>;
   refreshMotionLibrary(): Promise<void>;
 };
 

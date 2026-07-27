@@ -35,7 +35,7 @@ type CompanionState = {
   characterReady: boolean;
   modelLoading: boolean;
   configRevision: number;
-  activeModelId: string;
+  activeObjectFileId: number | null;
   models: ModelEntry[];
   motionLibrary: MotionLibraryEntry[];
   motionSlots: MotionSlotsConfig;
@@ -69,7 +69,7 @@ function visualConfigChanged(cfg: CompanionConfig, prev?: CompanionState): boole
   if (!prev) return true;
   const modelPath = cfg.model_available ? cfg.model_path : "";
   if (prev.modelPath !== modelPath) return true;
-  if (prev.activeModelId !== cfg.active_model_id) return true;
+  if (prev.activeObjectFileId !== cfg.active_object_file_id) return true;
   if (JSON.stringify(prev.motionSlots) !== JSON.stringify(cfg.motion_slots)) return true;
   if (JSON.stringify(prev.motionLibrary) !== JSON.stringify(cfg.motion_library)) return true;
   return false;
@@ -89,7 +89,7 @@ function applyConfigToState(cfg: CompanionConfig, prev?: CompanionState): Partia
     modelPath,
     ...runtimeFields,
     fbxImportAvailable: cfg.fbx_import_available,
-    activeModelId: cfg.active_model_id,
+    activeObjectFileId: cfg.active_object_file_id,
     models: cfg.models,
     motionLibrary: cfg.motion_library,
     motionSlots: cfg.motion_slots,
@@ -112,7 +112,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   characterReady: false,
   modelLoading: false,
   configRevision: 0,
-  activeModelId: "",
+  activeObjectFileId: null,
   models: [],
   motionLibrary: [],
   motionSlots: {} as MotionSlotsConfig,

@@ -9,7 +9,7 @@ export const companionHabitatSettingsSection: SettingsSection = {
   category: "server",
   title: "桌面伴侣",
   description:
-    "保存在 Habitat 数据库（companion_profile），多客户端共享；修改后各客户端经 companion.sync.pull 同步到本机缓存。",
+    "保存在 Habitat runtime 段 companion（模块配置，多客户端共享）；二进制走对象存储（object_file_id）；修改后各客户端经 companion.sync.pull 同步到本机缓存。",
   platforms: {
     desktop: { kind: "component", load: companionHubPanelLoad },
     mobile: { kind: "component", load: companionHubPanelLoad },

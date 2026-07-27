@@ -11,6 +11,20 @@ mock.module("./config-test-gateway-probes.ts", () => ({
   },
 }));
 
+const s3Write = mock(async () => undefined);
+const s3Bytes = mock(async () => new TextEncoder().encode("freeanima-object-storage-probe"));
+const s3Delete = mock(async () => undefined);
+
+mock.module("@freeanima/features/object-storage/domain/bun-s3.ts", () => ({
+  createBunS3Client: () => ({
+    write: s3Write,
+    delete: s3Delete,
+    file: () => ({
+      bytes: s3Bytes,
+    }),
+  }),
+}));
+
 import { Config } from "@freeanima/host/core/config";
 import type { AppRuntimeContext } from "@freeanima/host/platform/ports/app-runtime-context";
 import { sanitizeConfigForApi } from "@freeanima/host/platform/config";
@@ -40,6 +54,13 @@ const runtimeSnapshot = {
   },
   discord: { enabled: true, token: "discord-saved-token" },
   weixin: { enabled: true, token: "weixin-saved-token", base_url: "https://ilink.test" },
+  object_storage: {
+    endpoint: "https://s3.example.com",
+    region: "cn-hangzhou",
+    bucket: "freeanima",
+    access_key_id: "saved-ak",
+    secret_access_key: "saved-sk",
+  },
 };
 
 function bindTestConsoleContext(snapshot: Record<string, unknown> = runtimeSnapshot) {
@@ -73,6 +94,14 @@ describe("testConfigConnection", () => {
   afterEach(() => {
     globalThis.fetch = originalFetch;
     bindHabitatRuntimeContext();
+    s3Write.mockReset();
+    s3Bytes.mockReset();
+    s3Delete.mockReset();
+    s3Write.mockImplementation(async () => undefined);
+    s3Bytes.mockImplementation(async () =>
+      new TextEncoder().encode("freeanima-object-storage-probe"),
+    );
+    s3Delete.mockImplementation(async () => undefined);
   });
 
   it("tests camofox health endpoint", async () => {
@@ -172,5 +201,99 @@ describe("testConfigConnection", () => {
     });
     expect(result.ok).toBe(false);
     expect(result.message).toContain("失败");
+  });
+
+  it("tests object_storage Put/Get via Bun.S3Client", async () => {
+    bindTestConsoleContext();
+    const result = await testConfigConnection({
+      service: "object_storage",
+      config: {
+        endpoint: "https://s3.example.com",
+        bucket: "my-bucket",
+        access_key_id: "draft-ak",
+        secret_access_key: "draft-sk",
+      },
+    });
+    expect(result.ok).toBe(true);
+    expect(result.message).toContain("成功");
+    expect(s3Write).toHaveBeenCalled();
+    expect(s3Bytes).toHaveBeenCalled();
+  });
+
+  it("object_storage fails when bucket missing", async () => {
+    bindTestConsoleContext({
+      ...runtimeSnapshot,
+      object_storage: {
+        endpoint: "https://s3.example.com",
+        access_key_id: "ak",
+        secret_access_key: "sk",
+      },
+    });
+    const result = await testConfigConnection({
+      service: "object_storage",
+      config: {
+        endpoint: "https://s3.example.com",
+        bucket: "",
+        access_key_id: "ak",
+        secret_access_key: "sk",
+      },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("bucket");
+  });
+
+  it("object_storage timeout hints public reachability", async () => {
+    bindTestConsoleContext();
+    s3Write.mockImplementation(async () => {
+      throw new Error("The operation was aborted due to timeout");
+    });
+    const result = await testConfigConnection({
+      service: "object_storage",
+      config: {
+        endpoint: "https://oss-cn-hangzhou.aliyuncs.com",
+        bucket: "my-bucket",
+        access_key_id: "ak",
+        secret_access_key: "sk",
+      },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("超时");
+    expect(result.message).toContain("公网");
+  });
+
+  it("object_storage internal endpoint hints VPC", async () => {
+    bindTestConsoleContext();
+    s3Write.mockImplementation(async () => {
+      throw new Error("UnknownError");
+    });
+    const result = await testConfigConnection({
+      service: "object_storage",
+      config: {
+        endpoint: "https://oss-cn-hangzhou-internal.aliyuncs.com",
+        bucket: "my-bucket",
+        access_key_id: "ak",
+        secret_access_key: "sk",
+      },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("内网");
+  });
+
+  it("object_storage fails when S3 returns error", async () => {
+    bindTestConsoleContext();
+    s3Write.mockImplementation(async () => {
+      throw new Error("AccessDenied");
+    });
+    const result = await testConfigConnection({
+      service: "object_storage",
+      config: {
+        endpoint: "https://s3.example.com",
+        bucket: "my-bucket",
+        access_key_id: "ak",
+        secret_access_key: "sk",
+      },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("AccessDenied");
   });
 });

@@ -50,6 +50,8 @@ Envelope（每条）：
 | `task_list`       | 清单                                         |
 | `smart_list`      | 智能清单                                     |
 | `task_item`       | 任务                                         |
+| `object_file`     | 对象存储文件元数据                           |
+| `object_folder`   | 对象存储文件夹（`file_ids`）                 |
 
 加入新组件：改白名单常量 + 本表 + 评估噪点写是否需 `skip_revision`。
 

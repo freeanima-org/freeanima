@@ -3,7 +3,7 @@ export * from "./behavior.ts";
 export * from "./motion-slot-resolve.ts";
 export * from "./paths.ts";
 export * from "./config.ts";
-export * from "./profile-store.ts";
+export * from "./companion-world.ts";
 export * from "./client-config.ts";
 export * from "./model-registry.ts";
 export * from "./motion-library.ts";

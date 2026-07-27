@@ -57,13 +57,17 @@ function isAdvancedSectionKey(key: HabitatConfigSectionKey): key is AdvancedSect
 }
 
 const ADVANCED_TEST_SERVICES: Partial<
-  Record<AdvancedSectionId, "firecrawl" | "camofox" | "embedding" | "discord" | "weixin">
+  Record<
+    AdvancedSectionId,
+    "firecrawl" | "camofox" | "embedding" | "discord" | "weixin" | "object_storage"
+  >
 > = {
   firecrawl: "firecrawl",
   browser: "camofox",
   embedding: "embedding",
   discord: "discord",
   weixin: "weixin",
+  object_storage: "object_storage",
 };
 
 function advancedTestConfig(

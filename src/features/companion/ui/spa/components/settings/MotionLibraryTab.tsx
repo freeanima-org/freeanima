@@ -13,6 +13,7 @@ import { showConfirm } from "@freeanima/ui-kit/composite";
 import {
   deleteMotion,
   renameMotion,
+  reorderMotions,
   uploadMotionFile,
 } from "@freeanima/features/companion/ui/spa/lib/api.ts";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
@@ -21,6 +22,7 @@ import {
   COMPANION_WINDOW_HEIGHT,
   COMPANION_WINDOW_WIDTH,
 } from "@freeanima/features/companion/ui/spa/lib/window-metrics.ts";
+import { companionMotionCachePath } from "@freeanima/features/companion/shared/companion-schema.ts";
 import { FBX_IMPORT_UNAVAILABLE_MSG } from "@freeanima/features/companion/shared/constants.ts";
 import type { MotionLibraryEntry } from "@freeanima/features/companion/shared/constants.ts";
 import { MotionPreviewCanvas } from "./MotionPreviewCanvas.tsx";
@@ -37,12 +39,27 @@ export function MotionLibraryTab() {
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [previewId, setPreviewId] = useState<string | null>(null);
+  const [previewId, setPreviewId] = useState<number | null>(null);
 
-  const previewEntry = library.find((m) => m.id === previewId) ?? null;
+  const previewEntry = library.find((m) => m.object_file_id === previewId) ?? null;
   const accept = fbxImportAvailable
     ? ".vrma,.fbx,.zip,application/zip,model/gltf-binary"
     : ".vrma,.zip,application/zip,model/gltf-binary";
+
+  const moveMotion = async (objectFileId: number, delta: -1 | 1): Promise<void> => {
+    const ids = library.map((m) => m.object_file_id);
+    const idx = ids.indexOf(objectFileId);
+    const swap = idx + delta;
+    if (idx < 0 || swap < 0 || swap >= ids.length) return;
+    const next = [...ids];
+    const a = next[idx];
+    const b = next[swap];
+    if (a == null || b == null) return;
+    next[idx] = b;
+    next[swap] = a;
+    await reorderMotions(next);
+    await refreshConfig();
+  };
 
   useEffect(() => {
     void refreshConfig();
@@ -77,7 +94,7 @@ export function MotionLibraryTab() {
       }
       if (importedEntries.length > 0) {
         const lastImported = importedEntries.at(-1);
-        if (lastImported) setPreviewId(lastImported.id);
+        if (lastImported) setPreviewId(lastImported.object_file_id);
       }
       await refreshConfig();
       await emitConfigChanged();
@@ -96,10 +113,10 @@ export function MotionLibraryTab() {
       variant: "error",
     });
     if (!ok) return;
-    await deleteMotion(entry.id);
+    await deleteMotion(entry.object_file_id);
     await refreshConfig();
     await emitConfigChanged();
-    if (previewId === entry.id) setPreviewId(null);
+    if (previewId === entry.object_file_id) setPreviewId(null);
   };
 
   return (
@@ -143,11 +160,11 @@ export function MotionLibraryTab() {
             {library.length === 0 ? (
               <li className="text-center text-sm text-muted-foreground py-6">暂无动作</li>
             ) : (
-              library.map((m) => (
-                <li key={m.id}>
+              library.map((m, index) => (
+                <li key={m.object_file_id}>
                   <Card
                     className={`gap-0 border bg-background py-0 shadow-none shrink-0 ${
-                      previewId === m.id ? "ring-2 ring-primary/40" : ""
+                      previewId === m.object_file_id ? "ring-2 ring-primary/40" : ""
                     }`}
                   >
                     <CardContent className="flex flex-col gap-2 px-4 py-3">
@@ -159,23 +176,47 @@ export function MotionLibraryTab() {
                             onBlur={(e) => {
                               const name = e.target.value.trim();
                               if (name && name !== m.name) {
-                                void renameMotion(m.id, name).then(() => refreshConfig());
+                                void renameMotion(m.object_file_id, name).then(() =>
+                                  refreshConfig(),
+                                );
                               }
                             }}
                           />
-                          <p className="text-xs text-muted-foreground mt-1 truncate" title={m.id}>
-                            {m.id}
+                          <p className="text-xs text-muted-foreground mt-1 truncate">
+                            #{m.object_file_id}
                           </p>
                         </div>
                         <div className="flex flex-col gap-1 shrink-0">
                           <Button
                             type="button"
                             size="sm"
-                            variant={previewId === m.id ? "default" : "ghost"}
+                            variant={previewId === m.object_file_id ? "default" : "ghost"}
                             className="h-7 px-2 text-xs"
-                            onClick={() => setPreviewId(previewId === m.id ? null : m.id)}
+                            onClick={() =>
+                              setPreviewId(previewId === m.object_file_id ? null : m.object_file_id)
+                            }
                           >
                             预览
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            disabled={index === 0}
+                            onClick={() => void moveMotion(m.object_file_id, -1)}
+                          >
+                            上移
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            disabled={index >= library.length - 1}
+                            onClick={() => void moveMotion(m.object_file_id, 1)}
+                          >
+                            下移
                           </Button>
                           <Button
                             type="button"
@@ -233,9 +274,9 @@ export function MotionLibraryTab() {
               </div>
             ) : (
               <MotionPreviewCanvas
-                key={`${modelPath}:${previewEntry.id}`}
+                key={`${modelPath}:${previewEntry.object_file_id}`}
                 modelPath={modelPath}
-                motionFile={previewEntry.file}
+                motionFile={companionMotionCachePath(previewEntry.object_file_id)}
                 width={PREVIEW_FRAME_WIDTH}
               />
             )}

@@ -60,12 +60,12 @@ Bootstrap and runtime are **not merged** into a single config object (no `AnimaC
 
 ### Runtime config: live vs transferred
 
-| Kind            | Sections (examples)                                                                                                           | After UI save                                                                     |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| **Live**        | `compression`, `memory`, `fts`, `cjk`, `clarify`, `browser`, `firecrawl`, `models`, `tts`, `auto_llm`, gateway `tool_display` | Consumers read `Config.data` each use; snapshot update is enough                  |
-| **Transferred** | `llm`, `i18n`, `embedding`, `mcp_servers`, `acp_agents`, `discord` / `weixin` / `gateway` platforms, `worlds`                 | Snapshot update **plus** section apply (re-init registries / reconnect / re-bind) |
-| **Bootstrap**   | `database`, `http`, `redis`                                                                                                   | Edit YAML; **process restart** required                                           |
-| **Hard / rare** | `eventbus` (queue already built)                                                                                              | Prefer process restart if changing `key_prefix` etc.                              |
+| Kind            | Sections (examples)                                                                                                                        | After UI save                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| **Live**        | `compression`, `memory`, `fts`, `cjk`, `clarify`, `browser`, `firecrawl`, `models`, `tts`, `auto_llm`, `companion`, gateway `tool_display` | Consumers read `Config.data` each use; snapshot update is enough                              |
+| **Transferred** | `llm`, `i18n`, `embedding`, `mcp_servers`, `acp_agents`, `discord` / `weixin` / `gateway` platforms, `worlds`, `object_storage`            | Snapshot update **plus** section apply (re-init registries / reconnect / re-bind ObjectStore) |
+| **Bootstrap**   | `database`, `http`, `redis`                                                                                                                | Edit YAML; **process restart** required                                                       |
+| **Hard / rare** | `eventbus` (queue already built)                                                                                                           | Prefer process restart if changing `key_prefix` etc.                                          |
 
 ### Runtime config: UI coverage gaps
 
@@ -78,7 +78,7 @@ Settings / Habitat UI already expose many sections; the following are **register
 | **Likely dead / reserved** | `push`, `fallback_providers`, `platforms` | Little or no product consumer; candidates for later cleanup                                                  |
 | **Partial UI**             | `compression`, `memory`                   | Compression UI omits trigger/summary fields; memory UI is `passive_recall` only (`temporal_summary` missing) |
 
-Covered elsewhere: `mcp_servers` → Habitat `/habitat/mcp`; most advanced sections → Settings → Habitat 服务配置.
+Covered elsewhere: `mcp_servers` → Habitat `/habitat/mcp`; `companion` → Settings → 桌面伴侣；most advanced sections → Settings → Habitat 服务配置。
 
 - The system prompt is part of architecture, not ad-hoc string concatenation
 
@@ -443,14 +443,14 @@ Complementary: Pipeline Runner handles scheduled multi-step background work; Hoo
 
 The desktop companion（桌面伴侣）is an **unreachable local app** that **actively connects** to Habitat and registers remote tools in the **first-party companion overlay**（伴侣浮层 / `embedded-overlay`；shell provides window/IPC/FS only — **not** a Node sidecar), with a split boundary:
 
-| Concern                             | Habitat (`src/features/companion/`)              | Local install                             |
-| ----------------------------------- | ------------------------------------------------ | ----------------------------------------- |
-| Behavior, slots, active model       | `companion_profile` entity + Habitat RPC         | Cache in `~/.anima/companion/config.json` |
-| VRM / VRMA library                  | Files on Habitat host + content-hash metadata    | Lazy download to desktop cache            |
-| FBX → VRMA                          | Habitat service only                             | Not bundled in desktop installer          |
-| Settings UI                         | Habitat RPC + `/rpc/v1/companion/*` upload       | Desktop Settings section (not Habitat)    |
-| VRM render, float window, patrol    | —                                                | Tauri Portal shell + overlay SPA          |
-| Agent tools (`bubble`, `play_slot`) | Habitat RPC `tool.*` after `remote_tools.attach` | Overlay WebView-host 执行（本地 runtime） |
+| Concern                             | Habitat (`src/features/companion/`)                                      | Local install                                             |
+| ----------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------- |
+| Behavior, slots, active model       | runtime `companion` 段（模块配置） + Habitat RPC                         | Cache in `~/.anima/companion/config.json`                 |
+| VRM / VRMA library                  | `object_file_id` → 对象存储（runtime `object_storage`）；非本机磁盘 SSOT | Lazy download via `object_storage.file.get` / `sync.pull` |
+| FBX → VRMA                          | Habitat service only                                                     | Not bundled in desktop installer                          |
+| Settings UI                         | Habitat RPC + companion upload routes                                    | Desktop Settings section (not Habitat)                    |
+| VRM render, float window, patrol    | —                                                                        | Tauri Portal shell + overlay SPA                          |
+| Agent tools (`bubble`, `play_slot`) | Habitat RPC `tool.*` after `remote_tools.attach`                         | Overlay WebView-host 执行（本地 runtime）                 |
 
 **Remote tools ≠ Portal / MCP**: Portal shells and Chat/Settings use Habitat RPC for UI only. Dialable peers expose tools via **MCP**. Remote-tool attach exists solely when Habitat cannot dial the app (companion overlay today; future independent local apps). Routing uses `instance_id` (same machine may have multiple instances). See [`companion.md`](../modules/companion.md)、[`habitat-rpc.md`](../ops/habitat-rpc.md).
 

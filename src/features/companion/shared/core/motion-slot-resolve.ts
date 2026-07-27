@@ -24,7 +24,7 @@ export function resolveLocomotionMotion(
 }
 
 export function normalizeMotionSlots(
-  raw: Record<string, string[]>,
+  raw: Record<string, Array<string | number>>,
   library: MotionLibraryEntry[],
 ): MotionSlotsConfig {
   return normalizeMotionSlotsBase(raw, library, motionManifest.locomotion);

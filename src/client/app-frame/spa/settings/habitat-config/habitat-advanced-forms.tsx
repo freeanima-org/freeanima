@@ -21,6 +21,7 @@ export const ADVANCED_SECTIONS = [
   "acp_agents",
   "worlds",
   "auto_llm",
+  "object_storage",
 ] as const;
 
 /** 以条目名为 key 的 record 段；保存时需整段替换才能删除条目。 */
@@ -33,6 +34,7 @@ export const ADVANCED_SECTION_TITLES: Partial<Record<AdvancedSectionId, string>>
   gateway: "网关",
   discord: "Discord",
   weixin: "微信",
+  object_storage: "对象存储",
 };
 
 export type HabitatConfigRecordSectionId = (typeof HABITAT_CONFIG_RECORD_SECTIONS)[number];
@@ -52,6 +54,52 @@ function FirecrawlForm({
 }) {
   return hubConfigTextField("api_url", String(value.api_url ?? ""), (api_url) =>
     onChange({ ...value, api_url }),
+  );
+}
+
+function ObjectStorageForm({
+  value,
+  onChange,
+}: {
+  value: Record<string, unknown>;
+  onChange: (v: Record<string, unknown>) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">
+        S3 兼容远端为权威存储（SSOT）。未配置时上传/下载会报错。密钥可用 vault(&quot;id&quot;,
+        &quot;field&quot;) 或 env(&quot;KEY&quot;)。服务器仅缓存到临时目录（可丢）。Habitat 须能访问
+        endpoint 公网（或同 VPC 内网）；勿用仅 VPC 可达却从公网 Habitat 去连。
+      </p>
+      {hubConfigTextField(
+        "endpoint",
+        String(value.endpoint ?? ""),
+        (endpoint) => onChange({ ...value, endpoint }),
+        {
+          hint: "例：https://s3.oss-cn-hangzhou.aliyuncs.com；内网域名带 -internal",
+        },
+      )}
+      {hubConfigTextField("region", String(value.region ?? ""), (region) =>
+        onChange({ ...value, region }),
+      )}
+      {hubConfigTextField("bucket", String(value.bucket ?? ""), (bucket) =>
+        onChange({ ...value, bucket }),
+      )}
+      {hubConfigTextField("access_key_id", String(value.access_key_id ?? ""), (access_key_id) =>
+        onChange({ ...value, access_key_id }),
+      )}
+      {hubConfigTextField(
+        "secret_access_key",
+        String(value.secret_access_key ?? ""),
+        (secret_access_key) => onChange({ ...value, secret_access_key }),
+      )}
+      {habitatConfigBoolField(
+        "force_path_style",
+        Boolean(value.force_path_style),
+        (force_path_style) => onChange({ ...value, force_path_style }),
+        "MinIO 等常需开启 path-style；阿里云 OSS S3 兼容域名一般关闭",
+      )}
+    </div>
   );
 }
 
@@ -483,6 +531,8 @@ export function AdvancedSectionForm({
       return <WeixinForm value={value} onChange={onChange} />;
     case "firecrawl":
       return <FirecrawlForm value={value} onChange={onChange} />;
+    case "object_storage":
+      return <ObjectStorageForm value={value} onChange={onChange} />;
     case "browser":
       return <BrowserForm value={value} onChange={onChange} />;
     case "embedding":

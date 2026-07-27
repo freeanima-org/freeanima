@@ -1,95 +1,86 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import {
   normalizeMotionSlots,
   resolveLocomotionMotion,
   resolveMotionForSlot,
-} from "@freeanima/shared/companion-motion/motion-slot-resolve.ts";
+} from "./motion-slot-resolve.ts";
+import type { MotionLibraryEntry, MotionSlotsConfig } from "./types.ts";
 
-const defaultLocomotion = { walk: "mot_walk.vrma" };
+const library: MotionLibraryEntry[] = [
+  { name: "Idle A", object_file_id: 1, sort: 0 },
+  { name: "Idle B", object_file_id: 2, sort: 1 },
+  { name: "Walk", object_file_id: 3, sort: 2 },
+];
 
 describe("resolveMotionForSlot", () => {
-  const library = [
-    { id: "m1", name: "Idle", file: "VRMA_01.vrma" },
-    { id: "m2", name: "Wave", file: "VRMA_02.vrma" },
-  ];
+  const slots: MotionSlotsConfig = {
+    idle: [1, 2],
+    rest: [],
+    walk: [],
+    climb: [],
+    in_place: [],
+  };
 
-  test("指定 motion id", () => {
-    const slots = { idle: ["m1", "m2"], rest: [], walk: [], climb: [], in_place: [] };
-    expect(resolveMotionForSlot("idle", slots, library, { motionId: "m2" })?.file).toBe(
-      "VRMA_02.vrma",
+  it("honors explicit object_file_id", () => {
+    expect(resolveMotionForSlot("idle", slots, library, { motionId: 2 })?.objectFileId).toBe(2);
+    expect(resolveMotionForSlot("idle", slots, library, { motionId: 2 })?.file).toBe(
+      "/motions/2.vrma",
     );
   });
 
-  test("指定 id 不存在时回退随机", () => {
-    const slots = { idle: ["m1"], rest: [], walk: [], climb: [], in_place: [] };
-    const resolved = resolveMotionForSlot("idle", slots, library, { motionId: "missing" });
-    expect(resolved?.file).toBe("VRMA_01.vrma");
+  it("returns null for missing explicit id", () => {
+    expect(resolveMotionForSlot("idle", slots, library, { motionId: 99 })).toBeNull();
   });
 
-  test("槽位为空返回 null", () => {
-    const slots = { idle: [], rest: [], walk: [], climb: [], in_place: [] };
+  it("returns null when slot empty", () => {
     expect(resolveMotionForSlot("walk", slots, library)).toBeNull();
   });
 
-  test("槽位仍引用已重命名的 locomotion 文件名", () => {
-    const libraryWithWalk = [
+  it("picks from slot bindings", () => {
+    const libraryWithWalk: MotionLibraryEntry[] = [
       ...library,
-      { id: "walk1", name: "locomotion_walk", file: "mot_walk.vrma" },
+      { name: "W", object_file_id: 10, sort: 3 },
     ];
-    const slots = {
-      idle: ["m1"],
-      rest: [],
-      walk: ["locomotion_walk.vrma"],
-      climb: [],
-      in_place: [],
-    };
-    expect(resolveMotionForSlot("walk", slots, libraryWithWalk)?.file).toBe("mot_walk.vrma");
+    const walkSlots: MotionSlotsConfig = { ...slots, walk: [10] };
+    expect(resolveMotionForSlot("walk", walkSlots, libraryWithWalk)?.file).toBe("/motions/10.vrma");
   });
 });
 
 describe("resolveLocomotionMotion", () => {
-  test("walk 槽位优先于 manifest 回退", () => {
-    const library = [{ id: "w1", name: "Custom Walk", file: "custom_walk.vrma" }];
-    const slots = {
+  it("uses slot binding first", () => {
+    const slots: MotionSlotsConfig = {
       idle: [],
       rest: [],
-      walk: ["w1"],
+      walk: [3],
       climb: [],
       in_place: [],
     };
-    expect(resolveLocomotionMotion("walk", slots, library)?.file).toBe("custom_walk.vrma");
+    expect(resolveLocomotionMotion("walk", slots, library)?.file).toBe("/motions/3.vrma");
   });
 
-  test("walk 槽位为空时使用 manifest 默认文件", () => {
-    const library = [{ id: "w1", name: "locomotion_walk", file: "mot_walk.vrma" }];
-    const slots = { idle: [], rest: [], walk: [], climb: [], in_place: [] };
-    expect(resolveLocomotionMotion("walk", slots, library, defaultLocomotion)?.file).toBe(
-      "mot_walk.vrma",
-    );
+  it("falls back to manifest file name", () => {
+    const slots: MotionSlotsConfig = {
+      idle: [],
+      rest: [],
+      walk: [],
+      climb: [],
+      in_place: [],
+    };
+    expect(
+      resolveLocomotionMotion("walk", slots, library, { walk: "builtin_walk.vrma" })?.file,
+    ).toBe("builtin_walk.vrma");
   });
 });
 
 describe("normalizeMotionSlots", () => {
-  test("合并 legacy in_place_* 到 in_place", () => {
-    const library = [
-      { id: "h", name: "Head", file: "VRMA_02.vrma" },
-      { id: "t", name: "Torso", file: "VRMA_06.vrma" },
-    ];
-    const normalized = normalizeMotionSlots(
-      {
-        idle: ["VRMA_01.vrma"],
-        in_place_head: ["h"],
-        in_place_torso: ["t"],
-      },
-      library,
-    );
-    expect(normalized.in_place.toSorted()).toEqual(["h", "t"]);
-    expect(normalized.idle).toEqual(["VRMA_01.vrma"]);
+  it("maps numeric refs", () => {
+    const normalized = normalizeMotionSlots({ idle: [1, 2], walk: ["3"] }, library);
+    expect(normalized.idle).toEqual([1, 2]);
+    expect(normalized.walk).toEqual([3]);
   });
 
-  test("空 walk 槽位链接 manifest locomotion 到动作库 id", () => {
-    const library = [{ id: "w1", name: "locomotion_walk", file: "mot_walk.vrma" }];
-    const normalized = normalizeMotionSlots({ walk: [] }, library, defaultLocomotion);
-    expect(normalized.walk).toEqual(["w1"]);
+  it("keeps empty walk", () => {
+    const normalized = normalizeMotionSlots({ walk: [] }, library);
+    expect(normalized.walk).toEqual([]);
   });
 });

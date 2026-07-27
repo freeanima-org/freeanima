@@ -14,26 +14,26 @@ The content pack (React + VRM) is embedded by the **desktop Tauri shell** (`src/
 FreeAnima Portal (src/portal/app/tauri)
 ├── Tauri (Rust) — tray / multi-window + prefs / IPC
 │   ├── companion overlay — work-area fullscreen transparent; VRM stage + remote_tools.attach
-│   ├── companion settings — settings in main window (Habitat RPC + asset HTTP)
+│   ├── companion settings — settings in main window (Habitat RPC + object_storage.file.get)
 │   ├── chat — Chat SPA (Habitat RPC, no remote_tools.attach)
 │   └── habitat — Habitat WebView (Habitat RPC REST)
 └── Renderer — portalShell; overlay owns attach + tool runtime
          ↕ Habitat RPC (+ remote_tools.attach in overlay only)
-    anima service Habitat (companion_profile SSOT + assets + FBX→VRMA)
+    anima service Habitat (runtime companion + object storage + FBX→VRMA)
 ```
 
 ### Habitat vs local boundary
 
-| Layer              | Location                     | Responsibility                                                                                                                                                                   |
-| ------------------ | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Habitat SSOT**   | `src/features/companion/`    | `companion_profile` entity (behavior, slots, library meta); VRM/VRMA files under `~/.anima/companion/` on Habitat host; FBX→VRMA conversion; Settings read/write via Habitat RPC |
-| **Settings UI**    | Desktop Settings → Companion | Habitat RPC（`getTypedHabitatClient`：`call` / multipart `callRaw`；`companion.config.*`、model/motion CRUD、asset.get）                                                         |
-| **Companion host** | overlay SPA (`spa/`)         | `remote_tools.attach`, tool execution, local runtime (bubble/play); optional thin HTTP for static assets + `companion.sync.pull` cache                                           |
-| **Tauri host**     | `src/portal/app/tauri/`      | Transparent window, click-through, tray, show/hide + FS / prefs IPC                                                                                                              |
+| Layer              | Location                     | Responsibility                                                                                                                      |
+| ------------------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Habitat SSOT**   | `src/features/companion/`    | runtime 段 `companion`（behavior / slots / 模型与动作注册表 + `object_file_id`）；字节在对象存储；FBX→VRMA；Settings 经 Habitat RPC |
+| **Settings UI**    | Desktop Settings → Companion | Habitat RPC（`companion.config.*`、model/motion CRUD）；二进制经 `object_storage.file.get`                                          |
+| **Companion host** | overlay SPA (`spa/`)         | `remote_tools.attach`、本地 runtime；桌面经 `companion.sync.pull` 把缺文件落到本机缓存                                              |
+| **Tauri host**     | `src/portal/app/tauri/`      | Transparent window, click-through, tray, show/hide + FS / prefs IPC                                                                 |
 
 Management is in **Settings only** — Habitat has no companion admin page.
 
-On host start: Habitat config wins; `~/.anima/companion/config.json` on the desktop is an **offline cache**. Legacy local data is migrated once to Habitat (`companion.migrate.fromLocal` or HTTP upload). Multiple desktops share the same model/motion library via Habitat.
+On host start: Habitat runtime `companion` wins; `~/.anima/companion/config.json` on the desktop is an **offline cache**. Legacy local data is migrated once to Habitat (`companion.migrate.fromLocal` or HTTP upload). Multiple desktops share the same model/motion library via Habitat.
 
 ```text
 Settings ──Habitat RPC/HTTP──► features/companion (Habitat)
@@ -76,17 +76,17 @@ Settings → Companion client section shows **instance id** and **remote tools c
 
 ## Models and motions
 
-The repo **does not bundle** `.vrm` / `.vrma` files. **Habitat** is the SSOT: `companion_profile` entity in PostgreSQL plus files on the Habitat host at `~/.anima/companion/models/` and `motions/`. Each desktop keeps a **local cache** synced on host start (`companion.sync.pull`).
+The repo **does not bundle** `.vrm` / `.vrma` files. **Habitat** is the SSOT: runtime 段 `companion`（`models` / `motion_library` 仅 `{ name, object_file_id, sort }`；槽位与当前模型均引用 `object_file_id`）+ 对象存储字节。旧条目不迁移，须在 Settings **重新上传**。桌面本机缓存文件名由 `object_file_id` 推导（`{id}.vrm` / `{id}.vrma`）。
 
 ### VRM models
 
-Settings → **Models** tab: list, import, delete, rename, switch current model. Upload goes to Habitat (`POST /rpc/v1/companion/model/upload`); host downloads missing files for overlay rendering.
+Settings → **Models** tab: list, import, delete, rename, **reorder** (上移/下移 → `companion.model.reorder`), switch current model. Upload goes to Habitat（`companion.model.upload` → `createObjectFile`）；加载走 `object_storage.file.get`。
 
 During development, files in `src/features/companion/public/models/` serve as fallback.
 
 ### VRMA library and slots
 
-Settings → **Motion library** tab: import VRMA, FBX, or ZIP (FBX is converted on **Habitat**, not on desktop). **Motion slots** tab assigns motions per slot. Preview supports mouse drag to rotate view.
+Settings → **Motion library** tab: import VRMA, FBX, or ZIP (FBX is converted on **Habitat**, not on desktop); **reorder** via `companion.motion.reorder`. **Motion slots** tab assigns motions per slot. Preview supports mouse drag to rotate view.
 
 Unbound slots play no animation; patrol still moves the window; walk/climb VRMA play only when bound.
 
@@ -112,13 +112,13 @@ The Portal companion overlay WebView hosts companion UI and `remote_tools.attach
 
 Companion config has two storage layers:
 
-| Layer                                | Content                                                                             | Access                                                |
-| ------------------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| **Habitat PG** (`companion_profile`) | Behavior, models, motion library, slots                                             | Settings → Habitat → Companion via Habitat RPC / HTTP |
-| **Local device**                     | Window visibility (`companion-shell` scope), Habitat RPC runtime status (read-only) | Settings → local → Companion                          |
+| Layer                                               | Content                                                                             | Access                               |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------ |
+| **Habitat PG** (`habitat_runtime_config.companion`) | Behavior, models, motion library, slots（模块配置）                                 | Settings → Companion via Habitat RPC |
+| **Local device**                                    | Window visibility (`companion-shell` scope), Habitat RPC runtime status (read-only) | Settings → local → Companion         |
 
 Local `~/.anima/companion/config.json` is only a **habitat-sync cache**; the settings UI does not read/write it directly.
 
-After Habitat profile changes, the local cache syncs via `companion.sync.pull`; the overlay refreshes through `emitConfigChanged`.
+After Habitat companion config changes, the local cache syncs via `companion.sync.pull`; the overlay refreshes through `emitConfigChanged`.
 
 See also: [Habitat RPC](../ops/habitat-rpc.md), [architecture companion section](../product/architecture.md#desktop-companion-habitat-ssot).
