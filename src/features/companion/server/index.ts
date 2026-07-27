@@ -4,7 +4,6 @@ import type { ViteDevServer } from "vite";
 import { WebSocketServer } from "ws";
 import { companionPackageRoot } from "./companion-root.ts";
 import { corsPreflight, jsonResponse } from "./http/cors.ts";
-import { clientCompanionConfig } from "./config-response.ts";
 import { ensureCompanionDataDir } from "./paths.ts";
 import { serveCompanionPublicAsset, serveStatic, setStaticDistDir } from "./static.ts";
 import { COMPANION_PORT_ATTEMPTS, COMPANION_PORT_START } from "../shared/constants.ts";
@@ -58,10 +57,6 @@ export async function route(req: Request): Promise<Response> {
 
   if (req.method === "OPTIONS") {
     return corsPreflight();
-  }
-
-  if ((url.pathname === "/config.json" || url.pathname === "/api/config") && req.method === "GET") {
-    return jsonResponse(clientCompanionConfig());
   }
 
   if (url.pathname === "/api/bubbles/advance" && req.method === "POST") {

@@ -3,7 +3,7 @@ import { getPortalApiOrigin, isPortalShell } from "./portal-shell.ts";
 
 /**
  * 解析 companion/dev 本地 HTTP 根（Portal 壳用 apiOrigin；无壳时用页面 origin）。
- * 产品 Portal/Tauri 不依赖独立 Node 进程；仅本地 HMR / 无壳调试用此路径。
+ * 仅本地 HMR / runtime WS；配置不经此 origin（走 Habitat RPC）。
  */
 export async function resolveCompanionDevOrigin(_maxWaitMs = 45_000): Promise<string> {
   const origin = getPortalApiOrigin();

@@ -102,7 +102,7 @@ FBX→VRMA runs on the **Habitat host** (`anima service`). Desktop installers no
 bun src/features/companion/dev.ts
 ```
 
-Uses an in-process HTTP server; runtime events use localhost WebSocket (`/api/runtime/ws`).
+Uses an in-process HTTP server for static/HMR + localhost WebSocket (`/api/runtime/ws`). **Config always comes from Habitat RPC** (`companion.config.get`) — there is no local `GET /api/config`.
 
 ### Desktop (Tauri Portal)
 
