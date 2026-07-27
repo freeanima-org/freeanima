@@ -14,7 +14,10 @@ import {
 import type { ComponentBuildMeta } from "@freeanima/client/portal-sdk/build-meta";
 import { loadTauriNativeBuildMetaFromAssets } from "@freeanima/client/portal-sdk/native-build-meta.read";
 import { NATIVE_BUILD_META_CHANGED_EVENT } from "@freeanima/client/portal-sdk/native-build-meta.resolve";
-import type { ShellNativeAlertPayload } from "@freeanima/client/portal-sdk/shell-api.ts";
+import type {
+  ShellNativeAlertPayload,
+  ShellNativeAlertPermission,
+} from "@freeanima/client/portal-sdk/shell-api.ts";
 import {
   applyHabitatConfigToShell,
   notifyShellConfigChanged,
@@ -172,7 +175,10 @@ export async function bootstrapTauriBridge(): Promise<void> {
       } satisfies RemoteToolsStatusPayload;
     },
     showNativeAlert: (payload: ShellNativeAlertPayload) => invoke("show_native_alert", { payload }),
-    requestNativeAlertPermission: async () => "granted" as const,
+    readNativeAlertPermission: () =>
+      invoke<ShellNativeAlertPermission>("read_native_alert_permission"),
+    requestNativeAlertPermission: () =>
+      invoke<ShellNativeAlertPermission>("request_native_alert_permission"),
     setAppBadgeCount: (count: number) =>
       invoke("set_app_badge_count", { count: Math.max(0, Math.floor(count)) }),
     requestAppAttention: () => invoke("request_app_attention"),

@@ -12,6 +12,8 @@ PG-backed in-app inbox for **user** and **agent** subjects (entity model). Cron 
 
 ## Alert（本机提醒，本机-only）
 
+三分法词汇（Notification / Reminder / Alert）见切面 [`notification-and-reminder.md`](../aspects/notification-and-reminder.md)「中文词汇对照」——**Alert = 真响到设备上**，与 Inbox、任务闹钟意图无关。
+
 **不写 PG、不做跨设备认领。** 各 shell 端在启动时注册 `AlertBackend`（web / desktop / mobile）。产品提醒统一经 `portal-sdk/local-reminder` 的 **`deliverLocalReminder`**：
 
 | 本机条件                                        | 通道                                    |
@@ -58,11 +60,11 @@ Alert 分两档（同一契约，成对）：
 
 实现：`src/client/portal-sdk/local-reminder.ts` + `portal-sdk/alert/` + 各端 backend。
 
-| 端          | 即时通道（无伴侣 / 非 desktop）                | 预登记                           |
-| ----------- | ---------------------------------------------- | -------------------------------- |
-| **desktop** | 伴侣气泡或 Tauri 桌面通知（`showNativeAlert`） | process；伴侣可见时跳过          |
-| **web**     | Web Notification API                           | 页内 `setTimeout`（best-effort） |
-| **mobile**  | Tauri Android 本地通知（`showNativeAlert`）    | schedule / cancel                |
+| 端          | 即时通道（无伴侣 / 非 desktop）                                                                                      | 预登记                           |
+| ----------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| **desktop** | 伴侣气泡或 Tauri 桌面通知（`showNativeAlert`）                                                                       | process；伴侣可见时跳过          |
+| **web**     | Web Notification API                                                                                                 | 页内 `setTimeout`（best-effort） |
+| **mobile**  | Tauri Android 本地通知（`showNativeAlert`）；runtime 权限 + channel `freeanima.reminders`（High 横幅 / Public 锁屏） | schedule / cancel                |
 
 ---
 
