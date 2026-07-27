@@ -283,8 +283,7 @@ export async function serviceEmailSend(
 ) {
   assertPg(deps);
   const { sendEmail } = await import("@freeanima/host/capabilities/connectors/email");
-  const { subject_kind: _subjectKind, ...sendInput } = input;
-  return sendEmail(omitUndefined(sendInput));
+  return sendEmail(omitUndefined(input));
 }
 
 export async function serviceEmailSync(
@@ -430,8 +429,7 @@ export async function serviceEmailDraftSave(
 ) {
   assertPg(deps);
   const { saveDraft } = await import("@freeanima/host/capabilities/connectors/email");
-  const { subject_kind: _subjectKind, ...draftInput } = input;
-  return saveDraft(omitUndefined(draftInput));
+  return saveDraft(omitUndefined(input));
 }
 
 export async function serviceEmailDraftSend(
