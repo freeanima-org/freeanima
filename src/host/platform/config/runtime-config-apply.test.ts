@@ -23,10 +23,31 @@ describe("applyRuntimeConfigSection", () => {
     expect(config.data.compression?.enabled).toBe(true);
   });
 
-  it("TRANSFERRED_RUNTIME_SECTIONS 含 llm / mcp / worlds", () => {
+  it("TRANSFERRED_RUNTIME_SECTIONS 含 llm / mcp / worlds / object_storage", () => {
     expect(TRANSFERRED_RUNTIME_SECTIONS).toContain("llm");
     expect(TRANSFERRED_RUNTIME_SECTIONS).toContain("mcp_servers");
     expect(TRANSFERRED_RUNTIME_SECTIONS).toContain("worlds");
+    expect(TRANSFERRED_RUNTIME_SECTIONS).toContain("object_storage");
+  });
+
+  it("object_storage apply 会 rebind ObjectStore", async () => {
+    const { bindObjectStore, createObjectStore, getObjectStore, resetObjectStoreForTest } =
+      await import("@freeanima/features/object-storage/domain");
+    resetObjectStoreForTest();
+    const before = createObjectStore({});
+    bindObjectStore(before);
+    const config = Config.fromSnapshot({
+      object_storage: {
+        endpoint: "https://example.invalid",
+        region: "us-east-1",
+        bucket: "bucket",
+        access_key_id: "ak",
+        secret_access_key: "sk",
+      },
+    });
+    await applyRuntimeConfigSection(config, "object_storage");
+    expect(getObjectStore()).not.toBe(before);
+    resetObjectStoreForTest();
   });
 
   it("i18n apply 不依赖 runtime context", async () => {

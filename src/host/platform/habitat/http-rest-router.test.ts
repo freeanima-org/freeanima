@@ -55,10 +55,11 @@ describe("http-rest-router", () => {
     expect(match?.entry.http.response).toBe("raw");
   });
 
-  test("findRoute GET companion.asset.get", () => {
-    const match = findRoute("GET", "companion/assets/models/demo.vrm");
-    expect(match?.entry.hubMethod).toBe("companion.asset.get");
-    expect(match?.pathValues).toEqual({ kind: "models", fileName: "demo.vrm" });
+  test("findRoute GET object_storage.file.get", () => {
+    const match = findRoute("GET", "object_storage/file/42");
+    expect(match?.entry.hubMethod).toBe("object_storage.file.get");
+    expect(match?.pathValues).toEqual({ id: "42" });
+    expect(match?.entry.http.response).toBe("raw");
   });
 
   test("findRoute POST tts.synthesize raw method", () => {

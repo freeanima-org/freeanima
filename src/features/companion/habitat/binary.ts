@@ -1,19 +1,10 @@
-import { readFileSync } from "node:fs";
-import { z } from "zod";
-
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import type { RemoteToolsServerDeps } from "@freeanima/host/capabilities/outpost/transport/types";
 
 import { ApiHandlerError } from "../../habitat/habitat/habitat-api/handlers/errors.ts";
-import { resolveAssetFilePath } from "../domain/client-config.ts";
 import { addModelFromUpload } from "../domain/model-registry.ts";
 import { importMotionUpload } from "../domain/motion-import.ts";
 import { validateVrmUpload } from "../domain/models.ts";
-
-const companionAssetGetInputSchema = z.object({
-  kind: z.enum(["models", "motions"]),
-  fileName: z.string().min(1),
-});
 
 function requireHttpRequest(ctx: RemoteToolsRequestContext): Request {
   const httpRequest = (ctx as RemoteToolsRequestContext & { httpRequest?: Request }).httpRequest;
@@ -21,27 +12,6 @@ function requireHttpRequest(ctx: RemoteToolsRequestContext): Request {
     throw new Error("companion binary habitat method requires HTTP request context");
   }
   return httpRequest;
-}
-
-export async function handleCompanionAssetGet(
-  _deps: RemoteToolsServerDeps,
-  payload: unknown,
-  _ctx: RemoteToolsRequestContext,
-): Promise<Response> {
-  const input = companionAssetGetInputSchema.parse(payload);
-  const path = resolveAssetFilePath(input.kind, input.fileName);
-  if (!path) {
-    throw new ApiHandlerError(404, "资产不存在", { code: "NOT_FOUND" });
-  }
-  const bytes = readFileSync(path);
-  const contentType = input.kind === "models" ? "model/vrm" : "application/octet-stream";
-  return new Response(bytes, {
-    status: 200,
-    headers: {
-      "Content-Type": contentType,
-      "Cache-Control": "public, max-age=3600",
-    },
-  });
 }
 
 export async function handleCompanionModelUpload(

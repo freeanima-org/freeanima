@@ -22,6 +22,8 @@ import {
   POMODORO_TASK_FOCUS_COMPONENT,
   POMODORO_ACTIVE_COMPONENT,
   WORLD_CONFIG_COMPONENT,
+  OBJECT_FILE_COMPONENT,
+  OBJECT_FOLDER_COMPONENT,
   contentBlockBodySchema,
   diaryBlockTemplateBodySchema,
   diaryEntryBodySchema,
@@ -42,6 +44,8 @@ import {
   pomodoroTaskFocusBodySchema,
   pomodoroActiveBodySchema,
   worldConfigBodySchema,
+  objectFileBodySchema,
+  objectFolderBodySchema,
   type ContentBlockBody,
   type DiaryBlockTemplateBody,
   type DiaryEntryBody,
@@ -62,6 +66,8 @@ import {
   type PomodoroTaskFocusBody,
   type PomodoroActiveBody,
   type WorldConfigBody,
+  type ObjectFileBody,
+  type ObjectFolderBody,
 } from "./components/index.ts";
 import { parseEntityRevisions, type EntityRevision } from "./revisions.ts";
 
@@ -316,6 +322,26 @@ export function asProject(
   const parsed = projectBodySchema.safeParse(row.body);
   return parsed.success
     ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
+    : null;
+}
+
+export function asObjectFile(
+  row: EntityRow,
+): (ObjectFileBody & { id: number; title: string; world_id: number }) | null {
+  if (row.primary_component !== OBJECT_FILE_COMPONENT) return null;
+  const parsed = objectFileBodySchema.safeParse(row.body);
+  return parsed.success
+    ? { id: row.id, title: row.title, world_id: row.world_id, ...parsed.data }
+    : null;
+}
+
+export function asObjectFolder(
+  row: EntityRow,
+): (ObjectFolderBody & { id: number; title: string; world_id: number }) | null {
+  if (row.primary_component !== OBJECT_FOLDER_COMPONENT) return null;
+  const parsed = objectFolderBodySchema.safeParse(row.body);
+  return parsed.success
+    ? { id: row.id, title: row.title, world_id: row.world_id, ...parsed.data }
     : null;
 }
 

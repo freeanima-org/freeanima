@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 
+import { companionConfigSchema } from "@freeanima/host/core/config/schemas/companion.ts";
 import { llmConfigSchema } from "@freeanima/host/core/config/schemas/llm-config.ts";
 import { habitatRuntimeConfig } from "@freeanima/host/core/db/schema";
 
@@ -37,6 +38,9 @@ function replaceSection(
 function normalizeSectionValue(section: string, value: unknown): unknown {
   if (section === "llm") {
     return llmConfigSchema.parse(value ?? {});
+  }
+  if (section === "companion") {
+    return companionConfigSchema.parse(value ?? {});
   }
   return value ?? {};
 }

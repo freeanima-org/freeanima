@@ -9,6 +9,7 @@ import {
   stopPlatforms,
   type PlatformAdapter,
 } from "@freeanima/host/capabilities/connectors/gateway";
+import { bindObjectStore, createObjectStore } from "@freeanima/features/object-storage/domain";
 import { logComponent } from "@freeanima/host/platform/logging";
 import type { MessagingPort } from "@freeanima/host/platform/ports/messaging-port";
 import type { McpManagerPort } from "@freeanima/host/platform/ports/mcp-manager";
@@ -35,6 +36,7 @@ export const TRANSFERRED_RUNTIME_SECTIONS = [
   "weixin",
   "gateway",
   "worlds",
+  "object_storage",
 ] as const;
 
 export type TransferredRuntimeSection = (typeof TRANSFERRED_RUNTIME_SECTIONS)[number];
@@ -151,6 +153,9 @@ export async function applyRuntimeConfigSection(config: Config, section: string)
           break;
         case "worlds":
           await resolveAndBindWorldContext(config.data);
+          break;
+        case "object_storage":
+          bindObjectStore(createObjectStore(config.data.object_storage ?? {}));
           break;
         default:
           break;

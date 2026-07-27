@@ -12,14 +12,14 @@ export function createCompanionSettingsApi(): CompanionSettingsApi {
     async uploadModel(file: File) {
       await uploadModel(file);
     },
-    async setActiveModel(id: string) {
-      await setActiveModel(id);
+    async setActiveModel(objectFileId: number) {
+      await setActiveModel(objectFileId);
     },
-    async renameModel(id: string, name: string) {
-      await renameModel(id, name);
+    async renameModel(objectFileId: number, name: string) {
+      await renameModel(objectFileId, name);
     },
-    async deleteModel(id: string) {
-      await deleteModel(id);
+    async deleteModel(objectFileId: number) {
+      await deleteModel(objectFileId);
     },
     async refreshMotionLibrary() {
       await fetchMotionLibrary();

@@ -24,6 +24,7 @@ import { weixinConfigSchema } from "./weixin.ts";
 import { i18nConfigSchema } from "./i18n.ts";
 import { sectionSchema } from "./config.ts";
 import { objectStorageConfigSchema } from "./object-storage.ts";
+import { companionConfigSchema } from "./companion.ts";
 import { BOOTSTRAP_CONFIG_KEYS } from "../bootstrap-config.ts";
 
 /**
@@ -56,6 +57,8 @@ const runtimeConfigObjectSchema = z.object({
   worlds: worldsConfigSchema,
   tts: ttsConfigSchema,
   object_storage: objectStorageConfigSchema.optional(),
+  /** 桌面伴侣模块配置（行为 / 模型与动作注册表）；字节在 object_file */
+  companion: companionConfigSchema.optional(),
 });
 
 export const runtimeConfigSchema = runtimeConfigObjectSchema.partial().passthrough();

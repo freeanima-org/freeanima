@@ -47,7 +47,8 @@ export type HabitatConfigTestService =
   | "embedding"
   | "llm_provider"
   | "discord"
-  | "weixin";
+  | "weixin"
+  | "object_storage";
 
 export type HabitatConfigTestConnectionResult = {
   ok: boolean;

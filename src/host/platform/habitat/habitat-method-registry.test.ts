@@ -91,13 +91,14 @@ describe("habitat method registry (runtime SSOT)", () => {
     expect(isNonJsonHabitatHttpMethod("tls.ca")).toBe(true);
   });
 
-  test("companion.asset.get is raw GET", () => {
-    const def = getHabitatMethodDef("companion.asset.get");
+  test("object_storage.file.get is raw GET with ETag path", () => {
+    const def = getHabitatMethodDef("object_storage.file.get");
     expect(def.meta.http).toEqual({
       verb: "GET",
-      path: "companion/assets/:kind/:fileName",
-      pathParams: ["kind", "fileName"],
+      path: "object_storage/file/:id",
+      pathParams: ["id"],
       response: "raw",
     });
+    expect(isNonJsonHabitatHttpMethod("object_storage.file.get")).toBe(true);
   });
 });

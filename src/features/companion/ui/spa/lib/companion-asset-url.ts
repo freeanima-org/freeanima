@@ -1,6 +1,3 @@
-import { habitatRpcRestPrefix } from "@freeanima/shared/habitat-rpc";
-import { resolveHubBaseUrl } from "./companion-local.ts";
-
 export type CompanionAssetRef = { kind: "models" | "motions"; fileName: string };
 
 /** 对路径各段做 URL 编码（保留 `/`） */
@@ -29,25 +26,4 @@ export function parseCompanionAssetPath(path: string): CompanionAssetRef | null 
   const fileName = decodeURIComponent(m[2] ?? "");
   if (!fileName) return null;
   return { kind, fileName };
-}
-
-/**
- * 将 companion 相对资产路径解析为 Habitat REST URL（`companion.asset.get`）。
- * 绝对 http(s) URL 原样返回。
- * 运行时拉取请优先用 model-cache 的 callRaw，勿手拼 Bearer。
- */
-export async function resolveCompanionAssetUrl(path: string): Promise<string> {
-  if (path.startsWith("http://") || path.startsWith("https://")) {
-    return path;
-  }
-  const parsed = parseCompanionAssetPath(path);
-  if (!parsed) {
-    if (path.startsWith("/")) {
-      const base = await resolveHubBaseUrl();
-      return `${base}${encodeCompanionAssetPath(path)}`;
-    }
-    return path;
-  }
-  const base = (await resolveHubBaseUrl()).replace(/\/$/, "");
-  return `${base}${habitatRpcRestPrefix()}/companion/assets/${parsed.kind}/${encodeURIComponent(parsed.fileName)}`;
 }

@@ -1,8 +1,8 @@
 import { getCompanionHabitatClient } from "./habitat-client.ts";
 import { parseCompanionAssetPath } from "./companion-asset-url.ts";
+import { useCompanionStore } from "../stores/companion.ts";
 
-const CACHE_NAME = "companion-vrm-v2";
-/** Cache API 仅支持 http(s)；用稳定伪 origin，不绑定 Habitat host/port */
+const CACHE_NAME = "companion-object-v1";
 const CACHE_ORIGIN = "https://companion-asset.invalid";
 
 export type CachedModelSource = {
@@ -21,31 +21,43 @@ async function blobUrlFromResponse(res: Response): Promise<CachedModelSource> {
   };
 }
 
-/** 经统一 Habitat client 拉取 companion 资产（相对路径 → callRaw；绝对 URL → fetch） */
+/** 缓存路径 `{id}.vrm` / `{id}.vrma` → object_file_id */
+function lookupObjectFileId(pathOrUrl: string): number | undefined {
+  const parsed = parseCompanionAssetPath(pathOrUrl);
+  if (!parsed) return undefined;
+  const stem = parsed.fileName.replace(/\.(vrm|vrma)$/i, "");
+  const asNum = Number(stem);
+  if (Number.isInteger(asNum) && asNum > 0) {
+    const state = useCompanionStore.getState();
+    if (parsed.kind === "models") {
+      if (state.models.some((m) => m.object_file_id === asNum)) return asNum;
+    } else if (state.motionLibrary.some((m) => m.object_file_id === asNum)) {
+      return asNum;
+    }
+    return asNum;
+  }
+  return undefined;
+}
+
 async function fetchCompanionAssetResponse(pathOrUrl: string): Promise<Response> {
   if (pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://")) {
     return fetch(pathOrUrl);
   }
-  const parsed = parseCompanionAssetPath(pathOrUrl);
-  if (!parsed) {
-    throw new Error(`不支持的 companion 资产路径: ${pathOrUrl}`);
+  const fileId = lookupObjectFileId(pathOrUrl);
+  if (fileId == null) {
+    throw new Error(`无法解析 companion 资产 object_file_id: ${pathOrUrl}`);
   }
-  return getCompanionHabitatClient().callRaw("companion.asset.get", {
-    kind: parsed.kind,
-    fileName: parsed.fileName,
-  });
+  return getCompanionHabitatClient().callRaw("object_storage.file.get", { id: fileId });
 }
 
-/** Cache API 用的稳定 https key（相对路径 → 伪 URL；绝对 http(s) 原样） */
-export function cacheKeyFor(pathOrUrl: string): string {
-  const parsed = parseCompanionAssetPath(pathOrUrl);
-  if (parsed) {
-    return `${CACHE_ORIGIN}/${parsed.kind}/${encodeURIComponent(parsed.fileName)}`;
+export function cacheKeyFor(pathOrUrl: string, objectFileId?: number): string {
+  const id = objectFileId ?? lookupObjectFileId(pathOrUrl);
+  if (id != null && id > 0) {
+    return `${CACHE_ORIGIN}/file/${id}`;
   }
   return pathOrUrl;
 }
 
-/** 拉取 Habitat companion 资产并返回 blob URL，供 GLTFLoader 使用。 */
 export async function loadCompanionAssetBlobUrl(pathOrUrl: string): Promise<CachedModelSource> {
   const res = await fetchCompanionAssetResponse(pathOrUrl);
   if (!res.ok) {
@@ -54,7 +66,6 @@ export async function loadCompanionAssetBlobUrl(pathOrUrl: string): Promise<Cach
   return blobUrlFromResponse(res);
 }
 
-/** 从网络或 Cache API 加载 VRM/VRMA，返回 blob URL 供 GLTFLoader 使用 */
 export async function loadCachedModelSource(pathOrUrl: string): Promise<CachedModelSource> {
   if (typeof caches === "undefined") {
     return loadCompanionAssetBlobUrl(pathOrUrl);
@@ -81,7 +92,7 @@ export async function loadCachedModelSource(pathOrUrl: string): Promise<CachedMo
   try {
     await cache.put(cacheKey, res.clone());
   } catch {
-    // 写入失败不阻断加载（例如个别环境对 Response 的限制）
+    // 写入失败不阻断加载
   }
   return blobUrlFromResponse(res);
 }

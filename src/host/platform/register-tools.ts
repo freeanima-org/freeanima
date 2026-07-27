@@ -7,6 +7,11 @@ import { registerTaskTools } from "@freeanima/features/task/domain";
 import { registerProjectTools } from "@freeanima/features/project/domain";
 import { registerTagTools } from "@freeanima/features/tag/domain";
 import { registerVaultTools } from "@freeanima/features/vault/domain";
+import {
+  bindObjectStore,
+  createObjectStore,
+  registerObjectStorageTools,
+} from "@freeanima/features/object-storage/domain";
 import { registerNotificationTools } from "@freeanima/host/capabilities/tools/notification";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/host/capabilities/tools";
 import { registerCronjobTool } from "@freeanima/host/capabilities/connectors/cron/cronjob-tool";
@@ -34,6 +39,7 @@ export function registerServiceTools(opts: {
   if (registeredCatalog?.toolSets === opts.toolSets && registeredCatalog?.skills === opts.skills) {
     return;
   }
+  bindObjectStore(createObjectStore(opts.config.data.object_storage ?? {}));
   registerCoreTools(opts.toolSets, opts.config);
   registerSupplementalTools(opts.toolSets, opts.skills, opts.config);
   registerMemoryTools(opts.toolSets);
@@ -55,6 +61,7 @@ export function registerServiceTools(opts: {
   registerDiaryTools(opts.toolSets);
   registerPomodoroTools(opts.toolSets);
   registerVaultTools(opts.toolSets);
+  registerObjectStorageTools(opts.toolSets);
   registeredCatalog = opts;
 }
 

@@ -2,7 +2,6 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSy
 import { join } from "node:path";
 import { fetchHabitatRestRaw, parseHabitatRestResponse } from "@freeanima/shared/habitat-rpc";
 import {
-  companionCacheDir,
   companionConfigPath,
   companionHome,
   companionModelsDir,
@@ -13,7 +12,11 @@ import { habitatUrlFromConfig, remoteAuthTokenFromShell } from "./config.ts";
 
 type SyncPullResponse = {
   config: Record<string, unknown>;
-  asset_urls: string[];
+  assets: Array<{
+    kind: "models" | "motions";
+    file_name: string;
+    object_file_id: number;
+  }>;
 };
 
 type ConfigGetResponse = {
@@ -78,28 +81,28 @@ async function hubRpcCall<T>(method: string, payload: Record<string, unknown> = 
   return (await parseHabitatRestResponse(res)) as T;
 }
 
-async function downloadAsset(url: string): Promise<void> {
+async function downloadAsset(asset: {
+  kind: "models" | "motions";
+  file_name: string;
+  object_file_id: number;
+}): Promise<void> {
   const habitatUrl = habitatUrlFromConfig();
   const token = remoteAuthTokenFromShell();
   const headers: Record<string, string> = {};
   if (token) headers.authorization = `Bearer ${token}`;
-  const absolute = url.startsWith("http") ? url : `${habitatUrl.replace(/\/$/, "")}${url}`;
-  const res = await fetch(absolute, { headers });
-  if (!res.ok) throw new Error(`download failed: ${absolute}`);
+  const res = await fetchHabitatRestRaw(
+    habitatUrl,
+    "object_storage.file.get",
+    { id: asset.object_file_id },
+    token !== undefined ? { authToken: token } : undefined,
+  );
+  if (!res.ok) {
+    throw new Error(`download failed: object_file ${asset.object_file_id} HTTP ${res.status}`);
+  }
   const bytes = new Uint8Array(await res.arrayBuffer());
-  const parsed = new URL(absolute);
-  const parts = parsed.pathname.split("/").filter(Boolean);
-  const fileName = parts[parts.length - 1];
-  if (!fileName) return;
-  const kind = parts[parts.length - 2];
-  const destDir =
-    kind === "models"
-      ? companionModelsDir()
-      : kind === "motions"
-        ? companionMotionsDir()
-        : companionCacheDir();
+  const destDir = asset.kind === "models" ? companionModelsDir() : companionMotionsDir();
   mkdirSync(destDir, { recursive: true });
-  writeFileSync(join(destDir, decodeURIComponent(fileName)), bytes);
+  writeFileSync(join(destDir, asset.file_name), bytes);
 }
 
 async function uploadLocalFile(
@@ -184,11 +187,11 @@ export async function syncCompanionFromHabitat(): Promise<boolean> {
       ...persist
     } = result.config;
     writeFileSync(companionConfigPath(), JSON.stringify(persist, null, 2), "utf-8");
-    for (const url of result.asset_urls) {
+    for (const asset of result.assets) {
       try {
-        await downloadAsset(url);
+        await downloadAsset(asset);
       } catch (e) {
-        console.warn("[companion] asset download skipped:", url, e);
+        console.warn("[companion] asset download skipped:", asset, e);
       }
     }
     return true;

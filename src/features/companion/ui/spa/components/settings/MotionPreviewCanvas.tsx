@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -21,14 +21,26 @@ import {
 
 type Props = {
   modelPath: string;
+  /** `/motions/{id}.vrma` 或仅文件名（相对 motionManifest.baseUrl） */
   motionFile: string;
   width: number;
   className?: string;
 };
 
+/** motionFile 已是 `/motions/…` 时勿再拼 baseUrl（否则变成 `/motions//motions/…`） */
+export function resolvePreviewMotionPath(motionFile: string): string {
+  const trimmed = motionFile.trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.startsWith("/") || trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  return `${motionManifest.baseUrl}/${trimmed}`;
+}
+
 export function MotionPreviewCanvas({ modelPath, motionFile, width, className }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const height = Math.round((width * COMPANION_WINDOW_HEIGHT) / COMPANION_WINDOW_WIDTH);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,6 +50,7 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
     let revokeModel: (() => void) | undefined;
     let animationId: number | null = null;
     const clock = new THREE.Clock();
+    setError(null);
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 20);
@@ -65,6 +78,20 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
     resize();
+
+    const startRenderLoop = (): void => {
+      if (disposed || animationId != null) return;
+      const tick = (): void => {
+        if (disposed) return;
+        animationId = requestAnimationFrame(tick);
+        const delta = clock.getDelta();
+        mixer?.update(delta);
+        vrm?.update(delta);
+        controls?.update();
+        renderer.render(scene, camera);
+      };
+      tick();
+    };
 
     void (async () => {
       try {
@@ -101,33 +128,35 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
         controls.maxPolarAngle = (150 * Math.PI) / 180;
         controls.update();
 
-        const motionBlob = await loadCachedModelSource(`${motionManifest.baseUrl}/${motionFile}`);
+        // 先画出静态 VRM；动作失败时仍可见角色
+        startRenderLoop();
+
+        const motionPath = resolvePreviewMotionPath(motionFile);
+        const motionBlob = await loadCachedModelSource(motionPath);
+        if (disposed) {
+          motionBlob.revoke();
+          return;
+        }
         const animLoader = new GLTFLoader();
         animLoader.register((parser) => new VRMAnimationLoaderPlugin(parser));
         const motionGltf = await animLoader.loadAsync(motionBlob.url);
         motionBlob.revoke();
         const animations = motionGltf.userData.vrmAnimations as VRMAnimation[] | undefined;
         const vrma = animations?.[0];
-        if (!vrma || disposed) return;
+        if (!vrma || disposed) {
+          if (!vrma && !disposed) setError("动作文件无可播放的 VRMA 片段");
+          return;
+        }
 
         mixer = new THREE.AnimationMixer(loaded.scene);
         const clip = createVRMAnimationClip(vrma, loaded);
         const action = mixer.clipAction(clip);
         action.setLoop(THREE.LoopRepeat, Number.POSITIVE_INFINITY);
         action.play();
-
-        const tick = (): void => {
-          if (disposed) return;
-          animationId = requestAnimationFrame(tick);
-          const delta = clock.getDelta();
-          mixer?.update(delta);
-          vrm?.update(delta);
-          controls?.update();
-          renderer.render(scene, camera);
-        };
-        tick();
-      } catch {
-        /* 预览失败时保持空白 */
+      } catch (e) {
+        if (!disposed) {
+          setError(e instanceof Error ? e.message : String(e));
+        }
       }
     })();
 
@@ -144,12 +173,19 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
   }, [modelPath, motionFile, width, height]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={className ?? "motion-preview-canvas"}
-      width={width}
-      height={height}
-      style={{ width, height }}
-    />
+    <div className="relative" style={{ width, height }}>
+      <canvas
+        ref={canvasRef}
+        className={className ?? "motion-preview-canvas"}
+        width={width}
+        height={height}
+        style={{ width, height }}
+      />
+      {error ? (
+        <p className="absolute inset-x-2 bottom-2 rounded bg-destructive/90 px-2 py-1 text-[10px] text-destructive-foreground">
+          {error}
+        </p>
+      ) : null}
+    </div>
   );
 }

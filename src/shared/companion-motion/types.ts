@@ -6,13 +6,12 @@ export type MotionSlotId = (typeof MOTION_SLOT_IDS)[number];
 export const LEGACY_IN_PLACE_SLOT_PREFIX = "in_place_";
 
 export type MotionLibraryEntry = {
-  id: string;
   name: string;
-  file: string;
-  content_hash?: string;
+  object_file_id: number;
+  sort: number;
 };
 
-export type MotionSlotsConfig = Record<MotionSlotId, string[]>;
+export type MotionSlotsConfig = Record<MotionSlotId, number[]>;
 
 export type LocomotionManifest = Partial<Record<LocomotionSlot, string>>;
 

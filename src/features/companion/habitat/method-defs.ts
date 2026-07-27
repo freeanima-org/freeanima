@@ -9,12 +9,16 @@ import {
   companionModelDeleteOutputSchema,
   companionModelRenameInputSchema,
   companionModelRenameOutputSchema,
+  companionModelReorderInputSchema,
+  companionModelReorderOutputSchema,
   companionModelSetActiveInputSchema,
   companionModelSetActiveOutputSchema,
   companionMotionDeleteInputSchema,
   companionMotionDeleteOutputSchema,
   companionMotionRenameInputSchema,
   companionMotionRenameOutputSchema,
+  companionMotionReorderInputSchema,
+  companionMotionReorderOutputSchema,
   companionMotionSetSlotInputSchema,
   companionMotionSetSlotOutputSchema,
   companionSyncPullInputSchema,
@@ -29,10 +33,6 @@ import {
 } from "@freeanima/shared/habitat-contract";
 
 const emptyInputSchema = z.object({}).passthrough();
-const companionAssetGetInputSchema = z.object({
-  kind: z.enum(["models", "motions"]),
-  fileName: z.string().min(1),
-});
 const companionUploadOkOutputSchema = z.object({ ok: z.literal(true) });
 
 export const companionMethodDefs = {
@@ -61,6 +61,11 @@ export const companionMethodDefs = {
     output: companionModelDeleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
+  "companion.model.reorder": defineHabitatMethod({
+    input: companionModelReorderInputSchema,
+    output: companionModelReorderOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
   "companion.motion.setSlot": defineHabitatMethod({
     input: companionMotionSetSlotInputSchema,
     output: companionMotionSetSlotOutputSchema,
@@ -76,6 +81,11 @@ export const companionMethodDefs = {
     output: companionMotionDeleteOutputSchema,
     meta: dualTransportMeta(false),
   }),
+  "companion.motion.reorder": defineHabitatMethod({
+    input: companionMotionReorderInputSchema,
+    output: companionMotionReorderOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
   "companion.migrate.fromLocal": defineHabitatMethod({
     input: companionMigrateFromLocalInputSchema,
     output: companionMigrateFromLocalOutputSchema,
@@ -85,16 +95,6 @@ export const companionMethodDefs = {
     input: companionSyncPullInputSchema,
     output: companionSyncPullOutputSchema,
     meta: dualTransportMeta(true),
-  }),
-  "companion.asset.get": defineHabitatMethod({
-    input: companionAssetGetInputSchema,
-    output: z.record(z.string(), z.unknown()),
-    meta: binaryHttpMeta({
-      verb: "GET",
-      path: "companion/assets/:kind/:fileName",
-      pathParams: ["kind", "fileName"],
-      response: "raw",
-    }),
   }),
   "companion.model.upload": defineHabitatMethod({
     input: emptyInputSchema,

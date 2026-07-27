@@ -83,17 +83,31 @@ export async function uploadModel(file: File) {
   return { config: wrapHabitatConfig(data.config) };
 }
 
-export async function setActiveModel(id: string) {
-  const data = await getCompanionHabitatClient().call("companion.model.setActive", { id });
+export async function setActiveModel(objectFileId: number) {
+  const data = await getCompanionHabitatClient().call("companion.model.setActive", {
+    object_file_id: objectFileId,
+  });
   return { config: wrapHabitatConfig(data.config) };
 }
 
-export async function renameModel(id: string, name: string) {
-  await getCompanionHabitatClient().call("companion.model.rename", { id, name });
+export async function renameModel(objectFileId: number, name: string) {
+  await getCompanionHabitatClient().call("companion.model.rename", {
+    object_file_id: objectFileId,
+    name,
+  });
 }
 
-export async function deleteModel(id: string) {
-  const data = await getCompanionHabitatClient().call("companion.model.delete", { id });
+export async function deleteModel(objectFileId: number) {
+  const data = await getCompanionHabitatClient().call("companion.model.delete", {
+    object_file_id: objectFileId,
+  });
+  return { config: wrapHabitatConfig(data.config) };
+}
+
+export async function reorderModels(objectFileIds: number[]) {
+  const data = await getCompanionHabitatClient().call("companion.model.reorder", {
+    object_file_ids: objectFileIds,
+  });
   return { config: wrapHabitatConfig(data.config) };
 }
 
@@ -123,29 +137,43 @@ export async function uploadMotionFile(file: File) {
   return {
     ok: true as const,
     dir: "",
-    files: body.entries?.map((e) => e.file) ?? [],
+    files: body.entries?.map((e) => String(e.object_file_id)) ?? [],
     entries: body.entries ?? [],
     library: data.config.motion_library,
     ...(skipped && skipped.length > 0 ? { skipped_fbx: skipped } : {}),
   };
 }
 
-export async function setMotionSlot(slot: MotionSlotId, motionIds: string[]) {
+export async function setMotionSlot(slot: MotionSlotId, objectFileIds: number[]) {
   const data = await getCompanionHabitatClient().call("companion.motion.setSlot", {
     slot,
-    motion_ids: motionIds,
+    object_file_ids: objectFileIds,
   });
   return { config: wrapHabitatConfig(data.config) };
 }
 
-export async function renameMotion(id: string, name: string) {
-  const data = await getCompanionHabitatClient().call("companion.motion.rename", { id, name });
-  return { entry: data.config.motion_library.find((e) => e.id === id) };
+export async function renameMotion(objectFileId: number, name: string) {
+  const data = await getCompanionHabitatClient().call("companion.motion.rename", {
+    object_file_id: objectFileId,
+    name,
+  });
+  return {
+    entry: data.config.motion_library.find((e) => e.object_file_id === objectFileId),
+  };
 }
 
-export async function deleteMotion(id: string) {
-  const data = await getCompanionHabitatClient().call("companion.motion.delete", { id });
+export async function deleteMotion(objectFileId: number) {
+  const data = await getCompanionHabitatClient().call("companion.motion.delete", {
+    object_file_id: objectFileId,
+  });
   return { library: data.config.motion_library, config: wrapHabitatConfig(data.config) };
+}
+
+export async function reorderMotions(objectFileIds: number[]) {
+  const data = await getCompanionHabitatClient().call("companion.motion.reorder", {
+    object_file_ids: objectFileIds,
+  });
+  return { config: wrapHabitatConfig(data.config) };
 }
 
 export async function fetchMotionStatus() {

@@ -31,11 +31,6 @@ export const HTTP_ROUTE_OVERRIDES: Partial<Record<string, Partial<HttpRouteMeta>
   "conversation.tail": { pathParams: ["conversation_id"] },
   "vault.get": { verb: "POST" },
   "vault.crypto.get": { verb: "POST" },
-  "companion.asset.get": {
-    path: "companion/assets/:kind/:fileName",
-    pathParams: ["kind", "fileName"],
-    response: "raw",
-  },
 };
 
 const WRITE_PATH_ACTIONS = new Set([

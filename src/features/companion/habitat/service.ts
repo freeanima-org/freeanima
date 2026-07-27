@@ -6,17 +6,29 @@ import type {
   CompanionMigrateFromLocalInput,
   CompanionModelDeleteInput,
   CompanionModelRenameInput,
+  CompanionModelReorderInput,
   CompanionModelSetActiveInput,
   CompanionMotionDeleteInput,
   CompanionMotionRenameInput,
+  CompanionMotionReorderInput,
   CompanionMotionSetSlotInput,
 } from "../protocol/index.ts";
-import { buildClientCompanionConfig, listAssetDownloadUrls } from "../domain/client-config.ts";
-import { habitatUrlFromEnv, loadCompanionConfig, saveCompanionConfig } from "../domain/config.ts";
+import { buildClientCompanionConfig, listSyncAssets } from "../domain/client-config.ts";
+import { loadCompanionConfig, saveCompanionConfig } from "../domain/config.ts";
 import { migrateFromLocalDir } from "../domain/migrate.ts";
-import { deleteModel, renameModel, setActiveModel } from "../domain/model-registry.ts";
+import {
+  deleteModel,
+  renameModel,
+  reorderModels,
+  setActiveModel,
+} from "../domain/model-registry.ts";
 import { importMotionUpload } from "../domain/motion-import.ts";
-import { deleteMotion, renameMotion, setSlotMotions } from "../domain/motion-library.ts";
+import {
+  deleteMotion,
+  renameMotion,
+  reorderMotions,
+  setSlotMotions,
+} from "../domain/motion-library.ts";
 import { mergeBehavior } from "../domain/behavior.ts";
 
 function assertPg(): void {
@@ -39,7 +51,9 @@ export async function serviceCompanionConfigUpdate(
   assertPg();
   const current = await loadCompanionConfig();
   await saveCompanionConfig({
-    ...(input.active_model_id !== undefined ? { active_model_id: input.active_model_id } : {}),
+    ...(input.active_object_file_id !== undefined
+      ? { active_object_file_id: input.active_object_file_id }
+      : {}),
     ...(input.motion_slots !== undefined
       ? {
           motion_slots: {
@@ -68,7 +82,7 @@ export async function serviceCompanionModelSetActive(
   input: CompanionModelSetActiveInput,
 ): Promise<{ config: CompanionClientConfigPayload }> {
   assertPg();
-  await setActiveModel(input.id);
+  await setActiveModel(input.object_file_id);
   return { config: await buildClientCompanionConfig() };
 }
 
@@ -76,7 +90,7 @@ export async function serviceCompanionModelRename(
   input: CompanionModelRenameInput,
 ): Promise<{ config: CompanionClientConfigPayload }> {
   assertPg();
-  await renameModel(input.id, input.name);
+  await renameModel(input.object_file_id, input.name);
   return { config: await buildClientCompanionConfig() };
 }
 
@@ -84,7 +98,15 @@ export async function serviceCompanionModelDelete(
   input: CompanionModelDeleteInput,
 ): Promise<{ config: CompanionClientConfigPayload }> {
   assertPg();
-  await deleteModel(input.id);
+  await deleteModel(input.object_file_id);
+  return { config: await buildClientCompanionConfig() };
+}
+
+export async function serviceCompanionModelReorder(
+  input: CompanionModelReorderInput,
+): Promise<{ config: CompanionClientConfigPayload }> {
+  assertPg();
+  await reorderModels(input.object_file_ids);
   return { config: await buildClientCompanionConfig() };
 }
 
@@ -92,7 +114,7 @@ export async function serviceCompanionMotionSetSlot(
   input: CompanionMotionSetSlotInput,
 ): Promise<{ config: CompanionClientConfigPayload }> {
   assertPg();
-  await setSlotMotions(input.slot, input.motion_ids);
+  await setSlotMotions(input.slot, input.object_file_ids);
   return { config: await buildClientCompanionConfig() };
 }
 
@@ -100,7 +122,7 @@ export async function serviceCompanionMotionRename(
   input: CompanionMotionRenameInput,
 ): Promise<{ config: CompanionClientConfigPayload }> {
   assertPg();
-  await renameMotion(input.id, input.name);
+  await renameMotion(input.object_file_id, input.name);
   return { config: await buildClientCompanionConfig() };
 }
 
@@ -108,7 +130,15 @@ export async function serviceCompanionMotionDelete(
   input: CompanionMotionDeleteInput,
 ): Promise<{ config: CompanionClientConfigPayload }> {
   assertPg();
-  await deleteMotion(input.id);
+  await deleteMotion(input.object_file_id);
+  return { config: await buildClientCompanionConfig() };
+}
+
+export async function serviceCompanionMotionReorder(
+  input: CompanionMotionReorderInput,
+): Promise<{ config: CompanionClientConfigPayload }> {
+  assertPg();
+  await reorderMotions(input.object_file_ids);
   return { config: await buildClientCompanionConfig() };
 }
 
@@ -130,14 +160,13 @@ export async function serviceCompanionMigrateFromLocal(
 
 export async function serviceCompanionSyncPull(): Promise<{
   config: CompanionClientConfigPayload;
-  asset_urls: string[];
+  assets: ReturnType<typeof listSyncAssets>;
 }> {
   assertPg();
   const cfg = await loadCompanionConfig();
-  const habitatBase = habitatUrlFromEnv();
   return {
     config: await buildClientCompanionConfig(),
-    asset_urls: listAssetDownloadUrls(habitatBase, cfg),
+    assets: listSyncAssets(cfg),
   };
 }
 

@@ -169,12 +169,16 @@ import type {
   CompanionModelDeleteOutput,
   CompanionModelRenameInput,
   CompanionModelRenameOutput,
+  CompanionModelReorderInput,
+  CompanionModelReorderOutput,
   CompanionModelSetActiveInput,
   CompanionModelSetActiveOutput,
   CompanionMotionDeleteInput,
   CompanionMotionDeleteOutput,
   CompanionMotionRenameInput,
   CompanionMotionRenameOutput,
+  CompanionMotionReorderInput,
+  CompanionMotionReorderOutput,
   CompanionMotionSetSlotInput,
   CompanionMotionSetSlotOutput,
   CompanionSyncPullInput,
@@ -314,9 +318,11 @@ export const RPC_PROTOCOL_METHODS = [
   "companion.model.setActive",
   "companion.model.rename",
   "companion.model.delete",
+  "companion.model.reorder",
   "companion.motion.setSlot",
   "companion.motion.rename",
   "companion.motion.delete",
+  "companion.motion.reorder",
   "companion.migrate.fromLocal",
   "companion.sync.pull",
   "terminal.attach",
@@ -428,9 +434,11 @@ export type RpcRouterInputs = {
   "companion.model.setActive": CompanionModelSetActiveInput;
   "companion.model.rename": CompanionModelRenameInput;
   "companion.model.delete": CompanionModelDeleteInput;
+  "companion.model.reorder": CompanionModelReorderInput;
   "companion.motion.setSlot": CompanionMotionSetSlotInput;
   "companion.motion.rename": CompanionMotionRenameInput;
   "companion.motion.delete": CompanionMotionDeleteInput;
+  "companion.motion.reorder": CompanionMotionReorderInput;
   "companion.migrate.fromLocal": CompanionMigrateFromLocalInput;
   "companion.sync.pull": CompanionSyncPullInput;
   "terminal.attach": TerminalAttachInput;
@@ -540,9 +548,11 @@ export type RpcRouterOutputs = {
   "companion.model.setActive": CompanionModelSetActiveOutput;
   "companion.model.rename": CompanionModelRenameOutput;
   "companion.model.delete": CompanionModelDeleteOutput;
+  "companion.model.reorder": CompanionModelReorderOutput;
   "companion.motion.setSlot": CompanionMotionSetSlotOutput;
   "companion.motion.rename": CompanionMotionRenameOutput;
   "companion.motion.delete": CompanionMotionDeleteOutput;
+  "companion.motion.reorder": CompanionMotionReorderOutput;
   "companion.migrate.fromLocal": CompanionMigrateFromLocalOutput;
   "companion.sync.pull": CompanionSyncPullOutput;
   "terminal.attach": TerminalAttachOutput;

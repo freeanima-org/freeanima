@@ -1,3 +1,4 @@
+import { companionMotionCachePath } from "@freeanima/host/core/config/schemas/companion.ts";
 import {
   emptyMotionSlots,
   LEGACY_IN_PLACE_SLOT_PREFIX,
@@ -10,70 +11,63 @@ import {
 } from "./types.ts";
 
 export type ResolvedMotion = {
-  motionId: string | null;
+  objectFileId: number | null;
   file: string;
 };
 
 export type { LocomotionSlot };
 
-function libraryById(library: MotionLibraryEntry[]): Map<string, MotionLibraryEntry> {
-  return new Map(library.map((e) => [e.id, e]));
+function cachePathFor(objectFileId: number): string {
+  return companionMotionCachePath(objectFileId);
 }
 
-function libraryByFile(library: MotionLibraryEntry[]): Map<string, MotionLibraryEntry> {
-  return new Map(library.map((e) => [e.file, e]));
+function libraryByObjectFileId(library: MotionLibraryEntry[]): Map<number, MotionLibraryEntry> {
+  return new Map(library.map((e) => [e.object_file_id, e]));
 }
 
-function pickRandom(ids: string[]): string | null {
+function pickRandom(ids: number[]): number | null {
   if (ids.length === 0) return null;
   return ids[Math.floor(Math.random() * ids.length)] ?? null;
 }
 
-function resolveLibraryRef(ref: string, library: MotionLibraryEntry[]): string {
-  if (!ref.endsWith(".vrma")) return ref;
-  const byFile = libraryByFile(library);
-  const mapped = byFile.get(ref);
-  if (mapped) return mapped.id;
-  const stem = ref.replace(/\.vrma$/i, "");
-  const byStem = library.find((e) => e.name === stem || e.file === ref);
-  return byStem?.id ?? ref;
+function parseObjectFileId(ref: number | string): number | null {
+  if (typeof ref === "number") {
+    return Number.isInteger(ref) && ref > 0 ? ref : null;
+  }
+  const asNum = Number(ref);
+  if (Number.isInteger(asNum) && asNum > 0) return asNum;
+  const m = ref.match(/(\d+)\.vrma$/i);
+  if (m?.[1]) {
+    const id = Number(m[1]);
+    return Number.isInteger(id) && id > 0 ? id : null;
+  }
+  return null;
 }
 
 export function resolveMotionForSlot(
   slot: MotionSlotId,
   slots: MotionSlotsConfig,
   library: MotionLibraryEntry[],
-  options?: { motionId?: string | null },
+  options?: { motionId?: string | number | null },
 ): ResolvedMotion | null {
-  const byId = libraryById(library);
-  const byFile = libraryByFile(library);
+  const byId = libraryByObjectFileId(library);
   const slotIds = slots[slot] ?? [];
 
-  if (options?.motionId) {
-    const entry = byId.get(options.motionId);
-    if (entry) {
-      return { motionId: entry.id, file: entry.file };
-    }
+  if (options?.motionId != null && options.motionId !== "") {
+    const id = parseObjectFileId(options.motionId);
+    if (id == null) return null;
+    const entry = byId.get(id);
+    if (!entry) return null;
+    return { objectFileId: entry.object_file_id, file: cachePathFor(entry.object_file_id) };
   }
 
   const randomId = pickRandom(slotIds);
-  if (randomId) {
-    const asEntry = byId.get(randomId);
-    if (asEntry) {
-      return { motionId: asEntry.id, file: asEntry.file };
+  if (randomId != null) {
+    const entry = byId.get(randomId);
+    if (entry) {
+      return { objectFileId: entry.object_file_id, file: cachePathFor(entry.object_file_id) };
     }
-    if (randomId.endsWith(".vrma")) {
-      const mapped = byFile.get(randomId);
-      if (mapped) {
-        return { motionId: mapped.id, file: mapped.file };
-      }
-      const stem = randomId.replace(/\.vrma$/i, "");
-      const byStem = library.find((e) => e.name === stem);
-      if (byStem) {
-        return { motionId: byStem.id, file: byStem.file };
-      }
-      return { motionId: null, file: randomId };
-    }
+    return { objectFileId: randomId, file: cachePathFor(randomId) };
   }
 
   return null;
@@ -91,28 +85,28 @@ export function resolveLocomotionMotion(
   const fallbackFile = locomotionManifest?.[slot];
   if (!fallbackFile) return null;
 
-  const entry = library.find((e) => e.file === fallbackFile);
-  if (entry) {
-    return { motionId: entry.id, file: entry.file };
-  }
-  const stem = fallbackFile.replace(/\.vrma$/i, "");
-  const byStem = library.find((e) => e.name === stem);
-  if (byStem) {
-    return { motionId: byStem.id, file: byStem.file };
-  }
-  return { motionId: null, file: fallbackFile };
+  // manifest 文件名仅作本地/dev 回退；无对应 object_file 时仍返回路径供本地包加载
+  return { objectFileId: null, file: fallbackFile };
 }
 
+/** 将原始槽位表规范为 object_file_id[]（忽略无法解析的引用） */
 export function normalizeMotionSlots(
-  raw: Record<string, string[]>,
+  raw: Record<string, Array<string | number>>,
   library: MotionLibraryEntry[],
-  locomotionManifest?: LocomotionManifest,
+  _locomotionManifest?: LocomotionManifest,
 ): MotionSlotsConfig {
   const next = emptyMotionSlots();
-  const inPlace = new Set<string>();
+  const inPlace = new Set<number>();
+  const known = new Set(library.map((e) => e.object_file_id));
 
-  const mapRefs = (refs: string[]): string[] =>
-    refs.map((ref) => resolveLibraryRef(ref, library)).filter((ref) => ref.length > 0);
+  const mapRefs = (refs: Array<string | number>): number[] => {
+    const out: number[] = [];
+    for (const ref of refs) {
+      const id = parseObjectFileId(ref);
+      if (id != null && (known.size === 0 || known.has(id))) out.push(id);
+    }
+    return out;
+  };
 
   for (const [key, refs] of Object.entries(raw)) {
     if (key === "in_place") {
@@ -129,16 +123,6 @@ export function normalizeMotionSlots(
   }
 
   next.in_place = [...inPlace];
-
-  for (const slot of ["walk", "climb"] as const) {
-    if (next[slot].length > 0) continue;
-    const manifestFile = locomotionManifest?.[slot];
-    if (!manifestFile) continue;
-    const id = resolveLibraryRef(manifestFile, library);
-    if (!id.endsWith(".vrma")) {
-      next[slot] = [id];
-    }
-  }
 
   return next;
 }

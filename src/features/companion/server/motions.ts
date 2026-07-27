@@ -40,7 +40,8 @@ export async function downloadMotionsFromUrl(
     throw new Error(`下载失败: HTTP ${res.status}`);
   }
   const bytes = new Uint8Array(await res.arrayBuffer());
-  return importMotionUpload("download.zip", bytes);
+  await importMotionUpload("download.zip", bytes);
+  return { dir: companionMotionsDir(), files: [] };
 }
 
 export async function ensureDefaultMotions(): Promise<boolean> {
@@ -88,8 +89,8 @@ export async function handleMotionUpload(req: Request): Promise<Response> {
 
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const result = await importMotionUpload(file.name, bytes);
-    return jsonResponse({ ok: true, ...result, library: listMotionLibrary() });
+    await importMotionUpload(file.name, bytes);
+    return jsonResponse({ ok: true, library: listMotionLibrary() });
   } catch (e) {
     return jsonResponse({ error: e instanceof Error ? e.message : String(e) }, 400);
   }

@@ -33,20 +33,20 @@ function SlotAddModal({ slot, onClose }: AddModalProps) {
   const motionSlots = useCompanionStore((s) => s.motionSlots);
   const motionLibrary = useCompanionStore((s) => s.motionLibrary);
   const refreshConfig = useCompanionStore((s) => s.refreshConfig);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);
 
   const assigned = useMemo(() => new Set(motionSlots[slot] ?? []), [motionSlots, slot]);
   const available = useMemo(
-    () => motionLibrary.filter((m) => !assigned.has(m.id)),
+    () => motionLibrary.filter((m) => !assigned.has(m.object_file_id)),
     [motionLibrary, assigned],
   );
 
-  const toggle = (id: string): void => {
+  const toggle = (objectFileId: number): void => {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(objectFileId)) next.delete(objectFileId);
+      else next.add(objectFileId);
       return next;
     });
   };
@@ -79,13 +79,16 @@ function SlotAddModal({ slot, onClose }: AddModalProps) {
         ) : (
           <ul className="flex flex-col gap-1 max-h-[40vh] overflow-y-auto pr-1">
             {available.map((m) => (
-              <li key={m.id}>
+              <li key={m.object_file_id}>
                 <label className="flex cursor-pointer items-center gap-3 rounded-lg py-2 hover:bg-muted/50">
-                  <Checkbox checked={selected.has(m.id)} onCheckedChange={() => toggle(m.id)} />
+                  <Checkbox
+                    checked={selected.has(m.object_file_id)}
+                    onCheckedChange={() => toggle(m.object_file_id)}
+                  />
                   <span className="flex-1 min-w-0">
                     <span className="block truncate text-sm">{m.name}</span>
-                    <span className="block truncate text-xs text-foreground/45" title={m.id}>
-                      {m.id}
+                    <span className="block truncate text-xs text-foreground/45">
+                      #{m.object_file_id}
                     </span>
                   </span>
                 </label>
@@ -107,8 +110,11 @@ function SlotAddModal({ slot, onClose }: AddModalProps) {
   );
 }
 
-function motionEntry(library: MotionLibraryEntry[], id: string): MotionLibraryEntry | undefined {
-  return library.find((m) => m.id === id);
+function motionEntry(
+  library: MotionLibraryEntry[],
+  objectFileId: number,
+): MotionLibraryEntry | undefined {
+  return library.find((m) => m.object_file_id === objectFileId);
 }
 
 export function MotionSlotsTab() {
@@ -117,8 +123,8 @@ export function MotionSlotsTab() {
   const refreshConfig = useCompanionStore((s) => s.refreshConfig);
   const [addSlot, setAddSlot] = useState<MotionSlotId | null>(null);
 
-  const remove = (slot: MotionSlotId, motionId: string): void => {
-    const next = (motionSlots[slot] ?? []).filter((id) => id !== motionId);
+  const remove = (slot: MotionSlotId, objectFileId: number): void => {
+    const next = (motionSlots[slot] ?? []).filter((id) => id !== objectFileId);
     void setMotionSlot(slot, next)
       .then(() => refreshConfig())
       .then(() => emitConfigChanged());
@@ -158,19 +164,20 @@ export function MotionSlotsTab() {
                 ) : (
                   <ul className="flex flex-col divide-y divide-border">
                     {entries.map((m) => (
-                      <li key={m.id} className="flex items-center gap-3 py-2 first:pt-0 last:pb-0">
+                      <li
+                        key={m.object_file_id}
+                        className="flex items-center gap-3 py-2 first:pt-0 last:pb-0"
+                      >
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm">{m.name}</p>
-                          <p className="truncate text-xs text-foreground/45" title={m.id}>
-                            {m.id}
-                          </p>
+                          <p className="truncate text-xs text-foreground/45">#{m.object_file_id}</p>
                         </div>
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           className="h-7 shrink-0 px-2 text-xs text-destructive hover:text-destructive"
-                          onClick={() => remove(slot, m.id)}
+                          onClick={() => remove(slot, m.object_file_id)}
                         >
                           移除
                         </Button>

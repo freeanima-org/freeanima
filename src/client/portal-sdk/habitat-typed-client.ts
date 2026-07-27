@@ -23,6 +23,7 @@ import { diaryMethodDefs } from "@freeanima/features/diary/habitat/method-defs.t
 import { emailMethodDefs } from "@freeanima/features/email/habitat/method-defs.ts";
 import { mcpMethodDefs } from "@freeanima/features/mcp/habitat/method-defs.ts";
 import { notificationMethodDefs } from "@freeanima/features/notification/habitat/method-defs.ts";
+import { objectStorageMethodDefs } from "@freeanima/features/object-storage/habitat/method-defs.ts";
 import { pomodoroMethodDefs } from "@freeanima/features/pomodoro/habitat/method-defs.ts";
 import { projectMethodDefs } from "@freeanima/features/project/habitat/method-defs.ts";
 import { tagMethodDefs } from "@freeanima/features/tag/habitat/method-defs.ts";
@@ -43,6 +44,7 @@ export const FEATURE_METHOD_DEFS = {
   ...pomodoroMethodDefs,
   ...notificationMethodDefs,
   ...companionMethodDefs,
+  ...objectStorageMethodDefs,
   ...mcpMethodDefs,
 } as const;
 

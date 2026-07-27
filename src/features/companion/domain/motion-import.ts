@@ -1,23 +1,17 @@
 import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { basename, join } from "node:path";
-import { displayNameFromFilename, motionFileNameForId, newMotionId } from "./asset-id.ts";
+import { createObjectFile } from "@freeanima/features/object-storage/domain";
+import { displayNameFromFilename } from "./asset-id.ts";
 import type { MotionLibraryEntry } from "./types.ts";
 import { companionMotionsDir } from "./paths.ts";
 import { FBX_IMPORT_UNAVAILABLE_MSG, findFbx2gltfBinary } from "./fbx-converter-kit.ts";
 import { ensureFbx2gltf } from "./fbx2gltf-install.ts";
 import { convertFbxToVrmaFiles } from "./fbx2vrma-core.ts";
-import { loadCompanionConfig, saveCompanionConfig } from "./config.ts";
+import { resolveCompanionWorldId } from "./companion-world.ts";
+import { nextMotionSort, registerMotionEntry } from "./motion-library.ts";
 import { extractZipArchive, readBytes, removePath, writeBytes } from "./process-utils.ts";
 
 const MOTION_EXT = /\.(vrma|fbx)$/i;
-
-async function registerMotionEntry(entry: MotionLibraryEntry): Promise<MotionLibraryEntry> {
-  const cfg = await loadCompanionConfig();
-  const existing = cfg.motion_library.find((e) => e.id === entry.id);
-  if (existing) return existing;
-  await saveCompanionConfig({ motion_library: [...cfg.motion_library, entry] });
-  return entry;
-}
 
 export type MotionImportResult = {
   dir: string;
@@ -72,38 +66,42 @@ function collectMotionFiles(root: string): string[] {
   return found;
 }
 
+async function putMotionAsObjectFile(bytes: Uint8Array, title: string): Promise<number> {
+  const file = await createObjectFile({
+    world_id: resolveCompanionWorldId(),
+    title,
+    bytes,
+    mime_type: "application/octet-stream",
+  });
+  return file.id;
+}
+
 async function importVrmaBytes(
-  destDir: string,
   bytes: Uint8Array,
   uploadName: string,
+  sort: number,
 ): Promise<MotionLibraryEntry> {
-  const id = newMotionId();
-  const fileName = motionFileNameForId(id);
-  await writeBytes(join(destDir, fileName), bytes);
-  return registerMotionEntry({
-    id,
-    name: displayNameFromFilename(uploadName),
-    file: fileName,
-  });
+  const name = displayNameFromFilename(uploadName);
+  const object_file_id = await putMotionAsObjectFile(bytes, name);
+  return registerMotionEntry({ name, object_file_id, sort });
 }
 
 async function importFbxFile(
   destDir: string,
   inputPath: string,
   uploadName: string,
+  sort: number,
 ): Promise<MotionLibraryEntry> {
-  const id = newMotionId();
-  const fileName = motionFileNameForId(id);
-  const destPath = join(destDir, fileName);
+  const destPath = join(destDir, `.tmp-${Date.now()}.vrma`);
   await convertFbxToVrma(inputPath, destPath);
-  return registerMotionEntry({
-    id,
-    name: displayNameFromFilename(uploadName),
-    file: fileName,
-  });
+  const bytes = await readBytes(destPath);
+  const name = displayNameFromFilename(uploadName);
+  const object_file_id = await putMotionAsObjectFile(bytes, name);
+  await removePath(destPath);
+  return registerMotionEntry({ name, object_file_id, sort });
 }
 
-/** 将单个 .vrma / .fbx 或含 vrma/fbx 的 zip 导入到扁平 motions 目录 */
+/** 将单个 .vrma / .fbx 或含 vrma/fbx 的 zip 导入 */
 export async function importMotionUpload(
   uploadName: string,
   bytes: Uint8Array,
@@ -113,7 +111,7 @@ export async function importMotionUpload(
   const lower = uploadName.toLowerCase();
   const imported: MotionLibraryEntry[] = [];
   const skippedFbx: string[] = [];
-  const tryFbxImport = (): Promise<boolean> => fbxImportReady();
+  let sort = await nextMotionSort();
 
   if (lower.endsWith(".zip")) {
     const tempDir = join(destDir, ".import-tmp");
@@ -132,11 +130,13 @@ export async function importMotionUpload(
         const name = basename(src);
         if (name.toLowerCase().endsWith(".vrma")) {
           const data = await readBytes(src);
-          imported.push(await importVrmaBytes(destDir, data, name));
-        } else if (!(await tryFbxImport())) {
+          imported.push(await importVrmaBytes(data, name, sort));
+          sort += 1;
+        } else if (!(await fbxImportReady())) {
           skippedFbx.push(name);
         } else {
-          imported.push(await importFbxFile(destDir, src, name));
+          imported.push(await importFbxFile(destDir, src, name, sort));
+          sort += 1;
         }
       }
       if (imported.length === 0 && skippedFbx.length > 0) {
@@ -146,9 +146,9 @@ export async function importMotionUpload(
       await removePath(tempDir);
     }
   } else if (lower.endsWith(".vrma")) {
-    imported.push(await importVrmaBytes(destDir, bytes, uploadName));
+    imported.push(await importVrmaBytes(bytes, uploadName, sort));
   } else if (lower.endsWith(".fbx")) {
-    if (!(await tryFbxImport())) {
+    if (!(await fbxImportReady())) {
       throw new Error(FBX_IMPORT_UNAVAILABLE_MSG);
     }
     const tempDir = join(destDir, ".import-tmp");
@@ -156,7 +156,7 @@ export async function importMotionUpload(
     const tempInput = join(tempDir, basename(uploadName));
     try {
       await writeBytes(tempInput, bytes);
-      imported.push(await importFbxFile(destDir, tempInput, uploadName));
+      imported.push(await importFbxFile(destDir, tempInput, uploadName, sort));
     } finally {
       await removePath(tempDir);
     }
@@ -164,11 +164,11 @@ export async function importMotionUpload(
     throw new Error("仅支持 .vrma、.fbx 或 .zip");
   }
 
-  const uniqueEntries = [...new Map(imported.map((e) => [e.id, e])).values()];
+  const uniqueEntries = [...new Map(imported.map((e) => [e.object_file_id, e])).values()];
 
   return {
     dir: destDir,
-    files: uniqueEntries.map((e) => e.file),
+    files: uniqueEntries.map((e) => String(e.object_file_id)),
     entries: uniqueEntries,
     ...(skippedFbx.length > 0 ? { skipped_fbx: skippedFbx } : {}),
   };
