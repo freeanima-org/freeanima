@@ -1,6 +1,7 @@
 import {
   createVerifier,
   deriveMasterKey,
+  importRawAesKey,
   openVaultSecrets,
   randomSalt,
   resolveSecretField,
@@ -32,16 +33,38 @@ export type MasterPasswordChangePrep = {
 
 const DEFAULT_TIMEOUT_MS = 15 * 60 * 1000;
 
+export type VaultSessionTimeoutMode = "sliding" | "absolute";
+
 export class UserVaultSession {
   private masterKey: CryptoKey | null = null;
   private timeoutMs = DEFAULT_TIMEOUT_MS;
+  private timeoutMode: VaultSessionTimeoutMode = "sliding";
+  /** absolute 模式：解锁时刻；sliding 不使用 */
+  private unlockedAtMs = 0;
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   /** 已解锁 scope：VAULT_UI_SCOPE 或 conversation_id */
   private unlockedScopes = new Set<string>();
+  /** 为 true 时 derive 可导出主密钥（扩展 chrome.storage.session 恢复用） */
+  private extractableMasterKey = false;
+  private onLocked: (() => void) | null = null;
 
-  configure(opts: { timeoutMs?: number }): void {
+  configure(opts: {
+    timeoutMs?: number;
+    timeoutMode?: VaultSessionTimeoutMode;
+    extractableMasterKey?: boolean;
+    onLocked?: () => void;
+  }): void {
     if (opts.timeoutMs != null && opts.timeoutMs > 0) {
       this.timeoutMs = opts.timeoutMs;
+    }
+    if (opts.timeoutMode) {
+      this.timeoutMode = opts.timeoutMode;
+    }
+    if (opts.extractableMasterKey != null) {
+      this.extractableMasterKey = opts.extractableMasterKey;
+    }
+    if (opts.onLocked) {
+      this.onLocked = opts.onLocked;
     }
   }
 
@@ -49,8 +72,18 @@ export class UserVaultSession {
     return this.masterKey ? "unlocked" : "locked";
   }
 
+  /** 绝对超时截止时间（未解锁或 sliding 模式返回 null） */
+  getExpiresAtMs(): number | null {
+    if (!this.masterKey || this.timeoutMode !== "absolute") return null;
+    return this.unlockedAtMs + this.timeoutMs;
+  }
+
   isUnlocked(scope?: string): boolean {
     if (!this.masterKey) return false;
+    if (this.isAbsoluteExpired()) {
+      this.lock();
+      return false;
+    }
     if (!scope) {
       return this.unlockedScopes.has(VAULT_UI_SCOPE) || this.unlockedScopes.size > 0;
     }
@@ -59,6 +92,10 @@ export class UserVaultSession {
 
   canResolve(conversationId?: string): boolean {
     if (!this.masterKey) return false;
+    if (this.isAbsoluteExpired()) {
+      this.lock();
+      return false;
+    }
     if (conversationId) {
       return this.unlockedScopes.has(conversationId) || this.unlockedScopes.has(VAULT_UI_SCOPE);
     }
@@ -66,15 +103,52 @@ export class UserVaultSession {
   }
 
   async unlock(input: UserVaultUnlockInput): Promise<void> {
-    const masterKey = await deriveMasterKey(input.masterPassword, input.salt);
+    const masterKey = await deriveMasterKey(input.masterPassword, input.salt, undefined, {
+      extractable: this.extractableMasterKey,
+    });
     const ok = await verifyMasterKey(masterKey, input.verifier);
     if (!ok) {
       throw new Error("vault_master_password_invalid");
     }
     this.masterKey = masterKey;
+    this.unlockedAtMs = Date.now();
     const scope = input.conversationId?.trim() || VAULT_UI_SCOPE;
     this.unlockedScopes.add(scope);
     this.scheduleTimeout();
+  }
+
+  /**
+   * 从已导出的主密钥恢复会话（扩展 SW 冷启动）。
+   * `unlockedAtMs` 用于 absolute 超时；缺省则视为刚解锁。
+   */
+  async hydrateFromMasterKeyRaw(
+    rawKey: Uint8Array,
+    scopes: string[],
+    unlockedAtMs: number = Date.now(),
+  ): Promise<void> {
+    const masterKey = await importRawAesKey(rawKey);
+    this.masterKey = masterKey;
+    this.unlockedAtMs = unlockedAtMs;
+    this.unlockedScopes = new Set(scopes.length > 0 ? scopes : [VAULT_UI_SCOPE]);
+    if (this.isAbsoluteExpired()) {
+      this.clearMasterKey();
+      throw new Error("vault_session_expired");
+    }
+    this.scheduleTimeout();
+  }
+
+  /** 导出主密钥 raw（须 configure extractableMasterKey）；未解锁返回 null */
+  async exportMasterKeyRaw(): Promise<Uint8Array | null> {
+    if (!this.masterKey || !this.extractableMasterKey) return null;
+    try {
+      return new Uint8Array(await crypto.subtle.exportKey("raw", this.masterKey));
+    } catch {
+      return null;
+    }
+  }
+
+  listUnlockedScopes(): string[] {
+    return [...this.unlockedScopes];
   }
 
   lock(scope?: string): void {
@@ -89,6 +163,11 @@ export class UserVaultSession {
 
   touchActivity(): void {
     if (!this.masterKey) return;
+    if (this.isAbsoluteExpired()) {
+      this.lock();
+      return;
+    }
+    // absolute：只重排剩余时间，不延长截止；sliding：从现在起重新计时
     this.scheduleTimeout();
   }
 
@@ -189,11 +268,20 @@ export class UserVaultSession {
     };
   }
 
+  private isAbsoluteExpired(): boolean {
+    if (this.timeoutMode !== "absolute" || !this.masterKey) return false;
+    return Date.now() >= this.unlockedAtMs + this.timeoutMs;
+  }
+
   private scheduleTimeout(): void {
     if (this.timeoutId) clearTimeout(this.timeoutId);
+    const delay =
+      this.timeoutMode === "absolute"
+        ? Math.max(0, this.unlockedAtMs + this.timeoutMs - Date.now())
+        : this.timeoutMs;
     this.timeoutId = setTimeout(() => {
       this.lock();
-    }, this.timeoutMs);
+    }, delay);
   }
 
   private clearMasterKey(): void {
@@ -201,7 +289,10 @@ export class UserVaultSession {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
+    const hadKey = this.masterKey != null;
     this.masterKey = null;
+    this.unlockedAtMs = 0;
+    if (hadKey) this.onLocked?.();
   }
 }
 

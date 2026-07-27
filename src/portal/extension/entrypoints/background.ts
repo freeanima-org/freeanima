@@ -1,7 +1,15 @@
 import { extractCustomFieldNames, generateTotpCode } from "@freeanima/shared/vault-crypto";
+import type { VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
 import { matchVaultItemsForUrl } from "@freeanima/features/vault/domain/uri-match.ts";
 import { generatePassword } from "../features/vault/password-gen.ts";
-import { EXT_SCOPE, getExtVaultSession, isExtVaultUnlocked } from "../features/vault/session.ts";
+import {
+  EXT_SCOPE,
+  clearPersistedExtVaultSession,
+  ensureExtVaultSession,
+  getExtVaultSession,
+  isExtVaultUnlocked,
+  persistExtVaultSession,
+} from "../features/vault/session.ts";
 import { vaultCall } from "../runtime/habitat.ts";
 import { type ExtBgResponse, type ExtToBgMessage, type FillPayload } from "../runtime/messages.ts";
 import { loadSettings } from "../runtime/settings.ts";
@@ -132,6 +140,7 @@ export default defineBackground(() => {
 
 async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
   try {
+    await ensureExtVaultSession();
     switch (message.type) {
       case "ping":
         return { ok: true, message: "pong" };
@@ -139,7 +148,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         const settings = await loadSettings();
         return {
           ok: true,
-          unlocked: isExtVaultUnlocked(),
+          unlocked: await isExtVaultUnlocked(),
           habitat_configured: Boolean(settings.habitat_url && settings.auth_token),
         };
       }
@@ -159,6 +168,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
           verifier: config.verifier,
           conversationId: EXT_SCOPE,
         });
+        await persistExtVaultSession();
         return {
           ok: true,
           unlocked: true,
@@ -167,6 +177,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
       }
       case "lock": {
         getExtVaultSession().lock();
+        await clearPersistedExtVaultSession();
         return {
           ok: true,
           unlocked: false,
@@ -174,7 +185,8 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         };
       }
       case "list_for_tab": {
-        if (!isExtVaultUnlocked()) return { ok: false, error: "vault_locked" };
+        if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
+        getExtVaultSession().touchActivity();
         const listed = await vaultCall("vault.list", {
           subject_kind: "user",
           limit: 2000,
@@ -197,7 +209,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         return { ok: true, items: [...matched, ...rest] };
       }
       case "get_fill_payload": {
-        if (!isExtVaultUnlocked()) return { ok: false, error: "vault_locked" };
+        if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
         const { item } = await vaultCall("vault.get", {
           subject_kind: "user",
           id: message.item_id,
@@ -221,8 +233,125 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         };
         return { ok: true, fill };
       }
+      case "get_item": {
+        if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
+        const { item } = await vaultCall("vault.get", {
+          subject_kind: "user",
+          id: message.item_id,
+          include_secrets: true,
+        });
+        let password = "";
+        let notes = "";
+        let totp = "";
+        if (item.secrets_enc && item.dek_wrapped) {
+          const secrets = await getExtVaultSession().openSecrets(
+            item.secrets_enc,
+            item.dek_wrapped,
+          );
+          password = typeof secrets.password === "string" ? secrets.password : "";
+          notes = typeof secrets.notes === "string" ? secrets.notes : "";
+          totp = typeof secrets.totp === "string" ? secrets.totp : "";
+        }
+        const uris =
+          item.uris && item.uris.length > 0
+            ? item.uris
+            : item.url
+              ? [{ uri: item.url, match: "domain" as const }]
+              : [];
+        return {
+          ok: true,
+          editor: {
+            id: item.id,
+            title: item.title,
+            item_type: item.item_type,
+            username: item.username ?? "",
+            url: item.url ?? uris[0]?.uri ?? "",
+            uris,
+            tags: item.tags ?? [],
+            content: item.content ?? "",
+            password,
+            notes,
+            totp,
+          },
+        };
+      }
+      case "save_item": {
+        if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
+        const title = message.title.trim();
+        if (!title) return { ok: false, error: "标题不能为空" };
+        const uris = (message.uris ?? [])
+          .map((u) => ({ uri: u.uri.trim(), match: u.match }))
+          .filter((u) => u.uri.length > 0);
+        const url = (message.url?.trim() || uris[0]?.uri || undefined) as string | undefined;
+        const username = message.username?.trim() || undefined;
+        const tags = (message.tags ?? []).map((t) => t.trim()).filter(Boolean);
+        const content = message.content?.trim() || undefined;
+
+        if (message.id != null) {
+          const { item } = await vaultCall("vault.get", {
+            subject_kind: "user",
+            id: message.id,
+            include_secrets: true,
+          });
+          let secrets: VaultSecretsPayload = {};
+          if (item.secrets_enc && item.dek_wrapped) {
+            secrets = await getExtVaultSession().openSecrets(item.secrets_enc, item.dek_wrapped);
+          }
+          if (message.password !== undefined) secrets.password = message.password;
+          if (message.notes !== undefined) secrets.notes = message.notes;
+          if (message.totp !== undefined) {
+            const t = message.totp.trim();
+            if (t) secrets.totp = t;
+            else delete secrets.totp;
+          }
+          const sealed = await getExtVaultSession().sealSecrets(secrets);
+          const patched = await vaultCall("vault.patch", {
+            subject_kind: "user",
+            id: message.id,
+            title,
+            item_type: message.item_type,
+            ...(url !== undefined ? { url } : {}),
+            uris,
+            ...(username !== undefined ? { username } : { username: "" }),
+            tags,
+            ...(content !== undefined ? { content } : {}),
+            secrets_enc: sealed.secrets_enc,
+            dek_wrapped: sealed.dek_wrapped,
+            custom_field_names: extractCustomFieldNames(secrets),
+          });
+          return { ok: true, item: patched.item };
+        }
+
+        const secrets: VaultSecretsPayload = {};
+        if (message.password) secrets.password = message.password;
+        if (message.notes) secrets.notes = message.notes;
+        if (message.totp?.trim()) secrets.totp = message.totp.trim();
+        const sealed = await getExtVaultSession().sealSecrets(secrets);
+        const created = await vaultCall("vault.create", {
+          subject_kind: "user",
+          title,
+          item_type: message.item_type,
+          ...(url ? { url } : {}),
+          uris,
+          ...(username ? { username } : {}),
+          tags,
+          ...(content ? { content } : {}),
+          secrets_enc: sealed.secrets_enc,
+          dek_wrapped: sealed.dek_wrapped,
+          custom_field_names: extractCustomFieldNames(secrets),
+        });
+        return { ok: true, item: created.item };
+      }
+      case "delete_item": {
+        if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
+        await vaultCall("vault.delete", {
+          subject_kind: "user",
+          id: message.item_id,
+        });
+        return { ok: true, deleted: true };
+      }
       case "save_login": {
-        if (!isExtVaultUnlocked()) return { ok: false, error: "vault_locked" };
+        if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
         const listed = await vaultCall("vault.list", {
           subject_kind: "user",
           limit: 2000,
@@ -233,25 +362,45 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
             (i.url === message.url || i.uris?.some((u) => u.uri === message.url)) &&
             (i.username ?? "") === message.username,
         );
-        const secrets = {
-          password: message.password,
-        };
-        const sealed = await getExtVaultSession().sealSecrets(secrets);
-        const uris = [{ uri: message.url, match: "domain" as const }];
         if (match) {
-          const item = await vaultCall("vault.patch", {
+          const { item } = await vaultCall("vault.get", {
+            subject_kind: "user",
+            id: match.id,
+            include_secrets: true,
+          });
+          let secrets: VaultSecretsPayload = { password: message.password };
+          if (item.secrets_enc && item.dek_wrapped) {
+            secrets = {
+              ...(await getExtVaultSession().openSecrets(item.secrets_enc, item.dek_wrapped)),
+              password: message.password,
+            };
+          }
+          const sealed = await getExtVaultSession().sealSecrets(secrets);
+          const baseUris =
+            item.uris && item.uris.length > 0
+              ? [...item.uris]
+              : item.url
+                ? [{ uri: item.url, match: "domain" as const }]
+                : [];
+          const uris = baseUris.some((u) => u.uri === message.url)
+            ? baseUris
+            : [...baseUris, { uri: message.url, match: "domain" as const }];
+          const patched = await vaultCall("vault.patch", {
             subject_kind: "user",
             id: match.id,
             title: message.title || match.title,
-            url: message.url,
+            url: item.url || message.url,
             uris,
             username: message.username,
             secrets_enc: sealed.secrets_enc,
             dek_wrapped: sealed.dek_wrapped,
             custom_field_names: extractCustomFieldNames(secrets),
           });
-          return { ok: true, item: item.item };
+          return { ok: true, item: patched.item };
         }
+        const secrets = { password: message.password };
+        const sealed = await getExtVaultSession().sealSecrets(secrets);
+        const uris = [{ uri: message.url, match: "domain" as const }];
         const created = await vaultCall("vault.create", {
           subject_kind: "user",
           title: message.title || new URL(message.url).hostname || "Login",

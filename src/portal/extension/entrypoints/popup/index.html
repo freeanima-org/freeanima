@@ -291,12 +291,49 @@
       .field input[type="text"],
       .field input[type="password"],
       .field input[type="url"],
-      .field input[type="number"] {
+      .field input[type="number"],
+      .field select,
+      .field textarea {
         width: 100%;
         padding: 8px 10px;
         border: 1px solid var(--border);
         border-radius: 6px;
         font-size: 13px;
+        font-family: inherit;
+      }
+      .field textarea {
+        resize: vertical;
+        min-height: 64px;
+      }
+      .input-row {
+        display: flex;
+        gap: 6px;
+        align-items: stretch;
+      }
+      .input-row input {
+        flex: 1;
+        min-width: 0;
+      }
+      .uri-row {
+        display: grid;
+        grid-template-columns: 1fr 72px 32px;
+        gap: 4px;
+        margin-bottom: 6px;
+        align-items: center;
+      }
+      .uri-row input,
+      .uri-row select {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 12px;
+      }
+      .editor-form {
+        padding-bottom: 16px;
+      }
+      .danger-text {
+        color: var(--danger);
       }
       .gen-out {
         display: flex;
