@@ -26,6 +26,8 @@ export type TaskDetailPanelProps<T extends TaskItemRowPayload = TaskItemRowPaylo
   /** 番茄专注记录（实体级，清单与项目均可展示） */
   showPomodoroFocus?: boolean;
   onTagKnown?: (tag: TaskTagKnown) => void;
+  /** compact：聚焦标题/描述进入全屏编辑 */
+  onTextFieldActivate?: () => void;
 };
 
 /** 任务详情 SSOT：清单、项目、entity overlay 共用 */
@@ -36,12 +38,14 @@ export function TaskDetailPanel<T extends TaskItemRowPayload>({
   showAttribution = true,
   showPomodoroFocus = true,
   onTagKnown,
+  onTextFieldActivate,
 }: TaskDetailPanelProps<T>) {
   return (
     <DetailPanelShell saveStatus={saveStatus}>
       <TaskDetailEditor
         item={item}
         onChange={onChange}
+        {...(onTextFieldActivate ? { onTextFieldActivate } : {})}
         titleExtra={
           <div className="mt-1 flex flex-col gap-2">
             <div className="flex flex-wrap items-center gap-2">

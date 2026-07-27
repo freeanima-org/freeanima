@@ -26,11 +26,14 @@ export { TaskDetailEditor } from "./TaskDetailEditor.tsx";
 export type { TaskDetailEditorProps } from "./TaskDetailEditor.tsx";
 export { DetailPanelShell } from "./DetailPanelShell.tsx";
 export type { DetailPanelShellProps, DetailSaveStatus } from "./DetailPanelShell.tsx";
+export { DetailEditPageShell } from "./DetailEditPageShell.tsx";
+export type { DetailEditPageShellProps } from "./DetailEditPageShell.tsx";
 export { useDetailPanelState } from "./useDetailPanelState.ts";
 export type {
   UseDetailPanelStateOptions,
   UseDetailPanelStateResult,
 } from "./useDetailPanelState.ts";
+export { DETAIL_EDIT_HISTORY_KEY } from "./detail-edit-chrome.ts";
 export { QuickAddBar } from "./QuickAddBar.tsx";
 export { ModuleScopeBar } from "./ModuleScopeBar.tsx";
 export { MoveToListPicker } from "./MoveToListPicker.tsx";

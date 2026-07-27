@@ -4,7 +4,11 @@ import {
   writeModuleSelection,
 } from "@freeanima/client/portal-sdk/module-selection.ts";
 import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
-import { SubjectScopeToggle, useSubjectScope } from "@freeanima/client/portal-sdk/react.tsx";
+import {
+  SubjectScopeToggle,
+  useSubjectScope,
+  setCompactImmersive,
+} from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Button,
   Dialog,
@@ -18,6 +22,7 @@ import {
 import {
   ActionSheet,
   ConfirmDialog,
+  DetailEditPageShell,
   ModuleScopeBar,
   PullToRefresh,
   QuickAddBar,
@@ -156,9 +161,12 @@ export function ProjectApp() {
     item: detailItem,
     setItem: setDetailItem,
     detailOpen,
+    detailEditMode,
     saveStatus: detailSaveStatus,
     openDetail: openTaskDetail,
     closeDetail: closeTaskDetail,
+    enterDetailEdit,
+    exitDetailEdit,
     handleDetailOpenChange,
     resetDetail,
     applySavedItem,
@@ -167,6 +175,7 @@ export function ProjectApp() {
     cloneItem: cloneTaskItem,
     isDirty: isTaskItemDirty,
     isEqual: isTaskItemEqual,
+    setCompactImmersive,
     persistItem: (snapshot) =>
       updateProjectTask(subjectKind, snapshot.id, {
         title: snapshot.title,
@@ -892,6 +901,9 @@ export function ProjectApp() {
                 onChange={setDetailItem}
                 saveStatus={detailSaveStatus}
                 onTagKnown={rememberTag}
+                {...(layoutMode === "compact" && !detailEditMode
+                  ? { onTextFieldActivate: enterDetailEdit }
+                  : {})}
               />
             ) : (
               <div className="text-muted-foreground flex h-full items-center justify-center p-8 text-sm">
@@ -901,6 +913,17 @@ export function ProjectApp() {
           }
         />
       )}
+
+      {detailEditMode && detailItem ? (
+        <DetailEditPageShell onBack={exitDetailEdit}>
+          <ProjectTaskDetailPanel
+            item={detailItem}
+            onChange={setDetailItem}
+            saveStatus={detailSaveStatus}
+            onTagKnown={rememberTag}
+          />
+        </DetailEditPageShell>
+      ) : null}
 
       {sheetItems ? <ActionSheet items={sheetItems} onClose={() => setSheetItems(null)} /> : null}
 

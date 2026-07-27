@@ -9,7 +9,7 @@ export type { DetailSaveStatus };
 
 type ProjectTaskDetailPanelProps<T extends TaskItemRowPayload = TaskItemRowPayload> = Pick<
   TaskDetailPanelProps<T>,
-  "item" | "onChange" | "saveStatus" | "onTagKnown"
+  "item" | "onChange" | "saveStatus" | "onTagKnown" | "onTextFieldActivate"
 >;
 
 /** 项目任务详情：复用清单侧 TaskDetailPanel，关闭冗余归属行 */
@@ -18,6 +18,7 @@ export function ProjectTaskDetailPanel<T extends TaskItemRowPayload>({
   onChange,
   saveStatus = "idle",
   onTagKnown,
+  onTextFieldActivate,
 }: ProjectTaskDetailPanelProps<T>) {
   return (
     <TaskDetailPanel
@@ -27,6 +28,7 @@ export function ProjectTaskDetailPanel<T extends TaskItemRowPayload>({
       showAttribution={false}
       showPomodoroFocus
       {...(onTagKnown ? { onTagKnown } : {})}
+      {...(onTextFieldActivate ? { onTextFieldActivate } : {})}
     />
   );
 }

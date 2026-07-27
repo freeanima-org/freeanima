@@ -32,6 +32,8 @@ export type TaskDetailEditorProps<T extends TaskItemDisplay = TaskItemDisplay> =
   legend?: string;
   titleExtra?: ReactNode;
   children?: ReactNode;
+  /** compact：聚焦标题/描述时进入全屏编辑页 */
+  onTextFieldActivate?: () => void;
 };
 
 const PRIORITY_LABEL: Record<TaskItemPriority, string> = {
@@ -59,6 +61,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
   onChange,
   titleExtra,
   children,
+  onTextFieldActivate,
 }: TaskDetailEditorProps<T>) {
   const dueChip = formatDueChip(item.due_at);
   const datePart = isoToDateLocalValue(item.due_at);
@@ -182,6 +185,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
           value={item.title}
           placeholder="标题"
           aria-label="标题"
+          onFocus={() => onTextFieldActivate?.()}
           onChange={(e) => onChange({ ...item, title: e.target.value })}
         />
         {titleExtra}
@@ -192,6 +196,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
         value={item.content}
         placeholder="描述"
         aria-label="描述"
+        onFocus={() => onTextFieldActivate?.()}
         onChange={(e) => onChange({ ...item, content: e.target.value })}
       />
 

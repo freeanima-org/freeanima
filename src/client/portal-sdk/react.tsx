@@ -35,6 +35,12 @@ export { useNetworkOnline } from "./use-network-status.ts";
 export { useHabitatConnection } from "./use-habitat-connection.ts";
 export { reconnectHabitat } from "./habitat-connection.ts";
 export type { HabitatConnectionState } from "./habitat-connection.ts";
+export { useCompactImmersive, useSetCompactImmersive } from "./compact-immersive-react.tsx";
+export {
+  getCompactImmersive,
+  setCompactImmersive,
+  resetCompactImmersiveForTest,
+} from "./compact-immersive-store.ts";
 export { getUserVaultSession, VAULT_UI_SCOPE } from "./vault/user-vault-session.ts";
 export type { UserVaultSessionState, UserVaultUnlockInput } from "./vault/user-vault-session.ts";
 export { registerVaultRpcHandlers } from "./vault/vault-rpc-handlers.ts";

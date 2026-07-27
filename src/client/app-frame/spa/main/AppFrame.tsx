@@ -6,6 +6,7 @@ import {
   resolveShellModuleIdFromPath,
 } from "@freeanima/client/portal-sdk/shell-module-visibility";
 import {
+  useCompactImmersive,
   useShellModuleVisibility,
   useShellModuleOrder,
 } from "@freeanima/client/portal-sdk/react.tsx";
@@ -153,6 +154,7 @@ function ExpandedAppFrame() {
 function CompactAppFrame() {
   const visible = useShellModuleVisibility();
   const order = useShellModuleOrder();
+  const immersive = useCompactImmersive();
   const navItems = useMemo(() => orderedVisibleAppNavItems(visible, order), [order, visible]);
   const { bar, more, density } = useAppBottomNavLayout(navItems);
 
@@ -161,15 +163,17 @@ function CompactAppFrame() {
       <main className="flex-1 min-h-0 overflow-hidden">
         <Outlet />
       </main>
-      <nav
-        className="app-bottom-nav relative z-[60] shrink-0 flex border-t border bg-background safe-area-pb"
-        aria-label="模块导航"
-      >
-        {bar.map((item) => (
-          <AppBottomNavLink key={item.to} item={item} density={density} />
-        ))}
-        {more.length > 0 ? <MoreNavMenu items={more} /> : null}
-      </nav>
+      {immersive ? null : (
+        <nav
+          className="app-bottom-nav relative z-[60] shrink-0 flex border-t border bg-background safe-area-pb"
+          aria-label="模块导航"
+        >
+          {bar.map((item) => (
+            <AppBottomNavLink key={item.to} item={item} density={density} />
+          ))}
+          {more.length > 0 ? <MoreNavMenu items={more} /> : null}
+        </nav>
+      )}
     </div>
   );
 }
