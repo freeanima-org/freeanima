@@ -10,6 +10,15 @@ import {
 } from "react";
 
 import type { DetailSaveStatus } from "./DetailPanelShell.tsx";
+import {
+  DETAIL_EDIT_HISTORY_KEY,
+  clearDetailEditChrome,
+  enterDetailEditChrome,
+  exitDetailEditChrome,
+  historyStateHasDetailEdit,
+} from "./detail-edit-chrome.ts";
+
+export { DETAIL_EDIT_HISTORY_KEY } from "./detail-edit-chrome.ts";
 
 export type UseDetailPanelStateOptions<T> = {
   layoutMode: ThreeColumnLayoutMode;
@@ -20,6 +29,8 @@ export type UseDetailPanelStateOptions<T> = {
   autoSaveDebounceMs?: number;
   /** compact 下是否自动打开详情 Sheet（如移动任务弹窗打开时可设为 false） */
   compactSheetEnabled?: boolean;
+  /** compact 全屏编辑时隐藏壳底栏；由 App 注入 portal-sdk setCompactImmersive */
+  setCompactImmersive?: (immersive: boolean) => void;
   onSaved?: (saved: T) => void;
   onPersistError?: (error: unknown) => void;
 };
@@ -29,11 +40,15 @@ export type UseDetailPanelStateResult<T> = {
   setItem: Dispatch<SetStateAction<T | null>>;
   baseline: T | null;
   detailOpen: boolean;
+  /** compact：标题/描述激活后的全屏编辑页 */
+  detailEditMode: boolean;
   saveStatus: DetailSaveStatus;
   saving: boolean;
   openDetail: (item: T) => void;
   closeDetail: (opts?: { discard?: boolean }) => void;
   closeDetailSheet: () => void;
+  enterDetailEdit: () => void;
+  exitDetailEdit: () => void;
   handleDetailOpenChange: (open: boolean) => void;
   flushSave: () => Promise<boolean>;
   resetDetail: () => void;
@@ -48,23 +63,76 @@ export function useDetailPanelState<T extends { id: number }>({
   persistItem,
   autoSaveDebounceMs = 600,
   compactSheetEnabled = true,
+  setCompactImmersive,
   onSaved,
   onPersistError,
 }: UseDetailPanelStateOptions<T>): UseDetailPanelStateResult<T> {
   const [item, setItem] = useState<T | null>(null);
   const [baseline, setBaseline] = useState<T | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [detailEditMode, setDetailEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<DetailSaveStatus>("idle");
   const discardRef = useRef(false);
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const editHistoryPushedRef = useRef(false);
+  const detailEditModeRef = useRef(false);
+  const itemRef = useRef<T | null>(null);
+  const setCompactImmersiveRef = useRef(setCompactImmersive);
+  setCompactImmersiveRef.current = setCompactImmersive;
+  itemRef.current = item;
+  detailEditModeRef.current = detailEditMode;
 
-  const clearDetail = useCallback(() => {
-    setItem(null);
-    setBaseline(null);
-    setDetailOpen(false);
-    setSaveStatus("idle");
-  }, []);
+  const applyChrome = useCallback(
+    (chrome: { detailEditMode: boolean; detailOpen: boolean; immersive: boolean }) => {
+      detailEditModeRef.current = chrome.detailEditMode;
+      setDetailEditMode(chrome.detailEditMode);
+      setDetailOpen(chrome.detailOpen);
+      setCompactImmersiveRef.current?.(chrome.immersive);
+    },
+    [],
+  );
+
+  const leaveEditMode = useCallback(
+    (opts?: { reopenPeek?: boolean; syncHistory?: boolean }) => {
+      const wasEditing = detailEditModeRef.current;
+      if (!wasEditing && !editHistoryPushedRef.current) {
+        setCompactImmersiveRef.current?.(false);
+        return;
+      }
+      applyChrome(
+        exitDetailEditChrome({
+          layoutMode,
+          hasItem: itemRef.current != null,
+          compactSheetEnabled,
+          reopenPeek: opts?.reopenPeek === true,
+        }),
+      );
+      if (
+        opts?.syncHistory !== false &&
+        editHistoryPushedRef.current &&
+        typeof window !== "undefined" &&
+        historyStateHasDetailEdit(window.history.state)
+      ) {
+        editHistoryPushedRef.current = false;
+        window.history.back();
+        return;
+      }
+      editHistoryPushedRef.current = false;
+    },
+    [applyChrome, compactSheetEnabled, layoutMode],
+  );
+
+  const clearDetail = useCallback(
+    (opts?: { syncHistory?: boolean }) => {
+      leaveEditMode({ reopenPeek: false, syncHistory: opts?.syncHistory !== false });
+      applyChrome(clearDetailEditChrome());
+      setItem(null);
+      setBaseline(null);
+      setSaveStatus("idle");
+    },
+    [applyChrome, leaveEditMode],
+  );
 
   const markSaved = useCallback(() => {
     if (saveStatusTimerRef.current) clearTimeout(saveStatusTimerRef.current);
@@ -86,9 +154,10 @@ export function useDetailPanelState<T extends { id: number }>({
         discardRef.current = false;
         const synced = cloneItem(saved);
         if (opts?.closeAfter) {
+          leaveEditMode({ reopenPeek: false, syncHistory: true });
+          applyChrome(clearDetailEditChrome());
           setItem(null);
           setBaseline(null);
-          setDetailOpen(false);
         } else {
           setBaseline(synced);
           setItem((draft) => {
@@ -99,7 +168,6 @@ export function useDetailPanelState<T extends { id: number }>({
               synced,
               isEqual,
             }).draft;
-            // 离线 create flush 后 synced.id 可能已从 temp 变为 server id
             return merged.id === synced.id ? merged : { ...merged, id: synced.id };
           });
         }
@@ -115,11 +183,13 @@ export function useDetailPanelState<T extends { id: number }>({
       }
     },
     [
+      applyChrome,
       baseline,
       cloneItem,
       isDirty,
       isEqual,
       item,
+      leaveEditMode,
       markSaved,
       onPersistError,
       onSaved,
@@ -136,6 +206,7 @@ export function useDetailPanelState<T extends { id: number }>({
     (next: T) => {
       void (async () => {
         await flushSave();
+        leaveEditMode({ reopenPeek: false, syncHistory: true });
         setItem((prev) => {
           if (prev?.id === next.id) return prev;
           const copy = cloneItem(next);
@@ -146,7 +217,7 @@ export function useDetailPanelState<T extends { id: number }>({
         if (layoutMode === "compact") setDetailOpen(true);
       })();
     },
-    [cloneItem, flushSave, layoutMode],
+    [cloneItem, flushSave, layoutMode, leaveEditMode],
   );
 
   const closeDetail = useCallback(
@@ -160,6 +231,29 @@ export function useDetailPanelState<T extends { id: number }>({
   const closeDetailSheet = useCallback(() => {
     setDetailOpen(false);
   }, []);
+
+  const enterDetailEdit = useCallback(() => {
+    const chrome = enterDetailEditChrome(layoutMode, itemRef.current != null);
+    if (!chrome) return;
+    if (detailEditModeRef.current) return;
+    applyChrome(chrome);
+    if (typeof window !== "undefined" && !historyStateHasDetailEdit(window.history.state)) {
+      const prev =
+        window.history.state && typeof window.history.state === "object"
+          ? window.history.state
+          : {};
+      window.history.pushState({ ...prev, [DETAIL_EDIT_HISTORY_KEY]: true }, "");
+      editHistoryPushedRef.current = true;
+    }
+  }, [applyChrome, layoutMode]);
+
+  /** 退出全屏编辑 → 列表（不恢复 peek 展示态） */
+  const exitDetailEdit = useCallback(() => {
+    void (async () => {
+      await flushSave();
+      clearDetail({ syncHistory: true });
+    })();
+  }, [clearDetail, flushSave]);
 
   const handleDetailOpenChange = useCallback(
     (open: boolean) => {
@@ -216,27 +310,51 @@ export function useDetailPanelState<T extends { id: number }>({
   useEffect(() => {
     return () => {
       if (saveStatusTimerRef.current) clearTimeout(saveStatusTimerRef.current);
+      setCompactImmersiveRef.current?.(false);
     };
   }, []);
 
   useEffect(() => {
     if (layoutMode !== "compact") {
+      leaveEditMode({ reopenPeek: false, syncHistory: true });
       setDetailOpen(false);
-    } else if (item && compactSheetEnabled) {
+    } else if (item && compactSheetEnabled && !detailEditModeRef.current) {
       setDetailOpen(true);
     }
-  }, [compactSheetEnabled, item?.id, layoutMode]);
+  }, [compactSheetEnabled, item?.id, layoutMode, leaveEditMode]);
+
+  const flushSaveRef = useRef(flushSave);
+  flushSaveRef.current = flushSave;
+  const clearDetailRef = useRef(clearDetail);
+  clearDetailRef.current = clearDetail;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onPopState = () => {
+      if (!detailEditModeRef.current) return;
+      editHistoryPushedRef.current = false;
+      void (async () => {
+        await flushSaveRef.current();
+        clearDetailRef.current({ syncHistory: false });
+      })();
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   return {
     item,
     setItem,
     baseline,
     detailOpen,
+    detailEditMode,
     saveStatus,
     saving,
     openDetail,
     closeDetail,
     closeDetailSheet,
+    enterDetailEdit,
+    exitDetailEdit,
     handleDetailOpenChange,
     flushSave,
     resetDetail,

@@ -8,7 +8,11 @@ import type { TaskModuleSelection } from "@freeanima/client/portal-sdk";
 import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
 import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
 import { isTempId } from "@freeanima/client/portal-sdk/offline-temp-id";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
+import {
+  useSubjectScope,
+  SubjectScopeToggle,
+  setCompactImmersive,
+} from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Alert,
   AlertDescription,
@@ -25,6 +29,7 @@ import {
 import {
   ActionSheet,
   ConfirmDialog,
+  DetailEditPageShell,
   EmptyState,
   ModuleScopeBar,
   PullToRefresh,
@@ -176,9 +181,12 @@ export function TaskApp() {
     item: detailItem,
     setItem: setDetailItem,
     detailOpen,
+    detailEditMode,
     saveStatus: detailSaveStatus,
     openDetail: openTaskDetail,
     closeDetailSheet,
+    enterDetailEdit,
+    exitDetailEdit,
     handleDetailOpenChange,
     resetDetail,
   } = useDetailPanelState<TaskItemRow>({
@@ -188,6 +196,7 @@ export function TaskApp() {
     isEqual: isTaskItemEqual,
     autoSaveDebounceMs: 700,
     compactSheetEnabled: movePickerItemIds == null && moveProjectItemIds == null,
+    setCompactImmersive,
     persistItem: (snapshot) =>
       updateTaskItem(
         snapshot.id,
@@ -1562,6 +1571,9 @@ export function TaskApp() {
                   onChange={setDetailItem}
                   saveStatus={detailSaveStatus}
                   onTagKnown={rememberTag}
+                  {...(layoutMode === "compact" && !detailEditMode
+                    ? { onTextFieldActivate: enterDetailEdit }
+                    : {})}
                 />
               ) : (
                 <div className="text-muted-foreground flex h-full min-h-0 items-center justify-center p-8 text-sm">
@@ -1571,6 +1583,17 @@ export function TaskApp() {
             }
           />
         </div>
+
+        {detailEditMode && detailItem ? (
+          <DetailEditPageShell onBack={exitDetailEdit}>
+            <TaskDetailPanel
+              item={detailItem}
+              onChange={setDetailItem}
+              saveStatus={detailSaveStatus}
+              onTagKnown={rememberTag}
+            />
+          </DetailEditPageShell>
+        ) : null}
 
         {sheetMenu ? (
           <ActionSheet

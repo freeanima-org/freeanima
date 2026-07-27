@@ -132,6 +132,8 @@ Every pattern documents:
 
 **Implementation:** shadcn `Dialog` / `Sheet`; pickers such as `MoveToListPicker` follow the same idea.
 
+**Task detail (compact):** peek `Sheet` for browse/display; focusing title or notes enters an **immersive full-page edit** (`DetailEditPageShell` + `setCompactImmersive`) with a back control and **no bottom tabs**. Back / system back closes the detail and returns to the **list** (does not restore peek). Layout-driven — not shell kind.
+
 **Compliance:** Reference (with **pending alignment** on ad-hoc z-index values).
 
 ---
