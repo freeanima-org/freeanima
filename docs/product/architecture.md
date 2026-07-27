@@ -37,10 +37,10 @@ Estate **Body** (VM / OS / network under the four-layer model) is the cognitive 
 
 User copy says Habitat. Storage/RPC identifiers use `habitat_*` / `HabitatRPC/1.0` / `/rpc/v1`.
 
-| Layer         | Storage                                              | Who reads/writes                                             |
-| ------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
-| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`) | `platform/boot` only; install/ops edit YAML                  |
-| **Runtime**   | PostgreSQL `habitat_runtime_config`                  | Engine, tools, Shell Habitat settings, Habitat UI `config.*` |
+| Layer         | Storage                                                                           | Who reads/writes                                             |
+| ------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`)                              | `platform/boot` only; install/ops edit YAML                  |
+| **Runtime**   | PostgreSQL `habitat_runtime_config`（**一行一段**：`section` PK + `value` jsonb） | Engine, tools, Shell Habitat settings, Habitat UI `config.*` |
 
 ### Naming cleanup
 
@@ -51,7 +51,7 @@ Legacy `hub_*` / `console` protocol aliases and dual-write keys have been remove
 - The memory system may be layered internally, but the LLM sees a single entry point
 - Memory orchestration is built into the runtime; the LLM does not control memory pipelines
 - Credential management is a first-class system concern
-- Habitat **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL (`habitat_runtime_config`); `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`) for cold start — not editable via Shell or Habitat UI API
+- Habitat **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL `habitat_runtime_config` as **one row per section** (`section` + `value`); `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`) for cold start — not editable via Shell or Habitat UI API
 - Habitat **may start without LLM** configured; first-time setup happens in Shell **Settings → Habitat** (persist to PG). Saving runtime config **hot-applies in memory** (no Habitat restart). Missing `llm` must not block cold start.
 - Habitat **hosts browser `/web/*` whenever Web dist is present** (no config switch; run `just pack web` for source deploy). Source `just dev habitat` skips hosting so Vite serves the UI.
 - **Asset management** is a first-class system concern
@@ -66,6 +66,19 @@ Bootstrap and runtime are **not merged** into a single config object (no `AnimaC
 | **Transferred** | `llm`, `i18n`, `embedding`, `mcp_servers`, `acp_agents`, `discord` / `weixin` / `gateway` platforms, `worlds`                 | Snapshot update **plus** section apply (re-init registries / reconnect / re-bind) |
 | **Bootstrap**   | `database`, `http`, `redis`                                                                                                   | Edit YAML; **process restart** required                                           |
 | **Hard / rare** | `eventbus` (queue already built)                                                                                              | Prefer process restart if changing `key_prefix` etc.                              |
+
+### Runtime config: UI coverage gaps
+
+Settings / Habitat UI already expose many sections; the following are **registered in `runtimeConfigSchema` but not (fully) editable in UI** (ops / Habitat RPC / hand edit still work). Do not treat missing UI as “unused config”.
+
+| Gap                        | Sections                                  | Notes                                                                                                        |
+| -------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **No Settings panel**      | `i18n`, `clarify`, `eventbus`             | `i18n` is transferred (locale/timezone); `clarify` live; `eventbus` hard/rare                                |
+| **Legacy / overlap**       | `notifications`                           | Subject ids; prefer `worlds` (boot may still read as fallback)                                               |
+| **Likely dead / reserved** | `push`, `fallback_providers`, `platforms` | Little or no product consumer; candidates for later cleanup                                                  |
+| **Partial UI**             | `compression`, `memory`                   | Compression UI omits trigger/summary fields; memory UI is `passive_recall` only (`temporal_summary` missing) |
+
+Covered elsewhere: `mcp_servers` → Habitat `/habitat/mcp`; most advanced sections → Settings → Habitat 服务配置.
 
 - The system prompt is part of architecture, not ad-hoc string concatenation
 

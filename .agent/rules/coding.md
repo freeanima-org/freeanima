@@ -81,7 +81,7 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
 - **禁止**再引入合并 bootstrap + runtime 的超集 schema（历史 `animaConfigSchema` / `AnimaConfig` 已删除）
 - Bootstrap：`bootstrapConfigSchema`（`database` / `http` / `redis`，YAML）
-- Runtime：`runtimeConfigSchema` + `Config.data: RuntimeConfig`（PG）；UI 保存后走 section apply（live 读 vs transferred re-bind 见 [`docs/product/architecture.md`](../../docs/product/architecture.md)）
+- Runtime：`runtimeConfigSchema` + `Config.data: RuntimeConfig`（PG **一行一段** `habitat_runtime_config.section` / `.value`）；各段 Zod 分文件（`schemas/{llm,object-storage,mcp,…}.ts`），`runtime-config.ts` 只组合；UI 保存后走 section apply（live 读 vs transferred re-bind 见 [`docs/product/architecture.md`](../../docs/product/architecture.md)）
 
 ## 全栈 snake_case（PG / repos / protocol）
 

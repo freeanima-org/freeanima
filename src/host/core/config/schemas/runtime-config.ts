@@ -6,29 +6,28 @@ import { notificationsConfigSchema } from "./notifications.ts";
 import { ttsConfigSchema } from "./tts.ts";
 import { worldsConfigSchema } from "./worlds.ts";
 import { llmConfigSchema } from "./llm-config.ts";
-import {
-  acpAgentSchema,
-  autoLlmConfigSchema,
-  browserSchema,
-  cjkConfigSchema,
-  clarifySchema,
-  compressionSchema,
-  discordConfigSchema,
-  eventbusConfigSchema,
-  fallbackProviderSchema,
-  firecrawlSchema,
-  ftsConfigSchema,
-  gatewayConfigSchema,
-  i18nConfigSchema,
-  mcpServerSchema,
-  modelsConfigSchema,
-  sectionSchema,
-  weixinConfigSchema,
-} from "./config.ts";
+import { mcpServerSchema } from "./mcp.ts";
+import { acpAgentSchema } from "./acp.ts";
+import { fallbackProviderSchema } from "./fallback-providers.ts";
+import { firecrawlSchema } from "./firecrawl.ts";
+import { browserSchema } from "./browser.ts";
+import { clarifySchema } from "./clarify.ts";
+import { compressionSchema } from "./compression.ts";
+import { modelsConfigSchema } from "./models.ts";
+import { cjkConfigSchema } from "./cjk.ts";
+import { ftsConfigSchema } from "./fts.ts";
+import { eventbusConfigSchema } from "./eventbus.ts";
+import { gatewayConfigSchema } from "./gateway.ts";
+import { autoLlmConfigSchema } from "./auto-llm.ts";
+import { discordConfigSchema } from "./discord.ts";
+import { weixinConfigSchema } from "./weixin.ts";
+import { i18nConfigSchema } from "./i18n.ts";
+import { sectionSchema } from "./config.ts";
+import { objectStorageConfigSchema } from "./object-storage.ts";
 import { BOOTSTRAP_CONFIG_KEYS } from "../bootstrap-config.ts";
 
 /**
- * Habitat 运行时配置（PG habitat_runtime_config）。
+ * Habitat 运行时配置（PG habitat_runtime_config：一行一段）。
  * 不含 bootstrap 段（database / http / redis）；禁止再引入与 bootstrap 合并的超集 schema。
  */
 const runtimeConfigObjectSchema = z.object({
@@ -56,6 +55,7 @@ const runtimeConfigObjectSchema = z.object({
   notifications: notificationsConfigSchema,
   worlds: worldsConfigSchema,
   tts: ttsConfigSchema,
+  object_storage: objectStorageConfigSchema.optional(),
 });
 
 export const runtimeConfigSchema = runtimeConfigObjectSchema.partial().passthrough();

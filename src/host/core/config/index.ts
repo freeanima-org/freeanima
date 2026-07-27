@@ -29,4 +29,5 @@ export * from "./schemas/notifications.ts";
 export * from "./worlds.ts";
 export * from "./schemas/worlds.ts";
 export * from "./schemas/memory-config.ts";
+export * from "./schemas/object-storage.ts";
 export * from "./world-context.ts";

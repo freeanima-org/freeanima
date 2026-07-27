@@ -8,7 +8,6 @@ import type { CompanionBehavior } from "@freeanima/features/companion/shared/com
 import type { CompanionClientConfigPayload } from "@freeanima/shared/rpc-contract/frames/companion";
 import { parseHabitatRestResponse } from "@freeanima/shared/habitat-rpc";
 import { getCompanionHabitatClient } from "./habitat-client.ts";
-import { resolveCompanionDevOrigin } from "./companion-local.ts";
 
 export type CompanionConfig = ClientCompanionConfig;
 
@@ -33,27 +32,9 @@ export async function fetchCompanionConfig(): Promise<CompanionConfig> {
   return wrapHabitatConfig(data.config);
 }
 
-/** Overlay 运行时：Portal 壳走 Habitat RPC；无壳时才回退本地 companion/dev HTTP。 */
+/** Overlay / 无壳：一律 Habitat RPC（不再打本地 `/api/config`）。 */
 export async function fetchOverlayCompanionConfig(): Promise<CompanionConfig> {
-  const shell = window.portalShell;
-  if (shell?.isNativeShell || shell?.isTauri) {
-    return loadHabitatCompanionSettingsConfig();
-  }
-  try {
-    return await fetchLocalCompanionRuntimeConfig();
-  } catch {
-    return loadHabitatCompanionSettingsConfig();
-  }
-}
-
-/** 无壳 / companion/dev：本地 HTTP `/api/config` */
-export async function fetchLocalCompanionRuntimeConfig(): Promise<CompanionConfig> {
-  const base = await resolveCompanionDevOrigin();
-  const res = await fetch(`${base}/api/config`);
-  if (!res.ok) {
-    throw new Error(`companion local config HTTP ${res.status}`);
-  }
-  return wrapHabitatConfig((await res.json()) as ClientCompanionConfig);
+  return loadHabitatCompanionSettingsConfig();
 }
 
 export async function fetchCompanionRuntimeFields(): Promise<{
@@ -68,12 +49,7 @@ export async function fetchCompanionRuntimeFields(): Promise<{
       /* fall through */
     }
   }
-  try {
-    const cfg = await fetchLocalCompanionRuntimeConfig();
-    return { instance_id: cfg.instance_id, remote_tools_connected: cfg.remote_tools_connected };
-  } catch {
-    return { instance_id: "", remote_tools_connected: false };
-  }
+  return { instance_id: "", remote_tools_connected: false };
 }
 
 /** Habitat 设置页：profile 走 RPC，运行时字段走壳/本地 status */
