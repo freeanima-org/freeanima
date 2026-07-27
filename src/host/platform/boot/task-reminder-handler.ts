@@ -76,11 +76,14 @@ export async function runTaskReminderScan(): Promise<string> {
   }
 
   const now = Date.now();
+  const ctx = getResolvedWorldContext();
   const search = await searchEntities({
     primary_component: TASK_ITEM_COMPONENT,
     filters: { status: "pending" },
     limit: 500,
     mode: "filter_only",
+    global: true,
+    accessible_world_ids: [ctx.user_world_id, ctx.agent_world_id],
   });
 
   let sent = 0;

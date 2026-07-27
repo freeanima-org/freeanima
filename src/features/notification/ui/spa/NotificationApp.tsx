@@ -17,6 +17,7 @@ import {
   getNotificationRecipients,
   type NotificationRow,
 } from "./lib/api.ts";
+import { useNotificationUnreadStore } from "./stores/notification-unread.ts";
 
 const PAGE_SIZE = 20;
 
@@ -143,6 +144,7 @@ export function NotificationApp() {
       } else {
         setItems((prev) => prev.map((item) => (item.id === row.id ? result.notification : item)));
       }
+      void useNotificationUnreadStore.getState().refreshCount();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {

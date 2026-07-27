@@ -1,8 +1,11 @@
-import { describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
 
 import { bindResolvedWorldContext } from "@freeanima/host/core/config/world-context";
+import * as entityMod from "@freeanima/host/core/db/pg/entity";
+import * as notificationMod from "@freeanima/host/capabilities/tools/notification";
 import {
   recipientForTaskWorld,
+  runTaskReminderScan,
   shouldSendTaskReminder,
   taskReminderSourceRef,
   triggerMs,
@@ -13,6 +16,10 @@ bindResolvedWorldContext({
   agent_world_id: 20,
   user_subject_id: 1,
   agent_subject_id: 2,
+});
+
+afterEach(() => {
+  mock.restore();
 });
 
 describe("triggerMs", () => {
@@ -84,5 +91,33 @@ describe("recipientForTaskWorld", () => {
 
   it("returns null for unknown world", () => {
     expect(recipientForTaskWorld(99, port)).toBeNull();
+  });
+});
+
+describe("runTaskReminderScan", () => {
+  it("searchEntities 使用 global + user/agent world 白名单", async () => {
+    const searchSpy = spyOn(entityMod, "searchEntities").mockResolvedValue({
+      query: null,
+      limit: 500,
+      offset: 0,
+      count: 0,
+      results: [],
+    });
+    spyOn(notificationMod, "getNotificationPort").mockReturnValue({
+      getUserRecipient: () => ({ kind: "user" as const, id: "1" }),
+      getAgentRecipient: () => ({ kind: "agent" as const, id: "2" }),
+      create: async () => ({ id: "n1" }),
+    } as never);
+
+    const out = JSON.parse(await runTaskReminderScan()) as { ok: boolean; sent: number };
+    expect(out.ok).toBe(true);
+    expect(out.sent).toBe(0);
+    expect(searchSpy).toHaveBeenCalledTimes(1);
+    const arg = searchSpy.mock.calls[0]?.[0] as {
+      global?: boolean;
+      accessible_world_ids?: number[];
+    };
+    expect(arg.global).toBe(true);
+    expect(arg.accessible_world_ids).toEqual([10, 20]);
   });
 });

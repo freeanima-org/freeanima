@@ -173,6 +173,9 @@ export async function bootstrapTauriBridge(): Promise<void> {
     },
     showNativeAlert: (payload: ShellNativeAlertPayload) => invoke("show_native_alert", { payload }),
     requestNativeAlertPermission: async () => "granted" as const,
+    setAppBadgeCount: (count: number) =>
+      invoke("set_app_badge_count", { count: Math.max(0, Math.floor(count)) }),
+    requestAppAttention: () => invoke("request_app_attention"),
     emitConfigChanged: async () => {
       const c = await invoke<HabitatCfg>("get_habitat_config");
       applyHabitatConfigToShell(shell, c.habitatUrl, c.remoteAuthToken ?? "");

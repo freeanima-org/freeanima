@@ -52,6 +52,18 @@ export function createWebShellStub(): ShellApi {
     habitatWsUrl: "",
     windowRole: null,
     apiOrigin: null,
+    setAppBadgeCount: async (count: number) => {
+      const n = Math.max(0, Math.floor(count));
+      try {
+        if (n > 0 && typeof navigator.setAppBadge === "function") {
+          await navigator.setAppBadge(n);
+        } else if (n <= 0 && typeof navigator.clearAppBadge === "function") {
+          await navigator.clearAppBadge();
+        }
+      } catch {
+        // ignore
+      }
+    },
     ...shellExtras(""),
   };
 }
@@ -65,6 +77,18 @@ export function buildWebShellFromRaw(habitatUrl: string, remoteAuthToken: string
     ...apiFields,
     windowRole: null,
     apiOrigin: null,
+    setAppBadgeCount: async (count: number) => {
+      const n = Math.max(0, Math.floor(count));
+      try {
+        if (n > 0 && typeof navigator.setAppBadge === "function") {
+          await navigator.setAppBadge(n);
+        } else if (n <= 0 && typeof navigator.clearAppBadge === "function") {
+          await navigator.clearAppBadge();
+        }
+      } catch {
+        // ignore
+      }
+    },
     ...shellExtras(trimmedHabitatUrl),
   };
 }

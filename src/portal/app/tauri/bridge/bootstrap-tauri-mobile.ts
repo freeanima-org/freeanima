@@ -87,6 +87,19 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
     },
     showNativeAlert: (payload: ShellNativeAlertPayload) => invoke("show_native_alert", { payload }),
     requestNativeAlertPermission: async () => "granted" as const,
+    // Android：无成熟 launcher badge；WebView Badging API 尽力而为
+    setAppBadgeCount: async (count: number) => {
+      const n = Math.max(0, Math.floor(count));
+      try {
+        if (n > 0 && typeof navigator.setAppBadge === "function") {
+          await navigator.setAppBadge(n);
+        } else if (n <= 0 && typeof navigator.clearAppBadge === "function") {
+          await navigator.clearAppBadge();
+        }
+      } catch {
+        // ignore
+      }
+    },
     emitConfigChanged: async () => {
       const c = await invoke<HabitatCfg>("get_habitat_config");
       applyHabitatConfigToShell(shell, c.habitatUrl, c.remoteAuthToken ?? "");
