@@ -85,6 +85,7 @@ describe("judgeGoal", () => {
     expect(opts?.requestParams).toEqual({ ...GOAL_JUDGE_REQUEST_PARAMS });
     expect(GOAL_JUDGE_REQUEST_PARAMS.extra.response_format).toEqual({ type: "json_object" });
     expect(GOAL_JUDGE_REQUEST_PARAMS.extra.thinking).toEqual({ type: "disabled" });
+    expect(GOAL_JUDGE_REQUEST_PARAMS.extra.tool_choice).toBe("none");
     expect(GOAL_JUDGE_REQUEST_PARAMS.maxOutputTokens).toBe(2048);
   });
 

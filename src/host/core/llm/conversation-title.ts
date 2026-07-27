@@ -9,12 +9,14 @@ export const SESSION_TITLE_MAX_OUTPUT_TOKENS = 30;
 
 /**
  * 关闭 thinking：短标题不需要推理，且 thinking 常与 content 共用 max_tokens。
+ * tool_choice none：一次性 completion，禁止 tool call。
  * 兼容忽略 thinking 开关的网关（仍靠 maxOutputTokens 收紧）。
  */
 export const SESSION_TITLE_REQUEST_PARAMS = {
   maxOutputTokens: SESSION_TITLE_MAX_OUTPUT_TOKENS,
   extra: {
     thinking: { type: "disabled" },
+    tool_choice: "none",
   },
 } as const;
 

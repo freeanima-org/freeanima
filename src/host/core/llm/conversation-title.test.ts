@@ -58,6 +58,7 @@ describe("generateConversationTitle", () => {
     expect(opts?.profileId).toBe(PROFILE_SUMMARY);
     expect(opts?.requestParams).toEqual(SESSION_TITLE_REQUEST_PARAMS);
     expect(SESSION_TITLE_REQUEST_PARAMS.extra.thinking).toEqual({ type: "disabled" });
+    expect(SESSION_TITLE_REQUEST_PARAMS.extra.tool_choice).toBe("none");
     expect(SESSION_TITLE_MAX_OUTPUT_TOKENS).toBe(30);
   });
 

@@ -3,6 +3,16 @@ import { type CompressionState, formatMessagesForSummary, sliceForSummary } from
 import { chat, PROFILE_SUMMARY } from "@freeanima/host/core/llm";
 import type { StoredMessage } from "@freeanima/host/core/db/domain";
 
+/**
+ * 一次性摘要 completion：关 thinking、禁 tool call（经 params.extra 透传）。
+ */
+export const COMPRESSION_SUMMARY_REQUEST_PARAMS = {
+  extra: {
+    thinking: { type: "disabled" },
+    tool_choice: "none",
+  },
+} as const;
+
 const SUMMARY_INSTRUCTION = `You are a digital life running in FreeAnima. Compress the following conversation history into a concise conversation summary (first person "I"), keeping:
 - Partner intent and decisions made
 - Open items and agreements
@@ -57,7 +67,11 @@ export async function generateConversationSummary(
         { role: "system", content: systemPromptSnapshot },
         { role: "user", content: userContent },
       ],
-      { model, profileId: PROFILE_SUMMARY },
+      {
+        model,
+        profileId: PROFILE_SUMMARY,
+        requestParams: COMPRESSION_SUMMARY_REQUEST_PARAMS,
+      },
     );
     const summary = (resp.content ?? "").trim();
     if (!summary) return { ok: false, error: "Summary LLM returned empty" };
