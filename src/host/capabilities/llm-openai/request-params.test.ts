@@ -19,6 +19,18 @@ describe("buildChatCompletionParams", () => {
     expect(body.messages[0]).toEqual({ role: "system", content: "sys" });
     expect(body.messages[1]).toMatchObject({ role: "user", content: "ping" });
   });
+
+  it("merges params.extra into body (e.g. tool_choice)", () => {
+    const body = buildChatCompletionParams("gpt-test", {
+      ...baseRequest,
+      params: {
+        ...baseRequest.params,
+        extra: { tool_choice: "none", thinking: { type: "disabled" } },
+      },
+    });
+    expect(body.tool_choice).toBe("none");
+    expect((body as { thinking?: unknown }).thinking).toEqual({ type: "disabled" });
+  });
 });
 
 describe("buildStreamingChatCompletionParams", () => {

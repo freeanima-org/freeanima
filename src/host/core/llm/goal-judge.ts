@@ -33,6 +33,7 @@ const GOAL_JUDGE_JSON_SCHEMA = {
 /**
  * OpenAI-compatible JSON mode（经 params.extra 透传）。
  * 关闭 thinking：短 JSON 判定不需要推理，且 thinking 常与 content 共用 max_tokens。
+ * tool_choice none：一次性 completion，禁止 tool call。
  * maxOutputTokens 仍留余量，兼容忽略 thinking 开关的网关。
  */
 export const GOAL_JUDGE_REQUEST_PARAMS = {
@@ -41,6 +42,7 @@ export const GOAL_JUDGE_REQUEST_PARAMS = {
   extra: {
     response_format: { type: "json_object" },
     thinking: { type: "disabled" },
+    tool_choice: "none",
   },
 } as const;
 

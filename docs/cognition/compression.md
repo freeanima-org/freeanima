@@ -27,7 +27,7 @@ title: Compression
 
 Non-compression path: append new messages to raw only; boundaries unchanged.
 
-Compression path: when usage exceeds thresholds, older messages move into summary/slim; summary text updated asynchronously.
+Compression path: when usage exceeds thresholds, older messages move into summary/slim; summary text updated asynchronously. Summary LLM calls are one-shot completions (`tool_choice: none`, `thinking: disabled` via `params.extra`).
 
 ## Configuration
 

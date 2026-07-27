@@ -100,7 +100,7 @@ Legacy meta **read-time migration** (`parseCompressionState`):
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | `src/host/core/compress/compressor.ts`            | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |
 | `src/host/core/compress/compression-config.ts`    | Config and unified `context_window` resolution (config > default > catalog)                   |
-| `src/host/core/compress/compression-summary.ts`   | Summary LLM                                                                                   |
+| `src/host/core/compress/compression-summary.ts`   | Summary LLM（one-shot：`tool_choice: none` + `thinking: disabled`）                           |
 | `src/host/core/compress/compression-tool-loop.ts` | `isInToolLoop`                                                                                |
 | `runtime/src/turn/summarize-conversation.ts`      | `summarizeConversation` (manual `/summarize`)                                                 |
 | `runtime/src/conversation/conversation.ts`        | `recompressConversation`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression`            |

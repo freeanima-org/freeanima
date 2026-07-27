@@ -41,7 +41,7 @@ On **Chat**, terminal commands (`/goal status`, pause/resume/clear, `/subgoal` l
 
 Optional `goal_judge` in Habitat runtime `llm.profiles` (Shell **Settings → Habitat 服务 → 服务配置**). Falls back to `llm.default_profile` when unset.
 
-Judge calls use OpenAI-compatible `response_format: json_object` and `thinking: { type: "disabled" }` (via `params.extra`), plus `maxOutputTokens: 2048`. Prefer a model/gateway that supports JSON mode; unsupported endpoints will fail the judge call and pause the goal.
+Judge calls use OpenAI-compatible `response_format: json_object`, `thinking: { type: "disabled" }`, and `tool_choice: "none"` (via `params.extra`), plus `maxOutputTokens: 2048`. Prefer a model/gateway that supports JSON mode; unsupported endpoints will fail the judge call and pause the goal.
 
 ## vs ACP
 
