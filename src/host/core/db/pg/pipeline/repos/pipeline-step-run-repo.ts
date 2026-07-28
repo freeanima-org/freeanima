@@ -89,6 +89,39 @@ export async function listPipelineStepRuns(
   return rows.map(mapRow);
 }
 
+/**
+ * Distinct CST days with a completed or skipped pipeline step
+ * (used by sleep catch-up to skip already-slept light-sleep days).
+ */
+export async function listCompletedStepDays(opts: {
+  pipeline_id: string;
+  step_id: string;
+  from_day?: string;
+  to_day?: string;
+}): Promise<string[]> {
+  const conditions = [
+    eq(pipelineStepRun.pipeline_id, opts.pipeline_id),
+    eq(pipelineStepRun.step_id, opts.step_id),
+    sql`${pipelineStepRun.status} IN ('completed', 'skipped')`,
+  ];
+  if (opts.from_day?.trim()) {
+    conditions.push(sql`${pipelineStepRun.day} >= ${opts.from_day.trim()}`);
+  }
+  if (opts.to_day?.trim()) {
+    conditions.push(sql`${pipelineStepRun.day} <= ${opts.to_day.trim()}`);
+  }
+
+  const db = getDb();
+  const dayCol = pipelineStepRun.day;
+  const rows = await db
+    .select({ day: dayCol })
+    .from(pipelineStepRun)
+    .where(and(...conditions))
+    .groupBy(dayCol)
+    .orderBy(dayCol);
+  return rows.map((r) => r.day).filter((d) => d.length > 0);
+}
+
 /** 测试用：清空表 */
 export async function clearPipelineStepRunsForTests(): Promise<void> {
   const db = getDb();

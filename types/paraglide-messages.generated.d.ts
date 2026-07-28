@@ -541,6 +541,10 @@ type ParaglideMessageExports = {
   readonly habitat_semantic_source_conversation: ParaglideMessageFn;
   readonly habitat_semantic_updated: ParaglideMessageFn;
   readonly habitat_sleep_attempt: ParaglideMessageFn;
+  readonly habitat_sleep_catch_up: ParaglideMessageFn;
+  readonly habitat_sleep_catch_up_hint: ParaglideMessageFn;
+  readonly habitat_sleep_catch_up_progress: ParaglideMessageFn;
+  readonly habitat_sleep_catch_up_running: ParaglideMessageFn;
   readonly habitat_sleep_change_log: ParaglideMessageFn;
   readonly habitat_sleep_cycle: ParaglideMessageFn;
   readonly habitat_sleep_cycle_day: ParaglideMessageFn;
@@ -572,6 +576,7 @@ type ParaglideMessageExports = {
   readonly habitat_sleep_step_memory_ref_sync: ParaglideMessageFn;
   readonly habitat_sleep_step_self_layer_refresh: ParaglideMessageFn;
   readonly habitat_sleep_trigger: ParaglideMessageFn;
+  readonly habitat_sleep_trigger_catch_up: ParaglideMessageFn;
   readonly habitat_sleep_trigger_manual_cycle: ParaglideMessageFn;
   readonly habitat_sleep_trigger_manual_step: ParaglideMessageFn;
   readonly habitat_sleep_trigger_scheduled: ParaglideMessageFn;
@@ -1342,6 +1347,10 @@ declare module "*/messages/paraglide/messages.js" {
   export const habitat_semantic_source_conversation: ParaglideMessageFn;
   export const habitat_semantic_updated: ParaglideMessageFn;
   export const habitat_sleep_attempt: ParaglideMessageFn;
+  export const habitat_sleep_catch_up: ParaglideMessageFn;
+  export const habitat_sleep_catch_up_hint: ParaglideMessageFn;
+  export const habitat_sleep_catch_up_progress: ParaglideMessageFn;
+  export const habitat_sleep_catch_up_running: ParaglideMessageFn;
   export const habitat_sleep_change_log: ParaglideMessageFn;
   export const habitat_sleep_cycle: ParaglideMessageFn;
   export const habitat_sleep_cycle_day: ParaglideMessageFn;
@@ -1373,6 +1382,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const habitat_sleep_step_memory_ref_sync: ParaglideMessageFn;
   export const habitat_sleep_step_self_layer_refresh: ParaglideMessageFn;
   export const habitat_sleep_trigger: ParaglideMessageFn;
+  export const habitat_sleep_trigger_catch_up: ParaglideMessageFn;
   export const habitat_sleep_trigger_manual_cycle: ParaglideMessageFn;
   export const habitat_sleep_trigger_manual_step: ParaglideMessageFn;
   export const habitat_sleep_trigger_scheduled: ParaglideMessageFn;

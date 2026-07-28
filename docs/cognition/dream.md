@@ -43,9 +43,10 @@ Sleep-cycle DAG node `dream` (unchanged topology):
 
 ```text
 light-sleep
-  ├─► deep-sleep ──► memory-ref-sync
+  ├─► deep-sleep
   ├─► dream        (parallel)
-  └─► self-layer-refresh
+  ├─► self-layer-refresh
+  └─► memory-ref-sync
 ```
 
 ## Tools & UI

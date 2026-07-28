@@ -141,6 +141,9 @@ export type AppRuntimeSleepPort = {
     force?: boolean;
     deep_sleep_mode?: "full" | "incremental";
   }): Promise<{ ok: true; result: unknown } | { ok: false; error: string }>;
+  startSleepCatchUp(): Promise<
+    { ok: true; started: true; plan: unknown } | { ok: false; error: string }
+  >;
   listAutoLlmRuns(opts?: {
     run_kind?: string;
     status?: "ok" | "error";

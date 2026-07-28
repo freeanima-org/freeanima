@@ -640,3 +640,33 @@ export async function getEarliestConversationDay(): Promise<string | null> {
   const day = rows[0]?.day?.trim();
   return day || null;
 }
+
+/**
+ * CST calendar days YYYY-MM-DD with conversation.updated_at activity in [fromDay, toDay]
+ * (same non-debug / non-cron filter as light-sleep).
+ */
+export async function listConversationActivityDays(
+  fromDay: string,
+  toDay: string,
+): Promise<string[]> {
+  const fromIso = `${fromDay}T00:00:00+08:00`;
+  // toDay inclusive: upper bound = start of day after toDay
+  const toEndExclusive = `${toDay}T00:00:00+08:00`;
+  const dayExpr = sql<string>`to_char(
+    (${conversations.updated_at} AT TIME ZONE 'Asia/Shanghai')::date,
+    'YYYY-MM-DD'
+  )`;
+  const db = getDb();
+  const rows = await db
+    .select({ day: dayExpr })
+    .from(conversations)
+    .where(
+      sql`${conversations.updated_at} >= ${fromIso}::timestamptz
+        AND ${conversations.updated_at} < (${toEndExclusive}::timestamptz + interval '1 day')
+        AND ${conversations.debug} = false
+        AND COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'`,
+    )
+    .groupBy(dayExpr)
+    .orderBy(dayExpr);
+  return rows.map((r) => r.day).filter((d) => d.length > 0 && d >= fromDay && d <= toDay);
+}

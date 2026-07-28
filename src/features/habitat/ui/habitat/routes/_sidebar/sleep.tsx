@@ -25,6 +25,7 @@ import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form/
 import {
   getSleepPipelineStatus,
   listPipelineStepRuns,
+  startSleepCatchUp,
   startSleepCycle,
   startSleepPipelineStep,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
@@ -134,6 +135,8 @@ function triggerLabel(trigger: string): string {
       return m.habitat_sleep_trigger_manual_cycle();
     case "manual_step":
       return m.habitat_sleep_trigger_manual_step();
+    case "catch_up":
+      return m.habitat_sleep_trigger_catch_up();
     default:
       return trigger;
   }
@@ -175,15 +178,34 @@ type PipelineStepState = {
   skipped_reason?: string;
 };
 
+type CatchUpStatus = {
+  running: boolean;
+  plan: {
+    light_days: string[];
+    temporal_days: string[];
+    cascade_days: string[];
+    days: string[];
+  } | null;
+  completed_light_days: string[];
+  completed_temporal_days: string[];
+  completed_cascade_days: string[];
+  current_day: string | null;
+  current_step: string | null;
+  error: string | null;
+  finished: boolean;
+};
+
 type PipelineStatus = {
   running: boolean;
   step_running: boolean;
+  catch_up_running?: boolean;
   definition: { nodes: Array<{ id: string; dependsOn?: string[] }> };
   run_state: {
     day?: string;
     status?: string;
     steps?: Record<string, PipelineStepState>;
   } | null;
+  catch_up?: CatchUpStatus;
 };
 
 function outputToolCalls(output: Record<string, unknown> | null): string {
@@ -207,6 +229,7 @@ function SleepPage() {
   const [pipelineForce, setPipelineForce] = useState(false);
   const [deepSleepMode, setDeepSleepMode] = useState<"full" | "incremental">("full");
   const [pipelineStarting, setPipelineStarting] = useState(false);
+  const [catchUpStarting, setCatchUpStarting] = useState(false);
   const [runningStepId, setRunningStepId] = useState<string | null>(null);
   const [pipelineError, setPipelineError] = useState("");
   const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus | null>(null);
@@ -249,29 +272,45 @@ function SleepPage() {
   }, [refreshPipelineStatus]);
 
   useEffect(() => {
-    if (!pipelineStatus?.running && !pipelineStatus?.step_running) return;
+    if (
+      !pipelineStatus?.running &&
+      !pipelineStatus?.step_running &&
+      !pipelineStatus?.catch_up_running
+    ) {
+      return;
+    }
     const timer = setInterval(() => {
       void refreshPipelineStatus();
     }, 2500);
     return () => clearInterval(timer);
-  }, [pipelineStatus?.running, pipelineStatus?.step_running, refreshPipelineStatus]);
+  }, [
+    pipelineStatus?.running,
+    pipelineStatus?.step_running,
+    pipelineStatus?.catch_up_running,
+    refreshPipelineStatus,
+  ]);
 
   useEffect(() => {
     if (
       pipelineStatus?.running ||
       pipelineStatus?.step_running ||
+      pipelineStatus?.catch_up_running ||
       pipelineStarting ||
+      catchUpStarting ||
       runningStepId
     ) {
       return;
     }
-    if (!pipelineStatus?.run_state?.status && !runningStepId) return;
+    if (!pipelineStatus?.run_state?.status && !pipelineStatus?.catch_up?.finished) return;
     void refreshAfterRun();
   }, [
     pipelineStatus?.running,
     pipelineStatus?.step_running,
+    pipelineStatus?.catch_up_running,
     pipelineStatus?.run_state?.status,
+    pipelineStatus?.catch_up?.finished,
     pipelineStarting,
+    catchUpStarting,
     runningStepId,
     refreshAfterRun,
   ]);
@@ -279,7 +318,9 @@ function SleepPage() {
   const pipelineBusy =
     pipelineStatus?.running ||
     pipelineStatus?.step_running ||
+    pipelineStatus?.catch_up_running ||
     pipelineStarting ||
+    catchUpStarting ||
     Boolean(runningStepId);
 
   const startCycle = async () => {
@@ -298,6 +339,20 @@ function SleepPage() {
       setPipelineError(e instanceof Error ? e.message : String(e));
     } finally {
       setPipelineStarting(false);
+    }
+  };
+
+  const startCatchUp = async () => {
+    setCatchUpStarting(true);
+    setPipelineError("");
+    try {
+      await startSleepCatchUp();
+      await refreshPipelineStatus();
+    } catch (e) {
+      logCaughtError("routes/_sidebar/sleep", e);
+      setPipelineError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setCatchUpStarting(false);
     }
   };
 
@@ -329,6 +384,19 @@ function SleepPage() {
 
   const stepNodes = pipelineStatus?.definition?.nodes ?? [];
   const stepStates = pipelineStatus?.run_state?.steps ?? {};
+  const catchUp = pipelineStatus?.catch_up;
+  const catchUpTotal =
+    (catchUp?.plan?.light_days.length ?? 0) +
+    (catchUp?.plan?.temporal_days.length ?? 0) +
+    (catchUp?.plan?.cascade_days.length ?? 0);
+  const catchUpDone =
+    (catchUp?.completed_light_days.length ?? 0) +
+    (catchUp?.completed_temporal_days.length ?? 0) +
+    (catchUp?.completed_cascade_days.length ?? 0);
+  const catchUpCurrent =
+    catchUp?.current_step && catchUp.current_day
+      ? `${catchUp.current_step} @ ${catchUp.current_day}`
+      : (catchUp?.current_day ?? "—");
 
   return (
     <div>
@@ -382,6 +450,18 @@ function SleepPage() {
                 ? m.habitat_sleep_cycle_running()
                 : m.habitat_sleep_cycle_run()}
             </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              disabled={pipelineBusy}
+              onClick={() => void startCatchUp()}
+              title={m.habitat_sleep_catch_up_hint()}
+            >
+              {pipelineStatus?.catch_up_running || catchUpStarting
+                ? m.habitat_sleep_catch_up_running()
+                : m.habitat_sleep_catch_up()}
+            </Button>
             <div className="flex items-center gap-2">
               <Checkbox
                 id="pipeline-force"
@@ -394,6 +474,19 @@ function SleepPage() {
               </Label>
             </div>
           </div>
+          {(pipelineStatus?.catch_up_running || catchUp?.finished) && catchUpTotal > 0 ? (
+            <p className="text-xs text-muted-foreground mb-3">
+              {m.habitat_sleep_catch_up_progress({
+                current: catchUpCurrent,
+                done: String(catchUpDone),
+                total: String(catchUpTotal),
+              })}
+              {catchUp?.error ? (
+                <span className="text-destructive ml-1">— {catchUp.error}</span>
+              ) : null}
+            </p>
+          ) : null}
+          <p className="text-xs text-muted-foreground mb-3">{m.habitat_sleep_catch_up_hint()}</p>
 
           {stepNodes.length > 0 && (
             <div className="overflow-x-auto">

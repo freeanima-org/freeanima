@@ -12,20 +12,51 @@ import {
   SLEEP_CYCLE_JOB_ID,
   type SleepSummary,
 } from "@freeanima/host/capabilities/memory";
+import type { SleepCatchUpPlan } from "@freeanima/host/capabilities/memory/sleep-catch-up-types";
 import type { PipelineRunState } from "@freeanima/host/engine/pipeline";
+import { logCapability as logComponent } from "@freeanima/host/core/config";
 
 import {
   getSleepPipelineStatus as readSleepPipelineStatus,
   runSleepCycle,
   runSleepStep,
 } from "../boot/pipeline-handlers.ts";
-import { sleepCycleDefinition, SLEEP_CYCLE_PIPELINE_ID } from "../boot/sleep-cycle.ts";
+import {
+  sleepCycleDefinition,
+  SLEEP_CYCLE_PIPELINE_ID,
+  SLEEP_STEP_IDS,
+} from "../boot/sleep-cycle.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { listCronJobs } from "./service-status.ts";
 
 let sleepCycleRunning = false;
 let lastSleepCycleResult: Awaited<ReturnType<typeof runSleepCycle>> | null = null;
 let sleepStepRunning = false;
+let sleepCatchUpRunning = false;
+
+export type SleepCatchUpStatus = {
+  running: boolean;
+  plan: SleepCatchUpPlan | null;
+  completed_light_days: string[];
+  completed_temporal_days: string[];
+  completed_cascade_days: string[];
+  current_day: string | null;
+  current_step: string | null;
+  error: string | null;
+  finished: boolean;
+};
+
+let catchUpStatus: SleepCatchUpStatus = {
+  running: false,
+  plan: null,
+  completed_light_days: [],
+  completed_temporal_days: [],
+  completed_cascade_days: [],
+  current_day: null,
+  current_step: null,
+  error: null,
+  finished: false,
+};
 
 export async function getSleepSummary(): Promise<SleepSummary> {
   const { jobs } = await listCronJobs();
@@ -82,28 +113,36 @@ export async function listPipelineStepRuns(
 export type SleepPipelineStatus = {
   running: boolean;
   step_running: boolean;
+  catch_up_running: boolean;
   pipeline_id: string;
   definition: typeof sleepCycleDefinition;
   last_result: Awaited<ReturnType<typeof runSleepCycle>> | null;
   run_state: PipelineRunState | null;
+  catch_up: SleepCatchUpStatus;
 };
 
 export function getSleepPipelineStatus(): SleepPipelineStatus {
   return {
     running: sleepCycleRunning,
     step_running: sleepStepRunning,
+    catch_up_running: sleepCatchUpRunning,
     pipeline_id: SLEEP_CYCLE_PIPELINE_ID,
     definition: sleepCycleDefinition,
     last_result: lastSleepCycleResult,
     run_state: readSleepPipelineStatus(),
+    catch_up: { ...catchUpStatus },
   };
+}
+
+function sleepBusy(): boolean {
+  return sleepCycleRunning || sleepStepRunning || sleepCatchUpRunning;
 }
 
 export async function startSleepCycle(
   _deps: RuntimeDeps,
   opts?: { day?: string; deep_sleep_mode?: "full" | "incremental" },
 ): Promise<{ ok: true; started: true } | { ok: false; error: string }> {
-  if (sleepCycleRunning || sleepStepRunning) {
+  if (sleepBusy()) {
     return { ok: false, error: "sleep pipeline already running" };
   }
 
@@ -135,7 +174,7 @@ export async function startSleepPipelineStep(
 ): Promise<
   { ok: true; result: Awaited<ReturnType<typeof runSleepStep>> } | { ok: false; error: string }
 > {
-  if (sleepCycleRunning || sleepStepRunning) {
+  if (sleepBusy()) {
     return { ok: false, error: "sleep pipeline already running" };
   }
 
@@ -158,6 +197,139 @@ export async function startSleepPipelineStep(
   } finally {
     sleepStepRunning = false;
   }
+}
+
+export async function startSleepCatchUp(
+  _deps: RuntimeDeps,
+  opts?: { plan?: SleepCatchUpPlan },
+): Promise<{ ok: true; started: true; plan: SleepCatchUpPlan } | { ok: false; error: string }> {
+  if (sleepBusy()) {
+    return { ok: false, error: "sleep pipeline already running" };
+  }
+  if (!isPostgresPrimary()) {
+    return { ok: false, error: "postgres primary required for sleep catch-up" };
+  }
+
+  let plan: SleepCatchUpPlan;
+  if (opts?.plan) {
+    plan = opts.plan;
+  } else {
+    const { planSleepCatchUp } =
+      await import("@freeanima/host/capabilities/memory/sleep-catch-up.ts");
+    const planned: { ok: true; plan: SleepCatchUpPlan } | { ok: false; reason: string } =
+      await planSleepCatchUp();
+    if (planned.ok === false) {
+      return { ok: false, error: planned.reason };
+    }
+    plan = planned.plan;
+  }
+
+  sleepCatchUpRunning = true;
+  catchUpStatus = {
+    running: true,
+    plan,
+    completed_light_days: [],
+    completed_temporal_days: [],
+    completed_cascade_days: [],
+    current_day: null,
+    current_step: null,
+    error: null,
+    finished: false,
+  };
+
+  void (async () => {
+    try {
+      const lightSet = new Set(plan.light_days);
+      const temporalSet = new Set(plan.temporal_days);
+      for (const day of plan.days) {
+        if (lightSet.has(day)) {
+          catchUpStatus = {
+            ...catchUpStatus,
+            current_day: day,
+            current_step: SLEEP_STEP_IDS.lightSleep,
+          };
+          const result = await runSleepStep(SLEEP_STEP_IDS.lightSleep, {
+            day,
+            force: true,
+            trigger: "catch_up",
+          });
+          if (!result.ok) {
+            throw new Error(
+              result.error ?? result.dependency_error ?? `light-sleep failed for ${day}`,
+            );
+          }
+          catchUpStatus = {
+            ...catchUpStatus,
+            completed_light_days: [...catchUpStatus.completed_light_days, day],
+          };
+        }
+        if (temporalSet.has(day)) {
+          catchUpStatus = {
+            ...catchUpStatus,
+            current_day: day,
+            current_step: SLEEP_STEP_IDS.temporalSummaryDay,
+          };
+          const result = await runSleepStep(SLEEP_STEP_IDS.temporalSummaryDay, {
+            day,
+            force: true,
+            trigger: "catch_up",
+          });
+          if (!result.ok) {
+            throw new Error(
+              result.error ?? result.dependency_error ?? `temporal-summary-day failed for ${day}`,
+            );
+          }
+          catchUpStatus = {
+            ...catchUpStatus,
+            completed_temporal_days: [...catchUpStatus.completed_temporal_days, day],
+          };
+        }
+      }
+
+      for (const day of plan.cascade_days) {
+        catchUpStatus = {
+          ...catchUpStatus,
+          current_day: day,
+          current_step: SLEEP_STEP_IDS.temporalSummaryCascade,
+        };
+        const result = await runSleepStep(SLEEP_STEP_IDS.temporalSummaryCascade, {
+          day,
+          force: true,
+          trigger: "catch_up",
+        });
+        if (!result.ok) {
+          throw new Error(
+            result.error ?? result.dependency_error ?? `temporal-summary-cascade failed for ${day}`,
+          );
+        }
+        catchUpStatus = {
+          ...catchUpStatus,
+          completed_cascade_days: [...catchUpStatus.completed_cascade_days, day],
+        };
+      }
+
+      catchUpStatus = {
+        ...catchUpStatus,
+        running: false,
+        current_day: null,
+        current_step: null,
+        finished: true,
+      };
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      logComponent("memory").warn("sleep catch-up failed", { error: message });
+      catchUpStatus = {
+        ...catchUpStatus,
+        running: false,
+        error: message,
+        finished: true,
+      };
+    } finally {
+      sleepCatchUpRunning = false;
+    }
+  })();
+
+  return { ok: true, started: true, plan };
 }
 
 export async function listCronLogs(
