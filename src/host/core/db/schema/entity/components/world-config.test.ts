@@ -51,6 +51,20 @@ describe("worldConfigBodySchema", () => {
     expect(parsed.success).toBe(false);
   });
 
+  it("accepts common public world", () => {
+    const parsed = worldConfigBodySchema.safeParse({ common: true, private: false });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rejects common private world", () => {
+    const parsed = worldConfigBodySchema.safeParse({
+      common: true,
+      private: true,
+      owner_subject_id: 1,
+    });
+    expect(parsed.success).toBe(false);
+  });
+
   it("accepts grants on private world", () => {
     const parsed = worldConfigBodySchema.safeParse({
       private: true,

@@ -1,19 +1,28 @@
 import { describe, expect, it } from "bun:test";
 
-import { parseFrontmatter, skillFilePath, stripFrontmatter } from "./content.ts";
+import {
+  normalizeToolList,
+  parseFrontmatter,
+  serializeSkillMarkdown,
+  stripFrontmatter,
+} from "./content.ts";
 
 describe("skill content helpers", () => {
-  it("skillFilePath joins directory and name", () => {
-    expect(skillFilePath("/skills", "demo")).toBe("/skills/demo.md");
-  });
+  it("parseFrontmatter reads agentskills fields", () => {
+    const text = `---
+name: demo
+description: Demo skill
+allowed-tools: file_read @browser
+license: MIT
+---
 
-  it("parseFrontmatter reads yaml header", () => {
-    const text = "---\nname: demo\ndescription: Demo skill\ncreated: 2026-01-01\n---\n\n# Body";
-    expect(parseFrontmatter(text)).toEqual({
-      name: "demo",
-      description: "Demo skill",
-      created: "2026-01-01",
-    });
+# Body`;
+    const fm = parseFrontmatter(text);
+    expect(fm.name).toBe("demo");
+    expect(fm.description).toBe("Demo skill");
+    expect(fm["allowed-tools"]).toBe("file_read @browser");
+    expect(fm.license).toBe("MIT");
+    expect(normalizeToolList(fm["allowed-tools"])).toEqual(["file_read", "@browser"]);
   });
 
   it("parseFrontmatter returns empty without header", () => {
@@ -25,7 +34,18 @@ describe("skill content helpers", () => {
     expect(stripFrontmatter(text)).toBe("Hello\nworld");
   });
 
-  it("stripFrontmatter returns trimmed text when no header", () => {
-    expect(stripFrontmatter("  plain  ")).toBe("plain");
+  it("serializeSkillMarkdown roundtrips name and allowed-tools", () => {
+    const md = serializeSkillMarkdown({
+      name: "research",
+      description: "Research",
+      content: "# Hello",
+      allowed_tools: ["memory_recall", "@browser"],
+      origin: "builtin",
+      status: "active",
+    });
+    const fm = parseFrontmatter(md);
+    expect(fm.name).toBe("research");
+    expect(normalizeToolList(fm["allowed-tools"])).toEqual(["memory_recall", "@browser"]);
+    expect(stripFrontmatter(md)).toContain("# Hello");
   });
 });

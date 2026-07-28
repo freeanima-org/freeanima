@@ -24,6 +24,8 @@ export type CronJobCreateInput = {
   last_run_at?: Date | null;
   last_output_ref?: string | null;
   notify_on_success?: boolean;
+  allowed_tools?: string[];
+  denied_tools?: string[];
 };
 
 /** Built-in job upsert: update name/schedule/builtin/no_agent/timeout；不覆盖 run_count 等运行时字段 */
@@ -56,6 +58,8 @@ export type CronJobUpdateInput = {
   last_run_at?: Date | null;
   last_output_ref?: string | null;
   notify_on_success?: boolean;
+  allowed_tools?: string[];
+  denied_tools?: string[];
   updated_at?: Date;
 };
 

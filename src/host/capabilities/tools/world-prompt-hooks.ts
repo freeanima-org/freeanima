@@ -17,7 +17,8 @@ export function registerWorldContextSystemPromptHook(registry: HookRegistry): vo
       `- agent_subject_id: ${ctx.agent_subject_id}\n` +
       `- agent_world_id: ${ctx.agent_world_id}\n` +
       `- user_subject_id: ${ctx.user_subject_id}\n` +
-      `- user_world_id: ${ctx.user_world_id}`;
+      `- user_world_id: ${ctx.user_world_id}\n` +
+      `- commons_world_id: ${ctx.commons_world_id}`;
     return {
       status: "ok",
       data: {

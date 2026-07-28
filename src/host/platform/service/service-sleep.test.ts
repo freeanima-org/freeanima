@@ -45,8 +45,6 @@ const appendPipelineStepRunMock = mock(async (row: PipelineStepRunAppendInput) =
 
 mock.module("@freeanima/host/core/db/pg", () => ({
   isPostgresPrimary: () => true,
-  registerEmbedTextFn: () => {},
-  registerEmbedTextsFn: () => {},
 }));
 
 mock.module("@freeanima/host/core/db/pg/pipeline", () => ({

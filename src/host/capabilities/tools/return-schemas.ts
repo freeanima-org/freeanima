@@ -105,8 +105,12 @@ const webExtractResultSchema = z.object({
 const skillListEntrySchema = z.object({
   name: z.string(),
   description: z.string(),
+  origin: z.string().optional(),
+  status: z.string().optional(),
+  entity_id: z.number().optional(),
+  world_id: z.number().optional(),
+  allowed_tools: z.array(z.string()).optional(),
   source: z.string().optional(),
-  directory: z.string(),
 });
 
 const sessionSearchHitSchema = z.object({
@@ -384,7 +388,9 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
           name: "my-skill",
           description: "Example skill",
           source: "user",
-          directory: "/home/user/.anima/skills",
+          origin: "user",
+          entity_id: 1,
+          world_id: 10,
         },
       ],
       total: 1,
@@ -403,7 +409,9 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
           name: "my-skill",
           description: "Example skill",
           source: "user",
-          directory: "/home/user/.anima/skills",
+          origin: "user",
+          entity_id: 1,
+          world_id: 10,
         },
       ],
       total: 1,
@@ -423,6 +431,22 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       message: z.string(),
     }),
     example: { ok: true, name: "my-skill", message: "Skill 'my-skill' deleted" },
+  }),
+  skill_import: defineToolReturn({
+    schema: z.object({
+      ok: z.literal(true),
+      name: z.string(),
+      entity_id: z.number(),
+      message: z.string(),
+    }),
+    example: { ok: true, name: "my-skill", entity_id: 1, message: "Skill 'my-skill' imported" },
+  }),
+  skill_export: defineToolReturn({
+    schema: z.object({ name: z.string(), content: z.string() }),
+    example: {
+      name: "my-skill",
+      content: "---\nname: my-skill\ndescription: Example\n---\n\n# My Skill",
+    },
   }),
 
   freeanima_docs_list: defineToolReturn({

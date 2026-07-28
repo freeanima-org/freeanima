@@ -9,8 +9,6 @@ import {
   registerSystemPromptHooks,
 } from "@freeanima/host/platform";
 import { getAcpManager } from "@freeanima/host/capabilities/acp";
-import { MaskRegistry } from "@freeanima/host/core/mask";
-import { initMaskSystem } from "@freeanima/host/platform/service/mask-bind";
 import {
   registerServiceTools,
   registerServiceStores,
@@ -60,13 +58,10 @@ export function bindIntegrationRuntimeContext(pg: PgTestContext): void {
   bindHomeChannelConfig(pg.config);
   const kernel = createServiceKernel(pg.config);
   const conversation = createConversationService(pg.engine.catalog.toolSets);
-  const masks = new MaskRegistry();
-  initMaskSystem(masks);
   const fullDeps = {
     kernel,
     engine: pg.engine,
     conversation,
-    masks,
     mcp: null,
     outpost: null,
     acp: getAcpManager(),

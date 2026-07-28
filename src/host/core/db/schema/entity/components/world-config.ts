@@ -15,11 +15,33 @@ export type WorldGrant = z.infer<typeof worldGrantSchema>;
 export const worldConfigBodySchema = z
   .object({
     private: z.boolean().default(false),
+    /** 唯一公共 Commons world；强制 public */
+    common: z.boolean().default(false),
     owner_subject_id: z.number().int().positive().optional(),
     default_private: z.boolean().default(false),
     grants: z.array(worldGrantSchema).default([]),
   })
   .superRefine((b, ctx) => {
+    if (b.common) {
+      if (b.private) {
+        ctx.addIssue({
+          code: "custom",
+          message: "common world must be public",
+        });
+      }
+      if (b.owner_subject_id != null) {
+        ctx.addIssue({
+          code: "custom",
+          message: "common world must not have owner_subject_id",
+        });
+      }
+      if (b.default_private) {
+        ctx.addIssue({
+          code: "custom",
+          message: "common world cannot be default_private",
+        });
+      }
+    }
     if (b.private && b.owner_subject_id == null) {
       ctx.addIssue({ code: "custom", message: "private world requires owner_subject_id" });
     }

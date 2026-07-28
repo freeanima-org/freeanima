@@ -13,7 +13,6 @@ const listResidentSemanticMemoryMock = mock(async () => [] as SemanticMemoryRow[
 mock.module("@freeanima/host/core/db/pg/semantic-memory", () => ({
   listResidentSemanticMemory: listResidentSemanticMemoryMock,
 }));
-import { MaskRegistry } from "@freeanima/host/core/mask";
 import { createEngineCatalog } from "@freeanima/host/engine";
 import type { Engine } from "@freeanima/host/engine";
 import { Config } from "@freeanima/host/core/config";
@@ -91,7 +90,6 @@ function seedContext(catalog: ReturnType<typeof createEngineCatalog>, kernel: Ke
     mcp: null,
     outpost: null,
     acp: {} as never,
-    masks: new MaskRegistry(),
     host: "127.0.0.1",
     port: 2658,
   });

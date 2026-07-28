@@ -25,6 +25,8 @@ import { LIMBIC_COMPONENT, limbicBodySchema } from "./limbic.ts";
 import { NARRATIVE_COMPONENT, narrativeBodySchema } from "./narrative.ts";
 import { OBJECT_FILE_COMPONENT, objectFileBodySchema } from "./object-file.ts";
 import { OBJECT_FOLDER_COMPONENT, objectFolderBodySchema } from "./object-folder.ts";
+import { SKILL_COMPONENT, skillBodySchema } from "./skill.ts";
+import { SKILL_RESOURCE_COMPONENT, skillResourceBodySchema } from "./skill-resource.ts";
 import { SEMANTIC_MEMORY_COMPONENT, semanticMemoryBodySchema } from "./semantic-memory.ts";
 import { SEMANTIC_REF_COMPONENT, semanticRefBodySchema } from "./semantic-ref.ts";
 import { TASK_ITEM_COMPONENT, taskItemBodySchema } from "./task-item.ts";
@@ -68,6 +70,8 @@ export const COMPONENT_IDS = [
   COMPANION_PROFILE_COMPONENT,
   OBJECT_FILE_COMPONENT,
   OBJECT_FOLDER_COMPONENT,
+  SKILL_COMPONENT,
+  SKILL_RESOURCE_COMPONENT,
 ] as const;
 
 export type ComponentId = (typeof COMPONENT_IDS)[number];
@@ -109,6 +113,8 @@ export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
   [COMPANION_PROFILE_COMPONENT]: 120,
   [OBJECT_FILE_COMPONENT]: 130,
   [OBJECT_FOLDER_COMPONENT]: 131,
+  [SKILL_COMPONENT]: 140,
+  [SKILL_RESOURCE_COMPONENT]: 141,
 };
 
 const DEFAULT_COMPONENT_PRIORITY = 500;
@@ -161,6 +167,8 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [POMODORO_ACTIVE_COMPONENT]: pomodoroActiveBodySchema,
   [OBJECT_FILE_COMPONENT]: objectFileBodySchema,
   [OBJECT_FOLDER_COMPONENT]: objectFolderBodySchema,
+  [SKILL_COMPONENT]: skillBodySchema,
+  [SKILL_RESOURCE_COMPONENT]: skillResourceBodySchema,
 };
 
 export function componentBodySchema(component: ComponentId): z.ZodTypeAny {
@@ -203,3 +211,5 @@ export * from "./pomodoro-task-focus.ts";
 export * from "./pomodoro-active.ts";
 export * from "./object-file.ts";
 export * from "./object-folder.ts";
+export * from "./skill.ts";
+export * from "./skill-resource.ts";

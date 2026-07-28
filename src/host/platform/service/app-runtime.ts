@@ -13,7 +13,6 @@ import type { CronJobData } from "@freeanima/host/capabilities/connectors/cron";
 import type { Kernel } from "@freeanima/host/kernel";
 import type { AppRuntimePort } from "@freeanima/host/platform/ports/app-runtime-port";
 import type { AcpManagerPort } from "@freeanima/host/platform/ports/acp-manager";
-import type { MaskRegistryPort } from "@freeanima/host/platform/ports/mask-registry";
 import type { McpManagerPort } from "@freeanima/host/platform/ports/mcp-manager";
 import type { RemoteToolsManagerPort } from "@freeanima/host/platform/ports/remote-tools-manager";
 import type { ServiceEnginePort } from "@freeanima/host/platform/ports/service-engine";
@@ -53,7 +52,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   readonly kernel: Kernel;
   readonly engine: ServiceEnginePort;
   readonly conversation: ConversationService;
-  readonly masks: MaskRegistryPort;
   readonly mcp: McpManagerPort | null;
   readonly outpost: RemoteToolsManagerPort | null;
   readonly acp: AcpManagerPort;
@@ -64,7 +62,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     this.kernel = input.kernel;
     this.engine = input.engine;
     this.conversation = input.conversation;
-    this.masks = input.masks;
     this.mcp = input.mcp;
     this.outpost = input.outpost;
     this.acp = input.acp;
@@ -77,7 +74,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
       kernel: this.kernel,
       engine: this.engine,
       conversation: this.conversation,
-      masks: this.masks,
       mcp: this.mcp,
       outpost: this.outpost,
       acp: this.acp,

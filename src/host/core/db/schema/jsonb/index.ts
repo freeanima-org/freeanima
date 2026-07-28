@@ -38,4 +38,3 @@ export {
   type TemporalDayJson,
 } from "./temporal-day.ts";
 export { normalizePgTimestamp } from "./timestamp.ts";
-export { capabilityMaskSchema, type CapabilityMaskJson } from "./capability-mask.ts";

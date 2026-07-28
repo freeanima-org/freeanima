@@ -34,7 +34,6 @@ import { bindServicePorts } from "@freeanima/host/platform";
 import { FileConfig } from "@freeanima/host/platform/config/file-config.ts";
 import { createServiceKernel } from "@freeanima/host/platform/bootstrap";
 import { createConversationService } from "@freeanima/host/engine/conversation";
-import { MaskRegistry } from "@freeanima/host/core/mask";
 import { getAcpManager } from "@freeanima/host/capabilities/acp";
 import { createAppRuntime } from "@freeanima/host/platform/service/app-runtime";
 import { initRuntimeContext } from "@freeanima/host/platform/service/runtime-context";
@@ -100,7 +99,6 @@ describePg("cron", () => {
       kernel,
       engine: pg.engine,
       conversation,
-      masks: new MaskRegistry(),
       mcp: null,
       outpost: null,
       acp: getAcpManager(),

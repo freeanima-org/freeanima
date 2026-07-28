@@ -9,6 +9,7 @@ import { TASK_LIST_COMPONENT } from "./components/task-list.ts";
 import { OBJECT_FILE_COMPONENT } from "./components/object-file.ts";
 import { OBJECT_FOLDER_COMPONENT } from "./components/object-folder.ts";
 import { VAULT_ITEM_COMPONENT } from "./components/vault-item.ts";
+import { SKILL_COMPONENT } from "./components/skill.ts";
 
 /** 自动归档上限（count）；见 docs/aspects/entity-revisions.md */
 export const DEFAULT_ENTITY_REVISION_LIMIT = 10;
@@ -27,6 +28,7 @@ export const ENTITY_REVISION_PRIMARY_COMPONENTS = [
   TASK_ITEM_COMPONENT,
   OBJECT_FILE_COMPONENT,
   OBJECT_FOLDER_COMPONENT,
+  SKILL_COMPONENT,
 ] as const;
 
 export type EntityRevisionPrimaryComponent = (typeof ENTITY_REVISION_PRIMARY_COMPONENTS)[number];

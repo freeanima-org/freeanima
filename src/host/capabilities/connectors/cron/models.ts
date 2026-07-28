@@ -28,6 +28,8 @@ export class CronJob {
   last_run_at: number;
   last_output_ref: string | null;
   notify_on_success: boolean;
+  allowed_tools: string[];
+  denied_tools: string[];
 
   constructor(init: Partial<CronJobData> & Pick<CronJobData, "id" | "name" | "schedule">) {
     this.id = init.id;
@@ -51,6 +53,8 @@ export class CronJob {
     this.last_run_at = init.last_run_at ?? 0;
     this.last_output_ref = init.last_output_ref ?? null;
     this.notify_on_success = init.notify_on_success ?? false;
+    this.allowed_tools = init.allowed_tools ?? [];
+    this.denied_tools = init.denied_tools ?? [];
   }
 
   static fromRow(row: CronJobRow): CronJob {
@@ -76,6 +80,8 @@ export class CronJob {
       last_run_at: row.last_run_at ? Math.floor(new Date(row.last_run_at).getTime() / 1000) : 0,
       last_output_ref: row.last_output_ref,
       notify_on_success: row.notify_on_success,
+      allowed_tools: row.allowed_tools ?? [],
+      denied_tools: row.denied_tools ?? [],
     });
   }
 
@@ -105,6 +111,8 @@ export class CronJob {
       last_run_at: this.last_run_at,
       last_output_ref: this.last_output_ref,
       notify_on_success: this.notify_on_success,
+      allowed_tools: [...this.allowed_tools],
+      denied_tools: [...this.denied_tools],
       next_run_at: next,
       last_output: lastOutput.slice(0, 10_000),
     };

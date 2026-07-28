@@ -402,6 +402,16 @@ export const habitatMethodDefs = {
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
+  "skill.list": defineHabitatMethod({
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "skill.get": defineHabitatMethod({
+    input: z.object({ name: z.string().min(1) }),
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
   "tts.synthesize": defineHabitatMethod({
     input: ttsSynthesizeInputSchema,
     output: z.record(z.string(), z.unknown()),

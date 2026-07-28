@@ -62,7 +62,6 @@ describePg("service API tokens", () => {
         instanceRegistry: new RemoteInstanceRegistry(false),
         hubSessionRegistry: new HabitatSessionRegistry(),
         animaVersion: "test",
-        masks: runtime.fullDeps().masks,
       });
     });
 

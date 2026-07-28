@@ -2,11 +2,10 @@ import type { FullRuntimeDeps } from "./service/runtime-deps.ts";
 import { registerLlmStackConfigurator } from "@freeanima/host/core/llm";
 import { registerSystemPromptHookRunner } from "@freeanima/host/core/hooks/prompt";
 import { rebuildConversationCache } from "@freeanima/host/engine/conversation";
-import { registerConversationToolMaskFilter } from "@freeanima/host/core/tool";
+import { registerConversationToolPolicyFilter } from "@freeanima/host/core/tool";
 import { registerCompressionSummaryPostCut } from "@freeanima/host/core/compress";
 import { bindOpenAiCompatibleLlm } from "@freeanima/host/capabilities/llm-openai";
 import { foldSystemPromptSections, systemPromptBuild } from "@freeanima/host/core/hooks/prompt";
-import { filterToolNamesByMask, resolveConversationMaskFromMeta } from "./service/mask-bind.ts";
 import { getAppRuntime } from "./context.ts";
 
 /** Composition-root binding for engine injection ports (call once before initLlmRuntime) */
@@ -19,12 +18,8 @@ export function bindEnginePorts(): void {
     return foldSystemPromptSections(run.chain);
   });
 
-  registerConversationToolMaskFilter((toolNames, meta) => {
-    const deps = getAppRuntime().fullDeps();
-    const resolved = resolveConversationMaskFromMeta(deps, meta);
-    if (!resolved) return toolNames;
-    return filterToolNamesByMask(toolNames, resolved);
-  });
+  // 可见对话不强制收窄工具；看不见场景（sleep/cron）经 CapabilityPolicy 直接传入 toolMask
+  registerConversationToolPolicyFilter((toolNames, _meta) => toolNames);
 
   registerCompressionSummaryPostCut(async (conversation) => {
     const { engine } = getAppRuntime();

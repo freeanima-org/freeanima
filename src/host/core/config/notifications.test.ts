@@ -18,6 +18,7 @@ describe("resolveNotificationRecipients", () => {
       agent_subject_id: 20,
       user_world_id: 11,
       agent_world_id: 21,
+      commons_world_id: 30,
     });
     const config = {
       llm: { default_profile: "chat", providers: {}, profiles: {} },

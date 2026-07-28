@@ -14,12 +14,12 @@ const commands: SlashCommandItem[] = [
     ],
   },
   {
-    name: "mask",
-    description: "Capability mask",
+    name: "tooldisplay",
+    description: "Tool display",
     subcommands: [
-      { name: "set", description: "Set preset" },
-      { name: "clear", description: "Clear mask" },
-      { name: "show", description: "Show mask" },
+      { name: "set", description: "Set level" },
+      { name: "clear", description: "Clear override" },
+      { name: "show", description: "Show level" },
     ],
   },
 ];
@@ -43,8 +43,8 @@ describe("buildSlashMenuEntries", () => {
   });
 
   test("filters subcommands by second-token prefix", () => {
-    const rows = buildSlashMenuEntries("/mask se", commands);
-    expect(rows.map((r) => r.label)).toEqual(["/mask set"]);
+    const rows = buildSlashMenuEntries("/tooldisplay se", commands);
+    expect(rows.map((r) => r.label)).toEqual(["/tooldisplay set"]);
   });
 
   test("closes menu for commands without subcommands after space", () => {

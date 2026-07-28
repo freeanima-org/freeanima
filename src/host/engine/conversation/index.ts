@@ -8,7 +8,6 @@ export * from "@freeanima/host/core/db/domain";
 export {
   registerConversationToolMaskFilter,
   applyConversationToolMaskFilter,
-  conversationHasCapabilityMask,
   type ConversationToolMaskFilter,
 } from "@freeanima/host/core/tool";
 export { resolveExecutableToolNames } from "@freeanima/host/core/tool";

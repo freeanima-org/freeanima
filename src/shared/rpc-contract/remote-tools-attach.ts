@@ -90,7 +90,7 @@ export function createRemoteToolsHabitatAttach(
   ): Promise<string> {
     const attachBase = {
       app_id: options.appId,
-      features_requested: options.featuresRequested ?? ["server_info", "capability_mask"],
+      features_requested: options.featuresRequested ?? ["server_info"],
       ...(currentHttpUrl ? { http_url: currentHttpUrl } : {}),
     };
     for (let attempt = 0; attempt < 2; attempt++) {

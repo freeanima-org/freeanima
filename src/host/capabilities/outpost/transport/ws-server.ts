@@ -51,23 +51,12 @@ export function createRemoteToolsServerHandlers(
       if (!resolved.ok) {
         throw new Error(resolved.error);
       }
-      const wantsMaskPresets = parsed.features_requested.includes("capability_mask");
       return {
         instance_id: resolved.instanceId,
         features_enabled: parsed.features_requested,
         server_info: {
           anima_version: deps.animaVersion,
           habitat_rpc_version: HABITAT_RPC_VERSION,
-          ...(wantsMaskPresets
-            ? {
-                capability_mask: {
-                  presets: deps.masks.list().map((entry) => ({
-                    name: entry.name,
-                    allowed_tools_summary: entry.mask.allowed_tools.slice(0, 32),
-                  })),
-                },
-              }
-            : {}),
         },
       };
     },

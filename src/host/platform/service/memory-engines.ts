@@ -29,7 +29,7 @@ import {
 import { omitUndefined } from "@freeanima/host/core/util";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
-import { filterToolNamesByMask, resolveSleepMask } from "./mask-bind.ts";
+import { filterToolNamesByPolicy, resolveSleepCapabilityPolicy } from "./capability-policy-bind.ts";
 import { runAutoLlm } from "./auto-llm-run.ts";
 
 const LIGHT_SLEEP_MAX_TURNS = 50;
@@ -85,8 +85,8 @@ async function runSleepStream(
   opts: SleepStreamOptions,
 ): Promise<{ summary: string; toolCalls: number }> {
   const model = getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT);
-  const sleepMask = resolveSleepMask(deps);
-  const toolNames = filterToolNamesByMask(input.toolNames, sleepMask);
+  const sleepPolicy = resolveSleepCapabilityPolicy(deps);
+  const toolNames = filterToolNamesByPolicy(input.toolNames, sleepPolicy);
 
   const result = await runAutoLlm(
     deps,
@@ -98,7 +98,7 @@ async function runSleepStream(
       model,
       toolNames,
       maxTurns: opts.maxTurns,
-      toolMask: sleepMask,
+      toolMask: sleepPolicy,
       onToolResult: opts.onToolResult,
     }),
   );

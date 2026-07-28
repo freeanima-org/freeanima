@@ -67,7 +67,6 @@ export type PromptDebugResponse = {
   };
   meta?: {
     cwd?: string | null;
-    capability_mask?: { presets: string[] };
     tool_names?: string[];
   };
 };

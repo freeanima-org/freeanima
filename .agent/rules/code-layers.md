@@ -23,7 +23,7 @@ portal/cli → platform → capabilities → engine → core → kernel
 | Layer            | Directory                | Responsibility                                                                        |
 | ---------------- | ------------------------ | ------------------------------------------------------------------------------------- |
 | **kernel**       | `src/host/kernel/`       | Hook, EventBus, logging                                                               |
-| **core**         | `src/host/core/`         | PG、config、mask、host i18n、tool/LLM 原语                                            |
+| **core**         | `src/host/core/`         | PG、config、capability-policy、host i18n、tool/LLM 原语、skill                        |
 | **engine**       | `src/host/engine/`       | conversation、turn、loop、goal、pipeline（原 `runtime/`）                             |
 | **capabilities** | `src/host/capabilities/` | self、memory、tools（含 slash-commands）、outpost、connectors、acp、mcp-*、llm-openai |
 | **platform**     | `src/host/platform/`     | 组合根；`service/` = AppRuntime（原 `platform/runtime/`）                             |

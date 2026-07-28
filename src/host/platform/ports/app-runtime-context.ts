@@ -2,7 +2,6 @@ import type { ConversationService } from "@freeanima/host/engine/conversation";
 
 import type { AppRuntimePort } from "./app-runtime-port.ts";
 import type { AcpManagerPort } from "./acp-manager.ts";
-import type { MaskRegistryPort } from "./mask-registry.ts";
 import type { McpManagerPort } from "./mcp-manager.ts";
 import type { RemoteToolsManagerPort } from "./remote-tools-manager.ts";
 import type { ServiceEnginePort } from "./service-engine.ts";
@@ -10,7 +9,6 @@ import type { ServiceEnginePort } from "./service-engine.ts";
 export type AppRuntimeContext = {
   conversation: ConversationService;
   engine: ServiceEnginePort;
-  masks: MaskRegistryPort;
   mcp: McpManagerPort | null;
   outpost: RemoteToolsManagerPort | null;
   acp: AcpManagerPort;

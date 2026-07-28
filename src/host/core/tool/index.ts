@@ -28,11 +28,13 @@ export {
 } from "./conversation-tools.ts";
 export { handleConversationTodo } from "./conversation-todos.ts";
 export {
+  registerConversationToolPolicyFilter,
+  applyConversationToolPolicyFilter,
   registerConversationToolMaskFilter,
   applyConversationToolMaskFilter,
-  conversationHasCapabilityMask,
+  type ConversationToolPolicyFilter,
   type ConversationToolMaskFilter,
-} from "./mask-port.ts";
+} from "./policy-port.ts";
 export {
   runWithToolContext,
   getToolCallerAuth,

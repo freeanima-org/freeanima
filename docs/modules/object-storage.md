@@ -4,7 +4,7 @@ title: Object storage
 
 # Object storage（对象存储）
 
-Habitat 内容寻址对象层：大文件 / 不变文件。小文本频繁变更（skills 等）走数据库，不走本模块。
+Habitat 内容寻址对象层：大文件 / 不变文件。小文本频繁变更（skills 等）走数据库，不走本模块。Skills：[`skills.md`](skills.md)。
 
 **远端为 SSOT**：必须配置 runtime `object_storage`（S3 兼容）。未配置时，使用上传/下载/HTTP GET 等能力一律报错。本地磁盘只作**可丢弃服务器缓存**。远端客户端为 **Bun 内置 `S3Client`**。
 

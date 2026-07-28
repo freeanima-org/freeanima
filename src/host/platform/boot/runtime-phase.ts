@@ -18,7 +18,6 @@ import {
 import { createAcpSessionUpdatedHandler } from "../acp-conversation-callback.ts";
 import { initRuntimeContext } from "../service/runtime-context.ts";
 import { registerMemoryEngines } from "../service/memory-engines.ts";
-import { initMaskSystem } from "../service/mask-bind.ts";
 import { registerBootCronHandlers } from "./cron-handlers.ts";
 import { registerSleepPipelineStepRecorder } from "../service/pipeline-step-run-log.ts";
 import { startupLog } from "./status.ts";
@@ -43,14 +42,13 @@ export async function bootRuntimePhase(
   runtimeRef: { current: AppRuntime | null },
   acpSessionUpdatedRef?: { handler: ((sid: string) => void) | null },
 ): Promise<RuntimePhaseResult> {
-  const { kernel, engine, conversation, catalog, masks, mcp, outpost, acp } = phase;
+  const { kernel, engine, conversation, catalog, mcp, outpost, acp } = phase;
 
   startupLog("Initializing AppRuntime / EventBus…");
   const runtime = createAppRuntime({
     kernel,
     engine,
     conversation,
-    masks,
     mcp,
     outpost,
     acp,
@@ -80,7 +78,6 @@ export async function bootRuntimePhase(
   invalidateSelfLayerPromptCache();
   await loadSelfLayerPrompt();
 
-  initMaskSystem(masks);
   registerMemoryEngines(runtime.fullDeps());
   registerBootCronHandlers(engine);
   registerSleepPipelineStepRecorder();
@@ -88,9 +85,14 @@ export async function bootRuntimePhase(
   await initCronModule();
   startupLog("Cron scheduler started (Bun.cron)");
 
+  const { seedBuiltinSkills } = await import("@freeanima/host/core/skill");
+  await seedBuiltinSkills(catalog.skills);
+  startupLog("Builtin skills seeded");
+
   registerSystemPromptHooks({
     hookRegistry: kernel.hookRegistry,
     getToolRegistry: () => catalog.toolSets,
+    getSkillRegistry: () => catalog.skills,
   });
 
   initHabitatRouter();
@@ -108,7 +110,6 @@ export async function bootRuntimePhase(
     instanceRegistry: await createRemoteInstanceRegistry(),
     hubSessionRegistry: new HabitatSessionRegistry(),
     animaVersion: ANIMA_VERSION,
-    masks,
   });
 
   return { runtime };

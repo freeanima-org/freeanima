@@ -12,4 +12,3 @@ export { assertNotShuttingDown } from "@freeanima/host/platform/ports/app-runtim
 
 export type { AppRuntime } from "./service/index.ts";
 export type { Engine } from "@freeanima/host/engine";
-export type { MaskRegistry } from "@freeanima/host/core/mask";

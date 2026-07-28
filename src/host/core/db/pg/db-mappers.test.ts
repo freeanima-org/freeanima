@@ -102,6 +102,8 @@ describe("db transforms", () => {
     last_run_at: null,
     last_output_ref: null,
     notify_on_success: false,
+    allowed_tools: [],
+    denied_tools: [],
   };
 
   it("cron row inferSelect shape (builtin)", () => {

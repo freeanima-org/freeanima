@@ -12,7 +12,6 @@ import {
   systemPayloadSchema,
   type MessagePayload,
 } from "../schema/index.ts";
-import { capabilityMaskSchema } from "../schema/jsonb/capability-mask.ts";
 import {
   awaitingClarifySchema,
   compressionStateSchema,
@@ -62,7 +61,6 @@ export const conversationMetaSchema = z
     awaiting_clarify: z.unknown().optional(),
     acp_tasks: z.record(z.string(), z.unknown()).optional(),
     acp_tasks_handled_at: z.string().optional(),
-    capability_mask: capabilityMaskSchema.optional(),
     gateway_tool_display: z.string().optional(),
     goal: z.unknown().optional(),
   })

@@ -53,6 +53,7 @@ export function habitatNavGroups(): HabitatNavGroup[] {
       label: m.habitat_nav_group_capabilities(),
       items: [
         { to: "/tools", label: m.habitat_nav_tools() },
+        { to: "/skills", label: m.habitat_nav_skills() },
         { to: "/commands", label: m.habitat_nav_commands() },
         { to: "/mcp", label: m.habitat_nav_mcp() },
         { to: "/acp", label: m.habitat_nav_acp() },

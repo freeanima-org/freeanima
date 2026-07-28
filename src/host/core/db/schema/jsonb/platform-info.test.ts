@@ -39,8 +39,8 @@ describe("platform-info", () => {
   });
 
   test("buildPlatformInfo preserves extra fields for chat platform", () => {
-    const info = buildPlatformInfo("chat", { capability_mask: { presets: ["sleep"] } });
-    expect(info).toMatchObject({ platform: "chat", capability_mask: { presets: ["sleep"] } });
+    const info = buildPlatformInfo("chat", { note: "x" });
+    expect(info).toMatchObject({ platform: "chat", note: "x" });
   });
 
   test("stripOriginRoutingMeta removes routing keys", () => {

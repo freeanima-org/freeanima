@@ -12,7 +12,6 @@ import {
   type ConversationService,
 } from "@freeanima/host/engine/conversation";
 import { createServiceLogger, logComponent } from "@freeanima/host/platform/logging";
-import { MaskRegistry } from "@freeanima/host/core/mask";
 import { MCPManager } from "@freeanima/host/capabilities/mcp-client";
 import { RemoteToolsManager } from "@freeanima/host/capabilities/outpost";
 import { getAcpManager } from "@freeanima/host/capabilities/acp";
@@ -29,7 +28,6 @@ export type EnginePhaseResult = {
   engine: Engine;
   conversation: ConversationService;
   catalog: EngineCatalog;
-  masks: MaskRegistry;
   mcp: MCPManager;
   outpost: RemoteToolsManager;
   acp: ReturnType<typeof getAcpManager>;
@@ -42,7 +40,6 @@ export function bootEnginePhase(
 ): EnginePhaseResult {
   startupLog("Registering tools…");
   const catalog = createEngineCatalog();
-  const masks = new MaskRegistry();
   registerServiceTools({ toolSets: catalog.toolSets, skills: catalog.skills, config });
   const kernel = createServiceKernel(config);
 
@@ -76,7 +73,6 @@ export function bootEnginePhase(
     engine,
     conversation,
     catalog,
-    masks,
     mcp,
     outpost,
     acp,

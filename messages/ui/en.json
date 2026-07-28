@@ -797,5 +797,18 @@
   "habitat_mcp_edit_config": "Edit server config",
   "habitat_mcp_save_config": "Save MCP config",
   "habitat_mcp_save_failed": "Save failed: {detail}",
-  "habitat_mcp_runtime_heading": "Runtime"
+  "habitat_mcp_runtime_heading": "Runtime",
+  "habitat_nav_skills": "Skills",
+  "habitat_skills_intro": "Read-only catalog of skill entities (commons + agent private).",
+  "habitat_skills_empty": "No skills registered yet.",
+  "habitat_skills_col_name": "Name",
+  "habitat_skills_col_description": "Description",
+  "habitat_skills_col_origin": "Origin",
+  "habitat_skills_col_status": "Status",
+  "habitat_skills_back": "← Skills",
+  "habitat_skills_not_found": "Skill not found.",
+  "habitat_skills_allowed_tools": "Allowed tools",
+  "habitat_skills_denied_tools": "Denied tools",
+  "habitat_skills_resources": "Resources",
+  "habitat_skills_body": "Instructions"
 }

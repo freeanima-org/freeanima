@@ -14,7 +14,7 @@ import { getActiveRuntimeConfig, getProfileHopModel } from "@freeanima/host/core
 import { CST_OFFSET_MS, formatCstIso, omitUndefined } from "@freeanima/host/core/util";
 import { PROFILE_CHAT } from "@freeanima/host/core/provider";
 import { buildSystemPrompt } from "@freeanima/host/core/hooks/prompt";
-import { capabilityMaskSchema, stripOriginRoutingMeta } from "@freeanima/host/core/db/schema";
+import { stripOriginRoutingMeta } from "@freeanima/host/core/db/schema";
 import { applyConversationToolMaskFilter } from "@freeanima/host/core/tool";
 import { isSystemPromptStale } from "./system-prompt-freshness.ts";
 import {
@@ -246,11 +246,8 @@ export async function initConversation(
   opts: { platform: string; functions?: string[]; platform_extra?: Record<string, unknown> },
 ): Promise<void> {
   const cwd = allocateConversationCwd(sid);
-  const capabilityMaskRaw = opts.platform_extra?.capability_mask;
-  const capability_mask =
-    capabilityMaskRaw !== undefined ? capabilityMaskSchema.parse(capabilityMaskRaw) : undefined;
   const platform_extra = opts.platform_extra ? { ...opts.platform_extra } : undefined;
-  if (platform_extra) delete platform_extra.capability_mask;
+  if (platform_extra) delete platform_extra.capability_mask; // legacy drop
 
   const metaDraft: ConversationMetaMessage = {
     role: "conversation_meta",
@@ -261,7 +258,6 @@ export async function initConversation(
     timestamp: formatCstIso(),
     platform: opts.platform,
     cwd,
-    capability_mask,
     platform_extra:
       platform_extra && Object.keys(platform_extra).length > 0 ? platform_extra : undefined,
   };

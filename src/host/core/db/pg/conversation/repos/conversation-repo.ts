@@ -169,9 +169,8 @@ export async function patchConversationMeta(
 ): Promise<void> {
   const db = getDb();
 
-  // platform_info 衍生字段（capability_mask / gateway_tool_display）须走全量 upsert
+  // platform_info 衍生字段（gateway_tool_display）须走全量 upsert
   if (
-    "capability_mask" in patch ||
     "gateway_tool_display" in patch ||
     patch.platform !== undefined ||
     patch.platform_extra !== undefined
@@ -181,9 +180,6 @@ export async function patchConversationMeta(
     const merged: ConversationMetaMessage = { ...existing, ...patch, role: "conversation_meta" };
     if ("gateway_tool_display" in patch && patch.gateway_tool_display === undefined) {
       delete merged.gateway_tool_display;
-    }
-    if ("capability_mask" in patch && patch.capability_mask === undefined) {
-      delete merged.capability_mask;
     }
     await upsertConversationMeta(conversation_id, merged);
     return;

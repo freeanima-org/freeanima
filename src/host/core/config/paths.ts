@@ -29,9 +29,6 @@ export const PATHS = {
   get cronDir() {
     return homePath("cron");
   },
-  get masksYaml() {
-    return homePath("masks.yaml");
-  },
   get weixinDir() {
     return homePath("weixin");
   },

@@ -8,7 +8,7 @@ import {
 import {
   applyConversationToolMaskFilter,
   registerConversationToolMaskFilter,
-} from "./mask-port.ts";
+} from "./policy-port.ts";
 import { ToolSetRegistry } from "./toolset.ts";
 
 function stubTool(name: string) {
@@ -59,7 +59,7 @@ describe("resolveDefaultConversationToolSetsForMeta", () => {
     expect(resolved).toEqual(resolveDefaultConversationToolSets(registry));
   });
 
-  it("filters defaults to toolsets allowed by capability mask", () => {
+  it("applies conversation tool policy filter when registered", () => {
     registerConversationToolMaskFilter((names) => names.filter((n) => n.startsWith("memory_")));
     const registry = new ToolSetRegistry();
     registry.registerToolSet("toolset", "discovery", [
@@ -68,10 +68,7 @@ describe("resolveDefaultConversationToolSetsForMeta", () => {
     ]);
     registry.registerToolSet("memory", "memory", [stubTool("memory_recall")]);
     registry.registerToolSet("conversation", "session", [stubTool("conversation_search")]);
-    const resolved = resolveDefaultConversationToolSetsForMeta(
-      registry,
-      metaFixture({ capability_mask: { presets: ["sleep"] } }),
-    );
+    const resolved = resolveDefaultConversationToolSetsForMeta(registry, metaFixture());
     expect(resolved).toEqual(["memory"]);
     expect(applyConversationToolMaskFilter(["memory_recall"], metaFixture())).toEqual([
       "memory_recall",

@@ -45,14 +45,12 @@ describe("platform_info schema", () => {
     expect(splitPlatformInfo(info)).toEqual({ platform: "cron" });
   });
 
-  it("sap platformInfo preserves capability_mask in platform_info", () => {
+  it("sap platformInfo preserves arbitrary extras in platform_info", () => {
     const info = buildPlatformInfo("remote:chat:k7m", {
-      capability_mask: { presets: ["sleep"] },
+      note: "hello",
     });
     expect(info?.platform).toBe("remote:chat:k7m");
-    expect(splitPlatformInfo(info).platform_extra?.capability_mask).toEqual({
-      presets: ["sleep"],
-    });
+    expect(splitPlatformInfo(info).platform_extra?.note).toBe("hello");
   });
 
   it("discord platformInfo preserves gateway_tool_display in platform_info", () => {

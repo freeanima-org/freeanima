@@ -176,6 +176,38 @@ export async function getToolsStatus(scope?: "default" | "all") {
   return hubCall(habitat().call("status.tools", scope === "default" ? { scope: "default" } : {}));
 }
 
+export async function listHabitatSkills() {
+  return hubCall(habitat().call("skill.list", {})) as Promise<{
+    skills: Array<{
+      name: string;
+      description: string;
+      origin: string;
+      status: string;
+      entity_id: number;
+      world_id: number;
+      allowed_tools: string[];
+      denied_tools: string[];
+    }>;
+  }>;
+}
+
+export async function getHabitatSkill(name: string) {
+  return hubCall(habitat().call("skill.get", { name })) as Promise<{
+    name: string;
+    description: string;
+    origin: string;
+    status: string;
+    entity_id: number;
+    world_id: number;
+    allowed_tools: string[];
+    denied_tools: string[];
+    license?: string;
+    compatibility?: string;
+    content: string;
+    resources: Array<{ path: string; entity_id: number; kind: string }>;
+  }>;
+}
+
 export async function getPromptDebug(conversationId?: string) {
   return hubCall(
     habitat().call("prompt.debug", omitUndefined({ conversation_id: conversationId })),

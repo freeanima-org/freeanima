@@ -13,7 +13,6 @@ import { runtimeConfigSchema } from "@freeanima/host/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
 import { getAcpManager } from "@freeanima/host/capabilities/acp";
 import { createConversationService } from "@freeanima/host/engine/conversation";
-import { MaskRegistry } from "@freeanima/host/core/mask";
 
 const appendCalls: AutoLlmRunAppendInput[] = [];
 
@@ -60,7 +59,6 @@ function bindTestDeps(): FullRuntimeDeps {
     mcp: null,
     outpost: null,
     acp: getAcpManager(),
-    masks: new MaskRegistry(),
     host: "127.0.0.1",
     port: 2658,
   };

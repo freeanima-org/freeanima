@@ -2,9 +2,11 @@ import type { HookRegistry } from "@freeanima/host/kernel/hooks";
 import { systemPromptBuild } from "@freeanima/host/core/hooks/prompt";
 import { registerToolsetSystemPromptHooks } from "@freeanima/host/capabilities/tools/toolset-prompt-hooks";
 import { registerWorldContextSystemPromptHook } from "@freeanima/host/capabilities/tools/world-prompt-hooks";
+import { registerSkillsCatalogSystemPromptHook } from "@freeanima/host/capabilities/tools/skills-prompt-hooks";
 import { buildMemorySystemPromptSections } from "@freeanima/host/capabilities/memory/system-prompt-sections";
 import { loadSelfLayerPrompt } from "@freeanima/host/capabilities/self";
 import type { ToolSetRegistry } from "@freeanima/host/core/tool";
+import type { SkillRegistry } from "@freeanima/host/core/skill";
 
 function describePlatform(platform?: string): string {
   if (!platform) return "未知通道";
@@ -109,10 +111,14 @@ export function registerTemporalSummarySystemPromptHook(registry: HookRegistry):
 export function registerSystemPromptHooks(opts: {
   hookRegistry: HookRegistry;
   getToolRegistry: () => ToolSetRegistry;
+  getSkillRegistry?: () => SkillRegistry;
 }): void {
   registerMemorySystemPromptHooks(opts.hookRegistry);
   registerWorldContextSystemPromptHook(opts.hookRegistry);
   registerToolsetSystemPromptHooks(opts.hookRegistry, opts.getToolRegistry);
+  if (opts.getSkillRegistry) {
+    registerSkillsCatalogSystemPromptHook(opts.hookRegistry, opts.getSkillRegistry);
+  }
   registerChannelSystemPromptHook(opts.hookRegistry);
   registerEnvHealthSystemPromptHook(opts.hookRegistry);
   registerUserActivityStatsSystemPromptHook(opts.hookRegistry);

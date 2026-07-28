@@ -797,5 +797,18 @@
   "ui_shell_update_proxy_ghfast_top": "ghfast.top",
   "ui_shell_update_proxy_ghproxy_net": "ghproxy.net",
   "ui_shell_update_proxy_label": "下载代理",
-  "ui_shell_update_proxy_none": "直连（GitHub）"
+  "ui_shell_update_proxy_none": "直连（GitHub）",
+  "habitat_nav_skills": "技能",
+  "habitat_skills_intro": "只读技能目录（Commons + Agent 私有）。",
+  "habitat_skills_empty": "尚未注册技能。",
+  "habitat_skills_col_name": "名称",
+  "habitat_skills_col_description": "描述",
+  "habitat_skills_col_origin": "来源",
+  "habitat_skills_col_status": "状态",
+  "habitat_skills_back": "← 技能列表",
+  "habitat_skills_not_found": "未找到该技能。",
+  "habitat_skills_allowed_tools": "允许的工具",
+  "habitat_skills_denied_tools": "禁止的工具",
+  "habitat_skills_resources": "资源",
+  "habitat_skills_body": "指令正文"
 }
