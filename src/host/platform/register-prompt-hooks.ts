@@ -94,7 +94,12 @@ export function registerTemporalSummarySystemPromptHook(registry: HookRegistry):
       const { buildTemporalSummarySystemSection, resolveTemporalSummaryConfig } =
         await import("@freeanima/host/capabilities/memory/temporal-summary");
       const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-      const content = await buildTemporalSummarySystemSection(config);
+      const { content, truncated } = await buildTemporalSummarySystemSection(config);
+      if (truncated) {
+        const { notifyTemporalSummarySystemTruncated } =
+          await import("./service/temporal-summary-truncate-notify.ts");
+        await notifyTemporalSummarySystemTruncated({ maxChars: config.system_prompt_max_chars });
+      }
       if (!content.trim()) return { status: "ok" };
       return {
         status: "ok",
