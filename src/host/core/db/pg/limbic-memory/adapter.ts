@@ -68,11 +68,11 @@ export async function listLimbicMemoryBySession(
   conversationId: string,
 ): Promise<LimbicMemoryRow[]> {
   const worldId = await resolveMemoryBrickWorldId();
-  const bricks = await listBricksByComponent(worldId, LIMBIC_COMPONENT, { limit: 200 });
-  return bricks
-    .filter((b) => String(b.body.conversation_id ?? "") === conversationId)
-    .map(brickToRow)
-    .toSorted((a, b) => b.created_at.getTime() - a.created_at.getTime());
+  const bricks = await listBricksByComponent(worldId, LIMBIC_COMPONENT, {
+    conversation_id: conversationId,
+    limit: 200,
+  });
+  return bricks.map(brickToRow).toSorted((a, b) => b.created_at.getTime() - a.created_at.getTime());
 }
 
 export async function listLimbicMemoryBySessions(
@@ -80,20 +80,27 @@ export async function listLimbicMemoryBySessions(
   opts: LimbicListByConversationsOpts = {},
 ): Promise<LimbicMemoryRow[]> {
   if (conversationIds.length === 0) return [];
-  const set = new Set(conversationIds);
   const worldId = await resolveMemoryBrickWorldId();
-  const bricks = await listBricksByComponent(worldId, LIMBIC_COMPONENT, {
-    limit: opts.limit ?? 100,
-  });
   const minI = opts.minIntensity ?? 0;
-  let rows = bricks
-    .filter((b) => set.has(String(b.body.conversation_id ?? "")))
-    .map(brickToRow)
-    .filter((r) => r.intensity > minI);
+  const limit = opts.limit ?? 100;
+  const byId = new Map<string, LimbicMemoryRow>();
+  for (const conversationId of conversationIds) {
+    const bricks = await listBricksByComponent(worldId, LIMBIC_COMPONENT, {
+      conversation_id: conversationId,
+      limit: 200,
+    });
+    for (const brick of bricks) {
+      const row = brickToRow(brick);
+      if (row.intensity > minI) byId.set(row.id, row);
+    }
+  }
+  let rows = [...byId.values()];
   if (opts.orderBy === "intensity_desc") {
     rows = rows.toSorted((a, b) => b.intensity - a.intensity);
+  } else {
+    rows = rows.toSorted((a, b) => b.created_at.getTime() - a.created_at.getTime());
   }
-  return rows.slice(0, opts.limit ?? 100);
+  return rows.slice(0, limit);
 }
 
 export async function listLimbicMemoryByCreatedBetween(
@@ -125,10 +132,11 @@ export async function listLimbicMemory(opts: LimbicListOpts = {}): Promise<Limbi
   } else {
     bricks = await listBricksByComponent(worldId, LIMBIC_COMPONENT, {
       limit: limit + offset,
+      ...(opts.conversation_id ? { conversation_id: opts.conversation_id } : {}),
     });
   }
   let rows = bricks.map(brickToRow);
-  if (opts.conversation_id) {
+  if (opts.query?.trim() && opts.conversation_id) {
     rows = rows.filter((r) => r.conversation_id === opts.conversation_id);
   }
   if (opts.kind) {

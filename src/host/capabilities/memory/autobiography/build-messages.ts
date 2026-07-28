@@ -15,6 +15,7 @@ import {
   formatDialogueMessage,
   formatLimbicMemoriesMessage,
   type LightSleepConversationBlock,
+  type LightSleepDayRange,
 } from "../light-sleep/build-messages.ts";
 
 const AUTOBIOGRAPHY_SEMANTIC_TYPES = new Set(["experience", "imprint"]);
@@ -181,8 +182,17 @@ export async function buildLightSleepAutobiographyUserMessages(
   stageSemanticIds: number[],
   stageLimbicIds: string[],
   precomputedBlocks?: LightSleepConversationBlock[],
+  range?: LightSleepDayRange,
 ): Promise<string[]> {
-  const blocks = precomputedBlocks ?? (await collectConversationBlocks(conversationIds));
+  let blocks = precomputedBlocks;
+  if (!blocks) {
+    if (!range) {
+      throw new Error(
+        "buildLightSleepAutobiographyUserMessages requires precomputedBlocks or range",
+      );
+    }
+    blocks = await collectConversationBlocks(conversationIds, range);
+  }
   const dialogue = formatDialogueMessage(blocks);
   const semanticRows = await mergeSemanticRowsForSessions(conversationIds, stageSemanticIds);
   const limbicRows = await mergeLimbicRowsForSessions(conversationIds, stageLimbicIds);

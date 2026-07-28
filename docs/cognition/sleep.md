@@ -44,12 +44,13 @@ Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.js
 
 ## Light Sleep
 
-| Attribute     | Value                                                                                         |
-| ------------- | --------------------------------------------------------------------------------------------- |
-| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Habitat diagnostics)                          |
-| Scope         | Sessions with activity in previous calendar day (**excludes cron-platform sessions**)         |
-| Input         | Full day's **user conversations** (user+assistant, tools stripped), segmented by conversation |
-| Orchestration | Three stages sequential (separate LLM calls each)                                             |
+| Attribute     | Value                                                                                                                                                      |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Habitat diagnostics)                                                                                       |
+| Scope         | Sessions with `updated_at` in the previous CST calendar day (**excludes cron-platform sessions**)                                                          |
+| Input         | **Messages whose timestamps fall in that same day window** (user+assistant, tools stripped), segmented by conversation — not the full conversation history |
+| Empty day     | If a session was updated that day but has **no messages in the day window**, it is omitted from extraction                                                 |
+| Orchestration | Three stages sequential (separate LLM calls each)                                                                                                          |
 
 ### Three Stages
 
@@ -63,6 +64,8 @@ Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.js
 **Restraint principle:** Each stage LLM may judge "nothing worth recording" → no writes; program still runs subsequent stages.
 
 **Dedup (semantic):** Compare only against existing memories from same source sessions; cross-thread merging left to deep sleep.
+
+**Dedup (limbic):** Soft restraint against existing limbic for the same sessions (queried by `conversation_id`); do not re-record similar feelings for the same session.
 
 ## Deep Sleep
 

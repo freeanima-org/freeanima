@@ -273,10 +273,16 @@ export async function deprecateNarrativeBrick(worldId: number, id: number): Prom
 export async function listBricksByComponent(
   worldId: number,
   component: typeof LIMBIC_COMPONENT | typeof NARRATIVE_COMPONENT | typeof DREAM_COMPONENT,
-  opts: { limit?: number; offset?: number; parent_id?: number } = {},
+  opts: {
+    limit?: number;
+    offset?: number;
+    parent_id?: number;
+    conversation_id?: string;
+  } = {},
 ): Promise<MemoryBrickRow[]> {
   const filters: Record<string, unknown> = {};
   if (opts.parent_id != null) filters.parent_id = opts.parent_id;
+  if (opts.conversation_id) filters.conversation_id = opts.conversation_id;
   const result = await searchEntities({
     world_id: worldId,
     primary_component: CONTENT_BLOCK_COMPONENT,
