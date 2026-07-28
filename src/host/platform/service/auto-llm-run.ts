@@ -31,7 +31,7 @@ export type AutoLlmRunInput = {
   maxTurns: number;
   goal?: ConversationGoal;
   metadata?: Record<string, unknown>;
-  toolMask?: ResolvedCapabilityPolicy;
+  toolPolicy?: ResolvedCapabilityPolicy;
   onToolResult?: (name: string, content: string) => void;
   parentConversationId?: string;
 };
@@ -198,7 +198,7 @@ async function runEngineOnce(
   model: string,
 ): Promise<{ output: string; toolCalls: number }> {
   const tools = deps.engine.catalog.toolSets.openaiSchemasFromNames(input.toolNames);
-  const toolMask = runtimeToolPolicyFromResolved(input.toolMask ?? null);
+  const toolPolicy = runtimeToolPolicyFromResolved(input.toolPolicy ?? null);
   let toolCalls = 0;
   const parts: string[] = [];
 
@@ -211,7 +211,7 @@ async function runEngineOnce(
         config: deps.engine.config.data,
         logger: deps.engine.logger,
         llm: deps.engine.llm,
-        ...omitUndefined({ toolMask }),
+        ...omitUndefined({ toolPolicy }),
         max_turns: input.maxTurns,
         hookRegistry: deps.kernel.hookRegistry,
       })) {

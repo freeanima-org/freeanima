@@ -6,6 +6,7 @@ import {
   toolNamesForToolSets,
 } from "@freeanima/host/core/tool";
 import { omitUndefined } from "@freeanima/host/core/util";
+import type { ResolvedCapabilityPolicy } from "@freeanima/host/core/capability-policy";
 import {
   filterToolNamesByPolicy,
   resolveInvisibleCapabilityPolicy,
@@ -26,6 +27,18 @@ export type CronEngineJobInput = {
   allowed_tools?: string[];
   denied_tools?: string[];
 };
+
+/**
+ * 看不见场景：无 allow → 空列表（默认禁止全部工具）；
+ * 有 allow → 与默认工具池求交。
+ */
+export function toolNamesForInvisiblePolicy(
+  pool: readonly string[],
+  policy: ResolvedCapabilityPolicy,
+): string[] {
+  if (policy.allowed_tools.length === 0) return [];
+  return filterToolNamesByPolicy(pool, policy);
+}
 
 export async function runCronEngineTurn(
   deps: FullRuntimeDeps,
@@ -50,13 +63,7 @@ export async function runCronEngineTurn(
       denied_tools: job.denied_tools ?? [],
     },
   });
-  // 看不见场景：若技能+调用方均无 allow，则空列表（最小权限）；否则按策略过滤默认工具池
-  const toolNames =
-    policy.allowed_tools.length > 0
-      ? filterToolNamesByPolicy(allToolNames, policy)
-      : skillFrags.length === 0 && !job.allowed_tools?.length
-        ? allToolNames
-        : [];
+  const toolNames = toolNamesForInvisiblePolicy(allToolNames, policy);
 
   const maxTurns = cfg.compression?.max_rounds ?? 50;
 
@@ -70,7 +77,8 @@ export async function runCronEngineTurn(
       model,
       toolNames,
       maxTurns,
-      toolMask: policy.allowed_tools.length > 0 ? policy : undefined,
+      // 始终传执行闸（含空 allow = 全禁）
+      toolPolicy: policy,
       metadata: job.id ? { job_id: job.id } : undefined,
     }),
   );
