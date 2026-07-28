@@ -48,7 +48,7 @@ Skills participate in **Capability Policy** — see [`architecture.md`](../produ
 | Caller (cron, sleep, future subagent) | Optional        | Primary         |
 
 **Visible chat:** default ToolSets (includes `skill`); user present.  
-**Invisible runs:** least privilege ≈ union of loaded skills’ allows, minus caller denies.
+**Invisible runs:** least privilege — default deny all tools; effective set ≈ union of loaded skills’ allows, minus caller denies. No skills (and no caller allow) ⇒ no tools.
 
 **Data** allow/deny under the same umbrella is **reserved** (not implemented).
 

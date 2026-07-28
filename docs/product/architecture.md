@@ -227,10 +227,10 @@ CapabilityPolicy
 
 **Visibility:**
 
-| Scene                                 | Rule                                                                                   |
-| ------------------------------------- | -------------------------------------------------------------------------------------- |
-| Visible (user chat)                   | Broad default ToolSets; user can interrupt                                             |
-| Invisible (sleep / cron / autonomous) | Least privilege: effective tools ≈ union of loaded skills’ allows, minus caller denies |
+| Scene                                 | Rule                                                                                                                        |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Visible (user chat)                   | Broad default ToolSets; user can interrupt                                                                                  |
+| Invisible (sleep / cron / autonomous) | Least privilege: default deny; effective tools ≈ union of loaded skills’ allows, minus caller denies (no skills ⇒ no tools) |
 
 Skills themselves use progressive disclosure (catalog in system prompt; full body via `skill_load`). Details: [`skills.md`](../modules/skills.md).
 

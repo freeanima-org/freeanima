@@ -98,7 +98,7 @@ async function runSleepStream(
       model,
       toolNames,
       maxTurns: opts.maxTurns,
-      toolMask: sleepPolicy,
+      toolPolicy: sleepPolicy,
       onToolResult: opts.onToolResult,
     }),
   );

@@ -18,7 +18,7 @@ export function bindEnginePorts(): void {
     return foldSystemPromptSections(run.chain);
   });
 
-  // 可见对话不强制收窄工具；看不见场景（sleep/cron）经 CapabilityPolicy 直接传入 toolMask
+  // 可见对话不强制收窄工具；看不见场景（sleep/cron）经 CapabilityPolicy 传入 toolPolicy
   registerConversationToolPolicyFilter((toolNames, _meta) => toolNames);
 
   registerCompressionSummaryPostCut(async (conversation) => {
