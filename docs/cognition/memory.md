@@ -74,7 +74,7 @@ Long-term memory (LTM)
 └── Implicit memory (non-declarative) ── "what I know how to do"
     └── Procedural memory ── three-stage evolution
         ├── Declarative knowledge stage
-        ├── Dynamic skill stage    → skills system
+        ├── Dynamic skill stage    → skills system ([`skills.md`](../modules/skills.md))
         └── Crystallized instinct stage    → CLI / MCP / automation scripts
 ```
 

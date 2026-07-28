@@ -68,6 +68,7 @@ import {
 import { getPromptDebug } from "../habitat-api/handlers/prompt.ts";
 import { getOutpostsStatus } from "../habitat-api/handlers/outposts.ts";
 import { listSelfBlocks } from "../habitat-api/handlers/self.ts";
+import { getHabitatSkill, listHabitatSkills } from "../habitat-api/handlers/skills.ts";
 import {
   getSleepPipelineStatus,
   getSleepSummary,
@@ -545,6 +546,21 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
       }
       return { ok: true as const };
     },
+  ),
+  defineHabitatRouteFromDef(
+    "skill.list",
+    habitatMethodDefs["skill.list"],
+    wrapConsoleLegacyHandler(() => listHabitatSkills()),
+  ),
+  defineHabitatRouteFromDef(
+    "skill.get",
+    habitatMethodDefs["skill.get"],
+    wrapConsoleLegacyHandler(async (payload) => {
+      const { name } = payload as { name: string };
+      const skill = await getHabitatSkill(name);
+      if (!skill) throw new ApiHandlerError(404, `Skill '${name}' not found`);
+      return skill;
+    }),
   ),
   defineHabitatRouteFromDef(
     "tts.synthesize",

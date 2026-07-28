@@ -81,19 +81,16 @@ describe("sap-contract envelopes", () => {
     );
   });
 
-  it("validates remote_tools.attach output capability_mask presets shape", () => {
+  it("accepts remote_tools.attach output without capability_mask ads", () => {
     const parsed = remoteToolsAttachOutputSchema.parse({
       instance_id: "k7m",
-      features_enabled: ["capability_mask"],
+      features_enabled: ["server_info"],
       server_info: {
         anima_version: "0.5.0",
         habitat_rpc_version: HABITAT_RPC_VERSION,
-        capability_mask: {
-          presets: [{ name: "developer", allowed_tools_summary: ["file_read"] }],
-        },
       },
     });
-    expect(parsed.server_info?.capability_mask?.presets[0]?.name).toBe("developer");
+    expect(parsed.server_info?.anima_version).toBe("0.5.0");
   });
 
   it("accepts legacy habitat_rpc_version in remote_tools.attach output", () => {

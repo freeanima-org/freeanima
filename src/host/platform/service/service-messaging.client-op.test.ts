@@ -4,7 +4,6 @@ import * as turn from "@freeanima/host/engine/turn";
 import * as engine from "@freeanima/host/engine/loop";
 import type { StreamEvent } from "@freeanima/host/engine/loop";
 import { createConversationService } from "@freeanima/host/engine/conversation";
-import { MaskRegistry } from "@freeanima/host/core/mask";
 import { Config } from "@freeanima/host/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/host/engine";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/host/core/llm";
@@ -45,7 +44,6 @@ function bindTestRuntime() {
     mcp: null,
     outpost: null,
     acp: getAcpManager(),
-    masks: new MaskRegistry(),
     host: "127.0.0.1",
     port: 2658,
   });

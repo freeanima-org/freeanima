@@ -31,21 +31,29 @@ export class EntitySubjectBootstrapError extends Error {
 
 export function buildWorldConfigBody(input: {
   private: boolean;
+  common?: boolean;
   owner_subject_id?: number;
   default_private?: boolean;
   grants?: WorldGrant[];
 }): Record<string, unknown> {
+  const common = input.common === true;
   const grants = normalizeWorldGrants(
     input.grants,
-    input.private ? input.owner_subject_id : undefined,
+    input.private && !common ? input.owner_subject_id : undefined,
   );
+  if (common) {
+    const body = { private: false, common: true, default_private: false, grants };
+    worldConfigBodySchema.parse(body);
+    return body;
+  }
   if (!input.private) {
-    const body = { private: false, default_private: false, grants };
+    const body = { private: false, common: false, default_private: false, grants };
     worldConfigBodySchema.parse(body);
     return body;
   }
   const body = {
     private: true,
+    common: false,
     owner_subject_id: input.owner_subject_id,
     default_private: input.default_private ?? false,
     grants,
@@ -223,7 +231,47 @@ export type EnsuredWorldSubjects = {
   agent_subject_id: number;
   user_world_id: number;
   agent_world_id: number;
+  commons_world_id: number;
 };
+
+async function findCommonsWorld(): Promise<EntityRow | undefined> {
+  const worlds = await listEntities({ type: "world", limit: 500 });
+  return worlds.find((row) => {
+    const parsed = worldConfigBodySchema.safeParse(row.body);
+    return parsed.success && parsed.data.common === true;
+  });
+}
+
+/** 全库唯一 common public world；有则用、无则建 */
+export async function ensureCommonsWorld(): Promise<number> {
+  const existing = await findCommonsWorld();
+  if (existing) {
+    // 强制保持 public
+    const parsed = worldConfigBodySchema.safeParse(existing.body);
+    if (parsed.success && (parsed.data.private || parsed.data.owner_subject_id != null)) {
+      await updateEntity({
+        id: existing.id,
+        body: buildWorldConfigBody({ private: false, common: true, grants: parsed.data.grants }),
+      });
+    }
+    return existing.id;
+  }
+  const created = await createEntity({
+    type: "world",
+    world_id: ENTITY_ROOT_WORLD_ID,
+    components: [WORLD_CONFIG_COMPONENT],
+    primary_component: WORLD_CONFIG_COMPONENT,
+    title: "Commons",
+    summary: "Shared skills, files, and companion assets",
+    content: "",
+    body: buildWorldConfigBody({ private: false, common: true }),
+  });
+  const aligned = await updateEntity({
+    id: created.id,
+    world_id: created.id,
+  });
+  return aligned?.id ?? created.id;
+}
 
 function readSubjectWorldId(subject: EntityRow): number {
   const parsed = subjectConfigBodySchema.safeParse(subject.body);
@@ -236,7 +284,7 @@ function readSubjectWorldId(subject: EntityRow): number {
   return worldId;
 }
 
-/** Habitat 启动：确保 user/agent subject 及默认私有 world 存在 */
+/** Habitat 启动：确保 user/agent subject、默认私有 world、以及唯一 Commons world */
 export async function ensureWorldSubjects(config: RuntimeConfig): Promise<EnsuredWorldSubjects> {
   const { user_subject_id, agent_subject_id } = resolveWorldSubjectIds(config);
 
@@ -252,11 +300,14 @@ export async function ensureWorldSubjects(config: RuntimeConfig): Promise<Ensure
     throw new EntitySubjectBootstrapError("subject disappeared after default world bootstrap");
   }
 
+  const commons_world_id = await ensureCommonsWorld();
+
   return {
     user_subject_id: userRefreshed.id,
     agent_subject_id: agentRefreshed.id,
     user_world_id: readSubjectWorldId(userRefreshed),
     agent_world_id: readSubjectWorldId(agentRefreshed),
+    commons_world_id,
   };
 }
 

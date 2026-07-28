@@ -63,9 +63,6 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
     if (input.workspace_show_hidden !== undefined) {
       platformExtra.workspace_show_hidden = input.workspace_show_hidden;
     }
-    if (input.capability_mask) {
-      platformExtra.capability_mask = input.capability_mask;
-    }
     const sid = await depsOf(deps).runtime.conversation.newConversation(
       platform,
       undefined,

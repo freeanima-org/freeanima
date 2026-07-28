@@ -1,9 +1,6 @@
-import { afterEach, describe, expect, it } from "bun:test";
-import { writeFileSync } from "node:fs";
-import { join } from "node:path";
-
-import { createTempDir, removeTempDir } from "@freeanima/host/core/util/temp-dir";
-import { SkillRegistry } from "./registry.ts";
+import { describe, expect, it } from "bun:test";
+import { skillBodySchema } from "@freeanima/host/core/db/schema/entity";
+import { SkillRegistry, skillDefFromBody } from "./registry.ts";
 import {
   formatSkillsPrefix,
   listSkillsForTool,
@@ -12,33 +9,27 @@ import {
   searchSkillsForTool,
 } from "./tools.ts";
 
+function registerFmt(skills: SkillRegistry, body = "skill body"): void {
+  skills.register(
+    skillDefFromBody(
+      {
+        name: "fmt-skill",
+        description: "fmt",
+        entityId: 1,
+        worldId: 10,
+        content: body,
+        source: "test",
+      },
+      skillBodySchema.parse({ origin: "user", status: "active" }),
+    ),
+  );
+}
+
 describe("skill tools", () => {
-  const skills = new SkillRegistry();
-  const tempDirs: string[] = [];
-
-  afterEach(() => {
-    for (const dir of tempDirs.splice(0)) removeTempDir(dir);
-    skills.unregister("fmt-skill");
-  });
-
-  function registerSkillWithBody(body: string): void {
-    const dir = createTempDir("skill-tools-");
-    tempDirs.push(dir);
-    writeFileSync(
-      join(dir, "fmt-skill.md"),
-      `---\nname: fmt-skill\ndescription: fmt\n---\n\n${body}`,
-    );
-    skills.register({
-      name: "fmt-skill",
-      description: "fmt",
-      directory: dir,
-      source: "test",
-    });
-  }
-
-  it("loadSkillIntoContext validates name and content", () => {
-    expect(loadSkillIntoContext(skills, "  ")).toContain("cannot be empty");
-    expect(loadSkillIntoContext(skills, "missing")).toContain("not registered");
+  it("loadSkillIntoContext validates name and content", async () => {
+    const skills = new SkillRegistry();
+    expect(await loadSkillIntoContext(skills, "  ")).toContain("cannot be empty");
+    expect(await loadSkillIntoContext(skills, "missing")).toContain("not registered");
   });
 
   it("listSkillsForTool returns empty message", () => {
@@ -49,14 +40,16 @@ describe("skill tools", () => {
   });
 
   it("searchSkillsForTool wraps registry search", () => {
-    registerSkillWithBody("searchable body");
+    const skills = new SkillRegistry();
+    registerFmt(skills);
     const out = JSON.parse(searchSkillsForTool(skills, "fmt"));
     expect(out.total).toBe(1);
     expect(out.skills[0]?.name).toBe("fmt-skill");
   });
 
   it("formatSkillsPrefix and prependSkillsToPrompt wrap skill bodies", () => {
-    registerSkillWithBody("skill body");
+    const skills = new SkillRegistry();
+    registerFmt(skills, "skill body");
     expect(formatSkillsPrefix(skills, ["fmt-skill"])).toContain('<skill name="fmt-skill">');
     expect(prependSkillsToPrompt(skills, "prompt", ["fmt-skill"])).toMatch(
       /<skill name="fmt-skill">[\s\S]+prompt$/,

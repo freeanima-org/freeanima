@@ -1,7 +1,7 @@
 import type { ConversationMetaMessage } from "@freeanima/host/core/db/domain";
 import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
 import { patchConversationMeta } from "@freeanima/host/core/db/pg/conversation";
-import { applyConversationToolMaskFilter } from "./mask-port.ts";
+import { applyConversationToolPolicyFilter } from "./policy-port.ts";
 import { formatToolsForToolMessage } from "./catalog.ts";
 import { resolveDefaultConversationToolSets } from "./default-conversation-toolsets.ts";
 import { mergeToolSetNames, resolveToolSetNames, toolNamesForToolSets } from "./toolset-meta.ts";
@@ -44,12 +44,12 @@ export async function loadToolSetsIntoConversation(
   const allowed = known.filter((name) => {
     if (registry.isToolSetPrivate(name)) {
       const toolNames = toolNamesForToolSets(registry, [name]);
-      const filtered = applyConversationToolMaskFilter(toolNames, meta);
+      const filtered = applyConversationToolPolicyFilter(toolNames, meta);
       if (filtered.length === 0) return false;
       return true;
     }
     const toolNames = toolNamesForToolSets(registry, [name]);
-    const filtered = applyConversationToolMaskFilter(toolNames, meta);
+    const filtered = applyConversationToolPolicyFilter(toolNames, meta);
     return filtered.length > 0;
   });
   const denied = known.filter((name) => !allowed.includes(name));

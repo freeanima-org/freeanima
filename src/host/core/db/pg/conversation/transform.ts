@@ -7,7 +7,6 @@ import {
   type ConversationMetaMessage,
   type ConversationTodoStore,
 } from "@freeanima/host/core/db/domain";
-import { capabilityMaskSchema } from "@freeanima/host/core/db/schema";
 import {
   conversationCachedToolsetsSchema,
   conversationFunctionsSchema,
@@ -52,7 +51,6 @@ const META_KNOWN_KEYS = new Set([
   "src/platform_extra",
   "debug",
   "timestamp",
-  "capability_mask",
   "gateway_tool_display",
 ]);
 
@@ -78,11 +76,7 @@ export function conversationMetaToInsert(
     ...(meta.platform_extra && typeof meta.platform_extra === "object" ? meta.platform_extra : {}),
     ...passthrough,
   };
-  if (meta.capability_mask !== undefined) {
-    extra.capability_mask = capabilityMaskSchema.parse(meta.capability_mask);
-  } else {
-    delete extra.capability_mask;
-  }
+  delete extra.capability_mask;
   if (meta.gateway_tool_display !== undefined) {
     extra.gateway_tool_display = meta.gateway_tool_display;
   } else {
@@ -136,14 +130,11 @@ export function conversationMetaToInsert(
 export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
   const parsed = conversationSelectSchema.parse(row);
   const { platform, platform_extra } = splitPlatformInfo(parsed.platform_info);
-  const capabilityMaskRaw = platform_extra?.capability_mask;
-  const capability_mask =
-    capabilityMaskRaw !== undefined ? capabilityMaskSchema.parse(capabilityMaskRaw) : undefined;
   const gatewayToolDisplayRaw = platform_extra?.gateway_tool_display;
   const gateway_tool_display =
     typeof gatewayToolDisplayRaw === "string" ? gatewayToolDisplayRaw : undefined;
   const restExtra = platform_extra ? { ...platform_extra } : undefined;
-  if (restExtra) delete restExtra.capability_mask;
+  if (restExtra) delete restExtra.capability_mask; // legacy drop
   if (restExtra) delete restExtra.gateway_tool_display;
   const handledAt =
     typeof restExtra?.acp_tasks_handled_at === "string"
@@ -179,7 +170,6 @@ export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
     staged_toolsets: parsed.staged_toolsets,
     functions: parsed.functions,
     platform_extra: restExtra && Object.keys(restExtra).length > 0 ? restExtra : undefined,
-    capability_mask,
     gateway_tool_display,
     debug: parsed.debug,
   };

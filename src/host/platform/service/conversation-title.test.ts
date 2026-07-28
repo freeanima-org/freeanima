@@ -1,7 +1,6 @@
 import { describe, it, expect, spyOn, afterEach } from "bun:test";
 import * as sessionTitleLlm from "@freeanima/host/core/llm";
 import { createConversationService } from "@freeanima/host/engine/conversation";
-import { MaskRegistry } from "@freeanima/host/core/mask";
 import { Config } from "@freeanima/host/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/host/engine";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/host/core/llm";
@@ -48,7 +47,6 @@ function bindTestDeps(): FullRuntimeDeps {
     mcp: null,
     outpost: null,
     acp: getAcpManager(),
-    masks: new MaskRegistry(),
     host: "127.0.0.1",
     port: 2658,
   };

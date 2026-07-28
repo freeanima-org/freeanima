@@ -1,16 +1,11 @@
 import { z } from "zod";
 
-export const capabilityMaskInputSchema = z.object({
-  presets: z.array(z.string()).default([]),
-});
-
 export const conversationCreateInputSchema = z.object({
   title: z.string().optional(),
   platform: z.string().optional(),
   workspace_root: z.string().optional(),
   workspace_gitignore: z.boolean().optional(),
   workspace_show_hidden: z.boolean().optional(),
-  capability_mask: capabilityMaskInputSchema.optional(),
 });
 
 export type ConversationCreateInput = z.infer<typeof conversationCreateInputSchema>;

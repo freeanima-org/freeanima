@@ -47,7 +47,7 @@ FreeAnima Storage Architecture
 | **Detailed** autobiographical narrative        | Memory layer (autobiographical entries)                                          |
 | Other-models (cognition of partner and others) | Memory layer (semantic memory)                                                   |
 | Runtime state / health perception              | Estate / env-health — see [`environment-awareness.md`](environment-awareness.md) |
-| Concrete tool / skill inventory                | Estate layer                                                                     |
+| Concrete tool / skill inventory                | Estate layer — skills: [`skills.md`](../modules/skills.md)                       |
 
 ---
 

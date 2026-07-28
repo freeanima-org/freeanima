@@ -49,7 +49,6 @@ describePg("habitat conversation.list dual transport", () => {
       instanceRegistry: null as never,
       hubSessionRegistry: null as never,
       animaVersion: "test",
-      masks: null as never,
     };
     const ctx = {
       app_id: "chat",

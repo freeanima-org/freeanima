@@ -371,7 +371,6 @@ export const promptDebugResponseSchema = z.object({
   meta: z
     .object({
       cwd: z.string().nullable().optional(),
-      capability_mask: z.object({ presets: z.array(z.string()) }).optional(),
       tool_names: z.array(z.string()).optional(),
     })
     .optional(),

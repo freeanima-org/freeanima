@@ -204,22 +204,35 @@ Scene awareness is **soft** — it adjusts tone, distance, memory recall bias, a
 
 Distinct from scene awareness: banded host and process markers (disk, RSS, deps, MCP/ACP) live as a **session-static** system-prompt copy, with **event-level** Inbox notifications on change. See [`environment-awareness.md`](../cognition/environment-awareness.md).
 
-### Capability Mask
+### Capability Policy
 
 **Question: what tools and data can I use right now?**
 
-The capability mask is **hard** — it binds tool sets, data scope, and credential permissions. The same digital life may wear different masks per conversation or task to prevent permission leaks and tool pollution.
+**Capability Policy** is the **hard** constraint layer formerly sketched as “capability mask.” It is **not** a named wardrobe of presets (`masks.yaml` / Mask registry are retired). Policy is composed from:
 
-**Example masks:**
+| Layer                                     | Role                                    | Typical fill                                        |
+| ----------------------------------------- | --------------------------------------- | --------------------------------------------------- |
+| **Skill**                                 | Declares what a technique needs         | `tools.allowed` (whitelist); `tools.denied` rare    |
+| **Caller** (cron, sleep, future subagent) | Declares what this scene must not touch | `tools.denied` (optional); `tools.allowed` optional |
 
-- Developer: terminal, code read/write, ACP Cursor
-- Maintainer: FreeAnima config, deployment, database
-- Creator: files, notes, media generation
-- Research: web search, paper retrieval
-- Role-play: dialogue context only, no external tools
-- Default: basic chat + limited lookup
+Umbrella shape (implementation may store flat `allowed_tools` / `denied_tools`):
 
-**Operation:** Switches at conversation boundaries, explicit commands, or scene-awareness triggers. Each mask is a declared tool/data scope, not a separate identity.
+```text
+CapabilityPolicy
+├── tools.allowed / tools.denied   ← shipped direction
+└── data.allowed / data.denied     ← reserved; not runtime yet
+```
+
+**Merge:** union of allows, union of denies, deny wins; `@ToolSet` names expand like today’s tool filter. Same skill stays reusable across scenes—callers change deny lists instead of forking skill variants.
+
+**Visibility:**
+
+| Scene                                 | Rule                                                                                   |
+| ------------------------------------- | -------------------------------------------------------------------------------------- |
+| Visible (user chat)                   | Broad default ToolSets; user can interrupt                                             |
+| Invisible (sleep / cron / autonomous) | Least privilege: effective tools ≈ union of loaded skills’ allows, minus caller denies |
+
+Skills themselves use progressive disclosure (catalog in system prompt; full body via `skill_load`). Details: [`skills.md`](../modules/skills.md).
 
 ### How They Interact
 
@@ -228,15 +241,15 @@ Scene awareness (soft tuning)
      │  tone, distance, recall bias
      │
      ▼
-Capability mask (hard constraints)
-     │  tools, permissions, data scope
+Capability Policy (hard constraints)
+     │  tools (now); data (future)
      │
      ▼
 Agent behavior
 ```
 
-- Scene awareness infers "what we are doing" → may suggest mask switches and presence adjustments
-- Capability mask constrains "what I can do" → prevents cross-scene tool misuse
+- Scene awareness infers "what we are doing" → may suggest which skills to load and presence adjustments
+- Capability Policy constrains "what I can do" → prevents cross-scene tool misuse
 - Both converge in final behavior but evolve independently
 
 For design drafts, open a GitHub Issue (no design-doc directory in docs).

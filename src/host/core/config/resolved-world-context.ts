@@ -3,6 +3,7 @@ export type ResolvedWorldContext = {
   agent_subject_id: number;
   user_world_id: number;
   agent_world_id: number;
+  commons_world_id: number;
 };
 
 export type SubjectKind = "user" | "agent";

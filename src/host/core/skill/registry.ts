@@ -1,19 +1,38 @@
 import { omitUndefined } from "@freeanima/host/core/util";
-import { readdirSync } from "node:fs";
-import { readSkillDescriptionFromFile } from "./content.ts";
+import {
+  skillBodySchema,
+  type SkillBody,
+  type SkillOrigin,
+  type SkillStatus,
+} from "@freeanima/host/core/db/schema/entity";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { normalizeToolList, parseFrontmatter, stripFrontmatter } from "./content.ts";
 
 export type SkillDef = {
   name: string;
   description: string;
-  /** Skill file directory (filename `{name}.md`) */
-  directory: string;
-  /** Registration source, e.g. user / acp:cursor */
+  entityId: number;
+  worldId: number;
+  origin: SkillOrigin;
+  status: SkillStatus;
+  allowed_tools: readonly string[];
+  denied_tools: readonly string[];
+  license?: string;
+  compatibility?: string;
+  metadata: Record<string, unknown>;
+  content: string;
   source?: string;
 };
 
 export class SkillRegistry {
   private readonly registry = new Map<string, SkillDef>();
   private readonly order: string[] = [];
+
+  clear(): void {
+    this.registry.clear();
+    this.order.length = 0;
+  }
 
   register(def: SkillDef): void {
     if (!this.registry.has(def.name)) this.order.push(def.name);
@@ -49,22 +68,58 @@ export class SkillRegistry {
       .filter((s): s is SkillDef => s !== undefined);
   }
 
+  listActive(): SkillDef[] {
+    return this.list().filter((s) => s.status === "active");
+  }
+
   search(query: string): SkillDef[] {
     const q = query.trim().toLowerCase();
     if (!q) return this.list();
     return this.list().filter((s) => {
-      const hay = `${s.name} ${s.description} ${s.source ?? ""}`.toLowerCase();
+      const hay = `${s.name} ${s.description} ${s.origin} ${s.source ?? ""}`.toLowerCase();
       return hay.includes(q);
     });
   }
 }
 
-/** Scan `*.md` in directory and register (description from frontmatter, else default at register time) */
+export function skillDefFromBody(
+  input: {
+    name: string;
+    description: string;
+    entityId: number;
+    worldId: number;
+    content: string;
+    source?: string;
+  },
+  body: SkillBody,
+): SkillDef {
+  return omitUndefined({
+    name: input.name,
+    description: input.description,
+    entityId: input.entityId,
+    worldId: input.worldId,
+    origin: body.origin,
+    status: body.status,
+    allowed_tools: body.allowed_tools,
+    denied_tools: body.denied_tools,
+    license: body.license,
+    compatibility: body.compatibility,
+    metadata: body.metadata,
+    content: input.content,
+    source: input.source ?? body.origin,
+  });
+}
+
+/**
+ * 从目录扫描 *.md 注册到内存 registry（ACP 等瞬时技能；非 DB SSOT）。
+ * entityId/worldId = 0 表示未入库。
+ */
 export function registerSkillsFromDirectory(
   skills: SkillRegistry,
   directory: string,
-  opts?: { source?: string; description?: string },
+  opts?: { source?: string },
 ): number {
+  if (!existsSync(directory)) return 0;
   let files: string[];
   try {
     files = readdirSync(directory).filter((f) => f.endsWith(".md"));
@@ -73,16 +128,37 @@ export function registerSkillsFromDirectory(
   }
   let count = 0;
   for (const file of files) {
-    const name = file.replace(/\.md$/, "");
-    if (!name) continue;
-    const description = readSkillDescriptionFromFile(directory, name) || opts?.description || "";
+    const nameFromFile = file.replace(/\.md$/, "");
+    if (!nameFromFile) continue;
+    let raw: string;
+    try {
+      raw = readFileSync(join(directory, file), "utf-8");
+    } catch {
+      continue;
+    }
+    const fm = parseFrontmatter(raw);
+    const name = (fm.name ?? nameFromFile).trim();
+    const body = skillBodySchema.parse({
+      origin: "builtin",
+      status: "active",
+      license: fm.license,
+      compatibility: fm.compatibility,
+      metadata: fm.metadata ?? {},
+      allowed_tools: normalizeToolList(fm["allowed-tools"] ?? fm.allowed_tools),
+      denied_tools: normalizeToolList(fm.denied_tools),
+    });
     skills.register(
-      omitUndefined({
-        name,
-        description,
-        directory,
-        source: opts?.source,
-      }),
+      skillDefFromBody(
+        omitUndefined({
+          name,
+          description: (fm.description ?? "").trim(),
+          entityId: 0,
+          worldId: 0,
+          content: stripFrontmatter(raw),
+          source: opts?.source,
+        }),
+        body,
+      ),
     );
     count += 1;
   }

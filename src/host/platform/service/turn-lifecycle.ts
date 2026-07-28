@@ -2,7 +2,6 @@ import {
   isConversationMeta,
   resolveExecutableToolNames,
 } from "@freeanima/host/engine/conversation";
-import { resolveConversationMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-bind.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import {
   triggerConversationTitleIfFirstTurn,
@@ -153,7 +152,6 @@ export async function runSimpleTurn(
   goalLoop: while (true) {
     const tools = await deps.conversation.loadConversationTools(conversationId);
     const meta = await deps.conversation.loadConversationMeta(conversationId);
-    const toolMask = runtimeToolMaskFromResolved(resolveConversationMaskFromMeta(deps, meta));
     const executableTools = isConversationMeta(meta)
       ? resolveExecutableToolNames(meta, deps.engine.catalog.toolSets)
       : undefined;
@@ -167,7 +165,7 @@ export async function runSimpleTurn(
             model,
             tools,
             llm: deps.engine.llm,
-            ...omitUndefined({ toolMask, executableTools }),
+            ...omitUndefined({ executableTools }),
             hookRegistry: deps.kernel.hookRegistry,
             ...createTurnMessageCallbacks(deps, conversationId),
           }),
@@ -214,7 +212,6 @@ export async function* yieldEngineStream(
 ): AsyncGenerator<StreamEvent> {
   const tools = await deps.conversation.loadConversationTools(conversationId);
   const meta = await deps.conversation.loadConversationMeta(conversationId);
-  const toolMask = runtimeToolMaskFromResolved(resolveConversationMaskFromMeta(deps, meta));
   const executableTools = isConversationMeta(meta)
     ? resolveExecutableToolNames(meta, deps.engine.catalog.toolSets)
     : undefined;
@@ -230,7 +227,7 @@ export async function* yieldEngineStream(
             config: deps.engine.config.data,
             logger: deps.engine.logger,
             llm: deps.engine.llm,
-            ...omitUndefined({ toolMask, executableTools, llm_debug: llmDebug ? true : undefined }),
+            ...omitUndefined({ executableTools, llm_debug: llmDebug ? true : undefined }),
             ...host.engineStreamOpts(conversationId, signal, llmDebug),
           }),
         { tools: deps.engine.catalog.toolSets, ...omitUndefined({ executableTools }) },

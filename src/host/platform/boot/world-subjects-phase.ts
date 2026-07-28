@@ -41,7 +41,7 @@ export async function bootWorldSubjectsPhase(
   }
 
   startupLog(
-    `World subjects ready (user=${ctx.user_subject_id}/world=${ctx.user_world_id}, agent=${ctx.agent_subject_id}/world=${ctx.agent_world_id})`,
+    `World subjects ready (user=${ctx.user_subject_id}/world=${ctx.user_world_id}, agent=${ctx.agent_subject_id}/world=${ctx.agent_world_id}, commons=${ctx.commons_world_id})`,
   );
   return {};
 }

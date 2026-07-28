@@ -76,7 +76,7 @@ Settings → Companion client section shows **instance id** and **remote tools c
 
 ## Models and motions
 
-The repo **does not bundle** `.vrm` / `.vrma` files. **Habitat** is the SSOT: runtime 段 `companion`（`models` / `motion_library` 仅 `{ name, object_file_id, sort }`；槽位与当前模型均引用 `object_file_id`）+ 对象存储字节。旧条目不迁移，须在 Settings **重新上传**。桌面本机缓存文件名由 `object_file_id` 推导（`{id}.vrm` / `{id}.vrma`）。
+The repo **does not bundle** `.vrm` / `.vrma` files. **Habitat** is the SSOT: runtime 段 `companion`（`models` / `motion_library` 仅 `{ name, object_file_id, sort }`；槽位与当前模型均引用 `object_file_id`）+ 对象存储字节。新上传的 VRM/VRMA 落在 **Commons world**（`world_config.common`）；旧条目不迁移，须在 Settings **重新上传**。桌面本机缓存文件名由 `object_file_id` 推导（`{id}.vrm` / `{id}.vrma`）。
 
 ### VRM models
 

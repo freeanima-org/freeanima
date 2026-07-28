@@ -24,6 +24,8 @@ export const cronJobDataSchema = z.object({
   last_output_ref: z.string().nullable().default(null),
   /** 成功时是否将输出写入通知；失败始终通知 */
   notify_on_success: z.boolean().default(false),
+  allowed_tools: z.array(z.string()).default([]),
+  denied_tools: z.array(z.string()).default([]),
   /** API view: computed at runtime, not stored in PG */
   next_run_at: z.number().default(0),
   /** API view: lazy-loaded from last_output_ref */

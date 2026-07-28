@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { capabilityMaskPresetSchema } from "./lifecycle-remote.ts";
-
 export const remoteToolsAttachPayloadSchema = z.object({
   app_id: z.string().min(1),
   /** Omitted on first register; present on reconnect/login */
@@ -20,11 +18,6 @@ export const remoteToolsAttachOutputSchema = z.object({
     .object({
       anima_version: z.string(),
       habitat_rpc_version: z.string().optional(),
-      capability_mask: z
-        .object({
-          presets: z.array(capabilityMaskPresetSchema),
-        })
-        .optional(),
     })
     .refine((info) => info.habitat_rpc_version != null, {
       message: "server_info requires habitat_rpc_version",

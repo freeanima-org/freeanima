@@ -19,6 +19,10 @@ export const cronJobs = pgTable(
     context_from: text("context_from").array().notNull().default([]),
     timeout_sec: integer("timeout_sec").notNull().default(300),
     builtin: boolean("builtin").notNull().default(false),
+    /** 调用方工具白名单（可选）；与技能 allowed 并集 */
+    allowed_tools: text("allowed_tools").array().notNull().default([]),
+    /** 调用方工具黑名单（可选）；deny 胜出 */
+    denied_tools: text("denied_tools").array().notNull().default([]),
     repeat: integer("repeat"),
     run_count: integer("run_count").notNull().default(0),
     paused: boolean("paused").notNull().default(false),

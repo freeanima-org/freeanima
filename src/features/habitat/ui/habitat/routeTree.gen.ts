@@ -31,6 +31,9 @@ import { Route as SidebarCommandsRouteImport } from "./routes/_sidebar/commands"
 import { Route as SidebarAutobiographicalMemoryRouteImport } from "./routes/_sidebar/autobiographical-memory";
 import { Route as SidebarAutoLlmRunsRouteImport } from "./routes/_sidebar/auto-llm-runs";
 import { Route as SidebarAcpRouteImport } from "./routes/_sidebar/acp";
+import { Route as SidebarSkillsRouteRouteImport } from "./routes/_sidebar/skills/route";
+import { Route as SidebarSkillsIndexRouteImport } from "./routes/_sidebar/skills/index";
+import { Route as SidebarSkillsNameRouteImport } from "./routes/_sidebar/skills/$name";
 import { Route as SidebarConversationsRouteRouteImport } from "./routes/_sidebar/conversations/route";
 import { Route as SidebarConversationsIndexRouteImport } from "./routes/_sidebar/conversations/index";
 import { Route as SidebarConversationsConversationIdRouteImport } from "./routes/_sidebar/conversations/$conversationId";
@@ -144,6 +147,21 @@ const SidebarAcpRoute = SidebarAcpRouteImport.update({
   path: "/acp",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
+const SidebarSkillsRouteRoute = SidebarSkillsRouteRouteImport.update({
+  id: "/skills",
+  path: "/skills",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarSkillsIndexRoute = SidebarSkillsIndexRouteImport.update({
+  id: "/",
+  path: "/",
+  getParentRoute: () => SidebarSkillsRouteRoute,
+} as any);
+const SidebarSkillsNameRoute = SidebarSkillsNameRouteImport.update({
+  id: "/$name",
+  path: "/$name",
+  getParentRoute: () => SidebarSkillsRouteRoute,
+} as any);
 const SidebarConversationsRouteRoute = SidebarConversationsRouteRouteImport.update({
   id: "/conversations",
   path: "/conversations",
@@ -182,10 +200,13 @@ export interface FileRoutesByFullPath {
   "/subjects": typeof SidebarSubjectsRoute;
   "/system-prompt": typeof SidebarSystemPromptRoute;
   "/tools": typeof SidebarToolsRoute;
+  "/skills": typeof SidebarSkillsRouteRouteWithChildren;
+  "/skills/$name": typeof SidebarSkillsNameRoute;
   "/worlds": typeof SidebarWorldsRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/conversations/$conversationId": typeof SidebarConversationsConversationIdRoute;
   "/conversations/": typeof SidebarConversationsIndexRoute;
+  "/skills/": typeof SidebarSkillsIndexRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
@@ -207,10 +228,12 @@ export interface FileRoutesByTo {
   "/subjects": typeof SidebarSubjectsRoute;
   "/system-prompt": typeof SidebarSystemPromptRoute;
   "/tools": typeof SidebarToolsRoute;
+  "/skills/$name": typeof SidebarSkillsNameRoute;
   "/worlds": typeof SidebarWorldsRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/conversations/$conversationId": typeof SidebarConversationsConversationIdRoute;
   "/conversations": typeof SidebarConversationsIndexRoute;
+  "/skills": typeof SidebarSkillsIndexRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
@@ -235,10 +258,13 @@ export interface FileRoutesById {
   "/_sidebar/subjects": typeof SidebarSubjectsRoute;
   "/_sidebar/system-prompt": typeof SidebarSystemPromptRoute;
   "/_sidebar/tools": typeof SidebarToolsRoute;
+  "/_sidebar/skills": typeof SidebarSkillsRouteRouteWithChildren;
+  "/_sidebar/skills/$name": typeof SidebarSkillsNameRoute;
   "/_sidebar/worlds": typeof SidebarWorldsRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/_sidebar/conversations/$conversationId": typeof SidebarConversationsConversationIdRoute;
   "/_sidebar/conversations/": typeof SidebarConversationsIndexRoute;
+  "/_sidebar/skills/": typeof SidebarSkillsIndexRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
@@ -263,10 +289,13 @@ export interface FileRouteTypes {
     | "/subjects"
     | "/system-prompt"
     | "/tools"
+    | "/skills"
+    | "/skills/$name"
     | "/worlds"
     | "/workshop/$path"
     | "/conversations/$conversationId"
-    | "/conversations/";
+    | "/conversations/"
+    | "/skills/";
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/"
@@ -288,10 +317,12 @@ export interface FileRouteTypes {
     | "/subjects"
     | "/system-prompt"
     | "/tools"
+    | "/skills/$name"
     | "/worlds"
     | "/workshop/$path"
     | "/conversations/$conversationId"
-    | "/conversations";
+    | "/conversations"
+    | "/skills";
   id:
     | "__root__"
     | "/"
@@ -315,10 +346,13 @@ export interface FileRouteTypes {
     | "/_sidebar/subjects"
     | "/_sidebar/system-prompt"
     | "/_sidebar/tools"
+    | "/_sidebar/skills"
+    | "/_sidebar/skills/$name"
     | "/_sidebar/worlds"
     | "/workshop/$path"
     | "/_sidebar/conversations/$conversationId"
-    | "/_sidebar/conversations/";
+    | "/_sidebar/conversations/"
+    | "/_sidebar/skills/";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -370,6 +404,27 @@ declare module "@tanstack/react-router" {
       fullPath: "/tools";
       preLoaderRoute: typeof SidebarToolsRouteImport;
       parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/skills": {
+      id: "/_sidebar/skills";
+      path: "/skills";
+      fullPath: "/skills";
+      preLoaderRoute: typeof SidebarSkillsRouteRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/skills/$name": {
+      id: "/_sidebar/skills/$name";
+      path: "/$name";
+      fullPath: "/skills/$name";
+      preLoaderRoute: typeof SidebarSkillsNameRouteImport;
+      parentRoute: typeof SidebarSkillsRouteRoute;
+    };
+    "/_sidebar/skills/": {
+      id: "/_sidebar/skills/";
+      path: "/";
+      fullPath: "/skills/";
+      preLoaderRoute: typeof SidebarSkillsIndexRouteImport;
+      parentRoute: typeof SidebarSkillsRouteRoute;
     };
     "/_sidebar/system-prompt": {
       id: "/_sidebar/system-prompt";
@@ -521,6 +576,20 @@ const SidebarConversationsRouteRouteWithChildren = SidebarConversationsRouteRout
   SidebarConversationsRouteRouteChildren,
 );
 
+interface SidebarSkillsRouteRouteChildren {
+  SidebarSkillsNameRoute: typeof SidebarSkillsNameRoute;
+  SidebarSkillsIndexRoute: typeof SidebarSkillsIndexRoute;
+}
+
+const SidebarSkillsRouteRouteChildren: SidebarSkillsRouteRouteChildren = {
+  SidebarSkillsNameRoute: SidebarSkillsNameRoute,
+  SidebarSkillsIndexRoute: SidebarSkillsIndexRoute,
+};
+
+const SidebarSkillsRouteRouteWithChildren = SidebarSkillsRouteRoute._addFileChildren(
+  SidebarSkillsRouteRouteChildren,
+);
+
 interface SidebarRouteRouteChildren {
   SidebarConversationsRouteRoute: typeof SidebarConversationsRouteRouteWithChildren;
   SidebarAcpRoute: typeof SidebarAcpRoute;
@@ -540,6 +609,7 @@ interface SidebarRouteRouteChildren {
   SidebarSubjectsRoute: typeof SidebarSubjectsRoute;
   SidebarSystemPromptRoute: typeof SidebarSystemPromptRoute;
   SidebarToolsRoute: typeof SidebarToolsRoute;
+  SidebarSkillsRouteRoute: typeof SidebarSkillsRouteRouteWithChildren;
   SidebarWorldsRoute: typeof SidebarWorldsRoute;
 }
 
@@ -562,6 +632,7 @@ const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
   SidebarSubjectsRoute: SidebarSubjectsRoute,
   SidebarSystemPromptRoute: SidebarSystemPromptRoute,
   SidebarToolsRoute: SidebarToolsRoute,
+  SidebarSkillsRouteRoute: SidebarSkillsRouteRouteWithChildren,
   SidebarWorldsRoute: SidebarWorldsRoute,
 };
 

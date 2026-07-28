@@ -11,6 +11,7 @@ const CTX = {
   agent_subject_id: 20,
   user_world_id: 100,
   agent_world_id: 200,
+  commons_world_id: 30,
 } as const;
 
 describe("notification tool subject resolve", () => {

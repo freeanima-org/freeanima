@@ -343,9 +343,6 @@ function SystemPromptPage() {
                   cwd: <code className="text-xs">{data.meta.cwd}</code>
                 </div>
               ) : null}
-              {data.meta.capability_mask?.presets.length ? (
-                <div>capability_mask: {data.meta.capability_mask.presets.join(", ")}</div>
-              ) : null}
               {data.meta.tool_names?.length ? (
                 <div>
                   {m.habitat_system_prompt_meta_tools({

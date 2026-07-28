@@ -110,6 +110,16 @@ describe("ensureWorldSubjects", () => {
       if (opts?.type === "agent") {
         return [{ id: 43, type: "agent", body: { default_private_world_id: 430 }, title: "Agent" }];
       }
+      if (opts?.type === "world") {
+        return [
+          {
+            id: 900,
+            type: "world",
+            body: { private: false, common: true, grants: [] },
+            title: "Commons",
+          },
+        ];
+      }
       return [];
     });
     getEntity.mockImplementation(async (id: number) => {
@@ -130,6 +140,7 @@ describe("ensureWorldSubjects", () => {
       agent_subject_id: 43,
       user_world_id: 420,
       agent_world_id: 430,
+      commons_world_id: 900,
     });
   });
 

@@ -1,116 +1,42 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { createTempDir, removeTempDir } from "@freeanima/host/core/util/temp-dir";
-import {
-  SkillRegistry,
-  createUserSkill,
-  deleteUserSkill,
-  loadSkillIntoContext,
-  listSkillsForTool,
-  registerSkillsFromDirectory,
-  searchSkillsForTool,
-  USER_SKILLS_SOURCE,
-  registerUserSkillsFromHome,
-} from "./index.ts";
+import { describe, expect, it } from "bun:test";
+import { SkillRegistry, skillDefFromBody } from "./registry.ts";
+import { skillBodySchema } from "@freeanima/host/core/db/schema/entity";
 
 describe("SkillRegistry", () => {
-  const skills = new SkillRegistry();
-  const tempDirs: string[] = [];
-
-  afterEach(() => {
-    for (const dir of tempDirs.splice(0)) removeTempDir(dir);
-  });
-
-  it("register / list / search", () => {
-    skills.register({
-      name: "demo-a",
-      description: "Alpha skill",
-      directory: "/tmp/skills-a",
-      source: "test",
+  it("register / list / search / private overlay by name", () => {
+    const skills = new SkillRegistry();
+    const body = skillBodySchema.parse({
+      origin: "builtin",
+      status: "active",
+      allowed_tools: ["memory_recall"],
     });
-    skills.register({
-      name: "demo-b",
-      description: "Beta helper",
-      directory: "/tmp/skills-b",
-      source: "test",
-    });
-
-    expect(skills.list().map((s) => s.name)).toContain("demo-a");
-    expect(skills.search("beta").map((s) => s.name)).toContain("demo-b");
-    expect(skills.search("missing")).toHaveLength(0);
-
-    skills.unregister("demo-a");
-    skills.unregister("demo-b");
-  });
-
-  it("registerSkillsFromDirectory scans md files", () => {
-    const dir = createTempDir("skill-dir-");
-    tempDirs.push(dir);
-    writeFileSync(
-      join(dir, "scan-me.md"),
-      "---\nname: scan-me\ndescription: From dir\n---\n\n# Body\n",
+    skills.register(
+      skillDefFromBody(
+        {
+          name: "research",
+          description: "Commons research",
+          entityId: 1,
+          worldId: 10,
+          content: "commons body",
+        },
+        body,
+      ),
     );
-    const count = registerSkillsFromDirectory(skills, dir, { source: "pkg:test" });
-    expect(count).toBe(1);
-    expect(skills.search("scan-me")[0]?.description).toBe("From dir");
-    skills.unregister("scan-me");
-  });
-});
-
-describe("user skills", () => {
-  const skills = new SkillRegistry();
-  let home: string;
-  const prev = process.env.FREEANIMA_HOME;
-
-  beforeEach(() => {
-    home = createTempDir("anima-skills-");
-    process.env.FREEANIMA_HOME = home;
-  });
-
-  afterEach(() => {
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
-    removeTempDir(home);
-  });
-
-  it("create / list / load / delete", () => {
-    const created = JSON.parse(createUserSkill(skills, "demo", "test skill", "do something")) as {
-      ok: boolean;
-      name: string;
-    };
-    expect(created.ok).toBe(true);
-    expect(created.name).toBe("demo");
-    registerUserSkillsFromHome(skills);
-    expect(skills.list().some((s) => s.name === "demo" && s.source === USER_SKILLS_SOURCE)).toBe(
-      true,
+    skills.register(
+      skillDefFromBody(
+        {
+          name: "research",
+          description: "Private fork",
+          entityId: 2,
+          worldId: 20,
+          content: "private body",
+        },
+        skillBodySchema.parse({ origin: "user", status: "active", allowed_tools: ["file_read"] }),
+      ),
     );
-
-    const listed = JSON.parse(listSkillsForTool(skills));
-    expect(listed.skills.some((s: { name: string }) => s.name === "demo")).toBe(true);
-
-    const searched = JSON.parse(searchSkillsForTool(skills, "test"));
-    expect(searched.total).toBeGreaterThan(0);
-
-    const loaded = JSON.parse(loadSkillIntoContext(skills, "demo"));
-    expect(loaded.content).toContain("do something");
-    expect(loaded.skill).toBe("demo");
-
-    const deleted = JSON.parse(deleteUserSkill(skills, "demo")) as { ok: boolean; name: string };
-    expect(deleted.ok).toBe(true);
-    expect(deleted.name).toBe("demo");
-    expect(skills.list().some((s) => s.name === "demo")).toBe(false);
-  });
-
-  it("cannot delete built-in skill", () => {
-    skills.register({
-      name: "builtin-x",
-      description: "built-in",
-      directory: "/pkg/skills",
-      source: "acp",
-    });
-    const out = JSON.parse(deleteUserSkill(skills, "builtin-x")) as { error: string };
-    expect(out.error).toContain("built-in skill");
-    skills.unregister("builtin-x");
+    expect(skills.get("research")?.description).toBe("Private fork");
+    expect(skills.get("research")?.allowed_tools).toEqual(["file_read"]);
+    expect(skills.search("private").map((s) => s.name)).toEqual(["research"]);
+    expect(skills.listActive()).toHaveLength(1);
   });
 });

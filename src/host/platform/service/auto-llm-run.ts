@@ -13,8 +13,8 @@ import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
 import { appendAutoLlmRun } from "@freeanima/host/core/db/pg/auto-llm-run";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
-import type { ResolvedMask } from "@freeanima/host/core/mask";
-import { runtimeToolMaskFromResolved } from "./mask-bind.ts";
+import type { ResolvedCapabilityPolicy } from "@freeanima/host/core/capability-policy";
+import { runtimeToolPolicyFromResolved } from "./capability-policy-bind.ts";
 
 const AUTO_LLM_MAX_ATTEMPTS = 3;
 const AUTO_LLM_RETRY_BASE_MS = 500;
@@ -31,7 +31,7 @@ export type AutoLlmRunInput = {
   maxTurns: number;
   goal?: ConversationGoal;
   metadata?: Record<string, unknown>;
-  toolMask?: ResolvedMask;
+  toolMask?: ResolvedCapabilityPolicy;
   onToolResult?: (name: string, content: string) => void;
   parentConversationId?: string;
 };
@@ -198,7 +198,7 @@ async function runEngineOnce(
   model: string,
 ): Promise<{ output: string; toolCalls: number }> {
   const tools = deps.engine.catalog.toolSets.openaiSchemasFromNames(input.toolNames);
-  const toolMask = runtimeToolMaskFromResolved(input.toolMask ?? null);
+  const toolMask = runtimeToolPolicyFromResolved(input.toolMask ?? null);
   let toolCalls = 0;
   const parts: string[] = [];
 

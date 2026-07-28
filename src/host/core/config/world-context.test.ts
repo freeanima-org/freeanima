@@ -45,18 +45,20 @@ describe("ResolvedWorldContext", () => {
     resetResolvedWorldContextForTest();
   });
 
-  it("binds and reads four ids", () => {
+  it("binds and reads five ids", () => {
     bindResolvedWorldContext({
       user_subject_id: 1,
       agent_subject_id: 2,
       user_world_id: 10,
       agent_world_id: 20,
+      commons_world_id: 30,
     });
     expect(getResolvedWorldContext()).toEqual({
       user_subject_id: 1,
       agent_subject_id: 2,
       user_world_id: 10,
       agent_world_id: 20,
+      commons_world_id: 30,
     });
   });
 
@@ -70,6 +72,7 @@ describe("ResolvedWorldContext", () => {
       agent_subject_id: 2,
       user_world_id: 10,
       agent_world_id: 20,
+      commons_world_id: 30,
     });
     expect(resolveSubjectWorldId("user")).toBe(10);
     expect(resolveSubjectWorldId("agent")).toBe(20);

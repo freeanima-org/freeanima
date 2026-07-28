@@ -32,6 +32,8 @@ export async function createCronJob(row: CronJobCreateInput): Promise<void> {
     schedule: row.schedule,
     prompt: row.prompt ?? "",
     skills: normalizeStringArray(row.skills),
+    allowed_tools: normalizeStringArray(row.allowed_tools),
+    denied_tools: normalizeStringArray(row.denied_tools),
     script: row.script ?? null,
     no_agent: row.no_agent ?? false,
     model_provider: row.model_provider ?? null,
@@ -105,6 +107,9 @@ export async function updateCronJob(patch: CronJobUpdateInput): Promise<boolean>
   if (patch.schedule !== undefined) set.schedule = patch.schedule;
   if (patch.prompt !== undefined) set.prompt = patch.prompt;
   if (patch.skills !== undefined) set.skills = normalizeStringArray(patch.skills);
+  if (patch.allowed_tools !== undefined)
+    set.allowed_tools = normalizeStringArray(patch.allowed_tools);
+  if (patch.denied_tools !== undefined) set.denied_tools = normalizeStringArray(patch.denied_tools);
   if (patch.script !== undefined) set.script = patch.script;
   if (patch.no_agent !== undefined) set.no_agent = patch.no_agent;
   if (patch.model_provider !== undefined) set.model_provider = patch.model_provider;

@@ -60,7 +60,7 @@ type EngineOpts = {
   tools?: OpenAiToolSchema[];
   /** Injected tool registry; falls back to getToolRegistry() when omitted */
   toolRegistry?: ToolSetRegistry;
-  /** Tool names allowed by capability mask (ResolvedMask.allowed_tools); no fallback block when unset */
+  /** Tool names allowed by CapabilityPolicy; no fallback block when unset */
   toolMask?: { allowedTools: readonly string[] };
   /** Executable tool names (cached + staged toolsets); no loaded gate when unset */
   executableTools?: readonly string[];
@@ -488,7 +488,7 @@ export async function* runStream(
         const tool = resolveToolRegistry(opts).getTool(fnName);
         let result: string;
         if (opts?.toolMask && !opts.toolMask.allowedTools.includes(fnName)) {
-          result = toolError("Tool restricted by capability mask");
+          result = toolError("Tool restricted by capability policy");
         } else {
           const ctxExec = isExecutableTool(fnName);
           const blockedByLoaded =

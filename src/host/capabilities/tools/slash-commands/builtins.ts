@@ -8,7 +8,6 @@ import {
   clearAwaitingClarify,
   readAwaitingClarify,
 } from "@freeanima/host/capabilities/tools/clarify";
-import { resolveMaskPresets } from "@freeanima/host/core/mask";
 import { statsReport } from "@freeanima/host/platform/ports/conversation-stats";
 import { CHAT_PLATFORM_PATTERN } from "@freeanima/host/platform/ports/constants";
 import { formatCompressionDiagnostics, getCompressionConfig } from "@freeanima/host/core/compress";
@@ -349,70 +348,6 @@ async function cmdCompress(ctx: CommandContext): Promise<CommandResult> {
   return asPanel(lines.join("\n"));
 }
 
-async function reloadMaskSideEffects(conversationId: string): Promise<void> {
-  await conv().recompressConversation(conversationId, { force: true });
-  await conv().rebuildConversationCache(conversationId);
-}
-
-async function cmdMask(ctx: CommandContext): Promise<CommandResult> {
-  const sub = ctx.args[0]?.toLowerCase();
-  const meta = await conv().loadConversationMeta(ctx.conversationId);
-  if (!isConversationMeta(meta)) {
-    return asToast("⚠️ Current conversation does not exist, cannot set capability mask.");
-  }
-
-  if (sub === "set") {
-    const preset = ctx.args[1]?.trim();
-    if (!preset) {
-      return asPanel("Usage: `/mask set <preset-name>`");
-    }
-    const { masks, engine } = getAppRuntime();
-    if (!masks.get(preset)) {
-      const known = masks
-        .list()
-        .map((m) => m.name)
-        .join(", ");
-      return asToast(`⚠️ Unknown mask '${preset}'. Available: ${known || "(none)"}`);
-    }
-    await conv().updateConversationMetaField(ctx.conversationId, {
-      capability_mask: { presets: [preset] },
-    });
-    await reloadMaskSideEffects(ctx.conversationId);
-    const resolved = resolveMaskPresets([preset], masks, engine.catalog.toolSets);
-    return asToast(
-      `✅ Set capability mask '${preset}' (${resolved.allowed_tools.length} tools). Compressed and rebuilt conversation cache.`,
-    );
-  }
-
-  if (sub === "clear") {
-    await conv().updateConversationMetaField(ctx.conversationId, { capability_mask: undefined });
-    await reloadMaskSideEffects(ctx.conversationId);
-    return asToast(
-      "✅ Removed capability mask, restored full capabilities. Compressed and rebuilt conversation cache.",
-    );
-  }
-
-  if (sub === "show") {
-    const presets = meta.capability_mask?.presets ?? [];
-    if (presets.length === 0) {
-      return asPanel("ℹ️ Current conversation has no capability mask (full capabilities).");
-    }
-    const { masks, engine } = getAppRuntime();
-    const resolved = resolveMaskPresets(presets, masks, engine.catalog.toolSets);
-    const preview =
-      resolved.allowed_tools.length <= 12
-        ? resolved.allowed_tools.join(", ")
-        : `${resolved.allowed_tools.slice(0, 12).join(", ")}… (total ${resolved.allowed_tools.length})`;
-    return asPanel(
-      [`🎭 Capability mask: ${presets.join(", ")}`, `Allowed tools: ${preview || "(none)"}`].join(
-        "\n",
-      ),
-    );
-  }
-
-  return asPanel("Usage: `/mask set <preset>` | `/mask clear` | `/mask show`");
-}
-
 function cmdRestart(_ctx: CommandContext): CommandResult {
   if (getAppRuntime().isShuttingDown()) {
     return asToast("Service is already restarting…");
@@ -535,18 +470,6 @@ export function registerBuiltins(): void {
       "Manually collapse history into the runtime summary (idle: l2=l3=l4; waits for summary LLM)",
     handler: cmdSummarize,
     scope: "conversation",
-  });
-  registerCommand({
-    name: "mask",
-    description: "Set / view / clear current conversation capability mask (chat only)",
-    handler: cmdMask,
-    scope: "conversation",
-    platforms: [CHAT_PLATFORM_PATTERN],
-    subcommands: [
-      { name: "set", description: "Apply a mask preset: /mask set <preset>" },
-      { name: "clear", description: "Remove capability mask" },
-      { name: "show", description: "Show current capability mask" },
-    ],
   });
   registerCommand({
     name: "tooldisplay",

@@ -14,6 +14,7 @@ import {
 bindResolvedWorldContext({
   user_world_id: 10,
   agent_world_id: 20,
+  commons_world_id: 30,
   user_subject_id: 1,
   agent_subject_id: 2,
 });

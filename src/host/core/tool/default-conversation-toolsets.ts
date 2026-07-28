@@ -1,5 +1,5 @@
 import type { ConversationMetaMessage } from "@freeanima/host/core/db/domain";
-import { applyConversationToolMaskFilter } from "./mask-port.ts";
+import { applyConversationToolPolicyFilter } from "./policy-port.ts";
 import { toolNamesForToolSets } from "./toolset-meta.ts";
 import type { ToolSetRegistry } from "./toolset.ts";
 
@@ -9,6 +9,7 @@ export const DEFAULT_CONVERSATION_TOOLSETS = [
   TOOL_SET_DISCOVERY_TOOL_SET,
   "memory",
   "notification",
+  "skill",
 ] as const;
 
 export type DefaultConversationToolSetName = (typeof DEFAULT_CONVERSATION_TOOLSETS)[number];
@@ -36,6 +37,6 @@ export function resolveDefaultConversationToolSetsForMeta(
   meta: ConversationMetaMessage,
 ): string[] {
   const defaults = resolveDefaultConversationToolSets(registry);
-  const allowed = applyConversationToolMaskFilter(toolNamesForToolSets(registry, defaults), meta);
+  const allowed = applyConversationToolPolicyFilter(toolNamesForToolSets(registry, defaults), meta);
   return filterToolSetsByAllowedTools(registry, defaults, allowed);
 }

@@ -2,9 +2,10 @@ import type { SkillRegistry } from "@freeanima/host/core/skill";
 import {
   createUserSkill,
   deleteUserSkill,
+  exportUserSkill,
+  importUserSkill,
   listSkillsForTool,
   loadSkillIntoContext,
-  registerUserSkillsFromHome,
   searchSkillsForTool,
   viewUserSkill,
 } from "@freeanima/host/core/skill";
@@ -12,18 +13,7 @@ import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 import { attachToolReturns } from "@freeanima/host/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 
-let userSkillsRegistered = false;
-
-/** Scan ~/.anima/skills and register user skills (idempotent) */
-export function registerUserSkills(skills: SkillRegistry): number {
-  if (userSkillsRegistered) return 0;
-  userSkillsRegistered = true;
-  return registerUserSkillsFromHome(skills);
-}
-
 export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegistry): void {
-  registerUserSkills(skills);
-
   toolSets.registerToolSet(
     "skill",
     "Skill registry and management",
@@ -32,17 +22,20 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
         {
           name: "skill_create",
           description:
-            "Create a new skill (Markdown with YAML frontmatter), write to ~/.anima/skills and register",
+            "Create a new skill entity (Markdown body) in the acting agent private world and register it",
           parameters: {
             type: "object",
             properties: {
-              name: { type: "string", description: "Skill name (filename)" },
+              name: {
+                type: "string",
+                description: "Skill name (agentskills: lowercase, digits, hyphens)",
+              },
               description: { type: "string", description: "Short description" },
               content: { type: "string", description: "Skill body (Markdown)" },
             },
             required: ["name", "description", "content"],
           },
-          handler: (args) =>
+          handler: async (args) =>
             createUserSkill(
               skills,
               String(args.name ?? ""),
@@ -59,18 +52,17 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
             properties: { name: { type: "string", description: "Registered skill name" } },
             required: ["name"],
           },
-          handler: (args) => loadSkillIntoContext(skills, String(args.name ?? "")),
+          handler: async (args) => loadSkillIntoContext(skills, String(args.name ?? "")),
         },
         {
           name: "skill_list",
-          description:
-            "List all registered skills in the registry (name, description, source, directory)",
+          description: "List active skills (name, description, origin, allowed_tools)",
           parameters: { type: "object", properties: {} },
           handler: () => listSkillsForTool(skills),
         },
         {
           name: "skill_search",
-          description: "Search skills in the registry by name, description, or source",
+          description: "Search skills by name, description, or origin",
           parameters: {
             type: "object",
             properties: {
@@ -82,24 +74,46 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
         },
         {
           name: "skill_view",
-          description: "View full skill Markdown file (with frontmatter)",
+          description: "View full skill Markdown (YAML frontmatter + body) for export",
           parameters: {
             type: "object",
             properties: { name: { type: "string", description: "Skill name" } },
             required: ["name"],
           },
-          handler: (args) => viewUserSkill(skills, String(args.name ?? "")),
+          handler: async (args) => viewUserSkill(skills, String(args.name ?? "")),
         },
         {
           name: "skill_delete",
-          description:
-            "Delete user-created skill (~/.anima/skills); built-in skills cannot be deleted",
+          description: "Delete a non-builtin skill entity",
           parameters: {
             type: "object",
             properties: { name: { type: "string", description: "Skill name" } },
             required: ["name"],
           },
-          handler: (args) => deleteUserSkill(skills, String(args.name ?? "")),
+          handler: async (args) => deleteUserSkill(skills, String(args.name ?? "")),
+        },
+        {
+          name: "skill_import",
+          description:
+            "Import a SKILL.md (agentskills-compatible Markdown+YAML) into the private world",
+          parameters: {
+            type: "object",
+            properties: {
+              markdown: { type: "string", description: "Full SKILL.md text including frontmatter" },
+            },
+            required: ["markdown"],
+          },
+          handler: async (args) => importUserSkill(skills, String(args.markdown ?? "")),
+        },
+        {
+          name: "skill_export",
+          description: "Export a skill as agentskills-compatible Markdown",
+          parameters: {
+            type: "object",
+            properties: { name: { type: "string", description: "Skill name" } },
+            required: ["name"],
+          },
+          handler: async (args) => exportUserSkill(skills, String(args.name ?? "")),
         },
       ],
       CAPABILITIES_TOOLS_RETURNS,

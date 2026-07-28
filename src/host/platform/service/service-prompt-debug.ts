@@ -44,7 +44,6 @@ export type PromptDebugResponse = {
   };
   meta?: {
     cwd?: string | null;
-    capability_mask?: { presets: string[] };
     tool_names?: string[];
     staged_toolsets?: string[];
   };
@@ -226,9 +225,6 @@ export async function getPromptDebug(
     },
     meta: omitUndefined({
       cwd: cwd ?? null,
-      capability_mask: meta.capability_mask
-        ? { presets: [...(meta.capability_mask.presets ?? [])] }
-        : undefined,
       tool_names: [...(meta.cached_toolsets ?? [])],
       staged_toolsets: [...(meta.staged_toolsets ?? [])],
     }),
