@@ -4,10 +4,10 @@ import { runTemporalSummaryEngine } from "./engine-port.ts";
 /** Shared output constraints appended to every temporal-summary LLM call. */
 export function temporalSummaryOutputConstraints(maxChars: number): string {
   return [
-    `字数上限约 ${maxChars} 字。`,
+    `字数上限约 ${maxChars} 字；必须高度压缩，标题级/一句级，禁止展开细节或写成段落。`,
     "只输出摘要正文：不要标题、列表装饰、开场寒暄（如「收到」「好的」「我这就…」）或任何元叙述。",
-    "写事件级概览（主题与结果）；禁止堆砌内部 ID、逐步 tool/配置操作、逐条通知时间戳。",
-    "「无差别」= 不因「是否重要」故意漏事件，≠ 复述全部细节。",
+    "写主题与结果的极短概览；禁止堆砌内部 ID、逐步 tool/配置操作、逐条通知时间戳。",
+    "「无差别」= 不因「是否重要」故意漏主题，≠ 复述细节；宁短勿长。",
   ].join("");
 }
 

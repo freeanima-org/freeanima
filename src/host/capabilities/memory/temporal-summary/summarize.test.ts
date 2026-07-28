@@ -43,6 +43,7 @@ describe("temporalSummaryOutputConstraints", () => {
     const text = temporalSummaryOutputConstraints(500);
     expect(text).toContain("500");
     expect(text).toContain("收到");
-    expect(text).toContain("事件级");
+    expect(text).toContain("高度压缩");
+    expect(text).toContain("标题级");
   });
 });

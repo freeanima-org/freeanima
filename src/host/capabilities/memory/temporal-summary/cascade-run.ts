@@ -41,7 +41,7 @@ export async function runTemporalSummaryCascade(opts: {
       try {
         const content = await summarizeTemporalText({
           selfContent: opts.selfContent,
-          instruction: `请将 ${period_start} 至 ${D} 的全局天摘要合并为客观月摘要：事件级概览，压缩重复细节。`,
+          instruction: `请将 ${period_start} 至 ${D} 的全局天摘要合并为客观月摘要：一句级高度压缩，只留主题主线。`,
           material: days
             .toSorted((a, b) => a.period_start.localeCompare(b.period_start))
             .map((d) => `[${d.period_start}]\n${d.content}`)
@@ -75,7 +75,7 @@ export async function runTemporalSummaryCascade(opts: {
       try {
         const content = await summarizeTemporalText({
           selfContent: opts.selfContent,
-          instruction: `请将 ${D.slice(0, 4)} 年各月摘要合并为客观年摘要：事件级概览，压缩重复细节。`,
+          instruction: `请将 ${D.slice(0, 4)} 年各月摘要合并为客观年摘要：一句级高度压缩，只留年度主线。`,
           material: months
             .toSorted((a, b) => a.period_start.localeCompare(b.period_start))
             .map((d) => `[${d.period_start}]\n${d.content}`)

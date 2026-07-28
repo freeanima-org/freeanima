@@ -125,6 +125,8 @@ export {
   runTemporalSummaryDay,
   runTemporalSummaryCascade,
   buildTemporalSummarySystemSection,
+  temporalSummarySystemTruncatedSourceRef,
+  TEMPORAL_SUMMARY_SYSTEM_TRUNCATED_SOURCE_PREFIX,
   peerRollSourcesFp,
   peerRollRedisKey,
   injectTemporalPeerRollups,

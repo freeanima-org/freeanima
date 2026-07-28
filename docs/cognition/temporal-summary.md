@@ -20,7 +20,7 @@ title: Temporal Summary
 | Storage        | `diary_entry` + blocks | Global → entity; today per-conversation → `conversations.temporal_day` |
 | Primary reader | `/diary` UI            | System prompt (yesterday+) / timeline inject (today peers)             |
 
-LLM compression still applies (char caps). **Objective ≠ exhaustive log replay**: cover events without an editorial “worth remembering” filter, but write **event-level** digests (themes + outcomes). Omit internal IDs, step-by-step tool/config actions, and per-notification timestamps unless essential to understand what happened.
+LLM compression still applies (char caps). **Not the memory main store** (semantic / limbic / narrative live elsewhere — see [`memory.md`](memory.md)). Temporal summary is a **time-awareness digest**: highly compressed headlines, not detail replay. Same char budget over larger windows ≈ human-like decay (year still ~100 chars). **Objective ≠ exhaustive log replay**: cover themes without an editorial filter, omit IDs / step-by-step tool actions / per-notification timestamps.
 
 ## Storage layers
 
@@ -100,6 +100,19 @@ When assembling messages for viewer `V`:
 ## Config
 
 `memory.temporal_summary` in Habitat runtime config (`habitat_runtime_config`): `enabled`, char caps, `redis_key_prefix`.
+
+Default char caps (headline / one-line compression):
+
+| Cap                       | Default |
+| ------------------------- | ------- |
+| `chunk_max_chars`         | 50      |
+| `peer_roll_max_chars`     | 100     |
+| `global_day_max_chars`    | 100     |
+| `month_max_chars`         | 100     |
+| `year_max_chars`          | 100     |
+| `system_prompt_max_chars` | 1500    |
+
+If the assembled system section exceeds `system_prompt_max_chars`, Habitat truncates and writes an Inbox warning to **both** user and agent subjects (`source_ref` `temporal_summary:system_truncated:{CST_date}`), at most once per CST day.
 
 ## Sleep relationship
 

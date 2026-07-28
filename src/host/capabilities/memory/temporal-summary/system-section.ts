@@ -5,6 +5,11 @@ import {
 import { cstDateString, monthPeriodStart, yearPeriodStart } from "./buckets.ts";
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
 
+export type TemporalSummarySystemSectionResult = {
+  content: string;
+  truncated: boolean;
+};
+
 function addCstDays(cstDate: string, delta: number): string {
   const parts = cstDate.split("-").map(Number);
   const y = parts[0];
@@ -19,8 +24,8 @@ function addCstDays(cstDate: string, delta: number): string {
 export async function buildTemporalSummarySystemSection(
   config: ResolvedTemporalSummaryConfig,
   nowMs: number = Date.now(),
-): Promise<string> {
-  if (!config.enabled) return "";
+): Promise<TemporalSummarySystemSectionResult> {
+  if (!config.enabled) return { content: "", truncated: false };
   const today = cstDateString(nowMs);
   const sections: string[] = [];
 
@@ -117,10 +122,12 @@ export async function buildTemporalSummarySystemSection(
     sections.push(`### 更早（年摘要）\n${body}`);
   }
 
-  if (sections.length === 0) return "";
+  if (sections.length === 0) return { content: "", truncated: false };
   let text = `## 时间摘要\n\n${sections.join("\n\n")}`;
+  let truncated = false;
   if (text.length > config.system_prompt_max_chars) {
     text = `${text.slice(0, config.system_prompt_max_chars)}\n…`;
+    truncated = true;
   }
-  return text;
+  return { content: text, truncated };
 }
