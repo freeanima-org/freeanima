@@ -63,3 +63,11 @@ export async function startSleepPipelineStep(body: {
   }
   return result;
 }
+
+export async function startSleepCatchUp() {
+  const result = await habitatCtx().startSleepCatchUp();
+  if (!result.ok) {
+    throw new ApiHandlerError(400, result.error, { code: "sleep_catch_up_failed" });
+  }
+  return result;
+}

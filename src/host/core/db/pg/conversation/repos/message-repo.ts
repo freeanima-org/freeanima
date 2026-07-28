@@ -2,7 +2,7 @@ import { and, asc, desc, eq, gte, inArray, lt, lte, sql } from "drizzle-orm";
 import type { ConversationMessage, StoredMessage } from "@freeanima/host/core/db/domain";
 import type { MessageRowView } from "../types.ts";
 
-import { messages, type MessageSelect } from "@freeanima/host/core/db/schema";
+import { messages, conversations, type MessageSelect } from "@freeanima/host/core/db/schema";
 import { omitUndefined } from "@freeanima/host/core/util";
 
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
@@ -457,4 +457,25 @@ export async function shiftMessagePositions(
     .update(messages)
     .set({ pos: sql`${messages.pos} + ${delta}` })
     .where(scoped);
+}
+
+export async function getEarliestMessageDay(): Promise<string | null> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      day: sql<string | null>`to_char(
+        (MIN((${messages.payload}->>'timestamp')::timestamptz) AT TIME ZONE 'Asia/Shanghai')::date,
+        'YYYY-MM-DD'
+      )`,
+    })
+    .from(messages)
+    .innerJoin(conversations, eq(messages.conversation_id, conversations.id))
+    .where(
+      sql`${conversations.debug} = false
+        AND COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'
+        AND (${messages.payload}->>'role') IN ('user', 'assistant')
+        AND nullif(btrim(${messages.payload}->>'timestamp'), '') IS NOT NULL`,
+    );
+  const day = rows[0]?.day?.trim();
+  return day || null;
 }

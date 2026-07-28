@@ -45,11 +45,14 @@ const appendPipelineStepRunMock = mock(async (row: PipelineStepRunAppendInput) =
 
 mock.module("@freeanima/host/core/db/pg", () => ({
   isPostgresPrimary: () => true,
+  registerEmbedTextFn: () => {},
+  registerEmbedTextsFn: () => {},
 }));
 
 mock.module("@freeanima/host/core/db/pg/pipeline", () => ({
   appendPipelineStepRun: appendPipelineStepRunMock,
   listPipelineStepRuns: mock(async () => pipelineRows),
+  listCompletedStepDays: mock(async () => []),
 }));
 
 mock.module("../boot/pipeline-handlers.ts", () => ({
@@ -103,6 +106,39 @@ describe("service-sleep pipeline runs", () => {
 
     expect(runSleepCycleMock).toHaveBeenCalled();
     expect(appendPipelineStepRunMock).not.toHaveBeenCalled();
+  });
+
+  it("startSleepCatchUp runs light-sleep with catch_up trigger", async () => {
+    const deps = createDeps();
+    const { startSleepCatchUp, getSleepPipelineStatus } = await import("./service-sleep.ts");
+
+    const plan = {
+      start: "2026-06-01",
+      end: "2026-06-14",
+      light_days: ["2026-06-10"],
+      temporal_days: [] as string[],
+      cascade_days: [] as string[],
+      days: ["2026-06-10"],
+    };
+    const started = await startSleepCatchUp(deps, { plan });
+    expect(started.ok).toBe(true);
+    if (started.ok) {
+      expect(started.plan.light_days).toEqual(["2026-06-10"]);
+    }
+
+    await new Promise((r) => {
+      setTimeout(r, 80);
+    });
+
+    expect(runSleepStepMock).toHaveBeenCalledWith(
+      "light-sleep",
+      expect.objectContaining({
+        day: "2026-06-10",
+        force: true,
+        trigger: "catch_up",
+      }),
+    );
+    expect(getSleepPipelineStatus().catch_up.finished).toBe(true);
   });
 
   it("listPipelineStepRuns returns rows from store", async () => {

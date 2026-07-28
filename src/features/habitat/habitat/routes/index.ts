@@ -73,6 +73,7 @@ import {
   getSleepSummary,
   listCronLogs,
   listPipelineStepRuns,
+  startSleepCatchUp,
   startSleepCycle,
   startSleepPipelineStep,
 } from "../habitat-api/handlers/sleep.ts";
@@ -448,6 +449,11 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     wrapConsoleLegacyHandler((payload) =>
       startSleepCycle(omitUndefined(payload as Record<string, unknown>)),
     ),
+  ),
+  defineHabitatRouteFromDef(
+    "sleep.startCatchUp",
+    habitatMethodDefs["sleep.startCatchUp"],
+    wrapConsoleLegacyHandler(() => startSleepCatchUp()),
   ),
   defineHabitatRouteFromDef(
     "cronLogs.list",

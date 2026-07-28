@@ -19,16 +19,16 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 
 ## Current State
 
-| Mechanism              | Status         | Notes                                                                                                       |
-| ---------------------- | -------------- | ----------------------------------------------------------------------------------------------------------- |
-| Sleep cycle pipeline   | ✅ Implemented | In-process `Bun.cron` `builtin-sleep-cycle` @ 02:00 CST（不经 PG `cron_jobs`）                              |
-| Session cleanup        | ✅ Implemented | Step `conversation-cleanup` before light-sleep in sleep-cycle DAG                                           |
-| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                                                                       |
-| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                                                                   |
-| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                                                               |
-| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                                                                |
-| Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep                                              |
-| Temporal summary       | ✅ Implemented | Steps `temporal-summary-day` / `temporal-summary-cascade`; see [`temporal-summary.md`](temporal-summary.md) |
+| Mechanism              | Status         | Notes                                                                                                                                                 |
+| ---------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sleep cycle pipeline   | ✅ Implemented | In-process `Bun.cron` `builtin-sleep-cycle` @ 02:00 CST（不经 PG `cron_jobs`）                                                                        |
+| Session cleanup        | ✅ Implemented | Step `conversation-cleanup` before light-sleep in sleep-cycle DAG                                                                                     |
+| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                                                                                                                 |
+| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                                                                                                             |
+| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on light-sleep                                                                                                        |
+| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                                                                                                          |
+| Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep                                                                                        |
+| Temporal summary       | ✅ Implemented | Steps `temporal-summary-day` / `temporal-summary-cascade`（cascade depends on day, not deep-sleep）; see [`temporal-summary.md`](temporal-summary.md) |
 
 ## Orchestration
 
@@ -108,11 +108,11 @@ DAG (macro layer):
 ```text
 conversation-cleanup
   └─► light-sleep
-        ├─► deep-sleep ──► memory-ref-sync
-        │              └─► temporal-summary-cascade
+        ├─► deep-sleep
         ├─► dream
         ├─► self-layer-refresh
-        └─► temporal-summary-day
+        ├─► temporal-summary-day ──► temporal-summary-cascade
+        └─► memory-ref-sync
 ```
 
 ### Session cleanup (pre-light-sleep)
@@ -139,6 +139,18 @@ For a single past CST calendar day (e.g. before go-live or after migration), use
 
 1. Set **Day** to `YYYY-MM-DD`
 2. Run the **light-sleep** step (check **Force** to skip dependency checks if needed)
+
+### Catch-up (一键补睡眠)
+
+After downtime or migration, **Catch up sleep** on the same page:
+
+1. Scans from earliest conversation day (else earliest message day) through **today** (CST)
+2. For each day with conversation activity (same filter as light-sleep):
+   - Missing successful `light-sleep` → run `light-sleep` (`force`, trigger `catch_up`)
+   - Missing global `temporal_summary` day entity → run `temporal-summary-day`
+3. Then runs `temporal-summary-cascade` for month-ends in that range
+
+**Not included:** deep-sleep (inventory-wide; late run still works), dream (use single-step Force if needed), conversation half-hour ticks (today-only).
 
 Each step run is logged in the **Pipeline history** table on the sleep page (`pipeline_step_run.output`; deep-sleep rows include per-round summaries and change-log snapshots). Cross-session merge for that day still relies on a subsequent **deep-sleep** run. Cron-triggered cycle runs appear in **Habitat → Cron → Run history** on the sleep-cycle task.
 

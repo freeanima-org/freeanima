@@ -231,6 +231,10 @@ export async function startSleepPipelineStep(body: {
   return hubCall(habitat().call("sleep.runPipelineStep", body));
 }
 
+export async function startSleepCatchUp() {
+  return hubCall(habitat().call("sleep.startCatchUp", {}));
+}
+
 export async function listCronLogs(opts?: {
   job_id?: string;
   limit?: number;

@@ -346,6 +346,11 @@ export const habitatMethodDefs = {
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
+  "sleep.startCatchUp": defineHabitatMethod({
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
   "cronLogs.list": defineHabitatMethod({
     input: cronLogsQuerySchema,
     output: unknownOutputSchema,

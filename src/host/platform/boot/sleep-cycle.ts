@@ -57,13 +57,15 @@ export const sleepCycleDefinition: PipelineDefinition = {
     {
       id: SLEEP_STEP_IDS.temporalSummaryCascade,
       handler: SLEEP_STEP_IDS.temporalSummaryCascade,
-      dependsOn: [SLEEP_STEP_IDS.deepSleep],
+      // 读全局 day 摘要，不依赖深睡；避免深睡 LLM 超时误伤月末/年末 cascade
+      dependsOn: [SLEEP_STEP_IDS.temporalSummaryDay],
       optional: true,
     },
     {
       id: SLEEP_STEP_IDS.memoryRefSync,
       handler: SLEEP_STEP_IDS.memoryRefSync,
-      dependsOn: [SLEEP_STEP_IDS.deepSleep],
+      // 浅睡写入后即可校准引用计数；深睡失败时仍应跑，勿挂在 deep-sleep 上
+      dependsOn: [SLEEP_STEP_IDS.lightSleep],
       optional: true,
     },
   ],

@@ -21,6 +21,7 @@ export {
   getConversationTools,
   listConversationIdsUpdatedBetween,
   getEarliestConversationDay,
+  listConversationActivityDays,
   listStaleConversationIdsForCleanup,
   deleteStaleConversations,
   isCronSession,
@@ -63,5 +64,6 @@ export {
   listMessagesBeforePos,
   listMessagesByPosRange,
   listMessagesPage,
+  getEarliestMessageDay,
 } from "./repos/message-repo.ts";
 export { searchMessagesFts, countSearchableMessages } from "./repos/message-fts-repo.ts";

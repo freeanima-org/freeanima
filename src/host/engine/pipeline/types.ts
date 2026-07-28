@@ -9,12 +9,12 @@ export type PipelineContext = {
   day?: string;
   /** 跳过依赖检查，用于诊断单步运行 */
   force?: boolean;
-  /** 触发来源：scheduled | manual_cycle | manual_step */
+  /** 触发来源：scheduled | manual_cycle | manual_step | catch_up */
   trigger?: PipelineStepTrigger;
   [key: string]: unknown;
 };
 
-export type PipelineStepTrigger = "scheduled" | "manual_cycle" | "manual_step";
+export type PipelineStepTrigger = "scheduled" | "manual_cycle" | "manual_step" | "catch_up";
 
 /** 单步 handler 返回 */
 export type PipelineStepResult = {

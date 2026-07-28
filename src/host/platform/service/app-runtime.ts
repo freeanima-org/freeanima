@@ -491,6 +491,10 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return sleep.startSleepPipelineStep(this.runtimeDeps(), opts);
   }
 
+  startSleepCatchUp() {
+    return sleep.startSleepCatchUp(this.runtimeDeps());
+  }
+
   listAutoLlmRuns(opts?: Parameters<typeof autoLlmRuns.listAutoLlmRuns>[1]) {
     return autoLlmRuns.listAutoLlmRuns(this.runtimeDeps(), opts);
   }
