@@ -8,6 +8,7 @@ export const contentBlockSearchFiltersSchema = z
     parent_id: z.number().int().positive().optional(),
     block_type: contentBlockTypeSchema.optional(),
     client_op_id: z.string().min(1).optional(),
+    conversation_id: z.string().min(1).optional(),
   })
   .strict();
 

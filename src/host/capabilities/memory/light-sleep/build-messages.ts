@@ -54,14 +54,32 @@ function roleLabel(role: string): string {
   return role === "user" ? "User" : "Agent";
 }
 
+/** Keep messages whose timestamp falls in [fromIso, toIso). Invalid timestamps are dropped. */
+export function filterMessagesInDayRange<T extends { t: string }>(
+  messages: T[],
+  range: LightSleepDayRange,
+): T[] {
+  const fromMs = Date.parse(range.fromIso);
+  const toMs = Date.parse(range.toIso);
+  if (!Number.isFinite(fromMs) || !Number.isFinite(toMs)) return [];
+  return messages.filter((msg) => {
+    const ms = Date.parse(msg.t);
+    return Number.isFinite(ms) && ms >= fromMs && ms < toMs;
+  });
+}
+
 export async function collectConversationBlocks(
   conversationIds: string[],
+  range: LightSleepDayRange,
 ): Promise<LightSleepConversationBlock[]> {
   const blocks: LightSleepConversationBlock[] = [];
   for (const conversationId of conversationIds) {
     const meta = await getConversationMetaLite(conversationId);
     if (!meta || meta.role !== "conversation_meta") continue;
-    const messages = filterRecallableMessages(await listMessages(conversationId));
+    const messages = filterMessagesInDayRange(
+      filterRecallableMessages(await listMessages(conversationId)),
+      range,
+    );
     if (messages.length === 0) continue;
 
     const lines = [`## Conversation ${conversationId}`];
@@ -212,11 +230,30 @@ export function formatLimbicMemoriesMessage(rows: LimbicMemoryRow[]): string {
   return lines.join("\n").trim();
 }
 
+async function resolveConversationBlocks(
+  conversationIds: string[],
+  precomputedBlocks: LightSleepConversationBlock[] | undefined,
+  range: LightSleepDayRange | undefined,
+  caller: string,
+): Promise<LightSleepConversationBlock[]> {
+  if (precomputedBlocks) return precomputedBlocks;
+  if (!range) {
+    throw new Error(`${caller} requires precomputedBlocks or range`);
+  }
+  return collectConversationBlocks(conversationIds, range);
+}
+
 export async function buildLightSleepUserMessages(
   conversationIds: string[],
   precomputedBlocks?: LightSleepConversationBlock[],
+  range?: LightSleepDayRange,
 ): Promise<string[]> {
-  const blocks = precomputedBlocks ?? (await collectConversationBlocks(conversationIds));
+  const blocks = await resolveConversationBlocks(
+    conversationIds,
+    precomputedBlocks,
+    range,
+    "buildLightSleepUserMessages",
+  );
   const dialogue = formatDialogueMessage(blocks);
   const related = await listSemanticMemoryBySourceSessions(conversationIds, {
     status: "active",
@@ -227,8 +264,14 @@ export async function buildLightSleepUserMessages(
 export async function buildLimbicUserMessages(
   conversationIds: string[],
   precomputedBlocks?: LightSleepConversationBlock[],
+  range?: LightSleepDayRange,
 ): Promise<string[]> {
-  const blocks = precomputedBlocks ?? (await collectConversationBlocks(conversationIds));
+  const blocks = await resolveConversationBlocks(
+    conversationIds,
+    precomputedBlocks,
+    range,
+    "buildLimbicUserMessages",
+  );
   const dialogue = formatDialogueMessage(blocks);
   const related = await collectLimbicMemoriesForSessions(conversationIds);
   return [dialogue.text, formatLimbicMemoriesMessage(related), LIMBIC_INSTRUCTION];

@@ -302,6 +302,9 @@ function buildContentBlockBodyConditions(
   if (filters.client_op_id) {
     conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
   }
+  if (filters.conversation_id) {
+    conditions.push(sql`${entities.body}->>'conversation_id' = ${filters.conversation_id}`);
+  }
   return conditions;
 }
 

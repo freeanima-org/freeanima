@@ -11,7 +11,14 @@ import {
   resetAutobiographyEngineForTests,
 } from "../autobiography-port.ts";
 import { registerLightSleepEngine, resetLightSleepEngineForTests } from "../light-sleep-port.ts";
-import { buildLimbicUserMessages, LIMBIC_INSTRUCTION } from "./build-messages.ts";
+import {
+  buildLimbicUserMessages,
+  collectConversationBlocks,
+  cstDayRange,
+  filterMessagesInDayRange,
+  formatDialogueMessage,
+  LIMBIC_INSTRUCTION,
+} from "./build-messages.ts";
 import { runLightSleep } from "./run.ts";
 
 const listConversationIdsUpdatedBetweenMock = mock(async () => ["s-1"]);
@@ -22,8 +29,8 @@ const getConversationMetaLiteMock = mock(async () => ({
   timestamp: "2026-06-08T10:00:00+08:00",
 }));
 const listMessagesMock = mock(async () => [
-  { role: "user", content: "We talked a lot today", t: "2026-06-08T10:00:00+08:00" },
-  { role: "assistant", content: "Yes", t: "2026-06-08T10:01:00+08:00" },
+  { role: "user", content: "We talked a lot today", timestamp: "2026-06-08T10:00:00+08:00" },
+  { role: "assistant", content: "Yes", timestamp: "2026-06-08T10:01:00+08:00" },
 ]);
 const listSemanticMemoryBySourceSessionsMock = mock(async () => [
   {
@@ -121,7 +128,7 @@ mock.module("@freeanima/host/core/db/pg/self-layer", () => ({
 
 describe("light-sleep build-messages", () => {
   it("buildLimbicUserMessages includes dialogue, existing limbic, and instruction", async () => {
-    const messages = await buildLimbicUserMessages(["s-1"]);
+    const messages = await buildLimbicUserMessages(["s-1"], undefined, cstDayRange("2026-06-08"));
     expect(messages).toHaveLength(3);
     expect(messages[0]).toContain("# Today's dialogue");
     expect(messages[0]).toContain("We talked a lot today");
@@ -130,11 +137,50 @@ describe("light-sleep build-messages", () => {
     expect(messages[2]).toBe(LIMBIC_INSTRUCTION);
   });
 
+  it("filterMessagesInDayRange keeps only messages in [fromIso, toIso)", () => {
+    const range = cstDayRange("2026-06-08");
+    const filtered = filterMessagesInDayRange(
+      [
+        { t: "2026-06-07T23:59:59+08:00", role: "user", content: "yesterday" },
+        { t: "2026-06-08T10:00:00+08:00", role: "user", content: "today" },
+        { t: "2026-06-09T00:00:00+08:00", role: "user", content: "tomorrow" },
+      ],
+      range,
+    );
+    expect(filtered.map((m) => m.content)).toEqual(["today"]);
+  });
+
+  it("collectConversationBlocks drops sessions with no messages in the day window", async () => {
+    listMessagesMock.mockImplementationOnce(async () => [
+      { role: "user", content: "old talk", timestamp: "2026-06-01T10:00:00+08:00" },
+      { role: "assistant", content: "old reply", timestamp: "2026-06-01T10:01:00+08:00" },
+    ]);
+    const blocks = await collectConversationBlocks(["s-1"], cstDayRange("2026-06-08"));
+    expect(blocks).toHaveLength(0);
+    expect(formatDialogueMessage(blocks).text).toContain("No valid dialogue");
+  });
+
+  it("collectConversationBlocks keeps only same-day messages from a multi-day session", async () => {
+    listMessagesMock.mockImplementationOnce(async () => [
+      { role: "user", content: "past feeling", timestamp: "2026-06-07T15:00:00+08:00" },
+      { role: "assistant", content: "past reply", timestamp: "2026-06-07T15:01:00+08:00" },
+      { role: "user", content: "today only", timestamp: "2026-06-08T10:00:00+08:00" },
+      { role: "assistant", content: "today reply", timestamp: "2026-06-08T10:01:00+08:00" },
+    ]);
+    const blocks = await collectConversationBlocks(["s-1"], cstDayRange("2026-06-08"));
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0]?.text).toContain("today only");
+    expect(blocks[0]?.text).toContain("today reply");
+    expect(blocks[0]?.text).not.toContain("past feeling");
+  });
+
   it("buildLightSleepAutobiographyUserMessages includes dialogue, semantic, limbic, and existing autobiography", async () => {
     const messages = await buildLightSleepAutobiographyUserMessages(
       ["s-1"],
       [1001],
       ["limbic-new"],
+      undefined,
+      cstDayRange("2026-06-08"),
     );
     expect(messages).toHaveLength(5);
     expect(messages[0]).toContain("# Today's dialogue");

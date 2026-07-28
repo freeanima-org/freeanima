@@ -32,7 +32,7 @@ export async function runTemporalSummaryDay(opts: {
     };
   }
 
-  const blocks = await collectConversationBlocks(conversationIds);
+  const blocks = await collectConversationBlocks(conversationIds, range);
   const material = blocks.map((b) => b.text).join("\n\n");
   if (!material.trim()) {
     return {

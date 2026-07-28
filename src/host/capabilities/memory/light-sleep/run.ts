@@ -86,18 +86,46 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
     return result;
   }
 
-  const blocks = await collectConversationBlocks(conversationIds);
+  const blocks = await collectConversationBlocks(conversationIds, range);
+  if (blocks.length === 0) {
+    const result: LightSleepResult = {
+      ok: true,
+      day: range.day,
+      sessions: 0,
+      truncated_sessions: 0,
+      tool_calls: 0,
+      limbic_tool_calls: 0,
+      autobiography_tool_calls: 0,
+      narratives_created: 0,
+      summary_refreshed: false,
+      summary: "No messages in day window; skipping light sleep",
+      skipped: "no_day_messages",
+    };
+    recordLightSleepRun({
+      day: range.day,
+      conversationIds: [],
+      truncatedConversations: 0,
+      toolCalls: 0,
+      limbicToolCalls: 0,
+      autobiographyToolCalls: 0,
+      narrativesCreated: 0,
+      summaryRefreshed: false,
+    });
+    return result;
+  }
+
+  const activeConversationIds = blocks.map((b) => b.conversationId);
   const dialogue = formatDialogueMessage(blocks);
   const parts = await decomposeSystemPromptParts(opts.selfContent, null);
   const systemPrompt = composeSystemPrompt(parts);
 
   logComponent("memory").info("light sleep stage 1 (semantic) started", {
     day: range.day,
-    sessions: conversationIds.length,
+    sessions: activeConversationIds.length,
     truncated_sessions: dialogue.truncatedConversations,
   });
 
-  const semanticMessages = await buildLightSleepUserMessages(conversationIds, blocks);
+  const semanticMessages = await buildLightSleepUserMessages(activeConversationIds, blocks);
   const stageSemantic = await runLightSleepEngine({
     systemPrompt,
     userMessages: semanticMessages,
@@ -111,7 +139,7 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
     semantic_memory_ids: stageSemantic.semantic_memory_ids,
   });
 
-  const limbicMessages = await buildLimbicUserMessages(conversationIds, blocks);
+  const limbicMessages = await buildLimbicUserMessages(activeConversationIds, blocks);
   const stageLimbic = await runLightSleepEngine({
     systemPrompt,
     userMessages: limbicMessages,
@@ -126,7 +154,7 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
 
   const existingAuto = await listActiveAutobiographicalMemory({ limit: 200 });
   const autobiographyMessages = await buildLightSleepAutobiographyUserMessages(
-    conversationIds,
+    activeConversationIds,
     stageSemantic.semantic_memory_ids,
     stageLimbic.limbic_memory_ids,
     blocks,
@@ -160,7 +188,7 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
 
   recordLightSleepRun({
     day: range.day,
-    conversationIds,
+    conversationIds: activeConversationIds,
     truncatedConversations: dialogue.truncatedConversations,
     toolCalls: stageSemantic.tool_calls,
     limbicToolCalls: stageLimbic.tool_calls,
@@ -172,7 +200,7 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
   const result: LightSleepResult = {
     ok: true,
     day: range.day,
-    sessions: conversationIds.length,
+    sessions: activeConversationIds.length,
     truncated_sessions: dialogue.truncatedConversations,
     tool_calls: stageSemantic.tool_calls,
     limbic_tool_calls: stageLimbic.tool_calls,
