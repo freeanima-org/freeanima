@@ -24,7 +24,7 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 | Sleep cycle pipeline   | ✅ Implemented | In-process `Bun.cron` `builtin-sleep-cycle` @ 02:00 CST（不经 PG `cron_jobs`）                                                                        |
 | Session cleanup        | ✅ Implemented | Step `conversation-cleanup` before light-sleep in sleep-cycle DAG                                                                                     |
 | Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                                                                                                                 |
-| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                                                                                                             |
+| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`（depends on light-sleep）；**定时仅 CST 周一** full，其余 scheduled 日 skipIf 跳过                                                  |
 | Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on light-sleep                                                                                                        |
 | Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                                                                                                          |
 | Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep                                                                                        |
@@ -69,12 +69,12 @@ Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.js
 
 ## Deep Sleep
 
-| Attribute  | Value                                                                                                                                                 |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Trigger    | Sleep-cycle step `deep-sleep` (after light-sleep in DAG)                                                                                              |
-| Target     | All active semantic memory                                                                                                                            |
-| Operations | Contradiction detection + expiry marking, split, dedup merge, pin quality review—four sequential rounds                                               |
-| Mode       | **Incremental** (scheduled Tue–Sun): skip quiet rounds when nothing was `updated` in 24h; **Full** (scheduled Mon + manual): all rounds on full store |
+| Attribute  | Value                                                                                                                    |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Trigger    | Sleep-cycle step `deep-sleep`（after light-sleep）；**scheduled 仅 CST 周一**；Tue–Sun 定时 skip；手动 / catch_up 仍可跑 |
+| Target     | All active semantic memory                                                                                               |
+| Operations | Contradiction detection + expiry marking, split, dedup merge, pin quality review—four sequential rounds                  |
+| Mode       | **Full**（scheduled Mon + 手动默认）：四轮全跑；**Incremental**（手动可选）：安静轮可 skip（见下）                       |
 
 ### Four Rounds
 
@@ -87,7 +87,9 @@ Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.js
 
 **Ordering rationale:** Clean problems first, then refine, then merge, then review pinned quality.
 
-**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Habitat manual runs default to full but can select incremental.
+**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. **Scheduled cron runs deep-sleep only on CST Mondays (full)**; Tue–Sun scheduled cycles skip the step. Habitat manual runs default to full but can select incremental.
+
+**auto_llm_runs:** Light sleep writes one row per LLM stage（`light-sleep/semantic`、`light-sleep/limbic`；自传为 `self-autobiography`）；deep sleep one row per round（`deep-sleep/<round>`）. Multiple rows ≠ multiple sleep-cycle triggers.
 
 ### Contradiction Definition (Exclusive)
 
@@ -100,7 +102,7 @@ Two memories semantically negate each other and cannot be explained by temporal 
 ## Trigger Mechanism
 
 ```cron
-0 2 * * *  sleep-cycle   # in-process Bun.cron builtin-sleep-cycle: conversation-cleanup → light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync
+0 2 * * *  sleep-cycle   # in-process Bun.cron: cleanup → light → deep(Mon only) ∥ dream ∥ …
 ```
 
 DAG (macro layer):
@@ -108,7 +110,7 @@ DAG (macro layer):
 ```text
 conversation-cleanup
   └─► light-sleep
-        ├─► deep-sleep
+        ├─► deep-sleep   # scheduled: CST Monday only (skipIf otherwise)
         ├─► dream
         ├─► self-layer-refresh
         ├─► temporal-summary-day ──► temporal-summary-cascade

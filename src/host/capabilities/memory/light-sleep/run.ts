@@ -130,6 +130,7 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
     systemPrompt,
     userMessages: semanticMessages,
     toolNames: [...LIGHT_SLEEP_TOOL_NAMES],
+    stage: "semantic",
   });
 
   let summary = stageSemantic.summary;
@@ -144,6 +145,7 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
     systemPrompt,
     userMessages: limbicMessages,
     toolNames: [...LIMBIC_TOOL_NAMES],
+    stage: "limbic",
   });
   summary = appendSummaryPart(summary, "Limbic", stageLimbic.summary);
 

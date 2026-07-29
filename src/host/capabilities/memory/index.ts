@@ -51,6 +51,7 @@ export {
   type LightSleepEngineFn,
   type LightSleepEngineInput,
   type LightSleepEngineResult,
+  type LightSleepEngineStage,
 } from "./light-sleep-port.ts";
 export {
   registerDeepSleepEngine,

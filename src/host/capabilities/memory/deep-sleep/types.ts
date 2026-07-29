@@ -3,7 +3,7 @@ import { omitUndefined } from "@freeanima/host/core/util";
 
 export type DeepSleepRound = "contradiction_expiry" | "split" | "merge" | "pin_maintenance";
 
-/** Deep sleep mode: full (manual trigger) or incremental (scheduled cron) */
+/** Deep sleep mode: full (Monday scheduled + manual default) or incremental (manual optional) */
 export type DeepSleepMode = "full" | "incremental";
 
 /** Single change record */

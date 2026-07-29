@@ -1,9 +1,12 @@
 import { createEnginePort } from "./engine-port-registry.ts";
 
+export type LightSleepEngineStage = "semantic" | "limbic";
+
 export type LightSleepEngineInput = {
   systemPrompt: string;
   userMessages: string[];
   toolNames: string[];
+  stage: LightSleepEngineStage;
 };
 
 export type LightSleepEngineResult = {
