@@ -65,7 +65,6 @@ Bootstrap and runtime are **not merged** into a single config object (no `AnimaC
 | **Live**        | `compression`, `memory`, `fts`, `cjk`, `clarify`, `browser`, `firecrawl`, `models`, `tts`, `auto_llm`, `companion`, gateway `tool_display` | Consumers read `Config.data` each use; snapshot update is enough                              |
 | **Transferred** | `llm`, `i18n`, `embedding`, `mcp_servers`, `acp_agents`, `discord` / `weixin` / `gateway` platforms, `worlds`, `object_storage`            | Snapshot update **plus** section apply (re-init registries / reconnect / re-bind ObjectStore) |
 | **Bootstrap**   | `database`, `http`, `redis`                                                                                                                | Edit YAML; **process restart** required                                                       |
-| **Hard / rare** | `eventbus` (queue already built)                                                                                                           | Prefer process restart if changing `key_prefix` etc.                                          |
 
 ### Runtime config: UI coverage gaps
 
@@ -73,7 +72,7 @@ Settings / Habitat UI already expose many sections; the following are **register
 
 | Gap                        | Sections                                  | Notes                                                                                                        |
 | -------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| **No Settings panel**      | `i18n`, `clarify`, `eventbus`             | `i18n` is transferred (locale/timezone); `clarify` live; `eventbus` hard/rare                                |
+| **No Settings panel**      | `i18n`, `clarify`                         | `i18n` is transferred (locale/timezone); `clarify` live                                                      |
 | **Legacy / overlap**       | `notifications`                           | Subject ids; prefer `worlds` (boot may still read as fallback)                                               |
 | **Likely dead / reserved** | `push`, `fallback_providers`, `platforms` | Little or no product consumer; candidates for later cleanup                                                  |
 | **Partial UI**             | `compression`, `memory`                   | Compression UI omits trigger/summary fields; memory UI is `passive_recall` only (`temporal_summary` missing) |
@@ -446,11 +445,17 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 
 ## Events and Hooks (Summary)
 
-- **EventBus**: async notification transport (Redis queue); production code currently emits topics such as `session:updated` with **no registered handlers** — ACP callbacks use direct `onSessionUpdated` instead. **Not** used for sleep orchestration.
-- **Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light → deep → cross-domain maintenance steps). State in `~/.anima/runtime/pipeline_*_run.json`; Habitat API for diagnostics.
-- **Hooks**: sync interceptors — validation or clarification at message ingress, turn end, tool return, etc.
+Unified in-process **HookRegistry** (no Redis queue):
 
-Complementary: Pipeline Runner handles scheduled multi-step background work; Hooks handle "may this proceed before/during"; EventBus remains available for future cross-process fan-out but is not on the sleep path.
+- **`on`**: interceptors on the request path — `await`ed; may `blocked` / return Effect (message ingress, turn end, tool return, system prompt, before LLM, etc.).
+- **`subscribe`**: side-channel observers — started during `run` / `emit` **without awaiting** (errors logged); e.g. Discord session title on `conversation:updated`.
+- **`run` / `emit`**: real-time dispatch — await all `on` handlers, then fire-and-forget `subscribe` handlers. `emit` ignores the intercept result.
+
+**Pipeline Runner** remains separate: explicit DAG for background cycles (sleep-cycle). State in `~/.anima/runtime/pipeline_*_run.json`.
+
+Complementary: Pipeline = scheduled multi-step background work; HookRegistry `on` = “may this proceed / mutate”; `subscribe` = in-process notify. UI/ACP often still use direct `onConversationUpdated` callbacks in addition to `subscribe`.
+
+Legacy `kernel/eventbus` queue adapters are not on the Habitat production path.
 
 ## Desktop companion (Habitat SSOT)
 

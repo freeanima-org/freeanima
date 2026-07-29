@@ -26,7 +26,8 @@ export type ShutdownParams = {
 };
 
 export async function gracefulShutdown(params: ShutdownParams): Promise<void> {
-  const { signal, runtime, kernel, mcp, acp, platforms, cronInitialized, servers } = params;
+  const { signal, runtime, mcp, acp, platforms, cronInitialized, servers } = params;
+  void params.kernel;
   const http = params.http;
   const t0 = Date.now();
   const step = (label: string, ms: number) => {
@@ -71,12 +72,6 @@ export async function gracefulShutdown(params: ShutdownParams): Promise<void> {
     }
     await stopPlatforms(platforms);
     step("Gateway platforms stopped", Date.now() - s);
-  }
-
-  {
-    const s = Date.now();
-    kernel.eventBus.stop();
-    step("EventBus stopped", Date.now() - s);
   }
 
   if (mcp) {

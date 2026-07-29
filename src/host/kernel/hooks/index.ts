@@ -9,6 +9,7 @@ export {
 export { HookRegistry } from "./registry.ts";
 export type {
   HookHandler,
+  HookSubscriber,
   PayloadOf,
   HookEffectOf,
   HookStepResult,

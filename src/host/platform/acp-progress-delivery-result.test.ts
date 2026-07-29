@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "bun:test";
 import type { AcpAsyncTaskSnapshot, AcpPromptResult } from "@freeanima/host/capabilities/acp";
+import { createTestHookRegistry } from "@freeanima/host/kernel/hooks/testing";
 
 const deliverToTargets = vi.fn();
 
@@ -37,7 +38,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
 
     const port = createAcpProgressDelivery({
       conversation: conversation as never,
-      bus: null,
+      hookRegistry: createTestHookRegistry(),
       onConversationUpdated: (sid) => conversationUpdated.push(sid),
     });
 
@@ -97,7 +98,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
 
     const port = createAcpProgressDelivery({
       conversation: conversation as never,
-      bus: null,
+      hookRegistry: createTestHookRegistry(),
     });
 
     const task: AcpAsyncTaskSnapshot = {
@@ -147,7 +148,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
 
     const port = createAcpProgressDelivery({
       conversation: conversation as never,
-      bus: null,
+      hookRegistry: createTestHookRegistry(),
     });
 
     await port.deliverError(

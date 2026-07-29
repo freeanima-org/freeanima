@@ -12,7 +12,6 @@ import {
   registerNotificationInject,
   registerMemoryPassiveRecallHook,
   registerTemporalSummaryPeerInject,
-  registerServiceMemoryBus,
   registerServiceStores,
 } from "../register.ts";
 import { createAcpSessionUpdatedHandler } from "../acp-conversation-callback.ts";
@@ -44,7 +43,7 @@ export async function bootRuntimePhase(
 ): Promise<RuntimePhaseResult> {
   const { kernel, engine, conversation, catalog, mcp, outpost, acp } = phase;
 
-  startupLog("Initializing AppRuntime / EventBus…");
+  startupLog("Initializing AppRuntime…");
   const runtime = createAppRuntime({
     kernel,
     engine,
@@ -63,7 +62,6 @@ export async function bootRuntimePhase(
     getRuntime: () => runtimeRef.current,
   });
   runtime.setOnSessionUpdated(acpHandler);
-  runtime.setEventBus(kernel.eventBus);
 
   if (acpSessionUpdatedRef) acpSessionUpdatedRef.handler = acpHandler;
 
@@ -74,7 +72,6 @@ export async function bootRuntimePhase(
   registerNotificationInject({ kernel });
   registerMemoryPassiveRecallHook({ kernel });
   registerTemporalSummaryPeerInject({ kernel });
-  registerServiceMemoryBus({ kernel });
   invalidateSelfLayerPromptCache();
   await loadSelfLayerPrompt();
 

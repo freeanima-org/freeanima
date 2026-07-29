@@ -16,7 +16,7 @@ export const eventPayloadSchemas = {
   "test:ping": testPingPayloadSchema,
 } as const;
 
-/** EventBus topic → payload type map */
+/** Hook notify topic → payload type map（subscribe / emit） */
 export type EventMap = {
   [K in keyof typeof eventPayloadSchemas]: z.infer<(typeof eventPayloadSchemas)[K]>;
 };

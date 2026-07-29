@@ -14,7 +14,7 @@ title: Installation
 | **Source**     | Contributors, day-to-day development      | Required    | You install | Optional (recommended) | Bootstrap: `env()`; runtime: Vault |
 | **Standalone** | Production / self-host without a checkout | Not needed  | You install | Optional (recommended) | Bootstrap: `env()`; runtime: Vault |
 
-Both paths run the same `anima service` runtime (Habitat REST `/api` + Habitat RPC `/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis powers EventBus and task context; it **degrades silently** when unavailable — production setups should still run it.
+Both paths run the same `anima service` runtime (Habitat REST `/api` + Habitat RPC `/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis is optional (task context / other caches); it **degrades silently** when unavailable. Habitat lifecycle notify uses in-process HookRegistry `subscribe`, not a Redis EventBus.
 
 ## Shared prerequisites
 

@@ -1,4 +1,3 @@
-import type { EventBus } from "@freeanima/host/kernel/eventbus";
 import type {
   HealthSnapshot,
   PlatformStatusSnapshot,
@@ -44,7 +43,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   private platformStatus: Record<string, PlatformStatusSnapshot> = {};
   private readonly runControl = new EngineRunControl();
   private readonly conversationManager = new ConversationManager();
-  private bus: EventBus | null = null;
   private onConversationUpdated: ((sid: string) => void) | null = null;
   private readonly conversationWatchers = new Map<string, Set<() => void>>();
   private readonly inboxWatchers = new Set<(conversationId: string) => void>();
@@ -94,7 +92,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return {
       runControl: this.runControl,
       conversationManager: this.conversationManager,
-      bus: this.bus,
       onConversationUpdated: this.onConversationUpdated,
       streamHost: this,
     };
@@ -148,7 +145,10 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
 
   emitSessionUpdated(conversationId: string): void {
     messaging.emitSessionUpdated(
-      { bus: this.bus, onConversationUpdated: this.onConversationUpdated },
+      {
+        kernel: this.kernel,
+        onConversationUpdated: this.onConversationUpdated,
+      },
       conversationId,
     );
     this.pokeSessionWatchers(conversationId);
@@ -215,10 +215,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
 
   abortAll(): void {
     this.runControl.abortAll();
-  }
-
-  setEventBus(bus: EventBus): void {
-    this.bus = bus;
   }
 
   setOnSessionUpdated(cb: (sid: string) => void): void {

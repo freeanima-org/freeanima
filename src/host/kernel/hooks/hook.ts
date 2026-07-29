@@ -76,6 +76,11 @@ export type HookHandler<H extends Hook<unknown, Record<string, unknown>>> = (
   context: Readonly<PayloadOf<H>>,
 ) => HookStepResult<HookEffectOf<H>> | void | Promise<HookStepResult<HookEffectOf<H>> | void>;
 
+/** Side-channel observer; return value ignored; not awaited by {@link HookRegistry.run} */
+export type HookSubscriber<H extends Hook<unknown, Record<string, unknown>>> = (
+  context: Readonly<PayloadOf<H>>,
+) => void | Promise<void>;
+
 // --- Result chain queries ---
 
 /** Chain head to tail (last executed handler → first executed handler) */

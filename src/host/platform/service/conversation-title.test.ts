@@ -124,7 +124,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
 
     const notified: string[] = [];
     maybeGenerateConversationTitleAsync(deps, "sid", "hello", {
-      bus: null,
+      kernel: deps.kernel,
       onConversationUpdated: (sid) => {
         notified.push(sid);
       },
@@ -137,7 +137,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
     expect(notified).toEqual(["sid"]);
   });
 
-  it("prefers emitSessionUpdated over bus/onConversationUpdated", async () => {
+  it("prefers emitSessionUpdated over kernel/onConversationUpdated", async () => {
     const deps = bindTestDeps();
     const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
     const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
@@ -151,7 +151,7 @@ describe("maybeGenerateConversationTitleAsync", () => {
     const legacy: string[] = [];
     const full: string[] = [];
     maybeGenerateConversationTitleAsync(deps, "sid", "hello", {
-      bus: null,
+      kernel: deps.kernel,
       onConversationUpdated: (sid) => {
         legacy.push(sid);
       },

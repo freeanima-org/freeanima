@@ -16,7 +16,7 @@ import type { CommandDef, CommandUx } from "@freeanima/host/capabilities/tools/s
 import { messageIncoming, turnAfterComplete } from "@freeanima/host/core/hooks/conversation";
 import { headOkStepData } from "@freeanima/host/kernel/hooks";
 import type { StoredMessage as Message } from "@freeanima/host/core/db/domain";
-import type { EventBus } from "@freeanima/host/kernel/eventbus";
+import type { Kernel } from "@freeanima/host/kernel";
 import { conversationUpdated } from "@freeanima/host/capabilities/memory";
 import type { EngineRunControl } from "./engine-run-control.ts";
 import type { ConversationManager } from "./conversation-manager.ts";
@@ -43,7 +43,6 @@ export type MessageSendOriginExtra = {
 export type MessagingDeps = {
   runControl: EngineRunControl;
   conversationManager: ConversationManager;
-  bus: EventBus | null;
   onConversationUpdated: ((sid: string) => void) | null;
   streamHost: StreamTurnHost;
 };
@@ -85,10 +84,13 @@ export async function runTurnAfterCompleteHooks(
 }
 
 export function emitSessionUpdated(
-  msgDeps: Pick<MessagingDeps, "bus" | "onConversationUpdated">,
+  msgDeps: {
+    kernel: Kernel;
+    onConversationUpdated: ((sid: string) => void) | null;
+  },
   conversationId: string,
 ): void {
-  msgDeps.bus?.emit(conversationUpdated, { conversation_id: conversationId });
+  msgDeps.kernel.hookRegistry.emit(conversationUpdated, { conversation_id: conversationId });
   msgDeps.onConversationUpdated?.(conversationId);
 }
 
@@ -560,7 +562,7 @@ function runGoalStartStream(
       fast: async () => {
         effectiveUserText = await deps.conversation.beginTurnFast(conversationId, prompt);
         await triggerConversationTitleIfFirstTurn(deps, conversationId, effectiveUserText, {
-          bus: msgDeps.bus,
+          kernel: deps.kernel,
           onConversationUpdated: msgDeps.onConversationUpdated,
           emitSessionUpdated: (sid) => msgDeps.streamHost.emitSessionUpdated(sid),
         });
@@ -602,7 +604,7 @@ function runTurnStream(
           omitUndefined({ client_op_id: sendOpts?.client_op_id }),
         );
         await triggerConversationTitleIfFirstTurn(deps, conversationId, effectiveUserText, {
-          bus: msgDeps.bus,
+          kernel: deps.kernel,
           onConversationUpdated: msgDeps.onConversationUpdated,
           emitSessionUpdated: (sid) => msgDeps.streamHost.emitSessionUpdated(sid),
         });

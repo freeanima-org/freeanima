@@ -1,5 +1,6 @@
 import { describe, it, expect, mock } from "bun:test";
 import type { AcpAsyncTaskSnapshot } from "@freeanima/host/capabilities/acp";
+import { createTestHookRegistry } from "@freeanima/host/kernel/hooks/testing";
 
 const updates: Array<{ messageId: string; content: string }> = [];
 let storedId = "";
@@ -44,7 +45,7 @@ describe("createAcpProgressDelivery chat progress", () => {
 
     const port = createAcpProgressDelivery({
       conversation: conversation as never,
-      bus: null,
+      hookRegistry: createTestHookRegistry(),
     });
 
     const task: AcpAsyncTaskSnapshot = {

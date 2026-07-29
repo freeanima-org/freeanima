@@ -10,7 +10,7 @@ import {
 import { isConversationMeta } from "@freeanima/host/engine/conversation";
 import type { ConversationService } from "@freeanima/host/engine/conversation";
 import type { ConversationMetaLoadResult } from "@freeanima/host/core/db/domain";
-import type { EventBus } from "@freeanima/host/kernel/eventbus";
+import type { HookRegistry } from "@freeanima/host/kernel/hooks";
 import { conversationUpdated } from "@freeanima/host/capabilities/memory";
 import {
   appendMessageReturningId,
@@ -111,11 +111,11 @@ async function appendAcpAssistantMessage(
 
 export function createAcpProgressDelivery(opts: {
   conversation: ConversationService;
-  bus: EventBus | null;
+  hookRegistry: HookRegistry;
   onConversationUpdated?: ((sid: string) => void) | null;
 }): AcpProgressDeliveryPort {
   const notifyConversation = (conversationId: string): void => {
-    opts.bus?.emit(conversationUpdated, { conversation_id: conversationId });
+    opts.hookRegistry.emit(conversationUpdated, { conversation_id: conversationId });
     opts.onConversationUpdated?.(conversationId);
   };
 

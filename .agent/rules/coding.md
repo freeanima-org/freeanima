@@ -73,7 +73,7 @@ Additional rules:
 
 - Domain views may `import type` / `z.infer` from `@freeanima/host/core/db`, but **must not duplicate** storage Zod definitions
 - **HTTP/Habitat protocol 契约** → `@freeanima/habitat-contract`（类型 + `date-json` / `display-util`）；**Habitat REST 实现** → `@freeanima/habitat-api`；**in-process snapshots/display** → `@freeanima/platform`
-- **EventBus payloads** → publisher's domain package (e.g. memory events → `capabilities-memory`)
+- **Hook notify payloads**（`subscribe` / `emit`）→ publisher's domain package (e.g. conversation updated → `capabilities-memory`)
 - **Repository row shapes** → [`src/host/core/db/schema/rows/`](../../src/host/core/db/schema/rows/) = `typeof table.$inferSelect`；domain `types.ts` re-export；1:1 CRUD **无 mapper**（非平凡 join/transform 见 [`drizzle-db.md`](drizzle-db.md)）
 
 Do not maintain a domain-to-package inventory in docs — use source and `grep`.
@@ -105,7 +105,7 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 | 领域   | 检查项                                                                                                                          |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------- |
 | 安全   | 凭证路径不入 log / tool 返回；Habitat REST 输入校验；memory/self-layer 变更对照 [`identity.md`](../../docs/product/identity.md) |
-| 性能   | PG 查询热点（`src/host/core/db/pg`）；EventBus/Redis；流式 merge（`src/host/core/provider/stream-tools.ts`）                    |
+| 性能   | PG 查询热点（`src/host/core/db/pg`）；流式 merge（`src/host/core/provider/stream-tools.ts`）                                    |
 | 可测性 | colocated 单测 + `tests/integration/` 覆盖 boot / Habitat RPC 路径 gaps                                                         |
 
 **New PG domain**: `src/host/core/db/schema/{domain}` → repos in `src/host/core/db/pg/{domain}/` → barrel `index.ts` + `types.ts` → consumers import `@freeanima/host/core/db/pg/{domain}`。

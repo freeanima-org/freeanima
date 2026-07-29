@@ -1,6 +1,5 @@
 export {
   registerServiceIntegrations,
-  registerServiceMemoryBus,
   registerServiceStores,
   registerServiceTools,
   resetRegisterServiceToolsForTest,

@@ -218,4 +218,68 @@ describe("HookRegistry", () => {
     await registry.run(testHook, { value: 1 });
     expect(handler).toHaveBeenCalledTimes(2);
   });
+
+  it("subscribe fires without awaiting and does not block run", async () => {
+    const registry = newRegistry();
+    let subscriberStarted = false;
+    let subscriberFinished = false;
+    let resolveSlow: (() => void) | undefined;
+    const slowDone = new Promise<void>((r) => {
+      resolveSlow = r;
+    });
+    registry.subscribe(testHook, async () => {
+      subscriberStarted = true;
+      await slowDone;
+      subscriberFinished = true;
+    });
+    const run = await registry.run(testHook, { value: 1 });
+    expect(run.status).toBe("ok");
+    expect(subscriberStarted).toBe(true);
+    expect(subscriberFinished).toBe(false);
+    resolveSlow?.();
+    await slowDone;
+    expect(subscriberFinished).toBe(true);
+  });
+
+  it("subscribe still fires when there are no on handlers", async () => {
+    const registry = newRegistry();
+    const seen: number[] = [];
+    registry.subscribe(testHook, (ctx) => {
+      seen.push(ctx.value);
+    });
+    await registry.run(testHook, { value: 7 });
+    await new Promise<void>((r) => {
+      setTimeout(r, 0);
+    });
+    expect(seen).toEqual([7]);
+  });
+
+  it("emit is fire-and-forget run", async () => {
+    const registry = newRegistry();
+    const seen: number[] = [];
+    registry.subscribe(testHook, (ctx) => {
+      seen.push(ctx.value);
+    });
+    registry.emit(testHook, { value: 3 });
+    await new Promise<void>((r) => {
+      setTimeout(r, 0);
+    });
+    expect(seen).toEqual([3]);
+  });
+
+  it("on handlers still await before subscribe starts", async () => {
+    const registry = newRegistry();
+    const order: string[] = [];
+    registry.on(testHook, async () => {
+      order.push("on-start");
+      await Promise.resolve();
+      order.push("on-end");
+      return { status: "ok" };
+    });
+    registry.subscribe(testHook, () => {
+      order.push("sub");
+    });
+    await registry.run(testHook, { value: 1 });
+    expect(order).toEqual(["on-start", "on-end", "sub"]);
+  });
 });
