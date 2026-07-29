@@ -5,7 +5,6 @@ import {
   Button,
   Checkbox,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -2000,37 +1999,40 @@ export function ChatApp() {
         onCancel={() => setShowDeleteDialog(false)}
       />
 
-      <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
-        <DialogContent showCloseButton={false} className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{m.habitat_common_edit_title()}</DialogTitle>
-          </DialogHeader>
-          <Input
-            ref={renameInputRef}
-            value={renameText}
-            onChange={(e) => setRenameText(e.target.value)}
-            type="text"
-            className="text-sm"
-            placeholder={m.habitat_common_title_placeholder()}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") void confirmRename();
-              if (e.key === "Escape") setShowRenameDialog(false);
-            }}
-          />
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowRenameDialog(false)}
-            >
-              {m.habitat_common_cancel()}
-            </Button>
-            <Button type="button" size="sm" onClick={() => void confirmRename()}>
-              {m.habitat_common_confirm()}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+      <Dialog
+        isOpen={showRenameDialog}
+        onOpenChange={setShowRenameDialog}
+        showCloseButton={false}
+        className="max-w-sm"
+      >
+        <DialogHeader>
+          <DialogTitle>{m.habitat_common_edit_title()}</DialogTitle>
+        </DialogHeader>
+        <Input
+          ref={renameInputRef}
+          value={renameText}
+          onChange={(e) => setRenameText(e.target.value)}
+          type="text"
+          className="text-sm"
+          placeholder={m.habitat_common_title_placeholder()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") void confirmRename();
+            if (e.key === "Escape") setShowRenameDialog(false);
+          }}
+        />
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowRenameDialog(false)}
+          >
+            {m.habitat_common_cancel()}
+          </Button>
+          <Button type="button" size="sm" onClick={() => void confirmRename()}>
+            {m.habitat_common_confirm()}
+          </Button>
+        </DialogFooter>
       </Dialog>
     </div>
   );

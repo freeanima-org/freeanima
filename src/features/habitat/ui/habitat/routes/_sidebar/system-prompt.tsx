@@ -17,6 +17,8 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  buttonVariants,
+  cn,
 } from "@freeanima/ui-kit";
 import { useEffect, useMemo, useState } from "react";
 import { FormField } from "@freeanima/ui-kit/form/FormFieldset.tsx";
@@ -288,21 +290,26 @@ function SystemPromptPage() {
           </Select>
         </FormField>
         {selectedConversation ? (
-          <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
-            <Link
-              to="/conversations/$conversationId"
-              params={{ conversationId: selectedConversation }}
-            >
-              {m.habitat_system_prompt_conversation_detail()}
-            </Link>
-          </Button>
+          <Link
+            to="/conversations/$conversationId"
+            params={{ conversationId: selectedConversation }}
+            className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "h-7 text-xs")}
+          >
+            {m.habitat_system_prompt_conversation_detail()}
+          </Link>
         ) : null}
-        <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
-          <Link to="/self-layer">{m.habitat_system_prompt_self_layer()}</Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
-          <Link to="/tools">{m.habitat_system_prompt_tools_list()}</Link>
-        </Button>
+        <Link
+          to="/self-layer"
+          className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "h-7 text-xs")}
+        >
+          {m.habitat_system_prompt_self_layer()}
+        </Link>
+        <Link
+          to="/tools"
+          className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "h-7 text-xs")}
+        >
+          {m.habitat_system_prompt_tools_list()}
+        </Link>
       </div>
 
       {loading ? (
@@ -357,7 +364,7 @@ function SystemPromptPage() {
             <BreakdownBar data={data.system.breakdown} />
           </div>
 
-          <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="mb-4">
+          <Tabs value={tab} onValueChange={(v: string) => setTab(v as TabId)} className="mb-4">
             <TabsList className="w-fit">
               {(
                 [

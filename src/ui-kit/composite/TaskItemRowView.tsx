@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactElement, Ref } from "react";
+import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactElement, Ref } from "react";
 
 import { Button } from "../components/ui/button.tsx";
 import { Checkbox } from "../components/ui/checkbox.tsx";
@@ -20,7 +20,7 @@ export type TaskItemRowViewProps = {
   disabled?: boolean;
   selectionMode?: boolean;
   useActionSheet: boolean;
-  /** pointer 路径：Radix Context Menu 菜单项；与 ActionSheet 共享同一套构建逻辑 */
+  /** pointer 路径：Context Menu 菜单项；与 ActionSheet 共享同一套构建逻辑 */
   contextMenuItems?: ActionSheetItem[] | undefined;
   contextMenuEnabled?: boolean;
   secondaryLine?: string | null;
@@ -122,8 +122,8 @@ export function TaskItemRowView({
       ) : (
         <Checkbox
           checked={item.status === "completed"}
-          disabled={disabled}
-          onPointerDown={(e) => e.stopPropagation()}
+          {...(disabled !== undefined ? { disabled } : {})}
+          onPointerDown={(e: ReactPointerEvent) => e.stopPropagation()}
           onCheckedChange={() => onToggleComplete()}
         />
       )}
@@ -184,8 +184,8 @@ export function TaskItemRowView({
           size="icon-sm"
           className="shrink-0"
           aria-label="任务操作"
-          disabled={disabled}
-          onPointerDown={(e) => e.stopPropagation()}
+          {...(disabled !== undefined ? { disabled } : {})}
+          onPointerDown={(e: ReactPointerEvent) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             onOpenMenu();

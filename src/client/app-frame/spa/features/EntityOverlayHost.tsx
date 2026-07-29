@@ -1,5 +1,5 @@
 import { useEffect, useState, type JSX } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@freeanima/ui-kit";
+import { Dialog, DialogHeader, DialogTitle } from "@freeanima/ui-kit";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 import { getEntityOverlay } from "./entity-overlay-registry.ts";
@@ -43,17 +43,16 @@ export function EntityOverlayHost(): JSX.Element | null {
 
   return (
     <Dialog
-      open
+      isOpen
       onOpenChange={(open) => {
         if (!open) setReq(null);
       }}
+      className="flex max-h-[90vh] max-w-lg flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
     >
-      <DialogContent className="flex max-h-[90vh] max-w-lg flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
-        <DialogHeader className="sr-only">
-          <DialogTitle>实体详情</DialogTitle>
-        </DialogHeader>
-        <Overlay id={req.id} component={req.component} onClose={() => setReq(null)} />
-      </DialogContent>
+      <DialogHeader className="sr-only">
+        <DialogTitle>实体详情</DialogTitle>
+      </DialogHeader>
+      <Overlay id={req.id} component={req.component} onClose={() => setReq(null)} />
     </Dialog>
   );
 }

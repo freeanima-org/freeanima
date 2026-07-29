@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   Button,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -189,122 +188,121 @@ export function EmailAccountFormDialog({
 
   return (
     <Dialog
-      open={open}
+      isOpen={open}
       onOpenChange={(next) => {
         if (!next) onClose();
       }}
+      className="max-h-[90vh] max-w-md overflow-y-auto safe-area-pt safe-area-pb"
     >
-      <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto safe-area-pt safe-area-pb">
-        <DialogHeader>
-          <DialogTitle>
-            {mode === "create" ? m.email_add_account() : m.email_edit_account()}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogHeader>
+        <DialogTitle>
+          {mode === "create" ? m.email_add_account() : m.email_edit_account()}
+        </DialogTitle>
+      </DialogHeader>
 
-        <div className="space-y-3 py-2">
-          {error ? <p className="text-destructive text-sm">{error}</p> : null}
+      <div className="space-y-3 py-2">
+        {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
-          <FormField label={m.email_provider()} hint={m.email_provider_hint()}>
-            <select
-              className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
-              value={form.provider}
-              disabled={disabled || saving}
-              onChange={(e) => onProviderChange(e.target.value as EmailProviderId)}
-            >
-              <option value="custom">{m.email_provider_custom()}</option>
-              {providers.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
-          </FormField>
-
-          <FormField label={m.habitat_email_address()}>
-            <Input
-              type="email"
-              value={form.address}
-              disabled={disabled || saving}
-              onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))}
-            />
-          </FormField>
-
-          <FormField label={m.email_display_name()}>
-            <Input
-              value={form.display_name}
-              disabled={disabled || saving}
-              onChange={(e) => setForm((prev) => ({ ...prev, display_name: e.target.value }))}
-            />
-          </FormField>
-
-          <FormField label={m.email_password()} hint={m.email_password_hint()}>
-            <Input
-              type="password"
-              autoComplete="off"
-              value={form.password}
-              disabled={disabled || saving}
-              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-            />
-          </FormField>
-
-          {(showHosts || mode === "edit") && (
-            <FormField label={m.email_advanced_hosts()}>
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  placeholder={m.email_imap_host()}
-                  value={form.imap_host}
-                  disabled={disabled || saving}
-                  onChange={(e) => setForm((prev) => ({ ...prev, imap_host: e.target.value }))}
-                />
-                <Input
-                  placeholder={m.email_imap_port()}
-                  value={form.imap_port}
-                  disabled={disabled || saving}
-                  onChange={(e) => setForm((prev) => ({ ...prev, imap_port: e.target.value }))}
-                />
-                <Input
-                  placeholder={m.email_smtp_host()}
-                  value={form.smtp_host}
-                  disabled={disabled || saving}
-                  onChange={(e) => setForm((prev) => ({ ...prev, smtp_host: e.target.value }))}
-                />
-                <Input
-                  placeholder={m.email_smtp_port()}
-                  value={form.smtp_port}
-                  disabled={disabled || saving}
-                  onChange={(e) => setForm((prev) => ({ ...prev, smtp_port: e.target.value }))}
-                />
-              </div>
-            </FormField>
-          )}
-
-          <FormToggle
-            label={m.habitat_email_default_sender()}
-            checked={form.default_sender}
+        <FormField label={m.email_provider()} hint={m.email_provider_hint()}>
+          <select
+            className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
+            value={form.provider}
             disabled={disabled || saving}
-            onChange={(checked) => setForm((prev) => ({ ...prev, default_sender: checked }))}
-          />
-          <FormToggle
-            label={m.habitat_email_enabled()}
-            checked={form.enabled}
-            disabled={disabled || saving}
-            onChange={(checked) => setForm((prev) => ({ ...prev, enabled: checked }))}
-          />
-        </div>
-
-        <DialogFooter>
-          <Button type="button" variant="outline" disabled={saving} onClick={onClose}>
-            {m.email_cancel()}
-          </Button>
-          <Button
-            type="button"
-            disabled={disabled || saving || !form.address.trim()}
-            onClick={() => void submit()}
+            onChange={(e) => onProviderChange(e.target.value as EmailProviderId)}
           >
-            {saving ? <Spinner className="size-4" /> : m.email_save()}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+            <option value="custom">{m.email_provider_custom()}</option>
+            {providers.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+        </FormField>
+
+        <FormField label={m.habitat_email_address()}>
+          <Input
+            type="email"
+            value={form.address}
+            disabled={disabled || saving}
+            onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))}
+          />
+        </FormField>
+
+        <FormField label={m.email_display_name()}>
+          <Input
+            value={form.display_name}
+            disabled={disabled || saving}
+            onChange={(e) => setForm((prev) => ({ ...prev, display_name: e.target.value }))}
+          />
+        </FormField>
+
+        <FormField label={m.email_password()} hint={m.email_password_hint()}>
+          <Input
+            type="password"
+            autoComplete="off"
+            value={form.password}
+            disabled={disabled || saving}
+            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+          />
+        </FormField>
+
+        {(showHosts || mode === "edit") && (
+          <FormField label={m.email_advanced_hosts()}>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                placeholder={m.email_imap_host()}
+                value={form.imap_host}
+                disabled={disabled || saving}
+                onChange={(e) => setForm((prev) => ({ ...prev, imap_host: e.target.value }))}
+              />
+              <Input
+                placeholder={m.email_imap_port()}
+                value={form.imap_port}
+                disabled={disabled || saving}
+                onChange={(e) => setForm((prev) => ({ ...prev, imap_port: e.target.value }))}
+              />
+              <Input
+                placeholder={m.email_smtp_host()}
+                value={form.smtp_host}
+                disabled={disabled || saving}
+                onChange={(e) => setForm((prev) => ({ ...prev, smtp_host: e.target.value }))}
+              />
+              <Input
+                placeholder={m.email_smtp_port()}
+                value={form.smtp_port}
+                disabled={disabled || saving}
+                onChange={(e) => setForm((prev) => ({ ...prev, smtp_port: e.target.value }))}
+              />
+            </div>
+          </FormField>
+        )}
+
+        <FormToggle
+          label={m.habitat_email_default_sender()}
+          checked={form.default_sender}
+          disabled={disabled || saving}
+          onChange={(checked) => setForm((prev) => ({ ...prev, default_sender: checked }))}
+        />
+        <FormToggle
+          label={m.habitat_email_enabled()}
+          checked={form.enabled}
+          disabled={disabled || saving}
+          onChange={(checked) => setForm((prev) => ({ ...prev, enabled: checked }))}
+        />
+      </div>
+
+      <DialogFooter>
+        <Button type="button" variant="outline" disabled={saving} onClick={onClose}>
+          {m.email_cancel()}
+        </Button>
+        <Button
+          type="button"
+          disabled={disabled || saving || !form.address.trim()}
+          onClick={() => void submit()}
+        >
+          {saving ? <Spinner className="size-4" /> : m.email_save()}
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 }

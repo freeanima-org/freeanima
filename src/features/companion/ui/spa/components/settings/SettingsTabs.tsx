@@ -17,7 +17,7 @@ export function SettingsTabs() {
   return (
     <Tabs
       value={tab}
-      onValueChange={(value) => {
+      onValueChange={(value: string) => {
         if ((TAB_IDS as readonly string[]).includes(value)) {
           setTab(value as (typeof TAB_IDS)[number]);
         }

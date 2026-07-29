@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
+import { Badge, Card, CardContent, buttonVariants, cn } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { StoredMessagePanel } from "@freeanima/features/habitat/ui/habitat/components/habitat/ConversationMessagePanel.tsx";
 import { AcpProgressDock } from "@freeanima/features/habitat/ui/habitat/components/AcpProgressDock.tsx";
@@ -35,9 +35,12 @@ function ConversationDetailPage() {
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
-          <Link to="/conversations">{m.habitat_conversations_back_list()}</Link>
-        </Button>
+        <Link
+          to="/conversations"
+          className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "h-7 text-xs")}
+        >
+          {m.habitat_conversations_back_list()}
+        </Link>
         <h2 className="text-lg font-bold flex-1 truncate">
           {conversation?.title || m.habitat_common_no_title()}
         </h2>

@@ -12,7 +12,6 @@ import {
 import {
   Button,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -958,41 +957,40 @@ export function ProjectApp() {
       />
 
       <Dialog
-        open={childFolderParentId != null}
+        isOpen={childFolderParentId != null}
         onOpenChange={(open) => {
           if (!open) {
             setChildFolderParentId(null);
             setChildFolderName("");
           }
         }}
+        className="max-w-sm safe-area-pt safe-area-pb"
       >
-        <DialogContent className="max-w-sm safe-area-pt safe-area-pb">
-          <DialogHeader>
-            <DialogTitle>新建子文件夹</DialogTitle>
-          </DialogHeader>
-          <Input
-            focusOnMount
-            value={childFolderName}
-            onChange={(e) => setChildFolderName(e.target.value)}
-            placeholder="文件夹名称"
-          />
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setChildFolderParentId(null)}>
-              取消
-            </Button>
-            <Button
-              disabled={writesDisabled}
-              onClick={() =>
-                void handleCreateFolder(childFolderParentId, childFolderName).then(() => {
-                  setChildFolderParentId(null);
-                  setChildFolderName("");
-                })
-              }
-            >
-              创建
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+        <DialogHeader>
+          <DialogTitle>新建子文件夹</DialogTitle>
+        </DialogHeader>
+        <Input
+          focusOnMount
+          value={childFolderName}
+          onChange={(e) => setChildFolderName(e.target.value)}
+          placeholder="文件夹名称"
+        />
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setChildFolderParentId(null)}>
+            取消
+          </Button>
+          <Button
+            disabled={writesDisabled}
+            onClick={() =>
+              void handleCreateFolder(childFolderParentId, childFolderName).then(() => {
+                setChildFolderParentId(null);
+                setChildFolderName("");
+              })
+            }
+          >
+            创建
+          </Button>
+        </DialogFooter>
       </Dialog>
 
       <ConfirmDialog

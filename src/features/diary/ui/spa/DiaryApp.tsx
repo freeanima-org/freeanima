@@ -22,7 +22,6 @@ import { PullToRefresh } from "@freeanima/ui-kit/composite";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -640,27 +639,29 @@ export function DiaryApp() {
           tagIds={draft.tag_ids}
           onTagIdsChange={(tag_ids) => setDraft({ ...draft, tag_ids })}
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button type="button" variant="ghost" size="sm">
-              <PlusIcon className="size-3.5" />
-              添加块
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onSelect={() => handleAddBlock()}>空白块</DropdownMenuItem>
+        <DropdownMenuTrigger>
+          <Button type="button" variant="ghost" size="sm">
+            <PlusIcon className="size-3.5" />
+            添加块
+          </Button>
+          <DropdownMenu placement="bottom end" className="w-48">
+            <DropdownMenuItem onAction={() => handleAddBlock()}>空白块</DropdownMenuItem>
             {templates.length > 0 ? <DropdownMenuSeparator /> : null}
             {templates.map((tpl) => (
-              <DropdownMenuItem key={tpl.id} onSelect={() => handleAddBlock(tpl.preset)}>
+              <DropdownMenuItem
+                key={tpl.id}
+                id={String(tpl.id)}
+                onAction={() => handleAddBlock(tpl.preset)}
+              >
                 {tpl.name}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => setTemplateDialogOpen(true)}>
+            <DropdownMenuItem onAction={() => setTemplateDialogOpen(true)}>
               管理日记块模板…
             </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </DropdownMenu>
+        </DropdownMenuTrigger>
       </div>
     ) : null;
 

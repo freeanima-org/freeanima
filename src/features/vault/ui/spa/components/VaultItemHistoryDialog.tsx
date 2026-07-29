@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   Button,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -91,8 +90,12 @@ export function VaultItemHistoryDialog({
   const confirmRow = confirmIndex === null ? null : rows.find((r) => r.index === confirmIndex);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg safe-area-pt safe-area-pb">
+    <>
+      <Dialog
+        isOpen={open}
+        onOpenChange={onOpenChange}
+        className="max-w-lg safe-area-pt safe-area-pb"
+      >
         <DialogHeader>
           <DialogTitle>历史版本 — {itemTitle}</DialogTitle>
         </DialogHeader>
@@ -147,56 +150,55 @@ export function VaultItemHistoryDialog({
             关闭
           </Button>
         </DialogFooter>
-      </DialogContent>
+      </Dialog>
 
       <Dialog
-        open={confirmIndex !== null}
+        isOpen={confirmIndex !== null}
         onOpenChange={(next) => {
           if (!next) setConfirmIndex(null);
         }}
+        className="max-w-md safe-area-pt safe-area-pb"
       >
-        <DialogContent className="max-w-md safe-area-pt safe-area-pb">
-          <DialogHeader>
-            <DialogTitle>确认恢复此版本？</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground py-2">
-            将用
-            {confirmRow ? ` ${formatCapturedAt(confirmRow.captured_at)} 的快照` : "所选历史版本"}
-            覆盖当前条目；当前内容会先进入历史。
-          </p>
-          <DialogFooter className="gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={restoringIndex !== null}
-              onClick={() => setConfirmIndex(null)}
-            >
-              取消
-            </Button>
-            <Button
-              type="button"
-              disabled={restoringIndex !== null || confirmIndex === null}
-              onClick={() => {
-                if (confirmIndex === null) return;
-                setRestoringIndex(confirmIndex);
-                setError("");
-                void restoreVaultItemHistory(subjectKind, itemId, confirmIndex)
-                  .then(async () => {
-                    setConfirmIndex(null);
-                    onOpenChange(false);
-                    await onRestored();
-                  })
-                  .catch((err: unknown) => {
-                    setError(err instanceof Error ? err.message : String(err));
-                  })
-                  .finally(() => setRestoringIndex(null));
-              }}
-            >
-              {restoringIndex !== null ? <Spinner className="size-4" /> : "确认恢复"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+        <DialogHeader>
+          <DialogTitle>确认恢复此版本？</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground py-2">
+          将用
+          {confirmRow ? ` ${formatCapturedAt(confirmRow.captured_at)} 的快照` : "所选历史版本"}
+          覆盖当前条目；当前内容会先进入历史。
+        </p>
+        <DialogFooter className="gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={restoringIndex !== null}
+            onClick={() => setConfirmIndex(null)}
+          >
+            取消
+          </Button>
+          <Button
+            type="button"
+            disabled={restoringIndex !== null || confirmIndex === null}
+            onClick={() => {
+              if (confirmIndex === null) return;
+              setRestoringIndex(confirmIndex);
+              setError("");
+              void restoreVaultItemHistory(subjectKind, itemId, confirmIndex)
+                .then(async () => {
+                  setConfirmIndex(null);
+                  onOpenChange(false);
+                  await onRestored();
+                })
+                .catch((err: unknown) => {
+                  setError(err instanceof Error ? err.message : String(err));
+                })
+                .finally(() => setRestoringIndex(null));
+            }}
+          >
+            {restoringIndex !== null ? <Spinner className="size-4" /> : "确认恢复"}
+          </Button>
+        </DialogFooter>
       </Dialog>
-    </Dialog>
+    </>
   );
 }

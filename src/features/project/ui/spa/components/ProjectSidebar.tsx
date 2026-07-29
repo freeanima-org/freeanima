@@ -4,7 +4,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Button, Checkbox, Input } from "@freeanima/ui-kit";
 import { ContextMenu, EntityIdLabel } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
-import { useEffect, useMemo, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useState, type PointerEvent, type ReactElement } from "react";
 
 import type { ProjectFolderRow, ProjectRow } from "../lib/api.ts";
 import {
@@ -144,7 +144,7 @@ function SortableTreeRow({
             e.stopPropagation();
             onToggleExpand();
           }}
-          onPointerDown={(e) => e.stopPropagation()}
+          onPointerDown={(e: PointerEvent) => e.stopPropagation()}
         >
           {expanded ? "▼" : "▶"}
         </button>
@@ -170,7 +170,7 @@ function SortableTreeRow({
               e.stopPropagation();
               onOpenFolderMenu(folder);
             }}
-            onPointerDown={(e) => e.stopPropagation()}
+            onPointerDown={(e: PointerEvent) => e.stopPropagation()}
           >
             ⋯
           </Button>
@@ -232,7 +232,7 @@ function SortableTreeRow({
             e.stopPropagation();
             onOpenProjectMenu(project);
           }}
-          onPointerDown={(e) => e.stopPropagation()}
+          onPointerDown={(e: PointerEvent) => e.stopPropagation()}
         >
           ⋯
         </Button>

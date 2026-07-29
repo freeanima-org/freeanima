@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -131,113 +130,110 @@ function SubjectEditModal({
 
   return (
     <Dialog
-      open
+      isOpen
       onOpenChange={(next) => {
         if (!next) onClose();
       }}
+      className="max-w-lg safe-area-pt safe-area-pb"
     >
-      <DialogContent className="max-w-lg safe-area-pt safe-area-pb">
-        <DialogHeader>
-          <DialogTitle>
-            {mode === "create"
-              ? m.habitat_entities_new_subject()
-              : m.habitat_entities_edit_subject()}
-          </DialogTitle>
-        </DialogHeader>
-        {error ? (
-          <StatusAlert variant="error" className="mb-3">
-            {error}
-          </StatusAlert>
+      <DialogHeader>
+        <DialogTitle>
+          {mode === "create" ? m.habitat_entities_new_subject() : m.habitat_entities_edit_subject()}
+        </DialogTitle>
+      </DialogHeader>
+      {error ? (
+        <StatusAlert variant="error" className="mb-3">
+          {error}
+        </StatusAlert>
+      ) : null}
+      <FormFieldset bordered={false} className="gap-3">
+        {mode === "create" ? (
+          <FormField label={m.habitat_entities_col_type()} className="text-xs">
+            <Select
+              value={form.type}
+              onValueChange={(v) =>
+                setForm((f) => ({
+                  ...f,
+                  type: v === "user" ? "user" : "agent",
+                }))
+              }
+            >
+              <SelectTrigger size="sm" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="agent">{m.habitat_entities_type_agent()}</SelectItem>
+                <SelectItem value="user">{m.habitat_entities_type_user()}</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormField>
         ) : null}
-        <FormFieldset bordered={false} className="gap-3">
-          {mode === "create" ? (
-            <FormField label={m.habitat_entities_col_type()} className="text-xs">
+        <FormField label={m.habitat_entities_col_title()} className="text-xs">
+          <Input
+            type="text"
+            className="w-full h-8"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+          />
+        </FormField>
+        <FormField label={m.habitat_entities_col_summary()} className="text-xs">
+          <Input
+            type="text"
+            className="w-full h-8"
+            value={form.summary}
+            onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
+          />
+        </FormField>
+        <FormField label={m.habitat_entities_col_content()} className="text-xs">
+          <Textarea
+            className="w-full min-h-24"
+            value={form.content}
+            onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+          />
+        </FormField>
+        {mode === "edit" ? (
+          <FormField label={m.habitat_entities_col_default_private_world()} className="text-xs">
+            {candidateWorlds.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-2">
+                {m.habitat_entities_default_private_world_empty()}
+              </p>
+            ) : (
               <Select
-                value={form.type}
-                onValueChange={(v) =>
-                  setForm((f) => ({
-                    ...f,
-                    type: v === "user" ? "user" : "agent",
-                  }))
-                }
+                value={form.default_private_world_id}
+                onValueChange={(v) => setForm((f) => ({ ...f, default_private_world_id: v }))}
               >
                 <SelectTrigger size="sm" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="agent">{m.habitat_entities_type_agent()}</SelectItem>
-                  <SelectItem value="user">{m.habitat_entities_type_user()}</SelectItem>
+                  {candidateWorlds.map((w) => (
+                    <SelectItem key={w.id} value={String(w.id)}>
+                      {worldOptionLabel(w)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-            </FormField>
-          ) : null}
-          <FormField label={m.habitat_entities_col_title()} className="text-xs">
-            <Input
-              type="text"
-              className="w-full h-8"
-              value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            />
+            )}
           </FormField>
-          <FormField label={m.habitat_entities_col_summary()} className="text-xs">
-            <Input
-              type="text"
-              className="w-full h-8"
-              value={form.summary}
-              onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
-            />
-          </FormField>
-          <FormField label={m.habitat_entities_col_content()} className="text-xs">
-            <Textarea
-              className="w-full min-h-24"
-              value={form.content}
-              onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-            />
-          </FormField>
-          {mode === "edit" ? (
-            <FormField label={m.habitat_entities_col_default_private_world()} className="text-xs">
-              {candidateWorlds.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-2">
-                  {m.habitat_entities_default_private_world_empty()}
-                </p>
-              ) : (
-                <Select
-                  value={form.default_private_world_id}
-                  onValueChange={(v) => setForm((f) => ({ ...f, default_private_world_id: v }))}
-                >
-                  <SelectTrigger size="sm" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {candidateWorlds.map((w) => (
-                      <SelectItem key={w.id} value={String(w.id)}>
-                        {worldOptionLabel(w)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </FormField>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              {m.habitat_entities_subject_create_hint()}
-            </p>
-          )}
-        </FormFieldset>
-        <DialogFooter>
-          <Button type="button" variant="ghost" size="sm" disabled={saving} onClick={onClose}>
-            {m.habitat_common_cancel()}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            disabled={saving || !form.title.trim()}
-            onClick={() => onSave(form)}
-          >
-            {saving ? <Spinner /> : m.habitat_common_save()}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            {m.habitat_entities_subject_create_hint()}
+          </p>
+        )}
+      </FormFieldset>
+      <DialogFooter>
+        <Button type="button" variant="ghost" size="sm" disabled={saving} onClick={onClose}>
+          {m.habitat_common_cancel()}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          disabled={saving || !form.title.trim()}
+          onClick={() => onSave(form)}
+        >
+          {saving ? <Spinner /> : m.habitat_common_save()}
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 }

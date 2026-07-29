@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -104,81 +103,79 @@ export function ProjectEditorDialog({
   const folderLabel = target?.kind === "folder" ? "所属文件夹" : "所属文件夹";
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-3 py-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="project-edit-name">{nameLabel}</Label>
-            <Input
-              id="project-edit-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && target?.kind === "folder") void handleSave();
-              }}
-              focusOnMount
-            />
-          </div>
-          {target?.kind === "project" ? (
-            <>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="project-edit-content">背景说明</Label>
-                <Textarea
-                  id="project-edit-content"
-                  value={content}
-                  rows={4}
-                  onChange={(e) => setContent(e.target.value)}
+    <Dialog isOpen={open} onOpenChange={(next) => !next && onClose()} className="max-w-sm">
+      <DialogHeader>
+        <DialogTitle>{title}</DialogTitle>
+      </DialogHeader>
+      <div className="flex flex-col gap-3 py-2">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="project-edit-name">{nameLabel}</Label>
+          <Input
+            id="project-edit-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && target?.kind === "folder") void handleSave();
+            }}
+            focusOnMount
+          />
+        </div>
+        {target?.kind === "project" ? (
+          <>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="project-edit-content">背景说明</Label>
+              <Textarea
+                id="project-edit-content"
+                value={content}
+                rows={4}
+                onChange={(e) => setContent(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <Label>开始日期</Label>
+                <DatePickerInput
+                  value={startLocal}
+                  aria-label="开始日期"
+                  onChange={setStartLocal}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex min-w-0 flex-col gap-1.5">
-                  <Label>开始日期</Label>
-                  <DatePickerInput
-                    value={startLocal}
-                    aria-label="开始日期"
-                    onChange={setStartLocal}
-                  />
-                </div>
-                <div className="flex min-w-0 flex-col gap-1.5">
-                  <Label>结束日期</Label>
-                  <DatePickerInput value={endLocal} aria-label="结束日期" onChange={setEndLocal} />
-                </div>
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <Label>结束日期</Label>
+                <DatePickerInput value={endLocal} aria-label="结束日期" onChange={setEndLocal} />
               </div>
-              <p className="text-muted-foreground text-[11px]">可留空；也可只填其中一侧。</p>
-            </>
-          ) : null}
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="project-edit-folder">{folderLabel}</Label>
-            <select
-              id="project-edit-folder"
-              className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
-              value={folderId == null ? "" : String(folderId)}
-              onChange={(e) => {
-                const raw = e.target.value;
-                setFolderId(raw === "" ? null : Number(raw));
-              }}
-            >
-              <option value="">无（顶级）</option>
-              {folderOptions.map((folder) => (
-                <option key={folder.id} value={folder.id}>
-                  {folder.name}
-                </option>
-              ))}
-            </select>
-          </div>
+            </div>
+            <p className="text-muted-foreground text-[11px]">可留空；也可只填其中一侧。</p>
+          </>
+        ) : null}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="project-edit-folder">{folderLabel}</Label>
+          <select
+            id="project-edit-folder"
+            className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
+            value={folderId == null ? "" : String(folderId)}
+            onChange={(e) => {
+              const raw = e.target.value;
+              setFolderId(raw === "" ? null : Number(raw));
+            }}
+          >
+            <option value="">无（顶级）</option>
+            {folderOptions.map((folder) => (
+              <option key={folder.id} value={folder.id}>
+                {folder.name}
+              </option>
+            ))}
+          </select>
         </div>
-        <DialogFooter>
-          <Button type="button" variant="ghost" onClick={onClose} disabled={saving}>
-            取消
-          </Button>
-          <Button type="button" onClick={() => void handleSave()} disabled={!name.trim() || saving}>
-            保存
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+      </div>
+      <DialogFooter>
+        <Button type="button" variant="ghost" onClick={onClose} disabled={saving}>
+          取消
+        </Button>
+        <Button type="button" onClick={() => void handleSave()} disabled={!name.trim() || saving}>
+          保存
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 }

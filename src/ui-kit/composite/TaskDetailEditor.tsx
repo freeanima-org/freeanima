@@ -5,10 +5,8 @@ import { Button } from "../components/ui/button.tsx";
 import { Checkbox } from "../components/ui/checkbox.tsx";
 import {
   DropdownMenu,
-  DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu.tsx";
@@ -72,38 +70,32 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
     <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
       <div className="flex shrink-0 items-center gap-1">
         <Checkbox
-          checked={completed}
+          isSelected={completed}
           aria-label={completed ? "标记为未完成" : "标记为已完成"}
-          onCheckedChange={(checked) =>
+          onChange={(selected) =>
             onChange({
               ...item,
-              status: checked === true ? "completed" : "pending",
+              status: selected ? "completed" : "pending",
             })
           }
         />
 
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "h-8 max-w-[min(100%,16rem)] gap-1.5 px-2 font-normal",
-                dueChip.overdue ? "text-destructive" : "text-muted-foreground",
-                item.due_at && !dueChip.overdue ? "text-foreground" : null,
-              )}
-              aria-label="截止日期"
-            >
-              <CalendarIcon className="size-4 shrink-0" />
-              <span className="truncate">{dueChip.label}</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            className="w-72 p-3"
-            onCloseAutoFocus={(e) => e.preventDefault()}
+        <DropdownMenuTrigger>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "h-8 max-w-[min(100%,16rem)] gap-1.5 px-2 font-normal",
+              dueChip.overdue ? "text-destructive" : "text-muted-foreground",
+              item.due_at && !dueChip.overdue ? "text-foreground" : null,
+            )}
+            aria-label="截止日期"
           >
+            <CalendarIcon className="size-4 shrink-0" />
+            <span className="truncate">{dueChip.label}</span>
+          </Button>
+          <DropdownMenu placement="bottom start" className="w-72 p-3">
             <DropdownMenuLabel className="px-0 pt-0">截止日期</DropdownMenuLabel>
             <div className="flex flex-col gap-2" onPointerDown={(e) => e.stopPropagation()}>
               <DatePickerInput
@@ -141,39 +133,42 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                 </Button>
               ) : null}
             </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </DropdownMenu>
+        </DropdownMenuTrigger>
 
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className={cn("ml-auto", priorityFlagClass(item.priority))}
-              aria-label={`优先级：${PRIORITY_LABEL[item.priority]}`}
-            >
-              <FlagIcon
-                className="size-4"
-                fill={item.priority === "none" ? "none" : "currentColor"}
-              />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-36">
+        <DropdownMenuTrigger>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className={cn("ml-auto", priorityFlagClass(item.priority))}
+            aria-label={`优先级：${PRIORITY_LABEL[item.priority]}`}
+          >
+            <FlagIcon
+              className="size-4"
+              fill={item.priority === "none" ? "none" : "currentColor"}
+            />
+          </Button>
+          <DropdownMenu
+            placement="bottom end"
+            className="min-w-36"
+            selectionMode="single"
+            selectedKeys={[item.priority]}
+            onSelectionChange={(keys: Iterable<string | number> | "all") => {
+              if (keys === "all") return;
+              const key = [...keys][0];
+              if (typeof key === "string") onChange({ ...item, priority: key as TaskItemPriority });
+            }}
+          >
             <DropdownMenuLabel>优先级</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup
-              value={item.priority}
-              onValueChange={(value) => onChange({ ...item, priority: value as TaskItemPriority })}
-            >
-              {(Object.keys(PRIORITY_LABEL) as TaskItemPriority[]).map((value) => (
-                <DropdownMenuRadioItem key={value} value={value}>
-                  {PRIORITY_LABEL[value]}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            {(Object.keys(PRIORITY_LABEL) as TaskItemPriority[]).map((value) => (
+              <DropdownMenuItem key={value} id={value}>
+                {PRIORITY_LABEL[value]}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenu>
+        </DropdownMenuTrigger>
       </div>
 
       <div className="shrink-0">
@@ -200,7 +195,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
         onChange={(e) => onChange({ ...item, content: e.target.value })}
       />
 
-      {children ? <div className="shrink-0">{children}</div> : null}
+      {children}
     </div>
   );
 }

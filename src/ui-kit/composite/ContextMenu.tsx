@@ -1,8 +1,7 @@
 import type { ReactElement } from "react";
 
 import {
-  ContextMenu as ContextMenuRoot,
-  ContextMenuContent,
+  ContextMenu as ContextMenuPopover,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "../components/ui/context-menu.tsx";
@@ -22,25 +21,25 @@ function runMenuItemAction(onClick: () => void) {
 
 /**
  * 精确指针下的浮动右键菜单（触摸主输入请用 ActionSheet）。
- * 基于 Radix Context Menu（自带视口碰撞规避）；勿再自研 fixed+坐标定位。
+ * 基于 React Aria Menu（shadcn Aria Context Menu）；勿再自研 fixed+坐标定位。
  */
 export function ContextMenu({ items, disabled = false, children }: ContextMenuProps) {
   if (disabled || items.length === 0) return children;
 
   return (
-    <ContextMenuRoot>
-      <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
-      <ContextMenuContent>
+    <ContextMenuTrigger>
+      {children}
+      <ContextMenuPopover>
         {items.map((item) => (
           <ContextMenuItem
             key={item.label}
             variant={item.danger ? "destructive" : "default"}
-            onSelect={() => runMenuItemAction(item.onClick)}
+            onAction={() => runMenuItemAction(item.onClick)}
           >
             {item.label}
           </ContextMenuItem>
         ))}
-      </ContextMenuContent>
-    </ContextMenuRoot>
+      </ContextMenuPopover>
+    </ContextMenuTrigger>
   );
 }

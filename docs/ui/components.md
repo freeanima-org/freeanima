@@ -23,7 +23,7 @@ Visual tokens → [foundations.md](foundations.md). Dimension axes → [dimensio
 
 | Layer         | Role                                                                                                | Location                       |
 | ------------- | --------------------------------------------------------------------------------------------------- | ------------------------------ |
-| **Primitive** | shadcn/Radix controls + variants (`Button`, `Dialog`, `Input`, …)                                   | `ui-kit/components/ui`         |
+| **Primitive** | shadcn/React Aria controls + variants (`Button`, `Dialog`, `Input`, …)                              | `ui-kit/components/ui`         |
 | **Structure** | Form and layout shells (`FormFieldset`, `ListDetailLayout`, viewport hooks)                         | `ui-kit/form`, `ui-kit/layout` |
 | **Composite** | Cross-feature interaction patterns (`ConfirmDialog`, `ActionSheet`, `ContextMenu`, `EmptyState`, …) | `ui-kit/composite`             |
 | **Domain**    | Product-specific screens and fields                                                                 | `features/<slug>/ui`           |
@@ -59,7 +59,7 @@ Dependency direction: `app-frame` → `features/*/ui` → `{ui-kit, portal-sdk}`
 | -------------- | -------------------------------------------------------------------------------------------- |
 | Button         | `<Button variant size>`                                                                      |
 | Fields         | `<Input>` / `<Textarea>` / `<Select>`; no auto-focus by default (`focusOnMount` when needed) |
-| Dialog / Sheet | Default `onOpenAutoFocus` blocked; override only when intentional                            |
+| Dialog / Sheet | React Aria default focus management; compose with Aria/shadcn Aria conventions (`isOpen`)    |
 | Loading        | `<Spinner>`                                                                                  |
 | Empty          | `<EmptyState>`                                                                               |
 | Status         | `<StatusAlert>`                                                                              |

@@ -107,7 +107,7 @@ Agent bans (raw CSS vars, DaisyUI tokens) → [`.agent/rules/frontend-ui.md`](..
 
 ## Motion
 
-**Intent:** Transitions for open/close and state change (Radix/shadcn animate). Motion clarifies hierarchy; it is not ornament.
+**Intent:** Transitions for open/close and state change (React Aria / shadcn animate). Motion clarifies hierarchy; it is not ornament.
 
 | Lens        | Adaptation                                                         |
 | ----------- | ------------------------------------------------------------------ |

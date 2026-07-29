@@ -3,7 +3,6 @@ import {
   Button,
   Checkbox,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -119,125 +118,119 @@ export function SmartListEditorDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{initial?.id != null ? "编辑智能清单" : "新建智能清单"}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3 py-2">
+    <Dialog isOpen={open} onOpenChange={(next) => !next && onClose()} className="max-w-md">
+      <DialogHeader>
+        <DialogTitle>{initial?.id != null ? "编辑智能清单" : "新建智能清单"}</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-3 py-2">
+        <div className="space-y-1">
+          <Label htmlFor="smart-list-title">名称</Label>
+          <Input
+            id="smart-list-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="我的智能清单"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="smart-list-status">状态</Label>
+          <select
+            id="smart-list-status"
+            className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
+            value={status ?? "pending"}
+            onChange={(e) => setStatus(e.target.value as TaskItemSearchFilters["status"])}
+          >
+            {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value ?? "all"} value={opt.value ?? "all"}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        {status !== "completed" ? (
           <div className="space-y-1">
-            <Label htmlFor="smart-list-title">名称</Label>
-            <Input
-              id="smart-list-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="我的智能清单"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="smart-list-status">状态</Label>
+            <Label htmlFor="smart-list-due">截止日期</Label>
             <select
-              id="smart-list-status"
+              id="smart-list-due"
               className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
-              value={status ?? "pending"}
-              onChange={(e) => setStatus(e.target.value as TaskItemSearchFilters["status"])}
+              value={dueMode}
+              onChange={(e) => setDueMode(e.target.value as typeof dueMode)}
             >
-              {STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value ?? "all"} value={opt.value ?? "all"}>
-                  {opt.label}
-                </option>
-              ))}
+              <option value="none">不限</option>
+              <option value="today">今天及已过期</option>
+              <option value="tomorrow">明天</option>
+              <option value="next7">未来7天（含已过期）</option>
             </select>
           </div>
-          {status !== "completed" ? (
-            <div className="space-y-1">
-              <Label htmlFor="smart-list-due">截止日期</Label>
-              <select
-                id="smart-list-due"
-                className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
-                value={dueMode}
-                onChange={(e) => setDueMode(e.target.value as typeof dueMode)}
-              >
-                <option value="none">不限</option>
-                <option value="today">今天及已过期</option>
-                <option value="tomorrow">明天</option>
-                <option value="next7">未来7天（含已过期）</option>
-              </select>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              <Label htmlFor="smart-list-completed">完成时间</Label>
-              <select
-                id="smart-list-completed"
-                className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
-                value={completedMode}
-                onChange={(e) => setCompletedMode(e.target.value as typeof completedMode)}
-              >
-                <option value="none">不限</option>
-                <option value="today">今日完成</option>
-                <option value="yesterday">昨日完成</option>
-                <option value="last7">最近7天完成</option>
-              </select>
-            </div>
-          )}
+        ) : (
           <div className="space-y-1">
-            <Label>清单</Label>
-            <p className="text-muted-foreground text-xs">
-              可多选；不选则包含全部清单。文件夹不可选。
-            </p>
-            <div className="border-input max-h-40 overflow-y-auto rounded-md border p-2">
-              {visibleTree.length === 0 ? (
-                <p className="text-muted-foreground px-1 py-2 text-sm">暂无可用清单</p>
-              ) : (
-                <ul className="space-y-0.5">
-                  {visibleTree.map(({ list, depth }) =>
-                    list.is_folder ? (
-                      <li
-                        key={list.id}
-                        className="text-muted-foreground flex items-center gap-1 px-1 py-1 text-xs font-medium"
+            <Label htmlFor="smart-list-completed">完成时间</Label>
+            <select
+              id="smart-list-completed"
+              className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
+              value={completedMode}
+              onChange={(e) => setCompletedMode(e.target.value as typeof completedMode)}
+            >
+              <option value="none">不限</option>
+              <option value="today">今日完成</option>
+              <option value="yesterday">昨日完成</option>
+              <option value="last7">最近7天完成</option>
+            </select>
+          </div>
+        )}
+        <div className="space-y-1">
+          <Label>清单</Label>
+          <p className="text-muted-foreground text-xs">
+            可多选；不选则包含全部清单。文件夹不可选。
+          </p>
+          <div className="border-input max-h-40 overflow-y-auto rounded-md border p-2">
+            {visibleTree.length === 0 ? (
+              <p className="text-muted-foreground px-1 py-2 text-sm">暂无可用清单</p>
+            ) : (
+              <ul className="space-y-0.5">
+                {visibleTree.map(({ list, depth }) =>
+                  list.is_folder ? (
+                    <li
+                      key={list.id}
+                      className="text-muted-foreground flex items-center gap-1 px-1 py-1 text-xs font-medium"
+                      style={{ paddingLeft: `${depth * 12 + 4}px` }}
+                    >
+                      <span aria-hidden>📁</span>
+                      <span className="truncate">{list.name}</span>
+                    </li>
+                  ) : (
+                    <li key={list.id}>
+                      <label
+                        className="hover:bg-muted flex min-h-8 cursor-pointer items-center gap-2 rounded-md px-1 py-1 text-sm"
                         style={{ paddingLeft: `${depth * 12 + 4}px` }}
                       >
-                        <span aria-hidden>📁</span>
-                        <span className="truncate">{list.name}</span>
-                      </li>
-                    ) : (
-                      <li key={list.id}>
-                        <label
-                          className="hover:bg-muted flex min-h-8 cursor-pointer items-center gap-2 rounded-md px-1 py-1 text-sm"
-                          style={{ paddingLeft: `${depth * 12 + 4}px` }}
-                        >
-                          <Checkbox
-                            checked={selectedListIds.includes(list.id)}
-                            onCheckedChange={() => toggleListId(list.id)}
-                          />
-                          <span className="min-w-0 flex-1 truncate">{list.name}</span>
-                          {list.item_count != null ? (
-                            <span className="text-muted-foreground shrink-0 text-xs">
-                              {list.item_count}
-                            </span>
-                          ) : null}
-                        </label>
-                      </li>
-                    ),
-                  )}
-                </ul>
-              )}
-            </div>
+                        <Checkbox
+                          checked={selectedListIds.includes(list.id)}
+                          onCheckedChange={() => toggleListId(list.id)}
+                        />
+                        <span className="min-w-0 flex-1 truncate">{list.name}</span>
+                        {list.item_count != null ? (
+                          <span className="text-muted-foreground shrink-0 text-xs">
+                            {list.item_count}
+                          </span>
+                        ) : null}
+                      </label>
+                    </li>
+                  ),
+                )}
+              </ul>
+            )}
           </div>
         </div>
-        <DialogFooter>
-          <Button type="button" variant="ghost" onClick={onClose}>
-            取消
-          </Button>
-          <Button
-            type="button"
-            disabled={saving || !title.trim()}
-            onClick={() => void handleSave()}
-          >
-            保存
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+      </div>
+      <DialogFooter>
+        <Button type="button" variant="ghost" onClick={onClose}>
+          取消
+        </Button>
+        <Button type="button" disabled={saving || !title.trim()} onClick={() => void handleSave()}>
+          保存
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 }

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -54,53 +53,51 @@ export function ListEditorDialog({ open, list, lists, onClose, onSave }: ListEdi
   };
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>{list?.is_folder ? "编辑文件夹" : "编辑清单"}</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-3 py-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="list-edit-name">名称</Label>
-            <Input
-              id="list-edit-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") void handleSave();
-              }}
-              focusOnMount
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="list-edit-parent">所属文件夹</Label>
-            <select
-              id="list-edit-parent"
-              className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
-              value={parentId == null ? "" : String(parentId)}
-              onChange={(e) => {
-                const raw = e.target.value;
-                setParentId(raw === "" ? null : Number(raw));
-              }}
-            >
-              <option value="">无（顶级）</option>
-              {folderOptions.map((folder) => (
-                <option key={folder.id} value={folder.id}>
-                  {folder.name}
-                </option>
-              ))}
-            </select>
-          </div>
+    <Dialog isOpen={open} onOpenChange={(next) => !next && onClose()} className="max-w-sm">
+      <DialogHeader>
+        <DialogTitle>{list?.is_folder ? "编辑文件夹" : "编辑清单"}</DialogTitle>
+      </DialogHeader>
+      <div className="flex flex-col gap-3 py-2">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="list-edit-name">名称</Label>
+          <Input
+            id="list-edit-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void handleSave();
+            }}
+            focusOnMount
+          />
         </div>
-        <DialogFooter>
-          <Button type="button" variant="ghost" onClick={onClose} disabled={saving}>
-            取消
-          </Button>
-          <Button type="button" onClick={() => void handleSave()} disabled={!name.trim() || saving}>
-            保存
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="list-edit-parent">所属文件夹</Label>
+          <select
+            id="list-edit-parent"
+            className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
+            value={parentId == null ? "" : String(parentId)}
+            onChange={(e) => {
+              const raw = e.target.value;
+              setParentId(raw === "" ? null : Number(raw));
+            }}
+          >
+            <option value="">无（顶级）</option>
+            {folderOptions.map((folder) => (
+              <option key={folder.id} value={folder.id}>
+                {folder.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button type="button" variant="ghost" onClick={onClose} disabled={saving}>
+          取消
+        </Button>
+        <Button type="button" onClick={() => void handleSave()} disabled={!name.trim() || saving}>
+          保存
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 }

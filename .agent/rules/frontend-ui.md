@@ -3,7 +3,7 @@
 > **UI/UX 规范 SSOT** → [`docs/ui/`](../../docs/ui/overview.md)（dimensions / foundations / components / patterns）。  
 > 三维度 API → [`ui-dimensions.md`](ui-dimensions.md)。  
 > 功能原型与包边界 → [`frontend-features.md`](frontend-features.md)。  
-> 样式栈：**Tailwind CSS v4 + shadcn/ui**（`@freeanima/ui-kit`）。**禁止 DaisyUI。**
+> 样式栈：**Tailwind CSS v4 + shadcn/ui（React Aria base）**（`@freeanima/ui-kit`）。**禁止 DaisyUI。**
 
 视觉 / 组件 / 交互均须按壳·布局·交互三维适配（见 docs）；本文件只保留实现禁令与落点。
 
@@ -35,7 +35,7 @@
 | ------------ | ------------------------------------------------------------------------------------------- |
 | 按钮         | `<Button variant size>`                                                                     |
 | 表单         | `<Input>` / `<Textarea>` / `<Select>`；默认不自动聚焦（`focusOnMount`）                     |
-| Dialog/Sheet | 默认 `onOpenAutoFocus` 阻止聚焦                                                             |
+| Dialog/Sheet | 采用 React Aria 默认焦点管理；组合按 Aria/shadcn Aria 惯例（`isOpen` / `Dialog` 即模态层）  |
 | 空态 / 错误  | `<EmptyState>` / `<StatusAlert>`                                                            |
 | 确认         | `<ConfirmDialog>` / `showConfirm`；不可恢复删除二次确认；确认钮**禁止** `autoFocus`         |
 | 菜单         | pointer → `ContextMenu`；touch → `ActionSheet`；共享 `ActionSheetItem[]`                    |
