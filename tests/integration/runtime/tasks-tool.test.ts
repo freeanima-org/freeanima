@@ -60,6 +60,7 @@ describePg("tasks tool", () => {
         const tool = toolSets.getTool("task_create")!;
         output = await Promise.resolve(
           tool.handler({
+            subject_kind: "agent",
             title: "Discuss UI plan",
             priority: "high",
             content: "Details here",
@@ -107,18 +108,23 @@ describePg("tasks tool", () => {
       async () => {
         const createList = toolSets.getTool("tasklist_create")!;
         const listOut = await Promise.resolve(
-          createList.handler({ name: `pending-only-${randomUUID().slice(0, 8)}` }),
+          createList.handler({
+            subject_kind: "agent",
+            name: `pending-only-${randomUUID().slice(0, 8)}`,
+          }),
         );
         listId = (JSON.parse(listOut) as { list: { id: number } }).list.id;
 
         const create = toolSets.getTool("task_create")!;
         const createOut = await Promise.resolve(
-          create.handler({ title: "Active task", list_id: listId }),
+          create.handler({ subject_kind: "agent", title: "Active task", list_id: listId }),
         );
         const complete = toolSets.getTool("task_complete")!;
         const created = JSON.parse(createOut) as { item: { id: number } };
-        await Promise.resolve(complete.handler({ id: created.item.id }));
-        await Promise.resolve(create.handler({ title: "Pending task", list_id: listId }));
+        await Promise.resolve(complete.handler({ subject_kind: "agent", id: created.item.id }));
+        await Promise.resolve(
+          create.handler({ subject_kind: "agent", title: "Pending task", list_id: listId }),
+        );
       },
       { tools: toolSets },
     );
@@ -128,7 +134,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("task_list")!;
-        output = await Promise.resolve(tool.handler({ list_id: listId }));
+        output = await Promise.resolve(tool.handler({ subject_kind: "agent", list_id: listId }));
       },
       { tools: toolSets },
     );
@@ -153,7 +159,9 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const create = toolSets.getTool("task_create")!;
-        const out = await Promise.resolve(create.handler({ title: "Task to complete" }));
+        const out = await Promise.resolve(
+          create.handler({ subject_kind: "agent", title: "Task to complete" }),
+        );
         createdId = (JSON.parse(out) as { item: { id: number } }).item.id;
       },
       { tools: toolSets },
@@ -164,7 +172,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("task_complete")!;
-        output = await Promise.resolve(tool.handler({ id: createdId }));
+        output = await Promise.resolve(tool.handler({ subject_kind: "agent", id: createdId }));
       },
       { tools: toolSets },
     );
@@ -190,6 +198,7 @@ describePg("tasks tool", () => {
         const tool = toolSets.getTool("task_create")!;
         output = await Promise.resolve(
           tool.handler({
+            subject_kind: "agent",
             title: "Reminder task",
             remind_at: "2026-07-01T09:00:00+08:00",
           }),
@@ -213,7 +222,9 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const create = toolSets.getTool("tasklist_create")!;
-        const out = await Promise.resolve(create.handler({ name: "项目 Alpha" }));
+        const out = await Promise.resolve(
+          create.handler({ subject_kind: "agent", name: "项目 Alpha" }),
+        );
         createdId = (JSON.parse(out) as { list: { id: number; name: string } }).list.id;
         expect((JSON.parse(out) as { list: { name: string } }).list.name).toBe("项目 Alpha");
       },
@@ -225,7 +236,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const del = toolSets.getTool("tasklist_delete")!;
-        deleteOut = await Promise.resolve(del.handler({ id: createdId }));
+        deleteOut = await Promise.resolve(del.handler({ subject_kind: "agent", id: createdId }));
       },
       { tools: toolSets },
     );
@@ -245,15 +256,23 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const createList = toolSets.getTool("tasklist_create")!;
-        const listOut = await Promise.resolve(createList.handler({ name: "搜索清单 B" }));
+        const listOut = await Promise.resolve(
+          createList.handler({ subject_kind: "agent", name: "搜索清单 B" }),
+        );
         listBId = (JSON.parse(listOut) as { list: { id: number } }).list.id;
 
         const create = toolSets.getTool("task_create")!;
         await Promise.resolve(
-          create.handler({ title: "独特关键词任务", list_id: listA.id, content: "alpha" }),
+          create.handler({
+            subject_kind: "agent",
+            title: "独特关键词任务",
+            list_id: listA.id,
+            content: "alpha",
+          }),
         );
         await Promise.resolve(
           create.handler({
+            subject_kind: "agent",
             title: "另一清单任务",
             list_id: listBId,
             content: "独特关键词",
@@ -268,7 +287,9 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("task_search")!;
-        output = await Promise.resolve(tool.handler({ query: "独特关键词" }));
+        output = await Promise.resolve(
+          tool.handler({ subject_kind: "agent", query: "独特关键词" }),
+        );
       },
       { tools: toolSets },
     );
@@ -292,12 +313,15 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const createList = toolSets.getTool("tasklist_create")!;
-        const listOut = await Promise.resolve(createList.handler({ name: "限定清单" }));
+        const listOut = await Promise.resolve(
+          createList.handler({ subject_kind: "agent", name: "限定清单" }),
+        );
         listBId = (JSON.parse(listOut) as { list: { id: number } }).list.id;
 
         const create = toolSets.getTool("task_create")!;
         await Promise.resolve(
           create.handler({
+            subject_kind: "agent",
             title: "限定范围任务",
             list_id: listBId,
             content: "scope-test",
@@ -305,6 +329,7 @@ describePg("tasks tool", () => {
         );
         await Promise.resolve(
           create.handler({
+            subject_kind: "agent",
             title: "默认清单任务",
             list_id: listA.id,
             content: "scope-test",
@@ -319,7 +344,9 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("task_search")!;
-        output = await Promise.resolve(tool.handler({ query: "scope-test", list_id: listBId }));
+        output = await Promise.resolve(
+          tool.handler({ subject_kind: "agent", query: "scope-test", list_id: listBId }),
+        );
       },
       { tools: toolSets },
     );
@@ -339,7 +366,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const createList = toolSets.getTool("tasklist_create")!;
-        await Promise.resolve(createList.handler({ name: "季度规划清单" }));
+        await Promise.resolve(createList.handler({ subject_kind: "agent", name: "季度规划清单" }));
       },
       { tools: toolSets },
     );
@@ -349,7 +376,7 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("tasklist_search")!;
-        output = await Promise.resolve(tool.handler({ query: "季度规划" }));
+        output = await Promise.resolve(tool.handler({ subject_kind: "agent", query: "季度规划" }));
       },
       { tools: toolSets },
     );
@@ -369,9 +396,13 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const create = toolSets.getTool("task_create")!;
-        await Promise.resolve(create.handler({ title: "MCP scoped task", list_id: list.id }));
+        await Promise.resolve(
+          create.handler({ subject_kind: "agent", title: "MCP scoped task", list_id: list.id }),
+        );
         const tool = toolSets.getTool("task_list")!;
-        output = await Promise.resolve(tool.handler({ list_id: list.id, status: "all" }));
+        output = await Promise.resolve(
+          tool.handler({ subject_kind: "agent", list_id: list.id, status: "all" }),
+        );
       },
       {
         tools: toolSets,
@@ -411,6 +442,7 @@ describePg("tasks tool", () => {
         const create = toolSets.getTool("task_create")!;
         const out = await Promise.resolve(
           create.handler({
+            subject_kind: "agent",
             title: "In-project task",
             project_id: project.id,
           }),
@@ -427,10 +459,14 @@ describePg("tasks tool", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("task_list")!;
-        backlogOut = await Promise.resolve(tool.handler({ list_id: list.id }));
-        projectOut = await Promise.resolve(tool.handler({ project_id: project.id }));
+        backlogOut = await Promise.resolve(
+          tool.handler({ subject_kind: "agent", list_id: list.id }),
+        );
+        projectOut = await Promise.resolve(
+          tool.handler({ subject_kind: "agent", project_id: project.id }),
+        );
         conflictOut = await Promise.resolve(
-          tool.handler({ project_id: project.id, list_id: list.id }),
+          tool.handler({ subject_kind: "agent", project_id: project.id, list_id: list.id }),
         );
       },
       { tools: toolSets },
@@ -468,6 +504,7 @@ describePg("tasks tool", () => {
         const tool = toolSets.getTool("task_create")!;
         output = await Promise.resolve(
           tool.handler({
+            subject_kind: "agent",
             title: "Tagged by name",
             tags: ["bug"],
           }),
@@ -506,6 +543,7 @@ describePg("tasks tool", () => {
         const tool = toolSets.getTool("task_create")!;
         output = await Promise.resolve(
           tool.handler({
+            subject_kind: "agent",
             title: "Reuse tag",
             tags: [tagTitle.toLowerCase()],
           }),
@@ -541,6 +579,7 @@ describePg("tasks tool", () => {
         const tool = toolSets.getTool("task_create")!;
         output = await Promise.resolve(
           tool.handler({
+            subject_kind: "agent",
             title: "Merged tags",
             tag_ids: [work.id],
             tags: [bugTitle],
@@ -572,6 +611,7 @@ describePg("tasks tool", () => {
         const tool = toolSets.getTool("task_create")!;
         output = await Promise.resolve(
           tool.handler({
+            subject_kind: "agent",
             title: "Bad tag_ids",
             tag_ids: ["bug"],
           }),

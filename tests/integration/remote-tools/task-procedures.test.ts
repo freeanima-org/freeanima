@@ -33,23 +33,38 @@ describe("task SAP procedures", () => {
   });
 
   it("validates task procedure inputs", () => {
-    tasklistListInputSchema.parse({});
-    tasklistListInputSchema.parse({ include_closed: true });
-    smartlistListInputSchema.parse({});
+    tasklistListInputSchema.parse({ subject_kind: "user" });
+    tasklistListInputSchema.parse({ subject_kind: "user", include_closed: true });
+    smartlistListInputSchema.parse({ subject_kind: "user" });
     smartlistCreateInputSchema.parse({
+      subject_kind: "user",
       title: "我的清单",
       filters: { status: "pending" },
     });
-    tasklistItemListInputSchema.parse({ list_id: 1, status: "pending" });
+    tasklistItemListInputSchema.parse({ subject_kind: "user", list_id: 1, status: "pending" });
     tasklistItemListInputSchema.parse({
+      subject_kind: "user",
       filters: { status: "completed", completed_on: "today" },
     });
-    tasklistItemListInputSchema.parse({ filters: { status: "pending", list_ids: [1, 2] } });
-    tasklistItemCreateInputSchema.parse({ title: "写文档", list_id: 2 });
-    projectItemCreateInputSchema.parse({ title: "项目任务", project_id: 3 });
-    taskMoveToProjectInputSchema.parse({ id: 1, project_id: 9 });
-    taskMoveToListInputSchema.parse({ id: 1, list_id: 2 });
-    tasklistCreateInputSchema.parse({ name: "工作", is_folder: true, parent_id: 10 });
-    tasklistPatchInputSchema.parse({ id: 3, parent_id: null, is_folder: false });
+    tasklistItemListInputSchema.parse({
+      subject_kind: "user",
+      filters: { status: "pending", list_ids: [1, 2] },
+    });
+    tasklistItemCreateInputSchema.parse({ subject_kind: "user", title: "写文档", list_id: 2 });
+    projectItemCreateInputSchema.parse({ subject_kind: "user", title: "项目任务", project_id: 3 });
+    taskMoveToProjectInputSchema.parse({ subject_kind: "user", id: 1, project_id: 9 });
+    taskMoveToListInputSchema.parse({ subject_kind: "user", id: 1, list_id: 2 });
+    tasklistCreateInputSchema.parse({
+      subject_kind: "user",
+      name: "工作",
+      is_folder: true,
+      parent_id: 10,
+    });
+    tasklistPatchInputSchema.parse({
+      subject_kind: "user",
+      id: 3,
+      parent_id: null,
+      is_folder: false,
+    });
   });
 });
