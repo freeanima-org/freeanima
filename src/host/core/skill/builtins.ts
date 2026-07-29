@@ -6,10 +6,11 @@ import { upsertSkillEntity } from "@freeanima/host/core/db/pg/skill";
 import { parseFrontmatter, stripFrontmatter, normalizeToolList } from "./content.ts";
 import type { SkillRegistry } from "./registry.ts";
 import { hydrateSkillRegistry } from "./store.ts";
+import { SKILL_CURATION_NAME } from "./review-constants.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
-const BUILTIN_FILES = ["research.md"] as const;
+const BUILTIN_FILES = ["research.md", `${SKILL_CURATION_NAME}.md`] as const;
 
 /** 幂等种子 builtin skills 到 commons world，并 hydrate registry */
 export async function seedBuiltinSkills(skills: SkillRegistry): Promise<number> {

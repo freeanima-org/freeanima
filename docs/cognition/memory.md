@@ -82,7 +82,7 @@ Long-term memory (LTM)
 
 Definition: Memory of "when, where, and what I experienced"—with a distinct temporal stream property.
 
-**Conversation log** — the most raw, high-fidelity objective runtime trace. Only **user-facing conversations** (`conversations` without `platform_info.platform = cron`) feed light sleep and dream. Background LLM (cron agent, sleep stages) runs as **AutoLlmRun** — audited in `auto_llm_runs`, not copied into the conversation archive.
+**Conversation log** — the most raw, high-fidelity objective runtime trace. Only **user-facing conversations** (`conversations` without `platform_info.platform = cron`) feed light sleep and dream. Background LLM (cron agent, sleep stages, **skill evolve/maintain review**) runs as **AutoLlmRun** — audited in `auto_llm_runs`, not copied into the conversation archive.
 
 **Emotional anchors** — conversation-level mood snapshots written during light sleep; not injected into system prompt.
 

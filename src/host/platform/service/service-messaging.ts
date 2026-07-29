@@ -5,6 +5,7 @@ import {
   isGoalStartResult,
   isRestartResult,
   isUpgradeResult,
+  isSkillReviewResult,
   commandNeedsPreAck,
   commandNeedsMessageDelivery,
   formatCommandPreAck,
@@ -30,6 +31,7 @@ import { collectStreamReply, type StreamEvent } from "@freeanima/host/engine/loo
 import { scheduleGracefulRestart, runAnimaCliUpgrade } from "./process-restart.ts";
 import { omitUndefined } from "@freeanima/host/core/util";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
+import { runSkillReview } from "./skill-review-run.ts";
 
 export type MessageSendOriginExtra = {
   llm_debug?: boolean;
@@ -217,6 +219,41 @@ export async function executeCommand(
       found: true,
       ux: result.ux ?? "toast",
     };
+  }
+
+  if (isSkillReviewResult(result)) {
+    try {
+      const msgs =
+        result.data.mode === "evolve" ? await deps.conversation.load(conversationId) : undefined;
+      const outcome = await runSkillReview(
+        deps,
+        omitUndefined({
+          mode: result.data.mode,
+          conversationId,
+          msgs,
+          force: result.data.force === true ? true : undefined,
+          note: result.data.note,
+        }),
+      );
+      const detail = outcome.ran
+        ? outcome.result.status === "ok"
+          ? `done (${outcome.result.toolCalls} tool calls, ${outcome.result.durationMs}ms)`
+          : `error: ${outcome.result.error ?? outcome.result.output}`
+        : `skipped: ${outcome.reason}`;
+      return {
+        text: `${ensureCommandResultText(result.text, cmd)} ${detail}`.trim(),
+        data: result.data,
+        found: true,
+        ux: result.ux ?? "toast",
+      };
+    } catch (e) {
+      return {
+        text: `⚠️ Skill review failed: ${e}`,
+        data: result.data,
+        found: true,
+        ux: "toast",
+      };
+    }
   }
 
   return {

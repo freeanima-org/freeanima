@@ -6,9 +6,13 @@ import {
   importUserSkill,
   listSkillsForTool,
   loadSkillIntoContext,
+  parseCreateSkillArgs,
+  patchUserSkill,
   searchSkillsForTool,
+  updateUserSkill,
   viewUserSkill,
 } from "@freeanima/host/core/skill";
+import { omitUndefined } from "@freeanima/host/core/util";
 import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 import { attachToolReturns } from "@freeanima/host/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
@@ -22,7 +26,7 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
         {
           name: "skill_create",
           description:
-            "Create a new skill entity (Markdown body) in the acting agent private world and register it",
+            "Create a skill (Markdown body) in the agent private world. Use origin=evolved for self-evolved procedures (default origin=user). Fill allowed_tools when the skill needs specific tools.",
           parameters: {
             type: "object",
             properties: {
@@ -30,18 +34,120 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
                 type: "string",
                 description: "Skill name (agentskills: lowercase, digits, hyphens)",
               },
-              description: { type: "string", description: "Short description" },
+              description: { type: "string", description: "Short description (when to use)" },
               content: { type: "string", description: "Skill body (Markdown)" },
+              origin: {
+                type: "string",
+                description: "user (default) | evolved (self-evolution / review bypass)",
+                enum: ["user", "evolved"],
+              },
+              allowed_tools: {
+                type: "array",
+                items: { type: "string" },
+                description: "Tool names or @ToolSet ids this skill may use",
+              },
+              denied_tools: {
+                type: "array",
+                items: { type: "string" },
+                description: "Optional tool deny list",
+              },
             },
             required: ["name", "description", "content"],
           },
+          handler: async (args) => {
+            const parsed = parseCreateSkillArgs(args);
+            return createUserSkill(
+              skills,
+              parsed.name,
+              parsed.description,
+              parsed.content,
+              omitUndefined({
+                origin: parsed.origin,
+                allowed_tools: parsed.allowed_tools,
+                denied_tools: parsed.denied_tools,
+              }),
+            );
+          },
+        },
+        {
+          name: "skill_patch",
+          description:
+            "Targeted find-and-replace inside an existing non-builtin skill body (preferred over full rewrite).",
+          parameters: {
+            type: "object",
+            properties: {
+              name: { type: "string", description: "Skill name" },
+              old_string: {
+                type: "string",
+                description: "Exact text to find (must be unique unless replace_all)",
+              },
+              new_string: {
+                type: "string",
+                description: "Replacement text (may be empty to delete)",
+              },
+              replace_all: {
+                type: "boolean",
+                description: "Replace all occurrences (default false; requires unique match)",
+              },
+            },
+            required: ["name", "old_string", "new_string"],
+          },
           handler: async (args) =>
-            createUserSkill(
+            patchUserSkill(
               skills,
               String(args.name ?? ""),
-              String(args.description ?? ""),
-              String(args.content ?? ""),
+              String(args.old_string ?? ""),
+              String(args.new_string ?? ""),
+              args.replace_all === true,
             ),
+        },
+        {
+          name: "skill_update",
+          description:
+            "Replace description, content, and/or allowed_tools/denied_tools on a non-builtin skill (major edit).",
+          parameters: {
+            type: "object",
+            properties: {
+              name: { type: "string", description: "Skill name" },
+              description: { type: "string", description: "New short description" },
+              content: { type: "string", description: "New Markdown body" },
+              allowed_tools: {
+                type: "array",
+                items: { type: "string" },
+                description: "Replace allowed_tools list",
+              },
+              denied_tools: {
+                type: "array",
+                items: { type: "string" },
+                description: "Replace denied_tools list",
+              },
+            },
+            required: ["name"],
+          },
+          handler: async (args) => {
+            const allowed =
+              args.allowed_tools === undefined
+                ? undefined
+                : Array.isArray(args.allowed_tools)
+                  ? args.allowed_tools.map((x) => String(x))
+                  : undefined;
+            const denied =
+              args.denied_tools === undefined
+                ? undefined
+                : Array.isArray(args.denied_tools)
+                  ? args.denied_tools.map((x) => String(x))
+                  : undefined;
+            return updateUserSkill(
+              skills,
+              String(args.name ?? ""),
+              omitUndefined({
+                description: args.description !== undefined ? String(args.description) : undefined,
+                content: args.content !== undefined ? String(args.content) : undefined,
+                allowed_tools: allowed,
+                denied_tools: denied,
+              }),
+            );
+          },
         },
         {
           name: "skill_load",

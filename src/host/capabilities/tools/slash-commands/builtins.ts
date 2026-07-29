@@ -40,6 +40,7 @@ import {
   resumeConversationGoal,
   setConversationGoal,
 } from "@freeanima/host/engine/goal";
+import type { CommandSkillReviewData } from "./skill-review-data.ts";
 
 function conv() {
   return getAppRuntime().conversation;
@@ -194,6 +195,43 @@ async function cmdSubgoal(ctx: CommandContext): Promise<CommandResult> {
   const updated = await addSubgoal(conv(), ctx.conversationId, condition);
   if (!updated) return asToast("➕ Subgoal added.");
   return asPanel(`➕ Subgoal added.\n\n${formatSubgoalList(updated)}`);
+}
+
+function cmdLearn(ctx: CommandContext): CommandResult {
+  const note = ctx.args.join(" ").trim();
+  const data: CommandSkillReviewData = {
+    action: "skill_review",
+    mode: "evolve",
+    force: true,
+    ...(note ? { note } : {}),
+  };
+  return {
+    text: note
+      ? `📚 Skill learn queued (note: ${note}).`
+      : "📚 Skill learn queued from this conversation.",
+    ux: "toast",
+    data,
+  };
+}
+
+function cmdSkills(ctx: CommandContext): CommandResult {
+  const sub = ctx.args[0]?.trim().toLowerCase();
+  if (sub === "curate" || sub === "maintain") {
+    const note = ctx.args.slice(1).join(" ").trim();
+    const data: CommandSkillReviewData = {
+      action: "skill_review",
+      mode: "maintain",
+      ...(note ? { note } : {}),
+    };
+    return {
+      text: "🧹 Skill maintain queued.",
+      ux: "toast",
+      data,
+    };
+  }
+  return asPanel(
+    "Usage: `/skills curate` — review skill library (maintain bypass)\n`/learn [note]` — force skill evolve from this conversation",
+  );
 }
 
 async function cmdCancel(ctx: CommandContext): Promise<CommandResult> {
@@ -415,6 +453,19 @@ export function registerBuiltins(): void {
       { name: "remove", description: "Remove subgoal N (1-based): /subgoal remove <N>" },
       { name: "clear", description: "Clear all subgoals" },
     ],
+  });
+  registerCommand({
+    name: "learn",
+    description: "Force skill self-evolution review from this conversation",
+    handler: cmdLearn,
+    scope: "conversation",
+  });
+  registerCommand({
+    name: "skills",
+    description: "Skill library commands (curate / maintain)",
+    handler: cmdSkills,
+    scope: "conversation",
+    subcommands: [{ name: "curate", description: "Run skill maintain bypass on the library" }],
   });
   registerCommand({
     name: "cancel",

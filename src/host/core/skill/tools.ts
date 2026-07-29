@@ -1,7 +1,15 @@
 import { omitUndefined } from "@freeanima/host/core/util";
 import { toolError, toolResult } from "@freeanima/host/core/tool";
+import type { SkillOrigin } from "@freeanima/host/core/db/schema/entity";
 import type { SkillDef, SkillRegistry } from "./registry.ts";
-import { createDbSkill, deleteDbSkill, exportSkillMarkdown, importSkillMarkdown } from "./store.ts";
+import {
+  createDbSkill,
+  deleteDbSkill,
+  exportSkillMarkdown,
+  importSkillMarkdown,
+  patchDbSkill,
+  updateDbSkill,
+} from "./store.ts";
 
 export type SkillListEntry = {
   name: string;
@@ -25,6 +33,25 @@ function toListEntry(def: SkillDef): SkillListEntry {
     allowed_tools: def.allowed_tools,
     source: def.source,
   });
+}
+
+function parseStringList(raw: unknown): string[] | undefined {
+  if (raw === undefined || raw === null) return undefined;
+  if (Array.isArray(raw)) {
+    return raw.map((x) => String(x).trim()).filter(Boolean);
+  }
+  if (typeof raw === "string") {
+    return raw
+      .split(/[\s,]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return undefined;
+}
+
+function parseOrigin(raw: unknown): SkillOrigin | undefined {
+  if (raw === "user" || raw === "evolved" || raw === "imported") return raw;
+  return undefined;
 }
 
 export async function loadSkillIntoContext(skills: SkillRegistry, name: string): Promise<string> {
@@ -68,15 +95,91 @@ export async function createUserSkill(
   name: string,
   description: string,
   content: string,
+  opts?: {
+    origin?: SkillOrigin;
+    allowed_tools?: string[];
+    denied_tools?: string[];
+  },
 ): Promise<string> {
   try {
-    const def = await createDbSkill(skills, name, description, content);
+    const origin = opts?.origin ?? "user";
+    const def = await createDbSkill(skills, name, description, content, {
+      origin,
+      status: "active",
+      ...omitUndefined({
+        allowed_tools: opts?.allowed_tools,
+        denied_tools: opts?.denied_tools,
+      }),
+    });
     return toolResult({
       ok: true,
       name: def.name,
       description: def.description,
+      origin: def.origin,
       entity_id: def.entityId,
-      message: `Skill '${def.name}' created`,
+      message: `Skill '${def.name}' created (origin=${def.origin})`,
+    });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+/** Parse tool args for skill_create (shared by capabilities registration). */
+export function parseCreateSkillArgs(args: Record<string, unknown>): {
+  name: string;
+  description: string;
+  content: string;
+  origin?: SkillOrigin;
+  allowed_tools?: string[];
+  denied_tools?: string[];
+} {
+  return omitUndefined({
+    name: String(args.name ?? ""),
+    description: String(args.description ?? ""),
+    content: String(args.content ?? ""),
+    origin: parseOrigin(args.origin),
+    allowed_tools: parseStringList(args.allowed_tools),
+    denied_tools: parseStringList(args.denied_tools),
+  });
+}
+
+export async function patchUserSkill(
+  skills: SkillRegistry,
+  name: string,
+  oldString: string,
+  newString: string,
+  replaceAll?: boolean,
+): Promise<string> {
+  try {
+    const def = await patchDbSkill(skills, name, oldString, newString, {
+      replace_all: replaceAll === true,
+    });
+    return toolResult({
+      ok: true,
+      name: def.name,
+      message: `Skill '${def.name}' patched`,
+    });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+export async function updateUserSkill(
+  skills: SkillRegistry,
+  name: string,
+  patch: {
+    description?: string;
+    content?: string;
+    allowed_tools?: string[];
+    denied_tools?: string[];
+  },
+): Promise<string> {
+  try {
+    const def = await updateDbSkill(skills, name, patch);
+    return toolResult({
+      ok: true,
+      name: def.name,
+      message: `Skill '${def.name}' updated`,
     });
   } catch (e) {
     return toolError(String(e instanceof Error ? e.message : e));
