@@ -95,7 +95,7 @@ describePg("world scope tools", () => {
       async () => {
         const tool = toolSets.getTool("diary_append")!;
         agentOut = await Promise.resolve(
-          tool.handler({ content: "agent diary note", date: "2026-07-01" }),
+          tool.handler({ subject_kind: "agent", content: "agent diary note", date: "2026-07-01" }),
         );
       },
       { tools: toolSets },
@@ -109,6 +109,7 @@ describePg("world scope tools", () => {
         const tool = toolSets.getTool("diary_append")!;
         userOut = await Promise.resolve(
           tool.handler({
+            subject_kind: "user",
             content: "user diary note",
             date: "2026-07-01",
             world_id: testUserWorldId(),
@@ -124,7 +125,9 @@ describePg("world scope tools", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("diary_get")!;
-        agentGet = await Promise.resolve(tool.handler({ date: "2026-07-01" }));
+        agentGet = await Promise.resolve(
+          tool.handler({ subject_kind: "agent", date: "2026-07-01" }),
+        );
       },
       { tools: toolSets },
     );
@@ -143,7 +146,7 @@ describePg("world scope tools", () => {
       async () => {
         const tool = toolSets.getTool("diary_get")!;
         userGet = await Promise.resolve(
-          tool.handler({ date: "2026-07-01", world_id: testUserWorldId() }),
+          tool.handler({ subject_kind: "agent", date: "2026-07-01", world_id: testUserWorldId() }),
         );
       },
       { tools: toolSets, callerAuth: userCallerAuth() },
@@ -176,7 +179,9 @@ describePg("world scope tools", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("diary_get")!;
-        agentOut = await Promise.resolve(tool.handler({ date: "2026-07-02" }));
+        agentOut = await Promise.resolve(
+          tool.handler({ subject_kind: "agent", date: "2026-07-02" }),
+        );
       },
       { tools: toolSets },
     );
@@ -197,7 +202,7 @@ describePg("world scope tools", () => {
       async () => {
         const tool = toolSets.getTool("diary_get")!;
         userOut = await Promise.resolve(
-          tool.handler({ date: "2026-07-02", world_id: testUserWorldId() }),
+          tool.handler({ subject_kind: "agent", date: "2026-07-02", world_id: testUserWorldId() }),
         );
       },
       {
@@ -246,7 +251,7 @@ describePg("world scope tools", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("email_list_accounts")!;
-        agentOut = await Promise.resolve(tool.handler({}));
+        agentOut = await Promise.resolve(tool.handler({ subject_kind: "agent" }));
       },
       { tools: toolSets },
     );
@@ -259,7 +264,9 @@ describePg("world scope tools", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("email_list_accounts")!;
-        userOut = await Promise.resolve(tool.handler({ world_id: testUserWorldId() }));
+        userOut = await Promise.resolve(
+          tool.handler({ subject_kind: "agent", world_id: testUserWorldId() }),
+        );
       },
       {
         tools: toolSets,
@@ -286,6 +293,7 @@ describePg("world scope tools", () => {
         const tool = toolSets.getTool("notification_send")!;
         sendOut = await Promise.resolve(
           tool.handler({
+            subject_kind: "agent",
             title: "User scoped",
             body: "hello user inbox",
             subject_id: user_subject_id,
@@ -302,7 +310,7 @@ describePg("world scope tools", () => {
       async () => {
         const tool = toolSets.getTool("notification_list")!;
         userList = await Promise.resolve(
-          tool.handler({ subject_id: user_subject_id, read_filter: "all" }),
+          tool.handler({ subject_kind: "agent", subject_id: user_subject_id, read_filter: "all" }),
         );
       },
       { tools: toolSets },
@@ -315,7 +323,9 @@ describePg("world scope tools", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("notification_list")!;
-        agentList = await Promise.resolve(tool.handler({ recipient: "agent", read_filter: "all" }));
+        agentList = await Promise.resolve(
+          tool.handler({ subject_kind: "agent", recipient: "agent", read_filter: "all" }),
+        );
       },
       { tools: toolSets },
     );
