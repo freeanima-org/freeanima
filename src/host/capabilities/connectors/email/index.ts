@@ -29,7 +29,7 @@ export {
 export {
   buildNewMailNotificationContent,
   bucketNewMailSubjectsByWorld,
-  collectNewMailSubjects,
+  collectNewMails,
   notifyNewMailFromSyncResults,
 } from "./new-mail-notify.ts";
 export { createMailbox, renameMailbox, deleteMailbox } from "./mailbox-ops.ts";

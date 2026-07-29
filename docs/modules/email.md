@@ -12,7 +12,7 @@ Habitat-backed IMAP/SMTP mail client (`/email`). Entity model: [`docs/product/en
 - Flags: `\Seen` / `\Flagged` write-back and FLAGS refresh on sync
 - Send: SMTP + APPEND Sent; drafts in Drafts mailbox
 - Delete: move to Trash (default); mailbox CREATE/RENAME/DELETE
-- IDLE on inbox + cron `builtin-email-sync-all` every 5m across **all worlds** (enabled accounts); auto-sync new inbox subjects → **one notification per owning subject** (user vs agent world); manual `email.sync` does not notify
+- IDLE on inbox + cron `builtin-email-sync-all` every 5m across **all worlds** (enabled accounts); auto-sync new inbox mail → **one notification per owning subject** (user vs agent world) with body carrying `from` + `message_id` (entity id for `email_read`); manual `email.sync` does not notify
 - Local hybrid search (synced messages only)
 - List multi-select: mark read/unread, star, move, delete (serial RPC)
 
