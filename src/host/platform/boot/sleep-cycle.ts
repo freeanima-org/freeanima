@@ -1,5 +1,7 @@
 import type { PipelineDefinition } from "@freeanima/host/engine/pipeline";
 
+import { shouldSkipScheduledDeepSleep } from "./deep-sleep-mode.ts";
+
 /** 睡眠周期 pipeline id */
 export const SLEEP_CYCLE_PIPELINE_ID = "sleep-cycle";
 
@@ -18,6 +20,7 @@ export const SLEEP_STEP_IDS = {
 /**
  * 睡眠周期 DAG（宏观层）。
  * 浅睡/深睡内部多阶段仍由各自 run* 函数顺序编排，不提升到本 DAG。
+ * 定时深睡仅 CST 周一（见 shouldSkipScheduledDeepSleep）。
  */
 export const sleepCycleDefinition: PipelineDefinition = {
   id: SLEEP_CYCLE_PIPELINE_ID,
@@ -35,6 +38,7 @@ export const sleepCycleDefinition: PipelineDefinition = {
       id: SLEEP_STEP_IDS.deepSleep,
       handler: SLEEP_STEP_IDS.deepSleep,
       dependsOn: [SLEEP_STEP_IDS.lightSleep],
+      skipIf: shouldSkipScheduledDeepSleep,
     },
     {
       id: SLEEP_STEP_IDS.dream,

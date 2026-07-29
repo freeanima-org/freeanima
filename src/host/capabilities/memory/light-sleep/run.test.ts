@@ -211,7 +211,8 @@ describe("runLightSleep", () => {
 
     registerLightSleepEngine(async (input) => {
       lightSleepCalls += 1;
-      const isSemantic = input.toolNames.includes("memory_semantic_create");
+      expect(input.stage === "semantic" || input.stage === "limbic").toBe(true);
+      const isSemantic = input.stage === "semantic";
       return {
         summary: isSemantic ? "semantic done" : "limbic done",
         tool_calls: 0,

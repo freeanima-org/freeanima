@@ -75,7 +75,9 @@ type SleepStreamInput = {
 
 type SleepStreamOptions = {
   runKind: string;
+  runName: string;
   maxTurns: number;
+  metadata?: Record<string, unknown>;
   onToolResult?: (name: string, content: string) => void;
 };
 
@@ -91,7 +93,7 @@ async function runSleepStream(
   const result = await runAutoLlm(
     deps,
     omitUndefined({
-      runName: opts.runKind,
+      runName: opts.runName,
       runKind: opts.runKind,
       systemPrompt: input.systemPrompt,
       userMessages: input.userMessages,
@@ -99,6 +101,7 @@ async function runSleepStream(
       toolNames,
       maxTurns: opts.maxTurns,
       toolPolicy: sleepPolicy,
+      metadata: opts.metadata,
       onToolResult: opts.onToolResult,
     }),
   );
@@ -117,7 +120,9 @@ async function runLightSleepTurn(
   const limbicMemoryIds: string[] = [];
   const { summary, toolCalls } = await runSleepStream(deps, input, {
     runKind: "light-sleep",
+    runName: `light-sleep/${input.stage}`,
     maxTurns: LIGHT_SLEEP_MAX_TURNS,
+    metadata: { stage: input.stage },
     onToolResult: (name, content) => {
       const semanticId = extractSemanticMemoryId(name, content);
       if (semanticId && !semanticMemoryIds.includes(semanticId)) {
@@ -143,7 +148,9 @@ async function runDeepSleepTurn(
 ): Promise<DeepSleepEngineResult> {
   const { summary, toolCalls } = await runSleepStream(deps, input, {
     runKind: "deep-sleep",
+    runName: `deep-sleep/${input.round}`,
     maxTurns: DEEP_SLEEP_MAX_TURNS,
+    metadata: { round: input.round },
     onToolResult: (name, content) => {
       if (input.changeLog) {
         applyDeepSleepToolResult(input.changeLog, name, content);
@@ -159,6 +166,7 @@ async function runAutobiographyTurn(
 ): Promise<AutobiographyEngineResult> {
   const { summary, toolCalls } = await runSleepStream(deps, input, {
     runKind: "self-autobiography",
+    runName: "self-autobiography",
     maxTurns: 20,
   });
   return { summary, tool_calls: toolCalls };

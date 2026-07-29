@@ -1,11 +1,12 @@
 import { createEnginePort } from "./engine-port-registry.ts";
-import type { DeepSleepChangeLog } from "./deep-sleep/types.ts";
+import type { DeepSleepChangeLog, DeepSleepRound } from "./deep-sleep/types.ts";
 
 /** Deep sleep single-round LLM input (similar to light sleep, but userMessages has 4 entries) */
 export type DeepSleepEngineInput = {
   systemPrompt: string;
   userMessages: [string, string, string, string];
   toolNames: string[];
+  round: DeepSleepRound;
   changeLog?: DeepSleepChangeLog;
 };
 
