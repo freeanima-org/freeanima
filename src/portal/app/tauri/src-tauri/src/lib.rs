@@ -538,6 +538,8 @@ fn set_companion_visible(app: AppHandle, state: State<'_, ShellState>, visible: 
   if let Some(win) = app.get_webview_window("companion") {
     if visible {
       win.show().map_err(|e| e.to_string())?;
+      // overlay 常驻隐藏，show 时再推一发，避免此前漏收 config-changed
+      let _ = app.emit("shell:config-changed", ());
     } else {
       win.hide().map_err(|e| e.to_string())?;
     }
