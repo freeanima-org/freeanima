@@ -291,15 +291,15 @@ export function LlmDebugPanel({ open, onClose, snapshots, loading }: LlmDebugPan
         {loading ? (
           <p className="text-sm text-muted-foreground">{m.chat_llm_debug_loading()}</p>
         ) : (
-          <Tabs defaultValue="initial">
+          <Tabs defaultSelectedKey="initial" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="initial">{m.chat_llm_debug_tab_initial()}</TabsTrigger>
-              <TabsTrigger value="final">{m.chat_llm_debug_tab_final()}</TabsTrigger>
+              <TabsTrigger id="initial">{m.chat_llm_debug_tab_initial()}</TabsTrigger>
+              <TabsTrigger id="final">{m.chat_llm_debug_tab_final()}</TabsTrigger>
             </TabsList>
-            <TabsContent value="initial" className="mt-3">
+            <TabsContent id="initial" className="mt-3 min-w-0">
               <SnapshotView snapshot={snapshots?.initial} />
             </TabsContent>
-            <TabsContent value="final" className="mt-3">
+            <TabsContent id="final" className="mt-3 min-w-0">
               <SnapshotView snapshot={snapshots?.final} />
             </TabsContent>
           </Tabs>

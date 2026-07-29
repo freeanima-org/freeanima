@@ -210,15 +210,18 @@ export async function patchConversationMeta(
     set.system_prompt_built_at = Number.isNaN(parsed.getTime()) ? null : parsed;
     hasColumnPatch = true;
   }
-  if (patch.compression == null) {
-    set.compression = null;
-    hasColumnPatch = true;
-  } else if (patch.compression !== undefined) {
-    const compression = compressionStateSchema.parse(patch.compression);
-    if (compression == null) {
+  // 须用 `in`：`undefined == null` 为 true，未传 compression 时不可清空该列
+  // （否则 rebuildConversationCache / system_prompt 等 patch 会抹掉刚写入的摘要边界）
+  if ("compression" in patch) {
+    if (patch.compression == null) {
       set.compression = null;
     } else {
-      Object.assign(set, patchCompression(compression));
+      const compression = compressionStateSchema.parse(patch.compression);
+      if (compression == null) {
+        set.compression = null;
+      } else {
+        Object.assign(set, patchCompression(compression));
+      }
     }
     hasColumnPatch = true;
   }

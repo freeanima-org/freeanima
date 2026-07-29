@@ -346,7 +346,9 @@ async function cmdSummarize(ctx: CommandContext): Promise<CommandResult> {
     return asToast("ℹ️ Already fully summarized (l2 = l3 = l4).");
   }
   if (!r.ok) {
-    return asToast("⚠️ Could not summarize this conversation.");
+    return asToast(
+      "⚠️ Could not summarize this conversation（compression 边界未持久化，请检查 Habitat 日志）。",
+    );
   }
 
   const cfg = getCompressionConfig();
@@ -356,8 +358,11 @@ async function cmdSummarize(ctx: CommandContext): Promise<CommandResult> {
   ).trim();
   const preview =
     summaryPreview.length > 400 ? `${summaryPreview.slice(0, 400)}…` : summaryPreview || "(empty)";
+  const headline = summaryPreview
+    ? `✅ Summarized (${mode})`
+    : `⚠️ Summarized boundaries set (${mode}) — summary text empty（摘要 LLM 失败或空响应，见 Habitat 日志）`;
   const lines = [
-    `✅ Summarized (${mode})`,
+    headline,
     `l2: ${r.l2 ?? "—"}  l3: ${r.l3 ?? "—"}  l4: ${r.l4 ?? "—"}`,
     "",
     "**Summary preview:**",
