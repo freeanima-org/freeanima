@@ -28,7 +28,6 @@ import {
   useHabitatConnection,
   useNetworkOnline,
   useSubjectScope,
-  SubjectScopeToggle,
 } from "@freeanima/client/portal-sdk/react.tsx";
 import { readModuleSelection, writeModuleSelection } from "@freeanima/client/portal-sdk";
 import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
@@ -930,78 +929,62 @@ export function EmailApp() {
           listToggleAriaLabel={m.email_open_accounts()}
           detailOpen={detailOpen}
           onDetailOpenChange={handleDetailOpenChange}
-          middleActions={
-            <>
-              <SubjectScopeToggle />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 shrink-0 px-2"
-                disabled={refreshing || loading}
-                aria-label={m.habitat_common_refresh()}
-                onClick={() => void handleManualRefresh()}
-              >
-                {refreshing ? <Spinner className="size-3.5" /> : m.habitat_common_refresh()}
-              </Button>
-              {activeAccount ? (
-                <>
-                  {listLoading || searching || batchBusy ? <Spinner className="size-4" /> : null}
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={selectionMode ? "secondary" : "outline"}
-                    disabled={messages.length === 0 && !selectionMode}
-                    onClick={() => {
-                      if (selectionMode) exitSelectionMode();
-                      else setSelectionMode(true);
-                    }}
-                  >
-                    {selectionMode ? m.email_cancel() : m.email_select_mode()}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={writesDisabled}
-                    onClick={() => setComposeOpen(true)}
-                  >
-                    {m.email_compose()}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    disabled={syncing || writesDisabled}
-                    onClick={() => void onSync()}
-                  >
-                    {syncing ? m.email_syncing() : m.email_sync()}
-                  </Button>
-                </>
-              ) : null}
-            </>
-          }
           middleHeaderExtra={
             activeAccount ? (
               <div className="flex flex-col gap-2">
-                <div className="inline-flex w-fit overflow-hidden rounded-md border shadow-xs">
-                  <Button
-                    type="button"
-                    variant={listFilter === "unread" ? "default" : "outline"}
-                    size="sm"
-                    className="rounded-none border-0"
-                    onClick={() => void changeListFilter("unread")}
-                  >
-                    {m.email_filter_unread()}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={listFilter === "all" ? "default" : "outline"}
-                    size="sm"
-                    className="rounded-none border-0 border-l"
-                    onClick={() => void changeListFilter("all")}
-                  >
-                    {m.email_filter_all()}
-                  </Button>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="inline-flex w-fit overflow-hidden rounded-md border shadow-xs">
+                    <Button
+                      type="button"
+                      variant={listFilter === "unread" ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-none border-0"
+                      onClick={() => void changeListFilter("unread")}
+                    >
+                      {m.email_filter_unread()}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={listFilter === "all" ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-none border-0 border-l"
+                      onClick={() => void changeListFilter("all")}
+                    >
+                      {m.email_filter_all()}
+                    </Button>
+                  </div>
+                  <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">
+                    {listLoading || searching || batchBusy ? <Spinner className="size-4" /> : null}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={selectionMode ? "secondary" : "outline"}
+                      disabled={messages.length === 0 && !selectionMode}
+                      onClick={() => {
+                        if (selectionMode) exitSelectionMode();
+                        else setSelectionMode(true);
+                      }}
+                    >
+                      {selectionMode ? m.email_cancel() : m.email_select_mode()}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={writesDisabled}
+                      onClick={() => setComposeOpen(true)}
+                    >
+                      {m.email_compose()}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={syncing || writesDisabled}
+                      onClick={() => void onSync()}
+                    >
+                      {syncing ? m.email_syncing() : m.email_sync()}
+                    </Button>
+                  </div>
                 </div>
                 {selectionMode ? (
                   <div className="bg-muted/40 flex flex-col gap-2 rounded-md border p-2">
