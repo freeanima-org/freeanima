@@ -114,6 +114,7 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
     applyPackagedUpdate: async (opts: { assetUrl: string; expectedSize?: number }) => {
       const { installApkFromUrl } = await import("../lib/apk-installer.ts");
       await installApkFromUrl(opts.assetUrl, {
+        ...(opts.expectedSize != null ? { expectedSize: opts.expectedSize } : {}),
         onProgress: (progress) => {
           for (const handler of packagedUpdateProgressHandlers) {
             handler(progress);

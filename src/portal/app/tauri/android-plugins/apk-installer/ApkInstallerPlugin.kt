@@ -68,7 +68,8 @@ class ApkInstallerPlugin(private val activity: Activity) : Plugin(activity) {
       progress.put("total", total)
     }
     progress.put("phase", phase)
-    trigger("downloadProgress", progress)
+    // Channel → WebView 须在主线程；后台下载线程直接 trigger 时进度事件会静默丢失
+    activity.runOnUiThread { trigger("downloadProgress", progress) }
   }
 
   private fun downloadApk(assetUrl: String): File {
@@ -85,6 +86,7 @@ class ApkInstallerPlugin(private val activity: Activity) : Plugin(activity) {
     val out = File(activity.cacheDir, "freeanima-mobile-android.apk")
     var received = 0L
     var lastNotifyAt = 0L
+    notifyProgress(0L, total, "downloading")
     try {
       conn.inputStream.use { input ->
         FileOutputStream(out).use { fos ->

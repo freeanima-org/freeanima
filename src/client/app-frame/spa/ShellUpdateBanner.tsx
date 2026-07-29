@@ -239,12 +239,16 @@ export function ShellUpdateBanner(): null {
             setError(m.ui_shell_update_failed());
             return;
           }
-          setApplyProgress(null);
+          setApplyProgress({
+            received: 0,
+            total: update.assetSize ?? null,
+            phase: "downloading",
+          });
           setPhase("applying");
           const unsub = window.portalShell?.onPackagedUpdateProgress?.((progress) => {
             setApplyProgress({
               received: progress.received,
-              total: progress.total,
+              total: progress.total ?? update.assetSize ?? null,
               phase: progress.phase ?? "downloading",
             });
           });

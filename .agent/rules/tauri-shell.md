@@ -22,7 +22,7 @@ CI / 本地 release profile 优先级：**构建速度 > 体积 > 运行速度**
 
 NSIS 安装目录 = `productName`（无独立 installDir）。`just pack tauri-windows` 按当前 `productName` 选取 setup，并在构建前清除同目录旧 `*-setup.exe`，避免误拷 `FreeAnima_*.exe` 到 `dist/`。请安装与 channel 对应的 setup（dev 安装器文件名含 `FreeAnima Dev` / `FreeAnima-Dev`）。
 
-打包/开发脚本经 `scripts/apply-tauri-shell-identity.ts` 写出 `--config` 合并层；`FREEANIMA_HOME` 仍可覆盖壳 home。Habitat/CLI 数据目录不受此表影响（仍 `~/.anima` 或 `FREEANIMA_HOME`）。
+打包/开发脚本经 `scripts/apply-tauri-shell-identity.ts` 写出 `--config` 合并层（含 `version`；Android 另写 `bundle.android.versionCode`，公式见 `android-version-code.ts`）；`FREEANIMA_BUILD_VERSION` 同时写入 `native-build-meta`（关于页 / 更新比较）。`FREEANIMA_HOME` 仍可覆盖壳 home。Habitat/CLI 数据目录不受此表影响（仍 `~/.anima` 或 `FREEANIMA_HOME`）。
 
 ## 强制策略
 
