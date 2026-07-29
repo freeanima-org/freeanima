@@ -6,6 +6,8 @@ title: UI / UX
 
 Product design system for FreeAnima Portal UI: **visual foundations**, **component taxonomy**, and **interaction patterns**. All three adapt through the same orthogonal axes — **shell**, **layout**, and **interaction** — defined in [dimensions](dimensions.md).
 
+Covers the **application-form SPA** and browser-extension **popup / options** (same `@freeanima/ui-kit` stack). Content scripts stay out of this design system — see [portal.md](../modules/portal.md).
+
 This directory is the **UI/UX specification SSOT**. Agent hard bans, import rules, and API entry paths live in [`.agent/rules/`](../../.agent/rules/README.md) and link here. Token values live in code (`src/ui-kit/styles/globals.css`). When code and docs disagree, **code wins**.
 
 ## Reading order

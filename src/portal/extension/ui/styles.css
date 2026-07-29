@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@import "@freeanima/ui-kit/styles/globals.css";
+@source "../**/*.{tsx,ts}";
+@source "../../../features/vault/ui/shared/**/*.{tsx,ts}";
+@source "../../../ui-kit/**/*.{tsx,ts}";
+@import "@freeanima/ui-kit/styles.css";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body.ext-popup {
+  width: 380px;
+  height: 520px;
+  overflow: hidden;
+}
+
+body.ext-options {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}

@@ -40,6 +40,7 @@ src/portal/
 - 开发：`just dev browser-extension`
 - 鉴权：选项页填写 Habitat URL + Service API Token（Bearer）；RPC 仅 HTTP REST
 - 能力（Vault）：见 [`vault.md`](vault.md)
+- **UI 栈：** popup / options 与应用壳同栈（React + `@freeanima/ui-kit`）；编辑表单等与 Shell 共用 `features/vault/ui/shared`。content script 保持原生 DOM（页面注入，不适用 SPA UI 规范）。
 
 ## 相关
 

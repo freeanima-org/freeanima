@@ -12,7 +12,19 @@ import { ConfirmDialog, EmptyState, StatusAlert } from "@freeanima/ui-kit/compos
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
 import { m } from "@paraglide/messages";
 import type { VaultItemMetaRowPayload } from "@freeanima/shared/rpc-contract";
-import { extractCustomFieldNames, type VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
+import {
+  extractCustomFieldNames,
+  type VaultCustomField,
+  type VaultSecretsPayload,
+} from "@freeanima/shared/vault-crypto";
+import { generatePassword } from "@freeanima/features/vault/domain/password-gen.ts";
+import {
+  normalizeFormUris,
+  primaryUrlFromForm,
+  VaultItemForm,
+  VaultUnlockForm,
+  type VaultItemFormValues,
+} from "@freeanima/features/vault/ui/shared";
 
 import {
   changeVaultCryptoConfig,
@@ -33,62 +45,24 @@ import { newUserVaultSalt } from "./lib/crypto-client.ts";
 import { BitwardenImportDialog } from "./components/BitwardenImportDialog.tsx";
 import { ChangeMasterPasswordDialog } from "./components/ChangeMasterPasswordDialog.tsx";
 import { VaultItemDetail, type VaultDetailSecrets } from "./components/VaultItemDetail.tsx";
-import { VaultItemForm, type VaultItemFormValues } from "./components/VaultItemForm.tsx";
 import { VaultItemHistoryDialog } from "./components/VaultItemHistoryDialog.tsx";
 
-function LockScreen({
-  loading,
-  error,
-  setupMode,
-  onUnlock,
-  onSetup,
-}: {
-  loading: boolean;
-  error: string;
-  setupMode: boolean;
-  onUnlock: (password: string) => void;
-  onSetup: (password: string, confirm: string) => void;
-}) {
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-
-  return (
-    <div className="mx-auto flex h-full max-w-md flex-col justify-center gap-4 p-6">
-      <div className="space-y-1 text-center">
-        <h1 className="text-lg font-semibold">用户保险库已锁定</h1>
-        <p className="text-sm text-muted-foreground">
-          {setupMode ? "首次使用请设置主密码" : "输入主密码以解锁用户保险库"}
-        </p>
-      </div>
-      {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
-      <Input
-        type="password"
-        autoComplete="current-password"
-        placeholder="主密码"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      {setupMode ? (
-        <Input
-          type="password"
-          autoComplete="new-password"
-          placeholder="确认主密码"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-        />
-      ) : null}
-      <Button
-        type="button"
-        disabled={loading || !password.trim()}
-        onClick={() => {
-          if (setupMode) onSetup(password, confirm);
-          else onUnlock(password);
-        }}
-      >
-        {loading ? <Spinner className="size-4" /> : setupMode ? "创建保险库" : "解锁"}
-      </Button>
-    </div>
-  );
+function normalizeCustomFields(secrets: VaultSecretsPayload): VaultCustomField[] {
+  const raw = secrets.custom_fields;
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter(
+      (field): field is VaultCustomField =>
+        !!field &&
+        typeof field === "object" &&
+        typeof field.name === "string" &&
+        typeof field.value === "string",
+    )
+    .map((field) => ({
+      name: field.name,
+      value: field.value,
+      type: field.type === "hidden" || field.type === "boolean" ? field.type : "text",
+    }));
 }
 
 function secretsFromAgentView(secrets?: VaultSecretsViewPayload): VaultDetailSecrets {
@@ -116,13 +90,15 @@ function buildSecretsPayload(
   values: VaultItemFormValues,
   existing?: VaultSecretsPayload,
 ): VaultSecretsPayload {
-  const secrets: VaultSecretsPayload = {};
+  const secrets: VaultSecretsPayload = { ...existing };
   if (values.password) secrets.password = values.password;
+  else delete secrets.password;
   if (values.notes) secrets.notes = values.notes;
+  else delete secrets.notes;
   if (values.totp) secrets.totp = values.totp;
-  if (existing?.custom_fields && existing.custom_fields.length > 0) {
-    secrets.custom_fields = existing.custom_fields;
-  }
+  else delete secrets.totp;
+  if (values.custom_fields.length > 0) secrets.custom_fields = values.custom_fields;
+  else delete secrets.custom_fields;
   return secrets;
 }
 
@@ -308,16 +284,18 @@ export function VaultApp() {
     setError("");
     try {
       const secrets = buildSecretsPayload(values);
+      const uris = normalizeFormUris(values.uris);
+      const url = primaryUrlFromForm(values) || undefined;
       if (subjectKind === "user") {
         if (!session.isUnlocked(VAULT_UI_SCOPE)) throw new Error("vault_locked");
         const sealed = await session.sealSecrets(secrets);
         await createVaultItem("user", {
           title: values.title,
-          item_type: "login",
-          ...(values.url
-            ? { url: values.url, uris: [{ uri: values.url, match: "domain" as const }] }
-            : {}),
+          item_type: values.item_type,
+          ...(url ? { url } : {}),
+          ...(uris.length > 0 ? { uris } : {}),
           ...(values.username ? { username: values.username } : {}),
+          ...(values.tags.length > 0 ? { tags: values.tags } : {}),
           secrets_enc: sealed.secrets_enc,
           dek_wrapped: sealed.dek_wrapped,
           custom_field_names: extractCustomFieldNames(secrets),
@@ -325,11 +303,11 @@ export function VaultApp() {
       } else {
         await createVaultItemPlain({
           title: values.title,
-          item_type: "login",
-          ...(values.url
-            ? { url: values.url, uris: [{ uri: values.url, match: "domain" as const }] }
-            : {}),
+          item_type: values.item_type,
+          ...(url ? { url } : {}),
+          ...(uris.length > 0 ? { uris } : {}),
           ...(values.username ? { username: values.username } : {}),
+          ...(values.tags.length > 0 ? { tags: values.tags } : {}),
           secrets: secrets as VaultSecretsViewPayload,
         });
       }
@@ -358,13 +336,22 @@ export function VaultApp() {
         }
       }
       setEditExistingSecrets(secrets);
+      const uris =
+        detail.uris && detail.uris.length > 0
+          ? detail.uris
+          : detail.url
+            ? [{ uri: detail.url, match: "domain" as const }]
+            : [{ uri: "", match: "domain" as const }];
       setEditInitial({
         title: selectedItem.title,
-        url: selectedItem.url ?? "",
+        item_type: selectedItem.item_type,
         username: selectedItem.username ?? "",
+        tags: selectedItem.tags ?? [],
+        uris,
         password: typeof secrets.password === "string" ? secrets.password : "",
         totp: typeof secrets.totp === "string" ? secrets.totp : "",
         notes: typeof secrets.notes === "string" ? secrets.notes : "",
+        custom_fields: normalizeCustomFields(secrets),
       });
       setEditing(true);
       setCreating(false);
@@ -381,15 +368,19 @@ export function VaultApp() {
     setError("");
     try {
       const secrets = buildSecretsPayload(values, editExistingSecrets);
+      const uris = normalizeFormUris(values.uris);
+      const url = primaryUrlFromForm(values);
       if (subjectKind === "user") {
         if (!session.isUnlocked(VAULT_UI_SCOPE)) throw new Error("vault_locked");
         const sealed = await session.sealSecrets(secrets);
         await patchVaultItem("user", {
           id: selectedItem.id,
           title: values.title,
-          url: values.url,
-          uris: values.url ? [{ uri: values.url, match: "domain" }] : [],
+          item_type: values.item_type,
+          url,
+          uris,
           username: values.username,
+          tags: values.tags,
           secrets_enc: sealed.secrets_enc,
           dek_wrapped: sealed.dek_wrapped,
           custom_field_names: extractCustomFieldNames(secrets),
@@ -398,9 +389,11 @@ export function VaultApp() {
         await patchVaultItemPlain({
           id: selectedItem.id,
           title: values.title,
-          url: values.url,
-          uris: values.url ? [{ uri: values.url, match: "domain" }] : [],
+          item_type: values.item_type,
+          url,
+          uris,
           username: values.username,
+          tags: values.tags,
           secrets: secrets as VaultSecretsViewPayload,
         });
       }
@@ -508,7 +501,7 @@ export function VaultApp() {
 
   if (showLockScreen) {
     return (
-      <LockScreen
+      <VaultUnlockForm
         loading={actionLoading || loading}
         error={error}
         setupMode={userSetupMode}
@@ -713,6 +706,7 @@ export function VaultApp() {
                   disabled={writesDisabled}
                   loading={actionLoading}
                   onSubmit={(values) => void handleCreateItem(values)}
+                  onGeneratePassword={() => generatePassword({ length: 20, symbols: true })}
                 />
               </CardContent>
             </Card>
@@ -725,6 +719,7 @@ export function VaultApp() {
                   disabled={writesDisabled}
                   loading={actionLoading}
                   onSubmit={(values) => void handlePatchItem(values)}
+                  onGeneratePassword={() => generatePassword({ length: 20, symbols: true })}
                   onCancel={() => {
                     setEditing(false);
                     setEditInitial(null);

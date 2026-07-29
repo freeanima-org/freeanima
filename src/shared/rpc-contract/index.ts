@@ -468,6 +468,8 @@ export type {
   VaultItemDetailRowPayload,
   VaultSecretsViewPayload,
   VaultConfigRowPayload,
+  VaultUriMatch,
+  VaultUriEntryPayload,
   VaultListInput,
   VaultListOutput,
   VaultGetInput,

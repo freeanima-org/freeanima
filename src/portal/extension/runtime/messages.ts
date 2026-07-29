@@ -4,7 +4,7 @@ import type {
   VaultUriEntryPayload,
   VaultUriMatch,
 } from "@freeanima/shared/rpc-contract";
-import type { VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
+import type { VaultCustomField, VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
 
 export type VaultItemType = VaultItemMetaRowPayload["item_type"];
 
@@ -13,7 +13,7 @@ export type ExtToBgMessage =
   | { type: "get_status" }
   | { type: "unlock"; master_password: string }
   | { type: "lock" }
-  | { type: "list_for_tab"; tab_url: string }
+  | { type: "list_for_tab"; tab_url: string; query?: string }
   | { type: "get_fill_payload"; item_id: number }
   | { type: "get_item"; item_id: number }
   | {
@@ -29,6 +29,7 @@ export type ExtToBgMessage =
       password?: string;
       notes?: string;
       totp?: string;
+      custom_fields?: VaultCustomField[];
     }
   | { type: "delete_item"; item_id: number }
   | { type: "save_login"; title: string; url: string; username: string; password: string }
@@ -66,6 +67,7 @@ export type ExtVaultEditorItem = {
   password: string;
   notes: string;
   totp: string;
+  custom_fields: VaultCustomField[];
 };
 
 export type ExtVaultListItem = VaultItemMetaRowPayload & { matched: boolean };
@@ -81,7 +83,7 @@ export type ExtBgResponse =
   | { ok: true; deleted: true }
   | { ok: false; error: string };
 
-export type { VaultItemType, VaultUriEntryPayload, VaultUriMatch };
+export type { VaultUriEntryPayload, VaultUriMatch };
 
 export function sendBg(msg: ExtToBgMessage): Promise<ExtBgResponse> {
   return chrome.runtime.sendMessage(msg) as Promise<ExtBgResponse>;
