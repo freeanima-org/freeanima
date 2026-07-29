@@ -1,4 +1,4 @@
-import { createEventTopic } from "@freeanima/host/kernel/eventbus";
+import { createHook } from "@freeanima/host/kernel/hooks";
 
 export type ConversationUpdatedPayload = {
   conversation_id: string;
@@ -10,15 +10,15 @@ export type SemanticMemoryUpdatedPayload = {
 
 export type TestPingPayload = Record<string, unknown>;
 
-/** Compatible with legacy events.db topic column */
-export const conversationUpdated = createEventTopic<ConversationUpdatedPayload>(
+/** Conversation metadata changed; typically `subscribe` + `emit`/`run` (no intercept). */
+export const conversationUpdated = createHook<ConversationUpdatedPayload>(
   "conversation:updated",
   "Conversation updated",
 );
 
-export const semanticMemoryUpdated = createEventTopic<SemanticMemoryUpdatedPayload>(
+export const semanticMemoryUpdated = createHook<SemanticMemoryUpdatedPayload>(
   "semantic_memory:updated",
   "Semantic memory updated",
 );
 
-export const testPing = createEventTopic<TestPingPayload>("test:ping", "Test ping");
+export const testPing = createHook<TestPingPayload>("test:ping", "Test ping");

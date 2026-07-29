@@ -15,17 +15,17 @@ title: Identity
 
 **Let digital life persist within it, remembering who it is and what it has lived through.**
 
-| Structure                                | Role                                                                                                                            |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| **Habitat**                              | Long-running place: multiple digital lives + human assets; connect / open target — see [`architecture.md`](architecture.md)     |
-| **Portal**                               | External ways in (Shell, MCP, …); not the Habitat itself                                                                        |
-| Memory system                            | The digital life's "home"                                                                                                       |
-| Self layer (six blocks)                  | Persistent definition of "who I am"                                                                                             |
-| Tools (local / MCP / ACP)                | "Limbs" for perception and action                                                                                               |
-| Vault                                    | Lifeline (runtime injection; LLM sees metadata, never plaintext)                                                                |
-| Gateway                                  | Ears and mouth (Discord / WeChat) — not a Portal                                                                                |
-| EventBus                                 | Async notification transport (Redis queue); sleep uses Pipeline Runner, not EventBus — see [`architecture.md`](architecture.md) |
-| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                      |
+| Structure                                | Role                                                                                                                                                                     |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Habitat**                              | Long-running place: multiple digital lives + human assets; connect / open target — see [`architecture.md`](architecture.md)                                              |
+| **Portal**                               | External ways in (Shell, MCP, …); not the Habitat itself                                                                                                                 |
+| Memory system                            | The digital life's "home"                                                                                                                                                |
+| Self layer (six blocks)                  | Persistent definition of "who I am"                                                                                                                                      |
+| Tools (local / MCP / ACP)                | "Limbs" for perception and action                                                                                                                                        |
+| Vault                                    | Lifeline (runtime injection; LLM sees metadata, never plaintext)                                                                                                         |
+| Gateway                                  | Ears and mouth (Discord / WeChat) — not a Portal                                                                                                                         |
+| HookRegistry (`on` / `subscribe`)        | In-process lifecycle: intercept (`on`, awaited) vs side-channel notify (`subscribe`, not awaited); sleep uses Pipeline Runner — see [`architecture.md`](architecture.md) |
+| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                                                               |
 
 ---
 

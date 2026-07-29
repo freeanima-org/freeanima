@@ -32,7 +32,7 @@ database:
 #     #   # challenge_port: 80
 #     #   # staging: false
 
-# Redis（EventBus / 任务上下文；不可用时静默降级，可选）
+# Redis（可选：任务上下文 / 缓存等；不可用时静默降级）
 # redis:
 #   url: redis://127.0.0.1:6379/0
 

@@ -18,7 +18,7 @@ import { getAppRuntime } from "@freeanima/host/platform/ports";
 import { resolveCommand } from "@freeanima/host/capabilities/tools/slash-commands";
 import { conversationUpdated } from "@freeanima/host/capabilities/memory";
 import { isConversationMeta } from "@freeanima/host/core/db/domain";
-import type { EventBus } from "@freeanima/host/kernel/eventbus";
+import type { HookRegistry } from "@freeanima/host/kernel/hooks";
 import { KeyedRateLimiter } from "@freeanima/host/core/util/backoff";
 import { logComponent } from "@freeanima/host/platform/logging";
 import type { MessagingPort } from "@freeanima/host/platform/ports/messaging-port";
@@ -257,10 +257,10 @@ export class DiscordAdapter implements PlatformAdapter {
     this.conversationUpdatedOff?.();
     this.conversationUpdatedOff = null;
     try {
-      const kernel = (getAppRuntime() as { kernel?: { eventBus: EventBus } }).kernel;
-      const bus = kernel?.eventBus;
-      if (!bus) return;
-      this.conversationUpdatedOff = bus.on(conversationUpdated, (payload) => {
+      const kernel = (getAppRuntime() as { kernel?: { hookRegistry: HookRegistry } }).kernel;
+      const registry = kernel?.hookRegistry;
+      if (!registry) return;
+      this.conversationUpdatedOff = registry.subscribe(conversationUpdated, (payload) => {
         void this.onSessionTitleUpdated(payload.conversation_id);
       });
     } catch {

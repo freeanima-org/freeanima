@@ -1,12 +1,12 @@
-import type { EventBus } from "@freeanima/host/kernel/eventbus";
+import type { Kernel } from "@freeanima/host/kernel";
 import { conversationUpdated } from "@freeanima/host/capabilities/memory";
 import { fallbackConversationTitle, generateConversationTitle } from "@freeanima/host/core/llm";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 export type SessionTitleNotify = {
-  bus: EventBus | null;
+  kernel: Kernel;
   onConversationUpdated: ((sid: string) => void) | null;
-  /** 含 pokeSessionWatchers 的完整 conversation 更新（优先于 bus/onConversationUpdated） */
+  /** 含 pokeSessionWatchers 的完整 conversation 更新（优先于 kernel emit / onConversationUpdated） */
   emitSessionUpdated?: (sid: string) => void;
 };
 
@@ -17,7 +17,7 @@ function emitSessionTitleUpdated(notify: SessionTitleNotify, conversationId: str
     notify.emitSessionUpdated(conversationId);
     return;
   }
-  notify.bus?.emit(conversationUpdated, { conversation_id: conversationId });
+  notify.kernel.hookRegistry.emit(conversationUpdated, { conversation_id: conversationId });
   notify.onConversationUpdated?.(conversationId);
 }
 

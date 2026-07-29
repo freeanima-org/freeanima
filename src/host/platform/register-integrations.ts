@@ -33,7 +33,7 @@ export function registerServiceIntegrations(opts: {
   acp.bindProgressDelivery(
     createAcpProgressDelivery({
       conversation: opts.conversation,
-      bus: opts.kernel.eventBus,
+      hookRegistry: opts.kernel.hookRegistry,
       onConversationUpdated: opts.onConversationUpdated ?? null,
     }),
   );
