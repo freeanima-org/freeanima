@@ -1,5 +1,7 @@
 import { defineConfig } from "wxt";
 import path from "node:path";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 /** FreeAnima Vault 浏览器扩展（MV3；Chrome） */
 export default defineConfig({
@@ -47,6 +49,7 @@ export default defineConfig({
     },
   },
   vite: () => ({
+    plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
         "@freeanima": path.resolve(import.meta.dirname, "src"),

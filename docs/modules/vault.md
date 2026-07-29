@@ -26,14 +26,16 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 
 - 路由：`/vault`
 - 解锁 / 改密 / CRUD；用户库导入 **Bitwarden 未加密 JSON**（按 `import_refs.bitwarden` 幂等 upsert；可选「仅新建」）
+- 编辑表单与扩展共用 [`features/vault/ui/shared`](../../src/features/vault/ui/shared/)（多 URI、标签、自定义字段等）；数据面仍为 Habitat RPC（与扩展 `sendBg` 不同）
 
 ## 浏览器扩展（浏览器形态入口）
 
-- 入口：`src/portal/extension`（WXT MV3；`runtime/` + `features/vault/`；工具栏图标在 `public/icon-*.png`）
+- 入口：`src/portal/extension`（WXT MV3；React popup/options + `runtime/` + `features/vault/`；工具栏图标在 `public/icon-*.png`）
 - 构建：`just pack browser-extension` → `dist/browser-extension/chrome-mv3`
 - 开发：`just dev browser-extension`（或 `bunx wxt`）
 - 连接：扩展 **直连 Habitat**（Bearer `fa_at_…`），HTTP REST only；解锁态保存在扩展进程内，并经 `chrome.storage.session` 跨 service worker 回收恢复（**最多 8 小时**；**浏览器关闭后清除**，需重输主密码）
-- 能力：按 URL 匹配填充、弹窗列表、**新建/编辑/删除**（多 URI）、保存提示、密码生成、右键菜单、快捷键、卡片/身份填充
+- 能力：按 URL 匹配填充、弹窗列表（`vault.search` 对齐壳检索）、**新建/编辑/删除**（与 Shell 同表单）、保存提示、密码生成、右键菜单、快捷键、卡片/身份填充
+- content script：原生 DOM 填充（不挂 React）
 
 加载未打包扩展：Chrome → 扩展程序 → 开发者模式 → 加载已解压的扩展程序 → 选择 `dist/browser-extension/chrome-mv3`。
 

@@ -4,73 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FreeAnima Vault 选项</title>
-    <style>
-      :root {
-        color-scheme: light dark;
-        font-family: "Segoe UI", system-ui, sans-serif;
-      }
-      body {
-        margin: 0;
-        padding: 24px;
-        max-width: 520px;
-      }
-      h1 {
-        font-size: 1.25rem;
-      }
-      label {
-        display: block;
-        font-size: 0.875rem;
-        margin-top: 12px;
-      }
-      input {
-        width: 100%;
-        padding: 8px;
-        margin-top: 4px;
-      }
-      .row {
-        display: flex;
-        gap: 8px;
-        margin-top: 16px;
-      }
-      button {
-        padding: 8px 12px;
-        cursor: pointer;
-      }
-      .msg {
-        margin-top: 12px;
-        font-size: 0.875rem;
-      }
-      .err {
-        color: #cf222e;
-      }
-      .ok {
-        color: #1a7f37;
-      }
-      p {
-        color: #656d76;
-        font-size: 0.875rem;
-      }
-    </style>
   </head>
   <body>
-    <h1>FreeAnima Vault</h1>
-    <p>
-      直连 Habitat（Service API Token）。主密码仅在扩展内存中用于解密用户库，不会发送到 Habitat。
-      请用 <code>anima token create</code> 创建 Token。
-    </p>
-    <label>
-      Habitat URL
-      <input id="url" type="url" placeholder="http://127.0.0.1:2658" autocomplete="off" />
-    </label>
-    <label>
-      API Token
-      <input id="token" type="password" placeholder="fa_at_…" autocomplete="off" />
-    </label>
-    <div class="row">
-      <button id="save" type="button">保存</button>
-      <button id="test" type="button">测试连接</button>
-    </div>
-    <div id="msg" class="msg"></div>
-    <script type="module" src="./main.ts"></script>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
   </body>
 </html>

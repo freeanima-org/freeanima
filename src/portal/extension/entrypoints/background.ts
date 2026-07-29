@@ -1,5 +1,9 @@
-import { extractCustomFieldNames, generateTotpCode } from "@freeanima/shared/vault-crypto";
-import type { VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
+import {
+  extractCustomFieldNames,
+  generateTotpCode,
+  type VaultCustomField,
+  type VaultSecretsPayload,
+} from "@freeanima/shared/vault-crypto";
 import { matchVaultItemsForUrl } from "@freeanima/features/vault/domain/uri-match.ts";
 import { generatePassword } from "../features/vault/password-gen.ts";
 import {
@@ -187,10 +191,17 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
       case "list_for_tab": {
         if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
         getExtVaultSession().touchActivity();
-        const listed = await vaultCall("vault.list", {
-          subject_kind: "user",
-          limit: 2000,
-        });
+        const query = message.query?.trim() ?? "";
+        const listed = query
+          ? await vaultCall("vault.search", {
+              subject_kind: "user",
+              query,
+              limit: 200,
+            })
+          : await vaultCall("vault.list", {
+              subject_kind: "user",
+              limit: 2000,
+            });
         const matchable = listed.items.map((i) => ({
           id: i.id,
           ...(i.url !== undefined ? { url: i.url } : {}),
@@ -243,6 +254,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         let password = "";
         let notes = "";
         let totp = "";
+        let custom_fields: VaultCustomField[] = [];
         if (item.secrets_enc && item.dek_wrapped) {
           const secrets = await getExtVaultSession().openSecrets(
             item.secrets_enc,
@@ -251,6 +263,21 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
           password = typeof secrets.password === "string" ? secrets.password : "";
           notes = typeof secrets.notes === "string" ? secrets.notes : "";
           totp = typeof secrets.totp === "string" ? secrets.totp : "";
+          if (Array.isArray(secrets.custom_fields)) {
+            custom_fields = secrets.custom_fields
+              .filter(
+                (f): f is VaultCustomField =>
+                  !!f &&
+                  typeof f === "object" &&
+                  typeof f.name === "string" &&
+                  typeof f.value === "string",
+              )
+              .map((f) => ({
+                name: f.name,
+                value: f.value,
+                type: f.type === "hidden" || f.type === "boolean" ? f.type : "text",
+              }));
+          }
         }
         const uris =
           item.uris && item.uris.length > 0
@@ -272,6 +299,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
             password,
             notes,
             totp,
+            custom_fields,
           },
         };
       }
@@ -304,6 +332,10 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
             if (t) secrets.totp = t;
             else delete secrets.totp;
           }
+          if (message.custom_fields !== undefined) {
+            if (message.custom_fields.length > 0) secrets.custom_fields = message.custom_fields;
+            else delete secrets.custom_fields;
+          }
           const sealed = await getExtVaultSession().sealSecrets(secrets);
           const patched = await vaultCall("vault.patch", {
             subject_kind: "user",
@@ -326,6 +358,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         if (message.password) secrets.password = message.password;
         if (message.notes) secrets.notes = message.notes;
         if (message.totp?.trim()) secrets.totp = message.totp.trim();
+        if (message.custom_fields?.length) secrets.custom_fields = message.custom_fields;
         const sealed = await getExtVaultSession().sealSecrets(secrets);
         const created = await vaultCall("vault.create", {
           subject_kind: "user",

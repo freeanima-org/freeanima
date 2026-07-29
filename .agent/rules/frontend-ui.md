@@ -5,6 +5,8 @@
 > 功能原型与包边界 → [`frontend-features.md`](frontend-features.md)。  
 > 样式栈：**Tailwind CSS v4 + shadcn/ui（React Aria base）**（`@freeanima/ui-kit`）。**禁止 DaisyUI。**
 
+**适用范围：** Portal **应用形态 SPA**（web/tauri）以及浏览器扩展的 **popup / options**（`src/portal/extension` 中 React 入口）。**不含** content script（第三方页注入，保持原生 DOM）。
+
 视觉 / 组件 / 交互均须按壳·布局·交互三维适配（见 docs）；本文件只保留实现禁令与落点。
 
 ## 分层 → 代码（速查）
