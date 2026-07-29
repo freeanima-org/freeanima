@@ -13,6 +13,7 @@ import {
   upsertEmailThread,
   worldIdForAccount,
   type EmailSyncResult,
+  type NewMailNotifyItem,
 } from "@freeanima/features/email/domain";
 import {
   collectFlagRefreshUids,
@@ -99,12 +100,12 @@ async function syncMailboxMessages(
   upsertedMessages: number;
   upsertedThreads: number;
   highestUid: number | null;
-  newSubjects: string[];
+  newMails: NewMailNotifyItem[];
 }> {
   let upsertedMessages = 0;
   let upsertedThreads = 0;
   let highestUid: number | null = getMailboxCursor(account.sync, mailbox).last_uid ?? null;
-  const newSubjects: string[] = [];
+  const newMails: NewMailNotifyItem[] = [];
   const inboxMailbox = isInboxMailbox(account, mailbox);
 
   const lock = await client.getMailboxLock(mailbox);
@@ -192,7 +193,13 @@ async function syncMailboxMessages(
       }
       if (!existingBefore) {
         upsertedMessages += 1;
-        if (inboxMailbox) newSubjects.push(subject.trim() || "(No subject)");
+        if (inboxMailbox) {
+          newMails.push({
+            message_id: message.id,
+            from: formatAddress(envelope?.from?.[0]) || "(unknown)",
+            subject: subject.trim() || "(No subject)",
+          });
+        }
       }
       highestUid = Math.max(highestUid ?? 0, uid);
     }
@@ -202,7 +209,7 @@ async function syncMailboxMessages(
     lock.release();
   }
 
-  return { upsertedMessages, upsertedThreads, highestUid, newSubjects };
+  return { upsertedMessages, upsertedThreads, highestUid, newMails };
 }
 
 function isInboxMailbox(
@@ -255,7 +262,7 @@ export async function syncEmailAccount(
       upserted_messages: 0,
       upserted_threads: 0,
       highest_uid: null,
-      new_subjects: [],
+      new_mails: [],
       error: "account not found or disabled",
     };
   }
@@ -267,7 +274,7 @@ export async function syncEmailAccount(
       upserted_messages: 0,
       upserted_threads: 0,
       highest_uid: null,
-      new_subjects: [],
+      new_mails: [],
       error: "account not found or disabled",
     };
   }
@@ -275,7 +282,7 @@ export async function syncEmailAccount(
   let upsertedMessages = 0;
   let upsertedThreads = 0;
   let highestUid: number | null = null;
-  const newSubjects: string[] = [];
+  const newMails: NewMailNotifyItem[] = [];
 
   try {
     await withImapAccount(account, async (client) => {
@@ -296,7 +303,7 @@ export async function syncEmailAccount(
         const result = await syncMailboxMessages(client, account, mailbox, limit);
         upsertedMessages += result.upsertedMessages;
         upsertedThreads += result.upsertedThreads;
-        newSubjects.push(...result.newSubjects);
+        newMails.push(...result.newMails);
         if (result.highestUid != null) {
           highestUid =
             highestUid == null ? result.highestUid : Math.max(highestUid, result.highestUid);
@@ -338,7 +345,7 @@ export async function syncEmailAccount(
       upserted_messages: upsertedMessages,
       upserted_threads: upsertedThreads,
       highest_uid: highestUid,
-      new_subjects: newSubjects,
+      new_mails: newMails,
       error: err instanceof Error ? err.message : String(err),
     };
   }
@@ -349,7 +356,7 @@ export async function syncEmailAccount(
     upserted_messages: upsertedMessages,
     upserted_threads: upsertedThreads,
     highest_uid: highestUid,
-    new_subjects: newSubjects,
+    new_mails: newMails,
   };
 }
 

@@ -305,7 +305,6 @@ export type EmailSyncResult = {
   upserted_messages: number;
   upserted_threads: number;
   highest_uid: number | null;
-  new_subjects?: string[];
   error?: string;
 };
 

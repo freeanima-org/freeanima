@@ -128,6 +128,13 @@ export type EmailThreadListOpts = {
   offset?: number;
 };
 
+/** 自动同步通知用的新邮件摘要（entity id 供 email_read） */
+export type NewMailNotifyItem = {
+  message_id: number;
+  from: string;
+  subject: string;
+};
+
 export type EmailSyncResult = {
   account_id: number;
   /** 账户所属 world（自动同步通知按此路由收件人） */
@@ -135,8 +142,8 @@ export type EmailSyncResult = {
   upserted_messages: number;
   upserted_threads: number;
   highest_uid: number | null;
-  /** 本次新入库的收件箱邮件标题（用于自动同步通知） */
-  new_subjects: string[];
+  /** 本次新入库的收件箱邮件（用于自动同步通知） */
+  new_mails: NewMailNotifyItem[];
   error?: string;
 };
 

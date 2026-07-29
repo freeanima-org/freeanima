@@ -4,6 +4,7 @@ import {
   bucketNewMailSubjectsByWorld,
   buildNewMailNotificationContent,
 } from "./new-mail-notify.ts";
+import type { NewMailNotifyItem } from "@freeanima/features/email/domain";
 
 bindResolvedWorldContext({
   user_world_id: 10,
@@ -13,18 +14,34 @@ bindResolvedWorldContext({
   agent_subject_id: 2,
 });
 
+function mail(
+  partial: Partial<NewMailNotifyItem> & Pick<NewMailNotifyItem, "message_id">,
+): NewMailNotifyItem {
+  return {
+    message_id: partial.message_id,
+    from: partial.from ?? "sender@example.com",
+    subject: partial.subject ?? "Hello",
+  };
+}
+
 describe("buildNewMailNotificationContent", () => {
-  test("single subject becomes title", () => {
-    const { title, body } = buildNewMailNotificationContent(["Hello"]);
+  test("single mail includes from and message_id", () => {
+    const { title, body } = buildNewMailNotificationContent([
+      mail({ message_id: 42, from: "alice@example.com", subject: "Hello" }),
+    ]);
     expect(title).toBe("新邮件：Hello");
-    expect(body).toBe("Hello");
+    expect(body).toBe("from: alice@example.com\nmessage_id: 42\nsubject: Hello");
   });
 
-  test("multiple subjects are listed", () => {
-    const { title, body } = buildNewMailNotificationContent(["A", "B", "C"]);
+  test("multiple mails are listed with from and message_id", () => {
+    const { title, body } = buildNewMailNotificationContent([
+      mail({ message_id: 1, from: "a@x.com", subject: "A" }),
+      mail({ message_id: 2, from: "b@y.com", subject: "B" }),
+      mail({ message_id: 3, from: "c@z.com", subject: "C" }),
+    ]);
     expect(title).toBe("新邮件：3 封");
-    expect(body).toContain("• A");
-    expect(body).toContain("• C");
+    expect(body).toContain("• from: a@x.com | message_id: 1 | subject: A");
+    expect(body).toContain("• from: c@z.com | message_id: 3 | subject: C");
   });
 });
 
@@ -37,7 +54,7 @@ describe("bucketNewMailSubjectsByWorld", () => {
         upserted_messages: 1,
         upserted_threads: 1,
         highest_uid: 1,
-        new_subjects: ["User mail"],
+        new_mails: [mail({ message_id: 10, subject: "User mail" })],
       },
       {
         account_id: 2,
@@ -45,7 +62,7 @@ describe("bucketNewMailSubjectsByWorld", () => {
         upserted_messages: 1,
         upserted_threads: 1,
         highest_uid: 1,
-        new_subjects: ["Agent mail"],
+        new_mails: [mail({ message_id: 20, subject: "Agent mail" })],
       },
       {
         account_id: 3,
@@ -53,12 +70,12 @@ describe("bucketNewMailSubjectsByWorld", () => {
         upserted_messages: 1,
         upserted_threads: 1,
         highest_uid: 1,
-        new_subjects: ["Unknown"],
+        new_mails: [mail({ message_id: 99, subject: "Unknown" })],
       },
     ]);
     expect(buckets).toEqual([
-      { kind: "user", subjects: ["User mail"] },
-      { kind: "agent", subjects: ["Agent mail"] },
+      { kind: "user", mails: [mail({ message_id: 10, subject: "User mail" })] },
+      { kind: "agent", mails: [mail({ message_id: 20, subject: "Agent mail" })] },
     ]);
   });
 });
