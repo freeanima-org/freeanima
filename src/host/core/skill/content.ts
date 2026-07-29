@@ -1,3 +1,5 @@
+import { parseYaml } from "../../platform/config/yaml.ts";
+
 /** agentskills.io 兼容 frontmatter 解析（含 FreeAnima 扩展） */
 export type SkillFrontmatter = {
   name?: string;
@@ -14,73 +16,72 @@ export type SkillFrontmatter = {
   created?: string;
 };
 
-function parseYamlScalar(value: string): string {
-  const v = value.trim();
-  if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
-    return v.slice(1, -1);
-  }
-  return v;
+function asString(value: unknown): string | undefined {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return undefined;
 }
 
-function parseInlineArray(value: string): string[] | undefined {
-  const v = value.trim();
-  if (!v.startsWith("[") || !v.endsWith("]")) return undefined;
-  const inner = v.slice(1, -1).trim();
-  if (!inner) return [];
-  return inner
-    .split(",")
-    .map((s) => parseYamlScalar(s.trim()))
-    .filter(Boolean);
+function asStringOrStringArray(value: unknown): string | string[] | undefined {
+  if (value == null) return undefined;
+  if (Array.isArray(value)) {
+    return value.map((v) => String(v).trim()).filter(Boolean);
+  }
+  return asString(value);
+}
+
+function extractFrontmatterBlock(text: string): string | null {
+  const lines = text.split("\n");
+  if (lines[0]?.trim() !== "---") return null;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i]?.trim() === "---") {
+      return lines.slice(1, i).join("\n");
+    }
+  }
+  return null;
 }
 
 export function parseFrontmatter(text: string): SkillFrontmatter {
-  const lines = text.split("\n");
-  if (lines[0]?.trim() !== "---") return {};
-  const out: SkillFrontmatter = {};
-  let i = 1;
-  for (; i < lines.length; i++) {
-    const raw = lines[i] ?? "";
-    const line = raw.trim();
-    if (line === "---") break;
-    if (!line || line.startsWith("#")) continue;
-    const idx = line.indexOf(":");
-    if (idx <= 0) continue;
-    const key = line.slice(0, idx).trim();
-    const valueRaw = line.slice(idx + 1).trim();
-    if (key === "metadata" && (!valueRaw || valueRaw === "{}")) {
-      // 简易 metadata 块：后续行缩进 key: value
-      const meta: Record<string, unknown> = {};
-      let j = i + 1;
-      for (; j < lines.length; j++) {
-        const ml = lines[j] ?? "";
-        if (!ml.startsWith(" ") && !ml.startsWith("\t")) break;
-        const mtrim = ml.trim();
-        if (mtrim === "---") break;
-        const mi = mtrim.indexOf(":");
-        if (mi <= 0) continue;
-        meta[mtrim.slice(0, mi).trim()] = parseYamlScalar(mtrim.slice(mi + 1));
-      }
-      out.metadata = meta;
-      i = j - 1;
-      continue;
-    }
-    if (key === "name") out.name = parseYamlScalar(valueRaw);
-    else if (key === "description") out.description = parseYamlScalar(valueRaw);
-    else if (key === "license") out.license = parseYamlScalar(valueRaw);
-    else if (key === "compatibility") out.compatibility = parseYamlScalar(valueRaw);
-    else if (key === "created") out.created = parseYamlScalar(valueRaw);
-    else if (key === "origin") out.origin = parseYamlScalar(valueRaw);
-    else if (key === "status") out.status = parseYamlScalar(valueRaw);
-    else if (key === "allowed-tools" || key === "allowed_tools") {
-      const arr = parseInlineArray(valueRaw);
-      const val = arr ?? parseYamlScalar(valueRaw);
-      if (key === "allowed-tools") out["allowed-tools"] = val;
-      else out.allowed_tools = val;
-    } else if (key === "denied_tools" || key === "denied-tools") {
-      const arr = parseInlineArray(valueRaw);
-      out.denied_tools = arr ?? parseYamlScalar(valueRaw);
-    }
+  const block = extractFrontmatterBlock(text);
+  if (block == null) return {};
+  let raw: unknown;
+  try {
+    raw = parseYaml(block);
+  } catch {
+    return {};
   }
+  if (raw == null || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const obj = raw as Record<string, unknown>;
+  const out: SkillFrontmatter = {};
+
+  const name = asString(obj.name);
+  if (name != null) out.name = name;
+  const description = asString(obj.description);
+  if (description != null) out.description = description;
+  const license = asString(obj.license);
+  if (license != null) out.license = license;
+  const compatibility = asString(obj.compatibility);
+  if (compatibility != null) out.compatibility = compatibility;
+  const created = asString(obj.created);
+  if (created != null) out.created = created;
+  const origin = asString(obj.origin);
+  if (origin != null) out.origin = origin;
+  const status = asString(obj.status);
+  if (status != null) out.status = status;
+
+  if (obj.metadata != null && typeof obj.metadata === "object" && !Array.isArray(obj.metadata)) {
+    out.metadata = obj.metadata as Record<string, unknown>;
+  }
+
+  const allowedDash = asStringOrStringArray(obj["allowed-tools"]);
+  if (allowedDash != null) out["allowed-tools"] = allowedDash;
+  const allowedSnake = asStringOrStringArray(obj.allowed_tools);
+  if (allowedSnake != null) out.allowed_tools = allowedSnake;
+
+  const denied =
+    asStringOrStringArray(obj.denied_tools) ?? asStringOrStringArray(obj["denied-tools"]);
+  if (denied != null) out.denied_tools = denied;
+
   return out;
 }
 

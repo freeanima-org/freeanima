@@ -39,6 +39,14 @@ export function formatDue(due: string | null): string {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+/** UI 列表/详情通用日期时间展示（Intl；空值显示 em dash） */
+export function formatDateTime(value: string | null | undefined, emptyLabel = "—"): string {
+  if (!value) return emptyLabel;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString();
+}
+
 /** 详情顶栏截止 chip：如「7月13日」或「7月13日, 延期4天」 */
 export function formatDueChip(due: string | null | undefined): {
   label: string;

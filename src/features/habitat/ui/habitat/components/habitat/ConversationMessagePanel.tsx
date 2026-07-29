@@ -1,7 +1,7 @@
-import { marked } from "marked";
 import { useMemo } from "react";
 import type { DisplayItem } from "@freeanima/shared/rpc-contract/frames/display.ts";
 import { Button, Spinner } from "@freeanima/ui-kit";
+import { renderMarkdownHtml } from "@freeanima/ui-kit/lib/markdown.ts";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { ToolBlockBubble } from "./ToolBlockBubble.tsx";
 
@@ -16,17 +16,8 @@ type StoredMessagePanelProps = {
   onPageChange: (page: number) => void;
 };
 
-function renderMd(text: string) {
-  if (!text) return "";
-  try {
-    return marked.parse(text, { breaks: true, gfm: true }) as string;
-  } catch {
-    return text;
-  }
-}
-
 function AssistantMessageBubble({ content }: { content: string }) {
-  const html = useMemo(() => renderMd(content), [content]);
+  const html = useMemo(() => renderMarkdownHtml(content), [content]);
   return <div className="md-content" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 

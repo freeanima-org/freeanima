@@ -154,13 +154,13 @@ Agent bans (raw CSS vars, DaisyUI tokens) → [`.agent/rules/frontend-ui.md`](..
 
 **Intent:** Stable stacking for menus, sheets, toasts. Prefer shared conventions over magic numbers.
 
-| Lens        | Adaptation                                                                 |
-| ----------- | -------------------------------------------------------------------------- |
-| Invariant   | Overlay above chrome; do not cover bottom nav by raising z-index           |
-| Layout      | Sheet/Dialog/Drawer stacking                                               |
-| Interaction | Context menu / ActionSheet above content                                   |
-| Shell       | N/A                                                                        |
-| Forbidden   | Ad-hoc `z-[9999]` (**pending alignment** where present, e.g. some pickers) |
+| Lens        | Adaptation                                                                                |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| Invariant   | Overlay above chrome; do not cover bottom nav by raising z-index                          |
+| Layout      | Sheet/Dialog/Drawer stacking                                                              |
+| Interaction | Context menu / ActionSheet above content                                                  |
+| Shell       | N/A                                                                                       |
+| Forbidden   | Ad-hoc `z-[9999]` / hand-rolled modal overlays (use Dialog / Sheet / `ModalSheetPresent`) |
 
 ## Related
 

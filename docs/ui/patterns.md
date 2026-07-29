@@ -60,9 +60,9 @@ Every pattern documents:
 | Shell       | N/A                                                                                                                                                                                                         |
 | Forbidden   | `getShellKind()` to choose menu type; viewport width to choose ContextMenu vs ActionSheet; custom `fixed` coordinate menus                                                                                  |
 
-**Implementation:** Reference — [`TaskItemRowView.tsx`](../../src/ui-kit/composite/TaskItemRowView.tsx) (+ list wrapper `TaskItemListView`). Capability flags: `useActionSheet`, `contextMenuEnabled`, drag attrs/listeners from parent.
+**Implementation:** Chassis — [`ListRow.tsx`](../../src/ui-kit/composite/ListRow.tsx). Task domain — [`TaskItemRowView.tsx`](../../src/ui-kit/composite/TaskItemRowView.tsx) (+ list wrapper `TaskItemListView`). Second consumer — project sidebar rows. Capability flags: `useActionSheet`, `contextMenuEnabled`, drag attrs/listeners from parent.
 
-**Compliance:** Reference implementation (task-shaped). **Pending extraction:** domain-agnostic `ListRow` chassis. **Pending alignment:** other modules’ custom rows that diverge on menus/selection/drag.
+**Compliance:** Reference (chassis extracted). **Pending alignment:** other modules’ custom rows that diverge on menus/selection/drag.
 
 ---
 
@@ -130,11 +130,11 @@ Every pattern documents:
 | Shell       | N/A                                                                                   |
 | Forbidden   | `getShellKind() === "tauri"` ⇒ Sheet                                                  |
 
-**Implementation:** shadcn `Dialog` / `Sheet`; pickers such as `MoveToListPicker` follow the same idea.
+**Implementation:** shadcn `Dialog` / `Sheet` via composite `ModalSheetPresent`; pickers (`MoveToListPicker`, `MoveToProjectPicker`) use that shell. Do **not** hand-roll `createPortal` + fixed overlays.
 
 **Task detail (compact):** peek `Sheet` for browse/display; focusing title or notes enters an **immersive full-page edit** (`DetailEditPageShell` + `setCompactImmersive`) with a back control and **no bottom tabs**. Back / system back closes the detail and returns to the **list** (does not restore peek). Layout-driven — not shell kind.
 
-**Compliance:** Reference (with **pending alignment** on ad-hoc z-index values).
+**Compliance:** Reference.
 
 ---
 

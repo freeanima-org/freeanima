@@ -9,6 +9,7 @@ import {
   CardContent,
   Spinner,
 } from "@freeanima/ui-kit";
+import { formatDateTime } from "@freeanima/ui-kit/lib/datetime-local.ts";
 import { m } from "@paraglide/messages";
 
 import {
@@ -28,13 +29,6 @@ async function resolveRecipientIds(cached: RecipientIds | null): Promise<Recipie
   if (cached) return cached;
   const remote = await getNotificationRecipients();
   return { user: remote.user_subject_id, agent: remote.agent_subject_id };
-}
-
-function formatDateTime(value: string | null): string {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString();
 }
 
 function ListPagination({

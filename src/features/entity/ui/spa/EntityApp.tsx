@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { SubjectScopeToggle, useSubjectScope } from "@freeanima/client/portal-sdk/react.tsx";
 import { Button, Spinner } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
+import { formatDateTime } from "@freeanima/ui-kit/lib/datetime-local.ts";
 import { Boxes } from "lucide-react";
 
 import {
@@ -15,13 +16,6 @@ import {
 const PAGE_SIZE = 20;
 
 type EntityTab = "all" | "trash";
-
-function formatDateTime(value: string | null): string {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString();
-}
 
 function ListPagination({
   total,

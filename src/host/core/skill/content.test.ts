@@ -48,4 +48,24 @@ license: MIT
     expect(normalizeToolList(fm["allowed-tools"])).toEqual(["memory_recall", "@browser"]);
     expect(stripFrontmatter(md)).toContain("# Hello");
   });
+
+  it("parseFrontmatter reads YAML array and metadata", () => {
+    const text = `---
+name: demo
+description: Demo
+allowed-tools:
+  - file_read
+  - "@browser"
+metadata:
+  freeanima.origin: builtin
+denied_tools: ["shell_exec"]
+---
+
+# Body`;
+    const fm = parseFrontmatter(text);
+    expect(fm.name).toBe("demo");
+    expect(fm["allowed-tools"]).toEqual(["file_read", "@browser"]);
+    expect(fm.denied_tools).toEqual(["shell_exec"]);
+    expect(fm.metadata?.["freeanima.origin"]).toBe("builtin");
+  });
 });

@@ -2,9 +2,9 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button, Checkbox, Input } from "@freeanima/ui-kit";
-import { ContextMenu, EntityIdLabel } from "@freeanima/ui-kit/composite";
+import { EntityIdLabel, ListRow } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
-import { useEffect, useMemo, useState, type PointerEvent, type ReactElement } from "react";
+import { useEffect, useMemo, useState, type PointerEvent, type Ref } from "react";
 
 import type { ProjectFolderRow, ProjectRow } from "../lib/api.ts";
 import {
@@ -48,6 +48,8 @@ type ProjectSidebarProps = {
   onEditFolder: (folder: ProjectFolderRow) => void;
   onEditProject: (project: ProjectRow) => void;
 };
+
+const SIDEBAR_SELECTED = "bg-primary/15 font-medium";
 
 function SortableTreeRow({
   node,
@@ -116,38 +118,51 @@ function SortableTreeRow({
     const showBeforeLine = dragging && overFolderId === folder.id && folderDropIntent === "before";
     const showAfterLine = dragging && overFolderId === folder.id && folderDropIntent === "after";
 
-    const row: ReactElement = (
-      <div
-        ref={setNodeRef}
-        style={style}
+    return (
+      <ListRow
+        as="div"
+        selected={selected}
+        selectedClassName={SIDEBAR_SELECTED}
+        dragging={isDragging}
+        disabled={writesDisabled}
+        useActionSheet={useActionSheet}
+        contextMenuEnabled={contextMenuEnabled}
+        contextMenuItems={contextMenuItems}
+        onOpenMenu={() => onOpenFolderMenu(folder)}
+        dragAttributes={attributes}
+        dragListeners={listeners}
+        rowRef={setNodeRef as Ref<HTMLElement | null>}
+        rowStyle={style}
         className={[
-          "group relative flex min-h-11 touch-manipulation items-center gap-0.5 rounded-lg py-1 pr-1 text-sm select-none",
-          selected ? "bg-primary/15 font-medium" : "hover:bg-muted",
-          isDragging ? "opacity-50" : "",
+          "touch-manipulation gap-0.5 pr-1 text-sm select-none",
           isFolderIntoTarget ? "ring-primary bg-primary/10 ring-2" : "",
         ].join(" ")}
         onDoubleClick={useActionSheet ? undefined : () => onEditFolder(folder)}
-        {...attributes}
-        {...listeners}
+        overlays={
+          <>
+            {showBeforeLine ? (
+              <div className="bg-primary absolute top-0 right-1 left-1 z-20 h-0.5 rounded-full" />
+            ) : null}
+            {showAfterLine ? (
+              <div className="bg-primary absolute right-1 bottom-0 left-1 z-20 h-0.5 rounded-full" />
+            ) : null}
+          </>
+        }
+        leading={
+          <button
+            type="button"
+            className="text-muted-foreground flex min-h-11 min-w-6 shrink-0 items-center justify-center"
+            aria-label={expanded ? "折叠" : "展开"}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand();
+            }}
+            onPointerDown={(e: PointerEvent) => e.stopPropagation()}
+          >
+            {expanded ? "▼" : "▶"}
+          </button>
+        }
       >
-        {showBeforeLine ? (
-          <div className="bg-primary absolute top-0 right-1 left-1 z-20 h-0.5 rounded-full" />
-        ) : null}
-        {showAfterLine ? (
-          <div className="bg-primary absolute right-1 bottom-0 left-1 z-20 h-0.5 rounded-full" />
-        ) : null}
-        <button
-          type="button"
-          className="text-muted-foreground flex min-h-11 min-w-6 shrink-0 items-center justify-center"
-          aria-label={expanded ? "折叠" : "展开"}
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleExpand();
-          }}
-          onPointerDown={(e: PointerEvent) => e.stopPropagation()}
-        >
-          {expanded ? "▼" : "▶"}
-        </button>
         <button
           type="button"
           className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
@@ -158,30 +173,8 @@ function SortableTreeRow({
           </span>
           <span className="truncate">{folder.name}</span>
         </button>
-        {useActionSheet ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="shrink-0"
-            aria-label="操作"
-            disabled={writesDisabled}
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenFolderMenu(folder);
-            }}
-            onPointerDown={(e: PointerEvent) => e.stopPropagation()}
-          >
-            ⋯
-          </Button>
-        ) : null}
-      </div>
+      </ListRow>
     );
-
-    if (contextMenuEnabled && !useActionSheet && contextMenuItems && contextMenuItems.length > 0) {
-      return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
-    }
-    return row;
   }
 
   const project = node.project;
@@ -189,26 +182,35 @@ function SortableTreeRow({
   const showBeforeLine = dragging && overProjectId === project.id && projectDropIntent === "before";
   const showAfterLine = dragging && overProjectId === project.id && projectDropIntent === "after";
 
-  const row: ReactElement = (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={[
-        "group relative flex min-h-11 touch-manipulation items-center gap-0.5 rounded-lg py-1 pr-1 text-sm select-none",
-        selected ? "bg-primary/15 font-medium" : "hover:bg-muted",
-        isDragging ? "opacity-50" : "",
-      ].join(" ")}
+  return (
+    <ListRow
+      as="div"
+      selected={selected}
+      selectedClassName={SIDEBAR_SELECTED}
+      dragging={isDragging}
+      disabled={writesDisabled}
+      useActionSheet={useActionSheet}
+      contextMenuEnabled={contextMenuEnabled}
+      contextMenuItems={contextMenuItems}
+      onOpenMenu={() => onOpenProjectMenu(project)}
+      dragAttributes={attributes}
+      dragListeners={listeners}
+      rowRef={setNodeRef as Ref<HTMLElement | null>}
+      rowStyle={style}
+      className="touch-manipulation gap-0.5 pr-1 text-sm select-none"
       onDoubleClick={useActionSheet ? undefined : () => onEditProject(project)}
-      {...attributes}
-      {...listeners}
+      overlays={
+        <>
+          {showBeforeLine ? (
+            <div className="bg-primary absolute top-0 right-1 left-1 z-20 h-0.5 rounded-full" />
+          ) : null}
+          {showAfterLine ? (
+            <div className="bg-primary absolute right-1 bottom-0 left-1 z-20 h-0.5 rounded-full" />
+          ) : null}
+        </>
+      }
+      leading={<span className="min-w-6 shrink-0" aria-hidden />}
     >
-      {showBeforeLine ? (
-        <div className="bg-primary absolute top-0 right-1 left-1 z-20 h-0.5 rounded-full" />
-      ) : null}
-      {showAfterLine ? (
-        <div className="bg-primary absolute right-1 bottom-0 left-1 z-20 h-0.5 rounded-full" />
-      ) : null}
-      <span className="min-w-6 shrink-0" aria-hidden />
       <button
         type="button"
         className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
@@ -220,30 +222,8 @@ function SortableTreeRow({
           <span className="text-muted-foreground text-xs">{project.task_count ?? 0}</span>
         </span>
       </button>
-      {useActionSheet ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          className="shrink-0"
-          aria-label="操作"
-          disabled={writesDisabled}
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenProjectMenu(project);
-          }}
-          onPointerDown={(e: PointerEvent) => e.stopPropagation()}
-        >
-          ⋯
-        </Button>
-      ) : null}
-    </div>
+    </ListRow>
   );
-
-  if (contextMenuEnabled && !useActionSheet && contextMenuItems && contextMenuItems.length > 0) {
-    return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
-  }
-  return row;
 }
 
 function InactiveProjectRow({
@@ -267,15 +247,20 @@ function InactiveProjectRow({
   onOpenMenu: () => void;
   onEdit: () => void;
 }) {
-  const row: ReactElement = (
-    <div
-      className={[
-        "group flex min-h-11 items-center gap-0.5 rounded-lg py-1 pr-1 text-sm opacity-70",
-        selected ? "bg-primary/15 font-medium opacity-100" : "hover:bg-muted",
-      ].join(" ")}
+  return (
+    <ListRow
+      as="div"
+      selected={selected}
+      selectedClassName={`${SIDEBAR_SELECTED} opacity-100`}
+      disabled={writesDisabled}
+      useActionSheet={useActionSheet}
+      contextMenuEnabled={contextMenuEnabled}
+      contextMenuItems={contextMenuItems}
+      onOpenMenu={onOpenMenu}
+      className="gap-0.5 pr-1 text-sm opacity-70"
       onDoubleClick={useActionSheet ? undefined : onEdit}
+      leading={<span className="min-w-6 shrink-0" aria-hidden />}
     >
-      <span className="min-w-6 shrink-0" aria-hidden />
       <button
         type="button"
         className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
@@ -288,29 +273,8 @@ function InactiveProjectRow({
           <span className="text-muted-foreground text-xs">{project.task_count ?? 0}</span>
         </span>
       </button>
-      {useActionSheet ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          className="shrink-0"
-          aria-label="操作"
-          disabled={writesDisabled}
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenMenu();
-          }}
-        >
-          ⋯
-        </Button>
-      ) : null}
-    </div>
+    </ListRow>
   );
-
-  if (contextMenuEnabled && !useActionSheet && contextMenuItems && contextMenuItems.length > 0) {
-    return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
-  }
-  return row;
 }
 
 export function ProjectSidebar(props: ProjectSidebarProps) {

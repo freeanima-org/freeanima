@@ -40,7 +40,7 @@ Dependency direction: `app-frame` → `features/*/ui` → `{ui-kit, portal-sdk}`
 4. Layout structure components may use **layout** APIs (`useCompactLayout`, `useDrawerNav`, …).
 5. Shell-only concerns stay in portal-sdk / shell host; ui-kit does not export shell detectors.
 
-**Pending alignment:** Task-oriented views under `ui-kit/composite` (`TaskItemRowView`, …) are shared reference implementations. Prefer aligning new list modules to their **pattern contract** ([patterns.md](patterns.md)); extracting a generic `ListRow` is a follow-up task, not a license to fork row behavior.
+**Pending alignment:** Prefer `ListRow` (+ domain wrappers such as `TaskItemRowView`) for new list modules; align remaining custom rows to the **pattern contract** ([patterns.md](patterns.md)) — do not fork row behavior.
 
 ## Which layer may read which dimension
 

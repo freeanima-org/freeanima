@@ -33,31 +33,32 @@
 
 ## 基元 / 复合（必须遵守）
 
-| 场景         | 做法                                                                                        |
-| ------------ | ------------------------------------------------------------------------------------------- |
-| 按钮         | `<Button variant size>`                                                                     |
-| 表单         | `<Input>` / `<Textarea>` / `<Select>`；默认不自动聚焦（`focusOnMount`）                     |
-| Dialog/Sheet | 采用 React Aria 默认焦点管理；组合按 Aria/shadcn Aria 惯例（`isOpen` / `Dialog` 即模态层）  |
-| 空态 / 错误  | `<EmptyState>` / `<StatusAlert>`                                                            |
-| 确认         | `<ConfirmDialog>` / `showConfirm`；不可恢复删除二次确认；确认钮**禁止** `autoFocus`         |
-| 菜单         | pointer → `ContextMenu`；touch → `ActionSheet`；共享 `ActionSheetItem[]`                    |
-| 列表行       | 对齐 [`docs/ui/patterns.md`](../../docs/ui/patterns.md) DataListRow；参考 `TaskItemRowView` |
+| 场景         | 做法                                                                                                            |
+| ------------ | --------------------------------------------------------------------------------------------------------------- |
+| 按钮         | `<Button variant size>`                                                                                         |
+| 表单         | `<Input>` / `<Textarea>` / `<Select>`；默认不自动聚焦（`focusOnMount`）                                         |
+| Dialog/Sheet | 采用 React Aria 默认焦点管理；组合按 Aria/shadcn Aria 惯例（`isOpen` / `Dialog` 即模态层）                      |
+| 空态 / 错误  | `<EmptyState>` / `<StatusAlert>`                                                                                |
+| 确认         | `<ConfirmDialog>` / `showConfirm`；不可恢复删除二次确认；确认钮**禁止** `autoFocus`                             |
+| 菜单         | pointer → `ContextMenu`；touch → `ActionSheet`；共享 `ActionSheetItem[]`                                        |
+| 列表行       | 对齐 [`docs/ui/patterns.md`](../../docs/ui/patterns.md) DataListRow；优先 `ListRow`，任务域用 `TaskItemRowView` |
 
-从 `@freeanima/ui-kit/composite` 导入：`ConfirmDialog`、`showConfirm`、`ActionSheet`、`ContextMenu`、`EmptyState`、`StatusAlert`、`PullToRefresh`。
+从 `@freeanima/ui-kit/composite` 导入：`ConfirmDialog`、`showConfirm`、`ActionSheet`、`ContextMenu`、`EmptyState`、`StatusAlert`、`PullToRefresh`、`ListRow`、`MoveToListPicker`、`MoveToProjectPicker`。
 
 - **禁止** `window.confirm`
 - **禁止**自研 `fixed` + 裸坐标快捷菜单
+- **禁止**用 `createPortal` + 自研 `fixed` 遮罩实现 ModalSheetPresent（须走 `Dialog` / `Sheet` 或复合层包装）
 - **禁止**用壳类型或视口宽度选择 ContextMenu vs ActionSheet（用交互 capability）
 
 ## 模式 → 代码
 
-| 模式               | 落点                                                       |
-| ------------------ | ---------------------------------------------------------- |
-| DataListRow        | `ui-kit/composite/TaskItemRowView`（参考；通用抽离另任务） |
-| OverflowMenu       | `ContextMenu` / `ActionSheet` / `useLongPress`             |
-| ConfirmDestructive | `ConfirmDialog` / `showConfirm`                            |
-| ModalSheetPresent  | `Dialog` / `Sheet`；布局维切换呈现                         |
-| PullToRefresh      | `PullToRefresh`；见 `docs/aspects/page-refresh.md`         |
+| 模式               | 落点                                                   |
+| ------------------ | ------------------------------------------------------ |
+| DataListRow        | `ui-kit/composite/ListRow`；任务域 `TaskItemRowView`   |
+| OverflowMenu       | `ContextMenu` / `ActionSheet` / `useLongPress`         |
+| ConfirmDestructive | `ConfirmDialog` / `showConfirm`                        |
+| ModalSheetPresent  | `Dialog` / `Sheet`；布局维切换呈现（含 MoveTo*Picker） |
+| PullToRefresh      | `PullToRefresh`；见 `docs/aspects/page-refresh.md`     |
 
 ## 静态检查
 
