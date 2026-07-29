@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   Button,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -158,90 +157,89 @@ export function BitwardenImportDialog({
 
   return (
     <Dialog
-      open={open}
+      isOpen={open}
       onOpenChange={(next) => {
         if (!next) reset();
         onOpenChange(next);
       }}
+      className="max-w-lg"
     >
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>导入 Bitwarden</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            选择未加密的 Bitwarden JSON 导出。按 cipher UUID（import_refs.bitwarden）幂等更新。
-          </p>
-          {subjectKind !== "user" ? (
-            <StatusAlert variant="error">Bitwarden 导入仅支持用户保险库</StatusAlert>
-          ) : null}
-          {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
-          {result ? (
-            <StatusAlert variant={result.failed.length > 0 ? "warning" : "success"}>
-              新建 {result.created} · 更新 {result.updated} · 跳过 {result.skipped}
-              {result.failed.length > 0 ? ` · 失败 ${result.failed.length}` : ""}
-            </StatusAlert>
-          ) : null}
-          <label className="flex items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              className="mt-1"
-              checked={mode === "create_only"}
-              disabled={disabled || running}
-              onChange={(e) => {
-                const next: BitwardenImportMode = e.target.checked ? "create_only" : "upsert";
-                setMode(next);
-                setResult(null);
-                if (mappedItems && existingIndex) {
-                  rebuildPlan(mappedItems, existingIndex, next);
-                }
-              }}
-            />
-            <span>仅新建、不覆盖已存在（按 Bitwarden UUID；取消勾选则为 upsert）</span>
-          </label>
-          <div className="space-y-2">
-            <input
-              type="file"
-              accept="application/json,.json"
-              disabled={disabled || running || subjectKind !== "user"}
-              onChange={(e) => void onFile(e.target.files?.[0] ?? null)}
-            />
-            {fileName ? <p className="text-xs text-muted-foreground">已选：{fileName}</p> : null}
-          </div>
-          {summary ? (
-            <p className="text-sm text-muted-foreground">
-              预览：新建 {summary.create} · 更新 {summary.update} · 跳过 {summary.skip}
-            </p>
-          ) : null}
-          {result?.failed.length ? (
-            <ul className="max-h-32 overflow-y-auto text-xs text-destructive">
-              {result.failed.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={running}
-            onClick={() => {
-              reset();
-              onOpenChange(false);
+      <DialogHeader>
+        <DialogTitle>导入 Bitwarden</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          选择未加密的 Bitwarden JSON 导出。按 cipher UUID（import_refs.bitwarden）幂等更新。
+        </p>
+        {subjectKind !== "user" ? (
+          <StatusAlert variant="error">Bitwarden 导入仅支持用户保险库</StatusAlert>
+        ) : null}
+        {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
+        {result ? (
+          <StatusAlert variant={result.failed.length > 0 ? "warning" : "success"}>
+            新建 {result.created} · 更新 {result.updated} · 跳过 {result.skipped}
+            {result.failed.length > 0 ? ` · 失败 ${result.failed.length}` : ""}
+          </StatusAlert>
+        ) : null}
+        <label className="flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="mt-1"
+            checked={mode === "create_only"}
+            disabled={disabled || running}
+            onChange={(e) => {
+              const next: BitwardenImportMode = e.target.checked ? "create_only" : "upsert";
+              setMode(next);
+              setResult(null);
+              if (mappedItems && existingIndex) {
+                rebuildPlan(mappedItems, existingIndex, next);
+              }
             }}
-          >
-            关闭
-          </Button>
-          <Button
-            type="button"
-            disabled={disabled || running || !plan || plan.length === 0 || subjectKind !== "user"}
-            onClick={() => void runImport()}
-          >
-            {running ? <Spinner className="size-4" /> : "开始导入"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+          />
+          <span>仅新建、不覆盖已存在（按 Bitwarden UUID；取消勾选则为 upsert）</span>
+        </label>
+        <div className="space-y-2">
+          <input
+            type="file"
+            accept="application/json,.json"
+            disabled={disabled || running || subjectKind !== "user"}
+            onChange={(e) => void onFile(e.target.files?.[0] ?? null)}
+          />
+          {fileName ? <p className="text-xs text-muted-foreground">已选：{fileName}</p> : null}
+        </div>
+        {summary ? (
+          <p className="text-sm text-muted-foreground">
+            预览：新建 {summary.create} · 更新 {summary.update} · 跳过 {summary.skip}
+          </p>
+        ) : null}
+        {result?.failed.length ? (
+          <ul className="max-h-32 overflow-y-auto text-xs text-destructive">
+            {result.failed.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+      <DialogFooter>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={running}
+          onClick={() => {
+            reset();
+            onOpenChange(false);
+          }}
+        >
+          关闭
+        </Button>
+        <Button
+          type="button"
+          disabled={disabled || running || !plan || plan.length === 0 || subjectKind !== "user"}
+          onClick={() => void runImport()}
+        >
+          {running ? <Spinner className="size-4" /> : "开始导入"}
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 }

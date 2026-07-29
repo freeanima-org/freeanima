@@ -1,7 +1,7 @@
 import { type CSSProperties, type ReactNode } from "react";
 
 import { Button } from "../components/ui/button.tsx";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../components/ui/sheet.tsx";
+import { Sheet, SheetHeader, SheetTitle } from "../components/ui/sheet.tsx";
 import { ColumnResizeHandle } from "./ColumnResizeHandle.tsx";
 import { useObservedWidth } from "./observed-width.ts";
 import type { ThreeColumnLayoutMode } from "./three-column-mode.ts";
@@ -199,19 +199,19 @@ export function ThreeColumnLayout({
       </div>
 
       {isCompact ? (
-        <Sheet open={detailOpen} onOpenChange={onDetailOpenChange}>
-          <SheetContent
-            side="bottom"
-            showCloseButton={false}
-            className="flex h-[85dvh] max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-full"
+        <Sheet
+          isOpen={detailOpen}
+          onOpenChange={onDetailOpenChange}
+          side="bottom"
+          showCloseButton={false}
+          className="flex h-[85dvh] max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-full"
+        >
+          <SheetHeader
+            className={showDetailHeader ? "border shrink-0 border-b px-4 py-3" : "sr-only"}
           >
-            <SheetHeader
-              className={showDetailHeader ? "border shrink-0 border-b px-4 py-3" : "sr-only"}
-            >
-              <SheetTitle className="truncate">{detailTitle ?? "详情"}</SheetTitle>
-            </SheetHeader>
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{detail}</div>
-          </SheetContent>
+            <SheetTitle className="truncate">{detailTitle ?? "详情"}</SheetTitle>
+          </SheetHeader>
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{detail}</div>
         </Sheet>
       ) : null}
     </div>

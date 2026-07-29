@@ -6,7 +6,6 @@ import {
   CardTitle,
   Checkbox,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -64,48 +63,48 @@ function SlotAddModal({ slot, onClose }: AddModalProps) {
 
   return (
     <Dialog
-      open
+      isOpen
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
+      showCloseButton={false}
+      className="max-w-md"
     >
-      <DialogContent showCloseButton={false} className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>添加到 {MOTION_SLOT_LABELS[slot]}</DialogTitle>
-        </DialogHeader>
-        <p className="text-xs text-foreground/55">从动作库选择尚未关联到此槽位的动作（可多选）</p>
-        {available.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4">没有可添加的动作</p>
-        ) : (
-          <ul className="flex flex-col gap-1 max-h-[40vh] overflow-y-auto pr-1">
-            {available.map((m) => (
-              <li key={m.object_file_id}>
-                <label className="flex cursor-pointer items-center gap-3 rounded-lg py-2 hover:bg-muted/50">
-                  <Checkbox
-                    checked={selected.has(m.object_file_id)}
-                    onCheckedChange={() => toggle(m.object_file_id)}
-                  />
-                  <span className="flex-1 min-w-0">
-                    <span className="block truncate text-sm">{m.name}</span>
-                    <span className="block truncate text-xs text-foreground/45">
-                      #{m.object_file_id}
-                    </span>
+      <DialogHeader>
+        <DialogTitle>添加到 {MOTION_SLOT_LABELS[slot]}</DialogTitle>
+      </DialogHeader>
+      <p className="text-xs text-foreground/55">从动作库选择尚未关联到此槽位的动作（可多选）</p>
+      {available.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-4">没有可添加的动作</p>
+      ) : (
+        <ul className="flex flex-col gap-1 max-h-[40vh] overflow-y-auto pr-1">
+          {available.map((m) => (
+            <li key={m.object_file_id}>
+              <label className="flex cursor-pointer items-center gap-3 rounded-lg py-2 hover:bg-muted/50">
+                <Checkbox
+                  checked={selected.has(m.object_file_id)}
+                  onCheckedChange={() => toggle(m.object_file_id)}
+                />
+                <span className="flex-1 min-w-0">
+                  <span className="block truncate text-sm">{m.name}</span>
+                  <span className="block truncate text-xs text-foreground/45">
+                    #{m.object_file_id}
                   </span>
-                </label>
-              </li>
-            ))}
-          </ul>
-        )}
-        <DialogFooter>
-          <Button type="button" variant="ghost" onClick={onClose}>
-            取消
-          </Button>
-          <Button type="button" disabled={selected.size === 0 || saving} onClick={confirm}>
-            {saving ? <Spinner className="size-4" /> : null}
-            {saving ? "添加中…" : `添加 (${selected.size})`}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+                </span>
+              </label>
+            </li>
+          ))}
+        </ul>
+      )}
+      <DialogFooter>
+        <Button type="button" variant="ghost" onClick={onClose}>
+          取消
+        </Button>
+        <Button type="button" disabled={selected.size === 0 || saving} onClick={confirm}>
+          {saving ? <Spinner className="size-4" /> : null}
+          {saving ? "添加中…" : `添加 (${selected.size})`}
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 }

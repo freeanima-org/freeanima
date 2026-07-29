@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { Button } from "../components/ui/button.tsx";
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -42,37 +41,29 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Dialog
-      open={open}
+      isOpen={open}
       onOpenChange={(next) => {
         if (!next) onCancel();
       }}
+      className={cn("max-w-sm safe-area-pt safe-area-pb", className)}
+      showCloseButton={false}
     >
-      <DialogContent
-        className={cn("max-w-sm safe-area-pt safe-area-pb", className)}
-        showCloseButton={false}
-      >
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          {description != null && description !== "" ? (
-            <DialogDescription>{description}</DialogDescription>
-          ) : null}
-        </DialogHeader>
-        <DialogFooter>
-          {cancelable ? (
-            <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-              {cancelLabel ?? m.ui_common_cancel()}
-            </Button>
-          ) : null}
-          <Button
-            type="button"
-            variant={confirmButtonVariant(variant)}
-            size="sm"
-            onClick={onConfirm}
-          >
-            {confirmLabel ?? m.ui_common_confirm()}
+      <DialogHeader>
+        <DialogTitle>{title}</DialogTitle>
+        {description != null && description !== "" ? (
+          <DialogDescription>{description}</DialogDescription>
+        ) : null}
+      </DialogHeader>
+      <DialogFooter>
+        {cancelable ? (
+          <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+            {cancelLabel ?? m.ui_common_cancel()}
           </Button>
-        </DialogFooter>
-      </DialogContent>
+        ) : null}
+        <Button type="button" variant={confirmButtonVariant(variant)} size="sm" onClick={onConfirm}>
+          {confirmLabel ?? m.ui_common_confirm()}
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 }

@@ -8,6 +8,8 @@ import {
   CardContent,
   Input,
   Spinner,
+  buttonVariants,
+  cn,
 } from "@freeanima/ui-kit";
 import { showConfirm } from "@freeanima/ui-kit/composite";
 import {
@@ -73,19 +75,23 @@ export function ModelsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Button asChild className="w-full" disabled={uploading}>
-        <label className="cursor-pointer">
-          {uploading ? <Spinner className="size-4" /> : null}
-          {uploading ? "导入中…" : "导入 VRM 模型"}
-          <input
-            type="file"
-            accept=".vrm"
-            className="hidden"
-            disabled={uploading}
-            onChange={(e) => void onImport(e)}
-          />
-        </label>
-      </Button>
+      <label
+        className={cn(
+          buttonVariants(),
+          "w-full cursor-pointer",
+          uploading && "pointer-events-none opacity-50",
+        )}
+      >
+        {uploading ? <Spinner className="size-4" /> : null}
+        {uploading ? "导入中…" : "导入 VRM 模型"}
+        <input
+          type="file"
+          accept=".vrm"
+          className="hidden"
+          disabled={uploading}
+          onChange={(e) => void onImport(e)}
+        />
+      </label>
       {error ? (
         <Alert variant="error" className="py-2">
           <AlertDescription className="text-xs">{error}</AlertDescription>

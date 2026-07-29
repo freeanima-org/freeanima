@@ -12,8 +12,6 @@ import { PlusIcon, TagIcon } from "lucide-react";
 import { Button, Input, cn } from "@freeanima/ui-kit";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -313,12 +311,13 @@ export function TagPicker({
   const defaultLabel = hasTags && mode === "multi" ? "标签" : "添加标签";
   const label = triggerLabel ?? defaultLabel;
   const createIndex = visibleItems.length;
-  /** 不用仅依赖 focus:bg-accent，以免与 Radix 焦点样式混淆 */
+  /** 不用仅依赖 focus:bg-accent，以免与焦点样式混淆 */
   const highlightClass = "bg-accent text-accent-foreground data-[tag-nav-active]:bg-accent";
+  const placement = align === "end" ? "bottom end" : "bottom start";
 
   const menu = (
-    <DropdownMenu
-      open={open}
+    <DropdownMenuTrigger
+      isOpen={open}
       onOpenChange={(next) => {
         setOpen(next);
         if (!next) {
@@ -326,32 +325,40 @@ export function TagPicker({
           setActiveIndex(-1);
         }
       }}
-      modal={false}
     >
-      <DropdownMenuTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className={cn(
-            mode === "multi" ? "text-muted-foreground h-7 gap-1 px-2 text-xs" : undefined,
-            triggerClassName,
-          )}
-          aria-label={label}
-        >
-          {triggerIcon ??
-            (mode === "multi" ? (
-              <TagIcon className="size-3.5" />
-            ) : (
-              <PlusIcon className="size-3.5" />
-            ))}
-          {label}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align={align}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className={cn(
+          mode === "multi" ? "text-muted-foreground h-7 gap-1 px-2 text-xs" : undefined,
+          triggerClassName,
+        )}
+        aria-label={label}
+      >
+        {triggerIcon ??
+          (mode === "multi" ? <TagIcon className="size-3.5" /> : <PlusIcon className="size-3.5" />)}
+        {label}
+      </Button>
+      <DropdownMenu
+        placement={placement}
         className="w-72 p-2"
-        onCloseAutoFocus={(e) => e.preventDefault()}
+        selectionMode={mode === "multi" ? "multiple" : "none"}
+        selectedKeys={mode === "multi" ? [...selected].map(String) : undefined}
+        onSelectionChange={
+          mode === "multi"
+            ? (keys: "all" | Iterable<string | number>) => {
+                if (keys === "all") return;
+                const next = new Set([...keys].map((k) => Number(k)));
+                for (const id of selected) {
+                  if (!next.has(id)) toggle(id, false);
+                }
+                for (const id of next) {
+                  if (!selected.has(id)) toggle(id, true);
+                }
+              }
+            : undefined
+        }
         onKeyDownCapture={onPickerKeyDown}
       >
         <Input
@@ -379,10 +386,11 @@ export function TagPicker({
             ? visibleItems.map((row, index) => (
                 <DropdownMenuItem
                   key={row.id}
+                  id={String(row.id)}
                   data-tag-picker-nav={index}
                   data-tag-nav-active={activeIndex === index ? "" : undefined}
                   className={cn(activeIndex === index && highlightClass)}
-                  onSelect={() => pick(row.id)}
+                  onAction={() => pick(row.id)}
                 >
                   <span className="min-w-0 flex-1 truncate">{row.title}</span>
                   {row.count != null ? (
@@ -395,14 +403,12 @@ export function TagPicker({
             : null}
           {!loading && mode === "multi"
             ? visibleItems.map((row, index) => (
-                <DropdownMenuCheckboxItem
+                <DropdownMenuItem
                   key={row.id}
+                  id={String(row.id)}
                   data-tag-picker-nav={index}
                   data-tag-nav-active={activeIndex === index ? "" : undefined}
                   className={cn(activeIndex === index && highlightClass)}
-                  checked={selected.has(row.id)}
-                  onCheckedChange={(checked) => toggle(row.id, checked === true)}
-                  onSelect={(e) => e.preventDefault()}
                 >
                   <span className="min-w-0 flex-1 truncate">{row.title}</span>
                   {row.count != null ? (
@@ -410,7 +416,7 @@ export function TagPicker({
                       {row.count}
                     </span>
                   ) : null}
-                </DropdownMenuCheckboxItem>
+                </DropdownMenuItem>
               ))
             : null}
           {showCreate ? (
@@ -423,7 +429,7 @@ export function TagPicker({
                   "text-foreground gap-2",
                   activeIndex === createIndex && highlightClass,
                 )}
-                onSelect={() => void createAndPick(q)}
+                onAction={() => void createAndPick(q)}
               >
                 <PlusIcon className="size-3.5 shrink-0" />
                 <span className="min-w-0 truncate">添加「{q}」</span>
@@ -431,8 +437,8 @@ export function TagPicker({
             </>
           ) : null}
         </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </DropdownMenu>
+    </DropdownMenuTrigger>
   );
 
   if (triggerOnly) return menu;

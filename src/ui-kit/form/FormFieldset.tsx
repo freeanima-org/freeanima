@@ -89,7 +89,7 @@ export function FormToggle({
       <Checkbox
         id={id}
         checked={checked}
-        disabled={disabled}
+        {...(disabled !== undefined ? { disabled } : {})}
         onCheckedChange={(value) => onChange(value === true)}
       />
       <div className="grid gap-0.5">

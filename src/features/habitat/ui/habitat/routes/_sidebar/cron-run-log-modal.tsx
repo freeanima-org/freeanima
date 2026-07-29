@@ -2,7 +2,6 @@ import { Fragment, useCallback, useEffect, useState } from "react";
 import {
   Button,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -66,110 +65,109 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
 
   return (
     <Dialog
-      open
+      isOpen
       onOpenChange={(next) => {
         if (!next) onClose();
       }}
+      className="max-w-3xl safe-area-pt safe-area-pb"
     >
-      <DialogContent className="max-w-3xl safe-area-pt safe-area-pb">
-        <DialogHeader>
-          <DialogTitle>{m.habitat_cron_run_history_title({ name: jobName })}</DialogTitle>
-        </DialogHeader>
-        <p className="text-xs font-mono text-muted-foreground mb-3 break-all">{jobId}</p>
+      <DialogHeader>
+        <DialogTitle>{m.habitat_cron_run_history_title({ name: jobName })}</DialogTitle>
+      </DialogHeader>
+      <p className="text-xs font-mono text-muted-foreground mb-3 break-all">{jobId}</p>
 
-        <div className="flex justify-end mb-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs"
-            disabled={loading}
-            onClick={() => void reload()}
-          >
-            {loading ? m.habitat_common_refreshing() : m.habitat_common_refresh_list()}
-          </Button>
-        </div>
+      <div className="flex justify-end mb-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 text-xs"
+          disabled={loading}
+          onClick={() => void reload()}
+        >
+          {loading ? m.habitat_common_refreshing() : m.habitat_common_refresh_list()}
+        </Button>
+      </div>
 
-        {error ? (
-          <StatusAlert variant="error" className="mb-2">
-            {error}
-          </StatusAlert>
-        ) : null}
+      {error ? (
+        <StatusAlert variant="error" className="mb-2">
+          {error}
+        </StatusAlert>
+      ) : null}
 
-        <div className="overflow-x-auto max-h-[60vh]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{m.habitat_common_time()}</TableHead>
-                <TableHead>{m.habitat_common_status()}</TableHead>
-                <TableHead>#</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <Fragment key={row.id}>
-                  <TableRow className={row.ok ? "" : "bg-destructive/10"}>
-                    <TableCell className="whitespace-nowrap">
-                      {formatDisplayDateTime(row.finished_at)}
-                    </TableCell>
-                    <TableCell>
-                      {row.ok ? m.habitat_common_success() : m.habitat_common_failed()}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">{row.run_count}</TableCell>
-                    <TableCell>
-                      <Button
-                        type="button"
-                        size="sm"
-                        className="h-7 text-xs"
-                        onClick={() => setExpandedId(expandedId === row.id ? null : row.id)}
-                      >
-                        {expandedId === row.id
-                          ? m.habitat_common_collapse()
-                          : m.habitat_common_details()}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                  {expandedId === row.id && (
-                    <TableRow>
-                      <TableCell colSpan={4} className="bg-muted">
-                        {!row.ok && row.error && (
-                          <pre className="text-xs text-destructive whitespace-pre-wrap break-all">
-                            {row.error}
-                          </pre>
-                        )}
-                        {row.ok && row.output && (
-                          <pre className="text-xs whitespace-pre-wrap break-all max-h-48 overflow-auto">
-                            {JSON.stringify(row.output, null, 2)}
-                          </pre>
-                        )}
-                        {row.ok && !row.output && row.output_text && (
-                          <pre className="text-xs whitespace-pre-wrap break-all max-h-48 overflow-auto">
-                            {row.output_text}
-                          </pre>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </Fragment>
-              ))}
-              {!loading && rows.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    {m.habitat_cron_run_history_empty()}
+      <div className="overflow-x-auto max-h-[60vh]">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{m.habitat_common_time()}</TableHead>
+              <TableHead>{m.habitat_common_status()}</TableHead>
+              <TableHead>#</TableHead>
+              <TableHead />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <Fragment key={row.id}>
+                <TableRow className={row.ok ? "" : "bg-destructive/10"}>
+                  <TableCell className="whitespace-nowrap">
+                    {formatDisplayDateTime(row.finished_at)}
+                  </TableCell>
+                  <TableCell>
+                    {row.ok ? m.habitat_common_success() : m.habitat_common_failed()}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">{row.run_count}</TableCell>
+                  <TableCell>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setExpandedId(expandedId === row.id ? null : row.id)}
+                    >
+                      {expandedId === row.id
+                        ? m.habitat_common_collapse()
+                        : m.habitat_common_details()}
+                    </Button>
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                {expandedId === row.id && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="bg-muted">
+                      {!row.ok && row.error && (
+                        <pre className="text-xs text-destructive whitespace-pre-wrap break-all">
+                          {row.error}
+                        </pre>
+                      )}
+                      {row.ok && row.output && (
+                        <pre className="text-xs whitespace-pre-wrap break-all max-h-48 overflow-auto">
+                          {JSON.stringify(row.output, null, 2)}
+                        </pre>
+                      )}
+                      {row.ok && !row.output && row.output_text && (
+                        <pre className="text-xs whitespace-pre-wrap break-all max-h-48 overflow-auto">
+                          {row.output_text}
+                        </pre>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </Fragment>
+            ))}
+            {!loading && rows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  {m.habitat_cron_run_history_empty()}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-        <DialogFooter>
-          <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-            {m.habitat_common_close()}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+      <DialogFooter>
+        <Button type="button" variant="ghost" size="sm" onClick={onClose}>
+          {m.habitat_common_close()}
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 }

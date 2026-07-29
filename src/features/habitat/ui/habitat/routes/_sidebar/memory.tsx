@@ -1,9 +1,17 @@
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
 import type { ServiceSnapshot } from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
-import { Badge, Button, Card, CardContent, Input, Spinner } from "@freeanima/ui-kit";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Input,
+  Spinner,
+  buttonVariants,
+  cn,
+} from "@freeanima/ui-kit";
 import { FormField, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { cn } from "@freeanima/ui-kit/lib/utils.ts";
 import { useMemo, useState } from "react";
 import { formatMemoryRecallOutput } from "@freeanima/features/habitat/ui/habitat/components/habitat/format-memory-recall-output.ts";
 import {
@@ -160,9 +168,13 @@ function MemoryPage() {
         <p className="text-xs text-muted-foreground mb-1.5">{m.habitat_memory_quick_links()}</p>
         <div className="flex flex-wrap gap-2">
           {QUICK_LINKS.map((link) => (
-            <Button key={link.to} variant="outline" size="sm" className="h-7 text-xs" asChild>
-              <Link to={link.to}>{link.label()}</Link>
-            </Button>
+            <Link
+              key={link.to}
+              to={link.to}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-7 text-xs")}
+            >
+              {link.label()}
+            </Link>
           ))}
         </div>
       </div>

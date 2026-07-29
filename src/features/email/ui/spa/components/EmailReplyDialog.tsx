@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   Button,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -101,45 +100,43 @@ export function EmailReplyDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(next) => (!next ? onClose() : undefined)}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{message ? m.email_reply() : m.email_compose()}</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-3 py-2">
-          <FormField label={m.email_reply_to()}>
-            <Input
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              disabled={disabled || saving}
-            />
-          </FormField>
-          <FormField label={m.email_reply_subject()}>
-            <Input
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              disabled={disabled || saving}
-            />
-          </FormField>
-          <FormField label={m.email_reply_body()}>
-            <Textarea
-              className="min-h-40"
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              disabled={disabled || saving}
-            />
-          </FormField>
-          {error ? <p className="text-destructive text-sm">{error}</p> : null}
-        </div>
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
-            {m.email_cancel()}
-          </Button>
-          <Button type="button" disabled={disabled || saving} onClick={() => void onSubmit()}>
-            {saving ? <Spinner className="size-4" /> : m.email_send_action()}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+    <Dialog
+      isOpen={open}
+      onOpenChange={(next) => (!next ? onClose() : undefined)}
+      className="max-w-lg"
+    >
+      <DialogHeader>
+        <DialogTitle>{message ? m.email_reply() : m.email_compose()}</DialogTitle>
+      </DialogHeader>
+      <div className="flex flex-col gap-3 py-2">
+        <FormField label={m.email_reply_to()}>
+          <Input value={to} onChange={(e) => setTo(e.target.value)} disabled={disabled || saving} />
+        </FormField>
+        <FormField label={m.email_reply_subject()}>
+          <Input
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            disabled={disabled || saving}
+          />
+        </FormField>
+        <FormField label={m.email_reply_body()}>
+          <Textarea
+            className="min-h-40"
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            disabled={disabled || saving}
+          />
+        </FormField>
+        {error ? <p className="text-destructive text-sm">{error}</p> : null}
+      </div>
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
+          {m.email_cancel()}
+        </Button>
+        <Button type="button" disabled={disabled || saving} onClick={() => void onSubmit()}>
+          {saving ? <Spinner className="size-4" /> : m.email_send_action()}
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 }

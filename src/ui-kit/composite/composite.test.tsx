@@ -29,7 +29,7 @@ describe("composite components", () => {
     expect(html).toBe("");
   });
 
-  it("ConfirmDialog mounts when open (Radix Dialog 内容走 Portal，SSR 不输出 DOM)", () => {
+  it("ConfirmDialog mounts when open (Dialog 内容走 Portal，SSR 不输出 DOM)", () => {
     expect(() =>
       renderToStaticMarkup(
         createElement(ConfirmDialog, {
@@ -44,7 +44,7 @@ describe("composite components", () => {
     ).not.toThrow();
   });
 
-  it("ActionSheet mounts with items (Radix Sheet 内容走 Portal，SSR 不输出 DOM)", () => {
+  it("ActionSheet mounts with items (Sheet 内容走 Portal，SSR 不输出 DOM)", () => {
     let clicked = false;
     expect(() =>
       renderToStaticMarkup(
@@ -76,7 +76,7 @@ describe("composite components", () => {
     expect(html).toContain("Row");
   });
 
-  it("ContextMenu mounts with items (Radix Content 走 Portal)", () => {
+  it("ContextMenu mounts with items (Menu 内容走 Portal)", () => {
     expect(() =>
       renderToStaticMarkup(
         createElement(ContextMenu, {

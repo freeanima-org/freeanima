@@ -3,7 +3,6 @@ import { getUserVaultSession } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Button,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -110,39 +109,35 @@ export function VaultUnlockButton({
           解锁用户库
         </Button>
       )}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent showCloseButton={false} className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>解锁用户保险库</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            主密码仅在本机验证，不会作为聊天消息发送。
-          </p>
-          <Input
-            type="password"
-            autoComplete="current-password"
-            placeholder="主密码"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") void handleUnlock();
-            }}
-          />
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-          <DialogFooter>
-            <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
-              取消
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              disabled={loading || !password.trim()}
-              onClick={() => void handleUnlock()}
-            >
-              {loading ? <Spinner className="size-4" /> : "解锁"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+      <Dialog isOpen={open} onOpenChange={setOpen} showCloseButton={false} className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>解锁用户保险库</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">主密码仅在本机验证，不会作为聊天消息发送。</p>
+        <Input
+          type="password"
+          autoComplete="current-password"
+          placeholder="主密码"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") void handleUnlock();
+          }}
+        />
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+        <DialogFooter>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
+            取消
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            disabled={loading || !password.trim()}
+            onClick={() => void handleUnlock()}
+          >
+            {loading ? <Spinner className="size-4" /> : "解锁"}
+          </Button>
+        </DialogFooter>
       </Dialog>
     </>
   );

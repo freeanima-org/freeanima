@@ -7,7 +7,6 @@ import {
   CardContent,
   Checkbox,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -160,227 +159,222 @@ function WorldEditModal({
 
   return (
     <Dialog
-      open
+      isOpen
       onOpenChange={(next) => {
         if (!next) onClose();
       }}
+      className="max-w-xl max-h-[90vh] overflow-y-auto safe-area-pt safe-area-pb"
     >
-      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto safe-area-pt safe-area-pb">
-        <DialogHeader>
-          <DialogTitle>
-            {mode === "create" ? m.habitat_entities_new_world() : m.habitat_entities_edit_world()}
-          </DialogTitle>
-        </DialogHeader>
-        {error ? (
-          <StatusAlert variant="error" className="mb-3">
-            {error}
-          </StatusAlert>
-        ) : null}
-        <FormFieldset bordered={false} className="gap-3">
-          <FormField label={m.habitat_entities_col_title()} className="text-xs">
-            <Input
-              type="text"
-              className="w-full h-8"
-              value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+      <DialogHeader>
+        <DialogTitle>
+          {mode === "create" ? m.habitat_entities_new_world() : m.habitat_entities_edit_world()}
+        </DialogTitle>
+      </DialogHeader>
+      {error ? (
+        <StatusAlert variant="error" className="mb-3">
+          {error}
+        </StatusAlert>
+      ) : null}
+      <FormFieldset bordered={false} className="gap-3">
+        <FormField label={m.habitat_entities_col_title()} className="text-xs">
+          <Input
+            type="text"
+            className="w-full h-8"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+          />
+        </FormField>
+        <FormField label={m.habitat_entities_col_summary()} className="text-xs">
+          <Input
+            type="text"
+            className="w-full h-8"
+            value={form.summary}
+            onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
+          />
+        </FormField>
+        <FormField label={m.habitat_entities_col_content()} className="text-xs">
+          <Textarea
+            className="w-full min-h-24"
+            value={form.content}
+            onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+          />
+        </FormField>
+        <FormField label={m.habitat_entities_col_visibility()} className="text-xs">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="world-private"
+              checked={form.private}
+              onCheckedChange={(checked) =>
+                setForm((f) => {
+                  const nextPrivate = checked === true;
+                  const nextOwner = nextPrivate ? f.owner_subject_id : "";
+                  const ownerNum = nextOwner ? Number(nextOwner) : null;
+                  return {
+                    ...f,
+                    private: nextPrivate,
+                    owner_subject_id: nextOwner,
+                    grants: f.grants.filter(
+                      (g) => ownerNum == null || Number(g.subject_id) !== ownerNum,
+                    ),
+                  };
+                })
+              }
             />
-          </FormField>
-          <FormField label={m.habitat_entities_col_summary()} className="text-xs">
-            <Input
-              type="text"
-              className="w-full h-8"
-              value={form.summary}
-              onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
-            />
-          </FormField>
-          <FormField label={m.habitat_entities_col_content()} className="text-xs">
-            <Textarea
-              className="w-full min-h-24"
-              value={form.content}
-              onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-            />
-          </FormField>
-          <FormField label={m.habitat_entities_col_visibility()} className="text-xs">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="world-private"
-                checked={form.private}
-                onCheckedChange={(checked) =>
-                  setForm((f) => {
-                    const nextPrivate = checked === true;
-                    const nextOwner = nextPrivate ? f.owner_subject_id : "";
-                    const ownerNum = nextOwner ? Number(nextOwner) : null;
-                    return {
-                      ...f,
-                      private: nextPrivate,
-                      owner_subject_id: nextOwner,
-                      grants: f.grants.filter(
-                        (g) => ownerNum == null || Number(g.subject_id) !== ownerNum,
-                      ),
-                    };
-                  })
-                }
-              />
-              <Label htmlFor="world-private">{m.habitat_entities_visibility_private()}</Label>
-            </div>
-          </FormField>
-          {form.private ? (
-            <FormField label={m.habitat_entities_col_owner_subject()} className="text-xs">
-              <Select
-                value={form.owner_subject_id || "__none__"}
-                onValueChange={(v) =>
-                  setForm((f) => {
-                    const nextOwner = v === "__none__" ? "" : v;
-                    const ownerNum = nextOwner ? Number(nextOwner) : null;
-                    return {
-                      ...f,
-                      owner_subject_id: nextOwner,
-                      grants: f.grants.filter(
-                        (g) => ownerNum == null || Number(g.subject_id) !== ownerNum,
-                      ),
-                    };
-                  })
-                }
-              >
-                <SelectTrigger size="sm" className="w-full">
-                  <SelectValue placeholder={m.habitat_entities_owner_subject_placeholder()} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">
-                    {m.habitat_entities_owner_subject_placeholder()}
+            <Label htmlFor="world-private">{m.habitat_entities_visibility_private()}</Label>
+          </div>
+        </FormField>
+        {form.private ? (
+          <FormField label={m.habitat_entities_col_owner_subject()} className="text-xs">
+            <Select
+              value={form.owner_subject_id || "__none__"}
+              onValueChange={(v) =>
+                setForm((f) => {
+                  const nextOwner = v === "__none__" ? "" : v;
+                  const ownerNum = nextOwner ? Number(nextOwner) : null;
+                  return {
+                    ...f,
+                    owner_subject_id: nextOwner,
+                    grants: f.grants.filter(
+                      (g) => ownerNum == null || Number(g.subject_id) !== ownerNum,
+                    ),
+                  };
+                })
+              }
+            >
+              <SelectTrigger size="sm" className="w-full">
+                <SelectValue placeholder={m.habitat_entities_owner_subject_placeholder()} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">
+                  {m.habitat_entities_owner_subject_placeholder()}
+                </SelectItem>
+                {subjects.map((s) => (
+                  <SelectItem key={s.id} value={String(s.id)}>
+                    {subjectOptionLabel(s)}
                   </SelectItem>
-                  {subjects.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>
-                      {subjectOptionLabel(s)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormField>
-          ) : null}
-
-          <FormField label={m.habitat_entities_grants_label()} className="text-xs">
-            <p className="text-muted-foreground mb-2 leading-snug">
-              {m.habitat_entities_grants_hint()}
-            </p>
-            <div className="flex flex-col gap-2">
-              {form.grants.map((grant, index) => {
-                const taken = new Set(
-                  form.grants.map((g, i) => (i === index ? "" : g.subject_id)).filter(Boolean),
-                );
-                const options = grantableSubjects.filter(
-                  (s) => !taken.has(String(s.id)) || String(s.id) === grant.subject_id,
-                );
-                return (
-                  <div key={index} className="flex flex-wrap items-center gap-2">
-                    <Select
-                      value={grant.subject_id || "__none__"}
-                      onValueChange={(v) =>
-                        setForm((f) => ({
-                          ...f,
-                          grants: f.grants.map((g, i) =>
-                            i === index ? { ...g, subject_id: v === "__none__" ? "" : v } : g,
-                          ),
-                        }))
-                      }
-                    >
-                      <SelectTrigger size="sm" className="min-w-[12rem] flex-1">
-                        <SelectValue placeholder={m.habitat_entities_grant_subject_label()} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__none__">
-                          {m.habitat_entities_owner_subject_placeholder()}
-                        </SelectItem>
-                        {options.map((s) => (
-                          <SelectItem key={s.id} value={String(s.id)}>
-                            {subjectOptionLabel(s)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select
-                      value={grant.permission}
-                      onValueChange={(v) =>
-                        setForm((f) => ({
-                          ...f,
-                          grants: f.grants.map((g, i) =>
-                            i === index
-                              ? { ...g, permission: v === "write" ? "write" : "read" }
-                              : g,
-                          ),
-                        }))
-                      }
-                    >
-                      <SelectTrigger size="sm" className="w-28">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="read">
-                          {m.habitat_entities_grant_permission_read()}
-                        </SelectItem>
-                        <SelectItem value="write">
-                          {m.habitat_entities_grant_permission_write()}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-8"
-                      onClick={() =>
-                        setForm((f) => ({
-                          ...f,
-                          grants: f.grants.filter((_, i) => i !== index),
-                        }))
-                      }
-                    >
-                      {m.habitat_entities_grant_remove()}
-                    </Button>
-                  </div>
-                );
-              })}
-              {grantableSubjects.length === 0 ? (
-                <p className="text-muted-foreground">
-                  {m.habitat_entities_grants_empty_subjects()}
-                </p>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="self-start"
-                  disabled={
-                    grantableSubjects.every((s) => usedGrantSubjectIds.has(String(s.id))) ||
-                    form.grants.some((g) => !g.subject_id)
-                  }
-                  onClick={addGrant}
-                >
-                  {m.habitat_entities_grant_add()}
-                </Button>
-              )}
-            </div>
+                ))}
+              </SelectContent>
+            </Select>
           </FormField>
-        </FormFieldset>
-        <DialogFooter>
-          <Button type="button" variant="ghost" size="sm" disabled={saving} onClick={onClose}>
-            {m.habitat_common_cancel()}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            disabled={
-              saving ||
-              !form.title.trim() ||
-              (form.private && !form.owner_subject_id.trim()) ||
-              form.grants.some((g) => !g.subject_id)
-            }
-            onClick={() => onSave(form)}
-          >
-            {saving ? <Spinner /> : m.habitat_common_save()}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+        ) : null}
+
+        <FormField label={m.habitat_entities_grants_label()} className="text-xs">
+          <p className="text-muted-foreground mb-2 leading-snug">
+            {m.habitat_entities_grants_hint()}
+          </p>
+          <div className="flex flex-col gap-2">
+            {form.grants.map((grant, index) => {
+              const taken = new Set(
+                form.grants.map((g, i) => (i === index ? "" : g.subject_id)).filter(Boolean),
+              );
+              const options = grantableSubjects.filter(
+                (s) => !taken.has(String(s.id)) || String(s.id) === grant.subject_id,
+              );
+              return (
+                <div key={index} className="flex flex-wrap items-center gap-2">
+                  <Select
+                    value={grant.subject_id || "__none__"}
+                    onValueChange={(v) =>
+                      setForm((f) => ({
+                        ...f,
+                        grants: f.grants.map((g, i) =>
+                          i === index ? { ...g, subject_id: v === "__none__" ? "" : v } : g,
+                        ),
+                      }))
+                    }
+                  >
+                    <SelectTrigger size="sm" className="min-w-[12rem] flex-1">
+                      <SelectValue placeholder={m.habitat_entities_grant_subject_label()} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">
+                        {m.habitat_entities_owner_subject_placeholder()}
+                      </SelectItem>
+                      {options.map((s) => (
+                        <SelectItem key={s.id} value={String(s.id)}>
+                          {subjectOptionLabel(s)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={grant.permission}
+                    onValueChange={(v) =>
+                      setForm((f) => ({
+                        ...f,
+                        grants: f.grants.map((g, i) =>
+                          i === index ? { ...g, permission: v === "write" ? "write" : "read" } : g,
+                        ),
+                      }))
+                    }
+                  >
+                    <SelectTrigger size="sm" className="w-28">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="read">
+                        {m.habitat_entities_grant_permission_read()}
+                      </SelectItem>
+                      <SelectItem value="write">
+                        {m.habitat_entities_grant_permission_write()}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8"
+                    onClick={() =>
+                      setForm((f) => ({
+                        ...f,
+                        grants: f.grants.filter((_, i) => i !== index),
+                      }))
+                    }
+                  >
+                    {m.habitat_entities_grant_remove()}
+                  </Button>
+                </div>
+              );
+            })}
+            {grantableSubjects.length === 0 ? (
+              <p className="text-muted-foreground">{m.habitat_entities_grants_empty_subjects()}</p>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="self-start"
+                disabled={
+                  grantableSubjects.every((s) => usedGrantSubjectIds.has(String(s.id))) ||
+                  form.grants.some((g) => !g.subject_id)
+                }
+                onClick={addGrant}
+              >
+                {m.habitat_entities_grant_add()}
+              </Button>
+            )}
+          </div>
+        </FormField>
+      </FormFieldset>
+      <DialogFooter>
+        <Button type="button" variant="ghost" size="sm" disabled={saving} onClick={onClose}>
+          {m.habitat_common_cancel()}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          disabled={
+            saving ||
+            !form.title.trim() ||
+            (form.private && !form.owner_subject_id.trim()) ||
+            form.grants.some((g) => !g.subject_id)
+          }
+          onClick={() => onSave(form)}
+        >
+          {saving ? <Spinner /> : m.habitat_common_save()}
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 }

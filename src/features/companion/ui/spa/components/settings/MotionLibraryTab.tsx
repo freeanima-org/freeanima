@@ -8,6 +8,8 @@ import {
   CardTitle,
   Input,
   Spinner,
+  buttonVariants,
+  cn,
 } from "@freeanima/ui-kit";
 import { showConfirm } from "@freeanima/ui-kit/composite";
 import {
@@ -128,20 +130,24 @@ export function MotionLibraryTab() {
             ? " 支持 .vrma / .fbx，或包含 vrma、fbx 的 .zip。"
             : " 支持 .vrma 或含 vrma 的 .zip；FBX 需 Habitat 主机已安装 FBX2glTF。"}
         </p>
-        <Button asChild className="w-full" disabled={importing}>
-          <label className="cursor-pointer">
-            {importing ? <Spinner className="size-4" /> : null}
-            {importing ? "导入中…" : "导入动作"}
-            <input
-              type="file"
-              accept={accept}
-              multiple
-              className="hidden"
-              disabled={importing}
-              onChange={(e) => void onImport(e)}
-            />
-          </label>
-        </Button>
+        <label
+          className={cn(
+            buttonVariants(),
+            "w-full cursor-pointer",
+            importing && "pointer-events-none opacity-50",
+          )}
+        >
+          {importing ? <Spinner className="size-4" /> : null}
+          {importing ? "导入中…" : "导入动作"}
+          <input
+            type="file"
+            accept={accept}
+            multiple
+            className="hidden"
+            disabled={importing}
+            onChange={(e) => void onImport(e)}
+          />
+        </label>
         {error ? (
           <Alert variant="error" className="py-2">
             <AlertDescription className="text-xs">{error}</AlertDescription>

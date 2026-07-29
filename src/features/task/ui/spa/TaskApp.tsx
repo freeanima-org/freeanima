@@ -18,7 +18,6 @@ import {
   AlertDescription,
   Button,
   Dialog,
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -1612,45 +1611,45 @@ export function TaskApp() {
         />
 
         <Dialog
-          open={childNamePrompt != null}
+          isOpen={childNamePrompt != null}
           onOpenChange={(open) => {
             if (!open) setChildNamePrompt(null);
           }}
+          className="max-w-sm safe-area-pt safe-area-pb"
+          showCloseButton={false}
         >
-          <DialogContent className="max-w-sm safe-area-pt safe-area-pb" showCloseButton={false}>
-            <DialogHeader>
-              <DialogTitle>
-                {childNamePrompt?.kind === "folder" ? "新建子文件夹" : "新建子清单"}
-              </DialogTitle>
-            </DialogHeader>
-            <Input
-              focusOnMount
-              value={childNamePromptValue}
-              placeholder={childNamePrompt?.kind === "folder" ? "文件夹名称" : "清单名称"}
-              onChange={(e) => setChildNamePromptValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") confirmChildNamePrompt();
-              }}
-            />
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setChildNamePrompt(null)}
-              >
-                取消
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                disabled={!childNamePromptValue.trim()}
-                onClick={confirmChildNamePrompt}
-              >
-                创建
-              </Button>
-            </DialogFooter>
-          </DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {childNamePrompt?.kind === "folder" ? "新建子文件夹" : "新建子清单"}
+            </DialogTitle>
+          </DialogHeader>
+          <Input
+            focusOnMount
+            value={childNamePromptValue}
+            placeholder={childNamePrompt?.kind === "folder" ? "文件夹名称" : "清单名称"}
+            onChange={(e) => setChildNamePromptValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") confirmChildNamePrompt();
+            }}
+          />
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setChildNamePrompt(null)}
+            >
+              取消
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={!childNamePromptValue.trim()}
+              onClick={confirmChildNamePrompt}
+            >
+              创建
+            </Button>
+          </DialogFooter>
         </Dialog>
 
         <ConfirmDialog

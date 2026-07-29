@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Card, CardContent } from "@freeanima/ui-kit";
+import { Card, CardContent, buttonVariants, cn } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { fetchTlsCaInfo, type TlsCaInfo } from "@freeanima/client/portal-sdk/tls-ca-api";
 
@@ -84,11 +84,13 @@ export function HabitatTlsCaTrustCard({ habitatUrl }: Props) {
                 <p className="text-xs text-muted-foreground">签发者：{info.issuer}</p>
               ) : null}
               <p className="text-xs text-muted-foreground">{info.install_hint}</p>
-              <Button type="button" variant="outline" size="sm" asChild>
-                <a href={info.download_url} download={info.filename}>
-                  下载 {info.filename}
-                </a>
-              </Button>
+              <a
+                href={info.download_url}
+                download={info.filename}
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+              >
+                下载 {info.filename}
+              </a>
             </div>
           </div>
         ) : (
