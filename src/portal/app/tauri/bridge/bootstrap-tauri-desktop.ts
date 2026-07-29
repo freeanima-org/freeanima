@@ -1,6 +1,6 @@
 /** Tauri Portal：注入 window.portalShell（主窗 + companion overlay） */
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
+import { emit, listen } from "@tauri-apps/api/event";
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import type { RemoteInstanceStore } from "@freeanima/shared/rpc-contract";
 import {
@@ -131,9 +131,9 @@ export async function bootstrapTauriBridge(): Promise<void> {
     setCompanionVisible: async (visible) => {
       await invoke("set_companion_visible", { visible });
       notifyShellConfigChanged();
+      // Rust show 路径会 emit shell:config-changed，overlay 重拉配置
     },
     enqueueCompanionBubble: async (text) => {
-      const { emit } = await import("@tauri-apps/api/event");
       await emit("companion:enqueue-bubble", { text });
     },
     listenCompanionBubble: (handler) => {
@@ -186,6 +186,9 @@ export async function bootstrapTauriBridge(): Promise<void> {
       const c = await invoke<HabitatCfg>("get_habitat_config");
       applyHabitatConfigToShell(shell, c.habitatUrl, c.remoteAuthToken ?? "");
       notifyShellConfigChanged();
+      // 主窗 / 设置与 companion overlay 是不同 WebView；须 Tauri 事件跨窗通知
+      // （CustomEvent / localStorage 到不了 overlay；hide 伴侣也不会 re-init）
+      await emit("shell:config-changed");
     },
     ...(isWindowsDesktop()
       ? {

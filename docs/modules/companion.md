@@ -119,6 +119,6 @@ Companion config has two storage layers:
 
 Local `~/.anima/companion/config.json` is only a **habitat-sync cache**; the settings UI does not read/write it directly.
 
-After Habitat companion config changes, the local cache syncs via `companion.sync.pull`; the overlay refreshes through `emitConfigChanged`.
+After Habitat companion config changes, the local cache syncs via `companion.sync.pull`. On Portal desktop, settings call `emitConfigChanged` → Tauri event `shell:config-changed`（跨 WebView）→ overlay `refreshConfig`。Companion 窗是 **hide 非 destroy**，关开不会 `init`；因此跨窗事件是热更新的唯一路径（再次 show 时也会补发一次）。
 
 See also: [Habitat RPC](../ops/habitat-rpc.md), [architecture companion section](../product/architecture.md#desktop-companion-habitat-ssot).
