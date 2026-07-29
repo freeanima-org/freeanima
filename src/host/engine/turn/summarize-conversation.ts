@@ -115,10 +115,22 @@ export async function summarizeConversation(
     ? parseCompressionState(metaAfter.compression)
     : newState;
 
+  const persisted = finalState != null && (finalState.l2 > 0 || finalState.l3 > 0);
   const analysis = analyzeCompression(msgs, {
     ...compressOpts,
     state: finalState,
   });
+
+  if (!persisted) {
+    return {
+      ...analysis,
+      ok: false,
+      enabled: true,
+      updated: false,
+      idle,
+      compression: finalState,
+    };
+  }
 
   return {
     ...analysis,

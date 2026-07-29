@@ -9,6 +9,7 @@ import {
   MenuTrigger as MenuTriggerPrimitive,
   PopoverContext,
   Popover as PopoverPrimitive,
+  Pressable,
   Separator as SeparatorPrimitive,
   SubmenuTrigger as SubmenuTriggerPrimitive,
   type MenuItemProps as MenuItemPrimitiveProps,
@@ -83,6 +84,39 @@ function ContextMenuTrigger({
         }
       }}
     >
+      {/* MenuTrigger 要求首子为 pressable；普通 div 会触发 PressResponder 警告 */}
+      <Pressable>
+        <div
+          data-slot="context-menu-trigger"
+          className={cn("contents select-none", className)}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            const wasOpen = position !== null;
+            setPosition({
+              y: e.clientY,
+              x: e.clientX,
+            });
+            if (!wasOpen) {
+              onOpenChange?.(true);
+            }
+          }}
+        >
+          <PopoverContext.Consumer>
+            {(ctx: object | null) => (
+              <PopoverContext.Provider
+                value={{
+                  ...ctx,
+                  ...position,
+                  triggerRef: positionRef,
+                  style: undefined,
+                }}
+              >
+                {children}
+              </PopoverContext.Provider>
+            )}
+          </PopoverContext.Consumer>
+        </div>
+      </Pressable>
       {position &&
         createPortal(
           // Position the popover at the pointer.
@@ -97,36 +131,6 @@ function ContextMenuTrigger({
           />,
           document.body,
         )}
-      <div
-        data-slot="context-menu-trigger"
-        className={cn("contents select-none", className)}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          const wasOpen = position !== null;
-          setPosition({
-            y: e.clientY,
-            x: e.clientX,
-          });
-          if (!wasOpen) {
-            onOpenChange?.(true);
-          }
-        }}
-      >
-        <PopoverContext.Consumer>
-          {(ctx: object | null) => (
-            <PopoverContext.Provider
-              value={{
-                ...ctx,
-                ...position,
-                triggerRef: positionRef,
-                style: undefined,
-              }}
-            >
-              {children}
-            </PopoverContext.Provider>
-          )}
-        </PopoverContext.Consumer>
-      </div>
     </MenuTriggerPrimitive>
   );
 }

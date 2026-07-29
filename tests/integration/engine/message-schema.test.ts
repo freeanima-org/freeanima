@@ -50,4 +50,45 @@ describePg("schemas/message", () => {
       },
     });
   });
+
+  it("patch without compression key preserves compression boundaries", async () => {
+    const c = testConv();
+    const sid = "schema_compression_preserve";
+    await c.initConversation(sid, "m", { platform: TEST_SAP_CHAT_PLATFORM });
+    await c.updateConversationMetaField(sid, {
+      compression: { l2: 100, l3: 100, summary: "kept summary" },
+    });
+    await c.updateConversationMetaField(sid, {
+      cached_toolsets: ["toolset"],
+      staged_toolsets: [],
+    });
+    await c.updateConversationMetaField(sid, {
+      system_prompt: "rebuilt prompt",
+      system_prompt_built_at: new Date().toISOString(),
+    });
+    const meta = await c.loadConversationMeta(sid);
+    expect(meta.role).toBe("conversation_meta");
+    if (meta.role !== "conversation_meta") return;
+    expect(meta.compression).toEqual({
+      l2: 100,
+      l3: 100,
+      summary: "kept summary",
+    });
+    expect(meta.cached_toolsets).toEqual(["toolset"]);
+    expect(meta.system_prompt).toBe("rebuilt prompt");
+  });
+
+  it("explicit compression null clears boundaries", async () => {
+    const c = testConv();
+    const sid = "schema_compression_clear";
+    await c.initConversation(sid, "m", { platform: TEST_SAP_CHAT_PLATFORM });
+    await c.updateConversationMetaField(sid, {
+      compression: { l2: 50, l3: 50, summary: "gone" },
+    });
+    await c.updateConversationMetaField(sid, { compression: null });
+    const meta = await c.loadConversationMeta(sid);
+    expect(meta.role).toBe("conversation_meta");
+    if (meta.role !== "conversation_meta") return;
+    expect(meta.compression ?? null).toBeNull();
+  });
 });
