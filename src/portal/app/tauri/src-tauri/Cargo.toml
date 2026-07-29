@@ -39,3 +39,6 @@ codegen-units = 16
 lto = false
 opt-level = 2
 strip = true
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"

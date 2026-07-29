@@ -9,7 +9,11 @@ import {
 } from "@freeanima/host/core/db/pg/entity";
 
 import { ApiHandlerError } from "../../habitat/habitat/habitat-api/handlers/errors.ts";
-import { downloadObjectFileBytes, getObjectFile } from "../domain/file-store.ts";
+import {
+  downloadObjectFileBytes,
+  getObjectFile,
+  ObjectStorageNotConfiguredError,
+} from "../domain/index.ts";
 import { binaryResponseWithCache, notModifiedIfMatch } from "../domain/http-cache.ts";
 
 function requireHttpRequest(ctx: RemoteToolsRequestContext): Request {
@@ -72,7 +76,11 @@ export async function handleObjectStorageFileGet(
       cid: file.cid,
     });
   } catch (e) {
-    throw new ApiHandlerError(404, String(e), { code: "NOT_FOUND" });
+    if (e instanceof ObjectStorageNotConfiguredError) {
+      throw new ApiHandlerError(503, e.message, { code: e.code });
+    }
+    const msg = e instanceof Error ? e.message : String(e);
+    throw new ApiHandlerError(404, msg, { code: "NOT_FOUND" });
   }
 }
 

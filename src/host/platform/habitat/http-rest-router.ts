@@ -132,6 +132,38 @@ function jsonError(status: number, code: string, message: string): Response {
   return Response.json({ error: { code, message } }, { status });
 }
 
+/** 将 handler 抛错映射为 REST JSON；导出供单测（与 WS 同样透传 Error.message） */
+export function mapHabitatRestHandlerError(e: unknown): Response {
+  if (e instanceof z.ZodError) {
+    return jsonError(400, "invalid_input", e.message);
+  }
+  if (e instanceof HabitatRestHandlerError) {
+    return jsonError(e.status, e.code, e.message);
+  }
+  const apiErr = e as { status?: number; message?: string; context?: { code?: string } };
+  if (typeof apiErr.status === "number" && apiErr.message) {
+    return jsonError(
+      apiErr.status,
+      typeof apiErr.context?.code === "string" ? apiErr.context.code : "habitat_rpc_error",
+      apiErr.message,
+    );
+  }
+  console.error("[habitat-rest] handler failed:", e);
+  const withCode = e as { code?: unknown };
+  const errCode =
+    e instanceof Error && typeof withCode.code === "string" && withCode.code.trim()
+      ? withCode.code
+      : "habitat_rpc_error";
+  const message =
+    e instanceof Error && e.message.trim()
+      ? e.message
+      : typeof e === "string" && e.trim()
+        ? e
+        : "Habitat RPC request failed";
+  const status = errCode === "object_storage_not_configured" ? 503 : 500;
+  return jsonError(status, errCode, message);
+}
+
 function ctxFor(
   auth: HttpHubRestAuth,
   req: Request,
@@ -235,22 +267,7 @@ export async function handleHttpHabitatRestRequest(
       headers: { "Cache-Control": "private, no-cache" },
     });
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return jsonError(400, "invalid_input", e.message);
-    }
-    if (e instanceof HabitatRestHandlerError) {
-      return jsonError(e.status, e.code, e.message);
-    }
-    const apiErr = e as { status?: number; message?: string; context?: { code?: string } };
-    if (typeof apiErr.status === "number" && apiErr.message) {
-      return jsonError(
-        apiErr.status,
-        typeof apiErr.context?.code === "string" ? apiErr.context.code : "habitat_rpc_error",
-        apiErr.message,
-      );
-    }
-    console.error("[habitat-rest] handler failed:", e);
-    return jsonError(500, "habitat_rpc_error", "Habitat RPC request failed");
+    return mapHabitatRestHandlerError(e);
   }
 }
 

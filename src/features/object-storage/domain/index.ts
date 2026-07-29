@@ -7,6 +7,7 @@ export {
   serverCacheObjectPath,
   serverCacheRoot,
   OBJECT_STORAGE_NOT_CONFIGURED,
+  ObjectStorageNotConfiguredError,
   type ObjectStore,
   type ObjectPutResult,
 } from "./object-store.ts";

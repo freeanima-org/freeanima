@@ -2,6 +2,10 @@
 
 #[cfg(all(desktop, target_os = "windows"))]
 mod packaged_update;
+#[cfg(all(desktop, target_os = "windows"))]
+mod windows_aumid;
+#[cfg(desktop)]
+mod shell_icons;
 #[cfg(mobile)]
 mod apk_installer_plugin;
 
@@ -28,6 +32,8 @@ const SHELL_PREFS_FILE: &str = "desktop-shell.json";
 
 #[cfg(desktop)]
 static IS_QUITTING: AtomicBool = AtomicBool::new(false);
+#[cfg(desktop)]
+static TRAY_BLINK_ACTIVE: AtomicBool = AtomicBool::new(false);
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
@@ -582,9 +588,7 @@ fn set_app_badge_count(app: AppHandle, count: u32) -> Result<(), String> {
   #[cfg(target_os = "windows")]
   {
     if count > 0 {
-      if let Some(icon) = app.default_window_icon().cloned() {
-        let _ = window.set_overlay_icon(Some(icon));
-      }
+      let _ = window.set_overlay_icon(Some(shell_icons::unread_badge_overlay()));
     } else {
       let _ = window.set_overlay_icon(None);
     }
@@ -601,6 +605,54 @@ fn set_app_badge_count(app: AppHandle, count: u32) -> Result<(), String> {
 }
 
 #[cfg(desktop)]
+fn restore_tray_icon(app: &AppHandle) {
+  if let Some(tray) = app.tray_by_id("main") {
+    if let Some(icon) = app.default_window_icon().cloned() {
+      let _ = tray.set_icon(Some(icon));
+    }
+  }
+}
+
+#[cfg(desktop)]
+fn stop_tray_blink(app: &AppHandle) {
+  TRAY_BLINK_ACTIVE.store(false, Ordering::SeqCst);
+  restore_tray_icon(app);
+}
+
+#[cfg(desktop)]
+fn start_tray_blink(app: &AppHandle) {
+  if TRAY_BLINK_ACTIVE.swap(true, Ordering::SeqCst) {
+    return;
+  }
+  let handle = app.clone();
+  std::thread::spawn(move || {
+    let mut phase = false;
+    while TRAY_BLINK_ACTIVE.load(Ordering::SeqCst) {
+      phase = !phase;
+      let app = handle.clone();
+      let show_attention = phase;
+      let _ = app.clone().run_on_main_thread(move || {
+        if !TRAY_BLINK_ACTIVE.load(Ordering::SeqCst) {
+          return;
+        }
+        if let Some(tray) = app.tray_by_id("main") {
+          if show_attention {
+            let _ = tray.set_icon(Some(shell_icons::tray_attention_icon()));
+          } else if let Some(icon) = app.default_window_icon().cloned() {
+            let _ = tray.set_icon(Some(icon));
+          }
+        }
+      });
+      std::thread::sleep(std::time::Duration::from_millis(500));
+    }
+    let app = handle.clone();
+    let _ = app.clone().run_on_main_thread(move || {
+      restore_tray_icon(&app);
+    });
+  });
+}
+
+#[cfg(desktop)]
 #[tauri::command]
 fn request_app_attention(app: AppHandle) -> Result<(), String> {
   let window = app
@@ -611,6 +663,7 @@ fn request_app_attention(app: AppHandle) -> Result<(), String> {
     return Ok(());
   }
   let _ = window.request_user_attention(Some(tauri::UserAttentionType::Informational));
+  start_tray_blink(&app);
   Ok(())
 }
 
@@ -620,6 +673,7 @@ fn clear_app_attention(app: AppHandle) -> Result<(), String> {
   if let Some(window) = app.get_webview_window("main") {
     let _ = window.request_user_attention(None);
   }
+  stop_tray_blink(&app);
   Ok(())
 }
 
@@ -798,6 +852,7 @@ fn build_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
       } = event
       {
         let app = tray.app_handle();
+        stop_tray_blink(app);
         if let Some(w) = app.get_webview_window("main") {
           let _ = w.show();
           let _ = w.set_focus();
@@ -859,6 +914,8 @@ pub fn run() {
         apply_packaged_update,
       ])
       .setup(|app| {
+        #[cfg(windows)]
+        windows_aumid::register_aumid(app.handle());
         build_tray(app.handle())?;
         ensure_companion(app.handle()).ok();
         let handle = app.handle().clone();
@@ -882,6 +939,7 @@ pub fn run() {
           }
           if let tauri::WindowEvent::Focused(true) = event {
             let _ = window.request_user_attention(None);
+            stop_tray_blink(window.app_handle());
           }
         }
         // Windows：透明无边框窗失焦时 DWM 可能画出错误边框/标题条；1px 抖动强制重绘（迁自 Electron）

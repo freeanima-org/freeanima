@@ -44,7 +44,7 @@ Portal 壳在 Android 上弹出系统通知的约定（与 Reminder / Inbox 调�
 | Channel | `freeanima.reminders`：`Importance::High`（优先横幅 / heads-up）+ `Visibility::Public`（锁屏可见内容）+ vibration                    |
 | 展示    | `show_native_alert` 绑定上述 channel；上游一律走 `deliverLocalReminder` → `AlertBackend`                                             |
 
-iOS / 桌面不强制同一 channel API；桌面权限由 OS 会话模型处理（插件侧常为 Granted）。
+iOS / 桌面不强制同一 channel API。桌面权限由 OS 会话模型处理（`tauri-plugin-notification` 侧恒 Granted）：桌面 bridge **故意** stub `read/requestNativeAlertPermission → granted`，勿与 Android 一样走真实 invoke（Vite HMR 与旧 Rust 不同步时会整条 Alert 挂掉）。Windows **安装态**须在启动时注册 bundle `identifier` 为 AppUserModelID，否则 Toast 被 WinRT 静默丢弃。伴侣可见时 Inbox 仍优先气泡（产品规则）。
 
 ## World ownership
 
@@ -125,7 +125,7 @@ Today `PomodoroShellWatcher`, `ChatUnreadShellWatcher`, `NotificationReminderShe
 
 **Module nav badges** (side rail / bottom tabs): Chat = user unread conversation count; Bell = user Inbox unread count. Each is independent.
 
-**App icon badge** (desktop Dock / taskbar overlay; Web Badging API when available) = chat unread + notification unread sum, driven by `AppAttentionShellWatcher` via `ShellApi.setAppBadgeCount`. Unread rise while unfocused → `requestAppAttention` (taskbar flash). Tray tooltip shows the total on desktop.
+**App icon badge** (desktop Dock / taskbar overlay; Web Badging API when available) = chat unread + notification unread sum, driven by `AppAttentionShellWatcher` via `ShellApi.setAppBadgeCount`. Windows overlay uses a dedicated red badge icon（not the app icon）. Unread rise while unfocused → `requestAppAttention` (taskbar flash + tray icon blink). Tray tooltip shows the total on desktop.
 
 **Android launcher badge**: no mature Tauri plugin; ShortcutBadger would require in-tree Kotlin. Documented gap — follow-up. Mobile may try WebView `navigator.setAppBadge` best-effort only.
 

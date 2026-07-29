@@ -36,6 +36,15 @@ type RemoteS3 = {
 const NOT_CONFIGURED =
   "object_storage 未配置：请在 Habitat 设置 → 对象存储 中填写 S3 兼容 endpoint/bucket/密钥";
 
+/** 未配置 S3 兼容存储；Habitat REST/WS 可按 code 映射 503 */
+export class ObjectStorageNotConfiguredError extends Error {
+  readonly code = "object_storage_not_configured";
+  constructor(message: string = NOT_CONFIGURED) {
+    super(message);
+    this.name = "ObjectStorageNotConfiguredError";
+  }
+}
+
 function formatS3Error(op: string, key: string, err: unknown): Error {
   const code =
     err && typeof err === "object" && "code" in err ? String((err as { code: unknown }).code) : "";
@@ -72,7 +81,7 @@ export function createObjectStore(cfg: ObjectStorageConfigInput = {}): ObjectSto
 
   const requireRemote = async (): Promise<RemoteS3> => {
     const remote = await getRemote();
-    if (!remote) throw new Error(NOT_CONFIGURED);
+    if (!remote) throw new ObjectStorageNotConfiguredError();
     return remote;
   };
 
