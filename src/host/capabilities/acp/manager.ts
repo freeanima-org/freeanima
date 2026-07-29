@@ -1,6 +1,6 @@
-import { join } from "node:path";
 import type { SkillRegistry } from "@freeanima/host/core/skill";
-import { registerSkillsFromDirectory } from "@freeanima/host/core/skill";
+import { registerSkillFromMarkdown } from "@freeanima/host/core/skill";
+import acpCursorSkillMd from "./skills/acp-cursor.md" with { type: "text" };
 import { getToolConversationId } from "@freeanima/host/core/tool";
 import type { ToolDef, ToolSetRegistry } from "@freeanima/host/core/tool";
 import { acpToolSetId, toolError, toolResult } from "@freeanima/host/core/tool";
@@ -188,9 +188,14 @@ function buildPromptText(
   return promptText;
 }
 
+/** Bun `type: "text"` 嵌入；standalone compile 后仍可读 */
+const ACP_BUILTIN_SKILL_SOURCES = [acpCursorSkillMd] as const;
+
 function registerAcpBuiltinSkills(skills: SkillRegistry): void {
-  const dir = join(import.meta.dir, "..", "skills");
-  const count = registerSkillsFromDirectory(skills, dir, { source: ACP_SKILLS_SOURCE });
+  let count = 0;
+  for (const raw of ACP_BUILTIN_SKILL_SOURCES) {
+    if (registerSkillFromMarkdown(skills, raw, { source: ACP_SKILLS_SOURCE })) count += 1;
+  }
   if (count > 0) {
     logComponent("acp").info(`Registered ${count} built-in ACP Skill(s)`, {
       count,

@@ -1,44 +1,29 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { getRegistryPath, getTokenizersRootDir } from "./paths.ts";
+import seedRegistryJson from "../data/seed-registry.json" with { type: "json" };
 
 export type TokenizerRegistry = Record<string, string>;
 
-const SEED_REGISTRY_PATH = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "../data/seed-registry.json",
-);
-
-function parseRegistryJson(raw: string): TokenizerRegistry {
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
-    const out: TokenizerRegistry = {};
-    for (const [model, repo] of Object.entries(parsed)) {
-      if (typeof repo === "string" && repo.includes("/")) {
-        out[model] = repo;
-      }
+function parseRegistryJson(raw: unknown): TokenizerRegistry {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const out: TokenizerRegistry = {};
+  for (const [model, repo] of Object.entries(raw)) {
+    if (typeof repo === "string" && repo.includes("/")) {
+      out[model] = repo;
     }
-    return out;
-  } catch {
-    return {};
   }
+  return out;
 }
 
 export function loadSeedRegistry(): TokenizerRegistry {
-  try {
-    return parseRegistryJson(readFileSync(SEED_REGISTRY_PATH, "utf-8"));
-  } catch {
-    return {};
-  }
+  return parseRegistryJson(seedRegistryJson);
 }
 
 /** User overrides at ~/.anima/tokenizers/registry.json */
 export function loadUserRegistry(): TokenizerRegistry {
   try {
-    return parseRegistryJson(readFileSync(getRegistryPath(), "utf-8"));
+    return parseRegistryJson(JSON.parse(readFileSync(getRegistryPath(), "utf-8")) as unknown);
   } catch {
     return {};
   }
