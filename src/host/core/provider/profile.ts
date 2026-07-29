@@ -9,12 +9,14 @@ export const PROFILE_CHAT = "chat";
 export const PROFILE_REFLECT = "reflect";
 export const PROFILE_SUMMARY = "summary";
 export const PROFILE_GOAL_JUDGE = "goal_judge";
+export const PROFILE_SKILL_REVIEW = "skill_review";
 
 export const BUILTIN_PROFILE_IDS = [
   PROFILE_CHAT,
   PROFILE_REFLECT,
   PROFILE_SUMMARY,
   PROFILE_GOAL_JUDGE,
+  PROFILE_SKILL_REVIEW,
 ] as const;
 
 /** One hop in profile chain; later hops are standby routes on failover-eligible failures */

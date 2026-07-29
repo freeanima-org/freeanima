@@ -56,17 +56,51 @@ Skills participate in **Capability Policy** — see [`architecture.md`](../produ
 
 Habitat admin: read-only **skill list + detail** (`skill.list` / `skill.get`).
 
-## Self-evolution interface (#46)
+## Self-evolution (#46)
 
-| Outcome            | Action                                             |
-| ------------------ | -------------------------------------------------- |
-| Reusable technique | Upsert skill with `origin=evolved`, `status=draft` |
-| Confirmed          | `status=active` (enters system-prompt catalog)     |
-| Discard            | `status=discarded` or delete                       |
+Learning is a **bypass**, not the main chat turn. After a gated user turn (or an explicit command), Habitat runs a short **`runAutoLlm`** with **only `skill_*` tools**. The run is audited in `auto_llm_runs` (`run_kind`: `skill-evolve` / `skill-maintain`) and **does not** append conversation messages or feed light sleep.
+
+### Meta-skill `skill-curation`
+
+Ordinary builtin skill (commons). The bypass **hard-injects** its body into the review system prompt. Main-chat catalog still shows only name + description unless the agent `skill_load`s it.
+
+### Evolve vs maintain
+
+|          | Evolve                                                                           | Maintain                               |
+| -------- | -------------------------------------------------------------------------------- | -------------------------------------- |
+| Question | Did this turn produce a reusable procedure?                                      | Is the skill library healthy?          |
+| Trigger  | Post-turn gate (≥N tool calls, skill_load+error, recovery after error, `/learn`) | `/skills curate` (periodic hook later) |
+| Input    | Turn digest + catalog                                                            | Catalog; tools pull bodies as needed   |
+
+Shared: same meta-skill, same `skill_*` tools, same `llm.profiles.skill_review` (falls back to default), small `maxTurns`.
+
+### Write path (no human approval)
+
+| Action     | Tool                                                         |
+| ---------- | ------------------------------------------------------------ |
+| Create     | `skill_create` (`origin=user` \| `evolved`; status=`active`) |
+| Patch      | `skill_patch` (`old_string` / `new_string`)                  |
+| Major edit | `skill_update`                                               |
+| Delete     | `skill_delete` (non-builtin)                                 |
+
+Gate skips evolve when the turn already wrote a skill (avoid double-write). Prefer **noop** over low-value skills.
+
+### Commands
+
+| Command          | Effect                                       |
+| ---------------- | -------------------------------------------- |
+| `/learn [note]`  | Force evolve bypass for current conversation |
+| `/skills curate` | Maintain bypass                              |
+
+### Out of scope (this cut)
+
+- Tool self-evolution / runtime ToolSet registration
+- Draft → human approve gate
+- Opening non-`skill_*` tools inside the review loop
 
 ## Non-goals
 
 - Multi-agent dispatch of skills
-- Skill sprawl governance
+- Skill sprawl governance (beyond maintain bypass)
 - Runtime data Capability Policy
 - Restoring Mask presets / `masks.yaml`

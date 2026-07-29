@@ -47,6 +47,7 @@ export {
   LlmProfile,
   PROFILE_CHAT,
   PROFILE_GOAL_JUDGE,
+  PROFILE_SKILL_REVIEW,
   PROFILE_REFLECT,
   PROFILE_SUMMARY,
   ProfileRegistry,

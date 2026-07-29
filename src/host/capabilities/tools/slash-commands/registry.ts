@@ -2,6 +2,7 @@ import type { CommandGoalStartData } from "./goal-data.ts";
 import type { CommandRestartData } from "./restart-data.ts";
 import type { CommandRetryData } from "./retry-data.ts";
 import type { CommandUpgradeData } from "./upgrade-data.ts";
+import type { CommandSkillReviewData } from "./skill-review-data.ts";
 
 export type CommandContext = {
   conversationId: string;
@@ -23,6 +24,7 @@ export type CommandResult = {
     | CommandGoalStartData
     | CommandRestartData
     | CommandUpgradeData
+    | CommandSkillReviewData
     | Record<string, unknown>
     | null;
 };

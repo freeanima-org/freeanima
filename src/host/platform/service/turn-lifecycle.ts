@@ -25,6 +25,7 @@ import {
 } from "@freeanima/host/engine/goal";
 import type { HookRegistry } from "@freeanima/host/kernel/hooks";
 import { ConversationManager } from "./conversation-manager.ts";
+import { scheduleSkillEvolveAfterTurn } from "./skill-review-run.ts";
 
 /** beginTurn / retryTurn return value: [runtimeMsgs, functions, effectiveUserText] */
 export type TurnPrepareResult = [StoredMessage[], string[], string];
@@ -178,6 +179,8 @@ export async function runSimpleTurn(
       return `[engine error] ${e}`;
     }
     await finalizeTurn(deps, conversationId, msgs, effective, model, functions);
+
+    scheduleSkillEvolveAfterTurn(deps, conversationId, msgs);
 
     if (await shouldSkipGoalEvaluate(goalDeps, conversationId, msgs)) {
       break goalLoop;
@@ -381,6 +384,8 @@ export async function* runExclusiveStreamTurn(
             setImmediate(resolve);
           });
           await finalizeTurn(deps, conversationId, msgs, effective, model, functions);
+
+          scheduleSkillEvolveAfterTurn(deps, conversationId, msgs);
 
           let evalResult: Awaited<ReturnType<typeof evaluateGoalAfterTurn>> | undefined;
           if (!(await shouldSkipGoalEvaluate(goalDeps, conversationId, msgs))) {
