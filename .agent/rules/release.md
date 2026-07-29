@@ -99,7 +99,7 @@ Canary `nextVersion`：有 open Release PR（`autorelease: pending`）则取其 
 - 三端 job 均挂 `Swatinem/rust-cache`，**`key` 按平台区分**（`tauri-linux` / `tauri-windows-xwin` / `tauri-android`），避免并行覆盖
 - Windows 交叉另缓存 `cargo-xwin` 与 `~/.xwin`
 
-**本地构建默认 `channel=dev`**（未设 `FREEANIMA_BUILD_CHANNEL` 时）。CI 必须显式设置 `release` / `canary`。构建版本可用 `FREEANIMA_BUILD_VERSION` 覆盖（不改根 `package.json`）。
+**本地构建默认 `channel=dev`**（未设 `FREEANIMA_BUILD_CHANNEL` 时）。CI 必须显式设置 `release` / `canary`。构建版本可用 `FREEANIMA_BUILD_VERSION` 覆盖（不改根 `package.json`）。Android APK 的 `versionName` / `versionCode` 由 `apply-tauri-shell-identity` 写入 Tauri `--config` 合并层（与 `native-build-meta` 同源），避免 canary 仍显示基线 release 号。
 
 **分发轨（build-meta `channel`）**：`release` / `canary` / `dev`。`dev` **不可**换轨、不参与 GitHub 包更新；Desktop/Mobile 在 `dev` 下使用独立 appId（`com.freeanima.portal.dev`），避免覆盖正式安装（`com.freeanima.portal`）；壳默认 home 为 `~/.anima-dev`（正式轨 `~/.anima`，均可用 `FREEANIMA_HOME` 覆盖）。Standalone / Desktop / Mobile 在轨内检查更新；可在 `release`⇄`canary` 间切换。浏览器仅 PWA，不走 GitHub 包通道。
 

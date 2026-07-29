@@ -46,17 +46,19 @@ Mobile REST **connects directly** to Habitat (no local REST proxy); requires a *
 
 ## Troubleshooting
 
-| Symptom                                       | Common cause                                                                                      |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Keyboard covers chat input                    | WebView not resizing; rely on `visualViewport` inset (visualViewport only)                        |
-| Chat input unresponsive                       | No selected conversation; or Habitat RPC disconnected                                             |
-| Habitat load failed / Failed to fetch         | Habitat not `--host 0.0.0.0`, wrong token, firewall                                               |
-| 测试连接「网络错误」、浏览器同地址正常        | 壳内 HTTPS 需信任 mkcert 根 CA（`network_security_config` 已信任用户 CA）；或暂用 `http://…:2658` |
-| 测试连接成功，实际「连接已断开」              | 测试含原生 HTTP + WebSocket；仍断连则查 token / WS 代理                                           |
-| `Read-only file system` on save               | Fixed: prefs write to app private config dir                                                      |
-| ZeroTier / 虚拟网卡 IP                        | Phone ZeroTier online; Habitat `http.host: 0.0.0.0`; shell URL without trailing slash             |
-| Install `NO_CERTIFICATES` / version downgrade | Pack signs APK; uninstall old canary build then reinstall                                         |
-| 安装失败「签名冲突」                          | Uninstall `com.freeanima.portal`（或旧包 `org.freeanima.app`） then reinstall                     |
+| Symptom                                       | Common cause                                                                                                |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Keyboard covers chat input                    | WebView not resizing; rely on `visualViewport` inset (visualViewport only)                                  |
+| Chat input unresponsive                       | No selected conversation; or Habitat RPC disconnected                                                       |
+| Habitat load failed / Failed to fetch         | Habitat not `--host 0.0.0.0`, wrong token, firewall                                                         |
+| 测试连接「网络错误」、浏览器同地址正常        | 壳内 HTTPS 需信任 mkcert 根 CA（`network_security_config` 已信任用户 CA）；或暂用 `http://…:2658`           |
+| 测试连接成功，实际「连接已断开」              | 测试含原生 HTTP + WebSocket；仍断连则查 token / WS 代理                                                     |
+| `Read-only file system` on save               | Fixed: prefs write to app private config dir                                                                |
+| ZeroTier / 虚拟网卡 IP                        | Phone ZeroTier online; Habitat `http.host: 0.0.0.0`; shell URL without trailing slash                       |
+| Install `NO_CERTIFICATES` / version downgrade | Pack signs APK; uninstall old canary build then reinstall                                                   |
+| 安装失败「签名冲突」                          | Uninstall `com.freeanima.portal`（或旧包 `org.freeanima.app`） then reinstall                               |
+| 关于页 / 系统设置版本像正式版、检测不到更新   | 须带 `FREEANIMA_BUILD_VERSION` 打包；identity overlay 写入 versionName + versionCode（迁 Tauri 后曾漏同步） |
+| 更新下载无百分比                              | APK 插件进度须主线程 `trigger`；无 Content-Length 时用 Release `assetSize` 估百分比                         |
 
 ## Debugging
 

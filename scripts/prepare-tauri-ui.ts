@@ -16,6 +16,7 @@ import {
   type ShellBuildTarget,
 } from "@freeanima/client/portal-sdk/shell-build-target.ts";
 import { resolveBuildChannelFromEnv } from "@freeanima/host/core/config/build-meta.ts";
+import { resolveBuildVersionFromEnv } from "@freeanima/host/core/config/resolve-build-version.ts";
 import {
   resolveDesktopShellIdentity,
   resolveMobileShellIdentity,
@@ -34,7 +35,6 @@ const webDist = join(root, "src/portal/app/web", shellWebDistDirName(target));
 const uiRoot = join(srcTauri, "ui");
 const uiWeb = join(uiRoot, "web");
 const companionUi = join(uiRoot, "companion");
-const tauriConfPath = join(srcTauri, "tauri.conf.json");
 const cargoTargetDir = join(srcTauri, "target");
 /** 历史 resources 占位；desktop 已迁入 frontendDist，清理以免误用 file:// */
 const legacyCompanionResource = join(srcTauri, "companion-dist");
@@ -140,27 +140,15 @@ function injectBootSplash(indexPath: string, productName: string): void {
   writeFileSync(indexPath, html, "utf-8");
 }
 
-function readTauriProductVersion(): string | undefined {
-  try {
-    const conf = JSON.parse(readFileSync(tauriConfPath, "utf-8")) as { version?: string };
-    const v = conf.version?.trim();
-    return v || undefined;
-  } catch {
-    return undefined;
-  }
-}
-
 function writeNativeBuildMeta(destDir: string): void {
   const channel = buildChannel;
-  const version =
-    process.env.FREEANIMA_BUILD_VERSION?.trim() ||
-    process.env.DESKTOP_SHELL_VERSION?.trim() ||
-    readTauriProductVersion();
+  // 与 apply-tauri-shell-identity / pack 产物名同源，避免 canary 回落成 tauri.conf 的 release 号
+  const version = resolveBuildVersionFromEnv(root);
   const meta = resolveNativeBuildMeta({
     shell: target === "mobile" ? "mobile" : "desktop",
     channel,
     repoRoot: root,
-    ...(version ? { version } : {}),
+    version,
   });
   const path = join(destDir, "native-build-meta.json");
   writeFileSync(path, `${JSON.stringify(meta, null, 2)}\n`, "utf-8");
