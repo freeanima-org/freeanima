@@ -1,5 +1,10 @@
 export type { SkillDef } from "./registry.ts";
-export { SkillRegistry, skillDefFromBody, registerSkillsFromDirectory } from "./registry.ts";
+export {
+  SkillRegistry,
+  skillDefFromBody,
+  registerSkillFromMarkdown,
+  registerSkillsFromDirectory,
+} from "./registry.ts";
 export {
   parseFrontmatter,
   stripFrontmatter,

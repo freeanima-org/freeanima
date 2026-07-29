@@ -8,6 +8,7 @@
 - **Base compiler flags** ([`tsconfig.base.json`](../../tsconfig.base.json)): `strict`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noImplicitOverride`, `allowUnreachableCode: false`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`
 - **Paraglide types**: [`types/paraglide-messages.generated.d.ts`](../../types/paraglide-messages.generated.d.ts) is generated from `messages/en.json` (`bun scripts/gen-paraglide-message-types.ts`; optional via `just i18n check`)
 - **Optional props**: with `exactOptionalPropertyTypes`, do not pass `prop: undefined` — use `omitUndefined()` from `@freeanima/host/core/util` or conditional spread
+- **Standalone 随包资源**：`just pack cli` / Bun `--compile` 后，`import.meta.dir` + `readFileSync` **读不到**未嵌入的旁路文件（表现为 `/$bunfs/root/...` ENOENT）。仓库内随二进制分发的 `.md` / `.json` 等须 `import … with { type: "text" | "json" | "file" }`；migration / docs / web dist 走 `scripts/standalone-embed-plugin.ts`。用户数据（`~/.anima/`）与运行时路径除外。
 
 ## Lint (oxlint)
 

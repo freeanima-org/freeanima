@@ -110,8 +110,42 @@ export function skillDefFromBody(
   });
 }
 
+/** 从已读入的 markdown 注册瞬时技能（entityId/worldId = 0，非 DB SSOT）。 */
+export function registerSkillFromMarkdown(
+  skills: SkillRegistry,
+  raw: string,
+  opts?: { source?: string; fallbackName?: string },
+): boolean {
+  const fm = parseFrontmatter(raw);
+  const name = (fm.name ?? opts?.fallbackName ?? "").trim();
+  if (!name) return false;
+  const body = skillBodySchema.parse({
+    origin: "builtin",
+    status: "active",
+    license: fm.license,
+    compatibility: fm.compatibility,
+    metadata: fm.metadata ?? {},
+    allowed_tools: normalizeToolList(fm["allowed-tools"] ?? fm.allowed_tools),
+    denied_tools: normalizeToolList(fm.denied_tools),
+  });
+  skills.register(
+    skillDefFromBody(
+      omitUndefined({
+        name,
+        description: (fm.description ?? "").trim(),
+        entityId: 0,
+        worldId: 0,
+        content: stripFrontmatter(raw),
+        source: opts?.source,
+      }),
+      body,
+    ),
+  );
+  return true;
+}
+
 /**
- * 从目录扫描 *.md 注册到内存 registry（ACP 等瞬时技能；非 DB SSOT）。
+ * 从目录扫描 *.md 注册到内存 registry（开发态磁盘扫描；standalone 请用 type:text 嵌入）。
  * entityId/worldId = 0 表示未入库。
  */
 export function registerSkillsFromDirectory(
@@ -136,31 +170,15 @@ export function registerSkillsFromDirectory(
     } catch {
       continue;
     }
-    const fm = parseFrontmatter(raw);
-    const name = (fm.name ?? nameFromFile).trim();
-    const body = skillBodySchema.parse({
-      origin: "builtin",
-      status: "active",
-      license: fm.license,
-      compatibility: fm.compatibility,
-      metadata: fm.metadata ?? {},
-      allowed_tools: normalizeToolList(fm["allowed-tools"] ?? fm.allowed_tools),
-      denied_tools: normalizeToolList(fm.denied_tools),
-    });
-    skills.register(
-      skillDefFromBody(
-        omitUndefined({
-          name,
-          description: (fm.description ?? "").trim(),
-          entityId: 0,
-          worldId: 0,
-          content: stripFrontmatter(raw),
-          source: opts?.source,
-        }),
-        body,
-      ),
-    );
-    count += 1;
+    if (
+      registerSkillFromMarkdown(
+        skills,
+        raw,
+        omitUndefined({ source: opts?.source, fallbackName: nameFromFile }),
+      )
+    ) {
+      count += 1;
+    }
   }
   return count;
 }

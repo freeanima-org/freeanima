@@ -42,6 +42,8 @@ function parentDepth(spec: string): number {
 
 function checkSpec(spec: string): string | null {
   if (!spec.startsWith(".")) return null;
+  // Bun `with { type: "json"|"text"|"file" }` 资源嵌入不受代码层深度限制
+  if (/\.(json|md|sql|wasm|txt)$/i.test(spec)) return null;
   const depth = parentDepth(spec);
   if (depth > MAX_PARENT_DEPTH) {
     return `超过 ${MAX_PARENT_DEPTH} 级父目录（${"../".repeat(depth)}）；请改用 @freeanima/*`;
