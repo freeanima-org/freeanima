@@ -45,8 +45,7 @@ import {
   BuiltinSmartListSection,
   CustomSmartListSection,
 } from "./components/SmartListSidebarSection.tsx";
-import { MoveToListPicker } from "@freeanima/ui-kit/composite";
-import { MoveToProjectPicker } from "./components/MoveToProjectPicker.tsx";
+import { MoveToListPicker, MoveToProjectPicker } from "@freeanima/ui-kit/composite";
 import { SortableTaskList } from "./components/SortableTaskList.tsx";
 import { TaskDetailPanel } from "./components/TaskDetailPanel.tsx";
 import { TaskDndRoot } from "./components/TaskDndRoot.tsx";

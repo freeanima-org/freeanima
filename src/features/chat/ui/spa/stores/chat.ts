@@ -3,7 +3,7 @@ import type { DisplayItem, StreamApiEvent } from "@freeanima/features/chat/ui/sp
 import { pollUntilAssistantReply } from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
 import { randomUuid } from "@freeanima/shared/rpc-contract";
 import { subscribeHabitatRpcConnectionState } from "@freeanima/shared/habitat-rpc";
-import { marked } from "marked";
+import { renderMarkdownHtml } from "@freeanima/ui-kit/lib/markdown.ts";
 import { create } from "zustand";
 import { m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import {
@@ -141,23 +141,7 @@ function handleStreamEvent(
 }
 
 function renderMd(text: string): string {
-  if (!text) return "";
-  let html: string;
-  try {
-    html = marked.parse(text, { breaks: true, gfm: true }) as string;
-  } catch {
-    const div = document.createElement("div");
-    div.textContent = text;
-    html = div.innerHTML;
-  }
-  // `[[anima:id]]` / `[[anima:id?component=…]]` → clickable anchors for openEntityResource
-  return html.replace(
-    /\[\[anima:(\d+)((?:\?[^\]]*)?)\]\]/gi,
-    (_full, id: string, query: string) => {
-      const href = `anima:${id}${query ?? ""}`;
-      return `<a href="${href}" data-anima-uri="${href}" class="link link-hover font-mono text-xs">[[anima:${id}${query ?? ""}]]</a>`;
-    },
-  );
+  return renderMarkdownHtml(text);
 }
 
 async function waitForAssistantViaSessionEvents(

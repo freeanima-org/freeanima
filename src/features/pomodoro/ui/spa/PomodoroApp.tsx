@@ -28,6 +28,7 @@ import {
   Switch,
 } from "@freeanima/ui-kit";
 import { useCompactLayout } from "@freeanima/ui-kit/layout";
+import { formatDateTime } from "@freeanima/ui-kit/lib/datetime-local.ts";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { randomUuid } from "@freeanima/shared/rpc-contract";
 
@@ -67,12 +68,6 @@ function formatClock(ms: number): string {
   const min = Math.floor(totalSec / 60);
   const sec = totalSec % 60;
   return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
-}
-
-function formatDateTime(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString();
 }
 
 function parseTaskIdFromLocation(): number | null {

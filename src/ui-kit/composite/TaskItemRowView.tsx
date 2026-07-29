@@ -1,6 +1,5 @@
-import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactElement, Ref } from "react";
+import type { CSSProperties, PointerEvent as ReactPointerEvent, Ref } from "react";
 
-import { Button } from "../components/ui/button.tsx";
 import { Checkbox } from "../components/ui/checkbox.tsx";
 import { formatDue } from "../lib/datetime-local.ts";
 import {
@@ -8,10 +7,9 @@ import {
   resolveTaskTagTitles,
   type TaskItemDisplay,
 } from "../lib/task-item-display.ts";
-import { ContextMenu } from "./ContextMenu.tsx";
+import { ListRow } from "./ListRow.tsx";
 import { TaskItemTagStrip } from "./TaskItemTagStrip.tsx";
 import type { ActionSheetItem } from "./types.ts";
-import { useLongPress } from "./useLongPress.ts";
 
 export type TaskItemRowViewProps = {
   item: TaskItemDisplay;
@@ -65,40 +63,51 @@ export function TaskItemRowView({
   onSelectItem,
   onLongPress,
 }: TaskItemRowViewProps) {
-  const longPress = useLongPress({
-    enabled: longPressEnabled && useActionSheet && !selectionMode,
-    onTrigger: () => onLongPress?.(),
-  });
-
-  const canDrag = dragListeners != null && !selectionMode && !disabled;
   const tagTitles = resolveTaskTagTitles(item.tag_ids, tagTitleById);
-  const pointerMenu =
-    contextMenuEnabled && !useActionSheet && !selectionMode && (contextMenuItems?.length ?? 0) > 0;
 
   const handleSelectClick = (e: { shiftKey: boolean; preventDefault?: () => void }) => {
     e.preventDefault?.();
     onSelectItem?.(e.shiftKey);
   };
 
-  const row: ReactElement = (
-    <li
-      ref={rowRef}
-      style={rowStyle}
-      role={selectionMode ? "option" : undefined}
-      aria-selected={selectionMode ? selected : undefined}
+  const leading = selectionMode ? (
+    <span
       className={[
-        "hover:bg-muted group flex min-h-11 items-center gap-1 rounded-lg px-1 py-1",
-        canDrag ? "touch-pan-y cursor-grab active:cursor-grabbing select-none" : "",
-        selectionMode ? "cursor-pointer select-none" : "",
-        dragging ? "opacity-50" : "",
-        selected ? "bg-primary/20 ring-primary/40 ring-1 ring-inset" : "",
-        active && !selected ? "ring-primary/30 bg-primary/5 ring-1 ring-inset" : "",
+        "mx-1 flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+        selected ? "border-primary bg-primary" : "border-muted-foreground/35 bg-transparent",
       ].join(" ")}
-      onContextMenu={useActionSheet && !selectionMode ? longPress.onContextMenu : undefined}
-      onTouchStart={longPress.onTouchStart}
-      onTouchEnd={longPress.onTouchEnd}
-      onTouchMove={longPress.onTouchMove}
-      onTouchCancel={longPress.onTouchEnd}
+      aria-hidden
+    >
+      {selected ? <span className="bg-primary-foreground block size-2 rounded-full" /> : null}
+    </span>
+  ) : (
+    <Checkbox
+      checked={item.status === "completed"}
+      {...(disabled !== undefined ? { disabled } : {})}
+      onPointerDown={(e: ReactPointerEvent) => e.stopPropagation()}
+      onCheckedChange={() => onToggleComplete()}
+    />
+  );
+
+  return (
+    <ListRow
+      as="li"
+      active={active}
+      selected={selected}
+      disabled={disabled}
+      selectionMode={selectionMode}
+      dragging={dragging}
+      useActionSheet={useActionSheet}
+      contextMenuItems={contextMenuItems}
+      contextMenuEnabled={contextMenuEnabled}
+      longPressEnabled={longPressEnabled}
+      onLongPress={onLongPress}
+      onOpenMenu={onOpenMenu}
+      menuAriaLabel="任务操作"
+      dragAttributes={dragAttributes}
+      dragListeners={dragListeners}
+      rowRef={rowRef as Ref<HTMLElement | null>}
+      rowStyle={rowStyle}
       onClick={
         selectionMode
           ? (e) => {
@@ -106,27 +115,8 @@ export function TaskItemRowView({
             }
           : undefined
       }
-      {...(canDrag && dragAttributes ? dragAttributes : {})}
-      {...(canDrag && dragListeners ? dragListeners : {})}
+      leading={leading}
     >
-      {selectionMode ? (
-        <span
-          className={[
-            "mx-1 flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-            selected ? "border-primary bg-primary" : "border-muted-foreground/35 bg-transparent",
-          ].join(" ")}
-          aria-hidden
-        >
-          {selected ? <span className="bg-primary-foreground block size-2 rounded-full" /> : null}
-        </span>
-      ) : (
-        <Checkbox
-          checked={item.status === "completed"}
-          {...(disabled !== undefined ? { disabled } : {})}
-          onPointerDown={(e: ReactPointerEvent) => e.stopPropagation()}
-          onCheckedChange={() => onToggleComplete()}
-        />
-      )}
       <button
         type="button"
         className="flex min-w-0 flex-1 items-center gap-2 py-2 text-left text-sm"
@@ -177,28 +167,6 @@ export function TaskItemRowView({
           </>
         ) : null}
       </button>
-      {useActionSheet && !selectionMode ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          className="shrink-0"
-          aria-label="任务操作"
-          {...(disabled !== undefined ? { disabled } : {})}
-          onPointerDown={(e: ReactPointerEvent) => e.stopPropagation()}
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenMenu();
-          }}
-        >
-          ⋯
-        </Button>
-      ) : null}
-    </li>
+    </ListRow>
   );
-
-  if (pointerMenu && contextMenuItems) {
-    return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
-  }
-  return row;
 }

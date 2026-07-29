@@ -1,6 +1,18 @@
 import { describe, expect, test } from "bun:test";
 
-import { formatDueChip } from "./datetime-local.ts";
+import { formatDateTime, formatDueChip } from "./datetime-local.ts";
+
+describe("formatDateTime", () => {
+  test("empty shows em dash", () => {
+    expect(formatDateTime(null)).toBe("—");
+    expect(formatDateTime(undefined)).toBe("—");
+    expect(formatDateTime("")).toBe("—");
+  });
+
+  test("invalid returns raw", () => {
+    expect(formatDateTime("not-a-date")).toBe("not-a-date");
+  });
+});
 
 describe("formatDueChip", () => {
   test("empty due shows placeholder", () => {

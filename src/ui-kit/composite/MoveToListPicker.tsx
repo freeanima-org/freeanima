@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { createPortal } from "react-dom";
 
 import { Button, Input } from "../components/ui/index.ts";
-import { useCompactLayout } from "../layout/index.ts";
 import {
   buildListTree,
   flattenVisibleTree,
@@ -11,6 +9,7 @@ import {
   type ListTreeNode,
   type TaskListRowLike,
 } from "../lib/task-list-tree.ts";
+import { ModalSheetPresent } from "./ModalSheetPresent.tsx";
 
 export type MoveToListPickerProps<T extends TaskListRowLike = TaskListRowLike> = {
   open: boolean;
@@ -208,28 +207,11 @@ export function MoveToListPicker<T extends TaskListRowLike>({
   onSelect,
   onClose,
 }: MoveToListPickerProps<T>) {
-  const mobileLayout = useCompactLayout();
-  const [visible, setVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    if (!open) {
-      setVisible(false);
-      setSearchQuery("");
-      return;
-    }
-    const timer = window.setTimeout(() => setVisible(true), 0);
-    return () => window.clearTimeout(timer);
+    if (!open) setSearchQuery("");
   }, [open]);
-
-  useEffect(() => {
-    if (!visible) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [visible, onClose]);
 
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<number>>(() => {
     const saved = readExpandedFolders();
@@ -258,51 +240,25 @@ export function MoveToListPicker<T extends TaskListRowLike>({
     });
   };
 
-  if (!open || !visible || typeof document === "undefined") return null;
-
-  const treeRows = (
-    <TreePickerRows
-      nodes={displayTree}
-      expandedFolderIds={effectiveExpandedIds}
-      currentListId={currentListId}
-      searchQuery={searchQuery}
-      allLists={lists}
-      onToggleExpand={toggleExpand}
-      onSelect={onSelect}
-      onClose={onClose}
-    />
-  );
-
-  return createPortal(
-    <>
-      <div
-        className="fixed inset-0 z-[100] bg-black/50"
-        aria-hidden
-        onMouseDown={(e) => e.stopPropagation()}
-        onClick={onClose}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        className={
-          mobileLayout
-            ? "bg-background fixed inset-x-0 bottom-0 z-[101] flex max-h-[85vh] flex-col overflow-hidden rounded-t-2xl border-t shadow-lg safe-area-pb"
-            : "bg-background fixed top-1/2 left-1/2 z-[101] flex max-h-[min(85vh,32rem)] w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-lg border shadow-lg"
-        }
-        onMouseDown={(e) => e.stopPropagation()}
-        onClick={(e) => e.stopPropagation()}
+  return (
+    <ModalSheetPresent open={open} onClose={onClose} aria-label={title}>
+      <MoveToListPickerBody
+        title={title}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onClose={onClose}
       >
-        <MoveToListPickerBody
-          title={title}
+        <TreePickerRows
+          nodes={displayTree}
+          expandedFolderIds={effectiveExpandedIds}
+          currentListId={currentListId}
           searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+          allLists={lists}
+          onToggleExpand={toggleExpand}
+          onSelect={onSelect}
           onClose={onClose}
-        >
-          {treeRows}
-        </MoveToListPickerBody>
-      </div>
-    </>,
-    document.body,
+        />
+      </MoveToListPickerBody>
+    </ModalSheetPresent>
   );
 }
