@@ -46,7 +46,8 @@ NSIS 安装目录 = `productName`（无独立 installDir）。`just pack tauri-w
 
 - Android：通知、prefs、APK 覆盖更新（Rust 侧逐步补齐）。
 - 主屏小组件 MVP：番茄钟（`pomodoro-active` + `set_pomodoro_widget_state`）。
-- **应用图标未读角标**：桌面经 `ShellApi.setAppBadgeCount`（macOS/Linux `set_badge_count`；Windows `set_overlay_icon` 有/无未读）+ `requestAppAttention`；Web 走 Badging API。**Android launcher badge 无成熟 Tauri 插件**（ShortcutBadger 需自研 Kotlin）— follow-up；移动端仅尽力 `navigator.setAppBadge`。
+- **应用图标未读角标**：桌面经 `ShellApi.setAppBadgeCount`（macOS/Linux `set_badge_count`；Windows `set_overlay_icon` 用**专用红点徽章**，禁止套用应用图标）+ `requestAppAttention`（任务栏 flash + 托盘图标闪烁）；Web 走 Badging API。**Android launcher badge 无成熟 Tauri 插件**（ShortcutBadger 需自研 Kotlin）— follow-up；移动端仅尽力 `navigator.setAppBadge`。
+- **Windows Toast**：启动时注册 bundle `identifier` 为 AppUserModelID（HKCU + `SetCurrentProcessExplicitAppUserModelID`），否则安装态通知会被 WinRT 静默丢弃。
 
 ## 禁止
 

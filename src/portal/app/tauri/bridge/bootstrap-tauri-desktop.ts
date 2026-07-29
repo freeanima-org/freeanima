@@ -175,10 +175,10 @@ export async function bootstrapTauriBridge(): Promise<void> {
       } satisfies RemoteToolsStatusPayload;
     },
     showNativeAlert: (payload: ShellNativeAlertPayload) => invoke("show_native_alert", { payload }),
-    readNativeAlertPermission: () =>
-      invoke<ShellNativeAlertPermission>("read_native_alert_permission"),
-    requestNativeAlertPermission: () =>
-      invoke<ShellNativeAlertPermission>("request_native_alert_permission"),
+    // 桌面：tauri-plugin-notification 权限恒 Granted，无 runtime 弹窗。
+    // 禁止走真实 invoke——Vite HMR 与旧 Rust 不同步时权限命令缺失会整条 Alert 挂掉。
+    readNativeAlertPermission: async (): Promise<ShellNativeAlertPermission> => "granted",
+    requestNativeAlertPermission: async (): Promise<ShellNativeAlertPermission> => "granted",
     setAppBadgeCount: (count: number) =>
       invoke("set_app_badge_count", { count: Math.max(0, Math.floor(count)) }),
     requestAppAttention: () => invoke("request_app_attention"),

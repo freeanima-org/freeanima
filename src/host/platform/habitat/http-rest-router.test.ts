@@ -78,4 +78,27 @@ describe("http-rest-router", () => {
       }
     }
   });
+
+  test("mapHabitatRestHandlerError 透传 Error.message", async () => {
+    const { mapHabitatRestHandlerError } = await import("./http-rest-router.ts");
+    const res = mapHabitatRestHandlerError(
+      new Error("object_storage 未配置：请在 Habitat 设置 → 对象存储 中填写"),
+    );
+    expect(res.status).toBe(500);
+    const body = (await res.json()) as { error: { code: string; message: string } };
+    expect(body.error.message).toContain("未配置");
+    expect(body.error.message).not.toBe("Habitat RPC request failed");
+  });
+
+  test("mapHabitatRestHandlerError object_storage_not_configured → 503", async () => {
+    const { mapHabitatRestHandlerError } = await import("./http-rest-router.ts");
+    const err = Object.assign(new Error("object_storage 未配置：请填写 S3"), {
+      code: "object_storage_not_configured",
+    });
+    const res = mapHabitatRestHandlerError(err);
+    expect(res.status).toBe(503);
+    const body = (await res.json()) as { error: { code: string; message: string } };
+    expect(body.error.code).toBe("object_storage_not_configured");
+    expect(body.error.message).toContain("未配置");
+  });
 });
