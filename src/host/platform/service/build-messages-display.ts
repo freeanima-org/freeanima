@@ -1,4 +1,5 @@
 import type { StoredMessage } from "@freeanima/host/core/db/domain";
+import { TOOL_CALL_TITLE_KEY } from "@freeanima/host/core/tool";
 import type { DisplayItem, DisplayToolBlockItem } from "@freeanima/host/platform/schemas/display";
 
 function parseArgs(raw: string): Record<string, unknown> {
@@ -14,6 +15,7 @@ function parseArgs(raw: string): Record<string, unknown> {
 
 function argsPreviewFromObject(argsObj: Record<string, unknown>): string {
   return Object.keys(argsObj)
+    .filter((k) => k !== TOOL_CALL_TITLE_KEY)
     .slice(0, 4)
     .map((k) => `${k}=${String(argsObj[k] ?? "").slice(0, 40)}`)
     .join(", ");

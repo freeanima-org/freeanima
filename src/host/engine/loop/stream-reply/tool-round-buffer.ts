@@ -1,5 +1,6 @@
 /** 单轮 tool_begin / tool_result 结构化缓冲 */
 
+import { TOOL_CALL_TITLE_KEY } from "@freeanima/host/core/tool";
 import type { StructuredToolCall } from "./types.ts";
 
 export function isClarifyTool(name: string): boolean {
@@ -8,6 +9,7 @@ export function isClarifyTool(name: string): boolean {
 
 function argsPreviewFromObject(argsObj: Record<string, unknown>): string {
   return Object.keys(argsObj)
+    .filter((k) => k !== TOOL_CALL_TITLE_KEY)
     .slice(0, 4)
     .map((k) => `${k}=${String(argsObj[k] ?? "").slice(0, 40)}`)
     .join(", ");

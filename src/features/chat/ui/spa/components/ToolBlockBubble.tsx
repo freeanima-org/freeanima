@@ -19,6 +19,19 @@ function statusClass(status: string) {
   return "text-green-700 dark:text-green-300";
 }
 
+function callIntentTitle(args: Record<string, unknown> | undefined): string | undefined {
+  const v = args?._title;
+  if (typeof v !== "string") return undefined;
+  const trimmed = v.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function formatArgsForDisplay(args: Record<string, unknown>): Record<string, unknown> {
+  if (!("_title" in args)) return args;
+  const { _title: _removed, ...rest } = args;
+  return rest;
+}
+
 function formatJson(obj: Record<string, unknown>) {
   try {
     return JSON.stringify(obj, null, 2);
@@ -50,42 +63,53 @@ export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
 
       {expanded ? (
         <div className="tool-bubble-detail border-t border/50 px-3 py-2 space-y-3">
-          {calls.map((c, ci) => (
-            <div
-              key={`detail-${c.tool_call_id || ci}`}
-              className="rounded-lg bg-background p-2 space-y-1.5 min-w-0"
-            >
-              <div className="flex items-center gap-2 font-mono font-medium min-w-0">
-                <span className={`shrink-0 ${statusClass(c.status)}`}>{statusIcon(c.status)}</span>
-                <span className="truncate">{c.name}</span>
-                {c.tool_call_id ? (
-                  <span className="text-foreground/40 text-[10px] shrink-0">
-                    {c.tool_call_id.slice(0, 8)}
+          {calls.map((c, ci) => {
+            const intent = callIntentTitle(c.args);
+            const displayArgs = c.args ? formatArgsForDisplay(c.args) : undefined;
+            return (
+              <div
+                key={`detail-${c.tool_call_id || ci}`}
+                className="rounded-lg bg-background p-2 space-y-1.5 min-w-0"
+              >
+                <div className="flex items-center gap-2 font-medium min-w-0">
+                  <span className={`shrink-0 ${statusClass(c.status)}`}>
+                    {statusIcon(c.status)}
                   </span>
+                  <span className="truncate">{intent ?? c.name}</span>
+                  {intent ? (
+                    <span className="font-mono text-foreground/40 text-[10px] shrink-0 truncate">
+                      {c.name}
+                    </span>
+                  ) : null}
+                  {c.tool_call_id ? (
+                    <span className="text-foreground/40 text-[10px] shrink-0">
+                      {c.tool_call_id.slice(0, 8)}
+                    </span>
+                  ) : null}
+                </div>
+                {displayArgs && Object.keys(displayArgs).length > 0 ? (
+                  <div className="min-w-0">
+                    <div className="text-muted-foreground mb-0.5">{m.habitat_message_args()}</div>
+                    <pre className="tool-bubble-scroll text-[11px] whitespace-pre-wrap break-all">
+                      {formatJson(displayArgs)}
+                    </pre>
+                  </div>
+                ) : null}
+                {c.result ? (
+                  <div className="min-w-0">
+                    <div className="text-muted-foreground mb-0.5">{m.habitat_message_result()}</div>
+                    <pre className="tool-bubble-scroll text-[11px] whitespace-pre-wrap break-all">
+                      {truncateResult(c.result)}
+                    </pre>
+                  </div>
+                ) : c.status === "pending" ? (
+                  <div className="text-foreground/40 italic">
+                    {m.habitat_message_waiting_result()}
+                  </div>
                 ) : null}
               </div>
-              {c.args && Object.keys(c.args).length > 0 ? (
-                <div className="min-w-0">
-                  <div className="text-muted-foreground mb-0.5">{m.habitat_message_args()}</div>
-                  <pre className="tool-bubble-scroll text-[11px] whitespace-pre-wrap break-all">
-                    {formatJson(c.args)}
-                  </pre>
-                </div>
-              ) : null}
-              {c.result ? (
-                <div className="min-w-0">
-                  <div className="text-muted-foreground mb-0.5">{m.habitat_message_result()}</div>
-                  <pre className="tool-bubble-scroll text-[11px] whitespace-pre-wrap break-all">
-                    {truncateResult(c.result)}
-                  </pre>
-                </div>
-              ) : c.status === "pending" ? (
-                <div className="text-foreground/40 italic">
-                  {m.habitat_message_waiting_result()}
-                </div>
-              ) : null}
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : null}
     </div>

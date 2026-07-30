@@ -51,7 +51,15 @@ describe("formatToolsForToolMessage", () => {
     expect(formatted).toHaveLength(1);
     expect(formatted[0]?.parameters).toEqual({
       type: "object",
-      properties: { path: { type: "string" } },
+      properties: {
+        _title: {
+          type: "string",
+          description:
+            'One-line intent of this call for UI (e.g. "修改配置文件", "merger 10054 pr")',
+        },
+        path: { type: "string" },
+      },
+      required: ["_title"],
     });
   });
 

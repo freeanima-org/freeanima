@@ -1,4 +1,10 @@
-import { parseToolArgs, toolError, toolResult, validateToolArgs } from "@freeanima/host/core/tool";
+import {
+  omitToolCallTitle,
+  parseToolArgs,
+  toolError,
+  toolResult,
+  validateToolArgs,
+} from "@freeanima/host/core/tool";
 import {
   getActiveRuntimeConfig,
   getProfileHopModel,
@@ -508,7 +514,7 @@ export async function* runStream(
               result = toolError(validated.error);
             } else {
               try {
-                result = await Promise.resolve(tool.handler(validated.data));
+                result = await Promise.resolve(tool.handler(omitToolCallTitle(validated.data)));
                 if (typeof result !== "string") result = toolResult(result);
                 failureCounts.delete(fnName);
               } catch (exc) {

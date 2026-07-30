@@ -56,7 +56,9 @@
           "_streamGeneration",
           "_resetWeixinSessionPauseForTest",
           "_ensureBuiltinSleepCycleCronJob",
-          "_ensureBuiltinTaskRemindersCronJob"
+          "_ensureBuiltinTaskRemindersCronJob",
+          "_title",
+          "_removed"
         ]
       }
     ],
