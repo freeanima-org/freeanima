@@ -63,7 +63,7 @@ Bootstrap and runtime are **not merged** into a single config object (no `AnimaC
 | Kind            | Sections (examples)                                                                                                                                  | After UI save                                                                                 |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | **Live**        | `compression`, `prompt`, `memory`, `fts`, `cjk`, `clarify`, `browser`, `firecrawl`, `models`, `tts`, `auto_llm`, `companion`, gateway `tool_display` | Consumers read `Config.data` each use; snapshot update is enough                              |
-| **Transferred** | `llm`, `i18n`, `embedding`, `mcp_servers`, `acp_agents`, `discord` / `weixin` / `gateway` platforms, `worlds`, `object_storage`                      | Snapshot update **plus** section apply (re-init registries / reconnect / re-bind ObjectStore) |
+| **Transferred** | `llm`, `i18n`, `embedding`, `mcp_servers`, `discord` / `weixin` / `gateway` platforms, `worlds`, `object_storage`                                    | Snapshot update **plus** section apply (re-init registries / reconnect / re-bind ObjectStore) |
 | **Bootstrap**   | `database`, `http`, `redis`                                                                                                                          | Edit YAML; **process restart** required                                                       |
 
 ### Runtime config: UI coverage gaps
@@ -192,13 +192,13 @@ Navigation and main layout **must** use `useLayoutMode()` / viewport breakpoints
 
 Habitat sidebar is grouped (not flat storage tables). Map new features onto these user-visible concepts:
 
-| Group        | Cognitive layer | Routes (representative)                          |
-| ------------ | --------------- | ------------------------------------------------ |
-| Runtime      | Estate + ops    | dashboard, config, cron                          |
-| Memory       | Memory          | memory browse sub-routes, sleep, auto-llm-runs   |
-| Self         | Self            | self-layer, system-prompt                        |
-| Estate       | Estate          | subjects, worlds                                 |
-| Capabilities | Estate (tools)  | tools, commands, mcp, acp, remote-tool instances |
+| Group        | Cognitive layer | Routes (representative)                               |
+| ------------ | --------------- | ----------------------------------------------------- |
+| Runtime      | Estate + ops    | dashboard, config, cron                               |
+| Memory       | Memory          | memory browse sub-routes, sleep, auto-llm-runs        |
+| Self         | Self            | self-layer, system-prompt                             |
+| Estate       | Estate          | subjects, worlds                                      |
+| Capabilities | Estate (tools)  | tools, commands, mcp, remote-tool instances, subagent |
 
 FTS index maintenance is under Memory (not top-level). Do not add new flat nav items without mapping to a group above.
 
@@ -228,7 +228,7 @@ Scene awareness is **soft** — it adjusts tone, distance, memory recall bias, a
 
 **Question: what is my host / runtime quiet state?**
 
-Distinct from scene awareness: banded host and process markers (disk, RSS, deps, MCP/ACP) live as a **session-static** system-prompt copy, with **event-level** Inbox notifications on change. See [`environment-awareness.md`](../cognition/environment-awareness.md).
+Distinct from scene awareness: banded host and process markers (disk, RSS, deps, MCP) live as a **session-static** system-prompt copy, with **event-level** Inbox notifications on change. See [`environment-awareness.md`](../cognition/environment-awareness.md).
 
 ### Capability Policy
 
@@ -236,10 +236,10 @@ Distinct from scene awareness: banded host and process markers (disk, RSS, deps,
 
 **Capability Policy** is the **hard** constraint layer formerly sketched as “capability mask.” It is **not** a named wardrobe of presets (`masks.yaml` / Mask registry are retired). Policy is composed from:
 
-| Layer                                     | Role                                    | Typical fill                                        |
-| ----------------------------------------- | --------------------------------------- | --------------------------------------------------- |
-| **Skill**                                 | Declares what a technique needs         | `tools.allowed` (whitelist); `tools.denied` rare    |
-| **Caller** (cron, sleep, future subagent) | Declares what this scene must not touch | `tools.denied` (optional); `tools.allowed` optional |
+| Layer                              | Role                                    | Typical fill                                        |
+| ---------------------------------- | --------------------------------------- | --------------------------------------------------- |
+| **Skill**                          | Declares what a technique needs         | `tools.allowed` (whitelist); `tools.denied` rare    |
+| **Caller** (cron, sleep, subagent) | Declares what this scene must not touch | `tools.denied` (optional); `tools.allowed` optional |
 
 Umbrella shape (implementation may store flat `allowed_tools` / `denied_tools`):
 
@@ -320,18 +320,15 @@ just dev web                  # browser shell Vite HMR from :5000 (set FREEANIMA
 just pack web                # source deploy / Habitat /web: build dist before start
 ```
 
-## Tool Architecture (Three Layers)
+## Tool Architecture (Local + MCP + Subagent)
 
-Tools are registered in three layers but exposed to the LLM as one **flat tool list**. The LLM cares about names and parameters, not origin.
+Tools are registered from Local / MCP sources but exposed to the LLM as one **flat tool list**. Task-level in-process delegation uses **subagent** (AutoLlmRun), not an external ACP layer.
 
 ```text
 LLM view — flat tool list:
-  file_read_file(path)           ← local
-  file_write_file(path, content) ← local
-  code_execute(code)             ← local
+  file_read(path)                ← local
   query_database(sql)            ← MCP server
-  send_email(to, subject)        ← MCP server
-  acp_cursor(goal, context)      ← ACP agent
+  subagent_run(goal, slug)       ← internal subagent dispatch
 ```
 
 ### Layer 1: Local Tools
@@ -351,54 +348,36 @@ mcp_servers:
     command: npx
     args: ["@modelcontextprotocol/server-postgres", "postgresql://..."]
     transport: stdio
-    env:
-      PGOPTIONS: "-c statement_timeout=5s"
-  remote_habitat:
-    transport: http # Streamable HTTP — use for FreeAnima Habitat /mcp
-    url: http://127.0.0.1:2658/mcp
-    headers:
-      Authorization: "Bearer fa_at_…"
 ```
 
-### Layer 3: ACP Tools (Agent Client Protocol)
+### Subagent (internal)
 
-- Each external agent instance registers as **one** task-level tool: `acp_{name}(goal, context)`
-- For full task delegation (coding, analysis, booking, etc.); seconds to minutes latency
-- Configure under Habitat runtime `acp_agents` (PG `habitat_runtime_config`); edit in Shell **Settings → Habitat 服务 → 服务配置**
-
-```yaml
-# habitat_runtime_config fragment (not config.yaml)
-acp_agents:
-  cursor:
-    command: ~/.local/bin/agent
-    args: ["--force", "acp"]
-    name: cursor
-    description: "Delegate coding, refactoring, and code review"
-```
+- Named profiles as entities (`primary_component=subagent`); ToolSet `subagent`
+- Parent calls `subagent_run` → `runAutoLlm(runKind: "subagent")` with **materialized** `tools` / frozen `executableTools` (no `toolset_load` escalation)
+- See [`docs/modules/subagent.md`](../modules/subagent.md)
 
 ### Comparison
 
-| Dimension   | Local        | MCP              | ACP            |
-| ----------- | ------------ | ---------------- | -------------- |
-| Runs in     | Process      | External server  | External agent |
-| Granularity | Function     | Function         | Full task      |
-| Latency     | Milliseconds | Milliseconds–sec | Sec–minutes    |
-| Config      | Built-in     | `mcp_servers`    | `acp_agents`   |
+| Dimension   | Local        | MCP              | Subagent             |
+| ----------- | ------------ | ---------------- | -------------------- |
+| Runs in     | Process      | External server  | Process (AutoLlmRun) |
+| Granularity | Function     | Function         | Full sub-task        |
+| Latency     | Milliseconds | Milliseconds–sec | Sec–tens of seconds  |
+| Config      | Built-in     | `mcp_servers`    | Entity + Habitat UI  |
 
 Layers can be mixed; the LLM chooses order; FreeAnima registers and routes.
 
-## Conversation vs AutoLlmRun vs Delegation
+## Conversation vs AutoLlmRun
 
 **Axis:** whether the execution has a **user turn** during the run (not who triggered it). Chat LLM requests are **mutually exclusive**: either conversation path or AutoLlmRun — never both, never a third orphan `chat()`.
 
-| Kind                 | User turn     | PG persistence                                                            | Process trace                | Sleep pipeline                          |
-| -------------------- | ------------- | ------------------------------------------------------------------------- | ---------------------------- | --------------------------------------- |
-| **Conversation**     | yes           | `conversations` + `messages`                                              | message archive              | participates (light sleep, dream input) |
-| **AutoLlmRun**       | no            | `auto_llm_runs` + `auto_llm_messages` via `runAutoLlm` / `runAutoLlmChat` | full message transcript, TTL | excluded                                |
-| **Delegation (ACP)** | no (external) | parent conversation + `acp_tasks`                                         | optional                     | result via parent conversation          |
-| **Script cron**      | no            | `cron_log` only                                                           | stdout file                  | excluded                                |
+| Kind             | User turn | PG persistence                                                            | Process trace                | Sleep pipeline                          |
+| ---------------- | --------- | ------------------------------------------------------------------------- | ---------------------------- | --------------------------------------- |
+| **Conversation** | yes       | `conversations` + `messages`                                              | message archive              | participates (light sleep, dream input) |
+| **AutoLlmRun**   | no        | `auto_llm_runs` + `auto_llm_messages` via `runAutoLlm` / `runAutoLlmChat` | full message transcript, TTL | excluded                                |
+| **Script cron**  | no        | `cron_log` only                                                           | stdout file                  | excluded                                |
 
-AutoLlmRun covers: cron agent branch, sleep LLM stages, conversation **title** generation, **goal_judge**, compression / handoff summary, future internal subagents. One-shot side-cars use `runAutoLlmChat` (recorded `chat()`); tool loops use `runAutoLlm`. Tool context uses `contextKind: auto_llm` so `memory_remember` does not attach `source_conversations`. Cron `no_agent` shell scripts are **not** AutoLlmRun.
+AutoLlmRun covers: cron agent branch, sleep LLM stages, conversation **title** generation, **goal_judge**, compression / handoff summary, **internal subagents**. One-shot side-cars use `runAutoLlmChat` (recorded `chat()`); tool loops use `runAutoLlm`. Tool context uses `contextKind: auto_llm` so `memory_remember` does not attach `source_conversations`. Cron `no_agent` shell scripts are **not** AutoLlmRun. Policy-bound AutoLlm runs pass a **concrete tool name list** as `tools` (HARD_DENY `toolset_load` / `toolset_search`).
 
 **Session Goal continue turns** (synthetic user `↻ Continuing…` + assistant) stay on the **conversation** path so the chat transcript stays complete; only the **judge** hop is AutoLlm (`run_kind: goal-judge`).
 
@@ -406,14 +385,14 @@ AutoLlmRun covers: cron agent branch, sleep LLM stages, conversation **title** g
 
 **Question: should this conversation keep working toward a stated outcome?**
 
-Session Goal is an **in-process autonomous loop** at the Estate / orchestration layer — distinct from ACP async delegation:
+Session Goal is an **in-process autonomous loop** at the Estate / orchestration layer — distinct from subagent tool dispatch:
 
-| Dimension    | Session Goal                                                                                  | ACP                                   |
-| ------------ | --------------------------------------------------------------------------------------------- | ------------------------------------- |
-| Scope        | Single conversation                                                                           | External agent task                   |
-| Trigger      | `/goal` slash + post-turn judge                                                               | Tool call + callback turn             |
-| Persistence  | `conversations.goal` JSONB; continue turns in `messages`; judge hop in AutoLlm (`goal-judge`) | `conversations.acp_tasks`             |
-| Continuation | Same SSE stream, turn budget                                                                  | Independent message after task update |
+| Dimension    | Session Goal                                                                                  | Subagent                               |
+| ------------ | --------------------------------------------------------------------------------------------- | -------------------------------------- |
+| Scope        | Single conversation                                                                           | Fresh AutoLlmRun                       |
+| Trigger      | `/goal` slash + post-turn judge                                                               | `subagent_run` tool call               |
+| Persistence  | `conversations.goal` JSONB; continue turns in `messages`; judge hop in AutoLlm (`goal-judge`) | `auto_llm_runs` (`run_kind: subagent`) |
+| Continuation | Same SSE stream, turn budget                                                                  | Sync tool result to parent             |
 
 Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the goal is **paused** (warn logged + status line in chat). User messages preempt the loop; `/goal pause` / `/goal resume` control auto-continue without clearing state. See [`goal.md`](../modules/goal.md).
 
@@ -479,10 +458,11 @@ Unified in-process **HookRegistry** (no Redis queue):
 - **`on`**: interceptors on the request path — `await`ed; may `blocked` / return Effect (message ingress, turn end, tool return, system prompt, before LLM, etc.).
 - **`subscribe`**: side-channel observers — started during `run` / `emit` **without awaiting** (errors logged); e.g. Discord session title on `conversation:updated`.
 - **`run` / `emit`**: real-time dispatch — await all `on` handlers, then fire-and-forget `subscribe` handlers. `emit` ignores the intercept result.
+- **`llm_kind`**: required on every `on` / `subscribe` (`conversation` | `auto_llm` | `all`) and every `run` / `emit` (`conversation` | `auto_llm`; never `all`). Handlers are filtered by registration scope; the run kind is injected into handler context as `llm_kind`. Use this so conversation prompt sections (skills catalog, env-health, …) do not leak into AutoLlm / subagent runs.
 
 **Pipeline Runner** remains separate: explicit DAG for background cycles (sleep-cycle). State in `~/.anima/runtime/pipeline_*_run.json`.
 
-Complementary: Pipeline = scheduled multi-step background work; HookRegistry `on` = “may this proceed / mutate”; `subscribe` = in-process notify. UI/ACP often still use direct `onConversationUpdated` callbacks in addition to `subscribe`.
+Complementary: Pipeline = scheduled multi-step background work; HookRegistry `on` = “may this proceed / mutate”; `subscribe` = in-process notify. UI often still use direct `onConversationUpdated` callbacks in addition to `subscribe`.
 
 Legacy `kernel/eventbus` queue adapters are not on the Habitat production path.
 

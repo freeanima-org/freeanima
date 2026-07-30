@@ -107,10 +107,12 @@ export function getToolRegistry(): ToolSetRegistry {
   return tools;
 }
 
-/** tools_load appends executable tool names in the same turn */
+/** tools_load appends executable tool names in the same turn (conversation only) */
 export function grantExecutableTools(names: readonly string[]): void {
   const store = storage.getStore();
   if (!store?.executableTools) return;
+  // AutoLlm / 策略物化 runs：冻结 executableTools，禁止 toolset_load 扩权
+  if (store.contextKind === "auto_llm") return;
   for (const name of names) {
     if (name.trim()) store.executableTools.add(name.trim());
   }

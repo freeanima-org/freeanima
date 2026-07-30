@@ -120,7 +120,7 @@ export async function patchHabitatRuntimeConfigSection(
   return getHabitatRuntimeConfigDocument();
 }
 
-/** 整段替换（用于 acp_agents / mcp_servers 等 record 配置，支持删除条目）。 */
+/** 整段替换（用于 mcp_servers / models 等 record 配置，支持删除条目）。 */
 export async function replaceHabitatRuntimeConfigSection(
   section: string,
   value: Record<string, unknown>,

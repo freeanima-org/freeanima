@@ -1,8 +1,4 @@
 import {
-  sessionAcpDockInputSchema,
-  sessionAcpDockOutputSchema,
-} from "@freeanima/shared/rpc-contract/frames/acp";
-import {
   conversationArchiveInputSchema,
   conversationCommandsInputSchema,
   conversationCommandsOutputSchema,
@@ -114,11 +110,6 @@ export const chatMethodDefs = {
   "conversation.unreadCount": defineHabitatMethod({
     input: conversationUnreadCountInputSchema,
     output: conversationUnreadCountOutputSchema,
-    meta: dualTransportMeta(true),
-  }),
-  "conversation.acpDock": defineHabitatMethod({
-    input: sessionAcpDockInputSchema,
-    output: sessionAcpDockOutputSchema,
     meta: dualTransportMeta(true),
   }),
   "conversation.commands": defineHabitatMethod({

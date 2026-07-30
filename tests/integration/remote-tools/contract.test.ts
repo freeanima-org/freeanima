@@ -9,7 +9,6 @@ import {
   messageSendInputSchema,
   parseRpcEnvelope,
   serializeRpcEnvelope,
-  sessionAcpDockInputSchema,
   conversationCommandsInputSchema,
   toolRegisterInputSchema,
   habitatRpcConnectPayloadSchema,
@@ -55,7 +54,6 @@ describe("sap-contract envelopes", () => {
   });
 
   it("validates chat procedure schemas", () => {
-    sessionAcpDockInputSchema.parse({ conversation_id: "sid" });
     conversationCommandsInputSchema.parse({ platform: "remote:chat:k7m" });
     notificationListInputSchema.parse({ recipient_kind: "user", read_filter: "unread" });
     notificationMarkReadInputSchema.parse({ id: "n-1" });

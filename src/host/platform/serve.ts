@@ -155,7 +155,6 @@ export async function serve(
 
     startAsyncIntegrations({
       mcp: enginePhase.mcp,
-      acp: enginePhase.acp,
       runtime,
       engine: enginePhase.engine,
       platformsRef,
@@ -169,7 +168,7 @@ export async function serve(
     throw new Error("Engine phase failed to initialize");
   }
 
-  const { kernel, mcp, acp } = enginePhase;
+  const { kernel, mcp } = enginePhase;
   const runtime = getAppRuntime();
 
   const shutdown = async (signal: string) => {
@@ -179,7 +178,6 @@ export async function serve(
         runtime,
         kernel,
         mcp,
-        acp,
         platforms: platformsRef.list,
         cronInitialized,
         http: httpHooks,

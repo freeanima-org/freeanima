@@ -7,14 +7,18 @@ export function registerToolsetSystemPromptHooks(
   registry: HookRegistry,
   getToolRegistry: () => ToolSetRegistry,
 ): void {
-  registry.on(systemPromptBuild, () => {
-    const content = renderToolsetsSection(getToolRegistry());
-    if (!content.trim()) return { status: "ok" };
-    return {
-      status: "ok",
-      data: {
-        sections: [{ id: "toolsets", content, order: 10, priority: 5, budgetChars: 3_000 }],
-      },
-    };
-  });
+  registry.on(
+    systemPromptBuild,
+    () => {
+      const content = renderToolsetsSection(getToolRegistry());
+      if (!content.trim()) return { status: "ok" };
+      return {
+        status: "ok",
+        data: {
+          sections: [{ id: "toolsets", content, order: 10, priority: 5, budgetChars: 3_000 }],
+        },
+      };
+    },
+    { llm_kind: "conversation" },
+  );
 }

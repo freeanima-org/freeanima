@@ -4,6 +4,5 @@ export {
   registerNotificationInject,
   registerMemoryPassiveRecallHook,
   registerTemporalSummaryPeerInject,
-  startAcpProgressTicker,
 } from "./register-integrations.ts";
 export { registerServiceStores } from "./register-stores.ts";

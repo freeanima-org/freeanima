@@ -3,19 +3,31 @@ import { errMessage } from "../token/index.ts";
 import {
   blockedMessageFromChain,
   Hook,
+  matchesLlmKindScope,
   type HookEffectOf,
   type HookHandler,
+  type HookHandlerContext,
+  type HookRegisterOpts,
   type HookRunMeta,
+  type HookRunOpts,
   type HookRunResult,
   type HookStepLink,
   type HookStepResult,
   type HookSubscriber,
+  type LlmKind,
+  type LlmKindScope,
   type PayloadOf,
 } from "./hook.ts";
 
 type RegisteredHandler = {
   handler: HookHandler<Hook<unknown, Record<string, unknown>>>;
   priority: number;
+  llm_kind: LlmKindScope;
+};
+
+type RegisteredSubscriber = {
+  handler: HookSubscriber<Hook<unknown, Record<string, unknown>>>;
+  llm_kind: LlmKindScope;
 };
 
 function normalizeStep<Effect extends Record<string, unknown>>(
@@ -57,7 +69,7 @@ function buildRunResult<P, Effect extends Record<string, unknown>>(
 /** In-process hook registry: `on` = intercept (await), `subscribe` = side-channel (no await). */
 export class HookRegistry {
   private handlers: Map<symbol, RegisteredHandler[]>;
-  private subscribers: Map<symbol, HookSubscriber<Hook<unknown, Record<string, unknown>>>[]>;
+  private subscribers: Map<symbol, RegisteredSubscriber[]>;
   private readonly log: Logger;
 
   constructor(logger: Logger) {
@@ -69,25 +81,35 @@ export class HookRegistry {
   on<H extends Hook<unknown, Record<string, unknown>>>(
     hook: H,
     handler: HookHandler<H>,
-    opts?: { priority?: number },
+    opts: HookRegisterOpts,
   ): () => void {
-    const priority = opts?.priority ?? 100;
+    const priority = opts.priority ?? 100;
+    const llm_kind = opts.llm_kind;
     const list = this.handlers.get(hook.id) ?? [];
     const entry: RegisteredHandler = {
       handler: handler as HookHandler<Hook<unknown, Record<string, unknown>>>,
       priority,
+      llm_kind,
     };
     list.push(entry);
     list.sort((a, b) => a.priority - b.priority);
     this.handlers.set(hook.id, list);
-    this.log.debug("Register hook handler", { hook: hook.qualifiedId, priority });
+    this.log.debug("Register hook handler", {
+      hook: hook.qualifiedId,
+      priority,
+      llm_kind,
+    });
     return () => {
       const current = this.handlers.get(hook.id);
       if (!current) return;
       const idx = current.indexOf(entry);
       if (idx >= 0) current.splice(idx, 1);
       if (current.length === 0) this.handlers.delete(hook.id);
-      this.log.debug("Unregister hook handler", { hook: hook.qualifiedId, priority });
+      this.log.debug("Unregister hook handler", {
+        hook: hook.qualifiedId,
+        priority,
+        llm_kind,
+      });
     };
   }
 
@@ -95,35 +117,49 @@ export class HookRegistry {
   subscribe<H extends Hook<unknown, Record<string, unknown>>>(
     hook: H,
     handler: HookSubscriber<H>,
+    opts: Pick<HookRegisterOpts, "llm_kind">,
   ): () => void {
+    const llm_kind = opts.llm_kind;
     const list = this.subscribers.get(hook.id) ?? [];
-    const entry = handler as HookSubscriber<Hook<unknown, Record<string, unknown>>>;
+    const entry: RegisteredSubscriber = {
+      handler: handler as HookSubscriber<Hook<unknown, Record<string, unknown>>>,
+      llm_kind,
+    };
     list.push(entry);
     this.subscribers.set(hook.id, list);
-    this.log.debug("Register hook subscriber", { hook: hook.qualifiedId });
+    this.log.debug("Register hook subscriber", { hook: hook.qualifiedId, llm_kind });
     return () => {
       const current = this.subscribers.get(hook.id);
       if (!current) return;
       const idx = current.indexOf(entry);
       if (idx >= 0) current.splice(idx, 1);
       if (current.length === 0) this.subscribers.delete(hook.id);
-      this.log.debug("Unregister hook subscriber", { hook: hook.qualifiedId });
+      this.log.debug("Unregister hook subscriber", { hook: hook.qualifiedId, llm_kind });
     };
   }
 
   /**
    * Await intercept (`on`) handlers, then fire-and-forget `subscribe` handlers.
    * No queue — subscribers are started immediately and not awaited.
+   * Handlers filtered by registration `llm_kind`; context always includes run `llm_kind`.
    */
   async run<H extends Hook<unknown, Record<string, unknown>>>(
     hook: H,
     context: PayloadOf<H>,
-  ): Promise<HookRunResult<PayloadOf<H>, HookEffectOf<H>>> {
-    const list = this.handlers.get(hook.id) ?? [];
+    opts: HookRunOpts,
+  ): Promise<HookRunResult<HookHandlerContext<H>, HookEffectOf<H>>> {
+    const llm_kind = opts.llm_kind;
+    const enriched = Object.assign({}, context as object, {
+      llm_kind,
+    }) as HookHandlerContext<H>;
+    const list = (this.handlers.get(hook.id) ?? []).filter((h) =>
+      matchesLlmKindScope(h.llm_kind, llm_kind),
+    );
     const started = performance.now();
 
     this.log.debug("hook run start", {
       hook: hook.qualifiedId,
+      llm_kind,
       handlers: list.length,
       subscribers: this.subscribers.get(hook.id)?.length ?? 0,
     });
@@ -135,7 +171,7 @@ export class HookRegistry {
     let index = 0;
     for (const { handler } of list) {
       try {
-        const raw = await (handler as HookHandler<H>)(context);
+        const raw = await (handler as HookHandler<H>)(enriched);
         const step = normalizeStep<HookEffectOf<H>>(raw);
         chain = linkStep(step, chain);
         if (step.status === "failed") anyFailed = true;
@@ -166,7 +202,7 @@ export class HookRegistry {
       index++;
     }
 
-    this.fireSubscribers(hook, context);
+    this.fireSubscribers(hook, enriched, llm_kind);
 
     const meta: HookRunMeta = {
       duration_ms: performance.now() - started,
@@ -179,8 +215,8 @@ export class HookRegistry {
       blocked: stoppedByBlocked,
     });
 
-    return buildRunResult<PayloadOf<H>, HookEffectOf<H>>(
-      context,
+    return buildRunResult<HookHandlerContext<H>, HookEffectOf<H>>(
+      enriched,
       chain,
       anyFailed,
       stoppedByBlocked,
@@ -189,22 +225,30 @@ export class HookRegistry {
   }
 
   /** Fire-and-forget notify; same as `void run(...)` (ignores intercept result). */
-  emit<H extends Hook<unknown, Record<string, unknown>>>(hook: H, context: PayloadOf<H>): void {
-    void this.run(hook, context);
+  emit<H extends Hook<unknown, Record<string, unknown>>>(
+    hook: H,
+    context: PayloadOf<H>,
+    opts: HookRunOpts,
+  ): void {
+    void this.run(hook, context, opts);
   }
 
   private fireSubscribers<H extends Hook<unknown, Record<string, unknown>>>(
     hook: H,
-    context: PayloadOf<H>,
+    context: HookHandlerContext<H>,
+    llm_kind: LlmKind,
   ): void {
-    const list = this.subscribers.get(hook.id) ?? [];
+    const list = (this.subscribers.get(hook.id) ?? []).filter((s) =>
+      matchesLlmKindScope(s.llm_kind, llm_kind),
+    );
     if (list.length === 0) return;
     this.log.debug("hook subscribers fire", {
       hook: hook.qualifiedId,
+      llm_kind,
       subscribers: list.length,
     });
     let index = 0;
-    for (const handler of list) {
+    for (const { handler } of list) {
       const i = index;
       void Promise.resolve()
         .then(() => (handler as HookSubscriber<H>)(context))

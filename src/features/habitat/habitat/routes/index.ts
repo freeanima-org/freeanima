@@ -18,13 +18,6 @@ import {
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 
 import { authHasScope, type ServiceAuthContext } from "../habitat-api/auth-context.ts";
-import {
-  acpStartAgent,
-  acpStartAll,
-  acpStopAgent,
-  acpStopAll,
-  getAcpStatus,
-} from "../habitat-api/handlers/acp.ts";
 import { listAutoLlmRuns, getAutoLlmRun } from "../habitat-api/handlers/auto-llm-runs.ts";
 import {
   getHabitatConfig,
@@ -366,31 +359,6 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     "outposts.status",
     habitatMethodDefs["outposts.status"],
     wrapConsoleLegacyHandler(() => getOutpostsStatus()),
-  ),
-  defineHabitatRouteFromDef(
-    "acp.status",
-    habitatMethodDefs["acp.status"],
-    wrapConsoleLegacyHandler(() => getAcpStatus()),
-  ),
-  defineHabitatRouteFromDef(
-    "acp.startAll",
-    habitatMethodDefs["acp.startAll"],
-    wrapConsoleLegacyHandler(() => acpStartAll()),
-  ),
-  defineHabitatRouteFromDef(
-    "acp.stopAll",
-    habitatMethodDefs["acp.stopAll"],
-    wrapConsoleLegacyHandler(() => acpStopAll()),
-  ),
-  defineHabitatRouteFromDef(
-    "acp.startAgent",
-    habitatMethodDefs["acp.startAgent"],
-    wrapConsoleLegacyHandler((payload) => acpStartAgent((payload as { name: string }).name)),
-  ),
-  defineHabitatRouteFromDef(
-    "acp.stopAgent",
-    habitatMethodDefs["acp.stopAgent"],
-    wrapConsoleLegacyHandler((payload) => acpStopAgent((payload as { name: string }).name)),
   ),
   defineHabitatRouteFromDef(
     "fts.status",

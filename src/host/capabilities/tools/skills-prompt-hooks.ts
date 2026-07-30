@@ -7,20 +7,24 @@ export function registerSkillsCatalogSystemPromptHook(
   registry: HookRegistry,
   getSkills: () => SkillRegistry,
 ): void {
-  registry.on(systemPromptBuild, () => {
-    const active = getSkills().listActive();
-    if (active.length === 0) return { status: "ok" };
-    const lines = active.map((s) => `- **${s.name}**: ${s.description || "(no description)"}`);
-    const content = [
-      "## Skills",
-      "Available techniques (load full instructions with `skill_load` when needed):",
-      ...lines,
-    ].join("\n");
-    return {
-      status: "ok",
-      data: {
-        sections: [{ id: "skills-catalog", content, order: 9, priority: 5, budgetChars: 2_500 }],
-      },
-    };
-  });
+  registry.on(
+    systemPromptBuild,
+    () => {
+      const active = getSkills().listActive();
+      if (active.length === 0) return { status: "ok" };
+      const lines = active.map((s) => `- **${s.name}**: ${s.description || "(no description)"}`);
+      const content = [
+        "## Skills",
+        "Available techniques (load full instructions with `skill_load` when needed):",
+        ...lines,
+      ].join("\n");
+      return {
+        status: "ok",
+        data: {
+          sections: [{ id: "skills-catalog", content, order: 9, priority: 5, budgetChars: 2_500 }],
+        },
+      };
+    },
+    { llm_kind: "conversation" },
+  );
 }

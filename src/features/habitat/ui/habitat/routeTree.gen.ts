@@ -30,7 +30,7 @@ import { Route as SidebarCronRouteImport } from "./routes/_sidebar/cron";
 import { Route as SidebarCommandsRouteImport } from "./routes/_sidebar/commands";
 import { Route as SidebarAutobiographicalMemoryRouteImport } from "./routes/_sidebar/autobiographical-memory";
 import { Route as SidebarAutoLlmRunsRouteImport } from "./routes/_sidebar/auto-llm-runs";
-import { Route as SidebarAcpRouteImport } from "./routes/_sidebar/acp";
+import { Route as SidebarSubagentsRouteImport } from "./routes/_sidebar/subagents";
 import { Route as SidebarSkillsRouteRouteImport } from "./routes/_sidebar/skills/route";
 import { Route as SidebarSkillsIndexRouteImport } from "./routes/_sidebar/skills/index";
 import { Route as SidebarSkillsNameRouteImport } from "./routes/_sidebar/skills/$name";
@@ -142,9 +142,9 @@ const SidebarAutoLlmRunsRoute = SidebarAutoLlmRunsRouteImport.update({
   path: "/auto-llm-runs",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
-const SidebarAcpRoute = SidebarAcpRouteImport.update({
-  id: "/acp",
-  path: "/acp",
+const SidebarSubagentsRoute = SidebarSubagentsRouteImport.update({
+  id: "/subagents",
+  path: "/subagents",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
 const SidebarSkillsRouteRoute = SidebarSkillsRouteRouteImport.update({
@@ -183,7 +183,7 @@ export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
   "/workshop": typeof WorkshopRouteWithChildren;
   "/conversations": typeof SidebarConversationsRouteRouteWithChildren;
-  "/acp": typeof SidebarAcpRoute;
+  "/subagents": typeof SidebarSubagentsRoute;
   "/auto-llm-runs": typeof SidebarAutoLlmRunsRoute;
   "/autobiographical-memory": typeof SidebarAutobiographicalMemoryRoute;
   "/commands": typeof SidebarCommandsRoute;
@@ -211,7 +211,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
   "/workshop": typeof WorkshopRouteWithChildren;
-  "/acp": typeof SidebarAcpRoute;
+  "/subagents": typeof SidebarSubagentsRoute;
   "/auto-llm-runs": typeof SidebarAutoLlmRunsRoute;
   "/autobiographical-memory": typeof SidebarAutobiographicalMemoryRoute;
   "/commands": typeof SidebarCommandsRoute;
@@ -241,7 +241,7 @@ export interface FileRoutesById {
   "/_sidebar": typeof SidebarRouteRouteWithChildren;
   "/workshop": typeof WorkshopRouteWithChildren;
   "/_sidebar/conversations": typeof SidebarConversationsRouteRouteWithChildren;
-  "/_sidebar/acp": typeof SidebarAcpRoute;
+  "/_sidebar/subagents": typeof SidebarSubagentsRoute;
   "/_sidebar/auto-llm-runs": typeof SidebarAutoLlmRunsRoute;
   "/_sidebar/autobiographical-memory": typeof SidebarAutobiographicalMemoryRoute;
   "/_sidebar/commands": typeof SidebarCommandsRoute;
@@ -272,7 +272,7 @@ export interface FileRouteTypes {
     | "/"
     | "/workshop"
     | "/conversations"
-    | "/acp"
+    | "/subagents"
     | "/auto-llm-runs"
     | "/autobiographical-memory"
     | "/commands"
@@ -300,7 +300,7 @@ export interface FileRouteTypes {
   to:
     | "/"
     | "/workshop"
-    | "/acp"
+    | "/subagents"
     | "/auto-llm-runs"
     | "/autobiographical-memory"
     | "/commands"
@@ -329,7 +329,7 @@ export interface FileRouteTypes {
     | "/_sidebar"
     | "/workshop"
     | "/_sidebar/conversations"
-    | "/_sidebar/acp"
+    | "/_sidebar/subagents"
     | "/_sidebar/auto-llm-runs"
     | "/_sidebar/autobiographical-memory"
     | "/_sidebar/commands"
@@ -531,11 +531,11 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof SidebarAutoLlmRunsRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
-    "/_sidebar/acp": {
-      id: "/_sidebar/acp";
-      path: "/acp";
-      fullPath: "/acp";
-      preLoaderRoute: typeof SidebarAcpRouteImport;
+    "/_sidebar/subagents": {
+      id: "/_sidebar/subagents";
+      path: "/subagents";
+      fullPath: "/subagents";
+      preLoaderRoute: typeof SidebarSubagentsRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
     "/_sidebar/conversations": {
@@ -592,7 +592,7 @@ const SidebarSkillsRouteRouteWithChildren = SidebarSkillsRouteRoute._addFileChil
 
 interface SidebarRouteRouteChildren {
   SidebarConversationsRouteRoute: typeof SidebarConversationsRouteRouteWithChildren;
-  SidebarAcpRoute: typeof SidebarAcpRoute;
+  SidebarSubagentsRoute: typeof SidebarSubagentsRoute;
   SidebarAutoLlmRunsRoute: typeof SidebarAutoLlmRunsRoute;
   SidebarAutobiographicalMemoryRoute: typeof SidebarAutobiographicalMemoryRoute;
   SidebarCommandsRoute: typeof SidebarCommandsRoute;
@@ -615,7 +615,7 @@ interface SidebarRouteRouteChildren {
 
 const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
   SidebarConversationsRouteRoute: SidebarConversationsRouteRouteWithChildren,
-  SidebarAcpRoute: SidebarAcpRoute,
+  SidebarSubagentsRoute: SidebarSubagentsRoute,
   SidebarAutoLlmRunsRoute: SidebarAutoLlmRunsRoute,
   SidebarAutobiographicalMemoryRoute: SidebarAutobiographicalMemoryRoute,
   SidebarCommandsRoute: SidebarCommandsRoute,

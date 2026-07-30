@@ -36,7 +36,6 @@ import type {
   ConversationTailInput,
   ConversationTailOutput,
 } from "./frames/conversation.ts";
-import type { ConversationAcpDockInput, ConversationAcpDockOutput } from "./frames/acp.ts";
 import type {
   TasklistListInput,
   TasklistListOutput,
@@ -242,7 +241,6 @@ export const RPC_PROTOCOL_METHODS = [
   "conversation.subscribeInbox",
   "conversation.markRead",
   "conversation.unreadCount",
-  "conversation.acpDock",
   "conversation.commands",
   "conversation.command",
   "message.send",
@@ -353,7 +351,6 @@ export type RpcRouterInputs = {
   "conversation.subscribeInbox": ConversationSubscribeInboxInput;
   "conversation.markRead": ConversationMarkReadInput;
   "conversation.unreadCount": ConversationUnreadCountInput;
-  "conversation.acpDock": ConversationAcpDockInput;
   "conversation.commands": ConversationCommandsInput;
   "conversation.command": ConversationCommandInput;
   "message.send": MessageSendInput;
@@ -467,7 +464,6 @@ export type RpcRouterOutputs = {
   "conversation.subscribeInbox": { ok: true };
   "conversation.markRead": ConversationMarkReadOutput;
   "conversation.unreadCount": ConversationUnreadCountOutput;
-  "conversation.acpDock": ConversationAcpDockOutput;
   "conversation.commands": ConversationCommandsOutput;
   "conversation.command": ConversationCommandOutput;
   "message.send": MessageSendOutput;

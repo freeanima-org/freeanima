@@ -14,7 +14,6 @@ import {
 } from "@freeanima/ui-kit";
 import { ConfirmDialog, ActionSheet, toast } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
-import { AcpProgressDock } from "@freeanima/features/chat/ui/spa/components/AcpProgressDock.tsx";
 import { SlashCommandResultPanel } from "@freeanima/features/chat/ui/spa/components/SlashCommandResultPanel.tsx";
 import { ToolBlockBubble } from "@freeanima/features/chat/ui/spa/components/ToolBlockBubble.tsx";
 import {
@@ -23,7 +22,6 @@ import {
 } from "@freeanima/features/chat/ui/spa/components/ChatMessageBubble.tsx";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { ConversationListItem as ConversationListRow } from "@freeanima/features/chat/ui/spa/components/ConversationListItem.tsx";
-import { useAcpProgressDock } from "@freeanima/features/chat/ui/spa/hooks/useAcpProgressDock.ts";
 import { useEdgeSwipeOpen } from "@freeanima/features/chat/ui/spa/hooks/useEdgeSwipeOpen.ts";
 import { useKeyboardInset } from "@freeanima/features/chat/ui/spa/hooks/useKeyboardInset.ts";
 import { formatConversationIdDateTime } from "@freeanima/features/chat/ui/spa/lib/format-datetime.ts";
@@ -188,7 +186,6 @@ export function ChatApp() {
   const appendItemForConversation = useConversationsStore((s) => s.appendItemForConversation);
   const refreshMessages = useConversationsStore((s) => s.refreshMessages);
   const reloadConversationIfCurrent = useConversationsStore((s) => s.reloadConversationIfCurrent);
-  const patchProgressLine = useConversationsStore((s) => s.patchProgressLine);
   const resolveExpectedTailPos = useConversationsStore((s) => s.resolveExpectedTailPos);
   const outboxEntries = useOutboxStore((s) => s.entries);
   const outboxAckEntry = useOutboxStore((s) => s.ackEntry);
@@ -363,14 +360,6 @@ export function ChatApp() {
         },
       )
     : m.habitat_chat_title();
-
-  const acpDock = useAcpProgressDock(currentId, {
-    patchProgress: patchProgressLine,
-    onDecision: async (sid) => {
-      const baseline = useConversationsStore.getState().display.length;
-      await refreshMessages(sid, baseline);
-    },
-  });
 
   const INPUT_MIN_HEIGHT_PX = 36;
   const INPUT_MAX_HEIGHT_PX = 192;
@@ -1567,12 +1556,6 @@ export function ChatApp() {
               </>
             )}
           >
-            {acpDock ? (
-              <div className="shrink-0 px-4 pt-3">
-                <AcpProgressDock dock={acpDock} />
-              </div>
-            ) : null}
-
             {slashResult ? (
               <div className="shrink-0 px-4 pt-3">
                 <SlashCommandResultPanel

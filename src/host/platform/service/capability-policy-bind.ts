@@ -14,6 +14,10 @@ import {
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 export { filterToolNamesByPolicy, runtimeToolPolicyFromResolved, type ResolvedCapabilityPolicy };
+export {
+  materializeFromFragments,
+  materializeToolNames,
+} from "@freeanima/host/core/capability-policy";
 
 export function resolveSleepCapabilityPolicy(deps: FullRuntimeDeps): ResolvedCapabilityPolicy {
   return resolveSleepPolicy(deps.engine.catalog.toolSets);

@@ -206,9 +206,11 @@ async function runEngineOnce(
         config: deps.engine.config.data,
         logger: deps.engine.logger,
         llm: deps.engine.llm,
+        executableTools: input.toolNames,
         ...omitUndefined({ toolPolicy }),
         max_turns: input.maxTurns,
         hookRegistry: deps.kernel.hookRegistry,
+        llm_kind: "auto_llm",
       })) {
         switch (ev.event) {
           case "token":
@@ -234,6 +236,7 @@ async function runEngineOnce(
     {
       tools: deps.engine.catalog.toolSets,
       contextKind: "auto_llm",
+      executableTools: input.toolNames,
       ...omitUndefined({ parentConversationId: input.parentConversationId }),
     },
   );

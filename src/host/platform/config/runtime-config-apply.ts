@@ -2,7 +2,6 @@ import type { Config, RuntimeConfig } from "@freeanima/host/core/config";
 import { resolveAndBindWorldContext } from "@freeanima/host/core/config/world-context";
 import { applyHostI18nConfig } from "@freeanima/host/core/i18n";
 import { initLlmRuntime } from "@freeanima/host/core/llm";
-import { getAcpManager } from "@freeanima/host/capabilities/acp";
 import {
   discoverPlatforms,
   startPlatforms,
@@ -31,7 +30,6 @@ export const TRANSFERRED_RUNTIME_SECTIONS = [
   "i18n",
   "embedding",
   "mcp_servers",
-  "acp_agents",
   "discord",
   "weixin",
   "gateway",
@@ -94,10 +92,6 @@ async function applyMcp(): Promise<void> {
   await mcp.startAllEnabled();
 }
 
-async function applyAcp(): Promise<void> {
-  await getAcpManager().reloadEnabledFromConfig();
-}
-
 async function applyGateway(config: Config): Promise<void> {
   const platformsRef = applyDeps.getPlatformsRef?.() ?? null;
   const messaging =
@@ -142,9 +136,6 @@ export async function applyRuntimeConfigSection(config: Config, section: string)
           break;
         case "mcp_servers":
           await applyMcp();
-          break;
-        case "acp_agents":
-          await applyAcp();
           break;
         case "discord":
         case "weixin":

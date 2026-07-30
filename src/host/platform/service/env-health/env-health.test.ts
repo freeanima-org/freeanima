@@ -196,4 +196,63 @@ describe("env-health tick", () => {
     expect(port.created).toHaveLength(0);
     expect(await store.load()).toEqual(next);
   });
+
+  it("dev: boot_started_at alone refreshes baseline without notify", async () => {
+    const base = sampleMarkers();
+    const next = sampleMarkers({ boot_started_at: "2026-07-30T17:00:00+08:00" });
+    const store = memoryStore(base);
+    const port = mockNotificationPort();
+    const result = await runEnvHealthTick({
+      startTimeSec: 1,
+      notification: port,
+      store,
+      collect: async () => next,
+      suppressBootStartedNotify: true,
+    });
+    expect(result.action).toBe("quiet");
+    expect(result.changed_keys).toEqual(["boot_started_at"]);
+    expect(port.created).toHaveLength(0);
+    expect(await store.load()).toEqual(next);
+  });
+
+  it("dev: boot change with other markers still notifies others only", async () => {
+    const base = sampleMarkers();
+    const next = sampleMarkers({
+      boot_started_at: "2026-07-30T17:00:00+08:00",
+      postgres: "error",
+    });
+    const store = memoryStore(base);
+    const port = mockNotificationPort();
+    const result = await runEnvHealthTick({
+      startTimeSec: 1,
+      notification: port,
+      store,
+      collect: async () => next,
+      suppressBootStartedNotify: true,
+    });
+    expect(result.action).toBe("notified");
+    expect(result.changed_keys).toEqual(["postgres"]);
+    expect(port.created).toHaveLength(2);
+    expect(port.created[0]?.title).toBe("环境/健康变更：PostgreSQL");
+    expect(port.created[0]?.body).not.toContain("Boot started at");
+    expect(await store.load()).toEqual(next);
+  });
+
+  it("production: boot_started_at alone still notifies", async () => {
+    const base = sampleMarkers();
+    const next = sampleMarkers({ boot_started_at: "2026-07-30T17:00:00+08:00" });
+    const store = memoryStore(base);
+    const port = mockNotificationPort();
+    const result = await runEnvHealthTick({
+      startTimeSec: 1,
+      notification: port,
+      store,
+      collect: async () => next,
+      suppressBootStartedNotify: false,
+    });
+    expect(result.action).toBe("notified");
+    expect(result.changed_keys).toEqual(["boot_started_at"]);
+    expect(port.created).toHaveLength(2);
+    expect(port.created[0]?.title).toBe("环境/健康变更：Boot started at");
+  });
 });

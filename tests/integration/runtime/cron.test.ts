@@ -34,7 +34,6 @@ import { bindServicePorts } from "@freeanima/host/platform";
 import { FileConfig } from "@freeanima/host/platform/config/file-config.ts";
 import { createServiceKernel } from "@freeanima/host/platform/bootstrap";
 import { createConversationService } from "@freeanima/host/engine/conversation";
-import { getAcpManager } from "@freeanima/host/capabilities/acp";
 import { createAppRuntime } from "@freeanima/host/platform/service/app-runtime";
 import { initRuntimeContext } from "@freeanima/host/platform/service/runtime-context";
 import { registerServiceStores } from "@freeanima/host/platform";
@@ -101,7 +100,6 @@ describePg("cron", () => {
       conversation,
       mcp: null,
       outpost: null,
-      acp: getAcpManager(),
       host: "127.0.0.1",
       port: 2658,
     };

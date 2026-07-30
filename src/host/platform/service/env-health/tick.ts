@@ -41,7 +41,21 @@ export type EnvHealthTickDeps = {
   notification: EnvHealthNotificationPort | null;
   store?: EnvHealthBaselineStore;
   collect?: () => Promise<EnvHealthMarkers>;
+  /**
+   * 开发 Habitat：忽略 `boot_started_at` 变更通知（仍写回基线）。
+   * 由 boot 层传入 `isDevHabitatProcess()`；单测可显式开关。
+   */
+  suppressBootStartedNotify?: boolean;
 };
+
+/** 通知侧变更键：开发环境剔除重启噪声 `boot_started_at` */
+export function notifyChangedKeys(
+  changedKeys: (keyof EnvHealthMarkers)[],
+  suppressBootStartedNotify: boolean,
+): (keyof EnvHealthMarkers)[] {
+  if (!suppressBootStartedNotify) return changedKeys;
+  return changedKeys.filter((k) => k !== "boot_started_at");
+}
 
 /**
  * 采集 → 对比基线 → 有变更则双写 Inbox（source_ref 去重）→ 写回基线。
@@ -75,8 +89,19 @@ export async function runEnvHealthTick(deps: EnvHealthTickDeps): Promise<EnvHeal
     return { ok: true, action: "quiet" };
   }
 
+  const notifyKeys = notifyChangedKeys(diff.changedKeys, deps.suppressBootStartedNotify === true);
+  if (notifyKeys.length === 0) {
+    await store.save(current);
+    return {
+      ok: true,
+      action: "quiet",
+      changed_keys: diff.changedKeys as string[],
+    };
+  }
+
+  const notifyDiff = { changed: true as const, changedKeys: notifyKeys };
   const fp = fingerprintMarkers(stableMarkersJson(current));
-  const sourceRef = buildEnvHealthSourceRef(diff.changedKeys, fp);
+  const sourceRef = buildEnvHealthSourceRef(notifyKeys, fp);
   const port = deps.notification;
 
   if (!port) {
@@ -84,7 +109,7 @@ export async function runEnvHealthTick(deps: EnvHealthTickDeps): Promise<EnvHeal
     return {
       ok: false,
       action: "skipped",
-      changed_keys: diff.changedKeys as string[],
+      changed_keys: notifyKeys as string[],
       source_ref: sourceRef,
       error: "notification port unavailable",
     };
@@ -102,15 +127,15 @@ export async function runEnvHealthTick(deps: EnvHealthTickDeps): Promise<EnvHeal
     return {
       ok: true,
       action: "deduped",
-      changed_keys: diff.changedKeys as string[],
+      changed_keys: notifyKeys as string[],
       source_ref: sourceRef,
     };
   }
 
-  const title = formatChangeNotificationTitle(diff.changedKeys);
-  const body = formatChangeNotificationBody(current, baseline, diff);
+  const title = formatChangeNotificationTitle(notifyKeys);
+  const body = formatChangeNotificationBody(current, baseline, notifyDiff);
   const payload = {
-    changed_keys: diff.changedKeys,
+    changed_keys: notifyKeys,
     markers: current,
   };
 
@@ -141,7 +166,7 @@ export async function runEnvHealthTick(deps: EnvHealthTickDeps): Promise<EnvHeal
   return {
     ok: true,
     action: "notified",
-    changed_keys: diff.changedKeys as string[],
+    changed_keys: notifyKeys as string[],
     source_ref: sourceRef,
   };
 }

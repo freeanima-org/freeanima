@@ -1,6 +1,7 @@
 import {
   getToolRegistry,
   getToolConversationId,
+  getToolContextKind,
   grantExecutableTools,
 } from "@freeanima/host/core/tool";
 import { isConversationMeta, type ConversationMetaMessage } from "@freeanima/host/core/db/domain";
@@ -49,7 +50,7 @@ export function registerToolsetTools(toolSets: ToolSetRegistry): void {
         {
           name: "toolset_search",
           description:
-            "Search dynamically registered ToolSets (MCP/ACP/Outpost) by keyword. Built-in ToolSets are listed in system prompt — use toolset_load directly.",
+            "Search dynamically registered ToolSets (MCP/Outpost) by keyword. Built-in ToolSets are listed in system prompt — use toolset_load directly.",
           parameters: {
             type: "object",
             properties: {
@@ -61,6 +62,9 @@ export function registerToolsetTools(toolSets: ToolSetRegistry): void {
             required: ["query"],
           },
           handler: async (args) => {
+            if (getToolContextKind() === "auto_llm") {
+              return toolError("toolset_search is not available in AutoLlm / policy-bound runs");
+            }
             const ctx = await requireSessionMeta();
             if (!ctx.ok) return toolError(ctx.error);
             const query = String(args.query ?? "").trim();
@@ -90,6 +94,9 @@ export function registerToolsetTools(toolSets: ToolSetRegistry): void {
             required: ["toolsets"],
           },
           handler: async (args) => {
+            if (getToolContextKind() === "auto_llm") {
+              return toolError("toolset_load is not available in AutoLlm / policy-bound runs");
+            }
             const ctx = await requireSessionMeta();
             if (!ctx.ok) return toolError(ctx.error);
             const raw = args.toolsets;

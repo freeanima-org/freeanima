@@ -285,6 +285,10 @@ Privacy fields live in `body.secrets_enc` + `body.dek_wrapped`. Plaintext metada
 
 Legacy pass (`~/.password-store`) is **not** deleted on disk; migrate entries manually via Shell UI.
 
+## Subagent profiles
+
+Named AutoLlm subagent profiles: `type=content`, `primary_component=subagent`. Body fields include `slug`, `skills`, `max_turns`, `allowed_tools`, `denied_tools`. See [`subagent.md`](../modules/subagent.md).
+
 ## Search
 
 Entity **list** (deterministic browse) and **search** (relevance ranking) are separate ports:

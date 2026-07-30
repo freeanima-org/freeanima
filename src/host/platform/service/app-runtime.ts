@@ -11,7 +11,6 @@ import type { ConversationService } from "@freeanima/host/engine/conversation";
 import type { CronJobData } from "@freeanima/host/capabilities/connectors/cron";
 import type { Kernel } from "@freeanima/host/kernel";
 import type { AppRuntimePort } from "@freeanima/host/platform/ports/app-runtime-port";
-import type { AcpManagerPort } from "@freeanima/host/platform/ports/acp-manager";
 import type { McpManagerPort } from "@freeanima/host/platform/ports/mcp-manager";
 import type { RemoteToolsManagerPort } from "@freeanima/host/platform/ports/remote-tools-manager";
 import type { ServiceEnginePort } from "@freeanima/host/platform/ports/service-engine";
@@ -22,7 +21,6 @@ import { ConversationManager } from "./conversation-manager.ts";
 import type { FullRuntimeDeps, RuntimeDeps } from "./runtime-deps.ts";
 import * as status from "./service-status.ts";
 import * as conversations from "./service-conversations.ts";
-import * as acpDock from "./service-acp-dock.ts";
 import * as memory from "./service-memory.ts";
 import * as selfLayer from "./service-self.ts";
 import * as fts from "./service-fts.ts";
@@ -52,7 +50,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   readonly conversation: ConversationService;
   readonly mcp: McpManagerPort | null;
   readonly outpost: RemoteToolsManagerPort | null;
-  readonly acp: AcpManagerPort;
   readonly host: string;
   readonly port: number;
 
@@ -62,7 +59,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     this.conversation = input.conversation;
     this.mcp = input.mcp;
     this.outpost = input.outpost;
-    this.acp = input.acp;
     this.host = input.host;
     this.port = input.port;
   }
@@ -74,7 +70,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
       conversation: this.conversation,
       mcp: this.mcp,
       outpost: this.outpost,
-      acp: this.acp,
       host: this.host,
       port: this.port,
     };
@@ -120,6 +115,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   engineStreamOpts(conversationId: string, signal: AbortSignal, llmDebug?: boolean) {
     return {
       hookRegistry: this.kernel.hookRegistry,
+      llm_kind: "conversation" as const,
       ...createTurnMessageCallbacks(this.fullDeps(), conversationId),
       signal,
       shouldStop: () => this.runControl.isShuttingDown(),
@@ -312,10 +308,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
 
   getConversationInfo(conversationId: string, platform = ""): Promise<Record<string, unknown>> {
     return conversations.getConversationInfo(this.runtimeDeps(), conversationId, platform);
-  }
-
-  getConversationAcpDock(conversationId: string, platform = "") {
-    return acpDock.getConversationAcpDock(this.runtimeDeps(), conversationId, platform);
   }
 
   getMessages(

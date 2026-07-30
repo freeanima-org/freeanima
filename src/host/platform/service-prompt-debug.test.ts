@@ -89,7 +89,6 @@ function seedContext(catalog: ReturnType<typeof createEngineCatalog>, kernel: Ke
     } as Engine,
     mcp: null,
     outpost: null,
-    acp: {} as never,
     host: "127.0.0.1",
     port: 2658,
   });

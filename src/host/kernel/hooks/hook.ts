@@ -35,6 +35,18 @@ export type HookRunResult<P, Effect extends Record<string, unknown> = Record<str
   meta: HookRunMeta;
 };
 
+// --- LLM kind (prompt / lifecycle scoping) ---
+
+/** Actual run kind passed into handlers (never `all`) */
+export type LlmKind = "auto_llm" | "conversation";
+
+/** Registration filter: `all` matches every run */
+export type LlmKindScope = LlmKind | "all";
+
+export function matchesLlmKindScope(registered: LlmKindScope, run: LlmKind): boolean {
+  return registered === "all" || registered === run;
+}
+
 // --- Hook token ---
 
 /** Hook identity token; created only via createHook */
@@ -72,14 +84,30 @@ export type PayloadOf<H> = H extends Hook<infer P, infer _E> ? P : never;
 
 export type HookEffectOf<H> = H extends Hook<unknown, infer E> ? E : never;
 
+/** Handler / subscriber context: payload plus the run's {@link LlmKind} */
+export type HookHandlerContext<H extends Hook<unknown, Record<string, unknown>>> = Readonly<
+  PayloadOf<H> & { llm_kind: LlmKind }
+>;
+
 export type HookHandler<H extends Hook<unknown, Record<string, unknown>>> = (
-  context: Readonly<PayloadOf<H>>,
+  context: HookHandlerContext<H>,
 ) => HookStepResult<HookEffectOf<H>> | void | Promise<HookStepResult<HookEffectOf<H>> | void>;
 
 /** Side-channel observer; return value ignored; not awaited by {@link HookRegistry.run} */
 export type HookSubscriber<H extends Hook<unknown, Record<string, unknown>>> = (
-  context: Readonly<PayloadOf<H>>,
+  context: HookHandlerContext<H>,
 ) => void | Promise<void>;
+
+export type HookRegisterOpts = {
+  priority?: number;
+  /** Required. Restricts which {@link LlmKind} runs invoke this handler (`all` = every run). */
+  llm_kind: LlmKindScope;
+};
+
+export type HookRunOpts = {
+  /** Required. Concrete kind for this dispatch (never `all`). */
+  llm_kind: LlmKind;
+};
 
 // --- Result chain queries ---
 

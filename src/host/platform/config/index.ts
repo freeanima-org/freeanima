@@ -39,7 +39,6 @@ export {
 } from "./runtime-config-apply.ts";
 export {
   runtimeConfigSchema,
-  acpAgentSchema,
   mcpServerSchema,
   type RuntimeConfig,
   type LlmConfig,

@@ -8,3 +8,9 @@ export { mergePolicyFragments } from "./merge.ts";
 export { resolveCapabilityPolicy, type ResolveCapabilityPolicyInput } from "./resolve.ts";
 export { checkTool, filterToolNamesByPolicy, runtimeToolPolicyFromResolved } from "./filter.ts";
 export { SLEEP_ALLOWED_TOOLS, resolveSleepPolicy } from "./sleep.ts";
+export {
+  POLICY_RUN_HARD_DENIED_TOOLS,
+  materializeToolNames,
+  materializeFromFragments,
+  resolveSubagentToolPolicy,
+} from "./materialize.ts";

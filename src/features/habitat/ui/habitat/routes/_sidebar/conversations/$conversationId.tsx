@@ -3,8 +3,6 @@ import { useEffect } from "react";
 import { Badge, Card, CardContent, buttonVariants, cn } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { StoredMessagePanel } from "@freeanima/features/habitat/ui/habitat/components/habitat/ConversationMessagePanel.tsx";
-import { AcpProgressDock } from "@freeanima/features/habitat/ui/habitat/components/AcpProgressDock.tsx";
-import { useAcpProgressDock } from "@freeanima/features/habitat/ui/habitat/hooks/useAcpProgressDock.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { useHabitatConversationsStore } from "@freeanima/features/habitat/ui/habitat/stores/habitat-conversations.ts";
@@ -17,12 +15,6 @@ function ConversationDetailPage() {
   const { conversationId } = Route.useParams();
   const store = useHabitatConversationsStore();
   const conversation = store.findConversation(conversationId);
-
-  const acpDock = useAcpProgressDock(conversationId, {
-    onDecision: async (sid) => {
-      await useHabitatConversationsStore.getState().selectConversation(sid, store.currentPage());
-    },
-  });
 
   useEffect(() => {
     void useHabitatConversationsStore.getState().ensureConversationHeadline(conversationId);
@@ -58,11 +50,6 @@ function ConversationDetailPage() {
 
       <Card className="bg-muted py-0">
         <CardContent>
-          {acpDock ? (
-            <div className="mb-3">
-              <AcpProgressDock dock={acpDock} />
-            </div>
-          ) : null}
           <StoredMessagePanel
             items={store.display}
             total={store.total}

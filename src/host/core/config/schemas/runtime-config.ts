@@ -7,7 +7,6 @@ import { ttsConfigSchema } from "./tts.ts";
 import { worldsConfigSchema } from "./worlds.ts";
 import { llmConfigSchema } from "./llm-config.ts";
 import { mcpServerSchema } from "./mcp.ts";
-import { acpAgentSchema } from "./acp.ts";
 import { fallbackProviderSchema } from "./fallback-providers.ts";
 import { firecrawlSchema } from "./firecrawl.ts";
 import { browserSchema } from "./browser.ts";
@@ -42,7 +41,6 @@ const runtimeConfigObjectSchema = z.object({
   prompt: promptSchema.optional(),
   models: modelsConfigSchema.optional(),
   mcp_servers: z.record(z.string(), mcpServerSchema).optional(),
-  acp_agents: z.record(z.string(), acpAgentSchema).optional(),
   fallback_providers: z.array(fallbackProviderSchema).optional(),
   platforms: z.record(z.string(), z.unknown()).optional(),
   memory: memoryConfigSchema.optional(),

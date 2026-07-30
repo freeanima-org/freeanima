@@ -23,7 +23,7 @@ import {
   toolAfterCall,
   type BeforeLlmCallContext,
 } from "@freeanima/host/core/hooks/loop";
-import { headOkStepData, type HookRegistry } from "@freeanima/host/kernel/hooks";
+import { headOkStepData, type HookRegistry, type LlmKind } from "@freeanima/host/kernel/hooks";
 import * as llm from "@freeanima/host/core/llm";
 import type { LlmRuntime } from "@freeanima/host/core/llm";
 import { cleanToolCallsForApi } from "@freeanima/host/core/llm";
@@ -71,6 +71,11 @@ type EngineOpts = {
   /** Executable tool names (cached + staged toolsets); no loaded gate when unset */
   executableTools?: readonly string[];
   hookRegistry?: HookRegistry;
+  /**
+   * Required when `hookRegistry` is set — which registered handlers match this run
+   * (`conversation` vs `auto_llm`).
+   */
+  llm_kind?: LlmKind;
   onMessageAppended?: (msg: StoredMessage) => void | Promise<void>;
   onToolRoundComplete?: (msgs: StoredMessage[]) => void | Promise<void>;
   signal?: AbortSignal;
@@ -231,18 +236,26 @@ async function afterToolRoundBatch(
 
 async function runToolAfterCallHooks(
   hookRegistry: HookRegistry | undefined,
+  llm_kind: LlmKind | undefined,
   conversationId: string,
   toolName: string,
   args: Record<string, unknown>,
   result: string,
 ): Promise<TurnControl | null> {
   if (!hookRegistry) return null;
-  const hookRun = await hookRegistry.run(toolAfterCall, {
-    conversationId,
-    toolName,
-    args,
-    result,
-  });
+  if (!llm_kind) {
+    throw new Error("EngineOpts.llm_kind is required when hookRegistry is set");
+  }
+  const hookRun = await hookRegistry.run(
+    toolAfterCall,
+    {
+      conversationId,
+      toolName,
+      args,
+      result,
+    },
+    { llm_kind },
+  );
   const effect = headOkStepData(toolAfterCall, hookRun.chain);
   const tc = effect?.turnControl;
   if (!tc?.pause || !Array.isArray(tc.streamEvents)) return null;
@@ -327,11 +340,18 @@ export async function* runStream(
     // Run beforeLlmCall hook; modules (e.g. notifications) may modify messages before LLM inference
     const llmDebugExtras: Record<string, unknown> = {};
     if (opts?.hookRegistry) {
-      await opts.hookRegistry.run(beforeLlmCall, {
-        conversationId: getToolConversationId() ?? "",
-        messages: messages as BeforeLlmCallContext["messages"],
-        ...(opts.llm_debug ? { llm_debug: true as const, llmDebugExtras } : {}),
-      });
+      if (!opts.llm_kind) {
+        throw new Error("EngineOpts.llm_kind is required when hookRegistry is set");
+      }
+      await opts.hookRegistry.run(
+        beforeLlmCall,
+        {
+          conversationId: getToolConversationId() ?? "",
+          messages: messages as BeforeLlmCallContext["messages"],
+          ...(opts.llm_debug ? { llm_debug: true as const, llmDebugExtras } : {}),
+        },
+        { llm_kind: opts.llm_kind },
+      );
     }
 
     if (opts?.llm_debug) {
@@ -534,6 +554,7 @@ export async function* runStream(
         const conversationId = getToolConversationId() ?? "";
         const control = await runToolAfterCallHooks(
           opts?.hookRegistry,
+          opts?.llm_kind,
           conversationId,
           fnName,
           fnArgs,

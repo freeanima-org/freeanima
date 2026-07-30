@@ -5,7 +5,6 @@ import {
   habitatConfigNumberField,
   habitatConfigSelectClassName,
   hubConfigTextField,
-  hubConfigTransportField,
 } from "./habitat-config-field-helpers.tsx";
 
 export const ADVANCED_SECTIONS = [
@@ -18,14 +17,13 @@ export const ADVANCED_SECTIONS = [
   "cjk",
   "fts",
   "models",
-  "acp_agents",
   "worlds",
   "auto_llm",
   "object_storage",
 ] as const;
 
 /** 以条目名为 key 的 record 段；保存时需整段替换才能删除条目。 */
-export const HABITAT_CONFIG_RECORD_SECTIONS = ["models", "acp_agents"] as const;
+export const HABITAT_CONFIG_RECORD_SECTIONS = ["models"] as const;
 
 export type AdvancedSectionId = (typeof ADVANCED_SECTIONS)[number];
 
@@ -273,48 +271,6 @@ function ModelsForm({
   );
 }
 
-function AcpAgentsForm({
-  value,
-  onChange,
-}: {
-  value: Record<string, unknown>;
-  onChange: (v: Record<string, unknown>) => void;
-}) {
-  return (
-    <HabitatConfigRecordEntryEditor
-      label="ACP"
-      value={value}
-      onChange={onChange}
-      renderFields={(entry, patch) => (
-        <div className="space-y-4">
-          {habitatConfigBoolField("enabled", entry.enabled !== false, (v) => patch({ enabled: v }))}
-          {hubConfigTextField("command", String(entry.command ?? ""), (v) => patch({ command: v }))}
-          {hubConfigTextField("url", String(entry.url ?? ""), (v) => patch({ url: v }))}
-          {hubConfigTransportField(String(entry.transport ?? ""), (v) =>
-            patch({ transport: v || undefined }),
-          )}
-          {hubConfigTextField("adapter", String(entry.adapter ?? ""), (v) => patch({ adapter: v }))}
-          {hubConfigTextField("model", String(entry.model ?? ""), (v) => patch({ model: v }))}
-          {hubConfigTextField("cwd", String(entry.cwd ?? ""), (v) => patch({ cwd: v }))}
-          {habitatConfigNumberField(
-            "connect_timeout_ms",
-            typeof entry.connect_timeout_ms === "number" ? entry.connect_timeout_ms : "",
-            (v) => patch({ connect_timeout_ms: v === "" ? undefined : v }),
-          )}
-          {habitatConfigNumberField(
-            "prompt_timeout_ms",
-            typeof entry.prompt_timeout_ms === "number" ? entry.prompt_timeout_ms : "",
-            (v) => patch({ prompt_timeout_ms: v === "" ? undefined : v }),
-          )}
-          {habitatConfigBoolField("auto_restart", entry.auto_restart !== false, (v) =>
-            patch({ auto_restart: v }),
-          )}
-        </div>
-      )}
-    />
-  );
-}
-
 function formatWorldSubjectId(value: unknown): string {
   return typeof value === "number" && value > 0 ? String(value) : "启动后自动绑定";
 }
@@ -347,6 +303,12 @@ function AutoLlmForm({
   value: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
 }) {
+  const subagent =
+    value.subagent && typeof value.subagent === "object" && !Array.isArray(value.subagent)
+      ? (value.subagent as Record<string, unknown>)
+      : {};
+  const patchSubagent = (patch: Record<string, unknown>) =>
+    onChange({ ...value, subagent: { ...subagent, ...patch } });
   return (
     <div className="space-y-4">
       {habitatConfigNumberField(
@@ -358,6 +320,16 @@ function AutoLlmForm({
         "per_run_kind_keep",
         typeof value.per_run_kind_keep === "number" ? value.per_run_kind_keep : "",
         (v) => onChange({ ...value, per_run_kind_keep: v === "" ? undefined : v }),
+      )}
+      {habitatConfigNumberField(
+        "subagent.max_turns",
+        typeof subagent.max_turns === "number" ? subagent.max_turns : "",
+        (v) => patchSubagent({ max_turns: v === "" ? undefined : v }),
+      )}
+      {habitatConfigNumberField(
+        "subagent.max_parallel",
+        typeof subagent.max_parallel === "number" ? subagent.max_parallel : "",
+        (v) => patchSubagent({ max_parallel: v === "" ? undefined : v }),
       )}
     </div>
   );
@@ -543,8 +515,6 @@ export function AdvancedSectionForm({
       return <FtsForm value={value} onChange={onChange} />;
     case "models":
       return <ModelsForm value={value} onChange={onChange} />;
-    case "acp_agents":
-      return <AcpAgentsForm value={value} onChange={onChange} />;
     case "worlds":
       return <WorldsForm value={value} onChange={onChange} />;
     case "auto_llm":
