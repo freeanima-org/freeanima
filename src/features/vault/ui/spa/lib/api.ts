@@ -11,7 +11,10 @@ import type {
   VaultSecretsViewPayload,
 } from "@freeanima/shared/rpc-contract";
 import type { SubjectKind } from "@freeanima/client/portal-sdk";
+import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
+import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
+import { invalidatePortalReads } from "@freeanima/client/portal-sdk/portal-query";
 
 type VaultRpcMethod =
   | "vault.list"
@@ -40,19 +43,31 @@ export async function fetchVaultItems(
   subjectKind: SubjectKind,
   opts?: { limit?: number; query?: string },
 ): Promise<VaultItemMetaRowPayload[]> {
-  if (opts?.query?.trim()) {
-    const data = await vaultRequest<{ items: VaultItemMetaRowPayload[] }>("vault.search", {
-      subject_kind: subjectKind,
-      query: opts.query.trim(),
-      limit: opts.limit ?? 200,
-    });
-    return data.items;
-  }
-  const data = await vaultRequest<VaultListOutput>("vault.list", {
-    subject_kind: subjectKind,
-    limit: opts?.limit ?? 200,
+  const scope = resolveHabitatCacheScope();
+  const q = opts?.query?.trim();
+  const cacheId = q ? `search:${subjectKind}:${q}` : `list:${subjectKind}`;
+  // 仅 meta 列表；secrets 永不入 IDB（getVaultItem include_secrets 仍在线直连）
+  return withOfflineCache({
+    scope,
+    namespace: "vault",
+    id: cacheId,
+    fetch: async () => {
+      if (q) {
+        const data = await vaultRequest<{ items: VaultItemMetaRowPayload[] }>("vault.search", {
+          subject_kind: subjectKind,
+          query: q,
+          limit: opts?.limit ?? 200,
+        });
+        return data.items;
+      }
+      const data = await vaultRequest<VaultListOutput>("vault.list", {
+        subject_kind: subjectKind,
+        limit: opts?.limit ?? 200,
+      });
+      return data.items;
+    },
+    offlineError: "vault.list unavailable offline",
   });
-  return data.items;
 }
 
 export async function getVaultItem(
@@ -76,6 +91,7 @@ export async function createVaultItem(
     subject_kind: subjectKind,
     ...input,
   });
+  await invalidatePortalReads(["vault"]);
   return data.item;
 }
 
@@ -112,6 +128,7 @@ export async function patchVaultItemPlain(
 
 export async function deleteVaultItem(subjectKind: SubjectKind, id: number): Promise<void> {
   await vaultRequest("vault.delete", { subject_kind: subjectKind, id });
+  await invalidatePortalReads(["vault"]);
 }
 
 export async function getVaultCryptoConfig(

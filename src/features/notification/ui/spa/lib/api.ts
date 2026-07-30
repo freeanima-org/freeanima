@@ -1,8 +1,5 @@
-import {
-  readOfflineCache,
-  resolveHabitatCacheScope,
-  writeOfflineCache,
-} from "@freeanima/client/portal-sdk/offline-cache";
+import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
+import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import type {
   NotificationCreatedEvent,
   NotificationListInput,
@@ -28,15 +25,13 @@ export async function listNotifications(
 ): Promise<NotificationListOutput> {
   const scope = resolveHabitatCacheScope();
   const key = cacheKey(input);
-  const cached = await readOfflineCache<NotificationListOutput>(scope, "notifications", key);
-  try {
-    const result = await habitat().call("notification.list", input);
-    void writeOfflineCache(scope, "notifications", key, result);
-    return result;
-  } catch {
-    if (cached) return cached;
-    throw new Error("notification.list unavailable offline");
-  }
+  return withOfflineCache({
+    scope,
+    namespace: "notifications",
+    id: key,
+    fetch: async () => habitat().call("notification.list", input),
+    offlineError: "notification.list unavailable offline",
+  });
 }
 
 export async function markNotificationRead(id: string): Promise<NotificationMarkReadOutput> {

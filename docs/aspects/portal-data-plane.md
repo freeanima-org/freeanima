@@ -101,19 +101,22 @@ flowchart LR
 
 Automation must follow FreeAnima (this doc + [Page refresh](page-refresh.md)), not React Query defaults.
 
-## DX evolution (direction only)
+## DX evolution
 
-Not implemented by this doc. Advance when pain is real (no speculative QueryClient clone):
+Self-owned **PortalQueryClient** (not `@tanstack/react-query`) lives in `src/client/portal-sdk/portal-query/`:
 
-- Shared read hook (`data` / `loading` / `error` / `reload`) wrapping `withOfflineCache`
-- Shared write path that always exits through one invalidate/reload entry
-- Explicit invalidate by cache key or module
-- Key helpers for `scope|namespace|id`; inflight dedupe
-- Shared offline / outbox status primitives
-- Consistent pagination / load-more state machine
-- Optional devtools (IDB, outbox, gate, recent keys) and test fixtures
-- Lint or review rules: no second cache path
-- Separately: tighten ETag/304 with IDB into one protocol when bandwidth or multi-device cost justifies it
+| Capability                                                            | Status                                                     |
+| --------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Shared read hook (`usePortalRead`)                                    | shipped                                                    |
+| Infinite / load-more (`usePortalInfiniteQuery`)                       | shipped                                                    |
+| Write invalidate exit (`usePortalMutation` / `invalidatePortalReads`) | shipped                                                    |
+| Key helpers + inflight dedupe                                         | shipped                                                    |
+| Lint / script: no second IDB read path in feature UI                  | `scripts/check-portal-cache-path.ts`                       |
+| Offline / outbox status primitives                                    | direction                                                  |
+| Optional devtools                                                     | direction                                                  |
+| ETag/304 tied to IDB                                                  | out of scope until bandwidth / multi-device cost justifies |
+
+**Decision remains:** do not introduce the React Query **library**. PortalQueryClient follows FreeAnima automation (no focus refetch / no global list polling).
 
 ## Child docs
 

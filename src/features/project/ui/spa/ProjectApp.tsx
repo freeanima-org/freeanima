@@ -4,6 +4,7 @@ import {
   writeModuleSelection,
 } from "@freeanima/client/portal-sdk/module-selection.ts";
 import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
+import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
 import {
   SubjectScopeToggle,
   useSubjectScope,
@@ -122,7 +123,6 @@ export function ProjectApp() {
   }, []);
 
   const [listOpen, setListOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
@@ -136,6 +136,58 @@ export function ProjectApp() {
   const [tagPool, setTagPool] = useState<Array<{ id: number; title: string }>>([]);
   const [tagFilterId, setTagFilterId] = useState<number | null>(null);
   const [selectionSubjectKind, setSelectionSubjectKind] = useState(subjectKind);
+
+  type ProjectTreeBundle = { folders: ProjectFolderRow[]; projects: ProjectRow[] };
+  const projectTreeQuery = usePortalRead<ProjectTreeBundle>({
+    queryKey: ["project", "tree", subjectKind],
+    queryFn: async () => {
+      const [folderRows, projectRows] = await Promise.all([
+        fetchProjectFolders(subjectKind),
+        fetchProjects(subjectKind),
+      ]);
+      let projectsWithCounts = projectRows;
+      try {
+        const stats = await fetchProjectStats(subjectKind);
+        if (stats.size > 0) {
+          projectsWithCounts = projectRows.map((p) => ({
+            ...p,
+            task_count: stats.get(p.id) ?? p.task_count ?? 0,
+          }));
+        }
+      } catch {
+        // stats 为次要数据
+      }
+      return { folders: folderRows, projects: projectsWithCounts };
+    },
+  });
+  const reloadProjectTree = projectTreeQuery.reload;
+  const loading = projectTreeQuery.loading;
+
+  useEffect(() => {
+    const bundle = projectTreeQuery.data;
+    if (!bundle) return;
+    setFolders(bundle.folders);
+    setProjects(bundle.projects);
+    const stored = readModuleSelection("project", { subjectKind });
+    const active = bundle.projects.filter((p) => p.status === "active");
+    const pickId =
+      stored != null && bundle.projects.some((p) => p.id === stored)
+        ? stored
+        : (active[0]?.id ?? bundle.projects[0]?.id ?? null);
+    setSelectedProjectId((prev) => {
+      if (prev != null && bundle.projects.some((p) => p.id === prev)) return prev;
+      return pickId;
+    });
+    if (pickId != null && bundle.projects.some((p) => p.id === pickId && p.status !== "active")) {
+      setShowInactive(true);
+    }
+  }, [projectTreeQuery.data, subjectKind]);
+
+  useEffect(() => {
+    if (projectTreeQuery.error) {
+      setError(projectTreeQuery.error.message);
+    }
+  }, [projectTreeQuery.error]);
 
   // subject 切换时在 render 阶段清空选中，避免详情 effect 用旧 ID 打到新 world
   if (selectionSubjectKind !== subjectKind) {
@@ -277,52 +329,15 @@ export function ProjectApp() {
   const inactiveProjects = useMemo(() => projects.filter((p) => p.status !== "active"), [projects]);
 
   const reload = useCallback(
-    async (opts?: { quiet?: boolean }) => {
-      if (!opts?.quiet) setLoading(true);
+    async (_opts?: { quiet?: boolean }) => {
       setError("");
       try {
-        const [folderRows, projectRows] = await Promise.all([
-          fetchProjectFolders(subjectKind),
-          fetchProjects(subjectKind),
-        ]);
-        let projectsWithCounts = projectRows;
-        try {
-          const stats = await fetchProjectStats(subjectKind);
-          if (stats.size > 0) {
-            projectsWithCounts = projectRows.map((p) => ({
-              ...p,
-              task_count: stats.get(p.id) ?? p.task_count ?? 0,
-            }));
-          }
-        } catch {
-          // stats 为次要数据，失败时保留 list 默认 0
-        }
-        setFolders(folderRows);
-        setProjects(projectsWithCounts);
-
-        const stored = readModuleSelection("project", { subjectKind });
-        const active = projectsWithCounts.filter((p) => p.status === "active");
-        const pickId =
-          stored != null && projectsWithCounts.some((p) => p.id === stored)
-            ? stored
-            : (active[0]?.id ?? projectsWithCounts[0]?.id ?? null);
-        setSelectedProjectId((prev) => {
-          if (prev != null && projectsWithCounts.some((p) => p.id === prev)) return prev;
-          return pickId;
-        });
-        if (
-          pickId != null &&
-          projectsWithCounts.some((p) => p.id === pickId && p.status !== "active")
-        ) {
-          setShowInactive(true);
-        }
+        await reloadProjectTree();
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
-      } finally {
-        if (!opts?.quiet) setLoading(false);
       }
     },
-    [subjectKind],
+    [reloadProjectTree],
   );
 
   const reloadProjectDetail = useCallback(async () => {

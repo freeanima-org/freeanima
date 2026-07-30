@@ -5,9 +5,8 @@ import {
   launchPomodoroForTask,
 } from "@freeanima/client/portal-sdk";
 import type { TaskModuleSelection } from "@freeanima/client/portal-sdk";
-import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
 import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
-import { isTempId } from "@freeanima/client/portal-sdk/offline-temp-id";
+import { usePortalRead, invalidatePortalReads } from "@freeanima/client/portal-sdk/portal-query";
 import {
   useSubjectScope,
   SubjectScopeToggle,
@@ -81,14 +80,14 @@ import {
   type TaskItemRow,
   type TaskListRow,
 } from "./lib/api.ts";
+import { registerTaskOfflineModule } from "./lib/offline-store.ts";
 import {
-  readCachedTaskItems,
-  readCachedTaskLists,
-  resolveHabitatCacheScope,
-  writeCachedTaskItems,
-  writeCachedTaskLists,
-} from "./lib/offline-cache.ts";
-import { reconcileServerTaskLists, registerTaskOfflineModule } from "./lib/offline-store.ts";
+  taskListItemsQueryKey,
+  taskListsQueryKey,
+  taskSearchItemsQueryKey,
+  taskSmartItemsQueryKey,
+  taskSmartListsQueryKey,
+} from "./lib/task-query-keys.ts";
 import { useTaskLayoutMode } from "./lib/layout-mode.ts";
 import {
   isWebShell,
@@ -118,7 +117,6 @@ import {
   buildSmartListMenuItems,
 } from "./lib/task-menus.ts";
 import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-detail-dirty.ts";
-import { normalizeTaskItemRows } from "./lib/normalize-task-item.ts";
 
 type SheetMenuState = { title?: string; items: ActionSheetItem[] };
 type ChildNamePromptState = { kind: "list" | "folder"; parentId: number };
@@ -132,7 +130,6 @@ export function TaskApp() {
   const layoutMode = useTaskLayoutMode();
   const webShell = isWebShell();
   const selectionAnchorRef = useRef<number | null>(null);
-  const listsLoadGenRef = useRef(0);
   const itemsLoadGenRef = useRef(0);
 
   const [lists, setLists] = useState<TaskListRow[]>([]);
@@ -140,7 +137,6 @@ export function TaskApp() {
   const [smartListCounts, setSmartListCounts] = useState<Map<string, number>>(() => new Map());
   const [items, setItems] = useState<TaskItemRow[]>([]);
   const [selection, setSelection] = useState<TaskModuleSelection | null>(null);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [newListName, setNewListName] = useState("");
@@ -319,124 +315,160 @@ export function TaskApp() {
     [webShell],
   );
 
-  const loadItemsByFilters = useCallback(async (filters: SmartListRow["filters"]) => {
-    const generation = ++itemsLoadGenRef.current;
-    if (!isHabitatFetchAvailable()) {
-      if (generation !== itemsLoadGenRef.current) return;
-      setItems([]);
-      return;
-    }
-    try {
-      const rows = await fetchTaskItemsByFilters(filters);
-      if (generation !== itemsLoadGenRef.current) return;
-      setItems(rows);
-      void seedLocalTaskItems(rows);
-    } catch {
-      if (generation !== itemsLoadGenRef.current) return;
-      setItems([]);
-    }
-  }, []);
+  type TaskListsBundle = {
+    lists: TaskListRow[];
+    smartLists: SmartListRow[];
+    smartListCounts: Map<string, number>;
+  };
 
-  const loadItems = useCallback(async (listId: number) => {
-    const generation = ++itemsLoadGenRef.current;
-    const scope = resolveHabitatCacheScope();
-    const cached = await readCachedTaskItems(scope, listId);
-    if (generation !== itemsLoadGenRef.current) return;
-    if (cached) setItems(normalizeTaskItemRows(cached));
-    else setItems([]);
-    if (isTempId(listId) || !isHabitatFetchAvailable()) {
-      return;
-    }
-    try {
-      const rows = await fetchTaskItems(listId);
-      if (generation !== itemsLoadGenRef.current) return;
-      setItems(rows);
-      void writeCachedTaskItems(scope, listId, rows);
-    } catch {
-      if (generation !== itemsLoadGenRef.current) return;
-      if (!cached) setItems([]);
-    }
-  }, []);
-
-  const loadLists = useCallback(async (): Promise<TaskListRow[]> => {
-    const generation = ++listsLoadGenRef.current;
-    const scope = resolveHabitatCacheScope();
-    const cached = await readCachedTaskLists(scope);
-    if (generation !== listsLoadGenRef.current) return cached ?? [];
-    if (cached?.length) setLists(cached);
-    if (!isHabitatFetchAvailable()) {
-      return cached ?? [];
-    }
-    try {
+  const listsQuery = usePortalRead<TaskListsBundle>({
+    queryKey: taskListsQueryKey(subjectKind),
+    queryFn: async () => {
       const [rows, smartRows] = await Promise.all([
         fetchTaskLists({ includeClosed: true }),
         fetchSmartLists(),
       ]);
-      if (generation !== listsLoadGenRef.current) return rows;
-      let merged = await reconcileServerTaskLists(rows);
+      let merged = rows;
+      let counts = new Map<string, number>();
       try {
         const [listStats, smartStats] = await Promise.all([
           fetchTaskListStats({ includeClosed: true }),
           fetchSmartListStats(),
         ]);
-        if (generation !== listsLoadGenRef.current) return rows;
         if (listStats.size > 0) {
           merged = merged.map((list) => ({
             ...list,
             item_count: list.is_folder ? 0 : (listStats.get(list.id) ?? list.item_count),
           }));
         }
-        setSmartListCounts(smartStats);
+        counts = smartStats;
       } catch {
         // stats 为次要数据
       }
-      setLists(merged);
-      setSmartLists(smartRows);
-      void writeCachedTaskLists(scope, merged);
-      const next = resolveTaskSelection(merged, smartRows, {
-        stored: readModuleSelection("tasks"),
-        urlSelection: webShell ? readTaskSelectionFromUrl() : null,
-        preferUrl: webShell,
-      });
-      setSelection(next);
-      persistSelection(next);
-      if (merged.length === 0) setItems([]);
-      return merged;
-    } catch {
-      if (generation !== listsLoadGenRef.current) return cached ?? [];
-      if (!cached?.length) setError("无法加载任务清单");
-      return cached ?? [];
+      return { lists: merged, smartLists: smartRows, smartListCounts: counts };
+    },
+  });
+
+  const itemsQueryKey = useMemo(() => {
+    if (selection == null) return null;
+    if (selection.kind === "list") return taskListItemsQueryKey(subjectKind, selection.id);
+    if (selection.kind === "smart_list") return taskSmartItemsQueryKey(subjectKind, selection.key);
+    if (selection.kind === "search") {
+      const q = searchQuery.trim();
+      return q.length > 0 ? taskSearchItemsQueryKey(subjectKind, q) : null;
     }
-  }, [persistSelection, webShell]);
+    return null;
+  }, [selection, subjectKind, searchQuery]);
+
+  const itemsQuery = usePortalRead<TaskItemRow[]>({
+    queryKey: itemsQueryKey,
+    queryFn: async () => {
+      if (selection == null) return [];
+      if (selection.kind === "list") return fetchTaskItems(selection.id);
+      if (selection.kind === "smart_list") {
+        const row = findSmartListRowByKey(listsQuery.data?.smartLists ?? smartLists, selection.key);
+        if (!row) return [];
+        return fetchTaskItemsByFilters(row.filters);
+      }
+      if (selection.kind === "search") {
+        const q = searchQuery.trim();
+        if (!q) return [];
+        const rows = await searchTaskItems({ query: q, limit: 30 });
+        void seedLocalTaskItems(rows);
+        return rows;
+      }
+      return [];
+    },
+    enabled: itemsQueryKey != null,
+  });
+
+  // 同步 lists bundle → 本地 state + 选型
+  useEffect(() => {
+    const bundle = listsQuery.data;
+    if (!bundle) return;
+    setLists(bundle.lists);
+    setSmartLists(bundle.smartLists);
+    setSmartListCounts(bundle.smartListCounts);
+    const next = resolveTaskSelection(bundle.lists, bundle.smartLists, {
+      stored: readModuleSelection("tasks"),
+      urlSelection: webShell ? readTaskSelectionFromUrl() : null,
+      preferUrl: webShell,
+    });
+    setSelection(next);
+    persistSelection(next);
+    if (bundle.lists.length === 0) setItems([]);
+  }, [listsQuery.data, persistSelection, webShell]);
+
+  useEffect(() => {
+    if (listsQuery.error) {
+      setError(listsQuery.error.message || "无法加载任务清单");
+    }
+  }, [listsQuery.error]);
+
+  useEffect(() => {
+    if (itemsQuery.data == null) return;
+    if (selection?.kind === "search") {
+      setSearchHits(itemsQuery.data);
+      setSearching(false);
+    } else {
+      setItems(itemsQuery.data);
+    }
+  }, [itemsQuery.data, selection?.kind]);
+
+  const loading = listsQuery.loading;
+
+  const reloadLists = listsQuery.reload;
+  const reloadItems = itemsQuery.reload;
+
+  const loadItemsByFilters = useCallback(async (filters: SmartListRow["filters"]) => {
+    const generation = ++itemsLoadGenRef.current;
+    try {
+      const rows = await fetchTaskItemsByFilters(filters);
+      if (generation !== itemsLoadGenRef.current) return;
+      setItems(rows);
+    } catch {
+      if (generation !== itemsLoadGenRef.current) return;
+      setItems([]);
+    }
+  }, []);
+
+  const loadItems = useCallback(
+    async (listId: number) => {
+      await invalidatePortalReads(taskListItemsQueryKey(subjectKind, listId));
+      const generation = ++itemsLoadGenRef.current;
+      try {
+        const rows = await fetchTaskItems(listId);
+        if (generation !== itemsLoadGenRef.current) return;
+        setItems(rows);
+      } catch {
+        if (generation !== itemsLoadGenRef.current) return;
+        setItems([]);
+      }
+    },
+    [subjectKind],
+  );
+
+  const loadLists = useCallback(async (): Promise<TaskListRow[]> => {
+    await reloadLists();
+    return listsQuery.data?.lists ?? lists;
+  }, [lists, listsQuery.data?.lists, reloadLists]);
 
   const reloadCurrentItems = useCallback(async () => {
     if (selection == null || selection.kind === "search") return;
-    if (selection.kind === "list") {
-      await loadItems(selection.id);
-    } else {
-      const row = findSmartListRowByKey(smartLists, selection.key);
-      if (row) await loadItemsByFilters(row.filters);
-    }
-  }, [loadItems, loadItemsByFilters, selection, smartLists]);
+    await reloadItems();
+  }, [reloadItems, selection]);
 
   const refresh = useCallback(async () => {
     setError("");
-    const scope = resolveHabitatCacheScope();
-    const cached = await readCachedTaskLists(scope);
-    if (cached?.length) {
-      setLists(cached);
-      setLoading(false);
-    } else {
-      setLoading(true);
-    }
     try {
-      await loadLists();
+      await Promise.all([
+        reloadLists(),
+        invalidatePortalReads(taskSmartListsQueryKey(subjectKind)),
+      ]);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoading(false);
     }
-  }, [loadLists]);
+  }, [reloadLists, subjectKind]);
 
   const handleManualRefresh = useCallback(async () => {
     if (refreshing) return;
@@ -545,7 +577,6 @@ export function TaskApp() {
   }, [setDetailItem]);
 
   useEffect(() => {
-    listsLoadGenRef.current += 1;
     itemsLoadGenRef.current += 1;
     setLists([]);
     setSmartLists([]);

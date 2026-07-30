@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
 import {
   getUserVaultSession,
   SubjectScopeToggle,
@@ -114,7 +115,6 @@ export function VaultApp() {
   const [listOpen, setListOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
   const [userUnlocked, setUserUnlocked] = useState(() =>
@@ -150,8 +150,21 @@ export function VaultApp() {
     [items, selectedId],
   );
 
+  const vaultListQuery = usePortalRead({
+    queryKey:
+      showLockScreen || (isUserVault && userSetupMode)
+        ? null
+        : ["vault", "list", subjectKind, searchQuery.trim()],
+    queryFn: async () => {
+      const query = searchQuery.trim();
+      return fetchVaultItems(subjectKind, query ? { query } : {});
+    },
+    enabled: !showLockScreen,
+  });
+
+  const reloadVaultList = vaultListQuery.reload;
+
   const reload = useCallback(async () => {
-    setLoading(true);
     setError("");
     try {
       if (isUserVault) {
@@ -160,23 +173,31 @@ export function VaultApp() {
       } else {
         await ensureAgentVaultConfig();
       }
-      const query = searchQuery.trim();
-      const list = await fetchVaultItems(subjectKind, query ? { query } : {});
-      setItems(list);
-      if (selectedId != null && !list.some((item) => item.id === selectedId)) {
-        setSelectedId(null);
-        setDetailSecrets(null);
-        setEditing(false);
-      } else if (selectedId == null && !creating && !editing && list.length > 0) {
-        const first = list[0];
-        if (first) setSelectedId(first.id);
-      }
+      await reloadVaultList();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setLoading(false);
     }
-  }, [isUserVault, searchQuery, selectedId, subjectKind, creating, editing]);
+  }, [isUserVault, reloadVaultList]);
+
+  useEffect(() => {
+    const list = vaultListQuery.data;
+    if (list == null) return;
+    setItems(list);
+    if (selectedId != null && !list.some((item) => item.id === selectedId)) {
+      setSelectedId(null);
+      setDetailSecrets(null);
+      setEditing(false);
+    } else if (selectedId == null && !creating && !editing && list.length > 0) {
+      const first = list[0];
+      if (first) setSelectedId(first.id);
+    }
+  }, [vaultListQuery.data, selectedId, creating, editing]);
+
+  useEffect(() => {
+    if (vaultListQuery.error) setError(vaultListQuery.error.message);
+  }, [vaultListQuery.error]);
+
+  const loading = vaultListQuery.loading;
 
   useEffect(() => {
     void reload();

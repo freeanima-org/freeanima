@@ -3,11 +3,8 @@ import type {
   ServiceSnapshot,
 } from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
 import { resetBundledHabitatClientForTests } from "@freeanima/shared/habitat-client";
-import {
-  readOfflineCache,
-  resolveCacheScope,
-  writeOfflineCache,
-} from "@freeanima/client/portal-sdk/offline-cache";
+import { resolveCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
+import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { reviveDates } from "@freeanima/features/habitat/protocol/habitat-contract/date-json.ts";
 
 import { getHabitatRpcClient } from "./habitat-client.ts";
@@ -157,19 +154,13 @@ const HABITAT_MEMORY_CACHE_NS = "habitat-memory";
 
 export async function getStatus(): Promise<ServiceSnapshot> {
   const scope = resolveCacheScope(resolveApiOrigin());
-  const cached = await readOfflineCache<ServiceSnapshot>(
+  return withOfflineCache({
     scope,
-    HABITAT_STATUS_CACHE_NS,
-    HABITAT_STATUS_CACHE_KEY,
-  );
-  try {
-    const status = (await hubCall(habitat().call("status.get", {}))) as ServiceSnapshot;
-    void writeOfflineCache(scope, HABITAT_STATUS_CACHE_NS, HABITAT_STATUS_CACHE_KEY, status);
-    return status;
-  } catch (err) {
-    if (cached) return cached;
-    throw err;
-  }
+    namespace: HABITAT_STATUS_CACHE_NS,
+    id: HABITAT_STATUS_CACHE_KEY,
+    fetch: async () => (await hubCall(habitat().call("status.get", {}))) as ServiceSnapshot,
+    offlineError: "status.get unavailable offline",
+  });
 }
 
 export async function getToolsStatus(scope?: "default" | "all") {
@@ -312,15 +303,14 @@ export async function listSemanticMemories(input: {
 }) {
   const scope = resolveCacheScope(resolveApiOrigin());
   const cacheId = JSON.stringify(input);
-  const cached = await readOfflineCache(scope, HABITAT_MEMORY_CACHE_NS, cacheId);
-  try {
-    const result = await hubCall(habitat().call("memory.semanticList", input as never));
-    void writeOfflineCache(scope, HABITAT_MEMORY_CACHE_NS, cacheId, result);
-    return result;
-  } catch (err) {
-    if (cached != null) return reviveDates(cached);
-    throw err;
-  }
+  return withOfflineCache({
+    scope,
+    namespace: HABITAT_MEMORY_CACHE_NS,
+    id: cacheId,
+    fetch: async () => hubCall(habitat().call("memory.semanticList", input as never)),
+    reconcile: (result) => reviveDates(result),
+    offlineError: "memory.semanticList unavailable offline",
+  });
 }
 
 export async function updateSemanticMemoryPinned(input: { id: number; pinned: boolean }) {

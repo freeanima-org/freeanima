@@ -1,5 +1,6 @@
 import { getSubjectKind } from "@freeanima/client/portal-sdk";
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
+import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
 import { isTempId } from "@freeanima/client/portal-sdk/offline-temp-id";
 
@@ -24,12 +25,7 @@ import {
   seedLocalTaskItems,
   type OfflineUpdateTaskItemOpts,
 } from "./offline-store.ts";
-import {
-  readCachedTaskItems,
-  readCachedTaskLists,
-  writeCachedTaskItems,
-  writeCachedTaskLists,
-} from "./offline-cache.ts";
+import { readCachedTaskItems, readCachedTaskLists } from "./offline-cache.ts";
 import { normalizeTaskItemRows } from "./normalize-task-item.ts";
 
 export { seedLocalTaskItems };
@@ -71,17 +67,20 @@ function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
 
 export async function fetchTaskLists(opts?: { includeClosed?: boolean }): Promise<TaskListRow[]> {
   const scope = resolveHabitatCacheScope();
-  if (!isHabitatFetchAvailable()) {
-    return (await readCachedTaskLists(scope)) ?? [];
-  }
   try {
-    const data = await habitat().call(
-      "tasklist.list",
-      withSubjectKind({ include_closed: opts?.includeClosed }),
-    );
-    const merged = await reconcileServerTaskLists(data.lists);
-    void writeCachedTaskLists(scope, merged);
-    return merged;
+    return await withOfflineCache({
+      scope,
+      namespace: "tasks",
+      id: "lists",
+      fetch: async () => {
+        const data = await habitat().call(
+          "tasklist.list",
+          withSubjectKind({ include_closed: opts?.includeClosed }),
+        );
+        return reconcileServerTaskLists(data.lists);
+      },
+      offlineError: "tasklist.list unavailable offline",
+    });
   } catch {
     return (await readCachedTaskLists(scope)) ?? [];
   }
@@ -145,18 +144,24 @@ export async function deleteTaskList(id: number): Promise<void> {
 
 export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
   const scope = resolveHabitatCacheScope();
-  if (isTempId(listId) || !isHabitatFetchAvailable()) {
+  if (isTempId(listId)) {
     return normalizeTaskItemRows(await readCachedTaskItems(scope, listId));
   }
   try {
-    const data = await habitat().call(
-      "tasklist.item.list",
-      withSubjectKind({ list_id: listId, status: "all" }),
-    );
-    const items = normalizeTaskItemRows(data.items);
-    const merged = await reconcileServerTaskItems(listId, items);
-    void writeCachedTaskItems(scope, listId, merged);
-    return merged;
+    return await withOfflineCache({
+      scope,
+      namespace: "tasks",
+      id: `items:${listId}`,
+      fetch: async () => {
+        const data = await habitat().call(
+          "tasklist.item.list",
+          withSubjectKind({ list_id: listId, status: "all" }),
+        );
+        const items = normalizeTaskItemRows(data.items);
+        return reconcileServerTaskItems(listId, items);
+      },
+      offlineError: "tasklist.item.list unavailable offline",
+    });
   } catch {
     return normalizeTaskItemRows(await readCachedTaskItems(scope, listId));
   }
@@ -186,7 +191,9 @@ export async function fetchTaskItemById(id: number): Promise<TaskItemRow | null>
 }
 
 export async function fetchSmartLists(): Promise<SmartListRow[]> {
-  if (!isHabitatFetchAvailable()) return [];
+  if (!isHabitatFetchAvailable()) {
+    return [];
+  }
   const data = await habitat().call("smartlist.list", withSubjectKind({}));
   return data.smart_lists;
 }

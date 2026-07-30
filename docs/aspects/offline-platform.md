@@ -8,12 +8,12 @@ title: Offline Platform
 
 FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier 编号）：
 
-| 能力          | 叫法                     | 机制                      | 模块                                   |
-| ------------- | ------------------------ | ------------------------- | -------------------------------------- |
-| 只读本地副本  | **snapshot**（只读快照） | IndexedDB KV              | Email、Notification、Habitat、Dream 等 |
-| 可写 + 写队列 | **CRUD outbox**          | outbox + 乐观 KV          | Diary、Task、Project                   |
-| 可写 + 写队列 | **Hybrid outbox**        | outbox + localStorage LWW | Pomodoro（active 计时）                |
-| 可写 + 写队列 | **Stream outbox**        | SAP 流式 flush            | Chat send                              |
+| 能力          | 叫法                     | 机制                      | 模块                                               |
+| ------------- | ------------------------ | ------------------------- | -------------------------------------------------- |
+| 只读本地副本  | **snapshot**（只读快照） | IndexedDB KV              | Email、Notification、Vault meta、Habitat、Dream 等 |
+| 可写 + 写队列 | **CRUD outbox**          | outbox + 乐观 KV          | Diary、Task、Project                               |
+| 可写 + 写队列 | **Hybrid outbox**        | outbox + localStorage LWW | Pomodoro（active 计时）                            |
+| 可写 + 写队列 | **Stream outbox**        | SAP 流式 flush            | Chat send                                          |
 
 可写模块统一用 `offlineWritable: true` 标记（outbox 模块）。
 
@@ -51,6 +51,7 @@ FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier �
 - 栖息地可用：必打 Habitat（缓存命中不短路）；成功后异步写回本地 KV；fetch 失败回退快照
 - 栖息地不可用：只读本地；无缓存则抛 offlineError
 - snapshot / outbox 模块 list·get：优先 `withOfflineCache()`；手写路径须同语义
+- **Vault**：仅 **meta** list/search 可入 IDB；`include_secrets` / 明文密钥响应禁止写 snapshot
 
 ### 写（全体 outbox 模块：在线不入 outbox）
 

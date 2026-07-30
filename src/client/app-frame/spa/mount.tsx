@@ -9,6 +9,7 @@ import {
 import { createRoot } from "react-dom/client";
 import { Button, Card, CardContent } from "@freeanima/ui-kit";
 import { applyColorTheme, readColorTheme } from "@freeanima/client/portal-sdk/color-theme";
+import { PortalQueryProvider } from "@freeanima/client/portal-sdk/portal-query";
 import type { SettingsBinding } from "@freeanima/client/portal-sdk/settings";
 import { blockNativeDialogs, ConfirmPromptHost } from "@freeanima/ui-kit/composite";
 
@@ -175,14 +176,16 @@ function ShellAppTree({
   );
 
   return (
-    <ShellAppProvider bindings={bindings}>
-      <ConfirmPromptHost />
-      <EntityOverlayHost />
-      <ShellToaster />
-      <ShellNoticeWatchers />
-      {noticeWatchers}
-      <div className="h-full min-h-screen flex flex-col">{content}</div>
-    </ShellAppProvider>
+    <PortalQueryProvider>
+      <ShellAppProvider bindings={bindings}>
+        <ConfirmPromptHost />
+        <EntityOverlayHost />
+        <ShellToaster />
+        <ShellNoticeWatchers />
+        {noticeWatchers}
+        <div className="h-full min-h-screen flex flex-col">{content}</div>
+      </ShellAppProvider>
+    </PortalQueryProvider>
   );
 }
 

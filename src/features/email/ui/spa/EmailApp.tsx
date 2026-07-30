@@ -21,6 +21,7 @@ import {
   useSubjectScope,
 } from "@freeanima/client/portal-sdk/react.tsx";
 import { readModuleSelection, writeModuleSelection } from "@freeanima/client/portal-sdk";
+import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
 import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 import { m } from "@paraglide/messages";
 
@@ -121,6 +122,15 @@ export function EmailApp() {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
   const [batchBusy, setBatchBusy] = useState(false);
   const [deleteBatchPending, setDeleteBatchPending] = useState(false);
+
+  const accountsQuery = usePortalRead({
+    queryKey: ["email", "accounts", subjectKind],
+    queryFn: () => fetchEmailAccounts(),
+  });
+
+  useEffect(() => {
+    if (accountsQuery.data) setAccounts(accountsQuery.data);
+  }, [accountsQuery.data]);
 
   const activeAccount = useMemo(
     () => accounts.find((a) => a.id === activeAccountId) ?? null,
@@ -290,6 +300,7 @@ export function EmailApp() {
     setError("");
     try {
       const rows = await fetchEmailAccounts();
+      accountsQuery.setData(rows);
       setAccounts(rows);
       if (rows.length === 0) {
         setActiveAccountId(null);
@@ -345,7 +356,7 @@ export function EmailApp() {
     } finally {
       setLoading(false);
     }
-  }, [loadMailboxes, loadMessageDetail, useDrawer]);
+  }, [accountsQuery, loadMailboxes, loadMessageDetail, useDrawer]);
   const handleManualRefresh = useCallback(async () => {
     if (refreshing) return;
     setRefreshing(true);

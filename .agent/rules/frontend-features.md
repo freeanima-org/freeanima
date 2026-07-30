@@ -69,7 +69,7 @@
 2. 在 `src/shared/rpc-contract/feature-rpc/frames/` 增加 schema（若尚未存在）
 3. 在 `src/features/<slug>/habitat/routes/index.ts` 用 `bindHabitatRouteHandlers` 绑定 handler（**禁止** import `habitat-client`）
 4. 在 `src/host/platform/habitat/habitat-router.ts` import 该 feature routes bundle
-5. Feature UI `api.ts` 使用 `@freeanima/host/platform/habitat/client.ts` 的 `getTypedHabitatClient` / `call` / `subscribe`
+5. Feature UI `api.ts` 使用 `@freeanima/client/portal-sdk` 的 `getTypedHabitatClient` / `call` / `subscribe`（`habitat-typed-client`）；读列表经 `withOfflineCache` 或 `portal-query` hooks，禁止在 feature UI 直接 `readOfflineCache`/`writeOfflineCache`（见 `scripts/check-portal-cache-path.ts`）
 
 远程工具专用 method（`tool.*` / `remote_tools.attach` / terminal）在 [`src/host/capabilities/outpost/transport/ws-server.ts`](../../src/host/capabilities/outpost/transport/ws-server.ts)。
 

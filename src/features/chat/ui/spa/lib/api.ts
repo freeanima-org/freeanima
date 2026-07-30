@@ -4,11 +4,14 @@ import type {
   DisplayItem,
   StreamApiEvent,
 } from "./types.ts";
+import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
+import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import { getChatRpcStreamClient, chatPlatform } from "./habitat-stream-client.ts";
 import { m } from "./i18n.ts";
 import { omitUndefined } from "@freeanima/host/core/util";
+import { readCachedConversations } from "./offline-cache.ts";
 
 type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;
@@ -57,12 +60,27 @@ function sap() {
 export type { ConversationAcpDockSnapshot, StreamApiEvent } from "./types.ts";
 
 export async function listConversations(opts?: { includeArchived?: boolean }) {
-  requireHabitatFetch("conversation.list");
-  const result = await habitat().call("conversation.list", {
-    platform: chatPlatform(),
-    include_archived: opts?.includeArchived,
-  });
-  return mapConversationList(result);
+  const includeArchived = opts?.includeArchived === true;
+  const scope = resolveHabitatCacheScope();
+  try {
+    const conversations = await withOfflineCache({
+      scope,
+      namespace: "conversations",
+      id: `archived:${includeArchived}`,
+      fetch: async () => {
+        const result = await habitat().call("conversation.list", {
+          platform: chatPlatform(),
+          include_archived: opts?.includeArchived,
+        });
+        return mapConversationList(result).conversations;
+      },
+      offlineError: "conversation.list unavailable offline",
+    });
+    return { conversations };
+  } catch {
+    const cached = await readCachedConversations(scope, includeArchived);
+    return { conversations: cached ?? [] };
+  }
 }
 
 export async function createConversation() {
