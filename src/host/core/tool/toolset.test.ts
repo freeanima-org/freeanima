@@ -68,16 +68,10 @@ describe("ToolSetRegistry", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("t", "T", [sampleTool]);
     const schemas = registry.openaiSchemas();
-    expect(schemas).toEqual([
-      {
-        type: "function",
-        function: {
-          name: "test_tool",
-          description: "Test tool",
-          parameters: { type: "object", properties: {} },
-        },
-      },
-    ]);
+    const params = schemas[0]?.function.parameters;
+    expect(schemas[0]?.function.name).toBe("test_tool");
+    expect(params?.required).toContain("_title");
+    expect(params?.properties).toHaveProperty("_title");
   });
 
   it("openaiSchemasFromNames resolves schema by name", () => {

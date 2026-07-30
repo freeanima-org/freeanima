@@ -18,6 +18,14 @@ export {
 } from "./json-util.ts";
 export type { ParsedToolResult, ToolErrorResult } from "./json-util.ts";
 export { validateToolArgs } from "./validate-args.ts";
+export {
+  TOOL_CALL_TITLE_KEY,
+  TOOL_CALL_TITLE_PROPERTY,
+  injectToolCallTitle,
+  omitToolCallTitle,
+  shouldInjectToolCallTitle,
+  toolCallTitleFromArgs,
+} from "./tool-call-title.ts";
 export type { ToolArgsRecord } from "./tool-json.ts";
 export { ToolSetRegistry, mcpToolSetId, acpToolSetId } from "./toolset.ts";
 export {

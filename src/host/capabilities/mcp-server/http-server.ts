@@ -3,6 +3,7 @@ import { readAppVersionForCapability as readAppVersion } from "@freeanima/host/c
 import type { VerifiedServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
 import {
   handlerResultToMcpContent,
+  omitToolCallTitle,
   runWithToolContext,
   toolError,
   toolParametersToMcpInputSchema,
@@ -58,11 +59,15 @@ function createMcpServer(deps: McpServerDeps, callCtx?: McpCallContext): Server 
     }
     const sessionId = randomUUID();
     const callerAuth = callCtx?.callerAuth ?? undefined;
-    const text = await runWithToolContext(`mcp:${sessionId}`, () => tool.handler(validated.data), {
-      tools: deps.toolSets,
-      contextKind: "auto_llm",
-      ...(callerAuth ? { callerAuth } : {}),
-    });
+    const text = await runWithToolContext(
+      `mcp:${sessionId}`,
+      () => tool.handler(omitToolCallTitle(validated.data)),
+      {
+        tools: deps.toolSets,
+        contextKind: "auto_llm",
+        ...(callerAuth ? { callerAuth } : {}),
+      },
+    );
     return handlerResultToMcpContent(await Promise.resolve(text));
   });
 

@@ -7,6 +7,7 @@ import {
   type ToolDef,
   type ToolHandler,
 } from "./registry.ts";
+import { injectToolCallTitle, shouldInjectToolCallTitle } from "./tool-call-title.ts";
 
 export type { JsonSchemaObject, OpenAiToolEntry, ToolArgs, ToolDef, ToolHandler };
 
@@ -26,8 +27,11 @@ export type ToolSetView = {
   private?: boolean;
 };
 
-function freezeToolDef(def: ToolDef): ToolDef {
-  return Object.freeze({ ...def });
+function freezeToolDef(def: ToolDef, toolSetName: string): ToolDef {
+  const parameters = shouldInjectToolCallTitle(toolSetName)
+    ? injectToolCallTitle(def.parameters)
+    : def.parameters;
+  return Object.freeze({ ...def, parameters });
 }
 
 /** ToolSet registry: ToolSet embeds ToolDef[]; LLM/execution layer flattens via flat API */
@@ -47,7 +51,9 @@ export class ToolSetRegistry {
     if (this.sets.has(trimmed)) {
       throw new Error(`ToolSet '${trimmed}' already registered`);
     }
-    const frozenTools = Object.freeze(tools.map(freezeToolDef)) as readonly ToolDef[];
+    const frozenTools = Object.freeze(
+      tools.map((def) => freezeToolDef(def, trimmed)),
+    ) as readonly ToolDef[];
     for (const def of frozenTools) {
       if (this.toolIndex.has(def.name)) {
         throw new Error(`Tool '${def.name}' already registered`);

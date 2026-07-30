@@ -61,6 +61,8 @@
 
 **Module files:** one ToolSet per register module — `src/host/capabilities/**/src/{toolset-id}.ts` matching `registerToolSet("…")` (composite ids: `memory_semantic` → `memory-semantic.ts`). Plural filenames allowed only for multi-id config (`default-conversation-toolsets.ts`).
 
+**Call intent `_title`:** 本地 / outpost remote 工具在 `registerToolSet` 时自动注入必填 `parameters.properties._title`（一句话调用意图，供 UI；与业务字段 `title` 区分）。MCP/ACP ToolSet（`mcp_*` / `acp_*`）不注入。LLM 填写；`validateToolArgs` 强制；handler 调用前由 loop / MCP server / outpost 剥离（`omitToolCallTitle`）。前端 ToolBlock 优先展示 `args._title`。
+
 ## Type ownership
 
 When adding or moving types / Zod / ports, decide in this order:
