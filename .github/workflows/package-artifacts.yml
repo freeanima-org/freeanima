@@ -303,6 +303,28 @@ jobs:
           git tag -f "${{ inputs.publish_tag }}" "${{ steps.build.outputs.sha }}"
           git push -f origin "refs/tags/${{ inputs.publish_tag }}"
 
+      # 滚动 tag（canary）版本化文件名每轮不同；softprops 只按同名覆盖，须先清空旧 assets
+      - name: Clear previous release assets
+        if: inputs.move_tag
+        env:
+          GH_TOKEN: ${{ secrets.FREEANIMA_CI }}
+        run: |
+          set -euo pipefail
+          tag="${{ inputs.publish_tag }}"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            echo "No existing release for $tag; skip asset cleanup"
+            exit 0
+          fi
+          mapfile -t assets < <(gh release view "$tag" --json assets --jq '.assets[].name')
+          if [ "${#assets[@]}" -eq 0 ]; then
+            echo "No assets on $tag; skip"
+            exit 0
+          fi
+          for name in "${assets[@]}"; do
+            echo "Deleting asset: $name"
+            gh release delete-asset "$tag" "$name" --yes
+          done
+
       - name: Publish / update Release (set body)
         if: inputs.release_body != ''
         uses: softprops/action-gh-release@v3
