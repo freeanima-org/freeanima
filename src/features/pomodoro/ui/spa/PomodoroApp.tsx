@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { requestAlertPermission } from "@freeanima/client/portal-sdk/alert";
+import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
 import { switchWorkFocusTask } from "@freeanima/client/portal-sdk/pomodoro-focus-segments.ts";
 import {
   clearPomodoroLaunchParamsFromUrl,
@@ -146,6 +147,13 @@ export function PomodoroApp() {
   const habitatOnline = networkOnline && habitatConnection === "connected";
 
   const [config, setConfig] = useState<PomodoroConfigRow | null>(null);
+  const configQuery = usePortalRead({
+    queryKey: ["pomodoro", "config", subjectKind],
+    queryFn: () => fetchPomodoroConfig(subjectKind),
+  });
+  useEffect(() => {
+    if (configQuery.data) setConfig(configQuery.data);
+  }, [configQuery.data]);
   const [active, setActive] = useState<PomodoroActiveState | null>(
     () => getPomodoroSyncSnapshot(getSubjectKind()).active,
   );
@@ -210,15 +218,16 @@ export function PomodoroApp() {
     });
   }, [habitatOnline, subjectKind]);
 
+  const reloadConfig = configQuery.reload;
+
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       setLoading(true);
       setError("");
       try {
-        const cfg = await fetchPomodoroConfig(subjectKind);
+        await reloadConfig();
         if (cancelled) return;
-        setConfig(cfg);
         await pullPomodoroActive(subjectKind);
         if (cancelled) return;
         setActive(getPomodoroSyncSnapshot(subjectKind).active);
@@ -235,7 +244,7 @@ export function PomodoroApp() {
     return () => {
       cancelled = true;
     };
-  }, [subjectKind, reloadMeta]);
+  }, [subjectKind, reloadMeta, reloadConfig]);
 
   useEffect(() => {
     autostartHandledRef.current = false;

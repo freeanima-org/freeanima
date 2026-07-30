@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
 import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Alert,
@@ -83,47 +84,64 @@ export function NotificationApp() {
   const [recipientIds, setRecipientIds] = useState<RecipientIds | null>(null);
   const [readFilter, setReadFilter] = useState<ReadFilter>("unread");
   const [offset, setOffset] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [markingId, setMarkingId] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [total, setTotal] = useState(0);
-  const [items, setItems] = useState<NotificationRow[]>([]);
 
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 
-  const fetchList = useCallback(
-    async (nextOffset: number) => {
-      setLoading(true);
-      setError("");
-      try {
-        const ids = await resolveRecipientIds(recipientIds);
-        if (!recipientIds) setRecipientIds(ids);
-        const recipient_id = recipientKind === "user" ? ids.user : ids.agent;
-        const data = await listNotifications({
-          recipient_kind: recipientKind,
-          recipient_id,
-          read_filter: readFilter,
-          offset: nextOffset,
-          limit: PAGE_SIZE,
-        });
-        setItems(data.items ?? []);
-        setTotal(data.total ?? 0);
-        setOffset(nextOffset);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
-      } finally {
-        setLoading(false);
-      }
+  const listQuery = usePortalRead({
+    queryKey:
+      recipientIds == null
+        ? null
+        : [
+            "notifications",
+            recipientKind,
+            recipientKind === "user" ? recipientIds.user : recipientIds.agent,
+            readFilter,
+            offset,
+          ],
+    queryFn: async () => {
+      const ids = recipientIds;
+      if (!ids) throw new Error("recipient ids missing");
+      const recipient_id = recipientKind === "user" ? ids.user : ids.agent;
+      return listNotifications({
+        recipient_kind: recipientKind,
+        recipient_id,
+        read_filter: readFilter,
+        offset,
+        limit: PAGE_SIZE,
+      });
     },
-    [recipientKind, readFilter, recipientIds],
-  );
+    enabled: recipientIds != null,
+  });
+
+  const items = listQuery.data?.items ?? [];
+  const total = listQuery.data?.total ?? 0;
+  const loading = listQuery.loading;
 
   useEffect(() => {
-    void fetchList(0);
-  }, [fetchList]);
+    if (listQuery.error) setError(listQuery.error.message);
+  }, [listQuery.error]);
+
+  const fetchList = useCallback(async (nextOffset: number) => {
+    setError("");
+    setOffset(nextOffset);
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const ids = await resolveRecipientIds(null);
+        setRecipientIds(ids);
+        setOffset(0);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e));
+      }
+    })();
+  }, [recipientKind]);
 
   const onPageChange = (page: number) => {
-    void fetchList((page - 1) * PAGE_SIZE);
+    setOffset((page - 1) * PAGE_SIZE);
   };
 
   const handleMarkRead = async (row: NotificationRow) => {
@@ -133,10 +151,22 @@ export function NotificationApp() {
     try {
       const result = await markNotificationRead(row.id);
       if (readFilter === "unread") {
-        setItems((prev) => prev.filter((item) => item.id !== row.id));
-        setTotal((prev) => Math.max(0, prev - 1));
+        listQuery.setData((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            items: prev.items.filter((item) => item.id !== row.id),
+            total: Math.max(0, prev.total - 1),
+          };
+        });
       } else {
-        setItems((prev) => prev.map((item) => (item.id === row.id ? result.notification : item)));
+        listQuery.setData((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            items: prev.items.map((item) => (item.id === row.id ? result.notification : item)),
+          };
+        });
       }
       void useNotificationUnreadStore.getState().refreshCount();
     } catch (e) {

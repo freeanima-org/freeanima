@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
 import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
+import { usePortalInfiniteQuery } from "@freeanima/client/portal-sdk/portal-query";
 import { registerDiaryOfflineModule } from "./lib/offline-store.ts";
 import {
   countDiaryPendingOps,
@@ -67,14 +68,10 @@ export function DiaryApp() {
   const { kind: subjectKind } = useSubjectScope();
   const [pendingOps, setPendingOps] = useState(0);
   const writesDisabled = false;
-  const [entries, setEntries] = useState<DiaryEntryRow[]>([]);
-  const [hasMore, setHasMore] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [draft, setDraft] = useState<EntryDraft | null>(null);
   const [draftBaseline, setDraftBaseline] = useState<EntryDraft | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -88,6 +85,66 @@ export function DiaryApp() {
 
   selectedIdRef.current = selectedId;
 
+  const searchTrimmed = searchQuery.trim();
+  const diaryListQuery = usePortalInfiniteQuery<DiaryEntryRow[]>({
+    queryKey: searchTrimmed
+      ? ["diary", "search", subjectKind, searchTrimmed]
+      : ["diary", "list", subjectKind],
+    queryFn: async ({ pageParam }) => {
+      const offset = typeof pageParam === "number" ? pageParam : 0;
+      if (searchTrimmed) {
+        return searchDiaryEntries(subjectKind, searchTrimmed);
+      }
+      return fetchDiaryEntries(subjectKind, { limit: DIARY_PAGE_SIZE, offset });
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, pages) => {
+      if (searchTrimmed) return undefined;
+      if (lastPage.length < DIARY_PAGE_SIZE) return undefined;
+      return pages.reduce((n, p) => n + p.length, 0);
+    },
+  });
+
+  const entries = useMemo(() => {
+    const pages = diaryListQuery.data?.pages ?? [];
+    const flat = pages.flat();
+    return searchTrimmed ? flat : sortEntries(flat);
+  }, [diaryListQuery.data?.pages, searchTrimmed]);
+
+  const loading = diaryListQuery.loading;
+  const loadingMore = diaryListQuery.loadingMore;
+  const hasMore = diaryListQuery.hasNextPage;
+
+  const setDataInfinite = diaryListQuery.setData;
+  const setEntries = useCallback(
+    (updater: DiaryEntryRow[] | ((prev: DiaryEntryRow[]) => DiaryEntryRow[])) => {
+      setDataInfinite((prev) => {
+        const flat = prev?.pages.flat() ?? [];
+        const next = typeof updater === "function" ? updater(flat) : updater;
+        return {
+          pages: [searchTrimmed ? next : sortEntries(next)],
+          pageParams: [0],
+        };
+      });
+    },
+    [searchTrimmed, setDataInfinite],
+  );
+
+  useEffect(() => {
+    if (diaryListQuery.error) {
+      setError(diaryListQuery.error.message);
+    }
+  }, [diaryListQuery.error]);
+
+  useEffect(() => {
+    const currentSelectedId = selectedIdRef.current;
+    if (currentSelectedId != null && !entries.some((e) => e.id === currentSelectedId)) {
+      setSelectedId(null);
+      setDraft(null);
+      setDraftBaseline(null);
+    }
+  }, [entries]);
+
   const selectedEntry = useMemo(
     () => entries.find((e) => e.id === selectedId) ?? null,
     [entries, selectedId],
@@ -99,51 +156,23 @@ export function DiaryApp() {
     saveStatusTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
   }, []);
 
+  const reloadDiary = diaryListQuery.reload;
+  const fetchNextDiaryPage = diaryListQuery.fetchNextPage;
+
   const reload = useCallback(async () => {
-    setLoading(true);
     setError("");
-    try {
-      const query = searchQuery.trim();
-      const items = query
-        ? await searchDiaryEntries(subjectKind, query)
-        : await fetchDiaryEntries(subjectKind, { limit: DIARY_PAGE_SIZE, offset: 0 });
-      setEntries(query ? items : sortEntries(items));
-      setHasMore(!query && items.length >= DIARY_PAGE_SIZE);
-      const currentSelectedId = selectedIdRef.current;
-      // list/search 不带 blocks：仅在选中项消失时清空；正文 draft 不由列表覆盖
-      if (currentSelectedId != null && !items.some((e) => e.id === currentSelectedId)) {
-        setSelectedId(null);
-        setDraft(null);
-        setDraftBaseline(null);
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setLoading(false);
-    }
-  }, [searchQuery, subjectKind]);
+    await reloadDiary();
+  }, [reloadDiary]);
 
   const loadMore = useCallback(async () => {
-    if (searchQuery.trim() || loadingMore || !hasMore) return;
-    setLoadingMore(true);
+    if (searchTrimmed || !hasMore) return;
     setError("");
     try {
-      const page = await fetchDiaryEntries(subjectKind, {
-        limit: DIARY_PAGE_SIZE,
-        offset: entries.length,
-      });
-      setEntries((prev) => {
-        const seen = new Set(prev.map((e) => e.id));
-        const appended = page.filter((e) => !seen.has(e.id));
-        return sortEntries([...prev, ...appended]);
-      });
-      setHasMore(page.length >= DIARY_PAGE_SIZE);
+      await fetchNextDiaryPage();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setLoadingMore(false);
     }
-  }, [entries.length, hasMore, loadingMore, searchQuery, subjectKind]);
+  }, [fetchNextDiaryPage, hasMore, searchTrimmed]);
 
   const handleManualRefresh = useCallback(async () => {
     if (refreshing) return;
@@ -211,10 +240,6 @@ export function DiaryApp() {
     return () => clearInterval(timer);
   }, [entries, saving, creating]);
 
-  useEffect(() => {
-    void reload();
-  }, [reload]);
-
   useEffect(() => subscribeShellConfigChanges(), []);
 
   useEffect(() => {
@@ -235,7 +260,6 @@ export function DiaryApp() {
     setSelectedId(null);
     setDraft(null);
     setDraftBaseline(null);
-    setHasMore(false);
     initialTodayOpenedRef.current = false;
   }, [subjectKind]);
 

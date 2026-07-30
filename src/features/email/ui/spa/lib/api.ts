@@ -1,9 +1,7 @@
 import { getSubjectKind } from "@freeanima/client/portal-sdk";
-import {
-  readOfflineCache,
-  resolveHabitatCacheScope,
-  writeOfflineCache,
-} from "@freeanima/client/portal-sdk/offline-cache";
+import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
+import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
+import { invalidatePortalReads } from "@freeanima/client/portal-sdk/portal-query";
 
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import { omitUndefined } from "@freeanima/host/core/util";
@@ -139,22 +137,22 @@ function accountsCacheId(): string {
 }
 
 async function invalidateAccountsCache(): Promise<void> {
-  const scope = resolveHabitatCacheScope();
-  await writeOfflineCache(scope, "email", accountsCacheId(), null as unknown as EmailAccountRow[]);
+  await invalidatePortalReads(["email", "accounts"]);
 }
 
 export async function fetchEmailAccounts(): Promise<EmailAccountRow[]> {
   const scope = resolveHabitatCacheScope();
   const cacheId = accountsCacheId();
-  const cached = await readOfflineCache<EmailAccountRow[]>(scope, "email", cacheId);
-  try {
-    const data = await habitat().call("emailaccount.list", withSubjectKind({}));
-    void writeOfflineCache(scope, "email", cacheId, data.accounts);
-    return data.accounts;
-  } catch (err) {
-    if (cached) return cached;
-    throw err;
-  }
+  return withOfflineCache({
+    scope,
+    namespace: "email",
+    id: cacheId,
+    fetch: async () => {
+      const data = await habitat().call("emailaccount.list", withSubjectKind({}));
+      return data.accounts;
+    },
+    offlineError: "emailaccount.list unavailable offline",
+  });
 }
 
 export async function fetchEmailProviders(): Promise<EmailProviderPreset[]> {

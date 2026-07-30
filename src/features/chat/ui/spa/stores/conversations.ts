@@ -19,7 +19,6 @@ import {
   readCachedConversations,
   readCachedMessages,
   resolveHabitatCacheScope,
-  writeCachedConversations,
   writeCachedMessages,
 } from "@freeanima/features/chat/ui/spa/lib/offline-cache.ts";
 import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
@@ -132,24 +131,22 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
   },
 
   async fetchConversations() {
-    const scope = resolveHabitatCacheScope();
     const includeArchived = get().showArchived;
-    const cached = await readCachedConversations(scope, includeArchived);
-    if (cached?.length) {
-      set({ conversations: sortConversationsByUpdatedAt(cached) });
-    }
-    if (!isHabitatFetchAvailable()) {
-      return cached ?? [];
-    }
     try {
       const resp = await listConversations({ includeArchived });
       const conversations = sortConversationsByUpdatedAt(resp.conversations);
       set({ conversations });
-      void writeCachedConversations(scope, includeArchived, conversations);
       return conversations;
     } catch (e) {
       console.error("fetchSessions:", e);
-      return cached ?? [];
+      const scope = resolveHabitatCacheScope();
+      const cached = await readCachedConversations(scope, includeArchived);
+      if (cached?.length) {
+        const conversations = sortConversationsByUpdatedAt(cached);
+        set({ conversations });
+        return conversations;
+      }
+      return get().conversations;
     }
   },
 
