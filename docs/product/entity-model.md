@@ -122,7 +122,7 @@ TickTick-style lists and items map to:
 | List        | `type=content` | `task_list`    |
 | Item (task) | `type=content` | `task_item`    |
 
-Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** 使用顶层 `tag_ids`（指向同 World 的 `tag` entity，见下节）。各模块遗留的 `body.tags` 字符串数组不再作为任务试点读写路径。Each world gets a **default list** (`is_default: true`, name e.g.「收件箱」) **lazily** on first task use (`ensureDefaultTaskListForWorld`); it cannot be deleted or archived but may be renamed. List **`body.closed: true`** means archived: hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })`; contained task items are kept.
+Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** 使用顶层 `tag_ids`（指向同 World 的 `tag` entity，见下节）。**禁止** `body.tags` 字符串数组（存量已迁移剥离）。Each world gets a **default list** (`is_default: true`, name e.g.「收件箱」) **lazily** on first task use (`ensureDefaultTaskListForWorld`); it cannot be deleted or archived but may be renamed. List **`body.closed: true`** means archived: hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })`; contained task items are kept.
 
 Task/list **LLM 工具**默认在 **agent subject 专属 private world** 操作，多数调用可省略 `world_id`；按 `id` / `list_id` 操作时从实体反查 world 并校验 caller 权限。**MCP** 工具默认 scope 为 token 绑定 subject 的 private world。Shell SAP/REST 仍通过 `subject_kind` 选择 user/agent world（见下表）。
 
@@ -158,11 +158,14 @@ Future multi-world browse (e.g. diary calendar aggregation across worlds) should
 
 - **名称**在 entity `title`；body 仅 `sort_order` / `client_op_id`
 - 任意 content entity 通过顶层 **`tag_ids`** 挂载标签；含义由「实体类型 + 标签」组合自然产生（不做语义空间区分）
+- **禁止** component `body.tags` 字符串数组（vault / email / task / diary 均已收敛到 `tag_ids`）
 - 同 World 内 title（trim 后）唯一；删除标签时从该 World 所有实体的 `tag_ids` 剔除
+- **Habitat RPC Row：** 只暴露 `tag_ids`（不暴露字符串 `tags`）
+- **LLM/MCP 工具 DX：** 可同时接受 `tags`（标题 find-or-create）与 `tag_ids`；解析后只写 `tag_ids`
 - **Habitat RPC：** `tag.list` / `tag.search` / `tag.suggest` / `tag.create` / `tag.patch` / `tag.delete` / `tag.setOnEntity`
 - **LLM ToolSet：** `tag`（`tag_list` / `tag_search` / `tag_create` / `tag_update` / `tag_delete` / `tag_set_on_entity`）
 - **搜索：** `EntitySearchOpts.tag_ids`（或 `task_item` filters.`tag_ids`）为数组包含过滤（AND）
-- **挂标签 UI：** 共享 `TagPicker`（`features/tag/ui`）— 常用（`tag.suggest` 按目标实体 `primary_component` 频次）+ 搜索（`tag.search`）+ 新建；日记条目 / 日记块 / 任务详情共用
+- **挂标签 UI：** 共享 `TagPicker`（`features/tag/ui`）— 常用（`tag.suggest` 按目标实体 `primary_component` 频次）+ 搜索（`tag.search`）+ 新建；日记条目 / 日记块 / 任务详情 / Vault 条目共用
 - **列表筛选 UI：** 任务/项目等本地 FilterBar（从当前列表收集已有 tag chips），**不是**挂标签交互，不接入 `TagPicker`、不暴露新建
 - **兼容：** `diary.suggestTags` 仍可用，内部委托同一频次查询（固定 `diary_entry`）
 
@@ -270,7 +273,7 @@ Encrypted credentials in two libraries (**User** + **Agent**), ECS components `v
 | User    | `master_password` | Client (Shell / browser extension) | No — Chat unlock、`/vault`、扩展解锁 |
 | Agent   | `machine`         | Habitat (`agent-machine.key`)      | Yes — cron / tools                   |
 
-Privacy fields live in `body.secrets_enc` + `body.dek_wrapped`. Plaintext metadata: title, `url`, optional `uris[]` (`uri` + `match`), username, tags, `custom_field_names`, optional `import_refs` (e.g. Bitwarden cipher UUID). Secrets payload may include `password` / `totp` / `notes` / `custom_fields` / structured `card` / `identity`.
+Privacy fields live in `body.secrets_enc` + `body.dek_wrapped`. Plaintext metadata: title, `url`, optional `uris[]` (`uri` + `match`), username, top-level **`tag_ids`** (same-world `tag` entities; no `body.tags`), `custom_field_names`, optional `import_refs` (e.g. Bitwarden cipher UUID). Secrets payload may include `password` / `totp` / `notes` / `custom_fields` / structured `card` / `identity`.
 
 **Revisions:** vault items participate in the entity-level `entities.revisions` allowlist (max 10 snapshots on substantive update). Shell `/vault` can list history and restore; see [`docs/aspects/entity-revisions.md`](../aspects/entity-revisions.md). Master-password change must rewrap current and historical `dek_wrapped`.
 

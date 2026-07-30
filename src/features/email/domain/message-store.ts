@@ -1,4 +1,8 @@
-import { EMAIL_MESSAGE_COMPONENT, asEmailMessage } from "@freeanima/host/core/db/schema/entity";
+import {
+  EMAIL_MESSAGE_COMPONENT,
+  asEmailMessage,
+  type EntityRow,
+} from "@freeanima/host/core/db/schema/entity";
 
 import {
   createEntity,
@@ -11,22 +15,22 @@ import { worldIdForAccount } from "./email-world.ts";
 import { refreshThreadAggregates } from "./thread-store.ts";
 import type { EmailMessageListOpts, EmailMessageRow, EmailMessageUpsertInput } from "./types.ts";
 
-function normalizeTags(tags: string[] | undefined): string[] {
-  if (!tags?.length) return [];
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const raw of tags) {
-    const tag = raw.trim();
-    if (!tag || seen.has(tag)) continue;
-    seen.add(tag);
-    out.push(tag);
+function normalizeTagIds(tagIds: number[] | undefined): number[] {
+  if (!tagIds?.length) return [];
+  const seen = new Set<number>();
+  const out: number[] = [];
+  for (const raw of tagIds) {
+    const id = Math.floor(Number(raw));
+    if (!Number.isFinite(id) || id <= 0 || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
   }
   return out;
 }
 
 function toMessageRow(
   row: NonNullable<ReturnType<typeof asEmailMessage>>,
-  meta: { created_at: Date; updated_at: Date },
+  entity: Pick<EntityRow, "created_at" | "updated_at" | "tag_ids">,
 ): EmailMessageRow {
   return {
     id: row.id,
@@ -47,11 +51,11 @@ function toMessageRow(
     sent_at: row.sent_at,
     unread: row.unread ?? false,
     flags: row.flags ?? [],
-    tags: row.tags ?? [],
+    tag_ids: [...(entity.tag_ids ?? [])],
     headers: row.headers ?? null,
     attachments: row.attachments ?? [],
-    created_at: meta.created_at.toISOString(),
-    updated_at: meta.updated_at.toISOString(),
+    created_at: entity.created_at.toISOString(),
+    updated_at: entity.updated_at.toISOString(),
   };
 }
 
@@ -73,7 +77,7 @@ export async function findEmailMessageByImapUid(
   if (!row) return null;
   const parsed = asEmailMessage(row);
   if (!parsed) return null;
-  return toMessageRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+  return toMessageRow(parsed, row);
 }
 
 export async function upsertEmailMessage(input: EmailMessageUpsertInput): Promise<EmailMessageRow> {
@@ -96,12 +100,13 @@ export async function upsertEmailMessage(input: EmailMessageUpsertInput): Promis
     sent_at: input.sent_at,
     unread: input.unread ?? false,
     flags: input.flags ?? [],
-    tags: normalizeTags(input.tags),
     content_type: input.content_type ?? "text/plain",
     ...(input.text != null ? { text: input.text } : {}),
     ...(input.headers != null ? { headers: input.headers } : {}),
     ...(input.attachments != null ? { attachments: input.attachments } : {}),
   };
+
+  const tagIds = input.tag_ids !== undefined ? normalizeTagIds(input.tag_ids) : undefined;
 
   if (existing) {
     const row = await updateEntity({
@@ -110,12 +115,13 @@ export async function upsertEmailMessage(input: EmailMessageUpsertInput): Promis
       summary: input.preview,
       content: input.body,
       body,
+      ...(tagIds !== undefined ? { tag_ids: tagIds } : {}),
     });
     if (!row) throw new Error("failed to update email message");
     const parsed = asEmailMessage(row);
     if (!parsed) throw new Error("failed to parse updated email message");
     await refreshThreadAggregates(input.thread_id);
-    return toMessageRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+    return toMessageRow(parsed, row);
   }
 
   const worldId = await worldIdForAccount(input.account_id);
@@ -128,11 +134,12 @@ export async function upsertEmailMessage(input: EmailMessageUpsertInput): Promis
     summary: input.preview,
     content: input.body,
     body,
+    ...(tagIds !== undefined ? { tag_ids: tagIds } : {}),
   });
   const parsed = asEmailMessage(row);
   if (!parsed) throw new Error("failed to create email message");
   await refreshThreadAggregates(input.thread_id);
-  return toMessageRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+  return toMessageRow(parsed, row);
 }
 
 export async function getEmailMessageRow(id: number): Promise<EmailMessageRow | null> {
@@ -140,7 +147,7 @@ export async function getEmailMessageRow(id: number): Promise<EmailMessageRow | 
   if (!row) return null;
   const parsed = asEmailMessage(row);
   if (!parsed) return null;
-  return toMessageRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+  return toMessageRow(parsed, row);
 }
 
 export async function listEmailMessages(
@@ -154,7 +161,7 @@ export async function listEmailMessages(
   if (opts.unread != null) filters.unread = opts.unread;
   if (opts.flagged != null) filters.flagged = opts.flagged;
   if (opts.direction != null) filters.direction = opts.direction;
-  if (opts.tags?.length) filters.tags = opts.tags;
+  const tagIdsFilter = opts.tag_ids?.length ? opts.tag_ids : undefined;
   if (opts.since) filters.since = opts.since;
   if (opts.before) filters.before = opts.before;
 
@@ -162,6 +169,7 @@ export async function listEmailMessages(
     world_id: worldId,
     primary_component: EMAIL_MESSAGE_COMPONENT,
     ...(Object.keys(filters).length > 0 ? { filters } : {}),
+    ...(tagIdsFilter ? { tag_ids: tagIdsFilter } : {}),
     limit: opts.limit ?? 200,
     offset: opts.offset ?? 0,
     mode: "filter_only",
@@ -172,9 +180,7 @@ export async function listEmailMessages(
   return result.results
     .map((row) => {
       const parsed = asEmailMessage(row);
-      return parsed
-        ? toMessageRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
-        : null;
+      return parsed ? toMessageRow(parsed, row) : null;
     })
     .filter((row): row is EmailMessageRow => row != null)
     .toSorted((a, b) => b.sent_at.localeCompare(a.sent_at) || b.id - a.id);
@@ -193,7 +199,7 @@ export async function markEmailMessageRead(
   const next = asEmailMessage(updated);
   if (!next) return null;
   await refreshThreadAggregates(next.thread_id);
-  return toMessageRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
+  return toMessageRow(next, updated);
 }
 
 export async function deleteEmailMessageRow(id: number): Promise<boolean> {
@@ -203,16 +209,19 @@ export async function deleteEmailMessageRow(id: number): Promise<boolean> {
   return ok;
 }
 
-export async function tagEmailMessage(id: number, tags: string[]): Promise<EmailMessageRow | null> {
+export async function tagEmailMessage(
+  id: number,
+  tagIds: number[],
+): Promise<EmailMessageRow | null> {
   const row = await getEntity(id);
   if (!row) return null;
   const parsed = asEmailMessage(row);
   if (!parsed) return null;
-  const updated = await updateEntity({ id, body: { ...parsed, tags: normalizeTags(tags) } });
+  const updated = await updateEntity({ id, tag_ids: normalizeTagIds(tagIds) });
   if (!updated) return null;
   const next = asEmailMessage(updated);
   if (!next) return null;
-  return toMessageRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
+  return toMessageRow(next, updated);
 }
 
 export async function setEmailMessageAttachments(
@@ -227,7 +236,7 @@ export async function setEmailMessageAttachments(
   if (!updated) return null;
   const next = asEmailMessage(updated);
   if (!next) return null;
-  return toMessageRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
+  return toMessageRow(next, updated);
 }
 
 export async function listEmailMessageImapRefs(
@@ -270,7 +279,7 @@ export async function updateEmailMessageFlags(
   const next = asEmailMessage(updated);
   if (!next) return null;
   await refreshThreadAggregates(next.thread_id);
-  return toMessageRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
+  return toMessageRow(next, updated);
 }
 
 export async function updateEmailMessageMailbox(
@@ -290,7 +299,7 @@ export async function updateEmailMessageMailbox(
   if (!updated) return null;
   const next = asEmailMessage(updated);
   if (!next) return null;
-  return toMessageRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
+  return toMessageRow(next, updated);
 }
 
 export async function searchEmailMessages(
@@ -337,9 +346,7 @@ export async function searchEmailMessages(
   return result.results
     .map((row) => {
       const parsed = asEmailMessage(row);
-      return parsed
-        ? toMessageRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
-        : null;
+      return parsed ? toMessageRow(parsed, row) : null;
     })
     .filter((row): row is EmailMessageRow => row != null);
 }

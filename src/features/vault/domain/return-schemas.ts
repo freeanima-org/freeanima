@@ -15,7 +15,7 @@ const vaultItemMetaSchema = z.object({
     )
     .optional(),
   username: z.string().optional(),
-  tags: z.array(z.string()),
+  tag_ids: z.array(z.number()),
   custom_field_names: z.array(z.string()),
   import_refs: z.object({ bitwarden: z.string().optional() }).optional(),
   created_at: z.string(),
@@ -29,7 +29,7 @@ const exampleItem = {
   item_type: "login" as const,
   url: "https://example.com",
   username: "user@example.com",
-  tags: ["工作"],
+  tag_ids: [1],
   custom_field_names: [],
   created_at: "2026-06-10T10:00:00+08:00",
   updated_at: "2026-06-10T10:00:00+08:00",

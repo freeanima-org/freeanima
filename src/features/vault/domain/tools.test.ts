@@ -23,7 +23,7 @@ const createVaultItemMock = mock(async () => ({
   item_type: "login" as const,
   url: "https://github.com",
   username: "bot",
-  tags: ["ci"],
+  tag_ids: [1],
   secrets_enc: "enc",
   dek_wrapped: "dek",
   custom_field_names: ["api"],
@@ -36,7 +36,7 @@ const updateVaultItemMock = mock(async () => ({
   title: "GitHub updated",
   content: "",
   item_type: "login" as const,
-  tags: [],
+  tag_ids: [],
   secrets_enc: "enc2",
   dek_wrapped: "dek2",
   custom_field_names: [],
@@ -50,7 +50,7 @@ const getVaultItemMock = mock(async () => ({
   title: "GitHub",
   content: "",
   item_type: "login" as const,
-  tags: [],
+  tag_ids: [],
   secrets_enc: "enc",
   dek_wrapped: "dek",
   custom_field_names: [],
@@ -80,7 +80,7 @@ mock.module("./item-store.ts", () => ({
     item_type: string;
     url?: string;
     username?: string;
-    tags: string[];
+    tag_ids: number[];
     custom_field_names: string[];
     created_at: string;
     updated_at: string;
@@ -106,7 +106,7 @@ mock.module("./tool-world-resolve.ts", () => ({
     item_type: row.item_type,
     url: row.url,
     username: row.username,
-    tags: row.tags,
+    tag_ids: row.tag_ids,
     custom_field_names: row.custom_field_names,
     created_at: row.created_at,
     updated_at: row.updated_at,
@@ -146,7 +146,7 @@ describe("vault CRUD tools", () => {
       item_type: "login" as const,
       url: "https://github.com",
       username: "bot",
-      tags: ["ci"],
+      tag_ids: [1],
       secrets_enc: "enc",
       dek_wrapped: "dek",
       custom_field_names: ["api"],
@@ -158,7 +158,7 @@ describe("vault CRUD tools", () => {
       title: "GitHub updated",
       content: "",
       item_type: "login" as const,
-      tags: [],
+      tag_ids: [],
       secrets_enc: "enc2",
       dek_wrapped: "dek2",
       custom_field_names: [],
@@ -171,7 +171,7 @@ describe("vault CRUD tools", () => {
       title: "GitHub",
       content: "",
       item_type: "login" as const,
-      tags: [],
+      tag_ids: [],
       secrets_enc: "enc",
       dek_wrapped: "dek",
       custom_field_names: [],
@@ -211,7 +211,7 @@ describe("vault CRUD tools", () => {
       title: "GitHub",
       url: "https://github.com",
       username: "bot",
-      tags: ["ci"],
+      tag_ids: [1],
       secrets: { password: "tok", custom_fields: [{ name: "api", value: "x", type: "hidden" }] },
     });
     const data = JSON.parse(out) as {

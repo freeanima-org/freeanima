@@ -1,4 +1,8 @@
-import { EMAIL_THREAD_COMPONENT, asEmailThread } from "@freeanima/host/core/db/schema/entity";
+import {
+  EMAIL_THREAD_COMPONENT,
+  asEmailThread,
+  type EntityRow,
+} from "@freeanima/host/core/db/schema/entity";
 
 import {
   createEntity,
@@ -9,22 +13,22 @@ import {
 import { worldIdForAccount, worldIdForThread } from "./email-world.ts";
 import type { EmailThreadListOpts, EmailThreadRow, EmailThreadUpsertInput } from "./types.ts";
 
-function normalizeTags(tags: string[] | undefined): string[] {
-  if (!tags?.length) return [];
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const raw of tags) {
-    const tag = raw.trim();
-    if (!tag || seen.has(tag)) continue;
-    seen.add(tag);
-    out.push(tag);
+function normalizeTagIds(tagIds: number[] | undefined): number[] {
+  if (!tagIds?.length) return [];
+  const seen = new Set<number>();
+  const out: number[] = [];
+  for (const raw of tagIds) {
+    const id = Math.floor(Number(raw));
+    if (!Number.isFinite(id) || id <= 0 || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
   }
   return out;
 }
 
 function toThreadRow(
   row: NonNullable<ReturnType<typeof asEmailThread>>,
-  meta: { created_at: Date; updated_at: Date },
+  entity: Pick<EntityRow, "created_at" | "updated_at" | "tag_ids">,
 ): EmailThreadRow {
   return {
     id: row.id,
@@ -32,12 +36,12 @@ function toThreadRow(
     preview: row.preview,
     account_id: row.account_id,
     thread_key: row.thread_key,
-    tags: row.tags ?? [],
+    tag_ids: [...(entity.tag_ids ?? [])],
     unread_count: row.unread_count ?? 0,
     message_count: row.message_count ?? 0,
     last_message_at: row.last_message_at ?? null,
-    created_at: meta.created_at.toISOString(),
-    updated_at: meta.updated_at.toISOString(),
+    created_at: entity.created_at.toISOString(),
+    updated_at: entity.updated_at.toISOString(),
   };
 }
 
@@ -83,11 +87,12 @@ export async function findEmailThreadByKey(
   if (!row) return null;
   const parsed = asEmailThread(row);
   if (!parsed) return null;
-  return toThreadRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+  return toThreadRow(parsed, row);
 }
 
 export async function upsertEmailThread(input: EmailThreadUpsertInput): Promise<EmailThreadRow> {
   const existing = await findEmailThreadByKey(input.account_id, input.thread_key);
+  const tagIds = input.tag_ids !== undefined ? normalizeTagIds(input.tag_ids) : undefined;
   if (existing) {
     const unreadDelta = input.unread_delta ?? 0;
     const messageDelta = input.message_delta ?? 0;
@@ -98,19 +103,16 @@ export async function upsertEmailThread(input: EmailThreadUpsertInput): Promise<
       body: {
         account_id: input.account_id,
         thread_key: input.thread_key,
-        tags: input.tags != null ? normalizeTags(input.tags) : existing.tags,
         unread_count: Math.max(0, existing.unread_count + unreadDelta),
         message_count: Math.max(0, existing.message_count + messageDelta),
         last_message_at: input.last_message_at,
       },
+      ...(tagIds !== undefined ? { tag_ids: tagIds } : {}),
     });
     if (!row) throw new Error("failed to update email thread");
     const parsed = asEmailThread(row);
     if (!parsed) throw new Error("failed to parse updated email thread");
-    return toThreadRow(parsed, {
-      created_at: row.created_at,
-      updated_at: row.updated_at,
-    });
+    return toThreadRow(parsed, row);
   }
 
   const worldId = await worldIdForAccount(input.account_id);
@@ -124,15 +126,15 @@ export async function upsertEmailThread(input: EmailThreadUpsertInput): Promise<
     body: {
       account_id: input.account_id,
       thread_key: input.thread_key,
-      tags: normalizeTags(input.tags),
       unread_count: Math.max(0, input.unread_delta ?? 0),
       message_count: Math.max(0, input.message_delta ?? 1),
       last_message_at: input.last_message_at,
     },
+    ...(tagIds !== undefined ? { tag_ids: tagIds } : {}),
   });
   const parsed = asEmailThread(row);
   if (!parsed) throw new Error("failed to create email thread");
-  return toThreadRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+  return toThreadRow(parsed, row);
 }
 
 export async function listEmailThreads(
@@ -142,12 +144,13 @@ export async function listEmailThreads(
   const filters: Record<string, unknown> = {};
   if (opts.account_id != null) filters.account_id = opts.account_id;
   if (opts.has_unread) filters.has_unread = true;
-  if (opts.tags?.length) filters.tags = opts.tags;
+  const tagIdsFilter = opts.tag_ids?.length ? opts.tag_ids : undefined;
 
   const result = await searchEntities({
     world_id: worldId,
     primary_component: EMAIL_THREAD_COMPONENT,
     ...(Object.keys(filters).length > 0 ? { filters } : {}),
+    ...(tagIdsFilter ? { tag_ids: tagIdsFilter } : {}),
     limit: opts.limit ?? 200,
     offset: opts.offset ?? 0,
     mode: "filter_only",
@@ -156,9 +159,7 @@ export async function listEmailThreads(
   return result.results
     .map((row) => {
       const parsed = asEmailThread(row);
-      return parsed
-        ? toThreadRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
-        : null;
+      return parsed ? toThreadRow(parsed, row) : null;
     })
     .filter((row): row is EmailThreadRow => row != null)
     .toSorted(
@@ -166,16 +167,16 @@ export async function listEmailThreads(
     );
 }
 
-export async function tagEmailThread(id: number, tags: string[]): Promise<EmailThreadRow | null> {
+export async function tagEmailThread(id: number, tagIds: number[]): Promise<EmailThreadRow | null> {
   const row = await getEntity(id);
   if (!row) return null;
   const parsed = asEmailThread(row);
   if (!parsed) return null;
-  const updated = await updateEntity({ id, body: { ...parsed, tags: normalizeTags(tags) } });
+  const updated = await updateEntity({ id, tag_ids: normalizeTagIds(tagIds) });
   if (!updated) return null;
   const next = asEmailThread(updated);
   if (!next) return null;
-  return toThreadRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
+  return toThreadRow(next, updated);
 }
 
 export async function refreshThreadAggregates(threadId: number): Promise<void> {

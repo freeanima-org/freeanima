@@ -10,7 +10,7 @@ function view(partial: Partial<VaultRevisionCompareView>): VaultRevisionCompareV
   return {
     title: "t",
     content: "",
-    tags: [],
+    tag_ids: [],
     custom_field_names: [],
     ...partial,
   };
@@ -36,11 +36,12 @@ describe("diffVaultRevisionFields", () => {
   });
 
   it("returns empty when equal", () => {
-    const a = view({ title: "x", url: "https://a", tags: ["a", "b"] });
+    const a = view({ title: "x", url: "https://a", tag_ids: [1, 2] });
     const b = vaultCompareViewFromEntity({
       title: "x",
       content: "",
-      body: { url: "https://a", tags: ["b", "a"] },
+      body: { url: "https://a" },
+      tag_ids: [2, 1],
     });
     expect(diffVaultRevisionFields(a, b)).toEqual([]);
   });

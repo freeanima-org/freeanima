@@ -45,7 +45,6 @@ export const emailAccountSearchFiltersSchema = z
   .object({
     enabled: z.boolean().optional(),
     default_sender: z.boolean().optional(),
-    tags: z.array(z.string()).optional(),
   })
   .strict();
 
@@ -66,7 +65,6 @@ export const emailThreadSearchFiltersSchema = z
   .object({
     account_id: z.number().int().positive().optional(),
     thread_key: z.string().min(1).optional(),
-    tags: z.array(z.string()).optional(),
     has_unread: z.boolean().optional(),
   })
   .strict();
@@ -92,7 +90,6 @@ export const emailMessageSearchFiltersSchema = z
     imap_mailbox: z.string().min(1).optional(),
     unread: z.boolean().optional(),
     direction: emailDirectionSchema.optional(),
-    tags: z.array(z.string()).optional(),
     from: z.string().min(1).optional(),
     to: z.string().min(1).optional(),
     subject: z.string().min(1).optional(),
@@ -120,8 +117,6 @@ export const diaryEntrySearchFiltersSchema = z
   .object({
     entry_after: z.string().optional(),
     entry_before: z.string().optional(),
-    /** @deprecated 改用 EntitySearchOpts.tag_ids；迁移期仍接受但不再过滤 body.tags */
-    tags: z.array(z.string()).optional(),
     tag_ids: z.array(z.number().int().positive()).optional(),
     client_op_id: z.string().min(1).optional(),
   })
@@ -143,7 +138,6 @@ export function parseDiaryEntrySearchFilters(
 export const vaultItemSearchFiltersSchema = z
   .object({
     item_type: vaultItemTypeSchema.optional(),
-    tags: z.array(z.string()).optional(),
   })
   .strict();
 

@@ -94,6 +94,17 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
 详情：[`drizzle-db.md`](drizzle-db.md) DbRow / FTS 列名约定。
 
+## 标签字段（tag_ids vs tags）
+
+| 概念               | 正确命名            | 说明                                                                          |
+| ------------------ | ------------------- | ----------------------------------------------------------------------------- |
+| 实体挂载的标签引用 | `tag_ids: number[]` | PG 列 / Row / Habitat RPC / 离线 store **唯一**存储字段；**禁止** `body.tags` |
+| LLM/MCP 标题入参   | `tags: string[]`    | **仅工具层** find-or-create（解析为 `tag_ids`）；不入 body、不入 RPC Row      |
+| 标签实体列表返回   | `tags: TagRow[]`    | 集合名词 = 标签对象数组，不是字符串标签                                       |
+| React 本地 props   | 可 `tagIds`         | UI 边界内 camelCase；进出协议立刻映射为 `tag_ids`                             |
+
+产品叙述见 [`docs/product/entity-model.md`](../../docs/product/entity-model.md) Tag 节。
+
 ## Security and continuity
 
 - Credentials and secrets never in git / logs / tool return values

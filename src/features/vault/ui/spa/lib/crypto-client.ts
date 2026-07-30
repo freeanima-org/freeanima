@@ -12,7 +12,7 @@ export async function buildUserVaultCreatePayload(input: {
   item_type?: VaultCreateInput["item_type"];
   url?: string;
   username?: string;
-  tags?: string[];
+  tag_ids?: number[];
   secrets: VaultSecretsPayload;
   masterKey: CryptoKey;
 }): Promise<Pick<VaultCreateInput, "secrets_enc" | "dek_wrapped" | "custom_field_names">> {

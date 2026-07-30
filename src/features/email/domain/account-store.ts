@@ -1,7 +1,9 @@
 import {
   EMAIL_ACCOUNT_COMPONENT,
+  TAG_COMPONENT,
   asEmailAccount,
   type EmailAccountBody,
+  type EntityRow,
 } from "@freeanima/host/core/db/schema/entity";
 import {
   assertEntityInWorld,
@@ -16,17 +18,27 @@ import { removeEmailAccountAttachments } from "./attachment-store.ts";
 import { normalizeAccountSync } from "./sync-state.ts";
 import type { EmailAccountCreateInput, EmailAccountRow, EmailAccountUpdateInput } from "./types.ts";
 
-function normalizeTags(tags: string[] | undefined): string[] {
-  if (!tags?.length) return [];
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const raw of tags) {
-    const tag = raw.trim();
-    if (!tag || seen.has(tag)) continue;
-    seen.add(tag);
-    out.push(tag);
+function normalizeTagIds(tagIds: number[] | undefined): number[] {
+  if (!tagIds?.length) return [];
+  const seen = new Set<number>();
+  const out: number[] = [];
+  for (const raw of tagIds) {
+    const id = Math.floor(Number(raw));
+    if (!Number.isFinite(id) || id <= 0 || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
   }
   return out;
+}
+
+async function assertTagIdsInWorld(worldId: number, tagIds: number[]): Promise<void> {
+  for (const id of tagIds) {
+    const row = await getEntity(id);
+    if (!row || row.primary_component !== TAG_COMPONENT) {
+      throw new Error(`tag not found: ${id}`);
+    }
+    await assertEntityInWorld(id, worldId);
+  }
 }
 
 function accountTitle(input: { display_name?: string; address: string }): string {
@@ -35,7 +47,7 @@ function accountTitle(input: { display_name?: string; address: string }): string
 
 function toAccountRow(
   row: NonNullable<ReturnType<typeof asEmailAccount>>,
-  meta: { created_at: Date; updated_at: Date },
+  entity: Pick<EntityRow, "created_at" | "updated_at" | "tag_ids">,
 ): EmailAccountRow {
   return {
     id: row.id,
@@ -49,7 +61,7 @@ function toAccountRow(
     default_sender: row.default_sender ?? false,
     enabled: row.enabled ?? true,
     desc: row.desc,
-    tags: row.tags ?? [],
+    tag_ids: [...(entity.tag_ids ?? [])],
     ...(row.sync
       ? {
           sync: normalizeAccountSync(
@@ -62,8 +74,8 @@ function toAccountRow(
     ...(row.trash_mailbox !== undefined ? { trash_mailbox: row.trash_mailbox } : {}),
     ...(row.drafts_mailbox !== undefined ? { drafts_mailbox: row.drafts_mailbox } : {}),
     ...(row.delete_policy !== undefined ? { delete_policy: row.delete_policy } : {}),
-    created_at: meta.created_at.toISOString(),
-    updated_at: meta.updated_at.toISOString(),
+    created_at: entity.created_at.toISOString(),
+    updated_at: entity.updated_at.toISOString(),
   };
 }
 
@@ -106,9 +118,7 @@ export async function listEmailAccountRows(worldId: number): Promise<EmailAccoun
   return rows
     .map((row) => {
       const parsed = asEmailAccount(row);
-      return parsed
-        ? toAccountRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
-        : null;
+      return parsed ? toAccountRow(parsed, row) : null;
     })
     .filter((row): row is EmailAccountRow => row != null)
     .toSorted((a, b) => a.id - b.id);
@@ -119,7 +129,7 @@ export async function getEmailAccountRow(id: number): Promise<EmailAccountRow | 
   if (!row) return null;
   const parsed = asEmailAccount(row);
   if (!parsed) return null;
-  return toAccountRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+  return toAccountRow(parsed, row);
 }
 
 export async function findEmailAccountByAddressAndHost(
@@ -135,6 +145,8 @@ export async function createEmailAccount(
   worldId: number,
   input: EmailAccountCreateInput,
 ): Promise<EmailAccountRow> {
+  const tagIds = normalizeTagIds(input.tag_ids);
+  await assertTagIdsInWorld(worldId, tagIds);
   const body: EmailAccountBody = {
     address: input.address.trim(),
     password: input.password,
@@ -145,7 +157,6 @@ export async function createEmailAccount(
     default_sender: input.default_sender ?? false,
     enabled: input.enabled ?? true,
     desc: input.desc,
-    tags: normalizeTags(input.tags),
     sync: { mailboxes: { INBOX: { special_use: "inbox" } } },
   };
 
@@ -156,6 +167,7 @@ export async function createEmailAccount(
     primary_component: EMAIL_ACCOUNT_COMPONENT,
     title: accountTitle(input),
     body,
+    tag_ids: tagIds,
   });
 
   if (body.default_sender) {
@@ -173,9 +185,18 @@ export async function updateEmailAccount(
   worldId: number,
   input: EmailAccountUpdateInput,
 ): Promise<EmailAccountRow | null> {
-  const existing = await getEmailAccountRow(input.id);
-  if (!existing) return null;
+  const existingEntity = await getEntity(input.id);
+  if (!existingEntity) return null;
   await assertEntityInWorld(input.id, worldId);
+  const existingParsed = asEmailAccount(existingEntity);
+  if (!existingParsed) return null;
+  const existing = toAccountRow(existingParsed, existingEntity);
+
+  let nextTagIds = existingEntity.tag_ids ?? [];
+  if (input.tag_ids !== undefined) {
+    nextTagIds = normalizeTagIds(input.tag_ids);
+    await assertTagIdsInWorld(worldId, nextTagIds);
+  }
 
   const merged: EmailAccountBody = {
     address: input.address?.trim() ?? existing.address,
@@ -187,7 +208,6 @@ export async function updateEmailAccount(
     default_sender: input.default_sender ?? existing.default_sender,
     enabled: input.enabled ?? existing.enabled,
     desc: input.desc ?? existing.desc,
-    tags: input.tags != null ? normalizeTags(input.tags) : existing.tags,
     sync: input.sync ?? existing.sync,
     mailbox_paths: input.mailbox_paths ?? existing.mailbox_paths,
     delete_policy: input.delete_policy ?? existing.delete_policy,
@@ -211,6 +231,7 @@ export async function updateEmailAccount(
       address: merged.address,
     }),
     body: mergedRecord,
+    ...(input.tag_ids !== undefined ? { tag_ids: nextTagIds } : {}),
   });
   if (!row) return null;
 
@@ -274,9 +295,7 @@ export async function listAllEnabledEmailAccountRows(): Promise<EmailAccountRow[
   return rows
     .map((row) => {
       const parsed = asEmailAccount(row);
-      return parsed
-        ? toAccountRow(parsed, { created_at: row.created_at, updated_at: row.updated_at })
-        : null;
+      return parsed ? toAccountRow(parsed, row) : null;
     })
     .filter((row): row is EmailAccountRow => row != null && row.enabled)
     .toSorted((a, b) => a.id - b.id);

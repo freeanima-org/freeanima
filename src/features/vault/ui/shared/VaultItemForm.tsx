@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Button, FormField, Input, Spinner, Textarea } from "@freeanima/ui-kit";
 import { normalizeTotpSecret, type VaultCustomField } from "@freeanima/shared/vault-crypto";
 import type { VaultUriEntryPayload, VaultUriMatch } from "@freeanima/shared/rpc-contract";
+import { VAULT_ITEM_COMPONENT } from "@freeanima/host/core/db/schema";
+import { TagPicker } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 
 import { VAULT_ITEM_TYPE_OPTIONS, VAULT_URI_MATCH_OPTIONS } from "./uri-match.ts";
 
@@ -11,7 +13,7 @@ export type VaultItemFormValues = {
   title: string;
   item_type: VaultItemType;
   username: string;
-  tags: string[];
+  tag_ids: number[];
   uris: VaultUriEntryPayload[];
   password: string;
   totp: string;
@@ -25,7 +27,7 @@ export const emptyVaultItemFormValues = (): VaultItemFormValues => ({
   title: "",
   item_type: "login",
   username: "",
-  tags: [],
+  tag_ids: [],
   uris: [emptyUri()],
   password: "",
   totp: "",
@@ -74,10 +76,9 @@ export function VaultItemForm({
     ...emptyVaultItemFormValues(),
     ...initial,
     uris: initial?.uris?.length ? initial.uris : [emptyUri()],
-    tags: initial?.tags ?? [],
+    tag_ids: initial?.tag_ids ?? [],
     custom_fields: initial?.custom_fields ?? [],
   }));
-  const [tagsText, setTagsText] = useState(() => (initial?.tags ?? []).join(", "));
   const [totpHint, setTotpHint] = useState("");
   const [genLoading, setGenLoading] = useState(false);
 
@@ -87,10 +88,9 @@ export function VaultItemForm({
       ...emptyVaultItemFormValues(),
       ...initial,
       uris: initial.uris?.length ? initial.uris : [emptyUri()],
-      tags: initial.tags ?? [],
+      tag_ids: initial.tag_ids ?? [],
       custom_fields: initial.custom_fields ?? [],
     });
-    setTagsText((initial.tags ?? []).join(", "));
   }, [mode, initial]);
 
   const setField = <K extends keyof VaultItemFormValues>(key: K, value: VaultItemFormValues[K]) => {
@@ -117,10 +117,6 @@ export function VaultItemForm({
       }
     }
     setTotpHint("");
-    const tags = tagsText
-      .split(/[,，]/)
-      .map((t) => t.trim())
-      .filter(Boolean);
     const custom_fields = values.custom_fields
       .map((f) => ({
         name: f.name.trim(),
@@ -132,7 +128,7 @@ export function VaultItemForm({
       ...values,
       title,
       username: values.username.trim(),
-      tags,
+      tag_ids: values.tag_ids,
       uris: values.uris.map((u) => ({
         uri: u.uri.trim(),
         match: u.match,
@@ -143,7 +139,6 @@ export function VaultItemForm({
     });
     if (mode === "create") {
       setValues(emptyVaultItemFormValues());
-      setTagsText("");
     }
   };
 
@@ -308,12 +303,13 @@ export function VaultItemForm({
         />
       </FormField>
 
-      <FormField label="标签（逗号分隔）">
-        <Input
-          value={tagsText}
-          disabled={busy}
-          autoComplete="off"
-          onChange={(e) => setTagsText(e.target.value)}
+      <FormField label="标签">
+        <TagPicker
+          primaryComponent={VAULT_ITEM_COMPONENT}
+          tagIds={values.tag_ids}
+          onChange={(tag_ids) => setField("tag_ids", tag_ids)}
+          mode="multi"
+          readOnly={busy}
         />
       </FormField>
 

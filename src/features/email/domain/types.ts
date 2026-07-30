@@ -46,7 +46,7 @@ export type EmailAccountCreateInput = {
   default_sender?: boolean;
   enabled?: boolean;
   desc?: string;
-  tags?: string[];
+  tag_ids?: number[];
 };
 
 export type EmailAccountUpdateInput = {
@@ -61,7 +61,7 @@ export type EmailAccountUpdateInput = {
   default_sender?: boolean;
   enabled?: boolean;
   desc?: string;
-  tags?: string[];
+  tag_ids?: number[];
   sync?: EmailAccountBody["sync"];
   mailbox_paths?: string[];
   sent_mailbox?: string | null;
@@ -78,7 +78,7 @@ export type EmailThreadUpsertInput = {
   last_message_at: string;
   unread_delta?: number;
   message_delta?: number;
-  tags?: string[];
+  tag_ids?: number[];
 };
 
 export type EmailMessageUpsertInput = {
@@ -103,7 +103,7 @@ export type EmailMessageUpsertInput = {
   sent_at: string;
   unread?: boolean;
   flags?: string[];
-  tags?: string[];
+  tag_ids?: number[];
 };
 
 export type EmailMessageListOpts = {
@@ -113,7 +113,7 @@ export type EmailMessageListOpts = {
   unread?: boolean;
   flagged?: boolean;
   direction?: "inbound" | "outbound";
-  tags?: string[];
+  tag_ids?: number[];
   since?: string;
   before?: string;
   limit?: number;
@@ -122,7 +122,7 @@ export type EmailMessageListOpts = {
 
 export type EmailThreadListOpts = {
   account_id?: number;
-  tags?: string[];
+  tag_ids?: number[];
   has_unread?: boolean;
   limit?: number;
   offset?: number;

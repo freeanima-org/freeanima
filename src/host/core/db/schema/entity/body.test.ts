@@ -17,7 +17,6 @@ describe("validateEntityBody", () => {
       status: "pending",
       priority: "high",
       list_id: 2,
-      tags: [],
     });
     expect(body.title).toBe("Buy milk");
     expect(body.status).toBe("pending");
@@ -38,7 +37,7 @@ describe("validateEntityBody", () => {
 
   test("mergeComponentBody validates merged result", () => {
     const merged = mergeComponentBody(
-      { title: "a", status: "pending", priority: "none", list_id: 2, tags: [] },
+      { title: "a", status: "pending", priority: "none", list_id: 2 },
       { status: "completed" },
       [TASK_ITEM_COMPONENT],
     );

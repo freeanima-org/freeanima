@@ -15,7 +15,7 @@ export const emailAccountRowSchema = z.object({
   default_sender: z.boolean(),
   enabled: z.boolean(),
   desc: z.string().optional(),
-  tags: z.array(z.string()),
+  tag_ids: z.array(z.number().int().positive()),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -38,7 +38,7 @@ export const emailMessageRowSchema = z.object({
   flagged: z.boolean().optional(),
   direction: z.enum(["inbound", "outbound"]),
   imap_uid: z.number().nullable(),
-  tags: z.array(z.string()),
+  tag_ids: z.array(z.number().int().positive()),
   /** email.message.read：剥离后的 SMTP/MIME 头（不含 From/To/Subject/Date） */
   headers: z.record(z.string(), z.string()).optional(),
   attachments: z
@@ -64,7 +64,7 @@ export const emailThreadRowSchema = z.object({
   preview: z.string(),
   account_id: z.number().int().positive(),
   thread_key: z.string(),
-  tags: z.array(z.string()),
+  tag_ids: z.array(z.number().int().positive()),
   unread_count: z.number().int(),
   message_count: z.number().int(),
   last_message_at: z.string().nullable(),
@@ -237,7 +237,7 @@ export const emailAccountCreateInputSchema = z.object({
   default_sender: z.boolean().optional(),
   enabled: z.boolean().optional(),
   desc: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  tag_ids: z.array(z.number().int().positive()).optional(),
   ...emailAccountHostFields,
 });
 export type EmailAccountCreateInput = z.infer<typeof emailAccountCreateInputSchema>;
@@ -253,7 +253,7 @@ export const emailAccountPatchInputSchema = z.object({
   default_sender: z.boolean().optional(),
   enabled: z.boolean().optional(),
   desc: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  tag_ids: z.array(z.number().int().positive()).optional(),
   ...emailAccountHostFields,
 });
 export type EmailAccountPatchInput = z.infer<typeof emailAccountPatchInputSchema>;

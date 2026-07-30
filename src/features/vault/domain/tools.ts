@@ -10,6 +10,7 @@ import {
 import type { VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
 import { normalizeTotpSecret } from "@freeanima/shared/vault-crypto";
 
+import { ensureTagsByTitles } from "@freeanima/features/tag/domain";
 import {
   createVaultItem,
   deleteVaultItem,
@@ -71,12 +72,63 @@ const META_WRITE_PROPERTIES = {
   },
   url: { type: "string" },
   username: { type: "string" },
-  tags: { type: "array", items: { type: "string" } },
+  tags: {
+    type: "array",
+    items: { type: "string" },
+    description: "Tag titles (find-or-create); merged with tag_ids",
+  },
+  tag_ids: {
+    type: "array",
+    items: { type: "integer" },
+    description: "Existing tag entity ids (same world)",
+  },
 } as const;
+
+async function resolveVaultToolTagIds(
+  worldId: number,
+  args: Record<string, unknown>,
+): Promise<number[] | undefined | string> {
+  if (args.tags === undefined && args.tag_ids === undefined) return undefined;
+  const parts: number[][] = [];
+  if (args.tag_ids !== undefined) {
+    if (!Array.isArray(args.tag_ids)) return toolError("tag_ids must be an array of integers");
+    const ids: number[] = [];
+    for (const raw of args.tag_ids) {
+      const id = Math.floor(Number(raw));
+      if (!Number.isFinite(id) || id <= 0)
+        return toolError(`invalid tag_ids element: ${String(raw)}`);
+      ids.push(id);
+    }
+    parts.push(ids);
+  }
+  if (args.tags !== undefined) {
+    const titles = parseTags(args.tags);
+    if (titles === undefined) return toolError("tags must be an array of strings");
+    try {
+      parts.push(await ensureTagsByTitles(worldId, titles));
+    } catch (e) {
+      return toolError(e instanceof Error ? e.message : String(e));
+    }
+  }
+  const out: number[] = [];
+  const seen = new Set<number>();
+  for (const part of parts) {
+    for (const id of part) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(id);
+    }
+  }
+  return out;
+}
 
 function parseTags(raw: unknown): string[] | undefined {
   if (raw == null) return undefined;
-  if (Array.isArray(raw)) return raw.map((v) => String(v));
+  if (Array.isArray(raw))
+    return raw
+      .map((v) => String(v))
+      .map((s) => s.trim())
+      .filter(Boolean);
   if (typeof raw === "string") {
     return raw
       .split(",")
@@ -139,14 +191,15 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
   const worldId = await resolveVaultToolWorld({ args });
   if (typeof worldId === "string") return worldId;
 
-  const tags = parseTags(args.tags);
+  const tagIds = await resolveVaultToolTagIds(worldId, args);
+  if (typeof tagIds === "string") return tagIds;
   const limit =
     typeof args.limit === "number" && Number.isFinite(args.limit)
       ? Math.max(1, Math.min(500, Math.floor(args.limit)))
       : 50;
 
   const items = await listVaultItems(worldId, {
-    ...(tags !== undefined ? { tags } : {}),
+    ...(tagIds !== undefined ? { tag_ids: tagIds } : {}),
     limit,
     include_secrets: false,
   });
@@ -214,6 +267,8 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   try {
     await ensureAgentVaultConfig(worldId);
     const sealed = await sealAgentVaultItem(secretsParsed);
+    const tagIds = await resolveVaultToolTagIds(worldId, args);
+    if (typeof tagIds === "string") return tagIds;
     const item = await createVaultItem(
       worldId,
       omitUndefined({
@@ -222,7 +277,7 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
         item_type: parseItemType(args.item_type),
         url: args.url != null ? String(args.url) : undefined,
         username: args.username != null ? String(args.username) : undefined,
-        tags: parseTags(args.tags),
+        tag_ids: tagIds,
         secrets_enc: sealed.secrets_enc,
         dek_wrapped: sealed.dek_wrapped,
         custom_field_names: sealed.custom_field_names,
@@ -250,7 +305,7 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   const hasItemType = args.item_type != null;
   const hasUrl = args.url != null;
   const hasUsername = args.username != null;
-  const hasTags = args.tags != null;
+  const hasTags = args.tags != null || args.tag_ids != null;
   const hasSecrets = args.secrets != null;
   if (
     !hasTitle &&
@@ -280,6 +335,8 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
 
   try {
     await ensureAgentVaultConfig(worldId);
+    const tagIds = hasTags ? await resolveVaultToolTagIds(worldId, args) : undefined;
+    if (typeof tagIds === "string") return tagIds;
     const patch: Parameters<typeof updateVaultItem>[1] = omitUndefined({
       id,
       title: hasTitle ? String(args.title) : undefined,
@@ -287,7 +344,7 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
       item_type: hasItemType ? parseItemType(args.item_type) : undefined,
       url: hasUrl ? String(args.url) : undefined,
       username: hasUsername ? String(args.username) : undefined,
-      tags: hasTags ? parseTags(args.tags) : undefined,
+      tag_ids: tagIds,
     });
 
     if (secretsParsed) {
@@ -364,7 +421,12 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
             type: "object",
             properties: {
               ...WORLD_AND_SUBJECT,
-              tags: { type: "array", items: { type: "string" } },
+              tags: {
+                type: "array",
+                items: { type: "string" },
+                description: "Filter by tag titles (resolved to tag_ids)",
+              },
+              tag_ids: { type: "array", items: { type: "integer" } },
               limit: { type: "integer" },
             },
             required: ["subject_kind"],

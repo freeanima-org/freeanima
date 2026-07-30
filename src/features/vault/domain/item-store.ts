@@ -1,5 +1,6 @@
 import {
   VAULT_ITEM_COMPONENT,
+  TAG_COMPONENT,
   asVaultItem,
   type VaultImportRefs,
   type VaultItemType,
@@ -14,6 +15,7 @@ import {
   updateEntity,
 } from "@freeanima/host/core/db/pg/entity";
 import { assertEntityInWorld } from "@freeanima/host/core/db/pg/entity";
+import type { EntityRow } from "@freeanima/host/core/db/schema/entity";
 
 export type VaultItemRow = {
   id: number;
@@ -23,7 +25,7 @@ export type VaultItemRow = {
   url?: string;
   uris?: VaultUriEntry[];
   username?: string;
-  tags: string[];
+  tag_ids: number[];
   secrets_enc: string;
   dek_wrapped: string;
   custom_field_names: string[];
@@ -44,7 +46,7 @@ export type VaultItemCreateInput = {
   url?: string;
   uris?: VaultUriEntry[];
   username?: string;
-  tags?: string[];
+  tag_ids?: number[];
   secrets_enc: string;
   dek_wrapped: string;
   custom_field_names?: string[];
@@ -59,7 +61,7 @@ export type VaultItemUpdateInput = {
   url?: string;
   uris?: VaultUriEntry[];
   username?: string;
-  tags?: string[];
+  tag_ids?: number[];
   secrets_enc?: string;
   dek_wrapped?: string;
   custom_field_names?: string[];
@@ -68,17 +70,27 @@ export type VaultItemUpdateInput = {
   skip_revision?: boolean;
 };
 
-function normalizeTags(tags: string[] | undefined): string[] {
-  if (!tags?.length) return [];
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const raw of tags) {
-    const tag = raw.trim();
-    if (!tag || seen.has(tag)) continue;
-    seen.add(tag);
-    out.push(tag);
+function normalizeTagIds(tagIds: number[] | undefined): number[] {
+  if (!tagIds?.length) return [];
+  const seen = new Set<number>();
+  const out: number[] = [];
+  for (const raw of tagIds) {
+    const id = Math.floor(Number(raw));
+    if (!Number.isFinite(id) || id <= 0 || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
   }
   return out;
+}
+
+async function assertTagIdsInWorld(worldId: number, tagIds: number[]): Promise<void> {
+  for (const id of tagIds) {
+    const row = await getEntity(id);
+    if (!row || row.primary_component !== TAG_COMPONENT) {
+      throw new Error(`tag not found: ${id}`);
+    }
+    await assertEntityInWorld(id, worldId);
+  }
 }
 
 function normalizeUris(uris: VaultUriEntry[] | undefined): VaultUriEntry[] | undefined {
@@ -94,7 +106,7 @@ function normalizeUris(uris: VaultUriEntry[] | undefined): VaultUriEntry[] | und
 
 function toRow(
   parsed: NonNullable<ReturnType<typeof asVaultItem>>,
-  meta: { created_at: Date; updated_at: Date },
+  entity: Pick<EntityRow, "created_at" | "updated_at" | "tag_ids">,
 ): VaultItemRow {
   const uris = normalizeUris(parsed.uris);
   return {
@@ -105,13 +117,13 @@ function toRow(
     ...(parsed.url !== undefined ? { url: parsed.url } : {}),
     ...(uris !== undefined ? { uris } : {}),
     ...(parsed.username !== undefined ? { username: parsed.username } : {}),
-    tags: parsed.tags ?? [],
+    tag_ids: [...(entity.tag_ids ?? [])],
     secrets_enc: parsed.secrets_enc,
     dek_wrapped: parsed.dek_wrapped,
     custom_field_names: parsed.custom_field_names ?? [],
     ...(parsed.import_refs !== undefined ? { import_refs: parsed.import_refs } : {}),
-    created_at: meta.created_at.toISOString(),
-    updated_at: meta.updated_at.toISOString(),
+    created_at: entity.created_at.toISOString(),
+    updated_at: entity.updated_at.toISOString(),
   };
 }
 
@@ -122,14 +134,12 @@ export function toVaultItemMeta(row: VaultItemRow): VaultItemMetaRow {
 
 export async function listVaultItems(
   worldId: number,
-  opts: { limit?: number; tags?: string[]; include_secrets?: boolean } = {},
+  opts: { limit?: number; tag_ids?: number[]; include_secrets?: boolean } = {},
 ): Promise<Array<VaultItemRow | VaultItemMetaRow>> {
-  const filters: Record<string, unknown> = {};
-  if (opts.tags?.length) filters.tags = opts.tags;
   const result = await searchEntities({
     world_id: worldId,
     primary_component: VAULT_ITEM_COMPONENT,
-    ...(Object.keys(filters).length > 0 ? { filters } : {}),
+    ...(opts.tag_ids?.length ? { tag_ids: opts.tag_ids } : {}),
     limit: opts.limit ?? 500,
     mode: "filter_only",
     include_count: false,
@@ -139,7 +149,7 @@ export async function listVaultItems(
     .map((row) => {
       const parsed = asVaultItem(row);
       if (!parsed) return null;
-      const full = toRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+      const full = toRow(parsed, row);
       return opts.include_secrets ? full : toVaultItemMeta(full);
     })
     .filter((row): row is VaultItemRow | VaultItemMetaRow => row != null)
@@ -162,7 +172,7 @@ export async function searchVaultItems(
     .map((row) => {
       const parsed = asVaultItem(row);
       if (!parsed) return null;
-      const full = toRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+      const full = toRow(parsed, row);
       return opts.include_secrets ? full : toVaultItemMeta(full);
     })
     .filter((row): row is VaultItemRow | VaultItemMetaRow => row != null);
@@ -178,7 +188,7 @@ export async function getVaultItem(
   if (!row) return null;
   const parsed = asVaultItem(row);
   if (!parsed) return null;
-  const full = toRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+  const full = toRow(parsed, row);
   return opts.include_secrets ? full : toVaultItemMeta(full);
 }
 
@@ -187,12 +197,13 @@ export async function createVaultItem(
   input: VaultItemCreateInput,
 ): Promise<VaultItemRow> {
   const uris = normalizeUris(input.uris);
+  const tagIds = normalizeTagIds(input.tag_ids);
+  await assertTagIdsInWorld(worldId, tagIds);
   const body = {
     item_type: input.item_type ?? "login",
     url: input.url,
     ...(uris !== undefined ? { uris } : {}),
     username: input.username,
-    tags: normalizeTags(input.tags),
     secrets_enc: input.secrets_enc,
     dek_wrapped: input.dek_wrapped,
     custom_field_names: input.custom_field_names ?? [],
@@ -206,10 +217,11 @@ export async function createVaultItem(
     title: input.title.trim().slice(0, 500),
     content: input.content?.trim() ?? "",
     body,
+    tag_ids: tagIds,
   });
   const parsed = asVaultItem(created);
   if (!parsed) throw new Error("invalid vault_item");
-  return toRow(parsed, { created_at: created.created_at, updated_at: created.updated_at });
+  return toRow(parsed, created);
 }
 
 export async function updateVaultItem(
@@ -223,12 +235,16 @@ export async function updateVaultItem(
   if (!parsed) return null;
   const nextUris =
     input.uris !== undefined ? normalizeUris(input.uris) : normalizeUris(parsed.uris);
+  let nextTagIds = existing.tag_ids ?? [];
+  if (input.tag_ids !== undefined) {
+    nextTagIds = normalizeTagIds(input.tag_ids);
+    await assertTagIdsInWorld(worldId, nextTagIds);
+  }
   const body = {
     item_type: input.item_type ?? parsed.item_type,
     url: input.url !== undefined ? input.url : parsed.url,
     ...(nextUris !== undefined ? { uris: nextUris } : {}),
     username: input.username !== undefined ? input.username : parsed.username,
-    tags: input.tags !== undefined ? normalizeTags(input.tags) : (parsed.tags ?? []),
     secrets_enc: input.secrets_enc ?? parsed.secrets_enc,
     dek_wrapped: input.dek_wrapped ?? parsed.dek_wrapped,
     custom_field_names:
@@ -246,12 +262,13 @@ export async function updateVaultItem(
     ...(input.title !== undefined ? { title: input.title.trim().slice(0, 500) } : {}),
     ...(input.content !== undefined ? { content: input.content.trim() } : {}),
     body,
+    ...(input.tag_ids !== undefined ? { tag_ids: nextTagIds } : {}),
     ...(input.skip_revision ? { skip_revision: true } : {}),
   });
   if (!updated) return null;
   const next = asVaultItem(updated);
   if (!next) return null;
-  return toRow(next, { created_at: updated.created_at, updated_at: updated.updated_at });
+  return toRow(next, updated);
 }
 
 import {
@@ -298,7 +315,7 @@ export async function restoreVaultItemRevision(
   if (!updated) return null;
   const parsed = asVaultItem(updated);
   if (!parsed) return null;
-  return toRow(parsed, { created_at: updated.created_at, updated_at: updated.updated_at });
+  return toRow(parsed, updated);
 }
 
 export type VaultWrappedDekRow = {

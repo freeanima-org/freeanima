@@ -9,7 +9,6 @@ describe("taskItemBodySchema ownership XOR", () => {
       project_id: null,
       status: "pending",
       priority: "none",
-      tags: [],
       client_op_id: null,
     });
     expect(parsed.success).toBe(true);
@@ -25,7 +24,6 @@ describe("taskItemBodySchema ownership XOR", () => {
       project_id: 10,
       status: "pending",
       priority: "none",
-      tags: [],
       client_op_id: null,
     });
     expect(parsed.success).toBe(true);
@@ -41,7 +39,6 @@ describe("taskItemBodySchema ownership XOR", () => {
       project_id: 10,
       status: "pending",
       priority: "none",
-      tags: [],
       client_op_id: null,
     });
     expect(parsed.success).toBe(true);
@@ -57,7 +54,6 @@ describe("taskItemBodySchema ownership XOR", () => {
       project_id: null,
       status: "pending",
       priority: "none",
-      tags: [],
       client_op_id: null,
     });
     expect(parsed.success).toBe(false);

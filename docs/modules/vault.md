@@ -18,7 +18,7 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 ## 条目模型（摘要）
 
 - 类型：`login` | `secure_note` | `card` | `identity` | `custom`
-- 明文 meta：`title`、`url`、`uris[]`（`uri` + `match`）、`username`、`tags`、`import_refs`（如 `bitwarden` UUID）、`custom_field_names`
+- 明文 meta：`title`、`url`、`uris[]`（`uri` + `match`）、`username`、顶层 `tag_ids`（同 World `tag` entity；禁止 `body.tags`）、`import_refs`（如 `bitwarden` UUID）、`custom_field_names`
 - 密文：`secrets_enc` + `dek_wrapped`；载荷含 `password` / `totp` / `notes` / `custom_fields` / `card` / `identity`
 - `url` 为主展示 URI；`uris` 供 Bitwarden 式匹配（`domain` / `host` / `starts_with` / `exact` / `regex` / `never`）。无 `uris` 时对 `url` 做 domain 匹配
 

@@ -35,7 +35,7 @@ export const vaultItemMetaRowSchema = z.object({
   url: z.string().optional(),
   uris: z.array(vaultUriEntrySchema).optional(),
   username: z.string().optional(),
-  tags: z.array(z.string()),
+  tag_ids: z.array(z.number().int().positive()),
   custom_field_names: z.array(z.string()),
   import_refs: vaultImportRefsSchema.optional(),
   created_at: z.string(),
@@ -84,7 +84,7 @@ export type VaultConfigRowPayload = z.infer<typeof vaultConfigRowSchema>;
 
 export const vaultListInputSchema = z.object({
   subject_kind: vaultSubjectKindSchema,
-  tags: z.array(z.string()).optional(),
+  tag_ids: z.array(z.number().int().positive()).optional(),
   limit: z.number().int().positive().optional(),
   include_secrets: z.boolean().optional(),
 });
@@ -111,7 +111,7 @@ export const vaultCreateInputSchema = z.object({
   url: z.string().optional(),
   uris: z.array(vaultUriEntrySchema).optional(),
   username: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  tag_ids: z.array(z.number().int().positive()).optional(),
   secrets_enc: z.string().min(1),
   dek_wrapped: z.string().min(1),
   custom_field_names: z.array(z.string()).optional(),
@@ -130,7 +130,7 @@ export const vaultPatchInputSchema = z.object({
   url: z.string().optional(),
   uris: z.array(vaultUriEntrySchema).optional(),
   username: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  tag_ids: z.array(z.number().int().positive()).optional(),
   secrets_enc: z.string().min(1).optional(),
   dek_wrapped: z.string().min(1).optional(),
   custom_field_names: z.array(z.string()).optional(),
@@ -211,7 +211,7 @@ export const vaultHistoryChangedFieldSchema = z.enum([
   "url",
   "uris",
   "username",
-  "tags",
+  "tag_ids",
   "content",
   "item_type",
   "custom_field_names",
@@ -255,7 +255,7 @@ export const vaultCreatePlainInputSchema = z.object({
   url: z.string().optional(),
   uris: z.array(vaultUriEntrySchema).optional(),
   username: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  tag_ids: z.array(z.number().int().positive()).optional(),
   secrets: vaultSecretsViewSchema,
   import_refs: vaultImportRefsSchema.optional(),
 });
@@ -270,7 +270,7 @@ export const vaultPatchPlainInputSchema = z.object({
   url: z.string().optional(),
   uris: z.array(vaultUriEntrySchema).optional(),
   username: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  tag_ids: z.array(z.number().int().positive()).optional(),
   secrets: vaultSecretsViewSchema.optional(),
   import_refs: vaultImportRefsSchema.optional(),
 });

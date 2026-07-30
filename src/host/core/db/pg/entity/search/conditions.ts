@@ -172,11 +172,6 @@ function buildTaskItemBodyConditions(
   if (filters.priority != null) {
     conditions.push(sql`${entities.body}->>'priority' = ${filters.priority}`);
   }
-  if (filters.tags?.length) {
-    for (const tag of filters.tags) {
-      conditions.push(sql`${entities.body}->'tags' ? ${tag}`);
-    }
-  }
   if (filters.tag_ids?.length) {
     conditions.push(sql`${entities.tag_ids} @> ${pgBigintArray(filters.tag_ids)}`);
   }
@@ -322,11 +317,6 @@ function buildEmailAccountBodyConditions(
       sql`coalesce((${entities.body}->>'default_sender')::boolean, false) = ${filters.default_sender}`,
     );
   }
-  if (filters.tags?.length) {
-    for (const tag of filters.tags) {
-      conditions.push(sql`${entities.body}->'tags' ? ${tag}`);
-    }
-  }
   return conditions;
 }
 
@@ -339,11 +329,6 @@ function buildEmailThreadBodyConditions(
   }
   if (filters.thread_key) {
     conditions.push(sql`${entities.body}->>'thread_key' = ${filters.thread_key}`);
-  }
-  if (filters.tags?.length) {
-    for (const tag of filters.tags) {
-      conditions.push(sql`${entities.body}->'tags' ? ${tag}`);
-    }
   }
   if (filters.has_unread) {
     conditions.push(sql`coalesce((${entities.body}->>'unread_count')::int, 0) > 0`);
@@ -374,11 +359,6 @@ function buildEmailMessageBodyConditions(
   }
   if (filters.direction != null) {
     conditions.push(sql`${entities.body}->>'direction' = ${filters.direction}`);
-  }
-  if (filters.tags?.length) {
-    for (const tag of filters.tags) {
-      conditions.push(sql`${entities.body}->'tags' ? ${tag}`);
-    }
   }
   if (filters.from) {
     conditions.push(sql`${entities.body}->>'from' ILIKE ${`%${filters.from}%`}`);

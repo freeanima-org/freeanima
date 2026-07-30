@@ -68,7 +68,7 @@ function toMetaPayload(row: VaultItemMetaRow | VaultItemRow) {
     ...(row.url !== undefined ? { url: row.url } : {}),
     ...(row.uris !== undefined ? { uris: row.uris } : {}),
     ...(row.username !== undefined ? { username: row.username } : {}),
-    tags: row.tags,
+    tag_ids: row.tag_ids,
     custom_field_names: row.custom_field_names,
     ...(row.import_refs !== undefined ? { import_refs: row.import_refs } : {}),
     created_at: row.created_at,
@@ -91,7 +91,7 @@ export async function serviceVaultList(
   deps: RuntimeDeps,
   input: {
     subject_kind?: SubjectKind;
-    tags?: string[];
+    tag_ids?: number[];
     limit?: number;
     include_secrets?: boolean;
   },
@@ -102,7 +102,7 @@ export async function serviceVaultList(
   const items = await listVaultItems(
     worldId,
     omitUndefined({
-      tags: input.tags,
+      tag_ids: input.tag_ids,
       limit: input.limit,
       include_secrets: input.include_secrets,
     }),
@@ -171,7 +171,7 @@ export async function serviceVaultCreate(
     url?: string;
     uris?: VaultItemRow["uris"];
     username?: string;
-    tags?: string[];
+    tag_ids?: number[];
     secrets_enc: string;
     dek_wrapped: string;
     custom_field_names?: string[];
@@ -198,7 +198,7 @@ export async function serviceVaultCreatePlain(
     url?: string;
     uris?: VaultItemRow["uris"];
     username?: string;
-    tags?: string[];
+    tag_ids?: number[];
     secrets: VaultSecretsPayload;
     import_refs?: VaultItemRow["import_refs"];
   },
@@ -220,7 +220,7 @@ export async function serviceVaultCreatePlain(
       url: input.url,
       uris: input.uris,
       username: input.username,
-      tags: input.tags,
+      tag_ids: input.tag_ids,
       secrets_enc: sealed.secrets_enc,
       dek_wrapped: sealed.dek_wrapped,
       custom_field_names: sealed.custom_field_names,
@@ -241,7 +241,7 @@ export async function serviceVaultPatch(
     url?: string;
     uris?: VaultItemRow["uris"];
     username?: string;
-    tags?: string[];
+    tag_ids?: number[];
     secrets_enc?: string;
     dek_wrapped?: string;
     custom_field_names?: string[];
@@ -270,7 +270,7 @@ export async function serviceVaultPatchPlain(
     url?: string;
     uris?: VaultItemRow["uris"];
     username?: string;
-    tags?: string[];
+    tag_ids?: number[];
     secrets?: VaultSecretsPayload;
     import_refs?: VaultItemRow["import_refs"];
   },

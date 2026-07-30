@@ -12,12 +12,12 @@ describe("parseTaskItemSearchFilters", () => {
     const parsed = parseTaskItemSearchFilters({
       list_id: 2,
       status: "pending",
-      tags: ["work"],
+      tag_ids: [3],
       due_today: true,
     });
     expect(parsed.list_id).toBe(2);
     expect(parsed.status).toBe("pending");
-    expect(parsed.tags).toEqual(["work"]);
+    expect(parsed.tag_ids).toEqual([3]);
     expect(parsed.due_today).toBe(true);
   });
 
@@ -32,11 +32,9 @@ describe("parseDiaryEntrySearchFilters", () => {
       entry_after: "2026-06-01T00:00:00+08:00",
       entry_before: "2026-06-30T23:59:59+08:00",
       tag_ids: [7],
-      tags: ["日常"],
     });
     expect(parsed.entry_after).toBe("2026-06-01T00:00:00+08:00");
     expect(parsed.tag_ids).toEqual([7]);
-    expect(parsed.tags).toEqual(["日常"]);
   });
 
   it("accepts client_op_id for idempotent create lookup", () => {

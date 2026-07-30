@@ -19,7 +19,7 @@ export type EmailAccountRow = {
   default_sender: boolean;
   enabled: boolean;
   desc?: string | undefined;
-  tags: string[];
+  tag_ids: number[];
   created_at: string;
   updated_at: string;
 };
@@ -57,7 +57,7 @@ export type EmailMessageRow = {
   flagged: boolean;
   direction: "inbound" | "outbound";
   imap_mailbox?: string;
-  tags: string[];
+  tag_ids: number[];
 };
 
 function toUiMessage(row: {
@@ -75,7 +75,7 @@ function toUiMessage(row: {
   flagged?: boolean | undefined;
   direction: "inbound" | "outbound";
   imap_uid?: number | null;
-  tags: string[];
+  tag_ids: number[];
 }): EmailMessageRow {
   return {
     id: row.id,
@@ -90,7 +90,7 @@ function toUiMessage(row: {
     unread: row.unread,
     flagged: row.flagged === true,
     direction: row.direction,
-    tags: row.tags,
+    tag_ids: row.tag_ids,
     ...(row.content_type != null ? { content_type: row.content_type } : {}),
   };
 }
@@ -107,7 +107,7 @@ export type EmailAccountCreateInput = {
   default_sender?: boolean;
   enabled?: boolean;
   desc?: string;
-  tags?: string[];
+  tag_ids?: number[];
 };
 
 export type EmailAccountPatchInput = {
@@ -123,7 +123,7 @@ export type EmailAccountPatchInput = {
   default_sender?: boolean;
   enabled?: boolean;
   desc?: string;
-  tags?: string[];
+  tag_ids?: number[];
 };
 
 function habitat() {

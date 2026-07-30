@@ -20,6 +20,24 @@ import {
   type BitwardenMappedItem,
 } from "@freeanima/features/vault/domain/bitwarden-import.ts";
 import { createVaultItem, fetchVaultItems, patchVaultItem } from "../lib/api.ts";
+import { createTag, searchTags } from "@freeanima/features/tag/ui/spa/lib/api.ts";
+
+async function ensureTagIdsFromTitles(titles: string[]): Promise<number[]> {
+  const ids: number[] = [];
+  const seen = new Set<number>();
+  for (const raw of titles) {
+    const title = raw.trim();
+    if (!title) continue;
+    const found = await searchTags(title, { limit: 20 });
+    const exact = found.find((t) => t.title.toLowerCase() === title.toLowerCase());
+    const tag = exact ?? (await createTag(title));
+    if (!seen.has(tag.id)) {
+      seen.add(tag.id);
+      ids.push(tag.id);
+    }
+  }
+  return ids;
+}
 
 export function BitwardenImportDialog({
   open,
@@ -124,6 +142,7 @@ export function BitwardenImportDialog({
         try {
           const { mapped } = entry;
           const sealed = await session.sealSecrets(mapped.secrets);
+          const tag_ids = await ensureTagIdsFromTitles(mapped.tags);
           const meta = {
             title: mapped.title,
             content: mapped.content,
@@ -131,7 +150,7 @@ export function BitwardenImportDialog({
             ...(mapped.url ? { url: mapped.url } : {}),
             ...(mapped.uris ? { uris: mapped.uris } : {}),
             ...(mapped.username ? { username: mapped.username } : {}),
-            tags: mapped.tags,
+            ...(tag_ids.length > 0 ? { tag_ids } : {}),
             secrets_enc: sealed.secrets_enc,
             dek_wrapped: sealed.dek_wrapped,
             custom_field_names: extractCustomFieldNames(mapped.secrets),
