@@ -51,7 +51,7 @@ describe("generateConversationSummary", () => {
     resetActiveConfigForTest();
   });
 
-  it("passes one-shot requestParams to chat", async () => {
+  it("passes one-shot requestParams via runAutoLlmChat", async () => {
     const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "I fixed login." } as never);
     restores.push(chatSpy);
 

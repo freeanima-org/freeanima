@@ -27,6 +27,8 @@ mock.module("@freeanima/host/core/db/pg/auto-llm-run", () => ({
   purgeStaleAutoLlmRuns: mock(async () => ({ deleted: 0 })),
   listAutoLlmRuns: mock(async () => []),
   countAutoLlmRuns: mock(async () => 0),
+  getAutoLlmRun: mock(async () => null),
+  listAutoLlmMessages: mock(async () => []),
 }));
 
 import { runAutoLlm } from "./auto-llm-run.ts";
@@ -97,5 +99,8 @@ describe("runAutoLlm", () => {
     expect(appendCalls.length).toBe(1);
     expect(appendCalls[0]?.run_kind).toBe("cron");
     expect(appendCalls[0]?.status).toBe("ok");
+    expect(appendCalls[0]?.messages?.length).toBeGreaterThan(0);
+    expect(appendCalls[0]?.messages?.some((m) => m.payload.role === "system")).toBe(true);
+    expect(appendCalls[0]?.messages?.some((m) => m.payload.role === "user")).toBe(true);
   });
 });

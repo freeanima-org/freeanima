@@ -35,7 +35,7 @@ export { getAcpStatus, acpStartAll, acpStopAll, acpStartAgent, acpStopAgent } fr
 export { fetchConversationAcpDock, iterateConversationEvents } from "./conversation-events.ts";
 export { getFtsStatus, startRebuildFtsIndex, getRebuildFtsJobStatus } from "./fts.ts";
 export { getSleepSummary, listPipelineStepRuns, listCronLogs } from "./sleep.ts";
-export { listAutoLlmRuns } from "./auto-llm-runs.ts";
+export { listAutoLlmRuns, getAutoLlmRun } from "./auto-llm-runs.ts";
 export {
   listWorldEntities,
   getWorldEntity,

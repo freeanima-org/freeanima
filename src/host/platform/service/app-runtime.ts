@@ -491,6 +491,10 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return autoLlmRuns.listAutoLlmRuns(this.runtimeDeps(), opts);
   }
 
+  getAutoLlmRun(id: string) {
+    return autoLlmRuns.getAutoLlmRunDetail(this.runtimeDeps(), id);
+  }
+
   ensureBuiltinCronJobs(): Promise<void> {
     return status.ensureBuiltinCronJobsRegistered();
   }

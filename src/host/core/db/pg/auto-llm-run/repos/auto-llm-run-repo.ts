@@ -1,6 +1,8 @@
-import { and, count, desc, eq, inArray, lt } from "drizzle-orm";
-import { autoLlmRuns } from "@freeanima/host/core/db/schema";
+import { and, count, desc, eq, inArray, lt, asc } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
+import { autoLlmRuns, autoLlmMessages } from "@freeanima/host/core/db/schema";
 import type {
+  AutoLlmMessageRow,
   AutoLlmRunAppendInput,
   AutoLlmRunCountOpts,
   AutoLlmRunListOpts,
@@ -69,22 +71,56 @@ export async function countAutoLlmRuns(opts?: AutoLlmRunCountOpts): Promise<numb
   return Number(rows[0]?.value ?? 0);
 }
 
+export async function getAutoLlmRun(id: string): Promise<AutoLlmRunRow | null> {
+  const db = getDb();
+  const rows = await db.select().from(autoLlmRuns).where(eq(autoLlmRuns.id, id)).limit(1);
+  const raw = rows[0];
+  return raw ? mapAutoLlmRunRow(raw) : null;
+}
+
+export async function listAutoLlmMessages(runId: string): Promise<AutoLlmMessageRow[]> {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(autoLlmMessages)
+    .where(eq(autoLlmMessages.run_id, runId))
+    .orderBy(asc(autoLlmMessages.pos));
+  return rows.map((raw) => ({
+    id: raw.id,
+    run_id: raw.run_id,
+    pos: Number(raw.pos),
+    payload: raw.payload,
+  }));
+}
+
 export async function appendAutoLlmRun(row: AutoLlmRunAppendInput): Promise<void> {
   const created_at = row.created_at ? new Date(row.created_at) : new Date();
   const finished_at = row.finished_at ? new Date(row.finished_at) : created_at;
   const db = getDb();
-  await db.insert(autoLlmRuns).values({
-    id: row.id,
-    run_name: row.run_name,
-    run_kind: row.run_kind,
-    input_summary: row.input_summary.slice(0, INPUT_SUMMARY_MAX),
-    output: row.output.slice(0, OUTPUT_MAX),
-    status: row.status,
-    duration_ms: row.duration_ms,
-    error: row.error != null ? row.error.slice(0, ERROR_MAX) : null,
-    metadata: row.metadata ?? null,
-    created_at,
-    finished_at,
+  await db.transaction(async (tx) => {
+    await tx.insert(autoLlmRuns).values({
+      id: row.id,
+      run_name: row.run_name,
+      run_kind: row.run_kind,
+      input_summary: row.input_summary.slice(0, INPUT_SUMMARY_MAX),
+      output: row.output.slice(0, OUTPUT_MAX),
+      status: row.status,
+      duration_ms: row.duration_ms,
+      error: row.error != null ? row.error.slice(0, ERROR_MAX) : null,
+      metadata: row.metadata ?? null,
+      created_at,
+      finished_at,
+    });
+    const msgs = row.messages ?? [];
+    if (msgs.length === 0) return;
+    await tx.insert(autoLlmMessages).values(
+      msgs.map((m) => ({
+        id: m.id ?? randomUUID(),
+        run_id: row.id,
+        pos: m.pos,
+        payload: m.payload,
+      })),
+    );
   });
 }
 

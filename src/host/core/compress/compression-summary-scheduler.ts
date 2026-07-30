@@ -62,7 +62,7 @@ async function finalizeCompressionSummary(
     cutState,
     systemPromptSnapshot,
     model,
-    { preSliced: true },
+    { preSliced: true, parentConversationId: conversationId },
   );
 
   const merged: CompressionState = {

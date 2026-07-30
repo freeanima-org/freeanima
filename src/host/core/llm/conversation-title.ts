@@ -1,8 +1,10 @@
 import { omitUndefined } from "@freeanima/host/core/util";
 import { PROFILE_SUMMARY } from "@freeanima/host/core/provider";
 import type { ChatCompletion } from "@freeanima/host/core/provider";
-import { chat } from "./llm.ts";
+import { runAutoLlmChat } from "./auto-llm-chat.ts";
 import type { LlmRuntime } from "./llm-stack.ts";
+
+export const AUTO_LLM_RUN_KIND_CONVERSATION_TITLE = "conversation-title";
 
 /** Title is at most 50 chars; cap generation budget tightly. */
 export const SESSION_TITLE_MAX_OUTPUT_TOKENS = 30;
@@ -92,7 +94,7 @@ function completionDiagnostics(resp: ChatCompletion): GenerateConversationTitleD
 
 export async function generateConversationTitle(
   userText: string,
-  opts?: { runtime?: LlmRuntime; model?: string },
+  opts?: { runtime?: LlmRuntime; model?: string; parentConversationId?: string },
 ): Promise<GenerateConversationTitleResult> {
   const trimmed = userText.trim();
   if (!trimmed) {
@@ -100,18 +102,28 @@ export async function generateConversationTitle(
   }
 
   try {
-    const resp = await chat(
-      [
-        { role: "system", content: SESSION_TITLE_INSTRUCTION },
-        { role: "user", content: trimmed },
-      ],
+    const chatMessages = [
+      { role: "system" as const, content: SESSION_TITLE_INSTRUCTION },
+      { role: "user" as const, content: trimmed },
+    ];
+    const recorded = await runAutoLlmChat(
       omitUndefined({
+        runName: opts?.parentConversationId
+          ? `conversation-title:${opts.parentConversationId}`
+          : "conversation-title",
+        runKind: AUTO_LLM_RUN_KIND_CONVERSATION_TITLE,
+        messages: chatMessages,
         profileId: PROFILE_SUMMARY,
         runtime: opts?.runtime,
         model: opts?.model,
         requestParams: SESSION_TITLE_REQUEST_PARAMS,
+        parentConversationId: opts?.parentConversationId,
       }),
     );
+    if (recorded.status === "error" || !recorded.completion) {
+      return { ok: false, error: recorded.error ?? "LLM title call failed" };
+    }
+    const resp = recorded.completion;
     const title = extractTitleFromCompletion(resp);
     const diagnostics = completionDiagnostics(resp);
     if (!title) {

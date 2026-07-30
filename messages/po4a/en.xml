@@ -156,10 +156,12 @@
   <msg id="habitat_api_service_restarting">Service is restarting...</msg>
   <msg id="habitat_api_studio_workspace_missing">studio.workspace is not configured or does not exist</msg>
   <msg id="habitat_api_terminal_session_not_found">Terminal conversation does not exist or has closed</msg>
-  <msg id="habitat_auto_llm_runs_desc">Audit log for background LLM runs (cron agent, sleep pipeline). No user conversation archive.</msg>
+  <msg id="habitat_auto_llm_runs_desc">Audit log for non-conversation LLM runs (cron, sleep, title, goal judge, compression). Mutually exclusive with conversation messages.</msg>
   <msg id="habitat_auto_llm_runs_duration">Duration</msg>
   <msg id="habitat_auto_llm_runs_empty">No AutoLlmRun records yet.</msg>
   <msg id="habitat_auto_llm_runs_input">Input summary</msg>
+  <msg id="habitat_auto_llm_runs_messages">Messages</msg>
+  <msg id="habitat_auto_llm_runs_messages_empty">No message transcript for this run.</msg>
   <msg id="habitat_auto_llm_runs_metadata">Metadata</msg>
   <msg id="habitat_auto_llm_runs_output">Output</msg>
   <msg id="habitat_auto_llm_runs_run_kind">Run kind</msg>

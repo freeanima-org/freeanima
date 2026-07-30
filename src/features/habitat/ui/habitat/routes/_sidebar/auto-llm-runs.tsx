@@ -19,7 +19,7 @@ import {
 import { FormField } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
-import { listAutoLlmRuns } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
+import { getAutoLlmRun, listAutoLlmRuns } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
@@ -34,6 +34,13 @@ const RUN_KIND_OPTIONS = [
   "deep-sleep",
   "dream",
   "autobiography",
+  "temporal-summary",
+  "skill-evolve",
+  "skill-maintain",
+  "conversation-title",
+  "goal-judge",
+  "compression-summary",
+  "handoff-summary",
   "subagent",
 ] as const;
 
@@ -53,10 +60,32 @@ type AutoLlmRunRow = {
   finished_at: string;
 };
 
+type AutoLlmMessageRow = {
+  id: string;
+  run_id: string;
+  pos: number;
+  payload: {
+    role: string;
+    content?: string | null;
+    tool_call_id?: string;
+  };
+};
+
 function formatDurationMs(ms: number): string {
   if (ms < 1000) return `${ms} ms`;
   const sec = (ms / 1000).toFixed(1);
   return `${sec} s`;
+}
+
+function formatMessagePreview(msg: AutoLlmMessageRow): string {
+  const role = msg.payload.role;
+  const content =
+    typeof msg.payload.content === "string" ? msg.payload.content : (msg.payload.content ?? "");
+  const preview = content.length > 800 ? `${content.slice(0, 800)}…` : content;
+  if (role === "tool") {
+    return `[tool ${msg.payload.tool_call_id ?? ""}] ${preview}`;
+  }
+  return `[${role}] ${preview}`;
 }
 
 export const Route = createFileRoute("/_sidebar/auto-llm-runs")({
@@ -72,6 +101,8 @@ function AutoLlmRunsPage() {
   const [total, setTotal] = useState(0);
   const [items, setItems] = useState<AutoLlmRunRow[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [detailMessages, setDetailMessages] = useState<AutoLlmMessageRow[]>([]);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   const fetchList = useCallback(
@@ -104,6 +135,33 @@ function AutoLlmRunsPage() {
     },
     [runKind, statusFilter, setOffset],
   );
+
+  const loadDetail = useCallback(async (id: string) => {
+    setDetailLoading(true);
+    setDetailMessages([]);
+    try {
+      const data = (await getAutoLlmRun(id)) as {
+        run?: AutoLlmRunRow;
+        messages?: AutoLlmMessageRow[];
+      } | null;
+      setDetailMessages(data?.messages ?? []);
+    } catch (e) {
+      logCaughtError("routes/_sidebar/auto-llm-runs/get", e);
+      setDetailMessages([]);
+    } finally {
+      setDetailLoading(false);
+    }
+  }, []);
+
+  const toggleExpand = (id: string) => {
+    if (expandedId === id) {
+      setExpandedId(null);
+      setDetailMessages([]);
+      return;
+    }
+    setExpandedId(id);
+    void loadDetail(id);
+  };
 
   const runSearch = () => {
     void fetchList(0);
@@ -211,7 +269,7 @@ function AutoLlmRunsPage() {
                         type="button"
                         size="sm"
                         className="h-7 text-xs"
-                        onClick={() => setExpandedId(expandedId === row.id ? null : row.id)}
+                        onClick={() => toggleExpand(row.id)}
                       >
                         {expandedId === row.id
                           ? m.habitat_common_collapse()
@@ -250,6 +308,24 @@ function AutoLlmRunsPage() {
                             </pre>
                           </div>
                         ) : null}
+                        <div className="mb-2">
+                          <p className="text-xs font-semibold mb-1">
+                            {m.habitat_auto_llm_runs_messages()}
+                          </p>
+                          {detailLoading ? (
+                            <p className="text-xs text-muted-foreground">
+                              {m.habitat_common_loading()}
+                            </p>
+                          ) : detailMessages.length === 0 ? (
+                            <p className="text-xs text-muted-foreground">
+                              {m.habitat_auto_llm_runs_messages_empty()}
+                            </p>
+                          ) : (
+                            <pre className="text-xs whitespace-pre-wrap break-all max-h-64 overflow-auto">
+                              {detailMessages.map(formatMessagePreview).join("\n\n")}
+                            </pre>
+                          )}
+                        </div>
                         {row.metadata && Object.keys(row.metadata).length > 0 ? (
                           <div>
                             <p className="text-xs font-semibold mb-1">

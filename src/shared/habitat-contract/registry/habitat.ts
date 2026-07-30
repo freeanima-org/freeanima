@@ -50,6 +50,9 @@ const autoLlmRunsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).optional(),
   offset: z.coerce.number().int().min(0).optional(),
 });
+const autoLlmRunIdParamSchema = z.object({
+  id: z.string().min(1),
+});
 const ftsRebuildBodySchema = z.object({ only_missing: z.boolean().optional() });
 const sleepCycleBodySchema = z.object({
   day: z.string().optional(),
@@ -358,6 +361,11 @@ export const habitatMethodDefs = {
   }),
   "autoLlmRuns.list": defineHabitatMethod({
     input: autoLlmRunsQuerySchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "autoLlmRuns.get": defineHabitatMethod({
+    input: autoLlmRunIdParamSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
