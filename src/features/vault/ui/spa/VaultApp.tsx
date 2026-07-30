@@ -295,7 +295,7 @@ export function VaultApp() {
           ...(url ? { url } : {}),
           ...(uris.length > 0 ? { uris } : {}),
           ...(values.username ? { username: values.username } : {}),
-          ...(values.tags.length > 0 ? { tags: values.tags } : {}),
+          ...(values.tag_ids.length > 0 ? { tag_ids: values.tag_ids } : {}),
           secrets_enc: sealed.secrets_enc,
           dek_wrapped: sealed.dek_wrapped,
           custom_field_names: extractCustomFieldNames(secrets),
@@ -307,7 +307,7 @@ export function VaultApp() {
           ...(url ? { url } : {}),
           ...(uris.length > 0 ? { uris } : {}),
           ...(values.username ? { username: values.username } : {}),
-          ...(values.tags.length > 0 ? { tags: values.tags } : {}),
+          ...(values.tag_ids.length > 0 ? { tag_ids: values.tag_ids } : {}),
           secrets: secrets as VaultSecretsViewPayload,
         });
       }
@@ -346,7 +346,7 @@ export function VaultApp() {
         title: selectedItem.title,
         item_type: selectedItem.item_type,
         username: selectedItem.username ?? "",
-        tags: selectedItem.tags ?? [],
+        tag_ids: selectedItem.tag_ids ?? [],
         uris,
         password: typeof secrets.password === "string" ? secrets.password : "",
         totp: typeof secrets.totp === "string" ? secrets.totp : "",
@@ -380,7 +380,7 @@ export function VaultApp() {
           url,
           uris,
           username: values.username,
-          tags: values.tags,
+          tag_ids: values.tag_ids,
           secrets_enc: sealed.secrets_enc,
           dek_wrapped: sealed.dek_wrapped,
           custom_field_names: extractCustomFieldNames(secrets),
@@ -393,7 +393,7 @@ export function VaultApp() {
           url,
           uris,
           username: values.username,
-          tags: values.tags,
+          tag_ids: values.tag_ids,
           secrets: secrets as VaultSecretsViewPayload,
         });
       }

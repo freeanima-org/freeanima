@@ -8,6 +8,7 @@ import {
   messagePayload,
   parseAccountId,
   parseMessageId,
+  resolveEmailToolTagIds,
 } from "./email-tool-helpers.ts";
 import {
   getEmailMessageRow,
@@ -601,29 +602,48 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
         },
         {
           name: "email_tag",
-          description: "Set tags on an email thread or message entity.",
+          description:
+            "Set tag_ids on an email thread or message. Pass tags (titles, find-or-create) and/or tag_ids.",
           parameters: {
             type: "object",
             properties: {
               target: { type: "string", enum: ["thread", "message"] },
               id: { type: "number" },
               tags: { type: "array", items: { type: "string" } },
+              tag_ids: { type: "array", items: { type: "integer" } },
             },
-            required: ["target", "id", "tags"],
+            required: ["target", "id"],
           },
           handler: async (args) => {
             const id = parseMessageId(args.id);
             if (id == null) return toolError("id is required");
             const target = String(args.target ?? "");
-            const tags = Array.isArray(args.tags) ? args.tags.map(String) : [];
             try {
+              const worldId = await resolveEmailToolWorld({
+                args,
+                entityId: id,
+                access: "write",
+              });
+              if (typeof worldId === "string") return worldId;
+              const tagIds =
+                (await resolveEmailToolTagIds(
+                  worldId,
+                  omitUndefined({
+                    tags: Array.isArray(args.tags) ? args.tags.map(String) : undefined,
+                    tag_ids: Array.isArray(args.tag_ids)
+                      ? args.tag_ids
+                          .map((x) => Number(x))
+                          .filter((n) => Number.isFinite(n) && n > 0)
+                      : undefined,
+                  }),
+                )) ?? [];
               if (target === "thread") {
-                const thread = await tagEmailThread(id, tags);
+                const thread = await tagEmailThread(id, tagIds);
                 if (!thread) return toolError(`Email thread not found: ${id}`);
                 return toolResult({ ok: true, thread });
               }
               if (target === "message") {
-                const message = await tagEmailMessage(id, tags);
+                const message = await tagEmailMessage(id, tagIds);
                 if (!message) return toolError(`Email message not found: ${id}`);
                 return toolResult({ ok: true, message: await messagePayload(message) });
               }

@@ -49,7 +49,7 @@ export function metaPayload(row: {
   item_type: string;
   url?: string;
   username?: string;
-  tags: string[];
+  tag_ids: number[];
   custom_field_names: string[];
   created_at: string;
   updated_at: string;
@@ -61,7 +61,7 @@ export function metaPayload(row: {
     item_type: row.item_type,
     url: row.url,
     username: row.username,
-    tags: row.tags,
+    tag_ids: row.tag_ids,
     custom_field_names: row.custom_field_names,
     created_at: row.created_at,
     updated_at: row.updated_at,

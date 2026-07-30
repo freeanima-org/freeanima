@@ -43,7 +43,6 @@ export const emailAccountBodySchema = z.object({
   default_sender: z.boolean().default(false),
   enabled: z.boolean().default(true),
   desc: z.string().optional(),
-  tags: z.array(z.string()).optional(),
   sync: emailAccountSyncSchema.optional(),
   mailbox_paths: z.array(z.string()).optional(),
   sent_mailbox: z.string().optional(),

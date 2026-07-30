@@ -5,7 +5,7 @@ export const VAULT_REVISION_CHANGED_FIELDS = [
   "url",
   "uris",
   "username",
-  "tags",
+  "tag_ids",
   "content",
   "item_type",
   "custom_field_names",
@@ -22,25 +22,24 @@ export type VaultRevisionCompareView = {
   url?: string;
   uris_json?: string;
   username?: string;
-  tags: string[];
+  tag_ids: number[];
   item_type?: string;
   custom_field_names: string[];
   import_refs_json?: string;
   secrets_enc?: string;
 };
 
-function normalizeTags(tags: unknown): string[] {
-  if (!Array.isArray(tags)) return [];
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const raw of tags) {
-    if (typeof raw !== "string") continue;
-    const tag = raw.trim();
-    if (!tag || seen.has(tag)) continue;
-    seen.add(tag);
-    out.push(tag);
+function normalizeTagIds(tagIds: unknown): number[] {
+  if (!Array.isArray(tagIds)) return [];
+  const seen = new Set<number>();
+  const out: number[] = [];
+  for (const raw of tagIds) {
+    const id = Math.floor(Number(raw));
+    if (!Number.isFinite(id) || id <= 0 || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
   }
-  return out.toSorted((a, b) => a.localeCompare(b));
+  return out.toSorted((a, b) => a - b);
 }
 
 function normalizeNames(names: unknown): string[] {
@@ -59,11 +58,12 @@ export function vaultCompareViewFromEntity(row: {
   title: string;
   content: string;
   body: Record<string, unknown>;
+  tag_ids?: number[];
 }): VaultRevisionCompareView {
   const out: VaultRevisionCompareView = {
     title: row.title,
     content: row.content,
-    tags: normalizeTags(row.body.tags),
+    tag_ids: normalizeTagIds(row.tag_ids),
     custom_field_names: normalizeNames(row.body.custom_field_names),
   };
   const url = optStr(row.body.url);
@@ -86,6 +86,7 @@ export function vaultCompareViewFromRevision(rev: EntityRevision): VaultRevision
     title: rev.title,
     content: rev.content,
     body: rev.body,
+    tag_ids: rev.tag_ids,
   });
 }
 
@@ -102,7 +103,7 @@ export function diffVaultRevisionFields(
   if ((older.url ?? "") !== (newer.url ?? "")) changed.push("url");
   if ((older.uris_json ?? "") !== (newer.uris_json ?? "")) changed.push("uris");
   if ((older.username ?? "") !== (newer.username ?? "")) changed.push("username");
-  if (JSON.stringify(older.tags) !== JSON.stringify(newer.tags)) changed.push("tags");
+  if (JSON.stringify(older.tag_ids) !== JSON.stringify(newer.tag_ids)) changed.push("tag_ids");
   if (older.content !== newer.content) changed.push("content");
   if ((older.item_type ?? "") !== (newer.item_type ?? "")) changed.push("item_type");
   if (JSON.stringify(older.custom_field_names) !== JSON.stringify(newer.custom_field_names)) {

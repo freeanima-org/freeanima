@@ -1,13 +1,4 @@
 import { EMAIL_MESSAGE_COMPONENT } from "./components/email-message.ts";
-import { EMAIL_THREAD_COMPONENT } from "./components/email-thread.ts";
-import { TASK_ITEM_COMPONENT } from "./components/task-item.ts";
-
-function appendTags(parts: string[], tags: unknown): void {
-  if (!Array.isArray(tags)) return;
-  for (const tag of tags) {
-    if (typeof tag === "string" && tag.trim()) parts.push(tag.trim());
-  }
-}
 
 export function entitySearchTextForWrite(input: {
   title: string;
@@ -17,14 +8,7 @@ export function entitySearchTextForWrite(input: {
   primary_component: string | null;
 }): string {
   const parts = [input.title, input.summary, input.content].map((s) => s.trim()).filter(Boolean);
-  if (
-    input.primary_component === TASK_ITEM_COMPONENT ||
-    input.primary_component === EMAIL_MESSAGE_COMPONENT ||
-    input.primary_component === EMAIL_THREAD_COMPONENT
-  ) {
-    appendTags(parts, input.body.tags);
-  }
-  // diary_entry 标签已迁至顶层 tag_ids，不再写入 body.tags 供 FTS
+  // 标签一律走顶层 entities.tag_ids（过滤用）；不再从 body.tags 写入 FTS
   if (input.primary_component === EMAIL_MESSAGE_COMPONENT) {
     const from = input.body.from;
     const to = input.body.to;

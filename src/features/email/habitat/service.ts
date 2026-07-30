@@ -41,7 +41,7 @@ function toAccountPayload(account: Awaited<ReturnType<typeof listEmailAccountRow
     default_sender: account.default_sender,
     enabled: account.enabled,
     desc: account.desc,
-    tags: account.tags,
+    tag_ids: account.tag_ids,
     created_at: account.created_at,
     updated_at: account.updated_at,
   };
@@ -67,7 +67,7 @@ function toThreadPayload(thread: Awaited<ReturnType<typeof listEmailThreads>>[nu
     preview: thread.preview,
     account_id: thread.account_id,
     thread_key: thread.thread_key,
-    tags: thread.tags,
+    tag_ids: thread.tag_ids,
     unread_count: thread.unread_count,
     message_count: thread.message_count,
     last_message_at: thread.last_message_at,
@@ -104,7 +104,7 @@ export async function serviceEmailAccountCreate(
     default_sender?: boolean;
     enabled?: boolean;
     desc?: string;
-    tags?: string[];
+    tag_ids?: number[];
   },
 ) {
   assertPg(deps);
@@ -127,7 +127,7 @@ export async function serviceEmailAccountCreate(
       default_sender: withPreset.default_sender,
       enabled: withPreset.enabled,
       desc: withPreset.desc,
-      tags: withPreset.tags,
+      tag_ids: withPreset.tag_ids,
     }),
   );
   return { account: toAccountPayload(account) };
@@ -149,7 +149,7 @@ export async function serviceEmailAccountPatch(
     default_sender?: boolean;
     enabled?: boolean;
     desc?: string;
-    tags?: string[];
+    tag_ids?: number[];
   },
 ) {
   assertPg(deps);
@@ -181,7 +181,7 @@ export async function serviceEmailAccountPatch(
       default_sender: withPreset.default_sender,
       enabled: withPreset.enabled,
       desc: withPreset.desc,
-      tags: withPreset.tags,
+      tag_ids: withPreset.tag_ids,
     }),
   );
   if (!account) throw new Error("NOT_FOUND");

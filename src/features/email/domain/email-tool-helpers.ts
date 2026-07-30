@@ -1,4 +1,5 @@
 import { z } from "@freeanima/host/core/tool";
+import { ensureTagsByTitles } from "@freeanima/features/tag/domain";
 
 import type { listEmailAccountRows } from "./account-store.ts";
 import type { getEmailMessageRow } from "./message-store.ts";
@@ -8,6 +9,27 @@ import {
   requireCompleteEmailHosts,
   EMAIL_PROVIDER_IDS,
 } from "./provider-presets.ts";
+
+/** 工具层 tags（标题）+ tag_ids → 合并后的 id 列表；未传二者时 undefined。 */
+export async function resolveEmailToolTagIds(
+  worldId: number,
+  input: { tags?: string[]; tag_ids?: number[] },
+): Promise<number[] | undefined> {
+  if (input.tags === undefined && input.tag_ids === undefined) return undefined;
+  const parts: number[][] = [];
+  if (input.tag_ids?.length) parts.push(input.tag_ids);
+  if (input.tags?.length) parts.push(await ensureTagsByTitles(worldId, input.tags));
+  const out: number[] = [];
+  const seen = new Set<number>();
+  for (const part of parts) {
+    for (const id of part) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(id);
+    }
+  }
+  return out;
+}
 
 export const emailProviderSchema = z.enum(EMAIL_PROVIDER_IDS);
 
@@ -28,6 +50,7 @@ export const accountCreateSchema = z
     enabled: z.boolean().optional(),
     desc: z.string().optional(),
     tags: z.array(z.string()).optional(),
+    tag_ids: z.array(z.number().int().positive()).optional(),
   })
   .merge(accountHostFieldsSchema)
   .transform((raw) => {
@@ -47,6 +70,7 @@ export const accountCreateSchema = z
       ...(withPreset.enabled !== undefined ? { enabled: withPreset.enabled } : {}),
       ...(withPreset.desc !== undefined ? { desc: withPreset.desc } : {}),
       ...(withPreset.tags !== undefined ? { tags: withPreset.tags } : {}),
+      ...(withPreset.tag_ids !== undefined ? { tag_ids: withPreset.tag_ids } : {}),
     };
   });
 
@@ -59,6 +83,7 @@ export const accountPatchSchema = z
     enabled: z.boolean().optional(),
     desc: z.string().optional(),
     tags: z.array(z.string()).optional(),
+    tag_ids: z.array(z.number().int().positive()).optional(),
   })
   .merge(accountHostFieldsSchema)
   .transform((raw) => {
@@ -84,6 +109,7 @@ export const accountPatchSchema = z
       ...(withPreset.enabled !== undefined ? { enabled: withPreset.enabled } : {}),
       ...(withPreset.desc !== undefined ? { desc: withPreset.desc } : {}),
       ...(withPreset.tags !== undefined ? { tags: withPreset.tags } : {}),
+      ...(withPreset.tag_ids !== undefined ? { tag_ids: withPreset.tag_ids } : {}),
     };
   });
 
@@ -119,7 +145,7 @@ export function accountPayload(account: Awaited<ReturnType<typeof listEmailAccou
     default_sender: account.default_sender,
     enabled: account.enabled,
     desc: account.desc,
-    tags: account.tags,
+    tag_ids: account.tag_ids,
     password: account.password,
     sync: account.sync,
     created_at: account.created_at,
@@ -162,7 +188,7 @@ export async function messagePayload(
     flagged: isMessageFlagged(message.flags ?? []),
     direction: message.direction,
     imap_uid: message.imap_uid,
-    tags: message.tags,
+    tag_ids: message.tag_ids,
     ...(includeHeaders ? { headers: await resolveEmailHeadersForRead(message) } : {}),
     ...(includeAttachments
       ? {

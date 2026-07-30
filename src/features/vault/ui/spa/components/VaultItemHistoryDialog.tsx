@@ -22,7 +22,7 @@ const CHANGED_FIELD_LABELS: Record<string, string> = {
   title: "标题",
   url: "网址",
   username: "用户名",
-  tags: "标签",
+  tag_ids: "标签",
   content: "备注",
   item_type: "类型",
   custom_field_names: "自定义字段",

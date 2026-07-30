@@ -294,7 +294,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
             username: item.username ?? "",
             url: item.url ?? uris[0]?.uri ?? "",
             uris,
-            tags: item.tags ?? [],
+            tag_ids: item.tag_ids ?? [],
             content: item.content ?? "",
             password,
             notes,
@@ -312,7 +312,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
           .filter((u) => u.uri.length > 0);
         const url = (message.url?.trim() || uris[0]?.uri || undefined) as string | undefined;
         const username = message.username?.trim() || undefined;
-        const tags = (message.tags ?? []).map((t) => t.trim()).filter(Boolean);
+        const tag_ids = message.tag_ids ?? [];
         const content = message.content?.trim() || undefined;
 
         if (message.id != null) {
@@ -345,7 +345,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
             ...(url !== undefined ? { url } : {}),
             uris,
             ...(username !== undefined ? { username } : { username: "" }),
-            tags,
+            tag_ids,
             ...(content !== undefined ? { content } : {}),
             secrets_enc: sealed.secrets_enc,
             dek_wrapped: sealed.dek_wrapped,
@@ -367,7 +367,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
           ...(url ? { url } : {}),
           uris,
           ...(username ? { username } : {}),
-          tags,
+          tag_ids,
           ...(content ? { content } : {}),
           secrets_enc: sealed.secrets_enc,
           dek_wrapped: sealed.dek_wrapped,

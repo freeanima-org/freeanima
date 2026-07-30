@@ -24,7 +24,7 @@ export type ExtToBgMessage =
       username?: string;
       url?: string;
       uris?: VaultUriEntryPayload[];
-      tags?: string[];
+      tag_ids?: number[];
       content?: string;
       password?: string;
       notes?: string;
@@ -62,7 +62,7 @@ export type ExtVaultEditorItem = {
   username: string;
   url: string;
   uris: VaultUriEntryPayload[];
-  tags: string[];
+  tag_ids: number[];
   content: string;
   password: string;
   notes: string;

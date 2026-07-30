@@ -30,7 +30,6 @@ export const emailMessageBodySchema = z.object({
   sent_at: z.string(),
   unread: z.boolean().default(true),
   flags: z.array(z.string()).optional(),
-  tags: z.array(z.string()).default([]),
   /** 解码后正文的 MIME 类型（content 列）；html 时 UI 沙箱渲染 */
   content_type: emailContentTypeSchema.default("text/plain"),
   /** 始终为纯文本（ToolSet 默认 / preview） */

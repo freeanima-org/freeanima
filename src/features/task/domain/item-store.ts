@@ -190,7 +190,6 @@ export async function createTaskItem(
     priority: input.priority ?? "none",
     list_id: listId,
     sort_order: sortOrder,
-    tags: [] as string[],
     due_at: input.due_at ?? null,
     remind_at: input.remind_at ?? null,
     completed_at: null,

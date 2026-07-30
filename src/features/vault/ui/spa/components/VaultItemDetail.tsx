@@ -3,6 +3,8 @@ import { Button } from "@freeanima/ui-kit";
 import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 import { generateTotpCode } from "@freeanima/shared/vault-crypto";
 import type { VaultItemMetaRowPayload } from "@freeanima/shared/rpc-contract";
+import { VAULT_ITEM_COMPONENT } from "@freeanima/host/core/db/schema";
+import { TagPicker } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 
 export type VaultDetailSecrets = {
   password?: string;
@@ -162,17 +164,14 @@ export function VaultItemDetail({
 
       {item.username ? <SecretFieldRow label="用户名" value={item.username} /> : null}
 
-      {item.tags.length > 0 ? (
-        <div className="flex flex-wrap gap-1.5">
-          {item.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
+      {item.tag_ids.length > 0 ? (
+        <TagPicker
+          primaryComponent={VAULT_ITEM_COMPONENT}
+          tagIds={item.tag_ids}
+          onChange={() => {}}
+          mode="multi"
+          readOnly
+        />
       ) : null}
 
       {secretsLoading ? (

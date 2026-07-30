@@ -16,7 +16,6 @@ const taskItemBodyFieldsSchema = schedulableBodySchema.extend({
   /** 任务模块必填；项目内为 null（与 project_id 互斥） */
   list_id: z.number().int().positive().nullable(),
   sort_order: z.number().int().optional(),
-  tags: z.array(z.string()).default([]),
   completed_at: z.string().nullable().optional(),
   project_id: z.number().int().positive().nullable().optional(),
   client_op_id: z.string().min(1).nullable().default(null),

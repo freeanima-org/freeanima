@@ -13,6 +13,7 @@ import {
   accountPatchSchema,
   accountPayload,
   errMsg,
+  resolveEmailToolTagIds,
   type EmailToolIo,
   parseMessageId,
 } from "./email-tool-helpers.ts";
@@ -56,6 +57,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
               enabled: { type: "boolean" },
               desc: { type: "string" },
               tags: { type: "array", items: { type: "string" } },
+              tag_ids: { type: "array", items: { type: "integer" } },
             },
             required: ["subject_kind", "password", "address"],
           },
@@ -65,8 +67,16 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
               if (typeof worldId === "string") return worldId;
 
               const input = accountCreateSchema.parse(args);
+              const { tags, tag_ids: rawTagIds, ...rest } = input;
+              const tag_ids = await resolveEmailToolTagIds(
+                worldId,
+                omitUndefined({ tags, tag_ids: rawTagIds }),
+              );
               await io.assertPasswordResolvable({ password: input.password });
-              const account = await createEmailAccount(worldId, omitUndefined(input));
+              const account = await createEmailAccount(
+                worldId,
+                omitUndefined({ ...rest, tag_ids }),
+              );
               return toolResult({ ok: true, account: accountPayload(account) });
             } catch (err) {
               return toolError(errMsg(err));
@@ -98,6 +108,7 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
               enabled: { type: "boolean" },
               desc: { type: "string" },
               tags: { type: "array", items: { type: "string" } },
+              tag_ids: { type: "array", items: { type: "integer" } },
             },
             required: ["subject_kind", "id"],
           },
@@ -113,8 +124,16 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
               if (typeof worldId === "string") return worldId;
 
               const patch = accountPatchSchema.parse(args);
+              const { tags, tag_ids: rawTagIds, ...rest } = patch;
+              const tag_ids = await resolveEmailToolTagIds(
+                worldId,
+                omitUndefined({ tags, tag_ids: rawTagIds }),
+              );
               if (patch.password) await io.assertPasswordResolvable({ password: patch.password });
-              const account = await updateEmailAccount(worldId, omitUndefined({ id, ...patch }));
+              const account = await updateEmailAccount(
+                worldId,
+                omitUndefined({ id, ...rest, tag_ids }),
+              );
               if (!account) return toolError(`Email account not found: ${id}`);
               return toolResult({ ok: true, account: accountPayload(account) });
             } catch (err) {
