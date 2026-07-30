@@ -283,6 +283,8 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       limit: z.number(),
       results: z.array(memoryRecallHitSchema),
       summary: z.string(),
+      truncated: z.boolean(),
+      next_hint: z.string().optional(),
     }),
     example: {
       query: "compression",
@@ -302,6 +304,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
         },
       ],
       summary: "Found 1 related memory",
+      truncated: false,
     },
   }),
 };

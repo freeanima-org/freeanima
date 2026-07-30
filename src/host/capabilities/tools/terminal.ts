@@ -1,5 +1,13 @@
 import type { ToolSetRegistry } from "@freeanima/host/core/tool";
-import { attachToolReturns, toolError } from "@freeanima/host/core/tool";
+import {
+  appendToolOutputArtifact,
+  attachToolReturns,
+  formatOversizedToolOutput,
+  spillToolOutputArtifact,
+  TOOL_OUTPUT_CAPTURE_MAX,
+  TOOL_OUTPUT_PREVIEW_MAX,
+  toolError,
+} from "@freeanima/host/core/tool";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import { assertPathAllowed } from "./path-policy.ts";
@@ -11,16 +19,38 @@ import {
   SECRETS_TOOL_PROPERTY,
 } from "./subprocess-secrets.ts";
 
-const MAX_OUTPUT = 50 * 1024;
 const MAX_FOREGROUND_TIMEOUT = 600;
 
 const backgroundProcs = new Map<string, ChildProcess>();
 const backgroundOutput = new Map<string, string>();
+const backgroundArtifacts = new Map<string, string>();
 
 function appendOutput(conversationId: string, chunk: Buffer): void {
+  const text = chunk.toString("utf-8");
+  const existingArt = backgroundArtifacts.get(conversationId);
+  if (existingArt) {
+    appendToolOutputArtifact(existingArt, text);
+    return;
+  }
   const prev = backgroundOutput.get(conversationId) ?? "";
-  const next = prev + chunk.toString("utf-8");
-  backgroundOutput.set(conversationId, next.length > MAX_OUTPUT ? next.slice(0, MAX_OUTPUT) : next);
+  const next = prev + text;
+  if (next.length <= TOOL_OUTPUT_PREVIEW_MAX) {
+    backgroundOutput.set(conversationId, next);
+    return;
+  }
+  const captured =
+    next.length > TOOL_OUTPUT_CAPTURE_MAX ? next.slice(0, TOOL_OUTPUT_CAPTURE_MAX) : next;
+  const art = spillToolOutputArtifact(captured, "terminal-bg");
+  backgroundArtifacts.set(conversationId, art);
+  const preview = next.slice(0, TOOL_OUTPUT_PREVIEW_MAX);
+  backgroundOutput.set(
+    conversationId,
+    `${preview}\n\n` +
+      `[truncated: showing ${TOOL_OUTPUT_PREVIEW_MAX} of ${next.length}+ chars; further output appends to artifact]\n` +
+      `artifact_path: ${art}\n` +
+      `truncated: true\n` +
+      `Use file_read(path="${art}", offset=1, limit=500) to continue reading. Do not re-run the command.`,
+  );
 }
 
 function resolveWorkdir(workdir?: string | null): string | undefined {
@@ -44,7 +74,7 @@ function runForegroundArgv(
       encoding: "utf-8",
       timeout: safeTimeout * 1000,
       cwd: workdir,
-      maxBuffer: MAX_OUTPUT * 2,
+      maxBuffer: TOOL_OUTPUT_CAPTURE_MAX,
       env,
     });
     const parts: string[] = [];
@@ -53,15 +83,16 @@ function runForegroundArgv(
     if (result.status !== 0 && result.status != null) {
       parts.push(`--- exit code: ${result.status} ---`);
     }
-    let output = parts.join("");
-    if (output.length > MAX_OUTPUT) {
-      output = `${output.slice(0, MAX_OUTPUT)}\n... (truncated at ${MAX_OUTPUT} chars)`;
-    }
-    return output;
+    return formatOversizedToolOutput(parts.join(""), { kind: "terminal-run" });
   } catch (e) {
     const err = e as NodeJS.ErrnoException & { killed?: boolean };
     if (err.killed) return toolError(`timeout after ${safeTimeout}s`);
     if (err.code === "ENOENT") return toolError(`executable not found: ${bin}`);
+    if (err.message?.includes("maxBuffer")) {
+      return toolError(
+        `output exceeded capture limit (${TOOL_OUTPUT_CAPTURE_MAX} chars); redirect to a file and use file_read`,
+      );
+    }
     return toolError(err.message);
   }
 }
@@ -79,7 +110,7 @@ function runForegroundShell(
       encoding: "utf-8",
       timeout: safeTimeout * 1000,
       cwd: workdir,
-      maxBuffer: MAX_OUTPUT * 2,
+      maxBuffer: TOOL_OUTPUT_CAPTURE_MAX,
       env,
     });
     const parts: string[] = [];
@@ -88,15 +119,16 @@ function runForegroundShell(
     if (result.status !== 0 && result.status != null) {
       parts.push(`--- exit code: ${result.status} ---`);
     }
-    let output = parts.join("");
-    if (output.length > MAX_OUTPUT) {
-      output = `${output.slice(0, MAX_OUTPUT)}\n... (truncated at ${MAX_OUTPUT} chars)`;
-    }
-    return output;
+    return formatOversizedToolOutput(parts.join(""), { kind: "terminal-run" });
   } catch (e) {
     const err = e as NodeJS.ErrnoException & { killed?: boolean };
     if (err.killed) return toolError(`timeout after ${safeTimeout}s`);
     if (err.code === "ENOENT") return toolError("shell not found");
+    if (err.message?.includes("maxBuffer")) {
+      return toolError(
+        `output exceeded capture limit (${TOOL_OUTPUT_CAPTURE_MAX} chars); redirect to a file and use file_read`,
+      );
+    }
     return toolError(err.message);
   }
 }
@@ -217,6 +249,7 @@ async function handleProcess(
     }, 5000);
     backgroundProcs.delete(conversationId);
     backgroundOutput.delete(conversationId);
+    backgroundArtifacts.delete(conversationId);
     return `killed (${conversationId})`;
   }
 
@@ -276,7 +309,8 @@ export function registerTerminalTools(toolSets: ToolSetRegistry): void {
             "Run a command in a subprocess and return output. Default shell=false (argv spawn, no pipes). " +
             "Optional secrets[] injects vault fields into this subprocess env only (not Habitat process.env); " +
             "use argv form e.g. printenv GH_TOKEN or gh … — do not rely on echo $VAR unless shell=true. " +
-            "Pass shell=true only when pipes/redirection are needed. Catastrophic targets (rm -rf /, ~, $HOME, system roots) are always blocked.",
+            "Pass shell=true only when pipes/redirection are needed. Catastrophic targets (rm -rf /, ~, $HOME, system roots) are always blocked. " +
+            "Oversized stdout/stderr spills to ~/.anima/tool-artifacts (artifact_path); continue with file_read — do not re-run the command.",
           parameters: {
             type: "object",
             properties: {

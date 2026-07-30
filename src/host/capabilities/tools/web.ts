@@ -1,5 +1,10 @@
 import type { ToolSetRegistry } from "@freeanima/host/core/tool";
-import { attachToolReturns, toolError, toolResult } from "@freeanima/host/core/tool";
+import {
+  attachToolReturns,
+  formatOversizedToolOutput,
+  toolError,
+  toolResult,
+} from "@freeanima/host/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import type { Config } from "@freeanima/host/core/config";
 import {
@@ -184,7 +189,8 @@ async function handleWebExtract(urls: string[]): Promise<string> {
         let content = String(row.markdown ?? row.content ?? row.text ?? "");
         const maxChars = 100_000;
         if (content.length > maxChars) {
-          content = `${content.slice(0, maxChars)}\n\n[...truncated: exceeds ${maxChars} characters]`;
+          // Remote body has no offset API; spill so file_read can continue without re-fetching blindly.
+          content = formatOversizedToolOutput(content, { kind: "web-extract" });
         }
         results.push({ url, title, content, error: null });
       } else {

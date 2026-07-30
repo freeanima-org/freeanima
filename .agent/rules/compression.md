@@ -55,7 +55,7 @@ Input: full message list, current **`l4`**, old `l2/l3`.
 | **Inside tool loop**           | Only `usage ≥ trigger_high` (0.80) or `≥ emergency_ratio` (0.92) |
 | **Inside tool loop** otherwise | Do not compress                                                  |
 
-Occupancy estimated from four-segment runtime view at current **l4**, **not** full messages.
+Occupancy estimated from four-segment runtime view at current **l4**, **not** full messages. Token estimates use **LLM-visible message `content` only** (tool results must not hide bulk in a parallel payload field).
 
 ### `slimMessage`
 

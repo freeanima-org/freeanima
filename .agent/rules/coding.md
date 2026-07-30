@@ -42,6 +42,7 @@
 
 - **Failures**: always `toolError(msg)` → JSON `{"error":"..."}`
 - **Successes**: structured tools use `toolResult(obj)`; LLM-readable tools (`file_read`, `terminal_run`, `code_execute`, etc.) may return plain-text stdout
+- **Large tool output (Context Engineering)**: never bare-truncate without a fetch-more path. Idempotent reads → same-tool page (`offset` / `limit` / `full=true`). Non-idempotent / side-effecting (`terminal_run`, `code_execute`, …) → spill to `~/.anima/tool-artifacts` via `formatOversizedToolOutput` and continue with `file_read` — **do not** re-run the command. Do **not** add `messages.payload.details` to stash full results.
 - **Tool 入参**: call 前须经 `validateToolArgs`（对照 `ToolDef.parameters`）；类型错误与未知字段一律 `toolError`，禁止静默忽略/strip。loop-engine 与 MCP / Habitat 不得绕过该门闸直接调 `handler`
 - Safe paths per existing code (write protection, device blocking, binary filtering)
 

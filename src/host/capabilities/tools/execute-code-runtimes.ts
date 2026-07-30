@@ -1,4 +1,8 @@
-import { toolError } from "@freeanima/host/core/tool";
+import {
+  toolError,
+  formatOversizedToolOutput,
+  TOOL_OUTPUT_CAPTURE_MAX,
+} from "@freeanima/host/core/tool";
 import { createTempDir, removeManagedAnimaTmpPath } from "@freeanima/host/core/util/temp-dir";
 import { spawnSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
@@ -6,7 +10,6 @@ import { join } from "node:path";
 
 import { buildSubprocessEnv } from "./subprocess-env.ts";
 
-const MAX_OUTPUT = 50 * 1024;
 const MAX_TIMEOUT = 600;
 
 const BUN_PREAMBLE = `
@@ -30,11 +33,6 @@ export function listEnabledRuntimes(): RuntimeId[] {
   return ["bun", "nodejs"];
 }
 
-function truncateOutput(output: string): string {
-  if (output.length <= MAX_OUTPUT) return output;
-  return `${output.slice(0, MAX_OUTPUT)}\n... (truncated at ${MAX_OUTPUT} chars)`;
-}
-
 function formatProcessOutput(stdout: string, stderr: string, exitCode: number | null): string {
   const parts: string[] = [];
   if (stdout) parts.push(stdout);
@@ -42,8 +40,10 @@ function formatProcessOutput(stdout: string, stderr: string, exitCode: number | 
   if (exitCode !== 0 && exitCode != null) {
     parts.push(`--- exit code: ${exitCode} ---`);
   }
-  const output = parts.join("");
-  return truncateOutput(output) || "(no output)";
+  return formatOversizedToolOutput(parts.join(""), {
+    kind: "code-execute",
+    emptyLabel: "(no output)",
+  });
 }
 
 function formatSpawnResult(result: ReturnType<typeof spawnSync>): string {
@@ -53,11 +53,10 @@ function formatSpawnResult(result: ReturnType<typeof spawnSync>): string {
   if (result.status !== 0 && result.status != null) {
     parts.push(`--- exit code: ${result.status} ---`);
   }
-  let output = parts.join("");
-  if (output.length > MAX_OUTPUT) {
-    output = `${output.slice(0, MAX_OUTPUT)}\n... (truncated at ${MAX_OUTPUT} chars)`;
-  }
-  return output || "(no output)";
+  return formatOversizedToolOutput(parts.join(""), {
+    kind: "code-execute",
+    emptyLabel: "(no output)",
+  });
 }
 
 async function runBun(code: string, timeoutSec: number, env: NodeJS.ProcessEnv): Promise<string> {
@@ -96,11 +95,17 @@ function runNodejs(code: string, timeoutSec: number, env: NodeJS.ProcessEnv): st
     const result = spawnSync("node", ["--experimental-strip-types", file], {
       encoding: "utf-8",
       timeout: timeoutSec * 1000,
-      maxBuffer: MAX_OUTPUT,
+      maxBuffer: TOOL_OUTPUT_CAPTURE_MAX,
       env,
     });
     return formatSpawnResult(result);
   } catch (e) {
+    const err = e as Error;
+    if (err.message?.includes("maxBuffer")) {
+      return toolError(
+        `output exceeded capture limit (${TOOL_OUTPUT_CAPTURE_MAX} chars); write to a file and use file_read`,
+      );
+    }
     return toolError(String(e));
   } finally {
     removeManagedAnimaTmpPath(dir);

@@ -168,6 +168,13 @@ export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
                 limit: result.limit,
                 offset: result.offset,
                 count: result.count,
+                truncated: result.count >= limit,
+                ...(result.count >= limit
+                  ? {
+                      next_hint:
+                        "Page full for this limit; raise offset or refine filters/query and call entity_search again.",
+                    }
+                  : {}),
                 results: result.results.map(hitPayload),
               });
             } catch (e) {

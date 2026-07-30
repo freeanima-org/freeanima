@@ -25,6 +25,7 @@ import { i18nConfigSchema } from "./i18n.ts";
 import { sectionSchema } from "./config.ts";
 import { objectStorageConfigSchema } from "./object-storage.ts";
 import { companionConfigSchema } from "./companion.ts";
+import { promptSchema } from "./prompt.ts";
 import { BOOTSTRAP_CONFIG_KEYS } from "../bootstrap-config.ts";
 
 /**
@@ -38,6 +39,7 @@ const runtimeConfigObjectSchema = z.object({
   browser: browserSchema.optional(),
   clarify: clarifySchema.optional(),
   compression: compressionSchema.optional(),
+  prompt: promptSchema.optional(),
   models: modelsConfigSchema.optional(),
   mcp_servers: z.record(z.string(), mcpServerSchema).optional(),
   acp_agents: z.record(z.string(), acpAgentSchema).optional(),

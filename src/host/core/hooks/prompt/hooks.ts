@@ -11,6 +11,10 @@ export type SystemPromptSection = {
   id: string;
   content: string;
   order: number;
+  /** Per-section hard char cap (applied before global budget). */
+  budgetChars?: number;
+  /** Lower number = kept preferentially when over global budget (default 100). */
+  priority?: number;
 };
 
 export type SystemPromptBuildEffect = {

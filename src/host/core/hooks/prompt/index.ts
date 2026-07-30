@@ -4,7 +4,8 @@ export {
   type SystemPromptBuildEffect,
   type SystemPromptSection,
 } from "./hooks.ts";
-export { foldSystemPromptSections } from "./fold.ts";
+export { foldSystemPromptSections, foldSystemPromptSectionsDetailed } from "./fold.ts";
+export type { FoldSystemPromptOptions, FoldSystemPromptResult } from "./fold.ts";
 export {
   registerSystemPromptHookRunner,
   buildSystemPrompt,

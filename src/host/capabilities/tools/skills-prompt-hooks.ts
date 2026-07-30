@@ -19,7 +19,7 @@ export function registerSkillsCatalogSystemPromptHook(
     return {
       status: "ok",
       data: {
-        sections: [{ id: "skills-catalog", content, order: 9 }],
+        sections: [{ id: "skills-catalog", content, order: 9, priority: 5, budgetChars: 2_500 }],
       },
     };
   });

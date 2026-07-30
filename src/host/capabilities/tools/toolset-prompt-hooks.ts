@@ -13,7 +13,7 @@ export function registerToolsetSystemPromptHooks(
     return {
       status: "ok",
       data: {
-        sections: [{ id: "toolsets", content, order: 10 }],
+        sections: [{ id: "toolsets", content, order: 10, priority: 5, budgetChars: 3_000 }],
       },
     };
   });

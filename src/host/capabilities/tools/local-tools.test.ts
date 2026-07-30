@@ -163,6 +163,19 @@ describe("local tools", () => {
     expect(out).toContain("hello-anima");
   });
 
+  it("terminal oversized output spills artifact_path", async () => {
+    const { TOOL_OUTPUT_PREVIEW_MAX } = await import("@freeanima/host/core/tool");
+    const bigPath = join(cwd, "big-out.txt");
+    writeFileSync(bigPath, "y".repeat(TOOL_OUTPUT_PREVIEW_MAX + 80), "utf-8");
+    const out = await tools.getTool("terminal_run")!.handler({
+      command: `cat ${bigPath}`,
+      workdir: cwd,
+    });
+    expect(out).toContain("artifact_path:");
+    expect(out).toContain("truncated: true");
+    expect(out).toContain("file_read");
+  });
+
   it("terminal blocks catastrophic rm; shell=true works without env gate", async () => {
     const rm = await tools.getTool("terminal_run")!.handler({
       command: "rm -rf /",
