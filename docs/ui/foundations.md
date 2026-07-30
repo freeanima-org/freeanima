@@ -24,7 +24,7 @@ Agent bans (raw CSS vars, DaisyUI tokens) → [`.agent/rules/frontend-ui.md`](..
 | Shell       | Accent theme is **local client preference**, not Shell kind; do not ship a separate palette per shell                                      |
 | Forbidden   | DaisyUI `data-theme` / `--color-base-*`; choosing colors from `getShellKind()`                                                             |
 
-**Pending alignment:** Feature-local one-off colors that bypass semantic tokens.
+**Pending alignment:** Feature-local one-off colors that bypass semantic tokens (audit: SPA features largely use semantic Tailwind classes; keep watching Habitat admin / extension surfaces).
 
 ## Typography
 
@@ -60,13 +60,13 @@ Agent bans (raw CSS vars, DaisyUI tokens) → [`.agent/rules/frontend-ui.md`](..
 
 **Usage:** Controls/menus often `rounded-md` / `rounded-sm`; rows/Dialogs `rounded-lg`; pills/switches `rounded-full`; compact sheets may use larger top radius (`rounded-t-2xl`).
 
-| Lens        | Adaptation                                                                     |
-| ----------- | ------------------------------------------------------------------------------ |
-| Invariant   | Radius tokens; map control vs surface roles                                    |
-| Layout      | Sheet/drawer presentation may use larger top radius; Dialog stays `rounded-lg` |
-| Interaction | N/A                                                                            |
-| Shell       | N/A                                                                            |
-| Forbidden   | One-off `rounded-[13px]` sprawl (**pending alignment** where present)          |
+| Lens        | Adaptation                                                                                                                         |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Invariant   | Radius tokens; map control vs surface roles                                                                                        |
+| Layout      | Sheet/drawer presentation may use larger top radius; Dialog stays `rounded-lg`                                                     |
+| Interaction | N/A                                                                                                                                |
+| Shell       | N/A                                                                                                                                |
+| Forbidden   | One-off `rounded-[13px]` sprawl (SPA features clean; shadcn primitives may use `rounded-[min(var(--radius-*),…)]` token math — OK) |
 
 ## Border and dividers
 

@@ -60,9 +60,9 @@ Every pattern documents:
 | Shell       | N/A                                                                                                                                                                                                         |
 | Forbidden   | `getShellKind()` to choose menu type; viewport width to choose ContextMenu vs ActionSheet; custom `fixed` coordinate menus                                                                                  |
 
-**Implementation:** Chassis — [`ListRow.tsx`](../../src/ui-kit/composite/ListRow.tsx). Task domain — [`TaskItemRowView.tsx`](../../src/ui-kit/composite/TaskItemRowView.tsx) (+ list wrapper `TaskItemListView`). Second consumer — project sidebar rows. Capability flags: `useActionSheet`, `contextMenuEnabled`, drag attrs/listeners from parent.
+**Implementation:** Chassis — [`ListRow.tsx`](../../src/ui-kit/composite/ListRow.tsx). Task domain — [`TaskItemRowView.tsx`](../../src/ui-kit/composite/TaskItemRowView.tsx) (+ list wrapper `TaskItemListView`). Consumers: project sidebar, task list sidebar, smart-list sidebar, email message/account rows, chat conversation list. Capability flags: `useActionSheet`, `contextMenuEnabled`, drag attrs/listeners from parent.
 
-**Compliance:** Reference (chassis extracted). **Pending alignment:** other modules’ custom rows that diverge on menus/selection/drag.
+**Compliance:** Reference (chassis extracted). **Pending alignment (P2/P3):** MoveTo*Picker tree rows; Vault/diary/pomodoro pickers; Habitat admin; extension popup.
 
 ---
 
@@ -138,15 +138,93 @@ Every pattern documents:
 
 ---
 
+## QuickAddBar
+
+**Intent:** Single-line quick create at the edge of a list (tasks, project tasks).
+
+**Slots:** Text input; submit button (always visible).
+
+**States:** Empty / filled; disabled when writes blocked.
+
+**Dimension adaptation:**
+
+| Lens        | Adaptation                                                                                                       |
+| ----------- | ---------------------------------------------------------------------------------------------------------------- |
+| Invariant   | Same slots; submit button always present                                                                         |
+| Layout      | Top or bottom chrome via `className` (border direction); does not switch List-Detail                             |
+| Interaction | `enterToSubmit` (default true for single-line). Multi-line composers inject `useEnterToSendCapability()` instead |
+| Shell       | N/A                                                                                                              |
+| Forbidden   | Rely on Enter alone on touch; hide submit control for touch-primary                                              |
+
+**Implementation:** [`QuickAddBar.tsx`](../../src/ui-kit/composite/QuickAddBar.tsx).
+
+**Compliance:** Reference.
+
+---
+
+## PullToRefresh
+
+**Intent:** Refresh primary list content via touch pull; pointer uses a separate header refresh control.
+
+**Slots:** Scrollable content; pull indicator / spinner.
+
+**Dimension adaptation:**
+
+| Lens        | Adaptation                                                                                          |
+| ----------- | --------------------------------------------------------------------------------------------------- |
+| Invariant   | Same `onRefresh` callback                                                                           |
+| Layout      | N/A (wraps list scroller)                                                                           |
+| Interaction | **touch:** pull gesture (default auto-detect). **pointer:** disable pull; use header refresh button |
+| Shell       | N/A                                                                                                 |
+| Forbidden   | `getShellKind()` to enable pull                                                                     |
+
+**Implementation:** [`PullToRefresh.tsx`](../../src/ui-kit/composite/PullToRefresh.tsx). Product note → [page-refresh.md](../aspects/page-refresh.md).
+
+**Compliance:** Reference.
+
+---
+
+## ListDetail / ThreeColumn
+
+**Intent:** Page chassis for list + detail (+ optional third column).
+
+**Slots:** Sidebar / middle / detail; drawer vs columns.
+
+**Dimension adaptation:**
+
+| Lens        | Adaptation                                                                           |
+| ----------- | ------------------------------------------------------------------------------------ |
+| Invariant   | Same content slots                                                                   |
+| Layout      | `useDrawerNav` / `useThreeColumnLayoutMode` / `useCompactLayout` switch presentation |
+| Interaction | N/A for chassis; menus stay on rows                                                  |
+| Shell       | N/A                                                                                  |
+| Forbidden   | `getShellKind()` ⇒ drawer or tabs                                                    |
+
+**Implementation:** [`ListDetailLayout.tsx`](../../src/ui-kit/layout/ListDetailLayout.tsx), ThreeColumnLayout; chrome helpers [`DetailPanelShell.tsx`](../../src/ui-kit/composite/DetailPanelShell.tsx), [`ModuleScopeBar.tsx`](../../src/ui-kit/composite/ModuleScopeBar.tsx).
+
+**Compliance:** Reference.
+
+---
+
+## EmptyState / StatusAlert
+
+**Intent:** Empty list guidance; inline error/status messaging.
+
+**Slots:** Message (+ optional action for EmptyState); variant for StatusAlert.
+
+**Dimension adaptation:** Invariant copy and placement; layout may change padding; interaction/shell N/A.
+
+**Implementation:** [`EmptyState.tsx`](../../src/ui-kit/composite/EmptyState.tsx), [`StatusAlert.tsx`](../../src/ui-kit/composite/StatusAlert.tsx).
+
+**Compliance:** Reference.
+
+---
+
 ## Candidates (later)
 
-Document when stabilizing a second consumer:
+Document when stabilizing a second consumer or further extraction:
 
-- QuickAddBar
-- PullToRefresh (see also [page refresh](../aspects/page-refresh.md) — pointer header button vs touch pull)
-- ListDetail / ThreeColumn page chassis
-- EmptyState / StatusAlert surfaces as full pattern cards
-- ModuleScopeBar / DetailPanelShell
+- (none currently — QuickAddBar / PullToRefresh / ListDetail / EmptyState / ModuleScopeBar promoted above)
 
 ## New UI checklist
 

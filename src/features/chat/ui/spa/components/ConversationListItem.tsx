@@ -1,5 +1,4 @@
-import { useRef, type ReactElement } from "react";
-import { ContextMenu, useLongPress } from "@freeanima/ui-kit/composite";
+import { ListRow } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import type { ConversationListItem as ConversationListEntry } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 
@@ -28,33 +27,23 @@ export function ConversationListItem({
   onNavigate,
   onOpenMenu,
 }: ConversationListItemProps) {
-  const suppressClickRef = useRef(false);
-
-  const longPress = useLongPress({
-    enabled: useActionSheet,
-    onTrigger: () => {
-      suppressClickRef.current = true;
-      onOpenMenu(conversation.id);
-    },
-  });
-
-  const handleClick = () => {
-    if (suppressClickRef.current) {
-      suppressClickRef.current = false;
-      return;
-    }
-    void onNavigate(conversation.id);
-  };
-
-  const row: ReactElement = (
-    <div
+  return (
+    <ListRow
+      as="div"
+      selected={active}
+      selectedClassName="bg-primary/20 text-foreground font-semibold border-l-[3px] border-l-primary"
+      useActionSheet={useActionSheet}
+      contextMenuEnabled={contextMenuEnabled}
+      contextMenuItems={contextMenuItems}
+      longPressEnabled={useActionSheet}
+      onLongPress={() => onOpenMenu(conversation.id)}
+      onOpenMenu={() => onOpenMenu(conversation.id)}
       className={[
-        "session-item group flex min-h-10 items-center gap-1",
-        active ? "sidebar-nav-active" : "",
+        "gap-1 px-3 py-2 text-sm",
+        active ? "" : "text-muted-foreground",
         faded ? "opacity-60" : "",
       ].join(" ")}
-      onClick={handleClick}
-      {...(useActionSheet ? longPress : {})}
+      onClick={() => void onNavigate(conversation.id)}
     >
       <div
         className={[
@@ -67,11 +56,6 @@ export function ConversationListItem({
       {unread && !active ? (
         <span className="bg-primary size-2 shrink-0 rounded-full" aria-label="未读" title="未读" />
       ) : null}
-    </div>
+    </ListRow>
   );
-
-  if (contextMenuEnabled && !useActionSheet && contextMenuItems.length > 0) {
-    return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
-  }
-  return row;
 }

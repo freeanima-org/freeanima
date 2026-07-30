@@ -8,6 +8,8 @@ import {
   SubjectScopeToggle,
   useSubjectScope,
   setCompactImmersive,
+  useActionSheetCapability,
+  useContextMenuCapability,
 } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Button,
@@ -23,6 +25,8 @@ import {
   ConfirmDialog,
   DetailEditPageShell,
   ModuleScopeBar,
+  MoveToListPicker,
+  MoveToProjectPicker,
   PullToRefresh,
   QuickAddBar,
   useDetailPanelState,
@@ -38,7 +42,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { registerProjectOfflineModule } from "./lib/offline-store.ts";
 
-import { MoveToListPicker, MoveToProjectPicker } from "@freeanima/ui-kit/composite";
 import {
   ProjectEditorDialog,
   projectEditorDatesToIso,
@@ -88,10 +91,6 @@ import {
   readHideCompleted,
   writeHideCompleted,
 } from "./lib/project-tree.ts";
-import {
-  useActionSheetCapability,
-  useContextMenuCapability,
-} from "@freeanima/client/portal-sdk/react.tsx";
 import { TaskTagFilterBar } from "@freeanima/features/task/ui/spa/components/TaskTagFilterBar.tsx";
 import type { TagKnown as TaskTagKnown } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 import {
