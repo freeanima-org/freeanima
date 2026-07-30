@@ -76,6 +76,15 @@ export type ShellApi = {
     instance_id: string;
     remote_tools_connected: boolean;
   }>;
+  /** overlay → 设置：模型加载进度 */
+  reportCompanionModelStatus?: (status: {
+    loading: boolean;
+    error?: string | null;
+  }) => Promise<void>;
+  /** 设置页：订阅 overlay 模型加载状态 */
+  listenCompanionModelStatus?: (
+    handler: (status: { loading: boolean; error: string | null }) => void,
+  ) => () => void;
   createFileInstanceStore(appId: string): RemoteInstanceStore;
   /** 移动端：打开 连接设置页 */
   openHabitatSettings?: () => void;

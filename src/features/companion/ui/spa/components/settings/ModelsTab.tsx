@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import {
   Alert,
   AlertDescription,
@@ -19,7 +19,10 @@ import {
   setActiveModel,
 } from "@freeanima/features/companion/ui/spa/lib/api.ts";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
-import { emitConfigChanged } from "@freeanima/features/companion/ui/spa/lib/portal-shell.ts";
+import {
+  emitConfigChanged,
+  listenCompanionModelStatus,
+} from "@freeanima/features/companion/ui/spa/lib/portal-shell.ts";
 
 export function ModelsTab() {
   const models = useCompanionStore((s) => s.models);
@@ -28,6 +31,22 @@ export function ModelsTab() {
   const refreshConfig = useCompanionStore((s) => s.refreshConfig);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [desktopLoading, setDesktopLoading] = useState(false);
+  const [desktopError, setDesktopError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let off: (() => void) | undefined;
+    void listenCompanionModelStatus((status) => {
+      setDesktopLoading(status.loading);
+      setDesktopError(status.error);
+      if (status.error) {
+        setError(status.error);
+      }
+    }).then((fn) => {
+      off = fn;
+    });
+    return () => off?.();
+  }, []);
 
   const moveModel = async (objectFileId: number, delta: -1 | 1): Promise<void> => {
     const ids = models.map((m) => m.object_file_id);
@@ -50,13 +69,30 @@ export function ModelsTab() {
     if (!file) return;
     setUploading(true);
     setError(null);
+    setDesktopError(null);
     try {
+      setDesktopLoading(true);
       await uploadModel(file);
       await emitConfigChanged();
     } catch (e) {
+      setDesktopLoading(false);
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setUploading(false);
+    }
+  };
+
+  const onSwitch = async (objectFileId: number): Promise<void> => {
+    setError(null);
+    setDesktopError(null);
+    setDesktopLoading(true);
+    try {
+      await setActiveModel(objectFileId);
+      await refreshConfig();
+      await emitConfigChanged();
+    } catch (e) {
+      setDesktopLoading(false);
+      setError(e instanceof Error ? e.message : String(e));
     }
   };
 
@@ -73,28 +109,37 @@ export function ModelsTab() {
     await emitConfigChanged();
   };
 
+  const busy = uploading || desktopLoading;
+  const displayError = error ?? desktopError;
+
   return (
     <div className="flex flex-col gap-4">
       <label
         className={cn(
           buttonVariants(),
           "w-full cursor-pointer",
-          uploading && "pointer-events-none opacity-50",
+          busy && "pointer-events-none opacity-50",
         )}
       >
-        {uploading ? <Spinner className="size-4" /> : null}
-        {uploading ? "导入中…" : "导入 VRM 模型"}
+        {busy ? <Spinner className="size-4" /> : null}
+        {uploading ? "导入中…" : desktopLoading ? "加载模型中…" : "导入 VRM 模型"}
         <input
           type="file"
           accept=".vrm"
           className="hidden"
-          disabled={uploading}
+          disabled={busy}
           onChange={(e) => void onImport(e)}
         />
       </label>
-      {error ? (
+      {desktopLoading && !uploading ? (
+        <p className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Spinner className="size-3.5" />
+          桌面伴侣正在加载当前模型…
+        </p>
+      ) : null}
+      {displayError ? (
         <Alert variant="error" className="py-2">
-          <AlertDescription className="text-xs">{error}</AlertDescription>
+          <AlertDescription className="text-xs">{displayError}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -119,7 +164,7 @@ export function ModelsTab() {
                     />
                     {m.object_file_id === activeObjectFileId ? (
                       <Badge variant="success" className="shrink-0">
-                        当前
+                        {desktopLoading ? "加载中" : "当前"}
                       </Badge>
                     ) : (
                       <Button
@@ -127,11 +172,8 @@ export function ModelsTab() {
                         variant="ghost"
                         size="sm"
                         className="h-7 shrink-0 px-2 text-xs"
-                        onClick={() =>
-                          void setActiveModel(m.object_file_id)
-                            .then(() => refreshConfig())
-                            .then(() => emitConfigChanged())
-                        }
+                        disabled={busy}
+                        onClick={() => void onSwitch(m.object_file_id)}
                       >
                         切换
                       </Button>
@@ -149,7 +191,7 @@ export function ModelsTab() {
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-xs"
-                      disabled={index === 0}
+                      disabled={index === 0 || busy}
                       onClick={() => void moveModel(m.object_file_id, -1)}
                     >
                       上移
@@ -159,7 +201,7 @@ export function ModelsTab() {
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-xs"
-                      disabled={index >= models.length - 1}
+                      disabled={index >= models.length - 1 || busy}
                       onClick={() => void moveModel(m.object_file_id, 1)}
                     >
                       下移
@@ -169,6 +211,7 @@ export function ModelsTab() {
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                      disabled={busy}
                       onClick={() => void onDelete(m.object_file_id, m.name)}
                     >
                       删除

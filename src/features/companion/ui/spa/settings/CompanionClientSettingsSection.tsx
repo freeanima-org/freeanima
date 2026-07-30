@@ -85,7 +85,7 @@ export default function CompanionClientSettingsSection({ store }: SettingsPanelP
     <div className="flex flex-col gap-4">
       <FormToggle
         label="显示伴侣"
-        hint="关闭后桌面伴侣窗口将隐藏；可在本页重新开启"
+        hint="关闭后伴侣窗口关闭并离线（远程工具断开）；重新开启后重建窗口并连接"
         checked={visible}
         disabled={!ready || !store}
         onChange={onVisibleChange}

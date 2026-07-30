@@ -31,6 +31,7 @@ import {
   defineHabitatMethod,
   dualTransportMeta,
 } from "@freeanima/shared/habitat-contract";
+import { HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS } from "@freeanima/shared/habitat-rpc";
 
 const emptyInputSchema = z.object({}).passthrough();
 const companionUploadOkOutputSchema = z.object({ ok: z.literal(true) });
@@ -103,6 +104,7 @@ export const companionMethodDefs = {
       verb: "POST",
       path: "companion/model/upload",
       request: "multipart",
+      timeoutMs: HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS,
     }),
   }),
   "companion.motion.import": defineHabitatMethod({
@@ -112,6 +114,7 @@ export const companionMethodDefs = {
       verb: "POST",
       path: "companion/motion/import",
       request: "multipart",
+      timeoutMs: HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS,
     }),
   }),
 } as const;

@@ -84,6 +84,8 @@ export type BinaryHttpMetaOptions = {
   request?: HttpRequestEncoding;
   response?: HttpResponseEncoding;
   auth?: HabitatMethodMeta["auth"];
+  /** 客户端请求超时（ms）；大文件上传/下载建议显式设置 */
+  timeoutMs?: number;
 };
 
 /** 仅 HTTP + 非 JSON 请求/响应（companion 资产等） */
@@ -100,6 +102,7 @@ export function binaryHttpMeta(options: BinaryHttpMetaOptions): HabitatMethodMet
     defaultByProfile: { habitat: "http", outpost: "http" },
     fallback: false,
     ...(options.auth !== undefined ? { auth: options.auth } : {}),
+    ...(options.timeoutMs !== undefined ? { timeoutMs: options.timeoutMs } : {}),
     httpOverrides,
   };
 }

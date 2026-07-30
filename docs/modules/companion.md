@@ -119,6 +119,12 @@ Companion config has two storage layers:
 
 Local `~/.anima/companion/config.json` is only a **habitat-sync cache**; the settings UI does not read/write it directly.
 
-After Habitat companion config changes, the local cache syncs via `companion.sync.pull`. On Portal desktop, settings call `emitConfigChanged` → Tauri event `shell:config-changed`（跨 WebView）→ overlay `refreshConfig`。Companion 窗是 **hide 非 destroy**，关开不会 `init`；因此跨窗事件是热更新的唯一路径（再次 show 时也会补发一次）。
+After Habitat companion config changes, the local cache syncs via `companion.sync.pull`. On Portal desktop, settings call `emitConfigChanged` → Tauri event `shell:config-changed`（跨 WebView）→ overlay `refreshConfig`。
+
+**显示伴侣**：关 = **关闭** companion WebView（非 hide），SPA unmount 后 `remote_tools.attach` 拆除，伴侣离线；开 = `ensure_companion` 重建窗口并 attach。窗口关闭期间的配置变更在下次 show 的 `init` / `refreshConfig` 拉取。
+
+**模型切换 / 导入**：导入即激活（`active_object_file_id`）。加载失败时清场景并提示错误（不自动回退 active）；设置页经 `shell:companion-model-status` 显示桌面加载进度。非法 / 不完整 VRM 会映射为可读错误文案。
+
+**二进制超时**：`object_storage.file.get` 与 `companion.model.upload` / `companion.motion.import` 客户端默认超时 10 分钟（`HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS`）。
 
 See also: [Habitat RPC](../ops/habitat-rpc.md), [architecture companion section](../product/architecture.md#desktop-companion-habitat-ssot).

@@ -21,7 +21,7 @@ export type HabitatCallOptions = {
   transport?: "auto" | TransportKind;
   profile?: HabitatClientProfile;
   signal?: AbortSignal;
-  /** WS request 超时；省略时用 method meta.timeoutMs 或默认 3s */
+  /** WS/HTTP 请求超时；省略时用 method meta.timeoutMs 或默认 3s */
   timeoutMs?: number;
 };
 
@@ -214,6 +214,18 @@ export function createHabitatClient(options: HabitatClientOptions) {
     const def = getHabitatMethodDef(method);
     def.input.parse(payload);
 
+    const timeoutMs = opts.timeoutMs ?? def.meta.timeoutMs;
+    const timeoutSignal =
+      opts.signal == null && timeoutMs != null && timeoutMs > 0
+        ? AbortSignal.timeout(timeoutMs)
+        : undefined;
+    const signal =
+      opts.signal !== undefined
+        ? opts.signal
+        : timeoutSignal !== undefined
+          ? timeoutSignal
+          : undefined;
+
     const recordPayload = (payload ?? {}) as Record<string, unknown>;
     const { url, init } = buildHabitatRestRequest(
       options.httpOrigin,
@@ -224,7 +236,7 @@ export function createHabitatClient(options: HabitatClientOptions) {
     );
     const res = await httpFetch(url, {
       ...init,
-      ...(opts.signal !== undefined ? { signal: opts.signal } : {}),
+      ...(signal !== undefined ? { signal } : {}),
     });
     if (res.ok) return res;
     return throwHabitatRestError(res);

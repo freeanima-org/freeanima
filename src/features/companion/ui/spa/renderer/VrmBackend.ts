@@ -494,6 +494,16 @@ export class VrmBackend implements CharacterBackend {
     this.renderer.dispose();
   }
 
+  /** 切换模型前清场并刷透明帧，避免下载失败时残留旧角色 */
+  beginModelSwitch(): void {
+    this.loadGeneration += 1;
+    this.stopRenderLoop();
+    this.clearCharacterFromScene();
+    this.framing = null;
+    this.renderer.clear(true, true, true);
+    this.renderer.render(this.scene, this.camera);
+  }
+
   private stopRenderLoop(): void {
     if (this.animationId != null) {
       cancelAnimationFrame(this.animationId);
