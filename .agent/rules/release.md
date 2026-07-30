@@ -90,6 +90,8 @@ Specify version in commit body with `Release-As: x.y.z` (see [Release Please doc
 
 Canary `nextVersion`：有 open Release PR（`autorelease: pending`）则取其 `package.json.version`，否则回退 [`.release-please-manifest.json`](../../.release-please-manifest.json)。Body 含 `sha: <full>`，供 canary 轨按 commit 检测更新。
 
+滚动 canary（`move_tag`）在上传前会清空 tag `canary` 上既有 Release assets，避免版本化文件名（含时间戳）跨轮残留；固定名与本轮版本化名再由 `softprops/action-gh-release` 重新挂上。
+
 手动重打：在 Actions 触发 [`canary.yml`](../../.github/workflows/canary.yml) 的 `workflow_dispatch`（可选 `ref`），走同一套 `package-artifacts`。
 
 **Tauri 打包加速约定**（优先级：构建速度 > 体积 > 运行速度）：
