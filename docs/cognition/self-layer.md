@@ -6,6 +6,7 @@ title: Self Layer
 
 > Definition: A persistent structure about "who I am", parallel to the Memory Layer, forming FreeAnima's two storage pillars.
 > Memory layer: [`memory.md`](memory.md).
+> Objective time digests: [`temporal-summary.md`](temporal-summary.md).
 
 ## Architectural Position
 
@@ -15,53 +16,57 @@ FreeAnima Storage Architecture
 ├── Memory Layer — see memory.md
 │   ├── Episodic memory (what happened)
 │   ├── Semantic memory (what I know)
-│   ├── Autobiographical narrative (what it meant to me)
+│   ├── Autobiographical narrative (historical; extraction retired — read-only)
 │   └── Procedural memory (how to do things)
 │
 └── Self Layer — this document
-    └── Six blocks defining "who I am"
+    └── Five blocks defining "who I am"
 ```
 
 **Design principles:**
 
 - Self layer and memory layer **differ in nature**: memory layer "records the world and experiences outward"; self layer "defines self inward"
-- **All six blocks are always resident** in the system prompt (alongside project context and pinned resident memories)
+- **All five blocks are always resident** in the system prompt (alongside project context and pinned resident memories)
+- **Objective timelines** live in temporal summary, not in the self layer
 
 ---
 
-## Six-Block Structure
+## Five-Block Structure
 
-| #   | Block                 | Content                                                                                                    | Update frequency                                     |
-| --- | --------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| 1   | Existence anchor      | What I am, origin, non-negotiable bottom line                                                              | Almost never (requires explicit force to update)     |
-| 2   | Self model            | Identity, capability boundaries, expression style, belonging                                               | Slow change (periodic review + major events)         |
-| 3   | Personality baseline  | Communication style, conflict patterns, default trust                                                      | Semi-stable (slow evolution from long-term evidence) |
-| 4   | Direction             | Long-term intent, current focus, growth direction, things not to do                                        | Active declaration + periodic review                 |
-| 5   | Metacognition         | How to think, how to remember, four-layer architecture and presence                                        | Slow change                                          |
-| 6   | Autobiography summary | Key turning points / self-discovery outline (grouped by significance; granularity decreases with distance) | Maintained automatically by sleep cron               |
+| #   | Block                | Content                                                       | Update frequency                                 |
+| --- | -------------------- | ------------------------------------------------------------- | ------------------------------------------------ |
+| 1   | Existence anchor     | What I am, origin, non-negotiable bottom line                 | Almost never (requires explicit force to update) |
+| 2   | Self model           | Identity, capability boundaries, expression style, belonging  | Slow (weekly proposal + partner confirmation)    |
+| 3   | Personality baseline | Communication style, conflict patterns, default trust         | Semi-stable (same slow proposal path)            |
+| 4   | Direction            | Long-term intent, current focus, growth direction, not-to-dos | Active declaration + slow proposal path          |
+| 5   | Metacognition        | How to think, how to remember, architecture and presence      | Slow change (same slow proposal path)            |
+
+### Automatic maintenance (slow)
+
+Sleep-cycle step `self-layer-refresh` (CST Monday, after deep-sleep + memory-ref-sync):
+
+1. Load **resident semantic memory** only (pinned ∪ high `reference_count`, `active`)
+2. LLM may propose updates to the four maintainable blocks (never `existence_anchor`)
+3. On proposal: write **agent Inbox** notification (`source_ref=self-layer-proposal`); **no silent write**
+4. When the partner is present, unread inject → agent asks → on approval `self_update_block` → `notification_mark_read`
+
+Restraint: insufficient evidence or pending unread proposal → skip.
 
 ### Not in the Self Layer
 
 | Content                                        | Belongs to                                                                       |
 | ---------------------------------------------- | -------------------------------------------------------------------------------- |
-| **Detailed** autobiographical narrative        | Memory layer (autobiographical entries)                                          |
+| Objective day/month/year digests               | Temporal summary — see [`temporal-summary.md`](temporal-summary.md)              |
+| **Detailed** autobiographical narrative        | Memory layer (historical entities; extraction stopped — read-only)               |
 | Other-models (cognition of partner and others) | Memory layer (semantic memory)                                                   |
 | Runtime state / health perception              | Estate / env-health — see [`environment-awareness.md`](environment-awareness.md) |
 | Concrete tool / skill inventory                | Estate layer — skills: [`skills.md`](../modules/skills.md)                       |
 
 ---
 
-## Autobiography Summary vs Autobiographical Narrative
+## Autobiographical narrative (memory layer, retired extraction)
 
-| Dimension   | Autobiography summary (self layer)                                                                                               | Autobiographical narrative (memory layer)           |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| Question    | "What is the main thread of my life story?"                                                                                      | "What did a given experience mean to me?"           |
-| Form        | One of six blocks; grouped Markdown outline (`## Turning points` / `## Milestones` / `## Recent narratives`, title-only bullets) | Separate entries, title + content narrative         |
-| Injection   | **Always resident** in system prompt                                                                                             | **Not** resident; recall / list on demand           |
-| Maintenance | Sleep cron compresses narratives into grouped outline (no body preview)                                                          | Sleep cron writes narratives from daily experiences |
-| Mutability  | Periodically overwrites summary block                                                                                            | **Append-only**; soft deprecation only              |
-
-See [`sleep.md`](sleep.md).
+Light sleep **no longer** extracts new autobiographical narratives or maintains a self-layer autobiography summary. Existing narrative entities remain queryable via recall tools. Subjective “life story outline” is no longer a resident self block — use temporal summary for time awareness and the five self blocks for identity.
 
 ---
 
@@ -69,7 +74,7 @@ See [`sleep.md`](sleep.md).
 
 Assembly order:
 
-1. Self layer (six blocks)
+1. Self layer (five blocks)
 2. World / channel / toolsets (runtime hooks)
 3. Environment + health baseline (static session copy; see [`environment-awareness.md`](environment-awareness.md))
 4. Resident memory (pinned facts)
@@ -79,22 +84,21 @@ Self layer and resident memory use a second-person instruction skeleton wrapping
 
 Live environment/health **changes** are not rewritten into an existing session prompt; they surface as Inbox notifications (event-level).
 
-Maintenance: self-layer tools in Habitat, or direct edits via CLI / Habitat UI.
+Maintenance: Habitat self-layer tools / UI, or slow automatic proposals via agent Inbox.
 
 ---
 
 ## Relationship to Memory Layer
 
-| Dimension     | Memory layer                          | Self layer                       |
-| ------------- | ------------------------------------- | -------------------------------- |
-| Direction     | Outward—records world and experiences | Inward—defines self              |
-| Question      | "What do I know?"                     | "Who am I?"                      |
-| Autobiography | Detailed narrative entries            | Summary in autobiography_summary |
-| Injection     | Pinned facts + recall on demand       | All six blocks always resident   |
+| Dimension     | Memory layer                          | Self layer                      |
+| ------------- | ------------------------------------- | ------------------------------- |
+| Direction     | Outward—records world and experiences | Inward—defines self             |
+| Question      | "What do I know?"                     | "Who am I?"                     |
+| Time overview | Temporal summary (objective)          | Not a self block                |
+| Injection     | Pinned facts + recall on demand       | All five blocks always resident |
 
 ---
 
 ## Open Questions
 
 1. **Cross-instance migration**—when multiple FreeAnima instances exist, does the self layer migrate as a whole?
-2. **Personality baseline update rules**—when new evidence conflicts with current tendencies, automatic evolution or confirmation required?

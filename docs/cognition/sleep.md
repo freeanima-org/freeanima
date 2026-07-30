@@ -15,7 +15,7 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 1. **Internal mechanism, no trace** — Sleep runs in background, does not write to conversations, does not affect conversation flow
 2. **Do not copy human rhythm literally** — Triggered by system need (cron), not real-time
 3. **Two-tier layering** — Light sleep (incremental writes), deep sleep (semantic inventory optimization)
-4. **Identity context** — All memory processing must carry **self layer six blocks** + resident memory (see [`self-layer.md`](self-layer.md))
+4. **Identity context** — All memory processing must carry **self layer five blocks** + resident memory (see [`self-layer.md`](self-layer.md))
 
 ## Current State
 
@@ -26,7 +26,7 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 | Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                                                                                                                 |
 | Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`（depends on light-sleep）；**定时仅 CST 周一** full，其余 scheduled 日 skipIf 跳过                                                  |
 | Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on light-sleep                                                                                                        |
-| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                                                                                                          |
+| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh` after deep-sleep + memory-ref-sync；CST 周一；提议写入 agent Inbox（不静默写块）                                            |
 | Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep                                                                                        |
 | Temporal summary       | ✅ Implemented | Steps `temporal-summary-day` / `temporal-summary-cascade`（cascade depends on day, not deep-sleep）; see [`temporal-summary.md`](temporal-summary.md) |
 
@@ -50,16 +50,16 @@ Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.js
 | Scope         | Sessions with `updated_at` in the previous CST calendar day (**excludes cron-platform sessions**)                                                          |
 | Input         | **Messages whose timestamps fall in that same day window** (user+assistant, tools stripped), segmented by conversation — not the full conversation history |
 | Empty day     | If a session was updated that day but has **no messages in the day window**, it is omitted from extraction                                                 |
-| Orchestration | Three stages sequential (separate LLM calls each)                                                                                                          |
+| Orchestration | Two stages sequential (separate LLM calls each)                                                                                                            |
 
-### Three Stages
+### Stages
 
-| Stage              | Target                       | Purpose                                                                                  |
-| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |
-| 1 Semantic         | Semantic memory              | Extract facts, preferences, experiences from dialogue                                    |
-| 2 Limbic           | Emotional anchors            | Capture conversation mood and emotional turning points                                   |
-| 3 Autobiographical | Autobiographical narrative   | Record what experiences meant to the digital life                                        |
-| 3b                 | Autobiography summary (self) | Compress narratives into grouped self-layer outline (title-only bullets by significance) |
+| Stage      | Target            | Purpose                                                |
+| ---------- | ----------------- | ------------------------------------------------------ |
+| 1 Semantic | Semantic memory   | Extract facts, preferences, experiences from dialogue  |
+| 2 Limbic   | Emotional anchors | Capture conversation mood and emotional turning points |
+
+Autobiographical narrative extraction (former stage 3 / 3b) is **retired**; historical narrative entities remain read-only. See [`self-layer.md`](self-layer.md).
 
 **Restraint principle:** Each stage LLM may judge "nothing worth recording" → no writes; program still runs subsequent stages.
 
@@ -89,7 +89,7 @@ Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.js
 
 **Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. **Scheduled cron runs deep-sleep only on CST Mondays (full)**; Tue–Sun scheduled cycles skip the step. Habitat manual runs default to full but can select incremental.
 
-**auto_llm_runs:** Light sleep writes one row per LLM stage（`light-sleep/semantic`、`light-sleep/limbic`；自传为 `self-autobiography`）；deep sleep one row per round（`deep-sleep/<round>`）. Multiple rows ≠ multiple sleep-cycle triggers.
+**auto_llm_runs:** Light sleep writes one row per LLM stage（`light-sleep/semantic`、`light-sleep/limbic`）；deep sleep one row per round（`deep-sleep/<round>`）；self-layer refresh one row（`self-layer-refresh`）. Multiple rows ≠ multiple sleep-cycle triggers.
 
 ### Contradiction Definition (Exclusive)
 
@@ -112,9 +112,9 @@ conversation-cleanup
   └─► light-sleep
         ├─► deep-sleep   # scheduled: CST Monday only (skipIf otherwise)
         ├─► dream
-        ├─► self-layer-refresh
         ├─► temporal-summary-day ──► temporal-summary-cascade
         └─► memory-ref-sync
+              └─► self-layer-refresh  # also depends on deep-sleep; CST Monday skipIf
 ```
 
 ### Session cleanup (pre-light-sleep)
@@ -161,15 +161,15 @@ Each step run is logged in the **Pipeline history** table on the sleep page (`pi
 ```text
 Conversation archive
   │ sleep-cycle pipeline (02:00)
-  │   step light-sleep (three internal stages)
+  │   step light-sleep (semantic + limbic)
   ├─► semantic memory
-  ├─► emotional anchors
-  └─► autobiographical narrative ──compress──► self-layer autobiography summary (grouped outline)
+  └─► emotional anchors
   │
-  │   step deep-sleep (four internal rounds)
+  │   step deep-sleep (four internal rounds)  # Mon
   ▼
 semantic memory (consolidated)
   │   step memory-ref-sync
+  │   step self-layer-refresh → agent Inbox proposal (Mon; partner confirms before write)
   │ memory_recall (real-time retrieval in conversation)
   ▼
 Agent identity and recalled fragments in current context

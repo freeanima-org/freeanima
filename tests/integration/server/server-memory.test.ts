@@ -261,7 +261,7 @@ describePg("server memory API", () => {
     expect((await getSemanticMemory(id))?.pinned).toBe(false);
   });
 
-  it("listSelfBlocks returns six blocks in order", async () => {
+  it("listSelfBlocks returns five blocks in order", async () => {
     await upsertSelfBlock({
       block_key: "direction",
       content: "self layer list probe",

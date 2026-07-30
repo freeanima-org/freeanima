@@ -5,7 +5,6 @@ import { autobiographicalSignificanceSchema } from "@freeanima/host/core/db/sche
 import { formatCstIso, omitUndefined } from "@freeanima/host/core/util";
 import { listActiveAutobiographicalMemory } from "@freeanima/host/core/db/pg/autobiographical-memory";
 import { searchSemanticMemory } from "@freeanima/host/core/db/pg/semantic-memory";
-import { updateSelfBlock } from "@freeanima/host/core/db/pg/self-layer";
 
 import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
 import { runAutobiographyEngine } from "../autobiography-port.ts";
@@ -28,6 +27,7 @@ export type SelfAutobiographyResult = {
   skipped?: string;
   narratives_created: number;
   tool_calls: number;
+  /** Always false — self-layer autobiography_summary retired */
   summary_refreshed: boolean;
 };
 
@@ -85,7 +85,10 @@ function formatSummarySection(
   return [heading, ...titles.map((title) => `- ${title}`)].join("\n");
 }
 
-/** Build grouped outline from active autobiographical entries (granularity decreases with age) */
+/**
+ * Build grouped outline from active autobiographical entries (granularity decreases with age).
+ * Kept for read-only / diagnostic use; no longer written into the self layer.
+ */
 export function buildAutobiographySummary(rows: AutobiographicalMemoryRow[]): string {
   if (rows.length === 0) return "(No autobiography summary yet)";
 
@@ -122,17 +125,15 @@ export function buildAutobiographySummary(rows: AutobiographicalMemoryRow[]): st
   return sections.length > 0 ? sections.join("\n\n") : "(No autobiography summary yet)";
 }
 
+/** @deprecated Self-layer autobiography_summary retired; always returns false */
 export async function refreshAutobiographySummaryBlock(): Promise<boolean> {
-  const active = await listActiveAutobiographicalMemory({ order: "significance_desc", limit: 200 });
-  const summary = buildAutobiographySummary(active);
-  await updateSelfBlock({
-    block_key: "autobiography_summary",
-    content: summary,
-    updated_by: "autobiography_cron",
-  });
-  return true;
+  return false;
 }
 
+/**
+ * Manual / diagnostic autobiography extraction. Sleep cycle no longer calls this;
+ * existing narrative entities remain readable.
+ */
 export async function runSelfAutobiography(
   opts: RunSelfAutobiographyOpts,
 ): Promise<SelfAutobiographyResult> {
@@ -143,46 +144,47 @@ export async function runSelfAutobiography(
   let narrativesCreated = 0;
   let toolCalls = 0;
 
-  if (candidates.length > 0) {
-    const parts = await decomposeSystemPromptParts(opts.selfContent, null);
-    const systemPrompt = composeSystemPrompt(parts);
-    const userMessages = buildAutobiographyUserMessages(candidates, existing);
-
-    const engineResult = await runAutobiographyEngine({
-      systemPrompt,
-      userMessages,
-      toolNames: [...AUTOBIOGRAPHY_TOOL_NAMES],
-    });
-    toolCalls = engineResult.tool_calls;
-
-    const after = await listActiveAutobiographicalMemory({ limit: 200 });
-    narrativesCreated = Math.max(0, after.length - existing.length);
-
-    logComponent("memory").info("autobiography cron narrative stage completed", {
-      candidates: candidates.length,
-      tool_calls: toolCalls,
-      narratives_created: narrativesCreated,
-      summary: engineResult.summary.slice(0, 200),
-    });
-  } else {
+  if (candidates.length === 0) {
     logComponent("memory").info("autobiography cron skipped narrative extraction", {
       reason: "no_recent_experience_imprint",
       since: sinceIso,
     });
+    return omitUndefined({
+      ok: true,
+      skipped: "No recent experience/imprint; skipped narrative extraction",
+      narratives_created: 0,
+      tool_calls: 0,
+      summary_refreshed: false,
+    });
   }
 
-  const summaryRefreshed = await refreshAutobiographySummaryBlock();
+  const parts = await decomposeSystemPromptParts(opts.selfContent, null);
+  const systemPrompt = composeSystemPrompt(parts);
+  const userMessages = buildAutobiographyUserMessages(candidates, existing);
 
-  return omitUndefined({
+  const engineResult = await runAutobiographyEngine({
+    systemPrompt,
+    userMessages,
+    toolNames: [...AUTOBIOGRAPHY_TOOL_NAMES],
+  });
+  toolCalls = engineResult.tool_calls;
+
+  const after = await listActiveAutobiographicalMemory({ limit: 200 });
+  narrativesCreated = Math.max(0, after.length - existing.length);
+
+  logComponent("memory").info("autobiography cron narrative stage completed", {
+    candidates: candidates.length,
+    tool_calls: toolCalls,
+    narratives_created: narrativesCreated,
+    summary: engineResult.summary.slice(0, 200),
+  });
+
+  return {
     ok: true,
-    skipped:
-      candidates.length === 0
-        ? "No recent experience/imprint; skipped narrative extraction"
-        : undefined,
     narratives_created: narrativesCreated,
     tool_calls: toolCalls,
-    summary_refreshed: summaryRefreshed,
-  });
+    summary_refreshed: false,
+  };
 }
 
 export async function runSelfAutobiographyWithLog(

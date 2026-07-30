@@ -467,7 +467,7 @@
   "habitat_outposts_platform": "Platform",
   "habitat_outposts_registered_tools": "Registered tools",
   "habitat_outposts_tools_count": "{count} tools",
-  "habitat_self_layer_desc": "Read-only view of six PG self_blocks. Maintain via the update_self_block tool.",
+  "habitat_self_layer_desc": "Read-only view of five PG self_blocks. Maintain via self_update_block or weekly Inbox proposals.",
   "habitat_self_layer_empty": "No self layer data (PG unavailable or not initialized).",
   "habitat_self_layer_not_set": "(not set yet)",
   "habitat_self_layer_updated": "Updated {time}",

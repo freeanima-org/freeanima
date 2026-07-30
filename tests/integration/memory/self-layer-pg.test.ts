@@ -63,7 +63,7 @@ describePg("self layer PG", () => {
     expect(anchor?.content).toBe("explicit update");
   });
 
-  it("autobiographical_memory append-only + summary", async () => {
+  it("autobiographical_memory append-only (historical narrative retained read-only)", async () => {
     const id = await createAutobiographicalMemory({
       title: "First boundary test",
       content: "I realized that saying no is also a choice.",
@@ -79,14 +79,6 @@ describePg("self layer PG", () => {
     const summary = buildAutobiographySummary([row!]);
     expect(summary).toContain("First boundary test");
     expect(summary).toContain("## Turning points");
-
-    await upsertSelfBlock({
-      block_key: "autobiography_summary",
-      content: summary,
-      updated_by: "test",
-    });
-    const block = await getSelfBlock("autobiography_summary");
-    expect(block?.content).toContain("## Turning points");
 
     const deprecated = await deprecateAutobiographicalMemory(id);
     expect(deprecated).toBe(true);

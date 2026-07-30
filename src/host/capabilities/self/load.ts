@@ -27,7 +27,7 @@ function emptyPlaceholderBlocks(): SelfBlockRow[] {
   }));
 }
 
-/** Load the six self blocks as structured views */
+/** Load the five self blocks as structured views */
 export async function loadSelfBlocks(): Promise<SelfBlockView[]> {
   try {
     const rows = await listSelfBlocks();

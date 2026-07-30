@@ -20,13 +20,13 @@ function parseBlockKey(raw: unknown): SelfBlockKey | null {
 export function registerSelfTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "self",
-    "Self layer six blocks (read/write)",
+    "Self layer five blocks (read/write)",
     attachToolReturns(
       [
         {
           name: "self_get_blocks",
           description:
-            "Read self layer six blocks (existence anchor, self model, personality baseline, direction, metacognition, autobiography summary).",
+            "Read self layer five blocks (existence anchor, self model, personality baseline, direction, metacognition).",
           parameters: {
             type: "object",
             properties: {},
@@ -43,14 +43,14 @@ export function registerSelfTools(toolSets: ToolSetRegistry): void {
         {
           name: "self_update_block",
           description:
-            "Update a self layer block. existence_anchor is locked by default; use force=true to override.",
+            "Update a self layer block. existence_anchor is locked by default; use force=true to override. For Inbox self-layer maintenance proposals (source_ref=self-layer-proposal), ask the user first; only write after they approve, then notification_mark_read.",
           parameters: {
             type: "object",
             properties: {
               block_key: {
                 type: "string",
                 description:
-                  "existence_anchor | self_model | personality_baseline | direction | metacognition | autobiography_summary",
+                  "existence_anchor | self_model | personality_baseline | direction | metacognition",
               },
               content: { type: "string", description: "Block body (Markdown)" },
               force: {

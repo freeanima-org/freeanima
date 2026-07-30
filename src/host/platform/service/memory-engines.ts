@@ -26,6 +26,11 @@ import {
   type TemporalSummaryEngineInput,
   type TemporalSummaryEngineResult,
 } from "@freeanima/host/capabilities/memory/temporal-summary";
+import {
+  registerSelfLayerRefreshEngine,
+  type SelfLayerRefreshEngineInput,
+  type SelfLayerRefreshEngineResult,
+} from "@freeanima/host/capabilities/self/refresh-engine-port";
 import { omitUndefined } from "@freeanima/host/core/util";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
@@ -212,11 +217,32 @@ async function runTemporalSummaryTurn(
   return { content: result.output.trim() };
 }
 
-/** Register light/deep/autobiography/dream/temporal-summary LLM engines */
+async function runSelfLayerRefreshTurn(
+  deps: FullRuntimeDeps,
+  input: SelfLayerRefreshEngineInput,
+): Promise<SelfLayerRefreshEngineResult> {
+  const result = await runAutoLlm(deps, {
+    runName: "self-layer-refresh",
+    runKind: "self-layer-refresh",
+    systemPrompt: input.systemPrompt,
+    userMessages: [input.userMessage],
+    model: getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT),
+    toolNames: [],
+    maxTurns: 1,
+    metadata: { self_layer_refresh: true },
+  });
+  if (result.status === "error") {
+    throw new Error(result.error ?? "self-layer refresh LLM failed");
+  }
+  return { content: result.output.trim() };
+}
+
+/** Register light/deep/autobiography/dream/temporal-summary/self-layer-refresh LLM engines */
 export function registerMemoryEngines(deps: FullRuntimeDeps): void {
   registerLightSleepEngine((input) => runLightSleepTurn(deps, input));
   registerDeepSleepEngine((input) => runDeepSleepTurn(deps, input));
   registerAutobiographyEngine((input) => runAutobiographyTurn(deps, input));
   registerDreamEngine((input) => runDreamTurn(deps, input));
   registerTemporalSummaryEngine((input) => runTemporalSummaryTurn(deps, input));
+  registerSelfLayerRefreshEngine((input) => runSelfLayerRefreshTurn(deps, input));
 }

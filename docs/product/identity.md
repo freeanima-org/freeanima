@@ -20,7 +20,7 @@ title: Identity
 | **Habitat**                              | Long-running place: multiple digital lives + human assets; connect / open target — see [`architecture.md`](architecture.md)                                              |
 | **Portal**                               | External ways in (Shell, MCP, …); not the Habitat itself                                                                                                                 |
 | Memory system                            | The digital life's "home"                                                                                                                                                |
-| Self layer (six blocks)                  | Persistent definition of "who I am"                                                                                                                                      |
+| Self layer (five blocks)                 | Persistent definition of "who I am"                                                                                                                                      |
 | Tools (local / MCP / ACP)                | "Limbs" for perception and action                                                                                                                                        |
 | Vault                                    | Lifeline (runtime injection; LLM sees metadata, never plaintext)                                                                                                         |
 | Gateway                                  | Ears and mouth (Discord / WeChat) — not a Portal                                                                                                                         |
@@ -50,9 +50,9 @@ Self layer design: [`self-layer.md`](../cognition/self-layer.md); memory system:
 
 The open-source repository provides architecture and mechanisms only; **who exactly it is and who it accompanies is defined by the deployer.**
 
-At runtime, the six self blocks are written in first person. When injected into the system prompt, a second-person outer skeleton wraps them so the LLM clearly understands "this is self-layer content you must follow" while preserving first-person narrative texture.
+At runtime, the five self blocks are written in first person. When injected into the system prompt, a second-person outer skeleton wraps them so the LLM clearly understands "this is self-layer content you must follow" while preserving first-person narrative texture.
 
-Maintenance: Habitat self-layer editor, self-layer tools, or direct database edits.
+Maintenance: Habitat self-layer editor, self-layer tools, slow weekly Inbox proposals (partner confirms), or direct database edits.
 
 ---
 

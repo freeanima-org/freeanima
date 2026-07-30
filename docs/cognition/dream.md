@@ -45,8 +45,8 @@ Sleep-cycle DAG node `dream` (unchanged topology):
 light-sleep
   ├─► deep-sleep
   ├─► dream        (parallel)
-  ├─► self-layer-refresh
   └─► memory-ref-sync
+        └─► self-layer-refresh  # also depends on deep-sleep; Mon only when scheduled
 ```
 
 ## Tools & UI

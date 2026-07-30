@@ -29,7 +29,7 @@ function emptyPlaceholderBlocks(): SelfBlockDisplay[] {
   }));
 }
 
-/** Habitat self-layer six blocks read-only display */
+/** Habitat self-layer five blocks read-only display */
 export async function listSelfBlocks(_deps: RuntimeDeps): Promise<{ blocks: SelfBlockDisplay[] }> {
   try {
     const rows = await listPgSelfBlocks();
