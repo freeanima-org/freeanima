@@ -2,11 +2,11 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button, Checkbox, Input } from "@freeanima/ui-kit";
-import { ContextMenu } from "@freeanima/ui-kit/composite";
+import { ListRow } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { useDrawerNav } from "@freeanima/ui-kit/layout";
 import { SearchIcon } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactElement, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type PointerEvent, type ReactNode, type Ref } from "react";
 
 import { LIST_ROOT_DND_ID, listDndId } from "../lib/dnd-ids.ts";
 import type { TaskListRow } from "../lib/api.ts";
@@ -46,6 +46,8 @@ type ListSidebarProps = {
   contextMenuItemsForList?: ((list: TaskListRow) => ActionSheetItem[]) | undefined;
   onEditList: (list: TaskListRow) => void;
 };
+
+const SIDEBAR_SELECTED = "bg-primary/15 font-medium";
 
 function SortableTreeRow({
   node,
@@ -97,49 +99,59 @@ function SortableTreeRow({
     paddingLeft: `${8 + depth * 16}px`,
   };
 
-  const row: ReactElement = (
-    <div
-      ref={setNodeRef}
-      style={style}
+  return (
+    <ListRow
+      as="div"
+      selected={selected}
+      selectedClassName={SIDEBAR_SELECTED}
+      dragging={isDragging}
+      useActionSheet={useActionSheet}
+      contextMenuEnabled={contextMenuEnabled}
+      contextMenuItems={contextMenuItems}
+      onOpenMenu={onOpenMenu}
+      dragAttributes={attributes}
+      dragListeners={listeners}
+      rowRef={setNodeRef as Ref<HTMLElement | null>}
+      rowStyle={style}
       className={[
-        "group relative flex min-h-11 touch-manipulation items-center gap-0.5 rounded-lg py-1 pr-1 text-sm select-none",
-        selected ? "bg-primary/15 font-medium" : "hover:bg-muted",
-        isDragging ? "opacity-50" : "",
+        "touch-manipulation gap-0.5 pr-1 text-sm select-none",
         isTaskDropTarget || isFolderIntoTarget ? "ring-primary bg-primary/10 ring-2" : "",
       ].join(" ")}
       onDoubleClick={useActionSheet ? undefined : onEdit}
-      {...attributes}
-      {...listeners}
+      overlays={
+        <>
+          {showBeforeLine ? (
+            <div className="bg-primary absolute top-0 right-1 left-1 z-20 h-0.5 rounded-full" />
+          ) : null}
+          {showAfterLine ? (
+            <div className="bg-primary absolute right-1 bottom-0 left-1 z-20 h-0.5 rounded-full" />
+          ) : null}
+        </>
+      }
+      leading={
+        isFolder ? (
+          <button
+            type="button"
+            className="text-muted-foreground flex min-h-11 min-w-6 shrink-0 items-center justify-center"
+            aria-label={expanded ? "折叠" : "展开"}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand();
+            }}
+            onPointerDown={(e: PointerEvent) => e.stopPropagation()}
+          >
+            {expanded ? "▼" : "▶"}
+          </button>
+        ) : (
+          <span className="min-w-6 shrink-0" aria-hidden />
+        )
+      }
     >
-      {showBeforeLine ? (
-        <div className="bg-primary absolute top-0 right-1 left-1 z-20 h-0.5 rounded-full" />
-      ) : null}
-      {showAfterLine ? (
-        <div className="bg-primary absolute right-1 bottom-0 left-1 z-20 h-0.5 rounded-full" />
-      ) : null}
-      {isFolder ? (
-        <button
-          type="button"
-          className="text-muted-foreground flex min-h-11 min-w-6 shrink-0 items-center justify-center"
-          aria-label={expanded ? "折叠" : "展开"}
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleExpand();
-          }}
-        >
-          {expanded ? "▼" : "▶"}
-        </button>
-      ) : (
-        <span className="min-w-6 shrink-0" aria-hidden />
-      )}
       {isFolder ? (
         <button
           type="button"
           className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelectFolder();
-          }}
+          onClick={onSelectFolder}
         >
           <span className="mr-1 shrink-0" aria-hidden>
             📁
@@ -153,10 +165,7 @@ function SortableTreeRow({
         <button
           type="button"
           className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelectList();
-          }}
+          onClick={onSelectList}
         >
           <span className="min-w-0 flex-1 truncate">{list.name}</span>
           <span className="ml-auto flex shrink-0 items-center gap-1.5 tabular-nums">
@@ -165,28 +174,8 @@ function SortableTreeRow({
           </span>
         </button>
       )}
-      {useActionSheet ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          className="shrink-0"
-          aria-label="操作"
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenMenu();
-          }}
-        >
-          ⋯
-        </Button>
-      ) : null}
-    </div>
+    </ListRow>
   );
-
-  if (contextMenuEnabled && !useActionSheet && contextMenuItems && contextMenuItems.length > 0) {
-    return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
-  }
-  return row;
 }
 
 function ClosedListRow({
@@ -208,16 +197,24 @@ function ClosedListRow({
   onSelect: () => void;
   onOpenMenu: () => void;
 }) {
-  const row: ReactElement = (
-    <div
-      style={{ paddingLeft: `${8 + depth * 16}px` }}
-      className={[
-        "group flex min-h-11 items-center gap-0.5 rounded-lg py-1 pr-1 text-sm opacity-70",
-        selected ? "bg-primary/15 font-medium opacity-100" : "hover:bg-muted",
-      ].join(" ")}
+  return (
+    <ListRow
+      as="div"
+      selected={selected}
+      selectedClassName={`${SIDEBAR_SELECTED} opacity-100`}
+      useActionSheet={useActionSheet}
+      contextMenuEnabled={contextMenuEnabled}
+      contextMenuItems={contextMenuItems}
+      onOpenMenu={onOpenMenu}
+      rowStyle={{ paddingLeft: `${8 + depth * 16}px` }}
+      className="gap-0.5 pr-1 text-sm opacity-70"
+      leading={
+        <>
+          <span className="min-w-6 shrink-0" aria-hidden />
+          <span className="min-w-8 shrink-0" aria-hidden />
+        </>
+      }
     >
-      <span className="min-w-6 shrink-0" aria-hidden />
-      <span className="min-w-8 shrink-0" aria-hidden />
       <button
         type="button"
         className="flex min-w-0 flex-1 items-center gap-1 truncate py-2 text-left"
@@ -243,28 +240,8 @@ function ClosedListRow({
           </>
         )}
       </button>
-      {useActionSheet ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          className="shrink-0"
-          aria-label="操作"
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenMenu();
-          }}
-        >
-          ⋯
-        </Button>
-      ) : null}
-    </div>
+    </ListRow>
   );
-
-  if (contextMenuEnabled && !useActionSheet && contextMenuItems && contextMenuItems.length > 0) {
-    return <ContextMenu items={contextMenuItems}>{row}</ContextMenu>;
-  }
-  return row;
 }
 
 function ClosedListsSection({
@@ -377,19 +354,18 @@ export function ListSidebar({
         <div className="flex-1 overflow-y-auto">
           {onSelectSearch ? (
             <div className="p-2 pb-0">
-              <button
-                type="button"
-                className={[
-                  "hover:bg-muted flex min-h-11 w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm",
-                  searchSelected ? "bg-primary/15 font-medium" : "",
-                ].join(" ")}
-                aria-label="搜索"
-                aria-pressed={searchSelected}
+              <ListRow
+                as="div"
+                selected={searchSelected}
+                selectedClassName={SIDEBAR_SELECTED}
+                useActionSheet={false}
+                showPersistentMenu={false}
+                className="w-full gap-2 px-2 text-sm"
                 onClick={onSelectSearch}
+                leading={<SearchIcon className="size-4 shrink-0" aria-hidden />}
               >
-                <SearchIcon className="size-4 shrink-0" aria-hidden />
-                <span className="min-w-0 flex-1 truncate">搜索</span>
-              </button>
+                <span className="min-w-0 flex-1 truncate text-left">搜索</span>
+              </ListRow>
             </div>
           ) : null}
           {builtinSmartListSection}

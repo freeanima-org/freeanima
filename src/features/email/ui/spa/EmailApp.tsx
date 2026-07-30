@@ -1,17 +1,8 @@
-import {
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useRef,
-  useState,
-  type ReactElement,
-} from "react";
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import { Alert, AlertDescription, Button, Checkbox, Input, Spinner } from "@freeanima/ui-kit";
 import {
   ActionSheet,
   ConfirmDialog,
-  ContextMenu,
   EmptyState,
   PullToRefresh,
   StatusAlert,
@@ -32,11 +23,11 @@ import {
 import { readModuleSelection, writeModuleSelection } from "@freeanima/client/portal-sdk";
 import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 import { m } from "@paraglide/messages";
-import { MoreHorizontal } from "lucide-react";
 
 import { EmailAccountFormDialog } from "./components/EmailAccountFormDialog.tsx";
 import { EmailAccountSidebar, isSystemMailbox } from "./components/EmailAccountSidebar.tsx";
 import { EmailMessageDetail } from "./components/EmailMessageDetail.tsx";
+import { EmailMessageRowView } from "./components/EmailMessageRowView.tsx";
 import { EmailReplyDialog } from "./components/EmailReplyDialog.tsx";
 import {
   createEmailMailbox,
@@ -814,90 +805,23 @@ export function EmailApp() {
         >
           <ul className="divide-border divide-y">
             {messages.map((message) => {
-              const menuItems = messageMenuItems(message);
               const isChecked = selectedIds.has(message.id);
-              const row: ReactElement = (
-                <div
-                  className={`group hover:bg-muted/60 flex w-full items-stretch ${
-                    selectedMessageId === message.id || isChecked
-                      ? "bg-primary/10 ring-primary/30 ring-1 ring-inset"
-                      : ""
-                  }`}
-                >
-                  {selectionMode ? (
-                    <label
-                      className="flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center px-2"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Checkbox
-                        checked={isChecked}
-                        disabled={batchBusy}
-                        onCheckedChange={() => toggleSelectId(message.id)}
-                        aria-label={m.email_select_mode()}
-                      />
-                    </label>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="min-w-0 flex-1 px-3 py-3 text-left"
-                    onClick={() => {
-                      if (selectionMode) {
-                        toggleSelectId(message.id);
-                        return;
-                      }
-                      void openMessage(message);
-                    }}
-                  >
-                    <div className="flex items-start gap-2">
-                      {message.unread ? (
-                        <span className="bg-primary mt-1 inline-block h-2 w-2 shrink-0 rounded-full" />
-                      ) : (
-                        <span className="mt-1 inline-block h-2 w-2 shrink-0" />
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div
-                          className={`truncate ${message.unread ? "font-semibold" : "font-medium"}`}
-                        >
-                          {message.flagged ? "★ " : ""}
-                          {message.subject || m.habitat_email_no_subject()}
-                        </div>
-                        <div className="text-muted-foreground truncate text-xs">
-                          {message.direction === "outbound" ? message.to : message.from}
-                        </div>
-                        <div className="text-muted-foreground mt-1 truncate text-xs">
-                          {message.preview}
-                        </div>
-                      </div>
-                      <div className="text-muted-foreground shrink-0 text-[10px]">
-                        {formatWhen(message.sent_at)}
-                      </div>
-                    </div>
-                  </button>
-                  {!selectionMode && useActionSheet ? (
-                    <button
-                      type="button"
-                      className="text-muted-foreground hover:text-foreground flex min-h-11 min-w-11 shrink-0 items-center justify-center"
-                      aria-label={m.email_message_actions()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openMessageMenu(message);
-                      }}
-                    >
-                      <MoreHorizontal className="size-4" />
-                    </button>
-                  ) : null}
-                </div>
-              );
               return (
                 <li key={message.id}>
-                  {contextMenuEnabled &&
-                  !useActionSheet &&
-                  !selectionMode &&
-                  menuItems.length > 0 ? (
-                    <ContextMenu items={menuItems}>{row}</ContextMenu>
-                  ) : (
-                    row
-                  )}
+                  <EmailMessageRowView
+                    message={message}
+                    active={selectedMessageId === message.id}
+                    selected={isChecked}
+                    selectionMode={selectionMode}
+                    batchBusy={batchBusy}
+                    useActionSheet={useActionSheet}
+                    contextMenuEnabled={contextMenuEnabled}
+                    contextMenuItems={messageMenuItems(message)}
+                    formatWhen={formatWhen}
+                    onOpen={() => void openMessage(message)}
+                    onToggleSelect={() => toggleSelectId(message.id)}
+                    onOpenMenu={() => openMessageMenu(message)}
+                  />
                 </li>
               );
             })}

@@ -40,7 +40,7 @@ Dependency direction: `app-frame` → `features/*/ui` → `{ui-kit, portal-sdk}`
 4. Layout structure components may use **layout** APIs (`useCompactLayout`, `useDrawerNav`, …).
 5. Shell-only concerns stay in portal-sdk / shell host; ui-kit does not export shell detectors.
 
-**Pending alignment:** Prefer `ListRow` (+ domain wrappers such as `TaskItemRowView`) for new list modules; align remaining custom rows to the **pattern contract** ([patterns.md](patterns.md)) — do not fork row behavior.
+**Pending alignment:** Prefer `ListRow` (+ domain wrappers such as `TaskItemRowView` / `EmailMessageRowView`) for new list modules. Aligned: task/project sidebars, smart lists, email message & account rows, chat conversations. Remaining P2/P3: MoveTo*Picker, Vault/diary pickers, Habitat admin, extension popup — do not fork row behavior.
 
 ## Which layer may read which dimension
 

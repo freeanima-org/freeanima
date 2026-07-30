@@ -32,16 +32,6 @@
   @apply block p-3 overflow-x-auto bg-muted;
 }
 
-.session-item {
-  @apply block px-3 py-2 rounded-lg text-sm text-muted-foreground transition-colors cursor-pointer;
-}
-.session-item:hover {
-  @apply bg-muted/50 text-foreground;
-}
-.session-item.sidebar-nav-active {
-  @apply bg-primary/20 text-foreground font-semibold border-l-[3px] border-l-primary;
-}
-
 .tool-bubble {
   @apply rounded-2xl bg-muted/60;
   max-width: 100%;

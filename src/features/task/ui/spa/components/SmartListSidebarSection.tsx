@@ -1,10 +1,11 @@
 import { Button } from "@freeanima/ui-kit";
-import { ContextMenu, EntityIdLabel } from "@freeanima/ui-kit/composite";
+import { EntityIdLabel, ListRow } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
-import { useRef, type ReactElement, type TouchEvent } from "react";
 
 import type { SmartListRow } from "../lib/api.ts";
 import { smartListRowKey } from "../lib/task-smart-list-utils.ts";
+
+const SIDEBAR_SELECTED = "bg-muted font-medium";
 
 type BuiltinSmartListSectionProps = {
   smartLists: SmartListRow[];
@@ -52,16 +53,18 @@ function BuiltinSmartListRow({
   onSelect: () => void;
 }) {
   return (
-    <button
-      type="button"
-      className={`hover:bg-muted flex w-full min-w-0 items-center gap-1 rounded-md px-2 py-1.5 text-left text-sm ${
-        selected ? "bg-muted font-medium" : ""
-      }`}
+    <ListRow
+      as="div"
+      selected={selected}
+      selectedClassName={SIDEBAR_SELECTED}
+      useActionSheet={false}
+      showPersistentMenu={false}
+      className="w-full gap-1 px-2 text-sm"
       onClick={onSelect}
     >
-      <span className="min-w-0 flex-1 truncate">{row.title}</span>
+      <span className="min-w-0 flex-1 truncate text-left">{row.title}</span>
       <SidebarMeta count={count} />
-    </button>
+    </ListRow>
   );
 }
 
@@ -84,44 +87,24 @@ function CustomSmartListRow({
   contextMenuEnabled: boolean;
   contextMenuItems?: ActionSheetItem[] | undefined;
 }) {
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const clearLongPress = () => {
-    if (longPressTimer.current != null) {
-      clearTimeout(longPressTimer.current);
-    }
-    longPressTimer.current = null;
-  };
-
-  const handleTouchStart = (_e: TouchEvent) => {
-    if (!useActionSheet) return;
-    clearLongPress();
-    longPressTimer.current = setTimeout(() => {
-      onOpenMenu();
-    }, 450);
-  };
-
-  const button: ReactElement = (
-    <button
-      type="button"
-      className={`hover:bg-muted flex w-full min-w-0 items-center gap-1 rounded-md px-2 py-1.5 text-left text-sm ${
-        selected ? "bg-muted font-medium" : ""
-      }`}
+  return (
+    <ListRow
+      as="div"
+      selected={selected}
+      selectedClassName={SIDEBAR_SELECTED}
+      useActionSheet={useActionSheet}
+      contextMenuEnabled={contextMenuEnabled}
+      contextMenuItems={contextMenuItems}
+      longPressEnabled={useActionSheet}
+      onLongPress={onOpenMenu}
+      onOpenMenu={onOpenMenu}
+      className="w-full gap-1 px-2 text-sm"
       onClick={onSelect}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={clearLongPress}
-      onTouchMove={clearLongPress}
-      onTouchCancel={clearLongPress}
     >
-      <span className="min-w-0 flex-1 truncate">{row.title}</span>
+      <span className="min-w-0 flex-1 truncate text-left">{row.title}</span>
       <SidebarMeta id={row.id} count={count} />
-    </button>
+    </ListRow>
   );
-
-  if (contextMenuEnabled && !useActionSheet && contextMenuItems && contextMenuItems.length > 0) {
-    return <ContextMenu items={contextMenuItems}>{button}</ContextMenu>;
-  }
-  return button;
 }
 
 export function BuiltinSmartListSection({
@@ -152,16 +135,18 @@ export function BuiltinSmartListSection({
         );
       })}
       {defaultInboxId != null ? (
-        <button
-          type="button"
-          className={`hover:bg-muted flex w-full min-w-0 items-center gap-1 rounded-md px-2 py-1.5 text-left text-sm ${
-            inboxSelected ? "bg-muted font-medium" : ""
-          }`}
+        <ListRow
+          as="div"
+          selected={inboxSelected}
+          selectedClassName={SIDEBAR_SELECTED}
+          useActionSheet={false}
+          showPersistentMenu={false}
+          className="w-full gap-1 px-2 text-sm"
           onClick={onSelectInbox}
         >
-          <span className="min-w-0 flex-1 truncate">收件箱</span>
+          <span className="min-w-0 flex-1 truncate text-left">收件箱</span>
           <SidebarMeta id={defaultInboxId} count={inboxItemCount} />
-        </button>
+        </ListRow>
       ) : null}
     </div>
   );

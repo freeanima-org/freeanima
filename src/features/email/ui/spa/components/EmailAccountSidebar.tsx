@@ -1,10 +1,9 @@
-import type { ReactElement } from "react";
 import { SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
 import { Button } from "@freeanima/ui-kit";
-import { ContextMenu, EmptyState } from "@freeanima/ui-kit/composite";
+import { EmptyState, ListRow } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { m } from "@paraglide/messages";
-import { FileText, Folder, Inbox, MoreHorizontal, Plus, Send, Trash2 } from "lucide-react";
+import { FileText, Folder, Inbox, Plus, Send, Trash2 } from "lucide-react";
 
 import type { EmailAccountRow, EmailMailboxInfo } from "../lib/api.ts";
 
@@ -51,6 +50,7 @@ function mailboxLabel(box: EmailMailboxInfo): string {
 }
 
 const ROLE_ORDER = ["inbox", "sent", "drafts", "trash"];
+const FOLDER_SELECTED = "bg-primary/10 ring-primary/30 ring-1 ring-inset";
 
 export function sortMailboxes(boxes: EmailMailboxInfo[]): EmailMailboxInfo[] {
   return boxes.toSorted((a, b) => {
@@ -133,39 +133,31 @@ export function EmailAccountSidebar({
           {accounts.map((account) => {
             const selected = activeAccountId === account.id;
             const menuItems = contextMenuItemsForAccount?.(account) ?? [];
-            const header: ReactElement = (
-              <div className="group mb-1 flex items-center gap-1 px-1">
-                <button
-                  type="button"
-                  className="min-w-0 flex-1 truncate text-left text-xs font-medium"
-                  onDoubleClick={useActionSheet ? undefined : () => onEditAccount(account)}
-                  title={account.address}
-                >
-                  {accountLabel(account)}
-                </button>
-                {useActionSheet ? (
-                  <button
-                    type="button"
-                    className="text-muted-foreground hover:text-foreground flex min-h-9 min-w-9 shrink-0 items-center justify-center"
-                    aria-label={m.email_account_actions()}
-                    disabled={writesDisabled}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onOpenAccountMenu(account);
-                    }}
-                  >
-                    <MoreHorizontal className="size-3.5" />
-                  </button>
-                ) : null}
-              </div>
-            );
             return (
               <li key={account.id} className={account.enabled ? "" : "opacity-60"}>
-                {contextMenuEnabled && !useActionSheet && menuItems.length > 0 ? (
-                  <ContextMenu items={menuItems}>{header}</ContextMenu>
-                ) : (
-                  header
-                )}
+                <ListRow
+                  as="div"
+                  disabled={writesDisabled}
+                  useActionSheet={useActionSheet}
+                  contextMenuEnabled={contextMenuEnabled}
+                  contextMenuItems={menuItems}
+                  onOpenMenu={() => onOpenAccountMenu(account)}
+                  menuAriaLabel={m.email_account_actions()}
+                  showPersistentMenu={useActionSheet && menuItems.length > 0}
+                  className="mb-1 gap-1 px-1"
+                  onDoubleClick={useActionSheet ? undefined : () => onEditAccount(account)}
+                >
+                  <button
+                    type="button"
+                    className="min-w-0 flex-1 truncate py-2 text-left text-xs font-medium"
+                    title={account.address}
+                    onClick={() => {
+                      if (!selected) onSelectMailbox(account, "INBOX");
+                    }}
+                  >
+                    {accountLabel(account)}
+                  </button>
+                </ListRow>
                 {selected ? (
                   <ul className="space-y-0.5 pl-1">
                     {sorted.length === 0 ? (
@@ -177,44 +169,33 @@ export function EmailAccountSidebar({
                       const Icon = mailboxIcon(mailboxRole(box));
                       const active = activeMailbox === box.path;
                       const fItems = folderMenuItems?.(account, box) ?? [];
-                      const row = (
-                        <div className="group/folder flex items-center gap-0.5">
-                          <button
-                            type="button"
-                            className={`hover:bg-muted flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm ${
-                              active ? "bg-primary/10 ring-primary/30 ring-1 ring-inset" : ""
-                            }`}
-                            onClick={() => onSelectMailbox(account, box.path)}
-                          >
-                            <Icon className="size-3.5 shrink-0 opacity-70" />
-                            <span className="truncate">{mailboxLabel(box)}</span>
-                          </button>
-                          {fItems.length > 0 && useActionSheet ? (
-                            <button
-                              type="button"
-                              className="text-muted-foreground hover:text-foreground flex min-h-8 min-w-8 shrink-0 items-center justify-center"
-                              aria-label={m.email_folder_rename()}
-                              onClick={() => onOpenFolderMenu?.(account, box)}
-                            >
-                              <MoreHorizontal className="size-3.5" />
-                            </button>
-                          ) : null}
-                        </div>
-                      );
                       return (
                         <li key={box.path}>
-                          {contextMenuEnabled && !useActionSheet && fItems.length > 0 ? (
-                            <ContextMenu items={fItems}>{row}</ContextMenu>
-                          ) : (
-                            row
-                          )}
+                          <ListRow
+                            as="div"
+                            selected={active}
+                            selectedClassName={FOLDER_SELECTED}
+                            useActionSheet={useActionSheet}
+                            contextMenuEnabled={contextMenuEnabled}
+                            contextMenuItems={fItems}
+                            onOpenMenu={() => onOpenFolderMenu?.(account, box)}
+                            menuAriaLabel={m.email_folder_rename()}
+                            showPersistentMenu={fItems.length > 0 && useActionSheet}
+                            className="w-full gap-0.5 text-sm"
+                            onClick={() => onSelectMailbox(account, box.path)}
+                            leading={<Icon className="ml-2 size-3.5 shrink-0 opacity-70" />}
+                          >
+                            <span className="min-w-0 flex-1 truncate py-2 text-left">
+                              {mailboxLabel(box)}
+                            </span>
+                          </ListRow>
                         </li>
                       );
                     })}
                     <li>
                       <button
                         type="button"
-                        className="text-muted-foreground hover:bg-muted hover:text-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs"
+                        className="text-muted-foreground hover:bg-muted hover:text-foreground flex min-h-11 w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs"
                         disabled={writesDisabled}
                         onClick={() => onNewFolder(account)}
                       >
@@ -224,13 +205,17 @@ export function EmailAccountSidebar({
                     </li>
                   </ul>
                 ) : (
-                  <button
-                    type="button"
-                    className="hover:bg-muted w-full rounded-md px-2 py-1.5 text-left text-sm"
+                  <ListRow
+                    as="div"
+                    useActionSheet={false}
+                    showPersistentMenu={false}
+                    className="w-full px-2 text-sm"
                     onClick={() => onSelectMailbox(account, "INBOX")}
                   >
-                    {m.email_inbox_title()}
-                  </button>
+                    <span className="min-w-0 flex-1 truncate py-2 text-left">
+                      {m.email_inbox_title()}
+                    </span>
+                  </ListRow>
                 )}
               </li>
             );
