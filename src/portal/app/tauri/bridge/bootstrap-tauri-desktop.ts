@@ -174,6 +174,33 @@ export async function bootstrapTauriBridge(): Promise<void> {
         ),
       } satisfies RemoteToolsStatusPayload;
     },
+    reportCompanionModelStatus: async (status) => {
+      await invoke("report_companion_model_status", {
+        status: {
+          model_loading: status.loading,
+          error: status.error ?? null,
+        },
+      });
+      await emit("shell:companion-model-status", {
+        loading: status.loading,
+        error: status.error ?? null,
+      });
+    },
+    listenCompanionModelStatus: (handler) => {
+      let unlisten: (() => void) | undefined;
+      void listen<{ loading?: boolean; error?: string | null }>(
+        "shell:companion-model-status",
+        (ev) => {
+          handler({
+            loading: Boolean(ev.payload?.loading),
+            error: typeof ev.payload?.error === "string" ? ev.payload.error : null,
+          });
+        },
+      ).then((u) => {
+        unlisten = u;
+      });
+      return () => unlisten?.();
+    },
     showNativeAlert: (payload: ShellNativeAlertPayload) => invoke("show_native_alert", { payload }),
     // 桌面：tauri-plugin-notification 权限恒 Granted，无 runtime 弹窗。
     // 禁止走真实 invoke——Vite HMR 与旧 Rust 不同步时权限命令缺失会整条 Alert 挂掉。

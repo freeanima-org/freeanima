@@ -160,6 +160,14 @@ pub struct RemoteToolsStatus {
 }
 
 #[cfg(desktop)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub struct CompanionModelStatus {
+  pub model_loading: bool,
+  pub error: Option<String>,
+}
+
+#[cfg(desktop)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PatrolScreenInfo {
@@ -248,6 +256,8 @@ struct ShellState {
   pointer_active: Mutex<bool>,
   #[cfg(desktop)]
   remote_tools: Mutex<RemoteToolsStatus>,
+  #[cfg(desktop)]
+  companion_model: Mutex<CompanionModelStatus>,
   habitat: Mutex<HabitatClientConfig>,
   pomodoro: Mutex<PomodoroWidgetState>,
 }
@@ -277,6 +287,8 @@ impl Default for ShellState {
       pointer_active: Mutex::new(false),
       #[cfg(desktop)]
       remote_tools: Mutex::new(RemoteToolsStatus::default()),
+      #[cfg(desktop)]
+      companion_model: Mutex::new(CompanionModelStatus::default()),
       habitat: Mutex::new(HabitatClientConfig {
         habitat_url,
         remote_auth_token: prefs.remote_auth_token,
@@ -534,15 +546,25 @@ fn set_companion_visible(app: AppHandle, state: State<'_, ShellState>, visible: 
       companion_visible: visible,
     },
   )?;
-  ensure_companion(&app)?;
-  if let Some(win) = app.get_webview_window("companion") {
-    if visible {
+  if visible {
+    ensure_companion(&app)?;
+    if let Some(win) = app.get_webview_window("companion") {
       win.show().map_err(|e| e.to_string())?;
-      // overlay 常驻隐藏，show 时再推一发，避免此前漏收 config-changed
+      // 重建或再次 show 时补发，避免漏收 config-changed
       let _ = app.emit("shell:config-changed", ());
-    } else {
-      win.hide().map_err(|e| e.to_string())?;
     }
+  } else {
+    // 关显示 = 关闭 WebView = Outpost 离线（attach 随 SPA unmount 拆除）
+    if let Some(win) = app.get_webview_window("companion") {
+      let _ = win.hide();
+      let _ = win.close();
+    }
+    *state.remote_tools.lock().expect("rt") = RemoteToolsStatus::default();
+    *state.companion_model.lock().expect("cm") = CompanionModelStatus::default();
+    let _ = app.emit(
+      "shell:companion-model-status",
+      serde_json::json!({ "loading": false, "error": null }),
+    );
   }
   Ok(())
 }
@@ -557,6 +579,18 @@ fn report_remote_tools_status(state: State<'_, ShellState>, status: RemoteToolsS
 #[tauri::command]
 fn get_remote_tools_status(state: State<'_, ShellState>) -> RemoteToolsStatus {
   state.remote_tools.lock().expect("rt").clone()
+}
+
+#[cfg(desktop)]
+#[tauri::command]
+fn report_companion_model_status(state: State<'_, ShellState>, status: CompanionModelStatus) {
+  *state.companion_model.lock().expect("cm") = status;
+}
+
+#[cfg(desktop)]
+#[tauri::command]
+fn get_companion_model_status(state: State<'_, ShellState>) -> CompanionModelStatus {
+  state.companion_model.lock().expect("cm").clone()
 }
 
 #[tauri::command]
@@ -904,6 +938,8 @@ pub fn run() {
         set_companion_visible,
         report_remote_tools_status,
         get_remote_tools_status,
+        report_companion_model_status,
+        get_companion_model_status,
         show_native_alert,
         read_native_alert_permission,
         request_native_alert_permission,
@@ -919,7 +955,6 @@ pub fn run() {
         #[cfg(windows)]
         windows_aumid::register_aumid(app.handle());
         build_tray(app.handle())?;
-        ensure_companion(app.handle()).ok();
         let handle = app.handle().clone();
         std::thread::spawn(move || {
           std::thread::sleep(std::time::Duration::from_millis(1200));

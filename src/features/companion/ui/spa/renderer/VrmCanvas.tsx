@@ -3,6 +3,8 @@ import { disposeVrmBackend, getVrmBackend } from "./VrmBackend.ts";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 import { loadCachedModelSource } from "@freeanima/features/companion/ui/spa/lib/model-cache.ts";
 import { measureCharacterViewportSize } from "@freeanima/features/companion/ui/spa/lib/canvas-metrics.ts";
+import { formatVrmLoadError } from "@freeanima/features/companion/ui/spa/lib/vrm-load-error.ts";
+import { reportCompanionModelStatus } from "@freeanima/features/companion/ui/spa/lib/portal-shell.ts";
 
 type Props = {
   modelPath: string;
@@ -35,6 +37,7 @@ export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelErr
       setModelLoading(false);
       loadedModelRef.current = null;
       disposeVrmBackend();
+      void reportCompanionModelStatus({ loading: false, error: null });
       return;
     }
 
@@ -70,7 +73,7 @@ export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelErr
 
     if (reloadOnly) {
       void backend.reloadAnimations(motionConfig).catch((e) => {
-        onModelErrorRef.current?.(e instanceof Error ? e.message : String(e));
+        onModelErrorRef.current?.(formatVrmLoadError(e));
       });
       setHitTest((x, y) => backend.hitTest(x, y));
       return () => {
@@ -86,6 +89,9 @@ export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelErr
     }
 
     setModelLoading(true);
+    void reportCompanionModelStatus({ loading: true, error: null });
+    // 下载前清场，避免失败时残留旧模型
+    backend.beginModelSwitch();
     loadedModelRef.current = modelPath;
 
     void (async () => {
@@ -98,11 +104,15 @@ export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelErr
         if (cancelled) return;
         resize();
         setHitTest((x, y) => backend.hitTest(x, y));
+        void reportCompanionModelStatus({ loading: false, error: null });
         onModelLoadedRef.current?.();
       } catch (e) {
         if (!cancelled) {
           loadedModelRef.current = null;
-          onModelErrorRef.current?.(e instanceof Error ? e.message : String(e));
+          backend.beginModelSwitch();
+          const message = formatVrmLoadError(e);
+          void reportCompanionModelStatus({ loading: false, error: message });
+          onModelErrorRef.current?.(message);
         }
       } finally {
         if (!cancelled) setModelLoading(false);

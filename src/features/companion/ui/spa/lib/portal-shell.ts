@@ -117,6 +117,26 @@ export function listenCompanionBubble(handler: (text: string) => void): () => vo
   return api.listenCompanionBubble(handler);
 }
 
+export type CompanionModelStatusPayload = {
+  loading: boolean;
+  error: string | null;
+};
+
+/** overlay → 设置页：模型加载进度 / 错误 */
+export async function reportCompanionModelStatus(
+  status: CompanionModelStatusPayload,
+): Promise<void> {
+  await shell()?.reportCompanionModelStatus?.(status);
+}
+
+export async function listenCompanionModelStatus(
+  handler: (status: CompanionModelStatusPayload) => void,
+): Promise<() => void> {
+  const api = shell();
+  if (!api?.listenCompanionModelStatus) return () => {};
+  return api.listenCompanionModelStatus(handler);
+}
+
 export function isSettingsRoute(): boolean {
   return isSettingsView();
 }

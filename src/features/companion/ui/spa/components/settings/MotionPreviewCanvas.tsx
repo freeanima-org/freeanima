@@ -14,6 +14,7 @@ import {
   COMPANION_WINDOW_WIDTH,
 } from "@freeanima/features/companion/ui/spa/lib/window-metrics.ts";
 import { loadCachedModelSource } from "@freeanima/features/companion/ui/spa/lib/model-cache.ts";
+import { formatVrmLoadError } from "@freeanima/features/companion/ui/spa/lib/vrm-load-error.ts";
 import {
   applyVrmCameraFraming,
   computeVrmFraming,
@@ -149,13 +150,19 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
         }
 
         mixer = new THREE.AnimationMixer(loaded.scene);
-        const clip = createVRMAnimationClip(vrma, loaded);
-        const action = mixer.clipAction(clip);
-        action.setLoop(THREE.LoopRepeat, Number.POSITIVE_INFINITY);
-        action.play();
+        try {
+          const clip = createVRMAnimationClip(vrma, loaded);
+          const action = mixer.clipAction(clip);
+          action.setLoop(THREE.LoopRepeat, Number.POSITIVE_INFINITY);
+          action.play();
+        } catch (clipErr) {
+          if (!disposed) {
+            setError(formatVrmLoadError(clipErr));
+          }
+        }
       } catch (e) {
         if (!disposed) {
-          setError(e instanceof Error ? e.message : String(e));
+          setError(formatVrmLoadError(e));
         }
       }
     })();

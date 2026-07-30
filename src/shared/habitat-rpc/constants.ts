@@ -10,6 +10,9 @@ export const HABITAT_RPC_EMAIL_SYNC_TIMEOUT_MS = 120_000;
 /** email 写路径涉及 IMAP 的操作（mailbox CRUD / move / append 等） */
 export const HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS = 60_000;
 
+/** 对象文件 / companion 二进制上传下载（VRM、VRMA 等） */
+export const HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS = 600_000;
+
 /** WS 无任何 inbound 超过此时间则主动断连重连 */
 export const HABITAT_RPC_LIVENESS_SILENCE_MS = 10_000;
 

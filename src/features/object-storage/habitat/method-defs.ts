@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { binaryHttpMeta, defineHabitatMethod } from "@freeanima/shared/habitat-contract";
+import { HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS } from "@freeanima/shared/habitat-rpc";
 
 export const objectStorageMethodDefs = {
   "object_storage.file.get": defineHabitatMethod({
@@ -10,6 +11,7 @@ export const objectStorageMethodDefs = {
       path: "object_storage/file/:id",
       pathParams: ["id"],
       response: "raw",
+      timeoutMs: HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS,
     }),
   }),
 } as const;
