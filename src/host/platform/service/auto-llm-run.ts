@@ -1,11 +1,11 @@
-import { randomBytes } from "node:crypto";
 import * as loopEngine from "@freeanima/host/engine/loop";
 import { isTransientNetworkError } from "@freeanima/host/engine/loop";
 import { runWithToolContext } from "@freeanima/host/core/tool";
 import type { ConversationGoal, StoredMessage } from "@freeanima/host/core/db/domain";
 import { conversationGoalSchema } from "@freeanima/host/core/db/domain";
-import { CST_OFFSET_MS, formatCstIso, omitUndefined } from "@freeanima/host/core/util";
-import { judgeGoal } from "@freeanima/host/core/llm/goal-judge";
+import type { MessagePayload } from "@freeanima/host/core/db/schema";
+import { formatCstIso, omitUndefined } from "@freeanima/host/core/util";
+import { generateAutoLlmRunId, judgeGoal } from "@freeanima/host/core/llm";
 import { getProfileHopModel } from "@freeanima/host/core/config";
 import { PROFILE_CHAT, PROFILE_GOAL_JUDGE } from "@freeanima/host/core/provider";
 import { formatGoalContinuePrompt, formatGoalExhaustedMessage } from "@freeanima/host/engine/goal";
@@ -44,16 +44,6 @@ export type AutoLlmRunResult = {
   error?: string;
   durationMs: number;
 };
-
-function pad2(n: number): string {
-  return String(n).padStart(2, "0");
-}
-
-export function generateAutoLlmRunId(): string {
-  const d = new Date(Date.now() + CST_OFFSET_MS);
-  const ts = `${d.getUTCFullYear()}${pad2(d.getUTCMonth() + 1)}${pad2(d.getUTCDate())}_${pad2(d.getUTCHours())}${pad2(d.getUTCMinutes())}${pad2(d.getUTCSeconds())}`;
-  return `autollm_${ts}_${randomBytes(2).toString("hex")}`;
-}
 
 function sleepMs(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -110,6 +100,7 @@ async function evaluateGoalForAutoLlm(
   deps: FullRuntimeDeps,
   goal: ConversationGoal,
   msgs: StoredMessage[],
+  parentConversationId?: string,
 ): Promise<
   | { action: "stop"; goal: ConversationGoal }
   | { action: "continue"; goal: ConversationGoal; continuePrompt: string }
@@ -136,7 +127,11 @@ async function evaluateGoalForAutoLlm(
       assistantReply: lastAssistantText(msgs),
       recentContext: buildRecentContext(msgs),
     },
-    { runtime: deps.engine.llm, model },
+    omitUndefined({
+      runtime: deps.engine.llm,
+      model,
+      parentConversationId,
+    }),
   );
 
   if (!judge.ok) {
@@ -247,6 +242,53 @@ async function runEngineOnce(
   return { output, toolCalls };
 }
 
+function storedMessagesToPayloads(messages: StoredMessage[]): MessagePayload[] {
+  const payloads: MessagePayload[] = [];
+  for (const msg of messages) {
+    if (msg.role === "conversation_meta") continue;
+    if (msg.role === "system") {
+      payloads.push({
+        role: "system",
+        content: typeof msg.content === "string" ? msg.content : "",
+        ...omitUndefined({ timestamp: msg.timestamp, name: msg.name }),
+      });
+      continue;
+    }
+    if (msg.role === "user") {
+      payloads.push({
+        role: "user",
+        content: msg.content,
+        ...omitUndefined({ timestamp: msg.timestamp, name: msg.name }),
+      });
+      continue;
+    }
+    if (msg.role === "assistant") {
+      payloads.push({
+        role: "assistant",
+        content: msg.content ?? null,
+        ...omitUndefined({
+          timestamp: msg.timestamp,
+          name: msg.name,
+          tool_calls: msg.tool_calls,
+          model: msg.model,
+          finish_reason: msg.finish_reason,
+          reasoning: msg.reasoning,
+        }),
+      });
+      continue;
+    }
+    if (msg.role === "tool") {
+      payloads.push({
+        role: "tool",
+        tool_call_id: msg.tool_call_id,
+        content: msg.content,
+        ...omitUndefined({ timestamp: msg.timestamp, name: msg.name }),
+      });
+    }
+  }
+  return payloads;
+}
+
 async function persistAutoLlmRun(
   _deps: FullRuntimeDeps,
   row: {
@@ -260,9 +302,11 @@ async function persistAutoLlmRun(
     toolCalls: number;
     startedAt: string;
     finishedAt: string;
+    messages: StoredMessage[];
   },
 ): Promise<void> {
   if (!isPostgresPrimary()) return;
+  const payloads = storedMessagesToPayloads(row.messages);
   await appendAutoLlmRun({
     id: row.id,
     run_name: row.input.runName,
@@ -280,10 +324,11 @@ async function persistAutoLlmRun(
     },
     created_at: row.startedAt,
     finished_at: row.finishedAt,
+    messages: payloads.map((payload, pos) => ({ pos, payload })),
   });
 }
 
-/** 无用户 LLM 执行：不写 session/messages，过程写入 auto_llm_runs */
+/** 无用户回合 LLM：不写 conversations/messages，过程写入 auto_llm_runs + auto_llm_messages */
 export async function runAutoLlm(
   deps: FullRuntimeDeps,
   input: AutoLlmRunInput,
@@ -311,7 +356,12 @@ export async function runAutoLlm(
           toolCalls += round.toolCalls;
 
           if (!goal) break goalLoop;
-          const evalResult = await evaluateGoalForAutoLlm(deps, goal, messages);
+          const evalResult = await evaluateGoalForAutoLlm(
+            deps,
+            goal,
+            messages,
+            input.parentConversationId,
+          );
           goal = evalResult.goal;
           if (evalResult.action !== "continue") break goalLoop;
           messages = [
@@ -341,6 +391,7 @@ export async function runAutoLlm(
       toolCalls,
       startedAt,
       finishedAt,
+      messages,
     });
     return { runId, output, toolCalls, status: "ok", durationMs };
   } catch (err) {
@@ -358,6 +409,7 @@ export async function runAutoLlm(
       toolCalls,
       startedAt,
       finishedAt,
+      messages,
     });
     return {
       runId,

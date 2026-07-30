@@ -25,7 +25,7 @@ import {
   acpStopAll,
   getAcpStatus,
 } from "../habitat-api/handlers/acp.ts";
-import { listAutoLlmRuns } from "../habitat-api/handlers/auto-llm-runs.ts";
+import { listAutoLlmRuns, getAutoLlmRun } from "../habitat-api/handlers/auto-llm-runs.ts";
 import {
   getHabitatConfig,
   getHabitatConfigSection,
@@ -469,6 +469,11 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     wrapConsoleLegacyHandler((payload) =>
       listAutoLlmRuns(omitUndefined(payload as Record<string, unknown>)),
     ),
+  ),
+  defineHabitatRouteFromDef(
+    "autoLlmRuns.get",
+    habitatMethodDefs["autoLlmRuns.get"],
+    wrapConsoleLegacyHandler((payload) => getAutoLlmRun(payload as { id: string })),
   ),
   defineHabitatRouteFromDef(
     "worlds.context",

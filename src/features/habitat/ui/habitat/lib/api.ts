@@ -285,6 +285,10 @@ export async function listAutoLlmRuns(opts?: {
   return hubCall(habitat().call("autoLlmRuns.list", omitUndefined(opts ?? {})));
 }
 
+export async function getAutoLlmRun(id: string) {
+  return hubCall(habitat().call("autoLlmRuns.get", { id }));
+}
+
 export async function restartService() {
   return hubCall(habitat().call("status.restart", {}));
 }

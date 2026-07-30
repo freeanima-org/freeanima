@@ -64,9 +64,9 @@ DATABASE_URL="postgresql://anima:…@127.0.0.1:5432/anima" \
 
 Run after extensions are installed, or restart `anima service`.
 
-## `auto_llm_runs` (audit)
+## `auto_llm_runs` / `auto_llm_messages` (audit)
 
-Background LLM without user turns (cron agent, sleep pipeline stages) writes to `auto_llm_runs` instead of creating `conversations`. Retention (Habitat runtime / Shell **Settings → Habitat 服务 → 服务配置** `auto_llm`):
+Non-conversation chat LLM (cron agent, sleep pipeline stages, conversation title, goal judge, compression / handoff summary) writes to `auto_llm_runs` + `auto_llm_messages` instead of `conversations` / `messages`. Retention (Habitat runtime / Shell **Settings → Habitat 服务 → 服务配置** `auto_llm`):
 
 ```yaml
 # habitat_runtime_config fragment (not config.yaml)
@@ -75,7 +75,7 @@ auto_llm:
   per_run_kind_keep: 100
 ```
 
-Purged during sleep-cycle step `conversation-cleanup` (after stale conversation cleanup). Cron script runs (`no_agent`) use `cron_log` only.
+Purged during sleep-cycle step `conversation-cleanup` (after stale conversation cleanup); `auto_llm_messages` cascade on run delete. Cron script runs (`no_agent`) use `cron_log` only.
 
 ## Backups
 

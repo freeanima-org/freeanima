@@ -25,9 +25,9 @@ On **Chat**, terminal commands (`/goal status`, pause/resume/clear, `/subgoal` l
 ## Workflow
 
 1. User runs `/goal …` → writes `conversations.goal` and triggers engine run.
-2. After each assistant reply → **goal judge** reads goal, subgoals, recent dialogue, last reply.
+2. After each assistant reply → **goal judge** (`run_kind: goal-judge` AutoLlmRun; not written into conversation messages).
 3. Judge outputs strict JSON: `{"done": boolean, "reason": "..."}`.
-4. `done: false` → inject user-role continuation (e.g. `↻ Continuing toward goal (3/20): …`), continue next turn in same SSE stream.
+4. `done: false` → inject user-role continuation (e.g. `↻ Continuing toward goal (3/20): …`) into the **same conversation** `messages`, continue next turn in same SSE stream.
 5. `done: true` → mark completed, stop continuation.
 6. User message mid-run preempts current continuation; after that turn, re-judge; continues if not paused.
 

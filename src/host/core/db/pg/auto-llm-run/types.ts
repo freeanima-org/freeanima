@@ -1,3 +1,5 @@
+import type { MessagePayload } from "@freeanima/host/core/db/schema";
+
 export type AutoLlmRunRow = {
   id: string;
   run_name: string;
@@ -12,6 +14,19 @@ export type AutoLlmRunRow = {
   finished_at: string;
 };
 
+export type AutoLlmMessageRow = {
+  id: string;
+  run_id: string;
+  pos: number;
+  payload: MessagePayload;
+};
+
+export type AutoLlmMessageAppendInput = {
+  id?: string;
+  pos: number;
+  payload: MessagePayload;
+};
+
 export type AutoLlmRunAppendInput = {
   id: string;
   run_name: string;
@@ -24,6 +39,7 @@ export type AutoLlmRunAppendInput = {
   metadata?: Record<string, unknown> | null;
   created_at?: string;
   finished_at?: string;
+  messages?: AutoLlmMessageAppendInput[];
 };
 
 export type PurgeStaleAutoLlmRunsOpts = {

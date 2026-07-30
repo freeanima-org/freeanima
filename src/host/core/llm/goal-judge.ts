@@ -1,7 +1,9 @@
 import { omitUndefined } from "@freeanima/host/core/util";
 import { PROFILE_GOAL_JUDGE } from "@freeanima/host/core/provider";
-import { chat } from "./llm.ts";
+import { runAutoLlmChat } from "./auto-llm-chat.ts";
 import type { LlmRuntime } from "./llm-stack.ts";
+
+export const AUTO_LLM_RUN_KIND_GOAL_JUDGE = "goal-judge";
 
 export const GOAL_JUDGE_SYSTEM_PROMPT = `You are a strict goal-completion judge for an AI agent conversation.
 
@@ -106,24 +108,34 @@ export function parseGoalJudgeOutput(raw: string): GoalJudgeResult {
 
 export async function judgeGoal(
   input: GoalJudgeInput,
-  opts?: { runtime?: LlmRuntime; model?: string },
+  opts?: { runtime?: LlmRuntime; model?: string; parentConversationId?: string },
 ): Promise<GoalJudgeResult> {
   if (!input.goal.trim()) {
     return { ok: false, error: "empty goal" };
   }
   try {
-    const resp = await chat(
-      [
-        { role: "system", content: GOAL_JUDGE_SYSTEM_PROMPT },
-        { role: "user", content: formatGoalJudgeUser(input) },
-      ],
+    const chatMessages = [
+      { role: "system" as const, content: GOAL_JUDGE_SYSTEM_PROMPT },
+      { role: "user" as const, content: formatGoalJudgeUser(input) },
+    ];
+    const recorded = await runAutoLlmChat(
       omitUndefined({
+        runName: opts?.parentConversationId
+          ? `goal-judge:${opts.parentConversationId}`
+          : "goal-judge",
+        runKind: AUTO_LLM_RUN_KIND_GOAL_JUDGE,
+        messages: chatMessages,
         profileId: PROFILE_GOAL_JUDGE,
         runtime: opts?.runtime,
         model: opts?.model,
         requestParams: { ...GOAL_JUDGE_REQUEST_PARAMS },
+        parentConversationId: opts?.parentConversationId,
       }),
     );
+    if (recorded.status === "error" || !recorded.completion) {
+      return { ok: false, error: recorded.error ?? "judge LLM call failed" };
+    }
+    const resp = recorded.completion;
     const content = String(resp.content ?? "");
     const parsed = parseGoalJudgeOutput(content);
     if (parsed.ok) return parsed;

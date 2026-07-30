@@ -4,4 +4,6 @@ export {
   purgeStaleAutoLlmRuns,
   listAutoLlmRuns,
   countAutoLlmRuns,
+  getAutoLlmRun,
+  listAutoLlmMessages,
 } from "./repos/auto-llm-run-repo.ts";

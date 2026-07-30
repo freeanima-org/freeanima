@@ -362,16 +362,18 @@ Layers can be mixed; the LLM chooses order; FreeAnima registers and routes.
 
 ## Conversation vs AutoLlmRun vs Delegation
 
-**Axis:** whether the execution has a **user turn** during the run (not who triggered it).
+**Axis:** whether the execution has a **user turn** during the run (not who triggered it). Chat LLM requests are **mutually exclusive**: either conversation path or AutoLlmRun — never both, never a third orphan `chat()`.
 
-| Kind                 | User turn     | PG persistence                                      | Process trace   | Sleep pipeline                          |
-| -------------------- | ------------- | --------------------------------------------------- | --------------- | --------------------------------------- |
-| **Conversation**     | yes           | `sessions` + `messages` (code still says `session`) | message archive | participates (light sleep, dream input) |
-| **AutoLlmRun**       | no            | `auto_llm_runs` via `runAutoLlm()`                  | audit row, TTL  | excluded                                |
-| **Delegation (ACP)** | no (external) | parent conversation + `acp_tasks`                   | optional        | result via parent conversation          |
-| **Script cron**      | no            | `cron_log` only                                     | stdout file     | excluded                                |
+| Kind                 | User turn     | PG persistence                                                            | Process trace                | Sleep pipeline                          |
+| -------------------- | ------------- | ------------------------------------------------------------------------- | ---------------------------- | --------------------------------------- |
+| **Conversation**     | yes           | `conversations` + `messages`                                              | message archive              | participates (light sleep, dream input) |
+| **AutoLlmRun**       | no            | `auto_llm_runs` + `auto_llm_messages` via `runAutoLlm` / `runAutoLlmChat` | full message transcript, TTL | excluded                                |
+| **Delegation (ACP)** | no (external) | parent conversation + `acp_tasks`                                         | optional                     | result via parent conversation          |
+| **Script cron**      | no            | `cron_log` only                                                           | stdout file                  | excluded                                |
 
-AutoLlmRun covers: cron agent branch, sleep LLM stages, future internal subagents. Tool context uses `contextKind: auto_llm` so `memory_remember` does not attach `source_conversations`. Cron `no_agent` shell scripts are **not** AutoLlmRun.
+AutoLlmRun covers: cron agent branch, sleep LLM stages, conversation **title** generation, **goal_judge**, compression / handoff summary, future internal subagents. One-shot side-cars use `runAutoLlmChat` (recorded `chat()`); tool loops use `runAutoLlm`. Tool context uses `contextKind: auto_llm` so `memory_remember` does not attach `source_conversations`. Cron `no_agent` shell scripts are **not** AutoLlmRun.
+
+**Session Goal continue turns** (synthetic user `↻ Continuing…` + assistant) stay on the **conversation** path so the chat transcript stays complete; only the **judge** hop is AutoLlm (`run_kind: goal-judge`).
 
 ## Session Goal
 
@@ -379,12 +381,12 @@ AutoLlmRun covers: cron agent branch, sleep LLM stages, future internal subagent
 
 Session Goal is an **in-process autonomous loop** at the Estate / orchestration layer — distinct from ACP async delegation:
 
-| Dimension    | Session Goal                    | ACP                                   |
-| ------------ | ------------------------------- | ------------------------------------- |
-| Scope        | Single conversation             | External agent task                   |
-| Trigger      | `/goal` slash + post-turn judge | Tool call + callback turn             |
-| Persistence  | `conversations.goal` JSONB      | `conversations.acp_tasks`             |
-| Continuation | Same SSE stream, turn budget    | Independent message after task update |
+| Dimension    | Session Goal                                                                                  | ACP                                   |
+| ------------ | --------------------------------------------------------------------------------------------- | ------------------------------------- |
+| Scope        | Single conversation                                                                           | External agent task                   |
+| Trigger      | `/goal` slash + post-turn judge                                                               | Tool call + callback turn             |
+| Persistence  | `conversations.goal` JSONB; continue turns in `messages`; judge hop in AutoLlm (`goal-judge`) | `conversations.acp_tasks`             |
+| Continuation | Same SSE stream, turn budget                                                                  | Independent message after task update |
 
 Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the goal is **paused** (warn logged + status line in chat). User messages preempt the loop; `/goal pause` / `/goal resume` control auto-continue without clearing state. See [`goal.md`](../modules/goal.md).
 

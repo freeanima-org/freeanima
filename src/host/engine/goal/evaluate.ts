@@ -96,7 +96,7 @@ export async function evaluateGoalAfterTurn(
       assistantReply,
       recentContext: buildRecentContext(msgs),
     },
-    { runtime: deps.llm, model },
+    { runtime: deps.llm, model, parentConversationId: conversationId },
   );
 
   // Judge 基础设施失败：paused + 落库提示，避免 active 但不续跑的「装死」态

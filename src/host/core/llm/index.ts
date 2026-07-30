@@ -1,6 +1,7 @@
 export * from "./llm.ts";
 export * from "./runtime-system-turn.ts";
 export * from "./llm-adapt.ts";
+export * from "./auto-llm-chat.ts";
 export * from "./conversation-title.ts";
 export * from "./goal-judge.ts";
 export * from "./tool-loop-integrity.ts";

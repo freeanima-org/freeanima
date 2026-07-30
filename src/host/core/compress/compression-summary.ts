@@ -1,7 +1,11 @@
 import { getCompressionConfig } from "./compression-config.ts";
 import { type CompressionState, formatMessagesForSummary, sliceForSummary } from "./compressor.ts";
-import { chat, PROFILE_SUMMARY } from "@freeanima/host/core/llm";
+import { PROFILE_SUMMARY, runAutoLlmChat } from "@freeanima/host/core/llm";
+import { omitUndefined } from "@freeanima/host/core/util";
 import type { StoredMessage } from "@freeanima/host/core/db/domain";
+
+export const AUTO_LLM_RUN_KIND_COMPRESSION_SUMMARY = "compression-summary";
+export const AUTO_LLM_RUN_KIND_HANDOFF_SUMMARY = "handoff-summary";
 
 /**
  * 一次性摘要 completion：关 thinking、禁 tool call（经 params.extra 透传）。
@@ -49,7 +53,13 @@ export async function generateConversationSummary(
   newState: CompressionState,
   systemPromptSnapshot: string,
   model: string,
-  opts?: { preSliced?: boolean },
+  opts?: {
+    preSliced?: boolean;
+    parentConversationId?: string;
+    runKind?:
+      | typeof AUTO_LLM_RUN_KIND_COMPRESSION_SUMMARY
+      | typeof AUTO_LLM_RUN_KIND_HANDOFF_SUMMARY;
+  },
 ): Promise<GenerateSummaryResult> {
   const prevL2 = prevState?.l2 ?? null;
   const slice = opts?.preSliced ? messages : sliceForSummary(messages, prevL2, newState.l2);
@@ -60,21 +70,31 @@ export async function generateConversationSummary(
   const { summaryMaxTokens } = getCompressionConfig();
   const sliceText = formatMessagesForSummary(slice);
   const userContent = buildSummaryUserContent(sliceText, prevState?.summary, summaryMaxTokens);
+  const runKind = opts?.runKind ?? AUTO_LLM_RUN_KIND_COMPRESSION_SUMMARY;
+  const chatMessages = [
+    { role: "system" as const, content: systemPromptSnapshot },
+    { role: "user" as const, content: userContent },
+  ];
 
   try {
-    const resp = await chat(
-      [
-        { role: "system", content: systemPromptSnapshot },
-        { role: "user", content: userContent },
-      ],
-      {
+    const recorded = await runAutoLlmChat(
+      omitUndefined({
+        runName: opts?.parentConversationId ? `${runKind}:${opts.parentConversationId}` : runKind,
+        runKind,
+        messages: chatMessages,
         model,
         profileId: PROFILE_SUMMARY,
         requestParams: COMPRESSION_SUMMARY_REQUEST_PARAMS,
-      },
+        parentConversationId: opts?.parentConversationId,
+      }),
     );
-    const summary = (resp.content ?? "").trim();
-    if (!summary) return { ok: false, error: "Summary LLM returned empty" };
+    if (recorded.status === "error") {
+      return { ok: false, error: recorded.error ?? "Summary LLM call failed" };
+    }
+    const summary = recorded.output.trim();
+    if (!summary || summary === "(empty)") {
+      return { ok: false, error: "Summary LLM returned empty" };
+    }
     return { ok: true, summary };
   } catch (e) {
     return { ok: false, error: String(e) };

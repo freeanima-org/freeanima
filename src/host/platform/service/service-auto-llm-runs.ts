@@ -1,8 +1,13 @@
 import { omitUndefined } from "@freeanima/host/core/util";
-import type { AutoLlmRunRow } from "@freeanima/host/core/db/pg/auto-llm-run/types";
+import type {
+  AutoLlmMessageRow,
+  AutoLlmRunRow,
+} from "@freeanima/host/core/db/pg/auto-llm-run/types";
 import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
 import {
   countAutoLlmRuns,
+  getAutoLlmRun,
+  listAutoLlmMessages,
   listAutoLlmRuns as listPgAutoLlmRuns,
 } from "@freeanima/host/core/db/pg/auto-llm-run";
 import type { RuntimeDeps } from "./runtime-deps.ts";
@@ -12,6 +17,11 @@ export type AutoLlmRunListResult = {
   total: number;
   offset: number;
   limit: number;
+};
+
+export type AutoLlmRunGetResult = {
+  run: AutoLlmRunRow;
+  messages: AutoLlmMessageRow[];
 };
 
 function clampPagination(offset?: number, limit?: number) {
@@ -43,4 +53,15 @@ export async function listAutoLlmRuns(
     countAutoLlmRuns(filter),
   ]);
   return { items, total, offset, limit };
+}
+
+export async function getAutoLlmRunDetail(
+  _deps: RuntimeDeps,
+  id: string,
+): Promise<AutoLlmRunGetResult | null> {
+  if (!isPostgresPrimary()) return null;
+  const run = await getAutoLlmRun(id);
+  if (!run) return null;
+  const messages = await listAutoLlmMessages(id);
+  return { run, messages };
 }

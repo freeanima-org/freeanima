@@ -74,7 +74,10 @@ export function maybeGenerateConversationTitleAsync(
         }
 
         const log = deps.engine.logger.with({ component: "conversation-title" });
-        const gen = await generateConversationTitle(userText, { runtime: deps.engine.llm });
+        const gen = await generateConversationTitle(userText, {
+          runtime: deps.engine.llm,
+          parentConversationId: conversationId,
+        });
         let title = gen.ok ? gen.title : "";
         if (!title) {
           const fallback = fallbackConversationTitle(userText);

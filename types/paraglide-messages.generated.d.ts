@@ -165,6 +165,8 @@ type ParaglideMessageExports = {
   readonly habitat_auto_llm_runs_duration: ParaglideMessageFn;
   readonly habitat_auto_llm_runs_empty: ParaglideMessageFn;
   readonly habitat_auto_llm_runs_input: ParaglideMessageFn;
+  readonly habitat_auto_llm_runs_messages: ParaglideMessageFn;
+  readonly habitat_auto_llm_runs_messages_empty: ParaglideMessageFn;
   readonly habitat_auto_llm_runs_metadata: ParaglideMessageFn;
   readonly habitat_auto_llm_runs_output: ParaglideMessageFn;
   readonly habitat_auto_llm_runs_run_kind: ParaglideMessageFn;
@@ -984,6 +986,8 @@ declare module "*/messages/paraglide/messages.js" {
   export const habitat_auto_llm_runs_duration: ParaglideMessageFn;
   export const habitat_auto_llm_runs_empty: ParaglideMessageFn;
   export const habitat_auto_llm_runs_input: ParaglideMessageFn;
+  export const habitat_auto_llm_runs_messages: ParaglideMessageFn;
+  export const habitat_auto_llm_runs_messages_empty: ParaglideMessageFn;
   export const habitat_auto_llm_runs_metadata: ParaglideMessageFn;
   export const habitat_auto_llm_runs_output: ParaglideMessageFn;
   export const habitat_auto_llm_runs_run_kind: ParaglideMessageFn;

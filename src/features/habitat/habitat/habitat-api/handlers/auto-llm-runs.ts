@@ -8,3 +8,7 @@ export async function listAutoLlmRuns(opts?: {
 }) {
   return habitatCtx().listAutoLlmRuns(opts);
 }
+
+export async function getAutoLlmRun(opts: { id: string }) {
+  return habitatCtx().getAutoLlmRun(opts.id);
+}
