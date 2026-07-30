@@ -60,7 +60,7 @@ Disabled runtimes return a clear error listing available runtimes.
 ## Security
 
 - Always `shell: false` (see [`security.md`](../ops/security.md))
-- Timeout and output size limits match current implementation
+- Timeout and output size limits: preview capped (~50KB) in tool content; oversized stdout/stderr spills to `~/.anima/tool-artifacts/` with `artifact_path` — continue via `file_read`, **do not** re-run the snippet to fetch more
 - **Do not** auto-guess runtime from code content
 - JS runtimes can still import `node:fs`—terminal command hard denies do **not** apply inside `code_execute`
 

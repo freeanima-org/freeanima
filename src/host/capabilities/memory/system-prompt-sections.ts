@@ -1,28 +1,40 @@
 import { decomposeSystemPromptParts } from "./system-prompt.ts";
 import { MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
-
-export type MemorySystemPromptSection = {
-  id: string;
-  content: string;
-  order: number;
-};
+import type { SystemPromptSection } from "@freeanima/host/core/hooks/prompt";
 
 /** Build self / resident / agents sections for systemPromptBuild hook */
 export async function buildMemorySystemPromptSections(
   selfContent: string,
   cwd?: string | null,
-): Promise<MemorySystemPromptSection[]> {
+): Promise<SystemPromptSection[]> {
   const parts = await decomposeSystemPromptParts(selfContent, cwd);
-  const sections: MemorySystemPromptSection[] = [];
+  const sections: SystemPromptSection[] = [];
   if (parts.self.trim()) {
-    sections.push({ id: "self", content: parts.self.trim(), order: 0 });
+    sections.push({ id: "self", content: parts.self.trim(), order: 0, priority: 0 });
   }
-  sections.push({ id: "memory-citation", content: MEMORY_REFERENCE_CITATION_RULE, order: 25 });
+  sections.push({
+    id: "memory-citation",
+    content: MEMORY_REFERENCE_CITATION_RULE,
+    order: 25,
+    priority: 1,
+  });
   if (parts.resident.trim()) {
-    sections.push({ id: "resident", content: parts.resident, order: 30 });
+    sections.push({
+      id: "resident",
+      content: parts.resident,
+      order: 30,
+      priority: 4,
+      budgetChars: 6_000,
+    });
   }
   if (parts.agents.trim()) {
-    sections.push({ id: "agents", content: parts.agents, order: 40 });
+    sections.push({
+      id: "agents",
+      content: parts.agents,
+      order: 40,
+      priority: 7,
+      budgetChars: 4_000,
+    });
   }
   return sections;
 }

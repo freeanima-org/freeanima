@@ -44,7 +44,9 @@ export function registerChannelSystemPromptHook(registry: HookRegistry): void {
     return {
       status: "ok",
       data: {
-        sections: [{ id: "channel", content: `## 对话通道\n当前通道：${desc}`, order: 5 }],
+        sections: [
+          { id: "channel", content: `## 对话通道\n当前通道：${desc}`, order: 5, priority: 2 },
+        ],
       },
     };
   });
@@ -59,7 +61,9 @@ export function registerEnvHealthSystemPromptHook(registry: HookRegistry): void 
       return {
         status: "ok",
         data: {
-          sections: [{ id: "env-health-baseline", content, order: 15 }],
+          sections: [
+            { id: "env-health-baseline", content, order: 15, priority: 8, budgetChars: 1_200 },
+          ],
         },
       };
     } catch {
@@ -78,7 +82,9 @@ export function registerUserActivityStatsSystemPromptHook(registry: HookRegistry
       return {
         status: "ok",
         data: {
-          sections: [{ id: "user-activity-stats", content, order: 16 }],
+          sections: [
+            { id: "user-activity-stats", content, order: 16, priority: 9, budgetChars: 800 },
+          ],
         },
       };
     } catch {
@@ -104,7 +110,15 @@ export function registerTemporalSummarySystemPromptHook(registry: HookRegistry):
       return {
         status: "ok",
         data: {
-          sections: [{ id: "temporal-summary", content, order: 20 }],
+          sections: [
+            {
+              id: "temporal-summary",
+              content,
+              order: 20,
+              priority: 6,
+              budgetChars: config.system_prompt_max_chars,
+            },
+          ],
         },
       };
     } catch {

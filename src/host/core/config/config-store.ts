@@ -36,6 +36,11 @@ export function getActiveRuntimeConfig(): Config {
   return activeRuntimeConfig;
 }
 
+/** Non-throwing peek for early bind / unit tests */
+export function peekActiveRuntimeConfig(): Config | null {
+  return activeRuntimeConfig;
+}
+
 /** Unit test isolation */
 export function resetActiveConfigForTest(): void {
   activeRuntimeConfig = null;

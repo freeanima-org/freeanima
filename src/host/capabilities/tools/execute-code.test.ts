@@ -35,6 +35,19 @@ describe("execute_code runtimes", () => {
     expect(out.trim()).toBe("anima-exec-ok");
   });
 
+  it("spills oversized bun stdout to artifact instead of bare truncate", async () => {
+    const { TOOL_OUTPUT_PREVIEW_MAX } = await import("@freeanima/host/core/tool");
+    const out = await runExecuteCode(
+      `console.log(${JSON.stringify("z".repeat(TOOL_OUTPUT_PREVIEW_MAX + 50))});`,
+      "bun",
+      30,
+    );
+    expect(out).toContain("artifact_path:");
+    expect(out).toContain("truncated: true");
+    expect(out).toContain("Do not re-run the command");
+    expect(out).not.toMatch(/\.\.\. \(truncated at \d+ chars\)/);
+  });
+
   it("runs nodejs code when node is available", async () => {
     const which = Bun.spawnSync(["which", "node"]);
     if (which.exitCode !== 0) return;

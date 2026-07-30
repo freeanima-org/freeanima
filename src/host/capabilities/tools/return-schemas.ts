@@ -246,15 +246,15 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     example: { ok: true, path: "/home/user/project/src/app.ts" },
   }),
   terminal_run: defineTextToolReturn({
-    hint: "Command stdout/stderr plain text; non-zero exit appends --- exit code: N ---; background mode returns conversation_id hint. Default shell=false; catastrophic rm targets always blocked.",
+    hint: "Command stdout/stderr plain text; non-zero exit appends --- exit code: N ---; oversized output spills to ~/.anima/tool-artifacts (artifact_path + file_read; do not re-run). Background mode returns conversation_id hint. Default shell=false; catastrophic rm targets always blocked.",
     example: "hello world\n--- exit code: 0 ---",
   }),
   terminal_process: defineTextToolReturn({
-    hint: "Plain text: list/poll/log/wait/kill status and output",
+    hint: "Plain text: list/poll/log/wait/kill status and output; oversized background logs include artifact_path for file_read",
     example: "running\nprocess output line",
   }),
   code_execute: defineTextToolReturn({
-    hint: "Child stdout/stderr plain text; non-zero exit appends --- exit code: N ---",
+    hint: "Child stdout/stderr plain text; non-zero exit appends --- exit code: N ---; oversized output spills to ~/.anima/tool-artifacts (artifact_path + file_read; do not re-run)",
     example: "42\n--- exit code: 0 ---",
   }),
   browser_navigate: defineToolReturn({

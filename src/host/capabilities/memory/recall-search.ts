@@ -93,6 +93,8 @@ export type MemoryRecallResult = {
   limit: number;
   results: MemoryRecallHit[];
   summary: string;
+  truncated: boolean;
+  next_hint?: string;
 };
 
 type RecallCandidate = {
@@ -283,5 +285,12 @@ export async function memoryRecallSearch(
     limit,
     results,
     summary: buildRecallSummary(q, results),
+    truncated: results.length >= limit,
+    ...(results.length >= limit
+      ? {
+          next_hint:
+            "Result page full for this limit; raise limit (max 20) or refine query and call memory_recall again.",
+        }
+      : {}),
   };
 }

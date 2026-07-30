@@ -217,14 +217,14 @@ function truncateSnapshot(snapshotText: string, maxChars = SNAPSHOT_SUMMARIZE_TH
   const result: string[] = [];
   let chars = 0;
   for (const line of lines) {
-    if (chars + line.length + 1 > maxChars - 80) break;
+    if (chars + line.length + 1 > maxChars - 120) break;
     result.push(line);
     chars += line.length + 1;
   }
   const remaining = lines.length - result.length;
   if (remaining > 0) {
     result.push(
-      `\n[... ${remaining} lines truncated; use browser_snapshot(full=true) for full content]`,
+      `\n[truncated: ${remaining} lines omitted (${snapshotText.length} chars total); use browser_snapshot(full=true) for full content]`,
     );
   }
   return result.join("\n");

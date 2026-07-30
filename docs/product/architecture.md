@@ -60,11 +60,11 @@ Bootstrap and runtime are **not merged** into a single config object (no `AnimaC
 
 ### Runtime config: live vs transferred
 
-| Kind            | Sections (examples)                                                                                                                        | After UI save                                                                                 |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| **Live**        | `compression`, `memory`, `fts`, `cjk`, `clarify`, `browser`, `firecrawl`, `models`, `tts`, `auto_llm`, `companion`, gateway `tool_display` | Consumers read `Config.data` each use; snapshot update is enough                              |
-| **Transferred** | `llm`, `i18n`, `embedding`, `mcp_servers`, `acp_agents`, `discord` / `weixin` / `gateway` platforms, `worlds`, `object_storage`            | Snapshot update **plus** section apply (re-init registries / reconnect / re-bind ObjectStore) |
-| **Bootstrap**   | `database`, `http`, `redis`                                                                                                                | Edit YAML; **process restart** required                                                       |
+| Kind            | Sections (examples)                                                                                                                                  | After UI save                                                                                 |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **Live**        | `compression`, `prompt`, `memory`, `fts`, `cjk`, `clarify`, `browser`, `firecrawl`, `models`, `tts`, `auto_llm`, `companion`, gateway `tool_display` | Consumers read `Config.data` each use; snapshot update is enough                              |
+| **Transferred** | `llm`, `i18n`, `embedding`, `mcp_servers`, `acp_agents`, `discord` / `weixin` / `gateway` platforms, `worlds`, `object_storage`                      | Snapshot update **plus** section apply (re-init registries / reconnect / re-bind ObjectStore) |
+| **Bootstrap**   | `database`, `http`, `redis`                                                                                                                          | Edit YAML; **process restart** required                                                       |
 
 ### Runtime config: UI coverage gaps
 
@@ -72,7 +72,7 @@ Settings / Habitat UI already expose many sections; the following are **register
 
 | Gap                        | Sections                                  | Notes                                                                                                        |
 | -------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| **No Settings panel**      | `i18n`, `clarify`                         | `i18n` is transferred (locale/timezone); `clarify` live                                                      |
+| **No Settings panel**      | `i18n`, `clarify`, `prompt`               | `i18n` is transferred (locale/timezone); `clarify` live; `prompt.system_prompt_budget_chars`                 |
 | **Legacy / overlap**       | `notifications`                           | Subject ids; prefer `worlds` (boot may still read as fallback)                                               |
 | **Likely dead / reserved** | `push`, `fallback_providers`, `platforms` | Little or no product consumer; candidates for later cleanup                                                  |
 | **Partial UI**             | `compression`, `memory`                   | Compression UI omits trigger/summary fields; memory UI is `passive_recall` only (`temporal_summary` missing) |
@@ -80,6 +80,34 @@ Settings / Habitat UI already expose many sections; the following are **register
 Covered elsewhere: `mcp_servers` → Habitat `/habitat/mcp`; `companion` → Settings → 桌面伴侣；most advanced sections → Settings → Habitat 服务配置。
 
 - The system prompt is part of architecture, not ad-hoc string concatenation
+
+## Context Engineering
+
+Consciousness (layer ①) is capacity-limited. FreeAnima treats **what enters the LLM context** as an engineered surface — not an accidental dump of tool JSON and prompt modules.
+
+### Relative to Pi (badlogic/pi-mono)
+
+| Pi idea                            | FreeAnima stance                                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------ |
+| ~1K system prompt, four tools      | Keep digital-life self / memory / ToolSet catalog; **budget** sections instead of copying 1K     |
+| Dual-payload `content` + `details` | **Do not** persist UI-only `details` on `messages.payload` (model cannot use them to fetch more) |
+| Minimal built-ins, no MCP          | Keep MCP, permissions, progressive `toolset_load`                                                |
+| Infinite agent loop                | Keep `max_turns` / safety caps (policy, not this spine)                                          |
+
+### Tool results: slim content + fetch-more (no bare truncation)
+
+| Operation                                                           | Fetch-more path                                                                                                                                                                          |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Idempotent reads (file, search, snapshot, list, recall…)            | Same tool again (`offset` / `limit` / `full=true` / tighter query)                                                                                                                       |
+| Non-idempotent / side-effecting (`terminal_run`, `code_execute`, …) | Spill full stdout to an artifact under `~/.anima/tool-artifacts/`; content carries `artifact_path` + preview; continue via `file_read` — **never** re-run the command to get more output |
+
+Content that exceeds the preview budget must mark `truncated` (or equivalent) and include at least one of the paths above. Small results stay unchanged. Do not stash the full payload in a parallel `details` field for “later.”
+
+Token accounting for compression / FTS indexes **LLM-visible `content` only**.
+
+### System prompt budgets
+
+`systemPromptBuild` sections carry optional `budgetChars` and `priority`. Fold applies per-section caps, then a global `prompt.system_prompt_budget_chars` (runtime config). Core identity sections (`self`, `memory-citation`) are never silently dropped. Resident modules such as `env-health` and `user-activity-stats` stay in the system prompt but are budget-controlled.
 
 ## Four Cognitive Layers
 

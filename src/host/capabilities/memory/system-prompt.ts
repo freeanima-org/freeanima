@@ -5,7 +5,7 @@ import { listResidentSemanticMemory } from "@freeanima/host/core/db/pg/semantic-
 
 import { formatResidentMemoryLine } from "./memory-reference.ts";
 
-const MAX_AGENTS_CHARS = 8000;
+const MAX_AGENTS_CHARS = 4000;
 const PROMPT_CODE_FENCE_LANG = "md";
 
 /** Outer second-person frame for the resident-memory system prompt segment */

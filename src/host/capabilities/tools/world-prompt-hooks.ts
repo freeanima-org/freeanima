@@ -22,7 +22,7 @@ export function registerWorldContextSystemPromptHook(registry: HookRegistry): vo
     return {
       status: "ok",
       data: {
-        sections: [{ id: "world-context", content, order: 4 }],
+        sections: [{ id: "world-context", content, order: 4, priority: 3, budgetChars: 1_200 }],
       },
     };
   });
