@@ -15,8 +15,11 @@ const stateSchema = z.object({
       truncated_sessions: z.number().optional(),
       tool_calls: z.number().optional(),
       limbic_tool_calls: z.number().optional(),
+      /** @deprecated autobiography extraction retired */
       autobiography_tool_calls: z.number().optional(),
+      /** @deprecated autobiography extraction retired */
       narratives_created: z.number().optional(),
+      /** @deprecated autobiography summary block retired */
       summary_refreshed: z.boolean().optional(),
     })
     .optional(),
@@ -50,9 +53,6 @@ export function recordLightSleepRun(input: {
   truncatedConversations: number;
   toolCalls: number;
   limbicToolCalls: number;
-  autobiographyToolCalls: number;
-  narrativesCreated: number;
-  summaryRefreshed: boolean;
 }): void {
   writeLightSleepState({
     last_run_at: formatCstIso(),
@@ -63,9 +63,6 @@ export function recordLightSleepRun(input: {
       truncated_sessions: input.truncatedConversations,
       tool_calls: input.toolCalls,
       limbic_tool_calls: input.limbicToolCalls,
-      autobiography_tool_calls: input.autobiographyToolCalls,
-      narratives_created: input.narrativesCreated,
-      summary_refreshed: input.summaryRefreshed,
     },
   });
 }

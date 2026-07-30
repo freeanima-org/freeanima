@@ -34,7 +34,7 @@ describe("wrapSelfLayerForSystemPrompt", () => {
     expect(wrapSelfLayerForSystemPrompt("   \n  ")).toBe("");
   });
 
-  it("preserves six-block headings in inner content", () => {
+  it("preserves five-block headings in inner content", () => {
     const keys = Object.keys(SELF_BLOCK_HEADINGS) as SelfBlockKey[];
     const inner = renderSelfLayerPrompt(
       keys.map((key) => ({

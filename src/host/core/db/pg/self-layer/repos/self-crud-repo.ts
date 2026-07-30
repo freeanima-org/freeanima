@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, notInArray } from "drizzle-orm";
 import { selfBlockKeySchema, selfBlocks } from "@freeanima/host/core/db/schema";
 import type {
   SelfBlockKey,
@@ -20,6 +20,16 @@ function normalizeBlockKey(raw: string): SelfBlockKey {
 
 const PLACEHOLDER_EPOCH = new Date(0);
 
+/** Drop legacy keys (e.g. autobiography_summary) left after five-block migration */
+export async function purgeOrphanSelfBlocks(): Promise<number> {
+  const db = getDb();
+  const deleted = await db
+    .delete(selfBlocks)
+    .where(notInArray(selfBlocks.block_key, [...SELF_BLOCK_KEYS]))
+    .returning({ block_key: selfBlocks.block_key });
+  return deleted.length;
+}
+
 export async function getSelfBlock(key: SelfBlockKey): Promise<SelfBlockRow | null> {
   const db = getDb();
   const rows = await db.select().from(selfBlocks).where(eq(selfBlocks.block_key, key)).limit(1);
@@ -29,7 +39,12 @@ export async function getSelfBlock(key: SelfBlockKey): Promise<SelfBlockRow | nu
 export async function listSelfBlocks(): Promise<SelfBlockRow[]> {
   const db = getDb();
   const rows = await db.select().from(selfBlocks);
-  const byKey = new Map(rows.map((row) => [normalizeBlockKey(row.block_key), row]));
+  const byKey = new Map<SelfBlockKey, SelfBlockRow>();
+  for (const row of rows) {
+    const parsed = selfBlockKeySchema.safeParse(row.block_key);
+    if (!parsed.success) continue;
+    byKey.set(parsed.data, { ...row, block_key: parsed.data });
+  }
   return SELF_BLOCK_KEYS.map((key) => {
     const existing = byKey.get(key);
     if (existing) return existing;

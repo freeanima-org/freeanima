@@ -1,10 +1,6 @@
 import { logCapability as logComponent } from "@freeanima/host/core/config";
 import { listConversationIdsUpdatedBetween } from "@freeanima/host/core/db/pg/conversation";
-import { listActiveAutobiographicalMemory } from "@freeanima/host/core/db/pg/autobiographical-memory";
 
-import { buildLightSleepAutobiographyUserMessages } from "../autobiography/build-messages.ts";
-import { runAutobiographyEngine } from "../autobiography-port.ts";
-import { refreshAutobiographySummaryBlock } from "../autobiography/run.ts";
 import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
 import {
   buildLightSleepUserMessages,
@@ -23,9 +19,6 @@ export type LightSleepResult = {
   truncated_sessions: number;
   tool_calls: number;
   limbic_tool_calls: number;
-  autobiography_tool_calls: number;
-  narratives_created: number;
-  summary_refreshed: boolean;
   summary: string;
   skipped?: string;
 };
@@ -33,7 +26,6 @@ export type LightSleepResult = {
 export type RunLightSleepOpts = {
   selfContent: string;
   day?: string;
-  skipSummaryRefresh?: boolean;
 };
 
 const LIGHT_SLEEP_TOOL_NAMES = [
@@ -43,11 +35,6 @@ const LIGHT_SLEEP_TOOL_NAMES = [
 ] as const;
 
 const LIMBIC_TOOL_NAMES = ["memory_limbic_create"] as const;
-
-const AUTOBIOGRAPHY_TOOL_NAMES = [
-  "memory_autobiographical_create",
-  "memory_autobiographical_deprecate",
-] as const;
 
 function appendSummaryPart(base: string, label: string, part: string): string {
   const trimmed = part.trim();
@@ -67,9 +54,6 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
       truncated_sessions: 0,
       tool_calls: 0,
       limbic_tool_calls: 0,
-      autobiography_tool_calls: 0,
-      narratives_created: 0,
-      summary_refreshed: false,
       summary: "No conversation activity today; skipping light sleep",
       skipped: "no_sessions",
     };
@@ -79,9 +63,6 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
       truncatedConversations: 0,
       toolCalls: 0,
       limbicToolCalls: 0,
-      autobiographyToolCalls: 0,
-      narrativesCreated: 0,
-      summaryRefreshed: false,
     });
     return result;
   }
@@ -95,9 +76,6 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
       truncated_sessions: 0,
       tool_calls: 0,
       limbic_tool_calls: 0,
-      autobiography_tool_calls: 0,
-      narratives_created: 0,
-      summary_refreshed: false,
       summary: "No messages in day window; skipping light sleep",
       skipped: "no_day_messages",
     };
@@ -107,9 +85,6 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
       truncatedConversations: 0,
       toolCalls: 0,
       limbicToolCalls: 0,
-      autobiographyToolCalls: 0,
-      narrativesCreated: 0,
-      summaryRefreshed: false,
     });
     return result;
   }
@@ -149,44 +124,7 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
   });
   summary = appendSummaryPart(summary, "Limbic", stageLimbic.summary);
 
-  logComponent("memory").info("light sleep stage 3 (autobiographical) started", {
-    day: range.day,
-    limbic_memory_ids: stageLimbic.limbic_memory_ids,
-  });
-
-  const existingAuto = await listActiveAutobiographicalMemory({ limit: 200 });
-  const autobiographyMessages = await buildLightSleepAutobiographyUserMessages(
-    activeConversationIds,
-    stageSemantic.semantic_memory_ids,
-    stageLimbic.limbic_memory_ids,
-    blocks,
-  );
-  const stageAutobiography = await runAutobiographyEngine({
-    systemPrompt,
-    userMessages: autobiographyMessages,
-    toolNames: [...AUTOBIOGRAPHY_TOOL_NAMES],
-  });
-  summary = appendSummaryPart(summary, "Autobiography", stageAutobiography.summary);
-
-  const afterAuto = await listActiveAutobiographicalMemory({ limit: 200 });
-  const narrativesCreated = Math.max(0, afterAuto.length - existingAuto.length);
-
-  let summaryRefreshed = false;
-  if (!opts.skipSummaryRefresh) {
-    summaryRefreshed = await refreshAutobiographySummaryBlock();
-    logComponent("memory").info("light sleep stage 3b (autobiography summary) completed", {
-      day: range.day,
-      summary_refreshed: summaryRefreshed,
-    });
-  } else {
-    logComponent("memory").info("light sleep stage 3b skipped", {
-      day: range.day,
-      reason: "skip_summary_refresh",
-    });
-  }
-
-  const totalToolCalls =
-    stageSemantic.tool_calls + stageLimbic.tool_calls + stageAutobiography.tool_calls;
+  const totalToolCalls = stageSemantic.tool_calls + stageLimbic.tool_calls;
 
   recordLightSleepRun({
     day: range.day,
@@ -194,9 +132,6 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
     truncatedConversations: dialogue.truncatedConversations,
     toolCalls: stageSemantic.tool_calls,
     limbicToolCalls: stageLimbic.tool_calls,
-    autobiographyToolCalls: stageAutobiography.tool_calls,
-    narrativesCreated,
-    summaryRefreshed,
   });
 
   const result: LightSleepResult = {
@@ -206,9 +141,6 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
     truncated_sessions: dialogue.truncatedConversations,
     tool_calls: stageSemantic.tool_calls,
     limbic_tool_calls: stageLimbic.tool_calls,
-    autobiography_tool_calls: stageAutobiography.tool_calls,
-    narratives_created: narrativesCreated,
-    summary_refreshed: summaryRefreshed,
     summary,
   };
 

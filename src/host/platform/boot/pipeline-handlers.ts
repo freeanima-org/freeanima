@@ -12,10 +12,8 @@ import {
   syncSemanticMemoryReferenceCounts,
 } from "@freeanima/host/capabilities/memory";
 import { getActiveRuntimeConfig } from "@freeanima/host/core/config";
-import {
-  invalidateSelfLayerPromptCache,
-  loadSelfLayerPrompt,
-} from "@freeanima/host/capabilities/self";
+import { loadSelfLayerPrompt } from "@freeanima/host/capabilities/self";
+import { runSelfLayerRefresh } from "@freeanima/host/capabilities/self/refresh/run";
 import { purgeStaleAutoLlmRuns } from "@freeanima/host/core/db/pg/auto-llm-run";
 import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
 import {
@@ -116,9 +114,14 @@ export function registerSleepPipeline(engine: Engine): void {
   });
 
   runner.registerStep(SLEEP_STEP_IDS.selfLayerRefresh, async () => {
-    invalidateSelfLayerPromptCache();
-    await loadSelfLayerPrompt();
-    return { ok: true, output: { refreshed: true } };
+    const selfContent = await loadSelfLayerPrompt();
+    const result = await runSelfLayerRefresh(omitUndefined({ selfContent }));
+    if (result.skipped) {
+      return { ok: true, skipped: result.skipped, output: result };
+    }
+    return result.ok
+      ? { ok: true, output: result }
+      : { ok: false, output: result, error: result.summary };
   });
 
   runner.registerStep(SLEEP_STEP_IDS.temporalSummaryDay, async (ctx) => {

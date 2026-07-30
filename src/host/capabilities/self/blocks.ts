@@ -1,13 +1,12 @@
 import type { SelfBlockKey } from "@freeanima/host/core/db/pg/self-layer/types";
 
-/** Six block headings (injected into system prompt) */
+/** Five block headings (injected into system prompt) */
 export const SELF_BLOCK_HEADINGS: Record<SelfBlockKey, string> = {
   existence_anchor: "Existence anchor",
   self_model: "Self model",
   personality_baseline: "Personality baseline",
   direction: "Direction and intent",
   metacognition: "Metacognition",
-  autobiography_summary: "Autobiography summary",
 };
 
 export const SELF_BLOCK_EMPTY_PLACEHOLDER = "(not set yet)";

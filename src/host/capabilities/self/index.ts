@@ -1,4 +1,4 @@
-/** Self layer six blocks; see docs/cognition/self-layer.md */
+/** Self layer five blocks; see docs/cognition/self-layer.md */
 export const CAPABILITIES_IDENTITY_PACKAGE = "@freeanima/capabilities-identity" as const;
 
 export {
@@ -22,3 +22,14 @@ export {
 } from "./load.ts";
 export { getSelfLayerPromptCache, setSelfLayerPromptCache } from "./cache.ts";
 export { registerSelfTools } from "./tools.ts";
+export {
+  registerSelfLayerRefreshEngine,
+  resetSelfLayerRefreshEngineForTests,
+  runSelfLayerRefreshEngine,
+} from "./refresh-engine-port.ts";
+export { runSelfLayerRefresh, type SelfLayerRefreshResult } from "./refresh/run.ts";
+export {
+  SELF_LAYER_PROPOSAL_SOURCE_REF,
+  SELF_LAYER_PROPOSAL_TITLE,
+  parseSelfLayerRefreshResponse,
+} from "./refresh/messages.ts";

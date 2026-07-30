@@ -30,7 +30,7 @@ Separate from recall: **pinned** semantic memories plus **most-referenced** entr
 
 ## Relationship to Self Layer
 
-Self layer (six blocks) is **not** retrieved via `memory_recall`—it is always in the system prompt.
+Self layer (five blocks) is **not** retrieved via `memory_recall`—it is always in the system prompt.
 
 | Layer        | Injection                 | Reason                                            |
 | ------------ | ------------------------- | ------------------------------------------------- |

@@ -520,7 +520,7 @@
   "habitat_outposts_platform": "平台",
   "habitat_outposts_registered_tools": "注册工具",
   "habitat_outposts_tools_count": "{count} 个工具",
-  "habitat_self_layer_desc": "PG self_blocks 六块只读展示；维护请使用 update_self_block 工具。",
+  "habitat_self_layer_desc": "PG self_blocks 五块只读展示；维护请用 self_update_block，或每周 Inbox 提议经伙伴确认。",
   "habitat_self_layer_empty": "暂无自我层数据（PG 不可用或未初始化）。",
   "habitat_self_layer_not_set": "（尚未设定）",
   "habitat_self_layer_updated": "更新于 {time}",

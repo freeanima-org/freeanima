@@ -112,11 +112,12 @@ The inject block includes a **Handling protocol** (three-way triage by whether a
 
 For each injected `[id:…]` line, classify by content (not by writer/source):
 
-| Category                          | Action                          | Mark read                                       |
-| --------------------------------- | ------------------------------- | ----------------------------------------------- |
-| **Informational only**            | Acknowledge in reply if useful  | Batch `notification_mark_read({ ids: [...] })`  |
-| **Action needed, quick**          | Handle within ~3 tool rounds    | `notification_mark_read` that id after done     |
-| **Action needed, slow/uncertain** | Ask the user before a long task | Do **not** mark read until approved and handled |
+| Category                                                               | Action                                                    | Mark read                                            |
+| ---------------------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------- |
+| **Informational only**                                                 | Acknowledge in reply if useful                            | Batch `notification_mark_read({ ids: [...] })`       |
+| **Action needed, quick**                                               | Handle within ~3 tool rounds                              | `notification_mark_read` that id after done          |
+| **Action needed, slow/uncertain**                                      | Ask the user before a long task                           | Do **not** mark read until approved and handled      |
+| **Self-layer maintenance proposal** (`source_ref=self-layer-proposal`) | Ask partner; on approve `self_update_block`; else discard | Mark read only after accept+write or explicit reject |
 
 Unmarked unread items are re-injected on the next user turn. Use `notification_list(recipient=agent, read_filter=unread)` (recipient or `subject_id` required) if the inject block is truncated.
 

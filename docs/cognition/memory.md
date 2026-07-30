@@ -40,7 +40,7 @@ Internal activation state during a single LLM token inference pass. Dissipates t
 
 The current LLM context window, containing:
 
-- System prompt (self layer six blocks + resident memory + project context; see [`self-layer.md`](self-layer.md))
+- System prompt (self layer five blocks + resident memory + project context; see [`self-layer.md`](self-layer.md))
 - Recent messages in the current conversation
 - Relevant fragments recalled from long-term memory
 - Real-time tool call results
@@ -134,7 +134,7 @@ Conversion from working memory to long-term memory is handled by the sleep mecha
 - **Light sleep (✅):** step `light-sleep` — semantic + limbic + autobiographical extraction
 - **Deep sleep (✅):** step `deep-sleep` (depends on light-sleep) — contradiction/expiry, split, merge, pin maintenance
 
-**All conversions must carry identity context**—self layer six blocks + resident memory, not a generic extraction assistant.
+**All conversions must carry identity context**—self layer five blocks + resident memory, not a generic extraction assistant.
 
 ---
 

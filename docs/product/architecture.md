@@ -127,7 +127,6 @@ A digital life is structured from the inside out. Each layer answers a different
 │    └── personality_baseline (semi-stable)       │
 │    └── direction                                │
 │    └── metacognition                            │
-│    └── autobiography_summary (append-only)      │
 │    See [`self-layer.md`](../cognition/self-layer.md)        │
 ├───────────────────────────────────────────────┤
 │ ③ Memory                                       │

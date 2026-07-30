@@ -2,14 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import { createTempDir, removeTempDir } from "@freeanima/host/core/util/temp-dir";
 import type { LimbicMemoryRow, SemanticMemoryRow } from "@freeanima/host/core/db/schema/rows";
 
-import {
-  buildLightSleepAutobiographyUserMessages,
-  LIGHT_SLEEP_AUTOBIOGRAPHY_INSTRUCTION,
-} from "../autobiography/build-messages.ts";
-import {
-  registerAutobiographyEngine,
-  resetAutobiographyEngineForTests,
-} from "../autobiography-port.ts";
 import { registerLightSleepEngine, resetLightSleepEngineForTests } from "../light-sleep-port.ts";
 import {
   buildLimbicUserMessages,
@@ -102,8 +94,6 @@ const getSemanticMemoryMock = mock(async (id: string | number) =>
       } as SemanticMemoryRow)
     : null,
 );
-const listActiveAutobiographicalMemoryMock = mock(async () => []);
-const updateSelfBlockMock = mock(async () => true);
 
 mock.module("@freeanima/host/core/db/pg/conversation", () => ({
   listConversationIdsUpdatedBetween: listConversationIdsUpdatedBetweenMock,
@@ -118,12 +108,6 @@ mock.module("@freeanima/host/core/db/pg/semantic-memory", () => ({
 mock.module("@freeanima/host/core/db/pg/limbic-memory", () => ({
   listLimbicMemoryBySession: listLimbicMemoryBySessionMock,
   getLimbicMemory: getLimbicMemoryMock,
-}));
-mock.module("@freeanima/host/core/db/pg/autobiographical-memory", () => ({
-  listActiveAutobiographicalMemory: listActiveAutobiographicalMemoryMock,
-}));
-mock.module("@freeanima/host/core/db/pg/self-layer", () => ({
-  updateSelfBlock: updateSelfBlockMock,
 }));
 
 describe("light-sleep build-messages", () => {
@@ -173,41 +157,19 @@ describe("light-sleep build-messages", () => {
     expect(blocks[0]?.text).toContain("today reply");
     expect(blocks[0]?.text).not.toContain("past feeling");
   });
-
-  it("buildLightSleepAutobiographyUserMessages includes dialogue, semantic, limbic, and existing autobiography", async () => {
-    const messages = await buildLightSleepAutobiographyUserMessages(
-      ["s-1"],
-      [1001],
-      ["limbic-new"],
-      undefined,
-      cstDayRange("2026-06-08"),
-    );
-    expect(messages).toHaveLength(5);
-    expect(messages[0]).toContain("# Today's dialogue");
-    expect(messages[1]).toContain('"id":1001');
-    expect(messages[1]).toContain("experience");
-    expect(messages[2]).toContain("limbic-1");
-    expect(messages[2]).toContain("limbic-new");
-    expect(messages[3]).toContain("No autobiographical narratives yet");
-    expect(messages[4]).toBe(LIGHT_SLEEP_AUTOBIOGRAPHY_INSTRUCTION);
-  });
 });
 
 describe("runLightSleep", () => {
   let homeDir: string;
   let lightSleepCalls = 0;
-  let autobiographyCalls = 0;
 
   beforeEach(() => {
     homeDir = createTempDir("anima-light-sleep-");
     process.env.FREEANIMA_HOME = homeDir;
 
     lightSleepCalls = 0;
-    autobiographyCalls = 0;
-    updateSelfBlockMock.mockClear();
 
     resetLightSleepEngineForTests();
-    resetAutobiographyEngineForTests();
 
     registerLightSleepEngine(async (input) => {
       lightSleepCalls += 1;
@@ -220,35 +182,24 @@ describe("runLightSleep", () => {
         limbic_memory_ids: isSemantic ? [] : ["limbic-new"],
       };
     });
-
-    registerAutobiographyEngine(async () => {
-      autobiographyCalls += 1;
-      return { summary: "autobiography done", tool_calls: 0 };
-    });
   });
 
   afterEach(() => {
     delete process.env.FREEANIMA_HOME;
     removeTempDir(homeDir);
     resetLightSleepEngineForTests();
-    resetAutobiographyEngineForTests();
   });
 
-  it("Stage 1 with zero tool calls still runs Stage 2 and Stage 3", async () => {
+  it("Stage 1 with zero tool calls still runs Stage 2 limbic", async () => {
     const result = await runLightSleep({
       selfContent: "self layer",
       day: "2026-06-08",
     });
 
     expect(lightSleepCalls).toBe(2);
-    expect(autobiographyCalls).toBe(1);
     expect(result.tool_calls).toBe(0);
     expect(result.limbic_tool_calls).toBe(0);
-    expect(result.autobiography_tool_calls).toBe(0);
-    expect(result.summary_refreshed).toBe(true);
-    expect(updateSelfBlockMock).toHaveBeenCalled();
     expect(result.summary).toContain("semantic done");
     expect(result.summary).toContain("limbic done");
-    expect(result.summary).toContain("autobiography done");
   });
 });

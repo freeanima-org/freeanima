@@ -30,7 +30,7 @@ export function toSelfBlockView(row: SelfBlockRow): SelfBlockView {
   };
 }
 
-/** Render six blocks as resident Markdown */
+/** Render five blocks as resident Markdown */
 export function renderSelfLayerPrompt(blocks: SelfBlockRow[]): string {
   const lines: string[] = [];
   for (const row of blocks) {
@@ -42,7 +42,7 @@ export function renderSelfLayerPrompt(blocks: SelfBlockRow[]): string {
   return lines.join("\n\n");
 }
 
-/** Wrap six-block Markdown as self-layer system prompt segment (second-person frame + code fence) */
+/** Wrap five-block Markdown as self-layer system prompt segment (second-person frame + code fence) */
 export function wrapSelfLayerForSystemPrompt(innerMarkdown: string): string {
   const body = innerMarkdown.trim();
   if (!body) return "";

@@ -10,12 +10,11 @@ export const selfBlockKeySchema = z.enum([
   "personality_baseline",
   "direction",
   "metacognition",
-  "autobiography_summary",
 ]);
 
 export type SelfBlockKey = z.infer<typeof selfBlockKeySchema>;
 
-/** Self-layer six blocks (one row per block_key) */
+/** Self-layer five blocks (one row per block_key) */
 export const selfBlocks = pgTable("self_blocks", {
   block_key: text("block_key").primaryKey(),
   content: text("content").notNull().default(""),
