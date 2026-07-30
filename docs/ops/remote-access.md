@@ -140,7 +140,7 @@ http:
 
 The Habitat server certificate lives on the Habitat host. Browsers, **desktop shell**, and mobile APKs need the **mkcert root CA** (`rootCA.pem`, not `cert.pem`) in the OS trust store for HTTPS `:2659` without warnings（**Let's Encrypt 证书跳过本步**）：
 
-- **设置 → 连接** (`/web/settings?section=habitat`): download **rootCA.pem** and a **QR code** (QR points at the HTTP `:2658` download URL so you can scan before trusting HTTPS).
+- **设置 → 连接** (`/web/settings?section=habitat`): open **局域网 TLS 证书** → download **rootCA.pem** and a **QR code** (QR points at the HTTP `:2658` download URL so you can scan before trusting HTTPS).
 - If HTTPS pages still fail to load scripts, open settings via **`http://<host>:2658/web/settings?section=habitat`** first.
 
 ```bash
