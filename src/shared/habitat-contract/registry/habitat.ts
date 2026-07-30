@@ -26,7 +26,6 @@ const emptyInputSchema = z.object({}).strict();
 const idParamInputSchema = z.object({ id: z.string().min(1) });
 const conversationIdParamSchema = z.object({ conversationId: z.string().min(1) });
 const cronJobIdParamSchema = z.object({ id: z.string().min(1) });
-const nameParamSchema = z.object({ name: z.string().min(1) });
 const promptDebugQuerySchema = z.object({
   conversation_id: z.string().optional(),
   platform: z.string().optional(),
@@ -283,31 +282,6 @@ export const habitatMethodDefs = {
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
-  }),
-  "acp.status": defineHabitatMethod({
-    input: emptyInputSchema,
-    output: unknownOutputSchema,
-    meta: dualTransportMeta(true),
-  }),
-  "acp.startAll": defineHabitatMethod({
-    input: emptyInputSchema,
-    output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
-  }),
-  "acp.stopAll": defineHabitatMethod({
-    input: emptyInputSchema,
-    output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
-  }),
-  "acp.startAgent": defineHabitatMethod({
-    input: nameParamSchema,
-    output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
-  }),
-  "acp.stopAgent": defineHabitatMethod({
-    input: nameParamSchema,
-    output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
   }),
   "fts.status": defineHabitatMethod({
     input: emptyInputSchema,

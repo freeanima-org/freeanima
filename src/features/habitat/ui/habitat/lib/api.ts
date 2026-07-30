@@ -88,30 +88,6 @@ export async function getStoredMessages(conversationId: string, offset?: number,
   );
 }
 
-export type ConversationAcpDockTask = {
-  acp_conversation_id: string;
-  task_id: string;
-  agent_name: string;
-  status: string;
-  progress_message_id?: string;
-};
-
-export type ConversationAcpDockSnapshot = {
-  conversation_id: string;
-  tasks: ConversationAcpDockTask[];
-  progress_text: string;
-  task_progress: Record<string, string>;
-  highlight_decision: boolean;
-};
-
-export async function getConversationAcpDock(
-  conversationId: string,
-): Promise<ConversationAcpDockSnapshot> {
-  return hubCall(
-    habitat().call("conversation.acpDock", { conversation_id: conversationId }),
-  ) as Promise<ConversationAcpDockSnapshot>;
-}
-
 export function subscribeConversationEvents(
   conversationId: string,
   onUpdate: () => void,
@@ -179,6 +155,69 @@ export async function listHabitatSkills() {
       allowed_tools: string[];
       denied_tools: string[];
     }>;
+  }>;
+}
+
+export type HabitatSubagentRow = {
+  id: number;
+  slug: string;
+  title: string;
+  summary: string;
+  content: string;
+  skills: string[];
+  max_turns: number | null;
+  allowed_tools: string[];
+  denied_tools: string[];
+  prompt_includes: Array<"self" | "world" | "time">;
+  world_id: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export async function listHabitatSubagents(subjectKind: "user" | "agent" = "agent") {
+  return hubCall(habitat().call("subagent.list", { subject_kind: subjectKind })) as Promise<{
+    items: HabitatSubagentRow[];
+  }>;
+}
+
+export async function createHabitatSubagent(input: {
+  subject_kind: "user" | "agent";
+  slug: string;
+  title: string;
+  summary?: string;
+  content?: string;
+  skills?: string[];
+  max_turns?: number | null;
+  allowed_tools?: string[];
+  denied_tools?: string[];
+  prompt_includes?: Array<"self" | "world" | "time">;
+}) {
+  return hubCall(habitat().call("subagent.create", input)) as Promise<{
+    item: HabitatSubagentRow;
+  }>;
+}
+
+export async function patchHabitatSubagent(input: {
+  subject_kind: "user" | "agent";
+  id: number;
+  slug?: string;
+  title?: string;
+  summary?: string;
+  content?: string;
+  skills?: string[];
+  max_turns?: number | null;
+  allowed_tools?: string[];
+  denied_tools?: string[];
+  prompt_includes?: Array<"self" | "world" | "time">;
+}) {
+  return hubCall(habitat().call("subagent.patch", input)) as Promise<{
+    item: HabitatSubagentRow;
+  }>;
+}
+
+export async function deleteHabitatSubagent(subjectKind: "user" | "agent", id: number) {
+  return hubCall(habitat().call("subagent.delete", { subject_kind: subjectKind, id })) as Promise<{
+    ok: true;
   }>;
 }
 
@@ -376,26 +415,6 @@ export async function startAllMcp() {
 
 export async function stopAllMcp() {
   return hubCall(habitat().call("mcp.stopAll", {}));
-}
-
-export async function getAcpStatus() {
-  return hubCall(habitat().call("acp.status", {}));
-}
-
-export async function startAcp(name: string) {
-  return hubCall(habitat().call("acp.startAgent", { name }));
-}
-
-export async function stopAcp(name: string) {
-  return hubCall(habitat().call("acp.stopAgent", { name }));
-}
-
-export async function startAllAcp() {
-  return hubCall(habitat().call("acp.startAll", {}));
-}
-
-export async function stopAllAcp() {
-  return hubCall(habitat().call("acp.stopAll", {}));
 }
 
 export type EntityRow = import("@freeanima/host/core/db/pg/entity/types").EntityRow;

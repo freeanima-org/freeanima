@@ -21,8 +21,8 @@ describe("index exports", () => {
     type Payload = PayloadOf<typeof hook>;
     const initial: Payload = { count: 0 };
 
-    registry.on(hook, handler);
-    const run = await registry.run(hook, initial);
+    registry.on(hook, handler, { llm_kind: "all" });
+    const run = await registry.run(hook, initial, { llm_kind: "conversation" });
     expect(run.context.count).toBe(0);
     expect(run.chain?.data).toEqual({ count: 1 });
   });

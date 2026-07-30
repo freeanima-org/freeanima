@@ -14,7 +14,6 @@ import {
   registerTemporalSummaryPeerInject,
   registerServiceStores,
 } from "../register.ts";
-import { createAcpSessionUpdatedHandler } from "../acp-conversation-callback.ts";
 import { initRuntimeContext } from "../service/runtime-context.ts";
 import { registerMemoryEngines } from "../service/memory-engines.ts";
 import { registerBootCronHandlers } from "./cron-handlers.ts";
@@ -41,7 +40,7 @@ export async function bootRuntimePhase(
   runtimeRef: { current: AppRuntime | null },
   acpSessionUpdatedRef?: { handler: ((sid: string) => void) | null },
 ): Promise<RuntimePhaseResult> {
-  const { kernel, engine, conversation, catalog, mcp, outpost, acp } = phase;
+  const { kernel, engine, conversation, catalog, mcp, outpost } = phase;
 
   startupLog("Initializing AppRuntime…");
   const runtime = createAppRuntime({
@@ -50,20 +49,15 @@ export async function bootRuntimePhase(
     conversation,
     mcp,
     outpost,
-    acp,
     host,
     port,
   });
   runtimeRef.current = runtime;
   runtime.markStarted();
 
-  const acpHandler = createAcpSessionUpdatedHandler({
-    conversation,
-    getRuntime: () => runtimeRef.current,
+  runtime.setOnSessionUpdated((sid) => {
+    if (acpSessionUpdatedRef) acpSessionUpdatedRef.handler?.(sid);
   });
-  runtime.setOnSessionUpdated(acpHandler);
-
-  if (acpSessionUpdatedRef) acpSessionUpdatedRef.handler = acpHandler;
 
   bindServicePorts(runtime.fullDeps());
   initRuntimeContext(runtime);
@@ -85,6 +79,10 @@ export async function bootRuntimePhase(
   const { seedBuiltinSkills } = await import("@freeanima/host/core/skill");
   await seedBuiltinSkills(catalog.skills);
   startupLog("Builtin skills seeded");
+
+  const { seedBuiltinSubagents } = await import("@freeanima/features/subagent/domain");
+  const subagentSeeded = await seedBuiltinSubagents();
+  startupLog(`Builtin subagents seeded (${subagentSeeded} new)`);
 
   registerSystemPromptHooks({
     hookRegistry: kernel.hookRegistry,

@@ -80,13 +80,6 @@ function DashboardPage() {
     tool_count: 0,
   };
 
-  const acp = extensions?.acp ?? {
-    agent_count: 0,
-    connected_count: 0,
-    session_count: 0,
-    tool_count: 0,
-  };
-
   const toolCount = svc?.tools ?? 0;
   const cronCount = svc?.cron_jobs ?? 0;
   const commandCount = extensions?.commands ?? null;
@@ -116,13 +109,6 @@ function DashboardPage() {
     connected: String(mcp.connected_count),
     connecting: String(mcp.connecting_count),
     tools: String(mcp.tool_count),
-  });
-
-  const acpSummary = m.habitat_dashboard_acp_summary({
-    agents: String(acp.agent_count),
-    connected: String(acp.connected_count),
-    sessions: String(acp.session_count),
-    tools: String(acp.tool_count),
   });
 
   const runRestart = async () => {
@@ -184,7 +170,11 @@ function DashboardPage() {
               total={svc.conversations?.total ?? 0}
               platformRows={conversationPlatformRows}
             />
-            <CompactExtensionCard title="ACP" href="/acp" summary={acpSummary} />
+            <CompactExtensionCard
+              title={m.habitat_nav_subagents()}
+              href="/subagents"
+              summary={m.habitat_subagents_intro()}
+            />
             <StatCard title={m.habitat_common_tools()}>
               <p className="text-xl font-mono mt-1">{toolCount}</p>
               <p className="text-xs text-muted-foreground">

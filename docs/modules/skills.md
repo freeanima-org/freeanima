@@ -42,10 +42,10 @@ Do **not** dump every skill body into the system prompt.
 
 Skills participate in **Capability Policy** — see [`architecture.md`](../product/architecture.md).
 
-| Actor                                 | `allowed_tools` | `denied_tools`  |
-| ------------------------------------- | --------------- | --------------- |
-| Skill                                 | Primary         | Optional / rare |
-| Caller (cron, sleep, future subagent) | Optional        | Primary         |
+| Actor                          | `allowed_tools` | `denied_tools`  |
+| ------------------------------ | --------------- | --------------- |
+| Skill                          | Primary         | Optional / rare |
+| Caller (cron, sleep, subagent) | Optional        | Primary         |
 
 **Visible chat:** default ToolSets (includes `skill`); user present.  
 **Invisible runs:** least privilege — default deny all tools; effective set ≈ union of loaded skills’ allows, minus caller denies. No skills (and no caller allow) ⇒ no tools.

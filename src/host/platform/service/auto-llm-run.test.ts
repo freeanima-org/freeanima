@@ -11,7 +11,6 @@ import { createServiceKernel } from "@freeanima/host/platform/bootstrap";
 import { parseYaml } from "@freeanima/host/platform/config";
 import { runtimeConfigSchema } from "@freeanima/host/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
-import { getAcpManager } from "@freeanima/host/capabilities/acp";
 import { createConversationService } from "@freeanima/host/engine/conversation";
 
 const appendCalls: AutoLlmRunAppendInput[] = [];
@@ -48,19 +47,12 @@ const testEngine = createEngine({
 function bindTestDeps(): FullRuntimeDeps {
   const kernel = createServiceKernel(testConfig);
   const conversation = createConversationService(catalog.toolSets);
-  getAcpManager().bindRegistries({
-    toolSets: catalog.toolSets,
-    skills: catalog.skills,
-    config: testConfig,
-  });
-  getAcpManager().bindConversation(conversation);
   return {
     kernel,
     engine: testEngine,
     conversation,
     mcp: null,
     outpost: null,
-    acp: getAcpManager(),
     host: "127.0.0.1",
     port: 2658,
   };

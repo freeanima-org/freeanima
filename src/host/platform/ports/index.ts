@@ -32,7 +32,6 @@ export {
   assertNotShuttingDown,
   type AppRuntimeContext,
 } from "./app-runtime-context.ts";
-export type { AcpControlResult, AcpManagerPort, AcpStatusResponse } from "./acp-manager.ts";
 export type { McpControlResult, McpManagerPort, McpStatusResponse } from "./mcp-manager.ts";
 export type {
   OutpostInstanceStatus,

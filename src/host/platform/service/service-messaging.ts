@@ -53,11 +53,15 @@ export async function runIncomingMessageHooks(
   message: string,
   platform: string,
 ): Promise<{ ok: true; message: string; expiredHint?: string } | { ok: false; reason: string }> {
-  const run = await deps.kernel.hookRegistry.run(messageIncoming, {
-    conversationId,
-    message,
-    platform,
-  });
+  const run = await deps.kernel.hookRegistry.run(
+    messageIncoming,
+    {
+      conversationId,
+      message,
+      platform,
+    },
+    { llm_kind: "conversation" },
+  );
   if (run.blocked) {
     return { ok: false, reason: run.blockedMessage ?? "" };
   }
@@ -75,10 +79,14 @@ export async function runTurnAfterCompleteHooks(
   messages: Message[],
   defaultContent: string,
 ): Promise<string> {
-  const run = await deps.kernel.hookRegistry.run(turnAfterComplete, {
-    conversationId,
-    messages: messages as Record<string, unknown>[],
-  });
+  const run = await deps.kernel.hookRegistry.run(
+    turnAfterComplete,
+    {
+      conversationId,
+      messages: messages as Record<string, unknown>[],
+    },
+    { llm_kind: "conversation" },
+  );
   const effect = headOkStepData(turnAfterComplete, run.chain);
   return effect?.displayContent ?? defaultContent;
 }
@@ -90,7 +98,11 @@ export function emitSessionUpdated(
   },
   conversationId: string,
 ): void {
-  msgDeps.kernel.hookRegistry.emit(conversationUpdated, { conversation_id: conversationId });
+  msgDeps.kernel.hookRegistry.emit(
+    conversationUpdated,
+    { conversation_id: conversationId },
+    { llm_kind: "conversation" },
+  );
   msgDeps.onConversationUpdated?.(conversationId);
 }
 

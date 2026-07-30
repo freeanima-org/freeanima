@@ -260,9 +260,13 @@ export class DiscordAdapter implements PlatformAdapter {
       const kernel = (getAppRuntime() as { kernel?: { hookRegistry: HookRegistry } }).kernel;
       const registry = kernel?.hookRegistry;
       if (!registry) return;
-      this.conversationUpdatedOff = registry.subscribe(conversationUpdated, (payload) => {
-        void this.onSessionTitleUpdated(payload.conversation_id);
-      });
+      this.conversationUpdatedOff = registry.subscribe(
+        conversationUpdated,
+        (payload) => {
+          void this.onSessionTitleUpdated(payload.conversation_id);
+        },
+        { llm_kind: "conversation" },
+      );
     } catch {
       /* AppRuntime not ready yet; skip */
     }

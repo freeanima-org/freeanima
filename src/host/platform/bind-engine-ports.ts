@@ -18,7 +18,9 @@ export function bindEnginePorts(): void {
 
   registerSystemPromptHookRunner(async (ctx) => {
     const { kernel } = getAppRuntime();
-    const run = await kernel.hookRegistry.run(systemPromptBuild, ctx);
+    const run = await kernel.hookRegistry.run(systemPromptBuild, ctx, {
+      llm_kind: "conversation",
+    });
     const budget =
       peekActiveRuntimeConfig()?.data.prompt?.system_prompt_budget_chars ??
       DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS;

@@ -11,7 +11,6 @@ import {
   parseCompressionState,
   clarifyToolAwaitingResultSchema,
 } from "@freeanima/host/core/db/domain";
-import { jsonRpcMessageSchema } from "@freeanima/host/capabilities/acp/schemas/acp-jsonrpc.ts";
 import {
   weixinContextTokensSchema,
   weixinSyncSchema,
@@ -94,15 +93,6 @@ describe("schemas/clarify tool result", () => {
 });
 
 describe("integrations schemas", () => {
-  it("parses jsonrpc message loosely", () => {
-    const result = jsonRpcMessageSchema.safeParse({
-      jsonrpc: "2.0",
-      method: "ping",
-      id: 1,
-    });
-    expect(result.success).toBe(true);
-  });
-
   it("parses weixin sync state", () => {
     expect(weixinSyncSchema.safeParse({ sync_buf: "abc" }).success).toBe(true);
   });

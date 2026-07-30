@@ -157,8 +157,3 @@ export class ToolSetRegistry {
 export function mcpToolSetId(serverName: string): string {
   return `mcp_${serverName.trim()}`;
 }
-
-/** ACP agent `cursor` → toolset `acp_cursor` */
-export function acpToolSetId(agentName: string): string {
-  return `acp_${agentName.trim()}`;
-}

@@ -64,9 +64,8 @@ function mcpSummary(deps: FullRuntimeDeps): { connected: number; servers: number
   return { connected: s.connected_count, servers: s.server_count };
 }
 
-function acpSummary(deps: FullRuntimeDeps): { connected: number; agents: number } {
-  const s = deps.acp.getStatus();
-  return { connected: s.connected_count, agents: s.agent_count };
+function acpSummary(_deps: FullRuntimeDeps): { connected: number; agents: number } {
+  return { connected: 0, agents: 0 };
 }
 
 /** 从运行时采集并分档 */

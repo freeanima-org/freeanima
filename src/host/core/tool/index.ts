@@ -27,7 +27,7 @@ export {
   toolCallTitleFromArgs,
 } from "./tool-call-title.ts";
 export type { ToolArgsRecord } from "./tool-json.ts";
-export { ToolSetRegistry, mcpToolSetId, acpToolSetId } from "./toolset.ts";
+export { ToolSetRegistry, mcpToolSetId } from "./toolset.ts";
 export {
   loadToolSetsIntoConversation,
   resolveExecutableToolNames,

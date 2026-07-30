@@ -94,13 +94,6 @@ function buildProcessMemoryDetail(deps: FullRuntimeDeps): ProcessMemoryDetail {
   if (deps.mcp) {
     mcp = deps.mcp.getConnectionSummary();
   }
-  if (deps.acp) {
-    const acpStatus = deps.acp.getStatus();
-    acp = {
-      agent_count: acpStatus.agent_count,
-      connected_count: acpStatus.connected_count,
-    };
-  }
 
   const rssFromProc = readProcessRssKb();
   const rssMuKb = Math.round(mu.rss / 1024);
@@ -164,15 +157,6 @@ function buildExtensionSummaries(deps: FullRuntimeDeps): ExtensionSummaries {
   if (deps.mcp) {
     const conn = deps.mcp.getConnectionSummary();
     mcp = { ...conn, tool_count: deps.mcp.getToolCount() };
-  }
-  if (deps.acp) {
-    const status = deps.acp.getStatus();
-    acp = {
-      agent_count: status.agent_count,
-      connected_count: status.connected_count,
-      session_count: status.session_count,
-      tool_count: status.tool_count,
-    };
   }
   return { mcp, acp, commands };
 }

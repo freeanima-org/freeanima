@@ -12,15 +12,23 @@ describe("conversation hooks", () => {
 
   it("messageIncoming effect via headOkStepData", async () => {
     const registry = createTestHookRegistry();
-    registry.on(messageIncoming, () => ({
-      status: "ok",
-      data: { transformedMessage: "hi" },
-    }));
-    const run = await registry.run(messageIncoming, {
-      conversationId: "s1",
-      message: "hello",
-      platform: "console",
-    });
+    registry.on(
+      messageIncoming,
+      () => ({
+        status: "ok",
+        data: { transformedMessage: "hi" },
+      }),
+      { llm_kind: "conversation" },
+    );
+    const run = await registry.run(
+      messageIncoming,
+      {
+        conversationId: "s1",
+        message: "hello",
+        platform: "console",
+      },
+      { llm_kind: "conversation" },
+    );
     expect(headOkStepData(messageIncoming, run.chain)?.transformedMessage).toBe("hi");
   });
 });

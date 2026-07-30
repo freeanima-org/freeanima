@@ -36,7 +36,7 @@ Implementation: `src/host/platform/service/env-health/`.
 
 **Environment:** hostname, OS, timezone label, Habitat version, boot started_at, PostgreSQL / Redis status (`connected` | `error` | `not_configured`).
 
-**Health:** RSS band (512 MiB), MCP/ACP connection counts, disk free band for `FREEANIMA_HOME` (`<1GiB` | `1-2GiB` | `2-4GiB` | `4-8GiB` | `≥8GiB` | `unknown`).
+**Health:** RSS band (512 MiB), MCP connection counts, disk free band for `FREEANIMA_HOME` (`<1GiB` | `1-2GiB` | `2-4GiB` | `4-8GiB` | `≥8GiB` | `unknown`).
 
 Continuous metrics are banded so minor jitter does not spam notifications.
 
@@ -59,6 +59,7 @@ User-side dialogue density only (新开 / 更新会话、用户消息 — not ag
 - `source_kind: system`
 - `source_ref: env-health:<sortedChangedKeys>:<fingerprint>`
 - If both recipients already have that `source_ref`, skip create (dedupe) but still refresh baseline
+- **Dev Habitat** (`FREEANIMA_DEV_HABITAT=1` / `just dev habitat`): ignore `boot_started_at` for notify (still refresh baseline). Other marker changes still notify; production / standalone restart still notifies on boot.
 
 The user-activity panel does **not** emit change notifications.
 
@@ -66,5 +67,5 @@ The user-activity panel does **not** emit change notifications.
 
 - Habitat health dashboard UI (Issue #21 epic item)
 - Scene awareness (dialogue atmosphere)
-- Habitat HTTP `health.probe` / ACP process health checks (ops, not cognitive baseline)
+- Habitat HTTP `health.probe` / MCP process health checks (ops, not cognitive baseline)
 - Recent-memory / cross-session summary injection

@@ -11,7 +11,7 @@ title: Identity
 
 ## Positioning
 
-`freeanima` looks like Agent infrastructure (tool registration, layered memory, MCP/ACP, Runtime, Gateway), but the technical structure serves one purpose:
+`freeanima` looks like Agent infrastructure (tool registration, layered memory, MCP, Runtime, Gateway), but the technical structure serves one purpose:
 
 **Let digital life persist within it, remembering who it is and what it has lived through.**
 
@@ -21,7 +21,7 @@ title: Identity
 | **Portal**                               | External ways in (Shell, MCP, …); not the Habitat itself                                                                                                                 |
 | Memory system                            | The digital life's "home"                                                                                                                                                |
 | Self layer (five blocks)                 | Persistent definition of "who I am"                                                                                                                                      |
-| Tools (local / MCP / ACP)                | "Limbs" for perception and action                                                                                                                                        |
+| Tools (local / MCP / subagent)           | "Limbs" for perception and action                                                                                                                                        |
 | Vault                                    | Lifeline (runtime injection; LLM sees metadata, never plaintext)                                                                                                         |
 | Gateway                                  | Ears and mouth (Discord / WeChat) — not a Portal                                                                                                                         |
 | HookRegistry (`on` / `subscribe`)        | In-process lifecycle: intercept (`on`, awaited) vs side-channel notify (`subscribe`, not awaited); sleep uses Pipeline Runner — see [`architecture.md`](architecture.md) |

@@ -24,6 +24,7 @@ import {
   WORLD_CONFIG_COMPONENT,
   OBJECT_FILE_COMPONENT,
   OBJECT_FOLDER_COMPONENT,
+  SUBAGENT_COMPONENT,
   contentBlockBodySchema,
   diaryBlockTemplateBodySchema,
   diaryEntryBodySchema,
@@ -46,6 +47,7 @@ import {
   worldConfigBodySchema,
   objectFileBodySchema,
   objectFolderBodySchema,
+  subagentBodySchema,
   type ContentBlockBody,
   type DiaryBlockTemplateBody,
   type DiaryEntryBody,
@@ -68,6 +70,7 @@ import {
   type WorldConfigBody,
   type ObjectFileBody,
   type ObjectFolderBody,
+  type SubagentBody,
 } from "./components/index.ts";
 import { parseEntityRevisions, type EntityRevision } from "./revisions.ts";
 
@@ -349,4 +352,27 @@ export function asTag(row: EntityRow): (TagBody & { id: number; title: string })
   if (row.primary_component !== TAG_COMPONENT) return null;
   const parsed = tagBodySchema.safeParse(row.body);
   return parsed.success ? { id: row.id, title: row.title, ...parsed.data } : null;
+}
+
+export function asSubagent(row: EntityRow):
+  | (SubagentBody & {
+      id: number;
+      title: string;
+      summary: string;
+      content: string;
+      world_id: number;
+    })
+  | null {
+  if (row.primary_component !== SUBAGENT_COMPONENT) return null;
+  const parsed = subagentBodySchema.safeParse(row.body);
+  return parsed.success
+    ? {
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        content: row.content,
+        world_id: row.world_id,
+        ...parsed.data,
+      }
+    : null;
 }

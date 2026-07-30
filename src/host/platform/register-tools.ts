@@ -6,6 +6,7 @@ import { registerEmailTools } from "@freeanima/features/email/domain";
 import { registerTaskTools } from "@freeanima/features/task/domain";
 import { registerProjectTools } from "@freeanima/features/project/domain";
 import { registerTagTools } from "@freeanima/features/tag/domain";
+import { registerSubagentTools } from "@freeanima/features/subagent/domain";
 import { registerVaultTools } from "@freeanima/features/vault/domain";
 import {
   bindObjectStore,
@@ -57,6 +58,7 @@ export function registerServiceTools(opts: {
   registerTaskTools(opts.toolSets);
   registerProjectTools(opts.toolSets);
   registerTagTools(opts.toolSets);
+  registerSubagentTools(opts.toolSets);
   registerContentBlockTools(opts.toolSets);
   registerDiaryTools(opts.toolSets);
   registerPomodoroTools(opts.toolSets);

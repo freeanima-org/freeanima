@@ -3,6 +3,7 @@ import { systemPromptBuild } from "@freeanima/host/core/hooks/prompt";
 import { registerToolsetSystemPromptHooks } from "@freeanima/host/capabilities/tools/toolset-prompt-hooks";
 import { registerWorldContextSystemPromptHook } from "@freeanima/host/capabilities/tools/world-prompt-hooks";
 import { registerSkillsCatalogSystemPromptHook } from "@freeanima/host/capabilities/tools/skills-prompt-hooks";
+import { registerSubagentCatalogSystemPromptHook } from "@freeanima/features/subagent/domain";
 import { buildMemorySystemPromptSections } from "@freeanima/host/capabilities/memory/system-prompt-sections";
 import { loadSelfLayerPrompt } from "@freeanima/host/capabilities/self";
 import type { ToolSetRegistry } from "@freeanima/host/core/tool";
@@ -29,102 +30,122 @@ function describePlatform(platform?: string): string {
 }
 
 export function registerMemorySystemPromptHooks(registry: HookRegistry): void {
-  registry.on(systemPromptBuild, async (ctx) => {
-    const selfContent = await loadSelfLayerPrompt();
-    const sections = await buildMemorySystemPromptSections(selfContent, ctx.cwd);
-    if (sections.length === 0) return { status: "ok" };
-    return { status: "ok", data: { sections } };
-  });
+  registry.on(
+    systemPromptBuild,
+    async (ctx) => {
+      const selfContent = await loadSelfLayerPrompt();
+      const sections = await buildMemorySystemPromptSections(selfContent, ctx.cwd);
+      if (sections.length === 0) return { status: "ok" };
+      return { status: "ok", data: { sections } };
+    },
+    { llm_kind: "conversation" },
+  );
 }
 
 export function registerChannelSystemPromptHook(registry: HookRegistry): void {
-  registry.on(systemPromptBuild, (ctx) => {
-    const platform = ctx.meta?.platform;
-    const desc = describePlatform(platform);
-    return {
-      status: "ok",
-      data: {
-        sections: [
-          { id: "channel", content: `## 对话通道\n当前通道：${desc}`, order: 5, priority: 2 },
-        ],
-      },
-    };
-  });
+  registry.on(
+    systemPromptBuild,
+    (ctx) => {
+      const platform = ctx.meta?.platform;
+      const desc = describePlatform(platform);
+      return {
+        status: "ok",
+        data: {
+          sections: [
+            { id: "channel", content: `## 对话通道\n当前通道：${desc}`, order: 5, priority: 2 },
+          ],
+        },
+      };
+    },
+    { llm_kind: "conversation" },
+  );
 }
 
 export function registerEnvHealthSystemPromptHook(registry: HookRegistry): void {
-  registry.on(systemPromptBuild, async () => {
-    const { buildEnvHealthPromptSectionContent } = await import("./service/env-health/prompt.ts");
-    try {
-      const content = await buildEnvHealthPromptSectionContent();
-      if (!content.trim()) return { status: "ok" };
-      return {
-        status: "ok",
-        data: {
-          sections: [
-            { id: "env-health-baseline", content, order: 15, priority: 8, budgetChars: 1_200 },
-          ],
-        },
-      };
-    } catch {
-      return { status: "ok" };
-    }
-  });
+  registry.on(
+    systemPromptBuild,
+    async () => {
+      const { buildEnvHealthPromptSectionContent } = await import("./service/env-health/prompt.ts");
+      try {
+        const content = await buildEnvHealthPromptSectionContent();
+        if (!content.trim()) return { status: "ok" };
+        return {
+          status: "ok",
+          data: {
+            sections: [
+              { id: "env-health-baseline", content, order: 15, priority: 8, budgetChars: 1_200 },
+            ],
+          },
+        };
+      } catch {
+        return { status: "ok" };
+      }
+    },
+    { llm_kind: "conversation" },
+  );
 }
 
 export function registerUserActivityStatsSystemPromptHook(registry: HookRegistry): void {
-  registry.on(systemPromptBuild, async () => {
-    const { buildUserActivityStatsPromptSectionContent } =
-      await import("./service/user-activity-stats/prompt.ts");
-    try {
-      const content = await buildUserActivityStatsPromptSectionContent();
-      if (!content.trim()) return { status: "ok" };
-      return {
-        status: "ok",
-        data: {
-          sections: [
-            { id: "user-activity-stats", content, order: 16, priority: 9, budgetChars: 800 },
-          ],
-        },
-      };
-    } catch {
-      return { status: "ok" };
-    }
-  });
+  registry.on(
+    systemPromptBuild,
+    async () => {
+      const { buildUserActivityStatsPromptSectionContent } =
+        await import("./service/user-activity-stats/prompt.ts");
+      try {
+        const content = await buildUserActivityStatsPromptSectionContent();
+        if (!content.trim()) return { status: "ok" };
+        return {
+          status: "ok",
+          data: {
+            sections: [
+              { id: "user-activity-stats", content, order: 16, priority: 9, budgetChars: 800 },
+            ],
+          },
+        };
+      } catch {
+        return { status: "ok" };
+      }
+    },
+    { llm_kind: "conversation" },
+  );
 }
 
 export function registerTemporalSummarySystemPromptHook(registry: HookRegistry): void {
-  registry.on(systemPromptBuild, async () => {
-    try {
-      const { getActiveRuntimeConfig } = await import("@freeanima/host/core/config");
-      const { buildTemporalSummarySystemSection, resolveTemporalSummaryConfig } =
-        await import("@freeanima/host/capabilities/memory/temporal-summary");
-      const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-      const { content, truncated } = await buildTemporalSummarySystemSection(config);
-      if (truncated) {
-        const { notifyTemporalSummarySystemTruncated } =
-          await import("./service/temporal-summary-truncate-notify.ts");
-        await notifyTemporalSummarySystemTruncated({ maxChars: config.system_prompt_max_chars });
+  registry.on(
+    systemPromptBuild,
+    async () => {
+      try {
+        const { getActiveRuntimeConfig } = await import("@freeanima/host/core/config");
+        const { buildTemporalSummarySystemSection, resolveTemporalSummaryConfig } =
+          await import("@freeanima/host/capabilities/memory/temporal-summary");
+        const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
+        const { content, truncated } = await buildTemporalSummarySystemSection(config);
+        if (truncated) {
+          const { notifyTemporalSummarySystemTruncated } =
+            await import("./service/temporal-summary-truncate-notify.ts");
+          await notifyTemporalSummarySystemTruncated({ maxChars: config.system_prompt_max_chars });
+        }
+        if (!content.trim()) return { status: "ok" };
+        return {
+          status: "ok",
+          data: {
+            sections: [
+              {
+                id: "temporal-summary",
+                content,
+                order: 20,
+                priority: 6,
+                budgetChars: config.system_prompt_max_chars,
+              },
+            ],
+          },
+        };
+      } catch {
+        return { status: "ok" };
       }
-      if (!content.trim()) return { status: "ok" };
-      return {
-        status: "ok",
-        data: {
-          sections: [
-            {
-              id: "temporal-summary",
-              content,
-              order: 20,
-              priority: 6,
-              budgetChars: config.system_prompt_max_chars,
-            },
-          ],
-        },
-      };
-    } catch {
-      return { status: "ok" };
-    }
-  });
+    },
+    { llm_kind: "conversation" },
+  );
 }
 
 export function registerSystemPromptHooks(opts: {
@@ -135,6 +156,7 @@ export function registerSystemPromptHooks(opts: {
   registerMemorySystemPromptHooks(opts.hookRegistry);
   registerWorldContextSystemPromptHook(opts.hookRegistry);
   registerToolsetSystemPromptHooks(opts.hookRegistry, opts.getToolRegistry);
+  registerSubagentCatalogSystemPromptHook(opts.hookRegistry);
   if (opts.getSkillRegistry) {
     registerSkillsCatalogSystemPromptHook(opts.hookRegistry, opts.getSkillRegistry);
   }

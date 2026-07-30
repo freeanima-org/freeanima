@@ -44,10 +44,6 @@ async function loadServiceSessions() {
   return import("@freeanima/host/platform/service/service-conversations");
 }
 
-async function loadServiceAcpDock() {
-  return import("@freeanima/host/platform/service/service-acp-dock");
-}
-
 async function loadServiceStatus() {
   return import("@freeanima/host/platform/service/service-status");
 }
@@ -201,15 +197,6 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
       });
     }
     return { ok: true as const };
-  },
-  "conversation.acpDock": async (deps, input) => {
-    const platform = await resolveConversationPlatform(depsOf(deps), input.conversation_id);
-    const serviceAcpDock = await loadServiceAcpDock();
-    return serviceAcpDock.getConversationAcpDock(
-      depsOf(deps).runtime.runtimeDeps(),
-      input.conversation_id,
-      platform,
-    );
   },
   "conversation.commands": async (_deps, input, _ctx) => {
     const platform = input.platform?.trim() || undefined;

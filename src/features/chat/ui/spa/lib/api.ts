@@ -1,9 +1,4 @@
-import type {
-  ConversationAcpDockSnapshot,
-  ConversationListItem,
-  DisplayItem,
-  StreamApiEvent,
-} from "./types.ts";
+import type { ConversationListItem, DisplayItem, StreamApiEvent } from "./types.ts";
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
@@ -57,7 +52,7 @@ function sap() {
   return getChatRpcStreamClient();
 }
 
-export type { ConversationAcpDockSnapshot, StreamApiEvent } from "./types.ts";
+export type { StreamApiEvent } from "./types.ts";
 
 export async function listConversations(opts?: { includeArchived?: boolean }) {
   const includeArchived = opts?.includeArchived === true;
@@ -171,25 +166,6 @@ export async function deleteConversation(conversationId: string) {
 export async function rollbackBeforeLastUserMessage(conversationId: string) {
   await habitat().call("conversation.rollbackBeforeLastUser", { conversation_id: conversationId });
   return { ok: true as const };
-}
-
-export async function getConversationAcpDock(
-  conversationId: string,
-): Promise<ConversationAcpDockSnapshot> {
-  requireHabitatFetch("conversation.acpDock");
-  const raw = await habitat().call("conversation.acpDock", { conversation_id: conversationId });
-  return {
-    ...raw,
-    tasks: raw.tasks.map((task) => ({
-      acp_conversation_id: task.acp_conversation_id,
-      task_id: task.task_id,
-      agent_name: task.agent_name,
-      status: task.status,
-      ...(task.progress_message_id !== undefined
-        ? { progress_message_id: task.progress_message_id }
-        : {}),
-    })),
-  };
 }
 
 export async function listCommands(opts?: { all?: boolean; platform?: string }) {

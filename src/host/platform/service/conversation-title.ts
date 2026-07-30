@@ -17,7 +17,11 @@ function emitSessionTitleUpdated(notify: SessionTitleNotify, conversationId: str
     notify.emitSessionUpdated(conversationId);
     return;
   }
-  notify.kernel.hookRegistry.emit(conversationUpdated, { conversation_id: conversationId });
+  notify.kernel.hookRegistry.emit(
+    conversationUpdated,
+    { conversation_id: conversationId },
+    { llm_kind: "conversation" },
+  );
   notify.onConversationUpdated?.(conversationId);
 }
 

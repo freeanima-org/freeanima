@@ -11,7 +11,6 @@ export type DatabaseConfigInput = z.infer<typeof databaseConfigSchema>;
 export const sectionSchema = z.object({}).passthrough();
 
 export { mcpServerSchema } from "./mcp.ts";
-export { acpAgentSchema } from "./acp.ts";
 export { fallbackProviderSchema } from "./fallback-providers.ts";
 export { firecrawlSchema } from "./firecrawl.ts";
 export { browserSchema } from "./browser.ts";

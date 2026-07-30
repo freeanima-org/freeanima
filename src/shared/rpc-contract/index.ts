@@ -99,17 +99,6 @@ export type {
 } from "./frames/conversation.ts";
 
 export {
-  sessionAcpDockInputSchema,
-  sessionAcpDockOutputSchema,
-  acpDockTaskSchema,
-} from "./frames/acp.ts";
-export type {
-  ConversationAcpDockInput,
-  ConversationAcpDockOutput,
-  AcpDockTask,
-} from "./frames/acp.ts";
-
-export {
   taskListRowSchema,
   taskItemRowSchema,
   taskItemSearchFiltersSchema,

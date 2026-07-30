@@ -1,16 +1,12 @@
 import { prependSkillsToPrompt, skillPolicyFragments } from "@freeanima/host/core/skill";
 import { getProfileHopModel } from "@freeanima/host/platform/config";
 import { PROFILE_CHAT } from "@freeanima/host/core/provider";
-import {
-  resolveDefaultConversationToolSets,
-  toolNamesForToolSets,
-} from "@freeanima/host/core/tool";
 import { omitUndefined } from "@freeanima/host/core/util";
-import type { ResolvedCapabilityPolicy } from "@freeanima/host/core/capability-policy";
 import {
   filterToolNamesByPolicy,
-  resolveInvisibleCapabilityPolicy,
-} from "../capability-policy-bind.ts";
+  type ResolvedCapabilityPolicy,
+} from "@freeanima/host/core/capability-policy";
+import { materializeFromFragments } from "../capability-policy-bind.ts";
 
 import type { FullRuntimeDeps } from "../runtime-deps.ts";
 import {
@@ -52,18 +48,18 @@ export async function runCronEngineTurn(
   const systemPrompt = await buildAutoLlmSystemPrompt({
     taskSection: formatCronAutoLlmTaskSection(runName),
   });
-  const toolSetNames = resolveDefaultConversationToolSets(deps.engine.catalog.toolSets);
-  const allToolNames = toolNamesForToolSets(deps.engine.catalog.toolSets, toolSetNames);
 
   const skillFrags = skillPolicyFragments(deps.engine.skills, job.skills);
-  const policy = resolveInvisibleCapabilityPolicy(deps.engine.catalog.toolSets, {
-    skills: skillFrags,
-    caller: {
-      allowed_tools: job.allowed_tools ?? [],
-      denied_tools: job.denied_tools ?? [],
-    },
-  });
-  const toolNames = toolNamesForInvisiblePolicy(allToolNames, policy);
+  const { policy, toolNames } = materializeFromFragments(
+    [
+      ...skillFrags,
+      {
+        allowed_tools: job.allowed_tools ?? [],
+        denied_tools: job.denied_tools ?? [],
+      },
+    ],
+    deps.engine.catalog.toolSets,
+  );
 
   const maxTurns = cfg.compression?.max_rounds ?? 50;
 

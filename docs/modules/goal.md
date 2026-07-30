@@ -43,9 +43,9 @@ Optional `goal_judge` in Habitat runtime `llm.profiles` (Shell **Settings → Ha
 
 Judge calls use OpenAI-compatible `response_format: json_object`, `thinking: { type: "disabled" }`, and `tool_choice: "none"` (via `params.extra`), plus `maxOutputTokens: 2048`. Prefer a model/gateway that supports JSON mode; unsupported endpoints will fail the judge call and pause the goal.
 
-## vs ACP
+## vs Subagent
 
 - **Goal**: in-conversation synchronous continuation loop; orchestrated by platform turn lifecycle.
-- **ACP**: external agent async task; callback triggers separate turn on completion.
+- **Subagent**: separate AutoLlmRun via `subagent_run`; result returns as a tool payload (see [`subagent.md`](./subagent.md)).
 
 See [`architecture.md`](../product/architecture.md#session-goal).

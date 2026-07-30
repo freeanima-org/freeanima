@@ -14,7 +14,6 @@ import {
 import { createServiceLogger, logComponent } from "@freeanima/host/platform/logging";
 import { MCPManager } from "@freeanima/host/capabilities/mcp-client";
 import { RemoteToolsManager } from "@freeanima/host/capabilities/outpost";
-import { getAcpManager } from "@freeanima/host/capabilities/acp";
 import { bindContextWindowLookup } from "../bind-context-window.ts";
 import type { Kernel } from "@freeanima/host/kernel";
 import type { RuntimeConfigStore } from "@freeanima/host/platform/config";
@@ -30,10 +29,9 @@ export type EnginePhaseResult = {
   catalog: EngineCatalog;
   mcp: MCPManager;
   outpost: RemoteToolsManager;
-  acp: ReturnType<typeof getAcpManager>;
 };
 
-/** Phase 3: catalog、kernel、engine、conversation、MCP/ACP 管理器 */
+/** Phase 3: catalog、kernel、engine、conversation、MCP 管理器 */
 export function bootEnginePhase(
   config: RuntimeConfigStore,
   onConversationUpdated: (conversationId: string) => void,
@@ -66,7 +64,6 @@ export function bootEnginePhase(
   const mcp = new MCPManager(catalog.toolSets, config);
   const outpost = new RemoteToolsManager(catalog.toolSets);
   outpost.installToolRouting();
-  const acp = getAcpManager();
 
   return {
     kernel,
@@ -75,6 +72,5 @@ export function bootEnginePhase(
     catalog,
     mcp,
     outpost,
-    acp,
   };
 }

@@ -15,7 +15,7 @@ toolset_load(["ops"])
 | Tool               | Purpose                                                                                          |
 | ------------------ | ------------------------------------------------------------------------------------------------ |
 | `ops_health`       | Process health (`status`, `version`, `started_at`)                                               |
-| `ops_status`       | Full service snapshot (memory, PG/Redis, MCP/ACP, conversation counts)                           |
+| `ops_status`       | Full service snapshot (memory, PG/Redis, MCP, conversation counts)                               |
 | `ops_config_get`   | Runtime config with secrets masked as `***`; optional `section`                                  |
 | `ops_config_patch` | Deep-merge a runtime config section; **requires `confirm: true`** after partner clarify approval |
 | `ops_restart`      | Schedule Habitat restart; **requires `confirm: true`** after partner clarify approval            |

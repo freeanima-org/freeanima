@@ -27,6 +27,7 @@ import { OBJECT_FILE_COMPONENT, objectFileBodySchema } from "./object-file.ts";
 import { OBJECT_FOLDER_COMPONENT, objectFolderBodySchema } from "./object-folder.ts";
 import { SKILL_COMPONENT, skillBodySchema } from "./skill.ts";
 import { SKILL_RESOURCE_COMPONENT, skillResourceBodySchema } from "./skill-resource.ts";
+import { SUBAGENT_COMPONENT, subagentBodySchema } from "./subagent.ts";
 import { SEMANTIC_MEMORY_COMPONENT, semanticMemoryBodySchema } from "./semantic-memory.ts";
 import { SEMANTIC_REF_COMPONENT, semanticRefBodySchema } from "./semantic-ref.ts";
 import { TASK_ITEM_COMPONENT, taskItemBodySchema } from "./task-item.ts";
@@ -72,6 +73,7 @@ export const COMPONENT_IDS = [
   OBJECT_FOLDER_COMPONENT,
   SKILL_COMPONENT,
   SKILL_RESOURCE_COMPONENT,
+  SUBAGENT_COMPONENT,
 ] as const;
 
 export type ComponentId = (typeof COMPONENT_IDS)[number];
@@ -115,6 +117,7 @@ export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
   [OBJECT_FOLDER_COMPONENT]: 131,
   [SKILL_COMPONENT]: 140,
   [SKILL_RESOURCE_COMPONENT]: 141,
+  [SUBAGENT_COMPONENT]: 145,
 };
 
 const DEFAULT_COMPONENT_PRIORITY = 500;
@@ -169,6 +172,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [OBJECT_FOLDER_COMPONENT]: objectFolderBodySchema,
   [SKILL_COMPONENT]: skillBodySchema,
   [SKILL_RESOURCE_COMPONENT]: skillResourceBodySchema,
+  [SUBAGENT_COMPONENT]: subagentBodySchema,
 };
 
 export function componentBodySchema(component: ComponentId): z.ZodTypeAny {
@@ -213,3 +217,4 @@ export * from "./object-file.ts";
 export * from "./object-folder.ts";
 export * from "./skill.ts";
 export * from "./skill-resource.ts";
+export * from "./subagent.ts";

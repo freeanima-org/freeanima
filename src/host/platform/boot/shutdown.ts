@@ -4,7 +4,6 @@ import { stopPlatforms } from "@freeanima/host/capabilities/connectors/gateway";
 import { logComponent } from "@freeanima/host/platform/logging";
 import type { Kernel } from "@freeanima/host/kernel";
 import type { MCPManager } from "@freeanima/host/capabilities/mcp-client";
-import type { AcpManagerPort } from "@freeanima/host/platform/ports/acp-manager";
 import type { PlatformAdapter } from "@freeanima/host/capabilities/connectors/gateway";
 
 import { closeDb } from "./persistence-phase.ts";
@@ -17,7 +16,6 @@ export type ShutdownParams = {
   runtime: AppRuntime;
   kernel: Kernel;
   mcp: MCPManager | null;
-  acp: AcpManagerPort;
   platforms: PlatformAdapter[];
   cronInitialized: boolean;
   http?: HttpHooks;
@@ -26,7 +24,7 @@ export type ShutdownParams = {
 };
 
 export async function gracefulShutdown(params: ShutdownParams): Promise<void> {
-  const { signal, runtime, mcp, acp, platforms, cronInitialized, servers } = params;
+  const { signal, runtime, mcp, platforms, cronInitialized, servers } = params;
   void params.kernel;
   const http = params.http;
   const t0 = Date.now();
@@ -78,12 +76,6 @@ export async function gracefulShutdown(params: ShutdownParams): Promise<void> {
     const s = Date.now();
     await mcp.closeAll();
     step("MCP closed", Date.now() - s);
-  }
-
-  {
-    const s = Date.now();
-    await acp.stopAll();
-    step("ACP stopped", Date.now() - s);
   }
 
   {

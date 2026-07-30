@@ -1,10 +1,6 @@
 import { bridgeSessionUpdates } from "@freeanima/host/capabilities/outpost/transport/stream-bridge";
 import { habitatCtx } from "./runtime.ts";
 
-export async function fetchConversationAcpDock(conversationId: string) {
-  return habitatCtx().getConversationAcpDock(conversationId);
-}
-
 export async function* iterateConversationEvents(
   conversationId: string,
   signal: AbortSignal,

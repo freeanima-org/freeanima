@@ -4,5 +4,7 @@ import { beforeLlmCall } from "@freeanima/host/core/hooks/loop";
 import { createPassiveMemoryRecallHandler } from "./passive-recall/handler.ts";
 
 export function registerMemoryPassiveRecallHook(opts: { kernel: Kernel }): void {
-  opts.kernel.hookRegistry.on(beforeLlmCall, createPassiveMemoryRecallHandler());
+  opts.kernel.hookRegistry.on(beforeLlmCall, createPassiveMemoryRecallHandler(), {
+    llm_kind: "conversation",
+  });
 }
