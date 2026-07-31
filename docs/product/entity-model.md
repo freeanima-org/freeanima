@@ -101,6 +101,7 @@ Legacy SQL bootstrap seeds (public world id=1, Inbox id=2) are removed by migrat
   | private | owner **or** any grant | owner **or** write grant |
 
 - Owner always has full access without a grant row. Cross-world tool calls must use grants — open-source builds must not special-case subject ids.
+- **LLM tools:** `subject_kind: user|agent` resolves to that subject's default private world and then goes through the **same** `assertSubjectCanAccessWorld` path as an explicit `world_id` (no bypass). Shell SAP/REST `subject_kind` remains UI scope selection (authenticated human switching user/agent worlds) and is not this LLM grant path.
 - Do not confuse with semantic memory **`type=world`** (fact classification in [`memory.md`](../cognition/memory.md)) — that becomes `body.memory_kind=world` after future migration.
 
 ## Content

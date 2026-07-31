@@ -37,7 +37,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
           },
           handler: async (args) => {
             const ctx = await storeContext(args);
-            if (typeof ctx === "string") return toolError(ctx);
+            if (typeof ctx === "string") return ctx;
             const config = await getPomodoroConfig(ctx);
             return toolResult({ ok: true, config });
           },
@@ -63,7 +63,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
           },
           handler: async (args) => {
             const ctx = await storeContext(args);
-            if (typeof ctx === "string") return toolError(ctx);
+            if (typeof ctx === "string") return ctx;
             const config = await updatePomodoroConfig(
               ctx,
               omitUndefined({
@@ -119,7 +119,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
           },
           handler: async (args) => {
             const ctx = await storeContext(args);
-            if (typeof ctx === "string") return toolError(ctx);
+            if (typeof ctx === "string") return ctx;
             const phase = String(args.phase ?? "").trim();
             if (phase !== "work" && phase !== "short_break" && phase !== "long_break") {
               return toolError("invalid phase");
@@ -168,7 +168,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
           },
           handler: async (args) => {
             const ctx = await storeContext(args);
-            if (typeof ctx === "string") return toolError(ctx);
+            if (typeof ctx === "string") return ctx;
             const limit = args.limit != null ? Number(args.limit) : 20;
             const { items } = await listPomodoroSessions(ctx, { limit });
             return toolResult({ ok: true, items });
@@ -188,7 +188,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
           },
           handler: async (args) => {
             const ctx = await storeContext(args);
-            if (typeof ctx === "string") return toolError(ctx);
+            if (typeof ctx === "string") return ctx;
             const period = String(args.period ?? "today");
             if (period !== "today" && period !== "week") return toolError("invalid period");
             const stats = await getPomodoroStats(ctx, period);

@@ -1,3 +1,5 @@
+import type { SubjectKind } from "@freeanima/host/core/config";
+import { resolveSubjectWorldId } from "@freeanima/host/core/config";
 import { subjectConfigBodySchema } from "@freeanima/host/core/db/schema";
 import { resolveToolCallerSubjectId } from "@freeanima/host/core/tool";
 
@@ -70,6 +72,8 @@ export type ResolveToolWorldOpts = {
   explicitWorldId?: number;
   entityId?: number;
   listId?: number;
+  /** Resolve user/agent private world then assert caller grants (same as explicitWorldId) */
+  subjectKind?: SubjectKind;
   /** 默认 read；创建/更新/删除工具应传 write */
   access?: "read" | "write";
 };
@@ -94,6 +98,12 @@ export async function resolveToolWorld(opts: ResolveToolWorldOpts): Promise<numb
   if (opts.explicitWorldId != null && opts.explicitWorldId > 0) {
     await assertSubjectCanAccessWorld(callerSubjectId, opts.explicitWorldId, { access });
     return opts.explicitWorldId;
+  }
+
+  if (opts.subjectKind != null) {
+    const worldId = resolveSubjectWorldId(opts.subjectKind);
+    await assertSubjectCanAccessWorld(callerSubjectId, worldId, { access });
+    return worldId;
   }
 
   // 调用方自己的 default private world：owner 满权限，无需再 assert

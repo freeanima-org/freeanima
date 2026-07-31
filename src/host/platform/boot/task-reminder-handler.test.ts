@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
 import { bindResolvedWorldContext } from "@freeanima/host/core/config/world-context";
 import * as entityMod from "@freeanima/host/core/db/pg/entity";
@@ -11,12 +11,18 @@ import {
   triggerMs,
 } from "./task-reminder-handler.ts";
 
-bindResolvedWorldContext({
-  user_world_id: 10,
-  agent_world_id: 20,
-  commons_world_id: 30,
-  user_subject_id: 1,
-  agent_subject_id: 2,
+function bindTestWorldContext(): void {
+  bindResolvedWorldContext({
+    user_world_id: 10,
+    agent_world_id: 20,
+    commons_world_id: 30,
+    user_subject_id: 1,
+    agent_subject_id: 2,
+  });
+}
+
+beforeEach(() => {
+  bindTestWorldContext();
 });
 
 afterEach(() => {
@@ -104,6 +110,7 @@ describe("runTaskReminderScan", () => {
       count: 0,
       results: [],
     });
+    searchSpy.mockClear();
     spyOn(notificationMod, "getNotificationPort").mockReturnValue({
       getUserRecipient: () => ({ kind: "user" as const, id: "1" }),
       getAgentRecipient: () => ({ kind: "agent" as const, id: "2" }),

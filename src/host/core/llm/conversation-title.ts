@@ -1,4 +1,5 @@
 import { omitUndefined } from "@freeanima/host/core/util";
+import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
 import { PROFILE_SUMMARY } from "@freeanima/host/core/provider";
 import type { ChatCompletion } from "@freeanima/host/core/provider";
 import { runAutoLlmChat } from "./auto-llm-chat.ts";
@@ -112,6 +113,7 @@ export async function generateConversationTitle(
           ? `conversation-title:${opts.parentConversationId}`
           : "conversation-title",
         runKind: AUTO_LLM_RUN_KIND_CONVERSATION_TITLE,
+        subjectId: getResolvedWorldContext().agent_subject_id,
         messages: chatMessages,
         profileId: PROFILE_SUMMARY,
         runtime: opts?.runtime,

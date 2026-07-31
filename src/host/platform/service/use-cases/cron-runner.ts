@@ -1,5 +1,6 @@
 import { prependSkillsToPrompt, skillPolicyFragments } from "@freeanima/host/core/skill";
 import { getProfileHopModel } from "@freeanima/host/platform/config";
+import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
 import { PROFILE_CHAT } from "@freeanima/host/core/provider";
 import { omitUndefined } from "@freeanima/host/core/util";
 import {
@@ -68,6 +69,7 @@ export async function runCronEngineTurn(
     omitUndefined({
       runName,
       runKind: "cron",
+      subjectId: getResolvedWorldContext().agent_subject_id,
       systemPrompt,
       userMessages: [fullPrompt],
       model,

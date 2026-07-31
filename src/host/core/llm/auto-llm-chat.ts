@@ -16,6 +16,8 @@ export type AutoLlmChatMessage = SimpleChatMessage;
 export type AutoLlmChatInput = {
   runName: string;
   runKind: string;
+  /** Acting subject for audit / multi-anima (required) */
+  subjectId: number;
   messages: AutoLlmChatMessage[];
   profileId?: string;
   model?: string;
@@ -84,6 +86,7 @@ async function persistChatRun(row: {
     id: row.id,
     run_name: row.input.runName,
     run_kind: row.input.runKind,
+    subject_id: row.input.subjectId,
     input_summary: row.inputSummary,
     output: row.output.slice(0, OUTPUT_MAX),
     status: row.status,

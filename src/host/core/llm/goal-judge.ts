@@ -1,4 +1,5 @@
 import { omitUndefined } from "@freeanima/host/core/util";
+import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
 import { PROFILE_GOAL_JUDGE } from "@freeanima/host/core/provider";
 import { runAutoLlmChat } from "./auto-llm-chat.ts";
 import type { LlmRuntime } from "./llm-stack.ts";
@@ -124,6 +125,7 @@ export async function judgeGoal(
           ? `goal-judge:${opts.parentConversationId}`
           : "goal-judge",
         runKind: AUTO_LLM_RUN_KIND_GOAL_JUDGE,
+        subjectId: getResolvedWorldContext().agent_subject_id,
         messages: chatMessages,
         profileId: PROFILE_GOAL_JUDGE,
         runtime: opts?.runtime,

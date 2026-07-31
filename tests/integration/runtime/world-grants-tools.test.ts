@@ -159,4 +159,39 @@ describePg("world grants tools", () => {
     expect(parsed.ok).toBe(true);
     expect(parsed.item.blocks.map((b) => b.content).join("\n")).toContain("agent via write grant");
   });
+
+  it("subject_kind=user denies agent without grant; allows with read grant", async () => {
+    const sid = "sess-grant-subject-kind";
+    await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
+      platform: TEST_SAP_CHAT_PLATFORM,
+    });
+    const { agent_subject_id } = getResolvedWorldContext();
+
+    await setUserWorldGrants([]);
+
+    let denied = "";
+    await runWithToolContext(
+      sid,
+      async () => {
+        const tool = toolSets.getTool("diary_get")!;
+        denied = await Promise.resolve(tool.handler({ subject_kind: "user", date: "2026-07-12" }));
+      },
+      { tools: toolSets, subjectId: agent_subject_id },
+    );
+    expect(denied).toContain("cannot access world");
+
+    await setUserWorldGrants([{ subject_id: agent_subject_id, permission: "read" }]);
+
+    let allowed = "";
+    await runWithToolContext(
+      sid,
+      async () => {
+        const tool = toolSets.getTool("diary_get")!;
+        allowed = await Promise.resolve(tool.handler({ subject_kind: "user", date: "2026-07-12" }));
+      },
+      { tools: toolSets, subjectId: agent_subject_id },
+    );
+    expect(allowed).not.toContain("cannot access world");
+    expect(allowed).not.toContain("cannot write world");
+  });
 });

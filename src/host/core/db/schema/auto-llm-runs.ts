@@ -8,6 +8,8 @@ export const autoLlmRuns = pgTable(
     id: text("id").primaryKey(),
     run_name: text("run_name").notNull(),
     run_kind: text("run_kind").notNull(),
+    /** Acting subject (agent / future anima); null for legacy rows */
+    subject_id: integer("subject_id"),
     input_summary: text("input_summary").notNull().default(""),
     output: text("output").notNull().default(""),
     status: text("status").notNull(),
@@ -20,5 +22,6 @@ export const autoLlmRuns = pgTable(
   (t) => [
     index("idx_auto_llm_runs_kind_finished").on(t.run_kind, t.finished_at),
     index("idx_auto_llm_runs_name_finished").on(t.run_name, t.finished_at),
+    index("idx_auto_llm_runs_subject_finished").on(t.subject_id, t.finished_at),
   ],
 );
