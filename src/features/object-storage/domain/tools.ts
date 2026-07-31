@@ -2,7 +2,6 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 
 import type { SubjectKind } from "@freeanima/host/core/config";
-import { resolveSubjectWorldId } from "@freeanima/host/core/config";
 import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/host/core/db/pg/entity";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/host/core/tool";
 import type { ToolSetRegistry } from "@freeanima/host/core/tool";
@@ -68,7 +67,7 @@ async function resolveWorld(opts: {
     if (subjectKind == null) {
       return toolError("subject_kind is required (user|agent) when world_id omitted");
     }
-    return resolveSubjectWorldId(subjectKind);
+    return await resolveToolWorld({ subjectKind, access });
   } catch (e) {
     const msg = e instanceof ToolWorldAccessError ? e.message : String(e);
     return toolError(msg);

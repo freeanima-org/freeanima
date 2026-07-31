@@ -4,6 +4,7 @@ export type AutoLlmRunRow = {
   id: string;
   run_name: string;
   run_kind: string;
+  subject_id: number | null;
   input_summary: string;
   output: string;
   status: string;
@@ -31,6 +32,7 @@ export type AutoLlmRunAppendInput = {
   id: string;
   run_name: string;
   run_kind: string;
+  subject_id?: number | null;
   input_summary: string;
   output: string;
   status: "ok" | "error";

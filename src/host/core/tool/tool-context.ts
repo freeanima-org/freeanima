@@ -13,6 +13,8 @@ type ToolContextStore = {
   tools: ToolSetRegistry;
   /** MCP / HTTP Service API Token caller; absent for conversation LLM / AutoLlmRun */
   callerAuth?: VerifiedServiceApiToken;
+  /** Acting subject for AutoLlmRun / conversation; ignored when callerAuth present */
+  subjectId?: number;
   /** Mutable execution allowlist; no loaded gate when unset */
   executableTools?: Set<string>;
 };
@@ -47,6 +49,8 @@ export type RunWithToolContextOpts = {
   contextKind?: ToolContextKind;
   parentConversationId?: string;
   callerAuth?: VerifiedServiceApiToken;
+  /** Acting subject (AutoLlmRun); ignored when callerAuth present */
+  subjectId?: number;
 };
 
 export function runWithToolContext<T>(
@@ -60,6 +64,7 @@ export function runWithToolContext<T>(
     parentConversationId: opts.parentConversationId,
     tools: opts.tools,
     callerAuth: opts.callerAuth,
+    subjectId: opts.subjectId,
     executableTools: opts.executableTools ? new Set(opts.executableTools) : undefined,
   });
   const result = storage.run(store, fn);
@@ -92,10 +97,17 @@ export function getToolCallerAuth(): VerifiedServiceApiToken | undefined {
   return storage.getStore()?.callerAuth;
 }
 
-/** MCP token subject, or agent_subject_id for conversation LLM / AutoLlmRun. */
+/**
+ * Caller subject for tool world grants:
+ * 1. MCP / Service API token subject
+ * 2. ALS subjectId (AutoLlmRun acting subject)
+ * 3. Fallback: Habitat agent_subject_id
+ */
 export function resolveToolCallerSubjectId(): number {
   const auth = getToolCallerAuth();
   if (auth) return auth.subject_id;
+  const subjectId = storage.getStore()?.subjectId;
+  if (subjectId != null && subjectId > 0) return subjectId;
   return getResolvedWorldContext().agent_subject_id;
 }
 

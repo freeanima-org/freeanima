@@ -8,6 +8,7 @@ import {
   getProfileHopModel,
   peekActiveRuntimeConfig,
 } from "@freeanima/host/core/config";
+import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
 import { PROFILE_CHAT } from "@freeanima/host/core/provider";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { getToolConversationId } from "@freeanima/host/core/tool";
@@ -220,6 +221,7 @@ async function runOneTask(
     omitUndefined({
       runName,
       runKind: "subagent",
+      subjectId: getResolvedWorldContext().agent_subject_id,
       systemPrompt,
       userMessages: [withSkills],
       model,

@@ -92,6 +92,7 @@ describe("runAutoLlm", () => {
     const result = await runAutoLlm(deps, {
       runName: "test-cron",
       runKind: "cron",
+      subjectId: 2,
       systemPrompt: "sys",
       userMessages: ["do task"],
       toolNames: [],
@@ -103,6 +104,7 @@ describe("runAutoLlm", () => {
     expect(appendMsg).not.toHaveBeenCalled();
     expect(appendCalls.length).toBe(1);
     expect(appendCalls[0]?.run_kind).toBe("cron");
+    expect(appendCalls[0]?.subject_id).toBe(2);
     expect(appendCalls[0]?.status).toBe("ok");
     expect(appendCalls[0]?.messages?.length).toBeGreaterThan(0);
     expect(appendCalls[0]?.messages?.some((m) => m.payload.role === "system")).toBe(true);

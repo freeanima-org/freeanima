@@ -13,6 +13,7 @@ import {
 } from "@freeanima/host/core/skill";
 import type { StoredMessage } from "@freeanima/host/core/db/domain";
 import { getProfileHopModel } from "@freeanima/host/core/config";
+import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { resolveInvisibleCapabilityPolicy } from "./capability-policy-bind.ts";
 import { toolNamesForInvisiblePolicy } from "./use-cases/cron-runner.ts";
@@ -100,6 +101,7 @@ export async function runSkillReview(
     omitUndefined({
       runName,
       runKind,
+      subjectId: getResolvedWorldContext().agent_subject_id,
       systemPrompt,
       userMessages: [userPrompt],
       model,

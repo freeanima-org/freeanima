@@ -1,5 +1,9 @@
-import { describe, it, expect, spyOn, afterEach } from "bun:test";
+import { describe, it, expect, spyOn, afterEach, beforeEach, mock } from "bun:test";
 import * as llm from "./llm.ts";
+import {
+  bindResolvedWorldContext,
+  resetResolvedWorldContextForTest,
+} from "@freeanima/host/core/config/world-context";
 import {
   fallbackConversationTitle,
   generateConversationTitle,
@@ -8,6 +12,19 @@ import {
   SESSION_TITLE_REQUEST_PARAMS,
 } from "./conversation-title.ts";
 import { PROFILE_SUMMARY } from "@freeanima/host/core/provider";
+
+mock.module("@freeanima/host/core/db/pg", () => ({
+  isPostgresPrimary: () => true,
+}));
+
+mock.module("@freeanima/host/core/db/pg/auto-llm-run", () => ({
+  appendAutoLlmRun: mock(async () => {}),
+  purgeStaleAutoLlmRuns: mock(async () => ({ deleted: 0 })),
+  listAutoLlmRuns: mock(async () => []),
+  countAutoLlmRuns: mock(async () => 0),
+  getAutoLlmRun: mock(async () => null),
+  listAutoLlmMessages: mock(async () => []),
+}));
 
 describe("sanitizeConversationTitle", () => {
   it("trims quotes and collapses whitespace", () => {
@@ -37,9 +54,20 @@ describe("fallbackConversationTitle", () => {
 describe("generateConversationTitle", () => {
   const restores: Array<{ mockRestore: () => void }> = [];
 
+  beforeEach(() => {
+    bindResolvedWorldContext({
+      user_subject_id: 1,
+      agent_subject_id: 2,
+      user_world_id: 10,
+      agent_world_id: 20,
+      commons_world_id: 30,
+    });
+  });
+
   afterEach(() => {
     for (const spy of restores) spy.mockRestore();
     restores.length = 0;
+    resetResolvedWorldContextForTest();
   });
 
   it("calls chat with summary profile and dedicated system prompt", async () => {

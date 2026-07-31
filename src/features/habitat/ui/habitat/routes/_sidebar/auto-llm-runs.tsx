@@ -50,6 +50,7 @@ type AutoLlmRunRow = {
   id: string;
   run_name: string;
   run_kind: string;
+  subject_id: number | null;
   input_summary: string;
   output: string;
   status: string;
@@ -282,6 +283,7 @@ function AutoLlmRunsPage() {
                       <TableCell colSpan={6} className="bg-muted">
                         <p className="text-xs font-mono text-muted-foreground mb-2 break-all">
                           {row.id}
+                          {row.subject_id != null ? ` · subject_id=${row.subject_id}` : ""}
                         </p>
                         {row.input_summary ? (
                           <div className="mb-2">

@@ -31,6 +31,8 @@ export type AutoLlmToolStep = {
 export type AutoLlmRunInput = {
   runName: string;
   runKind: string;
+  /** Acting subject for tool world grants (required; multi-anima ready) */
+  subjectId: number;
   systemPrompt: string;
   userMessages: string[];
   model?: string;
@@ -264,6 +266,7 @@ async function runEngineOnce(
       tools: deps.engine.catalog.toolSets,
       contextKind: "auto_llm",
       executableTools: input.toolNames,
+      subjectId: input.subjectId,
       ...omitUndefined({ parentConversationId: input.parentConversationId }),
     },
   );
@@ -345,6 +348,7 @@ async function persistAutoLlmRun(
     id: row.id,
     run_name: row.input.runName,
     run_kind: row.input.runKind,
+    subject_id: row.input.subjectId,
     input_summary: row.inputSummary,
     output: row.output.slice(0, OUTPUT_MAX),
     status: row.status,

@@ -217,6 +217,10 @@ describe("updateProject terminal release_tasks", () => {
         "P",
       ),
     );
+<<<<<<< HEAD
+=======
+    spyOn(entityMod, "listEntities").mockResolvedValue([]);
+>>>>>>> 62045503 (feat(autollm): 贯通 acting subjectId 并堵住 subject_kind 旁路)
     const searchSpy = spyOn(entityMod, "searchEntities").mockResolvedValue({
       query: null,
       limit: 500,
@@ -224,7 +228,11 @@ describe("updateProject terminal release_tasks", () => {
       count: 0,
       results: [],
     });
+<<<<<<< HEAD
     spyOn(entityMod, "listEntities").mockResolvedValue([]);
+=======
+    searchSpy.mockClear();
+>>>>>>> 62045503 (feat(autollm): 贯通 acting subjectId 并堵住 subject_kind 旁路)
 
     const { updateProject } = await import("@freeanima/features/project/domain/project-store.ts");
     await updateProject(1, { id: 10, status: "completed" });

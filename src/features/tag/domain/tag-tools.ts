@@ -1,5 +1,4 @@
 import type { SubjectKind } from "@freeanima/host/core/config";
-import { resolveSubjectWorldId } from "@freeanima/host/core/config";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/host/core/tool";
 import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/host/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/host/core/util";
@@ -56,7 +55,7 @@ async function resolveTagToolWorld(opts: {
     if (subjectKind == null) {
       return toolError("subject_kind is required (user|agent) when world_id omitted");
     }
-    return resolveSubjectWorldId(subjectKind);
+    return await resolveToolWorld({ subjectKind, access });
   } catch (e) {
     const msg = e instanceof ToolWorldAccessError ? e.message : String(e);
     return toolError(msg);

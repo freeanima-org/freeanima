@@ -1,6 +1,7 @@
 import { getCompressionConfig } from "./compression-config.ts";
 import { type CompressionState, formatMessagesForSummary, sliceForSummary } from "./compressor.ts";
 import { PROFILE_SUMMARY, runAutoLlmChat } from "@freeanima/host/core/llm";
+import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
 import { omitUndefined } from "@freeanima/host/core/util";
 import type { StoredMessage } from "@freeanima/host/core/db/domain";
 
@@ -83,6 +84,7 @@ export async function generateConversationSummary(
       omitUndefined({
         runName: opts?.parentConversationId ? `${runKind}:${opts.parentConversationId}` : runKind,
         runKind,
+        subjectId: getResolvedWorldContext().agent_subject_id,
         messages: chatMessages,
         model,
         profileId: PROFILE_SUMMARY,

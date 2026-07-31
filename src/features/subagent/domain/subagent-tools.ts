@@ -1,5 +1,4 @@
 import type { SubjectKind } from "@freeanima/host/core/config";
-import { resolveSubjectWorldId } from "@freeanima/host/core/config";
 import {
   attachToolReturns,
   getToolConversationId,
@@ -65,7 +64,7 @@ async function resolveWorld(opts: {
     if (subjectKind == null) {
       return toolError("subject_kind is required (user|agent) when world_id omitted");
     }
-    return resolveSubjectWorldId(subjectKind);
+    return await resolveToolWorld({ subjectKind, access });
   } catch (e) {
     const msg = e instanceof ToolWorldAccessError ? e.message : String(e);
     return toolError(msg);

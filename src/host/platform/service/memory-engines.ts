@@ -1,5 +1,6 @@
 import { PROFILE_REFLECT } from "@freeanima/host/core/provider";
 import { getProfileHopModel } from "@freeanima/host/core/config";
+import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
 import { applyDeepSleepToolResult } from "@freeanima/host/capabilities/memory";
 import {
   registerLightSleepEngine,
@@ -100,6 +101,7 @@ async function runSleepStream(
     omitUndefined({
       runName: opts.runName,
       runKind: opts.runKind,
+      subjectId: getResolvedWorldContext().agent_subject_id,
       systemPrompt: input.systemPrompt,
       userMessages: input.userMessages,
       model,
@@ -184,6 +186,7 @@ async function runDreamTurn(
   const result = await runAutoLlm(deps, {
     runName: "dream",
     runKind: "dream",
+    subjectId: getResolvedWorldContext().agent_subject_id,
     systemPrompt: input.systemPrompt,
     userMessages: [input.userMessage],
     model: getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT),
@@ -204,6 +207,7 @@ async function runTemporalSummaryTurn(
   const result = await runAutoLlm(deps, {
     runName: "temporal-summary",
     runKind: "temporal-summary",
+    subjectId: getResolvedWorldContext().agent_subject_id,
     systemPrompt: input.systemPrompt,
     userMessages: [input.userMessage],
     model: getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT),
@@ -224,6 +228,7 @@ async function runSelfLayerRefreshTurn(
   const result = await runAutoLlm(deps, {
     runName: "self-layer-refresh",
     runKind: "self-layer-refresh",
+    subjectId: getResolvedWorldContext().agent_subject_id,
     systemPrompt: input.systemPrompt,
     userMessages: [input.userMessage],
     model: getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT),
