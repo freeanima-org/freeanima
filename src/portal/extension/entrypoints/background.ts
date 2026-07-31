@@ -4,7 +4,18 @@ import {
   type VaultCustomField,
   type VaultSecretsPayload,
 } from "@freeanima/shared/vault-crypto";
+import type { VaultItemMetaRowPayload } from "@freeanima/shared/rpc-contract";
 import { matchVaultItemsForUrl } from "@freeanima/features/vault/domain/uri-match.ts";
+import {
+  clearLocalCacheMemory,
+  listMetaFromCache,
+  loadLocalCache,
+  removeLocalCacheItem,
+  saveLocalCache,
+  upsertLocalCacheItem,
+  type CachedVaultItem,
+} from "../features/vault/local-cache.ts";
+import { findExistingLogin } from "../features/vault/login-match.ts";
 import { generatePassword } from "../features/vault/password-gen.ts";
 import {
   EXT_SCOPE,
@@ -17,6 +28,55 @@ import {
 import { vaultCall } from "../runtime/habitat.ts";
 import { type ExtBgResponse, type ExtToBgMessage, type FillPayload } from "../runtime/messages.ts";
 import { loadSettings } from "../runtime/settings.ts";
+
+async function refreshLocalCacheFromHabitat(): Promise<CachedVaultItem[]> {
+  const listed = await vaultCall("vault.list", {
+    subject_kind: "user",
+    limit: 2000,
+  });
+  const prevSecrets = new Map<number, Pick<CachedVaultItem, "secrets_enc" | "dek_wrapped">>();
+  const prev = await loadLocalCache();
+  if (prev) {
+    for (const item of prev.items) {
+      if (item.secrets_enc && item.dek_wrapped) {
+        prevSecrets.set(item.id, {
+          secrets_enc: item.secrets_enc,
+          dek_wrapped: item.dek_wrapped,
+        });
+      }
+    }
+  }
+  const items: CachedVaultItem[] = listed.items.map((meta) => {
+    const sealed = prevSecrets.get(meta.id);
+    return sealed ? { ...meta, ...sealed } : { ...meta };
+  });
+  await saveLocalCache(items);
+  return items;
+}
+
+async function listItemsPreferCache(query: string): Promise<VaultItemMetaRowPayload[]> {
+  if (query.trim()) {
+    const searched = await vaultCall("vault.search", {
+      subject_kind: "user",
+      query: query.trim(),
+      limit: 200,
+    });
+    return searched.items;
+  }
+  const cached = await loadLocalCache();
+  if (cached) {
+    return listMetaFromCache(cached);
+  }
+  return listMetaFromCache({
+    version: 1,
+    updatedAtMs: Date.now(),
+    items: await refreshLocalCacheFromHabitat(),
+  });
+}
+
+function toCachedMeta(item: VaultItemMetaRowPayload): CachedVaultItem {
+  return { ...item };
+}
 
 export default defineBackground(() => {
   chrome.runtime.onInstalled.addListener(() => {
@@ -173,6 +233,11 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
           conversationId: EXT_SCOPE,
         });
         await persistExtVaultSession();
+        try {
+          await refreshLocalCacheFromHabitat();
+        } catch {
+          /* 缓存预热失败不阻断解锁 */
+        }
         return {
           ok: true,
           unlocked: true,
@@ -182,6 +247,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
       case "lock": {
         getExtVaultSession().lock();
         await clearPersistedExtVaultSession();
+        clearLocalCacheMemory();
         return {
           ok: true,
           unlocked: false,
@@ -192,17 +258,8 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
         getExtVaultSession().touchActivity();
         const query = message.query?.trim() ?? "";
-        const listed = query
-          ? await vaultCall("vault.search", {
-              subject_kind: "user",
-              query,
-              limit: 200,
-            })
-          : await vaultCall("vault.list", {
-              subject_kind: "user",
-              limit: 2000,
-            });
-        const matchable = listed.items.map((i) => ({
+        const items = await listItemsPreferCache(query);
+        const matchable = items.map((i) => ({
           id: i.id,
           ...(i.url !== undefined ? { url: i.url } : {}),
           ...(i.uris !== undefined ? { uris: i.uris } : {}),
@@ -210,10 +267,10 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         const ranked = matchVaultItemsForUrl(message.tab_url, matchable);
         const matchedIds = new Set(ranked.map((r) => r.id));
         const matched = ranked
-          .map((r) => listed.items.find((i) => i.id === r.id))
+          .map((r) => items.find((i) => i.id === r.id))
           .filter((i): i is NonNullable<typeof i> => i != null)
           .map((i) => ({ ...i, matched: true as const }));
-        const rest = listed.items
+        const rest = items
           .filter((i) => !matchedIds.has(i.id))
           .toSorted((a, b) => a.title.localeCompare(b.title) || a.id - b.id)
           .map((i) => ({ ...i, matched: false as const }));
@@ -221,11 +278,34 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
       }
       case "get_fill_payload": {
         if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
-        const { item } = await vaultCall("vault.get", {
-          subject_kind: "user",
-          id: message.item_id,
-          include_secrets: true,
-        });
+        getExtVaultSession().touchActivity();
+        const cached = await loadLocalCache();
+        const cachedItem = cached?.items.find((i) => i.id === message.item_id);
+        let item: {
+          id: number;
+          title: string;
+          item_type: string;
+          username?: string;
+          secrets_enc?: string;
+          dek_wrapped?: string;
+        };
+        if (cachedItem?.secrets_enc && cachedItem.dek_wrapped) {
+          item = cachedItem;
+        } else {
+          const got = await vaultCall("vault.get", {
+            subject_kind: "user",
+            id: message.item_id,
+            include_secrets: true,
+          });
+          item = got.item;
+          if (got.item.secrets_enc && got.item.dek_wrapped) {
+            await upsertLocalCacheItem({
+              ...toCachedMeta(got.item),
+              secrets_enc: got.item.secrets_enc,
+              dek_wrapped: got.item.dek_wrapped,
+            });
+          }
+        }
         if (!item.secrets_enc || !item.dek_wrapped) {
           return { ok: false, error: "缺少密文" };
         }
@@ -243,6 +323,13 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
           ...(secrets.identity ? { identity: secrets.identity } : {}),
         };
         return { ok: true, fill };
+      }
+      case "check_login": {
+        if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
+        getExtVaultSession().touchActivity();
+        const items = await listItemsPreferCache("");
+        const match = findExistingLogin(items, message.url, message.username);
+        return { ok: true, exists: Boolean(match) };
       }
       case "get_item": {
         if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
@@ -351,6 +438,11 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
             dek_wrapped: sealed.dek_wrapped,
             custom_field_names: extractCustomFieldNames(secrets),
           });
+          await upsertLocalCacheItem({
+            ...toCachedMeta(patched.item),
+            secrets_enc: sealed.secrets_enc,
+            dek_wrapped: sealed.dek_wrapped,
+          });
           return { ok: true, item: patched.item };
         }
 
@@ -373,6 +465,11 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
           dek_wrapped: sealed.dek_wrapped,
           custom_field_names: extractCustomFieldNames(secrets),
         });
+        await upsertLocalCacheItem({
+          ...toCachedMeta(created.item),
+          secrets_enc: sealed.secrets_enc,
+          dek_wrapped: sealed.dek_wrapped,
+        });
         return { ok: true, item: created.item };
       }
       case "delete_item": {
@@ -381,20 +478,13 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
           subject_kind: "user",
           id: message.item_id,
         });
+        await removeLocalCacheItem(message.item_id);
         return { ok: true, deleted: true };
       }
       case "save_login": {
         if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
-        const listed = await vaultCall("vault.list", {
-          subject_kind: "user",
-          limit: 2000,
-        });
-        const match = listed.items.find(
-          (i) =>
-            i.item_type === "login" &&
-            (i.url === message.url || i.uris?.some((u) => u.uri === message.url)) &&
-            (i.username ?? "") === message.username,
-        );
+        const items = await listItemsPreferCache("");
+        const match = findExistingLogin(items, message.url, message.username);
         if (match) {
           const { item } = await vaultCall("vault.get", {
             subject_kind: "user",
@@ -429,6 +519,11 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
             dek_wrapped: sealed.dek_wrapped,
             custom_field_names: extractCustomFieldNames(secrets),
           });
+          await upsertLocalCacheItem({
+            ...toCachedMeta(patched.item),
+            secrets_enc: sealed.secrets_enc,
+            dek_wrapped: sealed.dek_wrapped,
+          });
           return { ok: true, item: patched.item };
         }
         const secrets = { password: message.password };
@@ -444,6 +539,11 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
           secrets_enc: sealed.secrets_enc,
           dek_wrapped: sealed.dek_wrapped,
           custom_field_names: extractCustomFieldNames(secrets),
+        });
+        await upsertLocalCacheItem({
+          ...toCachedMeta(created.item),
+          secrets_enc: sealed.secrets_enc,
+          dek_wrapped: sealed.dek_wrapped,
         });
         return { ok: true, item: created.item };
       }

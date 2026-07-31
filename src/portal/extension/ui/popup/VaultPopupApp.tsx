@@ -378,6 +378,15 @@ export function VaultPopupApp() {
           type="button"
           variant="ghost"
           size="icon-xs"
+          title="自动填充"
+          onClick={() => void fillItem(item.id)}
+        >
+          ↓
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-xs"
           title="复制密码"
           onClick={() => void copyField(item.id, "password")}
         >

@@ -49,6 +49,14 @@ function scoreOtp(el: HTMLInputElement): number {
   return 0;
 }
 
+/** 用户名或密码输入框（用于页内自动填充浮层） */
+export function isLoginCredentialField(el: HTMLInputElement): boolean {
+  if (el.type === "hidden" || el.disabled || el.readOnly) return false;
+  if (scorePassword(el) > 0) return true;
+  if (scoreOtp(el) > 0) return false;
+  return scoreUsername(el) > 0;
+}
+
 export function fillLogin(fill: FillPayload): void {
   const inputs = visibleInputs();
   const userEl = inputs.toSorted((a, b) => scoreUsername(b) - scoreUsername(a))[0];
