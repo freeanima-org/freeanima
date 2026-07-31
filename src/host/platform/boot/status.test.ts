@@ -23,7 +23,9 @@ describe("status pid ownership", () => {
     const { PATHS } = await import("@freeanima/host/platform/config");
     const { claimPidFileIfUnowned, cleanStatusFile, writeStatusFile } = await import("./status.ts");
 
-    const holder = spawn("sleep", ["30"], { stdio: "ignore" });
+    const holder = spawn(process.execPath, ["-e", "setTimeout(() => {}, 30000)"], {
+      stdio: "ignore",
+    });
     const foreignPid = holder.pid;
     if (foreignPid == null) throw new Error("failed to spawn holder");
 

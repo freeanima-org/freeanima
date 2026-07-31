@@ -45,8 +45,10 @@ async function buildTestTarball(workDir: string): Promise<Buffer> {
   const animaPath = join(pkg, "anima");
   writeFileSync(animaPath, "#!/bin/sh\necho test\n");
   chmodSync(animaPath, 0o755);
-  const tarball = join(workDir, "anima-linux-x64.tar.gz");
-  const proc = Bun.spawn(["tar", "-czf", tarball, "-C", pkg, "anima"], {
+  // Relative paths: GNU tar treats `C:` in absolute Windows paths as a remote host.
+  const tarballName = "anima-linux-x64.tar.gz";
+  const proc = Bun.spawn(["tar", "-czf", tarballName, "-C", "pkg", "anima"], {
+    cwd: workDir,
     stdout: "ignore",
     stderr: "pipe",
   });
@@ -55,7 +57,7 @@ async function buildTestTarball(workDir: string): Promise<Buffer> {
     const err = await new Response(proc.stderr).text();
     throw new Error(`tar create failed: ${err || code}`);
   }
-  return readFileSync(tarball);
+  return readFileSync(join(workDir, tarballName));
 }
 
 function releaseJson(tarUrl: string, size?: number) {

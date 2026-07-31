@@ -12,6 +12,7 @@ describe("mkcert-root-ca", () => {
   });
 
   test("detectHabitatTlsIssuerKind returns letsencrypt for LE-like issuer", () => {
+    if (!Bun.which("openssl")) return;
     const dir = mkdtempSync(join(tmpdir(), "anima-le-issuer-"));
     try {
       const certPath = join(dir, "cert.pem");

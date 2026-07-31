@@ -1,6 +1,6 @@
-import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 import {
   createCliDownloadProgressSink,
@@ -63,7 +63,11 @@ function findAnimaInExtract(extractDir: string): string {
 /** 解压 tarball 到 staging 并校验 anima 可执行文件存在 */
 async function stageStandaloneTarball(tarballPath: string): Promise<StagedTarball> {
   const extractDir = mkdtempSync(join(tmpdir(), "anima-upgrade-"));
-  const proc = Bun.spawn(["tar", "-xzf", tarballPath, "-C", extractDir], {
+  // Prefer relative argv under extractDir so GNU tar on Windows does not treat `C:` as a host.
+  const archiveName = "download.tar.gz";
+  copyFileSync(resolve(tarballPath), join(extractDir, archiveName));
+  const proc = Bun.spawn(["tar", "-xzf", archiveName], {
+    cwd: extractDir,
     stdout: "ignore",
     stderr: "pipe",
   });
@@ -73,6 +77,7 @@ async function stageStandaloneTarball(tarballPath: string): Promise<StagedTarbal
     rmSync(extractDir, { recursive: true, force: true });
     throw new Error(`tar 解压失败: ${err || code}`);
   }
+  rmSync(join(extractDir, archiveName), { force: true });
 
   const stagedAnimaPath = findAnimaInExtract(extractDir);
   return {

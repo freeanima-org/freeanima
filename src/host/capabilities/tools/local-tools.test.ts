@@ -158,6 +158,7 @@ describe("local tools", () => {
   it("terminal runs echo", async () => {
     const out = await tools.getTool("terminal_run")!.handler({
       command: "echo hello-anima",
+      shell: true,
       workdir: cwd,
     });
     expect(out).toContain("hello-anima");
@@ -167,8 +168,12 @@ describe("local tools", () => {
     const { TOOL_OUTPUT_PREVIEW_MAX } = await import("@freeanima/host/core/tool");
     const bigPath = join(cwd, "big-out.txt");
     writeFileSync(bigPath, "y".repeat(TOOL_OUTPUT_PREVIEW_MAX + 80), "utf-8");
+    writeFileSync(
+      join(cwd, "print-big.mjs"),
+      `import { readFileSync } from "node:fs";\nprocess.stdout.write(readFileSync(${JSON.stringify(bigPath)}, "utf8"));\n`,
+    );
     const out = await tools.getTool("terminal_run")!.handler({
-      command: `cat ${bigPath}`,
+      command: "bun print-big.mjs",
       workdir: cwd,
     });
     expect(out).toContain("artifact_path:");

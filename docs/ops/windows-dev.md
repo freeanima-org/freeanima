@@ -48,6 +48,8 @@ scoop install bun just git
 # Docker Desktop: install separately from docker.com if not using scoop
 ```
 
+确认 `bun --version` ≥ **1.3.14**（与根 `package.json` 的 `packageManager` 一致）。旧 scoop bun 会导致 `Bun.YAML` / `vi.useFakeTimers` 缺失、单测大面积失败；过旧时执行 `scoop update bun`。
+
 ### Optional (Portal desktop shell only)
 
 - [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) (often already present on Windows 10/11)

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { createTempDir, removeTempDir } from "@freeanima/host/core/util/temp-dir";
 import {
   assertPathAllowed,
@@ -38,7 +38,7 @@ describe("path-policy", () => {
   it("resolveToolPath expands ~ and relative paths", () => {
     expect(resolveToolPath("~/x", cwd)).toBe(join(home, "x"));
     expect(resolveToolPath("rel.txt", cwd)).toBe(join(cwd, "rel.txt"));
-    expect(resolveToolPath("/tmp/a", cwd)).toBe("/tmp/a");
+    expect(resolveToolPath("/tmp/a", cwd)).toBe(resolve("/tmp/a"));
   });
 
   it("normalizeLexicalPath collapses parent segments", () => {

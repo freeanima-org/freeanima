@@ -49,8 +49,7 @@ describe("execute_code runtimes", () => {
   });
 
   it("runs nodejs code when node is available", async () => {
-    const which = Bun.spawnSync(["which", "node"]);
-    if (which.exitCode !== 0) return;
+    if (!Bun.which("node")) return;
     const out = await runExecuteCode('console.log("anima-node-ok");', "nodejs", 30);
     expect(out.trim()).toBe("anima-node-ok");
   });

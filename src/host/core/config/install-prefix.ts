@@ -1,4 +1,4 @@
-import { dirname, join, normalize, resolve } from "node:path";
+import { dirname, isAbsolute, join, normalize, relative, resolve } from "node:path";
 
 import { isStandaloneExecutable } from "./cli-install.ts";
 import { PATHS } from "./paths.ts";
@@ -48,7 +48,9 @@ export function isPathInsideMonorepo(
   if (!monorepoRoot) return false;
   const root = normalize(resolve(monorepoRoot));
   const target = normalize(resolve(targetPath));
-  return target === root || target.startsWith(`${root}/`);
+  if (target === root) return true;
+  const rel = relative(root, target);
+  return rel !== "" && !rel.startsWith("..") && !isAbsolute(rel);
 }
 
 /**
