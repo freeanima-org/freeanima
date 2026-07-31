@@ -43,7 +43,6 @@ export function buildMessagesDisplay(all: StoredMessage[]): DisplayItem[] {
     }
 
     if (role === "assistant" && Array.isArray(msg.tool_calls) && msg.tool_calls.length > 0) {
-      flushPendingBlock();
       const calls = msg.tool_calls.map((tc) => {
         const fn = tc.function;
         const argsRaw = fn?.arguments ?? "{}";
@@ -56,9 +55,15 @@ export function buildMessagesDisplay(all: StoredMessage[]): DisplayItem[] {
           args: argsObj,
         };
       });
-      pendingBlock = { type: "tool_block", calls };
+      // 有可见 assistant 文本时先收口上一块再分段；无文本的连续 tool 轮次合并进同一 tool_block
       if (msg.content) {
+        flushPendingBlock();
         display.push({ type: "message", role: "assistant", content: msg.content });
+        pendingBlock = { type: "tool_block", calls };
+      } else if (pendingBlock) {
+        pendingBlock.calls.push(...calls);
+      } else {
+        pendingBlock = { type: "tool_block", calls };
       }
       continue;
     }

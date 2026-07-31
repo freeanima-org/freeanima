@@ -67,3 +67,12 @@ Outbox 布局与 [`portal-sdk/offline-outbox`](../../src/client/portal-sdk/offli
 - 用户手势链内 `primeMpegSpeechOutput` 解锁 HTMLAudio；移动 WebView 禁用 MSE 播 MP3，改为缓冲后播放。
 - `navigator.mediaSession` 提供系统媒体控件（play/pause/stop）；回前台时若仍在朗读且音频被系统暂停，尝试 `play()` 恢复。
 - **Web Speech** 后台行为依赖浏览器/WebView，不保证切应用后继续；切模块仍不会主动 `cancel`。
+
+## Tool activity strip
+
+Consecutive tool calls (same round, and multi-round without intervening assistant text) project to a single `tool_block`, rendered by `ToolBlockBubble`:
+
+- **Collapsed (default):** one-line activity strip; prefer scrolling the active `running`/`pending` call's `args._title` (fallback: tool name)
+- **Level 1 expand:** call list (status + `_title` + name)
+- **Level 2 expand:** per-call args / result; `subagent_run` also shows child `steps` summaries (child turns still are not written to parent `messages`)
+- During streaming, `tool_round_live` snapshots upsert the trailing `tool_block` so the strip updates while tools run

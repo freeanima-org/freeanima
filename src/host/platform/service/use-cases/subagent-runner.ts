@@ -49,6 +49,7 @@ export type SubagentRunTaskResult = {
   status: "ok" | "error";
   output: string;
   tool_calls: number;
+  steps?: Array<{ name: string; title?: string; status: string }>;
   error?: string;
   duration_ms: number;
 };
@@ -242,6 +243,7 @@ async function runOneTask(
     status: result.status,
     output: result.output,
     tool_calls: result.toolCalls,
+    steps: result.steps,
     error: result.error,
     duration_ms: result.durationMs,
   });

@@ -36,6 +36,7 @@ function* mapReplyEffectsToSap(
   for (const effect of effects) {
     switch (effect.kind) {
       case "tool_round":
+      case "tool_round_live":
         if (effect.calls.length > 0) {
           yield {
             method: "stream.display_append",

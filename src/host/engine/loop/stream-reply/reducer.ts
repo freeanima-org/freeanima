@@ -141,13 +141,16 @@ export function applyStreamReplyEvent(
       next = commitCurrentAnswer(next, effects);
       buffer.addBegin(event.data.name, event.data.args);
       next = { ...next, phase: "tool_collecting" };
+      effects.push({ kind: "tool_round_live", calls: buffer.snapshot() });
       break;
     }
     case "tool_result":
       buffer.addResult(event.data.name, event.data.content);
+      effects.push({ kind: "tool_round_live", calls: buffer.snapshot() });
       break;
     case "tool_error":
       buffer.addError(event.data.content);
+      effects.push({ kind: "tool_round_live", calls: buffer.snapshot() });
       break;
     case "tool_round_end": {
       next = flushToolRound(next, buffer, effects);

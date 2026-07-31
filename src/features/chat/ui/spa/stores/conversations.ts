@@ -3,6 +3,7 @@ import type {
   ConversationListItem,
 } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 import { hasNewAssistantReply } from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
+import { upsertDisplayItem } from "@freeanima/features/chat/ui/spa/lib/upsert-tool-block.ts";
 import { create } from "zustand";
 import {
   archiveConversation as archiveConversationApi,
@@ -246,12 +247,12 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
   },
 
   appendItem(item) {
-    set({ display: [...get().display, item] });
+    set({ display: upsertDisplayItem(get().display, item) });
   },
 
   appendItemForConversation(conversationId, item) {
     if (get().currentId !== conversationId) return;
-    set({ display: [...get().display, item] });
+    set({ display: upsertDisplayItem(get().display, item) });
   },
 
   patchDisplayByClientOpId(clientOpId, patch) {

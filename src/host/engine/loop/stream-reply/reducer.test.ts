@@ -26,6 +26,8 @@ describe("applyStreamReplyEvent / reduceStreamReplyEvents", () => {
       expect(toolRound.calls[0]?.name).toBe("demo_tool");
       expect(toolRound.calls[0]?.result).toBe("ok");
     }
+    const liveRounds = effects.filter((e) => e.kind === "tool_round_live");
+    expect(liveRounds.length).toBeGreaterThanOrEqual(2);
     expect(effects.some((e) => e.kind === "answer_finalize" && e.content === "final z")).toBe(true);
   });
 

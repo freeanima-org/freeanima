@@ -61,7 +61,7 @@ describe("buildMessagesDisplay", () => {
     expect(all.display).toHaveLength(1);
   });
 
-  it("emits separate tool_blocks for multi-round tool calls", () => {
+  it("emits separate tool_blocks when assistant text separates rounds", () => {
     const msgs: StoredMessage[] = [
       { role: "user", content: "go" },
       {
@@ -105,5 +105,44 @@ describe("buildMessagesDisplay", () => {
       expect(toolBlocks[1].calls[0]?.name).toBe("grep");
     }
     expect(display.some((d) => d.type === "message" && d.content === "mid")).toBe(true);
+  });
+
+  it("merges consecutive tool rounds without intervening assistant text", () => {
+    const msgs: StoredMessage[] = [
+      { role: "user", content: "go" },
+      {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          {
+            id: "call_1",
+            type: "function",
+            function: { name: "read", arguments: "{}" },
+          },
+        ],
+      },
+      { role: "tool", tool_call_id: "call_1", content: "ok" },
+      {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          {
+            id: "call_2",
+            type: "function",
+            function: { name: "grep", arguments: '{"p":"a"}' },
+          },
+        ],
+      },
+      { role: "tool", tool_call_id: "call_2", content: "hit" },
+      { role: "assistant", content: "done" },
+    ];
+
+    const display = buildMessagesDisplay(msgs);
+    const toolBlocks = display.filter((d) => d.type === "tool_block");
+    expect(toolBlocks).toHaveLength(1);
+    if (toolBlocks[0]?.type === "tool_block") {
+      expect(toolBlocks[0].calls.map((c) => c.name)).toEqual(["read", "grep"]);
+      expect(toolBlocks[0].calls.every((c) => c.status === "done")).toBe(true);
+    }
   });
 });
