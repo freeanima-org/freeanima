@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { entities, entityTypeSchema, type EntitySelect } from "./entity.ts";
 import {
+  CALENDAR_EVENT_COMPONENT,
   CONTENT_BLOCK_COMPONENT,
   DIARY_BLOCK_TEMPLATE_COMPONENT,
   DIARY_ENTRY_COMPONENT,
@@ -25,6 +26,7 @@ import {
   OBJECT_FILE_COMPONENT,
   OBJECT_FOLDER_COMPONENT,
   SUBAGENT_COMPONENT,
+  calendarEventBodySchema,
   contentBlockBodySchema,
   diaryBlockTemplateBodySchema,
   diaryEntryBodySchema,
@@ -48,6 +50,7 @@ import {
   objectFileBodySchema,
   objectFolderBodySchema,
   subagentBodySchema,
+  type CalendarEventBody,
   type ContentBlockBody,
   type DiaryBlockTemplateBody,
   type DiaryEntryBody,
@@ -203,6 +206,16 @@ export function asDiaryEntry(
 ): (DiaryEntryBody & { id: number; title: string; content: string; summary: string }) | null {
   if (row.primary_component !== DIARY_ENTRY_COMPONENT) return null;
   const parsed = diaryEntryBodySchema.safeParse(row.body);
+  return parsed.success
+    ? { id: row.id, title: row.title, content: row.content, summary: row.summary, ...parsed.data }
+    : null;
+}
+
+export function asCalendarEvent(
+  row: EntityRow,
+): (CalendarEventBody & { id: number; title: string; content: string; summary: string }) | null {
+  if (row.primary_component !== CALENDAR_EVENT_COMPONENT) return null;
+  const parsed = calendarEventBodySchema.safeParse(row.body);
   return parsed.success
     ? { id: row.id, title: row.title, content: row.content, summary: row.summary, ...parsed.data }
     : null;

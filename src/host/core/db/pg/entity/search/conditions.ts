@@ -1,5 +1,6 @@
 import { and, eq, gte, inArray, isNotNull, isNull, lte, sql, type SQL } from "drizzle-orm";
 import {
+  CALENDAR_EVENT_COMPONENT,
   CONTENT_BLOCK_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,
@@ -8,6 +9,7 @@ import {
   DIARY_ENTRY_COMPONENT,
   PROJECT_COMPONENT,
   PROJECT_FOLDER_COMPONENT,
+  parseCalendarEventSearchFilters,
   parseContentBlockSearchFilters,
   parseDiaryEntrySearchFilters,
   parseEmailAccountSearchFilters,
@@ -252,6 +254,24 @@ function buildProjectBodyConditions(filters: ReturnType<typeof parseProjectSearc
   if (filters.client_op_id) {
     conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
   }
+  // 有 start_at，且与 [range_start, range_end] 相交：
+  // start_at <= range_end AND COALESCE(end_at, start_at) >= range_start
+  if (filters.range_start || filters.range_end) {
+    conditions.push(sql`NULLIF(${entities.body}->>'start_at', '') IS NOT NULL`);
+    if (filters.range_end) {
+      conditions.push(
+        sql`(${entities.body}->>'start_at')::timestamptz <= ${filters.range_end}::timestamptz`,
+      );
+    }
+    if (filters.range_start) {
+      conditions.push(
+        sql`COALESCE(
+          NULLIF(${entities.body}->>'end_at', ''),
+          ${entities.body}->>'start_at'
+        )::timestamptz >= ${filters.range_start}::timestamptz`,
+      );
+    }
+  }
   return conditions;
 }
 
@@ -277,6 +297,31 @@ function buildDiaryEntryBodyConditions(
     conditions.push(
       sql`(${entities.body}->>'entry_at')::timestamptz <= ${filters.entry_before}::timestamptz`,
     );
+  }
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
+  return conditions;
+}
+
+function buildCalendarEventBodyConditions(
+  filters: ReturnType<typeof parseCalendarEventSearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.range_start || filters.range_end) {
+    if (filters.range_end) {
+      conditions.push(
+        sql`(${entities.body}->>'start_at')::timestamptz <= ${filters.range_end}::timestamptz`,
+      );
+    }
+    if (filters.range_start) {
+      conditions.push(
+        sql`COALESCE(
+          NULLIF(${entities.body}->>'end_at', ''),
+          ${entities.body}->>'start_at'
+        )::timestamptz >= ${filters.range_start}::timestamptz`,
+      );
+    }
   }
   if (filters.client_op_id) {
     conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
@@ -425,6 +470,9 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   }
   if (component === DIARY_ENTRY_COMPONENT) {
     return buildDiaryEntryBodyConditions(parseDiaryEntrySearchFilters(filters));
+  }
+  if (component === CALENDAR_EVENT_COMPONENT) {
+    return buildCalendarEventBodyConditions(parseCalendarEventSearchFilters(filters));
   }
   if (component === EMAIL_ACCOUNT_COMPONENT) {
     return buildEmailAccountBodyConditions(parseEmailAccountSearchFilters(filters));

@@ -60,6 +60,8 @@ function moduleLabel(moduleId: OfflineModuleId): string {
       return m.ui_offline_sync_module_chat();
     case "diary":
       return m.ui_offline_sync_module_diary();
+    case "calendar":
+      return m.ui_offline_sync_module_calendar();
     case "task":
       return m.ui_offline_sync_module_task();
     case "project":

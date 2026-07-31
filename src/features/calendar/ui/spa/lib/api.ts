@@ -1,0 +1,94 @@
+import type { NotificationRecipientKind } from "@freeanima/shared/rpc-contract/frames/notification";
+import type {
+  CalendarEventRowPayload,
+  CalendarRangeItemPayload,
+  CalendarRangeKind,
+} from "@freeanima/shared/rpc-contract/frames/calendar";
+
+import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
+import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
+import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
+
+import {
+  offlineCreateCalendarEvent,
+  offlineDeleteCalendarEvent,
+  offlineUpdateCalendarEvent,
+  registerCalendarOfflineModule,
+} from "./offline-store.ts";
+
+export type SubjectKind = NotificationRecipientKind;
+export type CalendarEventRow = CalendarEventRowPayload;
+export type CalendarRangeItem = CalendarRangeItemPayload;
+export type { CalendarRangeKind };
+
+let calendarModuleRegistered = false;
+
+function ensureCalendarOfflineModule(): void {
+  if (calendarModuleRegistered) return;
+  registerCalendarOfflineModule();
+  calendarModuleRegistered = true;
+}
+
+function habitat() {
+  return getTypedHabitatClient();
+}
+
+export async function fetchCalendarRange(
+  subjectKind: SubjectKind,
+  opts: { from: string; to: string; kinds?: CalendarRangeKind[] },
+): Promise<CalendarRangeItem[]> {
+  const scope = resolveHabitatCacheScope();
+  const kindsKey = (opts.kinds ?? []).join(",");
+  return withOfflineCache({
+    scope,
+    namespace: "calendar",
+    id: `range:${opts.from}:${opts.to}:${kindsKey}`,
+    fetch: async () => {
+      const data = await habitat().call("calendar.range", {
+        subject_kind: subjectKind,
+        from: opts.from,
+        to: opts.to,
+        ...(opts.kinds?.length ? { kinds: opts.kinds } : {}),
+      });
+      return data.items;
+    },
+    offlineError: "calendar.range unavailable offline",
+  });
+}
+
+export async function createCalendarEvent(
+  subjectKind: SubjectKind,
+  input: {
+    title: string;
+    content?: string;
+    start_at: string;
+    end_at?: string | null;
+    all_day?: boolean;
+    remind_at?: string | null;
+    client_op_id?: string;
+  },
+): Promise<CalendarEventRow> {
+  ensureCalendarOfflineModule();
+  return offlineCreateCalendarEvent(subjectKind, input);
+}
+
+export async function updateCalendarEvent(
+  subjectKind: SubjectKind,
+  input: {
+    id: number;
+    title?: string;
+    content?: string;
+    start_at?: string;
+    end_at?: string | null;
+    all_day?: boolean;
+    remind_at?: string | null;
+  },
+): Promise<CalendarEventRow> {
+  ensureCalendarOfflineModule();
+  return offlineUpdateCalendarEvent(subjectKind, input);
+}
+
+export async function deleteCalendarEvent(subjectKind: SubjectKind, id: number): Promise<void> {
+  ensureCalendarOfflineModule();
+  await offlineDeleteCalendarEvent(subjectKind, id);
+}

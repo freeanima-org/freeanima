@@ -4,8 +4,10 @@ import { bindResolvedWorldContext } from "@freeanima/host/core/config/world-cont
 import * as entityMod from "@freeanima/host/core/db/pg/entity";
 import * as notificationMod from "@freeanima/host/capabilities/tools/notification";
 import {
+  calendarEventReminderSourceRef,
   recipientForTaskWorld,
   runTaskReminderScan,
+  shouldSendCalendarEventReminder,
   shouldSendTaskReminder,
   taskReminderSourceRef,
   triggerMs,
@@ -85,6 +87,18 @@ describe("taskReminderSourceRef", () => {
   });
 });
 
+describe("calendarEventReminderSourceRef", () => {
+  it("includes calendar_event prefix and sends on start_at", () => {
+    const ms = Date.parse("2026-07-31T10:00:00.000Z");
+    expect(calendarEventReminderSourceRef(9, ms)).toBe(
+      "calendar_event:9:trigger:2026-07-31T10:00:00.000Z",
+    );
+    expect(shouldSendCalendarEventReminder({ start_at: "2026-07-31T10:00:00.000Z" }, ms + 1)).toBe(
+      true,
+    );
+  });
+});
+
 describe("recipientForTaskWorld", () => {
   const port = {
     getUserRecipient: () => ({ kind: "user" as const, id: "1" }),
@@ -117,15 +131,28 @@ describe("runTaskReminderScan", () => {
       create: async () => ({ id: "n1" }),
     } as never);
 
+    searchSpy.mockClear();
     const out = JSON.parse(await runTaskReminderScan()) as { ok: boolean; sent: number };
     expect(out.ok).toBe(true);
     expect(out.sent).toBe(0);
-    expect(searchSpy).toHaveBeenCalledTimes(1);
-    const arg = searchSpy.mock.calls[0]?.[0] as {
-      global?: boolean;
-      accessible_world_ids?: number[];
-    };
-    expect(arg.global).toBe(true);
-    expect(arg.accessible_world_ids).toEqual([10, 20]);
+
+    const scoped = searchSpy.mock.calls
+      .map(
+        (call) =>
+          call[0] as {
+            primary_component?: string;
+            global?: boolean;
+            accessible_world_ids?: number[];
+          },
+      )
+      .filter(
+        (arg) =>
+          arg.primary_component === "task_item" || arg.primary_component === "calendar_event",
+      );
+    expect(scoped.length).toBeGreaterThanOrEqual(2);
+    for (const arg of scoped) {
+      expect(arg.global).toBe(true);
+      expect(arg.accessible_world_ids).toEqual([10, 20]);
+    }
   });
 });

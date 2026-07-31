@@ -60,6 +60,7 @@ Agent hard bans / API quick reference → [`.agent/rules/frontend-ui.md`](../.ag
 | Chat              | [modules/chat.md](modules/chat.md)             |
 | Desktop companion | [modules/companion.md](modules/companion.md)   |
 | Diary             | [modules/diary.md](modules/diary.md)           |
+| Calendar          | [modules/calendar.md](modules/calendar.md)     |
 | Session goal      | [modules/goal.md](modules/goal.md)             |
 | Project           | [modules/project.md](modules/project.md)       |
 | Mobile app        | [modules/mobile-app.md](modules/mobile-app.md) |

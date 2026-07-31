@@ -1,0 +1,286 @@
+import { useCallback, useMemo, useState } from "react";
+import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
+import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
+import { navigateAppModulePath } from "@freeanima/client/portal-sdk/pomodoro-launch.ts";
+import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
+import { Button, Spinner, cn } from "@freeanima/ui-kit";
+import { useCompactLayout } from "@freeanima/ui-kit/layout";
+import { ChevronLeft, ChevronRight, PlusIcon } from "lucide-react";
+import { m } from "@paraglide/messages";
+
+import { AgendaList } from "./components/AgendaList.tsx";
+import { EventEditorDialog, type EventEditorTarget } from "./components/EventEditorDialog.tsx";
+import { MonthGrid } from "./components/MonthGrid.tsx";
+import {
+  createCalendarEvent,
+  deleteCalendarEvent,
+  fetchCalendarRange,
+  updateCalendarEvent,
+  type CalendarEventRow,
+  type CalendarRangeItem,
+  type CalendarRangeKind,
+} from "./lib/api.ts";
+import {
+  cstDayKey,
+  dayKeyFromIso,
+  monthLabel,
+  monthRangeIso,
+  shiftMonth,
+} from "./lib/format-calendar.ts";
+import { registerCalendarOfflineModule } from "./lib/offline-store.ts";
+
+registerCalendarOfflineModule();
+
+const KIND_OPTIONS: CalendarRangeKind[] = ["event", "task", "project"];
+
+function nextDayKey(day: string): string | null {
+  const parts = day.split("-").map(Number);
+  const y = parts[0];
+  const mo = parts[1];
+  const d = parts[2];
+  if (y == null || mo == null || d == null) return null;
+  if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(d)) return null;
+  const next = new Date(Date.UTC(y, mo - 1, d + 1));
+  return `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}-${String(next.getUTCDate()).padStart(2, "0")}`;
+}
+
+function countByDay(items: CalendarRangeItem[]): Map<string, number> {
+  const map = new Map<string, number>();
+  const bump = (day: string) => {
+    if (!day) return;
+    map.set(day, (map.get(day) ?? 0) + 1);
+  };
+  for (const item of items) {
+    if (item.kind === "event") {
+      const start = dayKeyFromIso(item.start_at);
+      const end = dayKeyFromIso(item.end_at ?? item.start_at);
+      if (!start) continue;
+      let cur: string | null = start;
+      while (cur != null && cur <= end) {
+        bump(cur);
+        const next = nextDayKey(cur);
+        if (next == null || next > end) break;
+        cur = next;
+      }
+      continue;
+    }
+    if (item.kind === "task") {
+      bump(dayKeyFromIso(item.due_at));
+      continue;
+    }
+    const start = dayKeyFromIso(item.start_at ?? "");
+    const end = dayKeyFromIso(item.end_at ?? item.start_at ?? "") || start;
+    if (!start) continue;
+    let cur: string | null = start;
+    while (cur != null && cur <= end) {
+      bump(cur);
+      const next = nextDayKey(cur);
+      if (next == null || next > end) break;
+      cur = next;
+    }
+  }
+  return map;
+}
+
+export function CalendarApp() {
+  const { kind: subjectKind } = useSubjectScope();
+  const compact = useCompactLayout();
+  const today = cstDayKey();
+  const [cursor, setCursor] = useState(() => {
+    const parts = today.split("-").map(Number);
+    const y = parts[0] ?? new Date().getFullYear();
+    const mo = parts[1] ?? new Date().getMonth() + 1;
+    return { year: y, monthIndex: mo - 1 };
+  });
+  const [selectedDay, setSelectedDay] = useState(today);
+  const [kinds, setKinds] = useState<CalendarRangeKind[]>([...KIND_OPTIONS]);
+  const [editor, setEditor] = useState<EventEditorTarget | null>(null);
+
+  const range = useMemo(
+    () => monthRangeIso(cursor.year, cursor.monthIndex),
+    [cursor.year, cursor.monthIndex],
+  );
+
+  const kindsKey = kinds.toSorted().join(",");
+  const query = usePortalRead({
+    queryKey: ["calendar", "range", subjectKind, range.from, range.to, kindsKey],
+    queryFn: () =>
+      fetchCalendarRange(subjectKind, {
+        from: range.from,
+        to: range.to,
+        kinds,
+      }),
+  });
+
+  const items = query.data ?? [];
+  const dayCounts = useMemo(() => countByDay(items), [items]);
+
+  const eventsById = useMemo(() => {
+    const map = new Map<number, CalendarEventRow>();
+    for (const item of items) {
+      if (item.kind !== "event") continue;
+      map.set(item.id, {
+        id: item.id,
+        title: item.title,
+        content: item.content,
+        start_at: item.start_at,
+        end_at: item.end_at,
+        all_day: item.all_day,
+        remind_at: item.remind_at,
+        tag_ids: [],
+        created_at: item.start_at,
+        updated_at: item.start_at,
+      });
+    }
+    return map;
+  }, [items]);
+
+  const toggleKind = useCallback((kind: CalendarRangeKind) => {
+    setKinds((prev) => {
+      if (prev.includes(kind)) {
+        const next = prev.filter((k) => k !== kind);
+        return next.length > 0 ? next : prev;
+      }
+      return [...prev, kind];
+    });
+  }, []);
+
+  const refresh = useCallback(async () => {
+    await query.reload();
+  }, [query]);
+
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-3 p-3 md:p-4">
+      <header className="flex flex-wrap items-center gap-2">
+        <h1 className="text-lg font-semibold">{m.calendar_title()}</h1>
+        <div className="ml-auto flex items-center gap-2">
+          <SubjectScopeToggle />
+          <Button
+            type="button"
+            size="sm"
+            onPress={() => setEditor({ mode: "create", day: selectedDay })}
+          >
+            <PlusIcon className="size-4" />
+            {m.calendar_new_event()}
+          </Button>
+        </div>
+      </header>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={m.calendar_prev_month()}
+          onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, -1))}
+        >
+          <ChevronLeft className="size-4" />
+        </Button>
+        <span className="min-w-24 text-center font-medium">
+          {monthLabel(cursor.year, cursor.monthIndex)}
+        </span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={m.calendar_next_month()}
+          onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, 1))}
+        >
+          <ChevronRight className="size-4" />
+        </Button>
+        <Button type="button" variant="outline" size="sm" onPress={() => setSelectedDay(today)}>
+          {m.calendar_today()}
+        </Button>
+        <div className="flex flex-wrap gap-1 md:ml-auto">
+          {KIND_OPTIONS.map((kind) => (
+            <Button
+              key={kind}
+              type="button"
+              size="sm"
+              variant={kinds.includes(kind) ? "default" : "outline"}
+              onPress={() => toggleKind(kind)}
+            >
+              {kind === "event"
+                ? m.calendar_kind_event()
+                : kind === "task"
+                  ? m.calendar_kind_task()
+                  : m.calendar_kind_project()}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {query.loading && items.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center">
+          <Spinner />
+        </div>
+      ) : (
+        <div
+          className={cn(
+            "min-h-0 flex-1 gap-4",
+            compact
+              ? "flex flex-col overflow-auto"
+              : "grid grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]",
+          )}
+        >
+          <section className="rounded-lg border border-border/60 p-3">
+            <MonthGrid
+              year={cursor.year}
+              monthIndex={cursor.monthIndex}
+              selectedDay={selectedDay}
+              today={today}
+              dayCounts={dayCounts}
+              onSelectDay={setSelectedDay}
+            />
+          </section>
+          <section className="flex min-h-0 flex-col rounded-lg border border-border/60 p-3">
+            <h2 className="mb-2 text-sm font-medium text-muted-foreground">{selectedDay}</h2>
+            <div className="min-h-0 flex-1 overflow-auto">
+              <AgendaList
+                day={selectedDay}
+                items={items}
+                onOpenEvent={(id) => {
+                  const ev = eventsById.get(id);
+                  if (ev) setEditor({ mode: "edit", event: ev });
+                }}
+                onEditEvent={(id) => {
+                  const ev = eventsById.get(id);
+                  if (ev) setEditor({ mode: "edit", event: ev });
+                }}
+                onOpenTask={(id) => {
+                  void openEntityResource({ id, component: "task_item", present: "overlay" });
+                }}
+                onOpenProject={() => {
+                  navigateAppModulePath("/projects");
+                }}
+              />
+            </div>
+          </section>
+        </div>
+      )}
+
+      <EventEditorDialog
+        open={editor != null}
+        target={editor}
+        onClose={() => setEditor(null)}
+        onSave={async (input) => {
+          if (editor?.mode === "edit") {
+            await updateCalendarEvent(subjectKind, { id: editor.event.id, ...input });
+          } else {
+            await createCalendarEvent(subjectKind, input);
+          }
+          await refresh();
+        }}
+        {...(editor?.mode === "edit"
+          ? {
+              onDelete: async () => {
+                await deleteCalendarEvent(subjectKind, editor.event.id);
+                setEditor(null);
+                await refresh();
+              },
+            }
+          : {})}
+      />
+    </div>
+  );
+}

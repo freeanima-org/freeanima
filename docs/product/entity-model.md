@@ -139,6 +139,7 @@ Habitat startup binds **`ResolvedWorldContext`** (`createTypedHabitatClient().ca
 | ---------------- | ------------------------------------------------ | ------------------------------ |
 | Shell header     | `user_world_id` or `agent_world_id`              | global **User / Agent** toggle |
 | `/tasks`         | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
+| `/calendar`      | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
 | `/projects`      | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
 | `/email`         | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
 | `/notifications` | `recipient_kind` + subject entity id             | none (inherits header)         |
@@ -212,6 +213,22 @@ Entries live in each subject's **`default_private_world_id`**. `body.entry_at` i
 - **LLM:** ToolSet `diary` — caller subject private world by default; optional `world_id`. Block-level edits also via ToolSet `content-block`.
 
 See [`docs/modules/diary.md`](../modules/diary.md).
+
+## Calendar module
+
+Unified schedule surface for **user** and **agent** subjects:
+
+| Concept | Entity         | Component        |
+| ------- | -------------- | ---------------- |
+| Event   | `type=content` | `calendar_event` |
+
+Events live in each subject's default private world. Body: `start_at` (required), `end_at`, `all_day`, `remind_at` / `last_notified_at` (schedulable), `client_op_id`. Title/notes on entity columns.
+
+- **SAP:** `calendar.list` / `create` / `get` / `patch` / `delete` + `calendar.range`（聚合 event + task due + project 区间）
+- **UI:** shell `/calendar` — 月视图 + 日议程
+- **LLM:** ToolSet `calendar`
+
+See [`docs/modules/calendar.md`](../modules/calendar.md).
 
 ## Content block
 

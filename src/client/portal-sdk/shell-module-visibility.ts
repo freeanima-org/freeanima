@@ -4,6 +4,7 @@ export type ShellModuleId =
   | "chat"
   | "tasks"
   | "projects"
+  | "calendar"
   | "pomodoro"
   | "email"
   | "diary"
@@ -17,6 +18,7 @@ export const SHELL_MODULE_IDS: ShellModuleId[] = [
   "chat",
   "tasks",
   "projects",
+  "calendar",
   "pomodoro",
   "email",
   "diary",
@@ -114,6 +116,7 @@ export function resolveShellModuleIdFromPath(pathname: string): ShellModuleId | 
   if (path.startsWith("/chat")) return "chat";
   if (path.startsWith("/tasks")) return "tasks";
   if (path.startsWith("/projects")) return "projects";
+  if (path.startsWith("/calendar")) return "calendar";
   if (path.startsWith("/pomodoro")) return "pomodoro";
   if (path.startsWith("/email")) return "email";
   if (path.startsWith("/diary")) return "diary";
@@ -129,6 +132,7 @@ const MODULE_DEFAULT_PATH: Record<ShellModuleId, string> = {
   chat: "/chat",
   tasks: "/tasks",
   projects: "/projects",
+  calendar: "/calendar",
   pomodoro: "/pomodoro",
   email: "/email",
   diary: "/diary",

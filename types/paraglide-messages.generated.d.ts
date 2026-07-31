@@ -5,6 +5,28 @@ type ParaglideMessageFn = (
 ) => string;
 
 type ParaglideMessageExports = {
+  readonly calendar_agenda_empty: ParaglideMessageFn;
+  readonly calendar_all_day: ParaglideMessageFn;
+  readonly calendar_cancel: ParaglideMessageFn;
+  readonly calendar_delete_event: ParaglideMessageFn;
+  readonly calendar_edit_event: ParaglideMessageFn;
+  readonly calendar_field_content: ParaglideMessageFn;
+  readonly calendar_field_end: ParaglideMessageFn;
+  readonly calendar_field_end_time: ParaglideMessageFn;
+  readonly calendar_field_remind: ParaglideMessageFn;
+  readonly calendar_field_remind_time: ParaglideMessageFn;
+  readonly calendar_field_start: ParaglideMessageFn;
+  readonly calendar_field_start_time: ParaglideMessageFn;
+  readonly calendar_field_title: ParaglideMessageFn;
+  readonly calendar_kind_event: ParaglideMessageFn;
+  readonly calendar_kind_project: ParaglideMessageFn;
+  readonly calendar_kind_task: ParaglideMessageFn;
+  readonly calendar_new_event: ParaglideMessageFn;
+  readonly calendar_next_month: ParaglideMessageFn;
+  readonly calendar_prev_month: ParaglideMessageFn;
+  readonly calendar_save: ParaglideMessageFn;
+  readonly calendar_title: ParaglideMessageFn;
+  readonly calendar_today: ParaglideMessageFn;
   readonly chat_archive: ParaglideMessageFn;
   readonly chat_archived_section: ParaglideMessageFn;
   readonly chat_delete: ParaglideMessageFn;
@@ -481,6 +503,7 @@ type ParaglideMessageExports = {
   readonly habitat_nav: ParaglideMessageFn;
   readonly habitat_nav_auto_llm_runs: ParaglideMessageFn;
   readonly habitat_nav_autobio: ParaglideMessageFn;
+  readonly habitat_nav_calendar: ParaglideMessageFn;
   readonly habitat_nav_chat: ParaglideMessageFn;
   readonly habitat_nav_commands: ParaglideMessageFn;
   readonly habitat_nav_conversations: ParaglideMessageFn;
@@ -794,6 +817,7 @@ type ParaglideMessageExports = {
   readonly ui_offline_readonly_mode: ParaglideMessageFn;
   readonly ui_offline_snapshot_updated: ParaglideMessageFn;
   readonly ui_offline_sync_failed: ParaglideMessageFn;
+  readonly ui_offline_sync_module_calendar: ParaglideMessageFn;
   readonly ui_offline_sync_module_chat: ParaglideMessageFn;
   readonly ui_offline_sync_module_diary: ParaglideMessageFn;
   readonly ui_offline_sync_module_pomodoro: ParaglideMessageFn;
@@ -843,6 +867,28 @@ declare module "@paraglide/messages" {
 
 declare module "*/messages/paraglide/messages.js" {
   export const m: ParaglideMessageExports;
+  export const calendar_agenda_empty: ParaglideMessageFn;
+  export const calendar_all_day: ParaglideMessageFn;
+  export const calendar_cancel: ParaglideMessageFn;
+  export const calendar_delete_event: ParaglideMessageFn;
+  export const calendar_edit_event: ParaglideMessageFn;
+  export const calendar_field_content: ParaglideMessageFn;
+  export const calendar_field_end: ParaglideMessageFn;
+  export const calendar_field_end_time: ParaglideMessageFn;
+  export const calendar_field_remind: ParaglideMessageFn;
+  export const calendar_field_remind_time: ParaglideMessageFn;
+  export const calendar_field_start: ParaglideMessageFn;
+  export const calendar_field_start_time: ParaglideMessageFn;
+  export const calendar_field_title: ParaglideMessageFn;
+  export const calendar_kind_event: ParaglideMessageFn;
+  export const calendar_kind_project: ParaglideMessageFn;
+  export const calendar_kind_task: ParaglideMessageFn;
+  export const calendar_new_event: ParaglideMessageFn;
+  export const calendar_next_month: ParaglideMessageFn;
+  export const calendar_prev_month: ParaglideMessageFn;
+  export const calendar_save: ParaglideMessageFn;
+  export const calendar_title: ParaglideMessageFn;
+  export const calendar_today: ParaglideMessageFn;
   export const chat_archive: ParaglideMessageFn;
   export const chat_archived_section: ParaglideMessageFn;
   export const chat_delete: ParaglideMessageFn;
@@ -1319,6 +1365,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const habitat_nav: ParaglideMessageFn;
   export const habitat_nav_auto_llm_runs: ParaglideMessageFn;
   export const habitat_nav_autobio: ParaglideMessageFn;
+  export const habitat_nav_calendar: ParaglideMessageFn;
   export const habitat_nav_chat: ParaglideMessageFn;
   export const habitat_nav_commands: ParaglideMessageFn;
   export const habitat_nav_conversations: ParaglideMessageFn;
@@ -1632,6 +1679,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const ui_offline_readonly_mode: ParaglideMessageFn;
   export const ui_offline_snapshot_updated: ParaglideMessageFn;
   export const ui_offline_sync_failed: ParaglideMessageFn;
+  export const ui_offline_sync_module_calendar: ParaglideMessageFn;
   export const ui_offline_sync_module_chat: ParaglideMessageFn;
   export const ui_offline_sync_module_diary: ParaglideMessageFn;
   export const ui_offline_sync_module_pomodoro: ParaglideMessageFn;
