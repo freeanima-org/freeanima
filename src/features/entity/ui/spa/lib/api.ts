@@ -1,6 +1,7 @@
 import { getSubjectKind } from "@freeanima/client/portal-sdk";
 import type {
   EntityAdminRowPayload,
+  EntityAdminType,
   EntityDeleteOutput,
   EntityListOutput,
   EntityTrashListOutput,
@@ -8,6 +9,14 @@ import type {
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 export type EntityAdminRow = EntityAdminRowPayload;
+
+export type EntityListQuery = {
+  limit?: number;
+  offset?: number;
+  type?: EntityAdminType;
+  primary_component?: string;
+  query?: string;
+};
 
 function habitat() {
   return getTypedHabitatClient();
@@ -17,17 +26,11 @@ function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
   return { subject_kind: getSubjectKind(), ...payload };
 }
 
-export async function fetchEntities(opts?: {
-  limit?: number;
-  offset?: number;
-}): Promise<EntityListOutput> {
+export async function fetchEntities(opts?: EntityListQuery): Promise<EntityListOutput> {
   return habitat().call("entity.list", withSubjectKind(opts ?? {}));
 }
 
-export async function fetchEntityTrash(opts?: {
-  limit?: number;
-  offset?: number;
-}): Promise<EntityTrashListOutput> {
+export async function fetchEntityTrash(opts?: EntityListQuery): Promise<EntityTrashListOutput> {
   return habitat().call("entity.trash.list", withSubjectKind(opts ?? {}));
 }
 
