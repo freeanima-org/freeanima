@@ -92,6 +92,21 @@ export function stopMpegPlayback(): void {
   disposeMediaSource();
 }
 
+export function getSharedMpegAudioElement(): HTMLAudioElement | null {
+  return playerState().sharedAudio;
+}
+
+/** 系统暂停后回前台时尝试恢复；返回是否发起了 play */
+export function resumeMpegPlaybackIfPaused(): boolean {
+  const audio = playerState().sharedAudio;
+  if (!audio || !audio.paused) return false;
+  if (!audio.src) return false;
+  void audio.play().catch(() => {
+    /* 系统策略拒绝时由 UI 保持 speaking，用户可重试或停止 */
+  });
+  return true;
+}
+
 /** 在用户点击/触摸同步链内调用，解锁移动端 HTMLAudio 播放 */
 export function primeMpegSpeechOutput(): void {
   if (typeof window === "undefined") return;
