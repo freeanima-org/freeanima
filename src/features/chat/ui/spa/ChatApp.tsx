@@ -57,6 +57,10 @@ import {
 import { initAppLocale, m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@freeanima/features/chat/ui/spa/lib/input-draft.ts";
 import {
+  AUTO_PERSIST_LONG,
+  createAutoPersistScheduler,
+} from "@freeanima/ui-kit/lib/auto-persist-schedule.ts";
+import {
   getChatRpcStreamClient,
   subscribeShellConfigChanges,
 } from "@freeanima/features/chat/ui/spa/lib/habitat-stream-client.ts";
@@ -238,6 +242,32 @@ export function ChatApp() {
   const [inputText, setInputText] = useState(() =>
     loadInputDraft(readConversationFromUrl() ?? null),
   );
+  const inputTextRef = useRef(inputText);
+  inputTextRef.current = inputText;
+  const draftConversationIdRef = useRef(currentId);
+  draftConversationIdRef.current = currentId;
+  const prevDraftConversationIdRef = useRef(currentId);
+  const inputDraftScheduler = useMemo(
+    () =>
+      createAutoPersistScheduler({
+        ...AUTO_PERSIST_LONG,
+        onFire: () => {
+          saveInputDraft(draftConversationIdRef.current, inputTextRef.current);
+        },
+      }),
+    [],
+  );
+  useEffect(() => () => inputDraftScheduler.flush(), [inputDraftScheduler]);
+
+  const clearInputAndDraft = useCallback(
+    (conversationId: string | null) => {
+      inputDraftScheduler.cancel();
+      setInputText("");
+      saveInputDraft(conversationId, "");
+    },
+    [inputDraftScheduler],
+  );
+
   const [commandList, setCommandList] = useState<CommandItem[]>([]);
   const [selectedCmdIdx, setSelectedCmdIdx] = useState(0);
   const [clarifyPending, setClarifyPending] = useState<ClarifyPending | null>(null);
@@ -623,6 +653,12 @@ export function ChatApp() {
   }, [currentId, display.length, hasMoreBefore, loadingOlder, messagesLoading, loadOlderMessages]);
 
   useEffect(() => {
+    const prevId = prevDraftConversationIdRef.current;
+    if (prevId && prevId !== currentId) {
+      inputDraftScheduler.cancel();
+      saveInputDraft(prevId, inputTextRef.current);
+    }
+    prevDraftConversationIdRef.current = currentId;
     if (!currentId) return;
     writeConversationToUrl(currentId);
     writeModuleSelection("chat", currentId);
@@ -633,7 +669,7 @@ export function ChatApp() {
       resizeInput();
       scrollDown({ force: true });
     });
-  }, [currentId]);
+  }, [currentId, inputDraftScheduler]);
 
   useEffect(() => {
     if (!currentId) return;
@@ -789,7 +825,9 @@ export function ChatApp() {
   };
 
   const applyMenuEntry = (entry: SlashMenuEntry) => {
+    inputTextRef.current = entry.insertText;
     setInputText(entry.insertText);
+    inputDraftScheduler.schedule();
     setSelectedCmdIdx(0);
     requestAnimationFrame(() => {
       resizeInput();
@@ -1236,8 +1274,7 @@ export function ChatApp() {
 
     if (streamVisible) {
       useChatStore.getState().enqueue(conversationId, text);
-      setInputText("");
-      saveInputDraft(conversationId, "");
+      clearInputAndDraft(conversationId);
       requestAnimationFrame(resizeInput);
       return;
     }
@@ -1248,8 +1285,7 @@ export function ChatApp() {
     let claimedOpId: string | null = null;
     try {
       if (text.startsWith("/") && canSendOnline) {
-        setInputText("");
-        saveInputDraft(originConversationId, "");
+        clearInputAndDraft(originConversationId);
         requestAnimationFrame(resizeInput);
         const cmdName = text.slice(1).split(/\s+/).filter(Boolean)[0] ?? "";
         setSlashResult({ command: cmdName, text: "", loading: true });
@@ -1283,8 +1319,7 @@ export function ChatApp() {
       const expectedTailPos = await resolveExpectedTailPos(originConversationId, canSendOnline);
 
       if (!text.startsWith("/") || !canSendOnline) {
-        setInputText("");
-        saveInputDraft(originConversationId, "");
+        clearInputAndDraft(originConversationId);
         requestAnimationFrame(resizeInput);
       }
 
@@ -1397,8 +1432,7 @@ export function ChatApp() {
       }
       if (e.key === "Escape") {
         e.preventDefault();
-        setInputText("");
-        saveInputDraft(currentId, "");
+        clearInputAndDraft(currentId);
         setSelectedCmdIdx(0);
         requestAnimationFrame(resizeInput);
         return;
@@ -1920,8 +1954,9 @@ export function ChatApp() {
                     value={inputText}
                     onChange={(e) => {
                       const next = e.target.value;
+                      inputTextRef.current = next;
                       setInputText(next);
-                      saveInputDraft(currentId, next);
+                      inputDraftScheduler.schedule();
                       setSelectedCmdIdx(0);
                       resizeInput();
                     }}

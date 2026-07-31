@@ -59,6 +59,7 @@
 | ConfirmDestructive | `ConfirmDialog` / `showConfirm`                        |
 | ModalSheetPresent  | `Dialog` / `Sheet`；布局维切换呈现（含 MoveTo*Picker） |
 | PullToRefresh      | `PullToRefresh`；见 `docs/aspects/page-refresh.md`     |
+| AutoPersist        | `lib/auto-persist-schedule`；见 `docs/ui/patterns.md`  |
 
 ## 静态检查
 

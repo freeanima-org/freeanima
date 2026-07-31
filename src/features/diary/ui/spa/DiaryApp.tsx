@@ -18,6 +18,10 @@ import {
   type DiaryBlockTemplateRow,
 } from "./lib/api.ts";
 import { mergeDraftAfterSave } from "@freeanima/ui-kit/lib/merge-draft-after-save.ts";
+import {
+  AUTO_PERSIST_LONG,
+  createAutoPersistScheduler,
+} from "@freeanima/ui-kit/lib/auto-persist-schedule.ts";
 import { Button, Input, Spinner } from "@freeanima/ui-kit";
 import { PullToRefresh } from "@freeanima/ui-kit/composite";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
@@ -520,23 +524,42 @@ export function DiaryApp() {
     return persistDraft();
   }, [persistDraft]);
 
+  const persistDraftRef = useRef(persistDraft);
+  persistDraftRef.current = persistDraft;
+
+  const draftPersistScheduler = useMemo(
+    () =>
+      createAutoPersistScheduler({
+        ...AUTO_PERSIST_LONG,
+        onFire: () => void persistDraftRef.current(),
+      }),
+    [],
+  );
+
+  useEffect(() => () => draftPersistScheduler.cancel(), [draftPersistScheduler]);
+
+  const flushDraftSaveAndCancel = useCallback(async (): Promise<boolean> => {
+    draftPersistScheduler.cancel();
+    return flushDraftSave();
+  }, [draftPersistScheduler, flushDraftSave]);
+
   const selectEntryById = useCallback(
     (id: number) => {
       void (async () => {
-        await flushDraftSave();
+        await flushDraftSaveAndCancel();
         await openEntryById(id);
       })();
     },
-    [flushDraftSave, openEntryById],
+    [flushDraftSaveAndCancel, openEntryById],
   );
 
   const handleNewEntry = useCallback(() => {
     void (async () => {
       if (writesDisabled || creating) return;
-      await flushDraftSave();
+      await flushDraftSaveAndCancel();
       await openTodayEntry();
     })();
-  }, [creating, flushDraftSave, openTodayEntry, writesDisabled]);
+  }, [creating, flushDraftSaveAndCancel, openTodayEntry, writesDisabled]);
 
   const handleAddBlock = useCallback(
     (preset?: DiaryBlockTemplateRow["preset"]) => {
@@ -562,14 +585,17 @@ export function DiaryApp() {
   );
 
   useEffect(() => {
-    if (!selectedEntry || !draft || !draftBaseline || writesDisabled) return;
-    if (!isEntryDraftDirty(draft, draftBaseline)) return;
+    if (!selectedEntry || !draft || !draftBaseline || writesDisabled) {
+      draftPersistScheduler.cancel();
+      return;
+    }
+    if (!isEntryDraftDirty(draft, draftBaseline)) {
+      draftPersistScheduler.cancel();
+      return;
+    }
     if (saving) return;
-    const timer = setTimeout(() => {
-      void persistDraft();
-    }, 700);
-    return () => clearTimeout(timer);
-  }, [draft, draftBaseline, persistDraft, saving, selectedEntry, writesDisabled]);
+    draftPersistScheduler.schedule();
+  }, [draft, draftBaseline, draftPersistScheduler, saving, selectedEntry, writesDisabled]);
 
   const listPane = (
     <div className="flex h-full min-h-0 min-w-0 flex-col gap-3">

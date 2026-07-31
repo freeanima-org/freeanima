@@ -35,6 +35,12 @@ export type {
   UseDetailPanelStateOptions,
   UseDetailPanelStateResult,
 } from "./useDetailPanelState.ts";
+export {
+  AUTO_PERSIST_LONG,
+  AUTO_PERSIST_SHORT,
+  createAutoPersistScheduler,
+} from "../lib/auto-persist-schedule.ts";
+export type { AutoPersistScheduler, AutoPersistTiming } from "../lib/auto-persist-schedule.ts";
 export { DETAIL_EDIT_HISTORY_KEY } from "./detail-edit-chrome.ts";
 export { QuickAddBar } from "./QuickAddBar.tsx";
 export { ModuleScopeBar } from "./ModuleScopeBar.tsx";

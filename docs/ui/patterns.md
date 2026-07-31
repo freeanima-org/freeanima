@@ -220,6 +220,31 @@ Every pattern documents:
 
 ---
 
+## AutoPersist (debounce + maxWait)
+
+**Intent:** Autosave user edits without flooding Habitat RPC / localStorage: **debounce** fires after input idle; **maxWait** (throttle window) forces a save while typing continuously.
+
+**Slots:** Scheduler API — `schedule` / `cancel` / `flush`; timing presets for long vs short text.
+
+**States:** Idle (no pending) / pending (timer or window open) / flushing (navigate away, unmount, close panel).
+
+**Dimension adaptation:** Invariant timing semantics across layout/shell; interaction N/A (not a gesture pattern).
+
+**Timing presets:**
+
+| Preset     | Use                                                         | debounce | maxWait |
+| ---------- | ----------------------------------------------------------- | -------- | ------- |
+| Long text  | Diary blocks, task/project `content`, chat input draft      | 1000ms   | 5000ms  |
+| Short text | Number/config fields (companion behavior, pomodoro minutes) | 400ms    | 2000ms  |
+
+**Implementation:** [`auto-persist-schedule.ts`](../../src/ui-kit/lib/auto-persist-schedule.ts); detail panels via [`useDetailPanelState.ts`](../../src/ui-kit/composite/useDetailPanelState.ts) (default long preset). Toggle/Switch and Habitat explicit Save buttons stay immediate — not AutoPersist.
+
+**Forbidden:** Per-keystroke Habitat writes for text/number fields; inventing a second debounce helper beside this module for UI autosave.
+
+**Compliance:** Reference.
+
+---
+
 ## Candidates (later)
 
 Document when stabilizing a second consumer or further extraction:

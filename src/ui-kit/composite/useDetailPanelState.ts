@@ -1,8 +1,14 @@
+import {
+  AUTO_PERSIST_LONG,
+  createAutoPersistScheduler,
+  type AutoPersistTiming,
+} from "../lib/auto-persist-schedule.ts";
 import { mergeDraftAfterSave } from "../lib/merge-draft-after-save.ts";
 import type { ThreeColumnLayoutMode } from "../layout/three-column-mode.ts";
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type Dispatch,
@@ -26,7 +32,8 @@ export type UseDetailPanelStateOptions<T> = {
   isDirty: (current: T, baseline: T) => boolean;
   isEqual: (a: T, b: T) => boolean;
   persistItem: (item: T) => Promise<T>;
-  autoSaveDebounceMs?: number;
+  /** 自动保存：防抖 + 节流窗口；默认长文本档 */
+  autoPersist?: AutoPersistTiming;
   /** compact 下是否自动打开详情 Sheet（如移动任务弹窗打开时可设为 false） */
   compactSheetEnabled?: boolean;
   /** compact 全屏编辑时隐藏壳底栏；由 App 注入 portal-sdk setCompactImmersive */
@@ -61,7 +68,7 @@ export function useDetailPanelState<T extends { id: number }>({
   isDirty,
   isEqual,
   persistItem,
-  autoSaveDebounceMs = 600,
+  autoPersist = AUTO_PERSIST_LONG,
   compactSheetEnabled = true,
   setCompactImmersive,
   onSaved,
@@ -198,9 +205,25 @@ export function useDetailPanelState<T extends { id: number }>({
     ],
   );
 
+  const persistRef = useRef(persist);
+  persistRef.current = persist;
+
+  const autoPersistScheduler = useMemo(
+    () =>
+      createAutoPersistScheduler({
+        debounceMs: autoPersist.debounceMs,
+        maxWaitMs: autoPersist.maxWaitMs,
+        onFire: () => void persistRef.current(),
+      }),
+    [autoPersist.debounceMs, autoPersist.maxWaitMs],
+  );
+
+  useEffect(() => () => autoPersistScheduler.cancel(), [autoPersistScheduler]);
+
   const flushSave = useCallback(async (): Promise<boolean> => {
+    autoPersistScheduler.cancel();
     return persist();
-  }, [persist]);
+  }, [autoPersistScheduler, persist]);
 
   const openDetail = useCallback(
     (next: T) => {
@@ -269,6 +292,7 @@ export function useDetailPanelState<T extends { id: number }>({
       void (async () => {
         const dirty = item != null && baseline != null && isDirty(item, baseline);
         if (dirty) {
+          autoPersistScheduler.cancel();
           const ok = await persist({ closeAfter: true });
           if (!ok) return;
           return;
@@ -276,7 +300,7 @@ export function useDetailPanelState<T extends { id: number }>({
         clearDetail();
       })();
     },
-    [baseline, clearDetail, isDirty, item, persist],
+    [autoPersistScheduler, baseline, clearDetail, isDirty, item, persist],
   );
 
   const resetDetail = useCallback(() => {
@@ -301,11 +325,13 @@ export function useDetailPanelState<T extends { id: number }>({
   );
 
   useEffect(() => {
-    if (!item || !baseline || !isDirty(item, baseline)) return;
+    if (!item || !baseline || !isDirty(item, baseline)) {
+      autoPersistScheduler.cancel();
+      return;
+    }
     if (saving) return;
-    const timer = setTimeout(() => void persist(), autoSaveDebounceMs);
-    return () => clearTimeout(timer);
-  }, [autoSaveDebounceMs, baseline, isDirty, item, persist, saving]);
+    autoPersistScheduler.schedule();
+  }, [autoPersistScheduler, baseline, isDirty, item, saving]);
 
   useEffect(() => {
     return () => {
