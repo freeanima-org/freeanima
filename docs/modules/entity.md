@@ -27,7 +27,7 @@ title: Entity module
 | 类型   | 过滤 `type`：`content` / `world` / `agent` / `user`                               |
 | 主组件 | 过滤 `primary_component`（自由文本，如 `task_item`）                              |
 
-行字段：id、title、primary_component、components、时间戳。存活行可 **deleteEntity**（软删）；回收站可 **restore**。满 30 天由睡眠 cleanup **purge** 物理删除。
+行字段：id、title、primary_component、components、时间戳。存活行可 **deleteEntity**（软删）；回收站可 **restore**。满 30 天由睡眠 cleanup **purge** 物理删除；若为 `object_file`，purge 后对无其它引用的 cid 删除对象存储 blob。
 
 ## Habitat RPC
 

@@ -48,13 +48,13 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 
 三种正交操作（**勿**用「第 N 层」表述；代码与 UI 只用下列名字）：
 
-| 操作                   | 含义                                                                                                                                                                                       | 典型 API                                                            |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| **remove**（容器移除） | 只改 membership（FK / `tag_ids` / 未来 pool `members[]`）；**不**删组件、不写 `deleted_at`                                                                                                 | `task.move*`、`tag.setOnEntity`、项目 release、未来 `entity.remove` |
-| **deleteComponent**    | 从 entity 去掉某个 component 并清理对应 body 字段；必要时按 `COMPONENT_PRIMARY_PRIORITY` 提升 `primary_component`；删光则空壳（`components=[]`，`primary_component=null`），**不**自动软删 | `entity.deleteComponent` / `deleteEntityComponent`                  |
-| **deleteEntity**       | 软删：写 `deleted_at`；默认 list/search 不可见；进 Entity 模块回收站                                                                                                                       | `entity.delete` / 各模块 `*.delete`（语义为软删）                   |
-| **restore**            | 清除 `deleted_at`；**不**自动恢复原容器 membership                                                                                                                                         | `entity.restore` / `restoreEntity`                                  |
-| **purge**              | 物理 `DELETE`；睡眠 cleanup 清理 `deleted_at` 满 **30 天** 的行                                                                                                                            | `purgeSoftDeletedEntities`（内部）                                  |
+| 操作                   | 含义                                                                                                                                                                                       | 典型 API                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| **remove**（容器移除） | 只改 membership（FK / `tag_ids` / 未来 pool `members[]`）；**不**删组件、不写 `deleted_at`                                                                                                 | `task.move*`、`tag.setOnEntity`、项目 release、未来 `entity.remove`  |
+| **deleteComponent**    | 从 entity 去掉某个 component 并清理对应 body 字段；必要时按 `COMPONENT_PRIMARY_PRIORITY` 提升 `primary_component`；删光则空壳（`components=[]`，`primary_component=null`），**不**自动软删 | `entity.deleteComponent` / `deleteEntityComponent`                   |
+| **deleteEntity**       | 软删：写 `deleted_at`；默认 list/search 不可见；进 Entity 模块回收站                                                                                                                       | `entity.delete` / 各模块 `*.delete`（语义为软删）                    |
+| **restore**            | 清除 `deleted_at`；**不**自动恢复原容器 membership                                                                                                                                         | `entity.restore` / `restoreEntity`                                   |
+| **purge**              | 物理 `DELETE`；睡眠 cleanup 清理 `deleted_at` 满 **30 天** 的行；`object_file` 在无其它实体引用同 `(world_id, cid)` 时同步删除对象存储 blob                                                | `purgeSoftDeletedEntities` + `gcObjectBlobsAfterEntityPurge`（内部） |
 
 补充规则：
 

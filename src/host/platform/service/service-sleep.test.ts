@@ -1,9 +1,17 @@
-import { afterEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, afterEach, describe, expect, it, mock } from "bun:test";
 import type {
   PipelineStepRunAppendInput,
   PipelineStepRunRow,
 } from "@freeanima/host/core/db/pg/pipeline/types";
 import type { RuntimeDeps } from "./runtime-deps.ts";
+
+// 先捕获真实实现，mock 后在 afterAll 恢复，避免 mock.module 全局泄漏污染其他测试文件。
+const realPg = await import("@freeanima/host/core/db/pg");
+const pgOriginal = { ...realPg };
+const realPipeline = await import("@freeanima/host/core/db/pg/pipeline");
+const pipelineOriginal = { ...realPipeline };
+const realPipelineHandlers = await import("../boot/pipeline-handlers.ts");
+const pipelineHandlersOriginal = { ...realPipelineHandlers };
 
 const runSleepCycleMock = mock(async () => ({
   ok: true,
@@ -44,22 +52,31 @@ const appendPipelineStepRunMock = mock(async (row: PipelineStepRunAppendInput) =
 });
 
 mock.module("@freeanima/host/core/db/pg", () => ({
+  ...pgOriginal,
   isPostgresPrimary: () => true,
 }));
 
 mock.module("@freeanima/host/core/db/pg/pipeline", () => ({
+  ...pipelineOriginal,
   appendPipelineStepRun: appendPipelineStepRunMock,
   listPipelineStepRuns: mock(async () => pipelineRows),
   listCompletedStepDays: mock(async () => []),
 }));
 
 mock.module("../boot/pipeline-handlers.ts", () => ({
+  ...pipelineHandlersOriginal,
   resolveSleepCycleDay: (day?: string) => day?.trim() || "2026-06-14",
   runSleepCycle: runSleepCycleMock,
   runSleepStep: runSleepStepMock,
   getSleepPipelineStatus: () => null,
   registerSleepPipeline: () => {},
 }));
+
+afterAll(() => {
+  mock.module("@freeanima/host/core/db/pg", () => pgOriginal);
+  mock.module("@freeanima/host/core/db/pg/pipeline", () => pipelineOriginal);
+  mock.module("../boot/pipeline-handlers.ts", () => pipelineHandlersOriginal);
+});
 
 function createDeps(): RuntimeDeps {
   return {

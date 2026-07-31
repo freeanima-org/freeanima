@@ -47,6 +47,16 @@ Habitat
 | `object_folder` | `{ parent_id?, file_ids[] }` + title           |
 | ToolSet         | `object_storage`                               |
 
+## 生命周期 / GC
+
+| 阶段                                                  | 行为                                                                                                             |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **软删**（`object_storage_delete` / `entity.delete`） | 只写 `deleted_at`；S3/本地缓存 **保留**，便于回收站 restore                                                      |
+| **purge**（睡眠 cleanup，软删满 30 天）               | 物理删除 entity 行后，对无其它 `object_file`（含未到期软删）仍引用的 `(world_id, cid)` 调用 `ObjectStore.delete` |
+| **未配置 object_storage**                             | PG purge 照常；远端 delete 跳过（仅清本地 cache 若有）                                                           |
+
+内容寻址：相同字节共享同一 cid；**仅当引用计数归零**才删远端对象。
+
 ## HTTP（Habitat RPC REST，需 Bearer）
 
 | 方法                      | 路径                      | 缓存                                                                          |

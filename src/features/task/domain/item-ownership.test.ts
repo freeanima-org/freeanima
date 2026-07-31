@@ -217,7 +217,7 @@ describe("updateProject terminal release_tasks", () => {
         "P",
       ),
     );
-    spyOn(entityMod, "searchEntities").mockResolvedValue({
+    const searchSpy = spyOn(entityMod, "searchEntities").mockResolvedValue({
       query: null,
       limit: 500,
       offset: 0,
@@ -225,7 +225,6 @@ describe("updateProject terminal release_tasks", () => {
       results: [],
     });
     spyOn(entityMod, "listEntities").mockResolvedValue([]);
-    const searchSpy = spyOn(entityMod, "searchEntities");
 
     const { updateProject } = await import("@freeanima/features/project/domain/project-store.ts");
     await updateProject(1, { id: 10, status: "completed" });

@@ -190,7 +190,8 @@ export function registerObjectStorageTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "object_storage_delete",
-          description: "Soft-delete an object_file entity (blob not GC'd yet)",
+          description:
+            "Soft-delete an object_file entity (blob kept for restore; GC'd on purge after retention)",
           parameters: {
             type: "object",
             properties: { id: { type: "integer" } },

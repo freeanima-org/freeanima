@@ -35,6 +35,11 @@ describe("object-store without remote", () => {
     await expect(store.put(1, new Uint8Array([1]))).rejects.toThrow(/未配置/);
   });
 
+  it("delete clears nothing remote when not configured (no throw)", async () => {
+    const store = createObjectStore({});
+    await expect(store.delete(1, "ab".repeat(16))).resolves.toBeUndefined();
+  });
+
   it("serverCacheObjectPath is under tmpdir/anima/objects", () => {
     const cid = "ab".repeat(16);
     expect(serverCacheObjectPath(cid)).toBe(

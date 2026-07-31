@@ -21,6 +21,11 @@ export {
   type ObjectFileRow,
 } from "./file-store.ts";
 export {
+  gcObjectBlobsAfterEntityPurge,
+  type GcObjectBlobsDeps,
+  type GcObjectBlobsResult,
+} from "./gc.ts";
+export {
   addFileToObjectFolder,
   createObjectFolder,
   deleteObjectFolder,
