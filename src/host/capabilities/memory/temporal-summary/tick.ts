@@ -6,18 +6,20 @@ import {
 } from "@freeanima/host/core/db/pg/temporal-summary";
 import {
   isCronSession,
-  listConversationIdsUpdatedBetween,
+  listConversationIdsWithMessagesBetween,
   listMessages,
 } from "@freeanima/host/core/db/pg/conversation";
 import type { TemporalDayChunk, TemporalDayJson } from "@freeanima/host/core/db/schema";
 import { filterRecallableMessages } from "../message-filter.ts";
 import {
   cstDateString,
+  cstDayStartIso,
   listClosedBucketsToday,
   peerRollRedisKey,
   peerRollSourcesFp,
   temporalBucketEndIso,
   temporalBucketStartIso,
+  temporalMaterialAfterAt,
   type PeerRollSource,
 } from "./buckets.ts";
 import { summarizeTemporalText } from "./summarize.ts";
@@ -44,17 +46,24 @@ function lastWatermark(day: TemporalDayJson | null): { id?: string; at?: string 
   return out;
 }
 
-function formatMessagesForSummary(
+/** Messages strictly after afterAt (ISO). Exported for unit tests. */
+export function filterMessagesAfterAt<T extends { t?: string }>(msgs: T[], afterAt?: string): T[] {
+  const afterMs = afterAt ? Date.parse(afterAt) : Number.NaN;
+  if (Number.isNaN(afterMs)) return [...msgs];
+  return msgs.filter((msg) => {
+    if (!msg.t) return true;
+    const t = Date.parse(msg.t);
+    if (Number.isNaN(t)) return true;
+    return t > afterMs;
+  });
+}
+
+export function formatMessagesForSummary(
   msgs: ReturnType<typeof filterRecallableMessages>,
   afterAt?: string,
 ): string {
-  const afterMs = afterAt ? Date.parse(afterAt) : Number.NaN;
   const lines: string[] = [];
-  for (const msg of msgs) {
-    if (!Number.isNaN(afterMs) && msg.t) {
-      const t = Date.parse(msg.t);
-      if (!Number.isNaN(t) && t <= afterMs) continue;
-    }
+  for (const msg of filterMessagesAfterAt(msgs, afterAt)) {
     lines.push(`${msg.t.slice(0, 19)} ${msg.role}: ${msg.content}`);
   }
   return lines.join("\n");
@@ -78,9 +87,10 @@ export async function runTemporalSummaryTick(opts: {
   const nowMs = opts.nowMs ?? Date.now();
   const cst_date = cstDateString(nowMs);
   const bucket = temporalBucketStartIso(nowMs);
-  const windowStart = new Date(nowMs - 2 * 60 * 60 * 1000).toISOString();
+  const dayStartIso = cstDayStartIso(nowMs);
   const windowEnd = new Date(nowMs + 60_000).toISOString();
-  const ids = await listConversationIdsUpdatedBetween(windowStart, windowEnd);
+  // 候选：CST 当日有消息活动的会话（非 conversations.updated_at）
+  const ids = await listConversationIdsWithMessagesBetween(dayStartIso, windowEnd);
 
   let chunks_written = 0;
   let scanned = 0;
@@ -93,12 +103,14 @@ export async function runTemporalSummaryTick(opts: {
     const day: TemporalDayJson =
       existing?.cst_date === cst_date ? existing : { cst_date, chunks: [] };
     const wm = lastWatermark(day.cst_date === cst_date ? day : null);
+    const afterAt = temporalMaterialAfterAt(wm.at, dayStartIso);
 
     const messages = filterRecallableMessages(await listMessages(conversationId));
-    const material = formatMessagesForSummary(messages, wm.at);
+    const incremental = filterMessagesAfterAt(messages, afterAt);
+    const material = formatMessagesForSummary(messages, afterAt);
     if (!material.trim()) continue;
 
-    const lastMsg = messages.at(-1);
+    const lastIncremental = incremental.at(-1);
     let summary: string;
     try {
       summary = await summarizeTemporalText({
@@ -124,7 +136,7 @@ export async function runTemporalSummaryTick(opts: {
       at: new Date(nowMs).toISOString(),
       bucket,
       summary: summary.trim(),
-      watermark_at: lastMsg?.t || new Date(nowMs).toISOString(),
+      watermark_at: lastIncremental?.t || new Date(nowMs).toISOString(),
     };
     day.chunks.push(chunk);
     await setConversationTemporalDay(conversationId, day);

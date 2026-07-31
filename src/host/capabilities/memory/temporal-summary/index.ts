@@ -2,6 +2,8 @@ export {
   temporalBucketStartIso,
   temporalBucketEndIso,
   cstDateString,
+  cstDayStartIso,
+  temporalMaterialAfterAt,
   listClosedBucketsToday,
   peerRollSourcesFp,
   peerRollRedisKey,
@@ -30,6 +32,8 @@ export {
 } from "./summarize.ts";
 export {
   runTemporalSummaryTick,
+  filterMessagesAfterAt,
+  formatMessagesForSummary,
   type PeerRollCache,
   type TemporalSummaryTickResult,
 } from "./tick.ts";

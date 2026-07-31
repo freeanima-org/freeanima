@@ -59,6 +59,7 @@ export {
   listMessageRowsPage,
   listMessageRowsFromPos,
   lastMessageTimestamp,
+  listConversationIdsWithMessagesBetween,
   listMessages,
   listRecentMessages,
   listMessagesBeforePos,

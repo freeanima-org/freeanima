@@ -27,9 +27,10 @@ export async function setConversationTemporalDay(
 ): Promise<void> {
   const db = getDb();
   const parsed = temporalDayJsonSchema.parse(temporal_day);
+  // 勿 bump updated_at：时间摘要元数据写回不得冒充会话活动
   await db
     .update(conversations)
-    .set({ temporal_day: parsed, updated_at: new Date() })
+    .set({ temporal_day: parsed })
     .where(eq(conversations.id, conversation_id));
 }
 

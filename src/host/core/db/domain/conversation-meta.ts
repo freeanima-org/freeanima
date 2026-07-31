@@ -61,6 +61,25 @@ export function parseCompressionState(raw: unknown): CompressionState | null {
   return parsed.success ? parsed.data : null;
 }
 
+/**
+ * When an incoming compression patch omits summary text, keep any existing
+ * non-empty summary (and its summary_at) so concurrent boundary writes cannot
+ * wipe a just-finished summary LLM result.
+ */
+export function mergeCompressionKeepingSummary(
+  incoming: CompressionState,
+  existing: CompressionState | null | undefined,
+): CompressionState {
+  if (incoming.summary?.trim()) return incoming;
+  const keep = existing?.summary?.trim();
+  if (!keep) return incoming;
+  return {
+    ...incoming,
+    summary: keep,
+    summary_at: incoming.summary_at ?? existing?.summary_at,
+  };
+}
+
 export function parseConversationTodoStore(raw: unknown): ConversationTodoStore {
   const result = conversationTodoStoreSchema.safeParse(raw);
   if (result.success) return result.data;

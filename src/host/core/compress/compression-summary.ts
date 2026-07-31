@@ -44,7 +44,9 @@ function buildSummaryUserContent(
   return parts.join("\n");
 }
 
-export type GenerateSummaryResult = { ok: true; summary: string } | { ok: false; error: string };
+export type GenerateSummaryResult =
+  | { ok: true; summary: string; runId?: string }
+  | { ok: false; error: string; runId?: string };
 
 /** Generate/merge summary from pre-compression system_prompt snapshot (no IO) */
 export async function generateConversationSummary(
@@ -89,13 +91,21 @@ export async function generateConversationSummary(
       }),
     );
     if (recorded.status === "error") {
-      return { ok: false, error: recorded.error ?? "Summary LLM call failed" };
+      return omitUndefined({
+        ok: false as const,
+        error: recorded.error ?? "Summary LLM call failed",
+        runId: recorded.runId,
+      });
     }
     const summary = recorded.output.trim();
     if (!summary || summary === "(empty)") {
-      return { ok: false, error: "Summary LLM returned empty" };
+      return omitUndefined({
+        ok: false as const,
+        error: "Summary LLM returned empty",
+        runId: recorded.runId,
+      });
     }
-    return { ok: true, summary };
+    return omitUndefined({ ok: true as const, summary, runId: recorded.runId });
   } catch (e) {
     return { ok: false, error: String(e) };
   }

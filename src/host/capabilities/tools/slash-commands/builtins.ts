@@ -330,6 +330,9 @@ async function cmdSummarize(ctx: CommandContext): Promise<CommandResult> {
       updated?: boolean;
       idle?: boolean;
       error?: string;
+      summary_run_id?: string;
+      summary_error?: string;
+      compression?: { summary?: string };
     };
 
   if (!r.enabled) {
@@ -345,6 +348,17 @@ async function cmdSummarize(ctx: CommandContext): Promise<CommandResult> {
   if (r.error === "already_collapsed") {
     return asToast("ℹ️ Already fully summarized (l2 = l3 = l4).");
   }
+  if (r.error === "summary_empty") {
+    const runHint = r.summary_run_id ? `（auto-llm run: ${r.summary_run_id}）` : "";
+    const detail = r.summary_error ? ` ${r.summary_error}` : "";
+    return asPanel(
+      [
+        `⚠️ 摘要文本未写入会话${runHint}`,
+        detail.trim() || "摘要 LLM 失败或空响应；可在 Habitat → Auto LLM runs 对照记录。",
+        `l2: ${r.l2 ?? "—"}  l3: ${r.l3 ?? "—"}  l4: ${r.l4 ?? "—"}`,
+      ].join("\n"),
+    );
+  }
   if (!r.ok) {
     return asToast(
       "⚠️ Could not summarize this conversation（compression 边界未持久化，请检查 Habitat 日志）。",
@@ -353,14 +367,10 @@ async function cmdSummarize(ctx: CommandContext): Promise<CommandResult> {
 
   const cfg = getCompressionConfig();
   const mode = r.idle ? "idle (l2=l3=l4)" : "partial (in-progress tail kept in raw)";
-  const summaryPreview = String(
-    (r as { compression?: { summary?: string } }).compression?.summary ?? "",
-  ).trim();
+  const summaryPreview = String(r.compression?.summary ?? "").trim();
   const preview =
     summaryPreview.length > 400 ? `${summaryPreview.slice(0, 400)}…` : summaryPreview || "(empty)";
-  const headline = summaryPreview
-    ? `✅ Summarized (${mode})`
-    : `⚠️ Summarized boundaries set (${mode}) — summary text empty（摘要 LLM 失败或空响应，见 Habitat 日志）`;
+  const headline = `✅ Summarized (${mode})`;
   const lines = [
     headline,
     `l2: ${r.l2 ?? "—"}  l3: ${r.l3 ?? "—"}  l4: ${r.l4 ?? "—"}`,

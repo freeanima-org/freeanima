@@ -5,6 +5,7 @@ import {
   parseCompressionState,
   parseConversationGoal,
   parseConversationTodoStore,
+  mergeCompressionKeepingSummary,
 } from "./conversation-meta.ts";
 
 describe("parseCompressionState", () => {
@@ -19,6 +20,38 @@ describe("parseCompressionState", () => {
   it("returns null for invalid shape", () => {
     expect(parseCompressionState({ l2: "bad" })).toBeNull();
     expect(parseCompressionState(null)).toBeNull();
+  });
+});
+
+describe("mergeCompressionKeepingSummary", () => {
+  it("keeps incoming summary when present", () => {
+    expect(
+      mergeCompressionKeepingSummary(
+        { l2: 10, l3: 12, summary: "new" },
+        { l2: 8, l3: 10, summary: "old", summary_at: "a" },
+      ),
+    ).toEqual({ l2: 10, l3: 12, summary: "new" });
+  });
+
+  it("preserves existing summary when incoming omits it", () => {
+    expect(
+      mergeCompressionKeepingSummary(
+        { l2: 10, l3: 12 },
+        { l2: 8, l3: 10, summary: "keep me", summary_at: "2026-07-31T00:00:00+08:00" },
+      ),
+    ).toEqual({
+      l2: 10,
+      l3: 12,
+      summary: "keep me",
+      summary_at: "2026-07-31T00:00:00+08:00",
+    });
+  });
+
+  it("does not invent summary when neither side has one", () => {
+    expect(mergeCompressionKeepingSummary({ l2: 3, l3: 3 }, null)).toEqual({
+      l2: 3,
+      l3: 3,
+    });
   });
 });
 

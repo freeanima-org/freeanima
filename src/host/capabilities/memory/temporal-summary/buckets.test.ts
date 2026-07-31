@@ -7,6 +7,8 @@ import {
   peerRollSourcesFp,
   temporalBucketEndIso,
   temporalBucketStartIso,
+  cstDayStartIso,
+  temporalMaterialAfterAt,
   type TimelinePeerInject,
 } from "./index.ts";
 import type { StoredMessage } from "@freeanima/host/core/db/domain";
@@ -34,6 +36,20 @@ describe("temporal-summary buckets", () => {
     expect(closed).not.toContain("2026-07-18T07:00+08:00");
     // 旧 bug：end 早 8h 会把 14:00+ 也算闭合；此处不应出现下午桶
     expect(closed).not.toContain("2026-07-18T14:00+08:00");
+  });
+
+  it("cstDayStartIso is midnight CST", () => {
+    const ms = Date.parse("2026-07-17T22:15:00.000Z"); // 2026-07-18 06:15 CST
+    expect(cstDayStartIso(ms)).toBe("2026-07-18T00:00:00+08:00");
+  });
+
+  it("temporalMaterialAfterAt uses max(watermark, day start)", () => {
+    const day = "2026-07-31T00:00:00+08:00";
+    expect(temporalMaterialAfterAt(undefined, day)).toBe(day);
+    expect(temporalMaterialAfterAt("2026-06-30T12:00:00+08:00", day)).toBe(day);
+    expect(temporalMaterialAfterAt("2026-07-31T10:00:00+08:00", day)).toBe(
+      "2026-07-31T10:00:00+08:00",
+    );
   });
 
   it("peerRollSourcesFp is order-independent for same set", () => {

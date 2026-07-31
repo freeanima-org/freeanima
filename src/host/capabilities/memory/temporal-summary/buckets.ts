@@ -32,6 +32,26 @@ export function cstDateString(atMs: number = Date.now()): string {
   return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
 
+/** CST day start as +08:00 ISO, e.g. 2026-07-18T00:00:00+08:00 */
+export function cstDayStartIso(atMs: number = Date.now()): string {
+  return `${cstDateString(atMs)}T00:00:00+08:00`;
+}
+
+/**
+ * Lower bound for tick material: max(watermark, CST day start).
+ * Prevents cross-day history dump when day rolls and watermark resets.
+ */
+export function temporalMaterialAfterAt(
+  watermarkAt: string | undefined,
+  dayStartIso: string,
+): string {
+  const dayMs = Date.parse(dayStartIso);
+  const wmMs = watermarkAt ? Date.parse(watermarkAt) : Number.NaN;
+  if (Number.isNaN(dayMs)) return watermarkAt ?? dayStartIso;
+  if (Number.isNaN(wmMs) || watermarkAt == null) return dayStartIso;
+  return wmMs >= dayMs ? watermarkAt : dayStartIso;
+}
+
 /** Closed half-hour buckets for cst_date whose end <= now */
 export function listClosedBucketsToday(nowMs: number = Date.now()): string[] {
   const date = cstDateString(nowMs);
