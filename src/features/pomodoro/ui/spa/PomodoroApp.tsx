@@ -30,6 +30,10 @@ import {
 } from "@freeanima/ui-kit";
 import { useCompactLayout } from "@freeanima/ui-kit/layout";
 import { formatDateTime } from "@freeanima/ui-kit/lib/datetime-local.ts";
+import {
+  AUTO_PERSIST_SHORT,
+  createAutoPersistScheduler,
+} from "@freeanima/ui-kit/lib/auto-persist-schedule.ts";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { randomUuid } from "@freeanima/shared/rpc-contract";
 
@@ -139,6 +143,20 @@ function SessionHistory({
   );
 }
 
+type ConfigNumberFields = Pick<
+  PomodoroConfigRow,
+  "work_minutes" | "short_break_minutes" | "long_break_minutes" | "cycles_before_long_break"
+>;
+
+function numbersFromConfig(config: PomodoroConfigRow): ConfigNumberFields {
+  return {
+    work_minutes: config.work_minutes,
+    short_break_minutes: config.short_break_minutes,
+    long_break_minutes: config.long_break_minutes,
+    cycles_before_long_break: config.cycles_before_long_break,
+  };
+}
+
 export function PomodoroApp() {
   const compact = useCompactLayout();
   const { kind: subjectKind } = useSubjectScope();
@@ -169,6 +187,13 @@ export function PomodoroApp() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showSettings, setShowSettings] = useState(false);
+  const [configNumbers, setConfigNumbers] = useState<ConfigNumberFields | null>(null);
+  const configRef = useRef(config);
+  configRef.current = config;
+  const configNumbersRef = useRef(configNumbers);
+  configNumbersRef.current = configNumbers;
+  const activeRef = useRef(active);
+  activeRef.current = active;
   const autostartHandledRef = useRef(false);
   const [navTick, setNavTick] = useState(0);
 
@@ -367,21 +392,69 @@ export function PomodoroApp() {
     }
   };
 
-  const handleConfigChange = async (patch: Partial<PomodoroConfigRow>) => {
-    if (!config) return;
-    try {
-      const next = await preferOnlineWrite(
-        async () => updatePomodoroConfig(subjectKind, patch),
-        async () => {
-          await enqueuePomodoroConfigUpdate(subjectKind, patch);
-          return { ...config, ...patch };
+  const handleConfigChange = useCallback(
+    async (patch: Partial<PomodoroConfigRow>) => {
+      const current = configRef.current;
+      if (!current) return;
+      try {
+        const next = await preferOnlineWrite(
+          async () => updatePomodoroConfig(subjectKind, patch),
+          async () => {
+            await enqueuePomodoroConfigUpdate(subjectKind, patch);
+            return { ...current, ...patch };
+          },
+        );
+        setConfig(next);
+        const currentActive = activeRef.current;
+        if (currentActive) await syncPomodoroPhaseLocalAlert(currentActive, currentActive, next);
+      } catch (e) {
+        setError(String(e instanceof Error ? e.message : e));
+      }
+    },
+    [subjectKind],
+  );
+
+  const handleConfigChangeRef = useRef(handleConfigChange);
+  handleConfigChangeRef.current = handleConfigChange;
+
+  const configNumberScheduler = useMemo(
+    () =>
+      createAutoPersistScheduler({
+        ...AUTO_PERSIST_SHORT,
+        onFire: () => {
+          const n = configNumbersRef.current;
+          if (!n) return;
+          void handleConfigChangeRef.current(n);
         },
-      );
-      setConfig(next);
-      if (active) await syncPomodoroPhaseLocalAlert(active, active, next);
-    } catch (e) {
-      setError(String(e instanceof Error ? e.message : e));
+      }),
+    [],
+  );
+
+  useEffect(() => () => configNumberScheduler.flush(), [configNumberScheduler]);
+
+  useEffect(() => {
+    if (!config) {
+      setConfigNumbers(null);
+      return;
     }
+    if (configNumberScheduler.isPending()) return;
+    setConfigNumbers(numbersFromConfig(config));
+  }, [config, configNumberScheduler]);
+
+  useEffect(() => {
+    if (!showSettings) configNumberScheduler.flush();
+  }, [showSettings, configNumberScheduler]);
+
+  const patchConfigNumber = <K extends keyof ConfigNumberFields>(
+    key: K,
+    value: ConfigNumberFields[K],
+  ) => {
+    const base = configNumbersRef.current ?? (config ? numbersFromConfig(config) : null);
+    if (!base) return;
+    const next = { ...base, [key]: value };
+    configNumbersRef.current = next;
+    setConfigNumbers(next);
+    configNumberScheduler.schedule();
   };
 
   const canPickTaskWhileActive = active?.phase === "work";
@@ -550,9 +623,9 @@ export function PomodoroApp() {
                     <Input
                       className="w-24"
                       type="number"
-                      value={config[key]}
+                      value={(configNumbers ?? numbersFromConfig(config))[key]}
                       disabled={!habitatOnline}
-                      onChange={(e) => void handleConfigChange({ [key]: Number(e.target.value) })}
+                      onChange={(e) => patchConfigNumber(key, Number(e.target.value))}
                     />
                   </div>
                 ))}

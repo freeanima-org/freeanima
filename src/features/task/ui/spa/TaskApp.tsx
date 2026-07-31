@@ -188,7 +188,6 @@ export function TaskApp() {
     cloneItem: cloneTaskItem,
     isDirty: isTaskItemDirty,
     isEqual: isTaskItemEqual,
-    autoSaveDebounceMs: 700,
     compactSheetEnabled: movePickerItemIds == null && moveProjectItemIds == null,
     setCompactImmersive,
     persistItem: (snapshot) =>
