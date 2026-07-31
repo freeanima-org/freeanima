@@ -9,6 +9,7 @@ import {
   hubConfigTextField,
   readHabitatConfigRecord,
 } from "./habitat-config-field-helpers.tsx";
+import { hubConfigVaultField } from "./habitat-config-vault-field.tsx";
 import { HabitatConfigConnectionTestButton } from "./HabitatConfigConnectionTestButton.tsx";
 
 const OPENAI_COMPATIBLE_BACKEND_ID = "openai_compatible";
@@ -300,11 +301,11 @@ export function LlmProvidersForm({
           {hubConfigTextField("base_url", String(entry.base_url ?? ""), (v) =>
             patch({ base_url: v }),
           )}
-          {hubConfigTextField(
+          {hubConfigVaultField(
             "api_key",
             String(entry.api_key ?? ""),
             (v) => patch({ api_key: v }),
-            { type: "password", hint: '可用 env("OPENAI_API_KEY") 或 vault 引用' },
+            { hint: '可用 env("OPENAI_API_KEY") 或从 Agent Vault 选择' },
           )}
           {habitatConfigNumberField(
             "timeout_ms",
@@ -359,26 +360,7 @@ export function LlmGeneralForm({
   );
 }
 
-export function providersDraftToPatch(
-  draft: Record<string, unknown> | null | undefined,
-): Record<string, unknown> {
-  const entries = readHabitatConfigRecord(draft);
-  const out: Record<string, unknown> = {};
-  for (const [id, provider] of Object.entries(entries)) {
-    out[id] = {
-      ...provider,
-      backend: String(provider.backend ?? OPENAI_COMPATIBLE_BACKEND_ID),
-    };
-  }
-  return out;
-}
-
-/** 载入草稿时就把 UI 展示的默认 backend 写进对象，避免「看起来已配置、保存却没带上」 */
-export function readProvidersDraft(
-  draft: Record<string, unknown> | null | undefined,
-): Record<string, unknown> {
-  return providersDraftToPatch(draft);
-}
+export { providersDraftToPatch, readProvidersDraft } from "./llm-settings-draft.ts";
 
 /** 保存前规范化：去掉空 hop，保留非空 params */
 export function profilesDraftToPatch(

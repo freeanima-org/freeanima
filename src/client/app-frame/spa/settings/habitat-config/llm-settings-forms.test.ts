@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { providersDraftToPatch, readProvidersDraft } from "./llm-settings-forms.tsx";
+import { providersDraftToPatch, readProvidersDraft } from "./llm-settings-draft.ts";
 
 describe("providersDraftToPatch", () => {
   it("补上 UI 展示了但草稿未写入的默认 backend", () => {

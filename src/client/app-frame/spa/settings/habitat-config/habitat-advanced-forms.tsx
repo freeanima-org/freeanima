@@ -6,6 +6,7 @@ import {
   habitatConfigSelectClassName,
   hubConfigTextField,
 } from "./habitat-config-field-helpers.tsx";
+import { hubConfigVaultField } from "./habitat-config-vault-field.tsx";
 
 export const ADVANCED_SECTIONS = [
   "gateway",
@@ -50,8 +51,18 @@ function FirecrawlForm({
   value: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
 }) {
-  return hubConfigTextField("api_url", String(value.api_url ?? ""), (api_url) =>
-    onChange({ ...value, api_url }),
+  return (
+    <div className="space-y-4">
+      {hubConfigTextField("api_url", String(value.api_url ?? ""), (api_url) =>
+        onChange({ ...value, api_url }),
+      )}
+      {hubConfigVaultField(
+        "api_key",
+        String(value.api_key ?? ""),
+        (api_key) => onChange({ ...value, api_key }),
+        { hint: '明文、vault("id","field") 或 env("KEY")' },
+      )}
+    </div>
   );
 }
 
@@ -65,9 +76,9 @@ function ObjectStorageForm({
   return (
     <div className="space-y-4">
       <p className="text-xs text-muted-foreground">
-        S3 兼容远端为权威存储（SSOT）。未配置时上传/下载会报错。密钥可用 vault(&quot;id&quot;,
-        &quot;field&quot;) 或 env(&quot;KEY&quot;)。服务器仅缓存到临时目录（可丢）。Habitat 须能访问
-        endpoint 公网（或同 VPC 内网）；勿用仅 VPC 可达却从公网 Habitat 去连。
+        S3 兼容远端为权威存储（SSOT）。未配置时上传/下载会报错。密钥可用「从 Vault 选择」或手写
+        vault()/env()。服务器仅缓存到临时目录（可丢）。Habitat 须能访问 endpoint 公网（或同 VPC
+        内网）；勿用仅 VPC 可达却从公网 Habitat 去连。
       </p>
       {hubConfigTextField(
         "endpoint",
@@ -83,10 +94,13 @@ function ObjectStorageForm({
       {hubConfigTextField("bucket", String(value.bucket ?? ""), (bucket) =>
         onChange({ ...value, bucket }),
       )}
-      {hubConfigTextField("access_key_id", String(value.access_key_id ?? ""), (access_key_id) =>
-        onChange({ ...value, access_key_id }),
+      {hubConfigVaultField(
+        "access_key_id",
+        String(value.access_key_id ?? ""),
+        (access_key_id) => onChange({ ...value, access_key_id }),
+        { type: "text" },
       )}
-      {hubConfigTextField(
+      {hubConfigVaultField(
         "secret_access_key",
         String(value.secret_access_key ?? ""),
         (secret_access_key) => onChange({ ...value, secret_access_key }),
@@ -390,12 +404,11 @@ function DiscordForm({
       {habitatConfigBoolField("启用", value.enabled !== false, (enabled) =>
         onChange({ ...value, enabled }),
       )}
-      {hubConfigTextField(
+      {hubConfigVaultField(
         "token",
         String(value.token ?? ""),
         (v) => onChange({ ...value, token: v }),
         {
-          type: "password",
           hint: '明文、vault("id","field") 或 env("KEY")',
         },
       )}
@@ -458,12 +471,11 @@ function WeixinForm({
       {habitatConfigBoolField("启用", value.enabled !== false, (enabled) =>
         onChange({ ...value, enabled }),
       )}
-      {hubConfigTextField(
+      {hubConfigVaultField(
         "token",
         String(value.token ?? ""),
         (v) => onChange({ ...value, token: v }),
         {
-          type: "password",
           hint: "明文、vault/env 引用，或环境变量 WEIXIN_ILINK_TOKEN",
         },
       )}
