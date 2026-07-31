@@ -24,8 +24,18 @@ describe("error-log", () => {
   });
 
   it("writes startup failure with source tag", () => {
-    logStartupError("service startup failed", new Error("database.url not configured"));
+    const prevError = console.error;
+    const lines: string[] = [];
+    console.error = (...args: unknown[]) => {
+      lines.push(args.map(String).join(" "));
+    };
+    try {
+      logStartupError("service startup failed", new Error("database.url not configured"));
+    } finally {
+      console.error = prevError;
+    }
 
+    expect(lines.some((line) => line.includes("database.url not configured"))).toBe(true);
     expect(memory.records.some((r) => r.message.includes("service startup failed"))).toBe(true);
     expect(
       memory.records.some(

@@ -79,4 +79,32 @@ describe("PortalQueryClient", () => {
     client.setQueryData<number>(key, (prev) => (prev ?? 0) + 1);
     expect(client.getQueryData<number>(key)).toBe(2);
   });
+
+  it("fetch 成功后 updatedAt!==0，避免 usePortalRead 把成功当成需再拉", async () => {
+    const key = ["task", "lists"] as const;
+    let calls = 0;
+    await client.fetchQuery({
+      queryKey: key,
+      queryFn: async () => {
+        calls += 1;
+        return ["ok"];
+      },
+    });
+    const afterSuccess = client.getQueryState(key);
+    expect(afterSuccess.status).toBe("success");
+    expect(afterSuccess.updatedAt).not.toBe(0);
+
+    // 与 usePortalRead / usePortalInfiniteQuery 的 needsFetch 条件对齐
+    const keyHash = hashQueryKey(key);
+    const lastFetchedHash = keyHash;
+    const needsFetch =
+      lastFetchedHash !== keyHash ||
+      afterSuccess.updatedAt === 0 ||
+      (afterSuccess.status === "idle" && afterSuccess.data === undefined);
+    expect(needsFetch).toBe(false);
+    expect(calls).toBe(1);
+
+    await client.invalidateQueries(key);
+    expect(client.getQueryState(key).updatedAt).toBe(0);
+  });
 });

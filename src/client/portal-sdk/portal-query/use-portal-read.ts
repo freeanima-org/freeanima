@@ -24,6 +24,9 @@ export function usePortalRead<T>(opts: UsePortalReadOptions<T>): UsePortalReadRe
   const enabled = opts.enabled !== false && opts.queryKey != null;
   const keyHash = opts.queryKey != null ? hashQueryKey(opts.queryKey) : "";
   const queryKey = opts.queryKey;
+  // 调用方常写内联数组 key；用 ref 避免 reload 引用随 key 身份抖动
+  const queryKeyRef = useRef(queryKey);
+  queryKeyRef.current = queryKey;
 
   const [version, setVersion] = useState(0);
   const state = queryKey != null ? client.getQueryState<T>(queryKey) : null;
@@ -31,41 +34,44 @@ export function usePortalRead<T>(opts: UsePortalReadOptions<T>): UsePortalReadRe
   const queryFnEvent = useEffectEvent(opts.queryFn);
 
   const reload = useCallback(async (): Promise<void> => {
-    if (!enabled || queryKey == null) return;
+    const key = queryKeyRef.current;
+    if (!enabled || key == null) return;
     try {
-      await client.fetchQuery({ queryKey, queryFn: () => queryFnEvent() });
+      await client.fetchQuery({ queryKey: key, queryFn: () => queryFnEvent() });
     } catch {
       // error 已写入 client state
     }
-  }, [client, enabled, keyHash, queryKey]);
+  }, [client, enabled, keyHash]);
 
   useEffect(() => {
     if (!enabled || queryKey == null) return;
     return client.subscribe(queryKey, () => setVersion((v) => v + 1));
-  }, [client, enabled, keyHash, queryKey]);
+    // keyHash 代表 queryKey 内容；勿依赖 queryKey 引用身份
+  }, [client, enabled, keyHash]);
 
   const lastFetchedHash = useRef<string>("");
-  const lastUpdatedAt = useRef<number>(-1);
 
   useEffect(() => {
     if (!enabled || queryKey == null) return;
     const current = client.getQueryState<T>(queryKey);
+    // updatedAt===0：未拉取或已 invalidate。成功后 updatedAt 为时间戳，不得因此再 reload
+    //（否则会与 notify 形成「成功 → updatedAt 变化 → 再拉」死循环）。
     const needsFetch =
       lastFetchedHash.current !== keyHash ||
       current.updatedAt === 0 ||
       (current.status === "idle" && current.data === undefined);
-    if (!needsFetch && current.updatedAt === lastUpdatedAt.current) return;
+    if (!needsFetch) return;
     lastFetchedHash.current = keyHash;
-    lastUpdatedAt.current = current.updatedAt === 0 ? -1 : current.updatedAt;
     void reload();
-  }, [client, enabled, keyHash, queryKey, version, state?.updatedAt, reload]);
+  }, [client, enabled, keyHash, version, state?.updatedAt, reload]);
 
   const setData = useCallback(
     (updater: T | ((prev: T | undefined) => T | undefined)) => {
-      if (queryKey == null) return;
-      client.setQueryData<T>(queryKey, updater);
+      const key = queryKeyRef.current;
+      if (key == null) return;
+      client.setQueryData<T>(key, updater);
     },
-    [client, queryKey],
+    [client, keyHash],
   );
 
   const data = state?.data;
