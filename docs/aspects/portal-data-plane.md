@@ -116,6 +116,8 @@ Self-owned **PortalQueryClient** (not `@tanstack/react-query`) lives in `src/cli
 | Optional devtools                                                     | direction                                                  |
 | ETag/304 tied to IDB                                                  | out of scope until bandwidth / multi-device cost justifies |
 
+自动拉取仅在 **key 变化**、**`updatedAt === 0`（未拉 / invalidate）**、或 **idle 无 data** 时触发；`fetchQuery` 成功写入的新时间戳**不得**再触发 reload（否则与 subscribe notify 死循环刷屏）。`reload` / `setData` 依赖 **keyHash**（非 key 数组引用），避免内联 `queryKey` 导致父组件 effect 反复 `resetDetail`。
+
 **Decision remains:** do not introduce the React Query **library**. PortalQueryClient follows FreeAnima automation (no focus refetch / no global list polling).
 
 ## Child docs

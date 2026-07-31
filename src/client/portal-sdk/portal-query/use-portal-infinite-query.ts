@@ -40,6 +40,8 @@ export function usePortalInfiniteQuery<TPage>(
   const enabled = opts.enabled !== false && opts.queryKey != null;
   const keyHash = opts.queryKey != null ? hashQueryKey(opts.queryKey) : "";
   const queryKey = opts.queryKey;
+  const queryKeyRef = useRef(queryKey);
+  queryKeyRef.current = queryKey;
   const initialPageParam = opts.initialPageParam ?? 0;
 
   const [version, setVersion] = useState(0);
@@ -49,10 +51,11 @@ export function usePortalInfiniteQuery<TPage>(
   const queryFnEvent = useEffectEvent(opts.queryFn);
 
   const loadFirstPage = useCallback(async (): Promise<void> => {
-    if (!enabled || queryKey == null) return;
+    const key = queryKeyRef.current;
+    if (!enabled || key == null) return;
     try {
       await client.fetchQuery({
-        queryKey,
+        queryKey: key,
         queryFn: async () => {
           const page = await queryFnEvent({ pageParam: initialPageParam });
           return { pages: [page], pageParams: [initialPageParam] } satisfies InfiniteData<TPage>;
@@ -61,12 +64,12 @@ export function usePortalInfiniteQuery<TPage>(
     } catch {
       // error in client state
     }
-  }, [client, enabled, initialPageParam, keyHash, queryKey]);
+  }, [client, enabled, initialPageParam, keyHash]);
 
   useEffect(() => {
     if (!enabled || queryKey == null) return;
     return client.subscribe(queryKey, () => setVersion((v) => v + 1));
-  }, [client, enabled, keyHash, queryKey]);
+  }, [client, enabled, keyHash]);
 
   const lastFetchedHash = useRef<string>("");
 
@@ -80,7 +83,7 @@ export function usePortalInfiniteQuery<TPage>(
     if (!needsFetch) return;
     lastFetchedHash.current = keyHash;
     void loadFirstPage();
-  }, [client, enabled, keyHash, queryKey, version, state?.updatedAt, loadFirstPage]);
+  }, [client, enabled, keyHash, version, state?.updatedAt, loadFirstPage]);
 
   const data = state?.data;
   const lastPage = data?.pages[data.pages.length - 1];
@@ -89,12 +92,13 @@ export function usePortalInfiniteQuery<TPage>(
   const hasNextPage = nextParam != null && nextParam !== false;
 
   const fetchNextPage = useCallback(async (): Promise<void> => {
-    if (!enabled || queryKey == null || !hasNextPage || loadingMore) return;
+    const key = queryKeyRef.current;
+    if (!enabled || key == null || !hasNextPage || loadingMore) return;
     const pageParam = nextParam;
     setLoadingMore(true);
     try {
       const page = await queryFnEvent({ pageParam });
-      client.setQueryData<InfiniteData<TPage>>(queryKey, (prev) => {
+      client.setQueryData<InfiniteData<TPage>>(key, (prev) => {
         const base = prev ?? { pages: [], pageParams: [] };
         return {
           pages: [...base.pages, page],
@@ -104,7 +108,7 @@ export function usePortalInfiniteQuery<TPage>(
     } finally {
       setLoadingMore(false);
     }
-  }, [client, enabled, hasNextPage, loadingMore, nextParam, queryKey]);
+  }, [client, enabled, hasNextPage, loadingMore, nextParam, keyHash]);
 
   const setData = useCallback(
     (
@@ -112,10 +116,11 @@ export function usePortalInfiniteQuery<TPage>(
         | InfiniteData<TPage>
         | ((prev: InfiniteData<TPage> | undefined) => InfiniteData<TPage> | undefined),
     ) => {
-      if (queryKey == null) return;
-      client.setQueryData<InfiniteData<TPage>>(queryKey, updater);
+      const key = queryKeyRef.current;
+      if (key == null) return;
+      client.setQueryData<InfiniteData<TPage>>(key, updater);
     },
-    [client, queryKey],
+    [client, keyHash],
   );
 
   return {

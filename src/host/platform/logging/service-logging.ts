@@ -57,6 +57,11 @@ export function logStartupError(
   error: unknown,
   context?: Record<string, unknown>,
 ): void {
+  // 启动失败先打可读正文（多行配置提示等），再写结构化日志
+  const detail = error instanceof Error ? error.message : String(error);
+  if (detail.length > 0 && detail !== message) {
+    console.error(detail);
+  }
   logComponent("startup").error(message, { err: error, ...context });
 }
 
