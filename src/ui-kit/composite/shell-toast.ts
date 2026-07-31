@@ -30,7 +30,14 @@ export function showShellToast(
     ...(options?.description != null ? { description: options.description } : {}),
     duration: options?.duration ?? Number.POSITIVE_INFINITY,
     ...(options?.action != null ? { action: options.action } : {}),
-    ...(options?.cancel != null ? { cancel: options.cancel } : {}),
+    ...(options?.cancel != null
+      ? {
+          cancel: {
+            label: options.cancel.label,
+            onClick: options.cancel.onClick ?? (() => undefined),
+          },
+        }
+      : {}),
   });
 }
 

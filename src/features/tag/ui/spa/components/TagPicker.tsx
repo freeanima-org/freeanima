@@ -344,10 +344,10 @@ export function TagPicker({
         placement={placement}
         className="w-72 p-2"
         selectionMode={mode === "multi" ? "multiple" : "none"}
-        selectedKeys={mode === "multi" ? [...selected].map(String) : undefined}
-        onSelectionChange={
-          mode === "multi"
-            ? (keys: "all" | Iterable<string | number>) => {
+        {...(mode === "multi"
+          ? {
+              selectedKeys: [...selected].map(String),
+              onSelectionChange: (keys: "all" | Iterable<string | number>) => {
                 if (keys === "all") return;
                 const next = new Set([...keys].map((k) => Number(k)));
                 for (const id of selected) {
@@ -356,86 +356,87 @@ export function TagPicker({
                 for (const id of next) {
                   if (!selected.has(id)) toggle(id, true);
                 }
-              }
-            : undefined
-        }
-        onKeyDownCapture={onPickerKeyDown}
+              },
+            }
+          : {})}
       >
-        <Input
-          ref={inputRef}
-          className="h-8"
-          value={query}
-          placeholder="搜索或新建…"
-          aria-label="搜索或新建标签"
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={onPickerKeyDown}
-          onClick={(e) => e.stopPropagation()}
-        />
-        <p className="text-muted-foreground mt-2 mb-1 px-1 text-[11px] font-medium tracking-wide uppercase">
-          {q ? "搜索结果" : "常用标签"}
-        </p>
-        <div className="max-h-60 overflow-y-auto">
-          {error ? <p className="text-destructive px-1 py-1 text-xs">{error}</p> : null}
-          {loading ? <p className="text-muted-foreground px-1 py-2 text-xs">加载中…</p> : null}
-          {!loading && visibleItems.length === 0 && !showCreate ? (
-            <p className="text-muted-foreground px-1 py-2 text-xs">
-              {q ? "无匹配标签" : "暂无常用标签，输入以搜索或新建"}
-            </p>
-          ) : null}
-          {!loading && mode === "append"
-            ? visibleItems.map((row, index) => (
+        <div onKeyDownCapture={onPickerKeyDown}>
+          <Input
+            ref={inputRef}
+            className="h-8"
+            value={query}
+            placeholder="搜索或新建…"
+            aria-label="搜索或新建标签"
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={onPickerKeyDown}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <p className="text-muted-foreground mt-2 mb-1 px-1 text-[11px] font-medium tracking-wide uppercase">
+            {q ? "搜索结果" : "常用标签"}
+          </p>
+          <div className="max-h-60 overflow-y-auto">
+            {error ? <p className="text-destructive px-1 py-1 text-xs">{error}</p> : null}
+            {loading ? <p className="text-muted-foreground px-1 py-2 text-xs">加载中…</p> : null}
+            {!loading && visibleItems.length === 0 && !showCreate ? (
+              <p className="text-muted-foreground px-1 py-2 text-xs">
+                {q ? "无匹配标签" : "暂无常用标签，输入以搜索或新建"}
+              </p>
+            ) : null}
+            {!loading && mode === "append"
+              ? visibleItems.map((row, index) => (
+                  <DropdownMenuItem
+                    key={row.id}
+                    id={String(row.id)}
+                    data-tag-picker-nav={index}
+                    data-tag-nav-active={activeIndex === index ? "" : undefined}
+                    className={cn(activeIndex === index && highlightClass)}
+                    onAction={() => pick(row.id)}
+                  >
+                    <span className="min-w-0 flex-1 truncate">{row.title}</span>
+                    {row.count != null ? (
+                      <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+                        {row.count}
+                      </span>
+                    ) : null}
+                  </DropdownMenuItem>
+                ))
+              : null}
+            {!loading && mode === "multi"
+              ? visibleItems.map((row, index) => (
+                  <DropdownMenuItem
+                    key={row.id}
+                    id={String(row.id)}
+                    data-tag-picker-nav={index}
+                    data-tag-nav-active={activeIndex === index ? "" : undefined}
+                    className={cn(activeIndex === index && highlightClass)}
+                  >
+                    <span className="min-w-0 flex-1 truncate">{row.title}</span>
+                    {row.count != null ? (
+                      <span className="text-muted-foreground ml-auto shrink-0 text-xs tabular-nums">
+                        {row.count}
+                      </span>
+                    ) : null}
+                  </DropdownMenuItem>
+                ))
+              : null}
+            {showCreate ? (
+              <>
+                {visibleItems.length > 0 ? <DropdownMenuSeparator /> : null}
                 <DropdownMenuItem
-                  key={row.id}
-                  id={String(row.id)}
-                  data-tag-picker-nav={index}
-                  data-tag-nav-active={activeIndex === index ? "" : undefined}
-                  className={cn(activeIndex === index && highlightClass)}
-                  onAction={() => pick(row.id)}
+                  data-tag-picker-nav={createIndex}
+                  data-tag-nav-active={activeIndex === createIndex ? "" : undefined}
+                  className={cn(
+                    "text-foreground gap-2",
+                    activeIndex === createIndex && highlightClass,
+                  )}
+                  onAction={() => void createAndPick(q)}
                 >
-                  <span className="min-w-0 flex-1 truncate">{row.title}</span>
-                  {row.count != null ? (
-                    <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-                      {row.count}
-                    </span>
-                  ) : null}
+                  <PlusIcon className="size-3.5 shrink-0" />
+                  <span className="min-w-0 truncate">添加「{q}」</span>
                 </DropdownMenuItem>
-              ))
-            : null}
-          {!loading && mode === "multi"
-            ? visibleItems.map((row, index) => (
-                <DropdownMenuItem
-                  key={row.id}
-                  id={String(row.id)}
-                  data-tag-picker-nav={index}
-                  data-tag-nav-active={activeIndex === index ? "" : undefined}
-                  className={cn(activeIndex === index && highlightClass)}
-                >
-                  <span className="min-w-0 flex-1 truncate">{row.title}</span>
-                  {row.count != null ? (
-                    <span className="text-muted-foreground ml-auto shrink-0 text-xs tabular-nums">
-                      {row.count}
-                    </span>
-                  ) : null}
-                </DropdownMenuItem>
-              ))
-            : null}
-          {showCreate ? (
-            <>
-              {visibleItems.length > 0 ? <DropdownMenuSeparator /> : null}
-              <DropdownMenuItem
-                data-tag-picker-nav={createIndex}
-                data-tag-nav-active={activeIndex === createIndex ? "" : undefined}
-                className={cn(
-                  "text-foreground gap-2",
-                  activeIndex === createIndex && highlightClass,
-                )}
-                onAction={() => void createAndPick(q)}
-              >
-                <PlusIcon className="size-3.5 shrink-0" />
-                <span className="min-w-0 truncate">添加「{q}」</span>
-              </DropdownMenuItem>
-            </>
-          ) : null}
+              </>
+            ) : null}
+          </div>
         </div>
       </DropdownMenu>
     </DropdownMenuTrigger>

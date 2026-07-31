@@ -14,7 +14,7 @@ function mockItem(id: string, label: string): AppNavItem {
     to: `/${id}`,
     match: `/${id}`,
     label: () => label,
-    icon: (() => null) as AppNavItem["icon"],
+    icon: (() => null) as unknown as AppNavItem["icon"],
   };
 }
 

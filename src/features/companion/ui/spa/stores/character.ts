@@ -275,6 +275,15 @@ export async function enterPatrolMode(): Promise<void> {
 }
 
 function tickJourney(): void {
+  if (!useCompanionStore.getState().characterReady) {
+    if (activeJourney != null || introWalkActive) {
+      activeJourney = null;
+      introWalkActive = false;
+    }
+    syncIdleAtRest();
+    return;
+  }
+
   if (!activeJourney) {
     if (useCharacterStore.getState().patrolling) {
       void scheduleNextPatrolStep();
@@ -329,6 +338,14 @@ export function syncCompanionStagePosition(): void {
 export function onCharacterModelReady(): void {
   syncCompanionStagePosition();
   void runStartupWalkToHome();
+}
+
+/** 切模时立刻打断巡逻 / 归位，避免旧模型继续播走路 */
+export function onCharacterModelSwitch(): void {
+  introWalkActive = false;
+  activeJourney = null;
+  useCharacterStore.getState().setPatrolling(false);
+  syncIdleAtRest();
 }
 
 async function readStartupSpawnPoint(): Promise<ScreenPoint> {

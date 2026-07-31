@@ -6,8 +6,9 @@ import {
   createRoute,
   createRouter,
   redirect,
+  type RouteComponent,
 } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, type ComponentType } from "react";
 
 import { shouldUseNativeShellNavigation } from "@freeanima/client/portal-sdk/shell-runtime.ts";
 
@@ -18,6 +19,11 @@ import { AppFrame } from "./main/AppFrame.tsx";
 import { SettingsPage } from "./settings/SettingsPage.tsx";
 import { needsHabitatSetup } from "./setup/habitat-setup.ts";
 import { resolveShellRouterBasepath } from "./router-basepath.ts";
+
+/** TanStack Router 对 lazy ComponentType<object> 的 RouteComponent 约束过严（Windows tsgo + eOPT） */
+function asRouteComponent(component: ComponentType<object>): RouteComponent {
+  return component as unknown as RouteComponent;
+}
 
 const rootRoute = createRootRoute({
   component: Outlet,
@@ -54,12 +60,17 @@ const indexRoute = createRoute({
   },
 });
 
-const featureRoutes = listShellFeatureRoutes().map((entry) =>
-  createRoute({
+function createLazyShellRoute(path: string, component: ComponentType<object>) {
+  return createRoute({
     getParentRoute: () => mainLayoutRoute,
-    path: entry.path,
-    component: shellLazyRoute(entry.load),
-  }),
+    path,
+    component: asRouteComponent(component),
+    // Windows tsgo + exactOptionalPropertyTypes 下 lazy RouteComponent 与 RouteOptions 不兼容
+  } as never);
+}
+
+const featureRoutes = listShellFeatureRoutes().map((entry) =>
+  createLazyShellRoute(entry.path, shellLazyRoute(entry.load)),
 );
 
 const habitatIndexRoute = createRoute({
@@ -70,17 +81,9 @@ const habitatIndexRoute = createRoute({
   },
 });
 
-const habitatDashboardRoute = createRoute({
-  getParentRoute: () => mainLayoutRoute,
-  path: "/habitat/dashboard",
-  component: loadHabitatShellRoute(),
-});
+const habitatDashboardRoute = createLazyShellRoute("/habitat/dashboard", loadHabitatShellRoute());
 
-const habitatCatchAllRoute = createRoute({
-  getParentRoute: () => mainLayoutRoute,
-  path: "/habitat/$",
-  component: loadHabitatShellRoute(),
-});
+const habitatCatchAllRoute = createLazyShellRoute("/habitat/$", loadHabitatShellRoute());
 
 const settingsRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,

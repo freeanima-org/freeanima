@@ -2,6 +2,7 @@ import type { ComponentProps } from "react";
 import { LabelContext, Label as LabelPrimitive } from "react-aria-components";
 
 import { cn } from "../../lib/utils.ts";
+import { omitUndefined } from "../../lib/omit-undefined.ts";
 
 type LabelProps = ComponentProps<typeof LabelPrimitive> & {
   htmlFor?: string;
@@ -16,8 +17,7 @@ function Label({ className, htmlFor, slot, ...props }: LabelProps) {
         className,
       )}
       {...props}
-      htmlFor={htmlFor}
-      slot={slot}
+      {...omitUndefined({ htmlFor, slot })}
     />
   );
 
