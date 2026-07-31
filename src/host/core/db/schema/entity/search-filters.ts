@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  CALENDAR_EVENT_COMPONENT,
   CONTENT_BLOCK_COMPONENT,
   DIARY_ENTRY_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
@@ -135,6 +136,28 @@ export function parseDiaryEntrySearchFilters(
   return parsed.data;
 }
 
+export const calendarEventSearchFiltersSchema = z
+  .object({
+    /** 视口开始：事件与 [range_start, range_end] 相交 */
+    range_start: z.string().optional(),
+    range_end: z.string().optional(),
+    client_op_id: z.string().min(1).optional(),
+  })
+  .strict();
+
+export type CalendarEventSearchFilters = z.infer<typeof calendarEventSearchFiltersSchema>;
+
+export function parseCalendarEventSearchFilters(
+  raw: Record<string, unknown> | undefined,
+): CalendarEventSearchFilters {
+  if (!raw || Object.keys(raw).length === 0) return {};
+  const parsed = calendarEventSearchFiltersSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`invalid calendar_event filters: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
 export const vaultItemSearchFiltersSchema = z
   .object({
     item_type: vaultItemTypeSchema.optional(),
@@ -243,6 +266,9 @@ export function parseProjectFolderSearchFilters(
 export const projectSearchFiltersSchema = z
   .object({
     client_op_id: z.string().min(1).optional(),
+    /** 视口开始：项目 start/end 与区间相交（无日期的项目不匹配） */
+    range_start: z.string().optional(),
+    range_end: z.string().optional(),
   })
   .strict();
 
@@ -267,6 +293,7 @@ export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [TAG_COMPONENT]: tagSearchFiltersSchema,
   [CONTENT_BLOCK_COMPONENT]: contentBlockSearchFiltersSchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntrySearchFiltersSchema,
+  [CALENDAR_EVENT_COMPONENT]: calendarEventSearchFiltersSchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountSearchFiltersSchema,
   [EMAIL_THREAD_COMPONENT]: emailThreadSearchFiltersSchema,
   [EMAIL_MESSAGE_COMPONENT]: emailMessageSearchFiltersSchema,

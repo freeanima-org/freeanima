@@ -55,6 +55,7 @@ Deliver notifications to the **subject of the World that owns the entity**. Do n
 | Event                                            | Notification (Inbox)       | Reminder → Alert                               |
 | ------------------------------------------------ | -------------------------- | ---------------------------------------------- |
 | Task **due**                                     | Yes (that World’s subject) | May also interrupt via `notification.created`  |
+| Calendar event **start** / `remind_at`           | Yes (that World’s subject) | Same scan as task (`builtin-task-reminders`)   |
 | Advance reminders (e.g. 7d / 3d / 1d before due) | **No**                     | **Yes** only                                   |
 | `notification_send` tool                         | Yes (by target / subject)  | Interrupt for subjects that need a device ring |
 | Chat unread rise                                 | No                         | Yes                                            |

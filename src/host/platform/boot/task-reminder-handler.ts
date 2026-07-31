@@ -1,4 +1,9 @@
-import { TASK_ITEM_COMPONENT, asTaskItem } from "@freeanima/host/core/db/schema/entity";
+import {
+  CALENDAR_EVENT_COMPONENT,
+  TASK_ITEM_COMPONENT,
+  asCalendarEvent,
+  asTaskItem,
+} from "@freeanima/host/core/db/schema/entity";
 import { getResolvedWorldContext } from "@freeanima/host/core/config";
 import { searchEntities, updateEntity } from "@freeanima/host/core/db/pg/entity";
 import { formatCstIso } from "@freeanima/host/core/util";
@@ -7,6 +12,13 @@ import type { NotificationRecipientRef } from "@freeanima/host/capabilities/tool
 
 export type TaskReminderSchedulable = {
   due_at?: string | null;
+  remind_at?: string | null;
+  last_notified_at?: string | null;
+};
+
+/** 日程提醒：remind_at 优先，否则 start_at（映射为 due_at 复用触发逻辑） */
+export type CalendarEventReminderSchedulable = {
+  start_at?: string | null;
   remind_at?: string | null;
   last_notified_at?: string | null;
 };
@@ -33,6 +45,14 @@ export function triggerMs(item: TaskReminderSchedulable): number | null {
   return Number.isFinite(due) ? due : null;
 }
 
+export function calendarEventTriggerMs(item: CalendarEventReminderSchedulable): number | null {
+  return triggerMs({
+    ...(item.remind_at !== undefined ? { remind_at: item.remind_at } : {}),
+    ...(item.start_at !== undefined ? { due_at: item.start_at } : {}),
+    ...(item.last_notified_at !== undefined ? { last_notified_at: item.last_notified_at } : {}),
+  });
+}
+
 export function shouldSendTaskReminder(
   item: TaskReminderSchedulable,
   nowMs: number = Date.now(),
@@ -44,8 +64,26 @@ export function shouldSendTaskReminder(
   return true;
 }
 
+export function shouldSendCalendarEventReminder(
+  item: CalendarEventReminderSchedulable,
+  nowMs: number = Date.now(),
+): boolean {
+  return shouldSendTaskReminder(
+    {
+      ...(item.remind_at !== undefined ? { remind_at: item.remind_at } : {}),
+      ...(item.start_at !== undefined ? { due_at: item.start_at } : {}),
+      ...(item.last_notified_at !== undefined ? { last_notified_at: item.last_notified_at } : {}),
+    },
+    nowMs,
+  );
+}
+
 export function taskReminderSourceRef(taskItemId: number, triggerAtMs: number): string {
   return `task_item:${taskItemId}:trigger:${new Date(triggerAtMs).toISOString()}`;
+}
+
+export function calendarEventReminderSourceRef(eventId: number, triggerAtMs: number): string {
+  return `calendar_event:${eventId}:trigger:${new Date(triggerAtMs).toISOString()}`;
 }
 
 function buildReminderBody(item: TaskReminderSchedulable & { title: string }): string {
@@ -54,7 +92,15 @@ function buildReminderBody(item: TaskReminderSchedulable & { title: string }): s
   return [dueLine, remindLine].filter(Boolean).join("\n") || item.title;
 }
 
-/** 将 task 所属 world 映射到通知收件人；未知 world 返回 null */
+function buildCalendarReminderBody(
+  item: CalendarEventReminderSchedulable & { title: string },
+): string {
+  const startLine = item.start_at ? `开始时间：${item.start_at}` : "";
+  const remindLine = item.remind_at ? `提醒时间：${item.remind_at}` : "";
+  return [startLine, remindLine].filter(Boolean).join("\n") || item.title;
+}
+
+/** 将 entity 所属 world 映射到通知收件人；未知 world 返回 null */
 export function recipientForTaskWorld(
   worldId: number,
   port: {
@@ -68,14 +114,12 @@ export function recipientForTaskWorld(
   return null;
 }
 
-/** 全表扫描到期/提醒已到的 pending 任务，按 entity world 写对应 subject Inbox */
-export async function runTaskReminderScan(): Promise<string> {
-  const port = getNotificationPort();
-  if (!port) {
-    return JSON.stringify({ ok: false, error: "notification port unavailable" });
-  }
+type ReminderPort = NonNullable<ReturnType<typeof getNotificationPort>>;
 
-  const now = Date.now();
+async function scanTaskReminders(
+  port: ReminderPort,
+  now: number,
+): Promise<{ sent: number; scanned: number; skipped_unknown_world: number }> {
   const ctx = getResolvedWorldContext();
   const search = await searchEntities({
     primary_component: TASK_ITEM_COMPONENT,
@@ -123,10 +167,81 @@ export async function runTaskReminderScan(): Promise<string> {
     sent += 1;
   }
 
+  return { sent, scanned: search.results.length, skipped_unknown_world: skippedUnknownWorld };
+}
+
+async function scanCalendarEventReminders(
+  port: ReminderPort,
+  now: number,
+): Promise<{ sent: number; scanned: number; skipped_unknown_world: number }> {
+  const ctx = getResolvedWorldContext();
+  const search = await searchEntities({
+    primary_component: CALENDAR_EVENT_COMPONENT,
+    limit: 500,
+    mode: "filter_only",
+    global: true,
+    accessible_world_ids: [ctx.user_world_id, ctx.agent_world_id],
+  });
+
+  let sent = 0;
+  let skippedUnknownWorld = 0;
+  for (const row of search.results) {
+    const item = asCalendarEvent(row);
+    if (!item) continue;
+    const schedulable: CalendarEventReminderSchedulable & { title: string } = {
+      title: item.title,
+      start_at: item.start_at,
+      remind_at: item.remind_at ?? null,
+      last_notified_at: item.last_notified_at ?? null,
+    };
+    if (!shouldSendCalendarEventReminder(schedulable, now)) continue;
+
+    const at = calendarEventTriggerMs(schedulable);
+    if (at == null) continue;
+
+    const recipient = recipientForTaskWorld(row.world_id, port);
+    if (!recipient) {
+      skippedUnknownWorld += 1;
+      continue;
+    }
+
+    await port.create({
+      recipient_kind: recipient.kind,
+      recipient_id: recipient.id,
+      title: `日程提醒：${item.title}`,
+      body: buildCalendarReminderBody(schedulable),
+      source_kind: "system",
+      source_ref: calendarEventReminderSourceRef(item.id, at),
+      payload: { calendar_event_id: item.id },
+    });
+
+    await updateEntity({
+      id: item.id,
+      body: { last_notified_at: formatCstIso(new Date()) },
+    });
+    sent += 1;
+  }
+
+  return { sent, scanned: search.results.length, skipped_unknown_world: skippedUnknownWorld };
+}
+
+/** 扫描到期任务与日程事件，按 entity world 写对应 subject Inbox */
+export async function runTaskReminderScan(): Promise<string> {
+  const port = getNotificationPort();
+  if (!port) {
+    return JSON.stringify({ ok: false, error: "notification port unavailable" });
+  }
+
+  const now = Date.now();
+  const tasks = await scanTaskReminders(port, now);
+  const events = await scanCalendarEventReminders(port, now);
+
   return JSON.stringify({
     ok: true,
-    sent,
-    scanned: search.results.length,
-    skipped_unknown_world: skippedUnknownWorld,
+    sent: tasks.sent + events.sent,
+    scanned: tasks.scanned + events.scanned,
+    skipped_unknown_world: tasks.skipped_unknown_world + events.skipped_unknown_world,
+    tasks,
+    calendar_events: events,
   });
 }

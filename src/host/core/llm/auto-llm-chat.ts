@@ -81,27 +81,31 @@ async function persistChatRun(row: {
   finishedAt: string;
   messagePayloads: MessagePayload[];
 }): Promise<void> {
-  if (!isPostgresPrimary()) return;
-  await appendAutoLlmRun({
-    id: row.id,
-    run_name: row.input.runName,
-    run_kind: row.input.runKind,
-    subject_id: row.input.subjectId,
-    input_summary: row.inputSummary,
-    output: row.output.slice(0, OUTPUT_MAX),
-    status: row.status,
-    duration_ms: row.durationMs,
-    error: row.error ?? null,
-    metadata: {
-      ...row.input.metadata,
-      model: row.input.model,
-      parent_conversation_id: row.input.parentConversationId,
-      profile_id: row.input.profileId,
-    },
-    created_at: row.startedAt,
-    finished_at: row.finishedAt,
-    messages: row.messagePayloads.map((payload, pos) => ({ pos, payload })),
-  });
+  try {
+    if (!isPostgresPrimary()) return;
+    await appendAutoLlmRun({
+      id: row.id,
+      run_name: row.input.runName,
+      run_kind: row.input.runKind,
+      subject_id: row.input.subjectId,
+      input_summary: row.inputSummary,
+      output: row.output.slice(0, OUTPUT_MAX),
+      status: row.status,
+      duration_ms: row.durationMs,
+      error: row.error ?? null,
+      metadata: {
+        ...row.input.metadata,
+        model: row.input.model,
+        parent_conversation_id: row.input.parentConversationId,
+        profile_id: row.input.profileId,
+      },
+      created_at: row.startedAt,
+      finished_at: row.finishedAt,
+      messages: row.messagePayloads.map((payload, pos) => ({ pos, payload })),
+    });
+  } catch {
+    // 落库失败不得掩盖 chat 结果（单测 mock.module 污染 isPostgresPrimary 时尤甚）
+  }
 }
 
 /**

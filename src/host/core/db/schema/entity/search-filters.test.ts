@@ -1,9 +1,11 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  parseCalendarEventSearchFilters,
   parseContentBlockSearchFilters,
   parseDiaryEntrySearchFilters,
   parsePomodoroSessionSearchFilters,
+  parseProjectSearchFilters,
   parseTaskItemSearchFilters,
 } from "./search-filters.ts";
 
@@ -46,6 +48,35 @@ describe("parseDiaryEntrySearchFilters", () => {
     expect(() => parseDiaryEntrySearchFilters({ foo: "bar" })).toThrow(
       /invalid diary_entry filters/,
     );
+  });
+});
+
+describe("parseCalendarEventSearchFilters", () => {
+  it("accepts range overlap filters", () => {
+    const parsed = parseCalendarEventSearchFilters({
+      range_start: "2026-07-01T00:00:00+08:00",
+      range_end: "2026-07-31T23:59:59+08:00",
+      client_op_id: "op-cal",
+    });
+    expect(parsed.range_start).toBe("2026-07-01T00:00:00+08:00");
+    expect(parsed.range_end).toBe("2026-07-31T23:59:59+08:00");
+    expect(parsed.client_op_id).toBe("op-cal");
+  });
+
+  it("rejects unknown fields", () => {
+    expect(() => parseCalendarEventSearchFilters({ foo: 1 })).toThrow(
+      /invalid calendar_event filters/,
+    );
+  });
+});
+
+describe("parseProjectSearchFilters", () => {
+  it("accepts range overlap filters", () => {
+    const parsed = parseProjectSearchFilters({
+      range_start: "2026-07-01T00:00:00+08:00",
+      range_end: "2026-07-31T23:59:59+08:00",
+    });
+    expect(parsed.range_start).toBe("2026-07-01T00:00:00+08:00");
   });
 });
 

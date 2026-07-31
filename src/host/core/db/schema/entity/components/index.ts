@@ -16,6 +16,7 @@ import {
   DIARY_BLOCK_TEMPLATE_COMPONENT,
   diaryBlockTemplateBodySchema,
 } from "./diary-block-template.ts";
+import { CALENDAR_EVENT_COMPONENT, calendarEventBodySchema } from "./calendar-event.ts";
 import { DIARY_ENTRY_COMPONENT, diaryEntryBodySchema } from "./diary-entry.ts";
 import { DREAM_COMPONENT, dreamBodySchema } from "./dream.ts";
 import { EMAIL_ACCOUNT_COMPONENT, emailAccountBodySchema } from "./email-account.ts";
@@ -51,6 +52,7 @@ export const COMPONENT_IDS = [
   PROJECT_COMPONENT,
   TAG_COMPONENT,
   DIARY_ENTRY_COMPONENT,
+  CALENDAR_EVENT_COMPONENT,
   DIARY_BLOCK_TEMPLATE_COMPONENT,
   CONTENT_BLOCK_COMPONENT,
   LIMBIC_COMPONENT,
@@ -95,6 +97,7 @@ export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
   [PROJECT_COMPONENT]: 40,
   [TAG_COMPONENT]: 45,
   [DIARY_ENTRY_COMPONENT]: 50,
+  [CALENDAR_EVENT_COMPONENT]: 52,
   [DIARY_BLOCK_TEMPLATE_COMPONENT]: 55,
   [CONTENT_BLOCK_COMPONENT]: 60,
   [LIMBIC_COMPONENT]: 70,
@@ -150,6 +153,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [PROJECT_COMPONENT]: projectBodySchema,
   [TAG_COMPONENT]: tagBodySchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntryBodySchema,
+  [CALENDAR_EVENT_COMPONENT]: calendarEventBodySchema,
   [DIARY_BLOCK_TEMPLATE_COMPONENT]: diaryBlockTemplateBodySchema,
   [CONTENT_BLOCK_COMPONENT]: contentBlockBodySchema,
   [LIMBIC_COMPONENT]: limbicBodySchema,
@@ -195,6 +199,7 @@ export * from "./project-folder.ts";
 export * from "./project.ts";
 export * from "./tag.ts";
 export * from "./diary-entry.ts";
+export * from "./calendar-event.ts";
 export * from "./diary-block-template.ts";
 export * from "./dream.ts";
 export * from "./content-block.ts";

@@ -202,7 +202,7 @@ describe("updateProject terminal release_tasks", () => {
       ),
     );
     spyOn(entityMod, "assertEntityInWorld").mockResolvedValue(undefined);
-    spyOn(entityMod, "updateEntity").mockResolvedValue(
+    const updateSpy = spyOn(entityMod, "updateEntity").mockResolvedValue(
       entityRow(
         10,
         PROJECT_COMPONENT,
@@ -218,22 +218,25 @@ describe("updateProject terminal release_tasks", () => {
       ),
     );
     spyOn(entityMod, "listEntities").mockResolvedValue([]);
-    const searchSpy = spyOn(entityMod, "searchEntities").mockResolvedValue({
+    spyOn(entityMod, "searchEntities").mockResolvedValue({
       query: null,
       limit: 500,
       offset: 0,
       count: 0,
       results: [],
     });
-    searchSpy.mockClear();
 
     const { updateProject } = await import("@freeanima/features/project/domain/project-store.ts");
     await updateProject(1, { id: 10, status: "completed" });
 
-    // 默认不释放：不应 search project tasks（task_count 已迁至 project.stats）
-    const projectTaskSearches = searchSpy.mock.calls.filter(
-      (c) => (c[0] as { filters?: { project_id?: number } }).filters?.project_id === 10,
-    );
-    expect(projectTaskSearches.length).toBe(0);
+    // 默认不释放：仅更新项目本体；释放任务会再 updateEntity 写回 list_id
+    // （勿用 searchEntities 全局 spy 计数——并行套件会污染）
+    const projectUpdates = updateSpy.mock.calls.filter((c) => (c[0] as { id?: number }).id === 10);
+    const taskReleases = updateSpy.mock.calls.filter((c) => {
+      const body = (c[0] as { body?: Record<string, unknown> }).body;
+      return body != null && "project_id" in body && body.project_id === null;
+    });
+    expect(projectUpdates.length).toBe(1);
+    expect(taskReleases.length).toBe(0);
   });
 });

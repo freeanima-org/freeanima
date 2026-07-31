@@ -1,0 +1,278 @@
+import type { ToolSetRegistry } from "@freeanima/host/core/tool";
+import { toolError, toolResult } from "@freeanima/host/core/tool";
+import { omitUndefined } from "@freeanima/host/core/util";
+
+import {
+  createCalendarEvent,
+  deleteCalendarEvent,
+  getCalendarEvent,
+  listCalendarEvents,
+  updateCalendarEvent,
+} from "./event-store.ts";
+import { listCalendarRange } from "./range-store.ts";
+import { resolveCalendarToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
+import type { CalendarRangeKind } from "./types.ts";
+
+async function storeContext(args: Record<string, unknown>, access: "read" | "write" = "read") {
+  const worldId = await resolveCalendarToolWorld({ args, access });
+  if (typeof worldId === "string") return worldId;
+  return { worldId };
+}
+
+function eventPayload(item: {
+  id: number;
+  title: string;
+  content: string;
+  start_at: string;
+  end_at: string | null;
+  all_day: boolean;
+  remind_at: string | null;
+}) {
+  return {
+    id: item.id,
+    title: item.title,
+    content: item.content,
+    start_at: item.start_at,
+    end_at: item.end_at,
+    all_day: item.all_day,
+    remind_at: item.remind_at,
+  };
+}
+
+async function handleList(args: Record<string, unknown>): Promise<string> {
+  const ctx = await storeContext(args);
+  if (typeof ctx === "string") return ctx;
+  try {
+    const items = await listCalendarEvents(
+      ctx,
+      omitUndefined({
+        range_start: args.range_start != null ? String(args.range_start) : undefined,
+        range_end: args.range_end != null ? String(args.range_end) : undefined,
+        limit: args.limit != null ? Number(args.limit) : undefined,
+      }),
+    );
+    return toolResult({ ok: true, action: "list", items: items.map(eventPayload) });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+async function handleCreate(args: Record<string, unknown>): Promise<string> {
+  const title = String(args.title ?? "").trim();
+  const startAt = String(args.start_at ?? "").trim();
+  if (!title) return toolError("title is required");
+  if (!startAt) return toolError("start_at is required");
+
+  const ctx = await storeContext(args, "write");
+  if (typeof ctx === "string") return ctx;
+  try {
+    const item = await createCalendarEvent(
+      ctx,
+      omitUndefined({
+        title,
+        start_at: startAt,
+        content: args.content != null ? String(args.content) : undefined,
+        end_at:
+          args.end_at === undefined ? undefined : args.end_at == null ? null : String(args.end_at),
+        all_day: typeof args.all_day === "boolean" ? args.all_day : undefined,
+        remind_at:
+          args.remind_at === undefined
+            ? undefined
+            : args.remind_at == null
+              ? null
+              : String(args.remind_at),
+      }),
+    );
+    return toolResult({ ok: true, action: "create", item: eventPayload(item) });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+async function handleUpdate(args: Record<string, unknown>): Promise<string> {
+  const id = Number(args.id);
+  if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+
+  const ctx = await storeContext(args, "write");
+  if (typeof ctx === "string") return ctx;
+  try {
+    const item = await updateCalendarEvent(
+      ctx,
+      omitUndefined({
+        id,
+        title: args.title != null ? String(args.title) : undefined,
+        content: args.content != null ? String(args.content) : undefined,
+        start_at: args.start_at != null ? String(args.start_at) : undefined,
+        end_at:
+          args.end_at === undefined ? undefined : args.end_at == null ? null : String(args.end_at),
+        all_day: typeof args.all_day === "boolean" ? args.all_day : undefined,
+        remind_at:
+          args.remind_at === undefined
+            ? undefined
+            : args.remind_at == null
+              ? null
+              : String(args.remind_at),
+      }),
+    );
+    if (!item) return toolError("calendar event not found");
+    return toolResult({ ok: true, action: "update", item: eventPayload(item) });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+async function handleDelete(args: Record<string, unknown>): Promise<string> {
+  const id = Number(args.id);
+  if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+  const ctx = await storeContext(args, "write");
+  if (typeof ctx === "string") return ctx;
+  try {
+    const ok = await deleteCalendarEvent(ctx, id);
+    if (!ok) return toolError("calendar event not found");
+    return toolResult({ ok: true, action: "delete", id });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+async function handleGet(args: Record<string, unknown>): Promise<string> {
+  const id = Number(args.id);
+  if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+  const ctx = await storeContext(args);
+  if (typeof ctx === "string") return ctx;
+  try {
+    const item = await getCalendarEvent(ctx, id);
+    if (!item) return toolError("calendar event not found");
+    return toolResult({ ok: true, action: "get", item: eventPayload(item) });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+async function handleRange(args: Record<string, unknown>): Promise<string> {
+  const from = String(args.from ?? "").trim();
+  const to = String(args.to ?? "").trim();
+  if (!from || !to) return toolError("from and to are required (ISO8601)");
+
+  const ctx = await storeContext(args);
+  if (typeof ctx === "string") return ctx;
+
+  let kinds: CalendarRangeKind[] | undefined;
+  if (Array.isArray(args.kinds)) {
+    kinds = args.kinds.filter(
+      (k): k is CalendarRangeKind => k === "event" || k === "task" || k === "project",
+    );
+  }
+
+  try {
+    const items = await listCalendarRange(ctx, omitUndefined({ from, to, kinds }));
+    return toolResult({ ok: true, action: "range", items });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+export function registerCalendarToolSet(toolSets: ToolSetRegistry): void {
+  toolSets.registerToolSet(
+    "calendar",
+    "Calendar events and unified range (events + task dues + projects) in subject private world.",
+    [
+      {
+        name: "calendar_list",
+        description: "List calendar events, optionally filtered by range_start/range_end.",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            range_start: { type: "string", description: "ISO8601 range start" },
+            range_end: { type: "string", description: "ISO8601 range end" },
+            limit: { type: "integer" },
+          },
+        },
+        handler: handleList,
+      },
+      {
+        name: "calendar_create",
+        description: "Create a calendar event.",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            title: { type: "string" },
+            content: { type: "string" },
+            start_at: { type: "string", description: "ISO8601 start" },
+            end_at: { type: "string", description: "ISO8601 end or null" },
+            all_day: { type: "boolean" },
+            remind_at: { type: "string", description: "ISO8601 remind time" },
+          },
+          required: ["title", "start_at"],
+        },
+        handler: handleCreate,
+      },
+      {
+        name: "calendar_update",
+        description: "Update a calendar event by id.",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            id: { type: "integer" },
+            title: { type: "string" },
+            content: { type: "string" },
+            start_at: { type: "string" },
+            end_at: { type: "string" },
+            all_day: { type: "boolean" },
+            remind_at: { type: "string" },
+          },
+          required: ["id"],
+        },
+        handler: handleUpdate,
+      },
+      {
+        name: "calendar_delete",
+        description: "Delete a calendar event by id.",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            id: { type: "integer" },
+          },
+          required: ["id"],
+        },
+        handler: handleDelete,
+      },
+      {
+        name: "calendar_get",
+        description: "Get a calendar event by id.",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            id: { type: "integer" },
+          },
+          required: ["id"],
+        },
+        handler: handleGet,
+      },
+      {
+        name: "calendar_range",
+        description:
+          "Unified calendar range: events, pending tasks with due_at, and projects overlapping [from, to].",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            from: { type: "string", description: "ISO8601 range start" },
+            to: { type: "string", description: "ISO8601 range end" },
+            kinds: {
+              type: "array",
+              items: { type: "string", enum: ["event", "task", "project"] },
+            },
+          },
+          required: ["from", "to"],
+        },
+        handler: handleRange,
+      },
+    ],
+  );
+}
