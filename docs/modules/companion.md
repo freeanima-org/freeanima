@@ -123,7 +123,7 @@ After Habitat companion config changes, the local cache syncs via `companion.syn
 
 **显示伴侣**：关 = **关闭** companion WebView（非 hide），SPA unmount 后 `remote_tools.attach` 拆除，伴侣离线；开 = `ensure_companion` 重建窗口并 attach。窗口关闭期间的配置变更在下次 show 的 `init` / `refreshConfig` 拉取。
 
-**模型切换 / 导入**：导入即激活（`active_object_file_id`）。加载失败时清场景并提示错误（不自动回退 active）；设置页经 `shell:companion-model-status` 显示桌面加载进度。非法 / 不完整 VRM 会映射为可读错误文案。
+**模型切换 / 导入**：导入即激活（`active_object_file_id`）。切换 `modelPath` 时 **立刻清场景并停巡逻**，下载完成前只显示 loading、不保留旧角色。加载失败时清场景并提示错误（不自动回退 active）；设置页经 `shell:companion-model-status` 显示桌面加载进度。非法 / 不完整 VRM 会映射为可读错误文案。桌面 overlay 为正交全屏相机，加载后关闭 MToon `screenCoordinates` 描边，避免黑剪影（设置预览仍用透视相机，不受影响）。
 
 **二进制超时**：`object_storage.file.get` 与 `companion.model.upload` / `companion.motion.import` 客户端默认超时 10 分钟（`HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS`）。
 

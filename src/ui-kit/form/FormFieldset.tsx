@@ -60,7 +60,7 @@ export function FormFieldLabel({
   children: ReactNode;
 }) {
   return (
-    <Label className={cn("text-sm", className)} htmlFor={htmlFor}>
+    <Label className={cn("text-sm", className)} {...(htmlFor !== undefined ? { htmlFor } : {})}>
       {children}
     </Label>
   );

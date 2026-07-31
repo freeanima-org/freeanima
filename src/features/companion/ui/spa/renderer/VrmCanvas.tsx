@@ -17,6 +17,8 @@ export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelErr
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const motionLibrary = useCompanionStore((s) => s.motionLibrary);
   const motionSlots = useCompanionStore((s) => s.motionSlots);
+  const characterReady = useCompanionStore((s) => s.characterReady);
+  const modelLoading = useCompanionStore((s) => s.modelLoading);
   const setHitTest = useCompanionStore((s) => s.setHitTestFn);
   const setModelLoading = useCompanionStore((s) => s.setModelLoading);
   const setBackend = useCompanionStore((s) => s.setBackend);
@@ -26,6 +28,8 @@ export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelErr
 
   onModelLoadedRef.current = onModelLoaded;
   onModelErrorRef.current = onModelError;
+
+  const hideWhileLoading = Boolean(modelPath.trim()) && !characterReady && modelLoading;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -142,5 +146,11 @@ export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelErr
     };
   }, [setBackend]);
 
-  return <canvas ref={canvasRef} className="block h-full w-full" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className="block h-full w-full"
+      style={hideWhileLoading ? { visibility: "hidden" } : undefined}
+    />
+  );
 }

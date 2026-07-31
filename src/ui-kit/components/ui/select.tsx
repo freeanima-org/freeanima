@@ -20,6 +20,7 @@ import {
 } from "react-aria-components";
 
 import { cn, ariaRenderProps } from "../../lib/utils.ts";
+import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { CheckIcon, ChevronDownIcon, SearchIcon } from "lucide-react";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./input-group.tsx";
 
@@ -45,12 +46,14 @@ function Select<T extends object, M extends "single" | "multiple" = "single">({
     <SelectPrimitive
       data-slot="select"
       className={cn("w-fit", className)}
-      selectedKey={selectedKey ?? value}
-      isDisabled={isDisabled ?? disabled}
       onSelectionChange={(key: Key | null) => {
         onSelectionChange?.(key);
         if (onValueChange && key != null) onValueChange(String(key));
       }}
+      {...omitUndefined({
+        selectedKey: selectedKey ?? value,
+        isDisabled: isDisabled ?? disabled,
+      })}
       {...props}
     />
   );
@@ -66,7 +69,15 @@ function SelectGroup<T extends object>({ className, ...props }: SelectGroupProps
   );
 }
 
-function SelectValue<T extends object>({ className, children, ...props }: SelectValueProps<T>) {
+function SelectValue<T extends object>({
+  className,
+  children,
+  placeholder,
+  ...props
+}: SelectValueProps<T> & {
+  /** 无选中时的占位文案（RAC SelectValue 无原生 placeholder） */
+  placeholder?: string;
+}) {
   return (
     <SelectValuePrimitive
       data-slot="select-value"
@@ -79,11 +90,18 @@ function SelectValue<T extends object>({ className, children, ...props }: Select
             selectedItems,
             selectedText,
             defaultChildren,
+            isPlaceholder,
           }: {
             selectedItems: unknown[];
             selectedText: string;
             defaultChildren: React.ReactNode;
-          }) => (selectedItems.length > 1 ? selectedText : defaultChildren)}
+            isPlaceholder?: boolean;
+          }) => {
+            if (isPlaceholder || selectedItems.length === 0) {
+              return placeholder ?? defaultChildren;
+            }
+            return selectedItems.length > 1 ? selectedText : defaultChildren;
+          }}
     </SelectValuePrimitive>
   );
 }
@@ -214,6 +232,7 @@ function SelectItem({
   children,
   value,
   id,
+  textValue,
   ...props
 }: React.ComponentProps<typeof ListBoxItemPrimitive> & {
   /** @deprecated 使用 id */
@@ -222,12 +241,14 @@ function SelectItem({
   return (
     <ListBoxItemPrimitive
       data-slot="select-item"
-      id={id ?? value}
-      textValue={typeof children === "string" ? children : undefined}
       className={cn(
         "relative flex w-full cursor-default items-center gap-1.5 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-focused:bg-accent data-focused:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className,
       )}
+      {...omitUndefined({
+        id: id ?? value,
+        textValue: typeof children === "string" ? children : textValue,
+      })}
       {...props}
     >
       {composeRenderProps(

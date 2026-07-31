@@ -15,6 +15,7 @@ import {
 import { resolveFacingOffsetY } from "./vrm-facing.ts";
 import { VrmBodyPicker } from "./VrmBodyPicker.ts";
 import { VrmAnimationPlayer, type MotionBindConfig } from "./VrmAnimationPlayer.ts";
+import { sanitizeMtoonOutlinesForOrtho } from "./sanitize-mtoon-outlines.ts";
 import { loadCachedModelSource } from "@freeanima/features/companion/ui/spa/lib/model-cache.ts";
 import type { MotionSlotId } from "@freeanima/features/companion/shared/companion-schema.ts";
 import {
@@ -152,6 +153,7 @@ export class VrmBackend implements CharacterBackend {
 
     VRMUtils.rotateVRM0(vrm);
     this.facingOffsetY = resolveFacingOffsetY(vrm.meta?.metaVersion);
+    sanitizeMtoonOutlinesForOrtho(vrm.scene);
     this.scalePivot.add(vrm.scene);
     this.vrm = vrm;
     this.framing = null;
@@ -500,8 +502,15 @@ export class VrmBackend implements CharacterBackend {
     this.stopRenderLoop();
     this.clearCharacterFromScene();
     this.framing = null;
+    this.travelMoving = false;
+    this.travelKind = "walk";
     this.renderer.clear(true, true, true);
     this.renderer.render(this.scene, this.camera);
+  }
+
+  /** @internal 单测：切模后 travel 是否已停 */
+  getTravelMovingForTest(): boolean {
+    return this.travelMoving;
   }
 
   private stopRenderLoop(): void {

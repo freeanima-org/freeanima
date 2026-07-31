@@ -19,6 +19,7 @@ import type {
 import type { MotionLibraryEntry } from "@freeanima/features/companion/shared/constants.ts";
 import { DEFAULT_BEHAVIOR } from "@freeanima/features/companion/shared/companion-schema.ts";
 import type { VrmBackend } from "../renderer/VrmBackend.ts";
+import { onCharacterModelSwitch } from "./character.ts";
 
 type SettingsTabId = "behavior" | "models" | "slots" | "library";
 
@@ -154,6 +155,11 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
     const prev = get();
     const modelPath = cfg.model_available ? cfg.model_path : "";
     const modelChanged = prev.modelPath !== modelPath;
+    if (modelChanged) {
+      // 与 Spinner / characterReady=false 同步清场，避免 useEffect 滞后导致旧角色残影
+      prev.backendRef.current?.beginModelSwitch();
+      onCharacterModelSwitch();
+    }
     set({
       ...applyConfigToState(cfg, prev),
       loading: false,
