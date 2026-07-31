@@ -1,6 +1,6 @@
 import * as loopEngine from "@freeanima/host/engine/loop";
 import { isTransientNetworkError } from "@freeanima/host/engine/loop";
-import { runWithToolContext } from "@freeanima/host/core/tool";
+import { runWithToolContext, toolCallTitleFromArgs } from "@freeanima/host/core/tool";
 import type { ConversationGoal, StoredMessage } from "@freeanima/host/core/db/domain";
 import { conversationGoalSchema } from "@freeanima/host/core/db/domain";
 import type { MessagePayload } from "@freeanima/host/core/db/schema";
@@ -20,6 +20,13 @@ const AUTO_LLM_MAX_ATTEMPTS = 3;
 const AUTO_LLM_RETRY_BASE_MS = 500;
 const OUTPUT_MAX = 10_000;
 const INPUT_SUMMARY_MAX = 2000;
+
+/** UI 用紧凑步骤（不含完整 args/result） */
+export type AutoLlmToolStep = {
+  name: string;
+  title?: string;
+  status: "running" | "done" | "error";
+};
 
 export type AutoLlmRunInput = {
   runName: string;
@@ -43,6 +50,7 @@ export type AutoLlmRunResult = {
   status: "ok" | "error";
   error?: string;
   durationMs: number;
+  steps: AutoLlmToolStep[];
 };
 
 function sleepMs(ms: number): Promise<void> {
@@ -191,11 +199,12 @@ async function runEngineOnce(
   input: AutoLlmRunInput,
   messages: StoredMessage[],
   model: string,
-): Promise<{ output: string; toolCalls: number }> {
+): Promise<{ output: string; toolCalls: number; steps: AutoLlmToolStep[] }> {
   const tools = deps.engine.catalog.toolSets.openaiSchemasFromNames(input.toolNames);
   const toolPolicy = runtimeToolPolicyFromResolved(input.toolPolicy ?? null);
   let toolCalls = 0;
   const parts: string[] = [];
+  const steps: AutoLlmToolStep[] = [];
 
   await runWithToolContext(
     runId,
@@ -220,12 +229,30 @@ async function runEngineOnce(
             parts.length = 0;
             parts.push(ev.data.content);
             break;
-          case "tool_begin":
+          case "tool_begin": {
             toolCalls += 1;
+            const title = toolCallTitleFromArgs(ev.data.args);
+            steps.push(
+              omitUndefined({
+                name: ev.data.name,
+                title,
+                status: "running" as const,
+              }),
+            );
             break;
-          case "tool_result":
+          }
+          case "tool_result": {
             input.onToolResult?.(ev.data.name, ev.data.content);
+            const isError =
+              ev.data.content.includes('"error"') ||
+              ev.data.content.startsWith('{"error"') ||
+              ev.data.content.startsWith("Error:");
+            const pending = steps.findLast(
+              (s) => s.name === ev.data.name && s.status === "running",
+            );
+            if (pending) pending.status = isError ? "error" : "done";
             break;
+          }
           case "error":
             throw new Error(ev.data.error);
           default:
@@ -241,8 +268,12 @@ async function runEngineOnce(
     },
   );
 
+  for (const step of steps) {
+    if (step.status === "running") step.status = "done";
+  }
+
   const output = parts.join("").trim() || `Completed ${toolCalls} tool call(s)`;
-  return { output, toolCalls };
+  return { output, toolCalls, steps };
 }
 
 function storedMessagesToPayloads(messages: StoredMessage[]): MessagePayload[] {
@@ -346,17 +377,20 @@ export async function runAutoLlm(
   let goal = input.goal ? conversationGoalSchema.parse(input.goal) : undefined;
   let output = "";
   let toolCalls = 0;
+  let steps: AutoLlmToolStep[] = [];
   let lastErr: unknown;
 
   try {
     for (let attempt = 0; attempt < AUTO_LLM_MAX_ATTEMPTS; attempt++) {
       output = "";
       toolCalls = 0;
+      steps = [];
       try {
         goalLoop: while (true) {
           const round = await runEngineOnce(deps, runId, input, messages, model);
           output = round.output;
           toolCalls += round.toolCalls;
+          steps = [...steps, ...round.steps];
 
           if (!goal) break goalLoop;
           const evalResult = await evaluateGoalForAutoLlm(
@@ -396,7 +430,7 @@ export async function runAutoLlm(
       finishedAt,
       messages,
     });
-    return { runId, output, toolCalls, status: "ok", durationMs };
+    return { runId, output, toolCalls, status: "ok", durationMs, steps };
   } catch (err) {
     const durationMs = Date.now() - startMs;
     const finishedAt = formatCstIso();
@@ -421,6 +455,7 @@ export async function runAutoLlm(
       status: "error",
       error: message,
       durationMs,
+      steps,
     };
   }
 }

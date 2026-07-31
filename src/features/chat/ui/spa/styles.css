@@ -48,6 +48,27 @@
   max-width: 100%;
 }
 
+.tool-bubble-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.tool-bubble-marquee-track {
+  display: inline-block;
+  padding-left: 100%;
+  animation: tool-bubble-marquee 8s linear infinite;
+}
+
+@keyframes tool-bubble-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
 .chat-bubble {
   /* w-fit + shrink-0：按内容撑开，避免 flex 子项被 min-w-0 压窄导致短句过早换行 */
   @apply w-fit max-w-[85%] shrink-0 rounded-2xl px-4 py-2;

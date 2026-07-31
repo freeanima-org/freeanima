@@ -22,17 +22,23 @@ function isErrorResult(content: string): boolean {
 }
 
 type ToolRoundEntry =
-  | { kind: "begin"; name: string; args: Record<string, unknown> }
+  | { kind: "begin"; name: string; args: Record<string, unknown>; tool_call_id: string }
   | { kind: "result"; name: string; content: string }
   | { kind: "error"; content: string };
 
 export class ToolRoundBuffer {
   private entries: ToolRoundEntry[] = [];
+  /** 跨轮单调递增，保证 stream tool_call_id 在客户端 upsert 时不冲突 */
   private nextCallId = 0;
 
   addBegin(name: string, args: Record<string, unknown>): void {
     if (isClarifyTool(name)) return;
-    this.entries.push({ kind: "begin", name, args });
+    this.entries.push({
+      kind: "begin",
+      name,
+      args,
+      tool_call_id: `stream-${this.nextCallId++}`,
+    });
   }
 
   addResult(name: string, content: string): void {
@@ -48,21 +54,29 @@ export class ToolRoundBuffer {
     return this.entries.length > 0;
   }
 
+  /** 当前轮次快照（不清空）；进行中的 call 保持 running */
+  snapshot(): StructuredToolCall[] {
+    return this.buildCalls({ finalizeRunning: false });
+  }
+
   take(): StructuredToolCall[] {
     if (this.entries.length === 0) return [];
-    const entries = this.entries;
+    const calls = this.buildCalls({ finalizeRunning: true });
     this.entries = [];
-    this.nextCallId = 0;
+    return calls;
+  }
 
+  private buildCalls(opts: { finalizeRunning: boolean }): StructuredToolCall[] {
+    if (this.entries.length === 0) return [];
     const calls: StructuredToolCall[] = [];
-    for (const entry of entries) {
+    for (const entry of this.entries) {
       if (entry.kind === "begin") {
         const argsObj = entry.args;
         calls.push({
           name: entry.name,
           args: argsObj,
           argsPreview: argsPreviewFromObject(argsObj),
-          tool_call_id: `stream-${this.nextCallId++}`,
+          tool_call_id: entry.tool_call_id,
           status: "running",
         });
         continue;
@@ -86,8 +100,10 @@ export class ToolRoundBuffer {
       }
     }
 
-    for (const call of calls) {
-      if (call.status === "running") call.status = "done";
+    if (opts.finalizeRunning) {
+      for (const call of calls) {
+        if (call.status === "running") call.status = "done";
+      }
     }
     return calls;
   }

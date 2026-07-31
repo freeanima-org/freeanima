@@ -39,6 +39,15 @@ const runResultSchema = z.object({
   status: z.enum(["ok", "error"]),
   output: z.string(),
   tool_calls: z.number(),
+  steps: z
+    .array(
+      z.object({
+        name: z.string(),
+        title: z.string().optional(),
+        status: z.string(),
+      }),
+    )
+    .optional(),
   error: z.string().optional(),
   duration_ms: z.number(),
 });
@@ -104,6 +113,10 @@ export const SUBAGENT_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
           status: "ok",
           output: "done",
           tool_calls: 2,
+          steps: [
+            { name: "web_search", title: "搜资料", status: "done" },
+            { name: "file_read", title: "读文件", status: "done" },
+          ],
           duration_ms: 100,
         },
       ],
