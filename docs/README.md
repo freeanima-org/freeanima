@@ -74,12 +74,13 @@ Agent hard bans / API quick reference → [`.agent/rules/frontend-ui.md`](../.ag
 
 ## Ops — deploy, secure, connect
 
-| Topic           | File                                             |
-| --------------- | ------------------------------------------------ |
-| Installation    | [ops/install.md](ops/install.md)                 |
-| Service         | [ops/service.md](ops/service.md)                 |
-| Security        | [ops/security.md](ops/security.md)               |
-| Database        | [ops/database.md](ops/database.md)               |
-| Remote access   | [ops/remote-access.md](ops/remote-access.md)     |
-| Habitat RPC     | [ops/habitat-rpc.md](ops/habitat-rpc.md)         |
-| Message gateway | [ops/message-gateway.md](ops/message-gateway.md) |
+| Topic               | File                                             |
+| ------------------- | ------------------------------------------------ |
+| Installation        | [ops/install.md](ops/install.md)                 |
+| Windows development | [ops/windows-dev.md](ops/windows-dev.md)         |
+| Service             | [ops/service.md](ops/service.md)                 |
+| Security            | [ops/security.md](ops/security.md)               |
+| Database            | [ops/database.md](ops/database.md)               |
+| Remote access       | [ops/remote-access.md](ops/remote-access.md)     |
+| Habitat RPC         | [ops/habitat-rpc.md](ops/habitat-rpc.md)         |
+| Message gateway     | [ops/message-gateway.md](ops/message-gateway.md) |

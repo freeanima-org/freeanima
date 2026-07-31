@@ -12,7 +12,7 @@
 | Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/cognition/memory.md`](docs/cognition/memory.md)                                                                                                                                     |
 | Tools          | Local / MCP flat registration; MCP client `src/host/capabilities/mcp-client/`、MCP server `/mcp` `src/host/capabilities/mcp-server/`；unreachable local apps may register remote tools over Habitat RPC；tools `src/host/capabilities/tools/`；internal subagent `src/features/subagent/` |
 | Secrets        | Vault (User/Agent libraries); bootstrap `env()`；runtime `vault()` / `env()`; LLM **sees metadata, not values**                                                                                                                                                                           |
-| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                                                                                                                                    |
+| Data directory | `~/.anima/` / `%USERPROFILE%\.anima` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                                                                                                           |
 | Code layout    | 产品代码在 `src/`（`host/`、`client/`、`ui-kit/`、`features/`、`shared/`、`portal/{app,extension,cli}/`）— 见 [`.agent/rules/repository-topology.md`](.agent/rules/repository-topology.md)；Desktop/Mobile 安装包内嵌 `web/dist`，浏览器/PWA 用 Habitat `/web/*`                          |
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
@@ -51,7 +51,7 @@ How agents should _shape_ changes. Hard checks and conventions → [`.agent/rule
 
 ## Common commands
 
-日常优先 `just`（见根 [`Justfile`](Justfile) + [`just/`](just/) 模块；`just --list` / `just pack --list`）。根 [`package.json`](package.json) **仅** `prepare`（husky）；业务入口不走 `bun run`。
+日常优先 `just`（见根 [`Justfile`](Justfile) + [`just/`](just/) 模块；`just --list` / `just pack --list`）。根 [`package.json`](package.json) **仅** `prepare`（husky）；业务入口不走 `bun run`。Windows 源码开发（winget / Git Bash / Docker）：[`docs/ops/windows-dev.md`](docs/ops/windows-dev.md)（Justfile 需要 PATH 上的 `bash`）。
 
 ```bash
 bun install

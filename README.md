@@ -55,16 +55,17 @@ Full blueprint: [`docs/product/architecture.md`](docs/product/architecture.md)
 | **Docs site**         | [freeanima.com/docs](https://freeanima.com/docs/) · [中文文档](https://freeanima.com/zh-cn/docs/) |
 | **Repo index**        | [`docs/README.md`](docs/README.md)                                                                |
 | Deployers / visitors  | [`docs/ops/install.md`](docs/ops/install.md) · [`docs/ops/security.md`](docs/ops/security.md)     |
+| Windows contributors  | [`docs/ops/windows-dev.md`](docs/ops/windows-dev.md)                                              |
 | AI agents             | [`AGENTS.md`](AGENTS.md) · [`.agent/rules/`](.agent/rules/README.md)                              |
 | Architecture          | [`docs/product/architecture.md`](docs/product/architecture.md)                                    |
 | Digital-life identity | [`docs/product/identity.md`](docs/product/identity.md)                                            |
 
 ## Quick start
 
-Two runtime modes — **Linux standalone** (recommended for self-host) or **source** (development). Full steps: [`docs/ops/install.md`](docs/ops/install.md).
+Two runtime modes — **Linux standalone** (recommended for self-host; **Linux x64 only**) or **source** (development on Linux, macOS, or Windows). Full steps: [`docs/ops/install.md`](docs/ops/install.md). Windows contributors: [`docs/ops/windows-dev.md`](docs/ops/windows-dev.md).
 
 ```bash
-# Standalone (Linux x64; no Bun on host)
+# Standalone (Linux x64; no Bun on host) — not available on Windows
 curl -fsSL https://freeanima.com/install | bash
 # Ensure ~/.local/bin is on PATH, then:
 anima --version
@@ -78,7 +79,7 @@ anima --version
 
 Then configure `~/.anima/config.yaml` (at least `database.url`) and run `anima service start`. See [`docs/ops/install.md`](docs/ops/install.md), [`docs/ops/database.md`](docs/ops/database.md), [`docs/ops/security.md`](docs/ops/security.md).
 
-**Source / contributors** (requires Bun ≥ 1.3.14):
+**Source / contributors** (requires Bun ≥ 1.3.14; `just` needs bash — on Windows use Git Bash, see [`windows-dev.md`](docs/ops/windows-dev.md)):
 
 ```bash
 git clone https://github.com/freeanima-org/freeanima.git && cd freeanima
@@ -86,7 +87,7 @@ bun install
 bun src/portal/cli/cli.ts -- --help
 just dev
 
-# Optional: build a local standalone into ~/.anima/standalone
+# Optional: build a local Linux standalone into ~/.anima/standalone (Linux host)
 just install cli
 ```
 
@@ -100,7 +101,7 @@ just install cli
 ## First-deploy security checklist
 
 1. Secrets go in **pass** (GPG) only — do not put them in `config.yaml` or commit to git
-2. `chmod 700 ~/.anima`
+2. `chmod 700 ~/.anima` (Unix; on Windows keep `%USERPROFILE%\.anima` private — see [`windows-dev.md`](docs/ops/windows-dev.md))
 3. Default bind is `127.0.0.1` only; add your own auth before exposing to the public internet
 4. Review MCP/ACP config; set `enabled: false` on untrusted external servers
 5. HTTP / Habitat have **no built-in authentication** — see [`docs/ops/security.md`](docs/ops/security.md)

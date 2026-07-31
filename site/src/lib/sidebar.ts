@@ -77,6 +77,7 @@ export const starlightSidebar = [
         collapsed: true,
         items: [
           { ...t(m.sidebar_install), link: "/docs/ops/install/" },
+          { ...t(m.sidebar_windows_dev), link: "/docs/ops/windows-dev/" },
           { ...t(m.sidebar_service), link: "/docs/ops/service/" },
           { ...t(m.sidebar_security), link: "/docs/ops/security/" },
           { ...t(m.sidebar_database), link: "/docs/ops/database/" },

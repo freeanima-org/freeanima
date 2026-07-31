@@ -29,6 +29,29 @@ Optional pool overrides（见 [`src/host/core/db/pg/client.ts`](../../src/host/c
 | `FREEANIMA_PG_POOL_IDLE_TIMEOUT` | `0`     | 秒；`0` = 关闭。Bun ≤1.3.14 勿设 `30`（会误杀长查询，见 troubleshooting） |
 | `FREEANIMA_PG_POOL_MAX_LIFETIME` | `0`     | 秒；`0` = 不限制连接寿命                                                  |
 
+## Local Install (Docker, cross-platform)
+
+Preferred on **Windows / macOS** and fine on Linux. Image includes **pgvector**:
+
+```bash
+docker run -d --name anima-pg \
+  -e POSTGRES_USER=anima \
+  -e POSTGRES_PASSWORD=anima \
+  -e POSTGRES_DB=anima \
+  -p 5432:5432 \
+  pgvector/pgvector:pg17
+```
+
+`config.yaml` (example):
+
+```yaml
+database:
+  url: postgresql://anima:anima@127.0.0.1:5432/anima
+  # or: url: env("DATABASE_URL")
+```
+
+Windows contributor notes (winget, Git Bash, Redis container): [`windows-dev.md`](windows-dev.md).
+
 ## Local Install (Debian)
 
 ```bash

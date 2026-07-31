@@ -1,8 +1,10 @@
 # FreeAnima 日常入口。实现见 scripts/；package.json 仅留 prepare（husky）。
 # 安装 just: https://github.com/casey/just · 列出：just --list · 模块：just pack --list
 # 公开配方均依赖 `_deps`（bun install）；已装好时通常 <1s。
+# Windows：需 PATH 上有 Git Bash 的 `bash`（见 docs/ops/windows-dev.md）。
 
 set shell := ["bash", "-euo", "pipefail", "-c"]
+set windows-shell := ["bash", "-euo", "pipefail", "-c"]
 
 mod dev 'just/dev.just'
 mod pack 'just/pack.just'

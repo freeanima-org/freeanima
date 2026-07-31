@@ -1,5 +1,7 @@
 # 各 just/*.just 模块共用（import）；勿单独 just。
+# Windows：与根 Justfile 相同，需 PATH 上的 bash（Git Bash）。
 set shell := ["bash", "-euo", "pipefail", "-c"]
+set windows-shell := ["bash", "-euo", "pipefail", "-c"]
 
 # 模块默认 cwd 为 just/；配方加 [no-cd] 后 cwd 保持调用目录（仓库根）。
 [private]
