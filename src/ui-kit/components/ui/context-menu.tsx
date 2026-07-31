@@ -103,7 +103,7 @@ function ContextMenuTrigger({
           }}
         >
           <PopoverContext.Consumer>
-            {(ctx) => (
+            {(ctx: React.ContextType<typeof PopoverContext>) => (
               <PopoverContext.Provider
                 value={{
                   ...(typeof ctx === "object" && ctx != null ? ctx : undefined),
