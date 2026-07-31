@@ -130,17 +130,14 @@ export async function uploadMotionFile(file: File) {
   const body = (await parseHabitatRestResponse(res)) as {
     library?: MotionLibraryEntry[];
     entries?: MotionLibraryEntry[];
-    skipped_fbx?: string[];
   };
   const data = await getCompanionHabitatClient().call("companion.config.get", {});
-  const skipped = body.skipped_fbx;
   return {
     ok: true as const,
     dir: "",
     files: body.entries?.map((e) => String(e.object_file_id)) ?? [],
     entries: body.entries ?? [],
     library: data.config.motion_library,
-    ...(skipped && skipped.length > 0 ? { skipped_fbx: skipped } : {}),
   };
 }
 
@@ -184,7 +181,6 @@ export async function fetchMotionStatus() {
     required: [] as string[],
     booth_url: "",
     auto_download_configured: false,
-    fbx_import_available: data.config.fbx_import_available,
   };
 }
 
@@ -202,7 +198,7 @@ export async function fetchLocomotionStatus() {
 }
 
 export async function downloadMotionsFromMirror() {
-  throw new Error("请通过 Settings 动作库导入 VRMA/FBX");
+  throw new Error("请通过 Settings 动作库导入 .vrma");
 }
 
 /** companion/dev 本地 runtime WS（Portal overlay 不走此路径） */

@@ -55,8 +55,8 @@ export async function handleCompanionMotionImport(
     throw new ApiHandlerError(400, "缺少 file 字段");
   }
   const lower = file.name.toLowerCase();
-  if (!lower.endsWith(".zip") && !lower.endsWith(".vrma") && !lower.endsWith(".fbx")) {
-    throw new ApiHandlerError(400, "仅支持 .vrma、.fbx 或 .zip");
+  if (!lower.endsWith(".vrma")) {
+    throw new ApiHandlerError(400, "仅支持 .vrma");
   }
   const bytes = new Uint8Array(await file.arrayBuffer());
   const result = await importMotionUpload(file.name, bytes);

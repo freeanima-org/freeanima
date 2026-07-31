@@ -55,7 +55,4 @@ export function defaultMotionSlotsFromManifest(): Record<MotionSlotId, string[]>
 
 export type CompanionConfig = CompanionRuntimeConfig;
 
-export const FBX_IMPORT_UNAVAILABLE_MSG =
-  "未找到 FBX2glTF 转换器，请直接导入 .vrma；或在 Habitat 宿主机执行 just misc setup-fbx。";
-
 export { companionModelCachePath };

@@ -25,7 +25,6 @@ import {
   COMPANION_WINDOW_WIDTH,
 } from "@freeanima/features/companion/ui/spa/lib/window-metrics.ts";
 import { companionMotionCachePath } from "@freeanima/features/companion/shared/companion-schema.ts";
-import { FBX_IMPORT_UNAVAILABLE_MSG } from "@freeanima/features/companion/shared/constants.ts";
 import type { MotionLibraryEntry } from "@freeanima/features/companion/shared/constants.ts";
 import { MotionPreviewCanvas } from "./MotionPreviewCanvas.tsx";
 
@@ -36,7 +35,6 @@ const PREVIEW_SIDEBAR_WIDTH = PREVIEW_FRAME_WIDTH + 24;
 export function MotionLibraryTab() {
   const library = useCompanionStore((s) => s.motionLibrary);
   const modelPath = useCompanionStore((s) => s.modelPath);
-  const fbxImportAvailable = useCompanionStore((s) => s.fbxImportAvailable);
   const refreshConfig = useCompanionStore((s) => s.refreshConfig);
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,9 +42,7 @@ export function MotionLibraryTab() {
   const [previewId, setPreviewId] = useState<number | null>(null);
 
   const previewEntry = library.find((m) => m.object_file_id === previewId) ?? null;
-  const accept = fbxImportAvailable
-    ? ".vrma,.fbx,.zip,application/zip,model/gltf-binary"
-    : ".vrma,.zip,application/zip,model/gltf-binary";
+  const accept = ".vrma";
 
   const moveMotion = async (objectFileId: number, delta: -1 | 1): Promise<void> => {
     const ids = library.map((m) => m.object_file_id);
@@ -79,19 +75,14 @@ export function MotionLibraryTab() {
     try {
       const importedEntries: MotionLibraryEntry[] = [];
       for (const file of files) {
-        if (!fbxImportAvailable && file.name.toLowerCase().endsWith(".fbx")) {
-          setError(FBX_IMPORT_UNAVAILABLE_MSG);
+        if (!file.name.toLowerCase().endsWith(".vrma")) {
+          setError("仅支持 .vrma");
           continue;
         }
         const result = await uploadMotionFile(file);
         importedEntries.push(...result.entries);
         if (result.library.length > 0) {
           useCompanionStore.setState({ motionLibrary: result.library });
-        }
-        if (result.skipped_fbx?.length) {
-          setNotice(
-            `已导入 VRMA；已跳过 ${result.skipped_fbx.length} 个 FBX（当前环境不支持转换）`,
-          );
         }
       }
       if (importedEntries.length > 0) {
@@ -126,9 +117,7 @@ export function MotionLibraryTab() {
       <div className="shrink-0 space-y-3">
         <p className="text-xs text-foreground/55 leading-relaxed">
           共 {library.length} 个动作。导入后在此列表显示；「动作槽位」Tab 用于绑定播放分组。
-          {fbxImportAvailable
-            ? " 支持 .vrma / .fbx，或包含 vrma、fbx 的 .zip。"
-            : " 支持 .vrma 或含 vrma 的 .zip；FBX 需 Habitat 主机已安装 FBX2glTF。"}
+          支持单个 .vrma（可多选）；若来源为动作包 zip，请先自行解压再导入。
         </p>
         <label
           className={cn(

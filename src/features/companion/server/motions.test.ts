@@ -10,7 +10,7 @@ describe("motionsReady", () => {
     expect(motionsReady("/nonexistent-dir-for-test")).toBe(false);
   });
 
-  test("识别 motions/vrma/ 子目录布局（官方 zip 默认结构）", () => {
+  test("识别 motions/vrma/ 子目录布局", () => {
     const dir = mkdtempSync(join(tmpdir(), "companion-motions-"));
     try {
       const nested = join(dir, "vrma");

@@ -23,6 +23,6 @@ describe("asset-id", () => {
 
   test("displayNameFromFilename 去掉扩展名", () => {
     expect(displayNameFromFilename("Happy Walk.vrma")).toBe("Happy Walk");
-    expect(displayNameFromFilename("/tmp/foo/bar.fbx")).toBe("bar");
+    expect(displayNameFromFilename("/tmp/foo/bar.vrma")).toBe("bar");
   });
 });

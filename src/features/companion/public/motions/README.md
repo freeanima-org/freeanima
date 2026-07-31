@@ -5,13 +5,11 @@
 ## 推荐方式（设置 → 动作库 Tab）
 
 1. 从系统托盘 → **设置…** 打开伴侣设置窗
-2. 在 **动作库** Tab 点击「打开 BOOTH 下载页」，登录 pixiv 后下载 `VRMA_MotionPack.zip`
-3. 点击「导入动作包 ZIP」（会自动解开 `vrma/` 子目录，文件保存到 `motions/` 根目录）
+2. 准备单个或多个 `.vrma` 文件（若来源为 BOOTH 等动作包 zip，请先自行解压）
+3. 在 **动作库** Tab 点击「导入动作」选择 `.vrma`（可多选）
 4. 在 **动作槽位** Tab 为各槽位（`idle`、`in_place`、`walk`、`climb` 等）勾选已导入的动作
 
-官方 zip 内结构为 `vrma/VRMA_*.vrma`，无需手动解压或调整目录。
-
-文件会解压到 `~/.anima/companion/motions/`（可通过 `FREEANIMA_HOME` 覆盖数据根目录）。
+导入后登记在 Habitat 对象存储；桌面本机缓存位于 `~/.anima/companion/motions/`（可通过 `FREEANIMA_HOME` 覆盖数据根目录）。
 
 ## 槽位说明
 
@@ -34,24 +32,8 @@
 
 来源：[VRoid 官方 7 种免费 VRMA 套装](https://vroid.com/en/news/6HozzBIV0KkcKf9dc1fZGW)（[BOOTH 5512385](https://booth.pm/ja/items/5512385)）。使用前请阅读商品页许可条款。
 
-## 自动下载（可选）
-
-BOOTH 官方链接**需要登录**，无法无账号静默下载。若你自行托管 zip 镜像，可设置环境变量：
-
-```bash
-COMPANION_VRMA_ZIP_URL=https://example.com/VRMA_MotionPack.zip
-```
-
-Habitat / companion 同步时会尝试下载；设置页也会出现「从镜像自动下载」按钮。
-
 ## 巡逻走路 / 攀爬（可选）
 
 在 **动作槽位** Tab 为 `walk`（横向移动）或 `climb`（纵向移动）导入并绑定 In Place 的 VRMA 后，巡逻时会播放对应槽位动作；未绑定则窗口仍平移，角色不播移动动画。
 
-### Mixamo（免费，需 Adobe 账号）
-
-- 站点：<https://www.mixamo.com/>
-- 下载：**FBX**、**Without Skin**、勾选 **In Place**
-- 在设置中通过动作库导入 FBX，Habitat 会转换为 `.vrma`
-
-许可以各资源商品页为准；导入后仅保存在本机 `~/.anima/companion/motions/`。
+动作库仅接受 `.vrma`；其它格式需自行转换为 VRMA 后再导入。

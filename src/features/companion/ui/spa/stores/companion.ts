@@ -32,7 +32,6 @@ type CompanionState = {
   modelPath: string;
   instanceId: string;
   sapConnected: boolean;
-  fbxImportAvailable: boolean;
   characterReady: boolean;
   modelLoading: boolean;
   configRevision: number;
@@ -89,7 +88,6 @@ function applyConfigToState(cfg: CompanionConfig, prev?: CompanionState): Partia
     habitatUrl: cfg.habitat_url,
     modelPath,
     ...runtimeFields,
-    fbxImportAvailable: cfg.fbx_import_available,
     activeObjectFileId: cfg.active_object_file_id,
     models: cfg.models,
     motionLibrary: cfg.motion_library,
@@ -109,7 +107,6 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   modelPath: "",
   instanceId: "",
   sapConnected: false,
-  fbxImportAvailable: false,
   characterReady: false,
   modelLoading: false,
   configRevision: 0,
