@@ -289,7 +289,7 @@ For design drafts, open a GitHub Issue (no design-doc directory in docs).
 | Limbic           | Emotional anchors and imprints — "what was felt"                                            |
 | Autobiographical | Meaning of important experiences; recalled on demand                                        |
 
-Pipeline: nightly **sleep-cycle** pipeline (in-process `Bun.cron` `builtin-sleep-cycle`) extracts and maintains memory; `memory_recall` retrieves on demand during chat. Details: [`memory.md`](../cognition/memory.md), [`sleep.md`](../cognition/sleep.md).
+Pipeline: nightly **sleep-cycle** pipeline (in-process `Bun.cron` `builtin-sleep-cycle`) extracts and maintains memory; scoped tools (`memory_semantic_search`, `memory_limbic_search`, `memory_autobiographical_search`, `conversation_search`) retrieve on demand during chat. Details: [`memory.md`](../cognition/memory.md), [`sleep.md`](../cognition/sleep.md).
 
 ## Vault & Secrets (Summary)
 

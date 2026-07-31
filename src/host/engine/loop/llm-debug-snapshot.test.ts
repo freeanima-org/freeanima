@@ -94,7 +94,7 @@ describe("buildLlmDebugSnapshot", () => {
         {
           type: "function",
           function: {
-            name: "memory_recall",
+            name: "memory_semantic_search",
             description:
               'recall memory\n\nReturns (JSON Schema): {"type":"object","properties":{"items":{"type":"array"}}}',
             parameters: { type: "object", properties: { query: { type: "string" } } },
@@ -107,7 +107,7 @@ describe("buildLlmDebugSnapshot", () => {
     );
 
     expect(snapshot.tool_count).toBe(1);
-    expect(snapshot.tools[0]?.function.name).toBe("memory_recall");
+    expect(snapshot.tools[0]?.function.name).toBe("memory_semantic_search");
     expect(snapshot.tools[0]?.function.description).toContain("Returns (JSON Schema):");
     expect(snapshot.turn_index).toBe(1);
     expect(snapshot.phase).toBe("final");

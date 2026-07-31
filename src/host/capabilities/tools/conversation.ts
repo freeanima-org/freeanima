@@ -99,7 +99,7 @@ export function registerConversationTools(toolSets: ToolSetRegistry): void {
           name: "conversation_scroll",
           description:
             "Paginated reading of historical messages in specified conversation (user/assistant full content; tool messages truncated).\n" +
-            "Use message_id (from memory_recall or conversation_search) as anchor to read forward; otherwise paginate with offset.",
+            "Use message_id (from conversation_search) as anchor to read forward; otherwise paginate with offset.",
           parameters: {
             type: "object",
             properties: {

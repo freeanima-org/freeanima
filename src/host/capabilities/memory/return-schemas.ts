@@ -12,49 +12,6 @@ const semanticMemoryResultSchema = z.object({
   status: z.string(),
 });
 
-const memoryRecallHitSchema = z.discriminatedUnion("memory_type", [
-  z.object({
-    memory_type: z.literal("semantic"),
-    score: z.number(),
-    semantic_memory_id: z.number().int().positive(),
-    type: z.string(),
-    pinned: z.boolean(),
-    content: z.string(),
-    source_conversations: z.array(z.string()),
-    observed_at: z.string().nullable(),
-    occurred_at: z.string().nullable(),
-    status: z.string(),
-  }),
-  z.object({
-    memory_type: z.literal("conversation"),
-    score: z.number(),
-    conversation_id: z.string(),
-    message_id: z.string(),
-    role: z.string(),
-    timestamp: z.string(),
-    snippet: z.string(),
-  }),
-  z.object({
-    memory_type: z.literal("limbic"),
-    score: z.number(),
-    limbic_memory_id: z.string(),
-    kind: z.string(),
-    conversation_id: z.string(),
-    content: z.string(),
-    intensity: z.number(),
-    valence: z.number().nullable(),
-    arousal: z.number().nullable(),
-  }),
-  z.object({
-    memory_type: z.literal("autobiographical"),
-    score: z.number(),
-    autobiographical_memory_id: z.string(),
-    title: z.string(),
-    snippet: z.string(),
-    significance: z.string(),
-  }),
-]);
-
 const rememberReturnSchema = z.object({
   ok: z.boolean(),
   action: z.string(),
@@ -147,6 +104,40 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       merged_source_conversations: ["sess-001"],
       merged_observed_at: "2026-06-01T10:00:00+08:00",
       merged_occurred_at: null,
+    },
+  }),
+  memory_autobiographical_search: defineToolReturn({
+    schema: z.object({
+      query: z.string(),
+      count: z.number(),
+      results: z.array(
+        z.object({
+          autobiographical_memory_id: z.string(),
+          title: z.string(),
+          snippet: z.string(),
+          significance: z.string(),
+          status: z.string(),
+          period_start: z.string().nullable(),
+          period_end: z.string().nullable(),
+          score: z.number(),
+        }),
+      ),
+    }),
+    example: {
+      query: "launch",
+      count: 1,
+      results: [
+        {
+          autobiographical_memory_id: "am-001",
+          title: "First launch",
+          snippet: "…first launch…",
+          significance: "milestone",
+          status: "active",
+          period_start: null,
+          period_end: null,
+          score: 0.5,
+        },
+      ],
     },
   }),
   memory_autobiographical_create: defineToolReturn({
@@ -275,36 +266,6 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       action: "create",
       semantic_memory_id: 1001,
       fact_id: 1001,
-    },
-  }),
-  memory_recall: defineToolReturn({
-    schema: z.object({
-      query: z.string(),
-      limit: z.number(),
-      results: z.array(memoryRecallHitSchema),
-      summary: z.string(),
-      truncated: z.boolean(),
-      next_hint: z.string().optional(),
-    }),
-    example: {
-      query: "compression",
-      limit: 10,
-      results: [
-        {
-          memory_type: "semantic",
-          score: 0.85,
-          semantic_memory_id: 1001,
-          type: "observation",
-          pinned: false,
-          content: "Conversation compression strategy prefers concise summaries",
-          source_conversations: ["sess-001"],
-          observed_at: "2026-06-10T10:00:00+08:00",
-          occurred_at: null,
-          status: "active",
-        },
-      ],
-      summary: "Found 1 related memory",
-      truncated: false,
     },
   }),
 };

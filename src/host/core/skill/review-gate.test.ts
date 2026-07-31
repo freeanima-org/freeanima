@@ -21,9 +21,9 @@ describe("skill evolve gate", () => {
         {
           role: "assistant",
           content: null,
-          tool_calls: [{ id: "1", function: { name: "memory_recall", arguments: "{}" } }],
+          tool_calls: [{ id: "1", function: { name: "memory_semantic_search", arguments: "{}" } }],
         },
-        { role: "tool", tool_call_id: "1", name: "memory_recall", content: '{"ok":true}' },
+        { role: "tool", tool_call_id: "1", name: "memory_semantic_search", content: '{"ok":true}' },
         { role: "assistant", content: "done" },
       ]),
       { minToolCalls: 5 },

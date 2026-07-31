@@ -10,7 +10,7 @@ function registry(): ToolSetRegistry {
   const reg = new ToolSetRegistry();
   reg.registerToolSet("memory", "memory", [
     {
-      name: "memory_recall",
+      name: "memory_semantic_search",
       description: "r",
       parameters: { type: "object", properties: {} },
       handler: async () => "{}",
@@ -67,7 +67,7 @@ describe("resolveSubagentToolPolicy / materializeToolNames", () => {
       },
       registry(),
     );
-    expect(materializeToolNames(policy)).toEqual(["file_read", "memory_recall"]);
+    expect(materializeToolNames(policy)).toEqual(["file_read", "memory_semantic_search"]);
   });
 
   it("HARD_DENY strips toolset_* even if allowed", () => {

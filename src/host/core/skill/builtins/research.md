@@ -1,7 +1,7 @@
 ---
 name: research
 description: Structured research playbook — clarify question, gather sources, synthesize findings.
-allowed-tools: @web @browser memory_recall memory_semantic_search
+allowed-tools: @web @browser memory_semantic_search
 origin: builtin
 status: active
 license: MIT

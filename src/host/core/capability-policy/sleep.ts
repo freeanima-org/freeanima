@@ -4,13 +4,14 @@ import type { ResolvedCapabilityPolicy } from "./types.ts";
 
 /** 睡眠管线默认允许的记忆工具（原 sleep mask 硬编码列表） */
 export const SLEEP_ALLOWED_TOOLS = [
-  "memory_recall",
   "memory_semantic_search",
   "memory_semantic_create",
   "memory_semantic_update",
   "memory_semantic_deprecate",
   "memory_semantic_merge",
+  "memory_limbic_search",
   "memory_limbic_create",
+  "memory_autobiographical_search",
   "memory_autobiographical_create",
   "memory_autobiographical_deprecate",
 ] as const;

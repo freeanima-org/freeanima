@@ -118,9 +118,12 @@ function MemoryPage() {
     if (!q) return;
     setSearching(true);
     setError("");
-    setTypeFilter("all");
     try {
-      const d = (await searchMemory({ query: q, limit })) as MemoryRecallResult;
+      const d = (await searchMemory({
+        query: q,
+        limit,
+        ...(typeFilter === "all" ? {} : { memory_types: [typeFilter] }),
+      })) as MemoryRecallResult;
       setResult(d);
       setLastQuery(q);
       setSearched(true);
@@ -209,6 +212,25 @@ function MemoryPage() {
                   className="h-8"
                 />
               </FormField>
+              <div className="flex flex-wrap gap-1">
+                <Badge
+                  variant={typeFilter === "all" ? "default" : "ghost"}
+                  className="text-xs cursor-pointer"
+                  onClick={() => setTypeFilter("all")}
+                >
+                  {m.habitat_memory_type_filter_all()}
+                </Badge>
+                {MEMORY_RECALL_TYPES.map((type) => (
+                  <Badge
+                    key={type}
+                    variant={typeFilter === type ? "default" : "ghost"}
+                    className="text-xs cursor-pointer"
+                    onClick={() => setTypeFilter(type)}
+                  >
+                    {memoryTypeLabel(type)}
+                  </Badge>
+                ))}
+              </div>
             </FormFieldset>
             <div className="flex items-center gap-2">
               <Button type="submit" size="sm" disabled={searching || !query.trim()}>

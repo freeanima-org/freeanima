@@ -2,45 +2,39 @@
 title: Recall Flow
 ---
 
-# Unified Recall Retrieval
+# Scoped Memory Retrieval
 
-> **v1 ✅ Implemented:** `memory_recall(query)` four-source unified recall, returns `results[]` (distinguished by `memory_type`).
+> **Current:** Active retrieval is **scope-split**. There is no cross-type unified `memory_recall` tool and no cross-type RRF merge for the LLM.
 
-## v1 Implemented
+## Active tools by scope
 
-| Capability        | Description                                                                                            |
-| ----------------- | ------------------------------------------------------------------------------------------------------ |
-| `memory_recall`   | Four sources: semantic / conversation / limbic / autobiographical; Top N; conversation returns snippet |
-| `sessions_search` | Session message search; returns snippet (not full content)                                             |
-| `memory_remember` | Semantic memory CRUD during conversation                                                               |
-| Resident memory   | System prompt injection (not recall)                                                                   |
+| Scope            | Tool                                          | Notes                                                                   |
+| ---------------- | --------------------------------------------- | ----------------------------------------------------------------------- |
+| semantic         | `memory_semantic_search`                      | FTS + structured filters; also **passive** inject before each user turn |
+| limbic           | `memory_limbic_search`                        | Hybrid FTS when `query` set; list/filter when omitted                   |
+| autobiographical | `memory_autobiographical_search`              | FTS on title + body; snippet return                                     |
+| conversation     | `conversation_search` / `conversation_scroll` | Dialogue snippets; session filter on search; scroll for full context    |
+| write (semantic) | `memory_remember` / semantic CRUD             | Not retrieval                                                           |
 
-### Four Sources
-
-| `memory_type`      | Content type                          |
-| ------------------ | ------------------------------------- |
-| `semantic`         | Facts, preferences, experiences, etc. |
-| `session`          | Historical conversation snippets      |
-| `limbic`           | Emotional memory                      |
-| `autobiographical` | Narrative title + content snippet     |
+Habitat debug `memory.search` may query one or more scopes in parallel for operators; results are **concatenated by scope** (no cross-type RRF). Product LLM path uses the per-scope tools above.
 
 ### Resident Memory
 
-Separate from recall: **pinned** semantic memories plus **most-referenced** entries are always injected into the system prompt. LLM cites memory ID markers in replies; reference counts sync via nightly cron.
+Separate from retrieval tools: **pinned** semantic memories plus **most-referenced** entries are always injected into the system prompt. LLM cites memory ID markers in replies; reference counts sync via nightly cron.
 
 ## Relationship to Self Layer
 
-Self layer (five blocks) is **not** retrieved via `memory_recall`—it is always in the system prompt.
+Self layer (five blocks) is **not** retrieved via memory search tools—it is always in the system prompt.
 
-| Layer        | Injection                 | Reason                                            |
-| ------------ | ------------------------- | ------------------------------------------------- |
-| Self layer   | Always in system prompt   | Small, fixed, every conversation needs "who I am" |
-| Memory layer | `memory_recall` on demand | Large, dynamic, search when needed                |
+| Layer        | Injection                          | Reason                                            |
+| ------------ | ---------------------------------- | ------------------------------------------------- |
+| Self layer   | Always in system prompt            | Small, fixed, every conversation needs "who I am" |
+| Memory layer | Per-scope tools / passive semantic | Large, dynamic, search when needed                |
 
-## Future Direction
+## Retired: Unified Recall
 
-Unified recall extending to resource layer (tools, skills, assets) with preset weighting is tracked in [Issue #47](https://github.com/freeanima-org/freeanima/issues/47). Not current runtime behavior.
+`memory_recall` (four-source RRF) is **removed**. Session/dialogue search stays on `conversation_search` only. Cross-resource “unified recall v2” ([Issue #47](https://github.com/freeanima-org/freeanima/issues/47)) remains not planned.
 
 ## Naming Rationale
 
-In cognitive psychology, **Recall** is actively pulling stored information from memory—retrieving what you already stored. Even when scope extends to resources, the action's essence is unchanged.
+In cognitive psychology, **Recall** is actively pulling stored information from memory. FreeAnima keeps the verb in docs; runtime tools are named by **scope** so the model routes intent without cross-type ranking collisions.

@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
-import type { MessageFtsHit } from "@freeanima/host/core/db/pg/conversation/types";
 import type { SemanticMemoryCreateInput } from "@freeanima/host/core/db/pg/semantic-memory/types";
 import type { SemanticMemoryRow } from "@freeanima/host/core/db/schema/rows";
-import { FtsQueryError } from "@freeanima/host/core/util";
 import { registerMemoryTools, searchSemanticMemory } from "@freeanima/host/capabilities/memory";
 import { registerToolConversationResolver } from "@freeanima/host/capabilities/memory/tool-conversation-port";
 import { ToolSetRegistry } from "@freeanima/host/core/tool";
@@ -73,10 +71,8 @@ mock.module("@freeanima/host/core/db/pg/semantic-memory", () => ({
   countSemanticMemory: mock(async () => rows.size),
 }));
 
-const searchMessagesFtsMock = mock(async (..._args: unknown[]) => [] as MessageFtsHit[]);
-
 mock.module("@freeanima/host/core/db/pg/conversation", () => ({
-  searchMessagesFts: searchMessagesFtsMock,
+  searchMessagesFts: mock(async () => []),
 }));
 
 mock.module("@freeanima/host/core/db/pg/limbic-memory", () => ({
@@ -95,7 +91,6 @@ describe("memory search", () => {
     nextId = 1;
     createSemanticMemoryMock.mockClear();
     searchSemanticMemoryFtsMock.mockClear();
-    searchMessagesFtsMock.mockClear();
     toolSets = new ToolSetRegistry();
     registerToolConversationResolver(() => "20260527_160000_test");
     registerMemoryTools(toolSets);
@@ -171,75 +166,7 @@ describe("memory search", () => {
     expect(row?.source_conversations).toEqual([]);
   });
 
-  it("memory_recall returns unified results with memory_type", async () => {
-    await createSemanticMemoryMock({ content: "FreeAnima memory pipeline uses compression" });
-
-    const sid = "20260526_120000_abcd";
-    searchMessagesFtsMock.mockImplementation(async () => [
-      {
-        message_id: "msg-001",
-        content: "Discussing compression algorithms",
-        role: "user",
-        conversation_id: sid,
-        timestamp: "2026-05-26T12:00:00+08:00",
-        rank: 0.1,
-      },
-    ]);
-
-    const out = await toolSets.getTool("memory_recall")!.handler({ query: "compression" });
-    const parsed = JSON.parse(out) as {
-      results: Array<{ memory_type: string; snippet?: string; content?: string }>;
-    };
-    expect(parsed.results.length).toBeGreaterThan(0);
-    const semantic = parsed.results.find((r) => r.memory_type === "semantic");
-    const conversation = parsed.results.find((r) => r.memory_type === "conversation");
-    expect(semantic?.content?.includes("compression")).toBe(true);
-    expect(conversation?.snippet?.includes("compression")).toBe(true);
-    expect(conversation && "content" in conversation).toBe(false);
-  });
-
-  it("memory_recall memory_types filters sources", async () => {
-    await createSemanticMemoryMock({ content: "FreeAnima memory pipeline uses compression" });
-    searchMessagesFtsMock.mockImplementation(async () => [
-      {
-        message_id: "msg-001",
-        content: "Discussing compression algorithms",
-        role: "user",
-        conversation_id: "20260526_120000_abcd",
-        timestamp: "2026-05-26T12:00:00+08:00",
-        rank: 0.1,
-      },
-    ]);
-
-    const out = await toolSets.getTool("memory_recall")!.handler({
-      query: "compression",
-      memory_types: ["semantic"],
-    });
-    const parsed = JSON.parse(out) as {
-      results: Array<{ memory_type: string }>;
-    };
-    expect(parsed.results.length).toBeGreaterThan(0);
-    expect(parsed.results.every((r) => r.memory_type === "semantic")).toBe(true);
-    expect(searchMessagesFtsMock).not.toHaveBeenCalled();
-  });
-
-  it("memory_recall returns friendly FTS validation error", async () => {
-    const out = await toolSets.getTool("memory_recall")!.handler({ query: "退烧 OR" });
-    expect(out).toContain("修改建议");
-    expect(out).toContain("不能以 OR 结尾");
-  });
-
-  it("memory_recall propagates store FTS errors as toolError", async () => {
-    searchSemanticMemoryFtsMock.mockImplementation(async () => {
-      throw new FtsQueryError(
-        "invalid_tsquery_structure",
-        "检索词之间缺少 AND/OR 连接",
-        "空格默认 AND",
-      );
-    });
-
-    const out = await toolSets.getTool("memory_recall")!.handler({ query: "退烧 OR 注意力" });
-    expect(out).toContain("修改建议");
-    expect(out).toContain("缺少 AND/OR 连接");
+  it("does not register retired memory_recall tool", () => {
+    expect(toolSets.getTool("memory_recall")).toBeUndefined();
   });
 });

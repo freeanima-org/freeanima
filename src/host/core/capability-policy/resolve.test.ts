@@ -26,25 +26,28 @@ describe("resolveCapabilityPolicy", () => {
     const resolved = resolveCapabilityPolicy(
       {
         skills: [
-          { allowed_tools: ["memory_recall", "file_read"], denied_tools: [] },
+          { allowed_tools: ["memory_semantic_search", "file_read"], denied_tools: [] },
           { allowed_tools: ["@browser"], denied_tools: [] },
         ],
         caller: { allowed_tools: [], denied_tools: ["file_read", "browser_click"] },
       },
       toolSetRegistry(),
     );
-    expect(resolved.allowed_tools.toSorted()).toEqual(["browser_navigate", "memory_recall"]);
+    expect(resolved.allowed_tools.toSorted()).toEqual([
+      "browser_navigate",
+      "memory_semantic_search",
+    ]);
     expect(resolved.denied_tools.toSorted()).toEqual(["browser_click", "file_read"]);
   });
 
   it("deny overrides allow within same fragment", () => {
     const resolved = resolveCapabilityPolicy(
       {
-        skills: [{ allowed_tools: ["memory_recall", "grep"], denied_tools: ["grep"] }],
+        skills: [{ allowed_tools: ["memory_semantic_search", "grep"], denied_tools: ["grep"] }],
       },
       toolSetRegistry(),
     );
-    expect(resolved.allowed_tools).toEqual(["memory_recall"]);
+    expect(resolved.allowed_tools).toEqual(["memory_semantic_search"]);
     expect(resolved.denied_tools).toEqual(["grep"]);
   });
 

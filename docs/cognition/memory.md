@@ -140,16 +140,16 @@ Conversion from working memory to long-term memory is handled by the sleep mecha
 
 ## IV. Retrieval Strategy
 
-### ✅ Implemented (`memory_recall` tool)
+### ✅ Scoped active search (no unified recall)
 
-`memory_recall(query)` parallel four-source recall, returns unified `results[]` (default Top 10), distinguished by `memory_type`:
+Active retrieval is **split by scope**. There is no LLM `memory_recall` and no cross-type RRF:
 
-| `memory_type`      | Notes                                                               |
-| ------------------ | ------------------------------------------------------------------- |
-| `semantic`         | Facts, preferences, experiences, etc.                               |
-| `session`          | Historical conversation snippets                                    |
-| `limbic`           | Emotional memory body (hybrid FTS + trgm)                           |
-| `autobiographical` | Narrative title + content snippet (hybrid FTS + trgm on title+body) |
+| Scope              | Tool                                          | Notes                                          |
+| ------------------ | --------------------------------------------- | ---------------------------------------------- |
+| `semantic`         | `memory_semantic_search`                      | Facts, preferences, experiences; FTS + filters |
+| `limbic`           | `memory_limbic_search`                        | Emotional memory (hybrid FTS when query set)   |
+| `autobiographical` | `memory_autobiographical_search`              | Narrative title + content snippet              |
+| conversation       | `conversation_search` / `conversation_scroll` | Historical dialogue; optional session filter   |
 
 ### ✅ Passive semantic recall (auto-inject)
 
@@ -157,7 +157,7 @@ Before each user-facing turn, the runtime searches **semantic memory only** from
 
 - **Resident memory** (system prompt): pinned + high-reference anchors, session snapshot
 - **Passive recall**: query-relevant semantic hits for the current message
-- **`memory_recall` tool**: conversation / limbic / autobiographical sources, broader or deeper retrieval when the model needs more; optional `memory_types` to restrict sources (default: all four)
+- **Active tools**: use the matching scope tool when the model needs more depth or non-semantic memory
 
 The conversation `system_prompt` column is a **session snapshot**. After each **CST 02:00** boundary (aligned with the sleep-cycle cron), the next user message rebuilds it in full (resident memory, world/channel context, toolsets, self layer, project `AGENTS.md`) via `ensureSystemPromptFresh` in `beginTurnPrepare`; mid-turn tool loops are not interrupted.
 
@@ -165,13 +165,13 @@ Configure under `memory.passive_recall` (`enabled`, `limit`, `min_score`, `min_r
 
 **Index columns (PG):** semantic memory rows are `entities` with `primary_component=semantic_memory` (shared `fts_segmented` → generated `search_fts`, async `search_embedding`). Conversation `messages` use `fts_segmented` → `content_fts` plus async `content_embedding`. Limbic / autobiographical / dream narratives live as `entities` `content_block`s (with `limbic` / `narrative` / `dream` tags) under dated `diary_entry`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only).
 
-**Hybrid retrieval:** FTS and trigram branches run in **one parallel wave**, then merge with Reciprocal Rank Fusion (RRF). Auto-built FTS queries join tokens with **OR** (space-separated / jieba segments); explicit `AND`/`OR`/`NOT` still work; unquoted CJK longer than two characters uses **bigram-OR** (so NL questions like「你的邮箱是啥？」can hit「邮箱」), while quoted phrases keep full adjacency. Keyword/FTS relevance is prioritized; vector similarity is not part of retrieval (avoids low-relevance semantic neighbors).
+**Hybrid retrieval:** FTS and trigram branches run in **one parallel wave**, then merge with Reciprocal Rank Fusion (RRF). Auto-built FTS queries join tokens with **OR** (space-separated / jieba segments); explicit `AND`/`OR`/`NOT` still work; unquoted CJK longer than two characters uses **bigram-OR**, while quoted phrases keep full adjacency. Keyword/FTS relevance is prioritized; vector similarity is not part of retrieval (avoids low-relevance semantic neighbors). RRF here is **within one index/scope**, not across memory types.
 
 Resident memory injected via system prompt: **up to 40 pinned** + **most-referenced top N** (default N=20). Each line carries a citation marker `[[anima:42]]` (ID only, no language prefix).
 
-**Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[anima:id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.
+**Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[anima:id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Conversation, limbic, and autobiographical hits do not use this marker.
 
-**Where the rule is communicated:** global system prompt `memory-citation` section; `memory_recall` and `memory_semantic_search` tool descriptions. Tool response JSON is not modified for this.
+**Where the rule is communicated:** global system prompt `memory-citation` section; `memory_semantic_search` tool description. Tool response JSON is not modified for this.
 
 **What counts as a reference:** only `[[anima:id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `entities.reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare numeric ids without `[[anima:…]]` are also not counted. Each citing message increments the weight (no per-conversation first-hit dedupe).
 

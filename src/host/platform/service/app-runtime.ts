@@ -379,7 +379,11 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     messaging.interruptSessionStream(this.messagingDeps(), conversationId);
   }
 
-  memorySearch(args: { query: string; limit?: number }) {
+  memorySearch(args: {
+    query: string;
+    limit?: number;
+    memory_types?: readonly ("semantic" | "conversation" | "limbic" | "autobiographical")[];
+  }) {
     return memory.memorySearch(args);
   }
 

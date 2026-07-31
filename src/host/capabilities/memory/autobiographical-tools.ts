@@ -1,6 +1,11 @@
 import type { ToolDef } from "@freeanima/host/core/tool";
 import { toolError, toolResult } from "@freeanima/host/core/tool";
-import { omitUndefined } from "@freeanima/host/core/util";
+import {
+  buildTextSearchSnippet,
+  formatFtsToolError,
+  isFtsQueryError,
+  omitUndefined,
+} from "@freeanima/host/core/util";
 import type {
   AutobiographicalSignificance,
   AutobiographicalMemoryCreateInput,
@@ -9,6 +14,7 @@ import type {
 import {
   createAutobiographicalMemory,
   deprecateAutobiographicalMemory,
+  searchAutobiographicalMemoryFts,
 } from "@freeanima/host/core/db/pg/autobiographical-memory";
 
 const SIGNIFICANCE_VALUES = ["normal", "milestone", "turning_point"] as const;
@@ -25,6 +31,51 @@ function parseSourceSemanticMemory(args: Record<string, unknown>): string[] | un
 }
 
 export const autobiographicalMemoryToolDefs: ToolDef[] = [
+  {
+    name: "memory_autobiographical_search",
+    description:
+      "Full-text search autobiographical narratives (title + body). Returns active narratives with title and content snippet. " +
+      "Use when you need life-story / milestone recall; not for facts (memory_semantic_search) or raw dialogue (conversation_search).",
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Full-text keywords (required)",
+        },
+        limit: {
+          type: "number",
+          description: "Max results, default 10, cap 30",
+        },
+      },
+      required: ["query"],
+    },
+    handler: async (args: Record<string, unknown>) => {
+      const query = String(args.query ?? "").trim();
+      if (!query) return toolError("query is required");
+      const limit = Math.max(1, Math.min(30, args.limit !== undefined ? Number(args.limit) : 10));
+      try {
+        const rows = await searchAutobiographicalMemoryFts(query, { limit });
+        return toolResult({
+          query,
+          count: rows.length,
+          results: rows.map((r) => ({
+            autobiographical_memory_id: r.id,
+            title: r.title,
+            snippet: buildTextSearchSnippet(query, r.content),
+            significance: r.significance,
+            status: r.status,
+            period_start: r.period_start,
+            period_end: r.period_end,
+            score: r.rank,
+          })),
+        });
+      } catch (err) {
+        if (isFtsQueryError(err)) return toolError(formatFtsToolError(err));
+        return toolError(err instanceof Error ? err.message : String(err));
+      }
+    },
+  },
   {
     name: "memory_autobiographical_create",
     description:
