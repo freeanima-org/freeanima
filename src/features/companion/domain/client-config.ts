@@ -6,7 +6,6 @@ import {
 } from "@freeanima/host/core/config/schemas/companion.ts";
 import { getObjectFile } from "@freeanima/features/object-storage/domain";
 import { activeModelPath, habitatUrlFromEnv, loadCompanionConfig } from "./config.ts";
-import { fbxImportAvailable } from "./fbx-converter-kit.ts";
 
 export async function buildClientCompanionConfig(): Promise<CompanionClientConfigPayload> {
   const cfg = await loadCompanionConfig();
@@ -22,7 +21,6 @@ export async function buildClientCompanionConfig(): Promise<CompanionClientConfi
     habitat_url: habitatUrlFromEnv(),
     model_path,
     model_available,
-    fbx_import_available: fbxImportAvailable(),
   };
 }
 

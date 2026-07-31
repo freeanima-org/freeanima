@@ -474,7 +474,6 @@ The desktop companion（桌面伴侣）is an **unreachable local app** that **ac
 | ----------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------- |
 | Behavior, slots, active model       | runtime `companion` 段（模块配置） + Habitat RPC                         | Cache in `~/.anima/companion/config.json`                 |
 | VRM / VRMA library                  | `object_file_id` → 对象存储（runtime `object_storage`）；非本机磁盘 SSOT | Lazy download via `object_storage.file.get` / `sync.pull` |
-| FBX → VRMA                          | Habitat service only                                                     | Not bundled in desktop installer                          |
 | Settings UI                         | Habitat RPC + companion upload routes                                    | Desktop Settings section (not Habitat)                    |
 | VRM render, float window, patrol    | —                                                                        | Tauri Portal shell + overlay SPA                          |
 | Agent tools (`bubble`, `play_slot`) | Habitat RPC `tool.*` after `remote_tools.attach`                         | Overlay WebView-host 执行（本地 runtime）                 |

@@ -10,4 +10,3 @@ export * from "./motion-library.ts";
 export * from "./motion-import.ts";
 export * from "./migrate.ts";
 export * from "./motions.ts";
-export * from "./fbx-converter-kit.ts";

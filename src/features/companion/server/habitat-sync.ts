@@ -183,7 +183,6 @@ export async function syncCompanionFromHabitat(): Promise<boolean> {
       habitat_url: _habitat,
       model_path: _mp,
       model_available: _ma,
-      fbx_import_available: _fbx,
       ...persist
     } = result.config;
     writeFileSync(companionConfigPath(), JSON.stringify(persist, null, 2), "utf-8");

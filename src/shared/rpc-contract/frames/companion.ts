@@ -25,7 +25,6 @@ export const companionClientConfigSchema = companionConfigSchema.extend({
   habitat_url: z.string().optional(),
   model_path: z.string(),
   model_available: z.boolean(),
-  fbx_import_available: z.boolean(),
 });
 
 export type CompanionClientConfigPayload = z.infer<typeof companionClientConfigSchema>;

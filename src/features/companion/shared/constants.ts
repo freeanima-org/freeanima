@@ -38,10 +38,6 @@ export const SETTINGS_WINDOW_HEIGHT = 720;
 export const SETTINGS_WINDOW_WIDTH_WIN = 960;
 export const SETTINGS_WINDOW_HEIGHT_WIN = 820;
 
-/** Habitat 主机未找到 FBX2glTF 原生转换器时的用户提示 */
-export const FBX_IMPORT_UNAVAILABLE_MSG =
-  "未找到 FBX2glTF 转换器，请直接导入 .vrma；或执行 just misc setup-fbx 下载。";
-
 export const LOCOMOTION_SLOTS = ["walk", "climb"] as const;
 export type LocomotionSlot = (typeof LOCOMOTION_SLOTS)[number];
 
@@ -57,7 +53,6 @@ export type ClientCompanionConfig = {
   model_path: string;
   model_available: boolean;
   remote_tools_connected: boolean;
-  fbx_import_available: boolean;
   active_object_file_id: number | null;
   models: ModelEntry[];
   motion_library: MotionLibraryEntry[];

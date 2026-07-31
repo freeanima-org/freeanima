@@ -12,8 +12,6 @@ export const REQUIRED_MOTION_FILES = requiredMotionFiles();
 
 export { publicMotionsDir, resolveMotionFile, resolveMotionsSearchDirs };
 
-const BOOTH_ITEM_URL = "https://booth.pm/ja/items/5512385";
-
 export function motionsReady(dir: string): boolean {
   if (!existsSync(dir)) return false;
   return REQUIRED_MOTION_FILES.every((name) => resolveMotionInDir(dir, name) != null);
@@ -31,38 +29,10 @@ function resolveMotionInDir(dir: string, name: string): string | null {
   return null;
 }
 
-/** 从 URL 下载 zip 并导入（可选镜像） */
-export async function downloadMotionsFromUrl(
-  url: string,
-): Promise<{ dir: string; files: string[] }> {
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`下载失败: HTTP ${res.status}`);
-  }
-  const bytes = new Uint8Array(await res.arrayBuffer());
-  await importMotionUpload("download.zip", bytes);
-  return { dir: companionMotionsDir(), files: [] };
-}
-
 export async function ensureDefaultMotions(): Promise<boolean> {
   const destDir = companionMotionsDir();
   if (motionsReady(destDir)) return true;
-  if (motionsReady(publicMotionsDir())) return true;
-
-  const url = process.env.COMPANION_VRMA_ZIP_URL?.trim();
-  if (!url) return false;
-
-  try {
-    await downloadMotionsFromUrl(url);
-    return motionsReady(destDir);
-  } catch (e) {
-    console.warn("[companion] VRMA 自动下载失败:", e);
-    return false;
-  }
-}
-
-export function boothMotionPackUrl(): string {
-  return BOOTH_ITEM_URL;
+  return motionsReady(publicMotionsDir());
 }
 
 export async function handleMotionUpload(req: Request): Promise<Response> {
@@ -83,8 +53,8 @@ export async function handleMotionUpload(req: Request): Promise<Response> {
   }
 
   const lower = file.name.toLowerCase();
-  if (!lower.endsWith(".zip") && !lower.endsWith(".vrma") && !lower.endsWith(".fbx")) {
-    return jsonResponse({ error: "仅支持 .vrma、.fbx 或 .zip" }, 400);
+  if (!lower.endsWith(".vrma")) {
+    return jsonResponse({ error: "仅支持 .vrma" }, 400);
   }
 
   try {

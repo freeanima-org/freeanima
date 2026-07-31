@@ -56,9 +56,6 @@
   "scripts": {
     "prepare": "husky || true"
   },
-  "patchedDependencies": {
-    "fbx2vrma-converter@1.0.2": "patches/fbx2vrma-converter@1.0.2.patch"
-  },
   "overrides": {
     "@sinclair/typebox": "^0.34.52",
     "esbuild": "0.28.1",
@@ -93,7 +90,6 @@
     "discord.js": "^14.27.0",
     "drizzle-orm": "^1.0.0-rc.4",
     "edge-tts-universal": "^1.4.0",
-    "fbx2vrma-converter": "^1.0.2",
     "imapflow": "^1.6.3",
     "isomorphic-dompurify": "^3.19.0",
     "lucide-react": "^1.27.0",

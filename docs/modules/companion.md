@@ -19,17 +19,17 @@ FreeAnima Portal (src/portal/app/tauri)
 │   └── habitat — Habitat WebView (Habitat RPC REST)
 └── Renderer — portalShell; overlay owns attach + tool runtime
          ↕ Habitat RPC (+ remote_tools.attach in overlay only)
-    anima service Habitat (runtime companion + object storage + FBX→VRMA)
+    anima service Habitat (runtime companion + object storage)
 ```
 
 ### Habitat vs local boundary
 
-| Layer              | Location                     | Responsibility                                                                                                                      |
-| ------------------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **Habitat SSOT**   | `src/features/companion/`    | runtime 段 `companion`（behavior / slots / 模型与动作注册表 + `object_file_id`）；字节在对象存储；FBX→VRMA；Settings 经 Habitat RPC |
-| **Settings UI**    | Desktop Settings → Companion | Habitat RPC（`companion.config.*`、model/motion CRUD）；二进制经 `object_storage.file.get`                                          |
-| **Companion host** | overlay SPA (`spa/`)         | `remote_tools.attach`、本地 runtime；桌面经 `companion.sync.pull` 把缺文件落到本机缓存                                              |
-| **Tauri host**     | `src/portal/app/tauri/`      | Transparent window, click-through, tray, show/hide + FS / prefs IPC                                                                 |
+| Layer              | Location                     | Responsibility                                                                                                            |
+| ------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Habitat SSOT**   | `src/features/companion/`    | runtime 段 `companion`（behavior / slots / 模型与动作注册表 + `object_file_id`）；字节在对象存储；Settings 经 Habitat RPC |
+| **Settings UI**    | Desktop Settings → Companion | Habitat RPC（`companion.config.*`、model/motion CRUD）；二进制经 `object_storage.file.get`                                |
+| **Companion host** | overlay SPA (`spa/`)         | `remote_tools.attach`、本地 runtime；桌面经 `companion.sync.pull` 把缺文件落到本机缓存                                    |
+| **Tauri host**     | `src/portal/app/tauri/`      | Transparent window, click-through, tray, show/hide + FS / prefs IPC                                                       |
 
 Management is in **Settings only** — Habitat has no companion admin page.
 
@@ -86,13 +86,9 @@ During development, files in `src/features/companion/public/models/` serve as fa
 
 ### VRMA library and slots
 
-Settings → **Motion library** tab: import VRMA, FBX, or ZIP (FBX is converted on **Habitat**, not on desktop); **reorder** via `companion.motion.reorder`. **Motion slots** tab assigns motions per slot. Preview supports mouse drag to rotate view.
+Settings → **Motion library** tab: import individual `.vrma` files (multi-select allowed; unzip packs yourself first); **reorder** via `companion.motion.reorder`. **Motion slots** tab assigns motions per slot. Preview supports mouse drag to rotate view.
 
 Unbound slots play no animation; patrol still moves the window; walk/climb VRMA play only when bound.
-
-### FBX import
-
-FBX→VRMA runs on the **Habitat host** (`anima service`). Desktop installers no longer bundle `fbx2vrma-converter` or FBX2glTF. On the Habitat machine run `just misc setup-fbx` if FBX conversion is needed.
 
 ## Development and run
 
