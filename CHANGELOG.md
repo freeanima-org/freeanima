@@ -3,6 +3,54 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.10.1](https://github.com/freeanima-org/freeanima/compare/v0.10.0...v0.10.1) (2026-07-31)
+
+
+### Features
+
+* **email:** 新邮件通知携带 from 与 message_id ([db73cc0](https://github.com/freeanima-org/freeanima/commit/db73cc0169ecc830c5ebdec82443150395fb1f63))
+* **host:** 落地 Context Engineering 脊柱（大输出再取 + 提示预算） ([041a06e](https://github.com/freeanima-org/freeanima/commit/041a06efcc351459e3da098bf69bc6d71fa325a8))
+* **portal:** 落地 PortalQueryClient 并统一入口数据切面 DX ([9f66a01](https://github.com/freeanima-org/freeanima/commit/9f66a016fef199cfd3bde5c07df821f3607f2906))
+* **self:** 自我层慢维护提议与自传栈下线 ([9b2cd9d](https://github.com/freeanima-org/freeanima/commit/9b2cd9d3cd95b91797f88ffb9f019776de408b8e))
+* **settings:** 局域网 TLS 证书改为按钮触发弹窗 ([f7ea79d](https://github.com/freeanima-org/freeanima/commit/f7ea79db7a473e93871b739c0f9449bc4d172d3b))
+* **subagent:** 落地内部 subagent 并移除 ACP ([acc649e](https://github.com/freeanima-org/freeanima/commit/acc649ef31e52794454fff76c7a85fd33743cd26))
+* **tools:** 本地工具强制 _title 调用意图供 UI 展示 ([b650820](https://github.com/freeanima-org/freeanima/commit/b6508206fad6b9e62ced817d8dd81a238c56eb69))
+* **vault:** 扩展与壳共用 ui-kit 编辑表单并修中文搜索 ([10bfa95](https://github.com/freeanima-org/freeanima/commit/10bfa958af1be0630dadb844455b0198b00c6a80))
+
+
+### Bug Fixes
+
+* **ci:** canary 发布前清空滚动 Release 旧资产 ([bba5aa6](https://github.com/freeanima-org/freeanima/commit/bba5aa698771346ccd0fdf02ae2610a6b0244f5a))
+* **companion:** 切模清场与正交描边，并修 Windows exactOptional 类型 ([937bee9](https://github.com/freeanima-org/freeanima/commit/937bee9bdbb6da3c2ddef57c0f4169207d47d672))
+* **companion:** 模型切换清场、关显示离线，二进制传输默认 10 分钟超时 ([034425a](https://github.com/freeanima-org/freeanima/commit/034425ae392259b6fb51685941ca27bd07cecadd))
+* **compression:** 避免 patch meta 时误清空摘要边界 ([ec0a455](https://github.com/freeanima-org/freeanima/commit/ec0a455e38d86fb6f68c40faacf28d269b9326d9))
+* **dev:** Habitat 启动失败时不启动 Web ([4365eb4](https://github.com/freeanima-org/freeanima/commit/4365eb487f43830c1232ef21f5f1765ea0fd8255))
+* **portal:** 修复 usePortalRead 列表刷屏死循环 ([7e256b4](https://github.com/freeanima-org/freeanima/commit/7e256b4a27e4d38c0c759b11927fd0dcd6ab6153))
+* **test:** 修复 Windows 单元测试路径策略与夹具 ([84dd300](https://github.com/freeanima-org/freeanima/commit/84dd300cc824ef03ce779aff92db159725c0bbcd))
+* **ui-kit:** 为 ContextMenu PopoverContext Consumer 标注类型 ([7e2e078](https://github.com/freeanima-org/freeanima/commit/7e2e078e56e59534e0353abf75513a33e725053d))
+
+
+### Documentation
+
+* **agents:** 明确正确路径优先于最小 diff ([3b7c654](https://github.com/freeanima-org/freeanima/commit/3b7c654582f7206203e80cb8125bc67beedb651d))
+* **ops:** 补充 Windows 源码开发指引并跨平台化 just dev ([dfce0f1](https://github.com/freeanima-org/freeanima/commit/dfce0f12cf7b76957c5a37f56e976f58c4110be7))
+
+
+### Miscellaneous
+
+* 统一文本换行为 LF（.gitattributes） ([e840430](https://github.com/freeanima-org/freeanima/commit/e840430a2ab0a797d3286813ab75e5e30131adf1))
+
+
+### Refactoring
+
+* **auto-llm:** 侧车 LLM 统一落库并记录 messages ([2b4acc5](https://github.com/freeanima-org/freeanima/commit/2b4acc5d43f35edec77965df781e594b586d6870))
+* **email:** 调整邮箱工具栏布局 ([3da3e96](https://github.com/freeanima-org/freeanima/commit/3da3e96911a37fe7d1998da0eeca071bcc8d27cb))
+* **entity:** 统一标签字段为顶层 tag_ids ([927e8bd](https://github.com/freeanima-org/freeanima/commit/927e8bdf3e4b1f97fdfe7ca4b142361f0c3e74b3))
+* **hooks:** 统一 on/subscribe 实时派发并移除生产 EventBus 队列 ([28b42a8](https://github.com/freeanima-org/freeanima/commit/28b42a8d37d94d4e48f51695622235383c140fd4))
+* **ui-kit:** 将 shadcn 底层从 Radix 换为 React Aria ([78a9a1b](https://github.com/freeanima-org/freeanima/commit/78a9a1ba672d56c382a5eaadcde4e82c2cc28ed6))
+* **ui:** 优先社区方案降维护成本 ([a08dc1f](https://github.com/freeanima-org/freeanima/commit/a08dc1f81058206a93903672febca24d0be13ade))
+* **ui:** 统一列表行与交互模式到 ListRow ([864d4d4](https://github.com/freeanima-org/freeanima/commit/864d4d402524e31cf81d7e2f7b54089f76f7b0f2))
+
 ## [0.10.0](https://github.com/freeanima-org/freeanima/compare/v0.9.3...v0.10.0) (2026-07-29)
 
 
