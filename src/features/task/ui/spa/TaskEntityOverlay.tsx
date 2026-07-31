@@ -81,6 +81,8 @@ export function TaskEntityOverlay({ id }: EntityOverlayProps): JSX.Element {
                 priority: next.priority,
                 due_at: next.due_at,
                 status: next.status,
+                recurrence: next.recurrence ?? null,
+                ...(next.recurrence ? { only_this: true } : {}),
               },
               { seed: next },
             ).catch((err) => {

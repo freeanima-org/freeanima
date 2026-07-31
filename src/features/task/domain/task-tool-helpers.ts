@@ -120,6 +120,8 @@ export function itemPayload(item: TaskItemRow) {
     list_name: item.list_name ?? null,
     sort_order: item.sort_order,
     completed_at: item.completed_at,
+    recurrence: item.recurrence ?? null,
+    occurrence_id: item.occurrence_id,
     created_at: item.created_at,
     updated_at: item.updated_at,
   };

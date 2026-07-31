@@ -21,11 +21,13 @@ import {
   parseProjectSearchFilters,
   parseTagSearchFilters,
   parseTaskItemSearchFilters,
+  parseTaskOccurrenceSearchFilters,
   POMODORO_SESSION_COMPONENT,
   POMODORO_TASK_FOCUS_COMPONENT,
   TAG_COMPONENT,
   parseTaskListSearchFilters,
   TASK_ITEM_COMPONENT,
+  TASK_OCCURRENCE_COMPONENT,
   TASK_LIST_COMPONENT,
   type EntityType,
 } from "@freeanima/host/core/db/schema";
@@ -221,6 +223,50 @@ function buildTaskItemBodyConditions(
   if (filters.in_backlog === true) {
     conditions.push(
       sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
+    );
+  }
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
+  return conditions;
+}
+
+function buildTaskOccurrenceBodyConditions(
+  filters: ReturnType<typeof parseTaskOccurrenceSearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.series_task_id != null) {
+    conditions.push(sql`${entities.body}->>'series_task_id' = ${String(filters.series_task_id)}`);
+  }
+  if (filters.list_ids != null && filters.list_ids.length > 0) {
+    if (filters.list_ids.length === 1) {
+      conditions.push(sql`${entities.body}->>'list_id' = ${String(filters.list_ids[0])}`);
+    } else {
+      conditions.push(
+        sql`${entities.body}->>'list_id' IN (${sql.join(
+          filters.list_ids.map((id) => sql`${String(id)}`),
+          sql`, `,
+        )})`,
+      );
+    }
+  } else if (filters.list_id != null) {
+    conditions.push(sql`${entities.body}->>'list_id' = ${String(filters.list_id)}`);
+  }
+  if (filters.project_id != null) {
+    conditions.push(sql`${entities.body}->>'project_id' = ${String(filters.project_id)}`);
+  }
+  if (filters.in_backlog === true) {
+    conditions.push(
+      sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
+    );
+  }
+  if (filters.completed_on != null) {
+    conditions.push(buildTaskItemCompletedOnCondition(filters.completed_on));
+  }
+  if (filters.completed_on_or_after_days != null) {
+    conditions.push(
+      sql`(${entities.body}->>'completed_at')::timestamptz IS NOT NULL
+        AND (${entities.body}->>'completed_at')::timestamptz::date >= ${CST_TODAY} - ${filters.completed_on_or_after_days}`,
     );
   }
   if (filters.client_op_id) {
@@ -452,6 +498,9 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   const component = opts.primary_component ?? opts.component;
   if (component === TASK_ITEM_COMPONENT) {
     return buildTaskItemBodyConditions(parseTaskItemSearchFilters(filters));
+  }
+  if (component === TASK_OCCURRENCE_COMPONENT) {
+    return buildTaskOccurrenceBodyConditions(parseTaskOccurrenceSearchFilters(filters));
   }
   if (component === TASK_LIST_COMPONENT) {
     return buildTaskListBodyConditions(parseTaskListSearchFilters(filters));

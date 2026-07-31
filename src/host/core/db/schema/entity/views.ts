@@ -10,6 +10,7 @@ import {
   EMAIL_MESSAGE_COMPONENT,
   EMAIL_THREAD_COMPONENT,
   TASK_ITEM_COMPONENT,
+  TASK_OCCURRENCE_COMPONENT,
   TASK_LIST_COMPONENT,
   SMART_LIST_COMPONENT,
   PROJECT_FOLDER_COMPONENT,
@@ -34,6 +35,7 @@ import {
   emailMessageBodySchema,
   emailThreadBodySchema,
   taskItemBodySchema,
+  taskOccurrenceBodySchema,
   taskListBodySchema,
   smartListBodySchema,
   projectFolderBodySchema,
@@ -58,6 +60,7 @@ import {
   type EmailMessageBody,
   type EmailThreadBody,
   type TaskItemBody,
+  type TaskOccurrenceBody,
   type TaskListBody,
   type SmartListBody,
   type ProjectFolderBody,
@@ -196,6 +199,16 @@ export function asTaskItem(
 ): (TaskItemBody & { id: number; title: string; content: string }) | null {
   if (row.primary_component !== TASK_ITEM_COMPONENT) return null;
   const parsed = taskItemBodySchema.safeParse(row.body);
+  return parsed.success
+    ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
+    : null;
+}
+
+export function asTaskOccurrence(
+  row: EntityRow,
+): (TaskOccurrenceBody & { id: number; title: string; content: string }) | null {
+  if (row.primary_component !== TASK_OCCURRENCE_COMPONENT) return null;
+  const parsed = taskOccurrenceBodySchema.safeParse(row.body);
   return parsed.success
     ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
     : null;

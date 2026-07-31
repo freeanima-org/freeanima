@@ -1,6 +1,7 @@
 import { omitUndefined } from "@freeanima/host/core/util";
 import {
   completeTaskItem,
+  completeTaskItemForever,
   createTaskItem,
   createTaskList,
   createSmartList,
@@ -9,12 +10,16 @@ import {
   deleteSmartList,
   ensureDefaultTaskListForWorld,
   getDefaultTaskList,
+  listCompletedActivity,
   listSmartListsMerged,
   listTaskItems,
   listTaskLists,
   listTaskListStats,
   listSmartListStats,
+  listTaskOccurrences,
   searchTaskItems,
+  shouldListCompletedActivity,
+  skipTaskItem,
   uncompleteTaskItem,
   updateTaskItem,
   updateTaskList,
@@ -241,6 +246,14 @@ export async function serviceTasklistItemList(
   }
   const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
   await ensureDefaultTaskListForWorld(worldId);
+  if (input.filters != null && shouldListCompletedActivity(input.filters)) {
+    const items = await listCompletedActivity(
+      worldId,
+      input.filters,
+      omitUndefined({ limit: input.limit, offset: input.offset }),
+    );
+    return { items };
+  }
   const items = await listTaskItems(
     worldId,
     omitUndefined({
@@ -293,6 +306,8 @@ export async function serviceTasklistItemCreate(
     tag_ids?: number[];
     priority?: "high" | "medium" | "low" | "none";
     due_at?: string | null;
+    remind_at?: string | null;
+    recurrence?: Parameters<typeof createTaskItem>[1]["recurrence"];
     sort_order?: number;
     client_op_id?: string;
   },
@@ -302,7 +317,7 @@ export async function serviceTasklistItemCreate(
   const { subject_kind, list_id, ...rest } = input;
   const worldId = await taskWorldIdForAuth(auth, subject_kind);
   const resolvedListId = list_id ?? (await getDefaultTaskList(worldId)).id;
-  const item = await createTaskItem(worldId, { ...rest, list_id: resolvedListId });
+  const item = await createTaskItem(worldId, omitUndefined({ ...rest, list_id: resolvedListId }));
   return { item };
 }
 
@@ -317,6 +332,8 @@ export async function serviceProjectItemCreate(
     tag_ids?: number[];
     priority?: "high" | "medium" | "low" | "none";
     due_at?: string | null;
+    remind_at?: string | null;
+    recurrence?: Parameters<typeof createTaskItem>[1]["recurrence"];
     sort_order?: number;
     client_op_id?: string;
   },
@@ -324,7 +341,10 @@ export async function serviceProjectItemCreate(
 ) {
   assertPg(deps);
   const { subject_kind, ...createInput } = input;
-  const item = await createTaskItem(await taskWorldIdForAuth(auth, subject_kind), createInput);
+  const item = await createTaskItem(
+    await taskWorldIdForAuth(auth, subject_kind),
+    omitUndefined(createInput),
+  );
   return { item };
 }
 
@@ -342,12 +362,17 @@ export async function serviceTaskPatch(
     remind_at?: string | null;
     sort_order?: number;
     status?: "pending" | "completed";
+    recurrence?: Parameters<typeof updateTaskItem>[1]["recurrence"];
+    only_this?: boolean;
   },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   const { id, subject_kind, ...patch } = input;
-  const item = await updateTaskItem(await taskWorldIdForAuth(auth, subject_kind), { id, ...patch });
+  const item = await updateTaskItem(
+    await taskWorldIdForAuth(auth, subject_kind),
+    omitUndefined({ id, ...patch }),
+  );
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
@@ -401,6 +426,50 @@ export async function serviceTaskComplete(
   const item = await completeTaskItem(await taskWorldIdForAuth(auth, input.subject_kind), input.id);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
+}
+
+export async function serviceTaskSkip(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const item = await skipTaskItem(await taskWorldIdForAuth(auth, input.subject_kind), input.id);
+  if (!item) throw new Error("NOT_FOUND");
+  return { item };
+}
+
+export async function serviceTaskCompleteForever(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const item = await completeTaskItemForever(
+    await taskWorldIdForAuth(auth, input.subject_kind),
+    input.id,
+  );
+  if (!item) throw new Error("NOT_FOUND");
+  return { item };
+}
+
+export async function serviceTaskListOccurrences(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    series_task_id: number;
+    limit?: number;
+    offset?: number;
+  },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const items = await listTaskOccurrences(
+    await taskWorldIdForAuth(auth, input.subject_kind),
+    input.series_task_id,
+    omitUndefined({ limit: input.limit, offset: input.offset }),
+  );
+  return { items };
 }
 
 export async function serviceTaskUncomplete(

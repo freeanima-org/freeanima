@@ -9,6 +9,7 @@ import {
   listEntities,
 } from "@freeanima/host/core/db/pg/entity";
 
+import { countCompletedActivity, shouldListCompletedActivity } from "./completed-activity.ts";
 import { type SmartListPreset } from "./smart-list-presets.ts";
 import { listSmartListsMerged } from "./smart-list-store.ts";
 
@@ -53,12 +54,14 @@ export async function listSmartListStats(worldId: number): Promise<SmartListCoun
   const smartLists = await listSmartListsMerged(worldId);
   const result: SmartListCountRow[] = [];
   for (const row of smartLists) {
-    const item_count = await countEntitiesSearch({
-      world_id: worldId,
-      primary_component: TASK_ITEM_COMPONENT,
-      filters: row.filters,
-      mode: "filter_only",
-    });
+    const item_count = shouldListCompletedActivity(row.filters)
+      ? await countCompletedActivity(worldId, row.filters)
+      : await countEntitiesSearch({
+          world_id: worldId,
+          primary_component: TASK_ITEM_COMPONENT,
+          filters: row.filters,
+          mode: "filter_only",
+        });
     if (row.preset != null) {
       result.push({ preset: row.preset, item_count });
     } else if (row.id != null) {

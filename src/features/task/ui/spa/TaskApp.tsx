@@ -200,6 +200,9 @@ export function TaskApp() {
           priority: snapshot.priority,
           due_at: snapshot.due_at,
           status: snapshot.status,
+          recurrence: snapshot.recurrence ?? null,
+          // 有重复规则时改期默认仅此一次，不挪规则轨
+          ...(snapshot.recurrence ? { only_this: true } : {}),
         },
         { seed: snapshot },
       ),

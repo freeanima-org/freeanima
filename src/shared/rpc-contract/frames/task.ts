@@ -8,6 +8,34 @@ const taskPrioritySchema = z.enum(["high", "medium", "low", "none"]);
 const taskStatusSchema = z.enum(["pending", "completed"]);
 const taskRelativeDaySchema = z.enum(["today", "tomorrow", "yesterday"]);
 
+const taskRecurrenceFreqSchema = z.enum(["daily", "weekly", "monthly", "yearly"]);
+const taskRecurrenceAnchorSchema = z.enum(["due", "completion"]);
+
+export const taskRecurrenceSchema = z.object({
+  freq: taskRecurrenceFreqSchema,
+  interval: z.number().int().positive(),
+  anchor: taskRecurrenceAnchorSchema,
+  weekdays: z.array(z.number().int().min(0).max(6)).min(1).optional(),
+  until: z.string().nullable().optional(),
+  count: z.number().int().positive().nullable().optional(),
+  schedule_at: z.string().min(1),
+});
+
+export type TaskRecurrencePayload = z.infer<typeof taskRecurrenceSchema>;
+
+/** 创建/patch 时可省略 schedule_at（服务端用 due_at 补） */
+export const taskRecurrenceInputSchema = z.object({
+  freq: taskRecurrenceFreqSchema,
+  interval: z.number().int().positive().optional(),
+  anchor: taskRecurrenceAnchorSchema.optional(),
+  weekdays: z.array(z.number().int().min(0).max(6)).min(1).optional(),
+  until: z.string().nullable().optional(),
+  count: z.number().int().positive().nullable().optional(),
+  schedule_at: z.string().min(1).optional(),
+});
+
+export type TaskRecurrenceInputPayload = z.infer<typeof taskRecurrenceInputSchema>;
+
 export const taskItemSearchFiltersSchema = z
   .object({
     list_id: z.number().int().positive().optional(),
@@ -71,11 +99,29 @@ export const taskItemRowSchema = z.object({
   list_name: z.string().nullable().optional(),
   sort_order: z.number().int(),
   completed_at: z.string().nullable(),
+  recurrence: taskRecurrenceSchema.nullable().optional(),
+  /** 若有值，本行是重复任务完成历史快照；id 为 series live id */
+  occurrence_id: z.number().int().positive().optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });
 
 export type TaskItemRowPayload = z.infer<typeof taskItemRowSchema>;
+
+export const taskOccurrenceRowSchema = z.object({
+  id: z.number().int().positive(),
+  title: z.string(),
+  content: z.string(),
+  series_task_id: z.number().int().positive(),
+  completed_at: z.string(),
+  due_at: z.string().nullable(),
+  list_id: z.number().int().positive().nullable(),
+  project_id: z.number().int().positive().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export type TaskOccurrenceRowPayload = z.infer<typeof taskOccurrenceRowSchema>;
 
 export const tasklistListInputSchema = z.object({
   subject_kind: taskSubjectKindSchema,
@@ -243,6 +289,8 @@ export const tasklistItemCreateInputSchema = z.object({
   tag_ids: z.array(z.number().int().positive()).optional(),
   priority: taskPrioritySchema.optional(),
   due_at: z.string().nullable().optional(),
+  remind_at: z.string().nullable().optional(),
+  recurrence: taskRecurrenceInputSchema.nullable().optional(),
   sort_order: z.number().int().optional(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -259,6 +307,8 @@ export const projectItemCreateInputSchema = z.object({
   tag_ids: z.array(z.number().int().positive()).optional(),
   priority: taskPrioritySchema.optional(),
   due_at: z.string().nullable().optional(),
+  remind_at: z.string().nullable().optional(),
+  recurrence: taskRecurrenceInputSchema.nullable().optional(),
   sort_order: z.number().int().optional(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -306,6 +356,9 @@ export const taskPatchInputSchema = z.object({
   remind_at: z.string().nullable().optional(),
   sort_order: z.number().int().optional(),
   status: taskStatusSchema.optional(),
+  recurrence: taskRecurrenceInputSchema.nullable().optional(),
+  /** 有 recurrence 时改 due：true=仅此一次；缺省=改规则轨 */
+  only_this: z.boolean().optional(),
   client_op_id: z.string().min(1).optional(),
 });
 export type TaskPatchInput = z.infer<typeof taskPatchInputSchema>;
@@ -320,6 +373,36 @@ export const taskCompleteInputSchema = z.object({
 export type TaskCompleteInput = z.infer<typeof taskCompleteInputSchema>;
 export const taskCompleteOutputSchema = z.object({ item: taskItemRowSchema });
 export type TaskCompleteOutput = z.infer<typeof taskCompleteOutputSchema>;
+
+export const taskSkipInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  id: z.number().int().positive(),
+  client_op_id: z.string().min(1).optional(),
+});
+export type TaskSkipInput = z.infer<typeof taskSkipInputSchema>;
+export const taskSkipOutputSchema = z.object({ item: taskItemRowSchema });
+export type TaskSkipOutput = z.infer<typeof taskSkipOutputSchema>;
+
+export const taskCompleteForeverInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  id: z.number().int().positive(),
+  client_op_id: z.string().min(1).optional(),
+});
+export type TaskCompleteForeverInput = z.infer<typeof taskCompleteForeverInputSchema>;
+export const taskCompleteForeverOutputSchema = z.object({ item: taskItemRowSchema });
+export type TaskCompleteForeverOutput = z.infer<typeof taskCompleteForeverOutputSchema>;
+
+export const taskListOccurrencesInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  series_task_id: z.number().int().positive(),
+  limit: z.number().int().positive().optional(),
+  offset: z.number().int().nonnegative().optional(),
+});
+export type TaskListOccurrencesInput = z.infer<typeof taskListOccurrencesInputSchema>;
+export const taskListOccurrencesOutputSchema = z.object({
+  items: z.array(taskOccurrenceRowSchema),
+});
+export type TaskListOccurrencesOutput = z.infer<typeof taskListOccurrencesOutputSchema>;
 
 export const taskUncompleteInputSchema = z.object({
   subject_kind: taskSubjectKindSchema,

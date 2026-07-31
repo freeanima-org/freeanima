@@ -16,12 +16,14 @@ import {
   PROJECT_FOLDER_COMPONENT,
   TASK_ITEM_COMPONENT,
   TASK_LIST_COMPONENT,
+  TASK_OCCURRENCE_COMPONENT,
   VAULT_ITEM_COMPONENT,
   vaultItemTypeSchema,
 } from "./components/index.ts";
 import { contentBlockSearchFiltersSchema } from "./content-block-search-filters.ts";
 import { tagSearchFiltersSchema } from "./tag-search-filters.ts";
 import { taskItemSearchFiltersSchema } from "./task-item-search-filters.ts";
+import { taskOccurrenceSearchFiltersSchema } from "./task-occurrence-search-filters.ts";
 
 export {
   parseTaskItemSearchFilters,
@@ -29,6 +31,12 @@ export {
   taskRelativeDaySchema,
   type TaskItemSearchFilters,
 } from "./task-item-search-filters.ts";
+
+export {
+  parseTaskOccurrenceSearchFilters,
+  taskOccurrenceSearchFiltersSchema,
+  type TaskOccurrenceSearchFilters,
+} from "./task-occurrence-search-filters.ts";
 
 export {
   contentBlockSearchFiltersSchema,
@@ -287,6 +295,7 @@ export function parseProjectSearchFilters(
 
 export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [TASK_ITEM_COMPONENT]: taskItemSearchFiltersSchema,
+  [TASK_OCCURRENCE_COMPONENT]: taskOccurrenceSearchFiltersSchema,
   [TASK_LIST_COMPONENT]: taskListSearchFiltersSchema,
   [PROJECT_FOLDER_COMPONENT]: projectFolderSearchFiltersSchema,
   [PROJECT_COMPONENT]: projectSearchFiltersSchema,

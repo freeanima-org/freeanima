@@ -5,7 +5,11 @@ import {
   asProject,
   PROJECT_COMPONENT,
   TASK_LIST_COMPONENT,
+  computeNextOccurrence,
+  normalizeRecurrenceInput,
+  shiftRemindAt,
   type EntityRow,
+  type TaskRecurrence,
 } from "@freeanima/host/core/db/schema/entity";
 import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/host/core/db/pg/entity";
 import { formatCstIso, omitUndefined } from "@freeanima/host/core/util";
@@ -18,6 +22,7 @@ import {
 } from "@freeanima/host/core/db/pg/entity";
 
 import { assertListAcceptsTasks, assertTaskListNotArchived } from "./list-store.ts";
+import { createTaskOccurrence, deleteOccurrencesForSeries } from "./occurrence-store.ts";
 import { nextPrependSortOrder } from "./sort-order.ts";
 import type {
   TaskItemCreateInput,
@@ -79,6 +84,7 @@ function toItemRow(entity: EntityRow): TaskItemRow {
     project_id: row.project_id ?? null,
     sort_order: row.sort_order ?? 0,
     completed_at: row.completed_at ?? null,
+    recurrence: row.recurrence ?? null,
     created_at: entity.created_at.toISOString(),
     updated_at: entity.updated_at.toISOString(),
   };
@@ -185,16 +191,23 @@ export async function createTaskItem(
     sortOrder = nextPrependSortOrder(siblings.map((s) => s.sort_order));
   }
 
+  const dueAt = input.due_at ?? null;
+  let recurrence: TaskRecurrence | null = null;
+  if (input.recurrence != null) {
+    recurrence = normalizeRecurrenceInput(input.recurrence, dueAt ?? formatCstIso(new Date()));
+  }
+
   const body = {
     status: "pending" as const,
     priority: input.priority ?? "none",
     list_id: listId,
     sort_order: sortOrder,
-    due_at: input.due_at ?? null,
+    due_at: dueAt,
     remind_at: input.remind_at ?? null,
     completed_at: null,
     client_op_id: input.client_op_id ?? null,
     project_id: projectId,
+    recurrence,
   };
 
   const row = await createEntity({
@@ -216,6 +229,26 @@ export async function updateTaskItem(
   worldId: number,
   input: TaskItemUpdateInput,
 ): Promise<TaskItemRow | null> {
+  // status→completed 统一走 complete 语义（含重复滚动）
+  if (input.status === "completed") {
+    const { status: _status, only_this: _onlyThis, ...rest } = input;
+    if (
+      rest.title !== undefined ||
+      rest.content !== undefined ||
+      rest.tag_ids !== undefined ||
+      rest.list_id !== undefined ||
+      rest.project_id !== undefined ||
+      rest.priority !== undefined ||
+      rest.due_at !== undefined ||
+      rest.remind_at !== undefined ||
+      rest.sort_order !== undefined ||
+      rest.recurrence !== undefined
+    ) {
+      await updateTaskItem(worldId, { ...rest, id: input.id });
+    }
+    return completeTaskItem(worldId, input.id);
+  }
+
   const existing = await getEntity(input.id);
   if (!existing) return null;
   await assertEntityInWorld(input.id, worldId);
@@ -255,12 +288,30 @@ export async function updateTaskItem(
     }
   }
   if (input.priority !== undefined) bodyPatch.priority = input.priority;
-  if (input.due_at !== undefined) bodyPatch.due_at = input.due_at;
+  if (input.due_at !== undefined) {
+    bodyPatch.due_at = input.due_at;
+    const existingRec = parsedExisting.recurrence ?? null;
+    if (existingRec && input.due_at != null && input.only_this !== true) {
+      bodyPatch.recurrence = { ...existingRec, schedule_at: input.due_at };
+    }
+  }
   if (input.remind_at !== undefined) bodyPatch.remind_at = input.remind_at;
   if (input.sort_order !== undefined) bodyPatch.sort_order = input.sort_order;
   if (input.status !== undefined) {
+    // status=completed 已在入口委托 completeTaskItem；此处仅 pending
     bodyPatch.status = input.status;
-    bodyPatch.completed_at = input.status === "completed" ? formatCstIso(new Date()) : null;
+    bodyPatch.completed_at = null;
+  }
+  if (input.recurrence !== undefined) {
+    if (input.recurrence == null) {
+      bodyPatch.recurrence = null;
+    } else {
+      const dueForSchedule =
+        input.due_at !== undefined
+          ? input.due_at
+          : ((bodyPatch.due_at as string | null | undefined) ?? parsedExisting.due_at ?? null);
+      bodyPatch.recurrence = normalizeRecurrenceInput(input.recurrence, dueForSchedule);
+    }
   }
 
   let nextTagIds: number[] | undefined;
@@ -287,12 +338,142 @@ export async function updateTaskItem(
   }
 }
 
+async function rollOrFinishRecurring(
+  worldId: number,
+  id: number,
+  parsed: NonNullable<ReturnType<typeof asTaskItem>>,
+  opts: { writeOccurrence: boolean; finishForever: boolean },
+): Promise<TaskItemRow | null> {
+  const now = formatCstIso(new Date());
+  const recurrence = parsed.recurrence;
+
+  if (opts.writeOccurrence && recurrence) {
+    await createTaskOccurrence(worldId, {
+      series_task_id: id,
+      title: parsed.title,
+      content: parsed.content,
+      completed_at: now,
+      due_at: parsed.due_at ?? null,
+      list_id: parsed.list_id ?? null,
+      project_id: parsed.project_id ?? null,
+    });
+  }
+
+  if (!recurrence || opts.finishForever) {
+    const row = await updateEntity({
+      id,
+      body: {
+        status: "completed",
+        completed_at: now,
+        recurrence: null,
+        last_notified_at: null,
+      },
+    });
+    return row ? toItemRow(row) : null;
+  }
+
+  const next = computeNextOccurrence(recurrence, {
+    completedAt: now,
+    currentDueAt: parsed.due_at ?? null,
+    decrementCount: opts.writeOccurrence,
+  });
+
+  if (!next) {
+    const row = await updateEntity({
+      id,
+      body: {
+        status: "completed",
+        completed_at: now,
+        recurrence: null,
+        last_notified_at: null,
+      },
+    });
+    return row ? toItemRow(row) : null;
+  }
+
+  const nextRemind = shiftRemindAt(parsed.due_at, parsed.remind_at, next.due_at);
+  const row = await updateEntity({
+    id,
+    body: {
+      status: "pending",
+      completed_at: null,
+      due_at: next.due_at,
+      remind_at: nextRemind,
+      recurrence: next.recurrence,
+      last_notified_at: null,
+    },
+  });
+  return row ? toItemRow(row) : null;
+}
+
 export async function completeTaskItem(worldId: number, id: number): Promise<TaskItemRow | null> {
-  return updateTaskItem(worldId, { id, status: "completed" });
+  const existing = await getEntity(id);
+  if (!existing) return null;
+  await assertEntityInWorld(id, worldId);
+  const parsed = asTaskItem(existing);
+  if (!parsed) return null;
+
+  if (!parsed.recurrence) {
+    return updateTaskItemFields(worldId, id, {
+      status: "completed",
+      completed_at: formatCstIso(new Date()),
+    });
+  }
+
+  return rollOrFinishRecurring(worldId, id, parsed, {
+    writeOccurrence: true,
+    finishForever: false,
+  });
+}
+
+/** 跳过本期：推进 due/schedule，不写 occurrence */
+export async function skipTaskItem(worldId: number, id: number): Promise<TaskItemRow | null> {
+  const existing = await getEntity(id);
+  if (!existing) return null;
+  await assertEntityInWorld(id, worldId);
+  const parsed = asTaskItem(existing);
+  if (!parsed?.recurrence) {
+    throw new Error("task has no recurrence");
+  }
+  return rollOrFinishRecurring(worldId, id, parsed, {
+    writeOccurrence: false,
+    finishForever: false,
+  });
+}
+
+/** 永久完成：写一条 occurrence，清 recurrence，标 completed */
+export async function completeTaskItemForever(
+  worldId: number,
+  id: number,
+): Promise<TaskItemRow | null> {
+  const existing = await getEntity(id);
+  if (!existing) return null;
+  await assertEntityInWorld(id, worldId);
+  const parsed = asTaskItem(existing);
+  if (!parsed) return null;
+  return rollOrFinishRecurring(worldId, id, parsed, {
+    writeOccurrence: parsed.recurrence != null,
+    finishForever: true,
+  });
+}
+
+async function updateTaskItemFields(
+  worldId: number,
+  id: number,
+  bodyPatch: Record<string, unknown>,
+): Promise<TaskItemRow | null> {
+  await assertEntityInWorld(id, worldId);
+  const row = await updateEntity({ id, body: bodyPatch });
+  if (!row) return null;
+  try {
+    return toItemRow(row);
+  } catch {
+    return null;
+  }
 }
 
 export async function uncompleteTaskItem(worldId: number, id: number): Promise<TaskItemRow | null> {
-  return updateTaskItem(worldId, { id, status: "pending" });
+  return updateTaskItemFields(worldId, id, { status: "pending", completed_at: null });
 }
 
 export async function deleteTaskItem(worldId: number, id: number): Promise<boolean> {
@@ -302,6 +483,9 @@ export async function deleteTaskItem(worldId: number, id: number): Promise<boole
   const parsed = asTaskItem(existing);
   if (parsed && parsed.project_id == null && parsed.list_id != null) {
     await assertTaskListNotArchived(parsed.list_id, worldId);
+  }
+  if (parsed) {
+    await deleteOccurrencesForSeries(worldId, id);
   }
   return deleteEntity(id);
 }

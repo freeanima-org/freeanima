@@ -1,5 +1,9 @@
 import type { TaskItemPriority } from "@freeanima/host/core/db/schema/entity";
 import type { TaskItemSearchFilters } from "@freeanima/host/core/db/schema";
+import type {
+  TaskRecurrence,
+  TaskRecurrenceInput,
+} from "@freeanima/host/core/db/schema/entity/task-recurrence.ts";
 
 export type {
   TaskItemRowPayload as TaskItemRow,
@@ -40,6 +44,7 @@ export type TaskItemCreateInput = {
   /** 项目内必填；与 list_id 互斥 */
   project_id?: number | null;
   client_op_id?: string;
+  recurrence?: TaskRecurrenceInput | null | undefined;
 };
 
 export type TaskItemUpdateInput = {
@@ -54,6 +59,12 @@ export type TaskItemUpdateInput = {
   remind_at?: string | null;
   sort_order?: number;
   status?: "pending" | "completed";
+  recurrence?: TaskRecurrenceInput | TaskRecurrence | null | undefined;
+  /**
+   * 仅当有 recurrence 且改 due_at 时：true = 仅此一次（不改 schedule_at）；
+   * false/缺省 = 同时改规则轨 schedule_at。
+   */
+  only_this?: boolean;
 };
 
 export type TaskItemSearchOpts = {

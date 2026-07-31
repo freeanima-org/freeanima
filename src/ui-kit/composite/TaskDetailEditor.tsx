@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CalendarIcon, FlagIcon } from "lucide-react";
+import { CalendarIcon, FlagIcon, RepeatIcon } from "lucide-react";
 
 import { Button } from "../components/ui/button.tsx";
 import { Checkbox } from "../components/ui/checkbox.tsx";
@@ -21,7 +21,11 @@ import {
   isoToTimeLocalValue,
   mergeDateTimeLocal,
 } from "../lib/datetime-local.ts";
-import type { TaskItemDisplay, TaskItemPriority } from "../lib/task-item-display.ts";
+import type {
+  TaskItemDisplay,
+  TaskItemPriority,
+  TaskItemRecurrenceDisplay,
+} from "../lib/task-item-display.ts";
 
 export type TaskDetailEditorProps<T extends TaskItemDisplay = TaskItemDisplay> = {
   item: T;
@@ -40,6 +44,42 @@ const PRIORITY_LABEL: Record<TaskItemPriority, string> = {
   medium: "中",
   high: "高",
 };
+
+const RECURRENCE_PRESETS: Array<{
+  id: string;
+  label: string;
+  build: (dueAt: string) => TaskItemRecurrenceDisplay | null;
+}> = [
+  { id: "none", label: "不重复", build: () => null },
+  {
+    id: "daily",
+    label: "每天",
+    build: (dueAt) => ({ freq: "daily", interval: 1, anchor: "due", schedule_at: dueAt }),
+  },
+  {
+    id: "weekly",
+    label: "每周",
+    build: (dueAt) => ({ freq: "weekly", interval: 1, anchor: "due", schedule_at: dueAt }),
+  },
+  {
+    id: "monthly",
+    label: "每月",
+    build: (dueAt) => ({ freq: "monthly", interval: 1, anchor: "due", schedule_at: dueAt }),
+  },
+  {
+    id: "yearly",
+    label: "每年",
+    build: (dueAt) => ({ freq: "yearly", interval: 1, anchor: "due", schedule_at: dueAt }),
+  },
+];
+
+function recurrenceLabel(recurrence: TaskItemRecurrenceDisplay | null | undefined): string {
+  if (!recurrence) return "不重复";
+  const preset = RECURRENCE_PRESETS.find(
+    (p) => p.id === recurrence.freq && recurrence.interval === 1,
+  );
+  return preset?.label ?? `每 ${recurrence.interval} ${recurrence.freq}`;
+}
 
 function priorityFlagClass(priority: TaskItemPriority): string {
   switch (priority) {
@@ -65,6 +105,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
   const datePart = isoToDateLocalValue(item.due_at);
   const timePart = isoToTimeLocalValue(item.due_at);
   const completed = item.status === "completed";
+  const scheduleAnchor = item.due_at ?? item.recurrence?.schedule_at ?? new Date().toISOString();
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
@@ -133,6 +174,47 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                 </Button>
               ) : null}
             </div>
+          </DropdownMenu>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuTrigger>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "h-8 gap-1.5 px-2 font-normal",
+              item.recurrence ? "text-foreground" : "text-muted-foreground",
+            )}
+            aria-label={`重复：${recurrenceLabel(item.recurrence)}`}
+          >
+            <RepeatIcon className="size-4 shrink-0" />
+            <span className="truncate">{recurrenceLabel(item.recurrence)}</span>
+          </Button>
+          <DropdownMenu
+            placement="bottom start"
+            className="min-w-36"
+            selectionMode="single"
+            selectedKeys={[item.recurrence?.freq ?? "none"]}
+            onSelectionChange={(keys: Iterable<string | number> | "all") => {
+              if (keys === "all") return;
+              const key = [...keys][0];
+              if (typeof key !== "string") return;
+              const preset = RECURRENCE_PRESETS.find((p) => p.id === key);
+              if (!preset) return;
+              onChange({
+                ...item,
+                recurrence: preset.build(scheduleAnchor),
+              });
+            }}
+          >
+            <DropdownMenuLabel>重复</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {RECURRENCE_PRESETS.map((preset) => (
+              <DropdownMenuItem key={preset.id} id={preset.id}>
+                {preset.label}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenu>
         </DropdownMenuTrigger>
 

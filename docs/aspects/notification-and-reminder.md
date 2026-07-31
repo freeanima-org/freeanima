@@ -78,12 +78,13 @@ loop:
   on fire → process → reschedule
 ```
 
-| Rule             | Detail                                                                                                                                                                 |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| How many timers? | **At most one** next-fire arm — not one timer per timed row                                                                                                            |
-| Implementation   | Equivalent to `while { work; sleep(next) }` on the Habitat event loop via **one** delayed timer (e.g. `setTimeout`); do not block the process with a synchronous sleep |
-| On mutation      | Creating/patching `due_at` / reminders **cancels and recomputes** the next wake                                                                                        |
-| Empty idle       | No cron_log spam; stay asleep until the next real fire or a mutation                                                                                                   |
+| Rule             | Detail                                                                                                                                                                        |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| How many timers? | **At most one** next-fire arm — not one timer per timed row                                                                                                                   |
+| Implementation   | Equivalent to `while { work; sleep(next) }` on the Habitat event loop via **one** delayed timer (e.g. `setTimeout`); do not block the process with a synchronous sleep        |
+| On mutation      | Creating/patching `due_at` / reminders **cancels and recomputes** the next wake                                                                                               |
+| Empty idle       | No cron_log spam; stay asleep until the next real fire or a mutation                                                                                                          |
+| Recurring tasks  | Live `task_item` keeps `pending` and rolls `due_at` / `remind_at` on complete（见 [`docs/modules/task.md`](../modules/task.md)）；扫描器仍只看 pending live，滚期后可再次触发 |
 
 Other builtins (sleep cycle, env-health, user Agent cron jobs) may keep the existing cron-table machinery. This aspect only moves **task due / reminder discovery** off that path.
 

@@ -1,6 +1,16 @@
 export type TaskItemPriority = "high" | "medium" | "low" | "none";
 export type TaskItemStatus = "pending" | "completed";
 
+export type TaskItemRecurrenceDisplay = {
+  freq: "daily" | "weekly" | "monthly" | "yearly";
+  interval: number;
+  anchor: "due" | "completion";
+  weekdays?: number[] | undefined;
+  until?: string | null | undefined;
+  count?: number | null | undefined;
+  schedule_at: string;
+};
+
 /** 任务列表/详情 UI 的最小字段集（feature 层 row 类型可结构兼容） */
 export type TaskItemDisplay = {
   id: number;
@@ -10,6 +20,8 @@ export type TaskItemDisplay = {
   status: TaskItemStatus;
   priority: TaskItemPriority;
   due_at: string | null;
+  /** 缺省/undefined = 非重复；null 显式清除 */
+  recurrence?: TaskItemRecurrenceDisplay | null | undefined;
 };
 
 export function priorityDot(priority: TaskItemPriority): string {
@@ -38,6 +50,7 @@ export function isTaskItemDisplayEqual(a: TaskItemDisplay, b: TaskItemDisplay): 
     a.status === b.status &&
     a.priority === b.priority &&
     a.due_at === b.due_at &&
+    JSON.stringify(a.recurrence ?? null) === JSON.stringify(b.recurrence ?? null) &&
     aTags.length === bTags.length &&
     aTags.every((t, i) => t === bTags[i])
   );
