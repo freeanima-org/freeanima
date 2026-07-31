@@ -33,6 +33,7 @@ export type ExtToBgMessage =
     }
   | { type: "delete_item"; item_id: number }
   | { type: "save_login"; title: string; url: string; username: string; password: string }
+  | { type: "check_login"; url: string; username: string }
   | {
       type: "generate_password";
       length?: number;
@@ -81,6 +82,7 @@ export type ExtBgResponse =
   | { ok: true; item: VaultItemMetaRowPayload | VaultItemDetailRowPayload }
   | { ok: true; message: string }
   | { ok: true; deleted: true }
+  | { ok: true; exists: boolean }
   | { ok: false; error: string };
 
 export type { VaultUriEntryPayload, VaultUriMatch };

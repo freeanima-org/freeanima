@@ -5,6 +5,7 @@ import {
   fillIdentity,
   fillLogin,
 } from "../features/vault/dom-fill.ts";
+import { attachPageAutofillUi } from "../features/vault/page-ui.ts";
 import type { FillPayload } from "../runtime/messages.ts";
 import { sendBg } from "../runtime/messages.ts";
 
@@ -22,6 +23,8 @@ export default defineContentScript({
       },
     );
 
+    attachPageAutofillUi();
+
     let lastPromptAt = 0;
     attachSavePrompt((creds) => {
       const now = Date.now();
@@ -32,6 +35,12 @@ export default defineContentScript({
       void (async () => {
         const status = await sendBg({ type: "get_status" });
         if (!status.ok || !("unlocked" in status) || !status.unlocked) return;
+        const existing = await sendBg({
+          type: "check_login",
+          url,
+          username: creds.username,
+        });
+        if (existing.ok && "exists" in existing && existing.exists) return;
         const ok = window.confirm(
           `将登录凭据保存到 FreeAnima Vault？\n${creds.username || "(无用户名)"}\n${url}`,
         );
