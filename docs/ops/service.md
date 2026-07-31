@@ -34,7 +34,9 @@ just misc memory-sample -- --habitat-url http://127.0.0.1:2658 --stage full
 | Mode                    | How to run Habitat                                                                                                                |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | **Monorepo / worktree** | `just dev habitat` (default random port ≥10000; optional `--port` / `--strict-port`; source `anima` has **no** `service` command) |
-| **Standalone install**  | `anima service start` / `stop` / `status` (systemd user unit; **2658** / TLS **2659**)                                            |
+| **Standalone install**  | `anima service start` / `stop` / `status` (systemd user unit; **2658** / TLS **2659**; **Linux x64 only**)                        |
+
+Windows source development uses the monorepo path (`just dev` / `just dev habitat`); there is no Windows `anima service` binary — see [`windows-dev.md`](windows-dev.md).
 
 Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.md)。
 

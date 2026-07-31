@@ -782,6 +782,7 @@ type ParaglideMessageExports = {
   readonly sidebar_time_perception: ParaglideMessageFn;
   readonly sidebar_tools: ParaglideMessageFn;
   readonly sidebar_versioning: ParaglideMessageFn;
+  readonly sidebar_windows_dev: ParaglideMessageFn;
   readonly ui_common_cancel: ParaglideMessageFn;
   readonly ui_common_close: ParaglideMessageFn;
   readonly ui_common_confirm: ParaglideMessageFn;
@@ -1619,6 +1620,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const sidebar_time_perception: ParaglideMessageFn;
   export const sidebar_tools: ParaglideMessageFn;
   export const sidebar_versioning: ParaglideMessageFn;
+  export const sidebar_windows_dev: ParaglideMessageFn;
   export const ui_common_cancel: ParaglideMessageFn;
   export const ui_common_close: ParaglideMessageFn;
   export const ui_common_confirm: ParaglideMessageFn;

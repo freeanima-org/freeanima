@@ -9,23 +9,26 @@ title: Installation
 
 ## Choose a path
 
-| Path           | Best for                                  | Bun on host | PostgreSQL  | Redis                  | Secrets                            |
-| -------------- | ----------------------------------------- | ----------- | ----------- | ---------------------- | ---------------------------------- |
-| **Source**     | Contributors, day-to-day development      | Required    | You install | Optional (recommended) | Bootstrap: `env()`; runtime: Vault |
-| **Standalone** | Production / self-host without a checkout | Not needed  | You install | Optional (recommended) | Bootstrap: `env()`; runtime: Vault |
+| Path           | Best for                                  | Host OS               | Bun on host | Notes                                                                                |
+| -------------- | ----------------------------------------- | --------------------- | ----------- | ------------------------------------------------------------------------------------ |
+| **Source**     | Contributors, day-to-day development      | Linux, macOS, Windows | Required    | You install PostgreSQL (pgvector) + optional Redis; bootstrap `env()`, runtime Vault |
+| **Standalone** | Production / self-host without a checkout | **Linux x64 only**    | Not needed  | Same Habitat runtime as `anima service`; same DB/Redis/secrets expectations          |
 
-Both paths run the same `anima service` runtime (Habitat REST `/api` + Habitat RPC `/rpc/v1` + engine). PostgreSQL with **pgvector** is **required**. Redis is optional (task context / other caches); it **degrades silently** when unavailable. Habitat lifecycle notify uses in-process HookRegistry `subscribe`, not a Redis EventBus.
+Both paths run the same Habitat runtime (REST `/api` + Habitat RPC `/rpc/v1` + engine). Standalone exposes it as `anima service`; source uses `just dev` / `just dev habitat`. PostgreSQL with **pgvector** is **required**. Redis is optional (task context / other caches); it **degrades silently** when unavailable. Habitat lifecycle notify uses in-process HookRegistry `subscribe`, not a Redis EventBus.
+
+**Windows:** there is no standalone Habitat binary. Use [source development](windows-dev.md) (Git Bash + Docker) or run Habitat on Linux/WSL/remote and connect the Desktop NSIS shell.
 
 ## Shared prerequisites
 
-| Component      | Version / notes                                                                                                                                           |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Bun**        | >= 1.3.14 — required for **source** installs ([bun.sh](https://bun.sh)); not required for standalone binaries                                             |
-| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md)                                                                      |
-| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                                             |
-| **Vault**      | Recommended for runtime secrets after Habitat is up; bootstrap `config.yaml` uses `env()` only ([`security.md`](security.md#credential-responsibilities)) |
+| Component      | Version / notes                                                                                                                                             |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Bun**        | >= 1.3.14 — required for **source** installs ([bun.sh](https://bun.sh); Windows: `winget install Oven-sh.Bun`); not required for standalone binaries        |
+| **just**       | [casey/just](https://github.com/casey/just) — Justfile needs **bash** on `PATH` (Git for Windows on native Windows; see [`windows-dev.md`](windows-dev.md)) |
+| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md) (Docker is the cross-platform default)                                 |
+| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                                               |
+| **Vault**      | Recommended for runtime secrets after Habitat is up; bootstrap `config.yaml` uses `env()` only ([`security.md`](security.md#credential-responsibilities))   |
 
-Data directory: `~/.anima/` (override with `FREEANIMA_HOME`). Back it up with your database.
+Data directory: `~/.anima/` on Unix, `%USERPROFILE%\.anima` on Windows (override with `FREEANIMA_HOME`). Back it up with your database.
 
 ---
 
@@ -164,7 +167,7 @@ For development, unreleased fixes, or running from a git checkout.
 
 ### 1. Clone and install dependencies
 
-**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended) · [just](https://github.com/casey/just) (for `just install cli`)
+**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended) · [just](https://github.com/casey/just) (bash on `PATH` — Git Bash on Windows). Windows setup: [`windows-dev.md`](windows-dev.md).
 
 ```bash
 git clone https://github.com/freeanima-org/freeanima.git
@@ -244,8 +247,9 @@ If status fails, check PostgreSQL connectivity, that migrations completed ([`dat
 
 ## Next steps
 
-1. **Security** — bootstrap `env()` + runtime Vault, `chmod 700 ~/.anima`, do not expose Habitat without auth ([`security.md`](security.md))
+1. **Security** — bootstrap `env()` + runtime Vault, `chmod 700 ~/.anima` (Windows: see [`windows-dev.md`](windows-dev.md)), do not expose Habitat without auth ([`security.md`](security.md))
 2. **Remote access** — Service API Token + LAN / local HTTPS for personal mobile/remote Habitat ([`remote-access.md`](remote-access.md))
 3. **Database** — backups, extensions, manual migrations if needed ([`database.md`](database.md))
-4. **Operations** — start/stop, memory metrics ([`service.md`](service.md))
-5. **Architecture** — memory pipeline, self layer, tools ([`product/architecture.md`](../product/architecture.md))
+4. **Windows development** — winget / Git Bash / Docker ([`windows-dev.md`](windows-dev.md))
+5. **Operations** — start/stop, memory metrics ([`service.md`](service.md))
+6. **Architecture** — memory pipeline, self layer, tools ([`product/architecture.md`](../product/architecture.md))

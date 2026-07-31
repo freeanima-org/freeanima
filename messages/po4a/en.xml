@@ -743,6 +743,7 @@
   <msg id="sidebar_time_perception">Time Perception</msg>
   <msg id="sidebar_tools">Tools</msg>
   <msg id="sidebar_versioning">Versioning</msg>
+  <msg id="sidebar_windows_dev">Windows development</msg>
   <msg id="ui_common_cancel">Cancel</msg>
   <msg id="ui_common_close">Close</msg>
   <msg id="ui_common_confirm">OK</msg>
