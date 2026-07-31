@@ -1,0 +1,12 @@
+# 仓库文本统一 LF（与 .editorconfig end_of_line=lf 一致）。
+# Windows 请保持 core.autocrlf=false，勿与 eol=lf 叠加转换。
+* text=auto eol=lf
+
+# 二进制：禁止按文本改写换行
+*.{png,jpg,jpeg,gif,webp,ico,bmp,svgz} binary
+*.{woff,woff2,ttf,otf,eot} binary
+*.{zip,gz,tgz,7z,rar,exe,dll,so,dylib,msi,AppImage} binary
+*.{wasm,bin,pdf,db,sqlite,sqlite3} binary
+*.{mp3,mp4,webm,wav,ogg,flac} binary
+*.{fbx,glb,gltf,vrm,vrma} binary
+*.{icns,cur,ani} binary
