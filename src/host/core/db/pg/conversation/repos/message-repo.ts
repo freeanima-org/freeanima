@@ -407,6 +407,32 @@ export async function lastMessageTimestamp(conversation_id: string): Promise<str
   return rows[0]?.ts ?? null;
 }
 
+/**
+ * Non-debug / non-cron conversation ids that have at least one message whose
+ * payload.timestamp falls in [fromIso, toIso). Used by temporal-summary tick
+ * (message activity — not conversations.updated_at).
+ */
+export async function listConversationIdsWithMessagesBetween(
+  fromIso: string,
+  toIso: string,
+): Promise<string[]> {
+  const db = getDb();
+  const msgTs = sql`(nullif(btrim(${messages.payload}->>'timestamp'), ''))::timestamptz`;
+  const rows = await db
+    .selectDistinct({ id: messages.conversation_id })
+    .from(messages)
+    .innerJoin(conversations, eq(messages.conversation_id, conversations.id))
+    .where(
+      and(
+        sql`${msgTs} >= ${fromIso}::timestamptz`,
+        sql`${msgTs} < ${toIso}::timestamptz`,
+        eq(conversations.debug, false),
+        sql`COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'`,
+      ),
+    );
+  return rows.map((r) => r.id);
+}
+
 export async function truncateMessagesAfter(
   conversation_id: string,
   keepThroughPos: number,

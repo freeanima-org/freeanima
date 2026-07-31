@@ -67,10 +67,31 @@ describe("generateConversationSummary", () => {
       { preSliced: true },
     );
 
-    expect(result).toEqual({ ok: true, summary: "I fixed login." });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.summary).toBe("I fixed login.");
     expect(chatSpy).toHaveBeenCalledTimes(1);
     const [, opts] = chatSpy.mock.calls[0]!;
     expect(opts?.profileId).toBe(llm.PROFILE_SUMMARY);
     expect(opts?.requestParams).toEqual(COMPRESSION_SUMMARY_REQUEST_PARAMS);
+  });
+
+  it("returns runId when LLM output is empty", async () => {
+    const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "  " } as never);
+    restores.push(chatSpy);
+
+    const result = await generateConversationSummary(
+      [msg("user", 2, "hi"), msg("assistant", 3, "yo")],
+      null,
+      { l2: 3, l3: 3 },
+      "sys",
+      "test-model",
+      { preSliced: true },
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("empty");
+      expect(result.runId).toMatch(/^autollm_/);
+    }
   });
 });

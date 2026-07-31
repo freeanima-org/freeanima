@@ -44,7 +44,7 @@ LLM compression still applies (char caps). **Not the memory main store** (semant
 }
 ```
 
-Chunks are **append-only** within a CST day. Tick only pushes new chunks when there are messages after the watermark.
+Chunks are **append-only** within a CST day. Tick only pushes new chunks when there are **CST-today** messages after `max(watermark_at, CST day start)`.
 
 ### Global entity body
 
@@ -56,12 +56,14 @@ Unique on `(window, period_start)` for global rows (expression unique index).
 
 ## Generation
 
-| Step               | Trigger                                                            | Output                                                     |
-| ------------------ | ------------------------------------------------------------------ | ---------------------------------------------------------- |
-| Conversation chunk | in-process `Bun.cron` `builtin-temporal-summary-tick` `*/30`       | Append chunk if new messages                               |
-| Peer rollup        | Same tick / on assemble for **closed** buckets                     | One merged peer digest per viewer source-set → Redis cache |
-| Global day         | Sleep step `temporal-summary-day` (after light-sleep)              | Overwrite global `day` entity for sleep day                |
-| Month / year       | Sleep step `temporal-summary-cascade` (after temporal-summary-day) | Month on month-end; year on Dec 31                         |
+| Step               | Trigger                                                            | Output                                                         |
+| ------------------ | ------------------------------------------------------------------ | -------------------------------------------------------------- |
+| Conversation chunk | in-process `Bun.cron` `builtin-temporal-summary-tick` `*/30`       | Append chunk if **CST-today message activity** after watermark |
+| Peer rollup        | Same tick / on assemble for **closed** buckets                     | One merged peer digest per viewer source-set → Redis cache     |
+| Global day         | Sleep step `temporal-summary-day` (after light-sleep)              | Overwrite global `day` entity for sleep day                    |
+| Month / year       | Sleep step `temporal-summary-cascade` (after temporal-summary-day) | Month on month-end; year on Dec 31                             |
+
+Tick **does not** use `conversations.updated_at` as the candidate gate (opening a chat / rebuilding system prompt / writing `temporal_day` can bump that column without new messages). Candidates are conversations with at least one message whose `payload.timestamp` falls on the current CST calendar day. Material for each chunk is messages after `max(watermark_at, CST day start)` — never a cross-day dump of older history when the day rolls and chunks reset. Writing `temporal_day` must **not** bump `updated_at`.
 
 Identity context (self + resident) must ride with LLM summarization calls.
 

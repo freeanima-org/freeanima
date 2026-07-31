@@ -16,6 +16,7 @@ import type {
   ConversationMetaLoadResult,
 } from "@freeanima/host/core/db/domain";
 import { isConversationMeta } from "@freeanima/host/core/db/domain";
+import { omitUndefined } from "@freeanima/host/core/util";
 import {
   load,
   loadConversationMeta,
@@ -33,7 +34,9 @@ export type SummarizeConversationResult = {
   enabled: boolean;
   updated: boolean;
   idle?: boolean;
-  error?: "empty" | "in_progress" | "already_collapsed";
+  error?: "empty" | "in_progress" | "already_collapsed" | "summary_empty";
+  summary_run_id?: string;
+  summary_error?: string;
   compression: CompressionState | null;
 } & Partial<CompressionAnalysis>;
 
@@ -108,7 +111,7 @@ export async function summarizeConversation(
 
   await updateConversationMetaField(conversationId, { compression: newState });
   scheduleCompressionSummary(conversationId, prevState, newState, systemSnapshot, model);
-  await flushCompressionSummaries(conversationId);
+  const job = await flushCompressionSummaries(conversationId);
 
   const metaAfter = await loadConversationMeta(conversationId);
   const finalState = isConversationMeta(metaAfter)
@@ -130,6 +133,20 @@ export async function summarizeConversation(
       idle,
       compression: finalState,
     };
+  }
+
+  if (!finalState?.summary?.trim()) {
+    return omitUndefined({
+      ...analysis,
+      ok: false as const,
+      enabled: true as const,
+      updated: true as const,
+      idle,
+      error: "summary_empty" as const,
+      summary_run_id: job?.runId,
+      summary_error: job?.error,
+      compression: finalState,
+    });
   }
 
   return {

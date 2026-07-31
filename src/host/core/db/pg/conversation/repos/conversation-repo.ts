@@ -2,6 +2,8 @@ import { and, desc, eq, inArray, isNull, lt, sql } from "drizzle-orm";
 import {
   compressionStateSchema,
   conversationTodoStoreSchema,
+  mergeCompressionKeepingSummary,
+  parseCompressionState,
   type CompressionState,
   type ConversationMetaMessage,
   type ConversationTodoStore,
@@ -220,7 +222,12 @@ export async function patchConversationMeta(
       if (compression == null) {
         set.compression = null;
       } else {
-        Object.assign(set, patchCompression(compression));
+        const existingMeta = await getConversationMeta(conversation_id);
+        const existingState = existingMeta ? parseCompressionState(existingMeta.compression) : null;
+        Object.assign(
+          set,
+          patchCompression(mergeCompressionKeepingSummary(compression, existingState)),
+        );
       }
     }
     hasColumnPatch = true;
@@ -285,9 +292,11 @@ export async function updateCompression(
   compression: CompressionState,
 ): Promise<void> {
   const db = getDb();
+  const existingMeta = await getConversationMeta(conversation_id);
+  const existingState = existingMeta ? parseCompressionState(existingMeta.compression) : null;
   await db
     .update(conversations)
-    .set(patchCompression(compression))
+    .set(patchCompression(mergeCompressionKeepingSummary(compression, existingState)))
     .where(eq(conversations.id, conversation_id));
 }
 
