@@ -1,12 +1,13 @@
 import type { ToolDef } from "@freeanima/host/core/tool";
 import { toolError, toolResult } from "@freeanima/host/core/tool";
-import { omitUndefined } from "@freeanima/host/core/util";
+import { formatFtsToolError, isFtsQueryError, omitUndefined } from "@freeanima/host/core/util";
 import type { LimbicKind } from "@freeanima/host/core/db/pg/limbic-memory/types";
 import type { LimbicMemoryRow } from "@freeanima/host/core/db/schema/rows";
 import {
   getLimbicMemory,
   listLimbicMemory,
   listLimbicMemoryBySession,
+  searchLimbicMemoryFts,
 } from "@freeanima/host/core/db/pg/limbic-memory";
 
 const LIMBIC_KINDS = ["conversation_mood", "turning_point", "spike"] as const;
@@ -74,15 +75,16 @@ export const limbicSearchToolDefs: ToolDef[] = [
   {
     name: "memory_limbic_search",
     description:
-      "Search limbic emotional memories. Returns entries sorted by created_at desc by default. " +
-      "Supports filtering by kind, intensity/valence range, conversation, and content query (case-insensitive substring). " +
+      "Search limbic emotional memories. With query: hybrid FTS + trigram. Without query: list with filters. " +
+      "Supports filtering by kind, intensity/valence range, and conversation. " +
       "Use to find emotional spikes, turning points, or conversation moods.",
     parameters: {
       type: "object",
       properties: {
         query: {
           type: "string",
-          description: "Search content (case-insensitive substring). Optional; omit to list all.",
+          description:
+            "Full-text keywords (hybrid FTS). Optional; omit to list/filter without text search.",
         },
         kind: {
           type: "string",
@@ -165,17 +167,22 @@ export const limbicSearchToolDefs: ToolDef[] = [
       const kind = kindRaw as LimbicKind | undefined;
 
       try {
-        // Use the store's list method for query/conversation_id/kind filtering
-        let rows = await listLimbicMemory(
-          omitUndefined({
-            query,
-            conversation_id: conversationId,
-            kind,
-            limit: 500, // fetch more then filter/order/slice
-          }),
-        );
+        let rows: LimbicMemoryRow[];
+        if (query) {
+          const ftsHits = await searchLimbicMemoryFts(query, { limit: 500 });
+          rows = ftsHits;
+          if (kind) rows = rows.filter((r) => r.kind === kind);
+          if (conversationId) rows = rows.filter((r) => r.conversation_id === conversationId);
+        } else {
+          rows = await listLimbicMemory(
+            omitUndefined({
+              conversation_id: conversationId,
+              kind,
+              limit: 500,
+            }),
+          );
+        }
 
-        // Apply range filters client-side
         rows = clampRange(
           rows,
           omitUndefined({
@@ -187,11 +194,8 @@ export const limbicSearchToolDefs: ToolDef[] = [
         );
 
         const total = rows.length;
-
-        // Sort
-        rows = applyOrder(rows, orderBy);
-
-        // Paginate
+        // FTS path keeps relevance order unless caller overrides order_by
+        rows = query && !orderBy ? rows : applyOrder(rows, orderBy);
         const page = rows.slice(offset, offset + limit);
 
         const hits = page.map((r) => ({
@@ -214,6 +218,7 @@ export const limbicSearchToolDefs: ToolDef[] = [
           results: hits,
         });
       } catch (err) {
+        if (isFtsQueryError(err)) return toolError(formatFtsToolError(err));
         return toolError(err instanceof Error ? err.message : String(err));
       }
     },

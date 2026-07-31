@@ -7,7 +7,7 @@ describe("renderToolsetsSection", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("memory", "Semantic memory tools", [
       {
-        name: "memory_recall",
+        name: "memory_semantic_search",
         description: "Recall",
         parameters: { type: "object", properties: {} },
         handler: () => "ok",

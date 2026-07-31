@@ -24,8 +24,8 @@ import {
 import { PATHS } from "@freeanima/host/platform/config";
 import { omitUndefined } from "@freeanima/host/core/util";
 import {
-  memoryRecallSearch,
-  type MemoryRecallResult,
+  memoryScopedSearch,
+  type MemoryScopedSearchResult,
 } from "@freeanima/host/capabilities/memory/search";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
@@ -69,10 +69,14 @@ function readMemoryEntry(path: string, displayName: string): MemoryFileEntry | n
 export async function memorySearch(args: {
   query: string;
   limit?: number;
-}): Promise<MemoryRecallResult> {
+  memory_types?: readonly ("semantic" | "conversation" | "limbic" | "autobiographical")[];
+}): Promise<MemoryScopedSearchResult> {
   const query = args.query.trim();
   if (!query) throw new Error("query is required");
-  return memoryRecallSearch(query, omitUndefined({ limit: args.limit }));
+  return memoryScopedSearch(
+    query,
+    omitUndefined({ limit: args.limit, memory_types: args.memory_types }),
+  );
 }
 
 /** PG STORED content_fts auto-maintained; returns semantic_memory row count */

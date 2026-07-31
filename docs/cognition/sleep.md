@@ -170,7 +170,7 @@ Conversation archive
 semantic memory (consolidated)
   │   step memory-ref-sync
   │   step self-layer-refresh → agent Inbox proposal (Mon; partner confirms before write)
-  │ memory_recall (real-time retrieval in conversation)
+  │ scoped search tools (real-time retrieval in conversation)
   ▼
 Agent identity and recalled fragments in current context
 ```

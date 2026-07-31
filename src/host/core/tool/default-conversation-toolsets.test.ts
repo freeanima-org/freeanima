@@ -34,9 +34,13 @@ function metaFixture(partial?: Partial<ConversationMetaMessage>): ConversationMe
 describe("filterToolSetsByAllowedTools", () => {
   it("keeps toolsets with at least one allowed tool", () => {
     const registry = new ToolSetRegistry();
-    registry.registerToolSet("memory", "memory", [stubTool("memory_recall")]);
+    registry.registerToolSet("memory", "memory", [stubTool("memory_semantic_search")]);
     registry.registerToolSet("file", "file", [stubTool("file_read")]);
-    const filtered = filterToolSetsByAllowedTools(registry, ["memory", "file"], ["memory_recall"]);
+    const filtered = filterToolSetsByAllowedTools(
+      registry,
+      ["memory", "file"],
+      ["memory_semantic_search"],
+    );
     expect(filtered).toEqual(["memory"]);
   });
 });
@@ -48,13 +52,13 @@ describe("resolveDefaultConversationToolSetsForMeta", () => {
 
   it("returns only default toolsets present in registry", () => {
     const registry = new ToolSetRegistry();
-    registry.registerToolSet("memory", "memory", [stubTool("memory_recall")]);
+    registry.registerToolSet("memory", "memory", [stubTool("memory_semantic_search")]);
     expect(resolveDefaultConversationToolSets(registry)).toEqual(["memory"]);
   });
 
   it("returns registry defaults when no mask filter applies", () => {
     const registry = new ToolSetRegistry();
-    registry.registerToolSet("memory", "memory", [stubTool("memory_recall")]);
+    registry.registerToolSet("memory", "memory", [stubTool("memory_semantic_search")]);
     const resolved = resolveDefaultConversationToolSetsForMeta(registry, metaFixture());
     expect(resolved).toEqual(resolveDefaultConversationToolSets(registry));
   });
@@ -66,12 +70,12 @@ describe("resolveDefaultConversationToolSetsForMeta", () => {
       stubTool("toolset_search"),
       stubTool("toolset_load"),
     ]);
-    registry.registerToolSet("memory", "memory", [stubTool("memory_recall")]);
+    registry.registerToolSet("memory", "memory", [stubTool("memory_semantic_search")]);
     registry.registerToolSet("conversation", "session", [stubTool("conversation_search")]);
     const resolved = resolveDefaultConversationToolSetsForMeta(registry, metaFixture());
     expect(resolved).toEqual(["memory"]);
-    expect(applyConversationToolMaskFilter(["memory_recall"], metaFixture())).toEqual([
-      "memory_recall",
+    expect(applyConversationToolMaskFilter(["memory_semantic_search"], metaFixture())).toEqual([
+      "memory_semantic_search",
     ]);
   });
 });

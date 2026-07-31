@@ -20,7 +20,8 @@ export async function memorySearch(body: MemorySearchBody) {
   const parsed = memorySearchBodySchema.parse(body);
   return habitatCtx().memorySearch({
     query: parsed.query,
-    limit: parsed.limit,
+    ...(parsed.limit !== undefined ? { limit: parsed.limit } : {}),
+    ...(parsed.memory_types !== undefined ? { memory_types: parsed.memory_types } : {}),
   });
 }
 

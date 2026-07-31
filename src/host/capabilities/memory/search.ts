@@ -106,11 +106,17 @@ export async function searchDialogueOnly(
 }
 
 export {
+  memoryScopedSearch,
   memoryRecallSearch,
+  isMemoryScopedHitType,
   isMemoryRecallHitType,
+  MEMORY_SCOPED_HIT_TYPES,
   MEMORY_RECALL_HIT_TYPES,
+  type MemoryScopedHit,
   type MemoryRecallHit,
+  type MemoryScopedHitType,
   type MemoryRecallHitType,
+  type MemoryScopedSearchResult,
   type MemoryRecallResult,
   type SemanticRecallHit,
   type ConversationRecallHit,

@@ -68,6 +68,10 @@ export const memorySearchBodySchema = z
   .object({
     query: z.string(),
     limit: z.number().int().positive().optional(),
+    memory_types: z
+      .array(z.enum(["semantic", "conversation", "limbic", "autobiographical"]))
+      .min(1)
+      .optional(),
   })
   .transform((b) => ({ ...b, query: b.query.trim() }))
   .refine((b) => b.query.length > 0, { message: "query is required" });

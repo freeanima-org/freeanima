@@ -31,7 +31,7 @@ describe("resolveReturnKind", () => {
   });
 
   it("defaults others to json", () => {
-    expect(resolveReturnKind("memory", { ...base, name: "memory_recall" })).toBe("json");
+    expect(resolveReturnKind("memory", { ...base, name: "memory_semantic_search" })).toBe("json");
   });
 });
 

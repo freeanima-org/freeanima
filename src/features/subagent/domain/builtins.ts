@@ -31,8 +31,10 @@ export const BUILTIN_SUBAGENT_SEEDS: ReadonlyArray<SubagentCreateInput & { slug:
     skills: [],
     max_turns: 20,
     allowed_tools: [
-      "memory_recall",
       "memory_semantic_search",
+      "memory_limbic_search",
+      "memory_autobiographical_search",
+      "conversation_search",
       "file_read",
       "file_search",
       "web_search",

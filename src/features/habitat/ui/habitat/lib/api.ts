@@ -323,7 +323,11 @@ export async function restartService() {
   return hubCall(habitat().call("status.restart", {}));
 }
 
-export async function searchMemory(input: { query: string; limit?: number }) {
+export async function searchMemory(input: {
+  query: string;
+  limit?: number;
+  memory_types?: Array<"semantic" | "conversation" | "limbic" | "autobiographical">;
+}) {
   return hubCall(habitat().call("memory.search", input));
 }
 

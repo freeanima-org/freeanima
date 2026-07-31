@@ -61,7 +61,7 @@ describe("message stream llm_debug", () => {
       turn_index: 2,
       model: "m",
       tool_count: 1,
-      tools: [{ name: "memory_recall" }],
+      tools: [{ name: "memory_semantic_search" }],
       invoke: { turns: [] },
     });
     expect(api?.event).toBe("llm_debug");

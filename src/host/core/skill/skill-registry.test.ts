@@ -8,7 +8,7 @@ describe("SkillRegistry", () => {
     const body = skillBodySchema.parse({
       origin: "builtin",
       status: "active",
-      allowed_tools: ["memory_recall"],
+      allowed_tools: ["memory_semantic_search"],
     });
     skills.register(
       skillDefFromBody(

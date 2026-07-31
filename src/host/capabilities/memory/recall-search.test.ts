@@ -24,9 +24,9 @@ mock.module("@freeanima/host/core/db/pg/autobiographical-memory", () => ({
   searchAutobiographicalMemoryFts: searchAutobiographicalMemoryFtsMock,
 }));
 
-import { memoryRecallSearch } from "./recall-search.ts";
+import { memoryScopedSearch } from "./recall-search.ts";
 
-describe("memoryRecallSearch", () => {
+describe("memoryScopedSearch", () => {
   beforeEach(() => {
     searchSemanticMemoryFtsMock.mockClear();
     searchMessagesFtsMock.mockClear();
@@ -41,11 +41,11 @@ describe("memoryRecallSearch", () => {
     searchAutobiographicalMemoryFtsMock.mockClear();
   });
 
-  it("merges four sources and returns unified results with memory_type", async () => {
+  it("concatenates scopes without cross-type RRF and tags memory_type", async () => {
     const now = new Date("2026-05-26T12:00:00+08:00");
     searchSemanticMemoryFtsMock.mockImplementation((async () => [
       {
-        id: "f-000001-abcd",
+        id: 1001,
         content: "compression semantic probe",
         type: "world",
         pinned: false,
@@ -96,14 +96,13 @@ describe("memoryRecallSearch", () => {
       },
     ]) as never);
 
-    const out = await memoryRecallSearch("compression", { limit: 10 });
-    expect(out.results.length).toBeGreaterThan(0);
-    expect(out.results.length).toBeLessThanOrEqual(10);
-    const types = new Set(out.results.map((r) => r.memory_type));
-    expect(types.has("semantic")).toBe(true);
-    expect(types.has("conversation")).toBe(true);
-    expect(types.has("limbic")).toBe(true);
-    expect(types.has("autobiographical")).toBe(true);
+    const out = await memoryScopedSearch("compression", { limit: 10 });
+    expect(out.results.map((r) => r.memory_type)).toEqual([
+      "semantic",
+      "conversation",
+      "limbic",
+      "autobiographical",
+    ]);
 
     const sessionHit = out.results.find((r) => r.memory_type === "conversation");
     expect(sessionHit).toBeDefined();
@@ -116,11 +115,11 @@ describe("memoryRecallSearch", () => {
     }
   });
 
-  it("respects limit cap", async () => {
+  it("applies per-scope limit", async () => {
     const now = new Date("2026-05-26T12:00:00+08:00");
     searchSemanticMemoryFtsMock.mockImplementation((async () =>
       Array.from({ length: 12 }, (_, i) => ({
-        id: `f-${String(i).padStart(6, "0")}-abcd`,
+        id: 1000 + i,
         content: `compression item ${i}`,
         type: "world",
         pinned: false,
@@ -131,16 +130,20 @@ describe("memoryRecallSearch", () => {
         status: "active",
       }))) as never);
 
-    const out = await memoryRecallSearch("compression", { limit: 5 });
+    const out = await memoryScopedSearch("compression", {
+      limit: 5,
+      memory_types: ["semantic"],
+    });
     expect(out.limit).toBe(5);
     expect(out.results.length).toBe(5);
+    expect(searchSemanticMemoryFtsMock).toHaveBeenCalledWith("compression", { limit: 5 });
   });
 
   it("memory_types restricts which sources are queried", async () => {
     const now = new Date("2026-05-26T12:00:00+08:00");
     searchSemanticMemoryFtsMock.mockImplementation((async () => [
       {
-        id: "f-000001-abcd",
+        id: 1001,
         content: "compression semantic only",
         type: "world",
         pinned: false,
@@ -162,7 +165,7 @@ describe("memoryRecallSearch", () => {
       },
     ]) as never);
 
-    const out = await memoryRecallSearch("compression", {
+    const out = await memoryScopedSearch("compression", {
       limit: 10,
       memory_types: ["semantic"],
     });

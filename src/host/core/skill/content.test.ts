@@ -39,13 +39,13 @@ license: MIT
       name: "research",
       description: "Research",
       content: "# Hello",
-      allowed_tools: ["memory_recall", "@browser"],
+      allowed_tools: ["memory_semantic_search", "@browser"],
       origin: "builtin",
       status: "active",
     });
     const fm = parseFrontmatter(md);
     expect(fm.name).toBe("research");
-    expect(normalizeToolList(fm["allowed-tools"])).toEqual(["memory_recall", "@browser"]);
+    expect(normalizeToolList(fm["allowed-tools"])).toEqual(["memory_semantic_search", "@browser"]);
     expect(stripFrontmatter(md)).toContain("# Hello");
   });
 

@@ -24,7 +24,7 @@ function testRegistry(): ToolSetRegistry {
   ]);
   reg.registerToolSet("memory", "memory", [
     {
-      name: "memory_recall",
+      name: "memory_semantic_search",
       description: "recall",
       parameters: { type: "object", properties: {} },
       handler: async () => "{}",
@@ -59,7 +59,7 @@ describe("resolveExecutableToolNames", () => {
     } satisfies ConversationMetaMessage;
     const names = resolveExecutableToolNames(meta, testRegistry()).toSorted();
     expect(names).toEqual(
-      ["file_read", "memory_recall", "toolset_load", "toolset_search"].toSorted(),
+      ["file_read", "memory_semantic_search", "toolset_load", "toolset_search"].toSorted(),
     );
   });
 });

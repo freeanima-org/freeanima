@@ -22,7 +22,7 @@ export type ConversationListOpts = {
   includeArchived?: boolean;
 };
 
-/** PG messages FTS hit row (memory_recall / conversation_search; mapped to snippet externally) */
+/** PG messages FTS hit row (conversation_search / Habitat scoped search; mapped to snippet externally) */
 export type MessageFtsHit = {
   message_id: string;
   content: string;
