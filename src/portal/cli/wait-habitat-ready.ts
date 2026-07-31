@@ -6,6 +6,8 @@ import { SYSTEMD_UNIT, systemdUserAvailable } from "./systemd-unit.ts";
 export type WaitForHabitatReadyOptions = {
   timeoutMs?: number;
   intervalMs?: number;
+  /** 返回 false 时提前结束等待（如 Habitat 进程已退出） */
+  stillAlive?: () => boolean;
 };
 
 /** 启动探活默认 15min：慢迁移（HNSW / 记忆 backfill）常超过旧的 2min 窗口 */
@@ -42,6 +44,7 @@ export async function waitForHabitatReady(
   const deadline = Date.now() + timeoutMs;
 
   while (Date.now() < deadline) {
+    if (opts?.stillAlive && !opts.stillAlive()) return false;
     const health = await apiGet(probeHost, port, "/rpc/v1/health/probe", 2000);
     if (health?.status === "ok") return true;
     await sleep(intervalMs);
