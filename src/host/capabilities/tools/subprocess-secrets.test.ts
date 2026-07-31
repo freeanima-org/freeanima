@@ -141,10 +141,17 @@ describe("resolveSubprocessSecrets", () => {
     if (typeof resolved === "string") return;
 
     expect(process.env[KEY]).toBeUndefined();
-    const child = spawnSync("printenv", [KEY], {
-      encoding: "utf-8",
-      env: buildSubprocessEnv(resolved),
-    });
+    const child = spawnSync(
+      process.execPath,
+      [
+        "-e",
+        `const v=process.env[${JSON.stringify(KEY)}]; if(v==null) process.exit(1); process.stdout.write(v)`,
+      ],
+      {
+        encoding: "utf-8",
+        env: buildSubprocessEnv(resolved),
+      },
+    );
     expect(child.status).toBe(0);
     expect((child.stdout ?? "").trim()).toBe("secret-value-xyz");
     expect(process.env[KEY]).toBeUndefined();

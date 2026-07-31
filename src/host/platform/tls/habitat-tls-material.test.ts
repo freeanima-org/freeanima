@@ -10,7 +10,7 @@ import {
 describe("tls-paths", () => {
   test("expandConfigPath expands tilde", () => {
     const expanded = expandConfigPath("~/certs/cert.pem");
-    expect(expanded.endsWith("/certs/cert.pem")).toBe(true);
+    expect(expanded.replace(/\\/g, "/").endsWith("/certs/cert.pem")).toBe(true);
   });
 
   test("collectTlsSanNames includes loopback and bind hosts", () => {
@@ -43,6 +43,7 @@ describe("tls-paths", () => {
 
 describe("ensureHabitatTlsMaterial", () => {
   test("uses existing files when present and SAN covers bind hosts", async () => {
+    if (!Bun.which("openssl")) return;
     const { mkdtempSync, rmSync } = await import("node:fs");
     const { join } = await import("node:path");
     const { tmpdir } = await import("node:os");

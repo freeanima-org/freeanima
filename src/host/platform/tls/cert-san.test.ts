@@ -27,6 +27,7 @@ describe("cert-san", () => {
   });
 
   test("readCertSanNames from PEM", async () => {
+    if (!Bun.which("openssl")) return;
     const { mkdtempSync, rmSync } = await import("node:fs");
     const { join } = await import("node:path");
     const { tmpdir } = await import("node:os");

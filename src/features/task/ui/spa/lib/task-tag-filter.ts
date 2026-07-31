@@ -30,7 +30,7 @@ export function collectTagsFromTaskItems(
       const title = titleById.get(id);
       return title ? [{ id, title }] : [];
     })
-    .toSorted((a, b) => a.title.localeCompare(b.title) || a.id - b.id);
+    .toSorted((a, b) => a.title.localeCompare(b.title, "en") || a.id - b.id);
 }
 
 /** null = 全部 */

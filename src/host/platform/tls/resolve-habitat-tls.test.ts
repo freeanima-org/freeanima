@@ -16,6 +16,7 @@ describe("resolveHabitatTlsListenConfig", () => {
   });
 
   test("uses default port when enabled with existing material", async () => {
+    if (!Bun.which("openssl")) return;
     const { mkdtempSync, rmSync } = await import("node:fs");
     const { join } = await import("node:path");
     const { tmpdir } = await import("node:os");

@@ -5,11 +5,23 @@ import { buildSubprocessEnv } from "./subprocess-env.ts";
 
 const KEY = "FA_SUBPROCESS_ENV_TEST";
 
+/** Cross-platform: print one env var (Windows has no `printenv`). Exits 1 when unset. */
+function spawnPrintEnv(key: string, env?: NodeJS.ProcessEnv) {
+  return spawnSync(
+    process.execPath,
+    [
+      "-e",
+      `const v=process.env[${JSON.stringify(key)}]; if(v==null) process.exit(1); process.stdout.write(v)`,
+    ],
+    { encoding: "utf-8", env },
+  );
+}
+
 describe("buildSubprocessEnv", () => {
   it("Bun: omitting spawn env does not see runtime process.env mutations", () => {
     process.env[KEY] = "from-parent";
     try {
-      const omitted = spawnSync("printenv", [KEY], { encoding: "utf-8" });
+      const omitted = spawnPrintEnv(KEY);
       expect(omitted.status).not.toBe(0);
       expect((omitted.stdout ?? "").trim()).toBe("");
     } finally {
@@ -20,10 +32,7 @@ describe("buildSubprocessEnv", () => {
   it("explicit buildSubprocessEnv makes runtime mutations visible to child", () => {
     process.env[KEY] = "from-parent";
     try {
-      const withEnv = spawnSync("printenv", [KEY], {
-        encoding: "utf-8",
-        env: buildSubprocessEnv(),
-      });
+      const withEnv = spawnPrintEnv(KEY, buildSubprocessEnv());
       expect(withEnv.status).toBe(0);
       expect((withEnv.stdout ?? "").trim()).toBe("from-parent");
     } finally {
@@ -37,7 +46,7 @@ describe("buildSubprocessEnv", () => {
     try {
       const env = buildSubprocessEnv({ [KEY]: "child-only" });
       expect(process.env[KEY]).toBeUndefined();
-      const child = spawnSync("printenv", [KEY], { encoding: "utf-8", env });
+      const child = spawnPrintEnv(KEY, env);
       expect(child.status).toBe(0);
       expect((child.stdout ?? "").trim()).toBe("child-only");
     } finally {

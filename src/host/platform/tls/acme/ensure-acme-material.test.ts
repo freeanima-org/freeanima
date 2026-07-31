@@ -39,7 +39,9 @@ function opensslCert(
   return { certPath, keyPath };
 }
 
-describe("ensure-acme-material", () => {
+const describeOpenSsl = Bun.which("openssl") ? describe : describe.skip;
+
+describeOpenSsl("ensure-acme-material", () => {
   test("existingAcmeCertReusable true when SAN matches and long-lived", () => {
     const dir = mkdtempSync(join(tmpdir(), "anima-acme-reuse-"));
     try {

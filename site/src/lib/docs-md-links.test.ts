@@ -3,8 +3,9 @@ import path from "node:path";
 
 import { resolveDocsMdHref } from "./docs-md-links.ts";
 
-const enRoot = "/repo/docs";
-const zhRoot = "/repo/docs/.generated/zh_CN";
+/** path.resolve 保证 Windows 带盘符，与生产侧 normalizeFsPath 前缀比较一致 */
+const enRoot = path.resolve("/repo/docs");
+const zhRoot = path.resolve("/repo/docs/.generated/zh_CN");
 const options = { enRoot, zhRoot };
 
 describe("resolveDocsMdHref", () => {
