@@ -24,6 +24,7 @@ import {
 import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-write";
 import { formatCstIso } from "@freeanima/host/core/util/time";
 import { omitUndefined } from "@freeanima/host/core/util";
+import { computeNextOccurrence, shiftRemindAt } from "@freeanima/host/core/db/schema/entity";
 import { nextPrependSortOrder } from "@freeanima/features/task/domain/sort-order.ts";
 import type {
   TaskItemRowPayload,
@@ -343,12 +344,16 @@ type TaskItemContentPatch = Partial<
     | "tag_ids"
     | "priority"
     | "due_at"
+    | "remind_at"
     | "list_id"
     | "project_id"
     | "status"
     | "sort_order"
+    | "recurrence"
   >
->;
+> & {
+  only_this?: boolean;
+};
 
 export type OfflineUpdateTaskItemOpts = {
   /** 本地未命中时先写入再走 outbox（例如智能清单详情里的内存行） */
@@ -394,6 +399,23 @@ async function callTaskItemWrite(
     return result.item;
   }
   const { list_id: _listId, project_id: _projectId, ...contentPatch } = patch;
+  if (contentPatch.status === "completed") {
+    const { status: _status, ...restPatch } = contentPatch;
+    if (Object.keys(omitUndefined(restPatch)).length > 0) {
+      await habitat().call("task.patch", {
+        ...subjectPayload(),
+        id: entityId,
+        client_op_id: randomUuid(),
+        ...omitUndefined(restPatch),
+      });
+    }
+    const result = await habitat().call("task.complete", {
+      ...subjectPayload(),
+      id: entityId,
+      client_op_id: opId,
+    });
+    return result.item;
+  }
   const result = await habitat().call("task.patch", {
     ...subjectPayload(),
     id: entityId,
@@ -968,7 +990,9 @@ export async function offlineUpdateTaskItem(
       ? null
       : (patch.list_id ?? existing.list_id ?? null);
     const nextStatus = patch.status ?? existing.status;
-    const updated: TaskItemRow = {
+    const completing = existing.status === "pending" && nextStatus === "completed";
+    const nowIso = formatCstIso(new Date());
+    let updated: TaskItemRow = {
       ...existing,
       ...patch,
       list_id: nextListId,
@@ -976,12 +1000,38 @@ export async function offlineUpdateTaskItem(
       status: nextStatus,
       completed_at:
         patch.status === "completed"
-          ? formatCstIso(new Date())
+          ? nowIso
           : patch.status === "pending"
             ? null
             : existing.completed_at,
       updated_at: now,
     };
+
+    // 重复任务完成：乐观滚动，保持 pending（与服务端 complete 语义一致）
+    if (completing && existing.recurrence) {
+      const next = computeNextOccurrence(existing.recurrence, {
+        completedAt: nowIso,
+        currentDueAt: existing.due_at,
+        decrementCount: true,
+      });
+      if (next) {
+        updated = {
+          ...updated,
+          status: "pending",
+          completed_at: null,
+          due_at: next.due_at,
+          remind_at: shiftRemindAt(existing.due_at, existing.remind_at, next.due_at),
+          recurrence: next.recurrence,
+        };
+      } else {
+        updated = {
+          ...updated,
+          status: "completed",
+          completed_at: nowIso,
+          recurrence: null,
+        };
+      }
+    }
 
     if (movingToProject || nextListId == null) {
       await removeLocalItem(scope, sourceListId, existing.id);
@@ -993,9 +1043,9 @@ export async function offlineUpdateTaskItem(
       if (nextStatus === "pending") await adjustListItemCount(scope, nextListId, 1);
     } else {
       await upsertLocalItem(scope, updated);
-      if (existing.status === "pending" && nextStatus === "completed") {
+      if (existing.status === "pending" && updated.status === "completed") {
         await adjustListItemCount(scope, sourceListId, -1);
-      } else if (existing.status === "completed" && nextStatus === "pending") {
+      } else if (existing.status === "completed" && updated.status === "pending") {
         await adjustListItemCount(scope, sourceListId, 1);
       }
     }
@@ -1029,6 +1079,33 @@ export async function offlineUpdateTaskItem(
           list_id: patch.list_id,
           sort_order: patch.sort_order,
         }),
+        createdAt: now,
+      });
+    } else if (completing) {
+      const { list_id: _listId, project_id: _projectId, status: _status, ...restPatch } = patch;
+      if (Object.keys(omitUndefined(restPatch)).length > 0) {
+        await enqueueOutboxOp(scope, {
+          id: randomUuid(),
+          moduleId: MODULE_ID,
+          method: "task.patch",
+          payload: {
+            ...subjectPayload(),
+            id: existing.id,
+            client_op_id: randomUuid(),
+            ...omitUndefined(restPatch),
+          },
+          createdAt: now,
+        });
+      }
+      await enqueueOutboxOp(scope, {
+        id: opId,
+        moduleId: MODULE_ID,
+        method: "task.complete",
+        payload: {
+          ...subjectPayload(),
+          id: existing.id,
+          client_op_id: opId,
+        },
         createdAt: now,
       });
     } else {

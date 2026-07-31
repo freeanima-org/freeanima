@@ -129,6 +129,20 @@ export const taskHabitatRoutes = bindHabitatRouteHandlers(taskMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "task.skip": async (deps, input, ctx) =>
+    service.serviceTaskSkip(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input), ctxAuth(ctx)),
+  "task.completeForever": async (deps, input, ctx) =>
+    service.serviceTaskCompleteForever(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
+  "task.listOccurrences": async (deps, input, ctx) =>
+    service.serviceTaskListOccurrences(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
   "task.uncomplete": async (deps, input, ctx) =>
     service.serviceTaskUncomplete(
       depsOf(deps).runtime.runtimeDeps(),

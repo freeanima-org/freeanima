@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { taskRecurrenceSchema } from "../task-recurrence.ts";
 import { schedulableBodySchema } from "./schedulable.ts";
 
 export const TASK_ITEM_COMPONENT = "task_item" as const;
@@ -19,6 +20,8 @@ const taskItemBodyFieldsSchema = schedulableBodySchema.extend({
   completed_at: z.string().nullable().optional(),
   project_id: z.number().int().positive().nullable().optional(),
   client_op_id: z.string().min(1).nullable().default(null),
+  /** 重复规则；null/缺省 = 非重复。完成时滚动 live，历史见 task_occurrence */
+  recurrence: taskRecurrenceSchema.nullable().optional(),
 });
 
 /**

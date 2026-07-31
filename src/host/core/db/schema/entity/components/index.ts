@@ -32,6 +32,7 @@ import { SUBAGENT_COMPONENT, subagentBodySchema } from "./subagent.ts";
 import { SEMANTIC_MEMORY_COMPONENT, semanticMemoryBodySchema } from "./semantic-memory.ts";
 import { SEMANTIC_REF_COMPONENT, semanticRefBodySchema } from "./semantic-ref.ts";
 import { TASK_ITEM_COMPONENT, taskItemBodySchema } from "./task-item.ts";
+import { TASK_OCCURRENCE_COMPONENT, taskOccurrenceBodySchema } from "./task-occurrence.ts";
 import { TASK_LIST_COMPONENT, taskListBodySchema } from "./task-list.ts";
 import { SMART_LIST_COMPONENT, smartListBodySchema } from "./smart-list.ts";
 import { PROJECT_FOLDER_COMPONENT, projectFolderBodySchema } from "./project-folder.ts";
@@ -48,6 +49,7 @@ export const COMPONENT_IDS = [
   TASK_LIST_COMPONENT,
   SMART_LIST_COMPONENT,
   TASK_ITEM_COMPONENT,
+  TASK_OCCURRENCE_COMPONENT,
   PROJECT_FOLDER_COMPONENT,
   PROJECT_COMPONENT,
   TAG_COMPONENT,
@@ -93,6 +95,7 @@ export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
   [TASK_LIST_COMPONENT]: 20,
   [SMART_LIST_COMPONENT]: 25,
   [TASK_ITEM_COMPONENT]: 30,
+  [TASK_OCCURRENCE_COMPONENT]: 31,
   [PROJECT_FOLDER_COMPONENT]: 35,
   [PROJECT_COMPONENT]: 40,
   [TAG_COMPONENT]: 45,
@@ -149,6 +152,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [TASK_LIST_COMPONENT]: taskListBodySchema,
   [SMART_LIST_COMPONENT]: smartListBodySchema,
   [TASK_ITEM_COMPONENT]: taskItemBodySchema,
+  [TASK_OCCURRENCE_COMPONENT]: taskOccurrenceBodySchema,
   [PROJECT_FOLDER_COMPONENT]: projectFolderBodySchema,
   [PROJECT_COMPONENT]: projectBodySchema,
   [TAG_COMPONENT]: tagBodySchema,
@@ -195,6 +199,7 @@ export * from "./user-config.ts";
 export * from "./task-list.ts";
 export * from "./smart-list.ts";
 export * from "./task-item.ts";
+export * from "./task-occurrence.ts";
 export * from "./project-folder.ts";
 export * from "./project.ts";
 export * from "./tag.ts";

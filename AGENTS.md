@@ -99,7 +99,8 @@ just misc memory-sample -- --habitat-url http://127.0.0.1:<habitat> --stage full
 | [`docs/cognition/`](docs/cognition/)                                                 | Cognitive mechanisms (memory, sleep, self layer, etc.)                            |
 | [`docs/ui/`](docs/ui/overview.md)                                                    | UI/UX design system (dimensions, foundations, components, patterns)               |
 | [`docs/aspects/`](docs/aspects/)                                                     | Cross-cutting design planes (data plane, offline, refresh, notification/reminder) |
-| [`docs/modules/`](docs/modules/)                                                     | Product capability modules (chat, companion, skills, project, subagent, …)        |
+| [`docs/modules/`](docs/modules/)                                                     | Product capability modules (chat, companion, skills, project, subagent, task, …)  |
+| [`docs/modules/task.md`](docs/modules/task.md)                                       | Task module + recurring A′ (live + occurrence)                                    |
 | [`docs/ops/`](docs/ops/)                                                             | Deploy, secure, connect Habitat                                                   |
 | [`docs/ops/habitat-rpc.md`](docs/ops/habitat-rpc.md)                                 | Habitat RPC transport + remote tool registration                                  |
 | [`docs/tools/`](docs/tools/)                                                         | Built-in ToolSets (browser, execute-code, freeanima_docs, …)                      |

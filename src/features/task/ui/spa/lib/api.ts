@@ -256,9 +256,17 @@ export async function updateTaskItem(
   patch: Partial<
     Pick<
       TaskItemRow,
-      "title" | "content" | "tag_ids" | "priority" | "due_at" | "status" | "sort_order"
+      | "title"
+      | "content"
+      | "tag_ids"
+      | "priority"
+      | "due_at"
+      | "remind_at"
+      | "status"
+      | "sort_order"
+      | "recurrence"
     >
-  >,
+  > & { only_this?: boolean },
   opts?: OfflineUpdateTaskItemOpts,
 ): Promise<TaskItemRow> {
   ensureTaskOfflineModule();

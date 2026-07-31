@@ -29,8 +29,12 @@ import {
   smartlistDeleteOutputSchema,
   taskCompleteInputSchema,
   taskCompleteOutputSchema,
+  taskCompleteForeverInputSchema,
+  taskCompleteForeverOutputSchema,
   taskDeleteInputSchema,
   taskDeleteOutputSchema,
+  taskListOccurrencesInputSchema,
+  taskListOccurrencesOutputSchema,
   taskMoveToListInputSchema,
   taskMoveToListOutputSchema,
   taskMoveToProjectInputSchema,
@@ -39,6 +43,8 @@ import {
   taskPatchOutputSchema,
   taskSearchInputSchema,
   taskSearchOutputSchema,
+  taskSkipInputSchema,
+  taskSkipOutputSchema,
   taskUncompleteInputSchema,
   taskUncompleteOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/task";
@@ -135,6 +141,21 @@ export const taskMethodDefs = {
     input: taskCompleteInputSchema,
     output: taskCompleteOutputSchema,
     meta: dualTransportMeta(false),
+  }),
+  "task.skip": defineHabitatMethod({
+    input: taskSkipInputSchema,
+    output: taskSkipOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "task.completeForever": defineHabitatMethod({
+    input: taskCompleteForeverInputSchema,
+    output: taskCompleteForeverOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "task.listOccurrences": defineHabitatMethod({
+    input: taskListOccurrencesInputSchema,
+    output: taskListOccurrencesOutputSchema,
+    meta: dualTransportMeta(true),
   }),
   "task.uncomplete": defineHabitatMethod({
     input: taskUncompleteInputSchema,

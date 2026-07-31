@@ -27,10 +27,24 @@ export {
   createTaskItem,
   updateTaskItem,
   completeTaskItem,
+  completeTaskItemForever,
+  skipTaskItem,
   uncompleteTaskItem,
   deleteTaskItem,
   searchTaskItems,
 } from "./item-store.ts";
+
+export {
+  listTaskOccurrences,
+  createTaskOccurrence,
+  type TaskOccurrenceRow,
+} from "./occurrence-store.ts";
+
+export {
+  listCompletedActivity,
+  shouldListCompletedActivity,
+  countCompletedActivity,
+} from "./completed-activity.ts";
 
 export {
   SORT_ORDER_STEP,

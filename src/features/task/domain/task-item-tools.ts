@@ -1,4 +1,8 @@
 import { asTaskItem } from "@freeanima/host/core/db/schema/entity";
+import {
+  taskRecurrenceInputSchema,
+  type TaskRecurrenceInput,
+} from "@freeanima/host/core/db/schema/entity/task-recurrence.ts";
 import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/host/core/tool";
 import { getEntity } from "@freeanima/host/core/db/pg/entity";
@@ -6,13 +10,16 @@ import { omitUndefined } from "@freeanima/host/core/util";
 
 import {
   completeTaskItem,
+  completeTaskItemForever,
   createTaskItem,
   deleteTaskItem,
   listTaskItems,
   searchTaskItems,
+  skipTaskItem,
   uncompleteTaskItem,
   updateTaskItem,
 } from "./item-store.ts";
+import { listTaskOccurrences } from "./occurrence-store.ts";
 import { getDefaultTaskList } from "./list-store.ts";
 import { TASK_TOOL_RETURNS } from "./return-schemas.ts";
 import {
@@ -24,6 +31,14 @@ import {
 } from "./task-tool-helpers.ts";
 import { resolveTaskToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 import type { TaskItemUpdateInput } from "./types.ts";
+
+function parseRecurrenceArg(raw: unknown): TaskRecurrenceInput | null | undefined {
+  if (raw === undefined) return undefined;
+  if (raw == null || raw === "") return null;
+  const parsed = taskRecurrenceInputSchema.safeParse(raw);
+  if (!parsed.success) throw new Error(`invalid recurrence: ${parsed.error.message}`);
+  return parsed.data;
+}
 
 async function resolveListId(worldId: number, raw: unknown): Promise<number | null> {
   if (raw == null || raw === "") {
@@ -72,6 +87,12 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
     args.remind_at != null && args.remind_at !== "" ? String(args.remind_at).trim() : null;
   const content = args.content != null ? String(args.content) : "";
   const project_id = hasProjectId ? Number(projectIdRaw) : undefined;
+  let recurrence: ReturnType<typeof parseRecurrenceArg>;
+  try {
+    recurrence = parseRecurrenceArg(args.recurrence);
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
 
   try {
     const item = await createTaskItem(
@@ -85,6 +106,7 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
         due_at: dueAt,
         remind_at: remindAt,
         project_id,
+        recurrence: recurrence ?? undefined,
       }),
     );
     return toolResult({ ok: true, action: "create", item: itemPayload(item) });
@@ -131,6 +153,14 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
     patch.project_id =
       raw == null || raw === "" ? null : Number.isFinite(Number(raw)) ? Number(raw) : null;
   }
+  if (args.recurrence !== undefined) {
+    try {
+      patch.recurrence = parseRecurrenceArg(args.recurrence) ?? null;
+    } catch (e) {
+      return toolError(String(e instanceof Error ? e.message : e));
+    }
+  }
+  if (args.only_this !== undefined) patch.only_this = Boolean(args.only_this);
 
   try {
     const item = await updateTaskItem(worldId, patch);
@@ -204,6 +234,7 @@ async function handleGet(args: Record<string, unknown>): Promise<string> {
     project_id: parsed.project_id ?? null,
     sort_order: parsed.sort_order ?? 0,
     completed_at: parsed.completed_at ?? null,
+    recurrence: parsed.recurrence ?? null,
     created_at: row.created_at.toISOString(),
     updated_at: row.updated_at.toISOString(),
   });
@@ -356,6 +387,11 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               priority: { type: "string", enum: TASK_PRIORITIES },
               due_at: { type: "string", description: "Due time ISO8601" },
               remind_at: { type: "string", description: "Reminder time ISO8601" },
+              recurrence: {
+                type: "object",
+                description:
+                  "Recurrence rule: {freq, interval?, anchor?, weekdays?, until?, count?, schedule_at?}",
+              },
             },
             required: ["subject_kind", "title"],
           },
@@ -387,6 +423,14 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
               due_at: { type: "string" },
               remind_at: { type: "string" },
               sort_order: { type: "integer" },
+              recurrence: {
+                type: "object",
+                description: "Recurrence rule or null to clear",
+              },
+              only_this: {
+                type: "boolean",
+                description: "When changing due_at with recurrence: true = this occurrence only",
+              },
             },
             required: ["subject_kind", "id"],
           },
@@ -394,7 +438,8 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "task_complete",
-          description: "Mark task as completed",
+          description:
+            "Complete task (recurring: write occurrence and roll due; non-recurring: mark completed)",
           exposeMcp: true,
           parameters: {
             type: "object",
@@ -402,6 +447,84 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
             required: ["subject_kind", "id"],
           },
           handler: (args) => handleComplete(args, false),
+        },
+        {
+          name: "task_skip",
+          description: "Skip current occurrence of a recurring task (no history row)",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: { id: { type: "integer" } },
+            required: ["subject_kind", "id"],
+          },
+          handler: async (args) => {
+            const id = Number(args.id);
+            if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+            const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
+            if (typeof worldId === "string") return worldId;
+            try {
+              const item = await skipTaskItem(worldId, id);
+              if (!item) return toolError(`task not found: ${id}`);
+              return toolResult({ ok: true, action: "skip", item: itemPayload(item) });
+            } catch (e) {
+              return toolError(String(e instanceof Error ? e.message : e));
+            }
+          },
+        },
+        {
+          name: "task_complete_forever",
+          description: "Complete recurring task permanently (clear recurrence)",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: { id: { type: "integer" } },
+            required: ["subject_kind", "id"],
+          },
+          handler: async (args) => {
+            const id = Number(args.id);
+            if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+            const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
+            if (typeof worldId === "string") return worldId;
+            try {
+              const item = await completeTaskItemForever(worldId, id);
+              if (!item) return toolError(`task not found: ${id}`);
+              return toolResult({ ok: true, action: "complete_forever", item: itemPayload(item) });
+            } catch (e) {
+              return toolError(String(e instanceof Error ? e.message : e));
+            }
+          },
+        },
+        {
+          name: "task_list_occurrences",
+          description: "List completion history for a recurring task series",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: {
+              series_task_id: { type: "integer", description: "Live task_item id" },
+              limit: { type: "integer" },
+            },
+            required: ["subject_kind", "series_task_id"],
+          },
+          handler: async (args) => {
+            const seriesTaskId = Number(args.series_task_id);
+            if (!Number.isFinite(seriesTaskId) || seriesTaskId <= 0) {
+              return toolError("series_task_id is required");
+            }
+            const worldId = await resolveTaskToolWorld({
+              args,
+              entityId: seriesTaskId,
+              access: "read",
+            });
+            if (typeof worldId === "string") return worldId;
+            const limit = args.limit != null ? Number(args.limit) : undefined;
+            const items = await listTaskOccurrences(
+              worldId,
+              seriesTaskId,
+              omitUndefined({ limit }),
+            );
+            return toolResult({ ok: true, action: "list_occurrences", items });
+          },
         },
         {
           name: "task_uncomplete",
