@@ -35,4 +35,23 @@ describe("waitForHabitatReady", () => {
     });
     expect(ok).toBe(false);
   });
+
+  it("returns false when stillAlive becomes false", async () => {
+    let alive = true;
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ status: "starting" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })) as unknown as typeof fetch;
+
+    const ready = waitForHabitatReady("127.0.0.1", 2658, {
+      timeoutMs: 5000,
+      intervalMs: 50,
+      stillAlive: () => alive,
+    });
+    setTimeout(() => {
+      alive = false;
+    }, 80);
+    expect(await ready).toBe(false);
+  });
 });
