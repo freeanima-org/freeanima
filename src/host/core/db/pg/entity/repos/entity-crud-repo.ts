@@ -14,6 +14,7 @@ import {
   pushEntityRevision,
   shouldRecordEntityRevision,
   snapshotEntityRevision,
+  OBJECT_FILE_COMPONENT,
   type EntityRowSelect,
 } from "@freeanima/host/core/db/schema/entity";
 import type {
@@ -306,14 +307,28 @@ export async function purgeEntity(id: number): Promise<boolean> {
   return result.length > 0;
 }
 
+/** purge 返回的行元数据（供 object_file blob GC 等后续清理）。 */
+export type PurgedEntityRow = {
+  id: number;
+  world_id: number;
+  primary_component: string | null;
+  body: unknown;
+};
+
+export type PurgeSoftDeletedEntitiesResult = {
+  purged: number;
+  rows: PurgedEntityRow[];
+};
+
 /** 物理清理 deleted_at 早于 olderThan 的软删实体。 */
 export async function purgeSoftDeletedEntities(opts: {
   olderThan: Date;
   page_size?: number;
-}): Promise<number> {
+}): Promise<PurgeSoftDeletedEntitiesResult> {
   const db = getDb();
   const pageSize = Math.max(1, Math.min(500, opts.page_size ?? 200));
   let purged = 0;
+  const allRows: PurgedEntityRow[] = [];
   while (true) {
     const rows = await db
       .delete(entities)
@@ -326,11 +341,42 @@ export async function purgeSoftDeletedEntities(opts: {
           LIMIT ${pageSize}
         )`,
       )
-      .returning({ id: entities.id });
+      .returning({
+        id: entities.id,
+        world_id: entities.world_id,
+        primary_component: entities.primary_component,
+        body: entities.body,
+      });
     purged += rows.length;
+    for (const row of rows) {
+      allRows.push({
+        id: row.id,
+        world_id: row.world_id,
+        primary_component: row.primary_component,
+        body: row.body,
+      });
+    }
     if (rows.length < pageSize) break;
   }
-  return purged;
+  return { purged, rows: allRows };
+}
+
+/**
+ * 统计同 world 内仍引用某 cid 的 object_file 实体数（含软删，供 purge 后 blob GC）。
+ */
+export async function countObjectFileCidRefs(worldId: number, cid: string): Promise<number> {
+  const db = getDb();
+  const [row] = await db
+    .select({ value: count() })
+    .from(entities)
+    .where(
+      and(
+        eq(entities.world_id, worldId),
+        eq(entities.primary_component, OBJECT_FILE_COMPONENT),
+        sql`${entities.body}->>'cid' = ${cid}`,
+      ),
+    );
+  return Number(row?.value ?? 0);
 }
 
 /**

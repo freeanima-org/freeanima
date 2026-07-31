@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
 import type { EntityRow } from "@freeanima/host/core/db/pg/entity";
 import type { VerifiedServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
 
@@ -17,15 +17,26 @@ const searchEntitiesMock = mock(async () => ({
   results: [] as EntityRow[],
 }));
 
+// 先捕获真实实现，mock 后在 afterAll 恢复，避免 mock.module 全局泄漏污染其他测试文件。
+const realPg = await import("@freeanima/host/core/db/pg");
+const pgOriginal = { ...realPg };
+const realWorldContext = await import("@freeanima/host/core/config/world-context");
+const worldContextOriginal = { ...realWorldContext };
+const realEntity = await import("@freeanima/host/core/db/pg/entity");
+const entityOriginal = { ...realEntity };
+
 mock.module("@freeanima/host/core/db/pg", () => ({
+  ...pgOriginal,
   isPostgresPrimary: () => true,
 }));
 
 mock.module("@freeanima/host/core/config/world-context", () => ({
+  ...worldContextOriginal,
   resolveSubjectWorldId: async () => 10,
 }));
 
 mock.module("@freeanima/host/core/db/pg/entity", () => ({
+  ...entityOriginal,
   getEntity: getEntityMock,
   listEntities: listEntitiesMock,
   countEntities: countEntitiesMock,
@@ -35,6 +46,12 @@ mock.module("@freeanima/host/core/db/pg/entity", () => ({
   restoreEntity: async () => null,
   deleteEntityComponent: async () => null,
 }));
+
+afterAll(() => {
+  mock.module("@freeanima/host/core/db/pg", () => pgOriginal);
+  mock.module("@freeanima/host/core/config/world-context", () => worldContextOriginal);
+  mock.module("@freeanima/host/core/db/pg/entity", () => entityOriginal);
+});
 
 import { serviceEntityList, serviceEntityTrashList } from "./service.ts";
 

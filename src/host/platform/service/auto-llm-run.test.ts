@@ -1,4 +1,4 @@
-import { describe, it, expect, spyOn, afterEach, mock } from "bun:test";
+import { describe, it, expect, spyOn, afterAll, afterEach, mock } from "bun:test";
 import * as loopEngine from "@freeanima/host/engine/loop";
 import * as conv from "@freeanima/host/engine/conversation";
 import type { AutoLlmRunAppendInput } from "@freeanima/host/core/db/pg/auto-llm-run/types";
@@ -15,11 +15,19 @@ import { createConversationService } from "@freeanima/host/engine/conversation";
 
 const appendCalls: AutoLlmRunAppendInput[] = [];
 
+// 先捕获真实实现，mock 后在 afterAll 恢复，避免 mock.module 全局泄漏污染其他测试文件。
+const realPg = await import("@freeanima/host/core/db/pg");
+const pgOriginal = { ...realPg };
+const realAutoLlmRun = await import("@freeanima/host/core/db/pg/auto-llm-run");
+const autoLlmRunOriginal = { ...realAutoLlmRun };
+
 mock.module("@freeanima/host/core/db/pg", () => ({
+  ...pgOriginal,
   isPostgresPrimary: () => true,
 }));
 
 mock.module("@freeanima/host/core/db/pg/auto-llm-run", () => ({
+  ...autoLlmRunOriginal,
   appendAutoLlmRun: mock(async (row: AutoLlmRunAppendInput) => {
     appendCalls.push(row);
   }),
@@ -29,6 +37,11 @@ mock.module("@freeanima/host/core/db/pg/auto-llm-run", () => ({
   getAutoLlmRun: mock(async () => null),
   listAutoLlmMessages: mock(async () => []),
 }));
+
+afterAll(() => {
+  mock.module("@freeanima/host/core/db/pg", () => pgOriginal);
+  mock.module("@freeanima/host/core/db/pg/auto-llm-run", () => autoLlmRunOriginal);
+});
 
 import { runAutoLlm } from "./auto-llm-run.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";

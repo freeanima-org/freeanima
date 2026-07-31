@@ -23,6 +23,7 @@ import {
 import { getPipelineRunner, type PipelineStepTrigger } from "@freeanima/host/engine/pipeline";
 import { cleanupStaleConversations } from "@freeanima/host/engine/conversation";
 import type { Engine } from "@freeanima/host/engine";
+import { gcObjectBlobsAfterEntityPurge } from "@freeanima/features/object-storage/domain";
 
 import { purgeCronConversations } from "@freeanima/host/core/db/pg/conversation";
 import { resolveDeepSleepMode } from "./deep-sleep-mode.ts";
@@ -42,6 +43,7 @@ export function registerSleepPipeline(engine: Engine): void {
     const perRunKindKeep = autoLlmCfg?.per_run_kind_keep ?? 100;
     let autoLlmPurged = { deleted: 0 };
     let entitiesPurged = 0;
+    let objectBlobsGc = { candidates: 0, deleted: 0, skipped_referenced: 0, skipped_errors: 0 };
     if (isPostgresPrimary() && retentionDays > 0) {
       const olderThan = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
       autoLlmPurged = await purgeStaleAutoLlmRuns({
@@ -53,7 +55,9 @@ export function registerSleepPipeline(engine: Engine): void {
       const entityOlderThan = new Date(
         Date.now() - ENTITY_SOFT_DELETE_RETENTION_DAYS * 24 * 60 * 60 * 1000,
       );
-      entitiesPurged = await purgeSoftDeletedEntities({ olderThan: entityOlderThan });
+      const purgeResult = await purgeSoftDeletedEntities({ olderThan: entityOlderThan });
+      entitiesPurged = purgeResult.purged;
+      objectBlobsGc = await gcObjectBlobsAfterEntityPurge(purgeResult.rows);
     }
 
     const sample_ids = result.ids.slice(0, 20);
@@ -65,6 +69,7 @@ export function registerSleepPipeline(engine: Engine): void {
         cron_sessions_purged: cronPurge.deleted,
         auto_llm_runs_purged: autoLlmPurged.deleted,
         soft_deleted_entities_purged: entitiesPurged,
+        object_storage_blobs_gc: objectBlobsGc,
       },
     };
   });

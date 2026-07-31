@@ -9,6 +9,7 @@ export {
   restoreEntity,
   purgeEntity,
   purgeSoftDeletedEntities,
+  countObjectFileCidRefs,
   deleteEntityComponent,
   collectEntityReferences,
   EntityDeleteError,
@@ -21,7 +22,11 @@ export {
   countPendingTaskItemsGroupedByListId,
   countPendingTaskItemsGroupedByProjectId,
 } from "./repos/entity-crud-repo.ts";
-export type { EntityReferenceHit } from "./repos/entity-crud-repo.ts";
+export type {
+  EntityReferenceHit,
+  PurgedEntityRow,
+  PurgeSoftDeletedEntitiesResult,
+} from "./repos/entity-crud-repo.ts";
 export {
   searchEntities,
   countEntitiesSearch,

@@ -134,8 +134,13 @@ export function createObjectStore(cfg: ObjectStorageConfigInput = {}): ObjectSto
       if (existsSync(cachePath)) {
         await rm(cachePath, { force: true });
       }
-      const remote = await requireRemote();
-      await remote.client.delete(objectStorageKey(worldId, cid));
+      const remote = await getRemote();
+      if (!remote) return;
+      try {
+        await remote.client.delete(objectStorageKey(worldId, cid));
+      } catch (e) {
+        throw formatS3Error("delete", objectStorageKey(worldId, cid), e);
+      }
     },
 
     async deleteWorldPrefix(worldId) {
