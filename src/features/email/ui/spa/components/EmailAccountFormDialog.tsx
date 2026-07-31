@@ -12,6 +12,8 @@ import {
 } from "@freeanima/ui-kit";
 import { m } from "@paraglide/messages";
 
+import { VaultRefField } from "@freeanima/features/vault/ui/spa/components/VaultRefField.tsx";
+
 import {
   createEmailAccount,
   fetchEmailProviders,
@@ -237,12 +239,10 @@ export function EmailAccountFormDialog({
         </FormField>
 
         <FormField label={m.email_password()} hint={m.email_password_hint()}>
-          <Input
-            type="password"
-            autoComplete="off"
+          <VaultRefField
             value={form.password}
             disabled={disabled || saving}
-            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+            onChange={(password) => setForm((prev) => ({ ...prev, password }))}
           />
         </FormField>
 
