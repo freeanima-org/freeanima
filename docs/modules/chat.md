@@ -51,3 +51,19 @@ Chat 维护 **用户已读水位**（`conversation_read_state`，按 Habitat use
 ## 与离线平台（Stream outbox）
 
 Outbox 布局与 [`portal-sdk/offline-outbox`](../../src/client/portal-sdk/offline-outbox.ts) 对齐；Chat flush 走 WS 流式 `message.send`，非通用 Habitat RPC 单次响应。
+
+## 朗读
+
+消息操作栏可朗读助手/用户文本。Provider 由 Habitat `tts` 配置（默认 **edge-tts**：Habitat 合成 MP3 + 客户端 `HTMLAudioElement`；可选 **web-speech**：浏览器 `speechSynthesis`）。
+
+### 生命周期
+
+- **保持播放**：切模块、切浏览器 Tab、切到其他 App **不**主动停止；播放状态在 Shell 级单例（`portal-sdk/speech/speech-playback-service`），Chat SPA unmount 后仍可继续。
+- **停止**：用户点停、切换会话、开始播另一条。
+- **重进聊天室**：按稳定 key（`conversationId:displayIndex`）恢复「正在播放」按钮态。
+
+### 移动端 / PWA
+
+- 用户手势链内 `primeMpegSpeechOutput` 解锁 HTMLAudio；移动 WebView 禁用 MSE 播 MP3，改为缓冲后播放。
+- `navigator.mediaSession` 提供系统媒体控件（play/pause/stop）；回前台时若仍在朗读且音频被系统暂停，尝试 `play()` 恢复。
+- **Web Speech** 后台行为依赖浏览器/WebView，不保证切应用后继续；切模块仍不会主动 `cancel`。

@@ -76,6 +76,7 @@ import {
 } from "@freeanima/client/portal-sdk";
 import { MessageActionBar } from "@freeanima/features/chat/ui/spa/components/MessageActionBar.tsx";
 import { useSpeechPlayback } from "@freeanima/features/chat/ui/spa/hooks/useSpeechPlayback.ts";
+import { speechMessageKey } from "@freeanima/client/portal-sdk/speech/speech-playback-service";
 import { markdownToPlainText } from "@freeanima/features/chat/ui/spa/lib/speech/plain-text.ts";
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
 import { useConversationsStore } from "@freeanima/features/chat/ui/spa/stores/conversations.ts";
@@ -1755,10 +1756,13 @@ export function ChatApp() {
                         align="end"
                         copyContent={item.content}
                         speechText={item.content}
-                        speaking={isSpeaking(`msg-${i}`)}
+                        speaking={!!currentId && isSpeaking(speechMessageKey(currentId, i))}
                         speechSupported={speechSupported}
                         speechUnsupportedReason={speechUnsupportedReason}
-                        onToggleSpeech={() => toggleSpeech(`msg-${i}`, item.content)}
+                        onToggleSpeech={() => {
+                          if (!currentId) return;
+                          toggleSpeech(speechMessageKey(currentId, i), item.content);
+                        }}
                         {...(item.clientOpId &&
                         (item.sendStatus === "pending" || item.sendStatus === "failed")
                           ? {
@@ -1799,10 +1803,13 @@ export function ChatApp() {
                         align="start"
                         copyContent={speechText}
                         speechText={speechText}
-                        speaking={isSpeaking(`msg-${i}`)}
+                        speaking={!!currentId && isSpeaking(speechMessageKey(currentId, i))}
                         speechSupported={speechSupported}
                         speechUnsupportedReason={speechUnsupportedReason}
-                        onToggleSpeech={() => toggleSpeech(`msg-${i}`, speechText)}
+                        onToggleSpeech={() => {
+                          if (!currentId) return;
+                          toggleSpeech(speechMessageKey(currentId, i), speechText);
+                        }}
                       />
                     </div>
                   );

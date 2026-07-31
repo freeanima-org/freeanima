@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { SpeechPlaybackConfig } from "./types.ts";
 import { createSpeechAdapter, stopSpeechPreview } from "./create-adapter.ts";
 import { consumeLastHubSpeechError, primeHabitatSpeechOutput } from "./habitat-adapter.ts";
+import { stopSpeechPlayback } from "./speech-playback-service.ts";
 
 let previewAdapter: ReturnType<typeof createSpeechAdapter> | null = null;
 
@@ -31,6 +32,7 @@ export function useSpeechPreview(config: SpeechPlaybackConfig, locale: string) {
       setError("");
       previewAdapter?.stop();
       stopSpeechPreview(configRef.current);
+      stopSpeechPlayback();
 
       const trimmed = text.trim();
       if (!trimmed) {

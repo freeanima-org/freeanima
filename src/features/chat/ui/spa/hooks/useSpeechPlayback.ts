@@ -1,105 +1,46 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { fetchHabitatConfig } from "@freeanima/client/portal-sdk/habitat-config-api";
-import { createSpeechAdapter } from "@freeanima/client/portal-sdk/speech/create-adapter";
+import { useCallback, useEffect, useReducer } from "react";
 import {
-  DEFAULT_SPEECH_PLAYBACK_CONFIG,
-  parseSpeechConfigFromHub,
-  type SpeechPlaybackConfig,
-} from "@freeanima/client/portal-sdk/speech/types";
-import { getWebSpeechUnsupportedReason } from "@freeanima/client/portal-sdk/speech/web-speech-support";
-import { consumeLastHubSpeechError } from "@freeanima/client/portal-sdk/speech/habitat-adapter";
-import { getAppLocale, m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
-import { createSpeechPlaybackController } from "@freeanima/features/chat/ui/spa/lib/speech/controller.ts";
-import type { SpeechPlaybackAdapter } from "@freeanima/features/chat/ui/spa/lib/speech/types.ts";
+  ensureSpeechPlaybackConfig,
+  getSpeechPlaybackSnapshot,
+  isSpeechSpeaking,
+  stopSpeechPlayback,
+  subscribeSpeechPlayback,
+  toggleSpeechPlayback,
+} from "@freeanima/client/portal-sdk/speech/speech-playback-service";
+import { getAppLocale } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 
-function wrapAdapterWithErrorHandler(
-  adapter: SpeechPlaybackAdapter,
-  onPlaybackError: () => void,
-): SpeechPlaybackAdapter {
-  return {
-    isSupported: () => adapter.isSupported(),
-    stop: () => adapter.stop(),
-    speak(text, locale, onEnd, onError) {
-      adapter.speak(text, locale, onEnd, () => {
-        onPlaybackError();
-        onError?.();
-      });
-    },
-  };
-}
-
-export function useSpeechPlayback(adapter?: SpeechPlaybackAdapter) {
-  const [speechConfig, setSpeechConfig] = useState<SpeechPlaybackConfig>(
-    DEFAULT_SPEECH_PLAYBACK_CONFIG,
-  );
-  const [playbackError, setPlaybackError] = useState<string | null>(null);
-  const playbackErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const showPlaybackError = useCallback(() => {
-    const detail = consumeLastHubSpeechError();
-    setPlaybackError(detail ?? m.chat_speech_playback_failed());
-    if (playbackErrorTimerRef.current != null) clearTimeout(playbackErrorTimerRef.current);
-    playbackErrorTimerRef.current = setTimeout(() => setPlaybackError(null), 4000);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const data = await fetchHabitatConfig();
-        if (!cancelled) {
-          setSpeechConfig(parseSpeechConfigFromHub(data.tts));
-        }
-      } catch {
-        /* 离线或 Habitat 未配置时沿用默认 */
-      }
-    })();
-    return () => {
-      cancelled = true;
-      if (playbackErrorTimerRef.current != null) clearTimeout(playbackErrorTimerRef.current);
-    };
-  }, []);
-
-  const speechAdapter = useMemo(() => {
-    const base = adapter ?? createSpeechAdapter(speechConfig);
-    return wrapAdapterWithErrorHandler(base, showPlaybackError);
-  }, [adapter, showPlaybackError, speechConfig]);
-
+/**
+ * Chat 侧朗读 Hook：订阅 Shell 级单例。
+ * 切模块 unmount 时不 stop，以便后台继续播放。
+ */
+export function useSpeechPlayback() {
   const [, rerender] = useReducer((n: number) => n + 1, 0);
-  const controllerRef = useRef(createSpeechPlaybackController(speechAdapter, () => rerender()));
+
+  useEffect(() => subscribeSpeechPlayback(() => rerender()), []);
 
   useEffect(() => {
-    controllerRef.current = createSpeechPlaybackController(speechAdapter, () => rerender());
-  }, [speechAdapter]);
+    void ensureSpeechPlaybackConfig();
+  }, []);
 
   const stop = useCallback(() => {
-    controllerRef.current.stop();
+    stopSpeechPlayback();
   }, []);
 
   const toggle = useCallback((key: string, text: string) => {
-    setPlaybackError(null);
-    controllerRef.current.toggle(key, text, getAppLocale());
+    toggleSpeechPlayback(key, text, getAppLocale());
   }, []);
 
-  const isSpeaking = useCallback((key: string) => controllerRef.current.isSpeaking(key), []);
+  const isSpeaking = useCallback((key: string) => isSpeechSpeaking(key), []);
 
-  const unsupportedReason = useMemo(() => {
-    if (!speechConfig.enabled) return "disabled" as const;
-    if (speechConfig.provider === "edge-tts") return null;
-    return getWebSpeechUnsupportedReason(true);
-  }, [speechConfig.enabled, speechConfig.provider]);
-
-  const isSupported = speechAdapter.isSupported();
-
-  useEffect(() => () => controllerRef.current.stop(), []);
+  const snapshot = getSpeechPlaybackSnapshot();
 
   return {
     toggle,
     stop,
     isSpeaking,
-    isSupported,
-    unsupportedReason,
-    playbackError,
-    activeKey: controllerRef.current.getActiveKey(),
+    isSupported: snapshot.isSupported,
+    unsupportedReason: snapshot.unsupportedReason,
+    playbackError: snapshot.playbackError,
+    activeKey: snapshot.activeKey,
   };
 }

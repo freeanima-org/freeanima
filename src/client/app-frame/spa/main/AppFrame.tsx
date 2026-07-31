@@ -18,6 +18,7 @@ import { useAppBottomNavLayout } from "../lib/use-app-bottom-nav-layout.ts";
 import { AppModuleRail } from "./AppModuleRail.tsx";
 import { PomodoroShellWatcher } from "@freeanima/features/pomodoro/ui/spa/PomodoroShellWatcher.tsx";
 import { ChatUnreadShellWatcher } from "@freeanima/features/chat/ui/spa/ChatUnreadShellWatcher.tsx";
+import { SpeechShellWatcher } from "@freeanima/features/chat/ui/spa/SpeechShellWatcher.tsx";
 import { NotificationReminderShellWatcher } from "@freeanima/features/notification/ui/spa/NotificationReminderShellWatcher.tsx";
 import { AppAttentionShellWatcher } from "./AppAttentionShellWatcher.tsx";
 import { AppNavUnreadBadge } from "./AppNavUnreadBadge.tsx";
@@ -185,6 +186,7 @@ export function AppFrame() {
       <AppModuleVisibilityGuard />
       <PomodoroShellWatcher />
       <ChatUnreadShellWatcher />
+      <SpeechShellWatcher />
       <NotificationReminderShellWatcher />
       <AppAttentionShellWatcher />
       {isCompactLayout(layoutMode) ? <CompactAppFrame /> : <ExpandedAppFrame />}
