@@ -9,12 +9,19 @@ import {
   getEntity,
   listEntities,
   restoreEntity,
+  searchEntities,
+  type EntityDeletedFilter,
   type EntityRow,
 } from "@freeanima/host/core/db/pg/entity";
+import type { EntityType } from "@freeanima/host/core/db/schema";
 import type { VerifiedServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
-import type { EntityAdminRowPayload } from "@freeanima/shared/rpc-contract/frames/entity";
+import type {
+  EntityAdminRowPayload,
+  EntityListInput,
+} from "@freeanima/shared/rpc-contract/frames/entity";
 import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 
+import { parseEntityListQueryId } from "./parse-entity-list-query-id.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 function assertPg(_deps: RuntimeDeps): void {
@@ -66,58 +73,105 @@ async function assertEntityInWorld(id: number, world_id: number, include_deleted
   return row;
 }
 
-export async function serviceEntityList(
+type EntityAdminListInput = Omit<EntityListInput, "subject_kind"> & {
+  subject_kind?: SubjectKind;
+};
+
+function matchesAdminFilters(
+  row: EntityRow,
+  opts: { type?: EntityType; primary_component?: string },
+): boolean {
+  if (opts.type && row.type !== opts.type) return false;
+  if (opts.primary_component && row.primary_component !== opts.primary_component) return false;
+  return true;
+}
+
+function matchesDeletedFilter(row: EntityRow, deleted: EntityDeletedFilter): boolean {
+  if (deleted === "alive") return row.deleted_at == null;
+  if (deleted === "deleted") return row.deleted_at != null;
+  return true;
+}
+
+async function serviceEntityAdminList(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; limit?: number; offset?: number } | undefined,
+  input: EntityAdminListInput | undefined,
   auth: VerifiedServiceApiToken,
+  deleted: "alive" | "deleted",
 ) {
   assertPg(deps);
   const world_id = await entityWorldIdForAuth(auth, input?.subject_kind);
   const limit = input?.limit ?? 100;
   const offset = input?.offset ?? 0;
-  const listOpts = {
+  const type = input?.type;
+  const primary_component = input?.primary_component?.trim() || undefined;
+  const query = input?.query?.trim() || undefined;
+
+  if (query) {
+    const id = parseEntityListQueryId(query);
+    if (id != null) {
+      const row = await getEntity(id, { include_deleted: true });
+      const filterMatch = {
+        ...(type ? { type } : {}),
+        ...(primary_component ? { primary_component } : {}),
+      };
+      if (
+        !row ||
+        row.world_id !== world_id ||
+        !matchesDeletedFilter(row, deleted) ||
+        !matchesAdminFilters(row, filterMatch)
+      ) {
+        return { items: [], count: 0 };
+      }
+      return { items: [toAdminRow(row)], count: 1 };
+    }
+
+    const result = await searchEntities({
+      world_id,
+      query,
+      ...(type ? { type } : {}),
+      ...(primary_component ? { primary_component } : {}),
+      deleted,
+      limit,
+      offset,
+      mode: "hybrid",
+      projection: "list",
+    });
+    return { items: result.results.map(toAdminRow), count: result.count };
+  }
+
+  const filterOpts = {
     world_id,
-    deleted: "alive" as const,
-    order_by: "updated_at" as const,
-    order_dir: "desc" as const,
-    limit,
-    offset,
+    deleted,
+    ...(type ? { type } : {}),
+    ...(primary_component ? { primary_component } : {}),
   };
   const [items, count] = await Promise.all([
-    listEntities(listOpts),
-    countEntities({
-      world_id,
-      deleted: "alive",
+    listEntities({
+      ...filterOpts,
+      order_by: deleted === "deleted" ? "deleted_at" : "updated_at",
+      order_dir: "desc",
+      limit,
+      offset,
     }),
+    countEntities(filterOpts),
   ]);
   return { items: items.map(toAdminRow), count };
 }
 
-export async function serviceEntityTrashList(
+export async function serviceEntityList(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; limit?: number; offset?: number } | undefined,
+  input: EntityAdminListInput | undefined,
   auth: VerifiedServiceApiToken,
 ) {
-  assertPg(deps);
-  const world_id = await entityWorldIdForAuth(auth, input?.subject_kind);
-  const limit = input?.limit ?? 100;
-  const offset = input?.offset ?? 0;
-  const listOpts = {
-    world_id,
-    deleted: "deleted" as const,
-    order_by: "deleted_at" as const,
-    order_dir: "desc" as const,
-    limit,
-    offset,
-  };
-  const [items, count] = await Promise.all([
-    listEntities(listOpts),
-    countEntities({
-      world_id,
-      deleted: "deleted",
-    }),
-  ]);
-  return { items: items.map(toAdminRow), count };
+  return serviceEntityAdminList(deps, input, auth, "alive");
+}
+
+export async function serviceEntityTrashList(
+  deps: RuntimeDeps,
+  input: EntityAdminListInput | undefined,
+  auth: VerifiedServiceApiToken,
+) {
+  return serviceEntityAdminList(deps, input, auth, "deleted");
 }
 
 export async function serviceEntityDelete(

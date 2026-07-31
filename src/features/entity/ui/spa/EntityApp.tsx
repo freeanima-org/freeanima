@@ -1,8 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { SubjectScopeToggle, useSubjectScope } from "@freeanima/client/portal-sdk/react.tsx";
-import { Button, Spinner } from "@freeanima/ui-kit";
+import {
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Spinner,
+} from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { formatDateTime } from "@freeanima/ui-kit/lib/datetime-local.ts";
+import type { EntityAdminType } from "@freeanima/shared/rpc-contract/frames/entity.ts";
 import { Boxes } from "lucide-react";
 
 import {
@@ -14,6 +24,8 @@ import {
 } from "./lib/api.ts";
 
 const PAGE_SIZE = 20;
+const TYPE_ALL = "__all__";
+const ENTITY_TYPES: EntityAdminType[] = ["content", "world", "agent", "user"];
 
 type EntityTab = "all" | "trash";
 
@@ -116,18 +128,29 @@ export function EntityApp() {
   const [error, setError] = useState("");
   const [total, setTotal] = useState(0);
   const [items, setItems] = useState<EntityAdminRow[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<EntityAdminType | "">("");
+  const [primaryComponent, setPrimaryComponent] = useState("");
 
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
+  const hasActiveFilters =
+    searchQuery.trim().length > 0 || typeFilter !== "" || primaryComponent.trim().length > 0;
 
   const fetchList = useCallback(
     async (nextOffset: number, nextTab: EntityTab) => {
       setLoading(true);
       setError("");
       try {
-        const data =
-          nextTab === "trash"
-            ? await fetchEntityTrash({ limit: PAGE_SIZE, offset: nextOffset })
-            : await fetchEntities({ limit: PAGE_SIZE, offset: nextOffset });
+        const query = searchQuery.trim();
+        const primary = primaryComponent.trim();
+        const opts = {
+          limit: PAGE_SIZE,
+          offset: nextOffset,
+          ...(typeFilter ? { type: typeFilter } : {}),
+          ...(primary ? { primary_component: primary } : {}),
+          ...(query ? { query } : {}),
+        };
+        const data = nextTab === "trash" ? await fetchEntityTrash(opts) : await fetchEntities(opts);
         setItems(data.items ?? []);
         setTotal(data.count ?? 0);
         setOffset(nextOffset);
@@ -137,7 +160,7 @@ export function EntityApp() {
         setLoading(false);
       }
     },
-    [subjectKind],
+    [subjectKind, searchQuery, typeFilter, primaryComponent],
   );
 
   useEffect(() => {
@@ -192,7 +215,7 @@ export function EntityApp() {
         <SubjectScopeToggle />
       </div>
 
-      <div className="flex shrink-0 gap-2 border-b px-4 py-2 md:px-6">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-2 md:px-6">
         <Button
           type="button"
           variant={tab === "all" ? "default" : "outline"}
@@ -209,6 +232,35 @@ export function EntityApp() {
         >
           回收站
         </Button>
+        <span className="flex-1" />
+        <Select
+          value={typeFilter || TYPE_ALL}
+          onValueChange={(v) => setTypeFilter(v === TYPE_ALL ? "" : (v as EntityAdminType))}
+        >
+          <SelectTrigger size="sm" className="w-[8.5rem]">
+            <SelectValue placeholder="类型" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={TYPE_ALL}>全部类型</SelectItem>
+            {ENTITY_TYPES.map((t) => (
+              <SelectItem key={t} value={t}>
+                {t}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
+          className="h-8 w-full max-w-[10rem] sm:h-9"
+          placeholder="主组件"
+          value={primaryComponent}
+          onChange={(e) => setPrimaryComponent(e.target.value)}
+        />
+        <Input
+          className="h-8 w-full sm:h-9 sm:max-w-xs"
+          placeholder="关键词、id 或 anima:id"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-4 md:p-6">
@@ -224,7 +276,7 @@ export function EntityApp() {
           </div>
         ) : items.length === 0 ? (
           <p className="text-sm text-muted-foreground py-8 text-center">
-            {tab === "trash" ? "回收站为空" : "暂无实体"}
+            {hasActiveFilters ? "无匹配实体" : tab === "trash" ? "回收站为空" : "暂无实体"}
           </p>
         ) : (
           <div className="space-y-2">

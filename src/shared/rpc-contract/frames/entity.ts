@@ -22,10 +22,21 @@ export const entityReferenceHitSchema = z.object({
 });
 export type EntityReferenceHitPayload = z.infer<typeof entityReferenceHitSchema>;
 
+export const entityAdminTypeSchema = z.enum(["content", "world", "agent", "user"]);
+export type EntityAdminType = z.infer<typeof entityAdminTypeSchema>;
+
 export const entityListInputSchema = z.object({
   subject_kind: entitySubjectKindSchema,
   limit: z.number().int().positive().max(500).optional(),
   offset: z.number().int().nonnegative().optional(),
+  /** 实体 type 过滤 */
+  type: entityAdminTypeSchema.optional(),
+  /** 主组件名过滤 */
+  primary_component: z.string().trim().min(1).optional(),
+  /**
+   * 关键词（title/summary/content）；纯正整数或 `anima:{id}` 走精确 id 查询。
+   */
+  query: z.string().optional(),
 });
 export type EntityListInput = z.infer<typeof entityListInputSchema>;
 export const entityListOutputSchema = z.object({
