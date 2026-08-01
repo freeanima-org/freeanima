@@ -106,6 +106,16 @@ function touchReminderScheduler(): void {
   }
 }
 
+/** 清单任务：归档后禁止完成/改期等变更（项目任务无 list_id） */
+async function assertParsedTaskListNotArchived(
+  parsed: { project_id?: number | null; list_id?: number | null },
+  worldId: number,
+): Promise<void> {
+  if (parsed.project_id == null && parsed.list_id != null) {
+    await assertTaskListNotArchived(parsed.list_id, worldId);
+  }
+}
+
 /** 按 id 取单条任务（含项目内）；不存在或不在 world 返回 null */
 export async function getTaskItem(worldId: number, id: number): Promise<TaskItemRow | null> {
   const row = await getEntity(id);
@@ -337,10 +347,7 @@ export async function updateTaskItem(
     throw new Error("list_id and project_id are mutually exclusive");
   }
 
-  const inProject = parsedExisting.project_id != null;
-  if (!inProject && parsedExisting.list_id != null) {
-    await assertTaskListNotArchived(parsedExisting.list_id, worldId);
-  }
+  await assertParsedTaskListNotArchived(parsedExisting, worldId);
 
   const bodyPatch: Record<string, unknown> = {};
   if (input.list_id !== undefined) {
@@ -551,6 +558,7 @@ export async function completeTaskItem(worldId: number, id: number): Promise<Tas
   await assertEntityInWorld(id, worldId);
   const parsed = asTaskItem(existing);
   if (!parsed) return null;
+  await assertParsedTaskListNotArchived(parsed, worldId);
 
   if (!parsed.recurrence) {
     return updateTaskItemFields(worldId, id, {
@@ -574,6 +582,7 @@ export async function skipTaskItem(worldId: number, id: number): Promise<TaskIte
   if (!parsed?.recurrence) {
     throw new Error("task has no recurrence");
   }
+  await assertParsedTaskListNotArchived(parsed, worldId);
   return rollOrFinishRecurring(worldId, id, parsed, {
     writeOccurrence: false,
     finishForever: false,
@@ -590,6 +599,7 @@ export async function completeTaskItemForever(
   await assertEntityInWorld(id, worldId);
   const parsed = asTaskItem(existing);
   if (!parsed) return null;
+  await assertParsedTaskListNotArchived(parsed, worldId);
   return rollOrFinishRecurring(worldId, id, parsed, {
     writeOccurrence: parsed.recurrence != null,
     finishForever: true,
@@ -612,6 +622,12 @@ async function updateTaskItemFields(
 }
 
 export async function uncompleteTaskItem(worldId: number, id: number): Promise<TaskItemRow | null> {
+  const existing = await getEntity(id);
+  if (!existing) return null;
+  await assertEntityInWorld(id, worldId);
+  const parsed = asTaskItem(existing);
+  if (!parsed) return null;
+  await assertParsedTaskListNotArchived(parsed, worldId);
   return updateTaskItemFields(worldId, id, { status: "pending", completed_at: null });
 }
 
@@ -620,10 +636,8 @@ export async function deleteTaskItem(worldId: number, id: number): Promise<boole
   if (!existing) return false;
   await assertEntityInWorld(id, worldId);
   const parsed = asTaskItem(existing);
-  if (parsed && parsed.project_id == null && parsed.list_id != null) {
-    await assertTaskListNotArchived(parsed.list_id, worldId);
-  }
   if (parsed) {
+    await assertParsedTaskListNotArchived(parsed, worldId);
     await deleteOccurrencesForSeries(worldId, id);
     // 级联软删子任务
     const children = await listTaskItems(worldId, {
