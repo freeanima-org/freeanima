@@ -5,6 +5,7 @@ import {
 } from "@freeanima/client/portal-sdk/speech/sentence-boundary";
 import { speechStreamKey } from "@freeanima/client/portal-sdk/speech/speech-playback-service";
 import { markdownToPlainText } from "@freeanima/features/chat/ui/spa/lib/speech/plain-text.ts";
+import { createSpeechPlaceholders } from "@freeanima/features/chat/ui/spa/lib/speech/speech-placeholders.ts";
 
 type UseStreamAutoSpeakArgs = {
   enabled: boolean;
@@ -85,8 +86,9 @@ export function useStreamAutoSpeak({
     const { sentences, nextIndex } = extractCompletedSentences(streamText, cursorRef.current);
     cursorRef.current = nextIndex;
 
+    const placeholders = createSpeechPlaceholders();
     for (const sentence of sentences) {
-      const plain = markdownToPlainText(sentence).trim();
+      const plain = markdownToPlainText(sentence, placeholders).trim();
       if (plain) enqueue(key, plain);
     }
 
@@ -105,7 +107,7 @@ export function useStreamAutoSpeak({
       const text = lastStreamTextRef.current;
       const rest = extractRemainder(text, cursorRef.current);
       cursorRef.current = text.length;
-      const plain = markdownToPlainText(rest).trim();
+      const plain = markdownToPlainText(rest, createSpeechPlaceholders()).trim();
       if (plain) enqueue(speechStreamKey(currentId), plain);
     }
 

@@ -54,7 +54,7 @@ Outbox 布局与 [`portal-sdk/offline-outbox`](../../src/client/portal-sdk/offli
 
 ## 朗读
 
-消息操作栏可朗读助手/用户文本。Provider 由 Habitat `tts` 配置（默认 **edge-tts**：Habitat 合成 MP3 + 客户端 `HTMLAudioElement`；可选 **web-speech**：浏览器 `speechSynthesis`）。
+消息操作栏可朗读助手/用户文本。Provider 由 Habitat `tts` 配置（默认 **edge-tts**：Habitat 合成 MP3 + 客户端 `HTMLAudioElement`；可选 **web-speech**：浏览器 `speechSynthesis`）。朗读前经 `markdownToPlainText` 占位过滤（代码块 / 表格 / 链接 / 图片 / 裸 URL），听者保留上下文而不读结构内容本身。
 
 ### 自动朗读（顶栏）
 
