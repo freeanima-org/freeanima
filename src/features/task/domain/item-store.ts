@@ -108,7 +108,7 @@ function touchReminderScheduler(): void {
 
 /** 清单任务：归档后禁止完成/改期等变更（项目任务无 list_id） */
 async function assertParsedTaskListNotArchived(
-  parsed: { project_id?: number | null; list_id?: number | null },
+  parsed: { project_id?: number | null | undefined; list_id?: number | null | undefined },
   worldId: number,
 ): Promise<void> {
   if (parsed.project_id == null && parsed.list_id != null) {
