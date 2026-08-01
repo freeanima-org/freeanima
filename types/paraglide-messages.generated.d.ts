@@ -67,6 +67,10 @@ type ParaglideMessageExports = {
   readonly chat_speech_auto_off: ParaglideMessageFn;
   readonly chat_speech_auto_on: ParaglideMessageFn;
   readonly chat_speech_insecure_context: ParaglideMessageFn;
+  readonly chat_speech_placeholder_code_block: ParaglideMessageFn;
+  readonly chat_speech_placeholder_image: ParaglideMessageFn;
+  readonly chat_speech_placeholder_link: ParaglideMessageFn;
+  readonly chat_speech_placeholder_table: ParaglideMessageFn;
   readonly chat_speech_play: ParaglideMessageFn;
   readonly chat_speech_playback_failed: ParaglideMessageFn;
   readonly chat_speech_stop: ParaglideMessageFn;
@@ -931,6 +935,10 @@ declare module "*/messages/paraglide/messages.js" {
   export const chat_speech_auto_off: ParaglideMessageFn;
   export const chat_speech_auto_on: ParaglideMessageFn;
   export const chat_speech_insecure_context: ParaglideMessageFn;
+  export const chat_speech_placeholder_code_block: ParaglideMessageFn;
+  export const chat_speech_placeholder_image: ParaglideMessageFn;
+  export const chat_speech_placeholder_link: ParaglideMessageFn;
+  export const chat_speech_placeholder_table: ParaglideMessageFn;
   export const chat_speech_play: ParaglideMessageFn;
   export const chat_speech_playback_failed: ParaglideMessageFn;
   export const chat_speech_stop: ParaglideMessageFn;

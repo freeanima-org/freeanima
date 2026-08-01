@@ -87,6 +87,7 @@ import {
   saveAutoSpeakPref,
 } from "@freeanima/features/chat/ui/spa/lib/speech/auto-speak-pref.ts";
 import { markdownToPlainText } from "@freeanima/features/chat/ui/spa/lib/speech/plain-text.ts";
+import { createSpeechPlaceholders } from "@freeanima/features/chat/ui/spa/lib/speech/speech-placeholders.ts";
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
 import { useConversationsStore } from "@freeanima/features/chat/ui/spa/stores/conversations.ts";
 import { useOutboxStore } from "@freeanima/features/chat/ui/spa/stores/outbox.ts";
@@ -460,6 +461,9 @@ export function ChatApp() {
       (!messagesLoading &&
         displayAwaitingReply(mergedDisplay) &&
         habitatConnection === "connected"));
+
+  const streamSpeechText =
+    streamVisible && streamText ? markdownToPlainText(streamText, createSpeechPlaceholders()) : "";
 
   const pendingOutboxKey = useMemo(
     () =>
@@ -1738,6 +1742,7 @@ export function ChatApp() {
                       </div>
                     );
                   }
+                  const speechText = markdownToPlainText(item.content, createSpeechPlaceholders());
                   return (
                     <div key={`d${i}`} className="flex min-w-0 max-w-full flex-col items-end">
                       <ChatMessageBubble
@@ -1813,13 +1818,13 @@ export function ChatApp() {
                       <MessageActionBar
                         align="end"
                         copyContent={item.content}
-                        speechText={item.content}
+                        speechText={speechText}
                         speaking={!!currentId && isSpeaking(speechMessageKey(currentId, i))}
                         speechSupported={speechSupported}
                         speechUnsupportedReason={speechUnsupportedReason}
                         onToggleSpeech={() => {
                           if (!currentId) return;
-                          toggleSpeech(speechMessageKey(currentId, i), item.content);
+                          toggleSpeech(speechMessageKey(currentId, i), speechText);
                         }}
                         {...(item.clientOpId &&
                         (item.sendStatus === "pending" || item.sendStatus === "failed")
@@ -1838,7 +1843,7 @@ export function ChatApp() {
                   );
                 }
                 if (item.type === "message" && item.role === "assistant") {
-                  const speechText = markdownToPlainText(item.content);
+                  const speechText = markdownToPlainText(item.content, createSpeechPlaceholders());
                   const messageKey = currentId ? speechMessageKey(currentId, i) : "";
                   const speakingAsStream =
                     isStreamSpeaking && !streamVisible && i === lastAssistantMessageIndex;
@@ -1863,7 +1868,7 @@ export function ChatApp() {
                       </ChatMessageBubble>
                       <MessageActionBar
                         align="start"
-                        copyContent={speechText}
+                        copyContent={item.content}
                         speechText={speechText}
                         speaking={speaking}
                         speechSupported={speechSupported}
@@ -1934,8 +1939,8 @@ export function ChatApp() {
                     </div>
                     <MessageActionBar
                       align="start"
-                      copyContent={markdownToPlainText(streamText)}
-                      speechText={markdownToPlainText(streamText)}
+                      copyContent={streamText}
+                      speechText={streamSpeechText}
                       speaking={isStreamSpeaking}
                       speechSupported={speechSupported}
                       speechUnsupportedReason={speechUnsupportedReason}
@@ -1945,7 +1950,7 @@ export function ChatApp() {
                           stopCurrentKeepEnabled();
                           return;
                         }
-                        toggleSpeech(speechStreamKey(currentId), markdownToPlainText(streamText));
+                        toggleSpeech(speechStreamKey(currentId), streamSpeechText);
                       }}
                     />
                   </div>
