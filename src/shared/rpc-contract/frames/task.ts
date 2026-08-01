@@ -377,6 +377,15 @@ export type TaskMoveToListInput = z.infer<typeof taskMoveToListInputSchema>;
 export const taskMoveToListOutputSchema = z.object({ item: taskItemRowSchema });
 export type TaskMoveToListOutput = z.infer<typeof taskMoveToListOutputSchema>;
 
+/** 按 id 取单条任务（含清单/backlog 与项目内） */
+export const taskGetInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  id: z.number().int().positive(),
+});
+export type TaskGetInput = z.infer<typeof taskGetInputSchema>;
+export const taskGetOutputSchema = z.object({ item: taskItemRowSchema.nullable() });
+export type TaskGetOutput = z.infer<typeof taskGetOutputSchema>;
+
 /** 共享内容字段 patch；归属变更请用 task.moveToProject / task.moveToList */
 export const taskPatchInputSchema = z.object({
   subject_kind: taskSubjectKindSchema,

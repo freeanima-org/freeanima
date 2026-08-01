@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu.tsx";
+import { Popover, PopoverDialog, PopoverTrigger } from "../components/ui/popover.tsx";
 import { Input } from "../components/ui/input.tsx";
 import { Textarea } from "../components/ui/textarea.tsx";
 import { DatePickerInput } from "../form/DatePickerInput.tsx";
@@ -195,6 +196,49 @@ function priorityFlagClass(priority: TaskItemPriority): string {
   }
 }
 
+function DateTimePopoverFields({
+  datePart,
+  timePart,
+  dateLabel,
+  timeLabel,
+  onDateChange,
+  onTimeChange,
+  onClear,
+  showClear,
+}: {
+  datePart: string;
+  timePart: string;
+  dateLabel: string;
+  timeLabel: string;
+  onDateChange: (nextDate: string) => void;
+  onTimeChange: (nextTime: string) => void;
+  onClear: () => void;
+  showClear: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <DatePickerInput
+        className="w-full"
+        value={datePart}
+        aria-label={dateLabel}
+        onChange={onDateChange}
+      />
+      <TimePickerInput
+        className="w-full"
+        value={timePart}
+        disabled={!datePart}
+        aria-label={timeLabel}
+        onChange={onTimeChange}
+      />
+      {showClear ? (
+        <Button type="button" variant="ghost" size="sm" className="self-start" onClick={onClear}>
+          清除
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
 export function TaskDetailEditor<T extends TaskItemDisplay>({
   item,
   onChange,
@@ -228,7 +272,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
           }
         />
 
-        <DropdownMenuTrigger>
+        <PopoverTrigger>
           <Button
             type="button"
             variant="ghost"
@@ -243,48 +287,38 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
             <CalendarIcon className="size-4 shrink-0" />
             <span className="truncate">{dueChip.label}</span>
           </Button>
-          <DropdownMenu placement="bottom start" className="w-72 p-3">
-            <DropdownMenuLabel className="px-0 pt-0">截止日期</DropdownMenuLabel>
-            <div className="flex flex-col gap-2" onPointerDown={(e) => e.stopPropagation()}>
-              <DatePickerInput
-                className="w-full"
-                value={datePart}
-                aria-label="截止日期"
-                onChange={(nextDate) =>
+          <Popover placement="bottom start" className="w-72 p-3">
+            <PopoverDialog>
+              <p className="text-muted-foreground mb-2 text-xs font-medium">截止日期</p>
+              <DateTimePopoverFields
+                datePart={datePart}
+                timePart={timePart}
+                dateLabel="截止日期"
+                timeLabel="截止时间"
+                showClear={item.due_at != null}
+                onDateChange={(nextDate) => {
+                  if (!nextDate) {
+                    onChange(setRemindAt({ ...item, due_at: null }, null));
+                    return;
+                  }
                   onChange({
                     ...item,
                     due_at: mergeDateTimeLocal(nextDate, timePart),
-                  })
-                }
-              />
-              <TimePickerInput
-                className="w-full"
-                value={timePart}
-                disabled={!datePart}
-                aria-label="截止时间"
-                onChange={(nextTime) =>
+                  });
+                }}
+                onTimeChange={(nextTime) =>
                   onChange({
                     ...item,
                     due_at: mergeDateTimeLocal(datePart, nextTime),
                   })
                 }
+                onClear={() => onChange(setRemindAt({ ...item, due_at: null }, null))}
               />
-              {item.due_at ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="self-start"
-                  onClick={() => onChange({ ...item, due_at: null })}
-                >
-                  清除
-                </Button>
-              ) : null}
-            </div>
-          </DropdownMenu>
-        </DropdownMenuTrigger>
+            </PopoverDialog>
+          </Popover>
+        </PopoverTrigger>
 
-        <DropdownMenuTrigger>
+        <PopoverTrigger>
           <Button
             type="button"
             variant="ghost"
@@ -298,83 +332,72 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
             <BellIcon className="size-4 shrink-0" />
             <span className="truncate">{remindLabel(item)}</span>
           </Button>
-          <DropdownMenu placement="bottom start" className="w-72 p-3">
-            <DropdownMenuLabel className="px-0 pt-0">提醒</DropdownMenuLabel>
-            <div className="flex flex-col gap-2" onPointerDown={(e) => e.stopPropagation()}>
-              <div className="flex flex-wrap gap-1">
-                {REMIND_PRESETS.map((preset) => (
-                  <Button
-                    key={preset.id}
-                    type="button"
-                    variant={remindPreset === preset.id ? "secondary" : "outline"}
-                    size="sm"
-                    className="h-7 px-2 text-xs"
-                    disabled={preset.id !== "none" && preset.id !== "custom" && !item.due_at}
-                    onClick={() => {
-                      if (preset.id === "none") {
-                        onChange(setRemindAt(item, null));
-                        return;
-                      }
-                      if (!item.due_at) return;
-                      if (preset.id === "at_due") {
-                        onChange(setRemindAt(item, item.due_at));
-                        return;
-                      }
-                      if (preset.id === "5m") {
-                        onChange(setRemindAt(item, offsetFromDue(item.due_at, 5 * 60 * 1000)));
-                        return;
-                      }
-                      if (preset.id === "1h") {
-                        onChange(setRemindAt(item, offsetFromDue(item.due_at, 60 * 60 * 1000)));
-                        return;
-                      }
-                      if (preset.id === "1d") {
-                        onChange(
-                          setRemindAt(item, offsetFromDue(item.due_at, 24 * 60 * 60 * 1000)),
-                        );
-                        return;
-                      }
-                    }}
-                  >
-                    {preset.label}
-                  </Button>
-                ))}
+          <Popover placement="bottom start" className="w-72 p-3">
+            <PopoverDialog>
+              <p className="text-muted-foreground mb-2 text-xs font-medium">提醒</p>
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap gap-1">
+                  {REMIND_PRESETS.map((preset) => (
+                    <Button
+                      key={preset.id}
+                      type="button"
+                      variant={remindPreset === preset.id ? "secondary" : "outline"}
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      disabled={preset.id !== "none" && preset.id !== "custom" && !item.due_at}
+                      onClick={() => {
+                        if (preset.id === "none") {
+                          onChange(setRemindAt(item, null));
+                          return;
+                        }
+                        if (!item.due_at) return;
+                        if (preset.id === "at_due") {
+                          onChange(setRemindAt(item, item.due_at));
+                          return;
+                        }
+                        if (preset.id === "5m") {
+                          onChange(setRemindAt(item, offsetFromDue(item.due_at, 5 * 60 * 1000)));
+                          return;
+                        }
+                        if (preset.id === "1h") {
+                          onChange(setRemindAt(item, offsetFromDue(item.due_at, 60 * 60 * 1000)));
+                          return;
+                        }
+                        if (preset.id === "1d") {
+                          onChange(
+                            setRemindAt(item, offsetFromDue(item.due_at, 24 * 60 * 60 * 1000)),
+                          );
+                        }
+                      }}
+                    >
+                      {preset.label}
+                    </Button>
+                  ))}
+                </div>
+                {remindPreset === "custom" || remindAt ? (
+                  <DateTimePopoverFields
+                    datePart={remindDatePart}
+                    timePart={remindTimePart}
+                    dateLabel="提醒日期"
+                    timeLabel="提醒时间"
+                    showClear={remindAt != null}
+                    onDateChange={(nextDate) =>
+                      onChange(
+                        setRemindAt(item, mergeDateTimeLocal(nextDate, remindTimePart || "09:00")),
+                      )
+                    }
+                    onTimeChange={(nextTime) =>
+                      onChange(
+                        setRemindAt(item, mergeDateTimeLocal(remindDatePart || datePart, nextTime)),
+                      )
+                    }
+                    onClear={() => onChange(setRemindAt(item, null))}
+                  />
+                ) : null}
               </div>
-              {(remindPreset === "custom" || remindAt) && (
-                <>
-                  <DatePickerInput
-                    className="w-full"
-                    value={remindDatePart}
-                    aria-label="提醒日期"
-                    onChange={(nextDate) =>
-                      onChange(setRemindAt(item, mergeDateTimeLocal(nextDate, remindTimePart)))
-                    }
-                  />
-                  <TimePickerInput
-                    className="w-full"
-                    value={remindTimePart}
-                    disabled={!remindDatePart}
-                    aria-label="提醒时间"
-                    onChange={(nextTime) =>
-                      onChange(setRemindAt(item, mergeDateTimeLocal(remindDatePart, nextTime)))
-                    }
-                  />
-                </>
-              )}
-              {remindAt ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="self-start"
-                  onClick={() => onChange(setRemindAt(item, null))}
-                >
-                  清除
-                </Button>
-              ) : null}
-            </div>
-          </DropdownMenu>
-        </DropdownMenuTrigger>
+            </PopoverDialog>
+          </Popover>
+        </PopoverTrigger>
 
         <DropdownMenuTrigger>
           <Button

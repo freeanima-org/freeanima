@@ -20,10 +20,15 @@ export function cstDayKey(date: Date = new Date()): string {
   return formatCstIso(date).slice(0, 10);
 }
 
-/** ISO day key from any ISO string (CST-oriented display uses leading date) */
+/**
+ * 将任意 ISO / 日期字符串落到 CST 日历日（YYYY-MM-DD）。
+ * 不可对带时区的 UTC 串直接 slice 前缀（如 `…T16:00:00.000Z` 在 CST 已是次日）。
+ * 纯日期 `YYYY-MM-DD` 视为已是日历日，原样返回。
+ */
 export function dayKeyFromIso(iso: string): string {
-  if (/^\d{4}-\d{2}-\d{2}/.test(iso)) return iso.slice(0, 10);
-  const ms = Date.parse(iso);
+  const trimmed = iso.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  const ms = Date.parse(trimmed);
   if (!Number.isFinite(ms)) return "";
   return cstDayKey(new Date(ms));
 }

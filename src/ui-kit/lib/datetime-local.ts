@@ -66,3 +66,13 @@ export function formatDueChip(due: string | null | undefined): {
   }
   return { label: dateLabel, overdue: false };
 }
+
+/** 详情顶栏提醒 chip */
+export function formatRemindChip(remind: string | null | undefined): string {
+  if (!remind) return "提醒";
+  const d = new Date(remind);
+  if (Number.isNaN(d.getTime())) return "提醒";
+  const dateLabel = `${d.getMonth() + 1}月${d.getDate()}日`;
+  const time = isoToTimeLocalValue(remind);
+  return time ? `${dateLabel} ${time}` : dateLabel;
+}

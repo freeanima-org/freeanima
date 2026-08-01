@@ -69,6 +69,8 @@ import type {
   TaskMoveToListOutput,
   TaskMoveToProjectInput,
   TaskMoveToProjectOutput,
+  TaskGetInput,
+  TaskGetOutput,
   TaskPatchInput,
   TaskPatchOutput,
   TaskCompleteInput,
@@ -261,6 +263,7 @@ export const RPC_PROTOCOL_METHODS = [
   "smartlist.delete",
   "project.item.list",
   "project.item.create",
+  "task.get",
   "task.patch",
   "task.moveToProject",
   "task.moveToList",
@@ -371,6 +374,7 @@ export type RpcRouterInputs = {
   "smartlist.delete": SmartlistDeleteInput;
   "project.item.list": ProjectItemListInput;
   "project.item.create": ProjectItemCreateInput;
+  "task.get": TaskGetInput;
   "task.patch": TaskPatchInput;
   "task.moveToProject": TaskMoveToProjectInput;
   "task.moveToList": TaskMoveToListInput;
@@ -484,6 +488,7 @@ export type RpcRouterOutputs = {
   "smartlist.delete": SmartlistDeleteOutput;
   "project.item.list": ProjectItemListOutput;
   "project.item.create": ProjectItemCreateOutput;
+  "task.get": TaskGetOutput;
   "task.patch": TaskPatchOutput;
   "task.moveToProject": TaskMoveToProjectOutput;
   "task.moveToList": TaskMoveToListOutput;

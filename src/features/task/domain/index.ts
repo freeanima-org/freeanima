@@ -23,6 +23,7 @@ export {
 } from "./list-store.ts";
 
 export {
+  getTaskItem,
   listTaskItems,
   createTaskItem,
   updateTaskItem,

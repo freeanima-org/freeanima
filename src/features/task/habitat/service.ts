@@ -10,6 +10,7 @@ import {
   deleteSmartList,
   ensureDefaultTaskListForWorld,
   getDefaultTaskList,
+  getTaskItem,
   listCompletedActivity,
   listSmartListsMerged,
   countSubtasks,
@@ -365,6 +366,20 @@ export async function serviceProjectItemCreate(
     await taskWorldIdForAuth(auth, subject_kind),
     omitUndefined(createInput),
   );
+  return { item };
+}
+
+/** 按 id 取单条（含项目内任务） */
+export async function serviceTaskGet(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    id: number;
+  },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const item = await getTaskItem(await taskWorldIdForAuth(auth, input.subject_kind), input.id);
   return { item };
 }
 

@@ -187,16 +187,13 @@ export async function fetchSubtasks(parentId: number): Promise<TaskItemRow[]> {
   return normalizeTaskItemRows(data.items);
 }
 
-/** Resolve a single task by id (best-effort list scan; used by Anima URI overlay). */
+/** 按 id 取单条任务（含项目内；供 entity overlay / 日历入口）。 */
 export async function fetchTaskItemById(id: number): Promise<TaskItemRow | null> {
   if (!isHabitatFetchAvailable()) return null;
-  const data = await habitat().call(
-    "tasklist.item.list",
-    withSubjectKind({ status: "all", limit: 200 }),
-  );
-  const items = normalizeTaskItemRows(data.items);
-  void seedLocalTaskItems(items);
-  const row = items.find((item) => item.id === id);
+  const data = await habitat().call("task.get", withSubjectKind({ id }));
+  if (!data.item) return null;
+  const [row] = normalizeTaskItemRows([data.item]);
+  if (row) void seedLocalTaskItems([row]);
   return row ?? null;
 }
 

@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState } from "react";
 import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { navigateAppModulePath } from "@freeanima/client/portal-sdk/pomodoro-launch.ts";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
 import { Button, Spinner, cn } from "@freeanima/ui-kit";
 import { useCompactLayout } from "@freeanima/ui-kit/layout";
 import { ChevronLeft, ChevronRight, PlusIcon } from "lucide-react";
@@ -84,8 +83,10 @@ function countByDay(items: CalendarRangeItem[]): Map<string, number> {
   return map;
 }
 
+/** 日程暂只看用户视图，不暴露 subject 切换 */
+const CALENDAR_SUBJECT = "user" as const;
+
 export function CalendarApp() {
-  const { kind: subjectKind } = useSubjectScope();
   const compact = useCompactLayout();
   const today = cstDayKey();
   const [cursor, setCursor] = useState(() => {
@@ -100,6 +101,7 @@ export function CalendarApp() {
   const [viewMode, setViewMode] = useState<"month" | "week">("month");
   const [expandRecurrence, setExpandRecurrence] = useState(true);
   const [weekAnchor, setWeekAnchor] = useState(() => weekStartMonday(today));
+  const [refreshing, setRefreshing] = useState(false);
 
   const range = useMemo(() => {
     if (viewMode === "week") {
@@ -119,9 +121,9 @@ export function CalendarApp() {
 
   const kindsKey = kinds.toSorted().join(",");
   const query = usePortalRead({
-    queryKey: ["calendar", "range", subjectKind, range.from, range.to, kindsKey],
+    queryKey: ["calendar", "range", CALENDAR_SUBJECT, range.from, range.to, kindsKey],
     queryFn: () =>
-      fetchCalendarRange(subjectKind, {
+      fetchCalendarRange(CALENDAR_SUBJECT, {
         from: range.from,
         to: range.to,
         kinds,
@@ -165,24 +167,20 @@ export function CalendarApp() {
     await query.reload();
   }, [query]);
 
+  const handleManualRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await refresh();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refresh, refreshing]);
+
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 p-3 md:p-4">
       <header className="flex flex-wrap items-center gap-2">
         <h1 className="text-lg font-semibold">{m.calendar_title()}</h1>
-        <div className="ml-auto flex items-center gap-2">
-          <SubjectScopeToggle />
-          <Button
-            type="button"
-            size="sm"
-            onPress={() => setEditor({ mode: "create", day: selectedDay })}
-          >
-            <PlusIcon className="size-4" />
-            {m.calendar_new_event()}
-          </Button>
-        </div>
-      </header>
-
-      <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
           variant="ghost"
@@ -274,7 +272,7 @@ export function CalendarApp() {
             </Button>
           </>
         ) : null}
-        <div className="flex flex-wrap gap-1 md:ml-auto">
+        <div className="flex flex-wrap gap-1">
           {KIND_OPTIONS.map((kind) => (
             <Button
               key={kind}
@@ -291,7 +289,28 @@ export function CalendarApp() {
             </Button>
           ))}
         </div>
-      </div>
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 shrink-0 px-2"
+            disabled={refreshing || query.loading}
+            aria-label={m.habitat_common_refresh()}
+            onPress={() => void handleManualRefresh()}
+          >
+            {refreshing ? <Spinner className="size-3.5" /> : m.habitat_common_refresh()}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onPress={() => setEditor({ mode: "create", day: selectedDay })}
+          >
+            <PlusIcon className="size-4" />
+            {m.calendar_new_event()}
+          </Button>
+        </div>
+      </header>
 
       {query.loading && items.length === 0 ? (
         <div className="flex flex-1 items-center justify-center">
@@ -318,7 +337,7 @@ export function CalendarApp() {
                   void openEntityResource({ id, component: "task_item", present: "overlay" });
                 }}
                 onDropTaskDue={(taskId, day) => {
-                  void patchTaskDueAt(subjectKind, taskId, day).then(() => refresh());
+                  void patchTaskDueAt(CALENDAR_SUBJECT, taskId, day).then(() => refresh());
                 }}
               />
             ) : (
@@ -364,16 +383,16 @@ export function CalendarApp() {
         onClose={() => setEditor(null)}
         onSave={async (input) => {
           if (editor?.mode === "edit") {
-            await updateCalendarEvent(subjectKind, { id: editor.event.id, ...input });
+            await updateCalendarEvent(CALENDAR_SUBJECT, { id: editor.event.id, ...input });
           } else {
-            await createCalendarEvent(subjectKind, input);
+            await createCalendarEvent(CALENDAR_SUBJECT, input);
           }
           await refresh();
         }}
         {...(editor?.mode === "edit"
           ? {
               onDelete: async () => {
-                await deleteCalendarEvent(subjectKind, editor.event.id);
+                await deleteCalendarEvent(CALENDAR_SUBJECT, editor.event.id);
                 setEditor(null);
                 await refresh();
               },

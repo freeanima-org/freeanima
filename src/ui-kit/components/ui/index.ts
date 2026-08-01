@@ -47,6 +47,7 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./dropdown-menu.tsx";
+export { Popover, PopoverDialog, PopoverTrigger } from "./popover.tsx";
 export { Input } from "./input.tsx";
 export {
   InputGroup,
