@@ -38,6 +38,7 @@ const {
   isSpeechSpeaking,
   resetSpeechPlaybackServiceForTests,
   speechMessageKey,
+  speechStreamKey,
   stopSpeechPlayback,
   subscribeSpeechPlayback,
   toggleSpeechPlayback,
@@ -53,6 +54,10 @@ describe("speech-playback-service", () => {
 
   it("speechMessageKey 按会话与下标稳定", () => {
     expect(speechMessageKey("c1", 3)).toBe("c1:3");
+  });
+
+  it("speechStreamKey 标识流式自动朗读", () => {
+    expect(speechStreamKey("c1")).toBe("c1:stream");
   });
 
   it("toggle 后 activeKey 在「模拟 unmount」后仍保留", () => {

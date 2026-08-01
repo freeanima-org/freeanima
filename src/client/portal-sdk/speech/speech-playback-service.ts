@@ -42,6 +42,11 @@ export function speechMessageKey(conversationId: string, displayIndex: number): 
   return `${conversationId}:${displayIndex}`;
 }
 
+/** 流式自动朗读专用 key（与消息下标区分；点停只停播报，不关顶栏开关） */
+export function speechStreamKey(conversationId: string): string {
+  return `${conversationId}:stream`;
+}
+
 function wrapAdapterWithErrorHandler(
   adapter: SpeechPlaybackAdapter,
   onPlaybackError: () => void,
@@ -170,6 +175,12 @@ export function toggleSpeechPlayback(key: string, text: string, locale: string):
   const state = getState();
   state.playbackError = null;
   state.controller.toggle(key, text, locale);
+}
+
+export function enqueueSpeechPlayback(key: string, text: string, locale: string): void {
+  const state = getState();
+  state.playbackError = null;
+  state.controller.enqueue(key, text, locale);
 }
 
 export function stopSpeechPlayback(): void {

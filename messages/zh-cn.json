@@ -37,6 +37,8 @@
   "chat_slash_result_close": "关闭",
   "chat_slash_result_loading": "运行中…",
   "chat_slash_result_title": "命令结果",
+  "chat_speech_auto_off": "自动朗读已关",
+  "chat_speech_auto_on": "自动朗读已开",
   "chat_speech_insecure_context": "Web Speech 需要 HTTPS；请使用 Edge TTS，或通过 HTTPS 打开服务",
   "chat_speech_play": "朗读",
   "chat_speech_playback_failed": "语音播放失败",

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useReducer } from "react";
 import {
+  enqueueSpeechPlayback,
   ensureSpeechPlaybackConfig,
   getSpeechPlaybackSnapshot,
   isSpeechSpeaking,
@@ -30,12 +31,17 @@ export function useSpeechPlayback() {
     toggleSpeechPlayback(key, text, getAppLocale());
   }, []);
 
+  const enqueue = useCallback((key: string, text: string) => {
+    enqueueSpeechPlayback(key, text, getAppLocale());
+  }, []);
+
   const isSpeaking = useCallback((key: string) => isSpeechSpeaking(key), []);
 
   const snapshot = getSpeechPlaybackSnapshot();
 
   return {
     toggle,
+    enqueue,
     stop,
     isSpeaking,
     isSupported: snapshot.isSupported,

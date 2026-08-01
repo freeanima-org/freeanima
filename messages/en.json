@@ -588,6 +588,8 @@
   "chat_slash_result_title": "Command result",
   "chat_speech_play": "Read aloud",
   "chat_speech_stop": "Stop reading",
+  "chat_speech_auto_on": "Auto-read on",
+  "chat_speech_auto_off": "Auto-read off",
   "chat_speech_unavailable": "Speech not supported on this device",
   "chat_speech_playback_failed": "Speech playback failed",
   "chat_speech_insecure_context": "Web Speech requires HTTPS; use Edge TTS or open the Service over HTTPS",

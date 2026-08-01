@@ -64,6 +64,8 @@ type ParaglideMessageExports = {
   readonly chat_slash_result_close: ParaglideMessageFn;
   readonly chat_slash_result_loading: ParaglideMessageFn;
   readonly chat_slash_result_title: ParaglideMessageFn;
+  readonly chat_speech_auto_off: ParaglideMessageFn;
+  readonly chat_speech_auto_on: ParaglideMessageFn;
   readonly chat_speech_insecure_context: ParaglideMessageFn;
   readonly chat_speech_play: ParaglideMessageFn;
   readonly chat_speech_playback_failed: ParaglideMessageFn;
@@ -926,6 +928,8 @@ declare module "*/messages/paraglide/messages.js" {
   export const chat_slash_result_close: ParaglideMessageFn;
   export const chat_slash_result_loading: ParaglideMessageFn;
   export const chat_slash_result_title: ParaglideMessageFn;
+  export const chat_speech_auto_off: ParaglideMessageFn;
+  export const chat_speech_auto_on: ParaglideMessageFn;
   export const chat_speech_insecure_context: ParaglideMessageFn;
   export const chat_speech_play: ParaglideMessageFn;
   export const chat_speech_playback_failed: ParaglideMessageFn;

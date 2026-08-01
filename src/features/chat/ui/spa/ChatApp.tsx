@@ -76,7 +76,16 @@ import {
 } from "@freeanima/client/portal-sdk";
 import { MessageActionBar } from "@freeanima/features/chat/ui/spa/components/MessageActionBar.tsx";
 import { useSpeechPlayback } from "@freeanima/features/chat/ui/spa/hooks/useSpeechPlayback.ts";
-import { speechMessageKey } from "@freeanima/client/portal-sdk/speech/speech-playback-service";
+import { useStreamAutoSpeak } from "@freeanima/features/chat/ui/spa/hooks/useStreamAutoSpeak.ts";
+import {
+  speechMessageKey,
+  speechStreamKey,
+} from "@freeanima/client/portal-sdk/speech/speech-playback-service";
+import { primeHabitatSpeechOutput } from "@freeanima/client/portal-sdk/speech/habitat-adapter";
+import {
+  loadAutoSpeakPref,
+  saveAutoSpeakPref,
+} from "@freeanima/features/chat/ui/spa/lib/speech/auto-speak-pref.ts";
 import { markdownToPlainText } from "@freeanima/features/chat/ui/spa/lib/speech/plain-text.ts";
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
 import { useConversationsStore } from "@freeanima/features/chat/ui/spa/stores/conversations.ts";
@@ -281,6 +290,7 @@ export function ChatApp() {
   const [debugViewerOpen, setDebugViewerOpen] = useState(false);
   const [llmDebugLoading, setLlmDebugLoading] = useState(false);
   const [llmDebugSnapshots, setLlmDebugSnapshots] = useState<LlmDebugSnapshots | null>(null);
+  const [autoSpeak, setAutoSpeak] = useState(() => loadAutoSpeakPref());
   const pendingRecoveryKeyRef = useRef<string | null>(null);
   const mobileLayout = useCompactLayout();
   /** Enter 发送：仅交互维（pointer）；与布局/壳正交 */
@@ -297,11 +307,13 @@ export function ChatApp() {
   const keyboardInset = useKeyboardInset();
   const {
     toggle: toggleSpeech,
+    enqueue: enqueueSpeech,
     stop: stopSpeech,
     isSpeaking,
     isSupported: speechSupported,
     unsupportedReason: speechUnsupportedReason,
     playbackError: speechPlaybackError,
+    activeKey: speechActiveKey,
   } = useSpeechPlayback();
 
   const startReeditUserMessage = useCallback((index: number, content: string) => {
@@ -350,6 +362,16 @@ export function ChatApp() {
   );
 
   const streamVisible = streaming && streamingConversationId === currentId;
+
+  const { stopCurrentKeepEnabled, isStreamSpeaking } = useStreamAutoSpeak({
+    enabled: autoSpeak && speechSupported,
+    currentId,
+    streamVisible,
+    streamText,
+    enqueue: enqueueSpeech,
+    stop: stopSpeech,
+    activeKey: speechActiveKey,
+  });
 
   const currentConversation = useMemo(
     () => conversations.find((s) => s.id === currentId),
@@ -453,6 +475,14 @@ export function ChatApp() {
     () => findLastUserMessageIndex(mergedDisplay),
     [mergedDisplay],
   );
+
+  const lastAssistantMessageIndex = useMemo(() => {
+    for (let i = mergedDisplay.length - 1; i >= 0; i--) {
+      const item = mergedDisplay[i];
+      if (item?.type === "message" && item.role === "assistant") return i;
+    }
+    return -1;
+  }, [mergedDisplay]);
 
   const confirmReeditUserMessage = async () => {
     const text = editDraft.trim();
@@ -1503,6 +1533,34 @@ export function ChatApp() {
         </Button>
         <Button
           type="button"
+          variant={autoSpeak ? "secondary" : "ghost"}
+          size="sm"
+          className="h-7 shrink-0 px-2"
+          disabled={!speechSupported}
+          aria-pressed={autoSpeak}
+          aria-label={autoSpeak ? m.chat_speech_auto_on() : m.chat_speech_auto_off()}
+          title={
+            !speechSupported
+              ? speechUnsupportedReason === "insecure_context"
+                ? m.chat_speech_insecure_context()
+                : m.chat_speech_unavailable()
+              : undefined
+          }
+          onPointerDown={() => {
+            if (speechSupported) primeHabitatSpeechOutput();
+          }}
+          onClick={() => {
+            setAutoSpeak((prev) => {
+              const next = !prev;
+              saveAutoSpeakPref(next);
+              return next;
+            });
+          }}
+        >
+          {m.chat_speech_play()}
+        </Button>
+        <Button
+          type="button"
           size="sm"
           className={`h-7 px-2 ${drawerNav ? "" : "hidden"}`}
           onClick={startConversation}
@@ -1781,6 +1839,10 @@ export function ChatApp() {
                 }
                 if (item.type === "message" && item.role === "assistant") {
                   const speechText = markdownToPlainText(item.content);
+                  const messageKey = currentId ? speechMessageKey(currentId, i) : "";
+                  const speakingAsStream =
+                    isStreamSpeaking && !streamVisible && i === lastAssistantMessageIndex;
+                  const speaking = (!!currentId && isSpeaking(messageKey)) || speakingAsStream;
                   return (
                     <div key={`d${i}`} className="flex min-w-0 max-w-full flex-col items-start">
                       <ChatMessageBubble align="start" className="chat-bubble-assistant">
@@ -1803,12 +1865,16 @@ export function ChatApp() {
                         align="start"
                         copyContent={speechText}
                         speechText={speechText}
-                        speaking={!!currentId && isSpeaking(speechMessageKey(currentId, i))}
+                        speaking={speaking}
                         speechSupported={speechSupported}
                         speechUnsupportedReason={speechUnsupportedReason}
                         onToggleSpeech={() => {
                           if (!currentId) return;
-                          toggleSpeech(speechMessageKey(currentId, i), speechText);
+                          if (speakingAsStream || isSpeaking(speechStreamKey(currentId))) {
+                            stopCurrentKeepEnabled();
+                            return;
+                          }
+                          toggleSpeech(messageKey, speechText);
                         }}
                       />
                     </div>
@@ -1848,7 +1914,7 @@ export function ChatApp() {
 
               {awaitingAssistant ? (
                 streamVisible && streamText ? (
-                  <div className="flex justify-start">
+                  <div className="flex min-w-0 max-w-full flex-col items-start">
                     <div className="chat-bubble chat-bubble-assistant">
                       <div
                         className="md-content"
@@ -1866,6 +1932,22 @@ export function ChatApp() {
                       />
                       <Spinner className="mt-1 size-3" />
                     </div>
+                    <MessageActionBar
+                      align="start"
+                      copyContent={markdownToPlainText(streamText)}
+                      speechText={markdownToPlainText(streamText)}
+                      speaking={isStreamSpeaking}
+                      speechSupported={speechSupported}
+                      speechUnsupportedReason={speechUnsupportedReason}
+                      onToggleSpeech={() => {
+                        if (!currentId) return;
+                        if (isStreamSpeaking) {
+                          stopCurrentKeepEnabled();
+                          return;
+                        }
+                        toggleSpeech(speechStreamKey(currentId), markdownToPlainText(streamText));
+                      }}
+                    />
                   </div>
                 ) : (
                   <div className="flex justify-start">

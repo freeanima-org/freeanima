@@ -56,11 +56,20 @@ Outbox 布局与 [`portal-sdk/offline-outbox`](../../src/client/portal-sdk/offli
 
 消息操作栏可朗读助手/用户文本。Provider 由 Habitat `tts` 配置（默认 **edge-tts**：Habitat 合成 MP3 + 客户端 `HTMLAudioElement`；可选 **web-speech**：浏览器 `speechSynthesis`）。
 
+### 自动朗读（顶栏）
+
+聊天页顶栏提供自动朗读开关（非设置页；`localStorage` key `chat:auto-speak` 持久化）：
+
+- **开启后**：仅当前打开会话的流式助手回复按句（`。！？` 与换行）FIFO 入队播放，不必等整条结束。
+- **切会话**：立刻停止并清空队列；切回不补读已错过内容；若流式仍在继续，仅跟读之后新完整句。
+- **点停**：流式气泡或对应消息上的喇叭可停止当前播报并清空队列，**不**关闭顶栏总开关；本 turn 不再入队，下一轮回复仍自动读。
+- **关闭总开关**：停止播放并清空队列。
+
 ### 生命周期
 
 - **保持播放**：切模块、切浏览器 Tab、切到其他 App **不**主动停止；播放状态在 Shell 级单例（`portal-sdk/speech/speech-playback-service`），Chat SPA unmount 后仍可继续。
-- **停止**：用户点停、切换会话、开始播另一条。
-- **重进聊天室**：按稳定 key（`conversationId:displayIndex`）恢复「正在播放」按钮态。
+- **停止**：用户点停、切换会话、开始播另一条、关闭自动朗读总开关。
+- **重进聊天室**：按稳定 key（`conversationId:displayIndex` 或 `conversationId:stream`）恢复「正在播放」按钮态。
 
 ### 移动端 / PWA
 
