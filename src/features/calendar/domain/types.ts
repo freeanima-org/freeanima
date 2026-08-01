@@ -67,6 +67,7 @@ export type CalendarRangeTaskItem = {
   status: "pending" | "completed";
   project_id: number | null;
   list_id: number | null;
+  virtual?: boolean;
 };
 
 export type CalendarRangeProjectItem = {

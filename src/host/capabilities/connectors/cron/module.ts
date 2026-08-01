@@ -39,9 +39,15 @@ export async function initCronModule(): Promise<void> {
   const jobs = await loadAllJobs();
   handles.syncAll(jobs);
   startInprocessBuiltins();
+  const { startTaskReminderScheduler } =
+    await import("@freeanima/host/platform/boot/task-reminder-scheduler.ts");
+  startTaskReminderScheduler();
 }
 
 export function stopCronModule(): void {
+  void import("@freeanima/host/platform/boot/task-reminder-scheduler.ts").then((m) => {
+    m.stopTaskReminderScheduler();
+  });
   stopInprocessBuiltins();
   handles?.stopAll();
   handles = null;

@@ -100,6 +100,8 @@ export const calendarRangeTaskItemSchema = z.object({
   status: z.enum(["pending", "completed"]),
   project_id: z.number().int().positive().nullable(),
   list_id: z.number().int().positive().nullable(),
+  /** 重复虚拟展开实例（非 live due）；点击仍打开 live */
+  virtual: z.boolean().optional(),
 });
 
 export const calendarRangeProjectItemSchema = z.object({

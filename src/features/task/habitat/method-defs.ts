@@ -47,9 +47,15 @@ import {
   taskSkipOutputSchema,
   taskUncompleteInputSchema,
   taskUncompleteOutputSchema,
+  taskSubscribeAdvanceRemindersInputSchema,
+  taskSubscribeAdvanceRemindersOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/task";
 
-import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
+import {
+  defineHabitatMethod,
+  dualTransportMeta,
+  wsOnlyMeta,
+} from "@freeanima/shared/habitat-contract";
 
 export const taskMethodDefs = {
   "tasklist.list": defineHabitatMethod({
@@ -171,5 +177,10 @@ export const taskMethodDefs = {
     input: taskSearchInputSchema,
     output: taskSearchOutputSchema,
     meta: dualTransportMeta(true),
+  }),
+  "task.subscribeAdvanceReminders": defineHabitatMethod({
+    input: taskSubscribeAdvanceRemindersInputSchema,
+    output: taskSubscribeAdvanceRemindersOutputSchema,
+    meta: wsOnlyMeta(),
   }),
 } as const;

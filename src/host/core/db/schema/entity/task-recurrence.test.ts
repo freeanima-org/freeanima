@@ -13,6 +13,9 @@ describe("task-recurrence", () => {
     const next = advanceScheduleAt("2026-07-31T09:00:00+08:00", {
       freq: "daily",
       interval: 1,
+      skip: "none",
+      workdays_only: false,
+      calendar: "gregorian",
     });
     expect(next.startsWith("2026-08-01T09:00:00")).toBe(true);
   });
@@ -21,6 +24,9 @@ describe("task-recurrence", () => {
     const next = advanceScheduleAt("2026-07-31T09:00:00+08:00", {
       freq: "weekly",
       interval: 1,
+      skip: "none",
+      workdays_only: false,
+      calendar: "gregorian",
     });
     expect(next.startsWith("2026-08-07T09:00:00")).toBe(true);
   });
@@ -29,6 +35,9 @@ describe("task-recurrence", () => {
     const next = advanceScheduleAt("2026-01-31T09:00:00+08:00", {
       freq: "monthly",
       interval: 1,
+      skip: "none",
+      workdays_only: false,
+      calendar: "gregorian",
     });
     expect(next.startsWith("2026-02-28T09:00:00")).toBe(true);
   });
@@ -93,5 +102,51 @@ describe("task-recurrence", () => {
       "2026-07-31T09:00:00+08:00",
     );
     expect(rec.schedule_at).toBe("2026-07-31T09:00:00+08:00");
+  });
+
+  test("daily skip weekend advances Friday to Monday", () => {
+    const next = advanceScheduleAt("2026-07-31T09:00:00+08:00", {
+      freq: "daily",
+      interval: 1,
+      skip: "weekend",
+      workdays_only: false,
+      calendar: "gregorian",
+    });
+    expect(next.startsWith("2026-08-03T09:00:00")).toBe(true);
+  });
+
+  test("daily workdays_only skips weekend", () => {
+    const next = advanceScheduleAt("2026-07-31T09:00:00+08:00", {
+      freq: "daily",
+      interval: 1,
+      skip: "none",
+      workdays_only: true,
+      calendar: "gregorian",
+    });
+    expect(next.startsWith("2026-08-03T09:00:00")).toBe(true);
+  });
+
+  test("yearly lunar advances to next lunar year", () => {
+    const next = advanceScheduleAt("2025-01-29T09:00:00+08:00", {
+      freq: "yearly",
+      interval: 1,
+      calendar: "lunar",
+      lunar_month: 1,
+      lunar_day: 1,
+      skip: "none",
+      workdays_only: false,
+    });
+    expect(next.startsWith("2026-02-17T09:00:00")).toBe(true);
+  });
+
+  test("lunar yearly schema requires lunar_month/day", () => {
+    const result = taskRecurrenceSchema.safeParse({
+      freq: "yearly",
+      interval: 1,
+      anchor: "due",
+      calendar: "lunar",
+      schedule_at: "2025-01-29T09:00:00+08:00",
+    });
+    expect(result.success).toBe(false);
   });
 });

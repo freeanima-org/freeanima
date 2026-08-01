@@ -37,9 +37,9 @@ describe("inprocess-builtins", () => {
     expect(extractInprocessFailureMessage(JSON.stringify({ ok: true, sent: 0 }))).toBeNull();
   });
 
-  test("四类 builtin id 识别", () => {
+  test("三类 builtin id 识别（task-reminders 已迁 scheduler）", () => {
     expect(isInprocessBuiltinId("builtin-sleep-cycle")).toBe(true);
-    expect(isInprocessBuiltinId("builtin-task-reminders")).toBe(true);
+    expect(isInprocessBuiltinId("builtin-task-reminders")).toBe(false);
     expect(isInprocessBuiltinId("builtin-env-health")).toBe(true);
     expect(isInprocessBuiltinId("builtin-temporal-summary-tick")).toBe(true);
     expect(isInprocessBuiltinId("builtin-email-sync-all")).toBe(false);
@@ -54,13 +54,13 @@ describe("inprocess-builtins", () => {
 
     stopInprocessBuiltins();
     startInprocessBuiltins();
-    expect(getInprocessBuiltinStatus("builtin-task-reminders")?.name).toBe("task-reminders");
+    expect(getInprocessBuiltinStatus("builtin-env-health")?.name).toBe("env-health");
   });
 
   test("幂等 start 不重复武装", () => {
     startInprocessBuiltins();
     startInprocessBuiltins();
-    expect(listInprocessBuiltinStatuses()).toHaveLength(4);
+    expect(listInprocessBuiltinStatuses()).toHaveLength(3);
   });
 
   test("handler 注册后 fire 路径可跑通（手动调 handler）", async () => {
@@ -82,13 +82,13 @@ describe("inprocess-builtins", () => {
       seen.push({ id: payload.id, error: payload.error });
     });
 
-    registerCronBuiltinHandler("builtin-task-reminders", async () => {
+    registerCronBuiltinHandler("builtin-temporal-summary-tick", async () => {
       return JSON.stringify({ ok: false, error: "port down" });
     });
     startInprocessBuiltins();
-    await fireInprocessBuiltinForTest("builtin-task-reminders");
-    expect(seen).toEqual([{ id: "builtin-task-reminders", error: "port down" }]);
-    expect(getInprocessBuiltinStatus("builtin-task-reminders")?.last_ok).toBe(false);
+    await fireInprocessBuiltinForTest("builtin-temporal-summary-tick");
+    expect(seen).toEqual([{ id: "builtin-temporal-summary-tick", error: "port down" }]);
+    expect(getInprocessBuiltinStatus("builtin-temporal-summary-tick")?.last_ok).toBe(false);
 
     registerCronBuiltinHandler("builtin-env-health", async () => {
       throw new Error("tick exploded");

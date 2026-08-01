@@ -8,7 +8,7 @@ Structured project management for FreeAnima, based on the [Unified Entity Model]
 
 **Model note (v0.2 simplified):** Milestones and required completion criteria were removed. Projects keep schedule + terminal status; optional background notes live in entity `content` (edited in the project edit dialog only). Tasks link to projects via `body.project_id` only.
 
-**v1** delivers: project folder tree, project entity, and task ownership migration. OKR, cross-entity links, Gantt/Kanban, and file assets are **[v2+]** (see [Non-goals (v1)](#non-goals-v1)).
+**v1** delivers: project folder tree, project entity, and task ownership migration. OKR, cross-entity links, Gantt, **项目文件夹级** Kanban, and file assets are **[v2+]**（任务模块 `/tasks` 看板已落地，见 [`task.md`](./task.md)）。
 
 ## Concept hierarchy
 
@@ -35,7 +35,7 @@ Independent folder hierarchy for project management only — **not shared** with
 | Cycle prevention | Same as task-list folders — nesting must not form cycles                                                 |
 | Delete           | Recursively removes sub-folders; contained projects get `folder_id: null` (projects are **not** deleted) |
 
-**[v2+]** Folder-level Gantt / Kanban views aggregating all projects under the folder.
+**[v2+]** Folder-level Gantt / Kanban views aggregating all projects under the folder（任务模块看板不覆盖此范围）。
 
 Example layout:
 
@@ -240,7 +240,7 @@ Both inherit Shell **User / Agent** toggle via `subject_kind`.
 Explicit **out of scope** for the first implementation:
 
 - OKR entities and KR → project mapping
-- Gantt / Kanban (including folder-level cross-project views)
+- Gantt / **folder-level** Kanban（跨项目聚合）；任务模块看板见 [`task.md`](./task.md)
 - Notes, clips, file/photo library and project material uploads
 - Cross-entity reference UI and archived reference context
 - Habitat admin surfaces for projects

@@ -7,6 +7,7 @@ import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/t
 
 import { taskAttributionLabel } from "../lib/task-attribution.ts";
 import { TaskPomodoroFocusSection } from "./TaskPomodoroFocusSection.tsx";
+import { TaskSubtaskSection } from "./TaskSubtaskSection.tsx";
 import { TaskTagPicker } from "./TaskTagPicker.tsx";
 import { EntityIdLabel } from "./EntityIdLabel.tsx";
 import type { TagKnown } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
@@ -62,6 +63,7 @@ export function TaskDetailPanel<T extends TaskItemRowPayload>({
           </div>
         }
       >
+        <TaskSubtaskSection parent={item} />
         {showPomodoroFocus ? <TaskPomodoroFocusSection taskId={item.id} /> : null}
       </TaskDetailEditor>
     </DetailPanelShell>

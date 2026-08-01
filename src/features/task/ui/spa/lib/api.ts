@@ -177,6 +177,16 @@ export async function fetchTaskItemsByFilters(
   return items;
 }
 
+/** 列子任务（一层） */
+export async function fetchSubtasks(parentId: number): Promise<TaskItemRow[]> {
+  if (!isHabitatFetchAvailable()) return [];
+  const data = await habitat().call(
+    "tasklist.item.list",
+    withSubjectKind({ parent_id: parentId, roots_only: false, status: "all" }),
+  );
+  return normalizeTaskItemRows(data.items);
+}
+
 /** Resolve a single task by id (best-effort list scan; used by Anima URI overlay). */
 export async function fetchTaskItemById(id: number): Promise<TaskItemRow | null> {
   if (!isHabitatFetchAvailable()) return null;
@@ -245,6 +255,8 @@ export async function createTaskItem(input: {
   tag_ids?: number[];
   priority?: TaskItemRow["priority"];
   due_at?: string | null;
+  remind_at?: string | null;
+  parent_id?: number | null;
   sort_order?: number;
 }): Promise<TaskItemRow> {
   ensureTaskOfflineModule();
@@ -262,6 +274,8 @@ export async function updateTaskItem(
       | "priority"
       | "due_at"
       | "remind_at"
+      | "reminders"
+      | "parent_id"
       | "status"
       | "sort_order"
       | "recurrence"
@@ -317,6 +331,44 @@ export async function uncompleteTaskItem(id: number): Promise<TaskItemRow> {
 export async function deleteTaskItem(id: number): Promise<void> {
   ensureTaskOfflineModule();
   return offlineDeleteTaskItem(id);
+}
+
+export type TaskAdvanceReminderEvent = {
+  task_item_id: number;
+  title: string;
+  body: string;
+  at: string;
+  source_ref: string;
+};
+
+/** 提前提醒推送（本机 Alert；不写 Inbox） */
+export function subscribeTaskAdvanceReminders(onEvent: (event: TaskAdvanceReminderEvent) => void): {
+  unsubscribe: () => void;
+} {
+  return habitat().subscribe(
+    "task.subscribeAdvanceReminders",
+    {},
+    {
+      onData: (payload) => {
+        const record = payload as Partial<TaskAdvanceReminderEvent>;
+        if (
+          typeof record.task_item_id === "number" &&
+          typeof record.title === "string" &&
+          typeof record.body === "string" &&
+          typeof record.at === "string" &&
+          typeof record.source_ref === "string"
+        ) {
+          onEvent({
+            task_item_id: record.task_item_id,
+            title: record.title,
+            body: record.body,
+            at: record.at,
+            source_ref: record.source_ref,
+          });
+        }
+      },
+    },
+  );
 }
 
 export { countTaskPendingOps } from "./offline-store.ts";

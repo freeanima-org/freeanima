@@ -7,7 +7,8 @@ import {
   TASK_LIST_COMPONENT,
   computeNextOccurrence,
   normalizeRecurrenceInput,
-  shiftRemindAt,
+  normalizeSchedulableReminders,
+  shiftSchedulableReminders,
   type EntityRow,
   type TaskRecurrence,
 } from "@freeanima/host/core/db/schema/entity";
@@ -20,6 +21,7 @@ import {
   searchEntities,
   updateEntity,
 } from "@freeanima/host/core/db/pg/entity";
+import { rescheduleTaskReminderScheduler } from "@freeanima/host/platform/boot/task-reminder-scheduler.ts";
 
 import { assertListAcceptsTasks, assertTaskListNotArchived } from "./list-store.ts";
 import { createTaskOccurrence, deleteOccurrencesForSeries } from "./occurrence-store.ts";
@@ -71,6 +73,10 @@ async function assertTagIdsInWorld(worldId: number, tagIds: number[]): Promise<v
 function toItemRow(entity: EntityRow): TaskItemRow {
   const row = asTaskItem(entity);
   if (!row) throw new Error("invalid task_item row");
+  const reminders = normalizeSchedulableReminders({
+    remind_at: row.remind_at,
+    reminders: row.reminders,
+  });
   return {
     id: row.id,
     title: row.title,
@@ -79,15 +85,25 @@ function toItemRow(entity: EntityRow): TaskItemRow {
     status: row.status,
     priority: row.priority,
     due_at: row.due_at ?? null,
-    remind_at: row.remind_at ?? null,
+    remind_at: reminders.remind_at,
+    ...(reminders.reminders.length > 0 ? { reminders: reminders.reminders } : {}),
     list_id: row.list_id ?? null,
     project_id: row.project_id ?? null,
     sort_order: row.sort_order ?? 0,
     completed_at: row.completed_at ?? null,
     recurrence: row.recurrence ?? null,
+    parent_id: row.parent_id ?? null,
     created_at: entity.created_at.toISOString(),
     updated_at: entity.updated_at.toISOString(),
   };
+}
+
+function touchReminderScheduler(): void {
+  try {
+    rescheduleTaskReminderScheduler();
+  } catch {
+    /* scheduler 可能尚未 start（单测） */
+  }
 }
 
 export async function listTaskItems(
@@ -103,8 +119,16 @@ export async function listTaskItems(
     if (opts.tag_ids?.length) filters.tag_ids = opts.tag_ids;
     if (opts.project_id != null) filters.project_id = opts.project_id;
     else if (opts.in_backlog !== false) filters.in_backlog = true;
-  } else if (opts.filters.project_id == null && opts.filters.in_backlog !== false) {
-    filters.in_backlog = true;
+    if (opts.parent_id != null) filters.parent_id = opts.parent_id;
+    else if (opts.roots_only !== false) filters.roots_only = true;
+  } else {
+    if (opts.filters.project_id == null && opts.filters.in_backlog !== false) {
+      filters.in_backlog = true;
+    }
+    if (opts.parent_id != null) filters.parent_id = opts.parent_id;
+    else if (opts.roots_only !== false && opts.filters.parent_id == null) {
+      filters.roots_only = opts.filters.roots_only ?? true;
+    }
   }
 
   const topLevelTagIds =
@@ -197,16 +221,34 @@ export async function createTaskItem(
     recurrence = normalizeRecurrenceInput(input.recurrence, dueAt ?? formatCstIso(new Date()));
   }
 
+  if (input.parent_id != null) {
+    await assertValidParentTask(worldId, input.parent_id, {
+      listId,
+      projectId,
+      forbidNested: true,
+    });
+    if (recurrence != null) {
+      throw new Error("subtasks cannot have recurrence");
+    }
+  }
+
+  const reminders = normalizeSchedulableReminders({
+    remind_at: input.remind_at,
+    reminders: input.reminders,
+  });
+
   const body = {
     status: "pending" as const,
     priority: input.priority ?? "none",
     list_id: listId,
     sort_order: sortOrder,
     due_at: dueAt,
-    remind_at: input.remind_at ?? null,
+    remind_at: reminders.remind_at,
+    reminders: reminders.reminders,
     completed_at: null,
     client_op_id: input.client_op_id ?? null,
     project_id: projectId,
+    parent_id: input.parent_id ?? null,
     recurrence,
   };
 
@@ -222,7 +264,30 @@ export async function createTaskItem(
   });
 
   if (!asTaskItem(row)) throw new Error("task item create failed");
+  touchReminderScheduler();
   return toItemRow(row);
+}
+
+async function assertValidParentTask(
+  worldId: number,
+  parentId: number,
+  opts: { listId: number | null; projectId: number | null; forbidNested: boolean },
+): Promise<void> {
+  const parentRow = await getEntity(parentId);
+  if (!parentRow || parentRow.primary_component !== TASK_ITEM_COMPONENT) {
+    throw new Error("parent task not found");
+  }
+  await assertEntityInWorld(parentId, worldId);
+  const parent = asTaskItem(parentRow);
+  if (!parent) throw new Error("parent task not found");
+  if (opts.forbidNested && parent.parent_id != null) {
+    throw new Error("subtasks cannot nest");
+  }
+  const parentList = parent.list_id ?? null;
+  const parentProject = parent.project_id ?? null;
+  if (opts.listId !== parentList || opts.projectId !== parentProject) {
+    throw new Error("subtask must share list/project with parent");
+  }
 }
 
 export async function updateTaskItem(
@@ -295,7 +360,52 @@ export async function updateTaskItem(
       bodyPatch.recurrence = { ...existingRec, schedule_at: input.due_at };
     }
   }
-  if (input.remind_at !== undefined) bodyPatch.remind_at = input.remind_at;
+  if (input.remind_at !== undefined || input.reminders !== undefined) {
+    const synced = normalizeSchedulableReminders({
+      remind_at: input.remind_at !== undefined ? input.remind_at : parsedExisting.remind_at,
+      reminders: input.reminders !== undefined ? input.reminders : parsedExisting.reminders,
+    });
+    bodyPatch.remind_at = synced.remind_at;
+    bodyPatch.reminders = synced.reminders;
+  }
+  if (input.parent_id !== undefined) {
+    if (input.parent_id != null) {
+      if (input.parent_id === input.id) throw new Error("task cannot be its own parent");
+      const nextList =
+        input.list_id !== undefined
+          ? input.list_id
+          : ((bodyPatch.list_id as number | null | undefined) ?? parsedExisting.list_id ?? null);
+      const nextProject =
+        input.project_id !== undefined
+          ? input.project_id
+          : ((bodyPatch.project_id as number | null | undefined) ??
+            parsedExisting.project_id ??
+            null);
+      await assertValidParentTask(worldId, input.parent_id, {
+        listId: nextList,
+        projectId: nextProject,
+        forbidNested: true,
+      });
+      if (parsedExisting.parent_id == null) {
+        // 根变子：禁止已有子任务的根挂到别的父下（一层模型）
+        const kids = await listTaskItems(worldId, {
+          parent_id: input.id,
+          roots_only: false,
+          in_backlog: false,
+          ...(parsedExisting.project_id != null
+            ? { project_id: parsedExisting.project_id }
+            : parsedExisting.list_id != null
+              ? { list_id: parsedExisting.list_id }
+              : {}),
+        });
+        if (kids.length > 0) throw new Error("task with subtasks cannot become a subtask");
+      }
+      bodyPatch.parent_id = input.parent_id;
+      bodyPatch.recurrence = null;
+    } else {
+      bodyPatch.parent_id = null;
+    }
+  }
   if (input.sort_order !== undefined) bodyPatch.sort_order = input.sort_order;
   if (input.status !== undefined) {
     // status=completed 已在入口委托 completeTaskItem；此处仅 pending
@@ -330,6 +440,16 @@ export async function updateTaskItem(
     }),
   );
   if (!row) return null;
+
+  if (
+    input.due_at !== undefined ||
+    input.remind_at !== undefined ||
+    input.reminders !== undefined ||
+    input.status !== undefined ||
+    input.recurrence !== undefined
+  ) {
+    touchReminderScheduler();
+  }
 
   try {
     return toItemRow(row);
@@ -391,18 +511,25 @@ async function rollOrFinishRecurring(
     return row ? toItemRow(row) : null;
   }
 
-  const nextRemind = shiftRemindAt(parsed.due_at, parsed.remind_at, next.due_at);
+  const nextReminders = shiftSchedulableReminders(
+    parsed.due_at,
+    next.due_at,
+    parsed.reminders,
+    parsed.remind_at,
+  );
   const row = await updateEntity({
     id,
     body: {
       status: "pending",
       completed_at: null,
       due_at: next.due_at,
-      remind_at: nextRemind,
+      remind_at: nextReminders.remind_at,
+      reminders: nextReminders.reminders,
       recurrence: next.recurrence,
       last_notified_at: null,
     },
   });
+  touchReminderScheduler();
   return row ? toItemRow(row) : null;
 }
 
@@ -486,8 +613,38 @@ export async function deleteTaskItem(worldId: number, id: number): Promise<boole
   }
   if (parsed) {
     await deleteOccurrencesForSeries(worldId, id);
+    // 级联软删子任务
+    const children = await listTaskItems(worldId, {
+      parent_id: id,
+      roots_only: false,
+      in_backlog: false,
+      ...(parsed.project_id != null
+        ? { project_id: parsed.project_id }
+        : parsed.list_id != null
+          ? { list_id: parsed.list_id }
+          : {}),
+    });
+    for (const child of children) {
+      await deleteEntity(child.id);
+    }
   }
+  touchReminderScheduler();
   return deleteEntity(id);
+}
+
+/** 子任务进度（根任务） */
+export async function countSubtasks(
+  worldId: number,
+  parentId: number,
+): Promise<{ done: number; total: number }> {
+  const kids = await listTaskItems(worldId, {
+    parent_id: parentId,
+    roots_only: false,
+    status: "all",
+    in_backlog: false,
+  });
+  const done = kids.filter((k) => k.status === "completed").length;
+  return { done, total: kids.length };
 }
 
 async function resolveEntityTitle(

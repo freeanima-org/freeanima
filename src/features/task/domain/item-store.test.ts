@@ -24,7 +24,12 @@ describe("listTaskItems filters", () => {
       expect.objectContaining({
         world_id: 1,
         mode: "filter_only",
-        filters: { status: "pending", due_on: "today", in_backlog: true },
+        filters: {
+          status: "pending",
+          due_on: "today",
+          in_backlog: true,
+          roots_only: true,
+        },
       }),
     );
   });
@@ -46,7 +51,7 @@ describe("listTaskItems filters", () => {
       expect.objectContaining({
         world_id: 1,
         mode: "filter_only",
-        filters: { project_id: 42, status: "pending" },
+        filters: { project_id: 42, status: "pending", roots_only: true },
       }),
     );
   });
