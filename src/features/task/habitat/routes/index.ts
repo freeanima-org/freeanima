@@ -111,6 +111,8 @@ export const taskHabitatRoutes = bindHabitatRouteHandlers(taskMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "task.get": async (deps, input, ctx) =>
+    service.serviceTaskGet(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input), ctxAuth(ctx)),
   "task.patch": async (deps, input, ctx) =>
     service.serviceTaskPatch(
       depsOf(deps).runtime.runtimeDeps(),

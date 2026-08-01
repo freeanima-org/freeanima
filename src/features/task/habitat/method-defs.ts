@@ -39,6 +39,8 @@ import {
   taskMoveToListOutputSchema,
   taskMoveToProjectInputSchema,
   taskMoveToProjectOutputSchema,
+  taskGetInputSchema,
+  taskGetOutputSchema,
   taskPatchInputSchema,
   taskPatchOutputSchema,
   taskSearchInputSchema,
@@ -127,6 +129,11 @@ export const taskMethodDefs = {
     input: projectItemCreateInputSchema,
     output: projectItemCreateOutputSchema,
     meta: dualTransportMeta(false),
+  }),
+  "task.get": defineHabitatMethod({
+    input: taskGetInputSchema,
+    output: taskGetOutputSchema,
+    meta: dualTransportMeta(true),
   }),
   "task.patch": defineHabitatMethod({
     input: taskPatchInputSchema,

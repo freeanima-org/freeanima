@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { formatDateTime, formatDueChip } from "./datetime-local.ts";
+import { formatDateTime, formatDueChip, formatRemindChip } from "./datetime-local.ts";
 
 describe("formatDateTime", () => {
   test("empty shows em dash", () => {
@@ -36,5 +36,20 @@ describe("formatDueChip", () => {
     const result = formatDueChip(past.toISOString());
     expect(result.overdue).toBe(true);
     expect(result.label).toBe(`${past.getMonth() + 1}月${past.getDate()}日, 延期4天`);
+  });
+});
+
+describe("formatRemindChip", () => {
+  test("empty shows placeholder", () => {
+    expect(formatRemindChip(null)).toBe("提醒");
+    expect(formatRemindChip(undefined)).toBe("提醒");
+  });
+
+  test("formats date and time", () => {
+    const at = new Date();
+    at.setHours(9, 30, 0, 0);
+    expect(formatRemindChip(at.toISOString())).toBe(
+      `${at.getMonth() + 1}月${at.getDate()}日 09:30`,
+    );
   });
 });

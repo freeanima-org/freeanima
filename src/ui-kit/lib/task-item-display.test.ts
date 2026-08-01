@@ -38,6 +38,7 @@ describe("isTaskItemDisplayEqual", () => {
     status: "pending",
     priority: "none",
     due_at: null,
+    remind_at: null,
   };
 
   test("treats missing tag_ids as empty without throwing", () => {

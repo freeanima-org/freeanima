@@ -64,8 +64,8 @@ export async function listCalendarRange(
       primary_component: TASK_ITEM_COMPONENT,
       filters: {
         status: "pending",
-        in_backlog: false,
         roots_only: true,
+        // 不设 in_backlog：同时包含清单/backlog 与项目内带 due 任务
       },
       limit: 500,
       mode: "filter_only",

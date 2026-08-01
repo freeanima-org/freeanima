@@ -106,6 +106,18 @@ function touchReminderScheduler(): void {
   }
 }
 
+/** 按 id 取单条任务（含项目内）；不存在或不在 world 返回 null */
+export async function getTaskItem(worldId: number, id: number): Promise<TaskItemRow | null> {
+  const row = await getEntity(id);
+  if (!row || row.primary_component !== TASK_ITEM_COMPONENT) return null;
+  if (row.world_id !== worldId) return null;
+  try {
+    return toItemRow(row);
+  } catch {
+    return null;
+  }
+}
+
 export async function listTaskItems(
   worldId: number,
   opts: TaskItemListOpts = {},

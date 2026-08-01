@@ -4,17 +4,26 @@ title: Calendar
 
 # Calendar（事件日程）
 
-统一时间出口：自有 **事件**（`calendar_event`）+ 任务 **due_at**（含重复虚拟展开）+ 项目 **start_at/end_at**，经 `calendar.range` 聚合到月/周/日视图。
+跨模块**时间视图 / 入口**：自有 **事件**（`calendar_event`）+ 带 `due_at` 的任务（清单/backlog 与项目内，含重复虚拟展开）+ 项目 **start_at/end_at**，经 `calendar.range` 聚合到月/周/日视图。  
+**不是**清单管理宿主——Inbox、清单树、智能清单规则与归档仍在 [Task](./task.md)。
 
 ## vs 相关模块
 
-| 能力         | Calendar                 | Task                 | Project        |
-| ------------ | ------------------------ | -------------------- | -------------- |
-| 自有时段条目 | `calendar_event` CRUD    | —                    | —              |
-| 任务到期     | range 内展示 pending due | 智能清单 / due 编辑  | —              |
-| 重复任务展开 | range 虚拟画出后续实例   | A′ live + occurrence | —              |
-| 项目窗口     | range 内展示相交项目     | —                    | start/end 编辑 |
-| 重复规则     | 事件不做                 | task recurrence      | —              |
+| 能力         | Calendar                                             | Task                                | Project        |
+| ------------ | ---------------------------------------------------- | ----------------------------------- | -------------- |
+| 自有时段条目 | `calendar_event` CRUD                                | —                                   | —              |
+| 任务到期     | range 内展示 pending due；点击 → overlay / 可跳 Task | 清单管理、due/remind 编辑、智能清单 | —              |
+| 重复任务展开 | range 虚拟画出后续实例                               | A′ live + occurrence                | —              |
+| 项目窗口     | range 内展示相交项目；点击 → `/projects`             | —                                   | start/end 编辑 |
+| 重复规则     | 事件不做                                             | task recurrence                     | —              |
+| 智能清单导航 | 不迁入（#14668 定论）                                | 宿主                                | —              |
+
+### #14668 定论
+
+- 日历 = 统一时间视图与入口（日常按时间浏览）
+- 展示来源：日程事件、清单带日期任务、项目本身、项目内带日期任务
+- 交互：点击 → 弹出层（entity overlay / 事件 Dialog）；需要完整上下文时跳转对应模块
+- **不**把智能清单侧栏或清单 CRUD 搬进日历
 
 ## 数据形状
 
@@ -42,7 +51,7 @@ Entity：`type=content`，`primary_component: calendar_event`，归属 subject �
 `calendar.range` 规则：
 
 - **event**：区间与 `[from,to]` 相交
-- **task**：`status=pending` 根任务；live `due_at` 落在区间，或带 `recurrence` 时在区间内 **虚拟展开**后续实例（`virtual: true`，不写库）
+- **task**：`status=pending` 根任务（**不**按 `in_backlog` 过滤：含清单/backlog 与项目内）；live `due_at` 落在区间，或带 `recurrence` 时在区间内 **虚拟展开**后续实例（`virtual: true`，不写库）
 - **project**：有 `start_at`，且与区间相交
 
 ## 提醒
@@ -51,12 +60,12 @@ Entity：`type=content`，`primary_component: calendar_event`，归属 subject �
 
 ## UI
 
-Shell `/calendar`：
+Shell `/calendar`：单行工具栏（月/周导航、kinds、重复展开、刷新、新建）；固定用户 subject（不暴露 user/agent 切换）。
 
 - **月视图**：月网格 + 选中日议程
 - **周视图**：周一至周日列；pending 任务可拖拽改 `due_at`（`task.patch` + `only_this: true`）
 - **重复展开**开关：控制是否显示虚拟重复实例
-- kinds 筛选；创建/编辑事件 Dialog。点击任务走 entity overlay；项目进 `/projects`
+- 创建/编辑事件 Dialog。点击任务走 entity overlay；项目进 `/projects`。清单管理回 `/tasks`
 
 ## LLM ToolSet `calendar`
 
