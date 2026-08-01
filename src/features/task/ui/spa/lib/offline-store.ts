@@ -24,7 +24,11 @@ import {
 import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-write";
 import { formatCstIso } from "@freeanima/host/core/util/time";
 import { omitUndefined } from "@freeanima/host/core/util";
-import { computeNextOccurrence, shiftRemindAt } from "@freeanima/host/core/db/schema/entity";
+import {
+  computeNextOccurrence,
+  normalizeRecurrenceInput,
+  shiftRemindAt,
+} from "@freeanima/host/core/db/schema/entity";
 import { nextPrependSortOrder } from "@freeanima/features/task/domain/sort-order.ts";
 import type {
   TaskItemRowPayload,
@@ -345,6 +349,8 @@ type TaskItemContentPatch = Partial<
     | "priority"
     | "due_at"
     | "remind_at"
+    | "reminders"
+    | "parent_id"
     | "list_id"
     | "project_id"
     | "status"
@@ -865,6 +871,8 @@ export async function offlineCreateTaskItem(input: {
   tag_ids?: number[];
   priority?: TaskItemRow["priority"];
   due_at?: string | null;
+  remind_at?: string | null;
+  parent_id?: number | null;
   sort_order?: number;
 }): Promise<TaskItemRow> {
   const title = input.title.trim();
@@ -878,6 +886,8 @@ export async function offlineCreateTaskItem(input: {
     tag_ids: input.tag_ids ?? [],
     priority: input.priority ?? ("none" as const),
     due_at: input.due_at ?? null,
+    remind_at: input.remind_at ?? null,
+    ...(input.parent_id != null ? { parent_id: input.parent_id } : {}),
     ...(autoPrepend ? {} : { sort_order: input.sort_order }),
   };
 
@@ -900,7 +910,8 @@ export async function offlineCreateTaskItem(input: {
       due_at: payload.due_at,
       sort_order,
       status: "pending",
-      remind_at: null,
+      remind_at: payload.remind_at,
+      parent_id: input.parent_id ?? null,
       project_id: null,
       completed_at: null,
       created_at: now,
@@ -1009,11 +1020,14 @@ export async function offlineUpdateTaskItem(
 
     // 重复任务完成：乐观滚动，保持 pending（与服务端 complete 语义一致）
     if (completing && existing.recurrence) {
-      const next = computeNextOccurrence(existing.recurrence, {
-        completedAt: nowIso,
-        currentDueAt: existing.due_at,
-        decrementCount: true,
-      });
+      const next = computeNextOccurrence(
+        normalizeRecurrenceInput(existing.recurrence, existing.due_at),
+        {
+          completedAt: nowIso,
+          currentDueAt: existing.due_at,
+          decrementCount: true,
+        },
+      );
       if (next) {
         updated = {
           ...updated,

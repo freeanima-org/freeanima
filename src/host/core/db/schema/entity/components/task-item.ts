@@ -19,6 +19,11 @@ const taskItemBodyFieldsSchema = schedulableBodySchema.extend({
   sort_order: z.number().int().optional(),
   completed_at: z.string().nullable().optional(),
   project_id: z.number().int().positive().nullable().optional(),
+  /**
+   * 子任务父任务 id；最多一层（子任务不可再挂 parent）。
+   * null/缺省 = 根任务。
+   */
+  parent_id: z.number().int().positive().nullable().optional(),
   client_op_id: z.string().min(1).nullable().default(null),
   /** 重复规则；null/缺省 = 非重复。完成时滚动 live，历史见 task_occurrence */
   recurrence: taskRecurrenceSchema.nullable().optional(),

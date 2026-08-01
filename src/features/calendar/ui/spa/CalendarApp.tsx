@@ -11,10 +11,12 @@ import { m } from "@paraglide/messages";
 import { AgendaList } from "./components/AgendaList.tsx";
 import { EventEditorDialog, type EventEditorTarget } from "./components/EventEditorDialog.tsx";
 import { MonthGrid } from "./components/MonthGrid.tsx";
+import { WeekGrid, weekStartMonday } from "./components/WeekGrid.tsx";
 import {
   createCalendarEvent,
   deleteCalendarEvent,
   fetchCalendarRange,
+  patchTaskDueAt,
   updateCalendarEvent,
   type CalendarEventRow,
   type CalendarRangeItem,
@@ -95,11 +97,25 @@ export function CalendarApp() {
   const [selectedDay, setSelectedDay] = useState(today);
   const [kinds, setKinds] = useState<CalendarRangeKind[]>([...KIND_OPTIONS]);
   const [editor, setEditor] = useState<EventEditorTarget | null>(null);
+  const [viewMode, setViewMode] = useState<"month" | "week">("month");
+  const [expandRecurrence, setExpandRecurrence] = useState(true);
+  const [weekAnchor, setWeekAnchor] = useState(() => weekStartMonday(today));
 
-  const range = useMemo(
-    () => monthRangeIso(cursor.year, cursor.monthIndex),
-    [cursor.year, cursor.monthIndex],
-  );
+  const range = useMemo(() => {
+    if (viewMode === "week") {
+      const end = (() => {
+        const parts = weekAnchor.split("-").map(Number);
+        const y = parts[0] ?? 1970;
+        const mo = parts[1] ?? 1;
+        const d = parts[2] ?? 1;
+        const next = new Date(Date.UTC(y, mo - 1, d + 6));
+        const day = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}-${String(next.getUTCDate()).padStart(2, "0")}`;
+        return `${day}T23:59:59+08:00`;
+      })();
+      return { from: `${weekAnchor}T00:00:00+08:00`, to: end };
+    }
+    return monthRangeIso(cursor.year, cursor.monthIndex);
+  }, [cursor.monthIndex, cursor.year, viewMode, weekAnchor]);
 
   const kindsKey = kinds.toSorted().join(",");
   const query = usePortalRead({
@@ -191,6 +207,73 @@ export function CalendarApp() {
         <Button type="button" variant="outline" size="sm" onPress={() => setSelectedDay(today)}>
           {m.calendar_today()}
         </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={viewMode === "month" ? "default" : "outline"}
+          onPress={() => setViewMode("month")}
+        >
+          月
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={viewMode === "week" ? "default" : "outline"}
+          onPress={() => {
+            setViewMode("week");
+            setWeekAnchor(weekStartMonday(selectedDay));
+          }}
+        >
+          周
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={expandRecurrence ? "default" : "outline"}
+          onPress={() => setExpandRecurrence((v) => !v)}
+        >
+          重复展开
+        </Button>
+        {viewMode === "week" ? (
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="上一周"
+              onPress={() => {
+                const parts = weekAnchor.split("-").map(Number);
+                const y = parts[0] ?? 1970;
+                const mo = parts[1] ?? 1;
+                const d = parts[2] ?? 1;
+                const prev = new Date(Date.UTC(y, mo - 1, d - 7));
+                setWeekAnchor(
+                  `${prev.getUTCFullYear()}-${String(prev.getUTCMonth() + 1).padStart(2, "0")}-${String(prev.getUTCDate()).padStart(2, "0")}`,
+                );
+              }}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="下一周"
+              onPress={() => {
+                const parts = weekAnchor.split("-").map(Number);
+                const y = parts[0] ?? 1970;
+                const mo = parts[1] ?? 1;
+                const d = parts[2] ?? 1;
+                const next = new Date(Date.UTC(y, mo - 1, d + 7));
+                setWeekAnchor(
+                  `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}-${String(next.getUTCDate()).padStart(2, "0")}`,
+                );
+              }}
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </>
+        ) : null}
         <div className="flex flex-wrap gap-1 md:ml-auto">
           {KIND_OPTIONS.map((kind) => (
             <Button
@@ -224,14 +307,30 @@ export function CalendarApp() {
           )}
         >
           <section className="rounded-lg border border-border/60 p-3">
-            <MonthGrid
-              year={cursor.year}
-              monthIndex={cursor.monthIndex}
-              selectedDay={selectedDay}
-              today={today}
-              dayCounts={dayCounts}
-              onSelectDay={setSelectedDay}
-            />
+            {viewMode === "week" ? (
+              <WeekGrid
+                weekStartDay={weekAnchor}
+                today={today}
+                items={items}
+                expandRecurrence={expandRecurrence}
+                onSelectDay={setSelectedDay}
+                onOpenTask={(id) => {
+                  void openEntityResource({ id, component: "task_item", present: "overlay" });
+                }}
+                onDropTaskDue={(taskId, day) => {
+                  void patchTaskDueAt(subjectKind, taskId, day).then(() => refresh());
+                }}
+              />
+            ) : (
+              <MonthGrid
+                year={cursor.year}
+                monthIndex={cursor.monthIndex}
+                selectedDay={selectedDay}
+                today={today}
+                dayCounts={dayCounts}
+                onSelectDay={setSelectedDay}
+              />
+            )}
           </section>
           <section className="flex min-h-0 flex-col rounded-lg border border-border/60 p-3">
             <h2 className="mb-2 text-sm font-medium text-muted-foreground">{selectedDay}</h2>

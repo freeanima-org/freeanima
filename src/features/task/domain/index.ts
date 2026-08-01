@@ -32,6 +32,7 @@ export {
   uncompleteTaskItem,
   deleteTaskItem,
   searchTaskItems,
+  countSubtasks,
 } from "./item-store.ts";
 
 export {

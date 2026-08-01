@@ -37,6 +37,7 @@ import {
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { m } from "@paraglide/messages";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
+import { TaskKanbanBoard, type KanbanGroupBy } from "./components/TaskKanbanBoard.tsx";
 import { ListSidebar } from "./components/ListSidebar.tsx";
 import { ListEditorDialog } from "./components/ListEditorDialog.tsx";
 import { SmartListEditorDialog } from "./components/SmartListEditorDialog.tsx";
@@ -149,6 +150,8 @@ export function TaskApp() {
   const [tagFilterId, setTagFilterId] = useState<number | null>(null);
   const [tagPool, setTagPool] = useState<Array<{ id: number; title: string }>>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [boardView, setBoardView] = useState(false);
+  const [kanbanGroupBy, setKanbanGroupBy] = useState<KanbanGroupBy>("priority");
 
   const [listEditor, setListEditor] = useState<TaskListRow | null>(null);
 
@@ -199,6 +202,8 @@ export function TaskApp() {
           tag_ids: snapshot.tag_ids,
           priority: snapshot.priority,
           due_at: snapshot.due_at,
+          remind_at: snapshot.remind_at,
+          ...(snapshot.reminders !== undefined ? { reminders: snapshot.reminders } : {}),
           status: snapshot.status,
           recurrence: snapshot.recurrence ?? null,
           // 有重复规则时改期默认仅此一次，不挪规则轨
@@ -1245,16 +1250,36 @@ export function TaskApp() {
     <>
       <Button
         type="button"
-        variant={selectionMode ? "secondary" : "ghost"}
+        variant={boardView ? "secondary" : "ghost"}
         size="sm"
-        onClick={() => {
-          if (selectionMode) exitSelectionMode();
-          else setSelectionMode(true);
-        }}
+        onClick={() => setBoardView((v) => !v)}
       >
-        {selectionMode ? "取消" : "选择"}
+        {boardView ? "列表" : "看板"}
       </Button>
-      {selectionMode && selectedItemIds.size > 0 ? (
+      {boardView ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setKanbanGroupBy((g) => (g === "priority" ? "status" : "priority"))}
+        >
+          {kanbanGroupBy === "priority" ? "按优先级" : "按状态"}
+        </Button>
+      ) : null}
+      {!boardView ? (
+        <Button
+          type="button"
+          variant={selectionMode ? "secondary" : "ghost"}
+          size="sm"
+          onClick={() => {
+            if (selectionMode) exitSelectionMode();
+            else setSelectionMode(true);
+          }}
+        >
+          {selectionMode ? "取消" : "选择"}
+        </Button>
+      ) : null}
+      {!boardView && selectionMode && selectedItemIds.size > 0 ? (
         <>
           <Button
             type="button"
@@ -1533,7 +1558,29 @@ export function TaskApp() {
                         </p>
                       ) : null}
 
-                      {smartListCompletedOnly ? (
+                      {boardView ? (
+                        <TaskKanbanBoard
+                          items={[...displayPending, ...displayCompleted]}
+                          groupBy={kanbanGroupBy}
+                          onOpen={openTaskDetail}
+                          onChangePriority={(id, priority) => {
+                            void updateTaskItem(id, { priority }).then((saved) => {
+                              setItems((prev) =>
+                                prev.map((row) => (row.id === saved.id ? saved : row)),
+                              );
+                            });
+                          }}
+                          onChangeStatus={(id, status) => {
+                            const row = items.find((i) => i.id === id);
+                            if (!row) return;
+                            if (status === "completed" && row.status !== "completed") {
+                              void toggleComplete(row);
+                            } else if (status === "pending" && row.status === "completed") {
+                              void toggleComplete(row);
+                            }
+                          }}
+                        />
+                      ) : smartListCompletedOnly ? (
                         <SortableTaskList
                           items={displayCompleted}
                           sortable={itemsSortable}
@@ -1571,7 +1618,7 @@ export function TaskApp() {
                         />
                       )}
 
-                      {showCompletedSection && !smartListCompletedOnly ? (
+                      {!boardView && showCompletedSection && !smartListCompletedOnly ? (
                         <CompletedTaskList
                           items={displayCompleted}
                           sortable={itemsSortable}

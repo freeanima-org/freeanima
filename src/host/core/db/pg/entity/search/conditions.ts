@@ -225,6 +225,14 @@ function buildTaskItemBodyConditions(
       sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
     );
   }
+  if (filters.parent_id != null) {
+    conditions.push(sql`${entities.body}->>'parent_id' = ${String(filters.parent_id)}`);
+  }
+  if (filters.roots_only === true) {
+    conditions.push(
+      sql`(${entities.body}->>'parent_id' IS NULL OR ${entities.body}->>'parent_id' = '')`,
+    );
+  }
   if (filters.client_op_id) {
     conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
   }

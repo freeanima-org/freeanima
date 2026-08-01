@@ -15,7 +15,7 @@ export type InprocessBuiltinDef = {
 /** 进程内 Bun.cron：不写 cron_jobs / cron_log */
 export const INPROCESS_BUILTIN_DEFS: readonly InprocessBuiltinDef[] = [
   { id: "builtin-sleep-cycle", name: "sleep-cycle", schedule: "0 2 * * *" },
-  { id: "builtin-task-reminders", name: "task-reminders", schedule: "* * * * *" },
+  // task-reminders 已迁 sleep-until-next（task-reminder-scheduler）；保留 handler 供测试手动 fire
   { id: "builtin-env-health", name: "env-health", schedule: "*/5 * * * *" },
   {
     id: "builtin-temporal-summary-tick",
@@ -69,15 +69,7 @@ export function getInprocessBuiltinStatus(id: string): InprocessBuiltinRuntime |
   return listInprocessBuiltinStatuses().find((s) => s.id === id) ?? null;
 }
 
-function shouldLogSuccessOutput(id: string, output: string): boolean {
-  if (id === "builtin-task-reminders") {
-    try {
-      const parsed = JSON.parse(output) as { ok?: boolean; sent?: number };
-      if (parsed.ok === true && parsed.sent === 0) return false;
-    } catch {
-      /* not JSON */
-    }
-  }
+function shouldLogSuccessOutput(_id: string, output: string): boolean {
   return output.trim().length > 0;
 }
 
@@ -195,6 +187,8 @@ export async function purgeInprocessBuiltinRowsFromPg(): Promise<number> {
     const ok = await deleteCronJob(def.id);
     if (ok) removed += 1;
   }
+  // 已迁 sleep-until-next 的旧分钟 cron 行
+  if (await deleteCronJob("builtin-task-reminders")) removed += 1;
   return removed;
 }
 

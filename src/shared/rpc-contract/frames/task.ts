@@ -10,6 +10,8 @@ const taskRelativeDaySchema = z.enum(["today", "tomorrow", "yesterday"]);
 
 const taskRecurrenceFreqSchema = z.enum(["daily", "weekly", "monthly", "yearly"]);
 const taskRecurrenceAnchorSchema = z.enum(["due", "completion"]);
+const taskRecurrenceSkipSchema = z.enum(["none", "weekend", "holiday", "weekend_and_holiday"]);
+const taskRecurrenceCalendarSchema = z.enum(["gregorian", "lunar"]);
 
 export const taskRecurrenceSchema = z.object({
   freq: taskRecurrenceFreqSchema,
@@ -19,6 +21,11 @@ export const taskRecurrenceSchema = z.object({
   until: z.string().nullable().optional(),
   count: z.number().int().positive().nullable().optional(),
   schedule_at: z.string().min(1),
+  skip: taskRecurrenceSkipSchema.optional(),
+  workdays_only: z.boolean().optional(),
+  calendar: taskRecurrenceCalendarSchema.optional(),
+  lunar_month: z.number().int().min(1).max(12).optional(),
+  lunar_day: z.number().int().min(1).max(30).optional(),
 });
 
 export type TaskRecurrencePayload = z.infer<typeof taskRecurrenceSchema>;
@@ -32,6 +39,11 @@ export const taskRecurrenceInputSchema = z.object({
   until: z.string().nullable().optional(),
   count: z.number().int().positive().nullable().optional(),
   schedule_at: z.string().min(1).optional(),
+  skip: taskRecurrenceSkipSchema.optional(),
+  workdays_only: z.boolean().optional(),
+  calendar: taskRecurrenceCalendarSchema.optional(),
+  lunar_month: z.number().int().min(1).max(12).optional(),
+  lunar_day: z.number().int().min(1).max(30).optional(),
 });
 
 export type TaskRecurrenceInputPayload = z.infer<typeof taskRecurrenceInputSchema>;
@@ -53,6 +65,8 @@ export const taskItemSearchFiltersSchema = z
     completed_on_or_after_days: z.number().int().nonnegative().optional(),
     project_id: z.number().int().positive().optional(),
     in_backlog: z.boolean().optional(),
+    parent_id: z.number().int().positive().optional(),
+    roots_only: z.boolean().optional(),
   })
   .strict();
 
@@ -84,6 +98,11 @@ export const taskListRowSchema = z.object({
 
 export type TaskListRowPayload = z.infer<typeof taskListRowSchema>;
 
+const taskReminderEntrySchema = z.object({
+  at: z.string().min(1),
+  last_notified_at: z.string().nullable().optional(),
+});
+
 export const taskItemRowSchema = z.object({
   id: z.number().int().positive(),
   title: z.string(),
@@ -93,6 +112,8 @@ export const taskItemRowSchema = z.object({
   priority: taskPrioritySchema,
   due_at: z.string().nullable(),
   remind_at: z.string().nullable(),
+  /** 多提前提醒；与 remind_at（最早一项）同步 */
+  reminders: z.array(taskReminderEntrySchema).optional(),
   list_id: z.number().int().positive().nullable(),
   project_id: z.number().int().positive().nullable(),
   project_title: z.string().nullable().optional(),
@@ -102,6 +123,11 @@ export const taskItemRowSchema = z.object({
   recurrence: taskRecurrenceSchema.nullable().optional(),
   /** 若有值，本行是重复任务完成历史快照；id 为 series live id */
   occurrence_id: z.number().int().positive().optional(),
+  /** 子任务父 id；根任务为 null */
+  parent_id: z.number().int().positive().nullable().optional(),
+  /** 子任务完成进度（仅根任务列表可选填充） */
+  subtask_done: z.number().int().nonnegative().optional(),
+  subtask_total: z.number().int().nonnegative().optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -257,6 +283,9 @@ export const taskListInputSchema = z.object({
   status: taskStatusSchema.or(z.literal("all")).optional(),
   due_today: z.boolean().optional(),
   tag_ids: z.array(z.number().int().positive()).optional(),
+  /** 只列根任务（默认 true）；false 可列全部；指定 parent_id 时列该父下子任务 */
+  roots_only: z.boolean().optional(),
+  parent_id: z.number().int().positive().optional(),
   limit: z.number().int().positive().optional(),
   offset: z.number().int().nonnegative().optional(),
 });
@@ -290,7 +319,9 @@ export const tasklistItemCreateInputSchema = z.object({
   priority: taskPrioritySchema.optional(),
   due_at: z.string().nullable().optional(),
   remind_at: z.string().nullable().optional(),
+  reminders: z.array(taskReminderEntrySchema).optional(),
   recurrence: taskRecurrenceInputSchema.nullable().optional(),
+  parent_id: z.number().int().positive().nullable().optional(),
   sort_order: z.number().int().optional(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -308,7 +339,9 @@ export const projectItemCreateInputSchema = z.object({
   priority: taskPrioritySchema.optional(),
   due_at: z.string().nullable().optional(),
   remind_at: z.string().nullable().optional(),
+  reminders: z.array(taskReminderEntrySchema).optional(),
   recurrence: taskRecurrenceInputSchema.nullable().optional(),
+  parent_id: z.number().int().positive().nullable().optional(),
   sort_order: z.number().int().optional(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -354,9 +387,11 @@ export const taskPatchInputSchema = z.object({
   priority: taskPrioritySchema.optional(),
   due_at: z.string().nullable().optional(),
   remind_at: z.string().nullable().optional(),
+  reminders: z.array(taskReminderEntrySchema).optional(),
   sort_order: z.number().int().optional(),
   status: taskStatusSchema.optional(),
   recurrence: taskRecurrenceInputSchema.nullable().optional(),
+  parent_id: z.number().int().positive().nullable().optional(),
   /** 有 recurrence 时改 due：true=仅此一次；缺省=改规则轨 */
   only_this: z.boolean().optional(),
   client_op_id: z.string().min(1).optional(),
@@ -432,3 +467,21 @@ export const taskSearchInputSchema = z.object({
 export type TaskSearchInput = z.infer<typeof taskSearchInputSchema>;
 export const taskSearchOutputSchema = z.object({ items: z.array(taskItemRowSchema) });
 export type TaskSearchOutput = z.infer<typeof taskSearchOutputSchema>;
+
+export const taskSubscribeAdvanceRemindersInputSchema = z.object({}).passthrough();
+export type TaskSubscribeAdvanceRemindersInput = z.infer<
+  typeof taskSubscribeAdvanceRemindersInputSchema
+>;
+export const taskSubscribeAdvanceRemindersOutputSchema = z.object({ ok: z.literal(true) });
+export type TaskSubscribeAdvanceRemindersOutput = z.infer<
+  typeof taskSubscribeAdvanceRemindersOutputSchema
+>;
+
+export const taskAdvanceReminderEventSchema = z.object({
+  task_item_id: z.number().int().positive(),
+  title: z.string(),
+  body: z.string(),
+  at: z.string(),
+  source_ref: z.string(),
+});
+export type TaskAdvanceReminderEvent = z.infer<typeof taskAdvanceReminderEventSchema>;

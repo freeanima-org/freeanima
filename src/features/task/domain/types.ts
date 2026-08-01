@@ -31,6 +31,11 @@ export type TaskListUpdateInput = {
   parent_id?: number | null;
 };
 
+export type TaskReminderEntryInput = {
+  at: string;
+  last_notified_at?: string | null;
+};
+
 export type TaskItemCreateInput = {
   title: string;
   content?: string;
@@ -40,9 +45,12 @@ export type TaskItemCreateInput = {
   priority?: TaskItemPriority;
   due_at?: string | null;
   remind_at?: string | null;
+  reminders?: TaskReminderEntryInput[];
   sort_order?: number;
   /** 项目内必填；与 list_id 互斥 */
   project_id?: number | null;
+  /** 子任务父 id（一层）；根任务省略 */
+  parent_id?: number | null;
   client_op_id?: string;
   recurrence?: TaskRecurrenceInput | null | undefined;
 };
@@ -57,6 +65,8 @@ export type TaskItemUpdateInput = {
   priority?: TaskItemPriority;
   due_at?: string | null;
   remind_at?: string | null;
+  reminders?: TaskReminderEntryInput[];
+  parent_id?: number | null;
   sort_order?: number;
   status?: "pending" | "completed";
   recurrence?: TaskRecurrenceInput | TaskRecurrence | null | undefined;
@@ -93,6 +103,9 @@ export type TaskItemListOpts = {
   project_id?: number;
   in_backlog?: boolean;
   filters?: TaskItemSearchFilters;
+  /** 默认 true：只返回根任务 */
+  roots_only?: boolean;
+  parent_id?: number;
   limit?: number;
   offset?: number;
 };

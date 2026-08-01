@@ -20,6 +20,7 @@ import { PomodoroShellWatcher } from "@freeanima/features/pomodoro/ui/spa/Pomodo
 import { ChatUnreadShellWatcher } from "@freeanima/features/chat/ui/spa/ChatUnreadShellWatcher.tsx";
 import { SpeechShellWatcher } from "@freeanima/features/chat/ui/spa/SpeechShellWatcher.tsx";
 import { NotificationReminderShellWatcher } from "@freeanima/features/notification/ui/spa/NotificationReminderShellWatcher.tsx";
+import { TaskAdvanceReminderShellWatcher } from "@freeanima/features/task/ui/spa/TaskAdvanceReminderShellWatcher.tsx";
 import { AppAttentionShellWatcher } from "./AppAttentionShellWatcher.tsx";
 import { AppNavUnreadBadge } from "./AppNavUnreadBadge.tsx";
 
@@ -188,6 +189,7 @@ export function AppFrame() {
       <ChatUnreadShellWatcher />
       <SpeechShellWatcher />
       <NotificationReminderShellWatcher />
+      <TaskAdvanceReminderShellWatcher />
       <AppAttentionShellWatcher />
       {isCompactLayout(layoutMode) ? <CompactAppFrame /> : <ExpandedAppFrame />}
     </SubjectScopeProvider>

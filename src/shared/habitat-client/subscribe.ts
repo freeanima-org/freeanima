@@ -49,7 +49,8 @@ export function createHabitatSubscriber(options: {
         if (
           method === "conversation.subscribe" ||
           method === "conversation.subscribeInbox" ||
-          method === "notification.subscribeInbox"
+          method === "notification.subscribeInbox" ||
+          method === "task.subscribeAdvanceReminders"
         ) {
           await rpc.request(method, input);
         }
@@ -58,7 +59,9 @@ export function createHabitatSubscriber(options: {
             ? "conversation.updated"
             : method === "notification.subscribeInbox"
               ? "notification.created"
-              : String(method);
+              : method === "task.subscribeAdvanceReminders"
+                ? "task.advanceReminder"
+                : String(method);
         const off = rpc.onEvent(eventMethod, (payload) => {
           if (!cancelled) callbacks.onData?.(payload);
         });

@@ -6,6 +6,7 @@ import {
 } from "@freeanima/host/core/db/schema/entity";
 import { searchEntities } from "@freeanima/host/core/db/pg/entity";
 
+import { expandRecurringTaskVirtuals } from "./expand-recurring-tasks.ts";
 import { listCalendarEvents } from "./event-store.ts";
 import type {
   CalendarRangeItem,
@@ -63,26 +64,52 @@ export async function listCalendarRange(
       primary_component: TASK_ITEM_COMPONENT,
       filters: {
         status: "pending",
-        has_due_at: true,
-        due_after: opts.from,
-        due_before: opts.to,
         in_backlog: false,
+        roots_only: true,
       },
       limit: 500,
       mode: "filter_only",
     });
     for (const row of result.results) {
       const item = asTaskItem(row);
-      if (!item?.due_at) continue;
-      items.push({
-        kind: "task",
-        id: item.id,
-        title: item.title,
-        due_at: item.due_at,
-        status: item.status === "completed" ? "completed" : "pending",
-        project_id: item.project_id ?? null,
-        list_id: item.list_id ?? null,
-      });
+      if (!item) continue;
+      if (item.due_at) {
+        const dueMs = Date.parse(item.due_at);
+        const fromMs = Date.parse(opts.from);
+        const toMs = Date.parse(opts.to);
+        if (
+          Number.isFinite(dueMs) &&
+          Number.isFinite(fromMs) &&
+          Number.isFinite(toMs) &&
+          dueMs >= fromMs &&
+          dueMs <= toMs
+        ) {
+          items.push({
+            kind: "task",
+            id: item.id,
+            title: item.title,
+            due_at: item.due_at,
+            status: item.status === "completed" ? "completed" : "pending",
+            project_id: item.project_id ?? null,
+            list_id: item.list_id ?? null,
+          });
+        }
+      }
+      if (item.recurrence && item.due_at) {
+        items.push(
+          ...expandRecurringTaskVirtuals({
+            id: item.id,
+            title: item.title,
+            status: item.status === "completed" ? "completed" : "pending",
+            project_id: item.project_id ?? null,
+            list_id: item.list_id ?? null,
+            due_at: item.due_at,
+            recurrence: item.recurrence,
+            from: opts.from,
+            to: opts.to,
+          }),
+        );
+      }
     }
   }
 

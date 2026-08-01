@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+import {
+  gregorianFromLunar,
+  isCnHoliday,
+  isCnWeekend,
+  isCnWorkday,
+  lunarPartsFromGregorian,
+} from "@freeanima/host/core/util/cn-calendar";
 import { formatCstIso } from "@freeanima/host/core/util";
 
 /** 重复频率 */
@@ -10,34 +17,91 @@ export type TaskRecurrenceFreq = z.infer<typeof taskRecurrenceFreqSchema>;
 export const taskRecurrenceAnchorSchema = z.enum(["due", "completion"]);
 export type TaskRecurrenceAnchor = z.infer<typeof taskRecurrenceAnchorSchema>;
 
+/** 遇非有效日时的跳过策略 */
+export const taskRecurrenceSkipSchema = z.enum([
+  "none",
+  "weekend",
+  "holiday",
+  "weekend_and_holiday",
+]);
+export type TaskRecurrenceSkip = z.infer<typeof taskRecurrenceSkipSchema>;
+
+/** 日历类型 */
+export const taskRecurrenceCalendarSchema = z.enum(["gregorian", "lunar"]);
+export type TaskRecurrenceCalendar = z.infer<typeof taskRecurrenceCalendarSchema>;
+
+const taskRecurrenceLunarRefine = (
+  data: {
+    calendar?: TaskRecurrenceCalendar | undefined;
+    freq: TaskRecurrenceFreq;
+    lunar_month?: number | undefined;
+    lunar_day?: number | undefined;
+  },
+  ctx: z.RefinementCtx,
+): void => {
+  if (data.calendar === "lunar" && data.freq === "yearly") {
+    if (data.lunar_month == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "lunar yearly requires lunar_month",
+        path: ["lunar_month"],
+      });
+    }
+    if (data.lunar_day == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "lunar yearly requires lunar_day",
+        path: ["lunar_day"],
+      });
+    }
+  }
+};
+
 /**
  * Live `task_item.body.recurrence`。
  * `schedule_at` = 规则时钟（仅此一次改期不改）；`due_at` 在 body 顶层为显示/提醒。
  * weekdays：0=Sun … 6=Sat（与 JS `getUTCDay` 在 +08:00 日历下一致时用 CST 部件）。
  */
-export const taskRecurrenceSchema = z.object({
-  freq: taskRecurrenceFreqSchema,
-  interval: z.number().int().positive().default(1),
-  anchor: taskRecurrenceAnchorSchema.default("due"),
-  weekdays: z.array(z.number().int().min(0).max(6)).min(1).optional(),
-  until: z.string().nullable().optional(),
-  /** 剩余可完成次数；每次 complete 递减；耗尽则结束系列 */
-  count: z.number().int().positive().nullable().optional(),
-  schedule_at: z.string().min(1),
-});
+export const taskRecurrenceSchema = z
+  .object({
+    freq: taskRecurrenceFreqSchema,
+    interval: z.number().int().positive().default(1),
+    anchor: taskRecurrenceAnchorSchema.default("due"),
+    weekdays: z.array(z.number().int().min(0).max(6)).min(1).optional(),
+    until: z.string().nullable().optional(),
+    /** 剩余可完成次数；每次 complete 递减；耗尽则结束系列 */
+    count: z.number().int().positive().nullable().optional(),
+    schedule_at: z.string().min(1),
+    skip: taskRecurrenceSkipSchema.default("none"),
+    /** 仅在工作日推进（跳过周末 + 法定假日，尊重调休上班日） */
+    workdays_only: z.boolean().default(false),
+    calendar: taskRecurrenceCalendarSchema.default("gregorian"),
+    /** 农历月（1-12）；calendar=lunar 且 freq=yearly 时必填 */
+    lunar_month: z.number().int().min(1).max(12).optional(),
+    /** 农历日（1-30）；calendar=lunar 且 freq=yearly 时必填 */
+    lunar_day: z.number().int().min(1).max(30).optional(),
+  })
+  .superRefine(taskRecurrenceLunarRefine);
 
 export type TaskRecurrence = z.infer<typeof taskRecurrenceSchema>;
 
 /** 创建 recurrence 时的输入（schedule_at 可省略，由 due_at 填充） */
-export const taskRecurrenceInputSchema = z.object({
-  freq: taskRecurrenceFreqSchema,
-  interval: z.number().int().positive().optional(),
-  anchor: taskRecurrenceAnchorSchema.optional(),
-  weekdays: z.array(z.number().int().min(0).max(6)).min(1).optional(),
-  until: z.string().nullable().optional(),
-  count: z.number().int().positive().nullable().optional(),
-  schedule_at: z.string().min(1).optional(),
-});
+export const taskRecurrenceInputSchema = z
+  .object({
+    freq: taskRecurrenceFreqSchema,
+    interval: z.number().int().positive().optional(),
+    anchor: taskRecurrenceAnchorSchema.optional(),
+    weekdays: z.array(z.number().int().min(0).max(6)).min(1).optional(),
+    until: z.string().nullable().optional(),
+    count: z.number().int().positive().nullable().optional(),
+    schedule_at: z.string().min(1).optional(),
+    skip: taskRecurrenceSkipSchema.optional(),
+    workdays_only: z.boolean().optional(),
+    calendar: taskRecurrenceCalendarSchema.optional(),
+    lunar_month: z.number().int().min(1).max(12).optional(),
+    lunar_day: z.number().int().min(1).max(30).optional(),
+  })
+  .superRefine(taskRecurrenceLunarRefine);
 
 export type TaskRecurrenceInput = z.infer<typeof taskRecurrenceInputSchema>;
 
@@ -96,10 +160,55 @@ function addCalendarDays(
   return { ...n, h: parts.h, mi: parts.mi, s: parts.s };
 }
 
+type ScheduleDayPolicy = Pick<TaskRecurrence, "skip" | "workdays_only">;
+
+function isScheduleDayValid(date: Date, policy: ScheduleDayPolicy): boolean {
+  if (policy.workdays_only) {
+    return isCnWorkday(date);
+  }
+  const skip = policy.skip ?? "none";
+  if (skip === "none") return true;
+  const weekend = isCnWeekend(date);
+  const holiday = isCnHoliday(date);
+  if (skip === "weekend") return !weekend;
+  if (skip === "holiday") return !holiday;
+  if (skip === "weekend_and_holiday") return !weekend && !holiday;
+  return true;
+}
+
+/** 逐日推进直到满足 skip / workdays_only 策略 */
+function adjustForSchedulePolicy(
+  parts: ReturnType<typeof cstParts>,
+  policy: ScheduleDayPolicy,
+): ReturnType<typeof cstParts> {
+  if (!policy.workdays_only && (policy.skip ?? "none") === "none") {
+    return parts;
+  }
+  let current = parts;
+  for (let i = 0; i < 366; i++) {
+    const date = fromCstParts(current.y, current.mo, current.d, current.h, current.mi, current.s);
+    if (isScheduleDayValid(date, policy)) {
+      return current;
+    }
+    current = addCalendarDays(current, 1);
+  }
+  throw new Error("schedule policy: no valid day within 366 days");
+}
+
 /** 从锚点时刻推进一期（不含 until/count 终止判断） */
 export function advanceScheduleAt(
   scheduleAtIso: string,
-  recurrence: Pick<TaskRecurrence, "freq" | "interval" | "weekdays">,
+  recurrence: Pick<
+    TaskRecurrence,
+    | "freq"
+    | "interval"
+    | "weekdays"
+    | "skip"
+    | "workdays_only"
+    | "calendar"
+    | "lunar_month"
+    | "lunar_day"
+  >,
 ): string {
   const start = new Date(scheduleAtIso);
   if (Number.isNaN(start.getTime())) {
@@ -136,9 +245,21 @@ export function advanceScheduleAt(
     }
   } else if (recurrence.freq === "monthly") {
     parts = addCalendarMonths(parts, interval);
+  } else if (recurrence.calendar === "lunar") {
+    const lunarMonth = recurrence.lunar_month;
+    const lunarDay = recurrence.lunar_day;
+    if (lunarMonth == null || lunarDay == null) {
+      throw new Error("lunar yearly requires lunar_month and lunar_day");
+    }
+    const currentLunar = lunarPartsFromGregorian(start);
+    const nextGreg = gregorianFromLunar(currentLunar.year + interval, lunarMonth, lunarDay);
+    const n = cstParts(nextGreg);
+    parts = { ...n, h: parts.h, mi: parts.mi, s: parts.s };
   } else {
     parts = addCalendarMonths(parts, interval * 12);
   }
+
+  parts = adjustForSchedulePolicy(parts, recurrence);
 
   return formatCstIso(fromCstParts(parts.y, parts.mo, parts.d, parts.h, parts.mi, parts.s));
 }

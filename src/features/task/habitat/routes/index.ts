@@ -2,9 +2,11 @@ import { omitUndefined } from "@freeanima/host/core/util";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 
+import { pumpTaskAdvanceReminders } from "../advance-reminder-stream.ts";
 import { taskMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
+import { taskSessionPumps } from "../session-pumps.ts";
 
 type TaskRemoteToolsServerDeps = {
   runtime: {
@@ -18,6 +20,10 @@ function depsOf(deps: unknown): TaskRemoteToolsServerDeps {
 
 function ctxAuth(ctx: unknown) {
   return (ctx as RemoteToolsRequestContext).auth;
+}
+
+function ctxOf(ctx: unknown): RemoteToolsRequestContext {
+  return ctx as RemoteToolsRequestContext;
 }
 
 export const taskHabitatRoutes = bindHabitatRouteHandlers(taskMethodDefs, {
@@ -161,4 +167,17 @@ export const taskHabitatRoutes = bindHabitatRouteHandlers(taskMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "task.subscribeAdvanceReminders": async (_deps, _input, ctx) => {
+    const sapCtx = ctxOf(ctx);
+    const sessionPumps = taskSessionPumps();
+    const pumpKey = `${sapCtx.app_id}:${sapCtx.instance_id}:task-advance-reminder`;
+    if (!sessionPumps.has(pumpKey)) {
+      const controller = new AbortController();
+      sessionPumps.set(pumpKey, controller);
+      void pumpTaskAdvanceReminders(sapCtx, controller.signal).finally(() => {
+        sessionPumps.delete(pumpKey);
+      });
+    }
+    return { ok: true as const };
+  },
 });

@@ -28,6 +28,10 @@ export const taskItemSearchFiltersSchema = z
     project_id: z.number().int().positive().optional(),
     /** true = 仅未归属项目的任务（Backlog） */
     in_backlog: z.boolean().optional(),
+    /** 子任务父 id */
+    parent_id: z.number().int().positive().optional(),
+    /** true = 仅根任务（body.parent_id 为空） */
+    roots_only: z.boolean().optional(),
     client_op_id: z.string().min(1).optional(),
   })
   .strict();

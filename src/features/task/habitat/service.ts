@@ -12,6 +12,7 @@ import {
   getDefaultTaskList,
   listCompletedActivity,
   listSmartListsMerged,
+  countSubtasks,
   listTaskItems,
   listTaskLists,
   listTaskListStats,
@@ -235,6 +236,8 @@ export async function serviceTasklistItemList(
     status?: "pending" | "completed" | "all";
     due_today?: boolean;
     tag_ids?: number[];
+    roots_only?: boolean;
+    parent_id?: number;
     limit?: number;
     offset?: number;
   },
@@ -262,10 +265,23 @@ export async function serviceTasklistItemList(
       status: input.filters == null ? (input.status ?? "all") : undefined,
       due_today: input.filters == null ? input.due_today : undefined,
       tag_ids: input.filters == null ? input.tag_ids : undefined,
+      roots_only: input.parent_id != null ? false : (input.roots_only ?? true),
+      parent_id: input.parent_id,
       limit: input.limit,
       offset: input.offset,
     }),
   );
+  // 根任务附带子任务进度
+  if (input.parent_id == null && (input.roots_only ?? true)) {
+    const enriched = await Promise.all(
+      items.map(async (item) => {
+        const { done, total } = await countSubtasks(worldId, item.id);
+        if (total === 0) return item;
+        return { ...item, subtask_done: done, subtask_total: total };
+      }),
+    );
+    return { items: enriched };
+  }
   return { items };
 }
 
@@ -307,6 +323,8 @@ export async function serviceTasklistItemCreate(
     priority?: "high" | "medium" | "low" | "none";
     due_at?: string | null;
     remind_at?: string | null;
+    reminders?: Parameters<typeof createTaskItem>[1]["reminders"];
+    parent_id?: number | null;
     recurrence?: Parameters<typeof createTaskItem>[1]["recurrence"];
     sort_order?: number;
     client_op_id?: string;
@@ -333,6 +351,8 @@ export async function serviceProjectItemCreate(
     priority?: "high" | "medium" | "low" | "none";
     due_at?: string | null;
     remind_at?: string | null;
+    reminders?: Parameters<typeof createTaskItem>[1]["reminders"];
+    parent_id?: number | null;
     recurrence?: Parameters<typeof createTaskItem>[1]["recurrence"];
     sort_order?: number;
     client_op_id?: string;
@@ -360,6 +380,8 @@ export async function serviceTaskPatch(
     priority?: "high" | "medium" | "low" | "none";
     due_at?: string | null;
     remind_at?: string | null;
+    reminders?: Parameters<typeof updateTaskItem>[1]["reminders"];
+    parent_id?: number | null;
     sort_order?: number;
     status?: "pending" | "completed";
     recurrence?: Parameters<typeof updateTaskItem>[1]["recurrence"];

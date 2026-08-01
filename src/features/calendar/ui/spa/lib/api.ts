@@ -33,6 +33,21 @@ function habitat() {
   return getTypedHabitatClient();
 }
 
+/** 日历拖拽改任务 due（仅此一次） */
+export async function patchTaskDueAt(
+  subjectKind: SubjectKind,
+  taskId: number,
+  day: string,
+): Promise<void> {
+  const due_at = `${day}T09:00:00+08:00`;
+  await habitat().call("task.patch", {
+    subject_kind: subjectKind,
+    id: taskId,
+    due_at,
+    only_this: true,
+  });
+}
+
 export async function fetchCalendarRange(
   subjectKind: SubjectKind,
   opts: { from: string; to: string; kinds?: CalendarRangeKind[] },
