@@ -24,7 +24,7 @@ export const taskRecurrenceSchema = z.object({
   skip: taskRecurrenceSkipSchema.optional(),
   workdays_only: z.boolean().optional(),
   calendar: taskRecurrenceCalendarSchema.optional(),
-  lunar_month: z.number().int().min(1).max(12).optional(),
+  lunar_month: z.number().int().min(-12).max(12).optional(),
   lunar_day: z.number().int().min(1).max(30).optional(),
 });
 
@@ -42,7 +42,7 @@ export const taskRecurrenceInputSchema = z.object({
   skip: taskRecurrenceSkipSchema.optional(),
   workdays_only: z.boolean().optional(),
   calendar: taskRecurrenceCalendarSchema.optional(),
-  lunar_month: z.number().int().min(1).max(12).optional(),
+  lunar_month: z.number().int().min(-12).max(12).optional(),
   lunar_day: z.number().int().min(1).max(30).optional(),
 });
 

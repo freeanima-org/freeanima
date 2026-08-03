@@ -139,9 +139,33 @@ describe("task-recurrence", () => {
     expect(next.startsWith("2026-02-17T09:00:00")).toBe(true);
   });
 
+  test("monthly lunar advances to next lunar month same day", () => {
+    // 2025-01-29 = 农历正月初一 → 下一农历月同日 = 二月初一 = 2025-02-28
+    const next = advanceScheduleAt("2025-01-29T09:00:00+08:00", {
+      freq: "monthly",
+      interval: 1,
+      calendar: "lunar",
+      lunar_day: 1,
+      skip: "none",
+      workdays_only: false,
+    });
+    expect(next.startsWith("2025-02-28T09:00:00")).toBe(true);
+  });
+
   test("lunar yearly schema requires lunar_month/day", () => {
     const result = taskRecurrenceSchema.safeParse({
       freq: "yearly",
+      interval: 1,
+      anchor: "due",
+      calendar: "lunar",
+      schedule_at: "2025-01-29T09:00:00+08:00",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  test("lunar monthly schema requires lunar_day", () => {
+    const result = taskRecurrenceSchema.safeParse({
+      freq: "monthly",
       interval: 1,
       anchor: "due",
       calendar: "lunar",

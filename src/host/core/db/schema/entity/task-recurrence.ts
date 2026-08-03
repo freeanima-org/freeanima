@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  gregorianAfterLunarMonths,
   gregorianFromLunar,
   isCnHoliday,
   isCnWeekend,
@@ -39,21 +40,28 @@ const taskRecurrenceLunarRefine = (
   },
   ctx: z.RefinementCtx,
 ): void => {
-  if (data.calendar === "lunar" && data.freq === "yearly") {
-    if (data.lunar_month == null) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "lunar yearly requires lunar_month",
-        path: ["lunar_month"],
-      });
-    }
-    if (data.lunar_day == null) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "lunar yearly requires lunar_day",
-        path: ["lunar_day"],
-      });
-    }
+  if (data.calendar !== "lunar") return;
+  if (data.freq !== "monthly" && data.freq !== "yearly") {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "lunar calendar only supports monthly or yearly",
+      path: ["calendar"],
+    });
+    return;
+  }
+  if (data.lunar_day == null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `lunar ${data.freq} requires lunar_day`,
+      path: ["lunar_day"],
+    });
+  }
+  if (data.freq === "yearly" && data.lunar_month == null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "lunar yearly requires lunar_month",
+      path: ["lunar_month"],
+    });
   }
 };
 
@@ -76,9 +84,9 @@ export const taskRecurrenceSchema = z
     /** 仅在工作日推进（跳过周末 + 法定假日，尊重调休上班日） */
     workdays_only: z.boolean().default(false),
     calendar: taskRecurrenceCalendarSchema.default("gregorian"),
-    /** 农历月（1-12）；calendar=lunar 且 freq=yearly 时必填 */
-    lunar_month: z.number().int().min(1).max(12).optional(),
-    /** 农历日（1-30）；calendar=lunar 且 freq=yearly 时必填 */
+    /** 农历月（1-12，闰月为负）；calendar=lunar 且 freq=yearly 时必填 */
+    lunar_month: z.number().int().min(-12).max(12).optional(),
+    /** 农历日（1-30）；calendar=lunar 且 freq=monthly|yearly 时必填 */
     lunar_day: z.number().int().min(1).max(30).optional(),
   })
   .superRefine(taskRecurrenceLunarRefine);
@@ -98,7 +106,7 @@ export const taskRecurrenceInputSchema = z
     skip: taskRecurrenceSkipSchema.optional(),
     workdays_only: z.boolean().optional(),
     calendar: taskRecurrenceCalendarSchema.optional(),
-    lunar_month: z.number().int().min(1).max(12).optional(),
+    lunar_month: z.number().int().min(-12).max(12).optional(),
     lunar_day: z.number().int().min(1).max(30).optional(),
   })
   .superRefine(taskRecurrenceLunarRefine);
@@ -244,19 +252,33 @@ export function advanceScheduleAt(
       parts = found;
     }
   } else if (recurrence.freq === "monthly") {
-    parts = addCalendarMonths(parts, interval);
-  } else if (recurrence.calendar === "lunar") {
-    const lunarMonth = recurrence.lunar_month;
-    const lunarDay = recurrence.lunar_day;
-    if (lunarMonth == null || lunarDay == null) {
-      throw new Error("lunar yearly requires lunar_month and lunar_day");
+    if (recurrence.calendar === "lunar") {
+      const lunarDay = recurrence.lunar_day;
+      if (lunarDay == null) {
+        throw new Error("lunar monthly requires lunar_day");
+      }
+      const nextGreg = gregorianAfterLunarMonths(start, lunarDay, interval);
+      const n = cstParts(nextGreg);
+      parts = { ...n, h: parts.h, mi: parts.mi, s: parts.s };
+    } else {
+      parts = addCalendarMonths(parts, interval);
     }
-    const currentLunar = lunarPartsFromGregorian(start);
-    const nextGreg = gregorianFromLunar(currentLunar.year + interval, lunarMonth, lunarDay);
-    const n = cstParts(nextGreg);
-    parts = { ...n, h: parts.h, mi: parts.mi, s: parts.s };
+  } else if (recurrence.freq === "yearly") {
+    if (recurrence.calendar === "lunar") {
+      const lunarMonth = recurrence.lunar_month;
+      const lunarDay = recurrence.lunar_day;
+      if (lunarMonth == null || lunarDay == null) {
+        throw new Error("lunar yearly requires lunar_month and lunar_day");
+      }
+      const currentLunar = lunarPartsFromGregorian(start);
+      const nextGreg = gregorianFromLunar(currentLunar.year + interval, lunarMonth, lunarDay);
+      const n = cstParts(nextGreg);
+      parts = { ...n, h: parts.h, mi: parts.mi, s: parts.s };
+    } else {
+      parts = addCalendarMonths(parts, interval * 12);
+    }
   } else {
-    parts = addCalendarMonths(parts, interval * 12);
+    throw new Error(`unsupported recurrence freq: ${recurrence.freq satisfies never}`);
   }
 
   parts = adjustForSchedulePolicy(parts, recurrence);

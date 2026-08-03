@@ -14,4 +14,13 @@ declare module "lunar-javascript" {
     getMonth(): number;
     getDay(): number;
   }
+
+  export class LunarMonth {
+    static fromYm(year: number, month: number): LunarMonth;
+    next(n: number): LunarMonth;
+    getYear(): number;
+    getMonth(): number;
+    getDayCount(): number;
+    isLeap(): boolean;
+  }
 }
