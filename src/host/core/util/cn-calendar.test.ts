@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+  gregorianAfterLunarMonths,
   gregorianFromLunar,
   isCnHoliday,
   isCnWeekend,
@@ -36,5 +37,10 @@ describe("cn-calendar", () => {
   test("lunarPartsFromGregorian for 2026 Spring Festival", () => {
     const parts = lunarPartsFromGregorian(new Date("2026-02-17T09:00:00+08:00"));
     expect(parts).toEqual({ year: 2026, month: 1, day: 1 });
+  });
+
+  test("gregorianAfterLunarMonths advances one lunar month", () => {
+    const next = gregorianAfterLunarMonths(new Date("2025-01-29T09:00:00+08:00"), 1, 1);
+    expect(formatCstIso(next).slice(0, 10)).toBe("2025-02-28");
   });
 });

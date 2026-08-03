@@ -1,5 +1,5 @@
 import { isHoliday, isWorkday } from "chinese-days";
-import { Lunar, Solar } from "lunar-javascript";
+import { Lunar, LunarMonth, Solar } from "lunar-javascript";
 
 import { formatCstIso } from "./time.ts";
 
@@ -57,4 +57,15 @@ export function lunarPartsFromGregorian(date: Date): { year: number; month: numb
   const solar = Solar.fromYmd(Number(m[1]), Number(m[2]), Number(m[3]));
   const lunar = solar.getLunar();
   return { year: lunar.getYear(), month: lunar.getMonth(), day: lunar.getDay() };
+}
+
+/**
+ * 从公历日起按农历推进 `months` 个农历月，落在指定农历日（短月夹到月末）。
+ * `month` 可为负（闰月，与 lunar-javascript 约定一致）。
+ */
+export function gregorianAfterLunarMonths(from: Date, lunarDay: number, months: number): Date {
+  const parts = lunarPartsFromGregorian(from);
+  const target = LunarMonth.fromYm(parts.year, parts.month).next(months);
+  const day = Math.min(Math.max(1, lunarDay), target.getDayCount());
+  return gregorianFromLunar(target.getYear(), target.getMonth(), day);
 }
