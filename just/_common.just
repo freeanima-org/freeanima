@@ -7,4 +7,4 @@ set windows-shell := ["bash", "-euo", "pipefail", "-c"]
 [private]
 [no-cd]
 _deps:
-  bun install
+  bun install --frozen-lockfile

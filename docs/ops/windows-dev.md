@@ -66,7 +66,31 @@ bun install
 just dev
 ```
 
+`just` recipes call `bun install --frozen-lockfile` via `_deps` (same as CI). First clone uses plain `bun install` above; afterward prefer `just deps` / any `just …` recipe so the lockfile is not rewritten casually.
+
 Configure `%USERPROFILE%\.anima\config.yaml` with a PostgreSQL URL (see [Database](#database) below). Full source steps: [`install.md`](install.md#source-repository).
+
+### npm registry (China / slow `registry.npmjs.org`)
+
+Do **not** put a mirror in the repo `bunfig.toml` or commit mirror URLs into `bun.lock`. Bun stores absolute tarball URLs in the lockfile; a mirror registry will rewrite them and break portability.
+
+For **local-only** acceleration, use a user-level config and keep `bun.lock` registry-agnostic (`""` resolved fields):
+
+```toml
+# %USERPROFILE%\.bunfig.toml  (not committed)
+[install]
+registry = "https://registry.npmmirror.com"
+```
+
+- Daily installs (`just`, `bun install --frozen-lockfile`): fetch via the mirror; lockfile stays unchanged.
+- When **updating** the lockfile (`bun add` / `bun update` / plain `bun install` that may rewrite `bun.lock`), force the official registry so new entries stay portable:
+
+```bash
+bun install --registry=https://registry.npmjs.org
+# or: bun add <pkg> --registry=https://registry.npmjs.org
+```
+
+Before commit, confirm `bun.lock` has no `registry.npmmirror.com` (or other mirror) hostnames.
 
 ### Bun bypass (no `just`)
 
