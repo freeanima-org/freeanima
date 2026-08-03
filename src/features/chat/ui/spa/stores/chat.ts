@@ -373,7 +373,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
             }
             if (result.receivedDone) {
               sendOpts.onStreamDone?.();
-              notifyDone();
+              // error 后再发 done（bridge 惯例）：不当成功，留给下方 onError
+              if (!receivedError) {
+                notifyDone();
+              }
               settleOk();
             }
           };
@@ -466,7 +469,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
 
       if (serverErrorMsg) {
-        await finishWithRecovery(serverErrorMsg);
+        // 对齐 resumeIfActive：有服务端 error 时直接 onError（勿走 finishWithRecovery，
+        // 因其在 receivedDone 时会 early-return，吞掉 onError）
+        callbacks.onError?.(serverErrorMsg);
       } else if (!doneNotified) {
         await finishWithRecovery();
       }

@@ -1,18 +1,42 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 
-mock.module("@paraglide/messages", () => ({ m: {} }));
+mock.module("@paraglide/messages", () => ({
+  m: new Proxy(
+    {},
+    {
+      get: (_t, prop: string) => () => prop,
+    },
+  ),
+}));
 mock.module("@paraglide/runtime", () => ({
   getLocale: () => "zh-cn",
   locales: ["zh-cn", "en"],
   setLocale: async (_locale: string) => {},
 }));
 
+type StreamCallbacks = {
+  onData?: (ev: { event: string; data: Record<string, unknown> }) => void;
+  onComplete?: () => void;
+  onError?: (err: Error) => void;
+  onStreamId?: (id: string) => void;
+};
+
+/** idle：仅挂订阅；error_then_done：模拟 bridge 先 error 再 done */
+let streamScenario: "idle" | "error_then_done" = "idle";
+
 mock.module("@freeanima/features/chat/ui/spa/lib/api.ts", () => ({
-  subscribeMessageStream: (
-    _input: unknown,
-    callbacks: { onComplete?: () => void; onStreamId?: (id: string) => void },
-  ) => {
-    queueMicrotask(() => callbacks.onStreamId?.("stream-test"));
+  subscribeMessageStream: (_input: unknown, callbacks: StreamCallbacks) => {
+    queueMicrotask(() => {
+      callbacks.onStreamId?.("stream-test");
+      if (streamScenario === "error_then_done") {
+        callbacks.onData?.({
+          event: "error",
+          data: { error: "LLM call failed: 403 China opt-in required" },
+        });
+        callbacks.onData?.({ event: "done", data: {} });
+        callbacks.onComplete?.();
+      }
+    });
     return {
       unsubscribe: () => {
         callbacks.onComplete?.();
@@ -34,6 +58,7 @@ const sessionStore = new Map<string, string>();
 
 describe("useChatStore queue", () => {
   beforeEach(() => {
+    streamScenario = "idle";
     sessionStore.clear();
     Object.defineProperty(globalThis, "sessionStorage", {
       configurable: true,
@@ -58,6 +83,7 @@ describe("useChatStore queue", () => {
 
   afterEach(() => {
     sessionStore.clear();
+    streamScenario = "idle";
   });
 
   test("enqueue 与 peekQueue 按 conversation 隔离", () => {
@@ -94,5 +120,25 @@ describe("useChatStore queue", () => {
         setTimeout(() => reject(new Error("send() hung after abortStream")), 500);
       }),
     ]);
+  });
+
+  test("stream.error 后再 stream.done 应调 onError、不调 onDone", async () => {
+    streamScenario = "error_then_done";
+    const errors: string[] = [];
+    let onDoneCalled = false;
+
+    await useChatStore.getState().send("conv-1", "hi", {
+      recoverDisplay: async () => false,
+      onError: (msg) => {
+        errors.push(msg);
+      },
+      onDone: () => {
+        onDoneCalled = true;
+      },
+    });
+
+    expect(errors).toEqual(["LLM call failed: 403 China opt-in required"]);
+    expect(onDoneCalled).toBe(false);
+    expect(useChatStore.getState().streaming).toBe(false);
   });
 });
