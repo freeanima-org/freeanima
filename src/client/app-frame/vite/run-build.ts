@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { build, type InlineConfig, type Rollup } from "vite";
+import { build, type InlineConfig, type Plugin, type Rollup } from "vite";
 
 import { buildViteAliases } from "./module-aliases.ts";
 import { shellEntryFileNames } from "./entry-file-names.ts";
@@ -48,11 +48,22 @@ export function createShellViteInlineConfig(opts: ShellViteBuildOptions): Inline
     ...opts.extraEntries,
   };
 
+  /** Mark Bun runtime built-ins as external — Vite's dep scanner can't resolve them. */
+  const bunExternalPlugin: Plugin = {
+    name: "bun-external",
+    resolveId(id) {
+      if (id === "bun" || id.startsWith("bun:")) {
+        return { id, external: true };
+      }
+      return undefined;
+    },
+  };
+
   return {
     configFile: false,
     root: opts.appDir,
     base: opts.base ?? "/",
-    plugins: [paraglideCompilePlugin(paraglideDir, repoRoot), react(), tailwindcss()],
+    plugins: [bunExternalPlugin, paraglideCompilePlugin(paraglideDir, repoRoot), react(), tailwindcss()],
     resolve: {
       alias: repoRoot ? buildViteAliases({ repoRoot, paraglideDir }) : [],
       dedupe: ["react", "react-dom"],

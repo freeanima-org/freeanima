@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { build, type InlineConfig, type Rollup } from "vite";
+import { build, type InlineConfig, type Plugin, type Rollup } from "vite";
 
 import { buildViteAliases } from "./module-aliases.ts";
 import { paraglideCompilePlugin } from "./paraglide-plugin.ts";
@@ -54,6 +54,17 @@ export function createSatelliteViteInlineConfig(opts: SatelliteViteOptions): Inl
     plugins.push(paraglideCompilePlugin(paraglideDir, opts.repoRoot));
   }
   plugins.push(react(), tailwindcss());
+
+  /** Mark Bun runtime built-ins as external — Vite's dep scanner can't resolve them. */
+  plugins.unshift({
+    name: "bun-external",
+    resolveId(id: string) {
+      if (id === "bun" || id.startsWith("bun:")) {
+        return { id, external: true };
+      }
+      return undefined;
+    },
+  } satisfies Plugin);
 
   return {
     configFile: false,

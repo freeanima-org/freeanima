@@ -1,6 +1,6 @@
 import type { RuntimeConfig } from "@freeanima/host/core/config";
 import { resetResolvedWorldContextForTest } from "@freeanima/host/core/config/world-context";
-import { resolveAndBindWorldContext } from "@freeanima/host/core/config/world-context";
+import { resolveAndBindWorldContext } from "@freeanima/host/core/config/world-context-pg";
 import { runMigrations } from "@freeanima/host/core/db";
 import { closeDb, getDb, initDatabase } from "@freeanima/host/core/db/pg";
 

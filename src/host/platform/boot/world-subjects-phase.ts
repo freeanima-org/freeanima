@@ -1,5 +1,5 @@
 import type { RuntimeConfigStore } from "@freeanima/host/platform/config";
-import { resolveAndBindWorldContext } from "@freeanima/host/core/config/world-context";
+import { resolveAndBindWorldContext } from "@freeanima/host/core/config/world-context-pg";
 
 import { startupLog } from "./status.ts";
 

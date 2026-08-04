@@ -2,7 +2,7 @@ import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "n
 import { dirname } from "node:path";
 
 import { PATHS } from "@freeanima/host/core/config";
-import { resolveAndBindWorldContext } from "@freeanima/host/core/config/world-context";
+import { resolveAndBindWorldContext } from "@freeanima/host/core/config/world-context-pg";
 import {
   createServiceApiTokenWithSecret,
   listServiceApiTokensBySubject,
