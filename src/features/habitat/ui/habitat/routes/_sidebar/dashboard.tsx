@@ -212,8 +212,11 @@ function DashboardPage() {
             <h3 className="text-sm font-semibold text-muted-foreground">
               {m.habitat_dashboard_memory()}
             </h3>
-            <Link to="/memory" className="text-primary underline-offset-4 hover:underline text-xs">
-              {m.habitat_dashboard_memory_desk()}
+            <Link
+              to="/passive-recall"
+              className="text-primary underline-offset-4 hover:underline text-xs"
+            >
+              {m.habitat_nav_passive_recall()}
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -21,7 +21,8 @@ import { Route as SidebarSleepRouteImport } from "./routes/_sidebar/sleep";
 import { Route as SidebarSemanticMemoryRouteImport } from "./routes/_sidebar/semantic-memory";
 import { Route as SidebarSelfLayerRouteImport } from "./routes/_sidebar/self-layer";
 import { Route as SidebarOutpostsRouteImport } from "./routes/_sidebar/outposts";
-import { Route as SidebarMemoryRouteImport } from "./routes/_sidebar/memory";
+import { Route as SidebarPassiveRecallRouteImport } from "./routes/_sidebar/passive-recall";
+import { Route as SidebarTemporalSummaryRouteImport } from "./routes/_sidebar/temporal-summary";
 import { Route as SidebarMcpRouteImport } from "./routes/_sidebar/mcp";
 import { Route as SidebarLimbicMemoryRouteImport } from "./routes/_sidebar/limbic-memory";
 import { Route as SidebarFtsRouteImport } from "./routes/_sidebar/fts";
@@ -97,9 +98,14 @@ const SidebarOutpostsRoute = SidebarOutpostsRouteImport.update({
   path: "/outposts",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
-const SidebarMemoryRoute = SidebarMemoryRouteImport.update({
-  id: "/memory",
-  path: "/memory",
+const SidebarPassiveRecallRoute = SidebarPassiveRecallRouteImport.update({
+  id: "/passive-recall",
+  path: "/passive-recall",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarTemporalSummaryRoute = SidebarTemporalSummaryRouteImport.update({
+  id: "/temporal-summary",
+  path: "/temporal-summary",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
 const SidebarMcpRoute = SidebarMcpRouteImport.update({
@@ -192,7 +198,8 @@ export interface FileRoutesByFullPath {
   "/fts": typeof SidebarFtsRoute;
   "/limbic-memory": typeof SidebarLimbicMemoryRoute;
   "/mcp": typeof SidebarMcpRoute;
-  "/memory": typeof SidebarMemoryRoute;
+  "/passive-recall": typeof SidebarPassiveRecallRoute;
+  "/temporal-summary": typeof SidebarTemporalSummaryRoute;
   "/outposts": typeof SidebarOutpostsRoute;
   "/self-layer": typeof SidebarSelfLayerRoute;
   "/semantic-memory": typeof SidebarSemanticMemoryRoute;
@@ -220,7 +227,8 @@ export interface FileRoutesByTo {
   "/fts": typeof SidebarFtsRoute;
   "/limbic-memory": typeof SidebarLimbicMemoryRoute;
   "/mcp": typeof SidebarMcpRoute;
-  "/memory": typeof SidebarMemoryRoute;
+  "/passive-recall": typeof SidebarPassiveRecallRoute;
+  "/temporal-summary": typeof SidebarTemporalSummaryRoute;
   "/outposts": typeof SidebarOutpostsRoute;
   "/self-layer": typeof SidebarSelfLayerRoute;
   "/semantic-memory": typeof SidebarSemanticMemoryRoute;
@@ -250,7 +258,8 @@ export interface FileRoutesById {
   "/_sidebar/fts": typeof SidebarFtsRoute;
   "/_sidebar/limbic-memory": typeof SidebarLimbicMemoryRoute;
   "/_sidebar/mcp": typeof SidebarMcpRoute;
-  "/_sidebar/memory": typeof SidebarMemoryRoute;
+  "/_sidebar/passive-recall": typeof SidebarPassiveRecallRoute;
+  "/_sidebar/temporal-summary": typeof SidebarTemporalSummaryRoute;
   "/_sidebar/outposts": typeof SidebarOutpostsRoute;
   "/_sidebar/self-layer": typeof SidebarSelfLayerRoute;
   "/_sidebar/semantic-memory": typeof SidebarSemanticMemoryRoute;
@@ -281,7 +290,8 @@ export interface FileRouteTypes {
     | "/fts"
     | "/limbic-memory"
     | "/mcp"
-    | "/memory"
+    | "/passive-recall"
+    | "/temporal-summary"
     | "/outposts"
     | "/self-layer"
     | "/semantic-memory"
@@ -309,7 +319,8 @@ export interface FileRouteTypes {
     | "/fts"
     | "/limbic-memory"
     | "/mcp"
-    | "/memory"
+    | "/passive-recall"
+    | "/temporal-summary"
     | "/outposts"
     | "/self-layer"
     | "/semantic-memory"
@@ -338,7 +349,8 @@ export interface FileRouteTypes {
     | "/_sidebar/fts"
     | "/_sidebar/limbic-memory"
     | "/_sidebar/mcp"
-    | "/_sidebar/memory"
+    | "/_sidebar/passive-recall"
+    | "/_sidebar/temporal-summary"
     | "/_sidebar/outposts"
     | "/_sidebar/self-layer"
     | "/_sidebar/semantic-memory"
@@ -468,11 +480,18 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof SidebarOutpostsRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
-    "/_sidebar/memory": {
-      id: "/_sidebar/memory";
-      path: "/memory";
-      fullPath: "/memory";
-      preLoaderRoute: typeof SidebarMemoryRouteImport;
+    "/_sidebar/passive-recall": {
+      id: "/_sidebar/passive-recall";
+      path: "/passive-recall";
+      fullPath: "/passive-recall";
+      preLoaderRoute: typeof SidebarPassiveRecallRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/temporal-summary": {
+      id: "/_sidebar/temporal-summary";
+      path: "/temporal-summary";
+      fullPath: "/temporal-summary";
+      preLoaderRoute: typeof SidebarTemporalSummaryRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
     "/_sidebar/mcp": {
@@ -601,7 +620,8 @@ interface SidebarRouteRouteChildren {
   SidebarFtsRoute: typeof SidebarFtsRoute;
   SidebarLimbicMemoryRoute: typeof SidebarLimbicMemoryRoute;
   SidebarMcpRoute: typeof SidebarMcpRoute;
-  SidebarMemoryRoute: typeof SidebarMemoryRoute;
+  SidebarPassiveRecallRoute: typeof SidebarPassiveRecallRoute;
+  SidebarTemporalSummaryRoute: typeof SidebarTemporalSummaryRoute;
   SidebarOutpostsRoute: typeof SidebarOutpostsRoute;
   SidebarSelfLayerRoute: typeof SidebarSelfLayerRoute;
   SidebarSemanticMemoryRoute: typeof SidebarSemanticMemoryRoute;
@@ -624,7 +644,8 @@ const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
   SidebarFtsRoute: SidebarFtsRoute,
   SidebarLimbicMemoryRoute: SidebarLimbicMemoryRoute,
   SidebarMcpRoute: SidebarMcpRoute,
-  SidebarMemoryRoute: SidebarMemoryRoute,
+  SidebarPassiveRecallRoute: SidebarPassiveRecallRoute,
+  SidebarTemporalSummaryRoute: SidebarTemporalSummaryRoute,
   SidebarOutpostsRoute: SidebarOutpostsRoute,
   SidebarSelfLayerRoute: SidebarSelfLayerRoute,
   SidebarSemanticMemoryRoute: SidebarSemanticMemoryRoute,

@@ -44,6 +44,17 @@ export const MEMORY_REFERENCE_CITATION_RULE =
   "append each cited `[[anima:id]]` at the end of your reply. " +
   "Do not use this marker for conversation, limbic, or autobiographical search hits.";
 
+/**
+ * System prompt strategy: clarify / recall facts via semantic memory only
+ * (resident → passive inject → active semantic search).
+ */
+export const MEMORY_RECALL_STRATEGY_RULE =
+  "When clarifying references or recalling facts, prefer semantic memory in this order: " +
+  "(1) resident memory already in the system prompt, " +
+  "(2) this turn's passive semantic context (`passive_memory_context` assistant message), " +
+  "(3) if still insufficient, call `memory_semantic_search`. " +
+  "Do not treat limbic, autobiographical, or conversation search as the default recall path.";
+
 /** Short hint appended to recall/search tool descriptions */
 export const MEMORY_SEMANTIC_CITATION_TOOL_HINT =
   "If your reply uses semantic memory results, append each cited `[[anima:{id}]]` (from `semantic_memory_id`) at the end of your reply.";

@@ -99,7 +99,11 @@ export type AppRuntimeConversationPort = {
 /** 语义 /  limbic / 自传 / 梦境记忆 */
 export type AppRuntimeMemoryPort = {
   listMemoryFiles(): Promise<unknown>;
-  memorySearch(opts: Record<string, unknown>): Promise<unknown>;
+  passiveRecallDebug(opts: Record<string, unknown>): Promise<unknown>;
+  listTemporalSummaries(opts?: Record<string, unknown>): Promise<unknown>;
+  regenerateTemporalSummary(opts: Record<string, unknown>): Promise<unknown>;
+  listTemporalSystemRolls(): Promise<unknown>;
+  regenerateTemporalSystemRoll(opts: Record<string, unknown>): Promise<unknown>;
   countSemanticMemory(): Promise<{ index_rows: number }>;
   listSemanticMemories(opts?: Record<string, unknown>): Promise<unknown>;
   updateSemanticMemoryPinned(

@@ -1,5 +1,5 @@
 import { decomposeSystemPromptParts } from "./system-prompt.ts";
-import { MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
+import { MEMORY_RECALL_STRATEGY_RULE, MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
 import type { SystemPromptSection } from "@freeanima/host/core/hooks/prompt";
 
 /** Build self / resident / agents sections for systemPromptBuild hook */
@@ -16,6 +16,12 @@ export async function buildMemorySystemPromptSections(
     id: "memory-citation",
     content: MEMORY_REFERENCE_CITATION_RULE,
     order: 25,
+    priority: 1,
+  });
+  sections.push({
+    id: "memory-recall",
+    content: MEMORY_RECALL_STRATEGY_RULE,
+    order: 26,
     priority: 1,
   });
   if (parts.resident.trim()) {

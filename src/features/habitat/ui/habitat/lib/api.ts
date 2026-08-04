@@ -323,12 +323,35 @@ export async function restartService() {
   return hubCall(habitat().call("status.restart", {}));
 }
 
-export async function searchMemory(input: {
-  query: string;
+export async function passiveRecallDebug(input: { user_text: string; limit?: number }) {
+  return hubCall(habitat().call("memory.passiveRecallDebug", input as never));
+}
+
+export async function listTemporalSummaries(input: {
+  window?: "day" | "month" | "year";
+  period_start_from?: string;
+  period_start_to?: string;
+  offset?: number;
   limit?: number;
-  memory_types?: Array<"semantic" | "conversation" | "limbic" | "autobiographical">;
 }) {
-  return hubCall(habitat().call("memory.search", input));
+  return hubCall(habitat().call("memory.temporalList", input as never));
+}
+
+export async function regenerateTemporalSummary(input: {
+  window: "day" | "month" | "year";
+  period_start: string;
+}) {
+  return hubCall(habitat().call("memory.temporalRegenerate", input as never));
+}
+
+export async function listTemporalSystemRolls() {
+  return hubCall(habitat().call("memory.temporalSystemRollList", {}));
+}
+
+export async function regenerateTemporalSystemRoll(input: {
+  kind: "past_days" | "past_months" | "past_years";
+}) {
+  return hubCall(habitat().call("memory.temporalSystemRollRegenerate", input as never));
 }
 
 export async function countSemanticMemory() {

@@ -1,14 +1,20 @@
 import {
   autobiographicalMemoryListBodySchema,
   limbicMemoryListBodySchema,
-  memorySearchBodySchema,
+  passiveRecallDebugBodySchema,
   semanticMemoryListBodySchema,
   semanticMemoryPinBodySchema,
+  temporalSummaryListBodySchema,
+  temporalSummaryRegenerateBodySchema,
+  temporalSystemRollRegenerateBodySchema,
   type AutobiographicalMemoryListBody,
   type LimbicMemoryListBody,
-  type MemorySearchBody,
+  type PassiveRecallDebugBody,
   type SemanticMemoryListBody,
   type SemanticMemoryPinBody,
+  type TemporalSummaryListBody,
+  type TemporalSummaryRegenerateBody,
+  type TemporalSystemRollRegenerateBody,
 } from "@freeanima/features/habitat/habitat/habitat-api/api";
 import { habitatCtx } from "./runtime.ts";
 
@@ -16,13 +22,40 @@ export async function listMemoryFiles() {
   return habitatCtx().listMemoryFiles();
 }
 
-export async function memorySearch(body: MemorySearchBody) {
-  const parsed = memorySearchBodySchema.parse(body);
-  return habitatCtx().memorySearch({
-    query: parsed.query,
+export async function passiveRecallDebug(body: PassiveRecallDebugBody) {
+  const parsed = passiveRecallDebugBodySchema.parse(body);
+  return habitatCtx().passiveRecallDebug({
+    user_text: parsed.user_text,
     ...(parsed.limit !== undefined ? { limit: parsed.limit } : {}),
-    ...(parsed.memory_types !== undefined ? { memory_types: parsed.memory_types } : {}),
   });
+}
+
+export async function listTemporalSummaries(body: TemporalSummaryListBody) {
+  const parsed = temporalSummaryListBodySchema.parse(body);
+  return habitatCtx().listTemporalSummaries({
+    window: parsed.window,
+    period_start_from: parsed.period_start_from?.trim() || undefined,
+    period_start_to: parsed.period_start_to?.trim() || undefined,
+    offset: parsed.offset,
+    limit: parsed.limit,
+  });
+}
+
+export async function regenerateTemporalSummary(body: TemporalSummaryRegenerateBody) {
+  const parsed = temporalSummaryRegenerateBodySchema.parse(body);
+  return habitatCtx().regenerateTemporalSummary({
+    window: parsed.window,
+    period_start: parsed.period_start,
+  });
+}
+
+export async function listTemporalSystemRolls() {
+  return habitatCtx().listTemporalSystemRolls();
+}
+
+export async function regenerateTemporalSystemRoll(body: TemporalSystemRollRegenerateBody) {
+  const parsed = temporalSystemRollRegenerateBodySchema.parse(body);
+  return habitatCtx().regenerateTemporalSystemRoll({ kind: parsed.kind });
 }
 
 export async function countSemanticMemory() {

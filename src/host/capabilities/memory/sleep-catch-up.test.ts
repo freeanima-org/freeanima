@@ -1,22 +1,29 @@
 import { describe, expect, it } from "bun:test";
-import { computeSleepCatchUpDays, listMonthEndsInRange, todayCstDay } from "./sleep-catch-up.ts";
+import { computeSleepCatchUpDays, listMonthStartsInRange, todayCstDay } from "./sleep-catch-up.ts";
 
-describe("listMonthEndsInRange", () => {
-  it("lists month-ends inside inclusive range", () => {
-    expect(listMonthEndsInRange("2026-01-15", "2026-03-10")).toEqual(["2026-01-31", "2026-02-28"]);
+describe("listMonthStartsInRange", () => {
+  it("lists month starts inside inclusive range", () => {
+    expect(listMonthStartsInRange("2026-01-15", "2026-03-10")).toEqual([
+      "2026-02-01",
+      "2026-03-01",
+    ]);
   });
 
-  it("includes boundary month-ends", () => {
-    expect(listMonthEndsInRange("2026-01-31", "2026-01-31")).toEqual(["2026-01-31"]);
+  it("includes boundary month starts", () => {
+    expect(listMonthStartsInRange("2026-02-01", "2026-02-01")).toEqual(["2026-02-01"]);
+  });
+
+  it("includes Jan 1 when in range", () => {
+    expect(listMonthStartsInRange("2026-01-01", "2026-01-15")).toEqual(["2026-01-01"]);
   });
 
   it("returns empty when from > to", () => {
-    expect(listMonthEndsInRange("2026-03-01", "2026-01-01")).toEqual([]);
+    expect(listMonthStartsInRange("2026-03-01", "2026-01-01")).toEqual([]);
   });
 });
 
 describe("computeSleepCatchUpDays", () => {
-  it("computes light and temporal gaps and cascade month-ends", () => {
+  it("computes light and temporal gaps and cascade month starts", () => {
     const result = computeSleepCatchUpDays({
       activityDays: ["2026-01-10", "2026-01-20", "2026-02-05"],
       completedLightDays: new Set(["2026-01-10"]),
@@ -27,7 +34,7 @@ describe("computeSleepCatchUpDays", () => {
     expect(result.light_days).toEqual(["2026-01-20", "2026-02-05"]);
     expect(result.temporal_days).toEqual(["2026-01-10", "2026-02-05"]);
     expect(result.days).toEqual(["2026-01-10", "2026-01-20", "2026-02-05"]);
-    expect(result.cascade_days).toEqual(["2026-01-31"]);
+    expect(result.cascade_days).toEqual(["2026-01-01", "2026-02-01"]);
   });
 
   it("omits cascade when nothing to catch up", () => {

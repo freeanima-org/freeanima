@@ -21,12 +21,26 @@ import {
   searchSemanticMemory,
   updateSemanticMemory,
 } from "@freeanima/host/core/db/pg/semantic-memory";
+import { listTemporalSummaries } from "@freeanima/host/core/db/pg/temporal-summary";
+import type { TemporalSummaryWindow } from "@freeanima/host/core/db/schema/entity/components/temporal-summary";
 import { PATHS } from "@freeanima/host/platform/config";
 import { omitUndefined } from "@freeanima/host/core/util";
+import { getActiveRuntimeConfig } from "@freeanima/host/core/config";
+import { cacheGetJson, cacheSetJson } from "@freeanima/host/capabilities/connectors/redis";
+import { loadSelfLayerPrompt } from "@freeanima/host/capabilities/self";
 import {
-  memoryScopedSearch,
-  type MemoryScopedSearchResult,
-} from "@freeanima/host/capabilities/memory/search";
+  runPassiveRecallDebug,
+  type PassiveRecallDebugResult,
+} from "@freeanima/host/capabilities/memory/passive-recall/debug-run.ts";
+import {
+  listTemporalSystemRolls,
+  regenerateTemporalSystemRoll,
+  rebuildMonthSummary,
+  rebuildYearSummary,
+  resolveTemporalSummaryConfig,
+  runTemporalSummaryDay,
+  type SysRollKind,
+} from "@freeanima/host/capabilities/memory/temporal-summary";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 export type MemoryListResult<T> = {
@@ -66,17 +80,118 @@ function readMemoryEntry(path: string, displayName: string): MemoryFileEntry | n
   }
 }
 
-export async function memorySearch(args: {
-  query: string;
+export async function passiveRecallDebug(args: {
+  user_text: string;
   limit?: number;
-  memory_types?: readonly ("semantic" | "conversation" | "limbic" | "autobiographical")[];
-}): Promise<MemoryScopedSearchResult> {
-  const query = args.query.trim();
-  if (!query) throw new Error("query is required");
-  return memoryScopedSearch(
-    query,
-    omitUndefined({ limit: args.limit, memory_types: args.memory_types }),
+}): Promise<PassiveRecallDebugResult> {
+  return runPassiveRecallDebug({
+    user_text: args.user_text,
+    ...(args.limit !== undefined ? { limit: args.limit } : {}),
+  });
+}
+
+export async function listTemporalSummaryMemories(args: {
+  window?: TemporalSummaryWindow;
+  period_start_from?: string;
+  period_start_to?: string;
+  offset?: number;
+  limit?: number;
+}) {
+  const { offset, limit } = clampPagination(args.offset, args.limit);
+  const result = await listTemporalSummaries(
+    omitUndefined({
+      window: args.window,
+      period_start_from: args.period_start_from,
+      period_start_to: args.period_start_to,
+      offset,
+      limit,
+    }),
   );
+  return {
+    items: result.items.map((row) => ({
+      ...row,
+      updated_at: row.updated_at.toISOString(),
+      content_chars: row.content.length,
+    })),
+    total: result.total,
+    offset,
+    limit,
+  };
+}
+
+function peerCache() {
+  return {
+    getJson: cacheGetJson,
+    setJson: cacheSetJson,
+  };
+}
+
+export async function regenerateTemporalSummary(args: {
+  window: TemporalSummaryWindow;
+  period_start: string;
+}) {
+  const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
+  const selfContent = await loadSelfLayerPrompt();
+  if (args.window === "day") {
+    const result = await runTemporalSummaryDay({
+      selfContent,
+      config,
+      day: args.period_start,
+    });
+    return {
+      ok: result.ok,
+      window: "day" as const,
+      period_start: args.period_start,
+      entity_id: result.entity_id ?? null,
+      summary: result.summary,
+      skipped: result.skipped ?? null,
+    };
+  }
+  if (args.window === "month") {
+    const result = await rebuildMonthSummary({
+      selfContent,
+      config,
+      period_start: args.period_start,
+    });
+    return {
+      ok: result.ok,
+      window: "month" as const,
+      period_start: args.period_start,
+      entity_id: result.entity_id ?? null,
+      summary: result.summary,
+      skipped: result.skipped ?? null,
+    };
+  }
+  const result = await rebuildYearSummary({
+    selfContent,
+    config,
+    period_start: args.period_start,
+  });
+  return {
+    ok: result.ok,
+    window: "year" as const,
+    period_start: args.period_start,
+    entity_id: result.entity_id ?? null,
+    summary: result.summary,
+    skipped: result.skipped ?? null,
+  };
+}
+
+export async function listTemporalSystemRollMemories() {
+  const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
+  return listTemporalSystemRolls({ config, peerCache: peerCache() });
+}
+
+export async function regenerateTemporalSystemRollMemory(args: { kind: SysRollKind }) {
+  const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
+  const selfContent = await loadSelfLayerPrompt();
+  const item = await regenerateTemporalSystemRoll({
+    kind: args.kind,
+    config,
+    selfContent,
+    peerCache: peerCache(),
+  });
+  return { ok: true as const, item };
 }
 
 /** PG STORED content_fts auto-maintained; returns semantic_memory row count */

@@ -22,10 +22,11 @@ export function habitatNavGroups(): HabitatNavGroup[] {
       id: "memory",
       label: m.habitat_nav_group_memory(),
       items: [
-        { to: "/memory", label: m.habitat_nav_memory() },
+        { to: "/passive-recall", label: m.habitat_nav_passive_recall() },
         { to: "/semantic-memory", label: m.habitat_nav_semantic() },
         { to: "/limbic-memory", label: m.habitat_nav_limbic() },
         { to: "/autobiographical-memory", label: m.habitat_nav_autobio() },
+        { to: "/temporal-summary", label: m.habitat_nav_temporal_summary() },
         { to: "/conversations", label: m.habitat_nav_conversations() },
         { to: "/fts", label: m.habitat_nav_fts() },
         { to: "/sleep", label: m.habitat_nav_sleep() },

@@ -70,12 +70,12 @@ Bootstrap and runtime are **not merged** into a single config object (no `AnimaC
 
 Settings / Habitat UI already expose many sections; the following are **registered in `runtimeConfigSchema` but not (fully) editable in UI** (ops / Habitat RPC / hand edit still work). Do not treat missing UI as “unused config”.
 
-| Gap                        | Sections                                  | Notes                                                                                                        |
-| -------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| **No Settings panel**      | `i18n`, `clarify`, `prompt`               | `i18n` is transferred (locale/timezone); `clarify` live; `prompt.system_prompt_budget_chars`                 |
-| **Legacy / overlap**       | `notifications`                           | Subject ids; prefer `worlds` (boot may still read as fallback)                                               |
-| **Likely dead / reserved** | `push`, `fallback_providers`, `platforms` | Little or no product consumer; candidates for later cleanup                                                  |
-| **Partial UI**             | `compression`, `memory`                   | Compression UI omits trigger/summary fields; memory UI is `passive_recall` only (`temporal_summary` missing) |
+| Gap                        | Sections                                  | Notes                                                                                                       |
+| -------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **No Settings panel**      | `i18n`, `clarify`, `prompt`               | `i18n` is transferred (locale/timezone); `clarify` live; `prompt.system_prompt_budget_chars`                |
+| **Legacy / overlap**       | `notifications`                           | Subject ids; prefer `worlds` (boot may still read as fallback)                                              |
+| **Likely dead / reserved** | `push`, `fallback_providers`, `platforms` | Little or no product consumer; candidates for later cleanup                                                 |
+| **Partial UI**             | `compression`, `memory`                   | Compression UI omits trigger/summary fields; memory ops: `passive-recall` debug + `temporal-summary` browse |
 
 Covered elsewhere: `mcp_servers` → Habitat `/habitat/mcp`; `companion` → Settings → 桌面伴侣；most advanced sections → Settings → Habitat 服务配置。
 
@@ -107,7 +107,7 @@ Token accounting for compression / FTS indexes **LLM-visible `content` only**.
 
 ### System prompt budgets
 
-`systemPromptBuild` sections carry optional `budgetChars` and `priority`. Fold applies per-section caps, then a global `prompt.system_prompt_budget_chars` (runtime config). Core identity sections (`self`, `memory-citation`) are never silently dropped. Resident modules such as `env-health` and `user-activity-stats` stay in the system prompt but are budget-controlled.
+`systemPromptBuild` sections carry optional `budgetChars` and `priority`. Fold applies per-section caps, then a global `prompt.system_prompt_budget_chars` (default **32000**). When over the global budget, fold **truncates within** lower-priority sections first; entire sections are dropped only as a last resort. Core identity sections (`self`, `memory-citation`, `memory-recall`) are never silently dropped. Resident modules such as `env-health` and `user-activity-stats` stay in the system prompt but are budget-controlled.
 
 ## Four Cognitive Layers
 

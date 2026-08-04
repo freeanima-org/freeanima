@@ -379,12 +379,26 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     messaging.interruptSessionStream(this.messagingDeps(), conversationId);
   }
 
-  memorySearch(args: {
-    query: string;
-    limit?: number;
-    memory_types?: readonly ("semantic" | "conversation" | "limbic" | "autobiographical")[];
-  }) {
-    return memory.memorySearch(args);
+  passiveRecallDebug(args: { user_text: string; limit?: number }) {
+    return memory.passiveRecallDebug(args);
+  }
+
+  listTemporalSummaries(args?: Parameters<typeof memory.listTemporalSummaryMemories>[0]) {
+    return memory.listTemporalSummaryMemories(args ?? {});
+  }
+
+  regenerateTemporalSummary(args: Parameters<typeof memory.regenerateTemporalSummary>[0]) {
+    return memory.regenerateTemporalSummary(args);
+  }
+
+  listTemporalSystemRolls() {
+    return memory.listTemporalSystemRollMemories();
+  }
+
+  regenerateTemporalSystemRoll(
+    args: Parameters<typeof memory.regenerateTemporalSystemRollMemory>[0],
+  ) {
+    return memory.regenerateTemporalSystemRollMemory(args);
   }
 
   countSemanticMemory(): Promise<{ index_rows: number }> {

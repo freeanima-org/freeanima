@@ -2,7 +2,10 @@ import { describe, it, expect } from "bun:test";
 import {
   createConversationBodySchema,
   sendMessageBodySchema,
-  memorySearchBodySchema,
+  passiveRecallDebugBodySchema,
+  temporalSummaryListBodySchema,
+  temporalSummaryRegenerateBodySchema,
+  temporalSystemRollRegenerateBodySchema,
   worldEntityCreateBodySchema,
   subjectEntityCreateBodySchema,
 } from "./api/schemas.ts";
@@ -17,10 +20,38 @@ describe("api/schemas", () => {
     expect(bad.success).toBe(false);
   });
 
-  it("validates memory search query", () => {
-    const ok = memorySearchBodySchema.safeParse({ query: "  test  ", limit: 5 });
+  it("validates passive recall debug body", () => {
+    const ok = passiveRecallDebugBodySchema.safeParse({ user_text: "  test  ", limit: 5 });
     expect(ok.success).toBe(true);
-    if (ok.success) expect(ok.data.query).toBe("test");
+    if (ok.success) expect(ok.data.user_text).toBe("test");
+  });
+
+  it("validates temporal summary list body", () => {
+    const ok = temporalSummaryListBodySchema.safeParse({
+      window: "day",
+      offset: 0,
+      limit: 20,
+    });
+    expect(ok.success).toBe(true);
+  });
+
+  it("validates temporal regenerate and system roll bodies", () => {
+    expect(
+      temporalSummaryRegenerateBodySchema.safeParse({
+        window: "month",
+        period_start: "2026-01-01",
+      }).success,
+    ).toBe(true);
+    expect(
+      temporalSummaryRegenerateBodySchema.safeParse({
+        window: "day",
+        period_start: "bad",
+      }).success,
+    ).toBe(false);
+    expect(temporalSystemRollRegenerateBodySchema.safeParse({ kind: "past_days" }).success).toBe(
+      true,
+    );
+    expect(temporalSystemRollRegenerateBodySchema.safeParse({ kind: "near7" }).success).toBe(false);
   });
 
   it("requires platform on create conversation", () => {

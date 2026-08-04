@@ -150,7 +150,7 @@ After downtime or migration, **Catch up sleep** on the same page:
 2. For each day with conversation activity (same filter as light-sleep):
    - Missing successful `light-sleep` → run `light-sleep` (`force`, trigger `catch_up`)
    - Missing global `temporal_summary` day entity → run `temporal-summary-day`
-3. Then runs `temporal-summary-cascade` for month-ends in that range
+3. Then runs `temporal-summary-cascade` for **month starts** in that range (rebuilds the previous month; Jan 1 also rebuilds the previous year)
 
 **Not included:** deep-sleep (inventory-wide; late run still works), dream (use single-step Force if needed), conversation half-hour ticks (today-only).
 

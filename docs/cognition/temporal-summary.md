@@ -18,7 +18,7 @@ title: Temporal Summary
 | Stance         | Subjective             | Objective                                                              |
 | Selection      | Editorial              | Indiscriminate coverage of active sessions                             |
 | Storage        | `diary_entry` + blocks | Global → entity; today per-conversation → `conversations.temporal_day` |
-| Primary reader | `/diary` UI            | System prompt (yesterday+) / timeline inject (today peers)             |
+| Primary reader | `/diary` UI            | System prompt (three reverse rollups) / timeline inject (today peers)  |
 
 LLM compression still applies (char caps). **Not the memory main store** (semantic / limbic / narrative live elsewhere — see [`memory.md`](memory.md)). Temporal summary is a **time-awareness digest**: highly compressed headlines, not detail replay. Same char budget over larger windows ≈ human-like decay (year still ~100 chars). **Objective ≠ exhaustive log replay**: cover themes without an editorial filter, omit IDs / step-by-step tool actions / per-notification timestamps.
 
@@ -54,18 +54,23 @@ Chunks are **append-only** within a CST day. Tick only pushes new chunks when th
 
 Unique on `(window, period_start)` for global rows (expression unique index).
 
-## Generation
+## Generation（期结束后汇总）
 
-| Step               | Trigger                                                            | Output                                                         |
-| ------------------ | ------------------------------------------------------------------ | -------------------------------------------------------------- |
-| Conversation chunk | in-process `Bun.cron` `builtin-temporal-summary-tick` `*/30`       | Append chunk if **CST-today message activity** after watermark |
-| Peer rollup        | Same tick / on assemble for **closed** buckets                     | One merged peer digest per viewer source-set → Redis cache     |
-| Global day         | Sleep step `temporal-summary-day` (after light-sleep)              | Overwrite global `day` entity for sleep day                    |
-| Month / year       | Sleep step `temporal-summary-cascade` (after temporal-summary-day) | Month on month-end; year on Dec 31                             |
+| Step               | Trigger                                                        | Output                                                         |
+| ------------------ | -------------------------------------------------------------- | -------------------------------------------------------------- |
+| Conversation chunk | in-process `Bun.cron` `builtin-temporal-summary-tick` `*/30`   | Append chunk if **CST-today message activity** after watermark |
+| Peer rollup        | Same tick / on assemble for **closed** buckets                 | One merged peer digest per viewer source-set → Redis cache     |
+| Global day         | Sleep step `temporal-summary-day` (after light-sleep)          | Overwrite global `day` entity for that sleep day               |
+| Month              | Sleep step `temporal-summary-cascade` on **month start** (1st) | Previous month from its day entities                           |
+| Year               | Same cascade on **Jan 1**                                      | Previous year from its month entities                          |
 
-Tick **does not** use `conversations.updated_at` as the candidate gate (opening a chat / rebuilding system prompt / writing `temporal_day` can bump that column without new messages). Candidates are conversations with at least one message whose `payload.timestamp` falls on the current CST calendar day. Material for each chunk is messages after `max(watermark_at, CST day start)` — never a cross-day dump of older history when the day rolls and chunks reset. Writing `temporal_day` must **not** bump `updated_at`.
+Example: on **2026-01-01**, cascade writes December 2025 month (if days exist) and **2025** year (if months exist). Habitat **Catch up sleep** schedules cascade on month-start dates in range.
+
+Tick **does not** use `conversations.updated_at` as the candidate gate. Candidates are conversations with at least one message whose `payload.timestamp` falls on the current CST calendar day. Writing `temporal_day` must **not** bump `updated_at`.
 
 Identity context (self + resident) must ride with LLM summarization calls.
+
+Habitat UI `/web/habitat/temporal-summary` can **regenerate** any day / month / year row (`memory.temporalRegenerate`).
 
 ### Redis peer rollup key
 
@@ -79,14 +84,32 @@ Identity context (self + resident) must ride with LLM summarization calls.
 - TTL: ~36h (discardable cache via Redis cache layer + in-process fallback)
 - Miss: LLM merge (or concatenate truncate if LLM unavailable); Hit: reuse
 
-Same source set shares one key across viewers that exclude the same peers.
+### Redis system roll keys（系统提示合摘要）
+
+Stable keys (no fingerprint in the path) so Habitat can list cache slots:
+
+```text
+{prefix}:sys_roll:past_days:{today}
+{prefix}:sys_roll:past_months:{yyyy-mm}
+{prefix}:sys_roll:past_years:{yyyy}
+```
+
+- Value: `{ summary, sources_fp, created_at }` — reuse when `sources_fp` matches current source rows
+- Cap: `global_day_max_chars` (default **100**) per roll
+- TTL: `peer_roll_ttl_seconds`
+- Habitat tab **System rolls**: `memory.temporalSystemRollList` / `memory.temporalSystemRollRegenerate`
 
 ## Injection（LLM prefix / KV cache）
 
-| Content                       | Where                                    | When it changes               |
-| ----------------------------- | ---------------------------------------- | ----------------------------- |
-| Yesterday … earlier (rolling) | System prompt section `temporal-summary` | CST 02:00 rebuild only        |
-| Today other sessions          | **Not** system                           | Closed half-hour buckets only |
+System prompt section `temporal-summary` injects **at most three** reverse rollups (near → far), each ≤100 chars:
+
+| Block  | Sources                                                               | When empty                           |
+| ------ | --------------------------------------------------------------------- | ------------------------------------ |
+| 过往日 | `day` entities with `period_start` in **this month** and before today | e.g. 1st of month                    |
+| 过往月 | `month` entities this year with `period_start` before this month-01   | e.g. January before any month exists |
+| 过往年 | `year` entities with `period_start` before this year-01-01            | first year of history                |
+
+Older detail is **not** listed raw: completed months/years already compressed at cascade time. Today peer activity stays on the **timeline** (not system).
 
 ### Today: timeline insert (one block per closed bucket)
 
@@ -120,4 +143,4 @@ If the assembled system section exceeds `system_prompt_max_chars`, Habitat trunc
 
 Global day overwrite is a **side product** of the sleep cycle, not a replacement for light-sleep semantic / limbic / autobiography stages.
 
-Habitat **Catch up sleep** backfills missing global `day` entities (and month/year cascade for month-ends in range) alongside missing light-sleep; see [`sleep.md`](sleep.md) Historical Day.
+Habitat **Catch up sleep** backfills missing global `day` entities (and month/year cascade on month starts in range) alongside missing light-sleep; see [`sleep.md`](sleep.md) Historical Day.
