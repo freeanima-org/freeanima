@@ -40,6 +40,18 @@ Windows source development uses the monorepo path (`just dev` / `just dev habita
 
 Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.md)。
 
+## LLM provider 超时（openai_compatible）
+
+`llm.providers.<id>` 支持三层超时（chat 流式 / 非流式；embedding 仍只用 `timeout_ms`）：
+
+| 字段                    | 默认              | 含义                                                         |
+| ----------------------- | ----------------- | ------------------------------------------------------------ |
+| `timeout_ms`            | `600000`（10min） | **整体**墙钟：发请求 → 结束                                  |
+| `first_byte_timeout_ms` | `30000`           | **首字节**：到首个 stream chunk / 非流响应返回               |
+| `idle_timeout_ms`       | `120000`          | **chunk idle**（仅流式）：相邻 chunk 间隔；须 ≤ `timeout_ms` |
+
+`first_byte_timeout_ms` / `idle_timeout_ms` 也须 ≤ `timeout_ms`。超时错误仍为 `ProviderErrorCode=timeout`，文案含 `first_byte` / `overall` / `idle`。
+
 ## Common commands
 
 ```bash

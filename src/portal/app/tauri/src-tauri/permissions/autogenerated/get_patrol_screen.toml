@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-get-patrol-screen"
+description = "Enables the get_patrol_screen command without any pre-configured scope."
+commands.allow = ["get_patrol_screen"]
+
+[[permission]]
+identifier = "deny-get-patrol-screen"
+description = "Denies the get_patrol_screen command without any pre-configured scope."
+commands.deny = ["get_patrol_screen"]

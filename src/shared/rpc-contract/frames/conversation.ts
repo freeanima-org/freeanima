@@ -6,6 +6,7 @@ export const conversationCreateInputSchema = z.object({
   workspace_root: z.string().optional(),
   workspace_gitignore: z.boolean().optional(),
   workspace_show_hidden: z.boolean().optional(),
+  project_world_id: z.number().int().positive().optional(),
 });
 
 export type ConversationCreateInput = z.infer<typeof conversationCreateInputSchema>;

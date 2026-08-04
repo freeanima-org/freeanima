@@ -9,8 +9,17 @@
 | `src/portal/app/tauri/`  | 统一 Portal：`src-tauri` + bridge + lib/spa       |
 | `src/client/portal-sdk/` | `ShellApi` / `getShellKind()`（`web` \| `tauri`） |
 
-开发：`just dev tauri`（桌面）；`just dev tauri-android`（移动）。
-打包：`just pack tauri-linux` / `just pack tauri-windows` / `just pack tauri-android`。
+开发（Win / Linux / mac **同一命令**）：`just dev tauri`（桌面；需 Vite `:5000`）；`just dev tauri-android`（移动）。
+打包：
+
+| 配方                      | 含义                                                |
+| ------------------------- | --------------------------------------------------- |
+| `just pack tauri`         | **当前宿主**桌面壳（Windows→NSIS / Linux→AppImage） |
+| `just pack tauri-windows` | Windows 上本机 MSVC；Linux/mac 上交叉 NSIS          |
+| `just pack tauri-linux`   | 仅 Linux 本机 AppImage                              |
+| `just pack tauri-android` | Android APK                                         |
+
+依赖：`just install tauri`（本机）；交叉 Windows：`just install tauri-windows`（非 Windows 宿主）。
 CI / 本地 release profile 优先级：**构建速度 > 体积 > 运行速度**（无 fat LTO；详见 [`release.md`](release.md)「Tauri 打包加速约定」）。
 
 **身份与数据目录**（由 `FREEANIMA_BUILD_CHANNEL` 派生；未设 ⇒ `dev`）：
@@ -41,6 +50,16 @@ NSIS 安装目录 = `productName`（无独立 installDir）。`just pack tauri-w
 - overlay SPA 打入 `frontendDist` 的 `ui/companion/`，打包态用 `WebviewUrl::App`（与主窗同协议）；**禁止** `file://` 加载 resources（Windows 空窗 / IPC 失败）。
 - Dev：`COMPANION_OVERLAY_URL` → Vite `:4176`（`just dev tauri`）。
 - overlay 自持 Habitat RPC + `remote_tools.attach`；**无** localhost Node HTTP host。
+- 关显示 = **close** WebView → attach 拆除（伴侣离线）。
+
+## Coding 前哨窗（桌面）
+
+- 独立有边框应用窗（label `coding`）；SPA 在 `frontendDist` 的 `ui/coding/`；`app_id: coding` + `remote_tools.attach`。
+- UI：**Agent Window** 模式（多 Agent 会话、可无工作区 / 多根；文件预览 Shiki + 行号）。见 [`docs/modules/coding.md`](../../docs/modules/coding.md)。
+- Dev：`CODING_WINDOW_URL`（Vite `:4186`）；打包 `WebviewUrl::App("coding/index.html")`。
+- **Dev 远程 Vite 须 IPC**：`capabilities/default.json` 的 `remote.urls` 须包含 `http://127.0.0.1:4186/*`（及 companion `:4176`、主窗 `:5000`），且 `build.rs` AppManifest + capability 须列出对应 `allow-*`（否则 Vite 页 `invoke` 报 `not allowed. Plugin not found`）。改 capability / build.rs 后需**重启** `just dev tauri`。
+- **Keep-alive**：关 UI 优先 **hide 不 close**，以保持 Outpost attach；勿照搬 Companion close=离线。主窗关闭不销毁 Coding 窗。
+- 壳提供薄 FS / spawn IPC（workspace 沙箱在 TS）；**禁止** Node sidecar。
 
 ## 移动与小组件
 

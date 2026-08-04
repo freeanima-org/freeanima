@@ -78,6 +78,8 @@ function createBrowserDevShellStub(habitatUrl = "", remoteAuthToken = ""): Shell
     habitatWsUrl: apiFields.habitatWsUrl,
     createFileInstanceStore: (appId) =>
       browserRemoteInstanceStore(trimmedHabitatUrl || "http://127.0.0.1:2658", appId),
+    // browser/dev stub：无 Rust IPC；Coding SPA 用 prompt 选路径，工具需测试 backend
+    pickDirectory: async () => null,
     emitConfigChanged: async () => {},
     listenConfigChanged: () => () => {},
   };

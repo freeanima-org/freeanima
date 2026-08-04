@@ -386,6 +386,7 @@
   <msg id="habitat_entities_col_id">ID</msg>
   <msg id="habitat_entities_col_owner_subject">Owner subject</msg>
   <msg id="habitat_entities_col_summary">Summary</msg>
+  <msg id="habitat_entities_col_stable_key">Stable key</msg>
   <msg id="habitat_entities_col_title">Title</msg>
   <msg id="habitat_entities_col_type">Type</msg>
   <msg id="habitat_entities_col_visibility">Visibility</msg>

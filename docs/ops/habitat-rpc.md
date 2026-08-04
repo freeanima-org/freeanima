@@ -18,10 +18,10 @@ Binary HTTP methods (e.g. `tts.synthesize`, companion assets, TLS PEM/QR) use Ha
 | Situation                                                    | Mechanism                                                             |
 | ------------------------------------------------------------ | --------------------------------------------------------------------- |
 | Peer is dialable (has a stable inbound MCP/HTTP listener)    | **MCP** — expose tools to each other                                  |
-| Product UI (Chat, Task, Settings, …)                         | Habitat RPC only — **no** remote-tool attach                          |
+| Main-shell product UI (Chat, Task, Settings, …)              | Habitat RPC only — **no** remote-tool attach                          |
 | Unreachable local app (no inbound listener Habitat can dial) | App **actively connects** and registers remote tools over Habitat RPC |
 
-Desktop companion is the in-tree example of the third row. Future independent local apps may do the same without being a Portal shell.
+In-tree Outposts: desktop **Companion** overlay and **Coding** outpost window (same Tauri Portal). Coding sessions should default to Outpost FS/terminal tools and must **not** silently fall back to Habitat-local `file_*`. See [`coding.md`](../modules/coding.md).
 
 ## Remote tool registration
 
@@ -48,10 +48,10 @@ Helpers: `resolveHabitatRpcWsUrl`, `buildHabitatRestRequest` in `@freeanima/shar
 
 ## Client profiles
 
-| Profile          | Attach                          | Typical consumer                                                |
-| ---------------- | ------------------------------- | --------------------------------------------------------------- |
-| Bundled SPA      | **No**                          | Chat, task, notification, diary, email                          |
-| Remote-tool host | **Yes** (`remote_tools.attach`) | companion (overlay WebView-host); future independent local apps |
+| Profile          | Attach                          | Typical consumer                                                            |
+| ---------------- | ------------------------------- | --------------------------------------------------------------------------- |
+| Bundled SPA      | **No**                          | Chat, task, notification, diary, email                                      |
+| Remote-tool host | **Yes** (`remote_tools.attach`) | companion overlay; **coding** outpost window; future independent local apps |
 
 Bundled SPA shares **one** Habitat RPC WebSocket per page load. Product modules pass a simple `platform` channel (e.g. `"chat"`), never a remote-tool `instance_id`.
 

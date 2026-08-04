@@ -102,6 +102,26 @@ describe("worldConfigBodySchema", () => {
     });
     expect(parsed.success).toBe(false);
   });
+
+  it("accepts stable_key with prefix", () => {
+    const parsed = worldConfigBodySchema.safeParse({
+      stable_key: "  git:github.com/org/foo  ",
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.stable_key).toBe("git:github.com/org/foo");
+  });
+
+  it("accepts novel/manual stable_key prefixes", () => {
+    expect(worldConfigBodySchema.safeParse({ stable_key: "novel:crane-summer" }).success).toBe(
+      true,
+    );
+    expect(worldConfigBodySchema.safeParse({ stable_key: "manual:scratch" }).success).toBe(true);
+  });
+
+  it("rejects empty or invalid stable_key", () => {
+    expect(worldConfigBodySchema.safeParse({ stable_key: "   " }).success).toBe(false);
+    expect(worldConfigBodySchema.safeParse({ stable_key: "no-prefix" }).success).toBe(false);
+  });
 });
 
 describe("normalizeWorldGrants", () => {

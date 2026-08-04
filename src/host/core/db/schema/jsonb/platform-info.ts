@@ -43,6 +43,8 @@ const remotePlatformInfoSchema = z.looseObject({
   workspace_root: z.string().optional(),
   workspace_gitignore: z.boolean().optional(),
   workspace_show_hidden: z.boolean().optional(),
+  /** Coding / 项目会话绑定的 Project World id */
+  project_world_id: z.number().int().positive().optional(),
 });
 
 const cronPlatformInfoSchema = z.looseObject({
@@ -52,6 +54,8 @@ const cronPlatformInfoSchema = z.looseObject({
 /** bundled Chat 会话（flat platform，无 SAP instance 段） */
 const chatPlatformInfoSchema = z.looseObject({
   platform: z.literal("chat"),
+  workspace_root: z.string().optional(),
+  project_world_id: z.number().int().positive().optional(),
 });
 
 /** Keys excluded from origin identity matching / probe construction */

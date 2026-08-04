@@ -392,6 +392,7 @@
   "habitat_entities_col_id": "ID",
   "habitat_entities_col_owner_subject": "归属主体",
   "habitat_entities_col_summary": "摘要",
+  "habitat_entities_col_stable_key": "稳定键",
   "habitat_entities_col_title": "标题",
   "habitat_entities_col_type": "类型",
   "habitat_entities_col_visibility": "可见性",

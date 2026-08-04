@@ -99,6 +99,13 @@ const worldGrantInputSchema = z.object({
   permission: z.enum(["read", "write"]),
 });
 
+const worldStableKeyInputSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(256)
+  .regex(/^[a-z][a-z0-9_]*:.+$/i, "stable_key must look like prefix:value");
+
 export const worldEntityCreateBodySchema = z
   .object({
     title: z.string(),
@@ -107,6 +114,7 @@ export const worldEntityCreateBodySchema = z
     private: z.boolean().optional().default(false),
     owner_subject_id: z.number().int().positive().optional(),
     grants: z.array(worldGrantInputSchema).optional(),
+    stable_key: worldStableKeyInputSchema.optional(),
   })
   .transform((b) => ({
     title: b.title.trim(),
@@ -115,6 +123,7 @@ export const worldEntityCreateBodySchema = z
     private: b.private ?? false,
     owner_subject_id: b.owner_subject_id,
     grants: b.grants,
+    stable_key: b.stable_key,
   }))
   .refine((b) => b.title.length > 0, { message: "title is required" })
   .superRefine((b, ctx) => {
@@ -134,6 +143,7 @@ const worldEntityUpdateFieldsSchema = z
     private: z.boolean().optional(),
     owner_subject_id: z.number().int().positive().nullable().optional(),
     grants: z.array(worldGrantInputSchema).optional(),
+    stable_key: worldStableKeyInputSchema.optional(),
   })
   .transform((b) => ({
     title: b.title !== undefined ? b.title.trim() : undefined,
@@ -142,6 +152,7 @@ const worldEntityUpdateFieldsSchema = z
     private: b.private,
     owner_subject_id: b.owner_subject_id,
     grants: b.grants,
+    stable_key: b.stable_key,
   }))
   .refine((b) => b.title === undefined || b.title.length > 0, { message: "title is required" })
   .superRefine((b, ctx) => {
@@ -165,6 +176,7 @@ export const worldEntityPatchInputSchema = z
     private: z.boolean().optional(),
     owner_subject_id: z.number().int().positive().nullable().optional(),
     grants: z.array(worldGrantInputSchema).optional(),
+    stable_key: worldStableKeyInputSchema.optional(),
   })
   .transform((b) => ({
     id: b.id,
@@ -174,6 +186,7 @@ export const worldEntityPatchInputSchema = z
     private: b.private,
     owner_subject_id: b.owner_subject_id,
     grants: b.grants,
+    stable_key: b.stable_key,
   }))
   .refine((b) => b.title === undefined || b.title.length > 0, { message: "title is required" })
   .superRefine((b, ctx) => {

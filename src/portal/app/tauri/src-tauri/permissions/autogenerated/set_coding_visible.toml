@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-set-coding-visible"
+description = "Enables the set_coding_visible command without any pre-configured scope."
+commands.allow = ["set_coding_visible"]
+
+[[permission]]
+identifier = "deny-set-coding-visible"
+description = "Denies the set_coding_visible command without any pre-configured scope."
+commands.deny = ["set_coding_visible"]

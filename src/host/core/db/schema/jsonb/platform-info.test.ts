@@ -43,6 +43,23 @@ describe("platform-info", () => {
     expect(info).toMatchObject({ platform: "chat", note: "x" });
   });
 
+  test("buildPlatformInfo accepts project_world_id on chat and remote", () => {
+    expect(buildPlatformInfo("chat", { project_world_id: 12 })).toMatchObject({
+      platform: "chat",
+      project_world_id: 12,
+    });
+    expect(
+      buildPlatformInfo("remote:coding:inst-1", {
+        workspace_root: "/repo",
+        project_world_id: 99,
+      }),
+    ).toMatchObject({
+      platform: "remote:coding:inst-1",
+      workspace_root: "/repo",
+      project_world_id: 99,
+    });
+  });
+
   test("stripOriginRoutingMeta removes routing keys", () => {
     expect(stripOriginRoutingMeta({ origin_active: true, ended_at: "x", channel_id: "1" })).toEqual(
       {

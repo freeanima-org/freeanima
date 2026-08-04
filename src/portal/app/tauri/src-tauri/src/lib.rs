@@ -1,4 +1,4 @@
-//! FreeAnima Portal — Tauri host（桌面：主窗 + companion；移动：单 WebView + 小组件）。
+//! FreeAnima Portal — Tauri host（桌面：主窗 + companion + coding；移动：单 WebView + 小组件）。
 
 #[cfg(all(desktop, target_os = "windows"))]
 mod packaged_update;
@@ -6,6 +6,8 @@ mod packaged_update;
 mod windows_aumid;
 #[cfg(desktop)]
 mod shell_icons;
+#[cfg(desktop)]
+mod coding_fs;
 #[cfg(mobile)]
 mod apk_installer_plugin;
 
@@ -27,6 +29,10 @@ use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}
 const COMPANION_W: f64 = 160.0;
 #[cfg(desktop)]
 const COMPANION_H: f64 = 260.0;
+#[cfg(desktop)]
+const CODING_W: f64 = 1280.0;
+#[cfg(desktop)]
+const CODING_H: f64 = 800.0;
 const DEFAULT_HABITAT: &str = "http://127.0.0.1:2658";
 const SHELL_PREFS_FILE: &str = "desktop-shell.json";
 
@@ -44,6 +50,8 @@ struct PersistedShellPrefs {
   remote_auth_token: String,
   #[serde(default = "default_companion_visible")]
   companion_visible: bool,
+  #[serde(default)]
+  coding_visible: bool,
 }
 
 fn default_companion_visible() -> bool {
@@ -251,6 +259,8 @@ struct ShellState {
   #[cfg(desktop)]
   companion_visible: Mutex<bool>,
   #[cfg(desktop)]
+  coding_visible: Mutex<bool>,
+  #[cfg(desktop)]
   clickthrough: Mutex<bool>,
   #[cfg(desktop)]
   pointer_active: Mutex<bool>,
@@ -281,6 +291,8 @@ impl Default for ShellState {
     Self {
       #[cfg(desktop)]
       companion_visible: Mutex::new(prefs.companion_visible),
+      #[cfg(desktop)]
+      coding_visible: Mutex::new(prefs.coding_visible),
       #[cfg(desktop)]
       clickthrough: Mutex::new(false),
       #[cfg(desktop)]
@@ -313,6 +325,37 @@ fn companion_url(_app: &AppHandle) -> WebviewUrl {
   // 切勿用 file:// 加载 bundle resources — Windows WebView2 下常空窗（仅 DWM 虚线框）且 invoke 失败，
   // remote_tools.attach 也不会跑。Dev：`just dev tauri` 注入 COMPANION_OVERLAY_URL → :4176。
   WebviewUrl::App(std::path::PathBuf::from("companion/index.html"))
+}
+
+#[cfg(desktop)]
+fn coding_url(_app: &AppHandle) -> WebviewUrl {
+  if let Ok(url) = std::env::var("CODING_WINDOW_URL") {
+    if let Ok(parsed) = url.parse() {
+      return WebviewUrl::External(parsed);
+    }
+  }
+  WebviewUrl::App(std::path::PathBuf::from("coding/index.html"))
+}
+
+#[cfg(desktop)]
+fn ensure_coding(app: &AppHandle) -> Result<(), String> {
+  if app.get_webview_window("coding").is_some() {
+    return Ok(());
+  }
+  let url = coding_url(app);
+  let mut builder = WebviewWindowBuilder::new(app, "coding", url)
+    .title("编码工作台")
+    .inner_size(CODING_W, CODING_H)
+    .min_inner_size(800.0, 560.0)
+    .resizable(true)
+    .decorations(true)
+    .visible(false);
+  #[cfg(windows)]
+  {
+    builder = builder.additional_browser_args(webview_browser_args());
+  }
+  builder.build().map_err(|e| e.to_string())?;
+  Ok(())
 }
 
 #[cfg(desktop)]
@@ -389,15 +432,20 @@ fn set_habitat_config(
   };
   *state.habitat.lock().expect("habitat lock") = cfg.clone();
   #[cfg(desktop)]
-  let visible = *state.companion_visible.lock().expect("cv");
+  let companion_visible = *state.companion_visible.lock().expect("cv");
+  #[cfg(desktop)]
+  let coding_visible = *state.coding_visible.lock().expect("coding_vis");
   #[cfg(not(desktop))]
-  let visible = true;
+  let companion_visible = true;
+  #[cfg(not(desktop))]
+  let coding_visible = false;
   save_shell_prefs(
     &app,
     &PersistedShellPrefs {
       habitat_url: cfg.habitat_url,
       remote_auth_token: cfg.remote_auth_token,
-      companion_visible: visible,
+      companion_visible,
+      coding_visible,
     },
   )?;
   let _ = app.emit("shell:config-changed", ());
@@ -538,12 +586,14 @@ fn get_companion_visible(state: State<'_, ShellState>) -> bool {
 fn set_companion_visible(app: AppHandle, state: State<'_, ShellState>, visible: bool) -> Result<(), String> {
   *state.companion_visible.lock().expect("cv") = visible;
   let habitat = state.habitat.lock().expect("habitat lock").clone();
+  let coding_visible = *state.coding_visible.lock().expect("coding_vis");
   save_shell_prefs(
     &app,
     &PersistedShellPrefs {
       habitat_url: habitat.habitat_url,
       remote_auth_token: habitat.remote_auth_token,
       companion_visible: visible,
+      coding_visible,
     },
   )?;
   if visible {
@@ -565,6 +615,43 @@ fn set_companion_visible(app: AppHandle, state: State<'_, ShellState>, visible: 
       "shell:companion-model-status",
       serde_json::json!({ "loading": false, "error": null }),
     );
+  }
+  Ok(())
+}
+
+#[cfg(desktop)]
+#[tauri::command]
+fn get_coding_visible(state: State<'_, ShellState>) -> bool {
+  *state.coding_visible.lock().expect("coding_vis")
+}
+
+#[cfg(desktop)]
+#[tauri::command]
+fn set_coding_visible(app: AppHandle, state: State<'_, ShellState>, visible: bool) -> Result<(), String> {
+  *state.coding_visible.lock().expect("coding_vis") = visible;
+  let habitat = state.habitat.lock().expect("habitat lock").clone();
+  let companion_visible = *state.companion_visible.lock().expect("cv");
+  save_shell_prefs(
+    &app,
+    &PersistedShellPrefs {
+      habitat_url: habitat.habitat_url,
+      remote_auth_token: habitat.remote_auth_token,
+      companion_visible,
+      coding_visible: visible,
+    },
+  )?;
+  if visible {
+    ensure_coding(&app)?;
+    if let Some(win) = app.get_webview_window("coding") {
+      win.show().map_err(|e| e.to_string())?;
+      let _ = win.set_focus();
+      let _ = app.emit("shell:config-changed", ());
+    }
+  } else {
+    // Coding：hide 不 close，保持 SPA / attach 存活
+    if let Some(win) = app.get_webview_window("coding") {
+      let _ = win.hide();
+    }
   }
   Ok(())
 }
@@ -845,9 +932,10 @@ fn dirs_next_home() -> std::path::PathBuf {
 #[cfg(desktop)]
 fn build_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
   let show = MenuItem::with_id(app, "show", "打开主窗口", true, None::<&str>)?;
+  let coding = MenuItem::with_id(app, "coding", "编码工作台", true, None::<&str>)?;
   let settings = MenuItem::with_id(app, "settings", "设置…", true, None::<&str>)?;
   let quit = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
-  let menu = Menu::with_items(app, &[&show, &settings, &quit])?;
+  let menu = Menu::with_items(app, &[&show, &coding, &settings, &quit])?;
 
   let icon = app
     .default_window_icon()
@@ -864,12 +952,16 @@ fn build_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
           let _ = w.set_focus();
         }
       }
+      "coding" => {
+        let state = app.state::<ShellState>();
+        let _ = set_coding_visible(app.clone(), state, true);
+      }
       "settings" => {
         let _ = open_settings(app.clone());
       }
       "quit" => {
         IS_QUITTING.store(true, Ordering::SeqCst);
-        for label in ["main", "companion"] {
+        for label in ["main", "companion", "coding"] {
           if let Some(w) = app.get_webview_window(label) {
             let _ = w.hide();
             let _ = w.close();
@@ -936,6 +1028,8 @@ pub fn run() {
         start_companion_drag,
         get_companion_visible,
         set_companion_visible,
+        get_coding_visible,
+        set_coding_visible,
         report_remote_tools_status,
         get_remote_tools_status,
         report_companion_model_status,
@@ -950,6 +1044,14 @@ pub fn run() {
         instance_save,
         probe_habitat_health,
         apply_packaged_update,
+        coding_fs::pick_directory,
+        coding_fs::workspace_fs_list_dir,
+        coding_fs::workspace_fs_read_text,
+        coding_fs::workspace_fs_write_text,
+        coding_fs::workspace_fs_exists,
+        coding_fs::workspace_fs_is_dir,
+        coding_fs::workspace_fs_walk_files,
+        coding_fs::run_command,
       ])
       .setup(|app| {
         #[cfg(windows)]
@@ -963,20 +1065,31 @@ pub fn run() {
           if visible {
             let _ = set_companion_visible(handle.clone(), state, true);
           }
+          let state = handle.state::<ShellState>();
+          let coding_visible = *state.coding_visible.lock().expect("coding_vis");
+          if coding_visible {
+            let _ = set_coding_visible(handle.clone(), state, true);
+          }
         });
         Ok(())
       })
       .on_window_event(|window, event| {
-        if window.label() == "main" {
+        if window.label() == "main" || window.label() == "coding" {
           if let tauri::WindowEvent::CloseRequested { api, .. } = event {
             if !IS_QUITTING.load(Ordering::SeqCst) {
               api.prevent_close();
               let _ = window.hide();
+              if window.label() == "coding" {
+                let state = window.app_handle().state::<ShellState>();
+                *state.coding_visible.lock().expect("coding_vis") = false;
+              }
             }
           }
-          if let tauri::WindowEvent::Focused(true) = event {
-            let _ = window.request_user_attention(None);
-            stop_tray_blink(window.app_handle());
+          if window.label() == "main" {
+            if let tauri::WindowEvent::Focused(true) = event {
+              let _ = window.request_user_attention(None);
+              stop_tray_blink(window.app_handle());
+            }
           }
         }
         // Windows：透明无边框窗失焦时 DWM 可能画出错误边框/标题条；1px 抖动强制重绘（迁自 Electron）

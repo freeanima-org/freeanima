@@ -17,9 +17,11 @@ habitat *args: _deps
 web *args: _deps
   bun scripts/dev-web.ts {{args}}
 
-# Tauri 桌面壳（需 just dev web 或已有 Vite :5000）
+# Tauri 桌面壳（Win/Linux/mac 同命令；需 just dev / just dev web，Vite :5000）
+# Windows 需 MSVC：just install tauri；或先 vcvars64.bat
 [no-cd]
 tauri: _deps
+  bun scripts/ensure-tauri-desktop-native.ts --check
   bun scripts/dev-tauri-desktop.ts
 
 # Android Tauri 调试

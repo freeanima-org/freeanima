@@ -443,6 +443,7 @@ export async function createWorldEntity(body: {
   private?: boolean;
   owner_subject_id?: number;
   grants?: WorldGrantInput[];
+  stable_key?: string;
 }) {
   return hubCall(habitat().call("entity.worldsCreate", body as never)) as Promise<EntityRow>;
 }
@@ -456,6 +457,7 @@ export async function updateWorldEntity(
     private?: boolean;
     owner_subject_id?: number | null;
     grants?: WorldGrantInput[];
+    stable_key?: string;
   },
 ) {
   const payload = { id: String(id), ...body };

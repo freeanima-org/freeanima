@@ -1,17 +1,17 @@
 # just pack …
-# 产物：web / cli / tauri-linux|windows|android
+# 产物：web / cli / tauri（本机）/ tauri-windows（Win 本机或交叉）/ tauri-android
 # 部件：tauri-ui / app-ui / brand-icons
 import '_common.just'
 
 [private]
 [no-cd]
-_ensure-tauri-linux:
-  bun scripts/install-tauri-linux-deps.ts --check
+_ensure-tauri-desktop:
+  bun scripts/ensure-tauri-desktop-native.ts --check
 
 [private]
 [no-cd]
-_ensure-tauri-windows:
-  bun scripts/install-tauri-windows-toolchain.ts --check
+_ensure-tauri-linux:
+  bun scripts/ensure-tauri-desktop-native.ts --check --require linux
 
 [private]
 [no-cd]
@@ -35,15 +35,21 @@ web: _deps
 cli: _deps
   bun scripts/build-cli-executable.ts
 
-# Tauri 本机 Linux 安装包（需 WebKitGTK）
+# 当前宿主平台桌面壳（Win→NSIS / Linux→AppImage；与 just dev tauri 同工具链）
+# 环境：FREEANIMA_BUILD_CHANNEL（缺省 dev）
+[no-cd]
+tauri: _deps _ensure-tauri-desktop
+  bun scripts/build-tauri-desktop.ts
+
+# Linux 本机 AppImage（非 Linux 宿主请用 just pack tauri）
 [no-cd]
 tauri-linux: _deps _ensure-tauri-linux
   bun scripts/build-tauri-desktop.ts
 
-# Tauri Windows NSIS 交叉编译
+# Windows NSIS：Windows 上本机 MSVC；Linux/macOS 上交叉编译（cargo-xwin）
 [no-cd]
-tauri-windows: _deps _ensure-tauri-windows
-  bun scripts/build-tauri-desktop-windows.ts
+tauri-windows: _deps
+  bun scripts/pack-tauri-windows.ts
 
 # Tauri Android APK → dist/freeanima-mobile-tauri-android.apk
 [no-cd]

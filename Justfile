@@ -1,5 +1,5 @@
 # FreeAnima 日常入口。实现见 scripts/；package.json 仅留 prepare（husky）。
-# 安装 just: https://github.com/casey/just · 列出：just --list · 模块：just pack --list
+# 安装 just: https://github.com/casey/just · 列出：just --list · 模块：just --list pack
 # 公开配方均依赖 `_deps`（bun install --frozen-lockfile）；已装好时通常 <1s。
 # 更新 bun.lock：显式 `bun install` / `bun add` / `bun update`（见 docs/ops/windows-dev.md）。
 # Windows：需 PATH 上有 Git Bash 的 `bash`（见 docs/ops/windows-dev.md）。

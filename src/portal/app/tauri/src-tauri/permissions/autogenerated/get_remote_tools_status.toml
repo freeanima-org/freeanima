@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-get-remote-tools-status"
+description = "Enables the get_remote_tools_status command without any pre-configured scope."
+commands.allow = ["get_remote_tools_status"]
+
+[[permission]]
+identifier = "deny-get-remote-tools-status"
+description = "Denies the get_remote_tools_status command without any pre-configured scope."
+commands.deny = ["get_remote_tools_status"]
