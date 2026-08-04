@@ -8,6 +8,7 @@ export const PACK_ARTIFACT_STABLE_NAMES = {
   "desktop-windows-nsis": "freeanima-desktop-windows-x64-setup.exe",
   "desktop-linux-appimage": "freeanima-desktop-tauri-linux.AppImage",
   "mobile-android-apk": "freeanima-mobile-android.apk",
+  "browser-extension-zip": "freeanima-browser-extension.zip",
 } as const;
 
 export type PackArtifactKind = keyof typeof PACK_ARTIFACT_STABLE_NAMES;
@@ -54,6 +55,8 @@ export function packArtifactVersionedName(kind: PackArtifactKind, meta: PackArti
       return `freeanima-desktop-tauri-linux-${versionToken}-${channel}.AppImage`;
     case "mobile-android-apk":
       return `freeanima-mobile-android-${versionToken}-${channel}.apk`;
+    case "browser-extension-zip":
+      return `freeanima-browser-extension-${versionToken}-${channel}.zip`;
     default: {
       const _exhaustive: never = kind;
       return _exhaustive;

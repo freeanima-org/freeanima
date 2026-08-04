@@ -65,6 +65,7 @@ jobs:
         - Linux standalone: `anima-linux-x64.tar.gz`
         - Desktop Windows: `freeanima-desktop-windows-x64-setup.exe`
         - Mobile Android (debug): `freeanima-mobile-android.apk`
+        - Browser Extension (Chrome MV3): `freeanima-browser-extension.zip`
 
         Channel: **canary**. Use in-app / `anima upgrade --channel canary` to follow this track.
     secrets:
