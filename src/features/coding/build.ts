@@ -18,6 +18,7 @@ function codingViteBuildOptions(overrides?: Partial<SatelliteViteOptions>): Sate
     repoRoot: REPO_ROOT,
     outdir: DIST_DIR,
     base: "./",
+    paraglide: true,
     ...overrides,
   };
 }

@@ -18,6 +18,8 @@ export default defineConfig(({ command, mode }) => {
     base: "./",
     minify: mode === "production",
     sourcemap: mode !== "production",
+    /** 复用 Chat 原子（Slash / LLM debug i18n）需 Paraglide */
+    paraglide: true,
   });
   return {
     ...base,

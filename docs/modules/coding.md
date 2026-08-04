@@ -100,6 +100,7 @@ With a git remote, the file may be omitted and the key computed; the file pins t
 
 - **左栏 Agents**：Repositories 分组 + 会话列表；Search（Ctrl/Cmd+K）；New Agent。
 - **中栏对话**：空态居中输入；有消息后线程 + 底部 follow-up；流式走 `getBundledRpcStreamClient`（**不**整包 import Chat SPA）；platform = `remote:coding:{instanceId}`。
+  - **复用 Chat 原子（禁止挂载 ChatApp）**：`slash-command-menu` / `conversation-command-api`（slash）、`stream-events` + Markdown（流式 token）、`upsert-tool-block` + `ToolBlockBubble`（tool activity strip）、`LlmDebugPanel` + `useChatLlmDebugEnabled`（LLM 调试；设置页开关与 Chat 共用）。UI 皮肤留在 Coding SPA。
 - **右栏 Context**（默认展开）：Files（可展开树）/ Preview（Shiki）/ Changes（按 path 聚合 + unified diff + Apply Changes）/ Terminals（`terminal_run` 输出日志；**非**交互 PTY）。
 - Search Actions：**无**「更换工作区」，有「新建 Agent」。
 - 理解笔记：挂在 Files 区（需 `project_world_id`）。

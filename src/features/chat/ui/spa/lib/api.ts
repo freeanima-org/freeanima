@@ -203,35 +203,20 @@ export function subscribeConversationInbox(onUpdate: (conversationId: string) =>
   return sap().subscribeInboxEvents(onUpdate);
 }
 
-export async function listConversationCommands(opts?: { all?: boolean }) {
-  return habitat().call("conversation.commands", {
-    platform: chatPlatform(),
-    all: opts?.all,
+export {
+  fetchLlmDebug,
+  runConversationCommand,
+  type ConversationCommandResult,
+} from "./conversation-command-api.ts";
+
+import { listConversationCommands as listConversationCommandsBase } from "./conversation-command-api.ts";
+
+/** Chat 默认 platform=chat；可显式传入 Coding 等 platform */
+export async function listConversationCommands(opts?: { all?: boolean; platform?: string }) {
+  return listConversationCommandsBase({
+    platform: opts?.platform ?? chatPlatform(),
+    ...(opts?.all !== undefined ? { all: opts.all } : {}),
   });
-}
-
-export type ConversationCommandResult =
-  | { delivery: "message" }
-  | { delivery: "rpc"; ux: "panel" | "toast" | "none"; text: string; command: string };
-
-/** Terminal slash path (panel / toast); may redirect to message.send via delivery: message */
-export async function runConversationCommand(
-  conversationId: string,
-  text: string,
-): Promise<ConversationCommandResult> {
-  requireHabitatFetch("conversation.command");
-  const raw = await habitat().call(
-    "conversation.command",
-    {
-      conversation_id: conversationId,
-      text,
-    },
-    { transport: "http" },
-  );
-  if (raw && typeof raw === "object" && "delivery" in raw) {
-    return raw as ConversationCommandResult;
-  }
-  throw new Error("conversation.command returned invalid payload");
 }
 
 export function subscribeMessageStream(
@@ -268,20 +253,6 @@ export async function lookupActiveStream(
 export async function interruptMessageStream(conversationId: string): Promise<void> {
   const client = await sap().whenReady();
   await client.request("message.interrupt", { conversation_id: conversationId });
-}
-
-export async function fetchLlmDebug(conversationId: string): Promise<{
-  initial?: import("@freeanima/features/chat/ui/spa/lib/types.ts").LlmDebugSnapshotPayload;
-  final?: import("@freeanima/features/chat/ui/spa/lib/types.ts").LlmDebugSnapshotPayload;
-  updated_at?: string;
-}> {
-  const raw = await habitat().call("llm_debug.get", { conversation_id: conversationId });
-  if (!raw || typeof raw !== "object") return {};
-  return raw as {
-    initial?: import("@freeanima/features/chat/ui/spa/lib/types.ts").LlmDebugSnapshotPayload;
-    final?: import("@freeanima/features/chat/ui/spa/lib/types.ts").LlmDebugSnapshotPayload;
-    updated_at?: string;
-  };
 }
 
 export async function loadConfig() {
