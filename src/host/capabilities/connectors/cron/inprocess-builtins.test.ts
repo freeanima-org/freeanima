@@ -37,12 +37,12 @@ describe("inprocess-builtins", () => {
     expect(extractInprocessFailureMessage(JSON.stringify({ ok: true, sent: 0 }))).toBeNull();
   });
 
-  test("三类 builtin id 识别（task-reminders 已迁 scheduler）", () => {
+  test("四类 builtin id 识别（task-reminders 已迁 scheduler）", () => {
     expect(isInprocessBuiltinId("builtin-sleep-cycle")).toBe(true);
     expect(isInprocessBuiltinId("builtin-task-reminders")).toBe(false);
     expect(isInprocessBuiltinId("builtin-env-health")).toBe(true);
+    expect(isInprocessBuiltinId("builtin-email-sync-all")).toBe(true);
     expect(isInprocessBuiltinId("builtin-temporal-summary-tick")).toBe(true);
-    expect(isInprocessBuiltinId("builtin-email-sync-all")).toBe(false);
   });
 
   test("start 后可查询状态；stop 后可再次 start", () => {
@@ -60,7 +60,7 @@ describe("inprocess-builtins", () => {
   test("幂等 start 不重复武装", () => {
     startInprocessBuiltins();
     startInprocessBuiltins();
-    expect(listInprocessBuiltinStatuses()).toHaveLength(3);
+    expect(listInprocessBuiltinStatuses()).toHaveLength(INPROCESS_BUILTIN_DEFS.length);
   });
 
   test("handler 注册后 fire 路径可跑通（手动调 handler）", async () => {

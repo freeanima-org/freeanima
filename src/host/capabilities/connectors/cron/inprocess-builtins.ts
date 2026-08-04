@@ -17,6 +17,7 @@ export const INPROCESS_BUILTIN_DEFS: readonly InprocessBuiltinDef[] = [
   { id: "builtin-sleep-cycle", name: "sleep-cycle", schedule: "0 2 * * *" },
   // task-reminders 已迁 sleep-until-next（task-reminder-scheduler）；保留 handler 供测试手动 fire
   { id: "builtin-env-health", name: "env-health", schedule: "*/5 * * * *" },
+  { id: "builtin-email-sync-all", name: "email-sync-all", schedule: "*/5 * * * *" },
   {
     id: "builtin-temporal-summary-tick",
     name: "temporal-summary-tick",
