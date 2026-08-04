@@ -43,7 +43,7 @@ describe("Engine", () => {
     const backends = new BackendRegistry();
     backends.register(backend);
     const providers = new ProviderRegistry(backends);
-    providers.register(new LlmProvider("main", backend.id, { apiKey: "k" }, backend));
+    providers.register(new LlmProvider("main", backend.id, { apiKey: "k" }, backends));
     const profiles = new ProfileRegistry(
       [profileDef(PROFILE_CHAT, [hop("main", "cfg-model")])],
       PROFILE_CHAT,

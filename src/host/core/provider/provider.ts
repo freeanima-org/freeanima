@@ -4,8 +4,15 @@ import { isProviderError, type ProviderError } from "./errors.ts";
 
 export type ProviderSpec = {
   id: string;
+  /**
+   * Default Format id (`LlmBackend.id`).
+   * Single-format connections use this always; gateway presets use it for
+   * catalog/listModels and as fallback when `resolveFormat` is absent.
+   */
   backendId: string;
   context: BackendContext;
+  /** Gateway presets: choose Format by model id */
+  resolveFormat?: (model: string) => string;
 };
 
 export type ProviderHealth = {
@@ -15,7 +22,7 @@ export type ProviderHealth = {
 };
 
 /**
- * Provider: connection instance = Backend + context.
+ * Connection: credentials/endpoint context + Format resolution.
  * Maintains health; params merged and clamped via prepareParams before invoke.
  */
 export class LlmProvider {
@@ -25,11 +32,23 @@ export class LlmProvider {
     readonly id: string,
     readonly backendId: string,
     readonly context: BackendContext,
-    readonly backend: LlmBackend,
+    private readonly backends: BackendRegistry,
+    private readonly resolveFormatFn?: (model: string) => string,
   ) {}
 
   static fromSpec(spec: ProviderSpec, backends: BackendRegistry): LlmProvider {
-    return new LlmProvider(spec.id, spec.backendId, spec.context, backends.get(spec.backendId));
+    return new LlmProvider(spec.id, spec.backendId, spec.context, backends, spec.resolveFormat);
+  }
+
+  /** Default Format (catalog / mapError without model). */
+  get backend(): LlmBackend {
+    return this.backends.get(this.backendId);
+  }
+
+  /** Resolve Format for a model (gateway presets may differ from {@link backendId}). */
+  formatForModel(model: string): LlmBackend {
+    const formatId = this.resolveFormatFn?.(model) ?? this.backendId;
+    return this.backends.get(formatId);
   }
 
   getHealth(): Readonly<ProviderHealth> {
@@ -37,8 +56,8 @@ export class LlmProvider {
   }
 
   /** Record failure and mark unhealthy; return mapped ProviderError */
-  reportFailure(err: unknown): ProviderError {
-    const mapped = isProviderError(err) ? err : this.mapError(err);
+  reportFailure(err: unknown, model?: string): ProviderError {
+    const mapped = isProviderError(err) ? err : this.mapError(err, model);
     this.health = { healthy: false, lastError: mapped, updatedAt: Date.now() };
     return mapped;
   }
@@ -48,11 +67,12 @@ export class LlmProvider {
   }
 
   getModel(model: string): Promise<ModelInfo | null> {
-    return this.backend.getModel(model, this.context);
+    return this.formatForModel(model).getModel(model, this.context);
   }
 
-  mapError(err: unknown): ProviderError {
-    return this.backend.mapError(err, this.context, { providerId: this.id });
+  mapError(err: unknown, model?: string): ProviderError {
+    const format = model ? this.formatForModel(model) : this.backend;
+    return format.mapError(err, this.context, { providerId: this.id });
   }
 
   /** Before Engine invoke: merge layered params and clamp per catalog */

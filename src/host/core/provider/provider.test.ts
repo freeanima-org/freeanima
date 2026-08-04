@@ -6,9 +6,9 @@ function setupProvider(backend = new MockBackend()) {
   const backends = new BackendRegistry();
   backends.register(backend);
   const providers = new ProviderRegistry(backends);
-  const provider = new LlmProvider("main", backend.id, { apiKey: "k" }, backend);
+  const provider = new LlmProvider("main", backend.id, { apiKey: "k" }, backends);
   providers.register(provider);
-  return { backend, providers, provider };
+  return { backend, providers, provider, backends };
 }
 
 describe("LlmProvider", () => {
@@ -63,6 +63,25 @@ describe("LlmProvider", () => {
   });
 });
 
+describe("LlmProvider formatForModel", () => {
+  it("gateway resolveFormat picks another Format adapter", () => {
+    const compat = new MockBackend({ id: "openai_compatible" });
+    const responses = new MockBackend({ id: "openai_responses" });
+    const backends = new BackendRegistry();
+    backends.register(compat);
+    backends.register(responses);
+    const provider = new LlmProvider(
+      "go",
+      "openai_compatible",
+      { apiKey: "k" },
+      backends,
+      (model) => (model.includes("luna") ? "openai_responses" : "openai_compatible"),
+    );
+    expect(provider.formatForModel("kimi-k3")).toBe(compat);
+    expect(provider.formatForModel("gpt-5.6-luna")).toBe(responses);
+  });
+});
+
 describe("ProviderRegistry", () => {
   it("lazy-instantiates from registerSpec", () => {
     const backend = new MockBackend();
@@ -83,11 +102,11 @@ describe("ProviderRegistry", () => {
     backends.register(backend);
     const providers = new ProviderRegistry(backends);
     providers.registerSpec({ id: "x", backendId: backend.id, context: {} });
-    expect(() => providers.register(new LlmProvider("x", backend.id, {}, backend))).toThrow(
+    expect(() => providers.register(new LlmProvider("x", backend.id, {}, backends))).toThrow(
       'provider "x" already has a pending spec; cannot register again',
     );
 
-    providers.register(new LlmProvider("y", backend.id, {}, backend));
+    providers.register(new LlmProvider("y", backend.id, {}, backends));
     expect(() => providers.registerSpec({ id: "y", backendId: backend.id, context: {} })).toThrow(
       'provider "y" already instantiated; cannot registerSpec again',
     );

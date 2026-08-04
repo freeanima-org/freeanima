@@ -9,7 +9,7 @@ import {
   resolveConfiguredProfileId,
   tryGetLlmConfig,
 } from "./llm-config.ts";
-import { llmConfigSchema } from "./schemas/llm-config.ts";
+import { llmConfigSchema, llmProviderSchema } from "./schemas/llm-config.ts";
 
 const CHAT_ONLY_SNAPSHOT = runtimeConfigSchema.parse({
   llm: {
@@ -67,7 +67,14 @@ describe("LLM optional at cold start", () => {
     expect(isLlmConfigured(cfg)).toBe(false);
   });
 
-  it("llmConfigSchema defaults missing backend and profiles", () => {
+  it("llmProviderSchema defaults missing format/preset; llmConfigSchema allows loose providers", () => {
+    const provider = llmProviderSchema.parse({
+      base_url: "https://opencode.ai/zen/go/v1",
+      api_key: "sk-test",
+    });
+    expect(provider.format).toBe("openai_compatible");
+    expect(provider.preset).toBe("custom");
+
     const parsed = llmConfigSchema.parse({
       providers: {
         "opencode-go": {
@@ -76,8 +83,8 @@ describe("LLM optional at cold start", () => {
         },
       },
     });
-    expect(parsed.providers["opencode-go"]?.backend).toBe("openai_compatible");
     expect(parsed.profiles).toEqual({});
+    expect(parsed.providers["opencode-go"]?.base_url).toBe("https://opencode.ai/zen/go/v1");
     expect(parsed.default_profile).toBe("chat");
   });
 });

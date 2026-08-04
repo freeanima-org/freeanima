@@ -18,3 +18,14 @@ export {
   unregisterLlmStackConfigurator,
   type LlmStackConfigurator,
 } from "./llm-stack-configurator.ts";
+export {
+  getLlmPreset,
+  LLM_PRESETS,
+  materializeConnection,
+  providerConfigToSpec,
+  resolveOpencodeGoFormat,
+  type GatewayFormatPreset,
+  type LlmPresetDef,
+  type MaterializedConnection,
+  type SingleFormatPreset,
+} from "./presets.ts";

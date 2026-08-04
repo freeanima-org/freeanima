@@ -16,7 +16,7 @@ export function isConfigSecretKey(key: string): boolean {
 
 /**
  * 递归整理配置快照供 HTTP / Habitat：
- * - 密钥字段（api_key 等）与 database.url **原样返回**（不脱敏）
+ * - 密钥字段（api_key 等）与 database.url **原样返回**（不脱敏；明文或 vault/env）
  * - MCP `env` / `headers` 与其它配置段一致，明文往返以便设置/栖息地可编辑
  */
 function sanitizeRecord(obj: Record<string, unknown>): Record<string, unknown> {

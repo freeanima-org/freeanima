@@ -4,7 +4,7 @@ import { registerSystemPromptHookRunner } from "@freeanima/host/core/hooks/promp
 import { rebuildConversationCache } from "@freeanima/host/engine/conversation";
 import { registerConversationToolPolicyFilter } from "@freeanima/host/core/tool";
 import { registerCompressionSummaryPostCut } from "@freeanima/host/core/compress";
-import { bindOpenAiCompatibleLlm } from "@freeanima/host/capabilities/llm-openai";
+import { bindLlmStack } from "@freeanima/host/capabilities/llm-openai";
 import { foldSystemPromptSections, systemPromptBuild } from "@freeanima/host/core/hooks/prompt";
 import {
   DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS,
@@ -14,7 +14,7 @@ import { getAppRuntime } from "./context.ts";
 
 /** Composition-root binding for engine injection ports (call once before initLlmRuntime) */
 export function bindEnginePorts(): void {
-  registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
+  registerLlmStackConfigurator(bindLlmStack);
 
   registerSystemPromptHookRunner(async (ctx) => {
     const { kernel } = getAppRuntime();

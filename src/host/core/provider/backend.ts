@@ -2,12 +2,13 @@ import type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke.ts";
 import type { ModelInfo } from "./model.ts";
 import { ProviderError } from "./errors.ts";
 
-/** Connection context held by Backend adapter; capabilities fill from parsed config */
+/** Connection context held by Format adapter; capabilities fill from parsed config */
 export type BackendContext = Record<string, unknown>;
 
 /**
- * Backend: protocol adapter base (capabilities subclass).
- * Multiple Provider instances may bind one Backend.
+ * Format adapter (historically `LlmBackend`): one LLM wire protocol.
+ * Multiple Connections (LlmProvider) may share one Format; gateway presets may
+ * pick Format per model via `ProviderSpec.resolveFormat`.
  */
 export abstract class LlmBackend {
   constructor(readonly id: string) {}

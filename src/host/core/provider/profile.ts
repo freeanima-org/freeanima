@@ -191,7 +191,7 @@ export class LlmProfile {
   }
 
   private enrichFailure(err: unknown, hopIndex: number): ProviderError {
-    const mapped = this.provider.reportFailure(err);
+    const mapped = this.provider.reportFailure(err, this._model);
     return withLlmRouteContext(mapped, {
       profileId: this.def.id,
       providerId: this.provider.id,
@@ -207,7 +207,7 @@ export class LlmProfile {
       const p = this.provider;
       const request = this.buildRequest(messages, opts);
       try {
-        const out = await p.backend.chat(this._model, request, p.context);
+        const out = await p.formatForModel(this._model).chat(this._model, request, p.context);
         p.markHealthy();
         return out;
       } catch (err) {
@@ -233,7 +233,9 @@ export class LlmProfile {
       const request = this.buildRequest(messages, opts);
       let yielded = false;
       try {
-        for await (const event of p.backend.chatStream(this._model, request, p.context)) {
+        for await (const event of p
+          .formatForModel(this._model)
+          .chatStream(this._model, request, p.context)) {
           yielded = true;
           yield event;
         }

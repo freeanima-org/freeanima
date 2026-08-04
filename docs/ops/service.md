@@ -40,17 +40,33 @@ Windows source development uses the monorepo path (`just dev` / `just dev habita
 
 Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.md)。
 
-## LLM provider 超时（openai_compatible）
+## LLM connections (Format / Preset)
 
-`llm.providers.<id>` 支持三层超时（chat 流式 / 非流式；embedding 仍只用 `timeout_ms`）：
+Each `llm.providers.<id>` entry is a **Connection** (credentials + endpoint). Concepts:
 
-| 字段                    | 默认              | 含义                                                         |
-| ----------------------- | ----------------- | ------------------------------------------------------------ |
-| `timeout_ms`            | `600000`（10min） | **整体**墙钟：发请求 → 结束                                  |
-| `first_byte_timeout_ms` | `30000`           | **首字节**：到首个 stream chunk / 非流响应返回               |
-| `idle_timeout_ms`       | `120000`          | **chunk idle**（仅流式）：相邻 chunk 间隔；须 ≤ `timeout_ms` |
+| Concept | Config              | Meaning                                                                      |
+| ------- | ------------------- | ---------------------------------------------------------------------------- |
+| Format  | `format`            | Wire protocol: `openai_compatible`, `openai_responses`, `anthropic_messages` |
+| Preset  | `preset`            | Built-in recipe: `deepseek`, `openrouter`, `opencode_go`, or `custom`        |
+| Profile | `llm.profiles.<id>` | Scene routing + chain failover                                               |
 
-`first_byte_timeout_ms` / `idle_timeout_ms` 也须 ≤ `timeout_ms`。超时错误仍为 `ProviderErrorCode=timeout`，文案含 `first_byte` / `overall` / `idle`。
+- **Single-format presets** (`deepseek`, `openrouter`): fixed Format + default `base_url`.
+- **Gateway preset** (`opencode_go`): base `https://opencode.ai/zen/go/v1`; Format is chosen **per model** (Chat Completions / Responses / Messages). See [OpenCode Go endpoints](https://opencode.ai/docs/zh-cn/go#api-%E7%AB%AF%E7%82%B9).
+- **Custom**: set `format` + `base_url` yourself (legacy `backend` is migrated to `format`).
+- There is **no** built-in `openai` preset.
+- **API keys**: plaintext in config, or `vault(...)` / `env(...)` references. Settings UI does **not** auto-mask secrets.
+
+### Timeouts
+
+`llm.providers.<id>` supports three timeout layers (chat stream / non-stream; embedding still uses only `timeout_ms`):
+
+| Field                   | Default          | Meaning                                              |
+| ----------------------- | ---------------- | ---------------------------------------------------- |
+| `timeout_ms`            | `600000` (10min) | Overall wall clock: request start → end              |
+| `first_byte_timeout_ms` | `30000`          | First byte: first stream chunk / non-stream response |
+| `idle_timeout_ms`       | `120000`         | Chunk idle (stream only); must be ≤ `timeout_ms`     |
+
+`first_byte_timeout_ms` / `idle_timeout_ms` must also be ≤ `timeout_ms`. Timeouts still map to `ProviderErrorCode=timeout` (messages include `first_byte` / `overall` / `idle`).
 
 ## Common commands
 
