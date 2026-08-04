@@ -93,6 +93,7 @@ Legacy SQL bootstrap seeds (public world id=1, Inbox id=2) are removed by migrat
   - `private: true` + `owner_subject_id` — private world owned by an `agent` or `user` entity
   - `default_private: true` — marks the subject's **exclusive** default private world (at most one per `owner_subject_id`)
   - `grants: [{ subject_id, permission: "read" | "write" }]` — explicit subject grants (**write includes read**; `subject_id` must not equal owner). Configured in Habitat Worlds UI; never hardcoded per subject in source.
+  - `stable_key?: string` — optional **cross-machine logical identity** for a World (e.g. `git:github.com/org/foo`, `novel:…`, `manual:…`). Display name stays on `entities.title`. When set, must be unique among `world_config` rows (partial unique index). Prefer **public** Project Worlds (one per project) for coding notes/tasks — see [`coding.md`](../modules/coding.md). **Never** name this field `repo_key`.
 - **Access rules** (MCP / LLM tools via `resolveToolWorld`):
 
   | World   | Read                   | Write                    |

@@ -3,8 +3,8 @@
  * 打包前：按 target 构建 web → `src/portal/app/tauri/src-tauri/ui/web`。
  *
  * FREEANIMA_TAURI_TARGET=desktop|mobile（默认 desktop）
- * - desktop：dist-desktop + ui/companion（frontendDist，非 file:// resources）+ 启动 splash
- * - mobile：dist-mobile，无 companion
+ * - desktop：dist-desktop + ui/companion + ui/coding（frontendDist，非 file:// resources）+ 启动 splash
+ * - mobile：dist-mobile，无 companion / coding
  */
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -23,6 +23,7 @@ import {
 } from "@freeanima/host/core/config/shell-identity.ts";
 import { resolveNativeBuildMeta } from "@freeanima/portal/app/shared/resolve-native-build-meta.ts";
 import { buildCompanionApp } from "@freeanima/features/companion/lib/exports/build.ts";
+import { buildCodingApp } from "@freeanima/features/coding/lib/exports/build.ts";
 import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -35,6 +36,7 @@ const webDist = join(root, "src/portal/app/web", shellWebDistDirName(target));
 const uiRoot = join(srcTauri, "ui");
 const uiWeb = join(uiRoot, "web");
 const companionUi = join(uiRoot, "companion");
+const codingUi = join(uiRoot, "coding");
 const cargoTargetDir = join(srcTauri, "target");
 /** 历史 resources 占位；desktop 已迁入 frontendDist，清理以免误用 file:// */
 const legacyCompanionResource = join(srcTauri, "companion-dist");
@@ -220,15 +222,28 @@ if (target === "desktop") {
     writeFileSync(join(legacyCompanionResource, ".gitkeep"), "");
   }
   console.log(`[prepare-tauri] companion → ${companionUi} (frontendDist)`);
+
+  console.log("[prepare-tauri] build coding…");
+  process.env.FREEANIMA_SHELL_TARGET = "desktop";
+  const codingDist = await buildCodingApp({ minify: true });
+  if (existsSync(codingUi)) rmSync(codingUi, { recursive: true });
+  mkdirSync(dirname(codingUi), { recursive: true });
+  cpSync(codingDist, codingUi, { recursive: true });
+  if (!existsSync(join(codingUi, "index.html"))) {
+    console.error(`[prepare-tauri] missing ${codingUi}/index.html`);
+    process.exit(1);
+  }
+  console.log(`[prepare-tauri] coding → ${codingUi} (frontendDist)`);
 } else {
   // mobile 无伴侣窗；若仍残留 companion-dist，保持空占位以免旧配置踩坑
   if (existsSync(companionUi)) rmSync(companionUi, { recursive: true });
+  if (existsSync(codingUi)) rmSync(codingUi, { recursive: true });
   if (existsSync(legacyCompanionResource)) {
     rmSync(legacyCompanionResource, { recursive: true });
     mkdirSync(legacyCompanionResource, { recursive: true });
     writeFileSync(join(legacyCompanionResource, ".gitkeep"), "");
   }
-  console.log("[prepare-tauri] skip companion (mobile)");
+  console.log("[prepare-tauri] skip companion/coding (mobile)");
 }
 
 applyTauriShellIdentity({

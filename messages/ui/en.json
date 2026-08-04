@@ -336,6 +336,7 @@
   "habitat_entities_col_id": "ID",
   "habitat_entities_col_owner_subject": "Owner subject",
   "habitat_entities_col_summary": "Summary",
+  "habitat_entities_col_stable_key": "Stable key",
   "habitat_entities_col_title": "Title",
   "habitat_entities_col_type": "Type",
   "habitat_entities_col_visibility": "Visibility",

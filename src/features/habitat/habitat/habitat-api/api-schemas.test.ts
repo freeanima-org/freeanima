@@ -56,6 +56,21 @@ describe("api/schemas", () => {
       private: true,
     });
     expect(missingOwner.success).toBe(false);
+
+    const withStable = worldEntityCreateBodySchema.safeParse({
+      title: "Repo world",
+      private: false,
+      stable_key: "  git:github.com/org/foo  ",
+    });
+    expect(withStable.success).toBe(true);
+    if (withStable.success) expect(withStable.data.stable_key).toBe("git:github.com/org/foo");
+
+    expect(
+      worldEntityCreateBodySchema.safeParse({
+        title: "Bad key",
+        stable_key: "no-prefix",
+      }).success,
+    ).toBe(false);
   });
 
   it("validates subject entity create body", () => {

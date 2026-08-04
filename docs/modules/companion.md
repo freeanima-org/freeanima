@@ -123,4 +123,6 @@ After Habitat companion config changes, the local cache syncs via `companion.syn
 
 **二进制超时**：`object_storage.file.get` 与 `companion.model.upload` / `companion.motion.import` 客户端默认超时 10 分钟（`HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS`）。
 
-See also: [Habitat RPC](../ops/habitat-rpc.md), [architecture companion section](../product/architecture.md#desktop-companion-habitat-ssot).
+**Coding outpost:** the [Coding workbench](./coding.md) is a sibling Outpost in the same Tauri Portal (`app_id: coding`). Unlike Companion (hide display **closes** the WebView and tears down attach), Coding should **hide without close** so Agent tool calls keep a live hand. Do not add Coding into this feature package.
+
+See also: [Habitat RPC](../ops/habitat-rpc.md), [architecture companion section](../product/architecture.md#desktop-companion-habitat-ssot), [coding.md](./coding.md).

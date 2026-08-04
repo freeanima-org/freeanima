@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import {
-  DEFAULT_TIMEOUT_MS,
+  DEFAULT_OVERALL_TIMEOUT_MS,
   parseOpenAiCompatibleContext,
   type OpenAiCompatibleContext,
 } from "./context.ts";
@@ -15,6 +15,7 @@ export function createOpenAiClientFromParsed(context: OpenAiCompatibleContext): 
   return new OpenAI({
     apiKey: context.apiKey,
     baseURL: context.baseUrl,
-    timeout: context.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+    /** SDK 兜底 = 整体超时；首字节 / idle 由 request-timeouts 应用层控制 */
+    timeout: context.timeoutMs ?? DEFAULT_OVERALL_TIMEOUT_MS,
   });
 }

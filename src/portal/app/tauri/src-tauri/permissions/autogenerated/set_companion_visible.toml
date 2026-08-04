@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-set-companion-visible"
+description = "Enables the set_companion_visible command without any pre-configured scope."
+commands.allow = ["set_companion_visible"]
+
+[[permission]]
+identifier = "deny-set-companion-visible"
+description = "Denies the set_companion_visible command without any pre-configured scope."
+commands.deny = ["set_companion_visible"]

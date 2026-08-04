@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { APIConnectionError, APIError } from "openai";
 import { ProviderError } from "@freeanima/host/core/provider";
 import { mapOpenAiCompatibleError } from "./map-error.ts";
+import { LlmTimeoutError } from "./request-timeouts.ts";
 
 describe("mapOpenAiCompatibleError", () => {
   it("passes through existing ProviderError", () => {
@@ -28,6 +29,26 @@ describe("mapOpenAiCompatibleError", () => {
     const cancelled = mapOpenAiCompatibleError(abort);
     expect(cancelled.code).toBe("cancelled");
     expect(cancelled.retryable).toBe(false);
+  });
+
+  it("maps LlmTimeoutError kinds to timeout (not cancelled)", () => {
+    for (const kind of ["first_byte", "overall", "idle"] as const) {
+      const err = mapOpenAiCompatibleError(new LlmTimeoutError(kind, 1000), {
+        providerId: "main",
+      });
+      expect(err.code).toBe("timeout");
+      expect(err.retryable).toBe(true);
+      expect(err.message).toContain(kind);
+      expect(err.providerId).toBe("main");
+    }
+
+    const wrapped = new Error("aborted", {
+      cause: new LlmTimeoutError("first_byte", 30_000),
+    });
+    wrapped.name = "AbortError";
+    const mapped = mapOpenAiCompatibleError(wrapped);
+    expect(mapped.code).toBe("timeout");
+    expect(mapped.message).toContain("first_byte");
   });
 
   it("maps connection / socket errors to retryable unavailable", () => {

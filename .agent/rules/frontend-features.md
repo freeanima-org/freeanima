@@ -5,7 +5,7 @@
 ## 决策树
 
 1. 是否需要用户可见的产品 CRUD + 实时 Habitat WS？→ **原型 A（Feature RPC）**
-2. 是否需要不可达本机的远程工具反向调用？→ **原型 A′（remote tools host）** — 仅 Habitat 拨不到的本地应用（今日 companion Outpost；亦可未来独立工具）
+2. 是否需要不可达本机的远程工具反向调用？→ **原型 A′（remote tools host）** — 仅 Habitat 拨不到的本地应用（今日 companion / **coding** Outpost；亦可未来独立工具）
 3. 是否是运维/配置/记忆管理类 UI（Habitat）？→ **原型 B（Habitat RPC）** — 与原型 A 相同 protocol
 4. 是否仅是壳层设置（Habitat URL、debug）？→ **原型 C（portal-sdk settings）**
 5. 对端可拨号的工具？→ **MCP**（不要用远程工具注册）
@@ -28,16 +28,17 @@
 
 ## 原型 A′ — 远程工具宿主（不可达本地应用）
 
-**示例**：companion（**伴侣浮层** / `embedded-overlay`：`createRemoteToolsHabitatAttach` 在第一方 overlay 内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）
+**示例**：companion（**伴侣浮层** / `embedded-overlay`）；**coding**（独立前哨窗 / `bundled-spa`：`createRemoteToolsHabitatAttach` 在第一方窗内 attach；壳只提供窗/IPC/FS；**禁止** Node sidecar）
 
-| 层                          | 必须改                                                                  |
-| --------------------------- | ----------------------------------------------------------------------- |
-| `rpc-contract`              | `remote-tools/` + `frames/*` attach / tool schema                       |
-| `src/features/companion/ui` | 伴侣浮层 UI + 可选 companion/dev 本地 HTTP（**禁止** Node sidecar）     |
-| 桌面壳                      | 透明窗 / click-through / 托盘 / FS；产品面仍走 Feature RPC，不做 attach |
+| 层                          | 必须改                                                              |
+| --------------------------- | ------------------------------------------------------------------- |
+| `rpc-contract`              | `remote-tools/` + `frames/*` attach / tool schema                   |
+| `src/features/companion/ui` | 伴侣浮层 UI + 可选 companion/dev 本地 HTTP（**禁止** Node sidecar） |
+| `src/features/coding/ui`    | Coding 前哨窗 UI + Outpost FS/终端执行（**禁止** Node sidecar）     |
+| 桌面壳                      | companion 透明窗 / coding 应用窗 / 托盘 / FS；主壳产品面不做 attach |
 
-**不要**：为 Chat/Task 等产品面新建 Outpost attach 或 `remote_tools.attach`；能 MCP 解决的不要走远程工具注册。  
-**允许**：Companion 等原型 A′ 的**第一方伴侣浮层**内 `remote_tools.attach`（WebView-host）。**禁止**：Chat 等产品面 attach；禁止为 attach 再起 Node sidecar。
+**不要**：为 Chat/Task 等**主壳**产品面新建 Outpost attach 或 `remote_tools.attach`；能 MCP 解决的不要走远程工具注册。  
+**允许**：原型 A′ 的**第一方前哨窗**（Companion overlay、Coding 窗）内 `remote_tools.attach`。**禁止**：主壳 Chat/Task 等 attach；禁止为 attach 再起 Node sidecar。Coding 关 UI 优先 **hide 保 attach**（勿照搬 Companion close=离线）。
 
 ## 原型 B — Habitat 运维面（Habitat RPC）
 

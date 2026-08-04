@@ -1,5 +1,12 @@
 import { describe, expect, it } from "bun:test";
-import { contextCacheKey, parseOpenAiCompatibleContext } from "./context.ts";
+import {
+  contextCacheKey,
+  DEFAULT_FIRST_BYTE_TIMEOUT_MS,
+  DEFAULT_IDLE_TIMEOUT_MS,
+  DEFAULT_OVERALL_TIMEOUT_MS,
+  parseOpenAiCompatibleContext,
+  resolveChatTimeouts,
+} from "./context.ts";
 
 describe("parseOpenAiCompatibleContext", () => {
   it("accepts camelCase and snake_case and normalizes baseUrl", () => {
@@ -7,11 +14,15 @@ describe("parseOpenAiCompatibleContext", () => {
       base_url: "https://api.example.com/",
       api_key: "key",
       timeout_ms: 5000,
+      first_byte_timeout_ms: 2000,
+      idle_timeout_ms: 3000,
     });
     expect(ctx).toEqual({
       baseUrl: "https://api.example.com",
       apiKey: "key",
       timeoutMs: 5000,
+      firstByteTimeoutMs: 2000,
+      idleTimeoutMs: 3000,
     });
   });
 
@@ -28,6 +39,42 @@ describe("parseOpenAiCompatibleContext", () => {
         timeoutMs: 0,
       }),
     ).toThrow(/timeoutMs/);
+  });
+
+  it("throws when firstByte > overall", () => {
+    expect(() =>
+      parseOpenAiCompatibleContext({
+        baseUrl: "https://x.com",
+        apiKey: "k",
+        timeoutMs: 1000,
+        firstByteTimeoutMs: 2000,
+      }),
+    ).toThrow(/firstByteTimeoutMs/);
+  });
+});
+
+describe("resolveChatTimeouts", () => {
+  it("applies defaults capped by overall", () => {
+    const resolved = resolveChatTimeouts({
+      baseUrl: "https://x.com",
+      apiKey: "k",
+      timeoutMs: 5_000,
+    });
+    expect(resolved.overallMs).toBe(5_000);
+    expect(resolved.firstByteMs).toBe(Math.min(DEFAULT_FIRST_BYTE_TIMEOUT_MS, 5_000));
+    expect(resolved.idleMs).toBe(Math.min(DEFAULT_IDLE_TIMEOUT_MS, 5_000));
+  });
+
+  it("uses full defaults when timeout unset", () => {
+    const resolved = resolveChatTimeouts({
+      baseUrl: "https://x.com",
+      apiKey: "k",
+    });
+    expect(resolved).toEqual({
+      overallMs: DEFAULT_OVERALL_TIMEOUT_MS,
+      firstByteMs: DEFAULT_FIRST_BYTE_TIMEOUT_MS,
+      idleMs: DEFAULT_IDLE_TIMEOUT_MS,
+    });
   });
 });
 

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-read-native-alert-permission"
+description = "Enables the read_native_alert_permission command without any pre-configured scope."
+commands.allow = ["read_native_alert_permission"]
+
+[[permission]]
+identifier = "deny-read-native-alert-permission"
+description = "Denies the read_native_alert_permission command without any pre-configured scope."
+commands.deny = ["read_native_alert_permission"]

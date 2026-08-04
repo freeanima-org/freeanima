@@ -1,0 +1,185 @@
+/**
+ * Coding WebView-host：createRemoteToolsHabitatAttach + attach。
+ * 产品面（Chat 等）禁止 attach；Coding 前哨窗本身即 Outpost。
+ */
+
+import {
+  createRemoteToolsHabitatAttach,
+  type RemoteToolsAttachHandle,
+} from "@freeanima/shared/rpc-contract/remote-tools-attach.ts";
+import {
+  browserRemoteInstanceStore,
+  type RemoteInstanceStore,
+} from "@freeanima/shared/rpc-contract/instance-store.ts";
+import { CODING_APP_ID } from "@freeanima/features/coding/shared/constants.ts";
+import { executeCodingTool } from "./tools-executor.ts";
+
+const APP_ID = CODING_APP_ID;
+
+const REGISTERED_TOOLS = [
+  {
+    local_name: "file_list",
+    description: "列出工作区目录树（只读；相对 workspace_root）",
+    parameters: {
+      type: "object",
+      properties: {
+        path: { type: "string", default: ".", description: "相对 workspace_root 的目录" },
+        max_depth: { type: "integer", default: 3 },
+        limit: { type: "integer", default: 500 },
+      },
+    },
+    return_kind: "json" as const,
+  },
+  {
+    local_name: "file_read",
+    description: "读取工作区内文本文件（带行号）",
+    parameters: {
+      type: "object",
+      properties: {
+        path: { type: "string" },
+        offset: { type: "integer", default: 1 },
+        limit: { type: "integer", default: 500 },
+      },
+      required: ["path"],
+    },
+    return_kind: "text" as const,
+  },
+  {
+    local_name: "file_search",
+    description: "在工作区内搜索文件内容（简单 includes；后续可换索引）",
+    parameters: {
+      type: "object",
+      properties: {
+        pattern: { type: "string" },
+        path: { type: "string", default: "." },
+        limit: { type: "integer", default: 50 },
+        output_mode: {
+          type: "string",
+          enum: ["content", "files_only", "count"],
+          default: "content",
+        },
+      },
+      required: ["pattern"],
+    },
+    return_kind: "text" as const,
+  },
+  {
+    local_name: "file_patch",
+    description: "用 old_string/new_string 最小替换编辑工作区文件",
+    parameters: {
+      type: "object",
+      properties: {
+        path: { type: "string" },
+        old_string: { type: "string" },
+        new_string: { type: "string" },
+        replace_all: { type: "boolean", default: false },
+      },
+      required: ["path", "old_string", "new_string"],
+    },
+    return_kind: "json" as const,
+  },
+  {
+    local_name: "terminal_run",
+    description:
+      "在工作区内执行一次性命令。默认 shell=false；需 portalShell.runCommand（Rust IPC）。",
+    parameters: {
+      type: "object",
+      properties: {
+        command: { type: "string" },
+        timeout: { type: "integer", default: 180 },
+        workdir: { type: "string", default: "." },
+        shell: { type: "boolean", default: false },
+      },
+      required: ["command"],
+    },
+    return_kind: "text" as const,
+  },
+];
+
+export type CodingRemoteToolsStatus = {
+  instance_id: string;
+  remote_tools_connected: boolean;
+};
+
+export type RemoteToolsHostHandle = {
+  stop: () => void;
+  getStatus: () => CodingRemoteToolsStatus;
+};
+
+function resolveInstanceStore(habitatUrl: string): RemoteInstanceStore {
+  const shell = typeof window !== "undefined" ? window.portalShell : undefined;
+  if (shell?.createFileInstanceStore) {
+    return shell.createFileInstanceStore(APP_ID);
+  }
+  return browserRemoteInstanceStore(habitatUrl.replace(/\/$/, ""), APP_ID);
+}
+
+function resolveAuthToken(): string | undefined {
+  const shell = typeof window !== "undefined" ? window.portalShell : undefined;
+  return shell?.remoteAuth?.token?.trim() || undefined;
+}
+
+function resolveHabitatUrl(fallback?: string): string {
+  const shell = typeof window !== "undefined" ? window.portalShell : undefined;
+  const fromShell = shell?.habitatUrl?.trim();
+  if (fromShell) return fromShell.replace(/\/$/, "");
+  return (fallback ?? "http://127.0.0.1:2658").replace(/\/$/, "");
+}
+
+/**
+ * 启动 Coding 窗内 remote tools attach。无 token 时返回 null（不抛错）。
+ */
+export function startCodingRemoteToolsHost(opts?: {
+  habitatUrl?: string;
+  httpUrl?: string;
+  onStatus?: (status: CodingRemoteToolsStatus) => void;
+}): RemoteToolsHostHandle | null {
+  const remoteAuthToken = resolveAuthToken();
+  if (!remoteAuthToken) {
+    const empty = { instance_id: "", remote_tools_connected: false };
+    opts?.onStatus?.(empty);
+    return null;
+  }
+
+  const habitatUrl = resolveHabitatUrl(opts?.habitatUrl);
+  const httpUrl = opts?.httpUrl ?? window.portalShell?.apiOrigin ?? undefined;
+  let attach: RemoteToolsAttachHandle | null = null;
+
+  const publish = (): void => {
+    const status: CodingRemoteToolsStatus = {
+      instance_id: attach?.getInstanceId() ?? "",
+      remote_tools_connected: attach?.isConnected() ?? false,
+    };
+    opts?.onStatus?.(status);
+  };
+
+  attach = createRemoteToolsHabitatAttach({
+    appId: APP_ID,
+    habitatUrl,
+    ...(httpUrl ? { httpUrl } : {}),
+    remoteAuthToken,
+    instanceStore: resolveInstanceStore(habitatUrl),
+    tools: REGISTERED_TOOLS,
+    toolsetPrivate: false,
+    onToolCall: async (localName, args) => executeCodingTool(localName, args),
+    onConnected: async (_client, instanceId) => {
+      console.log("coding remote tools connected", instanceId);
+      publish();
+    },
+  });
+
+  publish();
+
+  return {
+    stop: () => {
+      attach?.stop();
+      attach = null;
+      const empty = { instance_id: "", remote_tools_connected: false };
+      opts?.onStatus?.(empty);
+    },
+    getStatus: () => ({
+      instance_id: attach?.getInstanceId() ?? "",
+      remote_tools_connected: attach?.isConnected() ?? false,
+    }),
+  };
+}

@@ -13,11 +13,18 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const tauriDir = join(root, "src/portal/app/tauri");
 
 process.env.COMPANION_OVERLAY_URL ??= "http://127.0.0.1:4176/?view=overlay";
+process.env.CODING_WINDOW_URL ??= "http://127.0.0.1:4186/";
 
 const identity = applyTauriShellIdentity({ target: "desktop" });
 process.env.FREEANIMA_BUILD_CHANNEL ??= identity.channel;
 
 const companion = spawn("bun", ["src/features/companion/dev.ts"], {
+  cwd: root,
+  stdio: "inherit",
+  env: process.env,
+});
+
+const coding = spawn("bun", ["x", "vite", "--config", "src/features/coding/vite.config.ts"], {
   cwd: root,
   stdio: "inherit",
   env: process.env,
@@ -32,6 +39,7 @@ const tauri = spawn("bunx", ["tauri", "dev", "--config", identity.configArg], {
 
 function shutdown() {
   companion.kill("SIGTERM");
+  coding.kill("SIGTERM");
   tauri.kill("SIGTERM");
   process.exit(0);
 }
@@ -40,5 +48,6 @@ process.on("SIGTERM", shutdown);
 
 tauri.on("exit", (code) => {
   companion.kill("SIGTERM");
+  coding.kill("SIGTERM");
   process.exit(code ?? 0);
 });

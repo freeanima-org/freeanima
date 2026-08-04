@@ -5,6 +5,11 @@ import {
   type ProviderErrorCode,
 } from "@freeanima/host/core/provider";
 import { omitUndefined } from "@freeanima/host/core/util";
+import {
+  extractLlmTimeoutError,
+  isLlmTimeoutError,
+  type LlmTimeoutError,
+} from "./request-timeouts.ts";
 
 function mapOpenAiErrorCode(status: number | undefined): ProviderErrorCode {
   if (status === 429) return "rate_limited";
@@ -64,12 +69,29 @@ function unavailableFromConnection(err: Error, meta?: { providerId?: string }): 
   );
 }
 
+function timeoutFromLlm(err: LlmTimeoutError, meta?: { providerId?: string }): ProviderError {
+  return new ProviderError(
+    err.message,
+    "timeout",
+    true,
+    omitUndefined({
+      providerId: meta?.providerId,
+      cause: err,
+    }),
+  );
+}
+
 export function mapOpenAiCompatibleError(
   err: unknown,
   meta?: { providerId?: string },
 ): ProviderError {
   if (err instanceof ProviderError) {
     return err;
+  }
+
+  const llmTimeout = isLlmTimeoutError(err) ? err : extractLlmTimeoutError(err);
+  if (llmTimeout) {
+    return timeoutFromLlm(llmTimeout, meta);
   }
 
   if (err instanceof APIError) {

@@ -59,6 +59,9 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
     if (input.workspace_show_hidden !== undefined) {
       platformExtra.workspace_show_hidden = input.workspace_show_hidden;
     }
+    if (input.project_world_id !== undefined) {
+      platformExtra.project_world_id = input.project_world_id;
+    }
     const sid = await depsOf(deps).runtime.conversation.newConversation(
       platform,
       undefined,

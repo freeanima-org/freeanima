@@ -114,11 +114,15 @@ async function applySubjectDefaultPrivateWorld(subjectId: number, worldId: numbe
     if (parsed.data.default_private === shouldBeDefault) continue;
     await updateEntity({
       id: row.id,
-      body: buildWorldConfigBody({
-        private: true,
-        owner_subject_id: subjectId,
-        default_private: shouldBeDefault,
-      }),
+      body: buildWorldConfigBody(
+        omitUndefined({
+          private: true,
+          owner_subject_id: subjectId,
+          default_private: shouldBeDefault,
+          grants: parsed.data.grants,
+          stable_key: parsed.data.stable_key,
+        }),
+      ),
     });
   }
   await updateEntity({
@@ -150,6 +154,28 @@ async function assertGrantSubjects(grants: WorldGrant[] | undefined): Promise<vo
   }
 }
 
+function normalizeWorldStableKey(raw: string | undefined): string | undefined {
+  const trimmed = raw?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : undefined;
+}
+
+async function assertUniqueWorldStableKey(
+  stableKey: string,
+  excludeWorldId?: number,
+): Promise<void> {
+  const worlds = await listEntities({ type: "world", limit: 500 });
+  const conflict = worlds.find((row: EntityRow) => {
+    if (excludeWorldId != null && row.id === excludeWorldId) return false;
+    const parsed = worldConfigBodySchema.safeParse(row.body);
+    return parsed.success && parsed.data.stable_key === stableKey;
+  });
+  if (conflict) {
+    throw new ApiHandlerError(400, "world stable_key already exists", {
+      code: "entity_world_stable_key_exists",
+    });
+  }
+}
+
 export async function createWorldEntity(input: {
   title: string;
   summary?: string;
@@ -157,6 +183,7 @@ export async function createWorldEntity(input: {
   private: boolean;
   owner_subject_id?: number;
   grants?: WorldGrant[];
+  stable_key?: string;
 }) {
   if (input.private) {
     if (input.owner_subject_id == null) {
@@ -167,8 +194,17 @@ export async function createWorldEntity(input: {
     await assertSubjectEntity(input.owner_subject_id);
   }
   await assertGrantSubjects(input.grants);
+  const stableKey = normalizeWorldStableKey(input.stable_key);
+  if (stableKey) await assertUniqueWorldStableKey(stableKey);
 
-  const body = buildWorldConfigBody(input);
+  const body = buildWorldConfigBody(
+    omitUndefined({
+      private: input.private,
+      owner_subject_id: input.owner_subject_id,
+      grants: input.grants,
+      stable_key: stableKey,
+    }),
+  );
   const created = await createEntity({
     type: "world",
     world_id: ENTITY_ROOT_WORLD_ID,
@@ -195,6 +231,7 @@ export async function updateWorldEntity(
     private?: boolean;
     owner_subject_id?: number | null;
     grants?: WorldGrant[];
+    stable_key?: string;
   },
 ) {
   const existing = await getEntity(id);
@@ -204,12 +241,17 @@ export async function updateWorldEntity(
 
   const current = worldConfigBodySchema.safeParse(existing.body);
   const isDefaultPrivate = current.data?.default_private === true;
+  const nextStableKey =
+    input.stable_key !== undefined
+      ? normalizeWorldStableKey(input.stable_key)
+      : current.data?.stable_key;
 
   let bodyPatch: Record<string, unknown> | undefined;
   if (
     input.private !== undefined ||
     input.owner_subject_id !== undefined ||
-    input.grants !== undefined
+    input.grants !== undefined ||
+    input.stable_key !== undefined
   ) {
     const nextPrivate = input.private ?? current.data?.private ?? false;
     const nextOwnerSubjectId =
@@ -233,6 +275,7 @@ export async function updateWorldEntity(
       await assertSubjectEntity(nextOwnerSubjectId);
     }
     await assertGrantSubjects(nextGrants);
+    if (nextStableKey) await assertUniqueWorldStableKey(nextStableKey, id);
 
     bodyPatch = buildWorldConfigBody(
       omitUndefined({
@@ -240,6 +283,7 @@ export async function updateWorldEntity(
         owner_subject_id: nextPrivate ? nextOwnerSubjectId : undefined,
         default_private: isDefaultPrivate,
         grants: nextGrants,
+        stable_key: nextStableKey,
       }),
     );
   }

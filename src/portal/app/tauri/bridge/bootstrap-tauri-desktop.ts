@@ -22,6 +22,11 @@ import {
   applyHabitatConfigToShell,
   notifyShellConfigChanged,
 } from "../lib/apply-habitat-to-shell.ts";
+import {
+  codingPickDirectoryBridge,
+  codingRunCommandBridge,
+  createCodingWorkspaceFsBridge,
+} from "../lib/coding-shell-fs.ts";
 
 type HabitatCfg = { habitatUrl: string; remoteAuthToken: string };
 
@@ -119,6 +124,9 @@ export async function bootstrapTauriBridge(): Promise<void> {
     windowRole,
     apiOrigin: null,
     createFileInstanceStore,
+    workspaceFs: createCodingWorkspaceFsBridge(),
+    runCommand: codingRunCommandBridge,
+    pickDirectory: codingPickDirectoryBridge,
     openHabitatSettings: () => void invoke("open_settings"),
     openSettings: () => invoke("open_settings"),
     setClickThrough: (ignore) => invoke("set_click_through", { ignore }),
@@ -132,6 +140,11 @@ export async function bootstrapTauriBridge(): Promise<void> {
       await invoke("set_companion_visible", { visible });
       notifyShellConfigChanged();
       // Rust show 路径会 emit shell:config-changed，overlay 重拉配置
+    },
+    getCodingVisible: () => invoke<boolean>("get_coding_visible"),
+    setCodingVisible: async (visible) => {
+      await invoke("set_coding_visible", { visible });
+      notifyShellConfigChanged();
     },
     enqueueCompanionBubble: async (text) => {
       await emit("companion:enqueue-bubble", { text });

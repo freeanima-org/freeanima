@@ -8,13 +8,13 @@ title: Windows development
 
 ## Support boundaries
 
-| Path                                            | Windows                                                       |
-| ----------------------------------------------- | ------------------------------------------------------------- |
-| **Source / contributors** (`bun` + `just`)      | Supported with Git Bash (or WSL2)                             |
-| **Linux standalone** (`curl \| bash` → `anima`) | **Not available** — Linux x64 only                            |
-| **Desktop NSIS** (end-user Portal shell)        | Install from GitHub Release / canary                          |
-| **`just pack tauri-windows`**                   | Cross-compile host is **Linux/macOS**, not “build on Windows” |
-| **`just dev tauri`**                            | Native Windows OK (Rust + WebView2)                           |
+| Path                                                  | Windows                                                                  |
+| ----------------------------------------------------- | ------------------------------------------------------------------------ |
+| **Source / contributors** (`bun` + `just`)            | Supported with Git Bash (or WSL2)                                        |
+| **Linux standalone** (`curl \| bash` → `anima`)       | **Not available** — Linux x64 only                                       |
+| **Desktop NSIS** (end-user Portal shell)              | Install from GitHub Release / canary                                     |
+| **`just pack tauri`** / **`just pack tauri-windows`** | **Native on Windows**（MSVC）；Linux/mac 上 `tauri-windows` 才是交叉编译 |
+| **`just dev tauri`**                                  | Native Windows OK（Rust + WebView2 + MSVC）                              |
 
 Recommended contributor path: **native Windows + Git for Windows (bash on PATH) + Docker Desktop** for PostgreSQL/Redis. Use **WSL2** if you prefer the full Linux docs (`install.md` / Debian PG script) without adapting paths.
 
@@ -53,7 +53,27 @@ scoop install bun just git
 ### Optional (Portal desktop shell only)
 
 - [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) (often already present on Windows 10/11)
-- [rustup](https://rustup.rs/) + MSVC Build Tools — for `just dev tauri`
+- [rustup](https://rustup.rs/) + MSVC Build Tools — for `just dev tauri` / `just pack tauri`
+
+```powershell
+# 检查 / 提示安装 MSVC
+just install tauri
+
+# 开发（与 Linux 相同；另开终端先 just dev / just dev web，Vite :5000）
+# Coding 窗走 :4186 — capabilities remote.urls 已放行；改 capability 后须重启 tauri
+just dev tauri
+
+# 打包 Dev 安装器（与 Linux 的 just pack tauri 对称）
+$env:FREEANIMA_BUILD_CHANNEL = "dev"
+just pack tauri
+# 产物：dist/ 下 NSIS，或 src/portal/app/tauri/src-tauri/target/release/bundle/nsis/
+```
+
+打包前若 `link.exe` 不在 PATH，先开 **x64 Native Tools Command Prompt**，或：
+
+```bat
+call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+```
 
 ## Clone and run
 
@@ -150,7 +170,7 @@ docker run -d --name anima-redis -p 6379:6379 redis:7
 | Workflow                                                   | On Windows                                                                    |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `just install cli` / `just pack cli`                       | Linux standalone tarball — not a Windows Habitat binary                       |
-| `just pack tauri-windows` / `just install tauri-windows`   | Cross-compile from Linux/macOS                                                |
+| `just pack tauri-windows` / `just install tauri-windows`   | On Windows = same as host `tauri`（MSVC）；cross-compile only on Linux/macOS  |
 | Android (`just install android`, `just dev tauri-android`) | Expect bash SDK scripts; use WSL or a Linux host                              |
 | `just i18n po4a`                                           | Needs system `po4a` (typical apt/brew); optional for most UI work             |
 | `just qa test-integration`                                 | Needs Docker Desktop                                                          |

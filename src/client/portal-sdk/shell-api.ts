@@ -46,6 +46,39 @@ export type ShellNativeAlertScheduleResult = { id: string };
 
 export type ShellNativeAlertCancelKey = { id?: string; tag?: string };
 
+/** Coding Outpost：工作区 FS（Rust IPC；TS 侧先类型 + stub） */
+export type WorkspaceFsDirEntry = {
+  name: string;
+  kind: "file" | "dir";
+  size?: number;
+};
+
+export type WorkspaceFsApi = {
+  /** 列出绝对路径目录的直接子项 */
+  listDir: (absPath: string) => Promise<WorkspaceFsDirEntry[]>;
+  readText: (absPath: string) => Promise<string>;
+  writeText: (absPath: string, content: string) => Promise<void>;
+  exists: (absPath: string) => Promise<boolean>;
+  isDir: (absPath: string) => Promise<boolean>;
+  /** 递归枚举文件（绝对路径）；跳过 node_modules / .git */
+  walkFiles: (absRoot: string, opts?: { maxFiles?: number }) => Promise<string[]>;
+};
+
+export type ShellRunCommandOpts = {
+  command: string;
+  cwd?: string;
+  /** 毫秒；默认由 Rust 侧决定 */
+  timeoutMs?: number;
+  /** 是否经 shell；默认 false（argv spawn） */
+  shell?: boolean;
+};
+
+export type ShellRunCommandResult = {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+};
+
 /** Portal / Web 注入的 `window.portalShell` 桥接 */
 export type ShellApi = {
   /** 打包原生壳（Tauri desktop / mobile） */
@@ -86,6 +119,18 @@ export type ShellApi = {
     handler: (status: { loading: boolean; error: string | null }) => void,
   ) => () => void;
   createFileInstanceStore(appId: string): RemoteInstanceStore;
+  /**
+   * Coding Outpost：工作区文件读写（需 Rust `workspace_fs_*` IPC）。
+   * 未实现时 Coding SPA 仅能跑纯路径逻辑 / Bun 单测 backend。
+   */
+  workspaceFs?: WorkspaceFsApi;
+  /**
+   * Coding Outpost：在本机执行一次性命令（需 Rust `run_command` IPC）。
+   * 工作目录应由调用方限制在 workspace_root 内。
+   */
+  runCommand?: (opts: ShellRunCommandOpts) => Promise<ShellRunCommandResult>;
+  /** 原生文件夹选择器；取消返回 null */
+  pickDirectory?: () => Promise<string | null>;
   /** 移动端：打开 连接设置页 */
   openHabitatSettings?: () => void;
   setClickThrough?: (ignore: boolean) => Promise<void>;
@@ -99,6 +144,9 @@ export type ShellApi = {
   openSettings?: () => Promise<void>;
   getCompanionVisible?: () => Promise<boolean>;
   setCompanionVisible?: (visible: boolean) => Promise<void>;
+  /** Coding 前哨窗显隐（hide 保 attach） */
+  getCodingVisible?: () => Promise<boolean>;
+  setCodingVisible?: (visible: boolean) => Promise<void>;
   /** 设置页 → overlay：入队文字气泡（测试 / 调试） */
   enqueueCompanionBubble?: (text: string) => Promise<void>;
   /** overlay：监听入队气泡请求 */

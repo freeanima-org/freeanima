@@ -23,6 +23,7 @@ tauri-plugin-single-instance = "2"
 tauri-plugin-store = "2"
 tauri-plugin-shell = "2"
 mouse_position = "0.1.4"
+rfd = "0.15"
 url = "2"
 reqwest = { version = "0.12", default-features = false, features = [
   "json",

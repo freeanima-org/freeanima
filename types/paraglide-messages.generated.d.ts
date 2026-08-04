@@ -419,6 +419,7 @@ type ParaglideMessageExports = {
   readonly habitat_entities_col_default_private_world: ParaglideMessageFn;
   readonly habitat_entities_col_id: ParaglideMessageFn;
   readonly habitat_entities_col_owner_subject: ParaglideMessageFn;
+  readonly habitat_entities_col_stable_key: ParaglideMessageFn;
   readonly habitat_entities_col_summary: ParaglideMessageFn;
   readonly habitat_entities_col_title: ParaglideMessageFn;
   readonly habitat_entities_col_type: ParaglideMessageFn;
@@ -1287,6 +1288,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const habitat_entities_col_default_private_world: ParaglideMessageFn;
   export const habitat_entities_col_id: ParaglideMessageFn;
   export const habitat_entities_col_owner_subject: ParaglideMessageFn;
+  export const habitat_entities_col_stable_key: ParaglideMessageFn;
   export const habitat_entities_col_summary: ParaglideMessageFn;
   export const habitat_entities_col_title: ParaglideMessageFn;
   export const habitat_entities_col_type: ParaglideMessageFn;

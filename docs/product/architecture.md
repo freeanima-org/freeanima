@@ -177,16 +177,21 @@ Host stack: `src/host/{kernel,core,engine,capabilities,platform}`。Client: `src
 
 UI/UX design system (dimensions, visual foundations, components, interaction patterns) → [`docs/ui/`](../ui/overview.md). Agent hard bans / API → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md), [`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md).
 
-| Layer           | Platform-native?                                             | Location                                                            | Data path                               |
-| --------------- | ------------------------------------------------------------ | ------------------------------------------------------------------- | --------------------------------------- |
-| Shell（壳子维） | Yes                                                          | `src/portal/app/tauri`, companion, Habitat binding                  | Tauri IPC / commands                    |
-| app frame       | Layout follows viewport; settings chrome follows layout band | `src/client/app-frame`（`AppFrame`）                                | Habitat RPC（Feature RPC）              |
-| Habitat UI      | Shell embed（ordinary feature）                              | `src/features/habitat`（UI + `plugin.habitat.rpc`）                 | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
-| Companion host  | Overlay WebView-host（first-party）                          | `src/features/companion/companion`（spa attach；thin shell IPC/FS） | Habitat RPC + `remote_tools.attach`     |
+| Layer           | Platform-native?                                             | Location                                                      | Data path                               |
+| --------------- | ------------------------------------------------------------ | ------------------------------------------------------------- | --------------------------------------- |
+| Shell（壳子维） | Yes                                                          | `src/portal/app/tauri`, companion, Habitat binding            | Tauri IPC / commands                    |
+| app frame       | Layout follows viewport; settings chrome follows layout band | `src/client/app-frame`（`AppFrame`）                          | Habitat RPC（Feature RPC）              |
+| Habitat UI      | Shell embed（ordinary feature）                              | `src/features/habitat`（UI + `plugin.habitat.rpc`）           | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
+| Companion host  | Overlay WebView-host（first-party）                          | `src/features/companion/`（spa attach；thin shell IPC/FS）    | Habitat RPC + `remote_tools.attach`     |
+| Coding host     | Independent outpost window（first-party）                    | `src/features/coding/`（spa attach；dev-machine FS/terminal） | Habitat RPC + `remote_tools.attach`     |
 
 Navigation and main layout **must** use `useLayoutMode()` / viewport breakpoints (layout dimension). **Do not** lock app layout with `getShellKind()`. Interaction (context menu / long-press / Enter-to-send) uses `portal-sdk` interaction APIs. Visual, component, and pattern norms all adapt through the same three dimensions.
 
-**Boundaries:** `app-frame` and `src/features/*/ui` reach Habitat via `portal-sdk` + Feature RPC. **Remote tool registration** (`remote_tools.attach` + `tool.*`) is only for local apps Habitat cannot dial (today: companion **first-party overlay** / `embedded-overlay`; shell provides window/IPC/FS only; **no** Node sidecar). Product surfaces (Chat, etc.) do **not** attach. Dialable peers use **MCP**. See [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md), [`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md).
+**Boundaries:** `app-frame` and main-shell `src/features/*/ui` reach Habitat via `portal-sdk` + Feature RPC. **Remote tool registration** (`remote_tools.attach` + `tool.*`) is only for local apps Habitat cannot dial (today: companion overlay + **Coding outpost window**; shell provides window/IPC/FS only; **no** Node sidecar). **Main-shell product modules** (Chat, Task, Settings, …) do **not** attach; **outpost windows may be both UI and hands**. Dialable peers use **MCP**. See [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md), [`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md), [`coding.md`](../modules/coding.md).
+
+### Coding workbench (cross-machine Outpost)
+
+Target layout: Habitat on a **stable weak machine**; FS / terminal / patch on a **dev-machine Coding outpost** in the same Tauri Portal. One Coding window ⇒ one `instance_id`; multi-repo ⇒ multi conversation with distinct `workspace_root` + `project_world_id`, not multi-attach. Project identity uses World `stable_key` (not `repo_key`). Full design: [`coding.md`](../modules/coding.md).
 
 ### Habitat navigation ↔ cognitive layers
 

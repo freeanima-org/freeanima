@@ -32,6 +32,34 @@ describe("parseOpenAiCompatibleProviderSpec", () => {
     });
   });
 
+  it("parses first_byte and idle timeouts", () => {
+    const spec = parseOpenAiCompatibleProviderSpec("p", {
+      backend: OPENAI_COMPATIBLE_BACKEND_ID,
+      base_url: "https://api.example.com",
+      api_key: "k",
+      timeout_ms: 120_000,
+      first_byte_timeout_ms: 20_000,
+      idle_timeout_ms: 60_000,
+    });
+    expect(spec.context).toMatchObject({
+      timeoutMs: 120_000,
+      firstByteTimeoutMs: 20_000,
+      idleTimeoutMs: 60_000,
+    });
+  });
+
+  it("rejects first_byte_timeout_ms > timeout_ms", () => {
+    expect(() =>
+      parseOpenAiCompatibleProviderSpec("p", {
+        backend: OPENAI_COMPATIBLE_BACKEND_ID,
+        base_url: "https://api.example.com",
+        api_key: "k",
+        timeout_ms: 10_000,
+        first_byte_timeout_ms: 20_000,
+      }),
+    ).toThrow();
+  });
+
   it("rejects invalid backend or missing fields", () => {
     expect(() =>
       parseOpenAiCompatibleProviderSpec("p", {

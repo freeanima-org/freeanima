@@ -56,6 +56,7 @@ type WorldFormState = {
   private: boolean;
   owner_subject_id: string;
   grants: GrantFormRow[];
+  stable_key: string;
 };
 
 const EMPTY_FORM: WorldFormState = {
@@ -65,6 +66,7 @@ const EMPTY_FORM: WorldFormState = {
   private: false,
   owner_subject_id: "",
   grants: [],
+  stable_key: "",
 };
 
 function readWorldBody(row: EntityRow): {
@@ -72,6 +74,7 @@ function readWorldBody(row: EntityRow): {
   owner_subject_id: number | null;
   default_private: boolean;
   grants: WorldGrantInput[];
+  stable_key: string;
 } {
   const body = row.body ?? {};
   const isPrivate = body.private === true;
@@ -90,11 +93,13 @@ function readWorldBody(row: EntityRow): {
     if (ownerSubjectId != null && subjectId === ownerSubjectId) continue;
     grants.push({ subject_id: subjectId, permission });
   }
+  const stableKey = typeof body.stable_key === "string" ? body.stable_key.trim() : "";
   return {
     private: isPrivate,
     owner_subject_id: ownerSubjectId,
     default_private: body.default_private === true,
     grants,
+    stable_key: stableKey,
   };
 }
 
@@ -197,6 +202,15 @@ function WorldEditModal({
             className="w-full min-h-24"
             value={form.content}
             onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+          />
+        </FormField>
+        <FormField label={m.habitat_entities_col_stable_key()} className="text-xs">
+          <Input
+            type="text"
+            className="w-full h-8 font-mono text-xs"
+            placeholder="git:github.com/org/repo"
+            value={form.stable_key}
+            onChange={(e) => setForm((f) => ({ ...f, stable_key: e.target.value }))}
           />
         </FormField>
         <FormField label={m.habitat_entities_col_visibility()} className="text-xs">
@@ -457,6 +471,7 @@ function WorldsPage() {
               subject_id: String(g.subject_id),
               permission: g.permission,
             })),
+            stable_key: access.stable_key,
           };
         })()
       : EMPTY_FORM;
@@ -477,6 +492,7 @@ function WorldsPage() {
             g.subject_id > 0 &&
             (ownerSubjectId == null || g.subject_id !== ownerSubjectId),
         );
+      const stableKey = form.stable_key.trim();
       const payload = omitUndefined({
         title: form.title.trim(),
         summary: form.summary.trim(),
@@ -484,6 +500,7 @@ function WorldsPage() {
         private: form.private,
         owner_subject_id: ownerSubjectId,
         grants,
+        stable_key: stableKey || undefined,
       });
       if (modal?.mode === "edit" && modal.row) {
         await updateWorldEntity(modal.row.id, payload);

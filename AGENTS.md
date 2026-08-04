@@ -23,7 +23,7 @@ Directional heuristics for _what_ FreeAnima should feel like. Mechanisms and cog
 
 - **Platform-native UX** — Mobile and desktop are **separate interaction and layout designs**, not one responsive skin stretched across form factors. Shared contracts (API, Habitat RPC, settings keys) may exist; presentation and interaction patterns should fit each dimension value. **Shell** = Portal 宿主（browser/Tauri；形态 web/desktop/mobile），**≠** 侧栏/底栏/设置 chrome（那是 **app frame** / 应用布局）。**Three orthogonal dimensions**（规范 [`docs/ui/`](docs/ui/overview.md)；Agent API [`.agent/rules/ui-dimensions.md`](.agent/rules/ui-dimensions.md)）：**壳子**（能力）、**布局**（`compact`/`expanded` 视口）、**交互**（`pointer`/`touch`）。视觉 / 组件 / 交互均按三维适配。壳**不**锁布局。Phone 通常窄，但 **phone ≠ 窄布局**。
 - **Habitat & Portal** — User copy: **栖息地 / Habitat** = long-running place (multi digital life + human assets); **入口 / Portal** = 四形态（应用 Shell / 浏览器扩展 / MCP `/mcp` / CLI）。协议/代码标识仍写 Habitat（`/rpc/v1`）。见 [`docs/product/architecture.md`](docs/product/architecture.md) Product naming、[`i18n/glossary.md`](i18n/glossary.md)、[`docs/modules/portal.md`](docs/modules/portal.md)。
-- **Tools: MCP first, remote registration rare** — Dialable peers exchange tools via **MCP**. Only unreachable local apps (no stable inbound listener; e.g. desktop companion) **actively connect** to Habitat and register remote tools over Habitat RPC (`instance_id` routes `tool.call`). Product UI uses Habitat RPC only — never remote-tool attach. See architecture Client UI / companion sections.
+- **Tools: MCP first, remote registration rare** — Dialable peers exchange tools via **MCP**. Only unreachable local apps (no stable inbound listener; e.g. desktop companion, **Coding outpost**) **actively connect** to Habitat and register remote tools over Habitat RPC (`instance_id` routes `tool.call`). **Main-shell** product UI uses Habitat RPC only — never remote-tool attach; **outpost windows** (Companion / Coding) may attach. Coding design: [`docs/modules/coding.md`](docs/modules/coding.md).
 - **Concept convergence over feature sprawl** — As capabilities grow, **resist cognitive overload**: keep a small set of core concepts visible and stable; new features should map onto existing mental models rather than multiplying parallel abstractions in the UI.
 
 ## Code implementation principles
@@ -57,14 +57,16 @@ How agents should _shape_ changes. Hard checks and conventions → [`.agent/rule
 bun install
 just                         # 交互选配方
 just --list                  # 顶层：dev / check / pack / qa / …
+just --list pack             # 模块配方（亦：just --list install / just --list dev）
 just dev                     # Habitat（≥10000）+ Web（:5000）；多 worktree 友好
 just dev habitat / just dev web / just dev tauri / just dev tauri-android
 just check                   # PR 前质量门禁（= just qa check；≠ 全量 CI）
 just fmt / just test         # 顶层短别名 → qa::
 just qa typecheck / just qa lint / just qa test-changed
 just db generate / just db migrate   # 需 DATABASE_URL
-just pack web / just pack cli / just pack tauri-linux / just pack tauri-windows / just pack tauri-android
-just install cli / just install tauri-linux -- --apt
+# 桌面壳：Win/Linux 同命令 — pack/dev/install tauri = 本机；tauri-windows = Win 本机或非 Win 交叉
+just pack web / just pack cli / just pack tauri / just pack tauri-windows / just pack tauri-android
+just install cli / just install tauri / just install tauri-linux -- --apt
 just misc memory-sample -- --habitat-url http://127.0.0.1:<habitat> --stage full
 
 # standalone 安装版 CLI（源码 tree 的 anima 无 service）
@@ -85,25 +87,26 @@ just misc memory-sample -- --habitat-url http://127.0.0.1:<habitat> --stage full
 
 ## Doc map
 
-| File                                                                                 | Role                                                                              |
-| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| [`AGENTS.md`](AGENTS.md)                                                             | Bootstrap protocol, product & code principles (this file)                         |
-| [`.agent/rules/`](.agent/rules/README.md)                                            | Implementation constraints (layers, tests, coding, DB, packages)                  |
-| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues)                   | Actionable tasks and discussions                                                  |
-| [`docs/product/architecture.md`](docs/product/architecture.md)                       | Architecture principles and direction                                             |
-| [`docs/cognition/environment-awareness.md`](docs/cognition/environment-awareness.md) | Environment + health baseline (session prompt + change notify)                    |
-| [`docs/product/anima-uri.md`](docs/product/anima-uri.md)                             | Anima URI（entity 定位 / overlay；id 入库、URI 在 UI）                            |
-| [`.agent/rules/repository-topology.md`](.agent/rules/repository-topology.md)         | Repo layout Phase 1 host/client；ui-kit∥shared；i18n site/ui/host                 |
-| [`docs/cognition/temporal-summary.md`](docs/cognition/temporal-summary.md)           | Objective time digests (day/month/year; peer rollup)                              |
-| [`docs/product/`](docs/product/)                                                     | Product framing (architecture, identity, entity model)                            |
-| [`docs/cognition/`](docs/cognition/)                                                 | Cognitive mechanisms (memory, sleep, self layer, etc.)                            |
-| [`docs/ui/`](docs/ui/overview.md)                                                    | UI/UX design system (dimensions, foundations, components, patterns)               |
-| [`docs/aspects/`](docs/aspects/)                                                     | Cross-cutting design planes (data plane, offline, refresh, notification/reminder) |
-| [`docs/modules/`](docs/modules/)                                                     | Product capability modules (chat, companion, skills, project, subagent, task, …)  |
-| [`docs/modules/task.md`](docs/modules/task.md)                                       | Task module + recurring A′ (live + occurrence)                                    |
-| [`docs/ops/`](docs/ops/)                                                             | Deploy, secure, connect Habitat                                                   |
-| [`docs/ops/habitat-rpc.md`](docs/ops/habitat-rpc.md)                                 | Habitat RPC transport + remote tool registration                                  |
-| [`docs/tools/`](docs/tools/)                                                         | Built-in ToolSets (browser, execute-code, freeanima_docs, …)                      |
+| File                                                                                 | Role                                                                               |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| [`AGENTS.md`](AGENTS.md)                                                             | Bootstrap protocol, product & code principles (this file)                          |
+| [`.agent/rules/`](.agent/rules/README.md)                                            | Implementation constraints (layers, tests, coding, DB, packages)                   |
+| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues)                   | Actionable tasks and discussions                                                   |
+| [`docs/product/architecture.md`](docs/product/architecture.md)                       | Architecture principles and direction                                              |
+| [`docs/cognition/environment-awareness.md`](docs/cognition/environment-awareness.md) | Environment + health baseline (session prompt + change notify)                     |
+| [`docs/product/anima-uri.md`](docs/product/anima-uri.md)                             | Anima URI（entity 定位 / overlay；id 入库、URI 在 UI）                             |
+| [`.agent/rules/repository-topology.md`](.agent/rules/repository-topology.md)         | Repo layout Phase 1 host/client；ui-kit∥shared；i18n site/ui/host                  |
+| [`docs/cognition/temporal-summary.md`](docs/cognition/temporal-summary.md)           | Objective time digests (day/month/year; peer rollup)                               |
+| [`docs/product/`](docs/product/)                                                     | Product framing (architecture, identity, entity model)                             |
+| [`docs/cognition/`](docs/cognition/)                                                 | Cognitive mechanisms (memory, sleep, self layer, etc.)                             |
+| [`docs/ui/`](docs/ui/overview.md)                                                    | UI/UX design system (dimensions, foundations, components, patterns)                |
+| [`docs/aspects/`](docs/aspects/)                                                     | Cross-cutting design planes (data plane, offline, refresh, notification/reminder)  |
+| [`docs/modules/`](docs/modules/)                                                     | Product capability modules (chat, companion, coding, skills, project, subagent, …) |
+| [`docs/modules/coding.md`](docs/modules/coding.md)                                   | Coding outpost workbench（跨机 Outpost / stable_key / explore）                    |
+| [`docs/modules/task.md`](docs/modules/task.md)                                       | Task module + recurring A′ (live + occurrence)                                     |
+| [`docs/ops/`](docs/ops/)                                                             | Deploy, secure, connect Habitat                                                    |
+| [`docs/ops/habitat-rpc.md`](docs/ops/habitat-rpc.md)                                 | Habitat RPC transport + remote tool registration                                   |
+| [`docs/tools/`](docs/tools/)                                                         | Built-in ToolSets (browser, execute-code, freeanima_docs, …)                       |
 
 ---
 

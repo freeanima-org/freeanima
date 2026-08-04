@@ -1,15 +1,20 @@
 # just install …（系统依赖 + CLI / APK）
 import '_common.just'
 
-# 本机 Linux pack tauri-linux：WebKitGTK（缺包：just install tauri-linux -- --apt）
+# 当前宿主：桌面壳本机依赖（Linux WebKit / Windows MSVC 提示 / macOS Xcode）
+[no-cd]
+tauri *args:
+  bun scripts/install-tauri-desktop-native.ts {{args}}
+
+# 本机 Linux pack：WebKitGTK（缺包：just install tauri -- --apt 或 just install tauri-linux -- --apt）
 [no-cd]
 tauri-linux *args:
   bun scripts/install-tauri-linux-deps.ts {{args}}
 
-# 交叉 pack tauri-windows：rust target + cargo-xwin
+# Windows：本机打印 MSVC 安装提示；非 Windows：交叉编译工具链（rust target + cargo-xwin）
 [no-cd]
 tauri-windows *args: _deps
-  bun scripts/install-tauri-windows-toolchain.ts {{args}}
+  bun scripts/install-tauri-windows-dispatch.ts {{args}}
 
 # Android SDK + JDK
 [no-cd]

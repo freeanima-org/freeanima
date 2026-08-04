@@ -11,7 +11,11 @@ export type {
   PatrolScreenInfo,
   RemoteInstanceStore,
   ShellApi,
+  ShellRunCommandOpts,
+  ShellRunCommandResult,
   ScreenPoint,
+  WorkspaceFsApi,
+  WorkspaceFsDirEntry,
 } from "./shell-api.ts";
 
 export type {

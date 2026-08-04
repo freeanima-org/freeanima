@@ -1,6 +1,6 @@
 import type { FrontendManifest } from "./manifest.ts";
 
-export type WindowKind = "overlay" | "settings" | "browser";
+export type WindowKind = "overlay" | "settings" | "browser" | "coding";
 
 export type DesktopWindowSpec = {
   id: string;

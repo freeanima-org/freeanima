@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-set-pointer-active"
+description = "Enables the set_pointer_active command without any pre-configured scope."
+commands.allow = ["set_pointer_active"]
+
+[[permission]]
+identifier = "deny-set-pointer-active"
+description = "Denies the set_pointer_active command without any pre-configured scope."
+commands.deny = ["set_pointer_active"]

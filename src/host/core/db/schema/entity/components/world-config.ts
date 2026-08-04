@@ -20,6 +20,17 @@ export const worldConfigBodySchema = z
     owner_subject_id: z.number().int().positive().optional(),
     default_private: z.boolean().default(false),
     grants: z.array(worldGrantSchema).default([]),
+    /**
+     * 跨机逻辑身份（如 `git:github.com/org/foo`）；勿称 repo_key。
+     * 非空时全局唯一（见 migration partial unique index）。
+     */
+    stable_key: z
+      .string()
+      .trim()
+      .min(1)
+      .max(256)
+      .regex(/^[a-z][a-z0-9_]*:.+$/i, "stable_key must look like prefix:value")
+      .optional(),
   })
   .superRefine((b, ctx) => {
     if (b.common) {

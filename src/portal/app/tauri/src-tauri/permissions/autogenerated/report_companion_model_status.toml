@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-report-companion-model-status"
+description = "Enables the report_companion_model_status command without any pre-configured scope."
+commands.allow = ["report_companion_model_status"]
+
+[[permission]]
+identifier = "deny-report-companion-model-status"
+description = "Denies the report_companion_model_status command without any pre-configured scope."
+commands.deny = ["report_companion_model_status"]

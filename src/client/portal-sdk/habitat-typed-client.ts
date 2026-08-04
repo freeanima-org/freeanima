@@ -18,6 +18,7 @@ import {
 import type { HabitatMethodDef } from "@freeanima/shared/habitat-contract";
 
 import { chatMethodDefs } from "@freeanima/features/chat/habitat/method-defs.ts";
+import { codingMethodDefs } from "@freeanima/features/coding/habitat/method-defs.ts";
 import { companionMethodDefs } from "@freeanima/features/companion/habitat/method-defs.ts";
 import { diaryMethodDefs } from "@freeanima/features/diary/habitat/method-defs.ts";
 import { calendarMethodDefs } from "@freeanima/features/calendar/habitat/method-defs.ts";
@@ -36,6 +37,7 @@ import { vaultMethodDefs } from "@freeanima/features/vault/habitat/method-defs.t
 /** 聚合各 feature method-defs（浏览器 client registry；无 handler） */
 export const FEATURE_METHOD_DEFS = {
   ...chatMethodDefs,
+  ...codingMethodDefs,
   ...taskMethodDefs,
   ...projectMethodDefs,
   ...tagMethodDefs,

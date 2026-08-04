@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { ensureClientHabitatMethodRegistry } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import { fetchHabitatRestRaw, parseHabitatRestResponse } from "@freeanima/shared/habitat-rpc";
 import {
   companionConfigPath,
@@ -175,6 +176,8 @@ async function maybeMigrateLocalCompanionToHub(): Promise<void> {
 
 /** 从 Habitat 拉取 companion 配置与缺失资产，写入本地 cache */
 export async function syncCompanionFromHabitat(): Promise<boolean> {
+  // companion 独立进程无 Habitat router；REST 客户端需先装 feature method registry
+  ensureClientHabitatMethodRegistry();
   await maybeMigrateLocalCompanionToHub();
   try {
     const result = await hubRpcCall<SyncPullResponse>("companion.sync.pull", {});

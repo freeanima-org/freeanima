@@ -35,29 +35,36 @@ export function buildWorldConfigBody(input: {
   owner_subject_id?: number;
   default_private?: boolean;
   grants?: WorldGrant[];
+  /** 非空时写入；空串/undefined 不落库 */
+  stable_key?: string;
 }): Record<string, unknown> {
   const common = input.common === true;
   const grants = normalizeWorldGrants(
     input.grants,
     input.private && !common ? input.owner_subject_id : undefined,
   );
+  const stableKey = input.stable_key?.trim();
+  const withStableKey = <T extends Record<string, unknown>>(body: T): T => {
+    if (stableKey) return { ...body, stable_key: stableKey };
+    return body;
+  };
   if (common) {
-    const body = { private: false, common: true, default_private: false, grants };
+    const body = withStableKey({ private: false, common: true, default_private: false, grants });
     worldConfigBodySchema.parse(body);
     return body;
   }
   if (!input.private) {
-    const body = { private: false, common: false, default_private: false, grants };
+    const body = withStableKey({ private: false, common: false, default_private: false, grants });
     worldConfigBodySchema.parse(body);
     return body;
   }
-  const body = {
+  const body = withStableKey({
     private: true,
     common: false,
     owner_subject_id: input.owner_subject_id,
     default_private: input.default_private ?? false,
     grants,
-  };
+  });
   worldConfigBodySchema.parse(body);
   return body;
 }

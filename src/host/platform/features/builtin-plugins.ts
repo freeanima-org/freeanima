@@ -6,6 +6,7 @@ import { calendarPlugin } from "@freeanima/features/calendar/plugin";
 import { emailPlugin } from "@freeanima/features/email/plugin";
 import { notificationPlugin } from "@freeanima/features/notification/plugin";
 import { companionPlugin } from "@freeanima/features/companion/plugin";
+import { codingPlugin } from "@freeanima/features/coding/plugin";
 import { pomodoroPlugin } from "@freeanima/features/pomodoro/plugin";
 import { taskPlugin } from "@freeanima/features/task/plugin";
 import { projectPlugin } from "@freeanima/features/project/plugin";
@@ -26,6 +27,7 @@ export const builtinFeaturePlugins: FeaturePlugin[] = [
   vaultPlugin,
   notificationPlugin,
   companionPlugin,
+  codingPlugin,
   diaryPlugin,
   calendarPlugin,
   pomodoroPlugin,
