@@ -1,7 +1,30 @@
 import { defineConfig } from "wxt";
 import path from "node:path";
+import { readFileSync } from "node:fs";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+
+const rootPkg = JSON.parse(
+  readFileSync(path.resolve(import.meta.dirname, "package.json"), "utf-8"),
+) as { version: string };
+
+/** 解析完整构建版本：优先 FREEANIMA_BUILD_VERSION（CI canary/release），否则读根 package.json */
+function resolveBuildVersion(): string {
+  const fromEnv = process.env.FREEANIMA_BUILD_VERSION?.trim();
+  if (fromEnv) return fromEnv.replace(/^v/i, "");
+  return rootPkg.version;
+}
+
+/**
+ * Chrome 扩展 manifest.version 仅允许 1-4 个点分整数（≤65535），不支持 semver 预发/构建后缀。
+ * 从完整版本串中剥离 `-canary+…` 等后缀，保留基版本号。
+ */
+function resolveManifestVersion(full: string): string {
+  return full.replace(/[-+].*$/, "");
+}
+
+const appVersion = resolveBuildVersion();
+const manifestVersion = resolveManifestVersion(appVersion);
 
 /** FreeAnima Vault 浏览器扩展（MV3；Chrome） */
 export default defineConfig({
@@ -12,7 +35,7 @@ export default defineConfig({
   manifest: {
     name: "FreeAnima Vault",
     description: "FreeAnima 用户保险库：自动填充、生成密码、连接 Habitat",
-    version: "0.1.0",
+    version: manifestVersion,
     icons: {
       16: "icon-16.png",
       32: "icon-32.png",
