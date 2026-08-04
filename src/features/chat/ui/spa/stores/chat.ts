@@ -1,5 +1,8 @@
 import { omitUndefined } from "@freeanima/host/core/util/omit-undefined";
-import type { DisplayItem, StreamApiEvent } from "@freeanima/features/chat/ui/spa/lib/types.ts";
+import type {
+  LlmDebugSnapshotPayload,
+  StreamApiEvent,
+} from "@freeanima/features/chat/ui/spa/lib/types.ts";
 import { pollUntilAssistantReply } from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
 import { randomUuid } from "@freeanima/shared/rpc-contract";
 import { subscribeHabitatRpcConnectionState } from "@freeanima/shared/habitat-rpc";
@@ -18,23 +21,23 @@ import {
   readPersistedActiveStream,
   writePersistedActiveStream,
 } from "@freeanima/features/chat/ui/spa/lib/active-stream-persist.ts";
+import {
+  handleStreamEvent,
+  type StreamEventCallbacks,
+} from "@freeanima/features/chat/ui/spa/lib/stream-events.ts";
 
 type SendDoneOptions = {
   recovered?: boolean;
 };
 
-export type SendCallbacks = {
-  onToken?: (text: string) => void;
-  onDisplayAppend?: (item: DisplayItem) => void;
-  onAwaitingClarify?: (data: Record<string, unknown>) => void;
+export type SendCallbacks = StreamEventCallbacks & {
   onRecovering?: (active: boolean) => void;
   onError?: (msg: string) => void;
   onDone?: (opts?: SendDoneOptions) => void;
-  onLlmDebug?: (
-    snapshot: import("@freeanima/features/chat/ui/spa/lib/types.ts").LlmDebugSnapshotPayload,
-  ) => void;
   recoverDisplay?: (conversationId: string) => Promise<boolean>;
 };
+
+export type { LlmDebugSnapshotPayload };
 
 export type QueuedMessage = {
   id: string;
@@ -80,64 +83,6 @@ function detachStreamClient(): void {
     _unsubscribe();
     _unsubscribe = null;
   }
-}
-
-function handleStreamEvent(
-  ev: StreamApiEvent,
-  streamText: string,
-  callbacks: SendCallbacks,
-  patch: (partial: Partial<Pick<ChatState, "streaming" | "streamText">>) => void,
-): { streamText: string; receivedDone: boolean; receivedError: boolean } {
-  let receivedDone = false;
-  let receivedError = false;
-  let nextText = streamText;
-
-  switch (ev.event) {
-    case "accepted":
-      patch({ streaming: true });
-      break;
-    case "token":
-      nextText += ev.data.content || "";
-      patch({ streamText: nextText });
-      callbacks.onToken?.(nextText);
-      break;
-    case "content_replace":
-      nextText = ev.data.content || "";
-      patch({ streamText: nextText });
-      callbacks.onToken?.(nextText);
-      break;
-    case "display_append":
-      if (ev.data.item.type === "message" && ev.data.item.role === "assistant") {
-        nextText = "";
-        patch({ streamText: "" });
-        callbacks.onToken?.("");
-      }
-      callbacks.onDisplayAppend?.(ev.data.item);
-      break;
-    case "tool_begin":
-    case "tool_result":
-    case "tool_error":
-      break;
-    case "awaiting_clarify":
-      callbacks.onAwaitingClarify?.(ev.data as Record<string, unknown>);
-      break;
-    case "interrupted":
-      receivedDone = true;
-      break;
-    case "error":
-      receivedError = true;
-      break;
-    case "done":
-      receivedDone = true;
-      break;
-    case "ping":
-      break;
-    case "llm_debug":
-      callbacks.onLlmDebug?.(ev.data);
-      break;
-  }
-
-  return { streamText: nextText, receivedDone, receivedError };
 }
 
 function renderMd(text: string): string {

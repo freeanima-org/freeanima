@@ -37,9 +37,32 @@ After install, **open a new terminal** so `bun`, `just`, and `bash` are on `PATH
 ```powershell
 bun --version    # >= 1.3.14
 just --version
-bash --version   # Git Bash; required by the Justfile
+bash --version   # 必须是 Git Bash（MINGW），不要是 WSL
+Get-Command bash | Select-Object -ExpandProperty Source
+# 期望：…\scoop\shims\bash.exe 或 …\Git\bin\bash.exe
+# 若是 C:\Windows\System32\bash.exe → WSL 抢先，见下方「WSL bash 抢 PATH」
 docker version
 ```
+
+### WSL bash 抢 PATH（`just` → `bun: command not found`）
+
+`just` 的 `windows-shell` 会调用 PATH 上**第一个** `bash`。若 `C:\Windows\System32\bash.exe`（WSL）排在 Git Bash 前面：
+
+- PowerShell 里 `bun i` 正常（不走 bash）
+- `just dev` / `just deps` 报 `/bin/bash: line 1: bun: command not found`（WSL 里裸 `bun` 常不可用）
+
+**临时（当前终端）：**
+
+```powershell
+# scoop Git Bash
+$env:Path = "$env:USERPROFILE\scoop\shims;$env:Path"
+# 或 Git for Windows：
+# $env:Path = "C:\Program Files\Git\bin;$env:Path"
+Get-Command bash | Select-Object -ExpandProperty Source   # 确认已不是 System32
+just deps
+```
+
+**持久：** 在「环境变量」里把 `…\scoop\shims` 或 `C:\Program Files\Git\bin` 挪到 **用户 PATH 最前**（至少早于会解析到 System32 的条目）；或在「应用执行别名」里关掉 WSL 的 `bash.exe`。Justfile 在 Windows 上会调用 `bun.exe` 减轻该问题，但仍建议 `bash` 本身是 Git Bash。
 
 ### scoop (alternative)
 
