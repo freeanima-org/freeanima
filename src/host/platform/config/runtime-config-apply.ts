@@ -1,5 +1,5 @@
 import type { Config, RuntimeConfig } from "@freeanima/host/core/config";
-import { resolveAndBindWorldContext } from "@freeanima/host/core/config/world-context";
+import { resolveAndBindWorldContext } from "@freeanima/host/core/config/world-context-pg";
 import { applyHostI18nConfig } from "@freeanima/host/core/i18n";
 import { initLlmRuntime } from "@freeanima/host/core/llm";
 import {
