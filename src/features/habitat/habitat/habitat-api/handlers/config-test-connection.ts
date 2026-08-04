@@ -7,7 +7,14 @@ import { createOpenAiEmbeddingClient } from "@freeanima/host/capabilities/llm-op
 import { createOpenAiClientFromParsed } from "@freeanima/host/capabilities/llm-openai/client.ts";
 import { fetchModelCatalog } from "@freeanima/host/capabilities/llm-openai/catalog.ts";
 import { parseOpenAiCompatibleContext } from "@freeanima/host/capabilities/llm-openai/context.ts";
-import { OPENAI_COMPATIBLE_BACKEND_ID } from "@freeanima/host/core/config/schemas/llm-config.ts";
+import {
+  LLM_FORMAT_ANTHROPIC_MESSAGES,
+  LLM_FORMAT_OPENAI_COMPATIBLE,
+  LLM_FORMAT_OPENAI_RESPONSES,
+  llmProviderSchema,
+  type LlmProviderConfig,
+} from "@freeanima/host/core/config/schemas/llm-config.ts";
+import { materializeConnection } from "@freeanima/host/core/llm/presets";
 import { resolveValue } from "@freeanima/host/platform/config/resolve.ts";
 import { CONFIG_MASKED_SECRET } from "@freeanima/host/platform/config";
 import { createBunS3Client } from "@freeanima/features/object-storage/domain/bun-s3.ts";
@@ -236,12 +243,25 @@ async function testLlmProvider(
   const savedProviders = asRecord(savedLlm.providers);
   const saved = asRecord(savedProviders[providerId]);
 
-  const baseUrl = pickConfigString(draft.base_url, saved.base_url);
-  if (!baseUrl) return failure("请填写 base_url");
+  const merged: Record<string, unknown> = {
+    ...saved,
+    ...draft,
+    base_url: pickConfigString(draft.base_url, saved.base_url) || saved.base_url,
+    api_key: draft.api_key ?? saved.api_key,
+  };
 
-  const backend = pickConfigString(draft.backend, saved.backend) || OPENAI_COMPATIBLE_BACKEND_ID;
-  if (backend !== OPENAI_COMPATIBLE_BACKEND_ID) {
-    return failure(`暂不支持测试 backend：${backend}`);
+  let providerCfg: LlmProviderConfig;
+  try {
+    providerCfg = llmProviderSchema.parse(merged);
+  } catch (err) {
+    return failure(err instanceof Error ? err.message : String(err));
+  }
+
+  let materialized;
+  try {
+    materialized = materializeConnection(providerCfg);
+  } catch (err) {
+    return failure(err instanceof Error ? err.message : String(err));
   }
 
   let apiKey = "";
@@ -254,12 +274,50 @@ async function testLlmProvider(
 
   const timeoutRaw = draft.timeout_ms ?? saved.timeout_ms;
   const timeoutMs = typeof timeoutRaw === "number" && timeoutRaw > 0 ? timeoutRaw : TEST_TIMEOUT_MS;
+  const formatId = materialized.formatId;
 
   const started = Date.now();
   try {
+    if (formatId === LLM_FORMAT_ANTHROPIC_MESSAGES) {
+      const probeUrl = `${materialized.baseUrl.replace(/\/$/, "")}/messages`;
+      const res = await fetch(probeUrl, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "probe",
+          max_tokens: 1,
+          messages: [{ role: "user", content: "ping" }],
+        }),
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (res.status === 401 || res.status === 403) {
+        return failure("LLM 认证失败（检查 api_key）");
+      }
+      // 400/404 = reached API with bad model/body — connection OK
+      if (!res.ok && res.status !== 400 && res.status !== 404 && res.status !== 422) {
+        const text = await res.text().catch(() => "");
+        return failure(`LLM 连接失败：HTTP ${res.status}${text ? ` ${text.slice(0, 200)}` : ""}`);
+      }
+      return success(`LLM 连接成功（格式 ${formatId}）`, Date.now() - started, {
+        format: formatId,
+        preset: providerCfg.preset,
+        provider_id: providerId,
+        base_url: materialized.baseUrl,
+      });
+    }
+
+    if (formatId !== LLM_FORMAT_OPENAI_COMPATIBLE && formatId !== LLM_FORMAT_OPENAI_RESPONSES) {
+      return failure(`暂不支持测试格式：${formatId}`);
+    }
+
     const client = createOpenAiClientFromParsed(
       parseOpenAiCompatibleContext({
-        baseUrl,
+        baseUrl: materialized.baseUrl,
         apiKey,
         timeoutMs,
       }),
@@ -267,8 +325,10 @@ async function testLlmProvider(
     const models = await fetchModelCatalog(client);
     if (models.length === 0) return failure("已连接但未返回可用模型");
     return success(`LLM 连接成功（${models.length} 个模型）`, Date.now() - started, {
+      format: formatId,
+      preset: providerCfg.preset,
       provider_id: providerId,
-      base_url: baseUrl.replace(/\/$/, ""),
+      base_url: materialized.baseUrl,
       model_count: models.length,
       sample_models: models.slice(0, 5).map((m) => m.model),
     });

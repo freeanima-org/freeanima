@@ -3,7 +3,8 @@ llm:
   default_profile: chat
   providers:
     main:
-      backend: openai_compatible
+      preset: custom
+      format: openai_compatible
       base_url: https://api.openai.com/v1
       api_key: test-key
   profiles:

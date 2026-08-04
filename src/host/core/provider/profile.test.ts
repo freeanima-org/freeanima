@@ -21,7 +21,7 @@ function setupProfileStack(backend = new MockBackend()) {
   const backends = new BackendRegistry();
   backends.register(backend);
   const providers = new ProviderRegistry(backends);
-  providers.register(new LlmProvider("main", backend.id, { apiKey: "k" }, backend));
+  providers.register(new LlmProvider("main", backend.id, { apiKey: "k" }, backends));
   const defs = [
     profileDef("chat", [hop("main", "cfg-model", { temperature: 0.2 })], { topP: 0.9 }),
     profileDef("reflect", [hop("main", "reflect-model")]),
@@ -81,7 +81,7 @@ describe("ProfileRegistry", () => {
     const backends = new BackendRegistry();
     backends.register(new MockBackend());
     const providers = new ProviderRegistry(backends);
-    providers.register(new LlmProvider("main", "mock", {}, backends.get("mock")));
+    providers.register(new LlmProvider("main", "mock", {}, backends));
 
     expect(
       () =>
@@ -192,8 +192,8 @@ describe("LlmProfile", () => {
     backends.register(primary);
     backends.register(standby);
     const providers = new ProviderRegistry(backends);
-    providers.register(new LlmProvider("p1", primary.id, { apiKey: "bad" }, primary));
-    providers.register(new LlmProvider("p2", standby.id, { apiKey: "ok" }, standby));
+    providers.register(new LlmProvider("p1", primary.id, { apiKey: "bad" }, backends));
+    providers.register(new LlmProvider("p2", standby.id, { apiKey: "ok" }, backends));
     const profile = new LlmProfile(
       profileDef("chat", [hop("p1", "m1"), hop("p2", "standby-model")]),
       providers,
@@ -216,8 +216,8 @@ describe("LlmProfile", () => {
     backends.register(primary);
     backends.register(standby);
     const providers = new ProviderRegistry(backends);
-    providers.register(new LlmProvider("p1", primary.id, {}, primary));
-    providers.register(new LlmProvider("p2", standby.id, {}, standby));
+    providers.register(new LlmProvider("p1", primary.id, {}, backends));
+    providers.register(new LlmProvider("p2", standby.id, {}, backends));
     const profile = new LlmProfile(
       profileDef("chat", [hop("p1", "m1"), hop("p2", "m2")]),
       providers,
@@ -245,8 +245,8 @@ describe("LlmProfile", () => {
     backends.register(primary);
     backends.register(standby);
     const providers = new ProviderRegistry(backends);
-    providers.register(new LlmProvider("p1", primary.id, {}, primary));
-    providers.register(new LlmProvider("p2", standby.id, {}, standby));
+    providers.register(new LlmProvider("p1", primary.id, {}, backends));
+    providers.register(new LlmProvider("p2", standby.id, {}, backends));
     const profile = new LlmProfile(
       profileDef("chat", [hop("p1", "m1"), hop("p2", "m2")]),
       providers,
@@ -298,7 +298,7 @@ describe("LlmProfile", () => {
     const backends = new BackendRegistry();
     backends.register(new MockBackend());
     const providers = new ProviderRegistry(backends);
-    providers.register(new LlmProvider("main", "mock", {}, backends.get("mock")));
+    providers.register(new LlmProvider("main", "mock", {}, backends));
     const profile = new LlmProfile({ id: "empty", chain: [] }, providers);
     await expect(profile.bind()).rejects.toThrow('profile "empty" chain cannot be empty');
   });
