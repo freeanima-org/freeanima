@@ -5,7 +5,6 @@ import {
   getCronJob,
   listAllCronJobs,
   updateCronJob,
-  upsertBuiltinCronJob,
 } from "@freeanima/host/core/db/pg/cron";
 import { logComponent } from "@freeanima/host/platform/logging";
 import { CronHandleManager } from "./handle-manager.ts";
@@ -98,25 +97,8 @@ export function rowToPatch(job: CronJob): CronJobUpdateInput {
   };
 }
 
-/** PG cron_jobs 仅保留仍需任务表的 builtin（如 email-sync）；其余见 inprocess-builtins */
-export async function ensureBuiltinCronJobs(): Promise<void> {
-  await ensureBuiltinEmailSyncAllCronJob();
-}
-
-async function ensureBuiltinEmailSyncAllCronJob(): Promise<void> {
-  const id = "builtin-email-sync-all";
-  const scheduleChanged = await upsertBuiltinCronJob({
-    id,
-    name: "email-sync-all",
-    schedule: "*/5 * * * *",
-    prompt: "",
-    no_agent: true,
-    timeout_sec: 1800,
-  });
-  const job = await getJob(id);
-  if (!job || !handles) return;
-  if (scheduleChanged) handles.reregister(job);
-}
+/** 系统 builtin 已全部迁 inprocess-builtins；保留空实现供 boot / API 兼容 */
+export async function ensureBuiltinCronJobs(): Promise<void> {}
 
 export function cronRowToCreateInput(row: CronJobRow) {
   return { ...row };
