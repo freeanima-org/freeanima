@@ -76,10 +76,43 @@ export const memorySearchBodySchema = z
   .transform((b) => ({ ...b, query: b.query.trim() }))
   .refine((b) => b.query.length > 0, { message: "query is required" });
 
+export const passiveRecallDebugBodySchema = z
+  .object({
+    user_text: z.string(),
+    limit: z.number().int().positive().max(20).optional(),
+  })
+  .transform((b) => ({ ...b, user_text: b.user_text.trim() }))
+  .refine((b) => b.user_text.length > 0, { message: "user_text is required" });
+
+export const temporalSummaryWindowSchema = z.enum(["day", "month", "year"]);
+
+export const temporalSummaryListBodySchema = memoryListPaginationSchema.extend({
+  window: temporalSummaryWindowSchema.optional(),
+  period_start_from: z.string().optional(),
+  period_start_to: z.string().optional(),
+});
+
+export const temporalSummaryRegenerateBodySchema = z.object({
+  window: temporalSummaryWindowSchema,
+  period_start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+
+export const temporalSystemRollKindSchema = z.enum(["past_days", "past_months", "past_years"]);
+
+export const temporalSystemRollRegenerateBodySchema = z.object({
+  kind: temporalSystemRollKindSchema,
+});
+
 export type CreateConversationBody = z.infer<typeof createConversationBodySchema>;
 export type PatchTitleBody = z.infer<typeof patchTitleBodySchema>;
 export type SendMessageBody = z.infer<typeof sendMessageBodySchema>;
 export type MemorySearchBody = z.infer<typeof memorySearchBodySchema>;
+export type PassiveRecallDebugBody = z.infer<typeof passiveRecallDebugBodySchema>;
+export type TemporalSummaryListBody = z.infer<typeof temporalSummaryListBodySchema>;
+export type TemporalSummaryRegenerateBody = z.infer<typeof temporalSummaryRegenerateBodySchema>;
+export type TemporalSystemRollRegenerateBody = z.infer<
+  typeof temporalSystemRollRegenerateBodySchema
+>;
 export type SemanticMemoryListBody = z.infer<typeof semanticMemoryListBodySchema>;
 export type SemanticMemoryPinBody = z.infer<typeof semanticMemoryPinBodySchema>;
 export type LimbicMemoryListBody = z.infer<typeof limbicMemoryListBodySchema>;

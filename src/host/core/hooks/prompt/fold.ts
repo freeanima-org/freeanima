@@ -16,7 +16,7 @@ export type FoldSystemPromptResult = {
   droppedSectionIds: string[];
 };
 
-const DEFAULT_HARD_KEEP = ["self", "memory-citation"] as const;
+const DEFAULT_HARD_KEEP = ["self", "memory-citation", "memory-recall"] as const;
 
 function applySectionBudget(section: SystemPromptSection): {
   section: SystemPromptSection;
@@ -46,6 +46,7 @@ function joinSectionContentsLen(list: SystemPromptSection[]): number {
 /**
  * Merge hook sections by id (last write wins), apply per-section then global budgets.
  * Lower `priority` number = kept preferentially when over global budget.
+ * Prefer truncating within a section over dropping entire sections.
  */
 export function foldSystemPromptSectionsDetailed(
   chain: HookStepLink<SystemPromptBuildEffect> | null,
@@ -76,26 +77,9 @@ export function foldSystemPromptSectionsDetailed(
 
   let sections = afterSectionBudget;
   if (globalBudget != null && globalBudget > 0) {
-    // Drop lowest-priority (highest priority number) non-hardKeep sections first.
     const working = [...sections];
-    while (joinSectionContentsLen(working) > globalBudget) {
-      let dropIdx = -1;
-      let worstPri = Number.NEGATIVE_INFINITY;
-      for (let i = 0; i < working.length; i++) {
-        const s = working[i];
-        if (!s || hardKeep.has(s.id)) continue;
-        const pri = sectionPriority(s);
-        if (pri > worstPri || (pri === worstPri && (dropIdx < 0 || i > dropIdx))) {
-          worstPri = pri;
-          dropIdx = i;
-        }
-      }
-      if (dropIdx < 0) break;
-      const removed = working.splice(dropIdx, 1)[0];
-      if (removed) droppedSectionIds.push(removed.id);
-    }
 
-    // Still over: truncate lowest-priority remaining from the end of content.
+    // Prefer within-section truncation (highest priority number first; hardKeep last).
     while (joinSectionContentsLen(working) > globalBudget && working.length > 0) {
       let targetIdx = working.length - 1;
       let worstPri = Number.NEGATIVE_INFINITY;
@@ -103,7 +87,6 @@ export function foldSystemPromptSectionsDetailed(
         const s = working[i];
         if (!s) continue;
         const pri = sectionPriority(s);
-        // Prefer truncating non-hardKeep; among equals, higher priority number first.
         const effective = hardKeep.has(s.id) ? pri - 1000 : pri;
         if (effective > worstPri) {
           worstPri = effective;
@@ -124,7 +107,6 @@ export function foldSystemPromptSectionsDetailed(
       target.content = `${target.content.slice(0, cut)}${marker}`;
       if (!truncatedSectionIds.includes(target.id)) truncatedSectionIds.push(target.id);
       if (joinSectionContentsLen(working) <= globalBudget) break;
-      // Avoid infinite loop if hard-keep cannot shrink enough
       if (hardKeep.has(target.id) && cut <= 64) break;
     }
 

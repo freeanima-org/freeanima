@@ -55,7 +55,11 @@ import {
   listLimbicMemories,
   listMemoryFiles,
   listSemanticMemories,
-  memorySearch,
+  listTemporalSummaries,
+  regenerateTemporalSummary,
+  listTemporalSystemRolls,
+  regenerateTemporalSystemRoll,
+  passiveRecallDebug,
   updateSemanticMemoryPinned,
 } from "../habitat-api/handlers/memory.ts";
 import { getPromptDebug } from "../habitat-api/handlers/prompt.ts";
@@ -248,10 +252,38 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     wrapConsoleLegacyHandler(() => listMemoryFiles()),
   ),
   defineHabitatRouteFromDef(
-    "memory.search",
-    habitatMethodDefs["memory.search"],
+    "memory.passiveRecallDebug",
+    habitatMethodDefs["memory.passiveRecallDebug"],
     wrapConsoleLegacyHandler((payload) =>
-      memorySearch(payload as { query: string; limit?: number }),
+      passiveRecallDebug(payload as { user_text: string; limit?: number }),
+    ),
+  ),
+  defineHabitatRouteFromDef(
+    "memory.temporalList",
+    habitatMethodDefs["memory.temporalList"],
+    wrapConsoleLegacyHandler((payload) =>
+      listTemporalSummaries(payload as Record<string, unknown>),
+    ),
+  ),
+  defineHabitatRouteFromDef(
+    "memory.temporalRegenerate",
+    habitatMethodDefs["memory.temporalRegenerate"],
+    wrapConsoleLegacyHandler((payload) =>
+      regenerateTemporalSummary(
+        payload as { window: "day" | "month" | "year"; period_start: string },
+      ),
+    ),
+  ),
+  defineHabitatRouteFromDef(
+    "memory.temporalSystemRollList",
+    habitatMethodDefs["memory.temporalSystemRollList"],
+    wrapConsoleLegacyHandler(() => listTemporalSystemRolls()),
+  ),
+  defineHabitatRouteFromDef(
+    "memory.temporalSystemRollRegenerate",
+    habitatMethodDefs["memory.temporalSystemRollRegenerate"],
+    wrapConsoleLegacyHandler((payload) =>
+      regenerateTemporalSystemRoll(payload as { kind: "past_days" | "past_months" | "past_years" }),
     ),
   ),
   defineHabitatRouteFromDef(

@@ -5,10 +5,13 @@ import {
   entitySearchBodySchema,
   entitySearchQuerySchema,
   limbicMemoryListBodySchema,
-  memorySearchBodySchema,
+  passiveRecallDebugBodySchema,
   semanticMemoryListBodySchema,
   semanticMemoryPinBodySchema,
   subjectEntityCreateBodySchema,
+  temporalSummaryListBodySchema,
+  temporalSummaryRegenerateBodySchema,
+  temporalSystemRollRegenerateBodySchema,
   worldEntityCreateBodySchema,
   worldEntityPatchInputSchema,
 } from "./schemas.ts";
@@ -188,8 +191,28 @@ export const habitatMethodDefs = {
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "memory.search": defineHabitatMethod({
-    input: memorySearchBodySchema,
+  "memory.passiveRecallDebug": defineHabitatMethod({
+    input: passiveRecallDebugBodySchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "memory.temporalList": defineHabitatMethod({
+    input: temporalSummaryListBodySchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "memory.temporalRegenerate": defineHabitatMethod({
+    input: temporalSummaryRegenerateBodySchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "memory.temporalSystemRollList": defineHabitatMethod({
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "memory.temporalSystemRollRegenerate": defineHabitatMethod({
+    input: temporalSystemRollRegenerateBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),

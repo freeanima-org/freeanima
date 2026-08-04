@@ -7,7 +7,6 @@ import { listCompletedStepDays } from "@freeanima/host/core/db/pg/pipeline";
 import { listTemporalSummariesInRange } from "@freeanima/host/core/db/pg/temporal-summary";
 import { CST_OFFSET_MS } from "@freeanima/host/core/util";
 
-import { isCstMonthEnd } from "./temporal-summary/buckets.ts";
 import type { SleepCatchUpPlan } from "./sleep-catch-up-types.ts";
 
 export type { SleepCatchUpPlan } from "./sleep-catch-up-types.ts";
@@ -26,7 +25,49 @@ export function todayCstDay(nowMs: number = Date.now()): string {
   return `${cst.getUTCFullYear()}-${pad2(cst.getUTCMonth() + 1)}-${pad2(cst.getUTCDate())}`;
 }
 
-/** Month-end CST dates in [fromDay, toDay] inclusive */
+/**
+ * Month-start CST dates (YYYY-MM-01) in [fromDay, toDay] inclusive.
+ * Cascade runs on these days to rebuild the *previous* month (and year on Jan 1).
+ */
+export function listMonthStartsInRange(fromDay: string, toDay: string): string[] {
+  if (fromDay > toDay) return [];
+  const out: string[] = [];
+  let y = Number(fromDay.slice(0, 4));
+  let m = Number(fromDay.slice(5, 7));
+  const endY = Number(toDay.slice(0, 4));
+  const endM = Number(toDay.slice(5, 7));
+  if (
+    !Number.isFinite(y) ||
+    !Number.isFinite(m) ||
+    !Number.isFinite(endY) ||
+    !Number.isFinite(endM)
+  ) {
+    return [];
+  }
+  // Start from the first month whose -01 falls in range (or next month if fromDay mid-month)
+  const fromDayNum = Number(fromDay.slice(8, 10));
+  if (fromDayNum > 1) {
+    m += 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+  }
+  while (y < endY || (y === endY && m <= endM)) {
+    const monthStart = `${y}-${pad2(m)}-01`;
+    if (monthStart >= fromDay && monthStart <= toDay) {
+      out.push(monthStart);
+    }
+    m += 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+  }
+  return out;
+}
+
+/** @deprecated Use listMonthStartsInRange — cascade triggers on month starts. */
 export function listMonthEndsInRange(fromDay: string, toDay: string): string[] {
   if (fromDay > toDay) return [];
   const out: string[] = [];
@@ -43,10 +84,9 @@ export function listMonthEndsInRange(fromDay: string, toDay: string): string[] {
     return [];
   }
   while (y < endY || (y === endY && m <= endM)) {
-    // UTC day 0 of next month = last day of month m
     const last = new Date(Date.UTC(y, m, 0));
     const monthEnd = `${y}-${pad2(m)}-${pad2(last.getUTCDate())}`;
-    if (monthEnd >= fromDay && monthEnd <= toDay && isCstMonthEnd(monthEnd)) {
+    if (monthEnd >= fromDay && monthEnd <= toDay) {
       out.push(monthEnd);
     }
     m += 1;
@@ -74,10 +114,10 @@ export function computeSleepCatchUpDays(input: {
     .toSorted();
   const daySet = new Set([...light_days, ...temporal_days]);
   const days = [...daySet].toSorted();
-  // Cascade only when catching up day work; month-ends in range (handler no-ops if empty)
+  // Cascade on month starts in range (rebuilds previous month / year); no-op if empty material
   const cascade_days =
     light_days.length > 0 || temporal_days.length > 0
-      ? listMonthEndsInRange(input.from, input.to)
+      ? listMonthStartsInRange(input.from, input.to)
       : [];
   return { light_days, temporal_days, cascade_days, days };
 }

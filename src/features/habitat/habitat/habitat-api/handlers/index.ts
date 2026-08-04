@@ -20,7 +20,11 @@ export {
 } from "./status.ts";
 export {
   listMemoryFiles,
-  memorySearch,
+  passiveRecallDebug,
+  listTemporalSummaries,
+  regenerateTemporalSummary,
+  listTemporalSystemRolls,
+  regenerateTemporalSystemRoll,
   countSemanticMemory,
   listSemanticMemories,
   listLimbicMemories,

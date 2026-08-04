@@ -7,11 +7,18 @@ export {
   listClosedBucketsToday,
   peerRollSourcesFp,
   peerRollRedisKey,
+  sysRollSourcesFp,
+  sysRollRedisKey,
   monthPeriodStart,
   yearPeriodStart,
+  previousMonthPeriodStart,
+  lastDayOfMonthPeriod,
+  isCstMonthStart,
+  isCstYearStart,
   isCstMonthEnd,
   isCstYearEnd,
   type PeerRollSource,
+  type SysRollKind,
 } from "./buckets.ts";
 export {
   registerTemporalSummaryEngine,
@@ -38,11 +45,24 @@ export {
   type TemporalSummaryTickResult,
 } from "./tick.ts";
 export { runTemporalSummaryDay, type TemporalSummaryDayResult } from "./day-run.ts";
-export { runTemporalSummaryCascade, type TemporalSummaryCascadeResult } from "./cascade-run.ts";
+export {
+  runTemporalSummaryCascade,
+  rebuildMonthSummary,
+  rebuildYearSummary,
+  type TemporalSummaryCascadeResult,
+  type RebuildTemporalPeriodResult,
+} from "./cascade-run.ts";
 export {
   buildTemporalSummarySystemSection,
   type TemporalSummarySystemSectionResult,
+  type BuildTemporalSummarySystemSectionOpts,
 } from "./system-section.ts";
+export {
+  listTemporalSystemRolls,
+  regenerateTemporalSystemRoll,
+  type SysRollSlot,
+  type SysRollCacheValue,
+} from "./system-rolls.ts";
 export {
   TEMPORAL_SUMMARY_SYSTEM_TRUNCATED_SOURCE_PREFIX,
   temporalSummarySystemTruncatedSourceRef,

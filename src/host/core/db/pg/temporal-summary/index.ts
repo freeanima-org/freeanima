@@ -2,6 +2,7 @@ export {
   getTemporalSummary,
   upsertTemporalSummary,
   listTemporalSummariesInRange,
+  listTemporalSummaries,
   type TemporalSummaryRow,
 } from "./repos/temporal-summary-repo.ts";
 export {

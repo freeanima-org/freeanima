@@ -19,8 +19,7 @@ import {
 } from "@freeanima/host/core/db/pg/semantic-memory";
 import { upsertSelfBlock } from "@freeanima/host/core/db/pg/self-layer";
 import { countSemanticMemory } from "@freeanima/host/core/db/pg/semantic-memory";
-import { getTestEngine, getActivePgTestContext, seedSession } from "../../helpers/pg-test.ts";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
+import { getActivePgTestContext } from "../../helpers/pg-test.ts";
 
 describePg("server memory API", () => {
   let home: string;
@@ -49,48 +48,20 @@ describePg("server memory API", () => {
     expect(files.some((f: { name: string }) => f.name === `${id}.md`)).toBe(true);
   });
 
-  it("memorySearch returns structured semantic memory and PG dialogue hits", async () => {
+  it("passiveRecallDebug returns semantic pipeline debug for a query", async () => {
     await createSemanticMemory({
       content: "Freeanima memory pipeline uses compression",
       type: "world",
     });
 
-    const sid = "20260526_120000_abcd";
-    await seedSession(
-      getTestEngine(),
-      sid,
-      {
-        role: "conversation_meta",
-        model: "test-model",
-        cached_toolsets: [],
-        functions: [],
-        timestamp: "2026-05-26T12:00:00+08:00",
-        platform: TEST_SAP_CHAT_PLATFORM,
-        title: "t",
-      },
-      [
-        {
-          role: "user",
-          timestamp: "2026-05-26T12:00:00+08:00",
-          content: "Discuss compression algorithm",
-          pos: 1,
-        },
-      ],
-    );
-
-    const out = await getAppRuntime().memorySearch({ query: "compression" });
-    expect(out.results.length).toBeGreaterThan(0);
-    const semantic = out.results.find((r: { memory_type: string }) => r.memory_type === "semantic");
-    const conversation = out.results.find(
-      (r: { memory_type: string }) => r.memory_type === "conversation",
-    );
-    expect(semantic).toBeDefined();
-    expect(conversation).toBeDefined();
-    expect(semantic!.score).toBeGreaterThan(0);
-    if (conversation?.memory_type === "conversation") {
-      expect(conversation.conversation_id).toBe(sid);
-      expect(conversation.snippet.length).toBeGreaterThan(0);
-    }
+    const out = await getAppRuntime().passiveRecallDebug({
+      user_text: "compression",
+      limit: 5,
+    });
+    expect(out.debug.query).toBe("compression");
+    expect(out.enabled).toBe(true);
+    expect(Array.isArray(out.debug.fts)).toBe(true);
+    expect(Array.isArray(out.debug.merged)).toBe(true);
   });
 
   it("countSemanticMemory returns semantic memory count", async () => {
@@ -101,10 +72,11 @@ describePg("server memory API", () => {
 
     const index_rows = await countSemanticMemory();
     expect(index_rows).toBeGreaterThan(0);
-    const hits = await getAppRuntime().memorySearch({ query: "gamma" });
-    expect(hits.results.some((r: { memory_type: string }) => r.memory_type === "semantic")).toBe(
-      true,
-    );
+    const hits = await getAppRuntime().passiveRecallDebug({ user_text: "gamma" });
+    expect(
+      hits.debug.after_score_filter.some((r: { id: number }) => r.id > 0) ||
+        hits.debug.merged.some((r: { id: number }) => r.id > 0),
+    ).toBe(true);
   });
 
   it("listSemanticMemories supports filter offset and total", async () => {

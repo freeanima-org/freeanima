@@ -8,7 +8,7 @@ import {
   decomposeSystemPromptParts,
   RESIDENT_MEMORY_SYSTEM_FRAME,
 } from "./system-prompt.ts";
-import { MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
+import { MEMORY_RECALL_STRATEGY_RULE, MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
 import { buildMemorySystemPromptSections } from "./system-prompt-sections.ts";
 
 const listResidentSemanticMemoryMock = mock(
@@ -76,6 +76,14 @@ describe("system-prompt", () => {
     expect(citation).toBeDefined();
     expect(citation!.content).toBe(MEMORY_REFERENCE_CITATION_RULE);
     expect(citation!.order).toBe(25);
+  });
+
+  it("memory-recall strategy section is always present", async () => {
+    const sections = await buildMemorySystemPromptSections("self layer content");
+    const recall = sections.find((s) => s.id === "memory-recall");
+    expect(recall).toBeDefined();
+    expect(recall!.content).toBe(MEMORY_RECALL_STRATEGY_RULE);
+    expect(recall!.order).toBe(26);
   });
 
   it("project context segment includes code fence without second-person frame", async () => {

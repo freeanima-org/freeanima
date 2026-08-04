@@ -124,3 +124,59 @@ export async function listTemporalSummariesInRange(input: {
     };
   });
 }
+
+/** Paginated list of temporal summaries (newest period_start first). */
+export async function listTemporalSummaries(input: {
+  window?: TemporalSummaryWindow;
+  period_start_from?: string;
+  period_start_to?: string;
+  offset?: number;
+  limit?: number;
+}): Promise<{ items: TemporalSummaryRow[]; total: number }> {
+  const db = getDb();
+  const offset = Math.max(0, input.offset ?? 0);
+  const limit = Math.max(1, Math.min(100, input.limit ?? 20));
+  const conditions = [
+    eq(entities.primary_component, TEMPORAL_SUMMARY_COMPONENT),
+    eq(entities.world_id, agentWorldId()),
+  ];
+  if (input.window) {
+    conditions.push(sql`${entities.body}->>'window' = ${input.window}`);
+  }
+  if (input.period_start_from) {
+    conditions.push(sql`${entities.body}->>'period_start' >= ${input.period_start_from}`);
+  }
+  if (input.period_start_to) {
+    conditions.push(sql`${entities.body}->>'period_start' <= ${input.period_start_to}`);
+  }
+  const where = and(...conditions);
+  const [countRow] = await db
+    .select({ total: sql<number>`count(*)::int` })
+    .from(entities)
+    .where(where);
+  const rows = await db
+    .select({
+      id: entities.id,
+      content: entities.content,
+      body: entities.body,
+      updated_at: entities.updated_at,
+    })
+    .from(entities)
+    .where(where)
+    .orderBy(sql`${entities.body}->>'period_start' DESC`)
+    .limit(limit)
+    .offset(offset);
+  return {
+    total: countRow?.total ?? 0,
+    items: rows.map((row) => {
+      const body = temporalSummaryBodySchema.parse(row.body ?? {});
+      return {
+        id: row.id,
+        window: body.window,
+        period_start: body.period_start,
+        content: row.content ?? "",
+        updated_at: row.updated_at,
+      };
+    }),
+  };
+}

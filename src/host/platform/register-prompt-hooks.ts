@@ -118,8 +118,17 @@ export function registerTemporalSummarySystemPromptHook(registry: HookRegistry):
         const { getActiveRuntimeConfig } = await import("@freeanima/host/core/config");
         const { buildTemporalSummarySystemSection, resolveTemporalSummaryConfig } =
           await import("@freeanima/host/capabilities/memory/temporal-summary");
+        const { cacheGetJson, cacheSetJson } =
+          await import("@freeanima/host/capabilities/connectors/redis");
         const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-        const { content, truncated } = await buildTemporalSummarySystemSection(config);
+        const selfContent = await loadSelfLayerPrompt();
+        const { content, truncated } = await buildTemporalSummarySystemSection(config, {
+          selfContent,
+          peerCache: {
+            getJson: cacheGetJson,
+            setJson: cacheSetJson,
+          },
+        });
         if (truncated) {
           const { notifyTemporalSummarySystemTruncated } =
             await import("./service/temporal-summary-truncate-notify.ts");

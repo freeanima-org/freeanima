@@ -157,7 +157,9 @@ Before each user-facing turn, the runtime searches **semantic memory only** from
 
 - **Resident memory** (system prompt): pinned + high-reference anchors, session snapshot
 - **Passive recall**: query-relevant semantic hits for the current message
-- **Active tools**: use the matching scope tool when the model needs more depth or non-semantic memory
+- **Active tools**: `memory_semantic_search` when the model needs more depth on semantic facts
+
+**Clarify / recall strategy (system prompt `memory-recall`):** prefer resident → passive semantic inject → `memory_semantic_search`. Limbic / autobiographical / conversation search are not the default recall path.
 
 The conversation `system_prompt` column is a **session snapshot**. After each **CST 02:00** boundary (aligned with the sleep-cycle cron), the next user message rebuilds it in full (resident memory, world/channel context, toolsets, self layer, project `AGENTS.md`) via `ensureSystemPromptFresh` in `beginTurnPrepare`; mid-turn tool loops are not interrupted.
 
@@ -171,7 +173,7 @@ Resident memory injected via system prompt: **up to 40 pinned** + **most-referen
 
 **Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[anima:id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Conversation, limbic, and autobiographical hits do not use this marker.
 
-**Where the rule is communicated:** global system prompt `memory-citation` section; `memory_semantic_search` tool description. Tool response JSON is not modified for this.
+**Where the rule is communicated:** global system prompt `memory-citation` + `memory-recall` sections; `memory_semantic_search` tool description. Tool response JSON is not modified for this.
 
 **What counts as a reference:** only `[[anima:id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `entities.reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare numeric ids without `[[anima:…]]` are also not counted. Each citing message increments the weight (no per-conversation first-hit dedupe).
 

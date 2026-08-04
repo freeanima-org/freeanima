@@ -106,7 +106,38 @@ describe("foldSystemPromptSections", () => {
     expect(folded.truncatedSectionIds).toContain("env-health-baseline");
   });
 
-  it("drops low-priority sections under global budget but keeps self", async () => {
+  it("truncates low-priority sections under global budget before dropping", async () => {
+    const registry = createTestHookRegistry();
+    registry.on(
+      systemPromptBuild,
+      () => ({
+        status: "ok",
+        data: {
+          sections: [
+            { id: "self", content: "SELF_CORE", order: 0, priority: 0 },
+            { id: "memory-citation", content: "CITE", order: 25, priority: 1 },
+            {
+              id: "user-activity-stats",
+              content: "ACTIVITY".repeat(20),
+              order: 16,
+              priority: 9,
+            },
+          ],
+        },
+      }),
+      ALL,
+    );
+    const run = await registry.run(systemPromptBuild, { functionNames: [] }, CONV);
+    const folded = foldSystemPromptSectionsDetailed(run.chain, {
+      globalBudgetChars: 80,
+    });
+    expect(folded.text).toContain("SELF_CORE");
+    expect(folded.text).toContain("CITE");
+    expect(folded.truncatedSectionIds).toContain("user-activity-stats");
+    expect(folded.droppedSectionIds).not.toContain("user-activity-stats");
+  });
+
+  it("drops a non-hardKeep section only when truncation cannot retain content", async () => {
     const registry = createTestHookRegistry();
     registry.on(
       systemPromptBuild,

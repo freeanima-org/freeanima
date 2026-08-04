@@ -99,12 +99,61 @@ export function peerRollRedisKey(opts: {
   return `${opts.prefix}:peer_roll:${opts.cst_date}:${bucketToken}:${opts.sources_fp}`;
 }
 
+/** Fingerprint for system prompt rollup source rows */
+export function sysRollSourcesFp(
+  rows: ReadonlyArray<{ period_start: string; content: string }>,
+): string {
+  const sorted = rows.toSorted((a, b) => a.period_start.localeCompare(b.period_start));
+  const payload = JSON.stringify(
+    sorted.map((r) => ({ period_start: r.period_start, content: r.content.trim() })),
+  );
+  return createHash("sha256").update(payload).digest("hex").slice(0, 16);
+}
+
+export type SysRollKind = "past_days" | "past_months" | "past_years";
+
+/** Stable Redis key (no fp) so Habitat UI can list cache slots. */
+export function sysRollRedisKey(opts: {
+  prefix: string;
+  kind: SysRollKind;
+  /** past_days → today; past_months → yyyy-mm; past_years → yyyy */
+  anchor: string;
+}): string {
+  return `${opts.prefix}:sys_roll:${opts.kind}:${opts.anchor}`;
+}
+
 export function monthPeriodStart(cstDate: string): string {
   return `${cstDate.slice(0, 7)}-01`;
 }
 
 export function yearPeriodStart(cstDate: string): string {
   return `${cstDate.slice(0, 4)}-01-01`;
+}
+
+/** Previous calendar month period_start (YYYY-MM-01) relative to a month-start date. */
+export function previousMonthPeriodStart(monthStart: string): string {
+  const y = Number(monthStart.slice(0, 4));
+  const m = Number(monthStart.slice(5, 7));
+  if (!Number.isFinite(y) || !Number.isFinite(m)) return monthStart;
+  if (m === 1) return `${y - 1}-12-01`;
+  return `${y}-${pad2(m - 1)}-01`;
+}
+
+/** Last CST calendar day of the month containing period_start (YYYY-MM-01). */
+export function lastDayOfMonthPeriod(period_start: string): string {
+  const y = Number(period_start.slice(0, 4));
+  const m = Number(period_start.slice(5, 7));
+  if (!Number.isFinite(y) || !Number.isFinite(m)) return period_start;
+  const last = new Date(Date.UTC(y, m, 0));
+  return `${y}-${pad2(m)}-${pad2(last.getUTCDate())}`;
+}
+
+export function isCstMonthStart(cstDate: string): boolean {
+  return /^\d{4}-\d{2}-01$/.test(cstDate);
+}
+
+export function isCstYearStart(cstDate: string): boolean {
+  return /^\d{4}-01-01$/.test(cstDate);
 }
 
 export function isCstMonthEnd(cstDate: string): boolean {

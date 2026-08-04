@@ -12,6 +12,7 @@ export {
   formatResidentMemoryLine,
   parseMemoryReferenceMarkers,
   MEMORY_REFERENCE_CITATION_RULE,
+  MEMORY_RECALL_STRATEGY_RULE,
   MEMORY_SEMANTIC_CITATION_TOOL_HINT,
   memoryReferenceWeight,
 } from "./memory-reference.ts";
@@ -38,6 +39,10 @@ export {
 } from "./search.ts";
 export { registerMemoryTools } from "./register-tools.ts";
 export { registerMemoryPassiveRecallHook } from "./register-hooks.ts";
+export {
+  runPassiveRecallDebug,
+  type PassiveRecallDebugResult,
+} from "./passive-recall/debug-run.ts";
 export {
   semanticMemoryToolDefs,
   rememberFromArgs,
@@ -129,6 +134,10 @@ export {
   runTemporalSummaryTick,
   runTemporalSummaryDay,
   runTemporalSummaryCascade,
+  rebuildMonthSummary,
+  rebuildYearSummary,
+  listTemporalSystemRolls,
+  regenerateTemporalSystemRoll,
   buildTemporalSummarySystemSection,
   temporalSummarySystemTruncatedSourceRef,
   TEMPORAL_SUMMARY_SYSTEM_TRUNCATED_SOURCE_PREFIX,

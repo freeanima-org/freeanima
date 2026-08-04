@@ -16,7 +16,17 @@ title: Recall Flow
 | conversation     | `conversation_search` / `conversation_scroll` | Dialogue snippets; session filter on search; scroll for full context    |
 | write (semantic) | `memory_remember` / semantic CRUD             | Not retrieval                                                           |
 
-Habitat debug `memory.search` may query one or more scopes in parallel for operators; results are **concatenated by scope** (no cross-type RRF). Product LLM path uses the per-scope tools above.
+### Product recall strategy (system prompt)
+
+For **clarifying references / recalling facts**, the conversation system prompt section `memory-recall` instructs the model to prefer **semantic memory only**, in order:
+
+1. Resident memory (system prompt)
+2. This turn’s passive inject (`passive_memory_context`)
+3. Active `memory_semantic_search` when still insufficient
+
+Limbic / autobiographical / conversation tools remain available for explicit non-semantic needs; they are **not** the default clarify/recall path.
+
+Habitat operator debug uses `memory.passiveRecallDebug` (passive pipeline trace). Product LLM path uses the per-scope tools above.
 
 ### Resident Memory
 
