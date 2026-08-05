@@ -24,7 +24,6 @@ import {
 
 async function seedSessionMeta(conversationId: string): Promise<void> {
   await upsertConversationMeta(conversationId, {
-    role: "conversation_meta",
     model: "test-model",
     cached_toolsets: [],
     functions: [],

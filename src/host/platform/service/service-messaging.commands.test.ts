@@ -58,7 +58,6 @@ describe("sendMessageStream slash commands", () => {
       spyOn(conv, "conversationExists").mockResolvedValue(true),
       spyOn(conv, "assertConversationPlatform").mockResolvedValue(),
       spyOn(conv, "loadConversationMeta").mockResolvedValue({
-        role: "conversation_meta",
         model: "test-model",
         cached_toolsets: [],
         functions: [],
@@ -157,7 +156,6 @@ describe("runConversationCommand Chat RPC", () => {
       spyOn(conv, "conversationExists").mockResolvedValue(true),
       spyOn(conv, "assertConversationPlatform").mockResolvedValue(),
       spyOn(conv, "loadConversationMeta").mockResolvedValue({
-        role: "conversation_meta",
         model: "test-model",
         cached_toolsets: [],
         functions: [],

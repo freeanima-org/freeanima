@@ -37,7 +37,6 @@ const mockParts = {
 const mockConv = {
   conversationExists: mock(async (id: string) => id === "sess_ok"),
   loadConversationMeta: mock(async () => ({
-    role: "conversation_meta" as const,
     model: "gpt-4",
     cached_toolsets: ["file"],
     functions: [],
@@ -177,7 +176,6 @@ describe("service-prompt-debug", () => {
   it("conversation mode compares stored vs live and returns effective tools", async () => {
     const preview = await getPromptDebug(testDeps, "sess_ok");
     mockConv.loadConversationMeta.mockImplementation(async () => ({
-      role: "conversation_meta" as const,
       model: "gpt-4",
       cached_toolsets: ["file"],
       functions: [],

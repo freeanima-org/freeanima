@@ -29,7 +29,7 @@ describe("resolveSummarizeCut", () => {
     const msgs = [
       msg("user", 2),
       msg("assistant", 3, {
-        tool_calls: [{ id: "t1", type: "function", function: { name: "x" } }],
+        tool_calls: [{ id: "t1", type: "function", function: { name: "x", arguments: "{}" } }],
       }),
       msg("tool", 4, { tool_call_id: "t1", content: "{}" }),
     ];
@@ -42,7 +42,7 @@ describe("resolveSummarizeCut", () => {
       msg("assistant", 3),
       msg("user", 4),
       msg("assistant", 5, {
-        tool_calls: [{ id: "t1", type: "function", function: { name: "x" } }],
+        tool_calls: [{ id: "t1", type: "function", function: { name: "x", arguments: "{}" } }],
       }),
     ];
     expect(resolveSummarizeCut(msgs)).toEqual({ ok: true, cut: 3, idle: false, l4: 5 });

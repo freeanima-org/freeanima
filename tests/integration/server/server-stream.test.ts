@@ -24,7 +24,6 @@ describePg("sendMessageStream", () => {
   it("unknown slash command yields token and done without LLM", async () => {
     const sid = "20260526_150000_test";
     await seedSession(getTestEngine(), sid, {
-      role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
       functions: [],

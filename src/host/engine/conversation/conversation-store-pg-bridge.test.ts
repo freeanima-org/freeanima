@@ -20,7 +20,6 @@ describe("conversation-store-pg-bridge", () => {
 
   test("loadMessagesForRuntimeWithRouting signature accepts compression meta", () => {
     const meta: ConversationMetaMessage = {
-      role: "conversation_meta",
       model: "test",
       cached_toolsets: [],
       functions: [],

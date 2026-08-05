@@ -50,7 +50,6 @@ describe("mergeToolSetNames", () => {
 describe("resolveExecutableToolNames", () => {
   it("expands cached and staged toolsets", () => {
     const meta = {
-      role: "conversation_meta",
       model: "m",
       cached_toolsets: ["toolset", "memory"],
       staged_toolsets: ["file"],

@@ -34,7 +34,6 @@ describePg("memory PG FTS", () => {
       getTestEngine(),
       sid,
       {
-        role: "conversation_meta",
         model: "test-model",
         cached_toolsets: [],
         functions: [],
@@ -78,7 +77,6 @@ describePg("memory PG FTS", () => {
       getTestEngine(),
       sid,
       {
-        role: "conversation_meta",
         model: "test-model",
         cached_toolsets: [],
         functions: [],
@@ -119,7 +117,6 @@ describePg("memory PG FTS", () => {
       getTestEngine(),
       sid,
       {
-        role: "conversation_meta",
         model: "test-model",
         cached_toolsets: [],
         functions: [],

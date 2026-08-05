@@ -179,7 +179,7 @@ export async function patchConversationMeta(
   ) {
     const existing = await getConversationMeta(conversation_id);
     if (!existing) return;
-    const merged: ConversationMetaMessage = { ...existing, ...patch, role: "conversation_meta" };
+    const merged: ConversationMetaMessage = { ...existing, ...patch };
     if ("gateway_tool_display" in patch && patch.gateway_tool_display === undefined) {
       delete merged.gateway_tool_display;
     }
@@ -283,7 +283,7 @@ export async function patchConversationMeta(
 
   const existing = await getConversationMeta(conversation_id);
   if (!existing) return;
-  const merged: ConversationMetaMessage = { ...existing, ...patch, role: "conversation_meta" };
+  const merged: ConversationMetaMessage = { ...existing, ...patch };
   await upsertConversationMeta(conversation_id, merged);
 }
 

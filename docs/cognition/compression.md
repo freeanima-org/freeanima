@@ -9,12 +9,12 @@ title: Compression
 
 ## Design Principles
 
-| Principle           | Description                                                                    |
-| ------------------- | ------------------------------------------------------------------------------ |
-| No message deletion | History is kept; compression only changes runtime view and conversation meta   |
-| Four segments       | LLM context = system + summary + slim + raw                                    |
-| On-demand trigger   | Compress when usage nears window limits; higher thresholds in tool loops       |
-| Memory-independent  | Compression does not trigger semantic extraction; light sleep cron is separate |
+| Principle           | Description                                                                     |
+| ------------------- | ------------------------------------------------------------------------------- |
+| No message deletion | History is kept; compression only changes runtime view and `conversations` meta |
+| Four segments       | LLM context = system + summary + slim + raw                                     |
+| On-demand trigger   | Compress when usage nears window limits; higher thresholds in tool loops        |
+| Memory-independent  | Compression does not trigger semantic extraction; light sleep cron is separate  |
 
 ## Runtime Four Segments
 

@@ -22,7 +22,6 @@ export function stripTemporalSummaryPeersFromMessages(messages: StoredMessage[])
 }
 
 function messageTimeMs(msg: StoredMessage): number | null {
-  if (msg.role === "conversation_meta") return null;
   if (!("timestamp" in msg) || typeof msg.timestamp !== "string" || !msg.timestamp.trim()) {
     return null;
   }
@@ -36,7 +35,7 @@ function minInsertIndexAfterLeadingSystem(messages: StoredMessage[]): number {
   while (i < messages.length) {
     const msg = messages[i];
     if (!msg) break;
-    if (msg.role === "conversation_meta" || msg.role === "system") {
+    if (msg.role === "system") {
       i += 1;
       continue;
     }
@@ -48,7 +47,7 @@ function minInsertIndexAfterLeadingSystem(messages: StoredMessage[]): number {
 /**
  * Insert peer rollup blocks at chronological positions (runtime-only).
  * Deterministic: sorted by (at, content); inserts after last message with t <= at.
- * Never inserts before leading system / conversation_meta.
+ * Never inserts before leading system.
  */
 export function injectTemporalPeerRollups(
   messages: StoredMessage[],

@@ -44,7 +44,6 @@ describePg("goal commands", () => {
   it("/goal sets goal and returns goal_start action", async () => {
     const sid = newConversationId();
     await seedSession(getTestEngine(), sid, {
-      role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
       functions: [],
@@ -70,7 +69,6 @@ describePg("goal commands", () => {
   it("/goal status shows goal", async () => {
     const sid = newConversationId();
     await seedSession(getTestEngine(), sid, {
-      role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
       functions: [],
@@ -98,7 +96,6 @@ describePg("goal commands", () => {
   it("/subgoal append and list", async () => {
     const sid = newConversationId();
     await seedSession(getTestEngine(), sid, {
-      role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
       functions: [],

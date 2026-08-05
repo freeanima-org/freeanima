@@ -76,7 +76,7 @@ describe("compression v5.1", () => {
     const l4 = getL4(msgs);
     const derived = deriveBoundariesFromL4(msgs, l4, null, smallBoundary);
     if (derived) {
-      const rest = msgs.filter((m) => m.role !== "system" && m.role !== "conversation_meta");
+      const rest = msgs.filter((m) => m.role !== "system");
       const rawStart = rest
         .filter((m) => typeof m.pos === "number" && m.pos > derived.l3 && m.pos <= l4)
         .toSorted((a, b) => Number(a.pos) - Number(b.pos))[0];

@@ -23,14 +23,13 @@ export function isCompressed(state: CompressionState | null | undefined): boolea
 }
 
 function messagePos(msg: StoredMessage): number {
-  if (msg.role === "conversation_meta") return 0;
   return msg.pos ?? 0;
 }
 
 export function getL4(messages: StoredMessage[]): number {
   let max = 0;
   for (const m of messages) {
-    if (m.role === "system" || m.role === "conversation_meta") continue;
+    if (m.role === "system") continue;
     const pos = messagePos(m);
     if (pos > max) max = pos;
   }
@@ -38,7 +37,7 @@ export function getL4(messages: StoredMessage[]): number {
 }
 
 function restMessages(messages: StoredMessage[]): StoredMessage[] {
-  return messages.filter((m) => m.role !== "system" && m.role !== "conversation_meta");
+  return messages.filter((m) => m.role !== "system");
 }
 
 export function findLastUserIndex(rest: StoredMessage[]): number {

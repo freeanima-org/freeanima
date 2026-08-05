@@ -38,7 +38,6 @@ describe("buildCompressOptionsResolved", () => {
     registerCatalogContextWindowLookup(async () => 256_000);
     const opts = await buildCompressOptionsResolved(
       {
-        role: "conversation_meta",
         model: "gpt-x",
         cached_toolsets: [],
         functions: [],

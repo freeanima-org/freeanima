@@ -92,7 +92,6 @@ describePg("slash commands", () => {
       getTestEngine(),
       sid,
       {
-        role: "conversation_meta",
         model: "test-model",
         cached_toolsets: [],
         functions: [],
@@ -166,7 +165,6 @@ describePg("slash commands", () => {
         getTestEngine(),
         sid,
         {
-          role: "conversation_meta",
           model: "test-model",
           cached_toolsets: [],
           staged_toolsets: [],

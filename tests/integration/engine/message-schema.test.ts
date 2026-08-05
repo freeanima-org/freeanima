@@ -8,6 +8,7 @@ import {
 
 import { testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
+import { isConversationMeta } from "@freeanima/host/core/db/domain";
 
 describePg("schemas/message", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -39,8 +40,8 @@ describePg("schemas/message", () => {
       },
     });
     const meta = await c.loadConversationMeta(sid);
-    expect(meta.role).toBe("conversation_meta");
-    if (meta.role !== "conversation_meta") return;
+    expect(isConversationMeta(meta)).toBe(true);
+    if (!isConversationMeta(meta)) return;
     expect(meta.acp_tasks).toEqual({
       "uuid-1": {
         status: "running",
@@ -67,8 +68,8 @@ describePg("schemas/message", () => {
       system_prompt_built_at: new Date().toISOString(),
     });
     const meta = await c.loadConversationMeta(sid);
-    expect(meta.role).toBe("conversation_meta");
-    if (meta.role !== "conversation_meta") return;
+    expect(isConversationMeta(meta)).toBe(true);
+    if (!isConversationMeta(meta)) return;
     expect(meta.compression).toEqual({
       l2: 100,
       l3: 100,
@@ -87,8 +88,8 @@ describePg("schemas/message", () => {
     });
     await c.updateConversationMetaField(sid, { compression: null });
     const meta = await c.loadConversationMeta(sid);
-    expect(meta.role).toBe("conversation_meta");
-    if (meta.role !== "conversation_meta") return;
+    expect(isConversationMeta(meta)).toBe(true);
+    if (!isConversationMeta(meta)) return;
     expect(meta.compression ?? null).toBeNull();
   });
 });

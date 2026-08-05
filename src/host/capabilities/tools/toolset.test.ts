@@ -4,7 +4,6 @@ import { registerToolsetTools } from "./toolset.ts";
 import { runWithToolContext } from "@freeanima/host/core/tool";
 
 const sessionMeta = {
-  role: "conversation_meta" as const,
   model: "test",
   cached_toolsets: ["toolset"],
   staged_toolsets: [] as string[],

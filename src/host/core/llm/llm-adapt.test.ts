@@ -33,16 +33,9 @@ describe("normalizeAssistantTurn", () => {
 });
 
 describe("storedMessagesToInvokeInput", () => {
-  it("extracts leading system prompt and skips conversation_meta", () => {
+  it("extracts leading system prompt", () => {
     const messages: StoredMessage[] = [
       { role: "system", content: "You are helpful" },
-      {
-        role: "conversation_meta",
-        model: "m",
-        cached_toolsets: [],
-        functions: [],
-        timestamp: new Date().toISOString(),
-      },
       { role: "user", content: "hi" },
       { role: "assistant", content: "hello" },
     ];

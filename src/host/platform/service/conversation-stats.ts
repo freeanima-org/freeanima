@@ -196,8 +196,7 @@ export async function computeStats(
   conversationId: string,
 ): Promise<ConversationStats> {
   const message_count = await deps.conversation.countMessages(conversationId);
-  const records = message_count > 0 ? await deps.conversation.load(conversationId) : [];
-  const messages = records.filter((r) => r.role !== "conversation_meta");
+  const messages = message_count > 0 ? await deps.conversation.load(conversationId) : [];
   const assistant_msgs = messages.filter((m) => m.role === "assistant");
   const assistant_turns = assistant_msgs.length;
   const meta =
@@ -294,7 +293,7 @@ export async function computeStats(
     partial_usage,
     partial_cached,
     estimated_usage,
-    ...(await readCompressionAndContextFields(deps, conversationId, records)),
+    ...(await readCompressionAndContextFields(deps, conversationId, messages)),
   };
 }
 

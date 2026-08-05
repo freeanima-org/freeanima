@@ -22,7 +22,6 @@ function stubTool(name: string) {
 
 function metaFixture(partial?: Partial<ConversationMetaMessage>): ConversationMetaMessage {
   return {
-    role: "conversation_meta",
     model: "test",
     cached_toolsets: [],
     functions: [],

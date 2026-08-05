@@ -7,7 +7,6 @@ import { conversationMetaToInsert } from "./conversation/transform.ts";
 describe("db transforms", () => {
   it("conversationMetaToInsert normalizes timestamp", () => {
     const row = conversationMetaToInsert("cron_test", {
-      role: "conversation_meta",
       model: "m",
       cached_toolsets: [],
       staged_toolsets: [],
@@ -22,7 +21,6 @@ describe("db transforms", () => {
 
   it("cron ended_at normalized into platform_info", () => {
     const row = conversationMetaToInsert("cron_test", {
-      role: "conversation_meta",
       model: "m",
       cached_toolsets: [],
       staged_toolsets: [],

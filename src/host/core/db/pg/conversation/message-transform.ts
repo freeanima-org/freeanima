@@ -17,9 +17,6 @@ export function newMessageGlobalId(): string {
 }
 
 function assertConversationMessage(msg: StoredMessage): ConversationMessage {
-  if (msg.role === "conversation_meta") {
-    throw new Error("conversation_meta cannot be written to messages table");
-  }
   if (msg.role === "system") {
     throw new Error("system messages not written to messages table (see sessions.system_prompt)");
   }
