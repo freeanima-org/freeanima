@@ -1,4 +1,4 @@
-import { logCapability as logComponent } from "@freeanima/host/core/config";
+import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
 import { listConversationIdsUpdatedBetween } from "@freeanima/host/core/db/pg/conversation";
 import { upsertTemporalSummary } from "@freeanima/host/core/db/pg/temporal-summary";
 import { collectConversationBlocks, cstDayRange } from "../light-sleep/build-messages.ts";

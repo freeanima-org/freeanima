@@ -1,10 +1,7 @@
 import { readFileSync } from "node:fs";
 
-import {
-  getActiveRuntimeConfig,
-  isCjkJiebaEnabled,
-  cjkJiebaDictPath,
-} from "@freeanima/host/core/config";
+import { getActiveRuntimeConfig } from "@freeanima/host/core/config";
+import { isCjkJiebaEnabled, cjkJiebaDictPath } from "@freeanima/host/core/config/cjk-config";
 import type { Jieba } from "@node-rs/jieba";
 
 const CJK_RUN_RE = /[\u4e00-\u9fff\u3400-\u4dbf]+/g;

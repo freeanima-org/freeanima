@@ -1,4 +1,4 @@
-import { logCapability as logComponent } from "@freeanima/host/core/config";
+import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
 import type { AutobiographicalMemoryRow } from "@freeanima/host/core/db/schema/rows";
 import type { AutobiographicalSignificance } from "@freeanima/host/core/db/pg/autobiographical-memory/types";
 import { autobiographicalSignificanceSchema } from "@freeanima/host/core/db/schema/entity";

@@ -1,4 +1,4 @@
-import { readAppVersionForCapability as readAppVersion } from "@freeanima/host/core/config";
+import { readAppVersionForCapability as readAppVersion } from "@freeanima/host/core/config/capability-injection";
 import { omitUndefined } from "@freeanima/host/core/util";
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";

@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { PATHS } from "@freeanima/host/core/config";
+import { PATHS } from "@freeanima/host/core/config/paths";
 import { formatCstIso } from "@freeanima/host/core/util";
 import { z } from "zod";
 import { safeParseOrNull } from "@freeanima/host/core/util";

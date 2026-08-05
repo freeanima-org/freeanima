@@ -1,3 +1,7 @@
+/**
+ * 浏览器可安全导入的 config 桶。Node-only（PATHS / readAppVersion / build-meta 等）请用
+ * `@freeanima/host/core/config/paths`、`/version`、`/build-meta` 等子路径。
+ */
 export * from "./schemas/config.ts";
 export * from "./schemas/llm-config.ts";
 export * from "./schemas/embedding.ts";
@@ -6,24 +10,17 @@ export * from "./schemas/http-ports.ts";
 export * from "./http-bind.ts";
 export * from "./llm-config.ts";
 export * from "./compression-config.ts";
-export * from "./paths.ts";
 export * from "./config-store.ts";
 export * from "./bootstrap-config.ts";
 export * from "./schemas/runtime-config.ts";
 export * from "./runtime-logger.ts";
-export * from "./capability-injection.ts";
 export * from "./context-window-injection.ts";
-export * from "./repo-root.ts";
-export * from "./version.ts";
-export * from "./cli-install.ts";
-export * from "./install-prefix.ts";
 export * from "./standalone-runtime-meta.ts";
-export * from "./app-update/index.ts";
+export * from "./build-meta.parse.ts";
 export * from "./fts.ts";
 export * from "./embedding-helpers.ts";
 export * from "./tts-helpers.ts";
 export * from "./schemas/tts.ts";
-export * from "./cjk-config.ts";
 export * from "./notifications.ts";
 export * from "./schemas/notifications.ts";
 export * from "./worlds.ts";

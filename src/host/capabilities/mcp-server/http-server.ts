@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { readAppVersionForCapability as readAppVersion } from "@freeanima/host/core/config";
+import { readAppVersionForCapability as readAppVersion } from "@freeanima/host/core/config/capability-injection";
 import type { VerifiedServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
 import {
   handlerResultToMcpContent,

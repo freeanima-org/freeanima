@@ -1,7 +1,7 @@
 import { createLogger, type LogLevel, type Logger } from "@freeanima/host/kernel/logging";
 import { createConsoleSink } from "@freeanima/host/kernel/logging/sinks/console.ts";
 import { createFileSink } from "@freeanima/host/kernel/logging/sinks/file.ts";
-import { PATHS } from "@freeanima/host/core/config";
+import { PATHS } from "@freeanima/host/core/config/paths";
 
 let serviceLogger: Logger | null = null;
 let handlersInstalled = false;

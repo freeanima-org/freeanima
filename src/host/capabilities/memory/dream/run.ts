@@ -1,4 +1,4 @@
-import { logCapability as logComponent } from "@freeanima/host/core/config";
+import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
 import { omitUndefined } from "@freeanima/host/core/util";
 
 import { buildDreamEngineInput } from "./build-messages.ts";

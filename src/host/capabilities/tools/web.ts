@@ -10,7 +10,7 @@ import type { Config } from "@freeanima/host/core/config";
 import {
   readAppVersionForCapability as readAppVersion,
   vaultForCapability,
-} from "@freeanima/host/core/config";
+} from "@freeanima/host/core/config/capability-injection";
 
 function userAgent(): string {
   return `anima/${readAppVersion()}`;

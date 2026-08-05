@@ -1,4 +1,4 @@
-import { registerCapabilityInjection } from "@freeanima/host/core/config";
+import { registerCapabilityInjection } from "@freeanima/host/core/config/capability-injection";
 import { readAppVersion, resolveVaultField } from "@freeanima/host/platform/config";
 
 /** Bind service-config I/O helpers for capabilities packages */
