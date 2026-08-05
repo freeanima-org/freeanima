@@ -28,7 +28,6 @@ const STALE_UPDATED_AT = "2020-01-01T00:00:00+08:00";
 
 async function seedMeta(conversationId: string, opts?: { debug?: boolean }): Promise<void> {
   await upsertConversationMeta(conversationId, {
-    role: "conversation_meta",
     model: "test-model",
     cached_toolsets: [],
     functions: [],

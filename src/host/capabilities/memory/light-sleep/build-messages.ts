@@ -75,7 +75,7 @@ export async function collectConversationBlocks(
   const blocks: LightSleepConversationBlock[] = [];
   for (const conversationId of conversationIds) {
     const meta = await getConversationMetaLite(conversationId);
-    if (!meta || meta.role !== "conversation_meta") continue;
+    if (!meta) continue;
     const messages = filterMessagesInDayRange(
       filterRecallableMessages(await listMessages(conversationId)),
       range,

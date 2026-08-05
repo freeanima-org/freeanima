@@ -41,7 +41,6 @@ describePg("db conversation (PostgreSQL)", () => {
   it("append/read conversation meta and messages", async () => {
     const conversationId = "20260530_test_db";
     await upsertConversationMeta(conversationId, {
-      role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
       functions: [],
@@ -82,7 +81,6 @@ describePg("db conversation (PostgreSQL)", () => {
   it("JSONB assistant tool_calls round-trip", async () => {
     const conversationId = "db_jsonb_tool_calls";
     await upsertConversationMeta(conversationId, {
-      role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
       functions: [],
@@ -115,7 +113,6 @@ describePg("db conversation (PostgreSQL)", () => {
   it("concurrent appendMessage", async () => {
     const conversationId = "db_concurrent_append";
     await upsertConversationMeta(conversationId, {
-      role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
       functions: [],
@@ -141,7 +138,6 @@ describePg("db conversation (PostgreSQL)", () => {
   it("shiftMessagePositions makes room for mid-stream insert", async () => {
     const conversationId = "20260531_shift_test";
     await upsertConversationMeta(conversationId, {
-      role: "conversation_meta",
       model: "test-model",
       cached_toolsets: [],
       functions: [],

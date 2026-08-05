@@ -41,7 +41,6 @@ export function storedMessagesToInvokeInput(messages: StoredMessage[]): InvokeMe
   const turns: LlmTurnMessage[] = [];
 
   for (const msg of repaired) {
-    if (msg.role === "conversation_meta") continue;
     if (msg.role === "system") {
       if (isRuntimeSystemTurn(msg)) {
         turns.push({

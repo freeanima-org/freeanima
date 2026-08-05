@@ -16,7 +16,7 @@ function createMemoryConversation(): ConversationPort & {
   meta: Record<string, unknown>;
 } {
   const state = {
-    meta: { role: "conversation_meta", model: "m", goal: undefined } as Record<string, unknown>,
+    meta: { model: "m", goal: undefined } as Record<string, unknown>,
   };
   return {
     get meta() {

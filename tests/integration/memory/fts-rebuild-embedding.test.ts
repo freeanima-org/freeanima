@@ -41,7 +41,6 @@ function fixedEmbedding(value = 0.25): number[] {
 
 function sessionMeta() {
   return {
-    role: "conversation_meta" as const,
     model: "test-model",
     cached_toolsets: [] as string[],
     functions: [] as string[],

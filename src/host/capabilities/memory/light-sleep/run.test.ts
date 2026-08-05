@@ -15,7 +15,7 @@ import { runLightSleep } from "./run.ts";
 
 const listConversationIdsUpdatedBetweenMock = mock(async () => ["s-1"]);
 const getConversationMetaLiteMock = mock(async () => ({
-  role: "conversation_meta",
+  model: "test",
   title: "Test",
   platform: "console",
   timestamp: "2026-06-08T10:00:00+08:00",

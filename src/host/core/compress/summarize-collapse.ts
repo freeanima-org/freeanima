@@ -3,12 +3,11 @@ import { getL4 } from "./compressor.ts";
 import { isInToolLoop } from "./compression-tool-loop.ts";
 
 function messagePos(msg: StoredMessage): number {
-  if (msg.role === "conversation_meta") return 0;
   return msg.pos ?? 0;
 }
 
 function restMessages(messages: StoredMessage[]): StoredMessage[] {
-  return messages.filter((m) => m.role !== "system" && m.role !== "conversation_meta");
+  return messages.filter((m) => m.role !== "system");
 }
 
 export type SummarizeCutOk = { ok: true; cut: number; idle: boolean; l4: number };

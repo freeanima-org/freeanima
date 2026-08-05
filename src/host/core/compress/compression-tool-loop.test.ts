@@ -15,7 +15,13 @@ function msg(role: StoredMessage["role"], extra: Partial<StoredMessage> = {}): S
 
 describe("isInToolLoop", () => {
   it("false when no user message", () => {
-    expect(isInToolLoop([msg("assistant", { tool_calls: [{ id: "1" }] })])).toBe(false);
+    expect(
+      isInToolLoop([
+        msg("assistant", {
+          tool_calls: [{ id: "1", type: "function", function: { name: "x", arguments: "{}" } }],
+        }),
+      ]),
+    ).toBe(false);
   });
 
   it("false when user is last message", () => {
@@ -25,7 +31,9 @@ describe("isInToolLoop", () => {
   it("true when tail is tool after user", () => {
     const messages = [
       msg("user", { content: "go" }),
-      msg("assistant", { tool_calls: [{ id: "c1" }] }),
+      msg("assistant", {
+        tool_calls: [{ id: "c1", type: "function", function: { name: "x", arguments: "{}" } }],
+      }),
       msg("tool", { content: "result", tool_call_id: "c1" }),
     ];
     expect(isInToolLoop(messages)).toBe(true);
@@ -34,7 +42,9 @@ describe("isInToolLoop", () => {
   it("true when tail assistant still has tool_calls", () => {
     const messages = [
       msg("user", { content: "go" }),
-      msg("assistant", { tool_calls: [{ id: "c1" }] }),
+      msg("assistant", {
+        tool_calls: [{ id: "c1", type: "function", function: { name: "x", arguments: "{}" } }],
+      }),
     ];
     expect(isInToolLoop(messages)).toBe(true);
   });
@@ -44,10 +54,9 @@ describe("isInToolLoop", () => {
     expect(isInToolLoop(messages)).toBe(false);
   });
 
-  it("ignores system and conversation_meta when finding last user", () => {
+  it("ignores system when finding last user", () => {
     const messages = [
       msg("system", { content: "sys" }),
-      msg("conversation_meta", { content: "{}" }),
       msg("user", { content: "go" }),
       msg("assistant", { content: "ok" }),
     ];

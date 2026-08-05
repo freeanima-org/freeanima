@@ -78,7 +78,6 @@ describe("turn-lifecycle", () => {
       spyOn(deps.conversation, "beginTurn").mockResolvedValue([msgs, ["tool_a"], "cron prompt"]),
       spyOn(deps.conversation, "loadConversationTools").mockResolvedValue([]),
       spyOn(deps.conversation, "loadConversationMeta").mockResolvedValue({
-        role: "conversation_meta",
         model: "m1",
         cached_toolsets: [],
         functions: ["tool_a"],
@@ -119,7 +118,6 @@ describe("turn-lifecycle", () => {
       ]),
       spyOn(deps.conversation, "loadConversationTools").mockResolvedValue([]),
       spyOn(deps.conversation, "loadConversationMeta").mockResolvedValue({
-        role: "conversation_meta",
         model: "m",
         cached_toolsets: [],
         functions: [],

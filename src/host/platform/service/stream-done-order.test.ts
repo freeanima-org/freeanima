@@ -57,7 +57,6 @@ describe("sendMessageStream done order", () => {
       spyOn(conv, "conversationExists").mockResolvedValue(true),
       spyOn(conv, "assertConversationPlatform").mockResolvedValue(),
       spyOn(conv, "loadConversationMeta").mockResolvedValue({
-        role: "conversation_meta",
         model: "test",
         cached_toolsets: [],
         functions: [],

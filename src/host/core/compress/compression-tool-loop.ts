@@ -20,7 +20,7 @@ export function isToolLoopSuppressionActive(conversationId: string, timeoutSec: 
 
 /** Whether in tool-call chain since last user message */
 export function isInToolLoop(messages: StoredMessage[]): boolean {
-  const rest = messages.filter((m) => m.role !== "system" && m.role !== "conversation_meta");
+  const rest = messages.filter((m) => m.role !== "system");
   let lastUser = -1;
   for (let i = rest.length - 1; i >= 0; i--) {
     if (rest[i]?.role === "user") {

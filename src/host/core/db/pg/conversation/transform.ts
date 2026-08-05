@@ -33,9 +33,9 @@ function metaTimestampToDate(raw: string | undefined): Date {
 }
 
 const META_KNOWN_KEYS = new Set([
-  "role",
+  "role", // legacy JSONL field; strip if present
   "model",
-  "src/platform",
+  "platform",
   "title",
   "cwd",
   "system_prompt",
@@ -48,7 +48,7 @@ const META_KNOWN_KEYS = new Set([
   "cached_toolsets",
   "staged_toolsets",
   "functions",
-  "src/platform_extra",
+  "platform_extra",
   "debug",
   "timestamp",
   "gateway_tool_display",
@@ -126,7 +126,7 @@ export function conversationMetaToInsert(
   };
 }
 
-/** PG row → conversation_meta (synthetic role for existing code compatibility) */
+/** PG conversations row → domain ConversationMetaMessage */
 export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
   const parsed = conversationSelectSchema.parse(row);
   const { platform, platform_extra } = splitPlatformInfo(parsed.platform_info);
@@ -144,7 +144,6 @@ export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
     delete restExtra.acp_tasks_handled_at;
   }
   const base = {
-    role: "conversation_meta" as const,
     timestamp:
       parsed.created_at instanceof Date
         ? parsed.created_at.toISOString()

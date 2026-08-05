@@ -9,7 +9,7 @@ import { readConversationGoal } from "./store.ts";
 import type { ConversationPort } from "@freeanima/host/core/tool/conversation-port.ts";
 
 function createMemoryConversation(): ConversationPort {
-  const state = { meta: { role: "conversation_meta", model: "m" } as Record<string, unknown> };
+  const state = { meta: { model: "m" } as Record<string, unknown> };
   return {
     async loadConversationMeta() {
       return state.meta as never;

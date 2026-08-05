@@ -15,7 +15,7 @@ describe("resolveToolDisplayMode", () => {
   it("conversation override wins over global config", () => {
     expect(
       resolveToolDisplayMode(
-        { role: "conversation_meta", gateway_tool_display: "hidden" } as never,
+        { model: "m", gateway_tool_display: "hidden" } as never,
         { gateway: { tool_display: "count" } } as never,
       ),
     ).toBe("hidden");

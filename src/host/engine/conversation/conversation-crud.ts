@@ -213,12 +213,10 @@ export async function appendMessage(msg: StoredMessage, conversationId: string):
     ...msg,
   }) as StoredMessage & { timestamp?: string; id?: number };
   if (!out.timestamp) out.timestamp = formatCstIso();
-  if (out.pos === undefined && out.role !== "conversation_meta") {
+  if (out.pos === undefined) {
     out.pos = await nextMessagePosWithRouting(conversationId);
   }
-  if (out.role !== "conversation_meta") {
-    await pgWriteMessage(conversationId, out);
-  }
+  await pgWriteMessage(conversationId, out);
 }
 
 export async function appendConversationMeta(
@@ -228,7 +226,6 @@ export async function appendConversationMeta(
   opts?: { platform?: string; functions?: string[] },
 ): Promise<void> {
   const meta: ConversationMetaMessage = {
-    role: "conversation_meta",
     model,
     cached_toolsets: tools,
     staged_toolsets: [],
@@ -250,7 +247,6 @@ export async function initConversation(
   if (platform_extra) delete platform_extra.capability_mask; // legacy drop
 
   const metaDraft: ConversationMetaMessage = {
-    role: "conversation_meta",
     model,
     cached_toolsets: resolveDefaultConversationToolSets(tools),
     staged_toolsets: [],

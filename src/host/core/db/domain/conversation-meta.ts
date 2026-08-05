@@ -95,3 +95,43 @@ export type ConversationGoal = z.infer<typeof conversationGoalSchema>;
 export function parseConversationGoal(raw: unknown): ConversationGoal | null {
   return safeParseOrNull(conversationGoalSchema, raw);
 }
+
+/**
+ * Conversation row projection (not a message). Was JSONL first-line
+ * `{ role: "conversation_meta" }`; PG stores columns on `conversations`.
+ */
+export const conversationMetaSchema = z
+  .object({
+    model: z.string(),
+    cached_toolsets: z.array(z.string()).default([]),
+    staged_toolsets: z.array(z.string()).optional(),
+    functions: z.array(z.string()).default([]),
+    timestamp: z.string().default(""),
+    platform: z.string().optional(),
+    system_prompt: z.string().optional(),
+    /** ISO timestamptz；上次全量构建 system_prompt（日界刷新用） */
+    system_prompt_built_at: z.string().optional(),
+    cwd: z.string().optional(),
+    title: z.string().optional(),
+    compression: z.unknown().optional(),
+    platform_extra: z.record(z.string(), z.unknown()).optional(),
+    debug: z.boolean().optional(),
+    todos: z.unknown().optional(),
+    awaiting_clarify: z.unknown().optional(),
+    acp_tasks: z.record(z.string(), z.unknown()).optional(),
+    acp_tasks_handled_at: z.string().optional(),
+    gateway_tool_display: z.string().optional(),
+    goal: z.unknown().optional(),
+  })
+  .passthrough();
+
+export type ConversationMetaMessage = z.infer<typeof conversationMetaSchema>;
+
+/** Missing conversation → empty object (not null) for load helpers */
+export type ConversationMetaLoadResult = ConversationMetaMessage | Record<string, never>;
+
+export function isConversationMeta(
+  meta: ConversationMetaLoadResult,
+): meta is ConversationMetaMessage {
+  return typeof (meta as ConversationMetaMessage).model === "string";
+}

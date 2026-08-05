@@ -130,7 +130,7 @@ export async function appendMessageReturningId(
   msg: StoredMessage,
 ): Promise<{ messageId: string }> {
   const out: StoredMessage = { ...msg };
-  if (out.pos === undefined && out.role !== "conversation_meta") {
+  if (out.pos === undefined) {
     out.pos = await nextMessagePos(conversation_id);
   }
   const db = getDb();

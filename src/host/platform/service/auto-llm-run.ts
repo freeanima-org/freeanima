@@ -282,7 +282,6 @@ async function runEngineOnce(
 function storedMessagesToPayloads(messages: StoredMessage[]): MessagePayload[] {
   const payloads: MessagePayload[] = [];
   for (const msg of messages) {
-    if (msg.role === "conversation_meta") continue;
     if (msg.role === "system") {
       payloads.push({
         role: "system",
