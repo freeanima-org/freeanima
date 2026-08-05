@@ -4,7 +4,8 @@ import {
   parseFtsOperatorQuery,
   validateFtsQueryInput,
 } from "@freeanima/host/core/util";
-import { getActiveRuntimeConfig, isCjkJiebaEnabled } from "@freeanima/host/core/config";
+import { getActiveRuntimeConfig } from "@freeanima/host/core/config";
+import { isCjkJiebaEnabled } from "@freeanima/host/core/config/cjk-config";
 
 import {
   buildCharModeTsQuery,

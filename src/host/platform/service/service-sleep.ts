@@ -14,7 +14,7 @@ import {
 } from "@freeanima/host/capabilities/memory";
 import type { SleepCatchUpPlan } from "@freeanima/host/capabilities/memory/sleep-catch-up-types";
 import type { PipelineRunState } from "@freeanima/host/engine/pipeline";
-import { logCapability as logComponent } from "@freeanima/host/core/config";
+import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
 
 import {
   getSleepPipelineStatus as readSleepPipelineStatus,

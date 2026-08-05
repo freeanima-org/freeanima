@@ -1,6 +1,6 @@
 import { getNotificationPort } from "@freeanima/host/capabilities/tools/notification";
 import { temporalSummarySystemTruncatedSourceRef } from "@freeanima/host/capabilities/memory/temporal-summary";
-import { logCapability as logComponent } from "@freeanima/host/core/config";
+import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
 
 /**
  * When temporal-summary system section was truncated, warn user+agent Inbox.

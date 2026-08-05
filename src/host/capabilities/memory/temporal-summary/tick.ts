@@ -1,4 +1,4 @@
-import { logCapability as logComponent } from "@freeanima/host/core/config";
+import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
 import {
   getConversationTemporalDay,
   setConversationTemporalDay,

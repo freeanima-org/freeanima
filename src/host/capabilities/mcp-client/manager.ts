@@ -6,7 +6,7 @@ import {
   toolError,
 } from "@freeanima/host/core/tool";
 import type { Config } from "@freeanima/host/core/config";
-import { logCapability as logComponent } from "@freeanima/host/core/config";
+import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
 import { omitUndefined } from "@freeanima/host/core/util";
 
 import { McpClientSession, type McpServerConfig } from "./client.ts";

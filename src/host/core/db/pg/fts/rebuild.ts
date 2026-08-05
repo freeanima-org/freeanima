@@ -2,11 +2,8 @@ import { and, asc, eq, gt, isNotNull, isNull, sql as drizzleSql, type SQL } from
 import { entities, messages, SEMANTIC_MEMORY_COMPONENT } from "@freeanima/host/core/db/schema";
 import { entitySearchTextForWrite } from "@freeanima/host/core/db/schema/entity";
 
-import {
-  getActiveRuntimeConfig,
-  isCjkJiebaEnabled,
-  isEmbeddingEnabled,
-} from "@freeanima/host/core/config";
+import { getActiveRuntimeConfig, isEmbeddingEnabled } from "@freeanima/host/core/config";
+import { isCjkJiebaEnabled } from "@freeanima/host/core/config/cjk-config";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { logPgComponent } from "../log.ts";
 

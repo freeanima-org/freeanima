@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { PATHS } from "@freeanima/host/core/config";
+import { PATHS } from "@freeanima/host/core/config/paths";
 import { z } from "zod";
 
 const dreamStateSchema = z.object({

@@ -1,11 +1,11 @@
 import {
   DEFAULT_HABITAT_TLS_PORT,
-  PATHS,
   resolveHttpTlsMode,
   type HttpConfig,
   type HttpTlsConfigFields,
   collectHttpAllowedHosts,
 } from "@freeanima/host/core/config";
+import { PATHS } from "@freeanima/host/core/config/paths";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { resolveValue } from "@freeanima/host/platform/config";
 

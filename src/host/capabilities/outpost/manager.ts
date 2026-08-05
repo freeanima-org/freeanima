@@ -18,7 +18,7 @@ import {
   type RemoteToolDefInput,
   type ToolCallPayload,
 } from "@freeanima/shared/rpc-contract";
-import { logCapability as logComponent } from "@freeanima/host/core/config";
+import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
 
 export type OutpostConnection = {
   appId: string;

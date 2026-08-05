@@ -1,7 +1,7 @@
 import { chmodSync, existsSync, mkdirSync, unlinkSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
-import { PATHS } from "@freeanima/host/core/config";
+import { PATHS } from "@freeanima/host/core/config/paths";
 import { logComponent } from "@freeanima/host/platform/logging";
 
 import { certSanCoversRequired, readCertSanNames } from "./cert-san.ts";

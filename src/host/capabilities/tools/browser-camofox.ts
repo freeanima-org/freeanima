@@ -1,6 +1,6 @@
 import { toolError, toolResult } from "@freeanima/host/core/tool";
 import type { Config } from "@freeanima/host/core/config";
-import { homePath } from "@freeanima/host/core/config";
+import { homePath } from "@freeanima/host/core/config/paths";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";

@@ -1,4 +1,4 @@
-import { logCapability as logComponent } from "@freeanima/host/core/config";
+import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
 import { listResidentSemanticMemory } from "@freeanima/host/core/db/pg/semantic-memory";
 import { RESIDENT_TOP_N } from "@freeanima/host/core/db/pg/semantic-memory/types";
 import { purgeOrphanSelfBlocks } from "@freeanima/host/core/db/pg/self-layer";

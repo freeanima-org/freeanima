@@ -1,1 +1,1 @@
-export { getRepoRoot } from "@freeanima/host/core/config";
+export { getRepoRoot } from "@freeanima/host/core/config/repo-root";

@@ -1,7 +1,7 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { PATHS } from "@freeanima/host/core/config";
+import { PATHS } from "@freeanima/host/core/config/paths";
 
 /** 展开 leading ~ 与 $FREEANIMA_HOME 前缀 */
 export function expandConfigPath(raw: string): string {
