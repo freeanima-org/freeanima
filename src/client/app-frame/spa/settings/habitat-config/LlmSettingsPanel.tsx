@@ -73,39 +73,6 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
     [profilesDraft],
   );
 
-  const saveProviders = useCallback(async () => {
-    onSavingChange(true);
-    onError("");
-    try {
-      for (const entry of Object.values(readHabitatConfigRecord(providersDraft))) {
-        const err = validateTimeoutDraft(readTimeoutDraft(entry));
-        if (err) {
-          onError(err);
-          return;
-        }
-      }
-      await patchHabitatConfigSection("llm", { providers: providersDraftToPatch(providersDraft) });
-      await onSaved("llm.providers");
-    } catch (e) {
-      onError(e instanceof Error ? e.message : String(e));
-    } finally {
-      onSavingChange(false);
-    }
-  }, [onError, onSaved, onSavingChange, providersDraft]);
-
-  const saveProfiles = useCallback(async () => {
-    onSavingChange(true);
-    onError("");
-    try {
-      await patchHabitatConfigSection("llm", { profiles: profilesDraftToPatch(profilesDraft) });
-      await onSaved("llm.profiles");
-    } catch (e) {
-      onError(e instanceof Error ? e.message : String(e));
-    } finally {
-      onSavingChange(false);
-    }
-  }, [onError, onSaved, onSavingChange, profilesDraft]);
-
   const saveGeneral = useCallback(async () => {
     onSavingChange(true);
     onError("");
@@ -124,49 +91,107 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
     }
   }, [defaultProfile, onError, onSaved, onSavingChange]);
 
-  const closeEditor = () => setEditor(null);
-
-  const commitEditor = () => {
-    if (!editor) return;
+  const validateEditor = useCallback((): boolean => {
+    if (!editor) return false;
     const id = editor.id.trim();
     if (!id) {
       onError(editor.kind === "connection" ? "请填写连接 id" : "请填写场景 id");
-      return;
+      return false;
     }
     if (editor.kind === "connection") {
       const timeoutErr = validateTimeoutDraft(readTimeoutDraft(editor.entry));
       if (timeoutErr) {
         onError(timeoutErr);
-        return;
+        return false;
       }
       if (editor.mode === "create" && connectionIds.includes(id)) {
         onError(`连接 id「${id}」已存在`);
-        return;
+        return false;
       }
-      setProvidersDraft((prev) => {
-        const next = { ...readHabitatConfigRecord(prev) };
-        next[id] = editor.entry;
-        return next;
-      });
     } else {
       if (editor.mode === "create" && sceneIds.includes(id)) {
         onError(`场景 id「${id}」已存在`);
-        return;
+        return false;
       }
-      setProfilesDraft((prev) => {
-        const next = { ...readHabitatConfigRecord(prev) };
-        next[id] = editor.entry;
-        return next;
-      });
     }
     onError("");
-    closeEditor();
-  };
+    return true;
+  }, [editor, connectionIds, sceneIds, onError]);
+
+  const computeUpdatedProviders = useCallback(
+    (draft: Record<string, unknown>): Record<string, unknown> => {
+      if (!editor || editor.kind !== "connection") return draft;
+      const next = { ...readHabitatConfigRecord(draft) };
+      next[editor.id.trim()] = editor.entry;
+      return next;
+    },
+    [editor],
+  );
+
+  const computeUpdatedProfiles = useCallback(
+    (draft: Record<string, unknown>): Record<string, unknown> => {
+      if (!editor || editor.kind !== "scene") return draft;
+      const next = { ...readHabitatConfigRecord(draft) };
+      next[editor.id.trim()] = editor.entry;
+      return next;
+    },
+    [editor],
+  );
+
+  const persistEditor = useCallback(async () => {
+    if (!editor) return;
+    if (!validateEditor()) return;
+    const kind = editor.kind;
+    onSavingChange(true);
+    onError("");
+    try {
+      if (kind === "connection") {
+        const nextDraft = computeUpdatedProviders(providersDraft);
+        await patchHabitatConfigSection("llm", {
+          providers: providersDraftToPatch(nextDraft),
+        });
+        setProvidersDraft(nextDraft);
+        await onSaved("llm.providers");
+      } else {
+        const nextDraft = computeUpdatedProfiles(profilesDraft);
+        await patchHabitatConfigSection("llm", {
+          profiles: profilesDraftToPatch(nextDraft),
+        });
+        setProfilesDraft(nextDraft);
+        await onSaved("llm.profiles");
+      }
+      setEditor(null);
+    } catch (e) {
+      onError(e instanceof Error ? e.message : String(e));
+    } finally {
+      onSavingChange(false);
+    }
+  }, [
+    editor,
+    validateEditor,
+    computeUpdatedProviders,
+    computeUpdatedProfiles,
+    providersDraft,
+    profilesDraft,
+    onSaved,
+    onSavingChange,
+    onError,
+  ]);
+
+  const closeEditorPreservingDraft = useCallback(() => {
+    if (!validateEditor()) return;
+    if (editor?.kind === "connection") {
+      setProvidersDraft((prev) => computeUpdatedProviders(prev));
+    } else if (editor?.kind === "scene") {
+      setProfilesDraft((prev) => computeUpdatedProfiles(prev));
+    }
+    setEditor(null);
+  }, [editor, validateEditor, computeUpdatedProviders, computeUpdatedProfiles]);
 
   const deleteConnection = async (id: string) => {
     const ok = await showConfirm({
       title: "删除连接？",
-      description: `将从草稿中移除「${id}」。需再点「保存连接」才会写入 Habitat。`,
+      description: `将移除连接「${id}」。`,
       confirmLabel: "删除",
       variant: "error",
     });
@@ -176,12 +201,27 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
       delete next[id];
       return next;
     });
+    onSavingChange(true);
+    onError("");
+    try {
+      await patchHabitatConfigSection("llm", {
+        providers: providersDraftToPatch({
+          ...readHabitatConfigRecord(providersDraft),
+          [id]: undefined,
+        }),
+      });
+      await onSaved("llm.providers");
+    } catch (e) {
+      onError(e instanceof Error ? e.message : String(e));
+    } finally {
+      onSavingChange(false);
+    }
   };
 
   const deleteScene = async (id: string) => {
     const ok = await showConfirm({
       title: "删除场景？",
-      description: `将从草稿中移除「${id}」。需再点「保存场景」才会写入 Habitat。`,
+      description: `将移除场景「${id}」。`,
       confirmLabel: "删除",
       variant: "error",
     });
@@ -191,6 +231,21 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
       delete next[id];
       return next;
     });
+    onSavingChange(true);
+    onError("");
+    try {
+      await patchHabitatConfigSection("llm", {
+        profiles: profilesDraftToPatch({
+          ...readHabitatConfigRecord(profilesDraft),
+          [id]: undefined,
+        }),
+      });
+      await onSaved("llm.profiles");
+    } catch (e) {
+      onError(e instanceof Error ? e.message : String(e));
+    } finally {
+      onSavingChange(false);
+    }
   };
 
   const editorTitle =
@@ -281,28 +336,23 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
                 })}
               </ul>
             )}
-            <div className="flex flex-wrap gap-2">
-              {connectionIds.length > 0 ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    setEditor({
-                      kind: "connection",
-                      mode: "create",
-                      id: "",
-                      entry: emptyConnectionEntry(),
-                    })
-                  }
-                >
-                  新建连接
-                </Button>
-              ) : null}
-              <Button type="button" disabled={saving} onClick={() => void saveProviders()}>
-                保存连接
+            {connectionIds.length > 0 ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  setEditor({
+                    kind: "connection",
+                    mode: "create",
+                    id: "",
+                    entry: emptyConnectionEntry(),
+                  })
+                }
+              >
+                新建连接
               </Button>
-            </div>
+            ) : null}
           </TabsContent>
 
           <TabsContent id="scenes" className="space-y-4 pt-2">
@@ -368,28 +418,23 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
                 })}
               </ul>
             )}
-            <div className="flex flex-wrap gap-2">
-              {sceneIds.length > 0 ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    setEditor({
-                      kind: "scene",
-                      mode: "create",
-                      id: "",
-                      entry: emptySceneEntry(),
-                    })
-                  }
-                >
-                  新建场景
-                </Button>
-              ) : null}
-              <Button type="button" disabled={saving} onClick={() => void saveProfiles()}>
-                保存场景
+            {sceneIds.length > 0 ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  setEditor({
+                    kind: "scene",
+                    mode: "create",
+                    id: "",
+                    entry: emptySceneEntry(),
+                  })
+                }
+              >
+                新建场景
               </Button>
-            </div>
+            ) : null}
           </TabsContent>
 
           <TabsContent id="default" className="space-y-4 pt-2">
@@ -406,12 +451,12 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
 
         <ModalSheetPresent
           open={editor != null}
-          onClose={closeEditor}
+          onClose={closeEditorPreservingDraft}
           aria-label={editorTitle}
           className="sm:max-w-xl"
         >
           {editor ? (
-            <>
+            <div className="flex max-h-[85vh] flex-col">
               <div className="flex items-start justify-between gap-3 border-b px-4 py-3">
                 <p className="text-sm font-semibold">{editorTitle}</p>
                 <Button
@@ -419,12 +464,12 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
                   variant="ghost"
                   size="icon-sm"
                   aria-label="关闭"
-                  onClick={closeEditor}
+                  onClick={closeEditorPreservingDraft}
                 >
                   <XIcon />
                 </Button>
               </div>
-              <div className="max-h-[min(70vh,32rem)] space-y-4 overflow-y-auto p-4">
+              <div className="flex-1 space-y-4 overflow-y-auto p-4">
                 {editor.kind === "connection" ? (
                   <LlmConnectionEditorForm
                     connectionId={editor.id}
@@ -446,14 +491,14 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
                 )}
               </div>
               <div className="flex justify-end gap-2 border-t px-4 py-3">
-                <Button type="button" variant="outline" onClick={closeEditor}>
-                  取消
+                <Button type="button" variant="outline" onClick={closeEditorPreservingDraft}>
+                  关闭
                 </Button>
-                <Button type="button" onClick={commitEditor}>
-                  完成
+                <Button type="button" disabled={saving} onClick={() => void persistEditor()}>
+                  {saving ? "保存中…" : "保存"}
                 </Button>
               </div>
-            </>
+            </div>
           ) : null}
         </ModalSheetPresent>
       </CardContent>
