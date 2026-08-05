@@ -47,7 +47,7 @@ export function ModalSheetPresent({ open, onClose, className, children }: ModalS
       onOpenChange={onOpenChange}
       showCloseButton={false}
       className={cn(
-        "max-h-[min(85vh,32rem)] w-full max-w-xl gap-0 overflow-hidden p-0 sm:max-w-xl",
+        "max-h-[min(85vh,48rem)] w-full max-w-xl gap-0 overflow-hidden p-0 sm:max-w-xl",
         className,
       )}
     >

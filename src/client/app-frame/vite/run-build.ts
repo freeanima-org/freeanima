@@ -63,7 +63,12 @@ export function createShellViteInlineConfig(opts: ShellViteBuildOptions): Inline
     configFile: false,
     root: opts.appDir,
     base: opts.base ?? "/",
-    plugins: [bunExternalPlugin, paraglideCompilePlugin(paraglideDir, repoRoot), react(), tailwindcss()],
+    plugins: [
+      bunExternalPlugin,
+      paraglideCompilePlugin(paraglideDir, repoRoot),
+      react(),
+      tailwindcss(),
+    ],
     resolve: {
       alias: repoRoot ? buildViteAliases({ repoRoot, paraglideDir }) : [],
       dedupe: ["react", "react-dom"],
