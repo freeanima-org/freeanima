@@ -91,10 +91,7 @@ function Dialog({
           className,
         )}
       >
-        <DialogPrimitive
-          data-slot="dialog"
-          className="[display:inherit] [gap:inherit] outline-none"
-        >
+        <DialogPrimitive data-slot="dialog" className="grid grid-cols-1 [gap:inherit] outline-none">
           {children}
           {showCloseButton && (
             <DialogClose variant="ghost" className="absolute top-2 right-2" size="icon-sm">
