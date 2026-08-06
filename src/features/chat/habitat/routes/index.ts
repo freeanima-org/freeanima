@@ -119,9 +119,10 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
     }
     return { ok: true as const, last_read_pos: result.last_read_pos };
   },
-  "conversation.unreadCount": async (deps) => {
+  "conversation.unreadCount": async (deps, input) => {
     const subject_id = resolveUserSubjectId(depsOf(deps));
-    const count = await countUnreadConversations(subject_id);
+    const platform = input.platform?.trim() || undefined;
+    const count = await countUnreadConversations(subject_id, platform ? { platform } : undefined);
     return { count };
   },
   "conversation.messages": async (deps, input) => {
@@ -157,16 +158,19 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
   "conversation.archive": async (deps, input) => {
     const platform = await resolveConversationPlatform(depsOf(deps), input.conversation_id);
     await depsOf(deps).runtime.archiveConversation(input.conversation_id, platform);
+    depsOf(deps).runtime.emitSessionUpdated(input.conversation_id);
     return { ok: true as const };
   },
   "conversation.unarchive": async (deps, input) => {
     const platform = await resolveConversationPlatform(depsOf(deps), input.conversation_id);
     await depsOf(deps).runtime.unarchiveConversation(input.conversation_id, platform);
+    depsOf(deps).runtime.emitSessionUpdated(input.conversation_id);
     return { ok: true as const };
   },
   "conversation.delete": async (deps, input) => {
     const platform = await resolveConversationPlatform(depsOf(deps), input.conversation_id);
     await depsOf(deps).runtime.deleteConversation(input.conversation_id, platform);
+    depsOf(deps).runtime.emitSessionUpdated(input.conversation_id);
     return { ok: true as const };
   },
   "conversation.rollbackBeforeLastUser": async (deps, input) => {
