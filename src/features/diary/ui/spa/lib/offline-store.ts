@@ -554,6 +554,7 @@ export type OfflineDiaryBlockCreateInput = {
   tag_ids?: number[];
   components?: string[];
   sort_order?: number;
+  client_op_id?: string;
 };
 
 export async function offlineCreateDiaryBlock(
@@ -578,7 +579,7 @@ export async function offlineCreateDiaryBlock(
     const now = new Date().toISOString();
     const last = existing.blocks.toSorted((a, b) => a.sort_order - b.sort_order).at(-1);
     const tempId = allocateTempId(scope, MODULE_ID);
-    const opId = randomUuid();
+    const opId = opts.client_op_id?.trim() || randomUuid();
     const block: DiaryTextBlock = {
       id: tempId,
       title: opts.title?.trim() ?? "",
@@ -622,7 +623,7 @@ export async function offlineCreateDiaryBlock(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = opts.client_op_id?.trim() || randomUuid();
     const data = await habitat().call("diary.blockCreate", {
       subject_kind: subjectKind,
       parent_id: resolvedParentId,

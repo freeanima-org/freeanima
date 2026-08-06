@@ -26,6 +26,9 @@ import {
 
 export { DETAIL_EDIT_HISTORY_KEY } from "./detail-edit-chrome.ts";
 
+/** compact 全屏编辑时应对齐聚焦的字段 */
+export type DetailEditFocusField = "title" | "content";
+
 export type UseDetailPanelStateOptions<T> = {
   layoutMode: ThreeColumnLayoutMode;
   cloneItem: (item: T) => T;
@@ -49,12 +52,14 @@ export type UseDetailPanelStateResult<T> = {
   detailOpen: boolean;
   /** compact：标题/描述激活后的全屏编辑页 */
   detailEditMode: boolean;
+  /** 进入全屏编辑后应对齐聚焦的字段（peek pointer 激活时写入） */
+  pendingFocusField: DetailEditFocusField | null;
   saveStatus: DetailSaveStatus;
   saving: boolean;
   openDetail: (item: T) => void;
   closeDetail: (opts?: { discard?: boolean }) => void;
   closeDetailSheet: () => void;
-  enterDetailEdit: () => void;
+  enterDetailEdit: (field?: DetailEditFocusField) => void;
   exitDetailEdit: () => void;
   handleDetailOpenChange: (open: boolean) => void;
   flushSave: () => Promise<boolean>;
@@ -78,6 +83,7 @@ export function useDetailPanelState<T extends { id: number }>({
   const [baseline, setBaseline] = useState<T | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailEditMode, setDetailEditMode] = useState(false);
+  const [pendingFocusField, setPendingFocusField] = useState<DetailEditFocusField | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<DetailSaveStatus>("idle");
   const discardRef = useRef(false);
@@ -96,6 +102,7 @@ export function useDetailPanelState<T extends { id: number }>({
       setDetailEditMode(chrome.detailEditMode);
       setDetailOpen(chrome.detailOpen);
       setCompactImmersiveRef.current?.(chrome.immersive);
+      if (!chrome.detailEditMode) setPendingFocusField(null);
     },
     [],
   );
@@ -255,20 +262,24 @@ export function useDetailPanelState<T extends { id: number }>({
     setDetailOpen(false);
   }, []);
 
-  const enterDetailEdit = useCallback(() => {
-    const chrome = enterDetailEditChrome(layoutMode, itemRef.current != null);
-    if (!chrome) return;
-    if (detailEditModeRef.current) return;
-    applyChrome(chrome);
-    if (typeof window !== "undefined" && !historyStateHasDetailEdit(window.history.state)) {
-      const prev =
-        window.history.state && typeof window.history.state === "object"
-          ? window.history.state
-          : {};
-      window.history.pushState({ ...prev, [DETAIL_EDIT_HISTORY_KEY]: true }, "");
-      editHistoryPushedRef.current = true;
-    }
-  }, [applyChrome, layoutMode]);
+  const enterDetailEdit = useCallback(
+    (field?: DetailEditFocusField) => {
+      const chrome = enterDetailEditChrome(layoutMode, itemRef.current != null);
+      if (!chrome) return;
+      if (detailEditModeRef.current) return;
+      if (field) setPendingFocusField(field);
+      applyChrome(chrome);
+      if (typeof window !== "undefined" && !historyStateHasDetailEdit(window.history.state)) {
+        const prev =
+          window.history.state && typeof window.history.state === "object"
+            ? window.history.state
+            : {};
+        window.history.pushState({ ...prev, [DETAIL_EDIT_HISTORY_KEY]: true }, "");
+        editHistoryPushedRef.current = true;
+      }
+    },
+    [applyChrome, layoutMode],
+  );
 
   /** 退出全屏编辑 → 列表（不恢复 peek 展示态） */
   const exitDetailEdit = useCallback(() => {
@@ -374,6 +385,7 @@ export function useDetailPanelState<T extends { id: number }>({
     baseline,
     detailOpen,
     detailEditMode,
+    pendingFocusField,
     saveStatus,
     saving,
     openDetail,

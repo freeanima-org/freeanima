@@ -132,7 +132,7 @@ Every pattern documents:
 
 **Implementation:** shadcn `Dialog` / `Sheet` via composite `ModalSheetPresent`; pickers (`MoveToListPicker`, `MoveToProjectPicker`) use that shell. Do **not** hand-roll `createPortal` + fixed overlays.
 
-**Task detail (compact):** peek `Sheet` for browse/display; focusing title or notes enters an **immersive full-page edit** (`DetailEditPageShell` + `setCompactImmersive`) with a back control and **no bottom tabs**. Back / system back closes the detail and returns to the **list** (does not restore peek). Layout-driven — not shell kind.
+**Task detail (compact):** peek `Sheet` for browse/display; activating title or notes (pointer down before focus, then focus once in the immersive tree) enters an **immersive full-page edit** (`DetailEditPageShell` + `setCompactImmersive`) with a back control and **no bottom tabs** — avoids double soft-keyboard from peek→immersive remount. Back / system back closes the detail and returns to the **list** (does not restore peek). Layout-driven — not shell kind.
 
 **Compliance:** Reference.
 

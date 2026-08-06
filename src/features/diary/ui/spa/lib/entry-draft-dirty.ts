@@ -17,6 +17,11 @@ export type EntryDraft = {
   tag_ids: number[];
 };
 
+/** React / DnD 稳定键：保存后 id 可变，client_op_id 不变时可避免输入控件 remount */
+export function blockUiKey(block: Pick<BlockDraft, "id" | "client_op_id">): string {
+  return block.client_op_id ?? String(block.id);
+}
+
 export function blockDraftFromRow(block: DiaryTextBlock): BlockDraft {
   return {
     id: block.id,

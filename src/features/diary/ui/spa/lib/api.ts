@@ -164,6 +164,7 @@ export async function createDiaryBlock(
     tag_ids?: number[];
     components?: string[];
     sort_order?: number;
+    client_op_id?: string;
   },
 ): Promise<DiaryTextBlock> {
   ensureDiaryOfflineModule();

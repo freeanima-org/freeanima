@@ -19,7 +19,7 @@ import { useTouchPrimaryCapability } from "@freeanima/client/portal-sdk/react";
 import { Button, Input, Textarea, cn } from "@freeanima/ui-kit";
 import { ConfirmDialog } from "@freeanima/ui-kit/composite";
 
-import type { BlockDraft, EntryDraft } from "../lib/entry-draft-dirty.ts";
+import { blockUiKey, type BlockDraft, type EntryDraft } from "../lib/entry-draft-dirty.ts";
 import {
   firstContentParagraph,
   isBlockCollapsed,
@@ -49,8 +49,9 @@ function SortableBlock({
 }) {
   const touchPrimary = useTouchPrimaryCapability();
   const hoverReveal = touchPrimary ? "" : "opacity-0 group-hover:opacity-100";
+  const uiKey = blockUiKey(block);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: block.id,
+    id: uiKey,
     disabled: readOnly,
   });
   const style = {
@@ -210,8 +211,8 @@ export function EntryEditor({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = draft.blocks.findIndex((b) => b.id === active.id);
-    const newIndex = draft.blocks.findIndex((b) => b.id === over.id);
+    const oldIndex = draft.blocks.findIndex((b) => blockUiKey(b) === active.id);
+    const newIndex = draft.blocks.findIndex((b) => blockUiKey(b) === over.id);
     if (oldIndex < 0 || newIndex < 0) return;
     const reordered = arrayMove(draft.blocks, oldIndex, newIndex).map((block, index) => ({
       ...block,
@@ -225,13 +226,13 @@ export function EntryEditor({
       <div className="min-h-0 flex-1 overflow-y-auto">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext
-            items={draft.blocks.map((b) => b.id)}
+            items={draft.blocks.map((b) => blockUiKey(b))}
             strategy={verticalListSortingStrategy}
           >
             <div className="flex flex-col gap-1">
               {draft.blocks.map((block) => (
                 <SortableBlock
-                  key={block.id}
+                  key={blockUiKey(block)}
                   block={block}
                   readOnly={readOnly}
                   onChange={(patch) =>

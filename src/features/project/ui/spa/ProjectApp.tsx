@@ -211,6 +211,7 @@ export function ProjectApp() {
     setItem: setDetailItem,
     detailOpen,
     detailEditMode,
+    pendingFocusField,
     saveStatus: detailSaveStatus,
     openDetail: openTaskDetail,
     closeDetail: closeTaskDetail,
@@ -933,6 +934,7 @@ export function ProjectApp() {
             onChange={setDetailItem}
             saveStatus={detailSaveStatus}
             onTagKnown={rememberTag}
+            {...(pendingFocusField ? { focusField: pendingFocusField } : {})}
           />
         </DetailEditPageShell>
       ) : null}

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useEffect, useRef } from "react";
 import { BellIcon, CalendarIcon, FlagIcon, RepeatIcon } from "lucide-react";
 
 import { Button } from "../components/ui/button.tsx";
@@ -30,6 +31,8 @@ import type {
   TaskRecurrenceSkip,
 } from "../lib/task-item-display.ts";
 
+export type TaskDetailFocusField = "title" | "content";
+
 export type TaskDetailEditorProps<T extends TaskItemDisplay = TaskItemDisplay> = {
   item: T;
   onChange: (item: T) => void;
@@ -37,8 +40,10 @@ export type TaskDetailEditorProps<T extends TaskItemDisplay = TaskItemDisplay> =
   legend?: string;
   titleExtra?: ReactNode;
   children?: ReactNode;
-  /** compact：聚焦标题/描述时进入全屏编辑页 */
-  onTextFieldActivate?: () => void;
+  /** compact peek：标题/描述激活时进入全屏编辑（pointer 优先，避免半屏先获焦双弹键盘） */
+  onTextFieldActivate?: (field: TaskDetailFocusField) => void;
+  /** compact immersive：挂载后聚焦的字段 */
+  focusField?: TaskDetailFocusField;
 };
 
 const PRIORITY_LABEL: Record<TaskItemPriority, string> = {
@@ -257,6 +262,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
   titleExtra,
   children,
   onTextFieldActivate,
+  focusField,
 }: TaskDetailEditorProps<T>) {
   const dueChip = formatDueChip(item.due_at);
   const datePart = isoToDateLocalValue(item.due_at);
@@ -269,9 +275,34 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
   const remindPreset = detectRemindPreset(item);
   const recurrence = item.recurrence;
   const recurrenceUntilDate = isoToDateLocalValue(recurrence?.until ?? null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const activateField = (field: TaskDetailFocusField) => {
+    onTextFieldActivate?.(field);
+  };
+
+  /** peek Sheet 关闭会 restoreFocus 到列表项；延迟抢回，避免双键盘/失焦 */
+  useEffect(() => {
+    if (!focusField) return;
+    const aria = focusField === "title" ? "标题" : "描述";
+    let cancelled = false;
+    const focusTarget = () => {
+      if (cancelled) return;
+      const target = rootRef.current?.querySelector(`[aria-label="${aria}"]`) as HTMLElement | null;
+      if (target && document.activeElement !== target) {
+        target.focus({ preventScroll: true });
+      }
+    };
+    focusTarget();
+    const timers = [0, 50, 160, 320].map((ms) => window.setTimeout(focusTarget, ms));
+    return () => {
+      cancelled = true;
+      for (const id of timers) window.clearTimeout(id);
+    };
+  }, [focusField]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
+    <div ref={rootRef} className="flex min-h-0 flex-1 flex-col gap-3 p-4">
       <div className="flex shrink-0 flex-wrap items-center gap-1">
         <Checkbox
           isSelected={completed}
@@ -755,7 +786,15 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
           value={item.title}
           placeholder="标题"
           aria-label="标题"
-          onFocus={() => onTextFieldActivate?.()}
+          onPointerDown={
+            onTextFieldActivate
+              ? (e) => {
+                  e.preventDefault();
+                  activateField("title");
+                }
+              : undefined
+          }
+          onFocus={() => activateField("title")}
           onChange={(e) => onChange({ ...item, title: e.target.value })}
         />
         {titleExtra}
@@ -766,7 +805,15 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
         value={item.content}
         placeholder="描述"
         aria-label="描述"
-        onFocus={() => onTextFieldActivate?.()}
+        onPointerDown={
+          onTextFieldActivate
+            ? (e) => {
+                e.preventDefault();
+                activateField("content");
+              }
+            : undefined
+        }
+        onFocus={() => activateField("content")}
         onChange={(e) => onChange({ ...item, content: e.target.value })}
       />
 
