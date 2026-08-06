@@ -32,4 +32,4 @@ tauri-android: _deps
 # Vault 浏览器扩展（WXT；Chrome 加载 .output/chrome-mv3）
 [no-cd]
 browser-extension *args: _deps
-  bunx wxt {{args}}
+  {{ bun }} x wxt {{args}}

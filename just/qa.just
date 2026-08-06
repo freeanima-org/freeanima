@@ -5,8 +5,8 @@ import '_common.just'
 # 注：≠ 全量 CI（CI 另跑 bun scripts/run-ci-tests.ts）
 [no-cd]
 check: _deps
-  bunx tsgo -p tsconfig.json
-  bunx oxlint .
+  {{ bun }} x tsgo -p tsconfig.json
+  {{ bun }} x oxlint .
   {{ bun }} scripts/check-import-depth.ts
   {{ bun }} scripts/check-layer-deps.ts
   {{ bun }} scripts/check-portal-cache-path.ts
@@ -14,31 +14,31 @@ check: _deps
   {{ bun }} scripts/check-pg-sql-arrays.ts
   {{ bun }} scripts/check-auto-llm-chat-gate.ts
   {{ bun }} scripts/stylelint.ts
-  bunx oxfmt --check .
+  {{ bun }} x oxfmt --check .
   {{ bun }} test src --pass-with-no-tests --changed
 
 # husky pre-commit（与钩子同集合，避免漂移）
 [no-cd]
 pre-commit: _deps
-  bunx tsgo -p tsconfig.json
-  bunx oxlint .
+  {{ bun }} x tsgo -p tsconfig.json
+  {{ bun }} x oxlint .
   {{ bun }} scripts/check-import-depth.ts
   {{ bun }} scripts/check-layer-deps.ts
   {{ bun }} scripts/check-portal-cache-path.ts
-  bunx oxfmt --check .
+  {{ bun }} x oxfmt --check .
   {{ bun }} test src --pass-with-no-tests --changed
 
 [no-cd]
 typecheck: _deps
-  bunx tsgo -p tsconfig.json
+  {{ bun }} x tsgo -p tsconfig.json
 
 [no-cd]
 lint: _deps
-  bunx oxlint .
+  {{ bun }} x oxlint .
 
 [no-cd]
 lint-fix: _deps
-  bunx oxlint --fix .
+  {{ bun }} x oxlint --fix .
 
 [no-cd]
 stylelint: _deps
@@ -50,11 +50,11 @@ stylelint-fix: _deps
 
 [no-cd]
 fmt: _deps
-  bunx oxfmt .
+  {{ bun }} x oxfmt .
 
 [no-cd]
 fmt-check: _deps
-  bunx oxfmt --check .
+  {{ bun }} x oxfmt --check .
 
 # 全量单元 + 集成（串行）
 [no-cd]

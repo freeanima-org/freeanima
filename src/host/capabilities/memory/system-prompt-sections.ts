@@ -1,15 +1,19 @@
 import { decomposeSystemPromptParts } from "./system-prompt.ts";
 import { MEMORY_RECALL_STRATEGY_RULE, MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
-import type { SystemPromptSection } from "@freeanima/host/core/hooks/prompt";
+import type { PromptMode, SystemPromptSection } from "@freeanima/host/core/hooks/prompt";
 
 /** Build self / resident / agents sections for systemPromptBuild hook */
 export async function buildMemorySystemPromptSections(
   selfContent: string,
   cwd?: string | null,
+  mode: PromptMode = "digital_human",
 ): Promise<SystemPromptSection[]> {
-  const parts = await decomposeSystemPromptParts(selfContent, cwd);
+  const includeDigitalHuman = mode !== "work";
+  const parts = await decomposeSystemPromptParts(includeDigitalHuman ? selfContent : "", cwd, {
+    includeResident: includeDigitalHuman,
+  });
   const sections: SystemPromptSection[] = [];
-  if (parts.self.trim()) {
+  if (includeDigitalHuman && parts.self.trim()) {
     sections.push({ id: "self", content: parts.self.trim(), order: 0, priority: 0 });
   }
   sections.push({
@@ -24,7 +28,7 @@ export async function buildMemorySystemPromptSections(
     order: 26,
     priority: 1,
   });
-  if (parts.resident.trim()) {
+  if (includeDigitalHuman && parts.resident.trim()) {
     sections.push({
       id: "resident",
       content: parts.resident,

@@ -33,8 +33,8 @@ export function registerMemorySystemPromptHooks(registry: HookRegistry): void {
   registry.on(
     systemPromptBuild,
     async (ctx) => {
-      const selfContent = await loadSelfLayerPrompt();
-      const sections = await buildMemorySystemPromptSections(selfContent, ctx.cwd);
+      const selfContent = ctx.mode === "work" ? "" : await loadSelfLayerPrompt();
+      const sections = await buildMemorySystemPromptSections(selfContent, ctx.cwd, ctx.mode);
       if (sections.length === 0) return { status: "ok" };
       return { status: "ok", data: { sections } };
     },
@@ -48,11 +48,17 @@ export function registerChannelSystemPromptHook(registry: HookRegistry): void {
     (ctx) => {
       const platform = ctx.meta?.platform;
       const desc = describePlatform(platform);
+      const modeLabel = ctx.mode === "work" ? "工作模式" : "数字人类模式";
       return {
         status: "ok",
         data: {
           sections: [
-            { id: "channel", content: `## 对话通道\n当前通道：${desc}`, order: 5, priority: 2 },
+            {
+              id: "channel",
+              content: `## 对话通道 (${modeLabel})\n当前通道：${desc}`,
+              order: 5,
+              priority: 2,
+            },
           ],
         },
       };
@@ -64,7 +70,8 @@ export function registerChannelSystemPromptHook(registry: HookRegistry): void {
 export function registerEnvHealthSystemPromptHook(registry: HookRegistry): void {
   registry.on(
     systemPromptBuild,
-    async () => {
+    async (ctx) => {
+      if (ctx.mode === "work") return { status: "ok" };
       const { buildEnvHealthPromptSectionContent } = await import("./service/env-health/prompt.ts");
       try {
         const content = await buildEnvHealthPromptSectionContent();
@@ -88,7 +95,8 @@ export function registerEnvHealthSystemPromptHook(registry: HookRegistry): void 
 export function registerUserActivityStatsSystemPromptHook(registry: HookRegistry): void {
   registry.on(
     systemPromptBuild,
-    async () => {
+    async (ctx) => {
+      if (ctx.mode === "work") return { status: "ok" };
       const { buildUserActivityStatsPromptSectionContent } =
         await import("./service/user-activity-stats/prompt.ts");
       try {
@@ -113,7 +121,8 @@ export function registerUserActivityStatsSystemPromptHook(registry: HookRegistry
 export function registerTemporalSummarySystemPromptHook(registry: HookRegistry): void {
   registry.on(
     systemPromptBuild,
-    async () => {
+    async (ctx) => {
+      if (ctx.mode === "work") return { status: "ok" };
       try {
         const { getActiveRuntimeConfig } = await import("@freeanima/host/core/config");
         const { buildTemporalSummarySystemSection, resolveTemporalSummaryConfig } =

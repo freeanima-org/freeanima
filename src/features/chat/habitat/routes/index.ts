@@ -62,10 +62,14 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
     if (input.project_world_id !== undefined) {
       platformExtra.project_world_id = input.project_world_id;
     }
+    const module =
+      input.module ??
+      (platform === "chat" || platform.startsWith("remote:chat:") ? "chat" : undefined);
     const sid = await depsOf(deps).runtime.conversation.newConversation(
       platform,
       undefined,
       platformExtra,
+      module,
     );
     if (input.title?.trim()) {
       await depsOf(deps).runtime.setConversationTitle(sid, input.title.trim(), platform);

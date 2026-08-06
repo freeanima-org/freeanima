@@ -240,7 +240,12 @@ export async function initConversation(
   tools: ToolSetRegistry,
   sid: string,
   model: string,
-  opts: { platform: string; functions?: string[]; platform_extra?: Record<string, unknown> },
+  opts: {
+    platform: string;
+    functions?: string[];
+    platform_extra?: Record<string, unknown>;
+    module?: "chat" | "coding";
+  },
 ): Promise<void> {
   const cwd = allocateConversationCwd(sid);
   const platform_extra = opts.platform_extra ? { ...opts.platform_extra } : undefined;
@@ -254,6 +259,7 @@ export async function initConversation(
     timestamp: formatCstIso(),
     platform: opts.platform,
     cwd,
+    ...(opts.module ? { module: opts.module } : {}),
     platform_extra:
       platform_extra && Object.keys(platform_extra).length > 0 ? platform_extra : undefined,
   };
@@ -271,6 +277,7 @@ export async function newConversation(
   platform: string,
   model?: string,
   platformExtra?: Record<string, unknown>,
+  module?: "chat" | "coding",
 ): Promise<string> {
   const cfg = getActiveRuntimeConfig().data;
   const sid = generateConversationId();
@@ -281,6 +288,7 @@ export async function newConversation(
     omitUndefined({
       platform,
       platform_extra: platformExtra,
+      module,
     }),
   );
   return sid;

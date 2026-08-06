@@ -21,6 +21,7 @@ import { conversations } from "./conversations.ts";
 
 const conversationJsonbRefine = {
   platform_info: platformInfoSchema.nullable(),
+  module: z.enum(["chat", "coding"]).nullable().optional(),
   compression: compressionJsonSchema.nullable(),
   temporal_day: temporalDayJsonSchema.nullable(),
   todos: conversationTodoStoreSchema,

@@ -26,8 +26,9 @@ FreeAnima Storage Architecture
 **Design principles:**
 
 - Self layer and memory layer **differ in nature**: memory layer "records the world and experiences outward"; self layer "defines self inward"
-- **All five blocks are always resident** in the system prompt (alongside project context and pinned resident memories)
+- **Five blocks are resident in digital-human mode** system prompts (alongside project context and pinned resident memories); **work mode** omits them
 - **Objective timelines** live in temporal summary, not in the self layer
+- Prompt mode is driven by **`conversations.module`** (`chat` | `coding` | NULL), orthogonal to **`platform_info`** (channel identity)
 
 ---
 
@@ -72,7 +73,14 @@ Light sleep **no longer** extracts new autobiographical narratives or maintains 
 
 ## System Prompt Injection
 
-Assembly order:
+Prompt mode is derived from `conversations.module` (not from `platform`):
+
+| `module`       | Prompt mode                        | Self / resident / env-health / temporal / activity / notification inject |
+| -------------- | ---------------------------------- | ------------------------------------------------------------------------ |
+| `chat` or NULL | **数字人类模式** (`digital_human`) | Included                                                                 |
+| `coding`       | **工作模式** (`work`)              | Omitted                                                                  |
+
+Assembly order (**digital_human**):
 
 1. Self layer (five blocks)
 2. World / channel / toolsets (runtime hooks)
@@ -80,9 +88,11 @@ Assembly order:
 4. Resident memory (pinned facts)
 5. Project context (session working directory AGENTS.md if present)
 
+**Work mode** keeps memory citation/recall, channel (labeled), world/toolsets/skills/subagents, and AGENTS.md when present — without self-layer identity framing.
+
 Self layer and resident memory use a second-person instruction skeleton wrapping first-person self-statement content, so the LLM clearly understands "this is self-layer content you must follow."
 
-Live environment/health **changes** are not rewritten into an existing session prompt; they surface as Inbox notifications (event-level).
+Live environment/health **changes** are not rewritten into an existing session prompt; they surface as Inbox notifications (event-level). AutoLLM / cron runs use work-mode assembly (no self blocks).
 
 Maintenance: Habitat self-layer tools / UI, or slow automatic proposals via agent Inbox.
 
@@ -90,12 +100,12 @@ Maintenance: Habitat self-layer tools / UI, or slow automatic proposals via agen
 
 ## Relationship to Memory Layer
 
-| Dimension     | Memory layer                          | Self layer                      |
-| ------------- | ------------------------------------- | ------------------------------- |
-| Direction     | Outward—records world and experiences | Inward—defines self             |
-| Question      | "What do I know?"                     | "Who am I?"                     |
-| Time overview | Temporal summary (objective)          | Not a self block                |
-| Injection     | Pinned facts + recall on demand       | All five blocks always resident |
+| Dimension     | Memory layer                          | Self layer                        |
+| ------------- | ------------------------------------- | --------------------------------- |
+| Direction     | Outward—records world and experiences | Inward—defines self               |
+| Question      | "What do I know?"                     | "Who am I?"                       |
+| Time overview | Temporal summary (objective)          | Not a self block                  |
+| Injection     | Pinned facts + recall on demand       | Five blocks in digital-human mode |
 
 ---
 

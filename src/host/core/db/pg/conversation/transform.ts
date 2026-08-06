@@ -36,6 +36,7 @@ const META_KNOWN_KEYS = new Set([
   "role", // legacy JSONL field; strip if present
   "model",
   "platform",
+  "module",
   "title",
   "cwd",
   "system_prompt",
@@ -53,6 +54,11 @@ const META_KNOWN_KEYS = new Set([
   "timestamp",
   "gateway_tool_display",
 ]);
+
+function parseConversationModule(raw: string | null | undefined): "chat" | "coding" | undefined {
+  if (raw === "chat" || raw === "coding") return raw;
+  return undefined;
+}
 
 function metaBuiltAtToDate(raw: string | undefined): Date | null {
   if (!raw?.trim()) return null;
@@ -111,6 +117,7 @@ export function conversationMetaToInsert(
       meta.platform,
       Object.keys(extra).length > 0 ? extra : undefined,
     ),
+    module: meta.module ?? null,
     compression: compressionParsed,
     temporal_day: null,
     todos,
@@ -143,6 +150,7 @@ export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
   if (restExtra && "acp_tasks_handled_at" in restExtra) {
     delete restExtra.acp_tasks_handled_at;
   }
+  const module = parseConversationModule(parsed.module);
   const base = {
     timestamp:
       parsed.created_at instanceof Date
@@ -150,6 +158,7 @@ export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
         : String(parsed.created_at ?? ""),
     model: parsed.model,
     platform,
+    ...(module ? { module } : {}),
     title: parsed.title ?? undefined,
     cwd: parsed.cwd ?? undefined,
     system_prompt: parsed.system_prompt ?? undefined,

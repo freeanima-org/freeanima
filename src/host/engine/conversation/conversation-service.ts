@@ -83,8 +83,12 @@ export function createConversationService(tools: ToolSetRegistry) {
     appendConversationMeta,
     initConversation: (sid: string, model: string, opts: Parameters<typeof initConversation>[3]) =>
       initConversation(tools, sid, model, opts),
-    newConversation: (platform: string, model?: string, platformExtra?: Record<string, unknown>) =>
-      newConversation(tools, platform, model, platformExtra),
+    newConversation: (
+      platform: string,
+      model?: string,
+      platformExtra?: Record<string, unknown>,
+      module?: "chat" | "coding",
+    ) => newConversation(tools, platform, model, platformExtra, module),
     findConversationByOrigin,
     activateConversationOrigin,
     updateConversationMetaField: (

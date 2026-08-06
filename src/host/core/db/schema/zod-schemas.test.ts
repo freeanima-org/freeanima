@@ -10,6 +10,7 @@ const baseRow = {
   system_prompt: null,
   system_prompt_built_at: null,
   platform_info: null,
+  module: null,
   compression: null,
   temporal_day: null,
   todos: { items: [], next_id: 1 },
