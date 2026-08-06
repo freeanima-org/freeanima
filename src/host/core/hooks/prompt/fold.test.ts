@@ -5,6 +5,7 @@ import { foldSystemPromptSections, foldSystemPromptSectionsDetailed } from "./fo
 
 const ALL = { llm_kind: "all" as const };
 const CONV = { llm_kind: "conversation" as const };
+const EMPTY_CTX = { functionNames: [] as string[], mode: "digital_human" as const };
 
 describe("foldSystemPromptSections", () => {
   it("merges sections from multiple handlers by order", async () => {
@@ -25,7 +26,7 @@ describe("foldSystemPromptSections", () => {
       }),
       ALL,
     );
-    const run = await registry.run(systemPromptBuild, { functionNames: [] }, CONV);
+    const run = await registry.run(systemPromptBuild, EMPTY_CTX, CONV);
     expect(foldSystemPromptSections(run.chain)).toBe("SELF\n\nTOOLSETS");
   });
 
@@ -47,7 +48,7 @@ describe("foldSystemPromptSections", () => {
       }),
       { priority: 100, llm_kind: "all" },
     );
-    const run = await registry.run(systemPromptBuild, { functionNames: [] }, CONV);
+    const run = await registry.run(systemPromptBuild, EMPTY_CTX, CONV);
     expect(foldSystemPromptSections(run.chain)).toBe("NEW");
   });
 
@@ -70,13 +71,13 @@ describe("foldSystemPromptSections", () => {
       }),
       ALL,
     );
-    const run = await registry.run(systemPromptBuild, { functionNames: [] }, CONV);
+    const run = await registry.run(systemPromptBuild, EMPTY_CTX, CONV);
     expect(foldSystemPromptSections(run.chain)).toBe("B");
   });
 
   it("returns empty string when no sections", async () => {
     const registry = createTestHookRegistry();
-    const run = await registry.run(systemPromptBuild, { functionNames: [] }, CONV);
+    const run = await registry.run(systemPromptBuild, EMPTY_CTX, CONV);
     expect(foldSystemPromptSections(run.chain)).toBe("");
   });
 
@@ -100,7 +101,7 @@ describe("foldSystemPromptSections", () => {
       }),
       ALL,
     );
-    const run = await registry.run(systemPromptBuild, { functionNames: [] }, CONV);
+    const run = await registry.run(systemPromptBuild, EMPTY_CTX, CONV);
     const folded = foldSystemPromptSectionsDetailed(run.chain);
     expect(folded.text.length).toBeLessThanOrEqual(80);
     expect(folded.truncatedSectionIds).toContain("env-health-baseline");
@@ -127,7 +128,7 @@ describe("foldSystemPromptSections", () => {
       }),
       ALL,
     );
-    const run = await registry.run(systemPromptBuild, { functionNames: [] }, CONV);
+    const run = await registry.run(systemPromptBuild, EMPTY_CTX, CONV);
     const folded = foldSystemPromptSectionsDetailed(run.chain, {
       globalBudgetChars: 80,
     });
@@ -158,7 +159,7 @@ describe("foldSystemPromptSections", () => {
       }),
       ALL,
     );
-    const run = await registry.run(systemPromptBuild, { functionNames: [] }, CONV);
+    const run = await registry.run(systemPromptBuild, EMPTY_CTX, CONV);
     const folded = foldSystemPromptSectionsDetailed(run.chain, {
       globalBudgetChars: 40,
     });

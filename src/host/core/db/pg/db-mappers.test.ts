@@ -35,6 +35,25 @@ describe("db transforms", () => {
     });
   });
 
+  it("conversationMetaToInsert stores module on column not platform_info", () => {
+    const row = conversationMetaToInsert("coding_sess", {
+      model: "m",
+      cached_toolsets: [],
+      staged_toolsets: [],
+      functions: [],
+      timestamp: "2026-05-17T07:15:24.873Z",
+      platform: "remote:coding:inst1",
+      module: "coding",
+    });
+    expect(row.module).toBe("coding");
+    expect(row.platform_info).toEqual({
+      platform: "remote:coding:inst1",
+      outpost_app_id: "coding",
+      outpost_instance_id: "inst1",
+    });
+    expect(row.platform_info).not.toHaveProperty("module");
+  });
+
   it("message payload round-trip user / tool", () => {
     const userInsert = messageToInsert("sess", {
       role: "user",

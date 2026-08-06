@@ -86,6 +86,40 @@ describe("system-prompt", () => {
     expect(recall!.order).toBe(26);
   });
 
+  it("work mode omits self and resident but keeps citation/recall/agents", async () => {
+    listResidentSemanticMemoryMock.mockImplementation((async () => [
+      {
+        id: 1,
+        content: "pinned",
+        type: "fact",
+        pinned: true,
+        reference_count: 0,
+        source_conversations: [],
+        observed_at: null,
+        occurred_at: null,
+        status: "active",
+        content_embedding: null,
+        content_fts: null,
+        fts_segmented: null,
+        created_at: new Date("2026-01-01T00:00:00.000Z"),
+        updated_at: new Date("2026-01-01T00:00:00.000Z"),
+      },
+    ]) as never);
+    const dir = createTempDir("anima-agents-work-");
+    try {
+      writeFileSync(join(dir, "AGENTS.md"), "# Work agents", "utf-8");
+      const sections = await buildMemorySystemPromptSections("SELF_SHOULD_HIDE", dir, "work");
+      expect(sections.find((s) => s.id === "self")).toBeUndefined();
+      expect(sections.find((s) => s.id === "resident")).toBeUndefined();
+      expect(sections.find((s) => s.id === "memory-citation")).toBeDefined();
+      expect(sections.find((s) => s.id === "memory-recall")).toBeDefined();
+      expect(sections.find((s) => s.id === "agents")?.content).toContain("Work agents");
+      expect(listResidentSemanticMemoryMock).not.toHaveBeenCalled();
+    } finally {
+      removeTempDir(dir);
+    }
+  });
+
   it("project context segment includes code fence without second-person frame", async () => {
     const dir = createTempDir("anima-agents-");
     try {

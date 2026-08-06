@@ -108,6 +108,8 @@ export const conversationMetaSchema = z
     functions: z.array(z.string()).default([]),
     timestamp: z.string().default(""),
     platform: z.string().optional(),
+    /** Prompt 模式模块：chat=数字人类；coding=工作；缺省=数字人类 */
+    module: z.enum(["chat", "coding"]).optional(),
     system_prompt: z.string().optional(),
     /** ISO timestamptz；上次全量构建 system_prompt（日界刷新用） */
     system_prompt_built_at: z.string().optional(),

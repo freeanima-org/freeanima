@@ -55,11 +55,12 @@ export type SystemPromptParts = {
 export async function decomposeSystemPromptParts(
   selfContent: string,
   cwd?: string | null,
+  opts?: { includeResident?: boolean },
 ): Promise<SystemPromptParts> {
   return {
     self: selfContent.trim(),
     agents: readAgents(cwd),
-    resident: await renderResidentMemory(),
+    resident: opts?.includeResident === false ? "" : await renderResidentMemory(),
     toolsets: "",
   };
 }

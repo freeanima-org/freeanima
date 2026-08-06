@@ -109,6 +109,8 @@ bun install
 just dev
 ```
 
+`just` 在 Windows 上通过 `_common.just` 的 `bun := bun.exe` 调用 Bun；本地 CLI（`drizzle-kit` / `oxlint` / `oxfmt` / `tsgo` / `wxt`）统一为 `{{ bun }} x …`（即 `bun.exe x`），勿写裸 `bunx`（WSL bash 下常 127）。
+
 `just` recipes call `bun install --frozen-lockfile` via `_deps` (same as CI). First clone uses plain `bun install` above; afterward prefer `just deps` / any `just …` recipe so the lockfile is not rewritten casually.
 
 Configure `%USERPROFILE%\.anima\config.yaml` with a PostgreSQL URL (see [Database](#database) below). Full source steps: [`install.md`](install.md#source-repository).

@@ -163,7 +163,7 @@ export async function buildSubagentSystemPrompt(
   try {
     const run = await deps.kernel.hookRegistry.run(
       systemPromptBuild,
-      { functionNames },
+      { functionNames, mode: "work" },
       { llm_kind: "auto_llm" },
     );
     const budget =

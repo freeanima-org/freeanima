@@ -109,6 +109,7 @@ export async function ensureCodingConversation(opts: {
   });
   const created = await client.call("conversation.create", {
     platform,
+    module: "coding",
     ...(opts.workspaceRoot ? { workspace_root: opts.workspaceRoot } : {}),
     ...(world.project_world_id != null ? { project_world_id: world.project_world_id } : {}),
     ...(opts.displayName?.trim() || opts.stableKey

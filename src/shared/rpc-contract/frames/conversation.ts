@@ -3,6 +3,8 @@ import { z } from "zod";
 export const conversationCreateInputSchema = z.object({
   title: z.string().optional(),
   platform: z.string().optional(),
+  /** Prompt 模式：chat=数字人类；coding=工作；缺省由服务端按 platform 推断 */
+  module: z.enum(["chat", "coding"]).optional(),
   workspace_root: z.string().optional(),
   workspace_gitignore: z.boolean().optional(),
   workspace_show_hidden: z.boolean().optional(),

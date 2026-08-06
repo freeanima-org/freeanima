@@ -1,14 +1,11 @@
-import { loadSelfLayerPrompt } from "@freeanima/host/capabilities/self";
 import { buildMemorySystemPromptSections } from "@freeanima/host/capabilities/memory/system-prompt-sections";
 
-/** Self-layer + resident + optional task section for AutoLlmRun system prompt */
+/** Memory citation/recall + optional agents/task for AutoLlmRun（工作模式，无 self/resident） */
 export async function buildAutoLlmSystemPrompt(opts?: {
-  selfContent?: string;
   cwd?: string | null;
   taskSection?: string;
 }): Promise<string> {
-  const selfContent = opts?.selfContent ?? (await loadSelfLayerPrompt());
-  const sections = await buildMemorySystemPromptSections(selfContent, opts?.cwd ?? null);
+  const sections = await buildMemorySystemPromptSections("", opts?.cwd ?? null, "work");
   const chunks = [...sections].toSorted((a, b) => a.order - b.order).map((s) => s.content.trim());
   if (opts?.taskSection?.trim()) chunks.push(opts.taskSection.trim());
   return chunks.filter(Boolean).join("\n\n");

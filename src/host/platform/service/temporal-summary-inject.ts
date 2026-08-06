@@ -1,6 +1,8 @@
 import type { BeforeLlmCallContext } from "@freeanima/host/core/hooks/loop";
 import { getActiveRuntimeConfig } from "@freeanima/host/core/config";
-import { isCronSession } from "@freeanima/host/core/db/pg/conversation";
+import { resolvePromptMode } from "@freeanima/host/core/hooks/prompt";
+import { isConversationMeta } from "@freeanima/host/core/db/domain";
+import { getConversationMeta, isCronSession } from "@freeanima/host/core/db/pg/conversation";
 import { loadSelfLayerPrompt } from "@freeanima/host/capabilities/self";
 import {
   injectTemporalPeerRollups,
@@ -20,6 +22,11 @@ export function createTemporalPeerInjectHandler() {
     const conversationId = ctx.conversationId.trim();
     if (!conversationId) return;
     if (await isCronSession(conversationId)) return;
+
+    const meta = await getConversationMeta(conversationId);
+    if (meta != null && isConversationMeta(meta) && resolvePromptMode(meta.module) === "work") {
+      return;
+    }
 
     const selfContent = await loadSelfLayerPrompt();
     const injects = await resolvePeerTimelineInjects({

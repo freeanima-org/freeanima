@@ -1,4 +1,7 @@
 import type { BeforeLlmCallContext } from "@freeanima/host/core/hooks/loop";
+import { resolvePromptMode } from "@freeanima/host/core/hooks/prompt";
+import { isConversationMeta } from "@freeanima/host/core/db/domain";
+import { getConversationMeta } from "@freeanima/host/core/db/pg/conversation";
 
 import { getNotificationPort } from "./port.ts";
 import {
@@ -13,6 +16,14 @@ export function createNotificationInjectHandler() {
 
     const lastMsg = ctx.messages.at(-1);
     if (!lastMsg || lastMsg.role !== "user") return;
+
+    const conversationId = ctx.conversationId.trim();
+    if (conversationId) {
+      const meta = await getConversationMeta(conversationId);
+      if (meta != null && isConversationMeta(meta) && resolvePromptMode(meta.module) === "work") {
+        return;
+      }
+    }
 
     const port = getNotificationPort();
     if (!port) return;
