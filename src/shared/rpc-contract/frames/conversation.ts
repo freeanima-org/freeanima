@@ -60,7 +60,10 @@ export const conversationMarkReadOutputSchema = z.object({
 
 export type ConversationMarkReadOutput = z.infer<typeof conversationMarkReadOutputSchema>;
 
-export const conversationUnreadCountInputSchema = z.object({});
+export const conversationUnreadCountInputSchema = z.object({
+  /** 与 conversation.list 对齐；Chat Shell 传 chat */
+  platform: z.string().optional(),
+});
 
 export type ConversationUnreadCountInput = z.infer<typeof conversationUnreadCountInputSchema>;
 

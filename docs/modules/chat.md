@@ -11,9 +11,9 @@ Chat SPA 支持 **离线写入 outbox**、上线后 **自动重试**，并通过
 Chat 维护 **用户已读水位**（`conversation_read_state`，按 Habitat user subject）：
 
 - 会话未读：存在 `role=assistant` 且 `pos > last_read_pos` 的消息。
-- `conversation.list` 返回 `unread`；`conversation.unreadCount` 返回未归档未读会话数（Shell 导航 Chat 角标）。
+- `conversation.list` 返回 `unread`；`conversation.unreadCount` 返回未归档未读会话数（Shell 导航 Chat 角标）。角标计数与列表同范围：可选 `platform`（Chat 传 `chat`）+ 排除已归档。
 - **视口已读**：消息列表底部哨兵进入滚动视口且页面可见时才调用 `conversation.markRead`（水位单调升高）。打开会话或流式结束**不**自动 markRead；滚离底部或窗口失焦时当前会话可保持未读，Chat 导航数字角标会出现。
-- `conversation.subscribeInbox`（WS）在任意会话更新时推送 `conversation.updated`，供列表与角标刷新。
+- `conversation.subscribeInbox`（WS）在任意会话更新时推送 `conversation.updated`，供列表与角标刷新；删除 / 归档 / 取消归档也会 poke，以便角标与列表对齐。
 
 用户自己发送的消息不构成未读；不做 agent 未读分区。
 

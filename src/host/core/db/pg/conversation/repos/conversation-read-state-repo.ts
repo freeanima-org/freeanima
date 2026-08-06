@@ -70,16 +70,24 @@ export async function markConversationRead(opts: {
   return { last_read_pos: rows[0]?.last_read_pos ?? targetPos };
 }
 
-/** 用户未归档且未读的会话个数（Shell 角标） */
-export async function countUnreadConversations(userSubjectId: string): Promise<number> {
+/** 用户未归档且未读的会话个数（Shell 角标；可选按 platform 与列表对齐） */
+export async function countUnreadConversations(
+  userSubjectId: string,
+  opts?: { platform?: string },
+): Promise<number> {
   const subject_id = userSubjectId.trim();
   if (!subject_id) return 0;
   const db = getDb();
   const unread = conversationUnreadExistsSql(subject_id);
+  const platform = opts?.platform?.trim();
+  const conds = [isNull(conversations.archived_at), sql`${unread}`];
+  if (platform) {
+    conds.push(sql`${conversations.platform_info}->>'platform' = ${platform}`);
+  }
   const rows = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(conversations)
-    .where(and(isNull(conversations.archived_at), sql`${unread}`));
+    .where(and(...conds));
   return rows[0]?.count ?? 0;
 }
 

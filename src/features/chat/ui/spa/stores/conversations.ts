@@ -26,6 +26,7 @@ import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fe
 import { getConversationTail } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import { sortConversationsByUpdatedAt } from "@freeanima/features/chat/ui/spa/lib/sort-conversations.ts";
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
+import { useChatUnreadStore } from "@freeanima/features/chat/ui/spa/stores/chat-unread.ts";
 
 /** Chat 首屏 / 向上加载每页原始消息条数 */
 export const CHAT_MESSAGES_PAGE_SIZE = 100;
@@ -216,6 +217,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       await maybeInterruptStream(conversationId);
       await archiveConversationApi(conversationId);
       await get().fetchConversations();
+      void useChatUnreadStore.getState().refreshCount();
       return navigateAfterRemove(get, conversationId);
     } catch (e) {
       console.error("archiveConversation:", e);
@@ -227,6 +229,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
     try {
       await unarchiveConversationApi(conversationId);
       await get().fetchConversations();
+      void useChatUnreadStore.getState().refreshCount();
       return get().currentId;
     } catch (e) {
       console.error("unarchiveConversation:", e);
@@ -239,6 +242,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       await maybeInterruptStream(conversationId);
       await deleteConversationApi(conversationId);
       await get().fetchConversations();
+      void useChatUnreadStore.getState().refreshCount();
       return navigateAfterRemove(get, conversationId);
     } catch (e) {
       console.error("deleteConversation:", e);

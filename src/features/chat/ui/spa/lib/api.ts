@@ -103,10 +103,12 @@ export async function markConversationRead(
   );
 }
 
-/** 用户未归档未读会话数（Shell 角标） */
+/** 用户未归档未读会话数（Shell 角标；与列表同 platform） */
 export async function getUnreadConversationCount(): Promise<number> {
   requireHabitatFetch("conversation.unreadCount");
-  const result = await habitat().call("conversation.unreadCount", {});
+  const result = await habitat().call("conversation.unreadCount", {
+    platform: chatPlatform(),
+  });
   return result.count;
 }
 
