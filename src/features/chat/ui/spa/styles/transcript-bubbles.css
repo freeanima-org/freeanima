@@ -1,0 +1,86 @@
+/* Chat / Coding 共用：消息气泡 + Markdown + 工具块。禁止各 SPA 再平行拷贝。 */
+
+.md-content {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+}
+.md-content p {
+  margin: 0.3em 0;
+}
+.md-content p:first-child {
+  margin-top: 0;
+}
+.md-content p:last-child {
+  margin-bottom: 0;
+}
+.md-content pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.md-content code {
+  @apply bg-muted rounded px-1;
+  font-size: 0.875em;
+}
+.md-content pre code {
+  @apply block p-3 overflow-x-auto bg-muted;
+}
+
+.tool-bubble {
+  @apply rounded-2xl bg-muted/60;
+  max-width: 100%;
+}
+
+.tool-bubble-detail {
+  max-height: min(100vh, 100dvh);
+  overflow: auto;
+}
+
+.tool-bubble-scroll {
+  overflow: auto;
+  max-height: min(40vh, 16rem);
+  max-width: 100%;
+}
+
+.tool-bubble-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.tool-bubble-marquee-track {
+  display: inline-block;
+  padding-left: 100%;
+  animation: tool-bubble-marquee 8s linear infinite;
+}
+
+@keyframes tool-bubble-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.chat-bubble {
+  /* w-fit + shrink-0：按内容撑开，避免 flex 子项被 min-w-0 压窄导致短句过早换行 */
+  @apply w-fit max-w-[85%] shrink-0 rounded-2xl px-4 py-2;
+}
+.chat-bubble-user {
+  @apply bg-primary text-primary-foreground ml-auto;
+}
+.chat-bubble-assistant {
+  @apply bg-muted text-foreground;
+}
+
+.message-action-bar {
+  @apply text-muted-foreground;
+}
+
+@media (max-width: 767px) {
+  .chat-bubble {
+    max-width: min(92vw, 100%);
+  }
+}

@@ -57,6 +57,7 @@ NSIS 安装目录 = `productName`（无独立 installDir）。`just pack tauri-w
 - 独立有边框应用窗（label `coding`）；SPA 在 `frontendDist` 的 `ui/coding/`；`app_id: coding` + `remote_tools.attach`。
 - UI：**Agent Window** 模式（多 Agent 会话、可无工作区 / 多根；文件预览 Shiki + 行号）。见 [`docs/modules/coding.md`](../../docs/modules/coding.md)。
 - Dev：`CODING_WINDOW_URL`（Vite `:4186`）；打包 `WebviewUrl::App("coding/index.html")`。
+- **Dev Vite `cacheDir`**：web / companion / coding 各用独立 optimizeDeps 缓存（`createShellViteInlineConfig` / `createSatelliteViteInlineConfig` 的 `${outdir}-deps`）；禁止共用根 `node_modules/.vite`，否则并行 HMR 会 504 Outdated Optimize Dep。
 - **Dev 远程 Vite 须 IPC**：`capabilities/default.json` 的 `remote.urls` 须包含 `http://127.0.0.1:4186/*`（及 companion `:4176`、主窗 `:5000`），且 `build.rs` AppManifest + capability 须列出对应 `allow-*`（否则 Vite 页 `invoke` 报 `not allowed. Plugin not found`）。改 capability / build.rs 后需**重启** `just dev tauri`。
 - **Keep-alive**：关 UI 优先 **hide 不 close**，以保持 Outpost attach；勿照搬 Companion close=离线。主窗关闭不销毁 Coding 窗。
 - 壳提供薄 FS / spawn IPC（workspace 沙箱在 TS）；**禁止** Node sidecar。

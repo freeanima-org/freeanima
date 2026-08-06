@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 
 import { useChatLlmDebugEnabled } from "@freeanima/client/portal-sdk/react.tsx";
+import { ConversationTranscript } from "@freeanima/features/chat/ui/spa/components/ConversationTranscript.tsx";
 import { LlmDebugPanel } from "@freeanima/features/chat/ui/spa/components/LlmDebugPanel.tsx";
 import { SlashCommandResultPanel } from "@freeanima/features/chat/ui/spa/components/SlashCommandResultPanel.tsx";
-import { ToolBlockBubble } from "@freeanima/features/chat/ui/spa/components/ToolBlockBubble.tsx";
 import {
   fetchLlmDebug,
   listConversationCommands,
@@ -24,7 +24,7 @@ import { toast } from "@freeanima/ui-kit/composite";
 import { renderMarkdownHtml } from "@freeanima/ui-kit/lib/markdown.ts";
 import { Button } from "@freeanima/ui-kit";
 
-import { fetchCodingConversationHistory } from "../lib/chat-history.ts";
+import { fetchCodingConversationHistory, fetchCodingOlderMessages } from "../lib/chat-history.ts";
 import {
   appendUserMessage,
   applyCodingStreamEvent,
@@ -48,12 +48,6 @@ function renderMd(text: string): string {
   return renderMarkdownHtml(text);
 }
 
-function displayKey(item: CodingThreadState["display"][number], index: number): string {
-  if (item.type === "message") return `msg-${item.role}-${index}-${item.content.slice(0, 24)}`;
-  const ids = item.calls.map((c) => c.tool_call_id).join(",");
-  return `tool-${index}-${ids.length > 0 ? ids : String(item.calls.length)}`;
-}
-
 export function AgentChatPane({
   sessionKey,
   conversationId,
@@ -66,6 +60,7 @@ export function AgentChatPane({
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [commandList, setCommandList] = useState<SlashCommandItem[]>([]);
   const [selectedCmdIdx, setSelectedCmdIdx] = useState(0);
@@ -78,18 +73,18 @@ export function AgentChatPane({
   const [debugViewerOpen, setDebugViewerOpen] = useState(false);
   const [llmDebugLoading, setLlmDebugLoading] = useState(false);
   const [llmDebugSnapshots, setLlmDebugSnapshots] = useState<LlmDebugSnapshots | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const unsubRef = useRef<(() => void) | null>(null);
   const conversationIdRef = useRef(conversationId);
   conversationIdRef.current = conversationId;
+  const threadRef = useRef(thread);
+  threadRef.current = thread;
+  const loadingOlderRef = useRef(false);
 
   const slashMenuEntries = useMemo(
     () => buildSlashMenuEntries(draft, commandList),
     [draft, commandList],
   );
   const showCmdMenu = slashMenuEntries.length > 0;
-  /** 与 Chat 一致：仅有 streamText 时显示流式气泡（tool_block 走 display） */
-  const showStreamBubble = thread.streamText.length > 0;
 
   useEffect(() => {
     let cancelled = false;
@@ -117,6 +112,8 @@ export function AgentChatPane({
     setDraft("");
     setError(null);
     setBusy(false);
+    setLoadingOlder(false);
+    loadingOlderRef.current = false;
     setThread(emptyCodingThread());
     setSlashResult(null);
     setDebugViewerOpen(false);
@@ -150,10 +147,6 @@ export function AgentChatPane({
   }, [sessionKey]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [thread.display, thread.streamText, busy]);
-
-  useEffect(() => {
     return () => {
       unsubRef.current?.();
     };
@@ -181,6 +174,47 @@ export function AgentChatPane({
       cancelled = true;
     };
   }, [debugViewerOpen, conversationId]);
+
+  const loadOlder = useCallback(async (): Promise<boolean> => {
+    const cid = conversationIdRef.current;
+    const cur = threadRef.current;
+    if (
+      !cid ||
+      !cur.hasMoreBefore ||
+      cur.fromPos == null ||
+      loadingOlderRef.current ||
+      historyLoading
+    ) {
+      return false;
+    }
+    loadingOlderRef.current = true;
+    setLoadingOlder(true);
+    try {
+      const page = await fetchCodingOlderMessages(cid, cur.fromPos);
+      if (conversationIdRef.current !== cid) return false;
+      if (page.display.length === 0) {
+        setThread((prev) => ({
+          ...prev,
+          hasMoreBefore: page.hasMoreBefore,
+          fromPos: page.fromPos ?? prev.fromPos,
+        }));
+        return false;
+      }
+      setThread((prev) => ({
+        ...prev,
+        display: [...page.display, ...prev.display],
+        fromPos: page.fromPos ?? prev.fromPos,
+        hasMoreBefore: page.hasMoreBefore,
+      }));
+      return true;
+    } catch (e) {
+      console.error("coding loadOlder:", e);
+      return false;
+    } finally {
+      loadingOlderRef.current = false;
+      setLoadingOlder(false);
+    }
+  }, [historyLoading]);
 
   const applyMenuEntry = (entry: SlashMenuEntry) => {
     setDraft(entry.insertText);
@@ -334,7 +368,9 @@ export function AgentChatPane({
     }
   };
 
-  const empty = thread.display.length === 0 && !thread.streamText && !historyLoading;
+  const empty = thread.display.length === 0 && !thread.streamText && !historyLoading && !busy;
+  const streaming = busy || thread.streaming;
+  const streamVisible = thread.streamText.length > 0;
 
   const composeBlock = (hero: boolean) => (
     <div
@@ -437,39 +473,22 @@ export function AgentChatPane({
         ) : (
           <>
             <div className="coding-chat-thread">
-              {thread.display.map((item, index) => {
-                if (item.type === "tool_block") {
-                  return (
-                    <div key={displayKey(item, index)} className="coding-chat-msg role-tool">
-                      <ToolBlockBubble calls={item.calls} />
-                    </div>
-                  );
-                }
-                return (
-                  <div
-                    key={displayKey(item, index)}
-                    className={`coding-chat-msg role-${item.role}`}
-                  >
-                    <div className="coding-chat-role">{item.role === "user" ? "你" : "Agent"}</div>
-                    <div
-                      className="coding-chat-body prose prose-sm dark:prose-invert max-w-none"
-                      dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
-                    />
-                  </div>
-                );
-              })}
-              {showStreamBubble ? (
-                <div className="coding-chat-msg role-assistant">
-                  <div className="coding-chat-role">Agent …</div>
-                  <div
-                    className="coding-chat-body prose prose-sm dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html: renderMd(thread.streamText || "…"),
-                    }}
-                  />
-                </div>
-              ) : null}
-              <div ref={bottomRef} />
+              <ConversationTranscript
+                display={thread.display}
+                conversationKey={conversationId ?? sessionKey}
+                streamText={thread.streamText}
+                streaming={streaming}
+                streamVisible={streamVisible}
+                loadingOlder={loadingOlder}
+                hasMoreBefore={thread.hasMoreBefore}
+                messagesLoading={historyLoading}
+                onLoadOlder={loadOlder}
+                speech={{
+                  supported: false,
+                  isSpeaking: () => false,
+                  toggle: () => {},
+                }}
+              />
             </div>
             {composeBlock(false)}
           </>
