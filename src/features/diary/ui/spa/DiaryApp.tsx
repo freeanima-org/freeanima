@@ -25,6 +25,7 @@ import {
 import { Button, Input, Spinner } from "@freeanima/ui-kit";
 import { PullToRefresh } from "@freeanima/ui-kit/composite";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
+import { randomUuid } from "@freeanima/shared/rpc-contract";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -340,13 +341,14 @@ export function DiaryApp() {
             tag_ids: block.tag_ids,
             components: block.components,
             sort_order: block.sort_order,
+            ...(block.client_op_id ? { client_op_id: block.client_op_id } : {}),
           });
           nextBlocks.push({
             id: created.id,
             title: created.title ?? block.title,
             content: created.content,
             sort_order: created.sort_order,
-            client_op_id: created.client_op_id,
+            client_op_id: created.client_op_id ?? block.client_op_id,
             components: created.components ?? block.components,
             tag_ids: created.tag_ids ?? block.tag_ids,
           });
@@ -574,7 +576,7 @@ export function DiaryApp() {
             title: preset?.title ?? "",
             content: preset?.content ?? "",
             sort_order: nextOrder,
-            client_op_id: null,
+            client_op_id: randomUuid(),
             components: preset?.components ?? ["content_block"],
             tag_ids: preset?.tag_ids ?? [],
           },

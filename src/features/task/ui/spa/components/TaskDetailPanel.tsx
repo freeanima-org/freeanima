@@ -2,6 +2,7 @@ import {
   DetailPanelShell,
   TaskDetailEditor,
   type DetailSaveStatus,
+  type TaskDetailFocusField,
 } from "@freeanima/ui-kit/composite";
 import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task.ts";
 
@@ -14,6 +15,7 @@ import type { TagKnown } from "@freeanima/features/tag/ui/spa/components/TagPick
 
 export type { DetailSaveStatus };
 export type TaskTagKnown = TagKnown;
+export type { TaskDetailFocusField };
 
 export type TaskDetailPanelProps<T extends TaskItemRowPayload = TaskItemRowPayload> = {
   item: T;
@@ -27,8 +29,10 @@ export type TaskDetailPanelProps<T extends TaskItemRowPayload = TaskItemRowPaylo
   /** 番茄专注记录（实体级，清单与项目均可展示） */
   showPomodoroFocus?: boolean;
   onTagKnown?: (tag: TaskTagKnown) => void;
-  /** compact：聚焦标题/描述进入全屏编辑 */
-  onTextFieldActivate?: () => void;
+  /** compact peek：标题/描述激活进入全屏编辑 */
+  onTextFieldActivate?: (field: TaskDetailFocusField) => void;
+  /** compact immersive：挂载后聚焦字段 */
+  focusField?: TaskDetailFocusField;
 };
 
 /** 任务详情 SSOT：清单、项目、entity overlay 共用 */
@@ -40,6 +44,7 @@ export function TaskDetailPanel<T extends TaskItemRowPayload>({
   showPomodoroFocus = true,
   onTagKnown,
   onTextFieldActivate,
+  focusField,
 }: TaskDetailPanelProps<T>) {
   return (
     <DetailPanelShell saveStatus={saveStatus}>
@@ -47,6 +52,7 @@ export function TaskDetailPanel<T extends TaskItemRowPayload>({
         item={item}
         onChange={onChange}
         {...(onTextFieldActivate ? { onTextFieldActivate } : {})}
+        {...(focusField ? { focusField } : {})}
         titleExtra={
           <div className="mt-1 flex flex-col gap-2">
             <div className="flex flex-wrap items-center gap-2">

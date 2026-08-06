@@ -179,6 +179,7 @@ export function TaskApp() {
     setItem: setDetailItem,
     detailOpen,
     detailEditMode,
+    pendingFocusField,
     saveStatus: detailSaveStatus,
     openDetail: openTaskDetail,
     closeDetailSheet,
@@ -1669,6 +1670,7 @@ export function TaskApp() {
               onChange={setDetailItem}
               saveStatus={detailSaveStatus}
               onTagKnown={rememberTag}
+              {...(pendingFocusField ? { focusField: pendingFocusField } : {})}
             />
           </DetailEditPageShell>
         ) : null}

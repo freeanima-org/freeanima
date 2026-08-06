@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import type { DiaryEntryRow } from "./format-diary.ts";
-import { entryDraftFromRow, isEntryDraftDirty } from "./entry-draft-dirty.ts";
+import { blockUiKey, entryDraftFromRow, isEntryDraftDirty } from "./entry-draft-dirty.ts";
 
 const baseEntry: DiaryEntryRow = {
   id: 1,
@@ -26,6 +26,18 @@ const baseEntry: DiaryEntryRow = {
   created_at: "2026-01-01T00:00:00.000Z",
   updated_at: "2026-01-01T00:00:00.000Z",
 };
+
+describe("blockUiKey", () => {
+  it("优先使用 client_op_id，保存换 id 后仍稳定", () => {
+    const op = "op-stable-1";
+    expect(blockUiKey({ id: -1, client_op_id: op })).toBe(op);
+    expect(blockUiKey({ id: 42, client_op_id: op })).toBe(op);
+  });
+
+  it("无 client_op_id 时回退为 id 字符串", () => {
+    expect(blockUiKey({ id: 10, client_op_id: null })).toBe("10");
+  });
+});
 
 describe("entryDraftFromRow", () => {
   it("从条目生成 draft", () => {
