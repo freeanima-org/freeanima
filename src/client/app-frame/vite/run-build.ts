@@ -63,6 +63,11 @@ export function createShellViteInlineConfig(opts: ShellViteBuildOptions): Inline
     configFile: false,
     root: opts.appDir,
     base: opts.base ?? "/",
+    /**
+     * 与 satellite（companion / coding）并行时隔离 optimizeDeps 缓存，
+     * 避免共享 `node_modules/.vite` 触发 504 Outdated Optimize Dep。
+     */
+    cacheDir: `${opts.outdir}-deps`,
     plugins: [
       bunExternalPlugin,
       paraglideCompilePlugin(paraglideDir, repoRoot),

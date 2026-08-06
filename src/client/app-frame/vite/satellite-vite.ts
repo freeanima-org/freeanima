@@ -70,6 +70,12 @@ export function createSatelliteViteInlineConfig(opts: SatelliteViteOptions): Inl
     configFile: false,
     root: opts.appDir,
     base: opts.base ?? "/",
+    /**
+     * web / companion / coding 并行时若共用 `node_modules/.vite`，
+     * 一方 re-optimize 会使另一方浏览器拿到 504 Outdated Optimize Dep。
+     * outdir 在 serve 下已是各包独立目录（如 `.vite-coding`）。
+     */
+    cacheDir: `${opts.outdir}-deps`,
     plugins,
     resolve: {
       alias,

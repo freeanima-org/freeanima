@@ -3,6 +3,15 @@ import type { DisplayItem } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 
 import { emptyCodingThread, type CodingThreadState } from "./chat-thread.ts";
 
+/** 与 Chat `CHAT_MESSAGES_PAGE_SIZE` 对齐 */
+const CODING_MESSAGES_PAGE_SIZE = 100;
+
+export type CodingHistoryPage = {
+  display: DisplayItem[];
+  fromPos: number | null;
+  hasMoreBefore: boolean;
+};
+
 function normalizeDisplay(raw: unknown): DisplayItem[] {
   if (!Array.isArray(raw)) return [];
   const out: DisplayItem[] = [];
@@ -45,6 +54,18 @@ function normalizeDisplay(raw: unknown): DisplayItem[] {
   return out;
 }
 
+function pageFromResponse(resp: {
+  display?: unknown;
+  from_pos?: unknown;
+  has_more_before?: unknown;
+}): CodingHistoryPage {
+  return {
+    display: normalizeDisplay(resp.display),
+    fromPos: typeof resp.from_pos === "number" ? resp.from_pos : null,
+    hasMoreBefore: resp.has_more_before === true,
+  };
+}
+
 /** 拉取会话历史（尾页）→ Coding 线程状态 */
 export async function fetchCodingConversationHistory(
   conversationId: string,
@@ -53,8 +74,32 @@ export async function fetchCodingConversationHistory(
   const client = getTypedHabitatClient();
   const resp = await client.call("conversation.messages", {
     conversation_id: conversationId,
-    limit: opts?.limit ?? 100,
+    limit: opts?.limit ?? CODING_MESSAGES_PAGE_SIZE,
   });
-  const display = normalizeDisplay((resp as { display?: unknown }).display);
-  return { ...emptyCodingThread(), display };
+  const page = pageFromResponse(
+    resp as { display?: unknown; from_pos?: unknown; has_more_before?: unknown },
+  );
+  return {
+    ...emptyCodingThread(),
+    display: page.display,
+    fromPos: page.fromPos,
+    hasMoreBefore: page.hasMoreBefore,
+  };
+}
+
+/** 向上加载更早一页（before_pos） */
+export async function fetchCodingOlderMessages(
+  conversationId: string,
+  beforePos: number,
+  opts?: { limit?: number },
+): Promise<CodingHistoryPage> {
+  const client = getTypedHabitatClient();
+  const resp = await client.call("conversation.messages", {
+    conversation_id: conversationId,
+    limit: opts?.limit ?? CODING_MESSAGES_PAGE_SIZE,
+    before_pos: beforePos,
+  });
+  return pageFromResponse(
+    resp as { display?: unknown; from_pos?: unknown; has_more_before?: unknown },
+  );
 }

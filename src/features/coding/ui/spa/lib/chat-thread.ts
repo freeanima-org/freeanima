@@ -12,10 +12,19 @@ export type CodingThreadState = {
   /** 流式中尚未 commit 的助手文本（Chat streamText） */
   streamText: string;
   streaming: boolean;
+  /** 向上分页：最旧一页的 from_pos */
+  fromPos: number | null;
+  hasMoreBefore: boolean;
 };
 
 export function emptyCodingThread(): CodingThreadState {
-  return { display: [], streamText: "", streaming: false };
+  return {
+    display: [],
+    streamText: "",
+    streaming: false,
+    fromPos: null,
+    hasMoreBefore: false,
+  };
 }
 
 export function newMsgId(prefix: string): string {
@@ -156,6 +165,7 @@ export function commitStreamTextIfAny(state: CodingThreadState): CodingThreadSta
   const text = state.streamText.trim();
   if (!text) return { ...state, streamText: "", streaming: false };
   return {
+    ...state,
     display: upsertDisplayItem(state.display, {
       type: "message",
       role: "assistant",

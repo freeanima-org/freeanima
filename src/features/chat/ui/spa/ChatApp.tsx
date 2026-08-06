@@ -15,11 +15,8 @@ import {
 import { ConfirmDialog, ActionSheet, toast } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { SlashCommandResultPanel } from "@freeanima/features/chat/ui/spa/components/SlashCommandResultPanel.tsx";
-import { ToolBlockBubble } from "@freeanima/features/chat/ui/spa/components/ToolBlockBubble.tsx";
-import {
-  ChatMessageBubble,
-  findLastUserMessageIndex,
-} from "@freeanima/features/chat/ui/spa/components/ChatMessageBubble.tsx";
+import { ConversationTranscript } from "@freeanima/features/chat/ui/spa/components/ConversationTranscript.tsx";
+import type { TranscriptScrollApi } from "@freeanima/features/chat/ui/spa/hooks/useStickToBottomScroll.ts";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { ConversationListItem as ConversationListRow } from "@freeanima/features/chat/ui/spa/components/ConversationListItem.tsx";
 import { useEdgeSwipeOpen } from "@freeanima/features/chat/ui/spa/hooks/useEdgeSwipeOpen.ts";
@@ -74,20 +71,13 @@ import {
   subscribeSubjectKind,
   writeModuleSelection,
 } from "@freeanima/client/portal-sdk";
-import { MessageActionBar } from "@freeanima/features/chat/ui/spa/components/MessageActionBar.tsx";
 import { useSpeechPlayback } from "@freeanima/features/chat/ui/spa/hooks/useSpeechPlayback.ts";
 import { useStreamAutoSpeak } from "@freeanima/features/chat/ui/spa/hooks/useStreamAutoSpeak.ts";
-import {
-  speechMessageKey,
-  speechStreamKey,
-} from "@freeanima/client/portal-sdk/speech/speech-playback-service";
 import { primeHabitatSpeechOutput } from "@freeanima/client/portal-sdk/speech/habitat-adapter";
 import {
   loadAutoSpeakPref,
   saveAutoSpeakPref,
 } from "@freeanima/features/chat/ui/spa/lib/speech/auto-speak-pref.ts";
-import { markdownToPlainText } from "@freeanima/features/chat/ui/spa/lib/speech/plain-text.ts";
-import { createSpeechPlaceholders } from "@freeanima/features/chat/ui/spa/lib/speech/speech-placeholders.ts";
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
 import { useConversationsStore } from "@freeanima/features/chat/ui/spa/stores/conversations.ts";
 import { useOutboxStore } from "@freeanima/features/chat/ui/spa/stores/outbox.ts";
@@ -247,7 +237,7 @@ export function ChatApp() {
 
   const sendingRef = useRef(false);
   const msgAreaRef = useRef<HTMLDivElement>(null);
-  const stickToBottomRef = useRef(true);
+  const scrollApiRef = useRef<TranscriptScrollApi | null>(null);
   const readSentinelRef = useViewportConversationRead(currentId, display.length, msgAreaRef);
   const msgInputRef = useRef<HTMLTextAreaElement>(null);
   const [inputText, setInputText] = useState(() =>
@@ -462,9 +452,6 @@ export function ChatApp() {
         displayAwaitingReply(mergedDisplay) &&
         habitatConnection === "connected"));
 
-  const streamSpeechText =
-    streamVisible && streamText ? markdownToPlainText(streamText, createSpeechPlaceholders()) : "";
-
   const pendingOutboxKey = useMemo(
     () =>
       Object.values(outboxEntries)
@@ -474,19 +461,6 @@ export function ChatApp() {
         .join(","),
     [outboxEntries],
   );
-
-  const lastUserMessageIndex = useMemo(
-    () => findLastUserMessageIndex(mergedDisplay),
-    [mergedDisplay],
-  );
-
-  const lastAssistantMessageIndex = useMemo(() => {
-    for (let i = mergedDisplay.length - 1; i >= 0; i--) {
-      const item = mergedDisplay[i];
-      if (item?.type === "message" && item.role === "assistant") return i;
-    }
-    return -1;
-  }, [mergedDisplay]);
 
   const confirmReeditUserMessage = async () => {
     const text = editDraft.trim();
@@ -500,7 +474,7 @@ export function ChatApp() {
     try {
       await rollbackBeforeLastUserMessage(originConversationId);
       await selectConversation(originConversationId);
-      stickToBottomRef.current = true;
+      scrollApiRef.current?.stick();
       appendItem({ type: "message", role: "user", content: text });
       await dispatchSend(text, originConversationId);
     } finally {
@@ -658,36 +632,6 @@ export function ChatApp() {
   }, [debugViewerOpen, llmDebugEnabled, currentId]);
 
   useEffect(() => {
-    const el = msgAreaRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      const threshold = 96;
-      stickToBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
-      if (el.scrollTop < threshold && hasMoreBefore && !loadingOlder && !messagesLoading) {
-        const prevHeight = el.scrollHeight;
-        void loadOlderMessages().then((didLoad) => {
-          if (!didLoad) return;
-          requestAnimationFrame(() => {
-            const area = msgAreaRef.current;
-            if (!area) return;
-            area.scrollTop += area.scrollHeight - prevHeight;
-          });
-        });
-      }
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  }, [currentId, hasMoreBefore, loadingOlder, messagesLoading, loadOlderMessages]);
-
-  /** 首屏内容不足一屏时继续向上取，直到撑满或无更早消息 */
-  useEffect(() => {
-    const el = msgAreaRef.current;
-    if (!el || !currentId || messagesLoading || loadingOlder || !hasMoreBefore) return;
-    if (el.scrollHeight > el.clientHeight + 8) return;
-    void loadOlderMessages();
-  }, [currentId, display.length, hasMoreBefore, loadingOlder, messagesLoading, loadOlderMessages]);
-
-  useEffect(() => {
     const prevId = prevDraftConversationIdRef.current;
     if (prevId && prevId !== currentId) {
       inputDraftScheduler.cancel();
@@ -699,17 +643,11 @@ export function ChatApp() {
     writeModuleSelection("chat", currentId);
     setInputText(loadInputDraft(currentId));
     setSlashResult(null);
-    stickToBottomRef.current = true;
     requestAnimationFrame(() => {
       resizeInput();
-      scrollDown({ force: true });
+      scrollApiRef.current?.scrollDown({ force: true });
     });
   }, [currentId, inputDraftScheduler]);
-
-  useEffect(() => {
-    if (!currentId) return;
-    scrollDown();
-  }, [display.length, currentId]);
 
   useEffect(() => {
     if (!currentId) return;
@@ -758,13 +696,9 @@ export function ChatApp() {
 
     const originId = currentId;
     const isViewingOrigin = () => useConversationsStore.getState().currentId === originId;
-    // 不用下方的 scrollDown：本 effect 在其声明之前，避免 TDZ
+    // scrollApiRef 避免本 effect 相对 scrollDown 声明的 TDZ
     const scrollResume = () => {
-      requestAnimationFrame(() => {
-        const el = msgAreaRef.current;
-        if (!el) return;
-        el.scrollTop = el.scrollHeight;
-      });
+      scrollApiRef.current?.scrollDown({ force: true });
     };
 
     void (async () => {
@@ -843,12 +777,7 @@ export function ChatApp() {
   ]);
 
   const scrollDown = (opts?: { force?: boolean }) => {
-    requestAnimationFrame(() => {
-      const el = msgAreaRef.current;
-      if (!el) return;
-      if (!opts?.force && !stickToBottomRef.current) return;
-      el.scrollTop = el.scrollHeight;
-    });
+    scrollApiRef.current?.scrollDown(opts);
   };
 
   const resizeInput = () => {
@@ -1665,310 +1594,199 @@ export function ChatApp() {
               </div>
             ) : null}
 
-            <div
-              ref={msgAreaRef}
-              className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 space-y-4"
-            >
-              {currentId && loadingOlder ? (
-                <div className="flex justify-center py-2">
-                  <Spinner className="size-4" />
-                </div>
-              ) : null}
-              {!currentId ? (
-                <div className="flex flex-col items-center justify-center h-full gap-3 text-foreground/40 text-sm">
-                  <p>{m.habitat_chat_select_conversation()}</p>
-                  <Button
-                    type="button"
-                    size="sm"
-                    disabled={writesDisabled}
-                    onClick={startConversation}
-                  >
-                    {m.habitat_common_new_conversation()}
-                  </Button>
-                </div>
-              ) : messagesLoading ? (
+            <ConversationTranscript
+              display={mergedDisplay}
+              conversationKey={currentId}
+              scrollContainerRef={msgAreaRef}
+              scrollApiRef={scrollApiRef}
+              readSentinelRef={readSentinelRef}
+              streamText={streamText}
+              streaming={awaitingAssistant}
+              streamVisible={streamVisible}
+              recovering={recovering}
+              loadingOlder={loadingOlder}
+              hasMoreBefore={hasMoreBefore}
+              messagesLoading={messagesLoading}
+              onLoadOlder={loadOlderMessages}
+              onAnimaUriClick={(uri) => void openEntityResource(uri)}
+              speech={{
+                supported: speechSupported,
+                unsupportedReason: speechUnsupportedReason,
+                isSpeaking,
+                toggle: toggleSpeech,
+                stopKeepEnabled: stopCurrentKeepEnabled,
+                isStreamSpeaking,
+              }}
+              canEditUser={(i, item) => {
+                if (
+                  item.clientOpId &&
+                  (item.sendStatus === "pending" || item.sendStatus === "failed")
+                ) {
+                  return true;
+                }
+                if (item.sendStatus) return false;
+                for (let j = mergedDisplay.length - 1; j >= 0; j--) {
+                  const row = mergedDisplay[j];
+                  if (row?.type === "message" && row.role === "user") return j === i;
+                }
+                return false;
+              }}
+              onEditUser={(i, item) => {
+                if (
+                  item.clientOpId &&
+                  (item.sendStatus === "pending" || item.sendStatus === "failed")
+                ) {
+                  startEditOutboxMessage(i, item.clientOpId, item.content);
+                  return;
+                }
+                startReeditUserMessage(i, item.content);
+              }}
+              renderUserMessage={({ index: i }) => {
+                if (editingUserIndex !== i) return null;
+                return (
+                  <div className="flex justify-end min-w-0 max-w-full">
+                    <div className="chat-bubble chat-bubble-user w-full max-w-full space-y-2">
+                      <Textarea
+                        value={editDraft}
+                        onChange={(e) => setEditDraft(e.target.value)}
+                        rows={3}
+                        className="min-h-[4rem] w-full resize-y bg-background/10 text-primary-foreground"
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-primary-foreground"
+                          onClick={() => {
+                            setEditingUserIndex(null);
+                            setEditingOutboxOpId(null);
+                            setEditDraft("");
+                          }}
+                        >
+                          {m.habitat_common_cancel()}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-7"
+                          disabled={
+                            !editDraft.trim() || (editingOutboxOpId ? false : writesDisabled)
+                          }
+                          onClick={() =>
+                            void (editingOutboxOpId
+                              ? confirmEditOutboxMessage()
+                              : confirmReeditUserMessage())
+                          }
+                        >
+                          {m.habitat_common_confirm()}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }}
+              renderAfterUser={({ item }) => {
+                if (
+                  !item.clientOpId ||
+                  (item.sendStatus !== "pending" &&
+                    item.sendStatus !== "failed" &&
+                    item.sendStatus !== "stale")
+                ) {
+                  return null;
+                }
+                return (
+                  <div className="mt-1 flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        const opId = item.clientOpId;
+                        if (!opId) return;
+                        void outboxDiscard(opId).then(() => {
+                          removeDisplayByClientOpId(opId);
+                        });
+                      }}
+                    >
+                      {m.ui_outbox_discard()}
+                    </Button>
+                    {item.sendStatus === "stale" ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const opId = item.clientOpId;
+                          if (!opId || !currentId) return;
+                          void (async () => {
+                            sendingRef.current = true;
+                            try {
+                              await dispatchSend(item.content, currentId, {
+                                clientOpId: opId,
+                                expectedTailPos: outboxEntries[opId]?.expectedTailPos ?? 0,
+                                forceTail: true,
+                              });
+                            } finally {
+                              sendingRef.current = false;
+                            }
+                          })();
+                        }}
+                      >
+                        {m.ui_outbox_force_send()}
+                      </Button>
+                    ) : null}
+                  </div>
+                );
+              }}
+              empty={
+                !currentId ? (
+                  <div className="flex flex-col items-center justify-center h-full gap-3 text-foreground/40 text-sm">
+                    <p>{m.habitat_chat_select_conversation()}</p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={writesDisabled}
+                      onClick={startConversation}
+                    >
+                      {m.habitat_common_new_conversation()}
+                    </Button>
+                  </div>
+                ) : display.length === 0 && !awaitingAssistant ? (
+                  <div className="flex items-center justify-center h-full text-foreground/40 text-sm">
+                    {m.habitat_chat_send_first_message()}
+                  </div>
+                ) : null
+              }
+              loading={
                 <div className="flex h-full items-center justify-center">
                   <Spinner className="size-6" />
                 </div>
-              ) : display.length === 0 && !awaitingAssistant ? (
-                <div className="flex items-center justify-center h-full text-foreground/40 text-sm">
-                  {m.habitat_chat_send_first_message()}
-                </div>
-              ) : null}
-
-              {mergedDisplay.map((item, i) => {
-                if (item.type === "message" && item.role === "user") {
-                  if (editingUserIndex === i) {
-                    return (
-                      <div key={`d${i}`} className="flex justify-end min-w-0 max-w-full">
-                        <div className="chat-bubble chat-bubble-user w-full max-w-full space-y-2">
-                          <Textarea
-                            value={editDraft}
-                            onChange={(e) => setEditDraft(e.target.value)}
-                            rows={3}
-                            className="min-h-[4rem] w-full resize-y bg-background/10 text-primary-foreground"
-                          />
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 text-primary-foreground"
-                              onClick={() => {
-                                setEditingUserIndex(null);
-                                setEditingOutboxOpId(null);
-                                setEditDraft("");
-                              }}
-                            >
-                              {m.habitat_common_cancel()}
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              className="h-7"
-                              disabled={
-                                !editDraft.trim() || (editingOutboxOpId ? false : writesDisabled)
-                              }
-                              onClick={() =>
-                                void (editingOutboxOpId
-                                  ? confirmEditOutboxMessage()
-                                  : confirmReeditUserMessage())
-                              }
-                            >
-                              {m.habitat_common_confirm()}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  const speechText = markdownToPlainText(item.content, createSpeechPlaceholders());
-                  return (
-                    <div key={`d${i}`} className="flex min-w-0 max-w-full flex-col items-end">
-                      <ChatMessageBubble
-                        align="end"
-                        className={`chat-bubble-user whitespace-pre-wrap${
-                          item.sendStatus === "pending" || item.sendStatus === "sending"
-                            ? " opacity-70"
-                            : item.sendStatus === "stale" || item.sendStatus === "failed"
-                              ? " border border-warning"
-                              : ""
-                        }`}
-                      >
-                        {item.content}
-                        {item.sendStatus === "pending" ? (
-                          <p className="mt-1 text-xs opacity-70">{m.ui_outbox_pending()}</p>
-                        ) : null}
-                        {item.sendStatus === "stale" ? (
-                          <>
-                            <p className="mt-1 text-xs text-warning">{m.ui_outbox_stale()}</p>
-                            <p className="text-xs text-warning/80">{m.ui_outbox_stale_hint()}</p>
-                          </>
-                        ) : null}
-                        {item.sendStatus === "failed" ? (
-                          <p className="mt-1 text-xs text-warning">{m.ui_outbox_failed()}</p>
-                        ) : null}
-                      </ChatMessageBubble>
-                      {item.clientOpId &&
-                      (item.sendStatus === "pending" ||
-                        item.sendStatus === "failed" ||
-                        item.sendStatus === "stale") ? (
-                        <div className="mt-1 flex gap-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              const opId = item.clientOpId;
-                              if (!opId) return;
-                              void outboxDiscard(opId).then(() => {
-                                removeDisplayByClientOpId(opId);
-                              });
-                            }}
-                          >
-                            {m.ui_outbox_discard()}
-                          </Button>
-                          {item.sendStatus === "stale" ? (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                const opId = item.clientOpId;
-                                if (!opId || !currentId) return;
-                                void (async () => {
-                                  sendingRef.current = true;
-                                  try {
-                                    await dispatchSend(item.content, currentId, {
-                                      clientOpId: opId,
-                                      expectedTailPos: outboxEntries[opId]?.expectedTailPos ?? 0,
-                                      forceTail: true,
-                                    });
-                                  } finally {
-                                    sendingRef.current = false;
-                                  }
-                                })();
-                              }}
-                            >
-                              {m.ui_outbox_force_send()}
-                            </Button>
+              }
+              footer={
+                clarifyPending ? (
+                  <Alert variant="info" className="shadow-sm">
+                    <AlertDescription className="w-full space-y-2">
+                      <p className="font-medium">{m.habitat_chat_clarify_hint()}</p>
+                      {clarifyPending.items.map((item, ci) => (
+                        <div key={ci} className="text-sm">
+                          <p>
+                            {ci + 1}. {item.question}
+                          </p>
+                          {item.choices?.length ? (
+                            <ul className="text-muted-foreground ml-2 list-inside list-disc">
+                              {item.choices.map((choice, chi) => (
+                                <li key={chi}>{choice}</li>
+                              ))}
+                            </ul>
                           ) : null}
                         </div>
-                      ) : null}
-                      <MessageActionBar
-                        align="end"
-                        copyContent={item.content}
-                        speechText={speechText}
-                        speaking={!!currentId && isSpeaking(speechMessageKey(currentId, i))}
-                        speechSupported={speechSupported}
-                        speechUnsupportedReason={speechUnsupportedReason}
-                        onToggleSpeech={() => {
-                          if (!currentId) return;
-                          toggleSpeech(speechMessageKey(currentId, i), speechText);
-                        }}
-                        {...(item.clientOpId &&
-                        (item.sendStatus === "pending" || item.sendStatus === "failed")
-                          ? {
-                              onEdit: () => {
-                                const opId = item.clientOpId;
-                                if (!opId) return;
-                                startEditOutboxMessage(i, opId, item.content);
-                              },
-                            }
-                          : i === lastUserMessageIndex && !item.sendStatus
-                            ? { onEdit: () => startReeditUserMessage(i, item.content) }
-                            : {})}
-                      />
-                    </div>
-                  );
-                }
-                if (item.type === "message" && item.role === "assistant") {
-                  const speechText = markdownToPlainText(item.content, createSpeechPlaceholders());
-                  const messageKey = currentId ? speechMessageKey(currentId, i) : "";
-                  const speakingAsStream =
-                    isStreamSpeaking && !streamVisible && i === lastAssistantMessageIndex;
-                  const speaking = (!!currentId && isSpeaking(messageKey)) || speakingAsStream;
-                  return (
-                    <div key={`d${i}`} className="flex min-w-0 max-w-full flex-col items-start">
-                      <ChatMessageBubble align="start" className="chat-bubble-assistant">
-                        <div
-                          className="md-content min-w-0 max-w-full"
-                          dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
-                          onClick={(e) => {
-                            const target = e.target as HTMLElement | null;
-                            const anchor = target?.closest?.(
-                              "a[data-anima-uri]",
-                            ) as HTMLAnchorElement | null;
-                            if (!anchor) return;
-                            e.preventDefault();
-                            const uri = anchor.getAttribute("data-anima-uri");
-                            if (uri) void openEntityResource(uri);
-                          }}
-                        />
-                      </ChatMessageBubble>
-                      <MessageActionBar
-                        align="start"
-                        copyContent={item.content}
-                        speechText={speechText}
-                        speaking={speaking}
-                        speechSupported={speechSupported}
-                        speechUnsupportedReason={speechUnsupportedReason}
-                        onToggleSpeech={() => {
-                          if (!currentId) return;
-                          if (speakingAsStream || isSpeaking(speechStreamKey(currentId))) {
-                            stopCurrentKeepEnabled();
-                            return;
-                          }
-                          toggleSpeech(messageKey, speechText);
-                        }}
-                      />
-                    </div>
-                  );
-                }
-                if (item.type === "tool_block") {
-                  return (
-                    <div key={`d${i}`} className="flex max-w-full justify-start">
-                      <ToolBlockBubble calls={item.calls} />
-                    </div>
-                  );
-                }
-                return null;
-              })}
-
-              {clarifyPending ? (
-                <Alert variant="info" className="shadow-sm">
-                  <AlertDescription className="w-full space-y-2">
-                    <p className="font-medium">{m.habitat_chat_clarify_hint()}</p>
-                    {clarifyPending.items.map((item, ci) => (
-                      <div key={ci} className="text-sm">
-                        <p>
-                          {ci + 1}. {item.question}
-                        </p>
-                        {item.choices?.length ? (
-                          <ul className="text-muted-foreground ml-2 list-inside list-disc">
-                            {item.choices.map((choice, chi) => (
-                              <li key={chi}>{choice}</li>
-                            ))}
-                          </ul>
-                        ) : null}
-                      </div>
-                    ))}
-                  </AlertDescription>
-                </Alert>
-              ) : null}
-
-              {awaitingAssistant ? (
-                streamVisible && streamText ? (
-                  <div className="flex min-w-0 max-w-full flex-col items-start">
-                    <div className="chat-bubble chat-bubble-assistant">
-                      <div
-                        className="md-content"
-                        dangerouslySetInnerHTML={{ __html: renderMd(streamText) }}
-                        onClick={(e) => {
-                          const target = e.target as HTMLElement | null;
-                          const anchor = target?.closest?.(
-                            "a[data-anima-uri]",
-                          ) as HTMLAnchorElement | null;
-                          if (!anchor) return;
-                          e.preventDefault();
-                          const uri = anchor.getAttribute("data-anima-uri");
-                          if (uri) void openEntityResource(uri);
-                        }}
-                      />
-                      <Spinner className="mt-1 size-3" />
-                    </div>
-                    <MessageActionBar
-                      align="start"
-                      copyContent={streamText}
-                      speechText={streamSpeechText}
-                      speaking={isStreamSpeaking}
-                      speechSupported={speechSupported}
-                      speechUnsupportedReason={speechUnsupportedReason}
-                      onToggleSpeech={() => {
-                        if (!currentId) return;
-                        if (isStreamSpeaking) {
-                          stopCurrentKeepEnabled();
-                          return;
-                        }
-                        toggleSpeech(speechStreamKey(currentId), streamSpeechText);
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex justify-start">
-                    <div className="chat-bubble chat-bubble-assistant text-muted-foreground flex items-center gap-2 text-sm">
-                      <Spinner className="size-3" />
-                      {recovering && !streamVisible
-                        ? m.habitat_message_waiting_result()
-                        : m.habitat_chat_composing_reply()}
-                    </div>
-                  </div>
-                )
-              ) : null}
-              {currentId ? (
-                <div ref={readSentinelRef} className="h-px w-full shrink-0" aria-hidden />
-              ) : null}
-            </div>
+                      ))}
+                    </AlertDescription>
+                  </Alert>
+                ) : null
+              }
+            />
 
             <div
               className={[

@@ -1,0 +1,349 @@
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  type MouseEvent,
+  type MutableRefObject,
+  type ReactNode,
+  type RefObject,
+} from "react";
+import type { SpeechUnsupportedReason } from "@freeanima/client/portal-sdk/speech/adapter-types";
+import {
+  speechMessageKey as defaultSpeechMessageKey,
+  speechStreamKey as defaultSpeechStreamKey,
+} from "@freeanima/client/portal-sdk/speech/speech-playback-service";
+import { Spinner } from "@freeanima/ui-kit";
+import { renderMarkdownHtml } from "@freeanima/ui-kit/lib/markdown.ts";
+
+import { ChatMessageBubble, findLastUserMessageIndex } from "./ChatMessageBubble.tsx";
+import { MessageActionBar } from "./MessageActionBar.tsx";
+import { ToolBlockBubble } from "./ToolBlockBubble.tsx";
+import { useLoadOlderOnScrollTop } from "../hooks/useLoadOlderOnScrollTop.ts";
+import {
+  useStickToBottomScroll,
+  type TranscriptScrollApi,
+} from "../hooks/useStickToBottomScroll.ts";
+import { m } from "../lib/i18n.ts";
+import { markdownToPlainText } from "../lib/speech/plain-text.ts";
+import { createSpeechPlaceholders } from "../lib/speech/speech-placeholders.ts";
+import type { DisplayItem, DisplayMessageItem } from "../lib/types.ts";
+
+export type TranscriptSpeechApi = {
+  supported: boolean;
+  unsupportedReason?: SpeechUnsupportedReason | null;
+  isSpeaking: (key: string) => boolean;
+  toggle: (key: string, text: string) => void;
+  stopKeepEnabled?: () => void;
+  messageKey?: (conversationId: string, index: number) => string;
+  streamKey?: (conversationId: string) => string;
+  /** 流式自动朗读进行中 */
+  isStreamSpeaking?: boolean;
+};
+
+export type TranscriptUserContext = {
+  item: DisplayMessageItem;
+  index: number;
+};
+
+export type ConversationTranscriptProps = {
+  display: DisplayItem[];
+  /** 切会话时 force 贴底 */
+  conversationKey?: string | null;
+  className?: string;
+
+  streamText?: string;
+  /** 正在等待 / 流式中（显示流式气泡或 composing） */
+  streaming?: boolean;
+  /** 流式文本是否应对用户可见（Chat：本会话 stream 已 attach） */
+  streamVisible?: boolean;
+  recovering?: boolean;
+
+  loadingOlder?: boolean;
+  hasMoreBefore?: boolean;
+  messagesLoading?: boolean;
+  onLoadOlder?: () => Promise<boolean>;
+
+  speech?: TranscriptSpeechApi;
+  /** 有则在末条可编辑 user 上显示编辑（Chat outbox / re-edit） */
+  onEditUser?: (index: number, item: DisplayMessageItem) => void;
+  canEditUser?: (index: number, item: DisplayMessageItem) => boolean;
+
+  onAnimaUriClick?: (uri: string) => void;
+
+  /** 覆盖整条 user 行（编辑态） */
+  renderUserMessage?: (ctx: TranscriptUserContext) => ReactNode | null | undefined;
+  renderAfterUser?: (ctx: TranscriptUserContext) => ReactNode;
+  renderAfterAssistant?: (ctx: TranscriptUserContext) => ReactNode;
+
+  empty?: ReactNode;
+  loading?: ReactNode;
+  footer?: ReactNode;
+
+  /** 供父级在 stream 回调里调用 scrollDown / stick */
+  scrollApiRef?: MutableRefObject<TranscriptScrollApi | null>;
+  scrollContainerRef?: RefObject<HTMLDivElement | null>;
+  readSentinelRef?: RefObject<HTMLDivElement | null>;
+};
+
+function renderMd(text: string): string {
+  return renderMarkdownHtml(text);
+}
+
+function onMdClick(e: MouseEvent<HTMLDivElement>, onAnimaUriClick?: (uri: string) => void): void {
+  if (!onAnimaUriClick) return;
+  const target = e.target as HTMLElement | null;
+  const anchor = target?.closest?.("a[data-anima-uri]") as HTMLAnchorElement | null;
+  if (!anchor) return;
+  e.preventDefault();
+  const uri = anchor.getAttribute("data-anima-uri");
+  if (uri) onAnimaUriClick(uri);
+}
+
+/**
+ * Chat / Coding 共用消息列表 SSOT：气泡渲染 + stick-to-bottom + 向上懒加载。
+ * 禁止各 SPA 再平行写一套 display.map。
+ */
+export function ConversationTranscript({
+  display,
+  conversationKey = null,
+  className = "flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 space-y-4",
+  streamText = "",
+  streaming = false,
+  streamVisible,
+  recovering = false,
+  loadingOlder = false,
+  hasMoreBefore = false,
+  messagesLoading = false,
+  onLoadOlder,
+  speech,
+  onEditUser,
+  canEditUser,
+  onAnimaUriClick,
+  renderUserMessage,
+  renderAfterUser,
+  renderAfterAssistant,
+  empty,
+  loading,
+  footer,
+  scrollApiRef,
+  scrollContainerRef: externalScrollRef,
+  readSentinelRef,
+}: ConversationTranscriptProps) {
+  const internalScrollRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = externalScrollRef ?? internalScrollRef;
+
+  const streamIsVisible = streamVisible ?? (streaming && streamText.length > 0);
+  const awaiting = streaming || streamIsVisible;
+
+  const contentEpoch = `${display.length}:${streamText.length}:${awaiting ? 1 : 0}`;
+
+  const { scrollApi, onScrollPosition } = useStickToBottomScroll(scrollContainerRef, {
+    conversationKey,
+    contentEpoch,
+  });
+
+  useLoadOlderOnScrollTop(scrollContainerRef, {
+    conversationKey,
+    hasMoreBefore,
+    loadingOlder,
+    messagesLoading,
+    displayLength: display.length,
+    ...(onLoadOlder ? { onLoadOlder } : {}),
+    onScrollPosition,
+  });
+
+  useEffect(() => {
+    if (!scrollApiRef) return;
+    scrollApiRef.current = scrollApi;
+    return () => {
+      scrollApiRef.current = null;
+    };
+  }, [scrollApi, scrollApiRef]);
+
+  const lastUserIndex = useMemo(() => findLastUserMessageIndex(display), [display]);
+  const lastAssistantIndex = useMemo(() => {
+    for (let i = display.length - 1; i >= 0; i--) {
+      const item = display[i];
+      if (item?.type === "message" && item.role === "assistant") return i;
+    }
+    return -1;
+  }, [display]);
+
+  const msgKey = speech?.messageKey ?? defaultSpeechMessageKey;
+  const streamKey = speech?.streamKey ?? defaultSpeechStreamKey;
+  const streamSpeechText =
+    streamIsVisible && streamText
+      ? markdownToPlainText(streamText, createSpeechPlaceholders())
+      : "";
+
+  const showEmpty = !messagesLoading && display.length === 0 && !awaiting && empty != null;
+  const showLoading = messagesLoading && loading != null;
+
+  return (
+    <div ref={scrollContainerRef} className={className}>
+      {conversationKey && loadingOlder ? (
+        <div className="flex justify-center py-2">
+          <Spinner className="size-4" />
+        </div>
+      ) : null}
+
+      {showLoading ? loading : null}
+      {showEmpty ? empty : null}
+
+      {display.map((item, i) => {
+        if (item.type === "message" && item.role === "user") {
+          const overridden = renderUserMessage?.({ item, index: i });
+          if (overridden != null) {
+            return <Fragment key={`d${i}`}>{overridden}</Fragment>;
+          }
+          const speechText = markdownToPlainText(item.content, createSpeechPlaceholders());
+          const speechKey = conversationKey ? msgKey(conversationKey, i) : "";
+          const editAllowed =
+            onEditUser &&
+            (canEditUser ? canEditUser(i, item) : i === lastUserIndex && !item.sendStatus);
+          return (
+            <div key={`d${i}`} className="flex min-w-0 max-w-full flex-col items-end">
+              <ChatMessageBubble
+                align="end"
+                className={`chat-bubble-user whitespace-pre-wrap${
+                  item.sendStatus === "pending" || item.sendStatus === "sending"
+                    ? " opacity-70"
+                    : item.sendStatus === "stale" || item.sendStatus === "failed"
+                      ? " border border-warning"
+                      : ""
+                }`}
+              >
+                {item.content}
+                {item.sendStatus === "pending" ? (
+                  <p className="mt-1 text-xs opacity-70">{m.ui_outbox_pending()}</p>
+                ) : null}
+                {item.sendStatus === "stale" ? (
+                  <>
+                    <p className="mt-1 text-xs text-warning">{m.ui_outbox_stale()}</p>
+                    <p className="text-xs text-warning/80">{m.ui_outbox_stale_hint()}</p>
+                  </>
+                ) : null}
+                {item.sendStatus === "failed" ? (
+                  <p className="mt-1 text-xs text-warning">{m.ui_outbox_failed()}</p>
+                ) : null}
+              </ChatMessageBubble>
+              {renderAfterUser?.({ item, index: i })}
+              <MessageActionBar
+                align="end"
+                copyContent={item.content}
+                speechText={speechText}
+                speaking={!!conversationKey && !!speech?.isSpeaking(speechKey)}
+                speechSupported={speech?.supported ?? false}
+                {...(speech?.unsupportedReason != null
+                  ? { speechUnsupportedReason: speech.unsupportedReason }
+                  : {})}
+                onToggleSpeech={() => {
+                  if (!conversationKey || !speech) return;
+                  speech.toggle(speechKey, speechText);
+                }}
+                {...(editAllowed ? { onEdit: () => onEditUser?.(i, item) } : {})}
+              />
+            </div>
+          );
+        }
+
+        if (item.type === "message" && item.role === "assistant") {
+          const speechText = markdownToPlainText(item.content, createSpeechPlaceholders());
+          const messageKey = conversationKey ? msgKey(conversationKey, i) : "";
+          const speakingAsStream =
+            !!speech?.isStreamSpeaking && !streamIsVisible && i === lastAssistantIndex;
+          const speaking =
+            (!!conversationKey && !!speech?.isSpeaking(messageKey)) || speakingAsStream;
+          return (
+            <div key={`d${i}`} className="flex min-w-0 max-w-full flex-col items-start">
+              <ChatMessageBubble align="start" className="chat-bubble-assistant">
+                <div
+                  className="md-content min-w-0 max-w-full"
+                  dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
+                  onClick={(e) => onMdClick(e, onAnimaUriClick)}
+                />
+              </ChatMessageBubble>
+              {renderAfterAssistant?.({ item, index: i })}
+              <MessageActionBar
+                align="start"
+                copyContent={item.content}
+                speechText={speechText}
+                speaking={speaking}
+                speechSupported={speech?.supported ?? false}
+                {...(speech?.unsupportedReason != null
+                  ? { speechUnsupportedReason: speech.unsupportedReason }
+                  : {})}
+                onToggleSpeech={() => {
+                  if (!conversationKey || !speech) return;
+                  if (speakingAsStream || speech.isSpeaking(streamKey(conversationKey))) {
+                    speech.stopKeepEnabled?.();
+                    return;
+                  }
+                  speech.toggle(messageKey, speechText);
+                }}
+              />
+            </div>
+          );
+        }
+
+        if (item.type === "tool_block") {
+          return (
+            <div key={`d${i}`} className="flex max-w-full justify-start">
+              <ToolBlockBubble calls={item.calls} />
+            </div>
+          );
+        }
+
+        return null;
+      })}
+
+      {awaiting ? (
+        streamIsVisible && streamText ? (
+          <div className="flex min-w-0 max-w-full flex-col items-start">
+            <div className="chat-bubble chat-bubble-assistant">
+              <div
+                className="md-content"
+                dangerouslySetInnerHTML={{ __html: renderMd(streamText) }}
+                onClick={(e) => onMdClick(e, onAnimaUriClick)}
+              />
+              <Spinner className="mt-1 size-3" />
+            </div>
+            <MessageActionBar
+              align="start"
+              copyContent={streamText}
+              speechText={streamSpeechText}
+              speaking={speech?.isStreamSpeaking ?? false}
+              speechSupported={speech?.supported ?? false}
+              {...(speech?.unsupportedReason != null
+                ? { speechUnsupportedReason: speech.unsupportedReason }
+                : {})}
+              onToggleSpeech={() => {
+                if (!conversationKey || !speech) return;
+                if (speech.isStreamSpeaking) {
+                  speech.stopKeepEnabled?.();
+                  return;
+                }
+                speech.toggle(streamKey(conversationKey), streamSpeechText);
+              }}
+            />
+          </div>
+        ) : (
+          <div className="flex justify-start">
+            <div className="chat-bubble chat-bubble-assistant text-muted-foreground flex items-center gap-2 text-sm">
+              <Spinner className="size-3" />
+              {recovering && !streamIsVisible
+                ? m.habitat_message_waiting_result()
+                : m.habitat_chat_composing_reply()}
+            </div>
+          </div>
+        )
+      ) : null}
+
+      {footer}
+      {conversationKey && readSentinelRef ? (
+        <div ref={readSentinelRef} className="h-px w-full shrink-0" aria-hidden />
+      ) : null}
+    </div>
+  );
+}
