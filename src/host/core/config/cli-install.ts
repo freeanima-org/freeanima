@@ -11,7 +11,7 @@ export type CliInstallKind = "source" | "standalone";
  */
 export function isStandaloneExecutable(argv1 = process.argv[1]): boolean {
   if (typeof argv1 === "string" && argv1.startsWith("/$bunfs/")) return true;
-  if (argv1 === process.argv[1]) {
+  if (argv1 === process.argv[1] && typeof Bun !== "undefined") {
     const bunStandalone = (Bun as { isStandaloneExecutable?: boolean }).isStandaloneExecutable;
     if (typeof bunStandalone === "boolean") return bunStandalone;
   }

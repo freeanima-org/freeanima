@@ -12,6 +12,7 @@ import {
   restoreVaultItemRevision,
   searchVaultItems,
   toVaultItemMeta,
+  touchVaultItemLastUsed,
   updateVaultItem,
   type VaultItemMetaRow,
   type VaultItemRow,
@@ -68,6 +69,7 @@ function toMetaPayload(row: VaultItemMetaRow | VaultItemRow) {
     ...(row.url !== undefined ? { url: row.url } : {}),
     ...(row.uris !== undefined ? { uris: row.uris } : {}),
     ...(row.username !== undefined ? { username: row.username } : {}),
+    ...(row.last_used_at !== undefined ? { last_used_at: row.last_used_at } : {}),
     tag_ids: row.tag_ids,
     custom_field_names: row.custom_field_names,
     ...(row.import_refs !== undefined ? { import_refs: row.import_refs } : {}),
@@ -254,6 +256,20 @@ export async function serviceVaultPatch(
   const item = await updateVaultItem(
     await vaultWorldIdForAuth(auth, subject_kind),
     omitUndefined({ id, ...patch }),
+  );
+  if (!item) throw new Error("NOT_FOUND");
+  return { item: toMetaPayload(item) };
+}
+
+export async function serviceVaultTouch(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const item = await touchVaultItemLastUsed(
+    await vaultWorldIdForAuth(auth, input.subject_kind),
+    input.id,
   );
   if (!item) throw new Error("NOT_FOUND");
   return { item: toMetaPayload(item) };

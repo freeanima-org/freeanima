@@ -78,6 +78,29 @@ function toCachedMeta(item: VaultItemMetaRowPayload): CachedVaultItem {
   return { ...item };
 }
 
+/** 自动填充后 bump last_used_at：先写本地缓存，再异步上报 Habitat */
+async function recordFillUsed(itemId: number): Promise<void> {
+  const now = new Date().toISOString();
+  const cached = await loadLocalCache();
+  const prev = cached?.items.find((i) => i.id === itemId);
+  if (prev) {
+    await upsertLocalCacheItem({ ...prev, last_used_at: now });
+  }
+  try {
+    const touched = await vaultCall("vault.touch", {
+      subject_kind: "user",
+      id: itemId,
+    });
+    const sealed =
+      prev?.secrets_enc && prev.dek_wrapped
+        ? { secrets_enc: prev.secrets_enc, dek_wrapped: prev.dek_wrapped }
+        : {};
+    await upsertLocalCacheItem({ ...toCachedMeta(touched.item), ...sealed });
+  } catch {
+    /* 本地乐观更新已生效；下次 list/unlock 会与 Habitat 对齐 */
+  }
+}
+
 export default defineBackground(() => {
   chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.removeAll(() => {
@@ -135,6 +158,7 @@ export default defineBackground(() => {
         const fillRes = await handleMessage({ type: "get_fill_payload", item_id: first.id });
         if (!fillRes.ok || !("fill" in fillRes)) return;
         await chrome.tabs.sendMessage(tab.id, { type: "fill_login", fill: fillRes.fill });
+        void recordFillUsed(first.id);
       }
     })();
   });
@@ -169,6 +193,7 @@ export default defineBackground(() => {
           type: "fill_field",
           value: fill.username ?? "",
         });
+        void recordFillUsed(item.id);
         return;
       }
       if (info.menuItemId === "fa-fill-password") {
@@ -176,6 +201,7 @@ export default defineBackground(() => {
           type: "fill_field",
           value: fill.password ?? "",
         });
+        void recordFillUsed(item.id);
         return;
       }
       if (info.menuItemId === "fa-fill-totp") {
@@ -183,14 +209,17 @@ export default defineBackground(() => {
           type: "fill_field",
           value: fill.totp ?? "",
         });
+        void recordFillUsed(item.id);
         return;
       }
       if (info.menuItemId === "fa-fill-card") {
         await chrome.tabs.sendMessage(tab.id, { type: "fill_card", fill });
+        void recordFillUsed(item.id);
         return;
       }
       if (info.menuItemId === "fa-fill-identity") {
         await chrome.tabs.sendMessage(tab.id, { type: "fill_identity", fill });
+        void recordFillUsed(item.id);
         return;
       }
     })();
@@ -263,6 +292,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
           id: i.id,
           ...(i.url !== undefined ? { url: i.url } : {}),
           ...(i.uris !== undefined ? { uris: i.uris } : {}),
+          ...(i.last_used_at !== undefined ? { last_used_at: i.last_used_at } : {}),
         }));
         const ranked = matchVaultItemsForUrl(message.tab_url, matchable);
         const matchedIds = new Set(ranked.map((r) => r.id));
@@ -323,6 +353,12 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
           ...(secrets.identity ? { identity: secrets.identity } : {}),
         };
         return { ok: true, fill };
+      }
+      case "record_fill_used": {
+        if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
+        getExtVaultSession().touchActivity();
+        await recordFillUsed(message.item_id);
+        return { ok: true, recorded: true };
       }
       case "check_login": {
         if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };

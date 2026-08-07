@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Input, Spinner } from "@freeanima/ui-kit";
+import { Button, Input, Spinner, cn } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 
 export function VaultUnlockForm({
@@ -8,18 +8,20 @@ export function VaultUnlockForm({
   setupMode,
   onUnlock,
   onSetup,
+  className,
 }: {
   loading: boolean;
   error: string;
   setupMode: boolean;
   onUnlock: (password: string) => void;
   onSetup: (password: string, confirm: string) => void;
+  className?: string;
 }) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
 
   return (
-    <div className="mx-auto flex h-full max-w-md flex-col justify-center gap-4 p-6">
+    <div className={cn("mx-auto flex max-w-md flex-col justify-center gap-4 p-6", className)}>
       <div className="space-y-1 text-center">
         <h1 className="text-lg font-semibold">用户保险库已锁定</h1>
         <p className="text-sm text-muted-foreground">

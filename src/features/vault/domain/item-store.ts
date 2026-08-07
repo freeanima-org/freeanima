@@ -25,6 +25,7 @@ export type VaultItemRow = {
   url?: string;
   uris?: VaultUriEntry[];
   username?: string;
+  last_used_at?: string;
   tag_ids: number[];
   secrets_enc: string;
   dek_wrapped: string;
@@ -117,6 +118,7 @@ function toRow(
     ...(parsed.url !== undefined ? { url: parsed.url } : {}),
     ...(uris !== undefined ? { uris } : {}),
     ...(parsed.username !== undefined ? { username: parsed.username } : {}),
+    ...(parsed.last_used_at !== undefined ? { last_used_at: parsed.last_used_at } : {}),
     tag_ids: [...(entity.tag_ids ?? [])],
     secrets_enc: parsed.secrets_enc,
     dek_wrapped: parsed.dek_wrapped,
@@ -245,6 +247,7 @@ export async function updateVaultItem(
     url: input.url !== undefined ? input.url : parsed.url,
     ...(nextUris !== undefined ? { uris: nextUris } : {}),
     username: input.username !== undefined ? input.username : parsed.username,
+    ...(parsed.last_used_at !== undefined ? { last_used_at: parsed.last_used_at } : {}),
     secrets_enc: input.secrets_enc ?? parsed.secrets_enc,
     dek_wrapped: input.dek_wrapped ?? parsed.dek_wrapped,
     custom_field_names:
@@ -264,6 +267,40 @@ export async function updateVaultItem(
     body,
     ...(input.tag_ids !== undefined ? { tag_ids: nextTagIds } : {}),
     ...(input.skip_revision ? { skip_revision: true } : {}),
+  });
+  if (!updated) return null;
+  const next = asVaultItem(updated);
+  if (!next) return null;
+  return toRow(next, updated);
+}
+
+/** 仅更新 last_used_at；跳过 revisions（填充高频写） */
+export async function touchVaultItemLastUsed(
+  worldId: number,
+  id: number,
+  at: string = new Date().toISOString(),
+): Promise<VaultItemRow | null> {
+  await assertEntityInWorld(id, worldId);
+  const existing = await getEntity(id);
+  if (!existing) return null;
+  const parsed = asVaultItem(existing);
+  if (!parsed) return null;
+  const uris = normalizeUris(parsed.uris);
+  const body: Record<string, unknown> = {
+    item_type: parsed.item_type,
+    secrets_enc: parsed.secrets_enc,
+    dek_wrapped: parsed.dek_wrapped,
+    custom_field_names: parsed.custom_field_names ?? [],
+    last_used_at: at,
+  };
+  if (parsed.url !== undefined) body.url = parsed.url;
+  if (uris !== undefined) body.uris = uris;
+  if (parsed.username !== undefined) body.username = parsed.username;
+  if (parsed.import_refs !== undefined) body.import_refs = parsed.import_refs;
+  const updated = await updateEntity({
+    id,
+    body,
+    skip_revision: true,
   });
   if (!updated) return null;
   const next = asVaultItem(updated);

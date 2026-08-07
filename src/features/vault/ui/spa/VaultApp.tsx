@@ -523,6 +523,7 @@ export function VaultApp() {
   if (showLockScreen) {
     return (
       <VaultUnlockForm
+        className="h-full"
         loading={actionLoading || loading}
         error={error}
         setupMode={userSetupMode}

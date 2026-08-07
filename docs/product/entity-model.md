@@ -295,11 +295,11 @@ Encrypted credentials in two libraries (**User** + **Agent**), ECS components `v
 | User    | `master_password` | Client (Shell / browser extension) | No — Chat unlock、`/vault`、扩展解锁 |
 | Agent   | `machine`         | Habitat (`agent-machine.key`)      | Yes — cron / tools                   |
 
-Privacy fields live in `body.secrets_enc` + `body.dek_wrapped`. Plaintext metadata: title, `url`, optional `uris[]` (`uri` + `match`), username, top-level **`tag_ids`** (same-world `tag` entities; no `body.tags`), `custom_field_names`, optional `import_refs` (e.g. Bitwarden cipher UUID). Secrets payload may include `password` / `totp` / `notes` / `custom_fields` / structured `card` / `identity`.
+Privacy fields live in `body.secrets_enc` + `body.dek_wrapped`. Plaintext metadata: title, `url`, optional `uris[]` (`uri` + `match`), username, optional `last_used_at` (ISO; autofill bump via `vault.touch`, skip revision), top-level **`tag_ids`** (same-world `tag` entities; no `body.tags`), `custom_field_names`, optional `import_refs` (e.g. Bitwarden cipher UUID). Secrets payload may include `password` / `totp` / `notes` / `custom_fields` / structured `card` / `identity`.
 
-**Revisions:** vault items participate in the entity-level `entities.revisions` allowlist (max 10 snapshots on substantive update). Shell `/vault` can list history and restore; see [`docs/aspects/entity-revisions.md`](../aspects/entity-revisions.md). Master-password change must rewrap current and historical `dek_wrapped`.
+**Revisions:** vault items participate in the entity-level `entities.revisions` allowlist (max 10 snapshots on substantive update). Shell `/vault` can list history and restore; see [`docs/aspects/entity-revisions.md`](../aspects/entity-revisions.md). Master-password change must rewrap current and historical `dek_wrapped`. `vault.touch`（仅 `last_used_at`）**必须** `skip_revision`。
 
-- **SAP:** `vault.*` — Shell defaults `subject_kind: user`; ToolSet defaults agent world. History: `vault.history.list` / `vault.history.restore` (not exposed to LLM ToolSet).
+- **SAP:** `vault.*` — Shell defaults `subject_kind: user`; ToolSet defaults agent world. History: `vault.history.list` / `vault.history.restore`；autofill bump: `vault.touch`（not exposed to LLM ToolSet）。
 - **UI:** shell `/vault` (`@freeanima/features/vault`); Bitwarden 未加密 JSON 导入（`import_refs.bitwarden` 幂等）；bundled Chat 有独立主密码解锁。
 - **Browser extension:** `src/portal/extension` — 直连 Habitat REST + 扩展内主密码会话；见 [`docs/modules/vault.md`](../modules/vault.md)。
 - **LLM:** ToolSet `vault` — Habitat-only (not MCP): metadata list/search/get; `vault_create` / `vault_update` / `vault_delete` (Agent library seal for create/update); credentials via `terminal_run` / `code_execute` `secrets[]` (child env only) or `browser_type` `secret` (typed into page; redacted in tool results); never plaintext secrets in tool results or Habitat `process.env`.

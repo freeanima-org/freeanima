@@ -35,6 +35,8 @@ export const vaultItemMetaRowSchema = z.object({
   url: z.string().optional(),
   uris: z.array(vaultUriEntrySchema).optional(),
   username: z.string().optional(),
+  /** 最近一次自动填充（ISO）；用于同分匹配排序 */
+  last_used_at: z.string().optional(),
   tag_ids: z.array(z.number().int().positive()),
   custom_field_names: z.array(z.string()),
   import_refs: vaultImportRefsSchema.optional(),
@@ -139,6 +141,15 @@ export const vaultPatchInputSchema = z.object({
 export type VaultPatchInput = z.infer<typeof vaultPatchInputSchema>;
 export const vaultPatchOutputSchema = z.object({ item: vaultItemMetaRowSchema });
 export type VaultPatchOutput = z.infer<typeof vaultPatchOutputSchema>;
+
+/** 自动填充成功后 bump last_used_at（skip revision） */
+export const vaultTouchInputSchema = z.object({
+  subject_kind: vaultSubjectKindSchema,
+  id: z.number().int().positive(),
+});
+export type VaultTouchInput = z.infer<typeof vaultTouchInputSchema>;
+export const vaultTouchOutputSchema = z.object({ item: vaultItemMetaRowSchema });
+export type VaultTouchOutput = z.infer<typeof vaultTouchOutputSchema>;
 
 export const vaultDeleteInputSchema = z.object({
   subject_kind: vaultSubjectKindSchema,

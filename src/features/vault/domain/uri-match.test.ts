@@ -42,4 +42,13 @@ describe("matchVaultItemsForUrl", () => {
     expect(ranked.map((r) => r.id)).toEqual([2, 3]);
     expect(ranked[0]?.match).toBe("host");
   });
+
+  test("同分时按 last_used_at 降序，未使用排后", () => {
+    const ranked = matchVaultItemsForUrl("https://github.com/login", [
+      { id: 10, url: "https://github.com", last_used_at: "2024-01-01T00:00:00.000Z" },
+      { id: 20, url: "https://github.com", last_used_at: "2025-06-01T00:00:00.000Z" },
+      { id: 30, url: "https://github.com" },
+    ]);
+    expect(ranked.map((r) => r.id)).toEqual([20, 10, 30]);
+  });
 });

@@ -72,6 +72,8 @@ export const vaultItemBodySchema = z.object({
   url: z.string().optional(),
   uris: z.array(vaultUriEntrySchema).optional(),
   username: z.string().optional(),
+  /** 最近一次自动填充时间（ISO）；明文 meta，不进 secrets */
+  last_used_at: z.string().optional(),
   secrets_enc: z.string().min(1),
   dek_wrapped: z.string().min(1),
   custom_field_names: z.array(z.string()).default([]),

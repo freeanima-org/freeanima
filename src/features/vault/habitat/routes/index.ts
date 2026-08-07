@@ -53,6 +53,12 @@ export const vaultHabitatRoutes = bindHabitatRouteHandlers(vaultMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "vault.touch": async (deps, input, ctx) =>
+    service.serviceVaultTouch(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
   "vault.delete": async (deps, input, ctx) =>
     service.serviceVaultDelete(
       depsOf(deps).runtime.runtimeDeps(),
