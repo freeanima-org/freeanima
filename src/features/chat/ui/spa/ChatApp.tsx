@@ -11,6 +11,7 @@ import {
   Input,
   Spinner,
   Textarea,
+  Toggle,
 } from "@freeanima/ui-kit";
 import { ConfirmDialog, ActionSheet, toast } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
@@ -1464,13 +1465,11 @@ export function ChatApp() {
         >
           {refreshing ? <Spinner className="size-3.5" /> : m.habitat_common_refresh()}
         </Button>
-        <Button
-          type="button"
-          variant={autoSpeak ? "secondary" : "ghost"}
+        <Toggle
           size="sm"
-          className="h-7 shrink-0 px-2"
-          disabled={!speechSupported}
-          aria-pressed={autoSpeak}
+          className="shrink-0 px-2"
+          isSelected={autoSpeak}
+          isDisabled={!speechSupported}
           aria-label={autoSpeak ? m.chat_speech_auto_on() : m.chat_speech_auto_off()}
           title={
             !speechSupported
@@ -1482,16 +1481,13 @@ export function ChatApp() {
           onPointerDown={() => {
             if (speechSupported) primeHabitatSpeechOutput();
           }}
-          onClick={() => {
-            setAutoSpeak((prev) => {
-              const next = !prev;
-              saveAutoSpeakPref(next);
-              return next;
-            });
+          onChange={(next) => {
+            saveAutoSpeakPref(next);
+            setAutoSpeak(next);
           }}
         >
           {m.chat_speech_play()}
-        </Button>
+        </Toggle>
         <Button
           type="button"
           size="sm"

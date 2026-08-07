@@ -86,6 +86,7 @@ export {
 export { Skeleton } from "./skeleton.tsx";
 export { Spinner } from "./spinner.tsx";
 export { Switch } from "./switch.tsx";
+export { Toggle, toggleVariants } from "./toggle.tsx";
 export {
   Table,
   TableBody,
