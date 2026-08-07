@@ -13,7 +13,12 @@ import {
   setCodingWorkspace,
 } from "./tools-executor.ts";
 import { createNodeWorkspaceBackend } from "./workspace-fs.node-backend.ts";
-import { normalizeLexicalPath, resolveUnderWorkspace, WorkspaceSandbox } from "./workspace-fs.ts";
+import {
+  normalizeLexicalPath,
+  resolveUnderWorkspace,
+  WorkspaceSandbox,
+  asPosixPath,
+} from "./workspace-fs.ts";
 import { parseProjectJson, stableKeyFromGitRemote } from "./project-json.ts";
 
 afterEach(() => {
@@ -110,6 +115,36 @@ describe("executeCodingTool → workspace sandbox", () => {
     const sandbox = new WorkspaceSandbox(root, backend);
     const reread = await sandbox.fileRead({ path: "README.md" });
     expect(reread.ok && reread.text.includes("hello coding")).toBe(true);
+  });
+
+  test("project_context + agents_md_write", async () => {
+    const root = tempWorkspace();
+    const backend = createNodeWorkspaceBackend();
+    const posix = asPosixPath(root);
+    await backend.writeText(
+      `${posix}/.agents/skills/demo/SKILL.md`,
+      "---\nname: demo\ndescription: demo skill\n---\nDo the demo",
+    );
+    await backend.writeText(`${posix}/AGENTS.md`, "# old");
+    setCodingWorkspace({ workspaceRoot: root, backend });
+
+    const ctxRaw = await executeCodingTool("project_context", {});
+    const ctx = JSON.parse(ctxRaw) as {
+      skills: Array<{ name: string }>;
+      agentsMdPath: string;
+    };
+    expect(ctx.skills.some((s) => s.name === "demo")).toBe(true);
+    expect(ctx.agentsMdPath).toBe("AGENTS.md");
+
+    const writeRaw = await executeCodingTool("agents_md_write", {
+      content: "# Project\nUse bun test\n",
+    });
+    expect(JSON.parse(writeRaw)).toMatchObject({ ok: true, path: "AGENTS.md" });
+    const readRaw = await executeCodingTool("agents_md_read", {});
+    const read = JSON.parse(readRaw) as { ok: boolean; missing: boolean; content: string };
+    expect(read.ok).toBe(true);
+    expect(read.missing).toBe(false);
+    expect(read.content).toContain("Use bun test");
   });
 
   test("未设置 workspace 时返回错误", async () => {

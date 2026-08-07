@@ -20,4 +20,6 @@ export const codingHabitatRoutes = bindHabitatRouteHandlers(codingMethodDefs, {
     service.serviceCodingNoteCreate(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "coding.noteList": async (deps, input, _ctx) =>
     service.serviceCodingNoteList(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "coding.projectContextSync": async (deps, input, _ctx) =>
+    service.serviceProjectContextSync(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
 });

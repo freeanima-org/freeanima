@@ -182,6 +182,53 @@ export class WorkspaceSandbox {
     }
   }
 
+  async writeTextRel(
+    path: string,
+    content: string,
+  ): Promise<{ ok: true; path: string } | { ok: false; error: string }> {
+    const resolved = this.resolve(path);
+    if (!resolved.ok) return resolved;
+    try {
+      await this.backend.writeText(resolved.abs, content);
+      return { ok: true, path: resolved.rel };
+    } catch (e) {
+      return { ok: false, error: `write failed: ${e}` };
+    }
+  }
+
+  async existsRel(path: string): Promise<boolean> {
+    const resolved = this.resolve(path);
+    if (!resolved.ok) return false;
+    try {
+      return await this.backend.exists(resolved.abs);
+    } catch {
+      return false;
+    }
+  }
+
+  async isDirRel(path: string): Promise<boolean> {
+    const resolved = this.resolve(path);
+    if (!resolved.ok) return false;
+    try {
+      return await this.backend.isDir(resolved.abs);
+    } catch {
+      return false;
+    }
+  }
+
+  async listDirRel(
+    path: string,
+  ): Promise<{ ok: true; entries: WorkspaceFsDirEntry[] } | { ok: false; error: string }> {
+    const resolved = this.resolve(path);
+    if (!resolved.ok) return resolved;
+    try {
+      const entries = await this.backend.listDir(resolved.abs);
+      return { ok: true, entries };
+    } catch (e) {
+      return { ok: false, error: `listDir failed: ${e}` };
+    }
+  }
+
   async fileRead(opts: {
     path: string;
     offset?: number;

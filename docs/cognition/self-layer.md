@@ -86,9 +86,9 @@ Assembly order (**digital_human**):
 2. World / channel / toolsets (runtime hooks)
 3. Environment + health baseline (static session copy; see [`environment-awareness.md`](environment-awareness.md))
 4. Resident memory (pinned facts)
-5. Project context (session working directory AGENTS.md if present)
+5. Project context (Coding module only: Outpost-synced AGENTS.md / `.agents` rules / vendor compat — not arbitrary session cwd)
 
-**Work mode** keeps memory citation/recall, channel (labeled), world/toolsets/skills/subagents, and AGENTS.md when present — without self-layer identity framing.
+**Work mode** keeps memory citation/recall, channel (labeled), world/toolsets/skills/subagents, and Coding project context when synced — without self-layer identity framing.
 
 Self layer and resident memory use a second-person instruction skeleton wrapping first-person self-statement content, so the LLM clearly understands "this is self-layer content you must follow."
 

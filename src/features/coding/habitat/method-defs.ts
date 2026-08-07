@@ -4,6 +4,8 @@ import {
   codingNoteCreateOutputSchema,
   codingNoteListInputSchema,
   codingNoteListOutputSchema,
+  codingProjectContextSyncInputSchema,
+  codingProjectContextSyncOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/coding.ts";
 
 export const codingMethodDefs = {
@@ -16,5 +18,10 @@ export const codingMethodDefs = {
     input: codingNoteListInputSchema,
     output: codingNoteListOutputSchema,
     meta: dualTransportMeta(true),
+  }),
+  "coding.projectContextSync": defineHabitatMethod({
+    input: codingProjectContextSyncInputSchema,
+    output: codingProjectContextSyncOutputSchema,
+    meta: dualTransportMeta(false),
   }),
 } as const;

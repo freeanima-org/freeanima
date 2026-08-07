@@ -156,6 +156,28 @@ export async function resolveSubagentProfile(
       row = await getSubagentBySlug(worldId, slug);
     }
     if (!row) {
+      const { resolveProjectAgentOverlay } =
+        await import("@freeanima/host/core/skill/project-overlay.ts");
+      const slug = task.slug?.trim().toLowerCase() ?? "";
+      const hit = slug
+        ? await resolveProjectAgentOverlay(getToolConversationId() ?? null, slug)
+        : null;
+      if (hit) {
+        return {
+          kind: "ephemeral",
+          id: null,
+          slug: hit.slug,
+          title: hit.slug,
+          summary: hit.description,
+          content: hit.content,
+          skills: [],
+          max_turns: null,
+          allowed_tools: hit.allowed_tools ?? [],
+          denied_tools: [],
+          prompt_includes: mergePromptIncludes(undefined, task.prompt_includes),
+          world_id: worldId,
+        };
+      }
       throw new Error(
         task.id != null
           ? `subagent not found: id=${task.id}`

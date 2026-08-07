@@ -86,7 +86,7 @@ describe("system-prompt", () => {
     expect(recall!.order).toBe(26);
   });
 
-  it("work mode omits self and resident but keeps citation/recall/agents", async () => {
+  it("work mode omits self and resident; project AGENTS.md no longer loaded from cwd", async () => {
     listResidentSemanticMemoryMock.mockImplementation((async () => [
       {
         id: 1,
@@ -113,14 +113,14 @@ describe("system-prompt", () => {
       expect(sections.find((s) => s.id === "resident")).toBeUndefined();
       expect(sections.find((s) => s.id === "memory-citation")).toBeDefined();
       expect(sections.find((s) => s.id === "memory-recall")).toBeDefined();
-      expect(sections.find((s) => s.id === "agents")?.content).toContain("Work agents");
+      expect(sections.find((s) => s.id === "agents")).toBeUndefined();
       expect(listResidentSemanticMemoryMock).not.toHaveBeenCalled();
     } finally {
       removeTempDir(dir);
     }
   });
 
-  it("project context segment includes code fence without second-person frame", async () => {
+  it("does not load AGENTS.md from arbitrary cwd (coding-only via Outpost sync)", async () => {
     const dir = createTempDir("anima-agents-");
     try {
       writeFileSync(
@@ -130,10 +130,7 @@ describe("system-prompt", () => {
       );
 
       const parts = await decomposeSystemPromptParts("self layer", dir);
-      expect(parts.agents).toContain("## Project context");
-      expect(parts.agents).toContain("```md");
-      expect(parts.agents).toContain("Use type annotations");
-      expect(parts.agents).not.toContain(RESIDENT_MEMORY_SYSTEM_FRAME);
+      expect(parts.agents).toBe("");
     } finally {
       removeTempDir(dir);
     }

@@ -263,7 +263,10 @@ export async function initConversation(
     platform_extra:
       platform_extra && Object.keys(platform_extra).length > 0 ? platform_extra : undefined,
   };
-  const systemPrompt = await buildSystemPrompt(opts.functions ?? [], cwd, metaDraft);
+  const systemPrompt = await buildSystemPrompt(opts.functions ?? [], cwd, {
+    ...metaDraft,
+    conversation_id: sid,
+  } as typeof metaDraft & { conversation_id: string });
   const meta: ConversationMetaMessage = {
     ...metaDraft,
     system_prompt: systemPrompt,
@@ -428,7 +431,10 @@ export async function rebuildConversationSystemPrompt(conversationId: string): P
   if (!isConversationMeta(meta)) return;
   const functions = meta.functions ?? [];
   const cwd = meta.cwd;
-  const systemPrompt = await buildSystemPrompt(functions, cwd, meta);
+  const systemPrompt = await buildSystemPrompt(functions, cwd, {
+    ...meta,
+    conversation_id: conversationId,
+  } as typeof meta & { conversation_id: string });
   await updateConversationMetaField(conversationId, {
     system_prompt: systemPrompt,
     system_prompt_built_at: new Date().toISOString(),

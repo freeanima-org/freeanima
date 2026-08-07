@@ -84,6 +84,44 @@ Optional: `display_name` (team canonical name).
 
 With a git remote, the file may be omitted and the key computed; the file pins the key for no-remote / non-git projects.
 
+**`.anima/` 边界**：仅项目身份（`project.json` 等）。**不要**放置 `skills/`、`rules/`、`agents/`、`mcp.json` — 这些由社区 `.agents/` 与厂商兼容路径承担。
+
+## 项目 Agent 上下文（仅 Coding 模块）
+
+Habitat **普通 Chat 不**从会话 `cwd` 读 `AGENTS.md`。项目上下文 **只在** `module=coding` 且有 `workspace_root` 时装配：
+
+1. Coding Outpost 在工作区扫盘发现资产
+2. 经 `coding.projectContextSync` 写入 Habitat 会话缓存
+3. system prompt / `skill_load` / `subagent_run` 叠加项目层
+
+### 目录约定
+
+```text
+.agents/                         # 社区默认（Codex / OpenCode / Copilot 等）
+  skills/<name>/SKILL.md         # agentskills.io
+  rules/**/*.md
+  agents/**/*.{md,agent.md}
+  mcp.json
+AGENTS.md                        # 社区通用项目叙事；可读写（agents_md_read / agents_md_write）
+CLAUDE.md                        # Claude Code 兼容
+.claude/skills | .claude/rules | .claude/CLAUDE.md
+.cursor/rules/*.mdc
+.opencode/skills | .opencode/agents
+.mcp.json | .vscode/mcp.json | .cursor/mcp.json
+
+.anima/
+  project.json                   # 仅 identity / stable_key
+```
+
+同名资产优先级：`.agents` → 厂商路径（先声明的来源赢）。
+
+### 项目 MCP（Outpost 桥）
+
+- **发现与启停**在 Coding Outpost（开发机），**不**写入 Habitat 全局 `mcp_servers`
+- HTTP/SSE MCP：Outpost 连接后把 tools `tool.register` 为 `mcp_<server>_<tool>`，Habitat 经现有 remote-tools 桥调用
+- stdio MCP：在 Node/Bun Outpost 环境可连；纯 Tauri WebView 暂记 status（改用 HTTP 或后续壳桥）
+- 工具 `project_mcp_status` 查看连接状态
+
 ## Workbench UI (P0)
 
 交互对标 **Cursor Agents Window**：三栏 **Agents | 对话 | Context**，深色 Agent 优先。
@@ -110,13 +148,18 @@ With a git remote, the file may be omitted and the key computed; the file pins t
 
 Outpost `local_name`s (executed on the **dev machine** inside the Coding WebView / thin Rust IPC):
 
-| Tool           | Role                                                                    |
-| -------------- | ----------------------------------------------------------------------- |
-| `file_list`    | Read-only tree                                                          |
-| `file_read`    | Read file                                                               |
-| `file_search`  | Search files/content                                                    |
-| `file_patch`   | Minimal edit (`old_string` / `new_string`); UI diff review before apply |
-| `terminal_run` | One-shot command (optional `terminal_process`)                          |
+| Tool                 | Role                                                                    |
+| -------------------- | ----------------------------------------------------------------------- |
+| `file_list`          | Read-only tree                                                          |
+| `file_read`          | Read file                                                               |
+| `file_search`        | Search files/content                                                    |
+| `file_patch`         | Minimal edit (`old_string` / `new_string`); UI diff review before apply |
+| `terminal_run`       | One-shot command (optional `terminal_process`)                          |
+| `project_context`    | Discover project agent assets (rules / skills / agents / mcp)           |
+| `agents_md_read`     | Read root `AGENTS.md`                                                   |
+| `agents_md_write`    | Write root `AGENTS.md`                                                  |
+| `project_mcp_status` | Outpost-managed project MCP connection status                           |
+| `mcp_*_*`            | Bridged project MCP tools                                               |
 
 Paths are sandboxed under the session `workspace_root`. Coding sessions must **default to these Outpost tools** — do **not** silently fall back to Habitat-local `file_*` (the server does not have your repo).
 

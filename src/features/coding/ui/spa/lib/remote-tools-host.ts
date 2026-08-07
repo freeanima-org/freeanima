@@ -11,12 +11,15 @@ import {
   browserRemoteInstanceStore,
   type RemoteInstanceStore,
 } from "@freeanima/shared/rpc-contract/instance-store.ts";
+import type { RemoteToolDefInput } from "@freeanima/shared/rpc-contract/frames/tool.ts";
 import { CODING_APP_ID } from "@freeanima/features/coding/shared/constants.ts";
+import type { ProjectMcpServer } from "@freeanima/features/coding/domain";
 import { executeCodingTool } from "./tools-executor.ts";
+import { getProjectMcpManager } from "./project-mcp-manager.ts";
 
 const APP_ID = CODING_APP_ID;
 
-const REGISTERED_TOOLS = [
+const BASE_TOOLS: RemoteToolDefInput[] = [
   {
     local_name: "file_list",
     description: "列出工作区目录树（只读；相对 workspace_root）",
@@ -28,7 +31,7 @@ const REGISTERED_TOOLS = [
         limit: { type: "integer", default: 500 },
       },
     },
-    return_kind: "json" as const,
+    return_kind: "json",
   },
   {
     local_name: "file_read",
@@ -42,7 +45,7 @@ const REGISTERED_TOOLS = [
       },
       required: ["path"],
     },
-    return_kind: "text" as const,
+    return_kind: "text",
   },
   {
     local_name: "file_search",
@@ -61,7 +64,7 @@ const REGISTERED_TOOLS = [
       },
       required: ["pattern"],
     },
-    return_kind: "text" as const,
+    return_kind: "text",
   },
   {
     local_name: "file_patch",
@@ -76,7 +79,7 @@ const REGISTERED_TOOLS = [
       },
       required: ["path", "old_string", "new_string"],
     },
-    return_kind: "json" as const,
+    return_kind: "json",
   },
   {
     local_name: "terminal_run",
@@ -92,7 +95,38 @@ const REGISTERED_TOOLS = [
       },
       required: ["command"],
     },
-    return_kind: "text" as const,
+    return_kind: "text",
+  },
+  {
+    local_name: "project_context",
+    description:
+      "发现并返回工作区项目 Agent 上下文（.agents / AGENTS.md / CLAUDE.md / .cursor / .opencode 等；不含 .anima skills）",
+    parameters: { type: "object", properties: {} },
+    return_kind: "json",
+  },
+  {
+    local_name: "agents_md_read",
+    description: "读取工作区根 AGENTS.md（不存在则 missing=true）",
+    parameters: { type: "object", properties: {} },
+    return_kind: "json",
+  },
+  {
+    local_name: "agents_md_write",
+    description: "写入工作区根 AGENTS.md（社区通用项目叙事；可创建）",
+    parameters: {
+      type: "object",
+      properties: {
+        content: { type: "string", description: "完整 Markdown 内容" },
+      },
+      required: ["content"],
+    },
+    return_kind: "json",
+  },
+  {
+    local_name: "project_mcp_status",
+    description: "列出 Outpost 管理的项目 MCP 连接状态（不经 Habitat 全局 mcp_servers）",
+    parameters: { type: "object", properties: {} },
+    return_kind: "json",
   },
 ];
 
@@ -104,7 +138,15 @@ export type CodingRemoteToolsStatus = {
 export type RemoteToolsHostHandle = {
   stop: () => void;
   getStatus: () => CodingRemoteToolsStatus;
+  /** 按发现结果启停项目 MCP，并重新 tool.register（桥转发） */
+  refreshProjectMcp: (servers: ProjectMcpServer[]) => Promise<void>;
 };
+
+let activeHandle: RemoteToolsHostHandle | null = null;
+
+export function getCodingRemoteToolsHost(): RemoteToolsHostHandle | null {
+  return activeHandle;
+}
 
 function resolveInstanceStore(habitatUrl: string): RemoteInstanceStore {
   const shell = typeof window !== "undefined" ? window.portalShell : undefined;
@@ -144,6 +186,7 @@ export function startCodingRemoteToolsHost(opts?: {
   const habitatUrl = resolveHabitatUrl(opts?.habitatUrl);
   const httpUrl = opts?.httpUrl ?? window.portalShell?.apiOrigin ?? undefined;
   let attach: RemoteToolsAttachHandle | null = null;
+  const mcp = getProjectMcpManager();
 
   const publish = (): void => {
     const status: CodingRemoteToolsStatus = {
@@ -153,27 +196,52 @@ export function startCodingRemoteToolsHost(opts?: {
     opts?.onStatus?.(status);
   };
 
+  async function reregisterAllTools(): Promise<void> {
+    if (!attach?.isConnected()) return;
+    const client = await attach.getRpcStreamClient();
+    const tools = [...BASE_TOOLS, ...mcp.toRemoteToolDefs()];
+    await client.request("tool.register", {
+      tools,
+      private: false,
+    });
+  }
+
   attach = createRemoteToolsHabitatAttach({
     appId: APP_ID,
     habitatUrl,
     ...(httpUrl ? { httpUrl } : {}),
     remoteAuthToken,
     instanceStore: resolveInstanceStore(habitatUrl),
-    tools: REGISTERED_TOOLS,
+    tools: BASE_TOOLS,
     toolsetPrivate: false,
-    onToolCall: async (localName, args) => executeCodingTool(localName, args),
+    onToolCall: async (localName, args) => {
+      if (localName === "project_mcp_status") {
+        return JSON.stringify({ ok: true, servers: mcp.listStatuses() });
+      }
+      if (localName.startsWith("mcp_")) {
+        return mcp.callTool(localName, args);
+      }
+      return executeCodingTool(localName, args);
+    },
     onConnected: async (_client, instanceId) => {
       console.log("coding remote tools connected", instanceId);
+      try {
+        await reregisterAllTools();
+      } catch (e) {
+        console.warn("coding tool re-register failed", e);
+      }
       publish();
     },
   });
 
   publish();
 
-  return {
+  const handle: RemoteToolsHostHandle = {
     stop: () => {
+      void mcp.stopAll();
       attach?.stop();
       attach = null;
+      if (activeHandle === handle) activeHandle = null;
       const empty = { instance_id: "", remote_tools_connected: false };
       opts?.onStatus?.(empty);
     },
@@ -181,5 +249,11 @@ export function startCodingRemoteToolsHost(opts?: {
       instance_id: attach?.getInstanceId() ?? "",
       remote_tools_connected: attach?.isConnected() ?? false,
     }),
+    refreshProjectMcp: async (servers) => {
+      await mcp.reconcile(servers);
+      await reregisterAllTools();
+    },
   };
+  activeHandle = handle;
+  return handle;
 }

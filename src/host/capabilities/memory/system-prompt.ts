@@ -1,11 +1,8 @@
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { RESIDENT_TOP_N } from "@freeanima/host/core/db/pg/semantic-memory/types";
 import { listResidentSemanticMemory } from "@freeanima/host/core/db/pg/semantic-memory";
 
 import { formatResidentMemoryLine } from "./memory-reference.ts";
 
-const MAX_AGENTS_CHARS = 4000;
 const PROMPT_CODE_FENCE_LANG = "md";
 
 /** Outer second-person frame for the resident-memory system prompt segment */
@@ -19,22 +16,9 @@ function wrapPromptSection(heading: string, inner: string, frame?: string): stri
   return `${header}\n\`\`\`${PROMPT_CODE_FENCE_LANG}\n${body}\n\`\`\``;
 }
 
-function readAgents(cwd: string | null | undefined): string {
-  if (!cwd) return "";
-  const agentsPath = join(cwd, "AGENTS.md");
-  if (!existsSync(agentsPath)) return "";
-  try {
-    let content = readFileSync(agentsPath, "utf-8").trim();
-    if (!content) return "";
-    if (content.length > MAX_AGENTS_CHARS) {
-      const head = content.slice(0, Math.floor(MAX_AGENTS_CHARS * 0.7));
-      const tail = content.slice(-Math.floor(MAX_AGENTS_CHARS * 0.2));
-      content = `${head}\n\n[... truncated ...]\n\n${tail}`;
-    }
-    return wrapPromptSection("Project context", content);
-  } catch {
-    return "";
-  }
+function readAgents(_cwd: string | null | undefined): string {
+  // 项目 AGENTS.md / rules 仅 Coding 模块经 Outpost sync 注入；见 coding project-context hooks。
+  return "";
 }
 
 async function renderResidentMemory(): Promise<string> {

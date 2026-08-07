@@ -22,6 +22,11 @@ import {
 import { createProjectCodingNote, ensureCodingConversation } from "./lib/habitat-session.ts";
 import { loadProjectJsonFromWorkspace, type ParsedProjectJson } from "./lib/project-json.ts";
 import {
+  discoverWorkspaceProjectContext,
+  syncProjectContextToHabitat,
+} from "./lib/project-context.ts";
+import {
+  getCodingRemoteToolsHost,
   startCodingRemoteToolsHost,
   type CodingRemoteToolsStatus,
 } from "./lib/remote-tools-host.ts";
@@ -225,6 +230,34 @@ export function CodingApp() {
       cancelled = true;
     };
   }, [activeAgent, attach.instance_id, project?.stable_key, project?.display_name]);
+
+  /** 有 conversation + workspace 时发现项目上下文并 sync 到 Habitat */
+  useEffect(() => {
+    const conversationId = sessionMeta?.conversation_id ?? activeAgent?.conversationId;
+    if (!conversationId || !workspaceRoot) return;
+    const backend = createPortalShellWorkspaceBackend();
+    if (!backend) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const sandbox = new WorkspaceSandbox(workspaceRoot, backend);
+        const snapshot = await discoverWorkspaceProjectContext(sandbox);
+        if (cancelled) return;
+        await syncProjectContextToHabitat({ conversationId, snapshot });
+        const host = getCodingRemoteToolsHost();
+        if (host && snapshot.mcpServers.length > 0) {
+          await host.refreshProjectMcp(snapshot.mcpServers);
+        } else if (host) {
+          await host.refreshProjectMcp([]);
+        }
+      } catch (e) {
+        console.warn("project context sync failed", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionMeta?.conversation_id, activeAgent?.conversationId, workspaceRoot]);
 
   const bindConversation = useCallback(
     async (_firstMessage: string): Promise<string | null> => {
