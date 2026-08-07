@@ -144,6 +144,10 @@ export function applyStreamReplyEvent(
       effects.push({ kind: "tool_round_live", calls: buffer.snapshot() });
       break;
     }
+    case "tool_progress":
+      buffer.addProgress(event.data.name, event.data.content);
+      effects.push({ kind: "tool_round_live", calls: buffer.snapshot() });
+      break;
     case "tool_result":
       buffer.addResult(event.data.name, event.data.content);
       effects.push({ kind: "tool_round_live", calls: buffer.snapshot() });

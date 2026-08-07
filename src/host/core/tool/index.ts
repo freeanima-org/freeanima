@@ -45,6 +45,8 @@ export {
 } from "./policy-port.ts";
 export {
   runWithToolContext,
+  setToolProgressReporter,
+  reportToolProgress,
   getToolCallerAuth,
   resolveToolCallerSubjectId,
   getToolConversationId,
@@ -55,7 +57,11 @@ export {
   grantExecutableTools,
   isExecutableTool,
 } from "./tool-context.ts";
-export type { RunWithToolContextOpts, ToolContextKind } from "./tool-context.ts";
+export type {
+  RunWithToolContextOpts,
+  ToolContextKind,
+  ToolProgressReporter,
+} from "./tool-context.ts";
 export type { ToolSet, ToolSetView } from "./toolset.ts";
 export {
   DEFAULT_CONVERSATION_TOOLSETS,

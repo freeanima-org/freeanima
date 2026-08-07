@@ -136,7 +136,7 @@ function rowPayload(row: Awaited<ReturnType<typeof getSubagent>>) {
 export function registerSubagentTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "subagent",
-    "Named subagent profiles and synchronous dispatch (named slug|id, or ephemeral instructions+allowed_tools)",
+    "Named subagent profiles and dispatch (named slug|id, or ephemeral instructions+allowed_tools); returns synchronously while projecting live child steps to the parent Chat strip",
     attachToolReturns(
       [
         {
@@ -334,7 +334,7 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
         {
           name: "subagent_run",
           description:
-            "Run subagent(s) synchronously. Named: pass slug|id (tools from profile). Ephemeral: omit slug/id, pass instructions + allowed_tools (hard ceiling; empty array = no tools). Always set title for audit UI. Optional prompt_includes: self|world|time (opt-in; default none). No toolset_load.",
+            "Run subagent(s); returns when finished. Named: pass slug|id (tools from profile). Ephemeral: omit slug/id, pass instructions + allowed_tools (hard ceiling; empty array = no tools). Always set title for audit UI. Optional prompt_includes: self|world|time (opt-in; default none). No toolset_load. While running, child tool steps stream to the parent Chat tool strip.",
           parameters: {
             type: "object",
             properties: {

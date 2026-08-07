@@ -9,8 +9,9 @@ Named subagent profiles are stored as `entities` (`primary_component = subagent`
 ## Execution path
 
 - `subagent_run` → `runAutoLlm({ runKind: "subagent" })`
-- Fresh message context; the result is only the tool return value (not written to parent `messages`, not light-sleep input)
-- Return payload may include compact `steps[]` (`name` / `title` / `status`) for parent Chat multi-level expand; still not written into the parent message stream
+- Fresh message context; the **final** result is only the tool return value (not written to parent `messages`, not light-sleep input). The parent turn still waits for the tool to finish before the next LLM hop.
+- While running, compact `steps[]` (`name` / `title` / `status`) are projected to the parent Chat tool strip via engine `tool_progress` → `tool_round_live` (same `tool_call_id`; status stays `running`). Child turns are still not written into parent `messages`.
+- Return payload may include the same compact `steps[]` for parent Chat multi-level expand
 - `depth=1`: child runs HARD_DENY all `subagent_*` tools
 
 ## Named vs ephemeral

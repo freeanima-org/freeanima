@@ -35,6 +35,12 @@ function statusClass(status: string) {
   return "text-green-700 dark:text-green-300";
 }
 
+function resultRowStatus(status: string | undefined): string {
+  if (status === "error") return "error";
+  if (status === "running" || status === "pending") return "running";
+  return "done";
+}
+
 function callIntentTitle(args: Record<string, unknown> | undefined): string | undefined {
   const v = args?._title;
   if (typeof v !== "string") return undefined;
@@ -65,13 +71,6 @@ function truncateResult(text: string, max = 8000) {
   return `${text.slice(0, max)}\n${m.habitat_message_truncated()}`;
 }
 
-function pickHeadline(calls: DisplayToolCall[]): string {
-  const active = calls.find((c) => c.status === "running" || c.status === "pending");
-  if (active) return callLabel(active);
-  const last = calls.at(-1);
-  return last ? callLabel(last) : m.habitat_message_tool_calls({ count: String(calls.length) });
-}
-
 function parseSubagentResults(result: string | undefined): SubagentRunResult[] | null {
   if (!result) return null;
   try {
@@ -87,18 +86,64 @@ function parseSubagentResults(result: string | undefined): SubagentRunResult[] |
   }
 }
 
+function stepLabel(step: SubagentStep): string {
+  return step.title?.trim() || step.name;
+}
+
+function latestChildTitle(results: SubagentRunResult[] | null): string | undefined {
+  if (!results || results.length === 0) return undefined;
+  let lastStep: SubagentStep | undefined;
+  let lastRunning: SubagentStep | undefined;
+  for (const r of results) {
+    const steps = r.steps;
+    if (!steps) continue;
+    for (const s of steps) {
+      lastStep = s;
+      if (s.status === "running" || s.status === "pending") lastRunning = s;
+    }
+  }
+  const pick = lastRunning ?? lastStep;
+  return pick ? stepLabel(pick) : undefined;
+}
+
+function collapsedSummary(call: DisplayToolCall): string {
+  const active = call.status === "running" || call.status === "pending";
+  if (active && call.name === "subagent_run") {
+    const child = latestChildTitle(parseSubagentResults(call.result));
+    if (child) return child;
+  }
+  return callLabel(call);
+}
+
+function pickHeadline(calls: DisplayToolCall[]): string {
+  const active = calls.find((c) => c.status === "running" || c.status === "pending");
+  if (active) return collapsedSummary(active);
+  const last = calls.at(-1);
+  return last ? callLabel(last) : m.habitat_message_tool_calls({ count: String(calls.length) });
+}
+
 function ToolCallRow({ call }: { call: DisplayToolCall }) {
   const [open, setOpen] = useState(false);
   const intent = callIntentTitle(call.args);
   const displayArgs = call.args ? formatArgsForDisplay(call.args) : undefined;
   const subagentResults = call.name === "subagent_run" ? parseSubagentResults(call.result) : null;
+  const isActive = call.status === "running" || call.status === "pending";
+  const rowLabel = open ? (intent ?? call.name) : collapsedSummary(call);
+  const showNameHint = !open && isActive && rowLabel !== call.name && rowLabel !== intent;
 
   return (
     <Collapsible isExpanded={open} onExpandedChange={setOpen}>
       <CollapsibleTrigger className="w-full text-left flex items-center gap-2 px-1 py-1 rounded-md hover:bg-muted/50 min-w-0">
         <span className={`shrink-0 ${statusClass(call.status)}`}>{statusIcon(call.status)}</span>
-        <span className="truncate font-medium">{intent ?? call.name}</span>
-        {intent ? (
+        <span className={`truncate font-medium ${isActive && !open ? "animate-pulse" : ""}`}>
+          {rowLabel}
+        </span>
+        {intent && (!isActive || open) ? (
+          <span className="font-mono text-foreground/40 text-[10px] shrink-0 truncate">
+            {call.name}
+          </span>
+        ) : null}
+        {showNameHint ? (
           <span className="font-mono text-foreground/40 text-[10px] shrink-0 truncate">
             {call.name}
           </span>
@@ -123,10 +168,8 @@ function ToolCallRow({ call }: { call: DisplayToolCall }) {
                   className="rounded-md border border/40 px-2 py-1.5 space-y-1"
                 >
                   <div className="flex items-center gap-2 font-medium min-w-0">
-                    <span
-                      className={`shrink-0 ${statusClass(r.status === "error" ? "error" : "done")}`}
-                    >
-                      {statusIcon(r.status === "error" ? "error" : "done")}
+                    <span className={`shrink-0 ${statusClass(resultRowStatus(r.status))}`}>
+                      {statusIcon(resultRowStatus(r.status))}
                     </span>
                     <span className="truncate">{r.slug ?? "ephemeral"}</span>
                     {typeof r.tool_calls === "number" ? (

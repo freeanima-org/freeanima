@@ -23,6 +23,7 @@ function isErrorResult(content: string): boolean {
 
 type ToolRoundEntry =
   | { kind: "begin"; name: string; args: Record<string, unknown>; tool_call_id: string }
+  | { kind: "progress"; name: string; content: string }
   | { kind: "result"; name: string; content: string }
   | { kind: "error"; content: string };
 
@@ -39,6 +40,12 @@ export class ToolRoundBuffer {
       args,
       tool_call_id: `stream-${this.nextCallId++}`,
     });
+  }
+
+  /** 运行中 partial result（保持 status=running） */
+  addProgress(name: string, content: string): void {
+    if (isClarifyTool(name)) return;
+    this.entries.push({ kind: "progress", name, content });
   }
 
   addResult(name: string, content: string): void {
@@ -81,10 +88,13 @@ export class ToolRoundBuffer {
         });
         continue;
       }
+      if (entry.kind === "progress") {
+        const call = calls.find((c) => c.name === entry.name && c.status === "running");
+        if (call) call.result = entry.content;
+        continue;
+      }
       if (entry.kind === "result") {
-        const call = calls.find(
-          (c) => c.name === entry.name && c.status === "running" && c.result === undefined,
-        );
+        const call = calls.find((c) => c.name === entry.name && c.status === "running");
         if (call) {
           call.result = entry.content;
           call.status = isErrorResult(entry.content) ? "error" : "done";

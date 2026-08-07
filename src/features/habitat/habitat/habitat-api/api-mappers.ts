@@ -38,6 +38,9 @@ export function mapStreamEventToApi(ev: StreamEvent): StreamApiEvent {
       };
     case "interrupted":
       return { event: "interrupted", data: { reason: ev.data.reason } };
+    case "tool_progress":
+      // 进度经 stream-reply → tool_round_live → display_append；Habitat raw SSE 用 ping 占位
+      return { event: "ping", data: {} };
     case "tool_round_end":
     case "llm_debug":
       return { event: "ping", data: {} };

@@ -36,6 +36,7 @@ import {
   getToolRegistry,
   getToolConversationId,
   isExecutableTool,
+  setToolProgressReporter,
   type ToolSetRegistry,
 } from "@freeanima/host/core/tool";
 import { REPAIR_REASON_INTERRUPT } from "@freeanima/host/core/llm";
@@ -286,6 +287,7 @@ export async function run(messages: StoredMessage[], opts?: EngineOpts): Promise
         throw new EngineTurnInterrupted(ev.data.reason);
       case "awaiting_clarify":
       case "tool_begin":
+      case "tool_progress":
       case "tool_result":
       case "tool_error":
       case "tool_round_end":
@@ -304,6 +306,7 @@ export type StreamEvent =
   | { event: "token"; data: { content: string } }
   | { event: "content_replace"; data: { content: string } }
   | { event: "tool_begin"; data: { name: string; args: Record<string, unknown> } }
+  | { event: "tool_progress"; data: { name: string; content: string } }
   | { event: "tool_result"; data: { name: string; content: string } }
   | { event: "tool_error"; data: { name: string; content: string } }
   | { event: "tool_round_end"; data: { tool_count: number } }
@@ -321,6 +324,56 @@ export type StreamEvent =
 
 function hookStreamToEngine(ev: HookStreamEvent): StreamEvent {
   return ev as StreamEvent;
+}
+
+/**
+ * Run a long tool handler while yielding `tool_progress` events from ALS
+ * `reportToolProgress` (e.g. subagent live steps). Conversation turns only.
+ */
+async function* runToolHandlerWithProgress(
+  fnName: string,
+  invoke: () => Promise<string>,
+): AsyncGenerator<StreamEvent, string> {
+  const queue: string[] = [];
+  let wake: (() => void) | null = null;
+  const report = (content: string): void => {
+    queue.push(content);
+    const w = wake;
+    wake = null;
+    w?.();
+  };
+  setToolProgressReporter(report);
+  try {
+    const pending = invoke().then(
+      (value) => ({ ok: true as const, value }),
+      (error: unknown) => ({ ok: false as const, error }),
+    );
+    while (true) {
+      const waitProgress = new Promise<void>((resolve) => {
+        if (queue.length > 0) {
+          resolve();
+          return;
+        }
+        wake = resolve;
+      });
+      const raced = await Promise.race([
+        pending.then((r) => ({ tag: "done" as const, r })),
+        waitProgress.then(() => ({ tag: "progress" as const })),
+      ]);
+      while (queue.length > 0) {
+        const content = queue.shift();
+        if (content != null) {
+          yield { event: "tool_progress", data: { name: fnName, content } };
+        }
+      }
+      if (raced.tag === "done") {
+        if (!raced.r.ok) throw raced.r.error;
+        return raced.r.value;
+      }
+    }
+  } finally {
+    setToolProgressReporter(undefined);
+  }
 }
 
 export async function* runStream(
@@ -534,8 +587,18 @@ export async function* runStream(
               result = toolError(validated.error);
             } else {
               try {
-                result = await Promise.resolve(tool.handler(omitToolCallTitle(validated.data)));
-                if (typeof result !== "string") result = toolResult(result);
+                const invoke = async (): Promise<string> => {
+                  const raw = await Promise.resolve(
+                    tool.handler(omitToolCallTitle(validated.data)),
+                  );
+                  return typeof raw === "string" ? raw : toolResult(raw);
+                };
+                // 仅父对话注入进度通道；auto_llm 子循环继承父 reporter，勿覆盖
+                if (opts?.llm_kind === "conversation") {
+                  result = yield* runToolHandlerWithProgress(fnName, invoke);
+                } else {
+                  result = await invoke();
+                }
                 failureCounts.delete(fnName);
               } catch (exc) {
                 result = toolResult({ error: `${fnName} failed: ${exc}` });
