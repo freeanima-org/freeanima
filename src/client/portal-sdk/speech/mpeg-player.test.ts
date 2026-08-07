@@ -12,6 +12,7 @@ import {
 const originalAudio = globalThis.Audio;
 const originalCreateObjectURL = URL.createObjectURL;
 const originalRevokeObjectURL = URL.revokeObjectURL;
+const originalMediaSource = globalThis.MediaSource;
 
 function createStream(chunks: Uint8Array[]): ReadableStream<Uint8Array> {
   return new ReadableStream({
@@ -80,6 +81,12 @@ afterEach(() => {
   globalThis.Audio = originalAudio;
   URL.createObjectURL = originalCreateObjectURL;
   URL.revokeObjectURL = originalRevokeObjectURL;
+  if (originalMediaSource === undefined) {
+    // @ts-expect-error test cleanup — 避免 MediaSource mock 泄漏到其它用例
+    delete globalThis.MediaSource;
+  } else {
+    globalThis.MediaSource = originalMediaSource;
+  }
 });
 
 describe("consumeMpegStream", () => {
