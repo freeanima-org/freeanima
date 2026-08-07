@@ -90,6 +90,10 @@ export async function bootRuntimePhase(
     getSkillRegistry: () => catalog.skills,
   });
 
+  const { bindCodingProjectOverlays } =
+    await import("@freeanima/features/coding/domain/bind-overlays.ts");
+  bindCodingProjectOverlays();
+
   initHabitatRouter();
   registerFeatures(builtinFeaturePlugins);
 

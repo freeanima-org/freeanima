@@ -58,16 +58,32 @@ export async function loadSkillIntoContext(skills: SkillRegistry, name: string):
   const trimmed = name.trim();
   if (!trimmed) return toolError("Skill name cannot be empty");
   const def = skills.get(trimmed);
-  if (!def) return toolError(`Skill '${trimmed}' is not registered`);
-  const content = def.content.trim();
-  if (!content) return toolError(`Skill '${trimmed}' content is empty`);
-  return toolResult({
-    skill: trimmed,
-    description: def.description,
-    origin: def.origin,
-    allowed_tools: def.allowed_tools,
-    content,
-  });
+  if (def) {
+    const content = def.content.trim();
+    if (!content) return toolError(`Skill '${trimmed}' content is empty`);
+    return toolResult({
+      skill: trimmed,
+      description: def.description,
+      origin: def.origin,
+      allowed_tools: def.allowed_tools,
+      content,
+    });
+  }
+
+  const { getToolConversationId } = await import("@freeanima/host/core/tool/tool-context.ts");
+  const { resolveProjectSkillOverlay } = await import("./project-overlay.ts");
+  const hit = await resolveProjectSkillOverlay(getToolConversationId() ?? null, trimmed);
+  if (hit?.content?.trim()) {
+    return toolResult({
+      skill: hit.name,
+      description: hit.description,
+      origin: "project",
+      allowed_tools: [],
+      content: hit.content.trim(),
+      path: hit.path,
+    });
+  }
+  return toolError(`Skill '${trimmed}' is not registered`);
 }
 
 export function listSkillsForTool(skills: SkillRegistry): string {

@@ -4,9 +4,12 @@ import type {
   CodingNoteCreateInput,
   CodingNoteListInput,
   CodingNoteRowPayload,
+  CodingProjectContextSyncInput,
 } from "@freeanima/shared/rpc-contract/frames/coding.ts";
+import type { ProjectAgentContextSnapshot } from "@freeanima/features/coding/domain";
 
 import { createCodingNote, listCodingNotes, type CodingNoteRow } from "../domain/note-store.ts";
+import { setProjectAgentContext } from "../domain/project-context-cache.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 function assertPg(_deps: RuntimeDeps): void {
@@ -51,4 +54,23 @@ export async function serviceCodingNoteList(deps: RuntimeDeps, input: CodingNote
     }),
   );
   return { items: items.map(toPayload), count };
+}
+
+export async function serviceProjectContextSync(
+  _deps: RuntimeDeps,
+  input: CodingProjectContextSyncInput,
+) {
+  const snapshot = input.snapshot as unknown as ProjectAgentContextSnapshot;
+  setProjectAgentContext(input.conversation_id, snapshot);
+  // 清空缓存 prompt，下次 turn / ensureSystemPromptFresh 会全量重建并读到新 snapshot
+  try {
+    const { patchConversationMeta } = await import("@freeanima/host/core/db/pg/conversation");
+    await patchConversationMeta(input.conversation_id, {
+      system_prompt: "",
+      system_prompt_built_at: undefined,
+    });
+  } catch {
+    // PG 未就绪时仅内存缓存
+  }
+  return { ok: true as const, conversation_id: input.conversation_id };
 }

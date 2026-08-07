@@ -4,6 +4,7 @@ import { registerToolsetSystemPromptHooks } from "@freeanima/host/capabilities/t
 import { registerWorldContextSystemPromptHook } from "@freeanima/host/capabilities/tools/world-prompt-hooks";
 import { registerSkillsCatalogSystemPromptHook } from "@freeanima/host/capabilities/tools/skills-prompt-hooks";
 import { registerSubagentCatalogSystemPromptHook } from "@freeanima/features/subagent/domain";
+import { registerCodingProjectContextPromptHook } from "@freeanima/features/coding/domain/project-context-prompt-hooks.ts";
 import { buildMemorySystemPromptSections } from "@freeanima/host/capabilities/memory/system-prompt-sections";
 import { loadSelfLayerPrompt } from "@freeanima/host/capabilities/self";
 import type { ToolSetRegistry } from "@freeanima/host/core/tool";
@@ -172,6 +173,7 @@ export function registerSystemPromptHooks(opts: {
   getSkillRegistry?: () => SkillRegistry;
 }): void {
   registerMemorySystemPromptHooks(opts.hookRegistry);
+  registerCodingProjectContextPromptHook(opts.hookRegistry);
   registerWorldContextSystemPromptHook(opts.hookRegistry);
   registerToolsetSystemPromptHooks(opts.hookRegistry, opts.getToolRegistry);
   registerSubagentCatalogSystemPromptHook(opts.hookRegistry);

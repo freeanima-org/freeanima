@@ -1,8 +1,14 @@
 import {
+  discoverProjectAgentContext,
+  type ProjectAgentContextSnapshot,
+} from "@freeanima/features/coding/domain";
+
+import {
   createPortalShellWorkspaceBackend,
   WorkspaceSandbox,
   type WorkspaceFsBackend,
 } from "./workspace-fs.ts";
+import { projectVfsFromSandbox } from "./workspace-vfs.ts";
 
 function toolResult(value: unknown): string {
   return typeof value === "string" ? value : JSON.stringify(value);
@@ -262,6 +268,33 @@ export async function executeCodingTool(
         ok: true,
       });
       return out.text;
+    }
+    case "project_context": {
+      const vfs = projectVfsFromSandbox(sandbox);
+      const ctx = await discoverProjectAgentContext(vfs);
+      const snapshot: ProjectAgentContextSnapshot = {
+        ...ctx,
+        discovered_at: new Date().toISOString(),
+        workspace_root: sandbox.workspaceRoot,
+      };
+      return toolResult(snapshot);
+    }
+    case "agents_md_write": {
+      const content = typeof args.content === "string" ? args.content : "";
+      if (!content.trim()) return toolError("content 不能为空");
+      const out = await sandbox.writeTextRel("AGENTS.md", content);
+      if (!out.ok) return toolError(out.error);
+      return toolResult({ ok: true, path: "AGENTS.md", bytes: content.length });
+    }
+    case "agents_md_read": {
+      const out = await sandbox.readTextRel("AGENTS.md");
+      if (!out.ok) {
+        if (out.error.includes("read failed") || out.error.includes("ENOENT")) {
+          return toolResult({ ok: true, path: "AGENTS.md", content: "", missing: true });
+        }
+        return toolError(out.error);
+      }
+      return toolResult({ ok: true, path: "AGENTS.md", content: out.text, missing: false });
     }
     default:
       return toolError(`未知工具: ${localName}`);

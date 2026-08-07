@@ -25,7 +25,7 @@ title: Identity
 | Vault                                    | Lifeline (runtime injection; LLM sees metadata, never plaintext)                                                                                                         |
 | Gateway                                  | Ears and mouth (Discord / WeChat) — not a Portal                                                                                                                         |
 | HookRegistry (`on` / `subscribe`)        | In-process lifecycle: intercept (`on`, awaited) vs side-channel notify (`subscribe`, not awaited); sleep uses Pipeline Runner — see [`architecture.md`](architecture.md) |
-| Project narrative files like `AGENTS.md` | Anchor for project context                                                                                                                                               |
+| Project narrative files like `AGENTS.md` | Anchor for **Coding** project context (Outpost-synced; not loaded for ordinary Chat cwd)                                                                                 |
 
 ---
 
