@@ -20,7 +20,8 @@ import {
   isLlmTimeoutError,
 } from "../request-timeouts.ts";
 import { mapOpenAiCompatibleError } from "../map-error.ts";
-import { defaultModelInfo } from "../catalog.ts";
+import { defaultModelInfo, defaultModelInfoEnriched } from "../catalog.ts";
+import { enrichCatalogFromModelsDev } from "../models-dev/enrich.ts";
 import { normalizeUsage } from "../usage.ts";
 
 export const OPENAI_RESPONSES_FORMAT_ID = LLM_FORMAT_OPENAI_RESPONSES;
@@ -246,14 +247,14 @@ export class OpenAiResponsesBackend extends LlmBackend {
       for await (const m of page) {
         out.push(defaultModelInfo(m.id));
       }
-      return out;
+      return enrichCatalogFromModelsDev(out, { preferModelsDevLimits: true });
     } catch {
       return [];
     }
   }
 
   async getModel(model: string, _context: BackendContext): Promise<ModelInfo | null> {
-    return defaultModelInfo(model);
+    return defaultModelInfoEnriched(model);
   }
 
   mapError(err: unknown, _context: BackendContext, meta?: { providerId?: string }): ProviderError {

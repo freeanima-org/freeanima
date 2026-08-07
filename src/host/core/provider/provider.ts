@@ -70,6 +70,10 @@ export class LlmProvider {
     return this.formatForModel(model).getModel(model, this.context);
   }
 
+  listModels(): Promise<ModelInfo[]> {
+    return this.backend.listModels(this.context);
+  }
+
   mapError(err: unknown, model?: string): ProviderError {
     const format = model ? this.formatForModel(model) : this.backend;
     return format.mapError(err, this.context, { providerId: this.id });

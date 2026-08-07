@@ -8,16 +8,25 @@ const fetchModelCatalogMock = mock(async (): Promise<ModelInfo[]> => {
   throw new Error("500 status code (no body)");
 });
 
+const defaultModelInfoImpl = (model: string): ModelInfo => ({
+  model,
+  contextWindow: 128_000,
+  maxOutputTokens: 8192,
+  supportedParams: ["temperature", "maxOutputTokens", "tools", "streaming"],
+});
+
 mock.module("./catalog.ts", () => ({
-  defaultModelInfo: (model: string): ModelInfo => ({
-    model,
-    contextWindow: 128_000,
-    maxOutputTokens: 8192,
-    supportedParams: ["temperature", "maxOutputTokens", "tools", "streaming"],
-  }),
+  defaultModelInfo: defaultModelInfoImpl,
+  defaultModelInfoEnriched: async (model: string): Promise<ModelInfo> =>
+    defaultModelInfoImpl(model),
   fetchModelCatalog: fetchModelCatalogMock,
   findModelInCatalog: (catalog: ModelInfo[], model: string) =>
     catalog.find((entry) => entry.model === model) ?? null,
+}));
+
+mock.module("./models-dev/enrich.ts", () => ({
+  enrichCatalogFromModelsDev: async (catalog: ModelInfo[]) => catalog,
+  enrichModelInfoFromModelsDev: async (info: ModelInfo) => info,
 }));
 
 const { OpenAiCompatibleBackend } = await import("./backend.ts");

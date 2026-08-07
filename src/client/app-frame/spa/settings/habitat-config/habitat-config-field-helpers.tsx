@@ -4,7 +4,7 @@ import { Button, Input, Label } from "@freeanima/ui-kit";
 import { FormToggle } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 
 export const habitatConfigSelectClassName =
-  "border-input flex h-8 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30";
+  "border-input flex h-8 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30 [color-scheme:light] dark:[color-scheme:dark] [&_option]:bg-popover [&_option]:text-popover-foreground";
 
 export function hubConfigTextField(
   label: string,

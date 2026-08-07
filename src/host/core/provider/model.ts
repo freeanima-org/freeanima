@@ -27,12 +27,20 @@ export const EXTENDED_PARAM_KEYS = [
   "streaming",
 ] as const satisfies readonly ExtendedParamKey[];
 
+/** Optional pricing metadata (USD per 1M tokens), typically from models.dev. */
+export type ModelCostInfo = {
+  input?: number;
+  output?: number;
+};
+
 export type ModelInfo = {
   model: string;
   contextWindow: number;
   maxOutputTokens: number;
   supportedParams?: SupportedParam[];
   label?: string;
+  /** USD per 1M tokens when known (e.g. models.dev enrich). */
+  cost?: ModelCostInfo;
 };
 
 export function modelSupports(info: ModelInfo, key: SupportedParam): boolean {

@@ -26,6 +26,7 @@ import {
   replaceHabitatConfigSection,
 } from "../habitat-api/handlers/config.ts";
 import { testConfigConnection } from "../habitat-api/handlers/config-test-connection.ts";
+import { listProviderModels } from "../habitat-api/handlers/config-list-provider-models.ts";
 import {
   createConversation,
   getConversationInfo,
@@ -244,6 +245,13 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
           provider_id?: string;
         },
       ),
+    ),
+  ),
+  defineHabitatRouteFromDef(
+    "config.listProviderModels",
+    habitatMethodDefs["config.listProviderModels"],
+    wrapConsoleLegacyHandler((payload) =>
+      listProviderModels(payload as { provider_id: string; query?: string; limit?: number }),
     ),
   ),
   defineHabitatRouteFromDef(

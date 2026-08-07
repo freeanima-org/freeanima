@@ -4,6 +4,7 @@ export type {
   ExtendedParamKey,
   LlmCallParams,
   LlmParamKey,
+  ModelCostInfo,
   ModelInfo,
   SupportedParam,
 } from "./model.ts";

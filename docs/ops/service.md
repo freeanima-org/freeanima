@@ -56,6 +56,17 @@ Each `llm.providers.<id>` entry is a **Connection** (credentials + endpoint). Co
 - There is **no** built-in `openai` preset.
 - **API keys**: plaintext in config, or `vault(...)` / `env(...)` references. Settings UI does **not** auto-mask secrets.
 
+### models.dev metadata
+
+[models.dev](https://models.dev) is an open catalog of model limits, pricing, and capabilities. FreeAnima loads it via `@opencode-ai/models` (live `/api.json`, snapshot fallback) and uses it in these places:
+
+1. **Catalog enrich** — After Connection `GET /models`, merge context / max output / display name / USD-per-1M cost when ids match (provider non-default limits win over models.dev).
+2. **`getModel` fallback** — Anthropic Messages / OpenAI Responses / flaky compatible gateways that lack a real catalog use models.dev instead of a blind 128k default when the id is known.
+3. **Compression context fallback** — Catalog `contextWindow` (possibly enriched) is still the third priority under runtime `models.<id>.context_window` and `compression.default_context_window` (see [`compression.md`](../cognition/compression.md)).
+4. **Scene model picker** — Settings → Habitat 服务配置 → LLM → 场景路由：browse/search models via Habitat RPC `config.listProviderModels` (provider catalog first; preset slice from models.dev if `/models` is empty). Free-text model ids remain allowed.
+
+**Not in scope:** models.dev does not replace Connection credentials or endpoints; it does not bill usage; capability flags are hints only, not runtime guarantees.
+
 ### Timeouts
 
 `llm.providers.<id>` supports three timeout layers (chat stream / non-stream; embedding still uses only `timeout_ms`):

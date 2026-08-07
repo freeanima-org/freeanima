@@ -8,6 +8,7 @@ import {
   habitatConfigSelectClassName,
   hubConfigTextField,
 } from "./habitat-config-field-helpers.tsx";
+import { LlmModelPicker } from "./LlmModelPicker.tsx";
 import { hubConfigVaultField } from "./habitat-config-vault-field.tsx";
 import { HabitatConfigConnectionTestButton } from "./HabitatConfigConnectionTestButton.tsx";
 import {
@@ -167,9 +168,11 @@ function LlmRouteHopEditor({
         connectionIds={connectionIds}
         onChange={(provider) => onChange({ provider })}
       />
-      {hubConfigTextField("模型", hop.model, (model) => onChange({ model }), {
-        hint: "填写供应方模型 id，例如 deepseek-chat",
-      })}
+      <LlmModelPicker
+        providerId={hop.provider}
+        value={hop.model}
+        onChange={(model) => onChange({ model })}
+      />
       <LlmCallParamsEditor
         title="本步骤调用参数（可选）"
         value={hop.params}
