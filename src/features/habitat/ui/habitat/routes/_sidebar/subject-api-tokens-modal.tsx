@@ -164,9 +164,9 @@ export function SubjectApiTokensModal({
       onOpenChange={(next) => {
         if (!next) onClose();
       }}
-      className="max-w-4xl w-[calc(100%-2rem)] sm:max-w-4xl max-h-[85vh] flex flex-col overflow-hidden safe-area-pt safe-area-pb"
+      className="max-w-4xl w-[calc(100%-2rem)] sm:max-w-4xl h-[85vh] flex flex-col overflow-hidden safe-area-pt safe-area-pb"
     >
-      <DialogHeader>
+      <DialogHeader className="shrink-0">
         <DialogTitle>
           {m.habitat_entities_api_tokens_title({ subject: subjectLabel(subject) })}
         </DialogTitle>

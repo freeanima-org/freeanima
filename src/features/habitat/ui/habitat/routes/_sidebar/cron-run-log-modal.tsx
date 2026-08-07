@@ -69,14 +69,14 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
       onOpenChange={(next) => {
         if (!next) onClose();
       }}
-      className="max-w-3xl safe-area-pt safe-area-pb"
+      className="max-w-3xl h-[85vh] flex flex-col overflow-hidden safe-area-pt safe-area-pb"
     >
-      <DialogHeader>
+      <DialogHeader className="shrink-0">
         <DialogTitle>{m.habitat_cron_run_history_title({ name: jobName })}</DialogTitle>
       </DialogHeader>
-      <p className="text-xs font-mono text-muted-foreground mb-3 break-all">{jobId}</p>
+      <p className="text-xs font-mono text-muted-foreground mb-3 break-all shrink-0">{jobId}</p>
 
-      <div className="flex justify-end mb-2">
+      <div className="flex justify-end mb-2 shrink-0">
         <Button
           type="button"
           variant="ghost"
@@ -90,12 +90,12 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
       </div>
 
       {error ? (
-        <StatusAlert variant="error" className="mb-2">
+        <StatusAlert variant="error" className="mb-2 shrink-0">
           {error}
         </StatusAlert>
       ) : null}
 
-      <div className="overflow-x-auto max-h-[60vh]">
+      <div className="flex-1 min-h-0 overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -163,7 +163,7 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
         </Table>
       </div>
 
-      <DialogFooter>
+      <DialogFooter className="shrink-0">
         <Button type="button" variant="ghost" size="sm" onClick={onClose}>
           {m.habitat_common_close()}
         </Button>
