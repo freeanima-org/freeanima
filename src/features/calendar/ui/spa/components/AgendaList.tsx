@@ -56,7 +56,13 @@ export function AgendaList({
   return (
     <ul className="flex flex-col gap-2">
       {dayItems.map((item) => (
-        <li key={`${item.kind}-${item.id}`}>
+        <li
+          key={
+            item.kind === "task"
+              ? `${item.kind}-${item.id}-${item.due_at}-${item.virtual ? "v" : "l"}`
+              : `${item.kind}-${item.id}`
+          }
+        >
           <Button
             type="button"
             variant="outline"

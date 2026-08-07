@@ -1018,6 +1018,17 @@ export async function offlineUpdateTaskItem(
       updated_at: now,
     };
 
+    // 无日期则无重复与提醒
+    if (patch.due_at === null || patch.due_at === "") {
+      updated = {
+        ...updated,
+        due_at: null,
+        recurrence: null,
+        remind_at: null,
+        reminders: [],
+      };
+    }
+
     // 重复任务完成：乐观滚动，保持 pending（与服务端 complete 语义一致）
     if (completing && existing.recurrence) {
       const next = computeNextOccurrence(
