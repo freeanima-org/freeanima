@@ -81,7 +81,9 @@ Outbox 布局与 [`portal-sdk/offline-outbox`](../../src/client/portal-sdk/offli
 
 Consecutive tool calls (same round, and multi-round without intervening assistant text) project to a single `tool_block`, rendered by `ToolBlockBubble`:
 
-- **Collapsed (default):** one-line activity strip; prefer scrolling the active `running`/`pending` call's `args._title` (fallback: tool name)
-- **Level 1 expand:** call list (status + `_title` + name)
-- **Level 2 expand:** per-call args / result; `subagent_run` also shows child `steps` summaries (child turns still are not written to parent `messages`)
-- During streaming, `tool_round_live` snapshots upsert the trailing `tool_block` so the strip updates while tools run
+- **Collapsed (default):** one-line activity strip with marquee while active
+  - **Completed** calls: show the call label (`args._title`, else tool name)
+  - **Running / pending:** if the active call has live child steps (e.g. `subagent_run` via `tool_progress`), scroll the **latest child** `title`/`name`; otherwise the call's own label
+- **Level 1 expand:** call list; each row uses the same collapsed-summary rule when folded
+- **Level 2 expand:** per-call args / result; `subagent_run` also shows child `steps` summaries (including live partial `result` while running; child turns still are not written to parent `messages`)
+- During streaming, `tool_round_live` snapshots upsert the trailing `tool_block` so the strip updates while tools run (`tool_progress` updates a running call's partial `result` without marking it done)

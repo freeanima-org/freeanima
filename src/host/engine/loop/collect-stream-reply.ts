@@ -17,6 +17,7 @@ export async function collectStreamReply(events: AsyncIterable<StreamEvent>): Pr
       case "awaiting_clarify":
         break;
       case "tool_begin":
+      case "tool_progress":
       case "tool_result":
       case "tool_error":
         break;

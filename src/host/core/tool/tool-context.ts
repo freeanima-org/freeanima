@@ -6,6 +6,8 @@ import type { ToolSetRegistry } from "./toolset.ts";
 
 export type ToolContextKind = "conversation" | "auto_llm";
 
+export type ToolProgressReporter = (content: string) => void;
+
 type ToolContextStore = {
   contextId: string;
   contextKind: ToolContextKind;
@@ -17,6 +19,11 @@ type ToolContextStore = {
   subjectId?: number;
   /** Mutable execution allowlist; no loaded gate when unset */
   executableTools?: Set<string>;
+  /**
+   * Parent conversation tool progress sink (e.g. subagent live steps).
+   * Inherited by nested auto_llm contexts; only conversation loop-engine installs it.
+   */
+  onToolProgress?: ToolProgressReporter;
 };
 
 const storage = new AsyncLocalStorage<ToolContextStore>();
@@ -51,6 +58,8 @@ export type RunWithToolContextOpts = {
   callerAuth?: VerifiedServiceApiToken;
   /** Acting subject (AutoLlmRun); ignored when callerAuth present */
   subjectId?: number;
+  /** Override progress reporter; default inherits from parent ALS store */
+  onToolProgress?: ToolProgressReporter;
 };
 
 export function runWithToolContext<T>(
@@ -58,6 +67,7 @@ export function runWithToolContext<T>(
   fn: () => T,
   opts: RunWithToolContextOpts,
 ): T {
+  const parent = storage.getStore();
   const store: ToolContextStore = omitUndefined({
     contextId,
     contextKind: opts.contextKind ?? "conversation",
@@ -66,12 +76,26 @@ export function runWithToolContext<T>(
     callerAuth: opts.callerAuth,
     subjectId: opts.subjectId,
     executableTools: opts.executableTools ? new Set(opts.executableTools) : undefined,
+    onToolProgress: opts.onToolProgress ?? parent?.onToolProgress,
   });
   const result = storage.run(store, fn);
   if (isAsyncIterable(result)) {
     return bindToolContext(store, result) as T;
   }
   return result;
+}
+
+/** Install / clear progress reporter on the current ALS store (mutable). */
+export function setToolProgressReporter(reporter: ToolProgressReporter | undefined): void {
+  const store = storage.getStore();
+  if (!store) return;
+  if (reporter) store.onToolProgress = reporter;
+  else delete store.onToolProgress;
+}
+
+/** Report partial tool result JSON to the parent conversation stream (no-op if unset). */
+export function reportToolProgress(content: string): void {
+  storage.getStore()?.onToolProgress?.(content);
 }
 
 export function getToolContextKind(): ToolContextKind | undefined {

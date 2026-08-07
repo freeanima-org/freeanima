@@ -42,6 +42,8 @@ export type AutoLlmRunInput = {
   metadata?: Record<string, unknown>;
   toolPolicy?: ResolvedCapabilityPolicy;
   onToolResult?: (name: string, content: string) => void;
+  /** 子工具 steps 变更（含 running）；供父 Chat 进度投影 */
+  onStep?: (steps: readonly AutoLlmToolStep[]) => void;
   parentConversationId?: string;
 };
 
@@ -241,6 +243,7 @@ async function runEngineOnce(
                 status: "running" as const,
               }),
             );
+            input.onStep?.(steps.map((s) => ({ ...s })));
             break;
           }
           case "tool_result": {
@@ -253,6 +256,7 @@ async function runEngineOnce(
               (s) => s.name === ev.data.name && s.status === "running",
             );
             if (pending) pending.status = isError ? "error" : "done";
+            input.onStep?.(steps.map((s) => ({ ...s })));
             break;
           }
           case "error":

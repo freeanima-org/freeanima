@@ -77,4 +77,48 @@ describe("applyStreamReplyEvent / reduceStreamReplyEvents", () => {
     expect(commitIdx).toBeGreaterThanOrEqual(0);
     expect(toolIdx).toBeGreaterThan(commitIdx);
   });
+
+  it("tool_progress upserts live result while keeping running", async () => {
+    const events: StreamEvent[] = [
+      { event: "tool_begin", data: { name: "subagent_run", args: { _title: "调研" } } },
+      {
+        event: "tool_progress",
+        data: {
+          name: "subagent_run",
+          content: JSON.stringify({
+            ok: true,
+            action: "run",
+            results: [{ steps: [{ name: "web_search", title: "搜文档", status: "running" }] }],
+          }),
+        },
+      },
+      {
+        event: "tool_result",
+        data: {
+          name: "subagent_run",
+          content: JSON.stringify({
+            ok: true,
+            action: "run",
+            results: [{ steps: [{ name: "web_search", status: "done" }] }],
+          }),
+        },
+      },
+      { event: "tool_round_end", data: { tool_count: 1 } },
+      { event: "done", data: {} },
+    ];
+    const { effects } = await collectEffects(events);
+    const live = effects.filter((e) => e.kind === "tool_round_live");
+    expect(live.length).toBeGreaterThanOrEqual(2);
+    const mid = live[1];
+    expect(mid?.kind).toBe("tool_round_live");
+    if (mid?.kind === "tool_round_live") {
+      expect(mid.calls[0]?.status).toBe("running");
+      expect(mid.calls[0]?.result).toContain("搜文档");
+    }
+    const final = effects.find((e) => e.kind === "tool_round");
+    expect(final?.kind).toBe("tool_round");
+    if (final?.kind === "tool_round") {
+      expect(final.calls[0]?.status).toBe("done");
+    }
+  });
 });

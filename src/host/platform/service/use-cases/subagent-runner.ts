@@ -11,10 +11,10 @@ import {
 import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
 import { PROFILE_CHAT } from "@freeanima/host/core/provider";
 import { omitUndefined } from "@freeanima/host/core/util";
-import { getToolConversationId } from "@freeanima/host/core/tool";
+import { getToolConversationId, reportToolProgress, toolResult } from "@freeanima/host/core/tool";
 import { foldSystemPromptSections, systemPromptBuild } from "@freeanima/host/core/hooks/prompt";
 
-import { runAutoLlm, type AutoLlmRunResult } from "../auto-llm-run.ts";
+import { runAutoLlm, type AutoLlmRunResult, type AutoLlmToolStep } from "../auto-llm-run.ts";
 import type { FullRuntimeDeps } from "../runtime-deps.ts";
 import {
   getSubagent,
@@ -54,6 +54,59 @@ export type SubagentRunTaskResult = {
   error?: string;
   duration_ms: number;
 };
+
+/** 运行中进度槽（与终态 results[] 同形，status 可为 running） */
+type SubagentLiveSlot = {
+  run_id: string;
+  slug: string;
+  subagent_entity_id: number;
+  status: "running" | "ok" | "error";
+  output: string;
+  tool_calls: number;
+  steps?: AutoLlmToolStep[];
+  error?: string;
+  duration_ms: number;
+};
+
+function publishSubagentProgress(
+  slots: Array<SubagentLiveSlot | undefined>,
+  tasks: SubagentTaskInput[],
+): void {
+  const results = slots.map((slot, i) => {
+    if (slot) {
+      return omitUndefined({
+        run_id: slot.run_id,
+        slug: slot.slug,
+        subagent_entity_id: slot.subagent_entity_id,
+        status: slot.status,
+        output: slot.output,
+        tool_calls: slot.tool_calls,
+        steps: slot.steps,
+        error: slot.error,
+        duration_ms: slot.duration_ms,
+      });
+    }
+    const task = tasks[i];
+    return {
+      run_id: "",
+      slug: task?.slug?.trim() || EPHEMERAL_SLUG,
+      subagent_entity_id: task?.id ?? 0,
+      status: "running" as const,
+      output: "",
+      tool_calls: 0,
+      steps: [] as AutoLlmToolStep[],
+      duration_ms: 0,
+    };
+  });
+  reportToolProgress(
+    toolResult({
+      ok: true,
+      action: "run",
+      count: results.length,
+      results,
+    }),
+  );
+}
 
 function resolveMaxTurns(
   deps: FullRuntimeDeps,
@@ -182,7 +235,8 @@ async function runOneTask(
   deps: FullRuntimeDeps,
   worldId: number,
   task: SubagentTaskInput,
-  parentConversationId?: string,
+  parentConversationId: string | undefined,
+  onLiveUpdate: (slot: SubagentLiveSlot) => void,
 ): Promise<SubagentRunTaskResult> {
   const profile = await resolveSubagentProfile(worldId, task);
   const skillNames = [...new Set([...profile.skills, ...(task.skills ?? [])])];
@@ -216,6 +270,18 @@ async function runOneTask(
   const model = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
   const runName = resolveRunName(profile, task);
 
+  const liveBase: SubagentLiveSlot = {
+    run_id: "",
+    slug: profile.slug,
+    subagent_entity_id: profile.id ?? 0,
+    status: "running",
+    output: "",
+    tool_calls: 0,
+    steps: [],
+    duration_ms: 0,
+  };
+  onLiveUpdate(liveBase);
+
   const result: AutoLlmRunResult = await runAutoLlm(
     deps,
     omitUndefined({
@@ -234,6 +300,13 @@ async function runOneTask(
         slug: profile.slug,
         kind: profile.kind,
         world_id: worldId,
+      },
+      onStep: (steps: readonly AutoLlmToolStep[]) => {
+        onLiveUpdate({
+          ...liveBase,
+          tool_calls: steps.length,
+          steps: steps.map((s) => ({ ...s })),
+        });
       },
     }),
   );
@@ -267,7 +340,14 @@ export async function runSubagentTasks(
   const parentConversationId = input.parentConversationId ?? getToolConversationId() ?? undefined;
 
   const results: SubagentRunTaskResult[] = Array.from({ length: input.tasks.length });
+  const liveSlots: Array<SubagentLiveSlot | undefined> = Array.from({
+    length: input.tasks.length,
+  });
   let cursor = 0;
+
+  const bumpProgress = (): void => {
+    publishSubagentProgress(liveSlots, input.tasks);
+  };
 
   async function worker(): Promise<void> {
     while (true) {
@@ -277,7 +357,25 @@ export async function runSubagentTasks(
       const task = input.tasks[idx];
       if (!task) return;
       try {
-        results[idx] = await runOneTask(deps, input.worldId, task, parentConversationId);
+        results[idx] = await runOneTask(deps, input.worldId, task, parentConversationId, (slot) => {
+          liveSlots[idx] = slot;
+          bumpProgress();
+        });
+        const final = results[idx];
+        if (final) {
+          liveSlots[idx] = omitUndefined({
+            run_id: final.run_id,
+            slug: final.slug,
+            subagent_entity_id: final.subagent_entity_id,
+            status: final.status,
+            output: final.output,
+            tool_calls: final.tool_calls,
+            steps: final.steps as AutoLlmToolStep[] | undefined,
+            error: final.error,
+            duration_ms: final.duration_ms,
+          });
+          bumpProgress();
+        }
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         results[idx] = {
@@ -290,6 +388,17 @@ export async function runSubagentTasks(
           error: msg,
           duration_ms: 0,
         };
+        liveSlots[idx] = {
+          run_id: "",
+          slug: results[idx].slug,
+          subagent_entity_id: results[idx].subagent_entity_id,
+          status: "error",
+          output: "",
+          tool_calls: 0,
+          error: msg,
+          duration_ms: 0,
+        };
+        bumpProgress();
       }
     }
   }

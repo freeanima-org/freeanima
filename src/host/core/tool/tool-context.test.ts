@@ -5,7 +5,9 @@ import {
 } from "@freeanima/host/core/config/world-context";
 import {
   runWithToolContext,
+  reportToolProgress,
   resolveToolCallerSubjectId,
+  setToolProgressReporter,
   ToolSetRegistry,
 } from "@freeanima/host/core/tool";
 
@@ -89,5 +91,29 @@ describe("resolveToolCallerSubjectId", () => {
         },
       },
     );
+  });
+});
+
+describe("tool progress reporter", () => {
+  it("inherits onToolProgress into nested auto_llm context", () => {
+    const registry = new ToolSetRegistry();
+    const seen: string[] = [];
+    runWithToolContext(
+      "conv-progress",
+      () => {
+        setToolProgressReporter((content) => {
+          seen.push(content);
+        });
+        runWithToolContext(
+          "autollm-nested",
+          () => {
+            reportToolProgress('{"action":"run"}');
+          },
+          { tools: registry, contextKind: "auto_llm", subjectId: 1 },
+        );
+      },
+      { tools: registry },
+    );
+    expect(seen).toEqual(['{"action":"run"}']);
   });
 });
