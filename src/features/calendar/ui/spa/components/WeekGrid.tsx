@@ -8,7 +8,6 @@ export type WeekGridProps = {
   weekStartDay: string;
   today: string;
   items: CalendarRangeItem[];
-  expandRecurrence: boolean;
   onSelectDay: (day: string) => void;
   onOpenTask: (id: number) => void;
   onDropTaskDue: (taskId: number, day: string) => void;
@@ -40,7 +39,6 @@ export function WeekGrid({
   weekStartDay,
   today,
   items,
-  expandRecurrence,
   onSelectDay,
   onOpenTask,
   onDropTaskDue,
@@ -55,7 +53,6 @@ export function WeekGrid({
     for (const day of days) map.set(day, []);
     for (const item of items) {
       if (item.kind === "task") {
-        if (item.virtual && !expandRecurrence) continue;
         const day = dayKeyFromIso(item.due_at);
         map.get(day)?.push(item);
         continue;
@@ -69,7 +66,7 @@ export function WeekGrid({
       if (start) map.get(start)?.push(item);
     }
     return map;
-  }, [days, expandRecurrence, items]);
+  }, [days, items]);
 
   return (
     <div className="grid min-h-[16rem] grid-cols-7 gap-1">

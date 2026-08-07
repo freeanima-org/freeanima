@@ -31,16 +31,34 @@ const taskItemBodyFieldsSchema = schedulableBodySchema.extend({
 
 /**
  * 归属互斥：恰好一方有值（list_id XOR project_id）。
- * 读路径预处理：存量「进项目仍带 list_id」归一为 list_id=null。
+ * 读路径预处理：
+ * - 存量「进项目仍带 list_id」归一为 list_id=null
+ * - 无 due_at 时剥离 recurrence / 提醒（硬约束：无日期则无重复与提醒）
  */
 export const taskItemBodySchema = z.preprocess(
   (val) => {
     if (val == null || typeof val !== "object") return val;
-    const obj = val as Record<string, unknown>;
+    let obj = val as Record<string, unknown>;
     if (obj.project_id != null && obj.project_id !== "") {
-      return { ...obj, list_id: null };
+      obj = { ...obj, list_id: null };
     }
-    return val;
+    const dueEmpty = obj.due_at == null || obj.due_at === "";
+    if (dueEmpty) {
+      const hasRemind =
+        (typeof obj.remind_at === "string" && obj.remind_at.length > 0) ||
+        (Array.isArray(obj.reminders) && obj.reminders.length > 0);
+      const hasRecurrence = obj.recurrence != null && obj.recurrence !== undefined;
+      if (hasRemind || hasRecurrence) {
+        obj = {
+          ...obj,
+          due_at: null,
+          recurrence: null,
+          remind_at: null,
+          reminders: [],
+        };
+      }
+    }
+    return obj;
   },
   taskItemBodyFieldsSchema.superRefine((data, ctx) => {
     const hasList = data.list_id != null;
@@ -50,6 +68,25 @@ export const taskItemBodySchema = z.preprocess(
         code: z.ZodIssueCode.custom,
         message: "exactly one of list_id or project_id required",
         path: hasList ? ["project_id"] : ["list_id"],
+      });
+    }
+    const dueEmpty = data.due_at == null || data.due_at === "";
+    if (!dueEmpty) return;
+    if (data.recurrence != null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "recurrence requires due_at",
+        path: ["recurrence"],
+      });
+    }
+    const hasRemind =
+      (data.remind_at != null && data.remind_at !== "") ||
+      (data.reminders != null && data.reminders.length > 0);
+    if (hasRemind) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "reminders require due_at",
+        path: ["reminders"],
       });
     }
   }),

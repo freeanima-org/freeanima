@@ -268,7 +268,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
   const datePart = isoToDateLocalValue(item.due_at);
   const timePart = isoToTimeLocalValue(item.due_at);
   const completed = item.status === "completed";
-  const scheduleAnchor = item.due_at ?? item.recurrence?.schedule_at ?? new Date().toISOString();
+  const scheduleAnchor = item.due_at ?? new Date().toISOString();
   const remindAt = item.remind_at ?? item.reminders?.[0]?.at ?? null;
   const remindDatePart = isoToDateLocalValue(remindAt);
   const remindTimePart = isoToTimeLocalValue(remindAt);
@@ -341,7 +341,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                 showClear={item.due_at != null}
                 onDateChange={(nextDate) => {
                   if (!nextDate) {
-                    onChange(setRemindAt({ ...item, due_at: null }, null));
+                    onChange(setRemindAt({ ...item, due_at: null, recurrence: null }, null));
                     return;
                   }
                   onChange({
@@ -355,7 +355,9 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                     due_at: mergeDateTimeLocal(datePart, nextTime),
                   })
                 }
-                onClear={() => onChange(setRemindAt({ ...item, due_at: null }, null))}
+                onClear={() =>
+                  onChange(setRemindAt({ ...item, due_at: null, recurrence: null }, null))
+                }
               />
             </PopoverDialog>
           </Popover>
@@ -371,6 +373,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
               remindAt ? "text-foreground" : "text-muted-foreground",
             )}
             aria-label={`提醒：${remindLabel(item)}`}
+            isDisabled={!item.due_at}
           >
             <BellIcon className="size-4 shrink-0" />
             <span className="truncate">{remindLabel(item)}</span>
@@ -387,7 +390,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                       variant={remindPreset === preset.id ? "secondary" : "outline"}
                       size="sm"
                       className="h-7 px-2 text-xs"
-                      disabled={preset.id !== "none" && preset.id !== "custom" && !item.due_at}
+                      disabled={!item.due_at}
                       onClick={() => {
                         if (preset.id === "none") {
                           onChange(setRemindAt(item, null));
@@ -417,7 +420,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                     </Button>
                   ))}
                 </div>
-                {remindPreset === "custom" || remindAt ? (
+                {item.due_at && (remindPreset === "custom" || remindAt) ? (
                   <DateTimePopoverFields
                     datePart={remindDatePart}
                     timePart={remindTimePart}
@@ -452,6 +455,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
               item.recurrence ? "text-foreground" : "text-muted-foreground",
             )}
             aria-label={`重复：${recurrenceLabel(item.recurrence)}`}
+            isDisabled={!item.due_at}
           >
             <RepeatIcon className="size-4 shrink-0" />
             <span className="truncate">{recurrenceLabel(item.recurrence)}</span>
@@ -477,12 +481,14 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                       }
                       size="sm"
                       className="h-7 px-2 text-xs"
-                      onClick={() =>
+                      disabled={!item.due_at}
+                      onClick={() => {
+                        if (!item.due_at) return;
                         onChange({
                           ...item,
                           recurrence: preset.build(scheduleAnchor),
-                        })
-                      }
+                        });
+                      }}
                     >
                       {preset.label}
                     </Button>

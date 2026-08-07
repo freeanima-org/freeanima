@@ -29,6 +29,7 @@ import {
   shiftMonth,
 } from "./lib/format-calendar.ts";
 import { registerCalendarOfflineModule } from "./lib/offline-store.ts";
+import { filterVisibleCalendarItems } from "./lib/visible-items.ts";
 
 registerCalendarOfflineModule();
 
@@ -131,7 +132,11 @@ export function CalendarApp() {
   });
 
   const items = query.data ?? [];
-  const dayCounts = useMemo(() => countByDay(items), [items]);
+  const visibleItems = useMemo(
+    () => filterVisibleCalendarItems(items, expandRecurrence),
+    [expandRecurrence, items],
+  );
+  const dayCounts = useMemo(() => countByDay(visibleItems), [visibleItems]);
 
   const eventsById = useMemo(() => {
     const map = new Map<number, CalendarEventRow>();
@@ -330,8 +335,7 @@ export function CalendarApp() {
               <WeekGrid
                 weekStartDay={weekAnchor}
                 today={today}
-                items={items}
-                expandRecurrence={expandRecurrence}
+                items={visibleItems}
                 onSelectDay={setSelectedDay}
                 onOpenTask={(id) => {
                   void openEntityResource({ id, component: "task_item", present: "overlay" });
@@ -356,7 +360,7 @@ export function CalendarApp() {
             <div className="min-h-0 flex-1 overflow-auto">
               <AgendaList
                 day={selectedDay}
-                items={items}
+                items={visibleItems}
                 onOpenEvent={(id) => {
                   const ev = eventsById.get(id);
                   if (ev) setEditor({ mode: "edit", event: ev });

@@ -240,7 +240,10 @@ export async function createTaskItem(
   const dueAt = input.due_at ?? null;
   let recurrence: TaskRecurrence | null = null;
   if (input.recurrence != null) {
-    recurrence = normalizeRecurrenceInput(input.recurrence, dueAt ?? formatCstIso(new Date()));
+    if (dueAt == null || dueAt === "") {
+      throw new Error("recurrence requires due_at");
+    }
+    recurrence = normalizeRecurrenceInput(input.recurrence, dueAt);
   }
 
   if (input.parent_id != null) {
@@ -258,6 +261,12 @@ export async function createTaskItem(
     remind_at: input.remind_at,
     reminders: input.reminders,
   });
+  if (
+    (dueAt == null || dueAt === "") &&
+    (reminders.remind_at != null || reminders.reminders.length > 0)
+  ) {
+    throw new Error("reminders require due_at");
+  }
 
   const body = {
     status: "pending" as const,
@@ -373,10 +382,18 @@ export async function updateTaskItem(
   }
   if (input.priority !== undefined) bodyPatch.priority = input.priority;
   if (input.due_at !== undefined) {
-    bodyPatch.due_at = input.due_at;
-    const existingRec = parsedExisting.recurrence ?? null;
-    if (existingRec && input.due_at != null && input.only_this !== true) {
-      bodyPatch.recurrence = { ...existingRec, schedule_at: input.due_at };
+    const nextDue = input.due_at === "" ? null : input.due_at;
+    bodyPatch.due_at = nextDue;
+    if (nextDue == null) {
+      // 无日期则无重复与提醒
+      bodyPatch.recurrence = null;
+      bodyPatch.remind_at = null;
+      bodyPatch.reminders = [];
+    } else {
+      const existingRec = parsedExisting.recurrence ?? null;
+      if (existingRec && input.only_this !== true) {
+        bodyPatch.recurrence = { ...existingRec, schedule_at: nextDue };
+      }
     }
   }
   if (input.remind_at !== undefined || input.reminders !== undefined) {
@@ -384,6 +401,16 @@ export async function updateTaskItem(
       remind_at: input.remind_at !== undefined ? input.remind_at : parsedExisting.remind_at,
       reminders: input.reminders !== undefined ? input.reminders : parsedExisting.reminders,
     });
+    const dueAfterPatch =
+      bodyPatch.due_at !== undefined
+        ? (bodyPatch.due_at as string | null)
+        : (parsedExisting.due_at ?? null);
+    if (
+      (dueAfterPatch == null || dueAfterPatch === "") &&
+      (synced.remind_at != null || synced.reminders.length > 0)
+    ) {
+      throw new Error("reminders require due_at");
+    }
     bodyPatch.remind_at = synced.remind_at;
     bodyPatch.reminders = synced.reminders;
   }
@@ -436,9 +463,16 @@ export async function updateTaskItem(
       bodyPatch.recurrence = null;
     } else {
       const dueForSchedule =
-        input.due_at !== undefined
-          ? input.due_at
-          : ((bodyPatch.due_at as string | null | undefined) ?? parsedExisting.due_at ?? null);
+        bodyPatch.due_at !== undefined
+          ? (bodyPatch.due_at as string | null)
+          : input.due_at !== undefined
+            ? input.due_at === ""
+              ? null
+              : input.due_at
+            : (parsedExisting.due_at ?? null);
+      if (dueForSchedule == null || dueForSchedule === "") {
+        throw new Error("recurrence requires due_at");
+      }
       bodyPatch.recurrence = normalizeRecurrenceInput(input.recurrence, dueForSchedule);
     }
   }

@@ -254,6 +254,10 @@ async function scanTaskReminders(port: ReminderPort, now: number): Promise<TaskR
     }
 
     const normalized = listAdvanceReminders(schedulable);
+    // 无 due 的任务不应有 advance 提醒（防存量脏数据）
+    if (item.due_at == null || item.due_at === "") {
+      continue;
+    }
     let remindersChanged = false;
     const nextReminders = normalized.map((entry) => {
       if (!shouldSendAdvanceReminder(entry, now)) return entry;

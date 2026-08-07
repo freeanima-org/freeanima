@@ -64,7 +64,7 @@ Shell `/calendar`：单行工具栏（月/周导航、kinds、重复展开、刷
 
 - **月视图**：月网格 + 选中日议程
 - **周视图**：周一至周日列；pending 任务可拖拽改 `due_at`（`task.patch` + `only_this: true`）
-- **重复展开**开关：控制是否显示虚拟重复实例
+- **重复展开**开关：控制是否显示虚拟重复实例（月点计数、选中日议程、周列共用同一过滤；关闭时隐藏 `virtual: true`）
 - 创建/编辑事件 Dialog。点击任务走 entity overlay；项目进 `/projects`。清单管理回 `/tasks`
 
 ## LLM ToolSet `calendar`
