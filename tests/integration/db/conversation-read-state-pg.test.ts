@@ -109,8 +109,9 @@ describePg("conversation_read_state（用户未读）", () => {
     const engine = getTestEngine();
     const subject_id = resolveNotificationRecipients(engine.config.data).user.id;
     const c = testConv();
+    const otherPlatform = "remote:companion:test-unread";
     const chatSid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
-    const otherSid = await c.newConversation("companion");
+    const otherSid = await c.newConversation(otherPlatform);
 
     await c.appendMessage({ role: "user", content: "a", pos: 1 }, chatSid);
     await c.appendMessage({ role: "assistant", content: "b", pos: 2 }, chatSid);
@@ -121,6 +122,6 @@ describePg("conversation_read_state（用户未读）", () => {
     expect(await countUnreadConversations(subject_id, { platform: TEST_SAP_CHAT_PLATFORM })).toBe(
       1,
     );
-    expect(await countUnreadConversations(subject_id, { platform: "companion" })).toBe(1);
+    expect(await countUnreadConversations(subject_id, { platform: otherPlatform })).toBe(1);
   });
 });
