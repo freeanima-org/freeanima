@@ -83,7 +83,7 @@ export function tryAdbInstallApk(
   let exitCode = first.status;
   if (needReplace) {
     if (combined.trim()) process.stdout.write(combined);
-    const channel = resolveBuildChannelFromEnv("dev");
+    const channel = resolveBuildChannelFromEnv("local");
     const appId = resolveMobileShellIdentity(channel).applicationId;
     // 顺带卸旧包名（org.freeanima.app → com.freeanima.portal 迁移）
     for (const pkg of [appId, "org.freeanima.app"]) {

@@ -8,7 +8,7 @@ describe("native-build-meta", () => {
     const meta = {
       component: "native" as const,
       shell: "mobile" as const,
-      channel: "dev" as const,
+      channel: "local" as const,
       version: "1.0.0",
     };
     const define = nativeBuildMetaDefine(meta);

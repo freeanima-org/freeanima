@@ -89,7 +89,7 @@ anima versions                   # 列出本机 anima_*（* = current）
 anima versions use 0.9.2         # 切换 current symlink
 ```
 
-**Mobile Android APK**（`freeanima-mobile-android.apk`）：从 GitHub Release（`canary` 或版本 tag）下载 sideload。CI 使用固定 upload 签名，同 channel 内可覆盖升级。若曾安装旧版未固定签名的包、密钥轮换后、或从旧包名 `org.freeanima.app` 迁移，需先卸载后再安装（正式包名 `com.freeanima.portal`；本地 dev 包为 `com.freeanima.portal.dev`）。
+**Mobile Android APK**（`freeanima-mobile-android.apk`）：从 GitHub Release（`canary` 或版本 tag）下载 sideload。CI 使用固定 upload 签名，同 channel 内可覆盖升级。若曾安装旧版未固定签名的包、密钥轮换后、或从旧包名 `org.freeanima.app` 迁移，需先卸载后再安装（正式包名 `com.freeanima.portal`；本机 local 包为 `com.freeanima.portal.dev`）。
 
 ### 2. Configure
 

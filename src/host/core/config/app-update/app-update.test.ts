@@ -348,11 +348,11 @@ describe("resolvePackagedUpdate", () => {
     expect(sw.available).toBe(true);
   });
 
-  it("rejects dev channel", async () => {
+  it("rejects local channel", async () => {
     const r = await resolvePackagedUpdate({
       kind: "standalone-linux-x64",
       localVersion: "0.8.5",
-      channel: "dev",
+      channel: "local",
     });
     expect(r).toEqual({ available: false, reason: "unsupported_channel" });
   });

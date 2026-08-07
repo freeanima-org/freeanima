@@ -1,31 +1,26 @@
 import { defineConfig } from "wxt";
 import path from "node:path";
-import { readFileSync } from "node:fs";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { resolveBuildChannelFromEnv } from "./src/host/core/config/build-meta.ts";
+import { resolveBuildVersionFromEnv } from "./src/host/core/config/resolve-build-version.ts";
 import { buildViteAliases } from "./src/client/app-frame/vite/module-aliases.ts";
 
-const rootPkg = JSON.parse(
-  readFileSync(path.resolve(import.meta.dirname, "package.json"), "utf-8"),
-) as { version: string };
-
-/** 解析完整构建版本：优先 FREEANIMA_BUILD_VERSION（CI canary/release），否则读根 package.json */
-function resolveBuildVersion(): string {
-  const fromEnv = process.env.FREEANIMA_BUILD_VERSION?.trim();
-  if (fromEnv) return fromEnv.replace(/^v/i, "");
-  return rootPkg.version;
-}
+const repoRoot = path.resolve(import.meta.dirname);
 
 /**
  * Chrome 扩展 manifest.version 仅允许 1-4 个点分整数（≤65535），不支持 semver 预发/构建后缀。
- * 从完整版本串中剥离 `-canary+…` 等后缀，保留基版本号。
+ * 从完整版本串中剥离 `-local+…` / `-canary+…` 等后缀，保留基版本号。
  */
 function resolveManifestVersion(full: string): string {
   return full.replace(/[-+].*$/, "");
 }
 
-const appVersion = resolveBuildVersion();
+const buildChannel = resolveBuildChannelFromEnv("local");
+const appVersion = resolveBuildVersionFromEnv(repoRoot, process.env, { channel: buildChannel });
 const manifestVersion = resolveManifestVersion(appVersion);
+const isLocal = buildChannel === "local";
+const extensionName = isLocal ? "FreeAnima Vault Local" : "FreeAnima Vault";
 
 /** FreeAnima Vault 浏览器扩展（MV3；Chrome） */
 export default defineConfig({
@@ -34,9 +29,10 @@ export default defineConfig({
   publicDir: "src/portal/extension/public",
   modules: [],
   manifest: {
-    name: "FreeAnima Vault",
+    name: extensionName,
     description: "FreeAnima 用户保险库：自动填充、生成密码、连接 Habitat",
     version: manifestVersion,
+    version_name: appVersion,
     icons: {
       16: "icon-16.png",
       32: "icon-32.png",
@@ -60,7 +56,7 @@ export default defineConfig({
       },
     },
     action: {
-      default_title: "FreeAnima Vault",
+      default_title: extensionName,
       default_icon: {
         16: "icon-16.png",
         32: "icon-32.png",
@@ -75,7 +71,7 @@ export default defineConfig({
   vite: () => ({
     plugins: [react(), tailwindcss()],
     resolve: {
-      alias: buildViteAliases({ repoRoot: path.resolve(import.meta.dirname) }),
+      alias: buildViteAliases({ repoRoot }),
     },
   }),
 });

@@ -67,7 +67,7 @@ function purgeStaleCargoTargetIfNeeded(): void {
 
 purgeStaleCargoTargetIfNeeded();
 
-const buildChannel = resolveBuildChannelFromEnv("dev");
+const buildChannel = resolveBuildChannelFromEnv("local");
 const splashProductName =
   target === "mobile"
     ? resolveMobileShellIdentity(buildChannel).appName
@@ -145,7 +145,7 @@ function injectBootSplash(indexPath: string, productName: string): void {
 function writeNativeBuildMeta(destDir: string): void {
   const channel = buildChannel;
   // 与 apply-tauri-shell-identity / pack 产物名同源，避免 canary 回落成 tauri.conf 的 release 号
-  const version = resolveBuildVersionFromEnv(root);
+  const version = resolveBuildVersionFromEnv(root, process.env, { channel });
   const meta = resolveNativeBuildMeta({
     shell: target === "mobile" ? "mobile" : "desktop",
     channel,

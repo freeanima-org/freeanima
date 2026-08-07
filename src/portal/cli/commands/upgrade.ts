@@ -189,7 +189,7 @@ export function registerUpgradeCommand(program: Command): void {
   program
     .command("upgrade")
     .description(
-      "standalone：从 GitHub Releases 按 channel 升级；--channel release|canary 可换轨；--proxy 可选公共反代；源码/dev 仅打印指引",
+      "standalone：从 GitHub Releases 按 channel 升级；--channel release|canary 可换轨；--proxy 可选公共反代；源码/local 仅打印指引",
     )
     .option("--check", "仅检查是否有新版本，不下载安装")
     .option("--channel <name>", "release 或 canary（与当前不同时视为换轨）")

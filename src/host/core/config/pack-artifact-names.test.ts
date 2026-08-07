@@ -1,5 +1,8 @@
 import { describe, expect, it } from "bun:test";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
+import { createTempDir, removeTempDir } from "@freeanima/host/core/util/temp-dir";
 import {
   packArtifactLegacyAliases,
   packArtifactStableName,
@@ -13,19 +16,26 @@ describe("sanitizePackVersionToken", () => {
     expect(sanitizePackVersionToken("v0.9.2-canary+202607161200")).toBe(
       "0.9.2-canary.202607161200",
     );
+    expect(sanitizePackVersionToken("0.11.0-local+202608070617")).toBe("0.11.0-local.202608070617");
   });
 });
 
 describe("packArtifactVersionedName", () => {
   const meta = {
-    channel: "dev" as const,
-    version: "0.9.2",
-    versionToken: "0.9.2",
+    channel: "local" as const,
+    version: "0.9.2-local+202608070617",
+    versionToken: "0.9.2-local.202608070617",
   };
 
   it("builds desktop windows name", () => {
     expect(packArtifactVersionedName("desktop-windows-nsis", meta)).toBe(
-      "freeanima-desktop-windows-x64-0.9.2-dev-setup.exe",
+      "freeanima-desktop-windows-x64-0.9.2-local.202608070617-local-setup.exe",
+    );
+  });
+
+  it("builds browser-extension zip name", () => {
+    expect(packArtifactVersionedName("browser-extension-zip", meta)).toBe(
+      "freeanima-browser-extension-0.9.2-local.202608070617-local.zip",
     );
   });
 
@@ -61,11 +71,25 @@ describe("packArtifactLegacyAliases", () => {
 });
 
 describe("resolvePackArtifactMeta", () => {
-  it("defaults channel to dev and reads FREEANIMA_BUILD_VERSION", () => {
+  it("defaults channel to local and stamps version when env unset", () => {
+    const dir = createTempDir("freeanima-pack-meta-");
+    try {
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, "package.json"), JSON.stringify({ version: "0.11.0" }));
+      const meta = resolvePackArtifactMeta(dir, {});
+      expect(meta.channel).toBe("local");
+      expect(meta.version).toMatch(/^0\.11\.0-local\+\d{12}$/);
+      expect(meta.versionToken).toMatch(/^0\.11\.0-local\.\d{12}$/);
+    } finally {
+      removeTempDir(dir);
+    }
+  });
+
+  it("defaults channel to local and reads FREEANIMA_BUILD_VERSION", () => {
     const meta = resolvePackArtifactMeta(undefined, {
       FREEANIMA_BUILD_VERSION: "v1.2.3",
     });
-    expect(meta.channel).toBe("dev");
+    expect(meta.channel).toBe("local");
     expect(meta.version).toBe("1.2.3");
     expect(meta.versionToken).toBe("1.2.3");
   });

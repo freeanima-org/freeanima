@@ -8,7 +8,7 @@ describe("native-build-meta.read", () => {
       component: "native",
       shell: "mobile",
       version: "1.0.0",
-      channel: "dev",
+      channel: "local",
     });
     expect(meta?.shell).toBe("mobile");
   });
@@ -18,7 +18,7 @@ describe("native-build-meta.read", () => {
       readNativeBuildMetaFromDefine({
         component: "web",
         version: "1.0.0",
-        channel: "dev",
+        channel: "local",
       }),
     ).toBeUndefined();
   });

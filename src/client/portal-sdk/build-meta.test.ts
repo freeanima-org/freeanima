@@ -14,7 +14,7 @@ describe("portal-sdk/build-meta", () => {
     ).toMatchObject({ component: "web", version: "0.8.3", channel: "release" });
   });
 
-  it("normalizes legacy prod to release", () => {
+  it("normalizes legacy prod to release and dev to local", () => {
     expect(
       parseComponentBuildMeta({
         component: "web",
@@ -22,17 +22,24 @@ describe("portal-sdk/build-meta", () => {
         channel: "prod",
       })?.channel,
     ).toBe("release");
+    expect(
+      parseComponentBuildMeta({
+        component: "web",
+        version: "0.8.3",
+        channel: "dev",
+      })?.channel,
+    ).toBe("local");
   });
 
   it("formatBuildMetaLines renders key fields", () => {
     const lines = formatBuildMetaLines({
       component: "service",
       version: "0.8.3",
-      channel: "dev",
+      channel: "local",
       git: { commit: "abc", dirty: false },
     });
     expect(lines).toContain("version 0.8.3");
-    expect(lines).toContain("channel dev");
+    expect(lines).toContain("channel local");
     expect(lines).toContain("dirty no");
   });
 });

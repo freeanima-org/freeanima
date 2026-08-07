@@ -33,7 +33,7 @@ export function resolveServiceBuildMeta(): ComponentBuildMeta {
   }
 
   const installKind = getCliInstallKind();
-  const channel = installKind === "standalone" ? "release" : "dev";
+  const channel = installKind === "standalone" ? "release" : "local";
 
   cachedServiceBuildMeta = createComponentBuildMeta({
     component: "service",

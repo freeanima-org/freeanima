@@ -20,7 +20,7 @@ import {
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const target = parseShellBuildTarget(process.env.FREEANIMA_SHELL_TARGET);
 const out = join(root, "src/portal/app/web", shellWebDistDirName(target), "build-meta.json");
-const channel = resolveBuildChannelFromEnv("dev");
+const channel = resolveBuildChannelFromEnv("local");
 const meta = createComponentBuildMeta({
   component: "web",
   channel,

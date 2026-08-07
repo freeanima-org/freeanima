@@ -3,7 +3,7 @@
  *
  * 现行公式（generation floor 起）：
  * - 以 UTC 分钟为主序（优先版本串 `+YYYYMMDDHHmm`，否则 `opts.now` / 墙钟）
- * - 同一分钟内 release = canary/dev + 1，便于从 canary 切到同次构建窗口的 release
+ * - 同一分钟内 release = canary/local + 1，便于从 canary 切到同次构建窗口的 release
  *
  * 旧公式 `base*1e6+(minutes%1e6)` 约在 2025-11 后 stamp 回绕，且 release 仅为
  * `base`，远小于 canary，会触发系统「已安装更新的版本」。floor 高于旧 0.x
@@ -45,13 +45,13 @@ function parseSemverBase(version: string): number {
 
 export function computeAndroidVersionCode(
   version: string,
-  opts?: { now?: Date; channel?: "release" | "canary" | "dev" },
+  opts?: { now?: Date; channel?: "release" | "canary" | "local" },
 ): number {
   const s = version.trim().replace(/^v/i, "");
   const channel = opts?.channel;
   const useClock =
     channel === "canary" ||
-    channel === "dev" ||
+    channel === "local" ||
     channel === "release" ||
     /[-+]/.test(s); /* 有 prerelease/build meta 也按时钟 */
 

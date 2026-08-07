@@ -79,7 +79,7 @@ Specify version in commit body with `Release-As: x.y.z` (see [Release Please doc
 | Desktop Linux AppImage | `freeanima-desktop-tauri-linux.AppImage`  | `freeanima-desktop-tauri-linux-{ver}-{channel}.AppImage`  |
 | Mobile Android APK     | `freeanima-mobile-android.apk`            | `freeanima-mobile-android-{ver}-{channel}.apk`            |
 
-`just pack *` 经 [`pack-artifact-names.ts`](../../src/host/core/config/pack-artifact-names.ts) **双写**：版本化主名 + 固定别名（updater / 文档 curl）。`{ver}` 来自 `FREEANIMA_BUILD_VERSION` 或根 `package.json`（`+` → `.`）。本地未设 channel 时为 `dev`。
+`just pack *` 经 [`pack-artifact-names.ts`](../../src/host/core/config/pack-artifact-names.ts) **双写**：版本化主名 + 固定别名（updater / 文档 curl）。`{ver}` 来自 `FREEANIMA_BUILD_VERSION`，或本机缺省 `{package.json}-local+{UTC YYYYMMDDHHmm}`（`+` → `.`）。未设 channel 时为 `local`。
 
 差异仅 **channel / 版本号 / 发布目标**：
 
@@ -87,6 +87,7 @@ Specify version in commit body with `Release-As: x.y.z` (see [Release Please doc
 | ----------- | ----------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------- |
 | **release** | [`release.yml`](../../.github/workflows/release.yml)（Release Please 合并后） | `FREEANIMA_BUILD_VERSION` = tag（去 `v`） | `vX.Y.Z`，`channel=release`         |
 | **canary**  | [`canary.yml`](../../.github/workflows/canary.yml)（`main` push）             | `{nextVersion}-canary+{UTC YYYYMMDDHHmm}` | 滚动 tag `canary`，`channel=canary` |
+| **local**   | 本机 `just pack *`（未设 env）                                                | `{base}-local+{UTC YYYYMMDDHHmm}`         | 不发运                              |
 
 Canary `nextVersion`：有 open Release PR（`autorelease: pending`）则取其 `package.json.version`，否则回退 [`.release-please-manifest.json`](../../.release-please-manifest.json)。Body 含 `sha: <full>`，供 canary 轨按 commit 检测更新。
 
@@ -101,9 +102,9 @@ Canary `nextVersion`：有 open Release PR（`autorelease: pending`）则取其 
 - 三端 job 均挂 `Swatinem/rust-cache`，**`key` 按平台区分**（`tauri-linux` / `tauri-windows-xwin` / `tauri-android`），避免并行覆盖
 - Windows 交叉另缓存 `cargo-xwin` 与 `~/.xwin`
 
-**本地构建默认 `channel=dev`**（未设 `FREEANIMA_BUILD_CHANNEL` 时）。CI 必须显式设置 `release` / `canary`。构建版本可用 `FREEANIMA_BUILD_VERSION` 覆盖（不改根 `package.json`）。Android APK 的 `versionName` / `versionCode` 由 `apply-tauri-shell-identity` 写入 Tauri `--config` 合并层（与 `native-build-meta` 同源），避免 canary 仍显示基线 release 号。
+**本机构建默认 `channel=local`**（未设 `FREEANIMA_BUILD_CHANNEL` 时；遗留值 `dev` 读入归一为 `local`）。CI 必须显式设置 `release` / `canary`。构建版本可用 `FREEANIMA_BUILD_VERSION` 覆盖（不改根 `package.json`）；未覆盖且为 `local` 时自动 stamp。Android APK 的 `versionName` / `versionCode` 由 `apply-tauri-shell-identity` 写入 Tauri `--config` 合并层（与 `native-build-meta` 同源），避免 canary 仍显示基线 release 号。
 
-**分发轨（build-meta `channel`）**：`release` / `canary` / `dev`。`dev` **不可**换轨、不参与 GitHub 包更新；Desktop/Mobile 在 `dev` 下使用独立 appId（`com.freeanima.portal.dev`），避免覆盖正式安装（`com.freeanima.portal`）；壳默认 home 为 `~/.anima-dev`（正式轨 `~/.anima`，均可用 `FREEANIMA_HOME` 覆盖）。Standalone / Desktop / Mobile 在轨内检查更新；可在 `release`⇄`canary` 间切换。浏览器仅 PWA，不走 GitHub 包通道。
+**分发轨（build-meta `channel`）**：`release` / `canary` / `local`。`local` **不可**换轨、不参与 GitHub 包更新（与 CI 发运区分；打包管线相同）。Desktop/Mobile 在 `local` 下使用独立 appId（仍为 `com.freeanima.portal.dev`，避免已装本机包断裂），产品显示名 **FreeAnima Local**；壳默认 home 仍为 `~/.anima-dev`（正式轨 `~/.anima`，均可用 `FREEANIMA_HOME` 覆盖）。Standalone / Desktop / Mobile 在轨内检查更新；可在 `release`⇄`canary` 间切换。浏览器仅 PWA，不走 GitHub 包通道。
 
 发布使用组织 secret **`FREEANIMA_CI`**。
 
@@ -112,7 +113,7 @@ Canary `nextVersion`：有 open Release PR（`autorelease: pending`）则取其 
 After Release PR merge，`package-artifacts` 会执行 `just pack cli` 并打包上传。本地：
 
 ```bash
-just pack cli   # 默认 channel=dev；CI 设 FREEANIMA_BUILD_CHANNEL
+just pack cli   # 默认 channel=local；CI 设 FREEANIMA_BUILD_CHANNEL
 ./dist/anima-executable/anima --version
 ```
 

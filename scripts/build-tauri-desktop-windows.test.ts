@@ -5,37 +5,37 @@ import { matchNsisSetupForProduct } from "./build-tauri-desktop-windows.ts";
 describe("matchNsisSetupForProduct", () => {
   const mixed = [
     "FreeAnima_0.9.2_x64-setup.exe",
-    "FreeAnima Dev_0.9.2_x64-setup.exe",
+    "FreeAnima Local_0.9.2_x64-setup.exe",
     "readme.txt",
   ];
 
-  it("picks FreeAnima Dev and ignores FreeAnima_", () => {
-    const r = matchNsisSetupForProduct(mixed, "FreeAnima Dev");
-    expect(r).toEqual({ ok: true, name: "FreeAnima Dev_0.9.2_x64-setup.exe" });
+  it("picks FreeAnima Local and ignores FreeAnima_", () => {
+    const r = matchNsisSetupForProduct(mixed, "FreeAnima Local");
+    expect(r).toEqual({ ok: true, name: "FreeAnima Local_0.9.2_x64-setup.exe" });
   });
 
-  it("picks FreeAnima_ without matching FreeAnima Dev_", () => {
+  it("picks FreeAnima_ without matching FreeAnima Local_", () => {
     const r = matchNsisSetupForProduct(mixed, "FreeAnima");
     expect(r).toEqual({ ok: true, name: "FreeAnima_0.9.2_x64-setup.exe" });
   });
 
-  it("accepts dash-normalized Dev name", () => {
+  it("accepts dash-normalized Local name", () => {
     const r = matchNsisSetupForProduct(
-      ["FreeAnima-Dev_0.9.2_x64-setup.exe", "FreeAnima_0.9.2_x64-setup.exe"],
-      "FreeAnima Dev",
+      ["FreeAnima-Local_0.9.2_x64-setup.exe", "FreeAnima_0.9.2_x64-setup.exe"],
+      "FreeAnima Local",
     );
-    expect(r).toEqual({ ok: true, name: "FreeAnima-Dev_0.9.2_x64-setup.exe" });
+    expect(r).toEqual({ ok: true, name: "FreeAnima-Local_0.9.2_x64-setup.exe" });
   });
 
   it("fails when zero matches", () => {
-    const r = matchNsisSetupForProduct(["other-setup.exe"], "FreeAnima Dev");
+    const r = matchNsisSetupForProduct(["other-setup.exe"], "FreeAnima Local");
     expect(r.ok).toBe(false);
   });
 
   it("fails when multiple matches", () => {
     const r = matchNsisSetupForProduct(
-      ["FreeAnima Dev_0.9.2_x64-setup.exe", "FreeAnima-Dev_0.9.3_x64-setup.exe"],
-      "FreeAnima Dev",
+      ["FreeAnima Local_0.9.2_x64-setup.exe", "FreeAnima-Local_0.9.3_x64-setup.exe"],
+      "FreeAnima Local",
     );
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.matches).toHaveLength(2);

@@ -5,7 +5,7 @@ import { resolveAboutNativeBuildMeta } from "./native-build-meta.resolve.ts";
 const sampleMeta = {
   component: "native" as const,
   shell: "mobile" as const,
-  channel: "dev" as const,
+  channel: "local" as const,
   version: "0.8.4",
 };
 
