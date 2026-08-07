@@ -12,6 +12,8 @@ const root = join(import.meta.dir, "..");
 const extOutDir = join(root, "dist/browser-extension");
 const chromeDir = join(extOutDir, "chrome-mv3");
 
+// ui-kit/composite 经 @paraglide/messages；与 just pack web 一样先编译 catalog
+await $`bun ${join(root, "scripts/paraglide-compile.ts")}`.cwd(root);
 await $`bunx wxt build`.cwd(root);
 console.log("browser-extension → dist/browser-extension");
 
