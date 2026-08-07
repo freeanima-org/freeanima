@@ -1,10 +1,13 @@
 import { describe, expect, it } from "bun:test";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
+import { createTempDir, removeTempDir } from "@freeanima/host/core/util/temp-dir";
 import {
   ANDROID_VERSION_CODE_GENERATION_FLOOR,
   computeAndroidVersionCode,
 } from "./android-version-code.ts";
-import { formatCanaryVersion } from "./canary-version.ts";
+import { formatCanaryVersion, formatLocalVersion } from "./canary-version.ts";
 import { resolveBuildVersionFromEnv } from "./resolve-build-version.ts";
 import { resolveDesktopShellIdentity, resolveMobileShellIdentity } from "./shell-identity.ts";
 
@@ -16,6 +19,14 @@ describe("formatCanaryVersion", () => {
   });
 });
 
+describe("formatLocalVersion", () => {
+  it("formats base-local+UTC YYYYMMDDHHmm", () => {
+    const now = new Date(Date.UTC(2026, 7, 7, 6, 17)); // 2026-08-07T06:17Z
+    expect(formatLocalVersion("0.11.0", now)).toBe("0.11.0-local+202608070617");
+    expect(formatLocalVersion("v0.10.1", now)).toBe("0.10.1-local+202608070617");
+  });
+});
+
 describe("resolveBuildVersionFromEnv", () => {
   it("prefers FREEANIMA_BUILD_VERSION and strips leading v", () => {
     expect(
@@ -23,6 +34,21 @@ describe("resolveBuildVersionFromEnv", () => {
         FREEANIMA_BUILD_VERSION: "v1.2.3-canary+202601010000",
       }),
     ).toBe("1.2.3-canary+202601010000");
+  });
+
+  it("stamps local version when FREEANIMA_BUILD_VERSION unset", () => {
+    const dir = createTempDir("freeanima-resolve-ver-");
+    try {
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, "package.json"), JSON.stringify({ version: "0.11.0" }));
+      const now = new Date(Date.UTC(2026, 7, 7, 6, 17));
+      expect(resolveBuildVersionFromEnv(dir, {}, { channel: "local", now })).toBe(
+        "0.11.0-local+202608070617",
+      );
+      expect(resolveBuildVersionFromEnv(dir, {}, { channel: "release", now })).toBe("0.11.0");
+    } finally {
+      removeTempDir(dir);
+    }
   });
 });
 
@@ -34,15 +60,15 @@ describe("shell-identity", () => {
     expect(resolveMobileShellIdentity("canary").appName).toBe("FreeAnima");
   });
 
-  it("uses separate identity for dev", () => {
-    expect(resolveDesktopShellIdentity("dev")).toEqual({
+  it("uses separate identity for local", () => {
+    expect(resolveDesktopShellIdentity("local")).toEqual({
       appId: "com.freeanima.portal.dev",
-      productName: "FreeAnima Dev",
+      productName: "FreeAnima Local",
       executableName: "FreeAnima-Dev",
     });
-    expect(resolveMobileShellIdentity("dev")).toEqual({
+    expect(resolveMobileShellIdentity("local")).toEqual({
       applicationId: "com.freeanima.portal.dev",
-      appName: "FreeAnima Dev",
+      appName: "FreeAnima Local",
     });
   });
 });
@@ -59,7 +85,7 @@ describe("computeAndroidVersionCode", () => {
     expect(code % 2).toBe(1); // release bit
   });
 
-  it("embeds timestamp for canary/dev above generation floor", () => {
+  it("embeds timestamp for canary/local above generation floor", () => {
     const now = new Date(Date.UTC(2026, 6, 16, 2, 16)); // 2026-07-16T02:16Z
     const code = computeAndroidVersionCode("0.9.1-canary+202607160216", {
       channel: "canary",
@@ -67,6 +93,9 @@ describe("computeAndroidVersionCode", () => {
     });
     expect(code).toBeGreaterThan(ANDROID_VERSION_CODE_GENERATION_FLOOR);
     expect(code % 2).toBe(0);
+    expect(computeAndroidVersionCode("0.9.1-local+202607160216", { channel: "local", now })).toBe(
+      code,
+    );
   });
 
   it("keeps canary monotonic across the old 1e6-minute wrap", () => {

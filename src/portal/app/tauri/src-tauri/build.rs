@@ -1,8 +1,9 @@
 fn main() {
-  let channel = std::env::var("FREEANIMA_BUILD_CHANNEL").unwrap_or_else(|_| "dev".into());
+  let channel = std::env::var("FREEANIMA_BUILD_CHANNEL").unwrap_or_else(|_| "local".into());
   let channel = channel.trim().to_ascii_lowercase();
-  let (home_dirname, product_name) = if channel == "dev" {
-    (".anima-dev", "FreeAnima Dev")
+  // 本机轨：channel=local（遗留 env/文档仍可能写 dev）；home 目录名保持 .anima-dev
+  let (home_dirname, product_name) = if channel == "local" || channel == "dev" {
+    (".anima-dev", "FreeAnima Local")
   } else {
     (".anima", "FreeAnima")
   };

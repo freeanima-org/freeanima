@@ -87,7 +87,7 @@ just install tauri
 just dev tauri
 
 # 打包 Dev 安装器（与 Linux 的 just pack tauri 对称）
-$env:FREEANIMA_BUILD_CHANNEL = "dev"
+$env:FREEANIMA_BUILD_CHANNEL = "local"
 just pack tauri
 # 产物：dist/ 下 NSIS，或 src/portal/app/tauri/src-tauri/target/release/bundle/nsis/
 ```

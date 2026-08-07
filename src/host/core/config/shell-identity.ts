@@ -18,9 +18,10 @@ const DESKTOP_RELEASE: DesktopShellIdentity = {
   executableName: "FreeAnima",
 };
 
-const DESKTOP_DEV: DesktopShellIdentity = {
+/** 本机 local 轨：appId/可执行名后缀仍用 `.dev`，避免已装本机包与 `~/.anima-dev` 断裂 */
+const DESKTOP_LOCAL: DesktopShellIdentity = {
   appId: "com.freeanima.portal.dev",
-  productName: "FreeAnima Dev",
+  productName: "FreeAnima Local",
   executableName: "FreeAnima-Dev",
 };
 
@@ -29,16 +30,16 @@ const MOBILE_RELEASE: MobileShellIdentity = {
   appName: "FreeAnima",
 };
 
-const MOBILE_DEV: MobileShellIdentity = {
+const MOBILE_LOCAL: MobileShellIdentity = {
   applicationId: "com.freeanima.portal.dev",
-  appName: "FreeAnima Dev",
+  appName: "FreeAnima Local",
 };
 
-/** 仅 `dev` 使用独立身份；canary/release 共用正式身份 */
+/** 仅 `local` 使用独立身份；canary/release 共用正式身份 */
 export function resolveDesktopShellIdentity(channel: BuildChannel): DesktopShellIdentity {
-  return channel === "dev" ? DESKTOP_DEV : DESKTOP_RELEASE;
+  return channel === "local" ? DESKTOP_LOCAL : DESKTOP_RELEASE;
 }
 
 export function resolveMobileShellIdentity(channel: BuildChannel): MobileShellIdentity {
-  return channel === "dev" ? MOBILE_DEV : MOBILE_RELEASE;
+  return channel === "local" ? MOBILE_LOCAL : MOBILE_RELEASE;
 }

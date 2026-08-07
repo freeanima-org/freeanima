@@ -21,7 +21,7 @@ import { getRepoRoot } from "@freeanima/host/core/config/repo-root.ts";
 
 function usage(): never {
   console.error(
-    "Usage: bun scripts/gen-build-meta.ts --component service|web|native [--shell desktop|mobile] --channel release|canary|dev --out <path> [--repo-root <dir>]",
+    "Usage: bun scripts/gen-build-meta.ts --component service|web|native [--shell desktop|mobile] --channel release|canary|local --out <path> [--repo-root <dir>]",
   );
   process.exit(1);
 }
@@ -64,7 +64,7 @@ function parseArgs(argv: string[]): {
   }
 
   if (!component || !out) usage();
-  const channel = channelArg ?? resolveBuildChannelFromEnv("dev");
+  const channel = channelArg ?? resolveBuildChannelFromEnv("local");
 
   return {
     component,

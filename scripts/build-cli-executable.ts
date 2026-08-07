@@ -106,7 +106,7 @@ async function main(): Promise<void> {
   await ensureWebDist();
 
   console.log("resolving service build-meta for embed…");
-  const channel = resolveBuildChannelFromEnv("dev");
+  const channel = resolveBuildChannelFromEnv("local");
   const buildMeta = createComponentBuildMeta({
     component: "service",
     channel,

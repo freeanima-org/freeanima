@@ -93,7 +93,7 @@ async function fetchTrackRelease(
  * 解析包装更新。
  * - intent=check（默认）：在 `channel` 轨内检查是否有更新
  * - intent=switch：取 `targetChannel` tip，有资产即 available（换轨安装）
- * - channel/target 为 dev 或不合法 → unsupported_channel
+ * - channel/target 为 local 或不合法 → unsupported_channel
  */
 function withProxiedAssetUrl(
   result: PackagedUpdateResult,

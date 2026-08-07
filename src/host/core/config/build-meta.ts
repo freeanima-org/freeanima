@@ -108,7 +108,7 @@ export type CreateComponentBuildMetaInput = {
   version?: string;
   repoRoot?: string;
   env?: NodeJS.ProcessEnv;
-  /** release/canary 默认写入 build 时间；dev 默认不写 */
+  /** release/canary 默认写入 build 时间；local 默认不写 */
   includeBuiltAt?: boolean;
   builtAt?: string;
 };
@@ -122,14 +122,16 @@ export function resolveBuildChannelFromEnv(
   if (!raw) return fallback;
   const channel = normalizeBuildChannel(raw);
   if (!channel) {
-    throw new Error(`Invalid FREEANIMA_BUILD_CHANNEL=${raw} (expected release|canary|dev)`);
+    throw new Error(`Invalid FREEANIMA_BUILD_CHANNEL=${raw} (expected release|canary|local)`);
   }
   return channel;
 }
 
 export function createComponentBuildMeta(input: CreateComponentBuildMetaInput): ComponentBuildMeta {
+  const env = input.env ?? process.env;
   const version =
-    input.version?.trim() || resolveBuildVersionFromEnv(input.repoRoot, input.env ?? process.env);
+    input.version?.trim() ||
+    resolveBuildVersionFromEnv(input.repoRoot, env, { channel: input.channel });
   const git = resolveGitBuildInfo({
     ...(input.repoRoot ? { repoRoot: input.repoRoot } : {}),
     ...(input.env ? { env: input.env } : {}),

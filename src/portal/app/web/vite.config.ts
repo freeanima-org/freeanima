@@ -48,7 +48,7 @@ const UI_VERSION = readUiVersion();
 function devWebBuildMeta() {
   return createComponentBuildMeta({
     component: "web",
-    channel: "dev",
+    channel: "local",
     repoRoot: REPO_ROOT,
     version: UI_VERSION,
     includeBuiltAt: true,

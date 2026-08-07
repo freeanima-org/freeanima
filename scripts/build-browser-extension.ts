@@ -2,6 +2,7 @@
 /**
  * 构建 Vault 浏览器扩展（WXT → dist/browser-extension）并打包为 .zip。
  * 用法：bun scripts/build-browser-extension.ts
+ * 缺省 channel=local（版本 `{pkg}-local+UTC`）；CI 设 FREEANIMA_BUILD_CHANNEL + FREEANIMA_BUILD_VERSION。
  */
 import { $ } from "bun";
 import { readdir, readFile, writeFile } from "node:fs/promises";

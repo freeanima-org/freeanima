@@ -67,7 +67,7 @@ export function clearStaleNsisSetups(dir: string = nsisOut): number {
 
 /**
  * Tauri NSIS 名形如 `{productName}_{version}_x64-setup.exe`。
- * 必须按 productName 前缀匹配，避免 `FreeAnima_` 与 `FreeAnima Dev_` 并存时误选。
+ * 必须按 productName 前缀匹配，避免 `FreeAnima_` 与 `FreeAnima Local_` 并存时误选。
  */
 export function matchNsisSetupForProduct(
   fileNames: string[],

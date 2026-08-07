@@ -6,7 +6,7 @@ on:
   workflow_call:
     inputs:
       channel:
-        description: release | canary | dev
+        description: release | canary | local
         required: true
         type: string
       version:

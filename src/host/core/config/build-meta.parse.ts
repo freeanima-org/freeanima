@@ -1,6 +1,6 @@
 /** Node / CLI 侧 build-meta 解析（与 portal-sdk/build-meta.ts 保持同步） */
 
-export type BuildChannel = "release" | "canary" | "dev";
+export type BuildChannel = "release" | "canary" | "local";
 
 export type BuildComponent = "service" | "web" | "native";
 
@@ -26,10 +26,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === "object" && !Array.isArray(value);
 }
 
-/** 遗留 `"prod"` 归一为 `"release"` */
+/** 遗留 `"prod"` → `"release"`；遗留 `"dev"` → `"local"` */
 export function normalizeBuildChannel(raw: unknown): BuildChannel | null {
-  if (raw === "release" || raw === "canary" || raw === "dev") return raw;
+  if (raw === "release" || raw === "canary" || raw === "local") return raw;
   if (raw === "prod") return "release";
+  if (raw === "dev") return "local";
   return null;
 }
 

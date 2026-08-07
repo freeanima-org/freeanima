@@ -153,7 +153,7 @@ async function fetchServiceAboutInfo(): Promise<ServiceAboutInfo> {
         meta: {
           component: "service",
           version: body.version.trim(),
-          channel: "dev",
+          channel: "local",
         },
         ...(startedAt ? { startedAt } : {}),
       };
@@ -175,7 +175,7 @@ async function fetchWebBuildMeta(): Promise<ComponentBuildMeta | null> {
       return {
         component: "web",
         version: cfg.ui_version,
-        channel: "dev",
+        channel: "local",
       };
     }
     return null;

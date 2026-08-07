@@ -22,14 +22,14 @@
 依赖：`just install tauri`（本机）；交叉 Windows：`just install tauri-windows`（非 Windows 宿主）。
 CI / 本地 release profile 优先级：**构建速度 > 体积 > 运行速度**（无 fat LTO；详见 [`release.md`](release.md)「Tauri 打包加速约定」）。
 
-**身份与数据目录**（由 `FREEANIMA_BUILD_CHANNEL` 派生；未设 ⇒ `dev`）：
+**身份与数据目录**（由 `FREEANIMA_BUILD_CHANNEL` 派生；未设 ⇒ `local`；遗留 `dev` 归一为 `local`）：
 
-| Channel          | Bundle id                  | productName     | Windows 默认安装目录           | 壳默认 home    |
-| ---------------- | -------------------------- | --------------- | ------------------------------ | -------------- |
-| canary / release | `com.freeanima.portal`     | `FreeAnima`     | `%LOCALAPPDATA%\FreeAnima`     | `~/.anima`     |
-| dev              | `com.freeanima.portal.dev` | `FreeAnima Dev` | `%LOCALAPPDATA%\FreeAnima Dev` | `~/.anima-dev` |
+| Channel          | Bundle id                  | productName       | Windows 默认安装目录             | 壳默认 home    |
+| ---------------- | -------------------------- | ----------------- | -------------------------------- | -------------- |
+| canary / release | `com.freeanima.portal`     | `FreeAnima`       | `%LOCALAPPDATA%\FreeAnima`       | `~/.anima`     |
+| local            | `com.freeanima.portal.dev` | `FreeAnima Local` | `%LOCALAPPDATA%\FreeAnima Local` | `~/.anima-dev` |
 
-NSIS 安装目录 = `productName`（无独立 installDir）。`just pack tauri-windows` 按当前 `productName` 选取 setup，并在构建前清除同目录旧 `*-setup.exe`，避免误拷 `FreeAnima_*.exe` 到 `dist/`。请安装与 channel 对应的 setup（dev 安装器文件名含 `FreeAnima Dev` / `FreeAnima-Dev`）。
+NSIS 安装目录 = `productName`（无独立 installDir）。`just pack tauri-windows` 按当前 `productName` 选取 setup，并在构建前清除同目录旧 `*-setup.exe`，避免误拷 `FreeAnima_*.exe` 到 `dist/`。请安装与 channel 对应的 setup（local 安装器文件名含 `FreeAnima Local` / `FreeAnima-Local`；可执行名仍为 `FreeAnima-Dev`）。
 
 打包/开发脚本经 `scripts/apply-tauri-shell-identity.ts` 写出 `--config` 合并层（含 `version`；Android 另写 `bundle.android.versionCode`，公式见 `android-version-code.ts`）；`FREEANIMA_BUILD_VERSION` 同时写入 `native-build-meta`（关于页 / 更新比较）。`FREEANIMA_HOME` 仍可覆盖壳 home。Habitat/CLI 数据目录不受此表影响（仍 `~/.anima` 或 `FREEANIMA_HOME`）。
 

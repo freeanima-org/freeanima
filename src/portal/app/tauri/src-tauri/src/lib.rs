@@ -75,7 +75,7 @@ fn anima_home() -> std::path::PathBuf {
   h
 }
 
-/// 桌面：`~/.anima`（channel=dev 时为 `~/.anima-dev`，可用 FREEANIMA_HOME 覆盖）；移动：应用私有 config 目录。
+/// 桌面：`~/.anima`（channel=local 时为 `~/.anima-dev`，可用 FREEANIMA_HOME 覆盖）；移动：应用私有 config 目录。
 fn shell_prefs_path(app: &AppHandle) -> Result<std::path::PathBuf, String> {
   #[cfg(mobile)]
   {

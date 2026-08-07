@@ -36,7 +36,7 @@ cli: _deps
   {{ bun }} scripts/build-cli-executable.ts
 
 # 当前宿主平台桌面壳（Win→NSIS / Linux→AppImage；与 just dev tauri 同工具链）
-# 环境：FREEANIMA_BUILD_CHANNEL（缺省 dev）
+# 环境：FREEANIMA_BUILD_CHANNEL（缺省 local）
 [no-cd]
 tauri: _deps _ensure-tauri-desktop
   {{ bun }} scripts/build-tauri-desktop.ts
@@ -74,6 +74,7 @@ brand-icons: _deps
   {{ bun }} scripts/generate-brand-icons.ts
 
 # Vault 浏览器扩展（MV3 → dist/browser-extension）
+# 环境：FREEANIMA_BUILD_CHANNEL（缺省 local）；CI 设 canary|release + FREEANIMA_BUILD_VERSION
 [no-cd]
 browser-extension: _deps
   {{ bun }} scripts/build-browser-extension.ts

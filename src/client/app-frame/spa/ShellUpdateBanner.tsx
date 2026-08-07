@@ -105,7 +105,7 @@ export function ShellUpdateBanner(): null {
       try {
         const meta = await resolveAboutNativeBuildMeta();
         const channel: BuildChannel =
-          meta?.channel ?? window.portalShell?.nativeBuild?.channel ?? "dev";
+          meta?.channel ?? window.portalShell?.nativeBuild?.channel ?? "local";
         if (!isSwitchableChannel(channel)) {
           if (manual) setPhase("none");
           else setPhase("idle");

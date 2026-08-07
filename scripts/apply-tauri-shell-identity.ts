@@ -1,7 +1,7 @@
 /**
- * 按 FREEANIMA_BUILD_CHANNEL（缺省 dev）写出 Tauri `--config` 合并层。
- * 基线 `tauri.conf.json` 保持正式身份；dev 覆盖为 `.portal.dev`。
- * 版本 / Android versionCode 来自 FREEANIMA_BUILD_VERSION（canary 含 stamp），
+ * 按 FREEANIMA_BUILD_CHANNEL（缺省 local）写出 Tauri `--config` 合并层。
+ * 基线 `tauri.conf.json` 保持正式身份；local 覆盖为 `.portal.dev`（路径兼容）。
+ * 版本 / Android versionCode 来自 FREEANIMA_BUILD_VERSION（canary/local 含 stamp），
  * 避免 APK versionName 卡在基线 release 号导致「关于」与更新检测误判同版。
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -75,8 +75,8 @@ export function applyTauriShellIdentity(options?: {
   const target = options?.target ?? "desktop";
   const srcTauri = options?.srcTauri ?? srcTauriDefault;
   const repoRoot = options?.repoRoot ?? root;
-  const channel = resolveBuildChannelFromEnv("dev", env);
-  const version = resolveBuildVersionFromEnv(repoRoot, env);
+  const channel = resolveBuildChannelFromEnv("local", env);
+  const version = resolveBuildVersionFromEnv(repoRoot, env, { channel });
 
   const basePath = join(srcTauri, "tauri.conf.json");
   const base = JSON.parse(readFileSync(basePath, "utf-8")) as TauriConfShape;

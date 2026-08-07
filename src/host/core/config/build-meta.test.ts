@@ -25,12 +25,23 @@ describe("build-meta", () => {
       parseComponentBuildMeta({
         component: "service",
         version: "0.8.3",
+        channel: "local",
+      }),
+    ).toEqual({
+      component: "service",
+      version: "0.8.3",
+      channel: "local",
+    });
+    expect(
+      parseComponentBuildMeta({
+        component: "service",
+        version: "0.8.3",
         channel: "dev",
       }),
     ).toEqual({
       component: "service",
       version: "0.8.3",
-      channel: "dev",
+      channel: "local",
     });
     expect(
       parseComponentBuildMeta({
@@ -92,7 +103,7 @@ describe("build-meta", () => {
     expect(readBuildMetaFile(join(dir, "missing.json"))).toBeNull();
   });
 
-  it("createComponentBuildMeta reads version from repo package.json", () => {
+  it("createComponentBuildMeta stamps local version from package.json", () => {
     const dir = createTempDir("freeanima-build-meta-root-");
     tempDirs.push(dir);
     mkdirSync(dir, { recursive: true });
@@ -102,12 +113,13 @@ describe("build-meta", () => {
     );
     const meta = createComponentBuildMeta({
       component: "service",
-      channel: "dev",
+      channel: "local",
       repoRoot: dir,
       includeBuiltAt: false,
       env: {},
     });
-    expect(meta.version).toBe("1.2.3");
+    expect(meta.version).toMatch(/^1\.2\.3-local\+\d{12}$/);
+    expect(meta.channel).toBe("local");
     expect(meta.built_at).toBeUndefined();
   });
 
@@ -146,7 +158,10 @@ describe("build-meta", () => {
   });
 
   it("parse module matches node re-export", () => {
-    const raw = { component: "service", version: "0.8.3", channel: "dev" };
+    const raw = { component: "service", version: "0.8.3", channel: "local" };
     expect(parseComponentBuildMetaBrowser(raw)).toEqual(parseComponentBuildMeta(raw));
+    expect(parseComponentBuildMeta({ ...raw, channel: "dev" })).toEqual(
+      parseComponentBuildMeta(raw),
+    );
   });
 });

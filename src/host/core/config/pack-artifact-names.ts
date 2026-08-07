@@ -35,14 +35,14 @@ export function resolvePackArtifactMeta(
   repoRoot?: string,
   env: NodeJS.ProcessEnv = process.env,
 ): PackArtifactMeta {
-  const channel = resolveBuildChannelFromEnv("dev", env);
-  const version = resolveBuildVersionFromEnv(repoRoot, env);
+  const channel = resolveBuildChannelFromEnv("local", env);
+  const version = resolveBuildVersionFromEnv(repoRoot, env, { channel });
   return { channel, version, versionToken: sanitizePackVersionToken(version) };
 }
 
 /**
  * 版本化文件名：`…-{versionToken}-{channel}…`
- * 例：`freeanima-desktop-windows-x64-0.9.2-dev-setup.exe`
+ * 例：`freeanima-desktop-windows-x64-0.9.2-local.202608070617-local-setup.exe`
  */
 export function packArtifactVersionedName(kind: PackArtifactKind, meta: PackArtifactMeta): string {
   const { versionToken, channel } = meta;
