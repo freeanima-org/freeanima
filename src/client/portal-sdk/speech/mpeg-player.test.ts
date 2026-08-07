@@ -83,7 +83,7 @@ afterEach(() => {
   URL.revokeObjectURL = originalRevokeObjectURL;
   if (originalMediaSource === undefined) {
     // @ts-expect-error test cleanup — 避免 MediaSource mock 泄漏到其它用例
-    delete globalThis.MediaSource;
+    globalThis.MediaSource = undefined;
   } else {
     globalThis.MediaSource = originalMediaSource;
   }
