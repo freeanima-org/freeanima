@@ -91,6 +91,20 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
     }
   }, [defaultProfile, onError, onSaved, onSavingChange]);
 
+  /** 静默校验（关闭时用）；不写 onError，避免拦关闭导致 Dialog FocusScope 崩。 */
+  const isEditorValid = useCallback((): boolean => {
+    if (!editor) return false;
+    const id = editor.id.trim();
+    if (!id) return false;
+    if (editor.kind === "connection") {
+      if (validateTimeoutDraft(readTimeoutDraft(editor.entry))) return false;
+      if (editor.mode === "create" && connectionIds.includes(id)) return false;
+    } else if (editor.mode === "create" && sceneIds.includes(id)) {
+      return false;
+    }
+    return true;
+  }, [editor, connectionIds, sceneIds]);
+
   const validateEditor = useCallback((): boolean => {
     if (!editor) return false;
     const id = editor.id.trim();
@@ -178,15 +192,18 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
     onError,
   ]);
 
+  /** 关闭/遮罩Dismiss：始终关掉；仅内容有效时写回本地 draft（不拦关闭、不弹校验错误）。 */
   const closeEditorPreservingDraft = useCallback(() => {
-    if (!validateEditor()) return;
-    if (editor?.kind === "connection") {
-      setProvidersDraft((prev) => computeUpdatedProviders(prev));
-    } else if (editor?.kind === "scene") {
-      setProfilesDraft((prev) => computeUpdatedProfiles(prev));
+    onError("");
+    if (editor && isEditorValid()) {
+      if (editor.kind === "connection") {
+        setProvidersDraft((prev) => computeUpdatedProviders(prev));
+      } else if (editor.kind === "scene") {
+        setProfilesDraft((prev) => computeUpdatedProfiles(prev));
+      }
     }
     setEditor(null);
-  }, [editor, validateEditor, computeUpdatedProviders, computeUpdatedProfiles]);
+  }, [editor, isEditorValid, computeUpdatedProviders, computeUpdatedProfiles, onError]);
 
   const deleteConnection = async (id: string) => {
     const ok = await showConfirm({

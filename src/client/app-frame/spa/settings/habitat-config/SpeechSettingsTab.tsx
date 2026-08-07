@@ -22,6 +22,7 @@ import {
   getWebSpeechUnsupportedReason,
   isWebSpeechApiAvailable,
 } from "@freeanima/client/portal-sdk/speech/web-speech-support";
+import { habitatConfigSelectClassName } from "./habitat-config-field-helpers.tsx";
 
 const LANG_OPTIONS = [
   { value: "", label: "跟随应用语言" },
@@ -34,8 +35,7 @@ const PROVIDER_OPTIONS: Array<{ value: TtsProvider; label: string }> = [
   { value: "web-speech", label: "浏览器 Web Speech（本机离线）" },
 ];
 
-const selectClassName =
-  "border-input flex h-8 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30";
+const selectClassName = habitatConfigSelectClassName;
 
 function numberField(
   label: string,

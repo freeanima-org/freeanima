@@ -20,7 +20,7 @@ import {
 import { LLM_FORMAT_ANTHROPIC_MESSAGES } from "@freeanima/host/core/config";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { cleanToolCallsForApi } from "@freeanima/host/core/provider/stream-tools";
-import { defaultModelInfo } from "../catalog.ts";
+import { defaultModelInfoEnriched } from "../catalog.ts";
 import {
   parseOpenAiCompatibleContext,
   resolveChatTimeouts,
@@ -353,7 +353,7 @@ export class AnthropicMessagesBackend extends LlmBackend {
   }
 
   async getModel(model: string, _context: BackendContext): Promise<ModelInfo | null> {
-    return defaultModelInfo(model);
+    return defaultModelInfoEnriched(model);
   }
 
   mapError(err: unknown, _context: BackendContext, meta?: { providerId?: string }): ProviderError {

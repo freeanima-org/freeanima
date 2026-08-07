@@ -1,5 +1,10 @@
 import type OpenAI from "openai";
 import type { ModelInfo, SupportedParam } from "@freeanima/host/core/provider";
+import {
+  CATALOG_DEFAULT_CONTEXT_WINDOW,
+  CATALOG_DEFAULT_MAX_OUTPUT_TOKENS,
+  enrichModelInfoFromModelsDev,
+} from "./models-dev/enrich.ts";
 
 const DEFAULT_SUPPORTED_PARAMS: SupportedParam[] = [
   "temperature",
@@ -13,12 +18,12 @@ const DEFAULT_SUPPORTED_PARAMS: SupportedParam[] = [
 ];
 
 const DEFAULT_MODEL_INFO = {
-  contextWindow: 128_000,
-  maxOutputTokens: 8192,
+  contextWindow: CATALOG_DEFAULT_CONTEXT_WINDOW,
+  maxOutputTokens: CATALOG_DEFAULT_MAX_OUTPUT_TOKENS,
   supportedParams: DEFAULT_SUPPORTED_PARAMS,
 } as const;
 
-/** Fallback catalog when no /models entries */
+/** Fallback catalog when no /models entries; optionally enriched via models.dev. */
 export function defaultModelInfo(model: string): ModelInfo {
   return {
     model,
@@ -26,6 +31,11 @@ export function defaultModelInfo(model: string): ModelInfo {
     maxOutputTokens: DEFAULT_MODEL_INFO.maxOutputTokens,
     supportedParams: [...DEFAULT_MODEL_INFO.supportedParams],
   };
+}
+
+/** defaultModelInfo + models.dev enrich (context / cost / label). */
+export async function defaultModelInfoEnriched(model: string): Promise<ModelInfo> {
+  return enrichModelInfoFromModelsDev(defaultModelInfo(model), { preferModelsDevLimits: true });
 }
 
 type OpenAiModelObject = OpenAI.Models.Model;

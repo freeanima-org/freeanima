@@ -9,8 +9,14 @@ import {
 } from "@freeanima/host/core/provider";
 import { contextCacheKey, parseOpenAiCompatibleContext } from "./context.ts";
 import { createOpenAiClientFromParsed } from "./client.ts";
-import { defaultModelInfo, fetchModelCatalog, findModelInCatalog } from "./catalog.ts";
+import {
+  defaultModelInfo,
+  defaultModelInfoEnriched,
+  fetchModelCatalog,
+  findModelInCatalog,
+} from "./catalog.ts";
 import { loadModelCatalogCache, saveModelCatalogCache } from "./catalog-cache.ts";
+import { enrichCatalogFromModelsDev, enrichModelInfoFromModelsDev } from "./models-dev/enrich.ts";
 import { mapOpenAiCompatibleError } from "./map-error.ts";
 import { runOpenAiChat, runOpenAiChatStream } from "./openai-chat.ts";
 
@@ -28,13 +34,15 @@ export class OpenAiCompatibleBackend extends LlmBackend {
 
     const fromShared = await loadModelCatalogCache(parsed);
     if (fromShared) {
-      this.catalogCache.set(cacheKey, fromShared);
-      return fromShared;
+      const enriched = await enrichCatalogFromModelsDev(fromShared);
+      this.catalogCache.set(cacheKey, enriched);
+      return enriched;
     }
 
     const client = createOpenAiClientFromParsed(parsed);
     try {
-      const catalog = await fetchModelCatalog(client);
+      const raw = await fetchModelCatalog(client);
+      const catalog = await enrichCatalogFromModelsDev(raw);
       this.catalogCache.set(cacheKey, catalog);
       await saveModelCatalogCache(parsed, catalog);
       return catalog;
@@ -50,22 +58,27 @@ export class OpenAiCompatibleBackend extends LlmBackend {
     if (!catalog) {
       const fromShared = await loadModelCatalogCache(parsed);
       if (fromShared) {
-        catalog = fromShared;
+        catalog = await enrichCatalogFromModelsDev(fromShared);
         this.catalogCache.set(cacheKey, catalog);
       }
     }
     if (!catalog) {
       try {
         const client = createOpenAiClientFromParsed(parsed);
-        catalog = await fetchModelCatalog(client);
+        const raw = await fetchModelCatalog(client);
+        catalog = await enrichCatalogFromModelsDev(raw);
         this.catalogCache.set(cacheKey, catalog);
         await saveModelCatalogCache(parsed, catalog);
       } catch {
         // /models flaky on many compatible gateways — keep chat usable
-        return defaultModelInfo(model);
+        return defaultModelInfoEnriched(model);
       }
     }
-    return findModelInCatalog(catalog, model) ?? defaultModelInfo(model);
+    const found = findModelInCatalog(catalog, model);
+    if (found) {
+      return enrichModelInfoFromModelsDev(found);
+    }
+    return enrichModelInfoFromModelsDev(defaultModelInfo(model), { preferModelsDevLimits: true });
   }
 
   mapError(err: unknown, _context: BackendContext, meta?: { providerId?: string }): ProviderError {
