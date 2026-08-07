@@ -40,6 +40,10 @@ describe("UserVaultSession absolute + hydrate", () => {
     await session.hydrateFromMasterKeyRaw(raw!, scopes, unlockedAt);
     expect(session.isUnlocked("__vault_ext__")).toBe(true);
     expect(session.getExpiresAtMs()).toBeGreaterThan(Date.now());
+    // SW 冷启动后本地缓存仍需 exportMasterKeyRaw
+    const rawAfterHydrate = await session.exportMasterKeyRaw();
+    expect(rawAfterHydrate).not.toBeNull();
+    expect(rawAfterHydrate).toEqual(raw);
   });
 
   test("hydrate 已过期则失败并保持锁定", async () => {

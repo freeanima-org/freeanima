@@ -126,7 +126,9 @@ export class UserVaultSession {
     scopes: string[],
     unlockedAtMs: number = Date.now(),
   ): Promise<void> {
-    const masterKey = await importRawAesKey(rawKey);
+    const masterKey = await importRawAesKey(rawKey, {
+      extractable: this.extractableMasterKey,
+    });
     this.masterKey = masterKey;
     this.unlockedAtMs = unlockedAtMs;
     this.unlockedScopes = new Set(scopes.length > 0 ? scopes : [VAULT_UI_SCOPE]);
