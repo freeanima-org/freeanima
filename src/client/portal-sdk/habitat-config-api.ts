@@ -67,3 +67,27 @@ export async function testHabitatConfigConnection(input: {
     input,
   )) as HabitatConfigTestConnectionResult;
 }
+
+export type HabitatProviderModelEntry = {
+  model: string;
+  label?: string;
+  contextWindow: number;
+  maxOutputTokens: number;
+  cost?: { input?: number; output?: number };
+};
+
+export type HabitatListProviderModelsResult = {
+  models: HabitatProviderModelEntry[];
+  source: "provider" | "models_dev";
+};
+
+export async function listHabitatProviderModels(input: {
+  provider_id: string;
+  query?: string;
+  limit?: number;
+}): Promise<HabitatListProviderModelsResult> {
+  return (await habitatRpc().call(
+    "config.listProviderModels",
+    input,
+  )) as HabitatListProviderModelsResult;
+}

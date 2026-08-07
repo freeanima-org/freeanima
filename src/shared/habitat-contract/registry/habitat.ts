@@ -80,6 +80,28 @@ const configTestConnectionOutputSchema = z.object({
   latency_ms: z.number().int().nonnegative().optional(),
   details: z.record(z.string(), z.unknown()).optional(),
 });
+const configListProviderModelsInputSchema = z.object({
+  provider_id: z.string().min(1),
+  query: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(500).optional(),
+});
+const configListProviderModelsOutputSchema = z.object({
+  models: z.array(
+    z.object({
+      model: z.string(),
+      label: z.string().optional(),
+      contextWindow: z.number().int().nonnegative(),
+      maxOutputTokens: z.number().int().nonnegative(),
+      cost: z
+        .object({
+          input: z.number().optional(),
+          output: z.number().optional(),
+        })
+        .optional(),
+    }),
+  ),
+  source: z.enum(["provider", "models_dev"]),
+});
 const sleepRunStepBodySchema = z.object({
   step_id: z.string().min(1),
   day: z.string().optional(),
@@ -185,6 +207,11 @@ export const habitatMethodDefs = {
     input: configTestConnectionInputSchema,
     output: configTestConnectionOutputSchema,
     meta: dualTransportMeta(false),
+  }),
+  "config.listProviderModels": defineHabitatMethod({
+    input: configListProviderModelsInputSchema,
+    output: configListProviderModelsOutputSchema,
+    meta: dualTransportMeta(true),
   }),
   "memory.files": defineHabitatMethod({
     input: emptyInputSchema,

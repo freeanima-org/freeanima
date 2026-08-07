@@ -166,4 +166,18 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /*
+   * 原生 <select> 下拉在暗色主题下常继承浅色系统面板 + 前景文字，导致白底白字。
+   * color-scheme 让 OS 用暗色弹出层；option 再钉死 popover 色。
+   */
+  .dark select {
+    color-scheme: dark;
+  }
+
+  .dark select option,
+  .dark select optgroup {
+    background-color: var(--popover);
+    color: var(--popover-foreground);
+  }
 }
