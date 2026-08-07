@@ -20,6 +20,7 @@ function createMockAudio() {
     preload: "",
     currentTime: 0,
     readyState: 4,
+    ended: false,
     error: null as MediaError | null,
     setAttribute: mock(() => {}),
     pause: mock(function pause(this: { src: string; currentTime: number }) {
@@ -28,11 +29,15 @@ function createMockAudio() {
     removeAttribute: mock(function removeAttribute(this: { src: string }, name: string) {
       if (name === "src") this.src = "";
     }),
-    load: mock(function load(this: { readyState: number }) {
+    load: mock(function load(this: { readyState: number; ended: boolean }) {
       this.readyState = 4;
+      this.ended = false;
     }),
-    play: mock(function play(this: { emit: (type: string) => void; src: string }) {
-      queueMicrotask(() => this.emit("ended"));
+    play: mock(function play(this: { emit: (type: string) => void; src: string; ended: boolean }) {
+      queueMicrotask(() => {
+        this.ended = true;
+        this.emit("ended");
+      });
       return Promise.resolve();
     }),
     addEventListener(type: string, listener: () => void) {
@@ -69,6 +74,9 @@ beforeEach(() => {
   resetMpegPlayerStateForTests();
   setTtsAudioCacheForTests(new TtsAudioCache());
   stopMpegPlayback();
+  // 隔离：勿继承其它用例泄漏的 MediaSource mock（否则会误走 MSE 路径挂死）
+  // @ts-expect-error test isolation
+  delete globalThis.MediaSource;
   URL.createObjectURL = mock(() => "blob:mock-audio") as typeof URL.createObjectURL;
   URL.revokeObjectURL = mock(() => {}) as typeof URL.revokeObjectURL;
 
@@ -187,8 +195,11 @@ describe("createHabitatSpeechAdapter", () => {
 
     globalThis.Audio = mock(function MockAudio() {
       const audio = createMockAudio();
-      audio.play = mock(function play(this: { emit: (type: string) => void }) {
-        void firstPlayGate.then(() => this.emit("ended"));
+      audio.play = mock(function play(this: { emit: (type: string) => void; ended: boolean }) {
+        void firstPlayGate.then(() => {
+          this.ended = true;
+          this.emit("ended");
+        });
         return Promise.resolve();
       }) as typeof audio.play;
       latestMockAudio = audio;

@@ -299,6 +299,11 @@ async function waitForAudioEnded(audio: HTMLAudioElement, generation: number): P
     };
     audio.addEventListener("ended", onEnded);
     audio.addEventListener("error", onError);
+    // play() 可能在注册 listener 前已 ended（极短音频 / 测试 mock）
+    if (audio.ended) {
+      cleanup();
+      resolve();
+    }
   });
 
   if (isCancelled(generation)) {
