@@ -27,6 +27,8 @@ import {
   vaultPatchPlainOutputSchema,
   vaultSearchInputSchema,
   vaultSearchOutputSchema,
+  vaultTouchInputSchema,
+  vaultTouchOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/vault";
 
 import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
@@ -60,6 +62,11 @@ export const vaultMethodDefs = {
   "vault.patchPlain": defineHabitatMethod({
     input: vaultPatchPlainInputSchema,
     output: vaultPatchPlainOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "vault.touch": defineHabitatMethod({
+    input: vaultTouchInputSchema,
+    output: vaultTouchOutputSchema,
     meta: dualTransportMeta(false),
   }),
   "vault.delete": defineHabitatMethod({

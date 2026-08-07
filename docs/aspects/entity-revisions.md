@@ -76,6 +76,7 @@ flowchart LR
 | 场景                                        | 建议                                                       |
 | ------------------------------------------- | ---------------------------------------------------------- |
 | Vault 改主密码只 rewrap `dek_wrapped`       | **必须** skip（并显式写回 `revisions[].body.dek_wrapped`） |
+| Vault `vault.touch` 只写 `last_used_at`     | **必须** skip（填充高频，勿挤内容版本）                    |
 | 清单删除时子项 `parent_id: null` 等结构挂接 | skip                                                       |
 | 纯排序 / unread 标记翻转                    | 宜 skip（避免挤掉有用内容版本）                            |
 | 用户编辑标题、正文、密文                    | **不要** skip                                              |

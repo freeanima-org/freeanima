@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, FormField, Input, Checkbox } from "@freeanima/ui-kit";
+import { Button, FormField, FormToggle, Input } from "@freeanima/ui-kit";
 
 export type VaultPasswordGeneratorOptions = {
   length: number;
@@ -80,7 +80,7 @@ export function VaultPasswordGeneratorPanel({
           }
         />
       </FormField>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
         {(
           [
             ["upper", "大写 A–Z"],
@@ -89,14 +89,12 @@ export function VaultPasswordGeneratorPanel({
             ["symbols", "符号"],
           ] as const
         ).map(([key, label]) => (
-          <Checkbox
+          <FormToggle
             key={key}
-            className="gap-2"
-            isSelected={opts[key]}
+            label={label}
+            checked={opts[key]}
             onChange={(selected) => setOpts((prev) => ({ ...prev, [key]: selected }))}
-          >
-            <span className="text-sm">{label}</span>
-          </Checkbox>
+          />
         ))}
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}

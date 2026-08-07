@@ -15,6 +15,7 @@ export type ExtToBgMessage =
   | { type: "lock" }
   | { type: "list_for_tab"; tab_url: string; query?: string }
   | { type: "get_fill_payload"; item_id: number }
+  | { type: "record_fill_used"; item_id: number }
   | { type: "get_item"; item_id: number }
   | {
       type: "save_item";
@@ -77,6 +78,7 @@ export type ExtBgResponse =
   | { ok: true; unlocked: boolean; habitat_configured: boolean }
   | { ok: true; items: ExtVaultListItem[] }
   | { ok: true; fill: FillPayload }
+  | { ok: true; recorded: true }
   | { ok: true; editor: ExtVaultEditorItem }
   | { ok: true; password: string }
   | { ok: true; item: VaultItemMetaRowPayload | VaultItemDetailRowPayload }

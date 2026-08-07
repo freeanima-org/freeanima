@@ -93,7 +93,7 @@ function Dialog({
       >
         <DialogPrimitive
           data-slot="dialog"
-          className="flex h-full min-h-0 flex-col [gap:inherit] outline-none"
+          className="flex min-h-0 flex-col [gap:inherit] outline-none"
         >
           {children}
           {showCloseButton && (
@@ -126,7 +126,7 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end",
+        "-mx-4 -mb-4 flex shrink-0 flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end",
         className,
       )}
       {...props}

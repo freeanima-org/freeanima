@@ -18,9 +18,10 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 ## 条目模型（摘要）
 
 - 类型：`login` | `secure_note` | `card` | `identity` | `custom`
-- 明文 meta：`title`、`url`、`uris[]`（`uri` + `match`）、`username`、顶层 `tag_ids`（同 World `tag` entity；禁止 `body.tags`）、`import_refs`（如 `bitwarden` UUID）、`custom_field_names`
+- 明文 meta：`title`、`url`、`uris[]`（`uri` + `match`）、`username`、顶层 `tag_ids`（同 World `tag` entity；禁止 `body.tags`）、`import_refs`（如 `bitwarden` UUID）、`custom_field_names`、`last_used_at`（可选 ISO）
 - 密文：`secrets_enc` + `dek_wrapped`；载荷含 `password` / `totp` / `notes` / `custom_fields` / `card` / `identity`
 - `url` 为主展示 URI；`uris` 供 Bitwarden 式匹配（`domain` / `host` / `starts_with` / `exact` / `regex` / `never`）。无 `uris` 时对 `url` 做 domain 匹配
+- `last_used_at`：最近一次**自动填充**时间；扩展多匹配同分时按此降序。复制账密不计次。写回走 `vault.touch`（`skip_revision`）
 
 ## Shell UI
 
@@ -35,9 +36,10 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 - 构建：`just pack browser-extension` → `dist/browser-extension/chrome-mv3`
 - 开发：`just dev browser-extension`（或 `bunx wxt`）
 - 连接：扩展 **直连 Habitat**（Bearer `fa_at_…`），HTTP REST only；解锁态保存在扩展进程内，并经 `chrome.storage.session` 跨 service worker 回收恢复（**最多 8 小时**；**浏览器关闭后清除**，需重输主密码）。hydrate 须导入**可导出**主密钥，否则本地缓存无法用主密钥加解密并会误报 `vault_locked`
-- 能力：按 URL 匹配填充、弹窗列表（`vault.search` 对齐壳检索）、**新建/编辑/删除**（与 Shell 同表单）、保存提示、密码生成、右键菜单、快捷键、卡片/身份填充
+- 能力：按 URL 匹配填充（同分按 `last_used_at`）、弹窗列表（`vault.search` 对齐壳检索）、**新建/编辑/删除**（与 Shell 同表单）、保存提示、密码生成、右键菜单、快捷键、卡片/身份填充
 - 保存提示：提交登录表单时，若同 URL+用户名已在库中则**不弹**确认框
 - 本地缓存：`chrome.storage.local` 存放**主密钥 AES-GCM 加密**的条目副本；须解锁（主密码）后方可解密；锁定仅清内存明文
+- 填充后：扩展乐观更新本地 `last_used_at`，并调用 `vault.touch` 写回 Habitat；复制用户名/密码/TOTP **不**计次
 - 弹窗列表：行外常显「自动填充」与「复制密码」
 - 页内：聚焦用户名/密码框时 Shadow DOM 浮层列出匹配登录项（类 Bitwarden），并提供填充 / 复制密码按钮
 - content script：原生 DOM 填充（不挂 React）

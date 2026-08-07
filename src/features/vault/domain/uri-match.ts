@@ -11,6 +11,8 @@ export type VaultUriMatchable = {
   id: number;
   url?: string | undefined;
   uris?: VaultUriEntry[] | undefined;
+  /** ISO；同分时越新越靠前 */
+  last_used_at?: string | undefined;
 };
 
 export type VaultUriMatchResult = {
@@ -18,7 +20,14 @@ export type VaultUriMatchResult = {
   score: number;
   matched_uri: string;
   match: VaultUriMatchKind;
+  last_used_at?: string | undefined;
 };
+
+function lastUsedMs(iso: string | undefined): number {
+  if (!iso) return 0;
+  const ms = Date.parse(iso);
+  return Number.isFinite(ms) ? ms : 0;
+}
 
 function stripWww(host: string): string {
   return host.startsWith("www.") ? host.slice(4) : host;
@@ -112,7 +121,7 @@ export function scoreUriMatch(
   return 60;
 }
 
-/** 对条目列表按当前页 URL 匹配并排序（高分在前） */
+/** 对条目列表按当前页 URL 匹配并排序（高分在前；同分按 last_used_at 降序，再 id） */
 export function matchVaultItemsForUrl(
   pageUrl: string,
   items: VaultUriMatchable[],
@@ -129,10 +138,14 @@ export function matchVaultItemsForUrl(
           score,
           matched_uri: entry.uri,
           match: entry.match,
+          ...(item.last_used_at !== undefined ? { last_used_at: item.last_used_at } : {}),
         };
       }
     }
     if (best) out.push(best);
   }
-  return out.toSorted((a, b) => b.score - a.score || a.id - b.id);
+  return out.toSorted(
+    (a, b) =>
+      b.score - a.score || lastUsedMs(b.last_used_at) - lastUsedMs(a.last_used_at) || a.id - b.id,
+  );
 }

@@ -11,6 +11,7 @@ export {
   listVaultItemRevisions,
   restoreVaultItemRevision,
   toVaultItemMeta,
+  touchVaultItemLastUsed,
   type VaultItemRow,
   type VaultItemMetaRow,
   type VaultItemCreateInput,

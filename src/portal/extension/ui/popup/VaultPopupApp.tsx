@@ -146,6 +146,7 @@ export function VaultPopupApp() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id) return;
     await chrome.tabs.sendMessage(tab.id, { type: "fill_login", fill: fillRes.fill });
+    void sendBg({ type: "record_fill_used", item_id: id });
     window.close();
   };
 
@@ -261,6 +262,7 @@ export function VaultPopupApp() {
   if (!unlocked) {
     return (
       <VaultUnlockForm
+        className="h-full"
         loading={unlockLoading}
         error={gateError}
         setupMode={false}
@@ -665,7 +667,7 @@ export function VaultPopupApp() {
           <button
             key={id}
             type="button"
-            className={`flex-1 py-2.5 text-xs ${
+            className={`flex-1 py-2 text-xs ${
               activeTab === id ? "font-semibold text-primary" : "text-muted-foreground"
             }`}
             onClick={() => {
