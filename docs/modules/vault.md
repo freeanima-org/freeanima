@@ -34,7 +34,7 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 - 入口：`src/portal/extension`（WXT MV3；React popup/options + `runtime/` + `features/vault/`；工具栏图标在 `public/icon-*.png`）
 - 构建：`just pack browser-extension` → `dist/browser-extension/chrome-mv3`
 - 开发：`just dev browser-extension`（或 `bunx wxt`）
-- 连接：扩展 **直连 Habitat**（Bearer `fa_at_…`），HTTP REST only；解锁态保存在扩展进程内，并经 `chrome.storage.session` 跨 service worker 回收恢复（**最多 8 小时**；**浏览器关闭后清除**，需重输主密码）
+- 连接：扩展 **直连 Habitat**（Bearer `fa_at_…`），HTTP REST only；解锁态保存在扩展进程内，并经 `chrome.storage.session` 跨 service worker 回收恢复（**最多 8 小时**；**浏览器关闭后清除**，需重输主密码）。hydrate 须导入**可导出**主密钥，否则本地缓存无法用主密钥加解密并会误报 `vault_locked`
 - 能力：按 URL 匹配填充、弹窗列表（`vault.search` 对齐壳检索）、**新建/编辑/删除**（与 Shell 同表单）、保存提示、密码生成、右键菜单、快捷键、卡片/身份填充
 - 保存提示：提交登录表单时，若同 URL+用户名已在库中则**不弹**确认框
 - 本地缓存：`chrome.storage.local` 存放**主密钥 AES-GCM 加密**的条目副本；须解锁（主密码）后方可解密；锁定仅清内存明文

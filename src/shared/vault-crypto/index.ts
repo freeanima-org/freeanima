@@ -148,12 +148,15 @@ export async function verifyMasterKey(masterKey: CryptoKey, verifier: string): P
   }
 }
 
-export async function importRawAesKey(rawKey: Uint8Array): Promise<CryptoKey> {
+export async function importRawAesKey(
+  rawKey: Uint8Array,
+  opts?: { extractable?: boolean },
+): Promise<CryptoKey> {
   return getCrypto().subtle.importKey(
     "raw",
     asBufferSource(rawKey),
     { name: "AES-GCM", length: 256 },
-    false,
+    opts?.extractable === true,
     ["encrypt", "decrypt", "wrapKey", "unwrapKey"],
   );
 }
