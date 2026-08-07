@@ -3,6 +3,7 @@ import path from "node:path";
 import { readFileSync } from "node:fs";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { buildViteAliases } from "./src/client/app-frame/vite/module-aliases.ts";
 
 const rootPkg = JSON.parse(
   readFileSync(path.resolve(import.meta.dirname, "package.json"), "utf-8"),
@@ -74,9 +75,7 @@ export default defineConfig({
   vite: () => ({
     plugins: [react(), tailwindcss()],
     resolve: {
-      alias: {
-        "@freeanima": path.resolve(import.meta.dirname, "src"),
-      },
+      alias: buildViteAliases({ repoRoot: path.resolve(import.meta.dirname) }),
     },
   }),
 });

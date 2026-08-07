@@ -22,8 +22,6 @@ tauri-plugin-notification = "2"
 tauri-plugin-single-instance = "2"
 tauri-plugin-store = "2"
 tauri-plugin-shell = "2"
-mouse_position = "0.1.4"
-rfd = "0.15"
 url = "2"
 reqwest = { version = "0.12", default-features = false, features = [
   "json",
@@ -40,6 +38,11 @@ codegen-units = 16
 lto = false
 opt-level = 2
 strip = true
+
+# Coding 选目录 / 光标追踪仅桌面；rfd 无 Android 后端，勿进 mobile 依赖图
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+mouse_position = "0.1.4"
+rfd = "0.15"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55"
