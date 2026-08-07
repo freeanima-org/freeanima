@@ -109,7 +109,8 @@ export function resumeMpegPlaybackIfPaused(): boolean {
 
 /** 在用户点击/触摸同步链内调用，解锁移动端 HTMLAudio 播放 */
 export function primeMpegSpeechOutput(): void {
-  if (typeof window === "undefined") return;
+  // 测试里通常写 globalThis.window；勿仅用裸 window（部分运行时二者不同步）
+  if (typeof globalThis.window === "undefined") return;
   const state = playerState();
   if (!state.sharedAudio) {
     state.sharedAudio = createAudioElement();
@@ -315,7 +316,7 @@ async function playMpegViaMse(
   body: ReadableStream<Uint8Array>,
   generation: number,
 ): Promise<ArrayBuffer> {
-  if (typeof window === "undefined") {
+  if (typeof globalThis.window === "undefined") {
     throw new Error("语音播放需要浏览器环境");
   }
 
@@ -427,7 +428,7 @@ export type ConsumeMpegStreamResult = {
 
 export async function playMpegBuffer(buffer: ArrayBuffer, generation: number): Promise<void> {
   if (isCancelled(generation)) return;
-  if (typeof window === "undefined") {
+  if (typeof globalThis.window === "undefined") {
     throw new Error("语音播放需要浏览器环境");
   }
 
