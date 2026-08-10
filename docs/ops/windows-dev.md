@@ -166,7 +166,7 @@ docker run -d --name anima-pg \
   -e POSTGRES_PASSWORD=anima \
   -e POSTGRES_DB=anima \
   -p 5432:5432 \
-  pgvector/pgvector:pg17
+  pgvector/pgvector:pg18
 ```
 
 `config.yaml`:

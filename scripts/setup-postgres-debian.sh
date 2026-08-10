@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 本机 Debian PostgreSQL 17 生产向安装（逸灵风 Slice A）
+# 本机 Debian PostgreSQL 生产向安装（逸灵风 Slice A；版本随本机 psql）
 # 用法: sudo ./scripts/setup-postgres-debian.sh
 # 可选: ANIMa_PG_PASSWORD=xxx sudo ./scripts/setup-postgres-debian.sh
 set -euo pipefail

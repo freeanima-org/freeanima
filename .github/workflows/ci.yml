@@ -20,7 +20,7 @@ jobs:
       ANIMA_TEST_PG_URL: postgres://test:test@localhost:5432/test
     services:
       postgres:
-        image: pgvector/pgvector:pg17
+        image: pgvector/pgvector:pg18
         env:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test

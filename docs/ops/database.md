@@ -39,7 +39,7 @@ docker run -d --name anima-pg \
   -e POSTGRES_PASSWORD=anima \
   -e POSTGRES_DB=anima \
   -p 5432:5432 \
-  pgvector/pgvector:pg17
+  pgvector/pgvector:pg18
 ```
 
 `config.yaml` (example):
@@ -62,14 +62,14 @@ sudo ./scripts/setup-postgres-debian.sh
 #   url: env("DATABASE_URL")
 ```
 
-Defaults: PostgreSQL 17, `localhost` only, `scram-sha-256`, dedicated `anima` database and user.
+Defaults: PostgreSQL 18, `localhost` only, `scram-sha-256`, dedicated `anima` database and user.
 
 ## Extensions (One-Time)
 
 Full-text and vector search require PostgreSQL extensions. The app user usually cannot `CREATE EXTENSION`; run as superuser:
 
 ```bash
-sudo apt install postgresql-17-pgvector   # match psql --version
+sudo apt install postgresql-18-pgvector   # match psql --version
 sudo -u postgres psql -d anima -f core/scripts/ensure-pg-extensions.sql
 ```
 
