@@ -19,7 +19,7 @@ description: >-
 
 ## 输入来源（优先级）
 
-1. 风巢任务：MCP `feng-nest` → `task_get` → `content` 中「## 验收」
+1. 风巢任务：MCP `freeanima-fengnest-prod` → `task_get` → `content` 中「## 验收」
 2. 对话 / PR / Issue 中的验收清单
 3. 无显式验收：从目标与改动推导最小可验证清单，报告中标明「推导」
 
@@ -197,5 +197,5 @@ curl -sS -X POST -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: applicati
 
 - **不做**：`just check`、Playwright、`freeanima-testing`、自动 `task_complete` / push / cherry-pick
 - 不拿生产 `:2658` 当验收目标；不把 Service Token 明文贴进对话/报告
-- 风巢任务读写仍经 MCP `feng-nest`（若需拉任务）
+- 风巢任务读写仍经 MCP `freeanima-fengnest-prod`（若需拉任务）
 - 只在当前 worktree 起服与改代码；不跨仓动主工作区
