@@ -1,5 +1,9 @@
 import type { ToolSetRegistry } from "@freeanima/host/core/tool";
-import { TOOL_SET_LOAD_TOOL_NAME, TOOL_SET_SEARCH_TOOL_NAME } from "@freeanima/host/core/tool";
+import {
+  TOOL_SET_LOAD_TOOL_NAME,
+  TOOL_SET_SEARCH_TOOL_NAME,
+  TOOL_SET_UNLOAD_TOOL_NAME,
+} from "@freeanima/host/core/tool";
 
 import { expandToolSets } from "./expand.ts";
 import type { CapabilityPolicyFragment, ResolvedCapabilityPolicy } from "./types.ts";
@@ -7,6 +11,7 @@ import type { CapabilityPolicyFragment, ResolvedCapabilityPolicy } from "./types
 /** 策略运行禁止出现的工具（防 progressive load / 嵌套派发越权） */
 export const POLICY_RUN_HARD_DENIED_TOOLS = [
   TOOL_SET_LOAD_TOOL_NAME,
+  TOOL_SET_UNLOAD_TOOL_NAME,
   TOOL_SET_SEARCH_TOOL_NAME,
 ] as const;
 

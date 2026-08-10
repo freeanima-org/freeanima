@@ -30,6 +30,12 @@ function registry(): ToolSetRegistry {
       handler: async () => "{}",
     },
     {
+      name: "toolset_unload",
+      description: "u",
+      parameters: { type: "object", properties: {} },
+      handler: async () => "{}",
+    },
+    {
       name: "toolset_search",
       description: "s",
       parameters: { type: "object", properties: {} },
@@ -73,7 +79,7 @@ describe("resolveSubagentToolPolicy / materializeToolNames", () => {
   it("HARD_DENY strips toolset_* even if allowed", () => {
     const policy = resolveSubagentToolPolicy(
       {
-        entityAllowed: ["toolset_load", "toolset_search", "file_read"],
+        entityAllowed: ["toolset_load", "toolset_unload", "toolset_search", "file_read"],
         entityDenied: [],
       },
       registry(),

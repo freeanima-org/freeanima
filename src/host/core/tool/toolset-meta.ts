@@ -1,6 +1,7 @@
 import type { ToolSetRegistry } from "./toolset.ts";
 
 export const TOOL_SET_LOAD_TOOL_NAME = "toolset_load";
+export const TOOL_SET_UNLOAD_TOOL_NAME = "toolset_unload";
 export const TOOL_SET_SEARCH_TOOL_NAME = "toolset_search";
 
 /** Monolithic ToolSet names from before task/email split — expand when resolving cached meta */
@@ -37,6 +38,15 @@ export function mergeToolSetNames(current: readonly string[], toAdd: readonly st
     out.push(name);
   }
   return out;
+}
+
+/** Remove ToolSet names while preserving order of the remainder */
+export function removeToolSetNames(
+  current: readonly string[],
+  toRemove: readonly string[],
+): string[] {
+  const drop = new Set(toRemove.map((n) => n.trim()).filter(Boolean));
+  return current.map((n) => n.trim()).filter((name) => name.length > 0 && !drop.has(name));
 }
 
 /** Coerce legacy fine-grained tool names or ToolSet names into ToolSet names */

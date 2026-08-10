@@ -91,7 +91,7 @@ Consciousness (layer ①) is capacity-limited. FreeAnima treats **what enters th
 | ---------------------------------- | ------------------------------------------------------------------------------------------------ |
 | ~1K system prompt, four tools      | Keep digital-life self / memory / ToolSet catalog; **budget** sections instead of copying 1K     |
 | Dual-payload `content` + `details` | **Do not** persist UI-only `details` on `messages.payload` (model cannot use them to fetch more) |
-| Minimal built-ins, no MCP          | Keep MCP, permissions, progressive `toolset_load`                                                |
+| Minimal built-ins, no MCP          | Keep MCP, permissions, progressive `toolset_load` / `toolset_unload`                             |
 | Infinite agent loop                | Keep `max_turns` / safety caps (policy, not this spine)                                          |
 
 ### Tool results: slim content + fetch-more (no bare truncation)
@@ -383,7 +383,7 @@ Layers can be mixed; the LLM chooses order; FreeAnima registers and routes.
 | **Script cron**  | no        | `cron_log` only                                                           | stdout file                  | excluded                                |
 
 **Conversation persistence split:** session metadata (model, system_prompt, compression, todos, toolsets, …) lives on the **`conversations` row** (`ConversationMetaMessage` domain type). Transcript turns live in **`messages.payload`** (`StoredMessage` = user/system/assistant/tool only). Do not model meta as a message role — the old JSONL first-line `{ role: "conversation_meta" }` shape is gone.
-AutoLlmRun covers: cron agent branch, sleep LLM stages, conversation **title** generation, **goal_judge**, compression / handoff summary, **internal subagents**. One-shot side-cars use `runAutoLlmChat` (recorded `chat()`); tool loops use `runAutoLlm`. Tool context uses `contextKind: auto_llm` so `memory_remember` does not attach `source_conversations`. Cron `no_agent` shell scripts are **not** AutoLlmRun. Policy-bound AutoLlm runs pass a **concrete tool name list** as `tools` (HARD_DENY `toolset_load` / `toolset_search`).
+AutoLlmRun covers: cron agent branch, sleep LLM stages, conversation **title** generation, **goal_judge**, compression / handoff summary, **internal subagents**. One-shot side-cars use `runAutoLlmChat` (recorded `chat()`); tool loops use `runAutoLlm`. Tool context uses `contextKind: auto_llm` so `memory_remember` does not attach `source_conversations`. Cron `no_agent` shell scripts are **not** AutoLlmRun. Policy-bound AutoLlm runs pass a **concrete tool name list** as `tools` (HARD_DENY `toolset_load` / `toolset_unload` / `toolset_search`).
 
 **Acting subject:** both `runAutoLlm` and `runAutoLlmChat` require `subjectId` (persisted as `auto_llm_runs.subject_id`). Tool world grants use `resolveToolCallerSubjectId()` — MCP token subject, else ALS `subjectId`, else Habitat `agent_subject_id` fallback. Callers today pass the boot-bound agent subject; multi-anima will pass the job-bound anima without changing the grant path.
 

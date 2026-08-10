@@ -104,9 +104,13 @@ function ConnectionSelect({
   const missing = value && !connectionIds.includes(value);
   return (
     <div className="space-y-1">
-      <Label className="text-sm" htmlFor={id}>
-        连接
-      </Label>
+      {id !== undefined ? (
+        <Label className="text-sm" htmlFor={id}>
+          连接
+        </Label>
+      ) : (
+        <Label className="text-sm">连接</Label>
+      )}
       <select
         id={id}
         className={habitatConfigSelectClassName}

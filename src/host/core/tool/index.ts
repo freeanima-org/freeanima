@@ -30,9 +30,11 @@ export type { ToolArgsRecord } from "./tool-json.ts";
 export { ToolSetRegistry, mcpToolSetId } from "./toolset.ts";
 export {
   loadToolSetsIntoConversation,
+  unloadToolSetsFromConversation,
   resolveExecutableToolNames,
   resetConversationToolsetsToDefault,
   type LoadToolSetsIntoConversationResult,
+  type UnloadToolSetsFromConversationResult,
 } from "./conversation-tools.ts";
 export { handleConversationTodo } from "./conversation-todos.ts";
 export {
@@ -55,6 +57,7 @@ export {
   getToolParentConversationId,
   getToolRegistry,
   grantExecutableTools,
+  revokeExecutableTools,
   isExecutableTool,
 } from "./tool-context.ts";
 export type {
@@ -73,9 +76,11 @@ export {
 export type { DefaultConversationToolSetName } from "./default-conversation-toolsets.ts";
 export {
   TOOL_SET_LOAD_TOOL_NAME,
+  TOOL_SET_UNLOAD_TOOL_NAME,
   TOOL_SET_SEARCH_TOOL_NAME,
   toolSetForTool,
   mergeToolSetNames,
+  removeToolSetNames,
   resolveToolSetNames,
   toolNamesForToolSets,
   parseToolSetsFromLoadArgs,

@@ -3,6 +3,7 @@ import {
   getToolConversationId,
   getToolContextKind,
   grantExecutableTools,
+  revokeExecutableTools,
 } from "@freeanima/host/core/tool";
 import { isConversationMeta, type ConversationMetaMessage } from "@freeanima/host/core/db/domain";
 import { getConversationMeta } from "@freeanima/host/core/db/pg/conversation";
@@ -10,6 +11,7 @@ import {
   applyConversationToolMaskFilter,
   attachToolReturns,
   loadToolSetsIntoConversation,
+  unloadToolSetsFromConversation,
   searchToolsetsCatalog,
   toolError,
   toolResult,
@@ -120,6 +122,51 @@ export function registerToolsetTools(toolSets: ToolSetRegistry): void {
             ]);
             grantExecutableTools(expanded);
             return toolResult(result);
+          },
+        },
+        {
+          name: "toolset_unload",
+          description:
+            "Unload non-default ToolSets from the current conversation (removes from staged and cached). Default ToolSets (toolset, memory, notification, skill, subagent) cannot be unloaded.",
+          parameters: {
+            type: "object",
+            properties: {
+              toolsets: {
+                type: "array",
+                items: { type: "string" },
+                description: "ToolSet names to unload (e.g. file, mcp_postgres)",
+              },
+            },
+            required: ["toolsets"],
+          },
+          handler: async (args) => {
+            if (getToolContextKind() === "auto_llm") {
+              return toolError("toolset_unload is not available in AutoLlm / policy-bound runs");
+            }
+            const ctx = await requireSessionMeta();
+            if (!ctx.ok) return toolError(ctx.error);
+            const raw = args.toolsets;
+            if (!Array.isArray(raw) || raw.length === 0) {
+              return toolError("toolsets must be a non-empty array");
+            }
+            const toolsets = raw.map((n) => String(n ?? "").trim()).filter(Boolean);
+            if (toolsets.length === 0) return toolError("toolsets must be a non-empty array");
+            const conversationId = getToolConversationId();
+            if (!conversationId) return toolError("conversation_id is required");
+            const registry = getToolRegistry();
+            const result = await unloadToolSetsFromConversation(
+              registry,
+              conversationId,
+              toolsets,
+              ctx.meta,
+            );
+            revokeExecutableTools(result.revoked_tools);
+            return toolResult({
+              unloaded: result.unloaded,
+              protected: result.protected,
+              not_loaded: result.not_loaded,
+              unknown: result.unknown,
+            });
           },
         },
       ],

@@ -221,6 +221,20 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       ],
     },
   }),
+  toolset_unload: defineToolReturn({
+    schema: z.object({
+      unloaded: z.array(z.string()),
+      protected: z.array(z.string()),
+      not_loaded: z.array(z.string()),
+      unknown: z.array(z.string()),
+    }),
+    example: {
+      unloaded: ["file"],
+      protected: [],
+      not_loaded: [],
+      unknown: [],
+    },
+  }),
   file_read: defineTextToolReturn({
     hint: "Plain text with line numbers; each line formatted as offset|line_content",
     example: textLineNumberExample,
