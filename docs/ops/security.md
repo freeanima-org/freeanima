@@ -17,35 +17,36 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 
 ## Credential Responsibilities
 
-| Rule                     | Description                                                                                                                                                                                                                            |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI                                                                       |
-| Versioned updates        | Substantive vault item updates keep up to 10 prior snapshots (`entities.revisions`); restore via Shell `/vault` history. See [`entity-revisions`](../aspects/entity-revisions.md)                                                      |
-| Never commit secrets     | Do not write API keys, tokens, DB passwords into git. Bootstrap `config.yaml`: use `env()` (or keep secrets out of the file). Runtime LLM/MCP settings live in PG — use `vault()` / `env()` there                                      |
-| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, agent machine key (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`                                                                                    |
-| User master password     | Set only in Shell `/vault`、bundled Chat unlock，或 Vault 浏览器扩展选项解锁；**never** sent as a chat message or stored in PG messages                                                                                                |
-| Chat User vault unlock   | **v1 bundled Chat only**（`src/portal/app/web` / desktop / mobile）；Discord / WeChat gateways cannot unlock User library                                                                                                              |
-| Browser extension        | 浏览器形态入口（`src/portal/extension`）；Service API Token 存 `chrome.storage.local`；主密码仅扩展内存（默认 15min）；RPC 走 background `host_permissions`。见 [`portal.md`](../modules/portal.md)、[`vault.md`](../modules/vault.md) |
+| Rule                     | Description                                                                                                                                                                                                                                   |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI                                                                              |
+| Versioned updates        | Substantive vault item updates keep up to 10 prior snapshots (`entities.revisions`); restore via Shell `/vault` history. See [`entity-revisions`](../aspects/entity-revisions.md)                                                             |
+| Never commit secrets     | Do not write API keys, tokens, DB passwords into git. Bootstrap `config.yaml`: use `env()` (or keep secrets out of the file). Runtime LLM/MCP settings live in PG — use `vault()` / `env()` there                                             |
+| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, optional Agent vault **cache** (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`. Agent root key SSOT lives in User vault (PG), not as a durable home secret. |
+| User master password     | Set only in Shell `/vault`、bundled Chat unlock，或 Vault 浏览器扩展选项解锁；**never** sent as a chat message or stored in PG messages                                                                                                       |
+| Chat User vault unlock   | **v1 bundled Chat only**（`src/portal/app/web` / desktop / mobile）；Discord / WeChat gateways cannot unlock User library                                                                                                                     |
+| Browser extension        | 浏览器形态入口（`src/portal/extension`）；Service API Token 存 `chrome.storage.local`；主密码仅扩展内存（默认 15min）；RPC 走 background `host_permissions`。见 [`portal.md`](../modules/portal.md)、[`vault.md`](../modules/vault.md)        |
 
 `config.yaml` is **bootstrap only** (read before PostgreSQL is up). Secrets there support plaintext or `env("KEY")` — **not** `vault()` (Vault items live in PG). After Habitat is connected, runtime config in PG may use `vault("item_id", "field")` and `env("KEY")`. Agent tools that need CLI credentials pass per-call `secrets[]` on `terminal_run` / `code_execute` (child env only). Browser form fields use `browser_type` `secret` (typed into the page; never echoed in tool results). User-library resolution still requires an unlocked Chat session on the client.
 
 ### Vault trust boundaries
 
-| Surface    | User library                                                    | Agent library                                                   |
-| ---------- | --------------------------------------------------------------- | --------------------------------------------------------------- |
-| Habitat PG | Ciphertext + verifier only                                      | Ciphertext + machine key file on disk                           |
-| LLM        | Metadata only; subprocess `secrets[]` / `browser_type` `secret` | Metadata only; subprocess `secrets[]` / `browser_type` `secret` |
-| Shell      | Client master key in memory                                     | Habitat decrypt over loopback SAP                               |
+| Surface    | User library                                                    | Agent library                                                                 |
+| ---------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Habitat PG | Ciphertext + verifier; may hold Agent root key SSOT item        | Ciphertext only; root key not stored as PG plaintext                          |
+| Disk       | —                                                               | Rebuildable cache `vault/agent-machine.key` after unlock (`provision` / lock) |
+| LLM        | Metadata only; subprocess `secrets[]` / `browser_type` `secret` | Metadata only; subprocess `secrets[]` / `browser_type` `secret`               |
+| Shell      | Client master key in memory                                     | Habitat decrypt only when cache unlocked                                      |
 
 ## Data Persistence
 
-| Path                               | Content                  | Encryption                      |
-| ---------------------------------- | ------------------------ | ------------------------------- |
-| PostgreSQL conversation archive    | conversations / messages | No application-layer encryption |
-| `~/.anima/vault/agent-machine.key` | Agent vault machine key  | File permissions (`chmod 600`)  |
-| `~/.anima/weixin/`                 | WeChat sync state        | None                            |
+| Path                               | Content                                   | Encryption                                                                          |
+| ---------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------- |
+| PostgreSQL                         | conversations / memory / Vault ciphertext | No app-layer encryption; User vault holds Agent root key SSOT under master password |
+| `~/.anima/vault/agent-machine.key` | Agent vault **cache** (not SSOT)          | File permissions (`chmod 600`); rebuild via Data maintenance unlock                 |
+| `~/.anima/weixin/`                 | WeChat sync state                         | None                                                                                |
 
-Disk backup = data access. Protect backup media accordingly.
+**Instance backup set:** PostgreSQL (required) + `FREEANIMA_HOME` for bootstrap/`config.yaml`/TLS/weixin (as needed). Agent root key is recovered from User vault after master-password unlock—cache file is optional. Disk backup of an **unlocked** cache = data access; protect backup media. Without Habitat cache unlock, Agent inject (cron / tools / `vault()`) fails.
 
 ## LLM Tool Risks
 
@@ -61,6 +62,8 @@ Disk backup = data access. Protect backup media accordingly.
 | `vault_create` / `vault_update` / `vault_delete`           | Habitat-only (not MCP). create/update seal plaintext into **Agent** library only; tool results are metadata only. User library writes stay in Vault UI                                                                                                                                                                               |
 
 ### Agent vault usage
+
+Requires Habitat Agent cache **unlocked** (Data maintenance → Unlock Agent vault; seeds from User vault SSOT). Otherwise decrypt/seal throws `AGENT_VAULT_LOCKED`.
 
 1. **Discover** — `vault_list` / `vault_search` / `vault_get_meta` (metadata only; never plaintext in tool results).
 2. **Write (Agent library)** — `vault_create` / `vault_update` / `vault_delete` in Habitat chat only. create/update accept plaintext `secrets` to seal on Habitat; results return metadata only. User library: Vault UI. (Entire vault ToolSet is not MCP-exposed.)
@@ -147,7 +150,7 @@ The following are planned in code or docs—**deployers must not assume implemen
 
 1. Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/config.yaml`; use `env()` for bootstrap secrets — **do not** write plaintext secrets in config; `vault()` is for PG runtime config after Habitat is up
 2. Open Shell `/vault`; set User master password; migrate secrets from legacy pass if needed
-3. `chmod 700 ~/.anima` (includes `vault/agent-machine.key`)
+3. `chmod 700 ~/.anima` (includes optional `vault/agent-machine.key` cache)
 4. Bind `127.0.0.1` only, or ensure intranet isolation
 5. Review inbound MCP in Habitat UI (`/habitat/mcp`); set `enabled: false` for untrusted external Servers
 6. Regularly backup `~/.anima/` (and legacy `~/.password-store` if kept); encrypt backup media

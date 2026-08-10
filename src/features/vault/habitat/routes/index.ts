@@ -99,4 +99,12 @@ export const vaultHabitatRoutes = bindHabitatRouteHandlers(vaultMethodDefs, {
     service.serviceVaultCryptoChange(depsOf(deps).runtime.runtimeDeps(), input, ctxAuth(ctx)),
   "vault.ensureAgent": async (deps, input, ctx) =>
     service.serviceVaultEnsureAgent(depsOf(deps).runtime.runtimeDeps(), input, ctxAuth(ctx)),
+  "vault.agentKey.status": async (deps, input, ctx) =>
+    service.serviceVaultAgentKeyStatus(depsOf(deps).runtime.runtimeDeps(), input, ctxAuth(ctx)),
+  "vault.agentKey.provision": async (deps, input, ctx) =>
+    service.serviceVaultAgentKeyProvision(depsOf(deps).runtime.runtimeDeps(), input, ctxAuth(ctx)),
+  "vault.agentKey.lock": async (deps, input, ctx) =>
+    service.serviceVaultAgentKeyLock(depsOf(deps).runtime.runtimeDeps(), input, ctxAuth(ctx)),
+  "vault.agentKey.peekRaw": async (deps, input, ctx) =>
+    service.serviceVaultAgentKeyPeekRaw(depsOf(deps).runtime.runtimeDeps(), input, ctxAuth(ctx)),
 });

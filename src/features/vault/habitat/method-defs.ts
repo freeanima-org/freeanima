@@ -1,4 +1,12 @@
 import {
+  vaultAgentKeyLockInputSchema,
+  vaultAgentKeyLockOutputSchema,
+  vaultAgentKeyPeekRawInputSchema,
+  vaultAgentKeyPeekRawOutputSchema,
+  vaultAgentKeyProvisionInputSchema,
+  vaultAgentKeyProvisionOutputSchema,
+  vaultAgentKeyStatusInputSchema,
+  vaultAgentKeyStatusOutputSchema,
   vaultCreateInputSchema,
   vaultCreateOutputSchema,
   vaultCreatePlainInputSchema,
@@ -108,5 +116,25 @@ export const vaultMethodDefs = {
     input: vaultEnsureAgentInputSchema,
     output: vaultEnsureAgentOutputSchema,
     meta: dualTransportMeta(false),
+  }),
+  "vault.agentKey.status": defineHabitatMethod({
+    input: vaultAgentKeyStatusInputSchema,
+    output: vaultAgentKeyStatusOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "vault.agentKey.provision": defineHabitatMethod({
+    input: vaultAgentKeyProvisionInputSchema,
+    output: vaultAgentKeyProvisionOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "vault.agentKey.lock": defineHabitatMethod({
+    input: vaultAgentKeyLockInputSchema,
+    output: vaultAgentKeyLockOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "vault.agentKey.peekRaw": defineHabitatMethod({
+    input: vaultAgentKeyPeekRawInputSchema,
+    output: vaultAgentKeyPeekRawOutputSchema,
+    meta: dualTransportMeta(true),
   }),
 } as const;

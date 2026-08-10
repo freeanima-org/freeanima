@@ -837,5 +837,18 @@
   "habitat_subagents_field_allowed": "允许工具（@ToolSet 或工具名）",
   "habitat_subagents_field_denied": "拒绝工具",
   "habitat_subagents_field_prompt_includes": "提示词旁路（可选：self, world, time）",
-  "habitat_common_delete": "删除"
+  "habitat_common_delete": "删除",
+  "habitat_data_agent_vault_title": "Agent 密码库",
+  "habitat_data_agent_vault_desc": "根密钥保存在用户密码库（主密码保护）。解锁后写入 Habitat 可重建缓存，工具与 cron 才能解密 Agent 库。",
+  "habitat_data_agent_vault_open": "解锁 agent 密码库",
+  "habitat_data_agent_vault_dialog_title": "解锁 agent 密码库",
+  "habitat_data_agent_vault_status_label": "本地状态",
+  "habitat_data_agent_vault_status_unlocked": "已解锁",
+  "habitat_data_agent_vault_status_locked": "未解锁",
+  "habitat_data_agent_vault_need_user": "请先在 Portal「密码库」解锁用户主密码。",
+  "habitat_data_agent_vault_unlock_action": "解锁",
+  "habitat_data_agent_vault_lock_action": "锁定",
+  "habitat_data_agent_vault_unlocking": "解锁中…",
+  "habitat_data_agent_vault_locking": "锁定中…",
+  "habitat_data_agent_vault_refresh": "刷新状态"
 }

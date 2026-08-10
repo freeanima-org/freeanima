@@ -9,6 +9,7 @@ import {
   VAULT_UI_SCOPE,
 } from "@freeanima/client/portal-sdk/react.tsx";
 import { BitwardenImportDialog } from "@freeanima/features/vault/ui/spa/components/BitwardenImportDialog.tsx";
+import { UnlockAgentVaultDialog } from "@freeanima/features/vault/ui/spa/components/UnlockAgentVaultDialog.tsx";
 import { DidaImportDialog } from "@freeanima/features/task/ui/spa/components/DidaImportDialog.tsx";
 import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 
@@ -21,6 +22,7 @@ function DataMaintenancePage() {
   const userUnlocked = subjectKind === "user" && getUserVaultSession().isUnlocked(VAULT_UI_SCOPE);
   const [bwOpen, setBwOpen] = useState(false);
   const [didaOpen, setDidaOpen] = useState(false);
+  const [agentVaultOpen, setAgentVaultOpen] = useState(false);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4">
@@ -31,6 +33,20 @@ function DataMaintenancePage() {
       <p className="text-muted-foreground text-sm">
         集中管理第三方数据导入。密码库导入需要先在「密码库」解锁用户主密码。
       </p>
+
+      <Card>
+        <CardContent className="flex flex-col gap-3 p-4">
+          <div>
+            <h2 className="font-medium">{m.habitat_data_agent_vault_title()}</h2>
+            <p className="text-muted-foreground mt-1 text-xs">
+              {m.habitat_data_agent_vault_desc()}
+            </p>
+          </div>
+          <Button type="button" className="self-start" onClick={() => setAgentVaultOpen(true)}>
+            {m.habitat_data_agent_vault_open()}
+          </Button>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="flex flex-col gap-3 p-4">
@@ -68,6 +84,7 @@ function DataMaintenancePage() {
         </CardContent>
       </Card>
 
+      <UnlockAgentVaultDialog open={agentVaultOpen} onOpenChange={setAgentVaultOpen} />
       <BitwardenImportDialog
         open={bwOpen}
         subjectKind={subjectKind}

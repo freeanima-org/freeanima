@@ -17,7 +17,9 @@ const vaultItemMetaSchema = z.object({
   username: z.string().optional(),
   tag_ids: z.array(z.number()),
   custom_field_names: z.array(z.string()),
-  import_refs: z.object({ bitwarden: z.string().optional() }).optional(),
+  import_refs: z
+    .object({ bitwarden: z.string().optional(), agent_root_key: z.string().optional() })
+    .optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });

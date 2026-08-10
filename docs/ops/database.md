@@ -104,7 +104,7 @@ Purged during sleep-cycle step `conversation-cleanup` (after stale conversation 
 
 - **Migrations do not replace backups** — schedule regular full backups (e.g. `pg_dump`).
 - Back up before destructive changes.
-- Include `~/.anima/` (`FREEANIMA_HOME` overridable) in backup policy — see [`security.md`](security.md#data-persistence).
+- **Instance set:** PostgreSQL is required (includes User vault with Agent root key SSOT). Include `~/.anima/` (`FREEANIMA_HOME`) for bootstrap config / TLS / weixin as needed — see [`security.md`](security.md#data-persistence). Agent `vault/agent-machine.key` is a rebuildable cache (unlock from Data maintenance after restore).
 - Recommended local stack: hourly `pg_dump` + home tar (short retention), WAL archive (`archive_mode`), weekly `pg_basebackup` for PITR. Restore logical dumps as postgres superuser (`pg_restore --no-owner --no-acl --no-comments`).
 - **Search side table:** rebuildable index data is in `search_documents` (not business `entities` / `messages`). For a business-only logical dump you may exclude it, e.g. `pg_dump --exclude-table-data=search_documents …`, then run Habitat **FTS rebuild** after restore. Full dumps that keep search warm should include the table.
 

@@ -210,6 +210,14 @@ import type {
   VaultCryptoChangeOutput,
   VaultEnsureAgentInput,
   VaultEnsureAgentOutput,
+  VaultAgentKeyStatusInput,
+  VaultAgentKeyStatusOutput,
+  VaultAgentKeyProvisionInput,
+  VaultAgentKeyProvisionOutput,
+  VaultAgentKeyLockInput,
+  VaultAgentKeyLockOutput,
+  VaultAgentKeyPeekRawInput,
+  VaultAgentKeyPeekRawOutput,
 } from "./frames/vault.ts";
 import type {
   ToolErrorInput,
@@ -299,6 +307,10 @@ export const RPC_PROTOCOL_METHODS = [
   "vault.crypto.init",
   "vault.crypto.change",
   "vault.ensureAgent",
+  "vault.agentKey.status",
+  "vault.agentKey.provision",
+  "vault.agentKey.lock",
+  "vault.agentKey.peekRaw",
   "emailaccount.list",
   "email.message.list",
   "email.message.read",
@@ -410,6 +422,10 @@ export type RpcRouterInputs = {
   "vault.crypto.init": VaultCryptoInitInput;
   "vault.crypto.change": VaultCryptoChangeInput;
   "vault.ensureAgent": VaultEnsureAgentInput;
+  "vault.agentKey.status": VaultAgentKeyStatusInput;
+  "vault.agentKey.provision": VaultAgentKeyProvisionInput;
+  "vault.agentKey.lock": VaultAgentKeyLockInput;
+  "vault.agentKey.peekRaw": VaultAgentKeyPeekRawInput;
   "emailaccount.list": EmailAccountListInput;
   "email.message.list": EmailMessageListInput;
   "email.message.read": EmailMessageReadInput;
@@ -524,6 +540,10 @@ export type RpcRouterOutputs = {
   "vault.crypto.init": VaultCryptoInitOutput;
   "vault.crypto.change": VaultCryptoChangeOutput;
   "vault.ensureAgent": VaultEnsureAgentOutput;
+  "vault.agentKey.status": VaultAgentKeyStatusOutput;
+  "vault.agentKey.provision": VaultAgentKeyProvisionOutput;
+  "vault.agentKey.lock": VaultAgentKeyLockOutput;
+  "vault.agentKey.peekRaw": VaultAgentKeyPeekRawOutput;
   "emailaccount.list": EmailAccountListOutput;
   "email.message.list": EmailMessageListOutput;
   "email.message.read": EmailMessageReadOutput;

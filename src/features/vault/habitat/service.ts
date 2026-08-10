@@ -491,4 +491,60 @@ export async function serviceVaultEnsureAgent(
   return { config: toConfigPayload(config) };
 }
 
+function assertUserOrAgentToken(auth: VerifiedServiceApiToken): void {
+  if (auth.subject_type !== "user" && auth.subject_type !== "agent") {
+    throw new Error("FORBIDDEN_SUBJECT");
+  }
+}
+
+export async function serviceVaultAgentKeyStatus(
+  deps: RuntimeDeps,
+  _input: Record<string, never>,
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  assertUserOrAgentToken(auth);
+  const { isAgentVaultUnlocked } = await loadAgentVaultConnector();
+  return {
+    unlocked: isAgentVaultUnlocked(),
+    custody: "user_vault" as const,
+  };
+}
+
+export async function serviceVaultAgentKeyProvision(
+  deps: RuntimeDeps,
+  input: { key_b64: string },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  assertUserOrAgentToken(auth);
+  const { provisionAgentMachineKeyB64, ensureAgentVaultConfig } = await loadAgentVaultConnector();
+  await ensureAgentVaultConfig(resolveVaultWorldId("agent"));
+  await provisionAgentMachineKeyB64(input.key_b64);
+  return { unlocked: true as const };
+}
+
+export async function serviceVaultAgentKeyLock(
+  deps: RuntimeDeps,
+  _input: Record<string, never>,
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  assertUserOrAgentToken(auth);
+  const { lockAgentMachineKey } = await loadAgentVaultConnector();
+  lockAgentMachineKey();
+  return { unlocked: false as const };
+}
+
+export async function serviceVaultAgentKeyPeekRaw(
+  deps: RuntimeDeps,
+  _input: Record<string, never>,
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  assertUserOrAgentToken(auth);
+  const { peekAgentMachineKeyB64 } = await loadAgentVaultConnector();
+  return { key_b64: peekAgentMachineKeyB64() };
+}
+
 export { listVaultItemsWithWrappedDek, toVaultItemMeta, resolveDefaultPrivateWorldForSubject };

@@ -23,6 +23,8 @@ export type VaultUriEntry = z.infer<typeof vaultUriEntrySchema>;
 
 export const vaultImportRefsSchema = z.object({
   bitwarden: z.string().min(1).optional(),
+  /** Agent 根密钥 SSOT（固定值 `habitat`） */
+  agent_root_key: z.string().min(1).optional(),
 });
 export type VaultImportRefs = z.infer<typeof vaultImportRefsSchema>;
 
