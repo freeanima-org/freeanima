@@ -170,7 +170,7 @@ export async function setupIntegrationPg(): Promise<() => Promise<void>> {
 
   assertDockerAvailable();
   const containerId = execSync(
-    "docker run -d -p 0:5432 -e POSTGRES_PASSWORD=test -e POSTGRES_USER=test -e POSTGRES_DB=postgres pgvector/pgvector:pg17",
+    "docker run -d -p 0:5432 -e POSTGRES_PASSWORD=test -e POSTGRES_USER=test -e POSTGRES_DB=postgres pgvector/pgvector:pg18",
     { encoding: "utf-8" },
   ).trim();
   try {
