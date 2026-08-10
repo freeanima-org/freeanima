@@ -1,11 +1,12 @@
 import { and, desc, sql } from "drizzle-orm";
-import { entities } from "@freeanima/host/core/db/schema";
+import { entities, searchDocuments } from "@freeanima/host/core/db/schema";
 import { entityRowSelectColumns, mapEntityRow } from "@freeanima/host/core/db/schema/entity";
 import type { EntitySearchOpts } from "../types.ts";
 
 import { getDb } from "../../client.ts";
 import { buildCharModeTsQuery } from "../../fts/query-char.ts";
 import { buildFtsTsQuery } from "../../fts/query.ts";
+import { entitySearchDocumentsJoin } from "../../search/pg-search-index/channel-fts.ts";
 import { buildEntitySearchWhere, normalizeEntitySearchQuery } from "./conditions.ts";
 
 export type EntityFtsDbRow = ReturnType<typeof mapEntityRow> & { rank: number };
@@ -36,9 +37,14 @@ async function searchEntitiesFtsWithTsquery(
   const limit = Math.max(1, Math.min(100, opts.limit ?? 10));
   const db = getDb();
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
-  const rankExpr = sql<number>`ts_rank_cd(${entities.search_fts}, ${tsqueryExpr}, 32)`.as("rank");
+  const rankExpr = sql<number>`ts_rank_cd(${searchDocuments.search_fts}, ${tsqueryExpr}, 32)`.as(
+    "rank",
+  );
   const where = buildEntitySearchWhere(opts);
-  const conditions = [sql`${entities.search_fts} @@ ${tsqueryExpr}`, ...(where ? [where] : [])];
+  const conditions = [
+    sql`${searchDocuments.search_fts} @@ ${tsqueryExpr}`,
+    ...(where ? [where] : []),
+  ];
 
   const rows = await db
     .select({
@@ -46,6 +52,7 @@ async function searchEntitiesFtsWithTsquery(
       rank: rankExpr,
     })
     .from(entities)
+    .innerJoin(searchDocuments, entitySearchDocumentsJoin())
     .where(and(...conditions))
     .orderBy(desc(rankExpr))
     .limit(limit);

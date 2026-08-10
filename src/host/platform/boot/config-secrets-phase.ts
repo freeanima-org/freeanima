@@ -2,6 +2,7 @@ import type { RuntimeConfigStore } from "@freeanima/host/platform/config";
 import { resolveLlmProviderApiKeys } from "@freeanima/host/platform/config";
 import { applyHostI18nConfig } from "@freeanima/host/core/i18n";
 import { bindEmbeddingRuntime } from "../service/embedding-bind.ts";
+import { bindSearchRuntime } from "@freeanima/host/core/db/pg/search";
 import { bindTokenizerRuntime } from "../service/tokenizer-bind.ts";
 
 import { startupLog } from "./status.ts";
@@ -16,5 +17,6 @@ export async function bootConfigSecretsPhase(config: RuntimeConfigStore): Promis
     timezone: i18n?.timezone,
   });
   bindEmbeddingRuntime(config);
+  bindSearchRuntime(config);
   await bindTokenizerRuntime(config);
 }

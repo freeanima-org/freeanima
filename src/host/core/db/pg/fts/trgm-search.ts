@@ -1,13 +1,14 @@
 import type { SemanticFtsHit } from "@freeanima/host/core/db/schema/rows";
 import type { EntityRow } from "@freeanima/host/core/db/schema/entity";
-import { and, desc, eq, isNotNull, notLike, sql } from "drizzle-orm";
+import { and, desc, eq, notLike, sql } from "drizzle-orm";
 import { getActiveRuntimeConfig, getFtsTrgmMinSimilarity } from "@freeanima/host/core/config";
 import { messageDocKey, semanticMemoryDocKey } from "@freeanima/host/core/util";
-import { entities, messages } from "@freeanima/host/core/db/schema";
+import { entities, messages, searchDocuments } from "@freeanima/host/core/db/schema";
 
 import { getDb } from "../client.ts";
 import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
 import { entityToSemanticMemoryRow } from "../semantic-memory/map-row.ts";
+import { messageSearchDocumentsJoin } from "../search/pg-search-index/channel-fts.ts";
 
 export type TrgmSemanticHit = SemanticFtsHit & { docKey: string };
 
@@ -115,9 +116,9 @@ export async function searchMessagesTrgm(
 
   const db = getDb();
   const rankExpr = sql<number>`similarity(${msgContent}, ${q})`.as("rank");
-  // `<%` + word_similarity_threshold 可走 idx_messages_content_trgm（gin_trgm_ops）
+  // `<%` + word_similarity_threshold 可走 message content trgm；索引行存在于 search_documents
   const conditions = [
-    isNotNull(messages.content_fts),
+    sql`${searchDocuments.search_fts} IS NOT NULL`,
     sql`set_config('pg_trgm.word_similarity_threshold', ${String(minSim)}, true) IS NOT NULL`,
     sql`${msgContent} <% ${q}`,
     notLike(messages.conversation_id, "debug-%"),
@@ -136,6 +137,7 @@ export async function searchMessagesTrgm(
       rank: rankExpr,
     })
     .from(messages)
+    .innerJoin(searchDocuments, messageSearchDocumentsJoin())
     .where(and(...conditions))
     .orderBy(desc(rankExpr))
     .limit(limit);

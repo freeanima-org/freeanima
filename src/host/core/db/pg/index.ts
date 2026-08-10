@@ -38,6 +38,13 @@ export {
   type FtsRebuildJobStatus,
 } from "./fts/index.ts";
 export {
+  bindSearchRuntime,
+  getSearchBackend,
+  registerSearchBackend,
+  resetSearchBackendForTest,
+  tryGetSearchBackend,
+} from "./search/index.ts";
+export {
   getHabitatRuntimeConfigDocument,
   mergeSection,
   patchHabitatRuntimeConfigSection,

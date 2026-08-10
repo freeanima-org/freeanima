@@ -26,8 +26,7 @@ import type {
   EntityUpdateInput,
 } from "../types.ts";
 
-import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
-import { scheduleEntityEmbedding, clearEntityEmbedding } from "../../embedding/entity-embedding.ts";
+import { indexEntitySearchDoc, removeEntitySearchDoc } from "../../search/index-hooks.ts";
 import { getDb, type DbSession } from "../../client.ts";
 
 function mapRow(row: EntityRowSelect | typeof entities.$inferSelect): EntityRow {
@@ -63,7 +62,6 @@ export async function createEntity(
     body,
     primary_component: primary,
   });
-  const fts_segmented = await resolveFtsSegmentedForWrite(indexText);
   const db = session ?? getDb();
   const [row] = await db
     .insert(entities)
@@ -80,13 +78,21 @@ export async function createEntity(
       reference_count: input.reference_count ?? 0,
       tag_ids: input.tag_ids ?? [],
       revisions: [],
-      fts_segmented,
       created_at: input.created_at ?? now,
       updated_at: input.updated_at ?? input.created_at ?? now,
     })
     .returning(entityRowSelectColumns);
   if (!row) throw new Error("entity insert failed");
-  scheduleEntityEmbedding(row.id, indexText);
+  await indexEntitySearchDoc({
+    id: row.id,
+    world_id: row.world_id,
+    primary_component: row.primary_component,
+    title: row.title,
+    summary: row.summary,
+    content: row.content,
+    deleted_at: row.deleted_at,
+    indexText,
+  });
   return mapRow(row);
 }
 
@@ -103,7 +109,6 @@ export async function createEntityAtId(input: EntityCreateAtIdInput): Promise<En
     body,
     primary_component: primary,
   });
-  const fts_segmented = await resolveFtsSegmentedForWrite(indexText);
   const db = getDb();
   const [row] = await db
     .insert(entities)
@@ -120,7 +125,6 @@ export async function createEntityAtId(input: EntityCreateAtIdInput): Promise<En
       body,
       tag_ids: input.tag_ids ?? [],
       revisions: [],
-      fts_segmented,
       created_at: now,
       updated_at: now,
     })
@@ -135,7 +139,16 @@ export async function createEntityAtId(input: EntityCreateAtIdInput): Promise<En
     })
     .from(entities)
     .limit(1);
-  scheduleEntityEmbedding(row.id, indexText);
+  await indexEntitySearchDoc({
+    id: row.id,
+    world_id: row.world_id,
+    primary_component: row.primary_component,
+    title: row.title,
+    summary: row.summary,
+    content: row.content,
+    deleted_at: row.deleted_at,
+    indexText,
+  });
   return mapRow(row);
 }
 
@@ -228,19 +241,25 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
     );
   }
 
-  if (indexTextChanged) {
-    patch.fts_segmented = await resolveFtsSegmentedForWrite(indexText);
-    await clearEntityEmbedding(input.id);
-  }
-
   const db = getDb();
   const [row] = await db
     .update(entities)
     .set(patch)
     .where(eq(entities.id, input.id))
     .returning(entityRowSelectColumns);
-  if (indexTextChanged && row) {
-    scheduleEntityEmbedding(row.id, indexText);
+  if (row) {
+    await indexEntitySearchDoc({
+      id: row.id,
+      world_id: row.world_id,
+      primary_component: row.primary_component,
+      title: row.title,
+      summary: row.summary,
+      content: row.content,
+      deleted_at: row.deleted_at,
+      indexText,
+      scheduleEmbedding: indexTextChanged,
+      clearEmbeddingFirst: indexTextChanged,
+    });
   }
   return row ? mapRow(row) : null;
 }
@@ -292,7 +311,28 @@ export async function deleteEntity(id: number): Promise<boolean> {
     .update(entities)
     .set({ deleted_at: now, updated_at: now })
     .where(and(eq(entities.id, id), isNull(entities.deleted_at)))
-    .returning({ id: entities.id });
+    .returning(entityRowSelectColumns);
+  const row = result[0];
+  if (row) {
+    const indexText = entitySearchTextForWrite({
+      title: row.title,
+      summary: row.summary,
+      content: row.content,
+      body: row.body as Record<string, unknown>,
+      primary_component: row.primary_component,
+    });
+    await indexEntitySearchDoc({
+      id: row.id,
+      world_id: row.world_id,
+      primary_component: row.primary_component,
+      title: row.title,
+      summary: row.summary,
+      content: row.content,
+      deleted_at: row.deleted_at,
+      indexText,
+      scheduleEmbedding: false,
+    });
+  }
   return result.length > 0;
 }
 
@@ -307,6 +347,26 @@ export async function restoreEntity(id: number): Promise<EntityRow | null> {
     .set({ deleted_at: null, updated_at: now })
     .where(eq(entities.id, id))
     .returning(entityRowSelectColumns);
+  if (row) {
+    const indexText = entitySearchTextForWrite({
+      title: row.title,
+      summary: row.summary,
+      content: row.content,
+      body: row.body as Record<string, unknown>,
+      primary_component: row.primary_component,
+    });
+    await indexEntitySearchDoc({
+      id: row.id,
+      world_id: row.world_id,
+      primary_component: row.primary_component,
+      title: row.title,
+      summary: row.summary,
+      content: row.content,
+      deleted_at: null,
+      indexText,
+      scheduleEmbedding: false,
+    });
+  }
   return row ? mapRow(row) : null;
 }
 
@@ -317,6 +377,9 @@ export async function purgeEntity(id: number): Promise<boolean> {
     .delete(entities)
     .where(eq(entities.id, id))
     .returning({ id: entities.id });
+  if (result.length > 0) {
+    await removeEntitySearchDoc(id);
+  }
   return result.length > 0;
 }
 
@@ -368,6 +431,7 @@ export async function purgeSoftDeletedEntities(opts: {
         primary_component: row.primary_component,
         body: row.body,
       });
+      await removeEntitySearchDoc(row.id);
     }
     if (rows.length < pageSize) break;
   }
@@ -428,8 +492,6 @@ export async function deleteEntityComponent(
     body: nextBody,
     primary_component: nextPrimary,
   });
-  const fts_segmented = await resolveFtsSegmentedForWrite(indexText);
-  await clearEntityEmbedding(id);
 
   const db = getDb();
   const [row] = await db
@@ -438,12 +500,23 @@ export async function deleteEntityComponent(
       components: remaining,
       primary_component: nextPrimary,
       body: nextBody,
-      fts_segmented,
       updated_at: now,
     })
     .where(eq(entities.id, id))
     .returning(entityRowSelectColumns);
-  if (row) scheduleEntityEmbedding(row.id, indexText);
+  if (row) {
+    await indexEntitySearchDoc({
+      id: row.id,
+      world_id: row.world_id,
+      primary_component: row.primary_component,
+      title: row.title,
+      summary: row.summary,
+      content: row.content,
+      deleted_at: row.deleted_at,
+      indexText,
+      clearEmbeddingFirst: true,
+    });
+  }
   return row ? mapRow(row) : null;
 }
 

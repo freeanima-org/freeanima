@@ -110,14 +110,15 @@ Link to source — do not maintain function inventories here.
 | Dynamic filters (`buildListConditions` + `and`) | [`entity-crud-repo.ts`](../../src/host/core/db/pg/entity/repos/entity-crud-repo.ts); [`semantic-filters.ts`](../../src/host/core/db/pg/semantic-memory/repos/semantic-filters.ts) |
 | Bun-safe `text[]` (`pgTextArray`)               | [`utils/pg-sql.ts`](../../src/host/core/db/pg/utils/pg-sql.ts) — `ANY` / jsonb `?                                                                                                 | `/ array`&&` |
 | FTS / hybrid search (sql subquery in ORM)       | [`fts/hybrid-raw.ts`](../../src/host/core/db/pg/fts/hybrid-raw.ts), [`fts/hybrid-search.ts`](../../src/host/core/db/pg/fts/hybrid-search.ts)                                      |
-| Entity hybrid search (`searchEntities`)         | [`entity/search/entity-search-repo.ts`](../../src/host/core/db/pg/entity/search/entity-search-repo.ts) — FTS + trgm + vector → RRF                                                |
+| Entity hybrid search (`searchEntities`)         | [`entity/search/entity-search-repo.ts`](../../src/host/core/db/pg/entity/search/entity-search-repo.ts) — FTS + trgm → RRF (vector channel reserved, not in default hybrid)        |
+| SearchBackend / side table                      | [`search/`](../../src/host/core/db/pg/search/) + schema [`search-documents.ts`](../../src/host/core/db/schema/search-documents.ts) — rebuildable index off business tables        |
 | Conversation meta transform                     | [`conversation/transform.ts`](../../src/host/core/db/pg/conversation/transform.ts)                                                                                                |
 
 **检索与索引**：任何热路径使用 `<=>` / `word_similarity` / `similarity` 的表列，必须同步有 HNSW 或 `gin_trgm_ops`（可在 generate 后的 migration SQL 追加；见 entities / limbic / autobiographical）。表达式唯一索引（email IMAP 等）必须对应 SQL 点查，禁止 `limit N` 扫表 + JS 过滤。
 
 ### Entity search: result order
 
-`searchEntities({ mode: "hybrid", query })` returns rows in **relevance order** (RRF score from FTS / trgm / vector). Feature domain **must not** re-sort hybrid hits with list/browse natural order (`sort_order`, `entry_at`, title localeCompare, etc.).
+`searchEntities({ mode: "hybrid", query })` returns rows in **relevance order** (RRF score from FTS / trgm). Feature domain **must not** re-sort hybrid hits with list/browse natural order (`sort_order`, `entry_at`, title localeCompare, etc.).
 
 | Path                                                          | Order                                                                                             |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |

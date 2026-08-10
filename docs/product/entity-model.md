@@ -328,7 +328,7 @@ Entity **list** (deterministic browse) and **search** (relevance ranking) are se
 
 See memory hybrid search in [`memory.md`](../cognition/memory.md) for FTS operator syntax; entity search reuses the same query builder.
 
-**FTS index:** same `fts_segmented` + jieba write path as semantic memory (`resolveFtsSegmentedForWrite` on entity create/update). Legacy rows imported before this column may lack segmentation; run Habitat **FTS** rebuild (`onlyMissing`) to backfill `entities.fts_segmented` so jieba query tokens align with the GIN index.
+**FTS index:** rebuildable fields live on `search_documents` (jieba → `fts_segmented` → generated `search_fts`; async `embedding`). Entity create/update indexes via `SearchBackend.upsert`. Legacy rows may lack segmentation; run Habitat **FTS** rebuild (`onlyMissing`) to backfill `search_documents`. Business dumps may exclude `search_documents` (see [`database.md`](../ops/database.md)).
 
 ## Future migration map
 

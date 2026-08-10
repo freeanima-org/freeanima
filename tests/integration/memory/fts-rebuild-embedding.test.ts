@@ -96,7 +96,7 @@ describePg("FTS rebuild embedding PG", () => {
     const ctx = getActivePgTestContext();
     expect(ctx).not.toBeNull();
     await awaitPendingEmbeddingsForTest();
-    await ctx!.sql`UPDATE messages SET content_embedding = NULL`;
+    await ctx!.sql`UPDATE search_documents SET embedding = NULL WHERE resource = 'message'`;
 
     const before = await getFtsCoverageStats();
     const msgBefore = before.tables.find((t) => t.table === "messages")!;
@@ -127,7 +127,7 @@ describePg("FTS rebuild embedding PG", () => {
 
     const ctx = getActivePgTestContext();
     await awaitPendingEmbeddingsForTest();
-    await ctx!.sql`UPDATE messages SET content_embedding = NULL`;
+    await ctx!.sql`UPDATE search_documents SET embedding = NULL WHERE resource = 'message'`;
 
     await expect(rebuildAllFtsSegments({ onlyMissing: true })).rejects.toThrow(
       /stored 0 embeddings/,
@@ -147,17 +147,19 @@ describePg("FTS rebuild embedding PG", () => {
     });
 
     await awaitPendingEmbeddingsForTest();
-    await ctx!.sql`UPDATE entities SET search_embedding = NULL WHERE id = ${id}`;
+    await ctx!
+      .sql`UPDATE search_documents SET embedding = NULL WHERE resource = 'entity' AND source_id = ${String(id)}`;
 
     const result = await rebuildAllFtsSegments({ onlyMissing: true });
     expect(
       result.embeddings?.semantic_memory ?? result.embeddings?.entities ?? 0,
     ).toBeGreaterThanOrEqual(1);
 
-    const rows = await ctx!.sql<{ search_embedding: string | null }[]>`
-      SELECT search_embedding::text AS search_embedding FROM entities WHERE id = ${id}
+    const rows = await ctx!.sql<{ embedding: string | null }[]>`
+      SELECT embedding::text AS embedding FROM search_documents
+      WHERE resource = 'entity' AND source_id = ${String(id)}
     `;
-    expect(rows[0]?.search_embedding).not.toBeNull();
+    expect(rows[0]?.embedding).not.toBeNull();
   });
 
   it("onlyMissing=true skips message rows with empty payload content", async () => {
@@ -174,7 +176,7 @@ describePg("FTS rebuild embedding PG", () => {
     const ctx = getActivePgTestContext();
     expect(ctx).not.toBeNull();
     await awaitPendingEmbeddingsForTest();
-    await ctx!.sql`UPDATE messages SET content_embedding = NULL`;
+    await ctx!.sql`UPDATE search_documents SET embedding = NULL WHERE resource = 'message'`;
 
     const rows = await ctx!.sql<{ id: string }[]>`
       SELECT id FROM messages WHERE conversation_id = ${conversationId} ORDER BY pos LIMIT 1

@@ -8,6 +8,7 @@ import {
   type Db,
   type SqlClient,
 } from "@freeanima/host/core/db/pg";
+import { bindSearchRuntime } from "@freeanima/host/core/db/pg/search";
 import { createEngine } from "@freeanima/host/engine";
 import {
   initLlmRuntime,
@@ -77,6 +78,7 @@ function createTestSql(url: string): { sql: SqlClient; db: Db } {
 export async function setupPgTestDb(url: string, config: Config): Promise<PgTestContext> {
   initDatabase({ getDatabaseUrl: () => url });
   bindActiveRuntimeConfig(config);
+  bindSearchRuntime(config);
   const { sql, db } = createTestSql(url);
   setDbForTest(db, sql);
   await ensureIntegrationWorldContext(config);

@@ -1,9 +1,7 @@
-import { eq, sql } from "drizzle-orm";
-import { messages } from "@freeanima/host/core/db/schema";
-
-import { getDb } from "../client.ts";
-import { formatPgVector } from "./format.ts";
-import { clearEntityEmbedding, setEntityEmbedding } from "./entity-embedding.ts";
+import {
+  clearSearchDocumentEmbedding,
+  setSearchDocumentEmbedding,
+} from "../search/pg-search-index/backend.ts";
 
 /** content kept for call-site symmetry; row is keyed by id only (avoids JS trim vs PG btrim mismatch). */
 export async function setSemanticMemoryEmbedding(
@@ -19,13 +17,7 @@ export async function setMessageEmbedding(
   _content: string,
   embedding: number[],
 ): Promise<boolean> {
-  const db = getDb();
-  const rows = await db
-    .update(messages)
-    .set({ content_embedding: sql`${formatPgVector(embedding)}::vector` })
-    .where(eq(messages.id, id))
-    .returning({ id: messages.id });
-  return rows.length > 0;
+  return setSearchDocumentEmbedding("message", id, embedding);
 }
 
 export async function setLimbicMemoryEmbedding(
@@ -48,5 +40,16 @@ export async function clearSemanticMemoryEmbedding(id: string): Promise<void> {
   await clearEntityEmbedding(Number(id));
 }
 
-export { clearEntityEmbedding } from "./entity-embedding.ts";
-export { setEntityEmbedding };
+export async function setEntityEmbedding(
+  id: number,
+  _content: string,
+  embedding: number[],
+): Promise<boolean> {
+  return setSearchDocumentEmbedding("entity", id, embedding);
+}
+
+export async function clearEntityEmbedding(id: number): Promise<void> {
+  await clearSearchDocumentEmbedding("entity", id);
+}
+
+export { clearSearchDocumentEmbedding, setSearchDocumentEmbedding };

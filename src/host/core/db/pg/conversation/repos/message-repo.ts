@@ -5,8 +5,7 @@ import type { MessageRowView } from "../types.ts";
 import { messages, conversations, type MessageSelect } from "@freeanima/host/core/db/schema";
 import { omitUndefined } from "@freeanima/host/core/util";
 
-import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
-import { scheduleMessageEmbedding } from "../../embedding/schedule.ts";
+import { indexMessageSearchDoc } from "../../search/index-hooks.ts";
 import { recordMessageReferences } from "../../memory-reference/repos/memory-reference-repo.ts";
 import { isCronSession, touchConversationUpdatedAt } from "./conversation-repo.ts";
 import { getDb } from "../../client.ts";
@@ -41,10 +40,9 @@ export async function appendMessage(
 ): Promise<ConversationMessage> {
   const db = getDb();
   const insert = messageToInsert(conversation_id, msg);
-  const fts_segmented = await resolveFtsSegmentedForWrite(extractIndexableContent(insert.payload));
   const inserted = await db
     .insert(messages)
-    .values({ ...insert, fts_segmented })
+    .values(insert)
     .onConflictDoNothing({ target: [messages.conversation_id, messages.pos] })
     .returning();
   if (inserted.length > 0) {
@@ -52,7 +50,12 @@ export async function appendMessage(
     if (!row) throw new Error(`Row missing after messages insert: session=${conversation_id}`);
     const content = extractIndexableContent(row.payload);
     if (content) {
-      scheduleMessageEmbedding(row.id, content);
+      await indexMessageSearchDoc({
+        id: row.id,
+        conversation_id,
+        role: row.payload.role ?? "",
+        content,
+      });
       const created_at =
         typeof row.payload.timestamp === "string" ? row.payload.timestamp : undefined;
       const skipRefs = await isCronSession(conversation_id);
@@ -135,16 +138,24 @@ export async function appendMessageReturningId(
   }
   const db = getDb();
   const insert = messageToInsert(conversation_id, out);
-  const fts_segmented = await resolveFtsSegmentedForWrite(extractIndexableContent(insert.payload));
   const inserted = await db
     .insert(messages)
-    .values({ ...insert, fts_segmented })
+    .values(insert)
     .onConflictDoNothing({ target: [messages.conversation_id, messages.pos] })
     .returning();
   if (inserted.length > 0) {
     const insertedRow = inserted[0];
     if (!insertedRow)
       throw new Error(`Row missing after messages insert: session=${conversation_id}`);
+    const content = extractIndexableContent(insertedRow.payload);
+    if (content) {
+      await indexMessageSearchDoc({
+        id: insertedRow.id,
+        conversation_id,
+        role: insertedRow.payload.role ?? "",
+        content,
+      });
+    }
     return { messageId: insertedRow.id };
   }
 
@@ -179,14 +190,19 @@ export async function updateMessageContent(
   const payload = contentRow.payload;
   if (payload.role !== "assistant" && payload.role !== "user") return;
 
-  const fts_segmented = await resolveFtsSegmentedForWrite(content.trim());
   await db
     .update(messages)
     .set({
       payload: { ...payload, content },
-      fts_segmented,
     })
     .where(eq(messages.id, message_id));
+  await indexMessageSearchDoc({
+    id: message_id,
+    conversation_id,
+    role: payload.role ?? "",
+    content: content.trim(),
+    scheduleEmbedding: false,
+  });
 }
 
 export async function nextMessagePos(conversation_id: string): Promise<number> {

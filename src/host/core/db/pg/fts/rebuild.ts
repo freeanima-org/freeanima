@@ -1,5 +1,10 @@
-import { and, asc, eq, gt, isNotNull, isNull, sql as drizzleSql, type SQL } from "drizzle-orm";
-import { entities, messages, SEMANTIC_MEMORY_COMPONENT } from "@freeanima/host/core/db/schema";
+import { and, asc, eq, gt, sql as drizzleSql, type SQL } from "drizzle-orm";
+import {
+  entities,
+  messages,
+  searchDocuments,
+  SEMANTIC_MEMORY_COMPONENT,
+} from "@freeanima/host/core/db/schema";
 import { entitySearchTextForWrite } from "@freeanima/host/core/db/schema/entity";
 
 import { getActiveRuntimeConfig, isEmbeddingEnabled } from "@freeanima/host/core/config";
@@ -13,6 +18,9 @@ import { getEmbedTextFn } from "../embedding/runtime.ts";
 import { getDb } from "../client.ts";
 import { segmentForFts } from "./segment.ts";
 import type { FtsRebuildOptions, FtsRebuildPhase } from "./rebuild-types.ts";
+import { entityToSearchDoc, messageToSearchDoc } from "../search/docs-from-business.ts";
+import { getSearchBackend, tryGetSearchBackend } from "../search/runtime.ts";
+import { createPgSearchIndexBackend } from "../search/pg-search-index/backend.ts";
 
 /** PG page size for fts_segmented rebuild. */
 const REBUILD_DB_PAGE_SIZE = EMBEDDING_QUEUE_FLUSH_THRESHOLD;
@@ -46,19 +54,32 @@ function semanticMemoryActiveCondition(): SQL {
   return drizzleSql`${entities.body}->>'status' = 'active'`;
 }
 
-function semanticMemoryIdCursorCondition(_onlyMissing: boolean, lastId: number): SQL | undefined {
-  if (!lastId) return undefined;
-  return gt(entities.id, lastId);
+function missingSegmentedCondition(): SQL {
+  return drizzleSql`(${searchDocuments.doc_key} IS NULL OR nullif(btrim(${searchDocuments.fts_segmented}), '') IS NULL)`;
 }
 
-function messageIdCursorCondition(_onlyMissing: boolean, lastId: string): SQL | undefined {
-  if (!lastId) return undefined;
-  return gt(messages.id, lastId);
+function missingEmbeddingCondition(): SQL {
+  return drizzleSql`(${searchDocuments.doc_key} IS NULL OR ${searchDocuments.embedding} IS NULL)`;
 }
 
-function entityIdCursorCondition(_onlyMissing: boolean, lastId: number): SQL | undefined {
-  if (!lastId) return undefined;
-  return gt(entities.id, lastId);
+function entitySearchJoin() {
+  return and(
+    eq(searchDocuments.resource, "entity"),
+    drizzleSql`${searchDocuments.source_id} = ${entities.id}::text`,
+  );
+}
+
+function messageSearchJoin() {
+  return and(eq(searchDocuments.resource, "message"), eq(searchDocuments.source_id, messages.id));
+}
+
+async function ensureSearchBackend() {
+  if (!tryGetSearchBackend()) {
+    // Rebuild may run before bind in tests; default to side-table backend.
+    const { registerSearchBackend } = await import("../search/runtime.ts");
+    registerSearchBackend(createPgSearchIndexBackend());
+  }
+  return getSearchBackend();
 }
 
 function assertEmbeddingBatchStored(
@@ -102,12 +123,11 @@ async function countSemanticMemorySegmentedTargets(onlyMissing: boolean): Promis
     semanticMemoryPrimaryCondition(),
     drizzleSql`length(btrim(${entities.content})) > 0`,
   ];
-  if (onlyMissing) {
-    conditions.push(drizzleSql`nullif(btrim(${entities.fts_segmented}), '') IS NULL`);
-  }
+  if (onlyMissing) conditions.push(missingSegmentedCondition());
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(entities)
+    .leftJoin(searchDocuments, entitySearchJoin())
     .where(and(...conditions));
   return Number(rows[0]?.n ?? 0);
 }
@@ -121,25 +141,26 @@ async function countEntitiesSegmentedTargets(onlyMissing: boolean): Promise<numb
       coalesce(${entities.content}, '')
     )) > 0`,
   ];
-  if (onlyMissing) {
-    conditions.push(drizzleSql`nullif(btrim(${entities.fts_segmented}), '') IS NULL`);
-  }
+  if (onlyMissing) conditions.push(missingSegmentedCondition());
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(entities)
+    .leftJoin(searchDocuments, entitySearchJoin())
     .where(and(...conditions));
   return Number(rows[0]?.n ?? 0);
 }
 
 async function countMessagesSegmentedTargets(onlyMissing: boolean): Promise<number> {
   const db = getDb();
-  const conditions = [isNotNull(messages.content_fts)];
-  if (onlyMissing) {
-    conditions.push(drizzleSql`nullif(btrim(${messages.fts_segmented}), '') IS NULL`);
-  }
+  const conditions = [
+    drizzleSql`(${messages.payload})->>'role' IN ('user', 'assistant')`,
+    drizzleSql`length(btrim(coalesce(${messages.payload}->>'content', ''))) > 0`,
+  ];
+  if (onlyMissing) conditions.push(missingSegmentedCondition());
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(messages)
+    .leftJoin(searchDocuments, messageSearchJoin())
     .where(and(...conditions));
   return Number(rows[0]?.n ?? 0);
 }
@@ -151,21 +172,26 @@ async function countSemanticMemoryEmbeddingTargets(onlyMissing: boolean): Promis
     semanticMemoryActiveCondition(),
     drizzleSql`length(btrim(${entities.content})) > 0`,
   ];
-  if (onlyMissing) conditions.push(isNull(entities.search_embedding));
+  if (onlyMissing) conditions.push(missingEmbeddingCondition());
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(entities)
+    .leftJoin(searchDocuments, entitySearchJoin())
     .where(and(...conditions));
   return Number(rows[0]?.n ?? 0);
 }
 
 async function countMessagesEmbeddingTargets(onlyMissing: boolean): Promise<number> {
   const db = getDb();
-  const conditions = [isNotNull(messages.content_fts)];
-  if (onlyMissing) conditions.push(isNull(messages.content_embedding));
+  const conditions = [
+    drizzleSql`(${messages.payload})->>'role' IN ('user', 'assistant')`,
+    drizzleSql`length(btrim(coalesce(${messages.payload}->>'content', ''))) > 0`,
+  ];
+  if (onlyMissing) conditions.push(missingEmbeddingCondition());
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(messages)
+    .leftJoin(searchDocuments, messageSearchJoin())
     .where(and(...conditions));
   return Number(rows[0]?.n ?? 0);
 }
@@ -181,6 +207,7 @@ async function rebuildSemanticMemoryFtsSegmented(
   }
   if (!useJieba || total === 0) return 0;
 
+  const backend = await ensureSearchBackend();
   const db = getDb();
   let updated = 0;
   let lastId = 0;
@@ -190,15 +217,21 @@ async function rebuildSemanticMemoryFtsSegmented(
       semanticMemoryPrimaryCondition(),
       drizzleSql`length(btrim(${entities.content})) > 0`,
     ];
-    if (onlyMissing) {
-      baseConditions.push(drizzleSql`nullif(btrim(${entities.fts_segmented}), '') IS NULL`);
-    }
-    const cursorCond = semanticMemoryIdCursorCondition(onlyMissing, lastId);
-    if (cursorCond) baseConditions.push(cursorCond);
+    if (onlyMissing) baseConditions.push(missingSegmentedCondition());
+    if (lastId) baseConditions.push(gt(entities.id, lastId));
 
     const rows = await db
-      .select({ id: entities.id, content: entities.content })
+      .select({
+        id: entities.id,
+        world_id: entities.world_id,
+        primary_component: entities.primary_component,
+        title: entities.title,
+        summary: entities.summary,
+        content: entities.content,
+        deleted_at: entities.deleted_at,
+      })
       .from(entities)
+      .leftJoin(searchDocuments, entitySearchJoin())
       .where(and(...baseConditions))
       .orderBy(asc(entities.id))
       .limit(REBUILD_DB_PAGE_SIZE);
@@ -206,7 +239,18 @@ async function rebuildSemanticMemoryFtsSegmented(
 
     for (const row of rows) {
       const fts_segmented = await segmentForFts(row.content);
-      await db.update(entities).set({ fts_segmented }).where(eq(entities.id, row.id));
+      await backend.upsert([
+        entityToSearchDoc({
+          id: row.id,
+          world_id: row.world_id,
+          primary_component: row.primary_component,
+          title: row.title,
+          summary: row.summary,
+          content: row.content,
+          deleted_at: row.deleted_at,
+          fts_segmented,
+        }),
+      ]);
       updated += 1;
       report(opts.onProgress, "semantic_memory_segmented", "semantic_memory", updated, total);
       lastId = row.id;
@@ -229,24 +273,28 @@ async function rebuildMessagesFtsSegmented(
   }
   if (!useJieba || total === 0) return 0;
 
+  const backend = await ensureSearchBackend();
   const db = getDb();
   let updated = 0;
   let lastId = "";
 
   for (;;) {
-    const baseConditions = [isNotNull(messages.content_fts)];
-    if (onlyMissing) {
-      baseConditions.push(drizzleSql`nullif(btrim(${messages.fts_segmented}), '') IS NULL`);
-    }
-    const cursorCond = messageIdCursorCondition(onlyMissing, lastId);
-    if (cursorCond) baseConditions.push(cursorCond);
+    const baseConditions = [
+      drizzleSql`(${messages.payload})->>'role' IN ('user', 'assistant')`,
+      drizzleSql`length(btrim(coalesce(${messages.payload}->>'content', ''))) > 0`,
+    ];
+    if (onlyMissing) baseConditions.push(missingSegmentedCondition());
+    if (lastId) baseConditions.push(gt(messages.id, lastId));
 
     const rows = await db
       .select({
         id: messages.id,
+        conversation_id: messages.conversation_id,
+        role: drizzleSql<string>`${messages.payload}->>'role'`,
         content: drizzleSql<string | null>`${messages.payload}->>'content'`,
       })
       .from(messages)
+      .leftJoin(searchDocuments, messageSearchJoin())
       .where(and(...baseConditions))
       .orderBy(asc(messages.id))
       .limit(REBUILD_DB_PAGE_SIZE);
@@ -255,7 +303,15 @@ async function rebuildMessagesFtsSegmented(
     for (const row of rows) {
       const content = row.content ?? "";
       const fts_segmented = content ? await segmentForFts(content) : null;
-      await db.update(messages).set({ fts_segmented }).where(eq(messages.id, row.id));
+      await backend.upsert([
+        messageToSearchDoc({
+          id: row.id,
+          conversation_id: row.conversation_id,
+          role: row.role,
+          content,
+          fts_segmented,
+        }),
+      ]);
       updated += 1;
       report(opts.onProgress, "messages_segmented", "messages", updated, total);
       lastId = row.id;
@@ -275,6 +331,7 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
   report(opts.onProgress, "semantic_memory_embedding", "semantic_memory", 0, total);
   if (total === 0) return 0;
 
+  await ensureSearchBackend();
   const db = getDb();
   let updated = 0;
   let lastId = 0;
@@ -285,13 +342,13 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
       semanticMemoryActiveCondition(),
       drizzleSql`length(btrim(${entities.content})) > 0`,
     ];
-    if (onlyMissing) baseConditions.push(isNull(entities.search_embedding));
-    const cursorCond = semanticMemoryIdCursorCondition(onlyMissing, lastId);
-    if (cursorCond) baseConditions.push(cursorCond);
+    if (onlyMissing) baseConditions.push(missingEmbeddingCondition());
+    if (lastId) baseConditions.push(gt(entities.id, lastId));
 
     const rows = await db
       .select({ id: entities.id, content: entities.content })
       .from(entities)
+      .leftJoin(searchDocuments, entitySearchJoin())
       .where(and(...baseConditions))
       .orderBy(asc(entities.id))
       .limit(REBUILD_EMBEDDING_PAGE_SIZE);
@@ -299,6 +356,22 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
 
     const row = rows[0];
     if (!row) break;
+    const [full] = await db
+      .select({
+        id: entities.id,
+        world_id: entities.world_id,
+        primary_component: entities.primary_component,
+        title: entities.title,
+        summary: entities.summary,
+        content: entities.content,
+        deleted_at: entities.deleted_at,
+      })
+      .from(entities)
+      .where(eq(entities.id, row.id))
+      .limit(1);
+    if (full) {
+      await getSearchBackend().upsert([entityToSearchDoc(full)]);
+    }
     const stored = await embedRebuildRow("semantic_memory_embedding", {
       kind: "semantic_memory",
       id: String(row.id),
@@ -320,22 +393,28 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
   report(opts.onProgress, "messages_embedding", "messages", 0, total);
   if (total === 0) return 0;
 
+  await ensureSearchBackend();
   const db = getDb();
   let updated = 0;
   let lastId = "";
 
   for (;;) {
-    const baseConditions = [isNotNull(messages.content_fts)];
-    if (onlyMissing) baseConditions.push(isNull(messages.content_embedding));
-    const cursorCond = messageIdCursorCondition(onlyMissing, lastId);
-    if (cursorCond) baseConditions.push(cursorCond);
+    const baseConditions = [
+      drizzleSql`(${messages.payload})->>'role' IN ('user', 'assistant')`,
+      drizzleSql`length(btrim(coalesce(${messages.payload}->>'content', ''))) > 0`,
+    ];
+    if (onlyMissing) baseConditions.push(missingEmbeddingCondition());
+    if (lastId) baseConditions.push(gt(messages.id, lastId));
 
     const rows = await db
       .select({
         id: messages.id,
+        conversation_id: messages.conversation_id,
+        role: drizzleSql<string>`${messages.payload}->>'role'`,
         content: drizzleSql<string | null>`${messages.payload}->>'content'`,
       })
       .from(messages)
+      .leftJoin(searchDocuments, messageSearchJoin())
       .where(and(...baseConditions))
       .orderBy(asc(messages.id))
       .limit(REBUILD_EMBEDDING_PAGE_SIZE);
@@ -343,6 +422,14 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
 
     const row = rows[0];
     if (!row) break;
+    await getSearchBackend().upsert([
+      messageToSearchDoc({
+        id: row.id,
+        conversation_id: row.conversation_id,
+        role: row.role,
+        content: row.content ?? "",
+      }),
+    ]);
     const stored = await embedRebuildRow("messages_embedding", {
       kind: "message",
       id: row.id,
@@ -389,6 +476,7 @@ async function rebuildEntitiesFtsSegmented(
   }
   if (!useJieba || total === 0) return 0;
 
+  const backend = await ensureSearchBackend();
   const db = getDb();
   let updated = 0;
   let lastId = 0;
@@ -401,22 +489,22 @@ async function rebuildEntitiesFtsSegmented(
         coalesce(${entities.content}, '')
       )) > 0`,
     ];
-    if (onlyMissing) {
-      baseConditions.push(drizzleSql`nullif(btrim(${entities.fts_segmented}), '') IS NULL`);
-    }
-    const cursorCond = entityIdCursorCondition(onlyMissing, lastId);
-    if (cursorCond) baseConditions.push(cursorCond);
+    if (onlyMissing) baseConditions.push(missingSegmentedCondition());
+    if (lastId) baseConditions.push(gt(entities.id, lastId));
 
     const rows = await db
       .select({
         id: entities.id,
+        world_id: entities.world_id,
         title: entities.title,
         summary: entities.summary,
         content: entities.content,
         body: entities.body,
         primary_component: entities.primary_component,
+        deleted_at: entities.deleted_at,
       })
       .from(entities)
+      .leftJoin(searchDocuments, entitySearchJoin())
       .where(and(...baseConditions))
       .orderBy(asc(entities.id))
       .limit(REBUILD_DB_PAGE_SIZE);
@@ -431,7 +519,18 @@ async function rebuildEntitiesFtsSegmented(
         primary_component: row.primary_component,
       });
       const fts_segmented = indexText.trim() ? await segmentForFts(indexText) : null;
-      await db.update(entities).set({ fts_segmented }).where(eq(entities.id, row.id));
+      await backend.upsert([
+        entityToSearchDoc({
+          id: row.id,
+          world_id: row.world_id,
+          primary_component: row.primary_component,
+          title: row.title,
+          summary: row.summary,
+          content: row.content,
+          deleted_at: row.deleted_at,
+          fts_segmented,
+        }),
+      ]);
       updated += 1;
       report(opts.onProgress, "entities_segmented", "entities", updated, total);
       lastId = row.id;
