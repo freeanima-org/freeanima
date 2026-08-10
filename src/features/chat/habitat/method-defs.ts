@@ -39,6 +39,7 @@ import { z } from "zod";
 import {
   defineHabitatMethod,
   dualTransportMeta,
+  longOpMeta,
   wsOnlyMeta,
 } from "@freeanima/shared/habitat-contract";
 
@@ -146,6 +147,6 @@ export const chatMethodDefs = {
   "llm_debug.get": defineHabitatMethod({
     input: llmDebugGetInputSchema,
     output: llmDebugGetOutputSchema,
-    meta: dualTransportMeta(true),
+    meta: longOpMeta(true),
   }),
 } as const;

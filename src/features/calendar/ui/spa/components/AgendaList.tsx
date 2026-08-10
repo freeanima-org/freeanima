@@ -24,7 +24,14 @@ function itemTime(item: CalendarRangeItem): string {
     if (item.all_day) return m.calendar_all_day();
     return isoToTimeLocalValue(item.start_at) || "—";
   }
-  if (item.kind === "task") return isoToTimeLocalValue(item.due_at) || "—";
+  if (item.kind === "task") {
+    const start = isoToTimeLocalValue(item.start_at ?? item.due_at);
+    const due = isoToTimeLocalValue(item.due_at);
+    if (item.start_at && item.start_at !== item.due_at && start && due && start !== due) {
+      return `${start}–${due}`;
+    }
+    return due || "—";
+  }
   return isoToTimeLocalValue(item.start_at) || "—";
 }
 
@@ -42,7 +49,11 @@ export function AgendaList({
       const end = dayKeyFromIso(item.end_at ?? item.start_at);
       return start <= day && day <= end;
     }
-    if (item.kind === "task") return dayKeyFromIso(item.due_at) === day;
+    if (item.kind === "task") {
+      const start = dayKeyFromIso(item.start_at ?? item.due_at);
+      const end = dayKeyFromIso(item.due_at);
+      return start <= day && day <= end;
+    }
     const start = dayKeyFromIso(item.start_at ?? "");
     const end = dayKeyFromIso(item.end_at ?? item.start_at ?? "");
     if (!start) return false;

@@ -2,6 +2,11 @@ import type { z } from "zod";
 
 import type { HabitatMethodMeta } from "./transport.ts";
 import type { HttpRouteMeta, HttpRequestEncoding, HttpResponseEncoding } from "./http-route.ts";
+import {
+  HABITAT_RPC_LONG_TIMEOUT_MS,
+  HABITAT_RPC_READ_TIMEOUT_MS,
+  HABITAT_RPC_WRITE_TIMEOUT_MS,
+} from "./timeouts.ts";
 
 /** 单个 Habitat method 的契约定义 */
 export type HabitatMethodDef<
@@ -21,9 +26,11 @@ export function defineHabitatMethod<I extends z.ZodTypeAny, O extends z.ZodTypeA
 
 export type DualTransportMetaOptions = {
   http?: Partial<HttpRouteMeta>;
+  /** 覆盖读 3s / 写 10s 默认档 */
+  timeoutMs?: number;
 };
 
-/** HTTP + WS 双传输（只读默认 HTTP GET；写入默认 WS） */
+/** HTTP + WS 双传输（只读默认 HTTP GET；写入默认 WS）；超时默认读 3s / 写 10s */
 export function dualTransportMeta(
   readOnly = true,
   options?: DualTransportMetaOptions,
@@ -34,6 +41,8 @@ export function dualTransportMeta(
       ? { habitat: "http", outpost: "http" }
       : { habitat: "ws", outpost: "ws" },
     fallback: readOnly,
+    timeoutMs:
+      options?.timeoutMs ?? (readOnly ? HABITAT_RPC_READ_TIMEOUT_MS : HABITAT_RPC_WRITE_TIMEOUT_MS),
   };
   if (options?.http) {
     meta.httpOverrides = options.http;
@@ -41,38 +50,59 @@ export function dualTransportMeta(
   return meta;
 }
 
-/** 仅 HTTP 传输（REST /rpc/v1/{path}） */
-export function httpTransportMeta(): HabitatMethodMeta {
+/**
+ * 导入 / rebuild / LLM 相关等长任务：在 dual 传输上挂 30s 档。
+ * `readOnly` 仍控制默认传输与 HTTP verb。
+ */
+export function longOpMeta(
+  readOnly = false,
+  options?: Omit<DualTransportMetaOptions, "timeoutMs">,
+): HabitatMethodMeta {
+  return dualTransportMeta(readOnly, {
+    ...options,
+    timeoutMs: HABITAT_RPC_LONG_TIMEOUT_MS,
+  });
+}
+
+/** 仅 HTTP 传输（REST /rpc/v1/{path}）；默认读档 3s */
+export function httpTransportMeta(
+  timeoutMs: number = HABITAT_RPC_READ_TIMEOUT_MS,
+): HabitatMethodMeta {
   return {
     transports: ["http"],
     defaultByProfile: { habitat: "http", outpost: "http" },
     fallback: false,
+    timeoutMs,
   };
 }
 
-/** WS-only（流式 / outpost / terminal） */
-export function wsOnlyMeta(): HabitatMethodMeta {
+/** WS-only（流式 / outpost / terminal）；默认写档 10s */
+export function wsOnlyMeta(timeoutMs: number = HABITAT_RPC_WRITE_TIMEOUT_MS): HabitatMethodMeta {
   return {
     transports: ["ws"],
     defaultByProfile: { habitat: "ws", outpost: "ws" },
     fallback: false,
+    timeoutMs,
   };
 }
 
-/** 仅 HTTP + 匿名可访问（health / TLS CA 等基础设施探活） */
-export function publicHttpMeta(): HabitatMethodMeta {
+/** 仅 HTTP + 匿名可访问（health / TLS CA 等基础设施探活）；默认读档 3s */
+export function publicHttpMeta(timeoutMs: number = HABITAT_RPC_READ_TIMEOUT_MS): HabitatMethodMeta {
   return {
     transports: ["http"],
     defaultByProfile: { habitat: "http", outpost: "http" },
     fallback: false,
     auth: "optional",
+    timeoutMs,
   };
 }
 
 /** publicHttpMeta + raw Response 响应（TLS PEM/QR 等） */
-export function rawPublicHttpMeta(): HabitatMethodMeta {
+export function rawPublicHttpMeta(
+  timeoutMs: number = HABITAT_RPC_READ_TIMEOUT_MS,
+): HabitatMethodMeta {
   return {
-    ...publicHttpMeta(),
+    ...publicHttpMeta(timeoutMs),
     httpOverrides: { response: "raw" },
   };
 }
@@ -84,7 +114,7 @@ export type BinaryHttpMetaOptions = {
   request?: HttpRequestEncoding;
   response?: HttpResponseEncoding;
   auth?: HabitatMethodMeta["auth"];
-  /** 客户端请求超时（ms）；大文件上传/下载建议显式设置 */
+  /** 客户端请求超时（ms）；省略则用长任务档 30s；大文件请显式设 BINARY 常量 */
   timeoutMs?: number;
 };
 
@@ -101,8 +131,8 @@ export function binaryHttpMeta(options: BinaryHttpMetaOptions): HabitatMethodMet
     transports: ["http"],
     defaultByProfile: { habitat: "http", outpost: "http" },
     fallback: false,
+    timeoutMs: options.timeoutMs ?? HABITAT_RPC_LONG_TIMEOUT_MS,
     ...(options.auth !== undefined ? { auth: options.auth } : {}),
-    ...(options.timeoutMs !== undefined ? { timeoutMs: options.timeoutMs } : {}),
     httpOverrides,
   };
 }

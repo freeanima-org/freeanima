@@ -23,12 +23,19 @@ export type {
 export {
   defineHabitatMethod,
   dualTransportMeta,
+  longOpMeta,
   httpTransportMeta,
   wsOnlyMeta,
   publicHttpMeta,
   rawPublicHttpMeta,
   binaryHttpMeta,
 } from "./method-def.ts";
+
+export {
+  HABITAT_RPC_READ_TIMEOUT_MS,
+  HABITAT_RPC_WRITE_TIMEOUT_MS,
+  HABITAT_RPC_LONG_TIMEOUT_MS,
+} from "./timeouts.ts";
 
 export {
   defineHabitatRoute,

@@ -110,6 +110,8 @@ export const taskItemRowSchema = z.object({
   tag_ids: z.array(z.number().int().positive()),
   status: taskStatusSchema,
   priority: taskPrioritySchema,
+  /** 时段起点；无则仅用 due_at */
+  start_at: z.string().nullable().optional(),
   due_at: z.string().nullable(),
   remind_at: z.string().nullable(),
   /** 多提前提醒；与 remind_at（最早一项）同步 */
@@ -317,6 +319,7 @@ export const tasklistItemCreateInputSchema = z.object({
   content: z.string().optional(),
   tag_ids: z.array(z.number().int().positive()).optional(),
   priority: taskPrioritySchema.optional(),
+  start_at: z.string().nullable().optional(),
   due_at: z.string().nullable().optional(),
   remind_at: z.string().nullable().optional(),
   reminders: z.array(taskReminderEntrySchema).optional(),
@@ -337,6 +340,7 @@ export const projectItemCreateInputSchema = z.object({
   content: z.string().optional(),
   tag_ids: z.array(z.number().int().positive()).optional(),
   priority: taskPrioritySchema.optional(),
+  start_at: z.string().nullable().optional(),
   due_at: z.string().nullable().optional(),
   remind_at: z.string().nullable().optional(),
   reminders: z.array(taskReminderEntrySchema).optional(),
@@ -394,6 +398,7 @@ export const taskPatchInputSchema = z.object({
   content: z.string().optional(),
   tag_ids: z.array(z.number().int().positive()).optional(),
   priority: taskPrioritySchema.optional(),
+  start_at: z.string().nullable().optional(),
   due_at: z.string().nullable().optional(),
   remind_at: z.string().nullable().optional(),
   reminders: z.array(taskReminderEntrySchema).optional(),
@@ -494,3 +499,22 @@ export const taskAdvanceReminderEventSchema = z.object({
   source_ref: z.string(),
 });
 export type TaskAdvanceReminderEvent = z.infer<typeof taskAdvanceReminderEventSchema>;
+
+/** 滴答清单 CSV 备份导入 */
+export const taskImportDidaCsvInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  csv_text: z.string().min(1),
+  mode: z.enum(["upsert", "create_only"]).optional(),
+});
+export type TaskImportDidaCsvInput = z.infer<typeof taskImportDidaCsvInputSchema>;
+export const taskImportDidaCsvOutputSchema = z.object({
+  created_lists: z.number().int().nonnegative(),
+  updated_lists: z.number().int().nonnegative(),
+  created_tasks: z.number().int().nonnegative(),
+  updated_tasks: z.number().int().nonnegative(),
+  skipped: z.number().int().nonnegative(),
+  abandoned_skipped: z.number().int().nonnegative(),
+  warnings: z.array(z.string()),
+  errors: z.array(z.string()),
+});
+export type TaskImportDidaCsvOutput = z.infer<typeof taskImportDidaCsvOutputSchema>;

@@ -43,6 +43,7 @@ export type TaskItemCreateInput = {
   /** 任务模块必填；与 project_id 互斥 */
   list_id?: number | null;
   priority?: TaskItemPriority;
+  start_at?: string | null;
   due_at?: string | null;
   remind_at?: string | null;
   reminders?: TaskReminderEntryInput[];
@@ -63,6 +64,7 @@ export type TaskItemUpdateInput = {
   list_id?: number | null;
   project_id?: number | null;
   priority?: TaskItemPriority;
+  start_at?: string | null;
   due_at?: string | null;
   remind_at?: string | null;
   reminders?: TaskReminderEntryInput[];

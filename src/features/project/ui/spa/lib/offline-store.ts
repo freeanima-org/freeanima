@@ -1051,9 +1051,19 @@ export async function offlineUpdateProjectTask(
   patch: Partial<
     Pick<
       TaskItemRow,
-      "title" | "content" | "tag_ids" | "priority" | "due_at" | "sort_order" | "status"
+      | "title"
+      | "content"
+      | "tag_ids"
+      | "priority"
+      | "start_at"
+      | "due_at"
+      | "remind_at"
+      | "reminders"
+      | "sort_order"
+      | "status"
+      | "recurrence"
     >
-  >,
+  > & { only_this?: boolean },
 ): Promise<TaskItemRow> {
   const scope = resolveOutboxScope();
   const found = await findLocalItem(scope, id);
@@ -1063,7 +1073,7 @@ export async function offlineUpdateProjectTask(
   const doOffline = async (): Promise<TaskItemRow> => {
     const now = new Date().toISOString();
     const nextStatus = patch.status ?? existing.status;
-    const updated: TaskItemRow = {
+    let updated: TaskItemRow = {
       ...existing,
       ...patch,
       status: nextStatus,
@@ -1075,6 +1085,16 @@ export async function offlineUpdateProjectTask(
             : existing.completed_at,
       updated_at: now,
     };
+    if (patch.due_at === null || patch.due_at === "") {
+      updated = {
+        ...updated,
+        due_at: null,
+        start_at: null,
+        recurrence: null,
+        remind_at: null,
+        reminders: [],
+      };
+    }
     await upsertLocalItem(scope, updated);
 
     const method =

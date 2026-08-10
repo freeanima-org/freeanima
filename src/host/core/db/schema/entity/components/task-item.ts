@@ -57,6 +57,10 @@ export const taskItemBodySchema = z.preprocess(
           reminders: [],
         };
       }
+      // 无 due 时不保留孤立 start_at
+      if (obj.start_at != null && obj.start_at !== "") {
+        obj = { ...obj, start_at: null };
+      }
     }
     return obj;
   },
@@ -71,6 +75,25 @@ export const taskItemBodySchema = z.preprocess(
       });
     }
     const dueEmpty = data.due_at == null || data.due_at === "";
+    const start = data.start_at != null && data.start_at !== "" ? data.start_at : null;
+    if (start != null && dueEmpty) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "start_at requires due_at",
+        path: ["start_at"],
+      });
+    }
+    if (start != null && !dueEmpty && data.due_at) {
+      const startMs = Date.parse(start);
+      const dueMs = Date.parse(data.due_at);
+      if (Number.isFinite(startMs) && Number.isFinite(dueMs) && startMs > dueMs) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "start_at must be <= due_at",
+          path: ["start_at"],
+        });
+      }
+    }
     if (!dueEmpty) return;
     if (data.recurrence != null) {
       ctx.addIssue({

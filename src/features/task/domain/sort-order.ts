@@ -1,6 +1,19 @@
 /** 任务 / 清单 / 项目等拖拽排序的间隔步长；新建 prepend 为 min - STEP。 */
 export const SORT_ORDER_STEP = 10;
 
+/** PostgreSQL `integer` 范围（body.sort_order 经 `::int` 排序时不可越界） */
+export const PG_INT32_MIN = -2_147_483_648;
+export const PG_INT32_MAX = 2_147_483_647;
+
+/** 将 sort_order 钳到 PG int4，避免 ORDER BY / 存库溢出 */
+export function clampSortOrder(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  const n = Math.trunc(value);
+  if (n > PG_INT32_MAX) return PG_INT32_MAX;
+  if (n < PG_INT32_MIN) return PG_INT32_MIN;
+  return n;
+}
+
 export type SortOrderRow = { id: number; sort_order: number };
 
 export type SortOrderPatch = { id: number; sort_order: number };

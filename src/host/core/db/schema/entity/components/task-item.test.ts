@@ -86,13 +86,43 @@ describe("taskItemBodySchema due_at 与重复/提醒", () => {
     }
   });
 
-  test("有 due 时允许 recurrence 与 reminders", () => {
+  test("无 due 时预处理剥离 start_at", () => {
     const parsed = taskItemBodySchema.safeParse({
       list_id: 2,
       project_id: null,
       status: "pending",
       priority: "none",
       client_op_id: null,
+      due_at: null,
+      start_at: "2026-08-01T08:00:00+08:00",
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.start_at).toBeNull();
+    }
+  });
+
+  test("start_at 晚于 due_at 失败", () => {
+    const parsed = taskItemBodySchema.safeParse({
+      list_id: 2,
+      project_id: null,
+      status: "pending",
+      priority: "none",
+      client_op_id: null,
+      start_at: "2026-08-02T09:00:00+08:00",
+      due_at: "2026-08-01T09:00:00+08:00",
+    });
+    expect(parsed.success).toBe(false);
+  });
+
+  test("有 due 时允许 start_at / recurrence / reminders", () => {
+    const parsed = taskItemBodySchema.safeParse({
+      list_id: 2,
+      project_id: null,
+      status: "pending",
+      priority: "none",
+      client_op_id: null,
+      start_at: "2026-08-01T08:00:00+08:00",
       due_at: "2026-08-01T09:00:00+08:00",
       remind_at: "2026-08-01T08:00:00+08:00",
       reminders: [{ at: "2026-08-01T08:00:00+08:00" }],
@@ -105,6 +135,7 @@ describe("taskItemBodySchema due_at 与重复/提醒", () => {
     });
     expect(parsed.success).toBe(true);
     if (parsed.success) {
+      expect(parsed.data.start_at).toBe("2026-08-01T08:00:00+08:00");
       expect(parsed.data.recurrence?.freq).toBe("daily");
       expect(parsed.data.remind_at).toBe("2026-08-01T08:00:00+08:00");
     }

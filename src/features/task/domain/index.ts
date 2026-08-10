@@ -76,3 +76,21 @@ export {
 } from "./smart-list-presets.ts";
 
 export { registerTaskTools } from "./tools.ts";
+
+export {
+  parseDidaCsv,
+  planDidaImport,
+  parseCsvRows,
+  reminderDurationToAt,
+  buildDidaPreviewRows,
+  type DidaCsvParseResult,
+  type DidaImportMode,
+  type DidaImportPlanEntry,
+  type DidaPreviewRow,
+  type DidaPreviewBucket,
+  type DidaCsvSkippedTask,
+} from "./dida-csv-import.ts";
+
+export { parseDidaRepeat } from "./dida-rrule.ts";
+
+export { applyDidaCsvImport, type DidaImportApplyResult } from "./apply-dida-import.ts";

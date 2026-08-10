@@ -18,12 +18,13 @@ title: Task
 
 - 永远代表「当前期」：待办列表默认只查 **根任务**（`roots_only` / `parent_id` 空）。
 - `body.parent_id`（可选）：一层子任务；子任务不可再挂子任务，也不可带 `recurrence`。
-- **硬约束**：无 `due_at` 则无 `recurrence`、无提醒（`remind_at` / `reminders`）。清日期时级联清除；写入路径拒绝无日期的重复/提醒。
+- **硬约束**：无 `due_at` 则无 `recurrence`、无提醒（`remind_at` / `reminders`）、无 `start_at`。清日期时级联清除；写入路径拒绝无日期的重复/提醒。
+- `body.start_at`（可选）：时段起点；有值时须同时有 `due_at` 且 `start_at` ≤ `due_at`。日历聚合优先用 `start_at`（跨天任务按区间展示）。
 - `body.recurrence`（可选）：`freq` / `interval` / `anchor` / `weekdays?` / `until?` / `count?` / **`schedule_at`** / `skip?` / `workdays_only?` / `calendar?` / `lunar_month?` / `lunar_day?`。
   - `calendar=lunar` 仅支持 `monthly` / `yearly`：月重复必填 `lunar_day`（按农历月推进同日）；年重复必填 `lunar_month` + `lunar_day`（闰月 `lunar_month` 为负，与 lunar-javascript 一致）。
-- **显示与提醒**用顶层 `due_at`；**提前提醒**用 `reminders[]`（与兼容字段 `remind_at` = 最早一项同步；依赖 `due_at`）。
+- **显示与提醒**用顶层 `due_at`；**相对 due 的多提醒**用 `reminders[]`（与兼容字段 `remind_at` = 最早一项同步；依赖 `due_at`）。详情 UI 可增删多条相对预设（截止时 / 提前 / 当天 09:00）。
 - **规则时钟**用 `recurrence.schedule_at`。
-- 「仅此一次」改期：只改 `due_at`（及 remind 相对偏移），**不改** `schedule_at`。改规则轨：同时改 `due_at` 与 `schedule_at`（或显式 patch `recurrence`）。RPC：`only_this`（默认 false = 改规则轨；详情 UI 默认 true）。
+- 「仅此一次」改期：只改 `due_at`（及 remind / start 相对偏移），**不改** `schedule_at`。改规则轨：同时改 `due_at` 与 `schedule_at`（或显式 patch `recurrence`）。RPC：`only_this`（默认 false = 改规则轨；详情 UI 默认 true）。
 
 ### History `task_occurrence`
 
@@ -72,17 +73,28 @@ completeForever → 写 occurrence（若有规则）+ 清 recurrence + completed
 
 ## UI 视图
 
-| 视图 | 说明                                                          |
-| ---- | ------------------------------------------------------------- |
-| 列表 | 默认；支持拖拽排序                                            |
-| 看板 | `/tasks` 内切换；按优先级或状态分列，拖拽改字段；只显示根任务 |
-| 详情 | 提醒 / 重复高级选项 / 一层子任务 checklist / 番茄专注         |
+| 视图 | 说明                                                                       |
+| ---- | -------------------------------------------------------------------------- |
+| 列表 | 默认；支持拖拽排序                                                         |
+| 看板 | `/tasks` 内切换；按优先级或状态分列，拖拽改字段；只显示根任务              |
+| 详情 | 时段（start/due）/ 多提醒 / 重复高级选项 / 一层子任务 checklist / 番茄专注 |
+
+## 滴答清单 CSV 导入（有损、一次性）
+
+- 入口：栖息地 **数据维护**（`/data-maintenance`）→「从滴答清单导入」；RPC `task.importDidaCsv`。
+- **两步**：选 CSV → 本地预览大表（Tab：正常导入 / 警告 / 跳过）→ 确认后写入。
+- 源：滴答 Web CSV 备份（Version 7.x）；幂等 `client_op_id = dida:<taskId>` / `dida:list:…` / `dida:folder:…`。
+- Status `-1`（放弃）跳过；`0`→pending、`2`→completed。
+- **无 due** → 丢提醒与重复；已完成任务不保留 recurrence。
+- `Reminder`：ISO8601 duration → 相对 due 的绝对 `reminders[]`（可多条）。
+- `Repeat`：支持常见 RRULE 子集（`FREQ`/`INTERVAL`/`BYDAY`/`BYMONTHDAY`/`UNTIL`/`COUNT`/`LUNAR:`/`TT_SKIP`）；`ERULE`/`BYDATE` 自定义不映射并记警告。
+- 不做持续同步、不导入看板 Column。
 
 ## v1 边界（non-goals）
 
-- 不做独立 template 实体、预创建未来期、完整 RRULE
+- 不做独立 template 实体、预创建未来期、**完整通用 RRULE**（滴答 CSV 常见子集见上）
 - 不做跨时区多日历；日界与现有任务筛选一致（Asia/Shanghai）
-- 不做自然语言快速添加、习惯打卡、倒数日、清单协作、第三方日历同步
+- 不做自然语言快速添加、习惯打卡、倒数日、清单协作、第三方日历**持续**同步
 - 不做四象限 / 时间线甘特；项目文件夹级跨项目看板仍属后续
 
 日历侧重复实例为 **虚拟展开**（见 [`calendar.md`](./calendar.md)），不写未来 `task_occurrence`。
@@ -90,6 +102,7 @@ completeForever → 写 occurrence（若有规则）+ 清 recurrence + completed
 ## 相关代码
 
 - Schema：`task-item.ts` / `task-occurrence.ts` / `task-recurrence.ts` / `schedulable.ts`
-- Domain：`item-store.ts` / `occurrence-store.ts` / `completed-activity.ts`
-- RPC：`src/shared/rpc-contract/frames/task.ts`
+- Domain：`item-store.ts` / `occurrence-store.ts` / `completed-activity.ts` / `dida-csv-import.ts` / `dida-rrule.ts` / `apply-dida-import.ts`
+- RPC：`src/shared/rpc-contract/frames/task.ts`（含 `task.importDidaCsv`）
 - 提醒调度：`src/host/platform/boot/task-reminder-scheduler.ts`
+- 导入 UI：栖息地 `data-maintenance` + `DidaImportDialog`

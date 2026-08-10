@@ -51,6 +51,8 @@ import {
   taskUncompleteOutputSchema,
   taskSubscribeAdvanceRemindersInputSchema,
   taskSubscribeAdvanceRemindersOutputSchema,
+  taskImportDidaCsvInputSchema,
+  taskImportDidaCsvOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/task";
 
 import {
@@ -58,6 +60,7 @@ import {
   dualTransportMeta,
   wsOnlyMeta,
 } from "@freeanima/shared/habitat-contract";
+import { HABITAT_RPC_BULK_IMPORT_TIMEOUT_MS } from "@freeanima/shared/habitat-rpc";
 
 export const taskMethodDefs = {
   "tasklist.list": defineHabitatMethod({
@@ -184,6 +187,11 @@ export const taskMethodDefs = {
     input: taskSearchInputSchema,
     output: taskSearchOutputSchema,
     meta: dualTransportMeta(true),
+  }),
+  "task.importDidaCsv": defineHabitatMethod({
+    input: taskImportDidaCsvInputSchema,
+    output: taskImportDidaCsvOutputSchema,
+    meta: dualTransportMeta(false, { timeoutMs: HABITAT_RPC_BULK_IMPORT_TIMEOUT_MS }),
   }),
   "task.subscribeAdvanceReminders": defineHabitatMethod({
     input: taskSubscribeAdvanceRemindersInputSchema,

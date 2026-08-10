@@ -1,14 +1,25 @@
-/** 通用 Habitat RPC request 默认超时（快速反馈） */
-export const HABITAT_RPC_DEFAULT_REQUEST_TIMEOUT_MS = 3_000;
+import {
+  HABITAT_RPC_LONG_TIMEOUT_MS,
+  HABITAT_RPC_READ_TIMEOUT_MS,
+  HABITAT_RPC_WRITE_TIMEOUT_MS,
+} from "@freeanima/shared/habitat-contract";
 
-/** message.send 首包 ack（stream_id）超时 */
-export const HABITAT_RPC_MESSAGE_SEND_TIMEOUT_MS = 10_000;
+export { HABITAT_RPC_READ_TIMEOUT_MS, HABITAT_RPC_WRITE_TIMEOUT_MS, HABITAT_RPC_LONG_TIMEOUT_MS };
+
+/** 通用 Habitat RPC request 默认超时（= 读档） */
+export const HABITAT_RPC_DEFAULT_REQUEST_TIMEOUT_MS = HABITAT_RPC_READ_TIMEOUT_MS;
+
+/** message.send 首包 ack（stream_id）超时（= 写档） */
+export const HABITAT_RPC_MESSAGE_SEND_TIMEOUT_MS = HABITAT_RPC_WRITE_TIMEOUT_MS;
 
 /** email.sync / 多箱 IMAP 同步（含 FLAGS 刷新） */
 export const HABITAT_RPC_EMAIL_SYNC_TIMEOUT_MS = 120_000;
 
 /** email 写路径涉及 IMAP 的操作（mailbox CRUD / move / append 等） */
 export const HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS = 60_000;
+
+/** 大批量导入（如滴答 CSV）；服务端逐条写入 */
+export const HABITAT_RPC_BULK_IMPORT_TIMEOUT_MS = 600_000;
 
 /** 对象文件 / companion 二进制上传下载（VRM、VRMA 等） */
 export const HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS = 600_000;

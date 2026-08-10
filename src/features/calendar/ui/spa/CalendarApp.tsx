@@ -67,7 +67,15 @@ function countByDay(items: CalendarRangeItem[]): Map<string, number> {
       continue;
     }
     if (item.kind === "task") {
-      bump(dayKeyFromIso(item.due_at));
+      const start = dayKeyFromIso(item.start_at ?? item.due_at);
+      const end = dayKeyFromIso(item.due_at);
+      let cur: string | null = start;
+      while (cur != null && cur <= end) {
+        bump(cur);
+        const next = nextDayKey(cur);
+        if (next == null || next > end) break;
+        cur = next;
+      }
       continue;
     }
     const start = dayKeyFromIso(item.start_at ?? "");

@@ -24,7 +24,7 @@ export type HabitatMethodMeta = {
   http?: HttpRouteMeta;
   /** dualTransportMeta 传入的部分 http 覆盖，finalize 后清除 */
   httpOverrides?: Partial<HttpRouteMeta>;
-  /** WS/HTTP 客户端请求超时（ms）；省略则用 HABITAT_RPC_DEFAULT_REQUEST_TIMEOUT_MS */
+  /** WS/HTTP 客户端请求超时（ms）；省略时由客户端按读 3s / 写 10s 推断 */
   timeoutMs?: number;
 };
 

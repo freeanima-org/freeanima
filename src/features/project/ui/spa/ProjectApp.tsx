@@ -232,8 +232,13 @@ export function ProjectApp() {
         content: snapshot.content,
         tag_ids: snapshot.tag_ids,
         priority: snapshot.priority,
+        start_at: snapshot.start_at ?? null,
         due_at: snapshot.due_at,
+        remind_at: snapshot.remind_at ?? null,
+        reminders: snapshot.reminders ?? [],
         status: snapshot.status,
+        recurrence: snapshot.recurrence ?? null,
+        ...(snapshot.recurrence ? { only_this: true } : {}),
       }),
     onSaved: (saved) => {
       setTasks((prev) => prev.map((t) => (t.id === saved.id ? saved : t)));

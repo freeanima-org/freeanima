@@ -269,6 +269,7 @@ export async function updateTaskItem(
       | "content"
       | "tag_ids"
       | "priority"
+      | "start_at"
       | "due_at"
       | "remind_at"
       | "reminders"

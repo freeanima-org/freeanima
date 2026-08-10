@@ -322,6 +322,7 @@ export async function serviceTasklistItemCreate(
     content?: string;
     tag_ids?: number[];
     priority?: "high" | "medium" | "low" | "none";
+    start_at?: string | null;
     due_at?: string | null;
     remind_at?: string | null;
     reminders?: Parameters<typeof createTaskItem>[1]["reminders"];
@@ -350,6 +351,7 @@ export async function serviceProjectItemCreate(
     content?: string;
     tag_ids?: number[];
     priority?: "high" | "medium" | "low" | "none";
+    start_at?: string | null;
     due_at?: string | null;
     remind_at?: string | null;
     reminders?: Parameters<typeof createTaskItem>[1]["reminders"];
@@ -393,6 +395,7 @@ export async function serviceTaskPatch(
     content?: string;
     tag_ids?: number[];
     priority?: "high" | "medium" | "low" | "none";
+    start_at?: string | null;
     due_at?: string | null;
     remind_at?: string | null;
     reminders?: Parameters<typeof updateTaskItem>[1]["reminders"];
@@ -550,4 +553,19 @@ export async function serviceTaskSearch(
   const { subject_kind: _kind, ...searchInput } = input;
   const items = await searchTaskItems(worldId, omitUndefined(searchInput));
   return { items };
+}
+
+export async function serviceTaskImportDidaCsv(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    csv_text: string;
+    mode?: "upsert" | "create_only";
+  },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const { applyDidaCsvImport } = await import("../domain/apply-dida-import.ts");
+  const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
+  return applyDidaCsvImport(worldId, input.csv_text, input.mode ?? "upsert");
 }
