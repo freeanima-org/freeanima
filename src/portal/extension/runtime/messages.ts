@@ -74,8 +74,17 @@ export type ExtVaultEditorItem = {
 
 export type ExtVaultListItem = VaultItemMetaRowPayload & { matched: boolean };
 
+export type ExtVaultStatusOk = {
+  ok: true;
+  unlocked: boolean;
+  habitat_configured: boolean;
+  online: boolean;
+  /** 本地已有 salt/verifier，可冷启动离线主密码解锁 */
+  offline_unlock_ready: boolean;
+};
+
 export type ExtBgResponse =
-  | { ok: true; unlocked: boolean; habitat_configured: boolean }
+  | ExtVaultStatusOk
   | { ok: true; items: ExtVaultListItem[] }
   | { ok: true; fill: FillPayload }
   | { ok: true; recorded: true }
