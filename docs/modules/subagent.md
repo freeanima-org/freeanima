@@ -28,7 +28,7 @@ Named subagent profiles are stored as `entities` (`primary_component = subagent`
 
 1. Profile `allowed_tools` is the **only ceiling** (empty = no tools; may include `@ToolSet`)
 2. Profile / skill / caller `denied_tools` merge into deny; **deny wins**
-3. HARD_DENY: `toolset_load`, `toolset_search`, and all `subagent_*`
+3. HARD_DENY: `toolset_load`, `toolset_unload`, `toolset_search`, and all `subagent_*`
 4. The resolved set is **materialized to concrete tool names** as LLM `tools` plus frozen `executableTools`
 5. Skills: `prependSkillsToPrompt` injects bodies; skill deny may narrow; **skill allow cannot enlarge** the ceiling
 

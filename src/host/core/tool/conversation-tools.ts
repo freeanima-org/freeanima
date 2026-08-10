@@ -3,8 +3,16 @@ import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
 import { patchConversationMeta } from "@freeanima/host/core/db/pg/conversation";
 import { applyConversationToolPolicyFilter } from "./policy-port.ts";
 import { formatToolsForToolMessage } from "./catalog.ts";
-import { resolveDefaultConversationToolSets } from "./default-conversation-toolsets.ts";
-import { mergeToolSetNames, resolveToolSetNames, toolNamesForToolSets } from "./toolset-meta.ts";
+import {
+  DEFAULT_CONVERSATION_TOOLSETS,
+  resolveDefaultConversationToolSets,
+} from "./default-conversation-toolsets.ts";
+import {
+  mergeToolSetNames,
+  removeToolSetNames,
+  resolveToolSetNames,
+  toolNamesForToolSets,
+} from "./toolset-meta.ts";
 import type { ToolCatalogMessageEntry } from "./catalog.ts";
 import type { ToolSetRegistry } from "./toolset.ts";
 
@@ -14,6 +22,15 @@ export type LoadToolSetsIntoConversationResult = {
   already_loaded: string[];
   unknown: string[];
   tools: ToolCatalogMessageEntry[];
+};
+
+export type UnloadToolSetsFromConversationResult = {
+  unloaded: string[];
+  protected: string[];
+  not_loaded: string[];
+  unknown: string[];
+  /** Tool names no longer covered by remaining cached∪staged ToolSets */
+  revoked_tools: string[];
 };
 
 export function resolveExecutableToolNames(
@@ -70,6 +87,57 @@ export async function loadToolSetsIntoConversation(
     already_loaded,
     unknown,
     tools: formatToolsForToolMessage(registry, expandedNames),
+  };
+}
+
+export async function unloadToolSetsFromConversation(
+  registry: ToolSetRegistry,
+  conversationId: string,
+  toolsetNames: string[],
+  meta: ConversationMetaMessage,
+): Promise<UnloadToolSetsFromConversationResult> {
+  const unknown: string[] = [];
+  const known: string[] = [];
+  for (const name of toolsetNames.map((n) => n.trim()).filter(Boolean)) {
+    if (registry.getToolSet(name)) {
+      known.push(name);
+    } else {
+      unknown.push(name);
+    }
+  }
+
+  const defaultSet = new Set<string>(DEFAULT_CONVERSATION_TOOLSETS);
+  const protectedNames = known.filter((name) => defaultSet.has(name));
+  const candidates = known.filter((name) => !defaultSet.has(name));
+
+  const currentCached = resolveToolSetNames(registry, meta.cached_toolsets ?? []);
+  const currentStaged = resolveToolSetNames(registry, meta.staged_toolsets ?? []);
+  const loadedSet = new Set([...currentCached, ...currentStaged]);
+
+  const unloaded = candidates.filter((name) => loadedSet.has(name));
+  const not_loaded = candidates.filter((name) => !loadedSet.has(name));
+
+  const nextCached = removeToolSetNames(currentCached, unloaded);
+  const nextStaged = removeToolSetNames(currentStaged, unloaded);
+
+  if (unloaded.length > 0 && isPostgresPrimary()) {
+    await patchConversationMeta(conversationId, {
+      cached_toolsets: nextCached,
+      staged_toolsets: nextStaged,
+    });
+  }
+
+  const remainingTools = new Set(toolNamesForToolSets(registry, [...nextCached, ...nextStaged]));
+  const revoked_tools = toolNamesForToolSets(registry, unloaded).filter(
+    (name) => !remainingTools.has(name),
+  );
+
+  return {
+    unloaded,
+    protected: protectedNames,
+    not_loaded,
+    unknown,
+    revoked_tools,
   };
 }
 

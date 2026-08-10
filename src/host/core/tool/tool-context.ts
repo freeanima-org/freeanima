@@ -154,6 +154,18 @@ export function grantExecutableTools(names: readonly string[]): void {
   }
 }
 
+/** toolset_unload removes executable tool names in the same turn (conversation only) */
+export function revokeExecutableTools(names: readonly string[]): void {
+  const store = storage.getStore();
+  if (!store?.executableTools) return;
+  // AutoLlm / 策略物化 runs：冻结 executableTools，禁止 toolset_unload 改权
+  if (store.contextKind === "auto_llm") return;
+  for (const name of names) {
+    const trimmed = name.trim();
+    if (trimmed) store.executableTools.delete(trimmed);
+  }
+}
+
 /** Whether name is in execution allowlist; undefined when no allowlist (no gate) */
 export function isExecutableTool(name: string): boolean | undefined {
   const set = storage.getStore()?.executableTools;
