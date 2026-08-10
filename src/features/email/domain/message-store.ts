@@ -271,6 +271,13 @@ export async function updateEmailMessageFlags(
   if (!row) return null;
   const parsed = asEmailMessage(row);
   if (!parsed) return null;
+  const prevFlags = [...(parsed.flags ?? [])].toSorted();
+  const nextFlags = [...input.flags].toSorted();
+  const flagsUnchanged =
+    prevFlags.length === nextFlags.length && prevFlags.every((flag, i) => flag === nextFlags[i]);
+  if ((parsed.unread ?? false) === input.unread && flagsUnchanged) {
+    return toMessageRow(parsed, row);
+  }
   const updated = await updateEntity({
     id,
     body: { ...parsed, unread: input.unread, flags: input.flags },

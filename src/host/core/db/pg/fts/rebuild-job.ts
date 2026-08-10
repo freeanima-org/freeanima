@@ -46,7 +46,7 @@ function onProgress(progress: FtsRebuildProgress): void {
   };
 }
 
-/** Background rebuild on startup; returns current state if already running */
+/** 后台 FTS/embedding 重建；已在跑则返回当前状态（由 Habitat RPC / 管理台显式触发） */
 export function startFtsRebuildJob(opts?: { onlyMissing?: boolean }): FtsRebuildJobStatus {
   if (jobPromise) return getFtsRebuildJobStatus();
 
