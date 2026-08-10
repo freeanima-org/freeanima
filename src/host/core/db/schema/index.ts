@@ -7,6 +7,7 @@ export * from "./rows/index.ts";
 export * from "./conversations.ts";
 export * from "./conversation-read-state.ts";
 export * from "./messages.ts";
+export * from "./search-documents.ts";
 export * from "./semantic-memory.ts";
 export * from "./memory-reference.ts";
 export * from "./self-layer.ts";

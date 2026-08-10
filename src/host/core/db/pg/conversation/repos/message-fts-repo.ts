@@ -1,9 +1,10 @@
-import { and, isNotNull, notLike, sql } from "drizzle-orm";
-import { messages } from "@freeanima/host/core/db/schema";
+import { and, notLike, sql } from "drizzle-orm";
+import { messages, searchDocuments } from "@freeanima/host/core/db/schema";
 import type { MessageFtsHit } from "../types.ts";
 
 import { getDb } from "../../client.ts";
 import { hybridSearchMessages } from "../../fts/hybrid-search.ts";
+import { messageSearchDocumentsJoin } from "../../search/pg-search-index/channel-fts.ts";
 
 export async function searchMessagesFts(
   query: string,
@@ -17,6 +18,12 @@ export async function countSearchableMessages(): Promise<number> {
   const rows = await db
     .select({ n: sql<number>`count(*)::int` })
     .from(messages)
-    .where(and(isNotNull(messages.content_fts), notLike(messages.conversation_id, "debug-%")));
+    .innerJoin(searchDocuments, messageSearchDocumentsJoin())
+    .where(
+      and(
+        sql`${searchDocuments.search_fts} IS NOT NULL`,
+        notLike(messages.conversation_id, "debug-%"),
+      ),
+    );
   return Number(rows[0]?.n ?? 0);
 }

@@ -103,8 +103,7 @@ export type EntityRow = {
 };
 
 /**
- * 列表 / filter_only / get 查询列：不含 fts_segmented / search_embedding / search_fts，
- * 避免远程 PG 传输大字段拖慢 tasklist.item.list 等热路径。
+ * 列表 / filter_only / get 查询列（业务表已无搜索旁路列；投影保持显式）。
  */
 export const entityRowSelectColumns = {
   id: entities.id,

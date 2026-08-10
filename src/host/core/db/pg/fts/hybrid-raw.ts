@@ -1,12 +1,16 @@
 import type { SemanticFtsHit } from "@freeanima/host/core/db/schema/rows";
 import type { EntityRow } from "@freeanima/host/core/db/schema/entity";
 import { and, desc, eq, notLike, sql } from "drizzle-orm";
-import { entities, messages } from "@freeanima/host/core/db/schema";
+import { entities, messages, searchDocuments } from "@freeanima/host/core/db/schema";
 
 import { getDb } from "../client.ts";
 import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
 import { entityToSemanticMemoryRow } from "../semantic-memory/map-row.ts";
 import { buildFtsTsQuery } from "./query.ts";
+import {
+  entitySearchDocumentsJoin,
+  messageSearchDocumentsJoin,
+} from "../search/pg-search-index/channel-fts.ts";
 
 const semanticSelect = {
   id: entities.id,
@@ -84,9 +88,11 @@ export async function searchSemanticMemoryFtsRaw(
 
   const db = getDb();
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
-  const rankExpr = sql<number>`ts_rank_cd(${entities.search_fts}, ${tsqueryExpr}, 32)`.as("rank");
+  const rankExpr = sql<number>`ts_rank_cd(${searchDocuments.search_fts}, ${tsqueryExpr}, 32)`.as(
+    "rank",
+  );
   const conditions = [
-    sql`${entities.search_fts} @@ ${tsqueryExpr}`,
+    sql`${searchDocuments.search_fts} @@ ${tsqueryExpr}`,
     ...buildSemanticConditions({ types, status, source_conversations }),
   ];
 
@@ -96,6 +102,7 @@ export async function searchSemanticMemoryFtsRaw(
       rank: rankExpr,
     })
     .from(entities)
+    .innerJoin(searchDocuments, entitySearchDocumentsJoin())
     .where(and(...conditions))
     .orderBy(desc(rankExpr))
     .limit(limit);
@@ -127,9 +134,11 @@ export async function searchMessagesFtsRaw(
 
   const db = getDb();
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
-  const rankExpr = sql<number>`ts_rank_cd(${messages.content_fts}, ${tsqueryExpr}, 32)`.as("rank");
+  const rankExpr = sql<number>`ts_rank_cd(${searchDocuments.search_fts}, ${tsqueryExpr}, 32)`.as(
+    "rank",
+  );
   const conditions = [
-    sql`${messages.content_fts} @@ ${tsqueryExpr}`,
+    sql`${searchDocuments.search_fts} @@ ${tsqueryExpr}`,
     notLike(messages.conversation_id, "debug-%"),
   ];
   if (conversation_id) {
@@ -146,6 +155,7 @@ export async function searchMessagesFtsRaw(
       rank: rankExpr,
     })
     .from(messages)
+    .innerJoin(searchDocuments, messageSearchDocumentsJoin())
     .where(and(...conditions))
     .orderBy(desc(rankExpr))
     .limit(limit);

@@ -17,6 +17,8 @@ import {
 
 import { getDb } from "../client.ts";
 import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
+import { entitySearchDocumentsJoin } from "../search/pg-search-index/channel-fts.ts";
+import { searchDocuments } from "@freeanima/host/core/db/schema";
 import { buildFtsTsQuery } from "./query.ts";
 import { searchMessagesTrgm, searchSemanticMemoryTrgm } from "./trgm-search.ts";
 import { searchSemanticMemoryFtsRaw, searchMessagesFtsRaw } from "./hybrid-raw.ts";
@@ -143,9 +145,10 @@ export async function hybridCountSemanticMemory(
   const ftsBranch = db
     .select({ id: entities.id })
     .from(entities)
+    .innerJoin(searchDocuments, entitySearchDocumentsJoin())
     .where(
       and(
-        sql`${entities.search_fts} @@ ${tsqueryExpr}`,
+        sql`${searchDocuments.search_fts} @@ ${tsqueryExpr}`,
         ...(semanticConditions.length > 0 ? semanticConditions : []),
       ),
     );

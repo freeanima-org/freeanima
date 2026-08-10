@@ -15,6 +15,7 @@ import type { McpManagerPort } from "@freeanima/host/platform/ports/mcp-manager"
 import type { ServiceEnginePort } from "@freeanima/host/platform/ports/service-engine";
 import { resolveLlmProviderApiKeys } from "./llm-resolve.ts";
 import { bindEmbeddingRuntime } from "../service/embedding-bind.ts";
+import { bindSearchRuntime } from "@freeanima/host/core/db/pg/search";
 import { bindTokenizerRuntime } from "../service/tokenizer-bind.ts";
 import {
   isRuntimeContextReady,
@@ -133,6 +134,9 @@ export async function applyRuntimeConfigSection(config: Config, section: string)
         case "embedding":
           bindEmbeddingRuntime(config);
           await bindTokenizerRuntime(config);
+          break;
+        case "fts":
+          bindSearchRuntime(config);
           break;
         case "mcp_servers":
           await applyMcp();
