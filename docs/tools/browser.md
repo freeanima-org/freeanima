@@ -42,6 +42,20 @@ When a Habitat conversation first opens a Camofox session:
 
 Unset booleans are treated as **on** (`!== false`). Set explicitly to `false` to disable.
 
+## Per-call profile (`browser_navigate.user_id`)
+
+`browser_navigate` accepts an optional `user_id` (Camofox profile). Other `browser_*` tools keep using the conversation’s cached session.
+
+| Call                                       | Behavior                                                                                                                                                                                           |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Omit `user_id`                             | Reuse the conversation session if one exists; otherwise resolve via Habitat config (order above)                                                                                                   |
+| Pass `user_id` matching the cached profile | Navigate on the current tab                                                                                                                                                                        |
+| Pass a different `user_id`                 | Drop the in-process cache for this conversation and open a new tab under that profile (`sessionKey` = `task_` + conversation id prefix). Does **not** delete the previous Camofox profile remotely |
+
+A successful navigate result includes `user_id` so the agent can confirm the active profile. Omitting `user_id` after a prior tool override keeps that override for the conversation; it does not fall back to config until a new session is created (e.g. process restart or session cleared).
+
+Tool override applies only to that Habitat conversation’s cache. Habitat `browser.camofox.user_id` remains the default when no tool override is in effect.
+
 ## Recommended setups
 
 | Goal                                      | Config                                                                 |
@@ -49,6 +63,7 @@ Unset booleans are treated as **on** (`!== false`). Set explicitly to `false` to
 | Remember logins on this Habitat (default) | Leave fields unset, or `managed_persistence: true`                     |
 | Ephemeral browsing (no shared login)      | `managed_persistence: false`                                           |
 | Share / pin a Camofox profile             | Set `user_id`; add `session_key` only if you need a fixed session line |
+| Switch profiles inside one conversation   | Pass `user_id` on `browser_navigate`                                   |
 
 ## See also
 

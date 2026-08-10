@@ -35,11 +35,16 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
         {
           name: "browser_navigate",
           description:
-            "Open a URL in the browser. Call this tool first before using other browser_* tools. For plain text/API pages prefer web_extract or terminal curl; use the browser when interaction is needed (clicks, forms, dynamic content). Returns a compact snapshot with element refs; usually no separate browser_snapshot is needed.",
+            "Open a URL in the browser. Call this tool first before using other browser_* tools. For plain text/API pages prefer web_extract or terminal curl; use the browser when interaction is needed (clicks, forms, dynamic content). Returns a compact snapshot with element refs; usually no separate browser_snapshot is needed. Optional user_id selects a Camofox profile for this conversation; omit to keep the current session (or Habitat browser.camofox.user_id / managed profile). Pass a different user_id later to switch profiles.",
           parameters: {
             type: "object",
             properties: {
               url: { type: "string", description: "Target URL, e.g. https://example.com" },
+              user_id: {
+                type: "string",
+                description:
+                  "Camofox profile (userId). Omit to reuse the conversation session or config resolution; set a different value to switch profiles in this conversation.",
+              },
             },
             required: ["url"],
           },
@@ -51,7 +56,9 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
                 "Camofox not configured. Set browser.camofox.base_url in Habitat 服务配置（runtime）。",
               );
             }
-            return camofoxNavigate(sessionKey(), url);
+            const userId =
+              args.user_id == null ? undefined : String(args.user_id).trim() || undefined;
+            return camofoxNavigate(sessionKey(), url, userId ? { userId } : undefined);
           },
         },
         {

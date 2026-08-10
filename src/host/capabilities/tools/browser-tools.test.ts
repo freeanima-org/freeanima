@@ -202,8 +202,113 @@ describe("browser tools", () => {
     const out = JSON.parse(await camofoxNavigate("sess-a", "https://example.com"));
     expect(out.success).toBe(true);
     expect(out.url).toBe("https://example.com");
+    expect(typeof out.user_id).toBe("string");
+    expect(out.user_id.length).toBeGreaterThan(0);
     expect(out.snapshot).toContain("[e1]");
     expect(fetchMock).toHaveBeenCalled();
+  });
+
+  it("camofoxNavigate with user_id posts that profile on tab create", async () => {
+    const fetchMock = vi.fn(async (input: string | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/tabs") && init?.method === "POST") {
+        return new Response(JSON.stringify({ tabId: "tab-profile", url: "https://example.com" }), {
+          status: 200,
+        });
+      }
+      if (url.includes("/snapshot")) {
+        return new Response(JSON.stringify({ snapshot: "ok", refsCount: 0 }), { status: 200 });
+      }
+      return new Response("{}", { status: 404 });
+    });
+    stubFetch(fetchMock as unknown as typeof fetch);
+
+    const out = JSON.parse(
+      await camofoxNavigate("sess-profile", "https://example.com", { userId: "work_account" }),
+    );
+    expect(out.success).toBe(true);
+    expect(out.user_id).toBe("work_account");
+    const createBody = fetchMock.mock.calls.find(
+      ([u, init]) =>
+        String(u).endsWith("/tabs") && (init as RequestInit | undefined)?.method === "POST",
+    )?.[1] as RequestInit | undefined;
+    expect(JSON.parse(String(createBody?.body))).toMatchObject({
+      userId: "work_account",
+      url: "https://example.com",
+    });
+  });
+
+  it("camofoxNavigate switches profile when user_id changes", async () => {
+    let tabCreateCount = 0;
+    const fetchMock = vi.fn(async (input: string | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/tabs") && init?.method === "POST") {
+        tabCreateCount += 1;
+        const body = JSON.parse(String(init.body));
+        return new Response(JSON.stringify({ tabId: `tab-${body.userId}`, url: body.url }), {
+          status: 200,
+        });
+      }
+      if (url.includes("/navigate") && init?.method === "POST") {
+        return new Response(JSON.stringify({ ok: true, url: "https://b.com", title: "B" }), {
+          status: 200,
+        });
+      }
+      if (url.includes("/snapshot")) {
+        return new Response(JSON.stringify({ snapshot: "ok", refsCount: 0 }), { status: 200 });
+      }
+      return new Response("{}", { status: 404 });
+    });
+    stubFetch(fetchMock as unknown as typeof fetch);
+
+    const first = JSON.parse(
+      await camofoxNavigate("sess-switch", "https://a.com", { userId: "profile_a" }),
+    );
+    expect(first.user_id).toBe("profile_a");
+    expect(tabCreateCount).toBe(1);
+
+    const second = JSON.parse(
+      await camofoxNavigate("sess-switch", "https://b.com", { userId: "profile_b" }),
+    );
+    expect(second.success).toBe(true);
+    expect(second.user_id).toBe("profile_b");
+    expect(tabCreateCount).toBe(2);
+
+    const third = JSON.parse(await camofoxNavigate("sess-switch", "https://c.com"));
+    expect(third.user_id).toBe("profile_b");
+    const navigateCalls = fetchMock.mock.calls.filter(([u]) => String(u).includes("/navigate"));
+    expect(navigateCalls.length).toBe(1);
+  });
+
+  it("browser_navigate passes user_id to camofox", async () => {
+    const fetchMock = vi.fn(async (input: string | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/tabs") && init?.method === "POST") {
+        return new Response(JSON.stringify({ tabId: "tab-tool", url: "https://tool.test" }), {
+          status: 200,
+        });
+      }
+      if (url.includes("/snapshot")) {
+        return new Response(JSON.stringify({ snapshot: "ok", refsCount: 0 }), { status: 200 });
+      }
+      return new Response("{}", { status: 404 });
+    });
+    stubFetch(fetchMock as unknown as typeof fetch);
+
+    await runWithToolContext(
+      "tool-user-id-session",
+      async () => {
+        const out = JSON.parse(
+          await toolSets.getTool("browser_navigate")!.handler({
+            url: "https://tool.test",
+            user_id: "from_tool",
+          }),
+        );
+        expect(out.success).toBe(true);
+        expect(out.user_id).toBe("from_tool");
+      },
+      { tools: toolSets },
+    );
   });
 
   it("camofoxNavigate reuses tab on second navigate", async () => {
