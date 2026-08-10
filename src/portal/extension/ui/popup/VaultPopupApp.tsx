@@ -56,6 +56,8 @@ export function VaultPopupApp() {
   const [booting, setBooting] = useState(true);
   const [unlocked, setUnlocked] = useState(false);
   const [habitatConfigured, setHabitatConfigured] = useState(false);
+  const [online, setOnline] = useState(true);
+  const [offlineUnlockReady, setOfflineUnlockReady] = useState(false);
   const [gateError, setGateError] = useState("");
   const [unlockLoading, setUnlockLoading] = useState(false);
 
@@ -77,6 +79,8 @@ export function VaultPopupApp() {
   const [authToken, setAuthToken] = useState("");
   const [optionsMsg, setOptionsMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
+  const writesDisabled = !online;
+
   const refreshStatus = useCallback(async () => {
     const status = await sendBg({ type: "get_status" });
     if (!status.ok || !("unlocked" in status)) {
@@ -86,6 +90,8 @@ export function VaultPopupApp() {
     }
     setUnlocked(status.unlocked);
     setHabitatConfigured(status.habitat_configured);
+    setOnline(status.online);
+    setOfflineUnlockReady(status.offline_unlock_ready);
     setGateError("");
   }, []);
 
@@ -97,6 +103,16 @@ export function VaultPopupApp() {
       setAuthToken(s.auth_token);
       setBooting(false);
     })();
+  }, [refreshStatus]);
+
+  useEffect(() => {
+    const sync = () => void refreshStatus();
+    window.addEventListener("online", sync);
+    window.addEventListener("offline", sync);
+    return () => {
+      window.removeEventListener("online", sync);
+      window.removeEventListener("offline", sync);
+    };
   }, [refreshStatus]);
 
   const reloadList = useCallback(async (query: string) => {
@@ -164,6 +180,7 @@ export function VaultPopupApp() {
   };
 
   const openEditor = async (itemId: number | null) => {
+    if (itemId == null && writesDisabled) return;
     setEditorError("");
     setEditorLoading(true);
     try {
@@ -188,6 +205,10 @@ export function VaultPopupApp() {
   };
 
   const saveEditor = async (values: VaultItemFormValues) => {
+    if (writesDisabled) {
+      setEditorError("离线只读：请联网后再编辑");
+      return;
+    }
     setEditorLoading(true);
     setEditorError("");
     try {
@@ -220,7 +241,7 @@ export function VaultPopupApp() {
   };
 
   const deleteEditor = async () => {
-    if (editorId == null) return;
+    if (editorId == null || writesDisabled) return;
     const ok = await showConfirm({
       title: "删除确认",
       description: "确定删除该条目？此操作不可恢复。",
@@ -261,26 +282,35 @@ export function VaultPopupApp() {
 
   if (!unlocked) {
     return (
-      <VaultUnlockForm
-        className="h-full"
-        loading={unlockLoading}
-        error={gateError}
-        setupMode={false}
-        onUnlock={(password) => {
-          void (async () => {
-            setUnlockLoading(true);
-            setGateError("");
-            const res = await sendBg({ type: "unlock", master_password: password });
-            setUnlockLoading(false);
-            if (!res.ok) {
-              setGateError(res.error);
-              return;
-            }
-            await refreshStatus();
-          })();
-        }}
-        onSetup={() => undefined}
-      />
+      <div className="flex h-full min-h-0 flex-col">
+        {!online ? (
+          <StatusAlert variant="warning" className="m-3 mb-0">
+            {offlineUnlockReady
+              ? "当前离线：可用主密码解锁本地缓存（只读）"
+              : "当前离线：需先在联网时成功解锁一次才能离线使用"}
+          </StatusAlert>
+        ) : null}
+        <VaultUnlockForm
+          className="min-h-0 flex-1"
+          loading={unlockLoading}
+          error={gateError}
+          setupMode={false}
+          onUnlock={(password) => {
+            void (async () => {
+              setUnlockLoading(true);
+              setGateError("");
+              const res = await sendBg({ type: "unlock", master_password: password });
+              setUnlockLoading(false);
+              if (!res.ok) {
+                setGateError(res.error);
+                return;
+              }
+              await refreshStatus();
+            })();
+          }}
+          onSetup={() => undefined}
+        />
+      </div>
     );
   }
 
@@ -296,8 +326,10 @@ export function VaultPopupApp() {
           >
             ← 返回
           </Button>
-          <h1 className="text-sm font-semibold">{editorId == null ? "新建条目" : "编辑条目"}</h1>
-          {editorId != null ? (
+          <h1 className="text-sm font-semibold">
+            {writesDisabled ? "查看条目" : editorId == null ? "新建条目" : "编辑条目"}
+          </h1>
+          {editorId != null && !writesDisabled ? (
             <Button
               type="button"
               variant="ghost"
@@ -313,6 +345,11 @@ export function VaultPopupApp() {
           )}
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto p-3">
+          {writesDisabled ? (
+            <StatusAlert variant="warning" className="mb-3">
+              离线只读：请联网后再编辑
+            </StatusAlert>
+          ) : null}
           {editorError ? (
             <StatusAlert variant="error" className="mb-3">
               {editorError}
@@ -321,7 +358,7 @@ export function VaultPopupApp() {
           <VaultItemForm
             mode={editorId == null ? "create" : "edit"}
             initial={editorInitial}
-            disabled={false}
+            disabled={writesDisabled}
             loading={editorLoading}
             compact
             onSubmit={(values) => void saveEditor(values)}
@@ -412,7 +449,7 @@ export function VaultPopupApp() {
               className="justify-start"
               onClick={() => void openEditor(item.id)}
             >
-              编辑
+              {writesDisabled ? "查看" : "编辑"}
             </Button>
             <Button
               type="button"
@@ -468,7 +505,8 @@ export function VaultPopupApp() {
                   type="button"
                   variant="outline"
                   size="icon-sm"
-                  title="新建"
+                  title={writesDisabled ? "离线不可新建" : "新建"}
+                  disabled={writesDisabled}
                   onClick={() => void openEditor(null)}
                 >
                   ＋
@@ -488,6 +526,11 @@ export function VaultPopupApp() {
                 </Button>
               </div>
             </div>
+            {writesDisabled ? (
+              <StatusAlert variant="warning" className="mx-2 mt-2">
+                离线只读：可填充与浏览，不可编辑
+              </StatusAlert>
+            ) : null}
             <div className="flex shrink-0 gap-2 border-b border-border p-2">
               <Input
                 className="min-w-0 flex-1"

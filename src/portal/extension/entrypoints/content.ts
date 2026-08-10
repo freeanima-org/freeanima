@@ -35,6 +35,7 @@ export default defineContentScript({
       void (async () => {
         const status = await sendBg({ type: "get_status" });
         if (!status.ok || !("unlocked" in status) || !status.unlocked) return;
+        if (!status.online) return;
         const existing = await sendBg({
           type: "check_login",
           url,

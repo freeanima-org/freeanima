@@ -15,6 +15,11 @@ import {
   upsertLocalCacheItem,
   type CachedVaultItem,
 } from "../features/vault/local-cache.ts";
+import {
+  hasCryptoCache,
+  loadCryptoCache,
+  saveCryptoCache,
+} from "../features/vault/crypto-cache.ts";
 import { findExistingLogin } from "../features/vault/login-match.ts";
 import { generatePassword } from "../features/vault/password-gen.ts";
 import {
@@ -26,8 +31,31 @@ import {
   persistExtVaultSession,
 } from "../features/vault/session.ts";
 import { vaultCall } from "../runtime/habitat.ts";
-import { type ExtBgResponse, type ExtToBgMessage, type FillPayload } from "../runtime/messages.ts";
+import {
+  type ExtBgResponse,
+  type ExtToBgMessage,
+  type ExtVaultEditorItem,
+  type FillPayload,
+} from "../runtime/messages.ts";
 import { loadSettings } from "../runtime/settings.ts";
+
+const OFFLINE_READONLY_ERROR = "离线只读：请联网后再编辑";
+
+function isExtOnline(): boolean {
+  return typeof navigator === "undefined" ? true : navigator.onLine !== false;
+}
+
+function filterLocalMeta(
+  items: VaultItemMetaRowPayload[],
+  query: string,
+): VaultItemMetaRowPayload[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return items;
+  return items.filter((i) => {
+    const hay = `${i.title} ${i.username ?? ""} ${i.url ?? ""}`.toLowerCase();
+    return hay.includes(q);
+  });
+}
 
 async function refreshLocalCacheFromHabitat(): Promise<CachedVaultItem[]> {
   const listed = await vaultCall("vault.list", {
@@ -55,18 +83,29 @@ async function refreshLocalCacheFromHabitat(): Promise<CachedVaultItem[]> {
 }
 
 async function listItemsPreferCache(query: string): Promise<VaultItemMetaRowPayload[]> {
-  if (query.trim()) {
-    const searched = await vaultCall("vault.search", {
-      subject_kind: "user",
-      query: query.trim(),
-      limit: 200,
-    });
-    return searched.items;
+  const q = query.trim();
+  if (q) {
+    if (isExtOnline()) {
+      try {
+        const searched = await vaultCall("vault.search", {
+          subject_kind: "user",
+          query: q,
+          limit: 200,
+        });
+        return searched.items;
+      } catch {
+        /* 离线或 Habitat 不可达：走本地 */
+      }
+    }
+    const cached = await loadLocalCache();
+    if (!cached) return [];
+    return filterLocalMeta(listMetaFromCache(cached), q);
   }
   const cached = await loadLocalCache();
   if (cached) {
     return listMetaFromCache(cached);
   }
+  if (!isExtOnline()) return [];
   return listMetaFromCache({
     version: 1,
     updatedAtMs: Date.now(),
@@ -76,6 +115,76 @@ async function listItemsPreferCache(query: string): Promise<VaultItemMetaRowPayl
 
 function toCachedMeta(item: VaultItemMetaRowPayload): CachedVaultItem {
   return { ...item };
+}
+
+async function buildEditorFromSealed(item: {
+  id: number;
+  title: string;
+  item_type: ExtVaultEditorItem["item_type"];
+  username?: string | null | undefined;
+  url?: string | null | undefined;
+  uris?: ExtVaultEditorItem["uris"] | null | undefined;
+  tag_ids?: number[] | null | undefined;
+  content?: string | null | undefined;
+  secrets_enc?: string | undefined;
+  dek_wrapped?: string | undefined;
+}): Promise<ExtVaultEditorItem> {
+  let password = "";
+  let notes = "";
+  let totp = "";
+  let custom_fields: VaultCustomField[] = [];
+  if (item.secrets_enc && item.dek_wrapped) {
+    const secrets = await getExtVaultSession().openSecrets(item.secrets_enc, item.dek_wrapped);
+    password = typeof secrets.password === "string" ? secrets.password : "";
+    notes = typeof secrets.notes === "string" ? secrets.notes : "";
+    totp = typeof secrets.totp === "string" ? secrets.totp : "";
+    if (Array.isArray(secrets.custom_fields)) {
+      custom_fields = secrets.custom_fields
+        .filter(
+          (f): f is VaultCustomField =>
+            !!f &&
+            typeof f === "object" &&
+            typeof f.name === "string" &&
+            typeof f.value === "string",
+        )
+        .map((f) => ({
+          name: f.name,
+          value: f.value,
+          type: f.type === "hidden" || f.type === "boolean" ? f.type : "text",
+        }));
+    }
+  }
+  const uris =
+    item.uris && item.uris.length > 0
+      ? item.uris
+      : item.url
+        ? [{ uri: item.url, match: "domain" as const }]
+        : [];
+  return {
+    id: item.id,
+    title: item.title,
+    item_type: item.item_type,
+    username: item.username ?? "",
+    url: item.url ?? uris[0]?.uri ?? "",
+    uris,
+    tag_ids: item.tag_ids ?? [],
+    content: item.content ?? "",
+    password,
+    notes,
+    totp,
+    custom_fields,
+  };
+}
+
+async function statusPayload(unlocked: boolean): Promise<ExtBgResponse> {
+  const settings = await loadSettings();
+  return {
+    ok: true,
+    unlocked,
+    habitat_configured: Boolean(settings.habitat_url && settings.auth_token),
+    online: isExtOnline(),
+    offline_unlock_ready: await hasCryptoCache(),
+  };
 }
 
 /** 自动填充后 bump last_used_at：先写本地缓存，再异步上报 Habitat */
@@ -238,50 +347,85 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
       case "ping":
         return { ok: true, message: "pong" };
       case "get_status": {
-        const settings = await loadSettings();
-        return {
-          ok: true,
-          unlocked: await isExtVaultUnlocked(),
-          habitat_configured: Boolean(settings.habitat_url && settings.auth_token),
-        };
+        return statusPayload(await isExtVaultUnlocked());
       }
       case "test_connection": {
         await vaultCall("vault.crypto.get", { subject_kind: "user" });
         return { ok: true, message: "连接成功" };
       }
       case "unlock": {
-        const cryptoRes = await vaultCall("vault.crypto.get", { subject_kind: "user" });
-        const config = cryptoRes.config;
-        if (!config?.salt || !config.verifier) {
-          return { ok: false, error: "用户保险库尚未初始化（请先在 /vault 设置主密码）" };
+        const settings = await loadSettings();
+        const habitatConfigured = Boolean(settings.habitat_url && settings.auth_token);
+        let salt: string | undefined;
+        let verifier: string | undefined;
+        let fromHabitat = false;
+
+        if (isExtOnline() && habitatConfigured) {
+          try {
+            const cryptoRes = await vaultCall("vault.crypto.get", { subject_kind: "user" });
+            const config = cryptoRes.config;
+            if (config?.salt && config.verifier) {
+              salt = config.salt;
+              verifier = config.verifier;
+              fromHabitat = true;
+            } else {
+              return {
+                ok: false,
+                error: "用户保险库尚未初始化（请先在 /vault 设置主密码）",
+              };
+            }
+          } catch {
+            /* Habitat 不可达：尝试本地 crypto */
+          }
         }
-        await getExtVaultSession().unlock({
-          masterPassword: message.master_password,
-          salt: config.salt,
-          verifier: config.verifier,
-          conversationId: EXT_SCOPE,
-        });
-        await persistExtVaultSession();
+
+        if (!salt || !verifier) {
+          const cached = await loadCryptoCache();
+          if (!cached) {
+            return {
+              ok: false,
+              error: isExtOnline()
+                ? "用户保险库尚未初始化（请先在 /vault 设置主密码）"
+                : "离线解锁需先在联网时成功解锁一次",
+            };
+          }
+          salt = cached.salt;
+          verifier = cached.verifier;
+        }
+
         try {
-          await refreshLocalCacheFromHabitat();
-        } catch {
-          /* 缓存预热失败不阻断解锁 */
+          await getExtVaultSession().unlock({
+            masterPassword: message.master_password,
+            salt,
+            verifier,
+            conversationId: EXT_SCOPE,
+          });
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          if (msg === "vault_master_password_invalid") {
+            return { ok: false, error: "主密码错误" };
+          }
+          throw e;
         }
-        return {
-          ok: true,
-          unlocked: true,
-          habitat_configured: true,
-        };
+
+        if (fromHabitat) {
+          await saveCryptoCache({ salt, verifier });
+        }
+        await persistExtVaultSession();
+        if (fromHabitat) {
+          try {
+            await refreshLocalCacheFromHabitat();
+          } catch {
+            /* 缓存预热失败不阻断解锁 */
+          }
+        }
+        return statusPayload(true);
       }
       case "lock": {
         getExtVaultSession().lock();
         await clearPersistedExtVaultSession();
         clearLocalCacheMemory();
-        return {
-          ok: true,
-          unlocked: false,
-          habitat_configured: true,
-        };
+        return statusPayload(false);
       }
       case "list_for_tab": {
         if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
@@ -321,6 +465,8 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         };
         if (cachedItem?.secrets_enc && cachedItem.dek_wrapped) {
           item = cachedItem;
+        } else if (!isExtOnline()) {
+          return { ok: false, error: "离线缺少本地密文，请先在联网时填充或打开过该条目" };
         } else {
           const got = await vaultCall("vault.get", {
             subject_kind: "user",
@@ -369,65 +515,50 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
       }
       case "get_item": {
         if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
-        const { item } = await vaultCall("vault.get", {
-          subject_kind: "user",
-          id: message.item_id,
-          include_secrets: true,
-        });
-        let password = "";
-        let notes = "";
-        let totp = "";
-        let custom_fields: VaultCustomField[] = [];
-        if (item.secrets_enc && item.dek_wrapped) {
-          const secrets = await getExtVaultSession().openSecrets(
-            item.secrets_enc,
-            item.dek_wrapped,
-          );
-          password = typeof secrets.password === "string" ? secrets.password : "";
-          notes = typeof secrets.notes === "string" ? secrets.notes : "";
-          totp = typeof secrets.totp === "string" ? secrets.totp : "";
-          if (Array.isArray(secrets.custom_fields)) {
-            custom_fields = secrets.custom_fields
-              .filter(
-                (f): f is VaultCustomField =>
-                  !!f &&
-                  typeof f === "object" &&
-                  typeof f.name === "string" &&
-                  typeof f.value === "string",
-              )
-              .map((f) => ({
-                name: f.name,
-                value: f.value,
-                type: f.type === "hidden" || f.type === "boolean" ? f.type : "text",
-              }));
+        const cached = await loadLocalCache();
+        const cachedItem = cached?.items.find((i) => i.id === message.item_id);
+        if (cachedItem?.secrets_enc && cachedItem.dek_wrapped && !isExtOnline()) {
+          return {
+            ok: true,
+            editor: await buildEditorFromSealed(cachedItem),
+          };
+        }
+        if (!isExtOnline() && !cachedItem?.secrets_enc) {
+          return { ok: false, error: "离线缺少本地密文，请先在联网时打开过该条目" };
+        }
+        if (isExtOnline()) {
+          try {
+            const { item } = await vaultCall("vault.get", {
+              subject_kind: "user",
+              id: message.item_id,
+              include_secrets: true,
+            });
+            if (item.secrets_enc && item.dek_wrapped) {
+              await upsertLocalCacheItem({
+                ...toCachedMeta(item),
+                secrets_enc: item.secrets_enc,
+                dek_wrapped: item.dek_wrapped,
+              });
+            }
+            return { ok: true, editor: await buildEditorFromSealed(item) };
+          } catch (e) {
+            if (cachedItem?.secrets_enc && cachedItem.dek_wrapped) {
+              return {
+                ok: true,
+                editor: await buildEditorFromSealed(cachedItem),
+              };
+            }
+            throw e;
           }
         }
-        const uris =
-          item.uris && item.uris.length > 0
-            ? item.uris
-            : item.url
-              ? [{ uri: item.url, match: "domain" as const }]
-              : [];
-        return {
-          ok: true,
-          editor: {
-            id: item.id,
-            title: item.title,
-            item_type: item.item_type,
-            username: item.username ?? "",
-            url: item.url ?? uris[0]?.uri ?? "",
-            uris,
-            tag_ids: item.tag_ids ?? [],
-            content: item.content ?? "",
-            password,
-            notes,
-            totp,
-            custom_fields,
-          },
-        };
+        if (cachedItem) {
+          return { ok: true, editor: await buildEditorFromSealed(cachedItem) };
+        }
+        return { ok: false, error: "条目不在本地缓存" };
       }
       case "save_item": {
         if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
+        if (!isExtOnline()) return { ok: false, error: OFFLINE_READONLY_ERROR };
         const title = message.title.trim();
         if (!title) return { ok: false, error: "标题不能为空" };
         const uris = (message.uris ?? [])
@@ -510,6 +641,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
       }
       case "delete_item": {
         if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
+        if (!isExtOnline()) return { ok: false, error: OFFLINE_READONLY_ERROR };
         await vaultCall("vault.delete", {
           subject_kind: "user",
           id: message.item_id,
@@ -519,6 +651,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
       }
       case "save_login": {
         if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
+        if (!isExtOnline()) return { ok: false, error: OFFLINE_READONLY_ERROR };
         const items = await listItemsPreferCache("");
         const match = findExistingLogin(items, message.url, message.username);
         if (match) {
