@@ -200,6 +200,7 @@ describePg("tasks tool", () => {
           tool.handler({
             subject_kind: "agent",
             title: "Reminder task",
+            due_at: "2026-07-01T18:00:00+08:00",
             remind_at: "2026-07-01T09:00:00+08:00",
           }),
         );
