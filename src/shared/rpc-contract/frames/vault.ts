@@ -24,6 +24,8 @@ export type VaultUriEntryPayload = z.infer<typeof vaultUriEntrySchema>;
 
 export const vaultImportRefsSchema = z.object({
   bitwarden: z.string().min(1).optional(),
+  /** Agent 根密钥 SSOT（固定值 `habitat`） */
+  agent_root_key: z.string().min(1).optional(),
 });
 export type VaultImportRefsPayload = z.infer<typeof vaultImportRefsSchema>;
 
@@ -257,6 +259,38 @@ export const vaultEnsureAgentInputSchema = z.object({});
 export type VaultEnsureAgentInput = z.infer<typeof vaultEnsureAgentInputSchema>;
 export const vaultEnsureAgentOutputSchema = z.object({ config: vaultConfigRowSchema });
 export type VaultEnsureAgentOutput = z.infer<typeof vaultEnsureAgentOutputSchema>;
+
+export const vaultAgentKeyStatusInputSchema = z.object({});
+export type VaultAgentKeyStatusInput = z.infer<typeof vaultAgentKeyStatusInputSchema>;
+export const vaultAgentKeyStatusOutputSchema = z.object({
+  unlocked: z.boolean(),
+  custody: z.literal("user_vault"),
+});
+export type VaultAgentKeyStatusOutput = z.infer<typeof vaultAgentKeyStatusOutputSchema>;
+
+export const vaultAgentKeyProvisionInputSchema = z.object({
+  key_b64: z.string().min(1),
+});
+export type VaultAgentKeyProvisionInput = z.infer<typeof vaultAgentKeyProvisionInputSchema>;
+export const vaultAgentKeyProvisionOutputSchema = z.object({
+  unlocked: z.literal(true),
+});
+export type VaultAgentKeyProvisionOutput = z.infer<typeof vaultAgentKeyProvisionOutputSchema>;
+
+export const vaultAgentKeyLockInputSchema = z.object({});
+export type VaultAgentKeyLockInput = z.infer<typeof vaultAgentKeyLockInputSchema>;
+export const vaultAgentKeyLockOutputSchema = z.object({
+  unlocked: z.literal(false),
+});
+export type VaultAgentKeyLockOutput = z.infer<typeof vaultAgentKeyLockOutputSchema>;
+
+/** 迁移用：读取现有缓存 raw（无则 null）；不自动生成。 */
+export const vaultAgentKeyPeekRawInputSchema = z.object({});
+export type VaultAgentKeyPeekRawInput = z.infer<typeof vaultAgentKeyPeekRawInputSchema>;
+export const vaultAgentKeyPeekRawOutputSchema = z.object({
+  key_b64: z.string().nullable(),
+});
+export type VaultAgentKeyPeekRawOutput = z.infer<typeof vaultAgentKeyPeekRawOutputSchema>;
 
 export const vaultCreatePlainInputSchema = z.object({
   subject_kind: z.literal("agent"),

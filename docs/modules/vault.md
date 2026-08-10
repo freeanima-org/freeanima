@@ -8,17 +8,19 @@ title: Vault
 
 ## 双库
 
-| 库    | 模式                                            | 解密位置                  | 典型用途                         |
-| ----- | ----------------------------------------------- | ------------------------- | -------------------------------- |
-| User  | `master_password`                               | Portal / 浏览器扩展客户端 | 人类密码、TOTP、卡片             |
-| Agent | `machine`（`~/.anima/vault/agent-machine.key`） | Habitat                   | 工具 `secrets[]`、`vault()` 配置 |
+| 库    | 模式              | 解密位置                    | 典型用途                                                                            |
+| ----- | ----------------- | --------------------------- | ----------------------------------------------------------------------------------- |
+| User  | `master_password` | Portal / 浏览器扩展客户端   | 人类密码、TOTP、卡片；**Agent 根密钥 SSOT**（`import_refs.agent_root_key=habitat`） |
+| Agent | `machine`         | Habitat（需本地缓存已解锁） | 工具 `secrets[]`、`vault()` 配置                                                    |
+
+**Agent 根密钥 custody：** 唯一真相源在 **User 库**（主密码保护）。Habitat 侧 `~/.anima/vault/agent-machine.key` 仅为**可重建缓存**（`vault.agentKey.provision` 写入；`lock` 清除）。未解锁（无有效缓存）时 Agent 注密失败（cron / 工具 / `vault()`）。在栖息地「数据维护」解锁：客户端从 User 库取出根密钥并 `provision`。
 
 LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / `code_execute` `secrets[]` 或 `browser_type` `secret`。
 
 ## 条目模型（摘要）
 
 - 类型：`login` | `secure_note` | `card` | `identity` | `custom`
-- 明文 meta：`title`、`url`、`uris[]`（`uri` + `match`）、`username`、顶层 `tag_ids`（同 World `tag` entity；禁止 `body.tags`）、`import_refs`（如 `bitwarden` UUID）、`custom_field_names`、`last_used_at`（可选 ISO）
+- 明文 meta：`title`、`url`、`uris[]`（`uri` + `match`）、`username`、顶层 `tag_ids`（同 World `tag` entity；禁止 `body.tags`）、`import_refs`（如 `bitwarden` UUID、`agent_root_key=habitat`）、`custom_field_names`、`last_used_at`（可选 ISO）
 - 密文：`secrets_enc` + `dek_wrapped`；载荷含 `password` / `totp` / `notes` / `custom_fields` / `card` / `identity`
 - `url` 为主展示 URI；`uris` 供 Bitwarden 式匹配（`domain` / `host` / `starts_with` / `exact` / `regex` / `never`）。无 `uris` 时对 `url` 做 domain 匹配
 - `last_used_at`：最近一次**自动填充**时间；扩展多匹配同分时按此降序。复制账密不计次。写回走 `vault.touch`（`skip_revision`）
@@ -27,6 +29,7 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 
 - 路由：`/vault`
 - 解锁 / 改密 / CRUD；用户库导入 **Bitwarden 未加密 JSON**（按 `import_refs.bitwarden` 幂等 upsert；可选「仅新建」）— 入口在栖息地 **数据维护**（不再放在 `/vault` 工具栏）
+- Habitat **数据维护**：**解锁 agent 密码库**（本地缓存状态 + 解锁/锁定；根密钥 SSOT = User 库 `import_refs.agent_root_key=habitat`）
 - 编辑表单与扩展共用 [`features/vault/ui/shared`](../../src/features/vault/ui/shared/)（多 URI、标签、自定义字段等）；数据面仍为 Habitat RPC（与扩展 `sendBg` 不同）
 - **Vault 引用选择器**（`VaultRefField`）：设置里 LLM / Discord / 微信 / 对象存储 / Firecrawl 密钥，以及邮箱账号密码，可从 **Agent 库** 选条目与字段，写入 `vault("item_id", "field")`（仍可手写明文或 `env("KEY")`）。运行时 `resolveValue` 固定解析 Agent 库。
 

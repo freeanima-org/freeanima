@@ -13,7 +13,6 @@ import { getAgentMachineKey } from "./machine-key.ts";
 export async function ensureAgentVaultConfig(
   worldId: number = resolveVaultWorldId("agent"),
 ): Promise<NonNullable<Awaited<ReturnType<typeof getVaultConfig>>>> {
-  await getAgentMachineKey();
   const existing = await getVaultConfig(worldId);
   if (existing?.mode === "machine") return existing;
   return ensureVaultConfig(worldId, {

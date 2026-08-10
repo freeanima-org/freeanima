@@ -30,7 +30,11 @@ type VaultRpcMethod =
   | "vault.crypto.get"
   | "vault.crypto.init"
   | "vault.crypto.change"
-  | "vault.ensureAgent";
+  | "vault.ensureAgent"
+  | "vault.agentKey.status"
+  | "vault.agentKey.provision"
+  | "vault.agentKey.lock"
+  | "vault.agentKey.peekRaw";
 
 async function vaultRequest<T>(
   method: VaultRpcMethod,
@@ -224,6 +228,25 @@ export async function restoreVaultItemHistory(
 export async function ensureAgentVaultConfig(): Promise<VaultConfigRowPayload> {
   const data = await vaultRequest<{ config: VaultConfigRowPayload }>("vault.ensureAgent", {});
   return data.config;
+}
+
+export async function fetchAgentVaultKeyStatus(): Promise<{
+  unlocked: boolean;
+  custody: "user_vault";
+}> {
+  return vaultRequest("vault.agentKey.status", {});
+}
+
+export async function provisionAgentVaultKey(keyB64: string): Promise<{ unlocked: true }> {
+  return vaultRequest("vault.agentKey.provision", { key_b64: keyB64 });
+}
+
+export async function lockAgentVaultKey(): Promise<{ unlocked: false }> {
+  return vaultRequest("vault.agentKey.lock", {});
+}
+
+export async function peekAgentVaultKeyRaw(): Promise<{ key_b64: string | null }> {
+  return vaultRequest("vault.agentKey.peekRaw", {});
 }
 
 export type { VaultSecretsViewPayload, VaultItemMetaRowPayload, VaultItemDetailRowPayload };

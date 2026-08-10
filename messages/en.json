@@ -883,5 +883,18 @@
   "calendar_field_content": "Notes",
   "calendar_prev_month": "Previous month",
   "calendar_next_month": "Next month",
-  "calendar_today": "Today"
+  "calendar_today": "Today",
+  "habitat_data_agent_vault_title": "Agent vault",
+  "habitat_data_agent_vault_desc": "Root key lives in the User vault (master password). Unlock seeds a rebuildable Habitat cache so tools and cron can decrypt Agent secrets.",
+  "habitat_data_agent_vault_open": "Unlock Agent vault",
+  "habitat_data_agent_vault_dialog_title": "Unlock Agent vault",
+  "habitat_data_agent_vault_status_label": "Local status",
+  "habitat_data_agent_vault_status_unlocked": "Unlocked",
+  "habitat_data_agent_vault_status_locked": "Locked",
+  "habitat_data_agent_vault_need_user": "Unlock the User vault under Portal → Vault first.",
+  "habitat_data_agent_vault_unlock_action": "Unlock",
+  "habitat_data_agent_vault_lock_action": "Lock",
+  "habitat_data_agent_vault_unlocking": "Unlocking…",
+  "habitat_data_agent_vault_locking": "Locking…",
+  "habitat_data_agent_vault_refresh": "Refresh status"
 }
