@@ -34,6 +34,7 @@ const browserSuccessSchema = z.object({ success: z.literal(true) });
 const browserNavigateSchema = browserSuccessSchema.extend({
   url: z.string(),
   title: z.string(),
+  user_id: z.string(),
   snapshot: z.string().optional(),
   element_count: z.number().optional(),
   vnc_url: z.string().optional(),
@@ -277,6 +278,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       success: true,
       url: "https://example.com",
       title: "Example Domain",
+      user_id: "anima_work",
       snapshot: '[@e1] link "More information..."',
       element_count: 1,
     },

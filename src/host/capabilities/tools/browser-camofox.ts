@@ -353,13 +353,42 @@ export function resetCamofoxSessionsForTests(): void {
   vncUrlChecked = false;
 }
 
-export async function camofoxNavigate(conversationId: string, url: string): Promise<string> {
+/**
+ * When `userId` is set and differs from the cached conversation session, drop the
+ * in-process cache and open a new tab under that Camofox profile (does not DELETE
+ * the remote Camofox session for the previous profile).
+ */
+function applyToolUserIdOverride(conversationId: string, userId: string): void {
+  const existing = sessions.get(conversationId);
+  if (existing?.userId === userId) return;
+
+  sessions.delete(conversationId);
+  const cfg = resolveConfig();
+  sessions.set(conversationId, {
+    userId,
+    tabId: null,
+    sessionKey: `task_${conversationId.slice(0, 16)}`,
+    managed: true,
+    adoptExistingTab: cfg.adoptExistingTab,
+  });
+}
+
+export async function camofoxNavigate(
+  conversationId: string,
+  url: string,
+  opts?: { userId?: string },
+): Promise<string> {
   if (!isCamofoxConfigured()) {
     return toolError(
       "Camofox not configured. Set browser.camofox.base_url in Habitat 服务配置（runtime）。",
     );
   }
   try {
+    const toolUserId = opts?.userId?.trim() ?? "";
+    if (toolUserId) {
+      applyToolUserIdOverride(conversationId, toolUserId);
+    }
+
     let session = await ensureSession(conversationId);
     let data: Record<string, unknown>;
     if (!session.tabId) {
@@ -377,6 +406,7 @@ export async function camofoxNavigate(conversationId: string, url: string): Prom
       success: true,
       url: data.url ?? url,
       title: data.title ?? "",
+      user_id: session.userId,
     };
     const vnc = getVncUrl();
     if (vnc) {
