@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import type { Key } from "react-aria-components";
 import {
   Button,
   Dialog,
@@ -227,7 +228,7 @@ export function DidaImportDialog({
               />
               仅创建（跳过已导入的 client_op_id）
             </label>
-            <Tabs selectedKey={tab} onSelectionChange={(k) => setTab(String(k))}>
+            <Tabs selectedKey={tab} onSelectionChange={(k: Key) => setTab(String(k))}>
               <TabsList className="h-auto w-full flex-wrap justify-start">
                 <TabsTrigger id="ok">正常导入（{buckets.ok.length}）</TabsTrigger>
                 <TabsTrigger id="warn">警告（{buckets.warn.length}）</TabsTrigger>
