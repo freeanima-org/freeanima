@@ -37,7 +37,7 @@ export async function getFtsStatus(deps: RuntimeDeps): Promise<FtsStatusSnapshot
   };
 }
 
-/** Background rebuild on startup (default: fill missing rows only; resumable) */
+/** 显式触发后台 FTS/embedding 重建（默认 onlyMissing；不在 boot 自动跑） */
 export function startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): FtsRebuildJobStatus {
   return startFtsRebuildJob(opts);
 }

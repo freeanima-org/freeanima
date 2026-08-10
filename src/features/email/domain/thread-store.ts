@@ -190,14 +190,25 @@ export async function refreshThreadAggregates(threadId: number): Promise<void> {
   if (!row) return;
   const parsed = asEmailThread(row);
   if (!parsed) return;
+  const nextSummary = last?.preview ?? parsed.preview;
+  const nextLastMessageAt = last?.sent_at ?? parsed.last_message_at;
+  const nextMessageCount = messages.length;
+  if (
+    row.summary === nextSummary &&
+    (parsed.unread_count ?? 0) === unread_count &&
+    (parsed.message_count ?? 0) === nextMessageCount &&
+    (parsed.last_message_at ?? null) === (nextLastMessageAt ?? null)
+  ) {
+    return;
+  }
   await updateEntity({
     id: threadId,
-    summary: last?.preview ?? parsed.preview,
+    summary: nextSummary,
     body: {
       ...parsed,
       unread_count,
-      message_count: messages.length,
-      last_message_at: last?.sent_at ?? parsed.last_message_at,
+      message_count: nextMessageCount,
+      last_message_at: nextLastMessageAt,
     },
   });
 }

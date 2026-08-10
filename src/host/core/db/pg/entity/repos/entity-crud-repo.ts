@@ -10,6 +10,7 @@ import {
   stripRemovedComponentBodyFields,
   validateEntityBody,
   entitySearchTextForWrite,
+  entitySearchIndexTextChanged,
   isEntityRevisionPrimaryComponent,
   pushEntityRevision,
   shouldRecordEntityRevision,
@@ -175,6 +176,23 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
     body,
     primary_component: existing.primary_component,
   });
+  // 以检索索引文本为准：flags/unread 等元数据 body 变更不清向量、不重嵌
+  const indexTextChanged = entitySearchIndexTextChanged(
+    {
+      title: existing.title,
+      summary: existing.summary,
+      content: existing.content,
+      body: existing.body,
+      primary_component: existing.primary_component,
+    },
+    {
+      title: nextTitle,
+      summary: nextSummary,
+      content: nextContent,
+      body,
+      primary_component: existing.primary_component,
+    },
+  );
 
   const patch: Partial<typeof entities.$inferInsert> = {
     components,
@@ -210,12 +228,7 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
     );
   }
 
-  const textChanged =
-    input.title !== undefined ||
-    input.summary !== undefined ||
-    input.content !== undefined ||
-    input.body !== undefined;
-  if (textChanged) {
+  if (indexTextChanged) {
     patch.fts_segmented = await resolveFtsSegmentedForWrite(indexText);
     await clearEntityEmbedding(input.id);
   }
@@ -226,7 +239,7 @@ export async function updateEntity(input: EntityUpdateInput): Promise<EntityRow 
     .set(patch)
     .where(eq(entities.id, input.id))
     .returning(entityRowSelectColumns);
-  if (textChanged && row) {
+  if (indexTextChanged && row) {
     scheduleEntityEmbedding(row.id, indexText);
   }
   return row ? mapRow(row) : null;
