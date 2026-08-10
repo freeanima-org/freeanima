@@ -202,9 +202,10 @@ export function TaskApp() {
           content: snapshot.content,
           tag_ids: snapshot.tag_ids,
           priority: snapshot.priority,
+          start_at: snapshot.start_at ?? null,
           due_at: snapshot.due_at,
-          remind_at: snapshot.remind_at,
-          ...(snapshot.reminders !== undefined ? { reminders: snapshot.reminders } : {}),
+          remind_at: snapshot.remind_at ?? null,
+          reminders: snapshot.reminders ?? [],
           status: snapshot.status,
           recurrence: snapshot.recurrence ?? null,
           // 有重复规则时改期默认仅此一次，不挪规则轨

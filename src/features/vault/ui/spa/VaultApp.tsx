@@ -43,7 +43,6 @@ import {
   type VaultSecretsViewPayload,
 } from "./lib/api.ts";
 import { newUserVaultSalt } from "./lib/crypto-client.ts";
-import { BitwardenImportDialog } from "./components/BitwardenImportDialog.tsx";
 import { ChangeMasterPasswordDialog } from "./components/ChangeMasterPasswordDialog.tsx";
 import { VaultItemDetail, type VaultDetailSecrets } from "./components/VaultItemDetail.tsx";
 import { VaultItemHistoryDialog } from "./components/VaultItemHistoryDialog.tsx";
@@ -130,7 +129,6 @@ export function VaultApp() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [changePasswordError, setChangePasswordError] = useState("");
-  const [importOpen, setImportOpen] = useState(false);
 
   if (selectionSubjectKind !== subjectKind) {
     setSelectionSubjectKind(subjectKind);
@@ -553,15 +551,6 @@ export function VaultApp() {
               type="button"
               size="sm"
               variant="outline"
-              disabled={writesDisabled || actionLoading || !userUnlocked}
-              onClick={() => setImportOpen(true)}
-            >
-              导入 Bitwarden
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
               disabled={writesDisabled || actionLoading}
               onClick={() => {
                 setChangePasswordError("");
@@ -806,16 +795,6 @@ export function VaultApp() {
         error={changePasswordError}
         onOpenChange={setChangePasswordOpen}
         onSubmit={(input) => void handleChangeMasterPassword(input)}
-      />
-
-      <BitwardenImportDialog
-        open={importOpen}
-        subjectKind={subjectKind}
-        disabled={writesDisabled || actionLoading || !userUnlocked}
-        onOpenChange={setImportOpen}
-        onDone={async () => {
-          await reload();
-        }}
       />
     </div>
   );

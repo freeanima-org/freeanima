@@ -169,6 +169,12 @@ export const taskHabitatRoutes = bindHabitatRouteHandlers(taskMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "task.importDidaCsv": async (deps, input, ctx) =>
+    service.serviceTaskImportDidaCsv(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
   "task.subscribeAdvanceReminders": async (_deps, _input, ctx) => {
     const sapCtx = ctxOf(ctx);
     const sessionPumps = taskSessionPumps();

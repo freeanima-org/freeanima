@@ -2,10 +2,21 @@ import { describe, expect, it } from "bun:test";
 
 import {
   SORT_ORDER_STEP,
+  PG_INT32_MAX,
   applySortOrderUpdates,
+  clampSortOrder,
   nextPrependSortOrder,
   sortOrderUpdates,
 } from "./sort-order.ts";
+
+describe("clampSortOrder", () => {
+  it("钳到 PG int4", () => {
+    expect(clampSortOrder(2281701376)).toBe(PG_INT32_MAX);
+    expect(clampSortOrder(-3_000_000_000)).toBe(-2_147_483_648);
+    expect(clampSortOrder(42.9)).toBe(42);
+    expect(clampSortOrder(Number.NaN)).toBe(0);
+  });
+});
 
 describe("nextPrependSortOrder", () => {
   it("空列表为 0，否则 min - STEP", () => {

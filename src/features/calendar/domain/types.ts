@@ -63,6 +63,8 @@ export type CalendarRangeTaskItem = {
   kind: "task";
   id: number;
   title: string;
+  /** 时段起点；无则与 due_at 相同语义 */
+  start_at?: string | null;
   due_at: string;
   status: "pending" | "completed";
   project_id: number | null;

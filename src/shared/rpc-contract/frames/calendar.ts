@@ -96,6 +96,7 @@ export const calendarRangeTaskItemSchema = z.object({
   kind: z.literal("task"),
   id: z.number().int().positive(),
   title: z.string(),
+  start_at: z.string().nullable().optional(),
   due_at: z.string(),
   status: z.enum(["pending", "completed"]),
   project_id: z.number().int().positive().nullable(),

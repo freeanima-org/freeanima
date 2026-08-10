@@ -14,6 +14,7 @@ import { Route as SidebarRouteRouteImport } from "./routes/_sidebar/route";
 import { Route as IndexRouteImport } from "./routes/index";
 import { Route as WorkshopPathRouteImport } from "./routes/workshop/$path";
 import { Route as SidebarWorldsRouteImport } from "./routes/_sidebar/worlds";
+import { Route as SidebarDataMaintenanceRouteImport } from "./routes/_sidebar/data-maintenance";
 import { Route as SidebarToolsRouteImport } from "./routes/_sidebar/tools";
 import { Route as SidebarSystemPromptRouteImport } from "./routes/_sidebar/system-prompt";
 import { Route as SidebarSubjectsRouteImport } from "./routes/_sidebar/subjects";
@@ -61,6 +62,11 @@ const WorkshopPathRoute = WorkshopPathRouteImport.update({
 const SidebarWorldsRoute = SidebarWorldsRouteImport.update({
   id: "/worlds",
   path: "/worlds",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarDataMaintenanceRoute = SidebarDataMaintenanceRouteImport.update({
+  id: "/data-maintenance",
+  path: "/data-maintenance",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
 const SidebarToolsRoute = SidebarToolsRouteImport.update({
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   "/skills": typeof SidebarSkillsRouteRouteWithChildren;
   "/skills/$name": typeof SidebarSkillsNameRoute;
   "/worlds": typeof SidebarWorldsRoute;
+  "/data-maintenance": typeof SidebarDataMaintenanceRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/conversations/$conversationId": typeof SidebarConversationsConversationIdRoute;
   "/conversations/": typeof SidebarConversationsIndexRoute;
@@ -238,6 +245,7 @@ export interface FileRoutesByTo {
   "/tools": typeof SidebarToolsRoute;
   "/skills/$name": typeof SidebarSkillsNameRoute;
   "/worlds": typeof SidebarWorldsRoute;
+  "/data-maintenance": typeof SidebarDataMaintenanceRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/conversations/$conversationId": typeof SidebarConversationsConversationIdRoute;
   "/conversations": typeof SidebarConversationsIndexRoute;
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   "/_sidebar/skills": typeof SidebarSkillsRouteRouteWithChildren;
   "/_sidebar/skills/$name": typeof SidebarSkillsNameRoute;
   "/_sidebar/worlds": typeof SidebarWorldsRoute;
+  "/_sidebar/data-maintenance": typeof SidebarDataMaintenanceRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/_sidebar/conversations/$conversationId": typeof SidebarConversationsConversationIdRoute;
   "/_sidebar/conversations/": typeof SidebarConversationsIndexRoute;
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | "/skills"
     | "/skills/$name"
     | "/worlds"
+    | "/data-maintenance"
     | "/workshop/$path"
     | "/conversations/$conversationId"
     | "/conversations/"
@@ -330,6 +340,7 @@ export interface FileRouteTypes {
     | "/tools"
     | "/skills/$name"
     | "/worlds"
+    | "/data-maintenance"
     | "/workshop/$path"
     | "/conversations/$conversationId"
     | "/conversations"
@@ -361,6 +372,7 @@ export interface FileRouteTypes {
     | "/_sidebar/skills"
     | "/_sidebar/skills/$name"
     | "/_sidebar/worlds"
+    | "/_sidebar/data-maintenance"
     | "/workshop/$path"
     | "/_sidebar/conversations/$conversationId"
     | "/_sidebar/conversations/"
@@ -408,6 +420,13 @@ declare module "@tanstack/react-router" {
       path: "/worlds";
       fullPath: "/worlds";
       preLoaderRoute: typeof SidebarWorldsRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/data-maintenance": {
+      id: "/_sidebar/data-maintenance";
+      path: "/data-maintenance";
+      fullPath: "/data-maintenance";
+      preLoaderRoute: typeof SidebarDataMaintenanceRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
     "/_sidebar/tools": {
@@ -631,6 +650,7 @@ interface SidebarRouteRouteChildren {
   SidebarToolsRoute: typeof SidebarToolsRoute;
   SidebarSkillsRouteRoute: typeof SidebarSkillsRouteRouteWithChildren;
   SidebarWorldsRoute: typeof SidebarWorldsRoute;
+  SidebarDataMaintenanceRoute: typeof SidebarDataMaintenanceRoute;
 }
 
 const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
@@ -655,6 +675,7 @@ const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
   SidebarToolsRoute: SidebarToolsRoute,
   SidebarSkillsRouteRoute: SidebarSkillsRouteRouteWithChildren,
   SidebarWorldsRoute: SidebarWorldsRoute,
+  SidebarDataMaintenanceRoute: SidebarDataMaintenanceRoute,
 };
 
 const SidebarRouteRouteWithChildren = SidebarRouteRoute._addFileChildren(SidebarRouteRouteChildren);

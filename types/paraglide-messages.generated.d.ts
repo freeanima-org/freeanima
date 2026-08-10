@@ -516,6 +516,7 @@ type ParaglideMessageExports = {
   readonly habitat_nav_conversations: ParaglideMessageFn;
   readonly habitat_nav_cron: ParaglideMessageFn;
   readonly habitat_nav_dashboard: ParaglideMessageFn;
+  readonly habitat_nav_data_maintenance: ParaglideMessageFn;
   readonly habitat_nav_diary: ParaglideMessageFn;
   readonly habitat_nav_email: ParaglideMessageFn;
   readonly habitat_nav_entity: ParaglideMessageFn;
@@ -1407,6 +1408,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const habitat_nav_conversations: ParaglideMessageFn;
   export const habitat_nav_cron: ParaglideMessageFn;
   export const habitat_nav_dashboard: ParaglideMessageFn;
+  export const habitat_nav_data_maintenance: ParaglideMessageFn;
   export const habitat_nav_diary: ParaglideMessageFn;
   export const habitat_nav_email: ParaglideMessageFn;
   export const habitat_nav_entity: ParaglideMessageFn;

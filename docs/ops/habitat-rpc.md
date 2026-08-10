@@ -46,6 +46,18 @@ http://{habitat_host}:{port}/rpc/v1/task/list
 
 Helpers: `resolveHabitatRpcWsUrl`, `buildHabitatRestRequest` in `@freeanima/shared/habitat-rpc`.
 
+## Client request timeouts
+
+三档默认（method `meta.timeoutMs` 或 `call(..., { timeoutMs })` 可覆盖）：
+
+| 档     | 常量                           | 默认用途                                                                       |
+| ------ | ------------------------------ | ------------------------------------------------------------------------------ |
+| 读 3s  | `HABITAT_RPC_READ_TIMEOUT_MS`  | `dualTransportMeta(true)` / list·get·search                                    |
+| 写 10s | `HABITAT_RPC_WRITE_TIMEOUT_MS` | `dualTransportMeta(false)` / create·patch·delete；`message.send` 首包 ack      |
+| 长 30s | `HABITAT_RPC_LONG_TIMEOUT_MS`  | `longOpMeta()`：导入、`fts.rebuild`、LLM 探活/列表模型、sleep pipeline、TTS 等 |
+
+特殊通道单独更长：邮件 IMAP `HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS`、同步 `HABITAT_RPC_EMAIL_SYNC_TIMEOUT_MS`、大批量导入 `HABITAT_RPC_BULK_IMPORT_TIMEOUT_MS`（10min，如滴答 CSV）、二进制大文件 `HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS`。
+
 ## Client profiles
 
 | Profile          | Attach                          | Typical consumer                                                            |

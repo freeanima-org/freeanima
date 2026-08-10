@@ -53,8 +53,11 @@ export function WeekGrid({
     for (const day of days) map.set(day, []);
     for (const item of items) {
       if (item.kind === "task") {
-        const day = dayKeyFromIso(item.due_at);
-        map.get(day)?.push(item);
+        const start = dayKeyFromIso(item.start_at ?? item.due_at);
+        const end = dayKeyFromIso(item.due_at);
+        for (const day of days) {
+          if (start <= day && day <= end) map.get(day)?.push(item);
+        }
         continue;
       }
       if (item.kind === "event") {

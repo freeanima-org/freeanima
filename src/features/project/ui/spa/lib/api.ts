@@ -297,9 +297,19 @@ export async function updateProjectTask(
   patch: Partial<
     Pick<
       TaskItemRow,
-      "title" | "content" | "tag_ids" | "priority" | "due_at" | "sort_order" | "status"
+      | "title"
+      | "content"
+      | "tag_ids"
+      | "priority"
+      | "start_at"
+      | "due_at"
+      | "remind_at"
+      | "reminders"
+      | "sort_order"
+      | "status"
+      | "recurrence"
     >
-  >,
+  > & { only_this?: boolean },
 ): Promise<TaskItemRow> {
   ensureProjectOfflineModule();
   return offlineUpdateProjectTask(id, patch);

@@ -23,7 +23,8 @@ function sortKey(item: CalendarRangeItem): number {
     return Number.isFinite(ms) ? ms : 0;
   }
   if (item.kind === "task") {
-    const ms = Date.parse(item.due_at);
+    const anchor = item.start_at ?? item.due_at;
+    const ms = Date.parse(anchor);
     return Number.isFinite(ms) ? ms : 0;
   }
   const start = item.start_at ? Date.parse(item.start_at) : NaN;
@@ -75,19 +76,22 @@ export async function listCalendarRange(
       if (!item) continue;
       if (item.due_at) {
         const dueMs = Date.parse(item.due_at);
+        const startMs = item.start_at ? Date.parse(item.start_at) : dueMs;
         const fromMs = Date.parse(opts.from);
         const toMs = Date.parse(opts.to);
-        if (
+        const overlaps =
           Number.isFinite(dueMs) &&
+          Number.isFinite(startMs) &&
           Number.isFinite(fromMs) &&
           Number.isFinite(toMs) &&
-          dueMs >= fromMs &&
-          dueMs <= toMs
-        ) {
+          startMs <= toMs &&
+          dueMs >= fromMs;
+        if (overlaps) {
           items.push({
             kind: "task",
             id: item.id,
             title: item.title,
+            start_at: item.start_at ?? null,
             due_at: item.due_at,
             status: item.status === "completed" ? "completed" : "pending",
             project_id: item.project_id ?? null,

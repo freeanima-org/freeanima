@@ -517,6 +517,7 @@
   "habitat_nav_tools": "🔧 工具",
   "habitat_nav_vault": "🔐 凭证库",
   "habitat_nav_worlds": "🌍 世界",
+  "habitat_nav_data_maintenance": "🧰 数据维护",
   "habitat_outposts_app_id": "应用 ID",
   "habitat_outposts_connected_at": "已连接",
   "habitat_outposts_desc": "Outposts connected to this Habitat that registered remote tools (read-only).",

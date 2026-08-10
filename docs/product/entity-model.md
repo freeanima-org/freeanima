@@ -127,7 +127,7 @@ TickTick-style lists and items map to:
 
 Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** 使用顶层 `tag_ids`（指向同 World 的 `tag` entity，见下节）。**禁止** `body.tags` 字符串数组（存量已迁移剥离）。Each world gets a **default list** (`is_default: true`, name e.g.「收件箱」) **lazily** on first task use (`ensureDefaultTaskListForWorld`); it cannot be deleted or archived but may be renamed. List **`body.closed: true`** means archived: hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })`; contained task items are kept.
 
-**重复任务**（`task_item.body.recurrence` + `task_occurrence` 完成历史）、**一层子任务**（`body.parent_id`）、**多提醒**（`reminders[]` / 兼容 `remind_at`）见 [`docs/modules/task.md`](../modules/task.md)。
+**重复任务**（`task_item.body.recurrence` + `task_occurrence` 完成历史）、**一层子任务**（`body.parent_id`）、**时段**（`start_at` / `due_at`）、**多提醒**（`reminders[]` / 兼容 `remind_at`）见 [`docs/modules/task.md`](../modules/task.md)。滴答 CSV 一次性导入入口在栖息地数据维护。
 
 Task/list **LLM 工具**默认在 **agent subject 专属 private world** 操作，多数调用可省略 `world_id`；按 `id` / `list_id` 操作时从实体反查 world 并校验 caller 权限。**MCP** 工具默认 scope 为 token 绑定 subject 的 private world。Shell SAP/REST 仍通过 `subject_kind` 选择 user/agent world（见下表）。
 

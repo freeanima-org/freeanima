@@ -9,6 +9,7 @@ import {
   normalizeRecurrenceInput,
   normalizeSchedulableReminders,
   shiftSchedulableReminders,
+  shiftSchedulableStartAt,
   type EntityRow,
   type TaskRecurrence,
 } from "@freeanima/host/core/db/schema/entity";
@@ -25,7 +26,7 @@ import { rescheduleTaskReminderScheduler } from "@freeanima/host/platform/boot/t
 
 import { assertListAcceptsTasks, assertTaskListNotArchived } from "./list-store.ts";
 import { createTaskOccurrence, deleteOccurrencesForSeries } from "./occurrence-store.ts";
-import { nextPrependSortOrder } from "./sort-order.ts";
+import { nextPrependSortOrder, clampSortOrder } from "./sort-order.ts";
 import type {
   TaskItemCreateInput,
   TaskItemListOpts,
@@ -84,6 +85,7 @@ function toItemRow(entity: EntityRow): TaskItemRow {
     tag_ids: [...(entity.tag_ids ?? [])],
     status: row.status,
     priority: row.priority,
+    start_at: row.start_at ?? null,
     due_at: row.due_at ?? null,
     remind_at: reminders.remind_at,
     ...(reminders.reminders.length > 0 ? { reminders: reminders.reminders } : {}),
@@ -235,9 +237,22 @@ export async function createTaskItem(
       status: "pending",
     });
     sortOrder = nextPrependSortOrder(siblings.map((s) => s.sort_order));
+  } else {
+    sortOrder = clampSortOrder(sortOrder);
   }
 
   const dueAt = input.due_at ?? null;
+  let startAt = input.start_at ?? null;
+  if (dueAt == null || dueAt === "") {
+    startAt = null;
+  } else if (startAt != null && startAt !== "") {
+    const startMs = Date.parse(startAt);
+    const dueMs = Date.parse(dueAt);
+    if (Number.isFinite(startMs) && Number.isFinite(dueMs) && startMs > dueMs) {
+      throw new Error("start_at must be <= due_at");
+    }
+  }
+
   let recurrence: TaskRecurrence | null = null;
   if (input.recurrence != null) {
     if (dueAt == null || dueAt === "") {
@@ -273,6 +288,7 @@ export async function createTaskItem(
     priority: input.priority ?? "none",
     list_id: listId,
     sort_order: sortOrder,
+    start_at: startAt,
     due_at: dueAt,
     remind_at: reminders.remind_at,
     reminders: reminders.reminders,
@@ -336,7 +352,9 @@ export async function updateTaskItem(
       rest.project_id !== undefined ||
       rest.priority !== undefined ||
       rest.due_at !== undefined ||
+      rest.start_at !== undefined ||
       rest.remind_at !== undefined ||
+      rest.reminders !== undefined ||
       rest.sort_order !== undefined ||
       rest.recurrence !== undefined
     ) {
@@ -385,14 +403,43 @@ export async function updateTaskItem(
     const nextDue = input.due_at === "" ? null : input.due_at;
     bodyPatch.due_at = nextDue;
     if (nextDue == null) {
-      // 无日期则无重复与提醒
+      // 无日期则无重复、提醒与 start
       bodyPatch.recurrence = null;
       bodyPatch.remind_at = null;
       bodyPatch.reminders = [];
+      bodyPatch.start_at = null;
     } else {
       const existingRec = parsedExisting.recurrence ?? null;
       if (existingRec && input.only_this !== true) {
         bodyPatch.recurrence = { ...existingRec, schedule_at: nextDue };
+      }
+    }
+  }
+  if (input.start_at !== undefined) {
+    const nextStart = input.start_at === "" ? null : input.start_at;
+    const dueAfterPatch =
+      bodyPatch.due_at !== undefined
+        ? (bodyPatch.due_at as string | null)
+        : (parsedExisting.due_at ?? null);
+    if (nextStart != null && (dueAfterPatch == null || dueAfterPatch === "")) {
+      throw new Error("start_at requires due_at");
+    }
+    if (nextStart != null && dueAfterPatch) {
+      const startMs = Date.parse(nextStart);
+      const dueMs = Date.parse(dueAfterPatch);
+      if (Number.isFinite(startMs) && Number.isFinite(dueMs) && startMs > dueMs) {
+        throw new Error("start_at must be <= due_at");
+      }
+    }
+    bodyPatch.start_at = nextStart;
+  } else if (input.due_at !== undefined && bodyPatch.due_at != null) {
+    // 改 due 未显式改 start：若旧 start 晚于新 due 则清空
+    const existingStart = parsedExisting.start_at ?? null;
+    if (existingStart) {
+      const startMs = Date.parse(existingStart);
+      const dueMs = Date.parse(bodyPatch.due_at as string);
+      if (Number.isFinite(startMs) && Number.isFinite(dueMs) && startMs > dueMs) {
+        bodyPatch.start_at = null;
       }
     }
   }
@@ -452,7 +499,7 @@ export async function updateTaskItem(
       bodyPatch.parent_id = null;
     }
   }
-  if (input.sort_order !== undefined) bodyPatch.sort_order = input.sort_order;
+  if (input.sort_order !== undefined) bodyPatch.sort_order = clampSortOrder(input.sort_order);
   if (input.status !== undefined) {
     // status=completed 已在入口委托 completeTaskItem；此处仅 pending
     bodyPatch.status = input.status;
@@ -570,11 +617,13 @@ async function rollOrFinishRecurring(
     parsed.reminders,
     parsed.remind_at,
   );
+  const nextStart = shiftSchedulableStartAt(parsed.due_at, next.due_at, parsed.start_at);
   const row = await updateEntity({
     id,
     body: {
       status: "pending",
       completed_at: null,
+      start_at: nextStart,
       due_at: next.due_at,
       remind_at: nextReminders.remind_at,
       reminders: nextReminders.reminders,

@@ -1,17 +1,22 @@
 import {
   getHabitatMethodDef,
   isHabitatMethod,
+  isReadOnlyHabitatMeta,
   resolveDefaultTransport,
   resolveFallbackTransport,
+  resolveHabitatAuthPolicy,
   type HabitatClientProfile,
   type HabitatMethod,
   type HabitatMethodInputs,
+  type HabitatMethodMeta,
   type HabitatMethodOutputs,
   type TransportKind,
 } from "@freeanima/shared/habitat-contract";
 import type { RpcClient } from "@freeanima/shared/habitat-rpc";
 import {
   buildHabitatRestRequest,
+  HABITAT_RPC_READ_TIMEOUT_MS,
+  HABITAT_RPC_WRITE_TIMEOUT_MS,
   isNonJsonHabitatHttpMethod,
   parseHabitatRestResponse,
   throwHabitatRestError,
@@ -21,7 +26,7 @@ export type HabitatCallOptions = {
   transport?: "auto" | TransportKind;
   profile?: HabitatClientProfile;
   signal?: AbortSignal;
-  /** WS/HTTP 请求超时；省略时用 method meta.timeoutMs 或默认 3s */
+  /** WS/HTTP 请求超时；省略时用 method meta.timeoutMs，再按读 3s / 写 10s */
   timeoutMs?: number;
 };
 
@@ -70,6 +75,14 @@ function isReadMethod(method: HabitatMethod): boolean {
     method.endsWith(".summary") ||
     method.endsWith(".config")
   );
+}
+
+/** opts > meta.timeoutMs > 读/写档默认 */
+function resolveCallTimeoutMs(optsTimeout: number | undefined, meta: HabitatMethodMeta): number {
+  if (optsTimeout !== undefined) return optsTimeout;
+  if (meta.timeoutMs !== undefined) return meta.timeoutMs;
+  const readLike = isReadOnlyHabitatMeta(meta) || resolveHabitatAuthPolicy(meta) === "optional";
+  return readLike ? HABITAT_RPC_READ_TIMEOUT_MS : HABITAT_RPC_WRITE_TIMEOUT_MS;
 }
 
 type ConditionalGetCacheEntry = { etag: string; body: unknown };
@@ -182,7 +195,7 @@ export function createHabitatClient(options: HabitatClientOptions) {
       throw new Error(`transport ${forced} not allowed for ${method}`);
     }
 
-    const timeoutMs = opts.timeoutMs ?? def.meta.timeoutMs;
+    const timeoutMs = resolveCallTimeoutMs(opts.timeoutMs, def.meta);
 
     try {
       return await callOne(method, payload, forced, opts.signal, timeoutMs);
@@ -214,11 +227,9 @@ export function createHabitatClient(options: HabitatClientOptions) {
     const def = getHabitatMethodDef(method);
     def.input.parse(payload);
 
-    const timeoutMs = opts.timeoutMs ?? def.meta.timeoutMs;
+    const timeoutMs = resolveCallTimeoutMs(opts.timeoutMs, def.meta);
     const timeoutSignal =
-      opts.signal == null && timeoutMs != null && timeoutMs > 0
-        ? AbortSignal.timeout(timeoutMs)
-        : undefined;
+      opts.signal == null && timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined;
     const signal =
       opts.signal !== undefined
         ? opts.signal

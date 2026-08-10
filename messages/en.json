@@ -480,6 +480,7 @@
   "habitat_nav_pomodoro": "🍅 Pomodoro",
   "habitat_nav_tools": "🔧 Tools",
   "habitat_nav_worlds": "🌍 Worlds",
+  "habitat_nav_data_maintenance": "🧰 Data maintenance",
   "habitat_outposts_app_id": "App ID",
   "habitat_outposts_connected_at": "Connected",
   "habitat_outposts_desc": "Outposts connected to this Habitat that registered remote tools (read-only).",

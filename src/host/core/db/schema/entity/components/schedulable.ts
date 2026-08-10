@@ -13,6 +13,11 @@ export type SchedulableReminderEntry = z.infer<typeof schedulableReminderEntrySc
 
 /** 抽象 schedulable — 仅 Zod 层，不写入 components 数组 */
 export const schedulableBodySchema = z.object({
+  /**
+   * 时段起点（可选）。有值时通常伴随 `due_at`；日历展示优先用本字段。
+   * 与 `due_at` 同时存在时须 `start_at` ≤ `due_at`。
+   */
+  start_at: z.string().nullable().optional(),
   due_at: z.string().nullable().optional(),
   /**
    * 兼容单字段提醒：与 `reminders` 最早一项同步。
@@ -26,6 +31,22 @@ export const schedulableBodySchema = z.object({
 });
 
 export type SchedulableBody = z.infer<typeof schedulableBodySchema>;
+
+/** 滚期：保持 start 相对 due 的偏移；无 start 或无法解析则返回 null */
+export function shiftSchedulableStartAt(
+  prevDueAt: string | null | undefined,
+  nextDueAt: string,
+  startAt: string | null | undefined,
+): string | null {
+  if (startAt == null || startAt === "") return null;
+  const prevDueMs = prevDueAt ? Date.parse(prevDueAt) : NaN;
+  const nextDueMs = Date.parse(nextDueAt);
+  const startMs = Date.parse(startAt);
+  if (!Number.isFinite(prevDueMs) || !Number.isFinite(nextDueMs) || !Number.isFinite(startMs)) {
+    return null;
+  }
+  return formatCstIso(new Date(startMs + (nextDueMs - prevDueMs)));
+}
 
 /** 将 remind_at / reminders 归一为稳定形状（按 at 升序） */
 export function normalizeSchedulableReminders(input: {

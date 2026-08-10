@@ -19,6 +19,7 @@ import {
   binaryHttpMeta,
   defineHabitatMethod,
   dualTransportMeta,
+  longOpMeta,
   publicHttpMeta,
   rawPublicHttpMeta,
 } from "../method-def.ts";
@@ -206,12 +207,12 @@ export const habitatMethodDefs = {
   "config.testConnection": defineHabitatMethod({
     input: configTestConnectionInputSchema,
     output: configTestConnectionOutputSchema,
-    meta: dualTransportMeta(false),
+    meta: longOpMeta(false),
   }),
   "config.listProviderModels": defineHabitatMethod({
     input: configListProviderModelsInputSchema,
     output: configListProviderModelsOutputSchema,
-    meta: dualTransportMeta(true),
+    meta: longOpMeta(true),
   }),
   "memory.files": defineHabitatMethod({
     input: emptyInputSchema,
@@ -221,7 +222,7 @@ export const habitatMethodDefs = {
   "memory.passiveRecallDebug": defineHabitatMethod({
     input: passiveRecallDebugBodySchema,
     output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
+    meta: longOpMeta(false),
   }),
   "memory.temporalList": defineHabitatMethod({
     input: temporalSummaryListBodySchema,
@@ -231,7 +232,7 @@ export const habitatMethodDefs = {
   "memory.temporalRegenerate": defineHabitatMethod({
     input: temporalSummaryRegenerateBodySchema,
     output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
+    meta: longOpMeta(false),
   }),
   "memory.temporalSystemRollList": defineHabitatMethod({
     input: emptyInputSchema,
@@ -241,7 +242,7 @@ export const habitatMethodDefs = {
   "memory.temporalSystemRollRegenerate": defineHabitatMethod({
     input: temporalSystemRollRegenerateBodySchema,
     output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
+    meta: longOpMeta(false),
   }),
   "memory.semanticCount": defineHabitatMethod({
     input: emptyInputSchema,
@@ -326,7 +327,7 @@ export const habitatMethodDefs = {
   "prompt.debug": defineHabitatMethod({
     input: promptDebugQuerySchema,
     output: unknownOutputSchema,
-    meta: dualTransportMeta(true),
+    meta: longOpMeta(true),
   }),
   "outposts.status": defineHabitatMethod({
     input: emptyInputSchema,
@@ -346,7 +347,7 @@ export const habitatMethodDefs = {
   "fts.rebuild": defineHabitatMethod({
     input: ftsRebuildBodySchema,
     output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
+    meta: longOpMeta(false),
   }),
   "sleep.summary": defineHabitatMethod({
     input: emptyInputSchema,
@@ -366,17 +367,17 @@ export const habitatMethodDefs = {
   "sleep.runPipelineStep": defineHabitatMethod({
     input: sleepRunStepBodySchema,
     output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
+    meta: longOpMeta(false),
   }),
   "sleep.startCycle": defineHabitatMethod({
     input: sleepCycleBodySchema,
     output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
+    meta: longOpMeta(false),
   }),
   "sleep.startCatchUp": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
+    meta: longOpMeta(false),
   }),
   "cronLogs.list": defineHabitatMethod({
     input: cronLogsQuerySchema,

@@ -347,6 +347,7 @@ type TaskItemContentPatch = Partial<
     | "content"
     | "tag_ids"
     | "priority"
+    | "start_at"
     | "due_at"
     | "remind_at"
     | "reminders"
@@ -1018,11 +1019,12 @@ export async function offlineUpdateTaskItem(
       updated_at: now,
     };
 
-    // 无日期则无重复与提醒
+    // 无日期则无重复、提醒与开始时间
     if (patch.due_at === null || patch.due_at === "") {
       updated = {
         ...updated,
         due_at: null,
+        start_at: null,
         recurrence: null,
         remind_at: null,
         reminders: [],

@@ -47,6 +47,7 @@ export function habitatNavGroups(): HabitatNavGroup[] {
       items: [
         { to: "/subjects", label: m.habitat_nav_subjects() },
         { to: "/worlds", label: m.habitat_nav_worlds() },
+        { to: "/data-maintenance", label: m.habitat_nav_data_maintenance() },
       ],
     },
     {

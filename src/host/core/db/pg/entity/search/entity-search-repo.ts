@@ -41,7 +41,7 @@ function defaultOrderBy(primary_component?: string, opts?: { hasQuery?: boolean 
     (primary_component === TASK_ITEM_COMPONENT || primary_component === CONTENT_BLOCK_COMPONENT) &&
     !opts?.hasQuery
   ) {
-    return [sql`COALESCE((${entities.body}->>'sort_order')::int, 0)`, asc(entities.id)] as const;
+    return [sql`COALESCE((${entities.body}->>'sort_order')::bigint, 0)`, asc(entities.id)] as const;
   }
   return [desc(entities.updated_at), asc(entities.id)] as const;
 }

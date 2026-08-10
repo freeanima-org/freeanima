@@ -31,6 +31,8 @@ export type TaskItemDisplay = {
   tag_ids: number[];
   status: TaskItemStatus;
   priority: TaskItemPriority;
+  /** 时段起点；缺省/null = 无开始时间 */
+  start_at?: string | null | undefined;
   due_at: string | null;
   remind_at?: string | null | undefined;
   reminders?: TaskItemReminderDisplay[] | undefined;
@@ -81,6 +83,7 @@ export function isTaskItemDisplayEqual(a: TaskItemDisplay, b: TaskItemDisplay): 
     a.content === b.content &&
     a.status === b.status &&
     a.priority === b.priority &&
+    (a.start_at ?? null) === (b.start_at ?? null) &&
     a.due_at === b.due_at &&
     aRem.remind_at === bRem.remind_at &&
     JSON.stringify(aRem.reminders) === JSON.stringify(bRem.reminders) &&
