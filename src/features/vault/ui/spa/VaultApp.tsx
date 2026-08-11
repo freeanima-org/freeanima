@@ -18,6 +18,7 @@ import {
   type VaultCustomField,
   type VaultSecretsPayload,
 } from "@freeanima/shared/vault-crypto";
+import { ensureAgentRootKeySsot } from "@freeanima/features/vault/domain/agent-root-key-custody.ts";
 import { generatePassword } from "@freeanima/features/vault/domain/password-gen.ts";
 import {
   normalizeFormUris,
@@ -259,6 +260,12 @@ export function VaultApp() {
         verifier: config.verifier,
         conversationId: VAULT_UI_SCOPE,
       });
+      // 先写入 SSOT，再切解锁态触发列表刷新，避免竞态漏掉新条目
+      try {
+        await ensureAgentRootKeySsot();
+      } catch (ensureErr) {
+        setError(ensureErr instanceof Error ? ensureErr.message : String(ensureErr));
+      }
       setUserUnlocked(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -288,6 +295,11 @@ export function VaultApp() {
         verifier,
         conversationId: VAULT_UI_SCOPE,
       });
+      try {
+        await ensureAgentRootKeySsot();
+      } catch (ensureErr) {
+        setError(ensureErr instanceof Error ? ensureErr.message : String(ensureErr));
+      }
       setUserSetupMode(false);
       setUserUnlocked(true);
     } catch (e) {

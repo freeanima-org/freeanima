@@ -11,6 +11,7 @@ import {
   cn,
 } from "@freeanima/ui-kit";
 
+import { ensureAgentRootKeySsot } from "@freeanima/features/vault/domain/agent-root-key-custody.ts";
 import { getVaultCryptoConfig } from "@freeanima/features/chat/ui/spa/lib/vault-unlock-api.ts";
 
 /** bundled Shell Chat（/web/chat）内专用 User 库解锁控件；主密码不进消息流 */
@@ -71,6 +72,11 @@ export function VaultUnlockButton({
       setPassword("");
       setOpen(false);
       setUnlocked(true);
+      try {
+        await ensureAgentRootKeySsot();
+      } catch {
+        // Agent 根密钥迁入失败不阻断 Chat 解锁；可在密码库/数据维护重试
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
