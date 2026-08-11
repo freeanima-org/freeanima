@@ -10,6 +10,7 @@ import {
   normalizeSchedulableReminders,
   shiftSchedulableReminders,
   shiftSchedulableStartAt,
+  taskDeleteDetachesCarrier,
   type EntityRow,
   type TaskRecurrence,
 } from "@freeanima/host/core/db/schema/entity";
@@ -18,6 +19,7 @@ import { formatCstIso, omitUndefined } from "@freeanima/host/core/util";
 import {
   createEntity,
   deleteEntity,
+  deleteEntityComponent,
   getEntity,
   searchEntities,
   updateEntity,
@@ -95,6 +97,7 @@ function toItemRow(entity: EntityRow): TaskItemRow {
     completed_at: row.completed_at ?? null,
     recurrence: row.recurrence ?? null,
     parent_id: row.parent_id ?? null,
+    primary_component: entity.primary_component ?? TASK_ITEM_COMPONENT,
     created_at: entity.created_at.toISOString(),
     updated_at: entity.updated_at.toISOString(),
   };
@@ -118,10 +121,10 @@ async function assertParsedTaskListNotArchived(
   }
 }
 
-/** 按 id 取单条任务（含项目内）；不存在或不在 world 返回 null */
+/** 按 id 取单条任务（含项目内 / 邮件挂载 facet）；不存在或不在 world 返回 null */
 export async function getTaskItem(worldId: number, id: number): Promise<TaskItemRow | null> {
   const row = await getEntity(id);
-  if (!row || row.primary_component !== TASK_ITEM_COMPONENT) return null;
+  if (!row || !row.components.includes(TASK_ITEM_COMPONENT)) return null;
   if (row.world_id !== worldId) return null;
   try {
     return toItemRow(row);
@@ -160,7 +163,7 @@ export async function listTaskItems(
 
   const result = await searchEntities({
     world_id: worldId,
-    primary_component: TASK_ITEM_COMPONENT,
+    component: TASK_ITEM_COMPONENT,
     ...(Object.keys(filters).length > 0 ? { filters } : {}),
     ...(topLevelTagIds?.length ? { tag_ids: topLevelTagIds } : {}),
     limit: opts.limit ?? 500,
@@ -187,7 +190,7 @@ async function findTaskItemByClientOpId(
 ): Promise<TaskItemRow | null> {
   const result = await searchEntities({
     world_id: worldId,
-    primary_component: TASK_ITEM_COMPONENT,
+    component: TASK_ITEM_COMPONENT,
     filters: { client_op_id: clientOpId },
     limit: 1,
     mode: "filter_only",
@@ -321,7 +324,7 @@ async function assertValidParentTask(
   opts: { listId: number | null; projectId: number | null; forbidNested: boolean },
 ): Promise<void> {
   const parentRow = await getEntity(parentId);
-  if (!parentRow || parentRow.primary_component !== TASK_ITEM_COMPONENT) {
+  if (!parentRow || !parentRow.components.includes(TASK_ITEM_COMPONENT)) {
     throw new Error("parent task not found");
   }
   await assertEntityInWorld(parentId, worldId);
@@ -719,23 +722,31 @@ export async function deleteTaskItem(worldId: number, id: number): Promise<boole
   if (!existing) return false;
   await assertEntityInWorld(id, worldId);
   const parsed = asTaskItem(existing);
-  if (parsed) {
+  if (!parsed) return false;
+
+  // 挂载 facet（如邮件上的 task_item）：只 detach，禁止误删载体
+  if (taskDeleteDetachesCarrier(existing.primary_component)) {
     await assertParsedTaskListNotArchived(parsed, worldId);
-    await deleteOccurrencesForSeries(worldId, id);
-    // 级联软删子任务
-    const children = await listTaskItems(worldId, {
-      parent_id: id,
-      roots_only: false,
-      in_backlog: false,
-      ...(parsed.project_id != null
-        ? { project_id: parsed.project_id }
-        : parsed.list_id != null
-          ? { list_id: parsed.list_id }
-          : {}),
-    });
-    for (const child of children) {
-      await deleteEntity(child.id);
-    }
+    await deleteEntityComponent(id, TASK_ITEM_COMPONENT);
+    touchReminderScheduler();
+    return true;
+  }
+
+  await assertParsedTaskListNotArchived(parsed, worldId);
+  await deleteOccurrencesForSeries(worldId, id);
+  // 级联软删子任务
+  const children = await listTaskItems(worldId, {
+    parent_id: id,
+    roots_only: false,
+    in_backlog: false,
+    ...(parsed.project_id != null
+      ? { project_id: parsed.project_id }
+      : parsed.list_id != null
+        ? { list_id: parsed.list_id }
+        : {}),
+  });
+  for (const child of children) {
+    await deleteEntity(child.id);
   }
   touchReminderScheduler();
   return deleteEntity(id);
@@ -804,7 +815,7 @@ export async function searchTaskItems(
 
   const result = await searchEntities({
     world_id: worldId,
-    primary_component: TASK_ITEM_COMPONENT,
+    component: TASK_ITEM_COMPONENT,
     query: opts.query,
     ...(Object.keys(filters).length > 0 ? { filters } : {}),
     limit: Math.max(1, Math.min(50, opts.limit ?? 30)),

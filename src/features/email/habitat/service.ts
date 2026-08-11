@@ -3,8 +3,10 @@ import { omitUndefined } from "@freeanima/host/core/util";
 import { resolveSubjectWorldId, type SubjectKind } from "@freeanima/host/core/config";
 import {
   applyProviderPreset,
+  attachTaskToEmailMessage,
   createEmailAccount,
   deleteEmailAccountRow,
+  detachTaskFromEmailMessage,
   getEmailMessageRow,
   listEmailAccountRows,
   listEmailMessages,
@@ -237,6 +239,54 @@ export async function serviceEmailMessageRead(
       includeAttachments: true,
     }),
   };
+}
+
+export async function serviceEmailMessageAttachTask(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    id: number;
+    due_at?: string | null;
+    remind_at?: string | null;
+    list_id?: number;
+    title?: string;
+    priority?: "high" | "medium" | "low" | "none";
+  },
+) {
+  assertPg(deps);
+  const worldId = emailWorldId(input.subject_kind);
+  const item = await attachTaskToEmailMessage(
+    worldId,
+    input.id,
+    omitUndefined({
+      due_at: input.due_at,
+      remind_at: input.remind_at,
+      list_id: input.list_id,
+      title: input.title,
+      priority: input.priority,
+    }),
+  );
+  return {
+    item: {
+      id: item.id,
+      title: item.title,
+      status: item.status,
+      due_at: item.due_at,
+      remind_at: item.remind_at,
+      list_id: item.list_id,
+    },
+  };
+}
+
+export async function serviceEmailMessageDetachTask(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+) {
+  assertPg(deps);
+  const worldId = emailWorldId(input.subject_kind);
+  const ok = await detachTaskFromEmailMessage(worldId, input.id);
+  if (!ok) throw new Error("NOT_FOUND");
+  return { ok: true as const };
 }
 
 export async function serviceEmailMessageMarkRead(

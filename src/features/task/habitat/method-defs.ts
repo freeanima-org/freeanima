@@ -33,6 +33,8 @@ import {
   taskCompleteForeverOutputSchema,
   taskDeleteInputSchema,
   taskDeleteOutputSchema,
+  taskConvertToEventInputSchema,
+  taskConvertToEventOutputSchema,
   taskListOccurrencesInputSchema,
   taskListOccurrencesOutputSchema,
   taskMoveToListInputSchema,
@@ -181,6 +183,11 @@ export const taskMethodDefs = {
   "task.delete": defineHabitatMethod({
     input: taskDeleteInputSchema,
     output: taskDeleteOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "task.convertToEvent": defineHabitatMethod({
+    input: taskConvertToEventInputSchema,
+    output: taskConvertToEventOutputSchema,
     meta: dualTransportMeta(false),
   }),
   "task.search": defineHabitatMethod({

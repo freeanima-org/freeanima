@@ -285,6 +285,7 @@ async function rewriteLocalItemId(
             project_id: project.id,
             sort_order: 0,
             completed_at: null,
+            primary_component: "task_item",
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           };
@@ -997,6 +998,7 @@ export async function offlineCreateProjectTask(input: {
       project_id: input.project_id,
       sort_order,
       completed_at: null,
+      primary_component: "task_item",
       created_at: now,
       updated_at: now,
     };
@@ -1317,6 +1319,7 @@ export async function offlineMoveTaskToProject(
         project_id: projectId,
         sort_order: 0,
         completed_at: null,
+        primary_component: "task_item",
         created_at: now,
         updated_at: now,
       };

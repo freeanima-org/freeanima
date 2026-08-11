@@ -27,6 +27,7 @@ import {
   updateTaskList,
   updateSmartList,
 } from "../domain/index.ts";
+import { convertTaskItemToCalendarEvent } from "@freeanima/features/calendar/domain/convert-task-event.ts";
 import type { TaskItemSearchFilters } from "@freeanima/host/core/db/schema";
 import type { SubjectKind } from "@freeanima/host/core/config";
 import { resolveSubjectWorldId } from "@freeanima/host/core/config/world-context";
@@ -535,6 +536,19 @@ export async function serviceTaskDelete(
   const ok = await deleteTaskItem(await taskWorldIdForAuth(auth, input.subject_kind), input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
+}
+
+export async function serviceTaskConvertToEvent(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const item = await convertTaskItemToCalendarEvent(
+    await taskWorldIdForAuth(auth, input.subject_kind),
+    input.id,
+  );
+  return { item };
 }
 
 export async function serviceTaskSearch(

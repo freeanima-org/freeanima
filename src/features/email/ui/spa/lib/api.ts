@@ -312,6 +312,31 @@ export async function deleteEmailMessage(id: number): Promise<void> {
   await habitat().call("email.message.delete", withSubjectKind({ id }));
 }
 
+export async function attachTaskToEmail(
+  id: number,
+  input: { due_at?: string | null; remind_at?: string | null; title?: string } = {},
+): Promise<{ id: number; title: string; due_at: string | null; remind_at: string | null }> {
+  const data = await habitat().call(
+    "email.message.attachTask",
+    withSubjectKind(omitUndefined({ id, ...input })),
+  );
+  return data.item;
+}
+
+export async function detachTaskFromEmail(id: number): Promise<void> {
+  await habitat().call("email.message.detachTask", withSubjectKind({ id }));
+}
+
+/** 探测邮件是否已挂 task_item（同 id） */
+export async function emailHasAttachedTask(id: number): Promise<boolean> {
+  try {
+    const data = await habitat().call("task.get", withSubjectKind({ id }));
+    return data.item != null;
+  } catch {
+    return false;
+  }
+}
+
 export async function sendEmailMessage(input: {
   account_id?: number;
   to: string;

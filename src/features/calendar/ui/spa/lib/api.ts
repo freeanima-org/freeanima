@@ -107,3 +107,14 @@ export async function deleteCalendarEvent(subjectKind: SubjectKind, id: number):
   ensureCalendarOfflineModule();
   await offlineDeleteCalendarEvent(subjectKind, id);
 }
+
+export async function convertCalendarEventToTask(
+  subjectKind: SubjectKind,
+  id: number,
+): Promise<{ id: number; title: string }> {
+  const data = await habitat().call("calendar.convertToTask", {
+    subject_kind: subjectKind,
+    id,
+  });
+  return { id: data.item.id, title: data.item.title };
+}

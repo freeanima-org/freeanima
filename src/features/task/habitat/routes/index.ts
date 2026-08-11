@@ -163,6 +163,12 @@ export const taskHabitatRoutes = bindHabitatRouteHandlers(taskMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "task.convertToEvent": async (deps, input, ctx) =>
+    service.serviceTaskConvertToEvent(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
   "task.search": async (deps, input, ctx) =>
     service.serviceTaskSearch(
       depsOf(deps).runtime.runtimeDeps(),

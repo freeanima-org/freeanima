@@ -58,7 +58,7 @@ export async function listSmartListStats(worldId: number): Promise<SmartListCoun
       ? await countCompletedActivity(worldId, row.filters)
       : await countEntitiesSearch({
           world_id: worldId,
-          primary_component: TASK_ITEM_COMPONENT,
+          component: TASK_ITEM_COMPONENT,
           filters: row.filters,
           mode: "filter_only",
         });

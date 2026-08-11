@@ -55,6 +55,7 @@ function item(
     created_at: "2026-07-15T00:00:00.000Z",
     updated_at: "2026-07-15T00:00:00.000Z",
     ...partial,
+    primary_component: partial.primary_component ?? "task_item",
   };
 }
 

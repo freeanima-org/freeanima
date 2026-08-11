@@ -9,6 +9,7 @@ import {
   listCalendarEvents,
   updateCalendarEvent,
 } from "./event-store.ts";
+import { convertCalendarEventToTaskItem } from "./convert-task-event.ts";
 import { listCalendarRange } from "./range-store.ts";
 import { resolveCalendarToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 import type { CalendarRangeKind } from "./types.ts";
@@ -172,6 +173,29 @@ async function handleRange(args: Record<string, unknown>): Promise<string> {
   }
 }
 
+async function handleConvertToTask(args: Record<string, unknown>): Promise<string> {
+  const id = Number(args.id);
+  if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+  const ctx = await storeContext(args, "write");
+  if (typeof ctx === "string") return ctx;
+  try {
+    const item = await convertCalendarEventToTaskItem(ctx, id);
+    return toolResult({
+      ok: true,
+      action: "convert_to_task",
+      item: {
+        id: item.id,
+        title: item.title,
+        due_at: item.due_at,
+        list_id: item.list_id,
+        status: item.status,
+      },
+    });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
 export function registerCalendarToolSet(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "calendar",
@@ -253,6 +277,20 @@ export function registerCalendarToolSet(toolSets: ToolSetRegistry): void {
           required: ["id"],
         },
         handler: handleGet,
+      },
+      {
+        name: "calendar_convert_to_task",
+        description:
+          "Retype a calendar event into a task_item in the default Inbox (same entity id; lossy: drops all_day).",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            id: { type: "integer" },
+          },
+          required: ["id"],
+        },
+        handler: handleConvertToTask,
       },
       {
         name: "calendar_range",

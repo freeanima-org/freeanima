@@ -122,6 +122,7 @@ export function itemPayload(item: TaskItemRow) {
     completed_at: item.completed_at,
     recurrence: item.recurrence ?? null,
     occurrence_id: item.occurrence_id,
+    primary_component: item.primary_component,
     created_at: item.created_at,
     updated_at: item.updated_at,
   };

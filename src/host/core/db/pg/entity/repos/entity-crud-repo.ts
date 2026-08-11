@@ -19,11 +19,13 @@ import {
   type EntityRowSelect,
 } from "@freeanima/host/core/db/schema/entity";
 import type {
+  AddEntityComponentInput,
   EntityCreateInput,
   EntityGetOpts,
   EntityListOpts,
   EntityRow,
   EntityUpdateInput,
+  ReplacePrimaryComponentInput,
 } from "../types.ts";
 
 import { indexEntitySearchDoc, removeEntitySearchDoc } from "../../search/index-hooks.ts";
@@ -457,6 +459,138 @@ export async function countObjectFileCidRefs(worldId: number, cid: string): Prom
 }
 
 /**
+ * 原地换型（retype）：同 id 将 primary 从 `from` 换成 `to`，components=[to]，body 全量替换。
+ * 与 updateEntity（不可改 primary、body 走 merge）正交。
+ */
+export async function replacePrimaryComponent(
+  input: ReplacePrimaryComponentInput,
+): Promise<EntityRow | null> {
+  const from = primaryComponentSchema.parse(input.from);
+  const to = primaryComponentSchema.parse(input.to);
+  const existing = await getEntity(input.id);
+  if (!existing) return null;
+  if (existing.primary_component !== from) {
+    throw new EntityDeleteError(
+      `replacePrimaryComponent: expected primary ${from}, got ${existing.primary_component ?? "null"}`,
+    );
+  }
+
+  const components = [to];
+  const body = validateEntityBody(components, input.body);
+  const now = new Date();
+
+  let nextRevisions = existing.revisions;
+  if (!input.skip_revision && isEntityRevisionPrimaryComponent(existing.primary_component)) {
+    nextRevisions = pushEntityRevision(
+      existing.revisions,
+      snapshotEntityRevision({
+        title: existing.title,
+        summary: existing.summary,
+        content: existing.content,
+        body: existing.body,
+        tag_ids: existing.tag_ids,
+        pinned: existing.pinned,
+        updated_at: existing.updated_at,
+      }),
+    );
+  }
+
+  const indexText = entitySearchTextForWrite({
+    title: existing.title,
+    summary: existing.summary,
+    content: existing.content,
+    body,
+    primary_component: to,
+  });
+
+  const db = getDb();
+  const [row] = await db
+    .update(entities)
+    .set({
+      components,
+      primary_component: to,
+      body,
+      updated_at: now,
+      ...(nextRevisions !== existing.revisions ? { revisions: nextRevisions } : {}),
+    })
+    .where(eq(entities.id, input.id))
+    .returning(entityRowSelectColumns);
+  if (row) {
+    await indexEntitySearchDoc({
+      id: row.id,
+      world_id: row.world_id,
+      primary_component: row.primary_component,
+      title: row.title,
+      summary: row.summary,
+      content: row.content,
+      deleted_at: row.deleted_at,
+      indexText,
+      clearEmbeddingFirst: true,
+    });
+  }
+  return row ? mapRow(row) : null;
+}
+
+/**
+ * 追加组件（attach）：默认不改 primary；body 与现有 merge 后按全部 components 校验。
+ * 对称于 {@link deleteEntityComponent}。
+ */
+export async function addEntityComponent(
+  input: AddEntityComponentInput,
+): Promise<EntityRow | null> {
+  if (!isKnownComponent(input.component)) {
+    throw new EntityDeleteError(`unknown component: ${input.component}`);
+  }
+  const component = primaryComponentSchema.parse(input.component);
+  const existing = await getEntity(input.id);
+  if (!existing) return null;
+  if (existing.components.includes(component)) {
+    throw new EntityDeleteError(`component already present: ${component}`);
+  }
+
+  const components = [...existing.components, component];
+  const body = mergeComponentBody(existing.body, input.body, components);
+  const nextPrimary = input.promote_primary
+    ? component
+    : (existing.primary_component ?? pickPromotedPrimaryComponent(components));
+  const now = new Date();
+
+  const indexText = entitySearchTextForWrite({
+    title: existing.title,
+    summary: existing.summary,
+    content: existing.content,
+    body,
+    primary_component: nextPrimary,
+  });
+
+  const db = getDb();
+  const [row] = await db
+    .update(entities)
+    .set({
+      components,
+      primary_component: nextPrimary,
+      body,
+      updated_at: now,
+    })
+    .where(eq(entities.id, input.id))
+    .returning(entityRowSelectColumns);
+  if (row) {
+    await indexEntitySearchDoc({
+      id: row.id,
+      world_id: row.world_id,
+      primary_component: row.primary_component,
+      title: row.title,
+      summary: row.summary,
+      content: row.content,
+      deleted_at: row.deleted_at,
+      indexText,
+      clearEmbeddingFirst: true,
+    });
+  }
+  return row ? mapRow(row) : null;
+}
+
+/**
  * 删除 entity 上的某个 component；必要时提升 primary；可变成空壳。
  * 不自动软删。
  */
@@ -566,7 +700,12 @@ export async function collectEntityReferences(id: number): Promise<EntityReferen
   return hits;
 }
 
-/** 按 list_id 批量软删 task_item（分页直至清空，避免 500 截断） */
+const pendingTaskItemStatusWhere = sql`COALESCE(${entities.body}->>'status', '') <> ${"completed"}`;
+
+/** 认 components 含 task_item（含邮件挂载 facet），不要求 primary */
+const taskItemFacetWhere = sql`${entities.components} @> ARRAY[${"task_item"}]::text[]`;
+
+/** 按 list_id：软删 primary=task_item；对挂载 facet（primary≠task_item）只 detach */
 export async function deleteTaskItemsByListId(
   world_id: number,
   list_id: number,
@@ -594,6 +733,30 @@ export async function deleteTaskItemsByListId(
       .returning({ id: entities.id });
     deleted += rows.length;
     if (rows.length < pageSize) break;
+  }
+
+  // 挂载在其它 primary（如邮件）上的任务：卸组件，保留载体
+  while (true) {
+    const attached = await db
+      .select({ id: entities.id })
+      .from(entities)
+      .where(
+        and(
+          eq(entities.world_id, world_id),
+          isNull(entities.deleted_at),
+          sql`${entities.primary_component} IS DISTINCT FROM ${"task_item"}`,
+          taskItemFacetWhere,
+          sql`${entities.body}->>'list_id' = ${String(list_id)}`,
+        ),
+      )
+      .orderBy(asc(entities.id))
+      .limit(pageSize);
+    if (attached.length === 0) break;
+    for (const row of attached) {
+      await deleteEntityComponent(row.id, "task_item");
+      deleted += 1;
+    }
+    if (attached.length < pageSize) break;
   }
   return deleted;
 }
@@ -703,7 +866,7 @@ export async function countEntitiesByBodyListId(listId: number, world_id: number
     .where(
       and(
         eq(entities.world_id, world_id),
-        eq(entities.primary_component, "task_item"),
+        taskItemFacetWhere,
         isNull(entities.deleted_at),
         sql`${entities.body}->>'list_id' = ${String(listId)}`,
         sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
@@ -711,8 +874,6 @@ export async function countEntitiesByBodyListId(listId: number, world_id: number
     );
   return Number(row?.value ?? 0);
 }
-
-const pendingTaskItemStatusWhere = sql`COALESCE(${entities.body}->>'status', '') <> ${"completed"}`;
 
 /** 非 completed 的 task_item 计数（与清单 item_count 语义一致；排除项目内任务） */
 export async function countPendingTaskItemsByListId(
@@ -726,7 +887,7 @@ export async function countPendingTaskItemsByListId(
     .where(
       and(
         eq(entities.world_id, world_id),
-        eq(entities.primary_component, "task_item"),
+        taskItemFacetWhere,
         isNull(entities.deleted_at),
         sql`${entities.body}->>'list_id' = ${String(listId)}`,
         sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
@@ -751,7 +912,7 @@ export async function countPendingTaskItemsGroupedByListId(
     .where(
       and(
         eq(entities.world_id, world_id),
-        eq(entities.primary_component, "task_item"),
+        taskItemFacetWhere,
         isNull(entities.deleted_at),
         sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
         pendingTaskItemStatusWhere,
@@ -783,7 +944,7 @@ export async function countPendingTaskItemsGroupedByProjectId(
     .where(
       and(
         eq(entities.world_id, world_id),
-        eq(entities.primary_component, "task_item"),
+        taskItemFacetWhere,
         isNull(entities.deleted_at),
         sql`${entities.body}->>'project_id' IS NOT NULL`,
         sql`${entities.body}->>'project_id' <> ''`,

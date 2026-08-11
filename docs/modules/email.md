@@ -23,8 +23,15 @@ Habitat-backed IMAP/SMTP mail client (`/email`). Entity model: [`docs/product/en
 
 ## Habitat RPC (selected)
 
-`email.mailbox.list|create|rename|delete`, `email.message.list|read|markRead|markUnread|markFlagged|markUnflagged|move|delete|search`, `email.send`, `email.attachment.upload`, `email.draft.save|send`, `email.sync`, `emailaccount.*`.
+`email.mailbox.list|create|rename|delete`, `email.message.list|read|markRead|markUnread|markFlagged|markUnflagged|move|delete|search`, `email.message.attachTask` / `email.message.detachTask`，`email.send`, `email.attachment.upload`, `email.draft.save|send`, `email.sync`, `emailaccount.*`.
+
+### 邮件挂任务（attach）
+
+- 同 `entities.id`：`components` 追加 `task_item`，**primary 仍为 `email_message`**（见 [`entity-model.md`](../product/entity-model.md) Morph）。
+- 默认 Inbox；可选 `due_at` / `remind_at`（提醒依赖 due）。
+- 卸任务：`detachTask` 或清单侧 `task.delete`（对非 primary 的 task facet → 只 detach，不删邮件）。
+- 清单 / 提醒认 `components` 含 `task_item`。
 
 ## Tools
 
-ToolSets `email-account` and `email` (`email_sync`, `email_list`, `email_search`, `email_mark_read`, `email_mark_flagged`, `email_move`, …).
+ToolSets `email-account` and `email`（含 `email_attach_task` / `email_detach_task`，以及 `email_sync`、`email_list`、`email_search`、…）。

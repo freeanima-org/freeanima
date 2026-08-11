@@ -46,7 +46,10 @@ Entity：`type=content`，`primary_component: calendar_event`，归属 subject �
 | 方法                                                    | 用途                                                         |
 | ------------------------------------------------------- | ------------------------------------------------------------ |
 | `calendar.list` / `get` / `create` / `patch` / `delete` | 事件 CRUD                                                    |
+| `calendar.convertToTask`                                | 同 id retype → `task_item`（默认 Inbox；有损丢弃 `all_day`） |
 | `calendar.range`                                        | `from`/`to` + 可选 `kinds[]`：`event` \| `task` \| `project` |
+
+反向：`task.convertToEvent`（见 [task.md](./task.md)）。形态约定见 [`entity-model.md`](../product/entity-model.md)。
 
 `calendar.range` 规则：
 
@@ -69,7 +72,7 @@ Shell `/calendar`：单行工具栏（月/周导航、kinds、重复展开、刷
 
 ## LLM ToolSet `calendar`
 
-`calendar_list` / `calendar_create` / `calendar_update` / `calendar_delete` / `calendar_get` / `calendar_range`；默认 caller private world，可选 `world_id` / `subject_kind`。
+`calendar_list` / `calendar_create` / `calendar_update` / `calendar_delete` / `calendar_get` / `calendar_convert_to_task` / `calendar_range`；默认 caller private world，可选 `world_id` / `subject_kind`。
 
 ## Non-goals
 

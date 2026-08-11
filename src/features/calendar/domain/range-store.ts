@@ -62,7 +62,7 @@ export async function listCalendarRange(
   if (kindSet.has("task")) {
     const result = await searchEntities({
       world_id: ctx.worldId,
-      primary_component: TASK_ITEM_COMPONENT,
+      component: TASK_ITEM_COMPONENT,
       filters: {
         status: "pending",
         roots_only: true,

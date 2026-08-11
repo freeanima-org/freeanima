@@ -8,6 +8,7 @@ type ParaglideMessageExports = {
   readonly calendar_agenda_empty: ParaglideMessageFn;
   readonly calendar_all_day: ParaglideMessageFn;
   readonly calendar_cancel: ParaglideMessageFn;
+  readonly calendar_convert_to_task: ParaglideMessageFn;
   readonly calendar_delete_event: ParaglideMessageFn;
   readonly calendar_edit_event: ParaglideMessageFn;
   readonly calendar_field_content: ParaglideMessageFn;
@@ -94,6 +95,13 @@ type ParaglideMessageExports = {
   readonly email_attach_library_search: ParaglideMessageFn;
   readonly email_attach_library_search_action: ParaglideMessageFn;
   readonly email_attach_paste_hint: ParaglideMessageFn;
+  readonly email_attach_task: ParaglideMessageFn;
+  readonly email_attach_task_confirm: ParaglideMessageFn;
+  readonly email_attach_task_due: ParaglideMessageFn;
+  readonly email_attach_task_due_time: ParaglideMessageFn;
+  readonly email_attach_task_remind: ParaglideMessageFn;
+  readonly email_attach_task_remind_time: ParaglideMessageFn;
+  readonly email_attach_task_title: ParaglideMessageFn;
   readonly email_attachment_download: ParaglideMessageFn;
   readonly email_attachment_download_failed: ParaglideMessageFn;
   readonly email_attachment_preview: ParaglideMessageFn;
@@ -115,6 +123,7 @@ type ParaglideMessageExports = {
   readonly email_delete_message: ParaglideMessageFn;
   readonly email_delete_message_confirm: ParaglideMessageFn;
   readonly email_delete_message_failed: ParaglideMessageFn;
+  readonly email_detach_task: ParaglideMessageFn;
   readonly email_disable_account: ParaglideMessageFn;
   readonly email_display_name: ParaglideMessageFn;
   readonly email_drafts_title: ParaglideMessageFn;
@@ -178,6 +187,7 @@ type ParaglideMessageExports = {
   readonly email_trash_title: ParaglideMessageFn;
   readonly email_unstar: ParaglideMessageFn;
   readonly email_update_failed: ParaglideMessageFn;
+  readonly email_view_task: ParaglideMessageFn;
   readonly habitat_acp_action_failed: ParaglideMessageFn;
   readonly habitat_acp_active_sessions: ParaglideMessageFn;
   readonly habitat_acp_configured: ParaglideMessageFn;
@@ -931,6 +941,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const calendar_agenda_empty: ParaglideMessageFn;
   export const calendar_all_day: ParaglideMessageFn;
   export const calendar_cancel: ParaglideMessageFn;
+  export const calendar_convert_to_task: ParaglideMessageFn;
   export const calendar_delete_event: ParaglideMessageFn;
   export const calendar_edit_event: ParaglideMessageFn;
   export const calendar_field_content: ParaglideMessageFn;
@@ -1017,6 +1028,13 @@ declare module "*/messages/paraglide/messages.js" {
   export const email_attach_library_search: ParaglideMessageFn;
   export const email_attach_library_search_action: ParaglideMessageFn;
   export const email_attach_paste_hint: ParaglideMessageFn;
+  export const email_attach_task: ParaglideMessageFn;
+  export const email_attach_task_confirm: ParaglideMessageFn;
+  export const email_attach_task_due: ParaglideMessageFn;
+  export const email_attach_task_due_time: ParaglideMessageFn;
+  export const email_attach_task_remind: ParaglideMessageFn;
+  export const email_attach_task_remind_time: ParaglideMessageFn;
+  export const email_attach_task_title: ParaglideMessageFn;
   export const email_attachment_download: ParaglideMessageFn;
   export const email_attachment_download_failed: ParaglideMessageFn;
   export const email_attachment_preview: ParaglideMessageFn;
@@ -1038,6 +1056,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const email_delete_message: ParaglideMessageFn;
   export const email_delete_message_confirm: ParaglideMessageFn;
   export const email_delete_message_failed: ParaglideMessageFn;
+  export const email_detach_task: ParaglideMessageFn;
   export const email_disable_account: ParaglideMessageFn;
   export const email_display_name: ParaglideMessageFn;
   export const email_drafts_title: ParaglideMessageFn;
@@ -1101,6 +1120,7 @@ declare module "*/messages/paraglide/messages.js" {
   export const email_trash_title: ParaglideMessageFn;
   export const email_unstar: ParaglideMessageFn;
   export const email_update_failed: ParaglideMessageFn;
+  export const email_view_task: ParaglideMessageFn;
   export const habitat_acp_action_failed: ParaglideMessageFn;
   export const habitat_acp_active_sessions: ParaglideMessageFn;
   export const habitat_acp_configured: ParaglideMessageFn;

@@ -12,6 +12,7 @@ import {
   useActionSheetCapability,
   useContextMenuCapability,
 } from "@freeanima/client/portal-sdk/react.tsx";
+import { taskDeleteDetachesCarrier } from "@freeanima/host/core/db/schema/entity";
 import {
   Button,
   Dialog,
@@ -1055,13 +1056,23 @@ export function ProjectApp() {
 
       <ConfirmDialog
         open={deleteTaskTarget != null}
-        title="删除确认"
+        title={
+          deleteTaskTarget && taskDeleteDetachesCarrier(deleteTaskTarget.primary_component)
+            ? "移除确认"
+            : "删除确认"
+        }
         description={
           deleteTaskTarget
-            ? `确定删除任务「${deleteTaskTarget.title}」？此操作不可恢复。`
+            ? taskDeleteDetachesCarrier(deleteTaskTarget.primary_component)
+              ? `确定移除任务「${deleteTaskTarget.title}」？仅卸下任务组件，邮件等载体实体会保留。`
+              : `确定删除任务「${deleteTaskTarget.title}」？此操作不可恢复。`
             : undefined
         }
-        confirmLabel="删除"
+        confirmLabel={
+          deleteTaskTarget && taskDeleteDetachesCarrier(deleteTaskTarget.primary_component)
+            ? "移除"
+            : "删除"
+        }
         variant="error"
         onConfirm={() => void confirmDeleteTask()}
         onCancel={() => setDeleteTaskTarget(null)}

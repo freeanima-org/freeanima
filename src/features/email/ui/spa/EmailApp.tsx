@@ -26,6 +26,7 @@ import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 import { m } from "@paraglide/messages";
 
 import { EmailAccountFormDialog } from "./components/EmailAccountFormDialog.tsx";
+import { AttachTaskDialog } from "./components/AttachTaskDialog.tsx";
 import { EmailAccountSidebar, isSystemMailbox } from "./components/EmailAccountSidebar.tsx";
 import { EmailMessageDetail } from "./components/EmailMessageDetail.tsx";
 import { EmailMessageRowView } from "./components/EmailMessageRowView.tsx";
@@ -38,6 +39,9 @@ import {
   fetchEmailAccounts,
   fetchEmailMailboxes,
   fetchEmailMessages,
+  attachTaskToEmail,
+  detachTaskFromEmail,
+  emailHasAttachedTask,
   markEmailMessageFlagged,
   markEmailMessageRead,
   markEmailMessageUnflagged,
@@ -52,6 +56,7 @@ import {
   type EmailMailboxInfo,
   type EmailMessageRow,
 } from "./lib/api.ts";
+import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 
 function accountLabel(account: EmailAccountRow): string {
   return account.display_name || account.address;
@@ -122,6 +127,8 @@ export function EmailApp() {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
   const [batchBusy, setBatchBusy] = useState(false);
   const [deleteBatchPending, setDeleteBatchPending] = useState(false);
+  const [attachTaskTarget, setAttachTaskTarget] = useState<EmailMessageRow | null>(null);
+  const [messageHasTask, setMessageHasTask] = useState<Record<number, boolean>>({});
 
   const accountsQuery = usePortalRead({
     queryKey: ["email", "accounts", subjectKind],
@@ -242,6 +249,9 @@ export function EmailApp() {
         // raw=true：返回解码后的正文 content（html 或 plain），供沙箱 / 原文展示
         const row = await readEmailMessage(message.id, { raw: true });
         setDetail(row);
+        void emailHasAttachedTask(row.id).then((has) => {
+          setMessageHasTask((prev) => ({ ...prev, [row.id]: has }));
+        });
         if (row.direction === "inbound" && row.unread && !writesDisabled) {
           try {
             await markEmailMessageRead(row.id);
@@ -587,6 +597,29 @@ export function EmailApp() {
       onClick: () => copyMessageId(message),
     });
     if (!writesDisabled) {
+      if (messageHasTask[message.id]) {
+        items.push({
+          label: m.email_view_task(),
+          onClick: () =>
+            void openEntityResource({
+              id: message.id,
+              component: "task_item",
+              present: "overlay",
+            }),
+        });
+        items.push({
+          label: m.email_detach_task(),
+          onClick: () =>
+            void detachTaskFromEmail(message.id)
+              .then(() => setMessageHasTask((prev) => ({ ...prev, [message.id]: false })))
+              .catch((err) => setError(err instanceof Error ? err.message : String(err))),
+        });
+      } else {
+        items.push({
+          label: m.email_attach_task(),
+          onClick: () => setAttachTaskTarget(message),
+        });
+      }
       if (message.unread) {
         items.push({ label: m.email_mark_read(), onClick: () => onMarkRead(message) });
       } else {
@@ -1169,6 +1202,17 @@ export function EmailApp() {
           if (formState?.mode === "create") {
             void selectMailbox(saved, "INBOX");
           }
+        }}
+      />
+
+      <AttachTaskDialog
+        open={attachTaskTarget != null}
+        subject={attachTaskTarget?.subject ?? ""}
+        onClose={() => setAttachTaskTarget(null)}
+        onSubmit={async (input) => {
+          if (!attachTaskTarget) return;
+          await attachTaskToEmail(attachTaskTarget.id, input);
+          setMessageHasTask((prev) => ({ ...prev, [attachTaskTarget.id]: true }));
         }}
       />
 

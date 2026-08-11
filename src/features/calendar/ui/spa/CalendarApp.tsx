@@ -13,6 +13,7 @@ import { MonthGrid } from "./components/MonthGrid.tsx";
 import { WeekGrid, weekStartMonday } from "./components/WeekGrid.tsx";
 import {
   createCalendarEvent,
+  convertCalendarEventToTask,
   deleteCalendarEvent,
   fetchCalendarRange,
   patchTaskDueAt,
@@ -407,6 +408,16 @@ export function CalendarApp() {
                 await deleteCalendarEvent(CALENDAR_SUBJECT, editor.event.id);
                 setEditor(null);
                 await refresh();
+              },
+              onConvertToTask: async () => {
+                const item = await convertCalendarEventToTask(CALENDAR_SUBJECT, editor.event.id);
+                setEditor(null);
+                await refresh();
+                void openEntityResource({
+                  id: item.id,
+                  component: "task_item",
+                  present: "overlay",
+                });
               },
             }
           : {})}

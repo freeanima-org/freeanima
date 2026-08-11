@@ -206,7 +206,7 @@ export function nextFireMsFromSchedulable(
 async function scanTaskReminders(port: ReminderPort, now: number): Promise<TaskReminderScanStats> {
   const ctx = getResolvedWorldContext();
   const search = await searchEntities({
-    primary_component: TASK_ITEM_COMPONENT,
+    component: TASK_ITEM_COMPONENT,
     filters: { status: "pending" },
     limit: 500,
     mode: "filter_only",
@@ -381,7 +381,7 @@ export async function queryEarliestTaskReminderFireMs(
 ): Promise<number | null> {
   const ctx = getResolvedWorldContext();
   const search = await searchEntities({
-    primary_component: TASK_ITEM_COMPONENT,
+    component: TASK_ITEM_COMPONENT,
     filters: { status: "pending" },
     limit: 500,
     mode: "filter_only",

@@ -196,7 +196,7 @@ export function asSmartList(
 export function asTaskItem(
   row: EntityRow,
 ): (TaskItemBody & { id: number; title: string; content: string }) | null {
-  if (row.primary_component !== TASK_ITEM_COMPONENT) return null;
+  if (!row.components.includes(TASK_ITEM_COMPONENT)) return null;
   const parsed = taskItemBodySchema.safeParse(row.body);
   return parsed.success
     ? { id: row.id, title: row.title, content: row.content, ...parsed.data }

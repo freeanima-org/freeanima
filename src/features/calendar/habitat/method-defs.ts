@@ -5,6 +5,8 @@ import {
   calendarDeleteOutputSchema,
   calendarGetInputSchema,
   calendarGetOutputSchema,
+  calendarConvertToTaskInputSchema,
+  calendarConvertToTaskOutputSchema,
   calendarListInputSchema,
   calendarListOutputSchema,
   calendarPatchInputSchema,
@@ -40,6 +42,11 @@ export const calendarMethodDefs = {
     input: calendarGetInputSchema,
     output: calendarGetOutputSchema,
     meta: dualTransportMeta(true),
+  }),
+  "calendar.convertToTask": defineHabitatMethod({
+    input: calendarConvertToTaskInputSchema,
+    output: calendarConvertToTaskOutputSchema,
+    meta: dualTransportMeta(false),
   }),
   "calendar.range": defineHabitatMethod({
     input: calendarRangeInputSchema,
