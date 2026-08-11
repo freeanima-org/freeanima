@@ -1,6 +1,14 @@
 import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
 import { runTemporalSummaryEngine } from "./engine-port.ts";
 
+/**
+ * Hard truncate ceiling = target maxChars × 1.5.
+ * Prompt still asks for ~maxChars; headroom absorbs CJK/EN token-count drift.
+ */
+export function temporalSummaryHardCap(maxChars: number): number {
+  return Math.ceil(maxChars * 1.5);
+}
+
 /** Shared output constraints appended to every temporal-summary LLM call. */
 export function temporalSummaryOutputConstraints(maxChars: number): string {
   return [
@@ -49,6 +57,7 @@ export async function summarizeTemporalText(opts: {
   ].join("\n");
   const { content } = await runTemporalSummaryEngine({ systemPrompt, userMessage });
   const trimmed = stripTemporalSummaryPreamble(content);
-  if (trimmed.length <= opts.maxChars) return trimmed;
-  return trimmed.slice(0, opts.maxChars);
+  const hardCap = temporalSummaryHardCap(opts.maxChars);
+  if (trimmed.length <= hardCap) return trimmed;
+  return trimmed.slice(0, hardCap);
 }

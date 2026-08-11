@@ -13,6 +13,28 @@ export type TemporalSummaryDayResult = {
   skipped?: string;
 };
 
+async function upsertEmptyDay(opts: {
+  day: string;
+  empty_reason: string;
+  source_count: number;
+  summary: string;
+}): Promise<TemporalSummaryDayResult> {
+  const entity_id = await upsertTemporalSummary({
+    window: "day",
+    period_start: opts.day,
+    content: "",
+    empty_reason: opts.empty_reason,
+    source_count: opts.source_count,
+  });
+  return {
+    ok: true,
+    day: opts.day,
+    entity_id,
+    summary: opts.summary,
+    skipped: opts.empty_reason,
+  };
+}
+
 export async function runTemporalSummaryDay(opts: {
   selfContent: string;
   config: ResolvedTemporalSummaryConfig;
@@ -24,23 +46,23 @@ export async function runTemporalSummaryDay(opts: {
   const range = cstDayRange(opts.day);
   const conversationIds = await listConversationIdsUpdatedBetween(range.fromIso, range.toIso);
   if (conversationIds.length === 0) {
-    return {
-      ok: true,
+    return upsertEmptyDay({
       day: range.day,
+      empty_reason: "no_sessions",
+      source_count: 0,
       summary: "No conversation activity; skip global day",
-      skipped: "no_sessions",
-    };
+    });
   }
 
   const blocks = await collectConversationBlocks(conversationIds, range);
   const material = blocks.map((b) => b.text).join("\n\n");
   if (!material.trim()) {
-    return {
-      ok: true,
+    return upsertEmptyDay({
       day: range.day,
+      empty_reason: "empty",
+      source_count: conversationIds.length,
       summary: "Empty dialogue; skip",
-      skipped: "empty",
-    };
+    });
   }
 
   let content: string;
@@ -63,13 +85,20 @@ export async function runTemporalSummaryDay(opts: {
     };
   }
   if (!content.trim()) {
-    return { ok: true, day: range.day, summary: "empty summary", skipped: "empty_summary" };
+    return upsertEmptyDay({
+      day: range.day,
+      empty_reason: "empty_summary",
+      source_count: conversationIds.length,
+      summary: "empty summary",
+    });
   }
 
   const entity_id = await upsertTemporalSummary({
     window: "day",
     period_start: range.day,
     content,
+    empty_reason: null,
+    source_count: conversationIds.length,
   });
   return {
     ok: true,

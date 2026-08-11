@@ -61,8 +61,8 @@ export async function streamReplyToChannel(
     components: ActionRowBuilder<ButtonBuilder>[],
     timeoutSec: number,
   ): Promise<void> => {
-    const message = await withDiscordRetry(
-      async (): Promise<Message> => channelSend({ content, components }),
+    const message = await withDiscordRetry(async (): Promise<Message> =>
+      channelSend({ content, components }),
     );
     if (opts?.conversationId && opts.clarifyPending) {
       opts.clarifyPending.register(opts.conversationId, message, timeoutSec);

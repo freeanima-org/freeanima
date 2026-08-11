@@ -21,7 +21,10 @@ import {
   searchSemanticMemory,
   updateSemanticMemory,
 } from "@freeanima/host/core/db/pg/semantic-memory";
-import { listTemporalSummaries } from "@freeanima/host/core/db/pg/temporal-summary";
+import {
+  listTemporalSummaries,
+  listTemporalSummariesInRange,
+} from "@freeanima/host/core/db/pg/temporal-summary";
 import type { TemporalSummaryWindow } from "@freeanima/host/core/db/schema/entity/components/temporal-summary";
 import { PATHS } from "@freeanima/host/platform/config";
 import { omitUndefined } from "@freeanima/host/core/util";
@@ -33,6 +36,8 @@ import {
   type PassiveRecallDebugResult,
 } from "@freeanima/host/capabilities/memory/passive-recall/debug-run.ts";
 import {
+  clampTemporalBackfillRange,
+  listMissingPeriodStarts,
   listTemporalSystemRolls,
   regenerateTemporalSystemRoll,
   rebuildMonthSummary,
@@ -174,6 +179,77 @@ export async function regenerateTemporalSummary(args: {
     entity_id: result.entity_id ?? null,
     summary: result.summary,
     skipped: result.skipped ?? null,
+  };
+}
+
+export async function backfillMissingTemporalSummaries(args: {
+  window: TemporalSummaryWindow;
+  period_start_from: string;
+  period_start_to: string;
+}) {
+  const fromRaw = args.period_start_from;
+  const toRaw = args.period_start_to;
+  if (fromRaw > toRaw) {
+    return {
+      ok: false as const,
+      window: args.window,
+      period_start_from: fromRaw,
+      period_start_to: toRaw,
+      missing: [] as string[],
+      filled: [] as string[],
+      failed: [] as Array<{ period_start: string; summary: string }>,
+      summary: "period_start_from must be <= period_start_to",
+    };
+  }
+  const clamped = clampTemporalBackfillRange({ from: fromRaw, to: toRaw });
+  if (!clamped) {
+    return {
+      ok: true as const,
+      window: args.window,
+      period_start_from: fromRaw,
+      period_start_to: toRaw,
+      missing: [] as string[],
+      filled: [] as string[],
+      failed: [] as Array<{ period_start: string; summary: string }>,
+      summary: "range is entirely after CST today; skip future backfill",
+    };
+  }
+  const { from, to } = clamped;
+  const existing = await listTemporalSummariesInRange({
+    window: args.window,
+    period_start_from: from,
+    period_start_to: to,
+  });
+  const missing = listMissingPeriodStarts({
+    window: args.window,
+    from,
+    to,
+    today: clamped.today,
+    existing: new Set(existing.map((r) => r.period_start)),
+  });
+  const filled: string[] = [];
+  const failed: Array<{ period_start: string; summary: string }> = [];
+  for (const period_start of missing) {
+    const result = await regenerateTemporalSummary({
+      window: args.window,
+      period_start,
+    });
+    if (!result.ok) {
+      failed.push({ period_start, summary: result.summary });
+      continue;
+    }
+    filled.push(period_start);
+  }
+  const clampNote = clamped.clamped ? ` (capped to CST today ${clamped.today})` : "";
+  return {
+    ok: failed.length === 0,
+    window: args.window,
+    period_start_from: from,
+    period_start_to: to,
+    missing,
+    filled,
+    failed,
+    summary: `missing=${missing.length} filled=${filled.length} failed=${failed.length}${clampNote}`,
   };
 }
 

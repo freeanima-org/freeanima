@@ -49,18 +49,16 @@ export async function listConversations(opts?: { offset?: number; limit?: number
   ).conversations;
   const total = (raw as { total?: number }).total;
   return reviveDates({
-    conversations: rows.map(
-      (s): ConversationSummary => ({
-        id: s.conversation_id,
-        title: s.title ?? "",
-        platform: s.platform ?? "",
-        created_at: new Date(s.updated_at ?? 0),
-        updated_at: new Date(s.updated_at ?? 0),
-        ...(s.archived_at !== undefined && s.archived_at !== null
-          ? { archived_at: new Date(s.archived_at) }
-          : {}),
-      }),
-    ),
+    conversations: rows.map((s): ConversationSummary => ({
+      id: s.conversation_id,
+      title: s.title ?? "",
+      platform: s.platform ?? "",
+      created_at: new Date(s.updated_at ?? 0),
+      updated_at: new Date(s.updated_at ?? 0),
+      ...(s.archived_at !== undefined && s.archived_at !== null
+        ? { archived_at: new Date(s.archived_at) }
+        : {}),
+    })),
     ...(total !== undefined ? { total } : {}),
   });
 }
@@ -342,6 +340,14 @@ export async function regenerateTemporalSummary(input: {
   period_start: string;
 }) {
   return hubCall(habitat().call("memory.temporalRegenerate", input as never));
+}
+
+export async function backfillMissingTemporalSummaries(input: {
+  window: "day" | "month" | "year";
+  period_start_from: string;
+  period_start_to: string;
+}) {
+  return hubCall(habitat().call("memory.temporalBackfillMissing", input as never));
 }
 
 export async function listTemporalSystemRolls() {

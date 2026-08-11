@@ -1,6 +1,10 @@
 import { describe, expect, it } from "bun:test";
 
-import { stripTemporalSummaryPreamble, temporalSummaryOutputConstraints } from "./summarize.ts";
+import {
+  stripTemporalSummaryPreamble,
+  temporalSummaryHardCap,
+  temporalSummaryOutputConstraints,
+} from "./summarize.ts";
 
 describe("stripTemporalSummaryPreamble", () => {
   it("strips 收到 + 我这就… meta sentence", () => {
@@ -45,5 +49,13 @@ describe("temporalSummaryOutputConstraints", () => {
     expect(text).toContain("收到");
     expect(text).toContain("高度压缩");
     expect(text).toContain("标题级");
+  });
+});
+
+describe("temporalSummaryHardCap", () => {
+  it("is 1.5× rounded up", () => {
+    expect(temporalSummaryHardCap(100)).toBe(150);
+    expect(temporalSummaryHardCap(50)).toBe(75);
+    expect(temporalSummaryHardCap(1)).toBe(2);
   });
 });

@@ -21,6 +21,14 @@ export {
   type SysRollKind,
 } from "./buckets.ts";
 export {
+  listCstDaysInRange,
+  listMonthPeriodStartsInRange,
+  listYearPeriodStartsInRange,
+  listExpectedPeriodStarts,
+  listMissingPeriodStarts,
+  clampTemporalBackfillRange,
+} from "./backfill.ts";
+export {
   registerTemporalSummaryEngine,
   resetTemporalSummaryEngineForTests,
   runTemporalSummaryEngine,
@@ -36,6 +44,7 @@ export {
   summarizeTemporalText,
   stripTemporalSummaryPreamble,
   temporalSummaryOutputConstraints,
+  temporalSummaryHardCap,
 } from "./summarize.ts";
 export {
   runTemporalSummaryTick,

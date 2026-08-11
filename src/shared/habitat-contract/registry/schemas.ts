@@ -19,6 +19,7 @@ export {
   subjectEntityUpdateBodySchema,
   temporalSummaryListBodySchema,
   temporalSummaryRegenerateBodySchema,
+  temporalSummaryBackfillMissingBodySchema,
   temporalSystemRollRegenerateBodySchema,
   toolsStatusResponseSchema,
   worldEntityCreateBodySchema,

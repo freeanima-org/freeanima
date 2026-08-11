@@ -5,6 +5,7 @@ import {
   passiveRecallDebugBodySchema,
   temporalSummaryListBodySchema,
   temporalSummaryRegenerateBodySchema,
+  temporalSummaryBackfillMissingBodySchema,
   temporalSystemRollRegenerateBodySchema,
   worldEntityCreateBodySchema,
   subjectEntityCreateBodySchema,
@@ -52,6 +53,23 @@ describe("api/schemas", () => {
       true,
     );
     expect(temporalSystemRollRegenerateBodySchema.safeParse({ kind: "near7" }).success).toBe(false);
+  });
+
+  it("validates temporal backfill missing body", () => {
+    expect(
+      temporalSummaryBackfillMissingBodySchema.safeParse({
+        window: "day",
+        period_start_from: "2026-01-01",
+        period_start_to: "2026-01-31",
+      }).success,
+    ).toBe(true);
+    expect(
+      temporalSummaryBackfillMissingBodySchema.safeParse({
+        window: "day",
+        period_start_from: "2026-01",
+        period_start_to: "2026-01-31",
+      }).success,
+    ).toBe(false);
   });
 
   it("requires platform on create conversation", () => {

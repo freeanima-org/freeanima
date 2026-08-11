@@ -8,7 +8,7 @@ import {
   type PeerRollSource,
 } from "./buckets.ts";
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
-import { summarizeTemporalText } from "./summarize.ts";
+import { summarizeTemporalText, temporalSummaryHardCap } from "./summarize.ts";
 import type { PeerRollCache } from "./tick.ts";
 import type { TimelinePeerInject } from "./timeline-inject.ts";
 
@@ -71,7 +71,7 @@ export async function resolvePeerTimelineInjects(opts: {
           .toSorted((a, b) => a.conversation_id.localeCompare(b.conversation_id))
           .map((s) => s.summary)
           .join("\n")
-          .slice(0, opts.config.peer_roll_max_chars);
+          .slice(0, temporalSummaryHardCap(opts.config.peer_roll_max_chars));
       }
     }
     if (!summary.trim()) continue;

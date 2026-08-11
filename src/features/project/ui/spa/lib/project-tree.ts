@@ -62,9 +62,11 @@ export function buildProjectTree(
   }
 
   const rootFolders = buildFolders(null, 0);
-  const rootProjects = projectsInFolder(projects, null).map(
-    (project): ProjectTreeNode => ({ kind: "project", project, depth: 0 }),
-  );
+  const rootProjects = projectsInFolder(projects, null).map((project): ProjectTreeNode => ({
+    kind: "project",
+    project,
+    depth: 0,
+  }));
   return [...rootFolders, ...rootProjects];
 }
 

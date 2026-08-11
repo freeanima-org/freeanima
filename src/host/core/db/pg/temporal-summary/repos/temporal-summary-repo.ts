@@ -14,11 +14,31 @@ export type TemporalSummaryRow = {
   window: TemporalSummaryWindow;
   period_start: string;
   content: string;
+  empty_reason: string | null;
+  source_count: number | null;
   updated_at: Date;
 };
 
 function agentWorldId(): number {
   return getResolvedWorldContext().agent_world_id;
+}
+
+function mapRow(row: {
+  id: number;
+  content: string | null;
+  body: unknown;
+  updated_at: Date;
+}): TemporalSummaryRow {
+  const body = temporalSummaryBodySchema.parse(row.body ?? {});
+  return {
+    id: row.id,
+    window: body.window,
+    period_start: body.period_start,
+    content: row.content ?? "",
+    empty_reason: body.empty_reason ?? null,
+    source_count: body.source_count ?? null,
+    updated_at: row.updated_at,
+  };
 }
 
 export async function getTemporalSummary(
@@ -45,35 +65,35 @@ export async function getTemporalSummary(
     .limit(1);
   const row = rows[0];
   if (!row) return null;
-  const body = temporalSummaryBodySchema.parse(row.body ?? {});
-  return {
-    id: row.id,
-    window: body.window,
-    period_start: body.period_start,
-    content: row.content ?? "",
-    updated_at: row.updated_at,
-  };
+  return mapRow(row);
 }
 
 export async function upsertTemporalSummary(input: {
   window: TemporalSummaryWindow;
   period_start: string;
   content: string;
+  empty_reason?: string | null;
+  source_count?: number;
 }): Promise<number> {
   const content = input.content.trim();
+  const empty_reason = input.empty_reason !== undefined ? input.empty_reason : null;
   const body = temporalSummaryBodySchema.parse({
     window: input.window,
     period_start: input.period_start,
+    empty_reason,
+    ...(input.source_count !== undefined ? { source_count: input.source_count } : {}),
   }) as Record<string, unknown>;
   const existing = await getTemporalSummary(input.window, input.period_start);
   const title = `temporal ${input.window} ${input.period_start}`;
+  const summary =
+    content.slice(0, 200) || (typeof empty_reason === "string" ? `[${empty_reason}]` : "");
   if (existing) {
     await updateEntity({
       id: existing.id,
       title,
       content,
       body,
-      summary: content.slice(0, 200),
+      summary,
     });
     return existing.id;
   }
@@ -83,7 +103,7 @@ export async function upsertTemporalSummary(input: {
     components: [TEMPORAL_SUMMARY_COMPONENT],
     primary_component: TEMPORAL_SUMMARY_COMPONENT,
     title,
-    summary: content.slice(0, 200),
+    summary,
     content,
     body,
   });
@@ -113,16 +133,7 @@ export async function listTemporalSummariesInRange(input: {
         sql`${entities.body}->>'period_start' <= ${input.period_start_to}`,
       ),
     );
-  return rows.map((row) => {
-    const body = temporalSummaryBodySchema.parse(row.body ?? {});
-    return {
-      id: row.id,
-      window: body.window,
-      period_start: body.period_start,
-      content: row.content ?? "",
-      updated_at: row.updated_at,
-    };
-  });
+  return rows.map(mapRow);
 }
 
 /** Paginated list of temporal summaries (newest period_start first). */
@@ -168,15 +179,6 @@ export async function listTemporalSummaries(input: {
     .offset(offset);
   return {
     total: countRow?.total ?? 0,
-    items: rows.map((row) => {
-      const body = temporalSummaryBodySchema.parse(row.body ?? {});
-      return {
-        id: row.id,
-        window: body.window,
-        period_start: body.period_start,
-        content: row.content ?? "",
-        updated_at: row.updated_at,
-      };
-    }),
+    items: rows.map(mapRow),
   };
 }
