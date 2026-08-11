@@ -19,17 +19,57 @@ function visibleInputs(): HTMLInputElement[] {
   }) as HTMLInputElement[];
 }
 
+/** 搜索/筛选等非登录语义 */
+export function isNonLoginField(el: HTMLInputElement): boolean {
+  if (el.type === "search") return true;
+  const t = `${el.name} ${el.id} ${el.autocomplete} ${el.placeholder}`.toLowerCase();
+  return t.includes("search") || t.includes("query") || t.includes("filter");
+}
+
+function isTextLikeUsernameType(el: HTMLInputElement): boolean {
+  return el.type === "text" || el.type === "email" || el.type === "";
+}
+
+/** 用户名/邮箱信号（不含「任意 text」兜底） */
+export function hasUsernameSignal(el: HTMLInputElement): boolean {
+  if (el.type === "email") return true;
+  if (el.autocomplete === "username" || el.autocomplete === "email") return true;
+  const t = `${el.name} ${el.id} ${el.autocomplete} ${el.placeholder}`.toLowerCase();
+  return t.includes("user") || t.includes("email") || t.includes("login") || t.includes("account");
+}
+
+function passwordEligible(el: HTMLInputElement): boolean {
+  return el.type === "password" && !el.disabled && !el.readOnly;
+}
+
+function iterPasswordCandidates(scope: ParentNode): HTMLInputElement[] {
+  return [...scope.querySelectorAll("input")] as HTMLInputElement[];
+}
+
+/** 同 form，或无 form 时向上若干层父节点内，是否存在 password */
+export function hasPasswordNearby(el: HTMLInputElement): boolean {
+  if (el.form) {
+    return iterPasswordCandidates(el.form).some((input) => input !== el && passwordEligible(input));
+  }
+  let node: Element | null = el.parentElement;
+  for (let depth = 0; depth < 4 && node; depth++, node = node.parentElement) {
+    if (iterPasswordCandidates(node).some((input) => input !== el && passwordEligible(input))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * 填充/保存时的用户名打分。
+ * 关键词与 email 类型优先；与 password 同表单的裸 text 给邻接分，避免无法填无名用户名框。
+ */
 function scoreUsername(el: HTMLInputElement): number {
-  const t = `${el.type} ${el.name} ${el.id} ${el.autocomplete} ${el.placeholder}`.toLowerCase();
   if (el.type === "password") return -100;
-  if (
-    t.includes("user") ||
-    t.includes("email") ||
-    t.includes("login") ||
-    el.autocomplete === "username"
-  )
-    return 10;
-  if (el.type === "email" || el.type === "text") return 5;
+  if (isNonLoginField(el)) return 0;
+  if (scoreOtp(el) > 0) return 0;
+  if (hasUsernameSignal(el)) return 10;
+  if (isTextLikeUsernameType(el) && hasPasswordNearby(el)) return 5;
   return 0;
 }
 
@@ -54,7 +94,10 @@ export function isLoginCredentialField(el: HTMLInputElement): boolean {
   if (el.type === "hidden" || el.disabled || el.readOnly) return false;
   if (scorePassword(el) > 0) return true;
   if (scoreOtp(el) > 0) return false;
-  return scoreUsername(el) > 0;
+  if (isNonLoginField(el)) return false;
+  if (hasUsernameSignal(el)) return true;
+  if (isTextLikeUsernameType(el) && hasPasswordNearby(el)) return true;
+  return false;
 }
 
 export function fillLogin(fill: FillPayload): void {
