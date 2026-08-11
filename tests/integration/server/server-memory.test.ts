@@ -7,8 +7,6 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { getAppRuntime } from "@freeanima/host/platform";
 import { SELF_BLOCK_KEYS } from "@freeanima/host/core/db/pg/self-layer/types";
 import { createAutobiographicalMemory } from "@freeanima/host/core/db/pg/autobiographical-memory";
@@ -22,30 +20,14 @@ import { countSemanticMemory } from "@freeanima/host/core/db/pg/semantic-memory"
 import { getActivePgTestContext } from "../../helpers/pg-test.ts";
 
 describePg("server memory API", () => {
-  let home: string;
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
-    const ctx = await beginIntegrationCase("freeanima-memapi-");
-    home = ctx.home;
-    writeFileSync(join(home, "MEMORY.md"), "# Memory notes\n", "utf-8");
+    await beginIntegrationCase("freeanima-memapi-");
   });
 
   afterEach(async () => {
     await restoreIntegrationHome(prev);
-  });
-
-  it("listMemoryFiles returns objects with name and content", async () => {
-    const id = await createSemanticMemory({
-      content: "test semantic memory",
-    });
-    const { files } = await getAppRuntime().listMemoryFiles();
-    expect(files.length).toBeGreaterThan(0);
-    const memory = files.find((f: { name: string }) => f.name === "MEMORY.md");
-    expect(memory).toBeDefined();
-    expect(memory!.content).toContain("Memory notes");
-    expect(typeof memory!.size).toBe("number");
-    expect(files.some((f: { name: string }) => f.name === `${id}.md`)).toBe(true);
   });
 
   it("passiveRecallDebug returns semantic pipeline debug for a query", async () => {

@@ -20,10 +20,6 @@ import {
 } from "@freeanima/features/habitat/habitat/habitat-api/api";
 import { habitatCtx } from "./runtime.ts";
 
-export async function listMemoryFiles() {
-  return habitatCtx().listMemoryFiles();
-}
-
 export async function passiveRecallDebug(body: PassiveRecallDebugBody) {
   const parsed = passiveRecallDebugBodySchema.parse(body);
   return habitatCtx().passiveRecallDebug({

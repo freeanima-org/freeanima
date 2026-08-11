@@ -54,7 +54,6 @@ import {
   countSemanticMemory,
   listAutobiographicalMemories,
   listLimbicMemories,
-  listMemoryFiles,
   listSemanticMemories,
   listTemporalSummaries,
   regenerateTemporalSummary,
@@ -254,11 +253,6 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     wrapConsoleLegacyHandler((payload) =>
       listProviderModels(payload as { provider_id: string; query?: string; limit?: number }),
     ),
-  ),
-  defineHabitatRouteFromDef(
-    "memory.files",
-    habitatMethodDefs["memory.files"],
-    wrapConsoleLegacyHandler(() => listMemoryFiles()),
   ),
   defineHabitatRouteFromDef(
     "memory.passiveRecallDebug",

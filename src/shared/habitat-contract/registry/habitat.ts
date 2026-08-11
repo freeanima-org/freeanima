@@ -215,11 +215,6 @@ export const habitatMethodDefs = {
     output: configListProviderModelsOutputSchema,
     meta: longOpMeta(true),
   }),
-  "memory.files": defineHabitatMethod({
-    input: emptyInputSchema,
-    output: unknownOutputSchema,
-    meta: dualTransportMeta(true),
-  }),
   "memory.passiveRecallDebug": defineHabitatMethod({
     input: passiveRecallDebugBodySchema,
     output: unknownOutputSchema,

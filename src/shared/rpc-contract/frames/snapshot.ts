@@ -106,8 +106,6 @@ export type ServiceSnapshot = {
   memory_kb: number;
   memory_detail?: ProcessMemoryDetail;
   memory: {
-    files_count: number;
-    files_bytes: number;
     semantic_memory_count: number;
     dialogue_message_count: number;
   };

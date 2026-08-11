@@ -19,7 +19,6 @@ export {
   restartService,
 } from "./status.ts";
 export {
-  listMemoryFiles,
   passiveRecallDebug,
   listTemporalSummaries,
   regenerateTemporalSummary,
