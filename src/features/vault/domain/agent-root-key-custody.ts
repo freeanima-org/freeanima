@@ -1,4 +1,4 @@
-import { getUserVaultSession, VAULT_UI_SCOPE } from "@freeanima/client/portal-sdk/react.tsx";
+import { getUserVaultSession } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   AGENT_ROOT_KEY_ITEM_TITLE,
   AGENT_ROOT_KEY_REF,
@@ -26,7 +26,22 @@ function generateKeyB64(): string {
   return bytesToB64(raw);
 }
 
+function assertUserVaultUnlocked(): void {
+  const session = getUserVaultSession();
+  // 任意 scope 解锁即可封印（Vault UI / Chat conversation 共用同一 masterKey）
+  if (!session.isUnlocked()) {
+    throw new Error("vault_locked");
+  }
+}
+
 async function findAgentRootKeyItemId(): Promise<number | null> {
+  // 标题精确检索优先，避免 list limit 漏检
+  const searched = await fetchVaultItems("user", {
+    query: AGENT_ROOT_KEY_ITEM_TITLE,
+    limit: 50,
+  });
+  const hit = searched.find((row) => row.import_refs?.agent_root_key === AGENT_ROOT_KEY_REF);
+  if (hit) return hit.id;
   const items = await fetchVaultItems("user", { limit: 500 });
   const existing = items.find((row) => row.import_refs?.agent_root_key === AGENT_ROOT_KEY_REF);
   return existing?.id ?? null;
@@ -64,15 +79,36 @@ async function sealSsotItem(keyB64: string): Promise<void> {
   });
 }
 
+export type EnsureAgentRootKeySsotResult = "exists" | "migrated" | "created";
+
 /**
- * 若 Habitat 仍有缓存而 User 库尚无 SSOT，则迁入（避免锁定后误生成新钥）。
+ * 确保 User 库有 Agent 根密钥 SSOT（不 provision Habitat 缓存）。
+ * - 已有条目 → exists
+ * - Habitat 仍有 agent-machine.key → 迁入（migrated）
+ * - 否则生成新钥并封印（created；首次设主密码）
  * 要求 User 库已解锁。
  */
-export async function migrateAgentRootKeySsotIfNeeded(): Promise<boolean> {
-  const session = getUserVaultSession();
-  if (!session.isUnlocked(VAULT_UI_SCOPE)) {
-    throw new Error("vault_locked");
+export async function ensureAgentRootKeySsot(): Promise<EnsureAgentRootKeySsotResult> {
+  assertUserVaultUnlocked();
+  const existingId = await findAgentRootKeyItemId();
+  if (existingId != null) return "exists";
+
+  const peeked = await peekAgentVaultKeyRaw();
+  if (peeked.key_b64) {
+    await sealSsotItem(peeked.key_b64);
+    return "migrated";
   }
+
+  await sealSsotItem(generateKeyB64());
+  return "created";
+}
+
+/**
+ * 若 Habitat 仍有缓存而 User 库尚无 SSOT，则迁入（避免锁定后误生成新钥）。
+ * 不生成新钥。要求 User 库已解锁。
+ */
+export async function migrateAgentRootKeySsotIfNeeded(): Promise<boolean> {
+  assertUserVaultUnlocked();
   const existingId = await findAgentRootKeyItemId();
   if (existingId != null) return false;
   const peeked = await peekAgentVaultKeyRaw();
@@ -86,10 +122,7 @@ export async function migrateAgentRootKeySsotIfNeeded(): Promise<boolean> {
  * 要求 User 库已解锁。
  */
 export async function unlockAgentVaultFromUserCustody(): Promise<void> {
-  const session = getUserVaultSession();
-  if (!session.isUnlocked(VAULT_UI_SCOPE)) {
-    throw new Error("vault_locked");
-  }
+  assertUserVaultUnlocked();
 
   let keyB64: string;
   const existingId = await findAgentRootKeyItemId();

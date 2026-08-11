@@ -8,7 +8,7 @@ import {
   Spinner,
 } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { getUserVaultSession, VAULT_UI_SCOPE } from "@freeanima/client/portal-sdk/react.tsx";
+import { getUserVaultSession } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   lockAgentVaultCustody,
   migrateAgentRootKeySsotIfNeeded,
@@ -24,7 +24,7 @@ export function UnlockAgentVaultDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const userUnlocked = getUserVaultSession().isUnlocked(VAULT_UI_SCOPE);
+  const userUnlocked = getUserVaultSession().isUnlocked();
   const [unlocked, setUnlocked] = useState<boolean | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -36,8 +36,9 @@ export function UnlockAgentVaultDialog({
     try {
       const status = await fetchAgentVaultKeyStatus();
       setUnlocked(status.unlocked);
-      if (status.unlocked && getUserVaultSession().isUnlocked(VAULT_UI_SCOPE)) {
+      if (status.unlocked && getUserVaultSession().isUnlocked()) {
         try {
+          // 已解锁时只迁入、不生成，避免与 Habitat 缓存不同步
           await migrateAgentRootKeySsotIfNeeded();
         } catch (migrateErr) {
           // 迁移失败不阻断状态展示；解锁路径仍可重试
