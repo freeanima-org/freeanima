@@ -391,6 +391,12 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return memory.regenerateTemporalSummary(args);
   }
 
+  backfillMissingTemporalSummaries(
+    args: Parameters<typeof memory.backfillMissingTemporalSummaries>[0],
+  ) {
+    return memory.backfillMissingTemporalSummaries(args);
+  }
+
   listTemporalSystemRolls() {
     return memory.listTemporalSystemRollMemories();
   }

@@ -102,6 +102,7 @@ export type AppRuntimeMemoryPort = {
   passiveRecallDebug(opts: Record<string, unknown>): Promise<unknown>;
   listTemporalSummaries(opts?: Record<string, unknown>): Promise<unknown>;
   regenerateTemporalSummary(opts: Record<string, unknown>): Promise<unknown>;
+  backfillMissingTemporalSummaries(opts: Record<string, unknown>): Promise<unknown>;
   listTemporalSystemRolls(): Promise<unknown>;
   regenerateTemporalSystemRoll(opts: Record<string, unknown>): Promise<unknown>;
   countSemanticMemory(): Promise<{ index_rows: number }>;

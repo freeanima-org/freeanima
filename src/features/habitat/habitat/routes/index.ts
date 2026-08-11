@@ -58,6 +58,7 @@ import {
   listSemanticMemories,
   listTemporalSummaries,
   regenerateTemporalSummary,
+  backfillMissingTemporalSummaries,
   listTemporalSystemRolls,
   regenerateTemporalSystemRoll,
   passiveRecallDebug,
@@ -279,6 +280,19 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     wrapConsoleLegacyHandler((payload) =>
       regenerateTemporalSummary(
         payload as { window: "day" | "month" | "year"; period_start: string },
+      ),
+    ),
+  ),
+  defineHabitatRouteFromDef(
+    "memory.temporalBackfillMissing",
+    habitatMethodDefs["memory.temporalBackfillMissing"],
+    wrapConsoleLegacyHandler((payload) =>
+      backfillMissingTemporalSummaries(
+        payload as {
+          window: "day" | "month" | "year";
+          period_start_from: string;
+          period_start_to: string;
+        },
       ),
     ),
   ),

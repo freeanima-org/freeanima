@@ -39,14 +39,12 @@ describe("skill evolve gate", () => {
     const turn: StoredMessage[] = [
       { role: "user", content: "do stuff" },
       { role: "assistant", content: null, tool_calls: toolCalls },
-      ...toolCalls.map(
-        (tc): StoredMessage => ({
-          role: "tool",
-          tool_call_id: tc.id,
-          name: tc.function.name,
-          content: "ok",
-        }),
-      ),
+      ...toolCalls.map((tc): StoredMessage => ({
+        role: "tool",
+        tool_call_id: tc.id,
+        name: tc.function.name,
+        content: "ok",
+      })),
       { role: "assistant", content: "done" },
     ];
     const gate = evaluateSkillEvolveGate(turn, { minToolCalls: 5 });

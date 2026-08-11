@@ -432,15 +432,13 @@ export function ChatApp() {
     );
     const synced = mergeOutboxStatusIntoDisplay(cleaned, conversationOutbox);
     const undelivered = filterUndeliveredOutbox(synced, conversationOutbox, currentId);
-    const pendingOutbox = undelivered.map(
-      (e): DisplayItem => ({
-        type: "message",
-        role: "user",
-        content: e.text,
-        clientOpId: e.clientOpId,
-        sendStatus: e.status,
-      }),
-    );
+    const pendingOutbox = undelivered.map((e): DisplayItem => ({
+      type: "message",
+      role: "user",
+      content: e.text,
+      clientOpId: e.clientOpId,
+      sendStatus: e.status,
+    }));
     return [...synced, ...pendingOutbox];
   }, [currentId, display, outboxEntries]);
 

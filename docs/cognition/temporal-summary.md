@@ -49,10 +49,19 @@ Chunks are **append-only** within a CST day. Tick only pushes new chunks when th
 ### Global entity body
 
 ```ts
-{ window: "day" | "month" | "year", period_start: string } // CST YYYY-MM-DD
+{
+  window: "day" | "month" | "year",
+  period_start: string, // CST YYYY-MM-DD
+  empty_reason?: string | null, // e.g. no_sessions / empty / empty_summary / no_days / no_months
+  source_count?: number, // conversations or child summaries that contributed
+}
 ```
 
 Unique on `(window, period_start)` for global rows (expression unique index).
+
+**Skip still writes a row**: when there is no usable material (`no_sessions`, empty dialogue, empty LLM output, no child days/months), Habitat upserts `content=""` with `empty_reason` and `source_count` (often `0`). Successful regenerate clears `empty_reason`. Feature-off (`disabled`), cascade `no_trigger`, and LLM hard failures do **not** write placeholders.
+
+Month/year merge and system rolls **ignore** empty-content child rows so placeholders do not pollute rollups.
 
 ## Generation（期结束后汇总）
 
@@ -70,7 +79,10 @@ Tick **does not** use `conversations.updated_at` as the candidate gate. Candidat
 
 Identity context (self + resident) must ride with LLM summarization calls.
 
-Habitat UI `/web/habitat/temporal-summary` can **regenerate** any day / month / year row (`memory.temporalRegenerate`).
+Habitat UI `/web/habitat/temporal-summary`:
+
+- **Regenerate** any day / month / year row (`memory.temporalRegenerate`) — skip paths still upsert placeholders.
+- **Backfill missing** (`memory.temporalBackfillMissing`) for the current From/To range: enumerate expected `period_start` values (calendar days / month-01 / year-01-01), run regenerate only for missing rows. **To is capped at CST today** — future dates are never filled. System-rolls tab backfills cache-miss / empty slots via `memory.temporalSystemRollRegenerate`.
 
 ### Redis peer rollup key
 
@@ -95,13 +107,13 @@ Stable keys (no fingerprint in the path) so Habitat can list cache slots:
 ```
 
 - Value: `{ summary, sources_fp, created_at }` — reuse when `sources_fp` matches current source rows
-- Cap: `global_day_max_chars` (default **100**) per roll
+- Cap: prompt target `global_day_max_chars` (default **100**); hard truncate at **1.5×** (see below)
 - TTL: `peer_roll_ttl_seconds`
 - Habitat tab **System rolls**: `memory.temporalSystemRollList` / `memory.temporalSystemRollRegenerate`
 
 ## Injection（LLM prefix / KV cache）
 
-System prompt section `temporal-summary` injects **at most three** reverse rollups (near → far), each ≤100 chars:
+System prompt section `temporal-summary` injects **at most three** reverse rollups (near → far), each targeting ≤100 chars (hard cap 1.5×):
 
 | Block  | Sources                                                               | When empty                           |
 | ------ | --------------------------------------------------------------------- | ------------------------------------ |
@@ -136,6 +148,8 @@ Default char caps (headline / one-line compression):
 | `month_max_chars`         | 100     |
 | `year_max_chars`          | 100     |
 | `system_prompt_max_chars` | 1500    |
+
+LLM prompts still ask for ~`maxChars` 字. Post-processing hard-truncates at `ceil(maxChars * 1.5)` so CJK/EN mix undercounting does not clip headlines at the prompt target.
 
 If the assembled system section exceeds `system_prompt_max_chars`, Habitat truncates and writes an Inbox warning to **both** user and agent subjects (`source_ref` `temporal_summary:system_truncated:{CST_date}`), at most once per CST day.
 

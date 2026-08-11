@@ -97,6 +97,12 @@ export const temporalSummaryRegenerateBodySchema = z.object({
   period_start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 });
 
+export const temporalSummaryBackfillMissingBodySchema = z.object({
+  window: temporalSummaryWindowSchema,
+  period_start_from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  period_start_to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+
 export const temporalSystemRollKindSchema = z.enum(["past_days", "past_months", "past_years"]);
 
 export const temporalSystemRollRegenerateBodySchema = z.object({
@@ -110,6 +116,9 @@ export type MemorySearchBody = z.infer<typeof memorySearchBodySchema>;
 export type PassiveRecallDebugBody = z.infer<typeof passiveRecallDebugBodySchema>;
 export type TemporalSummaryListBody = z.infer<typeof temporalSummaryListBodySchema>;
 export type TemporalSummaryRegenerateBody = z.infer<typeof temporalSummaryRegenerateBodySchema>;
+export type TemporalSummaryBackfillMissingBody = z.infer<
+  typeof temporalSummaryBackfillMissingBodySchema
+>;
 export type TemporalSystemRollRegenerateBody = z.infer<
   typeof temporalSystemRollRegenerateBodySchema
 >;

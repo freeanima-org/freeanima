@@ -1,6 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
   Input,
@@ -20,6 +20,7 @@ import { FormField, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
 import {
+  backfillMissingTemporalSummaries,
   listTemporalSummaries,
   listTemporalSystemRolls,
   regenerateTemporalSummary,
@@ -34,6 +35,7 @@ const PAGE_SIZE = 20;
 const ENTITY_TABS = ["day", "month", "year"] as const;
 type EntityWindow = (typeof ENTITY_TABS)[number];
 type PageTab = EntityWindow | "system_rolls";
+type ToolbarOp = "list" | "backfill" | "regen";
 
 type TemporalRow = {
   id: number;
@@ -41,6 +43,8 @@ type TemporalRow = {
   period_start: string;
   content: string;
   content_chars: number;
+  empty_reason: string | null;
+  source_count: number | null;
   updated_at: string;
 };
 
@@ -65,17 +69,32 @@ function TemporalSummaryPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const { setOffset, currentPage, offsetForPage } = useHabitatOffsetPagination(PAGE_SIZE);
-  const [loading, setLoading] = useState(false);
+  const [listLoading, setListLoading] = useState(false);
+  const [backfilling, setBackfilling] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [total, setTotal] = useState(0);
   const [items, setItems] = useState<TemporalRow[]>([]);
   const [rolls, setRolls] = useState<SystemRollRow[]>([]);
   const [regenKey, setRegenKey] = useState<string | null>(null);
+  /** 互斥：查询 / 补跑 / 单行重生成同时只允许一个；避免第二个操作清掉第一个的 loading */
+  const opRef = useRef<ToolbarOp | null>(null);
+  const toolbarBusy = listLoading || backfilling || regenKey != null;
 
   const fetchEntityList = useCallback(
-    async (window: EntityWindow, nextOffset: number) => {
-      setLoading(true);
-      setError("");
+    async (
+      window: EntityWindow,
+      nextOffset: number,
+      opts?: { silent?: boolean; claimOp?: boolean },
+    ) => {
+      const silent = opts?.silent === true;
+      const claimOp = opts?.claimOp !== false && !silent;
+      if (claimOp) {
+        if (opRef.current) return;
+        opRef.current = "list";
+        setListLoading(true);
+      }
+      if (!silent) setError("");
       try {
         const data = (await listTemporalSummaries(
           omitUndefined({
@@ -97,15 +116,24 @@ function TemporalSummaryPage() {
           }),
         );
       } finally {
-        setLoading(false);
+        if (claimOp) {
+          setListLoading(false);
+          if (opRef.current === "list") opRef.current = null;
+        }
       }
     },
     [from, setOffset, to],
   );
 
-  const fetchRolls = useCallback(async () => {
-    setLoading(true);
-    setError("");
+  const fetchRolls = useCallback(async (opts?: { silent?: boolean; claimOp?: boolean }) => {
+    const silent = opts?.silent === true;
+    const claimOp = opts?.claimOp !== false && !silent;
+    if (claimOp) {
+      if (opRef.current) return;
+      opRef.current = "list";
+      setListLoading(true);
+    }
+    if (!silent) setError("");
     try {
       const data = (await listTemporalSystemRolls()) as { items: SystemRollRow[] };
       setRolls(data.items ?? []);
@@ -117,7 +145,10 @@ function TemporalSummaryPage() {
         }),
       );
     } finally {
-      setLoading(false);
+      if (claimOp) {
+        setListLoading(false);
+        if (opRef.current === "list") opRef.current = null;
+      }
     }
   }, []);
 
@@ -130,9 +161,12 @@ function TemporalSummaryPage() {
   }, [tab, fetchEntityList, fetchRolls]);
 
   const onRegenerateEntity = async (row: TemporalRow) => {
+    if (opRef.current) return;
     const key = `${row.window}:${row.period_start}`;
+    opRef.current = "regen";
     setRegenKey(key);
     setError("");
+    setInfo("");
     try {
       const result = (await regenerateTemporalSummary({
         window: row.window,
@@ -142,7 +176,7 @@ function TemporalSummaryPage() {
         setError(result.summary || m.habitat_temporal_summary_regen_failed());
         return;
       }
-      await fetchEntityList(row.window, offsetForPage(currentPage));
+      await fetchEntityList(row.window, offsetForPage(currentPage), { silent: true });
     } catch (e) {
       logCaughtError("routes/_sidebar/temporal-summary/regen", e);
       setError(
@@ -152,15 +186,63 @@ function TemporalSummaryPage() {
       );
     } finally {
       setRegenKey(null);
+      if (opRef.current === "regen") opRef.current = null;
+    }
+  };
+
+  const onBackfillMissing = async (window: EntityWindow) => {
+    const period_start_from = from.trim();
+    const period_start_to = to.trim();
+    if (!period_start_from || !period_start_to) {
+      setError(m.habitat_temporal_summary_backfill_need_range());
+      return;
+    }
+    if (opRef.current) return;
+    opRef.current = "backfill";
+    setBackfilling(true);
+    setError("");
+    setInfo("");
+    try {
+      const result = (await backfillMissingTemporalSummaries({
+        window,
+        period_start_from,
+        period_start_to,
+      })) as {
+        missing?: string[];
+        filled?: string[];
+        failed?: unknown[];
+        summary?: string;
+      };
+      setInfo(
+        m.habitat_temporal_summary_backfill_done({
+          missing: String(result.missing?.length ?? 0),
+          filled: String(result.filled?.length ?? 0),
+          failed: String(result.failed?.length ?? 0),
+        }),
+      );
+      await fetchEntityList(window, 0, { silent: true });
+    } catch (e) {
+      logCaughtError("routes/_sidebar/temporal-summary/backfill", e);
+      setError(
+        m.habitat_common_load_failed({
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
+    } finally {
+      setBackfilling(false);
+      if (opRef.current === "backfill") opRef.current = null;
     }
   };
 
   const onRegenerateRoll = async (kind: SystemRollRow["kind"]) => {
+    if (opRef.current) return;
+    opRef.current = "regen";
     setRegenKey(kind);
     setError("");
+    setInfo("");
     try {
       await regenerateTemporalSystemRoll({ kind });
-      await fetchRolls();
+      await fetchRolls({ silent: true });
     } catch (e) {
       logCaughtError("routes/_sidebar/temporal-summary/roll-regen", e);
       setError(
@@ -170,6 +252,46 @@ function TemporalSummaryPage() {
       );
     } finally {
       setRegenKey(null);
+      if (opRef.current === "regen") opRef.current = null;
+    }
+  };
+
+  const onBackfillMissingRolls = async () => {
+    if (opRef.current) return;
+    opRef.current = "backfill";
+    setBackfilling(true);
+    setError("");
+    setInfo("");
+    try {
+      const missing = rolls.filter((r) => !r.cache_hit || !r.summary.trim());
+      let filled = 0;
+      let failed = 0;
+      for (const row of missing) {
+        try {
+          await regenerateTemporalSystemRoll({ kind: row.kind });
+          filled += 1;
+        } catch {
+          failed += 1;
+        }
+      }
+      setInfo(
+        m.habitat_temporal_summary_backfill_done({
+          missing: String(missing.length),
+          filled: String(filled),
+          failed: String(failed),
+        }),
+      );
+      await fetchRolls({ silent: true });
+    } catch (e) {
+      logCaughtError("routes/_sidebar/temporal-summary/roll-backfill", e);
+      setError(
+        m.habitat_common_load_failed({
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
+    } finally {
+      setBackfilling(false);
+      if (opRef.current === "backfill") opRef.current = null;
     }
   };
 
@@ -198,28 +320,46 @@ function TemporalSummaryPage() {
 
         {ENTITY_TABS.map((w) => (
           <TabsContent key={w} value={w} className="space-y-4">
-            <FormFieldset className="flex flex-wrap items-end gap-3">
-              <FormField label="From" className="min-w-40">
-                <Input
-                  value={from}
-                  onChange={(e) => setFrom(e.target.value)}
-                  placeholder="YYYY-MM-DD"
-                />
-              </FormField>
-              <FormField label="To" className="min-w-40">
-                <Input
-                  value={to}
-                  onChange={(e) => setTo(e.target.value)}
-                  placeholder="YYYY-MM-DD"
-                />
-              </FormField>
-              <Button type="button" onClick={() => void fetchEntityList(w, 0)} disabled={loading}>
-                {loading ? <Spinner className="size-4" /> : null}
-                {m.habitat_common_search()}
-              </Button>
+            <FormFieldset className="space-y-0">
+              <div className="flex flex-wrap items-end gap-3">
+                <FormField label="From" className="min-w-40">
+                  <Input
+                    value={from}
+                    onChange={(e) => setFrom(e.target.value)}
+                    placeholder="YYYY-MM-DD"
+                  />
+                </FormField>
+                <FormField label="To" className="min-w-40">
+                  <Input
+                    value={to}
+                    onChange={(e) => setTo(e.target.value)}
+                    placeholder="YYYY-MM-DD"
+                  />
+                </FormField>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => void fetchEntityList(w, 0)}
+                    disabled={toolbarBusy}
+                  >
+                    {listLoading ? <Spinner className="size-4" /> : null}
+                    {m.habitat_common_search()}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => void onBackfillMissing(w)}
+                    disabled={toolbarBusy}
+                  >
+                    {backfilling ? <Spinner className="size-4" /> : null}
+                    {m.habitat_temporal_summary_backfill_missing()}
+                  </Button>
+                </div>
+              </div>
             </FormFieldset>
 
             {error && tab === w ? <StatusAlert variant="error">{error}</StatusAlert> : null}
+            {info && tab === w ? <StatusAlert variant="info">{info}</StatusAlert> : null}
 
             <Table>
               <TableHeader>
@@ -229,6 +369,10 @@ function TemporalSummaryPage() {
                   <TableHead className="w-20">
                     {m.habitat_temporal_summary_content_chars()}
                   </TableHead>
+                  <TableHead className="w-20">{m.habitat_temporal_summary_sources()}</TableHead>
+                  <TableHead className="w-28">
+                    {m.habitat_temporal_summary_empty_reason()}
+                  </TableHead>
                   <TableHead>content</TableHead>
                   <TableHead className="w-40">updated</TableHead>
                   <TableHead className="w-28">{m.habitat_temporal_summary_actions()}</TableHead>
@@ -237,7 +381,7 @@ function TemporalSummaryPage() {
               <TableBody>
                 {items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-muted-foreground text-sm">
+                    <TableCell colSpan={8} className="text-muted-foreground text-sm">
                       —
                     </TableCell>
                   </TableRow>
@@ -249,8 +393,14 @@ function TemporalSummaryPage() {
                         <TableCell className="font-mono text-xs">{row.id}</TableCell>
                         <TableCell className="font-mono text-xs">{row.period_start}</TableCell>
                         <TableCell className="font-mono text-xs">{row.content_chars}</TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {row.source_count ?? "—"}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          {row.empty_reason ?? "—"}
+                        </TableCell>
                         <TableCell className="text-xs whitespace-pre-wrap max-w-xl">
-                          {row.content}
+                          {row.content || "—"}
                         </TableCell>
                         <TableCell className="text-xs">
                           {formatDisplayDateTime(row.updated_at)}
@@ -260,7 +410,7 @@ function TemporalSummaryPage() {
                             type="button"
                             size="sm"
                             variant="outline"
-                            disabled={regenKey === key || loading}
+                            disabled={toolbarBusy}
                             onClick={() => void onRegenerateEntity(row)}
                           >
                             {regenKey === key ? <Spinner className="size-3" /> : null}
@@ -277,7 +427,7 @@ function TemporalSummaryPage() {
               currentPage={currentPage}
               total={total}
               pageSize={PAGE_SIZE}
-              loading={loading}
+              loading={toolbarBusy}
               onPageChange={(page) => void fetchEntityList(w, offsetForPage(page))}
             />
           </TabsContent>
@@ -290,15 +440,25 @@ function TemporalSummaryPage() {
           {error && tab === "system_rolls" ? (
             <StatusAlert variant="error">{error}</StatusAlert>
           ) : null}
-          <div className="flex gap-2">
+          {info && tab === "system_rolls" ? <StatusAlert variant="info">{info}</StatusAlert> : null}
+          <div className="flex items-center gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => void fetchRolls()}
-              disabled={loading}
+              disabled={toolbarBusy}
             >
-              {loading ? <Spinner className="size-4" /> : null}
+              {listLoading ? <Spinner className="size-4" /> : null}
               {m.habitat_common_search()}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void onBackfillMissingRolls()}
+              disabled={toolbarBusy}
+            >
+              {backfilling ? <Spinner className="size-4" /> : null}
+              {m.habitat_temporal_summary_backfill_missing()}
             </Button>
           </div>
           <Table>
@@ -342,7 +502,7 @@ function TemporalSummaryPage() {
                         type="button"
                         size="sm"
                         variant="outline"
-                        disabled={regenKey === row.kind || loading}
+                        disabled={toolbarBusy}
                         onClick={() => void onRegenerateRoll(row.kind)}
                       >
                         {regenKey === row.kind ? <Spinner className="size-3" /> : null}

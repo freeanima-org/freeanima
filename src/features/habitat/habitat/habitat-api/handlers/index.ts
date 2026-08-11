@@ -23,6 +23,7 @@ export {
   passiveRecallDebug,
   listTemporalSummaries,
   regenerateTemporalSummary,
+  backfillMissingTemporalSummaries,
   listTemporalSystemRolls,
   regenerateTemporalSystemRoll,
   countSemanticMemory,

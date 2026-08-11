@@ -8,7 +8,7 @@ import {
   type SysRollKind,
 } from "./buckets.ts";
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
-import { summarizeTemporalText } from "./summarize.ts";
+import { summarizeTemporalText, temporalSummaryHardCap } from "./summarize.ts";
 import type { PeerRollCache } from "./tick.ts";
 
 export type SysRollCacheValue = {
@@ -136,6 +136,7 @@ async function resolveRollup(opts: {
     anchor: loaded.anchor,
   });
   const maxChars = opts.config.global_day_max_chars;
+  const hardCap = temporalSummaryHardCap(maxChars);
   if (rows.length === 0) {
     return {
       kind: opts.kind,
@@ -159,7 +160,7 @@ async function resolveRollup(opts: {
         kind: opts.kind,
         anchor: loaded.anchor,
         label: loaded.label,
-        summary: cached.slice(0, maxChars),
+        summary: cached.slice(0, hardCap),
         sources_fp: fp,
         created_at: hit.created_at ?? null,
         source_count: rows.length,
@@ -186,9 +187,9 @@ async function resolveRollup(opts: {
       .toReversed()
       .map((r) => r.content)
       .join("；")
-      .slice(0, maxChars);
+      .slice(0, hardCap);
   }
-  summary = summary.trim().slice(0, maxChars);
+  summary = summary.trim().slice(0, hardCap);
   const created_at = new Date().toISOString();
   if (summary && opts.peerCache) {
     await opts.peerCache.setJson(

@@ -31,6 +31,37 @@ export type RebuildTemporalPeriodResult = {
   skipped?: string;
 };
 
+function withContent(
+  rows: Array<{ period_start: string; content: string }>,
+): Array<{ period_start: string; content: string }> {
+  return rows
+    .toSorted((a, b) => a.period_start.localeCompare(b.period_start))
+    .map((r) => ({ period_start: r.period_start, content: r.content.trim() }))
+    .filter((r) => r.content.length > 0);
+}
+
+async function upsertEmptyPeriod(opts: {
+  window: "month" | "year";
+  period_start: string;
+  empty_reason: string;
+  source_count: number;
+  summary: string;
+}): Promise<RebuildTemporalPeriodResult> {
+  const entity_id = await upsertTemporalSummary({
+    window: opts.window,
+    period_start: opts.period_start,
+    content: "",
+    empty_reason: opts.empty_reason,
+    source_count: opts.source_count,
+  });
+  return {
+    ok: true,
+    entity_id,
+    summary: opts.summary,
+    skipped: opts.empty_reason,
+  };
+}
+
 /** Rebuild month entity from day rows in that month (period_start = YYYY-MM-01). */
 export async function rebuildMonthSummary(opts: {
   selfContent: string;
@@ -45,25 +76,46 @@ export async function rebuildMonthSummary(opts: {
     period_start_to: period_end,
   });
   if (days.length === 0) {
-    return { ok: true, summary: `no day rows for ${period_start}`, skipped: "no_days" };
+    return upsertEmptyPeriod({
+      window: "month",
+      period_start,
+      empty_reason: "no_days",
+      source_count: 0,
+      summary: `no day rows for ${period_start}`,
+    });
+  }
+  const materialDays = withContent(days);
+  if (materialDays.length === 0) {
+    return upsertEmptyPeriod({
+      window: "month",
+      period_start,
+      empty_reason: "empty",
+      source_count: 0,
+      summary: `empty day material for ${period_start}`,
+    });
   }
   try {
     const content = await summarizeTemporalText({
       selfContent: opts.selfContent,
       instruction: `请将 ${period_start} 至 ${period_end} 的全局天摘要合并为客观月摘要：一句级高度压缩，只留主题主线。`,
-      material: days
-        .toSorted((a, b) => a.period_start.localeCompare(b.period_start))
-        .map((d) => `[${d.period_start}]\n${d.content}`)
-        .join("\n\n"),
+      material: materialDays.map((d) => `[${d.period_start}]\n${d.content}`).join("\n\n"),
       maxChars: opts.config.month_max_chars,
     });
     if (!content.trim()) {
-      return { ok: true, summary: "empty month summary", skipped: "empty_summary" };
+      return upsertEmptyPeriod({
+        window: "month",
+        period_start,
+        empty_reason: "empty_summary",
+        source_count: materialDays.length,
+        summary: "empty month summary",
+      });
     }
     const entity_id = await upsertTemporalSummary({
       window: "month",
       period_start,
       content,
+      empty_reason: null,
+      source_count: materialDays.length,
     });
     return { ok: true, entity_id, summary: `month ${period_start}→${entity_id}` };
   } catch (e) {
@@ -92,25 +144,46 @@ export async function rebuildYearSummary(opts: {
     period_start_to: `${y}-12-01`,
   });
   if (months.length === 0) {
-    return { ok: true, summary: `no month rows for ${y}`, skipped: "no_months" };
+    return upsertEmptyPeriod({
+      window: "year",
+      period_start,
+      empty_reason: "no_months",
+      source_count: 0,
+      summary: `no month rows for ${y}`,
+    });
+  }
+  const materialMonths = withContent(months);
+  if (materialMonths.length === 0) {
+    return upsertEmptyPeriod({
+      window: "year",
+      period_start,
+      empty_reason: "empty",
+      source_count: 0,
+      summary: `empty month material for ${y}`,
+    });
   }
   try {
     const content = await summarizeTemporalText({
       selfContent: opts.selfContent,
       instruction: `请将 ${y} 年各月摘要合并为客观年摘要：一句级高度压缩，只留年度主线与重要结果。`,
-      material: months
-        .toSorted((a, b) => a.period_start.localeCompare(b.period_start))
-        .map((d) => `[${d.period_start}]\n${d.content}`)
-        .join("\n\n"),
+      material: materialMonths.map((d) => `[${d.period_start}]\n${d.content}`).join("\n\n"),
       maxChars: opts.config.year_max_chars,
     });
     if (!content.trim()) {
-      return { ok: true, summary: "empty year summary", skipped: "empty_summary" };
+      return upsertEmptyPeriod({
+        window: "year",
+        period_start,
+        empty_reason: "empty_summary",
+        source_count: materialMonths.length,
+        summary: "empty year summary",
+      });
     }
     const entity_id = await upsertTemporalSummary({
       window: "year",
       period_start,
       content,
+      empty_reason: null,
+      source_count: materialMonths.length,
     });
     return { ok: true, entity_id, summary: `year ${period_start}→${entity_id}` };
   } catch (e) {
