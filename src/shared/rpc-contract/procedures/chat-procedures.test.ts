@@ -5,7 +5,6 @@ import {
   notificationMarkReadInputSchema,
   conversationCommandsInputSchema,
 } from "@freeanima/shared/rpc-contract";
-import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 describe("chat SAP procedures", () => {
   it("registers conversation.commands, notification.*", () => {
@@ -17,7 +16,7 @@ describe("chat SAP procedures", () => {
   });
 
   it("validates chat procedure inputs", () => {
-    conversationCommandsInputSchema.parse({ platform: TEST_SAP_CHAT_PLATFORM, all: false });
+    conversationCommandsInputSchema.parse({ platform: "chat", all: false });
     notificationListInputSchema.parse({ recipient_kind: "agent", read_filter: "all" });
     notificationMarkReadInputSchema.parse({ id: "abc" });
   });

@@ -1,0 +1,22 @@
+# Integration CORE paths（功能变更 / bug 修复主动跑；pre-commit / pre-push 不跑）
+# 一行一个相对仓库根的路径；# 开头为注释。
+tests/integration/db/db-conversation.test.ts
+tests/integration/db/conversation-archive.test.ts
+tests/integration/db/conversation-read-state-pg.test.ts
+tests/integration/engine/conversation.test.ts
+tests/integration/engine/conversation-origin.test.ts
+tests/integration/memory/semantic-memory-pg.test.ts
+tests/integration/memory/memory-fts.test.ts
+tests/integration/memory/memory-reference-pg.test.ts
+tests/integration/memory/recall-hybrid.test.ts
+tests/integration/memory/self-layer-pg.test.ts
+tests/integration/entity/entity-task-pg.test.ts
+tests/integration/entity/entity-search.test.ts
+tests/integration/server/service-api-auth.test.ts
+tests/integration/server/server-status.test.ts
+tests/integration/server/server-memory.test.ts
+tests/integration/runtime/tool-catalog.test.ts
+tests/integration/runtime/world-grants-tools.test.ts
+tests/integration/runtime/commands.core.test.ts
+tests/integration/runtime/tasks-tool.core.test.ts
+tests/integration/clarify/clarify-conversation.test.ts

@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { setupIntegrationPg } from "./integration-pg-setup.ts";
+import { listIntegrationCorePaths } from "./test-tiers.ts";
 
 const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const label = "qa test-integration";
@@ -56,8 +57,18 @@ try {
 }
 
 const workers = parallelWorkers();
-const paths = process.argv.slice(2);
-const testPaths = paths.length > 0 ? paths : ["tests/integration"];
+const rawArgs = process.argv.slice(2);
+const coreOnly = rawArgs.includes("--core");
+const paths = rawArgs.filter((a) => a !== "--core");
+let testPaths: string[];
+let env = { ...process.env };
+if (coreOnly) {
+  testPaths = listIntegrationCorePaths();
+  env = { ...env, FREEANIMA_TEST_TIER: "core" };
+  console.log(`[${label}] CORE subset (${testPaths.length} files)`);
+} else {
+  testPaths = paths.length > 0 ? paths : ["tests/integration"];
+}
 const testArgs = ["test", ...testPaths, "--pass-with-no-tests", `--parallel=${workers}`];
 console.log(`[${label}] bun ${testArgs.join(" ")}`);
 
@@ -65,7 +76,7 @@ try {
   const result = spawnSync("bun", testArgs, {
     cwd: repoRoot,
     stdio: "inherit",
-    env: process.env,
+    env,
   });
   exitCode = result.status ?? 1;
 } catch {

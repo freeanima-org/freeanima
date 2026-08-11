@@ -1,26 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
-import { handleModelUpload } from "@freeanima/features/companion/server/models.ts";
-import { serveStatic } from "@freeanima/features/companion/server/static.ts";
+import { describe, expect, it } from "bun:test";
+import { handleModelUpload } from "./models.ts";
+import { serveStatic } from "./static.ts";
 
 describe("companion model upload", () => {
-  let prevHome: string | undefined;
-  let home: string;
-
-  beforeEach(() => {
-    prevHome = process.env.FREEANIMA_HOME;
-    home = mkdtempSync(join(tmpdir(), "companion-upload-"));
-    process.env.FREEANIMA_HOME = home;
-  });
-
-  afterEach(() => {
-    if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prevHome;
-    rmSync(home, { recursive: true, force: true });
-  });
-
   it("本地 upload API 已停用，引导经 Habitat companion.model.upload", async () => {
     const body = new Uint8Array([0x67, 0x6c, 0x54, 0x46]);
     const file = new File([body], "test-model.vrm", { type: "model/gltf-binary" });

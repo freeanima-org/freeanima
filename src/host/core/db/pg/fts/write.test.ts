@@ -6,12 +6,13 @@ import {
   resetActiveConfigForTest,
 } from "@freeanima/host/core/config";
 
-const segmentForFtsMock = mock(async (_text: string) => {
+const segmentForFtsMock = mock(async (_text: string): Promise<string[] | null> => {
   throw new Error("jieba failed");
 });
 
 mock.module("./segment.ts", () => ({
   segmentForFts: segmentForFtsMock,
+  resetJiebaForTest: () => {},
 }));
 
 import { resolveFtsSegmentedForWrite } from "./write.ts";
@@ -34,11 +35,14 @@ function jiebaEnabledConfig(): Config {
 describe("resolveFtsSegmentedForWrite", () => {
   beforeEach(() => {
     bindActiveRuntimeConfig(jiebaEnabledConfig());
+    segmentForFtsMock.mockImplementation(async () => {
+      throw new Error("jieba failed");
+    });
   });
 
   afterEach(() => {
     resetActiveConfigForTest();
-    segmentForFtsMock.mockClear();
+    segmentForFtsMock.mockReset();
   });
 
   it("returns null when segmentation throws", async () => {

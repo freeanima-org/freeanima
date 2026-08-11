@@ -1,0 +1,11 @@
+# Unit CORE 路径默认（pre-push）；亦匹配任意 src/**/*.core.test.ts
+# 一行一个相对仓库根的目录或文件前缀；# 开头为注释。
+src/host/core/db
+src/host/core/compress
+src/host/engine
+src/host/kernel
+src/host/capabilities/memory
+src/shared/rpc-contract
+src/features/habitat/habitat/habitat-api/health-auth.core.test.ts
+src/features/habitat/habitat/habitat-api/mcp-auth.core.test.ts
+src/features/habitat/habitat/habitat-api/remote-auth.core.test.ts

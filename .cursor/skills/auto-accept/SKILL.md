@@ -14,6 +14,9 @@ description: >-
 ## 何时运行
 
 - 实现任务/功能改动**完成后主动**跑一遍（默认）
+- 功能变更 / bug 修复落地后，在浏览器验收前（或并行）主动跑：
+  - `just qa test-unit`（全量 unit）
+  - `just qa test-integration -- --core`（integration CORE；需 Docker）
 - 用户明确要求「自动验收 / E2E / 浏览器验收 / 补浏览器验收」时
 - 先前报告含「待人工」且原因是浏览器不可用，用户确认浏览器已就绪 / 说「需要」补 UI 时 → **只补浏览器行，重出完整合并报告**
 
