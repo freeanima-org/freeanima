@@ -451,6 +451,9 @@ function buildEmailMessageBodyConditions(
   if (filters.imap_mailbox) {
     conditions.push(sql`${entities.body}->>'imap_mailbox' = ${filters.imap_mailbox}`);
   }
+  if (filters.message_id) {
+    conditions.push(sql`${entities.body}->>'message_id' = ${filters.message_id}`);
+  }
   if (filters.unread != null) {
     conditions.push(
       sql`coalesce((${entities.body}->>'unread')::boolean, false) = ${filters.unread}`,

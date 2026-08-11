@@ -1,5 +1,6 @@
 export type * from "./types.ts";
 export { worldIdForAccount, worldIdForThread } from "./email-world.ts";
+export { normalizeRfcMessageId } from "./message-id.ts";
 export {
   createEmailAccount,
   deleteEmailAccountRow,
@@ -24,6 +25,7 @@ export {
 export {
   deleteEmailMessageRow,
   findEmailMessageByImapUid,
+  findEmailMessageByRfcMessageId,
   getEmailMessageRow,
   listEmailMessageImapRefs,
   listEmailMessages,

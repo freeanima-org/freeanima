@@ -12,9 +12,12 @@ import {
   updateEntity,
 } from "@freeanima/host/core/db/pg/entity";
 import { worldIdForAccount } from "./email-world.ts";
+import { normalizeRfcMessageId } from "./message-id.ts";
 import { refreshThreadAggregates } from "./thread-store.ts";
 import { softDeleteEmailAttachmentObjectFiles } from "./attachment-store.ts";
 import type { EmailMessageListOpts, EmailMessageRow, EmailMessageUpsertInput } from "./types.ts";
+
+export { normalizeRfcMessageId } from "./message-id.ts";
 
 function normalizeTagIds(tagIds: number[] | undefined): number[] {
   if (!tagIds?.length) return [];
@@ -81,19 +84,54 @@ export async function findEmailMessageByImapUid(
   return toMessageRow(parsed, row);
 }
 
+/** Same account + mailbox + RFC Message-ID（跨 UID 去重；不跨邮箱）. */
+export async function findEmailMessageByRfcMessageId(
+  accountId: number,
+  messageId: string,
+  mailbox: string,
+): Promise<EmailMessageRow | null> {
+  const normalized = normalizeRfcMessageId(messageId);
+  if (!normalized) return null;
+  const worldId = await worldIdForAccount(accountId);
+  const result = await searchEntities({
+    world_id: worldId,
+    primary_component: EMAIL_MESSAGE_COMPONENT,
+    filters: {
+      account_id: accountId,
+      imap_mailbox: mailbox,
+      message_id: normalized,
+    },
+    limit: 1,
+    mode: "filter_only",
+    include_count: false,
+  });
+  const row = result.results[0];
+  if (!row) return null;
+  const parsed = asEmailMessage(row);
+  if (!parsed) return null;
+  return toMessageRow(parsed, row);
+}
+
 export async function upsertEmailMessage(input: EmailMessageUpsertInput): Promise<EmailMessageRow> {
   const mailbox = input.imap_mailbox ?? "INBOX";
-  const existing =
+  const rfcMessageId =
+    input.message_id != null && input.message_id.trim()
+      ? normalizeRfcMessageId(input.message_id)
+      : null;
+  let existing =
     input.imap_uid != null
       ? await findEmailMessageByImapUid(input.account_id, input.imap_uid, mailbox)
       : null;
+  if (!existing && rfcMessageId) {
+    existing = await findEmailMessageByRfcMessageId(input.account_id, rfcMessageId, mailbox);
+  }
 
   const body = {
     account_id: input.account_id,
     thread_id: input.thread_id,
     imap_uid: input.imap_uid ?? undefined,
     imap_mailbox: mailbox,
-    message_id: input.message_id ?? undefined,
+    message_id: rfcMessageId ?? undefined,
     direction: input.direction,
     from: input.from,
     to: input.to,

@@ -86,6 +86,7 @@ describe("parseEmailMessageSearchFilters", () => {
     const parsed = parseEmailMessageSearchFilters({
       account_id: 1,
       imap_mailbox: "INBOX",
+      message_id: "<abc@example.com>",
       to: "user@example.com",
       subject: "invoice",
       flagged: true,
@@ -93,6 +94,7 @@ describe("parseEmailMessageSearchFilters", () => {
       unread: false,
     });
     expect(parsed.imap_mailbox).toBe("INBOX");
+    expect(parsed.message_id).toBe("<abc@example.com>");
     expect(parsed.to).toBe("user@example.com");
     expect(parsed.subject).toBe("invoice");
     expect(parsed.flagged).toBe(true);
