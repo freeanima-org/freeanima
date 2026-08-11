@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
 
+import {
+  outboundAttachmentMeta,
+  persistEmailAttachments,
+  resetEmailAttachmentObjectStorageForTest,
+  setEmailAttachmentObjectStorageForTest,
+  softDeleteEmailAttachmentObjectFiles,
+} from "./attachment-store.ts";
+
 const createObjectFile = mock(
   async (input: { world_id: number; title: string; bytes: Uint8Array; mime_type?: string }) => ({
     id: 9000 + input.bytes.byteLength,
@@ -14,25 +22,16 @@ const createObjectFile = mock(
 );
 
 const deleteObjectFile = mock(async (_id: number) => undefined);
-const downloadObjectFileBytes = mock(async (_id: number) => {
-  throw new Error("downloadObjectFileBytes not stubbed in this test");
-});
-
-mock.module("@freeanima/features/object-storage/domain", () => ({
-  createObjectFile,
-  deleteObjectFile,
-  downloadObjectFileBytes,
-}));
-
-const { persistEmailAttachments } = await import("./attachment-store.ts");
 
 describe("persistEmailAttachments", () => {
   afterEach(() => {
     createObjectFile.mockClear();
     deleteObjectFile.mockClear();
+    resetEmailAttachmentObjectStorageForTest();
   });
 
   test("creates object_file per attachment and returns object_file_id meta", async () => {
+    setEmailAttachmentObjectStorageForTest({ createObjectFile });
     const meta = await persistEmailAttachments(5, 20, [
       {
         filename: "note.txt",
@@ -59,8 +58,21 @@ describe("persistEmailAttachments", () => {
     expect(createObjectFile.mock.calls[0]?.[0]?.title).toBe("note.txt");
   });
 
-  test("outboundAttachmentMeta builds file_id from message id", async () => {
-    const { outboundAttachmentMeta } = await import("./attachment-store.ts");
+  test("softDeleteEmailAttachmentObjectFiles soft-deletes object files", async () => {
+    setEmailAttachmentObjectStorageForTest({ deleteObjectFile });
+    await softDeleteEmailAttachmentObjectFiles([
+      {
+        file_id: "1",
+        filename: "a.txt",
+        content_type: "text/plain",
+        size: 1,
+        object_file_id: 42,
+      },
+    ]);
+    expect(deleteObjectFile).toHaveBeenCalledWith(42);
+  });
+
+  test("outboundAttachmentMeta builds file_id from message id", () => {
     const meta = outboundAttachmentMeta(99, [
       {
         object_file_id: 7,
