@@ -1,0 +1,240 @@
+import { randomUUID } from "node:crypto";
+
+import { getRedis, isRedisConfigured } from "./client.ts";
+
+/** Key 前缀约定：分布式锁 */
+export const REDIS_LOCK_KEY_PREFIX = "anima:lock:";
+
+/** 未传 ttlMs 时的持有租约兜底 */
+export const DEFAULT_LOCK_TTL_MS = 60 * 60 * 1000; // 1h
+
+const DEFAULT_RETRY_INTERVAL_MS = 150;
+const DEFAULT_WAIT_MS = 30_000;
+
+const UNLOCK_LUA = `
+if redis.call("GET", KEYS[1]) == ARGV[1] then
+  return redis.call("DEL", KEYS[1])
+end
+return 0
+`;
+
+const EXTEND_LUA = `
+if redis.call("GET", KEYS[1]) == ARGV[1] then
+  return redis.call("PEXPIRE", KEYS[1], ARGV[2])
+end
+return 0
+`;
+
+let unavailableWarned = false;
+
+export type RedisLockAcquireOpts = {
+  /** 逻辑名；自动加 `anima:lock:` 前缀 */
+  key: string;
+  /** 持有租约；省略则 DEFAULT_LOCK_TTL_MS（1h） */
+  ttlMs?: number;
+  /** 长任务 watchdog 续期 */
+  renew?: boolean;
+  /** try=立即返回；wait=阻塞重试。默认 try */
+  mode?: "try" | "wait";
+  /** mode=wait 时的最长等待；默认 30s */
+  waitMs?: number;
+  /** wait 重试间隔基准；默认 ~150ms，另加小 jitter */
+  retryIntervalMs?: number;
+  /** 取消等待 */
+  signal?: AbortSignal;
+};
+
+export type WithRedisLockOpts = RedisLockAcquireOpts;
+
+export type RedisLockHandle = {
+  /** 释放锁并停止 watchdog；可安全重复调用 */
+  release: () => Promise<void>;
+};
+
+export type AcquireRedisLockResult =
+  | { status: "ok"; handle: RedisLockHandle }
+  /** Redis 未配置：无分布式互斥，仍可继续（local-only） */
+  | { status: "ok"; handle: RedisLockHandle; bypassed: true }
+  | { status: "busy" };
+
+export type WithRedisLockResult<T> = { status: "ok"; value: T } | { status: "busy" };
+
+function lockKey(logicalKey: string): string {
+  if (logicalKey.startsWith(REDIS_LOCK_KEY_PREFIX)) return logicalKey;
+  return `${REDIS_LOCK_KEY_PREFIX}${logicalKey}`;
+}
+
+function warnUnavailableOnce(): void {
+  if (unavailableWarned) return;
+  unavailableWarned = true;
+  console.warn(
+    "[redis-lock] Redis not configured; distributed locks degraded to local-only. Configure redis for multi-Habitat mutual exclusion.",
+  );
+}
+
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+      return;
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
+function retryDelayMs(baseMs: number): number {
+  const jitter = Math.floor(Math.random() * Math.max(1, Math.floor(baseMs / 3)));
+  return baseMs + jitter;
+}
+
+async function tryAcquire(key: string, token: string, ttlMs: number): Promise<boolean> {
+  try {
+    // bun-types 的 NX+PX 组合走 ...options: string[]
+    const result = await getRedis().set(key, token, "NX", "PX", String(ttlMs));
+    return result === "OK";
+  } catch {
+    return false;
+  }
+}
+
+async function releaseLock(key: string, token: string): Promise<boolean> {
+  try {
+    // Bun 1.3.14 typings 尚无 eval；经 send 调 EVAL
+    const result = await getRedis().send("EVAL", [UNLOCK_LUA, "1", key, token]);
+    return result === 1 || result === "1";
+  } catch {
+    return false;
+  }
+}
+
+async function extendLock(key: string, token: string, ttlMs: number): Promise<boolean> {
+  try {
+    const result = await getRedis().send("EVAL", [EXTEND_LUA, "1", key, token, String(ttlMs)]);
+    return result === 1 || result === "1";
+  } catch {
+    return false;
+  }
+}
+
+function startWatchdog(key: string, token: string, ttlMs: number): () => void {
+  const intervalMs = Math.max(1_000, Math.floor(ttlMs / 3));
+  const handle = setInterval(() => {
+    void extendLock(key, token, ttlMs);
+  }, intervalMs);
+  if (typeof handle === "object" && handle && "unref" in handle) {
+    (handle as { unref: () => void }).unref?.();
+  }
+  return () => clearInterval(handle);
+}
+
+async function waitForLock(
+  key: string,
+  token: string,
+  ttlMs: number,
+  waitMs: number,
+  retryIntervalMs: number,
+  signal?: AbortSignal,
+): Promise<boolean> {
+  const deadline = Date.now() + waitMs;
+  while (Date.now() < deadline) {
+    if (signal?.aborted) return false;
+    if (await tryAcquire(key, token, ttlMs)) return true;
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) break;
+    try {
+      await sleep(Math.min(retryDelayMs(retryIntervalMs), remaining), signal);
+    } catch {
+      return false;
+    }
+  }
+  if (signal?.aborted) return false;
+  return tryAcquire(key, token, ttlMs);
+}
+
+/**
+ * 获取锁句柄（适合 fire-and-forget 长任务：拿到后异步跑，结束再 release）。
+ * Redis 未配置时返回 bypassed 空 handle（release 为 no-op）。
+ */
+export async function acquireRedisLock(
+  opts: RedisLockAcquireOpts,
+): Promise<AcquireRedisLockResult> {
+  if (!isRedisConfigured()) {
+    warnUnavailableOnce();
+    return {
+      status: "ok",
+      bypassed: true,
+      handle: {
+        release: async () => {},
+      },
+    };
+  }
+
+  const key = lockKey(opts.key);
+  const ttlMs = opts.ttlMs ?? DEFAULT_LOCK_TTL_MS;
+  const mode = opts.mode ?? "try";
+  const token = randomUUID();
+
+  let acquired = false;
+  if (mode === "wait") {
+    acquired = await waitForLock(
+      key,
+      token,
+      ttlMs,
+      opts.waitMs ?? DEFAULT_WAIT_MS,
+      opts.retryIntervalMs ?? DEFAULT_RETRY_INTERVAL_MS,
+      opts.signal,
+    );
+  } else {
+    acquired = await tryAcquire(key, token, ttlMs);
+  }
+
+  if (!acquired) {
+    return { status: "busy" };
+  }
+
+  const stopWatchdog = opts.renew ? startWatchdog(key, token, ttlMs) : () => {};
+  let released = false;
+  return {
+    status: "ok",
+    handle: {
+      release: async () => {
+        if (released) return;
+        released = true;
+        stopWatchdog();
+        await releaseLock(key, token);
+      },
+    },
+  };
+}
+
+/**
+ * 单实例 Redis 锁：SET NX PX + token + Lua 安全释放/续期。
+ * 未配置 Redis 时跳过互斥并执行 fn（与现网可选 Redis 一致）。
+ */
+export async function withRedisLock<T>(
+  opts: WithRedisLockOpts,
+  fn: () => Promise<T>,
+): Promise<WithRedisLockResult<T>> {
+  const acquired = await acquireRedisLock(opts);
+  if (acquired.status === "busy") {
+    return { status: "busy" };
+  }
+  try {
+    return { status: "ok", value: await fn() };
+  } finally {
+    await acquired.handle.release();
+  }
+}
+
+/** @internal 单测重置 warn-once */
+export function resetRedisLockWarnForTest(): void {
+  unavailableWarned = false;
+}

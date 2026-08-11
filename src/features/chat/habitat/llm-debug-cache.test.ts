@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 
-import { resetCacheMemoryForTests } from "@freeanima/host/capabilities/connectors/redis";
+import { resetCacheMemoryForTests } from "@freeanima/host/core/redis";
 
 import {
   LLM_DEBUG_CACHE_TTL_SECONDS,

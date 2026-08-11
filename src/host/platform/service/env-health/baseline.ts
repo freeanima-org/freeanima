@@ -6,7 +6,7 @@ import {
   REDIS_KV_KEY_PREFIX,
   redisGetJson,
   redisSetJson,
-} from "@freeanima/host/capabilities/connectors/redis";
+} from "@freeanima/host/core/redis";
 import type { EnvHealthMarkers } from "./types.ts";
 
 export const ENV_HEALTH_BASELINE_FILENAME = "env-health-baseline.json";

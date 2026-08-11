@@ -25,7 +25,7 @@ import {
 import type { TemporalSummaryWindow } from "@freeanima/host/core/db/schema/entity/components/temporal-summary";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { getActiveRuntimeConfig } from "@freeanima/host/core/config";
-import { cacheGetJson, cacheSetJson } from "@freeanima/host/capabilities/connectors/redis";
+import { cacheGetJson, cacheSetJson } from "@freeanima/host/core/redis";
 import { loadSelfLayerPrompt } from "@freeanima/host/capabilities/self";
 import {
   runPassiveRecallDebug,

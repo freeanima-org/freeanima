@@ -38,7 +38,7 @@ Sleep uses a **macro DAG** (`sleep-cycle` pipeline) orchestrated by `PipelineRun
 
 Habitat (`/habitat`/dashboard/sleep`) supports **diagnostic** runs: full cycle or individual steps (`force` skips dependency checks). **Deep sleep mode** (full vs incremental) can be selected before manual runs.
 
-**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). Sleep-cycle scheduling is **in-process `Bun.cron`** (not listed under Habitat → Cron / `cron_log`); diagnostics remain on the Sleep dashboard.
+**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). Sleep-cycle scheduling is **in-process `Bun.cron`** (not listed under Habitat → Cron / `cron_log`); diagnostics remain on the Sleep dashboard. Multi-Habitat mutual exclusion uses Redis lock `anima:lock:sleep-pipeline` (shared with manual sleep APIs).
 
 Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.json` (SSOT for step status; no EventBus).
 

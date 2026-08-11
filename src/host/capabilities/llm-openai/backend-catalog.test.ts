@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
-import { resetCacheMemoryForTests } from "@freeanima/host/capabilities/connectors/redis";
+import { resetCacheMemoryForTests } from "@freeanima/host/core/redis";
 import type { ModelInfo } from "@freeanima/host/core/provider";
 
 import { saveModelCatalogCache } from "./catalog-cache.ts";

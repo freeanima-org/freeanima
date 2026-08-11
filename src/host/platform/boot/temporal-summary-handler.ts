@@ -5,7 +5,7 @@ import {
   resolveTemporalSummaryConfig,
   runTemporalSummaryTick,
 } from "@freeanima/host/capabilities/memory/temporal-summary";
-import { cacheGetJson, cacheSetJson } from "@freeanima/host/capabilities/connectors/redis";
+import { cacheGetJson, cacheSetJson } from "@freeanima/host/core/redis";
 
 /** Cron: half-hour conversation chunks + warm peer roll Redis cache */
 export async function runTemporalSummaryTickHandler(): Promise<string> {

@@ -1,4 +1,5 @@
 import { logComponent } from "@freeanima/host/platform/logging";
+import { withRedisLock } from "@freeanima/host/core/redis";
 
 import { queryEarliestTaskReminderFireMs, runTaskReminderScan } from "./task-reminder-handler.ts";
 
@@ -6,6 +7,7 @@ const log = logComponent("task-reminder-scheduler");
 
 const MAX_SLEEP_MS = 6 * 60 * 60 * 1000; // 最长睡 6h，避免极端时钟漂移
 const MIN_SLEEP_MS = 250;
+const REMINDER_LOCK_TTL_MS = 2 * 60 * 1000;
 
 let timer: ReturnType<typeof setTimeout> | null = null;
 let started = false;
@@ -22,7 +24,15 @@ async function tick(): Promise<void> {
   if (running) return;
   running = true;
   try {
-    const output = await runTaskReminderScan();
+    const locked = await withRedisLock(
+      { key: "task-reminder-scan", ttlMs: REMINDER_LOCK_TTL_MS, mode: "try" },
+      async () => runTaskReminderScan(),
+    );
+    if (locked.status === "busy") {
+      log.debug("task reminder scan skipped: redis lock busy");
+      return;
+    }
+    const output = locked.value;
     try {
       const parsed = JSON.parse(output) as { ok?: boolean; sent?: number };
       if (parsed.ok === true && (parsed.sent ?? 0) > 0) {

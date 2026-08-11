@@ -30,7 +30,7 @@ collect markers (banded)
 
 Implementation: `src/host/platform/service/env-health/`.
 
-**Storage:** baseline is **KV** (no TTL) via `connectors/redis` — Redis when configured; otherwise `~/.anima/env-health-baseline.json`. On first Redis hit after an old file exists, migrate once and delete the file. Do not confuse with **Cache** (`anima:cache:*`, TTL) used by 用户活跃统计.
+**Storage:** baseline is **KV** (no TTL) via `@freeanima/host/core/redis` — Redis when configured; otherwise `~/.anima/env-health-baseline.json`. On first Redis hit after an old file exists, migrate once and delete the file. Do not confuse with **Cache** (`anima:cache:*`, TTL) used by 用户活跃统计.
 
 ## v1 markers (after banding)
 

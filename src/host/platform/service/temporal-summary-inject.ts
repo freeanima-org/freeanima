@@ -10,7 +10,7 @@ import {
   resolveTemporalSummaryConfig,
   stripTemporalSummaryPeersFromMessages,
 } from "@freeanima/host/capabilities/memory/temporal-summary";
-import { cacheGetJson, cacheSetJson } from "@freeanima/host/capabilities/connectors/redis";
+import { cacheGetJson, cacheSetJson } from "@freeanima/host/core/redis";
 
 /** Inject closed-bucket peer rollups into the message timeline (runtime-only). */
 export function createTemporalPeerInjectHandler() {

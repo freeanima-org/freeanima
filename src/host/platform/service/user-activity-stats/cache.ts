@@ -1,8 +1,4 @@
-import {
-  REDIS_CACHE_KEY_PREFIX,
-  cacheGetJson,
-  cacheSetJson,
-} from "@freeanima/host/capabilities/connectors/redis";
+import { REDIS_CACHE_KEY_PREFIX, cacheGetJson, cacheSetJson } from "@freeanima/host/core/redis";
 import type { UserActivityStats } from "@freeanima/host/core/db/pg/conversation";
 import {
   buildUserActivityWindows,
