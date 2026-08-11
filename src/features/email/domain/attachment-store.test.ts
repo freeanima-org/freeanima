@@ -14,10 +14,14 @@ const createObjectFile = mock(
 );
 
 const deleteObjectFile = mock(async (_id: number) => undefined);
+const downloadObjectFileBytes = mock(async (_id: number) => {
+  throw new Error("downloadObjectFileBytes not stubbed in this test");
+});
 
 mock.module("@freeanima/features/object-storage/domain", () => ({
   createObjectFile,
   deleteObjectFile,
+  downloadObjectFileBytes,
 }));
 
 const { persistEmailAttachments, softDeleteEmailAttachmentObjectFiles } =

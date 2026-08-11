@@ -68,9 +68,23 @@ function warnUnavailableOnce(): void {
   if (unavailableWarned) return;
   unavailableWarned = true;
   console.warn(
-    "[redis-lock] Redis not configured; distributed locks degraded to local-only. Configure redis for multi-Habitat mutual exclusion.",
+    "[redis-lock] Redis unavailable; distributed locks degraded to local-only. Configure reachable redis for multi-Habitat mutual exclusion.",
   );
 }
+
+function bypassedLockResult(): Extract<AcquireRedisLockResult, { bypassed: true }> {
+  warnUnavailableOnce();
+  return {
+    status: "ok",
+    bypassed: true,
+    handle: {
+      release: async () => {},
+    },
+  };
+}
+
+/** acquired=拿到锁；held=他人持有；unavailable=连接/命令失败（应降级而非当 busy） */
+type AcquireAttempt = "acquired" | "held" | "unavailable";
 
 function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -95,13 +109,13 @@ function retryDelayMs(baseMs: number): number {
   return baseMs + jitter;
 }
 
-async function tryAcquire(key: string, token: string, ttlMs: number): Promise<boolean> {
+async function tryAcquire(key: string, token: string, ttlMs: number): Promise<AcquireAttempt> {
   try {
     // bun-types 的 NX+PX 组合走 ...options: string[]
     const result = await getRedis().set(key, token, "NX", "PX", String(ttlMs));
-    return result === "OK";
+    return result === "OK" ? "acquired" : "held";
   } catch {
-    return false;
+    return "unavailable";
   }
 }
 
@@ -142,20 +156,27 @@ async function waitForLock(
   waitMs: number,
   retryIntervalMs: number,
   signal?: AbortSignal,
-): Promise<boolean> {
+): Promise<AcquireAttempt> {
   const deadline = Date.now() + waitMs;
+  let sawHeld = false;
   while (Date.now() < deadline) {
-    if (signal?.aborted) return false;
-    if (await tryAcquire(key, token, ttlMs)) return true;
+    if (signal?.aborted) return sawHeld ? "held" : "unavailable";
+    const attempt = await tryAcquire(key, token, ttlMs);
+    if (attempt === "acquired") return "acquired";
+    if (attempt === "unavailable") {
+      // 连接失败：立即降级，勿空等 30s 再误报 busy
+      return "unavailable";
+    }
+    sawHeld = true;
     const remaining = deadline - Date.now();
     if (remaining <= 0) break;
     try {
       await sleep(Math.min(retryDelayMs(retryIntervalMs), remaining), signal);
     } catch {
-      return false;
+      return sawHeld ? "held" : "unavailable";
     }
   }
-  if (signal?.aborted) return false;
+  if (signal?.aborted) return sawHeld ? "held" : "unavailable";
   return tryAcquire(key, token, ttlMs);
 }
 
@@ -167,14 +188,7 @@ export async function acquireRedisLock(
   opts: RedisLockAcquireOpts,
 ): Promise<AcquireRedisLockResult> {
   if (!isRedisConfigured()) {
-    warnUnavailableOnce();
-    return {
-      status: "ok",
-      bypassed: true,
-      handle: {
-        release: async () => {},
-      },
-    };
+    return bypassedLockResult();
   }
 
   const key = lockKey(opts.key);
@@ -182,21 +196,22 @@ export async function acquireRedisLock(
   const mode = opts.mode ?? "try";
   const token = randomUUID();
 
-  let acquired = false;
-  if (mode === "wait") {
-    acquired = await waitForLock(
-      key,
-      token,
-      ttlMs,
-      opts.waitMs ?? DEFAULT_WAIT_MS,
-      opts.retryIntervalMs ?? DEFAULT_RETRY_INTERVAL_MS,
-      opts.signal,
-    );
-  } else {
-    acquired = await tryAcquire(key, token, ttlMs);
-  }
+  const attempt =
+    mode === "wait"
+      ? await waitForLock(
+          key,
+          token,
+          ttlMs,
+          opts.waitMs ?? DEFAULT_WAIT_MS,
+          opts.retryIntervalMs ?? DEFAULT_RETRY_INTERVAL_MS,
+          opts.signal,
+        )
+      : await tryAcquire(key, token, ttlMs);
 
-  if (!acquired) {
+  if (attempt === "unavailable") {
+    return bypassedLockResult();
+  }
+  if (attempt === "held") {
     return { status: "busy" };
   }
 

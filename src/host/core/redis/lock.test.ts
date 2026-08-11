@@ -88,6 +88,22 @@ describe("withRedisLock", () => {
     expect(result).toEqual({ status: "ok", value: 42 });
   });
 
+  it("bypasses when Redis SET throws (connection failure ≠ busy)", async () => {
+    initRedis({ getRedisUrl: () => "redis://127.0.0.1:6379" });
+    setRedisForTest({
+      set: mock(async () => {
+        throw new Error("connection refused");
+      }),
+      send: mock(async () => 0),
+    } as unknown as RedisClient);
+
+    const result = await withRedisLock(
+      { key: "down", mode: "wait", waitMs: 5_000, retryIntervalMs: 20 },
+      async () => "ok",
+    );
+    expect(result).toEqual({ status: "ok", value: "ok" });
+  });
+
   it("acquires with anima:lock prefix and releases via Lua", async () => {
     const mockRedis = createMockRedis();
     initRedis({ getRedisUrl: () => "redis://127.0.0.1:6379" });

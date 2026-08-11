@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
 
 type Stored = {
   id: number;
@@ -109,9 +109,9 @@ mock.module("./thread-store.ts", () => ({
   refreshThreadAggregates: async () => undefined,
 }));
 
-mock.module("./attachment-store.ts", () => ({
-  softDeleteEmailAttachmentObjectFiles: async () => undefined,
-}));
+// 用 spyOn 代替 mock.module，避免污染同目录 attachment-store.test 的真实 softDelete
+const attachmentMod = await import("./attachment-store.ts");
+spyOn(attachmentMod, "softDeleteEmailAttachmentObjectFiles").mockResolvedValue(undefined);
 
 const { upsertEmailMessage } = await import("./message-store.ts");
 const { normalizeRfcMessageId } = await import("./message-id.ts");
