@@ -109,13 +109,16 @@ mock.module("./thread-store.ts", () => ({
   refreshThreadAggregates: async () => undefined,
 }));
 
-// 阻断 attachment-store → object-storage 加载链（避免与 entity mock 冲突）；
-// 本文件只测 upsert，不覆盖 softDelete。
-mock.module("./attachment-store.ts", () => ({
-  softDeleteEmailAttachmentObjectFiles: async () => undefined,
-  persistEmailAttachments: async () => [],
-  loadOutboundAttachmentFiles: async () => [],
-  outboundAttachmentMeta: () => [],
+// 阻断 object-storage 真依赖（attachment-store 顶层 import）；勿 mock.module attachment-store
+// （会污染并行的 attachment-store.test 命名导出）。
+mock.module("@freeanima/features/object-storage/domain", () => ({
+  createObjectFile: async () => {
+    throw new Error("createObjectFile not used in message-store unit tests");
+  },
+  deleteObjectFile: async () => undefined,
+  downloadObjectFileBytes: async () => {
+    throw new Error("downloadObjectFileBytes not used in message-store unit tests");
+  },
 }));
 
 const { upsertEmailMessage } = await import("./message-store.ts");

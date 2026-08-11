@@ -2,12 +2,38 @@ import { createHash } from "node:crypto";
 
 import type { EmailMessageAttachmentMeta } from "@freeanima/host/core/db/schema/entity";
 import {
-  createObjectFile,
-  deleteObjectFile,
-  downloadObjectFileBytes,
+  createObjectFile as createObjectFileDefault,
+  deleteObjectFile as deleteObjectFileDefault,
+  downloadObjectFileBytes as downloadObjectFileBytesDefault,
 } from "@freeanima/features/object-storage/domain";
 
 import type { ParsedEmailAttachment } from "./mime-parse.ts";
+
+type ObjectStorageFns = {
+  createObjectFile: typeof createObjectFileDefault;
+  deleteObjectFile: typeof deleteObjectFileDefault;
+  downloadObjectFileBytes: typeof downloadObjectFileBytesDefault;
+};
+
+let objectStorage: ObjectStorageFns = {
+  createObjectFile: createObjectFileDefault,
+  deleteObjectFile: deleteObjectFileDefault,
+  downloadObjectFileBytes: downloadObjectFileBytesDefault,
+};
+
+/** @internal unit test injection（避免 mock.module 污染并行套件） */
+export function setEmailAttachmentObjectStorageForTest(partial: Partial<ObjectStorageFns>): void {
+  objectStorage = { ...objectStorage, ...partial };
+}
+
+/** @internal */
+export function resetEmailAttachmentObjectStorageForTest(): void {
+  objectStorage = {
+    createObjectFile: createObjectFileDefault,
+    deleteObjectFile: deleteObjectFileDefault,
+    downloadObjectFileBytes: downloadObjectFileBytesDefault,
+  };
+}
 
 function safeFilename(name: string, index: number): string {
   const base = name.replace(/[/\\<>:"|?*\x00-\x1f]/g, "_").trim() || `attachment-${index + 1}`;
@@ -43,7 +69,7 @@ export async function persistEmailAttachments(
     }
     usedNames.add(filename);
 
-    const objectFile = await createObjectFile({
+    const objectFile = await objectStorage.createObjectFile({
       world_id: worldId,
       title: filename,
       bytes: new Uint8Array(att.content),
@@ -81,7 +107,7 @@ export async function loadOutboundAttachmentFiles(input: {
 
   const out: LoadedOutboundAttachment[] = [];
   for (const [index, objectFileId] of ids.entries()) {
-    const downloaded = await downloadObjectFileBytes(objectFileId);
+    const downloaded = await objectStorage.downloadObjectFileBytes(objectFileId);
     if (downloaded.file.world_id !== input.worldId) {
       throw new Error(`attachment object_file ${objectFileId} is not in the send world`);
     }
@@ -118,7 +144,7 @@ export async function softDeleteEmailAttachmentObjectFiles(
   if (!attachments?.length) return;
   for (const att of attachments) {
     if (att.object_file_id > 0) {
-      await deleteObjectFile(att.object_file_id);
+      await objectStorage.deleteObjectFile(att.object_file_id);
     }
   }
 }
