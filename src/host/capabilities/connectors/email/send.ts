@@ -19,6 +19,7 @@ import {
 } from "@freeanima/features/email/domain";
 import { messagePreview, smtpSecure, withImapAccount } from "./imap-client.ts";
 import { resolveEmailAccountPassword } from "./password.ts";
+import { resolveSentCopyUid, searchMailboxUidByMessageId } from "./sent-copy.ts";
 import nodemailer from "nodemailer";
 import MailComposer from "nodemailer/lib/mail-composer/index.js";
 
@@ -189,6 +190,36 @@ async function appendToMailbox(
   );
 }
 
+/** SEARCH Sent by Message-ID；未命中再 APPEND（避免服务商已存 Sent 时双份）。 */
+async function ensureSentCopyUid(input: {
+  account: NonNullable<Awaited<ReturnType<typeof getEmailAccountRow>>>;
+  mailbox: string;
+  messageId: string;
+  raw: string;
+}): Promise<number | null> {
+  return withImapAccount(
+    input.account,
+    async (client, _box) => {
+      const lock = await client.getMailboxLock(input.mailbox);
+      try {
+        return await resolveSentCopyUid({
+          searchUid: () => searchMailboxUidByMessageId(client, input.messageId),
+          append: async () => {
+            const result = await client.append(input.mailbox, input.raw, ["\\Seen"]);
+            if (result && typeof result === "object" && "uid" in result && result.uid != null) {
+              return Number(result.uid);
+            }
+            return null;
+          },
+        });
+      } finally {
+        lock.release();
+      }
+    },
+    input.mailbox,
+  );
+}
+
 export async function sendEmail(input: SendEmailInput): Promise<{
   ok: true;
   messageId: string;
@@ -255,9 +286,14 @@ export async function sendEmail(input: SendEmailInput): Promise<{
             messageId: info.messageId,
             ...(input.cc ? { cc: input.cc } : {}),
           });
-    imapUid = await appendToMailbox(account, sentMailbox, raw, ["\\Seen"]);
+    imapUid = await ensureSentCopyUid({
+      account,
+      mailbox: sentMailbox,
+      messageId: info.messageId,
+      raw,
+    });
   } catch {
-    // SMTP 已成功；IMAP append 失败不阻断
+    // SMTP 已成功；IMAP Sent 副本失败不阻断
   }
 
   const message = await upsertEmailMessage({

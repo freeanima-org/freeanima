@@ -97,6 +97,8 @@ export const emailMessageSearchFiltersSchema = z
     thread_id: z.number().int().positive().optional(),
     imap_uid: z.number().int().positive().optional(),
     imap_mailbox: z.string().min(1).optional(),
+    /** RFC Message-ID（同账户同邮箱去重） */
+    message_id: z.string().min(1).optional(),
     unread: z.boolean().optional(),
     direction: emailDirectionSchema.optional(),
     from: z.string().min(1).optional(),

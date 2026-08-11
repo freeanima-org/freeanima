@@ -2,6 +2,7 @@ import { omitUndefined } from "@freeanima/host/core/util";
 import {
   deriveThreadKey,
   findEmailMessageByImapUid,
+  findEmailMessageByRfcMessageId,
   getEmailAccountRow,
   listAllEnabledEmailAccountRows,
   listEmailMessageImapRefs,
@@ -164,7 +165,9 @@ async function syncMailboxMessages(
       });
       upsertedThreads += 1;
 
-      const existingBefore = await findEmailMessageByImapUid(account.id, uid, mailbox);
+      const existingBefore =
+        (await findEmailMessageByImapUid(account.id, uid, mailbox)) ??
+        (messageId ? await findEmailMessageByRfcMessageId(account.id, messageId, mailbox) : null);
       const message = await upsertEmailMessage({
         account_id: account.id,
         thread_id: thread.id,

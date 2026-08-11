@@ -10,13 +10,15 @@ Habitat-backed IMAP/SMTP mail client (`/email`). Entity model: [`docs/product/en
 
 - Multi-mailbox sync (INBOX / Sent / Drafts / Trash + custom); LIST + SPECIAL-USE
 - Flags: `\Seen` / `\Flagged` write-back and FLAGS refresh on sync
-- Send: SMTP + APPEND Sent; drafts in Drafts mailbox
+- Send: SMTP + **Search-then-APPEND** Sent（SMTP 后按 Message-ID SEARCH；服务商已自动存 Sent 则跳过 APPEND，避免双份）；drafts in Drafts mailbox
+- Self-send: expected **one row in INBOX and one in Sent** (same RFC Message-ID, different `imap_mailbox`); same-mailbox Message-ID dedupe prevents a second Sent UID becoming a second local `email_message`
 - Delete: move to Trash (default); mailbox CREATE/RENAME/DELETE
 - IDLE on inbox + in-process `Bun.cron` `builtin-email-sync-all` every 5m across **all worlds** (enabled accounts; not PG `cron_jobs` / `cron_log`); auto-sync new inbox mail → **one notification per owning subject** (user vs agent world) with body carrying `from` + `message_id` (entity id for `email_read`); manual `email.sync` does not notify
+- Do not run **`anima service` and `just dev habitat` against the same PG / `FREEANIMA_HOME`** (both IDLE/cron sync the same accounts)
 - Local hybrid search (synced messages only)
 - List multi-select: mark read/unread, star, move, delete (serial RPC)
 - Attachments: sync → `createObjectFile` → `body.attachments[].object_file_id`；下载走 `object_storage.file.get`；删信/删账户时软删关联 `object_file`
-- Send with attachments: `email.attachment.upload`（multipart / 粘贴本地文件）或对象库已有 `object_file_id` → `email.send` `attachment_object_file_ids` → SMTP + Sent APPEND multipart MIME
+- Send with attachments: `email.attachment.upload`（multipart / 粘贴本地文件）或对象库已有 `object_file_id` → `email.send` `attachment_object_file_ids` → SMTP + Sent copy (search-then-append) multipart MIME
   - Compose UI：选文件、粘贴（含截图）、从本 world 对象库扁平列表勾选
 
 ## Habitat RPC (selected)
