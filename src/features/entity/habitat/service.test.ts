@@ -53,7 +53,7 @@ afterAll(() => {
   mock.module("@freeanima/host/core/db/pg/entity", () => entityOriginal);
 });
 
-import { serviceEntityList, serviceEntityTrashList } from "./service.ts";
+import { serviceEntityGet, serviceEntityList, serviceEntityTrashList } from "./service.ts";
 
 function auth(): VerifiedServiceApiToken {
   return { subject_type: "user" } as VerifiedServiceApiToken;
@@ -235,5 +235,49 @@ describe("serviceEntityList filters and search", () => {
         primary_component: "vault_item",
       }),
     );
+  });
+});
+
+describe("serviceEntityGet", () => {
+  beforeEach(() => {
+    getEntityMock.mockReset();
+    getEntityMock.mockImplementation(async () => null);
+  });
+
+  it("returns detail fields for entity in world", async () => {
+    const hit = row({
+      id: 42,
+      title: "hello",
+      summary: "sum",
+      content: "body text",
+      body: { a: 1 },
+      revisions: [{ at: "x" } as never],
+    });
+    getEntityMock.mockImplementation(async () => hit);
+
+    const result = await serviceEntityGet(testDeps(), { subject_kind: "user", id: 42 }, auth());
+
+    expect(result.item.id).toBe(42);
+    expect(result.item.summary).toBe("sum");
+    expect(result.item.content).toBe("body text");
+    expect(result.item.body).toEqual({ a: 1 });
+    expect(result.item.revision_count).toBe(1);
+    expect(getEntityMock).toHaveBeenCalledWith(42, { include_deleted: false });
+  });
+
+  it("passes include_deleted for trash detail", async () => {
+    const hit = row({
+      id: 7,
+      deleted_at: new Date("2026-02-01T00:00:00.000Z"),
+    });
+    getEntityMock.mockImplementation(async () => hit);
+
+    await serviceEntityGet(
+      testDeps(),
+      { subject_kind: "user", id: 7, include_deleted: true },
+      auth(),
+    );
+
+    expect(getEntityMock).toHaveBeenCalledWith(7, { include_deleted: true });
   });
 });

@@ -5,6 +5,7 @@ import { invalidatePortalReads } from "@freeanima/client/portal-sdk/portal-query
 
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import { omitUndefined } from "@freeanima/host/core/util";
+import { parseHabitatRestResponse } from "@freeanima/shared/habitat-rpc";
 
 export type EmailAccountRow = {
   id: number;
@@ -40,6 +41,16 @@ export type EmailProviderPreset = {
 
 export type EmailProviderId = "aliyun" | "gmail" | "qq" | "custom";
 
+export type EmailAttachmentRow = {
+  file_id: string;
+  filename: string;
+  content_type: string;
+  size: number;
+  object_file_id: number;
+  entity_id: number;
+  content_id?: string | undefined;
+};
+
 export type EmailMessageRow = {
   id: number;
   account_id: number;
@@ -56,6 +67,7 @@ export type EmailMessageRow = {
   direction: "inbound" | "outbound";
   imap_mailbox?: string;
   tag_ids: number[];
+  attachments?: EmailAttachmentRow[];
 };
 
 function toUiMessage(row: {
@@ -74,7 +86,27 @@ function toUiMessage(row: {
   direction: "inbound" | "outbound";
   imap_uid?: number | null;
   tag_ids: number[];
+  attachments?:
+    | Array<{
+        file_id: string;
+        filename: string;
+        content_type: string;
+        size: number;
+        object_file_id: number;
+        entity_id: number;
+        content_id?: string | undefined;
+      }>
+    | undefined;
 }): EmailMessageRow {
+  const attachments = row.attachments?.map((a) => ({
+    file_id: a.file_id,
+    filename: a.filename,
+    content_type: a.content_type,
+    size: a.size,
+    object_file_id: a.object_file_id,
+    entity_id: a.entity_id,
+    ...(a.content_id != null && a.content_id !== "" ? { content_id: a.content_id } : {}),
+  }));
   return {
     id: row.id,
     account_id: row.account_id,
@@ -90,6 +122,7 @@ function toUiMessage(row: {
     direction: row.direction,
     tag_ids: row.tag_ids,
     ...(row.content_type != null ? { content_type: row.content_type } : {}),
+    ...(attachments != null && attachments.length > 0 ? { attachments } : {}),
   };
 }
 
@@ -243,6 +276,15 @@ export async function readEmailMessage(
   return toUiMessage(data.message);
 }
 
+/** 经对象存储下载邮件附件字节。 */
+export async function downloadEmailAttachmentBytes(objectFileId: number): Promise<Blob> {
+  const res = await habitat().callRaw("object_storage.file.get", { id: objectFileId });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+  return res.blob();
+}
+
 export async function markEmailMessageRead(id: number): Promise<void> {
   await habitat().call("email.message.markRead", withSubjectKind({ id }));
 }
@@ -277,6 +319,7 @@ export async function sendEmailMessage(input: {
   body: string;
   cc?: string;
   bcc?: string;
+  attachment_object_file_ids?: number[];
 }): Promise<{ messageId: string; account_id: number; message_entity_id: number }> {
   const data = await habitat().call("email.send", withSubjectKind(omitUndefined(input)));
   return {
@@ -284,6 +327,54 @@ export async function sendEmailMessage(input: {
     account_id: data.account_id,
     message_entity_id: data.message_entity_id,
   };
+}
+
+/** 上传本地文件为邮件附件 object_file（multipart）。 */
+export async function uploadEmailAttachment(file: File): Promise<{
+  object_file_id: number;
+  filename: string;
+  content_type: string;
+  size: number;
+}> {
+  const form = new FormData();
+  form.append("file", file, file.name);
+  const res = await habitat().callRaw("email.attachment.upload", withSubjectKind({}), {
+    body: form,
+  });
+  const body = (await parseHabitatRestResponse(res)) as {
+    object_file_id: number;
+    filename: string;
+    content_type: string;
+    size: number;
+  };
+  return body;
+}
+
+export type EmailObjectLibraryItem = {
+  id: number;
+  title: string;
+  updated_at: string;
+};
+
+/** 列本 subject world 内 object_file，供发信从对象库选择。 */
+export async function listObjectFilesForAttach(opts?: {
+  query?: string;
+  limit?: number;
+}): Promise<EmailObjectLibraryItem[]> {
+  const data = await habitat().call(
+    "entity.list",
+    withSubjectKind({
+      primary_component: "object_file",
+      type: "content",
+      limit: opts?.limit ?? 50,
+      ...(opts?.query?.trim() ? { query: opts.query.trim() } : {}),
+    }),
+  );
+  return data.items.map((item) => ({
+    id: item.id,
+    title: item.title || `object_file #${item.id}`,
+    updated_at: item.updated_at,
+  }));
 }
 
 export async function saveEmailDraft(input: {

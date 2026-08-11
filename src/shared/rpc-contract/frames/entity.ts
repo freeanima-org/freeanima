@@ -16,6 +16,19 @@ export const entityAdminRowSchema = z.object({
 });
 export type EntityAdminRowPayload = z.infer<typeof entityAdminRowSchema>;
 
+/** 实体浏览器详情（含正文 / body；不含完整 revisions） */
+export const entityDetailSchema = entityAdminRowSchema.extend({
+  summary: z.string(),
+  content: z.string(),
+  body: z.record(z.string(), z.unknown()),
+  pinned: z.boolean(),
+  reference_count: z.number(),
+  tag_ids: z.array(z.number().int().positive()),
+  revision_count: z.number().int().nonnegative(),
+  created_at: z.string(),
+});
+export type EntityDetailPayload = z.infer<typeof entityDetailSchema>;
+
 export const entityReferenceHitSchema = z.object({
   entity_id: z.number().int().positive(),
   via: z.string(),
@@ -49,6 +62,18 @@ export const entityTrashListInputSchema = entityListInputSchema;
 export type EntityTrashListInput = z.infer<typeof entityTrashListInputSchema>;
 export const entityTrashListOutputSchema = entityListOutputSchema;
 export type EntityTrashListOutput = z.infer<typeof entityTrashListOutputSchema>;
+
+export const entityGetInputSchema = z.object({
+  subject_kind: entitySubjectKindSchema,
+  id: z.number().int().positive(),
+  /** 回收站详情需 true */
+  include_deleted: z.boolean().optional(),
+});
+export type EntityGetInput = z.infer<typeof entityGetInputSchema>;
+export const entityGetOutputSchema = z.object({
+  item: entityDetailSchema,
+});
+export type EntityGetOutput = z.infer<typeof entityGetOutputSchema>;
 
 export const entityDeleteInputSchema = z.object({
   subject_kind: entitySubjectKindSchema,

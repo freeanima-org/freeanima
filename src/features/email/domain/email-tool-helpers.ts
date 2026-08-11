@@ -123,6 +123,7 @@ export type EmailToolIo = {
     body: string;
     cc?: string;
     bcc?: string;
+    attachment_object_file_ids?: number[];
   }) => Promise<unknown>;
   markAsRead: (messageId: number) => Promise<unknown>;
   deleteEmail: (messageId: number) => Promise<unknown>;
@@ -197,7 +198,9 @@ export async function messagePayload(
             filename: a.filename,
             content_type: a.content_type,
             size: a.size,
+            object_file_id: a.object_file_id,
             entity_id: message.id,
+            ...(a.content_id ? { content_id: a.content_id } : {}),
           })),
         }
       : {}),

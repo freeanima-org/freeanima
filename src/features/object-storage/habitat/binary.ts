@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import type { RemoteToolsServerDeps } from "@freeanima/host/capabilities/outpost/transport/types";
+import { resolveSubjectWorldId } from "@freeanima/host/core/config";
 import {
   assertSubjectCanAccessWorld,
   resolveWorldFromEntityId,
@@ -29,10 +30,21 @@ const fileGetInputSchema = z.object({
 });
 
 /**
- * HTTP REST 无 ToolContext ALS；勿用 resolveToolWorld（无 callerAuth 时会落到 agent_subject_id）。
- * 以请求 Bearer 的 subject_id 做 world ACL。
+ * Habitat UI SubjectScope：user 可代读 agent 默认私有 world（与 entity/task/vault 的
+ * `subject_type=user && subject_kind=agent` 一致）。供单测与 HTTP 鉴权共用。
  */
-async function assertHttpCallerCanReadObjectFile(
+export function isUserAgentPrivateWorldPassthrough(
+  subjectType: string | undefined,
+  worldId: number,
+): boolean {
+  return subjectType === "user" && worldId === resolveSubjectWorldId("agent");
+}
+
+/**
+ * HTTP REST 无 ToolContext ALS；勿用 resolveToolWorld（无 callerAuth 时会落到 agent_subject_id）。
+ * 以请求 Bearer 的 subject_id 做 world ACL；user → agent 私有 world 直通。
+ */
+export async function assertHttpCallerCanReadObjectFile(
   ctx: RemoteToolsRequestContext,
   entityId: number,
 ): Promise<void> {
@@ -42,8 +54,12 @@ async function assertHttpCallerCanReadObjectFile(
   }
   try {
     const worldId = await resolveWorldFromEntityId(entityId);
+    if (isUserAgentPrivateWorldPassthrough(ctx.auth?.subject_type, worldId)) {
+      return;
+    }
     await assertSubjectCanAccessWorld(subjectId, worldId, { access: "read" });
   } catch (e) {
+    if (e instanceof ApiHandlerError) throw e;
     const msg = e instanceof ToolWorldAccessError ? e.message : String(e);
     throw new ApiHandlerError(403, msg, { code: "FORBIDDEN" });
   }

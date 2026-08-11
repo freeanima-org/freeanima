@@ -1,6 +1,4 @@
 import { afterEach, beforeEach, expect, it } from "bun:test";
-import { access, mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 
 import { getEntity } from "@freeanima/host/core/db/pg/entity";
 import {
@@ -10,9 +8,17 @@ import {
   getEmailMessageRow,
   listEmailMessages,
   listEmailThreads,
+  setEmailMessageAttachments,
   upsertEmailMessage,
   upsertEmailThread,
 } from "@freeanima/features/email/domain";
+import {
+  bindObjectStore,
+  createObjectFile,
+  createObjectStore,
+  getObjectFile,
+  resetObjectStoreForTest,
+} from "@freeanima/features/object-storage/domain";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -26,14 +32,16 @@ describePg("email account delete cascade", () => {
 
   beforeEach(async () => {
     await beginIntegrationCase("freeanima-email-del-");
+    bindObjectStore(createObjectStore({}));
   });
 
   afterEach(async () => {
+    resetObjectStoreForTest();
     await endIntegrationCase();
     await restoreIntegrationHome(prev);
   });
 
-  it("deletes local messages, threads, and attachments; leaves no orphans", async () => {
+  it("soft-deletes local messages, threads, and attachment object_files", async () => {
     const worldId = testUserWorldId();
     const account = await createEmailAccount(worldId, {
       address: "cascade@test.local",
@@ -67,10 +75,21 @@ describePg("email account delete cascade", () => {
       imap_mailbox: "INBOX",
     });
 
-    const home = process.env.FREEANIMA_HOME!;
-    const attachmentDir = join(home, "email-attachments", String(account.id), String(message.id));
-    await mkdir(attachmentDir, { recursive: true });
-    await writeFile(join(attachmentDir, "note.txt"), "hi");
+    const objectFile = await createObjectFile({
+      world_id: worldId,
+      title: "note.txt",
+      bytes: new Uint8Array([1, 2, 3]),
+      mime_type: "text/plain",
+    });
+    await setEmailMessageAttachments(message.id, [
+      {
+        file_id: `${message.id}-1-abc`,
+        filename: "note.txt",
+        content_type: "text/plain",
+        size: 3,
+        object_file_id: objectFile.id,
+      },
+    ]);
 
     expect(await listEmailMessages(worldId, { account_id: account.id })).toHaveLength(1);
     expect(await listEmailThreads(worldId, { account_id: account.id })).toHaveLength(1);
@@ -86,6 +105,9 @@ describePg("email account delete cascade", () => {
     expect(await listEmailMessages(worldId, { account_id: account.id })).toHaveLength(0);
     expect(await listEmailThreads(worldId, { account_id: account.id })).toHaveLength(0);
 
-    await expect(access(join(home, "email-attachments", String(account.id)))).rejects.toThrow();
+    // object_file 软删：alive get 为 null，include_deleted 仍可见
+    expect(await getObjectFile(objectFile.id)).toBeNull();
+    const deleted = await getEntity(objectFile.id, { include_deleted: true });
+    expect(deleted?.deleted_at).not.toBeNull();
   });
 });

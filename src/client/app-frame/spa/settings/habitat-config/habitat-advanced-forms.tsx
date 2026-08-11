@@ -76,9 +76,11 @@ function ObjectStorageForm({
   return (
     <div className="space-y-4">
       <p className="text-xs text-muted-foreground">
-        S3 兼容远端为权威存储（SSOT）。未配置时上传/下载会报错。密钥可用「从 Vault 选择」或手写
-        vault()/env()。服务器仅缓存到临时目录（可丢）。Habitat 须能访问 endpoint 公网（或同 VPC
-        内网）；勿用仅 VPC 可达却从公网 Habitat 去连。
+        S3 兼容远端可选：填齐 endpoint/bucket/密钥后远端为权威存储（SSOT），Habitat 另用
+        /tmp/anima/objects 作可丢缓存。全部留空则用本机持久库
+        ~/.anima/object-store（与临时缓存目录分离）。密钥可用「从 Vault 选择」或手写
+        vault()/env()。配远端时 Habitat 须能访问 endpoint 公网（或同 VPC 内网）；勿用仅 VPC
+        可达却从公网 Habitat 去连。
       </p>
       {hubConfigTextField(
         "endpoint",

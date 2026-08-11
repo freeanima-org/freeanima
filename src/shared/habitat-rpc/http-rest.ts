@@ -179,6 +179,9 @@ export function buildHabitatRestRequest(
     throw new Error(`habitat method ${method} requires FormData body`);
   }
 
+  // multipart / raw：标量 payload（如 subject_kind）走 query；二进制在 body
+  appendPayloadToQuery(url.searchParams, payload, omitKeys);
+
   const init: RequestInit = { method: "POST", headers };
   if (options?.body !== undefined) {
     init.body = options.body;

@@ -1,6 +1,8 @@
 import { omitUndefined } from "@freeanima/host/core/util";
+import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
 
+import { handleEmailAttachmentUpload } from "../binary.ts";
 import { emailMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
@@ -11,6 +13,10 @@ type EmailRemoteToolsServerDeps = {
 
 function depsOf(deps: unknown): EmailRemoteToolsServerDeps {
   return deps as EmailRemoteToolsServerDeps;
+}
+
+function ctxOf(ctx: unknown): RemoteToolsRequestContext {
+  return ctx as RemoteToolsRequestContext;
 }
 
 export const emailHabitatRoutes = bindHabitatRouteHandlers(emailMethodDefs, {
@@ -44,6 +50,8 @@ export const emailHabitatRoutes = bindHabitatRouteHandlers(emailMethodDefs, {
     service.serviceEmailMessageSearch(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "email.send": async (deps, input) =>
     service.serviceEmailSend(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "email.attachment.upload": async (_deps, input, ctx) =>
+    handleEmailAttachmentUpload(_deps, input, ctxOf(ctx)),
   "email.sync": async (deps, input) =>
     service.serviceEmailSync(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
   "email.mailbox.list": async (deps, input) =>

@@ -107,6 +107,7 @@ async function syncMailboxMessages(
   let highestUid: number | null = getMailboxCursor(account.sync, mailbox).last_uid ?? null;
   const newMails: NewMailNotifyItem[] = [];
   const inboxMailbox = isInboxMailbox(account, mailbox);
+  const worldId = await worldIdForAccount(account.id);
 
   const lock = await client.getMailboxLock(mailbox);
   try {
@@ -184,12 +185,16 @@ async function syncMailboxMessages(
         flags: [...(msg.flags ?? [])],
       });
       if (mime.attachments.length > 0) {
-        const attachmentMeta = await persistEmailAttachments(
-          account.id,
-          message.id,
-          mime.attachments,
-        );
-        await setEmailMessageAttachments(message.id, attachmentMeta);
+        const alreadyStored =
+          existingBefore?.attachments?.some((a) => a.object_file_id > 0) === true;
+        if (!alreadyStored) {
+          const attachmentMeta = await persistEmailAttachments(
+            worldId,
+            message.id,
+            mime.attachments,
+          );
+          await setEmailMessageAttachments(message.id, attachmentMeta);
+        }
       }
       if (!existingBefore) {
         upsertedMessages += 1;

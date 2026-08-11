@@ -33,6 +33,12 @@ export const entityHabitatRoutes = bindHabitatRouteHandlers(entityMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "entity.get": async (deps, input, ctx) =>
+    service.serviceEntityGet(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
   "entity.delete": async (deps, input, ctx) =>
     service.serviceEntityDelete(
       depsOf(deps).runtime.runtimeDeps(),

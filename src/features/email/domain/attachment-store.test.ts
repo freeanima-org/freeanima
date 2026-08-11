@@ -1,26 +1,36 @@
-import { afterEach, describe, expect, test } from "bun:test";
-import { access, mkdtemp, readFile, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { afterEach, describe, expect, mock, test } from "bun:test";
 
-import { persistEmailAttachments, removeEmailAccountAttachments } from "./attachment-store.ts";
+const createObjectFile = mock(
+  async (input: { world_id: number; title: string; bytes: Uint8Array; mime_type?: string }) => ({
+    id: 9000 + input.bytes.byteLength,
+    title: input.title,
+    world_id: input.world_id,
+    cid: "a".repeat(32),
+    size: input.bytes.byteLength,
+    mime_type: input.mime_type ?? "application/octet-stream",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }),
+);
+
+const deleteObjectFile = mock(async (_id: number) => undefined);
+
+mock.module("@freeanima/features/object-storage/domain", () => ({
+  createObjectFile,
+  deleteObjectFile,
+}));
+
+const { persistEmailAttachments, softDeleteEmailAttachmentObjectFiles } =
+  await import("./attachment-store.ts");
 
 describe("persistEmailAttachments", () => {
-  let home: string | undefined;
-  const prevHome = process.env.FREEANIMA_HOME;
-
-  afterEach(async () => {
-    if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prevHome;
-    if (home) await rm(home, { recursive: true, force: true });
-    home = undefined;
+  afterEach(() => {
+    createObjectFile.mockClear();
+    deleteObjectFile.mockClear();
   });
 
-  test("writes files under FREEANIMA_HOME/email-attachments and returns meta", async () => {
-    home = await mkdtemp(join(tmpdir(), "anima-email-att-"));
-    process.env.FREEANIMA_HOME = home;
-
-    const meta = await persistEmailAttachments(10, 20, [
+  test("creates object_file per attachment and returns object_file_id meta", async () => {
+    const meta = await persistEmailAttachments(5, 20, [
       {
         filename: "note.txt",
         content_type: "text/plain",
@@ -38,31 +48,41 @@ describe("persistEmailAttachments", () => {
     expect(meta).toHaveLength(2);
     expect(meta[0]?.filename).toBe("note.txt");
     expect(meta[0]?.file_id).toContain("20-1-");
-    expect(meta[0]?.path).toContain(join("email-attachments", "10", "20"));
+    expect(meta[0]?.object_file_id).toBe(9005);
     expect(meta[1]?.filename).toBe(".._.._evil.pdf");
-    expect(await readFile(meta[0]!.path, "utf8")).toBe("hello");
-    expect(await readFile(meta[1]!.path)).toEqual(Buffer.from("pdf"));
+    expect(meta[1]?.object_file_id).toBe(9003);
+    expect(createObjectFile).toHaveBeenCalledTimes(2);
+    expect(createObjectFile.mock.calls[0]?.[0]?.world_id).toBe(5);
+    expect(createObjectFile.mock.calls[0]?.[0]?.title).toBe("note.txt");
   });
 
-  test("removeEmailAccountAttachments deletes account attachment tree", async () => {
-    home = await mkdtemp(join(tmpdir(), "anima-email-att-rm-"));
-    process.env.FREEANIMA_HOME = home;
-
-    const meta = await persistEmailAttachments(11, 21, [
+  test("softDeleteEmailAttachmentObjectFiles soft-deletes object files", async () => {
+    await softDeleteEmailAttachmentObjectFiles([
       {
+        file_id: "1",
         filename: "a.txt",
         content_type: "text/plain",
         size: 1,
-        content: Buffer.from("a"),
+        object_file_id: 42,
       },
     ]);
-    const accountRoot = join(home, "email-attachments", "11");
-    await access(meta[0]!.path);
+    expect(deleteObjectFile).toHaveBeenCalledWith(42);
+  });
 
-    await removeEmailAccountAttachments(11);
-    await expect(access(accountRoot)).rejects.toThrow();
-
-    // 目录不存在时不应抛错
-    await removeEmailAccountAttachments(11);
+  test("outboundAttachmentMeta builds file_id from message id", async () => {
+    const { outboundAttachmentMeta } = await import("./attachment-store.ts");
+    const meta = outboundAttachmentMeta(99, [
+      {
+        object_file_id: 7,
+        filename: "x.pdf",
+        content_type: "application/pdf",
+        size: 10,
+        content: Buffer.from("x"),
+      },
+    ]);
+    expect(meta).toHaveLength(1);
+    expect(meta[0]?.object_file_id).toBe(7);
+    expect(meta[0]?.filename).toBe("x.pdf");
+    expect(meta[0]?.file_id).toContain("99-1-");
   });
 });

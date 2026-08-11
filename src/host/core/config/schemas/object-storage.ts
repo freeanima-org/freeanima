@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** Habitat runtime：S3 兼容远端（权威字节）；未配置时上传/下载能力报错 */
+/** Habitat runtime：可选 S3 兼容远端。空段 = 本机持久库 `FREEANIMA_HOME/object-store` 为 SSOT */
 export const objectStorageConfigSchema = z.object({
   endpoint: z.string().min(1).optional(),
   region: z.string().min(1).optional(),

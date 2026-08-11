@@ -13,6 +13,7 @@ import {
 } from "@freeanima/host/core/db/pg/entity";
 import { worldIdForAccount } from "./email-world.ts";
 import { refreshThreadAggregates } from "./thread-store.ts";
+import { softDeleteEmailAttachmentObjectFiles } from "./attachment-store.ts";
 import type { EmailMessageListOpts, EmailMessageRow, EmailMessageUpsertInput } from "./types.ts";
 
 function normalizeTagIds(tagIds: number[] | undefined): number[] {
@@ -204,6 +205,9 @@ export async function markEmailMessageRead(
 
 export async function deleteEmailMessageRow(id: number): Promise<boolean> {
   const existing = await getEmailMessageRow(id);
+  if (existing) {
+    await softDeleteEmailAttachmentObjectFiles(existing.attachments);
+  }
   const ok = await deleteEntity(id);
   if (ok && existing) await refreshThreadAggregates(existing.thread_id);
   return ok;

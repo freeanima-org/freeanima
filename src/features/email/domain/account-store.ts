@@ -14,7 +14,8 @@ import {
   listEntities,
   updateEntity,
 } from "@freeanima/host/core/db/pg/entity";
-import { removeEmailAccountAttachments } from "./attachment-store.ts";
+import { softDeleteEmailAttachmentObjectFiles } from "./attachment-store.ts";
+import { listEmailMessages } from "./message-store.ts";
 import { normalizeAccountSync } from "./sync-state.ts";
 import type { EmailAccountCreateInput, EmailAccountRow, EmailAccountUpdateInput } from "./types.ts";
 
@@ -244,10 +245,30 @@ export async function updateEmailAccount(
   return getEmailAccountRow(input.id);
 }
 
+async function softDeleteAttachmentObjectFilesForAccount(
+  worldId: number,
+  accountId: number,
+): Promise<void> {
+  const pageSize = 200;
+  let offset = 0;
+  for (;;) {
+    const messages = await listEmailMessages(worldId, {
+      account_id: accountId,
+      limit: pageSize,
+      offset,
+    });
+    for (const msg of messages) {
+      await softDeleteEmailAttachmentObjectFiles(msg.attachments);
+    }
+    if (messages.length < pageSize) break;
+    offset += pageSize;
+  }
+}
+
 export async function deleteEmailAccountRow(worldId: number, id: number): Promise<boolean> {
   await assertEntityInWorld(id, worldId);
+  await softDeleteAttachmentObjectFilesForAccount(worldId, id);
   await deleteEmailEntitiesByAccountId(worldId, id);
-  await removeEmailAccountAttachments(id);
   const ok = await deleteEntity(id);
   if (ok) await normalizeDefaultSender(worldId);
   return ok;

@@ -6,16 +6,21 @@ import {
   deleteEmailMessageRow,
   getEmailAccountRow,
   getEmailMessageRow,
+  loadOutboundAttachmentFiles,
   markEmailMessageRead,
+  outboundAttachmentMeta,
   resolveEmailAccountRow,
+  setEmailMessageAttachments,
   updateEmailMessageMailbox,
   upsertEmailMessage,
   upsertEmailThread,
   worldIdForAccount,
+  type LoadedOutboundAttachment,
 } from "@freeanima/features/email/domain";
 import { messagePreview, smtpSecure, withImapAccount } from "./imap-client.ts";
 import { resolveEmailAccountPassword } from "./password.ts";
 import nodemailer from "nodemailer";
+import MailComposer from "nodemailer/lib/mail-composer/index.js";
 
 export type SendEmailInput = {
   account_id?: number;
@@ -28,6 +33,7 @@ export type SendEmailInput = {
   body: string;
   cc?: string;
   bcc?: string;
+  attachment_object_file_ids?: number[];
 };
 
 export type SaveDraftInput = {
@@ -121,6 +127,44 @@ function buildSentMime(input: {
   return lines.join("\r\n");
 }
 
+function nodemailerMailOptions(input: {
+  account: NonNullable<Awaited<ReturnType<typeof getEmailAccountRow>>>;
+  to: string;
+  subject: string;
+  body: string;
+  cc?: string;
+  bcc?: string;
+  messageId?: string;
+  attachments: LoadedOutboundAttachment[];
+}): nodemailer.SendMailOptions {
+  return {
+    from: input.account.display_name
+      ? { name: input.account.display_name, address: input.account.address }
+      : input.account.address,
+    to: input.to,
+    cc: input.cc || undefined,
+    bcc: input.bcc || undefined,
+    subject: input.subject,
+    text: input.body,
+    ...(input.messageId ? { messageId: input.messageId } : {}),
+    ...(input.attachments.length > 0
+      ? {
+          attachments: input.attachments.map((att) => ({
+            filename: att.filename,
+            content: att.content,
+            contentType: att.content_type,
+          })),
+        }
+      : {}),
+  };
+}
+
+async function buildRawMime(mail: nodemailer.SendMailOptions): Promise<string> {
+  const compiled = new MailComposer(mail).compile();
+  const buf = await compiled.build();
+  return Buffer.from(buf).toString("utf8");
+}
+
 async function appendToMailbox(
   account: NonNullable<Awaited<ReturnType<typeof getEmailAccountRow>>>,
   mailbox: string,
@@ -155,6 +199,11 @@ export async function sendEmail(input: SendEmailInput): Promise<{
   const account = await resolveEmailAccountRow(worldId, input.account_id);
   const pass = await resolveEmailAccountPassword(account);
 
+  const attachmentFiles = await loadOutboundAttachmentFiles({
+    worldId,
+    objectFileIds: input.attachment_object_file_ids ?? [],
+  });
+
   const transport = nodemailer.createTransport({
     host: account.smtp_host,
     port: account.smtp_port,
@@ -165,16 +214,17 @@ export async function sendEmail(input: SendEmailInput): Promise<{
     },
   });
 
-  const info = await transport.sendMail({
-    from: account.display_name
-      ? { name: account.display_name, address: account.address }
-      : account.address,
+  const mail = nodemailerMailOptions({
+    account,
     to: input.to,
-    cc: input.cc || undefined,
-    bcc: input.bcc || undefined,
     subject: input.subject,
-    text: input.body,
+    body: input.body,
+    ...(input.cc ? { cc: input.cc } : {}),
+    ...(input.bcc ? { bcc: input.bcc } : {}),
+    attachments: attachmentFiles,
   });
+
+  const info = await transport.sendMail(mail);
 
   const sentAt = formatCstIso();
   const preview = messagePreview(input.body);
@@ -191,19 +241,21 @@ export async function sendEmail(input: SendEmailInput): Promise<{
   const sentMailbox = resolveSentMailbox(account);
   let imapUid: number | null = null;
   try {
-    imapUid = await appendToMailbox(
-      account,
-      sentMailbox,
-      buildSentMime({
-        account,
-        to: input.to,
-        subject: input.subject,
-        body: input.body,
-        messageId: info.messageId,
-        ...(input.cc ? { cc: input.cc } : {}),
-      }),
-      ["\\Seen"],
-    );
+    const raw =
+      attachmentFiles.length > 0
+        ? await buildRawMime({
+            ...mail,
+            messageId: info.messageId,
+          })
+        : buildSentMime({
+            account,
+            to: input.to,
+            subject: input.subject,
+            body: input.body,
+            messageId: info.messageId,
+            ...(input.cc ? { cc: input.cc } : {}),
+          });
+    imapUid = await appendToMailbox(account, sentMailbox, raw, ["\\Seen"]);
   } catch {
     // SMTP 已成功；IMAP append 失败不阻断
   }
@@ -225,6 +277,13 @@ export async function sendEmail(input: SendEmailInput): Promise<{
     imap_mailbox: sentMailbox,
     flags: ["\\Seen"],
   });
+
+  if (attachmentFiles.length > 0) {
+    await setEmailMessageAttachments(
+      message.id,
+      outboundAttachmentMeta(message.id, attachmentFiles),
+    );
+  }
 
   return {
     ok: true,

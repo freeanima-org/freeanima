@@ -4,6 +4,8 @@ import {
   entityDeleteComponentOutputSchema,
   entityDeleteInputSchema,
   entityDeleteOutputSchema,
+  entityGetInputSchema,
+  entityGetOutputSchema,
   entityListInputSchema,
   entityListOutputSchema,
   entityRestoreInputSchema,
@@ -21,6 +23,11 @@ export const entityMethodDefs = {
   "entity.trash.list": defineHabitatMethod({
     input: entityTrashListInputSchema,
     output: entityTrashListOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "entity.get": defineHabitatMethod({
+    input: entityGetInputSchema,
+    output: entityGetOutputSchema,
     meta: dualTransportMeta(true),
   }),
   "entity.delete": defineHabitatMethod({

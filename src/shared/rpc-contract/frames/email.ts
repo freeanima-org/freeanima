@@ -48,7 +48,9 @@ export const emailMessageRowSchema = z.object({
         filename: z.string(),
         content_type: z.string(),
         size: z.number().int().nonnegative(),
+        object_file_id: z.number().int().positive(),
         entity_id: z.number().int().positive(),
+        content_id: z.string().optional(),
       }),
     )
     .optional(),
@@ -137,6 +139,7 @@ export const emailSendInputSchema = z.object({
   body: z.string(),
   cc: z.string().optional(),
   bcc: z.string().optional(),
+  attachment_object_file_ids: z.array(z.number().int().positive()).max(20).optional(),
 });
 export type EmailSendInput = z.infer<typeof emailSendInputSchema>;
 export const emailSendOutputSchema = z.object({
@@ -146,6 +149,18 @@ export const emailSendOutputSchema = z.object({
   message_entity_id: z.number().int().positive(),
 });
 export type EmailSendOutput = z.infer<typeof emailSendOutputSchema>;
+
+export const emailAttachmentUploadInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+});
+export type EmailAttachmentUploadInput = z.infer<typeof emailAttachmentUploadInputSchema>;
+export const emailAttachmentUploadOutputSchema = z.object({
+  object_file_id: z.number().int().positive(),
+  filename: z.string().min(1),
+  content_type: z.string().min(1),
+  size: z.number().int().nonnegative(),
+});
+export type EmailAttachmentUploadOutput = z.infer<typeof emailAttachmentUploadOutputSchema>;
 
 export const emailSyncInputSchema = z.object({
   subject_kind: emailSubjectKindSchema,
