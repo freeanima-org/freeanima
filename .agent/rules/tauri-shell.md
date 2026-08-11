@@ -69,8 +69,17 @@ NSIS 安装目录 = `productName`（无独立 installDir）。`just pack tauri-w
 - **应用图标未读角标**：桌面经 `ShellApi.setAppBadgeCount`（macOS/Linux `set_badge_count`；Windows `set_overlay_icon` 用**专用红点徽章**，禁止套用应用图标）+ `requestAppAttention`（任务栏 flash + 托盘图标闪烁）；Web 走 Badging API。**Android launcher badge 无成熟 Tauri 插件**（ShortcutBadger 需自研 Kotlin）— follow-up；移动端仅尽力 `navigator.setAppBadge`。
 - **Windows Toast**：启动时注册 bundle `identifier` 为 AppUserModelID（HKCU + `SetCurrentProcessExplicitAppUserModelID`），否则安装态通知会被 WinRT 静默丢弃。
 
+## Windows NSIS 覆盖安装（检查更新）
+
+应用内「检查更新 → 安装」走自研下载 + 静默 `setup.exe /S`（非 `tauri-plugin-updater`）。`windows/hooks.nsh` 的 `PREINSTALL` 在进程仍在跑时 `ExecWait … --quit-for-install`，再 `taskkill` / 等待退出。
+
+- **`--quit-for-install` 必须经 `tauri-plugin-single-instance` 转发给已运行主进程**（主进程设 `IS_QUITTING` 后退出）。**禁止**在 `main.rs` 入口看到该 flag 就 `exit(0)`——第二实例会秒退且从不通知主实例，覆盖写入易卡死。
+- 冷启动（无已运行实例）才在 `setup` 里直接 `exit`，避免弹出旧 UI。
+- 下载用 blocking `reqwest`，须设 `connect_timeout` / `timeout`，失败回传 UI；启动安装器后**不要**立刻 `app.exit`（会打断脱离失败时的 NSIS 子进程）。
+
 ## 禁止
 
 - 为迁壳重写 Habitat / 产品 features。
 - 把 Android AppWidget 与桌面 companion overlay 做成同一套 UI 抽象。
 - 重新引入 Electron / Capacitor 双轨工程。
+- 在 `main` 入口对 `--quit-for-install` 抢先 `exit`（见上节）。

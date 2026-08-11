@@ -41,6 +41,30 @@ static IS_QUITTING: AtomicBool = AtomicBool::new(false);
 #[cfg(desktop)]
 static TRAY_BLINK_ACTIVE: AtomicBool = AtomicBool::new(false);
 
+/// NSIS 覆盖安装时通知已运行实例优雅退出（须经 single-instance 转发，勿在 main 入口抢先 exit）。
+#[cfg(desktop)]
+const QUIT_FOR_INSTALL_ARG: &str = "--quit-for-install";
+
+#[cfg(desktop)]
+fn argv_has_quit_for_install(args: impl IntoIterator<Item = impl AsRef<str>>) -> bool {
+  args
+    .into_iter()
+    .any(|a| a.as_ref() == QUIT_FOR_INSTALL_ARG)
+}
+
+#[cfg(desktop)]
+fn quit_for_install(app: &AppHandle) {
+  IS_QUITTING.store(true, Ordering::SeqCst);
+  for label in ["main", "companion", "coding"] {
+    if let Some(w) = app.get_webview_window(label) {
+      let _ = w.hide();
+      let _ = w.close();
+    }
+  }
+  app.cleanup_before_exit();
+  std::process::exit(0);
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 struct PersistedShellPrefs {
@@ -1006,7 +1030,11 @@ pub fn run() {
         MacosLauncher::LaunchAgent,
         Some(vec![]),
       ))
-      .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+      .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+        if argv_has_quit_for_install(args.iter().map(|s| s.as_str())) {
+          quit_for_install(app);
+          return;
+        }
         if let Some(w) = app.get_webview_window("main") {
           let _ = w.show();
           let _ = w.set_focus();
@@ -1054,6 +1082,10 @@ pub fn run() {
         coding_fs::run_command,
       ])
       .setup(|app| {
+        // 冷启动带 --quit-for-install（无已运行实例可转发）：直接退出，不建托盘/窗。
+        if argv_has_quit_for_install(std::env::args()) {
+          std::process::exit(0);
+        }
         #[cfg(windows)]
         windows_aumid::register_aumid(app.handle());
         build_tray(app.handle())?;

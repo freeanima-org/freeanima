@@ -69,6 +69,9 @@ fn download_installer_to_file<R: Runtime>(
   let client = reqwest::blocking::Client::builder()
     .user_agent("freeanima-desktop-updater")
     .redirect(reqwest::redirect::Policy::limited(10))
+    .connect_timeout(Duration::from_secs(30))
+    // 大安装包 + 慢网；超时后失败回传 UI，避免 Toast 永久「下载中」。
+    .timeout(Duration::from_secs(600))
     .build()
     .map_err(|e| format!("创建下载客户端失败: {e}"))?;
 
@@ -144,7 +147,8 @@ fn launch_windows_nsis_installer(installer_path: &Path) -> Result<u32, String> {
 
   match start {
     Ok(child) => Ok(child.id()),
-    Err(_) => {
+    Err(e) => {
+      eprintln!("[packaged-update] cmd start 失败 ({e})，fallback 直接 spawn /S");
       let child = Command::new(path_str)
         .arg("/S")
         .stdin(std::process::Stdio::null())

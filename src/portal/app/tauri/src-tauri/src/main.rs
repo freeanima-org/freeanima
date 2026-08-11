@@ -2,9 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-  // NSIS 覆盖安装：优雅退出，避免安装器删旧版时进程仍占用文件。
-  if std::env::args().any(|a| a == "--quit-for-install") {
-    std::process::exit(0);
-  }
+  // --quit-for-install 由 lib::run 内 single-instance / setup 处理：
+  // 必须进入 run()，第二实例才能把参数转发给已运行主进程。
   freeanima_portal_lib::run();
 }
