@@ -15,7 +15,6 @@ import { compressionSchema } from "./compression.ts";
 import { modelsConfigSchema } from "./models.ts";
 import { cjkConfigSchema } from "./cjk.ts";
 import { ftsConfigSchema } from "./fts.ts";
-import { eventbusConfigSchema } from "./eventbus.ts";
 import { gatewayConfigSchema } from "./gateway.ts";
 import { autoLlmConfigSchema } from "./auto-llm.ts";
 import { discordConfigSchema } from "./discord.ts";
@@ -47,7 +46,6 @@ const runtimeConfigObjectSchema = z.object({
   cjk: cjkConfigSchema,
   fts: ftsConfigSchema,
   embedding: embeddingConfigSchema,
-  eventbus: eventbusConfigSchema,
   gateway: gatewayConfigSchema,
   auto_llm: autoLlmConfigSchema,
   discord: discordConfigSchema,

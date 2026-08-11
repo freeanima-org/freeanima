@@ -474,8 +474,6 @@ Unified in-process **HookRegistry** (no Redis queue):
 
 Complementary: Pipeline = scheduled multi-step background work; HookRegistry `on` = “may this proceed / mutate”; `subscribe` = in-process notify. UI often still use direct `onConversationUpdated` callbacks in addition to `subscribe`.
 
-Legacy `kernel/eventbus` queue adapters are not on the Habitat production path.
-
 ## Desktop companion (Habitat SSOT)
 
 The desktop companion（桌面伴侣）is an **unreachable local app** that **actively connects** to Habitat and registers remote tools in the **first-party companion overlay**（伴侣浮层 / `embedded-overlay`；shell provides window/IPC/FS only — **not** a Node sidecar), with a split boundary:

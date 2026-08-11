@@ -1,12 +1,5 @@
 export { createSemanticMemory, type SemanticMemory } from "./fact.ts";
-export {
-  conversationUpdated,
-  semanticMemoryUpdated,
-  testPing,
-  type ConversationUpdatedPayload,
-  type SemanticMemoryUpdatedPayload,
-  type TestPingPayload,
-} from "./events.ts";
+export { conversationUpdated, type ConversationUpdatedPayload } from "./events.ts";
 export {
   formatMemoryReferenceMarker,
   formatResidentMemoryLine,

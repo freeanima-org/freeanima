@@ -17,7 +17,6 @@ export { browserSchema } from "./browser.ts";
 export { clarifySchema } from "./clarify.ts";
 export { cjkConfigSchema, type CjkConfigInput } from "./cjk.ts";
 export { ftsConfigSchema, ftsTrgmConfigSchema, type FtsConfigInput } from "./fts.ts";
-export { eventbusConfigSchema, type EventbusConfigInput } from "./eventbus.ts";
 export { compressionSchema } from "./compression.ts";
 export { promptSchema, DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS } from "./prompt.ts";
 export type { PromptConfigInput } from "./prompt.ts";
