@@ -55,7 +55,7 @@ export function VaultUnlockForm({
       ) : null}
       <Button
         type="button"
-        disabled={loading || !password || (setupMode && !confirm)}
+        isDisabled={loading || !password || (setupMode && !confirm)}
         onClick={() => (setupMode ? onSetup(password, confirm) : onUnlock(password))}
       >
         {loading ? <Spinner className="size-4" /> : setupMode ? "创建保险库" : "解锁"}

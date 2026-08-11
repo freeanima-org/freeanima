@@ -16,8 +16,10 @@ export function SettingsTabs() {
 
   return (
     <Tabs
-      value={tab}
-      onValueChange={(value: string) => {
+      selectedKey={tab}
+      onSelectionChange={(key) => {
+        if (key == null) return;
+        const value = String(key);
         if ((TAB_IDS as readonly string[]).includes(value)) {
           setTab(value as (typeof TAB_IDS)[number]);
         }
@@ -26,7 +28,7 @@ export function SettingsTabs() {
     >
       <TabsList className="h-auto w-full flex-wrap gap-1 bg-muted/40 p-1" aria-label="设置分类">
         {tabs.map((t) => (
-          <TabsTrigger key={t.id} value={t.id} className="text-xs">
+          <TabsTrigger key={t.id} id={t.id} className="text-xs">
             {t.label}
           </TabsTrigger>
         ))}

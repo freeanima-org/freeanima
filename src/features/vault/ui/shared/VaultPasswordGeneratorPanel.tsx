@@ -60,7 +60,7 @@ export function VaultPasswordGeneratorPanel({
           variant="outline"
           size="icon"
           aria-label="复制"
-          disabled={!password}
+          isDisabled={!password}
           onClick={() => void navigator.clipboard.writeText(password)}
         >
           ⧉
@@ -106,7 +106,7 @@ export function VaultPasswordGeneratorPanel({
           <Button
             type="button"
             variant="outline"
-            disabled={!password}
+            isDisabled={!password}
             onClick={() => void onFill(password)}
           >
             填入页面

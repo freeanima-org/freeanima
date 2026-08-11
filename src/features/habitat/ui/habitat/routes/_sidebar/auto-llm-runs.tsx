@@ -180,16 +180,20 @@ function AutoLlmRunsPage() {
       <div className="flex flex-wrap gap-2 mb-4 items-end">
         <FormField label={m.habitat_auto_llm_runs_run_kind()} className="w-full max-w-xs text-xs">
           <Select
-            value={runKind || ALL_VALUE}
-            onValueChange={(v) => setRunKind(v === ALL_VALUE ? "" : v)}
+            selectedKey={runKind || ALL_VALUE}
+            onSelectionChange={(key) => {
+              if (key == null) return;
+              const v = String(key);
+              setRunKind(v === ALL_VALUE ? "" : v);
+            }}
           >
             <SelectTrigger size="sm" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
+              <SelectItem id={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
               {RUN_KIND_OPTIONS.filter(Boolean).map((kind) => (
-                <SelectItem key={kind} value={kind}>
+                <SelectItem key={kind} id={kind}>
                   {kind}
                 </SelectItem>
               ))}
@@ -198,20 +202,24 @@ function AutoLlmRunsPage() {
         </FormField>
         <FormField label={m.habitat_common_status()} className="w-full max-w-xs text-xs">
           <Select
-            value={statusFilter || ALL_VALUE}
-            onValueChange={(v) => setStatusFilter(v === ALL_VALUE ? "" : v)}
+            selectedKey={statusFilter || ALL_VALUE}
+            onSelectionChange={(key) => {
+              if (key == null) return;
+              const v = String(key);
+              setStatusFilter(v === ALL_VALUE ? "" : v);
+            }}
           >
             <SelectTrigger size="sm" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
-              <SelectItem value="ok">{m.habitat_common_success()}</SelectItem>
-              <SelectItem value="error">{m.habitat_common_failed()}</SelectItem>
+              <SelectItem id={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
+              <SelectItem id="ok">{m.habitat_common_success()}</SelectItem>
+              <SelectItem id="error">{m.habitat_common_failed()}</SelectItem>
             </SelectContent>
           </Select>
         </FormField>
-        <Button type="button" size="sm" onClick={runSearch} disabled={loading}>
+        <Button type="button" size="sm" onClick={runSearch} isDisabled={loading}>
           {loading ? m.habitat_common_loading() : m.habitat_common_refresh()}
         </Button>
       </div>

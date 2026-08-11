@@ -86,7 +86,7 @@ export function ChangeMasterPasswordDialog({
         <Button
           type="button"
           variant="outline"
-          disabled={loading}
+          isDisabled={loading}
           onClick={() => {
             reset();
             onOpenChange(false);
@@ -96,7 +96,7 @@ export function ChangeMasterPasswordDialog({
         </Button>
         <Button
           type="button"
-          disabled={
+          isDisabled={
             loading || !currentPassword.trim() || !newPassword.trim() || !confirmPassword.trim()
           }
           onClick={() =>

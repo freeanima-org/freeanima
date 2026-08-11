@@ -523,7 +523,7 @@ export function PomodoroApp() {
 
               <div className="flex flex-wrap justify-center gap-2">
                 {!active ? (
-                  <Button type="button" onClick={handleStart} disabled={!config}>
+                  <Button type="button" onClick={handleStart} isDisabled={!config}>
                     开始
                   </Button>
                 ) : (
@@ -556,7 +556,7 @@ export function PomodoroApp() {
                     type="button"
                     variant="outline"
                     className="min-w-0 flex-1 justify-start"
-                    disabled={Boolean(active) && !canPickTaskWhileActive && taskItemId == null}
+                    isDisabled={Boolean(active) && !canPickTaskWhileActive && taskItemId == null}
                     onClick={() => {
                       if (taskItemId != null) {
                         openTaskItemOverlay(taskItemId);
@@ -640,9 +640,9 @@ export function PomodoroApp() {
                   <div key={key} className="flex items-center justify-between gap-2">
                     <span>{label}</span>
                     <Switch
-                      checked={config[key]}
-                      disabled={!habitatOnline}
-                      onCheckedChange={(checked) => void handleConfigChange({ [key]: checked })}
+                      isSelected={config[key]}
+                      isDisabled={!habitatOnline}
+                      onChange={(checked) => void handleConfigChange({ [key]: checked })}
                     />
                   </div>
                 ))}

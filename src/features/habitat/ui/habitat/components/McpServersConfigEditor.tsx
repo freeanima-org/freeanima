@@ -331,7 +331,7 @@ export function McpServersConfigEditor({ onSaved }: Props) {
                 type="button"
                 size="sm"
                 variant="outline"
-                disabled={!newName.trim()}
+                isDisabled={!newName.trim()}
                 onClick={addEntry}
               >
                 添加
@@ -353,7 +353,7 @@ export function McpServersConfigEditor({ onSaved }: Props) {
             ) : (
               <p className="text-sm text-muted-foreground">{m.habitat_mcp_empty_hint()}</p>
             )}
-            <Button type="button" disabled={saving} onClick={() => void save()}>
+            <Button type="button" isDisabled={saving} onClick={() => void save()}>
               {m.habitat_mcp_save_config()}
             </Button>
           </>

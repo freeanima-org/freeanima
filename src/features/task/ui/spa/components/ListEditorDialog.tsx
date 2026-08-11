@@ -91,10 +91,10 @@ export function ListEditorDialog({ open, list, lists, onClose, onSave }: ListEdi
         </div>
       </div>
       <DialogFooter>
-        <Button type="button" variant="ghost" onClick={onClose} disabled={saving}>
+        <Button type="button" variant="ghost" onClick={onClose} isDisabled={saving}>
           取消
         </Button>
-        <Button type="button" onClick={() => void handleSave()} disabled={!name.trim() || saving}>
+        <Button type="button" onClick={() => void handleSave()} isDisabled={!name.trim() || saving}>
           保存
         </Button>
       </DialogFooter>

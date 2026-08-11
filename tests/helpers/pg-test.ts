@@ -15,7 +15,7 @@ import {
   registerLlmStackConfigurator,
   resetLlmRuntimeForTests,
 } from "@freeanima/host/core/llm";
-import { bindOpenAiCompatibleLlm } from "@freeanima/host/capabilities/llm-openai";
+import { bindLlmStack } from "@freeanima/host/capabilities/llm-openai";
 import {
   createConversationService,
   type ConversationService,
@@ -53,7 +53,7 @@ async function ensureIntegrationWorldContext(config: Config): Promise<void> {
 }
 
 function createTestEngine(config: Config): Engine {
-  registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
+  registerLlmStackConfigurator(bindLlmStack);
   const llm = initLlmRuntime(config.data);
   return createEngine({ llm, config, logger: createTestLogger() });
 }

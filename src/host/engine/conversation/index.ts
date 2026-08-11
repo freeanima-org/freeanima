@@ -6,8 +6,8 @@ export { handleConversationTodo } from "@freeanima/host/core/tool";
 export type { TodoStatus, TodoItem, ConversationTodoStore } from "@freeanima/host/core/db/domain";
 export * from "@freeanima/host/core/db/domain";
 export {
-  registerConversationToolMaskFilter,
-  applyConversationToolMaskFilter,
-  type ConversationToolMaskFilter,
+  registerConversationToolPolicyFilter,
+  applyConversationToolPolicyFilter,
+  type ConversationToolPolicyFilter,
 } from "@freeanima/host/core/tool";
 export { resolveExecutableToolNames } from "@freeanima/host/core/tool";

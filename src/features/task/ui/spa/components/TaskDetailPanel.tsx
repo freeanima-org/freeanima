@@ -5,13 +5,13 @@ import {
   type TaskDetailFocusField,
 } from "@freeanima/ui-kit/composite";
 import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task.ts";
+import { TASK_ITEM_COMPONENT } from "@freeanima/host/core/db/schema";
+import { TagPicker, type TagKnown } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 
 import { taskAttributionLabel } from "../lib/task-attribution.ts";
 import { TaskPomodoroFocusSection } from "./TaskPomodoroFocusSection.tsx";
 import { TaskSubtaskSection } from "./TaskSubtaskSection.tsx";
-import { TaskTagPicker } from "./TaskTagPicker.tsx";
 import { EntityIdLabel } from "./EntityIdLabel.tsx";
-import type { TagKnown } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 
 export type { DetailSaveStatus };
 export type TaskTagKnown = TagKnown;
@@ -61,9 +61,11 @@ export function TaskDetailPanel<T extends TaskItemRowPayload>({
                 <p className="text-muted-foreground text-xs">归属：{taskAttributionLabel(item)}</p>
               ) : null}
             </div>
-            <TaskTagPicker
+            <TagPicker
+              primaryComponent={TASK_ITEM_COMPONENT}
               tagIds={item.tag_ids}
               onChange={(tag_ids) => onChange({ ...item, tag_ids })}
+              mode="multi"
               {...(onTagKnown ? { onTagKnown } : {})}
             />
           </div>

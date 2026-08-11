@@ -97,7 +97,7 @@ export default function CompanionClientSettingsSection({ store }: SettingsPanelP
           variant="outline"
           size="sm"
           className="w-fit"
-          disabled={!ready || testingBubble || !window.portalShell?.enqueueCompanionBubble}
+          isDisabled={!ready || testingBubble || !window.portalShell?.enqueueCompanionBubble}
           onClick={() => void onTestBubble()}
         >
           {testingBubble ? "发送中…" : "测试文字气泡"}

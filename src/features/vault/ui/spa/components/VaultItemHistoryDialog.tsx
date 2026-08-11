@@ -135,7 +135,7 @@ export function VaultItemHistoryDialog({
                     type="button"
                     size="sm"
                     variant="outline"
-                    disabled={disabled || restoringIndex !== null}
+                    isDisabled={disabled || restoringIndex !== null}
                     onClick={() => setConfirmIndex(row.index)}
                   >
                     恢复
@@ -171,14 +171,14 @@ export function VaultItemHistoryDialog({
           <Button
             type="button"
             variant="ghost"
-            disabled={restoringIndex !== null}
+            isDisabled={restoringIndex !== null}
             onClick={() => setConfirmIndex(null)}
           >
             取消
           </Button>
           <Button
             type="button"
-            disabled={restoringIndex !== null || confirmIndex === null}
+            isDisabled={restoringIndex !== null || confirmIndex === null}
             onClick={() => {
               if (confirmIndex === null) return;
               setRestoringIndex(confirmIndex);

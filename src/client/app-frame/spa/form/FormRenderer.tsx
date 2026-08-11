@@ -198,7 +198,7 @@ export function FormRenderer({
             type="button"
             size="sm"
             variant="outline"
-            disabled={testing || saving}
+            isDisabled={testing || saving}
             onClick={() => void testConnection()}
           >
             {testLabel}
@@ -208,13 +208,18 @@ export function FormRenderer({
           <Button
             type="button"
             size="sm"
-            disabled={saving || testing}
+            isDisabled={saving || testing}
             onClick={() => void saveAndEnter()}
           >
             {saving ? "保存中…" : "保存并进入"}
           </Button>
         ) : (
-          <Button type="button" size="sm" disabled={saving || testing} onClick={() => void save()}>
+          <Button
+            type="button"
+            size="sm"
+            isDisabled={saving || testing}
+            onClick={() => void save()}
+          >
             {saving ? "保存中…" : "保存"}
           </Button>
         )}

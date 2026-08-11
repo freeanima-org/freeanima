@@ -30,7 +30,7 @@ function HabitatConversationsPage() {
           variant="ghost"
           size="sm"
           className="h-7 text-xs"
-          disabled={store.loadingConversations}
+          isDisabled={store.loadingConversations}
           onClick={() => void store.fetchConversations({ force: true })}
         >
           {m.habitat_common_refresh()}
@@ -91,7 +91,7 @@ function HabitatConversationsPage() {
                         variant="outline"
                         size="sm"
                         className="h-7 text-xs"
-                        disabled={currentPage <= 1}
+                        isDisabled={currentPage <= 1}
                         onClick={() => void store.goToConversationsPage(currentPage - 1)}
                       >
                         {m.habitat_common_previous_page()}
@@ -101,7 +101,7 @@ function HabitatConversationsPage() {
                         variant="outline"
                         size="sm"
                         className="h-7 text-xs"
-                        disabled={currentPage >= pageCount}
+                        isDisabled={currentPage >= pageCount}
                         onClick={() => void store.goToConversationsPage(currentPage + 1)}
                       >
                         {m.habitat_common_next_page()}

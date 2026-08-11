@@ -6,8 +6,8 @@ import {
   resolveDefaultConversationToolSetsForMeta,
 } from "./default-conversation-toolsets.ts";
 import {
-  applyConversationToolMaskFilter,
-  registerConversationToolMaskFilter,
+  applyConversationToolPolicyFilter,
+  registerConversationToolPolicyFilter,
 } from "./policy-port.ts";
 import { ToolSetRegistry } from "./toolset.ts";
 
@@ -46,7 +46,7 @@ describe("filterToolSetsByAllowedTools", () => {
 
 describe("resolveDefaultConversationToolSetsForMeta", () => {
   afterEach(() => {
-    registerConversationToolMaskFilter((names) => names);
+    registerConversationToolPolicyFilter((names) => names);
   });
 
   it("returns only default toolsets present in registry", () => {
@@ -63,7 +63,7 @@ describe("resolveDefaultConversationToolSetsForMeta", () => {
   });
 
   it("applies conversation tool policy filter when registered", () => {
-    registerConversationToolMaskFilter((names) => names.filter((n) => n.startsWith("memory_")));
+    registerConversationToolPolicyFilter((names) => names.filter((n) => n.startsWith("memory_")));
     const registry = new ToolSetRegistry();
     registry.registerToolSet("toolset", "discovery", [
       stubTool("toolset_search"),
@@ -73,7 +73,7 @@ describe("resolveDefaultConversationToolSetsForMeta", () => {
     registry.registerToolSet("conversation", "session", [stubTool("conversation_search")]);
     const resolved = resolveDefaultConversationToolSetsForMeta(registry, metaFixture());
     expect(resolved).toEqual(["memory"]);
-    expect(applyConversationToolMaskFilter(["memory_semantic_search"], metaFixture())).toEqual([
+    expect(applyConversationToolPolicyFilter(["memory_semantic_search"], metaFixture())).toEqual([
       "memory_semantic_search",
     ]);
   });

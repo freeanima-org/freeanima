@@ -6,7 +6,6 @@ import {
 } from "react-aria-components";
 
 import { cn } from "../../lib/utils.ts";
-import { omitUndefined } from "../../lib/omit-undefined.ts";
 
 const toggleVariants = cva(
   "group/toggle inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -38,48 +37,20 @@ const toggleVariants = cva(
   },
 );
 
-type ToggleProps = Omit<
-  ToggleButtonPrimitiveProps,
-  "className" | "isSelected" | "onChange" | "isDisabled"
-> &
+type ToggleProps = Omit<ToggleButtonPrimitiveProps, "className"> &
   React.RefAttributes<HTMLButtonElement> &
   VariantProps<typeof toggleVariants> & {
     className?: string | undefined;
-    isSelected?: boolean;
-    onChange?: (isSelected: boolean) => void;
-    isDisabled?: boolean;
-    /** @deprecated 使用 isSelected */
-    pressed?: boolean;
-    /** @deprecated 使用 onChange */
-    onPressedChange?: (pressed: boolean) => void;
-    /** @deprecated 使用 isDisabled */
-    disabled?: boolean;
     title?: string | undefined;
   };
 
-function Toggle({
-  className,
-  variant = "default",
-  size = "default",
-  isSelected,
-  onChange,
-  pressed,
-  onPressedChange,
-  isDisabled,
-  disabled,
-  ...props
-}: ToggleProps) {
+function Toggle({ className, variant = "default", size = "default", ...props }: ToggleProps) {
   return (
     <ToggleButtonPrimitive
       data-slot="toggle"
       data-variant={variant}
       data-size={size}
       className={cn(toggleVariants({ variant, size, className }))}
-      {...omitUndefined({
-        isSelected: isSelected ?? pressed,
-        onChange: onChange ?? onPressedChange,
-        isDisabled: isDisabled ?? disabled,
-      })}
       {...props}
     />
   );

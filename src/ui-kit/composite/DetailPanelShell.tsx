@@ -3,9 +3,6 @@ import type { ReactNode } from "react";
 export type DetailSaveStatus = "idle" | "saving" | "saved" | "error";
 
 export type DetailPanelShellProps = {
-  /** @deprecated 底栏已移除；保留参数以免破坏调用方 */
-  onClose?: () => void;
-  closeLabel?: string;
   saveStatus?: DetailSaveStatus;
   children: ReactNode;
 };

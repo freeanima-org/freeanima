@@ -36,8 +36,6 @@ export type TaskDetailFocusField = "title" | "content";
 export type TaskDetailEditorProps<T extends TaskItemDisplay = TaskItemDisplay> = {
   item: T;
   onChange: (item: T) => void;
-  /** @deprecated 不再显示图例 */
-  legend?: string;
   titleExtra?: ReactNode;
   children?: ReactNode;
   /** compact peek：标题/描述激活时进入全屏编辑（pointer 优先，避免半屏先获焦双弹键盘） */
@@ -512,7 +510,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                       variant="outline"
                       size="sm"
                       className="h-7 px-2 text-xs"
-                      disabled={!item.due_at}
+                      isDisabled={!item.due_at}
                       onClick={() => addRemindPreset(preset.id)}
                     >
                       + {preset.label}
@@ -523,7 +521,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                     variant="ghost"
                     size="sm"
                     className="h-7 px-2 text-xs"
-                    disabled={reminderAts.length === 0}
+                    isDisabled={reminderAts.length === 0}
                     onClick={() => onChange(setReminders(item, []))}
                   >
                     清空
@@ -570,7 +568,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                       }
                       size="sm"
                       className="h-7 px-2 text-xs"
-                      disabled={!item.due_at}
+                      isDisabled={!item.due_at}
                       onClick={() => {
                         if (!item.due_at) return;
                         onChange({

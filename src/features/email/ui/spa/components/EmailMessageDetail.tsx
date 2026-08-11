@@ -60,7 +60,7 @@ export function EmailMessageDetail({
         <EntityIdLabel id={message.id} animaComponent="email_message" />
         <div className="ml-auto flex flex-wrap gap-1">
           {onReply ? (
-            <Button type="button" size="sm" disabled={writesDisabled} onClick={onReply}>
+            <Button type="button" size="sm" isDisabled={writesDisabled} onClick={onReply}>
               {m.email_reply()}
             </Button>
           ) : null}
@@ -71,7 +71,7 @@ export function EmailMessageDetail({
                     type="button"
                     size="sm"
                     variant="outline"
-                    disabled={writesDisabled}
+                    isDisabled={writesDisabled}
                     onClick={onMarkRead}
                   >
                     {m.email_mark_read()}
@@ -82,7 +82,7 @@ export function EmailMessageDetail({
                     type="button"
                     size="sm"
                     variant="outline"
-                    disabled={writesDisabled}
+                    isDisabled={writesDisabled}
                     onClick={onMarkUnread}
                   >
                     {m.email_mark_unread()}
@@ -100,7 +100,7 @@ export function EmailMessageDetail({
               size="sm"
               variant="ghost"
               className="text-destructive"
-              disabled={writesDisabled}
+              isDisabled={writesDisabled}
               onClick={onDelete}
             >
               {m.email_delete_message()}

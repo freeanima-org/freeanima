@@ -308,7 +308,7 @@ export function CalendarApp() {
             variant="ghost"
             size="sm"
             className="h-7 shrink-0 px-2"
-            disabled={refreshing || query.loading}
+            isDisabled={refreshing || query.loading}
             aria-label={m.habitat_common_refresh()}
             onPress={() => void handleManualRefresh()}
           >

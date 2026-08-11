@@ -165,7 +165,7 @@ export function HabitatConfigRecordEntryEditor({
           type="button"
           size="sm"
           variant="outline"
-          disabled={!newName.trim()}
+          isDisabled={!newName.trim()}
           onClick={addEntry}
         >
           添加

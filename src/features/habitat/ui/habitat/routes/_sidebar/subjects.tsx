@@ -150,20 +150,22 @@ function SubjectEditModal({
         {mode === "create" ? (
           <FormField label={m.habitat_entities_col_type()} className="text-xs">
             <Select
-              value={form.type}
-              onValueChange={(v) =>
+              selectedKey={form.type}
+              onSelectionChange={(key) => {
+                if (key == null) return;
+                const v = String(key);
                 setForm((f) => ({
                   ...f,
                   type: v === "user" ? "user" : "agent",
-                }))
-              }
+                }));
+              }}
             >
               <SelectTrigger size="sm" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="agent">{m.habitat_entities_type_agent()}</SelectItem>
-                <SelectItem value="user">{m.habitat_entities_type_user()}</SelectItem>
+                <SelectItem id="agent">{m.habitat_entities_type_agent()}</SelectItem>
+                <SelectItem id="user">{m.habitat_entities_type_user()}</SelectItem>
               </SelectContent>
             </Select>
           </FormField>
@@ -199,15 +201,19 @@ function SubjectEditModal({
               </p>
             ) : (
               <Select
-                value={form.default_private_world_id}
-                onValueChange={(v) => setForm((f) => ({ ...f, default_private_world_id: v }))}
+                selectedKey={form.default_private_world_id}
+                onSelectionChange={(key) => {
+                  if (key != null) {
+                    setForm((f) => ({ ...f, default_private_world_id: String(key) }));
+                  }
+                }}
               >
                 <SelectTrigger size="sm" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {candidateWorlds.map((w) => (
-                    <SelectItem key={w.id} value={String(w.id)}>
+                    <SelectItem key={w.id} id={String(w.id)}>
                       {worldOptionLabel(w)}
                     </SelectItem>
                   ))}
@@ -222,13 +228,13 @@ function SubjectEditModal({
         )}
       </FormFieldset>
       <DialogFooter>
-        <Button type="button" variant="ghost" size="sm" disabled={saving} onClick={onClose}>
+        <Button type="button" variant="ghost" size="sm" isDisabled={saving} onClick={onClose}>
           {m.habitat_common_cancel()}
         </Button>
         <Button
           type="button"
           size="sm"
-          disabled={saving || !form.title.trim()}
+          isDisabled={saving || !form.title.trim()}
           onClick={() => onSave(form)}
         >
           {saving ? <Spinner /> : m.habitat_common_save()}
@@ -378,7 +384,7 @@ function SubjectsPage() {
             type="button"
             variant="ghost"
             size="sm"
-            disabled={loading}
+            isDisabled={loading}
             onClick={() => void fetchList()}
           >
             {m.habitat_common_refresh()}

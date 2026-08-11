@@ -15,7 +15,7 @@ import { CST_OFFSET_MS, formatCstIso, omitUndefined } from "@freeanima/host/core
 import { PROFILE_CHAT } from "@freeanima/host/core/provider";
 import { buildSystemPrompt } from "@freeanima/host/core/hooks/prompt";
 import { stripOriginRoutingMeta } from "@freeanima/host/core/db/schema";
-import { applyConversationToolMaskFilter } from "@freeanima/host/core/tool";
+import { applyConversationToolPolicyFilter } from "@freeanima/host/core/tool";
 import { isSystemPromptStale } from "./system-prompt-freshness.ts";
 import {
   isConversationMeta,
@@ -98,7 +98,7 @@ export async function loadConversationTools(
         : await loadConversationMeta(conversationId);
     let names = toolNamesForToolSets(tools, resolved);
     if (isConversationMeta(metaForMask)) {
-      names = applyConversationToolMaskFilter(names, metaForMask);
+      names = applyConversationToolPolicyFilter(names, metaForMask);
     }
     return tools.openaiSchemasFromNames(names);
   }
@@ -115,7 +115,7 @@ export async function loadConversationTools(
       ? cachedMeta
       : await loadConversationMeta(conversationId);
   if (isConversationMeta(metaForMask)) {
-    effective = applyConversationToolMaskFilter(effective, metaForMask);
+    effective = applyConversationToolPolicyFilter(effective, metaForMask);
   }
   return tools.openaiSchemasFromNames(effective);
 }

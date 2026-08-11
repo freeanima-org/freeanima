@@ -62,7 +62,7 @@ function DataMaintenancePage() {
           <Button
             type="button"
             className="self-start"
-            disabled={subjectKind === "user" && !userUnlocked}
+            isDisabled={subjectKind === "user" && !userUnlocked}
             onClick={() => setBwOpen(true)}
           >
             导入 Bitwarden JSON

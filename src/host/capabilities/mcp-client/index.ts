@@ -12,7 +12,6 @@ export {
 } from "./status.ts";
 export {
   McpClientSession,
-  buildSseRequestHeaders,
   buildHttpRequestHeaders,
   type McpServerConfig,
   type McpToolDef,

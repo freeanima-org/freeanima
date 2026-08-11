@@ -130,10 +130,10 @@ export function EmailReplyDialog({
         {error ? <p className="text-destructive text-sm">{error}</p> : null}
       </div>
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
+        <Button type="button" variant="outline" onClick={onClose} isDisabled={saving}>
           {m.email_cancel()}
         </Button>
-        <Button type="button" disabled={disabled || saving} onClick={() => void onSubmit()}>
+        <Button type="button" isDisabled={disabled || saving} onClick={() => void onSubmit()}>
           {saving ? <Spinner className="size-4" /> : m.email_send_action()}
         </Button>
       </DialogFooter>

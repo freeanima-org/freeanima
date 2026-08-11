@@ -88,9 +88,9 @@ export function FormToggle({
     <div className={cn("flex items-start gap-3 py-1", className)}>
       <Checkbox
         id={id}
-        checked={checked}
-        {...(disabled !== undefined ? { disabled } : {})}
-        onCheckedChange={(value) => onChange(value === true)}
+        isSelected={checked}
+        {...(disabled !== undefined ? { isDisabled: disabled } : {})}
+        onChange={(value) => onChange(value === true)}
       />
       <div className="grid gap-0.5">
         <Label htmlFor={id} className="font-medium cursor-pointer">

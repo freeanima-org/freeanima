@@ -1,17 +1,18 @@
 import { describe, expect, it } from "bun:test";
-import { OPENAI_COMPATIBLE_BACKEND_ID, parseOpenAiCompatibleProviderSpec } from "./config.ts";
+import { LLM_FORMAT_OPENAI_COMPATIBLE } from "@freeanima/host/core/config/schemas/llm-config.ts";
+import { parseOpenAiCompatibleProviderSpec } from "./config.ts";
 
 describe("parseOpenAiCompatibleProviderSpec", () => {
   it("parses yaml config and strips trailing slash from base_url", () => {
     const spec = parseOpenAiCompatibleProviderSpec("deepseek", {
-      backend: OPENAI_COMPATIBLE_BACKEND_ID,
+      backend: LLM_FORMAT_OPENAI_COMPATIBLE,
       base_url: "https://api.example.com/v1/",
       api_key: "sk-test",
       timeout_ms: 30_000,
     });
     expect(spec).toEqual({
       id: "deepseek",
-      backendId: OPENAI_COMPATIBLE_BACKEND_ID,
+      backendId: LLM_FORMAT_OPENAI_COMPATIBLE,
       context: {
         baseUrl: "https://api.example.com/v1",
         apiKey: "sk-test",
@@ -22,7 +23,7 @@ describe("parseOpenAiCompatibleProviderSpec", () => {
 
   it("does not write context when no timeout_ms", () => {
     const spec = parseOpenAiCompatibleProviderSpec("p", {
-      backend: OPENAI_COMPATIBLE_BACKEND_ID,
+      backend: LLM_FORMAT_OPENAI_COMPATIBLE,
       base_url: "https://api.example.com",
       api_key: "k",
     });
@@ -34,7 +35,7 @@ describe("parseOpenAiCompatibleProviderSpec", () => {
 
   it("parses first_byte and idle timeouts", () => {
     const spec = parseOpenAiCompatibleProviderSpec("p", {
-      backend: OPENAI_COMPATIBLE_BACKEND_ID,
+      backend: LLM_FORMAT_OPENAI_COMPATIBLE,
       base_url: "https://api.example.com",
       api_key: "k",
       timeout_ms: 120_000,
@@ -51,7 +52,7 @@ describe("parseOpenAiCompatibleProviderSpec", () => {
   it("rejects first_byte_timeout_ms > timeout_ms", () => {
     expect(() =>
       parseOpenAiCompatibleProviderSpec("p", {
-        backend: OPENAI_COMPATIBLE_BACKEND_ID,
+        backend: LLM_FORMAT_OPENAI_COMPATIBLE,
         base_url: "https://api.example.com",
         api_key: "k",
         timeout_ms: 10_000,
@@ -70,7 +71,7 @@ describe("parseOpenAiCompatibleProviderSpec", () => {
     ).toThrow();
     expect(() =>
       parseOpenAiCompatibleProviderSpec("p", {
-        backend: OPENAI_COMPATIBLE_BACKEND_ID,
+        backend: LLM_FORMAT_OPENAI_COMPATIBLE,
         base_url: "not-a-url",
         api_key: "k",
       }),

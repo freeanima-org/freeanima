@@ -145,7 +145,7 @@ function CronPage() {
           type="button"
           variant="ghost"
           size="sm"
-          disabled={loading}
+          isDisabled={loading}
           onClick={() => void reload()}
         >
           {m.habitat_common_refresh()}
@@ -195,9 +195,9 @@ function CronPage() {
                         </Label>
                         <Switch
                           id={`cron-enable-${job.id}`}
-                          checked={!job.paused}
-                          disabled={!!toggling[job.id] || !!running[job.id]}
-                          onCheckedChange={(checked) => void onToggle(job, checked)}
+                          isSelected={!job.paused}
+                          isDisabled={!!toggling[job.id] || !!running[job.id]}
+                          onChange={(checked) => void onToggle(job, checked)}
                         />
                       </div>
                       <Button
@@ -205,7 +205,7 @@ function CronPage() {
                         variant="ghost"
                         size="sm"
                         className="h-7 text-xs"
-                        disabled={!!toggling[job.id] || !!running[job.id]}
+                        isDisabled={!!toggling[job.id] || !!running[job.id]}
                         onClick={() => setHistoryJob(job)}
                       >
                         {m.habitat_cron_run_history()}
@@ -215,7 +215,7 @@ function CronPage() {
                         variant="outline"
                         size="sm"
                         className="h-7 text-xs"
-                        disabled={!!toggling[job.id] || !!running[job.id]}
+                        isDisabled={!!toggling[job.id] || !!running[job.id]}
                         onClick={() => void runNow(job)}
                       >
                         {running[job.id] ? <Spinner /> : null}

@@ -5,7 +5,7 @@ import type { AutoLlmRunAppendInput } from "@freeanima/host/core/db/pg/auto-llm-
 import { Config } from "@freeanima/host/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/host/engine";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/host/core/llm";
-import { bindOpenAiCompatibleLlm } from "@freeanima/host/capabilities/llm-openai";
+import { bindLlmStack } from "@freeanima/host/capabilities/llm-openai";
 import { createTestLogger } from "@freeanima/host/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/host/platform/bootstrap";
 import { parseYaml } from "@freeanima/host/platform/config";
@@ -48,7 +48,7 @@ import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(runtimeConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
-registerLlmStackConfigurator(bindOpenAiCompatibleLlm);
+registerLlmStackConfigurator(bindLlmStack);
 
 const testEngine = createEngine({
   catalog,

@@ -39,7 +39,7 @@ export function HabitatConnectionBanner({ state, onRetry }: Props) {
           variant="destructive"
           size="sm"
           className="h-7 text-xs"
-          disabled={state === "connecting"}
+          isDisabled={state === "connecting"}
           onClick={() => void onRetry()}
         >
           {m.habitat_common_reconnect()}

@@ -40,10 +40,7 @@ export { handleConversationTodo } from "./conversation-todos.ts";
 export {
   registerConversationToolPolicyFilter,
   applyConversationToolPolicyFilter,
-  registerConversationToolMaskFilter,
-  applyConversationToolMaskFilter,
   type ConversationToolPolicyFilter,
-  type ConversationToolMaskFilter,
 } from "./policy-port.ts";
 export {
   runWithToolContext,

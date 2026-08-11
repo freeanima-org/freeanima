@@ -225,7 +225,7 @@ export function SubjectApiTokensModal({
         <Button
           type="button"
           size="sm"
-          disabled={creating || !name.trim()}
+          isDisabled={creating || !name.trim()}
           onClick={() => void onCreate()}
         >
           {creating ? <Spinner /> : m.habitat_entities_api_token_create()}
@@ -236,7 +236,7 @@ export function SubjectApiTokensModal({
         <Label htmlFor="subject-api-tokens-show-all" className="text-xs text-muted-foreground">
           {m.habitat_entities_api_tokens_show_all()}
         </Label>
-        <Switch id="subject-api-tokens-show-all" checked={showAll} onCheckedChange={setShowAll} />
+        <Switch id="subject-api-tokens-show-all" isSelected={showAll} onChange={setShowAll} />
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden [&_[data-slot=table-container]]:overflow-x-hidden">
@@ -300,7 +300,7 @@ export function SubjectApiTokensModal({
                       variant="ghost"
                       size="sm"
                       className="h-7 text-xs text-destructive"
-                      disabled={Boolean(token.revoked_at) || revokingId === token.id}
+                      isDisabled={Boolean(token.revoked_at) || revokingId === token.id}
                       onClick={() => void onRevoke(token)}
                     >
                       {revokingId === token.id ? (

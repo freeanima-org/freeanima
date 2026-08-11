@@ -273,16 +273,20 @@ function SystemPromptPage() {
           className="w-full max-w-xl text-xs"
         >
           <Select
-            value={selectedConversation || "__global__"}
-            onValueChange={(v) => handleConversationChange(v === "__global__" ? "" : v)}
+            selectedKey={selectedConversation || "__global__"}
+            onSelectionChange={(key) => {
+              if (key == null) return;
+              const v = String(key);
+              handleConversationChange(v === "__global__" ? "" : v);
+            }}
           >
             <SelectTrigger size="sm" className="w-full font-mono text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__global__">{m.habitat_common_global_template()}</SelectItem>
+              <SelectItem id="__global__">{m.habitat_common_global_template()}</SelectItem>
               {sortedConversations.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
+                <SelectItem key={s.id} id={s.id}>
                   {(s.title || m.habitat_common_no_title()).slice(0, 24)} · {s.id.slice(0, 20)}…
                 </SelectItem>
               ))}
@@ -364,7 +368,13 @@ function SystemPromptPage() {
             <BreakdownBar data={data.system.breakdown} />
           </div>
 
-          <Tabs value={tab} onValueChange={(v: string) => setTab(v as TabId)} className="mb-4">
+          <Tabs
+            selectedKey={tab}
+            onSelectionChange={(key) => {
+              if (key != null) setTab(String(key) as TabId);
+            }}
+            className="mb-4"
+          >
             <TabsList className="w-fit">
               {(
                 [
@@ -373,13 +383,13 @@ function SystemPromptPage() {
                   ["tools", m.habitat_system_prompt_tab_tools()],
                 ] as const
               ).map(([id, label]) => (
-                <TabsTrigger key={id} value={id}>
+                <TabsTrigger key={id} id={id}>
                   {label}
                 </TabsTrigger>
               ))}
             </TabsList>
 
-            <TabsContent value="parts" className="space-y-4 mt-4">
+            <TabsContent id="parts" className="space-y-4 mt-4">
               {PART_KEYS.map((key) => {
                 const text = data.system.parts[key];
                 return (
@@ -405,7 +415,7 @@ function SystemPromptPage() {
               })}
             </TabsContent>
 
-            <TabsContent value="full" className="space-y-4 mt-4">
+            <TabsContent id="full" className="space-y-4 mt-4">
               <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
@@ -452,7 +462,7 @@ function SystemPromptPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="tools" className="mt-4">
+            <TabsContent id="tools" className="mt-4">
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <Input
                   type="search"

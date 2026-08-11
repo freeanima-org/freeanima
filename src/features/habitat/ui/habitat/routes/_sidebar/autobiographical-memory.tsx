@@ -117,29 +117,38 @@ function AutobiographicalMemoryPage() {
                   <FormFieldLabel className="text-xs py-0">
                     {m.habitat_common_status_label()}
                   </FormFieldLabel>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <Select
+                    selectedKey={statusFilter}
+                    onSelectionChange={(key) => {
+                      if (key != null) setStatusFilter(String(key));
+                    }}
+                  >
                     <SelectTrigger size="sm" className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="active">active</SelectItem>
-                      <SelectItem value="deprecated">deprecated</SelectItem>
+                      <SelectItem id="active">active</SelectItem>
+                      <SelectItem id="deprecated">deprecated</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <FormFieldLabel className="text-xs py-0">significance</FormFieldLabel>
                   <Select
-                    value={significanceFilter || ALL_VALUE}
-                    onValueChange={(v) => setSignificanceFilter(v === ALL_VALUE ? "" : v)}
+                    selectedKey={significanceFilter || ALL_VALUE}
+                    onSelectionChange={(key) => {
+                      if (key == null) return;
+                      const v = String(key);
+                      setSignificanceFilter(v === ALL_VALUE ? "" : v);
+                    }}
                   >
                     <SelectTrigger size="sm" className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
+                      <SelectItem id={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
                       {SIGNIFICANCE_OPTIONS.map((s) => (
-                        <SelectItem key={s} value={s}>
+                        <SelectItem key={s} id={s}>
                           {s}
                         </SelectItem>
                       ))}
@@ -160,7 +169,7 @@ function AutobiographicalMemoryPage() {
                 </div>
               </div>
             </FormFieldset>
-            <Button type="submit" size="sm" disabled={loading}>
+            <Button type="submit" size="sm" isDisabled={loading}>
               {loading ? <Spinner /> : null}
               {m.habitat_common_query()}
             </Button>

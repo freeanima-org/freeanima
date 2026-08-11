@@ -7,8 +7,8 @@ import {
   notificationMarkReadInputSchema,
   mapSapStreamMethodToApi,
   messageSendInputSchema,
-  parseRpcEnvelope,
-  serializeRpcEnvelope,
+  parseHabitatRpcEnvelope,
+  serializeHabitatRpcEnvelope,
   conversationCommandsInputSchema,
   toolRegisterInputSchema,
   habitatRpcConnectPayloadSchema,
@@ -23,7 +23,7 @@ describe("sap-contract envelopes", () => {
       method: "conversation.create",
       payload: { platform: "remote:chat:k7m" },
     };
-    const parsed = parseRpcEnvelope(serializeRpcEnvelope(frame));
+    const parsed = parseHabitatRpcEnvelope(serializeHabitatRpcEnvelope(frame));
     expect(parsed).toEqual(frame);
   });
 

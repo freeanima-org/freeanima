@@ -76,7 +76,7 @@ function OutpostsPage() {
           type="button"
           variant="ghost"
           size="sm"
-          disabled={refreshing}
+          isDisabled={refreshing}
           onClick={() => void refresh()}
         >
           {refreshing ? m.habitat_common_refreshing() : m.habitat_common_refresh()}

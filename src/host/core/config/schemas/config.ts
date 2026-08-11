@@ -32,13 +32,12 @@ export { weixinConfigSchema, type WeixinConfigInput } from "./weixin.ts";
 export { autoLlmConfigSchema, type AutoLlmConfigInput } from "./auto-llm.ts";
 export { i18nConfigSchema, type I18nConfigInput } from "./i18n.ts";
 
-export type { LlmConfig, LlmProviderConfig, LlmProviderOpenAiConfig } from "./llm-config.ts";
+export type { LlmConfig, LlmProviderConfig } from "./llm-config.ts";
 export {
   llmConfigSchema,
   llmProfileSchema,
   llmProviderSchema,
   llmProviderLooseSchema,
-  llmProviderOpenAiSchema,
   llmRouteHopSchema,
   normalizeLlmProviderRaw,
   LLM_FORMAT_IDS,
@@ -50,6 +49,5 @@ export {
   LLM_PRESET_DEEPSEEK,
   LLM_PRESET_OPENROUTER,
   LLM_PRESET_OPENCODE_GO,
-  OPENAI_COMPATIBLE_BACKEND_ID,
 } from "./llm-config.ts";
 export type { LlmFormatId, LlmPresetId } from "./llm-config.ts";

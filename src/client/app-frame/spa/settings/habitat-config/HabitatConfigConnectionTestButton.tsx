@@ -45,7 +45,7 @@ export function HabitatConfigConnectionTestButton({
         type="button"
         size="sm"
         variant="outline"
-        disabled={disabled || testing}
+        isDisabled={disabled || testing}
         onClick={() => void runTest()}
       >
         {testing ? "测试中…" : "测试连接"}

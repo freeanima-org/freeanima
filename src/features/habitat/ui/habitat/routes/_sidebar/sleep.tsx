@@ -422,16 +422,18 @@ function SleepPage() {
                 {m.habitat_sleep_deep_sleep_mode()}
               </FormFieldLabel>
               <Select
-                value={deepSleepMode}
-                onValueChange={(v) => setDeepSleepMode(v as "full" | "incremental")}
-                disabled={pipelineBusy}
+                selectedKey={deepSleepMode}
+                onSelectionChange={(key) => {
+                  if (key != null) setDeepSleepMode(String(key) as "full" | "incremental");
+                }}
+                isDisabled={pipelineBusy}
               >
                 <SelectTrigger size="sm" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="full">{m.habitat_sleep_deep_sleep_mode_full()}</SelectItem>
-                  <SelectItem value="incremental">
+                  <SelectItem id="full">{m.habitat_sleep_deep_sleep_mode_full()}</SelectItem>
+                  <SelectItem id="incremental">
                     {m.habitat_sleep_deep_sleep_mode_incremental()}
                   </SelectItem>
                 </SelectContent>
@@ -442,7 +444,7 @@ function SleepPage() {
             <Button
               type="button"
               size="sm"
-              disabled={pipelineBusy}
+              isDisabled={pipelineBusy}
               onClick={() => void startCycle()}
             >
               {pipelineStatus?.running || pipelineStarting
@@ -453,7 +455,7 @@ function SleepPage() {
               type="button"
               size="sm"
               variant="secondary"
-              disabled={pipelineBusy}
+              isDisabled={pipelineBusy}
               onClick={() => void startCatchUp()}
               title={m.habitat_sleep_catch_up_hint()}
             >
@@ -464,9 +466,9 @@ function SleepPage() {
             <div className="flex items-center gap-2">
               <Checkbox
                 id="pipeline-force"
-                checked={pipelineForce}
-                disabled={pipelineBusy}
-                onCheckedChange={(checked) => setPipelineForce(checked === true)}
+                isSelected={pipelineForce}
+                isDisabled={pipelineBusy}
+                onChange={(checked) => setPipelineForce(checked === true)}
               />
               <Label htmlFor="pipeline-force" className="text-sm">
                 {m.habitat_sleep_cycle_force()}
@@ -524,7 +526,7 @@ function SleepPage() {
                             variant="secondary"
                             size="sm"
                             className="h-7 text-xs"
-                            disabled={pipelineBusy}
+                            isDisabled={pipelineBusy}
                             onClick={() => void startStep(node.id)}
                           >
                             {isRunningThis
@@ -549,7 +551,7 @@ function SleepPage() {
           type="button"
           variant="ghost"
           size="sm"
-          disabled={loading}
+          isDisabled={loading}
           onClick={() => void refreshAfterRun()}
         >
           {loading ? m.habitat_common_refreshing() : m.habitat_common_refresh_list()}

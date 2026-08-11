@@ -563,7 +563,7 @@ export function VaultApp() {
               type="button"
               size="sm"
               variant="outline"
-              disabled={writesDisabled || actionLoading}
+              isDisabled={writesDisabled || actionLoading}
               onClick={() => {
                 setChangePasswordError("");
                 setChangePasswordOpen(true);
@@ -590,7 +590,7 @@ export function VaultApp() {
           type="button"
           size="sm"
           variant="outline"
-          disabled={loading}
+          isDisabled={loading}
           aria-label={m.habitat_common_refresh()}
           onClick={() => void reload()}
         >
@@ -622,7 +622,7 @@ export function VaultApp() {
                 type="button"
                 size="sm"
                 variant="outline"
-                disabled={writesDisabled || actionLoading || (isUserVault && !userUnlocked)}
+                isDisabled={writesDisabled || actionLoading || (isUserVault && !userUnlocked)}
                 onClick={() => setHistoryOpen(true)}
               >
                 历史
@@ -631,7 +631,7 @@ export function VaultApp() {
                 type="button"
                 size="sm"
                 variant="outline"
-                disabled={writesDisabled || actionLoading}
+                isDisabled={writesDisabled || actionLoading}
                 onClick={() => void openEdit()}
               >
                 编辑
@@ -640,7 +640,7 @@ export function VaultApp() {
                 type="button"
                 size="sm"
                 variant="destructive"
-                disabled={writesDisabled || actionLoading}
+                isDisabled={writesDisabled || actionLoading}
                 onClick={() => setConfirmDeleteOpen(true)}
               >
                 删除
@@ -655,7 +655,7 @@ export function VaultApp() {
                 type="button"
                 size="sm"
                 className="w-full"
-                disabled={writesDisabled || actionLoading}
+                isDisabled={writesDisabled || actionLoading}
                 onClick={() => {
                   openCreate();
                   ctx.close();
@@ -766,7 +766,7 @@ export function VaultApp() {
                   : "还没有保险库条目，先新建一条吧。"
               }
               action={
-                <Button type="button" size="sm" disabled={writesDisabled} onClick={openCreate}>
+                <Button type="button" size="sm" isDisabled={writesDisabled} onClick={openCreate}>
                   新建条目
                 </Button>
               }

@@ -117,7 +117,11 @@ export default function AlertSettingsPanel(_props: SettingsPanelProps) {
       ) : null}
 
       <div className="flex flex-wrap gap-2">
-        <Button type="button" onClick={() => void handleTestAlert()} disabled={testing || !backend}>
+        <Button
+          type="button"
+          onClick={() => void handleTestAlert()}
+          isDisabled={testing || !backend}
+        >
           {testing ? "发送中…" : "测试 Alert"}
         </Button>
         <Button type="button" variant="outline" onClick={() => void refreshPermission()}>

@@ -24,7 +24,6 @@ export {
   searchDialogue,
   searchDialogueOnly,
   memoryScopedSearch,
-  memoryRecallSearch,
   type SearchResult,
   type MemoryScopedHit,
   type MemoryRecallHit,

@@ -150,7 +150,7 @@ function McpPage() {
             <Button
               type="button"
               size="sm"
-              disabled={bulkActing}
+              isDisabled={bulkActing}
               onClick={() => void controlAll("start-all")}
             >
               {m.habitat_common_start_all()}
@@ -159,7 +159,7 @@ function McpPage() {
               type="button"
               variant="ghost"
               size="sm"
-              disabled={bulkActing}
+              isDisabled={bulkActing}
               onClick={() => void controlAll("stop-all")}
             >
               {m.habitat_common_stop_all()}
@@ -212,7 +212,7 @@ function McpPage() {
                       type="button"
                       size="sm"
                       className="h-7 text-xs"
-                      disabled={!canStartMcpServer(srv) || !!acting[srv.name]}
+                      isDisabled={!canStartMcpServer(srv) || !!acting[srv.name]}
                       onClick={() => void controlServer(srv.name, "start")}
                     >
                       {m.habitat_common_start()}
@@ -222,7 +222,7 @@ function McpPage() {
                       variant="ghost"
                       size="sm"
                       className="h-7 text-xs"
-                      disabled={!canStopMcpServer(srv) || !!acting[srv.name]}
+                      isDisabled={!canStopMcpServer(srv) || !!acting[srv.name]}
                       onClick={() => void controlServer(srv.name, "stop")}
                     >
                       {m.habitat_common_stop()}

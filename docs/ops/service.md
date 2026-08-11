@@ -52,7 +52,7 @@ Each `llm.providers.<id>` entry is a **Connection** (credentials + endpoint). Co
 
 - **Single-format presets** (`deepseek`, `openrouter`): fixed Format + default `base_url`.
 - **Gateway preset** (`opencode_go`): base `https://opencode.ai/zen/go/v1`; Format is chosen **per model** (Chat Completions / Responses / Messages). See [OpenCode Go endpoints](https://opencode.ai/docs/zh-cn/go#api-%E7%AB%AF%E7%82%B9).
-- **Custom**: set `format` + `base_url` yourself (legacy `backend` is migrated to `format`).
+- **Custom**: set `format` + `base_url` yourself。PG `habitat_runtime_config.llm` 中遗留 `backend` 由迁移改写为 `format`；加载时 `normalizeLlmProviderRaw` 仍可消化未落库的旧 YAML。
 - There is **no** built-in `openai` preset.
 - **API keys**: plaintext in config, or `vault(...)` / `env(...)` references. Settings UI does **not** auto-mask secrets.
 

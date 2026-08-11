@@ -92,6 +92,3 @@ export function parseOpenAiCompatibleContext(context: BackendContext): OpenAiCom
 export function contextCacheKey(context: OpenAiCompatibleContext): string {
   return `${context.baseUrl}\0${context.apiKey}`;
 }
-
-/** @deprecated 使用 {@link DEFAULT_OVERALL_TIMEOUT_MS} */
-export const DEFAULT_TIMEOUT_MS = DEFAULT_OVERALL_TIMEOUT_MS;

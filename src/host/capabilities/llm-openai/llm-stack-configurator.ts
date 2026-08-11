@@ -9,7 +9,6 @@ import {
 import { providerConfigToSpec } from "@freeanima/host/core/llm/presets";
 import type { BackendRegistry, ProviderRegistry } from "@freeanima/host/core/provider";
 import { OpenAiCompatibleBackend } from "./backend.ts";
-import { OPENAI_COMPATIBLE_BACKEND_ID } from "./config.ts";
 import { OpenAiResponsesBackend } from "./openai-responses/backend.ts";
 import { AnthropicMessagesBackend } from "./anthropic-messages/backend.ts";
 
@@ -31,8 +30,3 @@ export function bindLlmStack(
     providers.registerSpec(providerConfigToSpec(id, providerCfg));
   }
 }
-
-/** @deprecated Use {@link bindLlmStack} */
-export const bindOpenAiCompatibleLlm = bindLlmStack;
-
-export { OPENAI_COMPATIBLE_BACKEND_ID };

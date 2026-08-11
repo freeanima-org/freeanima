@@ -37,7 +37,7 @@ import { m } from "@paraglide/messages";
 
 import { DiaryBlockTemplateDialog } from "./components/DiaryBlockTemplateDialog.tsx";
 import { EntryEditor, type EntrySaveStatus } from "./components/EntryEditor.tsx";
-import { EntryTagAddMenu, EntryTagHeader } from "./components/EntryTagHeader.tsx";
+import { EntryDetailTagChips, EntryTagAddMenu } from "./components/EntryTagHeader.tsx";
 import { EntryTimeline, findEntryByDayLocal } from "./components/EntryTimeline.tsx";
 import {
   entryDraftFromRow,
@@ -609,7 +609,7 @@ export function DiaryApp() {
             variant="ghost"
             size="sm"
             className="h-7 px-2"
-            disabled={refreshing || loading}
+            isDisabled={refreshing || loading}
             aria-label={m.habitat_common_refresh()}
             onClick={() => void handleManualRefresh()}
           >
@@ -618,7 +618,7 @@ export function DiaryApp() {
           <Button
             type="button"
             size="sm"
-            disabled={writesDisabled || creating}
+            isDisabled={writesDisabled || creating}
             onClick={handleNewEntry}
           >
             {creating ? "新建中…" : "新建"}
@@ -667,12 +667,10 @@ export function DiaryApp() {
 
   const detailHeaderExtra =
     selectedEntry && draft ? (
-      <EntryTagHeader
-        subjectKind={subjectKind}
+      <EntryDetailTagChips
         tagIds={draft.tag_ids}
         onTagIdsChange={(tag_ids) => setDraft({ ...draft, tag_ids })}
         readOnly={writesDisabled}
-        chipsOnly
       />
     ) : null;
 

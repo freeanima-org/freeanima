@@ -82,7 +82,7 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
           variant="ghost"
           size="sm"
           className="h-7 text-xs"
-          disabled={loading}
+          isDisabled={loading}
           onClick={() => void reload()}
         >
           {loading ? m.habitat_common_refreshing() : m.habitat_common_refresh_list()}

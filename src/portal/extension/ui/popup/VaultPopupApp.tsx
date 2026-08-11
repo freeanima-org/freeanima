@@ -335,7 +335,7 @@ export function VaultPopupApp() {
               variant="ghost"
               size="sm"
               className="text-destructive"
-              disabled={editorLoading}
+              isDisabled={editorLoading}
               onClick={() => void deleteEditor()}
             >
               删除
@@ -506,7 +506,7 @@ export function VaultPopupApp() {
                   variant="outline"
                   size="icon-sm"
                   title={writesDisabled ? "离线不可新建" : "新建"}
-                  disabled={writesDisabled}
+                  isDisabled={writesDisabled}
                   onClick={() => void openEditor(null)}
                 >
                   ＋
