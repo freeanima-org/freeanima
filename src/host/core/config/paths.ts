@@ -41,15 +41,6 @@ export const PATHS = {
   get cjkUserDict() {
     return homePath("cjk", "user.dict");
   },
-  get habitatBuildDir() {
-    return homePath("runtime", "console-build");
-  },
-  get habitatDevBuildDir() {
-    return homePath("runtime", "console-dev-build");
-  },
-  get binDir() {
-    return homePath("bin");
-  },
   get tlsDir() {
     return homePath("tls");
   },
