@@ -30,7 +30,6 @@ import * as autoLlmRuns from "./service-auto-llm-runs.ts";
 import * as messaging from "./service-messaging.ts";
 import { omitUndefined } from "@freeanima/host/core/util";
 
-export type { MemoryFileEntry } from "./service-memory.ts";
 export type { StreamEvent } from "@freeanima/host/engine/loop";
 export { ConversationManager } from "./conversation-manager.ts";
 
@@ -409,10 +408,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
 
   countSemanticMemory(): Promise<{ index_rows: number }> {
     return memory.countSemanticMemoryRows(this.runtimeDeps());
-  }
-
-  listMemoryFiles(): Promise<{ files: memory.MemoryFileEntry[] }> {
-    return memory.listMemoryFiles(this.runtimeDeps());
   }
 
   listSemanticMemories(args?: Parameters<typeof memory.listSemanticMemories>[1]) {

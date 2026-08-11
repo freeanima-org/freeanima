@@ -1,12 +1,10 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync } from "node:fs";
 import { getTokenizerBindingSnapshot } from "@freeanima/host/engine";
 import {
   getDefaultProviderBaseUrl,
   getProfileHopModel,
   isEmbeddingEnabled,
   sanitizeConfigForApi,
-  PATHS,
 } from "@freeanima/host/platform/config";
 import { formatCstIsoFromEpoch } from "@freeanima/host/core/util";
 import type { FullRuntimeDeps, RuntimeDeps } from "./runtime-deps.ts";
@@ -44,25 +42,6 @@ import { SERVICE_BUILD_META } from "./service-build-meta.ts";
 
 export function startTimeIso(epochSec: number): string {
   return formatCstIsoFromEpoch(epochSec);
-}
-
-export function buildMemoryFileStats(): { files_count: number; files_bytes: number } {
-  let files_count = 0;
-  let files_bytes = 0;
-  const add = (path: string) => {
-    if (!existsSync(path)) return;
-    try {
-      files_count++;
-      files_bytes += statSync(path).size;
-    } catch {
-      /* ignore */
-    }
-  };
-
-  add(join(PATHS.home, "MEMORY.md"));
-  add(join(PATHS.home, "USER.md"));
-
-  return { files_count, files_bytes };
 }
 
 function readProcStatusKb(field: string): number {
@@ -184,7 +163,6 @@ export async function buildStatus(
 
   const memoryDetail = buildProcessMemoryDetail(deps);
 
-  const fileStats = buildMemoryFileStats();
   const dependencies = await buildDependenciesStatus();
   let factsCount = 0;
   let l2IndexRows = 0;
@@ -242,8 +220,6 @@ export async function buildStatus(
     memory_kb: memoryDetail.rss_kb,
     memory_detail: memoryDetail,
     memory: {
-      files_count: fileStats.files_count,
-      files_bytes: fileStats.files_bytes,
       semantic_memory_count: factsCount,
       dialogue_message_count: l2IndexRows,
     },

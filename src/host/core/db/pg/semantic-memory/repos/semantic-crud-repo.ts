@@ -264,16 +264,6 @@ export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMem
   return topReferenced;
 }
 
-export async function listAllSemanticMemory(): Promise<SemanticMemoryRow[]> {
-  const db = getDb();
-  const rows = await db
-    .select(semanticSelect)
-    .from(entities)
-    .where(eq(entities.primary_component, SEMANTIC_MEMORY_COMPONENT))
-    .orderBy(desc(entities.updated_at));
-  return rows.map(mapDbRow);
-}
-
 export async function listActiveSemanticMemory(): Promise<SemanticMemoryRow[]> {
   const db = getDb();
   const rows = await db

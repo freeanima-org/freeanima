@@ -7,7 +7,6 @@ export {
   deleteSemanticMemory,
   countSemanticMemory,
   listResidentSemanticMemory,
-  listAllSemanticMemory,
   listActiveSemanticMemory,
   listSemanticMemoryBySourceSessions,
   findSemanticMemoryByContent,

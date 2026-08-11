@@ -1,5 +1,3 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
 import type { AutobiographicalListOpts } from "@freeanima/host/core/db/pg/autobiographical-memory/types";
 import type {
   AutobiographicalMemoryRow,
@@ -17,7 +15,6 @@ import {
   countSemanticMemory,
   countSemanticMemorySearch,
   getSemanticMemory,
-  listAllSemanticMemory,
   searchSemanticMemory,
   updateSemanticMemory,
 } from "@freeanima/host/core/db/pg/semantic-memory";
@@ -26,7 +23,6 @@ import {
   listTemporalSummariesInRange,
 } from "@freeanima/host/core/db/pg/temporal-summary";
 import type { TemporalSummaryWindow } from "@freeanima/host/core/db/schema/entity/components/temporal-summary";
-import { PATHS } from "@freeanima/host/platform/config";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { getActiveRuntimeConfig } from "@freeanima/host/core/config";
 import { cacheGetJson, cacheSetJson } from "@freeanima/host/capabilities/connectors/redis";
@@ -59,30 +55,6 @@ function clampPagination(offset?: number, limit?: number) {
   const safeLimit = Math.max(1, Math.min(100, limit ?? 20));
   const safeOffset = Math.max(0, offset ?? 0);
   return { offset: safeOffset, limit: safeLimit };
-}
-
-export type MemoryFileEntry = {
-  name: string;
-  path: string;
-  size: number;
-  mtime: number;
-  content: string;
-};
-
-function readMemoryEntry(path: string, displayName: string): MemoryFileEntry | null {
-  if (!existsSync(path)) return null;
-  try {
-    const st = statSync(path);
-    return {
-      name: displayName,
-      path,
-      size: st.size,
-      mtime: st.mtimeMs / 1000,
-      content: readFileSync(path, "utf-8"),
-    };
-  } catch {
-    return null;
-  }
 }
 
 export async function passiveRecallDebug(args: {
@@ -274,36 +246,6 @@ export async function regenerateTemporalSystemRollMemory(args: { kind: SysRollKi
 export async function countSemanticMemoryRows(_deps: RuntimeDeps): Promise<{ index_rows: number }> {
   const count = await countSemanticMemory();
   return { index_rows: count };
-}
-
-export async function listMemoryFiles(_deps: RuntimeDeps): Promise<{ files: MemoryFileEntry[] }> {
-  const files: MemoryFileEntry[] = [];
-  const home = PATHS.home;
-
-  for (const name of ["MEMORY.md", "USER.md"]) {
-    const path = join(home, name);
-    const entry = readMemoryEntry(path, name);
-    if (entry) files.push(entry);
-  }
-
-  try {
-    const rows = await listAllSemanticMemory();
-    for (const row of rows) {
-      const name = `${row.id}.md`;
-      const content = `---\nid: ${row.id}\ntype: ${row.type}\npinned: ${row.pinned}\ncreated: ${row.created_at}\nupdated: ${row.updated_at}\n---\n${row.content}`;
-      files.push({
-        name,
-        path: `pg:semantic_memory:${row.id}`,
-        size: Buffer.byteLength(content, "utf-8"),
-        mtime: row.updated_at.getTime() / 1000 || 0,
-        content,
-      });
-    }
-  } catch {
-    /* When PG unavailable, return Markdown identity file only */
-  }
-
-  return { files };
 }
 
 export async function listSemanticMemories(
