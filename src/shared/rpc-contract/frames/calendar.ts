@@ -78,6 +78,34 @@ export type CalendarGetInput = z.infer<typeof calendarGetInputSchema>;
 export const calendarGetOutputSchema = z.object({ item: calendarEventRowSchema });
 export type CalendarGetOutput = z.infer<typeof calendarGetOutputSchema>;
 
+export const calendarConvertToTaskInputSchema = z.object({
+  subject_kind: notificationRecipientKindSchema,
+  id: z.number().int().positive(),
+});
+export type CalendarConvertToTaskInput = z.infer<typeof calendarConvertToTaskInputSchema>;
+
+// 避免 frames/calendar ↔ frames/task 循环：此处内联 task 行形状的关键字段
+export const calendarConvertToTaskOutputSchema = z.object({
+  item: z.object({
+    id: z.number().int().positive(),
+    title: z.string(),
+    content: z.string(),
+    tag_ids: z.array(z.number().int().positive()),
+    status: z.enum(["pending", "completed"]),
+    priority: z.enum(["high", "medium", "low", "none"]),
+    start_at: z.string().nullable().optional(),
+    due_at: z.string().nullable(),
+    remind_at: z.string().nullable(),
+    list_id: z.number().int().positive().nullable(),
+    project_id: z.number().int().positive().nullable().optional(),
+    sort_order: z.number(),
+    completed_at: z.string().nullable(),
+    created_at: z.string(),
+    updated_at: z.string(),
+  }),
+});
+export type CalendarConvertToTaskOutput = z.infer<typeof calendarConvertToTaskOutputSchema>;
+
 export const calendarRangeKindSchema = z.enum(["event", "task", "project"]);
 export type CalendarRangeKind = z.infer<typeof calendarRangeKindSchema>;
 

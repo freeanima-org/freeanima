@@ -35,6 +35,10 @@ import {
   emailMessageMoveOutputSchema,
   emailMessageReadInputSchema,
   emailMessageReadOutputSchema,
+  emailMessageAttachTaskInputSchema,
+  emailMessageAttachTaskOutputSchema,
+  emailMessageDetachTaskInputSchema,
+  emailMessageDetachTaskOutputSchema,
   emailMessageSearchInputSchema,
   emailMessageSearchOutputSchema,
   emailProviderListInputSchema,
@@ -100,6 +104,16 @@ export const emailMethodDefs = {
     input: emailMessageReadInputSchema,
     output: emailMessageReadOutputSchema,
     meta: dualTransportMeta(true),
+  }),
+  "email.message.attachTask": defineHabitatMethod({
+    input: emailMessageAttachTaskInputSchema,
+    output: emailMessageAttachTaskOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "email.message.detachTask": defineHabitatMethod({
+    input: emailMessageDetachTaskInputSchema,
+    output: emailMessageDetachTaskOutputSchema,
+    meta: dualTransportMeta(false),
   }),
   "email.message.markRead": defineHabitatMethod({
     input: emailMessageMarkReadInputSchema,

@@ -9,4 +9,10 @@ export {
   updateCalendarEvent,
 } from "./event-store.ts";
 export { listCalendarRange } from "./range-store.ts";
+export {
+  convertCalendarEventToTaskItem,
+  convertTaskItemToCalendarEvent,
+  mapCalendarEventBodyToTaskItemFields,
+  mapTaskItemBodyToCalendarEvent,
+} from "./convert-task-event.ts";
 export { registerCalendarTools } from "./tools.ts";

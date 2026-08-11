@@ -61,6 +61,7 @@ export async function listCompletedActivity(
     completed_at: occ.completed_at,
     recurrence: null,
     occurrence_id: occ.id,
+    primary_component: "task_item",
     created_at: occ.created_at,
     updated_at: occ.updated_at,
   }));

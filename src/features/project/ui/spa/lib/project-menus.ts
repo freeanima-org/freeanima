@@ -1,3 +1,4 @@
+import { taskDeleteDetachesCarrier } from "@freeanima/host/core/db/schema/entity";
 import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 
 import type { TaskItemRow } from "./api.ts";
@@ -88,7 +89,11 @@ export function buildProjectTaskMenuItems(
     },
     { label: "移动到清单", onClick: handlers.onMoveToList },
     { label: "移动到项目", onClick: handlers.onMoveToProject },
-    { label: "删除", danger: true, onClick: () => void handlers.onDelete() },
+    {
+      label: taskDeleteDetachesCarrier(item.primary_component) ? "移除任务" : "删除",
+      danger: true,
+      onClick: () => void handlers.onDelete(),
+    },
   );
   return items;
 }

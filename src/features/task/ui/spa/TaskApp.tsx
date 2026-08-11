@@ -35,6 +35,7 @@ import {
   useDetailPanelState,
 } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
+import { taskDeleteDetachesCarrier } from "@freeanima/host/core/db/schema/entity";
 import { m } from "@paraglide/messages";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
 import { TaskKanbanBoard, type KanbanGroupBy } from "./components/TaskKanbanBoard.tsx";
@@ -55,6 +56,7 @@ import { findUnresolvedTaskTagIds } from "./lib/task-tag-filter.ts";
 import { fetchTags } from "@freeanima/features/tag/ui/spa/lib/api.ts";
 import {
   completeTaskItem,
+  convertTaskItemToEvent,
   createSmartList,
   createTaskItem,
   createTaskList,
@@ -970,6 +972,22 @@ export function TaskApp() {
     setItemToDelete(item);
   };
 
+  const handleConvertItemToEvent = async (item: TaskItemRow) => {
+    try {
+      await convertTaskItemToEvent(item.id);
+      setSelectedItemIds((prev) => {
+        if (!prev.has(item.id)) return prev;
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
+      await Promise.all([reloadCurrentItems(), loadLists()]);
+      if (searchActive) await refreshSearchHits();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
   const confirmDeleteItem = async () => {
     const item = itemToDelete;
     if (!item) return;
@@ -1245,6 +1263,7 @@ export function TaskApp() {
     onToggleComplete: toggleComplete,
     onMoveTo: (item: TaskItemRow) => openMovePickerForItems([item.id]),
     onMoveToProject: (item: TaskItemRow) => void openMoveProjectPicker(item.id),
+    onConvertToEvent: (item: TaskItemRow) => void handleConvertItemToEvent(item),
     onDelete: handleDeleteItem,
   };
 
@@ -1752,11 +1771,23 @@ export function TaskApp() {
 
         <ConfirmDialog
           open={itemToDelete != null}
-          title="删除确认"
-          description={
-            itemToDelete ? `确定删除任务「${itemToDelete.title}」？此操作不可恢复。` : undefined
+          title={
+            itemToDelete && taskDeleteDetachesCarrier(itemToDelete.primary_component)
+              ? "移除确认"
+              : "删除确认"
           }
-          confirmLabel="删除"
+          description={
+            itemToDelete
+              ? taskDeleteDetachesCarrier(itemToDelete.primary_component)
+                ? `确定移除任务「${itemToDelete.title}」？仅卸下任务组件，邮件等载体实体会保留。`
+                : `确定删除任务「${itemToDelete.title}」？此操作不可恢复。`
+              : undefined
+          }
+          confirmLabel={
+            itemToDelete && taskDeleteDetachesCarrier(itemToDelete.primary_component)
+              ? "移除"
+              : "删除"
+          }
           variant="error"
           onConfirm={() => void confirmDeleteItem()}
           onCancel={() => setItemToDelete(null)}

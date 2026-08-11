@@ -38,6 +38,12 @@ export {
   upsertEmailMessage,
 } from "./message-store.ts";
 export {
+  attachTaskToEmailMessage,
+  detachTaskFromEmailMessage,
+  emailMessageHasTask,
+  type AttachTaskToEmailInput,
+} from "./attach-task.ts";
+export {
   persistEmailAttachments,
   softDeleteEmailAttachmentObjectFiles,
   loadOutboundAttachmentFiles,

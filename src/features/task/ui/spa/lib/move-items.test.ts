@@ -20,6 +20,7 @@ describe("moveTaskItemsToProject", () => {
       project_id: 9,
       sort_order: 0,
       completed_at: null,
+      primary_component: "task_item",
       created_at: "",
       updated_at: "",
     });

@@ -141,13 +141,16 @@ describe("runTaskReminderScan", () => {
         (call) =>
           call[0] as {
             primary_component?: string;
+            component?: string;
             global?: boolean;
             accessible_world_ids?: number[];
           },
       )
       .filter(
         (arg) =>
-          arg.primary_component === "task_item" || arg.primary_component === "calendar_event",
+          arg.component === "task_item" ||
+          arg.primary_component === "task_item" ||
+          arg.primary_component === "calendar_event",
       );
     expect(scoped.length).toBeGreaterThanOrEqual(2);
     for (const arg of scoped) {

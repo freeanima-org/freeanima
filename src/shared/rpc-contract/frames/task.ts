@@ -130,6 +130,11 @@ export const taskItemRowSchema = z.object({
   /** 子任务完成进度（仅根任务列表可选填充） */
   subtask_done: z.number().int().nonnegative().optional(),
   subtask_total: z.number().int().nonnegative().optional(),
+  /**
+   * 实体 primary_component。非 `task_item` 时表示挂载 facet（如邮件），
+   * 删除只卸组件（见 `taskDeleteDetachesCarrier`）。
+   */
+  primary_component: z.string().min(1),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -470,6 +475,27 @@ export const taskDeleteInputSchema = z.object({
 export type TaskDeleteInput = z.infer<typeof taskDeleteInputSchema>;
 export const taskDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type TaskDeleteOutput = z.infer<typeof taskDeleteOutputSchema>;
+
+export const taskConvertToEventInputSchema = z.object({
+  subject_kind: taskSubjectKindSchema,
+  id: z.number().int().positive(),
+});
+export type TaskConvertToEventInput = z.infer<typeof taskConvertToEventInputSchema>;
+export const taskConvertToEventOutputSchema = z.object({
+  item: z.object({
+    id: z.number().int().positive(),
+    title: z.string(),
+    content: z.string(),
+    start_at: z.string(),
+    end_at: z.string().nullable(),
+    all_day: z.boolean(),
+    remind_at: z.string().nullable(),
+    tag_ids: z.array(z.number().int().positive()),
+    created_at: z.string(),
+    updated_at: z.string(),
+  }),
+});
+export type TaskConvertToEventOutput = z.infer<typeof taskConvertToEventOutputSchema>;
 
 export const taskSearchInputSchema = z.object({
   subject_kind: taskSubjectKindSchema,

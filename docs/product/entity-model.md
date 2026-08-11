@@ -56,6 +56,16 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 | **restore**            | 清除 `deleted_at`；**不**自动恢复原容器 membership                                                                                                                                         | `entity.restore` / `restoreEntity`                                   |
 | **purge**              | 物理 `DELETE`；睡眠 cleanup 清理 `deleted_at` 满 **30 天** 的行；`object_file` 在无其它实体引用同 `(world_id, cid)` 时同步删除对象存储 blob                                                | `purgeSoftDeletedEntities` + `gcObjectBlobsAfterEntityPurge`（内部） |
 
+## Morph semantics（形态变换）
+
+与上表正交；**勿**用新建行冒充「邮件变任务」：
+
+| 操作       | 含义                                                                                         | 典型 API / 产品入口                                                                             |
+| ---------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **retype** | 同 `entities.id`：换 `primary_component` + `components=[to]` + **整表替换** body（非 merge） | `replacePrimaryComponent`；`task.convertToEvent` / `calendar.convertToTask`                     |
+| **attach** | 同 id：`components` **追加**组件 + merge 该组件 body；默认 **不改** primary                  | `addEntityComponent`；`email.message.attachTask`（邮件上挂 `task_item`）                        |
+| **detach** | 去掉附加组件（即 deleteComponent）；载体实体保留                                             | `deleteEntityComponent`；`email.message.detachTask`；或 `task.delete` 在 primary≠`task_item` 时 |
+
 补充规则：
 
 - **容器移除不自动 deleteComponent**（例：从池子 remove 一项，该项上的 `picks_item` 等组件仍保留）。
@@ -63,6 +73,7 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 - **禁止软删**：`type` ∈ `agent` \| `user` \| `world`；默认 Inbox（`is_default`）清单仍不可删。
 - 空壳由主人在 Entity 模块或工具侧决定：补组件、或 `deleteEntity`。
 - Shell **Entity** 模块（[`docs/modules/entity.md`](../modules/entity.md)）：分页列出存活实体（`updated_at` 倒序）+ 回收站。
+- **任务 facet**：清单 / complete / 提醒扫描认 `components` **包含** `task_item`（不要求 primary）；primary 仍为 `email_message` 的挂载任务可进 Inbox。对挂载体执行 `task.delete` → **detach**，禁止误删邮件。
 
 ## Subject (`agent` / `user`)
 

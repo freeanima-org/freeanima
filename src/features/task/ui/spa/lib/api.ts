@@ -331,6 +331,15 @@ export async function deleteTaskItem(id: number): Promise<void> {
   return offlineDeleteTaskItem(id);
 }
 
+/** 同 id 有损转为日历事件（需联网） */
+export async function convertTaskItemToEvent(id: number): Promise<{ id: number; title: string }> {
+  const data = await habitat().call("task.convertToEvent", {
+    subject_kind: "user",
+    id,
+  });
+  return { id: data.item.id, title: data.item.title };
+}
+
 export type TaskAdvanceReminderEvent = {
   task_item_id: number;
   title: string;

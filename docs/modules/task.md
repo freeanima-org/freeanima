@@ -99,10 +99,21 @@ completeForever → 写 occurrence（若有规则）+ 清 recurrence + completed
 
 日历侧重复实例为 **虚拟展开**（见 [`calendar.md`](./calendar.md)），不写未来 `task_occurrence`。
 
+## 与日历事件互转（retype）
+
+- `task.convertToEvent`：同 id 将 pending 根任务（须有 `start_at`/`due_at`）换成 `calendar_event`；有损丢弃 recurrence / 归属 / 子任务（级联软删）与 occurrence。
+- 反向见 [`calendar.md`](./calendar.md) `calendar.convertToTask`。
+- 形态约定见 [`entity-model.md`](../product/entity-model.md) Morph（retype / attach）。
+
+## 任务 facet（非 primary）
+
+清单 / complete / 提醒 / `calendar.range` 认 **`components` 含 `task_item`**（例如邮件挂载）。`task.delete` 在 primary≠`task_item` 时只 **detach** 组件（前后端共用 `taskDeleteDetachesCarrier`；列表行带 `primary_component`，确认文案区分「移除任务」与软删实体）。
+
 ## 相关代码
 
 - Schema：`task-item.ts` / `task-occurrence.ts` / `task-recurrence.ts` / `schedulable.ts`
 - Domain：`item-store.ts` / `occurrence-store.ts` / `completed-activity.ts` / `dida-csv-import.ts` / `dida-rrule.ts` / `apply-dida-import.ts`
-- RPC：`src/shared/rpc-contract/frames/task.ts`（含 `task.importDidaCsv`）
+- 互转 mapper：`features/calendar/domain/convert-task-event.ts`
+- RPC：`src/shared/rpc-contract/frames/task.ts`（含 `task.importDidaCsv`、`task.convertToEvent`）
 - 提醒调度：`src/host/platform/boot/task-reminder-scheduler.ts`
 - 导入 UI：栖息地 `data-maintenance` + `DidaImportDialog`

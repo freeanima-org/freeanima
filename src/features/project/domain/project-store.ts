@@ -69,7 +69,7 @@ export async function releaseTasksFromProject(worldId: number, projectId: number
   const defaultListId = await resolveDefaultListId(worldId);
   const result = await searchEntities({
     world_id: worldId,
-    primary_component: TASK_ITEM_COMPONENT,
+    component: TASK_ITEM_COMPONENT,
     filters: { project_id: projectId },
     limit: 500,
     mode: "filter_only",

@@ -16,6 +16,7 @@ import {
   searchEmailMessages,
   tagEmailMessage,
 } from "./message-store.ts";
+import { attachTaskToEmailMessage, detachTaskFromEmailMessage } from "./attach-task.ts";
 import { EMAIL_TOOL_RETURNS } from "./return-schemas.ts";
 import { listEmailThreads, tagEmailThread } from "./thread-store.ts";
 import { getEmailSyncPort } from "./sync-port.ts";
@@ -40,6 +41,8 @@ const MAILBOX_TOOL_NAMES = [
   "email_mailbox_delete",
   "email_thread_list",
   "email_tag",
+  "email_attach_task",
+  "email_detach_task",
 ] as const;
 
 export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailToolIo): void {
@@ -660,6 +663,87 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
                 return toolResult({ ok: true, message: await messagePayload(message) });
               }
               return toolError("target must be thread or message");
+            } catch (err) {
+              return toolError(errMsg(err));
+            }
+          },
+        },
+        {
+          name: "email_attach_task",
+          description:
+            "Attach a task_item component onto an email_message (same entity id; primary stays email). Optional due_at/remind_at; reminders require due_at. Fails if already attached.",
+          parameters: {
+            type: "object",
+            properties: {
+              ...WORLD_ID_OPTIONAL,
+              id: { type: "integer", description: "email_message entity id" },
+              due_at: { type: "string", description: "Due time ISO8601" },
+              remind_at: { type: "string", description: "Reminder ISO8601 (requires due_at)" },
+              list_id: { type: "integer", description: "Target list; default Inbox" },
+              title: { type: "string", description: "Override task title (default email subject)" },
+              priority: { type: "string", enum: ["high", "medium", "low", "none"] },
+            },
+            required: ["subject_kind", "id"],
+          },
+          handler: async (args) => {
+            try {
+              const id = parseMessageId(args.id);
+              if (id == null) return toolError("id is required");
+              const worldId = await resolveEmailToolWorld({ args, entityId: id, access: "write" });
+              if (typeof worldId === "string") return worldId;
+              const item = await attachTaskToEmailMessage(
+                worldId,
+                id,
+                omitUndefined({
+                  due_at: args.due_at != null ? String(args.due_at) : undefined,
+                  remind_at: args.remind_at != null ? String(args.remind_at) : undefined,
+                  list_id: args.list_id != null ? Number(args.list_id) : undefined,
+                  title: args.title != null ? String(args.title) : undefined,
+                  priority:
+                    args.priority === "high" ||
+                    args.priority === "medium" ||
+                    args.priority === "low" ||
+                    args.priority === "none"
+                      ? args.priority
+                      : undefined,
+                }),
+              );
+              return toolResult({
+                ok: true,
+                action: "attach_task",
+                item: {
+                  id: item.id,
+                  title: item.title,
+                  due_at: item.due_at,
+                  remind_at: item.remind_at,
+                  list_id: item.list_id,
+                },
+              });
+            } catch (err) {
+              return toolError(errMsg(err));
+            }
+          },
+        },
+        {
+          name: "email_detach_task",
+          description: "Remove task_item from an email_message entity; keeps the email.",
+          parameters: {
+            type: "object",
+            properties: {
+              ...WORLD_ID_OPTIONAL,
+              id: { type: "integer", description: "email_message entity id" },
+            },
+            required: ["subject_kind", "id"],
+          },
+          handler: async (args) => {
+            try {
+              const id = parseMessageId(args.id);
+              if (id == null) return toolError("id is required");
+              const worldId = await resolveEmailToolWorld({ args, entityId: id, access: "write" });
+              if (typeof worldId === "string") return worldId;
+              const ok = await detachTaskFromEmailMessage(worldId, id);
+              if (!ok) return toolError(`no task attached on email ${id}`);
+              return toolResult({ ok: true, action: "detach_task", id });
             } catch (err) {
               return toolError(errMsg(err));
             }

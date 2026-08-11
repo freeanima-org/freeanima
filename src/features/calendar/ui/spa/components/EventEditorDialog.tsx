@@ -40,6 +40,7 @@ type EventEditorDialogProps = {
     remind_at: string | null;
   }) => void | Promise<void>;
   onDelete?: () => void | Promise<void>;
+  onConvertToTask?: () => void | Promise<void>;
 };
 
 export function EventEditorDialog({
@@ -48,6 +49,7 @@ export function EventEditorDialog({
   onClose,
   onSave,
   onDelete,
+  onConvertToTask,
 }: EventEditorDialogProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -188,6 +190,16 @@ export function EventEditorDialog({
             onPress={() => void onDelete()}
           >
             {m.calendar_delete_event()}
+          </Button>
+        ) : null}
+        {target?.mode === "edit" && onConvertToTask ? (
+          <Button
+            type="button"
+            variant="ghost"
+            isDisabled={saving}
+            onPress={() => void onConvertToTask()}
+          >
+            {m.calendar_convert_to_task()}
           </Button>
         ) : null}
         <Button type="button" variant="ghost" onPress={onClose} isDisabled={saving}>

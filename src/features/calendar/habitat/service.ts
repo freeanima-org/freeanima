@@ -1,4 +1,5 @@
 import {
+  convertCalendarEventToTaskItem,
   createCalendarEvent,
   deleteCalendarEvent,
   getCalendarEvent,
@@ -110,6 +111,16 @@ export async function serviceCalendarGet(
   const ctx = await storeContext(deps, input.subject_kind);
   const item = await getCalendarEvent(ctx, input.id);
   if (!item) throw new Error("NOT_FOUND");
+  return { item };
+}
+
+export async function serviceCalendarConvertToTask(
+  deps: RuntimeDeps,
+  input: { subject_kind: CalendarSubjectKind; id: number },
+) {
+  assertPg(deps);
+  const ctx = await storeContext(deps, input.subject_kind);
+  const item = await convertCalendarEventToTaskItem(ctx, input.id);
   return { item };
 }
 

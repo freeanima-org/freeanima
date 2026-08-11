@@ -79,6 +79,8 @@ import type {
   TaskUncompleteOutput,
   TaskDeleteInput,
   TaskDeleteOutput,
+  TaskConvertToEventInput,
+  TaskConvertToEventOutput,
   TaskSearchInput,
   TaskSearchOutput,
 } from "./frames/task.ts";
@@ -278,6 +280,7 @@ export const RPC_PROTOCOL_METHODS = [
   "task.complete",
   "task.uncomplete",
   "task.delete",
+  "task.convertToEvent",
   "task.search",
   "diary.list",
   "diary.create",
@@ -393,6 +396,7 @@ export type RpcRouterInputs = {
   "task.complete": TaskCompleteInput;
   "task.uncomplete": TaskUncompleteInput;
   "task.delete": TaskDeleteInput;
+  "task.convertToEvent": TaskConvertToEventInput;
   "task.search": TaskSearchInput;
   "diary.list": DiaryListInput;
   "diary.create": DiaryCreateInput;
@@ -511,6 +515,7 @@ export type RpcRouterOutputs = {
   "task.complete": TaskCompleteOutput;
   "task.uncomplete": TaskUncompleteOutput;
   "task.delete": TaskDeleteOutput;
+  "task.convertToEvent": TaskConvertToEventOutput;
   "task.search": TaskSearchOutput;
   "diary.list": DiaryListOutput;
   "diary.create": DiaryCreateOutput;

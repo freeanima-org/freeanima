@@ -43,6 +43,24 @@ export type EntityUpdateInput = {
   revisions?: EntityRevision[];
 };
 
+/** 原地换型：同 id 替换 primary + components + 全量 body（非 merge）。 */
+export type ReplacePrimaryComponentInput = {
+  id: number;
+  from: string;
+  to: string;
+  body: Record<string, unknown>;
+  skip_revision?: boolean;
+};
+
+/** 追加组件：默认不改 primary；body 为该组件字段（merge 进现有 body）。 */
+export type AddEntityComponentInput = {
+  id: number;
+  component: string;
+  body: Record<string, unknown>;
+  /** true 时把新组件提升为 primary；默认 false（如邮件挂 task_item） */
+  promote_primary?: boolean;
+};
+
 export type EntityDeletedFilter = "alive" | "deleted" | "all";
 
 export type EntityListOpts = {

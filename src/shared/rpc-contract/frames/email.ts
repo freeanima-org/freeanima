@@ -110,6 +110,36 @@ export type EmailMessageReadInput = z.infer<typeof emailMessageReadInputSchema>;
 export const emailMessageReadOutputSchema = z.object({ message: emailMessageRowSchema });
 export type EmailMessageReadOutput = z.infer<typeof emailMessageReadOutputSchema>;
 
+export const emailMessageAttachTaskInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  id: z.number().int().positive(),
+  due_at: z.string().nullable().optional(),
+  remind_at: z.string().nullable().optional(),
+  list_id: z.number().int().positive().optional(),
+  title: z.string().min(1).optional(),
+  priority: z.enum(["high", "medium", "low", "none"]).optional(),
+});
+export type EmailMessageAttachTaskInput = z.infer<typeof emailMessageAttachTaskInputSchema>;
+export const emailMessageAttachTaskOutputSchema = z.object({
+  item: z.object({
+    id: z.number().int().positive(),
+    title: z.string(),
+    status: z.enum(["pending", "completed"]),
+    due_at: z.string().nullable(),
+    remind_at: z.string().nullable(),
+    list_id: z.number().int().positive().nullable(),
+  }),
+});
+export type EmailMessageAttachTaskOutput = z.infer<typeof emailMessageAttachTaskOutputSchema>;
+
+export const emailMessageDetachTaskInputSchema = z.object({
+  subject_kind: emailSubjectKindSchema,
+  id: z.number().int().positive(),
+});
+export type EmailMessageDetachTaskInput = z.infer<typeof emailMessageDetachTaskInputSchema>;
+export const emailMessageDetachTaskOutputSchema = z.object({ ok: z.literal(true) });
+export type EmailMessageDetachTaskOutput = z.infer<typeof emailMessageDetachTaskOutputSchema>;
+
 export const emailMessageMarkReadInputSchema = z.object({
   subject_kind: emailSubjectKindSchema,
   id: z.number().int().positive(),

@@ -209,6 +209,23 @@ async function handleDelete(args: Record<string, unknown>): Promise<string> {
   }
 }
 
+async function handleConvertToEvent(args: Record<string, unknown>): Promise<string> {
+  const id = Number(args.id);
+  if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+
+  const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
+  if (typeof worldId === "string") return worldId;
+
+  try {
+    const { convertTaskItemToCalendarEvent } =
+      await import("@freeanima/features/calendar/domain/convert-task-event.ts");
+    const item = await convertTaskItemToCalendarEvent(worldId, id);
+    return toolResult({ ok: true, action: "convert_to_event", item });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
 async function handleGet(args: Record<string, unknown>): Promise<string> {
   const id = Number(args.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
@@ -235,6 +252,7 @@ async function handleGet(args: Record<string, unknown>): Promise<string> {
     sort_order: parsed.sort_order ?? 0,
     completed_at: parsed.completed_at ?? null,
     recurrence: parsed.recurrence ?? null,
+    primary_component: row.primary_component ?? "task_item",
     created_at: row.created_at.toISOString(),
     updated_at: row.updated_at.toISOString(),
   });
@@ -343,6 +361,7 @@ const TASK_ITEM_TOOL_NAMES = [
   "task_complete",
   "task_uncomplete",
   "task_delete",
+  "task_convert_to_event",
   "task_get",
   "task_list",
   "task_search",
@@ -547,6 +566,18 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
             required: ["subject_kind", "id"],
           },
           handler: handleDelete,
+        },
+        {
+          name: "task_convert_to_event",
+          description:
+            "Retype a pending rooted task with a date into a calendar_event (same entity id; lossy: drops recurrence, list/project, subtasks).",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: { id: { type: "integer" } },
+            required: ["subject_kind", "id"],
+          },
+          handler: handleConvertToEvent,
         },
         {
           name: "task_get",

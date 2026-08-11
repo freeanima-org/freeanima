@@ -1,3 +1,5 @@
+import { taskDeleteDetachesCarrier } from "@freeanima/host/core/db/schema/entity";
+
 import type { TaskListRow } from "./api.ts";
 import { copyText } from "./copy-text.ts";
 
@@ -78,6 +80,7 @@ export function buildItemMenuItems(
     onToggleComplete: (item: import("./api.ts").TaskItemRow) => void;
     onMoveTo: (item: import("./api.ts").TaskItemRow) => void;
     onMoveToProject?: (item: import("./api.ts").TaskItemRow) => void;
+    onConvertToEvent?: (item: import("./api.ts").TaskItemRow) => void;
     onDelete: (item: import("./api.ts").TaskItemRow) => void;
   },
   opts?: { listArchived?: boolean },
@@ -102,6 +105,16 @@ export function buildItemMenuItems(
   if (item.project_id == null && handlers.onMoveToProject) {
     items.push({ label: "移入项目…", onClick: () => handlers.onMoveToProject?.(item) });
   }
-  items.push({ label: "删除", danger: true, onClick: () => void handlers.onDelete(item) });
+  if (item.status === "pending" && (item.due_at || item.start_at) && handlers.onConvertToEvent) {
+    items.push({
+      label: "转为事件",
+      onClick: () => void handlers.onConvertToEvent?.(item),
+    });
+  }
+  items.push({
+    label: taskDeleteDetachesCarrier(item.primary_component) ? "移除任务" : "删除",
+    danger: true,
+    onClick: () => void handlers.onDelete(item),
+  });
   return items;
 }
