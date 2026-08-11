@@ -1,5 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute } from "@tanstack/react-router";
+import type { Key } from "react-aria-components";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
@@ -304,7 +305,7 @@ function TemporalSummaryPage() {
 
       <Tabs
         selectedKey={tab}
-        onSelectionChange={(key) => {
+        onSelectionChange={(key: Key) => {
           if (key != null) setTab(String(key) as PageTab);
         }}
         className="space-y-4"

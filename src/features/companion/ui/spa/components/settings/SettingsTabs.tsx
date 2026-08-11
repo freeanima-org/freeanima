@@ -1,3 +1,4 @@
+import type { Key } from "react-aria-components";
 import { Tabs, TabsList, TabsTrigger } from "@freeanima/ui-kit";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 
@@ -17,7 +18,7 @@ export function SettingsTabs() {
   return (
     <Tabs
       selectedKey={tab}
-      onSelectionChange={(key) => {
+      onSelectionChange={(key: Key) => {
         if (key == null) return;
         const value = String(key);
         if ((TAB_IDS as readonly string[]).includes(value)) {
