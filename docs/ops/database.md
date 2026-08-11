@@ -114,11 +114,12 @@ Full integration tests require **Docker** for a temporary PostgreSQL instance:
 
 ```bash
 just qa test-integration
+just qa test-integration -- --core
 just qa test-integration -- tests/integration/memory/foo.test.ts
 just test              # unit + integration（串行）
 ```
 
-pre-commit `just qa test-changed` does **not** run integration tests.
+pre-commit / pre-push **不**跑 integration；PR CI 全量；功能/修 bug 主动 `--core`。
 
 ## Troubleshooting
 

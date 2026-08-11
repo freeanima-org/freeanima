@@ -6,8 +6,20 @@ const verifyServiceApiToken = mock(
   async (_raw: string): Promise<VerifiedServiceApiToken | null> => null,
 );
 
+/** mock 须覆盖同包其它 named export（http-rest / boot 依赖链会一并解析） */
 mock.module("@freeanima/host/core/db/pg/service-api-token", () => ({
   verifyServiceApiToken,
+  revokeServiceApiToken: async () => false,
+  clearServiceApiTokenVerifyCache: () => {},
+  createServiceApiTokenWithSecret: async () => {
+    throw new Error("not mocked");
+  },
+  listServiceApiTokensBySubject: async () => [],
+  getServiceApiTokenById: async () => null,
+  countServiceApiTokens: async () => 0,
+  importServiceApiTokenFromPlaintext: async () => {
+    throw new Error("not mocked");
+  },
 }));
 
 const { evaluateServiceAuthAuthed } = await import("./service-auth.ts");

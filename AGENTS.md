@@ -63,6 +63,8 @@ just dev habitat / just dev web / just dev tauri / just dev tauri-android
 just check                   # PR 前质量门禁（= just qa check；≠ 全量 CI）
 just fmt / just test         # 顶层短别名 → qa::
 just qa typecheck / just qa lint / just qa test-changed
+just qa test-unit-core                   # pre-push：unit CORE
+just qa test-integration -- --core       # 功能/修 bug 主动：integration CORE
 just db generate / just db migrate   # 需 DATABASE_URL
 # 桌面壳：Win/Linux 同命令 — pack/dev/install tauri = 本机；tauri-windows = Win 本机或非 Win 交叉
 just pack web / just pack cli / just pack tauri / just pack tauri-windows / just pack tauri-android

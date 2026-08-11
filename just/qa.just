@@ -28,6 +28,11 @@ pre-commit: _deps
   {{ bun }} x oxfmt --check .
   {{ bun }} test src --pass-with-no-tests --changed
 
+# husky pre-push：仅 unit CORE（集成不跑）
+[no-cd]
+pre-push: _deps
+  {{ bun }} scripts/run-unit-core-tests.ts
+
 [no-cd]
 typecheck: _deps
   {{ bun }} x tsgo -p tsconfig.json
@@ -65,6 +70,10 @@ test: _deps
 [no-cd]
 test-unit: _deps
   {{ bun }} test src --pass-with-no-tests
+
+[no-cd]
+test-unit-core: _deps
+  {{ bun }} scripts/run-unit-core-tests.ts
 
 [no-cd]
 test-integration *args: _deps

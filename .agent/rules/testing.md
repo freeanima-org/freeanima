@@ -8,11 +8,38 @@
 | **Cross-package integration** | `tests/integration/`                                                    | PG, Redis, temp dirs, `beginIntegrationCase`             | —                                                                                       |
 | **Black-box E2E**             | [freeanima-testing](https://github.com/freeanima-org/freeanima-testing) | Compose + Playwright; PR dispatch async                  | —                                                                                       |
 
-- pre-commit: `just qa pre-commit`（含 `just qa test-changed`，**unit only**）
-- Before PR push: `just test` / `just qa test`（unit + integration；black-box in freeanima-testing）
-- Before PR push: `just check` includes `stylelint`（手写 CSS 主题色规范，见 [frontend-ui.md](frontend-ui.md)）
+### Core vs enhanced（门禁子集）
+
+bun:test **无原生 tags**。用文件约定 + 路径清单：
+
+| 标记         | 约定                                                                     | 判定                                                                                                   |
+| ------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| **core**     | `*.core.test.ts`，或列入 [`tests/tiers/`](../../tests/tiers/) 路径默认表 | 持久化契约、引擎主路径、记忆检索、entity/auth/ACL、工具门、RPC 契约、数据/安全回归                     |
+| **enhanced** | 其余 `*.test.ts`（默认）                                                 | UI 纯函数、渠道边矩阵、运维边缘、export smoke、次模块 cascade、CLI 二进制、无 PG 的伪集成（应迁 unit） |
+
+同文件混标（过渡）：[`tests/helpers/test-tier.ts`](../../tests/helpers/test-tier.ts) 的 `describeCore` / `describeEnhanced`；`FREEANIMA_TEST_TIER=core` 时 enhanced skip。
+
+清单 SSOT：
+
+- Unit CORE 默认目录 / 文件：[`tests/tiers/unit-core-globs.txt`](../../tests/tiers/unit-core-globs.txt)（另自动纳入任意 `src/**/*.core.test.ts`）
+- Integration CORE 显式路径：[`tests/tiers/integration-core.txt`](../../tests/tiers/integration-core.txt)
+
+### 门禁矩阵
+
+| 时机                                   | Unit                         | Integration                                |
+| -------------------------------------- | ---------------------------- | ------------------------------------------ |
+| **pre-commit**（`just qa pre-commit`） | `--changed`                  | 不跑                                       |
+| **pre-push**（`just qa pre-push`）     | **core**                     | 不跑                                       |
+| **PR CI**                              | 全部                         | 全部                                       |
+| **功能变更 / bug 修复（主动）**        | **全部** `just qa test-unit` | **core** `just qa test-integration --core` |
+
+- pre-commit: `just qa pre-commit`（含 changed unit）
+- pre-push: `just qa pre-push`（unit core only）
+- PR 全量：`just test` / CI `scripts/run-ci-tests.ts`
+- Before PR：`just check` includes `stylelint`（手写 CSS 主题色规范，见 [frontend-ui.md](frontend-ui.md)）
 - Single-package logic → colocated unit tests; multi-package or real persistence → `tests/integration/`
 - New features need tests (minimal viable); mock external deps; real LLM / network excluded from CI by default
+- **勿**再把无 PG / 纯 schema 的用例放进 `tests/integration/`（应 colocated unit；可标 enhanced）
 
 ## Same-package mock exports (prefer in unit tests)
 
@@ -37,12 +64,13 @@ Use `tests/helpers/integration-case.ts` (`restoreIntegrationHome` + `flushCompre
 
 ### PG：必须用隔离库（硬禁止指日常库）
 
-`just qa test-integration` 起 Docker 临时 PG → 建迁移好的模板库 `anima_it_template` → 每个测试进程克隆 `anima_it_*` 独立库（**不再** `clearPgTables`）。`--parallel` 默认开启（`FREEANIMA_TEST_PARALLEL` 可覆盖）。子集：`just qa test-integration -- <paths>`。
+`just qa test-integration` 起 Docker 临时 PG → 建迁移好的模板库 `anima_it_template` → 每个测试进程克隆 `anima_it_*` 独立库（**不再** `clearPgTables`）。`--parallel` 默认开启（`FREEANIMA_TEST_PARALLEL` 可覆盖）。子集：`just qa test-integration -- <paths>`；CORE：`just qa test-integration -- --core`。
 
 | 允许                                                        | 禁止                                                                         |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `just qa test-integration`（Docker 随机高位端口）           | 把 `ANIMA_TEST_PG_URL` 指到与 `~/.anima/config.yaml` **同 host:port** 的实例 |
 | `just qa test-integration -- tests/integration/…` 子集      | `bun test tests/integration/...` 复用 `just dev` / 日常库                    |
+| `just qa test-integration -- --core`                        | —                                                                            |
 | 自起 Docker / 空实例（端口 ≠ 日常）再设 `ANIMA_TEST_PG_URL` | —                                                                            |
 
 护栏：同 host:port 时 `describePg` **整包 skip**，且 `setupIntegrationPg` / `createIsolatedTestDb` **直接 throw**（零副作用）。
