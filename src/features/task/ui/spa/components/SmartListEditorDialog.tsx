@@ -205,8 +205,8 @@ export function SmartListEditorDialog({
                         style={{ paddingLeft: `${depth * 12 + 4}px` }}
                       >
                         <Checkbox
-                          checked={selectedListIds.includes(list.id)}
-                          onCheckedChange={() => toggleListId(list.id)}
+                          isSelected={selectedListIds.includes(list.id)}
+                          onChange={() => toggleListId(list.id)}
                         />
                         <span className="min-w-0 flex-1 truncate">{list.name}</span>
                         {list.item_count != null ? (
@@ -227,7 +227,11 @@ export function SmartListEditorDialog({
         <Button type="button" variant="ghost" onClick={onClose}>
           取消
         </Button>
-        <Button type="button" disabled={saving || !title.trim()} onClick={() => void handleSave()}>
+        <Button
+          type="button"
+          isDisabled={saving || !title.trim()}
+          onClick={() => void handleSave()}
+        >
           保存
         </Button>
       </DialogFooter>

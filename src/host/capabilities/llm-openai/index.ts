@@ -1,5 +1,4 @@
 export {
-  OPENAI_COMPATIBLE_BACKEND_ID,
   openAiCompatibleProviderConfigSchema,
   parseOpenAiCompatibleProviderSpec,
 } from "./config.ts";
@@ -10,7 +9,7 @@ export {
   AnthropicMessagesBackend,
   ANTHROPIC_MESSAGES_FORMAT_ID,
 } from "./anthropic-messages/backend.ts";
-export { bindLlmStack, bindOpenAiCompatibleLlm } from "./llm-stack-configurator.ts";
+export { bindLlmStack } from "./llm-stack-configurator.ts";
 export {
   createOpenAiEmbeddingBatchClient,
   createOpenAiEmbeddingClient,

@@ -460,7 +460,7 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
               sceneIds={sceneIds}
               onDefaultProfileChange={setDefaultProfile}
             />
-            <Button type="button" disabled={saving} onClick={() => void saveGeneral()}>
+            <Button type="button" isDisabled={saving} onClick={() => void saveGeneral()}>
               保存默认
             </Button>
           </TabsContent>
@@ -511,7 +511,7 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
                 <Button type="button" variant="outline" onClick={closeEditorPreservingDraft}>
                   关闭
                 </Button>
-                <Button type="button" disabled={saving} onClick={() => void persistEditor()}>
+                <Button type="button" isDisabled={saving} onClick={() => void persistEditor()}>
                   {saving ? "保存中…" : "保存"}
                 </Button>
               </div>

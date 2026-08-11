@@ -411,8 +411,8 @@ export function ListSidebar({
                 <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 py-1 text-xs">
                   <Checkbox
                     className="size-3.5"
-                    checked={showClosed}
-                    onCheckedChange={onToggleShowClosed}
+                    isSelected={showClosed}
+                    onChange={onToggleShowClosed}
                   />
                   显示已归档
                 </label>

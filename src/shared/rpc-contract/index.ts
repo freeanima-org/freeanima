@@ -1,12 +1,11 @@
 export {
-  RPC_PROTOCOL_VERSION,
-  parseRpcEnvelope,
-  serializeRpcEnvelope,
   habitatRpcConnectPayloadSchema,
   habitatRpcConnectedPayloadSchema,
   HABITAT_RPC_VERSION,
+  parseHabitatRpcEnvelope,
+  serializeHabitatRpcEnvelope,
 } from "./protocol.ts";
-export type { RpcEnvelope, RpcProtocolError } from "./protocol.ts";
+export type { HabitatRpcEnvelope, HabitatRpcError } from "./protocol.ts";
 export { randomUuid } from "@freeanima/host/kernel/random-uuid.ts";
 
 export {

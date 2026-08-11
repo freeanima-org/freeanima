@@ -244,7 +244,7 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
             {numberField("保留 token", compression.reserved_tokens, (v) =>
               setCompression((c) => ({ ...c, reserved_tokens: v === "" ? 8192 : v })),
             )}
-            <Button type="button" disabled={saving} onClick={() => void saveCompression()}>
+            <Button type="button" isDisabled={saving} onClick={() => void saveCompression()}>
               保存压缩配置
             </Button>
           </CardContent>
@@ -294,7 +294,7 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
               checked={memoryRecall.exclude_resident}
               onChange={(exclude_resident) => setMemoryRecall((m) => ({ ...m, exclude_resident }))}
             />
-            <Button type="button" disabled={saving} onClick={() => void saveMemory()}>
+            <Button type="button" isDisabled={saving} onClick={() => void saveMemory()}>
               保存记忆配置
             </Button>
           </CardContent>
@@ -338,7 +338,7 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
                 disabled={saving}
               />
             ) : null}
-            <Button type="button" disabled={saving} onClick={() => void saveAdvanced()}>
+            <Button type="button" isDisabled={saving} onClick={() => void saveAdvanced()}>
               保存 {configKey}
             </Button>
           </CardContent>

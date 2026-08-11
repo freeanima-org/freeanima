@@ -132,7 +132,7 @@ export function TaskSubtaskSection({ parent, onChanged }: Props) {
           type="button"
           size="sm"
           variant="outline"
-          disabled={busy}
+          isDisabled={busy}
           onClick={() => void add()}
         >
           添加

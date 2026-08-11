@@ -198,7 +198,7 @@ export function MotionLibraryTab() {
                             variant="ghost"
                             size="sm"
                             className="h-7 px-2 text-xs"
-                            disabled={index === 0}
+                            isDisabled={index === 0}
                             onClick={() => void moveMotion(m.object_file_id, -1)}
                           >
                             上移
@@ -208,7 +208,7 @@ export function MotionLibraryTab() {
                             variant="ghost"
                             size="sm"
                             className="h-7 px-2 text-xs"
-                            disabled={index >= library.length - 1}
+                            isDisabled={index >= library.length - 1}
                             onClick={() => void moveMotion(m.object_file_id, 1)}
                           >
                             下移

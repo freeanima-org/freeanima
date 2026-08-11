@@ -315,7 +315,7 @@ function RuntimeCard({
               variant="outline"
               size="sm"
               className="h-7 text-xs border-yellow-500/50 text-yellow-700 hover:bg-yellow-500/10 dark:text-yellow-400"
-              disabled={restarting}
+              isDisabled={restarting}
               onClick={onRestart}
             >
               {restarting ? m.habitat_common_restarting() : m.habitat_common_restart_service()}

@@ -155,10 +155,15 @@ export function DiaryBlockTemplateDialog({
               />
             </label>
             <DialogFooter>
-              <Button type="button" variant="ghost" disabled={busy} onClick={() => setEditor(null)}>
+              <Button
+                type="button"
+                variant="ghost"
+                isDisabled={busy}
+                onClick={() => setEditor(null)}
+              >
                 取消
               </Button>
-              <Button type="button" disabled={busy} onClick={() => void handleSave()}>
+              <Button type="button" isDisabled={busy} onClick={() => void handleSave()}>
                 保存
               </Button>
             </DialogFooter>
@@ -197,7 +202,7 @@ export function DiaryBlockTemplateDialog({
                       size="sm"
                       className="h-7 w-7 p-0"
                       aria-label={`编辑 ${item.name}`}
-                      disabled={busy}
+                      isDisabled={busy}
                       onClick={() =>
                         setEditor({
                           id: item.id,
@@ -215,7 +220,7 @@ export function DiaryBlockTemplateDialog({
                       size="sm"
                       className="text-destructive h-7 w-7 p-0"
                       aria-label={`删除 ${item.name}`}
-                      disabled={busy}
+                      isDisabled={busy}
                       onClick={() => setTemplateToDelete(item)}
                     >
                       <Trash2Icon className="size-3.5" />

@@ -71,9 +71,9 @@ function SortableModuleRow({
       </button>
       <Checkbox
         id={inputId}
-        checked={checked}
-        disabled={locked}
-        onCheckedChange={(value) => onToggle(value === true)}
+        isSelected={checked}
+        isDisabled={locked}
+        onChange={(value) => onToggle(value === true)}
       />
       <div className="min-w-0 flex-1">
         <Label

@@ -211,7 +211,7 @@ export function DidaImportDialog({
                 variant="ghost"
                 size="sm"
                 className="h-7 text-xs"
-                disabled={running}
+                isDisabled={running}
                 onClick={() => {
                   reset();
                 }}
@@ -275,7 +275,7 @@ export function DidaImportDialog({
         {step === "preview" ? (
           <Button
             type="button"
-            disabled={disabled || running || !csvText}
+            isDisabled={disabled || running || !csvText}
             onClick={() => void runImport()}
           >
             {running ? <Spinner className="size-4" /> : null}

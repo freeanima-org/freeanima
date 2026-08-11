@@ -8,7 +8,7 @@ import {
 import { isConversationMeta, type ConversationMetaMessage } from "@freeanima/host/core/db/domain";
 import { getConversationMeta } from "@freeanima/host/core/db/pg/conversation";
 import {
-  applyConversationToolMaskFilter,
+  applyConversationToolPolicyFilter,
   attachToolReturns,
   loadToolSetsIntoConversation,
   unloadToolSetsFromConversation,
@@ -37,7 +37,7 @@ function hitsWithAllowed(
 ) {
   return hits.map((hit) => {
     const toolNames = hit.tools.map((t) => t.name);
-    const allowedSet = new Set(applyConversationToolMaskFilter(toolNames, meta));
+    const allowedSet = new Set(applyConversationToolPolicyFilter(toolNames, meta));
     const allowed = toolNames.some((n) => allowedSet.has(n));
     return { ...hit, allowed };
   });

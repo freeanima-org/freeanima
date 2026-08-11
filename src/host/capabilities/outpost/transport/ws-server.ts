@@ -9,15 +9,19 @@ import { bindTaskSessionPumps } from "@freeanima/features/task/habitat/session-p
 import {
   remoteToolsAttachPayloadSchema,
   defineRpcProtocolRouter,
-  parseRpcEnvelope,
-  serializeRpcEnvelope,
   type RpcMethod,
   type RpcRequestAuthContext,
   type RemoteToolsRequestContext,
   type RpcRouterInputs,
   type RemoteToolsServerHandlers,
 } from "@freeanima/shared/rpc-contract";
-import { habitatRpcConnectPayloadSchema, HABITAT_RPC_VERSION } from "@freeanima/shared/habitat-rpc";
+import {
+  habitatRpcConnectPayloadSchema,
+  HABITAT_RPC_VERSION,
+  parseHabitatRpcEnvelope,
+  serializeHabitatRpcEnvelope,
+  type HabitatRpcEnvelope,
+} from "@freeanima/shared/habitat-rpc";
 import { verifyServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
 import { isHabitatMethod } from "@freeanima/shared/habitat-contract";
 import { getFeatureRpcHandler } from "@freeanima/host/platform/features/registry.ts";
@@ -114,8 +118,8 @@ export function attachSapWebSocket(
     }
   >();
 
-  const sendEnvelope = (envelope: Parameters<typeof serializeRpcEnvelope>[0]): void => {
-    ws.send(serializeRpcEnvelope(envelope));
+  const sendEnvelope = (envelope: HabitatRpcEnvelope): void => {
+    ws.send(serializeHabitatRpcEnvelope(envelope));
   };
 
   const createRemoteToolsSendRequest = () => {
@@ -157,9 +161,9 @@ export function attachSapWebSocket(
   };
 
   const handleMessage = async (raw: string): Promise<void> => {
-    let envelope: ReturnType<typeof parseRpcEnvelope>;
+    let envelope: HabitatRpcEnvelope;
     try {
-      envelope = parseRpcEnvelope(raw);
+      envelope = parseHabitatRpcEnvelope(raw);
     } catch {
       ws.close(1003, "invalid frame");
       return;

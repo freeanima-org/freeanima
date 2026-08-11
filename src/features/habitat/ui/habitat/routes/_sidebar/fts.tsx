@@ -299,7 +299,7 @@ function FtsPage() {
             <Button
               type="button"
               size="sm"
-              disabled={loading || job?.running === true}
+              isDisabled={loading || job?.running === true}
               onClick={() => void onRebuild(true)}
             >
               {job?.running ? m.habitat_fts_rebuilding() : m.habitat_fts_resume()}
@@ -308,7 +308,7 @@ function FtsPage() {
               type="button"
               variant="outline"
               size="sm"
-              disabled={loading || job?.running === true}
+              isDisabled={loading || job?.running === true}
               onClick={() => void onRebuild(false)}
             >
               {m.habitat_fts_full_rebuild()}
@@ -317,7 +317,7 @@ function FtsPage() {
               type="button"
               variant="ghost"
               size="sm"
-              disabled={loading}
+              isDisabled={loading}
               onClick={() => void reload()}
             >
               {m.habitat_fts_refresh_stats()}

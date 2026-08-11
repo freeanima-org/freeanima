@@ -136,7 +136,7 @@ function PassiveRecallDebugPage() {
         <Button
           type="button"
           onClick={() => void runDebug()}
-          disabled={loading || !userText.trim()}
+          isDisabled={loading || !userText.trim()}
         >
           {loading ? <Spinner className="size-4" /> : null}
           {m.habitat_passive_recall_run()}

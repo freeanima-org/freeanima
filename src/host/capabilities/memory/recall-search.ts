@@ -245,6 +245,3 @@ export async function memoryScopedSearch(
       : {}),
   };
 }
-
-/** @deprecated Use memoryScopedSearch */
-export const memoryRecallSearch = memoryScopedSearch;

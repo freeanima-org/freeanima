@@ -203,7 +203,7 @@ export function VaultItemForm({
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={busy || genLoading}
+                  isDisabled={busy || genLoading}
                   onClick={() => {
                     void (async () => {
                       setGenLoading(true);
@@ -268,7 +268,7 @@ export function VaultItemForm({
                 variant="outline"
                 size="icon"
                 className="shrink-0"
-                disabled={busy || values.uris.length <= 1}
+                isDisabled={busy || values.uris.length <= 1}
                 aria-label="删除 URI"
                 onClick={() =>
                   setValues((prev) => ({
@@ -286,7 +286,7 @@ export function VaultItemForm({
             type="button"
             variant="outline"
             size="sm"
-            disabled={busy}
+            isDisabled={busy}
             onClick={() => setValues((prev) => ({ ...prev, uris: [...prev.uris, emptyUri()] }))}
           >
             添加 URI
@@ -371,7 +371,7 @@ export function VaultItemForm({
                 variant="outline"
                 size="icon"
                 className="shrink-0"
-                disabled={busy}
+                isDisabled={busy}
                 aria-label="删除自定义字段"
                 onClick={() =>
                   setValues((prev) => ({
@@ -388,7 +388,7 @@ export function VaultItemForm({
             type="button"
             variant="outline"
             size="sm"
-            disabled={busy}
+            isDisabled={busy}
             onClick={() =>
               setValues((prev) => ({
                 ...prev,
@@ -402,11 +402,11 @@ export function VaultItemForm({
       </FormField>
 
       <div className="flex flex-wrap gap-2">
-        <Button type="button" disabled={!values.title.trim() || busy} onClick={submit}>
+        <Button type="button" isDisabled={!values.title.trim() || busy} onClick={submit}>
           {loading ? <Spinner className="size-4" /> : mode === "create" ? "保存条目" : "保存更改"}
         </Button>
         {onCancel ? (
-          <Button type="button" variant="outline" disabled={loading} onClick={onCancel}>
+          <Button type="button" variant="outline" isDisabled={loading} onClick={onCancel}>
             取消
           </Button>
         ) : null}

@@ -20,8 +20,8 @@ export const schedulableBodySchema = z.object({
   start_at: z.string().nullable().optional(),
   due_at: z.string().nullable().optional(),
   /**
-   * 兼容单字段提醒：与 `reminders` 最早一项同步。
-   * 新写入优先写 `reminders`；读写层可互相归一。
+   * 与 `reminders` 最早一项同步的镜像字段（PG 迁移已回填）。
+   * 读写请经 {@link normalizeSchedulableReminders}。
    */
   remind_at: z.string().nullable().optional(),
   /** 多提醒（提前响铃）；due 仍用顶层 `due_at` + `last_notified_at` */

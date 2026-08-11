@@ -1374,7 +1374,7 @@ export function TaskApp() {
                   variant="ghost"
                   size="sm"
                   className="h-7 shrink-0 px-2"
-                  disabled={refreshing || loading}
+                  isDisabled={refreshing || loading}
                   aria-label={m.habitat_common_refresh()}
                   onClick={() => void handleManualRefresh()}
                 >
@@ -1726,7 +1726,7 @@ export function TaskApp() {
             <Button
               type="button"
               size="sm"
-              disabled={!childNamePromptValue.trim()}
+              isDisabled={!childNamePromptValue.trim()}
               onClick={confirmChildNamePrompt}
             >
               创建

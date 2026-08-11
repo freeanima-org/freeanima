@@ -217,8 +217,8 @@ function WorldEditModal({
           <div className="flex items-center gap-2">
             <Checkbox
               id="world-private"
-              checked={form.private}
-              onCheckedChange={(checked) =>
+              isSelected={form.private}
+              onChange={(checked) =>
                 setForm((f) => {
                   const nextPrivate = checked === true;
                   const nextOwner = nextPrivate ? f.owner_subject_id : "";
@@ -240,8 +240,10 @@ function WorldEditModal({
         {form.private ? (
           <FormField label={m.habitat_entities_col_owner_subject()} className="text-xs">
             <Select
-              value={form.owner_subject_id || "__none__"}
-              onValueChange={(v) =>
+              selectedKey={form.owner_subject_id || "__none__"}
+              onSelectionChange={(key) => {
+                if (key == null) return;
+                const v = String(key);
                 setForm((f) => {
                   const nextOwner = v === "__none__" ? "" : v;
                   const ownerNum = nextOwner ? Number(nextOwner) : null;
@@ -252,18 +254,18 @@ function WorldEditModal({
                       (g) => ownerNum == null || Number(g.subject_id) !== ownerNum,
                     ),
                   };
-                })
-              }
+                });
+              }}
             >
               <SelectTrigger size="sm" className="w-full">
                 <SelectValue placeholder={m.habitat_entities_owner_subject_placeholder()} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">
+                <SelectItem id="__none__">
                   {m.habitat_entities_owner_subject_placeholder()}
                 </SelectItem>
                 {subjects.map((s) => (
-                  <SelectItem key={s.id} value={String(s.id)}>
+                  <SelectItem key={s.id} id={String(s.id)}>
                     {subjectOptionLabel(s)}
                   </SelectItem>
                 ))}
@@ -287,49 +289,53 @@ function WorldEditModal({
               return (
                 <div key={index} className="flex flex-wrap items-center gap-2">
                   <Select
-                    value={grant.subject_id || "__none__"}
-                    onValueChange={(v) =>
+                    selectedKey={grant.subject_id || "__none__"}
+                    onSelectionChange={(key) => {
+                      if (key == null) return;
+                      const v = String(key);
                       setForm((f) => ({
                         ...f,
                         grants: f.grants.map((g, i) =>
                           i === index ? { ...g, subject_id: v === "__none__" ? "" : v } : g,
                         ),
-                      }))
-                    }
+                      }));
+                    }}
                   >
                     <SelectTrigger size="sm" className="min-w-[12rem] flex-1">
                       <SelectValue placeholder={m.habitat_entities_grant_subject_label()} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">
+                      <SelectItem id="__none__">
                         {m.habitat_entities_owner_subject_placeholder()}
                       </SelectItem>
                       {options.map((s) => (
-                        <SelectItem key={s.id} value={String(s.id)}>
+                        <SelectItem key={s.id} id={String(s.id)}>
                           {subjectOptionLabel(s)}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   <Select
-                    value={grant.permission}
-                    onValueChange={(v) =>
+                    selectedKey={grant.permission}
+                    onSelectionChange={(key) => {
+                      if (key == null) return;
+                      const v = String(key);
                       setForm((f) => ({
                         ...f,
                         grants: f.grants.map((g, i) =>
                           i === index ? { ...g, permission: v === "write" ? "write" : "read" } : g,
                         ),
-                      }))
-                    }
+                      }));
+                    }}
                   >
                     <SelectTrigger size="sm" className="w-28">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="read">
+                      <SelectItem id="read">
                         {m.habitat_entities_grant_permission_read()}
                       </SelectItem>
-                      <SelectItem value="write">
+                      <SelectItem id="write">
                         {m.habitat_entities_grant_permission_write()}
                       </SelectItem>
                     </SelectContent>
@@ -359,7 +365,7 @@ function WorldEditModal({
                 variant="outline"
                 size="sm"
                 className="self-start"
-                disabled={
+                isDisabled={
                   grantableSubjects.every((s) => usedGrantSubjectIds.has(String(s.id))) ||
                   form.grants.some((g) => !g.subject_id)
                 }
@@ -372,13 +378,13 @@ function WorldEditModal({
         </FormField>
       </FormFieldset>
       <DialogFooter>
-        <Button type="button" variant="ghost" size="sm" disabled={saving} onClick={onClose}>
+        <Button type="button" variant="ghost" size="sm" isDisabled={saving} onClick={onClose}>
           {m.habitat_common_cancel()}
         </Button>
         <Button
           type="button"
           size="sm"
-          disabled={
+          isDisabled={
             saving ||
             !form.title.trim() ||
             (form.private && !form.owner_subject_id.trim()) ||
@@ -533,7 +539,7 @@ function WorldsPage() {
             type="button"
             variant="ghost"
             size="sm"
-            disabled={loading}
+            isDisabled={loading}
             onClick={() => void fetchList()}
           >
             {m.habitat_common_refresh()}

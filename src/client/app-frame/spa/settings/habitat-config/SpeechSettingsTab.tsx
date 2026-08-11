@@ -263,13 +263,13 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
           <Button
             type="button"
             variant="outline"
-            disabled={!previewSupported || previewing}
+            isDisabled={!previewSupported || previewing}
             onPointerDown={prime}
             onClick={preview}
           >
             {previewing ? "播放中…" : "试听"}
           </Button>
-          <Button type="button" disabled={saving} onClick={() => void save()}>
+          <Button type="button" isDisabled={saving} onClick={() => void save()}>
             保存语音配置
           </Button>
         </div>

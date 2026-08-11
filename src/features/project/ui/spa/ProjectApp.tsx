@@ -816,7 +816,7 @@ export function ProjectApp() {
                 variant="ghost"
                 size="sm"
                 className="h-7 shrink-0 px-2"
-                disabled={refreshing || loading}
+                isDisabled={refreshing || loading}
                 aria-label={m.habitat_common_refresh()}
                 onClick={() => void handleManualRefresh()}
               >
@@ -1000,7 +1000,7 @@ export function ProjectApp() {
             取消
           </Button>
           <Button
-            disabled={writesDisabled}
+            isDisabled={writesDisabled}
             onClick={() =>
               void handleCreateFolder(childFolderParentId, childFolderName).then(() => {
                 setChildFolderParentId(null);

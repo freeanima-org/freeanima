@@ -173,16 +173,20 @@ function SemanticMemoryPage() {
                     {m.habitat_common_type_label()}
                   </FormFieldLabel>
                   <Select
-                    value={typeFilter || ALL_VALUE}
-                    onValueChange={(v) => setTypeFilter(v === ALL_VALUE ? "" : v)}
+                    selectedKey={typeFilter || ALL_VALUE}
+                    onSelectionChange={(key) => {
+                      if (key == null) return;
+                      const v = String(key);
+                      setTypeFilter(v === ALL_VALUE ? "" : v);
+                    }}
                   >
                     <SelectTrigger size="sm" className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
+                      <SelectItem id={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
                       {SEMANTIC_TYPES.map((t) => (
-                        <SelectItem key={t} value={t}>
+                        <SelectItem key={t} id={t}>
                           {t}
                         </SelectItem>
                       ))}
@@ -193,14 +197,19 @@ function SemanticMemoryPage() {
                   <FormFieldLabel className="text-xs py-0">
                     {m.habitat_common_status_label()}
                   </FormFieldLabel>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <Select
+                    selectedKey={statusFilter}
+                    onSelectionChange={(key) => {
+                      if (key != null) setStatusFilter(String(key));
+                    }}
+                  >
                     <SelectTrigger size="sm" className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="active">active</SelectItem>
-                      <SelectItem value="deprecated">deprecated</SelectItem>
-                      <SelectItem value="all">{m.habitat_common_all()}</SelectItem>
+                      <SelectItem id="active">active</SelectItem>
+                      <SelectItem id="deprecated">deprecated</SelectItem>
+                      <SelectItem id="all">{m.habitat_common_all()}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -220,18 +229,19 @@ function SemanticMemoryPage() {
                   <FormFieldLabel className="text-xs py-0">
                     {m.habitat_semantic_sort()}
                   </FormFieldLabel>
-                  <Select value={sortBy} onValueChange={(v) => setSortBy(v as BrowseSortBy)}>
+                  <Select
+                    selectedKey={sortBy}
+                    onSelectionChange={(key) => {
+                      if (key != null) setSortBy(String(key) as BrowseSortBy);
+                    }}
+                  >
                     <SelectTrigger size="sm" className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="updated_at">
-                        {m.habitat_semantic_sort_updated()}
-                      </SelectItem>
-                      <SelectItem value="created_at">
-                        {m.habitat_semantic_sort_created()}
-                      </SelectItem>
-                      <SelectItem value="reference_count">
+                      <SelectItem id="updated_at">{m.habitat_semantic_sort_updated()}</SelectItem>
+                      <SelectItem id="created_at">{m.habitat_semantic_sort_created()}</SelectItem>
+                      <SelectItem id="reference_count">
                         {m.habitat_semantic_sort_reference_count()}
                       </SelectItem>
                     </SelectContent>
@@ -239,7 +249,7 @@ function SemanticMemoryPage() {
                 </div>
               </div>
             </FormFieldset>
-            <Button type="submit" size="sm" disabled={loading}>
+            <Button type="submit" size="sm" isDisabled={loading}>
               {loading ? <Spinner /> : null}
               {m.habitat_common_query()}
             </Button>
@@ -294,9 +304,9 @@ function SemanticMemoryPage() {
                             </Label>
                             <Switch
                               id={`pin-${row.id}`}
-                              checked={row.pinned}
-                              disabled={Boolean(toggling[row.id])}
-                              onCheckedChange={(checked) => void onTogglePinned(row, checked)}
+                              isSelected={row.pinned}
+                              isDisabled={Boolean(toggling[row.id])}
+                              onChange={(checked) => void onTogglePinned(row, checked)}
                             />
                           </div>
                         ) : row.pinned ? (

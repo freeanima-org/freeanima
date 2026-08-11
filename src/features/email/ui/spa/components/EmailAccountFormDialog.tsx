@@ -292,12 +292,12 @@ export function EmailAccountFormDialog({
       </div>
 
       <DialogFooter>
-        <Button type="button" variant="outline" disabled={saving} onClick={onClose}>
+        <Button type="button" variant="outline" isDisabled={saving} onClick={onClose}>
           {m.email_cancel()}
         </Button>
         <Button
           type="button"
-          disabled={disabled || saving || !form.address.trim()}
+          isDisabled={disabled || saving || !form.address.trim()}
           onClick={() => void submit()}
         >
           {saving ? <Spinner className="size-4" /> : m.email_save()}

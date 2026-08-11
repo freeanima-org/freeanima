@@ -59,7 +59,7 @@ function ListPagination({
           variant="outline"
           size="sm"
           className="h-7 rounded-none border-0 px-2.5 text-xs"
-          disabled={currentPage <= 1 || loading}
+          isDisabled={currentPage <= 1 || loading}
           onClick={() => onPageChange(currentPage - 1)}
         >
           上一页
@@ -69,7 +69,7 @@ function ListPagination({
           variant="outline"
           size="sm"
           className="h-7 rounded-none border-0 border-l px-2.5 text-xs"
-          disabled={currentPage >= pageCount || loading}
+          isDisabled={currentPage >= pageCount || loading}
           onClick={() => onPageChange(currentPage + 1)}
         >
           下一页
@@ -207,7 +207,7 @@ export function NotificationApp() {
           type="button"
           variant="ghost"
           size="sm"
-          disabled={loading}
+          isDisabled={loading}
           aria-label={m.habitat_common_refresh()}
           onClick={() => void fetchList(offset)}
         >
@@ -264,7 +264,7 @@ export function NotificationApp() {
                       <Button
                         type="button"
                         size="sm"
-                        disabled={markingId === row.id}
+                        isDisabled={markingId === row.id}
                         onClick={() => void handleMarkRead(row)}
                       >
                         {markingId === row.id ? <Spinner className="size-3.5" /> : "标记已读"}

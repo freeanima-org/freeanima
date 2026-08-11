@@ -5,25 +5,11 @@ import {
   TabPanel as TabPanelPrimitive,
   Tab as TabPrimitive,
   Tabs as TabsPrimitive,
-  type Key,
 } from "react-aria-components";
 
 import { cn } from "../../lib/utils.ts";
-import { omitUndefined } from "../../lib/omit-undefined.ts";
 
-function Tabs({
-  className,
-  selectedKey,
-  onSelectionChange,
-  value,
-  onValueChange,
-  ...props
-}: React.ComponentProps<typeof TabsPrimitive> & {
-  /** @deprecated 使用 selectedKey */
-  value?: string;
-  /** @deprecated 使用 onSelectionChange */
-  onValueChange?: (value: string) => void;
-}) {
+function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive>) {
   return (
     <TabsPrimitive
       data-slot="tabs"
@@ -32,11 +18,6 @@ function Tabs({
         "group/tabs flex flex-col gap-2 data-[orientation=vertical]:flex-row",
         className,
       )}
-      onSelectionChange={(key: Key) => {
-        onSelectionChange?.(key);
-        if (onValueChange && key != null) onValueChange(String(key));
-      }}
-      {...omitUndefined({ selectedKey: selectedKey ?? value })}
       {...props}
     />
   );
@@ -72,15 +53,7 @@ function TabsList({
   );
 }
 
-function TabsTrigger({
-  className,
-  value,
-  id,
-  ...props
-}: React.ComponentProps<typeof TabPrimitive> & {
-  /** @deprecated 使用 id */
-  value?: string;
-}) {
+function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabPrimitive>) {
   return (
     <TabPrimitive
       data-slot="tabs-trigger"
@@ -91,26 +64,16 @@ function TabsTrigger({
         "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-[orientation=horizontal]/tabs:after:inset-x-0 group-data-[orientation=horizontal]/tabs:after:bottom-[-5px] group-data-[orientation=horizontal]/tabs:after:h-0.5 group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-selected:after:opacity-100",
         className,
       )}
-      {...omitUndefined({ id: id ?? value })}
       {...props}
     />
   );
 }
 
-function TabsContent({
-  className,
-  value,
-  id,
-  ...props
-}: React.ComponentProps<typeof TabPanelPrimitive> & {
-  /** @deprecated 使用 id */
-  value?: string;
-}) {
+function TabsContent({ className, ...props }: React.ComponentProps<typeof TabPanelPrimitive>) {
   return (
     <TabPanelPrimitive
       data-slot="tabs-content"
       className={cn("flex-1 text-sm outline-none", className)}
-      {...omitUndefined({ id: id ?? value })}
       {...props}
     />
   );

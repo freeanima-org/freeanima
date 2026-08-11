@@ -34,7 +34,7 @@ export function MemoryListPagination({
           variant="outline"
           size="sm"
           className="h-7 text-xs"
-          disabled={currentPage <= 1 || loading}
+          isDisabled={currentPage <= 1 || loading}
           onClick={() => onPageChange(currentPage - 1)}
         >
           {m.habitat_common_previous_page()}
@@ -44,7 +44,7 @@ export function MemoryListPagination({
           variant="outline"
           size="sm"
           className="h-7 text-xs"
-          disabled={currentPage >= pageCount || loading}
+          isDisabled={currentPage >= pageCount || loading}
           onClick={() => onPageChange(currentPage + 1)}
         >
           {m.habitat_common_next_page()}

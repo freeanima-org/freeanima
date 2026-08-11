@@ -59,7 +59,7 @@ export function VaultRefField({
           type="button"
           size="sm"
           variant="outline"
-          disabled={disabled}
+          isDisabled={disabled}
           onClick={() => setOpen(true)}
         >
           从 Vault 选择
@@ -236,7 +236,7 @@ function VaultRefPickerDialog({
         </Button>
         <Button
           type="button"
-          disabled={!selected || !field.trim()}
+          isDisabled={!selected || !field.trim()}
           onClick={() => {
             if (!selected) return;
             onSelect(selected.id, field.trim());

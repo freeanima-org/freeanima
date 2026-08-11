@@ -9,12 +9,12 @@ title: Repository topology
 
 ## Packages
 
-| Package           | Path            | Role                                                                          |
-| ----------------- | --------------- | ----------------------------------------------------------------------------- |
-| `freeanima`       | repository root | Habitat runtime, CLI, capabilities, features, shells — **one `package.json`** |
-| `@freeanima/site` | `site/`         | Astro/Starlight 文档站（**独立** `package.json` + `bun.lock`，非 workspace）  |
+| Package           | Path            | Role                                                                                      |
+| ----------------- | --------------- | ----------------------------------------------------------------------------------------- |
+| `freeanima`       | repository root | Habitat runtime, CLI, capabilities, features, shells — **根 `package.json` + `bun.lock`** |
+| `@freeanima/site` | `site/`         | Astro/Starlight 文档站（独立 `package.json`；根 `workspaces: ["site"]`，共用根 lock）     |
 
-根目录 **无** 产品 `workspaces` 子包；`site/` 与产品依赖图分离。
+根产品依赖集中在仓库根；`site/` 为 workspace 成员，不另维护 `bun.lock`。
 
 ## Product source (`src/`)
 

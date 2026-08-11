@@ -894,7 +894,7 @@ export function EmailApp() {
                       type="button"
                       size="sm"
                       variant={selectionMode ? "secondary" : "outline"}
-                      disabled={messages.length === 0 && !selectionMode}
+                      isDisabled={messages.length === 0 && !selectionMode}
                       onClick={() => {
                         if (selectionMode) exitSelectionMode();
                         else setSelectionMode(true);
@@ -906,7 +906,7 @@ export function EmailApp() {
                       type="button"
                       size="sm"
                       variant="outline"
-                      disabled={writesDisabled}
+                      isDisabled={writesDisabled}
                       onClick={() => setComposeOpen(true)}
                     >
                       {m.email_compose()}
@@ -914,7 +914,7 @@ export function EmailApp() {
                     <Button
                       type="button"
                       size="sm"
-                      disabled={syncing || writesDisabled}
+                      isDisabled={syncing || writesDisabled}
                       onClick={() => void onSync()}
                     >
                       {syncing ? m.email_syncing() : m.email_sync()}
@@ -925,11 +925,10 @@ export function EmailApp() {
                   <div className="bg-muted/40 flex flex-col gap-2 rounded-md border p-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <Checkbox
-                        checked={
-                          allVisibleSelected ? true : someVisibleSelected ? "indeterminate" : false
-                        }
-                        disabled={messages.length === 0 || batchBusy}
-                        onCheckedChange={() => toggleSelectAllVisible()}
+                        isSelected={allVisibleSelected}
+                        isIndeterminate={someVisibleSelected && !allVisibleSelected}
+                        isDisabled={messages.length === 0 || batchBusy}
+                        onChange={() => toggleSelectAllVisible()}
                         aria-label={m.email_select_all()}
                       />
                       <span className="text-muted-foreground text-xs">
@@ -940,7 +939,7 @@ export function EmailApp() {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2"
-                        disabled={selectedIds.size === 0 || batchBusy}
+                        isDisabled={selectedIds.size === 0 || batchBusy}
                         onClick={() => clearSelection()}
                       >
                         {m.email_clear_selection()}
@@ -953,7 +952,7 @@ export function EmailApp() {
                           size="sm"
                           variant="outline"
                           className="h-7"
-                          disabled={batchBusy}
+                          isDisabled={batchBusy}
                           onClick={onBatchMarkRead}
                         >
                           {m.email_mark_read()}
@@ -963,7 +962,7 @@ export function EmailApp() {
                           size="sm"
                           variant="outline"
                           className="h-7"
-                          disabled={batchBusy}
+                          isDisabled={batchBusy}
                           onClick={onBatchMarkUnread}
                         >
                           {m.email_mark_unread()}
@@ -973,7 +972,7 @@ export function EmailApp() {
                           size="sm"
                           variant="outline"
                           className="h-7"
-                          disabled={batchBusy}
+                          isDisabled={batchBusy}
                           onClick={() => onBatchStar(true)}
                         >
                           {m.email_star()}
@@ -983,7 +982,7 @@ export function EmailApp() {
                           size="sm"
                           variant="outline"
                           className="h-7"
-                          disabled={batchBusy}
+                          isDisabled={batchBusy}
                           onClick={() => onBatchStar(false)}
                         >
                           {m.email_unstar()}
@@ -993,7 +992,7 @@ export function EmailApp() {
                           size="sm"
                           variant="outline"
                           className="h-7"
-                          disabled={batchBusy || mailboxes.every((b) => b.path === activeMailbox)}
+                          isDisabled={batchBusy || mailboxes.every((b) => b.path === activeMailbox)}
                           onClick={openBatchMoveMenu}
                         >
                           {m.email_move_to()}
@@ -1003,7 +1002,7 @@ export function EmailApp() {
                           size="sm"
                           variant="destructive"
                           className="h-7"
-                          disabled={batchBusy}
+                          isDisabled={batchBusy}
                           onClick={() => setDeleteBatchPending(true)}
                         >
                           {m.email_delete_message()}
@@ -1034,7 +1033,7 @@ export function EmailApp() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    disabled={searching}
+                    isDisabled={searching}
                     onClick={() => void onSearch()}
                   >
                     {m.email_search()}

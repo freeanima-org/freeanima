@@ -56,7 +56,7 @@ function ListPagination({
           variant="outline"
           size="sm"
           className="h-7 rounded-none border-0 px-2.5 text-xs"
-          disabled={currentPage <= 1 || loading}
+          isDisabled={currentPage <= 1 || loading}
           onClick={() => onPageChange(currentPage - 1)}
         >
           上一页
@@ -66,7 +66,7 @@ function ListPagination({
           variant="outline"
           size="sm"
           className="h-7 rounded-none border-0 border-l px-2.5 text-xs"
-          disabled={currentPage >= pageCount || loading}
+          isDisabled={currentPage >= pageCount || loading}
           onClick={() => onPageChange(currentPage + 1)}
         >
           下一页
@@ -95,7 +95,7 @@ function EntityRowActions({
         type="button"
         variant="outline"
         size="sm"
-        disabled={busy}
+        isDisabled={busy}
         onClick={() => {
           void onRestore(row);
         }}
@@ -109,7 +109,7 @@ function EntityRowActions({
       type="button"
       variant="outline"
       size="sm"
-      disabled={busy}
+      isDisabled={busy}
       onClick={() => {
         void onDelete(row);
       }}
@@ -234,16 +234,20 @@ export function EntityApp() {
         </Button>
         <span className="flex-1" />
         <Select
-          value={typeFilter || TYPE_ALL}
-          onValueChange={(v) => setTypeFilter(v === TYPE_ALL ? "" : (v as EntityAdminType))}
+          selectedKey={typeFilter || TYPE_ALL}
+          onSelectionChange={(key) => {
+            if (key == null) return;
+            const v = String(key);
+            setTypeFilter(v === TYPE_ALL ? "" : (v as EntityAdminType));
+          }}
         >
           <SelectTrigger size="sm" className="w-[8.5rem]">
             <SelectValue placeholder="类型" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={TYPE_ALL}>全部类型</SelectItem>
+            <SelectItem id={TYPE_ALL}>全部类型</SelectItem>
             {ENTITY_TYPES.map((t) => (
-              <SelectItem key={t} value={t}>
+              <SelectItem key={t} id={t}>
                 {t}
               </SelectItem>
             ))}

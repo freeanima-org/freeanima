@@ -243,7 +243,7 @@ export function BitwardenImportDialog({
         <Button
           type="button"
           variant="outline"
-          disabled={running}
+          isDisabled={running}
           onClick={() => {
             reset();
             onOpenChange(false);
@@ -253,7 +253,7 @@ export function BitwardenImportDialog({
         </Button>
         <Button
           type="button"
-          disabled={disabled || running || !plan || plan.length === 0 || subjectKind !== "user"}
+          isDisabled={disabled || running || !plan || plan.length === 0 || subjectKind !== "user"}
           onClick={() => void runImport()}
         >
           {running ? <Spinner className="size-4" /> : "开始导入"}

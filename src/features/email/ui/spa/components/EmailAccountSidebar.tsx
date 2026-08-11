@@ -115,7 +115,7 @@ export function EmailAccountSidebar({
           type="button"
           size="sm"
           className="h-8 flex-1"
-          disabled={writesDisabled}
+          isDisabled={writesDisabled}
           onClick={onAddAccount}
         >
           <Plus className="mr-1 size-3.5" />

@@ -172,7 +172,7 @@ export function ModelsTab() {
                         variant="ghost"
                         size="sm"
                         className="h-7 shrink-0 px-2 text-xs"
-                        disabled={busy}
+                        isDisabled={busy}
                         onClick={() => void onSwitch(m.object_file_id)}
                       >
                         切换
@@ -191,7 +191,7 @@ export function ModelsTab() {
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-xs"
-                      disabled={index === 0 || busy}
+                      isDisabled={index === 0 || busy}
                       onClick={() => void moveModel(m.object_file_id, -1)}
                     >
                       上移
@@ -201,7 +201,7 @@ export function ModelsTab() {
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-xs"
-                      disabled={index >= models.length - 1 || busy}
+                      isDisabled={index >= models.length - 1 || busy}
                       onClick={() => void moveModel(m.object_file_id, 1)}
                     >
                       下移
@@ -211,7 +211,7 @@ export function ModelsTab() {
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                      disabled={busy}
+                      isDisabled={busy}
                       onClick={() => void onDelete(m.object_file_id, m.name)}
                     >
                       删除

@@ -438,7 +438,7 @@ export function AgentChatPane({
               variant={debugViewerOpen ? "secondary" : "ghost"}
               size="sm"
               className="h-7 px-2"
-              disabled={!conversationId || llmDebugLoading}
+              isDisabled={!conversationId || llmDebugLoading}
               onClick={() => setDebugViewerOpen((v) => !v)}
             >
               {llmDebugLoading ? m.chat_llm_debug_loading() : m.chat_llm_debug_view()}

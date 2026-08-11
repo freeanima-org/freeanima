@@ -5,33 +5,12 @@ import {
 } from "react-aria-components";
 
 import { cn, ariaRenderProps } from "../../lib/utils.ts";
-import { omitUndefined } from "../../lib/omit-undefined.ts";
 
-type Props = Omit<SwitchPrimitiveProps, "isSelected" | "onChange" | "isDisabled"> & {
+type Props = SwitchPrimitiveProps & {
   size?: "sm" | "default";
-  isSelected?: boolean;
-  onChange?: (isSelected: boolean) => void;
-  isDisabled?: boolean;
-  /** @deprecated 使用 isSelected */
-  checked?: boolean;
-  /** @deprecated 使用 onChange */
-  onCheckedChange?: (checked: boolean) => void;
-  /** @deprecated 使用 isDisabled */
-  disabled?: boolean;
 };
 
-function Switch({
-  className,
-  size = "default",
-  children,
-  isSelected,
-  onChange,
-  checked,
-  onCheckedChange,
-  isDisabled,
-  disabled,
-  ...props
-}: Props) {
+function Switch({ className, size = "default", children, ...props }: Props) {
   return (
     <SwitchPrimitive
       data-slot="switch"
@@ -40,11 +19,6 @@ function Switch({
         "peer group/switch relative inline-flex shrink-0 items-center rounded-full border border-transparent transition-all outline-none not-data-selected:bg-input after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-focus-visible:border-ring data-focus-visible:ring-3 data-focus-visible:ring-ring/50 data-invalid:border-destructive data-invalid:ring-3 data-invalid:ring-destructive/20 data-[size=default]:h-[18.4px] data-[size=default]:w-[32px] data-[size=sm]:h-[14px] data-[size=sm]:w-[24px] dark:not-data-selected:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 dark:data-invalid:border-destructive/50 dark:data-invalid:ring-destructive/40 data-checked:bg-primary data-unchecked:bg-input dark:data-unchecked:bg-input/80 data-selected:bg-primary data-disabled:cursor-not-allowed data-disabled:opacity-50",
         className,
       )}
-      {...omitUndefined({
-        isSelected: isSelected ?? checked,
-        onChange: onChange ?? onCheckedChange,
-        isDisabled: isDisabled ?? disabled,
-      })}
       {...props}
     >
       {composeRenderProps(

@@ -71,7 +71,7 @@ export function MessageActionBar({
         variant="ghost"
         size="icon-sm"
         className="text-muted-foreground size-7 text-xs"
-        disabled={!canSpeak}
+        isDisabled={!canSpeak}
         aria-label={speaking ? m.chat_speech_stop() : m.chat_speech_play()}
         title={
           !speechSupported

@@ -125,21 +125,6 @@ export async function ensureCodingConversation(opts: {
   };
 }
 
-/** @deprecated 使用 ensureCodingConversation */
-export async function bootstrapCodingConversation(opts: {
-  workspaceRoot: string;
-  instanceId: string;
-  stableKey?: string | null;
-  displayName?: string | null;
-}): Promise<CodingSessionBootstrap | null> {
-  return ensureCodingConversation({
-    workspaceRoot: opts.workspaceRoot,
-    instanceId: opts.instanceId,
-    ...(opts.stableKey !== undefined ? { stableKey: opts.stableKey } : {}),
-    ...(opts.displayName !== undefined ? { displayName: opts.displayName } : {}),
-  });
-}
-
 /** 将理解笔记写入项目 Public World（coding_note）。 */
 export async function createProjectCodingNote(opts: {
   worldId: number;

@@ -138,7 +138,7 @@ export function VaultUnlockButton({
           <Button
             type="button"
             size="sm"
-            disabled={loading || !password.trim()}
+            isDisabled={loading || !password.trim()}
             onClick={() => void handleUnlock()}
           >
             {loading ? <Spinner className="size-4" /> : "解锁"}

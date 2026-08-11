@@ -202,6 +202,8 @@ mcpServers:
 ```
 
 - **Inbound** (Habitat connects to external MCP servers): runtime `mcp_servers` (`src/host/capabilities/mcp-client`); manage in Habitat UI `/habitat/mcp`
+  - Prefer `transport: http`（Streamable HTTP）连本机 `/mcp`；`sse` 仍可用但属旧协议，**不会**自动改写
+  - Auth：`headers.Authorization: Bearer env("KEY")`（PG 迁移会把遗留 `api_key_env` 写成此形）；连接时展开 `env()`
 - **Outbound** (external agents call Habitat tools): `/mcp` endpoint (`src/host/capabilities/mcp-server`)
 
 ## Operations

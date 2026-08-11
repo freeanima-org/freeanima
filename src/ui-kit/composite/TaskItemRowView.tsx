@@ -82,10 +82,10 @@ export function TaskItemRowView({
     </span>
   ) : (
     <Checkbox
-      checked={item.status === "completed"}
-      {...(disabled !== undefined ? { disabled } : {})}
+      isSelected={item.status === "completed"}
+      {...(disabled !== undefined ? { isDisabled: disabled } : {})}
       onPointerDown={(e: ReactPointerEvent) => e.stopPropagation()}
-      onCheckedChange={() => onToggleComplete()}
+      onChange={() => onToggleComplete()}
     />
   );
 

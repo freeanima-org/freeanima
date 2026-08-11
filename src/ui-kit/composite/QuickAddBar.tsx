@@ -39,7 +39,7 @@ export function QuickAddBar({
           if (e.key === "Enter" && enterToSubmit) onSubmit();
         }}
       />
-      <Button type="button" className="min-h-11 shrink-0" disabled={disabled} onClick={onSubmit}>
+      <Button type="button" className="min-h-11 shrink-0" isDisabled={disabled} onClick={onSubmit}>
         {submitLabel}
       </Button>
     </div>

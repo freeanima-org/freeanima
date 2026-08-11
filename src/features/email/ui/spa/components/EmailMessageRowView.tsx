@@ -63,9 +63,9 @@ export function EmailMessageRowView({
             onClick={(e) => e.stopPropagation()}
           >
             <Checkbox
-              checked={selected}
-              disabled={batchBusy}
-              onCheckedChange={() => onToggleSelect()}
+              isSelected={selected}
+              isDisabled={batchBusy}
+              onChange={() => onToggleSelect()}
               aria-label={m.email_select_mode()}
             />
           </label>

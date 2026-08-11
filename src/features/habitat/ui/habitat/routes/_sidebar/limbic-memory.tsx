@@ -129,16 +129,20 @@ function LimbicMemoryPage() {
                 <div>
                   <FormFieldLabel className="text-xs py-0">kind</FormFieldLabel>
                   <Select
-                    value={kindFilter || ALL_VALUE}
-                    onValueChange={(v) => setKindFilter(v === ALL_VALUE ? "" : v)}
+                    selectedKey={kindFilter || ALL_VALUE}
+                    onSelectionChange={(key) => {
+                      if (key == null) return;
+                      const v = String(key);
+                      setKindFilter(v === ALL_VALUE ? "" : v);
+                    }}
                   >
                     <SelectTrigger size="sm" className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
+                      <SelectItem id={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
                       {LIMBIC_KINDS.map((k) => (
-                        <SelectItem key={k} value={k}>
+                        <SelectItem key={k} id={k}>
                           {k}
                         </SelectItem>
                       ))}
@@ -147,7 +151,7 @@ function LimbicMemoryPage() {
                 </div>
               </div>
             </FormFieldset>
-            <Button type="submit" size="sm" disabled={loading}>
+            <Button type="submit" size="sm" isDisabled={loading}>
               {loading ? <Spinner /> : null}
               {m.habitat_common_query()}
             </Button>

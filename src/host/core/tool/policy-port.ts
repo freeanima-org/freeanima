@@ -23,9 +23,3 @@ export function applyConversationToolPolicyFilter(
   if (!sessionToolPolicyFilter) return toolNames;
   return sessionToolPolicyFilter(toolNames, meta);
 }
-
-/** @deprecated 使用 registerConversationToolPolicyFilter */
-export const registerConversationToolMaskFilter = registerConversationToolPolicyFilter;
-/** @deprecated 使用 applyConversationToolPolicyFilter */
-export const applyConversationToolMaskFilter = applyConversationToolPolicyFilter;
-export type ConversationToolMaskFilter = ConversationToolPolicyFilter;

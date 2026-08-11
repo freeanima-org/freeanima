@@ -1457,7 +1457,7 @@ export function ChatApp() {
           variant="ghost"
           size="sm"
           className="h-7 shrink-0 px-2"
-          disabled={refreshing || !ready}
+          isDisabled={refreshing || !ready}
           aria-label={m.habitat_common_refresh()}
           onClick={() => void handleManualRefresh()}
         >
@@ -1511,7 +1511,7 @@ export function ChatApp() {
             variant={debugViewerOpen ? "secondary" : "ghost"}
             size="sm"
             className="h-7 px-2"
-            disabled={!currentId || llmDebugLoading}
+            isDisabled={!currentId || llmDebugLoading}
             onClick={() => {
               if (debugViewerOpen) {
                 setDebugViewerOpen(false);
@@ -1556,8 +1556,8 @@ export function ChatApp() {
                   <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 text-xs">
                     <Checkbox
                       className="size-3.5"
-                      checked={showArchived}
-                      onCheckedChange={() => toggleShowArchived()}
+                      isSelected={showArchived}
+                      onChange={() => toggleShowArchived()}
                     />
                     {m.chat_show_archived()}
                   </label>
@@ -1664,7 +1664,7 @@ export function ChatApp() {
                           type="button"
                           size="sm"
                           className="h-7"
-                          disabled={
+                          isDisabled={
                             !editDraft.trim() || (editingOutboxOpId ? false : writesDisabled)
                           }
                           onClick={() =>
@@ -1740,7 +1740,7 @@ export function ChatApp() {
                     <Button
                       type="button"
                       size="sm"
-                      disabled={writesDisabled}
+                      isDisabled={writesDisabled}
                       onClick={startConversation}
                     >
                       {m.habitat_common_new_conversation()}
@@ -1880,14 +1880,14 @@ export function ChatApp() {
                     onKeyDown={onInputKeydown}
                   />
                 </div>
-                <Button type="submit" disabled={!inputText.trim()}>
+                <Button type="submit" isDisabled={!inputText.trim()}>
                   {m.habitat_common_send()}
                 </Button>
                 {streamVisible ? (
                   <Button
                     type="button"
                     variant="destructive"
-                    disabled={!canSendOnline}
+                    isDisabled={!canSendOnline}
                     onClick={() => void stopStreaming()}
                   >
                     {m.habitat_common_stop()}

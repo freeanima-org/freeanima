@@ -371,8 +371,8 @@ export function ProjectSidebar(props: ProjectSidebarProps) {
               <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 py-1 text-xs">
                 <Checkbox
                   className="size-3.5"
-                  checked={props.showInactive}
-                  onCheckedChange={(checked) => props.onToggleShowInactive(checked === true)}
+                  isSelected={props.showInactive}
+                  onChange={(checked) => props.onToggleShowInactive(checked === true)}
                 />
                 显示非活跃
               </label>
@@ -410,7 +410,11 @@ export function ProjectSidebar(props: ProjectSidebarProps) {
               if (e.key === "Enter") props.onCreateFolder();
             }}
           />
-          <Button size="sm" disabled={props.writesDisabled} onClick={() => props.onCreateFolder()}>
+          <Button
+            size="sm"
+            isDisabled={props.writesDisabled}
+            onClick={() => props.onCreateFolder()}
+          >
             +
           </Button>
         </div>
@@ -424,7 +428,11 @@ export function ProjectSidebar(props: ProjectSidebarProps) {
               if (e.key === "Enter") props.onCreateProject();
             }}
           />
-          <Button size="sm" disabled={props.writesDisabled} onClick={() => props.onCreateProject()}>
+          <Button
+            size="sm"
+            isDisabled={props.writesDisabled}
+            onClick={() => props.onCreateProject()}
+          >
             +
           </Button>
         </div>

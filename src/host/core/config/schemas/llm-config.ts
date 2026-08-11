@@ -14,9 +14,6 @@ export const LLM_FORMAT_IDS = [
 
 export type LlmFormatId = (typeof LLM_FORMAT_IDS)[number];
 
-/** @deprecated Use {@link LLM_FORMAT_OPENAI_COMPATIBLE} */
-export const OPENAI_COMPATIBLE_BACKEND_ID = LLM_FORMAT_OPENAI_COMPATIBLE;
-
 export const LLM_PRESET_DEEPSEEK = "deepseek";
 export const LLM_PRESET_OPENROUTER = "openrouter";
 export const LLM_PRESET_OPENCODE_GO = "opencode_go";
@@ -130,9 +127,6 @@ export const llmProviderSchema = z.preprocess(
     }),
 );
 
-/** @deprecated Prefer {@link llmProviderSchema} */
-export const llmProviderOpenAiSchema = llmProviderSchema;
-
 export const llmRouteHopSchema = z.object({
   provider: z.string().min(1),
   model: z.string().min(1),
@@ -188,9 +182,6 @@ export type LlmProviderConfig = {
 export type LlmProfileConfig = z.infer<typeof llmProfileSchema>;
 export type LlmRouteHopConfig = z.infer<typeof llmRouteHopSchema>;
 export type LlmConfig = z.infer<typeof llmConfigSchema>;
-
-/** @deprecated Use {@link LlmProviderConfig} */
-export type LlmProviderOpenAiConfig = LlmProviderConfig;
 
 export function llmProviderConfigToContext(
   cfg: LlmProviderConfig,

@@ -107,7 +107,6 @@ export async function searchDialogueOnly(
 
 export {
   memoryScopedSearch,
-  memoryRecallSearch,
   isMemoryScopedHitType,
   isMemoryRecallHitType,
   MEMORY_SCOPED_HIT_TYPES,

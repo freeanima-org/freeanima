@@ -82,8 +82,8 @@ function SlotAddModal({ slot, onClose }: AddModalProps) {
             <li key={m.object_file_id}>
               <label className="flex cursor-pointer items-center gap-3 rounded-lg py-2 hover:bg-muted/50">
                 <Checkbox
-                  checked={selected.has(m.object_file_id)}
-                  onCheckedChange={() => toggle(m.object_file_id)}
+                  isSelected={selected.has(m.object_file_id)}
+                  onChange={() => toggle(m.object_file_id)}
                 />
                 <span className="flex-1 min-w-0">
                   <span className="block truncate text-sm">{m.name}</span>
@@ -100,7 +100,7 @@ function SlotAddModal({ slot, onClose }: AddModalProps) {
         <Button type="button" variant="ghost" onClick={onClose}>
           取消
         </Button>
-        <Button type="button" disabled={selected.size === 0 || saving} onClick={confirm}>
+        <Button type="button" isDisabled={selected.size === 0 || saving} onClick={confirm}>
           {saving ? <Spinner className="size-4" /> : null}
           {saving ? "添加中…" : `添加 (${selected.size})`}
         </Button>
@@ -153,7 +153,7 @@ export function MotionSlotsTab() {
                     size="sm"
                     className="h-7 px-2 text-xs"
                     onClick={() => setAddSlot(slot)}
-                    disabled={motionLibrary.length === 0}
+                    isDisabled={motionLibrary.length === 0}
                   >
                     添加
                   </Button>

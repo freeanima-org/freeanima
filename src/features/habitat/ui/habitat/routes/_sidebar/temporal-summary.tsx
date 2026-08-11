@@ -302,10 +302,16 @@ function TemporalSummaryPage() {
         <p className="text-sm text-muted-foreground mt-1">{m.habitat_temporal_summary_desc()}</p>
       </div>
 
-      <Tabs value={tab} onValueChange={(v: string) => setTab(v as PageTab)} className="space-y-4">
+      <Tabs
+        selectedKey={tab}
+        onSelectionChange={(key) => {
+          if (key != null) setTab(String(key) as PageTab);
+        }}
+        className="space-y-4"
+      >
         <TabsList className="w-fit flex-wrap h-auto">
           {ENTITY_TABS.map((w) => (
-            <TabsTrigger key={w} value={w}>
+            <TabsTrigger key={w} id={w}>
               {w === "day"
                 ? m.habitat_temporal_summary_tab_day()
                 : w === "month"
@@ -313,13 +319,13 @@ function TemporalSummaryPage() {
                   : m.habitat_temporal_summary_tab_year()}
             </TabsTrigger>
           ))}
-          <TabsTrigger value="system_rolls">
+          <TabsTrigger id="system_rolls">
             {m.habitat_temporal_summary_tab_system_rolls()}
           </TabsTrigger>
         </TabsList>
 
         {ENTITY_TABS.map((w) => (
-          <TabsContent key={w} value={w} className="space-y-4">
+          <TabsContent key={w} id={w} className="space-y-4">
             <FormFieldset className="space-y-0">
               <div className="flex flex-wrap items-end gap-3">
                 <FormField label="From" className="min-w-40">
@@ -332,7 +338,7 @@ function TemporalSummaryPage() {
                   <Button
                     type="button"
                     onClick={() => void fetchEntityList(w, 0)}
-                    disabled={toolbarBusy}
+                    isDisabled={toolbarBusy}
                   >
                     {listLoading ? <Spinner className="size-4" /> : null}
                     {m.habitat_common_search()}
@@ -341,7 +347,7 @@ function TemporalSummaryPage() {
                     type="button"
                     variant="outline"
                     onClick={() => void onBackfillMissing(w)}
-                    disabled={toolbarBusy}
+                    isDisabled={toolbarBusy}
                   >
                     {backfilling ? <Spinner className="size-4" /> : null}
                     {m.habitat_temporal_summary_backfill_missing()}
@@ -402,7 +408,7 @@ function TemporalSummaryPage() {
                             type="button"
                             size="sm"
                             variant="outline"
-                            disabled={toolbarBusy}
+                            isDisabled={toolbarBusy}
                             onClick={() => void onRegenerateEntity(row)}
                           >
                             {regenKey === key ? <Spinner className="size-3" /> : null}
@@ -425,7 +431,7 @@ function TemporalSummaryPage() {
           </TabsContent>
         ))}
 
-        <TabsContent value="system_rolls" className="space-y-4">
+        <TabsContent id="system_rolls" className="space-y-4">
           <p className="text-sm text-muted-foreground">
             {m.habitat_temporal_summary_system_rolls_desc()}
           </p>
@@ -438,7 +444,7 @@ function TemporalSummaryPage() {
               type="button"
               variant="outline"
               onClick={() => void fetchRolls()}
-              disabled={toolbarBusy}
+              isDisabled={toolbarBusy}
             >
               {listLoading ? <Spinner className="size-4" /> : null}
               {m.habitat_common_search()}
@@ -447,7 +453,7 @@ function TemporalSummaryPage() {
               type="button"
               variant="outline"
               onClick={() => void onBackfillMissingRolls()}
-              disabled={toolbarBusy}
+              isDisabled={toolbarBusy}
             >
               {backfilling ? <Spinner className="size-4" /> : null}
               {m.habitat_temporal_summary_backfill_missing()}
@@ -494,7 +500,7 @@ function TemporalSummaryPage() {
                         type="button"
                         size="sm"
                         variant="outline"
-                        disabled={toolbarBusy}
+                        isDisabled={toolbarBusy}
                         onClick={() => void onRegenerateRoll(row.kind)}
                       >
                         {regenKey === row.kind ? <Spinner className="size-3" /> : null}

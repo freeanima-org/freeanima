@@ -34,23 +34,39 @@ export type McpServerConfig = {
 
 const DEFAULT_CONNECT_TIMEOUT_MS = 15_000;
 
-/** Merge explicit headers with legacy `api_key_env` → Bearer when Authorization absent. */
+const ENV_REF_RE = /env\("([^"]*)"\)/g;
+
+/** Expand embedded `env("KEY")`；任一 KEY 缺失则返回 undefined。 */
+function expandHeaderEnvRefs(value: string): string | undefined {
+  let missing = false;
+  const out = value.replace(ENV_REF_RE, (_full: string, key: string) => {
+    const fromEnv = process.env[key];
+    if (fromEnv === undefined || fromEnv === "") {
+      missing = true;
+      return "";
+    }
+    return fromEnv;
+  });
+  return missing ? undefined : out;
+}
+
+/**
+ * Merge headers；展开 `env("KEY")`。
+ * 迁移后推荐 `headers.Authorization: Bearer env("KEY")`；
+ * 仍接受遗留 `api_key_env`（未写 Authorization 时注入 Bearer）。
+ */
 export function buildHttpRequestHeaders(cfg: McpServerConfig): Record<string, string> | undefined {
-  const headers: Record<string, string> = { ...cfg.headers };
+  const headers: Record<string, string> = {};
+  for (const [key, value] of Object.entries(cfg.headers ?? {})) {
+    const expanded = expandHeaderEnvRefs(value);
+    if (expanded !== undefined) headers[key] = expanded;
+  }
   const hasAuthorization = Object.keys(headers).some((k) => k.toLowerCase() === "authorization");
   if (!hasAuthorization) {
-    const apiKey = resolveApiKey(cfg.api_key_env);
+    const apiKey = cfg.api_key_env ? process.env[cfg.api_key_env] : undefined;
     if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
   }
   return Object.keys(headers).length > 0 ? headers : undefined;
-}
-
-/** @deprecated Use buildHttpRequestHeaders */
-export const buildSseRequestHeaders = buildHttpRequestHeaders;
-
-function resolveApiKey(envVar?: string): string | undefined {
-  if (!envVar) return undefined;
-  return process.env[envVar];
 }
 
 export type McpToolDef = {

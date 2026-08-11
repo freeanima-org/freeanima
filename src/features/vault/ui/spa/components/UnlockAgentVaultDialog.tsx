@@ -117,19 +117,19 @@ export function UnlockAgentVaultDialog({
         <Button
           type="button"
           variant="outline"
-          disabled={busy || loadingStatus}
+          isDisabled={busy || loadingStatus}
           onClick={() => void refreshStatus()}
         >
           {m.habitat_data_agent_vault_refresh()}
         </Button>
         {unlocked ? (
-          <Button type="button" variant="outline" disabled={busy} onClick={() => void onLock()}>
+          <Button type="button" variant="outline" isDisabled={busy} onClick={() => void onLock()}>
             {busy ? m.habitat_data_agent_vault_locking() : m.habitat_data_agent_vault_lock_action()}
           </Button>
         ) : null}
         {/* 未解锁时必须提供解锁操作；已解锁时不再显示解锁主按钮 */}
         {unlocked !== true ? (
-          <Button type="button" disabled={busy || !userUnlocked} onClick={() => void onUnlock()}>
+          <Button type="button" isDisabled={busy || !userUnlocked} onClick={() => void onUnlock()}>
             {busy
               ? m.habitat_data_agent_vault_unlocking()
               : m.habitat_data_agent_vault_unlock_action()}
