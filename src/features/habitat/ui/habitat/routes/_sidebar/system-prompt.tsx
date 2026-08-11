@@ -1,5 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import type { Key } from "react-aria-components";
 import type { ConversationSummary } from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
 import type { PromptDebugResponse } from "@freeanima/features/habitat/protocol/habitat-contract/api/response-types.ts";
 import {
@@ -370,7 +371,7 @@ function SystemPromptPage() {
 
           <Tabs
             selectedKey={tab}
-            onSelectionChange={(key) => {
+            onSelectionChange={(key: Key) => {
               if (key != null) setTab(String(key) as TabId);
             }}
             className="mb-4"
