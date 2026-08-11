@@ -3,7 +3,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
-  Input,
   Spinner,
   Table,
   TableBody,
@@ -16,6 +15,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@freeanima/ui-kit";
+import { DatePickerInput } from "@freeanima/ui-kit/form/DatePickerInput.tsx";
 import { FormField, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
@@ -323,18 +323,10 @@ function TemporalSummaryPage() {
             <FormFieldset className="space-y-0">
               <div className="flex flex-wrap items-end gap-3">
                 <FormField label="From" className="min-w-40">
-                  <Input
-                    value={from}
-                    onChange={(e) => setFrom(e.target.value)}
-                    placeholder="YYYY-MM-DD"
-                  />
+                  <DatePickerInput value={from} aria-label="From" onChange={setFrom} />
                 </FormField>
                 <FormField label="To" className="min-w-40">
-                  <Input
-                    value={to}
-                    onChange={(e) => setTo(e.target.value)}
-                    placeholder="YYYY-MM-DD"
-                  />
+                  <DatePickerInput value={to} aria-label="To" onChange={setTo} />
                 </FormField>
                 <div className="flex items-center gap-2">
                   <Button

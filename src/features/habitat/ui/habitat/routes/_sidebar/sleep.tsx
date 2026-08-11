@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   Checkbox,
-  Input,
   Label,
   Select,
   SelectContent,
@@ -21,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@freeanima/ui-kit";
+import { DatePickerInput } from "@freeanima/ui-kit/form/DatePickerInput.tsx";
 import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import {
   getSleepPipelineStatus,
@@ -409,12 +409,11 @@ function SleepPage() {
           <p className="text-sm text-muted-foreground mb-3">{m.habitat_sleep_cycle_status()}</p>
           <FormFieldset bordered={false} className="gap-3 mb-3">
             <FormField label={m.habitat_sleep_cycle_day()} className="max-w-xs text-xs">
-              <Input
-                type="text"
+              <DatePickerInput
                 className="h-8"
-                placeholder="YYYY-MM-DD"
                 value={pipelineDay}
-                onChange={(e) => setPipelineDay(e.target.value)}
+                aria-label={m.habitat_sleep_cycle_day()}
+                onChange={setPipelineDay}
                 disabled={pipelineBusy}
               />
             </FormField>
