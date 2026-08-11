@@ -38,15 +38,6 @@ export type {
   CreateLoggerOptions,
 } from "./logging/index.ts";
 export type {
-  EventBus,
-  EventTopic,
-  EventHandler,
-  PayloadOf as EventPayloadOf,
-  DispatchOutcome,
-  EventQueueAdapter,
-  StoredEvent,
-} from "./eventbus/index.ts";
-export type {
   HookRegistry,
   Hook,
   HookHandler,

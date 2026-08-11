@@ -20,16 +20,16 @@ portal/cli → platform → capabilities → engine → core → kernel
 | `src/features/` | `@freeanima/features/{slug}/`                                | 产品纵向模块                                 |
 | `src/host/`     | `@freeanima/host/{kernel,core,engine,capabilities,platform}` | Habitat 进程                                 |
 
-| Layer            | Directory                | Responsibility                                                                               |
-| ---------------- | ------------------------ | -------------------------------------------------------------------------------------------- |
-| **kernel**       | `src/host/kernel/`       | HookRegistry (`on`/`subscribe`), logging (legacy `eventbus` adapters unused by Habitat path) |
-| **core**         | `src/host/core/`         | PG、Redis 原语（cache/kv/lock）、config、capability-policy、host i18n、tool/LLM 原语、skill  |
-| **engine**       | `src/host/engine/`       | conversation、turn、loop、goal、pipeline（原 `runtime/`）                                    |
-| **capabilities** | `src/host/capabilities/` | self、memory、tools（含 slash-commands）、outpost、connectors、acp、mcp-*、llm-openai        |
-| **platform**     | `src/host/platform/`     | 组合根；`service/` = AppRuntime（原 `platform/runtime/`）                                    |
-| **ui-kit**       | `src/ui-kit/`            | React 设计系统                                                                               |
-| **client**       | `src/client/`            | portal-sdk、app-frame                                                                        |
-| **portal**       | `src/portal/`            | 入口：`app`（Shell）/ `extension` / `cli`；MCP 形态在 host `mcp-server`                      |
+| Layer            | Directory                | Responsibility                                                                              |
+| ---------------- | ------------------------ | ------------------------------------------------------------------------------------------- |
+| **kernel**       | `src/host/kernel/`       | HookRegistry (`on`/`subscribe`), logging                                                    |
+| **core**         | `src/host/core/`         | PG、Redis 原语（cache/kv/lock）、config、capability-policy、host i18n、tool/LLM 原语、skill |
+| **engine**       | `src/host/engine/`       | conversation、turn、loop、goal、pipeline（原 `runtime/`）                                   |
+| **capabilities** | `src/host/capabilities/` | self、memory、tools（含 slash-commands）、outpost、connectors、acp、mcp-*、llm-openai       |
+| **platform**     | `src/host/platform/`     | 组合根；`service/` = AppRuntime（原 `platform/runtime/`）                                   |
+| **ui-kit**       | `src/ui-kit/`            | React 设计系统                                                                              |
+| **client**       | `src/client/`            | portal-sdk、app-frame                                                                       |
+| **portal**       | `src/portal/`            | 入口：`app`（Shell）/ `extension` / `cli`；MCP 形态在 host `mcp-server`                     |
 
 ### Feature 模块
 

@@ -14,7 +14,7 @@ title: Installation
 | **Source**     | Contributors, day-to-day development      | Linux, macOS, Windows | Required    | You install PostgreSQL (pgvector) + optional Redis; bootstrap `env()`, runtime Vault |
 | **Standalone** | Production / self-host without a checkout | **Linux x64 only**    | Not needed  | Same Habitat runtime as `anima service`; same DB/Redis/secrets expectations          |
 
-Both paths run the same Habitat runtime (REST `/api` + Habitat RPC `/rpc/v1` + engine). Standalone exposes it as `anima service`; source uses `just dev` / `just dev habitat`. PostgreSQL with **pgvector** is **required**. Redis is optional for caches/KV and **recommended when multiple Habitat processes share one PostgreSQL** — background jobs use distributed locks under `anima:lock:*` (sleep-cycle, cron, reminders, FTS rebuild, migrate); without Redis, locks degrade to process-local only. Habitat lifecycle notify uses in-process HookRegistry `subscribe`, not a Redis EventBus.
+Both paths run the same Habitat runtime (REST `/api` + Habitat RPC `/rpc/v1` + engine). Standalone exposes it as `anima service`; source uses `just dev` / `just dev habitat`. PostgreSQL with **pgvector** is **required**. Redis is optional for caches/KV and **recommended when multiple Habitat processes share one PostgreSQL** — background jobs use distributed locks under `anima:lock:*` (sleep-cycle, cron, reminders, FTS rebuild, migrate); without Redis, locks degrade to process-local only. Habitat lifecycle notify uses in-process HookRegistry `subscribe`.
 
 **Windows:** there is no standalone Habitat binary. Use [source development](windows-dev.md) (Git Bash + Docker) or run Habitat on Linux/WSL/remote and connect the Desktop NSIS shell.
 

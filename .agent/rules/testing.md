@@ -43,12 +43,12 @@ bun:test **无原生 tags**。用文件约定 + 路径清单：
 
 ## Same-package mock exports (prefer in unit tests)
 
-| Tier                       | Packages                                                                                                                                       | Usage                                                                                                              |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Tier 1 in-memory adapters  | `@freeanima/host/kernel/logging/null`、`/memory`、`/testing`；`@freeanima/host/kernel/hooks/testing`（legacy `eventbus/testing` still exists） | `createNullSink`, `createTestLogger`, `createTestHookRegistry`                                                     |
-| Tier 2 singleton injection | `@freeanima/host/core/redis`；`@freeanima/host/core/db/pg`（`setDbForTest`）                                                                   | `setXForTest` / `resetXForTest`; `afterEach` must reset；PG 域函数用 `mock.module("@freeanima/host/core/db/pg/…")` |
-| Tier 3 composite factories | optional `@freeanima/{pkg}/testing`                                                                                                            | Tier 1 only, e.g. `createTestLogger`                                                                               |
-| Domain mocks               | `{pkg}/src/test-helpers/`                                                                                                                      | when package has no port (e.g. `MockBackend`)                                                                      |
+| Tier                       | Packages                                                                                             | Usage                                                                                                              |
+| -------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Tier 1 in-memory adapters  | `@freeanima/host/kernel/logging/null`、`/memory`、`/testing`；`@freeanima/host/kernel/hooks/testing` | `createNullSink`, `createTestLogger`, `createTestHookRegistry`                                                     |
+| Tier 2 singleton injection | `@freeanima/host/core/redis`；`@freeanima/host/core/db/pg`（`setDbForTest`）                         | `setXForTest` / `resetXForTest`; `afterEach` must reset；PG 域函数用 `mock.module("@freeanima/host/core/db/pg/…")` |
+| Tier 3 composite factories | optional `@freeanima/{pkg}/testing`                                                                  | Tier 1 only, e.g. `createTestLogger`                                                                               |
+| Domain mocks               | `{pkg}/src/test-helpers/`                                                                            | when package has no port (e.g. `MockBackend`)                                                                      |
 
 Unit tests **must not** `import` `tests/helpers/log-isolation.ts` or write `config.yaml`; inject `Config.fromSnapshot()` (or bind package-specific config) and use `createNullSink` / `createMemorySink` for logging.
 
