@@ -1,4 +1,4 @@
-import { closeRedis, isRedisConfigured } from "@freeanima/host/capabilities/connectors/redis";
+import { closeRedis, isRedisConfigured } from "@freeanima/host/core/redis";
 import { stopCronModule } from "@freeanima/host/capabilities/connectors/cron";
 import { stopPlatforms } from "@freeanima/host/capabilities/connectors/gateway";
 import { logComponent } from "@freeanima/host/platform/logging";

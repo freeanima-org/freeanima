@@ -23,7 +23,7 @@ portal/cli → platform → capabilities → engine → core → kernel
 | Layer            | Directory                | Responsibility                                                                               |
 | ---------------- | ------------------------ | -------------------------------------------------------------------------------------------- |
 | **kernel**       | `src/host/kernel/`       | HookRegistry (`on`/`subscribe`), logging (legacy `eventbus` adapters unused by Habitat path) |
-| **core**         | `src/host/core/`         | PG、config、capability-policy、host i18n、tool/LLM 原语、skill                               |
+| **core**         | `src/host/core/`         | PG、Redis 原语（cache/kv/lock）、config、capability-policy、host i18n、tool/LLM 原语、skill  |
 | **engine**       | `src/host/engine/`       | conversation、turn、loop、goal、pipeline（原 `runtime/`）                                    |
 | **capabilities** | `src/host/capabilities/` | self、memory、tools（含 slash-commands）、outpost、connectors、acp、mcp-*、llm-openai        |
 | **platform**     | `src/host/platform/`     | 组合根；`service/` = AppRuntime（原 `platform/runtime/`）                                    |

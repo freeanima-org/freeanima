@@ -1,4 +1,5 @@
 import { deleteCronJob } from "@freeanima/host/core/db/pg/cron";
+import { withRedisLock } from "@freeanima/host/core/redis";
 import { logComponent } from "@freeanima/host/platform/logging";
 import { notifyInprocessBuiltinFailure } from "@freeanima/host/platform/ports/cron-notify";
 
@@ -11,6 +12,30 @@ export type InprocessBuiltinDef = {
   /** 与历史 cron_jobs.schedule 相同语义（CST 墙钟小时会经 resolveBunSchedule 转 UTC） */
   schedule: string;
 };
+
+/** 与手动 sleep API 共享的分布式锁逻辑名 */
+export const SLEEP_PIPELINE_LOCK_KEY = "sleep-pipeline";
+
+const HOUR_MS = 60 * 60 * 1000;
+const MIN_MS = 60 * 1000;
+
+function inprocessLockOpts(id: string): {
+  key: string;
+  ttlMs: number;
+  renew?: boolean;
+  mode: "try";
+} {
+  if (id === "builtin-sleep-cycle") {
+    return { key: SLEEP_PIPELINE_LOCK_KEY, ttlMs: 3 * HOUR_MS, renew: true, mode: "try" };
+  }
+  if (id === "builtin-temporal-summary-tick") {
+    return { key: `inprocess:${id}`, ttlMs: 25 * MIN_MS, renew: true, mode: "try" };
+  }
+  if (id === "builtin-email-sync-all" || id === "builtin-env-health") {
+    return { key: `inprocess:${id}`, ttlMs: 4 * MIN_MS, mode: "try" };
+  }
+  return { key: `inprocess:${id}`, ttlMs: HOUR_MS, mode: "try" };
+}
 
 /** 进程内 Bun.cron：不写 cron_jobs / cron_log */
 export const INPROCESS_BUILTIN_DEFS: readonly InprocessBuiltinDef[] = [
@@ -119,23 +144,29 @@ async function fire(id: string): Promise<void> {
   const state = states.get(id);
   if (!state || state.paused) return;
 
-  state.run_count += 1;
-  state.last_run_at = Date.now() / 1000;
+  const locked = await withRedisLock(inprocessLockOpts(id), async () => {
+    state.run_count += 1;
+    state.last_run_at = Date.now() / 1000;
 
-  try {
-    const output = await runCronBuiltinHandler(id);
-    const failure = extractInprocessFailureMessage(output);
-    if (failure != null) {
-      await reportFailure(state, failure);
-      return;
+    try {
+      const output = await runCronBuiltinHandler(id);
+      const failure = extractInprocessFailureMessage(output);
+      if (failure != null) {
+        await reportFailure(state, failure);
+        return;
+      }
+      state.last_ok = true;
+      if (output != null && shouldLogSuccessOutput(id, output)) {
+        log.debug(`${id} ok`, { output: output.slice(0, 240) });
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      await reportFailure(state, message.slice(0, 4000));
     }
-    state.last_ok = true;
-    if (output != null && shouldLogSuccessOutput(id, output)) {
-      log.debug(`${id} ok`, { output: output.slice(0, 240) });
-    }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    await reportFailure(state, message.slice(0, 4000));
+  });
+
+  if (locked.status === "busy") {
+    log.debug(`${id} skipped: redis lock busy`, { job_id: id });
   }
 }
 

@@ -22,7 +22,7 @@ title: Repository topology
 src/
 ├── host/                 # Habitat 进程栈
 │   ├── kernel/           # 日志、事件总线
-│   ├── core/             # 配置、PG、LLM 原语、mask、host i18n
+│   ├── core/             # 配置、PG、Redis 原语（cache/kv/lock）、LLM 原语、mask、host i18n
 │   ├── engine/           # 原 runtime/：conversation、turn、loop、pipeline
 │   ├── capabilities/     # acp, self, memory, tools(+slash), outpost, connectors, mcp-*, llm-openai
 │   └── platform/         # 组合根；service/（原 platform/runtime）

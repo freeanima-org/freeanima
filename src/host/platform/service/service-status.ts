@@ -26,7 +26,7 @@ import {
 import { pingDatabase, isJiebaLoaded } from "@freeanima/host/core/db/pg";
 import { countSemanticMemory } from "@freeanima/host/core/db/pg/semantic-memory";
 import { countSearchableMessages } from "@freeanima/host/core/db/pg/conversation";
-import { pingRedis } from "@freeanima/host/capabilities/connectors/redis";
+import { pingRedis } from "@freeanima/host/core/redis";
 import { listLoadedTokenizerRepos, listTokenizerBindings } from "@freeanima/host/core/tokenizer";
 import type {
   DependencyStatus,

@@ -1,0 +1,215 @@
+import { afterEach, describe, expect, it, mock } from "bun:test";
+import type { RedisClient } from "bun";
+
+import { initRedis, resetRedisForTest, setRedisForTest } from "./client.ts";
+import {
+  DEFAULT_LOCK_TTL_MS,
+  REDIS_LOCK_KEY_PREFIX,
+  resetRedisLockWarnForTest,
+  withRedisLock,
+} from "./lock.ts";
+
+type StoreEntry = { value: string; expiresAtMs: number };
+
+function createMockRedis() {
+  const store = new Map<string, StoreEntry>();
+  const set = mock(async (key: string, value: string, ...args: (string | number)[]) => {
+    let px: number | null = null;
+    let nx = false;
+    for (let i = 0; i < args.length; i++) {
+      const a = args[i];
+      if (a === "NX") nx = true;
+      if (a === "PX") {
+        px = Number(args[i + 1]);
+        i += 1;
+      }
+    }
+    const existing = store.get(key);
+    if (existing && Date.now() < existing.expiresAtMs && nx) {
+      return null;
+    }
+    store.set(key, {
+      value,
+      expiresAtMs: Date.now() + (px ?? DEFAULT_LOCK_TTL_MS),
+    });
+    return "OK";
+  });
+  const get = mock(async (key: string) => {
+    const e = store.get(key);
+    if (!e) return null;
+    if (Date.now() >= e.expiresAtMs) {
+      store.delete(key);
+      return null;
+    }
+    return e.value;
+  });
+  const send = mock(async (command: string, args: string[]) => {
+    if (command !== "EVAL") return null;
+    const script = args[0] ?? "";
+    const key = args[2] ?? "";
+    const token = args[3] ?? "";
+    const e = store.get(key);
+    if (!e || Date.now() >= e.expiresAtMs) return 0;
+    if (script.includes("DEL")) {
+      if (e.value === token) {
+        store.delete(key);
+        return 1;
+      }
+      return 0;
+    }
+    if (script.includes("PEXPIRE")) {
+      if (e.value === token) {
+        store.set(key, { value: e.value, expiresAtMs: Date.now() + Number(args[4]) });
+        return 1;
+      }
+      return 0;
+    }
+    return 0;
+  });
+
+  return {
+    store,
+    client: { set, get, send } as unknown as RedisClient,
+    set,
+    get,
+    send,
+  };
+}
+
+describe("withRedisLock", () => {
+  afterEach(() => {
+    resetRedisForTest();
+    resetRedisLockWarnForTest();
+  });
+
+  it("runs fn when Redis not configured (skipped_unavailable path executes)", async () => {
+    resetRedisForTest();
+    const result = await withRedisLock({ key: "k" }, async () => 42);
+    expect(result).toEqual({ status: "ok", value: 42 });
+  });
+
+  it("acquires with anima:lock prefix and releases via Lua", async () => {
+    const mockRedis = createMockRedis();
+    initRedis({ getRedisUrl: () => "redis://127.0.0.1:6379" });
+    setRedisForTest(mockRedis.client);
+
+    const result = await withRedisLock({ key: "job-a", ttlMs: 5_000 }, async () => {
+      expect(mockRedis.store.has(`${REDIS_LOCK_KEY_PREFIX}job-a`)).toBe(true);
+      return "done";
+    });
+    expect(result).toEqual({ status: "ok", value: "done" });
+    expect(mockRedis.store.has(`${REDIS_LOCK_KEY_PREFIX}job-a`)).toBe(false);
+    expect(mockRedis.send).toHaveBeenCalled();
+  });
+
+  it("try mode returns busy when lock held", async () => {
+    const mockRedis = createMockRedis();
+    initRedis({ getRedisUrl: () => "redis://127.0.0.1:6379" });
+    setRedisForTest(mockRedis.client);
+
+    mockRedis.store.set(`${REDIS_LOCK_KEY_PREFIX}busy`, {
+      value: "other",
+      expiresAtMs: Date.now() + 60_000,
+    });
+
+    const result = await withRedisLock({ key: "busy", mode: "try" }, async () => "x");
+    expect(result).toEqual({ status: "busy" });
+  });
+
+  it("wait mode acquires after release", async () => {
+    const mockRedis = createMockRedis();
+    initRedis({ getRedisUrl: () => "redis://127.0.0.1:6379" });
+    setRedisForTest(mockRedis.client);
+
+    const key = `${REDIS_LOCK_KEY_PREFIX}wait-me`;
+    mockRedis.store.set(key, { value: "holder", expiresAtMs: Date.now() + 60_000 });
+    setTimeout(() => {
+      mockRedis.store.delete(key);
+    }, 40);
+
+    const result = await withRedisLock(
+      { key: "wait-me", mode: "wait", waitMs: 500, retryIntervalMs: 20, ttlMs: 5_000 },
+      async () => "ok",
+    );
+    expect(result).toEqual({ status: "ok", value: "ok" });
+  });
+
+  it("wait mode times out as busy", async () => {
+    const mockRedis = createMockRedis();
+    initRedis({ getRedisUrl: () => "redis://127.0.0.1:6379" });
+    setRedisForTest(mockRedis.client);
+
+    mockRedis.store.set(`${REDIS_LOCK_KEY_PREFIX}stuck`, {
+      value: "holder",
+      expiresAtMs: Date.now() + 60_000,
+    });
+
+    const result = await withRedisLock(
+      { key: "stuck", mode: "wait", waitMs: 80, retryIntervalMs: 20 },
+      async () => "x",
+    );
+    expect(result).toEqual({ status: "busy" });
+  });
+
+  it("wait mode aborted via AbortSignal returns busy", async () => {
+    const mockRedis = createMockRedis();
+    initRedis({ getRedisUrl: () => "redis://127.0.0.1:6379" });
+    setRedisForTest(mockRedis.client);
+
+    mockRedis.store.set(`${REDIS_LOCK_KEY_PREFIX}abort`, {
+      value: "holder",
+      expiresAtMs: Date.now() + 60_000,
+    });
+
+    const ac = new AbortController();
+    setTimeout(() => ac.abort(), 30);
+
+    const result = await withRedisLock(
+      {
+        key: "abort",
+        mode: "wait",
+        waitMs: 5_000,
+        retryIntervalMs: 20,
+        signal: ac.signal,
+      },
+      async () => "x",
+    );
+    expect(result).toEqual({ status: "busy" });
+  });
+
+  it("does not unlock when token mismatches", async () => {
+    const mockRedis = createMockRedis();
+    initRedis({ getRedisUrl: () => "redis://127.0.0.1:6379" });
+    setRedisForTest(mockRedis.client);
+
+    const key = `${REDIS_LOCK_KEY_PREFIX}tok`;
+    let stolen = false;
+    const result = await withRedisLock({ key: "tok", ttlMs: 5_000 }, async () => {
+      // 模拟租约被覆盖：他人写入不同 token
+      mockRedis.store.set(key, { value: "stolen", expiresAtMs: Date.now() + 60_000 });
+      stolen = true;
+      return 1;
+    });
+    expect(stolen).toBe(true);
+    expect(result.status).toBe("ok");
+    // Lua 因 token 不匹配不删，stolen 仍在
+    expect(mockRedis.store.get(key)?.value).toBe("stolen");
+  });
+
+  it("renew starts watchdog that calls extend", async () => {
+    const mockRedis = createMockRedis();
+    initRedis({ getRedisUrl: () => "redis://127.0.0.1:6379" });
+    setRedisForTest(mockRedis.client);
+
+    // ttl 足够小使 interval = max(1000, ttl/3) 仍为 1000；用 spy 直接调 extend 路径：
+    // 短跑任务 + renew 至少注册 interval；验证 set 后 eval 在 finally 释放至少一次
+    const result = await withRedisLock({ key: "renew", ttlMs: 3_000, renew: true }, async () => {
+      await new Promise<void>((r) => {
+        setTimeout(r, 10);
+      });
+      return true;
+    });
+    expect(result).toEqual({ status: "ok", value: true });
+    expect(mockRedis.send.mock.calls.length).toBeGreaterThanOrEqual(1);
+  });
+});

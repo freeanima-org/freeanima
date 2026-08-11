@@ -17,7 +17,7 @@
 | Prefix                           | Notes                                                                                                         |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `@freeanima/host/kernel`         | logging, hooks（`on`/`subscribe`；legacy eventbus adapters）                                                  |
-| `@freeanima/host/core`           | db, config, capability-policy, i18n, tool, llm, skill, …                                                      |
+| `@freeanima/host/core`           | db、redis（cache/kv/lock）、config、capability-policy、i18n、tool、llm、skill、…                              |
 | `@freeanima/host/engine`         | conversation, turn, loop, goal, pipeline（原 runtime）                                                        |
 | `@freeanima/host/capabilities/*` | self（原 identity）、outpost（原 remote-tools）、connectors（原 platform/connectors）、tools(+slash-commands) |
 | `@freeanima/host/platform`       | boot, ports, habitat router, `service/`（原 platform/runtime）                                                |

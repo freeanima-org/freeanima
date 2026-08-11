@@ -29,3 +29,15 @@ export {
   resetCacheMemoryForTests,
 } from "./cache.ts";
 export { pingRedis, type RedisPingStatus } from "./health.ts";
+export {
+  DEFAULT_LOCK_TTL_MS,
+  REDIS_LOCK_KEY_PREFIX,
+  acquireRedisLock,
+  resetRedisLockWarnForTest,
+  withRedisLock,
+  type AcquireRedisLockResult,
+  type RedisLockAcquireOpts,
+  type RedisLockHandle,
+  type WithRedisLockOpts,
+  type WithRedisLockResult,
+} from "./lock.ts";

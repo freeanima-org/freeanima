@@ -1,6 +1,7 @@
 import { omitUndefined } from "@freeanima/host/core/util";
 import { existsSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { withRedisLock } from "@freeanima/host/core/redis";
 import { runCronEngineTurn } from "@freeanima/host/platform/ports/cron-use-cases";
 import { logComponent } from "@freeanima/host/platform/logging";
 import type { CronJob } from "./models.ts";
@@ -20,6 +21,12 @@ import { appendCronRunLog } from "./cron-log.ts";
 import { runCronBuiltinHandler } from "./builtin-handlers.ts";
 import { getCronHandleManager, isCronModuleInitialized, updateCronJobRow } from "./module.ts";
 import { getCronJob } from "@freeanima/host/core/db/pg/cron";
+
+const CRON_JOB_LOCK_TTL_CAP_MS = 2 * 60 * 60 * 1000;
+
+function cronJobLockTtlMs(timeoutSec: number): number {
+  return Math.min(CRON_JOB_LOCK_TTL_CAP_MS, Math.max(timeoutSec, 600) * 1000);
+}
 
 function runScript(scriptPath: string, timeoutSec: number): string {
   const path = resolveScriptPath(scriptPath);
@@ -130,21 +137,34 @@ export async function runJobById(jobId: string): Promise<void> {
 }
 
 export async function runJob(job: CronJob): Promise<void> {
-  try {
-    await runJobInternal(job);
-  } catch (e) {
-    const errText = String(e);
-    const output = `ERROR: ${errText}`;
-    job.last_output_ref = saveOutput(job, output);
-    await appendCronRunLog({
-      job_id: job.id,
-      run_count: job.run_count,
-      ok: false,
-      outputText: output,
-      error: errText,
-    });
-    await notifyCronJobResult(job, false, output, errText);
-    await finalizeJob(job, false);
+  const locked = await withRedisLock(
+    {
+      key: `cron-job:${job.id}`,
+      ttlMs: cronJobLockTtlMs(job.timeout_sec),
+      renew: true,
+      mode: "try",
+    },
+    async () => {
+      try {
+        await runJobInternal(job);
+      } catch (e) {
+        const errText = String(e);
+        const output = `ERROR: ${errText}`;
+        job.last_output_ref = saveOutput(job, output);
+        await appendCronRunLog({
+          job_id: job.id,
+          run_count: job.run_count,
+          ok: false,
+          outputText: output,
+          error: errText,
+        });
+        await notifyCronJobResult(job, false, output, errText);
+        await finalizeJob(job, false);
+      }
+    },
+  );
+  if (locked.status === "busy") {
+    logComponent("cron").debug(`job ${job.id} skipped: redis lock busy`, { job_id: job.id });
   }
 }
 

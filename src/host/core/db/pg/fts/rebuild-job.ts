@@ -1,9 +1,12 @@
-import { logPgComponent } from "../log.ts";
+import { withRedisLock } from "@freeanima/host/core/redis";
 
+import { logPgComponent } from "../log.ts";
 import { rebuildAllFtsSegments, type FtsRebuildResult } from "./rebuild.ts";
 import type { FtsRebuildPhase, FtsRebuildProgress } from "./rebuild-types.ts";
 
 const log = logPgComponent("embedding");
+
+const FTS_REBUILD_LOCK_TTL_MS = 2 * 60 * 60 * 1000;
 
 export type FtsRebuildJobStatus = {
   running: boolean;
@@ -58,17 +61,33 @@ export function startFtsRebuildJob(opts?: { onlyMissing?: boolean }): FtsRebuild
     started_at: new Date().toISOString(),
   };
 
-  jobPromise = rebuildAllFtsSegments({ onlyMissing, onProgress })
-    .then((result) => {
+  jobPromise = (async () => {
+    const locked = await withRedisLock(
+      { key: "fts-rebuild", ttlMs: FTS_REBUILD_LOCK_TTL_MS, renew: true, mode: "try" },
+      async () => rebuildAllFtsSegments({ onlyMissing, onProgress }),
+    );
+
+    if (locked.status === "busy") {
       status = {
-        ...status,
+        ...idleStatus(),
+        only_missing: onlyMissing,
         running: false,
+        started_at: status.started_at,
         finished_at: new Date().toISOString(),
-        result,
-        error: null,
+        error: "fts rebuild already running on another Habitat",
       };
-      return result;
-    })
+      return null as unknown as FtsRebuildResult;
+    }
+
+    status = {
+      ...status,
+      running: false,
+      finished_at: new Date().toISOString(),
+      result: locked.value,
+      error: null,
+    };
+    return locked.value;
+  })()
     .catch((err) => {
       const message = err instanceof Error ? err.message : String(err);
       log.error("fts rebuild job failed", { error: message });
@@ -76,7 +95,7 @@ export function startFtsRebuildJob(opts?: { onlyMissing?: boolean }): FtsRebuild
         ...status,
         running: false,
         finished_at: new Date().toISOString(),
-        error: err instanceof Error ? err.message : String(err),
+        error: message,
         result: null,
       };
       throw err;

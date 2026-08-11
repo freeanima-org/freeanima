@@ -6,7 +6,11 @@ import type {
 import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
 import { listPipelineStepRuns as listPgPipelineStepRuns } from "@freeanima/host/core/db/pg/pipeline";
 import { listCronLogs as listPgCronLogs } from "@freeanima/host/core/db/pg/cron";
-import { getInprocessBuiltinStatus } from "@freeanima/host/capabilities/connectors/cron";
+import { acquireRedisLock } from "@freeanima/host/core/redis";
+import {
+  getInprocessBuiltinStatus,
+  SLEEP_PIPELINE_LOCK_KEY,
+} from "@freeanima/host/capabilities/connectors/cron";
 import {
   buildSleepSummary,
   SLEEP_CYCLE_JOB_ID,
@@ -28,6 +32,17 @@ import {
 } from "../boot/sleep-cycle.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { listCronJobs } from "./service-status.ts";
+
+const SLEEP_PIPELINE_LOCK_TTL_MS = 3 * 60 * 60 * 1000;
+
+async function acquireSleepPipelineLock() {
+  return acquireRedisLock({
+    key: SLEEP_PIPELINE_LOCK_KEY,
+    ttlMs: SLEEP_PIPELINE_LOCK_TTL_MS,
+    renew: true,
+    mode: "try",
+  });
+}
 
 let sleepCycleRunning = false;
 let lastSleepCycleResult: Awaited<ReturnType<typeof runSleepCycle>> | null = null;
@@ -146,6 +161,11 @@ export async function startSleepCycle(
     return { ok: false, error: "sleep pipeline already running" };
   }
 
+  const lock = await acquireSleepPipelineLock();
+  if (lock.status === "busy") {
+    return { ok: false, error: "sleep pipeline already running" };
+  }
+
   sleepCycleRunning = true;
   lastSleepCycleResult = null;
 
@@ -156,6 +176,7 @@ export async function startSleepCycle(
         ...omitUndefined({ deep_sleep_mode: opts?.deep_sleep_mode }),
       });
     } finally {
+      await lock.handle.release();
       sleepCycleRunning = false;
     }
   })();
@@ -183,6 +204,11 @@ export async function startSleepPipelineStep(
     return { ok: false, error: `unknown sleep step: ${opts.stepId}` };
   }
 
+  const lock = await acquireSleepPipelineLock();
+  if (lock.status === "busy") {
+    return { ok: false, error: "sleep pipeline already running" };
+  }
+
   sleepStepRunning = true;
   try {
     const result = await runSleepStep(opts.stepId, {
@@ -195,6 +221,7 @@ export async function startSleepPipelineStep(
     });
     return { ok: true, result };
   } finally {
+    await lock.handle.release();
     sleepStepRunning = false;
   }
 }
@@ -222,6 +249,11 @@ export async function startSleepCatchUp(
       return { ok: false, error: planned.reason };
     }
     plan = planned.plan;
+  }
+
+  const lock = await acquireSleepPipelineLock();
+  if (lock.status === "busy") {
+    return { ok: false, error: "sleep pipeline already running" };
   }
 
   sleepCatchUpRunning = true;
@@ -325,6 +357,7 @@ export async function startSleepCatchUp(
         finished: true,
       };
     } finally {
+      await lock.handle.release();
       sleepCatchUpRunning = false;
     }
   })();
