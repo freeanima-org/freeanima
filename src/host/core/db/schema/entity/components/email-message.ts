@@ -11,7 +11,7 @@ export const emailMessageAttachmentMetaSchema = z.object({
   filename: z.string().min(1),
   content_type: z.string().min(1),
   size: z.number().int().nonnegative(),
-  path: z.string().min(1),
+  object_file_id: z.number().int().positive(),
   content_id: z.string().optional(),
 });
 

@@ -279,6 +279,7 @@ export async function serviceEmailSend(
     body: string;
     cc?: string;
     bcc?: string;
+    attachment_object_file_ids?: number[];
   },
 ) {
   assertPg(deps);

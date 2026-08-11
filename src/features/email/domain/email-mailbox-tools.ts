@@ -364,6 +364,12 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               body: { type: "string" },
               cc: { type: "string" },
               bcc: { type: "string" },
+              attachment_object_file_ids: {
+                type: "array",
+                items: { type: "number" },
+                description:
+                  "Optional object_file entity ids to attach (upload via object_storage_upload or email.attachment.upload first)",
+              },
             },
             required: ["subject_kind", "to", "subject", "body"],
           },
@@ -379,6 +385,11 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
               args.subject_kind === "user" || args.subject_kind === "agent"
                 ? args.subject_kind
                 : undefined;
+            const attachmentIds = Array.isArray(args.attachment_object_file_ids)
+              ? args.attachment_object_file_ids
+                  .map((id) => Number(id))
+                  .filter((id) => Number.isFinite(id) && id > 0)
+              : undefined;
             try {
               const result = await io.sendEmail(
                 omitUndefined({
@@ -390,6 +401,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
                   body: String(args.body ?? ""),
                   cc: args.cc != null ? String(args.cc) : undefined,
                   bcc: args.bcc != null ? String(args.bcc) : undefined,
+                  attachment_object_file_ids: attachmentIds,
                 }),
               );
               return toolResult(result);

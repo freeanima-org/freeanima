@@ -27,17 +27,18 @@ title: Entity module
 | 类型   | 过滤 `type`：`content` / `world` / `agent` / `user`                               |
 | 主组件 | 过滤 `primary_component`（自由文本，如 `task_item`）                              |
 
-行字段：id、title、primary_component、components、时间戳。存活行可 **deleteEntity**（软删）；回收站可 **restore**。满 30 天由睡眠 cleanup **purge** 物理删除；若为 `object_file`，purge 后对无其它引用的 cid 删除对象存储 blob。
+行字段：id、title、primary_component、components、时间戳。点击行打开 **详情弹窗**（`entity.get`：summary / content / body 与元数据）。存活行可 **deleteEntity**（软删）；回收站可 **restore**。满 30 天由睡眠 cleanup **purge** 物理删除；若为 `object_file`，purge 后对无其它引用的 cid 删除对象存储 blob。
 
 ## Habitat RPC
 
-| Method                   | 作用                                                      |
-| ------------------------ | --------------------------------------------------------- |
-| `entity.list`            | 存活实体分页；可选 `type` / `primary_component` / `query` |
-| `entity.trash.list`      | 回收站分页；入参同 `entity.list`                          |
-| `entity.delete`          | 软删；无 `force` 且存在引用时返回 `references`            |
-| `entity.restore`         | 从回收站恢复                                              |
-| `entity.deleteComponent` | 删除单个 component                                        |
+| Method                   | 作用                                                            |
+| ------------------------ | --------------------------------------------------------------- |
+| `entity.list`            | 存活实体分页；可选 `type` / `primary_component` / `query`       |
+| `entity.trash.list`      | 回收站分页；入参同 `entity.list`                                |
+| `entity.get`             | 单条详情（含 summary/content/body）；回收站需 `include_deleted` |
+| `entity.delete`          | 软删；无 `force` 且存在引用时返回 `references`                  |
+| `entity.restore`         | 从回收站恢复                                                    |
+| `entity.deleteComponent` | 删除单个 component                                              |
 
 `entity.list` / `entity.trash.list` 入参：`subject_kind`、`limit`、`offset`，以及可选 `type`、`primary_component`、`query`。有 `query` 时：id/`anima:` 捷径走 `getEntity`；否则 `searchEntities`（hybrid）。无 `query` 时 `listEntities` + 同条件 `countEntities`。
 

@@ -15,6 +15,7 @@ import { formatDateTime } from "@freeanima/ui-kit/lib/datetime-local.ts";
 import type { EntityAdminType } from "@freeanima/shared/rpc-contract/frames/entity.ts";
 import { Boxes } from "lucide-react";
 
+import { EntityDetailDialog } from "./components/EntityDetailDialog.tsx";
 import {
   deleteEntity,
   fetchEntities,
@@ -96,7 +97,8 @@ function EntityRowActions({
         variant="outline"
         size="sm"
         isDisabled={busy}
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation();
           void onRestore(row);
         }}
       >
@@ -110,7 +112,8 @@ function EntityRowActions({
       variant="outline"
       size="sm"
       isDisabled={busy}
-      onClick={() => {
+      onClick={(e) => {
+        e.stopPropagation();
         void onDelete(row);
       }}
     >
@@ -131,6 +134,7 @@ export function EntityApp() {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<EntityAdminType | "">("");
   const [primaryComponent, setPrimaryComponent] = useState("");
+  const [detailId, setDetailId] = useState<number | null>(null);
 
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
   const hasActiveFilters =
@@ -295,7 +299,16 @@ export function EntityApp() {
             {items.map((row) => (
               <div
                 key={row.id}
-                className="grid gap-2 rounded-lg border bg-card p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] md:items-center md:gap-3"
+                role="button"
+                tabIndex={0}
+                className="hover:bg-muted/40 grid cursor-pointer gap-2 rounded-lg border bg-card p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] md:items-center md:gap-3"
+                onClick={() => setDetailId(row.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setDetailId(row.id);
+                  }
+                }}
               >
                 <div className="min-w-0">
                   <div className="truncate text-sm font-medium">#{row.id}</div>
@@ -331,6 +344,13 @@ export function EntityApp() {
           </div>
         )}
       </div>
+
+      <EntityDetailDialog
+        open={detailId != null}
+        entityId={detailId}
+        includeDeleted={tab === "trash"}
+        onClose={() => setDetailId(null)}
+      />
     </div>
   );
 }

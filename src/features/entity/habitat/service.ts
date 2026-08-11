@@ -17,6 +17,7 @@ import type { EntityType } from "@freeanima/host/core/db/schema";
 import type { VerifiedServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
 import type {
   EntityAdminRowPayload,
+  EntityDetailPayload,
   EntityListInput,
 } from "@freeanima/shared/rpc-contract/frames/entity";
 import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
@@ -62,6 +63,20 @@ function toAdminRow(row: EntityRow): EntityAdminRowPayload {
     updated_at: row.updated_at.toISOString(),
     deleted_at: row.deleted_at?.toISOString() ?? null,
     world_id: row.world_id,
+  };
+}
+
+function toDetailRow(row: EntityRow): EntityDetailPayload {
+  return {
+    ...toAdminRow(row),
+    summary: row.summary,
+    content: row.content,
+    body: row.body,
+    pinned: row.pinned,
+    reference_count: row.reference_count,
+    tag_ids: row.tag_ids,
+    revision_count: row.revisions.length,
+    created_at: row.created_at.toISOString(),
   };
 }
 
@@ -172,6 +187,17 @@ export async function serviceEntityTrashList(
   auth: VerifiedServiceApiToken,
 ) {
   return serviceEntityAdminList(deps, input, auth, "deleted");
+}
+
+export async function serviceEntityGet(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number; include_deleted?: boolean },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const world_id = await entityWorldIdForAuth(auth, input.subject_kind);
+  const row = await assertEntityInWorld(input.id, world_id, input.include_deleted === true);
+  return { item: toDetailRow(row) };
 }
 
 export async function serviceEntityDelete(

@@ -35,7 +35,13 @@ export {
   updateEmailMessageMailbox,
   upsertEmailMessage,
 } from "./message-store.ts";
-export { persistEmailAttachments, removeEmailAccountAttachments } from "./attachment-store.ts";
+export {
+  persistEmailAttachments,
+  softDeleteEmailAttachmentObjectFiles,
+  loadOutboundAttachmentFiles,
+  outboundAttachmentMeta,
+  type LoadedOutboundAttachment,
+} from "./attachment-store.ts";
 export {
   registerEmailSyncPort,
   getEmailSyncPort,

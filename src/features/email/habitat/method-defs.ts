@@ -41,6 +41,8 @@ import {
   emailProviderListOutputSchema,
   emailSendInputSchema,
   emailSendOutputSchema,
+  emailAttachmentUploadInputSchema,
+  emailAttachmentUploadOutputSchema,
   emailSyncInputSchema,
   emailSyncOutputSchema,
   emailThreadListInputSchema,
@@ -48,11 +50,13 @@ import {
 } from "@freeanima/shared/rpc-contract/frames/email";
 
 import {
+  binaryHttpMeta,
   defineHabitatMethod,
   dualTransportMeta,
   type HabitatMethodMeta,
 } from "@freeanima/shared/habitat-contract";
 import {
+  HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS,
   HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS,
   HABITAT_RPC_EMAIL_SYNC_TIMEOUT_MS,
 } from "@freeanima/shared/habitat-rpc";
@@ -136,6 +140,16 @@ export const emailMethodDefs = {
     input: emailSendInputSchema,
     output: emailSendOutputSchema,
     meta: writeMeta(HABITAT_RPC_EMAIL_IMAP_TIMEOUT_MS),
+  }),
+  "email.attachment.upload": defineHabitatMethod({
+    input: emailAttachmentUploadInputSchema,
+    output: emailAttachmentUploadOutputSchema,
+    meta: binaryHttpMeta({
+      verb: "POST",
+      path: "email/attachment/upload",
+      request: "multipart",
+      timeoutMs: HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS,
+    }),
   }),
   "email.sync": defineHabitatMethod({
     input: emailSyncInputSchema,

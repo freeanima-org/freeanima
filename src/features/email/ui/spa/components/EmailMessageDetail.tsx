@@ -1,8 +1,13 @@
+import { useEffect, useState } from "react";
 import { Button, Spinner } from "@freeanima/ui-kit";
 import { EntityIdLabel } from "@freeanima/ui-kit/composite";
 import { m } from "@paraglide/messages";
 
-import type { EmailMessageRow } from "../lib/api.ts";
+import {
+  downloadEmailAttachmentBytes,
+  type EmailAttachmentRow,
+  type EmailMessageRow,
+} from "../lib/api.ts";
 import { buildEmailHtmlSrcDoc, looksLikeHtmlBody } from "../lib/email-html.ts";
 
 function formatWhen(iso: string): string {
@@ -10,6 +15,16 @@ function formatWhen(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleString();
+}
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function isImageAttachment(att: EmailAttachmentRow): boolean {
+  return att.content_type.toLowerCase().startsWith("image/");
 }
 
 type EmailMessageDetailProps = {
@@ -24,6 +39,107 @@ type EmailMessageDetailProps = {
   onCopyId?: () => void;
   onDelete?: () => void;
 };
+
+function EmailAttachmentList({ attachments }: { attachments: EmailAttachmentRow[] }) {
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewName, setPreviewName] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  async function withBlob(att: EmailAttachmentRow, action: "download" | "preview") {
+    setBusyId(att.file_id);
+    setError(null);
+    try {
+      const blob = await downloadEmailAttachmentBytes(att.object_file_id);
+      const url = URL.createObjectURL(blob);
+      if (action === "download") {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = att.filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        setPreviewUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          return url;
+        });
+        setPreviewName(att.filename);
+      }
+    } catch (e) {
+      const detail = e instanceof Error ? e.message : String(e);
+      setError(m.email_attachment_download_failed({ detail }));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <div className="border-border mb-4 space-y-2 rounded-md border p-3">
+      <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+        {m.email_attachments()}
+      </div>
+      <ul className="space-y-2">
+        {attachments.map((att) => (
+          <li key={att.file_id} className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="min-w-0 flex-1 truncate" title={att.filename}>
+              {att.filename}
+              <span className="text-muted-foreground ml-2 text-xs">
+                {formatSize(att.size)} · {att.content_type}
+              </span>
+            </span>
+            <div className="flex gap-1">
+              {isImageAttachment(att) ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  isDisabled={busyId === att.file_id}
+                  onClick={() => void withBlob(att, "preview")}
+                >
+                  {busyId === att.file_id ? (
+                    <Spinner className="size-3" />
+                  ) : (
+                    m.email_attachment_preview()
+                  )}
+                </Button>
+              ) : null}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                isDisabled={busyId === att.file_id}
+                onClick={() => void withBlob(att, "download")}
+              >
+                {busyId === att.file_id && !isImageAttachment(att) ? (
+                  <Spinner className="size-3" />
+                ) : (
+                  m.email_attachment_download()
+                )}
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {error ? <p className="text-destructive text-xs">{error}</p> : null}
+      {previewUrl ? (
+        <div className="mt-2 space-y-1">
+          <div className="text-muted-foreground text-xs">{previewName}</div>
+          <img
+            src={previewUrl}
+            alt={previewName ?? m.email_attachment_preview()}
+            className="border-border max-h-80 max-w-full rounded-md border object-contain"
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function EmailMessageDetail({
   loading,
@@ -53,6 +169,7 @@ export function EmailMessageDetail({
   }
 
   const isHtml = message.content_type === "text/html" || looksLikeHtmlBody(message.body);
+  const attachments = message.attachments ?? [];
 
   return (
     <article className="flex min-h-0 flex-1 flex-col overflow-hidden text-sm">
@@ -120,6 +237,7 @@ export function EmailMessageDetail({
             {m.habitat_email_date()} {formatWhen(message.sent_at)}
           </div>
         </div>
+        {attachments.length > 0 ? <EmailAttachmentList attachments={attachments} /> : null}
         {isHtml && message.body ? (
           <iframe
             title={message.subject || m.habitat_email_no_subject()}

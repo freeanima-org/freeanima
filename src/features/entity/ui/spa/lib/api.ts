@@ -3,12 +3,14 @@ import type {
   EntityAdminRowPayload,
   EntityAdminType,
   EntityDeleteOutput,
+  EntityDetailPayload,
   EntityListOutput,
   EntityTrashListOutput,
 } from "@freeanima/shared/rpc-contract/frames/entity.ts";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 export type EntityAdminRow = EntityAdminRowPayload;
+export type EntityDetail = EntityDetailPayload;
 
 export type EntityListQuery = {
   limit?: number;
@@ -32,6 +34,20 @@ export async function fetchEntities(opts?: EntityListQuery): Promise<EntityListO
 
 export async function fetchEntityTrash(opts?: EntityListQuery): Promise<EntityTrashListOutput> {
   return habitat().call("entity.trash.list", withSubjectKind(opts ?? {}));
+}
+
+export async function fetchEntityDetail(
+  id: number,
+  opts?: { includeDeleted?: boolean },
+): Promise<EntityDetail> {
+  const data = await habitat().call(
+    "entity.get",
+    withSubjectKind({
+      id,
+      ...(opts?.includeDeleted ? { include_deleted: true } : {}),
+    }),
+  );
+  return data.item;
 }
 
 export async function deleteEntity(id: number, force = false): Promise<EntityDeleteOutput> {
