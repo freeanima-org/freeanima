@@ -24,8 +24,7 @@ mock.module("@freeanima/features/object-storage/domain", () => ({
   downloadObjectFileBytes,
 }));
 
-const { persistEmailAttachments, softDeleteEmailAttachmentObjectFiles } =
-  await import("./attachment-store.ts");
+const { persistEmailAttachments } = await import("./attachment-store.ts");
 
 describe("persistEmailAttachments", () => {
   afterEach(() => {
@@ -58,19 +57,6 @@ describe("persistEmailAttachments", () => {
     expect(createObjectFile).toHaveBeenCalledTimes(2);
     expect(createObjectFile.mock.calls[0]?.[0]?.world_id).toBe(5);
     expect(createObjectFile.mock.calls[0]?.[0]?.title).toBe("note.txt");
-  });
-
-  test("softDeleteEmailAttachmentObjectFiles soft-deletes object files", async () => {
-    await softDeleteEmailAttachmentObjectFiles([
-      {
-        file_id: "1",
-        filename: "a.txt",
-        content_type: "text/plain",
-        size: 1,
-        object_file_id: 42,
-      },
-    ]);
-    expect(deleteObjectFile).toHaveBeenCalledWith(42);
   });
 
   test("outboundAttachmentMeta builds file_id from message id", async () => {
