@@ -7,6 +7,7 @@ import type { RuntimeDeps } from "./runtime-deps.ts";
 const getEntityMock = mock(
   async (_id: number, _opts?: { include_deleted?: boolean }) => null as EntityRow | null,
 );
+const assertSubjectCanAccessWorldMock = mock(async () => undefined);
 const listEntitiesMock = mock(async () => [] as EntityRow[]);
 const countEntitiesMock = mock(async () => 0);
 const searchEntitiesMock = mock(async () => ({
@@ -38,6 +39,7 @@ mock.module("@freeanima/host/core/config/world-context", () => ({
 mock.module("@freeanima/host/core/db/pg/entity", () => ({
   ...entityOriginal,
   getEntity: getEntityMock,
+  assertSubjectCanAccessWorld: assertSubjectCanAccessWorldMock,
   listEntities: listEntitiesMock,
   countEntities: countEntitiesMock,
   searchEntities: searchEntitiesMock,
@@ -56,7 +58,7 @@ afterAll(() => {
 import { serviceEntityGet, serviceEntityList, serviceEntityTrashList } from "./service.ts";
 
 function auth(): VerifiedServiceApiToken {
-  return { subject_type: "user" } as VerifiedServiceApiToken;
+  return { subject_id: 1, subject_type: "user" } as VerifiedServiceApiToken;
 }
 
 function testDeps(): RuntimeDeps {
@@ -241,7 +243,9 @@ describe("serviceEntityList filters and search", () => {
 describe("serviceEntityGet", () => {
   beforeEach(() => {
     getEntityMock.mockReset();
+    assertSubjectCanAccessWorldMock.mockReset();
     getEntityMock.mockImplementation(async () => null);
+    assertSubjectCanAccessWorldMock.mockImplementation(async () => undefined);
   });
 
   it("returns detail fields for entity in world", async () => {
@@ -255,7 +259,7 @@ describe("serviceEntityGet", () => {
     });
     getEntityMock.mockImplementation(async () => hit);
 
-    const result = await serviceEntityGet(testDeps(), { subject_kind: "user", id: 42 }, auth());
+    const result = await serviceEntityGet(testDeps(), { id: 42 }, auth());
 
     expect(result.item.id).toBe(42);
     expect(result.item.summary).toBe("sum");
@@ -263,6 +267,7 @@ describe("serviceEntityGet", () => {
     expect(result.item.body).toEqual({ a: 1 });
     expect(result.item.revision_count).toBe(1);
     expect(getEntityMock).toHaveBeenCalledWith(42, { include_deleted: false });
+    expect(assertSubjectCanAccessWorldMock).toHaveBeenCalledWith(1, 10, { access: "read" });
   });
 
   it("passes include_deleted for trash detail", async () => {
@@ -272,11 +277,7 @@ describe("serviceEntityGet", () => {
     });
     getEntityMock.mockImplementation(async () => hit);
 
-    await serviceEntityGet(
-      testDeps(),
-      { subject_kind: "user", id: 7, include_deleted: true },
-      auth(),
-    );
+    await serviceEntityGet(testDeps(), { id: 7, include_deleted: true }, auth());
 
     expect(getEntityMock).toHaveBeenCalledWith(7, { include_deleted: true });
   });

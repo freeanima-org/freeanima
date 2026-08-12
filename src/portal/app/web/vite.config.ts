@@ -224,9 +224,7 @@ export default defineConfig(({ command, mode }) => {
 
   const https = resolveDevWebHttps();
   if (shouldEnableDevWebHttps() && !https) {
-    console.warn(
-      "[dev:web] http.tls / DEV_HTTPS 已启用但缺少 ~/.anima/tls/{cert,key}.pem — 以 HTTP 启动",
-    );
+    console.warn("[dev:web] DEV_HTTPS 已启用但缺少 ~/.anima/tls/{cert,key}.pem — 以 HTTP 启动");
   }
 
   return mergeConfig(inline, {

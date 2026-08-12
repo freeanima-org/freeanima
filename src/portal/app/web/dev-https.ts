@@ -30,15 +30,9 @@ export function isHttpTlsEnabledInConfigYaml(yamlText: string): boolean {
 
 export function shouldEnableDevWebHttps(env: NodeJS.ProcessEnv = process.env): boolean {
   const flag = env.DEV_HTTPS?.trim();
-  if (flag === "0" || flag === "false") return false;
-  if (flag === "1" || flag === "true") return true;
-  try {
-    const cfgPath = join(animaHome(), "config.yaml");
-    if (!existsSync(cfgPath)) return false;
-    return isHttpTlsEnabledInConfigYaml(readFileSync(cfgPath, "utf-8"));
-  } catch {
-    return false;
-  }
+  // 本地 just dev 默认 HTTP；仅显式 DEV_HTTPS=1|true 才开 Vite HTTPS。
+  // 不跟 config.yaml http.tls.enabled（那是生产 Habitat TLS，与源码 Vite 解耦）。
+  return flag === "1" || flag === "true";
 }
 
 /** 复用 ~/.anima/tls 证书；缺失则返回 null（调用方打日志） */

@@ -48,4 +48,6 @@ title: 实体模块
 `getEntity`；否则 `searchEntities`（hybrid）。无 `query` 时 `listEntities` + 同条件
 `countEntities`。
 
+`entity.get` 仅需 `id`（可选 `include_deleted`）：按实体所在 world 校验调用方可读权限，**不**传 `subject_kind` / `world_id`。
+
 删除语义总表见 [`entity-model.md`](../product/entity-model.md)「删除语义」。

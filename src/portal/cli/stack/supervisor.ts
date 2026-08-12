@@ -32,7 +32,7 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
   const bootstrapHttp = bootstrap.http;
   /**
    * 源码 `dev:habitat`（skipTls）：Habitat 不托管 dist，
-   * UI 由 `dev:web`（Vite :5000，可 HTTPS）提供；与 http 侧 skipTls 对称。
+   * UI 由 `dev:web`（Vite WEB_DEV_PORT，默认 HTTP）提供；与 http 侧 skipTls 对称。
    */
   const webEnabled = !options.skipTls;
   if (options.skipTls) {
@@ -81,7 +81,9 @@ export async function runServiceStack(options: ServiceStackOptions): Promise<voi
     ? null
     : await resolveHabitatTlsListenConfig(bootstrapHttp, bindHosts);
   if (options.skipTls && bootstrapHttp?.tls?.enabled) {
-    console.log("[stack] skipTls：不绑 Habitat TLS（开发由 Vite HTTPS 终止；Habitat 仅明文 HTTP）");
+    console.log(
+      "[stack] skipTls：不绑 Habitat TLS（开发 Habitat 仅明文 HTTP；UI 由 Vite WEB_DEV_PORT 提供）",
+    );
   }
 
   let reloadTls:

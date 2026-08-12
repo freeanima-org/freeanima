@@ -2,9 +2,11 @@ import { lazyNamedComponent, shellLazyRoute } from "../lazy-route.tsx";
 import { registerShellFeatureRoutes } from "./shell-registry.ts";
 import { registerTaskEntityOverlay } from "@freeanima/features/task/ui/spa/register-task-entity-overlay.ts";
 import { registerSemanticMemoryEntityOverlay } from "@freeanima/features/memory/ui/spa/register-semantic-memory-entity-overlay.ts";
+import { registerCalendarEventEntityOverlay } from "@freeanima/features/calendar/ui/spa/register-calendar-entity-overlay.ts";
 
 registerTaskEntityOverlay();
 registerSemanticMemoryEntityOverlay();
+registerCalendarEventEntityOverlay();
 
 /** Shell routes for migrated feature plugins (Phase 2+). */
 export function registerFeaturePluginShellRoutes(): void {

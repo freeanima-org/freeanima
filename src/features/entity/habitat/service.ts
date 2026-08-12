@@ -2,6 +2,7 @@ import type { SubjectKind } from "@freeanima/host/core/config";
 import { resolveSubjectWorldId } from "@freeanima/host/core/config/world-context";
 import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
 import {
+  assertSubjectCanAccessWorld,
   collectEntityReferences,
   countEntities,
   deleteEntity,
@@ -10,6 +11,7 @@ import {
   listEntities,
   restoreEntity,
   searchEntities,
+  ToolWorldAccessError,
   type EntityDeletedFilter,
   type EntityRow,
 } from "@freeanima/host/core/db/pg/entity";
@@ -191,12 +193,22 @@ export async function serviceEntityTrashList(
 
 export async function serviceEntityGet(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number; include_deleted?: boolean },
+  input: { id: number; include_deleted?: boolean },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const world_id = await entityWorldIdForAuth(auth, input.subject_kind);
-  const row = await assertEntityInWorld(input.id, world_id, input.include_deleted === true);
+  const row = await getEntity(input.id, { include_deleted: input.include_deleted === true });
+  if (!row) {
+    throw new Error("entity not found");
+  }
+  try {
+    await assertSubjectCanAccessWorld(auth.subject_id, row.world_id, { access: "read" });
+  } catch (e) {
+    if (e instanceof ToolWorldAccessError) {
+      throw new Error("entity not found", { cause: e });
+    }
+    throw e;
+  }
   return { item: toDetailRow(row) };
 }
 

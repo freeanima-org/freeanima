@@ -7,6 +7,7 @@ import type {
 
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
+import { getSubjectKind } from "@freeanima/client/portal-sdk";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 import {
@@ -106,6 +107,21 @@ export async function updateCalendarEvent(
 export async function deleteCalendarEvent(subjectKind: SubjectKind, id: number): Promise<void> {
   ensureCalendarOfflineModule();
   await offlineDeleteCalendarEvent(subjectKind, id);
+}
+
+/** 按 id 拉取单条日历事件；先当前 subject，失败再试另一侧。 */
+export async function fetchCalendarEventById(id: number): Promise<CalendarEventRow | null> {
+  const primary = getSubjectKind();
+  const kinds = primary === "agent" ? (["agent", "user"] as const) : (["user", "agent"] as const);
+  for (const subject_kind of kinds) {
+    try {
+      const data = await habitat().call("calendar.get", { subject_kind, id });
+      return data.item;
+    } catch {
+      // try next subject_kind
+    }
+  }
+  return null;
 }
 
 export async function convertCalendarEventToTask(

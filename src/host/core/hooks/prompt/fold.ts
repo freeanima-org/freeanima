@@ -16,7 +16,12 @@ export type FoldSystemPromptResult = {
   droppedSectionIds: string[];
 };
 
-const DEFAULT_HARD_KEEP = ["self", "memory-citation", "memory-recall"] as const;
+const DEFAULT_HARD_KEEP = [
+  "self",
+  "anima-uri-protocol",
+  "memory-citation",
+  "memory-recall",
+] as const;
 
 function applySectionBudget(section: SystemPromptSection): {
   section: SystemPromptSection;

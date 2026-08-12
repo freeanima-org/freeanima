@@ -40,13 +40,10 @@ export async function fetchEntityDetail(
   id: number,
   opts?: { includeDeleted?: boolean },
 ): Promise<EntityDetail> {
-  const data = await habitat().call(
-    "entity.get",
-    withSubjectKind({
-      id,
-      ...(opts?.includeDeleted ? { include_deleted: true } : {}),
-    }),
-  );
+  const data = await habitat().call("entity.get", {
+    id,
+    ...(opts?.includeDeleted ? { include_deleted: true } : {}),
+  });
   return data.item;
 }
 

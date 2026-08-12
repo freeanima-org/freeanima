@@ -1,4 +1,5 @@
 /* Chat / Coding 共用：消息气泡 + Markdown + 工具块。禁止各 SPA 再平行拷贝。 */
+@import "@freeanima/ui-kit/styles/anima-uri-chip.css";
 
 .md-content {
   line-height: 1.6;
@@ -70,6 +71,14 @@
 }
 .chat-bubble-user {
   @apply bg-primary text-primary-foreground ml-auto;
+}
+.chat-bubble-user .anima-uri-chip {
+  @apply border-primary-foreground/35 bg-primary-foreground/15 text-primary-foreground;
+}
+@media (hover: hover) and (pointer: fine) {
+  .chat-bubble-user .anima-uri-chip:hover {
+    @apply bg-primary-foreground/25;
+  }
 }
 .chat-bubble-assistant {
   @apply bg-muted text-foreground;

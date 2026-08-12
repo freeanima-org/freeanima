@@ -42,7 +42,8 @@ describe("anima-uri", () => {
   test("default present by component", () => {
     expect(defaultPresentForComponent("task_item")).toBe("overlay");
     expect(defaultPresentForComponent("task_list")).toBe("navigate");
-    expect(defaultPresentForComponent(undefined)).toBe("navigate");
+    expect(defaultPresentForComponent(undefined)).toBe("overlay");
+    expect(defaultPresentForComponent("calendar_event")).toBe("overlay");
   });
 
   test("animaUriToShellPath and shell path parse", () => {

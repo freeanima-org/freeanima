@@ -1,9 +1,9 @@
 import type { AnimaPresent, AnimaUriRef } from "./anima-uri.ts";
 import { defaultPresentForComponent, navigateAnimaUri, parseAnimaUri } from "./anima-uri.ts";
-import { getEntityOverlay } from "./entity-overlay-registry.ts";
 
 export type EntityOverlayOpenRequest = {
   id: number;
+  /** 可为空：无 primary_component 时走通用浮层 */
   component: string;
   present: AnimaPresent;
 };
@@ -31,45 +31,66 @@ export type OpenEntityResourceResult =
   | { ok: true; mode: "overlay" | "navigate" }
   | { ok: false; error: string };
 
+const PARSE_ERROR_ZH: Record<string, string> = {
+  empty: "链接为空",
+  "anima:// is not supported; use anima:{id}": "不支持 anima://，请使用 anima:{id}",
+  "invalid anima uri": "无效的 Anima 链接",
+  "invalid scheme": "无效的协议",
+  "invalid id": "无效的实体 id",
+  "invalid component": "无效的 component",
+  "invalid present": "无效的 present",
+  "unsupported uri": "不支持的链接格式",
+  "invalid shell path": "无效的路径",
+  "invalid item id": "无效的任务 id",
+  "invalid list id": "无效的清单 id",
+  "tasks path missing item or list": "任务路径缺少 item 或 list",
+  "unsupported shell path": "不支持的壳路径",
+};
+
+function zhParseError(code: string): string {
+  return PARSE_ERROR_ZH[code] ?? `无法打开：${code}`;
+}
+
 async function resolveComponent(ref: AnimaUriRef): Promise<string | null> {
   if (ref.component) return ref.component;
   if (!primaryResolver) return null;
   return primaryResolver(ref.id);
 }
 
+function openOverlay(id: number, component: string): OpenEntityResourceResult {
+  if (!overlayOpener) {
+    return { ok: false, error: "实体浮层未就绪，请稍后重试" };
+  }
+  overlayOpener({ id, component, present: "overlay" });
+  return { ok: true, mode: "overlay" };
+}
+
 /**
  * Open an Anima URI or ref: overlay via registry Host, or navigate Shell path.
+ * 无 component / 无专用浮层时打开通用实体详情。
  */
 export async function openEntityResource(
   input: string | AnimaUriRef,
 ): Promise<OpenEntityResourceResult> {
   const parsed =
     typeof input === "string" ? parseAnimaUri(input) : ({ ok: true as const, ref: input } as const);
-  if (!parsed.ok) return { ok: false, error: parsed.error };
+  if (!parsed.ok) return { ok: false, error: zhParseError(parsed.error) };
 
-  const component = await resolveComponent(parsed.ref);
-  if (!component) {
-    return { ok: false, error: "component required (or register primary_component resolver)" };
-  }
+  const component = (await resolveComponent(parsed.ref))?.trim() || "";
+  const present = parsed.ref.present ?? defaultPresentForComponent(component || undefined);
+  const ref: AnimaUriRef = {
+    ...parsed.ref,
+    ...(component ? { component } : {}),
+    present,
+  };
 
-  const present = parsed.ref.present ?? defaultPresentForComponent(component);
-  const ref: AnimaUriRef = { ...parsed.ref, component, present };
-
-  if (present === "overlay") {
-    if (!getEntityOverlay(component)) {
-      return { ok: false, error: `no overlay registered for component: ${component}` };
+  if (present === "navigate" && component) {
+    if (navigateAnimaUri({ ...ref, component })) {
+      return { ok: true, mode: "navigate" };
     }
-    if (!overlayOpener) {
-      return { ok: false, error: "EntityOverlayHost not mounted" };
-    }
-    overlayOpener({ id: ref.id, component, present });
-    return { ok: true, mode: "overlay" };
   }
 
-  if (!navigateAnimaUri(ref)) {
-    return { ok: false, error: `no shell path for component: ${component}` };
-  }
-  return { ok: true, mode: "navigate" };
+  return openOverlay(parsed.ref.id, component);
 }
 
 /** Expose for console / tests. */

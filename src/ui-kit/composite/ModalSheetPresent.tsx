@@ -8,8 +8,10 @@ import { cn } from "../lib/cn.ts";
 export type ModalSheetPresentProps = {
   open: boolean;
   onClose: () => void;
-  /** 无障碍标题（传给 Dialog/Sheet 内容区由调用方渲染可见标题） */
+  /** 无障碍标题（传给 Dialog/Sheet） */
   "aria-label"?: string;
+  /** 右上角关闭钮；默认 false（调用方自带关闭时用） */
+  showCloseButton?: boolean;
   className?: string;
   children: ReactNode;
 };
@@ -18,7 +20,14 @@ export type ModalSheetPresentProps = {
  * ModalSheetPresent：expanded → Dialog，compact → bottom Sheet。
  * 禁止自研 createPortal + fixed 遮罩。
  */
-export function ModalSheetPresent({ open, onClose, className, children }: ModalSheetPresentProps) {
+export function ModalSheetPresent({
+  open,
+  onClose,
+  "aria-label": ariaLabel,
+  showCloseButton = false,
+  className,
+  children,
+}: ModalSheetPresentProps) {
   const compact = useCompactLayout();
   const onOpenChange = (next: boolean) => {
     if (!next) onClose();
@@ -30,7 +39,8 @@ export function ModalSheetPresent({ open, onClose, className, children }: ModalS
         isOpen={open}
         onOpenChange={onOpenChange}
         side="bottom"
-        showCloseButton={false}
+        showCloseButton={showCloseButton}
+        {...(ariaLabel !== undefined ? { "aria-label": ariaLabel } : {})}
         className={cn(
           "max-h-[85vh] gap-0 overflow-hidden rounded-t-2xl p-0 safe-area-pb",
           className,
@@ -45,7 +55,8 @@ export function ModalSheetPresent({ open, onClose, className, children }: ModalS
     <Dialog
       isOpen={open}
       onOpenChange={onOpenChange}
-      showCloseButton={false}
+      showCloseButton={showCloseButton}
+      {...(ariaLabel !== undefined ? { "aria-label": ariaLabel } : {})}
       className={cn(
         "max-h-[min(85vh,48rem)] w-full max-w-xl gap-0 overflow-hidden p-0 sm:max-w-xl",
         className,

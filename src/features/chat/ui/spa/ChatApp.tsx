@@ -17,6 +17,7 @@ import { ConfirmDialog, ActionSheet, toast } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { SlashCommandResultPanel } from "@freeanima/features/chat/ui/spa/components/SlashCommandResultPanel.tsx";
 import { ConversationTranscript } from "@freeanima/features/chat/ui/spa/components/ConversationTranscript.tsx";
+import { ChatComposeForm } from "@freeanima/features/chat/ui/spa/components/ChatComposeForm.tsx";
 import type { TranscriptScrollApi } from "@freeanima/features/chat/ui/spa/hooks/useStickToBottomScroll.ts";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { ConversationListItem as ConversationListRow } from "@freeanima/features/chat/ui/spa/components/ConversationListItem.tsx";
@@ -47,16 +48,10 @@ import {
   useActionSheetCapability,
   useChatLlmDebugEnabled,
   useContextMenuCapability,
-  useEnterToSendCapability,
   useHabitatConnection,
   useNetworkOnline,
   useOpenHabitatSettingsCapability,
 } from "@freeanima/client/portal-sdk/react.tsx";
-import { loadInputDraft, saveInputDraft } from "@freeanima/features/chat/ui/spa/lib/input-draft.ts";
-import {
-  AUTO_PERSIST_LONG,
-  createAutoPersistScheduler,
-} from "@freeanima/ui-kit/lib/auto-persist-schedule.ts";
 import {
   getChatRpcStreamClient,
   subscribeShellConfigChanges,
@@ -103,11 +98,7 @@ import {
   mergeOutboxStatusIntoDisplay,
   stripRedundantOptimisticDisplay,
 } from "@freeanima/features/chat/ui/spa/lib/outbox-display-sync.ts";
-import {
-  buildSlashMenuEntries,
-  type SlashCommandItem,
-  type SlashMenuEntry,
-} from "@freeanima/features/chat/ui/spa/lib/slash-command-menu.ts";
+import type { SlashCommandItem } from "@freeanima/features/chat/ui/spa/lib/slash-command-menu.ts";
 
 type CommandItem = SlashCommandItem;
 type ClarifyPending = {
@@ -237,38 +228,8 @@ export function ChatApp() {
   const msgAreaRef = useRef<HTMLDivElement>(null);
   const scrollApiRef = useRef<TranscriptScrollApi | null>(null);
   const readSentinelRef = useViewportConversationRead(currentId, display.length, msgAreaRef);
-  const msgInputRef = useRef<HTMLTextAreaElement>(null);
-  const [inputText, setInputText] = useState(() =>
-    loadInputDraft(readConversationFromUrl() ?? null),
-  );
-  const inputTextRef = useRef(inputText);
-  inputTextRef.current = inputText;
-  const draftConversationIdRef = useRef(currentId);
-  draftConversationIdRef.current = currentId;
-  const prevDraftConversationIdRef = useRef(currentId);
-  const inputDraftScheduler = useMemo(
-    () =>
-      createAutoPersistScheduler({
-        ...AUTO_PERSIST_LONG,
-        onFire: () => {
-          saveInputDraft(draftConversationIdRef.current, inputTextRef.current);
-        },
-      }),
-    [],
-  );
-  useEffect(() => () => inputDraftScheduler.flush(), [inputDraftScheduler]);
-
-  const clearInputAndDraft = useCallback(
-    (conversationId: string | null) => {
-      inputDraftScheduler.cancel();
-      setInputText("");
-      saveInputDraft(conversationId, "");
-    },
-    [inputDraftScheduler],
-  );
 
   const [commandList, setCommandList] = useState<CommandItem[]>([]);
-  const [selectedCmdIdx, setSelectedCmdIdx] = useState(0);
   const [clarifyPending, setClarifyPending] = useState<ClarifyPending | null>(null);
   const [slashResult, setSlashResult] = useState<{
     command: string;
@@ -282,8 +243,6 @@ export function ChatApp() {
   const [autoSpeak, setAutoSpeak] = useState(() => loadAutoSpeakPref());
   const pendingRecoveryKeyRef = useRef<string | null>(null);
   const mobileLayout = useCompactLayout();
-  /** Enter 发送：仅交互维（pointer）；与布局/壳正交 */
-  const enterToSend = useEnterToSendCapability();
   const canOpenHabitatSettingsUi = useOpenHabitatSettingsCapability();
   const useActionSheet = useActionSheetCapability();
   const contextMenuEnabled = useContextMenuCapability();
@@ -402,24 +361,6 @@ export function ChatApp() {
         },
       )
     : "聊天室";
-
-  const INPUT_MIN_HEIGHT_PX = 36;
-  const INPUT_MAX_HEIGHT_PX = 192;
-
-  const slashMenuEntries = useMemo(
-    () => buildSlashMenuEntries(inputText, commandList),
-    [inputText, commandList],
-  );
-
-  const showCmdMenu = slashMenuEntries.length > 0;
-  /** 窄视口/手机：菜单随输入区文档流展开，避免 absolute + 祖先 overflow-hidden 在软键盘顶起时被裁切 */
-  const cmdMenuInFlow = mobileLayout;
-
-  useEffect(() => {
-    setSelectedCmdIdx((i) =>
-      slashMenuEntries.length === 0 ? 0 : Math.min(i, slashMenuEntries.length - 1),
-    );
-  }, [slashMenuEntries]);
 
   const mergedDisplay = useMemo((): DisplayItem[] => {
     if (!currentId) return display;
@@ -628,22 +569,14 @@ export function ChatApp() {
   }, [debugViewerOpen, llmDebugEnabled, currentId]);
 
   useEffect(() => {
-    const prevId = prevDraftConversationIdRef.current;
-    if (prevId && prevId !== currentId) {
-      inputDraftScheduler.cancel();
-      saveInputDraft(prevId, inputTextRef.current);
-    }
-    prevDraftConversationIdRef.current = currentId;
     if (!currentId) return;
     writeConversationToUrl(currentId);
     writeModuleSelection("chat", currentId);
-    setInputText(loadInputDraft(currentId));
     setSlashResult(null);
     requestAnimationFrame(() => {
-      resizeInput();
       scrollApiRef.current?.scrollDown({ force: true });
     });
-  }, [currentId, inputDraftScheduler]);
+  }, [currentId]);
 
   useEffect(() => {
     if (!currentId) return;
@@ -776,25 +709,6 @@ export function ChatApp() {
     scrollApiRef.current?.scrollDown(opts);
   };
 
-  const resizeInput = () => {
-    const el = msgInputRef.current;
-    if (!el) return;
-    el.style.height = "0px";
-    const next = Math.max(INPUT_MIN_HEIGHT_PX, Math.min(el.scrollHeight, INPUT_MAX_HEIGHT_PX));
-    el.style.height = `${next}px`;
-  };
-
-  const applyMenuEntry = (entry: SlashMenuEntry) => {
-    inputTextRef.current = entry.insertText;
-    setInputText(entry.insertText);
-    inputDraftScheduler.schedule();
-    setSelectedCmdIdx(0);
-    requestAnimationFrame(() => {
-      resizeInput();
-      msgInputRef.current?.focus();
-    });
-  };
-
   const navigateToConversation = async (conversationId: string) => {
     if (conversationId === currentId) {
       setSidebarOpen(false);
@@ -809,7 +723,6 @@ export function ChatApp() {
     const id = await newConversationFn();
     if (id) {
       writeConversationToUrl(id);
-      requestAnimationFrame(resizeInput);
     }
   };
 
@@ -1221,8 +1134,8 @@ export function ChatApp() {
   const showOfflineCachedHint =
     shellWritesDisabled && (conversations.length > 0 || display.length > 0);
 
-  const sendMessage = async () => {
-    const text = inputText.trim();
+  const sendMessage = async (raw: string) => {
+    const text = raw.trim();
     if (!text || sendingRef.current) return;
 
     let conversationId = currentId;
@@ -1234,8 +1147,6 @@ export function ChatApp() {
 
     if (streamVisible) {
       useChatStore.getState().enqueue(conversationId, text);
-      clearInputAndDraft(conversationId);
-      requestAnimationFrame(resizeInput);
       return;
     }
 
@@ -1245,8 +1156,6 @@ export function ChatApp() {
     let claimedOpId: string | null = null;
     try {
       if (text.startsWith("/") && canSendOnline) {
-        clearInputAndDraft(originConversationId);
-        requestAnimationFrame(resizeInput);
         const cmdName = text.slice(1).split(/\s+/).filter(Boolean)[0] ?? "";
         setSlashResult({ command: cmdName, text: "", loading: true });
         try {
@@ -1277,11 +1186,6 @@ export function ChatApp() {
       }
 
       const expectedTailPos = await resolveExpectedTailPos(originConversationId, canSendOnline);
-
-      if (!text.startsWith("/") || !canSendOnline) {
-        clearInputAndDraft(originConversationId);
-        requestAnimationFrame(resizeInput);
-      }
 
       if (canSendOnline) {
         // 在线栖息地优先：内存 clientOpId + 直发，不入 IDB outbox
@@ -1370,38 +1274,6 @@ export function ChatApp() {
   const stopStreaming = async () => {
     if (!currentId || !streamVisible) return;
     await useChatStore.getState().stop(currentId);
-  };
-
-  const onInputKeydown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (showCmdMenu) {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setSelectedCmdIdx((i) => Math.min(i + 1, slashMenuEntries.length - 1));
-        return;
-      }
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setSelectedCmdIdx((i) => Math.max(i - 1, 0));
-        return;
-      }
-      if ((e.key === "Tab" || e.key === "Enter") && !e.shiftKey && !e.nativeEvent.isComposing) {
-        e.preventDefault();
-        const entry = slashMenuEntries[selectedCmdIdx];
-        if (entry) applyMenuEntry(entry);
-        return;
-      }
-      if (e.key === "Escape") {
-        e.preventDefault();
-        clearInputAndDraft(currentId);
-        setSelectedCmdIdx(0);
-        requestAnimationFrame(resizeInput);
-        return;
-      }
-    }
-    if (!enterToSend) return;
-    if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing) return;
-    e.preventDefault();
-    void sendMessage();
   };
 
   if (!ready && !error) {
@@ -1599,7 +1471,11 @@ export function ChatApp() {
               hasMoreBefore={hasMoreBefore}
               messagesLoading={messagesLoading}
               onLoadOlder={loadOlderMessages}
-              onAnimaUriClick={(uri) => void openEntityResource(uri)}
+              onAnimaUriClick={(uri) => {
+                void openEntityResource(uri).then((r) => {
+                  if (!r.ok) toast(r.error, { duration: 4000 });
+                });
+              }}
               speech={{
                 supported: speechSupported,
                 unsupportedReason: speechUnsupportedReason,
@@ -1813,86 +1689,15 @@ export function ChatApp() {
                   ))}
                 </ul>
               ) : null}
-              <form
-                className="flex gap-2 items-end"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void sendMessage();
-                }}
-              >
-                <div
-                  className={
-                    cmdMenuInFlow ? "flex min-w-0 flex-1 flex-col" : "relative min-w-0 flex-1"
-                  }
-                >
-                  {showCmdMenu ? (
-                    <ul
-                      className={[
-                        "mb-1 max-h-48 overflow-y-auto rounded-lg border border bg-background shadow-lg",
-                        cmdMenuInFlow
-                          ? "relative z-10 shrink-0"
-                          : "absolute bottom-full left-0 right-0 z-10",
-                      ].join(" ")}
-                    >
-                      {slashMenuEntries.map((entry, i) => (
-                        <li
-                          key={entry.label}
-                          className={[
-                            "px-3 py-2 text-sm cursor-pointer flex items-baseline gap-2 hover:bg-muted",
-                            i === selectedCmdIdx ? "bg-primary/15" : "",
-                          ].join(" ")}
-                          onPointerDown={(e) => {
-                            e.preventDefault();
-                            applyMenuEntry(entry);
-                          }}
-                        >
-                          <span className="font-mono font-medium shrink-0">{entry.label}</span>
-                          <span className="text-xs text-muted-foreground truncate">
-                            {entry.description}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  <Textarea
-                    ref={msgInputRef}
-                    value={inputText}
-                    onChange={(e) => {
-                      const next = e.target.value;
-                      inputTextRef.current = next;
-                      setInputText(next);
-                      inputDraftScheduler.schedule();
-                      setSelectedCmdIdx(0);
-                      resizeInput();
-                    }}
-                    rows={1}
-                    className="!min-h-9 h-9 max-h-48 w-full resize-none overflow-y-auto py-1.5 leading-5 [field-sizing:fixed]"
-                    placeholder={"输入消息（Shift+Enter 换行，Enter 发送；/ 开头是命令）"}
-                    onFocus={() => {
-                      requestAnimationFrame(() => {
-                        msgInputRef.current?.scrollIntoView({
-                          block: "nearest",
-                          behavior: "smooth",
-                        });
-                      });
-                    }}
-                    onKeyDown={onInputKeydown}
-                  />
-                </div>
-                <Button type="submit" isDisabled={!inputText.trim()}>
-                  {"发送"}
-                </Button>
-                {streamVisible ? (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    isDisabled={!canSendOnline}
-                    onClick={() => void stopStreaming()}
-                  >
-                    {"停止"}
-                  </Button>
-                ) : null}
-              </form>
+              <ChatComposeForm
+                conversationId={currentId}
+                commandList={commandList}
+                menuInFlow={mobileLayout}
+                streamVisible={streamVisible}
+                canSendOnline={canSendOnline}
+                onSend={sendMessage}
+                onStopStreaming={() => void stopStreaming()}
+              />
             </div>
           </ListDetailLayout>
         </div>
