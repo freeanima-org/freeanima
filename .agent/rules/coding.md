@@ -8,7 +8,7 @@
 - **Base compiler flags** ([`tsconfig.base.json`](../../tsconfig.base.json)): `strict`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noImplicitOverride`, `allowUnreachableCode: false`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`
 - **Paraglide types**: [`types/paraglide-messages.generated.d.ts`](../../types/paraglide-messages.generated.d.ts) is generated from `messages/en.json` (`bun scripts/gen-paraglide-message-types.ts`; optional via `just i18n check`)
 - **Optional props**: with `exactOptionalPropertyTypes`, do not pass `prop: undefined` — use `omitUndefined()` from `@freeanima/host/core/util` or conditional spread
-- **Standalone 随包资源**：`just pack cli` / Bun `--compile` 后，`import.meta.dir` + `readFileSync` **读不到**未嵌入的旁路文件（表现为 `/$bunfs/root/...` ENOENT）。仓库内随二进制分发的 `.md` / `.json` 等须 `import … with { type: "text" | "json" | "file" }`；migration / docs / web dist 走 `scripts/standalone-embed-plugin.ts`。用户数据（`~/.anima/`）与运行时路径除外。
+- **Standalone 随包资源**：`just pack cli` / Bun `--compile` 后，`import.meta.dir` + `readFileSync` **读不到**未嵌入的旁路文件（表现为 `/$bunfs/root/...` ENOENT）。仓库内随二进制分发的 `.md` / `.json` 等须 `import … with { type: "text" | "json" | "file" }`；migration / docs / web dist 走 `scripts/standalone-embed-plugin.ts`。用户数据（`~/.anima/`）与运行时路径除外。第三方包若在入口里 `readFileSync(join(__dirname, …))`（如历史 tiktoken wasm），须 Bun 插件改写或改为本仓库静态 `type: "file"` 加载（jieba 默认词典见 `src/host/core/db/pg/fts/segment.ts`）。**潜伏**：`@discordjs/ws` 的 `defaultWorker.js`、`pino`/`thread-stream` 的 worker 同样按 `__dirname` 找旁路 JS 且未嵌入；当前 Discord `Client` 未使用 `WorkerShardingStrategy`、Habitat 未直接开 pino transport，默认路径不触发——若启用 Worker 分片 / pino transport，须 embed 或 `bundlerPathsOverrides`，并加 standalone smoke。
 
 ## Lint (oxlint)
 

@@ -43,7 +43,9 @@ jobs:
       - name: Build Linux standalone
         run: just pack cli
       - name: Smoke standalone
-        run: bun scripts/smoke-standalone-tiktoken.ts
+        run: |
+          bun scripts/smoke-standalone-tiktoken.ts
+          bun scripts/smoke-standalone-jieba.ts
       - run: bun scripts/run-ci-tests.ts
       - name: Upload coverage report
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository

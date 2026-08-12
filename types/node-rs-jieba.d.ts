@@ -9,3 +9,9 @@ declare module "@node-rs/jieba" {
 declare module "@node-rs/jieba/dict" {
   export const dict: Uint8Array;
 }
+
+/** Bun `import … with { type: "file" }` → 嵌入文件路径（standalone 下为 /$bunfs/…） */
+declare module "@node-rs/jieba/dict.txt" {
+  const path: string;
+  export default path;
+}

@@ -3,8 +3,13 @@ import { readFileSync } from "node:fs";
 import { getActiveRuntimeConfig } from "@freeanima/host/core/config";
 import { isCjkJiebaEnabled, cjkJiebaDictPath } from "@freeanima/host/core/config/cjk-config";
 import type { Jieba } from "@node-rs/jieba";
+/** Embed default dict for Bun `--compile` (do not use `@node-rs/jieba/dict` — it readFileSync(__dirname)). */
+import jiebaDictPath from "@node-rs/jieba/dict.txt" with { type: "file" };
+
+import { logPgComponent } from "../log.ts";
 
 const CJK_RUN_RE = /[\u4e00-\u9fff\u3400-\u4dbf]+/g;
+const log = logPgComponent("fts");
 
 let jiebaInstance: Jieba | null = null;
 let jiebaLoadFailed = false;
@@ -15,8 +20,7 @@ async function getJieba(): Promise<Jieba | null> {
   if (jiebaInstance) return jiebaInstance;
   try {
     const { Jieba } = await import("@node-rs/jieba");
-    const { dict } = await import("@node-rs/jieba/dict");
-    const jieba = Jieba.withDict(dict);
+    const jieba = Jieba.withDict(readFileSync(jiebaDictPath));
     const dictPath = cjkJiebaDictPath(getActiveRuntimeConfig().data);
     try {
       jieba.loadDict(readFileSync(dictPath));
@@ -25,8 +29,9 @@ async function getJieba(): Promise<Jieba | null> {
     }
     jiebaInstance = jieba;
     return jieba;
-  } catch {
+  } catch (err) {
     jiebaLoadFailed = true;
+    log.warn("jieba load failed", { error: String(err) });
     return null;
   }
 }
