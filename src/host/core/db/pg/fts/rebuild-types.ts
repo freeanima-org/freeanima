@@ -6,6 +6,7 @@ export type FtsRebuildPhase =
   | "entities_segmented"
   | "semantic_memory_embedding"
   | "messages_embedding"
+  | "entities_embedding"
   | "limbic_memory_embedding"
   | "autobiographical_memory_embedding";
 
@@ -20,4 +21,8 @@ export type FtsRebuildOptions = {
   /** Only rows where fts_segmented / content_embedding still empty (resume checkpoint) */
   onlyMissing?: boolean;
   onProgress?: (progress: FtsRebuildProgress) => void;
+  /** Embedding rebuild retries per row (default 3). */
+  embedRetryAttempts?: number;
+  /** Base delay ms between embedding retries; attempt N waits base*N (default 750). */
+  embedRetryBaseMs?: number;
 };

@@ -2561,6 +2561,12 @@ msgid "Rebuild runs in the background. Default rebuilds missing rows only; safe 
 msgstr "重建在后台执行，不会阻塞页面。默认仅补缺失行，可断点续跑（如向量中断后再次点击即可继续）。"
 
 #. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:425
+#, no-wrap
+msgid "Entities · embedding"
+msgstr "实体 · 向量"
+
+#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:422
 #, no-wrap
 msgid "Full rebuild"

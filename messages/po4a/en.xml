@@ -422,6 +422,7 @@
   <msg id="habitat_fts_cjk_note">When cjk.enabled is off, empty fts_segmented is expected; rebuild segmented after enabling.</msg>
   <msg id="habitat_fts_coverage">Index coverage</msg>
   <msg id="habitat_fts_desc">Rebuild runs in the background. Default rebuilds missing rows only; safe to resume after interrupt.</msg>
+  <msg id="habitat_fts_entities_emb">Entities · embedding</msg>
   <msg id="habitat_fts_full_rebuild">Full rebuild</msg>
   <msg id="habitat_fts_messages_emb">Messages · embedding</msg>
   <msg id="habitat_fts_messages_seg">Messages · segmented</msg>
