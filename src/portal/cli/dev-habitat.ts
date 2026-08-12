@@ -6,6 +6,8 @@
  *   just dev habitat -- --port 12001
  *   just dev habitat -- --port 12001 --strict-port
  *
+ * 开发入口默认经 scripts/dev-habitat-watch.ts（debounce 硬重启）；
+ * FREEANIMA_HABITAT_WATCH=0 时监督器退回单次直接跑本文件。
  * 默认随机 ≥10000 闲口（避开生产 2658/2659）。TLS 由 Vite 终止，本进程不绑 Habitat TLS。
  */
 import { installErrorLogHandlers, logStartupError } from "@freeanima/host/platform/logging";
@@ -46,9 +48,11 @@ Examples:
   just dev habitat
   just dev habitat -- --port 12001
   just dev habitat -- --port 12001 --strict-port
+  FREEANIMA_HABITAT_WATCH=0 just dev habitat   # 关闭源码监视硬重启
 
 Dev defaults: random port ≥${DEV_HABITAT_PORT_MIN} (not 2658/2659). Pair with just dev web (Vite proxy).
 Production install uses standalone \`anima service\` (systemd). Source CLI has no \`service\` command.
+\`just dev habitat\` 默认经 scripts/dev-habitat-watch.ts（debounce 硬重启）。
 `,
     )
     .allowExcessArguments(false);

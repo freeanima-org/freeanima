@@ -98,7 +98,7 @@ anima service restart
 
 # --- monorepo / worktree ---
 just dev                     # Habitat (≥10000) + Vite Web (≥5000); proxy via FREEANIMA_URL
-just dev habitat              # Habitat foreground; default random ≥10000; skip Habitat TLS
+just dev habitat              # Habitat foreground + debounce 硬重启（默认）；FREEANIMA_HABITAT_WATCH=0 可关；random ≥10000; skip Habitat TLS
 just dev web              # Vite HMR from :5000 (set FREEANIMA_URL to Habitat); browser Habitat = page origin
 ```
 
@@ -106,11 +106,11 @@ just dev web              # Vite HMR from :5000 (set FREEANIMA_URL to Habitat); 
 
 **`service start` 永不触发 Web 构建。** 路径：
 
-| 模式       | 何时 `just pack web`       | UI                                                                    |
-| ---------- | -------------------------- | --------------------------------------------------------------------- |
-| 独立发行版 | `just pack cli` 时强制     | 内嵌，由 `/web/*` 提供                                                |
-| 源码部署   | 启动前手动 `just pack web` | 有 dist 时栖息地提供 `/web/*`                                         |
-| 开发       | 不需要                     | `just dev` / `just dev habitat` + `just dev web` → Web **:5000+** HMR |
+| 模式       | 何时 `just pack web`       | UI                                                                                              |
+| ---------- | -------------------------- | ----------------------------------------------------------------------------------------------- |
+| 独立发行版 | `just pack cli` 时强制     | 内嵌，由 `/web/*` 提供                                                                          |
+| 源码部署   | 启动前手动 `just pack web` | 有 dist 时栖息地提供 `/web/*`                                                                   |
+| 开发       | 不需要                     | `just dev` / `just dev habitat`（Habitat debounce 硬重启）+ `just dev web` → Web **:5000+** HMR |
 
 存在 Web dist（`src/portal/app/web/dist` 或内嵌）时，栈从栖息地提供浏览器 Web UI：`http://<host>:2658/web/*`（无独立 API 代理）。客户端在 **栖息地设置** 中保存栖息地 URL 与 **Service API Token**（`fa_at_...`）。可选栖息地原生 TLS 在 `http.tls.enabled: true` 时监听 **`https://<host>:2659`**（见 [`remote-access.md`](remote-access.md)）— **仅生产**；源码 `just dev habitat` 跳过栖息地 TLS；Vite 默认 HTTP，仅 `DEV_HTTPS=1` 时终止 HTTPS。
 

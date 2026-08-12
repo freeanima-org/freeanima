@@ -2,6 +2,7 @@
 import '_common.just'
 
 # Habitat ≥10000 / Web :5000；见 scripts/dev.ts。可选 HABITAT_PORT / WEB_DEV_PORT。
+# Habitat 默认 debounce 硬重启（scripts/dev-habitat-watch.ts）；FREEANIMA_HABITAT_WATCH=0 可关。
 # `just dev` → 本 default；`just dev habitat` / `just dev web` 等为子命令。
 [no-cd]
 default: _deps
@@ -10,7 +11,7 @@ default: _deps
 # 仅 Habitat（可附加：just dev habitat -- --port 12001）
 [no-cd]
 habitat *args: _deps
-  {{ bun }} src/portal/cli/dev-habitat.ts {{args}}
+  {{ bun }} scripts/dev-habitat-watch.ts {{args}}
 
 # 仅 Vite Web
 [no-cd]
