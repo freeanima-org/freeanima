@@ -28,7 +28,7 @@ function walk(dir: string, out: string[] = []): string[] {
     const p = join(dir, name);
     const st = statSync(p);
     if (st.isDirectory()) {
-      if (name === "node_modules" || name === "dist" || name === "paraglide") continue;
+      if (name === "node_modules" || name === "dist") continue;
       walk(p, out);
     } else if (name.endsWith(".ts") || name.endsWith(".tsx")) {
       out.push(p);

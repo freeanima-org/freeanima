@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { getHabitatSkill } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 
 export const Route = createFileRoute("/_sidebar/skills/$name")({
   loader: async ({ params }) => {
@@ -21,9 +20,9 @@ function SkillDetailPage() {
     return (
       <div className="space-y-4 p-4">
         <Link to="/skills" className="text-sm text-primary underline-offset-2 hover:underline">
-          {m.habitat_skills_back()}
+          {"← 技能列表"}
         </Link>
-        <StatusAlert variant="error">{m.habitat_skills_not_found()}</StatusAlert>
+        <StatusAlert variant="error">{"未找到该技能。"}</StatusAlert>
       </div>
     );
   }
@@ -31,7 +30,7 @@ function SkillDetailPage() {
   return (
     <div className="space-y-4 p-4">
       <Link to="/skills" className="text-sm text-primary underline-offset-2 hover:underline">
-        {m.habitat_skills_back()}
+        {"← 技能列表"}
       </Link>
       <div>
         <h1 className="font-mono text-xl font-semibold">{skill.name}</h1>
@@ -39,11 +38,11 @@ function SkillDetailPage() {
       </div>
       <dl className="grid gap-2 text-sm sm:grid-cols-2">
         <div>
-          <dt className="text-muted-foreground">{m.habitat_skills_col_origin()}</dt>
+          <dt className="text-muted-foreground">{"来源"}</dt>
           <dd className="font-mono">{skill.origin}</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">{m.habitat_skills_col_status()}</dt>
+          <dt className="text-muted-foreground">{"状态"}</dt>
           <dd className="font-mono">{skill.status}</dd>
         </div>
         <div>
@@ -68,14 +67,14 @@ function SkillDetailPage() {
         ) : null}
       </dl>
       <div>
-        <h2 className="mb-1 text-sm font-semibold">{m.habitat_skills_allowed_tools()}</h2>
+        <h2 className="mb-1 text-sm font-semibold">{"允许的工具"}</h2>
         <pre className="overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs">
           {skill.allowed_tools.length > 0 ? skill.allowed_tools.join("\n") : "—"}
         </pre>
       </div>
       {skill.denied_tools.length > 0 ? (
         <div>
-          <h2 className="mb-1 text-sm font-semibold">{m.habitat_skills_denied_tools()}</h2>
+          <h2 className="mb-1 text-sm font-semibold">{"禁止的工具"}</h2>
           <pre className="overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs">
             {skill.denied_tools.join("\n")}
           </pre>
@@ -83,7 +82,7 @@ function SkillDetailPage() {
       ) : null}
       {skill.resources.length > 0 ? (
         <div>
-          <h2 className="mb-1 text-sm font-semibold">{m.habitat_skills_resources()}</h2>
+          <h2 className="mb-1 text-sm font-semibold">{"资源"}</h2>
           <ul className="font-mono text-xs">
             {skill.resources.map((r) => (
               <li key={r.entity_id}>
@@ -94,7 +93,7 @@ function SkillDetailPage() {
         </div>
       ) : null}
       <div>
-        <h2 className="mb-1 text-sm font-semibold">{m.habitat_skills_body()}</h2>
+        <h2 className="mb-1 text-sm font-semibold">{"指令正文"}</h2>
         <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap rounded-md bg-muted p-3 text-sm">
           {skill.content}
         </pre>

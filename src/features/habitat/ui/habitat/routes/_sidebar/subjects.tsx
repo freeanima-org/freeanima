@@ -28,7 +28,6 @@ import {
 import { FormField, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import {
   createSubjectEntity,
   listSubjectEntities,
@@ -89,11 +88,8 @@ function privateWorldsForSubject(worlds: EntityRow[], subjectId: number): Entity
 }
 
 function worldOptionLabel(row: EntityRow): string {
-  const title = row.title || m.habitat_common_no_title();
-  const suffix =
-    row.body?.default_private === true
-      ? ` (${m.habitat_entities_world_default_private_badge()})`
-      : "";
+  const title = row.title || "（无标题）";
+  const suffix = row.body?.default_private === true ? ` (默认私有)` : "";
   return `#${row.id} — ${title}${suffix}`;
 }
 
@@ -137,9 +133,7 @@ function SubjectEditModal({
       className="max-w-lg safe-area-pt safe-area-pb"
     >
       <DialogHeader>
-        <DialogTitle>
-          {mode === "create" ? m.habitat_entities_new_subject() : m.habitat_entities_edit_subject()}
-        </DialogTitle>
+        <DialogTitle>{mode === "create" ? "新建主体" : "编辑主体"}</DialogTitle>
       </DialogHeader>
       {error ? (
         <StatusAlert variant="error" className="mb-3">
@@ -148,7 +142,7 @@ function SubjectEditModal({
       ) : null}
       <FormFieldset bordered={false} className="gap-3">
         {mode === "create" ? (
-          <FormField label={m.habitat_entities_col_type()} className="text-xs">
+          <FormField label={"类型"} className="text-xs">
             <Select
               selectedKey={form.type}
               onSelectionChange={(key) => {
@@ -164,13 +158,13 @@ function SubjectEditModal({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem id="agent">{m.habitat_entities_type_agent()}</SelectItem>
-                <SelectItem id="user">{m.habitat_entities_type_user()}</SelectItem>
+                <SelectItem id="agent">{"Agent"}</SelectItem>
+                <SelectItem id="user">{"用户"}</SelectItem>
               </SelectContent>
             </Select>
           </FormField>
         ) : null}
-        <FormField label={m.habitat_entities_col_title()} className="text-xs">
+        <FormField label={"标题"} className="text-xs">
           <Input
             type="text"
             className="w-full h-8"
@@ -178,7 +172,7 @@ function SubjectEditModal({
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
           />
         </FormField>
-        <FormField label={m.habitat_entities_col_summary()} className="text-xs">
+        <FormField label={"摘要"} className="text-xs">
           <Input
             type="text"
             className="w-full h-8"
@@ -186,7 +180,7 @@ function SubjectEditModal({
             onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
           />
         </FormField>
-        <FormField label={m.habitat_entities_col_content()} className="text-xs">
+        <FormField label={"内容"} className="text-xs">
           <Textarea
             className="w-full min-h-24"
             value={form.content}
@@ -194,11 +188,9 @@ function SubjectEditModal({
           />
         </FormField>
         {mode === "edit" ? (
-          <FormField label={m.habitat_entities_col_default_private_world()} className="text-xs">
+          <FormField label={"默认私有世界"} className="text-xs">
             {candidateWorlds.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-2">
-                {m.habitat_entities_default_private_world_empty()}
-              </p>
+              <p className="text-sm text-muted-foreground py-2">{"该主体暂无私有世界。"}</p>
             ) : (
               <Select
                 selectedKey={form.default_private_world_id}
@@ -222,14 +214,12 @@ function SubjectEditModal({
             )}
           </FormField>
         ) : (
-          <p className="text-xs text-muted-foreground">
-            {m.habitat_entities_subject_create_hint()}
-          </p>
+          <p className="text-xs text-muted-foreground">{"将自动创建默认私有世界。"}</p>
         )}
       </FormFieldset>
       <DialogFooter>
         <Button type="button" variant="ghost" size="sm" isDisabled={saving} onClick={onClose}>
-          {m.habitat_common_cancel()}
+          {"取消"}
         </Button>
         <Button
           type="button"
@@ -237,7 +227,7 @@ function SubjectEditModal({
           isDisabled={saving || !form.title.trim()}
           onClick={() => onSave(form)}
         >
-          {saving ? <Spinner /> : m.habitat_common_save()}
+          {saving ? <Spinner /> : "保存"}
         </Button>
       </DialogFooter>
     </Dialog>
@@ -245,8 +235,8 @@ function SubjectEditModal({
 }
 
 function subjectTypeLabel(type: string): string {
-  if (type === "agent") return m.habitat_entities_type_agent();
-  if (type === "user") return m.habitat_entities_type_user();
+  if (type === "agent") return "Agent";
+  if (type === "user") return "用户";
   return type;
 }
 
@@ -266,7 +256,7 @@ function SubjectsPage() {
 
   const worldTitleById = useCallback(
     (id: number | null): string => {
-      if (id == null) return m.habitat_common_empty();
+      if (id == null) return "（空）";
       const world = worlds.find((w) => w.id === id);
       return world?.title || `#${id}`;
     },
@@ -286,11 +276,7 @@ function SubjectsPage() {
       setWorlds(worldData.items);
     } catch (e) {
       logCaughtError("routes/_sidebar/subjects", e);
-      setError(
-        m.habitat_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setLoading(false);
     }
@@ -362,11 +348,7 @@ function SubjectsPage() {
       await fetchList();
     } catch (e) {
       logCaughtError("routes/_sidebar/subjects/save", e);
-      setModalError(
-        m.habitat_common_operation_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setModalError(`操作失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setSaving(false);
     }
@@ -376,8 +358,10 @@ function SubjectsPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-lg font-bold">{m.habitat_nav_subjects()}</h2>
-          <p className="text-sm text-muted-foreground mt-1">{m.habitat_entities_subjects_desc()}</p>
+          <h2 className="text-lg font-bold">{"👤 主体"}</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {"Agent 与用户相互独立。每个主体会自动获得一个默认私有世界。"}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2 console-page-toolbar">
           <Button
@@ -387,10 +371,10 @@ function SubjectsPage() {
             isDisabled={loading}
             onClick={() => void fetchList()}
           >
-            {m.habitat_common_refresh()}
+            {"刷新"}
           </Button>
           <Button type="button" size="sm" onClick={openCreate}>
-            {m.habitat_entities_new_subject()}
+            {"新建主体"}
           </Button>
         </div>
       </div>
@@ -406,18 +390,18 @@ function SubjectsPage() {
           <Spinner />
         </div>
       ) : items.length === 0 ? (
-        <StatusAlert variant="info">{m.habitat_entities_subjects_empty()}</StatusAlert>
+        <StatusAlert variant="info">{"暂无主体。请创建 agent 或 user 实体。"}</StatusAlert>
       ) : (
         <Card className="bg-muted py-0">
           <CardContent className="p-0 overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{m.habitat_entities_col_id()}</TableHead>
-                  <TableHead>{m.habitat_entities_col_type()}</TableHead>
-                  <TableHead>{m.habitat_entities_col_title()}</TableHead>
-                  <TableHead>{m.habitat_entities_col_default_private_world()}</TableHead>
-                  <TableHead>{m.habitat_common_time()}</TableHead>
+                  <TableHead>{"ID"}</TableHead>
+                  <TableHead>{"类型"}</TableHead>
+                  <TableHead>{"标题"}</TableHead>
+                  <TableHead>{"默认私有世界"}</TableHead>
+                  <TableHead>{"时间"}</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
@@ -431,7 +415,7 @@ function SubjectsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="max-w-[12rem] truncate">
-                      {row.title || m.habitat_common_no_title()}
+                      {row.title || "（无标题）"}
                     </TableCell>
                     <TableCell className="text-xs max-w-[12rem] truncate">
                       {worldTitleById(readDefaultPrivateWorldId(row))}
@@ -448,7 +432,7 @@ function SubjectsPage() {
                           className="h-7 text-xs"
                           onClick={() => openEdit(row)}
                         >
-                          {m.habitat_common_edit()}
+                          {"编辑"}
                         </Button>
                         <Button
                           type="button"
@@ -457,7 +441,7 @@ function SubjectsPage() {
                           className="h-7 text-xs"
                           onClick={() => setTokensSubject(row)}
                         >
-                          {m.habitat_entities_api_tokens()}
+                          {"API 令牌"}
                         </Button>
                       </div>
                     </TableCell>
@@ -466,7 +450,7 @@ function SubjectsPage() {
               </TableBody>
             </Table>
             <div className="px-4 py-2 text-xs text-muted-foreground border-t border/50">
-              {total} {m.habitat_entities_subjects_count_label()}
+              {total} {"主体"}
             </div>
           </CardContent>
         </Card>

@@ -52,7 +52,7 @@ describe("applyRuntimeConfigSection", () => {
 
   it("i18n apply 不依赖 runtime context", async () => {
     const config = Config.fromSnapshot({
-      i18n: { locale: "zh-cn", timezone: "Asia/Shanghai" },
+      i18n: { timezone: "Asia/Shanghai" },
     });
     await applyRuntimeConfigSection(config, "i18n");
   });

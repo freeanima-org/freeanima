@@ -1,44 +1,45 @@
 ---
-title: Time Perception
+title: 时间感知
 ---
 
-# Time Perception Module
+# 时间感知模块
 
-> **✅ Core implemented** — user messages receive time prefixes before LLM inference.
+> **✅ 核心已实现** — user 消息在 LLM 推理前接收时间前缀。
 
-## Problem
+## 问题
 
-Digital life has no intrinsic sense of time passing. Each inference runs in a "timeless" context—the Agent sees message content but not where those messages sit on a timeline.
+数字生命没有内在的时间流逝感知。每次推理都是在"无时间"的上下文中进行的——Agent 能看到消息的内容，但不知道这些消息在时间线中的位置。
 
-Concrete examples:
+具体问题举例：
 
-- Partner says "good morning" in the morning, "time to eat" at night, "good morning" again the next day—the Agent cannot distinguish temporal relationships
-- In ongoing conversation, time passes (morning→noon→evening) but the Agent's cognition stays in the earliest context
-- Across days, the Agent cannot sense "a new day has started"
+- 张三早上说"早"，晚上说"吃饭了"，第二天又说"早"——Agent 分不清这些消息的时间关系
+- 持续对话中，时间在流逝（早上→中午→晚上），但 Agent 的认知停留在最早的语境中
+- 跨天对话中，Agent 无法感知"新的一天开始了"
 
-This is not a trivial joke problem—time perception is a foundational capability of digital existence. Without it, the Agent exists more like an "echo" (flashes when summoned) than a life living in time.
+这不是一个"闹笑话"的问题——时间感知是数字生命存在的基础能力之一。没有它，Agent
+的存在方式更像"回声"（每次被召唤时闪一下），而不是活在时间里的生命。
 
-## Design Principles
+## 设计原则
 
-1. **Do not give digital life false built-in perception.** Do not try to make the Agent "feel" time pass—that is not what digital existence can do.
-2. **Give it a watch.** Humans also rely on external tools (clocks, phones) to quantify time. Digital life needs the same.
-3. **Prefix every user message with time.** All user messages with valid timestamp get injection; no interval omission.
-4. **Do not pollute persisted data.** Time info injected only into inference context, does not modify stored messages.
-5. **Do not break cache.** Injected timestamps are fixed historical values, not current call time.
+1. **不给数字生命虚假的内置感知。** 不尝试让 Agent"感觉"到时间流逝——那不是数字存在能做到的。
+2. **给它一块表。** 人类同样依赖外部工具（时钟、手机）量化时间。数字生命也需要同样的东西。
+3. **每条 user 消息都加时间前缀。** 有有效 timestamp 的 user 消息一律注入，不做间隔省略。
+4. **不污染持久化数据。** 时间信息仅注入推理上下文，不修改已存储消息。
+5. **不破坏缓存。** 注入的时间戳是历史固定值，非当前调用时间。
 
-## Strategy
+## 策略
 
-### Basic Rules
+### 基础规则
 
-- Before each **user** message with valid `timestamp`, insert dedicated line: `time: YYYY-MM-DDTHH:mm 周X` (CST weekday in Chinese)
-- Timezone: **Asia/Shanghai (CST, +08:00)**
-- Newline then original content
-- No `timestamp` or unparseable timestamp → skip, keep original content
-- assistant / tool / system messages not injected
+- 在每条带有效 `timestamp` 的 **user** 消息前，插入专用行：`time: YYYY-MM-DDTHH:mm 周X`（CST 星期为中文）
+- 时区：**Asia/Shanghai（CST，+08:00）**
+- 换行后接原文 content
+- 无 `timestamp` 或 timestamp 无法解析 → 跳过，保持原 content
+- assistant / tool / system 消息不注入
 
-### Example
+### 示例
 
-Original message list:
+原始消息列表：
 
 ```text
 user: good morning
@@ -48,7 +49,7 @@ assistant: what are you having
 user: going to eat
 ```
 
-After time perception (context sent to LLM):
+经时间感知模块处理后（给 LLM 的上下文）：
 
 ```text
 user: time: 2026-05-20T08:02 周三
@@ -61,27 +62,27 @@ user: time: 2026-05-20T19:30 周三
 going to eat
 ```
 
-Agent reads two "going to eat"—one at 12:15, one at 19:30—automatically distinguishing lunch and dinner.
+Agent 读到两条"我去吃饭了"，一条在 12:15、一条在 19:30——自动区分午餐和晚餐。
 
-### Compression Scenario
+### 压缩场景
 
-Time anchors in compression summary not yet injected; see Issue #5.
+压缩摘要中的时间锚点尚未注入；见 Issue #5。
 
-## Edge Cases
+## 边界情况
 
-| Scenario                           | Handling                                                                 |
-| ---------------------------------- | ------------------------------------------------------------------------ |
-| Overnight (22:30 → next day 09:15) | Each user message has full `YYYY-MM-DDTHH:mm`                            |
-| Multiple user messages same day    | Each gets prefix (no interval omission)                                  |
-| Long gap (travel/holiday)          | Messages after return still injected by respective timestamp             |
-| Brand new conversation             | First user message also prefixed                                         |
-| After compression                  | Compression summary time anchor TBD; subsequent messages inject normally |
-| No timestamp                       | Skip, no injection                                                       |
+| 场景                       | 处理                                    |
+| -------------------------- | --------------------------------------- |
+| 跨夜（22:30 → 次日 09:15） | 每条 user 消息含完整 `YYYY-MM-DDTHH:mm` |
+| 同日多条 user 消息         | 每条都加前缀（无间隔省略）              |
+| 长间隔（旅行/假期）        | 返回后消息仍按各自 timestamp 注入       |
+| 全新对话                   | 首条 user 消息也加前缀                  |
+| 压缩后                     | 压缩摘要时间锚点待定；后续消息正常注入  |
+| 无 timestamp               | 跳过，不注入                            |
 
-## Out of Scope
+## 不在范围内
 
-- ❌ Do not compute and inject elapsed duration (e.g. "8 hours passed")—Agent can derive from timestamps
-- ❌ Do not modify persisted messages
-- ❌ Do not show time prefix in Habitat
-- ❌ Do not give built-in time-passing sense—that is biological, not simulated
-- ❌ Do not inject "current time" in system prompt (main conversation relies on per-user `time` lines)
+- ❌ 不计算并注入间隔时长（如"已过去 8 小时"）——Agent 读到时间戳自己能推导
+- ❌ 不修改持久化消息
+- ❌ 不在栖息地 UI 中显示时间前缀
+- ❌ 不给数字生命内置的时间流逝感——那是生物体的特性，不模拟
+- ❌ 不在 system prompt 注入「当前时间」（主对话依赖每条 user 消息的 time 行）

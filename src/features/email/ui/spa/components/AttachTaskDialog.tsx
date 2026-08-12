@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Button, Dialog, DialogFooter, DialogHeader, DialogTitle, Label } from "@freeanima/ui-kit";
 import { DatePickerInput } from "@freeanima/ui-kit/form/DatePickerInput.tsx";
 import { TimePickerInput } from "@freeanima/ui-kit/form/TimePickerInput.tsx";
-import { m } from "@paraglide/messages";
 
 type AttachTaskDialogProps = {
   open: boolean;
@@ -55,37 +54,37 @@ export function AttachTaskDialog({ open, subject, onClose, onSubmit }: AttachTas
   return (
     <Dialog isOpen={open} onOpenChange={(v) => !v && onClose()} className="max-w-md">
       <DialogHeader>
-        <DialogTitle>{m.email_attach_task_title()}</DialogTitle>
+        <DialogTitle>{"从邮件添加任务"}</DialogTitle>
       </DialogHeader>
       <div className="flex flex-col gap-3 px-1 py-2">
         <p className="text-muted-foreground line-clamp-2 text-sm">{subject}</p>
         <div className="grid grid-cols-2 gap-2">
           <div className="flex flex-col gap-1.5">
-            <Label>{m.email_attach_task_due()}</Label>
+            <Label>{"截止日期"}</Label>
             <DatePickerInput value={dueDate} onChange={setDueDate} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>{m.email_attach_task_due_time()}</Label>
+            <Label>{"截止时间"}</Label>
             <TimePickerInput value={dueTime} onChange={setDueTime} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="flex flex-col gap-1.5">
-            <Label>{m.email_attach_task_remind()}</Label>
+            <Label>{"提醒日期"}</Label>
             <DatePickerInput value={remindDate} onChange={setRemindDate} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>{m.email_attach_task_remind_time()}</Label>
+            <Label>{"提醒时间"}</Label>
             <TimePickerInput value={remindTime} onChange={setRemindTime} />
           </div>
         </div>
       </div>
       <DialogFooter className="gap-2">
         <Button type="button" variant="ghost" onPress={onClose} isDisabled={saving}>
-          {m.email_cancel()}
+          {"取消"}
         </Button>
         <Button type="button" onPress={() => void handleSave()} isDisabled={saving}>
-          {m.email_attach_task_confirm()}
+          {"添加任务"}
         </Button>
       </DialogFooter>
     </Dialog>

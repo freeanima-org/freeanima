@@ -22,7 +22,7 @@ title: Repository topology
 src/
 ├── host/                 # Habitat 进程栈
 │   ├── kernel/           # 日志、事件总线
-│   ├── core/             # 配置、PG、Redis 原语（cache/kv/lock）、LLM 原语、mask、host i18n
+│   ├── core/             # 配置、PG、Redis 原语（cache/kv/lock）、LLM 原语、mask、时区
 │   ├── engine/           # 原 runtime/：conversation、turn、loop、pipeline
 │   ├── capabilities/     # acp, self, memory, tools(+slash), outpost, connectors, mcp-*, llm-openai
 │   └── platform/         # 组合根；service/（原 platform/runtime）
@@ -40,7 +40,7 @@ src/
 
 MCP 形态入口实现在 `host/capabilities/mcp-server`（**不在** `portal/`）。
 
-**Habitat 管理台** = 普通 `features/habitat`（与 chat/task 同形），不为它单开目录或 i18n catalog。
+**Habitat 管理台** = 普通 `features/habitat`（与 chat/task 同形），不为它单开目录。
 
 ### 依赖方向（CI：`bun scripts/check-layer-deps.ts`）
 
@@ -54,15 +54,9 @@ portal/app、portal/extension → client 层（同原 shell）
 host ↛ client / ui-kit（platform habitat client re-export 为过渡豁免）
 ```
 
-## i18n catalogs
+## 文案语言
 
-| Catalog  | Path             | Consumers                                                         |
-| -------- | ---------------- | ----------------------------------------------------------------- |
-| **site** | `messages/site/` | 文档站落地页（`landing_*`）                                       |
-| **ui**   | `messages/ui/`   | Portal + 全部 feature UI（含 habitat 管理台）                     |
-| **host** | `messages/host/` | Habitat 进程：提示词片段、错误文案（`@freeanima/host/core/i18n`） |
-
-根目录 `messages/en.json` / `zh-cn.json` 为 **ui catalog 镜像**（兼容既有工具）；inlang 主工程指向 `messages/ui/`。全局 `config.i18n.locale` / `config.i18n.timezone` 驱动 Host。
+产品 UI 与 `docs/**` 直接写**简体中文**（无 Paraglide / po4a）。术语见 [`i18n/glossary.md`](../../i18n/glossary.md)；规则见 [`i18n.md`](i18n.md)。`config.i18n.timezone` 仅保留时区。
 
 ## Module resolution
 

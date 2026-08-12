@@ -1,23 +1,23 @@
 ---
-title: Mobile app (Android)
+title: "移动端 APP（Android）"
 ---
 
-# Mobile app (Android)
+# 移动端 APP（Android）
 
-> Portal：**Tauri Android**（`src/portal/app/tauri/`）+ 包内 `dist-mobile` / `ui/web`。  
-> Shell rules: [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md).
+> 入口：**Tauri Android**（`src/portal/app/tauri/`）+ 包内 `dist-mobile` / `ui/web`。  
+> 壳规则：[`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)。
 
-## Scope
+## 范围
 
-| Item           | Description                                                |
-| -------------- | ---------------------------------------------------------- |
-| Platform       | **Android** sideload (APK); iOS later                      |
-| UI             | APK 内 WebView 加载 `prepare-tauri-ui` 拷入的 `ui/web`     |
-| Modules        | Chat + Habitat（本地 app-ui）                              |
-| Habitat config | APP **设置 → 连接**（Rust prefs / `app_config_dir`）       |
-| Habitat duties | Habitat RPC REST `/rpc/v1` + WebSocket；**不**托管壳内 SPA |
+| 项         | 说明                                                      |
+| ---------- | --------------------------------------------------------- |
+| 平台       | **Android** 侧载（APK）；iOS 稍后                         |
+| UI         | APK 内 WebView 加载 `prepare-tauri-ui` 拷入的 `ui/web`    |
+| 模块       | 聊天室 + 栖息地（本地 app-ui）                            |
+| 栖息地配置 | APP **设置 → 连接**（Rust prefs / `app_config_dir`）      |
+| 栖息地职责 | 栖息地 RPC REST `/rpc/v1` + WebSocket；**不**托管壳内 SPA |
 
-## Topology
+## 拓扑
 
 ```mermaid
 flowchart LR
@@ -34,37 +34,37 @@ flowchart LR
   HabitatUI -->|Habitat RPC Bearer| HabitatSvc
 ```
 
-Mobile REST **connects directly** to Habitat (no local REST proxy); requires a **Service API Token** and Habitat CORS for the WebView origin.
+移动端 REST **直连**栖息地（无本地 REST 代理）；需要 **Service API Token**，以及针对 WebView origin 的栖息地 CORS。
 
-## Habitat settings
+## 栖息地设置
 
-1. Home PC: `anima service start --host 0.0.0.0`, create a Service API Token (`anima token create --subject-id 1 --name bootstrap`; see [`remote-access.md`](../ops/remote-access.md)).
-2. First launch without Token → **设置 → 连接**:
-   - Habitat URL（`http://<PC-IP>:2658` or HTTPS；avoid `127.0.0.1` on phone）
-   - Service API Token (`fa_at_...`)
-3. **测试连接** → **保存并进入** → local `/web/chat`.
+1. 家用 PC：`anima service start --host 0.0.0.0`，创建 Service API Token（`anima token create --subject-id 1 --name bootstrap`；见 [`remote-access.md`](../ops/remote-access.md)）。
+2. 无 Token 首次启动 → **设置 → 连接**：
+   - 栖息地 URL（`http://<PC-IP>:2658` 或 HTTPS；手机上避免 `127.0.0.1`）
+   - Service API Token（`fa_at_...`）
+3. **测试连接** → **保存并进入** → 本地 `/web/chat`。
 
-## Troubleshooting
+## 故障排查
 
-| Symptom                                       | Common cause                                                                                                |
-| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Keyboard covers chat input                    | WebView not resizing; rely on `visualViewport` inset (visualViewport only)                                  |
-| Chat input unresponsive                       | No selected conversation; or Habitat RPC disconnected                                                       |
-| Habitat load failed / Failed to fetch         | Habitat not `--host 0.0.0.0`, wrong token, firewall                                                         |
-| 测试连接「网络错误」、浏览器同地址正常        | 壳内 HTTPS 需信任 mkcert 根 CA（`network_security_config` 已信任用户 CA）；或暂用 `http://…:2658`           |
-| 测试连接成功，实际「连接已断开」              | 测试含原生 HTTP + WebSocket；仍断连则查 token / WS 代理                                                     |
-| `Read-only file system` on save               | Fixed: prefs write to app private config dir                                                                |
-| ZeroTier / 虚拟网卡 IP                        | Phone ZeroTier online; Habitat `http.host: 0.0.0.0`; shell URL without trailing slash                       |
-| Install `NO_CERTIFICATES` / version downgrade | Pack signs APK; uninstall old canary build then reinstall                                                   |
-| 安装失败「签名冲突」                          | Uninstall `com.freeanima.portal`（或旧包 `org.freeanima.app`） then reinstall                               |
-| 关于页 / 系统设置版本像正式版、检测不到更新   | 须带 `FREEANIMA_BUILD_VERSION` 打包；identity overlay 写入 versionName + versionCode（迁 Tauri 后曾漏同步） |
-| 更新下载无百分比                              | APK 插件进度须主线程 `trigger`；无 Content-Length 时用 Release `assetSize` 估百分比                         |
+| 症状                                        | 常见原因                                                                                                    |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 键盘挡住聊天输入                            | WebView 未随键盘调整；依赖 `visualViewport` inset（仅 visualViewport）                                      |
+| 聊天输入无响应                              | 未选对话；或栖息地 RPC 已断连                                                                               |
+| 栖息地加载失败 / Failed to fetch            | 栖息地未 `--host 0.0.0.0`、错误 token、防火墙                                                               |
+| 测试连接「网络错误」、浏览器同地址正常      | 壳内 HTTPS 需信任 mkcert 根 CA（`network_security_config` 已信任用户 CA）；或暂用 `http://…:2658`           |
+| 测试连接成功，实际「连接已断开」            | 测试含原生 HTTP + WebSocket；仍断连则查 token / WS 代理                                                     |
+| 保存时 `Read-only file system`              | 已修：prefs 写入 app 私有 config 目录                                                                       |
+| ZeroTier / 虚拟网卡 IP                      | 手机 ZeroTier 在线；栖息地 `http.host: 0.0.0.0`；壳 URL 无尾斜杠                                            |
+| 安装 `NO_CERTIFICATES` / 版本降级           | 打包签名 APK；卸载旧 canary 后再装                                                                          |
+| 安装失败「签名冲突」                        | 卸载 `com.freeanima.portal`（或旧包 `org.freeanima.app`）再装                                               |
+| 关于页 / 系统设置版本像正式版、检测不到更新 | 须带 `FREEANIMA_BUILD_VERSION` 打包；identity overlay 写入 versionName + versionCode（迁 Tauri 后曾漏同步） |
+| 更新下载无百分比                            | APK 插件进度须主线程 `trigger`；无 Content-Length 时用 Release `assetSize` 估百分比                         |
 
-## Debugging
+## 调试
 
 `just dev tauri-android`：Tauri Android debug。Chrome `chrome://inspect` 连 WebView。
 
-## Build and sideload
+## 构建与侧载
 
 ```bash
 just install android
@@ -72,13 +72,13 @@ just install tauri-android -- --init   # 首次
 just pack tauri-android                      # → dist/ 双写：版本化名 + freeanima-mobile-android.apk（及 legacy tauri 别名；有设备则尝试 adb 安装）
 ```
 
-Release asset name on GitHub: `freeanima-mobile-android.apk`（updater 固定名）；同 Release 另附带 `freeanima-mobile-android-{ver}-{channel}.apk`。
+GitHub Release 资源名：`freeanima-mobile-android.apk`（updater 固定名）；同 Release 另附带 `freeanima-mobile-android-{ver}-{channel}.apk`。
 
-## vs desktop shell
+## 与桌面壳层对比
 
-|                | Desktop Tauri                        | Android Tauri                       |
-| -------------- | ------------------------------------ | ----------------------------------- |
-| Injection      | `bootstrap-tauri-desktop` → ShellApi | `bootstrap-tauri-mobile` → ShellApi |
-| Habitat config | 设置 → 连接 → `~/.anima` prefs       | 设置 → 连接 → app config dir        |
-| Companion      | overlay WebView                      | n/a（番茄钟小组件 MVP）             |
-| REST / RPC     | Direct Habitat + Bearer / WS         | Same                                |
+|            | 桌面 Tauri                           | Android Tauri                       |
+| ---------- | ------------------------------------ | ----------------------------------- |
+| 注入       | `bootstrap-tauri-desktop` → ShellApi | `bootstrap-tauri-mobile` → ShellApi |
+| 栖息地配置 | 设置 → 连接 → `~/.anima` prefs       | 设置 → 连接 → app config dir        |
+| 伴侣       | overlay WebView                      | n/a（番茄钟小组件 MVP）             |
+| REST / RPC | 直连栖息地 + Bearer / WS             | 相同                                |

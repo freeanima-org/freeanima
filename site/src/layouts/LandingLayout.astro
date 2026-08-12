@@ -1,6 +1,5 @@
 ---
 import SiteHeader from "../components/SiteHeader.astro";
-import type { SiteLocale } from "../lib/site.ts";
 import { getSiteMeta } from "../lib/site.ts";
 // oxlint-disable-next-line import/no-unassigned-import -- Astro side-effect stylesheet
 import "../styles/global.css";
@@ -8,20 +7,17 @@ import "../styles/global.css";
 import "../styles/landing.css";
 
 interface Props {
-  locale?: SiteLocale;
   title?: string;
   description?: string;
 }
 
-const locale = Astro.props.locale ?? "en";
 const fallback = getSiteMeta();
 const title = Astro.props.title ?? fallback.siteTitle;
 const description = Astro.props.description ?? fallback.siteDescription;
-const htmlLang = locale === "zh-cn" ? "zh-CN" : "en";
 ---
 
 <!doctype html>
-<html lang={htmlLang}>
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -30,7 +26,7 @@ const htmlLang = locale === "zh-cn" ? "zh-CN" : "en";
     <link rel="icon" type="image/png" href="/favicon.png" />
   </head>
   <body>
-    <SiteHeader locale={locale} />
+    <SiteHeader />
     <main class="landing">
       <slot />
     </main>

@@ -9,20 +9,6 @@ import { collectCoverageShards } from "./coverage-collect.ts";
 const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const label = "ci:tests";
 const standaloneBin = join(repoRoot, "dist/anima-executable/anima");
-const paraglideMessagesJs = join(repoRoot, "messages/paraglide/messages.js");
-
-function ensureParaglideCompiled(): void {
-  if (existsSync(paraglideMessagesJs)) return;
-  console.log(`[${label}] compiling paraglide messages…`);
-  const result = spawnSync("bun", ["scripts/paraglide-compile.ts"], {
-    cwd: repoRoot,
-    stdio: "inherit",
-    env: process.env,
-  });
-  if (result.status !== 0) {
-    throw new Error("paraglide-compile failed before unit tests");
-  }
-}
 
 function ensureStandaloneBuilt(): void {
   if (existsSync(standaloneBin)) return;
@@ -50,7 +36,6 @@ let exitCode = 0;
 let teardown: () => Promise<void> = async () => {};
 
 try {
-  ensureParaglideCompiled();
   ensureStandaloneBuilt();
 } catch (err) {
   const msg = err instanceof Error ? err.message : String(err);

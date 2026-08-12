@@ -13,7 +13,6 @@ import {
   subscribeAppRailExpanded,
   writeAppRailExpanded,
 } from "../lib/app-rail-prefs.ts";
-import { m as shellMessages } from "@paraglide/messages";
 import { AppNavUnreadBadge } from "./AppNavUnreadBadge.tsx";
 
 function useAppRailExpanded(): [boolean, () => void] {
@@ -66,7 +65,7 @@ export function AppModuleRail() {
     >
       <div className="app-rail-brand">
         <BrandLogo size={22} />
-        <span className="app-rail-brand-label">{shellMessages.habitat_brand()}</span>
+        <span className="app-rail-brand-label">{"逸灵风"}</span>
       </div>
 
       <nav className="app-rail-nav">

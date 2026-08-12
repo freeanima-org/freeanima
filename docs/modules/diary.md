@@ -1,88 +1,88 @@
 ---
-title: Diary
+title: 日记
 ---
 
-# Diary
+# 日记
 
-Structured diary for users and Agents, based on the [Unified Entity Model](../product/entity-model.md) `diary_entry` **container** plus child `content_block` (text) bricks.
+面向用户与 Agent 的结构化日记，基于[统一实体模型](../product/entity-model.md)的 `diary_entry` **容器**，外加子级 `content_block`（文本）砖块。
 
-## vs memory system
+## 与记忆体系对比
 
-| Capability | Diary                                              | Memory bricks (limbic / narrative / dream)                               |
-| ---------- | -------------------------------------------------- | ------------------------------------------------------------------------ |
-| Source     | User / Agent **writes actively**                   | Sleep pipeline / memory tools                                            |
-| Storage    | `entities` + `diary_entry` + child `content_block` | Same diary containers + semantic tags (`limbic` / `narrative` / `dream`) |
-| Editing    | Plain text blocks updateable                       | Semantic bricks append-only / soft-deprecate                             |
-| Namespace  | subject **default private world**                  | Agent private world for sleep-written bricks                             |
+| 能力     | 日记                                              | 记忆砖块（感性 / 叙事 / 梦境）                              |
+| -------- | ------------------------------------------------- | ----------------------------------------------------------- |
+| 来源     | 用户 / Agent **主动书写**                         | 睡眠管线 / 记忆工具                                         |
+| 存储     | `entities` + `diary_entry` + 子级 `content_block` | 同一日记容器 + 语义标签（`limbic` / `narrative` / `dream`） |
+| 编辑     | 纯文本块可更新                                    | 语义砖块只追加 / 软废弃                                     |
+| 命名空间 | subject **默认私有 World**                        | 睡眠写入砖块在 Agent 私有 World                             |
 
-Diary UI labels semantic bricks（梦境 / 情绪 / 自传）as read-only sections in the day entry.
+日记 UI 把语义砖块（梦境 / 情绪 / 自传）标为日条目中的只读分区。
 
-## User / Agent isolation
+## 用户 / Agent 隔离
 
-- User and Agent diaries live in the **default private world** of subjects resolved from boot-time `ResolvedWorldContext` / `habitat_runtime_config.worlds` (`user_subject_id` / `agent_subject_id`).
-- Shell header **User / Agent** toggle selects which subject's diary to view (see [`entity-model.md`](../product/entity-model.md) global Subject scope).
-- LLM tools (ToolSet `diary`) default to the **caller subject's private world** (conversation LLM → agent world); optional **`world_id`** overrides (e.g. `user_world_id` from system prompt).
+- 用户与 Agent 日记分别落在启动时 `ResolvedWorldContext` / `habitat_runtime_config.worlds`（`user_subject_id` / `agent_subject_id`）解析出的 subject **默认私有 World**。
+- 壳顶栏 **User / Agent** 切换选择查看哪个 subject 的日记（见 [`entity-model.md`](../product/entity-model.md) 全局 Subject 作用域）。
+- LLM 工具（ToolSet `diary`）默认用**调用方 subject 的私有 World**（对话 LLM → agent world）；可选 **`world_id`** 覆盖（如系统提示中的 `user_world_id`）。
 
-## Data shape
+## 数据形态
 
-**Container** (`diary_entry`):
+**容器**（`diary_entry`）：
 
-- `body.entry_at` — ISO 8601, when the diary entry occurred (**unique per day** per subject private world)
-- `tag_ids` — optional tags（顶层 `entities.tag_ids`，指向同 World 的 `tag` entity）
-- `title` / `summary` — entity columns
-- container **`content` is not used for body text** (kept empty after migration)
+- `body.entry_at` — ISO 8601，日记发生时间（每个 subject 私有 World **每日唯一**）
+- `tag_ids` — 可选标签（顶层 `entities.tag_ids`，指向同 World 的 `tag` entity）
+- `title` / `summary` — entity 列
+- 容器 **`content` 不用于正文**（迁移后保持为空）
 
-**Blocks** (`content_block`, `block_type: text`):
+**块**（`content_block`，`block_type: text`）：
 
-- `body.parent_id` → diary entry id
-- `body.sort_order` — view order (no semantic precedence)
-- text lives in the block's `content` column
-- optional `title` (entity column) — user-editable block heading; empty means no heading weight in UI
-- optional `tag_ids` (entity column) — unified entity tags（与日记容器同一模型）
-- semantic component tags on the block (`dream` / `limbic` / `narrative`) render as read-only labels（梦境 / 情绪 / 自传）beside the title; they are **not** the block title
+- `body.parent_id` → 日记条目 id
+- `body.sort_order` — 视图顺序（无语义优先级）
+- 文本在块的 `content` 列
+- 可选 `title`（entity 列）— 用户可编辑的块标题；空表示 UI 无标题权重
+- 可选 `tag_ids`（entity 列）— 统一实体标签（与日记容器同一模型）
+- 块上的语义组件标签（`dream` / `limbic` / `narrative`）在标题旁渲染为只读标签（梦境 / 情绪 / 自传）；它们**不是**块标题
 
-**日记块模板** (`diary_block_template` entity, subject private world):
+**日记块模板**（`diary_block_template` entity，subject 私有 World）：
 
 - `entities.title` = **模板名称**（列表/管理显示）
-- `entities.content` / `entities.tag_ids` stay empty — do **not** store insert payload there
-- `body.preset` = `{ title, content, components, tag_ids }` applied when inserting a new text block
-- SAP: `diary.templateList` / `templateCreate` / `templatePatch` / `templateDelete`
-- Empty world lazy-seeds「今日回顾」「运动」
+- `entities.content` / `entities.tag_ids` 保持为空 —— **不要**把插入载荷存那里
+- `body.preset` = `{ title, content, components, tag_ids }`，插入新文本块时应用
+- SAP：`diary.templateList` / `templateCreate` / `templatePatch` / `templateDelete`
+- 空 World 惰性播种「今日回顾」「运动」
 
-UI also persists per-block expand/collapse in localStorage (default expanded).
+UI 还在 localStorage 持久化每块展开/折叠（默认展开）。
 
-One-shot migration: Habitat `runMigrations` moves legacy diary `content` into the first text block and clears the container column.
+一次性迁移：栖息地 `runMigrations` 把遗留日记 `content` 移入第一个文本块并清空容器列。
 
-## Agent tools (ToolSet `diary`)
+## Agent 工具（ToolSet `diary`）
 
-Load via `toolset_load` with `diary`. Tools locate entries by **`date` (YYYY-MM-DD)**；**default today** (CST noon `…T12:00:00+08:00`)；**no `diary_create`** — use `diary_append` (creates empty shell for the day if missing, then adds a **new text block**). All tools accept optional **`world_id`**.
+经 `toolset_load` 加载 `diary`。工具按 **`date`（YYYY-MM-DD）** 定位条目；**默认今日**（CST 正午 `…T12:00:00+08:00`）；**无 `diary_create`** —— 用 `diary_append`（若缺则创建当日空壳，再加**新文本块**）。所有工具接受可选 **`world_id`**。
 
-| Tool           | Description                                                                                                       |
-| -------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `diary_append` | New text block for date; create shell if missing; storage `tag_ids`（工具可选 `tags` 标题）only on shell creation |
-| `diary_update` | Update entry **metadata** (title/summary/`tag_ids`；工具可选 `tags` 标题) by date — not body text                 |
-| `diary_get`    | Read entry + `blocks` for date; error if not found                                                                |
-| `diary_delete` | Delete entry for date (cascades child blocks); returns `{ ok, action, date }`                                     |
-| `diary_list`   | List by `entry_at DESC` (default `limit=20`, `offset`); optional date / `tag_ids`（工具可选 `tags` 标题过滤）     |
-| `diary_search` | Hybrid search over **text blocks**, returns matching diary entries                                                |
+| 工具           | 说明                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------ |
+| `diary_append` | 按日新建文本块；缺则建壳；存储 `tag_ids`（工具可选 `tags` 标题）仅在建壳时写入                         |
+| `diary_update` | 按日更新条目**元数据**（title/summary/`tag_ids`；工具可选 `tags` 标题）—— 不是正文                     |
+| `diary_get`    | 按日读取条目 + `blocks`；找不到则报错                                                                  |
+| `diary_delete` | 按日删除条目（级联子块）；返回 `{ ok, action, date }`                                                  |
+| `diary_list`   | 按 `entry_at DESC` 列表（默认 `limit=20`、`offset`）；可选日期 / `tag_ids`（工具可选 `tags` 标题过滤） |
+| `diary_search` | 对**文本块**混合搜索，返回匹配的日记条目                                                               |
 
-Fine-grained block CRUD / reorder: ToolSet `content-block`.
+细粒度块 CRUD / 重排：ToolSet `content-block`。
 
-**vs SAP/UI**: Shell `/diary` uses SAP `diary.*` / `diary.block*` located by entity **`id`**; Agent ToolSet uses **`date`** uniformly.
+**vs SAP/UI**：壳 `/diary` 用 SAP `diary.*` / `diary.block*`，按实体 **`id`** 定位；Agent ToolSet 统一用 **`date`**。
 
-## SAP methods
+## SAP 方法
 
-UI satellite `@freeanima/satellite-diary` (`/diary`) calls SAP:
+UI 卫星 `@freeanima/satellite-diary`（`/diary`）调用 SAP：
 
 - `diary.list` / `diary.create` / `diary.append` / `diary.patch` / `diary.delete` / `diary.get` / `diary.search`
-- `diary.blockCreate` / `diary.blockPatch` / `diary.blockDelete` / `diary.blockReorder` (text only; create/patch accept optional `title` / `tag_ids` / `components`)
+- `diary.blockCreate` / `diary.blockPatch` / `diary.blockDelete` / `diary.blockReorder`（仅文本；create/patch 接受可选 `title` / `tag_ids` / `components`）
 - `diary.templateList` / `diary.templateCreate` / `diary.templatePatch` / `diary.templateDelete`（日记块模板；`name` ≠ `preset`）
 
-All methods require `subject_kind: user | agent`.
+所有方法要求 `subject_kind: user | agent`。
 
-- `diary.list` defaults to **`entry_at DESC`**, `limit=20`, supports `offset` pagination
-- `diary.create` optional `content` → first text block (container `content` stays empty)
-- `diary.append` → new trailing text block
-- `diary.patch` → container metadata only
-- `diary.delete` → cascade-delete child blocks
-- `diary.template*` → CRUD for `diary_block_template`（模板名 `name` + 插入载荷 `preset`）
+- `diary.list` 默认 **`entry_at DESC`**，`limit=20`，支持 `offset` 分页
+- `diary.create` 可选 `content` → 第一个文本块（容器 `content` 保持为空）
+- `diary.append` → 新的末尾文本块
+- `diary.patch` → 仅容器元数据
+- `diary.delete` → 级联删除子块
+- `diary.template*` → `diary_block_template` 的 CRUD（模板名 `name` + 插入载荷 `preset`）

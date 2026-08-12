@@ -14,7 +14,6 @@ import type {
   LlmDebugSnapshotPayload,
   LlmDebugSnapshots,
 } from "@freeanima/features/chat/ui/spa/lib/types.ts";
-import { m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 
 type LlmDebugPanelProps = {
   open: boolean;
@@ -134,11 +133,11 @@ function PassiveRecallView({
     <div className="space-y-2 text-xs">
       <div className="space-y-1 rounded border bg-muted/20 px-2 py-2 font-mono text-[11px]">
         <div>
-          <span className="text-muted-foreground">{m.chat_llm_debug_passive_query()}: </span>
+          <span className="text-muted-foreground">{"查询"}: </span>
           {trace.query || "—"}
         </div>
         <div>
-          <span className="text-muted-foreground">{m.chat_llm_debug_passive_tsquery()}: </span>
+          <span className="text-muted-foreground">{"tsquery"}: </span>
           {trace.tsquery ?? "—"}
         </div>
         <div>
@@ -146,50 +145,44 @@ function PassiveRecallView({
           {trace.jieba_loaded == null ? "—" : String(trace.jieba_loaded)}
         </div>
         <div>
-          <span className="text-muted-foreground">{m.chat_llm_debug_passive_thresholds()}: </span>
+          <span className="text-muted-foreground">{"分数门槛"}: </span>
           min={trace.min_score} · relative={trace.min_relative_score} · effective=
           {trace.effective_min_score.toFixed(4)}
         </div>
         <div>
-          <span className="text-muted-foreground">{m.chat_llm_debug_passive_elapsed()}: </span>
+          <span className="text-muted-foreground">{"耗时"}: </span>
           {trace.elapsed_ms} ms
         </div>
         {trace.skipped_reason ? (
           <div>
-            <span className="text-muted-foreground">{m.chat_llm_debug_passive_skipped()}: </span>
+            <span className="text-muted-foreground">{"跳过原因"}: </span>
             {trace.skipped_reason}
           </div>
         ) : null}
         {trace.excluded_resident_ids.length > 0 ? (
           <div>
-            <span className="text-muted-foreground">
-              {m.chat_llm_debug_passive_excluded_resident()}:{" "}
-            </span>
+            <span className="text-muted-foreground">{"已排除常驻 id"}: </span>
             {trace.excluded_resident_ids.join(", ")}
           </div>
         ) : null}
       </div>
 
-      <NestedSection title={`${m.chat_llm_debug_passive_channel_fts()} (${trace.fts.length})`}>
+      <NestedSection title={`FTS 路 (${trace.fts.length})`}>
         <HitList hits={trace.fts} />
       </NestedSection>
-      <NestedSection title={`${m.chat_llm_debug_passive_channel_trgm()} (${trace.trgm.length})`}>
+      <NestedSection title={`Trigram 路 (${trace.trgm.length})`}>
         <HitList hits={trace.trgm} />
       </NestedSection>
-      <NestedSection title={`${m.chat_llm_debug_passive_merged()} (${trace.merged.length})`}>
+      <NestedSection title={`RRF 合并 (${trace.merged.length})`}>
         <HitList hits={trace.merged} />
       </NestedSection>
-      <NestedSection
-        title={`${m.chat_llm_debug_passive_after_score()} (${trace.after_score_filter.length})`}
-      >
+      <NestedSection title={`分数过滤后 (${trace.after_score_filter.length})`}>
         <HitList hits={trace.after_score_filter} />
       </NestedSection>
-      <NestedSection
-        title={`${m.chat_llm_debug_passive_after_resident()} (${trace.after_resident_filter.length})`}
-      >
+      <NestedSection title={`排除常驻后 (${trace.after_resident_filter.length})`}>
         <HitList hits={trace.after_resident_filter} />
       </NestedSection>
-      <NestedSection title={`${m.chat_llm_debug_passive_injected()} (${trace.injected.length})`}>
+      <NestedSection title={`最终注入 (${trace.injected.length})`}>
         <HitList hits={trace.injected} />
       </NestedSection>
     </div>
@@ -198,7 +191,13 @@ function PassiveRecallView({
 
 function SnapshotView({ snapshot }: { snapshot: LlmDebugSnapshotPayload | undefined }) {
   if (!snapshot) {
-    return <p className="text-sm text-muted-foreground">{m.chat_llm_debug_empty()}</p>;
+    return (
+      <p className="text-sm text-muted-foreground">
+        {
+          "No cached snapshot for this conversation. Send a message with LLM debug enabled, then open Debug again."
+        }
+      </p>
+    );
   }
 
   const passiveMissing =
@@ -208,20 +207,22 @@ function SnapshotView({ snapshot }: { snapshot: LlmDebugSnapshotPayload | undefi
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2 text-xs">
         <Badge variant="secondary">
-          {m.chat_llm_debug_model()}: {snapshot.model}
+          {"模型"}: {snapshot.model}
         </Badge>
         <Badge variant="secondary">
-          {m.chat_llm_debug_turn_index()}: {snapshot.turn_index}
+          {"回合"}: {snapshot.turn_index}
         </Badge>
         <Badge variant="secondary">
-          {m.chat_llm_debug_tool_count()}: {snapshot.tool_count}
+          {"工具"}: {snapshot.tool_count}
         </Badge>
       </div>
 
       {passiveMissing ? (
         <div className="rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">
-          <p className="font-medium text-foreground">{m.chat_llm_debug_passive_missing()}</p>
-          <p className="mt-1">{m.chat_llm_debug_passive_hint()}</p>
+          <p className="font-medium text-foreground">{"未检测到 passive_memory_context 注入。"}</p>
+          <p className="mt-1">
+            {"检查 memory.passive_recall.enabled、FTS 索引、exclude_resident 以及 cron 会话。"}
+          </p>
         </div>
       ) : null}
 
@@ -238,12 +239,12 @@ function SnapshotView({ snapshot }: { snapshot: LlmDebugSnapshotPayload | undefi
       ) : null}
 
       {snapshot.passive_recall ? (
-        <NestedSection title={m.chat_llm_debug_passive_recall()}>
+        <NestedSection title={"被动回忆检索"}>
           <PassiveRecallView trace={snapshot.passive_recall} />
         </NestedSection>
       ) : null}
 
-      <NestedSection title={m.chat_llm_debug_system_prompt()}>
+      <NestedSection title={"系统提示词"}>
         {snapshot.invoke.system_prompt ? (
           <pre className="max-h-56 overflow-auto whitespace-pre-wrap rounded border bg-muted/30 p-2 font-mono text-[11px]">
             {snapshot.invoke.system_prompt}
@@ -254,14 +255,14 @@ function SnapshotView({ snapshot }: { snapshot: LlmDebugSnapshotPayload | undefi
       </NestedSection>
 
       {snapshot.tools.length > 0 ? (
-        <NestedSection title={`${m.chat_llm_debug_tools()} (${snapshot.tools.length})`}>
+        <NestedSection title={`工具列表 (${snapshot.tools.length})`}>
           {snapshot.tools.map((tool) => (
             <ToolRow key={tool.function.name} tool={tool} />
           ))}
         </NestedSection>
       ) : null}
 
-      <NestedSection title={`${m.chat_llm_debug_turns()} (${snapshot.invoke.turns.length})`}>
+      <NestedSection title={`消息回合 (${snapshot.invoke.turns.length})`}>
         {snapshot.invoke.turns.map((turn, index) => (
           <TurnRow key={`${turn.role}-${turn.name ?? ""}-${index}`} turn={turn} index={index} />
         ))}
@@ -278,8 +279,12 @@ export function LlmDebugPanel({ open, onClose, snapshots, loading }: LlmDebugPan
     <aside className="flex h-full w-full max-w-md shrink-0 flex-col border-l bg-background sm:w-96">
       <div className="flex shrink-0 items-start justify-between gap-2 border-b px-4 py-3">
         <div className="min-w-0">
-          <h2 className="text-sm font-semibold">{m.chat_llm_debug_title()}</h2>
-          <p className="text-muted-foreground mt-0.5 text-xs">{m.chat_llm_debug_description()}</p>
+          <h2 className="text-sm font-semibold">{"LLM 调试"}</h2>
+          <p className="text-muted-foreground mt-0.5 text-xs">
+            {
+              "Enable in Settings → Chat, send a message, then open Debug. Snapshots are cached on the Habitat for 10 minutes."
+            }
+          </p>
         </div>
         <Button
           type="button"
@@ -288,17 +293,17 @@ export function LlmDebugPanel({ open, onClose, snapshots, loading }: LlmDebugPan
           className="h-7 shrink-0 px-2"
           onClick={onClose}
         >
-          {m.habitat_common_close()}
+          {"关闭"}
         </Button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
         {loading ? (
-          <p className="text-sm text-muted-foreground">{m.chat_llm_debug_loading()}</p>
+          <p className="text-sm text-muted-foreground">{"Loading debug snapshot…"}</p>
         ) : (
           <Tabs defaultSelectedKey="initial" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger id="initial">{m.chat_llm_debug_tab_initial()}</TabsTrigger>
-              <TabsTrigger id="final">{m.chat_llm_debug_tab_final()}</TabsTrigger>
+              <TabsTrigger id="initial">{"首次调用"}</TabsTrigger>
+              <TabsTrigger id="final">{"最近一次调用"}</TabsTrigger>
             </TabsList>
             <TabsContent id="initial" className="mt-3 min-w-0">
               <SnapshotView snapshot={snapshots?.initial} />

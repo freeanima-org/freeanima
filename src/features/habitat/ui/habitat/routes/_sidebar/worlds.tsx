@@ -29,7 +29,6 @@ import {
 import { FormField, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import {
   createWorldEntity,
   listSubjectEntities,
@@ -104,9 +103,8 @@ function readWorldBody(row: EntityRow): {
 }
 
 function subjectOptionLabel(row: EntityRow): string {
-  const typeLabel =
-    row.type === "user" ? m.habitat_entities_type_user() : m.habitat_entities_type_agent();
-  const title = row.title || m.habitat_common_no_title();
+  const typeLabel = row.type === "user" ? "用户" : "Agent";
+  const title = row.title || "（无标题）";
   return `#${row.id} — ${title} (${typeLabel})`;
 }
 
@@ -171,9 +169,7 @@ function WorldEditModal({
       className="max-w-xl max-h-[90vh] overflow-y-auto safe-area-pt safe-area-pb"
     >
       <DialogHeader>
-        <DialogTitle>
-          {mode === "create" ? m.habitat_entities_new_world() : m.habitat_entities_edit_world()}
-        </DialogTitle>
+        <DialogTitle>{mode === "create" ? "新建世界" : "编辑世界"}</DialogTitle>
       </DialogHeader>
       {error ? (
         <StatusAlert variant="error" className="mb-3">
@@ -181,7 +177,7 @@ function WorldEditModal({
         </StatusAlert>
       ) : null}
       <FormFieldset bordered={false} className="gap-3">
-        <FormField label={m.habitat_entities_col_title()} className="text-xs">
+        <FormField label={"标题"} className="text-xs">
           <Input
             type="text"
             className="w-full h-8"
@@ -189,7 +185,7 @@ function WorldEditModal({
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
           />
         </FormField>
-        <FormField label={m.habitat_entities_col_summary()} className="text-xs">
+        <FormField label={"摘要"} className="text-xs">
           <Input
             type="text"
             className="w-full h-8"
@@ -197,14 +193,14 @@ function WorldEditModal({
             onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
           />
         </FormField>
-        <FormField label={m.habitat_entities_col_content()} className="text-xs">
+        <FormField label={"内容"} className="text-xs">
           <Textarea
             className="w-full min-h-24"
             value={form.content}
             onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
           />
         </FormField>
-        <FormField label={m.habitat_entities_col_stable_key()} className="text-xs">
+        <FormField label={"稳定键"} className="text-xs">
           <Input
             type="text"
             className="w-full h-8 font-mono text-xs"
@@ -213,7 +209,7 @@ function WorldEditModal({
             onChange={(e) => setForm((f) => ({ ...f, stable_key: e.target.value }))}
           />
         </FormField>
-        <FormField label={m.habitat_entities_col_visibility()} className="text-xs">
+        <FormField label={"可见性"} className="text-xs">
           <div className="flex items-center gap-2">
             <Checkbox
               id="world-private"
@@ -234,11 +230,11 @@ function WorldEditModal({
                 })
               }
             />
-            <Label htmlFor="world-private">{m.habitat_entities_visibility_private()}</Label>
+            <Label htmlFor="world-private">{"私有"}</Label>
           </div>
         </FormField>
         {form.private ? (
-          <FormField label={m.habitat_entities_col_owner_subject()} className="text-xs">
+          <FormField label={"归属主体"} className="text-xs">
             <Select
               selectedKey={form.owner_subject_id || "__none__"}
               onSelectionChange={(key) => {
@@ -258,12 +254,10 @@ function WorldEditModal({
               }}
             >
               <SelectTrigger size="sm" className="w-full">
-                <SelectValue placeholder={m.habitat_entities_owner_subject_placeholder()} />
+                <SelectValue placeholder={"选择主体…"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem id="__none__">
-                  {m.habitat_entities_owner_subject_placeholder()}
-                </SelectItem>
+                <SelectItem id="__none__">{"选择主体…"}</SelectItem>
                 {subjects.map((s) => (
                   <SelectItem key={s.id} id={String(s.id)}>
                     {subjectOptionLabel(s)}
@@ -274,9 +268,11 @@ function WorldEditModal({
           </FormField>
         ) : null}
 
-        <FormField label={m.habitat_entities_grants_label()} className="text-xs">
+        <FormField label={"主体授权"} className="text-xs">
           <p className="text-muted-foreground mb-2 leading-snug">
-            {m.habitat_entities_grants_hint()}
+            {
+              "所有者始终拥有完全访问权。写权限包含读权限。公共世界对所有主体可读；此处授权主要用于开放写权限，或私有世界的读/写权限。"
+            }
           </p>
           <div className="flex flex-col gap-2">
             {form.grants.map((grant, index) => {
@@ -302,12 +298,10 @@ function WorldEditModal({
                     }}
                   >
                     <SelectTrigger size="sm" className="min-w-[12rem] flex-1">
-                      <SelectValue placeholder={m.habitat_entities_grant_subject_label()} />
+                      <SelectValue placeholder={"主题"} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem id="__none__">
-                        {m.habitat_entities_owner_subject_placeholder()}
-                      </SelectItem>
+                      <SelectItem id="__none__">{"选择主体…"}</SelectItem>
                       {options.map((s) => (
                         <SelectItem key={s.id} id={String(s.id)}>
                           {subjectOptionLabel(s)}
@@ -332,12 +326,8 @@ function WorldEditModal({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem id="read">
-                        {m.habitat_entities_grant_permission_read()}
-                      </SelectItem>
-                      <SelectItem id="write">
-                        {m.habitat_entities_grant_permission_write()}
-                      </SelectItem>
+                      <SelectItem id="read">{"读"}</SelectItem>
+                      <SelectItem id="write">{"写"}</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button
@@ -352,13 +342,13 @@ function WorldEditModal({
                       }))
                     }
                   >
-                    {m.habitat_entities_grant_remove()}
+                    {"移除"}
                   </Button>
                 </div>
               );
             })}
             {grantableSubjects.length === 0 ? (
-              <p className="text-muted-foreground">{m.habitat_entities_grants_empty_subjects()}</p>
+              <p className="text-muted-foreground">{"没有可授权的其他主体。"}</p>
             ) : (
               <Button
                 type="button"
@@ -371,7 +361,7 @@ function WorldEditModal({
                 }
                 onClick={addGrant}
               >
-                {m.habitat_entities_grant_add()}
+                {"添加授权"}
               </Button>
             )}
           </div>
@@ -379,7 +369,7 @@ function WorldEditModal({
       </FormFieldset>
       <DialogFooter>
         <Button type="button" variant="ghost" size="sm" isDisabled={saving} onClick={onClose}>
-          {m.habitat_common_cancel()}
+          {"取消"}
         </Button>
         <Button
           type="button"
@@ -392,7 +382,7 @@ function WorldEditModal({
           }
           onClick={() => onSave(form)}
         >
-          {saving ? <Spinner /> : m.habitat_common_save()}
+          {saving ? <Spinner /> : "保存"}
         </Button>
       </DialogFooter>
     </Dialog>
@@ -414,7 +404,7 @@ function WorldsPage() {
 
   const subjectTitleById = useCallback(
     (id: number | null): string => {
-      if (id == null) return m.habitat_common_empty();
+      if (id == null) return "（空）";
       const subject = subjects.find((s) => s.id === id);
       return subject?.title || `#${id}`;
     },
@@ -434,11 +424,7 @@ function WorldsPage() {
       setSubjects(subjectData.items);
     } catch (e) {
       logCaughtError("routes/_sidebar/worlds", e);
-      setError(
-        m.habitat_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setLoading(false);
     }
@@ -517,11 +503,7 @@ function WorldsPage() {
       await fetchList();
     } catch (e) {
       logCaughtError("routes/_sidebar/worlds/save", e);
-      setModalError(
-        m.habitat_common_operation_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setModalError(`操作失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setSaving(false);
     }
@@ -531,8 +513,10 @@ function WorldsPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-lg font-bold">{m.habitat_nav_worlds()}</h2>
-          <p className="text-sm text-muted-foreground mt-1">{m.habitat_entities_worlds_desc()}</p>
+          <h2 className="text-lg font-bold">{"🌍 世界"}</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {"逻辑命名空间（type=world）。可见性、归属主体与主体授权存放在 world_config body 中。"}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2 console-page-toolbar">
           <Button
@@ -542,10 +526,10 @@ function WorldsPage() {
             isDisabled={loading}
             onClick={() => void fetchList()}
           >
-            {m.habitat_common_refresh()}
+            {"刷新"}
           </Button>
           <Button type="button" size="sm" onClick={openCreate}>
-            {m.habitat_entities_new_world()}
+            {"新建世界"}
           </Button>
         </div>
       </div>
@@ -561,20 +545,20 @@ function WorldsPage() {
           <Spinner />
         </div>
       ) : items.length === 0 ? (
-        <StatusAlert variant="info">{m.habitat_entities_worlds_empty()}</StatusAlert>
+        <StatusAlert variant="info">{"暂无世界。创建后即可开始。"}</StatusAlert>
       ) : (
         <Card className="bg-muted py-0">
           <CardContent className="p-0 overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{m.habitat_entities_col_id()}</TableHead>
-                  <TableHead>{m.habitat_entities_col_title()}</TableHead>
-                  <TableHead>{m.habitat_entities_col_summary()}</TableHead>
-                  <TableHead>{m.habitat_entities_col_visibility()}</TableHead>
-                  <TableHead>{m.habitat_entities_col_owner_subject()}</TableHead>
-                  <TableHead>{m.habitat_entities_grants_label()}</TableHead>
-                  <TableHead>{m.habitat_common_time()}</TableHead>
+                  <TableHead>{"ID"}</TableHead>
+                  <TableHead>{"标题"}</TableHead>
+                  <TableHead>{"摘要"}</TableHead>
+                  <TableHead>{"可见性"}</TableHead>
+                  <TableHead>{"归属主体"}</TableHead>
+                  <TableHead>{"主体授权"}</TableHead>
+                  <TableHead>{"时间"}</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
@@ -585,30 +569,24 @@ function WorldsPage() {
                     <TableRow key={row.id}>
                       <TableCell className="font-mono text-xs">{row.id}</TableCell>
                       <TableCell className="max-w-[12rem] truncate">
-                        {row.title || m.habitat_common_no_title()}
+                        {row.title || "（无标题）"}
                       </TableCell>
                       <TableCell className="max-w-[16rem] truncate text-muted-foreground">
-                        {row.summary || m.habitat_common_empty()}
+                        {row.summary || "（空）"}
                       </TableCell>
                       <TableCell className="text-xs">
-                        {access.private
-                          ? access.default_private
-                            ? m.habitat_entities_world_default_private_badge()
-                            : m.habitat_entities_visibility_private()
-                          : m.habitat_entities_visibility_public()}
+                        {access.private ? (access.default_private ? "默认私有" : "私有") : "公开"}
                       </TableCell>
                       <TableCell className="text-xs max-w-[12rem] truncate">
-                        {access.private
-                          ? subjectTitleById(access.owner_subject_id)
-                          : m.habitat_common_empty()}
+                        {access.private ? subjectTitleById(access.owner_subject_id) : "（空）"}
                       </TableCell>
                       <TableCell className="text-xs max-w-[14rem] truncate text-muted-foreground">
                         {access.grants.length === 0
-                          ? m.habitat_common_empty()
+                          ? "（空）"
                           : access.grants
                               .map(
                                 (g) =>
-                                  `${subjectTitleById(g.subject_id)}:${g.permission === "write" ? m.habitat_entities_grant_permission_write() : m.habitat_entities_grant_permission_read()}`,
+                                  `${subjectTitleById(g.subject_id)}:${g.permission === "write" ? "写" : "读"}`,
                               )
                               .join(", ")}
                       </TableCell>
@@ -623,7 +601,7 @@ function WorldsPage() {
                           className="h-7 text-xs"
                           onClick={() => openEdit(row)}
                         >
-                          {m.habitat_common_edit()}
+                          {"编辑"}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -632,7 +610,7 @@ function WorldsPage() {
               </TableBody>
             </Table>
             <div className="px-4 py-2 text-xs text-muted-foreground border-t border/50">
-              {total} {m.habitat_entities_worlds_count_label()}
+              {total} {"世界"}
             </div>
           </CardContent>
         </Card>

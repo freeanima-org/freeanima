@@ -2,7 +2,6 @@ import { COMPACT_LAYOUT_MQ } from "@freeanima/ui-kit/layout";
 import { dismissShellToast, showShellToast, SHELL_TOAST_IDS } from "@freeanima/ui-kit/composite";
 import { useEffect, useRef, useState } from "react";
 
-import { m } from "@paraglide/messages";
 import {
   isBrowserWebShell,
   isStandalonePwa,
@@ -120,9 +119,9 @@ export function PwaNotices(): null {
       dismissShellToast(SHELL_TOAST_IDS.pwaUpdate);
       return;
     }
-    showShellToast(SHELL_TOAST_IDS.pwaUpdate, m.ui_pwa_update_available(), {
+    showShellToast(SHELL_TOAST_IDS.pwaUpdate, "有新版本可用。", {
       action: {
-        label: m.ui_pwa_update_reload(),
+        label: "重新加载",
         onClick: () => {
           void reloadRef.current?.();
           setNeedRefresh(false);
@@ -136,9 +135,9 @@ export function PwaNotices(): null {
       dismissShellToast(SHELL_TOAST_IDS.pwaOfflineReady);
       return;
     }
-    showShellToast(SHELL_TOAST_IDS.pwaOfflineReady, m.ui_pwa_shell_offline_ready(), {
+    showShellToast(SHELL_TOAST_IDS.pwaOfflineReady, "应用界面已可离线打开；服务数据仍需联网。", {
       duration: 8_000,
-      cancel: { label: m.ui_common_close(), onClick: () => setOfflineReady(false) },
+      cancel: { label: "关闭", onClick: () => setOfflineReady(false) },
     });
   }, [needRefresh, offlineReady, webShell]);
 
@@ -150,9 +149,9 @@ export function PwaNotices(): null {
       dismissShellToast(SHELL_TOAST_IDS.pwaInstall);
       return;
     }
-    showShellToast(SHELL_TOAST_IDS.pwaInstall, m.ui_pwa_install_prompt(), {
+    showShellToast(SHELL_TOAST_IDS.pwaInstall, "将 FreeAnima 添加到主屏幕，便于快速访问。", {
       action: {
-        label: m.ui_pwa_install_action(),
+        label: "安装",
         onClick: () => {
           void installEvent.prompt();
           void installEvent.userChoice.then((choice) => {
@@ -165,7 +164,7 @@ export function PwaNotices(): null {
         },
       },
       cancel: {
-        label: m.ui_common_close(),
+        label: "关闭",
         onClick: () => {
           markInstallDismissed();
           setInstallDismissed(true);

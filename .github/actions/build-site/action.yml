@@ -1,23 +1,8 @@
 name: Build site
-description: Astro site build via site prebuild (po4a + Paraglide); no PO/translation validation checks
+description: Astro site build（中文单站，无 po4a/Paraglide）
 runs:
   using: composite
   steps:
-    - name: Cache apt packages
-      uses: actions/cache@v4
-      with:
-        path: |
-          /var/cache/apt
-          /var/lib/apt/lists
-        key: apt-po4a-${{ runner.os }}-${{ hashFiles('.github/actions/build-site/action.yml') }}
-        restore-keys: |
-          apt-po4a-${{ runner.os }}-
-    - name: Install po4a
-      shell: bash
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y po4a gettext
-        po4a --version | grep -E 'po4a version 0\.(6[7-9]|[7-9][0-9])\.'
     - uses: ./.github/actions/setup-bun
     - name: Cache site dependencies
       uses: actions/cache@v4

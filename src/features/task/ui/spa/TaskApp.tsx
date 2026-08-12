@@ -36,7 +36,6 @@ import {
 } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { taskDeleteDetachesCarrier } from "@freeanima/host/core/db/schema/entity";
-import { m } from "@paraglide/messages";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
 import { TaskKanbanBoard, type KanbanGroupBy } from "./components/TaskKanbanBoard.tsx";
 import { ListSidebar } from "./components/ListSidebar.tsx";
@@ -1394,10 +1393,10 @@ export function TaskApp() {
                   size="sm"
                   className="h-7 shrink-0 px-2"
                   isDisabled={refreshing || loading}
-                  aria-label={m.habitat_common_refresh()}
+                  aria-label={"刷新"}
                   onClick={() => void handleManualRefresh()}
                 >
-                  {refreshing ? <Spinner className="size-3.5" /> : m.habitat_common_refresh()}
+                  {refreshing ? <Spinner className="size-3.5" /> : "刷新"}
                 </Button>
                 {loading || searching ? <Spinner className="size-4" /> : null}
               </>

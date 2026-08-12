@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Input } from "@freeanima/ui-kit";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 
 export type McpToolListItem = {
   original_name?: string;
@@ -34,9 +33,7 @@ export function McpServerToolsList({ tools }: Props) {
       });
 
   if (tools.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">{m.habitat_mcp_tools_count({ count: "0" })}</p>
-    );
+    return <p className="text-sm text-muted-foreground">{`工具 (0)`}</p>;
   }
 
   return (
@@ -45,19 +42,19 @@ export function McpServerToolsList({ tools }: Props) {
         <span className="text-muted-foreground group-open:rotate-90 transition-transform inline-block">
           ▸
         </span>
-        {m.habitat_mcp_tools_count({ count: String(tools.length) })}
+        {`工具 (${String(tools.length)})`}
       </summary>
       <div className="mt-2 space-y-2">
         {tools.length > 8 ? (
           <Input
             className="w-full h-8 text-xs"
             value={query}
-            placeholder={m.habitat_common_keyword_placeholder()}
+            placeholder={"关键词…"}
             onChange={(e) => setQuery(e.target.value)}
           />
         ) : null}
         {q && filtered.length === 0 ? (
-          <p className="text-xs text-muted-foreground">{m.habitat_common_no_results()}</p>
+          <p className="text-xs text-muted-foreground">{"无匹配记录。"}</p>
         ) : (
           <ul className="max-h-72 overflow-y-auto rounded-md border border-border divide-y divide-border bg-background/40">
             {filtered.map((t, i) => {

@@ -1,10 +1,11 @@
 ---
-title: Task
+title: 任务
 ---
 
 # 任务模块
 
-任务（`task_item`）与清单 / 智能清单 / 项目内任务共享同一实体组件；**重复任务**为滴答式 **A′**（live 系列头 + 完成历史），无独立模板实体。
+任务（`task_item`）与清单 / 智能清单 / 项目内任务共享同一实体组件；**重复任务**为滴答式 **A′**（live 系列头 +
+完成历史），无独立模板实体。
 
 ## 与日历的边界（#14668）
 
@@ -14,22 +15,33 @@ title: Task
 
 ## 数据模型
 
-### Live `task_item`
+### 当期 `task_item`
 
 - 永远代表「当前期」：待办列表默认只查 **根任务**（`roots_only` / `parent_id` 空）。
 - `body.parent_id`（可选）：一层子任务；子任务不可再挂子任务，也不可带 `recurrence`。
-- **硬约束**：无 `due_at` 则无 `recurrence`、无提醒（`remind_at` / `reminders`）、无 `start_at`。清日期时级联清除；写入路径拒绝无日期的重复/提醒。
-- `body.start_at`（可选）：时段起点；有值时须同时有 `due_at` 且 `start_at` ≤ `due_at`。日历聚合优先用 `start_at`（跨天任务按区间展示）。
-- `body.recurrence`（可选）：`freq` / `interval` / `anchor` / `weekdays?` / `until?` / `count?` / **`schedule_at`** / `skip?` / `workdays_only?` / `calendar?` / `lunar_month?` / `lunar_day?`。
-  - `calendar=lunar` 仅支持 `monthly` / `yearly`：月重复必填 `lunar_day`（按农历月推进同日）；年重复必填 `lunar_month` + `lunar_day`（闰月 `lunar_month` 为负，与 lunar-javascript 一致）。
-- **显示与提醒**用顶层 `due_at`；**相对 due 的多提醒**用 `reminders[]`（与兼容字段 `remind_at` = 最早一项同步；依赖 `due_at`）。详情 UI 可增删多条相对预设（截止时 / 提前 / 当天 09:00）。
+- **硬约束**：无 `due_at` 则无 `recurrence`、无提醒（`remind_at` / `reminders`）、无
+  `start_at`。清日期时级联清除；写入路径拒绝无日期的重复/提醒。
+- `body.start_at`（可选）：时段起点；有值时须同时有 `due_at` 且 `start_at` ≤ `due_at`。日历聚合优先用
+  `start_at`（跨天任务按区间展示）。
+- `body.recurrence`（可选）：`freq` / `interval` / `anchor` / `weekdays?` /
+  `until?` / `count?` / **`schedule_at`** / `skip?` / `workdays_only?` /
+  `calendar?` / `lunar_month?` / `lunar_day?`。
+  - `calendar=lunar` 仅支持 `monthly` / `yearly`：月重复必填
+    `lunar_day`（按农历月推进同日）；年重复必填 `lunar_month` + `lunar_day`（闰月 `lunar_month`
+    为负，与 lunar-javascript 一致）。
+- **显示与提醒**用顶层 `due_at`；**相对 due 的多提醒**用 `reminders[]`（与兼容字段 `remind_at` =
+  最早一项同步；依赖 `due_at`）。详情 UI 可增删多条相对预设（截止时 / 提前 / 当天 09:00）。
 - **规则时钟**用 `recurrence.schedule_at`。
-- 「仅此一次」改期：只改 `due_at`（及 remind / start 相对偏移），**不改** `schedule_at`。改规则轨：同时改 `due_at` 与 `schedule_at`（或显式 patch `recurrence`）。RPC：`only_this`（默认 false = 改规则轨；详情 UI 默认 true）。
+- 「仅此一次」改期：只改 `due_at`（及 remind / start 相对偏移），**不改** `schedule_at`。改规则轨：同时改
+  `due_at` 与 `schedule_at`（或显式 patch `recurrence`）。RPC：`only_this`（默认 false
+  = 改规则轨；详情 UI 默认 true）。
 
-### History `task_occurrence`
+### 历史 `task_occurrence`
 
-- 每期完成写一条不可变快照：`series_task_id` → live id；`completed_at` / `due_at` / 归属快照；`title`/`content` 复制当期。
-- **双向关联**：live → `task.listOccurrences(series_task_id)`；occurrence → `series_task_id` 打开 live。
+- 每期完成写一条不可变快照：`series_task_id` → live id；`completed_at` / `due_at` /
+  归属快照；`title`/`content` 复制当期。
+- **双向关联**：live → `task.listOccurrences(series_task_id)`；occurrence →
+  `series_task_id` 打开 live。
 - 删除 live：**级联软删**其 occurrence 与子任务。
 
 无 DDL（JSONB + `components[]`）。
@@ -61,14 +73,16 @@ completeForever → 写 occurrence（若有规则）+ 清 recurrence + completed
 1. `task_item`（一次性已完成）
 2. `task_occurrence`（重复打勾历史）
 
-实现：`listCompletedActivity`（domain）；列表 RPC 在 `status=completed` + `completed_on*` 时走并集。occurrence 行：`id = series_task_id`，带 `occurrence_id`。
+实现：`listCompletedActivity`（domain）；列表 RPC 在 `status=completed` +
+`completed_on*` 时走并集。occurrence 行：`id = series_task_id`，带 `occurrence_id`。
 
 ## 提醒
 
 见 [`notification-and-reminder`](../aspects/notification-and-reminder.md)：
 
 - **due** → Inbox Notification（`last_notified_at`）
-- **advance**（`reminders[]`）→ WS `task.advanceReminder` → 本机 Alert（条目级 `last_notified_at`）
+- **advance**（`reminders[]`）→ WS `task.advanceReminder` → 本机 Alert（条目级
+  `last_notified_at`）
 - Habitat：**sleep-until-next**（`task-reminder-scheduler`），不再每分钟 cron
 
 ## UI 视图
@@ -83,14 +97,17 @@ completeForever → 写 occurrence（若有规则）+ 清 recurrence + completed
 
 - 入口：栖息地 **数据维护**（`/data-maintenance`）→「从滴答清单导入」；RPC `task.importDidaCsv`。
 - **两步**：选 CSV → 本地预览大表（Tab：正常导入 / 警告 / 跳过）→ 确认后写入。
-- 源：滴答 Web CSV 备份（Version 7.x）；幂等 `client_op_id = dida:<taskId>` / `dida:list:…` / `dida:folder:…`。
+- 源：滴答 Web CSV 备份（Version 7.x）；幂等 `client_op_id = dida:<taskId>` /
+  `dida:list:…` / `dida:folder:…`。
 - Status `-1`（放弃）跳过；`0`→pending、`2`→completed。
 - **无 due** → 丢提醒与重复；已完成任务不保留 recurrence。
 - `Reminder`：ISO8601 duration → 相对 due 的绝对 `reminders[]`（可多条）。
-- `Repeat`：支持常见 RRULE 子集（`FREQ`/`INTERVAL`/`BYDAY`/`BYMONTHDAY`/`UNTIL`/`COUNT`/`LUNAR:`/`TT_SKIP`）；`ERULE`/`BYDATE` 自定义不映射并记警告。
+- `Repeat`：支持常见 RRULE
+  子集（`FREQ`/`INTERVAL`/`BYDAY`/`BYMONTHDAY`/`UNTIL`/`COUNT`/`LUNAR:`/`TT_SKIP`）；`ERULE`/`BYDATE`
+  自定义不映射并记警告。
 - 不做持续同步、不导入看板 Column。
 
-## v1 边界（non-goals）
+## v1 边界（非目标）
 
 - 不做独立 template 实体、预创建未来期、**完整通用 RRULE**（滴答 CSV 常见子集见上）
 - 不做跨时区多日历；日界与现有任务筛选一致（Asia/Shanghai）
@@ -101,19 +118,27 @@ completeForever → 写 occurrence（若有规则）+ 清 recurrence + completed
 
 ## 与日历事件互转（retype）
 
-- `task.convertToEvent`：同 id 将 pending 根任务（须有 `start_at`/`due_at`）换成 `calendar_event`；有损丢弃 recurrence / 归属 / 子任务（级联软删）与 occurrence。
+- `task.convertToEvent`：同 id 将 pending 根任务（须有 `start_at`/`due_at`）换成
+  `calendar_event`；有损丢弃 recurrence / 归属 / 子任务（级联软删）与 occurrence。
 - 反向见 [`calendar.md`](./calendar.md) `calendar.convertToTask`。
-- 形态约定见 [`entity-model.md`](../product/entity-model.md) Morph（retype / attach）。
+- 形态约定见 [`entity-model.md`](../product/entity-model.md) Morph（retype /
+  attach）。
 
 ## 任务 facet（非 primary）
 
-清单 / complete / 提醒 / `calendar.range` 认 **`components` 含 `task_item`**（例如邮件挂载）。`task.delete` 在 primary≠`task_item` 时只 **detach** 组件（前后端共用 `taskDeleteDetachesCarrier`；列表行带 `primary_component`，确认文案区分「移除任务」与软删实体）。
+清单 / complete / 提醒 / `calendar.range` 认 **`components` 含
+`task_item`**（例如邮件挂载）。`task.delete` 在 primary≠`task_item` 时只 **detach**
+组件（前后端共用 `taskDeleteDetachesCarrier`；列表行带
+`primary_component`，确认文案区分「移除任务」与软删实体）。
 
 ## 相关代码
 
-- Schema：`task-item.ts` / `task-occurrence.ts` / `task-recurrence.ts` / `schedulable.ts`
-- Domain：`item-store.ts` / `occurrence-store.ts` / `completed-activity.ts` / `dida-csv-import.ts` / `dida-rrule.ts` / `apply-dida-import.ts`
+- Schema：`task-item.ts` / `task-occurrence.ts` / `task-recurrence.ts` /
+  `schedulable.ts`
+- Domain：`item-store.ts` / `occurrence-store.ts` / `completed-activity.ts` /
+  `dida-csv-import.ts` / `dida-rrule.ts` / `apply-dida-import.ts`
 - 互转 mapper：`features/calendar/domain/convert-task-event.ts`
-- RPC：`src/shared/rpc-contract/frames/task.ts`（含 `task.importDidaCsv`、`task.convertToEvent`）
+- RPC：`src/shared/rpc-contract/frames/task.ts`（含
+  `task.importDidaCsv`、`task.convertToEvent`）
 - 提醒调度：`src/host/platform/boot/task-reminder-scheduler.ts`
 - 导入 UI：栖息地 `data-maintenance` + `DidaImportDialog`

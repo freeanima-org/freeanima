@@ -1,41 +1,41 @@
 ---
-title: UI / UX
+title: "UI / UX"
 ---
 
 # UI / UX
 
-Product design system for FreeAnima Portal UI: **visual foundations**, **component taxonomy**, and **interaction patterns**. All three adapt through the same orthogonal axes — **shell**, **layout**, and **interaction** — defined in [dimensions](dimensions.md).
+FreeAnima 入口 UI 的产品设计系统：**视觉基础**、**组件分类**与**交互模式**。三者皆经同一组正交轴适配 — **壳**、**布局**与**交互** — 见 [三维度](dimensions.md)。
 
-Covers the **application-form SPA** and browser-extension **popup / options** (same `@freeanima/ui-kit` stack). Content scripts stay out of this design system — see [portal.md](../modules/portal.md).
+覆盖**应用形态 SPA** 与浏览器扩展的 **popup / options**（同一 `@freeanima/ui-kit` 栈）。Content script 不在本设计系统内 — 见 [portal.md](../modules/portal.md)。
 
-This directory is the **UI/UX specification SSOT**. Agent hard bans, import rules, and API entry paths live in [`.agent/rules/`](../../.agent/rules/README.md) and link here. Token values live in code (`src/ui-kit/styles/globals.css`). When code and docs disagree, **code wins**.
+本目录是 **UI/UX 规范 SSOT**。Agent 硬禁令、导入规则与 API 入口路径在 [`.agent/rules/`](../../.agent/rules/README.md) 并链到此处。Token 值在代码中（`src/ui-kit/styles/globals.css`）。代码与文档冲突时，**以代码为准**。
 
-## Reading order
+## 阅读顺序
 
-1. [dimensions.md](dimensions.md) — shell / layout / interaction; Shell vs app frame
-2. [foundations.md](foundations.md) — color, type, space, radius, elevation, motion, focus, …
-3. [components.md](components.md) — primitive / structure / composite / domain; placement rules
-4. [patterns.md](patterns.md) — reusable interaction patterns (e.g. DataListRow)
+1. [dimensions.md](dimensions.md) — 壳 / 布局 / 交互；壳 vs 应用布局
+2. [foundations.md](foundations.md) — 色、字、间距、圆角、层级、动效、焦点…
+3. [components.md](components.md) — 基元 / 结构 / 复合 / 领域；放置规则
+4. [patterns.md](patterns.md) — 可复用交互模式（如 DataListRow）
 
-## Division of responsibility
+## 职责划分
 
-| Layer                           | Owns                                                          | Does not own                      |
-| ------------------------------- | ------------------------------------------------------------- | --------------------------------- |
-| `docs/ui/`                      | Product-facing norms, pattern contracts, dimension adaptation | IDE checklists, weekly tool lists |
-| `.agent/rules/ui-dimensions.md` | Hard bans + API quick reference                               | Long product essays               |
-| `.agent/rules/frontend-ui.md`   | Stack bans, import boundaries, composite import list          | Full visual essays                |
-| `src/ui-kit/`                   | Components + CSS tokens (implementation SSOT)                 | Product architecture              |
-| `docs/aspects/`                 | Cross-cutting data planes (sync, refresh, offline)            | Visual taxonomy                   |
+| 层                              | 拥有                               | 不拥有               |
+| ------------------------------- | ---------------------------------- | -------------------- |
+| `docs/ui/`                      | 面向产品的规范、模式契约、维度适配 | IDE 清单、每周工具表 |
+| `.agent/rules/ui-dimensions.md` | 硬禁令 + API 速查                  | 长篇产品论述         |
+| `.agent/rules/frontend-ui.md`   | 栈禁令、导入边界、复合导入列表     | 完整视觉论述         |
+| `src/ui-kit/`                   | 组件 + CSS token（实现 SSOT）      | 产品架构             |
+| `docs/aspects/`                 | 横切数据面（同步、刷新、离线）     | 视觉分类             |
 
-Feature archetypes and package touch lists → [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md).
+功能原型与包触达列表 → [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
 
-## Adoption
+## 采纳
 
-- **New UI** must follow this corpus (and the linked agent rules).
-- **Existing UI** may diverge; gaps are marked **pending alignment** in the topic docs. Fix them in follow-up tasks — do not weaken the spec to match forks.
+- **新 UI** 必须遵循本语料（及所链 Agent 规则）。
+- **既有 UI** 可有偏差；缺口在专题文档中标为 **待对齐**。在后续任务中修复 — 不要为迁就分叉而削弱规范。
 
-## Related
+## 相关文档
 
-- Product architecture (stack map) → [product/architecture.md](../product/architecture.md)
-- Page sync vs refresh → [aspects/page-refresh.md](../aspects/page-refresh.md)
-- Glossary (Shell, app frame, …) → [i18n/glossary.md](../../i18n/glossary.md)
+- 产品架构（栈地图）→ [product/architecture.md](../product/architecture.md)
+- 页面 sync vs refresh → [aspects/page-refresh.md](../aspects/page-refresh.md)
+- 术语表（壳、应用布局等）→ [i18n/glossary.md](../../i18n/glossary.md)

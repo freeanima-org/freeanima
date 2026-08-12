@@ -4,7 +4,6 @@ import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { getOutpostsStatus } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import {
   catchWithFallback,
   logCaughtError,
@@ -39,7 +38,7 @@ function OutpostsPage() {
 
   const [status, setStatus] = useState<OutpostsStatus | null>(initial);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(initial ? "" : m.habitat_common_load_failed_short());
+  const [error, setError] = useState(initial ? "" : "加载失败");
 
   const refresh = async () => {
     setError("");
@@ -57,9 +56,9 @@ function OutpostsPage() {
   if (!status) {
     return (
       <div>
-        <h2 className="text-lg font-bold">{m.habitat_nav_outposts()}</h2>
+        <h2 className="text-lg font-bold">{"Outposts"}</h2>
         <StatusAlert variant="error" className="mt-4">
-          {error || m.habitat_common_load_failed_short()}
+          {error || "加载失败"}
         </StatusAlert>
       </div>
     );
@@ -69,8 +68,10 @@ function OutpostsPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-lg font-bold">{m.habitat_nav_outposts()}</h2>
-          <p className="text-sm text-muted-foreground mt-1">{m.habitat_outposts_desc()}</p>
+          <h2 className="text-lg font-bold">{"Outposts"}</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {"Outposts connected to this Habitat that registered remote tools (read-only)."}
+          </p>
         </div>
         <Button
           type="button"
@@ -79,7 +80,7 @@ function OutpostsPage() {
           isDisabled={refreshing}
           onClick={() => void refresh()}
         >
-          {refreshing ? m.habitat_common_refreshing() : m.habitat_common_refresh()}
+          {refreshing ? "刷新中…" : "刷新"}
         </Button>
       </div>
 
@@ -92,8 +93,8 @@ function OutpostsPage() {
       <div className="flex flex-wrap gap-2 mb-4">
         {(
           [
-            [m.habitat_outposts_instances(), status.instance_count],
-            [m.habitat_outposts_registered_tools(), status.tool_count],
+            ["实例", status.instance_count],
+            ["注册工具", status.tool_count],
           ] as const
         ).map(([label, count]) => (
           <Badge key={label} variant="outline">
@@ -103,7 +104,11 @@ function OutpostsPage() {
       </div>
 
       {status.instances.length === 0 ? (
-        <StatusAlert variant="info">{m.habitat_outposts_empty_hint()}</StatusAlert>
+        <StatusAlert variant="info">
+          {
+            "No outpost instances connected. Start an outpost (Portal companion or standalone tool) to see it here."
+          }
+        </StatusAlert>
       ) : (
         <div className="space-y-4">
           {status.instances.map((inst) => (
@@ -112,7 +117,7 @@ function OutpostsPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold">{inst.app_id}</span>
                   <Badge variant="success" className="text-xs">
-                    {m.habitat_common_connected()}
+                    {"已连接"}
                   </Badge>
                   {inst.platform ? (
                     <Badge variant="outline" className="text-xs">
@@ -133,26 +138,24 @@ function OutpostsPage() {
 
                 <dl className="grid gap-2 text-sm sm:grid-cols-2">
                   <div>
-                    <dt className="text-muted-foreground">{m.habitat_outposts_app_id()}</dt>
+                    <dt className="text-muted-foreground">{"应用 ID"}</dt>
                     <dd className="font-mono text-xs break-all">{inst.app_id}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted-foreground">{m.habitat_outposts_instance_id()}</dt>
+                    <dt className="text-muted-foreground">{"实例 ID"}</dt>
                     <dd className="font-mono text-xs break-all">{inst.instance_id}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted-foreground">{m.habitat_outposts_connected_at()}</dt>
+                    <dt className="text-muted-foreground">{"已连接"}</dt>
                     <dd>{formatDisplayDateTime(inst.connected_at)}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted-foreground">{m.habitat_outposts_last_heartbeat()}</dt>
+                    <dt className="text-muted-foreground">{"最近心跳"}</dt>
                     <dd>{formatDisplayDateTime(inst.last_heartbeat_at)}</dd>
                   </div>
                 </dl>
 
-                <p className="text-sm font-medium">
-                  {m.habitat_outposts_tools_count({ count: String(inst.tool_count) })}
-                </p>
+                <p className="text-sm font-medium">{`${String(inst.tool_count)} 个工具`}</p>
                 {inst.tools.length > 0 ? (
                   <ul className="text-xs font-mono space-y-1">
                     {inst.tools.map((name) => (

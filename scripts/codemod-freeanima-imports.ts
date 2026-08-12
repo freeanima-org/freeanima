@@ -124,8 +124,6 @@ const EXACT_REWRITES: Record<string, string> = {
   "@freeanima/host/platform/alive": "@freeanima/host/platform/alive.ts",
   "@freeanima/host/kernel/random-uuid": "@freeanima/host/kernel/random-uuid.ts",
   "@freeanima/client/portal-sdk/react": "@freeanima/client/portal-sdk/react.tsx",
-  "@freeanima/features/habitat/build/paraglide-compile":
-    "@freeanima/features/habitat/build/paraglide-compile.ts",
   "@freeanima/features/habitat/build/build-utils":
     "@freeanima/features/habitat/build/build-utils.ts",
   "@freeanima/features/chat/ui/spa/styles.css": "@freeanima/features/chat/ui/spa/styles.css",

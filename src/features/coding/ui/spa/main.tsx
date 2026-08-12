@@ -4,7 +4,6 @@ import { isTauriMobileUserAgent, isTauriRuntime } from "@freeanima/client/portal
 import { Toaster } from "@freeanima/ui-kit/components/ui/sonner.tsx";
 
 import { CodingApp } from "./CodingApp.tsx";
-import { initAppLocale } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 
 async function bootstrapCodingShell(): Promise<void> {
   if (!isTauriRuntime()) {
@@ -25,7 +24,6 @@ void bootstrapCodingShell()
     console.error("[coding] portalShell bootstrap failed", err);
   })
   .finally(() => {
-    initAppLocale();
     const root = document.getElementById("root");
     if (!root) throw new Error("#root missing");
     createRoot(root).render(

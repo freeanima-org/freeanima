@@ -10,7 +10,6 @@ import {
 
 import { Spinner } from "../components/ui/spinner.tsx";
 import { cn } from "../lib/cn.ts";
-import { m } from "./i18n.ts";
 import {
   PULL_TO_REFRESH_EDGE_IGNORE_PX,
   PULL_TO_REFRESH_MAX_PULL_PX,
@@ -147,10 +146,10 @@ export function PullToRefresh({
   };
 
   const label = refreshing
-    ? m.habitat_common_refreshing()
+    ? "刷新中…"
     : shouldTriggerRefresh(pullDistance, thresholdPx)
-      ? m.habitat_common_refresh()
-      : m.habitat_common_refresh();
+      ? "刷新"
+      : "刷新";
 
   return (
     <div className={cn("flex h-full min-h-0 flex-col", className)}>

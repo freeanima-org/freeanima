@@ -21,7 +21,6 @@ import { FormField } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import { showConfirm, StatusAlert } from "@freeanima/ui-kit/composite";
 import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import {
   createSubjectApiToken,
   listSubjectApiTokens,
@@ -32,13 +31,13 @@ import {
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 
 function subjectLabel(row: EntityRow): string {
-  const title = row.title || m.habitat_common_no_title();
+  const title = row.title || "（无标题）";
   return `#${row.id} — ${title}`;
 }
 
 function tokenStatusLabel(token: ServiceApiTokenPublic): string {
-  if (token.revoked_at) return m.habitat_entities_api_token_status_revoked();
-  return m.habitat_entities_api_token_status_active();
+  if (token.revoked_at) return "已吊销";
+  return "运行中";
 }
 
 function isActiveToken(token: ServiceApiTokenPublic): boolean {
@@ -77,11 +76,7 @@ export function SubjectApiTokensModal({
       setItems(data.items);
     } catch (e) {
       logCaughtError("routes/_sidebar/subject-api-tokens-modal", e);
-      setError(
-        m.habitat_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setLoading(false);
     }
@@ -111,11 +106,7 @@ export function SubjectApiTokensModal({
       await fetchTokens();
     } catch (e) {
       logCaughtError("routes/_sidebar/subject-api-tokens-modal/create", e);
-      setError(
-        m.habitat_common_operation_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`操作失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setCreating(false);
     }
@@ -124,8 +115,8 @@ export function SubjectApiTokensModal({
   const onRevoke = async (token: ServiceApiTokenPublic) => {
     if (token.revoked_at) return;
     const confirmed = await showConfirm({
-      description: m.habitat_entities_api_token_revoke_confirm({ name: token.name }),
-      confirmLabel: m.habitat_entities_api_token_revoke(),
+      description: `吊销令牌「${token.name}」？`,
+      confirmLabel: "吊销",
       variant: "error",
     });
     if (!confirmed) return;
@@ -136,11 +127,7 @@ export function SubjectApiTokensModal({
       await fetchTokens();
     } catch (e) {
       logCaughtError("routes/_sidebar/subject-api-tokens-modal/revoke", e);
-      setError(
-        m.habitat_common_operation_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`操作失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setRevokingId(null);
     }
@@ -149,11 +136,7 @@ export function SubjectApiTokensModal({
   const onCopyPlaintext = async () => {
     if (!plaintext) return;
     const ok = await copyText(plaintext);
-    setCopyHint(
-      ok
-        ? m.habitat_common_copied({ label: m.habitat_entities_api_tokens() })
-        : m.habitat_common_copy_failed({ label: m.habitat_entities_api_tokens() }),
-    );
+    setCopyHint(ok ? "已复制API 令牌" : "复制API 令牌失败");
     if (!ok)
       logCaughtError("routes/_sidebar/subject-api-tokens-modal/copy", new Error("copyText failed"));
   };
@@ -167,12 +150,10 @@ export function SubjectApiTokensModal({
       className="max-w-4xl w-[calc(100%-2rem)] sm:max-w-4xl h-[85vh] flex flex-col overflow-hidden safe-area-pt safe-area-pb"
     >
       <DialogHeader className="shrink-0">
-        <DialogTitle>
-          {m.habitat_entities_api_tokens_title({ subject: subjectLabel(subject) })}
-        </DialogTitle>
+        <DialogTitle>{`服务 API 令牌 — ${subjectLabel(subject)}`}</DialogTitle>
       </DialogHeader>
       <p className="text-sm text-muted-foreground shrink-0">
-        {m.habitat_entities_api_tokens_desc()}
+        {"服务令牌绑定到此主体。密钥仅在创建时显示一次。"}
       </p>
 
       {error ? (
@@ -184,12 +165,14 @@ export function SubjectApiTokensModal({
       {plaintext ? (
         <StatusAlert variant="warning" className="mb-4 shrink-0">
           <div>
-            <p className="font-semibold">{m.habitat_entities_api_token_plaintext_title()}</p>
-            <p className="mt-1">{m.habitat_entities_api_token_plaintext_hint()}</p>
+            <p className="font-semibold">{"立即复制此令牌"}</p>
+            <p className="mt-1">
+              {"之后不会再显示。请粘贴到客户端连接设置（Service API Token）。"}
+            </p>
             <code className="block mt-2 p-2 rounded bg-muted text-xs break-all">{plaintext}</code>
             <div className="flex flex-wrap gap-2 mt-3">
               <Button type="button" size="sm" onClick={() => void onCopyPlaintext()}>
-                {m.habitat_common_copy()}
+                {"复制"}
               </Button>
               <Button
                 type="button"
@@ -200,7 +183,7 @@ export function SubjectApiTokensModal({
                   setCopyHint("");
                 }}
               >
-                {m.habitat_common_close()}
+                {"关闭"}
               </Button>
             </div>
             {copyHint ? <p className="text-xs mt-2 opacity-80">{copyHint}</p> : null}
@@ -209,14 +192,11 @@ export function SubjectApiTokensModal({
       ) : null}
 
       <div className="flex flex-wrap gap-2 items-end mb-4 shrink-0">
-        <FormField
-          label={m.habitat_entities_api_token_new()}
-          className="text-xs flex-1 min-w-[12rem]"
-        >
+        <FormField label={"新令牌"} className="text-xs flex-1 min-w-[12rem]">
           <Input
             type="text"
             className="w-full h-8"
-            placeholder={m.habitat_entities_api_token_name_placeholder()}
+            placeholder={"例如 desktop、mcp"}
             value={name}
             disabled={creating}
             onChange={(e) => setName(e.target.value)}
@@ -228,13 +208,13 @@ export function SubjectApiTokensModal({
           isDisabled={creating || !name.trim()}
           onClick={() => void onCreate()}
         >
-          {creating ? <Spinner /> : m.habitat_entities_api_token_create()}
+          {creating ? <Spinner /> : "创建令牌"}
         </Button>
       </div>
 
       <div className="flex items-center justify-end gap-2 mb-2 shrink-0">
         <Label htmlFor="subject-api-tokens-show-all" className="text-xs text-muted-foreground">
-          {m.habitat_entities_api_tokens_show_all()}
+          {"停止全部"}
         </Label>
         <Switch id="subject-api-tokens-show-all" isSelected={showAll} onChange={setShowAll} />
       </div>
@@ -245,29 +225,17 @@ export function SubjectApiTokensModal({
             <Spinner />
           </div>
         ) : visibleItems.length === 0 ? (
-          <StatusAlert variant="info">
-            {showAll
-              ? m.habitat_entities_api_tokens_empty()
-              : m.habitat_entities_api_tokens_empty_active()}
-          </StatusAlert>
+          <StatusAlert variant="info">{showAll ? "尚无令牌。" : "尚无令牌。"}</StatusAlert>
         ) : (
           <Table className="table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[18%]">{m.habitat_entities_api_token_col_name()}</TableHead>
-                <TableHead className="w-[14%]">
-                  {m.habitat_entities_api_token_col_prefix()}
-                </TableHead>
-                <TableHead className="w-[12%]">
-                  {m.habitat_entities_api_token_col_scopes()}
-                </TableHead>
-                <TableHead className="w-[10%]">
-                  {m.habitat_entities_api_token_col_status()}
-                </TableHead>
-                <TableHead className="w-[18%]">
-                  {m.habitat_entities_api_token_col_last_used()}
-                </TableHead>
-                <TableHead className="w-[18%]">{m.habitat_common_time()}</TableHead>
+                <TableHead className="w-[18%]">{"名称"}</TableHead>
+                <TableHead className="w-[14%]">{"前缀"}</TableHead>
+                <TableHead className="w-[12%]">{"范围"}</TableHead>
+                <TableHead className="w-[10%]">{"状态"}</TableHead>
+                <TableHead className="w-[18%]">{"最近使用"}</TableHead>
+                <TableHead className="w-[18%]">{"时间"}</TableHead>
                 <TableHead className="w-[10%]" />
               </TableRow>
             </TableHeader>
@@ -279,7 +247,7 @@ export function SubjectApiTokensModal({
                     {token.prefix}
                   </TableCell>
                   <TableCell className="text-xs whitespace-normal break-words">
-                    {token.scopes.join(", ") || m.habitat_common_empty()}
+                    {token.scopes.join(", ") || "（空）"}
                   </TableCell>
                   <TableCell>
                     <Badge variant={token.revoked_at ? "ghost" : "success"} className="text-xs">
@@ -287,9 +255,7 @@ export function SubjectApiTokensModal({
                     </Badge>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
-                    {token.last_used_at
-                      ? formatDisplayDateTime(token.last_used_at)
-                      : m.habitat_common_empty()}
+                    {token.last_used_at ? formatDisplayDateTime(token.last_used_at) : "（空）"}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDisplayDateTime(token.created_at)}
@@ -303,11 +269,7 @@ export function SubjectApiTokensModal({
                       isDisabled={Boolean(token.revoked_at) || revokingId === token.id}
                       onClick={() => void onRevoke(token)}
                     >
-                      {revokingId === token.id ? (
-                        <Spinner />
-                      ) : (
-                        m.habitat_entities_api_token_revoke()
-                      )}
+                      {revokingId === token.id ? <Spinner /> : "吊销"}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -319,7 +281,7 @@ export function SubjectApiTokensModal({
 
       <DialogFooter className="shrink-0">
         <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-          {m.habitat_common_close()}
+          {"关闭"}
         </Button>
       </DialogFooter>
     </Dialog>

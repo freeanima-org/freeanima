@@ -24,7 +24,6 @@ import {
   useStickToBottomScroll,
   type TranscriptScrollApi,
 } from "../hooks/useStickToBottomScroll.ts";
-import { m } from "../lib/i18n.ts";
 import { markdownToPlainText } from "../lib/speech/plain-text.ts";
 import { createSpeechPlaceholders } from "../lib/speech/speech-placeholders.ts";
 import type { DisplayItem, DisplayMessageItem } from "../lib/types.ts";
@@ -216,16 +215,16 @@ export function ConversationTranscript({
               >
                 {item.content}
                 {item.sendStatus === "pending" ? (
-                  <p className="mt-1 text-xs opacity-70">{m.ui_outbox_pending()}</p>
+                  <p className="mt-1 text-xs opacity-70">{"待发送"}</p>
                 ) : null}
                 {item.sendStatus === "stale" ? (
                   <>
-                    <p className="mt-1 text-xs text-warning">{m.ui_outbox_stale()}</p>
-                    <p className="text-xs text-warning/80">{m.ui_outbox_stale_hint()}</p>
+                    <p className="mt-1 text-xs text-warning">{"已过期"}</p>
+                    <p className="text-xs text-warning/80">{"对话已在其他设备上继续"}</p>
                   </>
                 ) : null}
                 {item.sendStatus === "failed" ? (
-                  <p className="mt-1 text-xs text-warning">{m.ui_outbox_failed()}</p>
+                  <p className="mt-1 text-xs text-warning">{"发送失败"}</p>
                 ) : null}
               </ChatMessageBubble>
               {renderAfterUser?.({ item, index: i })}
@@ -332,9 +331,7 @@ export function ConversationTranscript({
           <div className="flex justify-start">
             <div className="chat-bubble chat-bubble-assistant text-muted-foreground flex items-center gap-2 text-sm">
               <Spinner className="size-3" />
-              {recovering && !streamIsVisible
-                ? m.habitat_message_waiting_result()
-                : m.habitat_chat_composing_reply()}
+              {recovering && !streamIsVisible ? "等待结果…" : "正在撰写回复…"}
             </div>
           </div>
         )

@@ -39,7 +39,6 @@ import {
   useDrawerNav,
   useThreeColumnLayoutMode,
 } from "@freeanima/ui-kit/layout";
-import { m } from "@paraglide/messages";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { registerProjectOfflineModule } from "./lib/offline-store.ts";
@@ -818,10 +817,10 @@ export function ProjectApp() {
                 size="sm"
                 className="h-7 shrink-0 px-2"
                 isDisabled={refreshing || loading}
-                aria-label={m.habitat_common_refresh()}
+                aria-label={"刷新"}
                 onClick={() => void handleManualRefresh()}
               >
-                {refreshing ? <Spinner className="size-3.5" /> : m.habitat_common_refresh()}
+                {refreshing ? <Spinner className="size-3.5" /> : "刷新"}
               </Button>
             </div>
           }

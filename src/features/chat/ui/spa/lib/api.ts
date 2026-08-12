@@ -4,7 +4,6 @@ import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-fir
 import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import { getChatRpcStreamClient, chatPlatform } from "./habitat-stream-client.ts";
-import { m } from "./i18n.ts";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { readCachedConversations } from "./offline-cache.ts";
 
@@ -269,11 +268,11 @@ export async function loadConfig() {
 
   const res = await fetch("/config.json");
   if (!res.ok) {
-    throw new Error(m.habitat_common_network_error());
+    throw new Error("网络错误");
   }
   const ct = res.headers.get("content-type") ?? "";
   if (!ct.includes("application/json")) {
-    throw new Error(m.habitat_common_network_error());
+    throw new Error("网络错误");
   }
   return res.json() as Promise<{
     app_id: string;
@@ -285,5 +284,5 @@ export async function loadConfig() {
 
 export function conversationErrorMessage(err: unknown): string {
   if (err instanceof Error && err.message.trim()) return err.message;
-  return m.habitat_common_network_error();
+  return "网络错误";
 }

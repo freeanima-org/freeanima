@@ -97,7 +97,7 @@ just misc memory-sample -- --habitat-url http://127.0.0.1:<habitat> --stage full
 | [`docs/product/architecture.md`](docs/product/architecture.md)                       | Architecture principles and direction                                              |
 | [`docs/cognition/environment-awareness.md`](docs/cognition/environment-awareness.md) | Environment + health baseline (session prompt + change notify)                     |
 | [`docs/product/anima-uri.md`](docs/product/anima-uri.md)                             | Anima URI（entity 定位 / overlay；id 入库、URI 在 UI）                             |
-| [`.agent/rules/repository-topology.md`](.agent/rules/repository-topology.md)         | Repo layout Phase 1 host/client；ui-kit∥shared；i18n site/ui/host                  |
+| [`.agent/rules/repository-topology.md`](.agent/rules/repository-topology.md)         | Repo layout Phase 1 host/client；ui-kit∥shared                                     |
 | [`docs/cognition/temporal-summary.md`](docs/cognition/temporal-summary.md)           | Objective time digests (day/month/year; peer rollup)                               |
 | [`docs/product/`](docs/product/)                                                     | Product framing (architecture, identity, entity model)                             |
 | [`docs/cognition/`](docs/cognition/)                                                 | Cognitive mechanisms (memory, sleep, self layer, etc.)                             |
@@ -165,7 +165,7 @@ When sources conflict: **implemented behavior** follows code (and topic docs tha
 | Portal 壳（Tauri）打包 / ShellApi / 双轨发版               | [`.agent/rules/tauri-shell.md`](.agent/rules/tauri-shell.md)                                                                                                                                       |
 | UI/UX design system / interaction patterns                 | [`docs/ui/`](docs/ui/overview.md) + [`.agent/rules/frontend-ui.md`](.agent/rules/frontend-ui.md) / [`ui-dimensions.md`](.agent/rules/ui-dimensions.md)                                             |
 | Compression algorithm                                      | [`.agent/rules/compression.md`](.agent/rules/compression.md)                                                                                                                                       |
-| UI / docs i18n (Paraglide, po4a, PO)                       | [`.agent/rules/i18n.md`](.agent/rules/i18n.md)                                                                                                                                                     |
+| UI / docs 语言（中文；无 i18n 运行时）                     | [`.agent/rules/i18n.md`](.agent/rules/i18n.md)                                                                                                                                                     |
 | Task done                                                  | close corresponding GitHub Issue; user-visible changes use Conventional Commits                                                                                                                    |
 
 Tool tables, module trees, API lists **are not maintained in docs** — use registration code and service router as source of truth.

@@ -7,7 +7,6 @@ import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
 import { ConfirmDialog, showAlert, StatusAlert } from "@freeanima/ui-kit/composite";
 import { useState } from "react";
 import { getStatus, restartService } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { translateApiPayload } from "@freeanima/features/habitat/ui/habitat/lib/api-errors.ts";
 import { dependencyStatusLabel } from "@freeanima/features/habitat/ui/habitat/lib/habitat-status.ts";
@@ -100,16 +99,9 @@ function DashboardPage() {
   const heapUsedKb = svc?.memory_detail?.heap_used_kb;
   const processMemoryLabel = processMemoryKb ? formatProcessMemoryKb(processMemoryKb) : "—";
   const heapMemoryHint =
-    heapUsedKb != null
-      ? m.habitat_dashboard_jsc_heap({ size: formatProcessMemoryKb(heapUsedKb) })
-      : null;
+    heapUsedKb != null ? `JSC 堆 ${formatProcessMemoryKb(heapUsedKb)}（非物理内存）` : null;
 
-  const mcpSummary = m.habitat_dashboard_mcp_summary({
-    servers: String(mcp.server_count),
-    connected: String(mcp.connected_count),
-    connecting: String(mcp.connecting_count),
-    tools: String(mcp.tool_count),
-  });
+  const mcpSummary = `${String(mcp.server_count)} 服务器 · ${String(mcp.connected_count)} 已连接 · ${String(mcp.connecting_count)} 连接中 · ${String(mcp.tool_count)} 工具`;
 
   const runRestart = async () => {
     setShowRestartConfirm(false);
@@ -122,9 +114,7 @@ function DashboardPage() {
     } catch (err) {
       logCaughtError("dashboard/restartService", err);
       await showAlert({
-        description: m.habitat_dashboard_restart_failed({
-          detail: err instanceof Error ? err.message : String(err),
-        }),
+        description: `重启失败: ${err instanceof Error ? err.message : String(err)}`,
       });
       setRestarting(false);
     }
@@ -133,20 +123,18 @@ function DashboardPage() {
   if (!svc) {
     return (
       <div>
-        <h2 className="text-lg font-bold mb-2">{m.habitat_dashboard_title()}</h2>
-        <StatusAlert variant="error">{m.habitat_dashboard_load_failed()}</StatusAlert>
+        <h2 className="text-lg font-bold mb-2">{"仪表盘"}</h2>
+        <StatusAlert variant="error">{"服务状态加载失败"}</StatusAlert>
       </div>
     );
   }
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-2">{m.habitat_dashboard_title()}</h2>
+      <h2 className="text-lg font-bold mb-2">{"仪表盘"}</h2>
       <div className="space-y-4">
         <section>
-          <h3 className="text-sm font-semibold text-muted-foreground mb-1.5">
-            {m.habitat_dashboard_runtime()}
-          </h3>
+          <h3 className="text-sm font-semibold text-muted-foreground mb-1.5">{"运行时"}</h3>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
             <RuntimeCard
               svc={svc}
@@ -162,72 +150,62 @@ function DashboardPage() {
         </section>
 
         <section>
-          <h3 className="text-sm font-semibold text-muted-foreground mb-1.5">
-            {m.habitat_dashboard_conversations_tools()}
-          </h3>
+          <h3 className="text-sm font-semibold text-muted-foreground mb-1.5">{"对话与工具"}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-stretch">
             <ConversationStatCard
               total={svc.conversations?.total ?? 0}
               platformRows={conversationPlatformRows}
             />
             <CompactExtensionCard
-              title={m.habitat_nav_subagents()}
+              title={"子代理"}
               href="/subagents"
-              summary={m.habitat_subagents_intro()}
+              summary={
+                "命名子代理档案存为 entity。allowed_tools 为硬天花板；运行时物化固定 tools 列表（禁止 toolset_load）。"
+              }
             />
-            <StatCard title={m.habitat_common_tools()}>
+            <StatCard title={"工具"}>
               <p className="text-xl font-mono mt-1">{toolCount}</p>
-              <p className="text-xs text-muted-foreground">
-                {m.habitat_dashboard_tools_registered()}
-              </p>
+              <p className="text-xs text-muted-foreground">{"已注册"}</p>
             </StatCard>
             <CompactExtensionCard title="MCP" href="/mcp" summary={mcpSummary} />
             <StatCard
-              title={m.habitat_dashboard_cron()}
+              title={"定时任务"}
               action={
                 <Link
                   to="/cron"
                   className="text-primary underline-offset-4 hover:underline text-xs"
                 >
-                  {m.habitat_dashboard_manage()}
+                  {"管理"}
                 </Link>
               }
             >
               <p className="text-xl font-mono mt-1">{cronCount}</p>
-              <p className="text-xs text-muted-foreground">
-                {cronCount > 0
-                  ? m.habitat_dashboard_cron_configured()
-                  : m.habitat_dashboard_cron_none()}
-              </p>
+              <p className="text-xs text-muted-foreground">{cronCount > 0 ? "已配置" : "无"}</p>
             </StatCard>
-            <StatCard title={m.habitat_dashboard_slash_commands()}>
+            <StatCard title={"Slash 命令"}>
               <p className="text-xl font-mono mt-1">{commandCount ?? "—"}</p>
-              <p className="text-xs text-muted-foreground">{m.habitat_dashboard_all_platforms()}</p>
+              <p className="text-xs text-muted-foreground">{"全平台"}</p>
             </StatCard>
           </div>
         </section>
 
         <section>
           <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
-            <h3 className="text-sm font-semibold text-muted-foreground">
-              {m.habitat_dashboard_memory()}
-            </h3>
+            <h3 className="text-sm font-semibold text-muted-foreground">{"记忆体系"}</h3>
             <Link
               to="/passive-recall"
               className="text-primary underline-offset-4 hover:underline text-xs"
             >
-              {m.habitat_nav_passive_recall()}
+              {"🔎 被动召回调试"}
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <StatCard title={m.habitat_dashboard_semantic_memory()}>
+            <StatCard title={"语义记忆"}>
               <p className="text-xl font-mono mt-1">{semanticMemoryCount}</p>
             </StatCard>
-            <StatCard title={m.habitat_dashboard_dialogue_messages()}>
+            <StatCard title={"对话消息"}>
               <p className="text-xl font-mono mt-1">{dialogueMessageCount}</p>
-              <p className="text-xs text-muted-foreground">
-                {m.habitat_dashboard_messages_count()}
-              </p>
+              <p className="text-xs text-muted-foreground">{"对话消息"}</p>
             </StatCard>
           </div>
         </section>
@@ -235,9 +213,9 @@ function DashboardPage() {
 
       <ConfirmDialog
         open={showRestartConfirm}
-        title={m.habitat_common_restart_service()}
-        description={m.habitat_dashboard_restart_confirm()}
-        confirmLabel={m.habitat_common_restart_service()}
+        title={"重启服务"}
+        description={"确定要重启服务吗？正在进行的对话将被中断。"}
+        confirmLabel={"重启服务"}
         variant="error"
         onConfirm={() => void runRestart()}
         onCancel={() => setShowRestartConfirm(false)}
@@ -268,9 +246,7 @@ function RuntimeCard({
       <CardContent className="py-3 px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2">
           <div>
-            <h4 className="text-sm text-muted-foreground">
-              {m.habitat_dashboard_service_status()}
-            </h4>
+            <h4 className="text-sm text-muted-foreground">{"服务状态"}</h4>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant={svc.status === "running" ? "success" : "destructive"}>
                 {svc.status}
@@ -279,20 +255,18 @@ function RuntimeCard({
             </div>
           </div>
           <div>
-            <h4 className="text-sm text-muted-foreground">{m.habitat_dashboard_uptime()}</h4>
+            <h4 className="text-sm text-muted-foreground">{"运行时间"}</h4>
             <p className="text-xl font-mono mt-1">{formatUptime(svc.uptime_seconds) || "—"}</p>
           </div>
           <div>
-            <h4 className="text-sm text-muted-foreground">
-              {m.habitat_dashboard_process_memory()}
-            </h4>
+            <h4 className="text-sm text-muted-foreground">{"物理内存（RSS）"}</h4>
             <p className="text-xl font-mono mt-1">{processMemoryLabel}</p>
             {heapMemoryHint ? (
               <p className="text-xs text-muted-foreground mt-0.5">{heapMemoryHint}</p>
             ) : null}
           </div>
           <div>
-            <h4 className="text-sm text-muted-foreground">{m.habitat_dashboard_current_model()}</h4>
+            <h4 className="text-sm text-muted-foreground">{"当前模型"}</h4>
             <p className="text-base font-mono mt-1 truncate" title={svc.config?.model}>
               {svc.config?.model || "—"}
             </p>
@@ -300,11 +274,7 @@ function RuntimeCard({
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground border-t border pt-2 mt-2">
           {svc.start_time_iso ? (
-            <span>
-              {m.habitat_dashboard_started_at({
-                time: formatDisplayDateTime(svc.start_time_iso),
-              })}
-            </span>
+            <span>{`启动于 ${formatDisplayDateTime(svc.start_time_iso)}`}</span>
           ) : null}
           {svc.pid ? <span>PID {svc.pid}</span> : null}
           {dependencyBadge(postgres, "PG")}
@@ -318,7 +288,7 @@ function RuntimeCard({
               isDisabled={restarting}
               onClick={onRestart}
             >
-              {restarting ? m.habitat_common_restarting() : m.habitat_common_restart_service()}
+              {restarting ? "重启中…" : "重启服务"}
             </Button>
           </div>
         </div>
@@ -333,13 +303,9 @@ function PlatformConnectionsCard({ platforms }: { platforms: Record<string, unkn
   return (
     <Card className="bg-muted py-0">
       <CardContent className="py-3 px-4">
-        <h3 className="text-sm text-muted-foreground">
-          {m.habitat_dashboard_platform_connections()}
-        </h3>
+        <h3 className="text-sm text-muted-foreground">{"平台连接"}</h3>
         {entries.length === 0 ? (
-          <div className="text-xs text-muted-foreground mt-1">
-            {m.habitat_dashboard_no_platforms()}
-          </div>
+          <div className="text-xs text-muted-foreground mt-1">{"无平台接入"}</div>
         ) : (
           <div className="mt-1 space-y-1 max-h-24 overflow-y-auto">
             {entries.map(([name, ps]) => (
@@ -372,16 +338,16 @@ function ConversationStatCard({
 }) {
   return (
     <div className="group/session relative h-full">
-      <StatCard title={m.habitat_dashboard_conversations()}>
+      <StatCard title={"对话"}>
         <p className="text-xl font-mono mt-1">{total}</p>
-        <p className="text-xs text-muted-foreground">{m.habitat_dashboard_hover_platforms()}</p>
+        <p className="text-xs text-muted-foreground">{"悬停查看分平台"}</p>
       </StatCard>
       <div
         role="tooltip"
         className="pointer-events-none absolute left-0 top-full z-50 mt-1 hidden min-w-[10rem] rounded-lg bg-neutral px-3 py-2 text-xs text-neutral-content shadow-lg group-hover/session:block"
       >
         {platformRows.length === 0 ? (
-          <p className="text-left">{m.habitat_dashboard_no_platform_data()}</p>
+          <p className="text-left">{"暂无分平台数据"}</p>
         ) : (
           <ul className="list-none space-y-0.5 text-left">
             {platformRows.map((row) => (
@@ -411,7 +377,7 @@ function CompactExtensionCard({
         <div className="flex items-center justify-between gap-2">
           <h4 className="text-sm text-muted-foreground">{title}</h4>
           <Link to={href} className="text-primary underline-offset-4 hover:underline text-xs">
-            {m.habitat_dashboard_manage()}
+            {"管理"}
           </Link>
         </div>
         <p className="mt-1 flex-1 text-xs leading-snug text-muted-foreground">{summary}</p>

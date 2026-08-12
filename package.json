@@ -4,9 +4,6 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",
     "@commitlint/config-conventional": "^21.2.0",
-    "@inlang/paraglide-js": "^2.23.2",
-    "@inlang/plugin-m-function-matcher": "^2.2.9",
-    "@inlang/plugin-message-format": "^4.4.1",
     "@splicemood/lcov-to-cobertura": "^0.1.1",
     "@tailwindcss/vite": "^4.3.3",
     "@tauri-apps/cli": "^2.11.4",

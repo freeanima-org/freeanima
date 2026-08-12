@@ -1,23 +1,21 @@
 import path from "node:path";
 
 export interface DocsMdLinksOptions {
-  /** Absolute path to English docs root (`docs/`). */
-  enRoot: string;
-  /** Absolute path to generated Chinese docs root (`docs/.generated/zh_CN/`). */
-  zhRoot: string;
+  /** Absolute path to docs root (`docs/`). */
+  docsRoot: string;
 }
 
 function normalizeFsPath(filePath: string): string {
   return path.normalize(filePath).replace(/\\/g, "/");
 }
 
-function docsRelativeToUrl(relativePath: string, localePrefix: "" | "/zh-cn"): string {
+function docsRelativeToUrl(relativePath: string): string {
   let slug = relativePath.replace(/\.(md|mdx)$/i, "").replace(/\\/g, "/");
   if (/^readme$/i.test(slug) || slug === "") {
-    return `${localePrefix}/docs/`;
+    return "/docs/";
   }
   slug = slug.replace(/\/readme$/i, "");
-  return `${localePrefix}/docs/${slug}/`;
+  return `/docs/${slug}/`;
 }
 
 /** Resolve a relative `.md` / `.mdx` href from a docs source file to a Starlight URL. */
@@ -41,22 +39,14 @@ export function resolveDocsMdHref(
     return null;
   }
 
-  const enRoot = normalizeFsPath(options.enRoot);
-  const zhRoot = normalizeFsPath(options.zhRoot);
+  const docsRoot = normalizeFsPath(options.docsRoot);
   const sourceDir = path.dirname(normalizeFsPath(sourceFilePath));
   const resolved = normalizeFsPath(path.resolve(sourceDir, pathname));
 
-  let localePrefix: "" | "/zh-cn" = "";
-  let relative: string;
-
-  if (resolved === zhRoot || resolved.startsWith(`${zhRoot}/`)) {
-    localePrefix = "/zh-cn";
-    relative = resolved === zhRoot ? "" : resolved.slice(zhRoot.length + 1);
-  } else if (resolved === enRoot || resolved.startsWith(`${enRoot}/`)) {
-    relative = resolved === enRoot ? "" : resolved.slice(enRoot.length + 1);
-  } else {
+  if (resolved !== docsRoot && !resolved.startsWith(`${docsRoot}/`)) {
     return null;
   }
 
-  return docsRelativeToUrl(relative, localePrefix) + hash;
+  const relative = resolved === docsRoot ? "" : resolved.slice(docsRoot.length + 1);
+  return docsRelativeToUrl(relative) + hash;
 }

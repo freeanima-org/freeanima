@@ -1,50 +1,50 @@
 ---
-title: Recall Flow
+title: 回忆流程
 ---
 
-# Scoped Memory Retrieval
+# 分范围记忆检索
 
-> **Current:** Active retrieval is **scope-split**. There is no cross-type unified `memory_recall` tool and no cross-type RRF merge for the LLM.
+> **当前：** 主动检索按**范围拆分**。没有跨类型统一的 `memory_recall` 工具，也没有面向 LLM 的跨类型 RRF 合并。
 
-## Active tools by scope
+## 按范围的主动工具
 
-| Scope            | Tool                                          | Notes                                                                   |
-| ---------------- | --------------------------------------------- | ----------------------------------------------------------------------- |
-| semantic         | `memory_semantic_search`                      | FTS + structured filters; also **passive** inject before each user turn |
-| limbic           | `memory_limbic_search`                        | Hybrid FTS when `query` set; list/filter when omitted                   |
-| autobiographical | `memory_autobiographical_search`              | FTS on title + body; snippet return                                     |
-| conversation     | `conversation_search` / `conversation_scroll` | Dialogue snippets; session filter on search; scroll for full context    |
-| write (semantic) | `memory_remember` / semantic CRUD             | Not retrieval                                                           |
+| 范围              | 工具                                          | 说明                                            |
+| ----------------- | --------------------------------------------- | ----------------------------------------------- |
+| semantic          | `memory_semantic_search`                      | FTS + 结构化过滤；每轮 user 前也**被动**注入    |
+| limbic            | `memory_limbic_search`                        | 有 `query` 时混合 FTS；省略则为列表/过滤        |
+| autobiographical  | `memory_autobiographical_search`              | title + body 的 FTS；返回片段                   |
+| conversation      | `conversation_search` / `conversation_scroll` | 对话片段；搜索可按会话过滤；scroll 取完整上下文 |
+| write（semantic） | `memory_remember` / semantic CRUD             | 非检索                                          |
 
-### Product recall strategy (system prompt)
+### 产品回忆策略（系统提示）
 
-For **clarifying references / recalling facts**, the conversation system prompt section `memory-recall` instructs the model to prefer **semantic memory only**, in order:
+对**澄清指代 / 回忆事实**，对话系统提示段 `memory-recall` 指示模型优先**仅语义记忆**，顺序为：
 
-1. Resident memory (system prompt)
-2. This turn’s passive inject (`passive_memory_context`)
-3. Active `memory_semantic_search` when still insufficient
+1. 常驻记忆（系统提示）
+2. 本轮被动注入（`passive_memory_context`）
+3. 仍不足时主动 `memory_semantic_search`
 
-Limbic / autobiographical / conversation tools remain available for explicit non-semantic needs; they are **not** the default clarify/recall path.
+感性 / 自传 / 对话工具仍可用于明确的非语义需求；它们**不是**默认澄清/回忆路径。
 
-Habitat operator debug uses `memory.passiveRecallDebug` (passive pipeline trace). Product LLM path uses the per-scope tools above.
+栖息地运维调试用 `memory.passiveRecallDebug`（被动管线追踪）。产品 LLM 路径用上表分范围工具。
 
-### Resident Memory
+### 常驻记忆
 
-Separate from retrieval tools: **pinned** semantic memories plus **most-referenced** entries are always injected into the system prompt. LLM cites memory ID markers in replies; reference counts sync via nightly cron.
+与检索工具分开：**置顶**语义记忆加上**引用最多**的条目始终注入系统提示。LLM 在回复中引用记忆 ID 标记；引用计数经夜间 cron 同步。
 
-## Relationship to Self Layer
+## 与自我层的关系
 
-Self layer (five blocks) is **not** retrieved via memory search tools—it is always in the system prompt.
+自我层（五块）**不**经记忆搜索工具检索——它始终在系统提示中。
 
-| Layer        | Injection                          | Reason                                            |
-| ------------ | ---------------------------------- | ------------------------------------------------- |
-| Self layer   | Always in system prompt            | Small, fixed, every conversation needs "who I am" |
-| Memory layer | Per-scope tools / passive semantic | Large, dynamic, search when needed                |
+| 层     | 注入                  | 原因                               |
+| ------ | --------------------- | ---------------------------------- |
+| 自我层 | 始终在系统提示        | 小、固定，每次对话都需要「我是谁」 |
+| 记忆层 | 分范围工具 / 被动语义 | 大、动态，需要时再搜               |
 
-## Retired: Unified Recall
+## 已退役：统一回忆
 
-`memory_recall` (four-source RRF) is **removed**. Session/dialogue search stays on `conversation_search` only. Cross-resource “unified recall v2” ([Issue #47](https://github.com/freeanima-org/freeanima/issues/47)) remains not planned.
+`memory_recall`（四源 RRF）已**移除**。会话/对话搜索仅留在 `conversation_search`。跨资源「统一回忆 v2」（[Issue #47](https://github.com/freeanima-org/freeanima/issues/47)）仍未规划。
 
-## Naming Rationale
+## 命名说明
 
-In cognitive psychology, **Recall** is actively pulling stored information from memory. FreeAnima keeps the verb in docs; runtime tools are named by **scope** so the model routes intent without cross-type ranking collisions.
+在认知心理学中，**Recall（回忆）**是主动从记忆中提取已存信息。FreeAnima 文档保留该动词；运行时工具按**范围**命名，使模型在无跨类型排序冲突下路由意图。

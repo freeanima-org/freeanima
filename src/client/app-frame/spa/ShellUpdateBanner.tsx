@@ -11,7 +11,6 @@ import { resolveAboutNativeBuildMeta } from "@freeanima/client/portal-sdk/native
 import { dismissShellToast, showShellToast, SHELL_TOAST_IDS } from "@freeanima/ui-kit/composite";
 import { useEffect, useRef, useState } from "react";
 
-import { m } from "@paraglide/messages";
 const DISMISS_KEY = "freeanima.shell-update.dismissed-key";
 
 function dismissKey(update: Extract<PackagedUpdateResult, { available: true }>): string {
@@ -36,9 +35,9 @@ function writeDismissedKey(key: string): void {
 
 function formatUpdateErrorMessage(err: unknown): string {
   const message = err instanceof Error ? err.message : String(err);
-  const detail = m.ui_shell_update_failed_detail({ message });
+  const detail = `更新失败：${message}`;
   if (typeof window.portalShell?.applyPackagedUpdate === "function") {
-    return `${detail} ${m.ui_shell_update_log_hint()}`;
+    return `${detail} 详情见 ~/.anima/desktop-shell/shell.log。`;
   }
   return detail;
 }
@@ -59,16 +58,16 @@ type ApplyProgress = {
 
 function formatApplyingMessage(progress: ApplyProgress | null): string {
   if (progress?.phase === "installing") {
-    return m.ui_shell_update_installing();
+    return "正在安装…";
   }
   if (!progress) {
-    return m.ui_shell_update_applying();
+    return "正在下载并安装…";
   }
   if (progress.total != null && progress.total > 0) {
     const percent = Math.min(100, Math.floor((100 * progress.received) / progress.total));
-    return m.ui_shell_update_downloading({ percent: String(percent) });
+    return `下载中… ${String(percent)}%`;
   }
-  return m.ui_shell_update_downloading_bytes({ bytes: formatProgressBytes(progress.received) });
+  return `下载中… ${formatProgressBytes(progress.received)}`;
 }
 
 export const SHELL_UPDATE_CHECK_EVENT = "freeanima:shell-update-check";
@@ -181,7 +180,7 @@ export function ShellUpdateBanner(): null {
 
     if (phase === "idle" || phase === "checking") {
       if (phase === "checking") {
-        showShellToast(SHELL_TOAST_IDS.shellUpdate, `${m.ui_shell_update_check()}…`, {
+        showShellToast(SHELL_TOAST_IDS.shellUpdate, `检查更新…`, {
           duration: 10_000,
         });
       } else {
@@ -193,19 +192,19 @@ export function ShellUpdateBanner(): null {
     if (phase === "latest" || phase === "none") {
       showShellToast(
         SHELL_TOAST_IDS.shellUpdate,
-        phase === "none" ? m.ui_shell_update_none() : m.ui_shell_update_latest(),
+        phase === "none" ? "尚无适用于此平台的更新包。" : "已是最新版本。",
         {
           duration: 8_000,
-          cancel: { label: m.ui_common_close(), onClick: () => setPhase("idle") },
+          cancel: { label: "关闭", onClick: () => setPhase("idle") },
         },
       );
       return;
     }
 
     if (phase === "failed") {
-      showShellToast(SHELL_TOAST_IDS.shellUpdate, error ?? m.ui_shell_update_failed(), {
+      showShellToast(SHELL_TOAST_IDS.shellUpdate, error ?? "更新失败。请重试。", {
         duration: Number.POSITIVE_INFINITY,
-        cancel: { label: m.ui_common_close(), onClick: () => setPhase("idle") },
+        cancel: { label: "关闭", onClick: () => setPhase("idle") },
       });
       return;
     }
@@ -223,20 +222,17 @@ export function ShellUpdateBanner(): null {
     }
 
     const title = switching
-      ? m.ui_shell_channel_switch_available({
-          channel: update.track,
-          version: update.remoteVersion,
-        })
-      : m.ui_shell_update_available({ version: update.remoteVersion });
+      ? `安装 ${update.track} 构建（${update.remoteVersion}）？`
+      : `有新的应用版本（${update.remoteVersion}）可用。`;
 
     showShellToast(SHELL_TOAST_IDS.shellUpdate, title, {
       action: {
-        label: switching ? m.ui_shell_channel_switch_install() : m.ui_shell_update_install(),
+        label: switching ? "切换通道" : "立即更新",
         onClick: () => {
           const apply = window.portalShell?.applyPackagedUpdate;
           if (!apply) {
             setPhase("failed");
-            setError(m.ui_shell_update_failed());
+            setError("更新失败。请重试。");
             return;
           }
           setApplyProgress({
@@ -266,7 +262,7 @@ export function ShellUpdateBanner(): null {
         },
       },
       cancel: {
-        label: m.ui_shell_update_dismiss(),
+        label: "稍后",
         onClick: () => {
           writeDismissedKey(dismissKey(update));
           setPhase("idle");

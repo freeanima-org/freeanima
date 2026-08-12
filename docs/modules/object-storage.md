@@ -1,10 +1,11 @@
 ---
-title: Object storage
+title: 对象存储
 ---
 
-# Object storage（对象存储）
+# 对象存储
 
-Habitat 内容寻址对象层：大文件 / 不变文件。小文本频繁变更（skills 等）走数据库，不走本模块。Skills：[`skills.md`](skills.md)。
+Habitat 内容寻址对象层：大文件 / 不变文件。小文本频繁变更（skills
+等）走数据库，不走本模块。Skills：[`skills.md`](skills.md)。
 
 **权威字节（SSOT）**：
 
@@ -13,11 +14,14 @@ Habitat 内容寻址对象层：大文件 / 不变文件。小文本频繁变更
 | 未配 S3（空段） | `FREEANIMA_HOME/object-store/world/{worldId}/b3/{cid}`（持久本地库） | 无                                           |
 | 已配 S3 兼容    | 远端桶（Bun `S3Client`）                                             | `os.tmpdir()/anima/objects/{cid[0:2]}/{cid}` |
 
-持久本地库与远端拉通缓存**目录与概念分离**。业务与前端只持有 **`object_file` entity id**，经 `object_storage.file.get` 取字节。cid / S3 key 只存在于 `object_file`（及 ObjectStore 内部）。
+持久本地库与远端拉通缓存**目录与概念分离**。业务与前端只持有 **`object_file` entity id**，经
+`object_storage.file.get` 取字节。cid / S3 key 只存在于 `object_file`（及 ObjectStore
+内部）。
 
 ## 四层缓存（设计 vs 实现）
 
-设计上分四层；**本仓库只实现 1 / 3 / 4**，第 2 层留给运维前置网关。远端模式下第 1 层为可丢缓存；本地模式下权威字节在持久库，不走 `/tmp`。
+设计上分四层；**本仓库只实现 1 / 3 / 4**，第 2 层留给运维前置网关。远端模式下第 1 层为可丢缓存；本地模式下权威字节在持久库，不走
+`/tmp`。
 
 | 层                    | 设计意图                                      | 本仓库实现                                                                                                             |
 | --------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -42,7 +46,7 @@ Habitat
 
 **不提供** `blob.get`（按 cid 直取）与 S3 预签名 GET。内容不变时用 **ETag=cid** 做廉价 304 即可。
 
-## Entity / ToolSet / CID
+## 实体 / ToolSet / CID
 
 | 概念            | 说明                                            |
 | --------------- | ----------------------------------------------- |
@@ -68,7 +72,10 @@ Habitat
 | ------------------------- | ------------------------- | ----------------------------------------------------------------------------- |
 | `object_storage.file.get` | `object_storage/file/:id` | `Cache-Control: private, no-cache`；`ETag: "{cid}"`；匹配则 304（先于拉字节） |
 
-鉴权：默认按 Bearer `subject_id` 对 `object_file.world_id` 做 world ACL（read）。与 Habitat UI **SubjectScope** 对齐：**user subject** 可读本 Habitat 的 **agent 默认私有 world**（直通，无需 grant）；不反向放行 agent→user world。MCP/tool 路径仍走 `resolveToolWorld`，不受此 HTTP 直通影响。
+鉴权：默认按 Bearer `subject_id` 对 `object_file.world_id` 做 world ACL（read）。与
+Habitat UI **SubjectScope** 对齐：**user subject** 可读本 Habitat 的 **agent 默认私有
+world**（直通，无需 grant）；不反向放行 agent→user world。MCP/tool 路径仍走
+`resolveToolWorld`，不受此 HTTP 直通影响。
 
 `<img>` 不能带 Header：SPA 用 **fetch+Bearer → blob URL**（可叠 Cache API）。
 
@@ -88,12 +95,16 @@ object_storage:
   force_path_style: false
 ```
 
-「测试连接」用写/读/删探测对象（`_freeanima/connection-probe/…`），**不**调 `ListBuckets`。RAM 子账号对该 bucket 具备 `oss:PutObject` / `oss:GetObject` 即可（不必 `ListBuckets`）。
+「测试连接」用写/读/删探测对象（`_freeanima/connection-probe/…`），**不**调 `ListBuckets`。RAM
+子账号对该 bucket 具备 `oss:PutObject` / `oss:GetObject` 即可（不必 `ListBuckets`）。
 
-RAM 子账号至少需要该 bucket 上的 `oss:PutObject` / `oss:GetObject`（按需 `DeleteObject` / `ListObjects`）。密钥错误或策略过窄时上传会报 `AccessDenied`。
+RAM 子账号至少需要该 bucket 上的 `oss:PutObject` / `oss:GetObject`（按需 `DeleteObject` /
+`ListObjects`）。密钥错误或策略过窄时上传会报 `AccessDenied`。
 
-## Companion
+## 桌面伴侣
 
-Runtime 段 `companion` 存 **`object_file_id`**（非 cid）。上传走 `createObjectFile`；加载走 `object_storage.file.get`。旧仅磁盘 / 旧 `content_hash` 条目需重新导入。未配 S3 时字节落本机持久库。
+Runtime 段 `companion` 存 **`object_file_id`**（非 cid）。上传走
+`createObjectFile`；加载走 `object_storage.file.get`。旧仅磁盘 / 旧 `content_hash`
+条目需重新导入。未配 S3 时字节落本机持久库。
 
 代码：[`src/features/object-storage/`](../../src/features/object-storage/)。

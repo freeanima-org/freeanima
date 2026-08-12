@@ -1,16 +1,16 @@
 ---
-title: Project Management
+title: 项目管理
 ---
 
-# Project Management (spec v0.2)
+# 项目管理（规格 v0.2）
 
-Structured project management for FreeAnima, based on the [Unified Entity Model](../product/entity-model.md).
+逸灵风的结构化项目管理，基于[统一实体模型](../product/entity-model.md)。
 
-**Model note (v0.2 simplified):** Milestones and required completion criteria were removed. Projects keep schedule + terminal status; optional background notes live in entity `content` (edited in the project edit dialog only). Tasks link to projects via `body.project_id` only.
+**模型说明（v0.2 简化）：** 已移除里程碑与必填完成条件。项目保留日程 + 终态状态；可选背景说明放在实体 `content`（仅在项目编辑对话框中编辑）。任务仅经 `body.project_id` 关联项目。
 
-**v1** delivers: project folder tree, project entity, and task ownership migration. OKR, cross-entity links, Gantt, **项目文件夹级** Kanban, and file assets are **[v2+]**（任务模块 `/tasks` 看板已落地，见 [`task.md`](./task.md)）。
+**v1** 交付：项目文件夹树、项目实体、任务归属迁移。OKR、跨实体链接、甘特、**项目文件夹级**看板、文件资产为 **[v2+]**（任务模块 `/tasks` 看板已落地，见 [`task.md`](./task.md)）。
 
-## Concept hierarchy
+## 概念层级
 
 ```text
 project_folder (organizational tree, independent from task_list folders)
@@ -19,25 +19,25 @@ project_folder (organizational tree, independent from task_list folders)
 task module (/tasks) — lists, smart lists, backlog tasks (body.project_id empty)
 ```
 
-Project folders and task-list folders are **separate trees**. The task module remains the **Backlog / ad-hoc task pool** for items not assigned to a project.
+项目文件夹与任务清单文件夹是**两套独立树**。任务模块仍是未派入项目条目的 **Backlog / 临时任务池**。
 
 ---
 
-## Folders (`project_folder`)
+## 文件夹（`project_folder`）
 
-Independent folder hierarchy for project management only — **not shared** with task-list folders (`task_list.is_folder`).
+仅用于项目管理的独立文件夹层级——与任务清单文件夹（`task_list.is_folder`）**不共享**。
 
-| Rule             | Detail                                                                                                   |
-| ---------------- | -------------------------------------------------------------------------------------------------------- |
-| Nesting          | Unlimited depth; pure organization                                                                       |
-| No lifecycle     | No start/end dates or terminal status                                                                    |
-| Parent           | `body.parent_id` → another `project_folder` entity id, or `null` at root                                 |
-| Cycle prevention | Same as task-list folders — nesting must not form cycles                                                 |
-| Delete           | Recursively removes sub-folders; contained projects get `folder_id: null` (projects are **not** deleted) |
+| 规则       | 细节                                                               |
+| ---------- | ------------------------------------------------------------------ |
+| 嵌套       | 无限深度；纯组织                                                   |
+| 无生命周期 | 无起止日期或终态状态                                               |
+| 父级       | `body.parent_id` → 另一 `project_folder` 实体 id，或根为 `null`    |
+| 防环       | 同任务清单文件夹——嵌套不得成环                                     |
+| 删除       | 递归移除子文件夹；所含项目置 `folder_id: null`（项目**不被**删除） |
 
-**[v2+]** Folder-level Gantt / Kanban views aggregating all projects under the folder（任务模块看板不覆盖此范围）。
+**[v2+]** 文件夹级甘特 / 看板，聚合文件夹下全部项目（任务模块看板不覆盖此范围）。
 
-Example layout:
+示例布局：
 
 ```text
 FreeAnima (product tag or top folder name)
@@ -49,272 +49,272 @@ FreeAnima (product tag or top folder name)
 
 ---
 
-## Projects (`project`)
+## 项目（`project`）
 
-### Basic attributes
+### 基本属性
 
-| Rule            | Detail                                                                                              |
-| --------------- | --------------------------------------------------------------------------------------------------- |
-| Leaf node       | Projects **cannot nest**. Use `project_folder` for grouping                                         |
-| Schedule        | **Required** `start_at` and `end_at` (or explicit end condition encoded as `end_at`) at create time |
-| Background      | Optional entity `content` — project background / notes; **not** shown in list or task detail panes  |
-| Terminal status | `completed` / `cancelled` / `on_hold` (plus default `active`)                                       |
+| 规则     | 细节                                                                     |
+| -------- | ------------------------------------------------------------------------ |
+| 叶节点   | 项目**不可嵌套**。分组用 `project_folder`                                |
+| 日程     | 创建时**必填** `start_at` 与 `end_at`（或把显式结束条件编码为 `end_at`） |
+| 背景     | 可选实体 `content` — 项目背景 / 说明；**不**出现在列表或任务详情面板     |
+| 终态状态 | `completed` / `cancelled` / `on_hold`（另有默认 `active`）               |
 
-Edit **background notes** only in the **project edit dialog** (`ProjectEditorDialog`). The create dialog collects title + schedule only; the main project view shows dates in the header and tasks in the list — not `content`.
+**背景说明**仅在**项目编辑对话框**（`ProjectEditorDialog`）中编辑。创建对话框只收集标题 + 日程；主项目视图在页头显示日期、在列表显示任务——不显示 `content`。
 
-**Not a project:**
+**不算项目：**
 
-- Ongoing product maintenance (no defined end)
-- Ad-hoc chores such as "clean fridge compressor" (no planned schedule — stays in the task module)
-- `task_list` folders or multiple task lists (those belong to the **task module**, not project management)
+- 持续产品维护（无明确结束）
+- 临时杂务如「清理冰箱压缩机」（无计划日程——留在任务模块）
+- `task_list` 文件夹或多个任务清单（属于**任务模块**，非项目管理）
 
-### Project lifecycle and tasks
+### 项目生命周期与任务
 
-When a project reaches a terminal state or is deleted, task handling is explicit:
+项目进入终态或被删除时，任务处理是显式的：
 
-| Event                | Task behavior (v1 default)                                                                                                            |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `status → completed` | **Default: keep in project** (`project_id` retained). Explicit `release_tasks: true` moves pending tasks to the default list (Inbox). |
-| `status → cancelled` | Same as `completed`                                                                                                                   |
-| `status → on_hold`   | Tasks **keep** `project_id`; project UI read-only or degraded edit                                                                    |
-| Delete project       | All tasks move to the **default list** (`is_default` Inbox): `project_id` cleared, `list_id` set                                      |
+| 事件                 | 任务行为（v1 默认）                                                                                        |
+| -------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `status → completed` | **默认：留在项目内**（保留 `project_id`）。显式 `release_tasks: true` 把未完成任务移到默认清单（收件箱）。 |
+| `status → cancelled` | 同 `completed`                                                                                             |
+| `status → on_hold`   | 任务**保留** `project_id`；项目 UI 只读或降级编辑                                                          |
+| 删除项目             | 全部任务移到**默认清单**（`is_default` 收件箱）：清空 `project_id`，设置 `list_id`                         |
 
-Inactive projects (`on_hold` / `completed` / `cancelled`) are hidden from the project sidebar by default; toggle **显示非活跃** (same pattern as archived task lists).
+非活跃项目（`on_hold` / `completed` / `cancelled`）默认在项目侧栏隐藏；可切换**显示非活跃**（同归档任务清单模式）。
 
-Project archive semantics use **`project.status`** (and optional future `archived_at`) — **do not** reuse `task_list.body.closed`. Task-list archive (`closed: true`) remains: sidebar hidden, **mutations forbidden** (`清单已归档`).
+项目归档语义用 **`project.status`**（及可选未来 `archived_at`）——**不要**复用 `task_list.body.closed`。任务清单归档（`closed: true`）仍是：侧栏隐藏、**禁止变更**（`清单已归档`）。
 
-**[v2+]** Archived project context marks weak reference chains; file co-archive is user-explicit.
+**[v2+]** 已归档项目上下文标记弱引用链；文件共归档由用户显式决定。
 
-### Contents inside a project
+### 项目内内容
 
-| Type              | Description                                  | Ownership                                           |
-| ----------------- | -------------------------------------------- | --------------------------------------------------- |
-| Task              | Smallest execution unit; pending / completed | Belongs to project when `body.project_id` is set    |
-| Project materials | Files/docs not tied to a task                | **[v2+]** — file entity + project reference         |
-| Linked entities   | Diary, notes, clips                          | **[v2+]** — weak refs via future relationship layer |
-
----
-
-## Backlog / task module (`/tasks`)
-
-The **task module** is the existing `/tasks` Shell route: multiple `task_list`s, folder tree, Smart Lists, and archived lists.
-
-| Rule          | Detail                                                                                                                                                      |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Scope         | "Not in any project" means `task_item.body.project_id` is **null**                                                                                          |
-| Multi-list    | Unassigned tasks may live in **any** normal list (including the default list `is_default`, e.g. Inbox) — not a single Backlog list                          |
-| Visibility    | Tasks with `project_id` set are **hidden** from task-module list views                                                                                      |
-| Default list  | The lazy-created default list remains a normal list inside the task module — it is **not** a sync inbox between task module and projects                    |
-| No sync inbox | There is **no** auto two-way sync or "inbox" that requires tidying on both sides. Tasks belong to **either** the task module **or** a project at any moment |
-
-Smart Lists and archived lists follow the same module; see [Smart Lists](#smart-lists).
+| 类型     | 说明                        | 归属                             |
+| -------- | --------------------------- | -------------------------------- |
+| 任务     | 最小执行单元；待办 / 已完成 | `body.project_id` 设置时属于项目 |
+| 项目材料 | 不绑定任务的文件/文档       | **[v2+]** — 文件实体 + 项目引用  |
+| 链接实体 | 日记、笔记、剪藏            | **[v2+]** — 经未来关系层弱引用   |
 
 ---
 
-## Task ownership (task module ↔ project)
+## Backlog / 任务模块（`/tasks`）
 
-### Core rule
+**任务模块**即既有 `/tasks` 壳路由：多个 `task_list`、文件夹树、智能清单、已归档清单。
 
-A task belongs to **one side at a time**: either the task module (Backlog) **or** exactly one project. Ownership is **mutually exclusive** on the body fields.
+| 规则         | 细节                                                                                               |
+| ------------ | -------------------------------------------------------------------------------------------------- |
+| 范围         | 「不在任何项目」表示 `task_item.body.project_id` 为 **null**                                       |
+| 多清单       | 未派入项目的任务可落在**任一**普通清单（含默认清单 `is_default`，如收件箱）——不是单一 Backlog 清单 |
+| 可见性       | 已设 `project_id` 的任务在任务模块列表视图中**隐藏**                                               |
+| 默认清单     | 懒创建的默认清单仍是任务模块内的普通清单——**不是**任务模块与项目之间的同步收件箱                   |
+| 无同步收件箱 | **没有**自动双向同步或两边都要整理的「inbox」。任一时刻任务属于**要么**任务模块**要么**某个项目    |
 
-| Action                                  | Effect                                                                                                                            |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Drag / move task from Backlog → project | Set `project_id`; **clear `list_id`**; task disappears from task-module views and list counts                                     |
-| Move task from project → list           | Set `list_id` (user picks list); clear `project_id` — there is no "restore previous list" / 移回清单                              |
-| Move task project A → project B         | Direct transfer; `list_id` stays null                                                                                             |
-| Global search                           | Matches all tasks; result shows归属 `Backlog / {list name}` or `Project / {project title}`; click navigates to the owning surface |
-
-### Data model (extensions to `task_item`)
-
-| Field        | Type             | Rule                                                                                                  |
-| ------------ | ---------------- | ----------------------------------------------------------------------------------------------------- |
-| `list_id`    | `number \| null` | Required when in Backlog (`project_id` null). **Null when in a project** — do not retain last list id |
-| `project_id` | `number \| null` | Set when task is in a project; null when in Backlog                                                   |
-
-**Invariants:**
-
-- Exactly one of `list_id` / `project_id` is non-null
-- Task-module visibility ⇔ `project_id IS NULL` (and `list_id` set)
-- Project-module visibility ⇔ `project_id = {current project}` (and `list_id` null)
-- `list_id` must not point at a folder (`task_list.is_folder`)
-- List `item_count` counts only backlog tasks (`project_id` null) for that `list_id`
-
-Pomodoro focus (`pomodoro_task_focus.body.task_item_id`) is unchanged — focus is by task id regardless of project归属.
+智能清单与已归档清单同属该模块；见 [智能清单](#智能清单)。
 
 ---
 
-## Smart Lists
+## 任务归属（任务模块 ↔ 项目）
 
-Existing `smart_list` entities and built-in presets (Today, Tomorrow, etc.) remain in the task module.
+### 核心规则
 
-| Rule          | Detail                                                                                                               |
-| ------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Default scope | Smart List queries include only tasks with **`project_id` null**, unless the filter explicitly includes `project_id` |
-| v1            | Do **not** mix in-project tasks into Smart List results (consistent with Backlog-only task-module views)             |
-| **[v2+]**     | Presets filtered by `project_id` or cross-project views                                                              |
+任务**一次只属于一侧**：要么任务模块（Backlog），**要么**恰好一个项目。归属在 body 字段上**互斥**。
 
----
+| 动作                          | 效果                                                                                          |
+| ----------------------------- | --------------------------------------------------------------------------------------------- |
+| 从 Backlog 拖 / 移任务 → 项目 | 设 `project_id`；**清空 `list_id`**；任务从任务模块视图与清单计数中消失                       |
+| 从项目移任务 → 清单           | 设 `list_id`（用户选清单）；清空 `project_id`——无「恢复上一清单」/ 移回清单                   |
+| 任务从项目 A → 项目 B         | 直接转移；`list_id` 保持 null                                                                 |
+| 全局搜索                      | 匹配全部任务；结果展示归属 `Backlog / {清单名}` 或 `Project / {项目标题}`；点击导航到所属表面 |
 
-## Subject scope (User / Agent)
+### 数据模型（`task_item` 扩展）
 
-Aligned with [entity-model Shell scope](../product/entity-model.md#app-ui-global-subject-scope):
+| 字段         | 类型             | 规则                                                                           |
+| ------------ | ---------------- | ------------------------------------------------------------------------------ |
+| `list_id`    | `number \| null` | 在 Backlog 时必填（`project_id` null）。**在项目内为 null**——勿保留上一清单 id |
+| `project_id` | `number \| null` | 任务在项目内时设置；在 Backlog 时为 null                                       |
 
-- `project_folder` and `project` live in the **current subject's default private world**
-- Habitat RPC methods accept optional `subject_kind: user | agent` (default `user`, same as tasks)
-- **v1:** no cross user/agent world sharing for projects
+**不变量：**
 
----
+- `list_id` / `project_id` 恰好其一非 null
+- 任务模块可见 ⇔ `project_id IS NULL`（且 `list_id` 已设）
+- 项目模块可见 ⇔ `project_id = {当前项目}`（且 `list_id` null）
+- `list_id` 不得指向文件夹（`task_list.is_folder`）
+- 清单 `item_count` 只计该 `list_id` 下的 backlog 任务（`project_id` null）
 
-## Search and LLM tools
-
-| Surface                         | v1 behavior                                                                                                                                                              |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `task.search` / `entity_search` | Include `project_id`, `project_title`, `list_name` in results                                                                                                            |
-| ToolSet `project`               | CRUD for folders and projects (load via `toolset_load`); `project_create` / `project_patch` accept optional `content` for background notes                               |
-| ToolSet `task`                  | `task_create` / `task_update` support `project_id`; `task_list` / `task_search` filter by `project_id` (mutually exclusive with `list_id`; default list is Backlog only) |
-
----
-
-## [v2+] OKR and products
-
-**OKR** sits above projects: an Objective splits into Key Results; KRs land via one or more projects. OKR answers _why_ and _how much_; projects answer _how_ and _when_.
-
-**Product** is a ongoing namespace (e.g. "FreeAnima") — not a project, does not end or archive. **v1:** use `project.body.product_tag?: string` or top-level folder naming; no separate product entity.
+番茄专注（`pomodoro_task_focus.body.task_item_id`）不变——按任务 id 专注，与项目归属无关。
 
 ---
 
-## [v2+] Linked entities (external references)
+## 智能清单
 
-Projects may weak-link independent entities:
+既有 `smart_list` 实体与内置预设（今天、明天等）留在任务模块。
 
-| Entity       | Relation        | Notes                                                                  |
-| ------------ | --------------- | ---------------------------------------------------------------------- |
-| Diary        | Weak ref        | `diary_entry` exists today; link table or relationship layer **[v2+]** |
-| Note         | Weak ref        | Not implemented                                                        |
-| Clip         | Weak ref        | Not implemented                                                        |
-| File / photo | Attribution ref | File module not implemented; delete project does not delete files      |
-
-Same diary may link to multiple projects. Requires future `memory_references` / relationship table per [entity-model](../product/entity-model.md#future-migration-map-not-executed-yet).
+| 规则      | 细节                                                                           |
+| --------- | ------------------------------------------------------------------------------ |
+| 默认范围  | 智能清单查询仅含 **`project_id` null** 的任务，除非过滤器显式包含 `project_id` |
+| v1        | **不要**把项目内任务混入智能清单结果（与仅 Backlog 的任务模块视图一致）        |
+| **[v2+]** | 按 `project_id` 过滤的预设或跨项目视图                                         |
 
 ---
 
-## [v2+] Materials and files
+## Subject 作用域（User / Agent）
 
-Files and photos are global assets with project as one reference entry. Deleting a project does not delete files. Archive behavior for references is user-explicit.
+对齐[实体模型壳作用域](../product/entity-model.md#app-ui-global-subject-scope)：
 
----
-
-## Relationship to the task module
-
-| Aspect       | Decision                                                                 |
-| ------------ | ------------------------------------------------------------------------ |
-| Folder trees | **Separate** — `project_folder` vs `task_list.is_folder`                 |
-| Task module  | **Retained** — Backlog + ad-hoc pool                                     |
-| Convergence  | If Backlog usage shrinks, reconsider later; **do not** pre-merge modules |
+- `project_folder` 与 `project` 位于**当前 subject 的默认私有 world**
+- 栖息地 RPC 方法接受可选 `subject_kind: user | agent`（默认 `user`，同任务）
+- **v1：** 项目无跨 user/agent world 共享
 
 ---
 
-## UI (v1)
+## 搜索与 LLM 工具
 
-| Route       | Layout                                                                                                                            |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `/projects` | Folder tree + project task list + task detail pane (responsive `ThreeColumnLayout`); **no** milestone column or milestone dialogs |
-| `/tasks`    | Unchanged; hides `project_id` tasks                                                                                               |
-
-Project **background notes** (`entity.content`) are edited in the project edit dialog only — not in the sidebar, project header, or task list.
-
-Both inherit Shell **User / Agent** toggle via `subject_kind`.
+| 表面                            | v1 行为                                                                                                                                    |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `task.search` / `entity_search` | 结果含 `project_id`、`project_title`、`list_name`                                                                                          |
+| ToolSet `project`               | 文件夹与项目 CRUD（经 `toolset_load` 加载）；`project_create` / `project_patch` 接受可选 `content` 作背景说明                              |
+| ToolSet `task`                  | `task_create` / `task_update` 支持 `project_id`；`task_list` / `task_search` 按 `project_id` 过滤（与 `list_id` 互斥；默认清单仅 Backlog） |
 
 ---
 
-## Migration (v1)
+## [v2+] OKR 与产品
 
-- Existing tasks: `project_id` absent / null — behavior unchanged
-- **Simplified model migration:** drops `milestone` entities, clears `task_item.body.milestone_id`, removes `project.body.completion_criteria`; when `entity.content` is empty, backfills from former `completion_criteria`
-- New components registered in entity component index
+**OKR** 位于项目之上：目标拆成关键结果；KR 经一个或多个项目落地。OKR 回答「为什么」与「多少」；项目回答「怎么做」与「何时」。
 
----
-
-## Non-goals (v1)
-
-Explicit **out of scope** for the first implementation:
-
-- OKR entities and KR → project mapping
-- Gantt / **folder-level** Kanban（跨项目聚合）；任务模块看板见 [`task.md`](./task.md)
-- Notes, clips, file/photo library and project material uploads
-- Cross-entity reference UI and archived reference context
-- Habitat admin surfaces for projects
-- Cross user/agent world project sharing
+**产品**是持续命名空间（如「逸灵风」）——不是项目，不结束、不归档。**v1：** 用 `project.body.product_tag?: string` 或顶层文件夹命名；无独立产品实体。
 
 ---
 
-## Data model appendix
+## [v2+] 链接实体（外部引用）
 
-Entity type: `content`. Text fields use entity columns where noted.
+项目可弱链接独立实体：
+
+| 实体        | 关系     | 说明                                           |
+| ----------- | -------- | ---------------------------------------------- |
+| 日记        | 弱引用   | `diary_entry` 已存在；链接表或关系层 **[v2+]** |
+| 笔记        | 弱引用   | 未实现                                         |
+| 剪藏        | 弱引用   | 未实现                                         |
+| 文件 / 照片 | 归属引用 | 文件模块未实现；删项目不删文件                 |
+
+同一日记可链到多个项目。需要未来 `memory_references` / 关系表，见[实体模型](../product/entity-model.md#future-migration-map-not-executed-yet)。
+
+---
+
+## [v2+] 材料与文件
+
+文件与照片是全局资产，项目只是引用入口之一。删项目不删文件。引用的归档行为由用户显式决定。
+
+---
+
+## 与任务模块的关系
+
+| 方面     | 决策                                                 |
+| -------- | ---------------------------------------------------- |
+| 文件夹树 | **分开** — `project_folder` vs `task_list.is_folder` |
+| 任务模块 | **保留** — Backlog + 临时池                          |
+| 收敛     | 若 Backlog 使用减少再重新考虑；**不要**预先合并模块  |
+
+---
+
+## UI（v1 界面）
+
+| 路由        | 布局                                                                                               |
+| ----------- | -------------------------------------------------------------------------------------------------- |
+| `/projects` | 文件夹树 + 项目任务列表 + 任务详情面板（响应式 `ThreeColumnLayout`）；**无**里程碑栏或里程碑对话框 |
+| `/tasks`    | 不变；隐藏 `project_id` 任务                                                                       |
+
+项目**背景说明**（`entity.content`）仅在项目编辑对话框中编辑——不在侧栏、项目页头或任务列表。
+
+两者经 `subject_kind` 继承壳 **User / Agent** 切换。
+
+---
+
+## 迁移（v1）
+
+- 既有任务：`project_id` 缺省 / null — 行为不变
+- **简化模型迁移：** 删除 `milestone` 实体，清空 `task_item.body.milestone_id`，移除 `project.body.completion_criteria`；当 `entity.content` 为空时，从原 `completion_criteria` 回填
+- 新组件注册到实体组件索引
+
+---
+
+## 非目标（v1）
+
+首版实现**明确范围外**：
+
+- OKR 实体与 KR → 项目映射
+- 甘特 / **文件夹级**看板（跨项目聚合）；任务模块看板见 [`task.md`](./task.md)
+- 笔记、剪藏、文件/照片库与项目材料上传
+- 跨实体引用 UI 与已归档引用上下文
+- 栖息地管理台项目表面
+- 跨 user/agent world 项目共享
+
+---
+
+## 数据模型附录
+
+实体类型：`content`。注明处文本字段用实体列。
 
 ### `project_folder`
 
-| Location | Field        | Type           | Notes                   |
-| -------- | ------------ | -------------- | ----------------------- |
-| entity   | `title`      | string         | Folder name             |
-| body     | `parent_id`  | number \| null | Parent folder entity id |
-| body     | `sort_order` | number         | Sibling order           |
+| 位置   | 字段         | 类型           | 说明            |
+| ------ | ------------ | -------------- | --------------- |
+| entity | `title`      | string         | 文件夹名        |
+| body   | `parent_id`  | number \| null | 父文件夹实体 id |
+| body   | `sort_order` | number         | 同级顺序        |
 
 ### `project`
 
-| Location | Field         | Type           | Notes                                                |
-| -------- | ------------- | -------------- | ---------------------------------------------------- |
-| entity   | `title`       | string         | Project name                                         |
-| entity   | `content`     | string         | Optional background / notes (edit dialog only in UI) |
-| body     | `folder_id`   | number \| null | Parent folder                                        |
-| body     | `start_at`    | string         | ISO 8601                                             |
-| body     | `end_at`      | string         | ISO 8601                                             |
-| body     | `status`      | enum           | `active` \| `completed` \| `cancelled` \| `on_hold`  |
-| body     | `product_tag` | string         | Optional v1 product label                            |
-| body     | `sort_order`  | number         | Among siblings in folder                             |
+| 位置   | 字段          | 类型           | 说明                                                |
+| ------ | ------------- | -------------- | --------------------------------------------------- |
+| entity | `title`       | string         | 项目名                                              |
+| entity | `content`     | string         | 可选背景 / 说明（UI 仅编辑对话框）                  |
+| body   | `folder_id`   | number \| null | 父文件夹                                            |
+| body   | `start_at`    | string         | ISO 8601                                            |
+| body   | `end_at`      | string         | ISO 8601                                            |
+| body   | `status`      | enum           | `active` \| `completed` \| `cancelled` \| `on_hold` |
+| body   | `product_tag` | string         | 可选 v1 产品标签                                    |
+| body   | `sort_order`  | number         | 文件夹内同级                                        |
 
-### `task_item` (extensions)
+### `task_item`（扩展）
 
-| Location | Field        | Type           | Notes                                                                |
-| -------- | ------------ | -------------- | -------------------------------------------------------------------- |
-| body     | `project_id` | number \| null | Set when in project                                                  |
-| body     | `list_id`    | number         | Existing; see [Task ownership](#task-ownership-task-module--project) |
-
----
-
-## Offline (CRUD outbox)
-
-卫星壳 Project UI 走 IndexedDB 快照 + outbox（与 Diary / Task 同级）。写 RPC 支持可选 `client_op_id` 幂等；详见 [`offline-platform.md`](../aspects/offline-platform.md)。
+| 位置 | 字段         | 类型           | 说明                                         |
+| ---- | ------------ | -------------- | -------------------------------------------- |
+| body | `project_id` | number \| null | 在项目内时设置                               |
+| body | `list_id`    | number         | 既有；见 [任务归属](#任务归属任务模块--项目) |
 
 ---
 
-## Habitat RPC methods (v1)
+## 离线（CRUD outbox）
 
-All methods optional `subject_kind: user | agent` (default `user`). Transport: `POST|WS /rpc/v1`.
+卫星壳 Project UI 走 IndexedDB 快照 + outbox（与日记 / 任务同级）。写 RPC 支持可选 `client_op_id` 幂等；详见 [`offline-platform.md`](../aspects/offline-platform.md)。
+
+---
+
+## 栖息地 RPC 方法（v1）
+
+全部方法可选 `subject_kind: user | agent`（默认 `user`）。传输：`POST|WS /rpc/v1`。
 
 ### `projectfolder.*`
 
-| Method                 | Purpose                                                      |
-| ---------------------- | ------------------------------------------------------------ |
-| `projectfolder.list`   | List folder tree (`include nested` or flat with `parent_id`) |
-| `projectfolder.create` | Create folder (`parent_id?`, `title`, `sort_order?`)         |
-| `projectfolder.patch`  | Rename, reparent, reorder                                    |
-| `projectfolder.delete` | Delete folder tree; projects → `folder_id: null`             |
+| 方法                   | 用途                                               |
+| ---------------------- | -------------------------------------------------- |
+| `projectfolder.list`   | 列文件夹树（含嵌套或带 `parent_id` 扁平）          |
+| `projectfolder.create` | 创建文件夹（`parent_id?`、`title`、`sort_order?`） |
+| `projectfolder.patch`  | 重命名、改父、重排                                 |
+| `projectfolder.delete` | 删除文件夹树；项目 → `folder_id: null`             |
 
 ### `project.*`
 
-| Method           | Purpose                                                                                       |
-| ---------------- | --------------------------------------------------------------------------------------------- |
-| `project.list`   | List projects (`folder_id?`, `status?`)                                                       |
-| `project.stats`  | Per-project `task_count` for sidebar badges (`folder_id?`, `status?`)                         |
-| `project.create` | Create project (required `title`, `start_at`, `end_at`; optional `content`, `folder_id`, …)   |
-| `project.get`    | Project detail                                                                                |
-| `project.patch`  | Update fields (including optional `content`), terminal status, or `release_tasks` side-effect |
-| `project.delete` | Delete project; tasks move to default list (Inbox)                                            |
+| 方法             | 用途                                                                           |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `project.list`   | 列项目（`folder_id?`、`status?`）                                              |
+| `project.stats`  | 侧栏徽章用每项目 `task_count`（`folder_id?`、`status?`）                       |
+| `project.create` | 创建项目（必填 `title`、`start_at`、`end_at`；可选 `content`、`folder_id`、…） |
+| `project.get`    | 项目详情                                                                       |
+| `project.patch`  | 更新字段（含可选 `content`）、终态状态，或 `release_tasks` 副作用              |
+| `project.delete` | 删除项目；任务移到默认清单（收件箱）                                           |
 
-### Task item Habitat methods（归属拆分）
+### 任务条目栖息地方法（归属拆分）
 
-| Method                                    | Purpose                                          |
+| 方法                                      | 用途                                             |
 | ----------------------------------------- | ------------------------------------------------ |
 | `tasklist.item.list`                      | 任务模块列任务（清单 / Backlog；默认排除项目内） |
 | `tasklist.item.create`                    | 任务模块建任务（只认 `list_id`，可省略→收件箱）  |
@@ -326,6 +326,6 @@ All methods optional `subject_kind: user | agent` (default `user`). Transport: `
 | `task.search`                             | 跨归属搜索；结果含 project/list 归属             |
 | `task.complete` / `uncomplete` / `delete` | 按 id 共享操作                                   |
 
-Implementation target: `src/features/project/` (domain + habitat + `ui/spa` + `plugin.ts`); schemas under `src/host/core/db/schema/entity/components/`; SAP frames under `src/shared/rpc-contract/frames/`.
+实现目标：`src/features/project/`（domain + habitat + `ui/spa` + `plugin.ts`）；schema 在 `src/host/core/db/schema/entity/components/`；SAP frames 在 `src/shared/rpc-contract/frames/`。
 
-See also [entity-model — Project module](../product/entity-model.md#project-module-v1-spec).
+另见[实体模型 — 项目模块](../product/entity-model.md#project-module-v1-spec)。

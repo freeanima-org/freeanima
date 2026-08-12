@@ -7,7 +7,6 @@ import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
 import { useMemo, useState } from "react";
 import { getToolsStatus } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { catchWithFallback } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 
 type ToolsLoaderData = ToolsStatusResponse;
@@ -34,11 +33,13 @@ function sortToolSets(toolSets: ToolsLoaderData["toolsets"]): ToolsLoaderData["t
 }
 
 function returnKindLabel(kind: ToolsStatusToolItem["return_kind"]): string {
-  return kind === "text" ? m.habitat_tools_kind_text() : m.habitat_tools_kind_json();
+  return kind === "text" ? "纯文本" : "结构化 JSON";
 }
 
 function returnKindHint(kind: ToolsStatusToolItem["return_kind"]): string {
-  return kind === "text" ? m.habitat_tools_return_text() : m.habitat_tools_return_json();
+  return kind === "text"
+    ? "成功时返回纯文本；失败时返回 JSON error"
+    : "成功时返回 toolResult JSON 对象；失败时返回 JSON error";
 }
 
 function isDynamicRemoteTool(tool: ToolsStatusToolItem): boolean {
@@ -57,9 +58,9 @@ function formatReturnExample(tool: ToolsStatusToolItem): string {
 async function copyText(text: string, label: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(text);
-    console.info(m.habitat_common_copied({ label }));
+    console.info(`已复制${label}`);
   } catch {
-    console.warn(m.habitat_common_copy_failed({ label }));
+    console.warn(`复制${label}失败`);
   }
 }
 
@@ -77,8 +78,12 @@ function DefaultToolSetsSection({ names }: { names: string[] }) {
   return (
     <Card className="bg-muted py-0 mb-4">
       <CardContent className="py-3 px-4 gap-2">
-        <h3 className="text-sm font-semibold">{m.habitat_tools_default_loaded()}</h3>
-        <p className="text-xs text-muted-foreground">{m.habitat_tools_default_loaded_hint()}</p>
+        <h3 className="text-sm font-semibold">{"默认加载工具集"}</h3>
+        <p className="text-xs text-muted-foreground">
+          {
+            "新会话自动注入 LLM tools 参数的默认工具集（通过 toolset_load 按需加载的工具集不在此列）。"
+          }
+        </p>
         <div className="flex flex-wrap gap-1">
           {names.map((name) => (
             <Badge key={name} className="text-xs font-mono">
@@ -106,12 +111,12 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
             </Badge>
             {tool.requires_env?.length ? (
               <Badge variant="warning" className="text-xs">
-                {m.habitat_tools_needs_secret()}
+                {"需密钥"}
               </Badge>
             ) : null}
             {missingContract ? (
               <Badge variant="destructive" className="text-xs">
-                {m.habitat_tools_no_contract()}
+                {"未记录返回契约"}
               </Badge>
             ) : null}
           </div>
@@ -126,7 +131,7 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
 
         <details className="mt-1">
           <summary className="text-xs cursor-pointer text-muted-foreground">
-            {m.habitat_tools_param_schema()}
+            {"参数 schema"}
           </summary>
           <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.parameters, null, 2)}
@@ -136,7 +141,7 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
         {tool.return_schema ? (
           <details className="mt-1">
             <summary className="text-xs cursor-pointer text-muted-foreground">
-              {m.habitat_tools_success_schema()}
+              {"成功返回 schema"}
             </summary>
             <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto">
               {JSON.stringify(tool.return_schema, null, 2)}
@@ -147,7 +152,7 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
         {exampleText ? (
           <details className="mt-1">
             <summary className="text-xs cursor-pointer text-muted-foreground flex items-center gap-2">
-              <span>{m.habitat_tools_fidelity_example()}</span>
+              <span>{"保真示例（成功）"}</span>
               <Button
                 type="button"
                 variant="ghost"
@@ -155,10 +160,10 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
                 className="h-7 text-xs"
                 onClick={(e) => {
                   e.preventDefault();
-                  void copyText(exampleText, m.habitat_tools_success_example());
+                  void copyText(exampleText, "成功返回示例");
                 }}
               >
-                {m.habitat_common_copy()}
+                {"复制"}
               </Button>
             </summary>
             <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap">
@@ -168,14 +173,12 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
         ) : null}
 
         <details className="mt-1">
-          <summary className="text-xs cursor-pointer text-muted-foreground">
-            {m.habitat_tools_error_return()}
-          </summary>
-          <p className="text-xs text-muted-foreground mt-1">{m.habitat_tools_error_unified()}</p>
+          <summary className="text-xs cursor-pointer text-muted-foreground">{"错误返回"}</summary>
+          <p className="text-xs text-muted-foreground mt-1">{"所有工具失败时统一返回 JSON："}</p>
           <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.error_schema, null, 2)}
           </pre>
-          <p className="text-xs text-muted-foreground mt-2">{m.habitat_tools_example()}</p>
+          <p className="text-xs text-muted-foreground mt-2">{"示例："}</p>
           <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.error_example, null, 2)}
           </pre>
@@ -183,7 +186,7 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
 
         <details className="mt-1">
           <summary className="text-xs cursor-pointer text-muted-foreground">
-            {m.habitat_tools_openai_def()}
+            {"完整 OpenAI 定义"}
           </summary>
           <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.definition, null, 2)}
@@ -228,8 +231,8 @@ function ToolsPage() {
   if (toolSets.length === 0) {
     return (
       <div>
-        <h2 className="text-lg font-bold mb-4">{m.habitat_nav_tools()}</h2>
-        <p className="text-sm text-muted-foreground mb-4">{m.habitat_tools_desc()}</p>
+        <h2 className="text-lg font-bold mb-4">{"🔧 工具"}</h2>
+        <p className="text-sm text-muted-foreground mb-4">{"已注册的工具列表。"}</p>
         <DefaultToolSetsSection names={defaultToolSets} />
         <div className="space-y-3">
           {pagedTools.map((tool) => (
@@ -248,8 +251,10 @@ function ToolsPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-4">{m.habitat_nav_tools()}</h2>
-      <p className="text-sm text-muted-foreground mb-4">{m.habitat_tools_desc_grouped()}</p>
+      <h2 className="text-lg font-bold mb-4">{"🔧 工具"}</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        {"已注册的工具列表（按 ToolSet 分组）。"}
+      </p>
       <DefaultToolSetsSection names={defaultToolSets} />
 
       <div className="space-y-4">
@@ -283,7 +288,7 @@ function ToolsPage() {
 
         {ungroupedTools.length > 0 ? (
           <>
-            <h3 className="text-sm font-bold mt-4 mb-2">{m.habitat_tools_ungrouped()}</h3>
+            <h3 className="text-sm font-bold mt-4 mb-2">{"🔧 未分组工具"}</h3>
             <div className="space-y-3">
               {pagedUngroupedTools.map((tool) => (
                 <ToolCard key={tool.name} tool={tool} />

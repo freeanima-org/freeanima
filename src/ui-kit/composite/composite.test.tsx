@@ -1,13 +1,6 @@
-import { describe, expect, it, mock } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-
-mock.module("@paraglide/messages", () => ({
-  m: {
-    ui_common_cancel: () => "Cancel",
-    ui_common_confirm: () => "OK",
-  },
-}));
 
 const { ConfirmDialog } = await import("./ConfirmDialog.tsx");
 const { ActionSheet } = await import("./ActionSheet.tsx");

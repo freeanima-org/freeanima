@@ -20,7 +20,6 @@ import {
   patchHabitatSubagent,
   type HabitatSubagentRow,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import {
   catchWithFallback,
   logCaughtError,
@@ -68,7 +67,7 @@ function SubagentsPage() {
       setItems(data.items ?? []);
     } catch (e) {
       logCaughtError("subagents/reload", e);
-      setError(m.habitat_common_load_failed_short());
+      setError("加载失败");
     }
   };
 
@@ -143,20 +142,24 @@ function SubagentsPage() {
   return (
     <div className="space-y-4 p-4">
       <div>
-        <h1 className="text-xl font-semibold">{m.habitat_nav_subagents()}</h1>
-        <p className="text-sm text-muted-foreground">{m.habitat_subagents_intro()}</p>
+        <h1 className="text-xl font-semibold">{"子代理"}</h1>
+        <p className="text-sm text-muted-foreground">
+          {
+            "命名子代理档案存为 entity。allowed_tools 为硬天花板；运行时物化固定 tools 列表（禁止 toolset_load）。"
+          }
+        </p>
       </div>
       {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
 
       {items.length === 0 ? (
-        <StatusAlert variant="info">{m.habitat_subagents_empty()}</StatusAlert>
+        <StatusAlert variant="info">{"尚无子代理档案。"}</StatusAlert>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{m.habitat_subagents_col_slug()}</TableHead>
-              <TableHead>{m.habitat_subagents_col_title()}</TableHead>
-              <TableHead>{m.habitat_subagents_col_tools()}</TableHead>
+              <TableHead>{"Slug"}</TableHead>
+              <TableHead>{"标题"}</TableHead>
+              <TableHead>{"工具"}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -170,7 +173,7 @@ function SubagentsPage() {
                 </TableCell>
                 <TableCell className="space-x-2 text-right">
                   <Button size="sm" variant="ghost" onPress={() => startEdit(row)}>
-                    {m.habitat_common_edit()}
+                    {"编辑"}
                   </Button>
                   <Button
                     size="sm"
@@ -178,7 +181,7 @@ function SubagentsPage() {
                     isDisabled={busy}
                     onPress={() => void remove(row.id)}
                   >
-                    {m.habitat_common_delete()}
+                    {"删除"}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -189,39 +192,37 @@ function SubagentsPage() {
 
       <div className="space-y-3 rounded-md border p-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-medium">
-            {editingId != null ? m.habitat_subagents_edit() : m.habitat_subagents_create()}
-          </h2>
+          <h2 className="font-medium">{editingId != null ? "编辑子代理" : "创建子代理"}</h2>
           {editingId != null ? (
             <Button size="sm" variant="ghost" onPress={startCreate}>
-              {m.habitat_subagents_new()}
+              {"新建"}
             </Button>
           ) : null}
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1">
-            <Label>{m.habitat_subagents_col_slug()}</Label>
+            <Label>{"Slug"}</Label>
             <Input
               value={form.slug}
               onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
             />
           </div>
           <div className="space-y-1">
-            <Label>{m.habitat_subagents_col_title()}</Label>
+            <Label>{"标题"}</Label>
             <Input
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <Label>{m.habitat_subagents_field_summary()}</Label>
+            <Label>{"描述"}</Label>
             <Input
               value={form.summary}
               onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <Label>{m.habitat_subagents_field_content()}</Label>
+            <Label>{"系统提示补充"}</Label>
             <Textarea
               value={form.content}
               onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
@@ -229,7 +230,7 @@ function SubagentsPage() {
             />
           </div>
           <div className="space-y-1">
-            <Label>{m.habitat_subagents_field_skills()}</Label>
+            <Label>{"Skills（逗号分隔）"}</Label>
             <Input
               value={form.skills}
               onChange={(e) => setForm((f) => ({ ...f, skills: e.target.value }))}
@@ -237,14 +238,14 @@ function SubagentsPage() {
             />
           </div>
           <div className="space-y-1">
-            <Label>{m.habitat_subagents_field_max_turns()}</Label>
+            <Label>{"最大回合"}</Label>
             <Input
               value={form.max_turns}
               onChange={(e) => setForm((f) => ({ ...f, max_turns: e.target.value }))}
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <Label>{m.habitat_subagents_field_allowed()}</Label>
+            <Label>{"允许工具（@ToolSet 或工具名）"}</Label>
             <Textarea
               value={form.allowed_tools}
               onChange={(e) => setForm((f) => ({ ...f, allowed_tools: e.target.value }))}
@@ -253,7 +254,7 @@ function SubagentsPage() {
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <Label>{m.habitat_subagents_field_denied()}</Label>
+            <Label>{"拒绝工具"}</Label>
             <Textarea
               value={form.denied_tools}
               onChange={(e) => setForm((f) => ({ ...f, denied_tools: e.target.value }))}
@@ -261,7 +262,7 @@ function SubagentsPage() {
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <Label>{m.habitat_subagents_field_prompt_includes()}</Label>
+            <Label>{"提示词旁路（可选：self, world, time）"}</Label>
             <Input
               value={form.prompt_includes}
               onChange={(e) => setForm((f) => ({ ...f, prompt_includes: e.target.value }))}
@@ -270,7 +271,7 @@ function SubagentsPage() {
           </div>
         </div>
         <Button isDisabled={busy || !form.slug.trim()} onPress={() => void save()}>
-          {m.habitat_common_save()}
+          {"保存"}
         </Button>
       </div>
     </div>

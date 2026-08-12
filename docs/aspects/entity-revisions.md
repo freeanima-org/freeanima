@@ -1,29 +1,33 @@
 ---
-title: Entity revisions
+title: 实体修订
 ---
 
-# Entity revisions（实体版本快照）
+# 实体修订（版本快照）
 
-Cross-cutting design aspect：对选定 `primary_component` 的实体，在实质 `updateEntity` 前自动把**当前态**压入顶层 `entities.revisions`，便于误覆盖后回滚。
+横切设计切面：对选定 `primary_component` 的实体，在实质 `updateEntity`
+前自动把**当前态**压入顶层 `entities.revisions`，便于误覆盖后回滚。
 
-这不是独立产品模块；Vault 是首个完整产品面（list / restore UI）。其它白名单组件本切面只保证**自动归档**，历史 UI 按需跟进。
+这不是独立产品模块；Vault 是首个完整产品面（list / restore UI）。其它白名单组件本切面只保证**自动归档**，历史 UI
+按需跟进。
 
-相关：[`entity-model.md`](../product/entity-model.md)、[`security.md`](../ops/security.md)。代码 SSOT：`src/host/core/db/schema/entity/revisions.ts`、`updateEntity` / `restoreEntityRevision`。
+相关：[`entity-model.md`](../product/entity-model.md)、[`security.md`](../ops/security.md)。代码
+SSOT：`src/host/core/db/schema/entity/revisions.ts`、`updateEntity` /
+`restoreEntityRevision`。
 
-## Why
+## 为何需要
 
 - 凭证、日记正文、任务标题等**误改往往不可逆**（尤其 Vault 密文）。
 - 需要跨模块一致的存储与写入语义，避免每个 feature 自造 history 表。
 
-## Storage
+## 存储
 
 | 位置                 | 说明                                                                |
 | -------------------- | ------------------------------------------------------------------- |
 | `entities.revisions` | JSONB 数组，**不**进 component `body`                               |
 | 默认                 | `'[]'`；list projection **可不拉**该列（`entityListSelectColumns`） |
-| 上限                 | `DEFAULT_ENTITY_REVISION_LIMIT = 10`（count；无按天 TTL）           |
+| 上限                 | `DEFAULT_ENTITY_REVISION_LIMIT = 10`（条数；无按天 TTL）            |
 
-Envelope（每条）：
+信封（每条）：
 
 ```ts
 {
@@ -37,9 +41,10 @@ Envelope（每条）：
 }
 ```
 
-## Allowlist（自动归档）
+## 白名单（自动归档）
 
-仅下列 `primary_component` 在 `updateEntity` 时自动写入（见 `ENTITY_REVISION_PRIMARY_COMPONENTS`）：
+仅下列 `primary_component` 在 `updateEntity` 时自动写入（见
+`ENTITY_REVISION_PRIMARY_COMPONENTS`）：
 
 | primary_component | 说明                                         |
 | ----------------- | -------------------------------------------- |
@@ -55,7 +60,7 @@ Envelope（每条）：
 
 加入新组件：改白名单常量 + 本表 + 评估噪点写是否需 `skip_revision`。
 
-## Write semantics
+## 写入语义
 
 ```mermaid
 flowchart LR
@@ -83,26 +88,29 @@ flowchart LR
 
 显式替换历史：`revisions` + `skip_revision`（改密写回历史 DEK）。
 
-### Restore
+### 恢复
 
-`restoreEntityRevision(id, index)`：把 `revisions[index]` 写回当前字段；写入前仍会按规则归档**当前**态。越界返回 `null`。
+`restoreEntityRevision(id, index)`：把 `revisions[index]`
+写回当前字段；写入前仍会按规则归档**当前**态。越界返回 `null`。
 
 删除实体即丢弃全部 revisions。
 
 ## Vault 特例
 
 - 每次 seal 生成新 DEK；历史条目各自持有 `(secrets_enc, dek_wrapped)`。
-- 改主密码须 rewrap **当前 + 全部历史** `dek_wrapped`（`vault.crypto.change` 的 `revision_deks`）。
-- 产品 API：`vault.history.list`（仅 meta，无明文）、`vault.history.restore`。不向 LLM ToolSet 暴露 history。
+- 改主密码须 rewrap **当前 + 全部历史** `dek_wrapped`（`vault.crypto.change` 的
+  `revision_deks`）。
+- 产品 API：`vault.history.list`（仅 meta，无明文）、`vault.history.restore`。不向 LLM
+  ToolSet 暴露 history。
 
-## Non-goals
+## 非目标
 
 - 非白名单组件自动归档
 - 全表审计日志 / 按天 TTL
 - 全局统一 `*.history` RPC（各 feature 自建或复用 `restoreEntityRevision`）
 - 新 ECS `*_revision` component
 
-## Adding a product history UI
+## 增加产品历史 UI
 
 1. 确认组件已在白名单（或先加入）。
 2. Feature RPC：list meta（勿回传敏感明文）+ restore（调 `restoreEntityRevision`）。

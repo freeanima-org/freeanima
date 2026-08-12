@@ -21,7 +21,6 @@ import {
   runCronJob,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { CronRunLogModal } from "./cron-run-log-modal.tsx";
 import {
   catchWithFallback,
@@ -61,11 +60,7 @@ function CronPage() {
       setJobs(((data as { jobs?: CronJob[] }).jobs ?? []) as CronJob[]);
     } catch (e) {
       logCaughtError("routes/_sidebar/cron", e);
-      setError(
-        m.habitat_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setLoading(false);
     }
@@ -82,11 +77,7 @@ function CronPage() {
     } catch (e) {
       logCaughtError("routes/_sidebar/cron", e);
       setError(
-        m.habitat_cron_toggle_failed({
-          name: String(job.name ?? job.id),
-          action: enable ? m.habitat_common_start() : m.habitat_common_stop(),
-          detail: e instanceof Error ? e.message : String(e),
-        }),
+        `${String(job.name ?? job.id)} ${enable ? "启动" : "停止"}失败: ${e instanceof Error ? e.message : String(e)}`,
       );
     } finally {
       setToggling((t) => {
@@ -105,7 +96,7 @@ function CronPage() {
       if ((data as { job?: CronJob }).job) updateJob((data as { job: CronJob }).job);
       setToast((t) => ({
         ...t,
-        [job.id]: (data as { message?: string }).message || m.habitat_cron_triggered(),
+        [job.id]: (data as { message?: string }).message || "已触发",
       }));
       setTimeout(() => {
         setToast((t) => {
@@ -118,10 +109,7 @@ function CronPage() {
     } catch (e) {
       logCaughtError("routes/_sidebar/cron", e);
       setError(
-        m.habitat_cron_trigger_failed({
-          name: String(job.name ?? job.id),
-          detail: e instanceof Error ? e.message : String(e),
-        }),
+        `${String(job.name ?? job.id)} 触发失败: ${e instanceof Error ? e.message : String(e)}`,
       );
     } finally {
       setRunning((r) => {
@@ -136,9 +124,10 @@ function CronPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-lg font-bold">{m.habitat_nav_cron()}</h2>
+          <h2 className="text-lg font-bold">{"⏰ 定时任务"}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {m.habitat_cron_desc()} <code className="text-xs">cronjob</code>
+            {"查看调度任务、启用/暂停与手动触发。新建或删除请使用 cronjob 工具。"}{" "}
+            <code className="text-xs">cronjob</code>
           </p>
         </div>
         <Button
@@ -148,7 +137,7 @@ function CronPage() {
           isDisabled={loading}
           onClick={() => void reload()}
         >
-          {m.habitat_common_refresh()}
+          {"刷新"}
         </Button>
       </div>
 
@@ -160,9 +149,9 @@ function CronPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              [m.habitat_cron_total(), jobs.length],
-              [m.habitat_cron_active(), activeCount],
-              [m.habitat_cron_paused(), pausedCount],
+              ["任务总数", jobs.length],
+              ["运行中", activeCount],
+              ["已暂停", pausedCount],
             ].map(([label, value]) => (
               <Card key={String(label)} className="bg-muted py-0">
                 <CardContent className="py-4 px-4">
@@ -174,7 +163,7 @@ function CronPage() {
           </div>
 
           {jobs.length === 0 ? (
-            <StatusAlert variant="info">{m.habitat_cron_empty()}</StatusAlert>
+            <StatusAlert variant="info">{"暂无定时任务。"}</StatusAlert>
           ) : (
             jobs.map((job) => (
               <Card key={job.id} className="bg-muted py-0">
@@ -183,15 +172,13 @@ function CronPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-bold">{job.name}</h3>
                       <Badge variant={job.paused ? "ghost" : "success"} className="text-xs">
-                        {job.paused
-                          ? m.habitat_cron_status_paused()
-                          : m.habitat_cron_status_active()}
+                        {job.paused ? "已暂停" : "运行中"}
                       </Badge>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                       <div className="flex items-center gap-2">
                         <Label htmlFor={`cron-enable-${job.id}`} className="text-xs">
-                          {m.habitat_cron_enable()}
+                          {"启用"}
                         </Label>
                         <Switch
                           id={`cron-enable-${job.id}`}
@@ -208,7 +195,7 @@ function CronPage() {
                         isDisabled={!!toggling[job.id] || !!running[job.id]}
                         onClick={() => setHistoryJob(job)}
                       >
-                        {m.habitat_cron_run_history()}
+                        {"运行历史"}
                       </Button>
                       <Button
                         type="button"
@@ -219,7 +206,7 @@ function CronPage() {
                         onClick={() => void runNow(job)}
                       >
                         {running[job.id] ? <Spinner /> : null}
-                        {m.habitat_cron_run_now()}
+                        {"立即运行"}
                       </Button>
                     </div>
                   </div>
@@ -230,15 +217,11 @@ function CronPage() {
                         <TableCell className="font-mono text-xs break-all">{job.id}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell className="text-muted-foreground">
-                          {m.habitat_cron_schedule()}
-                        </TableCell>
+                        <TableCell className="text-muted-foreground">{"调度"}</TableCell>
                         <TableCell className="font-mono">{String(job.schedule ?? "")}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell className="text-muted-foreground">
-                          {m.habitat_cron_next_run()}
-                        </TableCell>
+                        <TableCell className="text-muted-foreground">{"下次运行"}</TableCell>
                         <TableCell>
                           {job.paused
                             ? "—"

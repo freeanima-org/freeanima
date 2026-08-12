@@ -6,7 +6,6 @@ import { build, type InlineConfig, type Plugin, type Rollup } from "vite";
 
 import { buildViteAliases } from "./module-aliases.ts";
 import { shellEntryFileNames } from "./entry-file-names.ts";
-import { paraglideCompilePlugin } from "./paraglide-plugin.ts";
 
 export type ShellViteBuildOptions = {
   /** composition 目录（含 index.html） */
@@ -14,8 +13,6 @@ export type ShellViteBuildOptions = {
   outdir: string;
   /** monorepo 根目录（Vite 打包 config 时 import.meta.dir 不可靠） */
   repoRoot?: string;
-  /** Paraglide 编译输出目录；默认 outdir/.paraglide */
-  paraglideOutdir?: string;
   base?: string;
   minify?: boolean;
   sourcemap?: boolean;
@@ -36,7 +33,6 @@ function prepareOutdir(outdir: string, watch: boolean): void {
 }
 
 export function createShellViteInlineConfig(opts: ShellViteBuildOptions): InlineConfig {
-  const paraglideDir = opts.paraglideOutdir ?? join(opts.outdir, ".paraglide");
   const repoRoot = opts.repoRoot;
   const indexHtml = join(opts.appDir, "index.html");
   if (!existsSync(indexHtml)) {
@@ -68,14 +64,9 @@ export function createShellViteInlineConfig(opts: ShellViteBuildOptions): Inline
      * 避免共享 `node_modules/.vite` 触发 504 Outdated Optimize Dep。
      */
     cacheDir: `${opts.outdir}-deps`,
-    plugins: [
-      bunExternalPlugin,
-      paraglideCompilePlugin(paraglideDir, repoRoot),
-      react(),
-      tailwindcss(),
-    ],
+    plugins: [bunExternalPlugin, react(), tailwindcss()],
     resolve: {
-      alias: repoRoot ? buildViteAliases({ repoRoot, paraglideDir }) : [],
+      alias: repoRoot ? buildViteAliases({ repoRoot }) : [],
       dedupe: ["react", "react-dom"],
     },
     ...(opts.define !== undefined ? { define: opts.define } : {}),

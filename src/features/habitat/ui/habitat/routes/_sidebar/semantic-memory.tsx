@@ -26,7 +26,6 @@ import {
 import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import {
   listSemanticMemories,
@@ -98,11 +97,7 @@ function SemanticMemoryPage() {
         setLoaded(true);
       } catch (e) {
         logCaughtError("routes/_sidebar/semantic-memory", e);
-        setError(
-          m.habitat_common_load_failed({
-            detail: e instanceof Error ? e.message : String(e),
-          }),
-        );
+        setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
       } finally {
         setLoading(false);
       }
@@ -129,11 +124,7 @@ function SemanticMemoryPage() {
       );
     } catch (e) {
       logCaughtError("routes/_sidebar/semantic-memory", e);
-      setError(
-        m.habitat_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setToggling((prev) => {
         const next = { ...prev };
@@ -145,8 +136,10 @@ function SemanticMemoryPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">{m.habitat_nav_semantic()}</h2>
-      <p className="text-sm text-muted-foreground mb-4">{m.habitat_semantic_desc()}</p>
+      <h2 className="text-lg font-bold mb-1">{"📝 语义记忆"}</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        {"浏览 PG semantic_memory 表，支持 FTS 搜索与过滤。"}
+      </p>
 
       <form
         className="mb-4"
@@ -158,20 +151,18 @@ function SemanticMemoryPage() {
         <Card className="bg-muted py-0">
           <CardContent className="gap-3 py-4 px-4">
             <FormFieldset bordered={false} className="gap-3">
-              <FormField label={m.habitat_semantic_search_fts()} className="text-xs">
+              <FormField label={"搜索词（可选，FTS）"} className="text-xs">
                 <Input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   type="text"
                   className="h-8"
-                  placeholder={m.habitat_common_keyword_placeholder()}
+                  placeholder={"关键词…"}
                 />
               </FormField>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
-                  <FormFieldLabel className="text-xs py-0">
-                    {m.habitat_common_type_label()}
-                  </FormFieldLabel>
+                  <FormFieldLabel className="text-xs py-0">{"类型"}</FormFieldLabel>
                   <Select
                     selectedKey={typeFilter || ALL_VALUE}
                     onSelectionChange={(key) => {
@@ -184,7 +175,7 @@ function SemanticMemoryPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem id={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
+                      <SelectItem id={ALL_VALUE}>{"全部"}</SelectItem>
                       {SEMANTIC_TYPES.map((t) => (
                         <SelectItem key={t} id={t}>
                           {t}
@@ -194,9 +185,7 @@ function SemanticMemoryPage() {
                   </Select>
                 </div>
                 <div>
-                  <FormFieldLabel className="text-xs py-0">
-                    {m.habitat_common_status_label()}
-                  </FormFieldLabel>
+                  <FormFieldLabel className="text-xs py-0">{"状态"}</FormFieldLabel>
                   <Select
                     selectedKey={statusFilter}
                     onSelectionChange={(key) => {
@@ -209,14 +198,12 @@ function SemanticMemoryPage() {
                     <SelectContent>
                       <SelectItem id="active">active</SelectItem>
                       <SelectItem id="deprecated">deprecated</SelectItem>
-                      <SelectItem id="all">{m.habitat_common_all()}</SelectItem>
+                      <SelectItem id="all">{"全部"}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <FormFieldLabel className="text-xs py-0">
-                    {m.habitat_semantic_source_conversation()}
-                  </FormFieldLabel>
+                  <FormFieldLabel className="text-xs py-0">{"来源对话（可选）"}</FormFieldLabel>
                   <Input
                     value={sourceConversation}
                     onChange={(e) => setSourceConversation(e.target.value)}
@@ -226,9 +213,7 @@ function SemanticMemoryPage() {
                   />
                 </div>
                 <div>
-                  <FormFieldLabel className="text-xs py-0">
-                    {m.habitat_semantic_sort()}
-                  </FormFieldLabel>
+                  <FormFieldLabel className="text-xs py-0">{"排序"}</FormFieldLabel>
                   <Select
                     selectedKey={sortBy}
                     onSelectionChange={(key) => {
@@ -239,11 +224,9 @@ function SemanticMemoryPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem id="updated_at">{m.habitat_semantic_sort_updated()}</SelectItem>
-                      <SelectItem id="created_at">{m.habitat_semantic_sort_created()}</SelectItem>
-                      <SelectItem id="reference_count">
-                        {m.habitat_semantic_sort_reference_count()}
-                      </SelectItem>
+                      <SelectItem id="updated_at">{"更新时间"}</SelectItem>
+                      <SelectItem id="created_at">{"创建时间"}</SelectItem>
+                      <SelectItem id="reference_count">{"引用次数"}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -251,7 +234,7 @@ function SemanticMemoryPage() {
             </FormFieldset>
             <Button type="submit" size="sm" isDisabled={loading}>
               {loading ? <Spinner /> : null}
-              {m.habitat_common_query()}
+              {"查询"}
             </Button>
           </CardContent>
         </Card>
@@ -270,22 +253,22 @@ function SemanticMemoryPage() {
               <Spinner />
             </div>
           ) : items.length === 0 ? (
-            <StatusAlert variant="info">{m.habitat_common_no_results()}</StatusAlert>
+            <StatusAlert variant="info">{"无匹配记录。"}</StatusAlert>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>id</TableHead>
-                    <TableHead>{m.habitat_common_type_label()}</TableHead>
-                    <TableHead>{m.habitat_common_status_label()}</TableHead>
-                    <TableHead>{m.habitat_semantic_pinned()}</TableHead>
-                    <TableHead>{m.habitat_semantic_created()}</TableHead>
-                    <TableHead>{m.habitat_semantic_updated()}</TableHead>
-                    <TableHead>{m.habitat_semantic_reference_count()}</TableHead>
-                    <TableHead>{m.habitat_limbic_content()}</TableHead>
+                    <TableHead>{"类型"}</TableHead>
+                    <TableHead>{"状态"}</TableHead>
+                    <TableHead>{"置顶"}</TableHead>
+                    <TableHead>{"创建时间"}</TableHead>
+                    <TableHead>{"更新时间"}</TableHead>
+                    <TableHead>{"引用"}</TableHead>
+                    <TableHead>{"内容"}</TableHead>
                     <TableHead>conversations</TableHead>
-                    {hasSearchQuery ? <TableHead>{m.habitat_semantic_rank()}</TableHead> : null}
+                    {hasSearchQuery ? <TableHead>{"排名"}</TableHead> : null}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -300,7 +283,7 @@ function SemanticMemoryPage() {
                         {row.status === "active" ? (
                           <div className="flex items-center gap-2">
                             <Label htmlFor={`pin-${row.id}`} className="sr-only">
-                              {m.habitat_semantic_pin_toggle()}
+                              {"置顶到常驻记忆"}
                             </Label>
                             <Switch
                               id={`pin-${row.id}`}
@@ -354,7 +337,7 @@ function SemanticMemoryPage() {
           />
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">{m.habitat_common_click_query_hint()}</p>
+        <p className="text-sm text-muted-foreground">{"点击「查询」加载列表。"}</p>
       )}
     </div>
   );

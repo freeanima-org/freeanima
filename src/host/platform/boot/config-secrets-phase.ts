@@ -11,10 +11,8 @@ import { startupLog } from "./status.ts";
 export async function bootConfigSecretsPhase(config: RuntimeConfigStore): Promise<void> {
   startupLog("Resolving config secrets (vault/env)…");
   config.update(await resolveLlmProviderApiKeys(config.data));
-  const i18n = config.data.i18n;
   applyHostI18nConfig({
-    locale: i18n?.locale,
-    timezone: i18n?.timezone,
+    timezone: config.data.i18n?.timezone,
   });
   bindEmbeddingRuntime(config);
   bindSearchRuntime(config);

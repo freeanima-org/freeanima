@@ -11,7 +11,6 @@ import {
   replaceHabitatConfigSection,
 } from "@freeanima/client/portal-sdk/habitat-config-api";
 
-import { m as uiMessages } from "@paraglide/messages";
 import {
   AdvancedSectionForm,
   readAdvancedSectionDraft,
@@ -150,7 +149,7 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
 
   const afterSave = useCallback(
     async (section: string) => {
-      setSavedHint(uiMessages.ui_habitat_config_saved_applied_description({ section }));
+      setSavedHint(`「${section}」已保存并在内存中热应用，无需重启。`);
       await load();
     },
     [load],

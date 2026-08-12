@@ -4,7 +4,6 @@ import { Badge, Card, CardContent, buttonVariants, cn } from "@freeanima/ui-kit"
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { StoredMessagePanel } from "@freeanima/features/habitat/ui/habitat/components/habitat/ConversationMessagePanel.tsx";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { useHabitatConversationsStore } from "@freeanima/features/habitat/ui/habitat/stores/habitat-conversations.ts";
 
 export const Route = createFileRoute("/_sidebar/conversations/$conversationId")({
@@ -31,11 +30,9 @@ function ConversationDetailPage() {
           to="/conversations"
           className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "h-7 text-xs")}
         >
-          {m.habitat_conversations_back_list()}
+          {"← 返回列表"}
         </Link>
-        <h2 className="text-lg font-bold flex-1 truncate">
-          {conversation?.title || m.habitat_common_no_title()}
-        </h2>
+        <h2 className="text-lg font-bold flex-1 truncate">{conversation?.title || "（无标题）"}</h2>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 mb-4 text-xs text-muted-foreground">

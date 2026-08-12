@@ -6,7 +6,6 @@ import {
   fetchHabitatConfigSection,
   replaceHabitatConfigSection,
 } from "@freeanima/client/portal-sdk/habitat-config-api";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 import {
   keyValueTextToRecord,
@@ -281,16 +280,12 @@ export function McpServersConfigEditor({ onSaved }: Props) {
     setSavedHint("");
     try {
       await replaceHabitatConfigSection("mcp_servers", draft);
-      setSavedHint(m.ui_habitat_config_saved_applied_description({ section: "mcp_servers" }));
+      setSavedHint(`「mcp_servers」已保存并在内存中热应用，无需重启。`);
       await load();
       await onSaved();
     } catch (e) {
       logCaughtError("McpServersConfigEditor/save", e);
-      setSaveError(
-        m.habitat_mcp_save_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setSaveError(`Save failed: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setSaving(false);
     }
@@ -302,14 +297,14 @@ export function McpServersConfigEditor({ onSaved }: Props) {
       open={keys.length === 0}
     >
       <summary className="cursor-pointer text-sm font-medium select-none">
-        {m.habitat_mcp_edit_config()}
+        {"Edit server config"}
       </summary>
       <div className="mt-4 space-y-4">
         {loadError ? <StatusAlert variant="error">{loadError}</StatusAlert> : null}
         {saveError ? <StatusAlert variant="error">{saveError}</StatusAlert> : null}
         {savedHint ? <StatusAlert variant="success">{savedHint}</StatusAlert> : null}
         {loading ? (
-          <p className="text-sm text-muted-foreground">{m.habitat_common_loading()}</p>
+          <p className="text-sm text-muted-foreground">{"加载中…"}</p>
         ) : (
           <>
             <div className="flex flex-wrap gap-1">
@@ -351,10 +346,12 @@ export function McpServersConfigEditor({ onSaved }: Props) {
             {entry ? (
               <McpEntryFields entryKey={activeKey} entry={entry} patch={patchEntry} />
             ) : (
-              <p className="text-sm text-muted-foreground">{m.habitat_mcp_empty_hint()}</p>
+              <p className="text-sm text-muted-foreground">
+                {"No MCP servers yet. Expand “Edit server config” below to add one."}
+              </p>
             )}
             <Button type="button" isDisabled={saving} onClick={() => void save()}>
-              {m.habitat_mcp_save_config()}
+              {"Save MCP config"}
             </Button>
           </>
         )}

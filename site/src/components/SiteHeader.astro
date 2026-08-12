@@ -1,27 +1,17 @@
 ---
-import { m } from "../lib/i18n.ts";
-import {
-  detectLocale,
-  getLanguageSwitch,
-  getNavLinks,
-  siteName,
-  type SiteLocale,
-} from "../lib/site.ts";
+import { getNavLinks, siteName } from "../lib/site.ts";
 
 interface Props {
   embedded?: boolean;
-  locale?: SiteLocale;
 }
 
-const { embedded = false, locale: localeProp } = Astro.props;
+const { embedded = false } = Astro.props;
 const pathname = Astro.url.pathname.replace(/\/$/, "") || "/";
-const locale = localeProp ?? detectLocale(pathname);
-const navLinks = getNavLinks(locale);
-const languageSwitch = getLanguageSwitch(pathname);
+const navLinks = getNavLinks();
 
 function isActive(href: string): boolean {
-  if (href === "/" || href === "/zh-cn/") {
-    return pathname === href.replace(/\/$/, "") || pathname === href;
+  if (href === "/") {
+    return pathname === "/" || pathname === "";
   }
   if (href.startsWith("/docs")) {
     return pathname === "/docs" || pathname.startsWith("/docs/");
@@ -32,11 +22,11 @@ function isActive(href: string): boolean {
 
 <header class:list={["site-header", embedded && "site-header--embedded"]}>
   <div class="site-header__inner">
-    <a class="site-header__brand" href={locale === "zh-cn" ? "/zh-cn/" : "/"}>
+    <a class="site-header__brand" href="/">
       <img class="site-header__logo" src="/favicon.png" width="20" height="20" alt="" />
       {siteName}
     </a>
-    <nav class="site-header__nav" aria-label={m.nav_site_aria()}>
+    <nav class="site-header__nav" aria-label="站点导航">
       {
         navLinks.map((link) => (
           <a
@@ -49,9 +39,6 @@ function isActive(href: string): boolean {
           </a>
         ))
       }
-      <a class="site-header__link site-header__link--locale" href={languageSwitch.href}>
-        {languageSwitch.label}
-      </a>
     </nav>
   </div>
 </header>
@@ -111,12 +98,6 @@ function isActive(href: string): boolean {
   .site-header__link:hover,
   .site-header__link--active {
     color: var(--color-text);
-  }
-
-  .site-header__link--locale {
-    border: 1px solid var(--color-border);
-    border-radius: 0.25rem;
-    padding: 0.125rem 0.5rem;
   }
 
   @media (max-width: 480px) {

@@ -1,19 +1,5 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 
-mock.module("@paraglide/messages", () => ({
-  m: new Proxy(
-    {},
-    {
-      get: (_t, prop: string) => () => prop,
-    },
-  ),
-}));
-mock.module("@paraglide/runtime", () => ({
-  getLocale: () => "zh-cn",
-  locales: ["zh-cn", "en"],
-  setLocale: async (_locale: string) => {},
-}));
-
 type StreamCallbacks = {
   onData?: (ev: { event: string; data: Record<string, unknown> }) => void;
   onComplete?: () => void;

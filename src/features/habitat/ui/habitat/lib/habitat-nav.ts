@@ -1,5 +1,3 @@
-import { m } from "./i18n.ts";
-
 export type HabitatNavItem = { to: string; label: string };
 
 export type HabitatNavGroup = {
@@ -12,54 +10,54 @@ export function habitatNavGroups(): HabitatNavGroup[] {
   return [
     {
       id: "runtime",
-      label: m.habitat_nav_group_runtime(),
+      label: "运行时",
       items: [
-        { to: "/dashboard", label: m.habitat_nav_dashboard() },
-        { to: "/cron", label: m.habitat_nav_cron() },
+        { to: "/dashboard", label: "📊 仪表盘" },
+        { to: "/cron", label: "⏰ 定时任务" },
       ],
     },
     {
       id: "memory",
-      label: m.habitat_nav_group_memory(),
+      label: "记忆体系",
       items: [
-        { to: "/passive-recall", label: m.habitat_nav_passive_recall() },
-        { to: "/semantic-memory", label: m.habitat_nav_semantic() },
-        { to: "/limbic-memory", label: m.habitat_nav_limbic() },
-        { to: "/autobiographical-memory", label: m.habitat_nav_autobio() },
-        { to: "/temporal-summary", label: m.habitat_nav_temporal_summary() },
-        { to: "/conversations", label: m.habitat_nav_conversations() },
-        { to: "/fts", label: m.habitat_nav_fts() },
-        { to: "/sleep", label: m.habitat_nav_sleep() },
-        { to: "/auto-llm-runs", label: m.habitat_nav_auto_llm_runs() },
+        { to: "/passive-recall", label: "🔎 被动召回调试" },
+        { to: "/semantic-memory", label: "📝 语义记忆" },
+        { to: "/limbic-memory", label: "💗 情感记忆" },
+        { to: "/autobiographical-memory", label: "📖 自传记忆" },
+        { to: "/temporal-summary", label: "⏳ 时间摘要" },
+        { to: "/conversations", label: "💬 对话" },
+        { to: "/fts", label: "🔍 全文检索" },
+        { to: "/sleep", label: "😴 睡眠" },
+        { to: "/auto-llm-runs", label: "🤖 自动 LLM 运行" },
       ],
     },
     {
       id: "self",
-      label: m.habitat_nav_group_self(),
+      label: "自我",
       items: [
-        { to: "/self-layer", label: m.habitat_nav_self_layer() },
-        { to: "/system-prompt", label: m.habitat_nav_system_prompt() },
+        { to: "/self-layer", label: "🪞 自我层" },
+        { to: "/system-prompt", label: "📋 系统提示词" },
       ],
     },
     {
       id: "estate",
-      label: m.habitat_nav_group_estate(),
+      label: "资源",
       items: [
-        { to: "/subjects", label: m.habitat_nav_subjects() },
-        { to: "/worlds", label: m.habitat_nav_worlds() },
-        { to: "/data-maintenance", label: m.habitat_nav_data_maintenance() },
+        { to: "/subjects", label: "👤 主体" },
+        { to: "/worlds", label: "🌍 世界" },
+        { to: "/data-maintenance", label: "🧰 数据维护" },
       ],
     },
     {
       id: "capabilities",
-      label: m.habitat_nav_group_capabilities(),
+      label: "能力",
       items: [
-        { to: "/tools", label: m.habitat_nav_tools() },
-        { to: "/skills", label: m.habitat_nav_skills() },
-        { to: "/commands", label: m.habitat_nav_commands() },
-        { to: "/mcp", label: m.habitat_nav_mcp() },
-        { to: "/subagents", label: m.habitat_nav_subagents() },
-        { to: "/outposts", label: m.habitat_nav_outposts() },
+        { to: "/tools", label: "🔧 工具" },
+        { to: "/skills", label: "技能" },
+        { to: "/commands", label: "⌨️ 命令" },
+        { to: "/mcp", label: "🔌 MCP" },
+        { to: "/subagents", label: "子代理" },
+        { to: "/outposts", label: "Outposts" },
       ],
     },
   ];

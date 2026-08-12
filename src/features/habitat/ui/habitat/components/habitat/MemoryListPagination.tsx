@@ -1,5 +1,4 @@
 import { Button } from "@freeanima/ui-kit";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 
 type MemoryListPaginationProps = {
   total: number;
@@ -22,11 +21,7 @@ export function MemoryListPagination({
   return (
     <div className="flex items-center justify-between gap-2 pt-2 border-t border/50 text-xs">
       <span className="text-muted-foreground">
-        {m.habitat_common_pagination({
-          total: String(total),
-          current: String(currentPage),
-          pages: String(pageCount),
-        })}
+        {`共 ${String(total)} 条 · 第 ${String(currentPage)} / ${String(pageCount)} 页`}
       </span>
       <div className="flex items-center gap-1">
         <Button
@@ -37,7 +32,7 @@ export function MemoryListPagination({
           isDisabled={currentPage <= 1 || loading}
           onClick={() => onPageChange(currentPage - 1)}
         >
-          {m.habitat_common_previous_page()}
+          {"上一页"}
         </Button>
         <Button
           type="button"
@@ -47,7 +42,7 @@ export function MemoryListPagination({
           isDisabled={currentPage >= pageCount || loading}
           onClick={() => onPageChange(currentPage + 1)}
         >
-          {m.habitat_common_next_page()}
+          {"下一页"}
         </Button>
       </div>
     </div>

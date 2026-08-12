@@ -33,7 +33,6 @@ import {
   formatDisplayDate,
   formatDisplayDateTime,
 } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import {
   catchWithFallback,
   logCaughtError,
@@ -113,15 +112,15 @@ export const Route = createFileRoute("/_sidebar/sleep")({
 function stepLabel(stepId: string): string {
   switch (stepId) {
     case "light-sleep":
-      return m.habitat_sleep_step_light_sleep();
+      return "浅睡";
     case "deep-sleep":
-      return m.habitat_sleep_step_deep_sleep();
+      return "深睡";
     case "dream":
-      return m.habitat_sleep_step_dream();
+      return "梦境";
     case "memory-ref-sync":
-      return m.habitat_sleep_step_memory_ref_sync();
+      return "记忆引用同步";
     case "self-layer-refresh":
-      return m.habitat_sleep_step_self_layer_refresh();
+      return "自我层刷新";
     default:
       return stepId;
   }
@@ -130,13 +129,13 @@ function stepLabel(stepId: string): string {
 function triggerLabel(trigger: string): string {
   switch (trigger) {
     case "scheduled":
-      return m.habitat_sleep_trigger_scheduled();
+      return "已调度";
     case "manual_cycle":
-      return m.habitat_sleep_trigger_manual_cycle();
+      return "手动周期";
     case "manual_step":
-      return m.habitat_sleep_trigger_manual_step();
+      return "手动步骤";
     case "catch_up":
-      return m.habitat_sleep_trigger_catch_up();
+      return "补跑";
     default:
       return trigger;
   }
@@ -162,9 +161,9 @@ function stepStatusBadgeVariant(status: string | undefined): BadgeVariant {
 function pipelineStatusLabel(status: string): string {
   switch (status) {
     case "completed":
-      return m.habitat_common_success();
+      return "成功";
     case "failed":
-      return m.habitat_common_failed();
+      return "失败";
     case "skipped":
       return status;
     default:
@@ -242,11 +241,7 @@ function SleepPage() {
       setRuns((data as { items?: PipelineRunRow[] }).items ?? []);
     } catch (e) {
       logCaughtError("routes/_sidebar/sleep", e);
-      setError(
-        m.habitat_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setLoading(false);
     }
@@ -400,27 +395,27 @@ function SleepPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">{m.habitat_nav_sleep()}</h2>
-      <p className="text-sm text-muted-foreground mb-4">{m.habitat_sleep_desc()}</p>
+      <h2 className="text-lg font-bold mb-1">{"😴 睡眠"}</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        {"睡眠周期状态、手动运行与流水线步骤历史。"}
+      </p>
 
       <Card className="bg-muted py-0 mb-4">
         <CardContent className="p-4">
-          <h3 className="font-semibold mb-1">{m.habitat_sleep_cycle_title()}</h3>
-          <p className="text-sm text-muted-foreground mb-3">{m.habitat_sleep_cycle_status()}</p>
+          <h3 className="font-semibold mb-1">{"运行控制"}</h3>
+          <p className="text-sm text-muted-foreground mb-3">{"步骤状态"}</p>
           <FormFieldset bordered={false} className="gap-3 mb-3">
-            <FormField label={m.habitat_sleep_cycle_day()} className="max-w-xs text-xs">
+            <FormField label={"日期（YYYY-MM-DD，可选）"} className="max-w-xs text-xs">
               <DatePickerInput
                 className="h-8"
                 value={pipelineDay}
-                aria-label={m.habitat_sleep_cycle_day()}
+                aria-label={"日期（YYYY-MM-DD，可选）"}
                 onChange={setPipelineDay}
                 disabled={pipelineBusy}
               />
             </FormField>
             <div className="max-w-md">
-              <FormFieldLabel className="text-xs py-0">
-                {m.habitat_sleep_deep_sleep_mode()}
-              </FormFieldLabel>
+              <FormFieldLabel className="text-xs py-0">{"深睡模式"}</FormFieldLabel>
               <Select
                 selectedKey={deepSleepMode}
                 onSelectionChange={(key) => {
@@ -432,10 +427,8 @@ function SleepPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem id="full">{m.habitat_sleep_deep_sleep_mode_full()}</SelectItem>
-                  <SelectItem id="incremental">
-                    {m.habitat_sleep_deep_sleep_mode_incremental()}
-                  </SelectItem>
+                  <SelectItem id="full">{"完整（全部轮次、全部记忆）"}</SelectItem>
+                  <SelectItem id="incremental">{"增量（跳过静默轮次）"}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -447,9 +440,7 @@ function SleepPage() {
               isDisabled={pipelineBusy}
               onClick={() => void startCycle()}
             >
-              {pipelineStatus?.running || pipelineStarting
-                ? m.habitat_sleep_cycle_running()
-                : m.habitat_sleep_cycle_run()}
+              {pipelineStatus?.running || pipelineStarting ? "睡眠周期运行中…" : "运行完整周期"}
             </Button>
             <Button
               type="button"
@@ -457,11 +448,9 @@ function SleepPage() {
               variant="secondary"
               isDisabled={pipelineBusy}
               onClick={() => void startCatchUp()}
-              title={m.habitat_sleep_catch_up_hint()}
+              title={"从最早活动日补到今天：缺浅睡的天跑浅睡，缺全局天摘要的天补时间摘要。"}
             >
-              {pipelineStatus?.catch_up_running || catchUpStarting
-                ? m.habitat_sleep_catch_up_running()
-                : m.habitat_sleep_catch_up()}
+              {pipelineStatus?.catch_up_running || catchUpStarting ? "补睡眠运行中…" : "一键补睡眠"}
             </Button>
             <div className="flex items-center gap-2">
               <Checkbox
@@ -471,31 +460,29 @@ function SleepPage() {
                 onChange={(checked) => setPipelineForce(checked === true)}
               />
               <Label htmlFor="pipeline-force" className="text-sm">
-                {m.habitat_sleep_cycle_force()}
+                {"强制（跳过依赖检查）"}
               </Label>
             </div>
           </div>
           {(pipelineStatus?.catch_up_running || catchUp?.finished) && catchUpTotal > 0 ? (
             <p className="text-xs text-muted-foreground mb-3">
-              {m.habitat_sleep_catch_up_progress({
-                current: catchUpCurrent,
-                done: String(catchUpDone),
-                total: String(catchUpTotal),
-              })}
+              {`补睡眠：${catchUpCurrent}（${String(catchUpDone)}/${String(catchUpTotal)}）`}
               {catchUp?.error ? (
                 <span className="text-destructive ml-1">— {catchUp.error}</span>
               ) : null}
             </p>
           ) : null}
-          <p className="text-xs text-muted-foreground mb-3">{m.habitat_sleep_catch_up_hint()}</p>
+          <p className="text-xs text-muted-foreground mb-3">
+            {"从最早活动日补到今天：缺浅睡的天跑浅睡，缺全局天摘要的天补时间摘要。"}
+          </p>
 
           {stepNodes.length > 0 && (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{m.habitat_sleep_cycle_step()}</TableHead>
-                    <TableHead>{m.habitat_common_status()}</TableHead>
+                    <TableHead>{"步骤"}</TableHead>
+                    <TableHead>{"状态"}</TableHead>
                     <TableHead />
                   </TableRow>
                 </TableHeader>
@@ -529,9 +516,7 @@ function SleepPage() {
                             isDisabled={pipelineBusy}
                             onClick={() => void startStep(node.id)}
                           >
-                            {isRunningThis
-                              ? m.habitat_sleep_cycle_running()
-                              : m.habitat_sleep_cycle_step_run()}
+                            {isRunningThis ? "睡眠周期运行中…" : "运行"}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -546,7 +531,7 @@ function SleepPage() {
       </Card>
 
       <div className="flex items-center gap-2 mb-3">
-        <h3 className="font-semibold flex-1">{m.habitat_sleep_pipeline_history_title()}</h3>
+        <h3 className="font-semibold flex-1">{"流水线历史"}</h3>
         <Button
           type="button"
           variant="ghost"
@@ -554,7 +539,7 @@ function SleepPage() {
           isDisabled={loading}
           onClick={() => void refreshAfterRun()}
         >
-          {loading ? m.habitat_common_refreshing() : m.habitat_common_refresh_list()}
+          {loading ? "刷新中…" : "刷新列表"}
         </Button>
         {error && <span className="text-destructive text-sm">{error}</span>}
       </div>
@@ -563,13 +548,13 @@ function SleepPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{m.habitat_common_time()}</TableHead>
-              <TableHead>{m.habitat_sleep_cycle_step()}</TableHead>
-              <TableHead>{m.habitat_sleep_trigger()}</TableHead>
-              <TableHead>{m.habitat_common_processing_day()}</TableHead>
-              <TableHead>{m.habitat_common_status()}</TableHead>
-              <TableHead>{m.habitat_sleep_attempt()}</TableHead>
-              <TableHead>{m.habitat_common_tools()}</TableHead>
+              <TableHead>{"时间"}</TableHead>
+              <TableHead>{"步骤"}</TableHead>
+              <TableHead>{"触发"}</TableHead>
+              <TableHead>{"处理日"}</TableHead>
+              <TableHead>{"状态"}</TableHead>
+              <TableHead>{"尝试次数"}</TableHead>
+              <TableHead>{"工具"}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -597,9 +582,7 @@ function SleepPage() {
                       className="h-7 text-xs"
                       onClick={() => toggleExpand(row)}
                     >
-                      {expandedId === row.id
-                        ? m.habitat_common_collapse()
-                        : m.habitat_common_details()}
+                      {expandedId === row.id ? "收起" : "详情"}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -629,25 +612,16 @@ function SleepPage() {
                           )}
                           {deepSleepRounds.length > 0 && (
                             <div className="mt-3">
-                              <h4 className="font-semibold text-sm mb-1">
-                                {m.habitat_sleep_deep_rounds()}
-                              </h4>
+                              <h4 className="font-semibold text-sm mb-1">{"深睡轮次日志"}</h4>
                               {deepSleepRounds.map((r) => (
                                 <div key={r.round_index} className="mb-2 border-t border pt-2">
                                   <p className="text-sm font-medium">
-                                    {m.habitat_sleep_round_tools({
-                                      index: String(r.round_index),
-                                      round: r.round,
-                                      count: String(r.tool_calls),
-                                    })}
+                                    {`${String(r.round_index)}. ${r.round} (${String(r.tool_calls)} 次工具)`}
                                   </p>
                                   <p className="text-xs text-muted-foreground">
-                                    {m.habitat_sleep_change_log({
-                                      added: String(r.change_log_snapshot.addedIds?.length ?? 0),
-                                      updated: String(
-                                        r.change_log_snapshot.modifiedIds?.length ?? 0,
-                                      ),
-                                    })}{" "}
+                                    {`变更: +${String(r.change_log_snapshot.addedIds?.length ?? 0)} / ~${String(
+                                      r.change_log_snapshot.modifiedIds?.length ?? 0,
+                                    )}`}{" "}
                                     / -{r.change_log_snapshot.deprecatedIds?.length ?? 0}
                                   </p>
                                   <p className="text-xs whitespace-pre-wrap">
@@ -666,7 +640,7 @@ function SleepPage() {
             {runs.length === 0 && (
               <TableRow>
                 <TableCell colSpan={8} className="text-center text-muted-foreground">
-                  {m.habitat_sleep_no_runs()}
+                  {"尚无运行记录"}
                 </TableCell>
               </TableRow>
             )}

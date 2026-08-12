@@ -1,13 +1,11 @@
 ---
 import LandingPage from "../components/LandingPage.astro";
 import LandingLayout from "../layouts/LandingLayout.astro";
-import { applySiteLocale } from "../lib/i18n.ts";
 import { getSiteMeta } from "../lib/site.ts";
 
-applySiteLocale("en");
 const meta = getSiteMeta();
 ---
 
-<LandingLayout locale="en" title={meta.siteTitle} description={meta.siteDescription}>
-  <LandingPage locale="en" />
+<LandingLayout title={meta.siteTitle} description={meta.siteDescription}>
+  <LandingPage />
 </LandingLayout>

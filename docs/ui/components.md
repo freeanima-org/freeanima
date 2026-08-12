@@ -1,84 +1,86 @@
 ---
-title: UI components
+title: UI 组件
 ---
 
-# UI components
+# UI 组件
 
-Taxonomy and placement rules for Portal UI. Implementation lives under `src/ui-kit/` and `src/features/*/ui/`. Agent import bans → [`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md) and [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md).
+入口 UI 的分层与落点规则。实现位于 `src/ui-kit/` 与 `src/features/*/ui/`。Agent 导入禁令 →
+[`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md) 与
+[`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
 
-Visual tokens → [foundations.md](foundations.md). Dimension axes → [dimensions.md](dimensions.md).
+视觉 token → [foundations.md](foundations.md)。维度轴 → [dimensions.md](dimensions.md)。
 
-## Spoken terms → repository terms
+## 口语术语 → 仓库术语
 
-| Spoken (product/design)         | Repository term                                                                      | Typical home                  |
-| ------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------- |
-| Non-business / design-system UI | **Primitive**, **structure**, **composite**                                          | `@freeanima/ui-kit`           |
-| Business / product UI           | **Domain** UI                                                                        | `src/features/<slug>/ui`      |
-| UI component                    | A React building block at one of the layers above                                    | —                             |
-| UI element / slot piece         | Presentational part inside a pattern (title text, badge, icon) — not its own package | Inside a component or pattern |
-| App chrome                      | **app frame** (not Shell)                                                            | `src/client/app-frame`        |
-| Host                            | **Shell**                                                                            | `src/portal/app/*`            |
+| 口语（产品 / 设计）  | 仓库术语                                                            | 典型位置                 |
+| -------------------- | ------------------------------------------------------------------- | ------------------------ |
+| 非业务 / 设计系统 UI | **基元（Primitive）**、**结构（structure）**、**复合（composite）** | `@freeanima/ui-kit`      |
+| 业务 / 产品 UI       | **领域（Domain）** UI                                               | `src/features/<slug>/ui` |
+| UI 组件              | 上述某一层的 React 构建块                                           | —                        |
+| UI 元素 / 槽位碎片   | 模式内部的展示部件（标题文案、徽章、图标）— 不是独立包              | 组件或模式内部           |
+| 应用 chrome          | **应用布局（app frame）**（不是壳）                                 | `src/client/app-frame`   |
+| 宿主                 | **壳（Shell）**                                                     | `src/portal/app/*`       |
 
-## Layers
+## 分层
 
-| Layer         | Role                                                                                                | Location                       |
-| ------------- | --------------------------------------------------------------------------------------------------- | ------------------------------ |
-| **Primitive** | shadcn/React Aria controls + variants (`Button`, `Dialog`, `Input`, …)                              | `ui-kit/components/ui`         |
-| **Structure** | Form and layout shells (`FormFieldset`, `ListDetailLayout`, viewport hooks)                         | `ui-kit/form`, `ui-kit/layout` |
-| **Composite** | Cross-feature interaction patterns (`ConfirmDialog`, `ActionSheet`, `ContextMenu`, `EmptyState`, …) | `ui-kit/composite`             |
-| **Domain**    | Product-specific screens and fields                                                                 | `features/<slug>/ui`           |
-| **app frame** | Module rail / tabs / settings host                                                                  | `client/app-frame`             |
-| **Shell**     | Portal host, IPC, bridge                                                                            | `portal/app`                   |
+| 层           | 职责                                                                                  | 位置                           |
+| ------------ | ------------------------------------------------------------------------------------- | ------------------------------ |
+| **基元**     | shadcn/React Aria 控件 + 变体（`Button`、`Dialog`、`Input`，…）                       | `ui-kit/components/ui`         |
+| **结构**     | 表单与布局壳（`FormFieldset`、`ListDetailLayout`、视口 hooks）                        | `ui-kit/form`、`ui-kit/layout` |
+| **复合**     | 跨 feature 交互模式（`ConfirmDialog`、`ActionSheet`、`ContextMenu`、`EmptyState`，…） | `ui-kit/composite`             |
+| **领域**     | 产品专用页面与字段                                                                    | `features/<slug>/ui`           |
+| **应用布局** | 模块 Rail / tabs / 设置宿主                                                           | `client/app-frame`             |
+| **壳**       | 入口宿主、IPC、bridge                                                                 | `portal/app`                   |
 
-Dependency direction: `app-frame` → `features/*/ui` → `{ui-kit, portal-sdk}` → shared. `ui-kit` must not import Habitat RPC / `rpc-contract`.
+依赖方向：`app-frame` → `features/*/ui` → `{ui-kit, portal-sdk}` → shared。`ui-kit` **不得**导入栖息地 RPC / `rpc-contract`。
 
-## Placement rules
+## 落点规则
 
-1. If two features need the same interaction chassis, put the chassis in **composite** (or structure/layout); keep field copy and domain types in the feature.
-2. Primitives stay dumb: variants and sizes, no feature imports.
-3. Composites take **capability props** (e.g. `useActionSheet: boolean`) or call portal-sdk **interaction** hooks — they must not call `getShellKind()` to choose ContextMenu vs ActionSheet.
-4. Layout structure components may use **layout** APIs (`useCompactLayout`, `useDrawerNav`, …).
-5. Shell-only concerns stay in portal-sdk / shell host; ui-kit does not export shell detectors.
+1. 若两个 feature 需要同一套交互底盘，把底盘放进 **复合**（或结构 / 布局）；字段文案与领域类型留在 feature。
+2. 基元保持哑组件：只有变体与尺寸，不导入 feature。
+3. 复合组件接收 **能力 props**（例如 `useActionSheet: boolean`），或调用 portal-sdk 的 **interaction** hooks — **不得**调用 `getShellKind()` 来在 ContextMenu 与 ActionSheet 之间选型。
+4. 布局结构组件可以使用 **layout** API（`useCompactLayout`、`useDrawerNav`，…）。
+5. 仅壳关心的事留在 portal-sdk / 壳宿主；ui-kit 不导出壳探测器。
 
-**Pending alignment:** Prefer `ListRow` (+ domain wrappers such as `TaskItemRowView` / `EmailMessageRowView`) for new list modules. Aligned: task/project sidebars, smart lists, email message & account rows, chat conversations. Remaining P2/P3: MoveTo*Picker, Vault/diary pickers, Habitat admin, extension popup — do not fork row behavior.
+**待对齐：** 新列表模块优先用 `ListRow`（以及领域包装如 `TaskItemRowView` / `EmailMessageRowView`）。已对齐：任务 / 项目侧栏、智能清单、邮件消息与账户行、聊天会话。剩余 P2/P3：MoveTo\*Picker、Vault/日记选择器、栖息地管理台、扩展 popup — 勿分叉行行为。
 
-## Which layer may read which dimension
+## 哪一层可读哪些维度
 
-| Layer              | Shell APIs                                                        | Layout APIs                                    | Interaction APIs                                 |
-| ------------------ | ----------------------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------ |
-| Primitive          | No                                                                | No                                             | No (presentation only)                           |
-| Structure / layout | No                                                                | Yes                                            | Rare (e.g. resize handles)                       |
-| Composite          | Only via injected capability / portal-sdk helpers that hide shell | If the composite is a layout pattern           | Yes (menus, long-press, Enter-to-send consumers) |
-| Domain             | Via portal-sdk when needed for capability UI                      | Yes for page chrome                            | Yes                                              |
-| app frame          | Capability visibility                                             | Yes (primary)                                  | Yes where chrome needs it                        |
-| Shell host         | Yes                                                               | Must not lock app layout from shell kind alone | Must not invent a parallel interaction model     |
+| 层          | 壳 API                                         | 布局 API                       | 交互 API                               |
+| ----------- | ---------------------------------------------- | ------------------------------ | -------------------------------------- |
+| 基元        | 否                                             | 否                             | 否（仅展示）                           |
+| 结构 / 布局 | 否                                             | 是                             | 少见（如 resize handles）              |
+| 复合        | 仅经注入能力 / 隐藏壳细节的 portal-sdk helpers | 若该复合本身是布局模式         | 是（菜单、长按、Enter-to-send 消费者） |
+| 领域        | 需要能力 UI 时经 portal-sdk                    | 页面 chrome 可用               | 是                                     |
+| 应用布局    | 能力可见性                                     | 是（主用）                     | chrome 需要处可用                      |
+| 壳宿主      | 是                                             | **不得**仅凭壳种类锁死应用布局 | **不得**另造一套并行交互模型           |
 
-## Primitive conventions (summary)
+## 基元约定（摘要）
 
-| Need           | Prefer                                                                                       |
-| -------------- | -------------------------------------------------------------------------------------------- |
-| Button         | `<Button variant size>`                                                                      |
-| Fields         | `<Input>` / `<Textarea>` / `<Select>`; no auto-focus by default (`focusOnMount` when needed) |
-| Dialog / Sheet | React Aria default focus management; compose with Aria/shadcn Aria conventions (`isOpen`)    |
-| Loading        | `<Spinner>`                                                                                  |
-| Empty          | `<EmptyState>`                                                                               |
-| Status         | `<StatusAlert>`                                                                              |
-| Confirm        | `<ConfirmDialog>` / `showConfirm` — never `window.confirm`                                   |
+| 需求           | 优先                                                                             |
+| -------------- | -------------------------------------------------------------------------------- |
+| 按钮           | `<Button variant size>`                                                          |
+| 字段           | `<Input>` / `<Textarea>` / `<Select>`；默认不自动聚焦（需要时用 `focusOnMount`） |
+| Dialog / Sheet | React Aria 默认焦点管理；按 Aria/shadcn Aria 约定组合（`isOpen`）                |
+| 加载           | `<Spinner>`                                                                      |
+| 空态           | `<EmptyState>`                                                                   |
+| 状态           | `<StatusAlert>`                                                                  |
+| 确认           | `<ConfirmDialog>` / `showConfirm` — 永不使用 `window.confirm`                    |
 
-Full agent checklist → [`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md).
+完整 Agent 清单 → [`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md)。
 
-## Dimension adaptation (components)
+## 维度适配（组件）
 
-| Lens        | Rule                                                                                   |
-| ----------- | -------------------------------------------------------------------------------------- |
-| Invariant   | Layer placement and import boundaries                                                  |
-| Layout      | Structure components switch List-Detail / Modal-Sheet presentation; domain fills slots |
-| Interaction | Composites branch on capability flags; shared menu item data (`ActionSheetItem[]`)     |
-| Shell       | Capability availability only; never “Tauri ⇒ bottom tabs”                              |
-| Forbidden   | Deep-importing feature sources from app-frame; ui-kit importing RPC                    |
+| 透镜   | 规则                                                          |
+| ------ | ------------------------------------------------------------- |
+| 不变量 | 分层落点与导入边界                                            |
+| 布局   | 结构组件在 List-Detail / Modal-Sheet 呈现间切换；领域填充槽位 |
+| 交互   | 复合按能力标志分支；共享菜单项数据（`ActionSheetItem[]`）     |
+| 壳     | 仅能力可用性；永不「Tauri ⇒ 底栏 tabs」                       |
+| 禁止   | 从 app-frame 深导入 feature 源码；ui-kit 导入 RPC             |
 
-## Related
+## 相关文档
 
-- Patterns → [patterns.md](patterns.md)
-- Foundations → [foundations.md](foundations.md)
-- Dimensions → [dimensions.md](dimensions.md)
+- 模式 → [patterns.md](patterns.md)
+- 视觉基础 → [foundations.md](foundations.md)
+- 三维度 → [dimensions.md](dimensions.md)

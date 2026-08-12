@@ -5,7 +5,6 @@ import { navigateAppModulePath } from "@freeanima/client/portal-sdk/pomodoro-lau
 import { Button, Spinner, cn } from "@freeanima/ui-kit";
 import { useCompactLayout } from "@freeanima/ui-kit/layout";
 import { ChevronLeft, ChevronRight, PlusIcon } from "lucide-react";
-import { m } from "@paraglide/messages";
 
 import { AgendaList } from "./components/AgendaList.tsx";
 import { EventEditorDialog, type EventEditorTarget } from "./components/EventEditorDialog.tsx";
@@ -194,12 +193,12 @@ export function CalendarApp() {
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 p-3 md:p-4">
       <header className="flex flex-wrap items-center gap-2">
-        <h1 className="text-lg font-semibold">{m.calendar_title()}</h1>
+        <h1 className="text-lg font-semibold">{"日程"}</h1>
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          aria-label={m.calendar_prev_month()}
+          aria-label={"上一月"}
           onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, -1))}
         >
           <ChevronLeft className="size-4" />
@@ -211,13 +210,13 @@ export function CalendarApp() {
           type="button"
           variant="ghost"
           size="icon"
-          aria-label={m.calendar_next_month()}
+          aria-label={"下一月"}
           onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, 1))}
         >
           <ChevronRight className="size-4" />
         </Button>
         <Button type="button" variant="outline" size="sm" onPress={() => setSelectedDay(today)}>
-          {m.calendar_today()}
+          {"今天"}
         </Button>
         <Button
           type="button"
@@ -295,11 +294,7 @@ export function CalendarApp() {
               variant={kinds.includes(kind) ? "default" : "outline"}
               onPress={() => toggleKind(kind)}
             >
-              {kind === "event"
-                ? m.calendar_kind_event()
-                : kind === "task"
-                  ? m.calendar_kind_task()
-                  : m.calendar_kind_project()}
+              {kind === "event" ? "事件" : kind === "task" ? "任务" : "项目"}
             </Button>
           ))}
         </div>
@@ -310,10 +305,10 @@ export function CalendarApp() {
             size="sm"
             className="h-7 shrink-0 px-2"
             isDisabled={refreshing || query.loading}
-            aria-label={m.habitat_common_refresh()}
+            aria-label={"刷新"}
             onPress={() => void handleManualRefresh()}
           >
-            {refreshing ? <Spinner className="size-3.5" /> : m.habitat_common_refresh()}
+            {refreshing ? <Spinner className="size-3.5" /> : "刷新"}
           </Button>
           <Button
             type="button"
@@ -321,7 +316,7 @@ export function CalendarApp() {
             onPress={() => setEditor({ mode: "create", day: selectedDay })}
           >
             <PlusIcon className="size-4" />
-            {m.calendar_new_event()}
+            {"新建事件"}
           </Button>
         </div>
       </header>

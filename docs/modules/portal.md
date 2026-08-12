@@ -1,10 +1,12 @@
 ---
-title: Portal
+title: 入口
 ---
 
-# Portal（入口）
+# 入口（Portal）
 
-Portal 是进入 Habitat 的**类**；具体实现按**入口形态**区分。术语 SSOT：[`i18n/glossary.md`](../../i18n/glossary.md)、[`docs/product/architecture.md`](../product/architecture.md) Product naming。
+入口是进入栖息地的**类**；具体实现按**入口形态**区分。术语
+SSOT：[`i18n/glossary.md`](../../i18n/glossary.md)、[`docs/product/architecture.md`](../product/architecture.md)
+产品命名。
 
 ## 四种形态
 
@@ -17,7 +19,8 @@ Portal 是进入 Habitat 的**类**；具体实现按**入口形态**区分。�
 
 - **Web 壳 = 应用形态**（标签页里的整窗 SPA），**不是**浏览器形态。
 - **浏览器形态** = 扩展运行时（popup / content script / background）。
-- **MCP 形态**产品上算入口；进程上挂在 Habitat 组合根。整包迁入 `portal/` 会迫使 host → portal，违反层边界。`mcp-client` 是出站工具接入，**不是**入口。
+- **MCP 形态**产品上算入口；进程上挂在 Habitat 组合根。整包迁入 `portal/` 会迫使 host →
+  portal，违反层边界。`mcp-client` 是出站工具接入，**不是**入口。
 - **Outpost / Gateway** 不是 Portal（见 glossary）。
 
 ## 目录约定
@@ -40,7 +43,8 @@ src/portal/
 - 开发：`just dev browser-extension`
 - 鉴权：选项页填写 Habitat URL + Service API Token（Bearer）；RPC 仅 HTTP REST
 - 能力（Vault）：见 [`vault.md`](vault.md)
-- **UI 栈：** popup / options 与应用壳同栈（React + `@freeanima/ui-kit`）；编辑表单等与 Shell 共用 `features/vault/ui/shared`。content script 保持原生 DOM（页面注入，不适用 SPA UI 规范）。
+- **UI 栈：** popup / options 与应用壳同栈（React + `@freeanima/ui-kit`）；编辑表单等与 Shell
+  共用 `features/vault/ui/shared`。content script 保持原生 DOM（页面注入，不适用 SPA UI 规范）。
 
 ## 相关
 

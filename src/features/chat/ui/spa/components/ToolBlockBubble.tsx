@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@freeanima/ui-kit";
 import type { DisplayToolCall } from "@freeanima/features/chat/ui/spa/lib/types.ts";
-import { m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 
 type ToolBlockBubbleProps = {
   calls: DisplayToolCall[];
@@ -68,7 +67,7 @@ function formatJson(obj: Record<string, unknown>) {
 
 function truncateResult(text: string, max = 8000) {
   if (text.length <= max) return text;
-  return `${text.slice(0, max)}\n${m.habitat_message_truncated()}`;
+  return `${text.slice(0, max)}\n…（已截断）`;
 }
 
 function parseSubagentResults(result: string | undefined): SubagentRunResult[] | null {
@@ -123,7 +122,7 @@ function pickHeadline(calls: DisplayToolCall[]): string {
   const active = calls.find((c) => c.status === "running" || c.status === "pending");
   if (active) return collapsedSummary(active);
   const last = calls.at(-1);
-  return last ? callLabel(last) : m.habitat_message_tool_calls({ count: String(calls.length) });
+  return last ? callLabel(last) : `工具调用 · ${String(calls.length)}`;
 }
 
 function ToolCallRow({ call }: { call: DisplayToolCall }) {
@@ -162,7 +161,7 @@ function ToolCallRow({ call }: { call: DisplayToolCall }) {
         <div className="rounded-lg bg-background p-2 space-y-1.5 min-w-0 mt-1 mb-2">
           {displayArgs && Object.keys(displayArgs).length > 0 ? (
             <div className="min-w-0">
-              <div className="text-muted-foreground mb-0.5">{m.habitat_message_args()}</div>
+              <div className="text-muted-foreground mb-0.5">{"参数"}</div>
               <pre className="tool-bubble-scroll text-[11px] whitespace-pre-wrap break-all">
                 {formatJson(displayArgs)}
               </pre>
@@ -182,7 +181,7 @@ function ToolCallRow({ call }: { call: DisplayToolCall }) {
                     <span className="truncate">{r.slug ?? "ephemeral"}</span>
                     {typeof r.tool_calls === "number" ? (
                       <span className="text-foreground/40 text-[10px] shrink-0">
-                        {m.habitat_message_tool_calls({ count: String(r.tool_calls) })}
+                        {`工具调用 · ${String(r.tool_calls)}`}
                       </span>
                     ) : null}
                   </div>
@@ -219,13 +218,13 @@ function ToolCallRow({ call }: { call: DisplayToolCall }) {
             </div>
           ) : call.result ? (
             <div className="min-w-0">
-              <div className="text-muted-foreground mb-0.5">{m.habitat_message_result()}</div>
+              <div className="text-muted-foreground mb-0.5">{"结果"}</div>
               <pre className="tool-bubble-scroll text-[11px] whitespace-pre-wrap break-all">
                 {truncateResult(call.result)}
               </pre>
             </div>
           ) : call.status === "pending" || call.status === "running" ? (
-            <div className="text-foreground/40 italic">{m.habitat_message_waiting_result()}</div>
+            <div className="text-foreground/40 italic">{"等待结果…"}</div>
           ) : null}
         </div>
       </CollapsibleContent>
@@ -246,7 +245,7 @@ export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
           <div className="flex-1 min-w-0">
             {expanded ? (
               <span className="font-medium text-muted-foreground truncate block">
-                {m.habitat_message_tool_calls({ count: String(calls.length) })}
+                {`工具调用 · ${String(calls.length)}`}
               </span>
             ) : (
               <div className="tool-bubble-marquee font-medium text-muted-foreground">

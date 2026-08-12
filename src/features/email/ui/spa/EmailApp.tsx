@@ -23,7 +23,6 @@ import {
 import { readModuleSelection, writeModuleSelection } from "@freeanima/client/portal-sdk";
 import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
 import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
-import { m } from "@paraglide/messages";
 
 import { EmailAccountFormDialog } from "./components/EmailAccountFormDialog.tsx";
 import { AttachTaskDialog } from "./components/AttachTaskDialog.tsx";
@@ -227,10 +226,7 @@ export function EmailApp() {
       setBatchBusy(false);
       if (failures.length > 0) {
         setError(
-          m.email_batch_failed({
-            failed: String(failures.length),
-            detail: failures.slice(0, 3).join("; "),
-          }),
+          `批量操作完成，${String(failures.length)} 项失败：${failures.slice(0, 3).join("; ")}`,
         );
       }
       return ok;
@@ -464,9 +460,7 @@ export function EmailApp() {
     try {
       const results = await syncEmailAccount(id, 100);
       const synced = results.reduce((sum, row) => sum + row.upserted_messages, 0);
-      setSyncNotice(
-        synced > 0 ? m.email_sync_done_new({ count: synced }) : m.email_sync_done_none(),
-      );
+      setSyncNotice(synced > 0 ? `同步完成，新增 ${synced} 封邮件。` : "同步完成，暂无新邮件。");
       await loadMailboxes(id);
       if (activeAccountId === id) await loadMessages(id);
     } catch (err) {
@@ -522,7 +516,7 @@ export function EmailApp() {
 
   const copyMessageId = (message: EmailMessageRow) => {
     void copyText(String(message.id)).then((ok) => {
-      if (!ok) setError(m.email_copy_id_failed());
+      if (!ok) setError("复制 ID 失败");
     });
   };
 
@@ -542,18 +536,18 @@ export function EmailApp() {
     const items: ActionSheetItem[] = [];
     if (!writesDisabled && !syncing) {
       items.push({
-        label: m.email_menu_sync(),
+        label: "同步收件箱",
         onClick: () => void onSync(account.id),
       });
     }
     if (!writesDisabled) {
       items.push({
-        label: m.email_edit_account(),
+        label: "编辑账户",
         onClick: () => setFormState({ mode: "edit", account }),
       });
       if (!account.default_sender) {
         items.push({
-          label: m.email_set_default_sender(),
+          label: "设为默认发件账户",
           onClick: () =>
             void patchEmailAccount({ id: account.id, default_sender: true })
               .then((saved) => {
@@ -567,7 +561,7 @@ export function EmailApp() {
         });
       }
       items.push({
-        label: account.enabled ? m.email_disable_account() : m.email_enable_account(),
+        label: account.enabled ? "禁用" : "启用",
         onClick: () =>
           void patchEmailAccount({ id: account.id, enabled: !account.enabled })
             .then((saved) => {
@@ -576,7 +570,7 @@ export function EmailApp() {
             .catch((err) => setError(err instanceof Error ? err.message : String(err))),
       });
       items.push({
-        label: m.email_delete_account(),
+        label: "删除账户",
         danger: true,
         onClick: () => setDeleteAccountTarget(account),
       });
@@ -588,18 +582,18 @@ export function EmailApp() {
     const items: ActionSheetItem[] = [];
     if (!writesDisabled) {
       items.push({
-        label: m.email_reply(),
+        label: "回复",
         onClick: () => setReplyMessage(message),
       });
     }
     items.push({
-      label: m.email_copy_id(),
+      label: "复制 ID",
       onClick: () => copyMessageId(message),
     });
     if (!writesDisabled) {
       if (messageHasTask[message.id]) {
         items.push({
-          label: m.email_view_task(),
+          label: "查看任务",
           onClick: () =>
             void openEntityResource({
               id: message.id,
@@ -608,7 +602,7 @@ export function EmailApp() {
             }),
         });
         items.push({
-          label: m.email_detach_task(),
+          label: "移除任务",
           onClick: () =>
             void detachTaskFromEmail(message.id)
               .then(() => setMessageHasTask((prev) => ({ ...prev, [message.id]: false })))
@@ -616,17 +610,17 @@ export function EmailApp() {
         });
       } else {
         items.push({
-          label: m.email_attach_task(),
+          label: "添加任务…",
           onClick: () => setAttachTaskTarget(message),
         });
       }
       if (message.unread) {
-        items.push({ label: m.email_mark_read(), onClick: () => onMarkRead(message) });
+        items.push({ label: "标记为已读", onClick: () => onMarkRead(message) });
       } else {
-        items.push({ label: m.email_mark_unread(), onClick: () => onMarkUnread(message) });
+        items.push({ label: "设为未读", onClick: () => onMarkUnread(message) });
       }
       items.push({
-        label: message.flagged ? m.email_unstar() : m.email_star(),
+        label: message.flagged ? "取消星标" : "加星标",
         onClick: () =>
           void (
             message.flagged
@@ -648,7 +642,7 @@ export function EmailApp() {
       for (const box of mailboxes) {
         if (box.path === activeMailbox) continue;
         items.push({
-          label: `${m.email_move_to()} ${box.name || box.path}`,
+          label: `移动到… ${box.name || box.path}`,
           onClick: () =>
             void moveEmailMessage(message.id, box.path)
               .then(() => {
@@ -662,7 +656,7 @@ export function EmailApp() {
         });
       }
       items.push({
-        label: m.email_delete_message(),
+        label: "删除邮件",
         danger: true,
         onClick: () => setDeleteMessageTarget(message),
       });
@@ -677,9 +671,9 @@ export function EmailApp() {
     if (writesDisabled || isSystemMailbox(mailbox)) return [];
     return [
       {
-        label: m.email_folder_rename(),
+        label: "重命名文件夹",
         onClick: () => {
-          const next = window.prompt(m.email_folder_name(), mailbox.path);
+          const next = window.prompt("文件夹名称", mailbox.path);
           if (!next?.trim() || next.trim() === mailbox.path) return;
           void renameEmailMailbox(account.id, mailbox.path, next.trim())
             .then((boxes) => {
@@ -690,7 +684,7 @@ export function EmailApp() {
         },
       },
       {
-        label: m.email_folder_delete(),
+        label: "删除文件夹",
         danger: true,
         onClick: () => setDeleteFolderTarget({ account, mailbox }),
       },
@@ -703,7 +697,7 @@ export function EmailApp() {
 
   const openMessageMenu = (message: EmailMessageRow) => {
     setSheetMenu({
-      title: message.subject || m.habitat_email_no_subject(),
+      title: message.subject || "(无主题)",
       items: messageMenuItems(message),
     });
   };
@@ -722,7 +716,7 @@ export function EmailApp() {
       }
     } catch (err) {
       const errDetail = err instanceof Error ? err.message : String(err);
-      setError(m.email_delete_failed({ detail: errDetail }));
+      setError(`删除账户失败：${errDetail}`);
       setDeleteAccountTarget(null);
     }
   };
@@ -747,7 +741,7 @@ export function EmailApp() {
       });
     } catch (err) {
       const errDetail = err instanceof Error ? err.message : String(err);
-      setError(m.email_delete_message_failed({ detail: errDetail }));
+      setError(`删除邮件失败：${errDetail}`);
       setDeleteMessageTarget(null);
     }
   };
@@ -788,7 +782,7 @@ export function EmailApp() {
         onClick: () => onBatchMove(box.path),
       }));
     if (items.length === 0) return;
-    setSheetMenu({ title: m.email_move_to(), items });
+    setSheetMenu({ title: "移动到…", items });
   };
 
   const confirmDeleteBatch = async () => {
@@ -822,7 +816,7 @@ export function EmailApp() {
       ) : null}
       {!activeAccount ? (
         <div className="text-muted-foreground flex flex-1 items-center justify-center p-8 text-sm">
-          {m.email_select_account()}
+          {"选择邮箱账户查看收件箱"}
         </div>
       ) : listLoading && messages.length === 0 ? (
         <div className="flex flex-1 items-center justify-center p-4">
@@ -836,7 +830,9 @@ export function EmailApp() {
         >
           <EmptyState
             message={
-              listFilter === "unread" ? m.email_no_unread_hint() : m.email_no_messages_hint()
+              listFilter === "unread"
+                ? "暂无未读邮件。可切换到「全部」，或点击同步。"
+                : "暂无邮件。点击「同步」从 IMAP 拉取。"
             }
             className="items-start flex-1 p-4 text-left"
           />
@@ -885,16 +881,16 @@ export function EmailApp() {
         <ThreeColumnLayout
           layoutMode={layoutMode}
           columnSplitKey="email"
-          listTitle={m.email_accounts_title()}
+          listTitle={"邮箱"}
           middleTitle={
             activeAccount
-              ? `${accountLabel(activeAccount)} · ${activeMailbox ?? m.email_inbox_title()}`
-              : m.email_inbox_title()
+              ? `${accountLabel(activeAccount)} · ${activeMailbox ?? "收件箱"}`
+              : "收件箱"
           }
-          detailTitle={detail?.subject || m.habitat_email_no_subject()}
+          detailTitle={detail?.subject || "(无主题)"}
           listOpen={listOpen}
           onListOpenChange={setListOpen}
-          listToggleAriaLabel={m.email_open_accounts()}
+          listToggleAriaLabel={"打开账户列表"}
           detailOpen={detailOpen}
           onDetailOpenChange={handleDetailOpenChange}
           middleHeaderExtra={
@@ -909,7 +905,7 @@ export function EmailApp() {
                       className="rounded-none border-0"
                       onClick={() => void changeListFilter("unread")}
                     >
-                      {m.email_filter_unread()}
+                      {"未读"}
                     </Button>
                     <Button
                       type="button"
@@ -918,7 +914,7 @@ export function EmailApp() {
                       className="rounded-none border-0 border-l"
                       onClick={() => void changeListFilter("all")}
                     >
-                      {m.email_filter_all()}
+                      {"全部"}
                     </Button>
                   </div>
                   <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">
@@ -933,7 +929,7 @@ export function EmailApp() {
                         else setSelectionMode(true);
                       }}
                     >
-                      {selectionMode ? m.email_cancel() : m.email_select_mode()}
+                      {selectionMode ? "取消" : "选择"}
                     </Button>
                     <Button
                       type="button"
@@ -942,7 +938,7 @@ export function EmailApp() {
                       isDisabled={writesDisabled}
                       onClick={() => setComposeOpen(true)}
                     >
-                      {m.email_compose()}
+                      {"写邮件"}
                     </Button>
                     <Button
                       type="button"
@@ -950,7 +946,7 @@ export function EmailApp() {
                       isDisabled={syncing || writesDisabled}
                       onClick={() => void onSync()}
                     >
-                      {syncing ? m.email_syncing() : m.email_sync()}
+                      {syncing ? "同步中…" : "同步"}
                     </Button>
                   </div>
                 </div>
@@ -962,10 +958,10 @@ export function EmailApp() {
                         isIndeterminate={someVisibleSelected && !allVisibleSelected}
                         isDisabled={messages.length === 0 || batchBusy}
                         onChange={() => toggleSelectAllVisible()}
-                        aria-label={m.email_select_all()}
+                        aria-label={"全选"}
                       />
                       <span className="text-muted-foreground text-xs">
-                        {m.email_selected_count({ count: String(selectedIds.size) })}
+                        {`已选 ${String(selectedIds.size)} 封`}
                       </span>
                       <Button
                         type="button"
@@ -975,7 +971,7 @@ export function EmailApp() {
                         isDisabled={selectedIds.size === 0 || batchBusy}
                         onClick={() => clearSelection()}
                       >
-                        {m.email_clear_selection()}
+                        {"清除选择"}
                       </Button>
                     </div>
                     {!writesDisabled && selectedIds.size > 0 ? (
@@ -988,7 +984,7 @@ export function EmailApp() {
                           isDisabled={batchBusy}
                           onClick={onBatchMarkRead}
                         >
-                          {m.email_mark_read()}
+                          {"标记为已读"}
                         </Button>
                         <Button
                           type="button"
@@ -998,7 +994,7 @@ export function EmailApp() {
                           isDisabled={batchBusy}
                           onClick={onBatchMarkUnread}
                         >
-                          {m.email_mark_unread()}
+                          {"设为未读"}
                         </Button>
                         <Button
                           type="button"
@@ -1008,7 +1004,7 @@ export function EmailApp() {
                           isDisabled={batchBusy}
                           onClick={() => onBatchStar(true)}
                         >
-                          {m.email_star()}
+                          {"加星标"}
                         </Button>
                         <Button
                           type="button"
@@ -1018,7 +1014,7 @@ export function EmailApp() {
                           isDisabled={batchBusy}
                           onClick={() => onBatchStar(false)}
                         >
-                          {m.email_unstar()}
+                          {"取消星标"}
                         </Button>
                         <Button
                           type="button"
@@ -1028,7 +1024,7 @@ export function EmailApp() {
                           isDisabled={batchBusy || mailboxes.every((b) => b.path === activeMailbox)}
                           onClick={openBatchMoveMenu}
                         >
-                          {m.email_move_to()}
+                          {"移动到…"}
                         </Button>
                         <Button
                           type="button"
@@ -1038,7 +1034,7 @@ export function EmailApp() {
                           isDisabled={batchBusy}
                           onClick={() => setDeleteBatchPending(true)}
                         >
-                          {m.email_delete_message()}
+                          {"删除邮件"}
                         </Button>
                       </div>
                     ) : null}
@@ -1047,7 +1043,7 @@ export function EmailApp() {
                 <div className="flex gap-2">
                   <Input
                     className="h-8 min-w-0 flex-1"
-                    placeholder={m.email_search_placeholder()}
+                    placeholder={"搜索邮件"}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => {
@@ -1060,7 +1056,7 @@ export function EmailApp() {
                     size="sm"
                     onClick={() => setSearchFiltersOpen((v) => !v)}
                   >
-                    {m.email_search_filters()}
+                    {"筛选"}
                   </Button>
                   <Button
                     type="button"
@@ -1069,27 +1065,27 @@ export function EmailApp() {
                     isDisabled={searching}
                     onClick={() => void onSearch()}
                   >
-                    {m.email_search()}
+                    {"搜索邮件"}
                   </Button>
                 </div>
-                <p className="text-muted-foreground text-[11px]">{m.email_search_synced_hint()}</p>
+                <p className="text-muted-foreground text-[11px]">{"仅搜索已同步的邮件。"}</p>
                 {searchFiltersOpen ? (
                   <div className="grid gap-2 sm:grid-cols-2">
                     <Input
                       className="h-8"
-                      placeholder={m.email_filter_from()}
+                      placeholder={"发件人"}
                       value={filterFrom}
                       onChange={(e) => setFilterFrom(e.target.value)}
                     />
                     <Input
                       className="h-8"
-                      placeholder={m.email_filter_to()}
+                      placeholder={"收件人"}
                       value={filterTo}
                       onChange={(e) => setFilterTo(e.target.value)}
                     />
                     <Input
                       className="h-8 sm:col-span-2"
-                      placeholder={m.email_filter_subject()}
+                      placeholder={"主题"}
                       value={filterSubject}
                       onChange={(e) => setFilterSubject(e.target.value)}
                     />
@@ -1099,7 +1095,7 @@ export function EmailApp() {
                         checked={filterFlagged}
                         onChange={(e) => setFilterFlagged(e.target.checked)}
                       />
-                      {m.email_filter_flagged()}
+                      {"已加星标"}
                     </label>
                     <label className="flex items-center gap-2 text-xs">
                       <input
@@ -1107,7 +1103,7 @@ export function EmailApp() {
                         checked={filterAttachment}
                         onChange={(e) => setFilterAttachment(e.target.checked)}
                       />
-                      {m.email_filter_attachment()}
+                      {"有附件"}
                     </label>
                     <label className="flex items-center gap-2 text-xs sm:col-span-2">
                       <input
@@ -1115,7 +1111,7 @@ export function EmailApp() {
                         checked={searchAllFolders}
                         onChange={(e) => setSearchAllFolders(e.target.checked)}
                       />
-                      {m.email_filter_all_folders()}
+                      {"全部文件夹"}
                     </label>
                     <Button
                       type="button"
@@ -1124,7 +1120,7 @@ export function EmailApp() {
                       className="sm:col-span-2"
                       onClick={clearSearchFilters}
                     >
-                      {m.email_clear_filters()}
+                      {"清除筛选"}
                     </Button>
                   </div>
                 ) : null}
@@ -1147,7 +1143,7 @@ export function EmailApp() {
               onEditAccount={(account) => setFormState({ mode: "edit", account })}
               onOpenAccountMenu={openAccountMenu}
               onNewFolder={(account) => {
-                const path = window.prompt(m.email_folder_name());
+                const path = window.prompt("文件夹名称");
                 if (!path?.trim()) return;
                 void createEmailMailbox(account.id, path.trim())
                   .then(setMailboxes)
@@ -1237,10 +1233,12 @@ export function EmailApp() {
 
       <ConfirmDialog
         open={deleteAccountTarget != null}
-        title={m.email_delete_account()}
-        description={m.email_delete_confirm()}
-        confirmLabel={m.email_delete_account()}
-        cancelLabel={m.email_cancel()}
+        title={"删除账户"}
+        description={
+          "确定删除此邮件账户？本地已同步的邮件与线程也会一并清除，不会删除服务器上的邮件。"
+        }
+        confirmLabel={"删除账户"}
+        cancelLabel={"取消"}
         variant="error"
         onConfirm={() => void confirmDeleteAccount()}
         onCancel={() => setDeleteAccountTarget(null)}
@@ -1248,10 +1246,10 @@ export function EmailApp() {
 
       <ConfirmDialog
         open={deleteMessageTarget != null}
-        title={m.email_delete_message()}
-        description={m.email_delete_message_confirm()}
-        confirmLabel={m.email_delete_message()}
-        cancelLabel={m.email_cancel()}
+        title={"删除邮件"}
+        description={"确定删除此邮件？将删除本地记录，并在可能时同步删除 IMAP。"}
+        confirmLabel={"删除邮件"}
+        cancelLabel={"取消"}
         variant="error"
         onConfirm={() => void confirmDeleteMessage()}
         onCancel={() => setDeleteMessageTarget(null)}
@@ -1259,10 +1257,10 @@ export function EmailApp() {
 
       <ConfirmDialog
         open={deleteBatchPending}
-        title={m.email_delete_message()}
-        description={m.email_batch_delete_confirm({ count: String(selectedIds.size) })}
-        confirmLabel={m.email_delete_message()}
-        cancelLabel={m.email_cancel()}
+        title={"删除邮件"}
+        description={`确定删除所选的 ${String(selectedIds.size)} 封邮件？将删除本地记录，并在可能时同步删除 IMAP。`}
+        confirmLabel={"删除邮件"}
+        cancelLabel={"取消"}
         variant="error"
         onConfirm={() => void confirmDeleteBatch()}
         onCancel={() => setDeleteBatchPending(false)}
@@ -1270,12 +1268,10 @@ export function EmailApp() {
 
       <ConfirmDialog
         open={deleteFolderTarget != null}
-        title={m.email_folder_delete()}
-        description={m.email_folder_delete_confirm({
-          path: deleteFolderTarget?.mailbox.path ?? "",
-        })}
-        confirmLabel={m.email_folder_delete()}
-        cancelLabel={m.email_cancel()}
+        title={"删除文件夹"}
+        description={`在邮件服务器上删除文件夹 ${deleteFolderTarget?.mailbox.path ?? ""}？`}
+        confirmLabel={"删除文件夹"}
+        cancelLabel={"取消"}
         variant="error"
         onConfirm={() => {
           if (!deleteFolderTarget) return;

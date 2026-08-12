@@ -4,13 +4,12 @@ import path from "node:path";
 import { resolveDocsMdHref } from "./docs-md-links.ts";
 
 /** path.resolve 保证 Windows 带盘符，与生产侧 normalizeFsPath 前缀比较一致 */
-const enRoot = path.resolve("/repo/docs");
-const zhRoot = path.resolve("/repo/docs/.generated/zh_CN");
-const options = { enRoot, zhRoot };
+const docsRoot = path.resolve("/repo/docs");
+const options = { docsRoot };
 
 describe("resolveDocsMdHref", () => {
   test("same-directory link", () => {
-    expect(resolveDocsMdHref("self-layer.md", `${enRoot}/cognition/memory.md`, options)).toBe(
+    expect(resolveDocsMdHref("self-layer.md", `${docsRoot}/cognition/memory.md`, options)).toBe(
       "/docs/cognition/self-layer/",
     );
   });
@@ -19,26 +18,20 @@ describe("resolveDocsMdHref", () => {
     expect(
       resolveDocsMdHref(
         "../ops/security.md#credential-responsibilities",
-        `${enRoot}/product/architecture.md`,
+        `${docsRoot}/product/architecture.md`,
         options,
       ),
     ).toBe("/docs/ops/security/#credential-responsibilities");
   });
 
   test("readme overview link", () => {
-    expect(resolveDocsMdHref("ops/security.md", `${enRoot}/README.md`, options)).toBe(
+    expect(resolveDocsMdHref("ops/security.md", `${docsRoot}/README.md`, options)).toBe(
       "/docs/ops/security/",
     );
   });
 
-  test("zh-cn locale prefix", () => {
-    expect(resolveDocsMdHref("memory.md", `${zhRoot}/cognition/architecture.md`, options)).toBe(
-      "/zh-cn/docs/cognition/memory/",
-    );
-  });
-
   test("skips external and out-of-docs links", () => {
-    const source = `${enRoot}/README.md`;
+    const source = `${docsRoot}/README.md`;
     expect(resolveDocsMdHref("https://example.com/a.md", source, options)).toBeNull();
     expect(
       resolveDocsMdHref(path.join("..", ".agent", "rules", "README.md"), source, options),

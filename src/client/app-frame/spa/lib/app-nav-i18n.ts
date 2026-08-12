@@ -16,8 +16,6 @@ import {
 
 import type { ShellModuleId } from "@freeanima/client/portal-sdk/shell-module-visibility";
 
-import { m } from "@paraglide/messages";
-
 /** Shell Rail/底栏已有图标，去掉 Paraglide 文案前缀 emoji。 */
 export function stripLeadingNavEmoji(label: string): string {
   return label
@@ -53,42 +51,90 @@ function navItem(
 /** 全部 Shell 模块（Rail / 设置页顺序） */
 export function appNavItems(): AppNavItem[] {
   return [
-    navItem("chat", "/chat", "/chat", shellNavLabel(m.habitat_nav_chat), MessageSquare),
-    navItem("tasks", "/tasks", "/tasks", shellNavLabel(m.habitat_nav_tasks), ListTodo),
+    navItem(
+      "chat",
+      "/chat",
+      "/chat",
+      shellNavLabel(() => "聊天室"),
+      MessageSquare,
+    ),
+    navItem(
+      "tasks",
+      "/tasks",
+      "/tasks",
+      shellNavLabel(() => "✅ 任务"),
+      ListTodo,
+    ),
     navItem(
       "projects",
       "/projects",
       "/projects",
-      shellNavLabel(m.habitat_nav_projects),
+      shellNavLabel(() => "📁 项目"),
       FolderKanban,
     ),
     navItem(
       "calendar",
       "/calendar",
       "/calendar",
-      shellNavLabel(m.habitat_nav_calendar),
+      shellNavLabel(() => "日程"),
       CalendarDays,
     ),
-    navItem("pomodoro", "/pomodoro", "/pomodoro", shellNavLabel(m.habitat_nav_pomodoro), Timer),
-    navItem("email", "/email", "/email", shellNavLabel(m.habitat_nav_email), Mail),
-    navItem("diary", "/diary", "/diary", shellNavLabel(m.habitat_nav_diary), BookOpen),
-    navItem("entity", "/entity", "/entity", shellNavLabel(m.habitat_nav_entity), Boxes),
-    navItem("vault", "/vault", "/vault", shellNavLabel(m.habitat_nav_vault), Lock),
+    navItem(
+      "pomodoro",
+      "/pomodoro",
+      "/pomodoro",
+      shellNavLabel(() => "🍅 番茄钟"),
+      Timer,
+    ),
+    navItem(
+      "email",
+      "/email",
+      "/email",
+      shellNavLabel(() => "📧 邮件"),
+      Mail,
+    ),
+    navItem(
+      "diary",
+      "/diary",
+      "/diary",
+      shellNavLabel(() => "📔 日记"),
+      BookOpen,
+    ),
+    navItem(
+      "entity",
+      "/entity",
+      "/entity",
+      shellNavLabel(() => "📦 实体"),
+      Boxes,
+    ),
+    navItem(
+      "vault",
+      "/vault",
+      "/vault",
+      shellNavLabel(() => "🔐 凭证库"),
+      Lock,
+    ),
     navItem(
       "notifications",
       "/notifications",
       "/notifications",
-      shellNavLabel(m.habitat_nav_notifications),
+      shellNavLabel(() => "通知"),
       Bell,
     ),
     navItem(
       "habitat",
       "/habitat/dashboard",
       "/habitat",
-      shellNavLabel(m.habitat_nav),
+      shellNavLabel(() => "栖息地"),
       LayoutDashboard,
     ),
-    navItem("settings", "/settings", "/settings", shellNavLabel(m.habitat_nav_settings), Settings),
+    navItem(
+      "settings",
+      "/settings",
+      "/settings",
+      shellNavLabel(() => "设置"),
+      Settings,
+    ),
   ];
 }
 

@@ -21,7 +21,6 @@ import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
 import { getAutoLlmRun, listAutoLlmRuns } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 import { useHabitatOffsetPagination } from "@freeanima/features/habitat/ui/habitat/lib/use-habitat-offset-pagination.ts";
 
@@ -125,11 +124,7 @@ function AutoLlmRunsPage() {
         setLoaded(true);
       } catch (e) {
         logCaughtError("routes/_sidebar/auto-llm-runs", e);
-        setError(
-          m.habitat_common_load_failed({
-            detail: e instanceof Error ? e.message : String(e),
-          }),
-        );
+        setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
       } finally {
         setLoading(false);
       }
@@ -174,11 +169,15 @@ function AutoLlmRunsPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">{m.habitat_nav_auto_llm_runs()}</h2>
-      <p className="text-sm text-muted-foreground mb-4">{m.habitat_auto_llm_runs_desc()}</p>
+      <h2 className="text-lg font-bold mb-1">{"🤖 自动 LLM 运行"}</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        {
+          "非对话 LLM 运行审计（定时任务、睡眠、标题生成、goal 判定、压缩摘要等）。与对话 messages 互斥。"
+        }
+      </p>
 
       <div className="flex flex-wrap gap-2 mb-4 items-end">
-        <FormField label={m.habitat_auto_llm_runs_run_kind()} className="w-full max-w-xs text-xs">
+        <FormField label={"运行类型"} className="w-full max-w-xs text-xs">
           <Select
             selectedKey={runKind || ALL_VALUE}
             onSelectionChange={(key) => {
@@ -191,7 +190,7 @@ function AutoLlmRunsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem id={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
+              <SelectItem id={ALL_VALUE}>{"全部"}</SelectItem>
               {RUN_KIND_OPTIONS.filter(Boolean).map((kind) => (
                 <SelectItem key={kind} id={kind}>
                   {kind}
@@ -200,7 +199,7 @@ function AutoLlmRunsPage() {
             </SelectContent>
           </Select>
         </FormField>
-        <FormField label={m.habitat_common_status()} className="w-full max-w-xs text-xs">
+        <FormField label={"状态"} className="w-full max-w-xs text-xs">
           <Select
             selectedKey={statusFilter || ALL_VALUE}
             onSelectionChange={(key) => {
@@ -213,14 +212,14 @@ function AutoLlmRunsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem id={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
-              <SelectItem id="ok">{m.habitat_common_success()}</SelectItem>
-              <SelectItem id="error">{m.habitat_common_failed()}</SelectItem>
+              <SelectItem id={ALL_VALUE}>{"全部"}</SelectItem>
+              <SelectItem id="ok">{"成功"}</SelectItem>
+              <SelectItem id="error">{"失败"}</SelectItem>
             </SelectContent>
           </Select>
         </FormField>
         <Button type="button" size="sm" onClick={runSearch} isDisabled={loading}>
-          {loading ? m.habitat_common_loading() : m.habitat_common_refresh()}
+          {loading ? "加载中…" : "刷新"}
         </Button>
       </div>
 
@@ -231,7 +230,7 @@ function AutoLlmRunsPage() {
       ) : null}
 
       {loaded && items.length === 0 && !loading ? (
-        <p className="text-sm text-muted-foreground">{m.habitat_auto_llm_runs_empty()}</p>
+        <p className="text-sm text-muted-foreground">{"尚无 AutoLlmRun 记录。"}</p>
       ) : null}
 
       {items.length > 0 ? (
@@ -239,11 +238,11 @@ function AutoLlmRunsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{m.habitat_common_time()}</TableHead>
-                <TableHead>{m.habitat_auto_llm_runs_run_name()}</TableHead>
-                <TableHead>{m.habitat_auto_llm_runs_run_kind()}</TableHead>
-                <TableHead>{m.habitat_common_status()}</TableHead>
-                <TableHead>{m.habitat_auto_llm_runs_duration()}</TableHead>
+                <TableHead>{"时间"}</TableHead>
+                <TableHead>{"运行名称"}</TableHead>
+                <TableHead>{"运行类型"}</TableHead>
+                <TableHead>{"状态"}</TableHead>
+                <TableHead>{"时长"}</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -280,9 +279,7 @@ function AutoLlmRunsPage() {
                         className="h-7 text-xs"
                         onClick={() => toggleExpand(row.id)}
                       >
-                        {expandedId === row.id
-                          ? m.habitat_common_collapse()
-                          : m.habitat_common_details()}
+                        {expandedId === row.id ? "收起" : "详情"}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -295,9 +292,7 @@ function AutoLlmRunsPage() {
                         </p>
                         {row.input_summary ? (
                           <div className="mb-2">
-                            <p className="text-xs font-semibold mb-1">
-                              {m.habitat_auto_llm_runs_input()}
-                            </p>
+                            <p className="text-xs font-semibold mb-1">{"输入摘要"}</p>
                             <pre className="text-xs whitespace-pre-wrap break-all max-h-32 overflow-auto">
                               {row.input_summary}
                             </pre>
@@ -310,26 +305,18 @@ function AutoLlmRunsPage() {
                         ) : null}
                         {row.output ? (
                           <div className="mb-2">
-                            <p className="text-xs font-semibold mb-1">
-                              {m.habitat_auto_llm_runs_output()}
-                            </p>
+                            <p className="text-xs font-semibold mb-1">{"输出"}</p>
                             <pre className="text-xs whitespace-pre-wrap break-all max-h-48 overflow-auto">
                               {row.output}
                             </pre>
                           </div>
                         ) : null}
                         <div className="mb-2">
-                          <p className="text-xs font-semibold mb-1">
-                            {m.habitat_auto_llm_runs_messages()}
-                          </p>
+                          <p className="text-xs font-semibold mb-1">{"消息"}</p>
                           {detailLoading ? (
-                            <p className="text-xs text-muted-foreground">
-                              {m.habitat_common_loading()}
-                            </p>
+                            <p className="text-xs text-muted-foreground">{"加载中…"}</p>
                           ) : detailMessages.length === 0 ? (
-                            <p className="text-xs text-muted-foreground">
-                              {m.habitat_auto_llm_runs_messages_empty()}
-                            </p>
+                            <p className="text-xs text-muted-foreground">{"此运行无消息轨迹。"}</p>
                           ) : (
                             <pre className="text-xs whitespace-pre-wrap break-all max-h-64 overflow-auto">
                               {detailMessages.map(formatMessagePreview).join("\n\n")}
@@ -338,9 +325,7 @@ function AutoLlmRunsPage() {
                         </div>
                         {row.metadata && Object.keys(row.metadata).length > 0 ? (
                           <div>
-                            <p className="text-xs font-semibold mb-1">
-                              {m.habitat_auto_llm_runs_metadata()}
-                            </p>
+                            <p className="text-xs font-semibold mb-1">{"元数据"}</p>
                             <pre className="text-xs whitespace-pre-wrap break-all max-h-32 overflow-auto">
                               {JSON.stringify(row.metadata, null, 2)}
                             </pre>

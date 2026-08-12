@@ -1,70 +1,70 @@
 ---
-title: Subagent
+title: 子代理
 ---
 
-# Subagent (in-process)
+# 子代理（进程内）
 
-Named subagent profiles are stored as `entities` (`primary_component = subagent`). Parent conversations manage profiles and dispatch work through ToolSet **`subagent`**.
+具名子代理配置存为 `entities`（`primary_component = subagent`）。父对话经 ToolSet **`subagent`** 管理配置并派发工作。
 
-## Execution path
+## 执行路径
 
 - `subagent_run` → `runAutoLlm({ runKind: "subagent" })`
-- Fresh message context; the **final** result is only the tool return value (not written to parent `messages`, not light-sleep input). The parent turn still waits for the tool to finish before the next LLM hop.
-- While running, compact `steps[]` (`name` / `title` / `status`) are projected to the parent Chat tool strip via engine `tool_progress` → `tool_round_live` (same `tool_call_id`; status stays `running`). Child turns are still not written into parent `messages`.
-- Return payload may include the same compact `steps[]` for parent Chat multi-level expand
-- `depth=1`: child runs HARD_DENY all `subagent_*` tools
+- 全新消息上下文；**最终**结果仅为工具返回值（不写入父 `messages`，不进浅睡输入）。父轮次仍等待工具完成后再进行下一跳 LLM。
+- 运行中，紧凑 `steps[]`（`name` / `title` / `status`）经 engine `tool_progress` → `tool_round_live` 投影到父聊天室工具条（同一 `tool_call_id`；状态保持 `running`）。子轮次仍不写入父 `messages`。
+- 返回载荷可含相同紧凑 `steps[]`，供父聊天室多级展开
+- `depth=1`：子运行 HARD_DENY 全部 `subagent_*` 工具
 
-## Named vs ephemeral
+## 具名 vs 临时
 
-|              | **Named**                                        | **Ephemeral**                                               |
-| ------------ | ------------------------------------------------ | ----------------------------------------------------------- |
-| Identity     | `slug` or `id` (entity)                          | omit both                                                   |
-| Role prompt  | entity `content` (preconfigured)                 | call `instructions` (parent LLM fills each time)            |
-| Tool ceiling | entity `allowed_tools` (cannot enlarge via call) | call **`allowed_tools` required** (array; empty = no tools) |
-| `title`      | optional override for AutoLlm `run_name`         | strongly recommended; fallback title / `ephemeral`          |
-| Skills       | entity + call union                              | call `skills` only                                          |
+|          | **具名**                               | **临时**                                           |
+| -------- | -------------------------------------- | -------------------------------------------------- |
+| 身份     | `slug` 或 `id`（实体）                 | 两者皆省略                                         |
+| 角色提示 | 实体 `content`（预配置）               | 调用 `instructions`（父 LLM 每次填写）             |
+| 工具上限 | 实体 `allowed_tools`（不可经调用放大） | 调用 **`allowed_tools` 必填**（数组；空 = 无工具） |
+| `title`  | 可选覆盖 AutoLlm `run_name`            | 强烈建议；回退 title / `ephemeral`                 |
+| 技能     | 实体 + 调用并集                        | 仅调用 `skills`                                    |
 
-## Tool policy (strict materialize)
+## 工具策略（严格物化）
 
-1. Profile `allowed_tools` is the **only ceiling** (empty = no tools; may include `@ToolSet`)
-2. Profile / skill / caller `denied_tools` merge into deny; **deny wins**
-3. HARD_DENY: `toolset_load`, `toolset_unload`, `toolset_search`, and all `subagent_*`
-4. The resolved set is **materialized to concrete tool names** as LLM `tools` plus frozen `executableTools`
-5. Skills: `prependSkillsToPrompt` injects bodies; skill deny may narrow; **skill allow cannot enlarge** the ceiling
+1. 配置 `allowed_tools` 是**唯一上限**（空 = 无工具；可含 `@ToolSet`）
+2. 配置 / 技能 / 调用方 `denied_tools` 合并为拒绝；**拒绝优先**
+3. HARD_DENY：`toolset_load`、`toolset_unload`、`toolset_search`，以及全部 `subagent_*`
+4. 解析集**物化为具体工具名**作为 LLM `tools`，外加冻结的 `executableTools`
+5. 技能：`prependSkillsToPrompt` 注入正文；技能 deny 可收窄；**技能 allow 不能放大**上限
 
-## Dispatch
+## 派发
 
-- Single task sugar or `tasks[]` (parallel, `auto_llm.subagent.max_parallel`, default 4)
-- `max_turns`: call > profile > `auto_llm.subagent.max_turns` (default 20)
+- 单任务语法糖或 `tasks[]`（并行，`auto_llm.subagent.max_parallel`，默认 4）
+- `max_turns`：调用 > 配置 > `auto_llm.subagent.max_turns`（默认 20）
 
-## Child system prompt path (not conversation)
+## 子 system prompt 路径（非对话）
 
-Default **minimal** (no self / resident / env-health / catalogs / channel):
+默认**最小**（无自我 / 常驻 / 环境健康 / 目录 / 通道）：
 
-1. `systemPromptBuild` with `llm_kind: auto_llm` (only handlers registered for `auto_llm` \| `all`)
-2. Opt-in side sections via `prompt_includes`: `self` \| `world` \| `time` — **union** of entity body + call args; default none
-3. Role section: named `content` or ephemeral `instructions`
+1. `systemPromptBuild`，`llm_kind: auto_llm`（仅注册给 `auto_llm` \| `all` 的 handler）
+2. 经 `prompt_includes` 可选旁路段：`self` \| `world` \| `time` — 实体 body + 调用参数的**并集**；默认无
+3. 角色段：具名 `content` 或临时 `instructions`
 
-Conversation prompt sections register with `llm_kind: conversation` and stay out of child runs.
+对话 prompt 段以 `llm_kind: conversation` 注册，不进子运行。
 
-## Builtin profiles
+## 内置配置
 
-On Habitat boot, the agent private world is **ensured** (idempotent by slug; existing rows are not overwritten):
+栖息地启动时**确保** Agent 私有 World（按 slug 幂等；已有行不覆盖）：
 
-| slug       | Role                                                               |
-| ---------- | ------------------------------------------------------------------ |
-| `general`  | General-purpose local tools                                        |
-| `explorer` | Read-only explore (memory / file / docs / web)                     |
-| `research` | 调研 — structured research (`research` skill + web/browser/memory) |
+| slug       | 角色                                                      |
+| ---------- | --------------------------------------------------------- |
+| `general`  | 通用本地工具                                              |
+| `explorer` | 只读探索（记忆 / 文件 / 文档 / web）                      |
+| `research` | 调研 — 结构化研究（`research` 技能 + web/browser/memory） |
 
-## Parent catalog
+## 父目录
 
-Visible chats inject a short multi-step guidance (Subagent → skills → toolsets) then a **Subagents** section (`slug` + summary) **before** Skills (`llm_kind: conversation`). Dispatch with `subagent_run`.
+可见聊天注入简短多步指引（子代理 → 技能 → toolsets），再在技能**之前**注入 **Subagents** 段（`slug` + 摘要）（`llm_kind: conversation`）。用 `subagent_run` 派发。
 
-## Habitat UI
+## 栖息地 UI
 
-`/subagents`: list / create / edit allow-deny, skills, `prompt_includes`. Audit: AutoLlmRuns (`run_kind=subagent`); `run_name` from call `title`.
+`/subagents`：列表 / 创建 / 编辑 allow-deny、技能、`prompt_includes`。审计：AutoLlmRuns（`run_kind=subagent`）；`run_name` 来自调用 `title`。
 
-## vs ACP
+## 与 ACP 对比
 
-ACP has been removed. Task-level delegation is this module; external protocol tools stay on MCP.
+ACP 已移除。任务级委派即本模块；外部协议工具仍走 MCP。

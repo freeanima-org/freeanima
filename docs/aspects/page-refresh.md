@@ -1,41 +1,41 @@
 ---
-title: Page refresh
+title: 页面刷新
 ---
 
-# Page refresh (sync vs refresh)
+# 页面刷新（sync vs refresh）
 
-> Parent aspect: [Portal data plane](portal-data-plane.md).
+> 父切面：[Portal 数据面](portal-data-plane.md)。
 
-Outpost/Portal UI keeps data fresh with two distinct verbs. Do not conflate them with PWA / installer “reload”, which updates shell assets only.
+前哨 / 入口 UI 用两个不同动词保持数据新鲜。不要与仅更新壳资源的 PWA / 安装器「reload」混为一谈。
 
-## Verbs
+## 动词
 
-| Verb        | When                                                           | What happens                                                                                                                   |
-| ----------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **sync**    | Habitat reconnect, tab visible again, Offline sync toast retry | Flush outbox; modules that flushed call `refreshAll` (see [offline platform](offline-platform.md))                             |
-| **refresh** | Header **Refresh** button or touch pull-to-refresh             | Re-run the page’s `reload*` / list fetch (online `withOfflineCache` already network-fetches). Same handler for button and pull |
+| 动词        | 何时                                            | 发生什么                                                                                  |
+| ----------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **sync**    | 栖息地重连、标签页再次可见、离线同步 toast 重试 | Flush outbox；已 flush 的模块调用 `refreshAll`（见 [离线平台](offline-platform.md)）      |
+| **refresh** | 顶栏 **刷新** 按钮或触控下拉刷新                | 重跑该页的 `reload*` / 列表拉取（在线 `withOfflineCache` 已走网络）。按钮与下拉同一处理器 |
 
-## Principles
+## 原则
 
-- **Limited auto**: keep sync + existing live channels (chat `stream.*`, `conversation.updated`, `pomodoro.active.changed`, `notification.created`). No global list polling for attention or lists. No unconditional `refreshAll` of every module on visibility when the outbox is empty. Attention routing → [Notification and reminder](notification-and-reminder.md).
-- **Manual refresh required** on product list surfaces so multi-device / agent edits can be pulled on demand.
-- **Interaction dimension** (see [UI dimensions](../ui/dimensions.md), agent API in [ui-dimensions](../../.agent/rules/ui-dimensions.md)): pointer uses a header button; touch also gets pull-to-refresh on the primary list. Shell kind does not lock the affordance. Pattern note → [UI patterns](../ui/patterns.md) (PullToRefresh candidate / DataListRow sibling surfaces).
-- **Out of scope**: Habitat fan-out for every CRUD entity; adopting the React Query **library** (self-owned hooks on the [Portal data plane](portal-data-plane.md) are fine); turning the offline-sync toast into a page refresh control.
+- **有限自动**：保留 sync + 既有 live 通道（聊天 `stream.*`、`conversation.updated`、`pomodoro.active.changed`、`notification.created`）。不对注意力或列表做全局轮询。outbox 为空时不对每个模块无条件 `refreshAll`。注意力路由 → [通知与提醒](notification-and-reminder.md)。
+- 产品列表面**须手动刷新**，以便按需拉取多设备 / Agent 编辑。
+- **交互维度**（见 [UI 三维度](../ui/dimensions.md)，Agent API 见 [ui-dimensions](../../.agent/rules/ui-dimensions.md)）：指针用顶栏按钮；触控主列表另有下拉刷新。壳种类不锁定交互方式。模式说明 → [UI 模式](../ui/patterns.md)（PullToRefresh 候选 / DataListRow 同级表面）。
+- **不在范围**：为每个 CRUD 实体做栖息地扇出；引入 React Query **库**（数据面上自建 hooks 可以）；把离线同步 toast 变成页面刷新控件。
 
-## Page classes
+## 页面类别
 
-| Class           | Pages                             | Auto                                                                   | Manual                                    |
-| --------------- | --------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------- |
-| A Stream        | Chat                              | SAP stream + recovery poll                                             | Header refresh (existing)                 |
-| B CRUD outbox   | Task, Project, Diary              | Mount / selection cache-first; local write reload; sync → `refreshAll` | Header + pull-to-refresh                  |
-| C Hybrid outbox | Pomodoro                          | `pomodoro.active.changed`                                              | Offline `refreshAll` for config/stats     |
-| D snapshot      | Email, Notification, Dream, Vault | Mount / dependency load                                                | Header refresh (pull on list where bound) |
-| E Habitat       | Ops lists                         | Load on enter                                                          | Explicit refresh (existing)               |
-| F Settings      | Shell settings                    | Load on open                                                           | Re-read after save                        |
-| G Shell update  | PWA / installer                   | Update check                                                           | Reload / install ≠ business refresh       |
+| 类别            | 页面                    | 自动                                                          | 手动                         |
+| --------------- | ----------------------- | ------------------------------------------------------------- | ---------------------------- |
+| A Stream        | 聊天室                  | SAP stream + 恢复轮询                                         | 顶栏刷新（已有）             |
+| B CRUD outbox   | 任务、项目、日记        | 挂载 / 选择 cache-first；本地写后 reload；sync → `refreshAll` | 顶栏 + 下拉刷新              |
+| C Hybrid outbox | 番茄钟                  | `pomodoro.active.changed`                                     | 离线 `refreshAll` 配置/统计  |
+| D snapshot      | 邮件、通知、梦境、Vault | 挂载 / 依赖加载                                               | 顶栏刷新（绑定列表处可下拉） |
+| E Habitat       | Ops 列表                | 进入时加载                                                    | 显式刷新（已有）             |
+| F Settings      | 壳设置                  | 打开时加载                                                    | 保存后重读                   |
+| G Shell update  | PWA / 安装器            | 更新检查                                                      | Reload / 安装 ≠ 业务刷新     |
 
-## Implementation notes
+## 实现要点
 
-- Shared pull gesture: `@freeanima/ui-kit/composite` `PullToRefresh` (touch-only; ignore starts near the left edge to avoid drawer swipe conflicts). Visual/hit-target norms → [UI foundations](../ui/foundations.md).
-- Copy: `m.habitat_common_refresh` / `m.habitat_common_refreshing`.
-- Follow-up (not required here): soft refresh of the focused module only on visibility with an empty outbox.
+- 共享下拉手势：`@freeanima/ui-kit/composite` `PullToRefresh`（仅触控；忽略靠近左缘的起始，避免与抽屉滑动冲突）。视觉 / 触控目标规范 → [UI 基础](../ui/foundations.md)。
+- 文案：`m.habitat_common_refresh` / `m.habitat_common_refreshing`。
+- 后续（此处不要求）：outbox 为空时仅对焦点模块做可见性软刷新。

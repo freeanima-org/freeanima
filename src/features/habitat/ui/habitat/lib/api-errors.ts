@@ -1,5 +1,4 @@
 import { omitUndefined } from "./omit-undefined.ts";
-import { m } from "./i18n.ts";
 
 export type ApiProtocolPayload = {
   error?: string;
@@ -9,34 +8,34 @@ export type ApiProtocolPayload = {
 };
 
 export function translateApiPayload(payload: ApiProtocolPayload | null | undefined): string {
-  if (!payload) return m.habitat_common_request_failed();
+  if (!payload) return "请求失败";
   const code = payload.code;
   const params = payload.params ?? {};
 
   if (code === "cron_job_not_found") {
-    return m.habitat_api_cron_job_not_found({ id: params.job_id ?? "" });
+    return `未找到任务: ${params.job_id ?? ""}`;
   }
   if (code === "service_restarting") {
-    return m.habitat_api_service_restarting();
+    return "服务正在重启...";
   }
   if (code === "email_account_not_found") {
-    return m.habitat_api_email_account_not_found({ account_id: params.account_id ?? "" });
+    return `未找到账户: ${params.account_id ?? ""}`;
   }
   if (code === "semantic_memory_count") {
-    return m.habitat_api_semantic_memory_count({ count: params.count ?? "" });
+    return `语义记忆：${params.count ?? ""} 条（PG content_fts 自动维护，无需重建）`;
   }
   if (code === "studio_workspace_missing") {
-    return m.habitat_api_studio_workspace_missing();
+    return "studio.workspace 未配置或不存在";
   }
   if (code === "terminal_session_not_found") {
-    return m.habitat_api_terminal_session_not_found();
+    return "终端会话不存在或已关闭";
   }
 
-  return payload.error ?? payload.message ?? m.habitat_common_request_failed();
+  return payload.error ?? payload.message ?? "请求失败";
 }
 
 export function translateApiErrorValue(value: unknown): string {
-  if (value == null) return m.habitat_common_request_failed();
+  if (value == null) return "请求失败";
   if (typeof value === "string") {
     return normalizeNetworkErrorMessage(value);
   }
@@ -69,7 +68,7 @@ function normalizeNetworkErrorMessage(message: string): string {
     lower.includes("network error") ||
     lower === "load failed"
   ) {
-    return m.habitat_common_network_error();
+    return "网络错误";
   }
   return message;
 }

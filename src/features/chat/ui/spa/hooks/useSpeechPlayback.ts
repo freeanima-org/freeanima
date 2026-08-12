@@ -8,7 +8,8 @@ import {
   subscribeSpeechPlayback,
   toggleSpeechPlayback,
 } from "@freeanima/client/portal-sdk/speech/speech-playback-service";
-import { getAppLocale } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
+/** 朗读 locale 固定中文（UI 已内联，无运行时 locale 切换） */
+const SPEECH_LOCALE = "zh-CN";
 
 /**
  * Chat 侧朗读 Hook：订阅 Shell 级单例。
@@ -28,11 +29,11 @@ export function useSpeechPlayback() {
   }, []);
 
   const toggle = useCallback((key: string, text: string) => {
-    toggleSpeechPlayback(key, text, getAppLocale());
+    toggleSpeechPlayback(key, text, SPEECH_LOCALE);
   }, []);
 
   const enqueue = useCallback((key: string, text: string) => {
-    enqueueSpeechPlayback(key, text, getAppLocale());
+    enqueueSpeechPlayback(key, text, SPEECH_LOCALE);
   }, []);
 
   const isSpeaking = useCallback((key: string) => isSpeechSpeaking(key), []);

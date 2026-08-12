@@ -24,8 +24,6 @@ import { reconnectHabitat, useHabitatConnection } from "@freeanima/client/portal
 import type { StreamFlushContext } from "@freeanima/client/portal-sdk/offline-module-types";
 import { dismissShellToast, showShellToast, SHELL_TOAST_IDS } from "@freeanima/ui-kit/composite";
 
-import { m } from "@paraglide/messages";
-
 import { registerAllOfflineModules } from "./register-offline-modules.ts";
 import {
   buildOfflineSyncSummaryMessage,
@@ -57,17 +55,17 @@ function resolveFlushOptions(forceTail = false) {
 function moduleLabel(moduleId: OfflineModuleId): string {
   switch (moduleId) {
     case "chat":
-      return m.ui_offline_sync_module_chat();
+      return "聊天室";
     case "diary":
-      return m.ui_offline_sync_module_diary();
+      return "日记";
     case "calendar":
-      return m.ui_offline_sync_module_calendar();
+      return "日程";
     case "task":
-      return m.ui_offline_sync_module_task();
+      return "任务";
     case "project":
-      return m.ui_offline_sync_module_project();
+      return "项目";
     case "pomodoro":
-      return m.ui_offline_sync_module_pomodoro();
+      return "番茄钟";
     default:
       return moduleId;
   }
@@ -84,7 +82,7 @@ function buildIssueDescription(issues: OfflineOutboxOp[]): string | undefined {
     .map((op) => {
       const label = moduleLabel(op.moduleId);
       if (op.lastError && op.lastError !== "stale") return `${label}: ${op.lastError}`;
-      if (isStaleOutboxOp(op)) return `${label}: ${m.ui_outbox_stale_hint()}`;
+      if (isStaleOutboxOp(op)) return `${label}: 对话已在其他设备上继续`;
       return label;
     })
     .join("\n");
@@ -205,9 +203,9 @@ export function OfflineSyncBootstrap(): null {
     const firstIssue = issues[0];
     const description = buildIssueDescription(issues);
     const message = buildOfflineSyncSummaryMessage(summary, habitatConnection, {
-      pending: (count) => m.ui_offline_sync_pending({ count }),
-      failed: (count) => m.ui_offline_sync_failed({ count }),
-      stale: (count) => m.ui_offline_sync_stale({ count }),
+      pending: (count) => `${count} 项待同步`,
+      failed: (count) => `${count} 项同步失败`,
+      stale: (count) => `${count} 处冲突`,
     });
 
     if (firstIssue) {
@@ -215,15 +213,13 @@ export function OfflineSyncBootstrap(): null {
         ...(description != null ? { description } : {}),
         action: {
           label:
-            isStaleOutboxOp(firstIssue) && firstIssue.moduleId === "chat"
-              ? m.ui_outbox_force_send()
-              : m.ui_offline_sync_retry(),
+            isStaleOutboxOp(firstIssue) && firstIssue.moduleId === "chat" ? "仍然发送" : "重试",
           onClick: () => {
             if (!busy) void handleRetryOp(firstIssue);
           },
         },
         cancel: {
-          label: m.ui_outbox_discard(),
+          label: "丢弃",
           onClick: () => {
             if (!busy) void handleDiscardOp(firstIssue);
           },
@@ -234,7 +230,7 @@ export function OfflineSyncBootstrap(): null {
 
     showShellToast(SHELL_TOAST_IDS.offlineSync, message, {
       action: {
-        label: m.ui_offline_sync_retry_all(),
+        label: "重新连接并全部重试",
         onClick: () => {
           if (!busy) void handleRetryAll();
         },

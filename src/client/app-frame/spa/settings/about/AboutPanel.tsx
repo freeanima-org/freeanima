@@ -26,7 +26,6 @@ import { getShellKind, type ShellRuntimeKind } from "@freeanima/client/portal-sd
 import { isTauriRuntime } from "@freeanima/client/portal-sdk/tauri-runtime";
 import { parseWebUiConfigJson } from "@freeanima/client/portal-sdk/web-ui-config";
 
-import { m } from "@paraglide/messages";
 import { requestShellUpdateCheck } from "../../ShellUpdateBanner.tsx";
 
 const proxySelectClassName =
@@ -35,13 +34,13 @@ const proxySelectClassName =
 function proxyOptionLabel(id: GithubReleaseProxyId): string {
   switch (id) {
     case "none":
-      return m.ui_shell_update_proxy_none();
+      return "直连（GitHub）";
     case "ghproxy-net":
-      return m.ui_shell_update_proxy_ghproxy_net();
+      return "ghproxy.net";
     case "gh-proxy-com":
-      return m.ui_shell_update_proxy_gh_proxy_com();
+      return "gh-proxy.com";
     case "ghfast-top":
-      return m.ui_shell_update_proxy_ghfast_top();
+      return "ghfast.top";
     default: {
       const _exhaustive: never = id;
       return _exhaustive;
@@ -63,31 +62,31 @@ function BuildMetaRows({
   startedAt?: string;
 }) {
   if (meta === undefined) {
-    return <p className="text-sm text-muted-foreground">{m.settings_about_loading()}</p>;
+    return <p className="text-sm text-muted-foreground">{"加载中…"}</p>;
   }
   if (!meta) {
-    return <p className="text-sm text-muted-foreground">{m.settings_about_unavailable()}</p>;
+    return <p className="text-sm text-muted-foreground">{"不可用"}</p>;
   }
 
   const rows: Array<{ label: string; value: string }> = [
-    { label: m.settings_about_field_version(), value: meta.version },
-    { label: m.settings_about_field_channel(), value: meta.channel },
+    { label: "版本", value: meta.version },
+    { label: "通道", value: meta.channel },
   ];
   if (meta.component === "native" && meta.shell) {
     const shellValue = getShellKind() === "tauri" ? `${meta.shell} · Tauri` : meta.shell;
-    rows.push({ label: m.settings_about_field_shell(), value: shellValue });
+    rows.push({ label: "壳", value: shellValue });
   }
   if (meta.git?.commit) {
-    rows.push({ label: m.settings_about_field_commit(), value: meta.git.commit });
+    rows.push({ label: "提交", value: meta.git.commit });
   }
   if (meta.component === "service" && startedAt) {
     rows.push({
-      label: m.settings_about_field_started_at(),
+      label: "启动于",
       value: formatBuiltAt(startedAt),
     });
   } else if (meta.built_at) {
     rows.push({
-      label: m.settings_about_field_built_at(),
+      label: "构建于",
       value: formatBuiltAt(meta.built_at),
     });
   }
@@ -277,9 +276,7 @@ export default function AboutPanel() {
       <div className="flex flex-wrap items-center gap-2">
         {canCheckNative ? (
           <label className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground whitespace-nowrap">
-              {m.ui_shell_update_proxy_label()}
-            </span>
+            <span className="text-muted-foreground whitespace-nowrap">{"下载代理"}</span>
             <select
               className={proxySelectClassName}
               value={updateProxy}
@@ -299,7 +296,7 @@ export default function AboutPanel() {
         ) : null}
         {canCheckNative ? (
           <Button type="button" size="sm" onClick={() => requestShellUpdateCheck()}>
-            {m.ui_shell_update_check()}
+            {"检查更新"}
           </Button>
         ) : null}
         {switchTarget ? (
@@ -311,7 +308,7 @@ export default function AboutPanel() {
               requestShellUpdateCheck({ intent: "switch", targetChannel: switchTarget })
             }
           >
-            {m.ui_shell_channel_switch({ channel: switchTarget })}
+            {`切换到 ${switchTarget}`}
           </Button>
         ) : null}
         {showWebSection ? (
@@ -323,29 +320,21 @@ export default function AboutPanel() {
               window.dispatchEvent(new CustomEvent("freeanima:pwa-update-check"));
             }}
           >
-            {m.ui_shell_update_check()}
+            {"检查更新"}
           </Button>
         ) : null}
       </div>{" "}
       <BuildMetaGroup
-        title={m.settings_about_group_service()}
+        title={"服务"}
         meta={serviceAbout?.meta}
         loading={serviceAbout === undefined}
         {...(serviceAbout?.startedAt ? { startedAt: serviceAbout.startedAt } : {})}
       />
       {showWebSection ? (
-        <BuildMetaGroup
-          title={m.settings_about_group_web()}
-          meta={webBuild}
-          loading={webBuild === undefined}
-        />
+        <BuildMetaGroup title={"Web UI"} meta={webBuild} loading={webBuild === undefined} />
       ) : null}
       {showNative ? (
-        <BuildMetaGroup
-          title={m.settings_about_group_native()}
-          meta={nativeBuild}
-          loading={nativeBuild === undefined}
-        />
+        <BuildMetaGroup title={"原生壳"} meta={nativeBuild} loading={nativeBuild === undefined} />
       ) : null}
     </div>
   );

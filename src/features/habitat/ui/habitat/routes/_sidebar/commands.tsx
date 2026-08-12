@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { listConversationCommands } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { catchWithFallback } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/commands")({
@@ -23,7 +22,7 @@ type CommandRow = {
 };
 
 function formatPlatforms(platforms?: string[]) {
-  if (!platforms?.length) return m.habitat_common_all();
+  if (!platforms?.length) return "全部";
   return platforms.join(", ");
 }
 
@@ -51,23 +50,23 @@ function CommandsPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">{m.habitat_nav_commands()}</h2>
-      <p className="text-sm text-muted-foreground mb-4">{m.habitat_commands_desc()}</p>
+      <h2 className="text-lg font-bold mb-1">{"⌨️ 命令"}</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        {"在对话输入框以 / 开头即可触发。命令按作用域分为两类。"}
+      </p>
 
       {conversationCommands.length > 0 ? (
         <section className="mb-6">
-          <h3 className="text-sm font-semibold mb-2">{m.habitat_commands_conversation_scope()}</h3>
+          <h3 className="text-sm font-semibold mb-2">{"当前会话"}</h3>
           <p className="text-xs text-muted-foreground mb-2">
-            {m.habitat_commands_conversation_hint({
-              count: String(conversationCommands.length),
-            })}
+            {`所有平台默认可用（共 ${String(conversationCommands.length)} 个）。`}
           </p>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-48">{m.habitat_commands_command()}</TableHead>
-                  <TableHead>{m.habitat_commands_description()}</TableHead>
+                  <TableHead className="w-48">{"命令"}</TableHead>
+                  <TableHead>{"说明"}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -87,17 +86,17 @@ function CommandsPage() {
 
       {globalCommands.length > 0 ? (
         <section>
-          <h3 className="text-sm font-semibold mb-2">{m.habitat_commands_global_scope()}</h3>
+          <h3 className="text-sm font-semibold mb-2">{"其它"}</h3>
           <p className="text-xs text-muted-foreground mb-2">
-            {m.habitat_commands_global_hint({ count: String(globalCommands.length) })}
+            {`跨对话或平台级操作（共 ${String(globalCommands.length)} 个）。`}
           </p>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-48">{m.habitat_commands_command()}</TableHead>
-                  <TableHead>{m.habitat_commands_description()}</TableHead>
-                  <TableHead className="w-40">{m.habitat_commands_platform()}</TableHead>
+                  <TableHead className="w-48">{"命令"}</TableHead>
+                  <TableHead>{"说明"}</TableHead>
+                  <TableHead className="w-40">{"平台"}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -119,7 +118,7 @@ function CommandsPage() {
       ) : null}
 
       {conversationCommands.length === 0 && globalCommands.length === 0 ? (
-        <StatusAlert variant="info">{m.habitat_commands_empty()}</StatusAlert>
+        <StatusAlert variant="info">{"暂无已注册的 slash 命令。"}</StatusAlert>
       ) : null}
     </div>
   );

@@ -1,15 +1,14 @@
 ---
-import { m } from "../../../messages/paraglide/messages.js";
 ---
 
 <script
   define:vars={{
-    mermaidDialog: m.docs_mermaid_dialog(),
-    mermaidZoomIn: m.docs_mermaid_zoom_in(),
-    mermaidZoomOut: m.docs_mermaid_zoom_out(),
-    mermaidZoomReset: m.docs_mermaid_zoom_reset(),
-    mermaidClose: m.docs_mermaid_close(),
-    mermaidExpand: m.docs_mermaid_expand(),
+    mermaidDialog: "Mermaid 图表",
+    mermaidZoomIn: "放大",
+    mermaidZoomOut: "缩小",
+    mermaidZoomReset: "重置缩放",
+    mermaidClose: "关闭",
+    mermaidExpand: "展开图表",
   }}
 >
   import { initMermaidClient } from "../lib/mermaid-client.ts";

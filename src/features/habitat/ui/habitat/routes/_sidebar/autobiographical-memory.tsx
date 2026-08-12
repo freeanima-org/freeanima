@@ -20,7 +20,6 @@ import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
 import { listAutobiographicalMemories } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 import { useHabitatOffsetPagination } from "@freeanima/features/habitat/ui/habitat/lib/use-habitat-offset-pagination.ts";
 
@@ -68,11 +67,7 @@ function AutobiographicalMemoryPage() {
         setLoaded(true);
       } catch (e) {
         logCaughtError("routes/_sidebar/autobiographical-memory", e);
-        setError(
-          m.habitat_common_load_failed({
-            detail: e instanceof Error ? e.message : String(e),
-          }),
-        );
+        setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
       } finally {
         setLoading(false);
       }
@@ -90,8 +85,10 @@ function AutobiographicalMemoryPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">{m.habitat_nav_autobio()}</h2>
-      <p className="text-sm text-muted-foreground mb-4">{m.habitat_autobio_desc()}</p>
+      <h2 className="text-lg font-bold mb-1">{"📖 自传记忆"}</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        {"浏览 autobiographical_memory 叙事条目。"}
+      </p>
 
       <form
         className="mb-4"
@@ -103,20 +100,18 @@ function AutobiographicalMemoryPage() {
         <Card className="bg-muted py-0">
           <CardContent className="gap-3 py-4 px-4">
             <FormFieldset bordered={false} className="gap-3">
-              <FormField label={m.habitat_autobio_search()} className="text-xs">
+              <FormField label={"搜索词（可选，标题/内容 ILIKE）"} className="text-xs">
                 <Input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   type="text"
                   className="h-8"
-                  placeholder={m.habitat_common_keyword_placeholder()}
+                  placeholder={"关键词…"}
                 />
               </FormField>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                  <FormFieldLabel className="text-xs py-0">
-                    {m.habitat_common_status_label()}
-                  </FormFieldLabel>
+                  <FormFieldLabel className="text-xs py-0">{"状态"}</FormFieldLabel>
                   <Select
                     selectedKey={statusFilter}
                     onSelectionChange={(key) => {
@@ -146,7 +141,7 @@ function AutobiographicalMemoryPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem id={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
+                      <SelectItem id={ALL_VALUE}>{"全部"}</SelectItem>
                       {SIGNIFICANCE_OPTIONS.map((s) => (
                         <SelectItem key={s} id={s}>
                           {s}
@@ -156,9 +151,7 @@ function AutobiographicalMemoryPage() {
                   </Select>
                 </div>
                 <div>
-                  <FormFieldLabel className="text-xs py-0">
-                    {m.habitat_autobio_source_conversation()}
-                  </FormFieldLabel>
+                  <FormFieldLabel className="text-xs py-0">{"来源对话（可选）"}</FormFieldLabel>
                   <Input
                     value={sourceSession}
                     onChange={(e) => setSourceSession(e.target.value)}
@@ -171,7 +164,7 @@ function AutobiographicalMemoryPage() {
             </FormFieldset>
             <Button type="submit" size="sm" isDisabled={loading}>
               {loading ? <Spinner /> : null}
-              {m.habitat_common_query()}
+              {"查询"}
             </Button>
           </CardContent>
         </Card>
@@ -190,7 +183,7 @@ function AutobiographicalMemoryPage() {
               <Spinner />
             </div>
           ) : items.length === 0 ? (
-            <StatusAlert variant="info">{m.habitat_common_no_results()}</StatusAlert>
+            <StatusAlert variant="info">{"无匹配记录。"}</StatusAlert>
           ) : (
             <div className="space-y-2">
               {items.map((row) => (
@@ -229,7 +222,7 @@ function AutobiographicalMemoryPage() {
           />
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">{m.habitat_common_click_query_hint()}</p>
+        <p className="text-sm text-muted-foreground">{"点击「查询」加载列表。"}</p>
       )}
     </div>
   );

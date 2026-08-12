@@ -29,7 +29,6 @@ import {
   listConversations,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 
 type TabId = "parts" | "full" | "tools";
@@ -47,10 +46,10 @@ const PART_BREAKDOWN_KEY = {
 } as const;
 
 function partLabel(key: PartKey): string {
-  if (key === "self") return m.habitat_system_prompt_block_self();
-  if (key === "toolsets") return m.habitat_system_prompt_block_toolsets();
-  if (key === "resident") return m.habitat_system_prompt_block_resident();
-  return m.habitat_system_prompt_block_agents();
+  if (key === "self") return "自我层";
+  if (key === "toolsets") return "ToolSets";
+  if (key === "resident") return "常驻记忆";
+  return "AGENTS.md";
 }
 
 function formatTokenK(tokens: number): string {
@@ -92,7 +91,7 @@ function ToolSchemaCard({ tool }: { tool: PromptDebugResponse["tools"]["items"][
         ) : null}
         <details className="mt-1">
           <summary className="text-xs cursor-pointer text-muted-foreground">
-            {m.habitat_tools_param_schema()}
+            {"参数 schema"}
           </summary>
           <pre className="text-xs mt-1 bg-muted p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.parameters, null, 2)}
@@ -109,24 +108,22 @@ function BreakdownBar({ data }: { data: PromptDebugResponse["system"]["breakdown
   return (
     <Card className="bg-muted py-0">
       <CardContent className="py-3 px-4 gap-2">
-        <h3 className="text-sm font-semibold">{m.habitat_system_prompt_token_breakdown()}</h3>
+        <h3 className="text-sm font-semibold">{"Token 分项（粗估）"}</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
           <div>
-            <span className="text-muted-foreground">{m.habitat_system_prompt_token_system()}</span>
+            <span className="text-muted-foreground">{"系统提示词"}</span>
             <div className="font-mono">~{formatTokenK(systemTotal)}</div>
           </div>
           <div>
-            <span className="text-muted-foreground">
-              {m.habitat_system_prompt_token_messages()}
-            </span>
+            <span className="text-muted-foreground">{"对话消息"}</span>
             <div className="font-mono">~{formatTokenK(data.messages)}</div>
           </div>
           <div>
-            <span className="text-muted-foreground">{m.habitat_system_prompt_token_tools()}</span>
+            <span className="text-muted-foreground">{"工具 schema"}</span>
             <div className="font-mono">~{formatTokenK(data.tools)}</div>
           </div>
           <div>
-            <span className="text-muted-foreground">{m.habitat_system_prompt_token_total()}</span>
+            <span className="text-muted-foreground">{"合计"}</span>
             <div className="font-mono font-semibold">~{formatTokenK(data.total)}</div>
           </div>
         </div>
@@ -137,27 +134,27 @@ function BreakdownBar({ data }: { data: PromptDebugResponse["system"]["breakdown
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             {data.system_self > 0 ? (
               <span>
-                {m.habitat_system_prompt_block_self()} ~{formatTokenK(data.system_self)}
+                {"自我层"} ~{formatTokenK(data.system_self)}
               </span>
             ) : null}
             {data.system_toolsets > 0 ? (
               <span>
-                {m.habitat_system_prompt_block_toolsets()} ~{formatTokenK(data.system_toolsets)}
+                {"ToolSets"} ~{formatTokenK(data.system_toolsets)}
               </span>
             ) : null}
             {data.system_resident > 0 ? (
               <span>
-                {m.habitat_system_prompt_block_resident()} ~{formatTokenK(data.system_resident)}
+                {"常驻记忆"} ~{formatTokenK(data.system_resident)}
               </span>
             ) : null}
             {data.system_agents > 0 ? (
               <span>
-                {m.habitat_system_prompt_block_agents()} ~{formatTokenK(data.system_agents)}
+                {"AGENTS.md"} ~{formatTokenK(data.system_agents)}
               </span>
             ) : null}
             {data.summary > 0 ? (
               <span>
-                {m.habitat_system_prompt_block_summary()} ~{formatTokenK(data.summary)}
+                {"摘要"} ~{formatTokenK(data.summary)}
               </span>
             ) : null}
           </div>
@@ -249,30 +246,28 @@ function SystemPromptPage() {
   const copyText = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopyHint(m.habitat_common_copied({ label }));
+      setCopyHint(`已复制${label}`);
       setTimeout(() => setCopyHint(""), 2000);
     } catch (err) {
       logCaughtError("system-prompt/copyText", err);
-      setCopyHint(m.habitat_common_copy_failed({ label: "" }));
+      setCopyHint("复制失败");
       setTimeout(() => setCopyHint(""), 2000);
     }
   };
 
-  const toolsMode =
-    data?.tools.mode === "registry"
-      ? m.habitat_system_prompt_tools_registry()
-      : m.habitat_system_prompt_tools_effective();
+  const toolsMode = data?.tools.mode === "registry" ? "全量注册表" : "对话有效";
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">{m.habitat_nav_system_prompt()}</h2>
-      <p className="text-sm text-muted-foreground mb-4">{m.habitat_system_prompt_desc()}</p>
+      <h2 className="text-lg font-bold mb-1">{"📋 系统提示词"}</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        {
+          "查看系统提示词分解、完整文本与会话有效工具 schema。默认全局模板；可选 conversation 对比 PG 持久化与实时重建结果。"
+        }
+      </p>
 
       <div className="flex flex-wrap items-end gap-3 mb-4">
-        <FormField
-          label={m.habitat_system_prompt_conversation_optional()}
-          className="w-full max-w-xl text-xs"
-        >
+        <FormField label={"对话（可选）"} className="w-full max-w-xl text-xs">
           <Select
             selectedKey={selectedConversation || "__global__"}
             onSelectionChange={(key) => {
@@ -285,10 +280,10 @@ function SystemPromptPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem id="__global__">{m.habitat_common_global_template()}</SelectItem>
+              <SelectItem id="__global__">{"— 全局模板 —"}</SelectItem>
               {sortedConversations.map((s) => (
                 <SelectItem key={s.id} id={s.id}>
-                  {(s.title || m.habitat_common_no_title()).slice(0, 24)} · {s.id.slice(0, 20)}…
+                  {(s.title || "（无标题）").slice(0, 24)} · {s.id.slice(0, 20)}…
                 </SelectItem>
               ))}
             </SelectContent>
@@ -300,47 +295,38 @@ function SystemPromptPage() {
             params={{ conversationId: selectedConversation }}
             className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "h-7 text-xs")}
           >
-            {m.habitat_system_prompt_conversation_detail()}
+            {"对话详情 →"}
           </Link>
         ) : null}
         <Link
           to="/self-layer"
           className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "h-7 text-xs")}
         >
-          {m.habitat_system_prompt_self_layer()}
+          {"自我层 →"}
         </Link>
         <Link
           to="/tools"
           className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "h-7 text-xs")}
         >
-          {m.habitat_system_prompt_tools_list()}
+          {"工具列表 →"}
         </Link>
       </div>
 
-      {loading ? (
-        <div className="text-sm text-muted-foreground">{m.habitat_common_loading()}</div>
-      ) : null}
+      {loading ? <div className="text-sm text-muted-foreground">{"加载中…"}</div> : null}
       {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
 
       {data && !loading ? (
         <>
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <Badge variant="ghost" className="text-xs">
-              {data.mode === "global"
-                ? m.habitat_system_prompt_mode_global()
-                : m.habitat_system_prompt_mode_conversation()}
+              {data.mode === "global" ? "全局模板" : "对话对比"}
             </Badge>
             <Badge variant="ghost" className="text-xs">
-              {m.habitat_system_prompt_tools_count({
-                count: String(data.tools.count),
-                mode: toolsMode,
-              })}
+              {`工具 ${String(data.tools.count)} 个（${toolsMode}）`}
             </Badge>
             {data.mode === "conversation" && data.system.in_sync !== undefined ? (
               <Badge variant={data.system.in_sync ? "success" : "warning"} className="text-xs">
-                {data.system.in_sync
-                  ? m.habitat_common_stored_live_sync()
-                  : m.habitat_common_stored_live_diff()}
+                {data.system.in_sync ? "stored 与 live 一致" : "stored 与 live 不一致"}
               </Badge>
             ) : null}
             {copyHint ? (
@@ -357,9 +343,7 @@ function SystemPromptPage() {
               ) : null}
               {data.meta.tool_names?.length ? (
                 <div>
-                  {m.habitat_system_prompt_meta_tools({
-                    count: String(data.meta.tool_names.length),
-                  })}
+                  {`conversation_meta.tools: ${String(data.meta.tool_names.length)} 个名称`}
                 </div>
               ) : null}
             </div>
@@ -379,9 +363,9 @@ function SystemPromptPage() {
             <TabsList className="w-fit">
               {(
                 [
-                  ["parts", m.habitat_system_prompt_tab_parts()],
-                  ["full", m.habitat_system_prompt_tab_full()],
-                  ["tools", m.habitat_system_prompt_tab_tools()],
+                  ["parts", "分项"],
+                  ["full", "完整文本"],
+                  ["tools", "工具 schema"],
                 ] as const
               ).map(([id, label]) => (
                 <TabsTrigger key={id} id={id}>
@@ -399,16 +383,13 @@ function SystemPromptPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-bold text-sm">{partLabel(key)}</h3>
                         <span className="text-xs text-muted-foreground">
-                          {m.habitat_common_chars_estimate({
-                            chars: String(estimateChars(text)),
-                            tokens: formatTokenK(data.system.breakdown[PART_BREAKDOWN_KEY[key]]),
-                          })}
+                          {`${String(estimateChars(text))} 字符 · ~${formatTokenK(data.system.breakdown[PART_BREAKDOWN_KEY[key]])} tokens`}
                         </span>
                       </div>
                     </summary>
                     <div className="px-4 pb-4">
                       <pre className="text-xs whitespace-pre-wrap bg-muted p-3 rounded max-h-96 overflow-auto">
-                        {text.trim() || m.habitat_common_empty()}
+                        {text.trim() || "（空）"}
                       </pre>
                     </div>
                   </details>
@@ -425,7 +406,7 @@ function SystemPromptPage() {
                   className="h-7 text-xs"
                   onClick={() => void copyText(data.system.composed, " live prompt")}
                 >
-                  {m.habitat_system_prompt_copy_live()}
+                  {"复制 live 全文"}
                 </Button>
                 {data.system.stored != null ? (
                   <Button
@@ -435,30 +416,28 @@ function SystemPromptPage() {
                     className="h-7 text-xs"
                     onClick={() => void copyText(data.system.stored ?? "", " stored prompt")}
                   >
-                    {m.habitat_system_prompt_copy_stored()}
+                    {"复制 stored 全文"}
                   </Button>
                 ) : null}
               </div>
               {data.mode === "conversation" && data.system.stored != null ? (
                 <div className="grid lg:grid-cols-2 gap-4">
                   <section>
-                    <h3 className="text-sm font-semibold mb-2">{m.habitat_system_prompt_live()}</h3>
+                    <h3 className="text-sm font-semibold mb-2">{"Live（实时重建）"}</h3>
                     <pre className="text-xs whitespace-pre-wrap bg-muted p-3 rounded max-h-[32rem] overflow-auto">
-                      {data.system.composed || m.habitat_common_empty()}
+                      {data.system.composed || "（空）"}
                     </pre>
                   </section>
                   <section>
-                    <h3 className="text-sm font-semibold mb-2">
-                      {m.habitat_system_prompt_stored()}
-                    </h3>
+                    <h3 className="text-sm font-semibold mb-2">{"Stored（PG）"}</h3>
                     <pre className="text-xs whitespace-pre-wrap bg-muted p-3 rounded max-h-[32rem] overflow-auto">
-                      {data.system.stored || m.habitat_common_empty()}
+                      {data.system.stored || "（空）"}
                     </pre>
                   </section>
                 </div>
               ) : (
                 <pre className="text-xs whitespace-pre-wrap bg-muted p-3 rounded max-h-[32rem] overflow-auto">
-                  {data.system.composed || m.habitat_common_empty()}
+                  {data.system.composed || "（空）"}
                 </pre>
               )}
             </TabsContent>
@@ -468,7 +447,7 @@ function SystemPromptPage() {
                 <Input
                   type="search"
                   className="w-full max-w-sm h-8"
-                  placeholder={m.habitat_system_prompt_search_tools()}
+                  placeholder={"搜索工具名 / 描述 / toolset"}
                   value={toolQuery}
                   onChange={(e) => setToolQuery(e.target.value)}
                 />
@@ -481,14 +460,10 @@ function SystemPromptPage() {
                     void copyText(JSON.stringify(data.tools.items, null, 2), " tool schema JSON")
                   }
                 >
-                  {m.habitat_system_prompt_copy_json()}
+                  {"复制 JSON"}
                 </Button>
                 <span className="text-xs text-muted-foreground">
-                  {m.habitat_system_prompt_tools_shown({
-                    shown: String(filteredTools.length),
-                    total: String(data.tools.count),
-                    tokens: formatTokenK(data.tools.tokens_est),
-                  })}
+                  {`显示 ${String(filteredTools.length)} / ${String(data.tools.count)} · ~${formatTokenK(data.tools.tokens_est)} tokens`}
                 </span>
               </div>
               <div className="space-y-2">
@@ -496,9 +471,7 @@ function SystemPromptPage() {
                   <ToolSchemaCard key={tool.name} tool={tool} />
                 ))}
                 {filteredTools.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">
-                    {m.habitat_system_prompt_no_tools()}
-                  </div>
+                  <div className="text-sm text-muted-foreground">{"无匹配工具"}</div>
                 ) : null}
                 <MemoryListPagination
                   total={filteredTools.length}

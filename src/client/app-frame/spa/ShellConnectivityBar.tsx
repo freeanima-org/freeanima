@@ -7,7 +7,6 @@ import {
 import { dismissShellToast, showShellToast, SHELL_TOAST_IDS } from "@freeanima/ui-kit/composite";
 import { useEffect, useRef } from "react";
 
-import { m } from "@paraglide/messages";
 import { resolveConnectivityNotice } from "./connectivity-notice.ts";
 
 function openHabitatSettingsIfAvailable(): void {
@@ -29,20 +28,24 @@ export function ShellConnectivityBar(): null {
     }
 
     if (notice.kind === "offline") {
-      showShellToast(SHELL_TOAST_IDS.connectivity, m.ui_network_offline(), {
-        description: m.ui_offline_readonly_mode(),
-      });
+      showShellToast(
+        SHELL_TOAST_IDS.connectivity,
+        "当前处于离线状态，服务实时功能不可用；部分页面可能仍显示已缓存的数据。",
+        {
+          description: "离线只读 — 恢复在线前无法编辑。",
+        },
+      );
       return;
     }
 
     if (notice.kind === "habitat-connecting") {
-      showShellToast(SHELL_TOAST_IDS.connectivity, m.habitat_common_connecting());
+      showShellToast(SHELL_TOAST_IDS.connectivity, "连接中");
       return;
     }
 
-    showShellToast(SHELL_TOAST_IDS.connectivity, m.habitat_disconnected(), {
+    showShellToast(SHELL_TOAST_IDS.connectivity, "连接已断开", {
       action: {
-        label: m.habitat_common_reconnect(),
+        label: "重连",
         onClick: () => {
           if (reconnectingRef.current || habitatConnection === "connecting") return;
           reconnectingRef.current = true;
