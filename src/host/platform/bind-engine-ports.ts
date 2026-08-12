@@ -5,12 +5,16 @@ import { rebuildConversationCache } from "@freeanima/host/engine/conversation";
 import { registerConversationToolPolicyFilter } from "@freeanima/host/core/tool";
 import { registerCompressionSummaryPostCut } from "@freeanima/host/core/compress";
 import { bindLlmStack } from "@freeanima/host/capabilities/llm-openai";
-import { foldSystemPromptSections, systemPromptBuild } from "@freeanima/host/core/hooks/prompt";
+import {
+  foldSystemPromptSectionsDetailed,
+  systemPromptBuild,
+} from "@freeanima/host/core/hooks/prompt";
 import {
   DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS,
   peekActiveRuntimeConfig,
 } from "@freeanima/host/core/config";
 import { getAppRuntime } from "./context.ts";
+import { notifyPromptFoldBudgetSoftFailure } from "./service/prompt-fold-soft-failure-notify.ts";
 
 /** Composition-root binding for engine injection ports (call once before initLlmRuntime) */
 export function bindEnginePorts(): void {
@@ -24,7 +28,9 @@ export function bindEnginePorts(): void {
     const budget =
       peekActiveRuntimeConfig()?.data.prompt?.system_prompt_budget_chars ??
       DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS;
-    return foldSystemPromptSections(run.chain, { globalBudgetChars: budget });
+    const folded = foldSystemPromptSectionsDetailed(run.chain, { globalBudgetChars: budget });
+    void notifyPromptFoldBudgetSoftFailure(folded);
+    return folded.text;
   });
 
   // 可见对话不强制收窄工具；看不见场景（sleep/cron）经 CapabilityPolicy 传入 toolPolicy

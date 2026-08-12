@@ -152,6 +152,19 @@ Documented so agents do not treat today’s behavior as the end state:
 
 Inbox protocol, tools, and agent inject details remain in [`notifications.md`](../cognition/notifications.md). Alert channel details remain there under Alert / `deliverLocalReminder`.
 
+## Bypassable soft failure
+
+When Habitat **continues** after a soft failure (truncate, empty search, degraded capability, skipped step) but the outcome changes cognition or capability visibility, do **not** stay fully silent:
+
+| Rule           | Detail                                                                                                                                             |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Recipients     | **user + agent** Inbox (`source_kind: "system"`)                                                                                                   |
+| Time window    | Default **once per CST calendar day per kind** via `source_ref` + `existsBySourceRef` (same pattern as temporal-summary system truncation)         |
+| Notify failure | Log warn only — never block the primary path                                                                                                       |
+| Out of scope   | Expected skips (e.g. empty deep-sleep), in-turn `toolError` / turn errors, cron / in-process builtin **whole-run** `ok:false` (already dual-Inbox) |
+
+Implementation: `notifySoftFailure` / `cstDaySourceRef` in `@freeanima/host/core/soft-failure`; platform binds dual-Inbox delivery at boot. Details and writer table: [`notifications.md`](../cognition/notifications.md).
+
 ## Related
 
 - Inbox / SAP / tools: [`notifications.md`](../cognition/notifications.md)

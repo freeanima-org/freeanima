@@ -8,6 +8,7 @@ import {
 import type { Config } from "@freeanima/host/core/config";
 import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
 import { omitUndefined } from "@freeanima/host/core/util";
+import { cstDaySourceRef, notifySoftFailure } from "@freeanima/host/core/soft-failure";
 
 import { McpClientSession, type McpServerConfig } from "./client.ts";
 import {
@@ -236,6 +237,17 @@ export class MCPManager {
     } catch (err) {
       this.serverErrors.set(name, formatMcpError(err));
       logComponent("mcp").error(`Failed to start MCP server '${name}'`, { err, server: name });
+      const error = formatMcpError(err);
+      void notifySoftFailure({
+        sourceRef: cstDaySourceRef(`mcp:start_failed:${name}`),
+        title: `MCP 服务器启动失败：${name}`,
+        body: [
+          `已启用的 MCP 服务器「${name}」启动失败，本会话将缺少其工具（已旁路继续）。`,
+          `错误：${error}`,
+        ].join("\n"),
+        payload: { kind: "mcp_start_failed", server: name, error },
+        logLabel: "mcp",
+      });
       return 0;
     } finally {
       this.connecting.delete(name);

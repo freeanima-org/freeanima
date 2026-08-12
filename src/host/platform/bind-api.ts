@@ -14,12 +14,15 @@ import { runSimpleTurn } from "./service/turn-lifecycle.ts";
 import { statsReport } from "./service/conversation-stats.ts";
 import { onConversationCloseBeforeNew } from "./service/use-cases/on-conversation-close.ts";
 import { runCronEngineTurn } from "./service/use-cases/cron-runner.ts";
+import { registerSoftFailureNotify } from "@freeanima/host/core/soft-failure";
 import { notifyBothRecipients } from "./service/notification-helpers.ts";
+import { deliverSoftFailureNotify } from "./service/soft-failure-notify.ts";
 import type { FullRuntimeDeps } from "./service/runtime-deps.ts";
 import type { CronJob } from "@freeanima/host/capabilities/connectors/cron/models";
 
 /** Register platform API ports after AppRuntime deps are available */
 export function bindServicePorts(deps: FullRuntimeDeps): void {
+  registerSoftFailureNotify(deliverSoftFailureNotify);
   registerToolConversationResolver(getToolConversationId);
   registerOnConversationCloseBeforeNew((conversationId) =>
     onConversationCloseBeforeNew(deps, conversationId),

@@ -2,20 +2,21 @@ import { afterEach, describe, expect, it, spyOn } from "bun:test";
 
 import * as notificationMod from "@freeanima/host/capabilities/tools/notification";
 import {
+  notifySoftFailure,
   registerSoftFailureNotify,
   unregisterSoftFailureNotify,
 } from "@freeanima/host/core/soft-failure";
 import { deliverSoftFailureNotify } from "./soft-failure-notify.ts";
-import { notifyTemporalSummarySystemTruncated } from "./temporal-summary-truncate-notify.ts";
 
 afterEach(() => {
   notificationMod.resetNotificationPortForTests();
   unregisterSoftFailureNotify();
 });
 
-describe("notifyTemporalSummarySystemTruncated", () => {
-  it("notifies both recipients when truncated and no prior source_ref", async () => {
-    const created: Array<{ recipient_kind: string; source_ref?: string | null }> = [];
+describe("deliverSoftFailureNotify / notifySoftFailure", () => {
+  it("notifies both recipients when no prior source_ref", async () => {
+    const created: Array<{ recipient_kind: string; source_ref?: string | null; title: string }> =
+      [];
     spyOn(notificationMod, "getNotificationPort").mockReturnValue({
       getUserRecipient: () => ({ kind: "user" as const, id: "u1" }),
       getAgentRecipient: () => ({ kind: "agent" as const, id: "a1" }),
@@ -30,15 +31,15 @@ describe("notifyTemporalSummarySystemTruncated", () => {
     });
     registerSoftFailureNotify(deliverSoftFailureNotify);
 
-    const action = await notifyTemporalSummarySystemTruncated({
-      maxChars: 1500,
-      nowMs: Date.parse("2026-07-28T10:00:00.000Z"),
+    const action = await notifySoftFailure({
+      sourceRef: "test:soft:2026-07-28",
+      title: "测试旁路失败",
+      body: "详情",
+      payload: { kind: "test_soft_failure" },
     });
     expect(action).toBe("notified");
     expect(created).toHaveLength(2);
-    expect(
-      created.every((c) => c.source_ref === "temporal_summary:system_truncated:2026-07-28"),
-    ).toBe(true);
+    expect(created.every((c) => c.source_ref === "test:soft:2026-07-28")).toBe(true);
   });
 
   it("dedupes when both recipients already have source_ref", async () => {
@@ -57,16 +58,32 @@ describe("notifyTemporalSummarySystemTruncated", () => {
     });
     registerSoftFailureNotify(deliverSoftFailureNotify);
 
-    const action = await notifyTemporalSummarySystemTruncated({
-      maxChars: 1500,
-      nowMs: Date.parse("2026-07-28T10:00:00.000Z"),
+    const action = await notifySoftFailure({
+      sourceRef: "test:soft:2026-07-28",
+      title: "测试旁路失败",
+      body: "详情",
     });
     expect(action).toBe("deduped");
     expect(created).toHaveLength(0);
   });
 
+  it("skips when notification port missing", async () => {
+    spyOn(notificationMod, "getNotificationPort").mockReturnValue(null);
+    registerSoftFailureNotify(deliverSoftFailureNotify);
+    const action = await notifySoftFailure({
+      sourceRef: "test:soft:2026-07-28",
+      title: "x",
+      body: "y",
+    });
+    expect(action).toBe("skipped");
+  });
+
   it("skips when soft-failure notify not registered", async () => {
-    const action = await notifyTemporalSummarySystemTruncated({ maxChars: 1500 });
+    const action = await notifySoftFailure({
+      sourceRef: "test:soft:2026-07-28",
+      title: "x",
+      body: "y",
+    });
     expect(action).toBe("skipped");
   });
 });

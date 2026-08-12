@@ -3,6 +3,7 @@ import { logPgComponent } from "../log.ts";
 import { EMBEDDING_QUEUE_FLUSH_THRESHOLD } from "./batch-pack.ts";
 import { embedAndStoreJobs } from "./embed-jobs.ts";
 import type { EmbeddingPendingJob } from "./types.ts";
+import { cstDaySourceRef, notifySoftFailure } from "@freeanima/host/core/soft-failure";
 
 const log = logPgComponent("embedding");
 
@@ -38,9 +39,21 @@ function flushPending(): void {
   const promise: Promise<void> = embedAndStoreJobs(batch)
     .then(() => {})
     .catch((err) => {
+      const error = String(err);
       log.warn("embedding write failed", {
         batch_size: batch.length,
-        error: String(err),
+        error,
+      });
+      void notifySoftFailure({
+        sourceRef: cstDaySourceRef("embedding:write_failed"),
+        title: "向量写入失败",
+        body: [
+          "异步 embedding 写入失败（已记录日志并旁路继续）。向量检索可能暂时空洞。",
+          `batch_size=${batch.length}`,
+          `错误：${error}`,
+        ].join("\n"),
+        payload: { kind: "embedding_write_failed", batch_size: batch.length, error },
+        logLabel: "embedding",
       });
     });
   inFlight.add(promise);

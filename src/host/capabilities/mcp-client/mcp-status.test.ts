@@ -1,10 +1,14 @@
-import { describe, it, expect } from "bun:test";
+import { afterEach, describe, it, expect } from "bun:test";
 import { Config } from "@freeanima/host/platform/config";
 import { parseYaml } from "@freeanima/host/platform/config";
 import { runtimeConfigSchema } from "@freeanima/host/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
 import { sanitizeMcpConfig, isMcpServerEnabled } from "./status.ts";
 import { ToolSetRegistry } from "@freeanima/host/core/tool";
+import {
+  registerSoftFailureNotify,
+  unregisterSoftFailureNotify,
+} from "@freeanima/host/core/soft-failure";
 import { MCPManager } from "./manager.ts";
 
 function mcpTestConfig() {
@@ -97,6 +101,41 @@ describe("MCPManager.getStatus", () => {
     expect(status.server_count).toBe(1);
     expect(status.servers.map((s) => s.name)).toEqual(["db"]);
     expect(mgr.getConnectionSummary().server_count).toBe(1);
+
+    await mgr.closeAll();
+  });
+});
+
+describe("MCPManager soft-failure notify", () => {
+  afterEach(() => {
+    unregisterSoftFailureNotify();
+  });
+
+  it("notifies dual-Inbox path when startServer fails", async () => {
+    const refs: string[] = [];
+    registerSoftFailureNotify(async (input) => {
+      refs.push(input.sourceRef);
+      return "notified";
+    });
+
+    const raw = parseYaml(
+      [
+        MINIMAL_LLM_YAML.trim(),
+        "mcp_servers:",
+        "  broken:",
+        "    command: /nonexistent/mcp-binary-that-does-not-exist",
+        "    args: []",
+        "    transport: stdio",
+      ].join("\n"),
+    );
+    const parsed = runtimeConfigSchema.safeParse(raw);
+    if (!parsed.success) throw new Error(parsed.error.message);
+    const config = Config.fromSnapshot(parsed.data);
+    const mgr = new MCPManager(new ToolSetRegistry(), config);
+
+    const result = await mgr.startServer("broken");
+    expect(result.ok).toBe(true);
+    expect(refs.some((r) => r.startsWith("mcp:start_failed:broken:"))).toBe(true);
 
     await mgr.closeAll();
   });

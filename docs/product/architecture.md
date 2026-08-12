@@ -107,7 +107,7 @@ Token accounting for compression / FTS indexes **LLM-visible `content` only**.
 
 ### System prompt budgets
 
-`systemPromptBuild` sections carry optional `budgetChars` and `priority`. Fold applies per-section caps, then a global `prompt.system_prompt_budget_chars` (default **32000**). When over the global budget, fold **truncates within** lower-priority sections first; entire sections are dropped only as a last resort. Core identity sections (`self`, `memory-citation`, `memory-recall`) are never silently dropped. Resident modules such as `env-health` and `user-activity-stats` stay in the system prompt but are budget-controlled.
+`systemPromptBuild` sections carry optional `budgetChars` and `priority`. Fold applies per-section caps, then a global `prompt.system_prompt_budget_chars` (default **32000**). When over the global budget, fold **truncates within** lower-priority sections first; entire sections are dropped only as a last resort. Core identity sections (`self`, `memory-citation`, `memory-recall`) are never silently dropped. Resident modules such as `env-health` and `user-activity-stats` stay in the system prompt but are budget-controlled. When fold truncates or drops sections, Habitat also writes a dual Inbox warning (user+agent, once per CST day) — same bypassable soft-failure pattern as temporal-summary system truncation; see [`notifications.md`](../cognition/notifications.md).
 
 ## Four Cognitive Layers
 

@@ -151,7 +151,7 @@ Default char caps (headline / one-line compression):
 
 LLM prompts still ask for ~`maxChars` 字. Post-processing hard-truncates at `ceil(maxChars * 1.5)` so CJK/EN mix undercounting does not clip headlines at the prompt target.
 
-If the assembled system section exceeds `system_prompt_max_chars`, Habitat truncates and writes an Inbox warning to **both** user and agent subjects (`source_ref` `temporal_summary:system_truncated:{CST_date}`), at most once per CST day.
+If the assembled system section exceeds `system_prompt_max_chars`, Habitat truncates and writes an Inbox warning to **both** user and agent subjects (`source_ref` `temporal_summary:system_truncated:{CST_date}`), at most once per CST day. Soft failures in tick chunk / peer-roll (`temporal_summary:tick_soft_fail:{CST_date}`) and whole inject catch (`temporal_summary:inject_failed:{CST_date}`) use the same dual-Inbox window — see [Bypassable soft failure](notifications.md#bypassable-soft-failure).
 
 ## Sleep relationship
 

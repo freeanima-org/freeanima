@@ -5,6 +5,7 @@ import {
 import { formatCstIso, omitUndefined } from "@freeanima/host/core/util";
 import type { CompressionState } from "@freeanima/host/core/db/domain";
 import { getRuntimeLogger } from "@freeanima/host/core/config";
+import { cstDaySourceRef, notifySoftFailure } from "@freeanima/host/core/soft-failure";
 import { generateConversationSummary } from "./compression-summary.ts";
 
 export type CompressionSummaryPostCut = (conversationId: string) => Promise<void>;
@@ -88,6 +89,22 @@ async function finalizeCompressionSummary(
         err: gen.error,
         runId: gen.runId,
       });
+    void notifySoftFailure({
+      sourceRef: cstDaySourceRef("compress:summary_failed"),
+      title: "会话压缩摘要生成失败",
+      body: [
+        "压缩边界变更后异步摘要失败，已保留既有 summary 继续运行。",
+        `conversation_id=${conversationId}`,
+        `错误：${gen.error}`,
+      ].join("\n"),
+      payload: {
+        kind: "compress_summary_failed",
+        conversation_id: conversationId,
+        error: gen.error,
+        run_id: gen.runId ?? null,
+      },
+      logLabel: "compress_summary",
+    });
     // 保留既有 summary，避免失败跑把已有摘要抹掉（并发 patch 另有 mergeCompressionKeepingSummary）
     if (cutState.summary?.trim()) {
       merged.summary = cutState.summary;
@@ -143,6 +160,21 @@ export function scheduleCompressionSummary(
         .error(`Conversation summary pipeline error: ${conversationId}`, {
           err: String(e),
         });
+      void notifySoftFailure({
+        sourceRef: cstDaySourceRef("compress:summary_failed"),
+        title: "会话压缩摘要生成失败",
+        body: [
+          "压缩摘要流水线异常，已旁路继续。",
+          `conversation_id=${conversationId}`,
+          `错误：${String(e)}`,
+        ].join("\n"),
+        payload: {
+          kind: "compress_summary_failed",
+          conversation_id: conversationId,
+          error: String(e),
+        },
+        logLabel: "compress_summary",
+      });
       return { ok: false, error: String(e) };
     })
     .finally(() => {

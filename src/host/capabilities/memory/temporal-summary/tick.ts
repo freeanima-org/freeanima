@@ -1,4 +1,5 @@
 import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
+import { cstDaySourceRef, notifySoftFailure } from "@freeanima/host/core/soft-failure";
 import {
   getConversationTemporalDay,
   setConversationTemporalDay,
@@ -94,6 +95,21 @@ export async function runTemporalSummaryTick(opts: {
 
   let chunks_written = 0;
   let scanned = 0;
+  let softFailNotified = false;
+
+  const notifyTickSoftFail = (error: string, detail: Record<string, unknown>) => {
+    if (softFailNotified) return;
+    softFailNotified = true;
+    void notifySoftFailure({
+      sourceRef: cstDaySourceRef("temporal_summary:tick_soft_fail", nowMs),
+      title: "时间摘要 tick 软失败",
+      body: ["半小时时间摘要 tick 中有步骤失败并已跳过，其余会话仍继续。", `错误：${error}`].join(
+        "\n",
+      ),
+      payload: { kind: "temporal_summary_tick_soft_fail", error, ...detail },
+      logLabel: "temporal_summary_tick",
+    });
+  };
 
   for (const conversationId of ids) {
     scanned += 1;
@@ -124,10 +140,12 @@ export async function runTemporalSummaryTick(opts: {
         maxChars: opts.config.chunk_max_chars,
       });
     } catch (e) {
+      const error = e instanceof Error ? e.message : String(e);
       logComponent("memory").warn("temporal chunk summarize failed", {
         conversationId,
-        error: e instanceof Error ? e.message : String(e),
+        error,
       });
+      notifyTickSoftFail(error, { phase: "chunk", conversation_id: conversationId });
       continue;
     }
     if (!summary.trim()) continue;
@@ -150,6 +168,7 @@ export async function runTemporalSummaryTick(opts: {
       peerCache: opts.peerCache,
       nowMs,
       cst_date,
+      onSoftFail: notifyTickSoftFail,
     });
   }
 
@@ -167,6 +186,7 @@ async function warmClosedPeerRolls(opts: {
   peerCache: PeerRollCache;
   nowMs: number;
   cst_date: string;
+  onSoftFail?: (error: string, detail: Record<string, unknown>) => void;
 }): Promise<void> {
   const closed = listClosedBucketsToday(opts.nowMs);
   const rows = await listTemporalDayByCstDate(opts.cst_date);
@@ -216,10 +236,12 @@ async function warmClosedPeerRolls(opts: {
           opts.config.peer_roll_ttl_seconds,
         );
       } catch (e) {
+        const error = e instanceof Error ? e.message : String(e);
         logComponent("memory").warn("peer roll warm failed", {
           bucket,
-          error: e instanceof Error ? e.message : String(e),
+          error,
         });
+        opts.onSoftFail?.(error, { phase: "peer_roll", bucket });
       }
     }
   }

@@ -91,16 +91,25 @@ Legacy `notifications.user_subject_id` / `agent_subject_id` are still read as fa
 
 Each row stores `recipient_kind` (`user` | `agent`) and `recipient_id` (entity id string from `ResolvedWorldContext`).
 
-| Writer                                  | Typical recipient                             |
-| --------------------------------------- | --------------------------------------------- |
-| Cron success (when `notify_on_success`) | **both** user + agent                         |
-| Cron failure                            | **both** user + agent                         |
-| Task **due** (target)                   | subject of the task’s World                   |
-| Env/health baseline change              | **both** user + agent (`builtin-env-health`)  |
-| In-process builtin failure              | **both** user + agent（无 cron_log 时的替代） |
-| `notification_send` tool                | user / agent / both; optional `subject_id`    |
+| Writer                                              | Typical recipient                                 |
+| --------------------------------------------------- | ------------------------------------------------- |
+| Cron success (when `notify_on_success`)             | **both** user + agent                             |
+| Cron failure                                        | **both** user + agent                             |
+| Task **due** (target)                               | subject of the task’s World                       |
+| Env/health baseline change                          | **both** user + agent (`builtin-env-health`)      |
+| In-process builtin failure                          | **both** user + agent（无 cron_log 时的替代）     |
+| Bypassable soft failure（截断 / 检索假空 / 降级等） | **both** user + agent；`source_ref` 按 CST 日去重 |
+| `notification_send` tool                            | user / agent / both; optional `subject_id`        |
 
 Dream pipeline **does not** create notifications (reminder removed).
+
+## Bypassable soft failure
+
+错误可旁路继续，但会改变认知或能力可见性时，向 user+agent 各写一条 Inbox；默认每个 CST 自然日每类最多一次（`source_ref` + `existsBySourceRef`）。通知失败只 warn，不阻断主路径。
+
+典型 `source_ref` 前缀：`prompt:fold_budget`、`temporal_summary:system_truncated` / `inject_failed` / `tick_soft_fail`、`memory:search_failed:{kind}`、`compress:summary_failed`、`embedding:write_failed`、`fts:segment_failed`、`mcp:start_failed:{server}`、`sleep:catch_up_failed`、`redis:lock_local_bypass`。
+
+切面原则见 [`notification-and-reminder.md`](../aspects/notification-and-reminder.md)#bypassable-soft-failure。代码：`@freeanima/host/core/soft-failure` + platform `deliverSoftFailureNotify`。
 
 ## Agent consciousness
 

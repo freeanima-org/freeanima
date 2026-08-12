@@ -12,10 +12,14 @@ import { getResolvedWorldContext } from "@freeanima/host/core/config/world-conte
 import { PROFILE_CHAT } from "@freeanima/host/core/provider";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { getToolConversationId, reportToolProgress, toolResult } from "@freeanima/host/core/tool";
-import { foldSystemPromptSections, systemPromptBuild } from "@freeanima/host/core/hooks/prompt";
+import {
+  foldSystemPromptSectionsDetailed,
+  systemPromptBuild,
+} from "@freeanima/host/core/hooks/prompt";
 
 import { runAutoLlm, type AutoLlmRunResult, type AutoLlmToolStep } from "../auto-llm-run.ts";
 import type { FullRuntimeDeps } from "../runtime-deps.ts";
+import { notifyPromptFoldBudgetSoftFailure } from "../prompt-fold-soft-failure-notify.ts";
 import {
   getSubagent,
   getSubagentBySlug,
@@ -244,7 +248,9 @@ export async function buildSubagentSystemPrompt(
     const budget =
       peekActiveRuntimeConfig()?.data.prompt?.system_prompt_budget_chars ??
       DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS;
-    hookText = foldSystemPromptSections(run.chain, { globalBudgetChars: budget }).trim();
+    const folded = foldSystemPromptSectionsDetailed(run.chain, { globalBudgetChars: budget });
+    void notifyPromptFoldBudgetSoftFailure(folded);
+    hookText = folded.text.trim();
   } catch {
     hookText = "";
   }
