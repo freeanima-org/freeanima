@@ -19,6 +19,7 @@ import {
 import type { SleepCatchUpPlan } from "@freeanima/host/capabilities/memory/sleep-catch-up-types";
 import type { PipelineRunState } from "@freeanima/host/engine/pipeline";
 import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
+import { cstDaySourceRef, notifySoftFailure } from "@freeanima/host/core/soft-failure";
 
 import {
   getSleepPipelineStatus as readSleepPipelineStatus,
@@ -356,6 +357,13 @@ export async function startSleepCatchUp(
         error: message,
         finished: true,
       };
+      void notifySoftFailure({
+        sourceRef: cstDaySourceRef("sleep:catch_up_failed"),
+        title: "睡眠补跑失败",
+        body: ["Catch up sleep 中途失败；已记录状态，可稍后重试。", `错误：${message}`].join("\n"),
+        payload: { kind: "sleep_catch_up_failed", error: message },
+        logLabel: "sleep_catch_up",
+      });
     } finally {
       await lock.handle.release();
       sleepCatchUpRunning = false;

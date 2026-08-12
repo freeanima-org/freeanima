@@ -5,10 +5,28 @@ import type {
 } from "@freeanima/host/core/db/schema/rows";
 import { buildTextSearchSnippet, validateFtsQueryInput } from "@freeanima/host/core/util";
 
+import type { MessageFtsHit } from "@freeanima/host/core/db/pg/conversation/types";
 import { searchAutobiographicalMemoryFts } from "@freeanima/host/core/db/pg/autobiographical-memory";
 import { searchLimbicMemoryFts } from "@freeanima/host/core/db/pg/limbic-memory";
 import { searchSemanticMemoryFts } from "@freeanima/host/core/db/pg/semantic-memory";
+import { cstDaySourceRef, notifySoftFailure } from "@freeanima/host/core/soft-failure";
 import { searchDialogue } from "./search.ts";
+
+type LimbicFtsHit = LimbicMemoryRow & { rank?: number };
+type AutobiographicalFtsHit = AutobiographicalMemoryRow & { rank: number };
+
+function notifyRecallSearchSoftFailure(kind: string, error: unknown): void {
+  const message = error instanceof Error ? error.message : String(error);
+  void notifySoftFailure({
+    sourceRef: cstDaySourceRef(`memory:recall_search_failed:${kind}`),
+    title: "记忆 scoped 检索失败（已返回空结果）",
+    body: [`scoped 记忆检索通道「${kind}」出错，该通道已按空结果继续。`, `错误：${message}`].join(
+      "\n",
+    ),
+    payload: { kind: "memory_recall_search_failed", channel: kind, error: message },
+    logLabel: "memory_recall_search",
+  });
+}
 
 /** Habitat debug / service scopes (not an LLM unified tool). */
 export type MemoryScopedHitType = "semantic" | "conversation" | "limbic" | "autobiographical";
@@ -212,13 +230,26 @@ export async function memoryScopedSearch(
     wanted.has("semantic")
       ? searchSemanticMemoryFts(q, { limit })
       : Promise.resolve([] as SemanticFtsHit[]),
-    wanted.has("conversation") ? searchDialogue(q, { limit }).catch(() => []) : Promise.resolve([]),
+    wanted.has("conversation")
+      ? searchDialogue(q, { limit }).catch((error: unknown): MessageFtsHit[] => {
+          notifyRecallSearchSoftFailure("conversation", error);
+          return [];
+        })
+      : Promise.resolve([] as MessageFtsHit[]),
     wanted.has("limbic")
-      ? searchLimbicMemoryFts(q, { limit }).catch(() => [])
-      : Promise.resolve([]),
+      ? searchLimbicMemoryFts(q, { limit }).catch((error: unknown): LimbicFtsHit[] => {
+          notifyRecallSearchSoftFailure("limbic", error);
+          return [];
+        })
+      : Promise.resolve([] as LimbicFtsHit[]),
     wanted.has("autobiographical")
-      ? searchAutobiographicalMemoryFts(q, { limit }).catch(() => [])
-      : Promise.resolve([]),
+      ? searchAutobiographicalMemoryFts(q, { limit }).catch(
+          (error: unknown): AutobiographicalFtsHit[] => {
+            notifyRecallSearchSoftFailure("autobiographical", error);
+            return [];
+          },
+        )
+      : Promise.resolve([] as AutobiographicalFtsHit[]),
   ]);
 
   const results: MemoryScopedHit[] = [];

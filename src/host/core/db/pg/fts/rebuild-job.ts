@@ -1,4 +1,5 @@
 import { withRedisLock } from "@freeanima/host/core/redis";
+import { cstDaySourceRef, notifySoftFailure } from "@freeanima/host/core/soft-failure";
 
 import { logPgComponent } from "../log.ts";
 import { rebuildAllFtsSegments, type FtsRebuildResult } from "./rebuild.ts";
@@ -98,6 +99,13 @@ export function startFtsRebuildJob(opts?: { onlyMissing?: boolean }): FtsRebuild
         error: message,
         result: null,
       };
+      void notifySoftFailure({
+        sourceRef: cstDaySourceRef("fts:rebuild_failed"),
+        title: "FTS 重建失败",
+        body: ["全量/增量 FTS 重建任务失败。", `错误：${message}`].join("\n"),
+        payload: { kind: "fts_rebuild_failed", error: message },
+        logLabel: "fts_rebuild",
+      });
       throw err;
     })
     .finally(() => {

@@ -158,7 +158,22 @@ export function registerTemporalSummarySystemPromptHook(registry: HookRegistry):
             ],
           },
         };
-      } catch {
+      } catch (e) {
+        const { cstDaySourceRef, notifySoftFailure } =
+          await import("@freeanima/host/core/soft-failure");
+        void notifySoftFailure({
+          sourceRef: cstDaySourceRef("temporal_summary:inject_failed"),
+          title: "时间摘要注入失败",
+          body: [
+            "本轮组装 system prompt 时时间摘要段落失败，已跳过该段继续推理。",
+            `错误：${e instanceof Error ? e.message : String(e)}`,
+          ].join("\n"),
+          payload: {
+            kind: "temporal_summary_inject_failed",
+            error: e instanceof Error ? e.message : String(e),
+          },
+          logLabel: "temporal_summary_inject",
+        });
         return { status: "ok" };
       }
     },

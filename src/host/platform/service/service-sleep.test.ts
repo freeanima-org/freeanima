@@ -3,6 +3,10 @@ import type {
   PipelineStepRunAppendInput,
   PipelineStepRunRow,
 } from "@freeanima/host/core/db/pg/pipeline/types";
+import {
+  registerSoftFailureNotify,
+  unregisterSoftFailureNotify,
+} from "@freeanima/host/core/soft-failure";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 // 先捕获真实实现，mock 后在 afterAll 恢复，避免 mock.module 全局泄漏污染其他测试文件。
@@ -92,6 +96,7 @@ describe("service-sleep pipeline runs", () => {
     runSleepStepMock.mockClear();
     appendPipelineStepRunMock.mockClear();
     pipelineRows.length = 0;
+    unregisterSoftFailureNotify();
   });
 
   it("startSleepPipelineStep does not write cron_log", async () => {
@@ -154,6 +159,35 @@ describe("service-sleep pipeline runs", () => {
       }),
     );
     expect(getSleepPipelineStatus().catch_up.finished).toBe(true);
+  });
+
+  it("startSleepCatchUp failure notifies soft-failure Inbox", async () => {
+    const refs: string[] = [];
+    registerSoftFailureNotify(async (input) => {
+      refs.push(input.sourceRef);
+      return "notified";
+    });
+    runSleepStepMock.mockImplementationOnce(async () => {
+      throw new Error("light-sleep boom");
+    });
+
+    const deps = createDeps();
+    const { startSleepCatchUp, getSleepPipelineStatus } = await import("./service-sleep.ts");
+    const plan = {
+      start: "2026-06-01",
+      end: "2026-06-14",
+      light_days: ["2026-06-10"],
+      temporal_days: [] as string[],
+      cascade_days: [] as string[],
+      days: ["2026-06-10"],
+    };
+    await startSleepCatchUp(deps, { plan });
+    await new Promise((r) => {
+      setTimeout(r, 80);
+    });
+
+    expect(getSleepPipelineStatus().catch_up.error).toContain("light-sleep boom");
+    expect(refs.some((r) => r.startsWith("sleep:catch_up_failed:"))).toBe(true);
   });
 
   it("listPipelineStepRuns returns rows from store", async () => {

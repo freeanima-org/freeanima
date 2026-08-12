@@ -144,6 +144,8 @@ For a single past CST calendar day (e.g. before go-live or after migration), use
 
 ### Catch-up (一键补睡眠)
 
+Catch-up run failures write status and also dual-Inbox notify (`sleep:catch_up_failed:{CST_date}`, once per CST day) — see [Bypassable soft failure](notifications.md#bypassable-soft-failure).
+
 After downtime or migration, **Catch up sleep** on the same page:
 
 1. Scans from earliest conversation day (else earliest message day) through **today** (CST)

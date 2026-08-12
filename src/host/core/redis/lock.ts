@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { cstDaySourceRef, notifySoftFailure } from "@freeanima/host/core/soft-failure";
 import { getRedis, isRedisConfigured } from "./client.ts";
 
 /** Key 前缀约定：分布式锁 */
@@ -26,6 +27,8 @@ return 0
 `;
 
 let unavailableWarned = false;
+/** Inbox 已 notified/deduped；skipped（port 未就绪）时下次 bypass 再试 */
+let softFailureInboxSettled = false;
 
 export type RedisLockAcquireOpts = {
   /** 逻辑名；自动加 `anima:lock:` 前缀 */
@@ -65,11 +68,26 @@ function lockKey(logicalKey: string): string {
 }
 
 function warnUnavailableOnce(): void {
-  if (unavailableWarned) return;
-  unavailableWarned = true;
-  console.warn(
-    "[redis-lock] Redis unavailable; distributed locks degraded to local-only. Configure reachable redis for multi-Habitat mutual exclusion.",
-  );
+  if (!unavailableWarned) {
+    unavailableWarned = true;
+    console.warn(
+      "[redis-lock] Redis unavailable; distributed locks degraded to local-only. Configure reachable redis for multi-Habitat mutual exclusion.",
+    );
+  }
+  if (softFailureInboxSettled) return;
+  void notifySoftFailure({
+    sourceRef: cstDaySourceRef("redis:lock_local_bypass"),
+    title: "Redis 锁已降级为本地旁路",
+    body: [
+      "Redis 不可用或未配置，分布式锁已降级为进程内旁路（无跨 Habitat 互斥）。",
+      "多实例部署时请配置可达 Redis；单实例可忽略。",
+    ].join("\n"),
+    payload: { kind: "redis_lock_local_bypass" },
+    logLabel: "redis_lock",
+  }).then((result) => {
+    // skipped = port/impl 未就绪；稍后再试。notified/deduped = 本 CST 日已落盘。
+    if (result !== "skipped") softFailureInboxSettled = true;
+  });
 }
 
 function bypassedLockResult(): Extract<AcquireRedisLockResult, { bypassed: true }> {
