@@ -107,7 +107,7 @@ title: 架构
 
 ### 系统提示预算
 
-`systemPromptBuild` 各段可带可选 `budgetChars` 与 `priority`。折叠先应用分段上限，再应用全局 `prompt.system_prompt_budget_chars`（默认 **32000**）。超出全局预算时，折叠**先在**低优先级段内截断；整段丢弃仅作最后手段。核心身份段（`self`、`memory-citation`、`memory-recall`）永不静默丢弃。常驻模块如 `env-health`、`user-activity-stats` 仍在系统提示中，但受预算控制。
+`systemPromptBuild` 各段可带可选 `budgetChars` 与 `priority`。折叠先应用分段上限，再应用全局 `prompt.system_prompt_budget_chars`（默认 **64000**）。超出全局预算时，折叠**先在**低优先级段内截断；整段丢弃仅作最后手段。核心身份段（`self`、`anima-uri-protocol`、`memory-citation`、`memory-recall`）永不静默丢弃。常驻模块如 `env-health`、`user-activity-stats` 仍在系统提示中，但受预算控制。
 
 ## 四层认知模型
 

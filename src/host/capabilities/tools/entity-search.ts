@@ -6,6 +6,8 @@ import {
   resolveToolCallerSubjectId,
 } from "@freeanima/host/core/tool";
 import {
+  assertSubjectCanAccessWorld,
+  getEntity,
   resolveToolWorld,
   resolveWorldsAccessibleBySubject,
   listEntities,
@@ -72,12 +74,57 @@ function hitPayload(row: {
   };
 }
 
+/** Resolve `[[anima:id]]` / entity id with caller world access check. */
+export async function handleEntityGet(args: Record<string, unknown>): Promise<string> {
+  const id = Number(args.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return toolError("id must be a positive integer");
+  }
+  try {
+    const row = await getEntity(id);
+    if (!row) {
+      return toolError(`entity not found: ${id}`);
+    }
+    await assertSubjectCanAccessWorld(resolveToolCallerSubjectId(), row.world_id, {
+      access: "read",
+    });
+    return toolResult(
+      hitPayload({
+        id: row.id,
+        type: row.type,
+        world_id: row.world_id,
+        primary_component: row.primary_component,
+        title: row.title,
+        summary: row.summary,
+        body: row.body,
+      }),
+    );
+  } catch (e) {
+    if (e instanceof ToolWorldAccessError) return toolError(e.message);
+    throw e;
+  }
+}
+
 export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "entity",
-    "Unified entity composite search",
+    "Entity lookup and composite search (resolve [[anima:id]] via entity_get)",
     attachToolReturns(
       [
+        {
+          name: "entity_get",
+          description:
+            "Get one entity by id (`entities.id` / `[[anima:id]]`). Returns primary_component, title, summary, body. " +
+            "Use this first to resolve entity refs, then call the domain tool for that component (e.g. task_get).",
+          parameters: {
+            type: "object",
+            properties: {
+              id: { type: "integer", description: "entities.id from [[anima:id]]" },
+            },
+            required: ["id"],
+          },
+          handler: handleEntityGet,
+        },
         {
           name: "entity_search",
           description:

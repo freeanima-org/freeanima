@@ -3,6 +3,7 @@ import { systemPromptBuild } from "@freeanima/host/core/hooks/prompt";
 import { registerToolsetSystemPromptHooks } from "@freeanima/host/capabilities/tools/toolset-prompt-hooks";
 import { registerWorldContextSystemPromptHook } from "@freeanima/host/capabilities/tools/world-prompt-hooks";
 import { registerSkillsCatalogSystemPromptHook } from "@freeanima/host/capabilities/tools/skills-prompt-hooks";
+import { ANIMA_URI_PROTOCOL_RULE } from "@freeanima/host/capabilities/tools/anima-uri-prompt";
 import { registerSubagentCatalogSystemPromptHook } from "@freeanima/features/subagent/domain";
 import { registerCodingProjectContextPromptHook } from "@freeanima/features/coding/domain/project-context-prompt-hooks.ts";
 import { buildMemorySystemPromptSections } from "@freeanima/host/capabilities/memory/system-prompt-sections";
@@ -39,6 +40,27 @@ export function registerMemorySystemPromptHooks(registry: HookRegistry): void {
       if (sections.length === 0) return { status: "ok" };
       return { status: "ok", data: { sections } };
     },
+    { llm_kind: "conversation" },
+  );
+}
+
+export function registerAnimaUriProtocolSystemPromptHook(registry: HookRegistry): void {
+  registry.on(
+    systemPromptBuild,
+    () => ({
+      status: "ok",
+      data: {
+        sections: [
+          {
+            id: "anima-uri-protocol",
+            content: ANIMA_URI_PROTOCOL_RULE,
+            order: 24,
+            priority: 1,
+            budgetChars: 500,
+          },
+        ],
+      },
+    }),
     { llm_kind: "conversation" },
   );
 }
@@ -195,6 +217,7 @@ export function registerSystemPromptHooks(opts: {
     registerSkillsCatalogSystemPromptHook(opts.hookRegistry, opts.getSkillRegistry);
   }
   registerChannelSystemPromptHook(opts.hookRegistry);
+  registerAnimaUriProtocolSystemPromptHook(opts.hookRegistry);
   registerEnvHealthSystemPromptHook(opts.hookRegistry);
   registerUserActivityStatsSystemPromptHook(opts.hookRegistry);
   registerTemporalSummarySystemPromptHook(opts.hookRegistry);

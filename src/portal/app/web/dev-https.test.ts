@@ -28,9 +28,12 @@ http:
     expect(isHttpTlsEnabledInConfigYaml("database:\n  url: x\n")).toBe(false);
   });
 
-  test("shouldEnableDevWebHttps respects DEV_HTTPS", () => {
+  test("shouldEnableDevWebHttps is opt-in via DEV_HTTPS only", () => {
+    expect(shouldEnableDevWebHttps({})).toBe(false);
     expect(shouldEnableDevWebHttps({ DEV_HTTPS: "1" })).toBe(true);
+    expect(shouldEnableDevWebHttps({ DEV_HTTPS: "true" })).toBe(true);
     expect(shouldEnableDevWebHttps({ DEV_HTTPS: "0" })).toBe(false);
+    expect(shouldEnableDevWebHttps({ DEV_HTTPS: "false" })).toBe(false);
   });
 
   test("readDevWebTokenPlaintext prefers FREEANIMA_DEV_TOKEN", () => {

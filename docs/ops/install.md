@@ -209,7 +209,7 @@ just dev habitat     # random ≥10000 (not production 2658); writes ~/.anima/de
 FREEANIMA_URL=http://127.0.0.1:<habitat-port> just dev web   # default :5000; browser Habitat = page origin
 ```
 
-浏览器 Web 默认栖息地 URL 为**页面 origin**（生产栖息地托管的 `/web` 与 Vite 相同）。开发从 `dev-web.token` 自动注入 Service API Token。若 `http.tls.enabled` / `DEV_HTTPS=1`，Vite 用 `~/.anima/tls` 提供 HTTPS（栖息地仍为明文 HTTP）。源码 `just dev habitat` **不**托管 `/web` dist —— 用 Vite（`WEB_DEV_PORT`，默认 5000）。
+浏览器 Web 默认栖息地 URL 为**页面 origin**（生产栖息地托管的 `/web` 与 Vite 相同）。开发从 `dev-web.token` 自动注入 Service API Token。源码 Vite **默认 HTTP**；仅显式 `DEV_HTTPS=1` 时用 `~/.anima/tls` 提供 HTTPS（栖息地仍为明文 HTTP；不跟 `config.yaml` `http.tls.enabled`）。源码 `just dev habitat` **不**托管 `/web` dist —— 用 Vite（`WEB_DEV_PORT`，默认 5000）。
 
 **源码部署**（有 dist 时栖息地托管 `/web/*`）：先构建 Web 再启动 —— 启动不会跑 `just pack web`。源码树的 `anima` 无 `service` 命令。
 

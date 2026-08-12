@@ -1,5 +1,6 @@
 import {
   Fragment,
+  memo,
   useEffect,
   useMemo,
   useRef,
@@ -19,6 +20,7 @@ import { renderMarkdownHtml } from "@freeanima/ui-kit/lib/markdown.ts";
 import { ChatMessageBubble, findLastUserMessageIndex } from "./ChatMessageBubble.tsx";
 import { MessageActionBar } from "./MessageActionBar.tsx";
 import { ToolBlockBubble } from "./ToolBlockBubble.tsx";
+import { useAnimaReferenceLabels } from "../hooks/useAnimaReferenceLabels.ts";
 import { useLoadOlderOnScrollTop } from "../hooks/useLoadOlderOnScrollTop.ts";
 import {
   useStickToBottomScroll,
@@ -85,10 +87,6 @@ export type ConversationTranscriptProps = {
   readSentinelRef?: RefObject<HTMLDivElement | null>;
 };
 
-function renderMd(text: string): string {
-  return renderMarkdownHtml(text);
-}
-
 function onMdClick(e: MouseEvent<HTMLDivElement>, onAnimaUriClick?: (uri: string) => void): void {
   if (!onAnimaUriClick) return;
   const target = e.target as HTMLElement | null;
@@ -102,8 +100,9 @@ function onMdClick(e: MouseEvent<HTMLDivElement>, onAnimaUriClick?: (uri: string
 /**
  * Chat / Coding 共用消息列表 SSOT：气泡渲染 + stick-to-bottom + 向上懒加载。
  * 禁止各 SPA 再平行写一套 display.map。
+ * memo：父级（如 compose 外其他 state）重渲时，props 未变则跳过整页气泡。
  */
-export function ConversationTranscript({
+export const ConversationTranscript = memo(function ConversationTranscript({
   display,
   conversationKey = null,
   className = "flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 space-y-4",
@@ -131,6 +130,9 @@ export function ConversationTranscript({
 }: ConversationTranscriptProps) {
   const internalScrollRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = externalScrollRef ?? internalScrollRef;
+  const animaLabels = useAnimaReferenceLabels(display, streamText);
+
+  const renderMd = (text: string): string => renderMarkdownHtml(text, animaLabels);
 
   const streamIsVisible = streamVisible ?? (streaming && streamText.length > 0);
   const awaiting = streaming || streamIsVisible;
@@ -205,7 +207,7 @@ export function ConversationTranscript({
             <div key={`d${i}`} className="flex min-w-0 max-w-full flex-col items-end">
               <ChatMessageBubble
                 align="end"
-                className={`chat-bubble-user whitespace-pre-wrap${
+                className={`chat-bubble-user${
                   item.sendStatus === "pending" || item.sendStatus === "sending"
                     ? " opacity-70"
                     : item.sendStatus === "stale" || item.sendStatus === "failed"
@@ -213,7 +215,11 @@ export function ConversationTranscript({
                       : ""
                 }`}
               >
-                {item.content}
+                <div
+                  className="md-content min-w-0 max-w-full"
+                  dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
+                  onClick={(e) => onMdClick(e, onAnimaUriClick)}
+                />
                 {item.sendStatus === "pending" ? (
                   <p className="mt-1 text-xs opacity-70">{"待发送"}</p>
                 ) : null}
@@ -343,4 +349,4 @@ export function ConversationTranscript({
       ) : null}
     </div>
   );
-}
+});

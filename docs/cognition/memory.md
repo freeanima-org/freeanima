@@ -171,9 +171,11 @@ Long-term memory (LTM)
 
 经系统提示注入的常驻记忆：**最多 40 条置顶** + **最高引用 top N**（默认 N=20）。每行带引用标记 `[[anima:42]]`（仅 ID，无语言前缀）。
 
+用户 / 助手消息中的 `[[anima:id]]` 是**通用实体引用**（任意 `primary_component`），不是「一定是语义记忆」；解析见 [`anima-uri.md`](../product/anima-uri.md)（`entity_get`）。
+
 **引用义务：** 助手回复凡使用语义记忆——常驻列表、`memory_semantic_search` 语义命中、或先前消息中的标记——必须在 **回复正文末尾** 追加每个被引用的 `[[anima:id]]`。使用行内标记或工具结果中的 `semantic_memory_id`。对话、感性、自传体命中不用此标记。
 
-**规则传达位置：** 全局系统提示 `memory-citation` + `memory-recall` 段；`memory_semantic_search` 工具描述。工具响应 JSON 不为此修改。
+**规则传达位置：** 全局系统提示 `anima-uri-protocol` + `memory-citation` + `memory-recall` 段；`memory_semantic_search` 工具描述。工具响应 JSON 不为此修改。
 
 **何谓一次引用：** 仅 **user/assistant** 消息正文中的 `[[anima:id]]` 标记会解析进 `memory_references`，并贡献 `entities.reference_count`。工具返回（含 `semantic_memory_id` 字段）**不是**引用。无 `[[anima:…]]` 的裸数字 id 也不计。每条引用消息都会增加权重（无按对话首次命中去重）。
 

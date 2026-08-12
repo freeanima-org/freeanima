@@ -8,4 +8,4 @@ export const promptSchema = z.object({
 
 export type PromptConfigInput = z.infer<typeof promptSchema>;
 
-export const DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS = 32_000;
+export const DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS = 64_000;

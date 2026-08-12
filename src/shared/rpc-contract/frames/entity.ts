@@ -64,7 +64,6 @@ export const entityTrashListOutputSchema = entityListOutputSchema;
 export type EntityTrashListOutput = z.infer<typeof entityTrashListOutputSchema>;
 
 export const entityGetInputSchema = z.object({
-  subject_kind: entitySubjectKindSchema,
   id: z.number().int().positive(),
   /** 回收站详情需 true */
   include_deleted: z.boolean().optional(),

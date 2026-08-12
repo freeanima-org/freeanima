@@ -64,4 +64,10 @@ Anima URI 是**壳 / UI 定位协议**，不是数据库外键。用户撰写的
 
 ## 记忆引用
 
-助手 / 用户消息正文用 `[[anima:{id}]]` 或 `[[anima:{id}?component=semantic_memory]]` 引用实体。聊天室 Markdown 将其转为可点击锚点，调用 `openEntityResource`（`semantic_memory` 默认浮层）。
+助手 / 用户消息正文用 `[[anima:{id}]]` 或 `[[anima:{id}?component=…]]` 引用实体。聊天室 Markdown 将其转为可点击 chip（首屏 `#id`，后台按 `entity.get` 异步补最多 10 字摘要：优先 `title`，否则 `content`），**用户与助手气泡均渲染**。点击调用 `openEntityResource`。URI 省略 `component` 时经 `entity.get` 解析 `primary_component`（任务 → `task_item` 浮层，语义记忆 → `semantic_memory` 浮层等；窄布局为底部 Sheet）。输入框键入 `[[` 弹出实体选择器（user/agent 合并、不限种类），选中插入 `[[anima:{id}]]`。
+
+## LLM / Agent
+
+系统提示段 `anima-uri-protocol`：标记 = 任意实体的 `entities.id`（不限记忆）。解析：`toolset_load(["entity"])` → `entity_get({id})` → 按 `primary_component`（或 `?component=`）再调领域工具。语义记忆**引用义务**仍由 `memory-citation` 约束（仅当回复使用了语义记忆时末尾追加）。
+
+壳侧点击 chip：`openEntityResource`；有专用浮层（`task_item` / `semantic_memory` / `calendar_event`）用专用面板，否则 **通用实体叠加层**（`GenericEntityOverlay`：标题 / 摘要 / 正文 / 类型与组件等基础字段）。`primary_component` 缺失时仍打开通用浮层。

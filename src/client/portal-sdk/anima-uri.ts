@@ -17,6 +17,7 @@ const DEFAULT_PRESENT_BY_COMPONENT: Record<string, AnimaPresent> = {
   task_item: "overlay",
   task_list: "navigate",
   semantic_memory: "overlay",
+  calendar_event: "overlay",
 };
 
 export function defaultPresentForComponent(component: string | undefined): AnimaPresent {
@@ -24,7 +25,8 @@ export function defaultPresentForComponent(component: string | undefined): Anima
     const mapped = DEFAULT_PRESENT_BY_COMPONENT[component];
     if (mapped) return mapped;
   }
-  return "navigate";
+  /** 未知组件 / 空壳：默认浮层（通用实体详情） */
+  return "overlay";
 }
 
 export function formatAnimaUri(ref: AnimaUriRef): string {

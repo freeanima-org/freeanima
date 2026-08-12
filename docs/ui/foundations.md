@@ -154,9 +154,15 @@ Agent 禁令（原始 CSS 变量、DaisyUI token）→ [`.agent/rules/frontend-u
 
 **意图：** 菜单、sheet、toast 的稳定叠层。优先共享约定，少用魔法数字。
 
+| 层           | 约定                              |
+| ------------ | --------------------------------- |
+| app 底栏     | `z-[60]`（`AppFrame`）            |
+| Dialog/Sheet | `z-[70]`（须盖住 compact 底栏）   |
+| 沉浸全页编辑 | `z-[70]`（`DetailEditPageShell`） |
+
 | 透镜   | 适配                                                                      |
 | ------ | ------------------------------------------------------------------------- |
-| 不变量 | 浮层在 chrome 之上；勿靠抬高 z-index 盖住底栏                             |
+| 不变量 | 模态浮层在 chrome（含底栏）之上；勿让底栏 `z` 压过 Dialog/Sheet           |
 | 布局   | Sheet/Dialog/Drawer 叠层                                                  |
 | 交互   | 右键菜单 / ActionSheet 在内容之上                                         |
 | 壳     | N/A                                                                       |

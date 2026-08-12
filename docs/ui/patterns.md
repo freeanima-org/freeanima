@@ -130,7 +130,7 @@ title: 交互模式
 | 壳     | N/A                                                                      |
 | 禁止   | `getShellKind() === "tauri"` ⇒ Sheet                                     |
 
-**实现：** 经复合 `ModalSheetPresent` 使用 shadcn `Dialog` / `Sheet`；选择器（`MoveToListPicker`、`MoveToProjectPicker`）用该壳。**禁止**手写 `createPortal` + fixed 浮层。
+**实现：** 经复合 `ModalSheetPresent` 使用 shadcn `Dialog` / `Sheet`；选择器（`MoveToListPicker`、`MoveToProjectPicker`）与实体 overlay（Anima URI / `EntityOverlayHost`）用该壳。**禁止**手写 `createPortal` + fixed 浮层。
 
 **任务详情（compact）：** 浏览/展示用 peek `Sheet`；激活标题或备注（focus 前 pointer down，再在沉浸树内 focus 一次）进入**沉浸全页编辑**（`DetailEditPageShell` + `setCompactImmersive`），带返回控件且**无底栏**——避免 peek→沉浸重挂载导致双软键盘。返回 / 系统返回关闭详情并回到**列表**（不恢复 peek）。由布局驱动——非壳类型。
 

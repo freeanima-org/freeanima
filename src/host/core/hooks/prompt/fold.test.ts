@@ -167,4 +167,40 @@ describe("foldSystemPromptSections", () => {
     expect(folded.text).toContain("CITE");
     expect(folded.droppedSectionIds).toContain("user-activity-stats");
   });
+
+  it("keeps anima-uri-protocol under tight global budget", async () => {
+    const registry = createTestHookRegistry();
+    registry.on(
+      systemPromptBuild,
+      () => ({
+        status: "ok",
+        data: {
+          sections: [
+            { id: "self", content: "SELF_CORE", order: 0, priority: 0 },
+            {
+              id: "anima-uri-protocol",
+              content: "ANIMA_URI_RULE",
+              order: 24,
+              priority: 1,
+            },
+            {
+              id: "user-activity-stats",
+              content: "ACTIVITY".repeat(20),
+              order: 16,
+              priority: 9,
+            },
+          ],
+        },
+      }),
+      ALL,
+    );
+    const run = await registry.run(systemPromptBuild, EMPTY_CTX, CONV);
+    const folded = foldSystemPromptSectionsDetailed(run.chain, {
+      globalBudgetChars: 40,
+    });
+    expect(folded.text).toContain("SELF_CORE");
+    expect(folded.text).toContain("ANIMA_URI");
+    expect(folded.droppedSectionIds).toContain("user-activity-stats");
+    expect(folded.droppedSectionIds).not.toContain("anima-uri-protocol");
+  });
 });
