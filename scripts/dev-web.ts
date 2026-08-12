@@ -8,4 +8,4 @@ import { join } from "node:path";
 
 const root = join(import.meta.dir, "..");
 const viteArgs = process.argv.slice(2);
-await $`bunx vite ${viteArgs}`.cwd(join(root, "src/portal/app/web"));
+await $`bun x vite ${viteArgs}`.cwd(join(root, "src/portal/app/web"));

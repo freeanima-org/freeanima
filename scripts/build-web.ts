@@ -11,5 +11,5 @@ import { join } from "node:path";
 
 const root = join(import.meta.dir, "..");
 
-await $`bunx vite build`.cwd(join(root, "src/portal/app/web"));
+await $`bun x vite build`.cwd(join(root, "src/portal/app/web"));
 await $`bun ${join(root, "scripts/write-web-build-meta.ts")}`.cwd(root);

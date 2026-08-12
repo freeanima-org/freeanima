@@ -100,8 +100,8 @@ const buildEnv = {
 };
 
 const build = spawnSync(
-  "bunx",
-  ["tauri", "android", "build", "--apk", "--config", identity.configArg],
+  "bun",
+  ["x", "tauri", "android", "build", "--apk", "--config", identity.configArg],
   {
     cwd: tauriDir,
     stdio: "inherit",

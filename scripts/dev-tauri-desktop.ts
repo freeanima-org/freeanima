@@ -30,7 +30,7 @@ const coding = spawn("bun", ["x", "vite", "--config", "src/features/coding/vite.
   env: process.env,
 });
 
-const tauri = spawn("bunx", ["tauri", "dev", "--config", identity.configArg], {
+const tauri = spawn("bun", ["x", "tauri", "dev", "--config", identity.configArg], {
   cwd: tauriDir,
   stdio: "inherit",
   env: process.env,
