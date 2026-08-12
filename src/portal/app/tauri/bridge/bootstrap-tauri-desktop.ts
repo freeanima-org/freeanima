@@ -244,9 +244,8 @@ export async function bootstrapTauriBridge(): Promise<void> {
               total: number | null;
               phase?: "downloading" | "installing";
             }) => void,
-          ) => {
-            let unlisten: (() => void) | undefined;
-            void listen<{
+          ): Promise<() => void> =>
+            listen<{
               received: number;
               total: number | null;
               phase?: "downloading" | "installing";
@@ -256,11 +255,7 @@ export async function bootstrapTauriBridge(): Promise<void> {
                 total: ev.payload.total,
                 ...(ev.payload.phase != null ? { phase: ev.payload.phase } : {}),
               });
-            }).then((u) => {
-              unlisten = u;
-            });
-            return () => unlisten?.();
-          },
+            }),
         }
       : {}),
   };

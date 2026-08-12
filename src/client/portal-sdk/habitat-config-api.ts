@@ -41,6 +41,54 @@ export async function restartHabitatService(): Promise<void> {
   await habitatRpc().call("status.restart", {});
 }
 
+export type HabitatServiceUpdateProxy = "none" | "ghproxy-net" | "gh-proxy-com" | "ghfast-top";
+
+export type HabitatServiceUpdateCheckResult = {
+  ok: true;
+  install_kind: "source" | "standalone";
+  upgradable: boolean;
+  reason?: string;
+  hint?: string;
+  localVersion?: string;
+  remoteVersion?: string;
+  assetUrl?: string;
+  channel?: string;
+};
+
+export type HabitatServiceUpdateApplyResult =
+  | {
+      ok: true;
+      install_kind: "standalone";
+      remoteVersion: string;
+      code: "service_restarting";
+    }
+  | {
+      ok: false;
+      install_kind: "source" | "standalone";
+      reason: string;
+      hint?: string;
+      message?: string;
+      remoteVersion?: string;
+    };
+
+export async function checkHabitatServiceUpdate(opts?: {
+  proxy?: HabitatServiceUpdateProxy;
+}): Promise<HabitatServiceUpdateCheckResult> {
+  return (await habitatRpc().call(
+    "status.updateCheck",
+    opts?.proxy != null ? { proxy: opts.proxy } : {},
+  )) as HabitatServiceUpdateCheckResult;
+}
+
+export async function applyHabitatServiceUpdate(opts?: {
+  proxy?: HabitatServiceUpdateProxy;
+}): Promise<HabitatServiceUpdateApplyResult> {
+  return (await habitatRpc().call(
+    "status.updateApply",
+    opts?.proxy != null ? { proxy: opts.proxy } : {},
+  )) as HabitatServiceUpdateApplyResult;
+}
+
 export type HabitatConfigTestService =
   | "firecrawl"
   | "camofox"

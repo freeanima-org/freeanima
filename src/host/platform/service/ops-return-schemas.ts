@@ -53,4 +53,51 @@ export const OPS_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
     }),
     example: { ok: true, code: "service_restarting" },
   }),
+  ops_update_check: defineToolReturn({
+    schema: z.object({
+      ok: z.literal(true),
+      install_kind: z.enum(["source", "standalone"]),
+      upgradable: z.boolean(),
+      reason: z.string().optional(),
+      hint: z.string().optional(),
+      localVersion: z.string().optional(),
+      remoteVersion: z.string().optional(),
+      assetUrl: z.string().optional(),
+      channel: z.string().optional(),
+    }),
+    example: {
+      ok: true,
+      install_kind: "standalone",
+      upgradable: true,
+      localVersion: "0.9.4",
+      remoteVersion: "0.9.5",
+      channel: "release",
+      assetUrl:
+        "https://github.com/freeanima-org/freeanima/releases/download/v0.9.5/anima-linux-x64.tar.gz",
+    },
+  }),
+  ops_update_apply: defineToolReturn({
+    schema: z.union([
+      z.object({
+        ok: z.literal(true),
+        install_kind: z.literal("standalone"),
+        remoteVersion: z.string(),
+        code: z.literal("service_restarting"),
+      }),
+      z.object({
+        ok: z.literal(false),
+        install_kind: z.enum(["source", "standalone"]),
+        reason: z.string(),
+        hint: z.string().optional(),
+        message: z.string().optional(),
+        remoteVersion: z.string().optional(),
+      }),
+    ]),
+    example: {
+      ok: true,
+      install_kind: "standalone",
+      remoteVersion: "0.9.5",
+      code: "service_restarting",
+    },
+  }),
 };

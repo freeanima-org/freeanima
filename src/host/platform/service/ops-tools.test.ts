@@ -9,6 +9,8 @@ import {
   handleOpsHealth,
   handleOpsRestart,
   handleOpsStatus,
+  handleOpsUpdateApply,
+  handleOpsUpdateCheck,
   registerOpsTools,
   resetOpsToolDepsForTest,
 } from "./ops-tools.ts";
@@ -159,5 +161,73 @@ describe("ops tools", () => {
     const out = parseResult(await handleOpsRestart({ confirm: true }));
     expect(out).toEqual({ ok: true, code: "service_restarting" });
     expect(scheduleRestart).toHaveBeenCalled();
+  });
+
+  it("registerOpsTools registers update tools", () => {
+    const toolSets = new ToolSetRegistry();
+    registerOpsTools(toolSets);
+    expect(toolSets.getTool("ops_update_check")).toBeDefined();
+    expect(toolSets.getTool("ops_update_apply")).toBeDefined();
+  });
+
+  it("ops_update_check returns check result", async () => {
+    const checkUpdate = mock(async () => ({
+      ok: true as const,
+      install_kind: "standalone" as const,
+      upgradable: true as const,
+      localVersion: "0.9.4",
+      remoteVersion: "0.9.5",
+      assetUrl: "https://example.com/a.tgz",
+      channel: "release" as const,
+    }));
+    bindOpsToolDeps({ checkUpdate });
+    const out = parseResult(await handleOpsUpdateCheck({ proxy: "none" }));
+    expect(out.upgradable).toBe(true);
+    expect(out.remoteVersion).toBe("0.9.5");
+    expect(checkUpdate).toHaveBeenCalled();
+  });
+
+  it("ops_update_apply requires confirm", async () => {
+    const applyUpdate = mock(async () => ({
+      ok: true as const,
+      install_kind: "standalone" as const,
+      remoteVersion: "0.9.5",
+      code: "service_restarting" as const,
+    }));
+    const scheduleRestart = mock(() => {});
+    bindOpsToolDeps({ applyUpdate, scheduleRestart });
+    const out = parseResult(await handleOpsUpdateApply({}));
+    expect(out.error).toMatch(/confirm=true/);
+    expect(applyUpdate).not.toHaveBeenCalled();
+    expect(scheduleRestart).not.toHaveBeenCalled();
+  });
+
+  it("ops_update_apply schedules restart when confirmed and ok", async () => {
+    const applyUpdate = mock(async () => ({
+      ok: true as const,
+      install_kind: "standalone" as const,
+      remoteVersion: "0.9.5",
+      code: "service_restarting" as const,
+    }));
+    const scheduleRestart = mock(() => {});
+    bindOpsToolDeps({ applyUpdate, scheduleRestart });
+    const out = parseResult(await handleOpsUpdateApply({ confirm: true }));
+    expect(out.ok).toBe(true);
+    expect(out.code).toBe("service_restarting");
+    expect(scheduleRestart).toHaveBeenCalled();
+  });
+
+  it("ops_update_apply does not restart when apply fails", async () => {
+    const applyUpdate = mock(async () => ({
+      ok: false as const,
+      install_kind: "source" as const,
+      reason: "source" as const,
+      hint: "源码提示",
+    }));
+    const scheduleRestart = mock(() => {});
+    bindOpsToolDeps({ applyUpdate, scheduleRestart });
+    const out = parseResult(await handleOpsUpdateApply({ confirm: true }));
+    expect(out.ok).toBe(false);
+    expect(scheduleRestart).not.toHaveBeenCalled();
   });
 });

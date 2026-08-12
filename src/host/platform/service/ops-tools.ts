@@ -1,4 +1,8 @@
 import { isBootstrapConfigKey } from "@freeanima/host/core/config";
+import {
+  applyServiceUpdate,
+  checkServiceUpdate,
+} from "@freeanima/host/core/config/app-update/service-update";
 import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 import { attachToolReturns, toolError, toolResult, type ToolArgs } from "@freeanima/host/core/tool";
 import {
@@ -18,6 +22,8 @@ const CONFIRM_REQUIRED =
 export type OpsToolDeps = {
   getRuntime: typeof getAppRuntime;
   scheduleRestart: (delayMs?: number) => void;
+  checkUpdate: typeof checkServiceUpdate;
+  applyUpdate: typeof applyServiceUpdate;
 };
 
 const defaultScheduleRestart = (delayMs = 100): void => {
@@ -29,6 +35,8 @@ const defaultScheduleRestart = (delayMs = 100): void => {
 let deps: OpsToolDeps = {
   getRuntime: getAppRuntime,
   scheduleRestart: defaultScheduleRestart,
+  checkUpdate: checkServiceUpdate,
+  applyUpdate: applyServiceUpdate,
 };
 
 /** Unit tests inject mocks */
@@ -40,6 +48,8 @@ export function resetOpsToolDepsForTest(): void {
   deps = {
     getRuntime: getAppRuntime,
     scheduleRestart: defaultScheduleRestart,
+    checkUpdate: checkServiceUpdate,
+    applyUpdate: applyServiceUpdate,
   };
 }
 
@@ -148,10 +158,36 @@ export async function handleOpsRestart(args: ToolArgs): Promise<string> {
   }
 }
 
+export async function handleOpsUpdateCheck(args: ToolArgs): Promise<string> {
+  try {
+    const proxy = args.proxy == null ? undefined : String(args.proxy);
+    const result = await deps.checkUpdate(proxy != null && proxy !== "" ? { proxy } : {});
+    return toolResult(result);
+  } catch (err) {
+    return toolError(err instanceof Error ? err.message : String(err));
+  }
+}
+
+export async function handleOpsUpdateApply(args: ToolArgs): Promise<string> {
+  const confirmErr = requireConfirm(args);
+  if (confirmErr) return toolError(confirmErr);
+
+  try {
+    const proxy = args.proxy == null ? undefined : String(args.proxy);
+    const result = await deps.applyUpdate(proxy != null && proxy !== "" ? { proxy } : {});
+    if (result.ok) {
+      deps.scheduleRestart();
+    }
+    return toolResult(result);
+  } catch (err) {
+    return toolError(err instanceof Error ? err.message : String(err));
+  }
+}
+
 export function registerOpsTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "ops",
-    "Habitat operations: health, status, sanitized config, confirmed config patch / restart",
+    "Habitat operations: health, status, sanitized config, confirmed config patch / restart / standalone update",
     attachToolReturns(
       [
         {
@@ -218,6 +254,43 @@ export function registerOpsTools(toolSets: ToolSetRegistry): void {
             required: ["confirm"],
           },
           handler: (args) => handleOpsRestart(args),
+        },
+        {
+          name: "ops_update_check",
+          description:
+            "Check whether a newer standalone Habitat binary is available on GitHub Releases. Source installs return upgradable=false with a hint. Optional proxy: none | ghproxy-net | gh-proxy-com | ghfast-top.",
+          parameters: {
+            type: "object",
+            properties: {
+              proxy: {
+                type: "string",
+                description:
+                  "GitHub Release proxy id (none | ghproxy-net | gh-proxy-com | ghfast-top)",
+              },
+            },
+          },
+          handler: (args) => handleOpsUpdateCheck(args),
+        },
+        {
+          name: "ops_update_apply",
+          description:
+            "Download and install standalone Habitat update, then schedule restart. Requires confirm=true after partner approval via clarify. Source / unsafe prefix returns error hint. Connection will drop after restart.",
+          parameters: {
+            type: "object",
+            properties: {
+              confirm: {
+                type: "boolean",
+                description: "Must be true after clarify partner approval",
+              },
+              proxy: {
+                type: "string",
+                description:
+                  "GitHub Release proxy id (none | ghproxy-net | gh-proxy-com | ghfast-top)",
+              },
+            },
+            required: ["confirm"],
+          },
+          handler: (args) => handleOpsUpdateApply(args),
         },
       ],
       OPS_TOOL_RETURNS,

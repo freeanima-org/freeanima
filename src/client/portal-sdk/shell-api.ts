@@ -173,14 +173,14 @@ export type ShellApi = {
   requestAppAttention?: () => Promise<void>;
   /** 原生壳：确认后下载 Releases 产物并覆盖安装（Desktop NSIS / Mobile APK） */
   applyPackagedUpdate?: (opts: { assetUrl: string; expectedSize?: number }) => Promise<void>;
-  /** 下载/安装进度（Tauri 事件） */
+  /** 下载/安装进度（Tauri 事件）；桌面侧可能返回 Promise（须 await listen 后再 apply） */
   onPackagedUpdateProgress?: (
     handler: (progress: {
       received: number;
       total: number | null;
       phase?: "downloading" | "installing";
     }) => void,
-  ) => () => void;
+  ) => (() => void) | Promise<() => void>;
 };
 
 declare global {

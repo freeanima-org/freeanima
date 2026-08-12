@@ -24,10 +24,16 @@ import {
   publicHttpMeta,
   rawPublicHttpMeta,
 } from "../method-def.ts";
+import { HABITAT_RPC_LONG_TIMEOUT_MS, HABITAT_RPC_PACKAGE_UPDATE_TIMEOUT_MS } from "../timeouts.ts";
 import { z } from "zod";
 
 const unknownOutputSchema = z.record(z.string(), z.unknown());
 const emptyInputSchema = z.object({}).strict();
+const serviceUpdateInputSchema = z
+  .object({
+    proxy: z.enum(["none", "ghproxy-net", "gh-proxy-com", "ghfast-top"]).optional(),
+  })
+  .strict();
 const idParamInputSchema = z.object({ id: z.string().min(1) });
 const conversationIdParamSchema = z.object({ conversationId: z.string().min(1) });
 const cronJobIdParamSchema = z.object({ id: z.string().min(1) });
@@ -184,6 +190,16 @@ export const habitatMethodDefs = {
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
+  }),
+  "status.updateCheck": defineHabitatMethod({
+    input: serviceUpdateInputSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(true, { timeoutMs: HABITAT_RPC_LONG_TIMEOUT_MS }),
+  }),
+  "status.updateApply": defineHabitatMethod({
+    input: serviceUpdateInputSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false, { timeoutMs: HABITAT_RPC_PACKAGE_UPDATE_TIMEOUT_MS }),
   }),
   "config.get": defineHabitatMethod({
     input: emptyInputSchema,

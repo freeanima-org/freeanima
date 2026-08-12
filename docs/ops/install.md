@@ -132,6 +132,8 @@ anima upgrade --check --channel canary --proxy ghfast-top
 
 升级时栖息地在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进制瞬间短暂停服并自动拉起。未运行 service 时仅写入新的 `anima_<version>` 并切换 `anima` symlink，不会自动启动。
 
+亦可在 **设置 → 关于 → 服务 → 检查更新**，或经 `toolset_load(["ops"])` 后调用 `ops_update_check` / `ops_update_apply`（后者须 clarify + `confirm: true`）。
+
 ```bash
 anima service restart   # 手动升级二进制后若未自动拉起时使用
 anima versions use <id> # 回退到本机已保留的旧版本（同样会按需停/启 service）
@@ -226,7 +228,7 @@ just check    # typecheck + lint + format + changed unit tests
 just test     # full unit + integration (integration may use Docker for temp PG)
 ```
 
-手动升级——`git pull`、`bun install`，然后重启服务。`anima upgrade` 与 `/upgrade` 仅打印说明。
+手动升级——`git pull`、`bun install`，然后重启服务。`anima upgrade`、设置「关于→服务」与 `ops_update_*` 对源码安装仅提示说明，不会自动升级。
 
 ---
 
