@@ -85,6 +85,8 @@ import {
   restartService,
   resumeCronJob,
   runCronJobNow,
+  checkServiceUpdateStatus,
+  applyServiceUpdateStatus,
 } from "../habitat-api/handlers/status.ts";
 import {
   getTlsCaInfo,
@@ -205,6 +207,16 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     "status.restart",
     habitatMethodDefs["status.restart"],
     wrapConsoleLegacyHandler(() => restartService()),
+  ),
+  defineHabitatRouteFromDef(
+    "status.updateCheck",
+    habitatMethodDefs["status.updateCheck"],
+    wrapConsoleLegacyHandler((payload) => checkServiceUpdateStatus(payload as { proxy?: string })),
+  ),
+  defineHabitatRouteFromDef(
+    "status.updateApply",
+    habitatMethodDefs["status.updateApply"],
+    wrapConsoleLegacyHandler((payload) => applyServiceUpdateStatus(payload as { proxy?: string })),
   ),
   defineHabitatRouteFromDef(
     "config.get",

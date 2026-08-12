@@ -6,3 +6,4 @@ export * from "./resolve-packaged-update.ts";
 export * from "./download.ts";
 export * from "./cli-download-progress.ts";
 export * from "./apply-standalone-upgrade.ts";
+export * from "./service-update.ts";

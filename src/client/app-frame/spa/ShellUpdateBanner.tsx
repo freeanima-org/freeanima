@@ -11,6 +11,8 @@ import { resolveAboutNativeBuildMeta } from "@freeanima/client/portal-sdk/native
 import { dismissShellToast, showShellToast, SHELL_TOAST_IDS } from "@freeanima/ui-kit/composite";
 import { useEffect, useRef, useState } from "react";
 
+import { formatApplyingMessage, type ShellApplyProgress } from "./shell-update-progress.ts";
+
 const DISMISS_KEY = "freeanima.shell-update.dismissed-key";
 
 function dismissKey(update: Extract<PackagedUpdateResult, { available: true }>): string {
@@ -42,34 +44,6 @@ function formatUpdateErrorMessage(err: unknown): string {
   return detail;
 }
 
-function formatProgressBytes(n: number): string {
-  if (!Number.isFinite(n) || n < 0) return "0 B";
-  if (n < 1024) return `${Math.floor(n)} B`;
-  if (n < 1024 ** 2) return `${(n / 1024).toFixed(1)} KB`;
-  if (n < 1024 ** 3) return `${(n / 1024 ** 2).toFixed(1)} MB`;
-  return `${(n / 1024 ** 3).toFixed(2)} GB`;
-}
-
-type ApplyProgress = {
-  received: number;
-  total: number | null;
-  phase: "downloading" | "installing";
-};
-
-function formatApplyingMessage(progress: ApplyProgress | null): string {
-  if (progress?.phase === "installing") {
-    return "正在安装…";
-  }
-  if (!progress) {
-    return "正在下载并安装…";
-  }
-  if (progress.total != null && progress.total > 0) {
-    const percent = Math.min(100, Math.floor((100 * progress.received) / progress.total));
-    return `下载中… ${String(percent)}%`;
-  }
-  return `下载中… ${formatProgressBytes(progress.received)}`;
-}
-
 export const SHELL_UPDATE_CHECK_EVENT = "freeanima:shell-update-check";
 
 export type ShellUpdateRequestDetail = {
@@ -91,7 +65,7 @@ export function ShellUpdateBanner(): null {
   );
   const [error, setError] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
-  const [applyProgress, setApplyProgress] = useState<ApplyProgress | null>(null);
+  const [applyProgress, setApplyProgress] = useState<ShellApplyProgress | null>(null);
   const checkingRef = useRef(false);
 
   useEffect(() => {
@@ -212,6 +186,7 @@ export function ShellUpdateBanner(): null {
     if (phase === "applying") {
       showShellToast(SHELL_TOAST_IDS.shellUpdate, formatApplyingMessage(applyProgress), {
         duration: Number.POSITIVE_INFINITY,
+        dismissible: false,
       });
       return;
     }
@@ -228,7 +203,9 @@ export function ShellUpdateBanner(): null {
     showShellToast(SHELL_TOAST_IDS.shellUpdate, title, {
       action: {
         label: switching ? "切换通道" : "立即更新",
-        onClick: () => {
+        onClick: (event) => {
+          // 阻止 Sonner action 后自动 dismiss，否则进度 toast 与卸载动画竞态消失
+          event?.preventDefault?.();
           const apply = window.portalShell?.applyPackagedUpdate;
           if (!apply) {
             setPhase("failed");
@@ -241,24 +218,27 @@ export function ShellUpdateBanner(): null {
             phase: "downloading",
           });
           setPhase("applying");
-          const unsub = window.portalShell?.onPackagedUpdateProgress?.((progress) => {
-            setApplyProgress({
-              received: progress.received,
-              total: progress.total ?? update.assetSize ?? null,
-              phase: progress.phase ?? "downloading",
+          void (async () => {
+            const maybeUnsub = window.portalShell?.onPackagedUpdateProgress?.((progress) => {
+              setApplyProgress({
+                received: progress.received,
+                total: progress.total ?? update.assetSize ?? null,
+                phase: progress.phase ?? "downloading",
+              });
             });
-          });
-          void apply({
-            assetUrl: update.assetUrl,
-            ...(update.assetSize != null ? { expectedSize: update.assetSize } : {}),
-          })
-            .catch((err) => {
+            const unsub = maybeUnsub != null ? await Promise.resolve(maybeUnsub) : undefined;
+            try {
+              await apply({
+                assetUrl: update.assetUrl,
+                ...(update.assetSize != null ? { expectedSize: update.assetSize } : {}),
+              });
+            } catch (err) {
               setPhase("failed");
               setError(formatUpdateErrorMessage(err));
-            })
-            .finally(() => {
+            } finally {
               unsub?.();
-            });
+            }
+          })();
         },
       },
       cancel: {

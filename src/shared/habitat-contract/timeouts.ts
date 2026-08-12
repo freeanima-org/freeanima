@@ -8,3 +8,5 @@ export const HABITAT_RPC_READ_TIMEOUT_MS = 3_000;
 export const HABITAT_RPC_WRITE_TIMEOUT_MS = 10_000;
 /** 导入、rebuild、LLM 探活与其它长任务 */
 export const HABITAT_RPC_LONG_TIMEOUT_MS = 30_000;
+/** standalone 服务包下载 + 安装（大文件 / 慢网） */
+export const HABITAT_RPC_PACKAGE_UPDATE_TIMEOUT_MS = 600_000;

@@ -2,6 +2,11 @@ import { habitatCtx } from "./runtime.ts";
 import { scheduleServiceRestart } from "../service-restart.ts";
 import { ApiHandlerError } from "./errors.ts";
 import type { ServiceAuthContext } from "../auth-context.ts";
+import {
+  applyServiceUpdate,
+  checkServiceUpdate,
+} from "@freeanima/host/core/config/app-update/service-update";
+import { logComponent } from "@freeanima/host/platform/logging";
 
 export async function getHealthProbe(auth?: ServiceAuthContext | null) {
   const ctx = habitatCtx();
@@ -62,4 +67,22 @@ export async function runCronJobNow(id: string) {
 export function restartService() {
   scheduleServiceRestart();
   return { ok: true as const, code: "service_restarting" };
+}
+
+export async function checkServiceUpdateStatus(payload?: { proxy?: string }) {
+  return checkServiceUpdate({
+    ...(payload?.proxy != null ? { proxy: payload.proxy } : {}),
+    log: (msg) => logComponent("service-update").info(msg),
+  });
+}
+
+export async function applyServiceUpdateStatus(payload?: { proxy?: string }) {
+  const result = await applyServiceUpdate({
+    ...(payload?.proxy != null ? { proxy: payload.proxy } : {}),
+    log: (msg) => logComponent("service-update").info(msg),
+  });
+  if (result.ok) {
+    scheduleServiceRestart();
+  }
+  return result;
 }
