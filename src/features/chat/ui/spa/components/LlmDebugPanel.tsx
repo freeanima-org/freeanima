@@ -142,6 +142,10 @@ function PassiveRecallView({
           {trace.tsquery ?? "—"}
         </div>
         <div>
+          <span className="text-muted-foreground">jieba_loaded: </span>
+          {trace.jieba_loaded == null ? "—" : String(trace.jieba_loaded)}
+        </div>
+        <div>
           <span className="text-muted-foreground">{m.chat_llm_debug_passive_thresholds()}: </span>
           min={trace.min_score} · relative={trace.min_relative_score} · effective=
           {trace.effective_min_score.toFixed(4)}

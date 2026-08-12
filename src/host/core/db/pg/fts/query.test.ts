@@ -36,6 +36,14 @@ describe("buildFtsTsQuery", () => {
     expect(tsq).not.toMatch(/\)\s+\(/);
   });
 
+  it("segments NL questions with jieba when enabled", async () => {
+    bindActiveRuntimeConfig(Config.fromSnapshot({ ...minimalConfig(), cjk: { enabled: true } }));
+    const tsq = await buildFtsTsQuery("风油精是什么");
+    expect(tsq).toContain("风油精");
+    expect(tsq).toContain("|");
+    expect(tsq).not.toBe("风油精是什么");
+  });
+
   it("validates input before building", async () => {
     bindActiveRuntimeConfig(Config.fromSnapshot(minimalConfig()));
     await expect(buildFtsTsQuery("退烧 OR")).rejects.toThrow("query 不能以 OR 结尾");

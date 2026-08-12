@@ -61,6 +61,7 @@ export type LlmDebugSnapshotPayload = {
   passive_recall?: {
     query: string;
     tsquery: string | null;
+    jieba_loaded?: boolean | null;
     effective_min_score: number;
     min_score: number;
     min_relative_score: number;

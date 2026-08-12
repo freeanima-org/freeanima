@@ -155,6 +155,7 @@ function PassiveRecallDebugPage() {
               <p>exclude_resident: {String(result.exclude_resident)}</p>
               <p>query: {debug?.query || "—"}</p>
               <p>tsquery: {debug?.tsquery || "—"}</p>
+              <p>jieba_loaded: {debug?.jieba_loaded == null ? "—" : String(debug.jieba_loaded)}</p>
               <p>
                 min_score / relative / effective: {debug?.min_score} / {debug?.min_relative_score} /{" "}
                 {debug?.effective_min_score}

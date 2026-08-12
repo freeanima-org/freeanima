@@ -8,6 +8,7 @@ import { previewPassiveContent } from "./debug-types.ts";
 import { formatPassiveMemoryBlock, wrapPassiveMemoryContext } from "./inject.ts";
 import { focusPassiveRecallQuery, stripTimePrefixFromUserContent } from "./query.ts";
 import { semanticPassiveRecallSearchDetailed } from "./search.ts";
+import { classifyPassiveRecallNoHits } from "./skipped-reason.ts";
 
 export type PassiveRecallDebugResult = {
   debug: PassiveRecallDebugTrace;
@@ -116,7 +117,7 @@ export async function runPassiveRecallDebug(opts: {
   debug.elapsed_ms = Math.round(performance.now() - started);
 
   if (hits.length === 0) {
-    debug.skipped_reason = "no_hits_after_filters";
+    debug.skipped_reason = classifyPassiveRecallNoHits(debug);
     return { ...baseMeta, debug, inject_preview: "" };
   }
 

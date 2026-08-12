@@ -6,6 +6,7 @@ import {
   getFtsTrgmFallbackWhenHitsLt,
 } from "@freeanima/host/core/config";
 import { buildFtsTsQuery } from "@freeanima/host/core/db/pg/fts/query.ts";
+import { isJiebaLoaded } from "@freeanima/host/core/db/pg/fts/segment.ts";
 import { searchSemanticMemoryFtsRaw } from "@freeanima/host/core/db/pg/fts/hybrid-raw.ts";
 import { searchSemanticMemoryTrgm } from "@freeanima/host/core/db/pg/fts/trgm-search.ts";
 import { searchSemanticMemoryFts } from "@freeanima/host/core/db/pg/semantic-memory";
@@ -140,6 +141,7 @@ export async function semanticPassiveRecallSearchDetailed(
   const debug: PassiveRecallDebugTrace = {
     query: q,
     tsquery: tsquery || null,
+    jieba_loaded: isJiebaLoaded(),
     effective_min_score: effectiveMin,
     min_score: minScore,
     min_relative_score: minRelative,

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterEach, describe, expect, it } from "bun:test";
 import {
   runtimeConfigSchema,
   Config,
@@ -6,18 +6,10 @@ import {
   resetActiveConfigForTest,
 } from "@freeanima/host/core/config";
 
-const segmentForFtsMock = mock(async (_text: string): Promise<string[] | null> => {
-  throw new Error("jieba failed");
-});
-
-mock.module("./segment.ts", () => ({
-  segmentForFts: segmentForFtsMock,
-  resetJiebaForTest: () => {},
-}));
-
 import { resolveFtsSegmentedForWrite } from "./write.ts";
+import { resetJiebaForTest } from "./segment.ts";
 
-function jiebaEnabledConfig(): Config {
+function configWithCjk(enabled: boolean): Config {
   return Config.fromSnapshot(
     runtimeConfigSchema.parse({
       llm: {
@@ -27,27 +19,25 @@ function jiebaEnabledConfig(): Config {
         },
         profiles: { chat: { chain: [{ provider: "main", model: "test" }] } },
       },
-      cjk: { enabled: true },
+      cjk: { enabled },
     }),
   );
 }
 
 describe("resolveFtsSegmentedForWrite", () => {
-  beforeEach(() => {
-    bindActiveRuntimeConfig(jiebaEnabledConfig());
-    segmentForFtsMock.mockImplementation(async () => {
-      throw new Error("jieba failed");
-    });
-  });
-
   afterEach(() => {
     resetActiveConfigForTest();
-    segmentForFtsMock.mockReset();
+    resetJiebaForTest();
   });
 
-  it("returns null when segmentation throws", async () => {
-    const out = await resolveFtsSegmentedForWrite("hello world");
-    expect(out).toBeNull();
-    expect(segmentForFtsMock).toHaveBeenCalledTimes(1);
+  it("returns null when cjk disabled", async () => {
+    bindActiveRuntimeConfig(configWithCjk(false));
+    expect(await resolveFtsSegmentedForWrite("风油精是什么")).toBeNull();
+  });
+
+  it("returns jieba-segmented text when cjk enabled", async () => {
+    bindActiveRuntimeConfig(configWithCjk(true));
+    const out = await resolveFtsSegmentedForWrite("风油精是什么");
+    expect(out).toBe("风油精 是 什么");
   });
 });

@@ -83,8 +83,10 @@ jobs:
       - name: Build Linux standalone
         run: just pack cli
 
-      - name: Smoke standalone (off build-machine tiktoken path)
-        run: bun scripts/smoke-standalone-tiktoken.ts
+      - name: Smoke standalone (off build-machine tiktoken / jieba paths)
+        run: |
+          bun scripts/smoke-standalone-tiktoken.ts
+          bun scripts/smoke-standalone-jieba.ts
 
       - name: Pack artifact
         run: |

@@ -12,7 +12,16 @@ import {
   buildJiebaGroupTsQuery,
   buildJiebaModeTsQuery,
 } from "./query-char.ts";
-import { segmentForFts } from "./segment.ts";
+import { isJiebaLoaded, segmentForFts } from "./segment.ts";
+
+/** Prefer jieba tokens when loaded; otherwise char-mode (avoids whole-sentence lexeme). */
+export function tsqueryAfterCjkSegment(
+  raw: string,
+  segmented: string,
+  jiebaLoaded: boolean,
+): string {
+  return jiebaLoaded ? buildJiebaModeTsQuery(segmented) : buildCharModeTsQuery(raw);
+}
 
 /** Build tsquery from current cjk config */
 export async function buildFtsTsQuery(raw: string): Promise<string> {
@@ -32,7 +41,7 @@ export async function buildFtsTsQuery(raw: string): Promise<string> {
     tsquery = buildCharModeTsQuery(trimmed);
   } else if (isCjkJiebaEnabled(getActiveRuntimeConfig().data)) {
     const segmented = await segmentForFts(trimmed);
-    tsquery = buildJiebaModeTsQuery(segmented);
+    tsquery = tsqueryAfterCjkSegment(trimmed, segmented, isJiebaLoaded());
   } else {
     tsquery = buildCharModeTsQuery(trimmed);
   }
@@ -42,6 +51,12 @@ export async function buildFtsTsQuery(raw: string): Promise<string> {
 }
 
 async function buildJiebaOperatorTsQuery(raw: string): Promise<string> {
+  // Warm jieba once; if load failed, whole query uses char-mode.
+  await segmentForFts(raw);
+  if (!isJiebaLoaded()) {
+    return buildCharModeTsQuery(raw);
+  }
+
   const segments = parseFtsOperatorQuery(raw);
   const output: string[] = [];
 

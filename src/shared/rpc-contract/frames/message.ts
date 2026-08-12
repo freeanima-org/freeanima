@@ -155,6 +155,8 @@ export type PassiveRecallDebugHit = {
 export type PassiveRecallDebugTrace = {
   query: string;
   tsquery: string | null;
+  /** Whether jieba singleton loaded in this process (null when not applicable / unknown). */
+  jieba_loaded?: boolean | null;
   effective_min_score: number;
   min_score: number;
   min_relative_score: number;

@@ -17,6 +17,7 @@ import {
 } from "./inject.ts";
 import { focusPassiveRecallQuery, stripTimePrefixFromUserContent } from "./query.ts";
 import { semanticPassiveRecallSearchDetailed } from "./search.ts";
+import { classifyPassiveRecallNoHits } from "./skipped-reason.ts";
 
 function emptyDebug(query: string): PassiveRecallDebugTrace {
   return {
@@ -129,7 +130,7 @@ export function createPassiveMemoryRecallHandler() {
     if (hits.length === 0) {
       finishDebug(ctx, debug, {
         query,
-        skipped_reason: debug ? "no_hits_after_filters" : "no_hits",
+        skipped_reason: debug ? classifyPassiveRecallNoHits(debug) : "no_hits",
         elapsed_ms: Math.round(performance.now() - started),
       });
       return;
