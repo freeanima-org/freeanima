@@ -1,6 +1,7 @@
 import { omitUndefined } from "@freeanima/host/core/util";
 import { toolError, toolResult } from "@freeanima/host/core/tool";
 import type { SkillOrigin } from "@freeanima/host/core/db/schema/entity";
+import { PROMPT_XML_TAGS, wrapPromptXml } from "@freeanima/host/core/hooks/prompt";
 import type { SkillDef, SkillRegistry } from "./registry.ts";
 import {
   createDbSkill,
@@ -244,7 +245,7 @@ export function formatSkillsPrefix(skills: SkillRegistry, names: string[]): stri
   for (const name of names) {
     const def = skills.get(name);
     if (def?.content.trim()) {
-      parts.push(`<skill name="${name}">\n${def.content.trim()}\n</skill>`);
+      parts.push(wrapPromptXml(PROMPT_XML_TAGS.skill, def.content.trim(), { attrs: { name } }));
     }
   }
   return parts.join("\n\n");

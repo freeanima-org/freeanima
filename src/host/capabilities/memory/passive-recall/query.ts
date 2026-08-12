@@ -1,10 +1,10 @@
-const TIME_PREFIX_RE = /^time: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?: 周[一二三四五六日])?\n/;
+import { stripUserTimePrefix } from "@freeanima/host/core/hooks/prompt";
 
 export const PASSIVE_RECALL_QUERY_MAX = 320;
 
-/** Strip runtime time prefix from user message before passive recall query. */
+/** Strip runtime-only time tag before using user text as a recall query. */
 export function stripTimePrefixFromUserContent(content: string): string {
-  return content.replace(TIME_PREFIX_RE, "").trim();
+  return stripUserTimePrefix(content);
 }
 
 /**

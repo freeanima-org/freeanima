@@ -2,12 +2,15 @@ import type { SelfBlockKey } from "@freeanima/host/core/db/schema";
 import { selfBlockKeySchema } from "@freeanima/host/core/db/schema";
 
 import type { SelfBlockRow } from "@freeanima/host/core/db/schema/rows";
+import {
+  PROMPT_XML_TAGS,
+  wrapPromptXml,
+  wrapPromptXmlSection,
+} from "@freeanima/host/core/hooks/prompt";
 
 import {
   SELF_BLOCK_EMPTY_PLACEHOLDER,
   SELF_BLOCK_HEADINGS,
-  SELF_LAYER_CODE_FENCE_LANG,
-  SELF_LAYER_PROMPT_HEADING,
   SELF_LAYER_SYSTEM_FRAME,
 } from "./blocks.ts";
 
@@ -30,24 +33,23 @@ export function toSelfBlockView(row: SelfBlockRow): SelfBlockView {
   };
 }
 
-/** Render five blocks as resident Markdown */
+/** Render five blocks as nested XML (`<existence_anchor>…</existence_anchor>` …). */
 export function renderSelfLayerPrompt(blocks: SelfBlockRow[]): string {
-  const lines: string[] = [];
+  const parts: string[] = [];
   for (const row of blocks) {
     const block_key = selfBlockKeySchema.parse(row.block_key);
-    const heading = SELF_BLOCK_HEADINGS[block_key];
     const body = row.content.trim() || SELF_BLOCK_EMPTY_PLACEHOLDER;
-    lines.push(`## ${heading}`, body);
+    const wrapped = wrapPromptXml(block_key, body);
+    if (wrapped) parts.push(wrapped);
   }
-  return lines.join("\n\n");
+  return parts.join("\n\n");
 }
 
-/** Wrap five-block Markdown as self-layer system prompt segment (second-person frame + code fence) */
-export function wrapSelfLayerForSystemPrompt(innerMarkdown: string): string {
-  const body = innerMarkdown.trim();
-  if (!body) return "";
-  const header = `${SELF_LAYER_SYSTEM_FRAME}\n\n## ${SELF_LAYER_PROMPT_HEADING}`;
-  return `${header}\n\`\`\`${SELF_LAYER_CODE_FENCE_LANG}\n${body}\n\`\`\``;
+/** Outer frame + `<self_layer>` around nested block tags. */
+export function wrapSelfLayerForSystemPrompt(innerXml: string): string {
+  return wrapPromptXmlSection(PROMPT_XML_TAGS.selfLayer, innerXml, {
+    frame: SELF_LAYER_SYSTEM_FRAME,
+  });
 }
 
 export function composeSelfLayerPromptFromViews(views: SelfBlockView[]): string {

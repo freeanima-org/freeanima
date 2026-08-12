@@ -26,15 +26,17 @@ describe("formatSubagentCatalogContent", () => {
     expect(formatSubagentCatalogContent([])).toBe("");
   });
 
-  it("lists slug and summary before skills-style heading", () => {
+  it("lists slug and summary inside subagents XML with strategy prose", () => {
     const text = formatSubagentCatalogContent([
       row({ slug: "explorer", summary: "Read-only explore" }),
       row({ slug: "research", title: "调研", summary: "Structured research" }),
     ]);
-    expect(text).toContain("## Subagents");
-    expect(text.indexOf("prefer a **Subagent**")).toBeLessThan(text.indexOf("## Subagents"));
+    // Body only here; fold adds <subagents>. Content must include both strategy paragraphs.
+    expect(text).toContain("prefer a **Subagent**");
+    expect(text).toContain("Named in-process subagent profiles");
     expect(text).toContain("subagent_run");
     expect(text).toContain("- **explorer**: Read-only explore");
     expect(text).toContain("- **research**: Structured research");
+    expect(text.indexOf("prefer a **Subagent**")).toBeLessThan(text.indexOf("- **explorer**"));
   });
 });

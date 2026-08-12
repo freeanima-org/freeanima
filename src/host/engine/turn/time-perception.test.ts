@@ -15,7 +15,7 @@ const WEEKDAY: Record<string, string> = {
 function prefixed(content: string, isoLocal: string): string {
   const day = isoLocal.slice(0, 10);
   const weekday = WEEKDAY[day] ?? "";
-  return `time: ${isoLocal} ${weekday}\n${content}`;
+  return `<time>${isoLocal} ${weekday}</time>\n${content}`;
 }
 
 function userMsg(content: string, timestamp: string): UserMessage {

@@ -31,7 +31,7 @@ title: 时间感知
 
 ### 基础规则
 
-- 在每条带有效 `timestamp` 的 **user** 消息前，插入专用行：`time: YYYY-MM-DDTHH:mm 周X`（CST 星期为中文）
+- 在每条带有效 `timestamp` 的 **user** 消息前，插入专用行：`<time>YYYY-MM-DDTHH:mm 周X</time>`（CST 星期为中文）
 - 时区：**Asia/Shanghai（CST，+08:00）**
 - 换行后接原文 content
 - 无 `timestamp` 或 timestamp 无法解析 → 跳过，保持原 content
@@ -52,13 +52,13 @@ user: going to eat
 经时间感知模块处理后（给 LLM 的上下文）：
 
 ```text
-user: time: 2026-05-20T08:02 周三
+user: <time>2026-05-20T08:02 周三</time>
 good morning
 assistant: morning ☀️
-user: time: 2026-05-20T12:15 周三
+user: <time>2026-05-20T12:15 周三</time>
 going to eat
 assistant: what are you having
-user: time: 2026-05-20T19:30 周三
+user: <time>2026-05-20T19:30 周三</time>
 going to eat
 ```
 
@@ -85,4 +85,4 @@ Agent 读到两条"我去吃饭了"，一条在 12:15、一条在 19:30——自
 - ❌ 不修改持久化消息
 - ❌ 不在栖息地 UI 中显示时间前缀
 - ❌ 不给数字生命内置的时间流逝感——那是生物体的特性，不模拟
-- ❌ 不在 system prompt 注入「当前时间」（主对话依赖每条 user 消息的 time 行）
+- ❌ 不在 system prompt 注入「当前时间」（主对话依赖每条 user 消息的 `<time>` 标签）

@@ -44,7 +44,7 @@ describePg("tool catalog lazy load", () => {
     expect(isConversationMeta(meta)).toBe(true);
     if (!isConversationMeta(meta)) return;
     const sp = meta.system_prompt ?? "";
-    expect(sp).toContain("## ToolSets");
+    expect(sp).toContain("<toolsets>");
     expect(sp).toContain("- file —");
     expect(sp).toContain("toolset_load");
   });

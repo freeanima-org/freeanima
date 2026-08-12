@@ -109,6 +109,10 @@ title: 架构
 
 `systemPromptBuild` 各段可带可选 `budgetChars` 与 `priority`。折叠先应用分段上限，再应用全局 `prompt.system_prompt_budget_chars`（默认 **64000**）。超出全局预算时，折叠**先在**低优先级段内截断；整段丢弃仅作最后手段。核心身份段（`self`、`anima-uri-protocol`、`memory-citation`、`memory-recall`）永不静默丢弃。常驻模块如 `env-health`、`user-activity-stats` 仍在系统提示中，但受预算控制。
 
+### 提示词外壳（XML 划界）
+
+机器注入的结构（系统提示各段、旁注、user 时间戳、技能正文）用 **XML 外壳**划界。系统提示中：除段首**命令式 / 第二人称 frame**（如自我层、常驻记忆说明）外，其余段落一律 XML 包裹；自我层五块为嵌套标签（`<existence_anchor>` …）。预算裁剪作用于 **标签内正文**，再包裹开闭标签，避免截断闭合标签。传输层 `role` 不再包一层 `<system>`/`<user>`。
+
 ## 四层认知模型
 
 数字生命由内而外分层。每一层回答一个不同的核心问题：

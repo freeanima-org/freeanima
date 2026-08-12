@@ -1,4 +1,5 @@
 import type { AssistantMessage, StoredMessage } from "@freeanima/host/core/db/domain";
+import { PROMPT_XML_TAGS, wrapPromptXmlSection } from "@freeanima/host/core/hooks/prompt";
 
 export const TEMPORAL_SUMMARY_PEERS_ASSISTANT_NAME = "temporal_summary_peers";
 
@@ -86,7 +87,7 @@ export const TEMPORAL_PEERS_HEAD =
   "以下是同一时段内其他会话的客观时间摘要（合写）。仅作背景，勿当作本会话用户原话。";
 
 export function wrapPeerRollupContent(summary: string): string {
-  const body = summary.trim();
-  if (!body) return "";
-  return `${TEMPORAL_PEERS_HEAD}\n\n\`\`\`temporal\n${body}\n\`\`\``;
+  return wrapPromptXmlSection(PROMPT_XML_TAGS.temporalPeers, summary, {
+    frame: TEMPORAL_PEERS_HEAD,
+  });
 }

@@ -63,6 +63,7 @@ export {
 } from "./cascade-run.ts";
 export {
   buildTemporalSummarySystemSection,
+  buildTemporalSummarySystemBody,
   type TemporalSummarySystemSectionResult,
   type BuildTemporalSummarySystemSectionOpts,
 } from "./system-section.ts";

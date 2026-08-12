@@ -43,7 +43,7 @@ describe("system-prompt", () => {
     expect(residentIdx).toBeLessThan(agentsIdx);
   });
 
-  it("resident memory segment includes second-person frame and code fence", async () => {
+  it("resident memory segment includes second-person frame and XML shell", async () => {
     listResidentSemanticMemoryMock.mockImplementation((async () => [
       {
         id: 42,
@@ -64,8 +64,9 @@ describe("system-prompt", () => {
     ]) as never);
     const parts = await decomposeSystemPromptParts("self layer content");
     expect(parts.resident).toContain(RESIDENT_MEMORY_SYSTEM_FRAME);
-    expect(parts.resident).toContain("## Resident memory");
-    expect(parts.resident).toContain("```md");
+    expect(parts.resident).toContain("<resident_memory>");
+    expect(parts.resident).toContain("</resident_memory>");
+    expect(parts.resident).not.toContain("```md");
     expect(parts.resident).toContain("- 📌 [[anima:42]] I like testing");
     expect(parts.resident).not.toContain(MEMORY_REFERENCE_CITATION_RULE);
   });
@@ -75,6 +76,7 @@ describe("system-prompt", () => {
     const citation = sections.find((s) => s.id === "memory-citation");
     expect(citation).toBeDefined();
     expect(citation!.content).toBe(MEMORY_REFERENCE_CITATION_RULE);
+    expect(citation!.xmlTag).toBe("memory_citation");
     expect(citation!.order).toBe(25);
   });
 
@@ -83,7 +85,17 @@ describe("system-prompt", () => {
     const recall = sections.find((s) => s.id === "memory-recall");
     expect(recall).toBeDefined();
     expect(recall!.content).toBe(MEMORY_RECALL_STRATEGY_RULE);
+    expect(recall!.xmlTag).toBe("memory_recall");
     expect(recall!.order).toBe(26);
+  });
+
+  it("self section uses xmlTag + frame with nested inner body", async () => {
+    const sections = await buildMemorySystemPromptSections("<self_model>\ninner\n</self_model>");
+    const self = sections.find((s) => s.id === "self");
+    expect(self).toBeDefined();
+    expect(self!.content).toContain("<self_model>");
+    expect(self!.xmlTag).toBe("self_layer");
+    expect(self!.xmlFrame).toBeTruthy();
   });
 
   it("work mode omits self and resident; project AGENTS.md no longer loaded from cwd", async () => {

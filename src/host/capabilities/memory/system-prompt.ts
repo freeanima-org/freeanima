@@ -1,31 +1,31 @@
 import { RESIDENT_TOP_N } from "@freeanima/host/core/db/pg/semantic-memory/types";
 import { listResidentSemanticMemory } from "@freeanima/host/core/db/pg/semantic-memory";
+import { PROMPT_XML_TAGS, wrapPromptXmlSection } from "@freeanima/host/core/hooks/prompt";
 
 import { formatResidentMemoryLine } from "./memory-reference.ts";
-
-const PROMPT_CODE_FENCE_LANG = "md";
 
 /** Outer second-person frame for the resident-memory system prompt segment */
 export const RESIDENT_MEMORY_SYSTEM_FRAME =
   "Below is your resident memory. These facts and conventions must always travel with you; follow and apply them consciously in conversation.";
-
-function wrapPromptSection(heading: string, inner: string, frame?: string): string {
-  const body = inner.trim();
-  if (!body) return "";
-  const header = frame ? `${frame.trim()}\n\n## ${heading}` : `## ${heading}`;
-  return `${header}\n\`\`\`${PROMPT_CODE_FENCE_LANG}\n${body}\n\`\`\``;
-}
 
 function readAgents(_cwd: string | null | undefined): string {
   // 项目 AGENTS.md / rules 仅 Coding 模块经 Outpost sync 注入；见 coding project-context hooks。
   return "";
 }
 
-async function renderResidentMemory(): Promise<string> {
+/** Inner resident-memory body (no XML wrap); fold wraps via xmlTag. */
+export async function renderResidentMemoryBody(): Promise<string> {
   const facts = await listResidentSemanticMemory(RESIDENT_TOP_N);
   if (facts.length === 0) return "";
-  const lines = facts.map((f) => formatResidentMemoryLine(f.content, f.id, f.pinned));
-  return wrapPromptSection("Resident memory", lines.join("\n"), RESIDENT_MEMORY_SYSTEM_FRAME);
+  return facts.map((f) => formatResidentMemoryLine(f.content, f.id, f.pinned)).join("\n");
+}
+
+async function renderResidentMemory(): Promise<string> {
+  const body = await renderResidentMemoryBody();
+  if (!body) return "";
+  return wrapPromptXmlSection(PROMPT_XML_TAGS.residentMemory, body, {
+    frame: RESIDENT_MEMORY_SYSTEM_FRAME,
+  });
 }
 
 export type SystemPromptParts = {

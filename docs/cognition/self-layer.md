@@ -90,7 +90,7 @@ FreeAnima Storage Architecture
 
 **工作模式**保留记忆引用/回忆、渠道（带标签）、world/toolsets/skills/subagents，以及已同步的 Coding 项目上下文 —— 不含自我层身份框架。
 
-自我层与常驻记忆使用第二人称指令骨架包裹第一人称自述内容，使 LLM 明确理解「这是你必须遵守的自我层内容」。
+自我层使用第二人称指令骨架 + **外层** `<self_layer>`，五块为**嵌套 XML**（`<existence_anchor>` / `<self_model>` / …），不再用 Markdown `##` 标题做结构。
 
 现场环境/健康**变化**不会改写已有会话提示；以 Inbox 通知呈现（事件级）。AutoLLM / cron 运行使用工作模式装配（无自我块）。
 

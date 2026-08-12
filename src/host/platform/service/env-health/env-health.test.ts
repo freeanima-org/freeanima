@@ -109,9 +109,10 @@ describe("env-health diff", () => {
 describe("env-health format", () => {
   it("includes baseline frame and marker lines", () => {
     const text = formatEnvHealthPromptSection(sampleMarkers());
-    expect(text).toContain("Environment + health baseline");
+    expect(text).toContain("<env_health>");
     expect(text).toContain("Hostname: host-a");
     expect(text).toContain("Disk free (FREEANIMA_HOME): 4-8GiB");
+    expect(text).not.toContain("```md");
   });
 
   it("formats change body with before/after", () => {

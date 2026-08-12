@@ -81,6 +81,39 @@ describe("foldSystemPromptSections", () => {
     expect(foldSystemPromptSections(run.chain)).toBe("");
   });
 
+  it("applies per-section budgetChars with xmlTag without breaking closing tag", async () => {
+    const registry = createTestHookRegistry();
+    registry.on(
+      systemPromptBuild,
+      () => ({
+        status: "ok",
+        data: {
+          sections: [
+            {
+              id: "env-health-baseline",
+              content: "E".repeat(200),
+              order: 15,
+              budgetChars: 80,
+              priority: 8,
+              xmlTag: "env_health",
+              xmlFrame: "Frame.",
+            },
+          ],
+        },
+      }),
+      ALL,
+    );
+    const run = await registry.run(systemPromptBuild, EMPTY_CTX, CONV);
+    const folded = foldSystemPromptSectionsDetailed(run.chain);
+    expect(folded.text.length).toBeLessThanOrEqual(80);
+    expect(folded.text).toContain("<env_health>");
+    expect(folded.text).toContain("</env_health>");
+    expect(folded.text.endsWith("</env_health>") || folded.text.includes("</env_health>")).toBe(
+      true,
+    );
+    expect(folded.truncatedSectionIds).toContain("env-health-baseline");
+  });
+
   it("applies per-section budgetChars", async () => {
     const registry = createTestHookRegistry();
     registry.on(

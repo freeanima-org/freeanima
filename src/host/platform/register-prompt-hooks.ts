@@ -1,13 +1,13 @@
 import type { HookRegistry } from "@freeanima/host/kernel/hooks";
-import { systemPromptBuild } from "@freeanima/host/core/hooks/prompt";
+import { PROMPT_XML_TAGS, systemPromptBuild } from "@freeanima/host/core/hooks/prompt";
 import { registerToolsetSystemPromptHooks } from "@freeanima/host/capabilities/tools/toolset-prompt-hooks";
 import { registerWorldContextSystemPromptHook } from "@freeanima/host/capabilities/tools/world-prompt-hooks";
 import { registerSkillsCatalogSystemPromptHook } from "@freeanima/host/capabilities/tools/skills-prompt-hooks";
-import { ANIMA_URI_PROTOCOL_RULE } from "@freeanima/host/capabilities/tools/anima-uri-prompt";
+import { ANIMA_URI_PROTOCOL_BODY } from "@freeanima/host/capabilities/tools/anima-uri-prompt";
 import { registerSubagentCatalogSystemPromptHook } from "@freeanima/features/subagent/domain";
 import { registerCodingProjectContextPromptHook } from "@freeanima/features/coding/domain/project-context-prompt-hooks.ts";
 import { buildMemorySystemPromptSections } from "@freeanima/host/capabilities/memory/system-prompt-sections";
-import { loadSelfLayerPrompt } from "@freeanima/host/capabilities/self";
+import { loadSelfLayerInner, loadSelfLayerPrompt } from "@freeanima/host/capabilities/self";
 import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 import type { SkillRegistry } from "@freeanima/host/core/skill";
 
@@ -35,7 +35,7 @@ export function registerMemorySystemPromptHooks(registry: HookRegistry): void {
   registry.on(
     systemPromptBuild,
     async (ctx) => {
-      const selfContent = ctx.mode === "work" ? "" : await loadSelfLayerPrompt();
+      const selfContent = ctx.mode === "work" ? "" : await loadSelfLayerInner();
       const sections = await buildMemorySystemPromptSections(selfContent, ctx.cwd, ctx.mode);
       if (sections.length === 0) return { status: "ok" };
       return { status: "ok", data: { sections } };
@@ -53,10 +53,11 @@ export function registerAnimaUriProtocolSystemPromptHook(registry: HookRegistry)
         sections: [
           {
             id: "anima-uri-protocol",
-            content: ANIMA_URI_PROTOCOL_RULE,
+            content: ANIMA_URI_PROTOCOL_BODY,
             order: 24,
             priority: 1,
             budgetChars: 500,
+            xmlTag: PROMPT_XML_TAGS.animaUri,
           },
         ],
       },
@@ -78,9 +79,10 @@ export function registerChannelSystemPromptHook(registry: HookRegistry): void {
           sections: [
             {
               id: "channel",
-              content: `## 对话通道 (${modeLabel})\n当前通道：${desc}`,
+              content: `对话通道（${modeLabel}）\n当前通道：${desc}`,
               order: 5,
               priority: 2,
+              xmlTag: PROMPT_XML_TAGS.channel,
             },
           ],
         },
@@ -95,15 +97,24 @@ export function registerEnvHealthSystemPromptHook(registry: HookRegistry): void 
     systemPromptBuild,
     async (ctx) => {
       if (ctx.mode === "work") return { status: "ok" };
-      const { buildEnvHealthPromptSectionContent } = await import("./service/env-health/prompt.ts");
+      const { buildEnvHealthPromptBody } = await import("./service/env-health/prompt.ts");
+      const { ENV_HEALTH_PROMPT_FRAME } = await import("./service/env-health/format.ts");
       try {
-        const content = await buildEnvHealthPromptSectionContent();
+        const content = await buildEnvHealthPromptBody();
         if (!content.trim()) return { status: "ok" };
         return {
           status: "ok",
           data: {
             sections: [
-              { id: "env-health-baseline", content, order: 15, priority: 8, budgetChars: 1_200 },
+              {
+                id: "env-health-baseline",
+                content,
+                order: 15,
+                priority: 8,
+                budgetChars: 1_200,
+                xmlTag: PROMPT_XML_TAGS.envHealth,
+                xmlFrame: ENV_HEALTH_PROMPT_FRAME,
+              },
             ],
           },
         };
@@ -120,16 +131,26 @@ export function registerUserActivityStatsSystemPromptHook(registry: HookRegistry
     systemPromptBuild,
     async (ctx) => {
       if (ctx.mode === "work") return { status: "ok" };
-      const { buildUserActivityStatsPromptSectionContent } =
+      const { buildUserActivityStatsPromptBody } =
         await import("./service/user-activity-stats/prompt.ts");
+      const { USER_ACTIVITY_PROMPT_FRAME } =
+        await import("./service/user-activity-stats/format.ts");
       try {
-        const content = await buildUserActivityStatsPromptSectionContent();
+        const content = await buildUserActivityStatsPromptBody();
         if (!content.trim()) return { status: "ok" };
         return {
           status: "ok",
           data: {
             sections: [
-              { id: "user-activity-stats", content, order: 16, priority: 9, budgetChars: 800 },
+              {
+                id: "user-activity-stats",
+                content,
+                order: 16,
+                priority: 9,
+                budgetChars: 800,
+                xmlTag: PROMPT_XML_TAGS.userActivity,
+                xmlFrame: USER_ACTIVITY_PROMPT_FRAME,
+              },
             ],
           },
         };
@@ -148,12 +169,12 @@ export function registerTemporalSummarySystemPromptHook(registry: HookRegistry):
       if (ctx.mode === "work") return { status: "ok" };
       try {
         const { getActiveRuntimeConfig } = await import("@freeanima/host/core/config");
-        const { buildTemporalSummarySystemSection, resolveTemporalSummaryConfig } =
+        const { buildTemporalSummarySystemBody, resolveTemporalSummaryConfig } =
           await import("@freeanima/host/capabilities/memory/temporal-summary");
         const { cacheGetJson, cacheSetJson } = await import("@freeanima/host/core/redis");
         const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
         const selfContent = await loadSelfLayerPrompt();
-        const { content, truncated } = await buildTemporalSummarySystemSection(config, {
+        const { body, truncated } = await buildTemporalSummarySystemBody(config, {
           selfContent,
           peerCache: {
             getJson: cacheGetJson,
@@ -165,17 +186,18 @@ export function registerTemporalSummarySystemPromptHook(registry: HookRegistry):
             await import("./service/temporal-summary-truncate-notify.ts");
           await notifyTemporalSummarySystemTruncated({ maxChars: config.system_prompt_max_chars });
         }
-        if (!content.trim()) return { status: "ok" };
+        if (!body.trim()) return { status: "ok" };
         return {
           status: "ok",
           data: {
             sections: [
               {
                 id: "temporal-summary",
-                content,
+                content: body,
                 order: 20,
                 priority: 6,
                 budgetChars: config.system_prompt_max_chars,
+                xmlTag: PROMPT_XML_TAGS.temporalSummary,
               },
             ],
           },
