@@ -9,6 +9,7 @@
  *   WEB_DEV_PORT  Vite 起始端口（默认 5000；占用则 Vite 自增）
  *   FREEANIMA_URL 由本脚本写入，仅作 Vite /rpc|/mcp proxy 目标
  *   FREEANIMA_HABITAT_READY_TIMEOUT_MS  等 Habitat 就绪超时（默认 900000）
+ *   FREEANIMA_HABITAT_WATCH  设为 0 关闭 Habitat 源码监视硬重启（默认开，见 scripts/dev-habitat-watch.ts）
  */
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -118,7 +119,7 @@ process.on("SIGTERM", () => {
 });
 
 habitat = spawnDev(
-  ["bun", "src/portal/cli/dev-habitat.ts", "--port", String(habitatPort), "--strict-port"],
+  ["bun", "scripts/dev-habitat-watch.ts", "--port", String(habitatPort), "--strict-port"],
   env,
 );
 

@@ -327,7 +327,7 @@ anima service status
 
 # monorepo / worktree
 just dev                         # Habitat (≥10000) + Vite Web (≥5000)
-just dev habitat                  # Habitat foreground (default random ≥10000; not 2658)
+just dev habitat                  # Habitat foreground + debounce 硬重启（FREEANIMA_HABITAT_WATCH=0 可关；default random ≥10000; not 2658）
 just dev web                  # browser shell Vite HMR from :5000 (set FREEANIMA_URL)
 just pack web                # source deploy / Habitat /web: build dist before start
 ```
