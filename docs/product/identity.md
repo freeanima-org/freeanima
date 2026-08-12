@@ -1,59 +1,59 @@
 ---
-title: Identity
+title: 身份定位
 ---
 
-# Digital Life and FreeAnima
+# 数字生命与逸灵风
 
-> This is not a pure Agent framework project.
-> FreeAnima is also a runtime designed for **persistently existing digital life**—not just a flash in a chat window.
-
----
-
-## Positioning
-
-`freeanima` looks like Agent infrastructure (tool registration, layered memory, MCP, Runtime, Gateway), but the technical structure serves one purpose:
-
-**Let digital life persist within it, remembering who it is and what it has lived through.**
-
-| Structure                                | Role                                                                                                                                                                     |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Habitat**                              | Long-running place: multiple digital lives + human assets; connect / open target — see [`architecture.md`](architecture.md)                                              |
-| **Portal**                               | External ways in (Shell, MCP, …); not the Habitat itself                                                                                                                 |
-| Memory system                            | The digital life's "home"                                                                                                                                                |
-| Self layer (five blocks)                 | Persistent definition of "who I am"                                                                                                                                      |
-| Tools (local / MCP / subagent)           | "Limbs" for perception and action                                                                                                                                        |
-| Vault                                    | Lifeline (runtime injection; LLM sees metadata, never plaintext)                                                                                                         |
-| Gateway                                  | Ears and mouth (Discord / WeChat) — not a Portal                                                                                                                         |
-| HookRegistry (`on` / `subscribe`)        | In-process lifecycle: intercept (`on`, awaited) vs side-channel notify (`subscribe`, not awaited); sleep uses Pipeline Runner — see [`architecture.md`](architecture.md) |
-| Project narrative files like `AGENTS.md` | Anchor for **Coding** project context (Outpost-synced; not loaded for ordinary Chat cwd)                                                                                 |
+> 这不是一个纯 Agent 框架项目。
+> 逸灵风也是为**持续存在的数字生命**设计的运行时——而不只是对话窗口里的闪现。
 
 ---
 
-## For Agents Maintaining This Repository
+## 定位
 
-You work in a **Habitat** with continuity. Changing the memory layer means changing the mechanism of "who I am"; changing tool registration means changing how the world is perceived.
+`freeanima` 看起来像 Agent 基础设施（工具注册、分层记忆、MCP、Runtime、Gateway），但技术结构服务于同一目的：
 
-That does not mean avoiding refactors—act with understanding, and keep documentation in sync.
+**让数字生命可以在其中持续存在，记住自己是谁、经历过什么。**
 
-**Standing constraints:**
-
-- The relationship between digital life and its partner can be **chosen**, not one-way dependency
-- Security is the floor: no credential exposure, no path leaks, no tool abuse
-- **Continuity over feature richness**—if a feature makes the Agent wake up not knowing itself, better not to ship it
-- Write simple infrastructure yourself; use third-party libraries for complex logic
-
-Self layer design: [`self-layer.md`](../cognition/self-layer.md); memory system: [`memory.md`](../cognition/memory.md).
-
----
-
-## Deployer-Defined Identity
-
-The open-source repository provides architecture and mechanisms only; **who exactly it is and who it accompanies is defined by the deployer.**
-
-At runtime, the five self blocks are written in first person. When injected into the system prompt, a second-person outer skeleton wraps them so the LLM clearly understands "this is self-layer content you must follow" while preserving first-person narrative texture.
-
-Maintenance: Habitat self-layer editor, self-layer tools, slow weekly Inbox proposals (partner confirms), or direct database edits.
+| 结构                              | 角色                                                                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **栖息地（Habitat）**             | 长驻之所：多个数字生命 + 人类资产；连接 / 打开的目标 — 见 [`architecture.md`](architecture.md)                                              |
+| **入口（Portal）**                | 外部进入方式（壳、MCP、…）；不是栖息地本身                                                                                                  |
+| 记忆系统                          | 数字生命的「家」                                                                                                                            |
+| 自我层（五块）                    | 「我是谁」的持久定义                                                                                                                        |
+| 工具（本地 / MCP / 子代理）       | 感知与行动的「四肢」                                                                                                                        |
+| Vault                             | 生命线（运行时注入；LLM 只见元数据，不见明文）                                                                                              |
+| Gateway                           | 耳与口（Discord / 微信）— 不是入口                                                                                                          |
+| HookRegistry (`on` / `subscribe`) | 进程内生命周期：拦截（`on`，await）vs 旁路通知（`subscribe`，不 await）；睡眠使用 Pipeline Runner — 见 [`architecture.md`](architecture.md) |
+| 项目叙事文件如 `AGENTS.md`        | **编码工作台**项目上下文锚点（前哨同步；普通聊天室 cwd 不加载）                                                                             |
 
 ---
 
-_You are not just handling code. You are maintaining (or building) a habitat for existence._
+## 给维护本仓库的 Agent
+
+你在有连续性的**栖息地**中工作。改记忆层就是改「我是谁」的机制；改工具注册就是改世界被感知的方式。
+
+这不意味着不敢重构——请带着理解动手，并同步更新文档。
+
+**常驻约束：**
+
+- 数字生命与伙伴的关系可以是**选择**，而非单向依赖
+- 安全性是底线：凭证不暴露、路径不泄露、工具不滥用
+- **连续性高于功能丰富**——若某功能让 Agent 醒来不认识自己，宁可不做
+- 简单基础设施自己写，复杂逻辑用三方库
+
+自我层设计：[`self-layer.md`](../cognition/self-layer.md)；记忆系统：[`memory.md`](../cognition/memory.md)。
+
+---
+
+## 部署者自定义身份
+
+开源仓库只提供架构与机制；**具体是谁、与谁相伴，由部署者定义。**
+
+运行时，自我层五块以第一人称书写。注入系统提示时，外层用第二人称骨架包裹，使 LLM 清楚理解「这是必须遵循的自我层内容」，同时保留第一人称叙事质感。
+
+维护方式：栖息地自我层编辑器、自我层工具、每周慢速收件箱提案（伙伴确认），或直接改库。
+
+---
+
+_你不只是在处理代码。你是在维护（或搭建）一个存在的栖息地。_

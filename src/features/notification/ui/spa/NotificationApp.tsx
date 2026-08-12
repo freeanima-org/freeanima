@@ -11,7 +11,6 @@ import {
   Spinner,
 } from "@freeanima/ui-kit";
 import { formatDateTime } from "@freeanima/ui-kit/lib/datetime-local.ts";
-import { m } from "@paraglide/messages";
 
 import {
   listNotifications,
@@ -208,10 +207,10 @@ export function NotificationApp() {
           variant="ghost"
           size="sm"
           isDisabled={loading}
-          aria-label={m.habitat_common_refresh()}
+          aria-label={"刷新"}
           onClick={() => void fetchList(offset)}
         >
-          {loading ? m.habitat_common_refreshing() : m.habitat_common_refresh()}
+          {loading ? "刷新中…" : "刷新"}
         </Button>
       </div>
 

@@ -1,38 +1,38 @@
 ---
-title: Windows development
+title: Windows 开发
 ---
 
-# Windows development
+# Windows 开发
 
-> Source development on native Windows (or WSL2). For Linux standalone install and general deploy steps, see [`install.md`](install.md). PostgreSQL: [`database.md`](database.md).
+> 在原生 Windows（或 WSL2）上做源码开发。Linux 独立安装与通用部署步骤见 [`install.md`](install.md)。PostgreSQL：[`database.md`](database.md)。
 
-## Support boundaries
+## 支持边界
 
-| Path                                                  | Windows                                                                  |
-| ----------------------------------------------------- | ------------------------------------------------------------------------ |
-| **Source / contributors** (`bun` + `just`)            | Supported with Git Bash (or WSL2)                                        |
-| **Linux standalone** (`curl \| bash` → `anima`)       | **Not available** — Linux x64 only                                       |
-| **Desktop NSIS** (end-user Portal shell)              | Install from GitHub Release / canary                                     |
-| **`just pack tauri`** / **`just pack tauri-windows`** | **Native on Windows**（MSVC）；Linux/mac 上 `tauri-windows` 才是交叉编译 |
-| **`just dev tauri`**                                  | Native Windows OK（Rust + WebView2 + MSVC）                              |
+| 路径                                                  | Windows                                                             |
+| ----------------------------------------------------- | ------------------------------------------------------------------- |
+| **源码 / 贡献者**（`bun` + `just`）                   | 配合 Git Bash（或 WSL2）支持                                        |
+| **Linux 独立安装**（`curl \| bash` → `anima`）        | **不可用** — 仅 Linux x64                                           |
+| **桌面 NSIS**（终端用户入口壳）                       | 从 GitHub Release / canary 安装                                     |
+| **`just pack tauri`** / **`just pack tauri-windows`** | **Windows 本机**（MSVC）；Linux/mac 上 `tauri-windows` 才是交叉编译 |
+| **`just dev tauri`**                                  | Windows 本机 OK（Rust + WebView2 + MSVC）                           |
 
-Recommended contributor path: **native Windows + Git for Windows (bash on PATH) + Docker Desktop** for PostgreSQL/Redis. Use **WSL2** if you prefer the full Linux docs (`install.md` / Debian PG script) without adapting paths.
+推荐贡献者路径：**原生 Windows + Git for Windows（PATH 上有 bash）+ Docker Desktop**（PostgreSQL/Redis）。若更想直接跟完整 Linux 文档（`install.md` / Debian PG 脚本）而不改路径，用 **WSL2**。
 
-Data directory: `%USERPROFILE%\.anima` (same as `~/.anima`; override with `FREEANIMA_HOME`).
+数据目录：`%USERPROFILE%\.anima`（等同 `~/.anima`；可用 `FREEANIMA_HOME` 覆盖）。
 
-## Install prerequisites
+## 安装前置
 
-### winget (preferred)
+### winget（推荐）
 
 ```powershell
 winget install Oven-sh.Bun
 winget install Casey.Just
 winget install Git.Git
-# PostgreSQL + Redis for local Habitat — Docker Desktop:
+# 本地栖息地用的 PostgreSQL + Redis — Docker Desktop：
 winget install Docker.DockerDesktop
 ```
 
-After install, **open a new terminal** so `bun`, `just`, and `bash` are on `PATH`. Confirm:
+安装后 **新开终端**，确保 `bun`、`just`、`bash` 在 `PATH` 上。确认：
 
 ```powershell
 bun --version    # >= 1.3.14
@@ -46,10 +46,12 @@ docker version
 
 ### WSL bash 抢 PATH（`just` → `bun: command not found`）
 
-`just` 的 `windows-shell` 会调用 PATH 上**第一个** `bash`。若 `C:\Windows\System32\bash.exe`（WSL）排在 Git Bash 前面：
+`just` 的 `windows-shell` 会调用 PATH 上**第一个** `bash`。若
+`C:\Windows\System32\bash.exe`（WSL）排在 Git Bash 前面：
 
 - PowerShell 里 `bun i` 正常（不走 bash）
-- `just dev` / `just deps` 报 `/bin/bash: line 1: bun: command not found`（WSL 里裸 `bun` 常不可用）
+- `just dev` / `just deps` 报 `/bin/bash: line 1: bun: command not found`（WSL
+  里裸 `bun` 常不可用）
 
 **临时（当前终端）：**
 
@@ -64,19 +66,21 @@ just deps
 
 **持久：** 在「环境变量」里把 `…\scoop\shims` 或 `C:\Program Files\Git\bin` 挪到 **用户 PATH 最前**（至少早于会解析到 System32 的条目）；或在「应用执行别名」里关掉 WSL 的 `bash.exe`。Justfile 在 Windows 上会调用 `bun.exe` 减轻该问题，但仍建议 `bash` 本身是 Git Bash。
 
-### scoop (alternative)
+### scoop（备选）
 
 ```powershell
 scoop install bun just git
 # Docker Desktop: install separately from docker.com if not using scoop
 ```
 
-确认 `bun --version` ≥ **1.3.14**（与根 `package.json` 的 `packageManager` 一致）。旧 scoop bun 会导致 `Bun.YAML` / `vi.useFakeTimers` 缺失、单测大面积失败；过旧时执行 `scoop update bun`。
+确认 `bun --version` ≥ **1.3.14**（与根 `package.json` 的 `packageManager` 一致）。旧
+scoop bun 会导致 `Bun.YAML` / `vi.useFakeTimers` 缺失、单测大面积失败；过旧时执行 `scoop update
+bun`。
 
-### Optional (Portal desktop shell only)
+### 可选（仅入口桌面壳）
 
-- [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) (often already present on Windows 10/11)
-- [rustup](https://rustup.rs/) + MSVC Build Tools — for `just dev tauri` / `just pack tauri`
+- [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)（Windows 10/11 上往往已有）
+- [rustup](https://rustup.rs/) + MSVC Build Tools — 用于 `just dev tauri` / `just pack tauri`
 
 ```powershell
 # 检查 / 提示安装 MSVC
@@ -98,9 +102,9 @@ just pack tauri
 call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
 ```
 
-## Clone and run
+## 克隆与运行
 
-Use **Git Bash** (or WSL) for `just` recipes — the Justfile sets `shell` / `windows-shell` to bash:
+`just` 配方请用 **Git Bash**（或 WSL）——Justfile 把 `shell` / `windows-shell` 设为 bash：
 
 ```bash
 git clone https://github.com/freeanima-org/freeanima.git
@@ -109,17 +113,22 @@ bun install
 just dev
 ```
 
-`just` 在 Windows 上通过 `_common.just` 的 `bun := bun.exe` 调用 Bun；本地 CLI（`drizzle-kit` / `oxlint` / `oxfmt` / `tsgo` / `wxt`）统一为 `{{ bun }} x …`（即 `bun.exe x`），勿写裸 `bunx`（WSL bash 下常 127）。
+`just` 在 Windows 上通过 `_common.just` 的 `bun := bun.exe` 调用 Bun；本地
+CLI（`drizzle-kit` / `oxlint` / `oxfmt` / `tsgo` / `wxt`）统一为 `{{ bun }} x
+…`（即 `bun.exe x`），勿写裸 `bunx`（WSL bash 下常 127）。
 
-`just` recipes call `bun install --frozen-lockfile` via `_deps` (same as CI). First clone uses plain `bun install` above; afterward prefer `just deps` / any `just …` recipe so the lockfile is not rewritten casually.
+`just` 配方经 `_deps` 调用 `bun install --frozen-lockfile`（与 CI 相同）。首次克隆用上面的普通
+`bun install`；之后优先 `just deps` / 任意 `just …` 配方，避免随意改写 lockfile。
 
-Configure `%USERPROFILE%\.anima\config.yaml` with a PostgreSQL URL (see [Database](#database) below). Full source steps: [`install.md`](install.md#source-repository).
+在 `%USERPROFILE%\.anima\config.yaml` 配置 PostgreSQL URL（见下方
+[数据库](#数据库)）。完整源码步骤：[`install.md`](install.md#source-repository)。
 
-### npm registry (China / slow `registry.npmjs.org`)
+### npm 镜像（中国 / `registry.npmjs.org` 较慢）
 
-Do **not** put a mirror in the repo `bunfig.toml` or commit mirror URLs into `bun.lock`. Bun stores absolute tarball URLs in the lockfile; a mirror registry will rewrite them and break portability.
+**不要**把镜像写进仓库 `bunfig.toml`，也**不要**把镜像 URL 提交进 `bun.lock`。Bun 会把绝对
+tarball URL 写进 lockfile；镜像 registry 会改写它们并破坏可移植性。
 
-For **local-only** acceleration, use a user-level config and keep `bun.lock` registry-agnostic (`""` resolved fields):
+**仅本机**加速时，用用户级配置，并保持 `bun.lock` 与 registry 无关（`""` resolved 字段）：
 
 ```toml
 # %USERPROFILE%\.bunfig.toml  (not committed)
@@ -127,19 +136,19 @@ For **local-only** acceleration, use a user-level config and keep `bun.lock` reg
 registry = "https://registry.npmmirror.com"
 ```
 
-- Daily installs (`just`, `bun install --frozen-lockfile`): fetch via the mirror; lockfile stays unchanged.
-- When **updating** the lockfile (`bun add` / `bun update` / plain `bun install` that may rewrite `bun.lock`), force the official registry so new entries stay portable:
+- 日常安装（`just`、`bun install --frozen-lockfile`）：经镜像拉取；lockfile 不变。
+- **更新** lockfile（`bun add` / `bun update` / 可能改写 `bun.lock` 的普通 `bun install`）时，强制官方 registry，使新条目可移植：
 
 ```bash
 bun install --registry=https://registry.npmjs.org
 # or: bun add <pkg> --registry=https://registry.npmjs.org
 ```
 
-Before commit, confirm `bun.lock` has no `registry.npmmirror.com` (or other mirror) hostnames.
+提交前确认 `bun.lock` 中没有 `registry.npmmirror.com`（或其他镜像）主机名。
 
-### Bun bypass (no `just`)
+### Bun 直跑（不用 `just`）
 
-If `just` cannot find `bash`, run the same entrypoints with Bun:
+若 `just` 找不到 `bash`，用 Bun 跑同一套入口：
 
 ```bash
 bun src/portal/cli/dev-habitat.ts          # Habitat; random port ≥10000
@@ -148,7 +157,7 @@ bun scripts/dev.ts                         # Habitat then Web (same as just dev)
 bun scripts/dev-tauri-desktop.ts           # Tauri shell (need Vite :5000)
 ```
 
-Quality checks without the interactive chooser:
+不做交互选择器的质量检查：
 
 ```bash
 just check          # or: just qa check
@@ -156,9 +165,9 @@ just qa typecheck
 just qa test-changed
 ```
 
-## Database
+## 数据库
 
-Prefer **Docker** on Windows (Debian `setup-postgres-debian.sh` does not apply):
+Windows 上优先 **Docker**（Debian 的 `setup-postgres-debian.sh` 不适用）：
 
 ```bash
 docker run -d --name anima-pg \
@@ -169,38 +178,38 @@ docker run -d --name anima-pg \
   pgvector/pgvector:pg18
 ```
 
-`config.yaml`:
+`config.yaml`：
 
 ```yaml
 database:
   url: postgresql://anima:anima@127.0.0.1:5432/anima
 ```
 
-Extensions ship in the image. More detail: [`database.md`](database.md#local-install-docker-cross-platform).
+扩展已打进镜像。更多细节：
+[`database.md`](database.md#local-install-docker-cross-platform)。
 
-Redis (optional):
+Redis（可选）：
 
 ```bash
 docker run -d --name anima-redis -p 6379:6379 redis:7
 ```
 
-## Habitat vs service
+## 栖息地 vs service
 
-- **Source tree**: use `just dev` / `just dev habitat`. The checkout CLI has **no** `anima service` command.
-- **`anima service` + systemd**: Linux **standalone** only — there is no Windows Habitat binary from `scripts/install.sh`.
-- End-user Windows installs run the **Portal Desktop** shell and connect to a Habitat (local WSL/Linux, LAN, or remote).
+- **源码树**：用 `just dev` / `just dev habitat`。checkout 的 CLI **没有** `anima service` 命令。
+- **`anima service` + systemd**：仅 Linux **独立安装** — `scripts/install.sh` 不会产出 Windows 栖息地二进制。
+- 终端用户 Windows 安装跑的是 **入口桌面** 壳，并连接到栖息地（本机 WSL/Linux、局域网或远程）。
 
-## Known limitations
+## 已知限制
 
-| Workflow                                                   | On Windows                                                                    |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `just install cli` / `just pack cli`                       | Linux standalone tarball — not a Windows Habitat binary                       |
-| `just pack tauri-windows` / `just install tauri-windows`   | On Windows = same as host `tauri`（MSVC）；cross-compile only on Linux/macOS  |
-| Android (`just install android`, `just dev tauri-android`) | Expect bash SDK scripts; use WSL or a Linux host                              |
-| `just i18n po4a`                                           | Needs system `po4a` (typical apt/brew); optional for most UI work             |
-| `just qa test-integration`                                 | Needs Docker Desktop                                                          |
-| ACL / `chmod 700 ~/.anima`                                 | Unix docs; on Windows keep the profile directory private via NTFS permissions |
+| 工作流                                                      | 在 Windows 上                                                              |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `just install cli` / `just pack cli`                        | Linux 独立安装 tarball — 不是 Windows 栖息地二进制                         |
+| `just pack tauri-windows` / `just install tauri-windows`    | 在 Windows 上 = 与宿主 `tauri` 相同（MSVC）；仅 Linux/macOS 上才是交叉编译 |
+| Android（`just install android`、`just dev tauri-android`） | 期望 bash SDK 脚本；用 WSL 或 Linux 主机                                   |
+| `just qa test-integration`                                  | 需要 Docker Desktop                                                        |
+| ACL / `chmod 700 ~/.anima`                                  | Unix 文档写法；Windows 上用 NTFS 权限保持配置目录私有                      |
 
-## Security note
+## 安全说明
 
-Do not put secrets in `config.yaml` or git. Prefer `env()` for bootstrap secrets. See [`security.md`](security.md).
+不要把密钥写进 `config.yaml` 或 git。引导密钥优先 `env()`。见 [`security.md`](security.md)。

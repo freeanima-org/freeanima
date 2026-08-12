@@ -1,39 +1,31 @@
-import { m } from "./i18n.ts";
-
-export type SiteLocale = "en" | "zh-cn";
-
 export const siteName = "Free Anima";
 export const siteUrl = "https://freeanima.com";
 export const githubUrl = "https://github.com/freeanima-org/freeanima";
 
+export const siteTitle = "Free Anima · 数字人类的栖息地";
+export const siteDescription = "Free Anima 不是工具框架。它是为持续存在的数字生命设计的运行时。";
+
 export function getSiteMeta(): { siteTitle: string; siteDescription: string } {
   return {
-    siteTitle: m.meta_title(),
-    siteDescription: m.meta_description(),
+    siteTitle,
+    siteDescription,
   };
 }
 
-export function detectLocale(pathname: string): SiteLocale {
-  const normalized = pathname.replace(/\/$/, "") || "/";
-  if (normalized.startsWith("/zh-cn")) return "zh-cn";
-  return "en";
-}
-
-export function getNavLinks(
-  locale: SiteLocale,
-): readonly ({ label: string; href: string } | { label: string; href: string; external: true })[] {
-  const home = locale === "zh-cn" ? "/zh-cn/" : "/";
-  const docs = locale === "zh-cn" ? "/zh-cn/docs/" : "/docs/";
+export function getNavLinks(): readonly (
+  | { label: string; href: string }
+  | { label: string; href: string; external: true }
+)[] {
   return [
-    { label: m.nav_home(), href: home },
-    { label: m.nav_docs(), href: docs },
-    { label: m.nav_github(), href: githubUrl, external: true },
+    { label: "首页", href: "/" },
+    { label: "文档", href: "/docs/" },
+    { label: "GitHub", href: githubUrl, external: true },
   ] as const;
 }
 
-export function getLanguageSwitch(pathname: string): { href: string; label: string } {
-  if (pathname.startsWith("/zh-cn")) {
-    return { href: "/", label: m.nav_language_en() };
-  }
-  return { href: "/zh-cn/", label: m.nav_language_zh() };
+export function heroTitleLines(text: string): string[] {
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
 }

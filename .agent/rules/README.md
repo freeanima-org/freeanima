@@ -18,8 +18,7 @@ Detailed implementation constraints for AI agents working in this repository. St
 | [`release.md`](release.md)                         | SemVer, Conventional Commits, Release Please, Linux standalone                               |
 | [`tauri-shell.md`](tauri-shell.md)                 | Portal 壳（Tauri）：工程位置、禁止 Node sidecar、ShellApi、双轨发版                          |
 | [`compression.md`](compression.md)                 | l-point compression algorithm and module entry points                                        |
-| [`i18n.md`](i18n.md)                               | UI/docs i18n: Paraglide, po4a, PO workflow, site/Habitat message keys                        |
-| [`docs-i18n.md`](docs-i18n.md)                     | AI rules for `docs/**` authoring and `po/zh_CN/*.po` msgstr                                  |
+| [`i18n.md`](i18n.md)                               | 无 i18n 运行时；UI/docs 直接中文；术语见 `i18n/glossary.md`                                  |
 
 **SSOT**: dependency boundaries → [`.agent/rules/code-layers.md`](code-layers.md)；import paths → `tsconfig.base.json` + `tsgo`；storage shapes → [`src/host/core/db/schema/`](../../src/host/core/db/schema/); port types and binding contracts → [`src/host/platform/ports/`](../../src/host/platform/ports/) (composition root imports `@freeanima/host/platform/ports`).
 

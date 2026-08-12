@@ -1,22 +1,22 @@
 ---
-title: Compression
+title: 压缩
 ---
 
-# Context Compression
+# 上下文压缩
 
-> Runtime context compression: conversations are **fully retained in the database**; only the **four-segment view** sent to the LLM is trimmed.
-> Related: [`sleep.md`](sleep.md), [`memory.md`](memory.md).
+> 运行时上下文压缩：对话在数据库中**全量保留**；仅裁切发给 LLM 的**四段视图**。
+> 关联：[`sleep.md`](sleep.md)、[`memory.md`](memory.md)。
 
-## Design Principles
+## 设计原则
 
-| Principle           | Description                                                                     |
-| ------------------- | ------------------------------------------------------------------------------- |
-| No message deletion | History is kept; compression only changes runtime view and `conversations` meta |
-| Four segments       | LLM context = system + summary + slim + raw                                     |
-| On-demand trigger   | Compress when usage nears window limits; higher thresholds in tool loops        |
-| Memory-independent  | Compression does not trigger semantic extraction; light sleep cron is separate  |
+| 原则       | 说明                                                |
+| ---------- | --------------------------------------------------- |
+| 不删消息   | 历史保留；压缩只改运行时视图与 `conversations` meta |
+| 四段       | LLM 上下文 = system + summary + slim + raw          |
+| 按需触发   | 用量接近窗口上限时压缩；工具循环内阈值更高          |
+| 与记忆独立 | 压缩不触发语义提取；浅睡 cron 另走                  |
 
-## Runtime Four Segments
+## 运行时四段
 
 ```text
 ① system  — system prompt (self layer + resident memory + project context)
@@ -25,13 +25,13 @@ title: Compression
 ④ raw     — recent segment: full messages including tool calls
 ```
 
-Non-compression path: append new messages to raw only; boundaries unchanged.
+非压缩路径：新消息仅追加到 raw；边界不变。
 
-Compression path: when usage exceeds thresholds, older messages move into summary/slim; summary text updated asynchronously. Summary LLM calls are one-shot completions (`tool_choice: none`, `thinking: disabled` via `params.extra`).
+压缩路径：用量超阈值时，较旧消息进入 summary/slim；摘要文本异步更新。摘要 LLM 调用为一次性补全（`tool_choice: none`，经 `params.extra` 的 `thinking: disabled`）。
 
-## Configuration
+## 配置
 
-Adjust in Habitat runtime (`habitat_runtime_config`; Shell **Settings → Habitat 服务 → 服务配置**):
+在栖息地运行时调整（`habitat_runtime_config`；壳 **设置 → 栖息地服务 → 服务配置**）：
 
 ```yaml
 # habitat_runtime_config fragment (not config.yaml)
@@ -50,38 +50,38 @@ compression:
   summary_max_tokens: 4000
 ```
 
-| Setting             | Default | Description                         |
-| ------------------- | ------- | ----------------------------------- |
-| `trigger_low`       | 0.60    | Threshold in normal conversation    |
-| `trigger_high`      | 0.80    | Threshold inside tool loop          |
-| `raw_min_messages`  | 5       | Minimum messages in raw segment     |
-| `slim_min_messages` | 50      | Minimum messages in slim after trim |
+| 设置                | 默认值 | 说明                     |
+| ------------------- | ------ | ------------------------ |
+| `trigger_low`       | 0.60   | 普通对话中的阈值         |
+| `trigger_high`      | 0.80   | 工具循环内的阈值         |
+| `raw_min_messages`  | 5      | raw 段最少消息数         |
+| `slim_min_messages` | 50     | 裁剪后 slim 段最少消息数 |
 
-### Token counting
+### Token 计数
 
-Compression and embedding batch packing use **heuristic token estimates** (`tokenx` in-process, id `__estimate__:tokenx`), not full HuggingFace vocabularies. Counts are approximate (good enough for budget triggers and chunk sizing); they are not provider-billing exact.
+压缩与嵌入批打包使用**启发式 token 估算**（进程内 `tokenx`，id `__estimate__:tokenx`），不是完整 HuggingFace 词表。计数为近似（足以做预算触发与分块）；非提供商账单精确值。
 
-### Context window resolution (token mode)
+### 上下文窗口解析（token 模式）
 
-Priority when estimating compression budget:
+估算压缩预算时的优先级：
 
-1. `models.<model>.context_window` in Habitat runtime config
-2. `compression.default_context_window` (applies to all models)
-3. Provider `/models` catalog `contextWindow` (when Habitat has registered lookup; may include [models.dev](https://models.dev) enrich — see [`service.md`](../ops/service.md) LLM section)
-4. Message-count fallback (`max_rounds` thresholds) when none of the above apply
+1. 栖息地运行时配置中的 `models.<model>.context_window`
+2. `compression.default_context_window`（适用于所有模型）
+3. Provider `/models` 目录的 `contextWindow`（栖息地已注册查找时；可能含 [models.dev](https://models.dev) enrichment — 见 [`service.md`](../ops/service.md) LLM 节）
+4. 以上皆无时的消息数回退（`max_rounds` 阈值）
 
-Per-model config always wins over dynamically fetched catalog values; catalog is read-only and never written back to runtime config.
+按模型配置始终优先于动态拉取的目录值；目录只读，永不写回运行时配置。
 
-Without any context window source, compression falls back to message-count triggers.
+无任何上下文窗口来源时，压缩回退到按消息数触发。
 
-Force compression in chat: `/compress` (`--force` ignores hysteresis).
+在对话中强制压缩：`/compress`（`--force` 忽略迟滞）。
 
-Manual summarize (Cursor-style): `/summarize` collapses history into the runtime summary without waiting for automatic thresholds. When the turn is **idle** (last message is a completed assistant reply), boundaries become `l2 = l3 = l4` and slim/raw are empty. During an **in-progress** turn, only content through the last completed assistant is summarized; the unfinished tail stays in raw. Summary text is merged **incrementally** (same as automatic compression), and the command waits for the summary LLM to finish. If the LLM run succeeds in auto-llm logs but `conversations.compression.summary` is still empty after flush, `/summarize` returns failure (`summary_empty`) with the auto-llm `runId` — it does **not** report success with an empty preview. Concurrent boundary patches that omit summary text must not wipe an existing non-empty summary.
+手动摘要（Cursor 风格）：`/summarize` 将历史折叠进运行时摘要，不等自动阈值。当轮次**空闲**（最后一条是已完成的助手回复）时，边界变为 `l2 = l3 = l4`，slim/raw 为空。**进行中**轮次时，仅摘要到最后一条已完成助手；未完成尾部留在 raw。摘要文本**增量**合并（与自动压缩相同），命令等待摘要 LLM 完成。若 LLM 运行在 auto-llm 日志中成功但 flush 后 `conversations.compression.summary` 仍空，`/summarize` 返回失败（`summary_empty`）并带 auto-llm `runId` — **不**以空预览报成功。省略摘要文本的并发边界补丁不得抹掉已有非空摘要。
 
-### Mid-turn protection vs empty raw
+### 轮次中保护 vs 空 raw
 
-Automatic boundary derivation keeps a non-empty raw segment (with a leading user message) so turns can continue while usage-based compression runs. That rule applies when **some raw tail must remain**. It is not a ban on empty raw: when the user explicitly `/summarize` on an idle conversation, full collapse (`l2 = l3 = l4`) is allowed. Mid-turn protection is implemented by **not folding incomplete turns into the summary**, not by permanently requiring a user in raw.
+自动边界推导保持非空 raw 段（带前导 user 消息），以便用量压缩运行时轮次可继续。该规则适用于**必须保留某段 raw 尾**时。它不是禁止空 raw：用户在空闲对话上显式 `/summarize` 时，允许完全折叠（`l2 = l3 = l4`）。轮次中保护通过**不把未完成轮次折进摘要**实现，而非永久要求 raw 中有 user。
 
-## Relationship to Memory Pipeline
+## 与记忆管道的关系
 
-Compression and light/deep sleep run **independently**: compression manages the current conversation's LLM window; memory extraction runs nightly from the full conversation archive.
+压缩与浅睡/深睡**独立运行**：压缩管理当前 conversation 的 LLM 窗口；记忆提取每晚从完整对话存档运行。

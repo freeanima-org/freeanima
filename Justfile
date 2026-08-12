@@ -15,7 +15,6 @@ mod pack 'just/pack.just'
 mod qa 'just/qa.just'
 mod db 'just/db.just'
 mod install 'just/install.just'
-mod i18n 'just/i18n.just'
 mod misc 'just/misc.just'
 
 default:

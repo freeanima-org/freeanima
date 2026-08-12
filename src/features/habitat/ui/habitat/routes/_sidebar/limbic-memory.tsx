@@ -25,7 +25,6 @@ import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
 import { listLimbicMemories } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 import { useHabitatOffsetPagination } from "@freeanima/features/habitat/ui/habitat/lib/use-habitat-offset-pagination.ts";
 
@@ -71,11 +70,7 @@ function LimbicMemoryPage() {
         setLoaded(true);
       } catch (e) {
         logCaughtError("routes/_sidebar/limbic-memory", e);
-        setError(
-          m.habitat_common_load_failed({
-            detail: e instanceof Error ? e.message : String(e),
-          }),
-        );
+        setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
       } finally {
         setLoading(false);
       }
@@ -93,8 +88,10 @@ function LimbicMemoryPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">{m.habitat_nav_limbic()}</h2>
-      <p className="text-sm text-muted-foreground mb-4">{m.habitat_limbic_desc()}</p>
+      <h2 className="text-lg font-bold mb-1">{"💗 情感记忆"}</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        {"浏览 limbic_memory（边缘系统 / 情感强度记录）。"}
+      </p>
 
       <form
         className="mb-4"
@@ -106,13 +103,13 @@ function LimbicMemoryPage() {
         <Card className="bg-muted py-0">
           <CardContent className="gap-3 py-4 px-4">
             <FormFieldset bordered={false} className="gap-3">
-              <FormField label={m.habitat_limbic_search()} className="text-xs">
+              <FormField label={"搜索词（可选，内容 ILIKE）"} className="text-xs">
                 <Input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   type="text"
                   className="h-8"
-                  placeholder={m.habitat_common_keyword_placeholder()}
+                  placeholder={"关键词…"}
                 />
               </FormField>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -123,7 +120,7 @@ function LimbicMemoryPage() {
                     onChange={(e) => setSessionId(e.target.value)}
                     type="text"
                     className="h-8 font-mono w-full"
-                    placeholder={m.habitat_common_optional()}
+                    placeholder={"可选"}
                   />
                 </div>
                 <div>
@@ -140,7 +137,7 @@ function LimbicMemoryPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem id={ALL_VALUE}>{m.habitat_common_all()}</SelectItem>
+                      <SelectItem id={ALL_VALUE}>{"全部"}</SelectItem>
                       {LIMBIC_KINDS.map((k) => (
                         <SelectItem key={k} id={k}>
                           {k}
@@ -153,7 +150,7 @@ function LimbicMemoryPage() {
             </FormFieldset>
             <Button type="submit" size="sm" isDisabled={loading}>
               {loading ? <Spinner /> : null}
-              {m.habitat_common_query()}
+              {"查询"}
             </Button>
           </CardContent>
         </Card>
@@ -172,17 +169,17 @@ function LimbicMemoryPage() {
               <Spinner />
             </div>
           ) : items.length === 0 ? (
-            <StatusAlert variant="info">{m.habitat_common_no_results()}</StatusAlert>
+            <StatusAlert variant="info">{"无匹配记录。"}</StatusAlert>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{m.habitat_common_time()}</TableHead>
+                    <TableHead>{"时间"}</TableHead>
                     <TableHead>kind</TableHead>
                     <TableHead>session</TableHead>
-                    <TableHead>{m.habitat_limbic_intensity()}</TableHead>
-                    <TableHead>{m.habitat_limbic_content()}</TableHead>
+                    <TableHead>{"强度"}</TableHead>
+                    <TableHead>{"内容"}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -214,7 +211,7 @@ function LimbicMemoryPage() {
           />
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">{m.habitat_common_click_query_hint()}</p>
+        <p className="text-sm text-muted-foreground">{"点击「查询」加载列表。"}</p>
       )}
     </div>
   );

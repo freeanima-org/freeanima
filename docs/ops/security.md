@@ -1,158 +1,158 @@
 ---
-title: Security
+title: 安全
 ---
 
-# FreeAnima Security
+# 逸灵风安全
 
-> Adopted principles: [architecture.md](../product/architecture.md).
-> Security review and implementation items: [GitHub Issue #33](https://github.com/freeanima-org/freeanima/issues/33), [#46](https://github.com/freeanima-org/freeanima/issues/46).
+> 采纳原则：[architecture.md](../product/architecture.md)。
+> 安全评审与实现项：[GitHub Issue #33](https://github.com/freeanima-org/freeanima/issues/33)、[#46](https://github.com/freeanima-org/freeanima/issues/46)。
 
-## Trust Model (Required Reading for Open-Source Deployment)
+## 信任模型（开源部署必读）
 
-FreeAnima is designed for **single-user local / intranet** deployment:
+逸灵风设计为**单人本地 / 内网**部署：
 
-- Habitat RPC REST (`/rpc/v1/*` except health probe/CORS/echo) requires a **Service API Token** (`Authorization: Bearer fa_at_…`); create with `anima token create`. Binding `127.0.0.1` limits network exposure but does not replace token auth — any local process that can reach the port still needs a valid token for business routes.
-- Default bind is `127.0.0.1`; for LAN access, assess CORS and network isolation yourself.
-- **Do not** expose the service to the public internet without TLS and token-protected clients (see [`remote-access.md`](remote-access.md)）。可选 `http.tls.mode: acme`（Let's Encrypt HTTP-01，公网 `:80` challenge + `:2659` HTTPS）仍须 Token；不替代防火墙 / 反向代理 harden。
+- 栖息地 RPC REST（`/rpc/v1/*`，health 探测 / CORS / echo 除外）需要 **Service API Token**（`Authorization: Bearer fa_at_…`）；用 `anima token create` 创建。绑定 `127.0.0.1` 可限制网络暴露，但**不能**替代 token 鉴权——任何能到达端口的本机进程，业务路由仍需有效 token。
+- 默认 bind 为 `127.0.0.1`；若需局域网访问，请自行评估 CORS 与网络隔离。
+- **禁止**在无 TLS、无 token 保护客户端的情况下把服务暴露到公网（见 [`remote-access.md`](remote-access.md)）。可选 `http.tls.mode: acme`（Let's Encrypt HTTP-01，公网 `:80` challenge + `:2659` HTTPS）仍须 Token；不替代防火墙 / 反向代理加固。
 
-## Credential Responsibilities
+## 凭证职责
 
-| Rule                     | Description                                                                                                                                                                                                                                   |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sole authoritative store | **Vault** (ECS `vault_item` in User + Agent libraries); legacy pass (`~/.password-store`) is read-only on disk after migration — runtime no longer uses pass CLI                                                                              |
-| Versioned updates        | Substantive vault item updates keep up to 10 prior snapshots (`entities.revisions`); restore via Shell `/vault` history. See [`entity-revisions`](../aspects/entity-revisions.md)                                                             |
-| Never commit secrets     | Do not write API keys, tokens, DB passwords into git. Bootstrap `config.yaml`: use `env()` (or keep secrets out of the file). Runtime LLM/MCP settings live in PG — use `vault()` / `env()` there                                             |
-| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, optional Agent vault **cache** (`vault/agent-machine.key`), conversations, memory—recommend `chmod 700`. Agent root key SSOT lives in User vault (PG), not as a durable home secret. |
-| User master password     | Set only in Shell `/vault`、bundled Chat unlock，或 Vault 浏览器扩展选项解锁；**never** sent as a chat message or stored in PG messages                                                                                                       |
-| Chat User vault unlock   | **v1 bundled Chat only**（`src/portal/app/web` / desktop / mobile）；Discord / WeChat gateways cannot unlock User library                                                                                                                     |
-| Browser extension        | 浏览器形态入口（`src/portal/extension`）；Service API Token 存 `chrome.storage.local`；主密码仅扩展内存（默认 15min）；RPC 走 background `host_permissions`。见 [`portal.md`](../modules/portal.md)、[`vault.md`](../modules/vault.md)        |
+| 规则                   | 说明                                                                                                                                                                                                                                   |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 唯一权威存储           | **Vault**（User + Agent 库中的 ECS `vault_item`）；遗留 pass（`~/.password-store`）迁移后磁盘只读——运行时不再使用 pass CLI                                                                                                             |
+| 带版本更新             | 实质性 vault 条目更新最多保留 10 份历史快照（`entities.revisions`）；经壳 `/vault` 历史恢复。见 [`entity-revisions`](../aspects/entity-revisions.md)                                                                                   |
+| 永不提交密钥           | 勿把 API 密钥、token、数据库密码写入 git。引导 `config.yaml`：用 `env()`（或把密钥放在文件外）。运行时 LLM/MCP 设置在 PG——在那里用 `vault()` / `env()`                                                                                 |
+| 运行时目录             | `~/.anima/`（可用 `FREEANIMA_HOME` 覆盖）存放配置、可选 Agent vault **缓存**（`vault/agent-machine.key`）、对话、记忆——建议 `chmod 700`。Agent 根密钥 SSOT 在 User vault（PG），不是家目录持久密钥。                                   |
+| 用户主密码             | 仅在壳 `/vault`、内嵌聊天室解锁，或 Vault 浏览器扩展选项解锁；**永不**作为聊天消息发送或存入 PG messages                                                                                                                               |
+| 聊天室 User vault 解锁 | **仅 v1 内嵌聊天室**（`src/portal/app/web` / desktop / mobile）；Discord / 微信 Gateway **不能**解锁 User 库                                                                                                                           |
+| 浏览器扩展             | 浏览器形态入口（`src/portal/extension`）；Service API Token 存 `chrome.storage.local`；主密码仅扩展内存（默认 15min）；RPC 走 background `host_permissions`。见 [`portal.md`](../modules/portal.md)、[`vault.md`](../modules/vault.md) |
 
-`config.yaml` is **bootstrap only** (read before PostgreSQL is up). Secrets there support plaintext or `env("KEY")` — **not** `vault()` (Vault items live in PG). After Habitat is connected, runtime config in PG may use `vault("item_id", "field")` and `env("KEY")`. Agent tools that need CLI credentials pass per-call `secrets[]` on `terminal_run` / `code_execute` (child env only). Browser form fields use `browser_type` `secret` (typed into the page; never echoed in tool results). User-library resolution still requires an unlocked Chat session on the client.
+`config.yaml` **仅作引导**（PostgreSQL 起来之前读取）。其中的密钥支持明文或 `env("KEY")`——**不是** `vault()`（Vault 条目在 PG）。栖息地连通后，PG 中的运行时配置可用 `vault("item_id", "field")` 与 `env("KEY")`。需要 CLI 凭证的 Agent 工具在 `terminal_run` / `code_execute` 上按次传入 `secrets[]`（仅子进程 env）。浏览器表单字段用 `browser_type` 的 `secret`（键入页面；永不在工具结果中回显）。User 库解析仍要求客户端有已解锁的聊天室会话。
 
-### Vault trust boundaries
+### Vault 信任边界
 
-| Surface    | User library                                                    | Agent library                                                                 |
-| ---------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Habitat PG | Ciphertext + verifier; may hold Agent root key SSOT item        | Ciphertext only; root key not stored as PG plaintext                          |
-| Disk       | —                                                               | Rebuildable cache `vault/agent-machine.key` after unlock (`provision` / lock) |
-| LLM        | Metadata only; subprocess `secrets[]` / `browser_type` `secret` | Metadata only; subprocess `secrets[]` / `browser_type` `secret`               |
-| Shell      | Client master key in memory                                     | Habitat decrypt only when cache unlocked                                      |
+| 面        | User 库                                                | Agent 库                                                           |
+| --------- | ------------------------------------------------------ | ------------------------------------------------------------------ |
+| 栖息地 PG | 密文 + verifier；可持有 Agent 根密钥 SSOT 条目         | 仅密文；根密钥不以 PG 明文存储                                     |
+| 磁盘      | —                                                      | 解锁后可重建的缓存 `vault/agent-machine.key`（`provision` / lock） |
+| LLM       | 仅元数据；子进程 `secrets[]` / `browser_type` `secret` | 仅元数据；子进程 `secrets[]` / `browser_type` `secret`             |
+| 壳        | 客户端主密钥在内存                                     | 仅缓存解锁时由栖息地解密                                           |
 
-## Data Persistence
+## 数据持久化
 
-| Path                               | Content                                   | Encryption                                                                          |
-| ---------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------- |
-| PostgreSQL                         | conversations / memory / Vault ciphertext | No app-layer encryption; User vault holds Agent root key SSOT under master password |
-| `~/.anima/vault/agent-machine.key` | Agent vault **cache** (not SSOT)          | File permissions (`chmod 600`); rebuild via Data maintenance unlock                 |
-| `~/.anima/weixin/`                 | WeChat sync state                         | None                                                                                |
+| 路径                               | 内容                            | 加密                                                      |
+| ---------------------------------- | ------------------------------- | --------------------------------------------------------- |
+| PostgreSQL                         | 对话 / 记忆 / Vault 密文        | 无应用层加密；User vault 在主密码下持有 Agent 根密钥 SSOT |
+| `~/.anima/vault/agent-machine.key` | Agent vault **缓存**（非 SSOT） | 文件权限（`chmod 600`）；经数据维护解锁重建               |
+| `~/.anima/weixin/`                 | 微信同步状态                    | 无                                                        |
 
-**Instance backup set:** PostgreSQL (required) + `FREEANIMA_HOME` for bootstrap/`config.yaml`/TLS/weixin (as needed). Agent root key is recovered from User vault after master-password unlock—cache file is optional. Disk backup of an **unlocked** cache = data access; protect backup media. Without Habitat cache unlock, Agent inject (cron / tools / `vault()`) fails.
+**实例备份集：** PostgreSQL（必需）+ `FREEANIMA_HOME`（引导/`config.yaml`/TLS/weixin，按需）。Agent 根密钥在主密码解锁后从 User vault 恢复——缓存文件可选。**已解锁**缓存的磁盘备份 = 数据可达；请保护备份介质。无栖息地缓存解锁时，Agent 注入（cron / 工具 / `vault()`）失败。
 
-## LLM Tool Risks
+## LLM 工具风险
 
-| Capability                                                 | Risk                                                                                                                                                                                                                                                                                                                                 |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `terminal_run`                                             | Default `shell: false` (argv spawn). Explicit `shell: true` enables pipes/redirection. Optional `secrets[]` decrypts Vault into **that subprocess env only** (not Habitat `process.env`). Always-on hard deny for catastrophic targets—**not** an OS sandbox; bypass via `code_execute` / interpreters remains                       |
-| `file_read` / `file_write` / `file_delete` / `file_search` | Path deny: `/etc`, `/proc`, `/sys`, dangerous `/dev`, `~/.ssh` private keys, `FREEANIMA_HOME/vault`. Heuristic deny ≠ writable-root sandbox                                                                                                                                                                                          |
-| `code_execute`                                             | No shell (Bun/Node argv). Optional `secrets[]` same as `terminal_run`. Arbitrary JS can still use `node:fs`—not a container sandbox                                                                                                                                                                                                  |
-| `browser_type`                                             | Optional `secret` decrypts one Vault field and types it into the page; tool result redacts `typed` as `***` (never plaintext)                                                                                                                                                                                                        |
-| MCP tools                                                  | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined                                                                                                                                                                                                                                |
-| Capability Policy                                          | Hard tool constraints: skill `allowed_tools` + caller (cron/sleep/subagent) optional allow/deny; `deny` overrides `allow`; not a Mask preset wardrobe. Data allow/deny reserved. See [`skills.md`](../modules/skills.md), [`architecture.md`](../product/architecture.md) Capability Policy, [`subagent.md`](../modules/subagent.md) |
-| `vault_list` / `vault_search` / `vault_get_meta`           | Vault metadata only; no secret values. Habitat-only (not MCP)                                                                                                                                                                                                                                                                        |
-| `vault_create` / `vault_update` / `vault_delete`           | Habitat-only (not MCP). create/update seal plaintext into **Agent** library only; tool results are metadata only. User library writes stay in Vault UI                                                                                                                                                                               |
+| 能力                                                       | 风险                                                                                                                                                                                                                                                                                     |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `terminal_run`                                             | 默认 `shell: false`（argv spawn）。显式 `shell: true` 启用管道/重定向。可选 `secrets[]` 把 Vault 解密到**仅该子进程 env**（非栖息地 `process.env`）。对灾难性目标常开硬拒绝——**不是** OS 沙箱；仍可能经 `code_execute` / 解释器绕过                                                      |
+| `file_read` / `file_write` / `file_delete` / `file_search` | 路径拒绝：`/etc`、`/proc`、`/sys`、危险 `/dev`、`~/.ssh` 私钥、`FREEANIMA_HOME/vault`。启发式拒绝 ≠ 可写根沙箱                                                                                                                                                                           |
+| `code_execute`                                             | 无 shell（Bun/Node argv）。可选 `secrets[]` 同 `terminal_run`。任意 JS 仍可用 `node:fs`——不是容器沙箱                                                                                                                                                                                    |
+| `browser_type`                                             | 可选 `secret` 解密一个 Vault 字段并键入页面；工具结果把 `typed` 打码为 `***`（永不明文）                                                                                                                                                                                                 |
+| MCP 工具                                                   | 能力完全由外部 Server 决定；默认 stdio，SSE 鉴权方案未完全定义                                                                                                                                                                                                                           |
+| 能力策略                                                   | 硬工具约束：技能 `allowed_tools` + 调用方（cron/睡眠/subagent）可选 allow/deny；`deny` 覆盖 `allow`；不是 Mask 预设衣橱。数据 allow/deny 预留。见 [`skills.md`](../modules/skills.md)、[`architecture.md`](../product/architecture.md) 能力策略、[`subagent.md`](../modules/subagent.md) |
+| `vault_list` / `vault_search` / `vault_get_meta`           | 仅 Vault 元数据；无密钥值。仅栖息地（非 MCP）                                                                                                                                                                                                                                            |
+| `vault_create` / `vault_update` / `vault_delete`           | 仅栖息地（非 MCP）。create/update 仅向 **Agent** 库密封明文；工具结果仅元数据。User 库写入留在 Vault UI                                                                                                                                                                                  |
 
-### Agent vault usage
+### Agent vault 用法
 
-Requires Habitat Agent cache **unlocked** (Data maintenance → Unlock Agent vault; seeds from User vault SSOT). Otherwise decrypt/seal throws `AGENT_VAULT_LOCKED`.
+需要栖息地 Agent 缓存**已解锁**（数据维护 → 解锁 Agent vault；从 User vault SSOT 播种）。否则解密/密封抛 `AGENT_VAULT_LOCKED`。
 
-1. **Discover** — `vault_list` / `vault_search` / `vault_get_meta` (metadata only; never plaintext in tool results).
-2. **Write (Agent library)** — `vault_create` / `vault_update` / `vault_delete` in Habitat chat only. create/update accept plaintext `secrets` to seal on Habitat; results return metadata only. User library: Vault UI. (Entire vault ToolSet is not MCP-exposed.)
-3. **Use** — pass `secrets: [{ id, env_name, field?, subject_kind? }]` on the same `terminal_run` or `code_execute` call that needs the credential (e.g. `GH_TOKEN` for `gh`); or `secret: { id, field }` on `browser_type` for form fields. For `field: "totp"`, the resolved value is the **current TOTP code** (RFC 6238), not the stored Base32 secret.
-4. **Scope** — plaintext is decrypted for that call only (`secrets[]` → child `env`; `browser_type` `secret` → Camofox type payload). It is **not** written to Habitat `process.env` and **not** returned in tool results. Default `shell=false`: use argv form (`printenv GH_TOKEN`, `gh …`), not `echo $VAR`.
+1. **发现** — `vault_list` / `vault_search` / `vault_get_meta`（仅元数据；工具结果永不含明文）。
+2. **写入（Agent 库）** — 仅在栖息地聊天中用 `vault_create` / `vault_update` / `vault_delete`。create/update 接受明文 `secrets` 在栖息地密封；结果仅返回元数据。User 库：Vault UI。（整个 vault ToolSet 不经 MCP 暴露。）
+3. **使用** — 在需要凭证的同一次 `terminal_run` 或 `code_execute` 调用上传入 `secrets: [{ id, env_name, field?, subject_kind? }]`（如 `GH_TOKEN` 给 `gh`）；或在 `browser_type` 上用 `secret: { id, field }` 填表单。对 `field: "totp"`，解析值为**当前 TOTP 码**（RFC 6238），不是存储的 Base32 密钥。
+4. **作用域** — 明文仅为本调用解密（`secrets[]` → 子进程 `env`；`browser_type` `secret` → Camofox 键入载荷）。**不**写入栖息地 `process.env`，**不**出现在工具结果。默认 `shell=false`：用 argv 形式（`printenv GH_TOKEN`、`gh …`），不要 `echo $VAR`。
 
-## Measures in Place
+## 已有措施
 
-| Measure                    | Description                                                                                                                                                   |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Same-origin RPC            | TanStack Start server functions same-origin by default, no CORS whitelist needed                                                                              |
-| Config API secrets         | Habitat config GET returns secrets in cleartext (`api_key`, MCP `env` / `headers`, etc.). Legacy `"***"` on write-back is restored via `restoreMaskedSecrets` |
-| MCP config                 | `sanitizeConfigForApi` keeps MCP `env` / `headers` plaintext so Habitat MCP page can edit round-trip                                                          |
-| File path policy           | Shared `path-policy` for `file_*` tools: `/etc`, vault, ssh private keys, `/proc`/`/sys`, blocked devices                                                     |
-| Terminal shell default off | `terminal_run` default `shell=false`; pass `shell=true` only when pipes/redirection are needed (friction, not a sandbox)                                      |
-| Terminal command hard deny | Always-on catastrophic command policy (`terminal-command-policy`); cannot be disabled via env                                                                 |
-| Slash commands             | Whitelist routing; every command must produce user-visible feedback; long-running commands send an immediate ack then the final result                        |
-| MCP default stdio          | Reduces port exposure                                                                                                                                         |
-| Vault isolation            | LLM sees vault item metadata only, not decrypted fields                                                                                                       |
-| Service API Token          | Habitat RPC REST `/rpc/v1/*` routes require `Authorization: Bearer fa_at_…` (`service_api_tokens` PG table); health probe/CORS/echo exempt.                   |
-| CI secret scanning         | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)                                                 |
-| `.gitignore`               | `.env.*`, `config.yaml`, private key suffixes                                                                                                                 |
+| 措施                | 说明                                                                                                                             |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| 同源 RPC            | TanStack Start server functions 默认同源，无需 CORS 白名单                                                                       |
+| 配置 API 密钥       | 栖息地 config GET 以明文返回密钥（`api_key`、MCP `env` / `headers` 等）。写回时遗留 `"***"` 经 `restoreMaskedSecrets` 恢复       |
+| MCP 配置            | `sanitizeConfigForApi` 保留 MCP `env` / `headers` 明文，便于栖息地 MCP 页来回编辑                                                |
+| 文件路径策略        | `file_*` 工具共用 `path-policy`：`/etc`、vault、ssh 私钥、`/proc`/`/sys`、阻断设备                                               |
+| 终端 shell 默认关闭 | `terminal_run` 默认 `shell=false`；仅在需要管道/重定向时传 `shell=true`（摩擦，非沙箱）                                          |
+| 终端命令硬拒绝      | 常开灾难性命令策略（`terminal-command-policy`）；不能用 env 关闭                                                                 |
+| Slash 命令          | 白名单路由；每条命令须产生用户可见反馈；长命令先立即 ack 再给最终结果                                                            |
+| MCP 默认 stdio      | 降低端口暴露                                                                                                                     |
+| Vault 隔离          | LLM 只见 vault 条目元数据，不见解密字段                                                                                          |
+| Service API Token   | 栖息地 RPC REST `/rpc/v1/*` 路由需要 `Authorization: Bearer fa_at_…`（`service_api_tokens` PG 表）；health 探测/CORS/echo 豁免。 |
+| CI 密钥扫描         | `.github/workflows/security.yml`（Gitleaks）；GitHub Secret scanning + Push protection（公开仓库免费）                           |
+| `.gitignore`        | `.env.*`、`config.yaml`、私钥后缀                                                                                                |
 
-## Known Gaps (Documentation ≠ Fully Implemented)
+## 已知缺口（文档 ≠ 已完全实现）
 
-The following are planned in code or docs—**deployers must not assume implemented**:
+以下在代码或文档中规划，**部署者请勿假设已实现**：
 
-| Priority | Item                                              | Status                                               |
-| -------- | ------------------------------------------------- | ---------------------------------------------------- |
-| P0       | `file_*` path deny (`/etc/`, vault, ssh, …)       | **Implemented** (`path-policy`)                      |
-| P0       | `terminal_run` default `shell=false`              | **Implemented**                                      |
-| P0       | Terminal catastrophic command hard deny           | **Implemented** (heuristic; ≠ sandbox)               |
-| P0       | `code_execute` no shell                           | **Implemented** (JS FS still open)                   |
-| P1       | Runtime Unix socket `chmod 600` + handshake token | Not implemented                                      |
-| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`    | Not implemented                                      |
-| P2       | (retired) Config API field redaction maintenance  | Dropped — secrets not masked (incl. MCP env/headers) |
-| P3       | IPC / LLM rate limiting                           | None                                                 |
-| P3       | Session disk encryption                           | None                                                 |
+| 优先级 | 项                                             | 状态                                     |
+| ------ | ---------------------------------------------- | ---------------------------------------- |
+| P0     | `file_*` 路径拒绝（`/etc/`、vault、ssh、…）    | **已实现**（`path-policy`）              |
+| P0     | `terminal_run` 默认 `shell=false`              | **已实现**                               |
+| P0     | 终端灾难性命令硬拒绝                           | **已实现**（启发式；≠ 沙箱）             |
+| P0     | `code_execute` 无 shell                        | **已实现**（JS FS 仍开放）               |
+| P1     | 运行时 Unix socket `chmod 600` + 握手 token    | 未实现                                   |
+| P1     | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT` | 未实现                                   |
+| P2     | （退役）配置 API 字段脱敏维护                  | 已放弃——密钥不脱敏（含 MCP env/headers） |
+| P3     | IPC / LLM 限流                                 | 无                                       |
+| P3     | 会话磁盘加密                                   | 无                                       |
 
-## Threat Sources
+## 威胁来源
 
-| Code  | Name                | Description                                                      |
-| ----- | ------------------- | ---------------------------------------------------------------- |
-| **A** | External attack     | Unauthorized access, port exposure                               |
-| **B** | LLM-layer injection | Prompt injection, tool parameter manipulation, command injection |
-| **C** | Agent error         | Mistaken dangerous operations                                    |
-| **D** | Dependency chain    | Third-party lib / MCP compromise                                 |
-| **E** | Data security       | Conversation leak, key leak, memory tampering                    |
+| 代号  | 名称         | 说明                             |
+| ----- | ------------ | -------------------------------- |
+| **A** | 外部攻击     | 未授权访问、端口暴露             |
+| **B** | LLM 层注入   | 提示注入、工具参数操纵、命令注入 |
+| **C** | Agent 误操作 | 误发危险操作                     |
+| **D** | 依赖链       | 第三方库 / MCP 被攻陷            |
+| **E** | 数据安全     | 对话泄漏、密钥泄漏、记忆篡改     |
 
-## Security Matrix
+## 安全矩阵
 
-| Module             | A External                                                 | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |
-| ------------------ | ---------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |
-| **Runtime**        | Default 127.0.0.1 bind                                     | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |
-| **Gateway**        | Token in Vault / env                                       | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |
-| **CLI / Tools**    | Local shell compromised                                    | path deny + terminal hard deny (bypass via `code_execute` possible) | Reduced catastrophic rm   | —                  | Logs may contain conversations     |
-| **HTTP / Habitat** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
-| **MCP**            | SSE auth undefined                                         | Malicious params                                                    | Wrong tool call           | Server compromised | Context may contain sensitive data |
-| **Vault**          | Agent machine key file permissions                         | Metadata-only tools; per-call `secrets[]` / `browser_type` `secret` | Wrong item / env_name     | Web Crypto         | User MP never in PG messages       |
+| 模块              | A 外部                                                     | B LLM 注入                                               | C Agent 误操作      | D 依赖         | E 数据                       |
+| ----------------- | ---------------------------------------------------------- | -------------------------------------------------------- | ------------------- | -------------- | ---------------------------- |
+| **运行时**        | 默认 127.0.0.1 bind                                        | MaxTurnsExceeded                                         | 缺口：限流          | llm 客户端漏洞 | PG 未加密                    |
+| **Gateway**       | Token 在 Vault / env                                       | 恶意消息                                                 | 回复含敏感信息      | SDK 漏洞       | —                            |
+| **CLI / 工具**    | 本机 shell 被控                                            | 路径拒绝 + 终端硬拒绝（可经 `code_execute` 绕过）        | 降低灾难性 rm       | —              | 日志可能含对话               |
+| **HTTP / 栖息地** | `service_api_tokens` Bearer token（所有来源，含 loopback） | BFF 不直接碰 LLM 参数                                    | 配置展示            | Vue/axios      | SSE 明文                     |
+| **MCP**           | SSE 鉴权未定义                                             | 恶意参数                                                 | 错误工具调用        | Server 被攻陷  | 上下文可能含敏感数据         |
+| **Vault**         | Agent machine key 文件权限                                 | 仅元数据工具；按次 `secrets[]` / `browser_type` `secret` | 错误条目 / env_name | Web Crypto     | 用户主密码永不进 PG messages |
 
-## Proposals Pending Review
+## 待评审提案
 
-### P0 — File path safety (landed)
+### P0 — 文件路径安全（已落地）
 
-- Read/write/delete/search deny: `/etc/`, `/proc/`, `~/.ssh/` private keys, vault under `FREEANIMA_HOME`
-- Optional `FREEANIMA_READ_SAFE_ROOT` still **P1**
+- 读/写/删/搜拒绝：`/etc/`、`/proc/`、`~/.ssh/` 私钥、`FREEANIMA_HOME` 下 vault
+- 可选 `FREEANIMA_READ_SAFE_ROOT` 仍为 **P1**
 
-### P0 — Shell execution + command hard deny (landed)
+### P0 — Shell 执行 + 命令硬拒绝（已落地）
 
-- `terminal_run` default `shell=false`; pass `shell=true` only for pipes/redirection (not a sandbox)
-- Always-on deny for catastrophic `rm`/`rmdir`, `mkfs*`, `dd of=/dev/…`, fork bombs, power commands, recursive chmod/chown on `/` or `$HOME`, destructive `find` on system/home roots
-- `code_execute` remains argv-only (no shell); **not** a process sandbox
+- `terminal_run` 默认 `shell=false`；仅在需要管道/重定向时传 `shell=true`（非沙箱）
+- 常开拒绝：灾难性 `rm`/`rmdir`、`mkfs*`、`dd of=/dev/…`、fork bomb、电源命令、对 `/` 或 `$HOME` 的递归 chmod/chown、对系统/家目录根的破坏性 `find`
+- `code_execute` 仍为仅 argv（无 shell）；**不是**进程沙箱
 
-### P1 — Runtime / Gateway
+### P1 — 运行时 / Gateway
 
-- Unix socket `chmod 600` + optional handshake token
-- Write safe root default cwd (`FREEANIMA_WRITE_SAFE_ROOT`)
+- Unix socket `chmod 600` + 可选握手 token
+- 写安全根默认 cwd（`FREEANIMA_WRITE_SAFE_ROOT`）
 
-### P2 — Config Redaction Maintenance
+### P2 — 配置脱敏维护
 
-- When adding secret fields, sync config sanitization in platform
+- 新增密钥字段时，同步平台中的配置消毒逻辑
 
-## First-Deployment Security Checklist
+## 首次部署安全清单
 
-1. Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/config.yaml`; use `env()` for bootstrap secrets — **do not** write plaintext secrets in config; `vault()` is for PG runtime config after Habitat is up
-2. Open Shell `/vault`; set User master password; migrate secrets from legacy pass if needed
-3. `chmod 700 ~/.anima` (includes optional `vault/agent-machine.key` cache)
-4. Bind `127.0.0.1` only, or ensure intranet isolation
-5. Review inbound MCP in Habitat UI (`/habitat/mcp`); set `enabled: false` for untrusted external Servers
-6. Regularly backup `~/.anima/` (and legacy `~/.password-store` if kept); encrypt backup media
-7. Do not commit `.env`, `config.yaml` to git
-8. Do not pass `shell=true` on `terminal_run` unless you intentionally need pipes/redirection
+1. 复制 [`config.example.yaml`](../../config.example.yaml) → `~/.anima/config.yaml`；引导密钥用 `env()`——**不要**在配置里写明文密钥；`vault()` 供栖息地起来后的 PG 运行时配置
+2. 打开壳 `/vault`；设置 User 主密码；按需从遗留 pass 迁移密钥
+3. `chmod 700 ~/.anima`（含可选 `vault/agent-machine.key` 缓存）
+4. 仅 bind `127.0.0.1`，或确保内网隔离
+5. 在栖息地 UI（`/habitat/mcp`）审查入站 MCP；对不信任的外部 Server 设 `enabled: false`
+6. 定期备份 `~/.anima/`（若保留则含遗留 `~/.password-store`）；备份介质加密存储
+7. 勿将 `.env`、`config.yaml` 提交到 git
+8. 除非确需管道/重定向，否则不要在 `terminal_run` 上传 `shell=true`

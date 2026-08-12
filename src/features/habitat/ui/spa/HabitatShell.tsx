@@ -6,7 +6,6 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef } from "react";
 import { getRouter } from "../habitat/router.tsx";
-import { initHabitatLocale } from "../habitat/lib/i18n.ts";
 import {
   habitatSubpathToShellPath,
   resolveHabitatSubpath,
@@ -14,8 +13,6 @@ import {
 } from "./habitat-path.ts";
 // oxlint-disable-next-line import/no-unassigned-import -- Vite side-effect stylesheet
 import "@freeanima/features/habitat/ui/habitat/styles.css";
-
-initHabitatLocale();
 
 /** Embedded Habitat SPA inside app-ui. */
 export function HabitatShell() {

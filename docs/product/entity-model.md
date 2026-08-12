@@ -1,50 +1,50 @@
 ---
-title: Entity Model
+title: 实体模型
 ---
 
-# Unified Entity Model (v0.8)
+# 统一实体模型（v0.8）
 
-FreeAnima stores most structured business data in a single **`entities`** table. Self layer remains physically isolated in [`self_blocks`](../cognition/self-layer.md).
+逸灵风把多数结构化业务数据存入单一 **`entities`** 表。自我层仍物理隔离在 [`self_blocks`](../cognition/self-layer.md)。
 
-## Hierarchy: subject → world → content
+## 层级：subject → world → content
 
-| Layer       | Entity type     | Role                                                |
-| ----------- | --------------- | --------------------------------------------------- |
-| **Subject** | `agent`, `user` | Who acts — exists **before** and **outside** worlds |
-| **World**   | `world`         | Logical namespace / permission boundary             |
-| **Content** | `content`       | Business data (tasks, future memory components, …)  |
+| 层          | 实体类型        | 作用                                    |
+| ----------- | --------------- | --------------------------------------- |
+| **Subject** | `agent`, `user` | 行动者——存在于 world **之前**且**之外** |
+| **World**   | `world`         | 逻辑命名空间 / 权限边界                 |
+| **Content** | `content`       | 业务数据（任务、未来记忆组件等）        |
 
-Subjects do **not** belong to a world. Each subject may have exactly **one default private world** (exclusive, auto-created on subject creation). Content belongs to a world via `world_id` and inherits that world's visibility boundary.
+Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认私有 world**（独占，创建 subject 时自动创建）。Content 通过 `world_id` 归属 world，并继承该 world 的可见性边界。
 
-## Two orthogonal classifications
+## 两种正交分类
 
-| Layer           | Cardinality              | Purpose                                                    |
-| --------------- | ------------------------ | ---------------------------------------------------------- |
-| **Entity type** | 4 fixed values           | Architecture boundary: `content`, `world`, `agent`, `user` |
-| **Components**  | Dynamic, many per entity | Functional markers: `task_list`, `task_item`, …            |
+| 层              | 基数               | 用途                                          |
+| --------------- | ------------------ | --------------------------------------------- |
+| **Entity type** | 4 个固定值         | 架构边界：`content`、`world`、`agent`、`user` |
+| **Components**  | 动态，每实体可多个 | 功能标记：`task_list`、`task_item` 等         |
 
-Component fields live in **`body` JSONB** at the top level. **`primary_component`** records the creation entry / module routing facet; it may become **null** when the entity has no components left (empty shell). List views still route by primary when present.
+组件字段位于顶层 **`body` JSONB**。**`primary_component`** 记录创建入口 / 模块路由面；当实体已无组件（空壳）时可变为 **null**。列表视图在 primary 存在时仍按 primary 路由。
 
-## `entities` table
+## `entities` 表
 
-| Column                          | Role                                                        |
+| 列                              | 作用                                                        |
 | ------------------------------- | ----------------------------------------------------------- |
-| `id`                            | `bigint` identity — global numeric ID                       |
-| `type`                          | One of four entity types                                    |
-| `world_id`                      | Native owning World (FK → `entities.id`)                    |
-| `components`                    | `text[]` component tags                                     |
-| `primary_component`             | Main component for module routing（空壳时为 null）          |
-| `title` / `summary` / `content` | Shared text columns (all components may use)                |
-| `body`                          | JSONB component payload                                     |
-| `pinned`                        | Entity-level pin（任意 component）                          |
+| `id`                            | `bigint` identity — 全局数字 ID                             |
+| `type`                          | 四种实体类型之一                                            |
+| `world_id`                      | 原生所属 World（FK → `entities.id`）                        |
+| `components`                    | `text[]` 组件标签                                           |
+| `primary_component`             | 模块路由主组件（空壳时为 null）                             |
+| `title` / `summary` / `content` | 共享文本列（各组件均可使用）                                |
+| `body`                          | JSONB 组件载荷                                              |
+| `pinned`                        | 实体级置顶（任意 component）                                |
 | `reference_count`               | `[[anima:id]]` 引用权重和                                   |
 | `tag_ids`                       | 关联 `primary_component=tag` 的 entity id 数组（per-World） |
-| `deleted_at`                    | Soft-delete timestamp；null = alive                         |
-| `created_at` / `updated_at`     | Timestamps                                                  |
+| `deleted_at`                    | 软删时间戳；null = 存活                                     |
+| `created_at` / `updated_at`     | 时间戳                                                      |
 
-**Not in v0.8 bootstrap:** relationship table, World nesting/mount, graph DB (PostgreSQL AGE). Subject↔world grants live in `world_config.grants` (no separate permission table).
+**v0.8 引导未含：** 关系表、World 嵌套/挂载、图数据库（PostgreSQL AGE）。Subject↔world 授权在 `world_config.grants`（无单独权限表）。
 
-## Deletion semantics
+## 删除语义
 
 三种正交操作（**勿**用「第 N 层」表述；代码与 UI 只用下列名字）：
 
@@ -56,7 +56,7 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 | **restore**            | 清除 `deleted_at`；**不**自动恢复原容器 membership                                                                                                                                         | `entity.restore` / `restoreEntity`                                   |
 | **purge**              | 物理 `DELETE`；睡眠 cleanup 清理 `deleted_at` 满 **30 天** 的行；`object_file` 在无其它实体引用同 `(world_id, cid)` 时同步删除对象存储 blob                                                | `purgeSoftDeletedEntities` + `gcObjectBlobsAfterEntityPurge`（内部） |
 
-## Morph semantics（形态变换）
+## Morph 语义（形态变换）
 
 与上表正交；**勿**用新建行冒充「邮件变任务」：
 
@@ -72,287 +72,286 @@ Component fields live in **`body` JSONB** at the top level. **`primary_component
 - **归档 ≠ 回收站**：`task_list.closed`、project `status`、semantic `deprecated` 是产品态，与 `deleted_at` 正交。
 - **禁止软删**：`type` ∈ `agent` \| `user` \| `world`；默认 Inbox（`is_default`）清单仍不可删。
 - 空壳由主人在 Entity 模块或工具侧决定：补组件、或 `deleteEntity`。
-- Shell **Entity** 模块（[`docs/modules/entity.md`](../modules/entity.md)）：分页列出存活实体（`updated_at` 倒序）+ 回收站。
+- 壳 **Entity** 模块（[`docs/modules/entity.md`](../modules/entity.md)）：分页列出存活实体（`updated_at` 倒序）+ 回收站。
 - **任务 facet**：清单 / complete / 提醒扫描认 `components` **包含** `task_item`（不要求 primary）；primary 仍为 `email_message` 的挂载任务可进 Inbox。对挂载体执行 `task.delete` → **detach**，禁止误删邮件。
 
-## Subject (`agent` / `user`)
+## Subject（`agent` / `user`）
 
-- Identity is **`type`** plus `agent_config` or `user_config` primary component.
-- Subjects are **not** scoped by `world_id` in a membership sense; row `world_id` stays at bootstrap root (`ENTITY_ROOT_WORLD_ID`) as a table placeholder.
-- **`agent_config` / `user_config` body**: `default_private_world_id` — the subject's single default private world (auto-created on subject create; configurable from private worlds owned by the subject).
-- **Notifications** use subject entity ids as `recipient_id` (see [`notifications.md`](../cognition/notifications.md)); ids come from boot-time **`ResolvedWorldContext`** (and are persisted to `habitat_runtime_config.worlds`).
-- **Service API Token**（`service_api_tokens` 表）绑定 subject entity id；Habitat REST/SAP/MCP 从 Bearer token 解析调用方身份。见 [`remote-access.md`](../ops/remote-access.md)。
+- 身份由 **`type`** 加 `agent_config` 或 `user_config` 主组件构成。
+- Subject **不**以成员关系意义上的 `world_id` 限定范围；行 `world_id` 保持在引导根（`ENTITY_ROOT_WORLD_ID`）作为表占位。
+- **`agent_config` / `user_config` body**：`default_private_world_id`——该 subject 唯一的默认私有 world（创建 subject 时自动创建；可从 subject 拥有的私有 world 配置）。
+- **通知**用 subject 实体 id 作 `recipient_id`（见 [`notifications.md`](../cognition/notifications.md)）；id 来自启动时 **`ResolvedWorldContext`**（并持久化到 `habitat_runtime_config.worlds`）。
+- **Service API Token**（`service_api_tokens` 表）绑定 subject 实体 id；栖息地 REST/SAP/MCP 从 Bearer token 解析调用方身份。见 [`remote-access.md`](../ops/remote-access.md)。
 
-### Boot-time ensure (`worlds` config)
+### 启动时 ensure（`worlds` 配置）
 
-Habitat startup runs **`ensureWorldSubjects()`** once (after migrations, before engine):
+栖息地启动运行一次 **`ensureWorldSubjects()`**（迁移之后、engine 之前）：
 
-- **Optional override**: if `habitat_runtime_config.worlds.user_subject_id` / `agent_subject_id` (or legacy `notifications`) are set, ensures those entity ids exist with the correct `type`.
-- **Unconfigured**: discovers the lowest-id entity of `type=user` / `type=agent`; if none exist, creates them with the next serial id (not fixed `1`/`2`).
-- Ensures each subject has a **default private world** (`default_private_world_id`); private world ids are **not fixed**.
-- If resolved ids differ from config (including when unset), **persists** them back to `habitat_runtime_config.worlds` so the next boot is stable.
-- Binds **`ResolvedWorldContext`** in memory: `user_subject_id`, `agent_subject_id`, `user_world_id`, `agent_world_id`.
-- Type conflict (configured id exists but wrong `type`) **aborts service startup**.
+- **可选覆盖**：若设置了 `habitat_runtime_config.worlds.user_subject_id` / `agent_subject_id`（或遗留 `notifications`），确保这些实体 id 存在且 `type` 正确。
+- **未配置**：发现最低 id 的 `type=user` / `type=agent` 实体；若无则用下一个序列 id 创建（非固定 `1`/`2`）。
+- 确保每个 subject 有**默认私有 world**（`default_private_world_id`）；私有 world id **不固定**。
+- 若解析 id 与配置不同（含未设置），**写回** `habitat_runtime_config.worlds`，使下次启动稳定。
+- 在内存绑定 **`ResolvedWorldContext`**：`user_subject_id`、`agent_subject_id`、`user_world_id`、`agent_world_id`。
+- 类型冲突（配置 id 存在但 `type` 错误）**中止服务启动**。
 
-Legacy SQL bootstrap seeds (public world id=1, Inbox id=2) are removed by migration; default data is **code-owned**, not migration-seeded.
+遗留 SQL 引导种子（公开 world id=1、Inbox id=2）已由迁移移除；默认数据由**代码拥有**，非迁移播种。
 
-## World namespace
+## World 命名空间
 
-- **`type: world`** entities are logical containers (permission/list boundary).
-- Visibility, owner, and grants live in **`world_config` body**:
-  - `private: false` — public world
-  - `private: true` + `owner_subject_id` — private world owned by an `agent` or `user` entity
-  - `default_private: true` — marks the subject's **exclusive** default private world (at most one per `owner_subject_id`)
-  - `grants: [{ subject_id, permission: "read" | "write" }]` — explicit subject grants (**write includes read**; `subject_id` must not equal owner). Configured in Habitat Worlds UI; never hardcoded per subject in source.
-  - `stable_key?: string` — optional **cross-machine logical identity** for a World (e.g. `git:github.com/org/foo`, `novel:…`, `manual:…`). Display name stays on `entities.title`. When set, must be unique among `world_config` rows (partial unique index). Prefer **public** Project Worlds (one per project) for coding notes/tasks — see [`coding.md`](../modules/coding.md). **Never** name this field `repo_key`.
-- **Access rules** (MCP / LLM tools via `resolveToolWorld`):
+- **`type: world`** 实体是逻辑容器（权限/列表边界）。
+- 可见性、所有者与授权在 **`world_config` body**：
+  - `private: false` — 公开 world
+  - `private: true` + `owner_subject_id` — 由 `agent` 或 `user` 实体拥有的私有 world
+  - `default_private: true` — 标记 subject 的**独占**默认私有 world（每个 `owner_subject_id` 至多一个）
+  - `grants: [{ subject_id, permission: "read" | "write" }]` — 显式 subject 授权（**write 含 read**；`subject_id` 不得等于 owner）。在栖息地 Worlds UI 配置；源码中永不按 subject 硬编码。
+  - `stable_key?: string` — 可选的 World **跨机逻辑身份**（如 `git:github.com/org/foo`、`novel:…`、`manual:…`）。显示名仍在 `entities.title`。设置时须在 `world_config` 行间唯一（部分唯一索引）。编码笔记/任务优先用**公开**项目 World（一项目一个）——见 [`coding.md`](../modules/coding.md)。**永不**把该字段命名为 `repo_key`。
+- **访问规则**（MCP / LLM 工具经 `resolveToolWorld`）：
 
-  | World   | Read                   | Write                    |
-  | ------- | ---------------------- | ------------------------ |
-  | public  | all subjects           | owner **or** write grant |
-  | private | owner **or** any grant | owner **or** write grant |
+  | World   | 读                    | 写                      |
+  | ------- | --------------------- | ----------------------- |
+  | public  | 全部 subject          | owner **或** write 授权 |
+  | private | owner **或** 任意授权 | owner **或** write 授权 |
 
-- Owner always has full access without a grant row. Cross-world tool calls must use grants — open-source builds must not special-case subject ids.
-- **LLM tools:** `subject_kind: user|agent` resolves to that subject's default private world and then goes through the **same** `assertSubjectCanAccessWorld` path as an explicit `world_id` (no bypass). Shell SAP/REST `subject_kind` remains UI scope selection (authenticated human switching user/agent worlds) and is not this LLM grant path.
-- Do not confuse with semantic memory **`type=world`** (fact classification in [`memory.md`](../cognition/memory.md)) — that becomes `body.memory_kind=world` after future migration.
+- Owner 始终有完整访问，无需授权行。跨 world 工具调用必须用授权——开源构建不得按 subject id 特判。
+- **LLM 工具：** `subject_kind: user|agent` 解析到该 subject 的默认私有 world，再走与显式 `world_id` **相同**的 `assertSubjectCanAccessWorld` 路径（无旁路）。壳 SAP/REST `subject_kind` 仍是 UI 作用域选择（已认证人类切换 user/agent world），不是这条 LLM 授权路径。
+- 勿与语义记忆 **`type=world`**（[`memory.md`](../cognition/memory.md) 中的事实分类）混淆——未来迁移后变为 `body.memory_kind=world`。
 
-## Content
+## 内容
 
-- **`world_id`** is the sole namespace key; access boundary is inherited from the owning world.
-- Content entities do not store a separate owner column.
+- **`world_id`** 是唯一命名空间键；访问边界继承自所属 world。
+- Content 实体不单独存储 owner 列。
 
-### UI location: Anima URI
+### UI 定位：Anima URI
 
-Shell UI locates entities with **Anima URI** (`anima:{id}?component=…`), not by storing URI strings in PG. FK fields remain numeric ids (e.g. `task_item_id`). Omitting `component` defaults to this entity’s `primary_component` when opening. See [`anima-uri.md`](anima-uri.md) — especially **Layering vs persistence**.
+壳 UI 用 **Anima URI**（`anima:{id}?component=…`）定位实体，而非把 URI 字符串存入 PG。FK 字段仍为数字 id（如 `task_item_id`）。省略 `component` 时打开默认本实体的 `primary_component`。见 [`anima-uri.md`](anima-uri.md)——尤其 **分层 vs 持久化**。
 
-## Task module (first consumer)
+## 任务模块（首个消费者）
 
-TickTick-style lists and items map to:
+滴答清单式列表与条目映射为：
 
-| Concept     | Entity         | Component         |
-| ----------- | -------------- | ----------------- |
-| Task domain | `type=world`   | `world_config`    |
-| List        | `type=content` | `task_list`       |
-| Item (task) | `type=content` | `task_item`       |
-| Occurrence  | `type=content` | `task_occurrence` |
+| 概念         | 实体           | 组件              |
+| ------------ | -------------- | ----------------- |
+| 任务域       | `type=world`   | `world_config`    |
+| 清单         | `type=content` | `task_list`       |
+| 条目（任务） | `type=content` | `task_item`       |
+| 发生次       | `type=content` | `task_occurrence` |
 
-Items reference their list via `body.list_id` (entity id). Task items store **title** and **content** on entity columns; **tags** 使用顶层 `tag_ids`（指向同 World 的 `tag` entity，见下节）。**禁止** `body.tags` 字符串数组（存量已迁移剥离）。Each world gets a **default list** (`is_default: true`, name e.g.「收件箱」) **lazily** on first task use (`ensureDefaultTaskListForWorld`); it cannot be deleted or archived but may be renamed. List **`body.closed: true`** means archived: hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })`; contained task items are kept.
+条目经 `body.list_id`（实体 id）引用清单。任务条目把 **title** 与 **content** 存在实体列；**标签**用顶层 `tag_ids`（指向同 World 的 `tag` entity，见下节）。**禁止** `body.tags` 字符串数组（存量已迁移剥离）。每个 world 在首次使用任务时**懒创建**一个**默认清单**（`is_default: true`，名称如「收件箱」）（`ensureDefaultTaskListForWorld`）；不可删除或归档，但可重命名。清单 **`body.closed: true`** 表示已归档：默认从主侧栏隐藏（`tasklist.list` 除非 `include_closed`），经 `tasklist.patch({ closed: false })` 恢复；所含任务条目保留。
 
 **重复任务**（`task_item.body.recurrence` + `task_occurrence` 完成历史）、**一层子任务**（`body.parent_id`）、**时段**（`start_at` / `due_at`）、**多提醒**（`reminders[]` / 兼容 `remind_at`）见 [`docs/modules/task.md`](../modules/task.md)。滴答 CSV 一次性导入入口在栖息地数据维护。
 
-Task/list **LLM 工具**默认在 **agent subject 专属 private world** 操作，多数调用可省略 `world_id`；按 `id` / `list_id` 操作时从实体反查 world 并校验 caller 权限。**MCP** 工具默认 scope 为 token 绑定 subject 的 private world。Shell SAP/REST 仍通过 `subject_kind` 选择 user/agent world（见下表）。
+任务/清单 **LLM 工具**默认在 **agent subject 专属 private world** 操作，多数调用可省略 `world_id`；按 `id` / `list_id` 操作时从实体反查 world 并校验 caller 权限。**MCP** 工具默认 scope 为 token 绑定 subject 的 private world。壳 SAP/REST 仍通过 `subject_kind` 选择 user/agent world（见下表）。
 
-**Folders** (`body.is_folder: true`) are container nodes in the sidebar tree only — they cannot hold tasks directly (`tasklist.item.create` / `task.moveToList` reject `list_id` pointing at a folder). Child lists and sub-folders reference a parent folder via `body.parent_id` (entity id of a folder, or omitted/null at root). Nesting must not form cycles. **Folders cannot be archived** — only deleted. Deleting a folder recursively removes all sub-folders and moves every contained list to root (`parent_id: null`); list task items are kept. List **`body.closed: true`** means archived (lists only): hidden from the main sidebar by default (`tasklist.list` unless `include_closed`), restorable via `tasklist.patch({ closed: false })` only; **any other mutation on an archived list or its tasks** (rename, move, edit, complete, …) returns `清单已归档`. Deleting a non-folder list soft-deletes its task items when `cascade` is true (default). `sort_order` is scoped among siblings sharing the same `parent_id`.
+**文件夹**（`body.is_folder: true`）仅为侧栏树的容器节点——不能直接容纳任务（`tasklist.item.create` / `task.moveToList` 拒绝指向文件夹的 `list_id`）。子清单与子文件夹经 `body.parent_id`（文件夹实体 id，或根处省略/null）引用父文件夹。嵌套不得成环。**文件夹不可归档**——只能删除。删除文件夹递归移除全部子文件夹，并把每个所含清单移到根（`parent_id: null`）；清单任务条目保留。清单 **`body.closed: true`** 表示已归档（仅清单）：默认从主侧栏隐藏（`tasklist.list` 除非 `include_closed`），仅可经 `tasklist.patch({ closed: false })` 恢复；**对已归档清单或其任务的任何其它变更**（重命名、移动、编辑、完成、…）返回 `清单已归档`。删除非文件夹清单时，若 `cascade` 为 true（默认）则软删其任务条目。`sort_order` 在共享同一 `parent_id` 的同级间作用域。
 
-LLM ToolSets: `@freeanima/feature-task/domain` — `task` (item CRUD + `task_search`) and `tasklist` (list CRUD + `tasklist_search`); load via `toolset_load`. `task_search` searches all lists when `list_id` is omitted. Legacy `tasks` table and `/api/tasks/*` are removed after one-time migration ([`scripts/archive/migrate-tasks-to-entities.ts`](../../scripts/archive/migrate-tasks-to-entities.ts)).
+LLM ToolSets：`@freeanima/feature-task/domain` — `task`（条目 CRUD + `task_search`）与 `tasklist`（清单 CRUD + `tasklist_search`）；经 `toolset_load` 加载。省略 `list_id` 时 `task_search` 搜索全部清单。遗留 `tasks` 表与 `/api/tasks/*` 在一次性迁移后移除（[`scripts/archive/migrate-tasks-to-entities.ts`](../../scripts/archive/migrate-tasks-to-entities.ts)）。
 
-### Shell UI: global Subject scope
+### 壳 UI：全局 Subject 作用域
 
-Habitat startup binds **`ResolvedWorldContext`** (`createTypedHabitatClient().call("worlds.context")` / `GET /rpc/v1/worlds/context`). The product shell exposes a **single User / Agent toggle** in the module header — not an arbitrary `world_id` picker. Selection maps to `user_world_id` / `agent_world_id` and persists in `sessionStorage` for the tab.
+栖息地启动绑定 **`ResolvedWorldContext`**（`createTypedHabitatClient().call("worlds.context")` / `GET /rpc/v1/worlds/context`）。产品壳在模块头暴露**单一 User / Agent 切换**——不是任意 `world_id` 选择器。选择映射到 `user_world_id` / `agent_world_id`，并在该标签页的 `sessionStorage` 持久化。
 
-| Surface          | World binding                                    | Control                        |
-| ---------------- | ------------------------------------------------ | ------------------------------ |
-| Shell header     | `user_world_id` or `agent_world_id`              | global **User / Agent** toggle |
-| `/tasks`         | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
-| `/calendar`      | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
-| `/projects`      | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
-| `/email`         | follows shell scope via SAP `subject_kind`       | none (inherits header)         |
-| `/notifications` | `recipient_kind` + subject entity id             | none (inherits header)         |
-| `/diary`         | subject default private world via `subject_kind` | none (inherits header)         |
-| `/vault`         | default **user** library; optional Agent view    | User: master password lock     |
+| 表面             | World 绑定                                  | 控件                       |
+| ---------------- | ------------------------------------------- | -------------------------- |
+| 壳顶栏           | `user_world_id` 或 `agent_world_id`         | 全局 **User / Agent** 切换 |
+| `/tasks`         | 经 SAP `subject_kind` 跟随壳作用域          | 无（继承顶栏）             |
+| `/calendar`      | 经 SAP `subject_kind` 跟随壳作用域          | 无（继承顶栏）             |
+| `/projects`      | 经 SAP `subject_kind` 跟随壳作用域          | 无（继承顶栏）             |
+| `/email`         | 经 SAP `subject_kind` 跟随壳作用域          | 无（继承顶栏）             |
+| `/notifications` | `recipient_kind` + subject 实体 id          | 无（继承顶栏）             |
+| `/diary`         | 经 `subject_kind` 的 subject 默认私有 world | 无（继承顶栏）             |
+| `/vault`         | 默认 **user** 库；可选 Agent 视图           | User：主密码锁             |
 
-SAP task/email methods accept optional `subject_kind` (defaults: task `user`, email `agent`). Satellites read the shell scope via **`useSubjectScope()`** from `@freeanima/client/portal-sdk`; Habitat REST entity search uses **`resolveWorldIdForSubject()`** with the same scope.
+SAP 任务/邮件方法接受可选 `subject_kind`（默认：任务 `user`，邮件 `agent`）。卫星经 `@freeanima/client/portal-sdk` 的 **`useSubjectScope()`** 读壳作用域；栖息地 REST 实体搜索用 **`resolveWorldIdForSubject()`** 与同一作用域。
 
-Future multi-world browse (e.g. diary calendar aggregation across worlds) should add **module-scoped** filters or Habitat tooling — not a speculative arbitrary world picker.
+未来多 world 浏览（如跨 world 的日记日历聚合）应加**模块作用域**过滤或栖息地工具——而非投机的任意 world 选择器。
 
-## Tag module（轻语义）
+## 标签模块（轻语义）
 
 标签是独立 content entity，**per-World 扁平池**（无 scope/命名空间、无层级、无全局池）：
 
-| Concept | Entity         | Component |
-| ------- | -------------- | --------- |
-| Tag     | `type=content` | `tag`     |
+| 概念 | 实体           | 组件  |
+| ---- | -------------- | ----- |
+| 标签 | `type=content` | `tag` |
 
-- **名称**在 entity `title`；body 仅 `sort_order` / `client_op_id`
+- **名称**在实体 `title`；body 仅 `sort_order` / `client_op_id`
 - 任意 content entity 通过顶层 **`tag_ids`** 挂载标签；含义由「实体类型 + 标签」组合自然产生（不做语义空间区分）
 - **禁止** component `body.tags` 字符串数组（vault / email / task / diary 均已收敛到 `tag_ids`）
 - 同 World 内 title（trim 后）唯一；删除标签时从该 World 所有实体的 `tag_ids` 剔除
-- **Habitat RPC Row：** 只暴露 `tag_ids`（不暴露字符串 `tags`）
+- **栖息地 RPC 行：** 只暴露 `tag_ids`（不暴露字符串 `tags`）
 - **LLM/MCP 工具 DX：** 可同时接受 `tags`（标题 find-or-create）与 `tag_ids`；解析后只写 `tag_ids`
-- **Habitat RPC：** `tag.list` / `tag.search` / `tag.suggest` / `tag.create` / `tag.patch` / `tag.delete` / `tag.setOnEntity`
+- **栖息地 RPC：** `tag.list` / `tag.search` / `tag.suggest` / `tag.create` / `tag.patch` / `tag.delete` / `tag.setOnEntity`
 - **LLM ToolSet：** `tag`（`tag_list` / `tag_search` / `tag_create` / `tag_update` / `tag_delete` / `tag_set_on_entity`）
 - **搜索：** `EntitySearchOpts.tag_ids`（或 `task_item` filters.`tag_ids`）为数组包含过滤（AND）
 - **挂标签 UI：** 共享 `TagPicker`（`features/tag/ui`）— 常用（`tag.suggest` 按目标实体 `primary_component` 频次）+ 搜索（`tag.search`）+ 新建；日记条目 / 日记块 / 任务详情 / Vault 条目共用
 - **列表筛选 UI：** 任务/项目等本地 FilterBar（从当前列表收集已有 tag chips），**不是**挂标签交互，不接入 `TagPicker`、不暴露新建
 - **兼容：** `diary.suggestTags` 仍可用，内部委托同一频次查询（固定 `diary_entry`）
 
-## Project module (v1 spec)
+## 项目模块（v1 规格）
 
-Project management uses a **separate folder tree** from task-list folders. Tasks belong to either the task module (Backlog, `project_id` null) or exactly one project — not both in UI at once.
+项目管理使用与任务清单文件夹**分开的文件夹树**。任务要么属于任务模块（Backlog，`project_id` null），要么恰好属于一个项目——UI 上不同时属于两边。
 
-| Concept        | Entity         | Component        |
-| -------------- | -------------- | ---------------- |
-| Project folder | `type=content` | `project_folder` |
-| Project        | `type=content` | `project`        |
+| 概念       | 实体           | 组件             |
+| ---------- | -------------- | ---------------- |
+| 项目文件夹 | `type=content` | `project_folder` |
+| 项目       | `type=content` | `project`        |
 
-`task_item.body.project_id` links items to a project. Optional project background notes use entity `content` (not `body`). Smart Lists in the task module default to tasks with no `project_id`. Shell route `/projects`; Habitat RPC `projectfolder.*`, `project.*`, `project.item.*`；跨边界归属用 `task.moveToProject` / `task.moveToList`。
+`task_item.body.project_id` 把条目链到项目。可选项目背景说明用实体 `content`（非 `body`）。任务模块智能清单默认只含无 `project_id` 的任务。壳路由 `/projects`；栖息地 RPC `projectfolder.*`、`project.*`、`project.item.*`；跨边界归属用 `task.moveToProject` / `task.moveToList`。
 
-Full spec: [`docs/modules/project.md`](../modules/project.md).
+完整规格：[`docs/modules/project.md`](../modules/project.md)。
 
-## Email module (Estate)
+## 邮件模块（资源层）
 
-Email accounts, threads, and mirrored messages map to:
+邮件账户、线程与镜像消息映射为：
 
-| Concept | Entity         | Component       |
-| ------- | -------------- | --------------- |
-| Account | `type=content` | `email_account` |
-| Thread  | `type=content` | `email_thread`  |
-| Message | `type=content` | `email_message` |
+| 概念 | 实体           | 组件            |
+| ---- | -------------- | --------------- |
+| 账户 | `type=content` | `email_account` |
+| 线程 | `type=content` | `email_thread`  |
+| 消息 | `type=content` | `email_message` |
 
-Accounts store SMTP/IMAP settings and **per-mailbox sync cursors** in `body.sync.mailboxes` (legacy single `mailbox`/`last_uid` migrates on read). Also `mailbox_paths`, `sent_mailbox` / `trash_mailbox` / `drafts_mailbox`, `delete_policy` (`move_to_trash` default). Messages store IMAP UID in `body.imap_uid` + `imap_mailbox`; `\Seen`/`\Flagged` mirrored as `unread` / `flags` (RPC exposes `flagged`). Human-readable subject uses entity `title`. Sync pipeline: LIST + SPECIAL-USE → multi-mailbox incremental UID fetch + FLAGS refresh → RFC822 → CTE/charset decode → strip attachments to **object storage** (`createObjectFile` → `body.attachments[].object_file_id`) → store **decoded content raw** in entity `content` (`text/plain` or `text/html`, see `body.content_type`); pure text always in `body.text`. Do **not** keep the full RFC822 blob on the entity. Send: SMTP (+ optional `attachment_object_file_ids`) then **APPEND** to Sent with `\Seen`（有附件时 MIME 为 multipart）；出站邮件同样写入 `body.attachments`. Delete: MOVE to Trash by default; soft-deleting a message/account also soft-deletes linked `object_file` entities (bytes remain until purge + GC). Habitat may run **IMAP IDLE** on inbox (in-process `Bun.cron` `builtin-email-sync-all` every 5m across all worlds as fallback, not PG `cron_jobs`; auto-sync new inbox mail titles → one notification per owning subject world, manual sync does not). Search is **local entity hybrid** (FTS+trgm) over synced mail with multi filters (`mailbox`/`from`/`to`/`subject`/`unread`/`flagged`/`has_attachment`/dates) — not IMAP SEARCH. UI `/email` is a conventional three-pane mail client (real IMAP folders). `email_read` / `email.message.read`: default body = plain text; `raw=true` = content raw. Attachment bytes via `object_storage.file.get` using `object_file_id`; upload for send via `email.attachment.upload`.
+账户在 `body.sync.mailboxes` 存储 SMTP/IMAP 设置与**每邮箱同步游标**（遗留单一 `mailbox`/`last_uid` 在读取时迁移）。另有 `mailbox_paths`、`sent_mailbox` / `trash_mailbox` / `drafts_mailbox`、`delete_policy`（默认 `move_to_trash`）。消息在 `body.imap_uid` + `imap_mailbox` 存 IMAP UID；`\Seen`/`\Flagged` 镜像为 `unread` / `flags`（RPC 暴露 `flagged`）。可读主题用实体 `title`。同步流水线：LIST + SPECIAL-USE → 多邮箱增量 UID 拉取 + FLAGS 刷新 → RFC822 → CTE/字符集解码 → 附件剥离到**对象存储**（`createObjectFile` → `body.attachments[].object_file_id`）→ 把**解码后的 content 原文**存实体 `content`（`text/plain` 或 `text/html`，见 `body.content_type`）；纯文本始终在 `body.text`。**不要**在实体上保留完整 RFC822 blob。发送：SMTP（+ 可选 `attachment_object_file_ids`）然后 **APPEND** 到 Sent 并带 `\Seen`（有附件时 MIME 为 multipart）；出站邮件同样写入 `body.attachments`。删除：默认 MOVE 到 Trash；软删消息/账户时也软删关联 `object_file` 实体（字节保留到 purge + GC）。栖息地可在收件箱跑 **IMAP IDLE**（进程内 `Bun.cron` `builtin-email-sync-all` 每 5 分钟跨全部 world 作回退，非 PG `cron_jobs`；自动同步新收件箱邮件标题 → 每个所属 subject world 一条通知，手动同步不发）。搜索是**本地实体混合**（FTS+trgm），对已同步邮件带多过滤器（`mailbox`/`from`/`to`/`subject`/`unread`/`flagged`/`has_attachment`/日期）——不是 IMAP SEARCH。UI `/email` 是常规三栏邮件客户端（真实 IMAP 文件夹）。`email_read` / `email.message.read`：默认正文 = 纯文本；`raw=true` = content 原文。附件字节经 `object_storage.file.get` 用 `object_file_id`；发送上传经 `email.attachment.upload`。
 
-LLM ToolSets: `@freeanima/feature-email/domain` — `email-account` (account entities) and `email` (sync, send/receive, search); load via `toolset_load`. User and agent each have accounts in their **default private world**; LLM tools accept optional **`world_id`** (SAP uses `subject_kind`). Legacy `config.yaml` `email.accounts[]` migrates via [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts).
+LLM ToolSets：`@freeanima/feature-email/domain` — `email-account`（账户实体）与 `email`（同步、收发、搜索）；经 `toolset_load` 加载。user 与 agent 各在其**默认私有 world** 有账户；LLM 工具接受可选 **`world_id`**（SAP 用 `subject_kind`）。遗留 `config.yaml` `email.accounts[]` 经 [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts) 迁移。
 
-## Diary module
+## 日记模块
 
-Structured journal entries for **user** and **agent** subjects:
+**user** 与 **agent** 主体的结构化日记条目：
 
-| Concept | Entity         | Component     |
-| ------- | -------------- | ------------- |
-| Entry   | `type=content` | `diary_entry` |
+| 概念 | 实体           | 组件          |
+| ---- | -------------- | ------------- |
+| 条目 | `type=content` | `diary_entry` |
 
-Entries live in each subject's **`default_private_world_id`**. `body.entry_at` is the timeline sort key; optional top-level **`tag_ids`**（指向同 World 的 `tag` entity；历史 `body.tags` 字符串已迁移剥离）。**Body text lives in child `content_block` rows** (`block_type: text`, `parent_id` → entry); the container entity `content` column is unused (empty after one-shot migration).
+条目位于各 subject 的 **`default_private_world_id`**。`body.entry_at` 是时间线排序键；可选顶层 **`tag_ids`**（指向同 World 的 `tag` entity；历史 `body.tags` 字符串已迁移剥离）。**正文在子 `content_block` 行**（`block_type: text`，`parent_id` → 条目）；容器实体 `content` 列未用（一次性迁移后为空）。
 
-- **SAP:** `diary.*` + `diary.block*` — all take `subject_kind: user | agent`. `diary.append` adds a new text block; `diary.patch` updates metadata only; delete cascades blocks.
-- **UI:** shell `/diary` — multi text-block editor with drag reorder.
-- **LLM:** ToolSet `diary` — caller subject private world by default; optional `world_id`. Block-level edits also via ToolSet `content-block`.
+- **SAP：** `diary.*` + `diary.block*` — 均接受 `subject_kind: user | agent`。`diary.append` 新增文本块；`diary.patch` 仅更新元数据；删除级联块。
+- **UI：** 壳 `/diary` — 多文本块编辑器，可拖拽重排。
+- **LLM：** ToolSet `diary` — 默认调用方 subject 私有 world；可选 `world_id`。块级编辑也可经 ToolSet `content-block`。
 
-See [`docs/modules/diary.md`](../modules/diary.md).
+见 [`docs/modules/diary.md`](../modules/diary.md)。
 
-## Calendar module
+## 日历模块
 
-Unified schedule surface for **user** and **agent** subjects:
+**user** 与 **agent** 主体的统一日程表面：
 
-| Concept | Entity         | Component        |
-| ------- | -------------- | ---------------- |
-| Event   | `type=content` | `calendar_event` |
+| 概念 | 实体           | 组件             |
+| ---- | -------------- | ---------------- |
+| 事件 | `type=content` | `calendar_event` |
 
-Events live in each subject's default private world. Body: `start_at` (required), `end_at`, `all_day`, `remind_at` / `last_notified_at` (schedulable), `client_op_id`. Title/notes on entity columns.
+事件位于各 subject 的默认私有 world。Body：`start_at`（必填）、`end_at`、`all_day`、`remind_at` / `last_notified_at`（可调度）、`client_op_id`。标题/备注在实体列。
 
-- **SAP:** `calendar.list` / `create` / `get` / `patch` / `delete` + `calendar.range`（聚合 event + task due + project 区间）
-- **UI:** shell `/calendar` — 月视图 + 日议程
-- **LLM:** ToolSet `calendar`
+- **SAP：** `calendar.list` / `create` / `get` / `patch` / `delete` + `calendar.range`（聚合 event + task due + project 区间）
+- **UI：** 壳 `/calendar` — 月视图 + 日议程
+- **LLM：** ToolSet `calendar`
 
-See [`docs/modules/calendar.md`](../modules/calendar.md).
+见 [`docs/modules/calendar.md`](../modules/calendar.md)。
 
-## Content block
+## Content block（内容块）
 
-Reusable content bricks for **containers** (diary, notes, …). `block_type` is technical only; semantics attach via `components[]` tags (not a nested JSONB `components` column — tags stay `text[]`, fields merge flat into `body`).
+供**容器**（日记、笔记、…）复用的内容砖。`block_type` 仅技术分类；语义经 `components[]` 标签挂载（不是嵌套 JSONB `components` 列——标签仍为 `text[]`，字段扁平合并进 `body`）。
 
-| Concept | Entity         | Component       |
-| ------- | -------------- | --------------- |
-| Block   | `type=content` | `content_block` |
+| 概念 | 实体           | 组件            |
+| ---- | -------------- | --------------- |
+| 块   | `type=content` | `content_block` |
 
-| Body / column     | Role                                                             |
+| Body / 列         | 作用                                                             |
 | ----------------- | ---------------------------------------------------------------- |
 | `body.block_type` | `text` \| `image` \| `audio` \| `video` \| `link_card` \| `file` |
-| `body.parent_id`  | Container entity id (`diary_entry`; later: note)                 |
-| `body.sort_order` | View order; blocks have no semantic precedence                   |
-| `body.url`        | Resource locator for non-text types; null for text               |
-| `content` column  | Text body or media caption                                       |
+| `body.parent_id`  | 容器实体 id（`diary_entry`；日后：note）                         |
+| `body.sort_order` | 视图顺序；块无语义优先级                                         |
+| `body.url`        | 非文本类型的资源定位；文本为 null                                |
+| `content` 列      | 文本正文或媒体说明                                               |
 
-Optional semantic components on the same row (`components[]`; fields merge into flat `body`):
+同行可选语义组件（`components[]`；字段扁平合并进 `body`）：
 
-| Component         | `body` fields                                                                                       |
-| ----------------- | --------------------------------------------------------------------------------------------------- |
-| `limbic`          | `valence`, `arousal`, `intensity`, optional provenance (`kind`, `legacy_id`, …)                     |
-| `narrative`       | `significance`, optional `period_*` / `status` / `legacy_id`                                        |
-| `dream`           | `source_limbic_ids`, `source_conversation_ids`, `episodic_snippets`, `legacy_id`                    |
-| `semantic_ref`    | `entity_id`（指向 `primary_component=semantic_memory` 的 entity）                                   |
-| `semantic_memory` | `memory_kind`, `status`, `source_conversations`, `observed_at`, `occurred_at`, optional `legacy_id` |
+| 组件              | `body` 字段                                                                                     |
+| ----------------- | ----------------------------------------------------------------------------------------------- |
+| `limbic`          | `valence`、`arousal`、`intensity`，可选 provenance（`kind`、`legacy_id`、…）                    |
+| `narrative`       | `significance`，可选 `period_*` / `status` / `legacy_id`                                        |
+| `dream`           | `source_limbic_ids`、`source_conversation_ids`、`episodic_snippets`、`legacy_id`                |
+| `semantic_ref`    | `entity_id`（指向 `primary_component=semantic_memory` 的 entity）                               |
+| `semantic_memory` | `memory_kind`、`status`、`source_conversations`、`observed_at`、`occurred_at`，可选 `legacy_id` |
 
-**Container end-state:** `diary_entry` is the only content-block container. Dream / limbic / autobiographical memories are `content_block` rows with the matching semantic tag under the dated diary for that CST day (agent default private world for sleep writes).
+**容器终态：** `diary_entry` 是唯一 content-block 容器。梦境 / 感性 / 自传记忆是带匹配语义标签的 `content_block` 行，挂在该 CST 日的日记下（睡眠写入用 agent 默认私有 world）。
 
-- **LLM:** ToolSet `content-block` (`@freeanima/features/content-block/domain`) — `content_block_create` / `update` / `delete` / `get` / `list` / `search` / `reorder`. `list` requires container `parent_id`; optional `component=limbic|narrative|semantic_ref|dream` filters semantic tags; `reorder` batch-updates `sort_order`. Optional `world_id`; `parent_id` / block `id` infer world.
-- **Search filters:** `parent_id`, `block_type`, `client_op_id` (whitelist shared by `entity_search` / store).
+- **LLM：** ToolSet `content-block`（`@freeanima/features/content-block/domain`）— `content_block_create` / `update` / `delete` / `get` / `list` / `search` / `reorder`。`list` 需要容器 `parent_id`；可选 `component=limbic|narrative|semantic_ref|dream` 过滤语义标签；`reorder` 批量更新 `sort_order`。可选 `world_id`；`parent_id` / 块 `id` 可推断 world。
+- **搜索过滤：** `parent_id`、`block_type`、`client_op_id`（`entity_search` / store 共享白名单）。
 
-## Dream (sleep pipeline)
+## 梦境（睡眠流水线）
 
-Nightly creative narratives (append-only, at most one dream block per diary day):
+夜间创意叙事（仅追加，每个日记日至多一个梦境块）：
 
-| Concept | Entity         | Components                |
-| ------- | -------------- | ------------------------- |
-| Dream   | `type=content` | `content_block` + `dream` |
+| 概念 | 实体           | 组件                      |
+| ---- | -------------- | ------------------------- |
+| 梦境 | `type=content` | `content_block` + `dream` |
 
-Writes go to the **agent** subject's **`default_private_world_id`**: ensure that day's `diary_entry`, then insert a text `content_block` tagged `dream`. Calendar day comes from the parent diary `entry_at` (CST), not a `dream_day` body field.
+写入 **agent** subject 的 **`default_private_world_id`**：确保当日 `diary_entry`，再插入带 `dream` 标签的文本 `content_block`。日历日来自父日记 `entry_at`（CST），不是 `dream_day` body 字段。
 
-- **Read:** `diary_get` / `content_block_list` / `content_block_search` with `component=dream`.
-- **UI:** Shell `/diary` shows dream blocks with a read-only「梦境」label (no independent `/dream` module).
-- **LLM:** No dedicated `dream` ToolSet; sleep `runDream` still generates blocks.
+- **读：** `diary_get` / `content_block_list` / `content_block_search` 带 `component=dream`。
+- **UI：** 壳 `/diary` 以只读「梦境」标签显示梦境块（无独立 `/dream` 模块）。
+- **LLM：** 无专用 `dream` ToolSet；睡眠 `runDream` 仍生成块。
 
-See [`docs/cognition/dream.md`](../cognition/dream.md).
+见 [`docs/cognition/dream.md`](../cognition/dream.md)。
 
-## Vault module (Estate)
+## Vault 模块（资源层）
 
-Encrypted credentials in two libraries (**User** + **Agent**), ECS components `vault_config` + `vault_item`:
+两个库中的加密凭证（**User** + **Agent**），ECS 组件 `vault_config` + `vault_item`：
 
-| Concept | Entity         | Component      |
-| ------- | -------------- | -------------- |
-| Config  | `type=content` | `vault_config` |
-| Item    | `type=content` | `vault_item`   |
+| 概念 | 实体           | 组件         |
+| ---- | -------------- | ------------ |
+| 条目 | `type=content` | `vault_item` |
 
-| Library | Crypto mode       | Decrypt location                                       | Headless inject                                                 |
-| ------- | ----------------- | ------------------------------------------------------ | --------------------------------------------------------------- |
-| User    | `master_password` | Client (Shell / browser extension)                     | No — Chat unlock、`/vault`、扩展解锁；holds Agent root key SSOT |
-| Agent   | `machine`         | Habitat（cache from User SSOT via `vault.agentKey.*`） | Only while Habitat cache unlocked — cron / tools                |
+| 库    | 加密模式          | 解密位置                                          | 无头注入                                                    |
+| ----- | ----------------- | ------------------------------------------------- | ----------------------------------------------------------- |
+| User  | `master_password` | 客户端（壳 / 浏览器扩展）                         | 否 — 聊天室解锁、`/vault`、扩展解锁；持有 Agent 根密钥 SSOT |
+| Agent | `machine`         | 栖息地（经 `vault.agentKey.*` 从 User SSOT 缓存） | 仅栖息地缓存解锁时 — cron / 工具                            |
 
-Privacy fields live in `body.secrets_enc` + `body.dek_wrapped`. Plaintext metadata: title, `url`, optional `uris[]` (`uri` + `match`), username, optional `last_used_at` (ISO; autofill bump via `vault.touch`, skip revision), top-level **`tag_ids`** (same-world `tag` entities; no `body.tags`), `custom_field_names`, optional `import_refs` (e.g. Bitwarden cipher UUID). Secrets payload may include `password` / `totp` / `notes` / `custom_fields` / structured `card` / `identity`.
+隐私字段在 `body.secrets_enc` + `body.dek_wrapped`。明文元数据：title、`url`、可选 `uris[]`（`uri` + `match`）、username、可选 `last_used_at`（ISO；经 `vault.touch` 自动填充 bump，跳过 revision）、顶层 **`tag_ids`**（同 World `tag` 实体；无 `body.tags`）、`custom_field_names`、可选 `import_refs`（如 Bitwarden cipher UUID）。密钥载荷可含 `password` / `totp` / `notes` / `custom_fields` / 结构化 `card` / `identity`。
 
-**Revisions:** vault items participate in the entity-level `entities.revisions` allowlist (max 10 snapshots on substantive update). Shell `/vault` can list history and restore; see [`docs/aspects/entity-revisions.md`](../aspects/entity-revisions.md). Master-password change must rewrap current and historical `dek_wrapped`. `vault.touch`（仅 `last_used_at`）**必须** `skip_revision`。
+**修订：** vault 条目参与实体级 `entities.revisions` 白名单（实质性更新最多 10 份快照）。壳 `/vault` 可列历史并恢复；见 [`docs/aspects/entity-revisions.md`](../aspects/entity-revisions.md)。更改主密码须重包当前与历史 `dek_wrapped`。`vault.touch`（仅 `last_used_at`）**必须** `skip_revision`。
 
-- **SAP:** `vault.*` — Shell defaults `subject_kind: user`; ToolSet defaults agent world. History: `vault.history.list` / `vault.history.restore`；autofill bump: `vault.touch`（not exposed to LLM ToolSet）。
-- **UI:** shell `/vault` (`@freeanima/features/vault`); Bitwarden 未加密 JSON 导入（`import_refs.bitwarden` 幂等）；bundled Chat 有独立主密码解锁。User 库解锁时自动确保 Agent 根密钥 SSOT；Habitat「数据维护」可解锁 Agent 库（SSOT → `vault.agentKey.provision`）。
-- **Browser extension:** `src/portal/extension` — 直连 Habitat REST + 扩展内主密码会话；见 [`docs/modules/vault.md`](../modules/vault.md)。
-- **LLM:** ToolSet `vault` — Habitat-only (not MCP): metadata list/search/get; `vault_create` / `vault_update` / `vault_delete` (Agent library seal for create/update); credentials via `terminal_run` / `code_execute` `secrets[]` (child env only) or `browser_type` `secret` (typed into page; redacted in tool results); never plaintext secrets in tool results or Habitat `process.env`.
-- **Config:** Runtime PG settings may use `vault("item_id", "field")` (Agent library) or `env("KEY")` (legacy `credential()` removed). Bootstrap `config.yaml` cannot resolve `vault()` — use `env()` or plaintext before PostgreSQL is up.
+- **SAP：** `vault.*` — 壳默认 `subject_kind: user`；ToolSet 默认 agent world。历史：`vault.history.list` / `vault.history.restore`；自动填充 bump：`vault.touch`（不暴露给 LLM ToolSet）。
+- **UI：** 壳 `/vault`（`@freeanima/features/vault`）；Bitwarden 未加密 JSON 导入（`import_refs.bitwarden` 幂等）；内嵌聊天室有独立主密码解锁。User 库解锁时自动确保 Agent 根密钥 SSOT；栖息地「数据维护」可解锁 Agent 库（SSOT → `vault.agentKey.provision`）。
+- **浏览器扩展：** `src/portal/extension` — 直连栖息地 REST + 扩展内主密码会话；见 [`docs/modules/vault.md`](../modules/vault.md)。
+- **LLM：** ToolSet `vault` — 仅栖息地（非 MCP）：元数据 list/search/get；`vault_create` / `vault_update` / `vault_delete`（create/update 密封到 Agent 库）；凭证经 `terminal_run` / `code_execute` `secrets[]`（仅子进程 env）或 `browser_type` `secret`（键入页面；工具结果打码）；工具结果或栖息地 `process.env` 永不明文密钥。
+- **配置：** 运行时 PG 设置可用 `vault("item_id", "field")`（Agent 库）或 `env("KEY")`（遗留 `credential()` 已移除）。引导 `config.yaml` 无法解析 `vault()` — PostgreSQL 起来前用 `env()` 或明文。
 
-Legacy pass (`~/.password-store`) is **not** deleted on disk; migrate entries manually via Shell UI.
+遗留 pass（`~/.password-store`）**不会从磁盘删除**；请经壳 UI 手动迁移条目。
 
-## Subagent profiles
+## Subagent 配置
 
-Named AutoLlm subagent profiles: `type=content`, `primary_component=subagent`. Body fields include `slug`, `skills`, `max_turns`, `allowed_tools`, `denied_tools`. See [`subagent.md`](../modules/subagent.md).
+具名 AutoLlm subagent 配置：`type=content`，`primary_component=subagent`。Body 字段含 `slug`、`skills`、`max_turns`、`allowed_tools`、`denied_tools`。见 [`subagent.md`](../modules/subagent.md)。
 
-## Search
+## 查询
 
-Entity **list** (deterministic browse) and **search** (relevance ranking) are separate ports:
+实体 **list**（确定性浏览）与 **search**（相关性排序）是独立端口：
 
-| Port                      | Role                                                           |
-| ------------------------- | -------------------------------------------------------------- |
-| `EntityStorePort.list`    | Structural filters; stable sort                                |
-| `EntitySearchPort.search` | Hard filters + optional text query; hybrid FTS/trigram via RRF |
+| 端口                      | 作用                                             |
+| ------------------------- | ------------------------------------------------ |
+| `EntityStorePort.list`    | 结构过滤；稳定排序                               |
+| `EntitySearchPort.search` | 硬过滤 + 可选文本查询；经 RRF 的混合 FTS/trigram |
 
-**Scope:** default `world_id`; `global: true` requires an explicit accessible-world allowlist (`resolveWorldsAccessibleBySubject`: public + owned private + grant-readable worlds).
+**作用域：** 默认 `world_id`；`global: true` 需要显式可访问 world 白名单（`resolveWorldsAccessibleBySubject`：公开 + 自有私有 + grant 可读 world）。
 
-**Component filters:** whitelisted per `primary_component` (e.g. `task_item`: `status`, `list_id`, `tag_ids`, `due_today`). Top-level `tag_ids` filter applies across components. Arbitrary JSONPath is forbidden.
+**组件过滤：** 按 `primary_component` 白名单（如 `task_item`：`status`、`list_id`、`tag_ids`、`due_today`）。顶层 `tag_ids` 过滤跨组件适用。禁止任意 JSONPath。
 
-**Tools / API:** `entity_search` (LLM/MCP) and `createTypedHabitatClient().call("entity.searchGet")` / `createTypedHabitatClient().call("entity.searchPost")` (REST `GET /rpc/v1/entity/searchGet` | `POST /rpc/v1/entity/searchPost`) share `EntitySearchPort`. Task UI search box uses the same Habitat RPC endpoint.
+**工具 / API：** `entity_search`（LLM/MCP）与 `createTypedHabitatClient().call("entity.searchGet")` / `createTypedHabitatClient().call("entity.searchPost")`（REST `GET /rpc/v1/entity/searchGet` | `POST /rpc/v1/entity/searchPost`）共享 `EntitySearchPort`。任务 UI 搜索框用同一栖息地 RPC 端点。
 
-See memory hybrid search in [`memory.md`](../cognition/memory.md) for FTS operator syntax; entity search reuses the same query builder.
+FTS 运算符语法见 [`memory.md`](../cognition/memory.md) 记忆混合搜索；实体搜索复用同一查询构建器。
 
-**FTS index:** rebuildable fields live on `search_documents` (jieba → `fts_segmented` → generated `search_fts`; async `embedding`). Entity create/update indexes via `SearchBackend.upsert`. Legacy rows may lack segmentation; run Habitat **FTS** rebuild (`onlyMissing`) to backfill `search_documents`. Business dumps may exclude `search_documents` (see [`database.md`](../ops/database.md)).
+**FTS 索引：** 可重建字段在 `search_documents`（jieba → `fts_segmented` → 生成 `search_fts`；异步 `embedding`）。实体创建/更新经 `SearchBackend.upsert` 索引。遗留行可能缺分词；跑栖息地 **FTS** 重建（`onlyMissing`）回填 `search_documents`。业务转储可排除 `search_documents`（见 [`database.md`](../ops/database.md)）。
 
-## Future migration map
+## 未来迁移图
 
-| Legacy table                   | Target                                                                                                                     |
+| 遗留表                         | 目标                                                                                                                       |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| `dream_memory` / `dream_entry` | `content_block` + `dream`（parent = dated `diary_entry`；**done**；独立 `/dream` UI / ToolSet 已退役）                     |
-| `semantic_memory`              | `primary_component=semantic_memory`（独立 entity；**done**）                                                               |
-| `autobiographical_memory`      | `content_block` + `narrative`（parent = dated `diary_entry`；**done**）                                                    |
-| `limbic_memory`                | `content_block` + `limbic`（parent = dated `diary_entry`；**done**）                                                       |
-| `diary_entry` single body      | Container + child `content_block`s (**done**; migration clears container `content`)                                        |
-| Global temporal digests        | `primary_component=temporal_summary`（day/month/year；见 [`temporal-summary.md`](../cognition/temporal-summary.md)）       |
-| `tasks` (legacy)               | `task_item` (when explicitly migrated)                                                                                     |
-| `config.yaml email.accounts`   | `email_account` (see [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)) |
-| `memory_references`            | relationship table (future)                                                                                                |
+| `dream_memory` / `dream_entry` | `content_block` + `dream`（parent = 按日 `diary_entry`；**已完成**；独立 `/dream` UI / ToolSet 已退役）                    |
+| `semantic_memory`              | `primary_component=semantic_memory`（独立 entity；**已完成**）                                                             |
+| `autobiographical_memory`      | `content_block` + `narrative`（parent = 按日 `diary_entry`；**已完成**）                                                   |
+| `limbic_memory`                | `content_block` + `limbic`（parent = 按日 `diary_entry`；**已完成**）                                                      |
+| `diary_entry` 单 body          | 容器 + 子 `content_block`（**已完成**；迁移清空容器 `content`）                                                            |
+| 全局时间摘要                   | `primary_component=temporal_summary`（day/month/year；见 [`temporal-summary.md`](../cognition/temporal-summary.md)）       |
+| `tasks`（遗留）                | `task_item`（显式迁移时）                                                                                                  |
+| `config.yaml email.accounts`   | `email_account`（见 [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)） |
+| `memory_references`            | 关系表（未来）                                                                                                             |
 
-See [`architecture.md`](architecture.md) for cognitive-layer context.
+认知层上下文见 [`architecture.md`](architecture.md)。

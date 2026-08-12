@@ -28,7 +28,6 @@ import {
   regenerateTemporalSystemRoll,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 import { useHabitatOffsetPagination } from "@freeanima/features/habitat/ui/habitat/lib/use-habitat-offset-pagination.ts";
 
@@ -111,11 +110,7 @@ function TemporalSummaryPage() {
         setOffset(nextOffset);
       } catch (e) {
         logCaughtError("routes/_sidebar/temporal-summary", e);
-        setError(
-          m.habitat_common_load_failed({
-            detail: e instanceof Error ? e.message : String(e),
-          }),
-        );
+        setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
       } finally {
         if (claimOp) {
           setListLoading(false);
@@ -140,11 +135,7 @@ function TemporalSummaryPage() {
       setRolls(data.items ?? []);
     } catch (e) {
       logCaughtError("routes/_sidebar/temporal-summary/system-rolls", e);
-      setError(
-        m.habitat_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       if (claimOp) {
         setListLoading(false);
@@ -174,17 +165,13 @@ function TemporalSummaryPage() {
         period_start: row.period_start,
       })) as { ok?: boolean; summary?: string };
       if (result.ok === false) {
-        setError(result.summary || m.habitat_temporal_summary_regen_failed());
+        setError(result.summary || "重新生成失败");
         return;
       }
       await fetchEntityList(row.window, offsetForPage(currentPage), { silent: true });
     } catch (e) {
       logCaughtError("routes/_sidebar/temporal-summary/regen", e);
-      setError(
-        m.habitat_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setRegenKey(null);
       if (opRef.current === "regen") opRef.current = null;
@@ -195,7 +182,7 @@ function TemporalSummaryPage() {
     const period_start_from = from.trim();
     const period_start_to = to.trim();
     if (!period_start_from || !period_start_to) {
-      setError(m.habitat_temporal_summary_backfill_need_range());
+      setError("补全缺失周期前请同时设置起止日期（YYYY-MM-DD）。");
       return;
     }
     if (opRef.current) return;
@@ -215,20 +202,12 @@ function TemporalSummaryPage() {
         summary?: string;
       };
       setInfo(
-        m.habitat_temporal_summary_backfill_done({
-          missing: String(result.missing?.length ?? 0),
-          filled: String(result.filled?.length ?? 0),
-          failed: String(result.failed?.length ?? 0),
-        }),
+        `补全完成：缺失 ${String(result.missing?.length ?? 0)}，已填 ${String(result.filled?.length ?? 0)}，失败 ${String(result.failed?.length ?? 0)}`,
       );
       await fetchEntityList(window, 0, { silent: true });
     } catch (e) {
       logCaughtError("routes/_sidebar/temporal-summary/backfill", e);
-      setError(
-        m.habitat_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setBackfilling(false);
       if (opRef.current === "backfill") opRef.current = null;
@@ -246,11 +225,7 @@ function TemporalSummaryPage() {
       await fetchRolls({ silent: true });
     } catch (e) {
       logCaughtError("routes/_sidebar/temporal-summary/roll-regen", e);
-      setError(
-        m.habitat_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setRegenKey(null);
       if (opRef.current === "regen") opRef.current = null;
@@ -276,20 +251,12 @@ function TemporalSummaryPage() {
         }
       }
       setInfo(
-        m.habitat_temporal_summary_backfill_done({
-          missing: String(missing.length),
-          filled: String(filled),
-          failed: String(failed),
-        }),
+        `补全完成：缺失 ${String(missing.length)}，已填 ${String(filled)}，失败 ${String(failed)}`,
       );
       await fetchRolls({ silent: true });
     } catch (e) {
       logCaughtError("routes/_sidebar/temporal-summary/roll-backfill", e);
-      setError(
-        m.habitat_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setBackfilling(false);
       if (opRef.current === "backfill") opRef.current = null;
@@ -299,8 +266,12 @@ function TemporalSummaryPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-bold">{m.habitat_nav_temporal_summary()}</h2>
-        <p className="text-sm text-muted-foreground mt-1">{m.habitat_temporal_summary_desc()}</p>
+        <h2 className="text-lg font-bold">{"⏳ 时间摘要"}</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          {
+            "全局日/月/年实体（各周期结束后写入），以及三条反向系统汇总（过往日/月/年），经 Redis 缓存。"
+          }
+        </p>
       </div>
 
       <Tabs
@@ -313,16 +284,10 @@ function TemporalSummaryPage() {
         <TabsList className="w-fit flex-wrap h-auto">
           {ENTITY_TABS.map((w) => (
             <TabsTrigger key={w} id={w}>
-              {w === "day"
-                ? m.habitat_temporal_summary_tab_day()
-                : w === "month"
-                  ? m.habitat_temporal_summary_tab_month()
-                  : m.habitat_temporal_summary_tab_year()}
+              {w === "day" ? "日" : w === "month" ? "月" : "年"}
             </TabsTrigger>
           ))}
-          <TabsTrigger id="system_rolls">
-            {m.habitat_temporal_summary_tab_system_rolls()}
-          </TabsTrigger>
+          <TabsTrigger id="system_rolls">{"系统汇总"}</TabsTrigger>
         </TabsList>
 
         {ENTITY_TABS.map((w) => (
@@ -342,7 +307,7 @@ function TemporalSummaryPage() {
                     isDisabled={toolbarBusy}
                   >
                     {listLoading ? <Spinner className="size-4" /> : null}
-                    {m.habitat_common_search()}
+                    {"查询"}
                   </Button>
                   <Button
                     type="button"
@@ -351,7 +316,7 @@ function TemporalSummaryPage() {
                     isDisabled={toolbarBusy}
                   >
                     {backfilling ? <Spinner className="size-4" /> : null}
-                    {m.habitat_temporal_summary_backfill_missing()}
+                    {"补全缺失"}
                   </Button>
                 </div>
               </div>
@@ -365,16 +330,12 @@ function TemporalSummaryPage() {
                 <TableRow>
                   <TableHead className="w-20">ID</TableHead>
                   <TableHead className="w-32">period_start</TableHead>
-                  <TableHead className="w-20">
-                    {m.habitat_temporal_summary_content_chars()}
-                  </TableHead>
-                  <TableHead className="w-20">{m.habitat_temporal_summary_sources()}</TableHead>
-                  <TableHead className="w-28">
-                    {m.habitat_temporal_summary_empty_reason()}
-                  </TableHead>
+                  <TableHead className="w-20">{"字符数"}</TableHead>
+                  <TableHead className="w-20">{"来源"}</TableHead>
+                  <TableHead className="w-28">{"为空原因"}</TableHead>
                   <TableHead>content</TableHead>
                   <TableHead className="w-40">updated</TableHead>
-                  <TableHead className="w-28">{m.habitat_temporal_summary_actions()}</TableHead>
+                  <TableHead className="w-28">{"操作"}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -413,7 +374,7 @@ function TemporalSummaryPage() {
                             onClick={() => void onRegenerateEntity(row)}
                           >
                             {regenKey === key ? <Spinner className="size-3" /> : null}
-                            {m.habitat_temporal_summary_regenerate()}
+                            {"重新生成"}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -434,7 +395,9 @@ function TemporalSummaryPage() {
 
         <TabsContent id="system_rolls" className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            {m.habitat_temporal_summary_system_rolls_desc()}
+            {
+              "提示词注入汇总：过往日（本月今天之前）、过往月（本年本月之前）、过往年（本年之前）。每条 ≤100 字（硬上限 1.5×）；仅在 Redis 有对应缓存时列出。"
+            }
           </p>
           {error && tab === "system_rolls" ? (
             <StatusAlert variant="error">{error}</StatusAlert>
@@ -448,7 +411,7 @@ function TemporalSummaryPage() {
               isDisabled={toolbarBusy}
             >
               {listLoading ? <Spinner className="size-4" /> : null}
-              {m.habitat_common_search()}
+              {"查询"}
             </Button>
             <Button
               type="button"
@@ -457,19 +420,19 @@ function TemporalSummaryPage() {
               isDisabled={toolbarBusy}
             >
               {backfilling ? <Spinner className="size-4" /> : null}
-              {m.habitat_temporal_summary_backfill_missing()}
+              {"补全缺失"}
             </Button>
           </div>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-36">{m.habitat_temporal_summary_roll_kind()}</TableHead>
+                <TableHead className="w-36">{"汇总类型"}</TableHead>
                 <TableHead className="w-28">anchor</TableHead>
-                <TableHead className="w-24">{m.habitat_temporal_summary_cache()}</TableHead>
+                <TableHead className="w-24">{"缓存"}</TableHead>
                 <TableHead className="w-20">sources</TableHead>
                 <TableHead>summary</TableHead>
                 <TableHead className="w-40">created</TableHead>
-                <TableHead className="w-28">{m.habitat_temporal_summary_actions()}</TableHead>
+                <TableHead className="w-28">{"操作"}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -484,11 +447,7 @@ function TemporalSummaryPage() {
                   <TableRow key={row.kind}>
                     <TableCell className="text-xs">{row.label}</TableCell>
                     <TableCell className="font-mono text-xs">{row.anchor}</TableCell>
-                    <TableCell className="text-xs">
-                      {row.cache_hit
-                        ? m.habitat_temporal_summary_cache_hit()
-                        : m.habitat_temporal_summary_cache_miss()}
-                    </TableCell>
+                    <TableCell className="text-xs">{row.cache_hit ? "命中" : "未命中"}</TableCell>
                     <TableCell className="font-mono text-xs">{row.source_count}</TableCell>
                     <TableCell className="text-xs whitespace-pre-wrap max-w-xl">
                       {row.summary || "—"}
@@ -505,7 +464,7 @@ function TemporalSummaryPage() {
                         onClick={() => void onRegenerateRoll(row.kind)}
                       >
                         {regenKey === row.kind ? <Spinner className="size-3" /> : null}
-                        {m.habitat_temporal_summary_regenerate()}
+                        {"重新生成"}
                       </Button>
                     </TableCell>
                   </TableRow>

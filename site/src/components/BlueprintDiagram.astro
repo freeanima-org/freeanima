@@ -1,29 +1,27 @@
 ---
-import { m } from "../lib/i18n.ts";
-
 const LAYERS = [
   {
     id: "self",
-    name: m.landing_layer_self_name(),
-    tagline: m.landing_layer_self_tagline(),
+    name: "自我层",
+    tagline: "我是谁",
     en: "IDENTITY",
   },
   {
     id: "memory",
-    name: m.landing_layer_memory_name(),
-    tagline: m.landing_layer_memory_tagline(),
+    name: "记忆层",
+    tagline: "我经历的一切",
     en: "MEMORY",
   },
   {
     id: "perception",
-    name: m.landing_layer_perception_name(),
-    tagline: m.landing_layer_perception_tagline(),
+    name: "感知层",
+    tagline: "我如何行动",
     en: "PERCEPTION",
   },
   {
     id: "estate",
-    name: m.landing_layer_estate_name(),
-    tagline: m.landing_layer_estate_tagline(),
+    name: "资源层",
+    tagline: "我的身体与资产",
     en: "RESOURCE",
   },
 ];
@@ -39,7 +37,7 @@ const YEAR = String(new Date().getFullYear());
 ---
 
 <div class="blueprint-diagram">
-  <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} aria-label={m.landing_blueprint_aria()}>
+  <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} aria-label="逸灵风四层架构图">
     {
       LAYERS.map((layer, i) => {
         const y = i * LAYER_H;

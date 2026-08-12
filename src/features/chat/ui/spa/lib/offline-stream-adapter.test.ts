@@ -1,11 +1,4 @@
-import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
-
-mock.module("@paraglide/messages", () => ({ m: {} }));
-mock.module("@paraglide/runtime", () => ({
-  getLocale: () => "zh-cn",
-  locales: ["zh-cn", "en"],
-  setLocale: async (_locale: string) => {},
-}));
+import { afterEach, describe, expect, it, spyOn } from "bun:test";
 
 const { buildHeadlessChatStreamFlushContext, chatStreamAdapter } =
   await import("@freeanima/features/chat/ui/spa/lib/offline-stream-adapter.ts");

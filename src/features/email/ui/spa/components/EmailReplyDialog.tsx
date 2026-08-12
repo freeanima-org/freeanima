@@ -11,7 +11,6 @@ import {
   Spinner,
   Textarea,
 } from "@freeanima/ui-kit";
-import { m } from "@paraglide/messages";
 
 import {
   listObjectFilesForAttach,
@@ -144,10 +143,7 @@ export function EmailReplyDialog({
     for (const file of Array.from(fileList)) {
       if (file.size > EMAIL_ATTACHMENT_MAX_BYTES) {
         setError(
-          m.email_attachment_too_large({
-            name: file.name || "attachment",
-            limit: String(EMAIL_ATTACHMENT_MAX_BYTES / (1024 * 1024)),
-          }),
+          `${file.name || "attachment"} 过大（最大 ${String(EMAIL_ATTACHMENT_MAX_BYTES / (1024 * 1024))} MiB）。`,
         );
         continue;
       }
@@ -228,7 +224,7 @@ export function EmailReplyDialog({
     if (disabled || accountId == null) return;
     const trimmedTo = to.trim();
     if (!trimmedTo) {
-      setError(m.email_reply_to_required());
+      setError("收件人为必填");
       return;
     }
     setSaving(true);
@@ -268,20 +264,20 @@ export function EmailReplyDialog({
       className="max-w-lg"
     >
       <DialogHeader>
-        <DialogTitle>{message ? m.email_reply() : m.email_compose()}</DialogTitle>
+        <DialogTitle>{message ? "回复" : "写邮件"}</DialogTitle>
       </DialogHeader>
       <div className="flex flex-col gap-3 py-2" onPaste={onPaste}>
-        <FormField label={m.email_reply_to()}>
+        <FormField label={"收件人"}>
           <Input value={to} onChange={(e) => setTo(e.target.value)} disabled={disabled || saving} />
         </FormField>
-        <FormField label={m.email_reply_subject()}>
+        <FormField label={"主题"}>
           <Input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             disabled={disabled || saving}
           />
         </FormField>
-        <FormField label={m.email_reply_body()}>
+        <FormField label={"正文"}>
           <Textarea
             className="min-h-40"
             value={body}
@@ -290,9 +286,11 @@ export function EmailReplyDialog({
             onPaste={onPaste}
           />
         </FormField>
-        <FormField label={m.email_attachments()}>
+        <FormField label={"附件"}>
           <div className="space-y-2">
-            <p className="text-muted-foreground text-xs">{m.email_attach_paste_hint()}</p>
+            <p className="text-muted-foreground text-xs">
+              {"可在此粘贴文件或截图，也可从本地或对象库添加。"}
+            </p>
             <input
               id={fileInputId}
               type="file"
@@ -312,7 +310,7 @@ export function EmailReplyDialog({
                 isDisabled={disabled || saving || atLimit}
                 onClick={() => document.getElementById(fileInputId)?.click()}
               >
-                {m.email_attach_files()}
+                {"添加附件"}
               </Button>
               <Button
                 type="button"
@@ -321,7 +319,7 @@ export function EmailReplyDialog({
                 isDisabled={disabled || saving || atLimit}
                 onClick={() => void openLibrary()}
               >
-                {m.email_attach_from_library()}
+                {"从对象库选择"}
               </Button>
             </div>
             {libraryOpen ? (
@@ -330,7 +328,7 @@ export function EmailReplyDialog({
                   <Input
                     value={libraryQuery}
                     onChange={(e) => setLibraryQuery(e.target.value)}
-                    placeholder={m.email_attach_library_search()}
+                    placeholder={"搜索对象文件"}
                     disabled={libraryLoading || saving}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
@@ -346,7 +344,7 @@ export function EmailReplyDialog({
                     isDisabled={libraryLoading || saving}
                     onClick={() => void searchLibrary()}
                   >
-                    {m.email_attach_library_search_action()}
+                    {"搜索"}
                   </Button>
                 </div>
                 {libraryLoading ? (
@@ -354,7 +352,7 @@ export function EmailReplyDialog({
                     <Spinner className="size-5" />
                   </div>
                 ) : libraryItems.length === 0 ? (
-                  <p className="text-muted-foreground text-xs">{m.email_attach_library_empty()}</p>
+                  <p className="text-muted-foreground text-xs">{"未找到对象文件。"}</p>
                 ) : (
                   <ul className="max-h-40 space-y-1 overflow-y-auto text-sm">
                     {libraryItems.map((item) => {
@@ -396,7 +394,7 @@ export function EmailReplyDialog({
                       setLibrarySelected(new Set());
                     }}
                   >
-                    {m.email_cancel()}
+                    {"取消"}
                   </Button>
                   <Button
                     type="button"
@@ -404,7 +402,7 @@ export function EmailReplyDialog({
                     isDisabled={saving || librarySelected.size === 0 || atLimit}
                     onClick={confirmLibrarySelection}
                   >
-                    {m.email_attach_library_add()}
+                    {"添加所选"}
                   </Button>
                 </div>
               </div>
@@ -416,9 +414,7 @@ export function EmailReplyDialog({
                     <span className="min-w-0 flex-1 truncate">
                       {item.kind === "local" ? item.file.name : item.filename}
                       <span className="text-muted-foreground ml-2 text-xs">
-                        {item.kind === "local"
-                          ? formatSize(item.file.size)
-                          : m.email_attach_from_library()}
+                        {item.kind === "local" ? formatSize(item.file.size) : "从对象库选择"}
                       </span>
                     </span>
                     <Button
@@ -428,7 +424,7 @@ export function EmailReplyDialog({
                       isDisabled={saving}
                       onClick={() => setPending((prev) => prev.filter((p) => p.key !== item.key))}
                     >
-                      {m.email_attachment_remove()}
+                      {"移除"}
                     </Button>
                   </li>
                 ))}
@@ -440,10 +436,10 @@ export function EmailReplyDialog({
       </div>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onClose} isDisabled={saving}>
-          {m.email_cancel()}
+          {"取消"}
         </Button>
         <Button type="button" isDisabled={disabled || saving} onClick={() => void onSubmit()}>
-          {saving ? <Spinner className="size-4" /> : m.email_send_action()}
+          {saving ? <Spinner className="size-4" /> : "发送"}
         </Button>
       </DialogFooter>
     </Dialog>

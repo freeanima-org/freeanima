@@ -14,12 +14,11 @@ alwaysApply: true
    - release / Conventional Commits → `release.md`
    - compression algorithm → `compression.md`
    - new packages → `packages.md`
-   - i18n / Paraglide / PO / UI strings → `i18n.md`
+   - 文案语言（无 i18n；UI/docs 中文）→ `i18n.md`
    - frontend features / Habitat RPC vs remote tools → `frontend-features.md`
    - shadcn / ui-kit / Modal → `frontend-ui.md`（规范正文 → [`docs/ui/`](../../docs/ui/overview.md)）
    - 壳子/布局/交互三维度 → `ui-dimensions.md`（产品叙述 → [`docs/ui/dimensions.md`](../../docs/ui/dimensions.md)）
    - Portal 壳 Tauri → `tauri-shell.md`
-   - `docs/**` or `po/zh_CN/*.po` → `docs-i18n.md`
 3. Product architecture (cognitive layers, tools, Gateway) → [`docs/product/architecture.md`](../../docs/product/architecture.md). UI/UX design system → [`docs/ui/`](../../docs/ui/overview.md).
 4. Code overrides docs when they conflict.
 5. When correcting or refining direction, principles, or philosophy, update the matching doc layer per `AGENTS.md` "Principle & direction maintenance" — same task/PR as code; do not leave changes code-only.

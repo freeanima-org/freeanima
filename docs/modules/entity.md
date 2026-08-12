@@ -1,16 +1,16 @@
 ---
-title: Entity module
+title: 实体模块
 ---
 
-# Entity（实体浏览器）
+# 实体（实体浏览器）
 
 跨模块浏览当前 subject world 内全部 `entities` 行，并管理软删回收站。
 
-## Shell
+## 壳
 
 - 路径：`/entity`
 - 导航：模块 id `entity`（`habitat_nav_entity`）
-- 范围：跟随 Shell **User / Agent**（`subject_kind` → 对应 private world）
+- 范围：跟随壳 **User / Agent**（`subject_kind` → 对应 private world）
 
 ## 视图
 
@@ -27,11 +27,14 @@ title: Entity module
 | 类型   | 过滤 `type`：`content` / `world` / `agent` / `user`                               |
 | 主组件 | 过滤 `primary_component`（自由文本，如 `task_item`）                              |
 
-行字段：id、title、primary_component、components、时间戳。点击行打开 **详情弹窗**（`entity.get`：summary / content / body 与元数据）。存活行可 **deleteEntity**（软删）；回收站可 **restore**。满 30 天由睡眠 cleanup **purge** 物理删除；若为 `object_file`，purge 后对无其它引用的 cid 删除对象存储 blob。
+行字段：id、title、primary_component、components、时间戳。点击行打开
+**详情弹窗**（`entity.get`：summary / content / body 与元数据）。存活行可
+**deleteEntity**（软删）；回收站可 **restore**。满 30 天由睡眠 cleanup **purge** 物理删除；若为
+`object_file`，purge 后对无其它引用的 cid 删除对象存储 blob。
 
-## Habitat RPC
+## 栖息地 RPC
 
-| Method                   | 作用                                                            |
+| 方法                     | 作用                                                            |
 | ------------------------ | --------------------------------------------------------------- |
 | `entity.list`            | 存活实体分页；可选 `type` / `primary_component` / `query`       |
 | `entity.trash.list`      | 回收站分页；入参同 `entity.list`                                |
@@ -40,6 +43,9 @@ title: Entity module
 | `entity.restore`         | 从回收站恢复                                                    |
 | `entity.deleteComponent` | 删除单个 component                                              |
 
-`entity.list` / `entity.trash.list` 入参：`subject_kind`、`limit`、`offset`，以及可选 `type`、`primary_component`、`query`。有 `query` 时：id/`anima:` 捷径走 `getEntity`；否则 `searchEntities`（hybrid）。无 `query` 时 `listEntities` + 同条件 `countEntities`。
+`entity.list` / `entity.trash.list` 入参：`subject_kind`、`limit`、`offset`，以及可选
+`type`、`primary_component`、`query`。有 `query` 时：id/`anima:` 捷径走
+`getEntity`；否则 `searchEntities`（hybrid）。无 `query` 时 `listEntities` + 同条件
+`countEntities`。
 
-删除语义总表见 [`entity-model.md`](../product/entity-model.md)「Deletion semantics」。
+删除语义总表见 [`entity-model.md`](../product/entity-model.md)「删除语义」。

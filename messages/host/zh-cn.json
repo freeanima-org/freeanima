@@ -1,7 +1,0 @@
-{
-  "error_internal": "内部错误",
-  "error_unauthorized": "未授权",
-  "error_not_found": "未找到",
-  "error_bad_request": "请求无效",
-  "prompt_locale_hint": "在合适时使用用户语言回复。"
-}

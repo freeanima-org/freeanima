@@ -1,70 +1,70 @@
 ---
-title: Camofox Browser Profile & Session
+title: "Camofox 浏览器 Profile 与 Session"
 ---
 
-# Camofox Browser Profile & Session
+# Camofox 浏览器 Profile 与 Session
 
-> Browser tools talk to Camofox over HTTP. **Profile** holds login state; **session** is a work line under that profile.
+> 浏览器工具经 HTTP 与 Camofox 通信。**Profile** 持有登录态；**session** 是该 profile 下的工作线。
 
-Configure under Habitat settings → Advanced → **browser** / **camofox** (`browser.camofox.*` in `habitat_runtime_config`).
+在栖息地设置 → 高级 → **browser** / **camofox** 配置（`habitat_runtime_config` 中的 `browser.camofox.*`）。
 
-## Profile vs session
+## Profile 与 session
 
-| Concept     | Config / field                                                            | What it owns                                               |
-| ----------- | ------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| **Profile** | Camofox `userId` (`user_id`, or derived when `managed_persistence`)       | Cookies, login, local storage — “who is browsing”          |
-| **Session** | Camofox `sessionKey` (`session_key`, or derived per Habitat conversation) | Tab / task line under that profile — create and adopt tabs |
+| 概念        | 配置 / 字段                                                    | 持有内容                                          |
+| ----------- | -------------------------------------------------------------- | ------------------------------------------------- |
+| **Profile** | Camofox `userId`（`user_id`，或 `managed_persistence` 时派生） | Cookie、登录、本地存储 — 「谁在浏览」             |
+| **Session** | Camofox `sessionKey`（`session_key`，或按栖息地对话派生）      | 该 profile 下的标签页 / 任务线 — 创建并采纳标签页 |
 
-One profile can have many sessions. Same profile + different sessions share login state but keep separate tab lines.
+一个 profile 可有多个 session。同 profile + 不同 session 共享登录态，但保持独立标签线。
 
-Habitat `conversationId` is only the in-process map key for the cached Camofox session object; it is not Camofox’s `sessionKey` itself (often derived from it).
+栖息地 `conversationId` 仅是进程内缓存 Camofox session 对象的映射键；不是 Camofox 的 `sessionKey` 本身（常由其派生）。
 
-## Resolution order
+## 解析顺序
 
-When a Habitat conversation first opens a Camofox session:
+栖息地对话首次打开 Camofox session 时：
 
-1. **`user_id` set** → use that profile; `session_key` if set, else `task_` + conversation id prefix. Ignores `managed_persistence`.
-2. Else **`managed_persistence` not false** (default **true**) → stable `userId` from `~/.anima/browser_auth/camofox`; `sessionKey` derived per conversation.
-3. Else (`managed_persistence: false`) → ephemeral random `userId` — no persistent profile.
+1. **已设 `user_id`** → 用该 profile；有 `session_key` 则用之，否则 `task_` + 对话 id 前缀。忽略 `managed_persistence`。
+2. 否则 **`managed_persistence` 不为 false**（默认 **true**）→ 从 `~/.anima/browser_auth/camofox` 得到稳定 `userId`；`sessionKey` 按对话派生。
+3. 否则（`managed_persistence: false`）→ 临时随机 `userId` — 无持久 profile。
 
-`session_key` alone does nothing; it only applies when `user_id` is set.
+单独设 `session_key` 无效；仅在已设 `user_id` 时生效。
 
-## Fields
+## 字段
 
-| Field                 | Default (when unset) | Meaning                                                                  |
-| --------------------- | -------------------- | ------------------------------------------------------------------------ |
-| `base_url`            | (required for tools) | Camofox REST base URL                                                    |
-| `timeout_ms`          | `30000`              | Per-request HTTP timeout                                                 |
-| `managed_persistence` | `true`               | Reuse a stable local profile when `user_id` is unset                     |
-| `adopt_existing_tab`  | `true`               | After restart, try to adopt an existing tab for the same profile/session |
-| `user_id`             | unset                | Explicit Camofox profile id (highest priority)                           |
-| `session_key`         | unset                | Explicit session key under that profile (only with `user_id`)            |
+| 字段                  | 默认（未设时） | 含义                                                   |
+| --------------------- | -------------- | ------------------------------------------------------ |
+| `base_url`            | （工具必需）   | Camofox REST 基址                                      |
+| `timeout_ms`          | `30000`        | 单次 HTTP 超时                                         |
+| `managed_persistence` | `true`         | 未设 `user_id` 时复用稳定本地 profile                  |
+| `adopt_existing_tab`  | `true`         | 重启后尝试为同一 profile/session 采纳已有标签页        |
+| `user_id`             | 未设           | 显式 Camofox profile id（最高优先级）                  |
+| `session_key`         | 未设           | 该 profile 下的显式 session key（仅与 `user_id` 同用） |
 
-Unset booleans are treated as **on** (`!== false`). Set explicitly to `false` to disable.
+未设的布尔视为**开**（`!== false`）。显式设为 `false` 以关闭。
 
-## Per-call profile (`browser_navigate.user_id`)
+## 按次 profile（`browser_navigate.user_id`）
 
-`browser_navigate` accepts an optional `user_id` (Camofox profile). Other `browser_*` tools keep using the conversation’s cached session.
+`browser_navigate` 接受可选 `user_id`（Camofox profile）。其他 `browser_*` 工具继续使用该对话缓存的 session。
 
-| Call                                       | Behavior                                                                                                                                                                                           |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Omit `user_id`                             | Reuse the conversation session if one exists; otherwise resolve via Habitat config (order above)                                                                                                   |
-| Pass `user_id` matching the cached profile | Navigate on the current tab                                                                                                                                                                        |
-| Pass a different `user_id`                 | Drop the in-process cache for this conversation and open a new tab under that profile (`sessionKey` = `task_` + conversation id prefix). Does **not** delete the previous Camofox profile remotely |
+| 调用                                | 行为                                                                                                                           |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| 省略 `user_id`                      | 若已有对话 session 则复用；否则按栖息地配置解析（上序）                                                                        |
+| 传入与缓存 profile 相同的 `user_id` | 在当前标签页导航                                                                                                               |
+| 传入不同的 `user_id`                | 丢弃本对话进程内缓存，在该 profile 下打开新标签（`sessionKey` = `task_` + 对话 id 前缀）。**不**远程删除先前的 Camofox profile |
 
-A successful navigate result includes `user_id` so the agent can confirm the active profile. Omitting `user_id` after a prior tool override keeps that override for the conversation; it does not fall back to config until a new session is created (e.g. process restart or session cleared).
+成功导航结果含 `user_id`，便于 Agent 确认当前 profile。先前工具覆盖后省略 `user_id` 会保持该覆盖，直到新建 session（如进程重启或清空 session）才回落到配置。
 
-Tool override applies only to that Habitat conversation’s cache. Habitat `browser.camofox.user_id` remains the default when no tool override is in effect.
+工具覆盖仅作用于该栖息地对话的缓存。无工具覆盖时，栖息地 `browser.camofox.user_id` 仍为默认。
 
-## Recommended setups
+## 推荐配置
 
-| Goal                                      | Config                                                                 |
-| ----------------------------------------- | ---------------------------------------------------------------------- |
-| Remember logins on this Habitat (default) | Leave fields unset, or `managed_persistence: true`                     |
-| Ephemeral browsing (no shared login)      | `managed_persistence: false`                                           |
-| Share / pin a Camofox profile             | Set `user_id`; add `session_key` only if you need a fixed session line |
-| Switch profiles inside one conversation   | Pass `user_id` on `browser_navigate`                                   |
+| 目标                          | 配置                                                  |
+| ----------------------------- | ----------------------------------------------------- |
+| 在本栖息地记住登录（默认）    | 字段留空，或 `managed_persistence: true`              |
+| 临时浏览（不共享登录）        | `managed_persistence: false`                          |
+| 共享 / 固定某 Camofox profile | 设 `user_id`；仅需固定 session 线时再加 `session_key` |
+| 同一对话内切换 profile        | 在 `browser_navigate` 上传入 `user_id`                |
 
-## See also
+## 另见
 
-Implementation: `src/host/capabilities/tools/browser-camofox.ts`.
+实现：`src/host/capabilities/tools/browser-camofox.ts`。

@@ -12,7 +12,6 @@ import {
 } from "@freeanima/ui-kit";
 import { DatePickerInput } from "@freeanima/ui-kit/form/DatePickerInput.tsx";
 import { TimePickerInput } from "@freeanima/ui-kit/form/TimePickerInput.tsx";
-import { m } from "@paraglide/messages";
 
 import type { CalendarEventRow } from "../lib/api.ts";
 import {
@@ -123,55 +122,53 @@ export function EventEditorDialog({
   return (
     <Dialog isOpen={open} onOpenChange={(next) => !next && onClose()} className="max-w-md">
       <DialogHeader>
-        <DialogTitle>
-          {target?.mode === "edit" ? m.calendar_edit_event() : m.calendar_new_event()}
-        </DialogTitle>
+        <DialogTitle>{target?.mode === "edit" ? "编辑事件" : "新建事件"}</DialogTitle>
       </DialogHeader>
       <div className="flex flex-col gap-3 px-1 py-2">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="cal-title">{m.calendar_field_title()}</Label>
+          <Label htmlFor="cal-title">{"标题"}</Label>
           <Input id="cal-title" value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
         <div className="flex items-center justify-between gap-3">
-          <Label htmlFor="cal-allday">{m.calendar_all_day()}</Label>
+          <Label htmlFor="cal-allday">{"全天"}</Label>
           <Switch id="cal-allday" isSelected={allDay} onChange={setAllDay} />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="flex flex-col gap-1.5">
-            <Label>{m.calendar_field_start()}</Label>
+            <Label>{"开始日期"}</Label>
             <DatePickerInput value={startDate} onChange={setStartDate} />
           </div>
           {!allDay ? (
             <div className="flex flex-col gap-1.5">
-              <Label>{m.calendar_field_start_time()}</Label>
+              <Label>{"开始时间"}</Label>
               <TimePickerInput value={startTime} onChange={setStartTime} />
             </div>
           ) : null}
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="flex flex-col gap-1.5">
-            <Label>{m.calendar_field_end()}</Label>
+            <Label>{"结束日期"}</Label>
             <DatePickerInput value={endDate} onChange={setEndDate} />
           </div>
           {!allDay ? (
             <div className="flex flex-col gap-1.5">
-              <Label>{m.calendar_field_end_time()}</Label>
+              <Label>{"结束时间"}</Label>
               <TimePickerInput value={endTime} onChange={setEndTime} />
             </div>
           ) : null}
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="flex flex-col gap-1.5">
-            <Label>{m.calendar_field_remind()}</Label>
+            <Label>{"提醒日期"}</Label>
             <DatePickerInput value={remindDate} onChange={setRemindDate} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>{m.calendar_field_remind_time()}</Label>
+            <Label>{"提醒时间"}</Label>
             <TimePickerInput value={remindTime} onChange={setRemindTime} />
           </div>
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="cal-content">{m.calendar_field_content()}</Label>
+          <Label htmlFor="cal-content">{"备注"}</Label>
           <Textarea
             id="cal-content"
             value={content}
@@ -189,7 +186,7 @@ export function EventEditorDialog({
             isDisabled={saving}
             onPress={() => void onDelete()}
           >
-            {m.calendar_delete_event()}
+            {"删除"}
           </Button>
         ) : null}
         {target?.mode === "edit" && onConvertToTask ? (
@@ -199,18 +196,18 @@ export function EventEditorDialog({
             isDisabled={saving}
             onPress={() => void onConvertToTask()}
           >
-            {m.calendar_convert_to_task()}
+            {"转为任务"}
           </Button>
         ) : null}
         <Button type="button" variant="ghost" onPress={onClose} isDisabled={saving}>
-          {m.calendar_cancel()}
+          {"取消"}
         </Button>
         <Button
           type="button"
           onPress={() => void handleSave()}
           isDisabled={saving || !title.trim()}
         >
-          {m.calendar_save()}
+          {"保存"}
         </Button>
       </DialogFooter>
     </Dialog>

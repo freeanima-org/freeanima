@@ -9,7 +9,6 @@ import {
   habitatNavItems,
 } from "@freeanima/features/habitat/ui/habitat/lib/habitat-nav.ts";
 import { resetApiClientCache } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 
 export const Route = createFileRoute("/_sidebar")({
   component: HabitatLayout,
@@ -51,7 +50,7 @@ function HabitatLayout() {
     const active = items
       .filter((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
       .toSorted((a, b) => b.to.length - a.to.length)[0];
-    return active?.label ?? m.habitat_title();
+    return active?.label ?? "栖息地";
   }, [pathname]);
 
   useEffect(() => {
@@ -67,7 +66,7 @@ function HabitatLayout() {
       {probeEnabled ? <HabitatConnectionBanner state={state} onRetry={() => void retry()} /> : null}
       <div className="flex-1 min-h-0">
         <ResponsiveSidebarLayout
-          title={m.habitat_title()}
+          title={"栖息地"}
           headerTitle={headerTitle}
           showSidebarHeader={false}
           sidebar={() => <HabitatSidebarNav />}

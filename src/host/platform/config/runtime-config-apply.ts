@@ -77,7 +77,6 @@ async function applyLlm(config: Config): Promise<void> {
 
 function applyI18n(cfg: RuntimeConfig): void {
   applyHostI18nConfig({
-    locale: cfg.i18n?.locale,
     timezone: cfg.i18n?.timezone,
   });
 }

@@ -11,7 +11,6 @@ import {
 import { Button, Card, CardContent, Input, Spinner } from "@freeanima/ui-kit";
 import { ConfirmDialog, EmptyState, StatusAlert } from "@freeanima/ui-kit/composite";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
-import { m } from "@paraglide/messages";
 import type { VaultItemMetaRowPayload } from "@freeanima/shared/rpc-contract";
 import {
   extractCustomFieldNames,
@@ -591,10 +590,10 @@ export function VaultApp() {
           size="sm"
           variant="outline"
           isDisabled={loading}
-          aria-label={m.habitat_common_refresh()}
+          aria-label={"刷新"}
           onClick={() => void reload()}
         >
-          {loading ? <Spinner className="size-4" /> : m.habitat_common_refresh()}
+          {loading ? <Spinner className="size-4" /> : "刷新"}
         </Button>
       </div>
 

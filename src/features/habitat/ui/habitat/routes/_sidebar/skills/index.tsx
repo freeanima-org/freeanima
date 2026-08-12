@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { listHabitatSkills } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { catchWithFallback } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/skills/")({
@@ -19,19 +18,19 @@ function SkillsPage() {
   return (
     <div className="space-y-4 p-4">
       <div>
-        <h1 className="text-xl font-semibold">{m.habitat_nav_skills()}</h1>
-        <p className="text-sm text-muted-foreground">{m.habitat_skills_intro()}</p>
+        <h1 className="text-xl font-semibold">{"技能"}</h1>
+        <p className="text-sm text-muted-foreground">{"只读技能目录（Commons + Agent 私有）。"}</p>
       </div>
       {skills.length === 0 ? (
-        <StatusAlert variant="info">{m.habitat_skills_empty()}</StatusAlert>
+        <StatusAlert variant="info">{"尚未注册技能。"}</StatusAlert>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{m.habitat_skills_col_name()}</TableHead>
-              <TableHead>{m.habitat_skills_col_description()}</TableHead>
-              <TableHead>{m.habitat_skills_col_origin()}</TableHead>
-              <TableHead>{m.habitat_skills_col_status()}</TableHead>
+              <TableHead>{"名称"}</TableHead>
+              <TableHead>{"描述"}</TableHead>
+              <TableHead>{"来源"}</TableHead>
+              <TableHead>{"状态"}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

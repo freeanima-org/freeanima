@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button, Spinner } from "@freeanima/ui-kit";
 import { EntityIdLabel } from "@freeanima/ui-kit/composite";
-import { m } from "@paraglide/messages";
 
 import {
   downloadEmailAttachmentBytes,
@@ -73,7 +72,7 @@ function EmailAttachmentList({ attachments }: { attachments: EmailAttachmentRow[
       }
     } catch (e) {
       const detail = e instanceof Error ? e.message : String(e);
-      setError(m.email_attachment_download_failed({ detail }));
+      setError(`下载附件失败：${detail}`);
     } finally {
       setBusyId(null);
     }
@@ -82,7 +81,7 @@ function EmailAttachmentList({ attachments }: { attachments: EmailAttachmentRow[
   return (
     <div className="border-border mb-4 space-y-2 rounded-md border p-3">
       <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-        {m.email_attachments()}
+        {"附件"}
       </div>
       <ul className="space-y-2">
         {attachments.map((att) => (
@@ -102,11 +101,7 @@ function EmailAttachmentList({ attachments }: { attachments: EmailAttachmentRow[
                   isDisabled={busyId === att.file_id}
                   onClick={() => void withBlob(att, "preview")}
                 >
-                  {busyId === att.file_id ? (
-                    <Spinner className="size-3" />
-                  ) : (
-                    m.email_attachment_preview()
-                  )}
+                  {busyId === att.file_id ? <Spinner className="size-3" /> : "预览"}
                 </Button>
               ) : null}
               <Button
@@ -119,7 +114,7 @@ function EmailAttachmentList({ attachments }: { attachments: EmailAttachmentRow[
                 {busyId === att.file_id && !isImageAttachment(att) ? (
                   <Spinner className="size-3" />
                 ) : (
-                  m.email_attachment_download()
+                  "下载"
                 )}
               </Button>
             </div>
@@ -132,7 +127,7 @@ function EmailAttachmentList({ attachments }: { attachments: EmailAttachmentRow[
           <div className="text-muted-foreground text-xs">{previewName}</div>
           <img
             src={previewUrl}
-            alt={previewName ?? m.email_attachment_preview()}
+            alt={previewName ?? "预览"}
             className="border-border max-h-80 max-w-full rounded-md border object-contain"
           />
         </div>
@@ -163,7 +158,7 @@ export function EmailMessageDetail({
   if (!message) {
     return (
       <div className="text-muted-foreground flex flex-1 items-center justify-center p-8 text-sm">
-        {m.habitat_email_select_message()}
+        {"选择左侧邮件查看正文"}
       </div>
     );
   }
@@ -178,7 +173,7 @@ export function EmailMessageDetail({
         <div className="ml-auto flex flex-wrap gap-1">
           {onReply ? (
             <Button type="button" size="sm" isDisabled={writesDisabled} onClick={onReply}>
-              {m.email_reply()}
+              {"回复"}
             </Button>
           ) : null}
           {showUnreadActions
@@ -191,7 +186,7 @@ export function EmailMessageDetail({
                     isDisabled={writesDisabled}
                     onClick={onMarkRead}
                   >
-                    {m.email_mark_read()}
+                    {"标记为已读"}
                   </Button>
                 )
               : onMarkUnread && (
@@ -202,13 +197,13 @@ export function EmailMessageDetail({
                     isDisabled={writesDisabled}
                     onClick={onMarkUnread}
                   >
-                    {m.email_mark_unread()}
+                    {"设为未读"}
                   </Button>
                 )
             : null}
           {onCopyId ? (
             <Button type="button" size="sm" variant="ghost" onClick={onCopyId}>
-              {m.email_copy_id()}
+              {"复制 ID"}
             </Button>
           ) : null}
           {onDelete ? (
@@ -220,7 +215,7 @@ export function EmailMessageDetail({
               isDisabled={writesDisabled}
               onClick={onDelete}
             >
-              {m.email_delete_message()}
+              {"删除邮件"}
             </Button>
           ) : null}
         </div>
@@ -228,28 +223,26 @@ export function EmailMessageDetail({
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
         <div className="text-muted-foreground mb-4 space-y-1">
           <div>
-            {m.habitat_email_from()} {message.from}
+            {"发件人："} {message.from}
           </div>
           <div>
-            {m.habitat_email_to()} {message.to}
+            {"收件人："} {message.to}
           </div>
           <div>
-            {m.habitat_email_date()} {formatWhen(message.sent_at)}
+            {"时间："} {formatWhen(message.sent_at)}
           </div>
         </div>
         {attachments.length > 0 ? <EmailAttachmentList attachments={attachments} /> : null}
         {isHtml && message.body ? (
           <iframe
-            title={message.subject || m.habitat_email_no_subject()}
+            title={message.subject || "(无主题)"}
             className="border-border h-[min(70vh,48rem)] w-full rounded-md border bg-white"
             sandbox=""
             referrerPolicy="no-referrer"
             srcDoc={buildEmailHtmlSrcDoc(message.body)}
           />
         ) : (
-          <pre className="wrap-break-word whitespace-pre-wrap">
-            {message.body || m.habitat_email_no_body()}
-          </pre>
+          <pre className="wrap-break-word whitespace-pre-wrap">{message.body || "(无正文)"}</pre>
         )}
       </div>
     </article>

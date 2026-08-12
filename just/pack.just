@@ -25,7 +25,7 @@ _ensure-tauri-android: _ensure-android
 
 # ─── 产物 ───────────────────────────────────────────
 
-# Web UI dist（paraglide + vite）
+# Web UI dist（vite）
 [no-cd]
 web: _deps
   {{ bun }} scripts/build-web.ts

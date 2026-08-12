@@ -1,42 +1,42 @@
 ---
-title: Installation
+title: 安装
 ---
 
-# Installation
+# 安装
 
-> Deploy FreeAnima on your machine — from source, or with a Linux standalone executable.
-> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands) · [`remote-access.md`](remote-access.md) (Service API Token / LAN).
+> 在本机部署逸灵风 —— 从源码，或用 Linux 独立可执行文件。
+> 安装后：[`security.md`](security.md)（凭证、绑定地址）· [`database.md`](database.md)（PostgreSQL）· [`service.md`](service.md)（运行时命令）· [`remote-access.md`](remote-access.md)（Service API Token / 局域网）。
 
-## Choose a path
+## 选择安装方式
 
-| Path           | Best for                                  | Host OS               | Bun on host | Notes                                                                                |
-| -------------- | ----------------------------------------- | --------------------- | ----------- | ------------------------------------------------------------------------------------ |
-| **Source**     | Contributors, day-to-day development      | Linux, macOS, Windows | Required    | You install PostgreSQL (pgvector) + optional Redis; bootstrap `env()`, runtime Vault |
-| **Standalone** | Production / self-host without a checkout | **Linux x64 only**    | Not needed  | Same Habitat runtime as `anima service`; same DB/Redis/secrets expectations          |
+| 路径         | 最适合                      | 宿主 OS               | 宿主是否需 Bun | 说明                                                                         |
+| ------------ | --------------------------- | --------------------- | -------------- | ---------------------------------------------------------------------------- |
+| **源码**     | 贡献者、日常开发            | Linux、macOS、Windows | 必需           | 自行安装 PostgreSQL（pgvector）+ 可选 Redis；bootstrap `env()`，运行时 Vault |
+| **独立发行** | 无 checkout 的生产 / 自托管 | **仅 Linux x64**      | 不需要         | 与 `anima service` 同一栖息地运行时；同样的 DB/Redis/密钥预期                |
 
-Both paths run the same Habitat runtime (REST `/api` + Habitat RPC `/rpc/v1` + engine). Standalone exposes it as `anima service`; source uses `just dev` / `just dev habitat`. PostgreSQL with **pgvector** is **required**. Redis is optional for caches/KV and **recommended when multiple Habitat processes share one PostgreSQL** — background jobs use distributed locks under `anima:lock:*` (sleep-cycle, cron, reminders, FTS rebuild, migrate); without Redis, locks degrade to process-local only. Habitat lifecycle notify uses in-process HookRegistry `subscribe`.
+两条路径跑同一栖息地运行时（REST `/api` + 栖息地 RPC `/rpc/v1` + engine）。独立发行以 `anima service` 暴露；源码用 `just dev` / `just dev habitat`。带 **pgvector** 的 PostgreSQL **必需**。Redis 对缓存/KV 可选，**多栖息地进程共用一个 PostgreSQL 时推荐** —— 后台任务用 `anima:lock:*` 下的分布式锁（sleep-cycle、cron、reminders、FTS rebuild、migrate）；无 Redis 时锁退化为仅进程内。栖息地生命周期通知用进程内 HookRegistry `subscribe`。
 
-**Windows:** there is no standalone Habitat binary. Use [source development](windows-dev.md) (Git Bash + Docker) or run Habitat on Linux/WSL/remote and connect the Desktop NSIS shell.
+**Windows：** 无独立栖息地二进制。用[源码开发](windows-dev.md)（Git Bash + Docker），或在 Linux/WSL/远程跑栖息地并连接桌面 NSIS 壳。
 
-## Shared prerequisites
+## 共用前置条件
 
-| Component      | Version / notes                                                                                                                                             |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Bun**        | >= 1.3.14 — required for **source** installs ([bun.sh](https://bun.sh); Windows: `winget install Oven-sh.Bun`); not required for standalone binaries        |
-| **just**       | [casey/just](https://github.com/casey/just) — Justfile needs **bash** on `PATH` (Git for Windows on native Windows; see [`windows-dev.md`](windows-dev.md)) |
-| **PostgreSQL** | 17 recommended; extensions: `vector`, FTS helpers — see [`database.md`](database.md) (Docker is the cross-platform default)                                 |
-| **Redis**      | 7.x recommended; defaults to `127.0.0.1:6379` when configured                                                                                               |
-| **Vault**      | Recommended for runtime secrets after Habitat is up; bootstrap `config.yaml` uses `env()` only ([`security.md`](security.md#credential-responsibilities))   |
+| 组件           | 版本 / 说明                                                                                                                                                |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Bun**        | >= 1.3.14 — **源码**安装必需（[bun.sh](https://bun.sh)；Windows：`winget install Oven-sh.Bun`）；独立二进制不需要                                          |
+| **just**       | [casey/just](https://github.com/casey/just) — Justfile 需要 `PATH` 上的 **bash**（原生 Windows 用 Git for Windows；见 [`windows-dev.md`](windows-dev.md)） |
+| **PostgreSQL** | 推荐 17；扩展：`vector`、FTS 辅助 — 见 [`database.md`](database.md)（Docker 为跨平台默认）                                                                 |
+| **Redis**      | 推荐 7.x；配置后默认 `127.0.0.1:6379`                                                                                                                      |
+| **Vault**      | 栖息地起来后推荐用于运行时密钥；bootstrap `config.yaml` 仅用 `env()`（[`security.md`](security.md#credential-responsibilities)）                           |
 
-Data directory: `~/.anima/` on Unix, `%USERPROFILE%\.anima` on Windows (override with `FREEANIMA_HOME`). Back it up with your database.
+数据目录：Unix 为 `~/.anima/`，Windows 为 `%USERPROFILE%\.anima`（可用 `FREEANIMA_HOME` 覆盖）。与数据库一并备份。
 
 ---
 
-## Standalone (Linux x64)
+## 独立发行（Linux x64）
 
-Release publishes 三端产物（与 canary 对称）：updater 固定名 `anima-linux-x64.tar.gz`、`freeanima-desktop-windows-x64-setup.exe`、`freeanima-mobile-android.apk`（另附同内容的 `{ver}-{channel}` 版本化文件名）。CI 固定 upload 签名；本地 `just dev tauri-android` 仍为默认 debug 签名。Standalone tarball 内含单文件可执行文件 `anima`；版本、service build-meta、migrations 与 Web UI 均嵌入该二进制。
+Release 发布三端产物（与 canary 对称）：updater 固定名 `anima-linux-x64.tar.gz`、`freeanima-desktop-windows-x64-setup.exe`、`freeanima-mobile-android.apk`（另附同内容的 `{ver}-{channel}` 版本化文件名）。CI 固定 upload 签名；本地 `just dev tauri-android` 仍为默认 debug 签名。Standalone tarball 内含单文件可执行文件 `anima`；版本、service build-meta、migrations 与 Web UI 均嵌入该二进制。
 
-### 1. Install (recommended)
+### 1. 安装（推荐）
 
 ```bash
 curl -fsSL https://freeanima.com/install | bash
@@ -65,9 +65,9 @@ curl -fsSL https://freeanima.com/install | CHANNEL=canary PROXY=ghfast-top bash
 curl -fsSL https://raw.githubusercontent.com/freeanima-org/freeanima/main/scripts/install.sh | bash
 ```
 
-Install prefix keeps versioned binaries as `anima_<version>` plus an `anima` symlink to the current version (up to 7 versions retained). Do not unpack into a git checkout. Ensure `~/.local/bin` is on `PATH`.
+安装前缀以 `anima_<version>` 保留版本化二进制，外加指向当前版本的 `anima` 符号链接（最多保留 7 个版本）。不要解压进 git checkout。确保 `~/.local/bin` 在 `PATH` 上。
 
-Manual unpack (same layout as the installer):
+手动解压（与安装器相同布局）：
 
 ```bash
 mkdir -p ~/.anima/standalone && cd ~/.anima/standalone
@@ -78,9 +78,9 @@ ln -sfn anima_0.9.2 anima
 mkdir -p ~/.local/bin && ln -sfn "$PWD/anima" ~/.local/bin/anima
 ```
 
-Or from a checkout: `just install cli` (builds then installs to the same default prefix).
+或从 checkout：`just install cli`（构建后安装到同一默认前缀）。
 
-Installed standalone 可用内置升级换轨与本机版本切换：
+已安装的独立发行可用内置升级换轨与本机版本切换：
 
 ```bash
 anima upgrade --channel canary   # 跟随 canary tip
@@ -89,9 +89,9 @@ anima versions                   # 列出本机 anima_*（* = current）
 anima versions use 0.9.2         # 切换 current symlink
 ```
 
-**Mobile Android APK**（`freeanima-mobile-android.apk`）：从 GitHub Release（`canary` 或版本 tag）下载 sideload。CI 使用固定 upload 签名，同 channel 内可覆盖升级。若曾安装旧版未固定签名的包、密钥轮换后、或从旧包名 `org.freeanima.app` 迁移，需先卸载后再安装（正式包名 `com.freeanima.portal`；本机 local 包为 `com.freeanima.portal.dev`）。
+**移动 Android APK**（`freeanima-mobile-android.apk`）：从 GitHub Release（`canary` 或版本 tag）下载 sideload。CI 使用固定 upload 签名，同 channel 内可覆盖升级。若曾安装旧版未固定签名的包、密钥轮换后、或从旧包名 `org.freeanima.app` 迁移，需先卸载后再安装（正式包名 `com.freeanima.portal`；本机 local 包为 `com.freeanima.portal.dev`）。
 
-### 2. Configure
+### 2. 配置
 
 ```bash
 mkdir -p ~/.anima
@@ -100,15 +100,15 @@ chmod 700 ~/.anima
 cp /path/to/freeanima-checkout/config.example.yaml ~/.anima/config.yaml
 ```
 
-Minimum production settings in `~/.anima/config.yaml` (**bootstrap only**):
+`~/.anima/config.yaml` 中最低生产设置（**仅 bootstrap**）：
 
-- **`database.url`** — PostgreSQL connection string (required)
+- **`database.url`** — PostgreSQL 连接字符串（必需）
 
-**Runtime settings** (LLM providers, compression, MCP, etc.) are stored in PostgreSQL (`habitat_runtime_config`). Edit them in the Shell app under **Settings → Habitat 服务 → 服务配置**. Habitat hosts `/web/*` whenever Web dist is present (no bootstrap switch).
+**运行时设置**（LLM 连接、压缩、MCP 等）存在 PostgreSQL（`habitat_runtime_config`）。在壳应用 **设置 → 栖息地服务 → 服务配置** 中编辑。有 Web dist 时栖息地即托管 `/web/*`（无 bootstrap 开关）。
 
-Prefer `env()` for bootstrap secrets in `config.yaml` (Vault is unavailable before PostgreSQL). Use Vault / `vault()` for runtime secrets in PG. See [`security.md`](security.md#credential-responsibilities).
+bootstrap 密钥在 `config.yaml` 中优先用 `env()`（PostgreSQL 起来前 Vault 不可用）。PG 中的运行时密钥用 Vault / `vault()`。见 [`security.md`](security.md#credential-responsibilities)。
 
-### 3. Start the service
+### 3. 启动服务
 
 ```bash
 anima service start              # background (systemd user unit when available)
@@ -116,11 +116,11 @@ anima service start --foreground # debug — logs to stdout
 anima service status
 ```
 
-Default bind: `127.0.0.1:2658`（Habitat API：`/api`，Habitat RPC：`/rpc/v1`；Web UI：`/web/*` when dist exists).
+默认绑定：`127.0.0.1:2658`（栖息地 API：`/api`，栖息地 RPC：`/rpc/v1`；有 dist 时 Web UI：`/web/*`）。
 
-### 4. Upgrade
+### 4. 升级
 
-Installed standalone (independent prefix, e.g. `~/.anima/standalone`):
+已安装的独立发行（独立前缀，如 `~/.anima/standalone`）：
 
 ```bash
 anima upgrade                 # 当前 bake channel 内升级（release：semver；canary：commit）
@@ -130,24 +130,24 @@ anima upgrade --proxy ghproxy-net
 anima upgrade --check --channel canary --proxy ghfast-top
 ```
 
-升级时 Habitat 在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进制瞬间短暂停服并自动拉起。未运行 service 时仅写入新的 `anima_<version>` 并切换 `anima` symlink，不会自动启动。
+升级时栖息地在**下载与校验阶段保持在线**；若 service 原先在运行，仅在替换二进制瞬间短暂停服并自动拉起。未运行 service 时仅写入新的 `anima_<version>` 并切换 `anima` symlink，不会自动启动。
 
 ```bash
 anima service restart   # 手动升级二进制后若未自动拉起时使用
 anima versions use <id> # 回退到本机已保留的旧版本（同样会按需停/启 service）
 ```
 
-Re-run the curl installer to reinstall/overwrite the same prefix, or from a checkout rebuild and reinstall (never into the repo):
+重新跑 curl 安装器可重装/覆盖同一前缀，或从 checkout 重建并再安装（永不装进仓库内）：
 
 ```bash
 just install cli
 ```
 
-`dist/anima-executable/` is build staging only — not a runtime prefix.
+`dist/anima-executable/` 仅构建暂存 —— 不是运行时前缀。
 
-### Build from a checkout
+### 从 checkout 构建
 
-Always runs `just pack web` before compiling the binary (embeds current Web dist):
+编译二进制前总会跑 `just pack web`（嵌入当前 Web dist）：
 
 ```bash
 just pack cli
@@ -157,17 +157,17 @@ just install cli
 anima --version
 ```
 
-Override prefix: `FREEANIMA_INSTALL_PREFIX=/opt/freeanima just install cli` or `bun scripts/install-cli.ts --prefix /opt/freeanima --skip-build`.
+覆盖前缀：`FREEANIMA_INSTALL_PREFIX=/opt/freeanima just install cli` 或 `bun scripts/install-cli.ts --prefix /opt/freeanima --skip-build`。
 
 ---
 
-## Source (repository)
+## 源码（仓库）
 
-For development, unreleased fixes, or running from a git checkout.
+用于开发、未发布修复或从 git checkout 运行。
 
-### 1. Clone and install dependencies
+### 1. 克隆并安装依赖
 
-**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · Vault (recommended) · [just](https://github.com/casey/just) (bash on `PATH` — Git Bash on Windows). Windows setup: [`windows-dev.md`](windows-dev.md).
+**前置：** Bun >= 1.3.14 · PostgreSQL（pgvector）· Redis（推荐）· Vault（推荐）· [just](https://github.com/casey/just)（`PATH` 上有 bash —— Windows 用 Git Bash）。Windows 搭建：[`windows-dev.md`](windows-dev.md)。
 
 ```bash
 git clone https://github.com/freeanima-org/freeanima.git
@@ -175,16 +175,16 @@ cd freeanima
 bun install
 ```
 
-### 2. Run the CLI from the checkout
+### 2. 从 checkout 跑 CLI
 
-Do **not** symlink source `cli.ts` into a global bin. From the checkout:
+**不要**把源码 `cli.ts` 符号链接到全局 bin。在 checkout 内：
 
 ```bash
 bun src/portal/cli/cli.ts -- --help
 just dev
 ```
 
-To install a **standalone** binary into an independent prefix (default `~/.anima/standalone`) for a PATH `anima` command:
+要把**独立**二进制装到独立前缀（默认 `~/.anima/standalone`）以便 `PATH` 上有 `anima`：
 
 ```bash
 just install cli
@@ -192,7 +192,7 @@ just install cli
 anima --version
 ```
 
-### 3. Configure and start
+### 3. 配置并启动
 
 ```bash
 mkdir -p ~/.anima
@@ -200,7 +200,7 @@ cp config.example.yaml ~/.anima/config.yaml
 # configure database (bootstrap); LLM in Shell Habitat 服务配置 (see database.md, security.md)
 ```
 
-**Dev** (Habitat + Vite HMR; never auto-builds Web). Prefer `just dev` for multi-worktree:
+**开发**（栖息地 + Vite HMR；永不自动构建 Web）。多 worktree 优先 `just dev`：
 
 ```bash
 just dev            # Habitat random ≥10000 + Web from :5000; FREEANIMA_URL wires Vite proxy only
@@ -209,9 +209,9 @@ just dev habitat     # random ≥10000 (not production 2658); writes ~/.anima/de
 FREEANIMA_URL=http://127.0.0.1:<habitat-port> just dev web   # default :5000; browser Habitat = page origin
 ```
 
-Browser Web defaults Habitat URL to the **page origin** (same in production Habitat-hosted `/web` and Vite). Dev injects Service API Token from `dev-web.token` automatically. If `http.tls.enabled` / `DEV_HTTPS=1`, Vite serves HTTPS using `~/.anima/tls` (Habitat stays plain HTTP). Source `just dev habitat` does **not** host `/web` dist — use Vite (`WEB_DEV_PORT`, default 5000).
+浏览器 Web 默认栖息地 URL 为**页面 origin**（生产栖息地托管的 `/web` 与 Vite 相同）。开发从 `dev-web.token` 自动注入 Service API Token。若 `http.tls.enabled` / `DEV_HTTPS=1`，Vite 用 `~/.anima/tls` 提供 HTTPS（栖息地仍为明文 HTTP）。源码 `just dev habitat` **不**托管 `/web` dist —— 用 Vite（`WEB_DEV_PORT`，默认 5000）。
 
-**Source deploy** (Habitat hosts `/web/*` when dist exists): build Web first, then start — startup does not run `just pack web`. Source-tree `anima` has no `service` command.
+**源码部署**（有 dist 时栖息地托管 `/web/*`）：先构建 Web 再启动 —— 启动不会跑 `just pack web`。源码树的 `anima` 无 `service` 命令。
 
 ```bash
 just pack web
@@ -219,20 +219,20 @@ just dev habitat
 # UI: http://127.0.0.1:2658/web/chat
 ```
 
-### 4. Development checks
+### 4. 开发检查
 
 ```bash
 just check    # typecheck + lint + format + changed unit tests
 just test     # full unit + integration (integration may use Docker for temp PG)
 ```
 
-Upgrade manually: `git pull`, `bun install`, then restart the service. `anima upgrade` / `/upgrade` print instructions only.
+手动升级——`git pull`、`bun install`，然后重启服务。`anima upgrade` 与 `/upgrade` 仅打印说明。
 
 ---
 
-## Verify installation
+## 验证安装
 
-Requires the **standalone** `anima` binary (`anima service` is not on the source-tree CLI).
+需要**独立发行**的 `anima` 二进制（源码树 CLI 上没有 `anima service`）。
 
 ```bash
 anima service start
@@ -243,13 +243,13 @@ anima service status
 curl -s -H "Authorization: Bearer <fa_at_...>" http://127.0.0.1:2658/rpc/v1/status/get | jq '.version, .memory_kb'
 ```
 
-If status fails, check PostgreSQL connectivity, that migrations completed ([`database.md`](database.md#troubleshooting)), and that a valid Service API Token is configured.
+若 status 失败，检查 PostgreSQL 连通性、迁移是否完成（[`database.md`](database.md#troubleshooting)），以及是否已配置有效的 Service API Token。
 
-## Next steps
+## 后续步骤
 
-1. **Security** — bootstrap `env()` + runtime Vault, `chmod 700 ~/.anima` (Windows: see [`windows-dev.md`](windows-dev.md)), do not expose Habitat without auth ([`security.md`](security.md))
-2. **Remote access** — Service API Token + LAN / local HTTPS for personal mobile/remote Habitat ([`remote-access.md`](remote-access.md))
-3. **Database** — backups, extensions, manual migrations if needed ([`database.md`](database.md))
-4. **Windows development** — winget / Git Bash / Docker ([`windows-dev.md`](windows-dev.md))
-5. **Operations** — start/stop, memory metrics ([`service.md`](service.md))
-6. **Architecture** — memory pipeline, self layer, tools ([`product/architecture.md`](../product/architecture.md))
+1. **安全** — bootstrap `env()` + 运行时 Vault，`chmod 700 ~/.anima`（Windows：见 [`windows-dev.md`](windows-dev.md)），无认证勿暴露栖息地（[`security.md`](security.md)）
+2. **远程访问** — Service API Token + 局域网 / 本机 HTTPS，供个人移动/远程栖息地（[`remote-access.md`](remote-access.md)）
+3. **数据库** — 备份、扩展、必要时手动迁移（[`database.md`](database.md)）
+4. **Windows 开发** — winget / Git Bash / Docker（[`windows-dev.md`](windows-dev.md)）
+5. **运维** — 启停、内存指标（[`service.md`](service.md)）
+6. **架构** — 记忆管线、自我层、工具（[`product/architecture.md`](../product/architecture.md)）

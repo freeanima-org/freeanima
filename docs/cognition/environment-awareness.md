@@ -1,24 +1,24 @@
 ---
-title: Environment Awareness
+title: 环境感知
 ---
 
-# Environment Awareness
+# 环境感知
 
-> Habitat-process loop: collect environment + health markers → compare baseline → notify on change, stay quiet otherwise.
-> Related: [Issue #44](https://github.com/freeanima-org/freeanima/issues/44) (partner-facing health warning), [`self-layer.md`](self-layer.md), [`notifications.md`](notifications.md).
+> 栖息地进程循环：采集环境 + 健康标记 → 与基线比较 → 有变化则通知，否则保持安静。
+> 相关：[Issue #44](https://github.com/freeanima-org/freeanima/issues/44)（面向伙伴的健康警告）、[`self-layer.md`](self-layer.md)、[`notifications.md`](notifications.md)。
 
-## Two channels
+## 两条通道
 
-| Channel                        | Cadence                                           | Role                                                                    |
-| ------------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------- |
-| **System prompt** (session)    | Snapshot at conversation init / CST 02:00 rebuild | Static **environment + health baseline** (+ 用户活跃统计)               |
-| **Inbox notification** (event) | On marker change vs baseline                      | Immediate surface to **user + agent**; agent via `notification_context` |
+| 通道                   | 节奏                              | 角色                                                       |
+| ---------------------- | --------------------------------- | ---------------------------------------------------------- |
+| **系统提示**（会话）   | 对话初始化 / CST 02:00 重建时快照 | 静态**环境 + 健康基线**（+ 用户活跃统计）                  |
+| **收件箱通知**（事件） | 标记相对基线变化时                | 即时面向 **user + agent**；agent 经 `notification_context` |
 
-Session prompts are **not** rewritten on every change — live awareness is event-level. The next day-boundary (or new session) picks up the updated baseline.
+会话提示**不**在每次变化时重写 — 实时感知在事件层。下一个日界（或新会话）再拾取更新后的基线。
 
-## Loop (`builtin-env-health`)
+## 循环（`builtin-env-health`）
 
-Schedule: every 5 minutes (`*/5 * * * *`), Habitat **in-process `Bun.cron`** (not PG `cron_jobs` / `cron_log`).
+调度：每 5 分钟（`*/5 * * * *`），栖息地**进程内 `Bun.cron`**（非 PG `cron_jobs` / `cron_log`）。
 
 ```text
 collect markers (banded)
@@ -28,44 +28,44 @@ collect markers (banded)
   → changed? notify user+agent (source_ref dedupe) → save baseline
 ```
 
-Implementation: `src/host/platform/service/env-health/`.
+实现：`src/host/platform/service/env-health/`。
 
-**Storage:** baseline is **KV** (no TTL) via `@freeanima/host/core/redis` — Redis when configured; otherwise `~/.anima/env-health-baseline.json`. On first Redis hit after an old file exists, migrate once and delete the file. Do not confuse with **Cache** (`anima:cache:*`, TTL) used by 用户活跃统计.
+**存储：** 基线为 **KV**（无 TTL），经 `@freeanima/host/core/redis` — 已配置则用 Redis；否则 `~/.anima/env-health-baseline.json`。旧文件存在且首次命中 Redis 时迁移一次并删文件。勿与用户活跃统计用的 **Cache**（`anima:cache:*`，有 TTL）混淆。
 
-## v1 markers (after banding)
+## v1 标记（分档后）
 
-**Environment:** hostname, OS, timezone label, Habitat version, boot started_at, PostgreSQL / Redis status (`connected` | `error` | `not_configured`).
+**环境：** hostname、OS、时区标签、栖息地版本、boot started_at、PostgreSQL / Redis 状态（`connected` | `error` | `not_configured`）。
 
-**Health:** RSS band (512 MiB), MCP connection counts, disk free band for `FREEANIMA_HOME` (`<1GiB` | `1-2GiB` | `2-4GiB` | `4-8GiB` | `≥8GiB` | `unknown`).
+**健康：** RSS 分档（512 MiB）、MCP 连接数、`FREEANIMA_HOME` 磁盘空闲分档（`<1GiB` | `1-2GiB` | `2-4GiB` | `4-8GiB` | `≥8GiB` | `unknown`）。
 
-Continuous metrics are banded so minor jitter does not spam notifications.
+连续指标分档，避免微小抖动刷屏通知。
 
-## System prompt sections
+## 系统提示段
 
-| Hook id               | Order | Content                                                                |
-| --------------------- | ----- | ---------------------------------------------------------------------- |
-| `env-health-baseline` | 15    | Environment + health baseline                                          |
-| `user-activity-stats` | 16    | **用户活跃统计** panel (CST windows; day-cached; **no** change notify) |
+| Hook id               | 顺序 | 内容                                                     |
+| --------------------- | ---- | -------------------------------------------------------- |
+| `env-health-baseline` | 15   | 环境 + 健康基线                                          |
+| `user-activity-stats` | 16   | **用户活跃统计**面板（CST 窗口；日缓存；**无**变化通知） |
 
-Registered in `register-prompt-hooks.ts`.
+注册于 `register-prompt-hooks.ts`。
 
-### 用户活跃统计 panel
+### 用户活跃统计面板
 
-User-side dialogue density only (新开 / 更新会话、用户消息 — not agent/tool traffic). CST calendar windows: 今天 / 昨天 / 前天 / 近 7·30·90 天 / 近 1 年. Excludes `debug` and `cron`. Refreshes with system-prompt day boundary; same CST day reuses Cache (`anima:cache:user-activity-stats`). Implementation: `src/host/platform/service/user-activity-stats/`.
+仅用户侧对话密度（新开 / 更新会话、用户消息 — 不含 agent/工具流量）。CST 日历窗口：今天 / 昨天 / 前天 / 近 7·30·90 天 / 近 1 年。排除 `debug` 与 `cron`。随系统提示日界刷新；同一 CST 日复用 Cache（`anima:cache:user-activity-stats`）。实现：`src/host/platform/service/user-activity-stats/`。
 
-## Notifications
+## 通知
 
-- Recipients: **user and agent**
+- 接收方：**user 与 agent**
 - `source_kind: system`
 - `source_ref: env-health:<sortedChangedKeys>:<fingerprint>`
-- If both recipients already have that `source_ref`, skip create (dedupe) but still refresh baseline
-- **Dev Habitat** (`FREEANIMA_DEV_HABITAT=1` / `just dev habitat`): ignore `boot_started_at` for notify (still refresh baseline). Other marker changes still notify; production / standalone restart still notifies on boot.
+- 若双方已有该 `source_ref`，跳过创建（去重）但仍刷新基线
+- **开发栖息地**（`FREEANIMA_DEV_HABITAT=1` / `just dev habitat`）：通知时忽略 `boot_started_at`（仍刷新基线）。其他标记变化仍通知；生产 / 独立版重启仍对 boot 通知。
 
-The user-activity panel does **not** emit change notifications.
+用户活跃面板**不**发出变化通知。
 
-## Not this module
+## 非本模块
 
-- Habitat health dashboard UI (Issue #21 epic item)
-- Scene awareness (dialogue atmosphere)
-- Habitat HTTP `health.probe` / MCP process health checks (ops, not cognitive baseline)
-- Recent-memory / cross-session summary injection
+- 栖息地健康仪表盘 UI（Issue #21 epic 项）
+- 场景感知（对话氛围）
+- 栖息地 HTTP `health.probe` / MCP 进程健康检查（运维，非认知基线）
+- 近记忆 / 跨会话摘要注入

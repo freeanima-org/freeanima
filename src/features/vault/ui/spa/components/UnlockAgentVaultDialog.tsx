@@ -14,7 +14,6 @@ import {
   migrateAgentRootKeySsotIfNeeded,
   unlockAgentVaultFromUserCustody,
 } from "@freeanima/features/vault/domain/agent-root-key-custody.ts";
-import { m } from "@paraglide/messages";
 import { fetchAgentVaultKeyStatus } from "@freeanima/features/vault/ui/spa/lib/api.ts";
 
 export function UnlockAgentVaultDialog({
@@ -84,12 +83,7 @@ export function UnlockAgentVaultDialog({
     }
   }
 
-  const statusText =
-    unlocked === null
-      ? "…"
-      : unlocked
-        ? m.habitat_data_agent_vault_status_unlocked()
-        : m.habitat_data_agent_vault_status_locked();
+  const statusText = unlocked === null ? "…" : unlocked ? "已解锁" : "未解锁";
 
   return (
     <Dialog
@@ -98,18 +92,22 @@ export function UnlockAgentVaultDialog({
       className="max-w-md safe-area-pt safe-area-pb"
     >
       <DialogHeader>
-        <DialogTitle>{m.habitat_data_agent_vault_dialog_title()}</DialogTitle>
+        <DialogTitle>{"解锁 agent 密码库"}</DialogTitle>
       </DialogHeader>
       <div className="space-y-3 py-2">
-        <p className="text-muted-foreground text-sm">{m.habitat_data_agent_vault_desc()}</p>
+        <p className="text-muted-foreground text-sm">
+          {
+            "根密钥保存在用户密码库（主密码保护）。解锁后写入 Habitat 可重建缓存，工具与 cron 才能解密 Agent 库。"
+          }
+        </p>
         <p className="text-sm">
-          {m.habitat_data_agent_vault_status_label()}:{" "}
+          {"本地状态"}:{" "}
           <span className="font-medium">
             {loadingStatus ? <Spinner className="inline size-4" /> : statusText}
           </span>
         </p>
         {!userUnlocked ? (
-          <StatusAlert variant="warning">{m.habitat_data_agent_vault_need_user()}</StatusAlert>
+          <StatusAlert variant="warning">{"请先在 Portal「密码库」解锁用户主密码。"}</StatusAlert>
         ) : null}
         {error ? <p className="text-destructive text-sm">{error}</p> : null}
       </div>
@@ -120,19 +118,17 @@ export function UnlockAgentVaultDialog({
           isDisabled={busy || loadingStatus}
           onClick={() => void refreshStatus()}
         >
-          {m.habitat_data_agent_vault_refresh()}
+          {"刷新状态"}
         </Button>
         {unlocked ? (
           <Button type="button" variant="outline" isDisabled={busy} onClick={() => void onLock()}>
-            {busy ? m.habitat_data_agent_vault_locking() : m.habitat_data_agent_vault_lock_action()}
+            {busy ? "锁定中…" : "锁定"}
           </Button>
         ) : null}
         {/* 未解锁时必须提供解锁操作；已解锁时不再显示解锁主按钮 */}
         {unlocked !== true ? (
           <Button type="button" isDisabled={busy || !userUnlocked} onClick={() => void onUnlock()}>
-            {busy
-              ? m.habitat_data_agent_vault_unlocking()
-              : m.habitat_data_agent_vault_unlock_action()}
+            {busy ? "解锁中…" : "解锁"}
           </Button>
         ) : null}
       </DialogFooter>

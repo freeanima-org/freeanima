@@ -15,7 +15,6 @@ import {
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { listCronLogs } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 
 type CronLogRow = {
@@ -49,11 +48,7 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
       setRows((data as { items?: CronLogRow[] }).items ?? []);
     } catch (e) {
       logCaughtError("routes/_sidebar/cron-run-log-modal", e);
-      setError(
-        m.habitat_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setLoading(false);
     }
@@ -72,7 +67,7 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
       className="max-w-3xl h-[85vh] flex flex-col overflow-hidden safe-area-pt safe-area-pb"
     >
       <DialogHeader className="shrink-0">
-        <DialogTitle>{m.habitat_cron_run_history_title({ name: jobName })}</DialogTitle>
+        <DialogTitle>{`运行历史 — ${jobName}`}</DialogTitle>
       </DialogHeader>
       <p className="text-xs font-mono text-muted-foreground mb-3 break-all shrink-0">{jobId}</p>
 
@@ -85,7 +80,7 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
           isDisabled={loading}
           onClick={() => void reload()}
         >
-          {loading ? m.habitat_common_refreshing() : m.habitat_common_refresh_list()}
+          {loading ? "刷新中…" : "刷新列表"}
         </Button>
       </div>
 
@@ -99,8 +94,8 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{m.habitat_common_time()}</TableHead>
-              <TableHead>{m.habitat_common_status()}</TableHead>
+              <TableHead>{"时间"}</TableHead>
+              <TableHead>{"状态"}</TableHead>
               <TableHead>#</TableHead>
               <TableHead />
             </TableRow>
@@ -112,9 +107,7 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
                   <TableCell className="whitespace-nowrap">
                     {formatDisplayDateTime(row.finished_at)}
                   </TableCell>
-                  <TableCell>
-                    {row.ok ? m.habitat_common_success() : m.habitat_common_failed()}
-                  </TableCell>
+                  <TableCell>{row.ok ? "成功" : "失败"}</TableCell>
                   <TableCell className="font-mono text-xs">{row.run_count}</TableCell>
                   <TableCell>
                     <Button
@@ -123,9 +116,7 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
                       className="h-7 text-xs"
                       onClick={() => setExpandedId(expandedId === row.id ? null : row.id)}
                     >
-                      {expandedId === row.id
-                        ? m.habitat_common_collapse()
-                        : m.habitat_common_details()}
+                      {expandedId === row.id ? "收起" : "详情"}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -155,7 +146,7 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
             {!loading && rows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={4} className="text-center text-muted-foreground">
-                  {m.habitat_cron_run_history_empty()}
+                  {"尚无运行记录"}
                 </TableCell>
               </TableRow>
             )}
@@ -165,7 +156,7 @@ export function CronRunLogModal({ jobId, jobName, onClose }: CronRunLogModalProp
 
       <DialogFooter className="shrink-0">
         <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-          {m.habitat_common_close()}
+          {"关闭"}
         </Button>
       </DialogFooter>
     </Dialog>

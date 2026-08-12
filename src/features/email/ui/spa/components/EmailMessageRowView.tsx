@@ -1,7 +1,6 @@
 import { Checkbox } from "@freeanima/ui-kit";
 import { ListRow } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
-import { m } from "@paraglide/messages";
 
 import type { EmailMessageRow } from "../lib/api.ts";
 
@@ -47,7 +46,7 @@ export function EmailMessageRowView({
       longPressEnabled={useActionSheet}
       onLongPress={onOpenMenu}
       onOpenMenu={onOpenMenu}
-      menuAriaLabel={m.email_message_actions()}
+      menuAriaLabel={"邮件操作"}
       className="w-full items-stretch gap-0 hover:bg-muted/60"
       onClick={() => {
         if (selectionMode) {
@@ -66,7 +65,7 @@ export function EmailMessageRowView({
               isSelected={selected}
               isDisabled={batchBusy}
               onChange={() => onToggleSelect()}
-              aria-label={m.email_select_mode()}
+              aria-label={"选择"}
             />
           </label>
         ) : undefined
@@ -82,7 +81,7 @@ export function EmailMessageRowView({
           <div className="min-w-0 flex-1">
             <div className={`truncate ${message.unread ? "font-semibold" : "font-medium"}`}>
               {message.flagged ? "★ " : ""}
-              {message.subject || m.habitat_email_no_subject()}
+              {message.subject || "(无主题)"}
             </div>
             <div className="text-muted-foreground truncate text-xs">
               {message.direction === "outbound" ? message.to : message.from}

@@ -52,7 +52,6 @@ import {
   useNetworkOnline,
   useOpenHabitatSettingsCapability,
 } from "@freeanima/client/portal-sdk/react.tsx";
-import { initAppLocale, m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@freeanima/features/chat/ui/spa/lib/input-draft.ts";
 import {
   AUTO_PERSIST_LONG,
@@ -109,8 +108,6 @@ import {
   type SlashCommandItem,
   type SlashMenuEntry,
 } from "@freeanima/features/chat/ui/spa/lib/slash-command-menu.ts";
-
-initAppLocale();
 
 type CommandItem = SlashCommandItem;
 type ClarifyPending = {
@@ -404,7 +401,7 @@ export function ChatApp() {
           platform: "",
         },
       )
-    : m.habitat_chat_title();
+    : "聊天室";
 
   const INPUT_MIN_HEIGHT_PX = 36;
   const INPUT_MAX_HEIGHT_PX = 192;
@@ -877,12 +874,12 @@ export function ChatApp() {
   const conversationMenuItemsFor = (id: string): ActionSheetItem[] => {
     const conv = conversations.find((s) => s.id === id);
     return [
-      { label: m.habitat_common_rename(), onClick: () => startRename(id) },
+      { label: "✏️ 重命名", onClick: () => startRename(id) },
       ...(conv?.archivedAt
-        ? [{ label: m.chat_unarchive(), onClick: () => void handleUnarchive(id) }]
-        : [{ label: m.chat_archive(), onClick: () => void handleArchive(id) }]),
+        ? [{ label: "取消归档", onClick: () => void handleUnarchive(id) }]
+        : [{ label: "归档", onClick: () => void handleArchive(id) }]),
       {
-        label: m.chat_delete(),
+        label: "删除",
         danger: true,
         onClick: () => startDelete(id),
       },
@@ -1220,7 +1217,7 @@ export function ChatApp() {
     }
   };
 
-  const offlineCachedHint = m.ui_offline_cached_hint();
+  const offlineCachedHint = " · 显示缓存数据";
   const showOfflineCachedHint =
     shellWritesDisabled && (conversations.length > 0 || display.length > 0);
 
@@ -1419,7 +1416,7 @@ export function ChatApp() {
     return (
       <div className="h-full flex items-center justify-center p-8">
         <div className="max-w-md text-center space-y-3">
-          <h2 className="text-lg font-bold">{m.habitat_chat_title()}</h2>
+          <h2 className="text-lg font-bold">{"聊天室"}</h2>
           <p className="text-sm text-destructive">{error}</p>
           <p className="text-xs text-muted-foreground">
             {getPortalShell()?.habitatWsUrl
@@ -1458,22 +1455,22 @@ export function ChatApp() {
           size="sm"
           className="h-7 shrink-0 px-2"
           isDisabled={refreshing || !ready}
-          aria-label={m.habitat_common_refresh()}
+          aria-label={"刷新"}
           onClick={() => void handleManualRefresh()}
         >
-          {refreshing ? <Spinner className="size-3.5" /> : m.habitat_common_refresh()}
+          {refreshing ? <Spinner className="size-3.5" /> : "刷新"}
         </Button>
         <Toggle
           size="sm"
           className="shrink-0 px-2"
           isSelected={autoSpeak}
           isDisabled={!speechSupported}
-          aria-label={autoSpeak ? m.chat_speech_auto_on() : m.chat_speech_auto_off()}
+          aria-label={autoSpeak ? "自动朗读已开" : "自动朗读已关"}
           title={
             !speechSupported
               ? speechUnsupportedReason === "insecure_context"
-                ? m.chat_speech_insecure_context()
-                : m.chat_speech_unavailable()
+                ? "Web Speech 需要 HTTPS；请使用 Edge TTS，或通过 HTTPS 打开服务"
+                : "此设备不支持语音朗读"
               : undefined
           }
           onPointerDown={() => {
@@ -1484,7 +1481,7 @@ export function ChatApp() {
             setAutoSpeak(next);
           }}
         >
-          {m.chat_speech_play()}
+          {"朗读"}
         </Toggle>
         <Button
           type="button"
@@ -1492,7 +1489,7 @@ export function ChatApp() {
           className={`h-7 px-2 ${drawerNav ? "" : "hidden"}`}
           onClick={startConversation}
         >
-          {m.habitat_common_new_conversation()}
+          {"＋ 新会话"}
         </Button>
         {canOpenHabitatSettingsUi ? (
           <Button
@@ -1520,7 +1517,7 @@ export function ChatApp() {
               setDebugViewerOpen(true);
             }}
           >
-            {llmDebugLoading ? m.chat_llm_debug_loading() : m.chat_llm_debug_view()}
+            {llmDebugLoading ? "Loading debug snapshot…" : "调试"}
           </Button>
         ) : null}
       </header>
@@ -1551,7 +1548,7 @@ export function ChatApp() {
                     className="w-full"
                     onClick={() => void newConversation()}
                   >
-                    {m.habitat_common_new_conversation()}
+                    {"＋ 新会话"}
                   </Button>
                   <label className="text-muted-foreground flex cursor-pointer select-none items-center gap-2 px-1 text-xs">
                     <Checkbox
@@ -1559,7 +1556,7 @@ export function ChatApp() {
                       isSelected={showArchived}
                       onChange={() => toggleShowArchived()}
                     />
-                    {m.chat_show_archived()}
+                    {"显示已归档"}
                   </label>
                 </div>
                 <div className="flex-1 space-y-1 overflow-y-auto px-2 py-1">
@@ -1567,7 +1564,7 @@ export function ChatApp() {
                   {showArchived && archivedConversations.length > 0 ? (
                     <div className="border/60 mt-2 space-y-1 border-t pt-2">
                       <div className="text-muted-foreground px-1 text-[11px] font-medium tracking-wide uppercase">
-                        {m.chat_archived_section()}
+                        {"已归档"}
                       </div>
                       {archivedConversations.map((s) => renderConversationItem(s, true))}
                     </div>
@@ -1658,7 +1655,7 @@ export function ChatApp() {
                             setEditDraft("");
                           }}
                         >
-                          {m.habitat_common_cancel()}
+                          {"取消"}
                         </Button>
                         <Button
                           type="button"
@@ -1673,7 +1670,7 @@ export function ChatApp() {
                               : confirmReeditUserMessage())
                           }
                         >
-                          {m.habitat_common_confirm()}
+                          {"确定"}
                         </Button>
                       </div>
                     </div>
@@ -1703,7 +1700,7 @@ export function ChatApp() {
                         });
                       }}
                     >
-                      {m.ui_outbox_discard()}
+                      {"丢弃"}
                     </Button>
                     {item.sendStatus === "stale" ? (
                       <Button
@@ -1727,7 +1724,7 @@ export function ChatApp() {
                           })();
                         }}
                       >
-                        {m.ui_outbox_force_send()}
+                        {"仍然发送"}
                       </Button>
                     ) : null}
                   </div>
@@ -1736,19 +1733,19 @@ export function ChatApp() {
               empty={
                 !currentId ? (
                   <div className="flex flex-col items-center justify-center h-full gap-3 text-foreground/40 text-sm">
-                    <p>{m.habitat_chat_select_conversation()}</p>
+                    <p>{"选择一个会话开始对话"}</p>
                     <Button
                       type="button"
                       size="sm"
                       isDisabled={writesDisabled}
                       onClick={startConversation}
                     >
-                      {m.habitat_common_new_conversation()}
+                      {"＋ 新会话"}
                     </Button>
                   </div>
                 ) : display.length === 0 && !awaitingAssistant ? (
                   <div className="flex items-center justify-center h-full text-foreground/40 text-sm">
-                    {m.habitat_chat_send_first_message()}
+                    {"发送第一条消息"}
                   </div>
                 ) : null
               }
@@ -1761,7 +1758,9 @@ export function ChatApp() {
                 clarifyPending ? (
                   <Alert variant="info" className="shadow-sm">
                     <AlertDescription className="w-full space-y-2">
-                      <p className="font-medium">{m.habitat_chat_clarify_hint()}</p>
+                      <p className="font-medium">
+                        {"需要你确认（一条消息回复全部，或发送 /cancel）"}
+                      </p>
                       {clarifyPending.items.map((item, ci) => (
                         <div key={ci} className="text-sm">
                           <p>
@@ -1808,7 +1807,7 @@ export function ChatApp() {
                         className="h-7 shrink-0 px-2"
                         onClick={() => void sendQueuedNow(item.id)}
                       >
-                        {m.habitat_chat_queue_send_now()}
+                        {"立即发送"}
                       </Button>
                     </li>
                   ))}
@@ -1868,7 +1867,7 @@ export function ChatApp() {
                     }}
                     rows={1}
                     className="!min-h-9 h-9 max-h-48 w-full resize-none overflow-y-auto py-1.5 leading-5 [field-sizing:fixed]"
-                    placeholder={m.habitat_chat_message_placeholder()}
+                    placeholder={"输入消息（Shift+Enter 换行，Enter 发送；/ 开头是命令）"}
                     onFocus={() => {
                       requestAnimationFrame(() => {
                         msgInputRef.current?.scrollIntoView({
@@ -1881,7 +1880,7 @@ export function ChatApp() {
                   />
                 </div>
                 <Button type="submit" isDisabled={!inputText.trim()}>
-                  {m.habitat_common_send()}
+                  {"发送"}
                 </Button>
                 {streamVisible ? (
                   <Button
@@ -1890,7 +1889,7 @@ export function ChatApp() {
                     isDisabled={!canSendOnline}
                     onClick={() => void stopStreaming()}
                   >
-                    {m.habitat_common_stop()}
+                    {"停止"}
                   </Button>
                 ) : null}
               </form>
@@ -1915,9 +1914,9 @@ export function ChatApp() {
 
       <ConfirmDialog
         open={showDeleteDialog}
-        title={m.chat_delete()}
-        description={m.chat_delete_confirm()}
-        confirmLabel={m.chat_delete()}
+        title={"删除"}
+        description={"永久删除此对话及全部消息？此操作不可撤销。"}
+        confirmLabel={"删除"}
         variant="error"
         onConfirm={() => void confirmDelete()}
         onCancel={() => setShowDeleteDialog(false)}
@@ -1930,7 +1929,7 @@ export function ChatApp() {
         className="max-w-sm"
       >
         <DialogHeader>
-          <DialogTitle>{m.habitat_common_edit_title()}</DialogTitle>
+          <DialogTitle>{"修改标题"}</DialogTitle>
         </DialogHeader>
         <Input
           ref={renameInputRef}
@@ -1938,7 +1937,7 @@ export function ChatApp() {
           onChange={(e) => setRenameText(e.target.value)}
           type="text"
           className="text-sm"
-          placeholder={m.habitat_common_title_placeholder()}
+          placeholder={"输入新标题"}
           onKeyDown={(e) => {
             if (e.key === "Enter") void confirmRename();
             if (e.key === "Escape") setShowRenameDialog(false);
@@ -1951,10 +1950,10 @@ export function ChatApp() {
             size="sm"
             onClick={() => setShowRenameDialog(false)}
           >
-            {m.habitat_common_cancel()}
+            {"取消"}
           </Button>
           <Button type="button" size="sm" onClick={() => void confirmRename()}>
-            {m.habitat_common_confirm()}
+            {"确定"}
           </Button>
         </DialogFooter>
       </Dialog>

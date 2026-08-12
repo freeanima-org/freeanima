@@ -9,7 +9,6 @@ import {
   listConversationCommands,
   runConversationCommand,
 } from "@freeanima/features/chat/ui/spa/lib/conversation-command-api.ts";
-import { m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import {
   buildSlashMenuEntries,
   type SlashCommandItem,
@@ -441,7 +440,7 @@ export function AgentChatPane({
               isDisabled={!conversationId || llmDebugLoading}
               onClick={() => setDebugViewerOpen((v) => !v)}
             >
-              {llmDebugLoading ? m.chat_llm_debug_loading() : m.chat_llm_debug_view()}
+              {llmDebugLoading ? "Loading debug snapshot…" : "调试"}
             </Button>
           ) : null}
         </header>

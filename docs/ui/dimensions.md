@@ -1,94 +1,94 @@
 ---
-title: UI dimensions
+title: UI 三维度
 ---
 
-# UI dimensions (shell / layout / interaction)
+# UI 三维度（壳 / 布局 / 交互）
 
-Portal UI is designed along **three orthogonal dimensions**. Visual foundations, components, and interaction patterns all adapt through this lens. Phone size does **not** imply compact layout; Tauri does **not** imply touch.
+入口 UI 沿**三个正交维度**设计。视觉基础、组件与交互模式都经此透镜适配。手机尺寸**不**等于 compact 布局；Tauri **不**等于 touch。
 
-Agent API tables and hard bans → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md). Implementation entry points are listed there; this page is the product narrative.
+Agent API 表与硬禁令 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。实现入口列于该文；本页是产品叙述。
 
-## Shell vs app frame
+## 壳 vs 应用布局
 
-| Concept       | What it is                                                                  | Code                                                                       |
-| ------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| **Shell**     | Portal runtime host (browser / Tauri; build targets web / desktop / mobile) | `src/portal/app/*`; `portal-sdk` (`getShellKind`, `ShellApi`, buildTarget) |
-| **app frame** | Module rail / bottom tabs, settings chrome                                  | `src/client/app-frame` (`AppFrame`); follows **viewport**, not Shell       |
+| 概念            | 是什么                                                             | 代码                                                                        |
+| --------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| **壳（Shell）** | 入口运行时宿主（browser / Tauri；构建目标 web / desktop / mobile） | `src/portal/app/*`；`portal-sdk`（`getShellKind`、`ShellApi`、buildTarget） |
+| **应用布局**    | 模块 Rail / 底栏、设置 chrome                                      | `src/client/app-frame`（`AppFrame`）；跟**视口**，不跟壳                    |
 
-Do not call app frame “Shell”. Do not derive rail vs bottom tabs from Shell kind.
+不要把应用布局叫「壳」。不要从壳种类推导 Rail vs 底栏。
 
-## The three dimensions
+## 三维
 
-| Dimension       | Controls                                     | Values                          | How decided                                              | Stability                              |
-| --------------- | -------------------------------------------- | ------------------------------- | -------------------------------------------------------- | -------------------------------------- |
-| **Shell**       | Capabilities (native APIs, files, push, IPC) | `web` / `tauri` (+ buildTarget) | Build + runtime (`getShellKind` / `getShellBuildTarget`) | Fixed per install                      |
-| **Layout**      | Presentation (wide/narrow chrome, nav IA)    | `compact` / `expanded`          | CSS `matchMedia` (viewport)                              | Changes with window size               |
-| **Interaction** | Input paradigm                               | `touch` / `pointer`             | `primaryInput` → `(pointer: fine)` + `(hover: hover)`    | Usually stable; can follow peripherals |
+| 维度     | 控制项                             | 取值                             | 如何判定                                                | 稳定性                 |
+| -------- | ---------------------------------- | -------------------------------- | ------------------------------------------------------- | ---------------------- |
+| **壳**   | 能力（原生 API、文件、推送、IPC）  | `web` / `tauri`（+ buildTarget） | 构建 + 运行时（`getShellKind` / `getShellBuildTarget`） | 每次安装固定           |
+| **布局** | 呈现（宽/窄 chrome、导航信息架构） | `compact` / `expanded`           | CSS `matchMedia`（视口）                                | 随窗口大小变化         |
+| **交互** | 输入范式                           | `touch` / `pointer`              | `primaryInput` → `(pointer: fine)` + `(hover: hover)`   | 通常稳定；可随外设变化 |
 
-Colloquial “mobile layout / desktop layout” means `compact` / `expanded` — not phone shell / desktop shell.
+口语「移动布局 / 桌面布局」指 `compact` / `expanded` —— 不是手机壳 / 桌面壳。
 
-## Core rules
+## 核心规则
 
-- Dimensions are **orthogonal**: none may imply the other two.
-- Forbidden: `isMobile = getShellKind() === "tauri"` (or similar mixes).
-- Forbidden: one `isMobile` / `isDesktop` flag driving both layout and interaction.
-- Components pick APIs by responsibility; do not hand-roll `isTauri && matchMedia(...)` to choose menus.
+- 维度**正交**：任一不得蕴含另外两个。
+- 禁止：`isMobile = getShellKind() === "tauri"`（或类似混用）。
+- 禁止：一个 `isMobile` / `isDesktop` 标志同时驱动布局与交互。
+- 组件按职责选 API；不要手写 `isTauri && matchMedia(...)` 来选菜单。
 
-## What each dimension drives
+## 各维度驱动什么
 
-### Shell → capabilities (`portal-sdk`)
+### 壳 → 能力（`portal-sdk`）
 
-Use for: file/FS bridges, notifications, Habitat settings visibility, hash navigation quirks, keyboard inset / safe-area host differences.
+用于：文件/FS 桥、通知、栖息地设置可见性、hash 导航怪癖、键盘 inset / safe-area 宿主差异。
 
-Do **not** use Shell kind to lock main nav (rail vs tabs), hover affordances, or Enter-to-send.
+**不要**用壳种类锁主导航（Rail vs 底栏）、hover 可发现性，或 Enter 发送。
 
-Unsupported capabilities return `null` / `false`; UI degrades.
+不支持的能力返回 `null` / `false`；UI 降级。
 
-### Layout → app frame and page structure
+### 布局 → 应用布局与页面结构
 
-Use for: compact bottom nav + drawer vs expanded rail + multi-column; Dialog vs Sheet **presentation**; list-detail stacking; settings chrome (tabs vs sidebar via `detectSettingsChromePlatform()`).
+用于：compact 底栏 + drawer vs expanded Rail + 多栏；Dialog vs Sheet **呈现**；list-detail 叠放；设置 chrome（tabs vs 侧栏，经 `detectSettingsChromePlatform()`）。
 
-Common layout patterns:
+常见布局模式：
 
-- **List-Detail** — side-by-side when expanded; stack + route when compact (`ListDetailLayout`)
-- **Grid-List** — multi-column vs single column
-- **Modal-Sheet** — centered Dialog when expanded; bottom Sheet when compact (presentation = layout; gesture = interaction)
-- **Sidebar-Drawer** — fixed sidebar vs hamburger + drawer; compact viewport-fixed layers must clear `--app-bottom-nav-h`
+- **List-Detail** — expanded 并排；compact 时堆叠 + 路由（`ListDetailLayout`）
+- **Grid-List** — 多列 vs 单列
+- **Modal-Sheet** — expanded 居中 Dialog；compact 底部 Sheet（呈现 = 布局；手势 = 交互）
+- **Sidebar-Drawer** — 固定侧栏 vs 汉堡 + drawer；compact 视口固定层须避开 `--app-bottom-nav-h`
 
-Settings **section fields** may follow shell (`resolveSettingsContentPlatform()`); settings **chrome** follows layout.
+设置**区块字段**可跟壳（`resolveSettingsContentPlatform()`）；设置 **chrome** 跟布局。
 
-### Interaction → input paradigm
+### 交互 → 输入范式
 
-Use for: ContextMenu vs ActionSheet / long-press; hover-revealed actions; Enter send vs newline; minimum hit targets.
+用于：ContextMenu vs ActionSheet / 长按；hover 才露出的操作；Enter 发送 vs 换行；最小命中目标。
 
-Conventions:
+约定：
 
-- **touch** — hit targets ≥44px; no hover-only affordances; long-press / ActionSheet
-- **pointer** — hover, right-click ContextMenu
-- External keyboard on a pad does **not** flip interaction to pointer; strategy stays touch
-- Keyboard-open **detection** is interaction; WebView resize differences may use shell helpers (e.g. `useKeyboardInset`)
+- **touch** — 命中目标 ≥44px；无仅 hover 可发现性；长按 / ActionSheet
+- **pointer** — hover、右键 ContextMenu
+- 平板外接键盘**不**把交互翻成 pointer；策略仍为 touch
+- 键盘打开**检测**属交互；WebView 尺寸差异可用壳 helper（如 `useKeyboardInset`）
 
-### Pad example
+### 平板示例
 
-| Dimension   | Value                                                    |
-| ----------- | -------------------------------------------------------- |
-| Shell       | `web` or `tauri` (how the user opened Portal)            |
-| Layout      | Live viewport (landscape → expanded, portrait → compact) |
-| Interaction | **touch** (`primaryInput: "touch"`)                      |
+| 维度 | 取值                                        |
+| ---- | ------------------------------------------- |
+| 壳   | `web` 或 `tauri`（用户如何打开入口）        |
+| 布局 | 实时视口（横屏 → expanded，竖屏 → compact） |
+| 交互 | **touch**（`primaryInput: "touch"`）        |
 
-## Dimension adaptation template
+## 维度适配模板
 
-When specifying visuals, components, or patterns, document:
+写视觉、组件或模式规格时，文档化：
 
-1. **Dimension-invariant** — shared contract
-2. **By layout** — compact vs expanded (or N/A)
-3. **By interaction** — pointer vs touch (or N/A)
-4. **By shell** — capability-only differences (or N/A)
-5. **Forbidden mixes** — e.g. Shell deciding hover; viewport width deciding ContextMenu vs ActionSheet
+1. **维度不变** — 共享契约
+2. **按布局** — compact vs expanded（或 N/A）
+3. **按交互** — pointer vs touch（或 N/A）
+4. **按壳** — 仅能力差异（或 N/A）
+5. **禁止混用** — 如壳决定 hover；视口宽度决定 ContextMenu vs ActionSheet
 
-## Related
+## 相关文档
 
-- Visual foundations → [foundations.md](foundations.md)
-- Components → [components.md](components.md)
-- Patterns → [patterns.md](patterns.md)
-- Agent rules → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)
+- 视觉基础 → [foundations.md](foundations.md)
+- 组件 → [components.md](components.md)
+- 模式 → [patterns.md](patterns.md)
+- Agent 规则 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)

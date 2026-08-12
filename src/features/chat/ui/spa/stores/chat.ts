@@ -8,7 +8,6 @@ import { randomUuid } from "@freeanima/shared/rpc-contract";
 import { subscribeHabitatRpcConnectionState } from "@freeanima/shared/habitat-rpc";
 import { renderMarkdownHtml } from "@freeanima/ui-kit/lib/markdown.ts";
 import { create } from "zustand";
-import { m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 import {
   interruptMessageStream,
   lookupActiveStream,
@@ -272,7 +271,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (fallbackError) {
         callbacks.onError?.(fallbackError);
       } else if (!streamText.trim()) {
-        callbacks.onError?.(m.habitat_common_no_reply());
+        callbacks.onError?.("无回复，请检查 API 密钥与服务端日志");
       }
     };
 
@@ -313,7 +312,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
             if (result.receivedError) {
               receivedError = true;
               if (ev.event === "error") {
-                serverErrorMsg = ev.data.error || m.habitat_common_server_error();
+                serverErrorMsg = ev.data.error || "服务端错误";
               }
             }
             if (result.receivedDone) {
@@ -338,7 +337,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
               return;
             }
             receivedError = true;
-            transportErrorMsg = err.message || m.habitat_common_server_error();
+            transportErrorMsg = err.message || "服务端错误";
             settleErr(err);
           };
 
@@ -435,7 +434,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (recovered) {
         notifyDone({ recovered: true });
       } else if (!receivedError || transportErrorMsg) {
-        callbacks.onError?.(transportErrorMsg || m.habitat_common_network_error());
+        callbacks.onError?.(transportErrorMsg || "网络错误");
       }
     } finally {
       if (generation === _streamGeneration) {
@@ -534,7 +533,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
             if (result.receivedError) {
               receivedError = true;
               if (ev.event === "error") {
-                serverErrorMsg = ev.data.error || m.habitat_common_server_error();
+                serverErrorMsg = ev.data.error || "服务端错误";
               }
             }
             if (result.receivedDone) {
@@ -550,7 +549,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
             }
             // attach 失败等：不要当成可静默重连的传输断开
             receivedError = true;
-            transportErrorMsg = err.message || m.habitat_common_server_error();
+            transportErrorMsg = err.message || "服务端错误";
             settleErr(err);
           };
           const onComplete = () => {

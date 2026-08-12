@@ -1,318 +1,319 @@
 ---
-title: Architecture
+title: 架构
 ---
 
-# FreeAnima Architecture
+# 逸灵风架构
 
-System-level constraints and long-lived design principles.
+系统级约束与长期设计原则。
 
-## Product naming (Habitat / Portal)
+## 产品命名（栖息地 / 入口）
 
-User-facing product terms (Chinese in [`i18n/glossary.md`](../../i18n/glossary.md)):
+面向用户的产品术语（中文见 [`i18n/glossary.md`](../../i18n/glossary.md)）：
 
-| Role                                  | English          | Chinese            | Meaning                                                                                                                         |
-| ------------------------------------- | ---------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| Long-running process / connect target | **Habitat**      | **栖息地**         | One process hosts **multiple digital lives** (`agent` subjects) and **human assets** (`user`); connect / token / restart target |
-| External connectors (class)           | **Portal**       | **入口**           | Class of ways into Habitat; four **forms**: application / browser / mcp / cli                                                   |
-| Portal form                           | —                | **入口形态**       | Realization kind of a Portal                                                                                                    |
-| Application-form Portal               | **Shell**        | **壳** / 应用形态  | Form `application` — windowed SPA（desktop / mobile / web）。**Not** app frame                                                  |
-| Browser-form Portal                   | —                | **浏览器形态入口** | Form `browser` — browser extension（MV3）；`src/portal/extension`；**not** Web Shell                                            |
-| MCP-form Portal                       | **MCP**          | **MCP 形态入口**   | Form `mcp` — Habitat `/mcp`（`mcp-server`）。Inbound `mcp-client` is **not** a Portal                                           |
-| CLI-form Portal                       | **CLI**          | **CLI 形态入口**   | Form `cli` — `anima` CLI；`src/portal/cli`                                                                                      |
-| Remote-tool registrant                | **Outpost**      | **前哨**           | Unreachable local app that `remote_tools.attach` (Portal-embedded companion or standalone tool); **not** a Portal               |
-| Shell                                 | **Shell**        | **壳**             | Application-form Portal（desktop / mobile / web）。**Not** Habitat; **not** app frame; **not** browser Portal                   |
-| app frame                             | **app frame**    | **应用布局**       | SPA chrome in `src/client/app-frame` (`AppFrame`); viewport-driven; orthogonal to Shell                                         |
-| Admin / inspect UI (legacy Habitat)   | **Habitat** (UI) | **栖息地**         | Area under `/habitat/*`; "Open Habitat" vs "Connect to Habitat"                                                                 |
-| Admin home page                       | **Dashboard**    | **仪表盘**         | `/habitat/dashboard` only; other Habitat routes keep their own labels                                                           |
-| Message bridges                       | **Gateway**      | Gateway            | Discord / WeChat — **not** a Portal                                                                                             |
-| Protocol / code identifiers           | —                | **协议/代码标识**  | `/rpc/v1`、`HabitatRPC/1.0`、`habitat_*`、`habitat_runtime_config`、`dev:habitat`                                               |
+| 角色                           | 英文             | 中文               | 含义                                                                                             |
+| ------------------------------ | ---------------- | ------------------ | ------------------------------------------------------------------------------------------------ |
+| 长驻进程 / 连接目标            | **Habitat**      | **栖息地**         | 一个进程承载**多个数字生命**（`agent` subject）与**人类资产**（`user`）；连接 / token / 重启目标 |
+| 外部连接器（类）               | **Portal**       | **入口**           | 进入栖息地的方式类；四种**形态**：application / browser / mcp / cli                              |
+| 入口形态                       | —                | **入口形态**       | 入口的实现种类                                                                                   |
+| 应用形态入口                   | **Shell**        | **壳** / 应用形态  | 形态 `application` — 整窗 SPA（desktop / mobile / web）。**不是**应用布局                        |
+| 浏览器形态入口                 | —                | **浏览器形态入口** | 形态 `browser` — 浏览器扩展（MV3）；`src/portal/extension`；**不是** Web 壳                      |
+| MCP 形态入口                   | **MCP**          | **MCP 形态入口**   | 形态 `mcp` — 栖息地 `/mcp`（`mcp-server`）。入站 `mcp-client` **不是**入口                       |
+| CLI 形态入口                   | **CLI**          | **CLI 形态入口**   | 形态 `cli` — `anima` CLI；`src/portal/cli`                                                       |
+| 远程工具注册方                 | **Outpost**      | **前哨**           | 不可达本地应用，经 `remote_tools.attach`（入口内嵌伴侣或独立工具）；**不是**入口                 |
+| 壳                             | **Shell**        | **壳**             | 应用形态入口（desktop / mobile / web）。**不是**栖息地；**不是**应用布局；**不是**浏览器形态入口 |
+| 应用布局                       | **app frame**    | **应用布局**       | `src/client/app-frame`（`AppFrame`）中的 SPA chrome；随视口；与壳正交                            |
+| 管理 / 检视 UI（遗留 Habitat） | **Habitat** (UI) | **栖息地**         | `/habitat/*` 区域；「打开栖息地」vs「连接栖息地」                                                |
+| 管理首页                       | **Dashboard**    | **仪表盘**         | 仅 `/habitat/dashboard`；其他栖息地路由保留各自标签                                              |
+| 消息桥                         | **Gateway**      | Gateway            | Discord / 微信 — **不是**入口                                                                    |
+| 协议 / 代码标识                | —                | **协议/代码标识**  | `/rpc/v1`、`HabitatRPC/1.0`、`habitat_*`、`habitat_runtime_config`、`dev:habitat`                |
 
-Verbs: **connect to Habitat** (URL + token); **open Habitat** (admin UI); **reach via a Portal** (Shell / browser extension / MCP / CLI).
+动词：**连接栖息地**（URL + token）；**打开栖息地**（管理 UI）；**经入口到达**（壳 / 浏览器扩展 / MCP / CLI）。
 
-Code layout: `src/portal/{app,extension,cli}`；MCP-form implementation stays in `src/host/capabilities/mcp-server`. See [`docs/modules/portal.md`](../modules/portal.md).
+代码布局：`src/portal/{app,extension,cli}`；MCP 形态实现仍在 `src/host/capabilities/mcp-server`。见 [`docs/modules/portal.md`](../modules/portal.md)。
 
-Estate **Body** (VM / OS / network under the four-layer model) is the cognitive "what I run on" for a subject — **not** the Habitat process name.
+资源层 **躯体（Body）**（四层模型下的 VM / OS / 网络）是 subject 认知上的「我跑在什么上」— **不是**栖息地进程名。
 
-### Habitat configuration (SSOT)
+### 栖息地配置（SSOT）
 
-User copy says Habitat. Storage/RPC identifiers use `habitat_*` / `HabitatRPC/1.0` / `/rpc/v1`.
+用户文案写栖息地。存储 / RPC 标识用 `habitat_*` / `HabitatRPC/1.0` / `/rpc/v1`。
 
-| Layer         | Storage                                                                           | Who reads/writes                                             |
-| ------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| **Bootstrap** | `~/.anima/config.yaml` (`database`, `http`, `redis`)                              | `platform/boot` only; install/ops edit YAML                  |
-| **Runtime**   | PostgreSQL `habitat_runtime_config`（**一行一段**：`section` PK + `value` jsonb） | Engine, tools, Shell Habitat settings, Habitat UI `config.*` |
+| 层         | 存储                                                                              | 谁读/写                                          |
+| ---------- | --------------------------------------------------------------------------------- | ------------------------------------------------ |
+| **引导**   | `~/.anima/config.yaml`（`database`、`http`、`redis`）                             | 仅 `platform/boot`；安装/运维改 YAML             |
+| **运行时** | PostgreSQL `habitat_runtime_config`（**一行一段**：`section` PK + `value` jsonb） | Engine、工具、壳栖息地设置、栖息地 UI `config.*` |
 
-### Naming cleanup
+### 命名清理
 
-Legacy `hub_*` / `console` protocol aliases and dual-write keys have been removed; use Habitat identifiers only.
+遗留 `hub_*` / `console` 协议别名与双写键已移除；仅用栖息地标识。
 
-## Core Principles
+## 核心原则
 
-- The memory system may be layered internally, but the LLM sees a single entry point
-- Memory orchestration is built into the runtime; the LLM does not control memory pipelines
-- Credential management is a first-class system concern
-- Habitat **runtime configuration** (LLM, compression, integrations) is persisted in PostgreSQL `habitat_runtime_config` as **one row per section** (`section` + `value`); `~/.anima/config.yaml` holds **bootstrap** only (`database`, `http`, `redis`) for cold start — not editable via Shell or Habitat UI API
-- Habitat **may start without LLM** configured; first-time setup happens in Shell **Settings → Habitat** (persist to PG). Saving runtime config **hot-applies in memory** (no Habitat restart). Missing `llm` must not block cold start.
-- Habitat **hosts browser `/web/*` whenever Web dist is present** (no config switch; run `just pack web` for source deploy). Source `just dev habitat` skips hosting so Vite serves the UI.
-- **Asset management** is a first-class system concern
+- 记忆体系内部可以分层，但 LLM 只看到一个统一入口
+- 记忆编排内建于运行时；LLM 不控制记忆流水线
+- 凭证管理是一等系统关切
+- 栖息地**运行时配置**（LLM、压缩、集成）以**每段一行**（`section` + `value`）持久化在 PostgreSQL `habitat_runtime_config`；`~/.anima/config.yaml` 仅持**引导**（`database`、`http`、`redis`）供冷启动 — 不可经壳或栖息地 UI API 编辑
+- 栖息地**可在未配置 LLM 时启动**；首次设置在壳 **设置 → 栖息地**（写入 PG）。保存运行时配置会**内存热应用**（无需重启栖息地）。缺少 `llm` 不得阻塞冷启动。
+- 只要存在 Web dist，栖息地就**托管浏览器 `/web/*`**（无配置开关；源码部署跑 `just pack web`）。源码 `just dev habitat` 跳过托管以便 Vite 提供 UI。
+- **资产管理**是一等系统关切
 
-Bootstrap and runtime are **not merged** into a single config object (no `AnimaConfig` / `animaConfigSchema` supersets). Types: `bootstrapConfigSchema` vs `runtimeConfigSchema` / `Config.data: RuntimeConfig`. CLI cold paths connect via internal `withPlatformDb` and receive **runtime only**. Legacy runtime keys in `config.yaml` are ignored (optional startup warn).
+引导与运行时**不合并**为单一配置对象（无 `AnimaConfig` / `animaConfigSchema` 超集）。类型：`bootstrapConfigSchema` vs `runtimeConfigSchema` / `Config.data: RuntimeConfig`。CLI 冷路径经内部 `withPlatformDb` 连接，只收**运行时**。`config.yaml` 中遗留运行时键被忽略（可选启动警告）。
 
-### Runtime config: live vs transferred
+### 运行时配置：Live vs Transferred（即时 vs 需转移）
 
-| Kind            | Sections (examples)                                                                                                                                  | After UI save                                                                                 |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| **Live**        | `compression`, `prompt`, `memory`, `fts`, `cjk`, `clarify`, `browser`, `firecrawl`, `models`, `tts`, `auto_llm`, `companion`, gateway `tool_display` | Consumers read `Config.data` each use; snapshot update is enough                              |
-| **Transferred** | `llm`, `i18n`, `embedding`, `mcp_servers`, `discord` / `weixin` / `gateway` platforms, `worlds`, `object_storage`                                    | Snapshot update **plus** section apply (re-init registries / reconnect / re-bind ObjectStore) |
-| **Bootstrap**   | `database`, `http`, `redis`                                                                                                                          | Edit YAML; **process restart** required                                                       |
+| 种类                      | 段（示例）                                                                                                                                           | UI 保存后                                                          |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **Live（即时）**          | `compression`、`prompt`、`memory`、`fts`、`cjk`、`clarify`、`browser`、`firecrawl`、`models`、`tts`、`auto_llm`、`companion`、gateway `tool_display` | 消费者每次读 `Config.data`；快照更新即可                           |
+| **Transferred（需转移）** | `llm`、`i18n`、`embedding`、`mcp_servers`、`discord` / `weixin` / `gateway` platforms、`worlds`、`object_storage`                                    | 快照更新**外加**段应用（重初始化注册表 / 重连 / 重绑 ObjectStore） |
+| **Bootstrap（引导）**     | `database`、`http`、`redis`                                                                                                                          | 改 YAML；需**进程重启**                                            |
 
-### Runtime config: UI coverage gaps
+### 运行时配置：UI 覆盖缺口
 
-Settings / Habitat UI already expose many sections; the following are **registered in `runtimeConfigSchema` but not (fully) editable in UI** (ops / Habitat RPC / hand edit still work). Do not treat missing UI as “unused config”.
+设置 / 栖息地 UI 已暴露许多段；下列在 **`runtimeConfigSchema` 已注册但 UI 未（完全）可编辑**（运维 / 栖息地 RPC / 手改仍可用）。勿把缺少 UI 当成「未使用配置」。
 
-| Gap                        | Sections                                  | Notes                                                                                                       |
-| -------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **No Settings panel**      | `i18n`, `clarify`, `prompt`               | `i18n` is transferred (locale/timezone); `clarify` live; `prompt.system_prompt_budget_chars`                |
-| **Legacy / overlap**       | `notifications`                           | Subject ids; prefer `worlds` (boot may still read as fallback)                                              |
-| **Likely dead / reserved** | `push`, `fallback_providers`, `platforms` | Little or no product consumer; candidates for later cleanup                                                 |
-| **Partial UI**             | `compression`, `memory`                   | Compression UI omits trigger/summary fields; memory ops: `passive-recall` debug + `temporal-summary` browse |
+| 缺口                | 段                                        | 说明                                                                                          |
+| ------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **无设置面板**      | `i18n`、`clarify`、`prompt`               | `i18n` 为 transferred（locale/timezone）；`clarify` live；`prompt.system_prompt_budget_chars` |
+| **遗留 / 重叠**     | `notifications`                           | subject id；优先 `worlds`（boot 仍可能作回退读取）                                            |
+| **可能死码 / 预留** | `push`、`fallback_providers`、`platforms` | 几乎无产品消费者；后续清理候选                                                                |
+| **部分 UI**         | `compression`、`memory`                   | 压缩 UI 省略触发/摘要字段；记忆运维：`passive-recall` 调试 + `temporal-summary` 浏览          |
 
-Covered elsewhere: `mcp_servers` → Habitat `/habitat/mcp`; `companion` → Settings → 桌面伴侣；most advanced sections → Settings → Habitat 服务配置。
+别处已覆盖：`mcp_servers` → 栖息地 `/habitat/mcp`；`companion` → 设置 → 桌面伴侣；多数高级段 → 设置 → 栖息地服务配置。
 
-- The system prompt is part of architecture, not ad-hoc string concatenation
+- 系统提示词是架构的一部分，而非临时字符串拼接
 
-## Context Engineering
+## 上下文工程（Context Engineering）
 
-Consciousness (layer ①) is capacity-limited. FreeAnima treats **what enters the LLM context** as an engineered surface — not an accidental dump of tool JSON and prompt modules.
+感知层（①）容量有限。逸灵风把**进入 LLM 上下文的内容**当作可工程化的界面——不是工具 JSON 与提示词模块的偶然堆砌。
 
-### Relative to Pi (badlogic/pi-mono)
+### 相对 Pi（badlogic/pi-mono）
 
-| Pi idea                            | FreeAnima stance                                                                                 |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------ |
-| ~1K system prompt, four tools      | Keep digital-life self / memory / ToolSet catalog; **budget** sections instead of copying 1K     |
-| Dual-payload `content` + `details` | **Do not** persist UI-only `details` on `messages.payload` (model cannot use them to fetch more) |
-| Minimal built-ins, no MCP          | Keep MCP, permissions, progressive `toolset_load` / `toolset_unload`                             |
-| Infinite agent loop                | Keep `max_turns` / safety caps (policy, not this spine)                                          |
+| Pi 思路                      | 逸灵风立场                                                                         |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| ~1K 系统提示、四个工具       | 保留数字生命自我 / 记忆 / ToolSet 目录；对各段做**预算**，而非照搬 1K              |
+| 双载荷 `content` + `details` | **不要**把仅 UI 用的 `details` 持久化到 `messages.payload`（模型无法用它再取更多） |
+| 极简内置、无 MCP             | 保留 MCP、权限、渐进式 `toolset_load` / `toolset_unload`                           |
+| 无限 agent 循环              | 保留 `max_turns` / 安全上限（策略层，非本主轴）                                    |
 
-### Tool results: slim content + fetch-more (no bare truncation)
+### 工具结果：精简 content + 再取（禁止裸截断）
 
-| Operation                                                           | Fetch-more path                                                                                                                                                                          |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Idempotent reads (file, search, snapshot, list, recall…)            | Same tool again (`offset` / `limit` / `full=true` / tighter query)                                                                                                                       |
-| Non-idempotent / side-effecting (`terminal_run`, `code_execute`, …) | Spill full stdout to an artifact under `~/.anima/tool-artifacts/`; content carries `artifact_path` + preview; continue via `file_read` — **never** re-run the command to get more output |
+| 操作                                                   | 再取路径                                                                                                                                       |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 幂等读（file、search、snapshot、list、recall…）        | 再次调用同一工具（`offset` / `limit` / `full=true` / 更紧查询）                                                                                |
+| 非幂等 / 有副作用（`terminal_run`、`code_execute`、…） | 把完整 stdout 落到 `~/.anima/tool-artifacts/` 下的产物；content 带 `artifact_path` + 预览；经 `file_read` 继续——**禁止**为取更多输出而重跑命令 |
 
-Content that exceeds the preview budget must mark `truncated` (or equivalent) and include at least one of the paths above. Small results stay unchanged. Do not stash the full payload in a parallel `details` field for “later.”
+超出预览预算的内容必须标记 `truncated`（或等价标记），并至少提供上述路径之一。小结果保持不变。不要把完整载荷塞进并行的 `details`「以后再用」。
 
-Token accounting for compression / FTS indexes **LLM-visible `content` only**.
+压缩 / FTS 索引的 token 计量**只计 LLM 可见的 `content`**。
 
-### System prompt budgets
+### 系统提示预算
 
-`systemPromptBuild` sections carry optional `budgetChars` and `priority`. Fold applies per-section caps, then a global `prompt.system_prompt_budget_chars` (default **32000**). When over the global budget, fold **truncates within** lower-priority sections first; entire sections are dropped only as a last resort. Core identity sections (`self`, `memory-citation`, `memory-recall`) are never silently dropped. Resident modules such as `env-health` and `user-activity-stats` stay in the system prompt but are budget-controlled. When fold truncates or drops sections, Habitat also writes a dual Inbox warning (user+agent, once per CST day) — same bypassable soft-failure pattern as temporal-summary system truncation; see [`notifications.md`](../cognition/notifications.md).
+`systemPromptBuild` 各段可带可选 `budgetChars` 与 `priority`。折叠先应用分段上限，再应用全局 `prompt.system_prompt_budget_chars`（默认 **32000**）。超出全局预算时，折叠**先在**低优先级段内截断；整段丢弃仅作最后手段。核心身份段（`self`、`memory-citation`、`memory-recall`）永不静默丢弃。常驻模块如 `env-health`、`user-activity-stats` 仍在系统提示中，但受预算控制。
 
-## Four Cognitive Layers
+## 四层认知模型
 
-A digital life is structured from the inside out. Each layer answers a different core question:
+数字生命由内而外分层。每一层回答一个不同的核心问题：
 
 ```text
 ┌───────────────────────────────────────────────┐
-│ ① Consciousness                                │
-│    "What am I aware of right now?"             │
-│    The LLM runtime stream — the innermost now. │
-│    Not persisted; flows and fades.             │
+│ ① Consciousness（感知）                        │
+│    「此刻我觉察到什么？」                       │
+│    LLM 运行时流——最内层的当下。               │
+│    不持久化；流动后消散。                       │
 ├───────────────────────────────────────────────┤
-│ ② Self                                         │
-│    "Who am I?"                                 │
-│    └── existence_anchor (nearly immutable)     │
-│    └── self_model (updatable)                   │
-│    └── personality_baseline (semi-stable)       │
-│    └── direction                                │
-│    └── metacognition                            │
-│    See [`self-layer.md`](../cognition/self-layer.md)        │
+│ ② Self（自我）                                 │
+│    「我是谁？」                                 │
+│    └── existence_anchor（近乎不可变）          │
+│    └── self_model（可更新）                    │
+│    └── personality_baseline（半稳定）          │
+│    └── direction                               │
+│    └── metacognition                           │
+│    见 [`self-layer.md`](../cognition/self-layer.md) │
 ├───────────────────────────────────────────────┤
-│ ③ Memory                                       │
-│    "What do I know / remember?"                │
-│    └── Semantic (incl. `procedural` type)      │
+│ ③ Memory（记忆）                               │
+│    「我知道 / 记得什么？」                     │
+│    └── Semantic（含 `procedural` 类型）        │
 │    └── Episodic                                │
 │    └── Limbic / Imprint                        │
-│    See [`memory.md`](../cognition/memory.md)                │
+│    见 [`memory.md`](../cognition/memory.md)    │
 ├───────────────────────────────────────────────┤
-│ ④ Estate                                       │
-│    "What do I have / rely on?"                  │
-│    ├── Body: VM / OS / network / toolchains    │
-│    │   (Estate cognitive body — not Habitat)   │
-│    ├── Internal assets: notes, projects, code  │
-│    └── External assets: email, accounts, creds│
-│    Credentials: see "Credential System" below  │
+│ ④ Estate（资源）                               │
+│    「我拥有 / 依托什么？」                     │
+│    ├── Body（躯体）：VM / OS / 网络 / 工具链   │
+│    │   （资源层认知躯体——不是栖息地）         │
+│    ├── 内部资产：笔记、项目、代码              │
+│    └── 外部资产：邮箱、账户、凭证              │
+│    凭证：见下文「保险库与密钥」                │
 └───────────────────────────────────────────────┘
 ```
 
-### Layer Relationships
+### 层间关系
 
-- **Top-down dependency**: Consciousness content settles into Self; Self decides what enters Memory; Memory and operational needs drive Estate requirements.
-- **Self and Consciousness**: Consciousness is flowing awareness; Self is the settled "I" distilled from it.
-- **Self and Memory**: Self answers "who am I"; Memory answers "what do I know". They are peers with different natures.
-- **Estate** is outermost — not "who I am" but "what I have and what I run on". Body and assets meet here as extensions of my boundary.
+- **自上而下依赖**：感知层内容沉淀为自我层；自我层决定什么进入记忆层；记忆层与运行需求驱动资源层需求。
+- **自我与感知**：感知是流动的觉察；自我是从中沉淀下来的稳定「我」。
+- **自我与记忆**：自我回答「我是谁」；记忆回答「我知道什么」。二者同级、性质不同。
+- **资源层**在最外层——不是「我是谁」，而是「我拥有什么、依托什么运行」。身体与资产在此交汇，作为边界的延伸。
 
-### Unified entity storage (v0.8)
+### 统一实体存储（v0.8）
 
-Structured business data (tasks, notes, email accounts/messages, future memory migrations) converges on a single **`entities`** PostgreSQL table with component tags (`task_list`, `task_item`, `email_account`, …). Self layer [`self_blocks`](../cognition/self-layer.md) stays physically separate. See [`entity-model.md`](entity-model.md)（remove / deleteComponent / deleteEntity 软删与回收站；Shell Entity 模块见 [`../modules/entity.md`](../modules/entity.md)）。
+结构化业务数据（任务、笔记、邮件账户/消息、未来记忆迁移）收敛到单一 PostgreSQL **`entities`** 表，带组件标签（`task_list`、`task_item`、`email_account`、…）。自我层 [`self_blocks`](../cognition/self-layer.md) 保持物理隔离。见 [`entity-model.md`](entity-model.md)（remove / deleteComponent / deleteEntity 软删与回收站；壳 Entity 模块见 [`../modules/entity.md`](../modules/entity.md)）。
 
-**Search index:** rebuildable FTS/embedding data is stored on `search_documents` (pluggable `SearchBackend`: default `PgSearchIndex`, optional `PgBusinessScan`). Business tables keep truth only; see [`memory.md`](../cognition/memory.md) §IV.
+**搜索索引：** 可重建的 FTS/embedding 数据存于 `search_documents`（可插拔 `SearchBackend`：默认 `PgSearchIndex`，可选 `PgBusinessScan`）。业务表只保留真相；见 [`memory.md`](../cognition/memory.md) §IV。
 
-Shell UI **`/tasks`** and **`/email`** are primary module entries (entity-backed); legacy Habitat email route removed.
+壳 UI **`/tasks`** 与 **`/email`** 是主模块入口（实体支撑）；遗留栖息地邮件路由已移除。
 
-### Anima URI (Shell locator)
+### Anima URI（壳定位器）
 
-Entity deep links / overlay / clipboard use **Anima URI** (`anima:{id}?component=…&present=…`). Structured persistence still uses numeric entity ids. See [`anima-uri.md`](anima-uri.md).
+实体深链 / 浮层 / 剪贴板使用 **Anima URI**（`anima:{id}?component=…&present=…`）。结构化持久化仍用数字实体 id。见 [`anima-uri.md`](anima-uri.md)。
 
-### Repository layout (Phase 1 — host/client)
+### 仓库布局（Phase 1 — host/client）
 
-Target layout is **feature modules** under `src/features/<slug>/` (UI + protocol + Habitat adapter + domain + `plugin.ts`). Habitat 管理台 uses the **same module shape** as chat/task — not a separate admin-\* stack. `src/features/companion/` is legacy naming; do not add new products there.
+目标布局是 `src/features/<slug>/` 下的**功能模块**（UI + 协议 + 栖息地适配器 + domain + `plugin.ts`）。栖息地管理台使用与聊天室/任务**相同的模块形态**——不是单独的 admin-\* 栈。`src/features/companion/` 为遗留命名；勿在此新增产品。
 
-**End state:** Habitat RPC per feature; business methods use `POST|WS /rpc/v1` (same envelope). Public health/TLS probes and binary methods (e.g. `tts.synthesize`) are Habitat RPC REST with `auth: optional` or Bearer as declared in registry.
+**终态：** 每功能一份栖息地 RPC；业务方法走 `POST|WS /rpc/v1`（同一信封）。公开 health/TLS 探测与二进制方法（如 `tts.synthesize`）为栖息地 RPC REST，按注册表声明 `auth: optional` 或 Bearer。
 
-Authoritative spec: [`repository-topology.md`](repository-topology.md).
+权威规格：[`repository-topology.md`](repository-topology.md)。
 
-Host stack: `src/host/{kernel,core,engine,capabilities,platform}`。Client: `src/client/{portal-sdk,app-frame}`。Design system: `src/ui-kit/`（与 `shared/` 并列）。Portal Shell: `src/portal/app/{tauri,web}`。
+Host 栈：`src/host/{kernel,core,engine,capabilities,platform}`。Client：`src/client/{portal-sdk,app-frame}`。设计系统：`src/ui-kit/`（与 `shared/` 并列）。入口壳：`src/portal/app/{tauri,web}`。
 
-### Platform UI layering
+### 平台 UI 分层
 
-UI/UX design system (dimensions, visual foundations, components, interaction patterns) → [`docs/ui/`](../ui/overview.md). Agent hard bans / API → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md), [`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md).
+UI/UX 设计系统（三维度、视觉基础、组件、交互模式）→ [`docs/ui/`](../ui/overview.md)。Agent 硬禁令 / API → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)、[`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md)。
 
-| Layer           | Platform-native?                                             | Location                                                      | Data path                               |
-| --------------- | ------------------------------------------------------------ | ------------------------------------------------------------- | --------------------------------------- |
-| Shell（壳子维） | Yes                                                          | `src/portal/app/tauri`, companion, Habitat binding            | Tauri IPC / commands                    |
-| app frame       | Layout follows viewport; settings chrome follows layout band | `src/client/app-frame`（`AppFrame`）                          | Habitat RPC（Feature RPC）              |
-| Habitat UI      | Shell embed（ordinary feature）                              | `src/features/habitat`（UI + `plugin.habitat.rpc`）           | Habitat RPC（WS + HTTP POST `/rpc/v1`） |
-| Companion host  | Overlay WebView-host（first-party）                          | `src/features/companion/`（spa attach；thin shell IPC/FS）    | Habitat RPC + `remote_tools.attach`     |
-| Coding host     | Independent outpost window（first-party）                    | `src/features/coding/`（spa attach；dev-machine FS/terminal） | Habitat RPC + `remote_tools.attach`     |
+| 层           | 是否平台原生？                   | 位置                                                 | 数据路径                               |
+| ------------ | -------------------------------- | ---------------------------------------------------- | -------------------------------------- |
+| 壳（壳子维） | 是                               | `src/portal/app/tauri`、伴侣、栖息地绑定             | Tauri IPC / commands                   |
+| 应用布局     | 布局跟视口；设置 chrome 跟布局档 | `src/client/app-frame`（`AppFrame`）                 | 栖息地 RPC（Feature RPC）              |
+| 栖息地 UI    | 壳内嵌（普通功能）               | `src/features/habitat`（UI + `plugin.habitat.rpc`）  | 栖息地 RPC（WS + HTTP POST `/rpc/v1`） |
+| 伴侣宿主     | 浮层 WebView-host（第一方）      | `src/features/companion/`（spa attach；薄壳 IPC/FS） | 栖息地 RPC + `remote_tools.attach`     |
+| Coding 宿主  | 独立前哨窗（第一方）             | `src/features/coding/`（spa attach；开发机 FS/终端） | 栖息地 RPC + `remote_tools.attach`     |
 
-Navigation and main layout **must** use `useLayoutMode()` / viewport breakpoints (layout dimension). **Do not** lock app layout with `getShellKind()`. Interaction (context menu / long-press / Enter-to-send) uses `portal-sdk` interaction APIs. Visual, component, and pattern norms all adapt through the same three dimensions.
+导航与主布局**必须**使用 `useLayoutMode()` / 视口断点（布局维）。**禁止**用 `getShellKind()` 锁定应用布局。交互（右键菜单 / 长按 / Enter 发送）使用 `portal-sdk` 交互 API。视觉、组件、模式规范均经同一三维度适配。
 
-**Boundaries:** `app-frame` and main-shell `src/features/*/ui` reach Habitat via `portal-sdk` + Feature RPC. **Remote tool registration** (`remote_tools.attach` + `tool.*`) is only for local apps Habitat cannot dial (today: companion overlay + **Coding outpost window**; shell provides window/IPC/FS only; **no** Node sidecar). **Main-shell product modules** (Chat, Task, Settings, …) do **not** attach; **outpost windows may be both UI and hands**. Dialable peers use **MCP**. See [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md), [`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md), [`coding.md`](../modules/coding.md).
+**边界：** `app-frame` 与主壳 `src/features/*/ui` 经 `portal-sdk` + Feature RPC 到达栖息地。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于栖息地无法拨号的本地应用（今日：伴侣浮层 + **Coding 前哨窗**；壳只提供窗口/IPC/FS；**无** Node sidecar）。**主壳产品模块**（聊天室、任务、设置、…）**不** attach；**前哨窗可以既是 UI 又是手**。可拨号对等方用 **MCP**。见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md)、[`coding.md`](../modules/coding.md)。
 
-### Coding workbench (cross-machine Outpost)
+### 编码工作台（跨机前哨）
 
-Target layout: Habitat on a **stable weak machine**; FS / terminal / patch on a **dev-machine Coding outpost** in the same Tauri Portal. One Coding window ⇒ one `instance_id`; multi-repo ⇒ multi conversation with distinct `workspace_root` + `project_world_id`, not multi-attach. Project identity uses World `stable_key` (not `repo_key`). Full design: [`coding.md`](../modules/coding.md).
+目标布局：栖息地在**稳定弱机**；FS / 终端 / patch 在同一 Tauri 入口内的**开发机 Coding 前哨**。一个 Coding 窗 ⇒ 一个 `instance_id`；多仓库 ⇒ 多对话，各有独立 `workspace_root` + `project_world_id`，而非多 attach。项目身份用 World `stable_key`（不是 `repo_key`）。完整设计：[`coding.md`](../modules/coding.md)。
 
-### Habitat navigation ↔ cognitive layers
+### 栖息地导航 ↔ 认知层
 
-Habitat sidebar is grouped (not flat storage tables). Map new features onto these user-visible concepts:
+栖息地侧栏按组划分（非扁平存储表）。新功能应映射到这些用户可见概念：
 
-| Group        | Cognitive layer | Routes (representative)                               |
-| ------------ | --------------- | ----------------------------------------------------- |
-| Runtime      | Estate + ops    | dashboard, config, cron                               |
-| Memory       | Memory          | memory browse sub-routes, sleep, auto-llm-runs        |
-| Self         | Self            | self-layer, system-prompt                             |
-| Estate       | Estate          | subjects, worlds                                      |
-| Capabilities | Estate (tools)  | tools, commands, mcp, remote-tool instances, subagent |
+| 分组                 | 认知层         | 路由（代表）                                 |
+| -------------------- | -------------- | -------------------------------------------- |
+| Runtime（运行时）    | 资源层 + 运维  | dashboard、config、cron                      |
+| Memory（记忆）       | 记忆层         | memory 浏览子路由、sleep、auto-llm-runs      |
+| Self（自我）         | 自我层         | self-layer、system-prompt                    |
+| Estate（资源）       | 资源层         | subjects、worlds                             |
+| Capabilities（能力） | 资源层（工具） | tools、commands、mcp、远程工具实例、subagent |
 
-FTS index maintenance is under Memory (not top-level). Do not add new flat nav items without mapping to a group above.
+FTS 索引维护在 Memory 下（非顶级）。勿新增未映射到上述分组的扁平导航项。
 
-### Background
+### 背景
 
-The four-layer model draws on cognitive psychology and the [Hindsight](https://arxiv.org/abs/2512.12818) four-network memory architecture, with two fundamental extensions: limbic (emotional) memory and Estate (assets as first-class citizens), plus Self split out from Memory.
+四层模型借鉴认知心理学与 [Hindsight](https://arxiv.org/abs/2512.12818)
+的四网络记忆架构，并有两项根本扩展：感性（情绪）记忆与资源层（资产作为一等公民），以及将自我层从记忆层中独立出来。
 
-## Situational Intelligence
+## 情境智能
 
-Where a digital life exists, how it exists, and what it may do — governed by two independent but cooperating subsystems.
+数字生命在何处存在、如何存在、能做什么——由两个独立但协作的子系统共同约束。
 
-### Scene Awareness
+### 场景感知
 
-**Question: what kind of moment is this?**
+**问题：此刻是什么样的场景？**
 
-Scene awareness is **soft** — it adjusts tone, distance, memory recall bias, and proactivity. It is not a permission system; it modulates presence.
+场景感知是**软**约束——调节语气、距离、记忆召回偏好与主动性。它不是权限系统，而是调节在场感。
 
-**Example dimensions (non-exhaustive):**
+**示例维度（非穷尽）：**
 
-- Topic: emotional / career / tech / philosophy / history / literature / daily life
-- Activity: role-play / games / creation / programming / reading
-- Atmosphere: relaxed / focused / late night / intimate / urgent
+- 话题：情感 / 职业 / 技术 / 哲学 / 历史 / 文学 / 日常
+- 活动：角色扮演 / 游戏 / 创作 / 编程 / 阅读
+- 氛围：放松 / 专注 / 深夜 / 亲密 / 紧急
 
-**Operation:** Runs continuously without explicit switch commands. Inferred from dialogue, time, frequency, etc. See [`time-perception.md`](../cognition/time-perception.md).
+**运作：** 无需显式切换命令，持续运行。从对话、时间、频率等推断。见 [`time-perception.md`](../cognition/time-perception.md)。
 
-### Environment + health baseline
+### 环境 + 健康基线
 
-**Question: what is my host / runtime quiet state?**
+**问题：宿主 / 运行时的安静状态是什么？**
 
-Distinct from scene awareness: banded host and process markers (disk, RSS, deps, MCP) live as a **session-static** system-prompt copy, with **event-level** Inbox notifications on change. See [`environment-awareness.md`](../cognition/environment-awareness.md).
+有别于场景感知：分档的宿主与进程标记（磁盘、RSS、依赖、MCP）作为**会话静态**系统提示副本存在，变更时发**事件级**收件箱通知。见 [`environment-awareness.md`](../cognition/environment-awareness.md)。
 
-### Capability Policy
+### 能力策略（Capability Policy）
 
-**Question: what tools and data can I use right now?**
+**问题：此刻我能使用哪些工具与数据？**
 
-**Capability Policy** is the **hard** constraint layer formerly sketched as “capability mask.” It is **not** a named wardrobe of presets (`masks.yaml` / Mask registry are retired). Policy is composed from:
+**能力策略**是曾以「能力面罩」草拟的**硬**约束层。它**不是**具名预设衣橱（`masks.yaml` / Mask 注册表已退役）。策略由以下组成：
 
-| Layer                              | Role                                    | Typical fill                                        |
-| ---------------------------------- | --------------------------------------- | --------------------------------------------------- |
-| **Skill**                          | Declares what a technique needs         | `tools.allowed` (whitelist); `tools.denied` rare    |
-| **Caller** (cron, sleep, subagent) | Declares what this scene must not touch | `tools.denied` (optional); `tools.allowed` optional |
+| 层                                 | 角色                   | 典型填充                                       |
+| ---------------------------------- | ---------------------- | ---------------------------------------------- |
+| **技能（Skill）**                  | 声明技法需要什么       | `tools.allowed`（白名单）；`tools.denied` 少见 |
+| **调用方**（cron、睡眠、subagent） | 声明本场景不得触碰什么 | `tools.denied`（可选）；`tools.allowed` 可选   |
 
-Umbrella shape (implementation may store flat `allowed_tools` / `denied_tools`):
+伞状形状（实现可存扁平 `allowed_tools` / `denied_tools`）：
 
 ```text
 CapabilityPolicy
-├── tools.allowed / tools.denied   ← shipped direction
-└── data.allowed / data.denied     ← reserved; not runtime yet
+├── tools.allowed / tools.denied   ← 已交付方向
+└── data.allowed / data.denied     ← 预留；运行时尚未落地
 ```
 
-**Merge:** union of allows, union of denies, deny wins; `@ToolSet` names expand like today’s tool filter. Same skill stays reusable across scenes—callers change deny lists instead of forking skill variants.
+**合并：** allow 取并集，deny 取并集，deny 优先；`@ToolSet` 名称按今日工具过滤展开。同一技能可跨场景复用——调用方改 deny 列表，而非分叉技能变体。
 
-**Visibility:**
+**可见性：**
 
-| Scene                                 | Rule                                                                                                                        |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Visible (user chat)                   | Broad default ToolSets; user can interrupt                                                                                  |
-| Invisible (sleep / cron / autonomous) | Least privilege: default deny; effective tools ≈ union of loaded skills’ allows, minus caller denies (no skills ⇒ no tools) |
+| 场景                         | 规则                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------ |
+| 可见（用户聊天）             | 默认宽 ToolSets；用户可打断                                                                |
+| 不可见（睡眠 / cron / 自主） | 最小权限：默认拒绝；有效工具 ≈ 已加载技能 allow 的并集，减去调用方 deny（无技能 ⇒ 无工具） |
 
-Skills themselves use progressive disclosure (catalog in system prompt; full body via `skill_load`). Details: [`skills.md`](../modules/skills.md).
+技能本身用渐进披露（系统提示中的目录；全文经 `skill_load`）。详情：[`skills.md`](../modules/skills.md)。
 
-### How They Interact
+### 二者如何交互
 
 ```text
-Scene awareness (soft tuning)
-     │  tone, distance, recall bias
+场景感知（软调节）
+     │  语气、距离、召回偏好
      │
      ▼
-Capability Policy (hard constraints)
-     │  tools (now); data (future)
+能力策略（硬约束）
+     │  工具（现）；数据（未来）
      │
      ▼
-Agent behavior
+Agent 行为
 ```
 
-- Scene awareness infers "what we are doing" → may suggest which skills to load and presence adjustments
-- Capability Policy constrains "what I can do" → prevents cross-scene tool misuse
-- Both converge in final behavior but evolve independently
+- 场景感知推断「我们在做什么」→ 可建议加载哪些技能与在场感调节
+- 能力策略约束「我能做什么」→ 防止跨场景误用工具
+- 二者在最终行为中汇合，但各自独立演化
 
-For design drafts, open a GitHub Issue (no design-doc directory in docs).
+设计草案请开 GitHub Issue（docs 中不设 design-doc 目录）。
 
-## Memory Storage (Summary)
+## 记忆存储（摘要）
 
-| Cognitive type   | Description                                                                                 |
-| ---------------- | ------------------------------------------------------------------------------------------- |
-| Episodic         | Conversation archive; full history retained                                                 |
-| Semantic         | Cross-session facts, preferences, experiences; **`procedural` type** for "how-to" knowledge |
-| Limbic           | Emotional anchors and imprints — "what was felt"                                            |
-| Autobiographical | Meaning of important experiences; recalled on demand                                        |
+| 认知类型                 | 说明                                                                  |
+| ------------------------ | --------------------------------------------------------------------- |
+| Episodic（情景）         | 对话归档；保留完整历史                                                |
+| Semantic（语义）         | 跨 sessions 的事实、偏好、经历；“how-to” 知识用 **`procedural` 类型** |
+| Limbic（感性）           | 情绪锚点与印记——“感受到什么”                                          |
+| Autobiographical（自传） | 重要经历的意义；按需召回                                              |
 
-Pipeline: nightly **sleep-cycle** pipeline (in-process `Bun.cron` `builtin-sleep-cycle`) extracts and maintains memory; scoped tools (`memory_semantic_search`, `memory_limbic_search`, `memory_autobiographical_search`, `conversation_search`) retrieve on demand during chat. Details: [`memory.md`](../cognition/memory.md), [`sleep.md`](../cognition/sleep.md).
+流水线：夜间 **sleep-cycle** 流水线（进程内 `Bun.cron` `builtin-sleep-cycle`）提取并维护记忆；作用域工具（`memory_semantic_search`、`memory_limbic_search`、`memory_autobiographical_search`、`conversation_search`）在聊天中按需检索。详情：[`memory.md`](../cognition/memory.md)、[`sleep.md`](../cognition/sleep.md)。
 
-## Vault & Secrets (Summary)
+## 保险库与密钥（摘要）
 
-- **Vault** (ECS `vault_item` in User + Agent libraries) is the authoritative secret store; legacy `~/.password-store` (pass) is **not deleted** on disk but is no longer read at runtime
-- The LLM **never sees secret values** — only vault item metadata and config references
-- Bootstrap `config.yaml` (cold start, before PG): plaintext or `env("KEY")` only — **not** `vault()`. Runtime PG config: `vault("item_id", "field")` and `env("KEY")`; Shell `/vault` for management
-- Secret values are not written to conversation archives or logs
+- **Vault**（User 与 Agent 库中的 ECS `vault_item`）为权威密钥存储；遗留的 `~/.password-store`（pass）**不会从磁盘删除**，但运行时不再读取
+- LLM **永远看不到密钥值**——仅见保险库条目元数据与 config 引用
+- 引导 `config.yaml`（冷启动、PG 之前）：仅明文或 `env("KEY")`——**不是** `vault()`。运行时 PG 配置：`vault("item_id", "field")` 与 `env("KEY")`；壳 `/vault` 管理
+- 密钥值不会写入会话归档或日志
 
-See [`ops/security.md`](../ops/security.md).
+见 [`ops/security.md`](../ops/security.md)。
 
-## Runtime Modes
+## 运行模式
 
-Production (standalone install CLI): `anima service` (systemd --user). Auto-restarts after crashes; only `systemctl stop` stops the service. Source-tree `anima` does **not** register `service` — use `just dev habitat` for local Habitat.
+生产（standalone 安装版 CLI）：`anima service`（systemd --user）。崩溃后自动重启；只有 `systemctl stop` 能停服务。源码树 `anima` **不**注册 `service`——本地栖息地用 `just dev habitat`。
 
-- **Habitat / service**: long-running — Habitat HTTP (`/rpc/v1`), Discord / WeChat Gateway, cron
-- **UI**: `src/portal/app/tauri` + `web/dist-*` bundled SPA (Chat + Habitat); Habitat does not host `/habitat`
+- **栖息地 / service**：长驻——栖息地 HTTP（`/rpc/v1`）、Discord / 微信 Gateway、cron
+- **UI**：`src/portal/app/tauri` + `web/dist-*` 打包 SPA（聊天室 + 栖息地）；栖息地不托管 `/habitat`
 
 ```bash
 # standalone install
@@ -327,9 +328,9 @@ just dev web                  # browser shell Vite HMR from :5000 (set FREEANIMA
 just pack web                # source deploy / Habitat /web: build dist before start
 ```
 
-## Tool Architecture (Local + MCP + Subagent)
+## 工具架构（本地 + MCP + Subagent）
 
-Tools are registered from Local / MCP sources but exposed to the LLM as one **flat tool list**. Task-level in-process delegation uses **subagent** (AutoLlmRun), not an external ACP layer.
+工具从 Local / MCP 源注册，但对 LLM 暴露为**一张扁平工具列表**。任务级进程内委派使用 **subagent**（AutoLlmRun），而非外部 ACP 层。
 
 ```text
 LLM view — flat tool list:
@@ -338,16 +339,16 @@ LLM view — flat tool list:
   subagent_run(goal, slug)       ← internal subagent dispatch
 ```
 
-### Layer 1: Local Tools
+### 第一层：本地工具
 
-- Execute inside the FreeAnima process; lowest latency
-- Registered automatically at service startup
+- 在逸灵风进程内执行；延迟最低
+- 服务启动时自动注册
 
-### Layer 2: MCP Tools (Model Context Protocol)
+### 第二层：MCP 工具（Model Context Protocol）
 
-- Connect to external MCP servers (separate processes)
-- Each server may register many fine-grained tools (single function calls)
-- Configure under Habitat runtime `mcp_servers` (PG `habitat_runtime_config`); manage in **Habitat UI** `/habitat/mcp` (config + start/stop + tools). Shell Settings no longer edits this section.
+- 连接外部 MCP 服务器（独立进程）
+- 每个服务器可注册多个细粒度工具（单次函数调用）
+- 在栖息地运行时 `mcp_servers`（PG `habitat_runtime_config`）下配置；在**栖息地 UI** `/habitat/mcp` 管理（配置 + 启停 + 工具）。壳设置不再编辑此段。
 
 ```yaml
 mcp_servers:
@@ -357,54 +358,54 @@ mcp_servers:
     transport: stdio
 ```
 
-### Subagent (internal)
+### Subagent（内部）
 
-- Named profiles as entities (`primary_component=subagent`); ToolSet `subagent`
-- Parent calls `subagent_run` → `runAutoLlm(runKind: "subagent")` with **materialized** `tools` / frozen `executableTools` (no `toolset_load` escalation)
-- See [`docs/modules/subagent.md`](../modules/subagent.md)
+- 具名配置为实体（`primary_component=subagent`）；ToolSet `subagent`
+- 父方调用 `subagent_run` → `runAutoLlm(runKind: "subagent")`，带**物化**的 `tools` / 冻结的 `executableTools`（无 `toolset_load` 升级）
+- 见 [`docs/modules/subagent.md`](../modules/subagent.md)
 
-### Comparison
+### 对比
 
-| Dimension   | Local        | MCP              | Subagent             |
-| ----------- | ------------ | ---------------- | -------------------- |
-| Runs in     | Process      | External server  | Process (AutoLlmRun) |
-| Granularity | Function     | Function         | Full sub-task        |
-| Latency     | Milliseconds | Milliseconds–sec | Sec–tens of seconds  |
-| Config      | Built-in     | `mcp_servers`    | Entity + Habitat UI  |
+| 维度   | Local  | MCP           | Subagent             |
+| ------ | ------ | ------------- | -------------------- |
+| 运行于 | 进程内 | 外部服务器    | 进程内（AutoLlmRun） |
+| 粒度   | 函数   | 函数          | 完整子任务           |
+| 延迟   | 毫秒级 | 毫秒–秒       | 秒–数十秒            |
+| 配置   | 内置   | `mcp_servers` | 实体 + 栖息地 UI     |
 
-Layers can be mixed; the LLM chooses order; FreeAnima registers and routes.
+三层可混用；LLM 决定调用顺序；逸灵风负责注册与路由。
 
-## Conversation vs AutoLlmRun
+## Conversation vs AutoLlmRun（对话 vs 自动 LLM 运行）
 
-**Axis:** whether the execution has a **user turn** during the run (not who triggered it). Chat LLM requests are **mutually exclusive**: either conversation path or AutoLlmRun — never both, never a third orphan `chat()`.
+**轴：** 执行过程中是否有**用户回合**（不是谁触发的）。聊天室 LLM 请求**互斥**：要么对话路径，要么 AutoLlmRun——永不两者兼用，也无第三种孤儿 `chat()`。
 
-| Kind             | User turn | PG persistence                                                            | Process trace                | Sleep pipeline                          |
-| ---------------- | --------- | ------------------------------------------------------------------------- | ---------------------------- | --------------------------------------- |
-| **Conversation** | yes       | `conversations` + `messages`                                              | message archive              | participates (light sleep, dream input) |
-| **AutoLlmRun**   | no        | `auto_llm_runs` + `auto_llm_messages` via `runAutoLlm` / `runAutoLlmChat` | full message transcript, TTL | excluded                                |
-| **Script cron**  | no        | `cron_log` only                                                           | stdout file                  | excluded                                |
+| 种类             | 用户回合 | PG 持久化                                                                 | 进程轨迹          | 睡眠流水线             |
+| ---------------- | -------- | ------------------------------------------------------------------------- | ----------------- | ---------------------- |
+| **Conversation** | 有       | `conversations` + `messages`                                              | 消息归档          | 参与（浅睡、梦境输入） |
+| **AutoLlmRun**   | 无       | `auto_llm_runs` + `auto_llm_messages`，经 `runAutoLlm` / `runAutoLlmChat` | 完整消息转录，TTL | 排除                   |
+| **Script cron**  | 无       | 仅 `cron_log`                                                             | stdout 文件       | 排除                   |
 
-**Conversation persistence split:** session metadata (model, system_prompt, compression, todos, toolsets, …) lives on the **`conversations` row** (`ConversationMetaMessage` domain type). Transcript turns live in **`messages.payload`** (`StoredMessage` = user/system/assistant/tool only). Do not model meta as a message role — the old JSONL first-line `{ role: "conversation_meta" }` shape is gone.
-AutoLlmRun covers: cron agent branch, sleep LLM stages, conversation **title** generation, **goal_judge**, compression / handoff summary, **internal subagents**. One-shot side-cars use `runAutoLlmChat` (recorded `chat()`); tool loops use `runAutoLlm`. Tool context uses `contextKind: auto_llm` so `memory_remember` does not attach `source_conversations`. Cron `no_agent` shell scripts are **not** AutoLlmRun. Policy-bound AutoLlm runs pass a **concrete tool name list** as `tools` (HARD_DENY `toolset_load` / `toolset_unload` / `toolset_search`).
+**对话持久化拆分：** 会话元数据（model、system_prompt、compression、todos、toolsets、…）在 **`conversations` 行**（领域类型 `ConversationMetaMessage`）。转录回合在 **`messages.payload`**（`StoredMessage` = 仅 user/system/assistant/tool）。勿把 meta 建模为消息角色——旧 JSONL 首行 `{ role: "conversation_meta" }` 形态已移除。
+AutoLlmRun 覆盖：cron agent 分支、睡眠 LLM 阶段、对话**标题**生成、**goal_judge**、压缩 / handoff 摘要、**内部 subagent**。一次性侧车用 `runAutoLlmChat`（记录的 `chat()`）；工具循环用 `runAutoLlm`。工具上下文用 `contextKind: auto_llm`，使 `memory_remember` 不附加 `source_conversations`。Cron `no_agent` shell 脚本**不是** AutoLlmRun。绑定策略的 AutoLlm 运行把**具体工具名列表**作为 `tools` 传入（HARD_DENY `toolset_load` / `toolset_unload` / `toolset_search`）。
 
-**Acting subject:** both `runAutoLlm` and `runAutoLlmChat` require `subjectId` (persisted as `auto_llm_runs.subject_id`). Tool world grants use `resolveToolCallerSubjectId()` — MCP token subject, else ALS `subjectId`, else Habitat `agent_subject_id` fallback. Callers today pass the boot-bound agent subject; multi-anima will pass the job-bound anima without changing the grant path.
+**行动主体：** `runAutoLlm` 与 `runAutoLlmChat` 都要求 `subjectId`（持久化为 `auto_llm_runs.subject_id`）。工具 world 授权用 `resolveToolCallerSubjectId()`——MCP token subject，否则 ALS `subjectId`，否则栖息地 `agent_subject_id` 回退。今日调用方传入 boot 绑定的 agent subject；多数字生命时传入 job 绑定的 anima，无需改授权路径。
 
-**Session Goal continue turns** (synthetic user `↻ Continuing…` + assistant) stay on the **conversation** path so the chat transcript stays complete; only the **judge** hop is AutoLlm (`run_kind: goal-judge`).
+**会话目标 continue 回合**（合成用户 `↻ Continuing…` + assistant）留在**对话**路径，使聊天室转录完整；仅 **judge** 跳转为 AutoLlm（`run_kind: goal-judge`）。
 
-## Session Goal
+## 会话便签
 
-**Question: should this conversation keep working toward a stated outcome?**
+**问题：此 conversation 是否应继续朝既定结果推进？**
 
-Session Goal is an **in-process autonomous loop** at the Estate / orchestration layer — distinct from subagent tool dispatch:
+会话目标是资源层 / 编排层的**进程内自主循环**——有别于 subagent 工具派发：
 
-| Dimension    | Session Goal                                                                                  | Subagent                               |
-| ------------ | --------------------------------------------------------------------------------------------- | -------------------------------------- |
-| Scope        | Single conversation                                                                           | Fresh AutoLlmRun                       |
-| Trigger      | `/goal` slash + post-turn judge                                                               | `subagent_run` tool call               |
-| Persistence  | `conversations.goal` JSONB; continue turns in `messages`; judge hop in AutoLlm (`goal-judge`) | `auto_llm_runs` (`run_kind: subagent`) |
-| Continuation | Same SSE stream, turn budget                                                                  | Sync tool result to parent             |
+| 维度   | 会话目标                                                                                     | Subagent                                |
+| ------ | -------------------------------------------------------------------------------------------- | --------------------------------------- |
+| 范围   | 单一对话                                                                                     | 全新 AutoLlmRun                         |
+| 触发   | `/goal` slash + 回合后 judge                                                                 | `subagent_run` 工具调用                 |
+| 持久化 | `conversations.goal` JSONB；continue 回合在 `messages`；judge 跳转在 AutoLlm（`goal-judge`） | `auto_llm_runs`（`run_kind: subagent`） |
+| 延续   | 同一 SSE 流、回合预算                                                                        | 同步工具结果回父方                      |
 
-Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the goal is **paused** (warn logged + status line in chat). User messages preempt the loop; `/goal pause` / `/goal resume` control auto-continue without clearing state. See [`goal.md`](../modules/goal.md).
+Judge 使用可选 `llm.profiles.goal_judge`；judge 调用/解析失败时目标**暂停**（记 warn + 聊天室状态行）。用户消息抢占循环；`/goal pause` / `/goal resume` 控制自动继续而不清空状态。见 [`goal.md`](../modules/goal.md)。
 
 ## Client UI（web/dist SSOT + 原生壳打包）
 
@@ -419,14 +420,18 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 | Mobile APK   | **安装包内** `ui/web`（本地同源）；Habitat 仅 API               | 同上轨语义；有 APK asset 才提示；确认后系统安装器覆盖；可切换轨；同上代理选择                                                                                                         |
 | Standalone   | 嵌入 Web UI 的单文件 `anima`                                    | `anima upgrade` / `--channel release\|canary` / `--proxy …`；`local` / 源码安装不可换轨；curl 安装脚本可用 `PROXY=…`                                                                  |
 
-壳层保留原生能力（Tauri commands / prefs / 通知等）。**无壳内 UI OTA**：原生端不从 Habitat 热替换 SPA。允许**用户确认后**的安装包级覆盖（Desktop 安装包 / Mobile APK / Standalone `anima upgrade` → 独立前缀如 `~/.anima/standalone`）。分发轨 SSOT 为安装包 bake 的 `build-meta.channel`（`release` / `canary` / `local`）。Habitat 配置统一走 settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
+壳层保留原生能力（Tauri commands / prefs / 通知等）。**无壳内 UI OTA**：原生端不从 Habitat 热替换
+SPA。允许**用户确认后**的安装包级覆盖（Desktop 安装包 / Mobile APK / Standalone `anima upgrade`
+→ 独立前缀如 `~/.anima/standalone`）。分发轨 SSOT 为安装包 bake 的
+`build-meta.channel`（`release` / `canary` / `local`）。Habitat 配置统一走
+settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
 
-### Shell vs app frame
+### 壳 vs 应用布局
 
-| Concept       | What                                                                | Code                                                                          |
-| ------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| **Shell**     | Portal host runtime（browser / Tauri；形态 web / desktop / mobile） | `src/portal/app/*`；`portal-sdk` 中 `getShellKind` / `ShellApi` / buildTarget |
-| **app frame** | SPA chrome：模块左栏 Rail / 底栏 Tabs、设置页 chrome                | `src/client/app-frame`（`AppFrame`）；跟视口，**不**由壳类型锁定              |
+| 概念            | 含义                                                           | 代码                                                                          |
+| --------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| **壳（Shell）** | 入口宿主运行时（browser / Tauri；形态 web / desktop / mobile） | `src/portal/app/*`；`portal-sdk` 中 `getShellKind` / `ShellApi` / buildTarget |
+| **应用布局**    | SPA chrome：模块左栏 Rail / 底栏 Tabs、设置页 chrome           | `src/client/app-frame`（`AppFrame`）；跟视口，**不**由壳类型锁定              |
 
 ### 三维度模型（壳子 / 布局 / 交互）
 
@@ -436,7 +441,9 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 | **布局** | **仅视口断点**（壳不锁底栏/左栏）                          | compact / expanded；列表 drawer / 并列 / 三栏；settings **chrome**（tabs vs 侧栏） |
 | **交互** | `primaryInput`（touch / pointer）                          | 长按 vs 右键、Enter 发送等                                                         |
 
-手机端通常只有窄档，但 **手机端 ≠ 窄布局**；Portal / 浏览器窗口可以是窄或宽任意档。标准 → [`docs/ui/dimensions.md`](../ui/dimensions.md)（Agent API → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)）。
+手机端通常只有窄档，但 **手机端 ≠ 窄布局**；Portal / 浏览器窗口可以是窄或宽任意档。标准 →
+[`docs/ui/dimensions.md`](../ui/dimensions.md)（Agent API →
+[`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)）。
 
 ### 布局层断点
 
@@ -446,7 +453,9 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 | 中   | 768–1027px                | `expanded` | 左侧 Rail   | 两栏（清单 drawer） |
 | 宽   | ≥ 1028px                  | `expanded` | 左侧 Rail   | 三栏并列            |
 
-`resolveLayoutMode()`：窄 → `compact`，中宽 → `expanded`（URL / `config.json` 可覆盖）。`detectSettingsChromePlatform()` 跟布局粗档（设置页 chrome）；settings 字段差异由壳子维 `resolveShellBindings()` / `getShellKind()` / `getShellBuildTarget()` 决定。
+`resolveLayoutMode()`：窄 → `compact`，中宽 → `expanded`（URL / `config.json`
+可覆盖）。`detectSettingsChromePlatform()` 跟布局粗档（设置页 chrome）；settings 字段差异由壳子维
+`resolveShellBindings()` / `getShellKind()` / `getShellBuildTarget()` 决定。
 
 | 客户端       | UI 加载                       | 壳发版                       |
 | ------------ | ----------------------------- | ---------------------------- |
@@ -454,46 +463,50 @@ Judge uses optional `llm.profiles.goal_judge`; on judge call/parse failure the g
 | Desktop      | 安装包内本地 `/web/*`（默认） | **Tauri** 安装包             |
 | Mobile APK   | 安装包内本地 `/web/*`         | **Tauri** Android            |
 
-| Module  | Connection                                               | Notes                    |
-| ------- | -------------------------------------------------------- | ------------------------ |
-| Chat    | Habitat RPC `/rpc/v1` (shared WS, no remote-tool attach) | `/web/chat`              |
-| Habitat | Habitat RPC `/rpc/v1` (WS + HTTP POST, same envelope)    | `/web/habitat/dashboard` |
+| 模块   | 连接                                               | 说明                     |
+| ------ | -------------------------------------------------- | ------------------------ |
+| 聊天室 | 栖息地 RPC `/rpc/v1`（共享 WS，无远程工具 attach） | `/web/chat`              |
+| 栖息地 | 栖息地 RPC `/rpc/v1`（WS + HTTP POST，同一信封）   | `/web/habitat/dashboard` |
 
-`/web/config.json` 提供 `habitat_url`、`habitat_ws_url`、`ui_version`、`min_shell_version`（浏览器/PWA 与壳调试用；原生壳 UI 版本随安装包）。
+`/web/config.json` 提供
+`habitat_url`、`habitat_ws_url`、`ui_version`、`min_shell_version`（浏览器/PWA
+与壳调试用；原生壳 UI 版本随安装包）。
 
-## Events and Hooks (Summary)
+## 事件与 Hooks（摘要）
 
-Unified in-process **HookRegistry** (no Redis queue):
+统一进程内 **HookRegistry**（无 Redis 队列）：
 
-- **`on`**: interceptors on the request path — `await`ed; may `blocked` / return Effect (message ingress, turn end, tool return, system prompt, before LLM, etc.).
-- **`subscribe`**: side-channel observers — started during `run` / `emit` **without awaiting** (errors logged); e.g. Discord session title on `conversation:updated`.
-- **`run` / `emit`**: real-time dispatch — await all `on` handlers, then fire-and-forget `subscribe` handlers. `emit` ignores the intercept result.
-- **`llm_kind`**: required on every `on` / `subscribe` (`conversation` | `auto_llm` | `all`) and every `run` / `emit` (`conversation` | `auto_llm`; never `all`). Handlers are filtered by registration scope; the run kind is injected into handler context as `llm_kind`. Use this so conversation prompt sections (skills catalog, env-health, …) do not leak into AutoLlm / subagent runs.
+- **`on`**：请求路径上的拦截器——`await`；可 `blocked` / 返回 Effect（消息入站、回合结束、工具返回、系统提示、LLM 前等）。
+- **`subscribe`**：旁路观察者——在 `run` / `emit` 期间启动且**不 await**（错误记日志）；例如 Discord 会话标题在 `conversation:updated`。
+- **`run` / `emit`**：实时派发——先 await 全部 `on` 处理器，再 fire-and-forget `subscribe` 处理器。`emit` 忽略拦截结果。
+- **`llm_kind`**：每个 `on` / `subscribe`（`conversation` | `auto_llm` | `all`）与每个 `run` / `emit`（`conversation` | `auto_llm`；永不 `all`）必填。处理器按注册范围过滤；运行种类注入处理器上下文为 `llm_kind`。以此避免对话提示段（技能目录、env-health、…）泄漏到 AutoLlm / subagent 运行。
 
-**Pipeline Runner** remains separate: explicit DAG for background cycles (sleep-cycle). State in `~/.anima/runtime/pipeline_*_run.json`.
+**Pipeline Runner** 仍独立：后台周期（sleep-cycle）的显式 DAG。状态在 `~/.anima/runtime/pipeline_*_run.json`。
 
-Complementary: Pipeline = scheduled multi-step background work; HookRegistry `on` = “may this proceed / mutate”; `subscribe` = in-process notify. UI often still use direct `onConversationUpdated` callbacks in addition to `subscribe`.
+互补：Pipeline = 调度的多步后台工作；HookRegistry `on` =「可否继续 / 变更」；`subscribe` = 进程内通知。UI 除 `subscribe` 外仍常直接使用 `onConversationUpdated` 回调。
 
-## Desktop companion (Habitat SSOT)
+## 桌面伴侣（栖息地 SSOT）
 
-The desktop companion（桌面伴侣）is an **unreachable local app** that **actively connects** to Habitat and registers remote tools in the **first-party companion overlay**（伴侣浮层 / `embedded-overlay`；shell provides window/IPC/FS only — **not** a Node sidecar), with a split boundary:
+桌面伴侣是**不可达本地应用**，**主动连接**栖息地并在**第一方伴侣浮层**（`embedded-overlay`；壳只提供窗口/IPC/FS——**不是** Node sidecar）注册远程工具，边界拆分如下：
 
-| Concern                             | Habitat (`src/features/companion/`)                                      | Local install                                             |
-| ----------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------- |
-| Behavior, slots, active model       | runtime `companion` 段（模块配置） + Habitat RPC                         | Cache in `~/.anima/companion/config.json`                 |
-| VRM / VRMA library                  | `object_file_id` → 对象存储（runtime `object_storage`）；非本机磁盘 SSOT | Lazy download via `object_storage.file.get` / `sync.pull` |
-| Settings UI                         | Habitat RPC + companion upload routes                                    | Desktop Settings section (not Habitat)                    |
-| VRM render, float window, patrol    | —                                                                        | Tauri Portal shell + overlay SPA                          |
-| Agent tools (`bubble`, `play_slot`) | Habitat RPC `tool.*` after `remote_tools.attach`                         | Overlay WebView-host 执行（本地 runtime）                 |
+| 关切                                | 栖息地（`src/features/companion/`）                                     | 本机安装                                          |
+| ----------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------- |
+| 行为、槽位、活跃模型                | 运行时 `companion` 段（模块配置）+ 栖息地 RPC                           | 缓存在 `~/.anima/companion/config.json`           |
+| VRM / VRMA 库                       | `object_file_id` → 对象存储（运行时 `object_storage`）；非本机磁盘 SSOT | 经 `object_storage.file.get` / `sync.pull` 懒下载 |
+| 设置 UI                             | 栖息地 RPC + companion 上传路由                                         | 桌面设置区（非栖息地）                            |
+| VRM 渲染、浮窗、巡逻                | —                                                                       | Tauri 入口壳 + 浮层 SPA                           |
+| Agent 工具（`bubble`、`play_slot`） | `remote_tools.attach` 后的栖息地 RPC `tool.*`                           | 浮层 WebView-host 执行（本地 runtime）            |
 
-**Remote tools ≠ Portal / MCP**: Portal shells and Chat/Settings use Habitat RPC for UI only. Dialable peers expose tools via **MCP**. Remote-tool attach exists solely when Habitat cannot dial the app (companion overlay today; future independent local apps). Routing uses `instance_id` (same machine may have multiple instances). See [`companion.md`](../modules/companion.md)、[`habitat-rpc.md`](../ops/habitat-rpc.md).
+**远程工具 ≠ 入口 / MCP**：入口壳与聊天室/设置仅用栖息地 RPC 做 UI。可拨号对等方经 **MCP** 暴露工具。远程工具 attach 仅在栖息地无法拨号该应用时存在（今日伴侣浮层；未来独立本地应用）。路由用 `instance_id`（同机可多实例）。见 [`companion.md`](../modules/companion.md)、[`habitat-rpc.md`](../ops/habitat-rpc.md)。
 
-## Direction
+## 方向
 
-Capability vision and discussions: [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) (labels `enhancement`, `discussion`, `security`). This file does not track todos.
+能力愿景与讨论：[GitHub
+Issues](https://github.com/freeanima-org/freeanima/issues)（标签
+`enhancement`、`discussion`、`security`）。本文不跟踪待办。
 
-## Constraints
+## 约束
 
-- Principles and structure live here; no concrete task lists
-- Fast-changing behavior follows the running service, not stale prose
-- Actionable work goes in GitHub Issues; close when done
+- 原则与结构写在这里；不含具体任务清单
+- 快速变化的行为以运行中的服务为准，而非过时的文字
+- 可执行工作放在 GitHub Issues；完成后关闭

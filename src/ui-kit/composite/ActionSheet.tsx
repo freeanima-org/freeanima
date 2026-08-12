@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { Button } from "../components/ui/button.tsx";
 import { Sheet, SheetHeader, SheetTitle } from "../components/ui/sheet.tsx";
 import { cn } from "../lib/cn.ts";
-import { m } from "./i18n.ts";
 import type { ActionSheetItem } from "./types.ts";
 
 export type ActionSheetProps = {
@@ -51,7 +50,7 @@ export function ActionSheet({ title, items, dismissLabel, onClose, className }: 
       </ul>
       <div className="border-t p-2">
         <Button type="button" variant="ghost" className="w-full" onClick={onClose}>
-          {dismissLabel ?? m.ui_common_cancel()}
+          {dismissLabel ?? "取消"}
         </Button>
       </div>
     </Sheet>

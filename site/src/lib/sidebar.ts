@@ -1,89 +1,78 @@
-import { m } from "../../../messages/paraglide/messages.js";
-
-type SidebarMessageFn = (typeof m)["sidebar_home"];
-
-/** Starlight sidebar 需要 en label + zh-CN translation，用 Paraglide 按 locale 取文案 */
-function t(fn: SidebarMessageFn): { label: string; translations: { "zh-CN": string } } {
-  return {
-    label: fn({}, { locale: "en" }),
-    translations: { "zh-CN": fn({}, { locale: "zh-cn" }) },
-  };
-}
-
+/** Starlight 侧栏：中文 label + link（无 i18n） */
 export const starlightSidebar = [
-  { ...t(m.sidebar_home), link: "/" },
+  { label: "首页", link: "/" },
   {
-    ...t(m.sidebar_docs),
+    label: "文档",
     items: [
-      { ...t(m.sidebar_overview), link: "/docs/" },
+      { label: "概述", link: "/docs/" },
       {
-        ...t(m.sidebar_product),
+        label: "产品",
         collapsed: true,
         items: [
-          { ...t(m.sidebar_architecture), link: "/docs/product/architecture/" },
-          { ...t(m.sidebar_identity), link: "/docs/product/identity/" },
-          { ...t(m.sidebar_entity_model), link: "/docs/product/entity-model/" },
-          { ...t(m.sidebar_anima_uri), link: "/docs/product/anima-uri/" },
+          { label: "架构", link: "/docs/product/architecture/" },
+          { label: "身份定位", link: "/docs/product/identity/" },
+          { label: "实体模型", link: "/docs/product/entity-model/" },
+          { label: "Anima URI", link: "/docs/product/anima-uri/" },
         ],
       },
       {
-        ...t(m.sidebar_cognition),
+        label: "认知",
         collapsed: true,
         items: [
-          { ...t(m.sidebar_memory), link: "/docs/cognition/memory/" },
-          { ...t(m.sidebar_compression), link: "/docs/cognition/compression/" },
-          { ...t(m.sidebar_sleep), link: "/docs/cognition/sleep/" },
-          { ...t(m.sidebar_dream), link: "/docs/cognition/dream/" },
-          { ...t(m.sidebar_self_layer), link: "/docs/cognition/self-layer/" },
-          { ...t(m.sidebar_time_perception), link: "/docs/cognition/time-perception/" },
-          { ...t(m.sidebar_temporal_summary), link: "/docs/cognition/temporal-summary/" },
-          { ...t(m.sidebar_recall_flow), link: "/docs/cognition/recall-flow/" },
-          { ...t(m.sidebar_environment_awareness), link: "/docs/cognition/environment-awareness/" },
-          { ...t(m.sidebar_notifications), link: "/docs/cognition/notifications/" },
+          { label: "记忆体系", link: "/docs/cognition/memory/" },
+          { label: "压缩", link: "/docs/cognition/compression/" },
+          { label: "睡眠机制", link: "/docs/cognition/sleep/" },
+          { label: "梦境", link: "/docs/cognition/dream/" },
+          { label: "自我层", link: "/docs/cognition/self-layer/" },
+          { label: "时间感知", link: "/docs/cognition/time-perception/" },
+          { label: "Temporal summary", link: "/docs/cognition/temporal-summary/" },
+          { label: "回忆流程", link: "/docs/cognition/recall-flow/" },
+          { label: "环境感知", link: "/docs/cognition/environment-awareness/" },
+          { label: "通知", link: "/docs/cognition/notifications/" },
         ],
       },
       {
-        ...t(m.sidebar_aspects),
+        label: "切面",
         collapsed: true,
         items: [
-          { ...t(m.sidebar_portal_data_plane), link: "/docs/aspects/portal-data-plane/" },
-          { ...t(m.sidebar_offline_platform), link: "/docs/aspects/offline-platform/" },
-          { ...t(m.sidebar_page_refresh), link: "/docs/aspects/page-refresh/" },
+          { label: "Portal 数据面", link: "/docs/aspects/portal-data-plane/" },
+          { label: "离线平台", link: "/docs/aspects/offline-platform/" },
+          { label: "页面刷新", link: "/docs/aspects/page-refresh/" },
         ],
       },
       {
-        ...t(m.sidebar_modules),
+        label: "模块",
         collapsed: true,
         items: [
-          { ...t(m.sidebar_chat), link: "/docs/modules/chat/" },
-          { ...t(m.sidebar_companion), link: "/docs/modules/companion/" },
-          { ...t(m.sidebar_diary), link: "/docs/modules/diary/" },
-          { ...t(m.sidebar_goal), link: "/docs/modules/goal/" },
-          { ...t(m.sidebar_project), link: "/docs/modules/project/" },
-          { ...t(m.sidebar_mobile_app), link: "/docs/modules/mobile-app/" },
+          { label: "聊天室", link: "/docs/modules/chat/" },
+          { label: "桌面伴侣", link: "/docs/modules/companion/" },
+          { label: "日记", link: "/docs/modules/diary/" },
+          { label: "会话目标", link: "/docs/modules/goal/" },
+          { label: "项目", link: "/docs/modules/project/" },
+          { label: "移动端 APP（Android）", link: "/docs/modules/mobile-app/" },
         ],
       },
       {
-        ...t(m.sidebar_tools),
+        label: "工具",
         collapsed: true,
         items: [
-          { ...t(m.sidebar_freeanima_docs), link: "/docs/tools/freeanima-docs/" },
-          { ...t(m.sidebar_runtimes), link: "/docs/tools/execute-code/" },
-          { ...t(m.sidebar_browser), link: "/docs/tools/browser/" },
+          { label: "freeanima_docs", link: "/docs/tools/freeanima-docs/" },
+          { label: "代码运行时", link: "/docs/tools/execute-code/" },
+          { label: "Camofox 浏览器", link: "/docs/tools/browser/" },
         ],
       },
       {
-        ...t(m.sidebar_ops),
+        label: "运维",
         collapsed: true,
         items: [
-          { ...t(m.sidebar_install), link: "/docs/ops/install/" },
-          { ...t(m.sidebar_windows_dev), link: "/docs/ops/windows-dev/" },
-          { ...t(m.sidebar_service), link: "/docs/ops/service/" },
-          { ...t(m.sidebar_security), link: "/docs/ops/security/" },
-          { ...t(m.sidebar_database), link: "/docs/ops/database/" },
-          { ...t(m.sidebar_remote_access), link: "/docs/ops/remote-access/" },
-          { ...t(m.sidebar_habitat_rpc), link: "/docs/ops/habitat-rpc/" },
-          { ...t(m.sidebar_message_gateway), link: "/docs/ops/message-gateway/" },
+          { label: "安装", link: "/docs/ops/install/" },
+          { label: "Windows 开发", link: "/docs/ops/windows-dev/" },
+          { label: "服务", link: "/docs/ops/service/" },
+          { label: "安全", link: "/docs/ops/security/" },
+          { label: "数据库", link: "/docs/ops/database/" },
+          { label: "远程访问", link: "/docs/ops/remote-access/" },
+          { label: "Habitat RPC", link: "/docs/ops/habitat-rpc/" },
+          { label: "消息网关", link: "/docs/ops/message-gateway/" },
         ],
       },
     ],

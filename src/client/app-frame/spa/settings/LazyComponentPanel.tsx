@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Alert, Button } from "@freeanima/ui-kit";
-import { initHabitatLocale } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import type {
   SettingsComponentLoader,
   SettingsPlatform,
@@ -19,10 +18,6 @@ export function LazyComponentPanel({ load, platform, store, deps }: Props) {
   const [retryKey, setRetryKey] = useState(0);
   const LazyPanel = useMemo(() => lazy(load), [load, retryKey]);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    initHabitatLocale();
-  }, []);
 
   useEffect(() => {
     setError(null);

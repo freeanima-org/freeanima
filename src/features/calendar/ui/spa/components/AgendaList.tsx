@@ -1,5 +1,4 @@
 import { Button, cn } from "@freeanima/ui-kit";
-import { m } from "@paraglide/messages";
 
 import type { CalendarRangeItem } from "../lib/api.ts";
 import { dayKeyFromIso, isoToTimeLocalValue } from "../lib/format-calendar.ts";
@@ -14,14 +13,14 @@ type AgendaListProps = {
 };
 
 function kindLabel(kind: CalendarRangeItem["kind"]): string {
-  if (kind === "event") return m.calendar_kind_event();
-  if (kind === "task") return m.calendar_kind_task();
-  return m.calendar_kind_project();
+  if (kind === "event") return "事件";
+  if (kind === "task") return "任务";
+  return "项目";
 }
 
 function itemTime(item: CalendarRangeItem): string {
   if (item.kind === "event") {
-    if (item.all_day) return m.calendar_all_day();
+    if (item.all_day) return "全天";
     return isoToTimeLocalValue(item.start_at) || "—";
   }
   if (item.kind === "task") {
@@ -61,7 +60,7 @@ export function AgendaList({
   });
 
   if (dayItems.length === 0) {
-    return <p className="text-sm text-muted-foreground px-1 py-4">{m.calendar_agenda_empty()}</p>;
+    return <p className="text-sm text-muted-foreground px-1 py-4">{"当天暂无条目"}</p>;
   }
 
   return (

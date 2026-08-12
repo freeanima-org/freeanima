@@ -1,7 +1,0 @@
-{
-  "error_internal": "Internal error",
-  "error_unauthorized": "Unauthorized",
-  "error_not_found": "Not found",
-  "error_bad_request": "Bad request",
-  "prompt_locale_hint": "Respond in the user locale when appropriate."
-}

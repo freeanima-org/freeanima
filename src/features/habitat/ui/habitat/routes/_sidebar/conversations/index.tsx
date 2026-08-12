@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { Badge, Button, Card, CardContent, Spinner } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { useHabitatConversationsStore } from "@freeanima/features/habitat/ui/habitat/stores/habitat-conversations.ts";
 
 export const Route = createFileRoute("/_sidebar/conversations/")({
@@ -24,7 +23,7 @@ function HabitatConversationsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold">{m.habitat_nav_conversations()}</h2>
+        <h2 className="text-lg font-bold">{"💬 对话"}</h2>
         <Button
           type="button"
           variant="ghost"
@@ -33,7 +32,7 @@ function HabitatConversationsPage() {
           isDisabled={store.loadingConversations}
           onClick={() => void store.fetchConversations({ force: true })}
         >
-          {m.habitat_common_refresh()}
+          {"刷新"}
         </Button>
       </div>
 
@@ -45,9 +44,7 @@ function HabitatConversationsPage() {
         <Card className="bg-muted py-0">
           <CardContent className="p-0">
             {totalConversations === 0 ? (
-              <div className="text-sm text-muted-foreground p-4">
-                {m.habitat_conversations_empty()}
-              </div>
+              <div className="text-sm text-muted-foreground p-4">{"暂无对话"}</div>
             ) : (
               <>
                 <div className="divide-y divide-border/50">
@@ -61,9 +58,7 @@ function HabitatConversationsPage() {
                       <Badge variant="ghost" className="text-xs shrink-0">
                         {s.platform || "legacy"}
                       </Badge>
-                      <span className="flex-1 truncate text-sm">
-                        {s.title || m.habitat_common_no_title()}
-                      </span>
+                      <span className="flex-1 truncate text-sm">{s.title || "（无标题）"}</span>
                       <span className="font-mono text-[10px] text-foreground/40 shrink-0 hidden sm:inline">
                         {s.id}
                       </span>
@@ -79,11 +74,7 @@ function HabitatConversationsPage() {
                 {pageCount > 1 ? (
                   <div className="flex items-center justify-between gap-2 px-4 py-3 border-t border/50 text-xs">
                     <span className="text-muted-foreground">
-                      {m.habitat_common_pagination({
-                        total: String(totalConversations),
-                        current: String(currentPage),
-                        pages: String(pageCount),
-                      })}
+                      {`共 ${String(totalConversations)} 条 · 第 ${String(currentPage)} / ${String(pageCount)} 页`}
                     </span>
                     <div className="flex items-center gap-1">
                       <Button
@@ -94,7 +85,7 @@ function HabitatConversationsPage() {
                         isDisabled={currentPage <= 1}
                         onClick={() => void store.goToConversationsPage(currentPage - 1)}
                       >
-                        {m.habitat_common_previous_page()}
+                        {"上一页"}
                       </Button>
                       <Button
                         type="button"
@@ -104,7 +95,7 @@ function HabitatConversationsPage() {
                         isDisabled={currentPage >= pageCount}
                         onClick={() => void store.goToConversationsPage(currentPage + 1)}
                       >
-                        {m.habitat_common_next_page()}
+                        {"下一页"}
                       </Button>
                     </div>
                   </div>

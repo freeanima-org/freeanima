@@ -1,51 +1,52 @@
 ---
-title: Session Goal
+title: 会话便签
 ---
 
-# Session Goal
+# 会话便签
 
-Session Goal lets you set a persistent objective for a single conversation. After each turn, an independent **judge model** decides whether the goal is complete; if not, a continuation prompt is injected automatically until the goal is met, the turn budget is exhausted, or the user pauses/clears.
+会话便签让你为单次对话设定持久目标。每轮结束后，独立的 **judge model（评判模型）**
+判定目标是否完成；若未完成，则自动注入续写提示，直至目标达成、轮次预算耗尽，或用户暂停/清除。
 
-## Commands
+## 命令
 
-| Command                | Description                                           |
-| ---------------------- | ----------------------------------------------------- |
-| `/goal <description>`  | Set goal and start first run (default 20-turn budget) |
-| `/goal status`         | View goal, subgoals, turn count, judge reason         |
-| `/goal pause`          | Pause auto-continuation (keep goal state)             |
-| `/goal resume`         | Resume auto-continuation                              |
-| `/goal clear`          | Clear goal                                            |
-| `/subgoal`             | List subgoals                                         |
-| `/subgoal <condition>` | Append sub-condition                                  |
-| `/subgoal remove <N>`  | Remove subgoal N (1-based)                            |
-| `/subgoal clear`       | Clear all subgoals                                    |
+| 命令                   | 说明                                     |
+| ---------------------- | ---------------------------------------- |
+| `/goal <description>`  | 设定目标并启动首次运行（默认 20 轮预算） |
+| `/goal status`         | 查看目标、子目标、轮次计数、评判理由     |
+| `/goal pause`          | 暂停自动续写（保留目标状态）             |
+| `/goal resume`         | 恢复自动续写                             |
+| `/goal clear`          | 清除目标                                 |
+| `/subgoal`             | 列出子目标                               |
+| `/subgoal <condition>` | 追加子条件                               |
+| `/subgoal remove <N>`  | 移除第 N 个子目标（从 1 起计）           |
+| `/subgoal clear`       | 清除全部子目标                           |
 
-On **Chat**, terminal commands (`/goal status`, pause/resume/clear, `/subgoal` list, etc.) run via Habitat RPC `conversation.command` and show in a result panel or toast — they do not flash through the message stream. Setting a goal (`/goal <description>`) and `/retry` still use `message.send` so the LLM turn streams into the conversation. Discord/Weixin keep the existing slash → stream reply path.
+在**聊天室**中，终端命令（`/goal status`、暂停/恢复/清除、`/subgoal` 列表等）经栖息地 RPC `conversation.command` 执行，结果在面板或 toast 展示 — 不闪过消息流。设定目标（`/goal <description>`）与 `/retry` 仍走 `message.send`，使 LLM 轮次流入对话。Discord/微信保持既有 slash → 流式回复路径。
 
-## Workflow
+## 工作流
 
-1. User runs `/goal …` → writes `conversations.goal` and triggers engine run.
-2. After each assistant reply → **goal judge** (`run_kind: goal-judge` AutoLlmRun; not written into conversation messages).
-3. Judge outputs strict JSON: `{"done": boolean, "reason": "..."}`.
-4. `done: false` → inject user-role continuation (e.g. `↻ Continuing toward goal (3/20): …`) into the **same conversation** `messages`, continue next turn in same SSE stream.
-5. `done: true` → mark completed, stop continuation.
-6. User message mid-run preempts current continuation; after that turn, re-judge; continues if not paused.
+1. 用户执行 `/goal …` → 写入 `conversations.goal` 并触发 engine 运行。
+2. 每条助手回复后 → **goal judge**（`run_kind: goal-judge` AutoLlmRun；不写入对话消息）。
+3. 评判输出严格 JSON：`{"done": boolean, "reason": "..."}`。
+4. `done: false` → 向**同一对话** `messages` 注入 user 角色续写（如 `↻ Continuing toward goal (3/20): …`），在同一 SSE 流中继续下一轮。
+5. `done: true` → 标记完成，停止续写。
+6. 运行中用户消息会抢占当前续写；该轮结束后重新评判；未暂停则继续。
 
-## Judge conservative policy
+## 评判保守策略
 
-- **Pass**: assistant clearly confirms completion, shows final deliverable, or states blocker needing user input (reason explains).
-- **Fail**: vague progress, plan only without evidence; implied completion does not count.
-- **Judge unavailable**: call or parse failure **pauses** the goal (`status: paused`), logs a warn, and appends a visible status line to the conversation (not a continue prompt). Use `/goal resume` to retry. Check `/goal status` for `last_judge_reason`.
+- **通过**：助手明确确认完成、展示最终交付物，或说明需用户输入的阻塞（理由中说明）。
+- **不通过**：进展模糊、仅有计划而无证据；隐含完成不算。
+- **评判不可用**：调用或解析失败会**暂停**目标（`status: paused`），打 warn 日志，并向对话追加可见状态行（不是续写提示）。用 `/goal resume` 重试。用 `/goal status` 查看 `last_judge_reason`。
 
-## Configuration
+## 配置
 
-Optional `goal_judge` in Habitat runtime `llm.profiles` (Shell **Settings → Habitat 服务 → 服务配置**). Falls back to `llm.default_profile` when unset.
+可选在栖息地运行时 `llm.profiles` 中配置 `goal_judge`（壳 **设置 → 栖息地服务 → 服务配置**）。未设时回落到 `llm.default_profile`。
 
-Judge calls use OpenAI-compatible `response_format: json_object`, `thinking: { type: "disabled" }`, and `tool_choice: "none"` (via `params.extra`), plus `maxOutputTokens: 2048`. Prefer a model/gateway that supports JSON mode; unsupported endpoints will fail the judge call and pause the goal.
+评判调用使用 OpenAI 兼容的 `response_format: json_object`、`thinking: { type: "disabled" }`，以及经 `params.extra` 的 `tool_choice: "none"`，外加 `maxOutputTokens: 2048`。优先选支持 JSON 模式的模型/网关；不支持的端点会使评判失败并暂停目标。
 
-## vs Subagent
+## vs 子代理
 
-- **Goal**: in-conversation synchronous continuation loop; orchestrated by platform turn lifecycle.
-- **Subagent**: separate AutoLlmRun via `subagent_run`; result returns as a tool payload (see [`subagent.md`](./subagent.md)).
+- **Goal**：对话内同步续写循环；由平台轮次生命周期编排。
+- **Subagent**：经 `subagent_run` 的独立 AutoLlmRun；结果作为工具载荷返回（见 [`subagent.md`](./subagent.md)）。
 
-See [`architecture.md`](../product/architecture.md#session-goal).
+见 [`architecture.md`](../product/architecture.md#session-goal)。

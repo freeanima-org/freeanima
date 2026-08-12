@@ -3,7 +3,6 @@ import { primeHabitatSpeechOutput } from "@freeanima/client/portal-sdk/speech/ha
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@freeanima/ui-kit";
 import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
-import { m } from "@freeanima/features/chat/ui/spa/lib/i18n.ts";
 
 const COPY_FEEDBACK_MS = 3000;
 
@@ -59,9 +58,7 @@ export function MessageActionBar({
         variant="ghost"
         size="icon-sm"
         className={`size-7 text-xs ${copied ? "text-foreground" : "text-muted-foreground"}`}
-        aria-label={
-          copied ? m.habitat_common_copied({ label: "" }).trim() : m.habitat_common_copy()
-        }
+        aria-label={copied ? "已复制" : "复制"}
         onClick={() => void handleCopy()}
       >
         {copied ? "✓" : "⎘"}
@@ -72,13 +69,13 @@ export function MessageActionBar({
         size="icon-sm"
         className="text-muted-foreground size-7 text-xs"
         isDisabled={!canSpeak}
-        aria-label={speaking ? m.chat_speech_stop() : m.chat_speech_play()}
+        aria-label={speaking ? "停止朗读" : "朗读"}
         title={
           !speechSupported
             ? (speechUnavailableTitle ??
               (speechUnsupportedReason === "insecure_context"
-                ? m.chat_speech_insecure_context()
-                : m.chat_speech_unavailable()))
+                ? "Web Speech 需要 HTTPS；请使用 Edge TTS，或通过 HTTPS 打开服务"
+                : "此设备不支持语音朗读"))
             : undefined
         }
         onPointerDown={() => {
@@ -94,7 +91,7 @@ export function MessageActionBar({
           variant="ghost"
           size="icon-sm"
           className="text-muted-foreground size-7 text-xs"
-          aria-label={m.habitat_common_edit()}
+          aria-label={"编辑"}
           onClick={onEdit}
         >
           ✎

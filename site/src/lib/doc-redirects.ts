@@ -65,9 +65,10 @@ const docMoves: Record<string, string> = {
   "/docs/tools/execute-code-runtimes/": "/docs/tools/execute-code/",
 };
 
+/** 文档路径迁移 + 旧 /zh-cn 前缀剥离（非 i18n） */
 export const docRedirects: Record<string, string> = Object.fromEntries(
   Object.entries(docMoves).flatMap(([from, to]) => [
     [from, to],
-    [`/zh-cn${from}`, `/zh-cn${to}`],
+    [`/zh-cn${from}`, to],
   ]),
 );

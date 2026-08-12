@@ -33,7 +33,6 @@ import {
   DropdownMenuTrigger,
 } from "@freeanima/ui-kit/components/ui/dropdown-menu.tsx";
 import { PlusIcon } from "lucide-react";
-import { m } from "@paraglide/messages";
 
 import { DiaryBlockTemplateDialog } from "./components/DiaryBlockTemplateDialog.tsx";
 import { EntryEditor, type EntrySaveStatus } from "./components/EntryEditor.tsx";
@@ -610,10 +609,10 @@ export function DiaryApp() {
             size="sm"
             className="h-7 px-2"
             isDisabled={refreshing || loading}
-            aria-label={m.habitat_common_refresh()}
+            aria-label={"刷新"}
             onClick={() => void handleManualRefresh()}
           >
-            {refreshing ? <Spinner className="size-3.5" /> : m.habitat_common_refresh()}
+            {refreshing ? <Spinner className="size-3.5" /> : "刷新"}
           </Button>
           <Button
             type="button"

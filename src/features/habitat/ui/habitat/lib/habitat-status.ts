@@ -1,23 +1,21 @@
-import { m } from "./i18n.ts";
-
 export function mcpStatusLabel(status: string): string {
-  if (status === "connected") return m.habitat_common_connected();
-  if (status === "connecting") return m.habitat_common_connecting();
-  if (status === "disabled") return m.habitat_common_disabled();
-  if (status === "error") return m.habitat_common_error();
-  return m.habitat_common_not_started();
+  if (status === "connected") return "已连接";
+  if (status === "connecting") return "连接中";
+  if (status === "disabled") return "已禁用";
+  if (status === "error") return "错误";
+  return "未启动";
 }
 
 export function dependencyStatusLabel(status: string): string {
-  if (status === "connected") return m.habitat_common_connected();
-  if (status === "error") return m.habitat_common_abnormal();
-  return m.habitat_common_not_configured();
+  if (status === "connected") return "已连接";
+  if (status === "error") return "异常";
+  return "未配置";
 }
 
 export function memoryTypeLabel(type: string): string {
-  if (type === "semantic") return m.habitat_memory_type_semantic();
-  if (type === "conversation") return m.habitat_memory_type_conversation();
-  if (type === "limbic") return m.habitat_memory_type_limbic();
-  if (type === "autobiographical") return m.habitat_memory_type_autobio();
+  if (type === "semantic") return "语义记忆";
+  if (type === "conversation") return "对话消息";
+  if (type === "limbic") return "感性记忆";
+  if (type === "autobiographical") return "自传体";
   return type;
 }

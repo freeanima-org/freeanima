@@ -17,7 +17,6 @@ import { FormField, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import type { PassiveRecallDebugTrace } from "@freeanima/shared/rpc-contract/frames/message";
 import { passiveRecallDebug } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 
 export const Route = createFileRoute("/_sidebar/passive-recall")({
@@ -91,11 +90,7 @@ function PassiveRecallDebugPage() {
       setResult(data);
     } catch (e) {
       logCaughtError("routes/_sidebar/passive-recall", e);
-      setError(
-        m.habitat_common_search_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`检索失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setLoading(false);
     }
@@ -106,12 +101,14 @@ function PassiveRecallDebugPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-bold">{m.habitat_nav_passive_recall()}</h2>
-        <p className="text-sm text-muted-foreground mt-1">{m.habitat_passive_recall_desc()}</p>
+        <h2 className="text-lg font-bold">{"🔎 被动召回调试"}</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          {"模拟一条用户消息，查看被动语义注入各阶段（不改动对话）。"}
+        </p>
       </div>
 
       <FormFieldset className="gap-3">
-        <FormField label={m.habitat_passive_recall_user_text()}>
+        <FormField label={"模拟用户消息"}>
           <Input
             value={userText}
             onChange={(e) => setUserText(e.target.value)}
@@ -139,7 +136,7 @@ function PassiveRecallDebugPage() {
           isDisabled={loading || !userText.trim()}
         >
           {loading ? <Spinner className="size-4" /> : null}
-          {m.habitat_passive_recall_run()}
+          {"运行调试"}
         </Button>
       </FormFieldset>
 
@@ -167,7 +164,7 @@ function PassiveRecallDebugPage() {
           </Card>
 
           <div>
-            <h3 className="text-sm font-semibold mb-2">{m.habitat_passive_recall_stages()}</h3>
+            <h3 className="text-sm font-semibold mb-2">{"流水线阶段"}</h3>
             <div className="space-y-3">
               <HitTable title="FTS" hits={debug?.fts ?? []} />
               <HitTable title="trgm" hits={debug?.trgm ?? []} />
@@ -180,7 +177,7 @@ function PassiveRecallDebugPage() {
 
           <Card className="py-0">
             <CardContent className="py-3 px-4 space-y-2">
-              <p className="text-sm font-medium">{m.habitat_passive_recall_inject_preview()}</p>
+              <p className="text-sm font-medium">{"注入预览"}</p>
               <pre className="text-xs whitespace-pre-wrap rounded-md bg-muted p-3 overflow-x-auto">
                 {result.inject_preview || "—"}
               </pre>

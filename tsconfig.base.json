@@ -23,8 +23,7 @@
     "allowImportingTsExtensions": true,
     "types": ["bun"],
     "paths": {
-      "@freeanima/*": ["./src/*"],
-      "@paraglide/*": ["./messages/paraglide/*"]
+      "@freeanima/*": ["./src/*"]
     }
   }
 }

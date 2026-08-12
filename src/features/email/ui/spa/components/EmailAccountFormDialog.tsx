@@ -10,7 +10,6 @@ import {
   Input,
   Spinner,
 } from "@freeanima/ui-kit";
-import { m } from "@paraglide/messages";
 
 import { VaultRefField } from "@freeanima/features/vault/ui/spa/components/VaultRefField.tsx";
 
@@ -134,7 +133,7 @@ export function EmailAccountFormDialog({
       const imap_port = parsePort(form.imap_port);
       if (mode === "create") {
         if (!form.password.trim()) {
-          throw new Error(m.email_password_required());
+          throw new Error("密码为必填");
         }
         const input: EmailAccountCreateInput = {
           address: form.address.trim(),
@@ -178,9 +177,7 @@ export function EmailAccountFormDialog({
       }
     } catch (err) {
       const detail = err instanceof Error ? err.message : String(err);
-      setError(
-        mode === "create" ? m.email_create_failed({ detail }) : m.email_update_failed({ detail }),
-      );
+      setError(mode === "create" ? `创建账户失败：${detail}` : `更新账户失败：${detail}`);
     } finally {
       setSaving(false);
     }
@@ -197,22 +194,23 @@ export function EmailAccountFormDialog({
       className="max-h-[90vh] max-w-md overflow-y-auto safe-area-pt safe-area-pb"
     >
       <DialogHeader>
-        <DialogTitle>
-          {mode === "create" ? m.email_add_account() : m.email_edit_account()}
-        </DialogTitle>
+        <DialogTitle>{mode === "create" ? "添加账户" : "编辑账户"}</DialogTitle>
       </DialogHeader>
 
       <div className="space-y-3 py-2">
         {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
-        <FormField label={m.email_provider()} hint={m.email_provider_hint()}>
+        <FormField
+          label={"服务商"}
+          hint={"选择服务商以填入默认 IMAP/SMTP，或选「自定义」手动填写。"}
+        >
           <select
             className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
             value={form.provider}
             disabled={disabled || saving}
             onChange={(e) => onProviderChange(e.target.value as EmailProviderId)}
           >
-            <option value="custom">{m.email_provider_custom()}</option>
+            <option value="custom">{"自定义"}</option>
             {providers.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.label}
@@ -221,7 +219,7 @@ export function EmailAccountFormDialog({
           </select>
         </FormField>
 
-        <FormField label={m.habitat_email_address()}>
+        <FormField label={"地址"}>
           <Input
             type="email"
             value={form.address}
@@ -230,7 +228,7 @@ export function EmailAccountFormDialog({
           />
         </FormField>
 
-        <FormField label={m.email_display_name()}>
+        <FormField label={"显示名称"}>
           <Input
             value={form.display_name}
             disabled={disabled || saving}
@@ -238,7 +236,10 @@ export function EmailAccountFormDialog({
           />
         </FormField>
 
-        <FormField label={m.email_password()} hint={m.email_password_hint()}>
+        <FormField
+          label={"密码"}
+          hint={'明文、env("KEY") 或 vault("item_id", "field")。编辑时留空则保留原密码。'}
+        >
           <VaultRefField
             value={form.password}
             disabled={disabled || saving}
@@ -247,28 +248,28 @@ export function EmailAccountFormDialog({
         </FormField>
 
         {(showHosts || mode === "edit") && (
-          <FormField label={m.email_advanced_hosts()}>
+          <FormField label={"IMAP / SMTP 设置"}>
             <div className="grid grid-cols-2 gap-2">
               <Input
-                placeholder={m.email_imap_host()}
+                placeholder={"IMAP 主机"}
                 value={form.imap_host}
                 disabled={disabled || saving}
                 onChange={(e) => setForm((prev) => ({ ...prev, imap_host: e.target.value }))}
               />
               <Input
-                placeholder={m.email_imap_port()}
+                placeholder={"IMAP 端口"}
                 value={form.imap_port}
                 disabled={disabled || saving}
                 onChange={(e) => setForm((prev) => ({ ...prev, imap_port: e.target.value }))}
               />
               <Input
-                placeholder={m.email_smtp_host()}
+                placeholder={"SMTP 主机"}
                 value={form.smtp_host}
                 disabled={disabled || saving}
                 onChange={(e) => setForm((prev) => ({ ...prev, smtp_host: e.target.value }))}
               />
               <Input
-                placeholder={m.email_smtp_port()}
+                placeholder={"SMTP 端口"}
                 value={form.smtp_port}
                 disabled={disabled || saving}
                 onChange={(e) => setForm((prev) => ({ ...prev, smtp_port: e.target.value }))}
@@ -278,13 +279,13 @@ export function EmailAccountFormDialog({
         )}
 
         <FormToggle
-          label={m.habitat_email_default_sender()}
+          label={"默认发件"}
           checked={form.default_sender}
           disabled={disabled || saving}
           onChange={(checked) => setForm((prev) => ({ ...prev, default_sender: checked }))}
         />
         <FormToggle
-          label={m.habitat_email_enabled()}
+          label={"已启用"}
           checked={form.enabled}
           disabled={disabled || saving}
           onChange={(checked) => setForm((prev) => ({ ...prev, enabled: checked }))}
@@ -293,14 +294,14 @@ export function EmailAccountFormDialog({
 
       <DialogFooter>
         <Button type="button" variant="outline" isDisabled={saving} onClick={onClose}>
-          {m.email_cancel()}
+          {"取消"}
         </Button>
         <Button
           type="button"
           isDisabled={disabled || saving || !form.address.trim()}
           onClick={() => void submit()}
         >
-          {saving ? <Spinner className="size-4" /> : m.email_save()}
+          {saving ? <Spinner className="size-4" /> : "保存"}
         </Button>
       </DialogFooter>
     </Dialog>

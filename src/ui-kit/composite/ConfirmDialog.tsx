@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from "../components/ui/dialog.tsx";
 import { cn } from "../lib/cn.ts";
-import { m } from "./i18n.ts";
 import type { ConfirmDialogVariant } from "./types.ts";
 import { confirmButtonVariant } from "./variants.ts";
 
@@ -63,7 +62,7 @@ export function ConfirmDialog({
             className="w-full sm:w-auto"
             onClick={onCancel}
           >
-            {cancelLabel ?? m.ui_common_cancel()}
+            {cancelLabel ?? "取消"}
           </Button>
         ) : null}
         <Button
@@ -73,7 +72,7 @@ export function ConfirmDialog({
           className="w-full sm:w-auto"
           onClick={onConfirm}
         >
-          {confirmLabel ?? m.ui_common_confirm()}
+          {confirmLabel ?? "确定"}
         </Button>
       </DialogFooter>
     </Dialog>

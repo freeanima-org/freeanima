@@ -1,75 +1,75 @@
 ---
-title: Coding Workbench
+title: 编码工作台
 ---
 
-# Coding Workbench
+# 编码工作台
 
-> **Coding** / **编码工作台**：Portal 内独立前哨窗（UI + `remote_tools.attach`），在开发机执行 FS / 终端 / patch；Habitat 做脑与项目 World。与 [Desktop Companion](./companion.md) 同类 Outpost，**不是**第二个 App，也**不是** [Project Management](./project.md)（任务/文件夹 PM）。
+> **Coding** / **编码工作台**：入口内独立前哨窗（UI + `remote_tools.attach`），在开发机执行 FS / 终端 / patch；栖息地做脑与项目 World。与 [桌面伴侣](./companion.md) 同类前哨，**不是**第二个 App，也**不是** [项目管理](./project.md)（任务/文件夹 PM）。
 
-## Goals
+## 目标
 
-- Personal toy → gradual daily driver for **Agent coding** (not Tab completion first).
-- Chat can already vibe; the bottleneck is **workbench UX** (explore / patch / multi-repo sessions).
-- Phase 1 focus: **read the repo (explore)**; write + diff next. LSP / Debugger / SSH Remote are **later**.
+- 个人玩具 → 逐步成为 **Agent 编码**的日常主力（不是先做 Tab 补全）。
+- 聊天室已能 vibe；瓶颈是**工作台 UX**（explore / patch / 多仓会话）。
+- 第一阶段重心：**读仓（explore）**；写与 diff 其次。LSP / Debugger / SSH Remote 为**后续**。
 
-## Runtime topology
+## 运行拓扑
 
-- Habitat on a **stable weak machine** (brain + memory + orchestration).
-- Hands on a **dev-machine Outpost**: FS / search / terminal / (later) patch.
-- **Cross-machine Outpost is required**, not optional.
+- 栖息地在**稳定弱机**（脑 + 记忆 + 编排）。
+- 手在**开发机前哨**：FS / 搜索 / 终端 /（后续）patch。
+- **跨机前哨是硬性要求**，不是可选项。
 
 ```text
 Coding outpost window ── RPC + attach ──► weak-machine Habitat
 Main Chat / tasks      ── RPC only ─────► same Habitat
 ```
 
-## Product shape
+## 产品形态
 
-- **Coding = independent outpost window** (UI + `remote_tools.attach`), same class as Companion; same **Tauri Portal**, not a second app.
-- Feature code: `src/features/coding/` — **do not** add Coding into `features/companion/`.
-- 「产品 UI 不 attach」applies to **main-shell product modules** (Chat, Task, …). An **outpost window may be both UI and hands**.
-- Keep-alive aligns with **Companion process/shell survival**, but **attach lifetime differs**:
-  - Companion: hide display **closes** the WebView → attach tears down (offline).
-  - Coding: prefer **hide without close** so the Outpost stay attached for Agent tool calls. Do **not** tie attach to the main window lifecycle.
+- **编码工作台 = 独立前哨窗**（UI + `remote_tools.attach`），与桌面伴侣同类；同一 **Tauri 入口**，不是第二个应用。
+- 功能代码：`src/features/coding/` —— **不要**把 Coding 塞进 `features/companion/`。
+- 「产品 UI 不 attach」适用于**主壳产品模块**（聊天室、任务、…）。**前哨窗可以既是 UI 又是手**。
+- 保活与**伴侣进程/壳存活**对齐，但 **attach 生命周期不同**：
+  - 伴侣：隐藏显示会**关闭** WebView → attach 拆除（离线）。
+  - 编码：优先**隐藏不关**，使前哨保持 attach，供 Agent 工具调用。**不要**把 attach 绑到主窗生命周期。
 
-## Connection and multi-repo sessions
+## 连接与多仓会话
 
-- Default: **one attach, one `instance_id`** (one Coding window = one local hand).
-- **Multi-repo ≠ multi instance**. Cursor-style “one UI, many repos” = **many Agent sessions**, each with its own locked `workspaceRoot`（一会话一根；创建后不可变）.
-- Multiple attaches only for: multi-machine outposts, Companion+Coding, or rare dual Coding windows.
-- `instance_id` = which local connection; **not** which repository.
+- 默认：**一次 attach，一个 `instance_id`**（一个 Coding 窗 = 一只本机手）。
+- **多仓 ≠ 多实例**。Cursor 式「一个 UI、多个仓」= **多个 Agent 会话**，各锁自己的 `workspaceRoot`（一会话一根；创建后不可变）。
+- 多次 attach 仅用于：多机前哨、伴侣+编码，或罕见双 Coding 窗。
+- `instance_id` = 哪条本机连接；**不是**哪个仓库。
 
-## Three identity layers
+## 三层身份
 
-| Layer                | Meaning                                                                             | Example                                                      |
-| -------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| **`stable_key`**     | Cross-machine logical project id (on **World**)                                     | `git:github.com/org/foo`, `novel:crane-summer`               |
-| **Project World**    | Knowledge/task boundary for that project (prefer **public**, one World per project) | entity + `world_config`                                      |
-| **`workspace_root`** | Checkout path on a machine                                                          | conversation `platform_info`; all FS/terminal relative to it |
+| 层                   | 含义                                                     | 示例                                           |
+| -------------------- | -------------------------------------------------------- | ---------------------------------------------- |
+| **`stable_key`**     | 跨机逻辑项目 id（在 **World** 上）                       | `git:github.com/org/foo`、`novel:crane-summer` |
+| **项目 World**       | 该项目的知识/任务边界（建议 **public**，一项目一 World） | entity + `world_config`                        |
+| **`workspace_root`** | 某机上的 checkout 路径                                   | 会话 `platform_info`；所有 FS/终端相对它       |
 
-- Grouping / memory / tasks → World / `stable_key`
-- Read files / run commands → current session `workspace_root`
-- Keep them separate to avoid “same origin, wrong directory” bugs.
+- 分组 / 记忆 / 任务 → World / `stable_key`
+- 读文件 / 跑命令 → 当前会话 `workspace_root`
+- 分开以免「同源、错目录」类 bug。
 
-Conversation meta also stores `project_world_id`. Coding sessions should use platform string `remote:coding:{instanceId}` (not plain `chat`).
+会话元数据还存 `project_world_id`。编码会话应使用 platform 字符串 `remote:coding:{instanceId}`（不是普通 `chat`）。
 
-## World strategy
+## World 策略
 
-- Do **not** dump multi-repo knowledge into Agent private (mud ball), and do **not** put it all in Commons.
-- **Private World**: subject personalization (style, prefs, weakly project-related).
-- **Project Public World**: project-bound data (explore notes, that project’s tasks, …); later multi-agent via **grants**.
-- **Commons**: Habitat-wide shared assets (builtin Skills, companion resources), not tied to one project.
-- Shell User/Agent toggle still scopes daily life; coding sessions carry **`project_world_id`** context.
+- **不要**把多仓知识倒进 Agent private（泥球），也**不要**全放 Commons。
+- **Private World**：主体个性化（风格、偏好、弱项目相关）。
+- **项目 Public World**：项目绑定数据（explore 笔记、该项目任务、…）；后续经 **grants** 多 agent。
+- **Commons**：栖息地级共享资产（内置技能、伴侣资源），不绑单一项目。
+- 壳的 User/Agent 切换仍框定日常；编码会话携带 **`project_world_id`** 上下文。
 
-## `stable_key` on World
+## World 上的 `stable_key`
 
-- Generic field on `world_config` body: **`stable_key`** (never `repo_key`).
-- Coding may **derive** from normalized git origin; other domains reuse prefixes: `git:` / `novel:` / `manual:`.
-- `title` = editable display name; `stable_key` = machine identity, **unique** when set (PG partial unique index + app check).
+- `world_config` body 上的通用字段：**`stable_key`**（永不叫 `repo_key`）。
+- 编码可从规范化 git origin **推导**；其他领域复用前缀：`git:` / `novel:` / `manual:`。
+- `title` = 可编辑显示名；`stable_key` = 机器身份，设置时**唯一**（PG 部分唯一索引 + 应用检查）。
 
-## `.anima/project.json` (committable)
+## `.anima/project.json`（可提交）
 
-Minimal team-committable set:
+团队可提交的最小集合：
 
 ```json
 {
@@ -78,20 +78,20 @@ Minimal team-committable set:
 }
 ```
 
-Optional: `display_name` (team canonical name).
+可选：`display_name`（团队规范名）。
 
-**Do not commit:** `world_id` (Habitat-local). Cache locally (`project.local.json` or Outpost prefs).
+**不要提交：** `world_id`（栖息地本地）。本地缓存（`project.local.json` 或前哨 prefs）。
 
-With a git remote, the file may be omitted and the key computed; the file pins the key for no-remote / non-git projects.
+有 git remote 时可省略该文件并由系统计算 key；无 remote / 非 git 项目用文件钉死 key。
 
 **`.anima/` 边界**：仅项目身份（`project.json` 等）。**不要**放置 `skills/`、`rules/`、`agents/`、`mcp.json` — 这些由社区 `.agents/` 与厂商兼容路径承担。
 
 ## 项目 Agent 上下文（仅 Coding 模块）
 
-Habitat **普通 Chat 不**从会话 `cwd` 读 `AGENTS.md`。项目上下文 **只在** `module=coding` 且有 `workspace_root` 时装配：
+栖息地**普通聊天室不**从会话 `cwd` 读 `AGENTS.md`。项目上下文**只在** `module=coding` 且有 `workspace_root` 时装配：
 
-1. Coding Outpost 在工作区扫盘发现资产
-2. 经 `coding.projectContextSync` 写入 Habitat 会话缓存
+1. Coding 前哨在工作区扫盘发现资产
+2. 经 `coding.projectContextSync` 写入栖息地会话缓存
 3. system prompt / `skill_load` / `subagent_run` 叠加项目层
 
 ### 目录约定
@@ -115,14 +115,14 @@ CLAUDE.md                        # Claude Code 兼容
 
 同名资产优先级：`.agents` → 厂商路径（先声明的来源赢）。
 
-### 项目 MCP（Outpost 桥）
+### 项目 MCP（前哨桥）
 
-- **发现与启停**在 Coding Outpost（开发机），**不**写入 Habitat 全局 `mcp_servers`
-- HTTP/SSE MCP：Outpost 连接后把 tools `tool.register` 为 `mcp_<server>_<tool>`，Habitat 经现有 remote-tools 桥调用
-- stdio MCP：在 Node/Bun Outpost 环境可连；纯 Tauri WebView 暂记 status（改用 HTTP 或后续壳桥）
+- **发现与启停**在 Coding 前哨（开发机），**不**写入栖息地全局 `mcp_servers`
+- HTTP/SSE MCP：前哨连接后把 tools `tool.register` 为 `mcp_<server>_<tool>`，栖息地经现有 remote-tools 桥调用
+- stdio MCP：在 Node/Bun 前哨环境可连；纯 Tauri WebView 暂记 status（改用 HTTP 或后续壳桥）
 - 工具 `project_mcp_status` 查看连接状态
 
-## Workbench UI (P0)
+## 工作台 UI（P0）
 
 交互对标 **Cursor Agents Window**：三栏 **Agents | 对话 | Context**，深色 Agent 优先。
 
@@ -130,7 +130,7 @@ CLAUDE.md                        # Claude Code 兼容
 
 - **一对话一根工作区**：本地 `CodingAgentSession.workspaceRoot: string | null`（创建时可明确选「无工作区」）。
 - **创建后不可变**：New Agent 选定路径（或无）即锁定；UI **无**添加/移除/更换文件夹。换目录 = **新建** Agent。
-- Habitat `conversation.create` 的 `workspace_root` 与本地字段一致且同样视为不可变；本地 `conversationId` 持久化后复用。
+- 栖息地 `conversation.create` 的 `workspace_root` 与本地字段一致且同样视为不可变；本地 `conversationId` 持久化后复用。
 - 左栏按 `workspaceRoot` 的 basename 分组（`null` →「无工作区」）；同仓多会话 = 同组多条（为后续同仓不同 worktree 路径留口：每条仍是独立 `workspaceRoot` 字符串）。
 - 本地存储 key `freeanima:coding:agent-sessions:v2`；从 v1 多根迁移时只保留 `activeRoot ?? workspaceRoots[0] ?? null`。
 
@@ -138,53 +138,53 @@ CLAUDE.md                        # Claude Code 兼容
 
 - **左栏 Agents**：Repositories 分组 + 会话列表；Search（Ctrl/Cmd+K）；New Agent。
 - **中栏对话**：空态居中输入；有消息后线程 + 底部 follow-up；流式走 `getBundledRpcStreamClient`（**不**整包 import Chat SPA）；platform = `remote:coding:{instanceId}`。
-  - **复用 Chat 原子（禁止挂载 ChatApp）**：`ConversationTranscript`（**消息列表 + stick-to-bottom + 向上懒加载 SSOT**；新增气泡样式 / display 分支只改该组件，禁止 Coding 平行 `display.map`）、`slash-command-menu` / `conversation-command-api`（slash）、`stream-events` + Markdown（流式 token）、`upsert-tool-block` + `ToolBlockBubble`（经 Transcript）、`LlmDebugPanel` + `useChatLlmDebugEnabled`（LLM 调试；设置页开关与 Chat 共用）。compose / 空态 hero / 三栏布局皮肤留在 Coding SPA。
-  - 历史分页与 Chat 同契约：`conversation.messages` 的 `before_pos` / `has_more_before` / `from_pos`。
+  - **复用聊天室原子（禁止挂载 ChatApp）**：`ConversationTranscript`（**消息列表 + stick-to-bottom + 向上懒加载 SSOT**；新增气泡样式 / display 分支只改该组件，禁止 Coding 平行 `display.map`）、`slash-command-menu` / `conversation-command-api`（slash）、`stream-events` + Markdown（流式 token）、`upsert-tool-block` + `ToolBlockBubble`（经 Transcript）、`LlmDebugPanel` + `useChatLlmDebugEnabled`（LLM 调试；设置页开关与聊天室共用）。compose / 空态 hero / 三栏布局皮肤留在 Coding SPA。
+  - 历史分页与聊天室同契约：`conversation.messages` 的 `before_pos` / `has_more_before` / `from_pos`。
 - **右栏 Context**（默认展开）：Files（可展开树）/ Preview（Shiki）/ Changes（按 path 聚合 + unified diff + Apply Changes）/ Terminals（`terminal_run` 输出日志；**非**交互 PTY）。
 - Search Actions：**无**「更换工作区」，有「新建 Agent」。
 - 理解笔记：挂在 Files 区（需 `project_world_id`）。
 
-## Tools (P0)
+## 工具（P0）
 
-Outpost `local_name`s (executed on the **dev machine** inside the Coding WebView / thin Rust IPC):
+前哨 `local_name`（在 Coding WebView / 薄 Rust IPC 内于**开发机**执行）：
 
-| Tool                 | Role                                                                    |
-| -------------------- | ----------------------------------------------------------------------- |
-| `file_list`          | Read-only tree                                                          |
-| `file_read`          | Read file                                                               |
-| `file_search`        | Search files/content                                                    |
-| `file_patch`         | Minimal edit (`old_string` / `new_string`); UI diff review before apply |
-| `terminal_run`       | One-shot command (optional `terminal_process`)                          |
-| `project_context`    | Discover project agent assets (rules / skills / agents / mcp)           |
-| `agents_md_read`     | Read root `AGENTS.md`                                                   |
-| `agents_md_write`    | Write root `AGENTS.md`                                                  |
-| `project_mcp_status` | Outpost-managed project MCP connection status                           |
-| `mcp_*_*`            | Bridged project MCP tools                                               |
+| 工具                 | 角色                                                         |
+| -------------------- | ------------------------------------------------------------ |
+| `file_list`          | 只读树                                                       |
+| `file_read`          | 读文件                                                       |
+| `file_search`        | 搜文件/内容                                                  |
+| `file_patch`         | 最小编辑（`old_string` / `new_string`）；应用前 UI diff 审阅 |
+| `terminal_run`       | 一次性命令（可选 `terminal_process`）                        |
+| `project_context`    | 发现项目 agent 资产（rules / skills / agents / mcp）         |
+| `agents_md_read`     | 读根 `AGENTS.md`                                             |
+| `agents_md_write`    | 写根 `AGENTS.md`                                             |
+| `project_mcp_status` | 前哨管理的项目 MCP 连接状态                                  |
+| `mcp_*_*`            | 桥接的项目 MCP 工具                                          |
 
-Paths are sandboxed under the session `workspace_root`. Coding sessions must **default to these Outpost tools** — do **not** silently fall back to Habitat-local `file_*` (the server does not have your repo).
+路径沙箱在会话 `workspace_root` 下。编码会话须**默认用这些前哨工具** —— **不要**静默回退到栖息地本机 `file_*`（服务器上没有你的仓）。
 
-Builtin subagent `explorer` uses Habitat `file_*` and is **not** a workspace explorer. Prefer `coding-explorer` for Outpost read-only tools.
+内置 subagent `explorer` 用栖息地 `file_*`，**不是**工作区探索器。前哨只读工具请用 `coding-explorer`。
 
-## Phasing
+## 分阶段
 
-**P0 (this module)**
+**P0（本模块）**
 
-- Coding outpost window + attach
+- Coding 前哨窗 + attach
 - `workspace_root` + `project_world_id` / `stable_key`
-- Read-only explore + terminal; coding-explorer subagent
-- Minimal patch + diff review
-- Understanding notes into **project World** (`coding_note`) via Habitat RPC `coding.noteCreate` / `coding.noteList`（Coding 窗「理解笔记」）
+- 只读 explore + 终端；coding-explorer subagent
+- 最小 patch + diff 审阅
+- 理解笔记写入**项目 World**（`coding_note`），经栖息地 RPC `coding.noteCreate` / `coding.noteList`（Coding 窗「理解笔记」）
 
-**Later**
+**后续**
 
 - LSP / refactor / Debugger
-- SSH Remote (same tool contract, different backend)
-- Heavier indexing / symbols
-- Interactive PTY
+- SSH Remote（同一工具契约，不同后端）
+- 更重索引 / symbols
+- 交互式 PTY
 - Cloud / Worktree 检出与真 Git Commit&Push（今日 Changes 用 Accept/Reject 聚合代替）
 
-## One-line summary
+## 一句话
 
-> Weak-machine Habitat = brain + project World; one local Coding outpost window = hands; multi-repo via session paths + World `stable_key`; teams pin only `stable_key` in-repo; win explore + workbench first, then IDE depth.
+> 弱机栖息地 = 脑 + 项目 World；本机一个 Coding 前哨窗 = 手；多仓靠会话路径 + World `stable_key`；团队仓内只钉 `stable_key`；先赢 explore + 工作台，再加深 IDE。
 
-See also: [Habitat RPC](../ops/habitat-rpc.md), [architecture](../product/architecture.md), [companion](./companion.md), [entity model](../product/entity-model.md).
+另见：[栖息地 RPC](../ops/habitat-rpc.md)、[架构](../product/architecture.md)、[桌面伴侣](./companion.md)、[实体模型](../product/entity-model.md)。

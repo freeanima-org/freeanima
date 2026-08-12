@@ -1,39 +1,39 @@
 ---
-title: ops ToolSet
+title: "ops ToolSet"
 ---
 
 # ops ToolSet
 
-On-demand Habitat ToolSet for **Habitat process operations**: health, status, sanitized runtime config, and partner-confirmed config patch / restart. Load with:
+按需加载的栖息地 ToolSet，用于**栖息地进程运维**：健康、状态、脱敏运行时配置，以及经伙伴确认的配置补丁 / 重启。加载方式：
 
 ```text
 toolset_load(["ops"])
 ```
 
-## Tools
+## 工具
 
-| Tool               | Purpose                                                                                          |
-| ------------------ | ------------------------------------------------------------------------------------------------ |
-| `ops_health`       | Process health (`status`, `version`, `started_at`)                                               |
-| `ops_status`       | Full service snapshot (memory, PG/Redis, MCP, conversation counts)                               |
-| `ops_config_get`   | Runtime config with secrets masked as `***`; optional `section`                                  |
-| `ops_config_patch` | Deep-merge a runtime config section; **requires `confirm: true`** after partner clarify approval |
-| `ops_restart`      | Schedule Habitat restart; **requires `confirm: true`** after partner clarify approval            |
+| 工具               | 用途                                                            |
+| ------------------ | --------------------------------------------------------------- |
+| `ops_health`       | 进程健康（`status`、`version`、`started_at`）                   |
+| `ops_status`       | 完整服务快照（内存、PG/Redis、MCP、对话计数）                   |
+| `ops_config_get`   | 密钥掩码为 `***` 的运行时配置；可选 `section`                   |
+| `ops_config_patch` | 深合并某运行时配置段；伙伴 clarify 批准后**须 `confirm: true`** |
+| `ops_restart`      | 安排栖息地重启；伙伴 clarify 批准后**须 `confirm: true`**       |
 
-## Confirm flow (writes)
+## 确认流（写操作）
 
-1. Call ToolSet `clarify` to ask the partner whether to patch config or restart.
-2. After approval, call `ops_config_patch` / `ops_restart` with `confirm: true`.
-3. Without `confirm: true`, the write tool returns an error (no awaiting state machine inside `ops`).
+1. 调用 ToolSet `clarify` 询问伙伴是否补丁配置或重启。
+2. 批准后，以 `confirm: true` 调用 `ops_config_patch` / `ops_restart`。
+3. 无 `confirm: true` 时，写工具返回错误（`ops` 内无等待状态机）。
 
-## Boundaries
+## 边界
 
-| Do                                                     | Do not                                                           |
-| ------------------------------------------------------ | ---------------------------------------------------------------- |
-| Inspect status / masked config when diagnosing Habitat | Expect secrets in tool results (always `***`)                    |
-| Patch non-secret runtime sections after clarify        | Patch `database` / `http` / `redis` (bootstrap; YAML cold-start) |
-| Restart after clarify when a setting requires reboot   | Write MCP `env` / `headers` or secret keys via LLM tools         |
-| Use Habitat settings UI / vault for credentials        | Use `ops` for cron (use ToolSet `cron`)                          |
-| Read product docs via `freeanima_docs` (`ops/` prefix) | Expose this ToolSet on Habitat `/mcp`                            |
+| 做                                           | 不做                                                        |
+| -------------------------------------------- | ----------------------------------------------------------- |
+| 诊断栖息地时检查状态 / 脱敏配置              | 期望工具结果含密钥（恒为 `***`）                            |
+| clarify 后补丁非密钥运行时段                 | 补丁 `database` / `http` / `redis`（引导配置；YAML 冷启动） |
+| 某设置需重启时，clarify 后重启               | 经 LLM 工具写入 MCP `env` / `headers` 或密钥键              |
+| 凭证用栖息地设置 UI / vault                  | 用 `ops` 做 cron（用 ToolSet `cron`）                       |
+| 经 `freeanima_docs`（`ops/` 前缀）读产品文档 | 在栖息地 `/mcp` 对外暴露本 ToolSet                          |
 
-`ops` is **not** in the default conversation toolsets; load it when needed.
+`ops` **不在**默认对话 toolsets 中；需要时再加载。

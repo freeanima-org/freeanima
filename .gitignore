@@ -54,17 +54,6 @@ coverage/
 .tanstack/
 .wxt/
 
-# po4a / gettext
-site/i18n/.generated/
-docs/.generated/
-docs/.zh-cn-ref/
-messages/.generated/
-messages/.zh-cn-ref/
-gettextization.failed.po
-*.mo
-
-
-
 # Misc
 /tmp/
 

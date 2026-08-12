@@ -11,7 +11,6 @@ import {
 import { BitwardenImportDialog } from "@freeanima/features/vault/ui/spa/components/BitwardenImportDialog.tsx";
 import { UnlockAgentVaultDialog } from "@freeanima/features/vault/ui/spa/components/UnlockAgentVaultDialog.tsx";
 import { DidaImportDialog } from "@freeanima/features/task/ui/spa/components/DidaImportDialog.tsx";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 
 export const Route = createFileRoute("/_sidebar/data-maintenance")({
   component: DataMaintenancePage,
@@ -27,7 +26,7 @@ function DataMaintenancePage() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-lg font-semibold">{m.habitat_nav_data_maintenance()}</h1>
+        <h1 className="text-lg font-semibold">{"🧰 数据维护"}</h1>
         <SubjectScopeToggle />
       </div>
       <p className="text-muted-foreground text-sm">
@@ -37,13 +36,15 @@ function DataMaintenancePage() {
       <Card>
         <CardContent className="flex flex-col gap-3 p-4">
           <div>
-            <h2 className="font-medium">{m.habitat_data_agent_vault_title()}</h2>
+            <h2 className="font-medium">{"Agent 密码库"}</h2>
             <p className="text-muted-foreground mt-1 text-xs">
-              {m.habitat_data_agent_vault_desc()}
+              {
+                "根密钥保存在用户密码库（主密码保护）。解锁后写入 Habitat 可重建缓存，工具与 cron 才能解密 Agent 库。"
+              }
             </p>
           </div>
           <Button type="button" className="self-start" onClick={() => setAgentVaultOpen(true)}>
-            {m.habitat_data_agent_vault_open()}
+            {"解锁 agent 密码库"}
           </Button>
         </CardContent>
       </Card>

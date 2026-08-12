@@ -1,11 +1,4 @@
-import { describe, expect, it, mock } from "bun:test";
-
-mock.module("@paraglide/messages", () => ({ m: {} }));
-mock.module("@paraglide/runtime", () => ({
-  getLocale: () => "zh-cn",
-  locales: ["zh-cn", "en"],
-  setLocale: async (_locale: string) => {},
-}));
+import { describe, expect, it } from "bun:test";
 
 import { stripLeadingNavEmoji } from "./app-nav-i18n.ts";
 

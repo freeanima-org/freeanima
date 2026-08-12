@@ -3,8 +3,6 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
 
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
-
 type ResponsiveSidebarLayoutProps = {
   title: ReactNode;
   /** 移动端顶栏标题（默认与聊天室一致：当前页名称） */
@@ -48,7 +46,7 @@ export function ResponsiveSidebarLayout({
       detailClassName="overflow-y-auto app-main-padding"
       listOpen={sidebarOpen}
       onListOpenChange={setSidebarOpen}
-      listToggleAriaLabel={m.habitat_common_toggle_nav()}
+      listToggleAriaLabel={"切换导航"}
       detailActions={mobileActions}
       list={({ close }) => sidebar({ close })}
     >

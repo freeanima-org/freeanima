@@ -1,9 +1,14 @@
 import { defineMiddleware } from "astro:middleware";
 
-import { applySiteLocale } from "./lib/i18n.ts";
-import { detectLocale } from "./lib/site.ts";
-
+/** 旧 /zh-cn/* 去掉前缀（非 i18n）；文档迁移见 doc-redirects */
 export const onRequest = defineMiddleware((context, next) => {
-  applySiteLocale(detectLocale(context.url.pathname));
+  const { pathname } = context.url;
+  if (pathname === "/zh-cn" || pathname === "/zh-cn/") {
+    return context.redirect("/", 301);
+  }
+  if (pathname.startsWith("/zh-cn/")) {
+    const stripped = pathname.slice("/zh-cn".length) || "/";
+    return context.redirect(stripped + context.url.search, 301);
+  }
   return next();
 });

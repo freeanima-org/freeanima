@@ -2,7 +2,6 @@ import { useSyncExternalStore } from "react";
 import type { ReactElement, ReactNode } from "react";
 
 import { ConfirmDialog } from "./ConfirmDialog.tsx";
-import { m } from "./i18n.ts";
 import type { ConfirmDialogVariant } from "./types.ts";
 
 export type ShowConfirmOptions = {
@@ -70,7 +69,7 @@ export function showAlert(options: ShowConfirmOptions | string): Promise<void> {
     enqueue({
       kind: "alert",
       options: {
-        title: opts.title ?? m.ui_common_notice(),
+        title: opts.title ?? "提示",
         ...opts,
       },
       resolve: () => resolve(),
@@ -83,7 +82,7 @@ export function ConfirmPromptHost(): ReactElement | null {
   if (!pending) return null;
 
   const { kind, options } = pending;
-  const title = options.title ?? m.ui_common_confirm();
+  const title = options.title ?? "确定";
   const description = options.description;
 
   return (

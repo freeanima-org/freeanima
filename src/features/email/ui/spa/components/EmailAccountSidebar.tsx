@@ -2,7 +2,6 @@ import { SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
 import { Button } from "@freeanima/ui-kit";
 import { EmptyState, ListRow } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
-import { m } from "@paraglide/messages";
 import { FileText, Folder, Inbox, Plus, Send, Trash2 } from "lucide-react";
 
 import type { EmailAccountRow, EmailMailboxInfo } from "../lib/api.ts";
@@ -42,10 +41,10 @@ function mailboxIcon(role: string | undefined) {
 
 function mailboxLabel(box: EmailMailboxInfo): string {
   const role = mailboxRole(box);
-  if (role === "inbox") return m.email_inbox_title();
-  if (role === "sent") return m.email_sent_title();
-  if (role === "drafts") return m.email_drafts_title();
-  if (role === "trash") return m.email_trash_title();
+  if (role === "inbox") return "收件箱";
+  if (role === "sent") return "发件箱";
+  if (role === "drafts") return "草稿";
+  if (role === "trash") return "回收站";
   return box.name || box.path;
 }
 
@@ -119,13 +118,13 @@ export function EmailAccountSidebar({
           onClick={onAddAccount}
         >
           <Plus className="mr-1 size-3.5" />
-          {m.email_add_account()}
+          {"添加账户"}
         </Button>
       </div>
 
       {accounts.length === 0 ? (
         <EmptyState
-          message={m.habitat_email_no_accounts()}
+          message={"暂无邮件账户。点击「添加账户」进行注册。"}
           className="items-start p-2 text-left text-sm"
         />
       ) : (
@@ -142,7 +141,7 @@ export function EmailAccountSidebar({
                   contextMenuEnabled={contextMenuEnabled}
                   contextMenuItems={menuItems}
                   onOpenMenu={() => onOpenAccountMenu(account)}
-                  menuAriaLabel={m.email_account_actions()}
+                  menuAriaLabel={"账户操作"}
                   showPersistentMenu={useActionSheet && menuItems.length > 0}
                   className="mb-1 gap-1 px-1"
                   onDoubleClick={useActionSheet ? undefined : () => onEditAccount(account)}
@@ -162,7 +161,7 @@ export function EmailAccountSidebar({
                   <ul className="space-y-0.5 pl-1">
                     {sorted.length === 0 ? (
                       <li className="text-muted-foreground px-2 py-1 text-xs">
-                        {m.email_no_mailbox_hint()}
+                        {"暂无文件夹。点同步以列举邮箱。"}
                       </li>
                     ) : null}
                     {sorted.map((box) => {
@@ -179,7 +178,7 @@ export function EmailAccountSidebar({
                             contextMenuEnabled={contextMenuEnabled}
                             contextMenuItems={fItems}
                             onOpenMenu={() => onOpenFolderMenu?.(account, box)}
-                            menuAriaLabel={m.email_folder_rename()}
+                            menuAriaLabel={"重命名文件夹"}
                             showPersistentMenu={fItems.length > 0 && useActionSheet}
                             className="w-full gap-0.5 text-sm"
                             onClick={() => onSelectMailbox(account, box.path)}
@@ -200,7 +199,7 @@ export function EmailAccountSidebar({
                         onClick={() => onNewFolder(account)}
                       >
                         <Plus className="size-3.5 shrink-0" />
-                        {m.email_folder_new()}
+                        {"新建文件夹"}
                       </button>
                     </li>
                   </ul>
@@ -212,9 +211,7 @@ export function EmailAccountSidebar({
                     className="w-full px-2 text-sm"
                     onClick={() => onSelectMailbox(account, "INBOX")}
                   >
-                    <span className="min-w-0 flex-1 truncate py-2 text-left">
-                      {m.email_inbox_title()}
-                    </span>
+                    <span className="min-w-0 flex-1 truncate py-2 text-left">{"收件箱"}</span>
                   </ListRow>
                 )}
               </li>

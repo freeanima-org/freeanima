@@ -2,7 +2,6 @@ import { useCallback, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import {
   getMcpStatus,
   startAllMcp,
@@ -68,7 +67,7 @@ function McpPage() {
   const [status, setStatus] = useState<McpStatus | null>(initial);
   const [bulkActing, setBulkActing] = useState(false);
   const [acting, setActing] = useState<Record<string, string>>({});
-  const [error, setError] = useState(initial ? "" : m.habitat_common_load_failed_short());
+  const [error, setError] = useState(initial ? "" : "加载失败");
 
   const refreshStatus = useCallback(async () => {
     try {
@@ -90,11 +89,7 @@ function McpPage() {
     } catch (e) {
       logCaughtError("routes/_sidebar/mcp", e);
       setError(
-        m.habitat_mcp_action_failed({
-          name,
-          action: action === "start" ? m.habitat_action_start() : m.habitat_action_stop(),
-          detail: e instanceof Error ? e.message : String(e),
-        }),
+        `${name} ${action === "start" ? "启动" : "停止"}失败: ${e instanceof Error ? e.message : String(e)}`,
       );
     } finally {
       setActing((a) => {
@@ -114,11 +109,7 @@ function McpPage() {
     } catch (e) {
       logCaughtError("routes/_sidebar/mcp", e);
       const detail = e instanceof Error ? e.message : String(e);
-      setError(
-        action === "start-all"
-          ? m.habitat_mcp_start_all_failed({ detail })
-          : m.habitat_mcp_stop_all_failed({ detail }),
-      );
+      setError(action === "start-all" ? `全部启动失败: ${detail}` : `全部停止失败: ${detail}`);
     } finally {
       setBulkActing(false);
     }
@@ -127,9 +118,9 @@ function McpPage() {
   if (!status) {
     return (
       <div>
-        <h2 className="text-lg font-bold">{m.habitat_nav_mcp()}</h2>
+        <h2 className="text-lg font-bold">{"🔌 MCP"}</h2>
         <StatusAlert variant="error" className="mt-4">
-          {error || m.habitat_common_load_failed_short()}
+          {error || "加载失败"}
         </StatusAlert>
         <div className="mt-4">
           <McpServersConfigEditor onSaved={refreshStatus} />
@@ -142,8 +133,12 @@ function McpPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-lg font-bold">{m.habitat_nav_mcp()}</h2>
-          <p className="text-sm text-muted-foreground mt-1">{m.habitat_mcp_desc()}</p>
+          <h2 className="text-lg font-bold">{"🔌 MCP"}</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {
+              "Configure inbound MCP servers (stdio / http / SSE), start/stop connections, and inspect tools."
+            }
+          </p>
         </div>
         {status.servers.length > 0 ? (
           <div className="flex gap-2">
@@ -153,7 +148,7 @@ function McpPage() {
               isDisabled={bulkActing}
               onClick={() => void controlAll("start-all")}
             >
-              {m.habitat_common_start_all()}
+              {"启动全部"}
             </Button>
             <Button
               type="button"
@@ -162,7 +157,7 @@ function McpPage() {
               isDisabled={bulkActing}
               onClick={() => void controlAll("stop-all")}
             >
-              {m.habitat_common_stop_all()}
+              {"停止全部"}
             </Button>
           </div>
         ) : null}
@@ -177,10 +172,10 @@ function McpPage() {
       <div className="flex flex-wrap gap-2 mb-4">
         {(
           [
-            [m.habitat_mcp_configured(), status.server_count],
-            [m.habitat_common_connected(), status.connected_count],
-            [m.habitat_common_connecting(), status.connecting_count ?? 0],
-            [m.habitat_mcp_registered_tools(), status.tool_count],
+            ["已配置", status.server_count],
+            ["已连接", status.connected_count],
+            ["连接中", status.connecting_count ?? 0],
+            ["注册工具", status.tool_count],
           ] as const
         ).map(([label, count]) => (
           <Badge key={label} variant="outline">
@@ -191,10 +186,12 @@ function McpPage() {
 
       <McpServersConfigEditor onSaved={refreshStatus} />
 
-      <h3 className="text-sm font-semibold mb-3">{m.habitat_mcp_runtime_heading()}</h3>
+      <h3 className="text-sm font-semibold mb-3">{"运行时"}</h3>
 
       {status.servers.length === 0 ? (
-        <StatusAlert variant="info">{m.habitat_mcp_empty_hint()}</StatusAlert>
+        <StatusAlert variant="info">
+          {"No MCP servers yet. Expand “Edit server config” below to add one."}
+        </StatusAlert>
       ) : (
         <div className="space-y-4">
           {status.servers.map((srv) => (
@@ -215,7 +212,7 @@ function McpPage() {
                       isDisabled={!canStartMcpServer(srv) || !!acting[srv.name]}
                       onClick={() => void controlServer(srv.name, "start")}
                     >
-                      {m.habitat_common_start()}
+                      {"启动"}
                     </Button>
                     <Button
                       type="button"
@@ -225,15 +222,13 @@ function McpPage() {
                       isDisabled={!canStopMcpServer(srv) || !!acting[srv.name]}
                       onClick={() => void controlServer(srv.name, "stop")}
                     >
-                      {m.habitat_common_stop()}
+                      {"停止"}
                     </Button>
                   </div>
                 </div>
                 {srv.error ? <p className="text-xs text-destructive">{srv.error}</p> : null}
                 <details>
-                  <summary className="text-sm font-medium cursor-pointer mb-2">
-                    {m.habitat_common_config()}
-                  </summary>
+                  <summary className="text-sm font-medium cursor-pointer mb-2">{"配置"}</summary>
                   <pre className="text-xs overflow-x-auto bg-muted rounded p-2">
                     {JSON.stringify(srv.config, null, 2)}
                   </pre>

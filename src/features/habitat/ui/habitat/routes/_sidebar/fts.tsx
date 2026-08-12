@@ -17,7 +17,6 @@ import {
   getRebuildFtsJobStatus,
   startRebuildFtsIndex,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
-import { m } from "@freeanima/features/habitat/ui/habitat/lib/i18n.ts";
 import {
   catchWithFallback,
   logCaughtError,
@@ -73,11 +72,11 @@ type FtsStatus = {
 };
 
 function phaseLabel(phase: string): string {
-  if (phase === "semantic_memory_segmented") return m.habitat_fts_semantic_seg();
-  if (phase === "messages_segmented") return m.habitat_fts_messages_seg();
-  if (phase === "semantic_memory_embedding") return m.habitat_fts_semantic_emb();
-  if (phase === "messages_embedding") return m.habitat_fts_messages_emb();
-  if (phase === "entities_embedding") return m.habitat_fts_entities_emb();
+  if (phase === "semantic_memory_segmented") return "语义记忆 · 分词";
+  if (phase === "messages_segmented") return "对话消息 · 分词";
+  if (phase === "semantic_memory_embedding") return "语义记忆 · 向量";
+  if (phase === "messages_embedding") return "对话消息 · 向量";
+  if (phase === "entities_embedding") return "实体 · 向量";
   return phase;
 }
 
@@ -91,11 +90,11 @@ function CoverageTable({ rows, cjkEnabled }: { rows: FtsTableCoverageRow[]; cjkE
       <Table className="font-mono text-xs">
         <TableHeader>
           <TableRow>
-            <TableHead>{m.habitat_common_table()}</TableHead>
-            <TableHead>{m.habitat_common_capability()}</TableHead>
+            <TableHead>{"表"}</TableHead>
+            <TableHead>{"能力"}</TableHead>
             <TableHead>FTS</TableHead>
-            <TableHead>{m.habitat_common_segmented()}</TableHead>
-            <TableHead>{m.habitat_common_embedding()}</TableHead>
+            <TableHead>{"分词"}</TableHead>
+            <TableHead>{"向量"}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -108,9 +107,9 @@ function CoverageTable({ rows, cjkEnabled }: { rows: FtsTableCoverageRow[]; cjkE
               <TableCell className="text-muted-foreground whitespace-nowrap">
                 {[
                   row.capabilities.fts && "FTS",
-                  row.capabilities.segmented && m.habitat_common_segmented(),
+                  row.capabilities.segmented && "分词",
                   row.capabilities.trgm && "trgm",
-                  row.capabilities.embedding && m.habitat_common_embedding(),
+                  row.capabilities.embedding && "向量",
                 ]
                   .filter(Boolean)
                   .join(" · ")}
@@ -131,7 +130,9 @@ function CoverageTable({ rows, cjkEnabled }: { rows: FtsTableCoverageRow[]; cjkE
         </TableBody>
       </Table>
       {!cjkEnabled ? (
-        <p className="text-xs text-muted-foreground mt-2 font-sans">* {m.habitat_fts_cjk_note()}</p>
+        <p className="text-xs text-muted-foreground mt-2 font-sans">
+          * {"cjk.enabled 关闭时 fts_segmented 为空属正常；开启后需重建分词。"}
+        </p>
       ) : null}
     </div>
   );
@@ -141,21 +142,21 @@ function RebuildProgress({ job }: { job: FtsRebuildJobStatus }) {
   if (!job.running && !job.error && !job.result) return null;
 
   const pct = job.total > 0 ? Math.min(100, Math.round((job.current / job.total) * 100)) : 0;
-  const label = job.phase ? phaseLabel(job.phase) : m.habitat_common_preparing();
+  const label = job.phase ? phaseLabel(job.phase) : "准备中";
 
   return (
     <Card className="bg-muted py-0 mb-4">
       <CardContent className="gap-3 py-4 px-4">
-        <h3 className="font-bold text-sm">{m.habitat_fts_rebuild_progress()}</h3>
+        <h3 className="font-bold text-sm">{"重建进度"}</h3>
         {job.running ? (
           <>
             <p className="text-sm font-sans">
               {label} · {formatRatio(job.current, job.total)}
-              {job.only_missing ? m.habitat_common_only_missing() : m.habitat_common_full_rebuild()}
+              {job.only_missing ? "（仅补缺失）" : "（全量）"}
             </p>
             <progress className="w-full h-2 accent-primary" value={pct} max={100} />
             <p className="text-xs text-muted-foreground font-sans">
-              {m.habitat_common_background_hint()}
+              {"后台运行中，可关闭页面；刷新统计可查看覆盖度变化。"}
             </p>
           </>
         ) : null}
@@ -186,11 +187,7 @@ function FtsPage() {
       if (data.rebuild) setJob(data.rebuild);
     } catch (e) {
       logCaughtError("routes/_sidebar/fts", e);
-      setError(
-        m.habitat_common_load_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     }
   }, []);
 
@@ -235,11 +232,7 @@ function FtsPage() {
       }
     } catch (e) {
       logCaughtError("routes/_sidebar/fts", e);
-      setError(
-        m.habitat_common_operation_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
+      setError(`操作失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setLoading(false);
     }
@@ -247,8 +240,12 @@ function FtsPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-4">{m.habitat_fts_title()}</h2>
-      <p className="text-sm text-muted-foreground mb-4">{m.habitat_fts_desc()}</p>
+      <h2 className="text-lg font-bold mb-4">{"🔍 全文检索"}</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        {
+          "重建在后台执行，不会阻塞页面。默认仅补缺失行，可断点续跑（如向量中断后再次点击即可继续）。"
+        }
+      </p>
 
       {error ? (
         <StatusAlert variant="error" className="mb-4">
@@ -260,18 +257,20 @@ function FtsPage() {
 
       <Card className="bg-muted py-0 mb-4">
         <CardContent className="gap-3 py-4 px-4">
-          <h3 className="font-bold text-sm">{m.habitat_fts_coverage()}</h3>
+          <h3 className="font-bold text-sm">{"索引覆盖度"}</h3>
           {status?.coverage?.tables?.length ? (
             <CoverageTable rows={status.coverage.tables} cjkEnabled={status.enabled} />
           ) : (
-            <p className="text-sm text-muted-foreground">{m.habitat_fts_pg_unavailable()}</p>
+            <p className="text-sm text-muted-foreground">
+              {"无法读取 PG 统计（未连接或非 PG 主存）"}
+            </p>
           )}
         </CardContent>
       </Card>
 
       <Card className="bg-muted py-0 mb-4">
         <CardContent className="gap-3 py-4 px-4">
-          <h3 className="font-bold text-sm">{m.habitat_common_config()}</h3>
+          <h3 className="font-bold text-sm">{"配置"}</h3>
           {status ? (
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm font-mono">
               <dt className="text-muted-foreground">cjk.enabled</dt>
@@ -288,7 +287,7 @@ function FtsPage() {
               <dd className="break-all">{status.embedding.base_url ?? "—"}</dd>
             </dl>
           ) : (
-            <p className="text-sm text-muted-foreground">{m.habitat_common_load_failed_short()}</p>
+            <p className="text-sm text-muted-foreground">{"加载失败"}</p>
           )}
           <div className="flex flex-wrap gap-2">
             <Button
@@ -297,7 +296,7 @@ function FtsPage() {
               isDisabled={loading || job?.running === true}
               onClick={() => void onRebuild(true)}
             >
-              {job?.running ? m.habitat_fts_rebuilding() : m.habitat_fts_resume()}
+              {job?.running ? "重建中…" : "续跑 / 补缺失"}
             </Button>
             <Button
               type="button"
@@ -306,7 +305,7 @@ function FtsPage() {
               isDisabled={loading || job?.running === true}
               onClick={() => void onRebuild(false)}
             >
-              {m.habitat_fts_full_rebuild()}
+              {"全量重建"}
             </Button>
             <Button
               type="button"
@@ -315,7 +314,7 @@ function FtsPage() {
               isDisabled={loading}
               onClick={() => void reload()}
             >
-              {m.habitat_fts_refresh_stats()}
+              {"刷新统计"}
             </Button>
           </div>
         </CardContent>
