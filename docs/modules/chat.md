@@ -99,9 +99,9 @@ Outbox 布局与
 
 连续工具调用（同一轮，以及中间无助手正文的多轮）投影为单个 `tool_block`，由 `ToolBlockBubble` 渲染：
 
-- **折叠（默认）：** 一行活动条，活跃时跑马灯
+- **折叠（默认）：** 一行活动条，标题默认静止截断；headline / 子步骤文案变更时旧行上滚出、新行自下滚入
   - **已完成**调用：显示调用标签（`args._title`，否则工具名）
-  - **运行中 / 等待：** 若活跃调用有 live 子步骤（如经 `tool_progress` 的 `subagent_run`），滚动**最新子步骤**的 `title`/`name`；否则用调用自身标签
+  - **运行中 / 等待：** 若活跃调用有 live 子步骤（如经 `tool_progress` 的 `subagent_run`），展示**最新子步骤**的 `title`/`name`；否则用调用自身标签
 - **一级展开：** 调用列表；每行折叠时用同一折叠摘要规则
 - **二级展开：** 每调用的 args / result；`subagent_run` 另显示子 `steps` 摘要（运行中含 live 部分 `result`；子轮次仍不写入父 `messages`）
 - 流式期间，`tool_round_live` 快照 upsert 末尾 `tool_block`，使工具运行时条带更新（`tool_progress` 更新运行中调用的部分 `result`，不标为完成）

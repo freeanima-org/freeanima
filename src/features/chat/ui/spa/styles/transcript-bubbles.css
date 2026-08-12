@@ -44,24 +44,64 @@
   max-width: 100%;
 }
 
-.tool-bubble-marquee {
+/* 工具条标题：默认静止；文案变更时旧行上滚出、新行自下滚入 */
+.tool-bubble-roll {
+  position: relative;
   overflow: hidden;
-  white-space: nowrap;
+  height: 1.25em;
+  line-height: 1.25em;
   max-width: 100%;
 }
 
-.tool-bubble-marquee-track {
-  display: inline-block;
-  padding-left: 100%;
-  animation: tool-bubble-marquee 8s linear infinite;
+.tool-bubble-roll-line {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-@keyframes tool-bubble-marquee {
-  0% {
-    transform: translateX(0);
+.tool-bubble-roll-out,
+.tool-bubble-roll-in {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+}
+
+.tool-bubble-roll-out {
+  animation: tool-bubble-roll-out 300ms ease-out forwards;
+}
+
+.tool-bubble-roll-in {
+  animation: tool-bubble-roll-in 300ms ease-out forwards;
+}
+
+@keyframes tool-bubble-roll-out {
+  from {
+    transform: translateY(0);
+    opacity: 1;
   }
-  100% {
-    transform: translateX(-100%);
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes tool-bubble-roll-in {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tool-bubble-roll-out,
+  .tool-bubble-roll-in {
+    animation: none;
   }
 }
 
