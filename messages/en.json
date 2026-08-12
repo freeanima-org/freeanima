@@ -394,6 +394,7 @@
   "habitat_fts_cjk_note": "When cjk.enabled is off, empty fts_segmented is expected; rebuild segmented after enabling.",
   "habitat_fts_coverage": "Index coverage",
   "habitat_fts_desc": "Rebuild runs in the background. Default rebuilds missing rows only; safe to resume after interrupt.",
+  "habitat_fts_entities_emb": "Entities · embedding",
   "habitat_fts_full_rebuild": "Full rebuild",
   "habitat_fts_messages_emb": "Messages · embedding",
   "habitat_fts_messages_seg": "Messages · segmented",

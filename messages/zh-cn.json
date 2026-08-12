@@ -450,6 +450,7 @@
   "habitat_fts_cjk_note": "cjk.enabled 关闭时 fts_segmented 为空属正常；开启后需重建分词。",
   "habitat_fts_coverage": "索引覆盖度",
   "habitat_fts_desc": "重建在后台执行，不会阻塞页面。默认仅补缺失行，可断点续跑（如向量中断后再次点击即可继续）。",
+  "habitat_fts_entities_emb": "实体 · 向量",
   "habitat_fts_full_rebuild": "全量重建",
   "habitat_fts_messages_emb": "对话消息 · 向量",
   "habitat_fts_messages_seg": "对话消息 · 分词",

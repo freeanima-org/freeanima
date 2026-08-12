@@ -19,7 +19,9 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 import { createSemanticMemory } from "@freeanima/host/core/db/pg/semantic-memory";
+import { createTaskItem, createTaskList } from "@freeanima/features/task/domain";
 import { getActivePgTestContext, getTestEngine, seedSession } from "../../helpers/pg-test.ts";
+import { testUserWorldId } from "../../helpers/world-context.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 function minimalConfig() {
@@ -129,9 +131,13 @@ describePg("FTS rebuild embedding PG", () => {
     await awaitPendingEmbeddingsForTest();
     await ctx!.sql`UPDATE search_documents SET embedding = NULL WHERE resource = 'message'`;
 
-    await expect(rebuildAllFtsSegments({ onlyMissing: true })).rejects.toThrow(
-      /stored 0 embeddings/,
-    );
+    await expect(
+      rebuildAllFtsSegments({
+        onlyMissing: true,
+        embedRetryAttempts: 2,
+        embedRetryBaseMs: 0,
+      }),
+    ).rejects.toThrow(/embedding failure\(s\) after retries/);
 
     const after = await getFtsCoverageStats();
     const msgAfter = after.tables.find((t) => t.table === "messages")!;
@@ -190,6 +196,55 @@ describePg("FTS rebuild embedding PG", () => {
 
     const result = await rebuildAllFtsSegments({ onlyMissing: true });
     expect(result.embeddings?.messages).toBeGreaterThanOrEqual(0);
+  });
+
+  it("onlyMissing=true backfills missing non-semantic entity embeddings", async () => {
+    const worldId = testUserWorldId();
+    const list = await createTaskList(worldId, { name: "fts-rebuild-emb-entities" });
+    const item = await createTaskItem(worldId, {
+      title: "实体向量续跑目标",
+      content: "need entity embedding rebuild",
+      list_id: list.id,
+    });
+
+    const ctx = getActivePgTestContext();
+    expect(ctx).not.toBeNull();
+    await awaitPendingEmbeddingsForTest();
+    await ctx!
+      .sql`UPDATE search_documents SET embedding = NULL WHERE resource = 'entity' AND source_id = ${String(item.id)}`;
+
+    const before = await getFtsCoverageStats();
+    const entitiesBefore = before.tables.find((t) => t.table === "entities")!;
+    expect(entitiesBefore.embedding).toBeLessThan(entitiesBefore.total);
+
+    const result = await rebuildAllFtsSegments({ onlyMissing: true });
+    expect(result.embeddings?.entities ?? 0).toBeGreaterThanOrEqual(1);
+
+    const rows = await ctx!.sql<{ embedding: string | null }[]>`
+      SELECT embedding::text AS embedding FROM search_documents
+      WHERE resource = 'entity' AND source_id = ${String(item.id)}
+    `;
+    expect(rows[0]?.embedding).not.toBeNull();
+
+    const after = await getFtsCoverageStats();
+    const entitiesAfter = after.tables.find((t) => t.table === "entities")!;
+    expect(entitiesAfter.embedding).toBe(entitiesAfter.total);
+  });
+
+  it("onlyMissing=true does not recount entities that already have embeddings", async () => {
+    const worldId = testUserWorldId();
+    const list = await createTaskList(worldId, { name: "fts-rebuild-emb-entities-skip" });
+    await createTaskItem(worldId, {
+      title: "已有向量实体",
+      content: "already embedded entity row",
+      list_id: list.id,
+    });
+
+    await awaitPendingEmbeddingsForTest();
+    // 先补齐引导数据等历史缺口，再断言本轮无新增
+    await rebuildAllFtsSegments({ onlyMissing: true });
+    const result = await rebuildAllFtsSegments({ onlyMissing: true });
+    expect(result.embeddings?.entities ?? 0).toBe(0);
   });
 
   afterAll(async () => {

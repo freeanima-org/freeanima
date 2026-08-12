@@ -13,7 +13,7 @@ import { omitUndefined } from "@freeanima/host/core/util";
 import { logPgComponent } from "../log.ts";
 
 import { EMBEDDING_QUEUE_FLUSH_THRESHOLD } from "../embedding/batch-pack.ts";
-import { embedAndStoreJobs } from "../embedding/embed-jobs.ts";
+import { embedAndStoreJobsResult } from "../embedding/embed-jobs.ts";
 import { getEmbedTextFn } from "../embedding/runtime.ts";
 import { getDb } from "../client.ts";
 import { segmentForFts } from "./segment.ts";
@@ -35,6 +35,21 @@ export type FtsRebuildResult = {
   embedding_enabled: boolean;
   embeddings?: Record<string, number>;
 };
+
+const EMBED_REBUILD_MAX_ATTEMPTS = 3;
+const EMBED_REBUILD_RETRY_BASE_MS = 750;
+
+type EmbedRebuildFailure = {
+  phase: FtsRebuildPhase;
+  id: string;
+  reason: string;
+};
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 function report(
   onProgress: FtsRebuildOptions["onProgress"],
@@ -82,39 +97,50 @@ async function ensureSearchBackend() {
   return getSearchBackend();
 }
 
-function assertEmbeddingBatchStored(
-  phase: FtsRebuildPhase,
-  batchSize: number,
-  stored: number,
-  rowId: string,
-): void {
-  if (batchSize > 0 && stored === 0) {
-    const msg = `${phase}: row ${rowId} stored 0 embeddings (check API, dimensions, config)`;
-    log.error("embedding rebuild batch stored 0 rows", {
-      phase,
-      batch_size: batchSize,
-      row_id: rowId,
-    });
-    throw new Error(msg);
-  }
-}
-
+/** Embed one row with retries; on persistent failure record and skip (resume can retry). */
 async function embedRebuildRow(
   phase: FtsRebuildPhase,
   job: {
-    kind: "semantic_memory" | "message" | "limbic_memory" | "autobiographical_memory";
+    kind: "semantic_memory" | "message" | "limbic_memory" | "autobiographical_memory" | "entity";
     id: string;
     content: string;
   },
+  failures: EmbedRebuildFailure[],
+  opts: FtsRebuildOptions = {},
 ): Promise<number> {
   const trimmed = job.content.trim();
   if (!trimmed) {
     log.warn("embedding rebuild skipping empty content", { phase, row_id: job.id });
     return 0;
   }
-  const stored = await embedAndStoreJobs([{ ...job, content: trimmed }]);
-  assertEmbeddingBatchStored(phase, 1, stored, job.id);
-  return stored;
+
+  const maxAttempts = Math.max(1, opts.embedRetryAttempts ?? EMBED_REBUILD_MAX_ATTEMPTS);
+  const retryBaseMs = Math.max(0, opts.embedRetryBaseMs ?? EMBED_REBUILD_RETRY_BASE_MS);
+
+  let lastReason = "check API, dimensions, config";
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const result = await embedAndStoreJobsResult([{ ...job, content: trimmed }]);
+    if (result.stored > 0) return result.stored;
+    lastReason = result.emptyReason?.trim() || lastReason;
+    if (attempt < maxAttempts) {
+      log.warn("embedding rebuild row retry", {
+        phase,
+        row_id: job.id,
+        attempt,
+        empty_reason: lastReason,
+      });
+      if (retryBaseMs > 0) await sleep(retryBaseMs * attempt);
+    }
+  }
+
+  log.error("embedding rebuild row skipped after retries", {
+    phase,
+    row_id: job.id,
+    empty_reason: lastReason,
+    attempts: maxAttempts,
+  });
+  failures.push({ phase, id: job.id, reason: lastReason });
+  return 0;
 }
 
 async function countSemanticMemorySegmentedTargets(onlyMissing: boolean): Promise<number> {
@@ -192,6 +218,24 @@ async function countMessagesEmbeddingTargets(onlyMissing: boolean): Promise<numb
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(messages)
     .leftJoin(searchDocuments, messageSearchJoin())
+    .where(and(...conditions));
+  return Number(rows[0]?.n ?? 0);
+}
+
+async function countEntitiesEmbeddingTargets(onlyMissing: boolean): Promise<number> {
+  const db = getDb();
+  const conditions = [
+    drizzleSql`length(btrim(
+      coalesce(${entities.title}, '') || ' ' ||
+      coalesce(${entities.summary}, '') || ' ' ||
+      coalesce(${entities.content}, '')
+    )) > 0`,
+  ];
+  if (onlyMissing) conditions.push(missingEmbeddingCondition());
+  const rows = await db
+    .select({ n: drizzleSql<number>`count(*)::int` })
+    .from(entities)
+    .leftJoin(searchDocuments, entitySearchJoin())
     .where(and(...conditions));
   return Number(rows[0]?.n ?? 0);
 }
@@ -323,7 +367,10 @@ async function rebuildMessagesFtsSegmented(
   return updated;
 }
 
-async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise<number> {
+async function rebuildSemanticMemoryEmbeddings(
+  opts: FtsRebuildOptions,
+  failures: EmbedRebuildFailure[],
+): Promise<number> {
   if (!getEmbedTextFn()) return 0;
 
   const onlyMissing = opts.onlyMissing ?? false;
@@ -372,11 +419,16 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
     if (full) {
       await getSearchBackend().upsert([entityToSearchDoc(full)]);
     }
-    const stored = await embedRebuildRow("semantic_memory_embedding", {
-      kind: "semantic_memory",
-      id: String(row.id),
-      content: row.content,
-    });
+    const stored = await embedRebuildRow(
+      "semantic_memory_embedding",
+      {
+        kind: "semantic_memory",
+        id: String(row.id),
+        content: row.content,
+      },
+      failures,
+      opts,
+    );
     updated += stored;
     report(opts.onProgress, "semantic_memory_embedding", "semantic_memory", updated, total);
     lastId = row.id;
@@ -385,7 +437,10 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
   return updated;
 }
 
-async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<number> {
+async function rebuildMessagesEmbeddings(
+  opts: FtsRebuildOptions,
+  failures: EmbedRebuildFailure[],
+): Promise<number> {
   if (!getEmbedTextFn()) return 0;
 
   const onlyMissing = opts.onlyMissing ?? false;
@@ -430,13 +485,102 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
         content: row.content ?? "",
       }),
     ]);
-    const stored = await embedRebuildRow("messages_embedding", {
-      kind: "message",
-      id: row.id,
-      content: row.content ?? "",
-    });
+    const stored = await embedRebuildRow(
+      "messages_embedding",
+      {
+        kind: "message",
+        id: row.id,
+        content: row.content ?? "",
+      },
+      failures,
+      opts,
+    );
     updated += stored;
     report(opts.onProgress, "messages_embedding", "messages", updated, total);
+    lastId = row.id;
+  }
+
+  return updated;
+}
+
+async function rebuildEntitiesEmbeddings(
+  opts: FtsRebuildOptions,
+  failures: EmbedRebuildFailure[],
+): Promise<number> {
+  if (!getEmbedTextFn()) return 0;
+
+  const onlyMissing = opts.onlyMissing ?? false;
+  const total = await countEntitiesEmbeddingTargets(onlyMissing);
+  report(opts.onProgress, "entities_embedding", "entities", 0, total);
+  if (total === 0) return 0;
+
+  await ensureSearchBackend();
+  const db = getDb();
+  let updated = 0;
+  let lastId = 0;
+
+  for (;;) {
+    const baseConditions = [
+      drizzleSql`length(btrim(
+        coalesce(${entities.title}, '') || ' ' ||
+        coalesce(${entities.summary}, '') || ' ' ||
+        coalesce(${entities.content}, '')
+      )) > 0`,
+    ];
+    if (onlyMissing) baseConditions.push(missingEmbeddingCondition());
+    if (lastId) baseConditions.push(gt(entities.id, lastId));
+
+    const rows = await db
+      .select({
+        id: entities.id,
+        world_id: entities.world_id,
+        primary_component: entities.primary_component,
+        title: entities.title,
+        summary: entities.summary,
+        content: entities.content,
+        body: entities.body,
+        deleted_at: entities.deleted_at,
+      })
+      .from(entities)
+      .leftJoin(searchDocuments, entitySearchJoin())
+      .where(and(...baseConditions))
+      .orderBy(asc(entities.id))
+      .limit(REBUILD_EMBEDDING_PAGE_SIZE);
+    if (rows.length === 0) break;
+
+    const row = rows[0];
+    if (!row) break;
+
+    const indexText = entitySearchTextForWrite({
+      title: row.title,
+      summary: row.summary,
+      content: row.content,
+      body: (row.body ?? {}) as Record<string, unknown>,
+      primary_component: row.primary_component,
+    });
+    await getSearchBackend().upsert([
+      entityToSearchDoc({
+        id: row.id,
+        world_id: row.world_id,
+        primary_component: row.primary_component,
+        title: row.title,
+        summary: row.summary,
+        content: row.content,
+        deleted_at: row.deleted_at,
+      }),
+    ]);
+    const stored = await embedRebuildRow(
+      "entities_embedding",
+      {
+        kind: "entity",
+        id: String(row.id),
+        content: indexText,
+      },
+      failures,
+      opts,
+    );
+    updated += stored;
+    report(opts.onProgress, "entities_embedding", "entities", updated, total);
     lastId = row.id;
   }
 
@@ -556,17 +700,30 @@ export async function rebuildAllFtsSegments(
   const embedding_enabled =
     isEmbeddingEnabled(getActiveRuntimeConfig().data) && getEmbedTextFn() != null;
   let embeddings: Record<string, number> | undefined;
+  const embedding_failures: EmbedRebuildFailure[] = [];
   if (embedding_enabled) {
-    const smEmb = await rebuildSemanticMemoryEmbeddings(opts);
-    const msgEmb = await rebuildMessagesEmbeddings(opts);
+    const smEmb = await rebuildSemanticMemoryEmbeddings(opts, embedding_failures);
+    const msgEmb = await rebuildMessagesEmbeddings(opts, embedding_failures);
+    const entitiesEmb = await rebuildEntitiesEmbeddings(opts, embedding_failures);
     const lmEmb = await rebuildLimbicMemoryEmbeddings(opts);
     const abEmb = await rebuildAutobiographicalMemoryEmbeddings(opts);
     embeddings = {
       semantic_memory: smEmb,
       messages: msgEmb,
+      entities: entitiesEmb,
       limbic_memory: lmEmb,
       autobiographical_memory: abEmb,
     };
+  }
+
+  if (embedding_failures.length > 0) {
+    const sample = embedding_failures
+      .slice(0, 3)
+      .map((f) => `${f.phase} ${f.id}: ${f.reason}`)
+      .join("; ");
+    throw new Error(
+      `${embedding_failures.length} embedding failure(s) after retries (e.g. ${sample}); click resume to retry remaining`,
+    );
   }
 
   return omitUndefined({

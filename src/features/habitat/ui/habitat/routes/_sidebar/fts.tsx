@@ -77,15 +77,12 @@ function phaseLabel(phase: string): string {
   if (phase === "messages_segmented") return m.habitat_fts_messages_seg();
   if (phase === "semantic_memory_embedding") return m.habitat_fts_semantic_emb();
   if (phase === "messages_embedding") return m.habitat_fts_messages_emb();
+  if (phase === "entities_embedding") return m.habitat_fts_entities_emb();
   return phase;
 }
 
 function formatRatio(n: number, total: number): string {
   return `${n}/${total}`;
-}
-
-function capabilityCell(enabled: boolean): string {
-  return enabled ? "✓" : "—";
 }
 
 function CoverageTable({ rows, cjkEnabled }: { rows: FtsTableCoverageRow[]; cjkEnabled: boolean }) {
@@ -98,7 +95,6 @@ function CoverageTable({ rows, cjkEnabled }: { rows: FtsTableCoverageRow[]; cjkE
             <TableHead>{m.habitat_common_capability()}</TableHead>
             <TableHead>FTS</TableHead>
             <TableHead>{m.habitat_common_segmented()}</TableHead>
-            <TableHead>trgm</TableHead>
             <TableHead>{m.habitat_common_embedding()}</TableHead>
           </TableRow>
         </TableHeader>
@@ -127,7 +123,6 @@ function CoverageTable({ rows, cjkEnabled }: { rows: FtsTableCoverageRow[]; cjkE
                     : `${formatRatio(row.segmented, row.total)}*`
                   : "—"}
               </TableCell>
-              <TableCell>{row.capabilities.trgm ? capabilityCell(true) : "—"}</TableCell>
               <TableCell>
                 {row.capabilities.embedding ? formatRatio(row.embedding, row.total) : "—"}
               </TableCell>
