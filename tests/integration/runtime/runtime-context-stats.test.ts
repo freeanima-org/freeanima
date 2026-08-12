@@ -57,7 +57,7 @@ compression:
     const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
     await c.updateConversationMetaField(sid, {
       model: "m",
-      system_prompt: "self layer block here\n\n## Resident memory\n- fact",
+      system_prompt: "self layer block here\n\n<resident_memory>\n- fact\n</resident_memory>",
       cached_toolsets: ["__ctx_stats__"],
     });
     await c.appendMessage({ role: "user", content: "hi", pos: 1 }, sid);

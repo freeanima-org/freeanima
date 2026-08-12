@@ -93,8 +93,10 @@ describe("user-activity-stats format", () => {
     const stats = emptyStats();
     stats.today = { created: 2, updated: 5, user_messages: 47 };
     const text = formatUserActivityStatsPromptSection(as_of_day, windows, stats);
-    expect(text).toContain("## 用户活跃统计（截至 2026-07-18）");
+    expect(text).toContain("<user_activity>");
+    expect(text).toContain("截至 2026-07-18");
     expect(text).toContain("今天：新开 2 / 更新 5 / 消息 47");
     expect(text).toContain("近 90 天：");
+    expect(text).not.toContain("```md");
   });
 });

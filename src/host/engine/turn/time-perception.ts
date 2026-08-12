@@ -12,14 +12,12 @@
  * - Do not break caches (timestamps are fixed historical values)
  */
 
-import { formatCstIso, formatCstWeekdayZh } from "@freeanima/host/core/util";
+import { buildUserTimePrefixLine } from "@freeanima/host/core/hooks/prompt";
 import {
   isUserMessage,
   type StoredMessage,
   type UserMessage,
 } from "@freeanima/host/core/db/domain";
-
-const CST_DATETIME_MINUTE_RE = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/;
 
 /**
  * Extract timestamp from a user message.
@@ -33,24 +31,11 @@ function getMessageTimestamp(msg: UserMessage): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-/** `YYYY-MM-DDTHH:mm` in CST (+08:00) */
-function formatCstDateTimeMinute(date: Date): string | null {
-  const match = CST_DATETIME_MINUTE_RE.exec(formatCstIso(date));
-  return match?.[1] ?? null;
-}
-
-/** Standalone time prefix line, e.g. `time: 2026-06-07T17:45 周日\n` */
-function buildTimePrefixLine(date: Date): string | null {
-  const dt = formatCstDateTimeMinute(date);
-  if (!dt) return null;
-  return `time: ${dt} ${formatCstWeekdayZh(date)}\n`;
-}
-
 /**
  * Inject time prefixes into user messages in a message list.
  *
  * Rules:
- * 1. Each user message with a valid timestamp → `time: YYYY-MM-DDTHH:mm 周X\n` + original text
+ * 1. Each user message with a valid timestamp → `<time>YYYY-MM-DDTHH:mm 周X</time>\n` + original text
  * 2. Missing timestamp or non-user messages → skip
  *
  * Pure function; does not mutate input.
@@ -70,7 +55,7 @@ export function injectTimePrefixes(messages: StoredMessage[]): StoredMessage[] {
       continue;
     }
 
-    const prefixLine = buildTimePrefixLine(ts);
+    const prefixLine = buildUserTimePrefixLine(ts);
     if (!prefixLine) {
       result.push(msg);
       continue;

@@ -37,21 +37,29 @@ export async function loadSelfBlocks(): Promise<SelfBlockView[]> {
   }
 }
 
-/** Assemble self-layer system prompt segment from PG self_blocks */
-export async function loadSelfLayerPrompt(): Promise<string> {
+/**
+ * Nested self-block XML only (`<existence_anchor>…</existence_anchor>` …).
+ * systemPromptBuild folds this with outer `<self_layer>` + frame.
+ */
+export async function loadSelfLayerInner(): Promise<string> {
   const cached = getSelfLayerPromptCache();
   if (cached) return cached;
 
   try {
     const rows = await listSelfBlocks();
-    const prompt = wrapSelfLayerForSystemPrompt(renderSelfLayerPrompt(rows));
-    setSelfLayerPromptCache(prompt);
-    return prompt;
+    const inner = renderSelfLayerPrompt(rows);
+    setSelfLayerPromptCache(inner);
+    return inner;
   } catch {
-    const prompt = wrapSelfLayerForSystemPrompt(renderSelfLayerPrompt(emptyPlaceholderBlocks()));
-    setSelfLayerPromptCache(prompt);
-    return prompt;
+    const inner = renderSelfLayerPrompt(emptyPlaceholderBlocks());
+    setSelfLayerPromptCache(inner);
+    return inner;
   }
+}
+
+/** Full self-layer segment (frame + `<self_layer>` + nested blocks) for non-fold consumers */
+export async function loadSelfLayerPrompt(): Promise<string> {
+  return wrapSelfLayerForSystemPrompt(await loadSelfLayerInner());
 }
 
 /** Refresh cache after self block updates */

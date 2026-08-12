@@ -1,5 +1,6 @@
 import type { NotificationRow } from "@freeanima/host/core/db/schema/rows";
 import type { AssistantMessage, StoredMessage } from "@freeanima/host/core/db/domain";
+import { PROMPT_XML_TAGS, wrapPromptXml } from "@freeanima/host/core/hooks/prompt";
 
 export const NOTIFICATION_CONTEXT_ASSISTANT_NAME = "notification_context";
 
@@ -13,8 +14,6 @@ export const NOTIFICATION_HANDLING_PROTOCOL = `## Handling protocol
 3. **需处理但耗时/不确定**：先问用户是否现在处理；未获同意 **不要** mark_read（下轮 user 消息前仍会注入）
 4. **自我层维护建议**（title 含「自我层维护」或 source_ref=\`self-layer-proposal\`）：属第 3 类。注入预览可能截断 → 先 \`notification_list\` 拉全文 → 向用户说明建议并征询 → 同意后按正文用 \`self_update_block\` 写回对应块 → 再 mark_read；拒绝则 mark_read 且不写块。
 注入块不完整时用 \`notification_list(recipient=agent, read_filter=unread)\` 补查。`;
-
-export const NOTIFICATION_CONTEXT_FENCE = "notification";
 
 export const NOTIFICATION_INJECT_LIMIT = 10;
 
@@ -45,13 +44,13 @@ export function formatNotificationBlock(rows: NotificationRow[]): string {
       `[id:${row.id}] title: ${row.title}\nbody: ${truncateBody(row.body, previewMaxForRow(row))}`,
   );
   if (lines.length === 0) return "";
-  return "```" + NOTIFICATION_CONTEXT_FENCE + "\n" + lines.join("\n\n") + "\n```";
+  return wrapPromptXml(PROMPT_XML_TAGS.notification, lines.join("\n\n"));
 }
 
 export function wrapNotificationContext(rows: NotificationRow[]): string {
   const block = formatNotificationBlock(rows);
   if (!block) return "";
-  return `${NOTIFICATION_CONTEXT_HEAD}\n\n${NOTIFICATION_HANDLING_PROTOCOL}\n\n## Unread notifications\n${block}`;
+  return `${NOTIFICATION_CONTEXT_HEAD}\n\n${NOTIFICATION_HANDLING_PROTOCOL}\n\n${block}`;
 }
 
 export function isNotificationContextAssistant(msg: StoredMessage): msg is AssistantMessage {

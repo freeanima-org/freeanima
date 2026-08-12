@@ -4,13 +4,7 @@ import type { ProjectAgentContext, ProjectRule } from "./types.ts";
 
 const MAX_ALWAYS_RULES_CHARS = 4_000;
 
-function wrapFence(heading: string, body: string): string {
-  const t = body.trim();
-  if (!t) return "";
-  return `## ${heading}\n\`\`\`md\n${t}\n\`\`\``;
-}
-
-/** always-on rules 拼接（按发现顺序）；超长截断 */
+/** always-on rules 拼接（按发现顺序）；超长截断 — body only；fold 外包 `<project_context>`. */
 export function formatAlwaysRulesSection(rules: readonly ProjectRule[]): string {
   const always = rules.filter((r) => r.kind === "always");
   if (always.length === 0) return "";
@@ -26,7 +20,7 @@ export function formatAlwaysRulesSection(rules: readonly ProjectRule[]): string 
     chunks.push(block);
     used += block.length + 2;
   }
-  return wrapFence("Project context", chunks.join("\n\n"));
+  return chunks.join("\n\n");
 }
 
 export function formatRequestableRulesCatalog(rules: readonly ProjectRule[]): string {
@@ -36,29 +30,19 @@ export function formatRequestableRulesCatalog(rules: readonly ProjectRule[]): st
     const g = r.globs?.length ? ` (globs: ${r.globs.join(", ")})` : "";
     return `- \`${r.path}\`${g}`;
   });
-  return ["## Project path-scoped rules", "Load via `file_read` when relevant:", ...lines].join(
-    "\n",
-  );
+  return ["Load via `file_read` when relevant:", ...lines].join("\n");
 }
 
 export function formatProjectSkillsCatalog(skills: ProjectAgentContext["skills"]): string {
   if (skills.length === 0) return "";
   const lines = skills.map((s) => `- **${s.name}**: ${s.description || "(no description)"}`);
-  return [
-    "## Project skills",
-    "Repo-local techniques (use `skill_load` with the skill name):",
-    ...lines,
-  ].join("\n");
+  return ["Repo-local techniques (use `skill_load` with the skill name):", ...lines].join("\n");
 }
 
 export function formatProjectAgentsCatalog(agents: ProjectAgentContext["agents"]): string {
   if (agents.length === 0) return "";
   const lines = agents.map((a) => `- **${a.slug}**: ${a.description || a.slug}`);
-  return [
-    "## Project subagents",
-    "Repo-local agent profiles (dispatch with `subagent_run` slug):",
-    ...lines,
-  ].join("\n");
+  return ["Repo-local agent profiles (dispatch with `subagent_run` slug):", ...lines].join("\n");
 }
 
 export function formatProjectMcpCatalog(mcp: ProjectAgentContext["mcpServers"]): string {
@@ -68,7 +52,6 @@ export function formatProjectMcpCatalog(mcp: ProjectAgentContext["mcpServers"]):
     return `- **${m.name}** (${t}) from \`${m.path}\``;
   });
   return [
-    "## Project MCP",
     "Managed by Coding Outpost; tools are bridged as remote tools when connected:",
     ...lines,
   ].join("\n");

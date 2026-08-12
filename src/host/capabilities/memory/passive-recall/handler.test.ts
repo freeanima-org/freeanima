@@ -75,7 +75,9 @@ describe("createPassiveMemoryRecallHandler", () => {
 
   it("injects runtime assistant when enabled and last message is user", async () => {
     bindTestConfig(true);
-    const messages: StoredMessage[] = [{ role: "user", content: "time: 2026-06-07T17:45\nhello" }];
+    const messages: StoredMessage[] = [
+      { role: "user", content: "<time>2026-06-07T17:45</time>\nhello" },
+    ];
     const ctx: BeforeLlmCallContext = { conversationId: "c1", messages };
 
     await createPassiveMemoryRecallHandler()(ctx);

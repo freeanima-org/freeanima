@@ -17,7 +17,7 @@ describe("focusPassiveRecallQuery", () => {
 
   it("strips time prefix before focus", () => {
     const body = "a".repeat(400);
-    const raw = `time: 2026-06-07T17:45\n${body}`;
+    const raw = `<time>2026-06-07T17:45</time>\n${body}`;
     const focused = focusPassiveRecallQuery(stripTimePrefixFromUserContent(raw), 100);
     expect(focused.length).toBeLessThanOrEqual(100);
   });

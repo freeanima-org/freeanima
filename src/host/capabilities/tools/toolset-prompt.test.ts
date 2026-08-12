@@ -22,7 +22,8 @@ describe("renderToolsetsSection", () => {
       },
     ]);
     const section = renderToolsetsSection(registry);
-    expect(section).toContain("## ToolSets");
+    expect(section).toContain("<toolsets>");
+    expect(section).toContain("</toolsets>");
     expect(section).toContain("toolset_load");
     expect(section).toContain("- file — Read and write workspace files");
     expect(section).toContain("- memory — Semantic memory tools");

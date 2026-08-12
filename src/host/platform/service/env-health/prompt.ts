@@ -1,6 +1,6 @@
 import { getAppRuntime, getRuntimeDeps } from "../runtime-context.ts";
 import { getBaselineStore } from "./baseline.ts";
-import { formatEnvHealthPromptSection } from "./format.ts";
+import { formatEnvHealthPromptBody, formatEnvHealthPromptSection } from "./format.ts";
 import type { EnvHealthMarkers } from "./types.ts";
 
 /**
@@ -21,6 +21,13 @@ export async function loadOrCollectBaselineMarkers(): Promise<EnvHealthMarkers> 
   return markers;
 }
 
+/** Inner body for systemPromptBuild fold. */
+export async function buildEnvHealthPromptBody(): Promise<string> {
+  const markers = await loadOrCollectBaselineMarkers();
+  return formatEnvHealthPromptBody(markers);
+}
+
+/** Fully wrapped (legacy / non-fold). */
 export async function buildEnvHealthPromptSectionContent(): Promise<string> {
   const markers = await loadOrCollectBaselineMarkers();
   return formatEnvHealthPromptSection(markers);

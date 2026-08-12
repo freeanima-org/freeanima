@@ -1,7 +1,8 @@
 import type { EnvHealthMarkers } from "./types.ts";
 import type { EnvHealthDiff } from "./diff.ts";
+import { PROMPT_XML_TAGS, wrapPromptXmlSection } from "@freeanima/host/core/hooks/prompt";
 
-const PROMPT_FRAME =
+export const ENV_HEALTH_PROMPT_FRAME =
   "Below is your environment and health baseline (static session snapshot). " +
   "It reflects the last quiet observation at prompt build time; live changes arrive as system notifications.";
 
@@ -26,10 +27,16 @@ export function formatMarkersBlock(markers: EnvHealthMarkers): string {
   return keys.map((k) => `- ${LABEL[k]}: ${String(markers[k])}`).join("\n");
 }
 
-/** System prompt section body */
+/** Inner body for systemPromptBuild (fold wraps `<env_health>`). */
+export function formatEnvHealthPromptBody(markers: EnvHealthMarkers): string {
+  return formatMarkersBlock(markers);
+}
+
+/** Fully wrapped section (non-fold callers / tests). */
 export function formatEnvHealthPromptSection(markers: EnvHealthMarkers): string {
-  const body = formatMarkersBlock(markers);
-  return `${PROMPT_FRAME}\n\n## Environment + health baseline\n\`\`\`md\n${body}\n\`\`\``;
+  return wrapPromptXmlSection(PROMPT_XML_TAGS.envHealth, formatEnvHealthPromptBody(markers), {
+    frame: ENV_HEALTH_PROMPT_FRAME,
+  });
 }
 
 export function formatChangeNotificationTitle(changedKeys: (keyof EnvHealthMarkers)[]): string {

@@ -1,6 +1,7 @@
 import type { ConversationMetaMessage } from "@freeanima/host/core/db/domain";
 import { createHook } from "@freeanima/host/kernel/hooks";
 import type { PromptMode } from "./mode.ts";
+import type { PromptXmlAttrs } from "./xml-wrap.ts";
 
 export type SystemPromptBuildContext = {
   functionNames: string[];
@@ -12,12 +13,21 @@ export type SystemPromptBuildContext = {
 
 export type SystemPromptSection = {
   id: string;
+  /**
+   * Section body. When `xmlTag` is set this is the *inner* payload (truncated before wrap);
+   * otherwise it is the final rendered text.
+   */
   content: string;
   order: number;
-  /** Per-section hard char cap (applied before global budget). */
+  /** Per-section hard char cap on *final* rendered length (applied before global budget). */
   budgetChars?: number;
   /** Lower number = kept preferentially when over global budget (default 100). */
   priority?: number;
+  /** When set, fold truncates `content` then wraps with this tag (+ optional frame). */
+  xmlTag?: string;
+  /** Imperative / second-person frame outside the XML tag (not truncated into the tag). */
+  xmlFrame?: string;
+  xmlAttrs?: PromptXmlAttrs;
 };
 
 export type SystemPromptBuildEffect = {

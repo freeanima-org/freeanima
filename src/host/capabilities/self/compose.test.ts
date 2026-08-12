@@ -1,14 +1,10 @@
 import { describe, it, expect } from "bun:test";
 import type { SelfBlockKey } from "@freeanima/host/core/db/pg/self-layer/types";
-import {
-  SELF_BLOCK_HEADINGS,
-  SELF_LAYER_PROMPT_HEADING,
-  SELF_LAYER_SYSTEM_FRAME,
-} from "./blocks.ts";
+import { SELF_BLOCK_HEADINGS, SELF_LAYER_SYSTEM_FRAME } from "./blocks.ts";
 import { renderSelfLayerPrompt, wrapSelfLayerForSystemPrompt } from "./compose.ts";
 
 describe("wrapSelfLayerForSystemPrompt", () => {
-  it("includes second-person frame, self-layer heading, and md fence", () => {
+  it("includes second-person frame, outer self_layer, and nested block tags", () => {
     const inner = renderSelfLayerPrompt([
       {
         block_key: "self_model",
@@ -23,10 +19,12 @@ describe("wrapSelfLayerForSystemPrompt", () => {
     const wrapped = wrapSelfLayerForSystemPrompt(inner);
 
     expect(wrapped).toContain(SELF_LAYER_SYSTEM_FRAME);
-    expect(wrapped).toContain(`## ${SELF_LAYER_PROMPT_HEADING}`);
-    expect(wrapped).toContain("```md");
-    expect(wrapped).toContain(`## ${SELF_BLOCK_HEADINGS.self_model}`);
+    expect(wrapped).toContain("<self_layer>");
+    expect(wrapped).toContain("</self_layer>");
+    expect(wrapped).toContain("<self_model>");
     expect(wrapped).toContain("I am a test Agent.");
+    expect(wrapped).not.toContain("```md");
+    expect(wrapped).not.toContain(`## ${SELF_BLOCK_HEADINGS.self_model}`);
   });
 
   it("returns empty string for empty content", () => {
@@ -34,7 +32,7 @@ describe("wrapSelfLayerForSystemPrompt", () => {
     expect(wrapSelfLayerForSystemPrompt("   \n  ")).toBe("");
   });
 
-  it("preserves five-block headings in inner content", () => {
+  it("preserves five block keys as nested XML tags", () => {
     const keys = Object.keys(SELF_BLOCK_HEADINGS) as SelfBlockKey[];
     const inner = renderSelfLayerPrompt(
       keys.map((key) => ({
@@ -48,8 +46,10 @@ describe("wrapSelfLayerForSystemPrompt", () => {
       })),
     );
     const wrapped = wrapSelfLayerForSystemPrompt(inner);
-    for (const heading of Object.values(SELF_BLOCK_HEADINGS)) {
-      expect(wrapped).toContain(`## ${heading}`);
+    for (const key of keys) {
+      expect(wrapped).toContain(`<${key}>`);
+      expect(wrapped).toContain(`</${key}>`);
+      expect(wrapped).toContain(`block-${key}`);
     }
   });
 });

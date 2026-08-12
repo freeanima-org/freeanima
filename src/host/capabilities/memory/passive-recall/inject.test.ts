@@ -27,8 +27,10 @@ const sampleHit = (id: number, content: string): SemanticRecallHit => ({
 
 describe("stripTimePrefixFromUserContent", () => {
   it("strips runtime time prefix", () => {
-    expect(stripTimePrefixFromUserContent("time: 2026-06-07T17:45 周日\nhello")).toBe("hello");
-    expect(stripTimePrefixFromUserContent("time: 2026-06-07T17:45\nhello")).toBe("hello");
+    expect(stripTimePrefixFromUserContent("<time>2026-06-07T17:45 周日</time>\nhello")).toBe(
+      "hello",
+    );
+    expect(stripTimePrefixFromUserContent("<time>2026-06-07T17:45</time>\nhello")).toBe("hello");
   });
 
   it("leaves plain content unchanged", () => {
@@ -40,7 +42,8 @@ describe("passive recall inject", () => {
   it("formats memory block with citation markers", () => {
     const block = formatPassiveMemoryBlock([sampleHit(4057, "Alice lives in Shanghai")], 500);
     expect(block).toContain("[[anima:4057]] Alice lives in Shanghai");
-    expect(block).toContain("```memory");
+    expect(block).toContain("<passive_memory>");
+    expect(block).toContain("</passive_memory>");
   });
 
   it("manifest inserts runtime assistant before last user message", () => {

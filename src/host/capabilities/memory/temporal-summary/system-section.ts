@@ -1,6 +1,11 @@
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
 import { resolveAllSystemRolls } from "./system-rolls.ts";
 import type { PeerRollCache } from "./tick.ts";
+import {
+  PROMPT_XML_TAGS,
+  truncatePromptBodyForXmlBudget,
+  wrapPromptXml,
+} from "@freeanima/host/core/hooks/prompt";
 
 export type TemporalSummarySystemSectionResult = {
   content: string;
@@ -33,12 +38,41 @@ export async function buildTemporalSummarySystemSection(
   });
   if (rolls.length === 0) return { content: "", truncated: false };
 
-  const sections = rolls.map((r) => `### ${r.label}\n${r.summary}`);
-  let text = `## 时间摘要\n\n${sections.join("\n\n")}`;
-  let truncated = false;
-  if (text.length > config.system_prompt_max_chars) {
-    text = `${text.slice(0, config.system_prompt_max_chars)}\n…`;
-    truncated = true;
-  }
-  return { content: text, truncated };
+  const body = rolls.map((r) => `### ${r.label}\n${r.summary}`).join("\n\n");
+  const { body: capped, truncated } = truncatePromptBodyForXmlBudget(
+    body,
+    config.system_prompt_max_chars,
+    { tag: PROMPT_XML_TAGS.temporalSummary },
+    "\n…",
+  );
+  return {
+    content: wrapPromptXml(PROMPT_XML_TAGS.temporalSummary, capped),
+    truncated,
+  };
+}
+
+/** Body-only for fold path (xmlTag applied by hook). */
+export async function buildTemporalSummarySystemBody(
+  config: ResolvedTemporalSummaryConfig,
+  opts: BuildTemporalSummarySystemSectionOpts | number = {},
+): Promise<{ body: string; truncated: boolean }> {
+  const normalized: BuildTemporalSummarySystemSectionOpts =
+    typeof opts === "number" ? { nowMs: opts } : opts;
+  if (!config.enabled) return { body: "", truncated: false };
+
+  const rolls = await resolveAllSystemRolls({
+    config,
+    ...(normalized.peerCache ? { peerCache: normalized.peerCache } : {}),
+    ...(normalized.selfContent !== undefined ? { selfContent: normalized.selfContent } : {}),
+    ...(normalized.nowMs !== undefined ? { nowMs: normalized.nowMs } : {}),
+  });
+  if (rolls.length === 0) return { body: "", truncated: false };
+
+  const body = rolls.map((r) => `### ${r.label}\n${r.summary}`).join("\n\n");
+  return truncatePromptBodyForXmlBudget(
+    body,
+    config.system_prompt_max_chars,
+    { tag: PROMPT_XML_TAGS.temporalSummary },
+    "\n…",
+  );
 }

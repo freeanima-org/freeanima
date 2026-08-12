@@ -5,7 +5,6 @@ export {
   SELF_BLOCK_HEADINGS,
   SELF_BLOCK_EMPTY_PLACEHOLDER,
   SELF_LAYER_SYSTEM_FRAME,
-  SELF_LAYER_PROMPT_HEADING,
 } from "./blocks.ts";
 export {
   renderSelfLayerPrompt,
@@ -16,6 +15,7 @@ export {
 } from "./compose.ts";
 export {
   loadSelfLayerPrompt,
+  loadSelfLayerInner,
   loadSelfBlocks,
   refreshSelfLayerPromptCache,
   invalidateSelfLayerPromptCache,

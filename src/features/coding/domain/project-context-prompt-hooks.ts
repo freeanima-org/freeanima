@@ -4,7 +4,11 @@
  */
 
 import type { HookRegistry } from "@freeanima/host/kernel/hooks";
-import { systemPromptBuild } from "@freeanima/host/core/hooks/prompt";
+import {
+  PROMPT_XML_TAGS,
+  systemPromptBuild,
+  type SystemPromptSection,
+} from "@freeanima/host/core/hooks/prompt";
 import {
   formatAlwaysRulesSection,
   formatProjectAgentsCatalog,
@@ -62,13 +66,7 @@ export function registerCodingProjectContextPromptHook(registry: HookRegistry): 
       const agents = snapshot.agents as ProjectAgentProfile[];
       const mcp = snapshot.mcpServers as ProjectMcpServer[];
 
-      const sections: Array<{
-        id: string;
-        content: string;
-        order: number;
-        priority: number;
-        budgetChars?: number;
-      }> = [];
+      const sections: SystemPromptSection[] = [];
 
       const always = formatAlwaysRulesSection(rules);
       if (always.trim()) {
@@ -78,6 +76,7 @@ export function registerCodingProjectContextPromptHook(registry: HookRegistry): 
           order: 40,
           priority: 7,
           budgetChars: 4_000,
+          xmlTag: PROMPT_XML_TAGS.projectContext,
         });
       }
       const scoped = formatRequestableRulesCatalog(rules);
@@ -88,6 +87,7 @@ export function registerCodingProjectContextPromptHook(registry: HookRegistry): 
           order: 41,
           priority: 8,
           budgetChars: 1_200,
+          xmlTag: PROMPT_XML_TAGS.projectRulesScoped,
         });
       }
       const skillCat = formatProjectSkillsCatalog(skills);
@@ -98,6 +98,7 @@ export function registerCodingProjectContextPromptHook(registry: HookRegistry): 
           order: 10,
           priority: 5,
           budgetChars: 2_000,
+          xmlTag: PROMPT_XML_TAGS.projectSkills,
         });
       }
       const agentCat = formatProjectAgentsCatalog(agents);
@@ -108,6 +109,7 @@ export function registerCodingProjectContextPromptHook(registry: HookRegistry): 
           order: 11,
           priority: 5,
           budgetChars: 1_500,
+          xmlTag: PROMPT_XML_TAGS.projectAgents,
         });
       }
       const mcpCat = formatProjectMcpCatalog(mcp);
@@ -118,6 +120,7 @@ export function registerCodingProjectContextPromptHook(registry: HookRegistry): 
           order: 42,
           priority: 9,
           budgetChars: 1_000,
+          xmlTag: PROMPT_XML_TAGS.projectMcp,
         });
       }
 

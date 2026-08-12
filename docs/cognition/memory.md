@@ -153,7 +153,7 @@ Long-term memory (LTM)
 
 ### ✅ 被动语义召回（自动注入）
 
-每个面向用户的回合前，运行时仅从最新用户消息检索 **语义记忆**（混合 FTS + trgm），再把 top-N 命中注入为 **仅运行时** 的 `role: assistant` 消息（`name: passive_memory_context`），紧挨在该用户消息之前。不持久化到 PG；不计入记忆引用。
+每个面向用户的回合前，运行时仅从最新用户消息检索 **语义记忆**（混合 FTS + trgm），再把 top-N 命中注入为 **仅运行时** 的 `role: assistant` 消息（`name: passive_memory_context`，载荷外包 `<passive_memory>`），紧挨在该用户消息之前。不持久化到 PG；不计入记忆引用。
 
 - **常驻记忆**（系统提示）：置顶 + 高引用锚点、session 快照
 - **被动召回**：与当前消息相关的语义命中
