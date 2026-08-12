@@ -3,7 +3,8 @@
  * Linux standalone 分发构建（唯一发版产物）：单文件 `anima`。
  *
  * 产物：`dist/anima-executable/anima`
- * - version / service build-meta / migration.sql / Web dist 均嵌入二进制
+ * - version / service build-meta / Web dist / docs 经 standalone-embed-plugin 嵌入
+ * - migration.sql 经调用点 `dir:../migrations` + dir-import 插件嵌入
  *
  * 用法：
  *   just pack cli
@@ -12,7 +13,7 @@
  */
 import { $ } from "bun";
 import { Glob } from "bun";
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import {
@@ -29,13 +30,13 @@ import {
   createTiktokenWasmPlugin,
   resolveTiktokenWasmPath,
 } from "./tiktoken-wasm-plugin.ts";
+import { createDirImportPlugin } from "./dir-import-plugin.ts";
 import { emitPackArtifact } from "./emit-pack-artifact.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const OUT_DIR = join(ROOT, "dist/anima-executable");
 const CLI_ENTRY = join(ROOT, "src/portal/cli/cli.ts");
 const EMBEDS_MODULE = join(ROOT, "src/portal/cli/standalone-embeds.ts");
-const MIGRATIONS_DIR = join(ROOT, "src/host/core/migrations");
 const WEB_DIST_DIR = join(ROOT, "src/portal/app/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
 const DOCS_DIR = join(ROOT, "docs");
@@ -61,22 +62,6 @@ async function ensureWebDist(): Promise<void> {
   if (!existsSync(WEB_DIST_INDEX)) {
     throw new Error("pack web 完成后仍缺少 src/portal/app/web/dist/index.html");
   }
-}
-
-function listMigrationEmbeds(): StandaloneEmbedInput[] {
-  const names = readdirSync(MIGRATIONS_DIR, { withFileTypes: true })
-    .filter((e) => e.isDirectory())
-    .map((e) => e.name)
-    .filter((name) => existsSync(join(MIGRATIONS_DIR, name, "migration.sql")))
-    .toSorted((a, b) => a.localeCompare(b));
-  if (names.length === 0) {
-    throw new Error(`no migration.sql under ${MIGRATIONS_DIR}`);
-  }
-  return names.map((name) => ({
-    kind: "migration" as const,
-    rel: name,
-    absPath: join(MIGRATIONS_DIR, name, "migration.sql"),
-  }));
 }
 
 function listWebEmbeds(): StandaloneEmbedInput[] {
@@ -115,7 +100,7 @@ async function main(): Promise<void> {
   });
   const embedVersion = buildMeta.version;
 
-  const files = [...listMigrationEmbeds(), ...listWebEmbeds(), ...listDocsEmbeds(DOCS_DIR)];
+  const files = [...listWebEmbeds(), ...listDocsEmbeds(DOCS_DIR)];
   const outfile = join(OUT_DIR, "anima");
   const tiktokenPackageWasm = resolveTiktokenWasmPath(ROOT);
   const tiktokenPackageDir = dirname(tiktokenPackageWasm);
@@ -123,12 +108,13 @@ async function main(): Promise<void> {
   const stagedWasm = join(OUT_DIR, "tiktoken_bg.wasm");
   cpSync(tiktokenPackageWasm, stagedWasm);
   console.log(
-    `compiling single-file standalone → ${outfile} (${files.length} embedded files + runtime meta + tiktoken wasm)`,
+    `compiling single-file standalone → ${outfile} (${files.length} web/docs embeds + dir: migrations + runtime meta + tiktoken wasm)`,
   );
 
   const result = await Bun.build({
     entrypoints: [CLI_ENTRY],
     plugins: [
+      createDirImportPlugin(),
       createStandaloneEmbedPlugin({
         embedsModulePath: EMBEDS_MODULE,
         files,

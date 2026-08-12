@@ -16,7 +16,7 @@ const globs = readFileSync(globsFile, "utf-8")
 const fix = process.argv.includes("--fix");
 const args = fix ? ["--fix", ...globs] : [...globs];
 
-const proc = Bun.spawn(["bunx", "stylelint", ...args], {
+const proc = Bun.spawn(["bun", "x", "stylelint", ...args], {
   cwd: root,
   stdout: "inherit",
   stderr: "inherit",

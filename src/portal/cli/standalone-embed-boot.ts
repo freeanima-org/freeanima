@@ -1,4 +1,5 @@
 import { registerEmbeddedMigrations } from "@freeanima/host/core/db";
+import { listEmbeddedMigrationsFromDir } from "@freeanima/host/core/db/migrations-dir-import";
 import { registerStandaloneRuntimeMeta } from "@freeanima/host/core/config/standalone-runtime-meta";
 import { registerEmbeddedDocs } from "@freeanima/host/capabilities/tools/docs-embedded";
 import { registerEmbeddedWebDist } from "./web/web-dist-embedded.ts";
@@ -8,13 +9,17 @@ import { standaloneEmbeds, standaloneRuntimeMeta } from "./standalone-embeds.ts"
 export function bootStandaloneEmbeds(): void {
   if (standaloneRuntimeMeta != null) {
     registerStandaloneRuntimeMeta(standaloneRuntimeMeta);
+    const migrations = listEmbeddedMigrationsFromDir();
+    if (migrations.length === 0) {
+      throw new Error(
+        "standalone: dir:../migrations 未解析到任何 migration.sql（检查 dir-import 插件是否接入 Bun.build）",
+      );
+    }
+    registerEmbeddedMigrations(migrations);
   }
 
   if (standaloneEmbeds.length === 0) return;
 
-  const migrations = standaloneEmbeds
-    .filter((e) => e.kind === "migration")
-    .map((e) => ({ name: e.rel, path: e.path }));
   const web = standaloneEmbeds
     .filter((e) => e.kind === "web")
     .map((e) => ({ rel: e.rel, path: e.path }));
@@ -22,7 +27,6 @@ export function bootStandaloneEmbeds(): void {
     .filter((e) => e.kind === "docs")
     .map((e) => ({ rel: e.rel, path: e.path }));
 
-  if (migrations.length > 0) registerEmbeddedMigrations(migrations);
   if (web.length > 0) registerEmbeddedWebDist(web);
   if (docs.length > 0) registerEmbeddedDocs(docs);
 }

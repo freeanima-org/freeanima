@@ -91,12 +91,16 @@ const buildEnv = {
 // 只打 CI/发布实际收集的格式，避免 targets=all 白打 deb/rpm
 const bundles = process.platform === "linux" ? ["--bundles", "appimage"] : [];
 console.log(`${LOG} host=${process.platform} channel=${identity.channel}`);
-const build = spawnSync("bunx", ["tauri", "build", ...bundles, "--config", identity.configArg], {
-  cwd: tauriDir,
-  stdio: "inherit",
-  shell: true,
-  env: buildEnv,
-});
+const build = spawnSync(
+  "bun",
+  ["x", "tauri", "build", ...bundles, "--config", identity.configArg],
+  {
+    cwd: tauriDir,
+    stdio: "inherit",
+    shell: true,
+    env: buildEnv,
+  },
+);
 if (build.status !== 0) process.exit(build.status ?? 1);
 
 if (process.platform === "linux") {

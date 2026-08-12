@@ -38,7 +38,7 @@ async function zipDirectoryContents(dir: string, outZip: string): Promise<void> 
   await writeFile(outZip, buf);
 }
 
-await $`bunx wxt build`.cwd(root);
+await $`bun x wxt build`.cwd(root);
 console.log("browser-extension → dist/browser-extension");
 
 // 将 chrome-mv3 目录打 zip 包

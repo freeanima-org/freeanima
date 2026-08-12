@@ -131,13 +131,13 @@ if (!ndkPresent()) {
 
 if (!existsSync(androidGen)) {
   if (doInit) {
-    run("bunx", ["tauri", "android", "init"], "tauri android init", tauriDir);
+    run("bun", ["x", "tauri", "android", "init"], "tauri android init", tauriDir);
   } else {
     console.error(
       "[install-android-tauri] 尚未生成 Android 工程。请执行：\n" +
         "  just install tauri-android -- --init\n" +
         "或：\n" +
-        "  cd src/portal/app/tauri && bunx tauri android init",
+        "  cd src/portal/app/tauri && bun x tauri android init",
     );
     process.exit(1);
   }

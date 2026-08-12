@@ -169,8 +169,9 @@ function main(): void {
   };
 
   const build = spawnSync(
-    "bunx",
+    "bun",
     [
+      "x",
       "tauri",
       "build",
       "--runner",
