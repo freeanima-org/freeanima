@@ -1,6 +1,70 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@freeanima/ui-kit";
 import type { DisplayToolCall } from "@freeanima/features/chat/ui/spa/lib/types.ts";
+
+function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+/** 折叠标题：静止截断；文案变更时旧行上滚出、新行自下滚入 */
+function RollingHeadline({ text, className }: { text: string; className?: string }) {
+  const [display, setDisplay] = useState(text);
+  const [outgoing, setOutgoing] = useState<string | null>(null);
+  const displayRef = useRef(text);
+  const pendingRef = useRef(text);
+
+  useEffect(() => {
+    pendingRef.current = text;
+    if (text === displayRef.current) return;
+
+    if (prefersReducedMotion()) {
+      displayRef.current = text;
+      setDisplay(text);
+      setOutgoing(null);
+      return;
+    }
+
+    if (outgoing !== null) return;
+
+    setOutgoing(displayRef.current);
+    displayRef.current = text;
+    setDisplay(text);
+  }, [text, outgoing]);
+
+  function finishRoll() {
+    setOutgoing(null);
+    const latest = pendingRef.current;
+    if (latest === displayRef.current) return;
+
+    if (prefersReducedMotion()) {
+      displayRef.current = latest;
+      setDisplay(latest);
+      return;
+    }
+
+    setOutgoing(displayRef.current);
+    displayRef.current = latest;
+    setDisplay(latest);
+  }
+
+  return (
+    <div className={`tool-bubble-roll${className ? ` ${className}` : ""}`}>
+      {outgoing !== null ? (
+        <>
+          <span className="tool-bubble-roll-line tool-bubble-roll-out" aria-hidden>
+            {outgoing}
+          </span>
+          <span className="tool-bubble-roll-line tool-bubble-roll-in" onAnimationEnd={finishRoll}>
+            {display}
+          </span>
+        </>
+      ) : (
+        <span className="tool-bubble-roll-line">{display}</span>
+      )}
+    </div>
+  );
+}
 
 type ToolBlockBubbleProps = {
   calls: DisplayToolCall[];
@@ -138,12 +202,12 @@ function ToolCallRow({ call }: { call: DisplayToolCall }) {
     <Collapsible isExpanded={open} onExpandedChange={setOpen}>
       <CollapsibleTrigger className="w-full text-left flex items-center gap-2 px-1 py-1 rounded-md hover:bg-muted/50 min-w-0">
         <span className={`shrink-0 ${statusClass(call.status)}`}>{statusIcon(call.status)}</span>
-        <span
-          className={`min-w-0 font-medium ${isActive && !open ? "tool-bubble-marquee" : "truncate"}`}
-        >
-          <span className={isActive && !open ? "tool-bubble-marquee-track" : undefined}>
-            {rowLabel}
-          </span>
+        <span className="min-w-0 flex-1 font-medium">
+          {open ? (
+            <span className="truncate block">{rowLabel}</span>
+          ) : (
+            <RollingHeadline text={rowLabel} />
+          )}
         </span>
         {intent && (!isActive || open) ? (
           <span className="font-mono text-foreground/40 text-[10px] shrink-0 truncate">
@@ -235,7 +299,6 @@ function ToolCallRow({ call }: { call: DisplayToolCall }) {
 export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
   const [expanded, setExpanded] = useState(false);
   const headline = pickHeadline(calls);
-  const isActive = calls.some((c) => c.status === "running" || c.status === "pending");
 
   return (
     <div className="tool-bubble text-xs max-w-full min-w-0">
@@ -248,11 +311,7 @@ export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
                 {`工具调用 · ${String(calls.length)}`}
               </span>
             ) : (
-              <div className="tool-bubble-marquee font-medium text-muted-foreground">
-                <span className={isActive ? "tool-bubble-marquee-track" : "truncate block"}>
-                  {headline}
-                </span>
-              </div>
+              <RollingHeadline text={headline} className="font-medium text-muted-foreground" />
             )}
           </div>
           {!expanded ? (
