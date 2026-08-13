@@ -4,12 +4,18 @@ import {
   DEFAULT_PASSIVE_RECALL_MIN_SCORE,
   getActiveRuntimeConfig,
   getFtsTrgmFallbackWhenHitsLt,
+  resolvePassiveRecallConfig,
 } from "@freeanima/host/core/config";
+import { extractContentWords } from "@freeanima/host/core/db/pg/fts/content-words.ts";
+import {
+  dropVectorOnlyHits,
+  hybridSearchSemanticMemory,
+} from "@freeanima/host/core/db/pg/fts/hybrid-search.ts";
 import { buildFtsTsQuery } from "@freeanima/host/core/db/pg/fts/query.ts";
 import { isJiebaLoaded } from "@freeanima/host/core/db/pg/fts/segment.ts";
 import { searchSemanticMemoryFtsRaw } from "@freeanima/host/core/db/pg/fts/hybrid-raw.ts";
 import { searchSemanticMemoryTrgm } from "@freeanima/host/core/db/pg/fts/trgm-search.ts";
-import { searchSemanticMemoryFts } from "@freeanima/host/core/db/pg/semantic-memory";
+import { searchSemanticMemoryVector } from "@freeanima/host/core/db/pg/fts/vector-search.ts";
 import {
   omitUndefined,
   rrfMerge,
@@ -98,9 +104,14 @@ export async function semanticPassiveRecallSearchDetailed(
   const started = performance.now();
   const minScore = opts?.min_score ?? DEFAULT_PASSIVE_RECALL_MIN_SCORE;
   const minRelative = opts?.min_relative_score ?? DEFAULT_PASSIVE_RECALL_MIN_RELATIVE_SCORE;
+  const useVector = resolvePassiveRecallConfig(getActiveRuntimeConfig().data).use_vector;
 
   if (!wantDebug) {
-    const rows = await searchSemanticMemoryFts(q, { limit: pool });
+    const rows = await hybridSearchSemanticMemory(q, {
+      limit: pool,
+      status: "active",
+      use_vector: useVector,
+    });
     if (rows.length === 0) return { hits: [] };
     const effectiveMin = effectivePassiveRecallMinScore(rows, opts);
     const hits: SemanticRecallHit[] = [];
@@ -114,20 +125,29 @@ export async function semanticPassiveRecallSearchDetailed(
   }
 
   const fetchPool = candidatePool(pool);
-  const [tsquery, ftsHits, trgmHits] = await Promise.all([
-    buildFtsTsQuery(q).catch(() => ""),
-    searchSemanticMemoryFtsRaw(q, { limit: fetchPool, status: "active" }),
-    searchSemanticMemoryTrgm(q, { limit: fetchPool, status: "active" }),
+  const content = await extractContentWords(q);
+  const lexicalQuery = content.query;
+  const [tsquery, ftsHits, trgmHits, vectorHits] = await Promise.all([
+    buildFtsTsQuery(lexicalQuery).catch(() => ""),
+    searchSemanticMemoryFtsRaw(lexicalQuery, { limit: fetchPool, status: "active" }),
+    searchSemanticMemoryTrgm(lexicalQuery, { limit: fetchPool, status: "active" }),
+    useVector
+      ? searchSemanticMemoryVector(q, { limit: fetchPool, status: "active" })
+      : Promise.resolve([]),
   ]);
 
   const ftsRanked = ftsHits.map((h) => ({ ...h, docKey: semanticMemoryDocKey(h.id) }));
   const trgmRanked = trgmHits.map((h) => ({ ...h, docKey: h.docKey }));
-  const merged = rrfMerge([ftsRanked, trgmRanked], { limit: pool }).map(
-    ({ docKey: _docKey, score, rank: _rank, ...row }) => ({
-      ...row,
-      rank: score,
-    }),
-  );
+  const vectorRanked = vectorHits.map((h) => ({ ...h, docKey: h.docKey }));
+  const rankedLists = useVector ? [ftsRanked, trgmRanked, vectorRanked] : [ftsRanked, trgmRanked];
+  let mergedRows = rrfMerge(rankedLists, { limit: pool });
+  if (useVector) {
+    mergedRows = dropVectorOnlyHits(mergedRows, [ftsRanked, trgmRanked]);
+  }
+  const merged = mergedRows.map(({ docKey: _docKey, score, rank: _rank, ...row }) => ({
+    ...row,
+    rank: score,
+  }));
 
   const effectiveMin = effectivePassiveRecallMinScore(merged, opts);
   const afterScore: SemanticRecallHit[] = [];
@@ -140,13 +160,16 @@ export async function semanticPassiveRecallSearchDetailed(
 
   const debug: PassiveRecallDebugTrace = {
     query: q,
+    content_query: lexicalQuery,
     tsquery: tsquery || null,
     jieba_loaded: isJiebaLoaded(),
+    use_vector: useVector,
     effective_min_score: effectiveMin,
     min_score: minScore,
     min_relative_score: minRelative,
     fts: ftsHits.map((h) => toDebugHit(h.id, h.rank, h.content)),
     trgm: trgmHits.map((h) => toDebugHit(h.id, h.rank, h.content)),
+    vector: vectorHits.map((h) => toDebugHit(h.id, h.rank, h.content)),
     merged: merged.map((h) => toDebugHit(h.id, hybridRankToScore(h.rank), h.content)),
     after_score_filter: afterScore.map((h) => toDebugHit(h.semantic_memory_id, h.score, h.content)),
     after_resident_filter: afterScore.map((h) =>

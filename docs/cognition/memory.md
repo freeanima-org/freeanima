@@ -153,7 +153,7 @@ Long-term memory (LTM)
 
 ### ✅ 被动语义召回（自动注入）
 
-每个面向用户的回合前，运行时仅从最新用户消息检索 **语义记忆**（混合 FTS + trgm），再把 top-N 命中注入为 **仅运行时** 的 `role: assistant` 消息（`name: passive_memory_context`，载荷外包 `<passive_memory>`），紧挨在该用户消息之前。不持久化到 PG；不计入记忆引用。
+每个面向用户的回合前，运行时仅从最新用户消息检索 **语义记忆**（混合 FTS + trgm，可选向量 boost），再把 top-N 命中注入为 **仅运行时** 的 `role: assistant` 消息（`name: passive_memory_context`，载荷外包 `<passive_memory>`），紧挨在该用户消息之前。不持久化到 PG；不计入记忆引用。
 
 - **常驻记忆**（系统提示）：置顶 + 高引用锚点、session 快照
 - **被动召回**：与当前消息相关的语义命中
@@ -163,11 +163,13 @@ Long-term memory (LTM)
 
 对话的 `system_prompt` 列是 **session 快照**。每个 **CST 02:00** 边界之后（与 sleep-cycle cron 对齐），下一条用户消息会经 `beginTurnPrepare` 中的 `ensureSystemPromptFresh` **整份重建**（常驻记忆、world/channel 上下文、toolsets、自我层、项目 `AGENTS.md`）；回合中的工具循环不会被打断。
 
-配置项在 `memory.passive_recall`（`enabled`、`limit`、`min_score`、`min_relative_score`、`max_chars`、`exclude_resident`）。cron / 后台会话跳过。
+配置项在 `memory.passive_recall`（`enabled`、`limit`、`min_score`、`min_relative_score`、`max_chars`、`exclude_resident`、`use_vector`）。`use_vector` 默认在 embedding 已配置时为 true。cron / 后台会话跳过。
+
+**查询分流（精度）：** FTS / trgm 使用 jieba 词性 + 功能词表抽出的 **实词串**（名/动为主，去掉「的/是/什么/可以」等）；向量通道对 `focusPassiveRecallQuery` 后的 **完整自然句** 做单次 embed（不去停用词、不按标点多路拆句）。向量只作 RRF **boost**：融合后丢弃仅出现在 vector 通道的命中，避免纯语义邻居误召回。
 
 **搜索索引（PG）：** 可重建的搜索数据在旁表 `search_documents`（不在业务 `entities` / `messages` 行上）。文档键为 `ent:{id}` / `msg:{id}`；jieba 写入 `fts_segmented` → 生成列 `search_fts`；embedding 异步落到 `search_documents.embedding`。业务 CRUD 调用 `SearchBackend.upsert`（默认 `PgSearchIndex`；可选 `fts.backend: pg_business_scan` 仅扫业务字段）。感性 / 自传体 / 梦境叙事作为 `entities` 的 `content_block`（带 `limbic` / `narrative` / `dream` 标签）挂在按日 `diary_entry` 下。jieba 在 upsert 时同步跑（失败 → null，行仍写入）；embedding 在 insert 后异步（失败仅打日志）。
 
-**混合检索：** 管线为 retrieve（通道 `fts` / `trgm`，可选 `vector`）→ fuse（RRF）→ 可选 rerank → hydrate 业务行。默认混合在 **一轮并行** 中跑 FTS 与 trigram，再 RRF。自动构建的 FTS 查询用 **OR** 连接 token（空格分隔 / jieba 切分）；显式 `AND`/`OR`/`NOT` 仍可用；未加引号且长度大于两个字符的 CJK 用 **bigram-OR**，加引号短语保持完整邻接。关键词 / FTS 相关性优先；向量相似度默认不参与检索（通道预留；避免低相关语义邻居）。此处 RRF 是 **同一索引 / 范围之内**，不是跨记忆类型。范围用 **过滤器**（`resource`、`primary_component`，…），不是扁平 kind 枚举。
+**混合检索：** 管线为 retrieve（通道 `fts` / `trgm`，可选 `vector`）→ fuse（RRF）→ 可选 rerank → hydrate 业务行。默认主动 / entity hybrid 在 **一轮并行** 中跑 FTS 与 trigram，再 RRF（**不含** vector）。被动召回在 embedding 开启时可把 vector 作为第三通道并做 vector-only 丢弃。自动构建的 FTS 查询用 **OR** 连接实词 token；显式 `AND`/`OR`/`NOT` 仍可用；未加引号且长度大于两个字符的 CJK 用 **bigram-OR**，加引号短语保持完整邻接。关键词 / FTS 相关性优先。此处 RRF 是 **同一索引 / 范围之内**，不是跨记忆类型。范围用 **过滤器**（`resource`、`primary_component`，…），不是扁平 kind 枚举。
 
 经系统提示注入的常驻记忆：**最多 40 条置顶** + **最高引用 top N**（默认 N=20）。每行带引用标记 `[[anima:42]]`（仅 ID，无语言前缀）。
 

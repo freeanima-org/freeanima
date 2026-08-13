@@ -155,14 +155,20 @@ export type PassiveRecallDebugHit = {
 
 export type PassiveRecallDebugTrace = {
   query: string;
+  /** FTS/trgm query after content-word extraction (optional for older traces). */
+  content_query?: string;
   tsquery: string | null;
   /** Whether jieba singleton loaded in this process (null when not applicable / unknown). */
   jieba_loaded?: boolean | null;
+  /** Whether vector boost channel was enabled for this run. */
+  use_vector?: boolean;
   effective_min_score: number;
   min_score: number;
   min_relative_score: number;
   fts: PassiveRecallDebugHit[];
   trgm: PassiveRecallDebugHit[];
+  /** Vector channel hits before RRF / vector-only drop (empty when disabled). */
+  vector?: PassiveRecallDebugHit[];
   merged: PassiveRecallDebugHit[];
   after_score_filter: PassiveRecallDebugHit[];
   after_resident_filter: PassiveRecallDebugHit[];

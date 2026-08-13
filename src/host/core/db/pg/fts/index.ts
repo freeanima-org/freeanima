@@ -1,5 +1,6 @@
 export { buildFtsTsQuery, buildCharModeTsQuery, buildJiebaModeTsQuery } from "./query.ts";
-export { segmentForFts, resetJiebaForTest, isJiebaLoaded } from "./segment.ts";
+export { segmentForFts, resetJiebaForTest, isJiebaLoaded, getJiebaForFts } from "./segment.ts";
+export { extractContentWords } from "./content-words.ts";
 export { resolveFtsSegmentedForWrite } from "./write.ts";
 export { rebuildAllFtsSegments, type FtsRebuildResult, type FtsRebuildOptions } from "./rebuild.ts";
 export {
@@ -22,7 +23,12 @@ export {
   limbicDocKey,
   autobiographicalDocKey,
 } from "@freeanima/host/core/util";
-export { hybridSearchSemanticMemory, hybridSearchMessages } from "./hybrid-search.ts";
+export {
+  hybridSearchSemanticMemory,
+  hybridSearchMessages,
+  dropVectorOnlyHits,
+} from "./hybrid-search.ts";
+export { searchSemanticMemoryVector } from "./vector-search.ts";
 export {
   registerEmbedTextFn,
   registerEmbedTextsFn,
