@@ -6,7 +6,7 @@ title: UI 三维度
 
 入口 UI 沿**三个正交维度**设计。视觉基础、组件与交互模式都经此透镜适配。手机尺寸**不**等于 compact 布局；Tauri **不**等于 touch。
 
-Agent API 表与硬禁令 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)。实现入口列于该文；本页是产品叙述。
+Agent API 表与硬禁令 → [`.cursor/rules/frontend-ui.mdc`](../../.cursor/rules/frontend-ui.mdc)。实现入口列于该文；本页是产品叙述。
 
 ## 壳 vs 应用布局
 
@@ -91,4 +91,4 @@ Agent API 表与硬禁令 → [`.agent/rules/ui-dimensions.md`](../../.agent/rul
 - 视觉基础 → [foundations.md](foundations.md)
 - 组件 → [components.md](components.md)
 - 模式 → [patterns.md](patterns.md)
-- Agent 规则 → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)
+- Agent 规则 → [`.cursor/rules/frontend-ui.mdc`](../../.cursor/rules/frontend-ui.mdc)

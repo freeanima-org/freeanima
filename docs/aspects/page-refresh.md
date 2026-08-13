@@ -19,7 +19,7 @@ title: 页面刷新
 
 - **有限自动**：保留 sync + 既有 live 通道（聊天 `stream.*`、`conversation.updated`、`pomodoro.active.changed`、`notification.created`）。不对注意力或列表做全局轮询。outbox 为空时不对每个模块无条件 `refreshAll`。注意力路由 → [通知与提醒](notification-and-reminder.md)。
 - 产品列表面**须手动刷新**，以便按需拉取多设备 / Agent 编辑。
-- **交互维度**（见 [UI 三维度](../ui/dimensions.md)，Agent API 见 [ui-dimensions](../../.agent/rules/ui-dimensions.md)）：指针用顶栏按钮；触控主列表另有下拉刷新。壳种类不锁定交互方式。模式说明 → [UI 模式](../ui/patterns.md)（PullToRefresh 候选 / DataListRow 同级表面）。
+- **交互维度**（见 [UI 三维度](../ui/dimensions.md)，Agent API 见 [frontend-ui](../../.cursor/rules/frontend-ui.mdc)）：指针用顶栏按钮；触控主列表另有下拉刷新。壳种类不锁定交互方式。模式说明 → [UI 模式](../ui/patterns.md)（PullToRefresh 候选 / DataListRow 同级表面）。
 - **不在范围**：为每个 CRUD 实体做栖息地扇出；引入 React Query **库**（数据面上自建 hooks 可以）；把离线同步 toast 变成页面刷新控件。
 
 ## 页面类别

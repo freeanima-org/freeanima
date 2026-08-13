@@ -200,8 +200,8 @@ for (const root of SCAN_ROOTS) {
   if (statSync(abs, { throwIfNoEntry: false })?.isDirectory()) walk(abs, files);
 }
 
-// package.json / tsconfig / AGENTS.md at repo root
-for (const f of ["package.json", "tsconfig.json", "AGENTS.md"]) {
+// package.json / tsconfig at repo root
+for (const f of ["package.json", "tsconfig.json"]) {
   const abs = join(REPO_ROOT, f);
   if (statSync(abs, { throwIfNoEntry: false })?.isFile()) files.push(abs);
 }

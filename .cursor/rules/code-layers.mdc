@@ -1,0 +1,54 @@
+---
+description: 六层依赖矩阵、composition root、禁止跨层 import
+globs: src/**/*
+alwaysApply: false
+---
+
+# Code layers
+
+> Repository 分层（≠ 认知层）。**文档 + oxlint `freeanima/layer-deps` + tsconfig paths**。目录地图 / 包名 → [`repository-topology.mdc`](repository-topology.mdc)。
+
+## Host 栈（高 → 低）
+
+```
+portal/cli → platform → capabilities → engine → core → kernel
+```
+
+| Layer | Directory | Responsibility |
+| ----- | --------- | -------------- |
+| kernel | `src/host/kernel/` | HookRegistry、logging |
+| core | `src/host/core/` | PG、Redis 原语、config、tool/LLM 原语、skill |
+| engine | `src/host/engine/` | conversation、turn、loop、goal、pipeline |
+| capabilities | `src/host/capabilities/` | self、memory、tools、outpost、mcp-*、… |
+| platform | `src/host/platform/` | 组合根；`service/` = AppRuntime |
+
+并列：`shared`（无 React）、`ui-kit`（仅 client）、`client`、`features`、`portal`。
+
+## Client 消环
+
+```
+app-frame → features/*/ui → { ui-kit, portal-sdk } → shared
+```
+
+- Feature UI **禁止** import app-frame / platform / engine / capabilities
+- Typed Habitat client：`@freeanima/client/portal-sdk/habitat-typed-client`
+- Display/snapshot：`@freeanima/shared/rpc-contract/frames/{display,snapshot}`
+
+## Dependency matrix
+
+| Source | Allowed | Forbidden |
+| ------ | ------- | --------- |
+| `host/kernel` | kernel | 其它 |
+| `host/core` | kernel, core | engine+ |
+| `host/engine` | kernel, core, engine | platform, capabilities |
+| `host/capabilities/*` | kernel, core, own pack, shared 契约 | platform, features, other capabilities*, engine |
+| `host/platform` | 全 host + features（注册） | ui-kit / client（除 habitat client 过渡 re-export） |
+| `features/*/ui` | ui-kit, portal-sdk, shared, host/core（工具/类型暂准） | platform, engine, capabilities, app-frame |
+| `ui-kit` | kernel（极少） | features, host, client |
+| `shared` | kernel, shared | ui-kit, client, React |
+
+**CI**：`just qa check` → oxlint `freeanima/layer-deps`。
+
+## Port / Catalog
+
+Boot：`src/host/platform/boot/`；入口：`serve.ts`。禁止模块级 registry 单例。Capabilities 访问 PG：`@freeanima/host/core/db/pg/*`。

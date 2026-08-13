@@ -1,6 +1,12 @@
+---
+description: Drizzle / PostgreSQL query conventions in core/db/pg
+globs: src/host/core/db/**/*
+alwaysApply: false
+---
+
 # Drizzle / PostgreSQL query conventions
 
-Repository query patterns for `@freeanima/host/core/db/pg`. Schema DDL and migrations → [`coding.md`](coding.md) § PG migrations.
+Repository query patterns for `@freeanima/host/core/db/pg`. Schema DDL and migrations → [`coding.md`](coding.mdc) § PG migrations.
 
 **Conflict priority**: implementation in `src/host/core/db/pg/` > this file.
 
@@ -10,7 +16,7 @@ Repository query patterns for `@freeanima/host/core/db/pg`. Schema DDL and migra
 
 | In scope                                           | Out of scope                                                                               |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `src/host/core/db/pg/` repository / FTS query code | Migration DDL (`db:generate`, `snapshot.json`) — see [`coding.md`](coding.md)              |
+| `src/host/core/db/pg/` repository / FTS query code | Migration DDL (`db:generate`, `snapshot.json`) — see [`coding.md`](coding.mdc)              |
 | ORM query patterns, type safety, dynamic filters   | Product memory pipeline — see [`docs/cognition/memory.md`](../../docs/cognition/memory.md) |
 | Repo transform (non-trivial joins)                 | User PG install, backup, ops — see [`docs/ops/database.md`](../../docs/ops/database.md)    |
 
@@ -20,7 +26,7 @@ Pool（`FREEANIMA_PG_POOL_*`）：`idleTimeout` **默认 0**。Bun ≤1.3.14 会
 
 Bun SQL `prepare` **保持默认 true**。设 `prepare: false` 时 jsonb 参数会变成 `[object Object]`（`entities.body` 等插入失败）。并发偶发 `ERR_POSTGRES_UNSUPPORTED_INTEGER_SIZE`（[oven-sh/bun#16774](https://github.com/oven-sh/bun/issues/16774)）是驱动竞态，**不能**用关 prepare 规避。
 
-PG repository 实现位于 `src/host/core/db/pg/`（按域分子目录）；schema / row 类型 SSOT 在 `@freeanima/host/core/db`。`src/host/capabilities/*` 可直接 import `@freeanima/host/core/db/pg/*` 与 `@freeanima/host/core/db/schema`（见 [`code-layers.md`](code-layers.md)）。
+PG repository 实现位于 `src/host/core/db/pg/`（按域分子目录）；schema / row 类型 SSOT 在 `@freeanima/host/core/db`。`src/host/capabilities/*` 可直接 import `@freeanima/host/core/db/pg/*` 与 `@freeanima/host/core/db/schema`（见 [`code-layers.md`](code-layers.mdc)）。
 
 ---
 

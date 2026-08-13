@@ -1,0 +1,40 @@
+---
+description: l-point 压缩硬约定与模块入口（算法细节见 docs）
+globs: src/host/core/compress/**/*,src/host/engine/**/*,docs/cognition/compression.md
+alwaysApply: false
+---
+
+# Compression (l-point)
+
+> 用户向总览：[`docs/cognition/compression.md`](../../docs/cognition/compression.md)。  
+> PG `messages` **全量 append-only**；仅送 LLM 的四段视图被裁剪。
+
+## 硬约定
+
+1. **PG never deletes** — 压缩只改 runtime view + `conversations.compression`
+2. **`l4 = max(pos)`** 实时增长，**不写 meta**；`l1` 固定合成行 pos（**`l1 ≠ l4`**）
+3. 成功压缩：`new l2 > old l2`，`new l3 ≥ old l3`；否则 abort
+4. **边界**（`deriveBoundariesFromL4`）与 **触发**（`shouldAdvance`）分离；仅 trigger 区分 tool loop
+5. 非压缩路径只读 meta；仅成功压缩更新 `l2`/`l3`/`summary`
+6. **无 `l2l`**：summary = `pos ≤ l2`
+7. Token 估算只用 LLM 可见 `content`（勿把大体量藏在并行字段）
+8. 压缩 **不**触发语义记忆抽取；浅睡 cron 独立（[`sleep.md`](../../docs/cognition/sleep.md)）
+
+## Trigger 摘要
+
+| 场景 | 压缩？ |
+| ---- | ------ |
+| 非 tool loop | `usage ≥ trigger_low`（0.60） |
+| tool loop 内 | 仅 `≥ trigger_high`（0.80）或 `≥ emergency_ratio`（0.92） |
+
+`slimMessage`：`tool` 丢弃；assistant+tool_calls 保留 content 否则 reasoning，剥 `tool_calls`。
+
+## 入口
+
+| 模块 | 职责 |
+| ---- | ---- |
+| `src/host/core/compress/compressor.ts` | l-points、`deriveBoundariesFromL4`、`shouldAdvance`、`slimMessage` |
+| `compression-config.ts` / `compression-summary.ts` / `compression-tool-loop.ts` | 配置、summary LLM、`isInToolLoop` |
+| engine turn / conversation / loop | `/summarize`、`recompressConversation`、`maybeApplyEmergencyCompression` |
+
+手动：`/compress`（`--force` 忽略滞后）；`/summarize` 见 docs。算法步骤与 legacy meta 迁移以 docs + `compressor.ts` 为准。

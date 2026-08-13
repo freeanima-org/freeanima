@@ -56,7 +56,7 @@ Full blueprint: [`docs/product/architecture.md`](docs/product/architecture.md)
 | **Repo index**        | [`docs/README.md`](docs/README.md)                                                                |
 | Deployers / visitors  | [`docs/ops/install.md`](docs/ops/install.md) · [`docs/ops/security.md`](docs/ops/security.md)     |
 | Windows contributors  | [`docs/ops/windows-dev.md`](docs/ops/windows-dev.md)                                              |
-| AI agents             | [`AGENTS.md`](AGENTS.md) · [`.agent/rules/`](.agent/rules/README.md)                              |
+| AI agents             | [`.cursor/rules/`](.cursor/rules/agent-bootstrap.mdc)                                             |
 | Architecture          | [`docs/product/architecture.md`](docs/product/architecture.md)                                    |
 | Digital-life identity | [`docs/product/identity.md`](docs/product/identity.md)                                            |
 

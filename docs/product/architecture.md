@@ -181,7 +181,7 @@ Host 栈：`src/host/{kernel,core,engine,capabilities,platform}`。Client：`src
 
 ### 平台 UI 分层
 
-UI/UX 设计系统（三维度、视觉基础、组件、交互模式）→ [`docs/ui/`](../ui/overview.md)。Agent 硬禁令 / API → [`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)、[`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md)。
+UI/UX 设计系统（三维度、视觉基础、组件、交互模式）→ [`docs/ui/`](../ui/overview.md)。Agent 硬禁令 / API → [`.cursor/rules/frontend-ui.mdc`](../../.cursor/rules/frontend-ui.mdc)。
 
 | 层           | 是否平台原生？                   | 位置                                                 | 数据路径                               |
 | ------------ | -------------------------------- | ---------------------------------------------------- | -------------------------------------- |
@@ -193,7 +193,7 @@ UI/UX 设计系统（三维度、视觉基础、组件、交互模式）→ [`do
 
 导航与主布局**必须**使用 `useLayoutMode()` / 视口断点（布局维）。**禁止**用 `getShellKind()` 锁定应用布局。交互（右键菜单 / 长按 / Enter 发送）使用 `portal-sdk` 交互 API。视觉、组件、模式规范均经同一三维度适配。
 
-**边界：** `app-frame` 与主壳 `src/features/*/ui` 经 `portal-sdk` + Feature RPC 到达栖息地。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于栖息地无法拨号的本地应用（今日：伴侣浮层 + **Coding 前哨窗**；壳只提供窗口/IPC/FS；**无** Node sidecar）。**主壳产品模块**（聊天室、任务、设置、…）**不** attach；**前哨窗可以既是 UI 又是手**。可拨号对等方用 **MCP**。见 [`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)、[`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md)、[`coding.md`](../modules/coding.md)。
+**边界：** `app-frame` 与主壳 `src/features/*/ui` 经 `portal-sdk` + Feature RPC 到达栖息地。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于栖息地无法拨号的本地应用（今日：伴侣浮层 + **Coding 前哨窗**；壳只提供窗口/IPC/FS；**无** Node sidecar）。**主壳产品模块**（聊天室、任务、设置、…）**不** attach；**前哨窗可以既是 UI 又是手**。可拨号对等方用 **MCP**。见 [`.cursor/rules/frontend-features.mdc`](../../.cursor/rules/frontend-features.mdc)、[`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md)、[`coding.md`](../modules/coding.md)。
 
 ### 编码工作台（跨机前哨）
 
@@ -413,7 +413,7 @@ Judge 使用可选 `llm.profiles.goal_judge`；judge 调用/解析失败时目�
 
 ## Client UI（web/dist SSOT + 原生壳打包）
 
-**Portal Shell 运行时**：**Tauri**（Rust 主进程 + 系统 WebView；桌面与 Android 统一壳层）。壳规则：[`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)。**禁止**为 companion 再打 Node sidecar；`remote_tools.attach` 在第一方伴侣浮层（见 Desktop companion）。
+**Portal Shell 运行时**：**Tauri**（Rust 主进程 + 系统 WebView；桌面与 Android 统一壳层）。壳规则：[`.cursor/rules/tauri-shell.mdc`](../../.cursor/rules/tauri-shell.mdc)。**禁止**为 companion 再打 Node sidecar；`remote_tools.attach` 在第一方伴侣浮层（见 Desktop companion）。
 
 **UI 源码产物**：`src/portal/app/web/dist`（`base: /web/`）。
 
@@ -447,7 +447,7 @@ settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
 
 手机端通常只有窄档，但 **手机端 ≠ 窄布局**；Portal / 浏览器窗口可以是窄或宽任意档。标准 →
 [`docs/ui/dimensions.md`](../ui/dimensions.md)（Agent API →
-[`.agent/rules/ui-dimensions.md`](../../.agent/rules/ui-dimensions.md)）。
+[`.cursor/rules/frontend-ui.mdc`](../../.cursor/rules/frontend-ui.mdc)）。
 
 ### 布局层断点
 

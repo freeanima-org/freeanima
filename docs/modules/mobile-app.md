@@ -5,7 +5,7 @@ title: "移动端 APP（Android）"
 # 移动端 APP（Android）
 
 > 入口：**Tauri Android**（`src/portal/app/tauri/`）+ 包内 `dist-mobile` / `ui/web`。  
-> 壳规则：[`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)。
+> 壳规则：[`.cursor/rules/tauri-shell.mdc`](../../.cursor/rules/tauri-shell.mdc)。
 
 ## 范围
 

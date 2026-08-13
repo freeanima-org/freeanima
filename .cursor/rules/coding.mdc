@@ -1,3 +1,9 @@
+---
+description: TypeScript / tools / Zod / ports / PG migrations coding standards
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
 # Coding standards
 
 ## TypeScript
@@ -84,7 +90,7 @@ Additional rules:
 - Domain views may `import type` / `z.infer` from `@freeanima/host/core/db`, but **must not duplicate** storage Zod definitions
 - **HTTP/Habitat protocol 契约** → `@freeanima/habitat-contract`（类型 + `date-json` / `display-util`）；**Habitat REST 实现** → `@freeanima/habitat-api`；**in-process snapshots/display** → `@freeanima/platform`
 - **Hook notify payloads**（`subscribe` / `emit`）→ publisher's domain package (e.g. conversation updated → `capabilities-memory`)
-- **Repository row shapes** → [`src/host/core/db/schema/rows/`](../../src/host/core/db/schema/rows/) = `typeof table.$inferSelect`；domain `types.ts` re-export；1:1 CRUD **无 mapper**（非平凡 join/transform 见 [`drizzle-db.md`](drizzle-db.md)）
+- **Repository row shapes** → [`src/host/core/db/schema/rows/`](../../src/host/core/db/schema/rows/) = `typeof table.$inferSelect`；domain `types.ts` re-export；1:1 CRUD **无 mapper**（非平凡 join/transform 见 [`drizzle-db.md`](drizzle-db.mdc)）
 
 Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
@@ -102,7 +108,7 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 - **PG row 类型**：`src/host/core/db/schema/rows/*` 或 `typeof table.$inferSelect`；JSON 边界 `Date`↔ISO（见 drizzle-db）；禁止 camelCase→snake_case 字段改名表与 dual-key DbRow
 - **Remote tools / feature protocol**：capabilities 从 `@freeanima/rpc-contract` re-export Payload；Habitat UI 从 `@freeanima/habitat-contract/api` 导入 Row / 响应类型
 
-详情：[`drizzle-db.md`](drizzle-db.md) DbRow / FTS 列名约定。
+详情：[`drizzle-db.md`](drizzle-db.mdc) DbRow / FTS 列名约定。
 
 ## 标签字段（tag_ids vs tags）
 
@@ -155,7 +161,7 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
 Table shapes SSOT: [`src/host/core/db/schema/`](../../src/host/core/db/schema/). User ops (install, backup): [`docs/ops/database.md`](../../docs/ops/database.md).
 
-Repository query conventions (ORM vs `db.execute`, DbRow typing): [`drizzle-db.md`](drizzle-db.md).
+Repository query conventions (ORM vs `db.execute`, DbRow typing): [`drizzle-db.md`](drizzle-db.mdc).
 
 ## Service 日志（error.log）
 
@@ -172,4 +178,4 @@ Repository query conventions (ORM vs `db.execute`, DbRow typing): [`drizzle-db.m
 ## Release
 
 - **Do not manually edit [`CHANGELOG.md`](../../CHANGELOG.md)** — Release Please only
-- Commit conventions and release flow: [`release.md`](release.md)
+- Commit conventions and release flow: [`release.md`](release.mdc)

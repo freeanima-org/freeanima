@@ -1,3 +1,9 @@
+---
+description: Unit/integration test tiers, mocks, PG isolation
+globs: **/*.{test,spec}.{ts,tsx},tests/**/*
+alwaysApply: false
+---
+
 # Testing rules
 
 ## Test tiers (mandatory)
@@ -36,7 +42,7 @@ bun:test **无原生 tags**。用文件约定 + 路径清单：
 - pre-commit: `just qa pre-commit`（含 changed unit）
 - pre-push: `just qa pre-push`（unit core only）
 - PR 全量：`just test` / CI `scripts/run-ci-tests.ts`
-- Before PR：`just check` includes `stylelint`（手写 CSS 主题色规范，见 [frontend-ui.md](frontend-ui.md)）
+- Before PR：`just check` includes `stylelint`（手写 CSS 主题色规范，见 [frontend-ui.md](frontend-ui.mdc)）
 - Single-package logic → colocated unit tests; multi-package or real persistence → `tests/integration/`
 - New features need tests (minimal viable); mock external deps; real LLM / network excluded from CI by default
 - **勿**再把无 PG / 纯 schema 的用例放进 `tests/integration/`（应 colocated unit；可标 enhanced）
