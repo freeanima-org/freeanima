@@ -8,6 +8,7 @@
     "suspicious": "error"
   },
   "plugins": ["typescript", "oxc", "import", "unicorn"],
+  "jsPlugins": ["./scripts/oxlint-plugins/freeanima/index.ts"],
   "env": {
     "node": true
   },
@@ -22,6 +23,12 @@
     "src/portal/extension/**"
   ],
   "rules": {
+    "freeanima/dir-import-exists": "error",
+    "freeanima/import-depth": "error",
+    "freeanima/layer-deps": "error",
+    "freeanima/no-direct-offline-cache": "error",
+    "freeanima/no-direct-chat": "error",
+    "freeanima/pg-sql-array-bind": "error",
     "import/extensions": [
       "error",
       "always",

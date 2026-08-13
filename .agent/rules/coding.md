@@ -4,7 +4,8 @@
 
 - Full type annotations on new and touched code
 - **Relative imports must include `.ts` / `.tsx` suffix** (oxlint `import/extensions`)
-- **Relative import depth**（`bun scripts/check-import-depth.ts`）：`src/`、`scripts/`、`tests/` 内相对路径最多 `../../`（禁止 `../../../` 及以上）；禁止 `../src/` 形式（跨目录引用 `src/` 须用 `@freeanima/*`）
+- **Relative import depth**（oxlint `freeanima/import-depth`）：`src/`、`scripts/`、`tests/` 内相对路径最多 `../../`（禁止 `../../../` 及以上）；禁止 `../src/` 形式（跨目录引用 `src/` 须用 `@freeanima/*`）
+- **`dir:` 目录导入**（oxlint `freeanima/dir-import-exists`）：`import … from "dir:…"` 须解析到真实目录（`app/web/dist` 构建产物可缺）
 - **Base compiler flags** ([`tsconfig.base.json`](../../tsconfig.base.json)): `strict`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noImplicitOverride`, `allowUnreachableCode: false`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`
 - **Optional props**: with `exactOptionalPropertyTypes`, do not pass `prop: undefined` — use `omitUndefined()` from `@freeanima/host/core/util` or conditional spread
 - **Standalone 随包资源**：`just pack cli` / Bun `--compile` 后，`import.meta.dir` + `readFileSync` **读不到**未嵌入的旁路文件（表现为 `/$bunfs/root/...` ENOENT）。仓库内随二进制分发的 `.md` / `.json` 等须 `import … with { type: "text" | "json" | "file" }`；**migrations / docs / web dist** 走调用点 `dir:`（[`migrations-dir-import.ts`](../../src/host/core/db/migrations-dir-import.ts)、[`docs-dir-import.ts`](../../src/host/capabilities/tools/docs-dir-import.ts)、[`web-dist-dir-import.ts`](../../src/portal/cli/web/web-dist-dir-import.ts) + [`dir-import-plugin.ts`](../../scripts/dir-import-plugin.ts)，`bunfig` preload / pack 插件）；`standalone-embed-plugin` **仅**注入 version / buildMeta。用户数据（`~/.anima/`）与运行时路径除外。第三方包若在入口里 `readFileSync(join(__dirname, …))`（如历史 tiktoken wasm），须 Bun 插件改写或改为本仓库静态 `type: "file"` 加载（jieba 默认词典见 `src/host/core/db/pg/fts/segment.ts`）。**潜伏**：`@discordjs/ws` 的 `defaultWorker.js`、`pino`/`thread-stream` 的 worker 同样按 `__dirname` 找旁路 JS 且未嵌入；当前 Discord `Client` 未使用 `WorkerShardingStrategy`、Habitat 未直接开 pino transport，默认路径不触发——若启用 Worker 分片 / pino transport，须 embed 或 `bundlerPathsOverrides`，并加 standalone smoke。
@@ -14,6 +15,13 @@
 - **Commands**: `just qa lint`（含 type-aware，`options.typeAware: true`）；`just qa lint-fix`；纳入 `just check`。
 - **依赖**: `oxlint` + `oxlint-tsgolint`（type-aware 规则需 TS 语义）。
 - **Config**: [`.oxlintrc.json`](../../.oxlintrc.json) — `correctness` 与 `suspicious` 为 error；type-aware 下显式启用的 `typescript/*` 见下。
+- **仓库自定义护栏**（`jsPlugins` → [`scripts/oxlint-plugins/freeanima/`](../../scripts/oxlint-plugins/freeanima/)）:
+  - `freeanima/dir-import-exists` — `dir:` 须解析到目录（`app/web/dist` 可缺）
+  - `freeanima/import-depth` — 相对 import 深度
+  - `freeanima/layer-deps` — 层依赖矩阵
+  - `freeanima/no-direct-offline-cache` — feature UI 禁直调 offline cache
+  - `freeanima/no-direct-chat` — 禁直调 `chat()`
+  - `freeanima/pg-sql-array-bind` — Bun SQL text[] 绑定
 - **Type-aware error 规则**（勿随意 disable）:
   - `typescript/no-floating-promises` — 未 await/void/return 的 Promise
   - `typescript/no-misused-promises` — async 误作 sync 回调（含 React 事件 handler）

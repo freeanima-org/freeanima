@@ -60,7 +60,7 @@ sql`e.val = ANY(${pgTextArray(ids)})`;
 sql`(${entities.body}->'source_conversations') ?| ${pgTextArray(ids)}`;
 ```
 
-静态检查：`bun scripts/check-pg-sql-arrays.ts`（`scripts/check-pg-sql-arrays.ts`，纳入 `just check`）。
+静态检查：oxlint `freeanima/pg-sql-array-bind`（[`scripts/oxlint-plugins/freeanima/`](../../scripts/oxlint-plugins/freeanima/)，纳入 `just check`）。
 
 ---
 

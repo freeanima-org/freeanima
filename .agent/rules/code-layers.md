@@ -1,6 +1,6 @@
 # Code layers and dependencies
 
-> **Repository** layering（≠ 认知 Consciousness/Self/Memory/Estate）。**文档 + `scripts/check-layer-deps.ts` + tsconfig paths** 把关。
+> **Repository** layering（≠ 认知 Consciousness/Self/Memory/Estate）。**文档 + oxlint `freeanima/layer-deps` + tsconfig paths** 把关。
 
 ## Layer topology
 
@@ -58,7 +58,7 @@ app-frame → features/*/ui → { ui-kit, portal-sdk } → shared
 | `ui-kit`              | kernel（极少）                                         | features, host, client                              |
 | `shared`              | kernel, shared                                         | ui-kit, client, React                               |
 
-**CI**：`just qa check` 跑 `bun scripts/check-layer-deps.ts`。
+**CI**：`just qa check` → oxlint `freeanima/layer-deps`（[`scripts/oxlint-plugins/freeanima/`](../../scripts/oxlint-plugins/freeanima/)）。
 
 ## Port binding
 

@@ -42,7 +42,7 @@ MCP 形态入口实现在 `host/capabilities/mcp-server`（**不在** `portal/`�
 
 **Habitat 管理台** = 普通 `features/habitat`（与 chat/task 同形），不为它单开目录。
 
-### 依赖方向（CI：`bun scripts/check-layer-deps.ts`）
+### 依赖方向（CI：oxlint `freeanima/layer-deps`）
 
 ```
 portal/cli, features(server) → platform → capabilities → engine → core → kernel
@@ -65,8 +65,9 @@ host ↛ client / ui-kit（platform habitat client re-export 为过渡豁免）
 
 ## 护栏
 
-- `bun scripts/check-import-depth.ts` — 相对路径深度
-- `bun scripts/check-layer-deps.ts` — 层依赖矩阵
+- oxlint `freeanima/import-depth` — 相对路径深度
+- oxlint `freeanima/layer-deps` — 层依赖矩阵
+- oxlint `freeanima/dir-import-exists` — `dir:` 目录存在
 - 已移除空的 `platform/admin-*` 遗留目录
 
 ## 文档站

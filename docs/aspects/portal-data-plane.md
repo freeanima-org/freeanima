@@ -105,16 +105,16 @@ flowchart LR
 
 自有 **PortalQueryClient**（不是 `@tanstack/react-query`）位于 `src/client/portal-sdk/portal-query/`：
 
-| 能力                                                          | 状态                                 |
-| ------------------------------------------------------------- | ------------------------------------ |
-| 共享读 hook（`usePortalRead`）                                | 已交付                               |
-| 无限 / 加载更多（`usePortalInfiniteQuery`）                   | 已交付                               |
-| 写后失效出口（`usePortalMutation` / `invalidatePortalReads`） | 已交付                               |
-| Key 助手 + inflight 去重                                      | 已交付                               |
-| Lint / 脚本：功能 UI 无第二 IDB 读路径                        | `scripts/check-portal-cache-path.ts` |
-| 离线 / outbox 状态基元                                        | 方向                                 |
-| 可选 devtools                                                 | 方向                                 |
-| ETag/304 与 IDB 绑定                                          | 带宽 / 多设备成本证明前范围外        |
+| 能力                                                          | 状态                                       |
+| ------------------------------------------------------------- | ------------------------------------------ |
+| 共享读 hook（`usePortalRead`）                                | 已交付                                     |
+| 无限 / 加载更多（`usePortalInfiniteQuery`）                   | 已交付                                     |
+| 写后失效出口（`usePortalMutation` / `invalidatePortalReads`） | 已交付                                     |
+| Key 助手 + inflight 去重                                      | 已交付                                     |
+| Lint：功能 UI 无第二 IDB 读路径                               | oxlint `freeanima/no-direct-offline-cache` |
+| 离线 / outbox 状态基元                                        | 方向                                       |
+| 可选 devtools                                                 | 方向                                       |
+| ETag/304 与 IDB 绑定                                          | 带宽 / 多设备成本证明前范围外              |
 
 自动拉取仅在 **key 变化**、**`updatedAt === 0`（未拉 / invalidate）**、或 **idle 无 data** 时触发；`fetchQuery` 成功写入的新时间戳**不得**再触发 reload（否则与 subscribe notify 死循环刷屏）。`reload` / `setData` 依赖 **keyHash**（非 key 数组引用），避免内联 `queryKey` 导致父组件 effect 反复 `resetDetail`。
 
