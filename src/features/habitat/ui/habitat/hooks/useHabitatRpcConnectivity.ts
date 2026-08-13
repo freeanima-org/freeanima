@@ -73,7 +73,7 @@ export function useHabitatRpcConnectivity(enabled: boolean): {
   }, [enabled, runProbe]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) return () => {};
     const onVisible = (): void => {
       if (document.visibilityState === "visible") void runProbe();
     };
@@ -82,7 +82,7 @@ export function useHabitatRpcConnectivity(enabled: boolean): {
   }, [enabled, runProbe]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) return () => {};
     const timer = setInterval(() => void runProbe(), POLL_MS);
     return () => clearInterval(timer);
   }, [enabled, runProbe]);

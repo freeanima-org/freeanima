@@ -117,7 +117,7 @@ export async function fetchLatestRelease(
   const latestRes = await fetchImpl(proxiedGithubApiUrl(`/repos/${repo}/releases/latest`, proxy), {
     headers,
     ...(options.signal ? { signal: options.signal } : {}),
-  } as RequestInit);
+  });
   if (latestRes.ok) {
     const release = parseGithubRelease(await latestRes.json());
     if (release && !release.draft && (options.includePrerelease || !release.prerelease)) {
@@ -130,7 +130,7 @@ export async function fetchLatestRelease(
     {
       headers,
       ...(options.signal ? { signal: options.signal } : {}),
-    } as RequestInit,
+    },
   );
   if (!listRes.ok) return null;
   const list = (await listRes.json()) as unknown;
@@ -158,7 +158,7 @@ export async function fetchReleaseByTag(
     {
       headers: githubHeaders(),
       ...(options.signal ? { signal: options.signal } : {}),
-    } as RequestInit,
+    },
   );
   if (!res.ok) return null;
   const release = parseGithubRelease(await res.json());

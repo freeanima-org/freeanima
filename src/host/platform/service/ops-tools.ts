@@ -15,6 +15,7 @@ import { getAppRuntime } from "@freeanima/host/platform/ports";
 import { triggerServiceRestart } from "@freeanima/host/platform/ports/process-restart";
 
 import { OPS_TOOL_RETURNS } from "./ops-return-schemas.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 const CONFIRM_REQUIRED =
   "confirm=true required; first use clarify ToolSet to get partner approval, then retry with confirm=true";
@@ -87,7 +88,7 @@ export async function handleOpsConfigGet(args: ToolArgs): Promise<string> {
   try {
     const rt = deps.getRuntime();
     const full = maskConfigSecretsForLlm(rt.getConfig().config);
-    const sectionRaw = args.section == null ? "" : String(args.section).trim();
+    const sectionRaw = args.section == null ? "" : coerceString(args.section).trim();
     if (!sectionRaw) {
       return toolResult({ config: full });
     }
@@ -113,7 +114,7 @@ export async function handleOpsConfigPatch(args: ToolArgs): Promise<string> {
   const confirmErr = requireConfirm(args);
   if (confirmErr) return toolError(confirmErr);
 
-  const section = String(args.section ?? "").trim();
+  const section = coerceString(args.section ?? "").trim();
   if (!section) return toolError("section is required");
   if (isBootstrapConfigKey(section)) {
     return toolError(`section ${section} is bootstrap (cold-start) config; cannot patch via ops`);
@@ -139,7 +140,7 @@ export async function handleOpsConfigPatch(args: ToolArgs): Promise<string> {
     const existing = (config.data as Record<string, unknown>)[section];
     const restored = restoreMaskedSecrets(patch, existing);
     await config.patchSection(section, restored);
-    const masked = maskConfigSecretsForLlm(config.data as Record<string, unknown>);
+    const masked = maskConfigSecretsForLlm(config.data);
     return toolResult({ ok: true as const, section, config: masked });
   } catch (err) {
     return toolError(err instanceof Error ? err.message : String(err));
@@ -160,7 +161,7 @@ export async function handleOpsRestart(args: ToolArgs): Promise<string> {
 
 export async function handleOpsUpdateCheck(args: ToolArgs): Promise<string> {
   try {
-    const proxy = args.proxy == null ? undefined : String(args.proxy);
+    const proxy = args.proxy == null ? undefined : coerceString(args.proxy);
     const result = await deps.checkUpdate(proxy != null && proxy !== "" ? { proxy } : {});
     return toolResult(result);
   } catch (err) {
@@ -173,7 +174,7 @@ export async function handleOpsUpdateApply(args: ToolArgs): Promise<string> {
   if (confirmErr) return toolError(confirmErr);
 
   try {
-    const proxy = args.proxy == null ? undefined : String(args.proxy);
+    const proxy = args.proxy == null ? undefined : coerceString(args.proxy);
     const result = await deps.applyUpdate(proxy != null && proxy !== "" ? { proxy } : {});
     if (result.ok) {
       deps.scheduleRestart();

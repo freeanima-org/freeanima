@@ -25,6 +25,7 @@ import {
 import { CONTENT_BLOCK_TOOL_RETURNS } from "./return-schemas.ts";
 import { resolveContentBlockToolWorld } from "./tool-world-resolve.ts";
 import type { ContentBlockReorderItem, ContentBlockUpdateInput } from "./types.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const parentId = Number(args.parent_id);
@@ -61,19 +62,19 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
       omitUndefined({
         parent_id: parentId,
         block_type: blockType,
-        content: args.content != null ? String(args.content) : undefined,
-        title: args.title != null ? String(args.title) : undefined,
-        summary: args.summary != null ? String(args.summary) : undefined,
+        content: args.content != null ? coerceString(args.content) : undefined,
+        title: args.title != null ? coerceString(args.title) : undefined,
+        summary: args.summary != null ? coerceString(args.summary) : undefined,
         sort_order: sortOrder,
         url:
           args.url === undefined
             ? undefined
             : args.url == null || args.url === ""
               ? null
-              : String(args.url),
+              : coerceString(args.url),
         client_op_id:
           args.client_op_id != null && args.client_op_id !== ""
-            ? String(args.client_op_id)
+            ? coerceString(args.client_op_id)
             : undefined,
         limbic: limbic ?? undefined,
         narrative: narrative ?? undefined,
@@ -94,12 +95,12 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   if (typeof worldId === "string") return worldId;
 
   const patch: ContentBlockUpdateInput = { id };
-  if (args.content !== undefined) patch.content = String(args.content);
-  if (args.title !== undefined) patch.title = String(args.title);
-  if (args.summary !== undefined) patch.summary = String(args.summary);
+  if (args.content !== undefined) patch.content = coerceString(args.content);
+  if (args.title !== undefined) patch.title = coerceString(args.title);
+  if (args.summary !== undefined) patch.summary = coerceString(args.summary);
   if (args.block_type !== undefined) {
     const blockType = parseBlockType(args.block_type);
-    if (!blockType) return toolError(`invalid block_type: ${args.block_type}`);
+    if (!blockType) return toolError(`invalid block_type: ${coerceString(args.block_type)}`);
     patch.block_type = blockType;
   }
   if (args.parent_id !== undefined) {
@@ -113,7 +114,7 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
     patch.sort_order = sortOrder;
   }
   if (args.url !== undefined) {
-    patch.url = args.url == null || args.url === "" ? null : String(args.url);
+    patch.url = args.url == null || args.url === "" ? null : coerceString(args.url);
   }
   if (args.limbic !== undefined) {
     const limbic = parseLimbic(args.limbic);
@@ -184,7 +185,7 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
   let blockType: ReturnType<typeof parseBlockType> | undefined;
   if (args.block_type != null && args.block_type !== "") {
     blockType = parseBlockType(args.block_type);
-    if (!blockType) return toolError(`invalid block_type: ${args.block_type}`);
+    if (!blockType) return toolError(`invalid block_type: ${coerceString(args.block_type)}`);
   }
 
   let component: string | undefined;
@@ -192,7 +193,7 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
     const tag = parseSemanticComponent(args.component);
     if (!tag) {
       return toolError(
-        `invalid component: ${args.component} (expected limbic|narrative|semantic_ref|dream)`,
+        `invalid component: ${coerceString(args.component)} (expected limbic|narrative|semantic_ref|dream)`,
       );
     }
     component = tag;
@@ -217,7 +218,7 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleSearch(args: Record<string, unknown>): Promise<string> {
-  const query = String(args.query ?? "").trim();
+  const query = coerceString(args.query ?? "").trim();
   if (!query) return toolError("query is required");
 
   const parentIdRaw = args.parent_id;
@@ -234,7 +235,7 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
   let blockType: ReturnType<typeof parseBlockType> | undefined;
   if (args.block_type != null && args.block_type !== "") {
     blockType = parseBlockType(args.block_type);
-    if (!blockType) return toolError(`invalid block_type: ${args.block_type}`);
+    if (!blockType) return toolError(`invalid block_type: ${coerceString(args.block_type)}`);
   }
 
   let component: string | undefined;
@@ -242,7 +243,7 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
     const tag = parseSemanticComponent(args.component);
     if (!tag) {
       return toolError(
-        `invalid component: ${args.component} (expected limbic|narrative|semantic_ref|dream)`,
+        `invalid component: ${coerceString(args.component)} (expected limbic|narrative|semantic_ref|dream)`,
       );
     }
     component = tag;
@@ -499,7 +500,7 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
       ],
       Object.fromEntries(
         CONTENT_BLOCK_TOOL_NAMES.map((name) => [name, CONTENT_BLOCK_TOOL_RETURNS[name]]),
-      ) as Partial<typeof CONTENT_BLOCK_TOOL_RETURNS>,
+      ),
     ),
   );
 }

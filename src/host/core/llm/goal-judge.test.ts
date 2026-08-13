@@ -97,7 +97,7 @@ describe("judgeGoal", () => {
   it("requests json_object response_format via extra", async () => {
     const chatSpy = spyOn(llm, "chat").mockResolvedValue({
       content: '{"done": true, "reason": "完成"}',
-    } as never);
+    });
     restores.push(chatSpy);
 
     const r = await judgeGoal({
@@ -122,7 +122,7 @@ describe("judgeGoal", () => {
       spyOn(llm, "chat").mockResolvedValue({
         content: "",
         reasoning: "thinking about whether the goal is done…",
-      } as never),
+      }),
     );
 
     const r = await judgeGoal({

@@ -47,7 +47,7 @@ function sanitizeRecord(obj: Record<string, unknown>): Record<string, unknown> {
 
 /** Runtime config snapshot for HTTP / Habitat（密钥明文；含 MCP env/headers） */
 export function sanitizeConfigForApi(cfg: RuntimeConfig): Record<string, unknown> {
-  return sanitizeRecord(cfg as Record<string, unknown>);
+  return sanitizeRecord(cfg);
 }
 
 /**
@@ -108,7 +108,7 @@ function maskRecordForLlm(
 export function maskConfigSecretsForLlm(
   cfg: RuntimeConfig | Record<string, unknown>,
 ): Record<string, unknown> {
-  return maskRecordForLlm(cfg as Record<string, unknown>);
+  return maskRecordForLlm(cfg);
 }
 
 /**
@@ -129,7 +129,7 @@ export function findForbiddenLlmConfigPatchPath(
     }
     if (Array.isArray(value)) {
       for (let i = 0; i < value.length; i++) {
-        const item = value[i];
+        const item: unknown = value[i];
         if (item != null && typeof item === "object" && !Array.isArray(item)) {
           const nested = findForbiddenLlmConfigPatchPath(
             item as Record<string, unknown>,

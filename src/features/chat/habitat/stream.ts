@@ -61,10 +61,7 @@ export async function pumpMessageStream(
     )) {
       // 快照入 Redis，不推给客户端（打开调试面板时再 llm_debug.get）
       if (mapped.method === "stream.llm_debug") {
-        await rememberLlmDebugFromStreamPayload(
-          conversationId,
-          mapped.payload as Record<string, unknown>,
-        );
+        await rememberLlmDebugFromStreamPayload(conversationId, mapped.payload);
         continue;
       }
       publishStreamEvent(ctx, mapped.method, mapped.payload);

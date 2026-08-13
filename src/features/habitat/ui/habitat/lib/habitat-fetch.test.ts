@@ -36,7 +36,7 @@ describe("resolveHabitatFetch", () => {
   test("远程 Habitat 使用 remoteAuth.token 附加 Bearer", async () => {
     let seenAuth = "";
     globalThis.fetch = (async (_input, init) => {
-      seenAuth = String(new Headers(init?.headers).get("Authorization") ?? "");
+      seenAuth = new Headers(init?.headers).get("Authorization") ?? "";
       return new Response("ok", { status: 200 });
     }) as typeof fetch;
 
@@ -52,7 +52,7 @@ describe("resolveHabitatFetch", () => {
   test("loopback Habitat 有 token 时仍附加 Bearer", async () => {
     let seenAuth = "unset";
     globalThis.fetch = (async (_input, init) => {
-      seenAuth = String(new Headers(init?.headers).get("Authorization") ?? "");
+      seenAuth = new Headers(init?.headers).get("Authorization") ?? "";
       return new Response("ok", { status: 200 });
     }) as typeof fetch;
 

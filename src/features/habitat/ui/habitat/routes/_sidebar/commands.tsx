@@ -43,7 +43,7 @@ function CommandDescription({ cmd }: { cmd: CommandRow }) {
 
 function CommandsPage() {
   const data = Route.useLoaderData() as { commands?: CommandRow[] };
-  const commands = (data.commands ?? []) as CommandRow[];
+  const commands = data.commands ?? [];
 
   const conversationCommands = commands.filter((c) => c.scope === "conversation");
   const globalCommands = commands.filter((c) => c.scope === "global");

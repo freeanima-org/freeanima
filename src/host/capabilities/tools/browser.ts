@@ -16,6 +16,7 @@ import {
   camofoxVision,
   isCamofoxConfigured,
 } from "./browser-camofox.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   parseSecretArg,
   resolveVaultSecretValue,
@@ -49,7 +50,7 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
             required: ["url"],
           },
           handler: (args) => {
-            const url = String(args.url ?? "").trim();
+            const url = coerceString(args.url ?? "").trim();
             if (!url) return toolError("url is required");
             if (!isCamofoxConfigured()) {
               return toolError(
@@ -57,7 +58,7 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
               );
             }
             const userId =
-              args.user_id == null ? undefined : String(args.user_id).trim() || undefined;
+              args.user_id == null ? undefined : coerceString(args.user_id).trim() || undefined;
             return camofoxNavigate(sessionKey(), url, userId ? { userId } : undefined);
           },
         },
@@ -90,7 +91,7 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
             required: ["ref"],
           },
           handler: (args) => {
-            const ref = String(args.ref ?? "").trim();
+            const ref = coerceString(args.ref ?? "").trim();
             if (!ref) return toolError("ref is required");
             return camofoxClick(sessionKey(), ref);
           },
@@ -114,7 +115,7 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
             required: ["ref"],
           },
           handler: async (args) => {
-            const ref = String(args.ref ?? "").trim();
+            const ref = coerceString(args.ref ?? "").trim();
             if (!ref) return toolError("ref is required");
             const hasText = args.text != null;
             const hasSecret = args.secret != null;
@@ -132,7 +133,7 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
               if (typeof resolved === "string") return resolved;
               return camofoxType(sessionKey(), ref, resolved.value, { redactTyped: true });
             }
-            return camofoxType(sessionKey(), ref, String(args.text ?? ""));
+            return camofoxType(sessionKey(), ref, coerceString(args.text ?? ""));
           },
         },
         {
@@ -145,7 +146,7 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
             },
             required: ["direction"],
           },
-          handler: (args) => camofoxScroll(sessionKey(), String(args.direction ?? "")),
+          handler: (args) => camofoxScroll(sessionKey(), coerceString(args.direction ?? "")),
         },
         {
           name: "browser_back",
@@ -165,7 +166,7 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
             required: ["key"],
           },
           handler: (args) => {
-            const key = String(args.key ?? "").trim();
+            const key = coerceString(args.key ?? "").trim();
             if (!key) return toolError("key is required");
             return camofoxPress(sessionKey(), key);
           },
@@ -210,7 +211,7 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
             required: ["question"],
           },
           handler: (args) =>
-            camofoxVision(sessionKey(), String(args.question ?? ""), Boolean(args.annotate)),
+            camofoxVision(sessionKey(), coerceString(args.question ?? ""), Boolean(args.annotate)),
         },
       ],
       CAPABILITIES_TOOLS_RETURNS,

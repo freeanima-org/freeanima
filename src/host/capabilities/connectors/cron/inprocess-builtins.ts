@@ -110,7 +110,7 @@ export function extractInprocessFailureMessage(output: string | null): string | 
     };
     if (parsed && typeof parsed === "object" && parsed.ok === false) {
       const detail = parsed.error ?? parsed.summary ?? output;
-      return String(detail).slice(0, 4000);
+      return detail.slice(0, 4000);
     }
   } catch {
     /* 非 JSON 视为成功输出 */

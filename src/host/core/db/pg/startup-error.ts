@@ -155,6 +155,10 @@ function buildStartupMessage(
         `  1. 以超级用户执行：sudo -u postgres psql -d ${dbName} -f src/host/core/scripts/ensure-pg-extensions.sql`,
         "  2. 详见 docs/ops/database.md",
       ].join("\n");
+    default: {
+      const _exhaustive: never = issue;
+      throw new Error(`Unhandled PostgreSQL startup issue: ${String(_exhaustive)}`);
+    }
   }
 }
 

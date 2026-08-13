@@ -12,6 +12,7 @@ import {
   SUBJECT_KIND_TOOL_PROPERTY,
   WORLD_ID_TOOL_PROPERTY,
 } from "@freeanima/features/vault/domain/tool-world-resolve";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 /** Vault item ref without env mapping (browser_type secret). */
 export type BrowserSecretRef = {
@@ -91,7 +92,7 @@ function parseVaultSecretFields(
 ): VaultSecretRef | string {
   const id = Number(rec.id);
   if (!Number.isFinite(id) || id <= 0) return toolError(idError);
-  const fieldRaw = rec.field != null ? String(rec.field).trim() : "";
+  const fieldRaw = rec.field != null ? coerceString(rec.field).trim() : "";
   const worldRaw = Number(rec.world_id);
   return omitUndefined({
     id,
@@ -110,7 +111,7 @@ export function parseSecretArg(raw: unknown): BrowserSecretRef | null | string {
   const rec = raw as Record<string, unknown>;
   const id = Number(rec.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("secret.id is required");
-  const field = String(rec.field ?? "").trim();
+  const field = coerceString(rec.field).trim();
   if (!field) return toolError("secret.field is required");
   return { id, field };
 }
@@ -126,7 +127,7 @@ export function parseSecretsArg(raw: unknown): SubprocessSecretRef[] | string {
     const rec = item as Record<string, unknown>;
     const base = parseVaultSecretFields(rec, "secrets[].id is required");
     if (typeof base === "string") return base;
-    const envName = String(rec.env_name ?? "").trim();
+    const envName = coerceString(rec.env_name).trim();
     if (!envName) return toolError("secrets[].env_name is required");
     out.push({ ...base, env_name: envName });
   }

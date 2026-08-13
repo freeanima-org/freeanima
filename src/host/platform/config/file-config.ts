@@ -29,10 +29,7 @@ export class FileConfig extends Config {
   }
 
   /** Merge-write a config.yaml section then reload */
-  patchSection(
-    section: keyof RuntimeConfig | string,
-    patch: Record<string, unknown>,
-  ): RuntimeConfig {
+  patchSection(section: keyof RuntimeConfig, patch: Record<string, unknown>): RuntimeConfig {
     const raw = loadConfigYamlRecord();
     const existing =
       typeof raw[section] === "object" && raw[section] != null && !Array.isArray(raw[section])

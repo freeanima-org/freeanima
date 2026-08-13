@@ -13,14 +13,14 @@ export function filterRecallableMessages(msgs: ConversationMessage[]): Recallabl
     const role = rec.role;
     if (role !== "user" && role !== "assistant") continue;
     const content = rec.content;
-    if (!content || !String(content).trim()) {
+    if (!content || !content.trim()) {
       if (role === "assistant" && "tool_calls" in rec && rec.tool_calls) continue;
       continue;
     }
     out.push({
       t: rec.timestamp ?? "",
       role,
-      content: String(content).trim(),
+      content: content.trim(),
     });
   }
   return out;

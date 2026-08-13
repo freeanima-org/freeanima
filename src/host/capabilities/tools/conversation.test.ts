@@ -113,7 +113,7 @@ describe("registerConversationTools", () => {
     const def = toolSets.getTool("conversation_scroll")!;
 
     conversationExistsMock.mockImplementation((async (id: string) => id === "s1") as never);
-    countMessagesMock.mockImplementation((async () => 5) as never);
+    countMessagesMock.mockImplementation(async () => 5);
     listMessageRowsPageMock.mockImplementation((async (
       _sid: string,
       offset: number,
@@ -153,8 +153,8 @@ describe("registerConversationTools", () => {
     registerConversationTools(toolSets);
     const def = toolSets.getTool("conversation_scroll")!;
 
-    conversationExistsMock.mockImplementation((async () => true) as never);
-    countMessagesMock.mockImplementation((async () => 3) as never);
+    conversationExistsMock.mockImplementation(async () => true);
+    countMessagesMock.mockImplementation(async () => 3);
     findMessagePosMock.mockImplementation((async (_sid: string, messageId: string) =>
       messageId === "anchor" ? 2 : null) as never);
     listMessageRowsFromPosMock.mockImplementation((async (

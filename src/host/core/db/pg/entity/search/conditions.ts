@@ -29,7 +29,6 @@ import {
   TASK_ITEM_COMPONENT,
   TASK_OCCURRENCE_COMPONENT,
   TASK_LIST_COMPONENT,
-  type EntityType,
 } from "@freeanima/host/core/db/schema";
 import { pgBigintArray } from "../../utils/pg-sql.ts";
 import type { EntitySearchOpts } from "../types.ts";
@@ -573,7 +572,7 @@ export function buildEntitySearchConditions(opts: EntitySearchOpts): SQL[] {
     conditions.push(eq(entities.type, opts.type));
   }
   if (opts.types != null && opts.types.length > 0) {
-    conditions.push(inArray(entities.type, opts.types as EntityType[]));
+    conditions.push(inArray(entities.type, opts.types));
   }
   if (opts.primary_component) {
     conditions.push(eq(entities.primary_component, opts.primary_component));
@@ -636,7 +635,7 @@ function escapePgRegexLiteral(ch: string): string {
  * 例：「知识片」→ `知.*识.*片`，可命中「知识卡片」。
  */
 export function buildCjkOrderedCharRegexPattern(query: string): string | null {
-  const chars = [...query.replace(/\s+/g, "")].filter((ch) => {
+  const chars = Array.from(query.replace(/\s+/g, "")).filter((ch) => {
     if (!ch.trim()) return false;
     return isCjkChar(ch) || /[\w]/.test(ch);
   });

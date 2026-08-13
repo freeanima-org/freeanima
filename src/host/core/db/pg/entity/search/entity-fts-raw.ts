@@ -57,7 +57,7 @@ async function searchEntitiesFtsWithTsquery(
     .orderBy(desc(rankExpr))
     .limit(limit);
 
-  return rows.map((r) => ({ ...mapEntityRow(r), rank: Number(r.rank) }));
+  return rows.map((r) => ({ ...mapEntityRow(r), rank: r.rank }));
 }
 
 export async function searchEntitiesFtsRaw(

@@ -7,6 +7,8 @@ import {
   SEMANTIC_REF_COMPONENT,
 } from "@freeanima/host/core/db/schema/entity";
 
+import { coerceString } from "@freeanima/shared/coerce-string";
+
 import type {
   ContentBlockLimbicInput,
   ContentBlockNarrativeInput,
@@ -54,7 +56,7 @@ export function parseBlockType(raw: unknown): ContentBlockType | null {
 
 export function parseSemanticComponent(raw: unknown): string | null {
   if (raw == null || raw === "") return null;
-  const tag = String(raw);
+  const tag = coerceString(raw);
   return (SEMANTIC_COMPONENT_TAGS as readonly string[]).includes(tag) ? tag : null;
 }
 

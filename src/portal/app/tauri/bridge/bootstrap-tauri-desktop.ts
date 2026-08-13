@@ -22,6 +22,7 @@ import {
   applyHabitatConfigToShell,
   notifyShellConfigChanged,
 } from "../lib/apply-habitat-to-shell.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   codingPickDirectoryBridge,
   codingRunCommandBridge,
@@ -91,9 +92,7 @@ function createFileInstanceStore(appId: string): RemoteInstanceStore {
 }
 
 function normalizeHabitatUrl(raw: string): string {
-  return String(raw ?? "")
-    .trim()
-    .replace(/\/$/, "");
+  return (raw ?? "").trim().replace(/\/$/, "");
 }
 
 async function loadTauriNativeBuildMeta(): Promise<ComponentBuildMeta | undefined> {
@@ -181,7 +180,7 @@ export async function bootstrapTauriBridge(): Promise<void> {
     getCompanionRemoteToolsStatus: async () => {
       const raw = await invoke<Record<string, unknown>>("get_remote_tools_status");
       return {
-        instance_id: String(raw.instance_id ?? raw.instanceId ?? ""),
+        instance_id: coerceString(raw.instance_id ?? raw.instanceId ?? ""),
         remote_tools_connected: Boolean(
           raw.remote_tools_connected ?? raw.remoteToolsConnected ?? false,
         ),
@@ -316,7 +315,7 @@ export async function bootstrapTauriBridge(): Promise<void> {
       if (scope.kind === "kv" && scope.id === "habitat") {
         const raw = value as { habitatUrl: string; remoteAuthToken: string };
         const url = normalizeHabitatUrl(raw.habitatUrl);
-        const token = String(raw.remoteAuthToken ?? "").trim();
+        const token = (raw.remoteAuthToken ?? "").trim();
         if (!url) throw new Error("栖息地地址不能为空");
         await testHabitatHealthConnection(url, token || undefined);
         return true;

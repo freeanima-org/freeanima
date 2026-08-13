@@ -35,7 +35,7 @@ function stubModel(partial: Partial<Model> & Pick<Model, "id" | "name">): Model 
     open_weights: partial.open_weights ?? false,
     limit: partial.limit ?? { context: 64_000, output: 4096 },
     cost: partial.cost,
-  }) as Model;
+  });
 }
 
 describe("models.dev preset mapping", () => {

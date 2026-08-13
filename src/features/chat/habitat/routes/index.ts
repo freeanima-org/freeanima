@@ -12,7 +12,6 @@ import {
 import { getConversationUpdatedAt } from "@freeanima/host/core/db/pg/conversation/repos/conversation-repo.ts";
 import type { RemoteToolsServerDeps } from "@freeanima/host/capabilities/outpost/transport/types";
 import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
-import type { RpcRouterOutputs } from "@freeanima/shared/rpc-contract";
 import { type RemoteToolsRequestContext } from "../../protocol/index.ts";
 import { loadLlmDebugCache } from "../llm-debug-cache.ts";
 import { chatMethodDefs } from "../method-defs.ts";
@@ -136,7 +135,7 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
         before_pos: input.before_pos,
       }),
     );
-    return messages as RpcRouterOutputs["conversation.messages"];
+    return messages;
   },
   "conversation.tail": async (deps, input) => {
     await resolveConversationPlatform(depsOf(deps), input.conversation_id);

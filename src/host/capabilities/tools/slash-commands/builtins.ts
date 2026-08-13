@@ -41,6 +41,7 @@ import {
   setConversationGoal,
 } from "@freeanima/host/engine/goal";
 import type { CommandSkillReviewData } from "./skill-review-data.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 function conv() {
   return getAppRuntime().conversation;
@@ -302,18 +303,18 @@ async function cmdSethome(ctx: CommandContext): Promise<CommandResult> {
   }
 
   if (ctx.platform === "discord") {
-    const channelId = String(extra.channel_id ?? "").trim();
+    const channelId = coerceString(extra.channel_id ?? "").trim();
     if (!channelId) {
       return asToast("⚠️ Cannot identify current Discord channel.");
     }
-    const threadId = String(extra.thread_id ?? "").trim();
+    const threadId = coerceString(extra.thread_id ?? "").trim();
     await setHomeChannel("discord", channelId, threadId || undefined);
     const where = threadId ? `channel ${channelId} / thread ${threadId}` : `channel ${channelId}`;
     return asToast(`✅ Set Discord home channel to ${where}(cron delivery etc. will default here)`);
   }
 
   if (ctx.platform === "weixin") {
-    const peerId = String(extra.weixin_peer_id ?? "").trim();
+    const peerId = coerceString(extra.weixin_peer_id ?? "").trim();
     if (!peerId) {
       return asToast("⚠️ Cannot identify current WeChat session.");
     }
@@ -367,7 +368,7 @@ async function cmdSummarize(ctx: CommandContext): Promise<CommandResult> {
 
   const cfg = getCompressionConfig();
   const mode = r.idle ? "idle (l2=l3=l4)" : "partial (in-progress tail kept in raw)";
-  const summaryPreview = String(r.compression?.summary ?? "").trim();
+  const summaryPreview = (r.compression?.summary ?? "").trim();
   const preview =
     summaryPreview.length > 400 ? `${summaryPreview.slice(0, 400)}…` : summaryPreview || "(empty)";
   const headline = `✅ Summarized (${mode})`;

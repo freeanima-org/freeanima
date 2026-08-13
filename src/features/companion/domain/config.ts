@@ -22,16 +22,16 @@ type PatchableConfig = {
 
 function coerceCompanionConfig(raw: unknown): CompanionConfig {
   const parsed = companionConfigSchema.safeParse(raw);
-  if (parsed.success) return parsed.data as CompanionConfig;
+  if (parsed.success) return parsed.data;
 
   const defaults = defaultCompanionRuntimeConfig();
   if (raw && typeof raw === "object" && "behavior" in raw) {
-    const behavior = companionBehaviorSchema.safeParse((raw as { behavior: unknown }).behavior);
+    const behavior = companionBehaviorSchema.safeParse(raw.behavior);
     if (behavior.success) {
       return { ...defaults, behavior: behavior.data };
     }
   }
-  return defaults as CompanionConfig;
+  return defaults;
 }
 
 function tryGetPatchableConfig(): PatchableConfig | null {
@@ -135,7 +135,7 @@ export async function loadCompanionConfig(): Promise<CompanionConfig> {
 
   const defaults = defaultCompanionRuntimeConfig();
   await persistCompanionConfig(defaults);
-  return defaults as CompanionConfig;
+  return defaults;
 }
 
 async function persistCompanionConfig(next: CompanionRuntimeConfig): Promise<void> {
@@ -164,5 +164,5 @@ export async function saveCompanionConfig(
     behavior: mergeBehavior({ ...current.behavior, ...patch.behavior }),
   });
   await persistCompanionConfig(next);
-  return next as CompanionConfig;
+  return next;
 }

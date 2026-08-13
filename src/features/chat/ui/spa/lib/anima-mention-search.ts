@@ -41,7 +41,7 @@ export async function searchAnimaMentionEntities(query: string): Promise<AnimaMe
   }
   return merged.slice(0, 20).map((item) => {
     const rawTitle = item.title.trim();
-    const snippet = rawTitle ? [...rawTitle].slice(0, 24).join("") : `#${item.id}`;
+    const snippet = rawTitle ? Array.from(rawTitle).slice(0, 24).join("") : `#${item.id}`;
     const component = item.primary_component?.trim() || "entity";
     return {
       id: item.id,

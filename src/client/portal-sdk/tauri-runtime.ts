@@ -1,15 +1,15 @@
 /** Tauri WebView 运行时探测（不依赖 @tauri-apps/api 静态 import） */
 
-function runtimeWindow(): Window | undefined {
-  if (typeof window !== "undefined") return window;
-  return (globalThis as { window?: Window }).window;
-}
-
 type TauriWindow = Window & {
   __TAURI_INTERNALS__?: unknown;
   __TAURI__?: unknown;
   isTauri?: boolean;
 };
+
+function runtimeWindow(): TauriWindow | undefined {
+  if (typeof window !== "undefined") return window;
+  return (globalThis as { window?: TauriWindow }).window;
+}
 
 /**
  * 是否在 Tauri WebView 内（portalShell 注入前也可用）。
@@ -17,7 +17,7 @@ type TauriWindow = Window & {
  * - 自定义协议与 Tauri 2 默认主机名（含 *.localhost，排除光杆 localhost）
  */
 export function isTauriRuntime(): boolean {
-  const w = runtimeWindow() as TauriWindow | undefined;
+  const w = runtimeWindow();
   if (!w) return false;
   if (w.portalShell?.isTauri) return true;
   if (w.__TAURI_INTERNALS__ || w.__TAURI__ || w.isTauri) return true;

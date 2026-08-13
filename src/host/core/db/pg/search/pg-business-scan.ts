@@ -63,9 +63,9 @@ export function createPgBusinessScanBackend(): SearchBackend {
           doc_key: searchDocKey("message", r.id),
           source_id: r.id,
           resource: "message",
-          score: Number(r.rank),
+          score: r.rank,
           channels_hit: ["trgm"],
-          channel_scores: { trgm: Number(r.rank) },
+          channel_scores: { trgm: r.rank },
         }));
         return fuseSearchHits({ trgm: hits }, { limit, fuse: "none" });
       }
@@ -105,9 +105,9 @@ export function createPgBusinessScanBackend(): SearchBackend {
         doc_key: searchDocKey("entity", r.id),
         source_id: String(r.id),
         resource: "entity",
-        score: Number(r.rank),
+        score: r.rank,
         channels_hit: ["trgm"],
-        channel_scores: { trgm: Number(r.rank) },
+        channel_scores: { trgm: r.rank },
       }));
       return fuseSearchHits({ trgm: hits }, { limit, fuse: "none" });
     },

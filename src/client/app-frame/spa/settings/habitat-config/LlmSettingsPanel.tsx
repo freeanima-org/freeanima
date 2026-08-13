@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type Key } from "react";
+import { useCallback, useEffect, useMemo, useState, type Key, type MouseEvent } from "react";
 import {
   Button,
   Card,
@@ -341,7 +341,7 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
                         size="sm"
                         variant="ghost"
                         className="text-destructive shrink-0"
-                        onClick={(e) => {
+                        onClick={(e: MouseEvent) => {
                           e.stopPropagation();
                           void deleteConnection(id);
                         }}
@@ -423,7 +423,7 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
                         size="sm"
                         variant="ghost"
                         className="text-destructive shrink-0"
-                        onClick={(e) => {
+                        onClick={(e: MouseEvent) => {
                           e.stopPropagation();
                           void deleteScene(id);
                         }}

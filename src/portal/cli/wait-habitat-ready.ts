@@ -29,7 +29,7 @@ function sleep(ms: number): Promise<void> {
 function systemdHabitatFailed(): boolean {
   if (!systemdUserAvailable() || !existsSync(serviceUnitPath())) return false;
   const r = spawnSync("systemctl", ["--user", "is-failed", SYSTEMD_UNIT], { encoding: "utf-8" });
-  return String(r.stdout ?? "").trim() === "failed";
+  return (r.stdout ?? "").trim() === "failed";
 }
 
 /** Poll GET /rpc/v1/health/probe until status is ok or timeout. */

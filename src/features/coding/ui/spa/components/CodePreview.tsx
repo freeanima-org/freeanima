@@ -29,7 +29,7 @@ export function CodePreview({ path, text, loading }: Props) {
     if (!path || !text) {
       setHtml("");
       setHlError(null);
-      return;
+      return () => {};
     }
     const lang = languageFromPath(path);
     void (async () => {

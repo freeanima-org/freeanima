@@ -270,10 +270,13 @@ export function useDetailPanelState<T extends { id: number }>({
       if (field) setPendingFocusField(field);
       applyChrome(chrome);
       if (typeof window !== "undefined" && !historyStateHasDetailEdit(window.history.state)) {
-        const prev =
-          window.history.state && typeof window.history.state === "object"
-            ? window.history.state
-            : {};
+        const rawState: unknown = window.history.state;
+        const prev: Record<string, unknown> = {};
+        if (rawState != null && typeof rawState === "object" && !Array.isArray(rawState)) {
+          for (const key of Object.keys(rawState)) {
+            prev[key] = Reflect.get(rawState, key);
+          }
+        }
         window.history.pushState({ ...prev, [DETAIL_EDIT_HISTORY_KEY]: true }, "");
         editHistoryPushedRef.current = true;
       }
@@ -366,7 +369,7 @@ export function useDetailPanelState<T extends { id: number }>({
   clearDetailRef.current = clearDetail;
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") return () => {};
     const onPopState = () => {
       if (!detailEditModeRef.current) return;
       editHistoryPushedRef.current = false;

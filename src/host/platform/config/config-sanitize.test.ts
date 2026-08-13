@@ -22,7 +22,7 @@ describe("sanitizeConfigForApi", () => {
           chat: { chain: [{ provider: "main", model: "m" }] },
         },
       },
-    } as never);
+    });
     const llm = out.llm as Record<string, unknown>;
     const providers = llm.providers as Record<string, Record<string, unknown>>;
     expect(providers.main?.api_key).toBe("sk-secret");
@@ -31,7 +31,7 @@ describe("sanitizeConfigForApi", () => {
   it("database.url 原样返回", () => {
     const out = sanitizeConfigForApi({
       database: { url: "postgresql://anima:secretpass@127.0.0.1:5432/anima" },
-    } as never);
+    });
     expect(out.database).toEqual({
       url: "postgresql://anima:secretpass@127.0.0.1:5432/anima",
     });
@@ -43,7 +43,7 @@ describe("sanitizeConfigForApi", () => {
         provider: "pushdeer",
         pushdeer: { pushkey: "real-key", api_base: "https://api2.pushdeer.com" },
       },
-    } as never);
+    });
     expect(out.push).toEqual({
       provider: "pushdeer",
       pushdeer: { pushkey: "real-key", api_base: "https://api2.pushdeer.com" },
@@ -96,7 +96,7 @@ describe("maskConfigSecretsForLlm", () => {
           chat: { chain: [{ provider: "main", model: "m" }] },
         },
       },
-    } as never);
+    });
     const llm = out.llm as Record<string, unknown>;
     const providers = llm.providers as Record<string, Record<string, unknown>>;
     expect(providers.main?.api_key).toBe(CONFIG_MASKED_SECRET);
@@ -106,7 +106,7 @@ describe("maskConfigSecretsForLlm", () => {
   it("掩码 database.url", () => {
     const out = maskConfigSecretsForLlm({
       database: { url: "postgresql://anima:secretpass@127.0.0.1:5432/anima" },
-    } as never);
+    });
     expect(out.database).toEqual({ url: CONFIG_MASKED_SECRET });
   });
 
@@ -124,7 +124,7 @@ describe("maskConfigSecretsForLlm", () => {
           headers: { Authorization: "Bearer tok" },
         },
       },
-    } as never);
+    });
     expect(out.mcp_servers).toEqual({
       db: {
         command: "node",

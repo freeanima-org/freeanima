@@ -9,6 +9,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "bun:
 import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
 
 import { registerSupplementalTools } from "@freeanima/host/capabilities/tools";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   camofoxNavigate,
   camofoxSnapshot,
@@ -156,10 +157,8 @@ describe("browser tools", () => {
     expect(out.success).toBe(true);
     expect(out.typed).toBe("***");
     expect(JSON.stringify(out)).not.toContain("super-secret-password");
-    const typeBody = fetchMock.mock.calls.find(([u]) => String(u).includes("/type"))?.[1] as
-      | RequestInit
-      | undefined;
-    expect(JSON.parse(String(typeBody?.body))).toEqual({
+    const typeBody = fetchMock.mock.calls.find(([u]) => String(u).includes("/type"))?.[1];
+    expect(JSON.parse(coerceString(typeBody?.body))).toEqual({
       userId: expect.any(String),
       ref: "e3",
       text: "super-secret-password",
@@ -229,10 +228,9 @@ describe("browser tools", () => {
     expect(out.success).toBe(true);
     expect(out.user_id).toBe("work_account");
     const createBody = fetchMock.mock.calls.find(
-      ([u, init]) =>
-        String(u).endsWith("/tabs") && (init as RequestInit | undefined)?.method === "POST",
-    )?.[1] as RequestInit | undefined;
-    expect(JSON.parse(String(createBody?.body))).toMatchObject({
+      ([u, init]) => String(u).endsWith("/tabs") && init?.method === "POST",
+    )?.[1];
+    expect(JSON.parse(coerceString(createBody?.body))).toMatchObject({
       userId: "work_account",
       url: "https://example.com",
     });
@@ -244,7 +242,7 @@ describe("browser tools", () => {
       const url = String(input);
       if (url.endsWith("/tabs") && init?.method === "POST") {
         tabCreateCount += 1;
-        const body = JSON.parse(String(init.body));
+        const body = JSON.parse(coerceString(init.body));
         return new Response(JSON.stringify({ tabId: `tab-${body.userId}`, url: body.url }), {
           status: 200,
         });

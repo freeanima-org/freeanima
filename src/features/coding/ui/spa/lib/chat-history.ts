@@ -1,5 +1,6 @@
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import type { DisplayItem } from "@freeanima/features/chat/ui/spa/lib/types.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 import { emptyCodingThread, type CodingThreadState } from "./chat-thread.ts";
 
@@ -24,7 +25,7 @@ function normalizeDisplay(raw: unknown): DisplayItem[] {
       out.push({
         type: "message",
         role: m.role,
-        content: typeof m.content === "string" ? m.content : String(m.content ?? ""),
+        content: typeof m.content === "string" ? m.content : coerceString(m.content),
       });
       continue;
     }
@@ -76,9 +77,7 @@ export async function fetchCodingConversationHistory(
     conversation_id: conversationId,
     limit: opts?.limit ?? CODING_MESSAGES_PAGE_SIZE,
   });
-  const page = pageFromResponse(
-    resp as { display?: unknown; from_pos?: unknown; has_more_before?: unknown },
-  );
+  const page = pageFromResponse(resp);
   return {
     ...emptyCodingThread(),
     display: page.display,
@@ -99,7 +98,5 @@ export async function fetchCodingOlderMessages(
     limit: opts?.limit ?? CODING_MESSAGES_PAGE_SIZE,
     before_pos: beforePos,
   });
-  return pageFromResponse(
-    resp as { display?: unknown; from_pos?: unknown; has_more_before?: unknown },
-  );
+  return pageFromResponse(resp);
 }

@@ -95,8 +95,7 @@ async function applyMcp(): Promise<void> {
 async function applyGateway(config: Config): Promise<void> {
   const platformsRef = applyDeps.getPlatformsRef?.() ?? null;
   const messaging =
-    applyDeps.getMessaging?.() ??
-    (isRuntimeContextReady() ? (getAppRuntime() as unknown as MessagingPort) : null);
+    applyDeps.getMessaging?.() ?? (isRuntimeContextReady() ? getAppRuntime() : null);
   if (!platformsRef || !messaging) {
     log.debug("gateway apply skipped: platforms/messaging not ready");
     return;

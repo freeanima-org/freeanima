@@ -165,7 +165,7 @@ export async function guardAwaitingClarify(
 export function parseClarifyToolResult(
   content: string,
 ): ClarifyAwaitingResult | ClarifyResolvedResult | { error: string } | null {
-  const parsed = parseToolResult<unknown>(content);
+  const parsed = parseToolResult(content);
   if (!parsed.ok) {
     if (parsed.error === "invalid JSON") return null;
     return { error: parsed.error };

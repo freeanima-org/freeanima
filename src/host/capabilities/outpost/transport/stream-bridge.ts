@@ -120,7 +120,7 @@ export function emitStreamEvent(
 ): void {
   const mapped = mapRuntimeStreamEventToSap(streamId, {
     event: ev.event,
-    data: ev.data as Record<string, unknown>,
+    data: ev.data,
   });
   if (mapped) {
     emit(mapped.method, mapped.payload);

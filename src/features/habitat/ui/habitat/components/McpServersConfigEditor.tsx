@@ -7,6 +7,7 @@ import {
   replaceHabitatConfigSection,
 } from "@freeanima/client/portal-sdk/habitat-config-api";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   keyValueTextToRecord,
   recordToKeyValueText,
@@ -126,7 +127,7 @@ function McpEntryFields({
   entry: Record<string, unknown>;
   patch: (part: Record<string, unknown>) => void;
 }) {
-  const transportRaw = String(entry.transport ?? "stdio");
+  const transportRaw = coerceString(entry.transport ?? "stdio");
   const transport = transportRaw === "sse" || transportRaw === "http" ? transportRaw : "stdio";
   const isRemote = transport === "sse" || transport === "http";
 
@@ -162,7 +163,7 @@ function McpEntryFields({
       )}
       {!isRemote ? (
         <>
-          {textField("command", String(entry.command ?? ""), (v) =>
+          {textField("command", coerceString(entry.command ?? ""), (v) =>
             patch({ command: v || undefined }),
           )}
           <div className="space-y-1">
@@ -179,7 +180,7 @@ function McpEntryFields({
               }}
             />
           </div>
-          {textField("cwd", String(entry.cwd ?? ""), (v) => patch({ cwd: v || undefined }))}
+          {textField("cwd", coerceString(entry.cwd ?? ""), (v) => patch({ cwd: v || undefined }))}
           <KeyValueField
             label="env"
             resetKey={`${entryKey}:env`}
@@ -190,7 +191,7 @@ function McpEntryFields({
         </>
       ) : (
         <>
-          {textField("url", String(entry.url ?? ""), (v) => patch({ url: v || undefined }), {
+          {textField("url", coerceString(entry.url ?? ""), (v) => patch({ url: v || undefined }), {
             placeholder:
               transport === "http" ? "http://127.0.0.1:2658/mcp" : "https://example.com/sse",
           })}

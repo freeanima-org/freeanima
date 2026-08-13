@@ -64,7 +64,7 @@ export function VaultItemHistoryDialog({
   const [confirmIndex, setConfirmIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return () => {};
     let cancelled = false;
     setLoading(true);
     setError("");

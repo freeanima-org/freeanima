@@ -5,6 +5,7 @@ import { assertPathAllowed, resolveToolPath } from "./path-policy.ts";
 import { existsSync, mkdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, extname, join, resolve } from "node:path";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 const BINARY_EXT = new Set([
   ".png",
@@ -31,7 +32,7 @@ async function handleReadFile(path: string, offset = 1, limit = 500): Promise<st
   try {
     content = await Bun.file(resolved).text();
   } catch (e) {
-    return toolError(`read failed: ${e}`);
+    return toolError(`read failed: ${e instanceof Error ? e.message : String(e)}`);
   }
   const lines = content.split("\n");
   const slice = lines.slice(Math.max(0, offset - 1), offset - 1 + limit);
@@ -47,7 +48,7 @@ function handleWriteFile(path: string, content: string): string {
     writeFileSync(resolved, content, "utf-8");
     return toolResult({ ok: true, path: resolved });
   } catch (e) {
-    return toolError(`write failed: ${e}`);
+    return toolError(`write failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 
@@ -64,7 +65,7 @@ function handleDeleteFile(path: string): string {
     unlinkSync(resolved);
     return toolResult({ ok: true, path: resolved });
   } catch (e) {
-    return toolError(`delete failed: ${e}`);
+    return toolError(`delete failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 
@@ -266,7 +267,7 @@ function handlePatch(
       : content.replace(old_string, new_string);
     return handleWriteFile(resolved, content);
   } catch (e) {
-    return toolError(`patch failed: ${e}`);
+    return toolError(`patch failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 
@@ -302,7 +303,7 @@ export function registerFileTools(toolSets: ToolSetRegistry): void {
             },
             required: ["path", "content"],
           },
-          handler: (a) => handleWriteFile(String(a.path), String(a.content ?? "")),
+          handler: (a) => handleWriteFile(String(a.path), coerceString(a.content ?? "")),
         },
         {
           name: "file_delete",
@@ -360,12 +361,12 @@ export function registerFileTools(toolSets: ToolSetRegistry): void {
           handler: (a) =>
             handleSearchFiles(
               String(a.pattern),
-              String(a.target ?? "content"),
-              String(a.path ?? "."),
-              a.file_glob != null ? String(a.file_glob) : null,
+              coerceString(a.target ?? "content"),
+              coerceString(a.path ?? "."),
+              a.file_glob != null ? coerceString(a.file_glob) : null,
               Number(a.limit ?? 50),
               Number(a.offset ?? 0),
-              String(a.output_mode ?? "content"),
+              coerceString(a.output_mode ?? "content"),
               Number(a.context ?? 0),
               Boolean(a.regex),
             ),

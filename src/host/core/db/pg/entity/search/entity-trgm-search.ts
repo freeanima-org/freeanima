@@ -46,6 +46,6 @@ export async function searchEntitiesTrgm(
   return rows.map((r) => ({
     ...mapEntityRow(r),
     docKey: entityDocKey(r.id),
-    rank: Number(r.rank),
+    rank: r.rank,
   }));
 }

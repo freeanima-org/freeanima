@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Checkbox } from "../components/ui/checkbox.tsx";
 import { Label } from "../components/ui/label.tsx";
 import { cn } from "../lib/cn.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 /** 单字段表单组（label + control + 可选 hint） */
 export function FormField({
@@ -82,7 +83,7 @@ export function FormToggle({
   className?: string;
   onChange: (checked: boolean) => void;
 }) {
-  const id = `form-toggle-${String(label).replace(/\s+/g, "-").toLowerCase()}`;
+  const id = `form-toggle-${coerceString(label).replace(/\s+/g, "-").toLowerCase()}`;
 
   return (
     <div className={cn("flex items-start gap-3 py-1", className)}>
@@ -90,7 +91,7 @@ export function FormToggle({
         id={id}
         isSelected={checked}
         {...(disabled !== undefined ? { isDisabled: disabled } : {})}
-        onChange={(value) => onChange(value === true)}
+        onChange={(value) => onChange(value)}
       />
       <div className="grid gap-0.5">
         <Label htmlFor={id} className="font-medium cursor-pointer">

@@ -160,14 +160,23 @@ function rewriteSpec(spec: string): string {
 
 function rewriteFileContent(text: string): { next: string; changed: boolean } {
   let changed = false;
-  const next = text.replace(IMPORT_SPEC_RE, (match, _p1, spec1, _p3, spec2) => {
-    const spec = spec1 ?? spec2;
-    if (!spec) return match;
-    const rewritten = rewriteSpec(spec);
-    if (rewritten === spec) return match;
-    changed = true;
-    return match.replace(spec, rewritten);
-  });
+  const next = text.replace(
+    IMPORT_SPEC_RE,
+    (
+      match: string,
+      _p1: string | undefined,
+      spec1: string | undefined,
+      _p3: string | undefined,
+      spec2: string | undefined,
+    ) => {
+      const spec = spec1 ?? spec2;
+      if (!spec) return match;
+      const rewritten = rewriteSpec(spec);
+      if (rewritten === spec) return match;
+      changed = true;
+      return match.replace(spec, rewritten);
+    },
+  );
   return { next, changed };
 }
 

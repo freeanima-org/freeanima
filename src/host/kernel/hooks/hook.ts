@@ -85,16 +85,16 @@ export type PayloadOf<H> = H extends Hook<infer P, infer _E> ? P : never;
 export type HookEffectOf<H> = H extends Hook<unknown, infer E> ? E : never;
 
 /** Handler / subscriber context: payload plus the run's {@link LlmKind} */
-export type HookHandlerContext<H extends Hook<unknown, Record<string, unknown>>> = Readonly<
+export type HookHandlerContext<H extends Hook<unknown>> = Readonly<
   PayloadOf<H> & { llm_kind: LlmKind }
 >;
 
-export type HookHandler<H extends Hook<unknown, Record<string, unknown>>> = (
+export type HookHandler<H extends Hook<unknown>> = (
   context: HookHandlerContext<H>,
 ) => HookStepResult<HookEffectOf<H>> | void | Promise<HookStepResult<HookEffectOf<H>> | void>;
 
 /** Side-channel observer; return value ignored; not awaited by {@link HookRegistry.run} */
-export type HookSubscriber<H extends Hook<unknown, Record<string, unknown>>> = (
+export type HookSubscriber<H extends Hook<unknown>> = (
   context: HookHandlerContext<H>,
 ) => void | Promise<void>;
 
@@ -145,7 +145,7 @@ export function blockedMessageFromChain<
 }
 
 /** First ok step with data from chain head (usually last executed handler) */
-export function headOkStepData<H extends Hook<unknown, Record<string, unknown>>>(
+export function headOkStepData<H extends Hook<unknown>>(
   hook: H,
   chain: HookStepLink<HookEffectOf<H>> | null,
 ): HookEffectOf<H> | undefined {

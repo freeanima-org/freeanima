@@ -50,7 +50,7 @@ export function limbicCreatedRange(range: LightSleepDayRange): { fromIso: string
   };
 }
 
-function shuffleInPlace<T>(items: T[]): void {
+function shuffleInPlace(items: unknown[]): void {
   for (let i = items.length - 1; i > 0; i -= 1) {
     const j = randomInt(i + 1);
     const left = items[j];

@@ -18,6 +18,7 @@ import { materializeConnection } from "@freeanima/host/core/llm/presets";
 import { resolveValue } from "@freeanima/host/platform/config/resolve.ts";
 import { CONFIG_MASKED_SECRET } from "@freeanima/host/platform/config";
 import { createBunS3Client } from "@freeanima/features/object-storage/domain/bun-s3.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import { z } from "zod";
 
 import { ApiHandlerError } from "./errors.ts";
@@ -51,7 +52,7 @@ export type ConfigTestConnectionInput = z.infer<typeof configTestConnectionInput
 export type ConfigTestConnectionResult = z.infer<typeof configTestConnectionOutputSchema>;
 
 function runtimeConfig(): RuntimeConfig {
-  return habitatCtx().engine.config.data as RuntimeConfig;
+  return habitatCtx().engine.config.data;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -312,7 +313,7 @@ async function testLlmProvider(
     }
 
     if (formatId !== LLM_FORMAT_OPENAI_COMPATIBLE && formatId !== LLM_FORMAT_OPENAI_RESPONSES) {
-      return failure(`暂不支持测试格式：${formatId}`);
+      return failure(`暂不支持测试格式：${coerceString(formatId)}`);
     }
 
     const client = createOpenAiClientFromParsed(
@@ -387,7 +388,7 @@ function formatS3ClientError(err: unknown, hints: string[] = []): string {
   if (parts.length === 0 && (code === "UnknownError" || msg === "UnknownError")) {
     parts.push("UnknownError（响应体无法解析，多为网络不可达或非 S3 错误页）");
   } else if (parts.length === 0) {
-    parts.push(String(err));
+    parts.push(msg || "未知错误");
   }
   for (const hint of hints) parts.push(hint);
   return parts.join(" · ");
@@ -564,7 +565,9 @@ export async function testConfigConnection(
       return testWeixin(draft);
     case "object_storage":
       return testObjectStorage(draft);
-    default:
-      throw new ApiHandlerError(400, `未知服务：${parsed.service satisfies never}`);
+    default: {
+      const _exhaustive: never = parsed.service;
+      throw new ApiHandlerError(400, `未知服务：${coerceString(_exhaustive)}`);
+    }
   }
 }

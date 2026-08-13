@@ -4,6 +4,7 @@ import { attachToolReturns, toolError, toolResult, type ToolArgs } from "@freean
 
 import { getNotificationPort } from "./port.ts";
 import { NOTIFICATION_TOOL_RETURNS } from "./return-schemas.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   resolveNotificationListSubject,
   resolveNotificationSendTargets,
@@ -16,7 +17,7 @@ function resolveMarkReadIds(args: ToolArgs): string[] | null {
   const fromArray = Array.isArray(args.ids)
     ? args.ids.map((value) => String(value).trim()).filter(Boolean)
     : [];
-  const single = String(args.id ?? "").trim();
+  const single = coerceString(args.id ?? "").trim();
   const merged = [...new Set(single ? [single, ...fromArray] : fromArray)];
   if (merged.length === 0) return null;
   return merged.slice(0, MARK_READ_MAX);
@@ -51,8 +52,8 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
             const port = getNotificationPort();
             if (!port) return toolError("Notification port not available");
 
-            const title = String(args.title ?? "").trim();
-            const body = String(args.body ?? "").trim();
+            const title = coerceString(args.title ?? "").trim();
+            const body = coerceString(args.body ?? "").trim();
             if (!title) return toolError("title is required");
             if (!body) return toolError("body is required");
 
@@ -114,7 +115,7 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
             const recipient = await resolveNotificationListSubject(args);
             if (typeof recipient === "string") return recipient;
 
-            const readFilter = String(args.read_filter ?? "unread").trim();
+            const readFilter = coerceString(args.read_filter ?? "unread").trim();
             if (readFilter !== "all" && readFilter !== "unread") {
               return toolError("read_filter must be all or unread");
             }

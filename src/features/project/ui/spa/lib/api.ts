@@ -5,6 +5,7 @@ import type {
   ProjectFolderRowPayload,
   ProjectRowPayload,
 } from "@freeanima/shared/rpc-contract/frames/project";
+import { normalizeTaskItemRows } from "@freeanima/features/task/ui/spa/lib/normalize-task-item.ts";
 import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task";
 
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
@@ -39,11 +40,6 @@ import {
 export type ProjectFolderRow = ProjectFolderRowPayload;
 export type ProjectRow = ProjectRowPayload;
 export type TaskItemRow = TaskItemRowPayload;
-
-function normalizeTaskItemRows(items: readonly TaskItemRow[] | null | undefined): TaskItemRow[] {
-  if (!Array.isArray(items)) return [];
-  return items.map((row) => ({ ...row, tag_ids: row.tag_ids ?? [] }));
-}
 
 export type TaskListRow = {
   id: number;
@@ -215,7 +211,7 @@ export async function fetchProjectTasks(
   return withOfflineCache({
     scope,
     namespace: "project",
-    id: `items:${projectId}`,
+    id: `items:${String(projectId)}`,
     fetch: async () => {
       const data = await habitat().call("project.item.list", {
         subject_kind: subjectKind,

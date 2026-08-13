@@ -128,7 +128,7 @@ export async function runAutoLlmChat(input: AutoLlmChatInput): Promise<AutoLlmCh
         requestParams: input.requestParams,
       }),
     );
-    const output = String(completion.content ?? "").trim();
+    const output = (completion.content ?? "").trim();
     const durationMs = Date.now() - startMs;
     const finishedAt = formatCstIso();
     await persistChatRun({

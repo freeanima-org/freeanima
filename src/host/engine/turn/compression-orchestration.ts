@@ -77,9 +77,7 @@ export async function recompressConversation(
 
   const boundariesChanged =
     newState != null &&
-    (prevState == null ||
-      Number(newState.l2) !== Number(prevState.l2) ||
-      Number(newState.l3) !== Number(prevState.l3));
+    (prevState == null || newState.l2 !== prevState.l2 || newState.l3 !== prevState.l3);
 
   const prevJson = JSON.stringify(prevState);
   const newJson = JSON.stringify(newState);

@@ -48,9 +48,7 @@ const HANDOFF_DEFAULTS: Record<string, boolean> = {
 };
 
 export function resolveConversationHandoffOnNew(platform: string, config?: RuntimeConfig): boolean {
-  const section = config?.[platform as keyof RuntimeConfig] as
-    | { session_handoff_on_new?: boolean }
-    | undefined;
+  const section = config?.[platform] as { session_handoff_on_new?: boolean } | undefined;
   if (typeof section?.session_handoff_on_new === "boolean") {
     return section.session_handoff_on_new;
   }

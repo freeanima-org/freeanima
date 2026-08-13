@@ -5,6 +5,7 @@
 import { randomUUID } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 type Snapshot = {
   version: string;
@@ -52,7 +53,7 @@ function keepTables(snap: Snapshot, tables: string[]): Snapshot {
     ddl: snap.ddl.filter((e) => {
       const t = e.entityType;
       if (t === "tables") return keep.has(String(e.name));
-      if ("table" in e && e.table) return keep.has(String(e.table));
+      if ("table" in e && e.table) return keep.has(coerceString(e.table));
       return false;
     }),
   };
@@ -63,7 +64,7 @@ function mergeTables(base: Snapshot, full: Snapshot, tables: string[]): Snapshot
   const existing = tableNames(base);
   const additions = chunk.ddl.filter((e) => {
     if (e.entityType === "tables") return !existing.has(String(e.name));
-    if ("table" in e && e.table) return !existing.has(String(e.table));
+    if ("table" in e && e.table) return !existing.has(coerceString(e.table));
     return true;
   });
   return { ...base, ddl: [...base.ddl, ...additions] };

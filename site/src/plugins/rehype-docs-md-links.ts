@@ -1,10 +1,22 @@
-import type { Element, Root } from "hast";
 import type { Plugin } from "unified";
-import type { VFile } from "vfile";
 
 import { resolveDocsMdHref, type DocsMdLinksOptions } from "../lib/docs-md-links.ts";
 
-function visitElements(node: Root | Element, visit: (element: Element) => void): void {
+type HastElement = {
+  type: "element";
+  tagName: string;
+  properties?: Record<string, unknown>;
+  children: HastNode[];
+};
+
+type HastRoot = {
+  type: "root";
+  children: HastNode[];
+};
+
+type HastNode = HastRoot | HastElement | { type: string; children?: HastNode[] };
+
+function visitElements(node: HastNode, visit: (element: HastElement) => void): void {
   if (node.type === "root") {
     for (const child of node.children) {
       if (child.type === "element") {
@@ -25,9 +37,10 @@ function visitElements(node: Root | Element, visit: (element: Element) => void):
 }
 
 /** Rehype plugin: rewrite in-repo docs `.md` links to Starlight doc URLs. */
-export function rehypeDocsMdLinks(options: DocsMdLinksOptions): Plugin<[], Root> {
-  return (tree: Root, file: VFile) => {
-    if (!file.path) {
+export function rehypeDocsMdLinks(options: DocsMdLinksOptions): Plugin<[], HastRoot> {
+  return (tree: HastRoot, file: { path?: string | null | undefined }) => {
+    const filePath = typeof file.path === "string" ? file.path : undefined;
+    if (!filePath) {
       return;
     }
 
@@ -41,9 +54,9 @@ export function rehypeDocsMdLinks(options: DocsMdLinksOptions): Plugin<[], Root>
         return;
       }
 
-      const resolved = resolveDocsMdHref(href, file.path, options);
+      const resolved = resolveDocsMdHref(href, filePath, options);
       if (resolved) {
-        node.properties.href = resolved;
+        node.properties = { ...node.properties, href: resolved };
       }
     });
   };

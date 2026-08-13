@@ -97,13 +97,13 @@ export async function readOfflineCache<T>(
   return entry?.data ?? null;
 }
 
-export async function writeOfflineCache<T>(
+export async function writeOfflineCache(
   scope: string,
   namespace: string,
   id: string,
-  value: T,
+  value: unknown,
 ): Promise<void> {
-  const envelope: OfflineCacheEnvelope<T> = {
+  const envelope: OfflineCacheEnvelope<unknown> = {
     v: ENVELOPE_VERSION,
     data: value,
     cachedAt: new Date().toISOString(),

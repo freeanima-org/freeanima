@@ -76,7 +76,7 @@ export function PomodoroShellWatcher() {
   /** 伴侣显隐变化：可见则取消 OS 预登记；隐藏则按当前阶段重新 schedule */
   useEffect(() => {
     const shell = window.portalShell;
-    if (!shell?.listenConfigChanged) return;
+    if (!shell?.listenConfigChanged) return () => {};
     return shell.listenConfigChanged(() => {
       void (async () => {
         const active =
@@ -94,7 +94,7 @@ export function PomodoroShellWatcher() {
   }, [subjectKind]);
 
   useEffect(() => {
-    if (!networkOnline || habitatConnection !== "connected") return;
+    if (!networkOnline || habitatConnection !== "connected") return () => {};
     let cancelled = false;
     let off: (() => void) | undefined;
     void whenPortalHabitatRpcReady().then((rpc) => {

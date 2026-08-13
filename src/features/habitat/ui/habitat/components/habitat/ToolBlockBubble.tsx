@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@freeanima/ui-kit";
 import type { DisplayToolCall } from "@freeanima/shared/rpc-contract/frames/display.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 type ToolBlockBubbleProps = {
   calls: DisplayToolCall[];
@@ -61,7 +62,7 @@ function formatJson(obj: Record<string, unknown>) {
   try {
     return JSON.stringify(obj, null, 2);
   } catch {
-    return String(obj);
+    return coerceString(obj);
   }
 }
 

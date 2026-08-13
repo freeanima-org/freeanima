@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   compareCanaryVersion,
   extractReleaseVersion,
@@ -65,7 +66,7 @@ describe("portal-sdk app-update", () => {
       ],
     };
     const fetchImpl = (async (url: RequestInfo | URL) => {
-      if (String(url).includes("/releases/tags/canary")) {
+      if (coerceString(url).includes("/releases/tags/canary")) {
         return new Response(JSON.stringify(release), { status: 200 });
       }
       return new Response("{}", { status: 404 });

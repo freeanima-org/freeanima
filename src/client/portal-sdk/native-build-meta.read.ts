@@ -24,7 +24,7 @@ export async function loadTauriNativeBuildMetaFromAssets(): Promise<
 
   const base =
     typeof import.meta !== "undefined" && import.meta.env?.BASE_URL
-      ? String(import.meta.env.BASE_URL)
+      ? import.meta.env.BASE_URL
       : "/web/";
   const candidates = [
     `${base}native-build-meta.json`.replace(/\/{2,}/g, "/"),

@@ -5,6 +5,7 @@
 
 import type { DisplayItem, DisplayToolCall } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 import { upsertDisplayItem } from "@freeanima/features/chat/ui/spa/lib/upsert-tool-block.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import type { StreamApiLikeEvent } from "@freeanima/shared/rpc-contract/frames/message.ts";
 
 export type CodingThreadState = {
@@ -40,7 +41,7 @@ function asDisplayItem(raw: unknown): DisplayItem | null {
     return {
       type: "message",
       role: m.role,
-      content: typeof m.content === "string" ? m.content : String(m.content ?? ""),
+      content: typeof m.content === "string" ? m.content : coerceString(m.content),
     };
   }
   if (item.type === "tool_block") {

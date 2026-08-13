@@ -35,7 +35,7 @@ describe("createLlmRuntime", () => {
   });
 
   it("allows missing llm for Habitat cold start", () => {
-    const rt = createLlmRuntime({} as RuntimeConfig);
+    const rt = createLlmRuntime({});
     expect(rt.backends.has("openai_compatible")).toBe(true);
     expect(rt.profiles.list()).toEqual([]);
     expect(() => rt.profiles.resolve()).toThrow(/LLM 未配置/);

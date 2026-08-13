@@ -13,6 +13,7 @@ import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import { assertPathAllowed } from "./path-policy.ts";
 import { assertTerminalCommandAllowed, splitCommandLine } from "./terminal-command-policy.ts";
 import { buildSubprocessEnv } from "./subprocess-env.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   parseSecretsArg,
   resolveSubprocessSecrets,
@@ -337,7 +338,7 @@ export function registerTerminalTools(toolSets: ToolSetRegistry): void {
             handleTerminal(
               String(a.command),
               Number(a.timeout ?? 180),
-              a.workdir != null ? String(a.workdir) : null,
+              a.workdir != null ? coerceString(a.workdir) : null,
               Boolean(a.background),
               Boolean(a.shell),
               a.secrets,
@@ -361,7 +362,7 @@ export function registerTerminalTools(toolSets: ToolSetRegistry): void {
           handler: (a) =>
             handleProcess(
               String(a.action),
-              a.conversation_id != null ? String(a.conversation_id) : null,
+              a.conversation_id != null ? coerceString(a.conversation_id) : null,
               Number(a.timeout ?? 30),
             ),
         },

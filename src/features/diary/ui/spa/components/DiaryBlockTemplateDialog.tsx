@@ -50,7 +50,7 @@ export function DiaryBlockTemplateDialog({
   const [templateToDelete, setTemplateToDelete] = useState<DiaryBlockTemplateRow | null>(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return () => {};
     let cancelled = false;
     void fetchDiaryBlockTemplates(subjectKind)
       .then((rows) => {

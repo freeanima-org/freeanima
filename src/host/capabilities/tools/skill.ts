@@ -16,6 +16,7 @@ import { omitUndefined } from "@freeanima/host/core/util";
 import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 import { attachToolReturns } from "@freeanima/host/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegistry): void {
   toolSets.registerToolSet(
@@ -95,9 +96,9 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
           handler: async (args) =>
             patchUserSkill(
               skills,
-              String(args.name ?? ""),
-              String(args.old_string ?? ""),
-              String(args.new_string ?? ""),
+              coerceString(args.name ?? ""),
+              coerceString(args.old_string ?? ""),
+              coerceString(args.new_string ?? ""),
               args.replace_all === true,
             ),
         },
@@ -139,10 +140,11 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
                   : undefined;
             return updateUserSkill(
               skills,
-              String(args.name ?? ""),
+              coerceString(args.name ?? ""),
               omitUndefined({
-                description: args.description !== undefined ? String(args.description) : undefined,
-                content: args.content !== undefined ? String(args.content) : undefined,
+                description:
+                  args.description !== undefined ? coerceString(args.description) : undefined,
+                content: args.content !== undefined ? coerceString(args.content) : undefined,
                 allowed_tools: allowed,
                 denied_tools: denied,
               }),
@@ -158,7 +160,7 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
             properties: { name: { type: "string", description: "Registered skill name" } },
             required: ["name"],
           },
-          handler: async (args) => loadSkillIntoContext(skills, String(args.name ?? "")),
+          handler: async (args) => loadSkillIntoContext(skills, coerceString(args.name ?? "")),
         },
         {
           name: "skill_list",
@@ -176,7 +178,7 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
             },
             required: ["query"],
           },
-          handler: (args) => searchSkillsForTool(skills, String(args.query ?? "")),
+          handler: (args) => searchSkillsForTool(skills, coerceString(args.query ?? "")),
         },
         {
           name: "skill_view",
@@ -186,7 +188,7 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
             properties: { name: { type: "string", description: "Skill name" } },
             required: ["name"],
           },
-          handler: async (args) => viewUserSkill(skills, String(args.name ?? "")),
+          handler: async (args) => viewUserSkill(skills, coerceString(args.name ?? "")),
         },
         {
           name: "skill_delete",
@@ -196,7 +198,7 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
             properties: { name: { type: "string", description: "Skill name" } },
             required: ["name"],
           },
-          handler: async (args) => deleteUserSkill(skills, String(args.name ?? "")),
+          handler: async (args) => deleteUserSkill(skills, coerceString(args.name ?? "")),
         },
         {
           name: "skill_import",
@@ -209,7 +211,7 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
             },
             required: ["markdown"],
           },
-          handler: async (args) => importUserSkill(skills, String(args.markdown ?? "")),
+          handler: async (args) => importUserSkill(skills, coerceString(args.markdown ?? "")),
         },
         {
           name: "skill_export",
@@ -219,7 +221,7 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
             properties: { name: { type: "string", description: "Skill name" } },
             required: ["name"],
           },
-          handler: async (args) => exportUserSkill(skills, String(args.name ?? "")),
+          handler: async (args) => exportUserSkill(skills, coerceString(args.name ?? "")),
         },
       ],
       CAPABILITIES_TOOLS_RETURNS,

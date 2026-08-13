@@ -17,7 +17,7 @@ function habitat() {
 }
 
 async function hubCall<T>(promise: Promise<T>): Promise<T> {
-  return reviveDates(await promise) as T;
+  return reviveDates(await promise);
 }
 
 export function resetApiClientCache(): void {

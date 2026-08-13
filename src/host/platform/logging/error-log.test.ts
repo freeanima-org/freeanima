@@ -3,7 +3,6 @@ import { createLogger } from "@freeanima/host/kernel/logging";
 import { createMemorySink } from "@freeanima/host/kernel/logging/sinks/memory.ts";
 import type { MemorySink } from "@freeanima/host/kernel/logging/sinks/memory.ts";
 import { logComponent, logStartupError, resetServiceLogger, setServiceLogger } from "./index.ts";
-
 describe("error-log", () => {
   let memory: MemorySink;
 
@@ -38,11 +37,12 @@ describe("error-log", () => {
     expect(lines.some((line) => line.includes("database.url not configured"))).toBe(true);
     expect(memory.records.some((r) => r.message.includes("service startup failed"))).toBe(true);
     expect(
-      memory.records.some(
-        (r) =>
-          r.attributes.component === "startup" &&
-          String(r.attributes.err ?? "").includes("database.url not configured"),
-      ),
+      memory.records.some((r) => {
+        if (r.attributes.component !== "startup") return false;
+        const err = r.attributes.err;
+        const text = err instanceof Error ? err.message : typeof err === "string" ? err : "";
+        return text.includes("database.url not configured");
+      }),
     ).toBe(true);
   });
 });

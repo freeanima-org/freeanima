@@ -10,7 +10,6 @@ import {
   limbicBodySchema,
   narrativeBodySchema,
   semanticRefBodySchema,
-  type ContentBlockType,
 } from "@freeanima/host/core/db/schema/entity";
 import {
   assertEntityInWorld,
@@ -353,7 +352,7 @@ export async function updateContentBlock(
   // 组件变更时用完整语义字段重建 body，避免残留字段导致校验失败
   const bodyForWrite = componentsChanged
     ? {
-        block_type: (input.block_type ?? parsedExisting.block_type) as ContentBlockType,
+        block_type: input.block_type ?? parsedExisting.block_type,
         parent_id: input.parent_id ?? parsedExisting.parent_id,
         sort_order: input.sort_order ?? parsedExisting.sort_order,
         url: input.url !== undefined ? input.url : parsedExisting.url,

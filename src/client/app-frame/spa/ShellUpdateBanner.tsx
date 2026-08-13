@@ -69,7 +69,7 @@ export function ShellUpdateBanner(): null {
   const checkingRef = useRef(false);
 
   useEffect(() => {
-    if (!kind) return;
+    if (!kind) return () => {};
 
     const runCheck = async (manual: boolean, detail?: ShellUpdateRequestDetail) => {
       if (checkingRef.current) return;

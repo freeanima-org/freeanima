@@ -13,6 +13,7 @@ import { convertCalendarEventToTaskItem } from "./convert-task-event.ts";
 import { listCalendarRange } from "./range-store.ts";
 import { resolveCalendarToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 import type { CalendarRangeKind } from "./types.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 async function storeContext(args: Record<string, unknown>, access: "read" | "write" = "read") {
   const worldId = await resolveCalendarToolWorld({ args, access });
@@ -47,8 +48,8 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
     const items = await listCalendarEvents(
       ctx,
       omitUndefined({
-        range_start: args.range_start != null ? String(args.range_start) : undefined,
-        range_end: args.range_end != null ? String(args.range_end) : undefined,
+        range_start: args.range_start != null ? coerceString(args.range_start) : undefined,
+        range_end: args.range_end != null ? coerceString(args.range_end) : undefined,
         limit: args.limit != null ? Number(args.limit) : undefined,
       }),
     );
@@ -59,8 +60,8 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleCreate(args: Record<string, unknown>): Promise<string> {
-  const title = String(args.title ?? "").trim();
-  const startAt = String(args.start_at ?? "").trim();
+  const title = coerceString(args.title ?? "").trim();
+  const startAt = coerceString(args.start_at ?? "").trim();
   if (!title) return toolError("title is required");
   if (!startAt) return toolError("start_at is required");
 
@@ -72,16 +73,20 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
       omitUndefined({
         title,
         start_at: startAt,
-        content: args.content != null ? String(args.content) : undefined,
+        content: args.content != null ? coerceString(args.content) : undefined,
         end_at:
-          args.end_at === undefined ? undefined : args.end_at == null ? null : String(args.end_at),
+          args.end_at === undefined
+            ? undefined
+            : args.end_at == null
+              ? null
+              : coerceString(args.end_at),
         all_day: typeof args.all_day === "boolean" ? args.all_day : undefined,
         remind_at:
           args.remind_at === undefined
             ? undefined
             : args.remind_at == null
               ? null
-              : String(args.remind_at),
+              : coerceString(args.remind_at),
       }),
     );
     return toolResult({ ok: true, action: "create", item: eventPayload(item) });
@@ -101,18 +106,22 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
       ctx,
       omitUndefined({
         id,
-        title: args.title != null ? String(args.title) : undefined,
-        content: args.content != null ? String(args.content) : undefined,
-        start_at: args.start_at != null ? String(args.start_at) : undefined,
+        title: args.title != null ? coerceString(args.title) : undefined,
+        content: args.content != null ? coerceString(args.content) : undefined,
+        start_at: args.start_at != null ? coerceString(args.start_at) : undefined,
         end_at:
-          args.end_at === undefined ? undefined : args.end_at == null ? null : String(args.end_at),
+          args.end_at === undefined
+            ? undefined
+            : args.end_at == null
+              ? null
+              : coerceString(args.end_at),
         all_day: typeof args.all_day === "boolean" ? args.all_day : undefined,
         remind_at:
           args.remind_at === undefined
             ? undefined
             : args.remind_at == null
               ? null
-              : String(args.remind_at),
+              : coerceString(args.remind_at),
       }),
     );
     if (!item) return toolError("calendar event not found");
@@ -151,8 +160,8 @@ async function handleGet(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleRange(args: Record<string, unknown>): Promise<string> {
-  const from = String(args.from ?? "").trim();
-  const to = String(args.to ?? "").trim();
+  const from = coerceString(args.from ?? "").trim();
+  const to = coerceString(args.to ?? "").trim();
   if (!from || !to) return toolError("from and to are required (ISO8601)");
 
   const ctx = await storeContext(args);

@@ -44,7 +44,7 @@ export function usePortalRead<T>(opts: UsePortalReadOptions<T>): UsePortalReadRe
   }, [client, enabled, keyHash]);
 
   useEffect(() => {
-    if (!enabled || queryKey == null) return;
+    if (!enabled || queryKey == null) return () => {};
     return client.subscribe(queryKey, () => setVersion((v) => v + 1));
     // keyHash 代表 queryKey 内容；勿依赖 queryKey 引用身份
   }, [client, enabled, keyHash]);
@@ -81,8 +81,8 @@ export function usePortalRead<T>(opts: UsePortalReadOptions<T>): UsePortalReadRe
   return {
     data,
     error,
-    loading: Boolean(enabled && data === undefined && pending && error == null),
-    refreshing: Boolean(enabled && data !== undefined && state?.status === "pending"),
+    loading: enabled && data === undefined && pending && error == null,
+    refreshing: enabled && data !== undefined && state?.status === "pending",
     reload,
     setData,
   };

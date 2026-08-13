@@ -2,7 +2,8 @@ import { getHabitatRpcConnectionState } from "./habitat-connection.ts";
 
 export function isNetworkOnline(): boolean {
   if (typeof navigator === "undefined") return true;
-  // Bun/部分运行时存在 navigator 但无 onLine；仅 onLine === false 视为离线。
+  // Bun 等运行时可能缺 onLine（undefined）；仅显式 false 视为离线。
+  // oxlint-disable-next-line typescript/no-unnecessary-boolean-literal-compare -- 运行时 onLine 可为 undefined，不能写成 !navigator.onLine
   return navigator.onLine !== false;
 }
 

@@ -61,8 +61,8 @@ export function slimMessage(msg: StoredMessage): StoredMessage | null {
   if (role === "assistant") {
     const calls = msg.tool_calls;
     const hasCalls = Array.isArray(calls) && calls.length > 0;
-    const content = String(msg.content ?? "").trim();
-    const reasoning = String(msg.reasoning ?? "").trim();
+    const content = (msg.content ?? "").trim();
+    const reasoning = (msg.reasoning ?? "").trim();
     let text = content || reasoning;
     if (!text && hasCalls) {
       const names = calls
@@ -497,7 +497,7 @@ export function formatMessagesForSummary(msgs: StoredMessage[]): string {
           lines.push(`[assistant tool_calls] ${JSON.stringify(m.tool_calls).slice(0, 1500)}`);
           break;
         }
-        const content = String(m.content ?? "").slice(0, 4000);
+        const content = (m.content ?? "").slice(0, 4000);
         if (content) lines.push(`[assistant] ${content}`);
         break;
       }

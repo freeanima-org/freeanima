@@ -40,6 +40,8 @@ jobs:
       - uses: ./.github/actions/setup-anima-home
       - run: just qa typecheck
       - run: just qa lint
+      - run: just qa stylelint
+      - run: just qa fmt-check
       - name: Build Linux standalone
         run: just pack cli
       - name: Smoke standalone

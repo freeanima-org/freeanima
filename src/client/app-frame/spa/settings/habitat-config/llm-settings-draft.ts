@@ -10,6 +10,7 @@ import {
 } from "@freeanima/host/core/config";
 import { getLlmPreset } from "@freeanima/host/core/llm/presets";
 import { readHabitatConfigRecord } from "./habitat-config-field-helpers.tsx";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export function providersDraftToPatch(
   draft: Record<string, unknown> | null | undefined,
@@ -58,7 +59,7 @@ export function llmFormatLabel(formatId: string): string {
 
 /** 列表副文：预设名 + URL（空则「使用预设默认」） */
 export function connectionListSubtitle(entry: Record<string, unknown>): string {
-  const preset = String(entry.preset ?? LLM_PRESET_CUSTOM);
+  const preset = coerceString(entry.preset ?? LLM_PRESET_CUSTOM);
   const label = llmPresetLabel(preset);
   const base = typeof entry.base_url === "string" ? entry.base_url.trim() : "";
   if (base) return `${label} · ${base}`;

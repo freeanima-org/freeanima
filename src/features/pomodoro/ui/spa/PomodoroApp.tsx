@@ -321,7 +321,7 @@ export function PomodoroApp() {
   useEffect(() => {
     if (taskItemId == null) {
       setLinkedTaskTitle(null);
-      return;
+      return () => {};
     }
     let cancelled = false;
     void resolveTaskTitleForPicker(taskItemId).then((title) => {
@@ -333,7 +333,7 @@ export function PomodoroApp() {
   }, [taskItemId]);
 
   useEffect(() => {
-    if (!active || active.runState !== "running") return;
+    if (!active || active.runState !== "running") return () => {};
     const id = window.setInterval(() => setTick((n) => n + 1), 250);
     return () => clearInterval(id);
   }, [active]);

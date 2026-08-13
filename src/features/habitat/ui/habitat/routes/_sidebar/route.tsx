@@ -54,7 +54,7 @@ function HabitatLayout() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!shell?.listenConfigChanged) return;
+    if (!shell?.listenConfigChanged) return () => {};
     return shell.listenConfigChanged(() => {
       resetApiClientCache();
       void retry();

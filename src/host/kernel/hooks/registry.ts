@@ -20,13 +20,13 @@ import {
 } from "./hook.ts";
 
 type RegisteredHandler = {
-  handler: HookHandler<Hook<unknown, Record<string, unknown>>>;
+  handler: HookHandler<Hook<unknown>>;
   priority: number;
   llm_kind: LlmKindScope;
 };
 
 type RegisteredSubscriber = {
-  handler: HookSubscriber<Hook<unknown, Record<string, unknown>>>;
+  handler: HookSubscriber<Hook<unknown>>;
   llm_kind: LlmKindScope;
 };
 
@@ -78,7 +78,7 @@ export class HookRegistry {
     this.log = logger.with({ component: "hooks" });
   }
 
-  on<H extends Hook<unknown, Record<string, unknown>>>(
+  on<H extends Hook<unknown>>(
     hook: H,
     handler: HookHandler<H>,
     opts: HookRegisterOpts,
@@ -87,7 +87,7 @@ export class HookRegistry {
     const llm_kind = opts.llm_kind;
     const list = this.handlers.get(hook.id) ?? [];
     const entry: RegisteredHandler = {
-      handler: handler as HookHandler<Hook<unknown, Record<string, unknown>>>,
+      handler,
       priority,
       llm_kind,
     };
@@ -114,7 +114,7 @@ export class HookRegistry {
   }
 
   /** Side-channel observer; invoked during {@link run} without awaiting (errors logged). */
-  subscribe<H extends Hook<unknown, Record<string, unknown>>>(
+  subscribe<H extends Hook<unknown>>(
     hook: H,
     handler: HookSubscriber<H>,
     opts: Pick<HookRegisterOpts, "llm_kind">,
@@ -122,7 +122,7 @@ export class HookRegistry {
     const llm_kind = opts.llm_kind;
     const list = this.subscribers.get(hook.id) ?? [];
     const entry: RegisteredSubscriber = {
-      handler: handler as HookSubscriber<Hook<unknown, Record<string, unknown>>>,
+      handler,
       llm_kind,
     };
     list.push(entry);
@@ -143,7 +143,7 @@ export class HookRegistry {
    * No queue — subscribers are started immediately and not awaited.
    * Handlers filtered by registration `llm_kind`; context always includes run `llm_kind`.
    */
-  async run<H extends Hook<unknown, Record<string, unknown>>>(
+  async run<H extends Hook<unknown>>(
     hook: H,
     context: PayloadOf<H>,
     opts: HookRunOpts,
@@ -225,15 +225,11 @@ export class HookRegistry {
   }
 
   /** Fire-and-forget notify; same as `void run(...)` (ignores intercept result). */
-  emit<H extends Hook<unknown, Record<string, unknown>>>(
-    hook: H,
-    context: PayloadOf<H>,
-    opts: HookRunOpts,
-  ): void {
+  emit<H extends Hook<unknown>>(hook: H, context: PayloadOf<H>, opts: HookRunOpts): void {
     void this.run(hook, context, opts);
   }
 
-  private fireSubscribers<H extends Hook<unknown, Record<string, unknown>>>(
+  private fireSubscribers<H extends Hook<unknown>>(
     hook: H,
     context: HookHandlerContext<H>,
     llm_kind: LlmKind,

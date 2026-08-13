@@ -49,7 +49,7 @@ export const DEFAULT_PASSIVE_RECALL_MIN_SCORE = 0.016;
 export const DEFAULT_PASSIVE_RECALL_MIN_RELATIVE_SCORE = 0.55;
 
 export function resolvePassiveRecallConfig(cfg: RuntimeConfig): ResolvedPassiveRecallConfig {
-  const raw = cfg.memory?.passive_recall as PassiveRecallConfigInput | undefined;
+  const raw = cfg.memory?.passive_recall;
   return {
     enabled: raw?.enabled ?? true,
     limit: raw?.limit ?? 5,

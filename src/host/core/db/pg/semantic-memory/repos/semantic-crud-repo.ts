@@ -36,7 +36,7 @@ import {
 } from "./semantic-filters.ts";
 
 function normalizeStatus(raw: string | undefined | null): string {
-  const parsed = semanticMemoryStatusSchema.safeParse(String(raw ?? "active").trim());
+  const parsed = semanticMemoryStatusSchema.safeParse((raw ?? "active").trim());
   return parsed.success ? parsed.data : "active";
 }
 
@@ -207,7 +207,7 @@ export async function countSemanticMemory(): Promise<number> {
         drizzleSql`${entities.body}->>'status' = 'active'`,
       ),
     );
-  return Number(rows[0]?.n ?? 0);
+  return rows[0]?.n ?? 0;
 }
 
 export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMemoryRow[]> {

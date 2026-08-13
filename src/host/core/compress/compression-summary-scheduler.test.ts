@@ -85,7 +85,7 @@ describe("scheduleCompressionSummary writeback", () => {
   it("writes non-empty summary into compression meta on success", async () => {
     const chatSpy = spyOn(llm, "chat").mockResolvedValue({
       content: "I discussed login fixes.",
-    } as never);
+    });
     restores.push(chatSpy);
 
     const cut: CompressionState = { l2: 3, l3: 3 };
@@ -98,7 +98,7 @@ describe("scheduleCompressionSummary writeback", () => {
   });
 
   it("returns ok:false with runId when LLM returns empty, without inventing summary", async () => {
-    const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "" } as never);
+    const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "" });
     restores.push(chatSpy);
 
     const cut: CompressionState = { l2: 3, l3: 3 };

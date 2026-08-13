@@ -188,7 +188,7 @@ export class UserVaultSession {
     dekWrapped: string,
   ): Promise<string | undefined> {
     const secrets = await this.openSecrets(secretsEnc, dekWrapped);
-    return resolveSecretField(secrets as VaultSecretsPayload, field);
+    return resolveSecretField(secrets, field);
   }
 
   async sealSecrets(

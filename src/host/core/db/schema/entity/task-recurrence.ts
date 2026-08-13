@@ -278,7 +278,8 @@ export function advanceScheduleAt(
       parts = addCalendarMonths(parts, interval * 12);
     }
   } else {
-    throw new Error(`unsupported recurrence freq: ${recurrence.freq satisfies never}`);
+    const unsupportedFreq = recurrence.freq satisfies never;
+    throw new Error(`unsupported recurrence freq: ${String(unsupportedFreq)}`);
   }
 
   parts = adjustForSchedulePolicy(parts, recurrence);

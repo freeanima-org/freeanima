@@ -20,7 +20,7 @@ export function buildFolderMenuItems(
   return [
     { label: "编辑", onClick: () => handlers.onEdit(folder) },
     { label: "新建子文件夹", onClick: () => handlers.onCreateChildFolder(folder) },
-    { label: "删除", danger: true, onClick: () => void handlers.onDelete(folder) },
+    { label: "删除", danger: true, onClick: () => handlers.onDelete(folder) },
   ];
 }
 
@@ -41,14 +41,14 @@ export function buildProjectMenuItems(
   const statusItems: ProjectMenuItem[] =
     project.status === "active"
       ? [
-          { label: "搁置", onClick: () => void handlers.onStatusChange(project, "on_hold") },
-          { label: "完成", onClick: () => void handlers.onStatusChange(project, "completed") },
-          { label: "取消", onClick: () => void handlers.onStatusChange(project, "cancelled") },
+          { label: "搁置", onClick: () => handlers.onStatusChange(project, "on_hold") },
+          { label: "完成", onClick: () => handlers.onStatusChange(project, "completed") },
+          { label: "取消", onClick: () => handlers.onStatusChange(project, "cancelled") },
         ]
       : [
           {
             label: "重新激活",
-            onClick: () => void handlers.onStatusChange(project, "active"),
+            onClick: () => handlers.onStatusChange(project, "active"),
           },
         ];
 
@@ -60,7 +60,7 @@ export function buildProjectMenuItems(
       label: handlers.hideCompleted ? "显示已完成" : "隐藏已完成",
       onClick: handlers.onToggleHideCompleted,
     },
-    { label: "删除项目", danger: true, onClick: () => void handlers.onDelete(project) },
+    { label: "删除项目", danger: true, onClick: () => handlers.onDelete(project) },
   ];
 }
 
@@ -85,14 +85,14 @@ export function buildProjectTaskMenuItems(
   items.push(
     {
       label: item.status === "completed" ? "标记未完成" : "标记完成",
-      onClick: () => void handlers.onToggleComplete(),
+      onClick: () => handlers.onToggleComplete(),
     },
     { label: "移动到清单", onClick: handlers.onMoveToList },
     { label: "移动到项目", onClick: handlers.onMoveToProject },
     {
       label: taskDeleteDetachesCarrier(item.primary_component) ? "移除任务" : "删除",
       danger: true,
-      onClick: () => void handlers.onDelete(),
+      onClick: () => handlers.onDelete(),
     },
   );
   return items;

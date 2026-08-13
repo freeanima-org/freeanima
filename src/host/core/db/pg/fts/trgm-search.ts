@@ -87,7 +87,7 @@ export async function searchSemanticMemoryTrgm(
     return {
       ...mapped,
       docKey: semanticMemoryDocKey(mapped.id),
-      rank: Number(r.rank),
+      rank: r.rank,
     };
   });
 }
@@ -149,6 +149,6 @@ export async function searchMessagesTrgm(
     conversation_id: r.conversation_id,
     timestamp: r.timestamp ?? "",
     docKey: messageDocKey(r.id),
-    rank: Number(r.rank),
+    rank: r.rank,
   }));
 }

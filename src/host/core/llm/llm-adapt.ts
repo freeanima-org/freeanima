@@ -19,7 +19,7 @@ export function normalizeAssistantTurn(msg: AssistantMessage): LlmTurnMessage | 
       tool_calls: cleaned,
     };
   }
-  const text = String(msg.content ?? "").trim() || assistantReasoningText(msg);
+  const text = (msg.content ?? "").trim() || assistantReasoningText(msg);
   if (!text) return null;
   const { tool_calls: _removed, ...rest } = msg;
   return { ...rest, role: "assistant", content: text };
@@ -58,7 +58,7 @@ export function storedMessagesToInvokeInput(messages: StoredMessage[]): InvokeMe
       if (normalized) turns.push(normalized);
       continue;
     }
-    turns.push(msg as LlmTurnMessage);
+    turns.push(msg);
   }
 
   const systemPrompt = systemParts.length > 0 ? systemParts.join("\n") : undefined;

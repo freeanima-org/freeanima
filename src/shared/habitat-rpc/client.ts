@@ -25,7 +25,7 @@ export type RpcRequestOptions = {
   timeoutMs?: number;
 };
 
-export type RpcRequestHandler = (payload: unknown) => unknown | Promise<unknown>;
+export type RpcRequestHandler = (payload: unknown) => unknown;
 
 export type RpcClient = {
   connect(payload: Omit<HabitatRpcConnectPayload, "protocol">): Promise<HabitatRpcConnectedPayload>;
@@ -40,7 +40,7 @@ export type CreateRpcClientOptions = {
   onConnected?: (payload: HabitatRpcConnectedPayload) => void;
   onDisconnected?: () => void;
   /** 全局 Habitat→Client 请求处理器（与 {@link RpcClient.onRequest} 二选一或并存） */
-  onRequest?: (req: { id: string; method: string; payload: unknown }) => unknown | Promise<unknown>;
+  onRequest?: (req: { id: string; method: string; payload: unknown }) => unknown;
 };
 
 function resolveRequestTimeoutMs(opts?: RpcRequestOptions): number | null {

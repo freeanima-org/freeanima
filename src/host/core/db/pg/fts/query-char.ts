@@ -76,7 +76,7 @@ function tokenToTsqueryPart(tok: string): string {
 
 function cjkProximityChain(text: string, opts?: { forceFullChain?: boolean }): string {
   // Drop punctuation / spaces so NL questions like「你的邮箱是啥？」don't require exact spans.
-  const chars = [...text].filter((ch) => {
+  const chars = Array.from(text).filter((ch) => {
     if (!ch.trim()) return false;
     const c = ch.codePointAt(0) ?? 0;
     if ((c >= 0x4e00 && c <= 0x9fff) || (c >= 0x3400 && c <= 0x4dbf)) return true;

@@ -1,4 +1,3 @@
-import type { RemoteToolsAttachOutput } from "./frames/lifecycle.ts";
 import type { RemoteToolDefInput, ToolCallPayload } from "./frames/tool.ts";
 import type { RemoteInstanceStore } from "./instance-store.ts";
 import type { RpcStreamClient } from "./router.ts";
@@ -95,10 +94,10 @@ export function createRemoteToolsHabitatAttach(
     };
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        const attached = (await client.request("remote_tools.attach", {
+        const attached = await client.request("remote_tools.attach", {
           ...attachBase,
           ...(instanceIdHint ? { instance_id: instanceIdHint } : {}),
-        })) as RemoteToolsAttachOutput;
+        });
         return attached.instance_id;
       } catch (e) {
         if (attempt === 0 && instanceIdHint && isStaleInstanceIdError(e)) {

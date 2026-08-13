@@ -289,14 +289,11 @@ export function resolveSecretField(
 
   const cardMatch = /^card\.(.+)$/.exec(fieldPath);
   if (cardMatch?.[1]) {
-    return nestedSecretString(secrets.card as Record<string, unknown> | undefined, cardMatch[1]);
+    return nestedSecretString(secrets.card, cardMatch[1]);
   }
   const identityMatch = /^identity\.(.+)$/.exec(fieldPath);
   if (identityMatch?.[1]) {
-    return nestedSecretString(
-      secrets.identity as Record<string, unknown> | undefined,
-      identityMatch[1],
-    );
+    return nestedSecretString(secrets.identity, identityMatch[1]);
   }
 
   // Flat name: same form as password — no custom_fields. prefix required.

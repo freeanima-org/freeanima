@@ -11,6 +11,7 @@ import type {
   AutobiographicalMemoryCreateInput,
 } from "@freeanima/host/core/db/pg/autobiographical-memory/types";
 
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   createAutobiographicalMemory,
   deprecateAutobiographicalMemory,
@@ -51,7 +52,7 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
       required: ["query"],
     },
     handler: async (args: Record<string, unknown>) => {
-      const query = String(args.query ?? "").trim();
+      const query = coerceString(args.query ?? "").trim();
       if (!query) return toolError("query is required");
       const limit = Math.max(1, Math.min(30, args.limit !== undefined ? Number(args.limit) : 10));
       try {
@@ -106,12 +107,13 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
       required: ["title", "content"],
     },
     handler: async (args: Record<string, unknown>) => {
-      const title = String(args.title ?? "").trim();
-      const content = String(args.content ?? "").trim();
+      const title = coerceString(args.title ?? "").trim();
+      const content = coerceString(args.content ?? "").trim();
       if (!title) return toolError("title is required");
       if (!content) return toolError("content is required");
 
-      const sigRaw = args.significance !== undefined ? String(args.significance).trim() : undefined;
+      const sigRaw =
+        args.significance !== undefined ? coerceString(args.significance).trim() : undefined;
       const significance =
         sigRaw && SIGNIFICANCE_VALUES.includes(sigRaw as (typeof SIGNIFICANCE_VALUES)[number])
           ? (sigRaw as AutobiographicalSignificance)
@@ -121,8 +123,8 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
         title,
         content,
         significance,
-        period_start: args.period_start !== undefined ? String(args.period_start) : undefined,
-        period_end: args.period_end !== undefined ? String(args.period_end) : undefined,
+        period_start: args.period_start !== undefined ? coerceString(args.period_start) : undefined,
+        period_end: args.period_end !== undefined ? coerceString(args.period_end) : undefined,
         source_semantic_memory: parseSourceSemanticMemory(args),
         source_conversations: parseStringArray(args.source_conversations),
       });
@@ -147,7 +149,7 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
       required: ["id"],
     },
     handler: async (args: Record<string, unknown>) => {
-      const id = String(args.id ?? "").trim();
+      const id = coerceString(args.id ?? "").trim();
       if (!id) return toolError("id is required");
       try {
         const ok = await deprecateAutobiographicalMemory(id);

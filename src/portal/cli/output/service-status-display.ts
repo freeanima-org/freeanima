@@ -3,6 +3,7 @@ import {
   formatBuildMetaLines,
   parseComponentBuildMeta,
 } from "@freeanima/host/core/config/build-meta";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import { prettyDuration, writeStatusLine } from "./status.ts";
 
 type MemoryDetail = {
@@ -43,9 +44,9 @@ function printField(label: string, value: string): void {
 }
 
 function formatPlatformLine(ps: Record<string, unknown>): string {
-  const status = String(ps.status ?? "unknown");
+  const status = coerceString(ps.status, "unknown");
   const extras: string[] = [];
-  if (ps.bot_name) extras.push(String(ps.bot_name));
+  if (ps.bot_name) extras.push(coerceString(ps.bot_name));
   return extras.length > 0 ? `${status} · ${extras.join(" · ")}` : status;
 }
 
@@ -82,8 +83,8 @@ export function printServiceRunningStatus(opts: {
   } | null;
 }): void {
   const api = opts.body ?? {};
-  const pid = api.pid ?? opts.statusFile.pid ?? opts.pidOverride ?? "?";
-  const version = api.version ?? opts.statusFile.version ?? "?";
+  const pid = coerceString(api.pid ?? opts.statusFile.pid ?? opts.pidOverride, "?");
+  const version = coerceString(api.version ?? opts.statusFile.version, "?");
   const buildRaw = api.build ?? opts.statusFile.build;
   const build = parseComponentBuildMeta(buildRaw);
 
@@ -135,8 +136,8 @@ export function printServiceRunningStatus(opts: {
   const apiBase = config.api_base ?? opts.statusFile.api_base;
   if (model || apiBase) {
     printSection("llm");
-    if (model) printField("model", String(model));
-    if (apiBase) printField("provider", String(apiBase));
+    if (model) printField("model", coerceString(model));
+    if (apiBase) printField("provider", coerceString(apiBase));
   }
 
   const platforms = (api.platforms as Record<string, Record<string, unknown>>) ?? {};
@@ -153,7 +154,7 @@ export function printServiceRunningStatus(opts: {
   const cronJobs = api.cron_jobs;
   const workload: string[] = [];
   if (conversations && "total" in conversations)
-    workload.push(`${conversations.total} conversations`);
+    workload.push(`${coerceString(conversations.total)} conversations`);
   if (typeof tools === "number") workload.push(`${tools} tools`);
   if (typeof cronJobs === "number" && cronJobs > 0) workload.push(`${cronJobs} cron`);
   if (workload.length > 0) {

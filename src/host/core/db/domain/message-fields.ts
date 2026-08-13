@@ -2,7 +2,7 @@ import type { AssistantMessage } from "./message.ts";
 
 /** Read assistant reasoning text from stored payload. */
 export function assistantReasoningText(msg: AssistantMessage): string {
-  return String(msg.reasoning ?? "").trim();
+  return (msg.reasoning ?? "").trim();
 }
 
 /** Resolve max tool-loop turns from protocol (`max_turns`) or runtime (`maxTurns`) opts. */

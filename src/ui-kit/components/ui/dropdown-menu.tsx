@@ -10,6 +10,11 @@ import {
   Popover as PopoverPrimitive,
   Separator as SeparatorPrimitive,
   SubmenuTrigger as SubmenuTriggerPrimitive,
+  type MenuProps,
+  type MenuTriggerProps,
+  type PopoverProps,
+  type SeparatorProps,
+  type SubmenuTriggerProps,
   type MenuItemProps as MenuItemPrimitiveProps,
   type MenuSectionProps as MenuSectionPrimitiveProps,
 } from "react-aria-components";
@@ -18,9 +23,18 @@ import { cn, ariaRenderProps } from "../../lib/utils.ts";
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";
 
-function DropdownMenuTrigger({ ...props }: React.ComponentProps<typeof MenuTriggerPrimitive>) {
+function DropdownMenuTrigger({ ...props }: MenuTriggerProps) {
   return <MenuTriggerPrimitive data-slot="dropdown-menu-trigger" {...props} />;
 }
+
+type DropdownMenuProps = Omit<MenuProps<object>, "children" | "className"> & {
+  "data-slot"?: string;
+  className?: string;
+  children?: React.ReactNode;
+  placement?: PopoverProps["placement"];
+  offset?: number;
+  crossOffset?: number;
+};
 
 function DropdownMenu({
   "data-slot": dataSlot = "dropdown-menu-content",
@@ -30,14 +44,7 @@ function DropdownMenu({
   className,
   children,
   ...props
-}: Omit<React.ComponentProps<typeof MenuPrimitive<object>>, "children" | "className"> & {
-  "data-slot"?: string;
-  className?: string;
-  children?: React.ReactNode;
-  placement?: React.ComponentProps<typeof PopoverPrimitive>["placement"];
-  offset?: number;
-  crossOffset?: number;
-}) {
+}: DropdownMenuProps) {
   return (
     <PopoverPrimitive
       data-slot={dataSlot}
@@ -67,13 +74,14 @@ function DropdownMenuGroup({
   return <MenuSectionPrimitive data-slot="dropdown-menu-group" {...props} />;
 }
 
-function DropdownMenuLabel({
-  className,
-  inset,
-  ...props
-}: React.ComponentProps<typeof HeaderPrimitive> & {
-  inset?: boolean;
-}) {
+/** RAC HeaderProps 在 tsgo 下会退化成仅 `render`（HTMLAttributes 未并入），故本地声明 */
+type DropdownMenuLabelProps = {
+  className?: string | undefined;
+  inset?: boolean | undefined;
+  children?: React.ReactNode;
+};
+
+function DropdownMenuLabel({ className, inset, ...props }: DropdownMenuLabelProps) {
   return (
     <HeaderPrimitive
       data-slot="dropdown-menu-label"
@@ -109,7 +117,7 @@ function DropdownMenuItem({
   children,
   textValue,
   ...props
-}: MenuItemPrimitiveProps<object> & {
+}: MenuItemPrimitiveProps & {
   inset?: boolean;
   variant?: "default" | "destructive";
 }) {
@@ -154,7 +162,7 @@ function DropdownMenuItem({
   );
 }
 
-function DropdownMenuSub({ ...props }: React.ComponentProps<typeof SubmenuTriggerPrimitive>) {
+function DropdownMenuSub({ ...props }: SubmenuTriggerProps) {
   return <SubmenuTriggerPrimitive data-slot="dropdown-menu-sub" {...props} />;
 }
 
@@ -164,7 +172,7 @@ function DropdownMenuSubTrigger({
   children,
   textValue,
   ...props
-}: MenuItemPrimitiveProps<object> & {
+}: MenuItemPrimitiveProps & {
   inset?: boolean;
 }) {
   return (
@@ -199,7 +207,7 @@ function DropdownMenuSubContent({
   offset = 0,
   className,
   ...props
-}: React.ComponentProps<typeof DropdownMenu>) {
+}: DropdownMenuProps) {
   return (
     <DropdownMenu
       data-slot="dropdown-menu-sub-content"
@@ -215,10 +223,7 @@ function DropdownMenuSubContent({
   );
 }
 
-function DropdownMenuSeparator({
-  className,
-  ...props
-}: React.ComponentProps<typeof SeparatorPrimitive>) {
+function DropdownMenuSeparator({ className, ...props }: SeparatorProps) {
   return (
     <SeparatorPrimitive
       data-slot="dropdown-menu-separator"

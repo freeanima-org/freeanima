@@ -1,6 +1,7 @@
 import { simpleParser, type AddressObject, type ParsedMail } from "mailparser";
 
 import type { EmailContentType } from "@freeanima/host/core/db/schema/entity";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export type ParsedEmailAttachment = {
   filename: string;
@@ -58,7 +59,7 @@ function headerValue(value: unknown): string | undefined {
     const text = (value as { text?: unknown }).text;
     if (typeof text === "string") return text;
   }
-  return String(value);
+  return coerceString(value);
 }
 
 function flattenAddresses(addr: AddressObject | AddressObject[] | undefined): string | undefined {

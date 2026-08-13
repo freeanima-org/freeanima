@@ -27,7 +27,7 @@ function coerceLocal(raw: unknown): CompanionConfig {
   if (parsed.success) {
     const habitat_url =
       raw && typeof raw === "object" && "habitat_url" in raw
-        ? String((raw as { habitat_url?: string }).habitat_url ?? HABITAT_URL)
+        ? ((raw as { habitat_url?: string }).habitat_url ?? HABITAT_URL)
         : HABITAT_URL;
     return { ...parsed.data, habitat_url };
   }

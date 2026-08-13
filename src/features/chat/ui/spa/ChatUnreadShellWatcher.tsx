@@ -23,7 +23,7 @@ export function ChatUnreadShellWatcher() {
   }, [networkOnline, habitatConnection, refreshCount]);
 
   useEffect(() => {
-    if (!networkOnline || habitatConnection !== "connected") return;
+    if (!networkOnline || habitatConnection !== "connected") return () => {};
     const sub = subscribeConversationInbox(() => {
       void refreshCount();
     });

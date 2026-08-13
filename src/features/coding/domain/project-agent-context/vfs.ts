@@ -36,7 +36,7 @@ export function createMemoryProjectVfs(
     const names = new Map<string, "file" | "dir">();
     for (const key of Object.keys(store)) {
       if (dir && key !== dir && !key.startsWith(prefix)) continue;
-      if (!dir && key.includes("/") === false) {
+      if (!dir && !key.includes("/")) {
         names.set(key, "file");
         continue;
       }

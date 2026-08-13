@@ -2,6 +2,7 @@ import { getResolvedWorldContext } from "@freeanima/host/core/config";
 import { getEntity } from "@freeanima/host/core/db/pg/entity";
 import type { NotificationRecipientKind } from "@freeanima/host/core/db/pg/notifications/types";
 import { toolError } from "@freeanima/host/core/tool";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export type ResolvedNotificationSubject = {
   recipient_kind: NotificationRecipientKind;
@@ -53,10 +54,10 @@ export async function resolveNotificationSendTargets(
     return [one];
   }
 
-  if (args.target == null || String(args.target).trim() === "") {
+  if (args.target == null || coerceString(args.target).trim() === "") {
     return toolError("target or subject_id is required");
   }
-  const target = String(args.target).trim();
+  const target = coerceString(args.target).trim();
   if (target !== "user" && target !== "agent" && target !== "both") {
     return toolError("target must be user, agent, or both");
   }
@@ -82,10 +83,10 @@ export async function resolveNotificationListSubject(
     return resolveExplicitSubject(explicitId);
   }
 
-  if (args.recipient == null || String(args.recipient).trim() === "") {
+  if (args.recipient == null || coerceString(args.recipient).trim() === "") {
     return toolError("recipient or subject_id is required");
   }
-  const recipientKind = String(args.recipient).trim();
+  const recipientKind = coerceString(args.recipient).trim();
   if (recipientKind !== "user" && recipientKind !== "agent") {
     return toolError("recipient must be user or agent");
   }

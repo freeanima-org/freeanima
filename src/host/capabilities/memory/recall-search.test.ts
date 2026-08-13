@@ -56,7 +56,7 @@ describe("memoryScopedSearch", () => {
         status: "active",
       },
     ]) as never);
-    searchMessagesFtsMock.mockImplementation((async () => [
+    searchMessagesFtsMock.mockImplementation(async () => [
       {
         message_id: "msg-001",
         conversation_id: "sid",
@@ -66,7 +66,7 @@ describe("memoryScopedSearch", () => {
         timestamp: now.toISOString(),
         rank: 0.2,
       },
-    ]) as never);
+    ]);
     searchLimbicMemoryFtsMock.mockImplementation((async () => [
       {
         id: "lm-1",
@@ -154,7 +154,7 @@ describe("memoryScopedSearch", () => {
         status: "active",
       },
     ]) as never);
-    searchMessagesFtsMock.mockImplementation((async () => [
+    searchMessagesFtsMock.mockImplementation(async () => [
       {
         message_id: "msg-001",
         conversation_id: "sid",
@@ -163,7 +163,7 @@ describe("memoryScopedSearch", () => {
         timestamp: now.toISOString(),
         rank: 0.8,
       },
-    ]) as never);
+    ]);
 
     const out = await memoryScopedSearch("compression", {
       limit: 10,

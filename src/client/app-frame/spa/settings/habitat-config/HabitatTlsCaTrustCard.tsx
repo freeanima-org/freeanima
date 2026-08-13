@@ -15,7 +15,7 @@ export function HabitatTlsCaTrustCard({ habitatUrl }: Props) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return () => {};
     let cancelled = false;
     void (async () => {
       setLoading(true);

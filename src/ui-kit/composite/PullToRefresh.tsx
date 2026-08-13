@@ -56,7 +56,7 @@ export function PullToRefresh({
   const refreshingRef = useRef(false);
 
   useEffect(() => {
-    if (enabled != null) return;
+    if (enabled != null) return () => {};
     const sync = () => setTouchPrimary(detectTouchPrimaryInput());
     sync();
     const mqFine = window.matchMedia("(pointer: fine)");

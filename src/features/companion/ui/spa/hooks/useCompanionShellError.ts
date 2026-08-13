@@ -8,7 +8,7 @@ import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/c
 /** Portal：监听壳层致命错误并写入 store */
 export function useCompanionShellError(fallbackMessage?: string): void {
   useEffect(() => {
-    if (!isPortalShell()) return;
+    if (!isPortalShell()) return () => {};
     let off: (() => void) | undefined;
     void listenServerError((msg) => {
       useCompanionStore.setState({

@@ -27,10 +27,7 @@ export function formatPrettyRecord(record: LogRecord): string {
   const { message, level, attributes } = record;
   const { component: _c, ...rest } = attributes;
   const restKeys = Object.keys(rest);
-  const suffix =
-    restKeys.length > 0
-      ? ` ${JSON.stringify(normalizeAttributes(rest as Record<string, unknown>))}`
-      : "";
+  const suffix = restKeys.length > 0 ? ` ${JSON.stringify(normalizeAttributes(rest))}` : "";
   return `${ts} ${level.toUpperCase()} ${component}${message}${suffix}`;
 }
 

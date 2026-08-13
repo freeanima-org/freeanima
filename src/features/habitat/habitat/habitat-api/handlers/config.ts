@@ -42,7 +42,7 @@ export function getHabitatConfigSection(section: string) {
 }
 
 function existingSection(config: { data: Record<string, unknown> }, section: string): unknown {
-  return (config.data as Record<string, unknown>)[section];
+  return config.data[section];
 }
 
 export async function patchHabitatConfigSection(section: string, patch: Record<string, unknown>) {
@@ -54,7 +54,7 @@ export async function patchHabitatConfigSection(section: string, patch: Record<s
   const config = requirePatchableConfig();
   const restored = restoreMaskedSecrets(patch, existingSection(config, section));
   await config.patchSection(section, restored);
-  return sanitizeConfigForApi(config.data as import("@freeanima/host/core/config").RuntimeConfig);
+  return sanitizeConfigForApi(config.data);
 }
 
 export async function replaceHabitatConfigSection(section: string, value: Record<string, unknown>) {
@@ -66,5 +66,5 @@ export async function replaceHabitatConfigSection(section: string, value: Record
   const config = requirePatchableConfig();
   const restored = restoreMaskedSecrets(value, existingSection(config, section));
   await config.replaceSection(section, restored);
-  return sanitizeConfigForApi(config.data as import("@freeanima/host/core/config").RuntimeConfig);
+  return sanitizeConfigForApi(config.data);
 }

@@ -21,6 +21,7 @@ import { EMAIL_TOOL_RETURNS } from "./return-schemas.ts";
 import { listEmailThreads, tagEmailThread } from "./thread-store.ts";
 import { getEmailSyncPort } from "./sync-port.ts";
 import { resolveEmailToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 const MAILBOX_TOOL_NAMES = [
   "email_sync",
@@ -121,7 +122,9 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
                   account_id: accountId,
                   thread_id: parseAccountId(args.thread_id),
                   imap_mailbox:
-                    args.mailbox != null ? String(args.mailbox).trim() || undefined : undefined,
+                    args.mailbox != null
+                      ? coerceString(args.mailbox).trim() || undefined
+                      : undefined,
                   unread: args.unread != null ? Boolean(args.unread) : undefined,
                   limit: args.limit != null ? Number(args.limit) : undefined,
                 }),
@@ -175,7 +178,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
             required: ["subject_kind"],
           },
           handler: async (args) => {
-            const query = args.query != null ? String(args.query).trim() : "";
+            const query = args.query != null ? coerceString(args.query).trim() : "";
             try {
               const accountId = parseAccountId(args.account_id);
               const worldId = await resolveEmailToolWorld({
@@ -191,22 +194,26 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
                   account_id: accountId,
                   thread_id: parseAccountId(args.thread_id),
                   mailbox:
-                    args.mailbox != null ? String(args.mailbox).trim() || undefined : undefined,
+                    args.mailbox != null
+                      ? coerceString(args.mailbox).trim() || undefined
+                      : undefined,
                   unread: args.unread != null ? Boolean(args.unread) : undefined,
                   flagged: args.flagged != null ? Boolean(args.flagged) : undefined,
                   has_attachment:
                     args.has_attachment != null ? Boolean(args.has_attachment) : undefined,
-                  from: args.from != null ? String(args.from).trim() || undefined : undefined,
-                  to: args.to != null ? String(args.to).trim() || undefined : undefined,
+                  from: args.from != null ? coerceString(args.from).trim() || undefined : undefined,
+                  to: args.to != null ? coerceString(args.to).trim() || undefined : undefined,
                   subject:
-                    args.subject != null ? String(args.subject).trim() || undefined : undefined,
+                    args.subject != null
+                      ? coerceString(args.subject).trim() || undefined
+                      : undefined,
                   since:
                     args.sent_after != null
-                      ? String(args.sent_after).trim() || undefined
+                      ? coerceString(args.sent_after).trim() || undefined
                       : undefined,
                   before:
                     args.sent_before != null
-                      ? String(args.sent_before).trim() || undefined
+                      ? coerceString(args.sent_before).trim() || undefined
                       : undefined,
                   limit: args.limit != null ? Number(args.limit) : undefined,
                 }),
@@ -326,7 +333,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           handler: async (args) => {
             const messageId = parseMessageId(args.message_id);
             if (messageId == null) return toolError("message_id is required");
-            const targetMailbox = String(args.target_mailbox ?? "").trim();
+            const targetMailbox = coerceString(args.target_mailbox ?? "").trim();
             if (!targetMailbox) return toolError("target_mailbox is required");
             try {
               const { moveMessage } = await import("@freeanima/host/capabilities/connectors/email");
@@ -399,11 +406,11 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
                   account_id: accountId,
                   subject_kind: subjectKind,
                   world_id: accountId == null ? worldId : undefined,
-                  to: String(args.to ?? ""),
-                  subject: String(args.subject ?? ""),
-                  body: String(args.body ?? ""),
-                  cc: args.cc != null ? String(args.cc) : undefined,
-                  bcc: args.bcc != null ? String(args.bcc) : undefined,
+                  to: coerceString(args.to ?? ""),
+                  subject: coerceString(args.subject ?? ""),
+                  body: coerceString(args.body ?? ""),
+                  cc: args.cc != null ? coerceString(args.cc) : undefined,
+                  bcc: args.bcc != null ? coerceString(args.bcc) : undefined,
                   attachment_object_file_ids: attachmentIds,
                 }),
               );
@@ -449,9 +456,9 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
                     subject_kind: subjectKind,
                     world_id: accountId == null ? worldId : undefined,
                     message_id: parseAccountId(args.message_id),
-                    to: args.to != null ? String(args.to) : undefined,
-                    subject: String(args.subject ?? ""),
-                    body: String(args.body ?? ""),
+                    to: args.to != null ? coerceString(args.to) : undefined,
+                    subject: coerceString(args.subject ?? ""),
+                    body: coerceString(args.body ?? ""),
                   }),
                 ),
               );
@@ -516,7 +523,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           handler: async (args) => {
             const accountId = parseAccountId(args.account_id);
             if (accountId == null) return toolError("account_id is required");
-            const path = String(args.path ?? "").trim();
+            const path = coerceString(args.path ?? "").trim();
             if (!path) return toolError("path is required");
             try {
               const { createMailbox } =
@@ -542,8 +549,8 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           handler: async (args) => {
             const accountId = parseAccountId(args.account_id);
             if (accountId == null) return toolError("account_id is required");
-            const from = String(args.from ?? "").trim();
-            const to = String(args.to ?? "").trim();
+            const from = coerceString(args.from ?? "").trim();
+            const to = coerceString(args.to ?? "").trim();
             if (!from || !to) return toolError("from and to are required");
             try {
               const { renameMailbox } =
@@ -568,7 +575,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           handler: async (args) => {
             const accountId = parseAccountId(args.account_id);
             if (accountId == null) return toolError("account_id is required");
-            const path = String(args.path ?? "").trim();
+            const path = coerceString(args.path ?? "").trim();
             if (!path) return toolError("path is required");
             try {
               const { deleteMailbox } =
@@ -632,7 +639,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           handler: async (args) => {
             const id = parseMessageId(args.id);
             if (id == null) return toolError("id is required");
-            const target = String(args.target ?? "");
+            const target = coerceString(args.target ?? "");
             try {
               const worldId = await resolveEmailToolWorld({
                 args,
@@ -695,10 +702,10 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
                 worldId,
                 id,
                 omitUndefined({
-                  due_at: args.due_at != null ? String(args.due_at) : undefined,
-                  remind_at: args.remind_at != null ? String(args.remind_at) : undefined,
+                  due_at: args.due_at != null ? coerceString(args.due_at) : undefined,
+                  remind_at: args.remind_at != null ? coerceString(args.remind_at) : undefined,
                   list_id: args.list_id != null ? Number(args.list_id) : undefined,
-                  title: args.title != null ? String(args.title) : undefined,
+                  title: args.title != null ? coerceString(args.title) : undefined,
                   priority:
                     args.priority === "high" ||
                     args.priority === "medium" ||
@@ -750,9 +757,7 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
           },
         },
       ],
-      Object.fromEntries(
-        MAILBOX_TOOL_NAMES.map((name) => [name, EMAIL_TOOL_RETURNS[name]]),
-      ) as Partial<typeof EMAIL_TOOL_RETURNS>,
+      Object.fromEntries(MAILBOX_TOOL_NAMES.map((name) => [name, EMAIL_TOOL_RETURNS[name]])),
     ),
   );
 }

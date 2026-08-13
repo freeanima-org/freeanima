@@ -70,9 +70,9 @@ export async function suggestTagsByPrimaryComponent(
 
   return rows
     .map((row) => ({
-      id: Number(row.id),
-      title: String(row.title ?? "").trim(),
-      count: Number(row.count ?? 0),
+      id: row.id,
+      title: (row.title ?? "").trim(),
+      count: row.count ?? 0,
     }))
     .filter((row) => row.id > 0 && row.title.length > 0 && row.count > 0);
 }

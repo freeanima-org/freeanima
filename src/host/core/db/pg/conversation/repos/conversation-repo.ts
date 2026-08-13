@@ -250,7 +250,7 @@ export async function patchConversationMeta(
     hasColumnPatch = true;
   }
   if (patch.debug !== undefined) {
-    set.debug = patch.debug === true;
+    set.debug = patch.debug;
     hasColumnPatch = true;
   }
   if ("awaiting_clarify" in patch) {
@@ -269,7 +269,7 @@ export async function patchConversationMeta(
     hasColumnPatch = true;
   }
   if (patch.model !== undefined) {
-    set.model = String(patch.model);
+    set.model = patch.model;
     hasColumnPatch = true;
   }
 
@@ -350,13 +350,13 @@ export async function countConversationsByPlatform(): Promise<Record<string, num
     .groupBy(platformExpr);
   const byPlatform: Record<string, number> = {};
   for (const row of rows) {
-    byPlatform[row.platform] = Number(row.n);
+    byPlatform[row.platform] = row.n;
   }
   return byPlatform;
 }
 
 function sessionPlatformWhere(platform?: string | null) {
-  if (!platform) return;
+  if (!platform) return undefined;
   return sql`${conversations.platform_info}->>'platform' = ${platform}`;
 }
 
@@ -365,7 +365,7 @@ function buildConversationListWhere(platform?: string | null, includeArchived?: 
   const platformCond = sessionPlatformWhere(platform);
   if (platformCond) conds.push(platformCond);
   if (!includeArchived) conds.push(isNull(conversations.archived_at));
-  if (conds.length === 0) return;
+  if (conds.length === 0) return undefined;
   if (conds.length === 1) return conds[0];
   return and(...conds);
 }

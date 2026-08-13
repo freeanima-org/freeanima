@@ -48,10 +48,8 @@ function installDevScopedSettingsBridge(): void {
     test: async (scope, value) => {
       if (scope.kind === "kv" && scope.id === "habitat") {
         const raw = value as { habitatUrl: string; remoteAuthToken: string };
-        const habitatUrl = String(raw.habitatUrl ?? "")
-          .trim()
-          .replace(/\/$/, "");
-        const token = String(raw.remoteAuthToken ?? "").trim();
+        const habitatUrl = (raw.habitatUrl ?? "").trim().replace(/\/$/, "");
+        const token = (raw.remoteAuthToken ?? "").trim();
         if (!habitatUrl) throw new Error("栖息地地址不能为空");
         await testHabitatHealthConnection(habitatUrl, token || undefined);
         return;

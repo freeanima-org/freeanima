@@ -174,10 +174,7 @@ export class McpClientSession {
       omitUndefined({
         name: t.name,
         description: t.description,
-        inputSchema: (t.inputSchema ?? { type: "object", properties: {} }) as Record<
-          string,
-          unknown
-        >,
+        inputSchema: t.inputSchema ?? { type: "object", properties: {} },
       }),
     );
   }

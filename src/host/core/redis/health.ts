@@ -33,7 +33,7 @@ export async function pingRedis(): Promise<RedisPingStatus> {
   try {
     const pong = await withTimeout(getRedis().ping(), PING_TIMEOUT_MS);
     if (pong !== "PONG") {
-      return { status: "error", error: `Unexpected response: ${pong}` };
+      return { status: "error", error: `Unexpected response: ${String(pong)}` };
     }
     return { status: "connected", latency_ms: Date.now() - started };
   } catch (err) {

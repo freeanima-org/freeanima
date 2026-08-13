@@ -53,7 +53,7 @@ export function LlmModelPicker({
   const canBrowse = providerId.trim().length > 0;
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return () => {};
     const onPointerDown = (e: PointerEvent) => {
       const root = rootRef.current;
       if (!root || !(e.target instanceof Node) || root.contains(e.target)) return;
@@ -64,7 +64,7 @@ export function LlmModelPicker({
   }, [open]);
 
   useEffect(() => {
-    if (!open || !canBrowse) return;
+    if (!open || !canBrowse) return () => {};
     let cancelled = false;
     const timer = window.setTimeout(() => {
       setLoading(true);

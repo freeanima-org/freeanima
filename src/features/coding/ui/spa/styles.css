@@ -312,8 +312,7 @@ body,
   padding: 0.25rem 0;
   max-height: 12rem;
   overflow: auto;
-  border-top: 1px solid var(--border, #e5e5e5);
-  background: var(--background, #0a0a0a);
+  @apply border-t border-border bg-background;
 }
 
 .coding-slash-item {

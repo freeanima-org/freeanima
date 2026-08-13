@@ -24,7 +24,7 @@ function normalizeTagIds(tagIds: number[] | undefined): number[] {
   const seen = new Set<number>();
   const out: number[] = [];
   for (const raw of tagIds) {
-    const id = Math.floor(Number(raw));
+    const id = Math.floor(raw);
     if (!Number.isFinite(id) || id <= 0 || seen.has(id)) continue;
     seen.add(id);
     out.push(id);
@@ -65,9 +65,7 @@ function toAccountRow(
     tag_ids: [...(entity.tag_ids ?? [])],
     ...(row.sync
       ? {
-          sync: normalizeAccountSync(
-            row.sync,
-          ) as import("@freeanima/host/core/db/schema/entity").EmailAccountSync,
+          sync: normalizeAccountSync(row.sync),
         }
       : {}),
     ...(row.mailbox_paths !== undefined ? { mailbox_paths: row.mailbox_paths } : {}),
@@ -97,7 +95,7 @@ async function normalizeDefaultSender(worldId: number, preferredId?: number): Pr
     })
     .filter((v): v is NonNullable<typeof v> => v != null);
 
-  const enabled = accounts.filter(({ parsed }) => parsed.enabled !== false);
+  const enabled = accounts.filter(({ parsed }) => parsed.enabled);
   if (enabled.length === 0) return;
 
   const defaults = accounts.filter(({ parsed }) => parsed.default_sender);
@@ -108,8 +106,8 @@ async function normalizeDefaultSender(worldId: number, preferredId?: number): Pr
   }
 
   for (const { row, parsed } of accounts) {
-    const nextDefault = parsed.id === keepId && parsed.enabled !== false;
-    if (Boolean(parsed.default_sender) === nextDefault) continue;
+    const nextDefault = parsed.id === keepId && parsed.enabled;
+    if (parsed.default_sender === nextDefault) continue;
     await updateEntity({ id: row.id, body: { ...parsed, default_sender: nextDefault } });
   }
 }

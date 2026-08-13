@@ -199,7 +199,7 @@ export async function syncAllReferenceCounts(): Promise<{ updated: number; rebui
     .from(entities)
     .where(drizzleSql`${entities.reference_count} > 0`);
 
-  return { updated: Number(countRows[0]?.count ?? 0), rebuilt };
+  return { updated: countRows[0]?.count ?? 0, rebuilt };
 }
 
 export async function countReferencesBySemanticMemory(entity_id: number): Promise<number> {
@@ -208,5 +208,5 @@ export async function countReferencesBySemanticMemory(entity_id: number): Promis
     .select({ count: drizzleSql<number>`count(*)::int` })
     .from(memoryReferences)
     .where(eq(memoryReferences.entity_id, entity_id));
-  return Number(rows[0]?.count ?? 0);
+  return rows[0]?.count ?? 0;
 }

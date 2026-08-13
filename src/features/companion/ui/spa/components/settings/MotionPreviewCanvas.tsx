@@ -4,10 +4,10 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { VRMLoaderPlugin, VRMUtils, type VRM } from "@pixiv/three-vrm";
 import {
-  createVRMAnimationClip,
-  VRMAnimationLoaderPlugin,
-  type VRMAnimation,
-} from "@pixiv/three-vrm-animation";
+  createVrmAnimationClip,
+  firstVrmAnimation,
+  registerVrmAnimationLoader,
+} from "../../renderer/vrm-animation-access.ts";
 import { motionManifest } from "@freeanima/features/companion/shared/motion-manifest.ts";
 import {
   COMPANION_WINDOW_HEIGHT,
@@ -19,6 +19,7 @@ import {
   applyVrmCameraFraming,
   computeVrmFraming,
 } from "@freeanima/features/companion/ui/spa/renderer/VrmCameraFraming.ts";
+import { getVrmScene } from "@freeanima/features/companion/ui/spa/renderer/vrm-three-access.ts";
 
 type Props = {
   modelPath: string;
@@ -45,7 +46,7 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !modelPath.trim() || !motionFile.trim()) return;
+    if (!canvas || !modelPath.trim() || !motionFile.trim()) return () => {};
 
     let disposed = false;
     let revokeModel: (() => void) | undefined;
@@ -139,19 +140,18 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
           return;
         }
         const animLoader = new GLTFLoader();
-        animLoader.register((parser) => new VRMAnimationLoaderPlugin(parser));
+        registerVrmAnimationLoader(animLoader);
         const motionGltf = await animLoader.loadAsync(motionBlob.url);
         motionBlob.revoke();
-        const animations = motionGltf.userData.vrmAnimations as VRMAnimation[] | undefined;
-        const vrma = animations?.[0];
+        const vrma = firstVrmAnimation(motionGltf);
         if (!vrma || disposed) {
           if (!vrma && !disposed) setError("动作文件无可播放的 VRMA 片段");
           return;
         }
 
-        mixer = new THREE.AnimationMixer(loaded.scene);
+        mixer = new THREE.AnimationMixer(getVrmScene(loaded));
         try {
-          const clip = createVRMAnimationClip(vrma, loaded);
+          const clip = createVrmAnimationClip(vrma, loaded);
           const action = mixer.clipAction(clip);
           action.setLoop(THREE.LoopRepeat, Number.POSITIVE_INFINITY);
           action.play();

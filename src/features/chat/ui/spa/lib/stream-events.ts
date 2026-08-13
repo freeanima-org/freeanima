@@ -56,7 +56,7 @@ export function handleStreamEvent(
     case "tool_error":
       break;
     case "awaiting_clarify":
-      callbacks.onAwaitingClarify?.(ev.data as Record<string, unknown>);
+      callbacks.onAwaitingClarify?.(ev.data);
       break;
     case "interrupted":
       receivedDone = true;

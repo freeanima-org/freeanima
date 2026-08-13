@@ -106,7 +106,7 @@ export function TaskItemRowView({
       menuAriaLabel="任务操作"
       dragAttributes={dragAttributes}
       dragListeners={dragListeners}
-      rowRef={rowRef as Ref<HTMLElement | null>}
+      rowRef={rowRef}
       rowStyle={rowStyle}
       onClick={
         selectionMode

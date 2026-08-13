@@ -13,6 +13,7 @@ import {
 } from "./github-releases.ts";
 import { matchReleaseAsset } from "./release-assets.ts";
 import { resolvePackagedUpdate } from "./resolve-packaged-update.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   compareCanaryVersion,
   compareSemver,
@@ -78,7 +79,7 @@ function releaseJson(tarUrl: string, size?: number) {
 
 function mockReleaseFetch(tarBytes: Buffer, contentLength?: number): typeof fetch {
   return (async (url: RequestInfo | URL) => {
-    const u = String(url);
+    const u = coerceString(url);
     if (u.includes("/releases/latest") || u.includes("/releases?")) {
       return new Response(
         JSON.stringify(releaseJson("https://example.com/anima-linux-x64.tar.gz")),
@@ -242,7 +243,7 @@ describe("resolvePackagedUpdate", () => {
       ],
     };
     const fetchImpl = (async (url: RequestInfo | URL) => {
-      const u = String(url);
+      const u = coerceString(url);
       if (u.includes("/releases/tags/canary")) {
         return new Response(JSON.stringify(release), { status: 200 });
       }
@@ -293,7 +294,7 @@ describe("resolvePackagedUpdate", () => {
       ],
     };
     const fetchImpl = (async (url: RequestInfo | URL) => {
-      const u = String(url);
+      const u = coerceString(url);
       if (u.includes("/releases/tags/canary")) {
         return new Response(JSON.stringify(release), { status: 200 });
       }
@@ -400,7 +401,7 @@ describe("applyStandaloneUpgrade", () => {
     tempDirs.push(prefix);
     let called = false;
     const fetchImpl = (async (url: RequestInfo | URL) => {
-      const u = String(url);
+      const u = coerceString(url);
       if (u.includes("/releases/latest")) {
         return new Response(JSON.stringify(releaseJson("https://example.com/missing.tgz")), {
           status: 200,
@@ -483,7 +484,7 @@ describe("applyStandaloneUpgrade", () => {
     mkdirSync(prefix, { recursive: true });
     const tarBytes = await buildTestTarball(work);
     const fetchImpl = (async (url: RequestInfo | URL) => {
-      const u = String(url);
+      const u = coerceString(url);
       if (u.includes("/releases/latest") || u.includes("/releases?")) {
         return new Response(
           JSON.stringify(releaseJson("https://example.com/anima-linux-x64.tar.gz", 999)),

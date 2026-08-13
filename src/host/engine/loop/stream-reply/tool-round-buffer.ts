@@ -2,6 +2,7 @@
 
 import { TOOL_CALL_TITLE_KEY } from "@freeanima/host/core/tool";
 import type { StructuredToolCall } from "./types.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export function isClarifyTool(name: string): boolean {
   return name === "clarify";
@@ -11,7 +12,7 @@ function argsPreviewFromObject(argsObj: Record<string, unknown>): string {
   return Object.keys(argsObj)
     .filter((k) => k !== TOOL_CALL_TITLE_KEY)
     .slice(0, 4)
-    .map((k) => `${k}=${String(argsObj[k] ?? "").slice(0, 40)}`)
+    .map((k) => `${k}=${coerceString(argsObj[k] ?? "").slice(0, 40)}`)
     .join(", ");
 }
 

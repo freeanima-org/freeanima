@@ -56,7 +56,7 @@ export function isNamedEmailProvider(
 }
 
 export type ApplyProviderPresetInput = {
-  provider?: EmailProviderId | string | undefined;
+  provider?: string | undefined;
   smtp_host?: string | undefined;
   smtp_port?: number | undefined;
   imap_host?: string | undefined;

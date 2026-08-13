@@ -45,7 +45,7 @@ function createMcpServer(deps: McpServerDeps, callCtx?: McpCallContext): Server 
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const name = request.params.name;
-    const args = (request.params.arguments ?? {}) as Record<string, unknown>;
+    const args = request.params.arguments ?? {};
     const tool = deps.toolSets.getTool(name);
     if (!tool?.exposeMcp) {
       return {

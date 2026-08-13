@@ -14,15 +14,16 @@ export default function HabitatConnectionSettingsPanel({ platform, store }: Sett
   const gateMode = needsHabitatSetup();
 
   useEffect(() => {
-    if (!store) return;
     let cancelled = false;
-    void store.load().then((raw) => {
-      if (cancelled || !raw || typeof raw !== "object") return;
-      const url = (raw as ShellClientConfig).habitatUrl;
-      if (typeof url === "string" && url.trim()) {
-        setHabitatUrl(url.trim());
-      }
-    });
+    if (store) {
+      void store.load().then((raw) => {
+        if (cancelled || !raw || typeof raw !== "object") return;
+        const url = (raw as ShellClientConfig).habitatUrl;
+        if (typeof url === "string" && url.trim()) {
+          setHabitatUrl(url.trim());
+        }
+      });
+    }
     return () => {
       cancelled = true;
     };

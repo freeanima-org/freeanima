@@ -21,7 +21,7 @@ describe("layout viewport", () => {
   });
 
   it("isCompactLayoutViewport uses matchMedia", () => {
-    window.matchMedia = ((query: string) =>
+    window.matchMedia = (query: string) =>
       ({
         matches: query.includes("767px"),
         media: query,
@@ -31,7 +31,7 @@ describe("layout viewport", () => {
         addListener: () => {},
         removeListener: () => {},
         dispatchEvent: () => false,
-      }) satisfies MediaQueryList) as typeof window.matchMedia;
+      }) satisfies MediaQueryList;
     expect(isCompactLayoutViewport()).toBe(true);
   });
 });

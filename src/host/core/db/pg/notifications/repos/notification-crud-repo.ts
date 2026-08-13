@@ -87,7 +87,7 @@ export async function countNotifications(
     .select({ n: sql<number>`count(*)::int` })
     .from(notifications)
     .where(and(...conditions));
-  return Number(rows[0]?.n ?? 0);
+  return rows[0]?.n ?? 0;
 }
 
 export async function markNotificationRead(id: string): Promise<NotificationRow | null> {

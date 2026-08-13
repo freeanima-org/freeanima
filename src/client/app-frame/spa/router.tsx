@@ -6,9 +6,8 @@ import {
   createRoute,
   createRouter,
   redirect,
-  type RouteComponent,
 } from "@tanstack/react-router";
-import { useMemo, type ComponentType } from "react";
+import { useMemo, type ComponentType, type ReactElement } from "react";
 
 import { shouldUseNativeShellNavigation } from "@freeanima/client/portal-sdk/shell-runtime.ts";
 
@@ -21,12 +20,16 @@ import { needsHabitatSetup } from "./setup/habitat-setup.ts";
 import { resolveShellRouterBasepath } from "./router-basepath.ts";
 
 /** TanStack Router 对 lazy ComponentType<object> 的 RouteComponent 约束过严（Windows tsgo + eOPT） */
-function asRouteComponent(component: ComponentType<object>): RouteComponent {
-  return component as unknown as RouteComponent;
+function asRouteComponent(component: ComponentType<object>): ComponentType<object> {
+  return component;
+}
+
+function RootOutlet(): ReactElement {
+  return <Outlet />;
 }
 
 const rootRoute = createRootRoute({
-  component: Outlet,
+  component: RootOutlet,
 });
 
 const setupAliasRoute = createRoute({

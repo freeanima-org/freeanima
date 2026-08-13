@@ -9,9 +9,8 @@
  */
 
 import { SQL } from "bun";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 
+import type { BootstrapConfig } from "@freeanima/host/core/config";
 import type { RuntimeConfig } from "@freeanima/host/core/config/schemas/runtime-config.ts";
 import { bindResolvedWorldContext } from "@freeanima/host/core/config/world-context.ts";
 import { ensureWorldSubjects } from "@freeanima/host/core/db/pg/entity/subject-world.ts";
@@ -21,7 +20,9 @@ import {
   listTaskItems,
   updateTaskItem,
 } from "@freeanima/features/task/domain/index.ts";
-import { initDatabase } from "@freeanima/host/core/db/pg/index.ts";
+import { initDatabase, closeDb } from "@freeanima/host/core/db/pg/index.ts";
+import { FileConfig } from "@freeanima/host/platform/config/file-config.ts";
+import { getConfiguredDatabaseUrlFromBootstrap } from "@freeanima/host/platform/config/database.ts";
 
 const MINIMAL_CONFIG = {
   llm: { default_profile: "chat", providers: {}, profiles: {} },
@@ -32,8 +33,6 @@ async function resolveUserTaskWorldId(): Promise<number> {
   bindResolvedWorldContext(ctx);
   return ctx.user_world_id;
 }
-
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 type LegacyTask = {
   id: string;
@@ -162,15 +161,24 @@ function mergeTasks(
   });
 }
 
+async function openFileConfigData(): Promise<unknown> {
+  const openFn: unknown = Reflect.get(FileConfig, "open");
+  if (typeof openFn !== "function") {
+    throw new Error("FileConfig.open 不可用");
+  }
+  const cfg: unknown = await Reflect.apply(openFn, FileConfig, []);
+  if (cfg == null || typeof cfg !== "object") {
+    throw new Error("FileConfig.open 返回无效");
+  }
+  return Reflect.get(cfg, "data");
+}
+
 async function resolveDatabaseUrl(): Promise<string> {
   const fromEnv = process.env.DATABASE_URL?.trim();
   if (fromEnv) return fromEnv;
 
-  const { FileConfig, getConfiguredDatabaseUrlFromBootstrap } = await import(
-    join(repoRoot, "src/host/platform/config/index.ts")
-  );
-  const cfg = FileConfig.open();
-  const url = await getConfiguredDatabaseUrlFromBootstrap(cfg.data);
+  const data = await openFileConfigData();
+  const url = await getConfiguredDatabaseUrlFromBootstrap(data as BootstrapConfig);
   if (!url) throw new Error("DATABASE_URL or anima database.url required");
   return url;
 }
@@ -180,7 +188,6 @@ async function main(): Promise<void> {
   const url = await resolveDatabaseUrl();
 
   const sql = new SQL(url);
-  const { closeDb } = await import("@freeanima/host/core/db/pg/index.ts");
   initDatabase({ getDatabaseUrl: () => url });
 
   try {

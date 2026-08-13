@@ -103,9 +103,9 @@ export function getHabitatMethodHttpRoute(method: HabitatMethod): HttpRouteMeta 
 
 export function listHabitatMethods(): HabitatMethod[] {
   if (isHabitatMethodRegistryInstalled()) {
-    return listInstalledHabitatMethods() as HabitatMethod[];
+    return listInstalledHabitatMethods();
   }
-  return Object.keys(STATIC_METHOD_REGISTRY) as HabitatMethod[];
+  return Object.keys(STATIC_METHOD_REGISTRY);
 }
 
 export {

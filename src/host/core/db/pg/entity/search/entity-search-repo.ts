@@ -175,7 +175,7 @@ export async function countEntitiesSearch(
     .select({ value: count() })
     .from(entities)
     .where(conditions.length > 0 ? and(...conditions) : undefined);
-  return Number(row?.value ?? 0);
+  return row?.value ?? 0;
 }
 
 export { EntitySearchScopeError };

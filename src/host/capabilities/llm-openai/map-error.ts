@@ -5,6 +5,7 @@ import {
   type ProviderErrorCode,
 } from "@freeanima/host/core/provider";
 import { omitUndefined } from "@freeanima/host/core/util";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   extractLlmTimeoutError,
   isLlmTimeoutError,
@@ -46,7 +47,7 @@ function errorChainText(err: unknown): string {
       parts.push(cur.name, cur.message);
       cur = cur.cause;
     } else {
-      parts.push(String(cur));
+      parts.push(coerceString(cur));
       break;
     }
   }
@@ -95,7 +96,7 @@ export function mapOpenAiCompatibleError(
   }
 
   if (err instanceof APIError) {
-    const status = err.status ?? 0;
+    const status = typeof err.status === "number" ? err.status : 0;
     if ((!status || status === 0) && isTransientConnectionError(err)) {
       return unavailableFromConnection(err, meta);
     }

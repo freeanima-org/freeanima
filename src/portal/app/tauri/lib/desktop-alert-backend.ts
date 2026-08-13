@@ -130,6 +130,12 @@ export function createDesktopAlertBackend(opts?: {
       }
       await webFallback.cancel(key);
     },
-    ...(webFallback.playSound !== undefined ? { playSound: webFallback.playSound } : {}),
+    ...(webFallback.playSound !== undefined
+      ? {
+          playSound: () => {
+            webFallback.playSound?.();
+          },
+        }
+      : {}),
   };
 }

@@ -33,6 +33,6 @@ describe("computeNextRunAt", () => {
 
 describe("ScheduleType re-export sanity", () => {
   it("has interval type", () => {
-    expect(String(ScheduleType.INTERVAL)).toBe("interval");
+    expect(ScheduleType.INTERVAL as string).toBe("interval");
   });
 });

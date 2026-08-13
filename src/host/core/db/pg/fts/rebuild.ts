@@ -155,7 +155,7 @@ async function countSemanticMemorySegmentedTargets(onlyMissing: boolean): Promis
     .from(entities)
     .leftJoin(searchDocuments, entitySearchJoin())
     .where(and(...conditions));
-  return Number(rows[0]?.n ?? 0);
+  return rows[0]?.n ?? 0;
 }
 
 async function countEntitiesSegmentedTargets(onlyMissing: boolean): Promise<number> {
@@ -173,7 +173,7 @@ async function countEntitiesSegmentedTargets(onlyMissing: boolean): Promise<numb
     .from(entities)
     .leftJoin(searchDocuments, entitySearchJoin())
     .where(and(...conditions));
-  return Number(rows[0]?.n ?? 0);
+  return rows[0]?.n ?? 0;
 }
 
 async function countMessagesSegmentedTargets(onlyMissing: boolean): Promise<number> {
@@ -188,7 +188,7 @@ async function countMessagesSegmentedTargets(onlyMissing: boolean): Promise<numb
     .from(messages)
     .leftJoin(searchDocuments, messageSearchJoin())
     .where(and(...conditions));
-  return Number(rows[0]?.n ?? 0);
+  return rows[0]?.n ?? 0;
 }
 
 async function countSemanticMemoryEmbeddingTargets(onlyMissing: boolean): Promise<number> {
@@ -204,7 +204,7 @@ async function countSemanticMemoryEmbeddingTargets(onlyMissing: boolean): Promis
     .from(entities)
     .leftJoin(searchDocuments, entitySearchJoin())
     .where(and(...conditions));
-  return Number(rows[0]?.n ?? 0);
+  return rows[0]?.n ?? 0;
 }
 
 async function countMessagesEmbeddingTargets(onlyMissing: boolean): Promise<number> {
@@ -219,7 +219,7 @@ async function countMessagesEmbeddingTargets(onlyMissing: boolean): Promise<numb
     .from(messages)
     .leftJoin(searchDocuments, messageSearchJoin())
     .where(and(...conditions));
-  return Number(rows[0]?.n ?? 0);
+  return rows[0]?.n ?? 0;
 }
 
 async function countEntitiesEmbeddingTargets(onlyMissing: boolean): Promise<number> {
@@ -237,7 +237,7 @@ async function countEntitiesEmbeddingTargets(onlyMissing: boolean): Promise<numb
     .from(entities)
     .leftJoin(searchDocuments, entitySearchJoin())
     .where(and(...conditions));
-  return Number(rows[0]?.n ?? 0);
+  return rows[0]?.n ?? 0;
 }
 
 async function rebuildSemanticMemoryFtsSegmented(

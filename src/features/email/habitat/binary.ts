@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import { resolveSubjectWorldId, type SubjectKind } from "@freeanima/host/core/config";
+import { resolveSubjectWorldId } from "@freeanima/host/core/config";
 import { createObjectFile } from "@freeanima/features/object-storage/domain";
 
 import { ApiHandlerError } from "../../habitat/habitat/habitat-api/handlers/errors.ts";
@@ -31,7 +31,7 @@ export async function handleEmailAttachmentUpload(
   size: number;
 }> {
   const input = uploadInputSchema.parse(payload);
-  const worldId = resolveSubjectWorldId(input.subject_kind as SubjectKind);
+  const worldId = resolveSubjectWorldId(input.subject_kind);
   const request = requireHttpRequest(ctx);
 
   let form: FormData;

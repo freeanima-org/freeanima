@@ -36,7 +36,7 @@ export function SearchPalette({
   const [q, setQ] = useState("");
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return () => {};
     setQ("");
     setTab("agents");
     const onKey = (e: KeyboardEvent) => {

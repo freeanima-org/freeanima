@@ -4,6 +4,7 @@ import { ImapFlow } from "imapflow";
 import type { EmailAccountRow } from "@freeanima/features/email/domain";
 
 import { resolveEmailAccountPassword } from "./password.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export function imapSecure(port: number): boolean {
   return port >= 993;
@@ -22,7 +23,7 @@ export function formatAddress(raw: unknown): string {
     if (addr.name) return `${addr.name} <${addr.address ?? ""}>`;
     return addr.address ?? "";
   }
-  return String(raw ?? "");
+  return coerceString(raw ?? "");
 }
 
 export function messagePreview(body: string, max = 200): string {

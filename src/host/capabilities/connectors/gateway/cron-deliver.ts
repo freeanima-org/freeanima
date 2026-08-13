@@ -21,11 +21,11 @@ async function resolveTextChannel(
   if (!channel?.isTextBased()) {
     throw new Error(`Discord channel ${channelId} is not text-based`);
   }
-  const textChannel = channel as TextBasedChannel;
+  const textChannel = channel;
   if (!("send" in textChannel) || typeof textChannel.send !== "function") {
     throw new Error(`Discord channel ${channelId} cannot send messages`);
   }
-  return textChannel as TextBasedChannel & { send: (content: string) => Promise<Message> };
+  return textChannel;
 }
 
 async function sendDiscord(

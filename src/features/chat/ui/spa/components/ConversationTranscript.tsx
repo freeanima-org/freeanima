@@ -155,7 +155,7 @@ export const ConversationTranscript = memo(function ConversationTranscript({
   });
 
   useEffect(() => {
-    if (!scrollApiRef) return;
+    if (!scrollApiRef) return () => {};
     scrollApiRef.current = scrollApi;
     return () => {
       scrollApiRef.current = null;

@@ -103,7 +103,10 @@ export function parseGoalJudgeOutput(raw: string): GoalJudgeResult {
     }
     return { ok: true, done: parsed.done, reason };
   } catch (e) {
-    return { ok: false, error: `judge JSON parse error: ${e}` };
+    return {
+      ok: false,
+      error: `judge JSON parse error: ${e instanceof Error ? e.message : String(e)}`,
+    };
   }
 }
 
@@ -138,10 +141,10 @@ export async function judgeGoal(
       return { ok: false, error: recorded.error ?? "judge LLM call failed" };
     }
     const resp = recorded.completion;
-    const content = String(resp.content ?? "");
+    const content = resp.content ?? "";
     const parsed = parseGoalJudgeOutput(content);
     if (parsed.ok) return parsed;
-    const hadReasoning = Boolean(String(resp.reasoning ?? "").trim());
+    const hadReasoning = Boolean((resp.reasoning ?? "").trim());
     // 推理模型 content 空、reasoning 有内容：多半是 max_tokens 被 thinking 占满
     if (!content.trim() && hadReasoning) {
       return {

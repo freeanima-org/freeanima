@@ -8,7 +8,7 @@ const DAY = "2026-06-14";
 const created: Array<Record<string, unknown>> = [];
 
 const createDreamEntryMock = mock(async (_ctx: { worldId: number }, row: DreamEntryCreateInput) => {
-  created.push(row as Record<string, unknown>);
+  created.push(row);
   return {
     id: 1,
     dream_day: row.dream_day,

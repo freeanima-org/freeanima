@@ -11,6 +11,7 @@ import {
   nowIso,
 } from "./session-store.ts";
 import { resolvePomodoroToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 async function storeContext(args: Record<string, unknown>) {
   const worldId = await resolvePomodoroToolWorld(args);
@@ -120,12 +121,13 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
           handler: async (args) => {
             const ctx = await storeContext(args);
             if (typeof ctx === "string") return ctx;
-            const phase = String(args.phase ?? "").trim();
-            if (phase !== "work" && phase !== "short_break" && phase !== "long_break") {
+            const phaseRaw = coerceString(args.phase ?? "").trim();
+            if (phaseRaw !== "work" && phaseRaw !== "short_break" && phaseRaw !== "long_break") {
               return toolError("invalid phase");
             }
-            const startedAt = String(args.started_at ?? "").trim();
-            const finishedAt = String(args.finished_at ?? "").trim() || nowIso();
+            const phase: "work" | "short_break" | "long_break" = phaseRaw;
+            const startedAt = coerceString(args.started_at ?? "").trim();
+            const finishedAt = coerceString(args.finished_at ?? "").trim() || nowIso();
             const planned = Number(args.planned_duration_ms);
             const actual = Number(args.actual_duration_ms);
             if (!startedAt) return toolError("started_at is required");
@@ -138,7 +140,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
             const item = await completePomodoroSession(
               ctx,
               omitUndefined({
-                phase: phase as "work" | "short_break" | "long_break",
+                phase,
                 started_at: startedAt,
                 finished_at: finishedAt,
                 planned_duration_ms: planned,
@@ -148,7 +150,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
                     ? Number(args.task_item_id)
                     : null,
                 cycle_index: args.cycle_index != null ? Number(args.cycle_index) : 0,
-                title: args.title != null ? String(args.title) : undefined,
+                title: args.title != null ? coerceString(args.title) : undefined,
               }),
             );
             return toolResult({ ok: true, item });
@@ -189,7 +191,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
           handler: async (args) => {
             const ctx = await storeContext(args);
             if (typeof ctx === "string") return ctx;
-            const period = String(args.period ?? "today");
+            const period = coerceString(args.period ?? "today");
             if (period !== "today" && period !== "week") return toolError("invalid period");
             const stats = await getPomodoroStats(ctx, period);
             return toolResult({ ok: true, ...stats });

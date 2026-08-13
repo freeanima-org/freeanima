@@ -4,15 +4,16 @@ import { attachToolReturns, toolError } from "@freeanima/host/core/tool";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import { handleConversationTodo } from "@freeanima/host/core/tool";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 async function handleTodo(args: Record<string, unknown>): Promise<string> {
   const conversationId = getToolConversationId();
   if (!conversationId) return toolError("No conversation context");
 
-  const action = String(args.action ?? "list");
-  const content = args.content != null ? String(args.content) : undefined;
+  const action = coerceString(args.action ?? "list");
+  const content = args.content != null ? coerceString(args.content) : undefined;
   const id = typeof args.id === "number" ? args.id : args.id != null ? Number(args.id) : undefined;
-  const status = args.status != null ? String(args.status) : undefined;
+  const status = args.status != null ? coerceString(args.status) : undefined;
 
   return handleConversationTodo(conversationId, action, omitUndefined({ content, id, status }));
 }

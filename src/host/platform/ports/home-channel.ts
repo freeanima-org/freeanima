@@ -1,4 +1,5 @@
-import type { RuntimeConfig, Config } from "@freeanima/host/core/config";
+import type { Config } from "@freeanima/host/core/config";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   getActiveRuntimeConfig,
   isPatchableRuntimeConfig,
@@ -30,15 +31,15 @@ function requireHomeChannelConfig(): Config {
 export function getHomeChannel(platform: string): HomeChannel | null {
   let cfg: Record<string, unknown>;
   try {
-    cfg = getActiveRuntimeConfig().data as Record<string, unknown>;
+    cfg = getActiveRuntimeConfig().data;
   } catch {
-    cfg = requireHomeChannelConfig().data as Record<string, unknown>;
+    cfg = requireHomeChannelConfig().data;
   }
   const section = cfg[platform] as Record<string, unknown> | undefined;
   if (!section) return null;
-  const chatId = String(section.home_channel ?? "").trim();
+  const chatId = coerceString(section.home_channel ?? "").trim();
   if (!chatId) return null;
-  const threadId = String(section.home_thread_id ?? "").trim();
+  const threadId = coerceString(section.home_thread_id ?? "").trim();
   return threadId ? { chat_id: chatId, thread_id: threadId } : { chat_id: chatId };
 }
 
@@ -54,7 +55,7 @@ function mergePlatformSectionIntoActive(platform: string, patch: Record<string, 
       ? { ...(data[platform] as Record<string, unknown>) }
       : {};
   data[platform] = { ...existing, ...patch };
-  config.update(data as RuntimeConfig);
+  config.update(data);
 }
 
 export async function setHomeChannel(

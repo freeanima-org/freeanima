@@ -245,7 +245,7 @@ async function findCommonsWorld(): Promise<EntityRow | undefined> {
   const worlds = await listEntities({ type: "world", limit: 500 });
   return worlds.find((row) => {
     const parsed = worldConfigBodySchema.safeParse(row.body);
-    return parsed.success && parsed.data.common === true;
+    return parsed.success && parsed.data.common;
   });
 }
 

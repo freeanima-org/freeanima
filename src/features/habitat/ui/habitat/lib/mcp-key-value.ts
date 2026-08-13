@@ -1,7 +1,8 @@
+import { coerceString } from "@freeanima/shared/coerce-string";
 export function recordToKeyValueText(record: unknown): string {
   if (record == null || typeof record !== "object" || Array.isArray(record)) return "";
   return Object.entries(record as Record<string, unknown>)
-    .map(([k, v]) => `${k}=${String(v ?? "")}`)
+    .map(([k, v]) => `${k}=${coerceString(v ?? "")}`)
     .join("\n");
 }
 

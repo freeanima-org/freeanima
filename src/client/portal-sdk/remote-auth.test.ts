@@ -29,7 +29,7 @@ describe("remote-auth helpers", () => {
     const originalFetch = globalThis.fetch;
     let seenAuth = "";
     globalThis.fetch = (async (_input, init) => {
-      seenAuth = String(new Headers(init?.headers).get("Authorization") ?? "");
+      seenAuth = new Headers(init?.headers).get("Authorization") ?? "";
       return new Response("ok", { status: 200 });
     }) as typeof fetch;
     try {

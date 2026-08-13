@@ -246,7 +246,7 @@ export async function startSleepCatchUp(
       await import("@freeanima/host/capabilities/memory/sleep-catch-up.ts");
     const planned: { ok: true; plan: SleepCatchUpPlan } | { ok: false; reason: string } =
       await planSleepCatchUp();
-    if (planned.ok === false) {
+    if (!planned.ok) {
       return { ok: false, error: planned.reason };
     }
     plan = planned.plan;

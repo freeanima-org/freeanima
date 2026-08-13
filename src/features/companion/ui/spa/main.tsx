@@ -44,7 +44,7 @@ function ClickThroughManager() {
 
   useEffect(() => {
     // 无模型 / 未 ready 也要跑：默认穿透，否则全屏 overlay 会挡下层点击
-    if (!isCompanionOverlay()) return;
+    if (!isCompanionOverlay()) return () => {};
 
     let cleanupCursor: (() => void) | undefined;
     ignoringRef.current = true;

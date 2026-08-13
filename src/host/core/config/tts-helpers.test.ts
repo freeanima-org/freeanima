@@ -4,7 +4,7 @@ import { getResolvedSpeechConfig } from "./tts-helpers.ts";
 
 describe("getResolvedSpeechConfig", () => {
   it("uses defaults when tts section is missing", () => {
-    const resolved = getResolvedSpeechConfig({} as never);
+    const resolved = getResolvedSpeechConfig({});
     expect(resolved.enabled).toBe(true);
     expect(resolved.provider).toBe("edge-tts");
     expect(resolved.lang).toBeNull();

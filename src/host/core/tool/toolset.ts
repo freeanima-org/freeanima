@@ -51,9 +51,7 @@ export class ToolSetRegistry {
     if (this.sets.has(trimmed)) {
       throw new Error(`ToolSet '${trimmed}' already registered`);
     }
-    const frozenTools = Object.freeze(
-      tools.map((def) => freezeToolDef(def, trimmed)),
-    ) as readonly ToolDef[];
+    const frozenTools = Object.freeze(tools.map((def) => freezeToolDef(def, trimmed)));
     for (const def of frozenTools) {
       if (this.toolIndex.has(def.name)) {
         throw new Error(`Tool '${def.name}' already registered`);

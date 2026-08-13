@@ -54,7 +54,10 @@ export function mapTaskItemBodyToCalendarEvent(task: {
   if (due == null && start == null) {
     throw new Error("task requires start_at or due_at to convert to event");
   }
-  const start_at = start ?? (due as string);
+  const start_at = start ?? due;
+  if (start_at == null) {
+    throw new Error("task requires start_at or due_at to convert to event");
+  }
   const end_at = start != null && due != null && start !== due ? due : null;
   return {
     start_at,

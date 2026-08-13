@@ -33,7 +33,7 @@ describe("schedule embedding", () => {
     await awaitPendingEmbeddingsForTest();
 
     expect(embedAndStoreJobsMock).toHaveBeenCalledTimes(1);
-    const jobs = embedAndStoreJobsMock.mock.calls[0]![0] as EmbeddingPendingJob[];
+    const jobs = embedAndStoreJobsMock.mock.calls[0]![0];
     expect(jobs.map((j) => j.id).toSorted()).toEqual(["m1", "m2"]);
   });
 
@@ -43,7 +43,7 @@ describe("schedule embedding", () => {
     await awaitPendingEmbeddingsForTest();
 
     expect(embedAndStoreJobsMock).toHaveBeenCalledTimes(1);
-    const jobs = embedAndStoreJobsMock.mock.calls[0]![0] as EmbeddingPendingJob[];
+    const jobs = embedAndStoreJobsMock.mock.calls[0]![0];
     expect(jobs.map((j) => j.content)).toEqual(["old", "new"]);
   });
 
@@ -59,7 +59,7 @@ describe("schedule embedding", () => {
     await awaitPendingEmbeddingsForTest();
 
     expect(embedAndStoreJobsMock).toHaveBeenCalledTimes(1);
-    const jobs = embedAndStoreJobsMock.mock.calls[0]![0] as EmbeddingPendingJob[];
+    const jobs = embedAndStoreJobsMock.mock.calls[0]![0];
     expect(jobs.map((j) => j.kind).toSorted()).toEqual([
       "autobiographical_memory",
       "limbic_memory",

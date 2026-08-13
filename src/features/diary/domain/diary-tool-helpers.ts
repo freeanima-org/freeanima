@@ -2,6 +2,7 @@ import type { DiaryEntryRow } from "./types.ts";
 import { entryDayKey, getDiaryEntryByDate, parseDiaryDate } from "./entry-store.ts";
 import type { DiaryStoreContext } from "./types.ts";
 import { findTagByTitle } from "@freeanima/features/tag/domain";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export function entryPayload(row: DiaryEntryRow): DiaryEntryRow {
   return row;
@@ -52,8 +53,8 @@ export async function resolveFilterTagIds(
 }
 
 export function parseToolDate(raw: unknown): string {
-  if (raw == null || String(raw).trim() === "") return parseDiaryDate(null);
-  return parseDiaryDate(String(raw));
+  if (raw == null || coerceString(raw).trim() === "") return parseDiaryDate(null);
+  return parseDiaryDate(coerceString(raw));
 }
 
 export function toolDateKey(raw: unknown): string {

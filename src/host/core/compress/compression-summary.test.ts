@@ -77,7 +77,7 @@ describe("generateConversationSummary", () => {
   });
 
   it("passes one-shot requestParams via runAutoLlmChat", async () => {
-    const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "I fixed login." } as never);
+    const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "I fixed login." });
     restores.push(chatSpy);
 
     const messages = [msg("user", 2, "fix login"), msg("assistant", 3, "done")];
@@ -101,7 +101,7 @@ describe("generateConversationSummary", () => {
   });
 
   it("returns runId when LLM output is empty", async () => {
-    const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "  " } as never);
+    const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "  " });
     restores.push(chatSpy);
 
     const result = await generateConversationSummary(

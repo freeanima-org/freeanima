@@ -94,7 +94,7 @@ export async function ensureTagsByTitles(worldId: number, titles: string[]): Pro
   const ids: number[] = [];
   const seen = new Set<number>();
   for (const raw of titles) {
-    const title = normalizeTitle(String(raw));
+    const title = normalizeTitle(raw);
     if (!title) continue;
     let tag = await findTagByTitle(worldId, title);
     if (!tag) {

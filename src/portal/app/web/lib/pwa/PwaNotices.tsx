@@ -49,7 +49,7 @@ export function PwaNotices(): null {
   const compactLayout = isCompactInstallContext();
 
   useEffect(() => {
-    if (!webShell) return;
+    if (!webShell) return () => {};
 
     const cleanups: Array<() => void> = [];
     let cancelled = false;

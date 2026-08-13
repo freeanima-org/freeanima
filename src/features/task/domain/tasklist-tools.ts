@@ -14,6 +14,7 @@ import { TASK_TOOL_RETURNS } from "./return-schemas.ts";
 import { listPayload } from "./task-tool-helpers.ts";
 import { resolveTaskToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 import type { TaskListUpdateInput } from "./types.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 async function handleListLists(args: Record<string, unknown>): Promise<string> {
   const worldId = await resolveTaskToolWorld({ args });
@@ -41,7 +42,7 @@ async function handleListCreate(args: Record<string, unknown>): Promise<string> 
   });
   if (typeof worldId === "string") return worldId;
 
-  const name = String(args.name ?? "").trim();
+  const name = coerceString(args.name ?? "").trim();
   if (!name) return toolError("name is required");
 
   try {
@@ -50,7 +51,7 @@ async function handleListCreate(args: Record<string, unknown>): Promise<string> 
       omitUndefined({
         name,
         sort_order: args.sort_order != null ? Number(args.sort_order) : undefined,
-        color: args.color != null ? String(args.color) : undefined,
+        color: args.color != null ? coerceString(args.color) : undefined,
         is_folder: args.is_folder === true,
         parent_id:
           args.parent_id == null
@@ -74,10 +75,10 @@ async function handleListUpdate(args: Record<string, unknown>): Promise<string> 
   if (typeof worldId === "string") return worldId;
 
   const patch: TaskListUpdateInput = { id };
-  if (args.name !== undefined) patch.name = String(args.name);
+  if (args.name !== undefined) patch.name = coerceString(args.name);
   if (args.sort_order !== undefined) patch.sort_order = Number(args.sort_order);
   if (args.closed !== undefined) patch.closed = Boolean(args.closed);
-  if (args.color !== undefined) patch.color = String(args.color);
+  if (args.color !== undefined) patch.color = coerceString(args.color);
   if (args.is_folder !== undefined) patch.is_folder = Boolean(args.is_folder);
   if (args.parent_id == null) patch.parent_id = null;
   else if (args.parent_id !== undefined) patch.parent_id = Number(args.parent_id);
@@ -117,7 +118,7 @@ async function handleListSearch(args: Record<string, unknown>): Promise<string> 
   const worldId = await resolveTaskToolWorld({ args });
   if (typeof worldId === "string") return worldId;
 
-  const query = String(args.query ?? "").trim();
+  const query = coerceString(args.query ?? "").trim();
   if (!query) return toolError("query is required");
 
   const limit =
@@ -251,9 +252,7 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
           handler: handleListSearch,
         },
       ],
-      Object.fromEntries(
-        TASKLIST_TOOL_NAMES.map((name) => [name, TASK_TOOL_RETURNS[name]]),
-      ) as Partial<typeof TASK_TOOL_RETURNS>,
+      Object.fromEntries(TASKLIST_TOOL_NAMES.map((name) => [name, TASK_TOOL_RETURNS[name]])),
     ),
   );
 }

@@ -9,6 +9,7 @@ import type { Config } from "@freeanima/host/core/config";
 import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { cstDaySourceRef, notifySoftFailure } from "@freeanima/host/core/soft-failure";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 import { McpClientSession, type McpServerConfig } from "./client.ts";
 import {
@@ -284,7 +285,9 @@ export class MCPManager {
             const result = await client.callTool(originalName, args);
             return extractMcpResult(result);
           } catch (err) {
-            return toolError(`MCP ${originalName} failed: ${err}`);
+            return toolError(
+              `MCP ${originalName} failed: ${err instanceof Error ? err.message : coerceString(err)}`,
+            );
           }
         },
       });

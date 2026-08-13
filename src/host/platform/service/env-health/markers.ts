@@ -29,7 +29,7 @@ export function depStatusToMarker(status: DependencyStatus): DepMarker {
 export function readDiskFreeBytes(path: string): number | null {
   try {
     const st = statfsSync(path);
-    return Number(st.bavail) * Number(st.bsize);
+    return st.bavail * st.bsize;
   } catch {
     return null;
   }

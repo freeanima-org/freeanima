@@ -164,5 +164,5 @@ export async function hybridCountSemanticMemory(
 
   const merged = union(ftsBranch, trgmBranch).as("merged");
   const rows = await db.select({ n: sql<number>`count(*)::int` }).from(merged);
-  return Number(rows[0]?.n ?? 0);
+  return rows[0]?.n ?? 0;
 }

@@ -12,7 +12,7 @@ export function discordThreadTitleFromSession(title: string): string {
 export function discordThreadNameFromUserMessage(text: string): string {
   const trimmed = text.trim();
   if (!trimmed) return "…";
-  const preview = [...trimmed].slice(0, DISCORD_THREAD_PREVIEW_LEN).join("");
+  const preview = Array.from(trimmed).slice(0, DISCORD_THREAD_PREVIEW_LEN).join("");
   return preview.slice(0, DISCORD_THREAD_TITLE_MAX) || "…";
 }
 

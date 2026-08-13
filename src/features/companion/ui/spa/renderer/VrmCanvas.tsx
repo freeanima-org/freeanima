@@ -33,7 +33,9 @@ export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelErr
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      return () => {};
+    }
 
     if (!modelPath.trim()) {
       setHitTest(null);
@@ -42,7 +44,7 @@ export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelErr
       loadedModelRef.current = null;
       disposeVrmBackend();
       void reportCompanionModelStatus({ loading: false, error: null });
-      return;
+      return () => {};
     }
 
     let cancelled = false;
@@ -80,48 +82,43 @@ export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelErr
         onModelErrorRef.current?.(formatVrmLoadError(e));
       });
       setHitTest((x, y) => backend.hitTest(x, y));
-      return () => {
-        cancelled = true;
-        resizeObserver?.disconnect();
-        window.removeEventListener("resize", resize);
-      };
-    }
-
-    if (loadedModelRef.current !== modelPath) {
-      loadedModelRef.current = null;
-      useCompanionStore.getState().setCharacterReady(false);
-    }
-
-    setModelLoading(true);
-    void reportCompanionModelStatus({ loading: true, error: null });
-    // 下载前清场，避免失败时残留旧模型
-    backend.beginModelSwitch();
-    loadedModelRef.current = modelPath;
-
-    void (async () => {
-      try {
-        const cached = await loadCachedModelSource(modelPath);
-        revokeModelUrl = cached.revoke;
-        if (cancelled) return;
-
-        await backend.load(cached.url, motionConfig);
-        if (cancelled) return;
-        resize();
-        setHitTest((x, y) => backend.hitTest(x, y));
-        void reportCompanionModelStatus({ loading: false, error: null });
-        onModelLoadedRef.current?.();
-      } catch (e) {
-        if (!cancelled) {
-          loadedModelRef.current = null;
-          backend.beginModelSwitch();
-          const message = formatVrmLoadError(e);
-          void reportCompanionModelStatus({ loading: false, error: message });
-          onModelErrorRef.current?.(message);
-        }
-      } finally {
-        if (!cancelled) setModelLoading(false);
+    } else {
+      if (loadedModelRef.current !== modelPath) {
+        loadedModelRef.current = null;
+        useCompanionStore.getState().setCharacterReady(false);
       }
-    })();
+
+      setModelLoading(true);
+      void reportCompanionModelStatus({ loading: true, error: null });
+      // 下载前清场，避免失败时残留旧模型
+      backend.beginModelSwitch();
+      loadedModelRef.current = modelPath;
+
+      void (async () => {
+        try {
+          const cached = await loadCachedModelSource(modelPath);
+          revokeModelUrl = cached.revoke;
+          if (cancelled) return;
+
+          await backend.load(cached.url, motionConfig);
+          if (cancelled) return;
+          resize();
+          setHitTest((x, y) => backend.hitTest(x, y));
+          void reportCompanionModelStatus({ loading: false, error: null });
+          onModelLoadedRef.current?.();
+        } catch (e) {
+          if (!cancelled) {
+            loadedModelRef.current = null;
+            backend.beginModelSwitch();
+            const message = formatVrmLoadError(e);
+            void reportCompanionModelStatus({ loading: false, error: message });
+            onModelErrorRef.current?.(message);
+          }
+        } finally {
+          if (!cancelled) setModelLoading(false);
+        }
+      })();
+    }
 
     return () => {
       cancelled = true;

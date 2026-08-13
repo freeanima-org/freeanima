@@ -3,6 +3,7 @@ import { attachToolReturns, toolError, toolResult } from "@freeanima/host/core/t
 
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import { getDoc, listDocs, resolveDocsCorpus, searchDocs } from "./docs-corpus.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export function registerDocsTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
@@ -26,7 +27,7 @@ export function registerDocsTools(toolSets: ToolSetRegistry): void {
           handler: (args) => {
             const corpus = resolveDocsCorpus();
             if ("error" in corpus) return toolError(corpus.error);
-            const prefixRaw = args.prefix == null ? "" : String(args.prefix);
+            const prefixRaw = args.prefix == null ? "" : coerceString(args.prefix);
             const docs = listDocs(corpus, prefixRaw.length > 0 ? prefixRaw : undefined);
             return toolResult({ docs, total: docs.length });
           },
@@ -48,7 +49,7 @@ export function registerDocsTools(toolSets: ToolSetRegistry): void {
           handler: (args) => {
             const corpus = resolveDocsCorpus();
             if ("error" in corpus) return toolError(corpus.error);
-            const result = getDoc(corpus, String(args.path ?? ""));
+            const result = getDoc(corpus, coerceString(args.path ?? ""));
             if (!result.ok) return toolError(result.error);
             return toolResult({
               path: result.path,
@@ -79,7 +80,7 @@ export function registerDocsTools(toolSets: ToolSetRegistry): void {
             const limit = limitRaw == null || limitRaw === "" ? undefined : Number(limitRaw);
             const result = searchDocs(
               corpus,
-              String(args.query ?? ""),
+              coerceString(args.query ?? ""),
               limit != null && Number.isFinite(limit) ? limit : undefined,
             );
             if ("error" in result) return toolError(result.error);

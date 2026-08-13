@@ -62,7 +62,7 @@ function restoreRecord(
       const prevArr = Array.isArray(prev) ? prev : undefined;
       out[key] = value.map((item, i) => {
         if (item != null && typeof item === "object" && !Array.isArray(item)) {
-          const prevItem = prevArr?.[i];
+          const prevItem: unknown = prevArr?.[i];
           return restoreRecord(
             item as Record<string, unknown>,
             prevItem != null && typeof prevItem === "object" && !Array.isArray(prevItem)

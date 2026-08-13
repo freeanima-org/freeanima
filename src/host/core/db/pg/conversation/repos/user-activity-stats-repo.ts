@@ -70,9 +70,9 @@ function packWindowCounts(
   user_messages: number | undefined,
 ): ActivityWindowCounts {
   return {
-    created: Number(created ?? 0),
-    updated: Number(updated ?? 0),
-    user_messages: Number(user_messages ?? 0),
+    created: created ?? 0,
+    updated: updated ?? 0,
+    user_messages: user_messages ?? 0,
   };
 }
 

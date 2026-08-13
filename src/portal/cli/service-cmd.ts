@@ -28,6 +28,7 @@ import { waitForHabitatReadyOrWarn } from "./wait-habitat-ready.ts";
 import { validateBootstrapOnStartup } from "@freeanima/host/platform/config";
 import { runServiceStack } from "./stack/supervisor.ts";
 import { probeWebHealth } from "./web/web-runtime.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export type ServiceArgs = {
   action: string;
@@ -84,7 +85,7 @@ function systemdState(): string | null {
 }
 
 function hostPort(statusFile: Record<string, unknown>, args: ServiceArgs): [string, number] {
-  return [String(statusFile.host ?? args.host), Number(statusFile.port ?? args.port)];
+  return [coerceString(statusFile.host ?? args.host), Number(statusFile.port ?? args.port)];
 }
 
 async function fetchHttpStatus(
@@ -103,7 +104,7 @@ function printDeadStatus(statusFile: Record<string, unknown>): void {
   const startTime = statusFile.start_time_iso ?? "";
   const version = statusFile.version ?? "?";
   const startTs = Number(statusFile.start_time ?? 0);
-  const phase = String(statusFile.phase ?? "");
+  const phase = coerceString(statusFile.phase ?? "");
   let ranFor = "";
   if (startTs > 0) {
     const now = Date.now() / 1000;
@@ -112,9 +113,9 @@ function printDeadStatus(statusFile: Record<string, unknown>): void {
   console.log("Free Anima · not running");
   if (startTs > 0) {
     const when = startTime || new Date(startTs * 1000).toISOString();
-    console.log(`  last start: ${when}${ranFor}`);
+    console.log(`  last start: ${coerceString(when)}${ranFor}`);
   }
-  console.log(`  version: ${version}`);
+  console.log(`  version: ${coerceString(version)}`);
   if (phase === "starting") writeStatusLine("warning", "Exited before startup completed");
   else writeStatusLine("warning", "May have exited abnormally");
   console.log(`  log: ${LOG_FILE}`);
@@ -271,7 +272,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     systemctl("daemon-reload");
     const r = systemctl("enable", "--now", SYSTEMD_UNIT);
     if (r.status !== 0) {
-      console.error(`Startup failed: ${r.stderr || r.stdout}`);
+      console.error(`Startup failed: ${String(r.stderr || r.stdout)}`);
       process.exit(1);
     }
     writeStatusLine("ok", "Started via systemd");

@@ -138,7 +138,9 @@ export class WorkspaceSandbox {
       try {
         kids = await this.backend.listDir(abs);
       } catch (e) {
-        throw new Error(`listDir failed: ${e}`, { cause: e });
+        throw new Error(`listDir failed: ${e instanceof Error ? e.message : String(e)}`, {
+          cause: e,
+        });
       }
       kids.sort((a, b) => {
         if (a.kind !== b.kind) return a.kind === "dir" ? -1 : 1;
@@ -178,7 +180,7 @@ export class WorkspaceSandbox {
       const content = await this.backend.readText(resolved.abs);
       return { ok: true, text: content };
     } catch (e) {
-      return { ok: false, error: `read failed: ${e}` };
+      return { ok: false, error: `read failed: ${e instanceof Error ? e.message : String(e)}` };
     }
   }
 
@@ -192,7 +194,7 @@ export class WorkspaceSandbox {
       await this.backend.writeText(resolved.abs, content);
       return { ok: true, path: resolved.rel };
     } catch (e) {
-      return { ok: false, error: `write failed: ${e}` };
+      return { ok: false, error: `write failed: ${e instanceof Error ? e.message : String(e)}` };
     }
   }
 
@@ -225,7 +227,7 @@ export class WorkspaceSandbox {
       const entries = await this.backend.listDir(resolved.abs);
       return { ok: true, entries };
     } catch (e) {
-      return { ok: false, error: `listDir failed: ${e}` };
+      return { ok: false, error: `listDir failed: ${e instanceof Error ? e.message : String(e)}` };
     }
   }
 
@@ -245,7 +247,7 @@ export class WorkspaceSandbox {
       const text = slice.map((l, i) => `${offset + i}|${l}`).join("\n");
       return { ok: true, text };
     } catch (e) {
-      return { ok: false, error: `read failed: ${e}` };
+      return { ok: false, error: `read failed: ${e instanceof Error ? e.message : String(e)}` };
     }
   }
 
@@ -302,7 +304,7 @@ export class WorkspaceSandbox {
       }
       return { ok: true, result: hits.join("\n") };
     } catch (e) {
-      return { ok: false, error: `search failed: ${e}` };
+      return { ok: false, error: `search failed: ${e instanceof Error ? e.message : String(e)}` };
     }
   }
 
@@ -336,7 +338,7 @@ export class WorkspaceSandbox {
       await this.backend.writeText(resolved.abs, content);
       return { ok: true, path: resolved.rel };
     } catch (e) {
-      return { ok: false, error: `patch failed: ${e}` };
+      return { ok: false, error: `patch failed: ${e instanceof Error ? e.message : String(e)}` };
     }
   }
 
@@ -370,7 +372,10 @@ export class WorkspaceSandbox {
       }
       return { ok: true, text };
     } catch (e) {
-      return { ok: false, error: `terminal_run failed: ${e}` };
+      return {
+        ok: false,
+        error: `terminal_run failed: ${e instanceof Error ? e.message : String(e)}`,
+      };
     }
   }
 }

@@ -4,7 +4,7 @@ import type {
   ToolsStatusToolItem,
 } from "@freeanima/features/habitat/protocol/habitat-contract/api/response-types.ts";
 import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type MouseEvent } from "react";
 import { getToolsStatus } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
 import { catchWithFallback } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
@@ -158,7 +158,7 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
                 variant="ghost"
                 size="sm"
                 className="h-7 text-xs"
-                onClick={(e) => {
+                onClick={(e: MouseEvent) => {
                   e.preventDefault();
                   void copyText(exampleText, "成功返回示例");
                 }}

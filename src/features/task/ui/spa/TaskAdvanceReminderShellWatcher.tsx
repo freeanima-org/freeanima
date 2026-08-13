@@ -10,7 +10,7 @@ export function TaskAdvanceReminderShellWatcher() {
   const habitatConnection = useHabitatConnection();
 
   useEffect(() => {
-    if (!networkOnline || habitatConnection !== "connected") return;
+    if (!networkOnline || habitatConnection !== "connected") return () => {};
     const sub = subscribeTaskAdvanceReminders((event) => {
       void deliverLocalReminder({
         title: event.title,

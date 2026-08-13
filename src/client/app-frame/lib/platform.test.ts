@@ -30,9 +30,9 @@ describe("resolveSettingsContentPlatform", () => {
   afterEach(() => {
     setShellBuildTargetForTests(null);
     if (originalShell !== undefined) {
-      (globalThis.window as TestWindow).portalShell = originalShell;
+      globalThis.window.portalShell = originalShell;
     } else {
-      delete (globalThis.window as TestWindow).portalShell;
+      delete globalThis.window.portalShell;
     }
   });
 

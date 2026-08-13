@@ -15,9 +15,7 @@ export function normalizePromptIncludes(
   const allow = new Set<string>(SUBAGENT_PROMPT_INCLUDES);
   const out: SubagentPromptInclude[] = [];
   for (const item of raw) {
-    const key = String(item ?? "")
-      .trim()
-      .toLowerCase();
+    const key = (item ?? "").trim().toLowerCase();
     if (!allow.has(key)) continue;
     if (!out.includes(key as SubagentPromptInclude)) {
       out.push(key as SubagentPromptInclude);

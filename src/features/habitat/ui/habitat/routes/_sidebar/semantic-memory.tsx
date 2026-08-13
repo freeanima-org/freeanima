@@ -306,9 +306,7 @@ function SemanticMemoryPage() {
                       <TableCell className="text-xs whitespace-nowrap">
                         {formatDisplayDateTime(row.updated_at)}
                       </TableCell>
-                      <TableCell className="text-xs">
-                        {Number(row.reference_count).toFixed(2)}
-                      </TableCell>
+                      <TableCell className="text-xs">{row.reference_count.toFixed(2)}</TableCell>
                       <TableCell className="text-sm max-w-md whitespace-pre-wrap">
                         {row.content}
                       </TableCell>
@@ -319,7 +317,7 @@ function SemanticMemoryPage() {
                       </TableCell>
                       {hasSearchQuery ? (
                         <TableCell className="text-xs whitespace-nowrap">
-                          {row.rank != null ? Number(row.rank).toFixed(4) : "-"}
+                          {row.rank != null ? row.rank.toFixed(4) : "-"}
                         </TableCell>
                       ) : null}
                     </TableRow>

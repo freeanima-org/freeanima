@@ -13,7 +13,6 @@ import {
   parseHabitatRpcEnvelope,
   serializeHabitatRpcEnvelope,
 } from "@freeanima/shared/habitat-rpc";
-import type { HabitatRpcEnvelope } from "@freeanima/shared/habitat-rpc";
 
 type Listener = (ev: Event | MessageEvent | CloseEvent) => void;
 
@@ -58,7 +57,7 @@ class MockWebSocket {
   }
 
   send(data: string): void {
-    const envelope = parseHabitatRpcEnvelope(data) as HabitatRpcEnvelope;
+    const envelope = parseHabitatRpcEnvelope(data);
     if (envelope.kind === "connect") {
       const connected = serializeHabitatRpcEnvelope({
         kind: "connected",

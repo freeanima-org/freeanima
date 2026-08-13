@@ -49,21 +49,21 @@ function channelInList(channelId: string, parentChannelId: string, csv: string):
 }
 
 export function mergeDiscordConfig(config?: Record<string, unknown>): DiscordConfig {
-  return { ...DISCORD_CONFIG_DEFAULTS, ...config } as DiscordConfig;
+  return { ...DISCORD_CONFIG_DEFAULTS, ...config };
 }
 
 export function shouldRespond(ctx: DiscordMessageContext, cfg: DiscordConfig): boolean {
   if (ctx.authorIsBot) return false;
   if (!ctx.content.trim()) return false;
 
-  const allowed = String(cfg.allowed_channels ?? "");
+  const allowed = cfg.allowed_channels ?? "";
   if (allowed && !channelInList(ctx.channelId, ctx.parentChannelId, allowed)) {
     return false;
   }
 
   if (ctx.isDm) return true;
 
-  if (channelInList(ctx.channelId, ctx.parentChannelId, String(cfg.free_response_channels ?? ""))) {
+  if (channelInList(ctx.channelId, ctx.parentChannelId, cfg.free_response_channels ?? "")) {
     return true;
   }
 
@@ -83,7 +83,7 @@ export function shouldCreateThread(ctx: DiscordMessageContext, cfg: DiscordConfi
   if (!cfg.auto_thread) return false;
   if (ctx.isDm) return false;
   if (ctx.isThread) return false;
-  if (channelInList(ctx.channelId, ctx.parentChannelId, String(cfg.free_response_channels ?? ""))) {
+  if (channelInList(ctx.channelId, ctx.parentChannelId, cfg.free_response_channels ?? "")) {
     return false;
   }
   return true;

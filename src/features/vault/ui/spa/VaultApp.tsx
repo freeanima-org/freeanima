@@ -338,7 +338,7 @@ export function VaultApp() {
           ...(uris.length > 0 ? { uris } : {}),
           ...(values.username ? { username: values.username } : {}),
           ...(values.tag_ids.length > 0 ? { tag_ids: values.tag_ids } : {}),
-          secrets: secrets as VaultSecretsViewPayload,
+          secrets: secrets,
         });
       }
       setCreating(false);
@@ -358,7 +358,7 @@ export function VaultApp() {
       const detail = await getVaultItem(subjectKind, selectedItem.id, true);
       let secrets: VaultSecretsPayload = {};
       if (subjectKind === "agent") {
-        secrets = (detail.secrets ?? {}) as VaultSecretsPayload;
+        secrets = detail.secrets ?? {};
       } else {
         if (!session.isUnlocked(VAULT_UI_SCOPE)) throw new Error("vault_locked");
         if (detail.secrets_enc && detail.dek_wrapped) {
@@ -424,7 +424,7 @@ export function VaultApp() {
           uris,
           username: values.username,
           tag_ids: values.tag_ids,
-          secrets: secrets as VaultSecretsViewPayload,
+          secrets: secrets,
         });
       }
       setEditing(false);

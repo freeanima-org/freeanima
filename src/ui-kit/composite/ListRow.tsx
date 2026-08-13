@@ -15,18 +15,18 @@ import type { ActionSheetItem } from "./types.ts";
 import { useLongPress } from "./useLongPress.ts";
 
 export type ListRowProps = {
-  as?: "li" | "div";
-  active?: boolean;
-  selected?: boolean;
-  disabled?: boolean;
-  selectionMode?: boolean;
-  dragging?: boolean;
+  as?: "li" | "div" | undefined;
+  active?: boolean | undefined;
+  selected?: boolean | undefined;
+  disabled?: boolean | undefined;
+  selectionMode?: boolean | undefined;
+  dragging?: boolean | undefined;
   useActionSheet: boolean;
   /** 覆盖默认 selected 视觉（侧栏等用 tint 而非 inset ring） */
   selectedClassName?: string | undefined;
   contextMenuItems?: ActionSheetItem[] | undefined;
-  contextMenuEnabled?: boolean;
-  longPressEnabled?: boolean;
+  contextMenuEnabled?: boolean | undefined;
+  longPressEnabled?: boolean | undefined;
   onLongPress?: (() => void) | undefined;
   onOpenMenu?: (() => void) | undefined;
   menuAriaLabel?: string | undefined;
@@ -124,7 +124,7 @@ export function ListRow({
           aria-label={menuAriaLabel}
           {...(disabled !== undefined ? { disabled } : {})}
           onPointerDown={(e: ReactPointerEvent) => e.stopPropagation()}
-          onClick={(e) => {
+          onClick={(e: ReactMouseEvent) => {
             e.stopPropagation();
             onOpenMenu?.();
           }}

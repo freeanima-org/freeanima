@@ -14,6 +14,8 @@ import {
 } from "@freeanima/host/core/db/schema/entity";
 import { getEntity } from "@freeanima/host/core/db/pg/entity";
 
+import { coerceString } from "@freeanima/shared/coerce-string";
+
 import type {
   DreamEntryCreateInput,
   DreamEntryListOpts,
@@ -40,7 +42,7 @@ async function brickToDreamRow(b: MemoryBrickRow): Promise<DreamEntryRow> {
       ? (b.body.source_conversation_ids as unknown[]).map(String)
       : [],
     episodic_snippets: Array.isArray(snippets) ? (snippets as DreamEpisodicSnippet[]) : [],
-    ...(b.body.legacy_id !== undefined ? { legacy_id: String(b.body.legacy_id) } : {}),
+    ...(b.body.legacy_id !== undefined ? { legacy_id: coerceString(b.body.legacy_id) } : {}),
     created_at: b.created_at,
   };
 }

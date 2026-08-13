@@ -76,7 +76,7 @@ function normalizeTagIds(tagIds: number[] | undefined): number[] {
   const seen = new Set<number>();
   const out: number[] = [];
   for (const raw of tagIds) {
-    const id = Math.floor(Number(raw));
+    const id = Math.floor(raw);
     if (!Number.isFinite(id) || id <= 0 || seen.has(id)) continue;
     seen.add(id);
     out.push(id);

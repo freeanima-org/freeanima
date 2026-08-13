@@ -5,6 +5,7 @@ import {
 } from "@freeanima/shared/habitat-contract";
 
 import { HABITAT_RPC_REST_PREFIX } from "./urls.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export { habitatRpcRestPrefix, habitatHealthProbeUrl } from "./urls.ts";
 
@@ -63,7 +64,7 @@ export function appendPayloadToQuery(
       params.set(key, JSON.stringify(value));
       continue;
     }
-    params.set(key, String(value));
+    params.set(key, coerceString(value));
   }
 }
 
@@ -106,7 +107,7 @@ function buildRestPath(
     if (idx === -1) {
       throw new Error(`path pattern missing param :${param}`);
     }
-    segments[idx] = encodeURIComponent(String(value));
+    segments[idx] = encodeURIComponent(coerceString(value));
   }
   return segments.join("/");
 }

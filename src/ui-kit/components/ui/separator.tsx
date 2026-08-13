@@ -1,13 +1,8 @@
-import * as React from "react";
-import { Separator as SeparatorPrimitive } from "react-aria-components";
+import { Separator as SeparatorPrimitive, type SeparatorProps } from "react-aria-components";
 
 import { cn } from "../../lib/utils.ts";
 
-function Separator({
-  className,
-  orientation = "horizontal",
-  ...props
-}: React.ComponentProps<typeof SeparatorPrimitive>) {
+function Separator({ className, orientation = "horizontal", ...props }: SeparatorProps) {
   return (
     <SeparatorPrimitive
       data-slot="separator"
