@@ -37,6 +37,7 @@ mock.module("@freeanima/host/core/db/pg/conversation", () => ({
 }));
 
 import {
+  abandonCompressionSummaries,
   flushCompressionSummaries,
   resetCompressionSummaryPostCutForTests,
   scheduleCompressionSummary,
@@ -74,6 +75,7 @@ describe("scheduleCompressionSummary writeback", () => {
   });
 
   afterEach(async () => {
+    abandonCompressionSummaries();
     await flushCompressionSummaries();
     for (const spy of restores) spy.mockRestore();
     restores.length = 0;
@@ -108,5 +110,79 @@ describe("scheduleCompressionSummary writeback", () => {
     expect(job?.ok).toBe(false);
     expect(job?.runId).toMatch(/^autollm_/);
     expect(patchCalls.at(-1)?.summary).toBeUndefined();
+  });
+
+  it("abandonCompressionSummaries clears pending so flush returns immediately", async () => {
+    const prevHome = process.env.FREEANIMA_HOME;
+    process.env.FREEANIMA_HOME = "/tmp/anima-compress-abandon";
+
+    const holder: { resolve?: (v: { content: string }) => void } = {};
+    const chatSpy = spyOn(llm, "chat").mockImplementation(
+      () =>
+        new Promise<{ content: string }>((resolve) => {
+          holder.resolve = resolve;
+        }),
+    );
+    restores.push(chatSpy);
+
+    const cut: CompressionState = { l2: 3, l3: 3 };
+    scheduleCompressionSummary("conv-hang", null, cut, "sys", "test-model");
+    for (let i = 0; i < 50 && chatSpy.mock.calls.length === 0; i++) {
+      await new Promise<void>((r) => {
+        setTimeout(r, 5);
+      });
+    }
+    expect(holder.resolve).toBeDefined();
+
+    abandonCompressionSummaries();
+    const started = Date.now();
+    await flushCompressionSummaries();
+    expect(Date.now() - started).toBeLessThan(500);
+
+    // 防止 abandon 后晚到的任务写库
+    process.env.FREEANIMA_HOME = "/tmp/anima-compress-abandon-gone";
+    holder.resolve!({ content: "late" });
+    await new Promise<void>((r) => {
+      setTimeout(r, 50);
+    });
+    expect(patchCalls).toHaveLength(0);
+
+    if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
+    else process.env.FREEANIMA_HOME = prevHome;
+  });
+
+  it("skips writeback when FREEANIMA_HOME changes after LLM returns", async () => {
+    const prevHome = process.env.FREEANIMA_HOME;
+    process.env.FREEANIMA_HOME = "/tmp/anima-compress-home-a";
+
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const chatSpy = spyOn(llm, "chat").mockImplementation(async () => {
+      await gate;
+      return { content: "should not write" };
+    });
+    restores.push(chatSpy);
+
+    const cut: CompressionState = { l2: 3, l3: 3 };
+    scheduleCompressionSummary("conv-home", null, cut, "sys", "test-model");
+    for (let i = 0; i < 50 && chatSpy.mock.calls.length === 0; i++) {
+      await new Promise<void>((r) => {
+        setTimeout(r, 5);
+      });
+    }
+    expect(chatSpy.mock.calls.length).toBeGreaterThan(0);
+
+    process.env.FREEANIMA_HOME = "/tmp/anima-compress-home-b";
+    release();
+    const job = await flushCompressionSummaries("conv-home");
+
+    expect(job?.ok).toBe(false);
+    expect(job?.error).toContain("FREEANIMA_HOME changed");
+    expect(patchCalls).toHaveLength(0);
+
+    if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
+    else process.env.FREEANIMA_HOME = prevHome;
   });
 });
