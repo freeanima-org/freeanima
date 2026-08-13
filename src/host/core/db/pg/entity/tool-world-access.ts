@@ -15,6 +15,18 @@ export class ToolWorldAccessError extends Error {
   override name = "ToolWorldAccessError";
 }
 
+/**
+ * Habitat UI SubjectScope：user 可代读 agent 默认私有 world
+ *（与 entity/task/vault 的 `subject_type=user && subject_kind=agent` 一致）。
+ * 仅挂在 Habitat HTTP/RPC 调用点；勿并入 assertSubjectCanAccessWorld / resolveToolWorld。
+ */
+export function isUserAgentPrivateWorldPassthrough(
+  subjectType: string | undefined,
+  worldId: number,
+): boolean {
+  return subjectType === "user" && worldId === resolveSubjectWorldId("agent");
+}
+
 /** subject entity → default_private_world_id */
 export async function resolveDefaultPrivateWorldForSubject(subjectId: number): Promise<number> {
   const row = await getEntity(subjectId);

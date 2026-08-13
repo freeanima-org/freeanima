@@ -8,6 +8,8 @@ export const entityAdminRowSchema = z.object({
   id: z.number().int().positive(),
   type: z.string(),
   title: z.string(),
+  /** 列表预览：DB summary，或 content/snippet 截断 */
+  summary: z.string(),
   primary_component: z.string().nullable(),
   components: z.array(z.string()),
   updated_at: z.string(),
@@ -18,7 +20,6 @@ export type EntityAdminRowPayload = z.infer<typeof entityAdminRowSchema>;
 
 /** 实体浏览器详情（含正文 / body；不含完整 revisions） */
 export const entityDetailSchema = entityAdminRowSchema.extend({
-  summary: z.string(),
   content: z.string(),
   body: z.record(z.string(), z.unknown()),
   pinned: z.boolean(),
