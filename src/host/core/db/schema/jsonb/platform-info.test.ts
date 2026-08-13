@@ -5,7 +5,9 @@ import {
   buildPlatformInfo,
   isCronPlatformInfo,
   isRemotePlatformString,
+  normalizeLegacyRemotePlatformPrefix,
   parseRemotePlatformString,
+  platformInfoSchema,
   splitPlatformInfo,
   stripOriginRoutingMeta,
 } from "./platform-info.ts";
@@ -16,8 +18,17 @@ describe("platform-info", () => {
       app_slug: "chat",
       instance_id_norm: "default",
     });
-    expect(parseRemotePlatformString("sap:chat:default")).toBeNull();
+    expect(parseRemotePlatformString("sap:chat:default")).toEqual({
+      app_slug: "chat",
+      instance_id_norm: "default",
+    });
     expect(parseRemotePlatformString("discord:x")).toBeNull();
+  });
+
+  test("normalizeLegacyRemotePlatformPrefix rewrites sap: to remote:", () => {
+    expect(normalizeLegacyRemotePlatformPrefix("sap:companion:k7m")).toBe("remote:companion:k7m");
+    expect(normalizeLegacyRemotePlatformPrefix("remote:coding:x")).toBe("remote:coding:x");
+    expect(normalizeLegacyRemotePlatformPrefix("discord")).toBe("discord");
   });
 
   test("buildPlatformInfo fills outpost fields", () => {
@@ -26,6 +37,26 @@ describe("platform-info", () => {
       platform: "remote:chat:inst-1",
       outpost_app_id: "chat",
       outpost_instance_id: "inst-1",
+    });
+  });
+
+  test("buildPlatformInfo normalizes legacy sap: platform on write", () => {
+    const info = buildPlatformInfo("sap:companion:k7m", {});
+    expect(info).toMatchObject({
+      platform: "remote:companion:k7m",
+      outpost_app_id: "companion",
+      outpost_instance_id: "k7m",
+    });
+  });
+
+  test("platformInfoSchema accepts and normalizes legacy sap: rows", () => {
+    const parsed = platformInfoSchema.parse({
+      platform: "sap:companion:abc",
+      outpost_app_id: "companion",
+    });
+    expect(parsed).toMatchObject({
+      platform: "remote:companion:abc",
+      outpost_app_id: "companion",
     });
   });
 
@@ -89,6 +120,8 @@ describe("platform-info", () => {
 
   test("isRemotePlatformString", () => {
     expect(isRemotePlatformString("remote:chat:default")).toBe(true);
+    expect(isRemotePlatformString("sap:companion:k7m")).toBe(true);
     expect(isRemotePlatformString("remote:chat")).toBe(false);
+    expect(isRemotePlatformString("sap:chat")).toBe(false);
   });
 });

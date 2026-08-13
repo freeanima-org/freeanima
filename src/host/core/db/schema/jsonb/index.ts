@@ -20,6 +20,7 @@ export {
   type GatewayPlatform,
   isGatewayPlatform,
   isRemotePlatformString,
+  normalizeLegacyRemotePlatformPrefix,
   platformInfoSchema,
   type PlatformInfo,
   buildPlatformInfo,
