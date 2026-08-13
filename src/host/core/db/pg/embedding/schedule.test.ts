@@ -1,21 +1,28 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
-
-const embedAndStoreJobsMock = mock(async (_jobs: EmbeddingPendingJob[]) => 0);
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
 import type { EmbeddingPendingJob } from "./types.ts";
 
+const embedAndStoreJobsMock = mock(async (_jobs: EmbeddingPendingJob[]) => 0);
+
+const embedJobsOriginal = await import("./embed-jobs.ts");
+
 mock.module("./embed-jobs.ts", () => ({
+  ...embedJobsOriginal,
   embedAndStoreJobs: embedAndStoreJobsMock,
 }));
 
-import {
+afterAll(() => {
+  mock.module("./embed-jobs.ts", () => embedJobsOriginal);
+});
+
+const {
   awaitPendingEmbeddingsForTest,
   resetPendingEmbeddingsForTest,
   scheduleAutobiographicalMemoryEmbedding,
   scheduleLimbicMemoryEmbedding,
   scheduleMessageEmbedding,
   scheduleSemanticMemoryEmbedding,
-} from "./schedule.ts";
+} = await import("./schedule.ts");
 
 describe("schedule embedding", () => {
   beforeEach(() => {

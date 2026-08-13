@@ -1,6 +1,9 @@
-import { afterEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, afterEach, describe, expect, it, mock } from "bun:test";
+
+const probesOriginal = await import("./config-test-gateway-probes.ts");
 
 mock.module("./config-test-gateway-probes.ts", () => ({
+  ...probesOriginal,
   probeDiscordBotToken: async (token: string) => {
     if (token === "bad") throw new Error("invalid token");
     return { tag: "TestBot#0001" };
@@ -15,7 +18,10 @@ const s3Write = mock(async () => undefined);
 const s3Bytes = mock(async () => new TextEncoder().encode("freeanima-object-storage-probe"));
 const s3Delete = mock(async () => undefined);
 
+const bunS3Original = await import("@freeanima/features/object-storage/domain/bun-s3.ts");
+
 mock.module("@freeanima/features/object-storage/domain/bun-s3.ts", () => ({
+  ...bunS3Original,
   createBunS3Client: () => ({
     write: s3Write,
     delete: s3Delete,
@@ -24,6 +30,11 @@ mock.module("@freeanima/features/object-storage/domain/bun-s3.ts", () => ({
     }),
   }),
 }));
+
+afterAll(() => {
+  mock.module("./config-test-gateway-probes.ts", () => probesOriginal);
+  mock.module("@freeanima/features/object-storage/domain/bun-s3.ts", () => bunS3Original);
+});
 
 import { Config } from "@freeanima/host/core/config";
 import type { AppRuntimeContext } from "@freeanima/host/platform/ports/app-runtime-context";
