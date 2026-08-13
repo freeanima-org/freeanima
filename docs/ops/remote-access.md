@@ -165,12 +165,12 @@ mkcert -install  # trust that CA on the Habitat host itself
 
 **入口**（`src/portal/app/tauri`）与 **浏览器 Web**（`src/portal/app/web`）是远程客户端；它们**不读取**栖息地 `config.yaml` 的 token。
 
-| 客户端           | 存储                                             |
-| ---------------- | ------------------------------------------------ |
-| 桌面壳           | `~/.anima-desktop/settings.json`（`habitat` 段） |
-| 移动壳           | Tauri prefs / store                              |
-| 浏览器 Web       | localStorage（设置页）                           |
-| Vault 浏览器扩展 | 扩展选项页 → `chrome.storage.local`              |
+| 客户端         | 存储                                             |
+| -------------- | ------------------------------------------------ |
+| 桌面壳         | `~/.anima-desktop/settings.json`（`habitat` 段） |
+| 移动壳         | Tauri prefs / store                              |
+| 浏览器 Web     | localStorage（设置页）                           |
+| 浏览器形态入口 | 扩展选项页 → `chrome.storage.local`              |
 
 设置（所有客户端）：
 
@@ -181,7 +181,7 @@ mkcert -install  # trust that CA on the Habitat host itself
 
 流程：打开栖息地设置 → 填写 → **测试连接** → 保存。桌面保存后需**重启桌面壳**。
 
-**Vault 浏览器扩展（浏览器形态入口）：** 选项页填写同一组 URL + Token → 测试连接 → 用用户库主密码解锁。RPC 仅 HTTP REST（background）；见 [`docs/modules/portal.md`](../modules/portal.md)、[`docs/modules/vault.md`](../modules/vault.md)（`just pack browser-extension-chrome` / `browser-extension-firefox`）。
+**浏览器形态入口：** 选项页填写同一组 URL + Token → 测试连接 → 用用户库主密码解锁 Vault。RPC 仅 HTTP REST（background）；见 [`docs/modules/portal.md`](../modules/portal.md)、[`docs/modules/vault.md`](../modules/vault.md)（`just pack browser-extension-chrome` / `browser-extension-firefox`）。
 
 ## 3. 认证行为
 

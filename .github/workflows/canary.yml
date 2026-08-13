@@ -69,7 +69,8 @@ jobs:
         - Browser Extension (Firefox, maintainer self-host): `freeanima-browser-extension-firefox.xpi`
 
         Channel: **canary**. Use in-app / `anima upgrade --channel canary` to follow this track.
-        Firefox Vault auto-update: `https://freeanima.com/extension/firefox/updates.json` → this xpi.
+        Firefox extension auto-update (`extension@freeanima.com`): `https://freeanima.com/extension/firefox/updates.json` → this xpi.
+        Changing gecko id requires uninstalling the old add-on and installing the new xpi.
     secrets:
       FREEANIMA_CI: ${{ secrets.FREEANIMA_CI }}
       FREEANIMA_ANDROID_KEYSTORE_BASE64: ${{ secrets.FREEANIMA_ANDROID_KEYSTORE_BASE64 }}

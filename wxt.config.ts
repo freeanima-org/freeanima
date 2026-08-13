@@ -46,9 +46,9 @@ const appVersion = resolveBuildVersionFromEnv(repoRoot, process.env, { channel: 
 const chromeManifestVersion = resolveChromeManifestVersion(appVersion);
 const firefoxManifestVersion = resolveFirefoxAddonVersion(appVersion);
 const isLocal = buildChannel === "local";
-const extensionName = isLocal ? "FreeAnima Vault Local" : "FreeAnima Vault";
+const extensionName = isLocal ? "FreeAnima Local" : "FreeAnima";
 
-/** FreeAnima Vault 浏览器扩展（MV3；Chrome 默认，Firefox 另轨） */
+/** 浏览器形态入口（MV3；Chrome 默认，Firefox 另轨） */
 export default defineConfig({
   srcDir: "src/portal/extension",
   outDir: "dist/browser-extension",
@@ -60,7 +60,7 @@ export default defineConfig({
     const isFirefox = browser === "firefox";
     return {
       name: extensionName,
-      description: "FreeAnima 用户保险库：自动填充、生成密码、连接 Habitat",
+      description: "FreeAnima 浏览器形态入口：连接栖息地；含保险库自动填充与密码生成",
       version: isFirefox ? firefoxManifestVersion : chromeManifestVersion,
       // version_name 为 Chrome 扩展；Firefox / AMO 不使用
       ...(isFirefox ? {} : { version_name: appVersion }),
@@ -79,7 +79,7 @@ export default defineConfig({
         },
         "open-popup": {
           suggested_key: { default: "Ctrl+Shift+Y" },
-          description: "打开 Vault 弹窗",
+          description: "打开扩展弹窗",
         },
         "generate-password": {
           suggested_key: { default: "Ctrl+Shift+G" },

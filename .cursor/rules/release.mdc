@@ -113,7 +113,7 @@ Canary `nextVersion`：有 open Release PR（`autorelease: pending`）则取其 
 
 **本机构建默认 `channel=local`**（未设 `FREEANIMA_BUILD_CHANNEL` 时；遗留值 `dev` 读入归一为 `local`）。CI 必须显式设置 `release` / `canary`。构建版本可用 `FREEANIMA_BUILD_VERSION` 覆盖（不改根 `package.json`）；未覆盖且为 `local` 时自动 stamp。Android APK 的 `versionName` / `versionCode` 由 `apply-tauri-shell-identity` 写入 Tauri `--config` 合并层（与 `native-build-meta` 同源），避免 canary 仍显示基线 release 号。
 
-**分发轨（build-meta `channel`）**：`release` / `canary` / `local`。`local` **不可**换轨、不参与 GitHub 包更新（与 CI 发运区分；打包管线相同）。Desktop/Mobile 在 `local` 下使用独立 appId（仍为 `com.freeanima.portal.dev`，避免已装本机包断裂），产品显示名 **FreeAnima Local**；壳默认 home 仍为 `~/.anima-dev`（正式轨 `~/.anima`，均可用 `FREEANIMA_HOME` 覆盖）。Standalone / Desktop / Mobile 在轨内检查更新；可在 `release`⇄`canary` 间切换。浏览器 PWA 不走 GitHub 包通道；Chrome Vault 为旁路 zip；维护者 Firefox Vault（`vault@freeanima.com`）跟 canary 自托管 `https://freeanima.com/extension/firefox/updates.json`。
+**分发轨（build-meta `channel`）**：`release` / `canary` / `local`。`local` **不可**换轨、不参与 GitHub 包更新（与 CI 发运区分；打包管线相同）。Desktop/Mobile 在 `local` 下使用独立 appId（仍为 `com.freeanima.portal.dev`，避免已装本机包断裂），产品显示名 **FreeAnima Local**；壳默认 home 仍为 `~/.anima-dev`（正式轨 `~/.anima`，均可用 `FREEANIMA_HOME` 覆盖）。Standalone / Desktop / Mobile 在轨内检查更新；可在 `release`⇄`canary` 间切换。浏览器 PWA 不走 GitHub 包通道；Chrome 浏览器形态入口为旁路 zip；维护者 Firefox 扩展（`extension@freeanima.com`）跟 canary 自托管 `https://freeanima.com/extension/firefox/updates.json`（换 gecko id 须卸旧装新）。
 
 发布使用组织 secret **`FREEANIMA_CI`**。
 

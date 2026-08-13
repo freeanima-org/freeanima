@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * Firefox 扩展打包冒烟（无 GUI）：校验 MV3 manifest / gecko / updates.json 约定。
- * Win 实机 Vault 填充需维护者本机安装签名 xpi 后手工确认。
+ * Win 实机填充等需维护者本机安装签名 xpi 后手工确认。
  *
  * 用法：FREEANIMA_BUILD_CHANNEL=canary FREEANIMA_BUILD_VERSION=… bun scripts/smoke-firefox-extension.ts
  * 缺省先跑 pack（可 SMOKE_SKIP_PACK=1 跳过）。
