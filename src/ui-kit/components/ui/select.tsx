@@ -11,7 +11,9 @@ import {
   Select as SelectPrimitive,
   SelectValue as SelectValuePrimitive,
   Separator as SeparatorPrimitive,
+  type ListBoxItemProps,
   type ListBoxProps,
+  type PopoverProps,
   type SearchFieldProps,
   type ListBoxSectionProps as SelectGroupProps,
   type SelectProps,
@@ -108,7 +110,7 @@ function SelectContent({
   offset = 4,
   crossOffset = 0,
   ...props
-}: Omit<React.ComponentProps<typeof PopoverPrimitive>, "className" | "children"> & {
+}: Omit<PopoverProps, "className" | "children"> & {
   className?: string;
   children?: React.ReactNode;
 }) {
@@ -132,7 +134,7 @@ function SelectPopover({
   offset = 4,
   crossOffset = 0,
   ...props
-}: Omit<React.ComponentProps<typeof PopoverPrimitive>, "className" | "children"> & {
+}: Omit<PopoverProps, "className" | "children"> & {
   className?: string;
   children?: React.ReactNode;
 }) {
@@ -197,12 +199,7 @@ function SelectLabel({ className, ...props }: React.ComponentProps<typeof Header
   );
 }
 
-function SelectItem({
-  className,
-  children,
-  textValue,
-  ...props
-}: React.ComponentProps<typeof ListBoxItemPrimitive>) {
+function SelectItem({ className, children, textValue, ...props }: ListBoxItemProps) {
   const resolvedTextValue: string | undefined = typeof children === "string" ? children : textValue;
   return (
     <ListBoxItemPrimitive

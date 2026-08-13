@@ -83,7 +83,7 @@ export async function runTurnAfterCompleteHooks(
     turnAfterComplete,
     {
       conversationId,
-      messages: messages as Record<string, unknown>[],
+      messages: messages,
     },
     { llm_kind: "conversation" },
   );
@@ -199,7 +199,12 @@ export async function executeCommand(
         ...(result.ux !== undefined ? { ux: result.ux } : {}),
       };
     } catch (e) {
-      return { text: `⚠️ ${e}`, data: result.data, found: true, ux: "toast" };
+      return {
+        text: `⚠️ ${e instanceof Error ? e.message : String(e)}`,
+        data: result.data,
+        found: true,
+        ux: "toast",
+      };
     }
   }
 
@@ -216,7 +221,12 @@ export async function executeCommand(
         ...(result.ux !== undefined ? { ux: result.ux } : {}),
       };
     } catch (e) {
-      return { text: `⚠️ ${e}`, data: result.data, found: true, ux: "toast" };
+      return {
+        text: `⚠️ ${e instanceof Error ? e.message : String(e)}`,
+        data: result.data,
+        found: true,
+        ux: "toast",
+      };
     }
   }
 
@@ -262,7 +272,7 @@ export async function executeCommand(
       };
     } catch (e) {
       return {
-        text: `⚠️ Skill review failed: ${e}`,
+        text: `⚠️ Skill review failed: ${e instanceof Error ? e.message : String(e)}`,
         data: result.data,
         found: true,
         ux: "toast",
@@ -512,7 +522,10 @@ async function* dispatchCommandStream(
     try {
       yield* runRetryStream(deps, msgDeps, conversationId);
     } catch (e) {
-      yield { event: "token", data: { content: `⚠️ ${e}` } };
+      yield {
+        event: "token",
+        data: { content: `⚠️ ${e instanceof Error ? e.message : String(e)}` },
+      };
       yield { event: "done", data: {} };
     }
     return;
@@ -524,7 +537,10 @@ async function* dispatchCommandStream(
     try {
       yield* runGoalStartStream(deps, msgDeps, conversationId, result.data.prompt);
     } catch (e) {
-      yield { event: "token", data: { content: `⚠️ ${e}` } };
+      yield {
+        event: "token",
+        data: { content: `⚠️ ${e instanceof Error ? e.message : String(e)}` },
+      };
       yield { event: "done", data: {} };
     }
     return;

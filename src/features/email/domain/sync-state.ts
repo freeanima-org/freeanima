@@ -154,14 +154,7 @@ export function resolveSpecialMailboxes(
     drafts_mailbox: existing?.drafts_mailbox ?? byUse.drafts,
     paths: paths.length > 0 ? paths : [inbox],
     byUse,
-  }) as {
-    inbox: string;
-    sent_mailbox?: string;
-    trash_mailbox?: string;
-    drafts_mailbox?: string;
-    paths: string[];
-    byUse: Partial<Record<EmailMailboxSpecialUse, string>>;
-  };
+  });
 }
 
 /** Mailboxes to sync by default: system roles + any with existing cursors. */

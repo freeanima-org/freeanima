@@ -21,6 +21,7 @@ import {
 } from "@freeanima/host/core/db/pg/semantic-memory";
 import { MEMORY_SEMANTIC_CITATION_TOOL_HINT } from "./memory-reference.ts";
 import { getToolConversationIdForMemory } from "./tool-conversation-port.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 const MEMORY_TYPES = [
   "world",
@@ -39,23 +40,23 @@ function parseStringArray(value: unknown): string[] | undefined {
 }
 
 async function handleCreateSemanticMemory(args: Record<string, unknown>): Promise<string> {
-  const content = String(args.content ?? "").trim();
+  const content = coerceString(args.content ?? "").trim();
   if (!content) return toolError("content is required");
 
   const row: SemanticMemoryCreateInput = omitUndefined({
     content,
-    type: args.type !== undefined ? String(args.type) : undefined,
+    type: args.type !== undefined ? coerceString(args.type) : undefined,
     pinned: args.pinned !== undefined ? Boolean(args.pinned) : undefined,
     source_conversations: parseStringArray(args.source_conversations),
     observed_at:
       args.observed_at !== undefined && args.observed_at != null
-        ? String(args.observed_at)
+        ? coerceString(args.observed_at)
         : formatCstIso(),
     occurred_at:
       args.occurred_at !== undefined && args.occurred_at != null
-        ? String(args.occurred_at)
+        ? coerceString(args.occurred_at)
         : undefined,
-    status: args.status !== undefined ? String(args.status) : undefined,
+    status: args.status !== undefined ? coerceString(args.status) : undefined,
   });
 
   const id = await createSemanticMemory(row);
@@ -65,7 +66,7 @@ async function handleCreateSemanticMemory(args: Record<string, unknown>): Promis
 function resolveSemanticMemoryId(args: Record<string, unknown>): number | null {
   const raw = args.semantic_memory_id ?? args.fact_id ?? args.id;
   if (raw == null || raw === "") return null;
-  const n = typeof raw === "number" ? raw : Number(String(raw).trim());
+  const n = typeof raw === "number" ? raw : Number(coerceString(raw).trim());
   if (!Number.isInteger(n) || n <= 0) return null;
   return n;
 }
@@ -106,21 +107,21 @@ async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promis
 
   const patch: SemanticMemoryUpdateInput = { id: semanticMemoryId };
   if (args.content !== undefined) {
-    const content = String(args.content).trim();
+    const content = coerceString(args.content).trim();
     if (!content) return toolError("content cannot be empty");
     patch.content = content;
   }
-  if (args.type !== undefined) patch.type = String(args.type);
+  if (args.type !== undefined) patch.type = coerceString(args.type);
   if (args.pinned !== undefined) patch.pinned = Boolean(args.pinned);
   if (args.source_conversations !== undefined)
     patch.source_conversations = parseStringArray(args.source_conversations) ?? [];
   if (args.observed_at !== undefined) {
-    patch.observed_at = args.observed_at == null ? null : String(args.observed_at);
+    patch.observed_at = args.observed_at == null ? null : coerceString(args.observed_at);
   }
   if (args.occurred_at !== undefined) {
-    patch.occurred_at = args.occurred_at == null ? null : String(args.occurred_at);
+    patch.occurred_at = args.occurred_at == null ? null : coerceString(args.occurred_at);
   }
-  if (args.status !== undefined) patch.status = String(args.status);
+  if (args.status !== undefined) patch.status = coerceString(args.status);
 
   await updateSemanticMemory(patch);
   return toolResult({
@@ -145,11 +146,11 @@ async function handleDeprecateSemanticMemory(args: Record<string, unknown>): Pro
 }
 
 async function handleSearchSemanticMemory(args: Record<string, unknown>): Promise<string> {
-  const query = String(args.query ?? "").trim();
+  const query = coerceString(args.query ?? "").trim();
   const limit = Number(args.limit ?? 10);
   const types = parseStringArray(args.types);
   const sourceConversations = parseStringArray(args.source_conversations);
-  const statusRaw = String(args.status ?? "active").trim();
+  const statusRaw = coerceString(args.status ?? "active").trim();
   const status =
     statusRaw === "all" || statusRaw === "deprecated" || statusRaw === "active"
       ? statusRaw
@@ -198,7 +199,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     );
   }
 
-  const targetContent = String(args.target_content ?? "").trim();
+  const targetContent = coerceString(args.target_content ?? "").trim();
   if (!targetContent) return toolError("target_content is required");
 
   // Look up all source memories
@@ -250,14 +251,14 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
 
   const mergedOccurred =
     args.target_occurred_at !== undefined && args.target_occurred_at != null
-      ? String(args.target_occurred_at)
+      ? coerceString(args.target_occurred_at)
       : (earliestOccurred ?? undefined);
 
   // Create new memory
   const newId = await createSemanticMemory(
     omitUndefined({
       content: targetContent,
-      type: args.target_type !== undefined ? String(args.target_type) : undefined,
+      type: args.target_type !== undefined ? coerceString(args.target_type) : undefined,
       pinned: args.target_pinned !== undefined ? Boolean(args.target_pinned) : undefined,
       source_conversations: mergedSessions,
       observed_at: earliestObserved,
@@ -289,7 +290,7 @@ function resolveObservedAt(
   defaults?: { observed_at?: string },
 ): string {
   if (args.observed_at !== undefined && args.observed_at != null) {
-    return String(args.observed_at);
+    return coerceString(args.observed_at);
   }
   return defaults?.observed_at ?? formatCstIso();
 }
@@ -299,7 +300,7 @@ export async function createSemanticMemoryFromArgs(
   args: Record<string, unknown>,
   defaults?: { source_conversations?: string[]; observed_at?: string },
 ): Promise<number> {
-  const content = String(args.content ?? "").trim();
+  const content = coerceString(args.content ?? "").trim();
   if (!content) throw new Error("content is required");
 
   const sourceConversations =
@@ -310,13 +311,13 @@ export async function createSemanticMemoryFromArgs(
   return createSemanticMemory(
     omitUndefined({
       content,
-      type: args.type !== undefined ? String(args.type) : undefined,
+      type: args.type !== undefined ? coerceString(args.type) : undefined,
       pinned: args.pinned !== undefined ? Boolean(args.pinned) : undefined,
       source_conversations: sourceConversations,
       observed_at: resolveObservedAt(args, defaults),
       occurred_at:
         args.occurred_at !== undefined && args.occurred_at != null
-          ? String(args.occurred_at)
+          ? coerceString(args.occurred_at)
           : undefined,
     }),
   );
@@ -438,7 +439,7 @@ export const semanticMemoryToolDefs: ToolDef[] = [
 ];
 
 export async function rememberFromArgs(args: Record<string, unknown>): Promise<string> {
-  const action = String(args.action ?? "create").trim() || "create";
+  const action = coerceString(args.action ?? "create").trim() || "create";
   if (action === "delete") {
     const semanticMemoryId = resolveSemanticMemoryId(args);
     if (!semanticMemoryId) return toolError("semantic_memory_id is required for delete");

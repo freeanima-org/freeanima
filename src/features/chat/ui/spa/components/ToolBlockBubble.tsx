@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@freeanima/ui-kit";
 import type { DisplayToolCall } from "@freeanima/features/chat/ui/spa/lib/types.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined") return false;
@@ -125,7 +126,7 @@ function formatJson(obj: Record<string, unknown>) {
   try {
     return JSON.stringify(obj, null, 2);
   } catch {
-    return String(obj);
+    return coerceString(obj);
   }
 }
 

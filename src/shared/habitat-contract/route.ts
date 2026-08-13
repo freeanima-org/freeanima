@@ -77,7 +77,7 @@ export function mergeFeatureRoutes<const R extends readonly HabitatRouteBundle[]
     if (handlers[route.method] !== undefined) {
       throw new Error(`duplicate habitat route in feature bundle: ${route.method}`);
     }
-    handlers[route.method] = route.handler as HabitatRouteHandler<z.ZodTypeAny, z.ZodTypeAny>;
+    handlers[route.method] = route.handler;
     defs[route.method] = route.def;
   }
 
@@ -116,7 +116,7 @@ export function defineHabitatRouteFromDef<M extends string>(
   method: M,
   def: HabitatMethodDef,
   handler: HabitatRouteHandler<z.ZodTypeAny, z.ZodTypeAny>,
-): HabitatRouteBundle<M, z.ZodTypeAny, z.ZodTypeAny> {
+): HabitatRouteBundle<M> {
   return {
     method,
     def,
@@ -145,7 +145,7 @@ export function bindHabitatRouteHandlers<const T extends HabitatMethodDefMap>(
     const handler = handlers[method as keyof T & string];
     if (!def) throw new Error(`missing habitat route def for ${method}`);
     if (!handler) throw new Error(`missing habitat route handler for ${method}`);
-    outHandlers[method] = handler as HabitatRouteHandler<z.ZodTypeAny, z.ZodTypeAny>;
+    outHandlers[method] = handler;
     outDefs[method] = def;
   }
   return { handlers: outHandlers, defs: outDefs } as {

@@ -1,5 +1,6 @@
 import { cacheGetJson, cacheSetJson, REDIS_CACHE_KEY_PREFIX } from "@freeanima/host/core/redis";
 import type { LlmDebugSnapshotPayload } from "@freeanima/shared/rpc-contract/frames/message";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 /** 滚动覆盖：每次写入重置 TTL */
 export const LLM_DEBUG_CACHE_TTL_SECONDS = 600;
@@ -22,16 +23,14 @@ function asSnapshot(payload: Record<string, unknown>): LlmDebugSnapshotPayload |
   const snapshot: LlmDebugSnapshotPayload = {
     phase,
     turn_index: Number(payload.turn_index ?? 0),
-    model: String(payload.model ?? ""),
+    model: coerceString(payload.model),
     tool_count: Number(payload.tool_count ?? 0),
     tools: Array.isArray(payload.tools) ? (payload.tools as LlmDebugSnapshotPayload["tools"]) : [],
     invoke: invoke as LlmDebugSnapshotPayload["invoke"],
   };
   const injections = payload.runtime_injections;
   if (injections && typeof injections === "object") {
-    snapshot.runtime_injections = injections as NonNullable<
-      LlmDebugSnapshotPayload["runtime_injections"]
-    >;
+    snapshot.runtime_injections = injections;
   }
   const passive = payload.passive_recall;
   if (passive && typeof passive === "object") {

@@ -77,7 +77,7 @@ export function shiftSchedulableReminders(
   prevDueAt: string | null | undefined,
   nextDueAt: string,
   reminders: SchedulableReminderEntry[] | null | undefined,
-  legacyRemindAt?: string | null | undefined,
+  legacyRemindAt?: string | null,
 ): { remind_at: string | null; reminders: SchedulableReminderEntry[] } {
   const prevDueMs = prevDueAt ? Date.parse(prevDueAt) : NaN;
   const nextDueMs = Date.parse(nextDueAt);

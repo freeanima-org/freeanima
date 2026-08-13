@@ -24,6 +24,7 @@ import {
   type RouteHop,
   type TimeoutDraft,
 } from "./llm-settings-draft.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   LLM_FORMAT_OPENAI_COMPATIBLE,
   LLM_PRESET_CUSTOM,
@@ -339,7 +340,7 @@ export function LlmConnectionEditorForm({
   onChange: (next: Record<string, unknown>) => void;
   testDisabled?: boolean;
 }) {
-  const preset = String(entry.preset ?? LLM_PRESET_CUSTOM);
+  const preset = coerceString(entry.preset ?? LLM_PRESET_CUSTOM);
   const isCustom = preset === LLM_PRESET_CUSTOM;
   const isGateway = preset === LLM_PRESET_OPENCODE_GO;
   const defaultUrl = connectionDefaultBaseUrl(preset);
@@ -405,7 +406,7 @@ export function LlmConnectionEditorForm({
           <select
             id="llm-connection-format"
             className={habitatConfigSelectClassName}
-            value={String(entry.format ?? LLM_FORMAT_OPENAI_COMPATIBLE)}
+            value={coerceString(entry.format ?? LLM_FORMAT_OPENAI_COMPATIBLE)}
             onChange={(e) => patch({ format: e.target.value })}
           >
             {LLM_SETTINGS_FORMATS.map((f) => (
@@ -419,7 +420,7 @@ export function LlmConnectionEditorForm({
 
       {hubConfigTextField(
         "Base URL",
-        String(entry.base_url ?? ""),
+        coerceString(entry.base_url ?? ""),
         (v) => patch({ base_url: v || undefined }),
         {
           hint: isCustom
@@ -431,9 +432,14 @@ export function LlmConnectionEditorForm({
         },
       )}
 
-      {hubConfigVaultField("API 密钥", String(entry.api_key ?? ""), (v) => patch({ api_key: v }), {
-        hint: "明文，或 vault(…) / env(…)；推荐从 Vault 选择写入引用",
-      })}
+      {hubConfigVaultField(
+        "API 密钥",
+        coerceString(entry.api_key ?? ""),
+        (v) => patch({ api_key: v }),
+        {
+          hint: "明文，或 vault(…) / env(…)；推荐从 Vault 选择写入引用",
+        },
+      )}
 
       <TimeoutAdvancedFields entry={entry} patch={patch} />
 

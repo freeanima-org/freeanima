@@ -13,6 +13,7 @@ import {
   updateTag,
 } from "./tag-store.ts";
 import { TAG_TOOL_RETURNS } from "./return-schemas.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 const WORLD_ID_OPTIONAL = {
   world_id: {
@@ -122,7 +123,7 @@ export function registerTagTools(toolSets: ToolSetRegistry): void {
             const result = await searchTags(
               worldId,
               omitUndefined({
-                query: args.query != null ? String(args.query) : undefined,
+                query: args.query != null ? coerceString(args.query) : undefined,
                 limit: args.limit != null ? Number(args.limit) : undefined,
                 offset: args.offset != null ? Number(args.offset) : undefined,
               }),
@@ -154,7 +155,7 @@ export function registerTagTools(toolSets: ToolSetRegistry): void {
               const item = await createTag(
                 worldId,
                 omitUndefined({
-                  title: String(args.title ?? ""),
+                  title: coerceString(args.title ?? ""),
                   sort_order: args.sort_order != null ? Number(args.sort_order) : undefined,
                 }),
               );
@@ -190,7 +191,7 @@ export function registerTagTools(toolSets: ToolSetRegistry): void {
                 worldId,
                 omitUndefined({
                   id,
-                  title: args.title != null ? String(args.title) : undefined,
+                  title: args.title != null ? coerceString(args.title) : undefined,
                   sort_order: args.sort_order != null ? Number(args.sort_order) : undefined,
                 }),
               );

@@ -7,20 +7,35 @@ import {
   Menu as MenuPrimitive,
   MenuSection as MenuSectionPrimitive,
   MenuTrigger as MenuTriggerPrimitive,
-  PopoverContext,
   Popover as PopoverPrimitive,
   Pressable,
   Separator as SeparatorPrimitive,
   SubmenuTrigger as SubmenuTriggerPrimitive,
+  type MenuProps,
+  type MenuTriggerProps,
+  type PopoverProps,
+  type SeparatorProps,
+  type SubmenuTriggerProps,
   type MenuItemProps as MenuItemPrimitiveProps,
   type MenuSectionProps as MenuSectionPrimitiveProps,
-  type MenuTriggerProps,
 } from "react-aria-components";
 import { createPortal } from "react-dom";
 
+import { AriaPopoverContext, type AriaPopoverAnchorContext } from "../../lib/aria-context.ts";
 import { cn, ariaRenderProps } from "../../lib/utils.ts";
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";
+
+type ContextMenuPlacement = NonNullable<PopoverProps["placement"]>;
+
+type ContextMenuProps = Omit<MenuProps<object>, "children" | "className"> & {
+  "data-slot"?: string;
+  className?: string;
+  children?: React.ReactNode;
+  placement?: ContextMenuPlacement;
+  offset?: number;
+  crossOffset?: number;
+};
 
 function ContextMenu({
   "data-slot": dataSlot = "context-menu-content",
@@ -30,14 +45,7 @@ function ContextMenu({
   className,
   children,
   ...props
-}: Omit<React.ComponentProps<typeof MenuPrimitive<object>>, "children" | "className"> & {
-  "data-slot"?: string;
-  className?: string;
-  children?: React.ReactNode;
-  placement?: React.ComponentProps<typeof PopoverPrimitive>["placement"];
-  offset?: number;
-  crossOffset?: number;
-}) {
+}: ContextMenuProps) {
   return (
     <PopoverPrimitive
       data-slot={dataSlot}
@@ -57,6 +65,24 @@ function ContextMenu({
       </MenuPrimitive>
     </PopoverPrimitive>
   );
+}
+
+function ContextMenuPopoverBridge({
+  children,
+  position,
+  positionRef,
+}: {
+  children: React.ReactNode;
+  position: { x: number; y: number } | null;
+  positionRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const parentCtx: AriaPopoverAnchorContext | null = React.useContext(AriaPopoverContext);
+  const merged: AriaPopoverAnchorContext = {
+    ...(typeof parentCtx === "object" && parentCtx != null ? parentCtx : {}),
+    ...(position == null ? {} : position),
+    triggerRef: positionRef,
+  };
+  return <AriaPopoverContext value={merged}>{children}</AriaPopoverContext>;
 }
 
 function ContextMenuTrigger({
@@ -102,19 +128,9 @@ function ContextMenuTrigger({
             }
           }}
         >
-          <PopoverContext.Consumer>
-            {(ctx: React.ContextType<typeof PopoverContext>) => (
-              <PopoverContext.Provider
-                value={{
-                  ...(typeof ctx === "object" && ctx != null ? ctx : undefined),
-                  ...position,
-                  triggerRef: positionRef,
-                }}
-              >
-                {children}
-              </PopoverContext.Provider>
-            )}
-          </PopoverContext.Consumer>
+          <ContextMenuPopoverBridge position={position} positionRef={positionRef}>
+            {children}
+          </ContextMenuPopoverBridge>
         </div>
       </Pressable>
       {position &&
@@ -143,13 +159,14 @@ function ContextMenuGroup({
   return <MenuSectionPrimitive data-slot="context-menu-group" {...props} />;
 }
 
-function ContextMenuLabel({
-  className,
-  inset,
-  ...props
-}: React.ComponentProps<typeof HeaderPrimitive> & {
-  inset?: boolean;
-}) {
+/** RAC HeaderProps 在 tsgo 下会退化成仅 `render`（HTMLAttributes 未并入），故本地声明 */
+type ContextMenuLabelProps = {
+  className?: string | undefined;
+  inset?: boolean | undefined;
+  children?: React.ReactNode;
+};
+
+function ContextMenuLabel({ className, inset, ...props }: ContextMenuLabelProps) {
   return (
     <HeaderPrimitive
       data-slot="context-menu-label"
@@ -185,7 +202,7 @@ function ContextMenuItem({
   children,
   textValue,
   ...props
-}: MenuItemPrimitiveProps<object> & {
+}: MenuItemPrimitiveProps & {
   inset?: boolean;
   variant?: "default" | "destructive";
 }) {
@@ -230,7 +247,7 @@ function ContextMenuItem({
   );
 }
 
-function ContextMenuSub({ ...props }: React.ComponentProps<typeof SubmenuTriggerPrimitive>) {
+function ContextMenuSub({ ...props }: SubmenuTriggerProps) {
   return <SubmenuTriggerPrimitive data-slot="context-menu-sub" {...props} />;
 }
 
@@ -240,7 +257,7 @@ function ContextMenuSubTrigger({
   children,
   textValue,
   ...props
-}: MenuItemPrimitiveProps<object> & {
+}: MenuItemPrimitiveProps & {
   inset?: boolean;
 }) {
   return (
@@ -275,7 +292,7 @@ function ContextMenuSubContent({
   offset = 0,
   className,
   ...props
-}: React.ComponentProps<typeof ContextMenu>) {
+}: ContextMenuProps) {
   return (
     <ContextMenu
       data-slot="context-menu-sub-content"
@@ -291,10 +308,7 @@ function ContextMenuSubContent({
   );
 }
 
-function ContextMenuSeparator({
-  className,
-  ...props
-}: React.ComponentProps<typeof SeparatorPrimitive>) {
+function ContextMenuSeparator({ className, ...props }: SeparatorProps) {
   return (
     <SeparatorPrimitive
       data-slot="context-menu-separator"

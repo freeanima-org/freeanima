@@ -26,6 +26,7 @@ import {
   catchWithFallback,
   logCaughtError,
 } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export const Route = createFileRoute("/_sidebar/cron")({
   loader: () => getCronJobs().catch(catchWithFallback("cron/getCronJobs", { jobs: [] })),
@@ -37,7 +38,7 @@ type CronJob = Record<string, unknown> & { id: string; name?: string; paused?: b
 function CronPage() {
   const initial = Route.useLoaderData() as { jobs?: CronJob[] };
 
-  const [jobs, setJobs] = useState<CronJob[]>((initial.jobs ?? []) as CronJob[]);
+  const [jobs, setJobs] = useState<CronJob[]>(initial.jobs ?? []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [toggling, setToggling] = useState<Record<string, string>>({});
@@ -57,7 +58,7 @@ function CronPage() {
     setError("");
     try {
       const data = await getCronJobs();
-      setJobs(((data as { jobs?: CronJob[] }).jobs ?? []) as CronJob[]);
+      setJobs((data as { jobs?: CronJob[] }).jobs ?? []);
     } catch (e) {
       logCaughtError("routes/_sidebar/cron", e);
       setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
@@ -77,7 +78,7 @@ function CronPage() {
     } catch (e) {
       logCaughtError("routes/_sidebar/cron", e);
       setError(
-        `${String(job.name ?? job.id)} ${enable ? "启动" : "停止"}失败: ${e instanceof Error ? e.message : String(e)}`,
+        `${coerceString(job.name ?? job.id)} ${enable ? "启动" : "停止"}失败: ${e instanceof Error ? e.message : String(e)}`,
       );
     } finally {
       setToggling((t) => {
@@ -109,7 +110,7 @@ function CronPage() {
     } catch (e) {
       logCaughtError("routes/_sidebar/cron", e);
       setError(
-        `${String(job.name ?? job.id)} 触发失败: ${e instanceof Error ? e.message : String(e)}`,
+        `${coerceString(job.name ?? job.id)} 触发失败: ${e instanceof Error ? e.message : String(e)}`,
       );
     } finally {
       setRunning((r) => {
@@ -218,7 +219,7 @@ function CronPage() {
                       </TableRow>
                       <TableRow>
                         <TableCell className="text-muted-foreground">{"调度"}</TableCell>
-                        <TableCell className="font-mono">{String(job.schedule ?? "")}</TableCell>
+                        <TableCell className="font-mono">{coerceString(job.schedule)}</TableCell>
                       </TableRow>
                       <TableRow>
                         <TableCell className="text-muted-foreground">{"下次运行"}</TableCell>
@@ -251,7 +252,7 @@ function CronPage() {
       {historyJob ? (
         <CronRunLogModal
           jobId={historyJob.id}
-          jobName={String(historyJob.name ?? historyJob.id)}
+          jobName={coerceString(historyJob.name ?? historyJob.id)}
           onClose={() => setHistoryJob(null)}
         />
       ) : null}

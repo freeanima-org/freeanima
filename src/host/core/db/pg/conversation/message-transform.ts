@@ -52,6 +52,6 @@ export function rowToMessage(row: unknown): ConversationMessage {
   const parsed = messageSelectSchema.parse(row);
   return conversationMessageSchema.parse({
     ...parsed.payload,
-    pos: Number(parsed.pos),
+    pos: parsed.pos,
   });
 }

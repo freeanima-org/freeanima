@@ -2,7 +2,6 @@ import { omitUndefined } from "@freeanima/host/core/util";
 import { toolResult } from "@freeanima/host/core/tool";
 import type { StoredMessage, ToolMessage } from "@freeanima/host/core/db/domain";
 import { cleanToolCallsForApi } from "@freeanima/host/core/provider/stream-tools";
-import type { ToolCall } from "@freeanima/host/core/provider";
 
 export const REPAIR_REASON_LOST = "tool response lost (conversation repair)";
 export const REPAIR_REASON_INTERRUPT = "interrupted by user";
@@ -37,7 +36,7 @@ export function detectToolLoopCorruption(messages: StoredMessage[]): ToolLoopCor
     const msg = messages[i];
     if (msg?.role !== "assistant" || !msg.tool_calls?.length) continue;
 
-    const cleaned = cleanToolCallsForApi(msg.tool_calls as ToolCall[]);
+    const cleaned = cleanToolCallsForApi(msg.tool_calls);
     if (cleaned.length === 0) continue;
 
     const responded = new Set<string>();
@@ -125,12 +124,12 @@ export function repairToolLoopMessages(
       continue;
     }
 
-    const cleaned = cleanToolCallsForApi(msg.tool_calls as ToolCall[]);
+    const cleaned = cleanToolCallsForApi(msg.tool_calls);
     if (cleaned.length === 0) {
-      const text = String(msg.content ?? "").trim() || String(msg.reasoning ?? "").trim();
+      const text = (msg.content ?? "").trim() || (msg.reasoning ?? "").trim();
       if (text) {
         const { tool_calls: _removed, ...rest } = msg;
-        out.push({ ...rest, role: "assistant", content: text } as StoredMessage);
+        out.push({ ...rest, role: "assistant", content: text });
       }
       let j = i + 1;
       while (j < messages.length && messages[j]?.role === "tool") j++;

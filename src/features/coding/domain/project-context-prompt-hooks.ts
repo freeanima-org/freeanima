@@ -17,10 +17,6 @@ import {
   formatRequestableRulesCatalog,
   getProjectAgentContext,
   type ProjectAgentContextSnapshot,
-  type ProjectAgentProfile,
-  type ProjectRule,
-  type ProjectSkill,
-  type ProjectMcpServer,
 } from "@freeanima/features/coding/domain";
 
 function asSnapshot(raw: unknown): ProjectAgentContextSnapshot | null {
@@ -61,10 +57,10 @@ export function registerCodingProjectContextPromptHook(registry: HookRegistry): 
       if (!snapshot && sid) snapshot = getProjectAgentContext(sid) ?? null;
       if (!snapshot) return { status: "ok" };
 
-      const rules = snapshot.rules as ProjectRule[];
-      const skills = snapshot.skills as ProjectSkill[];
-      const agents = snapshot.agents as ProjectAgentProfile[];
-      const mcp = snapshot.mcpServers as ProjectMcpServer[];
+      const rules = snapshot.rules;
+      const skills = snapshot.skills;
+      const agents = snapshot.agents;
+      const mcp = snapshot.mcpServers;
 
       const sections: SystemPromptSection[] = [];
 

@@ -22,6 +22,7 @@ import {
   removeFileFromObjectFolder,
 } from "./folder-store.ts";
 import { OBJECT_STORAGE_TOOL_RETURNS } from "./return-schemas.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 const WORLD_ID_OPTIONAL = {
   world_id: {
@@ -106,7 +107,7 @@ export function registerObjectStorageTools(toolSets: ToolSetRegistry): void {
             required: ["path"],
           },
           handler: async (args) => {
-            const pathRaw = String(args.path ?? "");
+            const pathRaw = coerceString(args.path ?? "");
             if (!pathRaw.trim()) return toolError("path is required");
             const resolved = resolveToolPath(pathRaw);
             const deny = assertPathAllowed(resolved, "read");
@@ -118,9 +119,10 @@ export function registerObjectStorageTools(toolSets: ToolSetRegistry): void {
               const base = resolved.split(/[/\\]/).pop() || "file";
               const item = await createObjectFile({
                 world_id: world,
-                title: String(args.title ?? base),
+                title: coerceString(args.title ?? base),
                 bytes,
-                mime_type: args.mime_type != null ? String(args.mime_type) : guessMime(resolved),
+                mime_type:
+                  args.mime_type != null ? coerceString(args.mime_type) : guessMime(resolved),
               });
               return toolResult({ ok: true, action: "upload", item });
             } catch (e) {
@@ -142,7 +144,7 @@ export function registerObjectStorageTools(toolSets: ToolSetRegistry): void {
           handler: async (args) => {
             const id = parseId(args.id);
             if (id == null) return toolError("id is required");
-            const pathRaw = String(args.path ?? "");
+            const pathRaw = coerceString(args.path ?? "");
             if (!pathRaw.trim()) return toolError("path is required");
             const resolved = resolveToolPath(pathRaw);
             const deny = assertPathAllowed(resolved, "write");
@@ -230,7 +232,7 @@ export function registerObjectStorageTools(toolSets: ToolSetRegistry): void {
             try {
               const item = await createObjectFolder({
                 world_id: world,
-                title: String(args.title ?? ""),
+                title: coerceString(args.title ?? ""),
                 parent_id: args.parent_id != null ? Number(args.parent_id) : null,
               });
               return toolResult({ ok: true, action: "folder_create", item });

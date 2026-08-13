@@ -10,20 +10,20 @@ export function useObservedWidth(): [RefCallback<HTMLElement>, number] {
   }, []);
 
   useLayoutEffect(() => {
-    if (!node) {
-      setWidth(0);
-      return;
+    if (node) {
+      const measure = () => {
+        const next = node.getBoundingClientRect().width;
+        setWidth(next > 0 ? Math.round(next) : 0);
+      };
+
+      measure();
+      const ro = new ResizeObserver(() => measure());
+      ro.observe(node);
+      return () => ro.disconnect();
     }
 
-    const measure = () => {
-      const next = node.getBoundingClientRect().width;
-      setWidth(next > 0 ? Math.round(next) : 0);
-    };
-
-    measure();
-    const ro = new ResizeObserver(() => measure());
-    ro.observe(node);
-    return () => ro.disconnect();
+    setWidth(0);
+    return () => {};
   }, [node]);
 
   return [ref, width];

@@ -7,6 +7,7 @@ import {
   writeGithubReleaseProxyPref,
 } from "./github-release-proxy-prefs.ts";
 import { resolvePackagedUpdate } from "./app-update.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 function mockLocalStorage(): Storage {
   const store = new Map<string, string>();
@@ -73,7 +74,7 @@ describe("portal-sdk github-release-proxy", () => {
     };
     const seen: string[] = [];
     const fetchImpl = (async (url: RequestInfo | URL) => {
-      seen.push(String(url));
+      seen.push(coerceString(url));
       return new Response(JSON.stringify(release), { status: 200 });
     }) as unknown as typeof fetch;
     const up = await resolvePackagedUpdate({

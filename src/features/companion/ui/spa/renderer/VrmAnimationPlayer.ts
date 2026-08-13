@@ -1,11 +1,12 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import {
-  createVRMAnimationClip,
-  VRMAnimationLoaderPlugin,
-  type VRMAnimation,
-} from "@pixiv/three-vrm-animation";
+  createVrmAnimationClip,
+  firstVrmAnimation,
+  registerVrmAnimationLoader,
+} from "./vrm-animation-access.ts";
 import type { VRM } from "@pixiv/three-vrm";
+import { getVrmScene } from "./vrm-three-access.ts";
 import { motionManifest } from "@freeanima/features/companion/shared/motion-manifest.ts";
 import {
   resolveLocomotionMotion,
@@ -63,7 +64,7 @@ export class VrmAnimationPlayer {
     if (!this.mixer || this.vrm !== vrm) {
       this.disposeMixerOnly();
       this.vrm = vrm;
-      this.mixer = new THREE.AnimationMixer(vrm.scene);
+      this.mixer = new THREE.AnimationMixer(getVrmScene(vrm));
     }
 
     this.clips = nextClips;
@@ -119,7 +120,7 @@ export class VrmAnimationPlayer {
     target: Map<string, THREE.AnimationClip>,
   ): Promise<void> {
     const loader = new GLTFLoader();
-    loader.register((parser) => new VRMAnimationLoaderPlugin(parser));
+    registerVrmAnimationLoader(loader);
 
     for (const file of files) {
       if (target.has(file)) continue;
@@ -127,10 +128,9 @@ export class VrmAnimationPlayer {
         const path = file.startsWith("/") ? file : `${manifest.baseUrl}/${file}`;
         const url = await resolveUrl(path);
         const gltf = await loader.loadAsync(url);
-        const animations = gltf.userData.vrmAnimations as VRMAnimation[] | undefined;
-        const vrma = animations?.[0];
-        if (!vrma) continue;
-        const clip = createVRMAnimationClip(vrma, vrm);
+        const vrma = firstVrmAnimation(gltf);
+        if (vrma == null) continue;
+        const clip = createVrmAnimationClip(vrma, vrm);
         target.set(file, clip);
       } catch (e) {
         console.warn(`[companion] VRMA 加载失败: ${file}`, e);

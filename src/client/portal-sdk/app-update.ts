@@ -188,7 +188,7 @@ async function fetchLatestStableRelease(
       `https://api.github.com/repos/${FREEANIMA_GITHUB_REPO}/releases/latest`,
       proxy,
     ),
-    { headers, ...(signal ? { signal } : {}) } as RequestInit,
+    { headers, ...(signal ? { signal } : {}) },
   );
   if (latestRes.ok) {
     const j = (await latestRes.json()) as ReleaseJson;
@@ -199,7 +199,7 @@ async function fetchLatestStableRelease(
       `https://api.github.com/repos/${FREEANIMA_GITHUB_REPO}/releases?per_page=10`,
       proxy,
     ),
-    { headers, ...(signal ? { signal } : {}) } as RequestInit,
+    { headers, ...(signal ? { signal } : {}) },
   );
   if (!listRes.ok) return null;
   const list = (await listRes.json()) as ReleaseJson[];
@@ -219,7 +219,7 @@ async function fetchReleaseByTag(
       `https://api.github.com/repos/${FREEANIMA_GITHUB_REPO}/releases/tags/${encoded}`,
       proxy,
     ),
-    { headers: githubHeaders(), ...(signal ? { signal } : {}) } as RequestInit,
+    { headers: githubHeaders(), ...(signal ? { signal } : {}) },
   );
   if (!res.ok) return null;
   const j = (await res.json()) as ReleaseJson;

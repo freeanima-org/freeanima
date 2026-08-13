@@ -44,7 +44,7 @@ describe("PortalQueryClient", () => {
     expect(calls).toBe(1);
     expect(a).toEqual({ n: 1 });
     expect(b).toEqual({ n: 1 });
-    expect(client.getQueryData<{ n: number }>(key)).toEqual({ n: 1 });
+    expect(client.getQueryData(key)).toEqual({ n: 1 });
   });
 
   it("invalidateQueries 按前缀匹配并置 updatedAt=0", async () => {
@@ -77,7 +77,7 @@ describe("PortalQueryClient", () => {
     const key = ["x"];
     client.setQueryData(key, 1);
     client.setQueryData<number>(key, (prev) => (prev ?? 0) + 1);
-    expect(client.getQueryData<number>(key)).toBe(2);
+    expect(client.getQueryData(key)).toBe(2);
   });
 
   it("fetch 成功后 updatedAt!==0，避免 usePortalRead 把成功当成需再拉", async () => {

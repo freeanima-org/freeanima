@@ -30,6 +30,7 @@ import type {
 
 import { indexEntitySearchDoc, removeEntitySearchDoc } from "../../search/index-hooks.ts";
 import { getDb, type DbSession } from "../../client.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 function mapRow(row: EntityRowSelect | typeof entities.$inferSelect): EntityRow {
   return mapEntityRow(row);
@@ -455,7 +456,7 @@ export async function countObjectFileCidRefs(worldId: number, cid: string): Prom
         sql`${entities.body}->>'cid' = ${cid}`,
       ),
     );
-  return Number(row?.value ?? 0);
+  return row?.value ?? 0;
 }
 
 /**
@@ -686,14 +687,15 @@ export async function collectEntityReferences(id: number): Promise<EntityReferen
 
   for (const row of fkRows) {
     const body = (row.body ?? {}) as Record<string, unknown>;
-    if (String(body.list_id ?? "") === idStr) hits.push({ entity_id: row.id, via: "body.list_id" });
-    if (String(body.project_id ?? "") === idStr)
+    if (coerceString(body.list_id ?? "") === idStr)
+      hits.push({ entity_id: row.id, via: "body.list_id" });
+    if (coerceString(body.project_id ?? "") === idStr)
       hits.push({ entity_id: row.id, via: "body.project_id" });
-    if (String(body.parent_id ?? "") === idStr)
+    if (coerceString(body.parent_id ?? "") === idStr)
       hits.push({ entity_id: row.id, via: "body.parent_id" });
-    if (String(body.folder_id ?? "") === idStr)
+    if (coerceString(body.folder_id ?? "") === idStr)
       hits.push({ entity_id: row.id, via: "body.folder_id" });
-    if (String(body.account_id ?? "") === idStr)
+    if (coerceString(body.account_id ?? "") === idStr)
       hits.push({ entity_id: row.id, via: "body.account_id" });
     if ((row.tag_ids ?? []).includes(id)) hits.push({ entity_id: row.id, via: "tag_ids" });
   }
@@ -855,7 +857,7 @@ export async function countEntities(
   const db = getDb();
   const where = buildListConditions(opts);
   const [row] = await db.select({ value: count() }).from(entities).where(where);
-  return Number(row?.value ?? 0);
+  return row?.value ?? 0;
 }
 
 export async function countEntitiesByBodyListId(listId: number, world_id: number): Promise<number> {
@@ -872,7 +874,7 @@ export async function countEntitiesByBodyListId(listId: number, world_id: number
         sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
       ),
     );
-  return Number(row?.value ?? 0);
+  return row?.value ?? 0;
 }
 
 /** 非 completed 的 task_item 计数（与清单 item_count 语义一致；排除项目内任务） */
@@ -894,7 +896,7 @@ export async function countPendingTaskItemsByListId(
         pendingTaskItemStatusWhere,
       ),
     );
-  return Number(row?.value ?? 0);
+  return row?.value ?? 0;
 }
 
 /** 一次查出 world 内各 list_id 的 pending task 数 */
@@ -924,7 +926,7 @@ export async function countPendingTaskItemsGroupedByListId(
   for (const row of rows) {
     const id = Number(row.list_id);
     if (!Number.isFinite(id) || id <= 0) continue;
-    map.set(id, Number(row.value));
+    map.set(id, row.value);
   }
   return map;
 }
@@ -957,7 +959,7 @@ export async function countPendingTaskItemsGroupedByProjectId(
   for (const row of rows) {
     const id = Number(row.project_id);
     if (!Number.isFinite(id) || id <= 0) continue;
-    map.set(id, Number(row.value));
+    map.set(id, row.value);
   }
   return map;
 }

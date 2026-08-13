@@ -122,7 +122,7 @@ function makePort(opts?: { unreadProposal?: boolean }): NotificationPort & {
           created_at: new Date(),
           source_kind: "system",
           source_ref: SELF_LAYER_PROPOSAL_SOURCE_REF,
-        } as NotificationRow,
+        },
       ];
     },
     async markRead() {

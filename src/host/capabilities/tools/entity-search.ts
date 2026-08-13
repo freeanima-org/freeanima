@@ -22,6 +22,7 @@ import {
 } from "@freeanima/host/core/util";
 import type { EntitySearchMode } from "@freeanima/host/core/db/pg/entity/types";
 import type { EntityType } from "@freeanima/host/core/db/schema";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 const FTS_SYNTAX =
   "PG search syntax (to_tsquery simple):\n" +
@@ -160,7 +161,7 @@ export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
             },
           },
           handler: async (args) => {
-            const query = String(args.query ?? "").trim();
+            const query = coerceString(args.query ?? "").trim();
             const global = args.global === true;
             const explicitWorldId = parseExplicitWorldId(args.world_id);
             const filters = parseFilters(args.filters);
@@ -170,9 +171,7 @@ export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
                 : undefined;
             const limit = Math.max(1, Math.min(50, asFloat(args.limit, 10)));
             const offset = Math.max(0, asFloat(args.offset, 0));
-            const mode = (
-              args.mode === "filter_only" ? "filter_only" : "hybrid"
-            ) as EntitySearchMode;
+            const mode: EntitySearchMode = args.mode === "filter_only" ? "filter_only" : "hybrid";
 
             try {
               if (query) validateFtsQueryInput(query);
@@ -201,8 +200,10 @@ export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
                   accessible_world_ids,
                   type: args.type as EntityType | undefined,
                   primary_component:
-                    args.primary_component != null ? String(args.primary_component) : undefined,
-                  component: args.component != null ? String(args.component) : undefined,
+                    args.primary_component != null
+                      ? coerceString(args.primary_component)
+                      : undefined,
+                  component: args.component != null ? coerceString(args.component) : undefined,
                   filters,
                   limit,
                   offset,

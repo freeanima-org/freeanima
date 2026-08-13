@@ -13,7 +13,7 @@ export type ToolReturnContractFields = Pick<
 >;
 
 function zodToJsonSchema(schema: z.ZodType): JsonSchemaObject {
-  return z.toJSONSchema(schema) as JsonSchemaObject;
+  return z.toJSONSchema(schema);
 }
 
 function assertExampleMatchesSchema(schema: z.ZodType, example: unknown, label: string): void {

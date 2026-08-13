@@ -10,8 +10,8 @@ import {
 } from "./mpeg-player.ts";
 
 const originalAudio = globalThis.Audio;
-const originalCreateObjectURL = URL.createObjectURL;
-const originalRevokeObjectURL = URL.revokeObjectURL;
+const originalCreateObjectURL = URL.createObjectURL.bind(URL);
+const originalRevokeObjectURL = URL.revokeObjectURL.bind(URL);
 const originalMediaSource = globalThis.MediaSource;
 
 function createStream(chunks: Uint8Array[]): ReadableStream<Uint8Array> {
@@ -25,8 +25,8 @@ function createStream(chunks: Uint8Array[]): ReadableStream<Uint8Array> {
 
 beforeEach(() => {
   resetMpegPlayerStateForTests();
-  URL.createObjectURL = mock(() => "blob:mock-audio") as typeof URL.createObjectURL;
-  URL.revokeObjectURL = mock(() => {}) as typeof URL.revokeObjectURL;
+  URL.createObjectURL = mock(() => "blob:mock-audio");
+  URL.revokeObjectURL = mock(() => {});
 
   globalThis.HTMLMediaElement = {
     HAVE_METADATA: 1,

@@ -216,9 +216,7 @@ function outputToolCalls(output: Record<string, unknown> | null): string {
 }
 
 function SleepPage() {
-  const initial = Route.useLoaderData() as {
-    runs: PipelineRunRow[];
-  };
+  const initial = Route.useLoaderData();
 
   const [runs, setRuns] = useState(initial.runs);
   const [loading, setLoading] = useState(false);
@@ -272,7 +270,7 @@ function SleepPage() {
       !pipelineStatus?.step_running &&
       !pipelineStatus?.catch_up_running
     ) {
-      return;
+      return () => {};
     }
     const timer = setInterval(() => {
       void refreshPipelineStatus();
@@ -457,7 +455,7 @@ function SleepPage() {
                 id="pipeline-force"
                 isSelected={pipelineForce}
                 isDisabled={pipelineBusy}
-                onChange={(checked) => setPipelineForce(checked === true)}
+                onChange={(checked) => setPipelineForce(checked)}
               />
               <Label htmlFor="pipeline-force" className="text-sm">
                 {"强制（跳过依赖检查）"}

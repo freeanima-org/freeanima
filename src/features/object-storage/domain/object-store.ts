@@ -61,8 +61,7 @@ export class ObjectStorageNotConfiguredError extends Error {
 }
 
 function formatS3Error(op: string, key: string, err: unknown): Error {
-  const code =
-    err && typeof err === "object" && "code" in err ? String((err as { code: unknown }).code) : "";
+  const code = err && typeof err === "object" && "code" in err ? String(err.code) : "";
   const msg = err instanceof Error ? err.message : String(err);
   const detail = code && code !== msg ? `${code}: ${msg}` : msg;
   return new Error(

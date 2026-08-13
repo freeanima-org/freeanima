@@ -19,6 +19,7 @@ import {
   type ToolSetRegistry,
 } from "@freeanima/host/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 async function requireSessionMeta(): Promise<
   { ok: true; meta: ConversationMetaMessage } | { ok: false; error: string }
@@ -69,7 +70,7 @@ export function registerToolsetTools(toolSets: ToolSetRegistry): void {
             }
             const ctx = await requireSessionMeta();
             if (!ctx.ok) return toolError(ctx.error);
-            const query = String(args.query ?? "").trim();
+            const query = coerceString(args.query ?? "").trim();
             if (!query) return toolError("query is required");
             const registry = getToolRegistry();
             const result = searchToolsetsCatalog(registry, query);

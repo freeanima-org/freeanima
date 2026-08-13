@@ -1,5 +1,6 @@
 import { logPgComponent } from "../log.ts";
 import { getActiveRuntimeConfig, getResolvedEmbeddingConfig } from "@freeanima/host/core/config";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 import { expandJobsToUnits } from "./batch-pack.ts";
 import { getEmbedTextFn, getEmbedTextsFn } from "./runtime.ts";
@@ -108,6 +109,10 @@ async function storeJobEmbedding(job: EmbeddingPendingJob, merged: number[]): Pr
       return setMessageEmbedding(job.id, job.content, merged);
     case "entity":
       return setEntityEmbedding(Number(job.id), job.content, merged);
+    default: {
+      const _exhaustive: never = job.kind;
+      throw new Error(`Unhandled embedding job kind: ${coerceString(_exhaustive)}`);
+    }
   }
 }
 

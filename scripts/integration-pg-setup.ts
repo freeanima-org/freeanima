@@ -4,6 +4,9 @@ import { dirname, join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
+import { runMigrations as applyMigrations } from "@freeanima/host/core/db/index.ts";
+import { closeDb, getDb, initDatabase } from "@freeanima/host/core/db/pg/client.ts";
+
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dbRoot = join(repoRoot, "src/host/core");
 const TEMPLATE_DB = "anima_it_template";
@@ -66,12 +69,6 @@ function ensurePgExtensions(url: string): void {
 
 async function runMigrations(url: string): Promise<void> {
   ensurePgExtensions(url);
-  const { initDatabase, getDb, closeDb } = await import(
-    join(repoRoot, "src/host/core/db/pg/client.ts")
-  );
-  const { runMigrations: applyMigrations } = await import(
-    join(repoRoot, "src/host/core/db/index.ts")
-  );
   initDatabase({ getDatabaseUrl: () => url });
   try {
     await applyMigrations(getDb());

@@ -19,6 +19,7 @@ import {
 } from "./diary-tool-helpers.ts";
 import { DIARY_TOOL_RETURNS } from "./return-schemas.ts";
 import { resolveDiaryToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 async function storeContext(args: Record<string, unknown>, access: "read" | "write" = "read") {
   const worldId = await resolveDiaryToolWorld({ args, access });
@@ -27,7 +28,7 @@ async function storeContext(args: Record<string, unknown>, access: "read" | "wri
 }
 
 async function handleAppend(args: Record<string, unknown>): Promise<string> {
-  const content = String(args.content ?? "").trim();
+  const content = coerceString(args.content ?? "").trim();
   if (!content) return toolError("content is required");
 
   const ctx = await storeContext(args, "write");
@@ -37,7 +38,7 @@ async function handleAppend(args: Record<string, unknown>): Promise<string> {
     const item = await appendDiaryEntryByDate(
       ctx,
       omitUndefined({
-        date: args.date != null ? String(args.date) : undefined,
+        date: args.date != null ? coerceString(args.date) : undefined,
         content,
         tags: parseTags(args.tags),
       }),
@@ -67,8 +68,8 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
       ctx,
       omitUndefined({
         date: resolved.dateKey,
-        title: args.title !== undefined ? String(args.title) : undefined,
-        summary: args.summary !== undefined ? String(args.summary) : undefined,
+        title: args.title !== undefined ? coerceString(args.title) : undefined,
+        summary: args.summary !== undefined ? coerceString(args.summary) : undefined,
         tags: parseTags(args.tags),
         tag_ids: parseTagIds(args.tag_ids),
       }),
@@ -117,12 +118,12 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
       ? Math.max(0, Math.floor(args.offset))
       : 0;
   const entry_after =
-    args.entry_after != null && String(args.entry_after).trim()
-      ? String(args.entry_after).trim()
+    args.entry_after != null && coerceString(args.entry_after).trim()
+      ? coerceString(args.entry_after).trim()
       : undefined;
   const entry_before =
-    args.entry_before != null && String(args.entry_before).trim()
-      ? String(args.entry_before).trim()
+    args.entry_before != null && coerceString(args.entry_before).trim()
+      ? coerceString(args.entry_before).trim()
       : undefined;
 
   const ctx = await storeContext(args);
@@ -165,7 +166,7 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleSearch(args: Record<string, unknown>): Promise<string> {
-  const query = String(args.query ?? "").trim();
+  const query = coerceString(args.query ?? "").trim();
   if (!query) return toolError("query is required");
 
   const limit =
@@ -196,9 +197,11 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
       omitUndefined({
         query,
         entry_after:
-          args.entry_after != null ? String(args.entry_after).trim() || undefined : undefined,
+          args.entry_after != null ? coerceString(args.entry_after).trim() || undefined : undefined,
         entry_before:
-          args.entry_before != null ? String(args.entry_before).trim() || undefined : undefined,
+          args.entry_before != null
+            ? coerceString(args.entry_before).trim() || undefined
+            : undefined,
         tag_ids,
         limit,
       }),

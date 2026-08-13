@@ -14,6 +14,7 @@ import {
   type ToolSetRegistry,
 } from "@freeanima/host/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   formatStoredMessageSearchHit,
   formatFtsToolError,
@@ -66,11 +67,11 @@ export function registerConversationTools(toolSets: ToolSetRegistry): void {
           handler: async (args) => {
             if (!isPostgresPrimary()) return toolError("PostgreSQL not configured");
 
-            const query = String(args.query ?? "").trim();
+            const query = coerceString(args.query ?? "").trim();
             if (!query) return toolError("query is required");
 
             const limit = asInt(args.limit, 10, 1, 50);
-            const conversationId = String(args.session ?? "").trim() || undefined;
+            const conversationId = coerceString(args.session ?? "").trim() || undefined;
             try {
               const rows = await searchMessagesFts(
                 query,
@@ -119,14 +120,14 @@ export function registerConversationTools(toolSets: ToolSetRegistry): void {
           handler: async (args) => {
             if (!isPostgresPrimary()) return toolError("PostgreSQL not configured");
 
-            const conversationId = String(args.conversation_id ?? "").trim();
+            const conversationId = coerceString(args.conversation_id ?? "").trim();
             if (!conversationId) return toolError("conversation_id is required");
             if (!(await conversationExists(conversationId))) {
               return toolError(`session not found: ${conversationId}`);
             }
 
             const limit = asInt(args.limit, 20, 1, 100);
-            const messageId = String(args.message_id ?? "").trim();
+            const messageId = coerceString(args.message_id ?? "").trim();
             const total = await countMessages(conversationId);
 
             let messages;

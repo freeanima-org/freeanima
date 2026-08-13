@@ -179,7 +179,7 @@ async function appendToMailbox(
       try {
         const result = await client.append(mailbox, raw, flags);
         if (result && typeof result === "object" && "uid" in result && result.uid != null) {
-          return Number(result.uid);
+          return result.uid;
         }
         return null;
       } finally {
@@ -207,7 +207,7 @@ async function ensureSentCopyUid(input: {
           append: async () => {
             const result = await client.append(input.mailbox, input.raw, ["\\Seen"]);
             if (result && typeof result === "object" && "uid" in result && result.uid != null) {
-              return Number(result.uid);
+              return result.uid;
             }
             return null;
           },

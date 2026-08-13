@@ -82,7 +82,7 @@ export function createRemoteToolsServerHandlers(
       }
 
       if (!router.isRpcMethod(method)) {
-        throw new Error(`unknown remote-tools method: ${method}`);
+        throw new Error(`unknown remote-tools method: ${String(method)}`);
       }
 
       switch (method) {
@@ -90,7 +90,7 @@ export function createRemoteToolsServerHandlers(
         case "remote_tools.detach":
           throw new Error("sap session methods are handled by Habitat RPC transport");
         default:
-          throw new Error(`unknown remote-tools method: ${String(method)}`);
+          throw new Error(`unknown remote-tools method: ${method}`);
       }
     },
   };

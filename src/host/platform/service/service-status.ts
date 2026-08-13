@@ -232,7 +232,7 @@ export async function buildStatus(
 
 export function getConfig(deps: RuntimeDeps): SafeConfigSnapshot {
   const cfg = deps.engine.config.data;
-  return { config: sanitizeConfigForApi(cfg) as SafeConfigSnapshot["config"] };
+  return { config: sanitizeConfigForApi(cfg) };
 }
 
 export function listToolsApi(deps: RuntimeDeps, scope?: "default" | "all") {

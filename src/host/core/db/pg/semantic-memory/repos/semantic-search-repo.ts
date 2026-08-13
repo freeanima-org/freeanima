@@ -169,5 +169,5 @@ export async function countSemanticMemorySearch(opts: SemanticSearchFilterOpts):
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(entities)
     .where(conditions.length > 0 ? and(...conditions) : undefined);
-  return Number(rows[0]?.n ?? 0);
+  return rows[0]?.n ?? 0;
 }

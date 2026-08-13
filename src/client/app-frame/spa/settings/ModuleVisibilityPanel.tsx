@@ -73,7 +73,7 @@ function SortableModuleRow({
         id={inputId}
         isSelected={checked}
         isDisabled={locked}
-        onChange={(value) => onToggle(value === true)}
+        onChange={(value) => onToggle(value)}
       />
       <div className="min-w-0 flex-1">
         <Label

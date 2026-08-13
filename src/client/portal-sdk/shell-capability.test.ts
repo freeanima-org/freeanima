@@ -4,7 +4,7 @@ import type { ShellApi } from "@freeanima/client/portal-sdk";
 import { hasEnterToSendCapability, hasFinePointerCapability } from "./shell-capability.ts";
 
 function mockMedia(finePointer: boolean) {
-  window.matchMedia = ((query: string) =>
+  window.matchMedia = (query: string) =>
     ({
       matches:
         query.includes("pointer: fine") || query.includes("hover: hover") ? finePointer : false,
@@ -15,7 +15,7 @@ function mockMedia(finePointer: boolean) {
       addListener: () => {},
       removeListener: () => {},
       dispatchEvent: () => false,
-    }) satisfies MediaQueryList) as typeof window.matchMedia;
+    }) satisfies MediaQueryList;
 }
 
 describe("shell-capability", () => {

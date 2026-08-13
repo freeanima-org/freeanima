@@ -1,15 +1,19 @@
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 import {
   TabList as TabListPrimitive,
   TabPanel as TabPanelPrimitive,
   Tab as TabPrimitive,
   Tabs as TabsPrimitive,
+  type TabListProps,
+  type TabPanelProps,
+  type TabProps,
+  type TabsProps,
 } from "react-aria-components";
 
 import { cn } from "../../lib/utils.ts";
 
-function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive>) {
+function Tabs({ className, ...props }: TabsProps) {
   return (
     <TabsPrimitive
       data-slot="tabs"
@@ -38,22 +42,29 @@ const tabsListVariants = cva(
   },
 );
 
+type TabsListVariant = "default" | "line";
+
 function TabsList({
   className,
   variant = "default",
   ...props
-}: React.ComponentProps<typeof TabListPrimitive> & VariantProps<typeof tabsListVariants>) {
+}: {
+  variant?: TabsListVariant;
+  className?: string;
+  children?: React.ReactNode;
+}) {
+  const listVariant: TabsListVariant = variant;
   return (
     <TabListPrimitive
       data-slot="tabs-list"
-      data-variant={variant}
-      className={cn(tabsListVariants({ variant }), className)}
-      {...props}
+      data-variant={listVariant}
+      className={cn(tabsListVariants({ variant: listVariant }), className)}
+      {...(props as TabListProps<object>)}
     />
   );
 }
 
-function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabPrimitive>) {
+function TabsTrigger({ className, ...props }: TabProps) {
   return (
     <TabPrimitive
       data-slot="tabs-trigger"
@@ -69,7 +80,7 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabPri
   );
 }
 
-function TabsContent({ className, ...props }: React.ComponentProps<typeof TabPanelPrimitive>) {
+function TabsContent({ className, ...props }: TabPanelProps) {
   return (
     <TabPanelPrimitive
       data-slot="tabs-content"

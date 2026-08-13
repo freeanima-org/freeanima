@@ -216,7 +216,7 @@ function WorldEditModal({
               isSelected={form.private}
               onChange={(checked) =>
                 setForm((f) => {
-                  const nextPrivate = checked === true;
+                  const nextPrivate = checked;
                   const nextOwner = nextPrivate ? f.owner_subject_id : "";
                   const ownerNum = nextOwner ? Number(nextOwner) : null;
                   return {

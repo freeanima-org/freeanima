@@ -1,10 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type {
-  JsonSchemaObject,
-  ToolDef,
-  ToolHandler,
-  ToolSetRegistry,
-} from "@freeanima/host/core/tool";
+import type { ToolDef, ToolHandler, ToolSetRegistry } from "@freeanima/host/core/tool";
 import { toolError, toolResult } from "@freeanima/host/core/tool";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { getToolConversationId } from "@freeanima/host/core/tool/tool-context";
@@ -214,7 +209,7 @@ export class RemoteToolsManager {
       defs.push({
         name: fullName,
         description: tool.description,
-        parameters: tool.parameters as JsonSchemaObject,
+        parameters: tool.parameters,
         returnKind: tool.return_kind,
         handler,
       });

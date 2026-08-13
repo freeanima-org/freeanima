@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { ComponentType, SVGProps } from "react";
 import {
   Bell,
   BookOpen,
@@ -30,12 +30,14 @@ function shellNavLabel(message: () => string): () => string {
   return () => stripLeadingNavEmoji(message());
 }
 
+type AppNavIcon = ComponentType<SVGProps<SVGSVGElement>>;
+
 export type AppNavItem = {
   id: ShellModuleId;
   to: string;
   match: string;
   label: () => string;
-  icon: LucideIcon;
+  icon: AppNavIcon;
 };
 
 function navItem(
@@ -43,7 +45,7 @@ function navItem(
   to: string,
   match: string,
   label: () => string,
-  icon: LucideIcon,
+  icon: AppNavIcon,
 ): AppNavItem {
   return { id, to, match, label, icon };
 }

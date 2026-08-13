@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import { SubjectScopeToggle, useSubjectScope } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Button,
@@ -97,7 +97,7 @@ function EntityRowActions({
         variant="outline"
         size="sm"
         isDisabled={busy}
-        onClick={(e) => {
+        onClick={(e: MouseEvent) => {
           e.stopPropagation();
           void onRestore(row);
         }}
@@ -112,7 +112,7 @@ function EntityRowActions({
       variant="outline"
       size="sm"
       isDisabled={busy}
-      onClick={(e) => {
+      onClick={(e: MouseEvent) => {
         e.stopPropagation();
         void onDelete(row);
       }}

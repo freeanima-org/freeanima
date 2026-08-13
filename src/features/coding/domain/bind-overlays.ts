@@ -4,18 +4,14 @@ import {
   registerProjectAgentOverlayResolver,
   registerProjectSkillOverlayResolver,
 } from "@freeanima/host/core/skill/project-overlay.ts";
-import {
-  getProjectAgentContext,
-  type ProjectAgentProfile,
-  type ProjectSkill,
-} from "@freeanima/features/coding/domain";
+import { getProjectAgentContext } from "@freeanima/features/coding/domain";
 
 export function bindCodingProjectOverlays(): void {
   registerProjectSkillOverlayResolver((conversationId, name) => {
     if (!conversationId) return null;
     const snap = getProjectAgentContext(conversationId);
     if (!snap) return null;
-    const skills = snap.skills as ProjectSkill[];
+    const skills = snap.skills;
     const hit = skills.find((s) => s.name === name);
     if (!hit?.body?.trim()) return null;
     return {
@@ -30,7 +26,7 @@ export function bindCodingProjectOverlays(): void {
     if (!conversationId) return null;
     const snap = getProjectAgentContext(conversationId);
     if (!snap) return null;
-    const agents = snap.agents as ProjectAgentProfile[];
+    const agents = snap.agents;
     const hit = agents.find((a) => a.slug === slug);
     if (!hit?.content?.trim()) return null;
     return {

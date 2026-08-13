@@ -37,6 +37,7 @@ import { omitUndefined } from "@freeanima/host/core/util";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import { filterToolNamesByPolicy, resolveSleepCapabilityPolicy } from "./capability-policy-bind.ts";
 import { runAutoLlm } from "./auto-llm-run.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 const LIGHT_SLEEP_MAX_TURNS = 50;
 const DEEP_SLEEP_MAX_TURNS = 100;
@@ -53,7 +54,7 @@ function extractSemanticMemoryId(toolName: string, content: string): number | nu
     const parsed = JSON.parse(content) as Record<string, unknown>;
     if (parsed.error) return null;
     const raw = parsed.semantic_memory_id ?? parsed.id ?? parsed.fact_id;
-    const n = typeof raw === "number" ? raw : Number(String(raw ?? "").trim());
+    const n = typeof raw === "number" ? raw : Number(coerceString(raw ?? "").trim());
     if (!Number.isInteger(n) || n <= 0) return null;
     return n;
   } catch {
@@ -66,7 +67,7 @@ function extractLimbicMemoryId(toolName: string, content: string): string | null
   try {
     const parsed = JSON.parse(content) as Record<string, unknown>;
     if (parsed.error) return null;
-    const id = String(parsed.id ?? "").trim();
+    const id = coerceString(parsed.id ?? "").trim();
     return id || null;
   } catch {
     return null;

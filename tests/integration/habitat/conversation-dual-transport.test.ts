@@ -67,9 +67,7 @@ describePg("habitat conversation.list dual transport", () => {
     const registryResult = (await registryHandler(deps, input, ctx)) as {
       conversations: Array<{ conversation_id: string }>;
     };
-    const routeResult = (await routeHandler(deps, input, ctx)) as {
-      conversations: Array<{ conversation_id: string }>;
-    };
+    const routeResult = await routeHandler(deps, input, ctx);
 
     const registryIds = new Set(registryResult.conversations.map((row) => row.conversation_id));
     const routeIds = new Set(routeResult.conversations.map((row) => row.conversation_id));

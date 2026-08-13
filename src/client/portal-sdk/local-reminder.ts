@@ -33,7 +33,7 @@ export async function isCompanionReminderPreferred(): Promise<boolean> {
   const shell = runtimeWindow()?.portalShell;
   if (!shell?.enqueueCompanionBubble || !shell.getCompanionVisible) return false;
   try {
-    return Boolean(await shell.getCompanionVisible());
+    return await shell.getCompanionVisible();
   } catch {
     return false;
   }

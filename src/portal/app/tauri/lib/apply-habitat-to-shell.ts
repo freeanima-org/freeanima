@@ -9,14 +9,11 @@ export function applyHabitatConfigToShell(
   habitatUrl: string,
   remoteAuthToken: string,
 ): void {
-  const url =
-    String(habitatUrl ?? "")
-      .trim()
-      .replace(/\/$/, "") || DEFAULT_HABITAT_URL;
+  const url = (habitatUrl ?? "").trim().replace(/\/$/, "") || DEFAULT_HABITAT_URL;
   const fields = buildShellApiFields(
     url,
     resolveHabitatRpcWsUrl(url),
-    String(remoteAuthToken ?? "").trim(),
+    (remoteAuthToken ?? "").trim(),
   );
   shell.habitatUrl = fields.habitatUrl;
   shell.habitatWsUrl = fields.habitatWsUrl;

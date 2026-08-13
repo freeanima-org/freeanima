@@ -28,7 +28,7 @@ describe("streamReplyToChannel", () => {
           typeof arg === "string"
             ? arg
             : arg && typeof arg === "object" && "content" in arg
-              ? String((arg as { content: string }).content)
+              ? (arg as { content: string }).content
               : "";
         sends.push(text);
         timeline.push({ kind: "send", text });

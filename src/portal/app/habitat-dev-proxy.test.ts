@@ -32,7 +32,7 @@ describe("habitat-dev-proxy", () => {
   it("resolveProxyHabitatUrl prefers FREEANIMA_URL", () => {
     const resolved = resolveProxyHabitatUrl({
       FREEANIMA_URL: "http://127.0.0.1:14445/",
-    } as NodeJS.ProcessEnv);
+    });
     expect(resolved).toEqual({ url: "http://127.0.0.1:14445", source: "env" });
   });
 });

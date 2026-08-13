@@ -58,13 +58,13 @@ function mapPriority(raw: string): "high" | "medium" | "low" | "none" {
 }
 
 async function tableExists(sql: SQL): Promise<boolean> {
-  const rows = await sql`
+  const rows = (await sql`
     SELECT EXISTS (
       SELECT 1 FROM information_schema.tables
       WHERE table_schema = 'public' AND table_name = 'tasks'
     ) AS "exists"
-  `;
-  return Boolean((rows[0] as { exists: boolean } | undefined)?.exists);
+  `) as Array<{ exists: boolean }>;
+  return Boolean(rows[0]?.exists);
 }
 
 async function loadLegacyTasks(sql: SQL): Promise<LegacyTaskRow[]> {

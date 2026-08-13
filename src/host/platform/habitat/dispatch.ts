@@ -1,9 +1,5 @@
-import type { RpcMethod, RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import {
-  getHabitatMethodDef,
-  isHabitatMethod,
-  type HabitatMethod,
-} from "@freeanima/shared/habitat-contract";
+import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
+import { getHabitatMethodDef, isHabitatMethod } from "@freeanima/shared/habitat-contract";
 import { getFeatureRpcHandler } from "../features/registry.ts";
 import type { RemoteToolsServerDeps } from "@freeanima/host/capabilities/outpost/transport/types.ts";
 
@@ -22,13 +18,13 @@ export async function habitatDispatch(
   ctx: HabitatDispatchContext,
 ): Promise<unknown> {
   if (!isHabitatMethod(method)) {
-    throw new Error(`unknown habitat method: ${method}`);
+    throw new Error(`unknown habitat method: ${String(method)}`);
   }
-  const hubMethod = method as HabitatMethod;
+  const hubMethod = method;
   const def = getHabitatMethodDef(hubMethod);
   const parsedInput = def.input.parse(payload);
 
-  const featureHandler = getFeatureRpcHandler(hubMethod as RpcMethod);
+  const featureHandler = getFeatureRpcHandler(hubMethod);
   if (featureHandler) {
     return featureHandler(deps, parsedInput, ctx);
   }

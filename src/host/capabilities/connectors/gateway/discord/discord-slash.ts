@@ -131,7 +131,7 @@ function originFromDiscordChannel(
   const isThread = "isThread" in channel && channel.isThread();
   const channelId = channel.id;
   const parentChannelId =
-    isThread && "parentId" in channel && channel.parentId ? String(channel.parentId) : channelId;
+    isThread && "parentId" in channel && channel.parentId ? channel.parentId : channelId;
   return extractOrigin({
     channelId,
     parentChannelId,
@@ -146,7 +146,7 @@ export async function syncDiscordSlashCommands(
   service: MessagingPort,
   cfg: DiscordConfig,
 ): Promise<void> {
-  if (cfg.slash_commands === false) return;
+  if (!cfg.slash_commands) return;
 
   const appId = client.user?.id;
   if (!appId) return;
@@ -154,7 +154,7 @@ export async function syncDiscordSlashCommands(
   const { commands } = service.listCommands({ platform: "discord" });
   const body = buildDiscordSlashCommands(commands);
   const rest = new REST({ version: "10" }).setToken(token);
-  const guildId = String(cfg.slash_commands_guild_id ?? "").trim();
+  const guildId = (cfg.slash_commands_guild_id ?? "").trim();
 
   try {
     if (guildId) {

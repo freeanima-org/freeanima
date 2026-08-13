@@ -60,8 +60,8 @@ export class PortalQueryClient {
     return (entry?.state as PortalQueryState<T> | undefined) ?? idleState<T>();
   }
 
-  getQueryData<T>(queryKey: PortalQueryKey): T | undefined {
-    return this.getQueryState<T>(queryKey).data;
+  getQueryData(queryKey: PortalQueryKey): unknown {
+    return this.getQueryState(queryKey).data;
   }
 
   setQueryData<T>(

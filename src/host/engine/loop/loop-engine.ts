@@ -18,11 +18,7 @@ import type {
   HookStreamEvent,
   TurnControl,
 } from "@freeanima/host/core/hooks/loop";
-import {
-  beforeLlmCall,
-  toolAfterCall,
-  type BeforeLlmCallContext,
-} from "@freeanima/host/core/hooks/loop";
+import { beforeLlmCall, toolAfterCall } from "@freeanima/host/core/hooks/loop";
 import { headOkStepData, type HookRegistry, type LlmKind } from "@freeanima/host/kernel/hooks";
 import * as llm from "@freeanima/host/core/llm";
 import type { LlmRuntime } from "@freeanima/host/core/llm";
@@ -260,7 +256,7 @@ async function runToolAfterCallHooks(
   const effect = headOkStepData(toolAfterCall, hookRun.chain);
   const tc = effect?.turnControl;
   if (!tc?.pause || !Array.isArray(tc.streamEvents)) return null;
-  return tc as TurnControl;
+  return tc;
 }
 
 export async function run(messages: StoredMessage[], opts?: EngineOpts): Promise<string> {
@@ -323,7 +319,7 @@ export type StreamEvent =
     };
 
 function hookStreamToEngine(ev: HookStreamEvent): StreamEvent {
-  return ev as StreamEvent;
+  return ev;
 }
 
 /**
@@ -400,7 +396,7 @@ export async function* runStream(
         beforeLlmCall,
         {
           conversationId: getToolConversationId() ?? "",
-          messages: messages as BeforeLlmCallContext["messages"],
+          messages: messages,
           ...(opts.llm_debug ? { llm_debug: true as const, llmDebugExtras } : {}),
         },
         { llm_kind: opts.llm_kind },
@@ -601,12 +597,14 @@ export async function* runStream(
                 }
                 failureCounts.delete(fnName);
               } catch (exc) {
-                result = toolResult({ error: `${fnName} failed: ${exc}` });
+                result = toolResult({
+                  error: `${fnName} failed: ${exc instanceof Error ? exc.message : String(exc)}`,
+                });
                 const count = (failureCounts.get(fnName) ?? 0) + 1;
                 failureCounts.set(fnName, count);
                 if (count >= HARD) {
                   throw new Error(
-                    `Tool '${fnName}' failed ${count} times consecutively. Last: ${exc}`,
+                    `Tool '${fnName}' failed ${count} times consecutively. Last: ${exc instanceof Error ? exc.message : String(exc)}`,
                     { cause: exc },
                   );
                 }

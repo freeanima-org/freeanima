@@ -58,7 +58,7 @@ describe("chatStreamAdapter.preflight claim", () => {
     const api = await import("./api.ts");
     const spy = spyOn(api, "getConversationTail").mockResolvedValue({
       tail_pos: 3,
-    } as never);
+    });
     try {
       const ctx = buildHeadlessChatStreamFlushContext(false);
       const result = await chatStreamAdapter.preflight!(op, ctx);

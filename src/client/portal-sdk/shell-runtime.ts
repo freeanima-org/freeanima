@@ -22,9 +22,7 @@ export function isNativeShell(): boolean {
 export function getShellKind(): ShellRuntimeKind {
   const buildTarget = getShellBuildTarget();
   const w = runtimeWindow();
-  const shell = w?.portalShell as
-    | (NonNullable<Window["portalShell"]> & { isTauri?: boolean })
-    | undefined;
+  const shell = w?.portalShell;
 
   if (buildTarget === "desktop" || buildTarget === "mobile") {
     return "tauri";

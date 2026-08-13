@@ -31,7 +31,7 @@ function parseDesktopGeneralSettings(raw: unknown): DesktopGeneralSettings {
 
 function normalizeDesktopGeneralSettings(input: DesktopGeneralSettings): DesktopGeneralSettings {
   const habitat = normalizeShellClientConfig(input);
-  return { ...habitat, launchAtLogin: Boolean(input.launchAtLogin) };
+  return { ...habitat, launchAtLogin: input.launchAtLogin };
 }
 
 function parseCompanionShellSettings(raw: unknown): CompanionShellSettings {
@@ -61,7 +61,7 @@ export function createDesktopSettingsStores(): DesktopSettingsStores {
       scope: COMPANION_SHELL_SCOPE,
       backend,
       parseLoad: parseCompanionShellSettings,
-      normalizeSave: (value) => ({ visible: Boolean(value.visible) }),
+      normalizeSave: (value) => ({ visible: value.visible }),
     }),
   };
 }

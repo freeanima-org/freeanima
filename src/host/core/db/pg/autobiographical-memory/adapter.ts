@@ -15,6 +15,8 @@ import {
   type MemoryBrickRow,
 } from "@freeanima/host/core/db/pg/memory-brick";
 
+import { coerceString } from "@freeanima/shared/coerce-string";
+
 import type {
   AutobiographicalFtsHit,
   AutobiographicalListOpts,
@@ -48,8 +50,8 @@ function brickToRow(b: MemoryBrickRow): AutobiographicalMemoryRow {
     title: b.title,
     content: b.content,
     significance,
-    period_start: b.body.period_start == null ? null : String(b.body.period_start),
-    period_end: b.body.period_end == null ? null : String(b.body.period_end),
+    period_start: b.body.period_start == null ? null : coerceString(b.body.period_start),
+    period_end: b.body.period_end == null ? null : coerceString(b.body.period_end),
     source_facts: Array.isArray(facts)
       ? facts.map((v) => Number(v)).filter((n) => Number.isInteger(n) && n > 0)
       : [],

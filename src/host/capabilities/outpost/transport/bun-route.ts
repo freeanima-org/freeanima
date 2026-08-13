@@ -35,7 +35,7 @@ export function createSapBunHandlers(deps: RemoteToolsServerDeps): {
     fetch(req, server) {
       const url = new URL(req.url);
       if (!isRpcTree(url.pathname)) {
-        return;
+        return undefined;
       }
 
       if (isRpcRoot(url.pathname)) {
@@ -52,7 +52,7 @@ export function createSapBunHandlers(deps: RemoteToolsServerDeps): {
             },
           })
         ) {
-          return;
+          return undefined;
         }
         return new Response("Expected WebSocket upgrade", { status: 426 });
       }

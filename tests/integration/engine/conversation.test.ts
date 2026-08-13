@@ -43,7 +43,7 @@ describePg("conversation", () => {
     const c = testConv();
     const sid = await c.newConversation("weixin");
     const meta = await c.loadConversationMeta(sid);
-    const cwd = isConversationMeta(meta) ? String(meta.cwd ?? "") : "";
+    const cwd = isConversationMeta(meta) ? (meta.cwd ?? "") : "";
     expect(cwd).toMatch(/^\/tmp\/anima-cwd-/);
     expect(cwd).not.toBe(process.cwd());
     expect(cwd).toContain(sid.slice(0, 8));
@@ -53,7 +53,7 @@ describePg("conversation", () => {
     const c = testConv();
     const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
     const meta = await c.loadConversationMeta(sid);
-    const cwd = isConversationMeta(meta) ? String(meta.cwd ?? "") : "";
+    const cwd = isConversationMeta(meta) ? (meta.cwd ?? "") : "";
     expect(cwd).not.toBe("");
     expect(existsSync(cwd)).toBe(true);
     await restoreIntegrationHome(prev);

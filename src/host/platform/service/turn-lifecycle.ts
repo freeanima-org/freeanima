@@ -177,7 +177,7 @@ export async function runSimpleTurn(
       if (e instanceof loopEngine.MaxTurnsExceeded) {
         return `[tool loop limit exceeded] ${e.message}`;
       }
-      return `[engine error] ${e}`;
+      return `[engine error] ${e instanceof Error ? e.message : String(e)}`;
     }
     await finalizeTurn(deps, conversationId, msgs, effective, model, functions);
 

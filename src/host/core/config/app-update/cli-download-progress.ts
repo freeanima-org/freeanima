@@ -57,7 +57,7 @@ export function createCliDownloadProgressSink(opts: {
   const isTty =
     opts.isTty ??
     (typeof (stream as NodeJS.WriteStream).isTTY === "boolean" &&
-      Boolean((stream as NodeJS.WriteStream).isTTY));
+      (stream as NodeJS.WriteStream).isTTY);
   let wrote = false;
   const startedAt = nowMs();
   let lastReceived = 0;

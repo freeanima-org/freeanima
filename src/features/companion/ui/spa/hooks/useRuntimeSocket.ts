@@ -19,14 +19,12 @@ export function useRuntimeSocket(enabled: boolean): void {
   const setRuntimeBubble = useCompanionStore((s) => s.setRuntimeBubble);
 
   useEffect(() => {
-    if (!enabled) return;
-
     let ws: WebSocket | null = null;
     let cancelled = false;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
     const connect = async (): Promise<void> => {
-      if (cancelled) return;
+      if (cancelled || !enabled) return;
       try {
         const origin = await resolveCompanionDevOrigin();
         if (cancelled) return;
@@ -54,7 +52,7 @@ export function useRuntimeSocket(enabled: boolean): void {
       }
     };
 
-    void connect();
+    if (enabled) void connect();
 
     return () => {
       cancelled = true;

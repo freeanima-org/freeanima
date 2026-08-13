@@ -2,6 +2,7 @@ import type { TaskItemPriority } from "@freeanima/host/core/db/schema/entity";
 import { ensureTagsByTitles } from "@freeanima/features/tag/domain";
 
 import type { TaskItemRow, TaskListRow } from "./types.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export const TASK_PRIORITIES: TaskItemPriority[] = ["high", "medium", "low", "none"];
 
@@ -11,7 +12,7 @@ export type ParseResult<T> = ParseOk<T> | ParseErr;
 
 export function parsePriority(raw: unknown): TaskItemPriority | undefined {
   if (raw == null || raw === "") return undefined;
-  const s = String(raw);
+  const s = coerceString(raw);
   return TASK_PRIORITIES.includes(s as TaskItemPriority) ? (s as TaskItemPriority) : undefined;
 }
 

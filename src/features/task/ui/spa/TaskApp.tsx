@@ -280,14 +280,14 @@ export function TaskApp() {
   }, [subjectKind, reloadTags]);
 
   useEffect(() => {
-    if (!webShell) return;
+    if (!webShell) return () => {};
     const fromUrl = readTaskItemFromUrl();
-    if (!fromUrl) return;
+    if (!fromUrl) return () => {};
     if (detailItem?.id === fromUrl.itemId) {
       appliedItemUrlRef.current = fromUrl.itemId;
-      return;
+      return () => {};
     }
-    if (appliedItemUrlRef.current === fromUrl.itemId && detailItem == null) return;
+    if (appliedItemUrlRef.current === fromUrl.itemId && detailItem == null) return () => {};
 
     const local =
       items.find((row) => row.id === fromUrl.itemId) ??
@@ -295,7 +295,7 @@ export function TaskApp() {
     if (local) {
       openTaskDetail(local);
       appliedItemUrlRef.current = fromUrl.itemId;
-      return;
+      return () => {};
     }
 
     let cancelled = false;
@@ -627,12 +627,12 @@ export function TaskApp() {
   }, [selection, smartLists, loadItems, loadItemsByFilters, resetDetail]);
 
   useEffect(() => {
-    if (selection?.kind !== "search") return;
+    if (selection?.kind !== "search") return () => {};
     const q = searchQuery.trim();
     if (!q) {
       setSearchHits([]);
       setSearching(false);
-      return;
+      return () => {};
     }
     setSearching(true);
     const timer = setTimeout(() => {
@@ -1120,7 +1120,7 @@ export function TaskApp() {
     void reloadTags();
   }, [unresolvedTagKey, reloadTags]);
   const matchTag = useCallback(
-    (row: TaskItemRow) => tagFilterId == null || row.tag_ids?.includes(tagFilterId) === true,
+    (row: TaskItemRow) => tagFilterId == null || row.tag_ids?.includes(tagFilterId),
     [tagFilterId],
   );
   const pendingItems = items.filter((i) => i.status === "pending" && matchTag(i));

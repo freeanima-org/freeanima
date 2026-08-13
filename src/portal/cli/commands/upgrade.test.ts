@@ -6,7 +6,7 @@ import { CLI_UPGRADE_HINT_SOURCE } from "@freeanima/host/core/config/cli-install
 
 describe("runCliUpgrade", () => {
   const prevArgv1 = process.argv[1];
-  const prevExit = process.exit;
+  const prevExit = process.exit.bind(process);
   const tempDirs: string[] = [];
 
   afterEach(() => {
@@ -27,13 +27,13 @@ describe("runCliUpgrade", () => {
 
     const stderr: string[] = [];
     spyOn(console, "error").mockImplementation((msg: string) => {
-      stderr.push(String(msg));
+      stderr.push(msg);
     });
     let exitCode: number | undefined;
-    process.exit = ((code?: number) => {
+    process.exit = (code?: number) => {
       exitCode = code ?? 0;
       throw new Error("exit");
-    }) as typeof process.exit;
+    };
 
     const { runCliUpgrade } = await import("./upgrade.ts");
     await expect(runCliUpgrade({ scriptPath: cliPath })).rejects.toThrow("exit");

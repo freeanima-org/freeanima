@@ -3,6 +3,7 @@ import { toolError, toolResult } from "@freeanima/host/core/tool";
 import type { SkillOrigin } from "@freeanima/host/core/db/schema/entity";
 import { PROMPT_XML_TAGS, wrapPromptXml } from "@freeanima/host/core/hooks/prompt";
 import type { SkillDef, SkillRegistry } from "./registry.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   createDbSkill,
   deleteDbSkill,
@@ -151,9 +152,9 @@ export function parseCreateSkillArgs(args: Record<string, unknown>): {
   denied_tools?: string[];
 } {
   return omitUndefined({
-    name: String(args.name ?? ""),
-    description: String(args.description ?? ""),
-    content: String(args.content ?? ""),
+    name: coerceString(args.name ?? ""),
+    description: coerceString(args.description ?? ""),
+    content: coerceString(args.content ?? ""),
     origin: parseOrigin(args.origin),
     allowed_tools: parseStringList(args.allowed_tools),
     denied_tools: parseStringList(args.denied_tools),

@@ -317,7 +317,7 @@ export function TagPicker({
   }, [tagIdsKey]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return () => {};
     let cancelled = false;
     const timer = setTimeout(
       () => {

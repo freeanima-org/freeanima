@@ -116,7 +116,7 @@ export const llmProviderSchema = z.preprocess(
             message: "custom connection requires format",
           });
         }
-        if (val.base_url == null || !String(val.base_url).trim()) {
+        if (val.base_url == null || !val.base_url.trim()) {
           ctx.addIssue({
             code: "custom",
             path: ["base_url"],

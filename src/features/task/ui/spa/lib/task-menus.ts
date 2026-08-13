@@ -19,7 +19,7 @@ export function buildSmartListMenuItems(
 ): import("./menu-types.ts").TaskMenuItem[] {
   return [
     { label: "编辑", onClick: () => handlers.onEdit(row) },
-    { label: "删除", danger: true, onClick: () => void handlers.onDelete(row) },
+    { label: "删除", danger: true, onClick: () => handlers.onDelete(row) },
   ];
 }
 
@@ -36,11 +36,11 @@ export function buildListMenuItems(
 ): import("./menu-types.ts").TaskMenuItem[] {
   if (list.closed && !list.is_folder) {
     const items: import("./menu-types.ts").TaskMenuItem[] = [
-      { label: "取消归档", onClick: () => void handlers.onReopen(list) },
+      { label: "取消归档", onClick: () => handlers.onReopen(list) },
       copyIdMenuItem(list.id),
     ];
     if (!list.is_default) {
-      items.push({ label: "删除", danger: true, onClick: () => void handlers.onDelete(list) });
+      items.push({ label: "删除", danger: true, onClick: () => handlers.onDelete(list) });
     }
     return items;
   }
@@ -60,14 +60,14 @@ export function buildListMenuItems(
       items.push({ label: "新建子文件夹", onClick: () => onCreateChildFolder(list) });
     }
     if (!list.is_default) {
-      items.push({ label: "删除", danger: true, onClick: () => void handlers.onDelete(list) });
+      items.push({ label: "删除", danger: true, onClick: () => handlers.onDelete(list) });
     }
     return items;
   }
 
   if (!list.is_default) {
-    items.push({ label: "归档", onClick: () => void handlers.onClose(list) });
-    items.push({ label: "删除", danger: true, onClick: () => void handlers.onDelete(list) });
+    items.push({ label: "归档", onClick: () => handlers.onClose(list) });
+    items.push({ label: "删除", danger: true, onClick: () => handlers.onDelete(list) });
   }
   return items;
 }
@@ -98,7 +98,7 @@ export function buildItemMenuItems(
   items.push(
     {
       label: item.status === "completed" ? "标记未完成" : "标记完成",
-      onClick: () => void handlers.onToggleComplete(item),
+      onClick: () => handlers.onToggleComplete(item),
     },
     { label: "移动到…", onClick: () => handlers.onMoveTo(item) },
   );
@@ -108,13 +108,13 @@ export function buildItemMenuItems(
   if (item.status === "pending" && (item.due_at || item.start_at) && handlers.onConvertToEvent) {
     items.push({
       label: "转为事件",
-      onClick: () => void handlers.onConvertToEvent?.(item),
+      onClick: () => handlers.onConvertToEvent?.(item),
     });
   }
   items.push({
     label: taskDeleteDetachesCarrier(item.primary_component) ? "移除任务" : "删除",
     danger: true,
-    onClick: () => void handlers.onDelete(item),
+    onClick: () => handlers.onDelete(item),
   });
   return items;
 }

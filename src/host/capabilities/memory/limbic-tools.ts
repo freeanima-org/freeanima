@@ -6,6 +6,7 @@ import type {
   LimbicMemoryCreateInput,
 } from "@freeanima/host/core/db/pg/limbic-memory/types";
 import { createLimbicMemory } from "@freeanima/host/core/db/pg/limbic-memory";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 const LIMBIC_KINDS = ["conversation_mood", "turning_point", "spike"] as const;
 
@@ -65,9 +66,9 @@ export const limbicMemoryToolDefs: ToolDef[] = [
       required: ["conversation_id", "kind", "content"],
     },
     handler: async (args: Record<string, unknown>) => {
-      const conversationId = String(args.conversation_id ?? "").trim();
-      const content = String(args.content ?? "").trim();
-      const kindRaw = String(args.kind ?? "").trim();
+      const conversationId = coerceString(args.conversation_id).trim();
+      const content = coerceString(args.content).trim();
+      const kindRaw = coerceString(args.kind).trim();
 
       if (!conversationId) return toolError("conversation_id is required");
       if (!content) return toolError("content is required");
@@ -92,7 +93,8 @@ export const limbicMemoryToolDefs: ToolDef[] = [
         valence: parseOptionalFloat(args.valence),
         arousal: parseOptionalFloat(args.arousal),
         intensity,
-        source_segment: args.source_segment !== undefined ? String(args.source_segment) : undefined,
+        source_segment:
+          args.source_segment !== undefined ? coerceString(args.source_segment) : undefined,
         semantic_memory_ids: parseNumberArray(args.semantic_memory_ids),
       });
 

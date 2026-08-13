@@ -90,7 +90,7 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
     const refresh = () => setVoices(listWebSpeechVoices());
     refresh();
     const synth = typeof speechSynthesis !== "undefined" ? speechSynthesis : undefined;
-    if (!synth) return;
+    if (!synth) return () => {};
     synth.addEventListener("voiceschanged", refresh);
     return () => synth.removeEventListener("voiceschanged", refresh);
   }, []);

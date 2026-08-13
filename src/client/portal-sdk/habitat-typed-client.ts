@@ -61,7 +61,7 @@ const CLIENT_METHOD_REGISTRY = {
 
 type ClientMethodRegistry = typeof CLIENT_METHOD_REGISTRY;
 
-export type HabitatMethod = keyof ClientMethodRegistry & string;
+export type HabitatMethod = keyof ClientMethodRegistry;
 export type HabitatMethodInputs = {
   [K in HabitatMethod]: z.infer<ClientMethodRegistry[K]["input"]>;
 };
@@ -93,14 +93,14 @@ export function createTypedHabitatClient(options: HabitatClientOptions) {
       payload: HabitatMethodInputs[K],
       opts?: HabitatCallOptions,
     ): Promise<HabitatMethodOutputs[K]> {
-      return client.call(method, payload as never, opts) as Promise<HabitatMethodOutputs[K]>;
+      return client.call(method, payload, opts) as Promise<HabitatMethodOutputs[K]>;
     },
     callRaw<K extends HabitatMethod>(
       method: K,
       payload: HabitatMethodInputs[K],
       opts?: HabitatCallRawOptions,
     ): Promise<Response> {
-      return client.callRaw(method, payload as never, opts);
+      return client.callRaw(method, payload, opts);
     },
     callViaWs: client.callViaWs.bind(client),
     callViaHttp: client.callViaHttp.bind(client),

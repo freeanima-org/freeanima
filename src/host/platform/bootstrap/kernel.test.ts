@@ -21,6 +21,6 @@ describe("service-bootstrap kernel", () => {
     });
     const kernel = createServiceKernel(config);
     expect(kernel.hookRegistry).toBeDefined();
-    expect(kernel.logger.info).toBeFunction();
+    expect(typeof kernel.logger.info).toBe("function");
   });
 });

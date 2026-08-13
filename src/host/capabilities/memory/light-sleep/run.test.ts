@@ -38,7 +38,7 @@ const listSemanticMemoryBySourceSessionsMock = mock(async () => [
     world_id: 1,
     created_at: new Date("2026-01-01T00:00:00.000Z"),
     updated_at: new Date("2026-01-01T00:00:00.000Z"),
-  } as SemanticMemoryRow,
+  },
 ]);
 const listLimbicMemoryBySessionMock = mock(async () => [
   {

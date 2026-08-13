@@ -18,10 +18,11 @@ import {
 import { notifyDebugConfigChanged } from "../debug-config-events.ts";
 import { resolveShellRouterBasepath } from "../router-basepath.ts";
 import { shouldUseNativeShellNavigation } from "@freeanima/client/portal-sdk/shell-runtime.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 type Props = {
   fields: SettingsFormFields;
-  store: SettingsStore<unknown>;
+  store: SettingsStore;
   platform: SettingsPlatform;
   sectionId?: string;
   onDirty?: () => void;
@@ -51,7 +52,7 @@ export function FormRenderer({
   const [status, setStatus] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const canTest = Boolean(store.test);
+  const canTest = store.test != null;
   const grouped = useMemo(() => groupFields(fields.items), [fields.items]);
 
   useEffect(() => {
@@ -270,7 +271,7 @@ function GroupedFieldInput({
         <FormFieldLabel>{item.label}</FormFieldLabel>
         <select
           className={cn(selectClassName, widthClass)}
-          value={String(value ?? "")}
+          value={coerceString(value ?? "")}
           onChange={(e) => onChange(e.target.value)}
         >
           {item.options.map((opt) => (
@@ -291,7 +292,7 @@ function GroupedFieldInput({
           className="w-full"
           rows={4}
           placeholder={item.placeholder}
-          value={String(value ?? "")}
+          value={coerceString(value ?? "")}
           onChange={(e) => onChange(e.target.value)}
         />
       </div>
@@ -305,7 +306,7 @@ function GroupedFieldInput({
         type={item.type === "password" ? "password" : item.type === "number" ? "number" : "text"}
         className={widthClass}
         placeholder={item.placeholder}
-        value={String(value ?? "")}
+        value={coerceString(value ?? "")}
         onChange={(e) => onChange(item.type === "number" ? Number(e.target.value) : e.target.value)}
       />
       {item.description ? (
@@ -343,7 +344,7 @@ function FieldInput({
       <FormField className={widthClass} label={item.label}>
         <select
           className={cn(selectClassName, widthClass)}
-          value={String(value ?? "")}
+          value={coerceString(value ?? "")}
           onChange={(e) => onChange(e.target.value)}
         >
           {item.options.map((opt) => (
@@ -363,7 +364,7 @@ function FieldInput({
           className="w-full"
           rows={4}
           placeholder={item.placeholder}
-          value={String(value ?? "")}
+          value={coerceString(value ?? "")}
           onChange={(e) => onChange(e.target.value)}
         />
       </FormField>
@@ -376,7 +377,7 @@ function FieldInput({
         type={item.type === "password" ? "password" : item.type === "number" ? "number" : "text"}
         className={widthClass}
         placeholder={item.placeholder}
-        value={String(value ?? "")}
+        value={coerceString(value ?? "")}
         onChange={(e) => onChange(item.type === "number" ? Number(e.target.value) : e.target.value)}
       />
     </FormField>

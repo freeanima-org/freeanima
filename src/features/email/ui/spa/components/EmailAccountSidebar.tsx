@@ -2,6 +2,7 @@ import { SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
 import { Button } from "@freeanima/ui-kit";
 import { EmptyState, ListRow } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
+import type { ReactNode } from "react";
 import { FileText, Folder, Inbox, Plus, Send, Trash2 } from "lucide-react";
 
 import type { EmailAccountRow, EmailMailboxInfo } from "../lib/api.ts";
@@ -24,18 +25,19 @@ function mailboxRole(box: EmailMailboxInfo): string | undefined {
   return undefined;
 }
 
-function mailboxIcon(role: string | undefined) {
+function mailboxIcon(role: string | undefined): ReactNode {
+  const className = "ml-2 size-3.5 shrink-0 opacity-70";
   switch (role) {
     case "inbox":
-      return Inbox;
+      return <Inbox className={className} />;
     case "sent":
-      return Send;
+      return <Send className={className} />;
     case "drafts":
-      return FileText;
+      return <FileText className={className} />;
     case "trash":
-      return Trash2;
+      return <Trash2 className={className} />;
     default:
-      return Folder;
+      return <Folder className={className} />;
   }
 }
 
@@ -165,7 +167,6 @@ export function EmailAccountSidebar({
                       </li>
                     ) : null}
                     {sorted.map((box) => {
-                      const Icon = mailboxIcon(mailboxRole(box));
                       const active = activeMailbox === box.path;
                       const fItems = folderMenuItems?.(account, box) ?? [];
                       return (
@@ -182,7 +183,7 @@ export function EmailAccountSidebar({
                             showPersistentMenu={fItems.length > 0 && useActionSheet}
                             className="w-full gap-0.5 text-sm"
                             onClick={() => onSelectMailbox(account, box.path)}
-                            leading={<Icon className="ml-2 size-3.5 shrink-0 opacity-70" />}
+                            leading={mailboxIcon(mailboxRole(box))}
                           >
                             <span className="min-w-0 flex-1 truncate py-2 text-left">
                               {mailboxLabel(box)}

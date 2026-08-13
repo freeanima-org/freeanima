@@ -21,12 +21,12 @@ export type EnrichOptions = {
 };
 
 function supportedParamsFromModelsDev(entry: Model): SupportedParam[] | undefined {
-  if (entry.temperature !== false && entry.tool_call !== false) {
+  if (entry.temperature !== false && entry.tool_call) {
     return undefined;
   }
   const params: SupportedParam[] = ["maxOutputTokens", "topP", "stop", "extra", "streaming"];
   if (entry.temperature !== false) params.push("temperature");
-  if (entry.tool_call !== false) params.push("tools");
+  if (entry.tool_call) params.push("tools");
   if (entry.reasoning) params.push("reasoning");
   return params;
 }

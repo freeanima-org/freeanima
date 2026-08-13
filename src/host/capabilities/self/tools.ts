@@ -11,9 +11,10 @@ import {
 
 import { invalidateSelfLayerPromptCache } from "./cache.ts";
 import { loadSelfBlocks, loadSelfLayerPrompt } from "./load.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 function parseBlockKey(raw: unknown): SelfBlockKey | null {
-  const key = String(raw ?? "").trim() as SelfBlockKey;
+  const key = coerceString(raw ?? "").trim() as SelfBlockKey;
   return SELF_BLOCK_KEYS.includes(key) ? key : null;
 }
 
@@ -64,7 +65,7 @@ export function registerSelfTools(toolSets: ToolSetRegistry): void {
             const blockKey = parseBlockKey(args.block_key);
             if (!blockKey) return toolError("invalid block_key");
 
-            const content = String(args.content ?? "").trim();
+            const content = coerceString(args.content ?? "").trim();
             if (!content) return toolError("content is required");
 
             const force = args.force !== undefined ? Boolean(args.force) : false;

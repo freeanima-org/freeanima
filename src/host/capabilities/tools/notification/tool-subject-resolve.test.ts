@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 
 import { bindResolvedWorldContext } from "@freeanima/host/core/config/world-context";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   resolveNotificationListSubject,
   resolveNotificationSendTargets,
@@ -25,7 +26,7 @@ describe("notification tool subject resolve", () => {
       body: "b",
     });
     expect(typeof err).toBe("string");
-    expect(String(err)).toContain("target or subject_id is required");
+    expect(coerceString(err)).toContain("target or subject_id is required");
   });
 
   it("send with target both", async () => {
@@ -43,7 +44,7 @@ describe("notification tool subject resolve", () => {
   it("list without recipient or subject_id errors", async () => {
     const err = await resolveNotificationListSubject({});
     expect(typeof err).toBe("string");
-    expect(String(err)).toContain("recipient or subject_id is required");
+    expect(coerceString(err)).toContain("recipient or subject_id is required");
   });
 
   it("rejects unknown subject_id", async () => {
@@ -53,6 +54,6 @@ describe("notification tool subject resolve", () => {
       body: "b",
     });
     expect(typeof err).toBe("string");
-    expect(String(err)).toContain("not a configured");
+    expect(coerceString(err)).toContain("not a configured");
   });
 });

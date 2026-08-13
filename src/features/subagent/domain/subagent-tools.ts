@@ -22,6 +22,7 @@ import {
 import type { SubagentTaskInput } from "./types.ts";
 import { SUBAGENT_TOOL_RETURNS } from "./return-schemas.ts";
 import { normalizePromptIncludes } from "./subagent-prompt.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 const WORLD_ID_OPTIONAL = {
   world_id: {
@@ -78,12 +79,12 @@ function parseStringArray(raw: unknown): string[] | undefined {
 }
 
 function parseTask(raw: Record<string, unknown>): SubagentTaskInput | string {
-  const goal = String(raw.goal ?? "").trim();
+  const goal = coerceString(raw.goal ?? "").trim();
   if (!goal) return "goal is required";
   const id = raw.id != null ? Number(raw.id) : undefined;
-  const slug = raw.slug != null ? String(raw.slug).trim() : undefined;
+  const slug = raw.slug != null ? coerceString(raw.slug).trim() : undefined;
   const hasNamed = (id != null && Number.isFinite(id) && id > 0) || Boolean(slug);
-  const instructions = raw.instructions != null ? String(raw.instructions).trim() : undefined;
+  const instructions = raw.instructions != null ? coerceString(raw.instructions).trim() : undefined;
   const allowedRaw = parseStringArray(raw.allowed_tools);
   const promptIncludes = normalizePromptIncludes(parseStringArray(raw.prompt_includes));
 
@@ -100,10 +101,10 @@ function parseTask(raw: Record<string, unknown>): SubagentTaskInput | string {
     goal,
     id: id != null && Number.isFinite(id) && id > 0 ? Math.floor(id) : undefined,
     slug,
-    title: raw.title != null ? String(raw.title).trim() || undefined : undefined,
+    title: raw.title != null ? coerceString(raw.title).trim() || undefined : undefined,
     instructions: instructions || undefined,
     allowed_tools: hasNamed ? undefined : (allowedRaw ?? []),
-    context: raw.context != null ? String(raw.context) : undefined,
+    context: raw.context != null ? coerceString(raw.context) : undefined,
     skills: parseStringArray(raw.skills),
     max_turns:
       raw.max_turns != null && Number(raw.max_turns) > 0
@@ -221,11 +222,11 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
             if (typeof worldId === "string") return worldId;
             try {
               const item = await createSubagent(worldId, {
-                slug: String(args.slug ?? ""),
-                title: String(args.title ?? ""),
+                slug: coerceString(args.slug ?? ""),
+                title: coerceString(args.title ?? ""),
                 ...omitUndefined({
-                  summary: args.summary != null ? String(args.summary) : undefined,
-                  content: args.content != null ? String(args.content) : undefined,
+                  summary: args.summary != null ? coerceString(args.summary) : undefined,
+                  content: args.content != null ? coerceString(args.content) : undefined,
                   skills: parseStringArray(args.skills),
                   max_turns:
                     args.max_turns != null && Number(args.max_turns) > 0
@@ -278,10 +279,10 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
               const item = await updateSubagent(worldId, {
                 id: Math.floor(id),
                 ...omitUndefined({
-                  slug: args.slug != null ? String(args.slug) : undefined,
-                  title: args.title != null ? String(args.title) : undefined,
-                  summary: args.summary != null ? String(args.summary) : undefined,
-                  content: args.content != null ? String(args.content) : undefined,
+                  slug: args.slug != null ? coerceString(args.slug) : undefined,
+                  title: args.title != null ? coerceString(args.title) : undefined,
+                  summary: args.summary != null ? coerceString(args.summary) : undefined,
+                  content: args.content != null ? coerceString(args.content) : undefined,
                   skills: parseStringArray(args.skills),
                   max_turns:
                     args.max_turns != null

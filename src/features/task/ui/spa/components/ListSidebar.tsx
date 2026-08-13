@@ -6,7 +6,7 @@ import { ListRow } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { useDrawerNav } from "@freeanima/ui-kit/layout";
 import { SearchIcon } from "lucide-react";
-import { useEffect, useMemo, useState, type PointerEvent, type ReactNode, type Ref } from "react";
+import { useEffect, useMemo, useState, type PointerEvent, type ReactNode } from "react";
 
 import { LIST_ROOT_DND_ID, listDndId } from "../lib/dnd-ids.ts";
 import type { TaskListRow } from "../lib/api.ts";
@@ -111,7 +111,7 @@ function SortableTreeRow({
       onOpenMenu={onOpenMenu}
       dragAttributes={attributes}
       dragListeners={listeners}
-      rowRef={setNodeRef as Ref<HTMLElement | null>}
+      rowRef={setNodeRef}
       rowStyle={style}
       className={[
         "touch-manipulation gap-0.5 pr-1 text-sm select-none",

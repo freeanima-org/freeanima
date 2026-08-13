@@ -34,7 +34,7 @@ export function createTiktokenWasmPlugin(wasmAbsPath: string): BunPlugin {
     name: "freeanima-tiktoken-wasm",
     setup(build) {
       build.onLoad({ filter: /tiktoken\.cjs$/ }, (args) => {
-        if (!isTiktokenMainCjs(args.path)) return;
+        if (!isTiktokenMainCjs(args.path)) return undefined;
 
         // Relative import 相对原包路径解析并静态打进 bundle；勿 createRequire（compile 后会变成运行时解析）。
         const contents = `/** AUTO by scripts/tiktoken-wasm-plugin.ts — embed wasm for bun --compile */

@@ -20,7 +20,7 @@ describe("readThreeColumnLayoutMode", () => {
 
   function mockMatchMedia(mobile: boolean, wide: boolean) {
     if (!globalThis.window) return;
-    globalThis.window.matchMedia = ((query: string) => {
+    globalThis.window.matchMedia = (query: string) => {
       const matches =
         query.includes("767px") && query.includes("max-width")
           ? mobile
@@ -37,7 +37,7 @@ describe("readThreeColumnLayoutMode", () => {
         removeListener: () => {},
         dispatchEvent: () => false,
       } satisfies MediaQueryList;
-    }) as typeof window.matchMedia;
+    };
   }
 
   test("窄视口 compact", () => {

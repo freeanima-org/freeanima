@@ -3,7 +3,6 @@ import { isLlmConfigured, tryGetLlmConfig } from "@freeanima/host/core/config";
 import {
   assertProfilesValid,
   BackendRegistry,
-  type LlmCallParams,
   type LlmProfileDef,
   ProfileRegistry,
   ProviderRegistry,
@@ -28,10 +27,10 @@ function profileDefsFromConfig(llm: LlmConfig): LlmProfileDef[] {
         omitUndefined({
           provider: hop.provider,
           model: hop.model,
-          params: hop.params as Partial<LlmCallParams> | undefined,
+          params: hop.params,
         }),
       ),
-      params: profile.params as Partial<LlmCallParams> | undefined,
+      params: profile.params,
     }),
   );
 }

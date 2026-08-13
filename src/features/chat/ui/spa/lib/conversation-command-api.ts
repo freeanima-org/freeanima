@@ -43,7 +43,7 @@ export async function runConversationCommand(
     { transport: "http" },
   );
   if (raw && typeof raw === "object" && "delivery" in raw) {
-    return raw as ConversationCommandResult;
+    return raw;
   }
   throw new Error("conversation.command returned invalid payload");
 }

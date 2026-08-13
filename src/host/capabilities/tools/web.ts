@@ -7,6 +7,7 @@ import {
 } from "@freeanima/host/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import type { Config } from "@freeanima/host/core/config";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   readAppVersionForCapability as readAppVersion,
   vaultForCapability,
@@ -125,9 +126,9 @@ async function handleWebSearch(query: string, limit = 5): Promise<string> {
       if (!item || typeof item !== "object") continue;
       const row = item as Record<string, unknown>;
       results.push({
-        title: String(row.title ?? ""),
-        url: String(row.url ?? row.link ?? ""),
-        description: String(row.description ?? row.snippet ?? ""),
+        title: coerceString(row.title ?? ""),
+        url: coerceString(row.url ?? row.link ?? ""),
+        description: coerceString(row.description ?? row.snippet ?? ""),
       });
     }
   } else if (rawData && typeof rawData === "object") {
@@ -137,9 +138,9 @@ async function handleWebSearch(query: string, limit = 5): Promise<string> {
         if (!item || typeof item !== "object") continue;
         const row = item as Record<string, unknown>;
         results.push({
-          title: String(row.title ?? ""),
-          url: String(row.url ?? row.link ?? ""),
-          description: String(row.description ?? row.snippet ?? ""),
+          title: coerceString(row.title ?? ""),
+          url: coerceString(row.url ?? row.link ?? ""),
+          description: coerceString(row.description ?? row.snippet ?? ""),
         });
       }
     }
@@ -185,8 +186,8 @@ async function handleWebExtract(urls: string[]): Promise<string> {
       const payload = data.data ?? data;
       if (payload && typeof payload === "object" && !Array.isArray(payload)) {
         const row = payload as Record<string, unknown>;
-        const title = String(row.title ?? "");
-        let content = String(row.markdown ?? row.content ?? row.text ?? "");
+        const title = coerceString(row.title ?? "");
+        let content = coerceString(row.markdown ?? row.content ?? row.text ?? "");
         const maxChars = 100_000;
         if (content.length > maxChars) {
           // Remote body has no offset API; spill so file_read can continue without re-fetching blindly.

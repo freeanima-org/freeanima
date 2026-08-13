@@ -99,9 +99,7 @@ import { handleTtsSynthesize } from "../tts-handler.ts";
 
 type AnyHabitatRouteHandler = HabitatRouteHandler<z.ZodTypeAny, z.ZodTypeAny>;
 
-function wrapConsoleLegacyHandler(
-  fn: (payload: unknown) => Promise<unknown> | unknown,
-): AnyHabitatRouteHandler {
+function wrapConsoleLegacyHandler(fn: (payload: unknown) => unknown): AnyHabitatRouteHandler {
   return (_deps, input, _ctx) => Promise.resolve(fn(input));
 }
 

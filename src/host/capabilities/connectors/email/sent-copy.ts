@@ -56,7 +56,7 @@ export async function searchMailboxUidByMessageId(
     )) as number[];
     const first = uids[0];
     if (first != null && Number.isFinite(first) && first > 0) {
-      return Number(first);
+      return first;
     }
   }
   return null;

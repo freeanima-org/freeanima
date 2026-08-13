@@ -116,8 +116,8 @@ describe("http-dispatch", () => {
       fetch(req, bunServer) {
         const upgraded = trySapWebSocketUpgrade(req, bunServer, {
           fetch(innerReq, innerServer) {
-            const upgradeServer = innerServer as Bun.Server<unknown>;
-            if (upgradeServer.upgrade(innerReq, { data: {} })) return;
+            const upgradeServer = innerServer;
+            if (upgradeServer.upgrade(innerReq, { data: {} })) return undefined;
             return new Response("Expected WebSocket upgrade", { status: 426 });
           },
         });

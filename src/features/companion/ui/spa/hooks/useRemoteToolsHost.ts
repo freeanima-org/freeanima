@@ -11,7 +11,6 @@ import {
 } from "../lib/runtime-local.ts";
 import { listenCompanionBubble } from "../lib/portal-shell.ts";
 import { useCompanionStore } from "../stores/companion.ts";
-import type { MotionSlotId } from "@freeanima/features/companion/shared/companion-schema.ts";
 
 /**
  * Overlay WebView-host：挂载时 attach；shell config-changed 时重建。
@@ -21,13 +20,13 @@ export function useRemoteToolsHost(enabled: boolean): void {
   const handleRef = useRef<RemoteToolsHostHandle | null>(null);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) return () => {};
 
     setRuntimeBubbleListener((current, pending) => {
       useCompanionStore.getState().setRuntimeBubble(current, pending);
     });
     setRuntimePlayHandler((slot, motionId) => {
-      useCompanionStore.getState().backendRef.current?.playSlot(slot as MotionSlotId, motionId);
+      useCompanionStore.getState().backendRef.current?.playSlot(slot, motionId);
     });
 
     const applyStatus = (status: CompanionRemoteToolsStatus): void => {

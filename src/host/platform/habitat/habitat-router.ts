@@ -81,6 +81,6 @@ export type HabitatMethodOutputs = InferHabitatOutputs<typeof chatHabitatRoutes>
   InferHabitatOutputs<typeof mcpHabitatRoutes> &
   InferHabitatOutputs<typeof habitatCoreRoutes>;
 
-export type HabitatMethod = keyof HabitatMethodInputs & string;
+export type HabitatMethod = Extract<keyof HabitatMethodInputs, string>;
 
 export type { InferHabitatInputs, InferHabitatOutputs } from "./types.ts";

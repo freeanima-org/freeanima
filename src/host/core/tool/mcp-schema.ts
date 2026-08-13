@@ -25,7 +25,7 @@ export function normalizeJsonSchema(
 export function mcpToolParameters(mcpTool: {
   inputSchema?: Record<string, unknown>;
 }): JsonSchemaObject {
-  return normalizeJsonSchema(mcpTool.inputSchema as JsonSchemaObject | undefined);
+  return normalizeJsonSchema(mcpTool.inputSchema);
 }
 
 /** ToolDef.parameters → MCP tools/list inputSchema */

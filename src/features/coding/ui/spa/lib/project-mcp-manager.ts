@@ -61,7 +61,7 @@ async function createTransport(server: ProjectMcpServer): Promise<Transport> {
           },
         }
       : {};
-    return new SSEClientTransport(url, opts) as Transport;
+    return new SSEClientTransport(url, opts);
   }
 
   // stdio：仅 Node/Bun（测试）；浏览器/Tauri WebView 不可用
@@ -86,7 +86,7 @@ async function createTransport(server: ProjectMcpServer): Promise<Transport> {
   };
   if (cfg.env) stdioOpts.env = cfg.env;
   if (cfg.cwd) stdioOpts.cwd = cfg.cwd;
-  return new StdioClientTransport(stdioOpts) as Transport;
+  return new StdioClientTransport(stdioOpts);
 }
 
 export class ProjectMcpManager {

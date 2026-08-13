@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import type { VRM } from "@pixiv/three-vrm";
+
+import { getVrmScene } from "./vrm-three-access.ts";
 import {
   CHARACTER_FOOTPRINT_HEIGHT,
   CHARACTER_FOOTPRINT_WIDTH,
@@ -20,16 +22,17 @@ export function computeVrmFraming(vrm: VRM): {
   basePosition: THREE.Vector3;
   framing: VrmFramingState;
 } {
-  vrm.scene.updateMatrixWorld(true);
+  const scene = getVrmScene(vrm);
+  scene.updateMatrixWorld(true);
 
-  const box = new THREE.Box3().setFromObject(vrm.scene);
+  const box = new THREE.Box3().setFromObject(scene);
   const center = box.getCenter(new THREE.Vector3());
   const basePosition = new THREE.Vector3(-center.x, -box.min.y, -center.z);
 
-  vrm.scene.position.copy(basePosition);
-  vrm.scene.updateMatrixWorld(true);
+  scene.position.copy(basePosition);
+  scene.updateMatrixWorld(true);
 
-  const grounded = new THREE.Box3().setFromObject(vrm.scene);
+  const grounded = new THREE.Box3().setFromObject(scene);
   const modelSize = grounded.getSize(new THREE.Vector3());
   const groundedCenter = grounded.getCenter(new THREE.Vector3());
   const footY = grounded.min.y;

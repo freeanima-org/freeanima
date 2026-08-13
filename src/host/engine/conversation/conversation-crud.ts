@@ -56,6 +56,7 @@ import {
   deleteStaleConversations,
 } from "./conversation-store-pg-bridge.ts";
 import type { ConversationSummaryRow } from "@freeanima/host/core/db/pg/conversation/types";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export type Message = StoredMessage;
 
@@ -211,7 +212,7 @@ export async function loadForRuntime(
 export async function appendMessage(msg: StoredMessage, conversationId: string): Promise<void> {
   const out: StoredMessage & { timestamp?: string; id?: number } = omitUndefined({
     ...msg,
-  }) as StoredMessage & { timestamp?: string; id?: number };
+  });
   if (!out.timestamp) out.timestamp = formatCstIso();
   if (out.pos === undefined) {
     out.pos = await nextMessagePosWithRouting(conversationId);
@@ -266,7 +267,7 @@ export async function initConversation(
   const systemPrompt = await buildSystemPrompt(opts.functions ?? [], cwd, {
     ...metaDraft,
     conversation_id: sid,
-  } as typeof metaDraft & { conversation_id: string });
+  });
   const meta: ConversationMetaMessage = {
     ...metaDraft,
     system_prompt: systemPrompt,
@@ -303,7 +304,7 @@ function originExtraMatches(
 ): boolean {
   const identity = stripOriginRoutingMeta(platformExtra);
   for (const [key, val] of Object.entries(identity)) {
-    if (String(stored[key] ?? "") !== String(val ?? "")) {
+    if (coerceString(stored[key] ?? "") !== coerceString(val ?? "")) {
       return false;
     }
   }
@@ -434,7 +435,7 @@ export async function rebuildConversationSystemPrompt(conversationId: string): P
   const systemPrompt = await buildSystemPrompt(functions, cwd, {
     ...meta,
     conversation_id: conversationId,
-  } as typeof meta & { conversation_id: string });
+  });
   await updateConversationMetaField(conversationId, {
     system_prompt: systemPrompt,
     system_prompt_built_at: new Date().toISOString(),
@@ -627,7 +628,7 @@ export async function rollbackToLastUser(conversationId: string): Promise<string
   if (keepThroughPos === undefined) {
     throw new Error("No partner message to retry");
   }
-  await pgWriteTruncate(conversationId, Number(keepThroughPos));
+  await pgWriteTruncate(conversationId, keepThroughPos);
 
   return lastUser.role === "user" ? lastUser.content : "";
 }
@@ -657,7 +658,7 @@ export async function rollbackBeforeLastUser(conversationId: string): Promise<vo
   if (keepThroughPos === undefined) {
     throw new Error("No user message to edit");
   }
-  await pgWriteTruncate(conversationId, Number(keepThroughPos));
+  await pgWriteTruncate(conversationId, keepThroughPos);
 }
 
 /** Default minimum age before a stale conversation may be deleted by sleep-cycle cleanup */

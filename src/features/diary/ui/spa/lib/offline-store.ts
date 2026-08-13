@@ -27,6 +27,7 @@ import {
 } from "@freeanima/client/portal-sdk/offline-temp-id";
 import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-write";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import { randomUuid } from "@freeanima/shared/rpc-contract";
 
 import type { DiaryEntryRow, DiarySubjectKind, DiaryTextBlock } from "./format-diary.ts";
@@ -259,7 +260,7 @@ function mergePatchIntoCreate(
 ): OfflineOutboxOp {
   const payload = { ...createOp.payload };
   if (patchOp.method === "diary.append") {
-    const fragment = String(patchOp.payload.content ?? "");
+    const fragment = coerceString(patchOp.payload.content);
     const prev = typeof payload.content === "string" ? payload.content : "";
     payload.content = prev.trim() ? `${prev.trim()}\n\n${fragment}` : fragment;
   } else {

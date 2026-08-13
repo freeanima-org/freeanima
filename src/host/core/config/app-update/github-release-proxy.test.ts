@@ -6,6 +6,7 @@ import {
   normalizeGithubReleaseProxy,
 } from "./github-release-proxy.ts";
 import { resolvePackagedUpdate } from "./resolve-packaged-update.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 describe("github-release-proxy", () => {
   it("normalizes unknown to none", () => {
@@ -44,7 +45,7 @@ describe("resolvePackagedUpdate with proxy", () => {
     };
     const seen: string[] = [];
     const fetchImpl = (async (url: RequestInfo | URL) => {
-      seen.push(String(url));
+      seen.push(coerceString(url));
       return new Response(JSON.stringify(release), { status: 200 });
     }) as unknown as typeof fetch;
 

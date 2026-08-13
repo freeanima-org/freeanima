@@ -41,6 +41,50 @@ function requireTool(registry: ToolSetRegistry, name: string) {
   return tool;
 }
 
+function parseDocsList(raw: unknown): { total: number; docs: { path: string }[] } {
+  if (raw == null || typeof raw !== "object") {
+    throw new Error("freeanima_docs_list 返回非对象");
+  }
+  const total: unknown = Reflect.get(raw, "total");
+  const docsRaw: unknown = Reflect.get(raw, "docs");
+  if (typeof total !== "number" || !Array.isArray(docsRaw)) {
+    throw new Error("freeanima_docs_list 结构无效");
+  }
+  const docs = docsRaw.flatMap((entry) => {
+    if (entry == null || typeof entry !== "object") return [];
+    const path: unknown = Reflect.get(entry, "path");
+    return typeof path === "string" ? [{ path }] : [];
+  });
+  return { total, docs };
+}
+
+function parseDocsGet(raw: unknown): { content: string } {
+  if (raw == null || typeof raw !== "object") {
+    throw new Error("freeanima_docs_get 返回非对象");
+  }
+  const content: unknown = Reflect.get(raw, "content");
+  if (typeof content !== "string") {
+    throw new Error("freeanima_docs_get 缺少 content");
+  }
+  return { content };
+}
+
+function parseDocsSearch(raw: unknown): { total: number } {
+  if (raw == null || typeof raw !== "object") {
+    throw new Error("freeanima_docs_search 返回非对象");
+  }
+  const total: unknown = Reflect.get(raw, "total");
+  if (typeof total !== "number") {
+    throw new Error("freeanima_docs_search 缺少 total");
+  }
+  return { total };
+}
+
+function parseJson(text: string): unknown {
+  const parsed: unknown = JSON.parse(text);
+  return parsed;
+}
+
 function stopChild(child: ChildProcess | null): void {
   if (!child || child.killed) return;
   child.kill("SIGTERM");
@@ -91,23 +135,31 @@ async function assertEmbeddedCorpusWithoutDiskDocs(): Promise<void> {
   const registry = new ToolSetRegistry();
   registerDocsTools(registry);
 
-  const list = JSON.parse(await requireTool(registry, "freeanima_docs_list").handler({}));
+  const list = parseDocsList(
+    parseJson(await requireTool(registry, "freeanima_docs_list").handler({})),
+  );
   if (list.total !== embeds.length) {
     throw new Error(`freeanima_docs_list total=${list.total}, expected ${embeds.length}`);
   }
-  if (!list.docs.some((d: { path: string }) => d.path === "product/architecture.md")) {
+  if (!list.docs.some((d) => d.path === "product/architecture.md")) {
     throw new Error("freeanima_docs_list missing product/architecture.md");
   }
 
-  const get = JSON.parse(
-    await requireTool(registry, "freeanima_docs_get").handler({ path: "product/architecture.md" }),
+  const get = parseDocsGet(
+    parseJson(
+      await requireTool(registry, "freeanima_docs_get").handler({
+        path: "product/architecture.md",
+      }),
+    ),
   );
-  if (!String(get.content).includes(DOC_NEEDLE)) {
+  if (!get.content.includes(DOC_NEEDLE)) {
     throw new Error("freeanima_docs_get content missing expected architecture marker");
   }
 
-  const search = JSON.parse(
-    await requireTool(registry, "freeanima_docs_search").handler({ query: "Habitat Portal" }),
+  const search = parseDocsSearch(
+    parseJson(
+      await requireTool(registry, "freeanima_docs_search").handler({ query: "Habitat Portal" }),
+    ),
   );
   if (search.total < 1) {
     throw new Error(`freeanima_docs_search expected hits, got total=${search.total}`);

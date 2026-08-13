@@ -1,5 +1,6 @@
 import type { StoredMessage } from "@freeanima/host/core/db/domain";
 import type { SkillRegistry } from "./registry.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   SKILL_EVOLVE_MIN_TOOL_CALLS,
   SKILL_WRITE_TOOL_NAMES,
@@ -78,7 +79,7 @@ export function collectTurnToolStats(msgs: readonly StoredMessage[]): TurnToolSt
           try {
             const args: unknown = JSON.parse(tc.function.arguments || "{}");
             if (args && typeof args === "object" && "name" in args) {
-              const sn = String((args as { name?: unknown }).name ?? "").trim();
+              const sn = coerceString((args as { name?: unknown }).name ?? "").trim();
               if (sn) loadedSkillNames.push(sn);
             }
           } catch {

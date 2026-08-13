@@ -3,6 +3,7 @@ import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/host/core/tool";
 import { CRON_TOOL_RETURNS } from "./return-schemas.ts";
 import { computeNextRunAt } from "./bun-schedule.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   createJob,
   getJob,
@@ -24,8 +25,8 @@ function tsHuman(ts: number): string {
 }
 
 async function handleCronjob(args: Record<string, unknown>): Promise<string> {
-  const action = String(args.action ?? "list");
-  const jobId = String(args.job_id ?? "");
+  const action = coerceString(args.action ?? "list");
+  const jobId = coerceString(args.job_id ?? "");
 
   if (action === "list") {
     const jobs = await listJobs();
@@ -72,9 +73,9 @@ async function handleCronjob(args: Record<string, unknown>): Promise<string> {
   }
 
   if (action === "create") {
-    const name = String(args.name ?? "");
-    const schedule = String(args.schedule ?? "");
-    const prompt = String(args.prompt ?? "");
+    const name = coerceString(args.name ?? "");
+    const schedule = coerceString(args.schedule ?? "");
+    const prompt = coerceString(args.prompt ?? "");
     const noAgent = Boolean(args.no_agent);
     if (!name) return toolError("name required to create job");
     if (!schedule) return toolError("schedule required to create job");
@@ -87,7 +88,7 @@ async function handleCronjob(args: Record<string, unknown>): Promise<string> {
           schedule,
           prompt,
           skills: Array.isArray(args.skills) ? (args.skills as string[]) : undefined,
-          script: args.script != null ? String(args.script) : null,
+          script: args.script != null ? coerceString(args.script) : null,
           no_agent: noAgent,
           repeat: typeof args.repeat === "number" ? args.repeat : null,
           notify_on_success: Boolean(args.notify_on_success),

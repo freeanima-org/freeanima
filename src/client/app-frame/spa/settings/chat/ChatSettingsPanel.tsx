@@ -25,7 +25,7 @@ export default function ChatSettingsPanel(_props: SettingsPanelProps) {
         <Switch
           id="chat-llm-debug"
           isSelected={llmDebugEnabled}
-          onChange={(checked) => setLlmDebugEnabled(checked === true)}
+          onChange={(checked) => setLlmDebugEnabled(checked)}
           aria-label={"Enable LLM debug"}
         />
       </div>

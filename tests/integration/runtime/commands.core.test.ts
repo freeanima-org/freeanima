@@ -26,7 +26,7 @@ async function patchMetaForTest(
   conversationId: string,
   patch: Record<string, unknown>,
 ): Promise<void> {
-  await patchConversationMeta(conversationId, patch as never);
+  await patchConversationMeta(conversationId, patch);
 }
 
 describePg("slash commands (core)", () => {
@@ -223,7 +223,7 @@ describePg("slash commands (core)", () => {
     expect(metaAfter.title).toBe("preserved title");
     expect(metaAfter.model).toBe(metaBefore.model);
 
-    const sp = String(metaAfter.system_prompt ?? "");
+    const sp = metaAfter.system_prompt ?? "";
     expect(sp).toContain(selfModel);
     expect(sp).not.toBe("old prompt");
   });

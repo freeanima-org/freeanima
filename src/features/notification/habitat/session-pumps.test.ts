@@ -34,7 +34,7 @@ describe("notification session-pumps", () => {
         app_id: "portal",
         instance_id: "main",
         sendEvent(method, payload) {
-          events1.push({ method, id: String((payload as { id?: string }).id ?? "") });
+          events1.push({ method, id: (payload as { id?: string }).id ?? "" });
         },
       } as Parameters<typeof pumpUserNotificationInbox>[0],
       c1.signal,
@@ -72,7 +72,7 @@ describe("notification session-pumps", () => {
         app_id: "portal",
         instance_id: "main",
         sendEvent(method, payload) {
-          events2.push({ method, id: String((payload as { id?: string }).id ?? "") });
+          events2.push({ method, id: (payload as { id?: string }).id ?? "" });
         },
       } as Parameters<typeof pumpUserNotificationInbox>[0],
       c2.signal,

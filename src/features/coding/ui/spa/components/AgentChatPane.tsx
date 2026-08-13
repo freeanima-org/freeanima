@@ -152,7 +152,7 @@ export function AgentChatPane({
   }, []);
 
   useEffect(() => {
-    if (!debugViewerOpen || !conversationId) return;
+    if (!debugViewerOpen || !conversationId) return () => {};
     let cancelled = false;
     setLlmDebugLoading(true);
     void fetchLlmDebug(conversationId)

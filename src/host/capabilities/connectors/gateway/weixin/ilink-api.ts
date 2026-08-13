@@ -5,6 +5,7 @@ import { chunkText } from "../chunk-text.ts";
 import { randomBytes } from "node:crypto";
 
 import { ilinkMessageSchema, type IlinkMessage } from "../schemas/weixin.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export { type IlinkMessage };
 export const ILINK_BASE_URL = "https://ilinkai.weixin.qq.com";
@@ -136,7 +137,7 @@ export function assertIlinkOk(resp: Record<string, unknown>, endpoint: string): 
   const retNum = ret === undefined || ret == null ? 0 : Number(ret);
   const errNum = errcode === undefined || errcode == null ? 0 : Number(errcode);
   if (retNum === 0 && errNum === 0) return;
-  const errmsg = String(resp.errmsg ?? resp.err_msg ?? "");
+  const errmsg = coerceString(resp.errmsg ?? resp.err_msg ?? "");
   throw new Error(`iLink ${endpoint} ret=${String(ret)} errcode=${String(errcode)}: ${errmsg}`);
 }
 
@@ -265,7 +266,7 @@ export async function sendTypingIndicator(
   contextToken?: string,
 ): Promise<void> {
   const cfg = await getConfig(baseUrl, token, peerId, contextToken);
-  const ticket = String(cfg.typing_ticket ?? "").trim();
+  const ticket = coerceString(cfg.typing_ticket ?? "").trim();
   if (!ticket) return;
   await sendTyping(baseUrl, token, peerId, ticket);
 }

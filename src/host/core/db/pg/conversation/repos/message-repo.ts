@@ -27,7 +27,7 @@ function rowToMessageRowView(row: Pick<MessageSelect, "id" | "pos" | "payload">)
   }
   return {
     message_id: row.id,
-    pos: Number(row.pos),
+    pos: row.pos,
     role,
     content,
     timestamp: typeof row.payload.timestamp === "string" ? row.payload.timestamp : "",
@@ -211,7 +211,7 @@ export async function nextMessagePos(conversation_id: string): Promise<number> {
     .select({ maxPos: sql<number>`coalesce(max(${messages.pos}), 0)` })
     .from(messages)
     .where(eq(messages.conversation_id, conversation_id));
-  return Number(rows[0]?.maxPos ?? 0) + 1;
+  return (rows[0]?.maxPos ?? 0) + 1;
 }
 
 /** 当前会话末条消息的 pos；空会话为 0 */
@@ -318,7 +318,7 @@ export async function countMessages(conversation_id: string): Promise<number> {
     .select({ count: sql<number>`count(*)::int` })
     .from(messages)
     .where(eq(messages.conversation_id, conversation_id));
-  return Number(rows[0]?.count ?? 0);
+  return rows[0]?.count ?? 0;
 }
 
 export async function countUserMessages(conversation_id: string): Promise<number> {
@@ -332,7 +332,7 @@ export async function countUserMessages(conversation_id: string): Promise<number
         sql`(${messages.payload})->>'role' = 'user'`,
       ),
     );
-  return Number(rows[0]?.count ?? 0);
+  return rows[0]?.count ?? 0;
 }
 
 /** API / history pagination: slice by pos order, avoid full listMessages */
@@ -366,7 +366,7 @@ export async function findMessagePos(
     .limit(1);
   const posRow = rows[0];
   if (!posRow) return null;
-  return Number(posRow.pos);
+  return posRow.pos;
 }
 
 export async function listMessageRowsPage(

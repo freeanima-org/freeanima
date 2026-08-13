@@ -15,7 +15,6 @@ import {
 } from "@freeanima/client/portal-sdk/offline-outbox";
 
 import { getConversationTail, subscribeMessageStream } from "./api.ts";
-import type { StreamApiEvent } from "./types.ts";
 import { isChatSendClaimed, updateChatSendPayload } from "./offline-send-store.ts";
 
 export const CHAT_OFFLINE_MODULE_ID = "chat" as const;
@@ -81,7 +80,7 @@ export const chatStreamAdapter: StreamModuleAdapter = {
         }),
         {
           onData: (ev) => {
-            ctx.stream.onEvent(payload.conversation_id, ev as StreamApiEvent);
+            ctx.stream.onEvent(payload.conversation_id, ev);
             if (ev.event === "error") {
               const code = (ev.data as { code?: string }).code;
               if (code === "tail_conflict") {

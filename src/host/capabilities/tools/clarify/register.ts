@@ -48,9 +48,9 @@ export function registerClarifyHooks(opts: {
   registry.on(
     toolAfterCall,
     (ctx) => {
-      if (ctx.toolName !== "clarify") return;
+      if (ctx.toolName !== "clarify") return undefined;
       const parsed = parseClarifyToolResult(ctx.result);
-      if (!parsed || !("status" in parsed) || parsed.status !== "awaiting") return;
+      if (!parsed || !("status" in parsed) || parsed.status !== "awaiting") return undefined;
       const data: ToolAfterCallEffect = {
         turnControl: {
           pause: true,
@@ -72,7 +72,7 @@ export function registerClarifyHooks(opts: {
     turnAfterComplete,
     async (ctx) => {
       const pending = findAwaitingClarifyInMessages(ctx.messages);
-      if (!pending) return;
+      if (!pending) return undefined;
       await setAwaitingClarify(conversation, ctx.conversationId, {
         items: pending.items,
         timeout_sec: pending.timeout_sec,

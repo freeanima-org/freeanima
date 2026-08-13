@@ -1,3 +1,4 @@
+import { coerceString } from "@freeanima/shared/coerce-string";
 /// <reference lib="dom" />
 
 export const OFFLINE_DB_NAME = "freeanima-portal-cache";
@@ -46,7 +47,7 @@ export function openOfflineDb(): Promise<IDBDatabase | null> {
   });
 }
 
-export async function offlineDbGet(store: string, key: string): Promise<unknown | null> {
+export async function offlineDbGet(store: string, key: string): Promise<unknown> {
   if (testBackend) {
     return testBackend.get(`${store}|${key}`) ?? null;
   }
@@ -137,7 +138,7 @@ export async function offlineDbListKeys(store: string, prefix: string): Promise<
       () => {
         const cursor = req.result;
         if (!cursor) return;
-        const key = String(cursor.key);
+        const key = coerceString(cursor.key);
         if (key.startsWith(prefix)) keys.push(key.slice(prefix.length));
         cursor.continue();
       },

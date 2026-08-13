@@ -28,7 +28,7 @@ export function mapAutoLlmRunRow(raw: AutoLlmRunDbRow): AutoLlmRunRow {
     status: raw.status,
     duration_ms: raw.duration_ms,
     error: raw.error,
-    metadata: raw.metadata as Record<string, unknown> | null,
+    metadata: raw.metadata,
     created_at: String(raw.created_at),
     finished_at: String(raw.finished_at),
   };
@@ -69,7 +69,7 @@ export async function countAutoLlmRuns(opts?: AutoLlmRunCountOpts): Promise<numb
     .select({ value: count() })
     .from(autoLlmRuns)
     .where(conditions.length > 0 ? and(...conditions) : undefined);
-  return Number(rows[0]?.value ?? 0);
+  return rows[0]?.value ?? 0;
 }
 
 export async function getAutoLlmRun(id: string): Promise<AutoLlmRunRow | null> {
@@ -89,7 +89,7 @@ export async function listAutoLlmMessages(runId: string): Promise<AutoLlmMessage
   return rows.map((raw) => ({
     id: raw.id,
     run_id: raw.run_id,
-    pos: Number(raw.pos),
+    pos: raw.pos,
     payload: raw.payload,
   }));
 }

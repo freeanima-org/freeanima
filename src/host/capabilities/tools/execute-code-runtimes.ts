@@ -25,8 +25,16 @@ import { readFileSync, writeFileSync } from "node:fs";
 export type RuntimeId = "bun" | "nodejs";
 
 export function parseRuntime(raw: unknown): RuntimeId {
-  const value = String(raw ?? "bun").toLowerCase();
-  return value === "nodejs" ? "nodejs" : "bun";
+  let value = "bun";
+  if (typeof raw === "string") value = raw;
+  else if (
+    raw != null &&
+    (typeof raw === "number" || typeof raw === "boolean" || typeof raw === "bigint")
+  ) {
+    value = String(raw);
+  }
+  const normalized = value.toLowerCase();
+  return normalized === "nodejs" ? "nodejs" : "bun";
 }
 
 export function listEnabledRuntimes(): RuntimeId[] {
@@ -49,7 +57,7 @@ function formatProcessOutput(stdout: string, stderr: string, exitCode: number | 
 function formatSpawnResult(result: ReturnType<typeof spawnSync>): string {
   const parts: string[] = [];
   if (result.stdout) parts.push(String(result.stdout));
-  if (result.stderr) parts.push(`--- stderr ---\n${result.stderr}`);
+  if (result.stderr) parts.push(`--- stderr ---\n${String(result.stderr)}`);
   if (result.status !== 0 && result.status != null) {
     parts.push(`--- exit code: ${result.status} ---`);
   }
@@ -124,8 +132,10 @@ export async function runExecuteCode(
       return runBun(code, timeoutSec, env);
     case "nodejs":
       return runNodejs(code, timeoutSec, env);
-    default:
-      return toolError(`runtime '${runtime}' is not supported`);
+    default: {
+      const unsupportedRuntime = runtime satisfies never;
+      return toolError(`runtime '${String(unsupportedRuntime)}' is not supported`);
+    }
   }
 }
 

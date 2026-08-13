@@ -3,6 +3,7 @@ import { attachToolReturns } from "@freeanima/host/core/tool";
 
 import { clampTimeout, parseRuntime, runExecuteCode } from "./execute-code-runtimes.ts";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   parseSecretsArg,
   resolveSubprocessSecrets,
@@ -44,7 +45,7 @@ export function registerExecuteCodeTool(toolSets: ToolSetRegistry): void {
             required: ["code"],
           },
           handler: async (a) => {
-            const code = String(a.code ?? "");
+            const code = coerceString(a.code ?? "");
             const runtime = parseRuntime(a.runtime);
             const timeout = clampTimeout(a.timeout);
             const parsedSecrets = parseSecretsArg(a.secrets);

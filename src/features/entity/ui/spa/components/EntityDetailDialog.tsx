@@ -72,7 +72,7 @@ export function EntityDetailDialog({
       setItem(null);
       setError("");
       setCopied(false);
-      return;
+      return () => {};
     }
     let cancelled = false;
     setLoading(true);

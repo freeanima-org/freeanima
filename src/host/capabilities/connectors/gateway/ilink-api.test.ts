@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
 
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   WEIXIN_TEXT_CHUNK_LIMIT,
   _resetWeixinSessionPauseForTest,
@@ -67,7 +68,7 @@ describe("sendTextChunked", () => {
     globalThis.fetch = vi.fn(async (_url: string, init?: RequestInit) => {
       const hdrs = init?.headers as Record<string, string>;
       seenHeaders.push(hdrs);
-      seenBodies.push(String(init?.body ?? ""));
+      seenBodies.push(coerceString(init?.body ?? ""));
       return new Response(JSON.stringify({ ret: 0, errcode: 0 }), { status: 200 });
     }) as unknown as typeof fetch;
 

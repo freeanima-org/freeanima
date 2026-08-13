@@ -9,6 +9,7 @@ import {
   SILENT_WAV_DATA_URI,
   stopMpegPlayback,
 } from "./mpeg-player.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   createHabitatSpeechAdapter,
   primeHabitatSpeechOutput,
@@ -17,8 +18,8 @@ import {
 
 const originalFetch = globalThis.fetch;
 const originalAudio = globalThis.Audio;
-const originalCreateObjectURL = URL.createObjectURL;
-const originalRevokeObjectURL = URL.revokeObjectURL;
+const originalCreateObjectURL = URL.createObjectURL.bind(URL);
+const originalRevokeObjectURL = URL.revokeObjectURL.bind(URL);
 const originalMediaSource = globalThis.MediaSource;
 const prevWindow = globalThis.window;
 
@@ -100,8 +101,8 @@ beforeEach(() => {
   // 隔离：勿继承其它用例泄漏的 MediaSource mock（否则会误走 MSE 路径挂死）
   // @ts-expect-error test isolation
   globalThis.MediaSource = undefined;
-  URL.createObjectURL = mock(() => "blob:mock-audio") as typeof URL.createObjectURL;
-  URL.revokeObjectURL = mock(() => {}) as typeof URL.revokeObjectURL;
+  URL.createObjectURL = mock(() => "blob:mock-audio");
+  URL.revokeObjectURL = mock(() => {});
 
   globalThis.Audio = mock(function MockAudio() {
     latestMockAudio = createMockAudio();
@@ -160,7 +161,7 @@ describe("createHabitatSpeechAdapter", () => {
     const audioBuffer = new Uint8Array([0xff, 0xf3, 0x64, 0xc4]).buffer;
 
     const fetchMock = mock(async (input: RequestInfo | URL) => {
-      const url = String(input);
+      const url = coerceString(input);
       expect(url).toBe("http://192.168.1.10:2658/rpc/v1/tts/synthesize");
       return streamResponse(audioBuffer);
     });

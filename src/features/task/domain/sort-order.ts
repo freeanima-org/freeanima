@@ -28,7 +28,7 @@ export function nextPrependSortOrder(existingSortOrders: readonly number[]): num
  * 根据「仍带旧 sort_order」的新顺序，计算最少 patch。
  * 单次搬移且邻居间有整数空隙 → 只改搬移项；否则按 0, STEP, 2*STEP… 整表 densify。
  */
-export function sortOrderUpdates<T extends SortOrderRow>(ordered: T[]): SortOrderPatch[] {
+export function sortOrderUpdates(ordered: SortOrderRow[]): SortOrderPatch[] {
   if (ordered.length === 0) return [];
 
   let strictlyIncreasing = true;
@@ -68,7 +68,7 @@ export function sortOrderUpdates<T extends SortOrderRow>(ordered: T[]): SortOrde
   return densifySortOrderUpdates(ordered);
 }
 
-function densifySortOrderUpdates<T extends SortOrderRow>(ordered: T[]): SortOrderPatch[] {
+function densifySortOrderUpdates(ordered: SortOrderRow[]): SortOrderPatch[] {
   const updates: SortOrderPatch[] = [];
   ordered.forEach((item, index) => {
     const next = index * SORT_ORDER_STEP;

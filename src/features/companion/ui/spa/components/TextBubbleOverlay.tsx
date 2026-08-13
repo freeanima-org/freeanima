@@ -52,7 +52,7 @@ export function TextBubbleOverlay() {
       lastAnchorRef.current = null;
       const el = buttonRef.current;
       if (el) el.style.visibility = "hidden";
-      return;
+      return () => {};
     }
 
     let raf = 0;

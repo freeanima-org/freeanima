@@ -89,7 +89,7 @@ function completionDiagnostics(resp: ChatCompletion): GenerateConversationTitleD
   return omitUndefined({
     model: resp.model,
     finish_reason: resp.finish_reason,
-    had_reasoning: Boolean(String(resp.reasoning ?? "").trim()),
+    had_reasoning: Boolean((resp.reasoning ?? "").trim()),
   });
 }
 

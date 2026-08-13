@@ -4,7 +4,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Button, Checkbox, Input } from "@freeanima/ui-kit";
 import { EntityIdLabel, ListRow } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
-import { useEffect, useMemo, useState, type PointerEvent, type Ref } from "react";
+import { useEffect, useMemo, useState, type PointerEvent } from "react";
 
 import type { ProjectFolderRow, ProjectRow } from "../lib/api.ts";
 import {
@@ -131,7 +131,7 @@ function SortableTreeRow({
         onOpenMenu={() => onOpenFolderMenu(folder)}
         dragAttributes={attributes}
         dragListeners={listeners}
-        rowRef={setNodeRef as Ref<HTMLElement | null>}
+        rowRef={setNodeRef}
         rowStyle={style}
         className={[
           "touch-manipulation gap-0.5 pr-1 text-sm select-none",
@@ -195,7 +195,7 @@ function SortableTreeRow({
       onOpenMenu={() => onOpenProjectMenu(project)}
       dragAttributes={attributes}
       dragListeners={listeners}
-      rowRef={setNodeRef as Ref<HTMLElement | null>}
+      rowRef={setNodeRef}
       rowStyle={style}
       className="touch-manipulation gap-0.5 pr-1 text-sm select-none"
       onDoubleClick={useActionSheet ? undefined : () => onEditProject(project)}
@@ -372,7 +372,7 @@ export function ProjectSidebar(props: ProjectSidebarProps) {
                 <Checkbox
                   className="size-3.5"
                   isSelected={props.showInactive}
-                  onChange={(checked) => props.onToggleShowInactive(checked === true)}
+                  onChange={(checked) => props.onToggleShowInactive(checked)}
                 />
                 显示非活跃
               </label>

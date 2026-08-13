@@ -31,6 +31,7 @@ import {
 } from "./task-tool-helpers.ts";
 import { resolveTaskToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
 import type { TaskItemUpdateInput } from "./types.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 function parseRecurrenceArg(raw: unknown): TaskRecurrenceInput | null | undefined {
   if (raw === undefined) return undefined;
@@ -61,7 +62,7 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   });
   if (typeof worldId === "string") return worldId;
 
-  const title = String(args.title ?? "").trim();
+  const title = coerceString(args.title ?? "").trim();
   if (!title) return toolError("title is required");
 
   // 省略 list_id/project_id → 默认清单（Backlog）；二者都传则互斥错误
@@ -76,16 +77,16 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
 
   const priority = parsePriority(args.priority);
   if (args.priority != null && args.priority !== "" && !priority) {
-    return toolError(`invalid priority: ${args.priority}`);
+    return toolError(`invalid priority: ${coerceString(args.priority)}`);
   }
 
   const tagResolved = await resolveToolTagIds(worldId, args);
   if (!tagResolved.ok) return toolError(tagResolved.error);
 
-  const dueAt = args.due_at != null && args.due_at !== "" ? String(args.due_at).trim() : null;
+  const dueAt = args.due_at != null && args.due_at !== "" ? coerceString(args.due_at).trim() : null;
   const remindAt =
-    args.remind_at != null && args.remind_at !== "" ? String(args.remind_at).trim() : null;
-  const content = args.content != null ? String(args.content) : "";
+    args.remind_at != null && args.remind_at !== "" ? coerceString(args.remind_at).trim() : null;
+  const content = args.content != null ? coerceString(args.content) : "";
   const project_id = hasProjectId ? Number(projectIdRaw) : undefined;
   let recurrence: ReturnType<typeof parseRecurrenceArg>;
   try {
@@ -123,8 +124,8 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   if (typeof worldId === "string") return worldId;
 
   const patch: TaskItemUpdateInput = { id };
-  if (args.title !== undefined) patch.title = String(args.title);
-  if (args.content !== undefined) patch.content = String(args.content);
+  if (args.title !== undefined) patch.title = coerceString(args.title);
+  if (args.content !== undefined) patch.content = coerceString(args.content);
   if (args.tags !== undefined || args.tag_ids !== undefined) {
     const tagResolved = await resolveToolTagIds(worldId, args);
     if (!tagResolved.ok) return toolError(tagResolved.error);
@@ -137,15 +138,15 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   }
   if (args.priority !== undefined) {
     const priority = parsePriority(args.priority);
-    if (!priority) return toolError(`invalid priority: ${args.priority}`);
+    if (!priority) return toolError(`invalid priority: ${coerceString(args.priority)}`);
     patch.priority = priority;
   }
   if (args.due_at !== undefined) {
-    patch.due_at = args.due_at != null && args.due_at !== "" ? String(args.due_at) : null;
+    patch.due_at = args.due_at != null && args.due_at !== "" ? coerceString(args.due_at) : null;
   }
   if (args.remind_at !== undefined) {
     patch.remind_at =
-      args.remind_at != null && args.remind_at !== "" ? String(args.remind_at) : null;
+      args.remind_at != null && args.remind_at !== "" ? coerceString(args.remind_at) : null;
   }
   if (args.sort_order !== undefined) patch.sort_order = Number(args.sort_order);
   if (args.project_id !== undefined) {
@@ -303,7 +304,7 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleSearch(args: Record<string, unknown>): Promise<string> {
-  const query = String(args.query ?? "").trim();
+  const query = coerceString(args.query ?? "").trim();
   if (!query) return toolError("query is required");
 
   const listIdRaw = args.list_id;
@@ -638,9 +639,7 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
           handler: handleSearch,
         },
       ],
-      Object.fromEntries(
-        TASK_ITEM_TOOL_NAMES.map((name) => [name, TASK_TOOL_RETURNS[name]]),
-      ) as Partial<typeof TASK_TOOL_RETURNS>,
+      Object.fromEntries(TASK_ITEM_TOOL_NAMES.map((name) => [name, TASK_TOOL_RETURNS[name]])),
     ),
   );
 }

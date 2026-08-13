@@ -132,7 +132,7 @@ export function ChatComposeForm({
     if (!animaTrigger) {
       setAnimaEntries([]);
       setAnimaLoading(false);
-      return;
+      return () => {};
     }
     let cancelled = false;
     setAnimaLoading(true);
@@ -363,7 +363,7 @@ export function ChatComposeForm({
           type="button"
           variant="destructive"
           isDisabled={!canSendOnline}
-          onClick={() => void onStopStreaming()}
+          onClick={() => onStopStreaming()}
         >
           {"停止"}
         </Button>

@@ -41,7 +41,7 @@ describe("resolveContextWindowWithSource", () => {
   });
 
   it("returns null when no source available", () => {
-    const r = resolveContextWindowWithSource({} as RuntimeConfig, "gpt-4");
+    const r = resolveContextWindowWithSource({}, "gpt-4");
     expect(r).toEqual({ window: null, source: null });
   });
 });

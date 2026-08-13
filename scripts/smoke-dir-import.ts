@@ -46,9 +46,15 @@ function listDocsRelsFromDisk(): string[] {
 function assertEqualSets(label: string, actual: string[], expected: string[]): void {
   if (actual.length !== expected.length) {
     throw new Error(
-      `${label}: length ${actual.length} !== ${expected.length}\n` +
-        `  onlyActual=${actual.filter((x) => !expected.includes(x)).slice(0, 5)}\n` +
-        `  onlyExpected=${expected.filter((x) => !actual.includes(x)).slice(0, 5)}`,
+      `${label}: length ${String(actual.length)} !== ${String(expected.length)}\n` +
+        `  onlyActual=${actual
+          .filter((x) => !expected.includes(x))
+          .slice(0, 5)
+          .join(", ")}\n` +
+        `  onlyExpected=${expected
+          .filter((x) => !actual.includes(x))
+          .slice(0, 5)
+          .join(", ")}`,
     );
   }
   for (let i = 0; i < actual.length; i++) {

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { omitUndefined } from "@freeanima/host/core/util";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export const messageSendInputSchema = z.object({
   conversation_id: z.string().min(1),
@@ -267,18 +268,18 @@ export function mapRuntimeStreamEventToSap(
     case "token":
       return mapStreamApiEventToSap(streamId, {
         event: "token",
-        data: { content: String(ev.data.content ?? "") },
+        data: { content: coerceString(ev.data.content ?? "") },
       });
     case "content_replace":
       return mapStreamApiEventToSap(streamId, {
         event: "content_replace",
-        data: { content: String(ev.data.content ?? "") },
+        data: { content: coerceString(ev.data.content ?? "") },
       });
     case "tool_begin":
       return mapStreamApiEventToSap(streamId, {
         event: "tool_begin",
         data: {
-          tool: String(ev.data.name ?? ev.data.tool ?? "?"),
+          tool: coerceString(ev.data.name ?? ev.data.tool ?? "?"),
           args: (ev.data.args as Record<string, unknown>) ?? {},
           content: "",
         },
@@ -287,16 +288,16 @@ export function mapRuntimeStreamEventToSap(
       return mapStreamApiEventToSap(streamId, {
         event: "tool_result",
         data: {
-          tool: String(ev.data.name ?? ev.data.tool ?? "?"),
-          content: String(ev.data.content ?? ""),
+          tool: coerceString(ev.data.name ?? ev.data.tool ?? "?"),
+          content: coerceString(ev.data.content ?? ""),
         },
       });
     case "tool_error":
       return mapStreamApiEventToSap(streamId, {
         event: "tool_error",
         data: {
-          tool: String(ev.data.name ?? ev.data.tool ?? "?"),
-          content: String(ev.data.content ?? ""),
+          tool: coerceString(ev.data.name ?? ev.data.tool ?? "?"),
+          content: coerceString(ev.data.content ?? ""),
         },
       });
     case "awaiting_clarify":
@@ -313,7 +314,7 @@ export function mapRuntimeStreamEventToSap(
     case "interrupted":
       return mapStreamApiEventToSap(streamId, {
         event: "interrupted",
-        data: { reason: String(ev.data.reason ?? "") },
+        data: { reason: coerceString(ev.data.reason ?? "") },
       });
     case "done": {
       const reason = ev.data.reason as "awaiting_clarify" | "interrupted" | undefined;
@@ -326,7 +327,7 @@ export function mapRuntimeStreamEventToSap(
       return mapStreamApiEventToSap(streamId, {
         event: "error",
         data: omitUndefined({
-          error: String(ev.data.error ?? ev.data.message ?? "error"),
+          error: coerceString(ev.data.error ?? ev.data.message ?? "error"),
           code: typeof ev.data.code === "string" ? ev.data.code : undefined,
           current_tail_pos:
             typeof ev.data.current_tail_pos === "number" ? ev.data.current_tail_pos : undefined,
@@ -351,9 +352,9 @@ export function mapSapStreamMethodToApi(
     case "stream.accepted":
       return { event: "accepted", data: {} };
     case "stream.token":
-      return { event: "token", data: { content: String(payload.content ?? "") } };
+      return { event: "token", data: { content: coerceString(payload.content ?? "") } };
     case "stream.content_replace":
-      return { event: "content_replace", data: { content: String(payload.content ?? "") } };
+      return { event: "content_replace", data: { content: coerceString(payload.content ?? "") } };
     case "stream.display_append":
       return {
         event: "display_append",
@@ -363,7 +364,7 @@ export function mapSapStreamMethodToApi(
       return {
         event: "tool_begin",
         data: {
-          tool: String(payload.tool ?? "?"),
+          tool: coerceString(payload.tool ?? "?"),
           args: (payload.args as Record<string, unknown>) ?? {},
           content: "",
         },
@@ -372,16 +373,16 @@ export function mapSapStreamMethodToApi(
       return {
         event: "tool_result",
         data: {
-          tool: String(payload.tool ?? "?"),
-          content: String(payload.content ?? ""),
+          tool: coerceString(payload.tool ?? "?"),
+          content: coerceString(payload.content ?? ""),
         },
       };
     case "stream.tool_error":
       return {
         event: "tool_error",
         data: {
-          tool: String(payload.tool ?? "?"),
-          content: String(payload.content ?? ""),
+          tool: coerceString(payload.tool ?? "?"),
+          content: coerceString(payload.content ?? ""),
         },
       };
     case "stream.awaiting_clarify":
@@ -396,7 +397,7 @@ export function mapSapStreamMethodToApi(
         },
       };
     case "stream.interrupted":
-      return { event: "interrupted", data: { reason: String(payload.reason ?? "") } };
+      return { event: "interrupted", data: { reason: coerceString(payload.reason ?? "") } };
     case "stream.done": {
       const reason = payload.reason as "awaiting_clarify" | "interrupted" | undefined;
       return {
@@ -408,7 +409,7 @@ export function mapSapStreamMethodToApi(
       return {
         event: "error",
         data: omitUndefined({
-          error: String(payload.error ?? "error"),
+          error: coerceString(payload.error ?? "error"),
           code: typeof payload.code === "string" ? payload.code : undefined,
           current_tail_pos:
             typeof payload.current_tail_pos === "number" ? payload.current_tail_pos : undefined,

@@ -31,7 +31,7 @@ export function useLoadOlderOnScrollTop(
 
   useEffect(() => {
     const el = scrollContainerRef.current;
-    if (!el || !onLoadOlder) return;
+    if (!el || !onLoadOlder) return () => {};
     const onScroll = () => {
       onScrollPosition?.();
       if (

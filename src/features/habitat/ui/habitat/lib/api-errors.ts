@@ -1,4 +1,5 @@
 import { omitUndefined } from "./omit-undefined.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export type ApiProtocolPayload = {
   error?: string;
@@ -57,7 +58,7 @@ export function translateApiErrorValue(value: unknown): string {
     if (typeof obj.message === "string") return normalizeNetworkErrorMessage(obj.message);
     if (typeof obj.value === "string") return normalizeNetworkErrorMessage(obj.value);
   }
-  return normalizeNetworkErrorMessage(String(value));
+  return normalizeNetworkErrorMessage(coerceString(value));
 }
 
 function normalizeNetworkErrorMessage(message: string): string {

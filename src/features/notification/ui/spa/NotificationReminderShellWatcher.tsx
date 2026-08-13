@@ -16,7 +16,7 @@ export function NotificationReminderShellWatcher() {
   }, [networkOnline, habitatConnection, refreshCount]);
 
   useEffect(() => {
-    if (!networkOnline || habitatConnection !== "connected") return;
+    if (!networkOnline || habitatConnection !== "connected") return () => {};
     const sub = subscribeUserNotificationInbox((event) => {
       void deliverLocalReminder({
         title: event.title,

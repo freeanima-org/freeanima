@@ -9,6 +9,8 @@ import {
   type MemoryBrickRow,
 } from "@freeanima/host/core/db/pg/memory-brick";
 
+import { coerceString } from "@freeanima/shared/coerce-string";
+
 import type {
   LimbicFtsHit,
   LimbicListByConversationsOpts,
@@ -23,13 +25,13 @@ function brickToRow(b: MemoryBrickRow): LimbicMemoryRow {
   const semantic = b.body.semantic_memory_ids;
   return {
     id: String(b.id),
-    conversation_id: String(b.body.conversation_id ?? ""),
+    conversation_id: coerceString(b.body.conversation_id ?? ""),
     kind,
     valence: b.body.valence == null ? null : Number(b.body.valence),
     arousal: b.body.arousal == null ? null : Number(b.body.arousal),
     content: b.content,
     intensity: Number(b.body.intensity ?? 0.5),
-    source_segment: b.body.source_segment == null ? null : String(b.body.source_segment),
+    source_segment: b.body.source_segment == null ? null : coerceString(b.body.source_segment),
     semantic_memory_ids: Array.isArray(semantic)
       ? semantic.map((v) => Number(v)).filter((n) => Number.isInteger(n) && n > 0)
       : [],

@@ -2,6 +2,7 @@ import { getActiveRuntimeConfig } from "@freeanima/host/platform/config";
 import { logComponent } from "@freeanima/host/platform/logging";
 
 import { ILINK_BASE_URL } from "./ilink-api.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export type WeixinCredentials = {
   token: string;
@@ -20,13 +21,13 @@ export function botAccountIdFromToken(token: string): string {
 }
 
 function buildCredentials(data: Record<string, unknown>, source: string): WeixinCredentials {
-  const token = String(data.token ?? "");
-  const accountId = String(data.account_id ?? "").trim() || botAccountIdFromToken(token);
+  const token = coerceString(data.token ?? "");
+  const accountId = coerceString(data.account_id ?? "").trim() || botAccountIdFromToken(token);
   logComponent("weixin").info(`WeChat credentials loaded from ${source}`, { source });
   return {
     token,
-    base_url: String(data.base_url ?? ILINK_BASE_URL),
-    user_id: String(data.user_id ?? ""),
+    base_url: coerceString(data.base_url ?? ILINK_BASE_URL),
+    user_id: coerceString(data.user_id ?? ""),
     account_id: accountId,
   };
 }
@@ -38,7 +39,7 @@ export function loadWeixinCredentials(): WeixinCredentials | null {
     const weixin = (cfg.weixin ?? {}) as Record<string, unknown>;
     if (weixin.enabled === false) return null;
     const tokenEnv = process.env.WEIXIN_ILINK_TOKEN?.trim();
-    const token = String(weixin.token ?? tokenEnv ?? "").trim();
+    const token = coerceString(weixin.token ?? tokenEnv ?? "").trim();
     if (!token) return null;
     return buildCredentials({ ...weixin, token }, "runtime config");
   } catch {

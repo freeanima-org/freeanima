@@ -44,7 +44,7 @@ export async function searchPendingTasksForPicker(query: string): Promise<Pomodo
     "task.search",
     withSubjectKind({ query: q, status: "pending", limit: PICK_LIMIT }),
   );
-  return (data.items ?? []) as PomodoroTaskPickRow[];
+  return data.items ?? [];
 }
 
 export async function resolveTaskTitleForPicker(taskId: number): Promise<string | null> {

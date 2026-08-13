@@ -15,6 +15,7 @@ import {
   updateProject,
 } from "./index.ts";
 import { PROJECT_TOOL_RETURNS } from "./return-schemas.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 const WORLD_ID_TOOL_PROPERTY = {
   type: "integer",
@@ -112,7 +113,8 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
               worldId,
               omitUndefined({
                 folder_id: args.folder_id != null ? Number(args.folder_id) : undefined,
-                status: args.status != null ? (String(args.status) as ProjectStatus) : undefined,
+                status:
+                  args.status != null ? (coerceString(args.status) as ProjectStatus) : undefined,
               }),
             );
             return toolResult({
@@ -165,7 +167,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
           handler: async (args) => {
             const worldId = await resolveWorld(args, "write");
             if (typeof worldId === "string") return worldId;
-            const title = String(args.title ?? "").trim();
+            const title = coerceString(args.title ?? "").trim();
             if (!title) return toolError("title is required");
             try {
               const item = await createProject(
@@ -173,14 +175,18 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
                 omitUndefined({
                   title,
                   start_at:
-                    args.start_at == null || args.start_at === "" ? null : String(args.start_at),
-                  end_at: args.end_at == null || args.end_at === "" ? null : String(args.end_at),
-                  content: args.content != null ? String(args.content) : undefined,
+                    args.start_at == null || args.start_at === ""
+                      ? null
+                      : coerceString(args.start_at),
+                  end_at:
+                    args.end_at == null || args.end_at === "" ? null : coerceString(args.end_at),
+                  content: args.content != null ? coerceString(args.content) : undefined,
                   folder_id:
                     args.folder_id != null && args.folder_id !== ""
                       ? Number(args.folder_id)
                       : undefined,
-                  product_tag: args.product_tag != null ? String(args.product_tag) : undefined,
+                  product_tag:
+                    args.product_tag != null ? coerceString(args.product_tag) : undefined,
                 }),
               );
               return toolResult({ ok: true, action: "create", item: projectPayload(item) });
@@ -217,13 +223,13 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
                 worldId,
                 omitUndefined({
                   id,
-                  title: args.title != null ? String(args.title) : undefined,
-                  content: args.content != null ? String(args.content) : undefined,
-                  status: args.status != null ? String(args.status) : undefined,
+                  title: args.title != null ? coerceString(args.title) : undefined,
+                  content: args.content != null ? coerceString(args.content) : undefined,
+                  status: args.status != null ? coerceString(args.status) : undefined,
                   linked_diary_ids: Array.isArray(args.linked_diary_ids)
                     ? args.linked_diary_ids.map((v) => Number(v)).filter((n) => n > 0)
                     : undefined,
-                }) as Parameters<typeof updateProject>[1],
+                }),
               );
               if (!item) return toolError(`project not found: ${id}`);
               return toolResult({ ok: true, action: "patch", item: projectPayload(item) });
@@ -292,7 +298,7 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
           handler: async (args) => {
             const worldId = await resolveWorld(args, "write");
             if (typeof worldId === "string") return worldId;
-            const name = String(args.name ?? "").trim();
+            const name = coerceString(args.name ?? "").trim();
             if (!name) return toolError("name is required");
             const item = await createProjectFolder(
               worldId,

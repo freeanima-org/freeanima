@@ -26,8 +26,8 @@ export function reorderIds<T extends { id: number }>(
   return next;
 }
 
-export function sortOrderUpdates<T extends { id: number; sort_order: number }>(
-  ordered: T[],
+export function sortOrderUpdates(
+  ordered: { id: number; sort_order: number }[],
 ): Array<{ id: number; sort_order: number }> {
   const updates: Array<{ id: number; sort_order: number }> = [];
   ordered.forEach((item, index) => {

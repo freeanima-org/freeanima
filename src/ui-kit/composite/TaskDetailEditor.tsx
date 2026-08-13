@@ -339,7 +339,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
 
   /** peek Sheet 关闭会 restoreFocus 到列表项；延迟抢回，避免双键盘/失焦 */
   useEffect(() => {
-    if (!focusField) return;
+    if (!focusField) return () => {};
     const aria = focusField === "title" ? "标题" : "描述";
     let cancelled = false;
     const focusTarget = () => {

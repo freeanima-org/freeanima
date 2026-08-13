@@ -123,8 +123,7 @@ function conversationToolItems(
       name: s.function.name,
       description: s.function.description ?? def?.description ?? "",
       toolset: toolSetByName.get(s.function.name),
-      parameters: (s.function.parameters ??
-        def?.parameters ?? { type: "object" }) as JsonSchemaObject,
+      parameters: s.function.parameters ?? def?.parameters ?? { type: "object" },
       return_schema: def?.returnSchema,
     });
   });

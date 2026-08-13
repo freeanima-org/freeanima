@@ -147,7 +147,7 @@ export function registerClarifyTool(toolSets: ToolSetRegistry): void {
               },
             },
           },
-          handler: (a) => handleClarify(a as ClarifyArgs),
+          handler: (a) => handleClarify(a),
         },
       ],
       CLARIFY_TOOL_RETURNS,

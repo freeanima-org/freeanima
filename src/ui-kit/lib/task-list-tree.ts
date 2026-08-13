@@ -18,7 +18,7 @@ export type ListTreeNode<T extends TaskListRowLike = TaskListRowLike> = {
   depth: number;
 };
 
-export function getParentId<T extends TaskListRowLike>(list: T): number | null {
+export function getParentId(list: TaskListRowLike): number | null {
   return list.parent_id ?? null;
 }
 
@@ -53,8 +53,8 @@ export function flattenVisibleTree<T extends TaskListRowLike>(
   return out;
 }
 
-export function isDescendant<T extends TaskListRowLike>(
-  lists: T[],
+export function isDescendant(
+  lists: TaskListRowLike[],
   ancestorId: number,
   nodeId: number,
 ): boolean {
@@ -71,10 +71,7 @@ export function isDescendant<T extends TaskListRowLike>(
   return false;
 }
 
-export function collectFolderDescendantIds<T extends TaskListRowLike>(
-  lists: T[],
-  folderId: number,
-): number[] {
+export function collectFolderDescendantIds(lists: TaskListRowLike[], folderId: number): number[] {
   const out: number[] = [];
   const queue = [folderId];
   while (queue.length > 0) {
@@ -88,7 +85,7 @@ export function collectFolderDescendantIds<T extends TaskListRowLike>(
   return out;
 }
 
-export function listPathLabel<T extends TaskListRowLike>(lists: T[], listId: number): string {
+export function listPathLabel(lists: TaskListRowLike[], listId: number): string {
   const names: string[] = [];
   let current = lists.find((l) => l.id === listId);
   const visited = new Set<number>();

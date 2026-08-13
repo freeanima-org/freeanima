@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { spawnSync } from "node:child_process";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 const resolveAgentVaultSecretMock = mock(async () => "secret-value-xyz");
 const resolveUserVaultSecretMock = mock(async () => {
@@ -42,8 +43,8 @@ describe("parseSecretArg", () => {
   });
 
   it("requires id and field", () => {
-    expect(String(parseSecretArg({ id: 12 }))).toContain("secret.field is required");
-    expect(String(parseSecretArg({ field: "password" }))).toContain("secret.id is required");
+    expect(coerceString(parseSecretArg({ id: 12 }))).toContain("secret.field is required");
+    expect(coerceString(parseSecretArg({ field: "password" }))).toContain("secret.id is required");
   });
 
   it("parses id and field", () => {

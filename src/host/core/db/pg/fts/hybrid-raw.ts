@@ -62,7 +62,7 @@ function mapHit(row: {
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
-  return { ...entityToSemanticMemoryRow(entityRow), rank: Number(row.rank) };
+  return { ...entityToSemanticMemoryRow(entityRow), rank: row.rank };
 }
 
 export async function searchSemanticMemoryFtsRaw(
@@ -166,6 +166,6 @@ export async function searchMessagesFtsRaw(
     role: r.role,
     conversation_id: r.conversation_id,
     timestamp: r.timestamp ?? "",
-    rank: Number(r.rank),
+    rank: r.rank,
   }));
 }

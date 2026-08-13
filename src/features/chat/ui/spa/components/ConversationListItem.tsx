@@ -43,7 +43,7 @@ export function ConversationListItem({
         active ? "" : "text-muted-foreground",
         faded ? "opacity-60" : "",
       ].join(" ")}
-      onClick={() => void onNavigate(conversation.id)}
+      onClick={() => onNavigate(conversation.id)}
     >
       <div
         className={[

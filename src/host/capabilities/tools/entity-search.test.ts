@@ -45,7 +45,7 @@ describe("handleEntityGet", () => {
       deleted_at: null,
       created_at: new Date(),
       updated_at: new Date(),
-    } as never);
+    });
 
     await runWithToolContext(
       "t1",
@@ -103,7 +103,7 @@ describe("handleEntityGet", () => {
       deleted_at: null,
       created_at: new Date(),
       updated_at: new Date(),
-    } as never);
+    });
     accessSpy.mockRejectedValue(
       new entityPg.ToolWorldAccessError("subject 1 cannot access world 8"),
     );

@@ -237,7 +237,7 @@ export default function AboutPanel() {
   useEffect(() => {
     if (!showWebSection) {
       setWebBuild(null);
-      return;
+      return () => {};
     }
     let cancelled = false;
     setWebBuild(undefined);

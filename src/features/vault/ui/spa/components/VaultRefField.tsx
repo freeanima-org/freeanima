@@ -142,7 +142,7 @@ function VaultRefPickerDialog({
   }, [open, initial, items]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return () => {};
     const id = window.setTimeout(() => void loadItems(query), 280);
     return () => clearTimeout(id);
   }, [open, query, loadItems]);

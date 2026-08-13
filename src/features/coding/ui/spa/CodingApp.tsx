@@ -88,7 +88,7 @@ export function CodingApp() {
   const [knownFiles, setKnownFiles] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!searchOpen || !workspaceRoot) return;
+    if (!searchOpen || !workspaceRoot) return () => {};
     let cancelled = false;
     void (async () => {
       const backend = createPortalShellWorkspaceBackend();
@@ -152,7 +152,7 @@ export function CodingApp() {
     if (!workspaceRoot) {
       setCodingWorkspace(null);
       setProject(null);
-      return;
+      return () => {};
     }
     let cancelled = false;
     const backend = createPortalShellWorkspaceBackend();
@@ -196,12 +196,12 @@ export function CodingApp() {
     if (!attach.instance_id || !activeAgent) {
       setSessionMeta(null);
       setSessionError(null);
-      return;
+      return () => {};
     }
     if (!activeAgent.conversationId) {
       setSessionMeta(null);
       setSessionError(null);
-      return;
+      return () => {};
     }
     let cancelled = false;
     void (async () => {
@@ -234,9 +234,9 @@ export function CodingApp() {
   /** 有 conversation + workspace 时发现项目上下文并 sync 到 Habitat */
   useEffect(() => {
     const conversationId = sessionMeta?.conversation_id ?? activeAgent?.conversationId;
-    if (!conversationId || !workspaceRoot) return;
+    if (!conversationId || !workspaceRoot) return () => {};
     const backend = createPortalShellWorkspaceBackend();
-    if (!backend) return;
+    if (!backend) return () => {};
     let cancelled = false;
     void (async () => {
       try {

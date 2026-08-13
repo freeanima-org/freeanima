@@ -71,7 +71,7 @@ describe("generateConversationTitle", () => {
   });
 
   it("calls chat with summary profile and dedicated system prompt", async () => {
-    const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "Fix login bug" } as never);
+    const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "Fix login bug" });
     restores.push(chatSpy);
 
     const result = await generateConversationTitle("The login page throws 500");
@@ -96,7 +96,7 @@ describe("generateConversationTitle", () => {
       reasoning: "小区门口碰面",
       model: "deepseek-reasoner",
       finish_reason: "stop",
-    } as never);
+    });
     restores.push(chatSpy);
 
     const result = await generateConversationTitle("（轻轻点了下头）");
@@ -115,7 +115,7 @@ describe("generateConversationTitle", () => {
       reasoning: "",
       model: "test-model",
       finish_reason: "length",
-    } as never);
+    });
     restores.push(chatSpy);
 
     const result = await generateConversationTitle("hello");
@@ -129,7 +129,7 @@ describe("generateConversationTitle", () => {
   });
 
   it("returns error for empty user text without calling chat", async () => {
-    const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "x" } as never);
+    const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "x" });
     restores.push(chatSpy);
 
     const result = await generateConversationTitle("   ");

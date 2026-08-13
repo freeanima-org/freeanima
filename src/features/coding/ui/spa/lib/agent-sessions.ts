@@ -53,8 +53,7 @@ export function createAgentSession(partial?: {
 }): CodingAgentSession {
   const now = Date.now();
   const rootRaw = partial?.workspaceRoot;
-  const workspaceRoot =
-    rootRaw == null || rootRaw === "" ? null : normalizeRoot(String(rootRaw)) || null;
+  const workspaceRoot = rootRaw == null || rootRaw === "" ? null : normalizeRoot(rootRaw) || null;
   return {
     id: newSessionId(),
     title: partial?.title?.trim() || defaultTitle(workspaceRoot),
@@ -124,7 +123,7 @@ function migrateSessionRow(row: unknown): Partial<CodingAgentSession> & Record<s
   if (!row || typeof row !== "object") return {};
   const s = row as Record<string, unknown>;
   if (typeof s.workspaceRoot === "string" || s.workspaceRoot === null) {
-    return s as Partial<CodingAgentSession> & Record<string, unknown>;
+    return s;
   }
   const roots = Array.isArray(s.workspaceRoots)
     ? (s.workspaceRoots as unknown[])
@@ -158,8 +157,8 @@ function sanitizeSession(
     workspaceRoot = null;
   }
   return {
-    id: String(s.id || newSessionId()),
-    title: String(s.title || defaultTitle(workspaceRoot)),
+    id: s.id || newSessionId(),
+    title: s.title || defaultTitle(workspaceRoot),
     workspaceRoot,
     conversationId:
       typeof s.conversationId === "string" && s.conversationId.trim()

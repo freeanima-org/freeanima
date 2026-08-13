@@ -85,7 +85,7 @@ describe("runAutoLlm", () => {
       yield { event: "token" as const, data: { content: "cron done" } };
     }
     const streamSpy = spyOn(loopEngine, "runStream").mockImplementation(() => fakeStream());
-    const appendMsg = spyOn(conv, "appendMessage").mockResolvedValue(undefined as never);
+    const appendMsg = spyOn(conv, "appendMessage").mockResolvedValue(undefined);
     restores.push(streamSpy, appendMsg);
 
     const deps = bindTestDeps();

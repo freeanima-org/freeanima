@@ -26,7 +26,7 @@ export function useKeyboardInset(): number {
 
   useEffect(() => {
     const vv = window.visualViewport;
-    if (!vv) return;
+    if (!vv) return () => {};
     const update = () => {
       setInnerHeight(readInnerHeight());
       setVvInset(computeVisualViewportInset(vv));

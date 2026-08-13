@@ -1,4 +1,5 @@
 import { applyChangeLog, type DeepSleepChangeLog } from "./types.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 function parseToolJson(content: string): Record<string, unknown> | null {
   try {
@@ -12,7 +13,7 @@ function parseToolJson(content: string): Record<string, unknown> | null {
 }
 
 function asId(value: unknown): string {
-  return String(value ?? "").trim();
+  return coerceString(value ?? "").trim();
 }
 
 /** Update in-memory change log from deep sleep tool_result */

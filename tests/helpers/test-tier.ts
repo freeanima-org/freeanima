@@ -20,16 +20,13 @@ export const testCore = test;
 
 /** 仅全量；`FREEANIMA_TEST_TIER=core` 时 skip */
 export const describeEnhanced: typeof describe = skipEnhanced
-  ? (Object.assign(
-      (name: string, fn: () => void) => describe.skip(name, fn),
-      describe,
-    ) as typeof describe)
+  ? Object.assign((name: string, fn: () => void) => describe.skip(name, fn), describe)
   : describe;
 
 export const testEnhanced: typeof test = skipEnhanced
-  ? (Object.assign(
+  ? Object.assign(
       (name: string, fn: () => void | Promise<void>, timeout?: number) =>
         test.skip(name, fn, timeout),
       test,
-    ) as typeof test)
+    )
   : test;

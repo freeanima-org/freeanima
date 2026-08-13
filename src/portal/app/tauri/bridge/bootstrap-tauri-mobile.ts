@@ -39,9 +39,7 @@ export async function syncPomodoroWidgetState(payload: PomodoroWidgetPayload): P
 }
 
 function normalizeHabitatUrl(raw: string): string {
-  return String(raw ?? "")
-    .trim()
-    .replace(/\/$/, "");
+  return (raw ?? "").trim().replace(/\/$/, "");
 }
 
 function createFileInstanceStore(appId: string): RemoteInstanceStore {
@@ -161,7 +159,7 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
       if (scope.kind === "kv" && scope.id === "habitat") {
         const raw = value as { habitatUrl: string; remoteAuthToken: string };
         const url = normalizeHabitatUrl(raw.habitatUrl);
-        const token = String(raw.remoteAuthToken ?? "").trim();
+        const token = (raw.remoteAuthToken ?? "").trim();
         if (!url) throw new Error("栖息地地址不能为空");
         await testHabitatHealthConnection(url, token || undefined);
       }

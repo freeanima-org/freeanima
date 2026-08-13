@@ -40,7 +40,7 @@ async function vaultRequest<T>(
   method: VaultRpcMethod,
   payload: Record<string, unknown>,
 ): Promise<T> {
-  return getTypedHabitatClient().call(method as never, payload as never) as Promise<T>;
+  return getTypedHabitatClient().call(method as never, payload as never);
 }
 
 export async function fetchVaultItems(

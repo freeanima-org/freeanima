@@ -99,7 +99,7 @@ export async function bootRuntimePhase(
 
   outpost.loadSessionPlatformExtra = async (conversationId) => {
     const meta = await conversation.loadConversationMeta(conversationId);
-    if (!isConversationMeta(meta)) return;
+    if (!isConversationMeta(meta)) return undefined;
     return meta.platform_extra;
   };
 

@@ -3,7 +3,9 @@ import {
   Dialog as DialogPrimitive,
   DialogTrigger as DialogTriggerPrimitive,
   Popover as PopoverPrimitive,
+  type DialogProps,
   type DialogTriggerProps as DialogTriggerPrimitiveProps,
+  type PopoverProps,
 } from "react-aria-components";
 
 import { cn } from "../../lib/utils.ts";
@@ -21,7 +23,7 @@ function Popover({
   className,
   children,
   ...props
-}: Omit<React.ComponentProps<typeof PopoverPrimitive>, "children" | "className"> & {
+}: Omit<PopoverProps, "children" | "className"> & {
   "data-slot"?: string;
   className?: string;
   children?: React.ReactNode;
@@ -44,7 +46,7 @@ function Popover({
 }
 
 /** Popover 内焦点容器（非 Modal Dialog） */
-function PopoverDialog({ className, ...props }: React.ComponentProps<typeof DialogPrimitive>) {
+function PopoverDialog({ className, ...props }: DialogProps) {
   return (
     <DialogPrimitive
       data-slot="popover-dialog"

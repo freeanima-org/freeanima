@@ -64,9 +64,9 @@ export async function searchPgIndexTrgm(
       doc_key: r.doc_key,
       source_id: r.source_id,
       resource: "entity" as const,
-      score: Number(r.rank),
+      score: r.rank,
       channels_hit: ["trgm" as const],
-      channel_scores: { trgm: Number(r.rank) },
+      channel_scores: { trgm: r.rank },
     }));
   }
 
@@ -87,9 +87,9 @@ export async function searchPgIndexTrgm(
       doc_key: r.doc_key,
       source_id: r.source_id,
       resource: "message" as const,
-      score: Number(r.rank),
+      score: r.rank,
       channels_hit: ["trgm" as const],
-      channel_scores: { trgm: Number(r.rank) },
+      channel_scores: { trgm: r.rank },
     }));
   }
 
@@ -108,8 +108,8 @@ export async function searchPgIndexTrgm(
     doc_key: r.doc_key,
     source_id: r.source_id,
     resource: filters.resource,
-    score: Number(r.rank),
+    score: r.rank,
     channels_hit: ["trgm" as const],
-    channel_scores: { trgm: Number(r.rank) },
+    channel_scores: { trgm: r.rank },
   }));
 }

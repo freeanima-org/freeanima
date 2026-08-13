@@ -24,15 +24,15 @@ describe("resolveToolDisplayMode", () => {
 
 describe("resolveConversationHandoffOnNew", () => {
   it("uses platform defaults when config unset", () => {
-    expect(resolveConversationHandoffOnNew("discord", {} as never)).toBe(true);
-    expect(resolveConversationHandoffOnNew("weixin", {} as never)).toBe(false);
+    expect(resolveConversationHandoffOnNew("discord", {})).toBe(true);
+    expect(resolveConversationHandoffOnNew("weixin", {})).toBe(false);
   });
 
   it("respects config override", () => {
     expect(
       resolveConversationHandoffOnNew("weixin", {
         weixin: { session_handoff_on_new: true },
-      } as never),
+      }),
     ).toBe(true);
   });
 });

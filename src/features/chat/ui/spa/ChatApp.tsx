@@ -503,7 +503,7 @@ export function ChatApp() {
   }, [bootstrapConversation]);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready) return () => {};
     return subscribeSubjectKind(() => {
       void bootstrapConversation(false).catch((e) => console.error("chat subject bootstrap:", e));
     });
@@ -546,7 +546,7 @@ export function ChatApp() {
 
   /** 打开调试面板时再拉取 Redis 缓存（按会话） */
   useEffect(() => {
-    if (!debugViewerOpen || !llmDebugEnabled || !currentId) return;
+    if (!debugViewerOpen || !llmDebugEnabled || !currentId) return () => {};
     let cancelled = false;
     setLlmDebugLoading(true);
     void fetchLlmDebug(currentId)
@@ -579,7 +579,7 @@ export function ChatApp() {
   }, [currentId]);
 
   useEffect(() => {
-    if (!currentId) return;
+    if (!currentId) return () => {};
     const sub = subscribeConversationUpdates(currentId, () => {
       void fetchConversations();
     });
@@ -600,19 +600,19 @@ export function ChatApp() {
 
   /** 刷新 / 整页刷新 / 切回会话：先 stream.lookup/attach 续传，否则轮询落库 */
   useEffect(() => {
-    if (!currentId) return;
-    if (habitatConnection !== "connected") return;
-    if (streaming && streamingConversationId === currentId) return;
+    if (!currentId) return () => {};
+    if (habitatConnection !== "connected") return () => {};
+    if (streaming && streamingConversationId === currentId) return () => {};
 
     const awaiting = displayAwaitingReply(display);
     const persisted = Boolean(readPersistedActiveStream(currentId));
     if (!awaiting && !persisted) {
       pendingRecoveryKeyRef.current = null;
-      return;
+      return () => {};
     }
 
     const key = `${currentId}@${display.length}@${persisted ? "p" : "n"}@connected`;
-    if (pendingRecoveryKeyRef.current === key) return;
+    if (pendingRecoveryKeyRef.current === key) return () => {};
     pendingRecoveryKeyRef.current = key;
 
     const baseline = display.length;
@@ -883,8 +883,8 @@ export function ChatApp() {
           case "awaiting_clarify":
             if (Array.isArray(streamEv.data.items) && streamEv.data.items.length > 0) {
               setClarifyPending({
-                items: streamEv.data.items as ClarifyPending["items"],
-                timeout_sec: (streamEv.data.timeout_sec as number | undefined) ?? 1800,
+                items: streamEv.data.items,
+                timeout_sec: streamEv.data.timeout_sec ?? 1800,
               });
             }
             scrollDown();

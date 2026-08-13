@@ -95,9 +95,9 @@ export function EntryTimeline({
 
   // 滚动在外层 PullToRefresh；此处不用自身作 IO root（高度随内容涨时 sentinel 会常驻可见）。
   useEffect(() => {
-    if (!hasMore || !onLoadMoreRef.current) return;
+    if (!hasMore || !onLoadMoreRef.current) return () => {};
     const sentinel = sentinelRef.current;
-    if (!sentinel) return;
+    if (!sentinel) return () => {};
 
     const observer = new IntersectionObserver(
       (entries) => {

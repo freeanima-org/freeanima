@@ -151,7 +151,7 @@ export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
     return await withOfflineCache({
       scope,
       namespace: "tasks",
-      id: `items:${listId}`,
+      id: `items:${String(listId)}`,
       fetch: async () => {
         const data = await habitat().call(
           "tasklist.item.list",

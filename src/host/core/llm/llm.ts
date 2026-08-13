@@ -47,7 +47,7 @@ export async function chat(
   const profile = resolveRuntime(opts).profiles.resolve(opts?.profileId);
   const input = isSimpleChatOnly(messages)
     ? simpleMessagesToInvokeInput(messages as SimpleChatMessage[])
-    : storedMessagesToInvokeInput(messages as StoredMessage[]);
+    : storedMessagesToInvokeInput(messages);
 
   return profile.chat(
     input.turns,

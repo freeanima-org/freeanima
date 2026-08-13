@@ -68,9 +68,7 @@ export async function serviceCompanionConfigUpdate(
     ...(input.behavior !== undefined
       ? {
           behavior: mergeBehavior(
-            Object.fromEntries(
-              Object.entries(input.behavior).filter(([, v]) => v !== undefined),
-            ) as Partial<typeof current.behavior>,
+            Object.fromEntries(Object.entries(input.behavior).filter(([, v]) => v !== undefined)),
           ),
         }
       : {}),

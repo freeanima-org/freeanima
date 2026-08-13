@@ -13,8 +13,9 @@ import {
   type VrmFramingState,
 } from "./VrmCameraFraming.ts";
 import { resolveFacingOffsetY } from "./vrm-facing.ts";
-import { VrmBodyPicker } from "./VrmBodyPicker.ts";
+import { getVrmNormalizedBoneNode, getVrmScene } from "./vrm-three-access.ts";
 import { VrmAnimationPlayer, type MotionBindConfig } from "./VrmAnimationPlayer.ts";
+import { VrmBodyPicker } from "./VrmBodyPicker.ts";
 import { sanitizeMtoonOutlinesForOrtho } from "./sanitize-mtoon-outlines.ts";
 import { loadCachedModelSource } from "@freeanima/features/companion/ui/spa/lib/model-cache.ts";
 import type { MotionSlotId } from "@freeanima/features/companion/shared/companion-schema.ts";
@@ -37,10 +38,12 @@ const HIT_BOUNDS_TTL_MS = 100;
 
 function attachLookAtQuaternionProxy(vrm: VRM): void {
   if (!vrm.lookAt) return;
-  if (vrm.scene.getObjectByName(LOOK_AT_PROXY_NAME)) return;
+  const scene = getVrmScene(vrm);
+  if (scene.getObjectByName(LOOK_AT_PROXY_NAME)) return;
   const proxy = new VRMLookAtQuaternionProxy(vrm.lookAt);
-  (proxy as unknown as THREE.Object3D).name = LOOK_AT_PROXY_NAME;
-  vrm.scene.add(proxy);
+  const proxyObj = proxy as unknown as THREE.Object3D;
+  proxyObj.name = LOOK_AT_PROXY_NAME;
+  scene.add(proxyObj);
 }
 
 const MIN_WALK_SPEED_PX = 8;
@@ -153,8 +156,8 @@ export class VrmBackend implements CharacterBackend {
 
     VRMUtils.rotateVRM0(vrm);
     this.facingOffsetY = resolveFacingOffsetY(vrm.meta?.metaVersion);
-    sanitizeMtoonOutlinesForOrtho(vrm.scene);
-    this.scalePivot.add(vrm.scene);
+    sanitizeMtoonOutlinesForOrtho(getVrmScene(vrm));
+    this.scalePivot.add(getVrmScene(vrm));
     this.vrm = vrm;
     this.framing = null;
     this.refitCamera(vrm, true);
@@ -261,7 +264,7 @@ export class VrmBackend implements CharacterBackend {
     const rect = this.ensureCanvasRect();
     if (rect.width <= 0 || rect.height <= 0) return null;
 
-    const head = this.vrm.humanoid?.getNormalizedBoneNode("head");
+    const head = getVrmNormalizedBoneNode(this.vrm, "head");
     if (head) {
       this.headBox.setFromObject(head);
       if (this.headBox.isEmpty()) {
@@ -301,18 +304,19 @@ export class VrmBackend implements CharacterBackend {
   }
 
   private refitCamera(vrm: VRM, reposition: boolean, traveling = false): void {
+    const scene = getVrmScene(vrm);
     if (reposition || !this.framing) {
       // 暂时放到世界原点算 grounding，再挂回 scalePivot
-      if (vrm.scene.parent !== this.scene) {
-        this.scene.add(vrm.scene);
+      if (scene.parent !== this.scene) {
+        this.scene.add(scene);
       }
       const { basePosition, framing } = computeVrmFraming(vrm);
       this.framing = framing;
       this.basePosition.copy(basePosition);
 
       this.scalePivot.position.set(framing.centerX, framing.lookAtY, 0);
-      this.scalePivot.add(vrm.scene);
-      vrm.scene.position.set(
+      this.scalePivot.add(scene);
+      scene.position.set(
         basePosition.x - framing.centerX,
         basePosition.y - framing.lookAtY,
         basePosition.z,
@@ -403,7 +407,7 @@ export class VrmBackend implements CharacterBackend {
       }
     }
 
-    this.vrm.scene.rotation.y = this.facingOffsetY + this.displayHeading;
+    getVrmScene(this.vrm).rotation.y = this.facingOffsetY + this.displayHeading;
     this.applyScreenPosition();
 
     if (
@@ -524,9 +528,10 @@ export class VrmBackend implements CharacterBackend {
     this.animationPlayer.dispose();
     this.revokeMotionUrls();
     if (this.vrm) {
-      this.scalePivot.remove(this.vrm.scene);
-      this.scene.remove(this.vrm.scene);
-      VRMUtils.deepDispose(this.vrm.scene);
+      const scene = getVrmScene(this.vrm);
+      this.scalePivot.remove(scene);
+      this.scene.remove(scene);
+      VRMUtils.deepDispose(scene);
       this.vrm = null;
     }
     this.scalePivot.scale.set(1, 1, 1);

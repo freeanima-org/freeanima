@@ -162,7 +162,7 @@ export async function applyStandaloneUpgrade(
         }
       : createCliDownloadProgressSink({
           fileName: update.assetName,
-          isTty: opts.cliProgressTty ?? process.stderr.isTTY === true,
+          isTty: opts.cliProgressTty ?? process.stderr.isTTY,
         }));
   try {
     log(`下载 ${update.assetUrl} …`);

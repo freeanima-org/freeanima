@@ -34,6 +34,14 @@ alwaysApply: false
   - `typescript/await-thenable` — await 非 Thenable
   - `typescript/no-explicit-any` — 显式 `any`（`**/*.{test,spec}.{ts,tsx}`、`tests/**`、`routeTree.gen.ts` 除外）
   - `typescript/no-non-null-assertion` — 禁止 `!.`（测试文件同上 override off）
+  - `typescript/no-base-to-string` — 禁止对可能为 object 的值做默认字符串化（可用 `@freeanima/shared/coerce-string`）
+  - `typescript/consistent-return` — 同一函数各路径须一致是否返回值
+  - `typescript/restrict-template-expressions` — 模板插值须为 string/number/boolean/nullish
+  - `typescript/no-unnecessary-type-assertion` / `no-unnecessary-type-conversion` / `no-unnecessary-type-arguments` / `no-unnecessary-type-parameters` / `no-unnecessary-boolean-literal-compare`
+  - `typescript/no-meaningless-void-operator` / `no-misused-spread` / `no-redundant-type-constituents` / `no-duplicate-type-constituents` / `unbound-method`
+  - `typescript/no-unsafe-assignment` / `no-unsafe-member-access` / `no-unsafe-call` — 测试文件 override 为 off（与 `no-explicit-any` 同）
+- **Type-aware warn**（暂未升 error；新代码优先避免）:
+  - `typescript/no-unsafe-type-assertion` — 窄化断言量级大，门禁不 fail；优先类型守卫 / Zod.parse，勿机械包一层 `as`
 - **Error-level 规则**（fix，do not disable without reason）:
   - `unicorn/no-array-sort` — use `Array#toSorted()` when returning a sorted copy; avoid in-place `.sort()` unless mutation is intentional (then use a line-level disable with reason).
   - `unicorn/prefer-add-event-listener` — prefer `addEventListener` over `on*` property handlers (DOM, WebSocket, IDB, SharedWorker).

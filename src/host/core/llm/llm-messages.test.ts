@@ -48,7 +48,7 @@ describe("messagesForApi", () => {
       },
     ]);
     expect(out[0]).toMatchObject({ role: "assistant", content: "" });
-    expect("tool_calls" in out[0]! && out[0]!.tool_calls).toBeFalsy();
+    expect("tool_calls" in out[0]! && out[0].tool_calls).toBeFalsy();
   });
 
   it("resolves tool name from prior assistant tool_calls", () => {

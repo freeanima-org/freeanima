@@ -3,6 +3,7 @@ import { toolError, toolResult } from "@freeanima/host/core/tool";
 import { formatFtsToolError, isFtsQueryError, omitUndefined } from "@freeanima/host/core/util";
 import type { LimbicKind } from "@freeanima/host/core/db/pg/limbic-memory/types";
 import type { LimbicMemoryRow } from "@freeanima/host/core/db/schema/rows";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   getLimbicMemory,
   listLimbicMemory,
@@ -135,15 +136,15 @@ export const limbicSearchToolDefs: ToolDef[] = [
       required: [],
     },
     handler: async (args: Record<string, unknown>) => {
-      const query = args.query !== undefined ? String(args.query).trim() : undefined;
-      const kindRaw = args.kind !== undefined ? String(args.kind).trim() : undefined;
+      const query = args.query !== undefined ? coerceString(args.query).trim() : undefined;
+      const kindRaw = args.kind !== undefined ? coerceString(args.kind).trim() : undefined;
       const conversationId =
-        args.conversation_id !== undefined ? String(args.conversation_id).trim() : undefined;
+        args.conversation_id !== undefined ? coerceString(args.conversation_id).trim() : undefined;
       const minIntensity = parseOptionalFloat(args.min_intensity);
       const maxIntensity = parseOptionalFloat(args.max_intensity);
       const minValence = parseOptionalFloat(args.min_valence);
       const maxValence = parseOptionalFloat(args.max_valence);
-      const orderBy = args.order_by !== undefined ? String(args.order_by) : undefined;
+      const orderBy = args.order_by !== undefined ? coerceString(args.order_by) : undefined;
       const limit = Math.max(1, Math.min(100, args.limit !== undefined ? Number(args.limit) : 20));
       const offset = Math.max(0, args.offset !== undefined ? Number(args.offset) : 0);
 
@@ -238,7 +239,7 @@ export const limbicSearchToolDefs: ToolDef[] = [
       required: ["id"],
     },
     handler: async (args: Record<string, unknown>) => {
-      const id = String(args.id ?? "").trim();
+      const id = coerceString(args.id ?? "").trim();
       if (!id) return toolError("id is required");
 
       try {
@@ -281,7 +282,7 @@ export const limbicSearchToolDefs: ToolDef[] = [
       required: ["conversation_id"],
     },
     handler: async (args: Record<string, unknown>) => {
-      const conversationId = String(args.conversation_id ?? "").trim();
+      const conversationId = coerceString(args.conversation_id ?? "").trim();
       if (!conversationId) return toolError("conversation_id is required");
       const limit = Math.max(1, Math.min(100, args.limit !== undefined ? Number(args.limit) : 20));
 

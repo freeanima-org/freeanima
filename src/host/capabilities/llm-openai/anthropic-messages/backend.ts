@@ -32,6 +32,7 @@ import {
   isLlmTimeoutError,
 } from "../request-timeouts.ts";
 import { normalizeUsage } from "../usage.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export const ANTHROPIC_MESSAGES_FORMAT_ID = LLM_FORMAT_ANTHROPIC_MESSAGES;
 
@@ -138,8 +139,8 @@ function mapAnthropicError(err: unknown, meta?: { providerId?: string }): Provid
     );
   }
   if (err && typeof err === "object" && "status" in err) {
-    const status = Number((err as { status?: number }).status ?? 0);
-    const message = err instanceof Error ? err.message : String(err);
+    const status = (err as { status?: number }).status ?? 0;
+    const message = err instanceof Error ? err.message : coerceString(err);
     return providerErrorFromHttpStatus(
       status,
       message,
@@ -243,7 +244,7 @@ export async function runAnthropicMessages(
     if (timeouts.signal.aborted && isLlmTimeoutError(timeouts.signal.reason)) {
       throw timeouts.signal.reason;
     }
-    rethrowTimeout(err);
+    return rethrowTimeout(err);
   } finally {
     timeouts.dispose();
   }
@@ -336,6 +337,7 @@ export async function* runAnthropicMessagesStream(
       finish_reason: finishReason ?? (tool_calls.length > 0 ? "tool_calls" : "stop"),
       model: modelName,
     };
+    return;
   } catch (err) {
     if (timeouts.signal.aborted && isLlmTimeoutError(timeouts.signal.reason)) {
       throw timeouts.signal.reason;

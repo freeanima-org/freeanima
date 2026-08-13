@@ -25,5 +25,5 @@ export async function countSearchableMessages(): Promise<number> {
         notLike(messages.conversation_id, "debug-%"),
       ),
     );
-  return Number(rows[0]?.n ?? 0);
+  return rows[0]?.n ?? 0;
 }

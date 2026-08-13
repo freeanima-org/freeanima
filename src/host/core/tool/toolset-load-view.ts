@@ -15,7 +15,7 @@ function parseLoadCallToolsets(call: ToolCall): string[] {
   if (!isLoadToolCall(call.function?.name ?? "")) return [];
   try {
     const raw = call.function.arguments;
-    const args = typeof raw === "string" ? JSON.parse(raw) : raw;
+    const args = typeof raw === "string" ? (JSON.parse(raw) as unknown) : raw;
     return parseToolSetsFromLoadArgs(args);
   } catch {
     return [];
@@ -44,7 +44,7 @@ export function stripCachedToolSetLoadRounds(
       continue;
     }
 
-    const calls = msg.tool_calls as ToolCall[];
+    const calls = msg.tool_calls;
     const stripIds = new Set(
       calls.filter((c) => shouldStripLoadCall(c, cachedToolsets)).map((c) => c.id),
     );

@@ -34,6 +34,10 @@ export function shellWebDistDirName(target: ShellBuildTarget): string {
       return "dist-desktop";
     case "mobile":
       return "dist-mobile";
+    default: {
+      const _exhaustive: never = target;
+      throw new Error(`Unhandled shell build target: ${String(_exhaustive)}`);
+    }
   }
 }
 
@@ -57,7 +61,7 @@ export function getShellBuildTarget(): ShellBuildTarget {
   try {
     const fromEnv =
       typeof process !== "undefined" ? process.env?.FREEANIMA_SHELL_TARGET : undefined;
-    if (fromEnv != null && String(fromEnv).trim() !== "") {
+    if (fromEnv != null && fromEnv.trim() !== "") {
       return parseShellBuildTarget(fromEnv);
     }
   } catch {

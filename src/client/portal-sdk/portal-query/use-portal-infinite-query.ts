@@ -14,7 +14,7 @@ export type UsePortalInfiniteQueryOptions<TPage> = {
   /** 拉取一页；pageParam 首屏为 initialPageParam */
   queryFn: (ctx: { pageParam: unknown }) => Promise<TPage>;
   initialPageParam?: unknown;
-  getNextPageParam: (lastPage: TPage, pages: TPage[]) => unknown | undefined | null;
+  getNextPageParam: (lastPage: TPage, pages: TPage[]) => unknown;
   enabled?: boolean;
 };
 
@@ -67,7 +67,7 @@ export function usePortalInfiniteQuery<TPage>(
   }, [client, enabled, initialPageParam, keyHash]);
 
   useEffect(() => {
-    if (!enabled || queryKey == null) return;
+    if (!enabled || queryKey == null) return () => {};
     return client.subscribe(queryKey, () => setVersion((v) => v + 1));
   }, [client, enabled, keyHash]);
 
@@ -126,11 +126,10 @@ export function usePortalInfiniteQuery<TPage>(
   return {
     data,
     error: state?.error ?? null,
-    loading: Boolean(
+    loading:
       enabled && data === undefined && (state?.status === "pending" || state?.status === "idle"),
-    ),
     loadingMore,
-    hasNextPage: Boolean(hasNextPage),
+    hasNextPage: hasNextPage,
     fetchNextPage,
     reload: loadFirstPage,
     setData,

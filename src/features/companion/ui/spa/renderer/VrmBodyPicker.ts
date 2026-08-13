@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import type { VRM } from "@pixiv/three-vrm";
 
+import { getVrmNormalizedBoneNode, getVrmScene } from "./vrm-three-access.ts";
+
 export type BodyZone = "head" | "torso" | "leftArm" | "rightArm" | "leftLeg" | "rightLeg";
 
 const BONE_ZONE: Record<string, BodyZone> = {
@@ -43,9 +45,7 @@ export function resolveBodyZoneFromPoint(vrm: VRM, hitPoint: THREE.Vector3): Bod
   const boneWorld = new THREE.Vector3();
 
   for (const boneName of Object.keys(BONE_ZONE)) {
-    const node = humanoid.getNormalizedBoneNode(
-      boneName as Parameters<typeof humanoid.getNormalizedBoneNode>[0],
-    );
+    const node = getVrmNormalizedBoneNode(vrm, boneName);
     if (!node) continue;
     node.getWorldPosition(boneWorld);
     const distSq = hitPoint.distanceToSquared(boneWorld);
@@ -90,7 +90,7 @@ export class VrmBodyPicker {
   ): boolean {
     if (!this.setRayFromScreen(camera, canvas, screenX, screenY, canvasRect)) return false;
     // 只要有交点即可；阈值 1 时 three 仍会扫完全部 mesh，粗滤在 Backend 侧
-    return this.raycaster.intersectObject(vrm.scene, true).length > 0;
+    return this.raycaster.intersectObject(getVrmScene(vrm), true).length > 0;
   }
 
   pickBodyZone(
@@ -102,7 +102,7 @@ export class VrmBodyPicker {
     canvasRect?: DOMRect,
   ): BodyZone | null {
     if (!this.setRayFromScreen(camera, canvas, screenX, screenY, canvasRect)) return null;
-    const hits = this.raycaster.intersectObject(vrm.scene, true);
+    const hits = this.raycaster.intersectObject(getVrmScene(vrm), true);
     if (hits.length === 0) return null;
 
     const hit = hits[0];

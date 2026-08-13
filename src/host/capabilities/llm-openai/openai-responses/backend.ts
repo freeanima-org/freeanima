@@ -158,7 +158,7 @@ export async function runOpenAiResponses(
     if (timeouts.signal.aborted && isLlmTimeoutError(timeouts.signal.reason)) {
       throw timeouts.signal.reason;
     }
-    rethrowTimeout(err);
+    return rethrowTimeout(err);
   } finally {
     timeouts.dispose();
   }
@@ -227,6 +227,7 @@ export async function* runOpenAiResponsesStream(
       finish_reason: toolCalls.length > 0 ? "tool_calls" : "stop",
       model: modelName,
     };
+    return;
   } catch (err) {
     if (timeouts.signal.aborted && isLlmTimeoutError(timeouts.signal.reason)) {
       throw timeouts.signal.reason;

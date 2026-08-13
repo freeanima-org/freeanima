@@ -103,11 +103,7 @@ export function createHabitatClient(options: HabitatClientOptions) {
     timeoutMs?: number,
   ): Promise<HabitatMethodOutputs[K]> {
     const rpc = await options.getRpcClient();
-    return rpc.request(
-      method,
-      payload,
-      timeoutMs !== undefined ? { timeoutMs } : undefined,
-    ) as Promise<HabitatMethodOutputs[K]>;
+    return rpc.request(method, payload, timeoutMs !== undefined ? { timeoutMs } : undefined);
   }
 
   async function callViaHttp<K extends HabitatMethod>(
@@ -146,14 +142,14 @@ export function createHabitatClient(options: HabitatClientOptions) {
       if (!cached) {
         throw new Error(`HTTP 304 Not Modified without local cache for ${method}`);
       }
-      return def.output.parse(cached.body) as HabitatMethodOutputs[K];
+      return def.output.parse(cached.body);
     }
     const result = await parseHabitatRestResponse(res);
     const etag = res.headers.get("ETag");
     if (etag) {
       conditionalGetCache.set(cacheKey, { etag, body: result });
     }
-    return def.output.parse(result) as HabitatMethodOutputs[K];
+    return def.output.parse(result);
   }
 
   async function callOne<K extends HabitatMethod>(
@@ -181,7 +177,7 @@ export function createHabitatClient(options: HabitatClientOptions) {
     opts: HabitatCallOptions = {},
   ): Promise<HabitatMethodOutputs[K]> {
     if (!isHabitatMethod(method)) {
-      throw new Error(`unknown habitat method: ${method}`);
+      throw new Error(`unknown habitat method: ${String(method)}`);
     }
     const def = getHabitatMethodDef(method);
     def.input.parse(payload);
@@ -219,7 +215,7 @@ export function createHabitatClient(options: HabitatClientOptions) {
     opts: HabitatCallRawOptions = {},
   ): Promise<Response> {
     if (!isHabitatMethod(method)) {
-      throw new Error(`unknown habitat method: ${method}`);
+      throw new Error(`unknown habitat method: ${String(method)}`);
     }
     if (!isNonJsonHabitatHttpMethod(method)) {
       throw new Error(`habitat method ${method} should use call() for JSON HTTP`);

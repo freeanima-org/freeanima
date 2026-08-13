@@ -2,6 +2,7 @@ import { toolError, toolResult } from "@freeanima/host/core/tool";
 import type { Config } from "@freeanima/host/core/config";
 import { homePath } from "@freeanima/host/core/config/paths";
 import { omitUndefined } from "@freeanima/host/core/util";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 
@@ -236,16 +237,11 @@ async function adoptExistingTab(session: CamofoxSession): Promise<CamofoxSession
     const data = await getJson("/tabs", { userId: session.userId }, 5_000);
     const tabs = data.tabs;
     if (!Array.isArray(tabs) || tabs.length === 0) return session;
-    const matching = tabs.filter(
-      (tab): tab is Record<string, unknown> =>
-        typeof tab === "object" && tab != null && tab.listItemId === session.sessionKey,
+    const tabRows = tabs.filter(
+      (tab): tab is Record<string, unknown> => typeof tab === "object" && tab != null,
     );
-    const candidates =
-      matching.length > 0
-        ? matching
-        : tabs.filter(
-            (tab): tab is Record<string, unknown> => typeof tab === "object" && tab != null,
-          );
+    const matching = tabRows.filter((tab) => tab.listItemId === session.sessionKey);
+    const candidates = matching.length > 0 ? matching : tabRows;
     const latest = candidates.at(-1);
     const tabId = latest?.tabId;
     if (typeof tabId === "string" && tabId) {
@@ -416,7 +412,7 @@ export async function camofoxNavigate(
 
     try {
       const snap = await getJson(`/tabs/${session.tabId}/snapshot`, { userId: session.userId });
-      let snapshotText = String(snap.snapshot ?? "");
+      let snapshotText = coerceString(snap.snapshot);
       if (snapshotText.length > SNAPSHOT_SUMMARIZE_THRESHOLD) {
         snapshotText = truncateSnapshot(snapshotText);
       }
@@ -441,7 +437,7 @@ export async function camofoxSnapshot(conversationId: string, full = false): Pro
   try {
     const session = requireTab(conversationId);
     const data = await getJson(`/tabs/${session.tabId}/snapshot`, { userId: session.userId });
-    let snapshot = String(data.snapshot ?? "");
+    let snapshot = coerceString(data.snapshot);
     const refsCount = data.refsCount ?? 0;
     if (!full && snapshot.length > SNAPSHOT_SUMMARIZE_THRESHOLD) {
       snapshot = truncateSnapshot(snapshot);
@@ -566,7 +562,7 @@ export async function camofoxGetImages(conversationId: string): Promise<string> 
   try {
     const session = requireTab(conversationId);
     const data = await getJson(`/tabs/${session.tabId}/snapshot`, { userId: session.userId });
-    const snapshot = String(data.snapshot ?? "");
+    const snapshot = coerceString(data.snapshot);
     const images: Array<{ src: string; alt: string }> = [];
     const lines = snapshot.split("\n");
     for (let i = 0; i < lines.length; i++) {
@@ -617,7 +613,7 @@ export async function camofoxVision(
     if (annotate) {
       try {
         const snap = await getJson(`/tabs/${session.tabId}/snapshot`, { userId: session.userId });
-        const excerpt = String(snap.snapshot ?? "").slice(0, 3000);
+        const excerpt = coerceString(snap.snapshot).slice(0, 3000);
         payload.snapshot_excerpt = excerpt;
       } catch {
         /* optional */

@@ -77,7 +77,7 @@ export async function downloadReleaseAsset(
     ...(opts?.signal ? { signal: opts.signal } : {}),
     headers: { "User-Agent": "freeanima-app-update", Accept: "application/octet-stream" },
     redirect: "follow",
-  } as RequestInit);
+  });
   if (!res.ok) {
     throw new Error(`下载失败 HTTP ${res.status}: ${url}`);
   }
@@ -93,7 +93,7 @@ export async function downloadReleaseAsset(
   const total = opts?.expectedSize ?? (contentLength != null ? Number(contentLength) : null);
   const resolvedTotal = total != null && Number.isFinite(total) && total >= 0 ? total : null;
 
-  await pipeResponseBodyToFile(res.body as ReadableStream<Uint8Array>, destPath, {
+  await pipeResponseBodyToFile(res.body, destPath, {
     total: resolvedTotal,
     ...(opts?.onProgress ? { onProgress: opts.onProgress } : {}),
   });

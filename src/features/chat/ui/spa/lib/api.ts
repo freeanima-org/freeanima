@@ -140,7 +140,7 @@ export async function getStoredMessages(
       limit: opts?.limit,
       before_pos: opts?.before_pos,
     }),
-  ) as Promise<StoredMessagesResponse>;
+  );
 }
 
 export async function setConversationTitle(conversationId: string, title: string) {

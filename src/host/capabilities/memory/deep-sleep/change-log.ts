@@ -1,3 +1,5 @@
+import { coerceString } from "@freeanima/shared/coerce-string";
+
 import type { DeepSleepChangeLog, DeepSleepChangeEntry } from "./types.ts";
 
 function sourceLabel(sources: string[]): string {
@@ -30,6 +32,10 @@ function entryToLine(entry: DeepSleepChangeEntry): string {
         ? ` "${t.content}" sources=${sourceLabel(t.source_conversations)} observed=${formatObservedAt(t.observed_at)}`
         : "";
       return `${entry.id} (${t?.type ?? "?"})${info}`;
+    }
+    default: {
+      const _exhaustive: never = entry.action;
+      throw new Error(`Unhandled deep sleep change entry: ${coerceString(_exhaustive)}`);
     }
   }
 }

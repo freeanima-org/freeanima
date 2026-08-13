@@ -21,6 +21,7 @@ import {
   toVaultItemMeta,
 } from "./item-store.ts";
 import { VAULT_TOOL_RETURNS } from "./return-schemas.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   metaPayload,
   resolveVaultToolWorld,
@@ -140,7 +141,7 @@ function parseTags(raw: unknown): string[] | undefined {
 
 function parseItemType(raw: unknown): VaultItemType | undefined {
   if (raw == null) return undefined;
-  const v = String(raw);
+  const v = coerceString(raw);
   return ITEM_TYPES.has(v as VaultItemType) ? (v as VaultItemType) : undefined;
 }
 
@@ -159,10 +160,10 @@ function parseSecretsPayload(raw: unknown): VaultSecretsPayload | string {
   }
   const rec = raw as Record<string, unknown>;
   const out: VaultSecretsPayload = {};
-  if (rec.password != null) out.password = String(rec.password).trim();
-  if (rec.notes != null) out.notes = String(rec.notes);
+  if (rec.password != null) out.password = coerceString(rec.password).trim();
+  if (rec.notes != null) out.notes = coerceString(rec.notes);
   if (rec.totp != null) {
-    const totp = normalizeTotpSecret(String(rec.totp));
+    const totp = normalizeTotpSecret(coerceString(rec.totp));
     if (totp) out.totp = totp;
   }
   if (rec.custom_fields != null) {
@@ -175,12 +176,12 @@ function parseSecretsPayload(raw: unknown): VaultSecretsPayload | string {
         return toolError("secrets.custom_fields[] must be objects");
       }
       const f = entry as Record<string, unknown>;
-      const name = String(f.name ?? "").trim();
+      const name = coerceString(f.name ?? "").trim();
       if (!name) return toolError("secrets.custom_fields[].name is required");
-      const typeRaw = f.type != null ? String(f.type) : "text";
+      const typeRaw = f.type != null ? coerceString(f.type) : "text";
       const type =
         typeRaw === "hidden" || typeRaw === "boolean" || typeRaw === "text" ? typeRaw : "text";
-      fields.push({ name, value: String(f.value ?? "").trim(), type });
+      fields.push({ name, value: coerceString(f.value ?? "").trim(), type });
     }
     out.custom_fields = fields;
   }
@@ -212,7 +213,7 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleSearch(args: Record<string, unknown>): Promise<string> {
-  const query = String(args.query ?? "").trim();
+  const query = coerceString(args.query ?? "").trim();
   if (!query) return toolError("query is required");
 
   const worldId = await resolveVaultToolWorld({ args });
@@ -252,7 +253,7 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const userDeny = rejectUserLibraryWrites(args);
   if (userDeny) return userDeny;
 
-  const title = String(args.title ?? "").trim();
+  const title = coerceString(args.title ?? "").trim();
   if (!title) return toolError("title is required");
 
   const secretsParsed = parseSecretsPayload(args.secrets ?? {});
@@ -273,10 +274,10 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
       worldId,
       omitUndefined({
         title,
-        content: args.content != null ? String(args.content) : undefined,
+        content: args.content != null ? coerceString(args.content) : undefined,
         item_type: parseItemType(args.item_type),
-        url: args.url != null ? String(args.url) : undefined,
-        username: args.username != null ? String(args.username) : undefined,
+        url: args.url != null ? coerceString(args.url) : undefined,
+        username: args.username != null ? coerceString(args.username) : undefined,
         tag_ids: tagIds,
         secrets_enc: sealed.secrets_enc,
         dek_wrapped: sealed.dek_wrapped,

@@ -28,7 +28,7 @@ export function parseAnimaReferenceIds(content: string): number[] {
 export function snippetFromEntityFields(title: string, content: string): string {
   const raw = title.trim() || content.trim();
   if (!raw) return "";
-  return [...raw].slice(0, 10).join("");
+  return Array.from(raw).slice(0, 10).join("");
 }
 
 function collectIdsFromDisplay(display: DisplayItem[], streamText: string): number[] {
@@ -109,7 +109,7 @@ export function useAnimaReferenceLabels(
     applyCached();
 
     const missing = ids.filter((id) => !snippetCache.has(id));
-    if (missing.length === 0) return;
+    if (missing.length === 0) return () => {};
 
     void Promise.all(missing.map((id) => fetchSnippet(id))).then(() => {
       if (!cancelled) applyCached();

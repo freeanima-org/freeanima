@@ -44,6 +44,8 @@ export function resetTempIdAllocatorForTests(): void {
   scopeCounters.clear();
 }
 
-export function isTempId(id: unknown): id is number {
+export function isTempId(id: number): boolean;
+export function isTempId(id: unknown): id is number;
+export function isTempId(id: unknown): boolean {
   return typeof id === "number" && Number.isInteger(id) && id < 0;
 }

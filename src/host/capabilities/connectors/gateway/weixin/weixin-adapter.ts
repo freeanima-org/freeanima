@@ -30,6 +30,7 @@ import {
   parseUserTextMessage,
 } from "./weixin-message.ts";
 import type { WeixinCredentials } from "./weixin-credentials.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   weixinContextTokensSchema,
   weixinSyncSchema,
@@ -194,7 +195,7 @@ export class WeixinAdapter implements PlatformAdapter {
       return;
     }
 
-    const newBuf = String(resp.get_updates_buf ?? "");
+    const newBuf = coerceString(resp.get_updates_buf ?? "");
     if (newBuf) {
       this.syncBuf = newBuf;
       this.persistSyncBuf();
@@ -220,7 +221,7 @@ export class WeixinAdapter implements PlatformAdapter {
         continue;
       }
       const msg = normalizeInboundMessage(inbound);
-      const msgId = String(msg.msg_id ?? msg.message_id ?? msg.seq_id ?? "");
+      const msgId = coerceString(msg.msg_id ?? msg.message_id ?? msg.seq_id ?? "");
       if (msgId && this.seen.has(msgId)) continue;
 
       if (msgId) {
@@ -234,7 +235,7 @@ export class WeixinAdapter implements PlatformAdapter {
         const reason = explainInboundSkip(msg, this.creds.account_id);
         logComponent("weixin").warn(`WeChat inbound skipped: ${reason}`, {
           reason,
-          from_user_id: safeId(String(msg.from_user_id ?? "")),
+          from_user_id: safeId(coerceString(msg.from_user_id ?? "")),
           message_type: msg.message_type ?? null,
         });
         continue;
@@ -368,7 +369,7 @@ export class WeixinAdapter implements PlatformAdapter {
         peer_id: safeId(peerId),
         text_len: text.length,
         chunks,
-        ret: String(lastRet.ret ?? "?"),
+        ret: coerceString(lastRet.ret ?? "?"),
       });
     } catch (e) {
       logComponent("weixin").error("WeChat send reply failed", { err: e });

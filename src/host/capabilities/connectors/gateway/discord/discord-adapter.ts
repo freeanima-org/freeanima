@@ -53,6 +53,7 @@ import {
 
 import { isDiscordDeliveryDegraded, withDiscordRetry } from "./discord-retry.ts";
 import { chunkText } from "../chunk-text.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   discordThreadNameFromUserMessage,
   discordThreadTitleFromSession,
@@ -73,19 +74,19 @@ function messageContext(message: Message, botUserId: string | undefined): Discor
   const isThread = message.channel.isThread();
   const parentId =
     isThread && "parentId" in message.channel && message.channel.parentId
-      ? String(message.channel.parentId)
-      : String(message.channel.id);
+      ? message.channel.parentId
+      : message.channel.id;
 
   const isMentioned =
     Boolean(botUserId && message.mentions.users.has(botUserId)) ||
-    Boolean(message.client.user && message.content.startsWith(message.client.user.displayName));
+    (message.client.user && message.content.startsWith(message.client.user.displayName));
 
   return {
     content: message.content,
     authorIsBot: message.author.id === botUserId,
     isDm: message.channel.type === ChannelType.DM,
     isThread,
-    channelId: String(message.channel.id),
+    channelId: message.channel.id,
     parentChannelId: parentId,
     isMentioned,
     isReplyToBot: message.mentions.repliedUser?.id === botUserId,
@@ -597,21 +598,21 @@ export class DiscordAdapter implements PlatformAdapter {
     const guildId = message.guild?.id ?? "";
     if (ctx.isThread || !shouldCreateThread(ctx, this.cfg)) {
       return extractOrigin({
-        channelId: String(message.channel.id),
+        channelId: message.channel.id,
         parentChannelId: ctx.parentChannelId,
         guildId,
         isThread: ctx.isThread,
       });
     }
-    if (replyChannelId !== String(message.channel.id)) {
+    if (replyChannelId !== message.channel.id) {
       return threadOriginAfterCreate({
         guildId,
-        parentChannelId: String(message.channel.id),
+        parentChannelId: message.channel.id,
         threadId: replyChannelId,
       });
     }
     return extractOrigin({
-      channelId: String(message.channel.id),
+      channelId: message.channel.id,
       parentChannelId: ctx.parentChannelId,
       guildId,
       isThread: false,
@@ -630,7 +631,9 @@ export class DiscordAdapter implements PlatformAdapter {
       ).trim();
       if (!title) return;
 
-      const channel = await withDiscordRetry(() => this.client.channels.fetch(String(threadId)));
+      const channel = await withDiscordRetry(() =>
+        this.client.channels.fetch(coerceString(threadId)),
+      );
       if (!channel?.isThread()) return;
 
       await this.maybeApplySessionTitleToThread(channel, conversationId);
@@ -655,7 +658,7 @@ export class DiscordAdapter implements PlatformAdapter {
       const title = (
         await getAppRuntime().conversation.getConversationTitle(conversationId)
       ).trim();
-      if (!title || !shouldRenameDiscordThread(String(channel.name ?? ""), title)) return;
+      if (!title || !shouldRenameDiscordThread(channel.name ?? "", title)) return;
       await channel.setName(discordThreadTitleFromSession(title));
     } catch {
       /* Rename failure does not affect main flow */

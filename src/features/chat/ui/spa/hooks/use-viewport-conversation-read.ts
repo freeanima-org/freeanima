@@ -26,7 +26,7 @@ export function useViewportConversationRead(
   useEffect(() => {
     const node = sentinelRef.current;
     const root = scrollRootRef.current;
-    if (!node || !root || !conversationId) return;
+    if (!node || !root || !conversationId) return () => {};
 
     const tryMark = () => {
       if (!conversationId) return;

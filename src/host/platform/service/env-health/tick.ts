@@ -95,7 +95,7 @@ export async function runEnvHealthTick(deps: EnvHealthTickDeps): Promise<EnvHeal
     return {
       ok: true,
       action: "quiet",
-      changed_keys: diff.changedKeys as string[],
+      changed_keys: diff.changedKeys,
     };
   }
 
@@ -109,7 +109,7 @@ export async function runEnvHealthTick(deps: EnvHealthTickDeps): Promise<EnvHeal
     return {
       ok: false,
       action: "skipped",
-      changed_keys: notifyKeys as string[],
+      changed_keys: notifyKeys,
       source_ref: sourceRef,
       error: "notification port unavailable",
     };
@@ -127,7 +127,7 @@ export async function runEnvHealthTick(deps: EnvHealthTickDeps): Promise<EnvHeal
     return {
       ok: true,
       action: "deduped",
-      changed_keys: notifyKeys as string[],
+      changed_keys: notifyKeys,
       source_ref: sourceRef,
     };
   }
@@ -166,7 +166,7 @@ export async function runEnvHealthTick(deps: EnvHealthTickDeps): Promise<EnvHeal
   return {
     ok: true,
     action: "notified",
-    changed_keys: notifyKeys as string[],
+    changed_keys: notifyKeys,
     source_ref: sourceRef,
   };
 }

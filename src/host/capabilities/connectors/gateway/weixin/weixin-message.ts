@@ -1,6 +1,7 @@
 import { safeParseOrNull } from "@freeanima/host/core/util";
 import { ITEM_TEXT, MSG_TYPE_BOT, MSG_TYPE_USER, type IlinkMessage } from "./ilink-api.ts";
 import { ilinkMessageSchema } from "../schemas/weixin.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export type WeixinPlatformExtra = {
   weixin_user_id: string;
@@ -78,7 +79,7 @@ export function extractTextFromMessage(msg: IlinkMessage): string {
 
     const textItem = (rec.text_item ?? rec.textItem) as Record<string, unknown> | undefined;
     if (typeof textItem === "object" && textItem != null) {
-      const text = String(textItem.text ?? textItem.content ?? "");
+      const text = coerceString(textItem.text ?? textItem.content ?? "");
       if (text) return text;
     }
   }
@@ -88,7 +89,7 @@ export function extractTextFromMessage(msg: IlinkMessage): string {
     const rec = item as Record<string, unknown>;
     const voiceItem = (rec.voice_item ?? rec.voiceItem) as Record<string, unknown> | undefined;
     if (typeof voiceItem === "object" && voiceItem != null) {
-      const voiceText = String(voiceItem.text ?? "");
+      const voiceText = coerceString(voiceItem.text ?? "");
       if (voiceText) return voiceText;
     }
   }
@@ -105,7 +106,7 @@ export function parseUserTextMessage(
 ): ParsedUserTextMessage | null {
   const normalized = normalizeInboundMessage(msg);
 
-  const fromUser = String(normalized.from_user_id ?? "").trim();
+  const fromUser = coerceString(normalized.from_user_id ?? "").trim();
   if (!fromUser) return null;
 
   const msgType = coerceMessageType(normalized.message_type);
@@ -118,16 +119,16 @@ export function parseUserTextMessage(
 
   const roomId = normalized.room_id ?? normalized.chat_room_id;
   const isGroup = Boolean(roomId);
-  const peerId = String(roomId ?? fromUser);
+  const peerId = coerceString(roomId ?? fromUser);
 
-  const msgId = String(normalized.msg_id ?? normalized.message_id ?? normalized.seq_id ?? "");
+  const msgId = coerceString(normalized.msg_id ?? normalized.message_id ?? normalized.seq_id ?? "");
 
   return {
     text,
     fromUserId: fromUser,
     peerId,
     isGroup,
-    contextToken: String(normalized.context_token ?? ""),
+    contextToken: coerceString(normalized.context_token ?? ""),
     msgId,
   };
 }
@@ -136,7 +137,7 @@ export function parseUserTextMessage(
 export function explainInboundSkip(msg: IlinkMessage, botAccountId: string): string {
   const normalized = normalizeInboundMessage(msg);
 
-  const fromUser = String(normalized.from_user_id ?? "").trim();
+  const fromUser = coerceString(normalized.from_user_id ?? "").trim();
   if (!fromUser) return "missing from_user_id";
 
   const msgType = coerceMessageType(normalized.message_type);

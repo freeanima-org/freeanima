@@ -83,23 +83,23 @@
     "typescript/no-explicit-any": "error",
     "typescript/no-non-null-assertion": "error",
     "unicorn/prefer-node-protocol": "error",
-    "typescript/no-unsafe-type-assertion": "off",
-    "typescript/no-base-to-string": "off",
-    "typescript/no-unnecessary-type-assertion": "off",
-    "typescript/no-unnecessary-type-conversion": "off",
-    "typescript/consistent-return": "off",
-    "typescript/no-meaningless-void-operator": "off",
-    "typescript/no-unnecessary-type-arguments": "off",
-    "typescript/no-misused-spread": "off",
-    "typescript/no-redundant-type-constituents": "off",
-    "typescript/no-unnecessary-boolean-literal-compare": "off",
-    "typescript/unbound-method": "off",
-    "typescript/no-unnecessary-type-parameters": "off",
-    "typescript/no-duplicate-type-constituents": "off",
-    "typescript/restrict-template-expressions": "off",
-    "typescript/no-unsafe-assignment": "off",
-    "typescript/no-unsafe-member-access": "off",
-    "typescript/no-unsafe-call": "off"
+    "typescript/no-unsafe-type-assertion": "warn",
+    "typescript/no-base-to-string": "error",
+    "typescript/no-unnecessary-type-assertion": "error",
+    "typescript/no-unnecessary-type-conversion": "error",
+    "typescript/consistent-return": "error",
+    "typescript/no-meaningless-void-operator": "error",
+    "typescript/no-unnecessary-type-arguments": "error",
+    "typescript/no-misused-spread": "error",
+    "typescript/no-redundant-type-constituents": "error",
+    "typescript/no-unnecessary-boolean-literal-compare": "error",
+    "typescript/unbound-method": "error",
+    "typescript/no-unnecessary-type-parameters": "error",
+    "typescript/no-duplicate-type-constituents": "error",
+    "typescript/restrict-template-expressions": "error",
+    "typescript/no-unsafe-assignment": "error",
+    "typescript/no-unsafe-member-access": "error",
+    "typescript/no-unsafe-call": "error"
   },
   "overrides": [
     {
@@ -138,7 +138,11 @@
         "typescript/no-explicit-any": "off",
         "typescript/no-non-null-assertion": "off",
         "typescript/no-floating-promises": "off",
-        "typescript/await-thenable": "off"
+        "typescript/await-thenable": "off",
+        "typescript/no-unsafe-assignment": "off",
+        "typescript/no-unsafe-member-access": "off",
+        "typescript/no-unsafe-call": "off",
+        "typescript/no-unsafe-type-assertion": "off"
       }
     },
     {

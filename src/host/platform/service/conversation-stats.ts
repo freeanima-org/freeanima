@@ -70,7 +70,7 @@ function usageFromMessage(msg: StoredMessage): Record<string, number> | null {
   if (msg.role !== "assistant") return null;
   const usage = msg.usage;
   if (usage && typeof usage === "object") {
-    return normalizeUsage(usage as Record<string, unknown>);
+    return normalizeUsage(usage);
   }
   return null;
 }

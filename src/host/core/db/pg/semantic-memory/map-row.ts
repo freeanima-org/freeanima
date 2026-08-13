@@ -6,11 +6,12 @@ import {
 } from "@freeanima/host/core/db/schema";
 import type { EntityRow } from "@freeanima/host/core/db/schema/entity";
 import type { SemanticMemoryRow } from "@freeanima/host/core/db/schema/rows";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export function parseObservedAt(raw: unknown): Date | null {
   if (raw == null || raw === "") return null;
   if (raw instanceof Date) return raw;
-  const d = new Date(String(raw));
+  const d = new Date(coerceString(raw));
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
@@ -27,7 +28,7 @@ export function entityToSemanticMemoryRow(row: EntityRow): SemanticMemoryRow {
   const statusParsed = semanticMemoryStatusSchema.safeParse(body.status ?? "active");
   const status = statusParsed.success ? statusParsed.data : "active";
   const source_conversations = Array.isArray(body.source_conversations)
-    ? body.source_conversations.map((s) => String(s).trim()).filter(Boolean)
+    ? body.source_conversations.map((s) => s.trim()).filter(Boolean)
     : [];
   return {
     id: row.id,

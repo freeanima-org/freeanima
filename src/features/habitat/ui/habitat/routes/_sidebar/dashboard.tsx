@@ -69,7 +69,7 @@ function DashboardPage() {
   const [restarting, setRestarting] = useState(false);
   const [showRestartConfirm, setShowRestartConfirm] = useState(false);
 
-  const svc = status as ServiceSnapshot | null;
+  const svc = status;
   const extensions = svc?.extensions;
 
   const mcp = extensions?.mcp ?? {
@@ -92,7 +92,7 @@ function DashboardPage() {
   const redis = svc?.dependencies?.redis;
 
   const conversationPlatformRows = Object.entries(conversationsByPlatform)
-    .map(([platform, count]) => ({ platform, count: count as number }))
+    .map(([platform, count]) => ({ platform, count: count }))
     .toSorted((a, b) => b.count - a.count);
 
   const processMemoryKb = svc?.memory_kb ?? 0;
@@ -109,7 +109,7 @@ function DashboardPage() {
     try {
       const res = await restartService();
       await showAlert({
-        description: translateApiPayload(res as { code?: string; message?: string }),
+        description: translateApiPayload(res),
       });
     } catch (err) {
       logCaughtError("dashboard/restartService", err);

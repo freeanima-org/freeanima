@@ -70,9 +70,9 @@ export async function searchPgIndexFts(
       doc_key: r.doc_key,
       source_id: r.source_id,
       resource: "entity" as const,
-      score: Number(r.rank),
+      score: r.rank,
       channels_hit: ["fts" as const],
-      channel_scores: { fts: Number(r.rank) },
+      channel_scores: { fts: r.rank },
     }));
   }
 
@@ -93,9 +93,9 @@ export async function searchPgIndexFts(
       doc_key: r.doc_key,
       source_id: r.source_id,
       resource: "message" as const,
-      score: Number(r.rank),
+      score: r.rank,
       channels_hit: ["fts" as const],
-      channel_scores: { fts: Number(r.rank) },
+      channel_scores: { fts: r.rank },
     }));
   }
 
@@ -114,9 +114,9 @@ export async function searchPgIndexFts(
     doc_key: r.doc_key,
     source_id: r.source_id,
     resource: filters.resource,
-    score: Number(r.rank),
+    score: r.rank,
     channels_hit: ["fts" as const],
-    channel_scores: { fts: Number(r.rank) },
+    channel_scores: { fts: r.rank },
   }));
 }
 

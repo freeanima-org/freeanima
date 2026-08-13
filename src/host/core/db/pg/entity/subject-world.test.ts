@@ -93,7 +93,7 @@ describe("ensureWorldSubjects", () => {
   });
 
   it("creates next-id subjects when unconfigured and empty", async () => {
-    const ctx = await ensureWorldSubjects({} as never);
+    const ctx = await ensureWorldSubjects({});
     expect(createEntityAtId).not.toHaveBeenCalled();
     expect(createEntity.mock.calls.length).toBeGreaterThanOrEqual(2);
     expect(ctx.user_subject_id).toBeGreaterThan(0);
@@ -132,7 +132,7 @@ describe("ensureWorldSubjects", () => {
       return null;
     });
 
-    const ctx = await ensureWorldSubjects({} as never);
+    const ctx = await ensureWorldSubjects({});
     expect(createEntity).not.toHaveBeenCalled();
     expect(createEntityAtId).not.toHaveBeenCalled();
     expect(ctx).toEqual({
@@ -167,7 +167,7 @@ describe("ensureWorldSubjects", () => {
 
     const ctx = await ensureWorldSubjects({
       worlds: { user_subject_id: 5, agent_subject_id: 6 },
-    } as never);
+    });
 
     expect(createEntityAtId).toHaveBeenCalled();
     expect(ctx.user_subject_id).toBe(5);

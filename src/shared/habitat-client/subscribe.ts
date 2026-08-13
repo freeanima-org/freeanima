@@ -26,14 +26,14 @@ export function createHabitatSubscriber(options: {
   getRpcClient: () => Promise<RpcClient>;
   profile?: HabitatClientProfile;
 }) {
-  function subscribe<K extends HabitatMethod>(
-    method: K,
+  function subscribe(
+    method: HabitatMethod,
     input: Record<string, unknown>,
     callbacks: HabitatSubscribeCallbacks<unknown>,
     _opts: HabitatSubscribeOptions = {},
   ): { unsubscribe: () => void } {
     if (!isHabitatMethod(method)) {
-      throw new Error(`unknown habitat method: ${method}`);
+      throw new Error(`unknown habitat method: ${String(method)}`);
     }
     const def = getHabitatMethodDef(method);
     def.input.parse(input);
@@ -61,7 +61,7 @@ export function createHabitatSubscriber(options: {
               ? "notification.created"
               : method === "task.subscribeAdvanceReminders"
                 ? "task.advanceReminder"
-                : String(method);
+                : method;
         const off = rpc.onEvent(eventMethod, (payload) => {
           if (!cancelled) callbacks.onData?.(payload);
         });

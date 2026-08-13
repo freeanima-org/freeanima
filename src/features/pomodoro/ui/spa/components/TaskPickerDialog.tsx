@@ -38,7 +38,7 @@ export function TaskPickerDialog({ open, selectedId, onSelect, onClose }: TaskPi
   }, [open, loadItems]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return () => {};
     const id = window.setTimeout(() => void loadItems(query), 280);
     return () => clearTimeout(id);
   }, [open, query, loadItems]);

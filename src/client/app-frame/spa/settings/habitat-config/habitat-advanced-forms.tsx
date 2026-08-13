@@ -7,6 +7,7 @@ import {
   hubConfigTextField,
 } from "./habitat-config-field-helpers.tsx";
 import { hubConfigVaultField } from "./habitat-config-vault-field.tsx";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 export const ADVANCED_SECTIONS = [
   "gateway",
@@ -53,12 +54,12 @@ function FirecrawlForm({
 }) {
   return (
     <div className="space-y-4">
-      {hubConfigTextField("api_url", String(value.api_url ?? ""), (api_url) =>
+      {hubConfigTextField("api_url", coerceString(value.api_url ?? ""), (api_url) =>
         onChange({ ...value, api_url }),
       )}
       {hubConfigVaultField(
         "api_key",
-        String(value.api_key ?? ""),
+        coerceString(value.api_key ?? ""),
         (api_key) => onChange({ ...value, api_key }),
         { hint: '明文、vault("id","field") 或 env("KEY")' },
       )}
@@ -84,27 +85,27 @@ function ObjectStorageForm({
       </p>
       {hubConfigTextField(
         "endpoint",
-        String(value.endpoint ?? ""),
+        coerceString(value.endpoint ?? ""),
         (endpoint) => onChange({ ...value, endpoint }),
         {
           hint: "例：https://s3.oss-cn-hangzhou.aliyuncs.com；内网域名带 -internal",
         },
       )}
-      {hubConfigTextField("region", String(value.region ?? ""), (region) =>
+      {hubConfigTextField("region", coerceString(value.region ?? ""), (region) =>
         onChange({ ...value, region }),
       )}
-      {hubConfigTextField("bucket", String(value.bucket ?? ""), (bucket) =>
+      {hubConfigTextField("bucket", coerceString(value.bucket ?? ""), (bucket) =>
         onChange({ ...value, bucket }),
       )}
       {hubConfigVaultField(
         "access_key_id",
-        String(value.access_key_id ?? ""),
+        coerceString(value.access_key_id ?? ""),
         (access_key_id) => onChange({ ...value, access_key_id }),
         { type: "text" },
       )}
       {hubConfigVaultField(
         "secret_access_key",
-        String(value.secret_access_key ?? ""),
+        coerceString(value.secret_access_key ?? ""),
         (secret_access_key) => onChange({ ...value, secret_access_key }),
       )}
       {habitatConfigBoolField(
@@ -135,7 +136,7 @@ function BrowserForm({
         Profile ≈ userId（登录态）；Session ≈
         session_key（同一档案下的任务线）。关闭持久化则每次临时档案。
       </p>
-      {hubConfigTextField("base_url", String(camofox.base_url ?? ""), (v) =>
+      {hubConfigTextField("base_url", coerceString(camofox.base_url ?? ""), (v) =>
         setCamofox({ base_url: v }),
       )}
       {habitatConfigNumberField(
@@ -158,7 +159,7 @@ function BrowserForm({
       )}
       {hubConfigTextField(
         "user_id",
-        String(camofox.user_id ?? ""),
+        coerceString(camofox.user_id ?? ""),
         (v) => setCamofox({ user_id: v }),
         {
           hint: "显式档案 ID；一旦填写则优先于 managed_persistence",
@@ -166,7 +167,7 @@ function BrowserForm({
       )}
       {hubConfigTextField(
         "session_key",
-        String(camofox.session_key ?? ""),
+        coerceString(camofox.session_key ?? ""),
         (v) => setCamofox({ session_key: v }),
         {
           hint: "仅在填写 user_id 时生效；同一档案下的会话键，缺省按对话派生",
@@ -188,18 +189,18 @@ function EmbeddingForm({
       {habitatConfigBoolField("enabled", value.enabled !== false, (enabled) =>
         onChange({ ...value, enabled }),
       )}
-      {hubConfigTextField("base_url", String(value.base_url ?? ""), (v) =>
+      {hubConfigTextField("base_url", coerceString(value.base_url ?? ""), (v) =>
         onChange({ ...value, base_url: v }),
       )}
       {hubConfigTextField(
         "api_key",
-        String(value.api_key ?? ""),
+        coerceString(value.api_key ?? ""),
         (v) => onChange({ ...value, api_key: v }),
         {
           type: "password",
         },
       )}
-      {hubConfigTextField("model", String(value.model ?? ""), (v) =>
+      {hubConfigTextField("model", coerceString(value.model ?? ""), (v) =>
         onChange({ ...value, model: v }),
       )}
       {habitatConfigNumberField(
@@ -228,7 +229,7 @@ function CjkForm({
       {habitatConfigBoolField("enabled", value.enabled !== false, (enabled) =>
         onChange({ ...value, enabled }),
       )}
-      {hubConfigTextField("dict_path", String(value.dict_path ?? ""), (v) =>
+      {hubConfigTextField("dict_path", coerceString(value.dict_path ?? ""), (v) =>
         onChange({ ...value, dict_path: v }),
       )}
     </div>
@@ -374,7 +375,7 @@ function GatewayForm({
         <Label className="text-sm">tool_display</Label>
         <select
           className={habitatConfigSelectClassName}
-          value={String(value.tool_display ?? "")}
+          value={coerceString(value.tool_display ?? "")}
           onChange={(e) =>
             onChange({
               ...value,
@@ -408,7 +409,7 @@ function DiscordForm({
       )}
       {hubConfigVaultField(
         "token",
-        String(value.token ?? ""),
+        coerceString(value.token ?? ""),
         (v) => onChange({ ...value, token: v }),
         {
           hint: '明文、vault("id","field") 或 env("KEY")',
@@ -419,13 +420,13 @@ function DiscordForm({
       )}
       {hubConfigTextField(
         "free_response_channels",
-        String(value.free_response_channels ?? ""),
+        coerceString(value.free_response_channels ?? ""),
         (v) => onChange({ ...value, free_response_channels: v }),
         { hint: "频道 ID，逗号分隔；这些频道可不 @ 就回复" },
       )}
       {hubConfigTextField(
         "allowed_channels",
-        String(value.allowed_channels ?? ""),
+        coerceString(value.allowed_channels ?? ""),
         (v) => onChange({ ...value, allowed_channels: v }),
         { hint: "白名单频道 ID，逗号分隔；空=不限制" },
       )}
@@ -442,7 +443,7 @@ function DiscordForm({
       )}
       {hubConfigTextField(
         "slash_commands_guild_id",
-        String(value.slash_commands_guild_id ?? ""),
+        coerceString(value.slash_commands_guild_id ?? ""),
         (v) => onChange({ ...value, slash_commands_guild_id: v }),
         { hint: "空=全局注册（传播较慢）；填 guild 则即时生效" },
       )}
@@ -451,10 +452,10 @@ function DiscordForm({
         value.session_handoff_on_new !== false,
         (v) => onChange({ ...value, session_handoff_on_new: v }),
       )}
-      {hubConfigTextField("home_channel", String(value.home_channel ?? ""), (v) =>
+      {hubConfigTextField("home_channel", coerceString(value.home_channel ?? ""), (v) =>
         onChange({ ...value, home_channel: v }),
       )}
-      {hubConfigTextField("home_thread_id", String(value.home_thread_id ?? ""), (v) =>
+      {hubConfigTextField("home_thread_id", coerceString(value.home_thread_id ?? ""), (v) =>
         onChange({ ...value, home_thread_id: v }),
       )}
     </div>
@@ -475,19 +476,19 @@ function WeixinForm({
       )}
       {hubConfigVaultField(
         "token",
-        String(value.token ?? ""),
+        coerceString(value.token ?? ""),
         (v) => onChange({ ...value, token: v }),
         {
           hint: "明文、vault/env 引用，或环境变量 WEIXIN_ILINK_TOKEN",
         },
       )}
-      {hubConfigTextField("base_url", String(value.base_url ?? ""), (v) =>
+      {hubConfigTextField("base_url", coerceString(value.base_url ?? ""), (v) =>
         onChange({ ...value, base_url: v }),
       )}
-      {hubConfigTextField("user_id", String(value.user_id ?? ""), (v) =>
+      {hubConfigTextField("user_id", coerceString(value.user_id ?? ""), (v) =>
         onChange({ ...value, user_id: v }),
       )}
-      {hubConfigTextField("account_id", String(value.account_id ?? ""), (v) =>
+      {hubConfigTextField("account_id", coerceString(value.account_id ?? ""), (v) =>
         onChange({ ...value, account_id: v }),
       )}
       {habitatConfigBoolField(
