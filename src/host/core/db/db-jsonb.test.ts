@@ -4,6 +4,7 @@ import {
   acpTasksSchema,
   acpTaskEntrySchema,
   conversationCachedToolsetsSchema,
+  normalizeConversationToolNames,
 } from "./schema/jsonb/conversation-meta-jsonb.ts";
 
 describe("platform_info schema", () => {
@@ -77,6 +78,23 @@ describe("platform_info schema", () => {
 });
 
 describe("conversation tools jsonb", () => {
+  it("normalizeConversationToolNames keeps tool name strings", () => {
+    expect(normalizeConversationToolNames(["file_read", "grep"])).toEqual(["file_read", "grep"]);
+  });
+
+  it("normalizeConversationToolNames extracts function.name from legacy OpenAI schema", () => {
+    const legacy = [
+      { type: "function", function: { name: "file_read", description: "read" } },
+      { type: "function", function: { name: "grep" } },
+    ];
+    expect(normalizeConversationToolNames(legacy)).toEqual(["file_read", "grep"]);
+    expect(conversationCachedToolsetsSchema.parse(legacy)).toEqual(["file_read", "grep"]);
+  });
+
+  it("normalizeConversationToolNames ignores invalid entries", () => {
+    expect(normalizeConversationToolNames([null, "", {}, { function: {} }])).toEqual([]);
+  });
+
   it("conversationCachedToolsetsSchema accepts tool name strings", () => {
     expect(conversationCachedToolsetsSchema.parse(["file_read", "grep"])).toEqual([
       "file_read",
