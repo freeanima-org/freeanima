@@ -208,7 +208,8 @@ export async function updateMessageContent(
 export async function nextMessagePos(conversation_id: string): Promise<number> {
   const db = getDb();
   const rows = await db
-    .select({ maxPos: sql<number>`coalesce(max(${messages.pos}), 0)` })
+    // Bun SQL 对 bigint 聚合可能返回 BigInt；与 count(*)::int 一致强制 number
+    .select({ maxPos: sql<number>`coalesce(max(${messages.pos}), 0)::int` })
     .from(messages)
     .where(eq(messages.conversation_id, conversation_id));
   return (rows[0]?.maxPos ?? 0) + 1;
