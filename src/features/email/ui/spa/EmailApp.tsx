@@ -251,7 +251,7 @@ export function EmailApp() {
         if (row.direction === "inbound" && row.unread && !writesDisabled) {
           try {
             await markEmailMessageRead(row.id);
-            applyUnreadLocal(row.id, false);
+            // 未读 tab：不立刻从列表剔除，等切 tab / 手动刷新 / 同步再 loadMessages
             setDetail((prev) => (prev?.id === row.id ? { ...prev, unread: false } : prev));
           } catch (markErr) {
             console.warn("markEmailMessageRead failed:", markErr);
@@ -263,7 +263,7 @@ export function EmailApp() {
         setDetailLoading(false);
       }
     },
-    [applyUnreadLocal, layoutMode, writesDisabled],
+    [layoutMode, writesDisabled],
   );
 
   const loadMailboxes = useCallback(async (accountId: number) => {
