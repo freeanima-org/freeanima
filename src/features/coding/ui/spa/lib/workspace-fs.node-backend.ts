@@ -12,6 +12,48 @@ function toAbs(p: string): string {
   return resolve(p.replace(/\//g, process.platform === "win32" ? "\\" : "/"));
 }
 
+/** 与 Habitat `splitCommandLine` / Rust coding_fs 同语义（测试 backend shell=false）。 */
+function splitCommandLine(command: string): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let quote: "'" | '"' | null = null;
+  let escape = false;
+
+  for (const ch of command) {
+    if (escape) {
+      cur += ch;
+      escape = false;
+      continue;
+    }
+    if (quote === null && ch === "\\") {
+      escape = true;
+      continue;
+    }
+    if (quote !== null) {
+      if (ch === quote) {
+        quote = null;
+      } else {
+        cur += ch;
+      }
+      continue;
+    }
+    if (ch === "'" || ch === '"') {
+      quote = ch;
+      continue;
+    }
+    if (/\s/.test(ch)) {
+      if (cur.length > 0) {
+        out.push(cur);
+        cur = "";
+      }
+      continue;
+    }
+    cur += ch;
+  }
+  if (cur.length > 0) out.push(cur);
+  return out;
+}
+
 export function createNodeWorkspaceBackend(): WorkspaceFsBackend {
   return {
     async listDir(absPath) {
@@ -64,12 +106,24 @@ export function createNodeWorkspaceBackend(): WorkspaceFsBackend {
     },
     async runCommand(opts) {
       const cwd = opts.cwd ? toAbs(opts.cwd) : process.cwd();
+      const useShell = opts.shell ?? false;
       return await new Promise((resolvePromise, reject) => {
-        const child = spawn(opts.command, {
-          cwd,
-          shell: opts.shell ?? true,
-          env: process.env,
-        });
+        let child;
+        try {
+          child = useShell
+            ? spawn(opts.command, { cwd, shell: true, env: process.env })
+            : (() => {
+                const parts = splitCommandLine(opts.command.trim());
+                const bin = parts[0];
+                if (!bin) {
+                  throw new Error("command is empty");
+                }
+                return spawn(bin, parts.slice(1), { cwd, shell: false, env: process.env });
+              })();
+        } catch (err) {
+          reject(err instanceof Error ? err : new Error(String(err)));
+          return;
+        }
         let stdout = "";
         let stderr = "";
         const timer =
