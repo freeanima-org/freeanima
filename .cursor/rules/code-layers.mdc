@@ -16,7 +16,7 @@ portal/cli → platform → capabilities → engine → core → kernel
 
 | Layer | Directory | Responsibility |
 | ----- | --------- | -------------- |
-| kernel | `src/host/kernel/` | HookRegistry、logging |
+| kernel | `src/host/kernel/` | HookRegistry、logging（**方向**：加厚为 config/loop **机制**，无产品段；见 [`src-layering.md`](../../docs/product/src-layering.md)） |
 | core | `src/host/core/` | PG、Redis 原语、config、tool/LLM 原语、skill |
 | engine | `src/host/engine/` | conversation、turn、loop、goal、pipeline |
 | capabilities | `src/host/capabilities/` | self、memory、tools、outpost、mcp-*、… |
@@ -46,6 +46,8 @@ app-frame → features/*/ui → { ui-kit, portal-sdk } → shared
 | `features/*/ui` | ui-kit, portal-sdk, shared, host/core（工具/类型暂准） | platform, engine, capabilities, app-frame |
 | `ui-kit` | kernel（极少） | features, host, client |
 | `shared` | kernel, shared | ui-kit, client, React |
+
+**方向：** `shared` 不得依赖 `host/core`（今日有回指，P1 剪断）；`features/*/ui` → `host/core`「暂准」应收口到 shared 纯 Zod 出口（P2）。三分包与 portal 归属 → [`src-layering.md`](../../docs/product/src-layering.md)。
 
 **CI**：`just qa check` → oxlint `freeanima/layer-deps`。
 

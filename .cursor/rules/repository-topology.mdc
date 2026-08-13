@@ -15,6 +15,8 @@ alwaysApply: false
 | `freeanima` | 仓库根 | Habitat + CLI + capabilities + features + shells（根 `package.json` + `bun.lock`） |
 | `@freeanima/site` | `site/` | Astro/Starlight（workspace；共用根 lock） |
 
+**方向（未落地）：** workspace 三分包 **shared / habitat / frontend**（不发布）；portal 按 form 拆入 habitat（cli、mcp）与 frontend（application、browser）。见 [`docs/product/src-layering.md`](../../docs/product/src-layering.md)。落地前仍以本表「今日」为准。
+
 ## Import prefixes（RFC #1）
 
 | Shape | Pattern | Example |

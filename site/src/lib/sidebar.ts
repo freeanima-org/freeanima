@@ -10,6 +10,7 @@ export const starlightSidebar = [
         collapsed: true,
         items: [
           { label: "架构", link: "/docs/product/architecture/" },
+          { label: "src 分层", link: "/docs/product/src-layering/" },
           { label: "身份定位", link: "/docs/product/identity/" },
           { label: "实体模型", link: "/docs/product/entity-model/" },
           { label: "Anima URI", link: "/docs/product/anima-uri/" },
