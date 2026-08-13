@@ -1,12 +1,11 @@
 import { cn } from "@freeanima/ui-kit";
 import type { ReactNode } from "react";
 
-export type ContextTab = "files" | "preview" | "changes" | "terminals";
+export type ContextTab = "files" | "preview" | "terminals";
 
 const TABS: Array<{ id: ContextTab; label: string }> = [
   { id: "files", label: "Files" },
   { id: "preview", label: "Preview" },
-  { id: "changes", label: "Changes" },
   { id: "terminals", label: "Terminals" },
 ];
 

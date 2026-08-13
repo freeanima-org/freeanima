@@ -192,24 +192,25 @@ body,
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.15rem;
-  align-items: stretch;
+  align-items: center;
 }
 
 .coding-agent-row,
 .coding-root-row {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.1rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
   min-width: 0;
   text-align: left;
   border: 0;
   background: transparent;
-  padding: 0.35rem 0.4rem;
+  padding: 0.28rem 0.4rem;
   border-radius: 0.35rem;
   cursor: pointer;
   color: inherit;
   font: inherit;
+  min-height: 1.75rem;
 }
 
 .coding-agent-row:hover,
@@ -238,16 +239,35 @@ body,
   white-space: nowrap;
 }
 
+.coding-agent-item-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.05rem;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.coding-agents-list > li:hover .coding-agent-item-actions,
+.coding-agents-list > li:focus-within .coding-agent-item-actions,
+.coding-agents-list > li.active .coding-agent-item-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.coding-agent-action,
 .coding-agent-del {
   border: 0;
   background: transparent;
-  opacity: 0.45;
+  opacity: 0.55;
   cursor: pointer;
   padding: 0.25rem;
   border-radius: 0.25rem;
   color: inherit;
+  display: inline-flex;
+  align-items: center;
 }
 
+.coding-agent-action:hover,
 .coding-agent-del:hover {
   opacity: 1;
   background: color-mix(in oklab, currentColor 8%, transparent);
@@ -477,8 +497,7 @@ body,
 }
 
 .coding-context-preview > h3,
-.coding-notes h3,
-.coding-changes-review h3 {
+.coding-notes h3 {
   margin: 0;
   font-size: 0.75rem;
   font-weight: 600;
@@ -518,72 +537,6 @@ body,
 .coding-preview > h2 {
   margin-bottom: 0.4rem;
   flex: 0 0 auto;
-}
-
-.coding-changes-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 0.65rem;
-}
-
-.coding-changes-files {
-  list-style: none;
-  margin: 0 0 0.75rem;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.coding-changes-files > li {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.coding-changes-file {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  text-align: left;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  padding: 0.3rem 0.4rem;
-  border-radius: 0.35rem;
-  cursor: pointer;
-}
-
-.coding-changes-file.active,
-.coding-changes-file:hover {
-  background: color-mix(in oklab, currentColor 8%, transparent);
-}
-
-.coding-changes-file-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  padding-left: 0.4rem;
-}
-
-.coding-changes-mini {
-  display: inline-flex;
-  gap: 0.2rem;
-}
-
-.coding-unified-diff {
-  margin: 0.35rem 0 0;
-  padding: 0.5rem;
-  overflow: auto;
-  max-height: 24rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.72rem;
-  line-height: 1.4;
-  white-space: pre;
-  @apply rounded-md border bg-muted/30;
 }
 
 .coding-term-toolbar {
@@ -868,27 +821,6 @@ body,
   font-size: 0.8rem;
 }
 
-.coding-patch {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  margin-bottom: 0.75rem;
-}
-
-.coding-patch-path {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-}
-
-.coding-patch-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  font-size: 0.75rem;
-}
-
 .coding-patch-ta {
   width: 100%;
   min-height: 4rem;
@@ -896,11 +828,6 @@ body,
   font-size: 0.75rem;
   @apply rounded-md border bg-transparent px-2 py-1;
   resize: vertical;
-}
-
-.coding-patch-actions {
-  display: flex;
-  gap: 0.4rem;
 }
 
 .coding-session-meta {

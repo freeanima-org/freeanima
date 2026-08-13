@@ -4,11 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import {
-  acceptPendingPatch,
-  clearPendingPatches,
   clearTerminalLogs,
   executeCodingTool,
-  getPendingPatches,
   getTerminalLogs,
   setCodingWorkspace,
 } from "./tools-executor.ts";
@@ -23,7 +20,6 @@ import { parseProjectJson, stableKeyFromGitRemote } from "./project-json.ts";
 
 afterEach(() => {
   setCodingWorkspace(null);
-  clearPendingPatches();
   clearTerminalLogs();
 });
 
@@ -101,13 +97,7 @@ describe("executeCodingTool → workspace sandbox", () => {
       old_string: "hello world",
       new_string: "hello coding",
     });
-    const queued = JSON.parse(patchRaw) as { ok: boolean; pending: boolean; patch_id: string };
-    expect(queued.ok).toBe(true);
-    expect(queued.pending).toBe(true);
-    expect(getPendingPatches()).toHaveLength(1);
-
-    const appliedRaw = await acceptPendingPatch(queued.patch_id);
-    expect(JSON.parse(appliedRaw)).toEqual({
+    expect(JSON.parse(patchRaw)).toEqual({
       ok: true,
       path: "README.md",
       applied: true,

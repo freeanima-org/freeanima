@@ -4,12 +4,12 @@ import { AgentChatPane } from "./components/AgentChatPane.tsx";
 import { AgentSessionSidebar } from "./components/AgentSessionSidebar.tsx";
 import { CodePreview } from "./components/CodePreview.tsx";
 import { ContextPanel, type ContextTab } from "./components/ContextPanel.tsx";
-import { FilesChangedPanel } from "./components/FilesChangedPanel.tsx";
 import { NewAgentDialog } from "./components/NewAgentDialog.tsx";
 import { SearchPalette, type SearchAction } from "./components/SearchPalette.tsx";
 import { TerminalLogPanel } from "./components/TerminalLogPanel.tsx";
 import { WorkspaceFileTree } from "./components/WorkspaceFileTree.tsx";
 import {
+  archiveSession,
   createAgentSession,
   getActiveSession,
   loadAgentSessions,
@@ -30,12 +30,7 @@ import {
   startCodingRemoteToolsHost,
   type CodingRemoteToolsStatus,
 } from "./lib/remote-tools-host.ts";
-import {
-  setCodingWorkspace,
-  subscribePendingPatches,
-  subscribeTerminalLogs,
-  type PendingPatch,
-} from "./lib/tools-executor.ts";
+import { setCodingWorkspace, subscribeTerminalLogs } from "./lib/tools-executor.ts";
 import { createPortalShellWorkspaceBackend, WorkspaceSandbox } from "./lib/workspace-fs.ts";
 
 type AttachStatus = CodingRemoteToolsStatus;
@@ -80,7 +75,6 @@ export function CodingApp() {
   const [error, setError] = useState<string | null>(null);
   const [sessionMeta, setSessionMeta] = useState<SessionMeta | null>(null);
   const [sessionError, setSessionError] = useState<string | null>(null);
-  const [pending, setPending] = useState<PendingPatch[]>([]);
   const [termCount, setTermCount] = useState(0);
   const [contextTab, setContextTab] = useState<ContextTab>("files");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -131,7 +125,6 @@ export function CodingApp() {
     };
   }, []);
 
-  useEffect(() => subscribePendingPatches((list) => setPending([...list])), []);
   useEffect(
     () =>
       subscribeTerminalLogs((logs) => {
@@ -327,11 +320,6 @@ export function CodingApp() {
         run: () => setNewAgentOpen(true),
       },
       {
-        id: "tab-changes",
-        label: "打开 Changes",
-        run: () => setContextTab("changes"),
-      },
-      {
         id: "tab-terminals",
         label: "打开 Terminals",
         run: () => setContextTab("terminals"),
@@ -389,6 +377,7 @@ export function CodingApp() {
           activeSessionId={agents.activeSessionId}
           onSelect={(id) => setAgents((prev) => ({ ...prev, activeSessionId: id }))}
           onNew={() => setNewAgentOpen(true)}
+          onArchive={(id) => setAgents((prev) => archiveSession(prev, id))}
           onDelete={(id) => setAgents((prev) => removeSession(prev, id))}
           onOpenSearch={() => setSearchOpen(true)}
         />
@@ -416,7 +405,6 @@ export function CodingApp() {
           tab={contextTab}
           onTabChange={setContextTab}
           badge={{
-            changes: pending.length,
             terminals: termCount,
           }}
         >
@@ -492,9 +480,6 @@ export function CodingApp() {
               <h3>{selectedPath ? selectedPath : "预览"}</h3>
               <CodePreview path={selectedPath} text={previewText} loading={previewLoading} />
             </div>
-          ) : null}
-          {contextTab === "changes" ? (
-            <FilesChangedPanel patches={pending} onError={setError} />
           ) : null}
           {contextTab === "terminals" ? <TerminalLogPanel /> : null}
         </ContextPanel>
