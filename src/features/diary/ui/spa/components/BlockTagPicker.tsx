@@ -31,7 +31,7 @@ export function BlockTagPicker({
         alwaysShowTrigger={alwaysShowTrigger}
         hideWhenEmpty
         triggerClassName={cn(
-          "data-[state=open]:opacity-100",
+          "aria-expanded:opacity-100",
           touchPrimary ? "" : "opacity-0 group-hover:opacity-100",
         )}
       />

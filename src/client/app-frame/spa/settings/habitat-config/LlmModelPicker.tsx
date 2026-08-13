@@ -156,7 +156,7 @@ export function LlmModelPicker({
             {!loading && !error && models.length === 0 ? (
               <p className="text-muted-foreground text-xs">无匹配模型；可继续手填任意 id。</p>
             ) : null}
-            <ul className="max-h-60 overflow-y-auto">
+            <ul className="h-60 overflow-y-auto">
               {models.map((entry) => (
                 <li key={entry.model}>
                   <button
