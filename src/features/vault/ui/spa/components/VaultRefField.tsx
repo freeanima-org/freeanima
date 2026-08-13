@@ -175,7 +175,7 @@ function VaultRefPickerDialog({
 
       <Input placeholder="搜索条目标题…" value={query} onChange={(e) => setQuery(e.target.value)} />
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="h-[min(50vh,20rem)] overflow-y-auto">
         {loading ? (
           <div className="flex justify-center py-8">
             <Spinner />

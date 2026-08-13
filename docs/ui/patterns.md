@@ -130,11 +130,27 @@ title: 交互模式
 | 壳     | N/A                                                                      |
 | 禁止   | `getShellKind() === "tauri"` ⇒ Sheet                                     |
 
-**实现：** 经复合 `ModalSheetPresent` 使用 shadcn `Dialog` / `Sheet`；选择器（`MoveToListPicker`、`MoveToProjectPicker`）与实体 overlay（Anima URI / `EntityOverlayHost`）用该壳。**禁止**手写 `createPortal` + fixed 浮层。
+**实现：** 经复合 `ModalSheetPresent` 使用 shadcn `Dialog` / `Sheet`；选择器（`MoveToListPicker`、`MoveToProjectPicker`、`TagPicker` 的 compact 路径）与实体 overlay（Anima URI / `EntityOverlayHost`）用该壳。**禁止**手写 `createPortal` + fixed 浮层。
 
 **任务详情（compact）：** 浏览/展示用 peek `Sheet`；激活标题或备注（focus 前 pointer down，再在沉浸树内 focus 一次）进入**沉浸全页编辑**（`DetailEditPageShell` + `setCompactImmersive`），带返回控件且**无底栏**——避免 peek→沉浸重挂载导致双软键盘。返回 / 系统返回关闭详情并回到**列表**（不恢复 peek）。由布局驱动——非壳类型。
 
 **合规：** 参考。
+
+---
+
+## 弹出层边界（Menu / Popover / ModalSheetPresent / ActionSheet / Drawer）
+
+**意图：** 同一产品内弹出层语义稳定，避免复杂内容塞进 Menu 导致空白、或用壳类型选 Sheet。
+
+| 组件                | 适用                                                                                                                         | 不适用                                                  |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `DropdownMenu`      | **仅** `MenuItem` 枚举（如日记「添加块」）                                                                                   | Input、自定义列表、复杂表单                             |
+| `Popover`           | 锚定触发的复杂内容（提醒/截止/重复；`TagPicker` expanded）                                                                   | 把复杂节点塞回 Menu；touch 短操作列表（用 ActionSheet） |
+| `ModalSheetPresent` | 布局驱动模态：expanded Dialog / compact 底部 Sheet（MoveTo*、`TagPicker` compact、实体 overlay）；可搜列表区固定高度内部滚动 | 侧栏导航；用 `getShellKind` / `isMobile` 分支           |
+| `ActionSheet`       | touch 溢出操作（与 `ContextMenu` 共享 `ActionSheetItem[]`）                                                                  | 可搜 / 多选 / 新建 picker                               |
+| 导航 `Drawer`       | 布局维侧栏导航                                                                                                               | 与底部 Sheet 混称                                       |
+
+**合规：** 参考（与 [frontend-ui.mdc](../../.cursor/rules/frontend-ui.mdc) 选型表一致）。
 
 ---
 
@@ -256,6 +272,7 @@ title: 交互模式
 - [ ] 选用模式（或扩展目录），而非发明并行手势
 - [ ] 已文档化维度适配（至少布局 + 交互）
 - [ ] 菜单共享一套条目列表；无 fixed 定位 DIY 菜单
+- [ ] 含 Input / 复杂表单不用 DropdownMenu；可搜 picker 在 compact 用 ModalSheetPresent
 - [ ] 不可逆操作使用 ConfirmDestructive
 - [ ] Touch 路径不依赖仅 hover 可及性
 - [ ] 壳类型不锁定布局或菜单类型

@@ -75,15 +75,17 @@ function TreePickerRows<T extends TaskListRowLike>({
 
   if (selectable.length === 0) {
     return (
-      <p className="text-muted-foreground px-4 py-6 text-sm">
-        {searching ? "没有匹配的清单" : "没有其它清单可移动"}
-      </p>
+      <div className="h-[min(50vh,20rem)] overflow-y-auto">
+        <p className="text-muted-foreground px-4 py-6 text-sm">
+          {searching ? "没有匹配的清单" : "没有其它清单可移动"}
+        </p>
+      </div>
     );
   }
 
   if (searching) {
     return (
-      <ul className="max-h-[50vh] overflow-y-auto p-2">
+      <ul className="h-[min(50vh,20rem)] overflow-y-auto p-2">
         {selectable.map(({ list }) => (
           <li key={list.id}>
             <button
@@ -106,7 +108,7 @@ function TreePickerRows<T extends TaskListRowLike>({
   }
 
   return (
-    <ul className="max-h-[50vh] overflow-y-auto p-2">
+    <ul className="h-[min(50vh,20rem)] overflow-y-auto p-2">
       {visible.map((node) => {
         const { list, depth } = node;
         const isFolder = list.is_folder;

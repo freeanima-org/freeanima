@@ -51,7 +51,7 @@ export function MoveToProjectPicker({
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
-      <ul className="max-h-[50vh] overflow-y-auto p-2">
+      <ul className="h-[min(50vh,20rem)] overflow-y-auto p-2">
         {filtered.map((project) => (
           <li key={project.id}>
             <button

@@ -263,7 +263,7 @@ export function ChatComposeForm({
   };
 
   const menuClass = [
-    "mb-1 max-h-48 overflow-y-auto rounded-lg border border bg-background shadow-lg",
+    "mb-1 h-48 overflow-y-auto rounded-lg border border bg-background shadow-lg",
     menuInFlow ? "relative z-10 shrink-0" : "absolute bottom-full left-0 right-0 z-10",
   ].join(" ");
 

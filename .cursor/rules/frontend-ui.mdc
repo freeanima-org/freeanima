@@ -59,12 +59,24 @@ touch ≥44px、无 hover-only；Pad+外接键盘时交互维仍为 touch。入�
 | 按钮 / 表单 | `<Button>` / `<Input>` / `<Select>`；默认不 `focusOnMount` |
 | Dialog/Sheet | React Aria 焦点；`isOpen` / `Dialog` |
 | 确认 | `<ConfirmDialog>` / `showConfirm`；确认钮禁止 `autoFocus` |
-| 菜单 | pointer→`ContextMenu`；touch→`ActionSheet`；共享 `ActionSheetItem[]` |
+| 溢出菜单 | pointer→`ContextMenu`；touch→`ActionSheet`；共享 `ActionSheetItem[]` |
 | 列表行 | DataListRow；优先 `ListRow` / `TaskItemRowView` |
 
-从 `@freeanima/ui-kit/composite`：`ConfirmDialog`、`showConfirm`、`ActionSheet`、`ContextMenu`、`EmptyState`、`StatusAlert`、`PullToRefresh`、`ListRow`、MoveTo*Picker。
+### 弹出层选型（Menu / Popover / ModalSheetPresent）
 
-**禁止**：`window.confirm`；自研 `fixed` 快捷菜单；自研 `createPortal`+遮罩当 Modal；用壳/视口宽选 ContextMenu vs ActionSheet。
+| 场景 | 选用 | 禁止 |
+| ---- | ---- | ---- |
+| **仅** `MenuItem` 枚举（无 Input / 自定义布局） | `DropdownMenu` | — |
+| 含 Input、自定义列表、复杂表单（锚定桌面） | `Popover` + `PopoverDialog` | **禁止**塞进 `DropdownMenu`（Menu 只可靠渲染 MenuItem，复杂节点会被丢弃 → 空白） |
+| 可搜选择器 / 复杂 picker | **compact → `ModalSheetPresent`（底部 Sheet）**；expanded 可用锚定 `Popover`，或一律 `ModalSheetPresent`（居中 Dialog）；**列表区用固定 `h-*` + 内部滚动**（禁止仅 `max-h-*`，避免结果数量变化时外壳抖动） | 用壳/`isMobile` 分支；用 `ActionSheet` 承载搜索/多选/新建 |
+| touch 溢出操作（短操作列表） | `ActionSheet` | 与可搜 picker 混用 |
+| 侧栏导航 | 布局维 `Drawer` | 与底部 Sheet / ModalSheetPresent 混为一谈 |
+
+示例：`TagPicker`（compact Sheet / expanded Popover）；`MoveToListPicker` / `MoveToProjectPicker`（一律 ModalSheetPresent）；任务详情提醒/截止/重复面板（Popover，勿用 Menu）。
+
+从 `@freeanima/ui-kit/composite`：`ConfirmDialog`、`showConfirm`、`ActionSheet`、`ContextMenu`、`EmptyState`、`StatusAlert`、`PullToRefresh`、`ListRow`、`ModalSheetPresent`、MoveTo*Picker。
+
+**禁止**：`window.confirm`；自研 `fixed` 快捷菜单；自研 `createPortal`+遮罩当 Modal；用壳/视口宽选 ContextMenu vs ActionSheet；在 `DropdownMenu` 内放 Input / 非 MenuItem 复杂内容。
 
 ## 其它
 

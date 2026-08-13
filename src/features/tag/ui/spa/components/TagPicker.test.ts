@@ -4,6 +4,7 @@ import { DIARY_ENTRY_COMPONENT, TASK_ITEM_COMPONENT } from "@freeanima/host/core
 
 import { moveNavIndex, navTargetCount } from "./TagPicker.tsx";
 
+/** 壳层（Popover / ModalSheetPresent）不在此测；仅覆盖导航与新建判定纯逻辑。 */
 /** 纯逻辑：是否展示「添加「q」」（无精确标题命中） */
 function shouldShowCreate(
   query: string,
