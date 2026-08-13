@@ -12,8 +12,8 @@ export type {
   AutobiographicalMemoryRow,
   LimbicMemoryRow,
   SemanticMemoryRow,
-} from "@freeanima/host/core/db/schema/rows";
-export type { EntityRow } from "@freeanima/host/core/db/pg/entity/types";
+} from "@freeanima/shared/pg-shapes/rows/memory-rows.ts";
+export type { EntityRow } from "@freeanima/shared/pg-shapes/rows/entity-row.ts";
 
 export type {
   DependencyStatus,

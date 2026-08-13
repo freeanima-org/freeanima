@@ -48,6 +48,13 @@
   },
   "packageManager": "bun@1.3.14",
   "private": true,
+  "exports": {
+    "./src/shared/pg-shapes": "./src/shared/pg-shapes/index.ts",
+    "./src/shared/pg-shapes/*": "./src/shared/pg-shapes/*",
+    "./src/shared/rpc-contract/*": "./src/shared/rpc-contract/*",
+    "./src/shared/util": "./src/shared/util/index.ts",
+    "./src/shared/util/*": "./src/shared/util/*"
+  },
   "workspaces": [
     "site"
   ],

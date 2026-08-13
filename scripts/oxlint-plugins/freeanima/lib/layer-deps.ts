@@ -50,7 +50,7 @@ export function checkLayerDeps(rel: string, spec: string): string | null {
   const to = targetLayer(spec);
 
   if ((from === "feature-ui" || from === "client") && isFrontendDbImport(spec)) {
-    return "feature-ui/client 不得 import host/core/db 或 drizzle-orm；请用 @freeanima/shared/{db-shapes,entity-shapes}";
+    return "feature-ui/client 不得 import host/core/db 或 drizzle-orm；请用 @freeanima/shared/pg-shapes";
   }
 
   if (!to) return null;

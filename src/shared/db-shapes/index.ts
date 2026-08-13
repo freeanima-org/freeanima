@@ -1,4 +1,5 @@
-export { limbicKindSchema, type LimbicKind } from "./limbic.ts";
+/** @deprecated 请改用 `@freeanima/shared/pg-shapes` */
+export { limbicKindSchema, type LimbicKind } from "@freeanima/shared/pg-shapes/entity/limbic.ts";
 export {
   narrativeSignificanceSchema,
   autobiographicalSignificanceSchema,
@@ -6,18 +7,21 @@ export {
   autobiographicalStatusSchema,
   type NarrativeSignificance,
   type NarrativeStatus,
-} from "./narrative.ts";
+} from "@freeanima/shared/pg-shapes/entity/narrative.ts";
 export {
   semanticMemoryTypeSchema,
   semanticMemoryStatusSchema,
   normalizeSemanticMemoryType,
   type SemanticMemoryType,
   type SemanticMemoryStatus,
-} from "./semantic-memory.ts";
-export { clarifyItemSchema, type ClarifyItem } from "./clarify-item.ts";
+} from "@freeanima/shared/pg-shapes/entity/semantic-memory.ts";
+export {
+  clarifyItemSchema,
+  type ClarifyItem,
+} from "@freeanima/shared/pg-shapes/jsonb/clarify-item.ts";
 export type {
   SemanticMemoryRow,
   SemanticFtsHit,
   LimbicMemoryRow,
   AutobiographicalMemoryRow,
-} from "./rows.ts";
+} from "@freeanima/shared/pg-shapes/rows/memory-rows.ts";

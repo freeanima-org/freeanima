@@ -1,11 +1,13 @@
 import { z } from "zod";
 
-import { VAULT_ITEM_COMPONENT } from "@freeanima/shared/entity-shapes/component-ids.ts";
+import { VAULT_ITEM_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export {
+  vaultItemTypeSchema,
+  type VaultItemType,
+} from "@freeanima/shared/pg-shapes/entity/enums.ts";
+import { vaultItemTypeSchema } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 
 export { VAULT_ITEM_COMPONENT };
-
-export const vaultItemTypeSchema = z.enum(["login", "secure_note", "card", "identity", "custom"]);
-export type VaultItemType = z.infer<typeof vaultItemTypeSchema>;
 
 export const vaultUriMatchSchema = z.enum([
   "domain",

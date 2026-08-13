@@ -1,52 +1,26 @@
 import { z } from "zod";
 
 import { notificationRecipientKindSchema } from "./notification.ts";
+import {
+  taskItemPrioritySchema,
+  taskItemStatusSchema,
+} from "@freeanima/shared/pg-shapes/entity/enums.ts";
+import {
+  taskRecurrenceSchema,
+  taskRecurrenceInputSchema,
+  type TaskRecurrence,
+  type TaskRecurrenceInput,
+} from "@freeanima/shared/pg-shapes/entity/task-recurrence.ts";
 
 const taskSubjectKindSchema = notificationRecipientKindSchema;
 
-const taskPrioritySchema = z.enum(["high", "medium", "low", "none"]);
-const taskStatusSchema = z.enum(["pending", "completed"]);
+const taskPrioritySchema = taskItemPrioritySchema;
+const taskStatusSchema = taskItemStatusSchema;
 const taskRelativeDaySchema = z.enum(["today", "tomorrow", "yesterday"]);
 
-const taskRecurrenceFreqSchema = z.enum(["daily", "weekly", "monthly", "yearly"]);
-const taskRecurrenceAnchorSchema = z.enum(["due", "completion"]);
-const taskRecurrenceSkipSchema = z.enum(["none", "weekend", "holiday", "weekend_and_holiday"]);
-const taskRecurrenceCalendarSchema = z.enum(["gregorian", "lunar"]);
-
-export const taskRecurrenceSchema = z.object({
-  freq: taskRecurrenceFreqSchema,
-  interval: z.number().int().positive(),
-  anchor: taskRecurrenceAnchorSchema,
-  weekdays: z.array(z.number().int().min(0).max(6)).min(1).optional(),
-  until: z.string().nullable().optional(),
-  count: z.number().int().positive().nullable().optional(),
-  schedule_at: z.string().min(1),
-  skip: taskRecurrenceSkipSchema.optional(),
-  workdays_only: z.boolean().optional(),
-  calendar: taskRecurrenceCalendarSchema.optional(),
-  lunar_month: z.number().int().min(-12).max(12).optional(),
-  lunar_day: z.number().int().min(1).max(30).optional(),
-});
-
-export type TaskRecurrencePayload = z.infer<typeof taskRecurrenceSchema>;
-
-/** 创建/patch 时可省略 schedule_at（服务端用 due_at 补） */
-export const taskRecurrenceInputSchema = z.object({
-  freq: taskRecurrenceFreqSchema,
-  interval: z.number().int().positive().optional(),
-  anchor: taskRecurrenceAnchorSchema.optional(),
-  weekdays: z.array(z.number().int().min(0).max(6)).min(1).optional(),
-  until: z.string().nullable().optional(),
-  count: z.number().int().positive().nullable().optional(),
-  schedule_at: z.string().min(1).optional(),
-  skip: taskRecurrenceSkipSchema.optional(),
-  workdays_only: z.boolean().optional(),
-  calendar: taskRecurrenceCalendarSchema.optional(),
-  lunar_month: z.number().int().min(-12).max(12).optional(),
-  lunar_day: z.number().int().min(1).max(30).optional(),
-});
-
-export type TaskRecurrenceInputPayload = z.infer<typeof taskRecurrenceInputSchema>;
+export { taskRecurrenceSchema, taskRecurrenceInputSchema };
+export type TaskRecurrencePayload = TaskRecurrence;
+export type TaskRecurrenceInputPayload = TaskRecurrenceInput;
 
 export const taskItemSearchFiltersSchema = z
   .object({

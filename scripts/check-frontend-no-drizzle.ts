@@ -19,6 +19,7 @@ const PROBE_IMPORTS = [
   "@freeanima/client/portal-sdk/pomodoro-active-store.ts",
   "@freeanima/shared/entity-shapes",
   "@freeanima/shared/db-shapes",
+  "@freeanima/shared/pg-shapes",
 ];
 
 function collectModuleIdsPlugin(ids: Set<string>): Plugin {
