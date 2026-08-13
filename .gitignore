@@ -12,6 +12,7 @@ config.yaml
 **/*.d.ts
 !types/**/*.d.ts
 !**/global.d.ts
+!**/env.d.ts
 !packages/shell-ui/types/**/*.d.ts
 
 # Cryptographic keys
