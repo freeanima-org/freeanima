@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
 
 /**
  * ensureWorldSubjects 路径：配置优先 / 发现 / next-id 创建。
@@ -38,7 +38,11 @@ const updateEntity = mock(
   }),
 );
 
+const entityCrudOriginal = await import("./repos/entity-crud-repo.ts");
+const worldAssertOriginal = await import("./world-assert.ts");
+
 mock.module("./repos/entity-crud-repo.ts", () => ({
+  ...entityCrudOriginal,
   getEntity,
   listEntities,
   createEntity,
@@ -47,8 +51,14 @@ mock.module("./repos/entity-crud-repo.ts", () => ({
 }));
 
 mock.module("./world-assert.ts", () => ({
+  ...worldAssertOriginal,
   assertPrivateWorldOwnedBySubject: mock(async () => undefined),
 }));
+
+afterAll(() => {
+  mock.module("./repos/entity-crud-repo.ts", () => entityCrudOriginal);
+  mock.module("./world-assert.ts", () => worldAssertOriginal);
+});
 
 const { ensureWorldSubjects } = await import("./subject-world.ts");
 

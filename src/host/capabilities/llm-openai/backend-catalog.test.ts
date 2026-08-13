@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, afterEach, describe, expect, it, mock } from "bun:test";
 import { resetCacheMemoryForTests } from "@freeanima/host/core/redis";
 import type { ModelInfo } from "@freeanima/host/core/provider";
 
@@ -15,7 +15,11 @@ const defaultModelInfoImpl = (model: string): ModelInfo => ({
   supportedParams: ["temperature", "maxOutputTokens", "tools", "streaming"],
 });
 
+const catalogOriginal = await import("./catalog.ts");
+const enrichOriginal = await import("./models-dev/enrich.ts");
+
 mock.module("./catalog.ts", () => ({
+  ...catalogOriginal,
   defaultModelInfo: defaultModelInfoImpl,
   defaultModelInfoEnriched: async (model: string): Promise<ModelInfo> =>
     defaultModelInfoImpl(model),
@@ -25,9 +29,15 @@ mock.module("./catalog.ts", () => ({
 }));
 
 mock.module("./models-dev/enrich.ts", () => ({
+  ...enrichOriginal,
   enrichCatalogFromModelsDev: async (catalog: ModelInfo[]) => catalog,
   enrichModelInfoFromModelsDev: async (info: ModelInfo) => info,
 }));
+
+afterAll(() => {
+  mock.module("./catalog.ts", () => catalogOriginal);
+  mock.module("./models-dev/enrich.ts", () => enrichOriginal);
+});
 
 const { OpenAiCompatibleBackend } = await import("./backend.ts");
 

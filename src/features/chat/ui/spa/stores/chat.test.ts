@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 
 type StreamCallbacks = {
   onData?: (ev: { event: string; data: Record<string, unknown> }) => void;
@@ -10,7 +10,11 @@ type StreamCallbacks = {
 /** idle：仅挂订阅；error_then_done：模拟 bridge 先 error 再 done */
 let streamScenario: "idle" | "error_then_done" = "idle";
 
+const apiOriginal = await import("@freeanima/features/chat/ui/spa/lib/api.ts");
+const habitatRpcOriginal = await import("@freeanima/shared/habitat-rpc");
+
 mock.module("@freeanima/features/chat/ui/spa/lib/api.ts", () => ({
+  ...apiOriginal,
   subscribeMessageStream: (_input: unknown, callbacks: StreamCallbacks) => {
     queueMicrotask(() => {
       callbacks.onStreamId?.("stream-test");
@@ -35,10 +39,16 @@ mock.module("@freeanima/features/chat/ui/spa/lib/api.ts", () => ({
 }));
 
 mock.module("@freeanima/shared/habitat-rpc", () => ({
+  ...habitatRpcOriginal,
   subscribeHabitatRpcConnectionState: () => () => {},
 }));
 
-import { useChatStore } from "./chat.ts";
+afterAll(() => {
+  mock.module("@freeanima/features/chat/ui/spa/lib/api.ts", () => apiOriginal);
+  mock.module("@freeanima/shared/habitat-rpc", () => habitatRpcOriginal);
+});
+
+const { useChatStore } = await import("./chat.ts");
 
 const sessionStore = new Map<string, string>();
 

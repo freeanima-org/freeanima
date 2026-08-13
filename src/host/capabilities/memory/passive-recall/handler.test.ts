@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, afterEach, describe, expect, it, mock } from "bun:test";
 
 import type { StoredMessage } from "@freeanima/host/core/db/domain";
 import type { BeforeLlmCallContext } from "@freeanima/host/core/hooks/loop";
@@ -30,7 +30,10 @@ const semanticPassiveRecallSearchDetailed = mock(async () => ({
 const isCronSession = mock(async () => false);
 const listResidentSemanticMemory = mock(async () => []);
 
+const searchOriginal = await import("./search.ts");
+
 mock.module("./search.ts", () => ({
+  ...searchOriginal,
   semanticPassiveRecallSearchDetailed,
 }));
 
@@ -41,6 +44,10 @@ mock.module("@freeanima/host/core/db/pg/conversation", () => ({
 mock.module("@freeanima/host/core/db/pg/semantic-memory", () => ({
   listResidentSemanticMemory,
 }));
+
+afterAll(() => {
+  mock.module("./search.ts", () => searchOriginal);
+});
 
 const { createPassiveMemoryRecallHandler } = await import("./handler.ts");
 

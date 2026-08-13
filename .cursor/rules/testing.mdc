@@ -58,6 +58,18 @@ bun:test **无原生 tags**。用文件约定 + 路径清单：
 
 Unit tests **must not** `import` `tests/helpers/log-isolation.ts` or write `config.yaml`; inject `Config.fromSnapshot()` (or bind package-specific config) and use `createNullSink` / `createMemorySink` for logging.
 
+### `mock.module` 隔离（硬约束）
+
+Bun `mock.module` **进程级残留**。部分 stub（只导出几个符号）会让同进程后续用例报 `Export named … not found`（speech / email 已踩坑）。
+
+| 允许 | 禁止 |
+| ---- | ---- |
+| 同包优先 `setXForTests` / DI，不用 `mock.module` | 部分导出且无 `afterAll` / `mock.restore` 还原 |
+| `const orig = await import("…"); mock.module("…", () => ({ ...orig, override })); afterAll(() => mock.module("…", () => orig))` | 相对路径 stub 同包真实模块却只列用到的导出 |
+| absolute `@freeanima/host/core/db/pg/…` 按 Tier 2；能 spread original 则 spread | 假定「文件跑完就自动清模块表」 |
+
+相对路径 stub 同包模块 = **最高风险**（受害文件单独跑仍绿）。
+
 ## Temp directory cleanup
 
 - Prefer `@freeanima/host/core/util/temp-dir` helpers: `createTempDir(prefix)` + `removeTempDir(path)`（或 `removeManagedAnimaTmpPath`，用于 `anima-cwd-*` / `anima-exec-*`）。**勿**从 `@freeanima/host/core/util` 桶导入（桶不含 Node 专用 API，避免浏览器拉取 `node:path`）。

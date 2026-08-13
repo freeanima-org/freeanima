@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
 import {
   registerSelfLayerRefreshEngine,
@@ -70,6 +70,9 @@ const loadSelfBlocksMock = mock(async () => [
 ]);
 const loadSelfLayerPromptMock = mock(async () => "self prompt");
 
+const loadOriginal = await import("../load.ts");
+const cacheOriginal = await import("../cache.ts");
+
 mock.module("@freeanima/host/core/db/pg/semantic-memory", () => ({
   listResidentSemanticMemory: listResidentSemanticMemoryMock,
 }));
@@ -77,12 +80,19 @@ mock.module("@freeanima/host/core/db/pg/self-layer", () => ({
   purgeOrphanSelfBlocks: purgeOrphanSelfBlocksMock,
 }));
 mock.module("../load.ts", () => ({
+  ...loadOriginal,
   loadSelfBlocks: loadSelfBlocksMock,
   loadSelfLayerPrompt: loadSelfLayerPromptMock,
 }));
 mock.module("../cache.ts", () => ({
+  ...cacheOriginal,
   invalidateSelfLayerPromptCache: mock(() => undefined),
 }));
+
+afterAll(() => {
+  mock.module("../load.ts", () => loadOriginal);
+  mock.module("../cache.ts", () => cacheOriginal);
+});
 
 function makePort(opts?: { unreadProposal?: boolean }): NotificationPort & {
   created: NotificationRow[];

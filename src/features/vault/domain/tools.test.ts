@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
 import { ToolSetRegistry } from "@freeanima/host/core/tool";
 
 const ensureAgentVaultConfigMock = mock(async () => ({}));
@@ -60,13 +60,19 @@ const getVaultItemMock = mock(async () => ({
 
 const resolveVaultToolWorldMock = mock(async () => 7);
 
+const itemStoreOriginal = await import("./item-store.ts");
+const toolWorldOriginal = await import("./tool-world-resolve.ts");
+const vaultConnectorOriginal = await import("@freeanima/host/capabilities/connectors/vault");
+
 mock.module("@freeanima/host/capabilities/connectors/vault", () => ({
+  ...vaultConnectorOriginal,
   ensureAgentVaultConfig: ensureAgentVaultConfigMock,
   sealAgentVaultItem: sealAgentVaultItemMock,
   openAgentVaultSecrets: openAgentVaultSecretsMock,
 }));
 
 mock.module("./item-store.ts", () => ({
+  ...itemStoreOriginal,
   createVaultItem: createVaultItemMock,
   updateVaultItem: updateVaultItemMock,
   deleteVaultItem: deleteVaultItemMock,
@@ -98,6 +104,7 @@ mock.module("./item-store.ts", () => ({
 }));
 
 mock.module("./tool-world-resolve.ts", () => ({
+  ...toolWorldOriginal,
   resolveVaultToolWorld: resolveVaultToolWorldMock,
   metaPayload: (row: Record<string, unknown>) => ({
     id: row.id,
@@ -118,6 +125,12 @@ mock.module("./tool-world-resolve.ts", () => ({
   },
   WORLD_ID_TOOL_PROPERTY: { type: "integer", description: "world" },
 }));
+
+afterAll(() => {
+  mock.module("./item-store.ts", () => itemStoreOriginal);
+  mock.module("./tool-world-resolve.ts", () => toolWorldOriginal);
+  mock.module("@freeanima/host/capabilities/connectors/vault", () => vaultConnectorOriginal);
+});
 
 const { registerVaultTools } = await import("./tools.ts");
 

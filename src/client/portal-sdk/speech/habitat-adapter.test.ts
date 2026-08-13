@@ -21,6 +21,8 @@ const originalAudio = globalThis.Audio;
 const originalCreateObjectURL = URL.createObjectURL.bind(URL);
 const originalRevokeObjectURL = URL.revokeObjectURL.bind(URL);
 const originalMediaSource = globalThis.MediaSource;
+const originalHtmlMediaElement = globalThis.HTMLMediaElement;
+const originalMediaError = globalThis.MediaError;
 const prevWindow = globalThis.window;
 
 let latestMockAudio: ReturnType<typeof createMockAudio> | null = null;
@@ -138,6 +140,18 @@ afterEach(() => {
     globalThis.MediaSource = undefined;
   } else {
     globalThis.MediaSource = originalMediaSource;
+  }
+  if (originalHtmlMediaElement === undefined) {
+    // @ts-expect-error test cleanup
+    globalThis.HTMLMediaElement = undefined;
+  } else {
+    globalThis.HTMLMediaElement = originalHtmlMediaElement;
+  }
+  if (originalMediaError === undefined) {
+    // @ts-expect-error test cleanup
+    globalThis.MediaError = undefined;
+  } else {
+    globalThis.MediaError = originalMediaError;
   }
   if (prevWindow === undefined) {
     // @ts-expect-error test cleanup

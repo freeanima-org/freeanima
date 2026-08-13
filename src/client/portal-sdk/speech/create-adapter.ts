@@ -3,11 +3,25 @@ import { consumeLastHubSpeechError, createHabitatSpeechAdapter } from "./habitat
 import type { SpeechPlaybackAdapter } from "./adapter-types.ts";
 import type { SpeechPlaybackConfig } from "./types.ts";
 
-export function createSpeechAdapter(config: SpeechPlaybackConfig): SpeechPlaybackAdapter {
+function createSpeechAdapterDefault(config: SpeechPlaybackConfig): SpeechPlaybackAdapter {
   if (config.provider === "web-speech") {
     return createBrowserSpeechAdapter(undefined, config);
   }
   return createHabitatSpeechAdapter(config);
+}
+
+let createSpeechAdapterImpl: (config: SpeechPlaybackConfig) => SpeechPlaybackAdapter =
+  createSpeechAdapterDefault;
+
+export function createSpeechAdapter(config: SpeechPlaybackConfig): SpeechPlaybackAdapter {
+  return createSpeechAdapterImpl(config);
+}
+
+/** 单测注入假 adapter；传 null 恢复默认。勿用 mock.module 替换本模块。 */
+export function setCreateSpeechAdapterForTests(
+  fn: ((config: SpeechPlaybackConfig) => SpeechPlaybackAdapter) | null,
+): void {
+  createSpeechAdapterImpl = fn ?? createSpeechAdapterDefault;
 }
 
 let previewAdapter: ReturnType<typeof createSpeechAdapter> | null = null;

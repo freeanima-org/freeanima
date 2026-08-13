@@ -1,29 +1,7 @@
-import { afterEach, describe, expect, it, mock } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
-let spoken: string[] = [];
-let stopped = 0;
-let holdEnd = false;
-
-mock.module("./create-adapter.ts", () => ({
-  createSpeechAdapter: () => ({
-    isSupported: () => true,
-    stop() {
-      stopped += 1;
-    },
-    speak(text: string, _locale: string, onEnd: () => void) {
-      spoken.push(text);
-      if (holdEnd) return;
-      onEnd();
-    },
-  }),
-}));
-
-mock.module("./speech-media-session.ts", () => ({
-  syncSpeechMediaSession: () => {},
-  clearSpeechMediaSession: () => {},
-}));
-
-const {
+import { setCreateSpeechAdapterForTests } from "./create-adapter.ts";
+import {
   getSpeechPlaybackSnapshot,
   isSpeechSpeaking,
   resetSpeechPlaybackServiceForTests,
@@ -32,14 +10,37 @@ const {
   stopSpeechPlayback,
   subscribeSpeechPlayback,
   toggleSpeechPlayback,
-} = await import("./speech-playback-service.ts");
+} from "./speech-playback-service.ts";
+
+let spoken: string[] = [];
+let stopped = 0;
+let holdEnd = false;
 
 describe("speech-playback-service", () => {
-  afterEach(() => {
+  beforeEach(() => {
     spoken = [];
     stopped = 0;
     holdEnd = false;
+    setCreateSpeechAdapterForTests(() => ({
+      isSupported: () => true,
+      stop() {
+        stopped += 1;
+      },
+      speak(text: string, _locale: string, onEnd: () => void) {
+        spoken.push(text);
+        if (holdEnd) return;
+        onEnd();
+      },
+    }));
     resetSpeechPlaybackServiceForTests();
+  });
+
+  afterEach(() => {
+    resetSpeechPlaybackServiceForTests();
+    setCreateSpeechAdapterForTests(null);
+    spoken = [];
+    stopped = 0;
+    holdEnd = false;
   });
 
   it("speechMessageKey 按会话与下标稳定", () => {

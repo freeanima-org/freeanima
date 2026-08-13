@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from "bun:test";
+import { afterAll, describe, expect, it, mock } from "bun:test";
 
 const embeddingsCreate = mock(async ({ input }: { input: string | string[] }) => {
   const inputs = Array.isArray(input) ? input : [input];
@@ -10,13 +10,20 @@ const embeddingsCreate = mock(async ({ input }: { input: string | string[] }) =>
   };
 });
 
+const clientOriginal = await import("./client.ts");
+
 mock.module("./client.ts", () => ({
+  ...clientOriginal,
   createOpenAiClientFromParsed: () => ({
     embeddings: { create: embeddingsCreate },
   }),
 }));
 
-import { createOpenAiEmbeddingBatchClient } from "./embedding.ts";
+afterAll(() => {
+  mock.module("./client.ts", () => clientOriginal);
+});
+
+const { createOpenAiEmbeddingBatchClient } = await import("./embedding.ts");
 
 const cfg = {
   apiKey: "test",

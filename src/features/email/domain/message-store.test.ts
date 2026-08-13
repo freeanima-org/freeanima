@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, mock, test } from "bun:test";
+import { afterAll, afterEach, describe, expect, mock, test } from "bun:test";
 
 type Stored = {
   id: number;
@@ -100,18 +100,25 @@ mock.module("@freeanima/host/core/db/pg/entity", () => ({
   deleteEntity,
 }));
 
+const emailWorldOriginal = await import("./email-world.ts");
+const threadStoreOriginal = await import("./thread-store.ts");
+const objectStorageOriginal = await import("@freeanima/features/object-storage/domain");
+
 mock.module("./email-world.ts", () => ({
+  ...emailWorldOriginal,
   worldIdForAccount: async () => 1,
   worldIdForThread: async () => 1,
 }));
 
 mock.module("./thread-store.ts", () => ({
+  ...threadStoreOriginal,
   refreshThreadAggregates: async () => undefined,
 }));
 
 // 阻断 object-storage 真依赖（attachment-store 顶层 import）；勿 mock.module attachment-store
 // （会污染并行的 attachment-store.test 命名导出）。
 mock.module("@freeanima/features/object-storage/domain", () => ({
+  ...objectStorageOriginal,
   createObjectFile: async () => {
     throw new Error("createObjectFile not used in message-store unit tests");
   },
@@ -121,6 +128,11 @@ mock.module("@freeanima/features/object-storage/domain", () => ({
   },
 }));
 
+afterAll(() => {
+  mock.module("./email-world.ts", () => emailWorldOriginal);
+  mock.module("./thread-store.ts", () => threadStoreOriginal);
+  mock.module("@freeanima/features/object-storage/domain", () => objectStorageOriginal);
+});
 const { upsertEmailMessage } = await import("./message-store.ts");
 const { normalizeRfcMessageId } = await import("./message-id.ts");
 
