@@ -162,4 +162,14 @@ describe("executeCodingTool → workspace sandbox", () => {
     expect(logs[0]!.command).toContain("echo");
     expect(logs[0]!.ok).toBe(true);
   });
+
+  test("terminal_run shell=false 保留引号内空格（含中文）", async () => {
+    const root = tempWorkspace();
+    setCodingWorkspace({ workspaceRoot: root, backend: createNodeWorkspaceBackend() });
+    const out = await executeCodingTool("terminal_run", {
+      command: `printf '%s' "feat: 中文 带空格"`,
+      shell: false,
+    });
+    expect(out).toContain("feat: 中文 带空格");
+  });
 });

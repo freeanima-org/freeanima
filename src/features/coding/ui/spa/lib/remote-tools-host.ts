@@ -84,7 +84,7 @@ const BASE_TOOLS: RemoteToolDefInput[] = [
   {
     local_name: "terminal_run",
     description:
-      "在工作区内执行一次性命令。默认 shell=false；需 portalShell.runCommand（Rust IPC）。",
+      '在工作区内执行一次性命令。默认 shell=false（quote-aware argv，带空格参数请用引号，如 git commit -m "中文 带空格"）；管道/重定向等再 shell=true。需 portalShell.runCommand（Rust IPC）。',
     parameters: {
       type: "object",
       properties: {

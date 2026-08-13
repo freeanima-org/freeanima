@@ -144,6 +144,49 @@ fn walk_files_inner(root: &Path, dir: &Path, limit: usize, out: &mut Vec<String>
   Ok(())
 }
 
+/// Quote-aware argv split（与 Habitat `splitCommandLine` 同语义；无 shell 展开）。
+fn split_command_line(command: &str) -> Vec<String> {
+  let mut out: Vec<String> = Vec::new();
+  let mut cur = String::new();
+  let mut quote: Option<char> = None;
+  let mut escape = false;
+
+  for ch in command.chars() {
+    if escape {
+      cur.push(ch);
+      escape = false;
+      continue;
+    }
+    if quote.is_none() && ch == '\\' {
+      escape = true;
+      continue;
+    }
+    if let Some(q) = quote {
+      if ch == q {
+        quote = None;
+      } else {
+        cur.push(ch);
+      }
+      continue;
+    }
+    if ch == '\'' || ch == '"' {
+      quote = Some(ch);
+      continue;
+    }
+    if ch.is_whitespace() {
+      if !cur.is_empty() {
+        out.push(std::mem::take(&mut cur));
+      }
+      continue;
+    }
+    cur.push(ch);
+  }
+  if !cur.is_empty() {
+    out.push(cur);
+  }
+  out
+}
+
 #[tauri::command]
 pub fn run_command(
   command: String,
@@ -172,10 +215,10 @@ pub fn run_command(
       c
     }
   } else {
-    let mut parts = cmd.split_whitespace();
-    let bin = parts.next().ok_or_else(|| "command is empty".to_string())?;
+    let parts = split_command_line(cmd);
+    let bin = parts.first().ok_or_else(|| "command is empty".to_string())?;
     let mut c = Command::new(bin);
-    c.args(parts);
+    c.args(&parts[1..]);
     c
   };
 
@@ -228,5 +271,42 @@ pub fn run_command(
       }
       Err(e) => return Err(e.to_string()),
     }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::split_command_line;
+
+  #[test]
+  fn split_respects_double_and_single_quotes() {
+    assert_eq!(
+      split_command_line(r#"echo "a b" 'c d'"#),
+      vec!["echo", "a b", "c d"]
+    );
+  }
+
+  #[test]
+  fn split_preserves_cjk_spaces_in_commit_message() {
+    assert_eq!(
+      split_command_line(r#"git commit -m "feat: 中文 带空格""#),
+      vec!["git", "commit", "-m", "feat: 中文 带空格"]
+    );
+  }
+
+  #[test]
+  fn split_unquoted_whitespace() {
+    assert_eq!(
+      split_command_line("git status -sb"),
+      vec!["git", "status", "-sb"]
+    );
+  }
+
+  #[test]
+  fn split_backslash_escape_outside_quotes() {
+    assert_eq!(
+      split_command_line(r#"echo a\ b"#),
+      vec!["echo", "a b"]
+    );
   }
 }
