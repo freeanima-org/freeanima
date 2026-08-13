@@ -1,32 +1,23 @@
 # just qa …（质量：check / lint / fmt / test）
 import '_common.just'
 
-# PR 前：typecheck + lint + import-depth + pg-sql-arrays + stylelint + format + test:changed
+# PR 前：typecheck + lint（含 freeanima jsPlugins 护栏）+ stylelint + format + test:changed
 # 注：≠ 全量 CI（CI 另跑 bun scripts/run-ci-tests.ts）
 [no-cd]
 check: _deps
   {{ bun }} x tsgo -p tsconfig.json
   {{ bun }} x oxlint .
-  {{ bun }} scripts/check-import-depth.ts
-  {{ bun }} scripts/check-layer-deps.ts
-  {{ bun }} scripts/check-portal-cache-path.ts
-  {{ bun }} scripts/check-pg-sql-arrays.ts --self-test
-  {{ bun }} scripts/check-pg-sql-arrays.ts
-  {{ bun }} scripts/check-auto-llm-chat-gate.ts
   {{ bun }} scripts/stylelint.ts
   {{ bun }} x oxfmt --check .
-  {{ bun }} test src --pass-with-no-tests --changed
+  {{ bun }} test src scripts/oxlint-plugins --pass-with-no-tests --changed
 
 # husky pre-commit（与钩子同集合，避免漂移）
 [no-cd]
 pre-commit: _deps
   {{ bun }} x tsgo -p tsconfig.json
   {{ bun }} x oxlint .
-  {{ bun }} scripts/check-import-depth.ts
-  {{ bun }} scripts/check-layer-deps.ts
-  {{ bun }} scripts/check-portal-cache-path.ts
   {{ bun }} x oxfmt --check .
-  {{ bun }} test src --pass-with-no-tests --changed
+  {{ bun }} test src scripts/oxlint-plugins --pass-with-no-tests --changed
 
 # husky pre-push：仅 unit CORE（集成不跑）
 [no-cd]
