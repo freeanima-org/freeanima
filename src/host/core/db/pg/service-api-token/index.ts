@@ -9,10 +9,12 @@ import {
 } from "./crypto.ts";
 import {
   createServiceApiToken,
+  getServiceApiTokenById,
   getServiceApiTokenByPrefix,
   touchServiceApiTokenLastUsed,
+  updateServiceApiTokenName as updateServiceApiTokenNameRow,
 } from "./repos/token-repo.ts";
-import type { ServiceApiTokenPublic } from "./types.ts";
+import { toServiceApiTokenPublic, type ServiceApiTokenPublic } from "./types.ts";
 
 export type VerifiedServiceApiToken = {
   token_id: number;
@@ -71,11 +73,49 @@ export async function createServiceApiTokenWithSecret(input: {
       name: input.name,
       prefix: parts.prefix,
       token_hash,
+      token_secret: parts.secret,
       scopes: input.scopes,
       expires_at: input.expires_at,
     }),
   );
   return { token, plaintext: parts.plaintext };
+}
+
+export async function revealServiceApiTokenPlaintext(id: number): Promise<string> {
+  const row = await getServiceApiTokenById(id);
+  if (!row) {
+    throw new Error(`token ${id} not found`);
+  }
+  if (!isTokenActive(row)) {
+    throw new Error(`token ${id} is revoked or expired`);
+  }
+  if (!row.token_secret) {
+    throw new Error(`token ${id} is not revealable; recreate the token`);
+  }
+  return `${SERVICE_API_TOKEN_PREFIX}${row.prefix}_${row.token_secret}`;
+}
+
+export async function updateServiceApiTokenName(
+  id: number,
+  name: string,
+): Promise<ServiceApiTokenPublic> {
+  const trimmed = name.trim();
+  if (!trimmed) {
+    throw new Error("name is required");
+  }
+  const existing = await getServiceApiTokenById(id);
+  if (!existing) {
+    throw new Error(`token ${id} not found`);
+  }
+  const ok = await updateServiceApiTokenNameRow(id, trimmed);
+  if (!ok) {
+    throw new Error(`token ${id} not found`);
+  }
+  const row = await getServiceApiTokenById(id);
+  if (!row) {
+    throw new Error(`token ${id} not found`);
+  }
+  return toServiceApiTokenPublic(row);
 }
 
 export async function verifyServiceApiToken(
@@ -142,6 +182,7 @@ export async function importServiceApiTokenFromPlaintext(input: {
         name: input.name,
         prefix: parsed.prefix,
         token_hash,
+        token_secret: parsed.secret,
         scopes: input.scopes,
       }),
     );
@@ -155,6 +196,7 @@ export async function importServiceApiTokenFromPlaintext(input: {
       name: input.name,
       prefix: parts.prefix,
       token_hash,
+      token_secret: trimmed,
       scopes: input.scopes,
     }),
   );

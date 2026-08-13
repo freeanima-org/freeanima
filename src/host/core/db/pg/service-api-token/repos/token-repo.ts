@@ -49,6 +49,7 @@ export async function createServiceApiToken(input: CreateServiceApiTokenInput) {
       name: input.name,
       prefix: input.prefix,
       token_hash: input.token_hash,
+      token_secret: input.token_secret ?? null,
       scopes: input.scopes ?? ["full"],
       created_at: new Date(),
       expires_at: input.expires_at ?? null,
@@ -59,6 +60,16 @@ export async function createServiceApiToken(input: CreateServiceApiTokenInput) {
   const row = rows[0];
   if (!row) throw new Error("failed to create service api token");
   return toServiceApiTokenPublic(row);
+}
+
+export async function updateServiceApiTokenName(id: number, name: string): Promise<boolean> {
+  const db = getDb();
+  const rows = await db
+    .update(serviceApiTokens)
+    .set({ name })
+    .where(eq(serviceApiTokens.id, id))
+    .returning({ id: serviceApiTokens.id });
+  return rows.length > 0;
 }
 
 export async function revokeServiceApiToken(id: number): Promise<boolean> {

@@ -14,6 +14,8 @@ export const serviceApiTokens = pgTable(
     name: text("name").notNull(),
     prefix: text("prefix").notNull(),
     token_hash: text("token_hash").notNull(),
+    /** 可恢复 secret；旧行可为 null（无法再次 reveal） */
+    token_secret: text("token_secret"),
     scopes: text("scopes").array().notNull().default(["full"]),
     created_at: pgTimestamptz("created_at").notNull(),
     expires_at: pgTimestamptz("expires_at"),

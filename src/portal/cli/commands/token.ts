@@ -2,7 +2,9 @@ import { withPlatformDb } from "@freeanima/host/platform/config";
 import {
   createServiceApiTokenWithSecret,
   listServiceApiTokensBySubject,
+  revealServiceApiTokenPlaintext,
   revokeServiceApiToken,
+  updateServiceApiTokenName,
 } from "@freeanima/host/core/db/pg/service-api-token";
 import type { Command } from "commander";
 
@@ -16,7 +18,7 @@ export function registerTokenCommand(program: Command): void {
 
   tokenCmd
     .command("create")
-    .description("为 subject 创建 API token（明文仅此次输出）")
+    .description("为 subject 创建 API token（明文输出；之后可用 reveal 再取）")
     .requiredOption("--subject-id <id>", "user/agent subject entity id", parseInt)
     .requiredOption("--name <name>", "token 名称，如 bootstrap / desktop")
     .action(async (opts: { subjectId: number; name: string }) => {
@@ -43,7 +45,7 @@ export function registerTokenCommand(program: Command): void {
 
   tokenCmd
     .command("list")
-    .description("列出某 subject 的 token（不含 secret）")
+    .description("列出某 subject 的 token（不含 secret；revealable 表示可再次 reveal）")
     .requiredOption("--subject-id <id>", "subject entity id", parseInt)
     .action(async (opts: { subjectId: number }) => {
       try {
@@ -56,9 +58,41 @@ export function registerTokenCommand(program: Command): void {
         }
         for (const row of items) {
           console.log(
-            `${row.id}\t${row.prefix}\t${row.name}\t${row.scopes.join(",")}\trevoked=${row.revoked_at ? "yes" : "no"}`,
+            `${row.id}\t${row.prefix}\t${row.name}\t${row.scopes.join(",")}\trevealable=${row.revealable ? "yes" : "no"}\trevoked=${row.revoked_at ? "yes" : "no"}`,
           );
         }
+      } catch (e) {
+        printCliError(e);
+        process.exit(1);
+      }
+    });
+
+  tokenCmd
+    .command("reveal")
+    .description("再次输出 token 明文（需创建时已存档 secret）")
+    .argument("<id>", "token id", parseInt)
+    .action(async (id: number) => {
+      try {
+        const plaintext = await withPlatformDb(async () => revealServiceApiTokenPlaintext(id));
+        console.log(plaintext);
+        writeStatusLine("ok", `已 reveal token id=${id}`);
+      } catch (e) {
+        printCliError(e);
+        process.exit(1);
+      }
+    });
+
+  tokenCmd
+    .command("rename")
+    .description("修改 token 名称")
+    .argument("<id>", "token id", parseInt)
+    .requiredOption("--name <name>", "新名称")
+    .action(async (id: number, opts: { name: string }) => {
+      try {
+        const token = await withPlatformDb(async () =>
+          updateServiceApiTokenName(id, opts.name.trim()),
+        );
+        writeStatusLine("ok", `已改名 token id=${token.id} name=${token.name}`);
       } catch (e) {
         printCliError(e);
         process.exit(1);
