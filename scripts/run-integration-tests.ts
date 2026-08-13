@@ -69,7 +69,13 @@ if (coreOnly) {
 } else {
   testPaths = paths.length > 0 ? paths : ["tests/integration"];
 }
-const testArgs = ["test", ...testPaths, "--pass-with-no-tests", `--parallel=${workers}`];
+const testArgs = [
+  "test",
+  ...testPaths,
+  "--pass-with-no-tests",
+  `--parallel=${workers}`,
+  "--timeout=30000",
+];
 console.log(`[${label}] bun ${testArgs.join(" ")}`);
 
 try {

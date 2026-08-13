@@ -1,5 +1,8 @@
 import type { PgTestContext } from "./pg-test.ts";
-import { flushCompressionSummaries } from "@freeanima/host/engine/turn";
+import {
+  flushCompressionSummaries,
+  abandonCompressionSummaries,
+} from "@freeanima/host/engine/turn";
 import { createConversationService } from "@freeanima/host/engine/conversation";
 import { createServiceKernel } from "@freeanima/host/platform/bootstrap";
 import {
@@ -46,10 +49,18 @@ async function cleanupIntegrationSessionCwds(): Promise<void> {
   }
 }
 
+/** Teardown budget: do not await real LLM first-byte (default 30s) past Bun hook timeout */
+const COMPRESSION_FLUSH_BUDGET_MS = 2000;
+
 async function flushActiveCompressionSummaries(): Promise<void> {
-  if (getActivePgTestContext()) {
-    await flushCompressionSummaries();
-  }
+  if (!getActivePgTestContext()) return;
+  await Promise.race([
+    flushCompressionSummaries(),
+    new Promise<void>((resolve) => {
+      setTimeout(resolve, COMPRESSION_FLUSH_BUDGET_MS);
+    }),
+  ]);
+  abandonCompressionSummaries();
 }
 
 /** Standard integration-test AppRuntime (builtins / Habitat handler) */

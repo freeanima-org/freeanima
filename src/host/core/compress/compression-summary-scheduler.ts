@@ -42,6 +42,18 @@ export async function flushCompressionSummaries(
   return undefined;
 }
 
+/**
+ * Drop pending map entries so teardown no longer awaits them.
+ * In-flight jobs may still finish; they must re-check FREEANIMA_HOME before writing.
+ */
+export function abandonCompressionSummaries(): void {
+  pendingCompressionSummaries.clear();
+}
+
+function homeStillMatches(homeAtSchedule: string): boolean {
+  return (process.env.FREEANIMA_HOME ?? "") === homeAtSchedule;
+}
+
 async function patchConversationCompression(
   conversationId: string,
   compression: CompressionState,
@@ -57,7 +69,7 @@ async function finalizeCompressionSummary(
   model: string,
   homeAtSchedule: string,
 ): Promise<CompressionSummaryJobResult> {
-  if ((process.env.FREEANIMA_HOME ?? "") !== homeAtSchedule) {
+  if (!homeStillMatches(homeAtSchedule)) {
     getRuntimeLogger()
       .with({ component: "compression" })
       .warn(`Skipping conversation summary (FREEANIMA_HOME changed): ${conversationId}`);
@@ -75,6 +87,15 @@ async function finalizeCompressionSummary(
     model,
     { preSliced: true, parentConversationId: conversationId },
   );
+
+  if (!homeStillMatches(homeAtSchedule)) {
+    getRuntimeLogger()
+      .with({ component: "compression" })
+      .warn(
+        `Skipping conversation summary writeback (FREEANIMA_HOME changed after LLM): ${conversationId}`,
+      );
+    return { ok: false, error: "FREEANIMA_HOME changed; summary skipped" };
+  }
 
   const merged: CompressionState = {
     ...cutState,

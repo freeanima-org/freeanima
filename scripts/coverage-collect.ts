@@ -66,11 +66,16 @@ function listTestFiles(root: string): string[] {
 
 function runCoverageTarget(target: string, testFailures: string[]): boolean {
   rmSync(coverageDir, { recursive: true, force: true });
+  const extraTimeout =
+    target === "tests/integration" || target.startsWith("tests/integration/")
+      ? (["--timeout=30000"] as const)
+      : ([] as const);
   const status = runBunTest([
     target,
     "--pass-with-no-tests",
     "--coverage",
     "--coverage-reporter=lcov",
+    ...extraTimeout,
   ]);
   if (status !== 0) {
     testFailures.push(target);

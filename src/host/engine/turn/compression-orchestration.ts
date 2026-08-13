@@ -9,6 +9,7 @@ import {
   buildCompressOptionsResolved,
   scheduleCompressionSummary,
   flushCompressionSummaries,
+  abandonCompressionSummaries,
   maybeApplyEmergencyCompression,
 } from "@freeanima/host/core/compress";
 import { omitUndefined } from "@freeanima/host/core/util";
@@ -25,7 +26,7 @@ function defaultChatModel(): string {
   return getProfileHopModel(getActiveRuntimeConfig().data, PROFILE_CHAT);
 }
 
-export { flushCompressionSummaries, maybeApplyEmergencyCompression };
+export { abandonCompressionSummaries, flushCompressionSummaries, maybeApplyEmergencyCompression };
 export {
   summarizeConversation,
   type SummarizeConversationResult,
