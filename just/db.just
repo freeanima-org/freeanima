@@ -9,6 +9,7 @@ generate: _deps
 [no-cd]
 shapes: _deps
   {{ bun }} scripts/gen-shared-shapes/main.ts
+  {{ bun }} x oxfmt src/shared/pg-shapes/rows
 
 [no-cd]
 shapes-check: _deps
