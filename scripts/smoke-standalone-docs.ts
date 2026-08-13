@@ -21,13 +21,12 @@ import {
   registerEmbeddedDocs,
   resetEmbeddedDocsForTest,
 } from "@freeanima/host/capabilities/tools/docs-embedded";
-import { listDocsEmbeds } from "./standalone-docs-embeds.ts";
+import { listEmbeddedDocsFromDir } from "@freeanima/host/capabilities/tools/docs-dir-import";
 
 const ROOT = join(import.meta.dir, "..");
 const BIN = join(ROOT, "dist/anima-executable/anima");
 const STANDALONE_ROOT = join(ROOT, "dist/anima-executable");
-const DOCS_DIR = join(ROOT, "docs");
-const DOC_NEEDLE = "System-level constraints and long-lived design principles";
+const DOC_NEEDLE = "系统级约束与长期设计原则";
 const SMOKE_PORT = 18_659;
 
 function sleep(ms: number): Promise<void> {
@@ -77,8 +76,8 @@ function assertBinaryHasEmbeddedDocs(): void {
 }
 
 async function assertEmbeddedCorpusWithoutDiskDocs(): Promise<void> {
-  const embeds = listDocsEmbeds(DOCS_DIR);
-  console.log(`ok: docs embed manifest ${embeds.length} file(s)`);
+  const embeds = listEmbeddedDocsFromDir();
+  console.log(`ok: docs dir: embed manifest ${embeds.length} file(s)`);
 
   const prevRepoRoot = process.env.FREEANIMA_REPO_ROOT;
   process.env.FREEANIMA_REPO_ROOT = STANDALONE_ROOT;
@@ -87,12 +86,7 @@ async function assertEmbeddedCorpusWithoutDiskDocs(): Promise<void> {
   resetDocsCorpusCacheForTest();
   setDocsCorpusForTest(null);
 
-  registerEmbeddedDocs(
-    embeds.map((e) => ({
-      rel: e.rel,
-      path: e.absPath,
-    })),
-  );
+  registerEmbeddedDocs(embeds);
 
   const registry = new ToolSetRegistry();
   registerDocsTools(registry);

@@ -1,19 +1,22 @@
 #!/usr/bin/env bun
 /**
- * migrations `dir:` 嵌入契约冒烟（对照磁盘枚举 + Bun.build）。
+ * migrations / docs `dir:` 嵌入契约冒烟（对照磁盘枚举 + Bun.build）。
  *
  * 用法：
  *   bun scripts/smoke-dir-import-migrations.ts
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { Glob } from "bun";
 
 import { listEmbeddedMigrationsFromDir } from "@freeanima/host/core/db/migrations-dir-import";
+import { listEmbeddedDocsFromDir } from "@freeanima/host/capabilities/tools/docs-dir-import";
 
 import { createDirImportPlugin } from "./dir-import-plugin.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const MIGRATIONS_DIR = join(ROOT, "src/host/core/migrations");
+const DOCS_DIR = join(ROOT, "docs");
 
 function listMigrationDirsFromDisk(): string[] {
   const names = readdirSync(MIGRATIONS_DIR, { withFileTypes: true })
@@ -25,6 +28,16 @@ function listMigrationDirsFromDisk(): string[] {
     throw new Error(`no migration.sql under ${MIGRATIONS_DIR}`);
   }
   return names;
+}
+
+function listDocsRelsFromDisk(): string[] {
+  const rels: string[] = [];
+  for (const rel of new Glob("**/*.md").scanSync({ cwd: DOCS_DIR, onlyFiles: true })) {
+    const normalized = rel.split("\\").join("/");
+    if (normalized.startsWith(".generated/") || normalized.includes("/.generated/")) continue;
+    rels.push(normalized);
+  }
+  return rels.toSorted((a, b) => a.localeCompare(b));
 }
 
 function assertEqualSets(label: string, actual: string[], expected: string[]): void {
@@ -42,7 +55,7 @@ function assertEqualSets(label: string, actual: string[], expected: string[]): v
   }
 }
 
-async function smokeRuntime(): Promise<void> {
+async function smokeMigrationsRuntime(): Promise<void> {
   const fromDirApi = listEmbeddedMigrationsFromDir().map((m) => m.name);
   const fromDisk = listMigrationDirsFromDisk();
   assertEqualSets("listEmbeddedMigrationsFromDir vs disk", fromDirApi, fromDisk);
@@ -55,12 +68,28 @@ async function smokeRuntime(): Promise<void> {
   if (fromPlugin !== fromDiskContent) {
     throw new Error(`content mismatch for ${sample.name}/migration.sql`);
   }
-  if (!sample.name.includes("_") || sample.path.length === 0) {
-    throw new Error("expected nested migration dir name and non-empty path");
+
+  console.log(
+    `migrations runtime ok: ${fromDirApi.length} migration.sql; sample ${sample.name} (${fromDiskContent.length} bytes)`,
+  );
+}
+
+async function smokeDocsRuntime(): Promise<void> {
+  const fromDirApi = listEmbeddedDocsFromDir().map((d) => d.rel);
+  const fromDisk = listDocsRelsFromDisk();
+  assertEqualSets("listEmbeddedDocsFromDir vs disk", fromDirApi, fromDisk);
+
+  const docs = listEmbeddedDocsFromDir();
+  const sample = docs[0];
+  if (!sample) throw new Error("listEmbeddedDocsFromDir returned empty");
+  const fromPlugin = await Bun.file(sample.path).text();
+  const fromDiskContent = readFileSync(join(DOCS_DIR, sample.rel), "utf8");
+  if (fromPlugin !== fromDiskContent) {
+    throw new Error(`content mismatch for docs/${sample.rel}`);
   }
 
   console.log(
-    `runtime ok: ${fromDirApi.length} migration.sql; sample ${sample.name} (${fromDiskContent.length} bytes)`,
+    `docs runtime ok: ${fromDirApi.length} .md; sample ${sample.rel} (${fromDiskContent.length} bytes)`,
   );
 }
 
@@ -75,10 +104,12 @@ async function smokeBuild(): Promise<void> {
     `import assets from ${JSON.stringify(`dir:${MIGRATIONS_DIR}`)};
 const sqlKeys = Object.keys(assets).filter((k) => k.endsWith("/migration.sql"));
 if (sqlKeys.length === 0) throw new Error("build entry: no migration.sql keys");
-const sample = assets[sqlKeys[0]!];
+const firstKey = sqlKeys[0];
+if (!firstKey) throw new Error("build entry: empty sqlKeys");
+const sample = assets[firstKey];
 const text = await Bun.file(sample).text();
 if (!text.includes(";")) throw new Error("build entry: sample sql looks empty");
-console.log("build-run ok:", sqlKeys.length, sqlKeys[0]);
+console.log("build-run ok:", sqlKeys.length, firstKey);
 `,
   );
 
@@ -117,6 +148,7 @@ console.log("build-run ok:", sqlKeys.length, sqlKeys[0]);
   rmSync(outDir, { recursive: true, force: true });
 }
 
-await smokeRuntime();
+await smokeMigrationsRuntime();
+await smokeDocsRuntime();
 await smokeBuild();
 console.log("smoke-dir-import-migrations: all checks passed");

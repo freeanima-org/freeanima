@@ -3,8 +3,8 @@
  * Linux standalone 分发构建（唯一发版产物）：单文件 `anima`。
  *
  * 产物：`dist/anima-executable/anima`
- * - version / service build-meta / Web dist / docs 经 standalone-embed-plugin 嵌入
- * - migration.sql 经调用点 `dir:../migrations` + dir-import 插件嵌入
+ * - version / service build-meta / Web dist 经 standalone-embed-plugin 嵌入
+ * - migration.sql / docs/*.md 经调用点 `dir:` + dir-import 插件嵌入
  *
  * 用法：
  *   just pack cli
@@ -24,7 +24,6 @@ import {
   createStandaloneEmbedPlugin,
   type StandaloneEmbedInput,
 } from "./standalone-embed-plugin.ts";
-import { listDocsEmbeds } from "./standalone-docs-embeds.ts";
 import {
   assertStandaloneBinaryHasNoTiktokenBuildPath,
   createTiktokenWasmPlugin,
@@ -39,7 +38,6 @@ const CLI_ENTRY = join(ROOT, "src/portal/cli/cli.ts");
 const EMBEDS_MODULE = join(ROOT, "src/portal/cli/standalone-embeds.ts");
 const WEB_DIST_DIR = join(ROOT, "src/portal/app/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
-const DOCS_DIR = join(ROOT, "docs");
 
 async function ensureWebDist(): Promise<void> {
   const force = process.env.FREEANIMA_FORCE_WEB_BUILD === "1";
@@ -100,7 +98,7 @@ async function main(): Promise<void> {
   });
   const embedVersion = buildMeta.version;
 
-  const files = [...listWebEmbeds(), ...listDocsEmbeds(DOCS_DIR)];
+  const files = listWebEmbeds();
   const outfile = join(OUT_DIR, "anima");
   const tiktokenPackageWasm = resolveTiktokenWasmPath(ROOT);
   const tiktokenPackageDir = dirname(tiktokenPackageWasm);
@@ -108,7 +106,7 @@ async function main(): Promise<void> {
   const stagedWasm = join(OUT_DIR, "tiktoken_bg.wasm");
   cpSync(tiktokenPackageWasm, stagedWasm);
   console.log(
-    `compiling single-file standalone → ${outfile} (${files.length} web/docs embeds + dir: migrations + runtime meta + tiktoken wasm)`,
+    `compiling single-file standalone → ${outfile} (${files.length} web embeds + dir: migrations/docs + runtime meta + tiktoken wasm)`,
   );
 
   const result = await Bun.build({
