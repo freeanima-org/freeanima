@@ -42,6 +42,7 @@ import { TEMPORAL_SUMMARY_COMPONENT, temporalSummaryBodySchema } from "./tempora
 import { USER_CONFIG_COMPONENT, userConfigBodySchema } from "./user-config.ts";
 import { WORLD_CONFIG_COMPONENT, worldConfigBodySchema } from "./world-config.ts";
 import { CODING_NOTE_COMPONENT, codingNoteBodySchema } from "./coding-note.ts";
+import { BOOKMARK_COMPONENT, bookmarkBodySchema } from "./bookmark.ts";
 
 export const COMPONENT_IDS = [
   WORLD_CONFIG_COMPONENT,
@@ -58,6 +59,7 @@ export const COMPONENT_IDS = [
   CALENDAR_EVENT_COMPONENT,
   DIARY_BLOCK_TEMPLATE_COMPONENT,
   CODING_NOTE_COMPONENT,
+  BOOKMARK_COMPONENT,
   CONTENT_BLOCK_COMPONENT,
   LIMBIC_COMPONENT,
   NARRATIVE_COMPONENT,
@@ -105,6 +107,7 @@ export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
   [CALENDAR_EVENT_COMPONENT]: 52,
   [DIARY_BLOCK_TEMPLATE_COMPONENT]: 55,
   [CODING_NOTE_COMPONENT]: 58,
+  [BOOKMARK_COMPONENT]: 59,
   [CONTENT_BLOCK_COMPONENT]: 60,
   [LIMBIC_COMPONENT]: 70,
   [NARRATIVE_COMPONENT]: 71,
@@ -163,6 +166,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [CALENDAR_EVENT_COMPONENT]: calendarEventBodySchema,
   [DIARY_BLOCK_TEMPLATE_COMPONENT]: diaryBlockTemplateBodySchema,
   [CODING_NOTE_COMPONENT]: codingNoteBodySchema,
+  [BOOKMARK_COMPONENT]: bookmarkBodySchema,
   [CONTENT_BLOCK_COMPONENT]: contentBlockBodySchema,
   [LIMBIC_COMPONENT]: limbicBodySchema,
   [NARRATIVE_COMPONENT]: narrativeBodySchema,
@@ -211,6 +215,7 @@ export * from "./diary-entry.ts";
 export * from "./calendar-event.ts";
 export * from "./diary-block-template.ts";
 export * from "./coding-note.ts";
+export * from "./bookmark.ts";
 export * from "./dream.ts";
 export * from "./content-block.ts";
 export * from "./limbic.ts";

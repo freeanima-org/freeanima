@@ -43,7 +43,11 @@ export type ExtToBgMessage =
       digits?: boolean;
       symbols?: boolean;
     }
-  | { type: "test_connection" };
+  | { type: "test_connection" }
+  | { type: "bookmark_get_sync_settings" }
+  | { type: "bookmark_set_sync_enabled"; enabled: boolean }
+  | { type: "bookmark_sync_now"; full?: boolean }
+  | { type: "bookmark_list"; query?: string };
 
 export type FillPayload = {
   item_id: number;
@@ -94,6 +98,18 @@ export type ExtBgResponse =
   | { ok: true; message: string }
   | { ok: true; deleted: true }
   | { ok: true; exists: boolean }
+  | {
+      ok: true;
+      bookmark_sync: {
+        enabled: boolean;
+        last_sync_at: string | null;
+        last_error: string | null;
+      };
+    }
+  | {
+      ok: true;
+      bookmarks: { id: string; title: string; url?: string; kind: "folder" | "url" }[];
+    }
   | { ok: false; error: string };
 
 export type { VaultUriEntryPayload, VaultUriMatch };
