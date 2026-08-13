@@ -16,6 +16,13 @@ import { loadSettings, saveSettings } from "../../runtime/settings.ts";
 type TabId = "vault" | "generator" | "options";
 type Screen = { kind: "main" } | { kind: "editor"; itemId: number | null };
 
+function extensionDisplayVersion(): string {
+  const manifest = chrome.runtime.getManifest() as chrome.runtime.ManifestV3 & {
+    version_name?: string;
+  };
+  return manifest.version_name ?? manifest.version;
+}
+
 async function activeTabUrl(): Promise<string> {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   return tab?.url ?? "";
@@ -627,6 +634,9 @@ export function VaultPopupApp() {
           <div className="flex h-full min-h-0 flex-col">
             <div className="shrink-0 border-b border-border px-3 py-2">
               <h1 className="text-base font-semibold">选项</h1>
+              <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+                版本 {extensionDisplayVersion()}
+              </p>
             </div>
             <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
               <label className="block space-y-1 text-sm">
