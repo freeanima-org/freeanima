@@ -19,10 +19,11 @@ export function VaultOptionsApp() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-lg font-semibold">FreeAnima Vault</h1>
+        <h1 className="text-lg font-semibold">FreeAnima</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          直连 Habitat（Service API Token）。主密码仅在扩展内存中用于解密用户库，不会发送到
-          Habitat。请用 <code className="text-xs">anima token create</code> 创建 Token。
+          浏览器形态入口：直连栖息地（Service API
+          Token）。主密码仅在扩展内存中用于解密用户库，不会发送到 Habitat。请用{" "}
+          <code className="text-xs">anima token create</code> 创建 Token。
         </p>
       </div>
       <label className="block space-y-1 text-sm">

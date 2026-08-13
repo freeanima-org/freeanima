@@ -5,7 +5,7 @@
 | 形态   | form          | 本目录       | 说明                                                                                            |
 | ------ | ------------- | ------------ | ----------------------------------------------------------------------------------------------- |
 | 应用   | `application` | `app/`       | Shell（Tauri / Web 整窗 SPA）                                                                   |
-| 浏览器 | `browser`     | `extension/` | 浏览器扩展（MV3）                                                                               |
+| 浏览器 | `browser`     | `extension/` | 浏览器形态入口（MV3；展示名 FreeAnima；Firefox gecko `extension@freeanima.com`）                |
 | CLI    | `cli`         | `cli/`       | `anima` CLI                                                                                     |
 | MCP    | `mcp`         | —            | **实现在** `src/host/capabilities/mcp-server/`（Habitat `/mcp`）；不宜迁入本树（host ↛ portal） |
 

@@ -8,7 +8,7 @@
 
 ## `FREEANIMA_AMO_API_KEY` / `FREEANIMA_AMO_API_SECRET`（Firefox 扩展 unlisted 签名）
 
-维护者本人 Windows Firefox Vault 自托管自动更新（canary）需要 AMO 签发 **unlisted** xpi。
+维护者本人 Windows Firefox **浏览器形态入口**自托管自动更新（canary）需要 AMO 签发 **unlisted** xpi（gecko id `extension@freeanima.com`）。
 
 1. [AMO Developer Hub](https://addons.mozilla.org/developers/) → API Keys → 生成 JWT（issuer + secret）
 2. 组织/仓库 Actions secrets：

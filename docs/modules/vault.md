@@ -46,14 +46,11 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
   密钥，以及邮箱账号密码，可从 **Agent 库** 选条目与字段，写入 `vault("item_id", "field")`（仍可手写明文或
   `env("KEY")`）。运行时 `resolveValue` 固定解析 Agent 库。
 
-## 浏览器扩展（浏览器形态入口）
+## 浏览器形态中的 Vault
 
-- 入口：`src/portal/extension`（WXT MV3；React popup/options + `runtime/` +
-  `features/vault/`；工具栏图标在 `public/icon-*.png`）
-- 构建（Chrome）：`just pack browser-extension-chrome` → `dist/browser-extension/chrome-mv3` + zip
-- 构建（Firefox，维护者自托管 canary）：`just pack browser-extension-firefox` → xpi + updates.json（需 AMO API 签名才可自动更新）
-- 开发（Chrome）：`just dev browser-extension-chrome`（或 `bun x wxt`）
-- 开发（Firefox）：`just dev browser-extension-firefox`（或 `bun x wxt -b firefox --mv3`）
+安装、打包、gecko id、展示名等入口级约定见 [`portal.md`](portal.md)。本节只写 **Vault 在扩展内** 的行为。
+
+- 模块：`src/portal/extension/features/vault/`（popup / content / background 协作）
 - 连接：扩展 **直连 Habitat**（Bearer `fa_at_…`），HTTP REST only；解锁态保存在扩展进程内，并经
   `chrome.storage.session` 跨 service worker 回收恢复（**最多 8
   小时**；**浏览器关闭后清除**，需重输主密码）。hydrate 须导入**可导出**主密钥，否则本地缓存无法用主密钥加解密并会误报
@@ -74,18 +71,9 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
   Shadow DOM 浮层列出匹配登录项（类 Bitwarden），并提供填充 / 复制密码按钮；搜索/OTP 等非登录框不弹出
 - content script：原生 DOM 填充（不挂 React）
 
-加载未打包扩展：Chrome → 扩展程序 → 开发者模式 → 加载已解压的扩展程序 → 选择
-`dist/browser-extension/chrome-mv3`。
-
-**维护者 Firefox（Windows，跟 canary 自动更新）：** 从 GitHub canary Release 下载签名
-`freeanima-browser-extension-firefox.xpi` 安装一次；之后由
-`https://freeanima.com/extension/firefox/updates.json` 指向同一 Release 固定资产名自动升级。gecko id
-固定为 `vault@freeanima.com`。未配置 AMO 签名时仅能 `about:debugging` 临时加载。详见
-[`.github/SECRETS.md`](../../.github/SECRETS.md)。
-
 ## 相关
 
-- Portal 四形态：[`docs/modules/portal.md`](portal.md)
+- Portal 四形态与扩展安装：[`docs/modules/portal.md`](portal.md)
 - 架构与凭证原则：[`docs/product/architecture.md`](../product/architecture.md)、[`docs/ops/security.md`](../ops/security.md)
 - 远程 Token：[`docs/ops/remote-access.md`](../ops/remote-access.md)
 - Entity 模型：[`docs/product/entity-model.md`](../product/entity-model.md)

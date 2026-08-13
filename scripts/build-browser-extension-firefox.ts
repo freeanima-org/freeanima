@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * 构建 Vault Firefox 扩展（WXT -b firefox）并产出可上传的 .xpi + updates.json。
+ * 构建浏览器形态入口 Firefox 扩展（WXT -b firefox）并产出可上传的 .xpi + updates.json。
  *
  * - 有 FREEANIMA_AMO_API_KEY + FREEANIMA_AMO_API_SECRET → web-ext sign（unlisted）
  * - 否则打未签名 zip 命名为 .xpi（仅供 about:debugging 临时加载；不可用于正式自动更新）

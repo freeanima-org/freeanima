@@ -43,7 +43,7 @@ export default defineContentScript({
         });
         if (existing.ok && "exists" in existing && existing.exists) return;
         const ok = window.confirm(
-          `将登录凭据保存到 FreeAnima Vault？\n${creds.username || "(无用户名)"}\n${url}`,
+          `将登录凭据保存到 FreeAnima 保险库？\n${creds.username || "(无用户名)"}\n${url}`,
         );
         if (!ok) return;
         const res = await sendBg({
@@ -54,7 +54,7 @@ export default defineContentScript({
           password: creds.password,
         });
         if (!res.ok) {
-          console.warn("[FreeAnima Vault] save failed", res.error);
+          console.warn("[FreeAnima] vault save failed", res.error);
         }
       })();
     });

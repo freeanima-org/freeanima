@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * 构建 Vault Chrome 浏览器扩展（WXT → dist/browser-extension）并打包为 .zip。
+ * 构建浏览器形态入口 Chrome 扩展（WXT → dist/browser-extension）并打包为 .zip。
  * 用法：bun scripts/build-browser-extension-chrome.ts
  * 缺省 channel=local（版本 `{pkg}-local+UTC`）；CI 设 FREEANIMA_BUILD_CHANNEL + FREEANIMA_BUILD_VERSION。
  */
