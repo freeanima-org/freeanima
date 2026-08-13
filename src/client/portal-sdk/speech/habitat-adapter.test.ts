@@ -231,6 +231,31 @@ describe("createHabitatSpeechAdapter", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it("prefetch 写入缓存后 speak 不再请求 Habitat", async () => {
+    const audioBuffer = new Uint8Array([0xff, 0xf3, 0x64, 0xc4]).buffer;
+    const fetchMock = mock(async () => streamResponse(audioBuffer));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const adapter = createHabitatSpeechAdapter({
+      ...DEFAULT_SPEECH_PLAYBACK_CONFIG,
+      provider: "edge-tts",
+    });
+
+    adapter.prefetch?.("下一句。", "zh-CN");
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 30);
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // speak 开头会 bump generation；预取不得被取消
+    stopMpegPlayback();
+
+    await new Promise<void>((resolve, reject) => {
+      adapter.speak("下一句。", "zh-CN", resolve, reject);
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("长文预取：第二段 fetch 在第一段播放完成前启动", async () => {
     const audioBuffer = new Uint8Array([0xff, 0xf3, 0x64, 0xc4]).buffer;
 

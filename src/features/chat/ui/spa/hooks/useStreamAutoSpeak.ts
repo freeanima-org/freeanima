@@ -18,6 +18,17 @@ type UseStreamAutoSpeakArgs = {
 };
 
 /**
+ * 中途打开总开关时的游标：流式仍在进行则从文首消费已成句；
+ * 流已结束则跳到文末（不补读已结束 turn）。
+ */
+export function cursorAfterAutoSpeakEnabled(
+  streamVisible: boolean,
+  streamTextLength: number,
+): number {
+  return streamVisible ? 0 : streamTextLength;
+}
+
+/**
  * 流式自动朗读（豆包式）：
  * - 开着时按句 FIFO 跟读当前会话流式回复
  * - 切会话停读且不补读错过内容
@@ -62,7 +73,7 @@ export function useStreamAutoSpeak({
 
     if (!wasEnabled && enabled) {
       suppressedTurnRef.current = false;
-      cursorRef.current = streamText.length;
+      cursorRef.current = cursorAfterAutoSpeakEnabled(streamVisible, streamText.length);
       return;
     }
 
@@ -70,7 +81,7 @@ export function useStreamAutoSpeak({
       stop();
       suppressedTurnRef.current = false;
     }
-  }, [enabled, streamText.length, stop]);
+  }, [enabled, streamVisible, streamText.length, stop]);
 
   useEffect(() => {
     if (!enabled || !currentId || !streamVisible || suppressedTurnRef.current) return;

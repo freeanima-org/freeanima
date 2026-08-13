@@ -31,6 +31,12 @@ export function createSpeechPlaybackController(
     queue = [];
   };
 
+  const prefetchHead = () => {
+    const head = queue[0];
+    if (!head) return;
+    adapter.prefetch?.(head.text, head.locale);
+  };
+
   const playNext = (expectedGeneration: number) => {
     if (expectedGeneration !== generation) return;
 
@@ -45,6 +51,7 @@ export function createSpeechPlaybackController(
     playing = true;
     activeKey = next.key;
     notify();
+    prefetchHead();
 
     const itemKey = next.key;
     const gen = expectedGeneration;
@@ -86,7 +93,10 @@ export function createSpeechPlaybackController(
 
       queue.push({ key, text: trimmed, locale });
       if (!playing) playNext(generation);
-      else notify();
+      else {
+        prefetchHead();
+        notify();
+      }
     },
 
     toggle(key, text, locale) {

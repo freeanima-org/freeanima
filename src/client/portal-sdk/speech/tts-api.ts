@@ -108,3 +108,42 @@ export async function synthesizeSpeechViaHubStream(
 
   return { buffer, fromCache: false, played };
 }
+
+/** 进行中的预取；与播放 generation 解耦，避免 speak/stop bump 取消下一句预合成 */
+const inFlightPrefetch = new Map<string, Promise<void>>();
+
+/**
+ * 仅写入 TTS 缓存，不播放、不绑定 playbackGeneration。
+ * 供队列队首预取；speak 命中缓存即可立刻播。
+ */
+export async function prefetchHabitatTtsToCache(
+  params: HabitatTtsSynthesizeParams,
+): Promise<{ fromCache: boolean }> {
+  const text = normalizeHubTtsText(params.text);
+  const cacheParams = { ...params, text };
+  const cacheKey = await buildTtsCacheKey(cacheParams);
+  if (getTtsAudioCache().get(cacheKey)) {
+    return { fromCache: true };
+  }
+
+  const existing = inFlightPrefetch.get(cacheKey);
+  if (existing) {
+    await existing;
+    return { fromCache: true };
+  }
+
+  const task = (async () => {
+    const response = await postHubTtsSynthesize(cacheParams);
+    const buffer = await response.arrayBuffer();
+    if (buffer.byteLength === 0) {
+      throw new Error("栖息地返回空音频");
+    }
+    getTtsAudioCache().set(cacheKey, buffer);
+  })().finally(() => {
+    inFlightPrefetch.delete(cacheKey);
+  });
+
+  inFlightPrefetch.set(cacheKey, task);
+  await task;
+  return { fromCache: false };
+}

@@ -4,15 +4,18 @@ import type { SpeechPlaybackAdapter } from "./adapter-types.ts";
 
 function createMockAdapter(): SpeechPlaybackAdapter & {
   spoken: Array<{ text: string; locale: string }>;
+  prefetched: Array<{ text: string; locale: string }>;
   stopped: number;
   finishCurrent: () => void;
 } {
   const spoken: Array<{ text: string; locale: string }> = [];
+  const prefetched: Array<{ text: string; locale: string }> = [];
   let stopped = 0;
   let pendingEnd: (() => void) | null = null;
 
   return {
     spoken,
+    prefetched,
     get stopped() {
       return stopped;
     },
@@ -25,6 +28,9 @@ function createMockAdapter(): SpeechPlaybackAdapter & {
     stop() {
       stopped += 1;
       pendingEnd = null;
+    },
+    prefetch(text, locale) {
+      prefetched.push({ text, locale });
     },
     speak(text, locale, end) {
       spoken.push({ text, locale });
@@ -91,6 +97,20 @@ describe("createSpeechPlaybackController", () => {
     expect(adapter.spoken.map((s) => s.text)).toEqual(["一。", "二。", "三。"]);
     adapter.finishCurrent();
     expect(ctrl.getActiveKey()).toBeNull();
+  });
+
+  it("播中 enqueue 会预取队首下一句", () => {
+    const adapter = createMockAdapter();
+    const ctrl = createSpeechPlaybackController(adapter, () => {});
+    ctrl.enqueue("stream", "一。", "zh-cn");
+    expect(adapter.prefetched).toEqual([]);
+    ctrl.enqueue("stream", "二。", "zh-cn");
+    expect(adapter.prefetched).toEqual([{ text: "二。", locale: "zh-cn" }]);
+    ctrl.enqueue("stream", "三。", "zh-cn");
+    expect(adapter.prefetched.at(-1)).toEqual({ text: "二。", locale: "zh-cn" });
+    adapter.finishCurrent();
+    expect(adapter.spoken.map((s) => s.text)).toEqual(["一。", "二。"]);
+    expect(adapter.prefetched.at(-1)).toEqual({ text: "三。", locale: "zh-cn" });
   });
 
   it("stop 清空队列且旧 onEnd 不再继续", () => {

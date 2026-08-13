@@ -7,7 +7,7 @@ import {
   SECOND_HABITAT_TTS_CHUNK_MIN,
 } from "./constants.ts";
 import type { SpeechPlaybackAdapter } from "./adapter-types.ts";
-import { synthesizeSpeechViaHubStream } from "./tts-api.ts";
+import { prefetchHabitatTtsToCache, synthesizeSpeechViaHubStream } from "./tts-api.ts";
 import type { SpeechPlaybackConfig } from "./types.ts";
 import {
   getPlaybackGeneration,
@@ -107,6 +107,24 @@ export function createHabitatSpeechAdapter(
 
     stop() {
       stopMpegPlayback();
+    },
+
+    prefetch(text, locale) {
+      if (!options.enabled || options.provider !== "edge-tts") return;
+      const chunks = splitTextForHabitatSpeech(text);
+      const first = chunks[0];
+      if (!first) return;
+      void prefetchHabitatTtsToCache({
+        text: first,
+        lang: options.lang,
+        voice: options.voiceName,
+        appLocale: locale,
+        rate: options.rate,
+        pitch: options.pitch,
+        volume: options.volume,
+      }).catch(() => {
+        /* 预取失败不影响当前播放；下一句 speak 会再请求 */
+      });
     },
 
     speak(text, locale, onEnd, onError) {
