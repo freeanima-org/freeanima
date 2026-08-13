@@ -15,7 +15,10 @@ export type CreateRemoteToolsAttachOptions = {
   instanceStore?: RemoteInstanceStore;
   featuresRequested?: string[];
   tools?: RemoteToolDefInput[];
+  /** @deprecated Prefer `toolsetVisibility`. */
   toolsetPrivate?: boolean;
+  /** Discovery visibility for registered remote ToolSet; default catalog. */
+  toolsetVisibility?: "hidden" | "searchable" | "catalog";
   onToolCall?: (
     localName: string,
     args: Record<string, unknown>,
@@ -56,7 +59,11 @@ export function createRemoteToolsHabitatAttach(
     });
     await client.request("tool.register", {
       tools: options.tools,
-      private: options.toolsetPrivate !== false,
+      ...(options.toolsetVisibility != null
+        ? { visibility: options.toolsetVisibility }
+        : options.toolsetPrivate != null
+          ? { private: options.toolsetPrivate }
+          : {}),
     });
   }
 

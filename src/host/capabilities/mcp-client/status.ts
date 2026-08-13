@@ -12,6 +12,7 @@ export type McpServerConfigView = {
   cwd?: string;
   env?: Record<string, string>;
   connect_timeout_ms?: number;
+  toolset_visibility?: "hidden" | "searchable" | "catalog";
 };
 
 export type McpToolView = {
@@ -84,5 +85,6 @@ export function sanitizeMcpConfig(cfg: McpServerConfig): McpServerConfigView {
   if (cfg.cwd) view.cwd = cfg.cwd;
   if (cfg.connect_timeout_ms) view.connect_timeout_ms = cfg.connect_timeout_ms;
   if (cfg.env && Object.keys(cfg.env).length > 0) view.env = { ...cfg.env };
+  if (cfg.toolset_visibility) view.toolset_visibility = cfg.toolset_visibility;
   return view;
 }

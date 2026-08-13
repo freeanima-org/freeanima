@@ -198,5 +198,6 @@ export function registerCronjobTool(toolSets: ToolSetRegistry): void {
       ],
       CRON_TOOL_RETURNS,
     ),
+    { visibility: "searchable" },
   );
 }

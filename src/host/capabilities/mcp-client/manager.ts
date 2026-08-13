@@ -296,7 +296,9 @@ export class MCPManager {
     const setId = mcpToolSetId(name);
     this.toolSets.unregisterToolSet(setId);
     if (defs.length > 0) {
-      this.toolSets.registerToolSet(setId, `MCP ${name}`, defs);
+      this.toolSets.registerToolSet(setId, `MCP ${name}`, defs, {
+        visibility: cfg.toolset_visibility ?? "catalog",
+      });
       logComponent("mcp").info(`MCP '${name}': ${defs.length} tool(s) registered`, {
         server: name,
         tool_count: defs.length,

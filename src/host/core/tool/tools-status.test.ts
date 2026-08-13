@@ -97,5 +97,23 @@ describe("buildToolsStatus", () => {
     expect(mcp?.return_kind).toBe("text");
 
     expect(status.toolsets.map((ts) => ts.name)).toEqual(["toolset", "file", "mcp_demo"]);
+    expect(status.toolsets.find((ts) => ts.name === "file")?.visibility).toBe("catalog");
+    expect(status.toolsets.find((ts) => ts.name === "file")?.visibility_source).toBe("registered");
+  });
+
+  it("reports override visibility_source", () => {
+    const registry = new ToolSetRegistry();
+    registry.registerToolSet("file", "files", [
+      {
+        name: "file_read",
+        description: "Read file",
+        parameters: { type: "object" },
+        handler: () => "ok",
+      },
+    ]);
+    registry.setVisibilityOverrides({ file: "hidden" });
+    const status = buildToolsStatus(registry);
+    expect(status.toolsets[0]?.visibility).toBe("hidden");
+    expect(status.toolsets[0]?.visibility_source).toBe("override");
   });
 });

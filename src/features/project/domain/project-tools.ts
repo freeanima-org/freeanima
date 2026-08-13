@@ -320,5 +320,6 @@ export function registerProjectTools(toolSets: ToolSetRegistry): void {
       ],
       PROJECT_TOOL_RETURNS,
     ),
+    { visibility: "searchable" },
   );
 }

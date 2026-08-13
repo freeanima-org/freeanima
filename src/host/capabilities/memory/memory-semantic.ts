@@ -13,5 +13,6 @@ export function registerMemorySemanticTools(toolSets: ToolSetRegistry): void {
       [...semanticMemoryToolDefs, ...autobiographicalMemoryToolDefs, ...limbicMemoryToolDefs],
       MEMORY_TOOL_RETURNS,
     ),
+    { visibility: "searchable" },
   );
 }

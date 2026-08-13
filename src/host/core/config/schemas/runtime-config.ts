@@ -40,6 +40,11 @@ const runtimeConfigObjectSchema = z.object({
   prompt: promptSchema.optional(),
   models: modelsConfigSchema.optional(),
   mcp_servers: z.record(z.string(), mcpServerSchema).optional(),
+  /**
+   * Runtime overrides for ToolSet discovery visibility (name → visibility).
+   * Takes precedence over register-time / MCP server toolset_visibility.
+   */
+  toolset_visibility: z.record(z.string(), z.enum(["hidden", "searchable", "catalog"])).optional(),
   fallback_providers: z.array(fallbackProviderSchema).optional(),
   platforms: z.record(z.string(), z.unknown()).optional(),
   memory: memoryConfigSchema.optional(),

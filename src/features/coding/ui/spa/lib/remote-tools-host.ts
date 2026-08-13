@@ -202,7 +202,7 @@ export function startCodingRemoteToolsHost(opts?: {
     const tools = [...BASE_TOOLS, ...mcp.toRemoteToolDefs()];
     await client.request("tool.register", {
       tools,
-      private: false,
+      visibility: "catalog",
     });
   }
 
@@ -213,7 +213,7 @@ export function startCodingRemoteToolsHost(opts?: {
     remoteAuthToken,
     instanceStore: resolveInstanceStore(habitatUrl),
     tools: BASE_TOOLS,
-    toolsetPrivate: false,
+    toolsetVisibility: "catalog",
     onToolCall: async (localName, args) => {
       if (localName === "project_mcp_status") {
         return JSON.stringify({ ok: true, servers: mcp.listStatuses() });

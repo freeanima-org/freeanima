@@ -502,5 +502,6 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
         CONTENT_BLOCK_TOOL_NAMES.map((name) => [name, CONTENT_BLOCK_TOOL_RETURNS[name]]),
       ),
     ),
+    { visibility: "searchable" },
   );
 }

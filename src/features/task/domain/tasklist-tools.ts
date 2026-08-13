@@ -254,5 +254,6 @@ export function registerTaskListTools(toolSets: ToolSetRegistry): void {
       ],
       Object.fromEntries(TASKLIST_TOOL_NAMES.map((name) => [name, TASK_TOOL_RETURNS[name]])),
     ),
+    { visibility: "searchable" },
   );
 }

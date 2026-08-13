@@ -261,5 +261,6 @@ export function registerTagTools(toolSets: ToolSetRegistry): void {
       ],
       TAG_TOOL_RETURNS,
     ),
+    { visibility: "searchable" },
   );
 }

@@ -52,5 +52,6 @@ export function registerTodoTool(toolSets: ToolSetRegistry): void {
       ],
       CAPABILITIES_TOOLS_RETURNS,
     ),
+    { visibility: "searchable" },
   );
 }

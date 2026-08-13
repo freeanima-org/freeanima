@@ -23,9 +23,10 @@ describe("applyRuntimeConfigSection", () => {
     expect(config.data.compression?.enabled).toBe(true);
   });
 
-  it("TRANSFERRED_RUNTIME_SECTIONS 含 llm / mcp / worlds / object_storage", () => {
+  it("TRANSFERRED_RUNTIME_SECTIONS 含 llm / mcp / toolset_visibility / worlds / object_storage", () => {
     expect(TRANSFERRED_RUNTIME_SECTIONS).toContain("llm");
     expect(TRANSFERRED_RUNTIME_SECTIONS).toContain("mcp_servers");
+    expect(TRANSFERRED_RUNTIME_SECTIONS).toContain("toolset_visibility");
     expect(TRANSFERRED_RUNTIME_SECTIONS).toContain("worlds");
     expect(TRANSFERRED_RUNTIME_SECTIONS).toContain("object_storage");
   });

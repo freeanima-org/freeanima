@@ -39,7 +39,7 @@ function toolsetEntries(registry: ToolSetRegistry): Array<{
 }> {
   return registry
     .listToolSets()
-    .filter((view) => !view.private)
+    .filter((view) => view.visibility === "catalog" || view.visibility === "searchable")
     .map((view) => {
       const ts = registry.getToolSet(view.name);
       if (!ts) return null;

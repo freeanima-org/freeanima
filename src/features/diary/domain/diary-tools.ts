@@ -342,5 +342,6 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
       ],
       DIARY_TOOL_RETURNS,
     ),
+    { visibility: "searchable" },
   );
 }

@@ -94,6 +94,8 @@ title: 架构
 | 极简内置、无 MCP             | 保留 MCP、权限、渐进式 `toolset_load` / `toolset_unload`                           |
 | 无限 agent 循环              | 保留 `max_turns` / 安全上限（策略层，非本主轴）                                    |
 
+ToolSet 发现可见度分三级：`catalog`（进系统提示 `<toolsets>` 目录）、`searchable`（不进目录、可经 `toolset_search` 发现）、`hidden`（仅按名 `toolset_load`）。目录段 intro 须说明目录外仍可通过 `toolset_search` 发现。
+
 ### 工具结果：精简 content + 再取（禁止裸截断）
 
 | 操作                                                   | 再取路径                                                                                                                                       |

@@ -101,4 +101,28 @@ describe("ToolSetRegistry", () => {
       "Tool 'dup' already registered",
     );
   });
+
+  it("defaults visibility to catalog; private true maps to hidden", () => {
+    const registry = new ToolSetRegistry();
+    registry.registerToolSet("pub", "Public", [{ ...sampleTool, name: "pub_tool" }]);
+    registry.registerToolSet("hid", "Hidden", [{ ...sampleTool, name: "hid_tool" }], {
+      private: true,
+    });
+    expect(registry.getToolSet("pub")?.visibility).toBe("catalog");
+    expect(registry.listToolSets().find((t) => t.name === "pub")?.visibility).toBe("catalog");
+    expect(registry.getEffectiveVisibility("hid")).toBe("hidden");
+    expect(registry.isToolSetPrivate("hid")).toBe(true);
+    expect(registry.isToolSetPrivate("pub")).toBe(false);
+  });
+
+  it("runtime visibility overrides take precedence", () => {
+    const registry = new ToolSetRegistry();
+    registry.registerToolSet("file", "files", [{ ...sampleTool, name: "file_read" }]);
+    registry.setVisibilityOverrides({ file: "searchable" });
+    expect(registry.getRegisteredVisibility("file")).toBe("catalog");
+    expect(registry.getEffectiveVisibility("file")).toBe("searchable");
+    expect(registry.listToolSets()[0]?.visibility_overridden).toBe(true);
+    registry.setVisibilityOverride("file", null);
+    expect(registry.getEffectiveVisibility("file")).toBe("catalog");
+  });
 });

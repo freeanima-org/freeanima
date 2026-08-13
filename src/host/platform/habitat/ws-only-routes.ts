@@ -73,7 +73,10 @@ export const wsOnlyHabitatRoutes = mergeFeatureRoutes([
         sapCtx.app_id,
         sapCtx.instance_id,
         input.tools,
-        { private: input.private },
+        {
+          ...(input.visibility != null ? { visibility: input.visibility } : {}),
+          ...(input.private != null ? { private: input.private } : {}),
+        },
       );
       return { registered };
     },

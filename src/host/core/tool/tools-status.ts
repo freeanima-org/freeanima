@@ -8,7 +8,7 @@ import {
   type ToolDef,
   type ToolReturnKind,
 } from "./registry.ts";
-import type { ToolSetRegistry } from "./toolset.ts";
+import type { ToolSetRegistry, ToolSetVisibility } from "./toolset.ts";
 
 /** Built-in LLM-readable plain-text tools (fallback when returnKind is unset) */
 export const TEXT_RETURN_TOOL_NAMES = [
@@ -33,10 +33,18 @@ export type ToolsStatusToolItem = {
   error_example: { error: string };
 };
 
+export type ToolsStatusToolSetItem = {
+  name: string;
+  description: string;
+  tools: string[];
+  visibility: ToolSetVisibility;
+  visibility_source: "registered" | "override";
+};
+
 export type ToolsStatusResponse = {
   default_toolsets: string[];
   tools: ToolsStatusToolItem[];
-  toolsets: { name: string; description: string; tools: string[] }[];
+  toolsets: ToolsStatusToolSetItem[];
 };
 
 const TEXT_RETURN_TOOL_SET = new Set<string>(TEXT_RETURN_TOOL_NAMES);
@@ -119,6 +127,8 @@ export function buildToolsStatus(
       name: ts.name,
       description: ts.description,
       tools: [...ts.tools],
+      visibility: ts.visibility,
+      visibility_source: ts.visibility_overridden ? ("override" as const) : ("registered" as const),
     })),
   };
 }

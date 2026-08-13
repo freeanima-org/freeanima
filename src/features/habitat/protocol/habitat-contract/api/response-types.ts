@@ -27,6 +27,8 @@ export type ToolsStatusResponse = {
     name: string;
     description: string;
     tools: string[];
+    visibility: "hidden" | "searchable" | "catalog";
+    visibility_source: "registered" | "override";
   }>;
 };
 

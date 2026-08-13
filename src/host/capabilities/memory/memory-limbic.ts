@@ -8,5 +8,6 @@ export function registerMemoryLimbicTools(toolSets: ToolSetRegistry): void {
     "memory_limbic",
     "Limbic emotional memory search and retrieval",
     attachToolReturns([...limbicSearchToolDefs], MEMORY_TOOL_RETURNS),
+    { visibility: "searchable" },
   );
 }

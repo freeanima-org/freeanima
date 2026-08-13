@@ -58,5 +58,6 @@ export function registerExecuteCodeTool(toolSets: ToolSetRegistry): void {
       ],
       CAPABILITIES_TOOLS_RETURNS,
     ),
+    { visibility: "searchable" },
   );
 }

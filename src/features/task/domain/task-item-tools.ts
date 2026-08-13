@@ -641,5 +641,6 @@ export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
       ],
       Object.fromEntries(TASK_ITEM_TOOL_NAMES.map((name) => [name, TASK_TOOL_RETURNS[name]])),
     ),
+    { visibility: "searchable" },
   );
 }

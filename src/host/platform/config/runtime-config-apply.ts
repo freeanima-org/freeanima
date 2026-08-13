@@ -31,6 +31,7 @@ export const TRANSFERRED_RUNTIME_SECTIONS = [
   "i18n",
   "embedding",
   "mcp_servers",
+  "toolset_visibility",
   "discord",
   "weixin",
   "gateway",
@@ -92,6 +93,23 @@ async function applyMcp(): Promise<void> {
   await mcp.startAllEnabled();
 }
 
+function applyToolsetVisibility(config: Config): void {
+  const engine =
+    applyDeps.getEngine?.() ?? (isRuntimeContextReady() ? getRuntimeDeps().engine : null);
+  if (!engine?.catalog?.toolSets) {
+    log.debug("toolset_visibility apply skipped: engine not ready");
+    return;
+  }
+  const raw = config.data.toolset_visibility ?? {};
+  const overrides: Record<string, "hidden" | "searchable" | "catalog"> = {};
+  for (const [name, visibility] of Object.entries(raw)) {
+    if (visibility === "hidden" || visibility === "searchable" || visibility === "catalog") {
+      overrides[name] = visibility;
+    }
+  }
+  engine.catalog.toolSets.setVisibilityOverrides(overrides);
+}
+
 async function applyGateway(config: Config): Promise<void> {
   const platformsRef = applyDeps.getPlatformsRef?.() ?? null;
   const messaging =
@@ -138,6 +156,12 @@ export async function applyRuntimeConfigSection(config: Config, section: string)
           break;
         case "mcp_servers":
           await applyMcp();
+          // MCP re-register clears nothing from overrides Map, but ensure
+          // config overrides stay applied after reconnect.
+          applyToolsetVisibility(config);
+          break;
+        case "toolset_visibility":
+          applyToolsetVisibility(config);
           break;
         case "discord":
         case "weixin":

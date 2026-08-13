@@ -1,6 +1,11 @@
 import { randomUUID } from "node:crypto";
-import type { ToolDef, ToolHandler, ToolSetRegistry } from "@freeanima/host/core/tool";
-import { toolError, toolResult } from "@freeanima/host/core/tool";
+import type {
+  ToolDef,
+  ToolHandler,
+  ToolSetRegistry,
+  ToolSetVisibility,
+} from "@freeanima/host/core/tool";
+import { resolveToolSetVisibility, toolError, toolResult } from "@freeanima/host/core/tool";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { getToolConversationId } from "@freeanima/host/core/tool/tool-context";
 import {
@@ -71,7 +76,7 @@ export class RemoteToolsManager {
   private readonly pendingCalls = new Map<string, PendingToolCall>();
   private readonly toolSetNames = new Map<string, string>();
   private readonly registeredToolDefs = new Map<string, RemoteToolDefInput[]>();
-  private readonly registeredToolPrivate = new Map<string, boolean>();
+  private readonly registeredToolVisibility = new Map<string, ToolSetVisibility>();
   private wrappedGetTool: ((name: string) => ToolDef | undefined) | null = null;
 
   constructor(private readonly toolSets: ToolSetRegistry) {}
@@ -183,7 +188,7 @@ export class RemoteToolsManager {
     appId: string,
     instanceId: string,
     tools: RemoteToolDefInput[],
-    opts?: { private?: boolean },
+    opts?: { visibility?: ToolSetVisibility; private?: boolean },
   ): string[] {
     const key = this.connectionKey(appId, instanceId);
     if (!this.connections.has(key)) {
@@ -223,12 +228,13 @@ export class RemoteToolsManager {
       registered.push(fullName);
     }
 
+    const visibility = resolveToolSetVisibility(opts);
     this.registeredToolDefs.set(key, tools);
-    this.registeredToolPrivate.set(key, opts?.private !== false);
+    this.registeredToolVisibility.set(key, visibility);
 
     if (defs.length > 0) {
       this.toolSets.registerToolSet(setName, `Outpost ${appId}/${instanceId}`, defs, {
-        private: opts?.private !== false,
+        visibility,
       });
       this.toolSetNames.set(setName, setName);
     }
@@ -244,10 +250,10 @@ export class RemoteToolsManager {
     const current = this.registeredToolDefs.get(key) ?? [];
     const remove = new Set(localNames.map((n) => n.trim()).filter(Boolean));
     const next = current.filter((t) => !remove.has(t.local_name));
-    const isPrivate = this.registeredToolPrivate.get(key) ?? true;
+    const visibility = this.registeredToolVisibility.get(key) ?? "catalog";
     this.unregisterAllTools(appId, instanceId);
     if (next.length > 0) {
-      this.registerTools(appId, instanceId, next, { private: isPrivate });
+      this.registerTools(appId, instanceId, next, { visibility });
     }
   }
 
@@ -260,7 +266,7 @@ export class RemoteToolsManager {
     }
     this.toolSetNames.delete(setName);
     this.registeredToolDefs.delete(key);
-    this.registeredToolPrivate.delete(key);
+    this.registeredToolVisibility.delete(key);
   }
 
   handleToolResult(callId: string, content: string): void {
