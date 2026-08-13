@@ -39,4 +39,12 @@ describe("conversationSelectSchema", () => {
       conversationSelectSchema.parse({ ...baseRow, archived_at: "2026-01-02T00:00:00Z" }),
     ).not.toThrow();
   });
+
+  it("normalizes legacy sap: platform_info on select", () => {
+    const parsed = conversationSelectSchema.parse({
+      ...baseRow,
+      platform_info: { platform: "sap:companion:k7m" },
+    });
+    expect(parsed.platform_info).toMatchObject({ platform: "remote:companion:k7m" });
+  });
 });

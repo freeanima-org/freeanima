@@ -15,8 +15,14 @@ export function isGatewayPlatform(value: string): value is GatewayPlatform {
   return (GATEWAY_PLATFORMS as readonly string[]).includes(value);
 }
 
+/** 已存会话遗留前缀 `sap:` → canonical `remote:`（协议新连接仍只用 remote） */
+export function normalizeLegacyRemotePlatformPrefix(platform: string): string {
+  return platform.startsWith("sap:") ? `remote:${platform.slice(4)}` : platform;
+}
+
 export function isRemotePlatformString(platform: string): boolean {
-  const parts = platform.split(":");
+  const normalized = normalizeLegacyRemotePlatformPrefix(platform);
+  const parts = normalized.split(":");
   const prefix = parts[0];
   if (parts.length !== 3 || prefix !== "remote") return false;
   return !!parts[1]?.trim() && !!parts[2]?.trim();
@@ -27,7 +33,8 @@ export function parseRemotePlatformString(platform: string): {
   instance_id_norm: string;
 } | null {
   if (!isRemotePlatformString(platform)) return null;
-  const parts = platform.split(":");
+  const normalized = normalizeLegacyRemotePlatformPrefix(platform);
+  const parts = normalized.split(":");
   const appSlug = parts[1];
   const instanceId = parts[2];
   if (appSlug === undefined || instanceId === undefined) return null;
@@ -37,6 +44,7 @@ export function parseRemotePlatformString(platform: string): {
 const remotePlatformInfoSchema = z.looseObject({
   platform: z
     .string()
+    .transform(normalizeLegacyRemotePlatformPrefix)
     .refine((p) => isRemotePlatformString(p), { message: "invalid remote platform" }),
   outpost_app_id: z.string().optional(),
   outpost_instance_id: z.string().optional(),
@@ -174,22 +182,23 @@ export function buildPlatformInfo(
   platformExtra?: Record<string, unknown>,
 ): PlatformInfo | null {
   if (!platform) return null;
-  if (isChatPlatformString(platform)) {
+  const canonical = normalizeLegacyRemotePlatformPrefix(platform);
+  if (isChatPlatformString(canonical)) {
     const extra = normalizePlatformExtra(platformExtra);
     const merged: Record<string, unknown> = { platform: "chat", ...extra };
     return chatPlatformInfoSchema.parse(merged);
   }
-  if (!isGatewayPlatform(platform) && !isRemotePlatformString(platform)) {
+  if (!isGatewayPlatform(canonical) && !isRemotePlatformString(canonical)) {
     return null;
   }
   const extra = normalizePlatformExtra(platformExtra);
-  const withDefaults = applyPlatformExtraDefaults(platform, { ...extra });
+  const withDefaults = applyPlatformExtraDefaults(canonical, { ...extra });
   const merged: Record<string, unknown> = {
-    platform,
+    platform: canonical,
     ...withDefaults,
   };
-  if (isRemotePlatformString(platform)) {
-    const parsed = parseRemotePlatformString(platform);
+  if (isRemotePlatformString(canonical)) {
+    const parsed = parseRemotePlatformString(canonical);
     if (parsed) {
       merged.outpost_app_id ??= parsed.app_slug;
       merged.outpost_instance_id ??= parsed.instance_id_norm;

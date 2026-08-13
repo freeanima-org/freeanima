@@ -1,3 +1,4 @@
+import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
 import { CST_OFFSET_MS } from "@freeanima/host/core/util";
 import type { LimbicMemoryRow, SemanticMemoryRow } from "@freeanima/host/core/db/schema/rows";
 import { getConversationMetaLite, listMessages } from "@freeanima/host/core/db/pg/conversation";
@@ -74,7 +75,16 @@ export async function collectConversationBlocks(
 ): Promise<LightSleepConversationBlock[]> {
   const blocks: LightSleepConversationBlock[] = [];
   for (const conversationId of conversationIds) {
-    const meta = await getConversationMetaLite(conversationId);
+    let meta;
+    try {
+      meta = await getConversationMetaLite(conversationId);
+    } catch (e) {
+      logComponent("memory").warn("skip conversation: meta parse failed", {
+        conversation_id: conversationId,
+        error: e instanceof Error ? e.message : String(e),
+      });
+      continue;
+    }
     if (!meta) continue;
     const messages = filterMessagesInDayRange(
       filterRecallableMessages(await listMessages(conversationId)),

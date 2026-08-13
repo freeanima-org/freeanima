@@ -157,6 +157,17 @@ describe("light-sleep build-messages", () => {
     expect(blocks[0]?.text).toContain("today reply");
     expect(blocks[0]?.text).not.toContain("past feeling");
   });
+
+  it("collectConversationBlocks skips sessions whose meta parse throws", async () => {
+    getConversationMetaLiteMock.mockImplementationOnce(async () => {
+      throw new Error(
+        '[{"code":"custom","path":["platform_info","platform"],"message":"invalid remote platform"}]',
+      );
+    });
+    const blocks = await collectConversationBlocks(["bad", "s-1"], cstDayRange("2026-06-08"));
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0]?.conversationId).toBe("s-1");
+  });
 });
 
 describe("runLightSleep", () => {
