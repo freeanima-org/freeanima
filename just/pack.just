@@ -73,8 +73,14 @@ app-ui: _deps
 brand-icons: _deps
   {{ bun }} scripts/generate-brand-icons.ts
 
-# Vault 浏览器扩展（MV3 → dist/browser-extension）
+# Vault 浏览器扩展 Chrome MV3（→ dist/browser-extension + zip）
 # 环境：FREEANIMA_BUILD_CHANNEL（缺省 local）；CI 设 canary|release + FREEANIMA_BUILD_VERSION
 [no-cd]
-browser-extension: _deps
-  {{ bun }} scripts/build-browser-extension.ts
+browser-extension-chrome: _deps
+  {{ bun }} scripts/build-browser-extension-chrome.ts
+
+# Vault 浏览器扩展 Firefox（→ 签名/未签名 xpi + updates.json；跟 canary 自托管）
+# 签名：FREEANIMA_AMO_API_KEY + FREEANIMA_AMO_API_SECRET（缺省则未签名，仅调试）
+[no-cd]
+browser-extension-firefox: _deps
+  {{ bun }} scripts/build-browser-extension-firefox.ts

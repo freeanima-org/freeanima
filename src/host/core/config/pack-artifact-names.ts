@@ -9,6 +9,8 @@ export const PACK_ARTIFACT_STABLE_NAMES = {
   "desktop-linux-appimage": "freeanima-desktop-tauri-linux.AppImage",
   "mobile-android-apk": "freeanima-mobile-android.apk",
   "browser-extension-zip": "freeanima-browser-extension.zip",
+  "browser-extension-firefox-xpi": "freeanima-browser-extension-firefox.xpi",
+  "browser-extension-firefox-updates": "freeanima-browser-extension-firefox-updates.json",
 } as const;
 
 export type PackArtifactKind = keyof typeof PACK_ARTIFACT_STABLE_NAMES;
@@ -57,6 +59,10 @@ export function packArtifactVersionedName(kind: PackArtifactKind, meta: PackArti
       return `freeanima-mobile-android-${versionToken}-${channel}.apk`;
     case "browser-extension-zip":
       return `freeanima-browser-extension-${versionToken}-${channel}.zip`;
+    case "browser-extension-firefox-xpi":
+      return `freeanima-browser-extension-firefox-${versionToken}-${channel}.xpi`;
+    case "browser-extension-firefox-updates":
+      return `freeanima-browser-extension-firefox-updates-${versionToken}-${channel}.json`;
     default: {
       const _exhaustive: never = kind;
       return _exhaustive;

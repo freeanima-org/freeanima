@@ -6,6 +6,21 @@
 
 在 **freeanima-org** → Settings → Secrets and variables → Actions → Organization secrets 配置后，确保 `freeanima` 仓库可访问。
 
+## `FREEANIMA_AMO_API_KEY` / `FREEANIMA_AMO_API_SECRET`（Firefox 扩展 unlisted 签名）
+
+维护者本人 Windows Firefox Vault 自托管自动更新（canary）需要 AMO 签发 **unlisted** xpi。
+
+1. [AMO Developer Hub](https://addons.mozilla.org/developers/) → API Keys → 生成 JWT（issuer + secret）
+2. 组织/仓库 Actions secrets：
+   - **`FREEANIMA_AMO_API_KEY`** = JWT issuer
+   - **`FREEANIMA_AMO_API_SECRET`** = JWT secret
+3. [`canary.yml`](workflows/canary.yml) → `package-artifacts` 的 Firefox job 调用 `web-ext sign --channel=unlisted`
+4. 产物：`freeanima-browser-extension-firefox.xpi` + `…-updates.json` 挂到 tag `canary`；site 同步到 `https://freeanima.com/extension/firefox/updates.json`
+
+未配置时仍会打出**未签名** xpi（可 `about:debugging` 临时加载），但不能在正式 Firefox 上自动更新。
+
+本机：`FREEANIMA_AMO_API_KEY=… FREEANIMA_AMO_API_SECRET=… just pack browser-extension-firefox`
+
 ## `FREEANIMA_CI`（Release Please + Canary + Blackbox dispatch）
 
 同一 token 用于：

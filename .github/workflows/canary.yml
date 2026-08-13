@@ -66,11 +66,31 @@ jobs:
         - Desktop Windows: `freeanima-desktop-windows-x64-setup.exe`
         - Mobile Android (debug): `freeanima-mobile-android.apk`
         - Browser Extension (Chrome MV3): `freeanima-browser-extension.zip`
+        - Browser Extension (Firefox, maintainer self-host): `freeanima-browser-extension-firefox.xpi`
 
         Channel: **canary**. Use in-app / `anima upgrade --channel canary` to follow this track.
+        Firefox Vault auto-update: `https://freeanima.com/extension/firefox/updates.json` → this xpi.
     secrets:
       FREEANIMA_CI: ${{ secrets.FREEANIMA_CI }}
       FREEANIMA_ANDROID_KEYSTORE_BASE64: ${{ secrets.FREEANIMA_ANDROID_KEYSTORE_BASE64 }}
       FREEANIMA_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.FREEANIMA_ANDROID_KEYSTORE_PASSWORD }}
       FREEANIMA_ANDROID_KEY_PASSWORD: ${{ secrets.FREEANIMA_ANDROID_KEY_PASSWORD }}
       FREEANIMA_ANDROID_KEY_ALIAS: ${{ secrets.FREEANIMA_ANDROID_KEY_ALIAS }}
+      FREEANIMA_AMO_API_KEY: ${{ secrets.FREEANIMA_AMO_API_KEY }}
+      FREEANIMA_AMO_API_SECRET: ${{ secrets.FREEANIMA_AMO_API_SECRET }}
+
+  refresh-site:
+    name: Refresh site (Firefox updates.json)
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Dispatch site deploy
+        env:
+          GH_TOKEN: ${{ secrets.FREEANIMA_CI }}
+        run: |
+          set -euo pipefail
+          gh workflow run site.yml --repo "${{ github.repository }}"
+          echo "Dispatched site.yml to sync freeanima.com/extension/firefox/updates.json"

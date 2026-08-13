@@ -417,12 +417,14 @@ Judge 使用可选 `llm.profiles.goal_judge`；judge 调用/解析失败时目�
 
 **UI 源码产物**：`src/portal/app/web/dist`（`base: /web/`）。
 
-| 客户端       | UI 加载                                                         | 更新方式                                                                                                                                                                              |
-| ------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 浏览器 / PWA | Habitat 托管 `/web/*`（有 dist 时始终托管）                     | Service Worker 提示新版本后**手动重载**（不自动刷新）；**不**跟 GitHub 包通道                                                                                                         |
-| Desktop      | **安装包内** `ui/web`（`prepare-tauri-ui`）；调试可用 Tauri dev | 按 bake `channel` 查 GitHub（`release`=stable latest + semver；`canary`=tag `canary` + commit）；用户确认后 NSIS 覆盖；可切换 `release`⇄`canary`；About 可选公共 gh-proxy（默认直连） |
-| Mobile APK   | **安装包内** `ui/web`（本地同源）；Habitat 仅 API               | 同上轨语义；有 APK asset 才提示；确认后系统安装器覆盖；可切换轨；同上代理选择                                                                                                         |
-| Standalone   | 嵌入 Web UI 的单文件 `anima`                                    | `anima upgrade` / 设置「关于→服务」/ `ops_update_*`；`--channel` / `--proxy`；`local` / 源码安装不可自动升级；curl 安装脚本可用 `PROXY=…`                                             |
+| 客户端                              | UI 加载                                                         | 更新方式                                                                                                                                                                              |
+| ----------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 浏览器 / PWA                        | Habitat 托管 `/web/*`（有 dist 时始终托管）                     | Service Worker 提示新版本后**手动重载**（不自动刷新）；**不**跟 GitHub 包通道                                                                                                         |
+| Desktop                             | **安装包内** `ui/web`（`prepare-tauri-ui`）；调试可用 Tauri dev | 按 bake `channel` 查 GitHub（`release`=stable latest + semver；`canary`=tag `canary` + commit）；用户确认后 NSIS 覆盖；可切换 `release`⇄`canary`；About 可选公共 gh-proxy（默认直连） |
+| Mobile APK                          | **安装包内** `ui/web`（本地同源）；Habitat 仅 API               | 同上轨语义；有 APK asset 才提示；确认后系统安装器覆盖；可切换轨；同上代理选择                                                                                                         |
+| Standalone                          | 嵌入 Web UI 的单文件 `anima`                                    | `anima upgrade` / 设置「关于→服务」/ `ops_update_*`；`--channel` / `--proxy`；`local` / 源码安装不可自动升级；curl 安装脚本可用 `PROXY=…`                                             |
+| Vault 浏览器扩展（Chrome）          | 开发者模式加载已解压 / Release zip                              | **无**商店 OTA；手动重载                                                                                                                                                              |
+| Vault 浏览器扩展（Firefox，维护者） | 签名 xpi（gecko id `vault@freeanima.com`）                      | 只跟 **canary**：`https://freeanima.com/extension/firefox/updates.json` → Release 固定资产名 xpi；AMO unlisted 签名                                                                   |
 
 壳层保留原生能力（Tauri commands / prefs / 通知等）。**无壳内 UI OTA**：原生端不从 Habitat 热替换
 SPA。允许**用户确认后**的安装包级覆盖（Desktop 安装包 / Mobile APK / Standalone `anima upgrade`

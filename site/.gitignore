@@ -6,6 +6,9 @@ dist/
 # synced from ../scripts/install.sh (site prebuild/predev)
 public/install
 
+# synced from canary Release / placeholder (site prebuild/predev)
+public/extension/firefox/updates.json
+
 # dependencies
 node_modules/
 

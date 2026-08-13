@@ -5,9 +5,10 @@
   "packageManager": "bun@1.3.14",
   "scripts": {
     "sync-install": "cp ../scripts/install.sh public/install",
-    "predev": "bun run sync-install",
+    "sync-firefox-updates": "bun ../scripts/sync-firefox-extension-updates.ts",
+    "predev": "bun run sync-install && bun run sync-firefox-updates",
     "dev": "astro dev",
-    "prebuild": "bun run sync-install",
+    "prebuild": "bun run sync-install && bun run sync-firefox-updates",
     "build": "astro build",
     "preview": "astro preview"
   },

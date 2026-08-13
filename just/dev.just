@@ -30,7 +30,12 @@ tauri: _deps
 tauri-android: _deps
   {{ bun }} scripts/dev-tauri-mobile.ts
 
-# Vault 浏览器扩展（WXT；Chrome 加载 .output/chrome-mv3）
+# Vault 浏览器扩展 Chrome（WXT；加载 .output/chrome-mv3）
 [no-cd]
-browser-extension *args: _deps
+browser-extension-chrome *args: _deps
   {{ bun }} x wxt {{args}}
+
+# Vault 浏览器扩展 Firefox（WXT -b firefox --mv3）
+[no-cd]
+browser-extension-firefox *args: _deps
+  {{ bun }} x wxt -b firefox --mv3 {{args}}
