@@ -1,4 +1,8 @@
-import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import {
+  bindResolvedWorldContext,
+  resetResolvedWorldContextForTest,
+} from "@freeanima/host/core/config/resolved-world-context.ts";
 import type { EntityRow } from "@freeanima/host/core/db/pg/entity";
 import type { VerifiedServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
 
@@ -33,7 +37,7 @@ mock.module("@freeanima/host/core/db/pg", () => ({
 
 mock.module("@freeanima/host/core/config/world-context", () => ({
   ...worldContextOriginal,
-  resolveSubjectWorldId: async () => 10,
+  resolveSubjectWorldId: (kind: "user" | "agent") => (kind === "agent" ? 20 : 10),
 }));
 
 mock.module("@freeanima/host/core/db/pg/entity", () => ({
@@ -63,6 +67,16 @@ function auth(): VerifiedServiceApiToken {
 
 function testDeps(): RuntimeDeps {
   return {};
+}
+
+function bindWorlds() {
+  bindResolvedWorldContext({
+    user_subject_id: 1,
+    agent_subject_id: 2,
+    user_world_id: 10,
+    agent_world_id: 20,
+    commons_world_id: 30,
+  });
 }
 
 function row(partial: Partial<EntityRow> & Pick<EntityRow, "id">): EntityRow {
@@ -120,6 +134,7 @@ describe("serviceEntityList filters and search", () => {
           id: 42,
           type: "content",
           title: "exact",
+          summary: "",
           primary_component: "task_item",
           components: ["task_item"],
           updated_at: "2026-01-02T00:00:00.000Z",
@@ -131,6 +146,25 @@ describe("serviceEntityList filters and search", () => {
     });
     expect(searchEntitiesMock).not.toHaveBeenCalled();
     expect(listEntitiesMock).not.toHaveBeenCalled();
+  });
+
+  it("fills list summary from content when title/summary empty", async () => {
+    const hit = row({
+      id: 11,
+      title: "",
+      summary: "",
+      content: "记忆正文预览内容足够长",
+      primary_component: "semantic_memory",
+      components: ["semantic_memory"],
+    });
+    getEntityMock.mockImplementation(async () => hit);
+
+    const result = await serviceEntityList(
+      testDeps(),
+      { subject_kind: "user", query: "11" },
+      auth(),
+    );
+    expect(result.items[0]?.summary).toBe("记忆正文预览内容足够长");
   });
 
   it("returns empty for id hit that is soft-deleted on alive list", async () => {
@@ -201,6 +235,27 @@ describe("serviceEntityList filters and search", () => {
     );
   });
 
+  it("uses search snippet for list summary when content absent", async () => {
+    const hit = {
+      ...row({ id: 8, title: "", summary: "", content: "" }),
+      snippet: "snippet from hybrid",
+    };
+    searchEntitiesMock.mockImplementation(async () => ({
+      query: "hybrid",
+      limit: 20,
+      offset: 0,
+      count: 1,
+      results: [hit],
+    }));
+
+    const result = await serviceEntityList(
+      testDeps(),
+      { subject_kind: "user", query: "hybrid" },
+      auth(),
+    );
+    expect(result.items[0]?.summary).toBe("snippet from hybrid");
+  });
+
   it("passes type and primary_component to list and count together", async () => {
     const hit = row({ id: 3 });
     listEntitiesMock.mockImplementation(async () => [hit]);
@@ -242,10 +297,15 @@ describe("serviceEntityList filters and search", () => {
 
 describe("serviceEntityGet", () => {
   beforeEach(() => {
+    bindWorlds();
     getEntityMock.mockReset();
     assertSubjectCanAccessWorldMock.mockReset();
     getEntityMock.mockImplementation(async () => null);
     assertSubjectCanAccessWorldMock.mockImplementation(async () => undefined);
+  });
+
+  afterEach(() => {
+    resetResolvedWorldContextForTest();
   });
 
   it("returns detail fields for entity in world", async () => {
@@ -268,6 +328,36 @@ describe("serviceEntityGet", () => {
     expect(result.item.revision_count).toBe(1);
     expect(getEntityMock).toHaveBeenCalledWith(42, { include_deleted: false });
     expect(assertSubjectCanAccessWorldMock).toHaveBeenCalledWith(1, 10, { access: "read" });
+  });
+
+  it("user reading agent-world entity skips ACL", async () => {
+    const hit = row({
+      id: 99,
+      world_id: 20,
+      title: "",
+      content: "agent memory",
+      primary_component: "semantic_memory",
+      components: ["semantic_memory"],
+    });
+    getEntityMock.mockImplementation(async () => hit);
+
+    const result = await serviceEntityGet(testDeps(), { id: 99 }, auth());
+
+    expect(result.item.id).toBe(99);
+    expect(result.item.content).toBe("agent memory");
+    expect(assertSubjectCanAccessWorldMock).not.toHaveBeenCalled();
+  });
+
+  it("agent token still uses ACL on agent world", async () => {
+    const hit = row({ id: 88, world_id: 20 });
+    getEntityMock.mockImplementation(async () => hit);
+
+    await serviceEntityGet(testDeps(), { id: 88 }, {
+      subject_id: 2,
+      subject_type: "agent",
+    } as VerifiedServiceApiToken);
+
+    expect(assertSubjectCanAccessWorldMock).toHaveBeenCalledWith(2, 20, { access: "read" });
   });
 
   it("passes include_deleted for trash detail", async () => {

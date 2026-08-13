@@ -14,6 +14,16 @@ type SemanticMemoryView = {
   reference_count: number;
 };
 
+function memoryKindFromBody(body: Record<string, unknown> | undefined): string {
+  const kind = body?.memory_kind;
+  return typeof kind === "string" && kind.trim() ? kind : "semantic_memory";
+}
+
+function statusFromBody(body: Record<string, unknown> | undefined): string {
+  const status = body?.status;
+  return typeof status === "string" && status.trim() ? status : "active";
+}
+
 export function SemanticMemoryEntityOverlay({ id }: EntityOverlayProps): JSX.Element {
   const [row, setRow] = useState<SemanticMemoryView | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,21 +34,24 @@ export function SemanticMemoryEntityOverlay({ id }: EntityOverlayProps): JSX.Ele
     setLoading(true);
     setError(null);
     void getTypedHabitatClient()
-      .call("memory.semanticList", {
-        status: "all",
-        limit: 100,
-        offset: 0,
-      })
+      .call("entity.get", { id })
       .then((raw: unknown) => {
         if (cancelled) return;
-        const items = (raw as { items?: SemanticMemoryView[] }).items ?? [];
-        const hit = items.find((item) => item.id === id) ?? null;
-        if (!hit) {
+        const item = (raw as { item?: Record<string, unknown> }).item;
+        if (!item || item.primary_component !== "semantic_memory") {
           setError("未找到该语义记忆");
           setRow(null);
-        } else {
-          setRow(hit);
+          return;
         }
+        const body = (item.body ?? {}) as Record<string, unknown>;
+        setRow({
+          id: Number(item.id),
+          type: memoryKindFromBody(body),
+          content: typeof item.content === "string" ? item.content : "",
+          pinned: item.pinned === true,
+          status: statusFromBody(body),
+          reference_count: typeof item.reference_count === "number" ? item.reference_count : 0,
+        });
       })
       .catch((err: unknown) => {
         if (cancelled) return;

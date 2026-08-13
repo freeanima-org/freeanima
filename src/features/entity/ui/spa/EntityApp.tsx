@@ -312,7 +312,7 @@ export function EntityApp() {
               >
                 <div className="min-w-0">
                   <div className="truncate text-sm font-medium">#{row.id}</div>
-                  <div className="truncate text-sm">{row.title || "—"}</div>
+                  <div className="truncate text-sm">{row.title || row.summary || "—"}</div>
                   <div className="text-xs text-muted-foreground">{row.type}</div>
                 </div>
                 <div className="truncate text-sm">{row.primary_component ?? "—"}</div>

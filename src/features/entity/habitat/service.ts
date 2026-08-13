@@ -8,12 +8,14 @@ import {
   deleteEntity,
   deleteEntityComponent,
   getEntity,
+  isUserAgentPrivateWorldPassthrough,
   listEntities,
   restoreEntity,
   searchEntities,
   ToolWorldAccessError,
   type EntityDeletedFilter,
   type EntityRow,
+  type EntitySearchHit,
 } from "@freeanima/host/core/db/pg/entity";
 import type { EntityType } from "@freeanima/host/core/db/schema";
 import type { VerifiedServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token";
@@ -26,6 +28,8 @@ import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 
 import { parseEntityListQueryId } from "./parse-entity-list-query-id.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
+
+const LIST_PREVIEW_MAX = 120;
 
 function assertPg(_deps: RuntimeDeps): void {
   if (!isPostgresPrimary()) {
@@ -55,11 +59,28 @@ async function entityWorldIdForAuth(
   return resolveSubjectWorldId(kind);
 }
 
-function toAdminRow(row: EntityRow): EntityAdminRowPayload {
+function truncatePreview(text: string, max = LIST_PREVIEW_MAX): string {
+  const t = text.trim();
+  if (t.length <= max) return t;
+  return `${t.slice(0, max)}…`;
+}
+
+/** 列表行展示用：summary → content 截断 → 搜索 snippet */
+function listPreviewSummary(row: EntityRow, snippet?: string): string {
+  const summary = row.summary.trim();
+  if (summary) return summary;
+  const content = row.content.trim();
+  if (content) return truncatePreview(content);
+  const snip = snippet?.trim();
+  return snip ? truncatePreview(snip) : "";
+}
+
+function toAdminRow(row: EntityRow, snippet?: string): EntityAdminRowPayload {
   return {
     id: row.id,
     type: row.type,
     title: row.title,
+    summary: listPreviewSummary(row, snippet),
     primary_component: row.primary_component,
     components: row.components,
     updated_at: row.updated_at.toISOString(),
@@ -109,6 +130,10 @@ function matchesDeletedFilter(row: EntityRow, deleted: EntityDeletedFilter): boo
   return true;
 }
 
+function mapSearchHitToAdminRow(hit: EntitySearchHit): EntityAdminRowPayload {
+  return toAdminRow(hit, hit.snippet);
+}
+
 async function serviceEntityAdminList(
   deps: RuntimeDeps,
   input: EntityAdminListInput | undefined,
@@ -153,7 +178,7 @@ async function serviceEntityAdminList(
       mode: "hybrid",
       projection: "list",
     });
-    return { items: result.results.map(toAdminRow), count: result.count };
+    return { items: result.results.map(mapSearchHitToAdminRow), count: result.count };
   }
 
   const filterOpts = {
@@ -172,7 +197,7 @@ async function serviceEntityAdminList(
     }),
     countEntities(filterOpts),
   ]);
-  return { items: items.map(toAdminRow), count };
+  return { items: items.map((row) => toAdminRow(row)), count };
 }
 
 export async function serviceEntityList(
@@ -201,13 +226,15 @@ export async function serviceEntityGet(
   if (!row) {
     throw new Error("entity not found");
   }
-  try {
-    await assertSubjectCanAccessWorld(auth.subject_id, row.world_id, { access: "read" });
-  } catch (e) {
-    if (e instanceof ToolWorldAccessError) {
-      throw new Error("entity not found", { cause: e });
+  if (!isUserAgentPrivateWorldPassthrough(auth.subject_type, row.world_id)) {
+    try {
+      await assertSubjectCanAccessWorld(auth.subject_id, row.world_id, { access: "read" });
+    } catch (e) {
+      if (e instanceof ToolWorldAccessError) {
+        throw new Error("entity not found", { cause: e });
+      }
+      throw e;
     }
-    throw e;
   }
   return { item: toDetailRow(row) };
 }

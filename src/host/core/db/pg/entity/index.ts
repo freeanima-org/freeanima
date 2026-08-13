@@ -61,6 +61,7 @@ export {
   resolveDefaultWorldForToolCaller,
   resolveToolWorld,
   listWorldIdsAccessibleBySubject,
+  isUserAgentPrivateWorldPassthrough,
   ToolWorldAccessError,
   type ResolveToolWorldOpts,
 } from "./tool-world-access.ts";

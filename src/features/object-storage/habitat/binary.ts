@@ -2,13 +2,12 @@ import { z } from "zod";
 
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import type { RemoteToolsServerDeps } from "@freeanima/host/capabilities/outpost/transport/types";
-import { resolveSubjectWorldId } from "@freeanima/host/core/config";
 import {
   assertSubjectCanAccessWorld,
+  isUserAgentPrivateWorldPassthrough,
   resolveWorldFromEntityId,
   ToolWorldAccessError,
 } from "@freeanima/host/core/db/pg/entity";
-
 import { ApiHandlerError } from "../../habitat/habitat/habitat-api/handlers/errors.ts";
 import {
   downloadObjectFileBytes,
@@ -16,6 +15,8 @@ import {
   ObjectStorageNotConfiguredError,
 } from "../domain/index.ts";
 import { binaryResponseWithCache, notModifiedIfMatch } from "../domain/http-cache.ts";
+
+export { isUserAgentPrivateWorldPassthrough };
 
 function requireHttpRequest(ctx: RemoteToolsRequestContext): Request {
   const httpRequest = (ctx as RemoteToolsRequestContext & { httpRequest?: Request }).httpRequest;
@@ -28,17 +29,6 @@ function requireHttpRequest(ctx: RemoteToolsRequestContext): Request {
 const fileGetInputSchema = z.object({
   id: z.number().int().positive(),
 });
-
-/**
- * Habitat UI SubjectScope：user 可代读 agent 默认私有 world（与 entity/task/vault 的
- * `subject_type=user && subject_kind=agent` 一致）。供单测与 HTTP 鉴权共用。
- */
-export function isUserAgentPrivateWorldPassthrough(
-  subjectType: string | undefined,
-  worldId: number,
-): boolean {
-  return subjectType === "user" && worldId === resolveSubjectWorldId("agent");
-}
 
 /**
  * HTTP REST 无 ToolContext ALS；勿用 resolveToolWorld（无 callerAuth 时会落到 agent_subject_id）。
