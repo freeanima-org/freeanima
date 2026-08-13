@@ -27,6 +27,7 @@ import {
   OBJECT_FILE_COMPONENT,
   OBJECT_FOLDER_COMPONENT,
   SUBAGENT_COMPONENT,
+  BOOKMARK_COMPONENT,
   calendarEventBodySchema,
   contentBlockBodySchema,
   diaryBlockTemplateBodySchema,
@@ -52,6 +53,7 @@ import {
   objectFileBodySchema,
   objectFolderBodySchema,
   subagentBodySchema,
+  bookmarkBodySchema,
   type CalendarEventBody,
   type ContentBlockBody,
   type DiaryBlockTemplateBody,
@@ -77,6 +79,7 @@ import {
   type ObjectFileBody,
   type ObjectFolderBody,
   type SubagentBody,
+  type BookmarkBody,
 } from "./components/index.ts";
 import { parseEntityRevisions, type EntityRevision } from "./revisions.ts";
 
@@ -377,6 +380,31 @@ export function asTag(row: EntityRow): (TagBody & { id: number; title: string })
   if (row.primary_component !== TAG_COMPONENT) return null;
   const parsed = tagBodySchema.safeParse(row.body);
   return parsed.success ? { id: row.id, title: row.title, ...parsed.data } : null;
+}
+
+export function asBookmark(row: EntityRow):
+  | (BookmarkBody & {
+      id: number;
+      title: string;
+      content: string;
+      deleted_at: Date | null;
+      created_at: Date;
+      updated_at: Date;
+    })
+  | null {
+  if (row.primary_component !== BOOKMARK_COMPONENT) return null;
+  const parsed = bookmarkBodySchema.safeParse(row.body);
+  return parsed.success
+    ? {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        deleted_at: row.deleted_at,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        ...parsed.data,
+      }
+    : null;
 }
 
 export function asSubagent(row: EntityRow):

@@ -14,6 +14,7 @@ import { tagPlugin } from "@freeanima/features/tag/plugin";
 import { subagentPlugin } from "@freeanima/features/subagent/plugin";
 import { entityPlugin } from "@freeanima/features/entity/plugin";
 import { vaultPlugin } from "@freeanima/features/vault/plugin";
+import { bookmarkPlugin } from "@freeanima/features/bookmark/plugin";
 
 /** Habitat feature plugins registered at boot. */
 export const builtinFeaturePlugins: FeaturePlugin[] = [
@@ -25,6 +26,7 @@ export const builtinFeaturePlugins: FeaturePlugin[] = [
   subagentPlugin,
   entityPlugin,
   vaultPlugin,
+  bookmarkPlugin,
   notificationPlugin,
   companionPlugin,
   codingPlugin,

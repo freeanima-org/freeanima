@@ -38,6 +38,20 @@ import {
   type FillPayload,
 } from "../runtime/messages.ts";
 import { loadSettings } from "../runtime/settings.ts";
+import {
+  ensureBookmarkAlarm,
+  isBookmarkSyncAlarm,
+  listLocalBookmarks,
+  onBookmarkChanged,
+  onBookmarkCreated,
+  onBookmarkMoved,
+  onBookmarkRemoved,
+  runBookmarkSync,
+} from "../features/bookmarks/sync.ts";
+import {
+  loadBookmarkSyncSettings,
+  saveBookmarkSyncSettings,
+} from "../features/bookmarks/sync-settings.ts";
 
 const OFFLINE_READONLY_ERROR = "离线只读：请联网后再编辑";
 
@@ -337,6 +351,26 @@ export default defineBackground(() => {
   chrome.runtime.onMessage.addListener((message: ExtToBgMessage, _sender, sendResponse) => {
     void handleMessage(message).then(sendResponse);
     return true;
+  });
+
+  void ensureBookmarkAlarm();
+
+  chrome.alarms.onAlarm.addListener((alarm) => {
+    if (!isBookmarkSyncAlarm(alarm.name)) return;
+    void runBookmarkSync().catch(() => undefined);
+  });
+
+  chrome.bookmarks.onCreated.addListener((id, node) => {
+    void onBookmarkCreated(id, node);
+  });
+  chrome.bookmarks.onChanged.addListener((id, change) => {
+    void onBookmarkChanged(id, change);
+  });
+  chrome.bookmarks.onRemoved.addListener((id, removeInfo) => {
+    void onBookmarkRemoved(id, removeInfo);
+  });
+  chrome.bookmarks.onMoved.addListener((id) => {
+    void onBookmarkMoved(id);
   });
 });
 
@@ -727,6 +761,34 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
             symbols: message.symbols ?? true,
           }),
         };
+      }
+      case "bookmark_get_sync_settings": {
+        const s = await loadBookmarkSyncSettings();
+        return {
+          ok: true,
+          bookmark_sync: {
+            enabled: s.enabled,
+            last_sync_at: s.last_sync_at,
+            last_error: s.last_error,
+          },
+        };
+      }
+      case "bookmark_set_sync_enabled": {
+        await saveBookmarkSyncSettings({ enabled: message.enabled, last_error: null });
+        await ensureBookmarkAlarm();
+        if (message.enabled) {
+          const sync = await runBookmarkSync({ fullPush: true });
+          return { ok: true, message: sync.message };
+        }
+        return { ok: true, message: "已关闭书签同步" };
+      }
+      case "bookmark_sync_now": {
+        const sync = await runBookmarkSync({ fullPush: message.full === true });
+        return { ok: true, message: sync.message };
+      }
+      case "bookmark_list": {
+        const bookmarks = await listLocalBookmarks(message.query);
+        return { ok: true, bookmarks };
       }
       default: {
         const _exhaustive: never = message;

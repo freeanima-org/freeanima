@@ -13,7 +13,7 @@ import {
 import { sendBg, type ExtVaultEditorItem, type ExtVaultListItem } from "../../runtime/messages.ts";
 import { loadSettings, saveSettings } from "../../runtime/settings.ts";
 
-type TabId = "vault" | "generator" | "options";
+type TabId = "vault" | "bookmarks" | "generator" | "options";
 type Screen = { kind: "main" } | { kind: "editor"; itemId: number | null };
 
 function extensionDisplayVersion(): string {
@@ -85,6 +85,13 @@ export function VaultPopupApp() {
   const [habitatUrl, setHabitatUrl] = useState("");
   const [authToken, setAuthToken] = useState("");
   const [optionsMsg, setOptionsMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [bookmarks, setBookmarks] = useState<
+    { id: string; title: string; url?: string; kind: "folder" | "url" }[]
+  >([]);
+  const [bookmarkQuery, setBookmarkQuery] = useState("");
+  const [bookmarkError, setBookmarkError] = useState("");
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const [bookmarkSyncMsg, setBookmarkSyncMsg] = useState("");
 
   const writesDisabled = !online;
 
@@ -154,6 +161,33 @@ export function VaultPopupApp() {
     }, 200);
     return () => window.clearTimeout(handle);
   }, [unlocked, screen.kind, activeTab, searchQuery, reloadList]);
+
+  const reloadBookmarks = useCallback(async (query: string) => {
+    setBookmarkLoading(true);
+    setBookmarkError("");
+    try {
+      const res = await sendBg({
+        type: "bookmark_list",
+        ...(query.trim() ? { query: query.trim() } : {}),
+      });
+      if (!res.ok) {
+        setBookmarkError(res.error);
+        setBookmarks([]);
+        return;
+      }
+      if ("bookmarks" in res) setBookmarks(res.bookmarks);
+    } finally {
+      setBookmarkLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!unlocked || screen.kind !== "main" || activeTab !== "bookmarks") return;
+    const handle = window.setTimeout(() => {
+      void reloadBookmarks(bookmarkQuery);
+    }, 200);
+    return () => window.clearTimeout(handle);
+  }, [unlocked, screen.kind, activeTab, bookmarkQuery, reloadBookmarks]);
 
   const filteredItems = useMemo(() => {
     if (typeFilter === "all") return items;
@@ -595,6 +629,76 @@ export function VaultPopupApp() {
           </div>
         ) : null}
 
+        {activeTab === "bookmarks" ? (
+          <div className="flex h-full min-h-0 flex-col">
+            <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2">
+              <h1 className="text-base font-semibold">书签</h1>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void (async () => {
+                    const res = await sendBg({ type: "bookmark_sync_now" });
+                    if (res.ok && "message" in res) setBookmarkSyncMsg(res.message);
+                    else if (!res.ok) setBookmarkError(res.error);
+                    await reloadBookmarks(bookmarkQuery);
+                  })();
+                }}
+              >
+                同步
+              </Button>
+            </div>
+            <div className="flex shrink-0 gap-2 border-b border-border p-2">
+              <Input
+                className="min-w-0 flex-1"
+                type="search"
+                placeholder="搜索书签…"
+                value={bookmarkQuery}
+                onChange={(e) => setBookmarkQuery(e.target.value)}
+              />
+            </div>
+            {bookmarkSyncMsg ? (
+              <StatusAlert variant="success" className="mx-2 mt-2">
+                {bookmarkSyncMsg}
+              </StatusAlert>
+            ) : null}
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              {bookmarkError ? (
+                <StatusAlert variant="error" className="m-2">
+                  {bookmarkError}
+                </StatusAlert>
+              ) : null}
+              {bookmarkLoading && bookmarks.length === 0 ? (
+                <p className="p-4 text-center text-sm text-muted-foreground">加载中…</p>
+              ) : bookmarks.length === 0 ? (
+                <EmptyState className="py-10" message="暂无书签。可在选项页开启同步。" />
+              ) : (
+                <ul>
+                  {bookmarks
+                    .filter((b) => b.kind === "url")
+                    .map((b) => (
+                      <li key={b.id} className="border-b border-border px-3 py-2">
+                        <button
+                          type="button"
+                          className="w-full text-left"
+                          onClick={() => {
+                            if (b.url) void chrome.tabs.create({ url: b.url });
+                          }}
+                        >
+                          <div className="truncate text-sm font-medium">{b.title || "未命名"}</div>
+                          {b.url ? (
+                            <div className="truncate text-xs text-muted-foreground">{b.url}</div>
+                          ) : null}
+                        </button>
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        ) : null}
+
         {activeTab === "generator" ? (
           <div className="flex h-full min-h-0 flex-col">
             <div className="shrink-0 border-b border-border px-3 py-2">
@@ -713,6 +817,7 @@ export function VaultPopupApp() {
         {(
           [
             ["vault", "密码库"],
+            ["bookmarks", "书签"],
             ["generator", "生成器"],
             ["options", "选项"],
           ] as const

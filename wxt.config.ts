@@ -70,7 +70,16 @@ export default defineConfig({
         48: "icon-48.png",
         128: "icon-128.png",
       },
-      permissions: ["storage", "activeTab", "tabs", "contextMenus", "scripting", "notifications"],
+      permissions: [
+        "storage",
+        "activeTab",
+        "tabs",
+        "contextMenus",
+        "scripting",
+        "notifications",
+        "bookmarks",
+        "alarms",
+      ],
       host_permissions: ["http://*/*", "https://*/*"],
       commands: {
         "autofill-login": {

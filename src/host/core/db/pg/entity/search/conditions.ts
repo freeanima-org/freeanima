@@ -29,6 +29,8 @@ import {
   TASK_ITEM_COMPONENT,
   TASK_OCCURRENCE_COMPONENT,
   TASK_LIST_COMPONENT,
+  BOOKMARK_COMPONENT,
+  parseBookmarkSearchFilters,
 } from "@freeanima/host/core/db/schema";
 import { pgBigintArray } from "../../utils/pg-sql.ts";
 import type { EntitySearchOpts } from "../types.ts";
@@ -501,6 +503,29 @@ function buildEmailMessageBodyConditions(
   return conditions;
 }
 
+function buildBookmarkBodyConditions(
+  filters: ReturnType<typeof parseBookmarkSearchFilters>,
+): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.kind != null) {
+    conditions.push(sql`${entities.body}->>'kind' = ${filters.kind}`);
+  }
+  if (filters.browser_id) {
+    conditions.push(sql`${entities.body}->>'browser_id' = ${filters.browser_id}`);
+  }
+  if (filters.parent_id === null) {
+    conditions.push(
+      sql`(${entities.body}->>'parent_id' IS NULL OR ${entities.body}->>'parent_id' = '')`,
+    );
+  } else if (filters.parent_id != null) {
+    conditions.push(sql`${entities.body}->>'parent_id' = ${String(filters.parent_id)}`);
+  }
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
+  return conditions;
+}
+
 export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   const filters = opts.filters;
   if (!filters || Object.keys(filters).length === 0) return [];
@@ -547,6 +572,9 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   }
   if (component === POMODORO_TASK_FOCUS_COMPONENT) {
     return buildPomodoroTaskFocusBodyConditions(parsePomodoroTaskFocusSearchFilters(filters));
+  }
+  if (component === BOOKMARK_COMPONENT) {
+    return buildBookmarkBodyConditions(parseBookmarkSearchFilters(filters));
   }
 
   if (component) {

@@ -17,6 +17,7 @@ import { subagentHabitatRoutes } from "@freeanima/features/subagent/habitat/rout
 import { entityHabitatRoutes } from "@freeanima/features/entity/habitat/routes/index.ts";
 import { taskHabitatRoutes } from "@freeanima/features/task/habitat/routes/index.ts";
 import { vaultHabitatRoutes } from "@freeanima/features/vault/habitat/routes/index.ts";
+import { bookmarkHabitatRoutes } from "@freeanima/features/bookmark/habitat/routes/index.ts";
 
 import type { InferHabitatInputs, InferHabitatOutputs } from "./types.ts";
 import { wsOnlyHabitatRoutes } from "./ws-only-routes.ts";
@@ -29,6 +30,7 @@ const featureRouteBundles = [
   subagentHabitatRoutes,
   entityHabitatRoutes,
   vaultHabitatRoutes,
+  bookmarkHabitatRoutes,
   emailHabitatRoutes,
   diaryHabitatRoutes,
   calendarHabitatRoutes,
@@ -50,6 +52,7 @@ export type HabitatMethodInputs = InferHabitatInputs<typeof chatHabitatRoutes> &
   InferHabitatInputs<typeof subagentHabitatRoutes> &
   InferHabitatInputs<typeof entityHabitatRoutes> &
   InferHabitatInputs<typeof vaultHabitatRoutes> &
+  InferHabitatInputs<typeof bookmarkHabitatRoutes> &
   InferHabitatInputs<typeof emailHabitatRoutes> &
   InferHabitatInputs<typeof diaryHabitatRoutes> &
   InferHabitatInputs<typeof calendarHabitatRoutes> &
@@ -69,6 +72,7 @@ export type HabitatMethodOutputs = InferHabitatOutputs<typeof chatHabitatRoutes>
   InferHabitatOutputs<typeof subagentHabitatRoutes> &
   InferHabitatOutputs<typeof entityHabitatRoutes> &
   InferHabitatOutputs<typeof vaultHabitatRoutes> &
+  InferHabitatOutputs<typeof bookmarkHabitatRoutes> &
   InferHabitatOutputs<typeof emailHabitatRoutes> &
   InferHabitatOutputs<typeof diaryHabitatRoutes> &
   InferHabitatOutputs<typeof calendarHabitatRoutes> &

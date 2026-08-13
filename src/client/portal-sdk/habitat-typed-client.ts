@@ -33,6 +33,7 @@ import { subagentMethodDefs } from "@freeanima/features/subagent/habitat/method-
 import { entityMethodDefs } from "@freeanima/features/entity/habitat/method-defs.ts";
 import { taskMethodDefs } from "@freeanima/features/task/habitat/method-defs.ts";
 import { vaultMethodDefs } from "@freeanima/features/vault/habitat/method-defs.ts";
+import { bookmarkMethodDefs } from "@freeanima/features/bookmark/habitat/method-defs.ts";
 
 /** 聚合各 feature method-defs（浏览器 client registry；无 handler） */
 export const FEATURE_METHOD_DEFS = {
@@ -44,6 +45,7 @@ export const FEATURE_METHOD_DEFS = {
   ...subagentMethodDefs,
   ...entityMethodDefs,
   ...vaultMethodDefs,
+  ...bookmarkMethodDefs,
   ...emailMethodDefs,
   ...diaryMethodDefs,
   ...calendarMethodDefs,

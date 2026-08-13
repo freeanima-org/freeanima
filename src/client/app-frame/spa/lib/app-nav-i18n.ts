@@ -2,6 +2,7 @@ import type { ComponentType, SVGProps } from "react";
 import {
   Bell,
   BookOpen,
+  Bookmark,
   Boxes,
   CalendarDays,
   FolderKanban,
@@ -101,6 +102,13 @@ export function appNavItems(): AppNavItem[] {
       "/diary",
       shellNavLabel(() => "📔 日记"),
       BookOpen,
+    ),
+    navItem(
+      "bookmarks",
+      "/bookmarks",
+      "/bookmarks",
+      shellNavLabel(() => "书签"),
+      Bookmark,
     ),
     navItem(
       "entity",

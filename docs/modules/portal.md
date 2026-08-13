@@ -31,7 +31,7 @@ src/portal/
   extension/     # 浏览器形态
     entrypoints/
     runtime/     # settings、Habitat HTTP client、消息信封
-    features/    # 按能力：vault；规划 bookmarks / clipper
+    features/    # 按能力：vault / bookmarks；规划 clipper
   cli/           # CLI 形态
 ```
 
@@ -53,7 +53,7 @@ src/portal/
 | 能力            | 状态 | 说明                                                                          |
 | --------------- | ---- | ----------------------------------------------------------------------------- |
 | Vault（保险库） | 现行 | 自动填充、弹窗 CRUD、保存提示、密码生成等 — 行为细节见 [`vault.md`](vault.md) |
-| 书签同步        | 规划 | 扩展内模块；独立 entity，不塞 `vault_item`                                    |
+| 书签同步        | 现行 | 扩展内模块；独立 `bookmark` entity；双向同步见 [`bookmark.md`](bookmark.md)   |
 | 网页剪藏        | 规划 | 扩展内模块；独立 entity，不塞 `vault_item`                                    |
 
 ### Firefox（维护者自托管 canary）
