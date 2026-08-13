@@ -130,6 +130,7 @@ CLAUDE.md                        # Claude Code 兼容
 
 - **一对话一根工作区**：本地 `CodingAgentSession.workspaceRoot: string | null`（创建时可明确选「无工作区」）。
 - **创建后不可变**：New Agent 选定路径（或无）即锁定；UI **无**添加/移除/更换文件夹。换目录 = **新建** Agent。
+- **新建可选已有工作区**：本地额外持久化 `knownWorkspaces`（去重工作区路径，会话删除后仍保留）；New Agent 对话框用下拉列出这些工作区，选中即复用该根新建会话（仍是独立 `workspaceRoot` 字符串），也可「选择新文件夹」或「无工作区」。
 - 栖息地 `conversation.create` 的 `workspace_root` 与本地字段一致且同样视为不可变；本地 `conversationId` 持久化后复用。
 - 左栏按 `workspaceRoot` 的 basename 分组（`null` →「无工作区」）；同仓多会话 = 同组多条（为后续同仓不同 worktree 路径留口：每条仍是独立 `workspaceRoot` 字符串）。
 - 本地存储 key `freeanima:coding:agent-sessions:v2`；从 v1 多根迁移时只保留 `activeRoot ?? workspaceRoots[0] ?? null`。

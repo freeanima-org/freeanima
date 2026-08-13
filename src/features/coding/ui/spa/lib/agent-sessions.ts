@@ -19,6 +19,8 @@ export type CodingAgentSession = {
 export type AgentSessionsState = {
   sessions: CodingAgentSession[];
   activeSessionId: string | null;
+  /** 已知工作区（曾选过的工作区路径，去重；会话被删也保留，供新建下拉选择） */
+  knownWorkspaces: string[];
 };
 
 const STORAGE_KEY = "freeanima:coding:agent-sessions:v2";
@@ -69,7 +71,7 @@ export function createAgentSession(partial?: {
 
 export function emptySessionsState(): AgentSessionsState {
   const first = createAgentSession({ title: "无工作区", workspaceRoot: null });
-  return { sessions: [first], activeSessionId: first.id };
+  return { sessions: [first], activeSessionId: first.id, knownWorkspaces: [] };
 }
 
 export function loadAgentSessions(): AgentSessionsState {
@@ -119,7 +121,7 @@ function migrateV1(raw: unknown): AgentSessionsState {
     sessions.find((s) => s.id === r.activeSessionId)?.id ??
     sessions.at(0)?.id ??
     emptySessionsState().activeSessionId;
-  return { sessions, activeSessionId };
+  return { sessions, activeSessionId, knownWorkspaces: collectWorkspaceRoots(sessions) };
 }
 
 function migrateSessionRow(row: unknown): Partial<CodingAgentSession> & Record<string, unknown> {
@@ -145,14 +147,15 @@ function normalizeState(parsed: AgentSessionsState): AgentSessionsState {
   }
   const sessions = parsed.sessions.map(sanitizeSession);
   const visible = visibleSessions(sessions);
+  const knownWorkspaces = sanitizeKnownWorkspaces(parsed.knownWorkspaces, sessions);
   if (visible.length === 0) {
     const fresh = createAgentSession({ title: "无工作区", workspaceRoot: null });
-    return { sessions: [...sessions, fresh], activeSessionId: fresh.id };
+    return { sessions: [...sessions, fresh], activeSessionId: fresh.id, knownWorkspaces };
   }
   const activeSessionId =
     visible.find((s) => s.id === parsed.activeSessionId)?.id ?? visible.at(0)?.id ?? null;
   if (!activeSessionId) return emptySessionsState();
-  return { sessions, activeSessionId };
+  return { sessions, activeSessionId, knownWorkspaces };
 }
 
 function sanitizeSession(
@@ -206,12 +209,17 @@ export function removeSession(state: AgentSessionsState, id: string): AgentSessi
   const sessions = state.sessions.filter((s) => s.id !== id);
   const visible = visibleSessions(sessions);
   if (visible.length === 0) {
+    // 可见会话清空后仍保留已记录的工作区，供新建下拉继续选择
     const fresh = createAgentSession({ title: "无工作区", workspaceRoot: null });
-    return { sessions: [...sessions, fresh], activeSessionId: fresh.id };
+    return {
+      sessions: [...sessions, fresh],
+      activeSessionId: fresh.id,
+      knownWorkspaces: state.knownWorkspaces,
+    };
   }
   const activeSessionId =
     state.activeSessionId === id ? (visible.at(0)?.id ?? null) : state.activeSessionId;
-  return { sessions, activeSessionId };
+  return { sessions, activeSessionId, knownWorkspaces: state.knownWorkspaces };
 }
 
 /** 软归档：离开主列表，数据仍留在 localStorage。 */
@@ -223,11 +231,15 @@ export function archiveSession(state: AgentSessionsState, id: string): AgentSess
   const visible = visibleSessions(sessions);
   if (visible.length === 0) {
     const fresh = createAgentSession({ title: "无工作区", workspaceRoot: null });
-    return { sessions: [...sessions, fresh], activeSessionId: fresh.id };
+    return {
+      sessions: [...sessions, fresh],
+      activeSessionId: fresh.id,
+      knownWorkspaces: state.knownWorkspaces,
+    };
   }
   const activeSessionId =
     state.activeSessionId === id ? (visible.at(0)?.id ?? null) : state.activeSessionId;
-  return { sessions, activeSessionId };
+  return { sessions, activeSessionId, knownWorkspaces: state.knownWorkspaces };
 }
 
 /** 仅允许写 conversationId / title / updatedAt；workspaceRoot 创建后不可变 */
@@ -265,4 +277,48 @@ export function groupSessionsByRepo(sessions: CodingAgentSession[]): RepoGroup[]
     if (b.workspaceRoot == null) return -1;
     return a.key.localeCompare(b.key);
   });
+}
+
+/** 从会话列表收集非空工作区根（规范化、去重、排序）。 */
+function collectWorkspaceRoots(sessions: CodingAgentSession[]): string[] {
+  const set = new Set<string>();
+  for (const s of sessions) {
+    if (s.workspaceRoot) set.add(normalizeRoot(s.workspaceRoot));
+  }
+  return [...set].toSorted((a, b) => a.localeCompare(b));
+}
+
+/** 兼容旧数据：knownWorkspaces 缺失时从会话派生，并与显式列表合并。 */
+function sanitizeKnownWorkspaces(raw: unknown, sessions: CodingAgentSession[]): string[] {
+  const set = new Set<string>();
+  if (Array.isArray(raw)) {
+    for (const item of raw) {
+      const root = normalizeRoot(String(item ?? ""));
+      if (root) set.add(root);
+    }
+  }
+  for (const s of sessions) {
+    if (s.workspaceRoot) set.add(normalizeRoot(s.workspaceRoot));
+  }
+  return [...set].toSorted((a, b) => a.localeCompare(b));
+}
+
+/** 新建下拉可选的已知工作区列表（含已无会话的历史工作区）。 */
+export function listKnownWorkspaceRoots(state: AgentSessionsState): string[] {
+  return sanitizeKnownWorkspaces(state.knownWorkspaces, state.sessions);
+}
+
+/** 把工作区记入本地已知列表（去重）；创建带工作区的会话时调用。 */
+export function rememberWorkspace(
+  state: AgentSessionsState,
+  workspaceRoot: string,
+): AgentSessionsState {
+  const root = normalizeRoot(workspaceRoot);
+  if (!root) return state;
+  const exists = state.knownWorkspaces.some((w) => normalizeRoot(w) === root);
+  if (exists) return state;
+  return {
+    ...state,
+    knownWorkspaces: [...state.knownWorkspaces, root].toSorted((a, b) => a.localeCompare(b)),
+  };
 }
