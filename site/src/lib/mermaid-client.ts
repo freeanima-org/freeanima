@@ -110,7 +110,8 @@ function ensureLightbox(): HTMLElement {
   };
 
   root.addEventListener("click", (event) => {
-    const target = event.target as HTMLElement;
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
     if (target.closest("[data-fa-mermaid-close]")) {
       root.hidden = true;
       stage.innerHTML = "";
@@ -147,7 +148,9 @@ function openLightbox(svg: SVGElement): void {
   const stage = root.querySelector<HTMLElement>(".fa-mermaid-lightbox__stage");
   if (!stage) return;
   stage.innerHTML = "";
-  stage.appendChild(svg.cloneNode(true) as SVGElement);
+  const cloned = svg.cloneNode(true);
+  if (!(cloned instanceof SVGElement)) return;
+  stage.appendChild(cloned);
   root.hidden = false;
 }
 
