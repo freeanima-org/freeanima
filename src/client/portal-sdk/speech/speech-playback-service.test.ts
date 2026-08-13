@@ -18,19 +18,9 @@ mock.module("./create-adapter.ts", () => ({
   }),
 }));
 
-mock.module("./habitat-adapter.ts", () => ({
-  consumeLastHubSpeechError: () => undefined,
-}));
-
 mock.module("./speech-media-session.ts", () => ({
   syncSpeechMediaSession: () => {},
   clearSpeechMediaSession: () => {},
-}));
-
-mock.module("./mpeg-player.ts", () => ({
-  primeMpegSpeechOutput: () => {},
-  resumeMpegPlaybackIfPaused: () => false,
-  getSharedMpegAudioElement: () => null,
 }));
 
 const {

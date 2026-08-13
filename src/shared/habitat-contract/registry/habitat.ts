@@ -452,6 +452,19 @@ export const habitatMethodDefs = {
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
+  "tokens.reveal": defineHabitatMethod({
+    input: z.object({ id: z.coerce.number().int().positive() }),
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "tokens.updateName": defineHabitatMethod({
+    input: z.object({
+      id: z.coerce.number().int().positive(),
+      name: z.string().min(1),
+    }),
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
   "skill.list": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,

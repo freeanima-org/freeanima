@@ -1,0 +1,1 @@
+ALTER TABLE "service_api_tokens" ADD COLUMN "token_secret" text;

@@ -532,6 +532,7 @@ export type ServiceApiTokenPublic = {
   expires_at: Date | null;
   last_used_at: Date | null;
   revoked_at: Date | null;
+  revealable: boolean;
 };
 
 export async function listSubjectApiTokens(subjectId: number) {
@@ -548,4 +549,16 @@ export async function createSubjectApiToken(subjectId: number, body: { name: str
 
 export async function revokeSubjectApiToken(tokenId: number) {
   return hubCall(habitat().call("tokens.revoke", { id: tokenId })) as Promise<{ ok: true }>;
+}
+
+export async function revealSubjectApiToken(tokenId: number) {
+  return hubCall(habitat().call("tokens.reveal", { id: tokenId })) as Promise<{
+    plaintext: string;
+  }>;
+}
+
+export async function updateSubjectApiTokenName(tokenId: number, name: string) {
+  return hubCall(habitat().call("tokens.updateName", { id: tokenId, name })) as Promise<{
+    token: ServiceApiTokenPublic;
+  }>;
 }

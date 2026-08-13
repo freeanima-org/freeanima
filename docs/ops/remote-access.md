@@ -43,21 +43,28 @@ Registry 标记 `auth: optional` 的栖息地 RPC 方法（如 `health.probe`、
 
 ```bash
 anima token create --subject-id 1 --name bootstrap
-# 终端打印 fa_at_...（仅此一次）→ 填入客户端 Habitat 设置
+# 终端打印 fa_at_... → 填入客户端 Habitat 设置
+# 之后可用 anima token reveal <id> 再次输出明文
 ```
 
-列出 / 撤销：
+列出 / 再次复制 / 改名 / 撤销：
 
 ```bash
 anima token list --subject-id 1
+anima token reveal <token_id>
+anima token rename <token_id> --name desktop
 anima token revoke <token_id>
 ```
 
 栖息地 RPC REST（需已认证 `full` token）：
 
-- `GET /rpc/v1/tokens/listForSubject?id=:id`（或 `createTypedHabitatClient().call("tokens.listForSubject", { id })`）
-- `POST /rpc/v1/tokens/createForSubject` — body `{ "id": <subject_id>, "name": "desktop" }`，响应含一次性 `plaintext`
+- `GET /rpc/v1/tokens/listForSubject?id=:id`（或 `createTypedHabitatClient().call("tokens.listForSubject", { id })`）— 项含 `revealable`（旧行无存档 secret 时为 `false`）
+- `POST /rpc/v1/tokens/createForSubject` — body `{ "id": <subject_id>, "name": "desktop" }`，响应含 `plaintext`（同时存档 secret，可再次 reveal）
+- `POST /rpc/v1/tokens/reveal` — body `{ "id": <token_id> }`，响应 `{ "plaintext": "fa_at_…" }`
+- `POST /rpc/v1/tokens/updateName` — body `{ "id": <token_id>, "name": "desktop" }`
 - `POST /rpc/v1/tokens/revoke` — body `{ "id": <token_id> }`
+
+新建 token 会把 secret 以可恢复形式写入 PG（个人栖息地）；鉴权仍用 `token_hash`。迁移前创建的旧 token 无法 reveal，需重建。
 
 ### 监听地址（`http.host`）
 

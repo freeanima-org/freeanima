@@ -10,6 +10,8 @@ export type ServiceApiTokenPublic = {
   expires_at: Date | null;
   last_used_at: Date | null;
   revoked_at: Date | null;
+  /** 是否可再次 reveal 明文（有存档 token_secret） */
+  revealable: boolean;
 };
 
 export type CreateServiceApiTokenInput = {
@@ -17,6 +19,7 @@ export type CreateServiceApiTokenInput = {
   name: string;
   prefix: string;
   token_hash: string;
+  token_secret?: string | null;
   scopes?: string[];
   expires_at?: Date | null;
 };
@@ -32,5 +35,6 @@ export function toServiceApiTokenPublic(row: ServiceApiTokenRow): ServiceApiToke
     expires_at: row.expires_at,
     last_used_at: row.last_used_at,
     revoked_at: row.revoked_at,
+    revealable: Boolean(row.token_secret),
   };
 }

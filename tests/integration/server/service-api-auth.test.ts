@@ -1,7 +1,15 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
-import { createServiceApiTokenWithSecret } from "@freeanima/host/core/db/pg/service-api-token";
+import {
+  createServiceApiTokenWithSecret,
+  getServiceApiTokenById,
+  hashServiceApiTokenSecret,
+  revealServiceApiTokenPlaintext,
+  revokeServiceApiToken,
+  updateServiceApiTokenName,
+} from "@freeanima/host/core/db/pg/service-api-token";
+import { createServiceApiToken } from "@freeanima/host/core/db/pg/service-api-token/repos/token-repo.ts";
 import { getAppRuntime } from "@freeanima/host/platform";
 import {
   builtinFeaturePlugins,
@@ -103,6 +111,61 @@ describePg("service API tokens", () => {
       const body = (await res.json()) as { status: string; authed: boolean };
       expect(body.status).toBe("ok");
       expect(body.authed).toBe(true);
+    });
+  });
+
+  describe("reveal / rename", () => {
+    beforeEach(async () => {
+      await beginIntegrationCase("freeanima-svc-token-mgmt-");
+      bindHabitatRuntimeContext();
+      registerFeatures(builtinFeaturePlugins);
+      const runtime = getAppRuntime();
+      runtime.markStarted();
+    });
+
+    afterEach(async () => {
+      resetFeatureRegistryForTests();
+      await restoreIntegrationHome(prev);
+    });
+
+    it("create → reveal roundtrip and rename", async () => {
+      const { user_subject_id } = getResolvedWorldContext();
+      const created = await createServiceApiTokenWithSecret({
+        subject_id: user_subject_id,
+        name: "desktop",
+      });
+      expect(created.token.revealable).toBe(true);
+
+      const revealed = await revealServiceApiTokenPlaintext(created.token.id);
+      expect(revealed).toBe(created.plaintext);
+
+      const renamed = await updateServiceApiTokenName(created.token.id, "laptop");
+      expect(renamed.name).toBe("laptop");
+      const row = await getServiceApiTokenById(created.token.id);
+      expect(row?.name).toBe("laptop");
+    });
+
+    it("reveal fails for legacy token without secret and for revoked token", async () => {
+      const { user_subject_id } = getResolvedWorldContext();
+      const hash = await hashServiceApiTokenSecret("legacy-secret");
+      const legacy = await createServiceApiToken({
+        subject_id: user_subject_id,
+        name: "legacy",
+        prefix: `leg${Date.now().toString(36)}`.slice(0, 12),
+        token_hash: hash,
+        token_secret: null,
+      });
+      expect(legacy.revealable).toBe(false);
+      await expect(revealServiceApiTokenPlaintext(legacy.id)).rejects.toThrow(/not revealable/);
+
+      const created = await createServiceApiTokenWithSecret({
+        subject_id: user_subject_id,
+        name: "to-revoke",
+      });
+      await revokeServiceApiToken(created.token.id);
+      await expect(revealServiceApiTokenPlaintext(created.token.id)).rejects.toThrow(
+        /revoked or expired/,
+      );
     });
   });
 });

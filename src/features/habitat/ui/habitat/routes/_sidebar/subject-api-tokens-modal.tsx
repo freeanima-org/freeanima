@@ -24,7 +24,9 @@ import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/li
 import {
   createSubjectApiToken,
   listSubjectApiTokens,
+  revealSubjectApiToken,
   revokeSubjectApiToken,
+  updateSubjectApiTokenName,
   type EntityRow,
   type ServiceApiTokenPublic,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
@@ -59,6 +61,10 @@ export function SubjectApiTokensModal({
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
   const [revokingId, setRevokingId] = useState<number | null>(null);
+  const [copyingId, setCopyingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingName, setEditingName] = useState("");
+  const [renamingId, setRenamingId] = useState<number | null>(null);
   const [plaintext, setPlaintext] = useState<string | null>(null);
   const [copyHint, setCopyHint] = useState("");
   const [showAll, setShowAll] = useState(false);
@@ -88,11 +94,11 @@ export function SubjectApiTokensModal({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !creating && revokingId == null) onClose();
+      if (e.key === "Escape" && !creating && revokingId == null && renamingId == null) onClose();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [creating, onClose, revokingId]);
+  }, [creating, onClose, renamingId, revokingId]);
 
   const onCreate = async () => {
     const trimmed = name.trim();
@@ -133,12 +139,58 @@ export function SubjectApiTokensModal({
     }
   };
 
-  const onCopyPlaintext = async () => {
-    if (!plaintext) return;
-    const ok = await copyText(plaintext);
-    setCopyHint(ok ? "已复制API 令牌" : "复制API 令牌失败");
+  const onCopyPlaintext = async (value: string) => {
+    const ok = await copyText(value);
+    setCopyHint(ok ? "已复制 API 令牌" : "复制 API 令牌失败");
     if (!ok)
       logCaughtError("routes/_sidebar/subject-api-tokens-modal/copy", new Error("copyText failed"));
+  };
+
+  const onRevealAndCopy = async (token: ServiceApiTokenPublic) => {
+    if (!token.revealable || !isActiveToken(token)) return;
+    setCopyingId(token.id);
+    setError("");
+    setCopyHint("");
+    try {
+      const result = await revealSubjectApiToken(token.id);
+      setPlaintext(result.plaintext);
+      await onCopyPlaintext(result.plaintext);
+    } catch (e) {
+      logCaughtError("routes/_sidebar/subject-api-tokens-modal/reveal", e);
+      setError(`操作失败: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setCopyingId(null);
+    }
+  };
+
+  const startEditName = (token: ServiceApiTokenPublic) => {
+    setEditingId(token.id);
+    setEditingName(token.name);
+  };
+
+  const cancelEditName = () => {
+    setEditingId(null);
+    setEditingName("");
+  };
+
+  const onSaveName = async (token: ServiceApiTokenPublic) => {
+    const trimmed = editingName.trim();
+    if (!trimmed || trimmed === token.name) {
+      cancelEditName();
+      return;
+    }
+    setRenamingId(token.id);
+    setError("");
+    try {
+      const result = await updateSubjectApiTokenName(token.id, trimmed);
+      setItems((prev) => prev.map((row) => (row.id === token.id ? result.token : row)));
+      cancelEditName();
+    } catch (e) {
+      logCaughtError("routes/_sidebar/subject-api-tokens-modal/rename", e);
+      setError(`操作失败: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setRenamingId(null);
+    }
   };
 
   return (
@@ -153,7 +205,7 @@ export function SubjectApiTokensModal({
         <DialogTitle>{`服务 API 令牌 — ${subjectLabel(subject)}`}</DialogTitle>
       </DialogHeader>
       <p className="text-sm text-muted-foreground shrink-0">
-        {"服务令牌绑定到此主体。密钥仅在创建时显示一次。"}
+        {"服务令牌绑定到此主体。可随时再次复制明文；旧版令牌若无法复制请重建。"}
       </p>
 
       {error ? (
@@ -165,13 +217,11 @@ export function SubjectApiTokensModal({
       {plaintext ? (
         <StatusAlert variant="warning" className="mb-4 shrink-0">
           <div>
-            <p className="font-semibold">{"立即复制此令牌"}</p>
-            <p className="mt-1">
-              {"之后不会再显示。请粘贴到客户端连接设置（Service API Token）。"}
-            </p>
+            <p className="font-semibold">{"令牌明文"}</p>
+            <p className="mt-1">{"请粘贴到客户端连接设置（Service API Token）。"}</p>
             <code className="block mt-2 p-2 rounded bg-muted text-xs break-all">{plaintext}</code>
             <div className="flex flex-wrap gap-2 mt-3">
-              <Button type="button" size="sm" onClick={() => void onCopyPlaintext()}>
+              <Button type="button" size="sm" onClick={() => void onCopyPlaintext(plaintext)}>
                 {"复制"}
               </Button>
               <Button
@@ -230,19 +280,75 @@ export function SubjectApiTokensModal({
           <Table className="table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[18%]">{"名称"}</TableHead>
-                <TableHead className="w-[14%]">{"前缀"}</TableHead>
-                <TableHead className="w-[12%]">{"范围"}</TableHead>
+                <TableHead className="w-[22%]">{"名称"}</TableHead>
+                <TableHead className="w-[12%]">{"前缀"}</TableHead>
+                <TableHead className="w-[10%]">{"范围"}</TableHead>
                 <TableHead className="w-[10%]">{"状态"}</TableHead>
-                <TableHead className="w-[18%]">{"最近使用"}</TableHead>
-                <TableHead className="w-[18%]">{"时间"}</TableHead>
-                <TableHead className="w-[10%]" />
+                <TableHead className="w-[16%]">{"最近使用"}</TableHead>
+                <TableHead className="w-[16%]">{"时间"}</TableHead>
+                <TableHead className="w-[14%]" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {visibleItems.map((token) => (
                 <TableRow key={token.id}>
-                  <TableCell className="whitespace-normal break-words">{token.name}</TableCell>
+                  <TableCell className="whitespace-normal break-words">
+                    {editingId === token.id ? (
+                      <div className="flex flex-wrap gap-1 items-center">
+                        <Input
+                          type="text"
+                          className="h-7 text-xs flex-1 min-w-[6rem]"
+                          value={editingName}
+                          disabled={renamingId === token.id}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              void onSaveName(token);
+                            }
+                            if (e.key === "Escape") {
+                              e.preventDefault();
+                              cancelEditName();
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-7 text-xs"
+                          isDisabled={renamingId === token.id || !editingName.trim()}
+                          onClick={() => void onSaveName(token)}
+                        >
+                          {renamingId === token.id ? <Spinner /> : "保存"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs"
+                          isDisabled={renamingId === token.id}
+                          onClick={cancelEditName}
+                        >
+                          {"取消"}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-1 items-center">
+                        <span>{token.name}</span>
+                        {!token.revoked_at ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => startEditName(token)}
+                          >
+                            {"编辑"}
+                          </Button>
+                        ) : null}
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="font-mono text-xs whitespace-normal break-all">
                     {token.prefix}
                   </TableCell>
@@ -261,16 +367,31 @@ export function SubjectApiTokensModal({
                     {formatDisplayDateTime(token.created_at)}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-xs text-destructive"
-                      isDisabled={Boolean(token.revoked_at) || revokingId === token.id}
-                      onClick={() => void onRevoke(token)}
-                    >
-                      {revokingId === token.id ? <Spinner /> : "吊销"}
-                    </Button>
+                    <div className="flex flex-wrap gap-1 justify-end">
+                      {isActiveToken(token) ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs"
+                          isDisabled={!token.revealable || copyingId === token.id}
+                          title={token.revealable ? "复制明文" : "旧令牌无法再次复制，请重建"}
+                          onClick={() => void onRevealAndCopy(token)}
+                        >
+                          {copyingId === token.id ? <Spinner /> : "复制"}
+                        </Button>
+                      ) : null}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs text-destructive"
+                        isDisabled={Boolean(token.revoked_at) || revokingId === token.id}
+                        onClick={() => void onRevoke(token)}
+                      >
+                        {revokingId === token.id ? <Spinner /> : "吊销"}
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
