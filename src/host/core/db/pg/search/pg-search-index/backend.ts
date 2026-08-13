@@ -11,6 +11,7 @@ import type { SearchBackend, SearchChannel, SearchDoc, SearchHit, SearchQuery } 
 import { UnsupportedSearchChannelError } from "../types.ts";
 import { searchPgIndexFts } from "./channel-fts.ts";
 import { searchPgIndexTrgm } from "./channel-trgm.ts";
+import { searchPgIndexVector } from "./channel-vector.ts";
 
 const SUPPORTED: SearchChannel[] = ["fts", "trgm", "vector"];
 
@@ -109,8 +110,7 @@ export function createPgSearchIndexBackend(): SearchBackend {
           } else if (ch === "trgm") {
             byChannel.trgm = await searchPgIndexTrgm(q, query.filters, limit);
           } else if (ch === "vector") {
-            // Stored for future use; read path not enabled by default.
-            byChannel.vector = [];
+            byChannel.vector = await searchPgIndexVector(q, query.filters, limit);
           }
         }),
       );

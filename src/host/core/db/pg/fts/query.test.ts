@@ -40,8 +40,16 @@ describe("buildFtsTsQuery", () => {
     bindActiveRuntimeConfig(Config.fromSnapshot({ ...minimalConfig(), cjk: { enabled: true } }));
     const tsq = await buildFtsTsQuery("风油精是什么");
     expect(tsq).toContain("风油精");
-    expect(tsq).toContain("|");
+    expect(tsq).not.toContain("是");
+    expect(tsq).not.toContain("什么");
     expect(tsq).not.toBe("风油精是什么");
+  });
+
+  it("drops function words from NL questions", async () => {
+    bindActiveRuntimeConfig(Config.fromSnapshot({ ...minimalConfig(), cjk: { enabled: true } }));
+    const tsq = await buildFtsTsQuery("风油精是什么");
+    // Sole content lexeme — no OR of stopwords
+    expect(tsq).toBe("风油精");
   });
 
   it("validates input before building", async () => {

@@ -7,6 +7,7 @@ import {
 import { getActiveRuntimeConfig } from "@freeanima/host/core/config";
 import { isCjkJiebaEnabled } from "@freeanima/host/core/config/cjk-config";
 
+import { extractContentWords } from "./content-words.ts";
 import {
   buildCharModeTsQuery,
   buildJiebaGroupTsQuery,
@@ -23,7 +24,7 @@ export function tsqueryAfterCjkSegment(
   return jiebaLoaded ? buildJiebaModeTsQuery(segmented) : buildCharModeTsQuery(raw);
 }
 
-/** Build tsquery from current cjk config */
+/** Build tsquery from current cjk config (NL queries drop function words first). */
 export async function buildFtsTsQuery(raw: string): Promise<string> {
   const trimmed = raw.trim();
   if (!trimmed) return trimmed;
@@ -38,12 +39,16 @@ export async function buildFtsTsQuery(raw: string): Promise<string> {
       tsquery = buildCharModeTsQuery(trimmed);
     }
   } else if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+    // Quoted phrase: exact adjacency; do not strip content words.
     tsquery = buildCharModeTsQuery(trimmed);
   } else if (isCjkJiebaEnabled(getActiveRuntimeConfig().data)) {
-    const segmented = await segmentForFts(trimmed);
-    tsquery = tsqueryAfterCjkSegment(trimmed, segmented, isJiebaLoaded());
+    const content = await extractContentWords(trimmed);
+    const forQuery = content.query;
+    const segmented = await segmentForFts(forQuery);
+    tsquery = tsqueryAfterCjkSegment(forQuery, segmented, isJiebaLoaded());
   } else {
-    tsquery = buildCharModeTsQuery(trimmed);
+    const content = await extractContentWords(trimmed);
+    tsquery = buildCharModeTsQuery(content.query);
   }
 
   if (tsquery) assertValidTsQueryString(tsquery);
@@ -65,7 +70,8 @@ async function buildJiebaOperatorTsQuery(raw: string): Promise<string> {
       output.push(seg.op);
       continue;
     }
-    const segmented = await segmentForFts(seg.tokens.join(" "));
+    const content = await extractContentWords(seg.tokens.join(" "));
+    const segmented = await segmentForFts(content.query);
     const part = buildJiebaGroupTsQuery(segmented);
     if (part) output.push(part);
   }

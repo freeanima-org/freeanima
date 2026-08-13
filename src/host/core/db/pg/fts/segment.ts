@@ -14,7 +14,8 @@ const log = logPgComponent("fts");
 let jiebaInstance: Jieba | null = null;
 let jiebaLoadFailed = false;
 
-async function getJieba(): Promise<Jieba | null> {
+/** Shared jieba singleton for FTS segment / content-word tagging. */
+export async function getJiebaForFts(): Promise<Jieba | null> {
   if (!isCjkJiebaEnabled(getActiveRuntimeConfig().data)) return null;
   if (jiebaLoadFailed) return null;
   if (jiebaInstance) return jiebaInstance;
@@ -52,7 +53,7 @@ export async function segmentForFts(text: string): Promise<string> {
   const trimmed = text.trim();
   if (!trimmed) return "";
 
-  const jieba = await getJieba();
+  const jieba = await getJiebaForFts();
   if (!jieba) return trimmed;
 
   const parts: string[] = [];

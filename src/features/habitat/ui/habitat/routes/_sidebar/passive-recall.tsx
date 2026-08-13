@@ -151,8 +151,10 @@ function PassiveRecallDebugPage() {
               <p>max_chars: {result.max_chars}</p>
               <p>exclude_resident: {String(result.exclude_resident)}</p>
               <p>query: {debug?.query || "—"}</p>
+              <p>content_query: {debug?.content_query || "—"}</p>
               <p>tsquery: {debug?.tsquery || "—"}</p>
               <p>jieba_loaded: {debug?.jieba_loaded == null ? "—" : String(debug.jieba_loaded)}</p>
+              <p>use_vector: {debug?.use_vector == null ? "—" : String(debug.use_vector)}</p>
               <p>
                 min_score / relative / effective: {debug?.min_score} / {debug?.min_relative_score} /{" "}
                 {debug?.effective_min_score}
@@ -168,6 +170,7 @@ function PassiveRecallDebugPage() {
             <div className="space-y-3">
               <HitTable title="FTS" hits={debug?.fts ?? []} />
               <HitTable title="trgm" hits={debug?.trgm ?? []} />
+              <HitTable title="vector" hits={debug?.vector ?? []} />
               <HitTable title="merged" hits={debug?.merged ?? []} />
               <HitTable title="after_score_filter" hits={debug?.after_score_filter ?? []} />
               <HitTable title="after_resident_filter" hits={debug?.after_resident_filter ?? []} />

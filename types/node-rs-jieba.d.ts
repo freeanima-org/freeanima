@@ -1,8 +1,14 @@
 declare module "@node-rs/jieba" {
+  export type TaggedWord = {
+    tag: string;
+    word: string;
+  };
+
   export class Jieba {
     static withDict(dict: Uint8Array): Jieba;
     loadDict(data: Buffer): void;
     cut(text: string, hmm: boolean): string[];
+    tag(sentence: string | Uint8Array, hmm?: boolean | null): TaggedWord[];
   }
 }
 
