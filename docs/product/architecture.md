@@ -175,7 +175,7 @@ title: 架构
 
 **终态：** 每功能一份栖息地 RPC；业务方法走 `POST|WS /rpc/v1`（同一信封）。公开 health/TLS 探测与二进制方法（如 `tts.synthesize`）为栖息地 RPC REST，按注册表声明 `auth: optional` 或 Bearer。
 
-权威规格：[`repository-topology.md`](repository-topology.md)。
+权威规格：[`.cursor/rules/repository-topology.mdc`](../../.cursor/rules/repository-topology.mdc)。目标三分包与 portal 归属 → [`src-layering.md`](src-layering.md)。
 
 Host 栈：`src/host/{kernel,core,engine,capabilities,platform}`。Client：`src/client/{portal-sdk,app-frame}`。设计系统：`src/ui-kit/`（与 `shared/` 并列）。入口壳：`src/portal/app/{tauri,web}`。
 
