@@ -69,4 +69,23 @@ describe("layer-deps", () => {
       checkLayerDeps("src/features/task/ui/a.ts", "@freeanima/host/capabilities/tools"),
     ).toMatch(/不得 import platform\/engine\/capabilities/);
   });
+
+  test("shared cannot import host", () => {
+    expect(checkLayerDeps("src/shared/rpc-contract/x.ts", "@freeanima/host/core/util")).toMatch(
+      /shared 不得 import host/,
+    );
+    expect(checkLayerDeps("src/shared/util/x.ts", "@freeanima/shared/db-shapes")).toBeNull();
+  });
+
+  test("feature-ui/client cannot import host/core/db or drizzle-orm", () => {
+    expect(
+      checkLayerDeps("src/features/task/ui/a.ts", "@freeanima/host/core/db/schema/entity"),
+    ).toMatch(/不得 import host\/core\/db/);
+    expect(checkLayerDeps("src/client/portal-sdk/a.ts", "drizzle-orm")).toMatch(
+      /不得 import host\/core\/db/,
+    );
+    expect(
+      checkLayerDeps("src/features/task/ui/a.ts", "@freeanima/shared/entity-shapes"),
+    ).toBeNull();
+  });
 });

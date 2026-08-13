@@ -1,9 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import {
-  getBundledRpcStreamClient,
-  mapSapStreamMethodToApi,
-  streamEventMethods,
-} from "@freeanima/shared/rpc-contract";
+import { mapSapStreamMethodToApi, streamEventMethods } from "@freeanima/shared/rpc-contract";
+import { getBundledRpcStreamClient } from "@freeanima/shared/rpc-contract/bundled-rpc-stream-browser.ts";
 
 describe("chat browser SAP client", () => {
   it("sendMessageStream maps stream events to console shape", () => {

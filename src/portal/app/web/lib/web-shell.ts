@@ -1,4 +1,4 @@
-import { browserRemoteInstanceStore } from "@freeanima/shared/rpc-contract";
+import { browserRemoteInstanceStore } from "@freeanima/shared/rpc-contract/instance-store-browser.ts";
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import { buildShellApiFields } from "@freeanima/client/portal-sdk/shell-api-fields";
 import { normalizeShellClientConfig } from "@freeanima/client/portal-sdk/shell-client-config";

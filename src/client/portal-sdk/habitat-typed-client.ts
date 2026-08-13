@@ -9,7 +9,7 @@ import {
 import {
   resolveBundledHabitatClientOptions,
   type BundledHabitatClientOptions,
-} from "@freeanima/shared/habitat-client/bundled.ts";
+} from "@freeanima/shared/habitat-client/bundled-browser.ts";
 import { STATIC_METHOD_REGISTRY } from "@freeanima/shared/habitat-contract/registry/index.ts";
 import {
   installHabitatMethodRegistry,

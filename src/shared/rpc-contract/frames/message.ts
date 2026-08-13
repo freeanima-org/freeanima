@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { omitUndefined } from "@freeanima/host/core/util";
+import { omitUndefined } from "@freeanima/shared/util/omit-undefined.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 export const messageSendInputSchema = z.object({

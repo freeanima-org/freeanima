@@ -2,8 +2,9 @@ import { z } from "zod";
 
 import { taskRecurrenceSchema } from "../task-recurrence.ts";
 import { schedulableBodySchema } from "./schedulable.ts";
+import { TASK_ITEM_COMPONENT } from "@freeanima/shared/entity-shapes/component-ids.ts";
 
-export const TASK_ITEM_COMPONENT = "task_item" as const;
+export { TASK_ITEM_COMPONENT };
 
 export const taskItemStatusSchema = z.enum(["pending", "completed"]);
 export type TaskItemStatus = z.infer<typeof taskItemStatusSchema>;

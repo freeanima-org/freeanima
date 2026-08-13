@@ -13,9 +13,3 @@ export {
   type HabitatSubscribeCallbacks,
   type HabitatSubscribeOptions,
 } from "./subscribe.ts";
-export {
-  getBundledHabitatClient,
-  getOutpostHabitatClient,
-  resetBundledHabitatClientForTests,
-  type BundledHabitatClientOptions,
-} from "./bundled.ts";

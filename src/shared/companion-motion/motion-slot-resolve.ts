@@ -1,4 +1,4 @@
-import { companionMotionCachePath } from "@freeanima/host/core/config/schemas/companion.ts";
+import { companionMotionCachePath } from "@freeanima/shared/companion-config";
 import {
   emptyMotionSlots,
   LEGACY_IN_PLACE_SLOT_PREFIX,

@@ -4,6 +4,8 @@ import { HABITAT_RPC_LIVENESS_SILENCE_MS } from "./constants.ts";
 import { habitatHttpFromRpcWsUrl } from "./urls.ts";
 import { runHabitatRpcTransport, type HabitatRpcTransportHandle } from "./transport.ts";
 
+export type { RpcClient };
+
 export type HabitatRpcConnectionState = "connecting" | "connected" | "disconnected";
 
 export type BundledHabitatRpcClientOptions = {

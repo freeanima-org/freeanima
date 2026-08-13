@@ -78,19 +78,3 @@ export {
   throwHabitatRestError,
 } from "./http-rest.ts";
 export type { BuildHabitatRestRequestOptions, HabitatRestErrorBody } from "./http-rest.ts";
-
-export {
-  getBundledHabitatRpcClient,
-  whenHabitatRpcReady,
-  resetBundledHabitatRpcClientForTests,
-  subscribeBundledHabitatRpcConfigChanges,
-  subscribeHabitatRpcConnectionState,
-  getHabitatRpcConnectionState,
-  getHabitatRpcLastInboundAt,
-  reconnectHabitatRpc,
-} from "./bundled.ts";
-export type {
-  BundledHabitatRpcClient,
-  BundledHabitatRpcClientOptions,
-  HabitatRpcConnectionState,
-} from "./bundled.ts";

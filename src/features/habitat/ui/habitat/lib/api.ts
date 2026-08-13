@@ -2,7 +2,7 @@ import type {
   ConversationSummary,
   ServiceSnapshot,
 } from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
-import { resetBundledHabitatClientForTests } from "@freeanima/shared/habitat-client";
+import { resetBundledHabitatClientForTests } from "@freeanima/shared/habitat-client/bundled-browser.ts";
 import { resolveCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { reviveDates } from "@freeanima/features/habitat/protocol/habitat-contract/date-json.ts";

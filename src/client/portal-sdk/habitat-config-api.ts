@@ -1,4 +1,4 @@
-import { getBundledHabitatClient } from "@freeanima/shared/habitat-client";
+import { getBundledHabitatClient } from "@freeanima/shared/habitat-client/bundled-browser.ts";
 
 import { resolveHabitatApiFetch } from "./habitat-api-fetch.ts";
 

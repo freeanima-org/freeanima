@@ -1,12 +1,11 @@
 /// <reference lib="dom" />
+import { resolveHabitatRpcWsUrl, type RpcStreamClient } from "@freeanima/shared/rpc-contract";
 import {
-  resolveHabitatRpcWsUrl,
   getBundledRpcStreamClient,
   resetBundledRpcStreamClientForTests,
   subscribeShellConfigChanges,
   whenBundledRpcStreamClientReady,
-  type RpcStreamClient,
-} from "@freeanima/shared/rpc-contract";
+} from "@freeanima/shared/rpc-contract/bundled-rpc-stream-browser.ts";
 
 const CHAT_PLATFORM = "chat";
 

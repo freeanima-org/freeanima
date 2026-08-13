@@ -12,7 +12,7 @@ import {
   useActionSheetCapability,
   useContextMenuCapability,
 } from "@freeanima/client/portal-sdk/react.tsx";
-import { taskDeleteDetachesCarrier } from "@freeanima/host/core/db/schema/entity";
+import { taskDeleteDetachesCarrier } from "@freeanima/shared/entity-shapes";
 import {
   Button,
   Dialog,

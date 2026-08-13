@@ -2,9 +2,9 @@ import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test";
 
 const call = mock((_method: string, _payload?: unknown) => Promise.resolve({}));
 
-const habitatClientActual = await import("@freeanima/shared/habitat-client");
+const habitatClientActual = await import("@freeanima/shared/habitat-client/bundled-browser.ts");
 
-mock.module("@freeanima/shared/habitat-client", () => ({
+mock.module("@freeanima/shared/habitat-client/bundled-browser.ts", () => ({
   ...habitatClientActual,
   getBundledHabitatClient: () => ({ call }),
   resetBundledHabitatClientForTests: () => undefined,

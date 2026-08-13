@@ -1,4 +1,4 @@
-import { TASK_ITEM_COMPONENT } from "@freeanima/host/core/db/schema/entity";
+import { TASK_ITEM_COMPONENT } from "@freeanima/shared/entity-shapes";
 import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task.ts";
 
 /** Habitat / 缓存行可能缺 tag_ids / primary_component；渲染前补齐。 */

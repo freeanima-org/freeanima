@@ -35,11 +35,29 @@ export function targetLayer(spec: string): string | null {
   return "other";
 }
 
+function isFrontendDbImport(spec: string): boolean {
+  if (spec === "drizzle-orm" || spec.startsWith("drizzle-orm/")) return true;
+  return (
+    spec.includes("@freeanima/host/core/db") ||
+    spec.startsWith("@freeanima/core/db") ||
+    spec.includes("/host/core/db/")
+  );
+}
+
 /** 层依赖违规原因；合法返回 null。 */
 export function checkLayerDeps(rel: string, spec: string): string | null {
   const from = layerOf(rel);
   const to = targetLayer(spec);
+
+  if ((from === "feature-ui" || from === "client") && isFrontendDbImport(spec)) {
+    return "feature-ui/client 不得 import host/core/db 或 drizzle-orm；请用 @freeanima/shared/{db-shapes,entity-shapes}";
+  }
+
   if (!to) return null;
+
+  if (from === "shared" && to === "host") {
+    return "shared 不得 import host（纯工具/Zod 须落在 shared）";
+  }
 
   if ((from === "feature-ui" || (from === "client" && rel.includes("/spa/"))) && to === "host") {
     if (

@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+import { clarifyItemSchema } from "@freeanima/shared/db-shapes";
+
+export { clarifyItemSchema };
+
 export const todoStatusSchema = z.enum(["pending", "in_progress", "completed", "cancelled"]);
 
 export const todoItemSchema = z.object({
@@ -17,12 +21,6 @@ export const conversationTodoStoreSchema = z.object({
 });
 
 export type ConversationTodosJson = z.infer<typeof conversationTodoStoreSchema>;
-
-export const clarifyItemSchema = z.object({
-  question: z.string().min(1),
-  choices: z.array(z.string().min(1)).max(4).optional(),
-  default: z.string().optional(),
-});
 
 /** conversations.awaiting_clarify */
 export const awaitingClarifySchema = z.object({

@@ -1,13 +1,11 @@
 import {
   autobiographicalSignificanceSchema,
   autobiographicalStatusSchema,
+  clarifyItemSchema,
   limbicKindSchema,
-} from "@freeanima/host/core/db/schema/entity";
-import { clarifyItemSchema } from "@freeanima/host/core/db/schema/jsonb/conversation-meta-jsonb.ts";
-import {
   semanticMemoryStatusSchema,
   semanticMemoryTypeSchema,
-} from "@freeanima/host/core/db/schema/semantic-memory.ts";
+} from "@freeanima/shared/db-shapes";
 import { z } from "zod";
 
 const memoryListPaginationSchema = z.object({

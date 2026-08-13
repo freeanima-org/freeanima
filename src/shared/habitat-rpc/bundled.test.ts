@@ -6,7 +6,7 @@ import {
   resetBundledHabitatRpcClientForTests,
   subscribeHabitatRpcConnectionState,
   type HabitatRpcConnectionState,
-} from "./bundled.ts";
+} from "./bundled-browser.ts";
 
 describe("subscribeHabitatRpcConnectionState", () => {
   afterEach(() => {

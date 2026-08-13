@@ -1,4 +1,7 @@
-import { getBundledHabitatRpcClient, type RpcClient } from "@freeanima/shared/habitat-rpc";
+import {
+  getBundledHabitatRpcClient,
+  type RpcClient,
+} from "@freeanima/shared/habitat-rpc/bundled-browser.ts";
 
 let satelliteRpc: Promise<RpcClient> | null = null;
 

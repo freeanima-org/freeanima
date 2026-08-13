@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-export const VAULT_ITEM_COMPONENT = "vault_item" as const;
+import { VAULT_ITEM_COMPONENT } from "@freeanima/shared/entity-shapes/component-ids.ts";
+
+export { VAULT_ITEM_COMPONENT };
 
 export const vaultItemTypeSchema = z.enum(["login", "secure_note", "card", "identity", "custom"]);
 export type VaultItemType = z.infer<typeof vaultItemTypeSchema>;
