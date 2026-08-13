@@ -8,11 +8,11 @@ The root `tests/` directory hosts **cross-package integration tests** and shared
 
 ## Layers
 
-| Layer         | Location                                                                | External I/O                                                                        |
-| ------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Unit          | `src/**/*.test.ts`                                                      | mock + in-memory only (see [`.agent/rules/testing.md`](../.agent/rules/testing.md)) |
-| Integration   | `tests/integration/`                                                    | PG, Redis, temp `FREEANIMA_HOME`, `beginIntegrationCase`                            |
-| Black-box E2E | [freeanima-testing](https://github.com/freeanima-org/freeanima-testing) | Docker PG/Redis + source start + Playwright                                         |
+| Layer         | Location                                                                | External I/O                                                                            |
+| ------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Unit          | `src/**/*.test.ts`                                                      | mock + in-memory only (see [`.cursor/rules/testing.mdc`](../.cursor/rules/testing.mdc)) |
+| Integration   | `tests/integration/`                                                    | PG, Redis, temp `FREEANIMA_HOME`, `beginIntegrationCase`                                |
+| Black-box E2E | [freeanima-testing](https://github.com/freeanima-org/freeanima-testing) | Docker PG/Redis + source start + Playwright                                             |
 
 ### Core / enhanced
 
@@ -50,7 +50,7 @@ just check                               # typecheck + lint + format + test-chan
 ```
 
 - 有 Docker 时，[`scripts/integration-pg-setup.ts`](../scripts/integration-pg-setup.ts) 会建模板库并注入 `ANIMA_TEST_PG_URL`；`just qa test-integration` 默认 `--parallel`（每 worker 克隆独立库，**无 clearPgTables**）。
-- **禁止**把 `ANIMA_TEST_PG_URL` 指到日常 `~/.anima` / `config.yaml` 同 host:port（护栏 skip + throw）；细则见 [`.agent/rules/testing.md`](../.agent/rules/testing.md)。
+- **禁止**把 `ANIMA_TEST_PG_URL` 指到日常 `~/.anima` / `config.yaml` 同 host:port（护栏 skip + throw）；细则见 [`.cursor/rules/testing.mdc`](../.cursor/rules/testing.mdc)。
 - 功能变更 / bug 修复：主动 `just qa test-unit` + `just qa test-integration -- --core`（勿只跑 `--changed`）。
 - PR CI 跑全量 unit + integration（`scripts/run-ci-tests.ts`）。
 

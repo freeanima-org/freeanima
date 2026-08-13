@@ -263,4 +263,4 @@ title: 交互模式
 ## 相关文档
 
 - 页面刷新动词 → [aspects/page-refresh.md](../aspects/page-refresh.md)
-- Agent UI 规则 → [`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md)
+- Agent UI 规则 → [`.cursor/rules/frontend-ui.mdc`](../../.cursor/rules/frontend-ui.mdc)

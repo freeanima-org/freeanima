@@ -49,5 +49,5 @@ src/portal/
 ## 相关
 
 - 远程 Token：[`docs/ops/remote-access.md`](../ops/remote-access.md)
-- 壳规则：[`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)
-- 仓库拓扑：[`.agent/rules/repository-topology.md`](../../.agent/rules/repository-topology.md)
+- 壳规则：[`.cursor/rules/tauri-shell.mdc`](../../.cursor/rules/tauri-shell.mdc)
+- 仓库拓扑：[`.cursor/rules/repository-topology.mdc`](../../.cursor/rules/repository-topology.mdc)

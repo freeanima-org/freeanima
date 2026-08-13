@@ -1,3 +1,9 @@
+---
+description: SemVer, Conventional Commits, Release Please, Linux standalone
+globs: package.json,.release-please-config.json,**/CHANGELOG.md,just/pack.just,just/install.just,.github/workflows/**/*
+alwaysApply: false
+---
+
 # Versioning and Release
 
 FreeAnima follows [Semantic Versioning 2.0.0](https://semver.org/) (`MAJOR.MINOR.PATCH`).

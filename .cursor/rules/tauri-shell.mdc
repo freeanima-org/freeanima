@@ -1,3 +1,9 @@
+---
+description: Portal 壳 Tauri：工程位置、禁止 Node sidecar、ShellApi、双轨发版
+globs: src/portal/app/tauri/**/*,**/tauri.conf.*,just/pack.just,just/dev.just,just/install.just
+alwaysApply: false
+---
+
 # Tauri Portal 壳
 
 > 桌面 + Android 统一 **Tauri**（Rust 主进程 + 系统 WebView）。UI 仍是 `web/dist-*` / companion spa。
@@ -20,7 +26,7 @@
 | `just pack tauri-android` | Android APK                                         |
 
 依赖：`just install tauri`（本机）；交叉 Windows：`just install tauri-windows`（非 Windows 宿主）。
-CI / 本地 release profile 优先级：**构建速度 > 体积 > 运行速度**（无 fat LTO；详见 [`release.md`](release.md)「Tauri 打包加速约定」）。
+CI / 本地 release profile 优先级：**构建速度 > 体积 > 运行速度**（无 fat LTO；详见 [`release.md`](release.mdc)「Tauri 打包加速约定」）。
 
 **身份与数据目录**（由 `FREEANIMA_BUILD_CHANNEL` 派生；未设 ⇒ `local`；遗留 `dev` 归一为 `local`）：
 
@@ -38,7 +44,7 @@ NSIS 安装目录 = `productName`（无独立 installDir）。`just pack tauri-w
 1. **产品逻辑 TypeScript-only**（Habitat / features）；壳主进程 **Rust only** — 不在壳内跑 Node/Bun 业务进程。
 2. **禁止 Node sidecar**：companion `remote_tools.attach` 在 **伴侣浮层**（`embedded-overlay` WebView）；壳只提供窗 / IPC / FS / 通知。
 3. **`ShellApi` 注入**：`isTauri: true`、`isNativeShell: true`；桌面 `primaryInput: "pointer"`；移动 `primaryInput: "touch"`。
-4. **禁止**用 `getShellKind() === "tauri"` 锁布局（三维度规则 → [`ui-dimensions.md`](ui-dimensions.md)）。
+4. **禁止**用 `getShellKind() === "tauri"` 锁布局（三维度 → [`frontend-ui.mdc`](frontend-ui.mdc)）。
 5. 编译期壳目标：`FREEANIMA_SHELL_TARGET=desktop|mobile` → `dist-desktop` / `dist-mobile`；打包前 `scripts/prepare-tauri-ui.ts` 拷入 `src-tauri/ui/web`。
 6. Habitat URL + token 存壳 prefs（Rust `desktop-shell.json` / Tauri store）。
 7. **原生 HTTP TLS 须用 OS 信任库**：`reqwest` 使用 `rustls-tls-native-roots`（读系统/用户 CA，含 mkcert `-install`）。**禁止**仅 `rustls-tls` / webpki-roots——否则壳「测试连接」对已装 mkcert 的 HTTPS 仍失败，而浏览器/WebView 正常（Electron 时代曾合并 system CA，同级约束）。

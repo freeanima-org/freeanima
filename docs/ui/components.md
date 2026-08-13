@@ -5,8 +5,8 @@ title: UI 组件
 # UI 组件
 
 入口 UI 的分层与落点规则。实现位于 `src/ui-kit/` 与 `src/features/*/ui/`。Agent 导入禁令 →
-[`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md) 与
-[`.agent/rules/frontend-features.md`](../../.agent/rules/frontend-features.md)。
+[`.cursor/rules/frontend-ui.mdc`](../../.cursor/rules/frontend-ui.mdc) 与
+[`.cursor/rules/frontend-features.mdc`](../../.cursor/rules/frontend-features.mdc)。
 
 视觉 token → [foundations.md](foundations.md)。维度轴 → [dimensions.md](dimensions.md)。
 
@@ -67,7 +67,7 @@ title: UI 组件
 | 状态           | `<StatusAlert>`                                                                  |
 | 确认           | `<ConfirmDialog>` / `showConfirm` — 永不使用 `window.confirm`                    |
 
-完整 Agent 清单 → [`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md)。
+完整 Agent 清单 → [`.cursor/rules/frontend-ui.mdc`](../../.cursor/rules/frontend-ui.mdc)。
 
 ## 维度适配（组件）
 

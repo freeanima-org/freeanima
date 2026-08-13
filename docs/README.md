@@ -5,7 +5,7 @@ title: 文档索引
 # 文档/
 
 面向 **FreeAnima 用户** 与栖息地 Agent（`freeanima_docs` ToolSet）。贡献者规则见
-[`.agent/rules/`](../.agent/rules/README.md)。任务见 [GitHub
+[`.cursor/rules/`](../.cursor/rules/agent-bootstrap.mdc)。任务见 [GitHub
 Issues](https://github.com/freeanima-org/freeanima/issues)。
 
 **Agent 提示：** 先 `toolset_load(["freeanima_docs"])`，再优先对 `README.md` 调用 `freeanima_docs_get`，或用 `freeanima_docs_list` 加路径 `prefix`（`product/`、`cognition/`、`ui/`、`aspects/`、`modules/`、`tools/`、`ops/`）。
@@ -45,8 +45,7 @@ Issues](https://github.com/freeanima-org/freeanima/issues)。
 | 交互模式 | [ui/patterns.md](ui/patterns.md)       |
 
 Agent 硬禁令 / API 速查 →
-[`.agent/rules/frontend-ui.md`](../.agent/rules/frontend-ui.md)、
-[`.agent/rules/ui-dimensions.md`](../.agent/rules/ui-dimensions.md)。
+[`.cursor/rules/frontend-ui.mdc`](../.cursor/rules/frontend-ui.mdc)。
 
 ## 切面 — 横切设计切面
 

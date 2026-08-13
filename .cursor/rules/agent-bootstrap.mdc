@@ -1,24 +1,71 @@
 ---
-description: FreeAnima agent bootstrap — read AGENTS.md and .agent/rules/ before coding
+description: FreeAnima bootstrap — 全局视图、原则、命令、文案、冲突优先级、原则维护
 alwaysApply: true
 ---
 
 # Agent bootstrap
 
-1. Read root [`AGENTS.md`](../../AGENTS.md) for startup order, product & code principles, and doc map.
-2. Before changing code, open the relevant file under [`.agent/rules/`](../../.agent/rules/README.md):
-   - layers / Registry / composition → `code-layers.md`
-   - tests → `testing.md`
-   - types / tools / security / PG migrations → `coding.md`
-   - `core/db/pg` / Drizzle queries → `drizzle-db.md`
-   - release / Conventional Commits → `release.md`
-   - compression algorithm → `compression.md`
-   - new packages → `packages.md`
-   - 文案语言（无 i18n；UI/docs 中文）→ `i18n.md`
-   - frontend features / Habitat RPC vs remote tools → `frontend-features.md`
-   - shadcn / ui-kit / Modal → `frontend-ui.md`（规范正文 → [`docs/ui/`](../../docs/ui/overview.md)）
-   - 壳子/布局/交互三维度 → `ui-dimensions.md`（产品叙述 → [`docs/ui/dimensions.md`](../../docs/ui/dimensions.md)）
-   - Portal 壳 Tauri → `tauri-shell.md`
-3. Product architecture (cognitive layers, tools, Gateway) → [`docs/product/architecture.md`](../../docs/product/architecture.md). UI/UX design system → [`docs/ui/`](../../docs/ui/overview.md).
-4. Code overrides docs when they conflict.
-5. When correcting or refining direction, principles, or philosophy, update the matching doc layer per `AGENTS.md` "Principle & direction maintenance" — same task/PR as code; do not leave changes code-only.
+> 身份：[`docs/product/identity.md`](../../docs/product/identity.md)；self：[`docs/cognition/self-layer.md`](../../docs/cognition/self-layer.md)。
+
+## Global view
+
+**Habitat**（栖息地）= 长驻进程；**Portal**（入口）四形态：application Shell / browser 扩展 / mcp `/mcp` / cli。产品与 Habitat 逻辑 **仅 TypeScript**；Portal Shell = **Tauri**。源码 `just dev`；安装版 `anima service`（`/rpc/v1` + `/mcp`）。布局：`src/{host,client,ui-kit,features,shared,portal}` — [`repository-topology.mdc`](repository-topology.mdc)。命名：[`docs/product/architecture.md`](../../docs/product/architecture.md)、[`i18n/glossary.md`](../../i18n/glossary.md)。
+
+**代码是真相**；勿凭 docs 臆造工具名 / 端点 / 协议。专题约束靠 `.cursor/rules/*.mdc` 的 globs 注入（改相关文件时自动带上）。
+
+## Product principles
+
+- **Platform-native UX** — Mobile/desktop 分设交互与布局，非一套 responsive。**Shell** ≠ app frame（Rail/底栏）。三维：壳 / 布局（`compact`|`expanded`）/ 交互（`pointer`|`touch`）— [`frontend-ui.mdc`](frontend-ui.mdc)。壳不锁布局；**phone ≠ 窄布局**。
+- **Habitat & Portal** — 用户文案用栖息地/入口；协议标识仍写 Habitat。
+- **MCP first** — 可拨号对等方用 MCP；仅不可达本地应用（Companion / Coding outpost）经 Habitat RPC `remote_tools.attach`。主壳产品 UI **不** attach。
+- **Concept convergence** — 核心概念少而稳；新功能映射已有心智模型。
+
+## Code principles
+
+- **Right path over minimal diff** — 终态正确优先于最小 diff。
+- **Testability by design** — 就近单测；跨边界集成测；PG 测禁止指日常 `config.yaml` 同 host:port — [`testing.mdc`](testing.mdc)。
+- **Elegant & simple** — 终态最简正确结构；清晰优于巧妙间接。
+- **Prefer mature community solutions** — UI 用 shadcn；勿自造平行栈。
+- **No speculative layering** — 第二个真实消费者再加抽象。
+- **Portal shell = Tauri** — 禁止 Node sidecar — [`tauri-shell.mdc`](tauri-shell.mdc)。
+
+## 文案语言
+
+**无 i18n 运行时**。产品 UI / Host 用户可见串 / `docs/**` 直接**简体中文**；术语 [`i18n/glossary.md`](../../i18n/glossary.md)。禁止再引入 Paraglide / gettext / Starlight locales / 未使用的双语抽象。
+
+## Commands
+
+日常 `just`（根 [`package.json`](../../package.json) 仅 husky；业务不走 `bun run`）。
+
+```bash
+bun install
+just dev                     # Habitat(≥10000) + Web(:5000)
+just check                   # PR 门禁
+just qa test-unit-core
+just qa test-integration -- --core
+just db generate / just db migrate
+just pack web|cli|tauri|tauri-windows|tauri-android
+```
+
+- 生产 Habitat：`http://127.0.0.1:2658/rpc/v1`；dev 随机 ≥10000
+- Dev UI：`http://127.0.0.1:5000/web/chat`；`DEV_HTTPS=1` 才开 Vite HTTPS
+- 详释：[`docs/ops/database.md`](../../docs/ops/database.md)、[`release.mdc`](release.mdc)
+
+## Conflict priority
+
+1. **代码** > docs / rules  
+2. **`docs/product/architecture.md`** > 其他 docs  
+3. **GitHub Issues** > 过时规划（不覆盖已上线代码）
+
+## Principle maintenance
+
+原则修正须与代码 **同 PR** 落盘：
+
+| 性质 | 写入 |
+| ---- | ---- |
+| 产品 / 认知方向 | `docs/product/` → 专题；`docs/cognition/` |
+| UI/UX 叙述 | `docs/ui/`；硬禁令 → [`frontend-ui.mdc`](frontend-ui.mdc) |
+| 实现约束 | `.cursor/rules/<topic>.mdc` |
+| 本文件级原则 / 冲突优先级 | 本文件 |
+
+禁止：本 bootstrap 堆工具表/目录树/API 清单；专题 rule 写产品架构长文；手工改 `CHANGELOG.md`。

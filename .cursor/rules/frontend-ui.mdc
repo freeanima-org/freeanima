@@ -1,0 +1,74 @@
+---
+description: 前端硬约束 — 三维度 API、shadcn/ui-kit、Modal/菜单/列表
+globs: src/client/**/*,src/features/**/ui/**/*,src/portal/app/**/*,src/portal/extension/**/*,src/ui-kit/**/*
+alwaysApply: false
+---
+
+# Frontend UI
+
+> 产品叙述 SSOT → [`docs/ui/`](../../docs/ui/overview.md)。功能原型 → [`frontend-features.mdc`](frontend-features.mdc)。  
+> 栈：**Tailwind v4 + shadcn（React Aria）**（`@freeanima/ui-kit`）。**禁止 DaisyUI。**  
+> 适用范围：Portal SPA（web/tauri）+ 扩展 popup/options；**不含** content script。
+
+## 三维度（壳 / 布局 / 交互）
+
+| 概念 | 是什么 | 代码 |
+| ---- | ------ | ---- |
+| **Shell** | Portal 运行时宿主 | `src/portal/app/*`；`portal-sdk` |
+| **app frame** | Rail / 底栏 / 设置 chrome | `src/client/app-frame` |
+
+禁止把 app frame 叫 Shell；禁止用 Shell 类型推导 Rail/底栏。
+
+| 禁止 | 允许 |
+| ---- | ---- |
+| `getShellKind()` / `isNativeShell` 锁应用布局 | `useLayoutMode()` / `useDrawerNav()` |
+| 视口断点决定右键 vs 长按 | `useContextMenuCapability` / `useActionSheetCapability` |
+| 布局+壳决定 Enter 发送 | `useEnterToSendCapability()` |
+| 单个 `isMobile`/`isDesktop` 同时锁布局和交互 | 按维选用 API |
+| 为壳判断 import `portal/app/web` | `@freeanima/client/portal-sdk` |
+| `ui-kit` 导出壳判定 | 壳判定仅 portal-sdk |
+
+**壳**：`getShellKind` / `getShellBuildTarget` / `canOpenHabitatSettings` / `shouldUseNativeShellNavigation`  
+**布局**：`useLayoutMode` / `useCompactLayout` / `useDrawerNav`（窄视口 &lt;768px）  
+**交互**：`hasFinePointerCapability` / `hasTouchPrimaryCapability` / `useContextMenuCapability` / `useActionSheetCapability` / `useEnterToSendCapability`  
+
+touch ≥44px、无 hover-only；Pad+外接键盘时交互维仍为 touch。入口：`portal-sdk/shell-runtime.ts`、`shell-capability.ts`；布局 `ui-kit/layout/viewport.ts`。
+
+旧名速记：`shell-sdk`→`portal-sdk`；`ModuleShell`→`AppFrame`；`useMobileLayout`→`useCompactLayout`。
+
+## 分层 → 代码
+
+| 层级 | 位置 |
+| ---- | ---- |
+| 基元 | `@freeanima/ui-kit` → `components/ui` |
+| 结构 | `@freeanima/ui-kit/form`、`layout` |
+| 复合 | `@freeanima/ui-kit/composite` |
+| 领域 | `features/*/ui` |
+
+## 主题与 CSS
+
+- Token SSOT：`src/ui-kit/styles/globals.css`（`:root` / `.dark`；强调色 `.dark[data-color-theme]`）
+- **禁止**在 `globals.css` 外裸写主题色 `var(--background)`；用 Tailwind / `@apply`
+- 布局裸 CSS 只放 position / safe-area
+- 暗色用 `.dark`；**禁止** DaisyUI `data-theme`
+
+## 基元 / 复合
+
+| 场景 | 做法 |
+| ---- | ---- |
+| 按钮 / 表单 | `<Button>` / `<Input>` / `<Select>`；默认不 `focusOnMount` |
+| Dialog/Sheet | React Aria 焦点；`isOpen` / `Dialog` |
+| 确认 | `<ConfirmDialog>` / `showConfirm`；确认钮禁止 `autoFocus` |
+| 菜单 | pointer→`ContextMenu`；touch→`ActionSheet`；共享 `ActionSheetItem[]` |
+| 列表行 | DataListRow；优先 `ListRow` / `TaskItemRowView` |
+
+从 `@freeanima/ui-kit/composite`：`ConfirmDialog`、`showConfirm`、`ActionSheet`、`ContextMenu`、`EmptyState`、`StatusAlert`、`PullToRefresh`、`ListRow`、MoveTo*Picker。
+
+**禁止**：`window.confirm`；自研 `fixed` 快捷菜单；自研 `createPortal`+遮罩当 Modal；用壳/视口宽选 ContextMenu vs ActionSheet。
+
+## 其它
+
+- 多列：`columnSplitKey` → `freeanima:column-splits:<key>`
+- 模块可见性：`shell-module-visibility.ts`；`chat`/`settings` 不可关
+- 静态检查：`just qa stylelint`
+- **禁止**：DaisyUI class / `--color-base-*`；`ui-kit` 内 import `rpc-contract`；app-frame 深路径 import feature 源码

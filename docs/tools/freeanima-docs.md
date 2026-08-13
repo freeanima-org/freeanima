@@ -36,4 +36,4 @@ toolset_load(["freeanima_docs"])
 
 - 来源：仓库 `docs/**/*.md`（独立构建嵌入同一棵树）。
 - 跳过 `docs/.generated/`（翻译构建产物）。
-- **不要**把验收清单、临时 QA 笔记或仅 IDE 用的实现规则放进 `docs/` — 那些属于语料外（如 `.agent/rules/`）。
+- **不要**把验收清单、临时 QA 笔记或仅 IDE 用的实现规则放进 `docs/` — 那些属于语料外（如 `.cursor/rules/`）。

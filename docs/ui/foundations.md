@@ -8,7 +8,7 @@ title: 视觉基础
 
 各节使用[维度适配模板](dimensions.md#dimension-adaptation-template)。
 
-Agent 禁令（原始 CSS 变量、DaisyUI token）→ [`.agent/rules/frontend-ui.md`](../../.agent/rules/frontend-ui.md)。
+Agent 禁令（原始 CSS 变量、DaisyUI token）→ [`.cursor/rules/frontend-ui.mdc`](../../.cursor/rules/frontend-ui.mdc)。
 
 ## 颜色与主题
 

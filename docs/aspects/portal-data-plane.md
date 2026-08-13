@@ -131,4 +131,4 @@ flowchart LR
 
 - [远程访问](../ops/remote-access.md) — PWA 与业务离线边界
 - [栖息地 RPC](../ops/habitat-rpc.md) — 传输
-- [UI 三维度](../ui/dimensions.md)（Agent API：[ui-dimensions 规则](../../.agent/rules/ui-dimensions.md)）— pointer vs touch 刷新可及性
+- [UI 三维度](../ui/dimensions.md)（Agent API：[frontend-ui 规则](../../.cursor/rules/frontend-ui.mdc)）— pointer vs touch 刷新可及性

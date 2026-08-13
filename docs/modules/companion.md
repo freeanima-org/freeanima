@@ -4,7 +4,7 @@ title: 桌面伴侣
 
 # 桌面伴侣
 
-> **桌面伴侣** / **Companion**：产品功能。**伴侣浮层**（companion overlay）：入口透明 VRM 窗（`embedded-overlay`）。**前哨**（Outpost）：overlay 内 `remote_tools.attach` 角色。目标壳：**Tauri**（见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)）。不经 `config.yaml` 管理；**禁止**再打独立 Node sidecar。
+> **桌面伴侣** / **Companion**：产品功能。**伴侣浮层**（companion overlay）：入口透明 VRM 窗（`embedded-overlay`）。**前哨**（Outpost）：overlay 内 `remote_tools.attach` 角色。目标壳：**Tauri**（见 [`.cursor/rules/tauri-shell.mdc`](../../.cursor/rules/tauri-shell.mdc)）。不经 `config.yaml` 管理；**禁止**再打独立 Node sidecar。
 
 内容包（React + VRM）由**桌面 Tauri 壳**（`src/portal/app/tauri`）嵌入。打包后的浮层从 `frontendDist` 的 `ui/companion/` 经 `WebviewUrl::App` 加载（与主窗同一自定义协议 —— **不是** `file://` 资源）。浮层用栖息地 RPC 连接，调用 `remote_tools.attach`，并向 Agent 暴露本机工具（`bubble`、`play_slot`）。聊天室等产品模块只用栖息地 RPC（不 attach）。
 
@@ -102,7 +102,7 @@ bun src/features/companion/dev.ts
 
 ### 桌面（Tauri 入口）
 
-入口伴侣浮层 WebView 承载伴侣 UI 与 `remote_tools.attach`（`embedMode: embedded-overlay`；禁止 Node sidecar）。窗口 / IPC / FS 来自 Tauri 命令。见 [`.agent/rules/tauri-shell.md`](../../.agent/rules/tauri-shell.md)。
+入口伴侣浮层 WebView 承载伴侣 UI 与 `remote_tools.attach`（`embedMode: embedded-overlay`；禁止 Node sidecar）。窗口 / IPC / FS 来自 Tauri 命令。见 [`.cursor/rules/tauri-shell.mdc`](../../.cursor/rules/tauri-shell.mdc)。
 
 ## 设置存储
 
