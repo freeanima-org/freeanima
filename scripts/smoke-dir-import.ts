@@ -3,7 +3,7 @@
  * migrations / docs / web dist `dir:` 嵌入契约冒烟（对照磁盘枚举 + Bun.build）。
  *
  * 用法：
- *   bun scripts/smoke-dir-import-migrations.ts
+ *   bun scripts/smoke-dir-import.ts
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
@@ -123,7 +123,7 @@ async function smokeWebRuntime(): Promise<void> {
 }
 
 async function smokeBuild(): Promise<void> {
-  const outDir = join(ROOT, "tmp/smoke-dir-import-migrations");
+  const outDir = join(ROOT, "tmp/smoke-dir-import");
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
 
@@ -181,4 +181,4 @@ await smokeMigrationsRuntime();
 await smokeDocsRuntime();
 await smokeWebRuntime();
 await smokeBuild();
-console.log("smoke-dir-import-migrations: all checks passed");
+console.log("smoke-dir-import: all checks passed");
