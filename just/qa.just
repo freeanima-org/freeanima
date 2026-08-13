@@ -10,6 +10,12 @@ check: _deps
   {{ bun }} scripts/stylelint.ts
   {{ bun }} x oxfmt --check .
   {{ bun }} test src scripts/oxlint-plugins --pass-with-no-tests --changed
+  {{ bun }} scripts/check-frontend-no-drizzle.ts
+
+# 抽样：Vite 解析 task/vault/diary UI + portal-sdk，断言模块图无 drizzle-orm
+[no-cd]
+check-frontend-no-drizzle: _deps
+  {{ bun }} scripts/check-frontend-no-drizzle.ts
 
 # husky pre-commit（与钩子同集合，避免漂移）
 [no-cd]

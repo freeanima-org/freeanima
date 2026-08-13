@@ -5,9 +5,8 @@
 import {
   getBundledRpcStreamClient,
   type BundledSapStreamClient,
-  type StreamApiLikeEvent,
-  type SubscribeCallbacks,
-} from "@freeanima/shared/rpc-contract";
+} from "@freeanima/shared/rpc-contract/bundled-rpc-stream-browser.ts";
+import type { StreamApiLikeEvent, SubscribeCallbacks } from "@freeanima/shared/rpc-contract";
 
 export type CodingStreamClient = BundledSapStreamClient;
 

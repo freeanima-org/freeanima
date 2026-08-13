@@ -1,4 +1,4 @@
-import { whenBundledRpcStreamClientReady } from "@freeanima/shared/rpc-contract";
+import { whenBundledRpcStreamClientReady } from "@freeanima/shared/rpc-contract/bundled-rpc-stream-browser.ts";
 import type { VaultConfigRowPayload } from "@freeanima/shared/rpc-contract";
 
 export async function getVaultCryptoConfig(

@@ -1,10 +1,9 @@
 import { z } from "zod";
 
+import { limbicKindSchema, type LimbicKind } from "@freeanima/shared/db-shapes";
+
+export { limbicKindSchema, type LimbicKind };
 export const LIMBIC_COMPONENT = "limbic" as const;
-
-export const limbicKindSchema = z.enum(["conversation_mood", "turning_point", "spike"]);
-
-export type LimbicKind = z.infer<typeof limbicKindSchema>;
 
 export const limbicBodySchema = z.object({
   valence: z.number().min(-1).max(1),

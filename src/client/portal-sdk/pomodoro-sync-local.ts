@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import type { PomodoroActiveBody } from "@freeanima/host/core/db/schema/entity";
+import type { PomodoroActiveBody } from "@freeanima/shared/entity-shapes";
 import type { PomodoroActiveState } from "./pomodoro-active-types.ts";
 import { activeStateToHabitatBody, habitatBodyToActiveState } from "./pomodoro-active-store.ts";
 import { readPomodoroActiveState, writePomodoroActiveState } from "./pomodoro-active.ts";

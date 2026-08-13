@@ -1,4 +1,4 @@
-import { randomUuid } from "@freeanima/host/kernel/random-uuid.ts";
+import { randomUuid } from "@freeanima/shared/util/random-uuid.ts";
 
 import {
   HABITAT_RPC_CONNECT_TIMEOUT_MS,

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, test } from "bun:test";
 import {
   getHabitatRpcConnectionState,
   resetBundledHabitatRpcClientForTests,
-} from "@freeanima/shared/habitat-rpc";
+} from "@freeanima/shared/habitat-rpc/bundled-browser.ts";
 
 import { reconnectHabitat, subscribeHabitatConnection } from "./habitat-connection.ts";
 

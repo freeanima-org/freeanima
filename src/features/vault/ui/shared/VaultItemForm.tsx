@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, FormField, Input, Spinner, Textarea } from "@freeanima/ui-kit";
 import { normalizeTotpSecret, type VaultCustomField } from "@freeanima/shared/vault-crypto";
 import type { VaultUriEntryPayload, VaultUriMatch } from "@freeanima/shared/rpc-contract";
-import { VAULT_ITEM_COMPONENT } from "@freeanima/host/core/db/schema";
+import { VAULT_ITEM_COMPONENT } from "@freeanima/shared/entity-shapes";
 import { TagPicker } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 
 import { VAULT_ITEM_TYPE_OPTIONS, VAULT_URI_MATCH_OPTIONS } from "./uri-match.ts";

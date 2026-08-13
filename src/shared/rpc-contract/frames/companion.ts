@@ -5,7 +5,7 @@ import {
   companionModelEntrySchema,
   companionMotionEntrySchema,
   companionMotionSlotsSchema,
-} from "@freeanima/host/core/config/schemas/companion.ts";
+} from "@freeanima/shared/companion-config";
 
 export {
   companionBehaviorSchema,

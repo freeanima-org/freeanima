@@ -7,10 +7,8 @@ import {
   createRemoteToolsHabitatAttach,
   type RemoteToolsAttachHandle,
 } from "@freeanima/shared/rpc-contract/remote-tools-attach.ts";
-import {
-  browserRemoteInstanceStore,
-  type RemoteInstanceStore,
-} from "@freeanima/shared/rpc-contract/instance-store.ts";
+import { browserRemoteInstanceStore } from "@freeanima/shared/rpc-contract/instance-store-browser.ts";
+import type { RemoteInstanceStore } from "@freeanima/shared/rpc-contract/instance-store.ts";
 import { executeCompanionTool } from "./tools-executor.ts";
 
 const APP_ID = "companion";

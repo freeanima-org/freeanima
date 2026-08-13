@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type JSX } from "react";
 import { PlusIcon } from "lucide-react";
 
-import { DIARY_ENTRY_COMPONENT } from "@freeanima/host/core/db/schema";
+import { DIARY_ENTRY_COMPONENT } from "@freeanima/shared/entity-shapes";
 import { TagChips } from "@freeanima/features/tag/ui/spa/components/TagChips.tsx";
 import { TagPicker } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 import { fetchTags, type TagRow } from "@freeanima/features/tag/ui/spa/lib/api.ts";

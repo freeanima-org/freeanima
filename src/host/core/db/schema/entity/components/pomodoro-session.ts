@@ -1,9 +1,12 @@
 import { z } from "zod";
 
-export const POMODORO_SESSION_COMPONENT = "pomodoro_session" as const;
+import {
+  POMODORO_SESSION_COMPONENT,
+  pomodoroPhaseSchema,
+  type PomodoroPhase,
+} from "@freeanima/shared/entity-shapes";
 
-export const pomodoroPhaseSchema = z.enum(["work", "short_break", "long_break"]);
-export type PomodoroPhase = z.infer<typeof pomodoroPhaseSchema>;
+export { POMODORO_SESSION_COMPONENT, pomodoroPhaseSchema, type PomodoroPhase };
 
 export const pomodoroSessionBodySchema = z.object({
   phase: pomodoroPhaseSchema,

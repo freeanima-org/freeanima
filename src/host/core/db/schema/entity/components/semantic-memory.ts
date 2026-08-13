@@ -1,28 +1,22 @@
 import { z } from "zod";
 
+import {
+  normalizeSemanticMemoryType,
+  semanticMemoryStatusSchema,
+  semanticMemoryTypeSchema,
+  type SemanticMemoryStatus,
+  type SemanticMemoryType,
+} from "@freeanima/shared/db-shapes";
+
+export {
+  semanticMemoryTypeSchema,
+  semanticMemoryStatusSchema,
+  normalizeSemanticMemoryType,
+  type SemanticMemoryType,
+  type SemanticMemoryStatus,
+};
+
 export const SEMANTIC_MEMORY_COMPONENT = "semantic_memory" as const;
-
-export const semanticMemoryTypeSchema = z.enum([
-  "world",
-  "experience",
-  "opinion",
-  "observation",
-  "preference",
-  "procedural",
-  "imprint",
-]);
-
-export type SemanticMemoryType = z.infer<typeof semanticMemoryTypeSchema>;
-
-export const semanticMemoryStatusSchema = z.enum(["active", "deprecated"]);
-
-export type SemanticMemoryStatus = z.infer<typeof semanticMemoryStatusSchema>;
-
-export function normalizeSemanticMemoryType(raw: string | undefined | null): SemanticMemoryType {
-  if (!raw?.trim()) return "world";
-  const parsed = semanticMemoryTypeSchema.safeParse(raw.trim().toLowerCase());
-  return parsed.success ? parsed.data : "world";
-}
 
 export const semanticMemoryBodySchema = z.object({
   /** 旧 semantic_memory.type（与 entities.type 区分） */

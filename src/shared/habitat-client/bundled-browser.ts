@@ -1,5 +1,8 @@
 /// <reference lib="dom" />
-import { getBundledHabitatRpcClient, type RpcClient } from "@freeanima/shared/habitat-rpc";
+import {
+  getBundledHabitatRpcClient,
+  type RpcClient,
+} from "@freeanima/shared/habitat-rpc/bundled-browser.ts";
 
 import { createFullHabitatClient, habitatHttpFromWsUrl, type HabitatClient } from "./index.ts";
 

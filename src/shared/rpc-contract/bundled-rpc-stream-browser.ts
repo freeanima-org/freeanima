@@ -3,7 +3,7 @@ import {
   getBundledHabitatRpcClient,
   subscribeBundledHabitatRpcConfigChanges,
   type HabitatRpcConnectionState,
-} from "@freeanima/shared/habitat-rpc";
+} from "@freeanima/shared/habitat-rpc/bundled-browser.ts";
 import type { StreamApiLikeEvent } from "./frames/message.ts";
 import {
   createSapConversationStreamClient,

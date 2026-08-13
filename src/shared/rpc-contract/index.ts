@@ -6,7 +6,7 @@ export {
   serializeHabitatRpcEnvelope,
 } from "./protocol.ts";
 export type { HabitatRpcEnvelope, HabitatRpcError } from "./protocol.ts";
-export { randomUuid } from "@freeanima/host/kernel/random-uuid.ts";
+export { randomUuid } from "@freeanima/shared/util/random-uuid.ts";
 
 export {
   normalizeAppSlug,
@@ -28,7 +28,6 @@ export type { ParsedRemoteToolName, ParsedRemotePlatform } from "./naming.ts";
 export { generateRemoteInstanceIdCandidate, assertRemoteInstanceId } from "./instance-id.ts";
 
 export {
-  browserRemoteInstanceStore,
   memoryRemoteInstanceStore,
   loadRemoteInstanceId,
   type RemoteInstanceStore,
@@ -598,16 +597,6 @@ export {
   habitatHttpFromWsUrl,
   habitatHttpFromRpcWsUrl,
 } from "./urls.ts";
-
-export {
-  getBundledRpcStreamClient,
-  whenBundledRpcStreamClientReady,
-  whenBundledRpcClientReady,
-  createBundledSapStreamClient,
-  resetBundledRpcStreamClientForTests,
-  subscribeShellConfigChanges,
-} from "./bundled-rpc-stream.ts";
-export type { BundledSapStreamClient, SapConnectionState } from "./bundled-rpc-stream.ts";
 
 export { sapClientFromRpc } from "./rpc-stream-client-from-rpc.ts";
 

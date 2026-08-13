@@ -28,7 +28,7 @@ import {
   computeNextOccurrence,
   normalizeRecurrenceInput,
   shiftRemindAt,
-} from "@freeanima/host/core/db/schema/entity";
+} from "@freeanima/shared/entity-shapes";
 import { nextPrependSortOrder } from "@freeanima/features/task/domain/sort-order.ts";
 import type {
   TaskItemRowPayload,

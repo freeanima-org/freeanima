@@ -1,7 +1,7 @@
 import {
   subscribeHabitatRpcConnectionState,
   whenHabitatRpcReady,
-} from "@freeanima/shared/habitat-rpc";
+} from "@freeanima/shared/habitat-rpc/bundled-browser.ts";
 import { z } from "zod";
 
 import { getUserVaultSession } from "./user-vault-session.ts";

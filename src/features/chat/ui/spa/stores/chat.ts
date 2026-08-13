@@ -5,7 +5,7 @@ import type {
 } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 import { pollUntilAssistantReply } from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
 import { randomUuid } from "@freeanima/shared/rpc-contract";
-import { subscribeHabitatRpcConnectionState } from "@freeanima/shared/habitat-rpc";
+import { subscribeHabitatRpcConnectionState } from "@freeanima/shared/habitat-rpc/bundled-browser.ts";
 import { renderMarkdownHtml } from "@freeanima/ui-kit/lib/markdown.ts";
 import { create } from "zustand";
 import {

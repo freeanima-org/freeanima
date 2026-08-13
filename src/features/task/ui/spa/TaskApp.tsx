@@ -35,7 +35,7 @@ import {
   useDetailPanelState,
 } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
-import { taskDeleteDetachesCarrier } from "@freeanima/host/core/db/schema/entity";
+import { taskDeleteDetachesCarrier } from "@freeanima/shared/entity-shapes";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
 import { TaskKanbanBoard, type KanbanGroupBy } from "./components/TaskKanbanBoard.tsx";
 import { ListSidebar } from "./components/ListSidebar.tsx";

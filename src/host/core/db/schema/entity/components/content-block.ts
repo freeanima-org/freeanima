@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-export const CONTENT_BLOCK_COMPONENT = "content_block" as const;
+import { CONTENT_BLOCK_COMPONENT } from "@freeanima/shared/entity-shapes/component-ids.ts";
+
+export { CONTENT_BLOCK_COMPONENT };
 
 export const contentBlockTypeSchema = z.enum([
   "text",

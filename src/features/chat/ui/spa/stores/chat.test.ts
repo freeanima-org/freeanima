@@ -11,7 +11,7 @@ type StreamCallbacks = {
 let streamScenario: "idle" | "error_then_done" = "idle";
 
 const apiOriginal = await import("@freeanima/features/chat/ui/spa/lib/api.ts");
-const habitatRpcOriginal = await import("@freeanima/shared/habitat-rpc");
+const habitatRpcOriginal = await import("@freeanima/shared/habitat-rpc/bundled-browser.ts");
 
 mock.module("@freeanima/features/chat/ui/spa/lib/api.ts", () => ({
   ...apiOriginal,
@@ -38,14 +38,14 @@ mock.module("@freeanima/features/chat/ui/spa/lib/api.ts", () => ({
   lookupActiveStream: async () => ({}),
 }));
 
-mock.module("@freeanima/shared/habitat-rpc", () => ({
+mock.module("@freeanima/shared/habitat-rpc/bundled-browser.ts", () => ({
   ...habitatRpcOriginal,
   subscribeHabitatRpcConnectionState: () => () => {},
 }));
 
 afterAll(() => {
   mock.module("@freeanima/features/chat/ui/spa/lib/api.ts", () => apiOriginal);
-  mock.module("@freeanima/shared/habitat-rpc", () => habitatRpcOriginal);
+  mock.module("@freeanima/shared/habitat-rpc/bundled-browser.ts", () => habitatRpcOriginal);
 });
 
 const { useChatStore } = await import("./chat.ts");

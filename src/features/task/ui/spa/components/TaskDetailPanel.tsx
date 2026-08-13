@@ -5,7 +5,7 @@ import {
   type TaskDetailFocusField,
 } from "@freeanima/ui-kit/composite";
 import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task.ts";
-import { TASK_ITEM_COMPONENT } from "@freeanima/host/core/db/schema";
+import { TASK_ITEM_COMPONENT } from "@freeanima/shared/entity-shapes";
 import { TagPicker, type TagKnown } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 
 import { taskAttributionLabel } from "../lib/task-attribution.ts";

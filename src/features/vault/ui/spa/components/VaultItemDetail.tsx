@@ -3,7 +3,7 @@ import { Button } from "@freeanima/ui-kit";
 import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 import { generateTotpCode } from "@freeanima/shared/vault-crypto";
 import type { VaultItemMetaRowPayload } from "@freeanima/shared/rpc-contract";
-import { VAULT_ITEM_COMPONENT } from "@freeanima/host/core/db/schema";
+import { VAULT_ITEM_COMPONENT } from "@freeanima/shared/entity-shapes";
 import { TagPicker } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
 
 export type VaultDetailSecrets = {

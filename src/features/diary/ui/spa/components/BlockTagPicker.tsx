@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 
-import { CONTENT_BLOCK_COMPONENT } from "@freeanima/host/core/db/schema";
+import { CONTENT_BLOCK_COMPONENT } from "@freeanima/shared/entity-shapes";
 import { useTouchPrimaryCapability } from "@freeanima/client/portal-sdk/react";
 import { cn } from "@freeanima/ui-kit";
 import { TagPicker } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
