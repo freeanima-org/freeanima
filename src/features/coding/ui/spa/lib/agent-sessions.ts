@@ -10,6 +10,8 @@ export type CodingAgentSession = {
   workspaceRoot: string | null;
   /** Habitat conversation；PR2 写入后复用 */
   conversationId: string | null;
+  /** 软归档时间戳；null = 仍在主列表 */
+  archivedAt: number | null;
   createdAt: number;
   updatedAt: number;
 };
@@ -59,6 +61,7 @@ export function createAgentSession(partial?: {
     title: partial?.title?.trim() || defaultTitle(workspaceRoot),
     workspaceRoot,
     conversationId: partial?.conversationId?.trim() || null,
+    archivedAt: null,
     createdAt: now,
     updatedAt: now,
   };
@@ -141,8 +144,13 @@ function normalizeState(parsed: AgentSessionsState): AgentSessionsState {
     return emptySessionsState();
   }
   const sessions = parsed.sessions.map(sanitizeSession);
+  const visible = visibleSessions(sessions);
+  if (visible.length === 0) {
+    const fresh = createAgentSession({ title: "无工作区", workspaceRoot: null });
+    return { sessions: [...sessions, fresh], activeSessionId: fresh.id };
+  }
   const activeSessionId =
-    sessions.find((s) => s.id === parsed.activeSessionId)?.id ?? sessions.at(0)?.id;
+    visible.find((s) => s.id === parsed.activeSessionId)?.id ?? visible.at(0)?.id ?? null;
   if (!activeSessionId) return emptySessionsState();
   return { sessions, activeSessionId };
 }
@@ -156,6 +164,10 @@ function sanitizeSession(
   } else if (s.workspaceRoot === null) {
     workspaceRoot = null;
   }
+  const archivedAt =
+    typeof s.archivedAt === "number" && Number.isFinite(s.archivedAt) && s.archivedAt > 0
+      ? s.archivedAt
+      : null;
   return {
     id: s.id || newSessionId(),
     title: s.title || defaultTitle(workspaceRoot),
@@ -164,6 +176,7 @@ function sanitizeSession(
       typeof s.conversationId === "string" && s.conversationId.trim()
         ? s.conversationId.trim()
         : null,
+    archivedAt,
     createdAt: Number(s.createdAt) || Date.now(),
     updatedAt: Number(s.updatedAt) || Date.now(),
   };
@@ -171,6 +184,10 @@ function sanitizeSession(
 
 export function getActiveSession(state: AgentSessionsState): CodingAgentSession | null {
   return state.sessions.find((s) => s.id === state.activeSessionId) ?? null;
+}
+
+export function visibleSessions(sessions: CodingAgentSession[]): CodingAgentSession[] {
+  return sessions.filter((s) => s.archivedAt == null);
 }
 
 export function upsertSession(
@@ -187,9 +204,29 @@ export function upsertSession(
 
 export function removeSession(state: AgentSessionsState, id: string): AgentSessionsState {
   const sessions = state.sessions.filter((s) => s.id !== id);
-  if (sessions.length === 0) return emptySessionsState();
+  const visible = visibleSessions(sessions);
+  if (visible.length === 0) {
+    const fresh = createAgentSession({ title: "无工作区", workspaceRoot: null });
+    return { sessions: [...sessions, fresh], activeSessionId: fresh.id };
+  }
   const activeSessionId =
-    state.activeSessionId === id ? (sessions.at(0)?.id ?? null) : state.activeSessionId;
+    state.activeSessionId === id ? (visible.at(0)?.id ?? null) : state.activeSessionId;
+  return { sessions, activeSessionId };
+}
+
+/** 软归档：离开主列表，数据仍留在 localStorage。 */
+export function archiveSession(state: AgentSessionsState, id: string): AgentSessionsState {
+  const now = Date.now();
+  const sessions = state.sessions.map((s) =>
+    s.id === id ? { ...s, archivedAt: now, updatedAt: now } : s,
+  );
+  const visible = visibleSessions(sessions);
+  if (visible.length === 0) {
+    const fresh = createAgentSession({ title: "无工作区", workspaceRoot: null });
+    return { sessions: [...sessions, fresh], activeSessionId: fresh.id };
+  }
+  const activeSessionId =
+    state.activeSessionId === id ? (visible.at(0)?.id ?? null) : state.activeSessionId;
   return { sessions, activeSessionId };
 }
 

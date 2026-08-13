@@ -24,14 +24,6 @@ export type CodingToolsExecutorOptions = {
   backend?: WorkspaceFsBackend;
 };
 
-export type PendingPatch = {
-  id: string;
-  path: string;
-  old_string: string;
-  new_string: string;
-  replace_all: boolean;
-};
-
 export type TerminalLogEntry = {
   id: string;
   command: string;
@@ -42,9 +34,6 @@ export type TerminalLogEntry = {
 };
 
 let active: CodingToolsExecutorOptions | null = null;
-let pendingPatches: PendingPatch[] = [];
-const pendingListeners = new Set<(patches: readonly PendingPatch[]) => void>();
-let patchSeq = 0;
 
 let terminalLogs: TerminalLogEntry[] = [];
 const terminalListeners = new Set<(logs: readonly TerminalLogEntry[]) => void>();
@@ -81,11 +70,6 @@ function pushTerminalLog(entry: Omit<TerminalLogEntry, "id" | "at">): void {
   publishTerminal();
 }
 
-function publishPending(): void {
-  const snapshot = pendingPatches.slice();
-  for (const cb of pendingListeners) cb(snapshot);
-}
-
 /** SPA / 测试：设置当前会话 workspace（一把本地手可服务多会话路径）。 */
 export function setCodingWorkspace(opts: CodingToolsExecutorOptions | null): void {
   active = opts;
@@ -93,26 +77,6 @@ export function setCodingWorkspace(opts: CodingToolsExecutorOptions | null): voi
 
 export function getCodingWorkspace(): CodingToolsExecutorOptions | null {
   return active;
-}
-
-export function getPendingPatches(): readonly PendingPatch[] {
-  return pendingPatches;
-}
-
-export function subscribePendingPatches(
-  cb: (patches: readonly PendingPatch[]) => void,
-): () => void {
-  pendingListeners.add(cb);
-  cb(pendingPatches.slice());
-  return () => {
-    pendingListeners.delete(cb);
-  };
-}
-
-/** 测试 / 重置：清空待审 patch。 */
-export function clearPendingPatches(): void {
-  pendingPatches = [];
-  publishPending();
 }
 
 function resolveSandbox(): WorkspaceSandbox | { error: string } {
@@ -126,54 +90,6 @@ function resolveSandbox(): WorkspaceSandbox | { error: string } {
     };
   }
   return new WorkspaceSandbox(active.workspaceRoot, backend);
-}
-
-/** 用户 Accept：真正写入磁盘。 */
-export async function acceptPendingPatch(id: string): Promise<string> {
-  const idx = pendingPatches.findIndex((p) => p.id === id);
-  if (idx < 0) return toolError(`pending patch 不存在: ${id}`);
-  const patch = pendingPatches[idx];
-  if (!patch) return toolError(`pending patch 不存在: ${id}`);
-  const sandbox = resolveSandbox();
-  if ("error" in sandbox) return toolError(sandbox.error);
-  const out = await sandbox.filePatch({
-    path: patch.path,
-    old_string: patch.old_string,
-    new_string: patch.new_string,
-    replace_all: patch.replace_all,
-  });
-  if (!out.ok) return toolError(out.error);
-  pendingPatches = pendingPatches.filter((p) => p.id !== id);
-  publishPending();
-  return toolResult({ ok: true, path: out.path, applied: true });
-}
-
-/** Accept 前允许 UI 微调 old/new。 */
-export async function acceptEditedPendingPatch(
-  id: string,
-  edits: { old_string: string; new_string: string },
-): Promise<string> {
-  const idx = pendingPatches.findIndex((p) => p.id === id);
-  if (idx < 0) return toolError(`pending patch 不存在: ${id}`);
-  const cur = pendingPatches[idx];
-  if (!cur) return toolError(`pending patch 不存在: ${id}`);
-  pendingPatches[idx] = {
-    ...cur,
-    old_string: edits.old_string,
-    new_string: edits.new_string,
-  };
-  publishPending();
-  return acceptPendingPatch(id);
-}
-
-export function rejectPendingPatch(id: string): boolean {
-  const before = pendingPatches.length;
-  pendingPatches = pendingPatches.filter((p) => p.id !== id);
-  if (pendingPatches.length !== before) {
-    publishPending();
-    return true;
-  }
-  return false;
 }
 
 export async function executeCodingTool(
@@ -219,29 +135,19 @@ export async function executeCodingTool(
       return out.result;
     }
     case "file_patch": {
-      // 无 dry_run：入队待用户 Accept，避免模型直接写盘
       const path = typeof args.path === "string" ? args.path : "";
       const old_string = typeof args.old_string === "string" ? args.old_string : "";
       const new_string = typeof args.new_string === "string" ? args.new_string : "";
       if (!path) return toolError("path 不能为空");
       if (!old_string) return toolError("old_string 不能为空");
-      patchSeq += 1;
-      const pending: PendingPatch = {
-        id: `patch-${patchSeq}`,
+      const out = await sandbox.filePatch({
         path,
         old_string,
         new_string,
         replace_all: Boolean(args.replace_all),
-      };
-      pendingPatches = [...pendingPatches, pending];
-      publishPending();
-      return toolResult({
-        ok: true,
-        pending: true,
-        patch_id: pending.id,
-        path,
-        message: "awaiting user Accept in Coding Diff 审阅",
       });
+      if (!out.ok) return toolError(out.error);
+      return toolResult({ ok: true, path: out.path, applied: true });
     }
     case "terminal_run": {
       const command = typeof args.command === "string" ? args.command : "";

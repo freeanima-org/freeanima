@@ -136,11 +136,11 @@ CLAUDE.md                        # Claude Code 兼容
 
 ### 栏位
 
-- **左栏 Agents**：Repositories 分组 + 会话列表；Search（Ctrl/Cmd+K）；New Agent。
+- **左栏 Agents**：Repositories 分组 + 会话列表（单行 title；悬停归档 / 删除）；Search（Ctrl/Cmd+K）；New Agent。归档为软隐藏（`archivedAt`），本轮无「已归档」入口。
 - **中栏对话**：空态居中输入；有消息后线程 + 底部 follow-up；流式走 `getBundledRpcStreamClient`（**不**整包 import Chat SPA）；platform = `remote:coding:{instanceId}`。
   - **复用聊天室原子（禁止挂载 ChatApp）**：`ConversationTranscript`（**消息列表 + stick-to-bottom + 向上懒加载 SSOT**；新增气泡样式 / display 分支只改该组件，禁止 Coding 平行 `display.map`）、`slash-command-menu` / `conversation-command-api`（slash）、`stream-events` + Markdown（流式 token）、`upsert-tool-block` + `ToolBlockBubble`（经 Transcript）、`LlmDebugPanel` + `useChatLlmDebugEnabled`（LLM 调试；设置页开关与聊天室共用）。compose / 空态 hero / 三栏布局皮肤留在 Coding SPA。
   - 历史分页与聊天室同契约：`conversation.messages` 的 `before_pos` / `has_more_before` / `from_pos`。
-- **右栏 Context**（默认展开）：Files（可展开树）/ Preview（Shiki）/ Changes（按 path 聚合 + unified diff + Apply Changes）/ Terminals（`terminal_run` 输出日志；**非**交互 PTY）。
+- **右栏 Context**（默认展开）：Files（可展开树）/ Preview（Shiki）/ Terminals（`terminal_run` 输出日志；**非**交互 PTY）。
 - Search Actions：**无**「更换工作区」，有「新建 Agent」。
 - 理解笔记：挂在 Files 区（需 `project_world_id`）。
 
@@ -148,18 +148,18 @@ CLAUDE.md                        # Claude Code 兼容
 
 前哨 `local_name`（在 Coding WebView / 薄 Rust IPC 内于**开发机**执行）：
 
-| 工具                 | 角色                                                         |
-| -------------------- | ------------------------------------------------------------ |
-| `file_list`          | 只读树                                                       |
-| `file_read`          | 读文件                                                       |
-| `file_search`        | 搜文件/内容                                                  |
-| `file_patch`         | 最小编辑（`old_string` / `new_string`）；应用前 UI diff 审阅 |
-| `terminal_run`       | 一次性命令（可选 `terminal_process`）                        |
-| `project_context`    | 发现项目 agent 资产（rules / skills / agents / mcp）         |
-| `agents_md_read`     | 读根 `AGENTS.md`                                             |
-| `agents_md_write`    | 写根 `AGENTS.md`                                             |
-| `project_mcp_status` | 前哨管理的项目 MCP 连接状态                                  |
-| `mcp_*_*`            | 桥接的项目 MCP 工具                                          |
+| 工具                 | 角色                                                        |
+| -------------------- | ----------------------------------------------------------- |
+| `file_list`          | 只读树                                                      |
+| `file_read`          | 读文件                                                      |
+| `file_search`        | 搜文件/内容                                                 |
+| `file_patch`         | 最小编辑（`old_string` / `new_string`）；**立即写入**工作区 |
+| `terminal_run`       | 一次性命令（可选 `terminal_process`）                       |
+| `project_context`    | 发现项目 agent 资产（rules / skills / agents / mcp）        |
+| `agents_md_read`     | 读根 `AGENTS.md`                                            |
+| `agents_md_write`    | 写根 `AGENTS.md`                                            |
+| `project_mcp_status` | 前哨管理的项目 MCP 连接状态                                 |
+| `mcp_*_*`            | 桥接的项目 MCP 工具                                         |
 
 路径沙箱在会话 `workspace_root` 下。编码会话须**默认用这些前哨工具** —— **不要**静默回退到栖息地本机 `file_*`（服务器上没有你的仓）。
 
@@ -172,7 +172,7 @@ CLAUDE.md                        # Claude Code 兼容
 - Coding 前哨窗 + attach
 - `workspace_root` + `project_world_id` / `stable_key`
 - 只读 explore + 终端；coding-explorer subagent
-- 最小 patch + diff 审阅
+- 最小 `file_patch` 立即写盘
 - 理解笔记写入**项目 World**（`coding_note`），经栖息地 RPC `coding.noteCreate` / `coding.noteList`（Coding 窗「理解笔记」）
 
 **后续**
@@ -181,7 +181,7 @@ CLAUDE.md                        # Claude Code 兼容
 - SSH Remote（同一工具契约，不同后端）
 - 更重索引 / symbols
 - 交互式 PTY
-- Cloud / Worktree 检出与真 Git Commit&Push（今日 Changes 用 Accept/Reject 聚合代替）
+- Cloud / Worktree 检出与真 Git Commit&Push
 
 ## 一句话
 
