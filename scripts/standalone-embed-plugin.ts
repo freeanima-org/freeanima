@@ -1,21 +1,16 @@
 /**
  * Bun.build 插件：在 standalone 编译时把 `standalone-embeds.ts` 替换为
- * 带 `with { type: "file" }` 的嵌入清单 + 内联 runtime meta（version / buildMeta）。
+ * 内联 runtime meta（version / buildMeta）。
+ *
+ * 资源嵌入改由调用点 `dir:`（migrations / docs / web dist）完成。
  */
 import type { BunPlugin } from "bun";
 import { realpathSync } from "node:fs";
 
 import type { ComponentBuildMeta } from "@freeanima/host/core/config/build-meta.parse";
 
-export type StandaloneEmbedInput = {
-  kind: "web";
-  rel: string;
-  absPath: string;
-};
-
 export function createStandaloneEmbedPlugin(opts: {
   embedsModulePath: string;
-  files: StandaloneEmbedInput[];
   version: string;
   buildMeta: ComponentBuildMeta;
 }): BunPlugin {
@@ -37,37 +32,13 @@ export function createStandaloneEmbedPlugin(opts: {
         }
         if (resolved !== target) return;
 
-        const importLines: string[] = [];
-        const entries: string[] = [];
-        for (const [i, file] of opts.files.entries()) {
-          const id = `embed${i}`;
-          importLines.push(
-            `import ${id} from ${JSON.stringify(file.absPath)} with { type: "file" };`,
-          );
-          entries.push(
-            `  { kind: ${JSON.stringify(file.kind)}, rel: ${JSON.stringify(file.rel)}, path: ${id} }`,
-          );
-        }
-
         const contents = `/** AUTO-INJECTED by scripts/standalone-embed-plugin.ts during just pack cli */
 import type { ComponentBuildMeta } from "@freeanima/host/core/config/build-meta.parse";
-
-export type StandaloneEmbedFile = {
-  kind: "web";
-  rel: string;
-  path: string;
-};
 
 export type StandaloneRuntimeMetaInject = {
   version: string;
   buildMeta: ComponentBuildMeta;
 };
-
-${importLines.join("\n")}
-
-export const standaloneEmbeds: StandaloneEmbedFile[] = [
-${entries.join(",\n")}
-];
 
 export const standaloneRuntimeMeta: StandaloneRuntimeMetaInject = ${metaJson} as StandaloneRuntimeMetaInject;
 `;

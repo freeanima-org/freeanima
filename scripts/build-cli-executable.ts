@@ -3,8 +3,8 @@
  * Linux standalone 分发构建（唯一发版产物）：单文件 `anima`。
  *
  * 产物：`dist/anima-executable/anima`
- * - version / service build-meta / Web dist 经 standalone-embed-plugin 嵌入
- * - migration.sql / docs/*.md 经调用点 `dir:` + dir-import 插件嵌入
+ * - version / service build-meta 经 standalone-embed-plugin 注入
+ * - migration.sql / docs/*.md / web dist 经调用点 `dir:` + dir-import 插件嵌入
  *
  * 用法：
  *   just pack cli
@@ -12,7 +12,6 @@
  *   ./dist/anima-executable/anima --version
  */
 import { $ } from "bun";
-import { Glob } from "bun";
 import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 
@@ -20,10 +19,7 @@ import {
   createComponentBuildMeta,
   resolveBuildChannelFromEnv,
 } from "@freeanima/host/core/config/build-meta";
-import {
-  createStandaloneEmbedPlugin,
-  type StandaloneEmbedInput,
-} from "./standalone-embed-plugin.ts";
+import { createStandaloneEmbedPlugin } from "./standalone-embed-plugin.ts";
 import {
   assertStandaloneBinaryHasNoTiktokenBuildPath,
   createTiktokenWasmPlugin,
@@ -62,26 +58,6 @@ async function ensureWebDist(): Promise<void> {
   }
 }
 
-function listWebEmbeds(): StandaloneEmbedInput[] {
-  if (!existsSync(WEB_DIST_INDEX)) {
-    throw new Error(`Web dist 缺失（${WEB_DIST_DIR}）。请先 just pack web`);
-  }
-  const files: StandaloneEmbedInput[] = [];
-  for (const rel of new Glob("**/*").scanSync({ cwd: WEB_DIST_DIR, onlyFiles: true })) {
-    const normalized = rel.split("\\").join("/");
-    if (normalized === ".ok" || normalized.endsWith("/.ok")) continue;
-    files.push({
-      kind: "web",
-      rel: normalized,
-      absPath: join(WEB_DIST_DIR, normalized),
-    });
-  }
-  if (files.length === 0) {
-    throw new Error(`Web dist 为空: ${WEB_DIST_DIR}`);
-  }
-  return files.toSorted((a, b) => a.rel.localeCompare(b.rel));
-}
-
 async function main(): Promise<void> {
   rmSync(OUT_DIR, { recursive: true, force: true });
   mkdirSync(OUT_DIR, { recursive: true });
@@ -98,7 +74,6 @@ async function main(): Promise<void> {
   });
   const embedVersion = buildMeta.version;
 
-  const files = listWebEmbeds();
   const outfile = join(OUT_DIR, "anima");
   const tiktokenPackageWasm = resolveTiktokenWasmPath(ROOT);
   const tiktokenPackageDir = dirname(tiktokenPackageWasm);
@@ -106,7 +81,7 @@ async function main(): Promise<void> {
   const stagedWasm = join(OUT_DIR, "tiktoken_bg.wasm");
   cpSync(tiktokenPackageWasm, stagedWasm);
   console.log(
-    `compiling single-file standalone → ${outfile} (${files.length} web embeds + dir: migrations/docs + runtime meta + tiktoken wasm)`,
+    `compiling single-file standalone → ${outfile} (dir: migrations/docs/web + runtime meta + tiktoken wasm)`,
   );
 
   const result = await Bun.build({
@@ -115,7 +90,6 @@ async function main(): Promise<void> {
       createDirImportPlugin(),
       createStandaloneEmbedPlugin({
         embedsModulePath: EMBEDS_MODULE,
-        files,
         version: embedVersion,
         buildMeta,
       }),

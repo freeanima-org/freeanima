@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * migrations / docs `dir:` 嵌入契约冒烟（对照磁盘枚举 + Bun.build）。
+ * migrations / docs / web dist `dir:` 嵌入契约冒烟（对照磁盘枚举 + Bun.build）。
  *
  * 用法：
  *   bun scripts/smoke-dir-import-migrations.ts
@@ -11,12 +11,15 @@ import { Glob } from "bun";
 
 import { listEmbeddedMigrationsFromDir } from "@freeanima/host/core/db/migrations-dir-import";
 import { listEmbeddedDocsFromDir } from "@freeanima/host/capabilities/tools/docs-dir-import";
+import { listEmbeddedWebDistFromDir } from "@freeanima/portal/cli/web/web-dist-dir-import";
 
 import { createDirImportPlugin } from "./dir-import-plugin.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const MIGRATIONS_DIR = join(ROOT, "src/host/core/migrations");
 const DOCS_DIR = join(ROOT, "docs");
+const WEB_DIST_DIR = join(ROOT, "src/portal/app/web/dist");
+const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
 
 function listMigrationDirsFromDisk(): string[] {
   const names = readdirSync(MIGRATIONS_DIR, { withFileTypes: true })
@@ -93,6 +96,32 @@ async function smokeDocsRuntime(): Promise<void> {
   );
 }
 
+async function smokeWebRuntime(): Promise<void> {
+  if (!existsSync(WEB_DIST_INDEX)) {
+    console.log("web runtime skip: dist/index.html missing（先 just pack web）");
+    return;
+  }
+  const fromDirApi = listEmbeddedWebDistFromDir().map((f) => f.rel);
+  const fromDisk: string[] = [];
+  for (const rel of new Glob("**/*").scanSync({ cwd: WEB_DIST_DIR, onlyFiles: true })) {
+    const normalized = rel.split("\\").join("/");
+    if (normalized === ".ok" || normalized.endsWith("/.ok")) continue;
+    fromDisk.push(normalized);
+  }
+  fromDisk.sort((a, b) => a.localeCompare(b));
+  assertEqualSets("listEmbeddedWebDistFromDir vs disk", fromDirApi, fromDisk);
+
+  const files = listEmbeddedWebDistFromDir();
+  const sample = files.find((f) => f.rel === "index.html") ?? files[0];
+  if (!sample) throw new Error("listEmbeddedWebDistFromDir returned empty");
+  const fromPlugin = await Bun.file(sample.path).arrayBuffer();
+  const fromDiskBuf = readFileSync(join(WEB_DIST_DIR, sample.rel));
+  if (Buffer.from(fromPlugin).compare(fromDiskBuf) !== 0) {
+    throw new Error(`content mismatch for web/${sample.rel}`);
+  }
+  console.log(`web runtime ok: ${fromDirApi.length} files; sample ${sample.rel}`);
+}
+
 async function smokeBuild(): Promise<void> {
   const outDir = join(ROOT, "tmp/smoke-dir-import-migrations");
   rmSync(outDir, { recursive: true, force: true });
@@ -150,5 +179,6 @@ console.log("build-run ok:", sqlKeys.length, firstKey);
 
 await smokeMigrationsRuntime();
 await smokeDocsRuntime();
+await smokeWebRuntime();
 await smokeBuild();
 console.log("smoke-dir-import-migrations: all checks passed");
