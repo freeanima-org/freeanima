@@ -759,5 +759,6 @@ export function registerEmailMailboxTools(toolSets: ToolSetRegistry, io: EmailTo
       ],
       Object.fromEntries(MAILBOX_TOOL_NAMES.map((name) => [name, EMAIL_TOOL_RETURNS[name]])),
     ),
+    { visibility: "searchable" },
   );
 }

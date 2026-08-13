@@ -30,6 +30,8 @@ export type McpServerConfig = {
   connect_timeout_ms?: number;
   /** Whether to auto-connect on Free Anima startup, default true */
   enabled?: boolean;
+  /** Discovery visibility for registered `mcp_<name>` ToolSet; default catalog */
+  toolset_visibility?: "hidden" | "searchable" | "catalog";
 };
 
 const DEFAULT_CONNECT_TIMEOUT_MS = 15_000;

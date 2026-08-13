@@ -27,7 +27,13 @@ export {
   toolCallTitleFromArgs,
 } from "./tool-call-title.ts";
 export type { ToolArgsRecord } from "./tool-json.ts";
-export { ToolSetRegistry, mcpToolSetId } from "./toolset.ts";
+export {
+  ToolSetRegistry,
+  mcpToolSetId,
+  isToolSetVisibility,
+  resolveToolSetVisibility,
+  TOOL_SET_VISIBILITIES,
+} from "./toolset.ts";
 export {
   loadToolSetsIntoConversation,
   unloadToolSetsFromConversation,
@@ -62,7 +68,7 @@ export type {
   ToolContextKind,
   ToolProgressReporter,
 } from "./tool-context.ts";
-export type { ToolSet, ToolSetView } from "./toolset.ts";
+export type { ToolSet, ToolSetView, ToolSetVisibility, RegisterToolSetOpts } from "./toolset.ts";
 export {
   DEFAULT_CONVERSATION_TOOLSETS,
   TOOL_SET_DISCOVERY_TOOL_SET,
@@ -97,6 +103,7 @@ export { buildToolsStatus, resolveReturnKind, TEXT_RETURN_TOOL_NAMES } from "./t
 export type {
   ToolsStatusResponse,
   ToolsStatusToolItem,
+  ToolsStatusToolSetItem,
   BuildToolsStatusOptions,
 } from "./tools-status.ts";
 export {

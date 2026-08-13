@@ -321,5 +321,6 @@ export function registerCalendarToolSet(toolSets: ToolSetRegistry): void {
         handler: handleRange,
       },
     ],
+    { visibility: "searchable" },
   );
 }

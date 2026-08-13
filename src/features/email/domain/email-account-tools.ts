@@ -195,5 +195,6 @@ export function registerEmailAccountTools(toolSets: ToolSetRegistry, io: EmailTo
       ],
       Object.fromEntries(ACCOUNT_TOOL_NAMES.map((name) => [name, EMAIL_TOOL_RETURNS[name]])),
     ),
+    { visibility: "searchable" },
   );
 }

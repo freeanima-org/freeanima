@@ -161,6 +161,33 @@ function McpEntryFields({
         typeof entry.connect_timeout_ms === "number" ? entry.connect_timeout_ms : "",
         (v) => patch({ connect_timeout_ms: v === "" ? undefined : v }),
       )}
+      <div className="space-y-1">
+        <Label className="text-sm">toolset_visibility</Label>
+        <select
+          className={selectClassName}
+          value={
+            entry.toolset_visibility === "hidden" ||
+            entry.toolset_visibility === "searchable" ||
+            entry.toolset_visibility === "catalog"
+              ? entry.toolset_visibility
+              : "catalog"
+          }
+          onChange={(e) => {
+            const v = e.target.value;
+            patch({
+              toolset_visibility:
+                v === "hidden" || v === "searchable" || v === "catalog" ? v : "catalog",
+            });
+          }}
+        >
+          <option value="catalog">catalog（进系统提示目录）</option>
+          <option value="searchable">searchable（可搜，不进目录）</option>
+          <option value="hidden">hidden（仅按名 load）</option>
+        </select>
+        <p className="text-xs text-muted-foreground">
+          {"注册为 mcp_<名称> 工具集时的发现可见度；默认 catalog。"}
+        </p>
+      </div>
       {!isRemote ? (
         <>
           {textField("command", coerceString(entry.command ?? ""), (v) =>

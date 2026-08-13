@@ -42,6 +42,40 @@ describe("searchToolsetsCatalog", () => {
     const hit = searchToolsetsCatalog(registry, "read file");
     expect(hit.hits.some((h) => h.toolset === "file")).toBe(true);
   });
+
+  it("includes searchable but excludes hidden", () => {
+    const registry = new ToolSetRegistry();
+    registry.registerToolSet(
+      "ops",
+      "habitat ops",
+      [
+        {
+          name: "ops_status",
+          description: "status",
+          parameters: { type: "object", properties: {} },
+          handler: () => "ok",
+        },
+      ],
+      { visibility: "searchable" },
+    );
+    registry.registerToolSet(
+      "secret",
+      "mask only",
+      [
+        {
+          name: "secret_ping",
+          description: "ping",
+          parameters: { type: "object", properties: {} },
+          handler: () => "ok",
+        },
+      ],
+      { visibility: "hidden" },
+    );
+    const hit = searchToolsetsCatalog(registry, "ops");
+    expect(hit.hits.some((h) => h.toolset === "ops")).toBe(true);
+    const secret = searchToolsetsCatalog(registry, "secret");
+    expect(secret.hits.some((h) => h.toolset === "secret")).toBe(false);
+  });
 });
 
 describe("formatToolsForToolMessage", () => {

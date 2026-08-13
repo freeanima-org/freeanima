@@ -2,13 +2,14 @@ import type { ToolSetRegistry } from "@freeanima/host/core/tool";
 import { PROMPT_XML_TAGS, wrapPromptXml } from "@freeanima/host/core/hooks/prompt";
 
 const TOOLSETS_INTRO =
-  "Built-in and connected ToolSets are listed below. Load any set with toolset_load; unload non-default sets with toolset_unload. For dynamically registered tools (MCP/ACP/Outpost) whose names you don't know, use toolset_search first to find the ToolSet, then load it.";
+  "The list below is the core ToolSet catalog only — not the full inventory. " +
+  "ToolSets not listed here (domain features, MCP, remote/Outpost tools, etc.) can still be found with toolset_search, then loaded with toolset_load; unload non-default sets with toolset_unload.";
 
 /** Inner ToolSet catalog body (intro + lines); fold wraps with `<toolsets>`. */
 export function renderToolsetsBody(registry: ToolSetRegistry): string {
   const sets = registry
     .listToolSets()
-    .filter((ts) => !ts.private)
+    .filter((ts) => ts.visibility === "catalog")
     .toSorted((a, b) => a.name.localeCompare(b.name));
   if (sets.length === 0) return "";
   const lines = sets.map((ts) => `- ${ts.name} — ${ts.description.trim() || "(no description)"}`);

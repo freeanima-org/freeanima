@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const toolSetVisibilitySchema = z.enum(["hidden", "searchable", "catalog"]);
+
 export const mcpServerSchema = z
   .object({
     command: z.string().optional(),
@@ -18,5 +20,10 @@ export const mcpServerSchema = z
     cwd: z.string().optional(),
     connect_timeout_ms: z.number().int().positive().optional(),
     enabled: z.boolean().optional(),
+    /**
+     * ToolSet discovery visibility for the registered `mcp_<name>` set.
+     * Default when omitted: catalog.
+     */
+    toolset_visibility: toolSetVisibilitySchema.optional(),
   })
   .passthrough();

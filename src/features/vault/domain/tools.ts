@@ -510,6 +510,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
       ],
       VAULT_TOOL_RETURNS,
     ),
+    { visibility: "searchable" },
   );
 }
 

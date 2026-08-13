@@ -11,19 +11,51 @@ import { injectToolCallTitle, shouldInjectToolCallTitle } from "./tool-call-titl
 
 export type { JsonSchemaObject, OpenAiToolEntry, ToolArgs, ToolDef, ToolHandler };
 
+/** ToolSet discovery surface for system-prompt catalog and toolset_search. */
+export type ToolSetVisibility = "hidden" | "searchable" | "catalog";
+
+export const TOOL_SET_VISIBILITIES = ["hidden", "searchable", "catalog"] as const;
+
+export function isToolSetVisibility(value: unknown): value is ToolSetVisibility {
+  return value === "hidden" || value === "searchable" || value === "catalog";
+}
+
+/**
+ * Normalize register / RPC opts into a visibility.
+ * `visibility` wins; else `private: true` → hidden; else catalog.
+ */
+export function resolveToolSetVisibility(opts?: {
+  visibility?: ToolSetVisibility;
+  private?: boolean;
+}): ToolSetVisibility {
+  if (opts?.visibility != null && isToolSetVisibility(opts.visibility)) return opts.visibility;
+  if (opts?.private === true) return "hidden";
+  return "catalog";
+}
+
 export type ToolSet = {
   name: string;
   description: string;
   tools: readonly ToolDef[];
-  /** When true, excluded from toolset_search and default conversation injection */
-  private?: boolean;
+  /** Registered (pre-override) discovery visibility. */
+  visibility: ToolSetVisibility;
 };
 
-/** Habitat / API view */
+/** Habitat / API view (effective visibility after overrides). */
 export type ToolSetView = {
   name: string;
   description: string;
   tools: string[];
+  visibility: ToolSetVisibility;
+  /** True when a runtime override is applied for this name. */
+  visibility_overridden?: boolean;
+  /** @deprecated Derived from visibility === "hidden"; prefer `visibility`. */
+  private?: boolean;
+};
+
+export type RegisterToolSetOpts = {
+  visibility?: ToolSetVisibility;
+  /** @deprecated Prefer `visibility`. `true` maps to `hidden`. */
   private?: boolean;
 };
 
@@ -39,12 +71,14 @@ export class ToolSetRegistry {
   private readonly sets = new Map<string, ToolSet>();
   private readonly toolIndex = new Map<string, ToolDef>();
   private readonly toolOrder: string[] = [];
+  /** Runtime overrides (e.g. habitat `toolset_visibility` config). */
+  private readonly visibilityOverrides = new Map<string, ToolSetVisibility>();
 
   registerToolSet(
     name: string,
     description: string,
     tools: ToolDef[],
-    opts?: { private?: boolean },
+    opts?: RegisterToolSetOpts,
   ): void {
     const trimmed = name.trim();
     if (!trimmed) throw new Error("ToolSet name is required");
@@ -57,11 +91,12 @@ export class ToolSetRegistry {
         throw new Error(`Tool '${def.name}' already registered`);
       }
     }
+    const visibility = resolveToolSetVisibility(opts);
     const toolSet: ToolSet = Object.freeze({
       name: trimmed,
       description,
       tools: frozenTools,
-      ...(opts?.private ? { private: true } : {}),
+      visibility,
     });
     this.sets.set(trimmed, toolSet);
     for (const def of frozenTools) {
@@ -91,17 +126,62 @@ export class ToolSetRegistry {
     return this.sets.get(name.trim());
   }
 
-  listToolSets(): ToolSetView[] {
-    return [...this.sets.values()].map((ts) => ({
-      name: ts.name,
-      description: ts.description,
-      tools: ts.tools.map((t) => t.name),
-      ...(ts.private ? { private: true } : {}),
-    }));
+  /** Registered visibility (ignores runtime overrides). */
+  getRegisteredVisibility(name: string): ToolSetVisibility | undefined {
+    return this.sets.get(name.trim())?.visibility;
   }
 
+  /** Effective visibility after overrides. Missing set → undefined. */
+  getEffectiveVisibility(name: string): ToolSetVisibility | undefined {
+    const trimmed = name.trim();
+    const set = this.sets.get(trimmed);
+    if (!set) return undefined;
+    return this.visibilityOverrides.get(trimmed) ?? set.visibility;
+  }
+
+  /**
+   * Replace all visibility overrides (hot-apply from config).
+   * Pass empty object / clear to remove all overrides.
+   */
+  setVisibilityOverrides(overrides: Record<string, ToolSetVisibility>): void {
+    this.visibilityOverrides.clear();
+    for (const [rawName, visibility] of Object.entries(overrides)) {
+      const name = rawName.trim();
+      if (!name || !isToolSetVisibility(visibility)) continue;
+      this.visibilityOverrides.set(name, visibility);
+    }
+  }
+
+  /** Merge or clear a single override. `null` / undefined clears. */
+  setVisibilityOverride(name: string, visibility: ToolSetVisibility | null): void {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    if (visibility == null) {
+      this.visibilityOverrides.delete(trimmed);
+      return;
+    }
+    if (!isToolSetVisibility(visibility)) return;
+    this.visibilityOverrides.set(trimmed, visibility);
+  }
+
+  listToolSets(): ToolSetView[] {
+    return [...this.sets.values()].map((ts) => {
+      const overridden = this.visibilityOverrides.has(ts.name);
+      const visibility = this.visibilityOverrides.get(ts.name) ?? ts.visibility;
+      return {
+        name: ts.name,
+        description: ts.description,
+        tools: ts.tools.map((t) => t.name),
+        visibility,
+        ...(overridden ? { visibility_overridden: true } : {}),
+        ...(visibility === "hidden" ? { private: true } : {}),
+      };
+    });
+  }
+
+  /** Effective visibility === hidden (compat with former `private`). */
   isToolSetPrivate(name: string): boolean {
-    return this.sets.get(name.trim())?.private === true;
+    return this.getEffectiveVisibility(name) === "hidden";
   }
 
   getTool(name: string): ToolDef | undefined {

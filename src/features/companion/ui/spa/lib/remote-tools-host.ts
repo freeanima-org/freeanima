@@ -112,7 +112,7 @@ export function startCompanionRemoteToolsHost(opts?: {
     remoteAuthToken,
     instanceStore: resolveInstanceStore(habitatUrl),
     tools: REGISTERED_TOOLS,
-    toolsetPrivate: false,
+    toolsetVisibility: "catalog",
     onToolCall: async (localName, args) => executeCompanionTool(localName, args),
     onConnected: async (_client, instanceId) => {
       console.log("companion remote tools connected", instanceId);

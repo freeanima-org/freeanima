@@ -2,6 +2,8 @@ import { z } from "zod";
 
 const jsonSchemaObjectSchema = z.record(z.string(), z.unknown());
 
+export const toolSetVisibilitySchema = z.enum(["hidden", "searchable", "catalog"]);
+
 export const sapToolDefInputSchema = z.object({
   local_name: z.string().min(1),
   description: z.string(),
@@ -13,8 +15,16 @@ export type RemoteToolDefInput = z.infer<typeof sapToolDefInputSchema>;
 
 export const toolRegisterInputSchema = z.object({
   tools: z.array(sapToolDefInputSchema).min(1),
-  /** Outpost remote toolsets default to private (mask-only discovery) */
-  private: z.boolean().default(true),
+  /**
+   * Discovery visibility for the remote ToolSet. Default catalog when omitted
+   * (and when `private` is also omitted).
+   */
+  visibility: toolSetVisibilitySchema.optional(),
+  /**
+   * @deprecated Prefer `visibility`. `true` → hidden, `false` → catalog when
+   * `visibility` is omitted.
+   */
+  private: z.boolean().optional(),
 });
 
 export type ToolRegisterInput = z.infer<typeof toolRegisterInputSchema>;
