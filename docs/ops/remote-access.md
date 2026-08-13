@@ -174,7 +174,7 @@ mkcert -install  # trust that CA on the Habitat host itself
 
 流程：打开栖息地设置 → 填写 → **测试连接** → 保存。桌面保存后需**重启桌面壳**。
 
-**Vault 浏览器扩展（浏览器形态入口）：** 选项页填写同一组 URL + Token → 测试连接 → 用用户库主密码解锁。RPC 仅 HTTP REST（background）；见 [`docs/modules/portal.md`](../modules/portal.md)、[`docs/modules/vault.md`](../modules/vault.md)（`just pack browser-extension`）。
+**Vault 浏览器扩展（浏览器形态入口）：** 选项页填写同一组 URL + Token → 测试连接 → 用用户库主密码解锁。RPC 仅 HTTP REST（background）；见 [`docs/modules/portal.md`](../modules/portal.md)、[`docs/modules/vault.md`](../modules/vault.md)（`just pack browser-extension-chrome` / `browser-extension-firefox`）。
 
 ## 3. 认证行为
 

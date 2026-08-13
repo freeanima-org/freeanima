@@ -271,7 +271,7 @@ export function VaultPopupApp() {
 
   if (!habitatConfigured) {
     return (
-      <div className="flex h-full flex-col justify-center gap-3 p-6">
+      <div className="box-border flex h-full w-full max-w-full flex-col justify-center gap-3 p-6">
         <StatusAlert variant="error">请先在选项页配置 Habitat URL 与 API Token</StatusAlert>
         <Button type="button" onClick={() => void chrome.runtime.openOptionsPage()}>
           打开选项
@@ -282,7 +282,7 @@ export function VaultPopupApp() {
 
   if (!unlocked) {
     return (
-      <div className="flex h-full min-h-0 flex-col">
+      <div className="flex h-full min-h-0 w-full max-w-full flex-col">
         {!online ? (
           <StatusAlert variant="warning" className="m-3 mb-0">
             {offlineUnlockReady
@@ -291,7 +291,7 @@ export function VaultPopupApp() {
           </StatusAlert>
         ) : null}
         <VaultUnlockForm
-          className="min-h-0 flex-1"
+          className="mx-0 max-w-none min-h-0 w-full flex-1"
           loading={unlockLoading}
           error={gateError}
           setupMode={false}

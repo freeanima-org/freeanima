@@ -39,6 +39,12 @@ describe("packArtifactVersionedName", () => {
     );
   });
 
+  it("builds browser-extension firefox xpi name", () => {
+    expect(packArtifactVersionedName("browser-extension-firefox-xpi", meta)).toBe(
+      "freeanima-browser-extension-firefox-0.9.2-local.202608070617-local.xpi",
+    );
+  });
+
   it("builds canary android name", () => {
     expect(
       packArtifactVersionedName("mobile-android-apk", {

@@ -39,8 +39,10 @@ src/portal/
 
 ## 浏览器形态（扩展）
 
-- 构建：`just pack browser-extension` → `dist/browser-extension/chrome-mv3`
-- 开发：`just dev browser-extension`
+- 构建（Chrome）：`just pack browser-extension-chrome` → `dist/browser-extension/chrome-mv3`
+- 构建（Firefox 维护者 canary）：`just pack browser-extension-firefox`
+- 开发（Chrome）：`just dev browser-extension-chrome`
+- 开发（Firefox）：`just dev browser-extension-firefox`
 - 鉴权：选项页填写 Habitat URL + Service API Token（Bearer）；RPC 仅 HTTP REST
 - 能力（Vault）：见 [`vault.md`](vault.md)
 - **UI 栈：** popup / options 与应用壳同栈（React + `@freeanima/ui-kit`）；编辑表单等与 Shell

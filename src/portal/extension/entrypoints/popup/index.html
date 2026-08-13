@@ -1,11 +1,32 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="ext-popup">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FreeAnima Vault</title>
+    <!-- Firefox 按 body 内容算 popup 宽；尽早锁死，避免首屏按 max-w-md 偏好宽度撑破 -->
+    <style>
+      html {
+        margin: 0;
+        height: 520px;
+        overflow: hidden;
+      }
+      body {
+        margin: 0;
+        width: 380px;
+        min-width: 380px;
+        max-width: 380px;
+        height: 520px;
+        overflow: hidden;
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+    </style>
   </head>
-  <body>
+  <body class="ext-popup">
     <div id="root"></div>
     <script type="module" src="./main.tsx"></script>
   </body>

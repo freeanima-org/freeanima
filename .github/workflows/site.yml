@@ -9,6 +9,7 @@ on:
       - "site/**"
       - "docs/**"
       - "scripts/install.sh"
+      - "scripts/sync-firefox-extension-updates.ts"
       - ".github/actions/build-site/**"
       - ".github/workflows/site.yml"
   workflow_dispatch:

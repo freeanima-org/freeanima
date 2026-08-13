@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
- * 构建 Vault 浏览器扩展（WXT → dist/browser-extension）并打包为 .zip。
- * 用法：bun scripts/build-browser-extension.ts
+ * 构建 Vault Chrome 浏览器扩展（WXT → dist/browser-extension）并打包为 .zip。
+ * 用法：bun scripts/build-browser-extension-chrome.ts
  * 缺省 channel=local（版本 `{pkg}-local+UTC`）；CI 设 FREEANIMA_BUILD_CHANNEL + FREEANIMA_BUILD_VERSION。
  */
 import { $ } from "bun";
@@ -39,17 +39,17 @@ async function zipDirectoryContents(dir: string, outZip: string): Promise<void> 
 }
 
 await $`bun x wxt build`.cwd(root);
-console.log("browser-extension → dist/browser-extension");
+console.log("browser-extension-chrome → dist/browser-extension");
 
 // 将 chrome-mv3 目录打 zip 包
 const zipSource = join(extOutDir, "freeanima-browser-extension.zip");
 rmSync(zipSource, { force: true });
 await zipDirectoryContents(chromeDir, zipSource);
-console.log("browser-extension .zip →", zipSource);
+console.log("browser-extension-chrome .zip →", zipSource);
 
 // 按 pack artifact 命名规则写入版本化 + stable 副本
 emitPackArtifact({
   kind: "browser-extension-zip",
   sourcePath: zipSource,
-  logPrefix: "[pack browser-extension]",
+  logPrefix: "[pack browser-extension-chrome]",
 });

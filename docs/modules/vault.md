@@ -50,8 +50,10 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 
 - 入口：`src/portal/extension`（WXT MV3；React popup/options + `runtime/` +
   `features/vault/`；工具栏图标在 `public/icon-*.png`）
-- 构建：`just pack browser-extension` → `dist/browser-extension/chrome-mv3`
-- 开发：`just dev browser-extension`（或 `bun x wxt`）
+- 构建（Chrome）：`just pack browser-extension-chrome` → `dist/browser-extension/chrome-mv3` + zip
+- 构建（Firefox，维护者自托管 canary）：`just pack browser-extension-firefox` → xpi + updates.json（需 AMO API 签名才可自动更新）
+- 开发（Chrome）：`just dev browser-extension-chrome`（或 `bun x wxt`）
+- 开发（Firefox）：`just dev browser-extension-firefox`（或 `bun x wxt -b firefox --mv3`）
 - 连接：扩展 **直连 Habitat**（Bearer `fa_at_…`），HTTP REST only；解锁态保存在扩展进程内，并经
   `chrome.storage.session` 跨 service worker 回收恢复（**最多 8
   小时**；**浏览器关闭后清除**，需重输主密码）。hydrate 须导入**可导出**主密钥，否则本地缓存无法用主密钥加解密并会误报
@@ -74,6 +76,12 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 
 加载未打包扩展：Chrome → 扩展程序 → 开发者模式 → 加载已解压的扩展程序 → 选择
 `dist/browser-extension/chrome-mv3`。
+
+**维护者 Firefox（Windows，跟 canary 自动更新）：** 从 GitHub canary Release 下载签名
+`freeanima-browser-extension-firefox.xpi` 安装一次；之后由
+`https://freeanima.com/extension/firefox/updates.json` 指向同一 Release 固定资产名自动升级。gecko id
+固定为 `vault@freeanima.com`。未配置 AMO 签名时仅能 `about:debugging` 临时加载。详见
+[`.github/SECRETS.md`](../../.github/SECRETS.md)。
 
 ## 相关
 

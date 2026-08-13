@@ -57,6 +57,10 @@ on:
         required: true
       FREEANIMA_ANDROID_KEY_ALIAS:
         required: true
+      FREEANIMA_AMO_API_KEY:
+        required: false
+      FREEANIMA_AMO_API_SECRET:
+        required: false
 
 env:
   FREEANIMA_BUILD_CHANNEL: ${{ inputs.channel }}
@@ -273,7 +277,7 @@ jobs:
             dist/freeanima-mobile-android-*.apk
           if-no-files-found: error
 
-  browser-extension:
+  browser-extension-chrome:
     name: Browser Extension (Chrome MV3)
     runs-on: ubuntu-latest
     permissions:
@@ -287,8 +291,8 @@ jobs:
       - uses: ./.github/actions/setup-bun
       - uses: ./.github/actions/setup-just
 
-      - name: Build & pack browser extension
-        run: just pack browser-extension
+      - name: Build & pack Chrome browser extension
+        run: just pack browser-extension-chrome
 
       - name: Collect artifact
         run: |
@@ -298,15 +302,55 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: package-browser-extension
+          name: package-browser-extension-chrome
           path: |
             dist/freeanima-browser-extension.zip
             dist/freeanima-browser-extension-*.zip
           if-no-files-found: error
 
+  # 维护者 Firefox 自托管（跟 canary tip；Chrome 包不受影响）
+  browser-extension-firefox:
+    name: Browser Extension (Firefox)
+    if: inputs.channel == 'canary'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-just
+
+      - name: Build & pack Firefox extension
+        env:
+          FREEANIMA_AMO_API_KEY: ${{ secrets.FREEANIMA_AMO_API_KEY }}
+          FREEANIMA_AMO_API_SECRET: ${{ secrets.FREEANIMA_AMO_API_SECRET }}
+        run: just pack browser-extension-firefox
+
+      - name: Collect artifact
+        run: |
+          set -euo pipefail
+          ls -la dist/
+          test -f dist/freeanima-browser-extension-firefox.xpi
+          test -f dist/freeanima-browser-extension-firefox-updates.json
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: package-browser-extension-firefox
+          path: |
+            dist/freeanima-browser-extension-firefox.xpi
+            dist/freeanima-browser-extension-firefox-*.xpi
+            dist/freeanima-browser-extension-firefox-updates.json
+            dist/freeanima-browser-extension-firefox-updates-*.json
+          if-no-files-found: error
+
   publish:
     name: Publish GitHub Release assets
-    needs: [linux-standalone, desktop-windows, desktop-tauri, mobile-android, browser-extension]
+    needs:
+      [linux-standalone, desktop-windows, desktop-tauri, mobile-android, browser-extension-chrome]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -403,4 +447,32 @@ jobs:
             artifacts/freeanima-mobile-android-*.apk
             artifacts/freeanima-browser-extension.zip
             artifacts/freeanima-browser-extension-*.zip
+          fail_on_unmatched_files: true
+
+  # canary 清空资产后再挂 Firefox xpi / updates.json（与主 publish 解耦，避免 release 轨缺文件）
+  publish-firefox:
+    name: Publish Firefox extension assets
+    if: inputs.channel == 'canary'
+    needs: [publish, browser-extension-firefox]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: package-browser-extension-firefox
+          path: artifacts
+
+      - name: List Firefox artifacts
+        run: ls -la artifacts/
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ inputs.publish_tag }}
+          token: ${{ secrets.FREEANIMA_CI }}
+          files: |
+            artifacts/freeanima-browser-extension-firefox.xpi
+            artifacts/freeanima-browser-extension-firefox-*.xpi
+            artifacts/freeanima-browser-extension-firefox-updates.json
+            artifacts/freeanima-browser-extension-firefox-updates-*.json
           fail_on_unmatched_files: true
