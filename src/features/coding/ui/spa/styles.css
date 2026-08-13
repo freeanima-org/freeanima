@@ -659,6 +659,18 @@ body,
   gap: 0.4rem;
 }
 
+.coding-new-agent-select {
+  display: flex;
+  width: 100%;
+}
+
+.coding-select {
+  width: 100%;
+  @apply rounded-md border bg-transparent px-2.5 py-2 text-sm;
+  font: inherit;
+  color-scheme: dark;
+}
+
 .coding-new-agent-actions .coding-btn {
   display: inline-flex;
   align-items: center;

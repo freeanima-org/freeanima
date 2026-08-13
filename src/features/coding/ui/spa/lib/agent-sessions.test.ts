@@ -3,9 +3,13 @@ import { describe, expect, test } from "bun:test";
 import {
   createAgentSession,
   defaultTitle,
+  emptySessionsState,
   groupSessionsByRepo,
+  listKnownWorkspaceRoots,
   loadAgentSessions,
   patchSessionMeta,
+  rememberWorkspace,
+  removeSession,
   repoGroupKey,
 } from "./agent-sessions.ts";
 
@@ -44,5 +48,36 @@ describe("agent-sessions v2", () => {
     // node 测试无 localStorage 时 empty
     const state = loadAgentSessions();
     expect(state.sessions.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("rememberWorkspace 去重并持久化到 knownWorkspaces", () => {
+    const base = emptySessionsState();
+    const withRoot = rememberWorkspace(base, "C:/proj/freeanima");
+    expect(withRoot.knownWorkspaces).toEqual(["C:/proj/freeanima"]);
+    const again = rememberWorkspace(withRoot, "C:/proj/freeanima");
+    expect(again.knownWorkspaces).toEqual(["C:/proj/freeanima"]);
+    expect(rememberWorkspace(withRoot, "").knownWorkspaces).toEqual(withRoot.knownWorkspaces);
+  });
+
+  test("listKnownWorkspaceRoots 合并已知与现存会话并去重", () => {
+    const a = createAgentSession({ workspaceRoot: "C:/proj/freeanima" });
+    const b = createAgentSession({ workspaceRoot: "D:/wt/freeanima" });
+    const state = {
+      sessions: [a, b, createAgentSession({ workspaceRoot: null })],
+      activeSessionId: a.id,
+      knownWorkspaces: ["C:/proj/freeanima", "E:/old/removed"],
+    };
+    expect(listKnownWorkspaceRoots(state)).toEqual([
+      "C:/proj/freeanima",
+      "D:/wt/freeanima",
+      "E:/old/removed",
+    ]);
+  });
+
+  test("removeSession 清空会话后仍保留 knownWorkspaces", () => {
+    const state = rememberWorkspace(emptySessionsState(), "C:/repo");
+    const removed = removeSession(state, state.sessions[0]!.id);
+    expect(removed.sessions.length).toBeGreaterThanOrEqual(1);
+    expect(removed.knownWorkspaces).toEqual(["C:/repo"]);
   });
 });

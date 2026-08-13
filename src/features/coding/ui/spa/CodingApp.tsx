@@ -12,8 +12,10 @@ import { WorkspaceFileTree } from "./components/WorkspaceFileTree.tsx";
 import {
   createAgentSession,
   getActiveSession,
+  listKnownWorkspaceRoots,
   loadAgentSessions,
   patchSessionMeta,
+  rememberWorkspace,
   removeSession,
   saveAgentSessions,
   upsertSession,
@@ -68,6 +70,7 @@ export function CodingApp() {
   const [agents, setAgents] = useState<AgentSessionsState>(() => loadAgentSessions());
   const activeAgent = useMemo(() => getActiveSession(agents), [agents]);
   const workspaceRoot = activeAgent?.workspaceRoot ?? null;
+  const knownWorkspaceRoots = useMemo(() => listKnownWorkspaceRoots(agents), [agents]);
 
   const [attach, setAttach] = useState<AttachStatus>({
     instance_id: "",
@@ -311,10 +314,17 @@ export function CodingApp() {
 
   const createLockedSession = (workspaceRootValue: string | null) => {
     const s = createAgentSession({ workspaceRoot: workspaceRootValue });
-    setAgents((prev) => ({
-      sessions: [...prev.sessions, s],
-      activeSessionId: s.id,
-    }));
+    setAgents((prev) => {
+      const remembered =
+        workspaceRootValue == null || workspaceRootValue === ""
+          ? prev
+          : rememberWorkspace(prev, workspaceRootValue);
+      return {
+        sessions: [...remembered.sessions, s],
+        activeSessionId: s.id,
+        knownWorkspaces: remembered.knownWorkspaces,
+      };
+    });
     setNewAgentOpen(false);
   };
 
@@ -503,6 +513,8 @@ export function CodingApp() {
       <NewAgentDialog
         open={newAgentOpen}
         onClose={() => setNewAgentOpen(false)}
+        workspaceRoots={knownWorkspaceRoots}
+        onSelectWorkspace={(root) => createLockedSession(root)}
         onNoWorkspace={() => createLockedSession(null)}
         onPickFolder={() => {
           void pickWorkspacePath()
