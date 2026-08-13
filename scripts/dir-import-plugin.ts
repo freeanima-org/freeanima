@@ -3,10 +3,11 @@
  * `with { type: "file" }` 路径 map（嵌套键为相对根的 POSIX 路径）。
  *
  * Runtime：`bunfig.toml` preload；Bun.build / `--compile`：传入 `plugins`。
- * 生产用法见 `src/host/core/db/migrations-dir-import.ts`。
+ * 生产用法：migrations / docs / web dist 的 `*-dir-import` 模块。
+ * 目录不存在时导出空 map（源码 CLI 在尚未 pack web 时不致崩）。
  */
 import type { BunPlugin } from "bun";
-import { lstatSync, readdirSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync, statSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
 export type DirImportEntry = {
@@ -90,6 +91,12 @@ export function createDirImportPlugin(): BunPlugin {
       });
 
       build.onLoad({ filter: /.*/, namespace: "dir" }, (args) => {
+        if (!existsSync(args.path) || !statSync(args.path).isDirectory()) {
+          return {
+            contents: buildDirImportModuleSource([]),
+            loader: "ts",
+          };
+        }
         const entries = listDirImportEntries(args.path);
         return {
           contents: buildDirImportModuleSource(entries),

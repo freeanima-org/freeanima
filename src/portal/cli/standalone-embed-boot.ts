@@ -4,37 +4,38 @@ import { registerStandaloneRuntimeMeta } from "@freeanima/host/core/config/stand
 import { registerEmbeddedDocs } from "@freeanima/host/capabilities/tools/docs-embedded";
 import { listEmbeddedDocsFromDir } from "@freeanima/host/capabilities/tools/docs-dir-import";
 import { registerEmbeddedWebDist } from "./web/web-dist-embedded.ts";
-import { standaloneEmbeds, standaloneRuntimeMeta } from "./standalone-embeds.ts";
+import { listEmbeddedWebDistFromDir } from "./web/web-dist-dir-import.ts";
+import { standaloneRuntimeMeta } from "./standalone-embeds.ts";
 
 /** 在 cli 入口最早 side-effect：把编译期嵌入注册到 globalThis */
 export function bootStandaloneEmbeds(): void {
-  if (standaloneRuntimeMeta != null) {
-    registerStandaloneRuntimeMeta(standaloneRuntimeMeta);
+  if (standaloneRuntimeMeta == null) return;
 
-    const migrations = listEmbeddedMigrationsFromDir();
-    if (migrations.length === 0) {
-      throw new Error(
-        "standalone: dir:../migrations 未解析到任何 migration.sql（检查 dir-import 插件是否接入 Bun.build）",
-      );
-    }
-    registerEmbeddedMigrations(migrations);
+  registerStandaloneRuntimeMeta(standaloneRuntimeMeta);
 
-    const docs = listEmbeddedDocsFromDir();
-    if (docs.length === 0) {
-      throw new Error(
-        "standalone: dir:…/docs 未解析到任何 .md（检查 dir-import 插件是否接入 Bun.build）",
-      );
-    }
-    registerEmbeddedDocs(docs);
+  const migrations = listEmbeddedMigrationsFromDir();
+  if (migrations.length === 0) {
+    throw new Error(
+      "standalone: dir:../migrations 未解析到任何 migration.sql（检查 dir-import 插件是否接入 Bun.build）",
+    );
   }
+  registerEmbeddedMigrations(migrations);
 
-  if (standaloneEmbeds.length === 0) return;
+  const docs = listEmbeddedDocsFromDir();
+  if (docs.length === 0) {
+    throw new Error(
+      "standalone: dir:…/docs 未解析到任何 .md（检查 dir-import 插件是否接入 Bun.build）",
+    );
+  }
+  registerEmbeddedDocs(docs);
 
-  const web = standaloneEmbeds
-    .filter((e) => e.kind === "web")
-    .map((e) => ({ rel: e.rel, path: e.path }));
-
-  if (web.length > 0) registerEmbeddedWebDist(web);
+  const web = listEmbeddedWebDistFromDir();
+  if (web.length === 0) {
+    throw new Error(
+      "standalone: dir:…/web/dist 未解析到任何文件（请先 pack web，并确认 dir-import 插件已接入）",
+    );
+  }
+  registerEmbeddedWebDist(web);
 }
 
 /** 模块加载即注册，保证先于 ANIMA_VERSION / SERVICE_BUILD_META 求值 */
