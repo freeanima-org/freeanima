@@ -1,1 +1,1 @@
-export { taskDeleteDetachesCarrier } from "@freeanima/shared/entity-shapes/task-delete.ts";
+export { taskDeleteDetachesCarrier } from "@freeanima/shared/pg-shapes/entity/task-delete.ts";

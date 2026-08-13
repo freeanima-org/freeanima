@@ -1,10 +1,15 @@
 import { z } from "zod";
 
 import { notificationRecipientKindSchema } from "./notification.ts";
+import {
+  vaultItemTypeSchema,
+  type VaultItemType,
+} from "@freeanima/shared/pg-shapes/entity/enums.ts";
 
 const vaultSubjectKindSchema = notificationRecipientKindSchema;
 
-export const vaultItemTypeSchema = z.enum(["login", "secure_note", "card", "identity", "custom"]);
+export { vaultItemTypeSchema };
+export type VaultItemTypePayload = VaultItemType;
 
 export const vaultUriMatchSchema = z.enum([
   "domain",

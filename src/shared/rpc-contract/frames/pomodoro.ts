@@ -1,9 +1,13 @@
 import { z } from "zod";
 
 import { notificationRecipientKindSchema } from "./notification.ts";
+import {
+  pomodoroPhaseSchema,
+  type PomodoroPhase,
+} from "@freeanima/shared/pg-shapes/entity/pomodoro-active.ts";
 
-export const pomodoroPhaseSchema = z.enum(["work", "short_break", "long_break"]);
-export type PomodoroPhasePayload = z.infer<typeof pomodoroPhaseSchema>;
+export { pomodoroPhaseSchema };
+export type PomodoroPhasePayload = PomodoroPhase;
 
 export const pomodoroConfigRowSchema = z.object({
   work_minutes: z.number().int(),

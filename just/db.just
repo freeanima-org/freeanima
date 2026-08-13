@@ -5,6 +5,15 @@ import '_common.just'
 generate: _deps
   cd src/host/core && {{ bun }} x drizzle-kit generate
 
+# 从 pgTable + 覆盖映射 codegen 纯 Zod → shared/pg-shapes/rows
+[no-cd]
+shapes: _deps
+  {{ bun }} scripts/gen-shared-shapes/main.ts
+
+[no-cd]
+shapes-check: _deps
+  {{ bun }} scripts/check-shared-shapes.ts
+
 [no-cd]
 migrate: _deps
   cd src/host/core && {{ bun }} x drizzle-kit migrate

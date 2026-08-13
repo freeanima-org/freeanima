@@ -1,4 +1,4 @@
 export type {
   LimbicMemoryRow,
   AutobiographicalMemoryRow,
-} from "@freeanima/shared/db-shapes/rows.ts";
+} from "@freeanima/shared/pg-shapes/rows/memory-rows.ts";

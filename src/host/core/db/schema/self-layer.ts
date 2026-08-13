@@ -2,17 +2,7 @@ import { boolean, integer, pgTable, text } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
-import { z } from "zod";
-
-export const selfBlockKeySchema = z.enum([
-  "existence_anchor",
-  "self_model",
-  "personality_baseline",
-  "direction",
-  "metacognition",
-]);
-
-export type SelfBlockKey = z.infer<typeof selfBlockKeySchema>;
+export { selfBlockKeySchema, type SelfBlockKey } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 
 /** Self-layer five blocks (one row per block_key) */
 export const selfBlocks = pgTable("self_blocks", {

@@ -450,7 +450,7 @@ export async function stopAllMcp() {
   return hubCall(habitat().call("mcp.stopAll", {}));
 }
 
-export type EntityRow = import("@freeanima/host/core/db/pg/entity/types").EntityRow;
+export type EntityRow = import("@freeanima/shared/pg-shapes/rows/entity-row.ts").EntityRow;
 
 type EntityListResponse = { items: EntityRow[]; total: number };
 

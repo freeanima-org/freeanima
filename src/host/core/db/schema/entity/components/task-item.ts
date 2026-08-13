@@ -2,15 +2,19 @@ import { z } from "zod";
 
 import { taskRecurrenceSchema } from "../task-recurrence.ts";
 import { schedulableBodySchema } from "./schedulable.ts";
-import { TASK_ITEM_COMPONENT } from "@freeanima/shared/entity-shapes/component-ids.ts";
+import { TASK_ITEM_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export {
+  taskItemStatusSchema,
+  taskItemPrioritySchema,
+  type TaskItemStatus,
+  type TaskItemPriority,
+} from "@freeanima/shared/pg-shapes/entity/enums.ts";
+import {
+  taskItemStatusSchema,
+  taskItemPrioritySchema,
+} from "@freeanima/shared/pg-shapes/entity/enums.ts";
 
 export { TASK_ITEM_COMPONENT };
-
-export const taskItemStatusSchema = z.enum(["pending", "completed"]);
-export type TaskItemStatus = z.infer<typeof taskItemStatusSchema>;
-
-export const taskItemPrioritySchema = z.enum(["high", "medium", "low", "none"]);
-export type TaskItemPriority = z.infer<typeof taskItemPrioritySchema>;
 
 const taskItemBodyFieldsSchema = schedulableBodySchema.extend({
   status: taskItemStatusSchema.default("pending"),
