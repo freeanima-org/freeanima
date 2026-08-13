@@ -146,7 +146,13 @@ async function generateTable(spec: TableGenSpec): Promise<string> {
   const imports = mergeImports(spec.overrides);
   const importLines = [
     'import { z } from "zod";',
-    ...imports.map((imp) => `import { ${imp.names.join(", ")} } from "${imp.from}";`),
+    ...imports.map((imp) => {
+      if (imp.names.length <= 3) {
+        return `import { ${imp.names.join(", ")} } from "${imp.from}";`;
+      }
+      const body = imp.names.map((n) => `  ${n},`).join("\n");
+      return `import {\n${body}\n} from "${imp.from}";`;
+    }),
   ];
 
   const selectName = `${spec.exportPrefix}SelectSchema`;

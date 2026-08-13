@@ -44,13 +44,22 @@ function checkGeneratedFresh(): void {
     console.error(r.stdout, r.stderr);
     process.exit(r.status ?? 1);
   }
+  const fmt = spawnSync("bun", ["x", "oxfmt", "src/shared/pg-shapes/rows"], {
+    cwd: REPO_ROOT,
+    encoding: "utf8",
+  });
+  if (fmt.status !== 0) {
+    console.error(fmt.stdout, fmt.stderr);
+    process.exit(fmt.status ?? 1);
+  }
   const diff = spawnSync("git", ["diff", "--exit-code", "--", "src/shared/pg-shapes/rows"], {
     cwd: REPO_ROOT,
     encoding: "utf8",
   });
   if (diff.status !== 0) {
     console.error(
-      "pg-shapes rows drift — run `just db shapes` and commit.\n" + (diff.stdout || ""),
+      "pg-shapes rows drift — run `just db shapes` && bun x oxfmt src/shared/pg-shapes/rows and commit.\n" +
+        (diff.stdout || ""),
     );
     process.exit(1);
   }
