@@ -3,7 +3,7 @@
  * Linux standalone 分发构建（唯一发版产物）：单文件 `anima`。
  *
  * 产物：`dist/anima-executable/anima`
- * - version / service build-meta 经 standalone-embed-plugin 注入
+ * - version / service build-meta 经 Bun.build `files` 虚拟覆盖 standalone-meta.ts
  * - migration.sql / docs/*.md / web dist 经调用点 `dir:` + dir-import 插件嵌入
  *
  * 用法：
@@ -12,14 +12,13 @@
  *   ./dist/anima-executable/anima --version
  */
 import { $ } from "bun";
-import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, realpathSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import {
   createComponentBuildMeta,
   resolveBuildChannelFromEnv,
 } from "@freeanima/host/core/config/build-meta";
-import { createStandaloneEmbedPlugin } from "./standalone-embed-plugin.ts";
 import {
   assertStandaloneBinaryHasNoTiktokenBuildPath,
   createTiktokenWasmPlugin,
@@ -31,7 +30,7 @@ import { emitPackArtifact } from "./emit-pack-artifact.ts";
 const ROOT = join(import.meta.dir, "..");
 const OUT_DIR = join(ROOT, "dist/anima-executable");
 const CLI_ENTRY = join(ROOT, "src/portal/cli/cli.ts");
-const EMBEDS_MODULE = join(ROOT, "src/portal/cli/standalone-embeds.ts");
+const META_MODULE = realpathSync(join(ROOT, "src/portal/cli/standalone-meta.ts"));
 const WEB_DIST_DIR = join(ROOT, "src/portal/app/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
 
@@ -58,6 +57,20 @@ async function ensureWebDist(): Promise<void> {
   }
 }
 
+function buildStandaloneMetaSource(version: string, buildMeta: unknown): string {
+  const metaJson = JSON.stringify({ version, buildMeta });
+  return `/** VIRTUAL: injected by scripts/build-cli-executable.ts via Bun.build files */
+import type { ComponentBuildMeta } from "@freeanima/host/core/config/build-meta.parse";
+
+export type StandaloneRuntimeMetaInject = {
+  version: string;
+  buildMeta: ComponentBuildMeta;
+};
+
+export const standaloneRuntimeMeta: StandaloneRuntimeMetaInject = ${metaJson} as StandaloneRuntimeMetaInject;
+`;
+}
+
 async function main(): Promise<void> {
   rmSync(OUT_DIR, { recursive: true, force: true });
   mkdirSync(OUT_DIR, { recursive: true });
@@ -81,20 +94,15 @@ async function main(): Promise<void> {
   const stagedWasm = join(OUT_DIR, "tiktoken_bg.wasm");
   cpSync(tiktokenPackageWasm, stagedWasm);
   console.log(
-    `compiling single-file standalone → ${outfile} (dir: migrations/docs/web + runtime meta + tiktoken wasm)`,
+    `compiling single-file standalone → ${outfile} (dir: migrations/docs/web + files meta + tiktoken wasm)`,
   );
 
   const result = await Bun.build({
     entrypoints: [CLI_ENTRY],
-    plugins: [
-      createDirImportPlugin(),
-      createStandaloneEmbedPlugin({
-        embedsModulePath: EMBEDS_MODULE,
-        version: embedVersion,
-        buildMeta,
-      }),
-      createTiktokenWasmPlugin(stagedWasm),
-    ],
+    files: {
+      [META_MODULE]: buildStandaloneMetaSource(embedVersion, buildMeta),
+    },
+    plugins: [createDirImportPlugin(), createTiktokenWasmPlugin(stagedWasm)],
     compile: {
       outfile,
     },

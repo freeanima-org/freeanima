@@ -13,7 +13,7 @@ type EmbeddedDocsGlobal = typeof globalThis & {
   [GLOBAL_KEY]?: EmbeddedDocsFile[];
 };
 
-/** 由 standalone-embed-boot（编译期 type:file 嵌入）注入 */
+/** 由 standalone-boot 经 dir: 注册（type:file 路径） */
 export function registerEmbeddedDocs(files: EmbeddedDocsFile[]): void {
   (globalThis as EmbeddedDocsGlobal)[GLOBAL_KEY] = files;
 }

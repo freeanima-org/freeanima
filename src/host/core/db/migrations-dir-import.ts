@@ -2,7 +2,7 @@
  * Standalone migrations 嵌入：调用点 `dir:` 声明依赖整个 migrations 树，
  * 由 `scripts/dir-import-plugin.ts` 展开为逐文件 `type: "file"`。
  *
- * 源码运行需 bunfig preload 注册该插件；仅在 standalone（注入了 runtimeMeta）时注册到 globalThis。
+ * 源码运行需 bunfig preload 注册该插件；仅 standalone-boot（runtimeMeta 非 null）时 dynamic import 并注册。
  */
 import migrationFiles from "dir:../migrations";
 

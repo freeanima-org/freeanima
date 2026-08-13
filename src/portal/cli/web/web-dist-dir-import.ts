@@ -2,8 +2,8 @@
  * Standalone Web dist 嵌入：调用点 `dir:` 声明依赖整个 web/dist 树，
  * 由 `scripts/dir-import-plugin.ts` 展开为逐文件 `type: "file"`。
  *
- * 源码运行需 bunfig preload；目录缺失时为空 map（不注册）。
- * 仅在 standalone（注入了 runtimeMeta）且非空时注册到 globalThis。
+ * 源码运行需 bunfig preload；目录缺失时为空 map。
+ * 仅 standalone-boot（runtimeMeta 非 null）时 dynamic import；非空才注册。
  */
 import webDistFiles from "dir:../../app/web/dist";
 

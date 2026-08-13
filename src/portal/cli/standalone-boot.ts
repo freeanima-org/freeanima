@@ -1,18 +1,21 @@
+/**
+ * Standalone CLI 启动注册：有 runtimeMeta 时注册 meta，并经 `dir:` 注册
+ * migrations / docs / web dist（动态 import，源码路径不展开目录树）。
+ */
 import { registerEmbeddedMigrations } from "@freeanima/host/core/db";
-import { listEmbeddedMigrationsFromDir } from "@freeanima/host/core/db/migrations-dir-import";
 import { registerStandaloneRuntimeMeta } from "@freeanima/host/core/config/standalone-runtime-meta";
 import { registerEmbeddedDocs } from "@freeanima/host/capabilities/tools/docs-embedded";
-import { listEmbeddedDocsFromDir } from "@freeanima/host/capabilities/tools/docs-dir-import";
 import { registerEmbeddedWebDist } from "./web/web-dist-embedded.ts";
-import { listEmbeddedWebDistFromDir } from "./web/web-dist-dir-import.ts";
-import { standaloneRuntimeMeta } from "./standalone-embeds.ts";
+import { standaloneRuntimeMeta } from "./standalone-meta.ts";
 
-/** 在 cli 入口最早 side-effect：把编译期嵌入注册到 globalThis */
-export function bootStandaloneEmbeds(): void {
+/** 须在导入会求值 ANIMA_VERSION / SERVICE_BUILD_META 的模块之前 await */
+export async function bootStandalone(): Promise<void> {
   if (standaloneRuntimeMeta == null) return;
 
   registerStandaloneRuntimeMeta(standaloneRuntimeMeta);
 
+  const { listEmbeddedMigrationsFromDir } =
+    await import("@freeanima/host/core/db/migrations-dir-import");
   const migrations = listEmbeddedMigrationsFromDir();
   if (migrations.length === 0) {
     throw new Error(
@@ -21,6 +24,8 @@ export function bootStandaloneEmbeds(): void {
   }
   registerEmbeddedMigrations(migrations);
 
+  const { listEmbeddedDocsFromDir } =
+    await import("@freeanima/host/capabilities/tools/docs-dir-import");
   const docs = listEmbeddedDocsFromDir();
   if (docs.length === 0) {
     throw new Error(
@@ -29,6 +34,7 @@ export function bootStandaloneEmbeds(): void {
   }
   registerEmbeddedDocs(docs);
 
+  const { listEmbeddedWebDistFromDir } = await import("./web/web-dist-dir-import.ts");
   const web = listEmbeddedWebDistFromDir();
   if (web.length === 0) {
     throw new Error(
@@ -37,6 +43,3 @@ export function bootStandaloneEmbeds(): void {
   }
   registerEmbeddedWebDist(web);
 }
-
-/** 模块加载即注册，保证先于 ANIMA_VERSION / SERVICE_BUILD_META 求值 */
-bootStandaloneEmbeds();
