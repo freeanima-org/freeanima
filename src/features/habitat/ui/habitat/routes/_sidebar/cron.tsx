@@ -13,14 +13,16 @@ import {
   TableCell,
   TableRow,
 } from "@freeanima/ui-kit";
-import { StatusAlert } from "@freeanima/ui-kit/composite";
+import { showConfirm, StatusAlert } from "@freeanima/ui-kit/composite";
 import {
+  deleteCronJob,
   getCronJobs,
   pauseCronJob,
   resumeCronJob,
   runCronJob,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
+import { CronCreateDialog } from "./cron-create-dialog.tsx";
 import { CronRunLogModal } from "./cron-run-log-modal.tsx";
 import {
   catchWithFallback,
@@ -43,8 +45,10 @@ function CronPage() {
   const [error, setError] = useState("");
   const [toggling, setToggling] = useState<Record<string, string>>({});
   const [running, setRunning] = useState<Record<string, boolean>>({});
+  const [deleting, setDeleting] = useState<Record<string, boolean>>({});
   const [toast, setToast] = useState<Record<string, string>>({});
   const [historyJob, setHistoryJob] = useState<CronJob | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const activeCount = jobs.filter((j) => !j.paused).length;
   const pausedCount = jobs.filter((j) => j.paused).length;
@@ -121,25 +125,59 @@ function CronPage() {
     }
   };
 
+  const onDelete = async (job: CronJob) => {
+    const confirmed = await showConfirm({
+      description: `删除定时任务「${coerceString(job.name ?? job.id)}」？此操作不可撤销。`,
+      confirmLabel: "删除",
+      variant: "error",
+    });
+    if (!confirmed) return;
+    setError("");
+    setDeleting((d) => ({ ...d, [job.id]: true }));
+    try {
+      await deleteCronJob(job.id);
+      setJobs((prev) => prev.filter((j) => j.id !== job.id));
+    } catch (e) {
+      logCaughtError("routes/_sidebar/cron/delete", e);
+      setError(
+        `${coerceString(job.name ?? job.id)} 删除失败: ${e instanceof Error ? e.message : String(e)}`,
+      );
+    } finally {
+      setDeleting((d) => {
+        const next = { ...d };
+        delete next[job.id];
+        return next;
+      });
+    }
+  };
+
+  const busy = (job: CronJob) => !!toggling[job.id] || !!running[job.id] || !!deleting[job.id];
+
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-lg font-bold">{"⏰ 定时任务"}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {"查看调度任务、启用/暂停与手动触发。新建或删除请使用 cronjob 工具。"}{" "}
+            {"查看、新建、启用/暂停、手动触发与删除调度任务。高级脚本任务可用 ToolSet "}
             <code className="text-xs">cronjob</code>
+            {"。"}
           </p>
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          isDisabled={loading}
-          onClick={() => void reload()}
-        >
-          {"刷新"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" size="sm" onClick={() => setCreating(true)}>
+            {"新建"}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            isDisabled={loading}
+            onClick={() => void reload()}
+          >
+            {"刷新"}
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -184,7 +222,7 @@ function CronPage() {
                         <Switch
                           id={`cron-enable-${job.id}`}
                           isSelected={!job.paused}
-                          isDisabled={!!toggling[job.id] || !!running[job.id]}
+                          isDisabled={busy(job)}
                           onChange={(checked) => void onToggle(job, checked)}
                         />
                       </div>
@@ -193,7 +231,7 @@ function CronPage() {
                         variant="ghost"
                         size="sm"
                         className="h-7 text-xs"
-                        isDisabled={!!toggling[job.id] || !!running[job.id]}
+                        isDisabled={busy(job)}
                         onClick={() => setHistoryJob(job)}
                       >
                         {"运行历史"}
@@ -203,11 +241,22 @@ function CronPage() {
                         variant="outline"
                         size="sm"
                         className="h-7 text-xs"
-                        isDisabled={!!toggling[job.id] || !!running[job.id]}
+                        isDisabled={busy(job)}
                         onClick={() => void runNow(job)}
                       >
                         {running[job.id] ? <Spinner /> : null}
                         {"立即运行"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs text-destructive"
+                        isDisabled={busy(job)}
+                        onClick={() => void onDelete(job)}
+                      >
+                        {deleting[job.id] ? <Spinner /> : null}
+                        {"删除"}
                       </Button>
                     </div>
                   </div>
@@ -254,6 +303,16 @@ function CronPage() {
           jobId={historyJob.id}
           jobName={coerceString(historyJob.name ?? historyJob.id)}
           onClose={() => setHistoryJob(null)}
+        />
+      ) : null}
+
+      {creating ? (
+        <CronCreateDialog
+          onClose={() => setCreating(false)}
+          onCreated={(job) => {
+            setJobs((prev) => [job, ...prev.filter((j) => j.id !== job.id)]);
+            setCreating(false);
+          }}
         />
       ) : null}
     </div>

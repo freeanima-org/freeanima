@@ -476,6 +476,19 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return status.runCronJobNow(jobId);
   }
 
+  createCronJob(opts: {
+    name: string;
+    schedule: string;
+    prompt: string;
+    notify_on_success?: boolean;
+  }): Promise<CronJobData> {
+    return status.createCronJob(opts);
+  }
+
+  deleteCronJob(jobId: string): Promise<boolean> {
+    return status.deleteCronJob(jobId);
+  }
+
   getSleepSummary() {
     return sleep.getSleepSummary();
   }

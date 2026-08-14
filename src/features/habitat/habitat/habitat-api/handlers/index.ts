@@ -16,6 +16,8 @@ export {
   pauseCronJob,
   resumeCronJob,
   runCronJobNow,
+  createCronJob,
+  deleteCronJob,
   restartService,
 } from "./status.ts";
 export {

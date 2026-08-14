@@ -258,6 +258,19 @@ export async function runCronJob(id: string) {
   return hubCall(habitat().call("status.cronJobRun", { id }));
 }
 
+export async function createCronJob(body: {
+  name: string;
+  schedule: string;
+  prompt: string;
+  notify_on_success?: boolean;
+}) {
+  return hubCall(habitat().call("status.cronJobCreate", body));
+}
+
+export async function deleteCronJob(id: string) {
+  return hubCall(habitat().call("status.cronJobDelete", { id }));
+}
+
 export async function getSleepSummary() {
   return hubCall(habitat().call("sleep.summary", {}));
 }

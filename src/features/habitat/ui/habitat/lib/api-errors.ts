@@ -16,6 +16,12 @@ export function translateApiPayload(payload: ApiProtocolPayload | null | undefin
   if (code === "cron_job_not_found") {
     return `未找到任务: ${params.job_id ?? ""}`;
   }
+  if (code === "cron_job_create_failed") {
+    return payload.error ?? "创建定时任务失败";
+  }
+  if (code === "cron_job_delete_failed") {
+    return payload.error ?? `删除定时任务失败: ${params.job_id ?? ""}`;
+  }
   if (code === "service_restarting") {
     return "服务正在重启...";
   }
