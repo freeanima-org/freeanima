@@ -1,7 +1,6 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
-import { navigateAppModulePath } from "@freeanima/client/portal-sdk/pomodoro-launch.ts";
 import { Button, Spinner, cn } from "@freeanima/ui-kit";
 import { useCompactLayout } from "@freeanima/ui-kit/layout";
 import { ChevronLeft, ChevronRight, PlusIcon } from "lucide-react";
@@ -14,6 +13,7 @@ import {
   createCalendarEvent,
   convertCalendarEventToTask,
   deleteCalendarEvent,
+  fetchCalendarEventById,
   fetchCalendarRange,
   patchTaskDueAt,
   updateCalendarEvent,
@@ -23,6 +23,7 @@ import {
 import { cstDayKey, monthLabel, monthRangeIso, shiftMonth } from "./lib/format-calendar.ts";
 import { registerCalendarOfflineModule } from "./lib/offline-store.ts";
 import { readCalendarUiPrefs, writeCalendarUiPrefs } from "./lib/calendar-prefs.ts";
+import { readCalendarEventFromUrl, writeCalendarEventToUrl } from "./lib/calendar-event-url.ts";
 import { filterVisibleCalendarItems } from "./lib/visible-items.ts";
 
 registerCalendarOfflineModule();
@@ -133,6 +134,48 @@ export function CalendarApp() {
       setRefreshing(false);
     }
   }, [refresh, refreshing]);
+
+  const appliedEventUrlRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const eventId = readCalendarEventFromUrl();
+    if (eventId == null) {
+      appliedEventUrlRef.current = null;
+      return () => {};
+    }
+    if (appliedEventUrlRef.current === eventId) return () => {};
+
+    const local = eventsById.get(eventId);
+    if (local) {
+      appliedEventUrlRef.current = eventId;
+      setEditor({ mode: "edit", event: local });
+      writeCalendarEventToUrl(null);
+      return () => {};
+    }
+
+    let cancelled = false;
+    void fetchCalendarEventById(eventId).then((row) => {
+      if (cancelled) return;
+      appliedEventUrlRef.current = eventId;
+      if (row) {
+        setEditor({ mode: "edit", event: row });
+        const day = row.start_at.slice(0, 10);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+          setSelectedDay(day);
+          const parts = day.split("-").map(Number);
+          const y = parts[0];
+          const mo = parts[1];
+          if (y != null && mo != null) {
+            setCursor({ year: y, monthIndex: mo - 1 });
+          }
+        }
+      }
+      writeCalendarEventToUrl(null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [eventsById]);
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 p-3 md:p-4">
@@ -292,8 +335,8 @@ export function CalendarApp() {
                 onOpenTask={(id) => {
                   void openEntityResource({ id, component: "task_item", present: "overlay" });
                 }}
-                onOpenProject={() => {
-                  navigateAppModulePath("/projects");
+                onOpenProject={(id) => {
+                  void openEntityResource({ id, component: "project", present: "overlay" });
                 }}
                 onDropTaskDue={(taskId, day) => {
                   void patchTaskDueAt(CALENDAR_SUBJECT, taskId, day).then(() => refresh());
@@ -314,8 +357,8 @@ export function CalendarApp() {
                 onOpenTask={(id) => {
                   void openEntityResource({ id, component: "task_item", present: "overlay" });
                 }}
-                onOpenProject={() => {
-                  navigateAppModulePath("/projects");
+                onOpenProject={(id) => {
+                  void openEntityResource({ id, component: "project", present: "overlay" });
                 }}
               />
             )}
@@ -337,8 +380,8 @@ export function CalendarApp() {
                 onOpenTask={(id) => {
                   void openEntityResource({ id, component: "task_item", present: "overlay" });
                 }}
-                onOpenProject={() => {
-                  navigateAppModulePath("/projects");
+                onOpenProject={(id) => {
+                  void openEntityResource({ id, component: "project", present: "overlay" });
                 }}
               />
             </div>

@@ -8,7 +8,7 @@ type AgendaListProps = {
   items: CalendarRangeItem[];
   onOpenEvent: (id: number) => void;
   onOpenTask: (id: number) => void;
-  onOpenProject: () => void;
+  onOpenProject: (id: number) => void;
   onEditEvent: (id: number) => void;
 };
 
@@ -80,7 +80,7 @@ export function AgendaList({
             onPress={() => {
               if (item.kind === "event") onEditEvent(item.id);
               else if (item.kind === "task") onOpenTask(item.id);
-              else onOpenProject();
+              else onOpenProject(item.id);
             }}
           >
             <span className="w-12 shrink-0 text-xs text-muted-foreground">{itemTime(item)}</span>

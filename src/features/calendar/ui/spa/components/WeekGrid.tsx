@@ -18,7 +18,7 @@ export type WeekGridProps = {
   onSelectDay: (day: string) => void;
   onOpenEvent: (id: number) => void;
   onOpenTask: (id: number) => void;
-  onOpenProject: () => void;
+  onOpenProject: (id: number) => void;
   onDropTaskDue: (taskId: number, day: string) => void;
 };
 
@@ -50,7 +50,7 @@ function openBar(
 ): void {
   if (bar.item.kind === "event") handlers.onOpenEvent(bar.item.id);
   else if (bar.item.kind === "task") handlers.onOpenTask(bar.item.id);
-  else handlers.onOpenProject();
+  else handlers.onOpenProject(bar.item.id);
 }
 
 export function WeekGrid({

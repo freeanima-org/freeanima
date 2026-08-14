@@ -44,6 +44,7 @@ describe("anima-uri", () => {
     expect(defaultPresentForComponent("task_list")).toBe("navigate");
     expect(defaultPresentForComponent(undefined)).toBe("overlay");
     expect(defaultPresentForComponent("calendar_event")).toBe("overlay");
+    expect(defaultPresentForComponent("project")).toBe("overlay");
   });
 
   test("animaUriToShellPath and shell path parse", () => {
@@ -51,6 +52,8 @@ describe("anima-uri", () => {
       "/tasks?item=42&present=overlay",
     );
     expect(animaUriToShellPath({ id: 7, component: "task_list" })).toBe("/tasks?list=7");
+    expect(animaUriToShellPath({ id: 11, component: "project" })).toBe("/projects?project=11");
+    expect(animaUriToShellPath({ id: 22, component: "calendar_event" })).toBe("/calendar?event=22");
     expect(animaUriToShellPath({ id: 42 })).toBeNull();
 
     expect(parseAnimaUri("/tasks?item=42&present=overlay")).toEqual({
@@ -60,6 +63,14 @@ describe("anima-uri", () => {
     expect(parseAnimaUri("/tasks?list=9")).toEqual({
       ok: true,
       ref: { id: 9, component: "task_list", present: "navigate" },
+    });
+    expect(parseAnimaUri("/projects?project=11")).toEqual({
+      ok: true,
+      ref: { id: 11, component: "project", present: "navigate" },
+    });
+    expect(parseAnimaUri("/calendar?event=22")).toEqual({
+      ok: true,
+      ref: { id: 22, component: "calendar_event", present: "navigate" },
     });
   });
 

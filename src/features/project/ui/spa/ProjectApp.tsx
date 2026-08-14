@@ -101,6 +101,7 @@ import {
 } from "@freeanima/features/task/ui/spa/lib/task-tag-filter.ts";
 import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-detail-dirty.ts";
 import { fetchTags } from "@freeanima/features/tag/ui/spa/lib/api.ts";
+import { readProjectFromUrl, writeProjectToUrl } from "./lib/project-url.ts";
 
 function menuToSheet(items: ProjectMenuItem[]): ActionSheetItem[] {
   return items.map((item) => ({
@@ -168,16 +169,23 @@ export function ProjectApp() {
     if (!bundle) return;
     setFolders(bundle.folders);
     setProjects(bundle.projects);
+    const fromUrl = readProjectFromUrl();
     const stored = readModuleSelection("project", { subjectKind });
     const active = bundle.projects.filter((p) => p.status === "active");
     const pickId =
-      stored != null && bundle.projects.some((p) => p.id === stored)
-        ? stored
-        : (active[0]?.id ?? bundle.projects[0]?.id ?? null);
+      fromUrl != null && bundle.projects.some((p) => p.id === fromUrl)
+        ? fromUrl
+        : stored != null && bundle.projects.some((p) => p.id === stored)
+          ? stored
+          : (active[0]?.id ?? bundle.projects[0]?.id ?? null);
     setSelectedProjectId((prev) => {
+      if (fromUrl != null && bundle.projects.some((p) => p.id === fromUrl)) return fromUrl;
       if (prev != null && bundle.projects.some((p) => p.id === prev)) return prev;
       return pickId;
     });
+    if (fromUrl != null && bundle.projects.some((p) => p.id === fromUrl)) {
+      writeModuleSelection("project", fromUrl, { subjectKind });
+    }
     if (pickId != null && bundle.projects.some((p) => p.id === pickId && p.status !== "active")) {
       setShowInactive(true);
     }
@@ -451,6 +459,7 @@ export function ProjectApp() {
     setSelectedProjectId(id);
     setTagFilterId(null);
     writeModuleSelection("project", id, { subjectKind });
+    writeProjectToUrl(id);
     setSelectedFolderId(null);
     closeTaskDetail({ discard: true });
     if (useDrawer) setListOpen(false);
@@ -474,6 +483,7 @@ export function ProjectApp() {
     setNewProjectTitle("");
     setSelectedProjectId(item.id);
     writeModuleSelection("project", item.id, { subjectKind });
+    writeProjectToUrl(item.id);
     await reload();
   };
 
