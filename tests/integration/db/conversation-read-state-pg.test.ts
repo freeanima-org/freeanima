@@ -109,7 +109,8 @@ describePg("conversation_read_state（用户未读）", () => {
     const engine = getTestEngine();
     const subject_id = resolveNotificationRecipients(engine.config.data).user.id;
     const c = testConv();
-    const otherPlatform = "remote:companion:test-unread";
+    // flat platform（remote: 已不是合法 conversations.platform）
+    const otherPlatform = "companion";
     const chatSid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
     const otherSid = await c.newConversation(otherPlatform);
 

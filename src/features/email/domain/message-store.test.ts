@@ -103,6 +103,9 @@ mock.module("@freeanima/host/core/db/pg/entity", () => ({
 const emailWorldOriginal = await import("./email-world.ts");
 const threadStoreOriginal = await import("./thread-store.ts");
 const objectStorageOriginal = await import("@freeanima/features/object-storage/domain");
+const realCreateObjectFile = objectStorageOriginal.createObjectFile;
+const realDeleteObjectFile = objectStorageOriginal.deleteObjectFile;
+const realDownloadObjectFileBytes = objectStorageOriginal.downloadObjectFileBytes;
 
 mock.module("./email-world.ts", () => ({
   ...emailWorldOriginal,
@@ -131,7 +134,13 @@ mock.module("@freeanima/features/object-storage/domain", () => ({
 afterAll(() => {
   mock.module("./email-world.ts", () => emailWorldOriginal);
   mock.module("./thread-store.ts", () => threadStoreOriginal);
-  mock.module("@freeanima/features/object-storage/domain", () => objectStorageOriginal);
+  // Bun mock.module 会写穿原模块；还原时必须用 mock 前捕获的函数引用
+  mock.module("@freeanima/features/object-storage/domain", () => ({
+    ...objectStorageOriginal,
+    createObjectFile: realCreateObjectFile,
+    deleteObjectFile: realDeleteObjectFile,
+    downloadObjectFileBytes: realDownloadObjectFileBytes,
+  }));
 });
 const { upsertEmailMessage } = await import("./message-store.ts");
 const { normalizeRfcMessageId } = await import("./message-id.ts");

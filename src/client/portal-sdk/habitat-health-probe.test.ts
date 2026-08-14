@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, mock, test } from "bun:test";
+import { afterAll, afterEach, describe, expect, mock, test } from "bun:test";
 
 import {
   formatHabitatHealthProbeFetchError,
@@ -8,10 +8,28 @@ import {
   probeHabitatHealthUrl,
 } from "./habitat-health-probe.ts";
 
+const nativeProbeOriginal = await import("./native-habitat-health-probe.ts");
+const realShouldProbeHabitatHealthViaNativeHttp =
+  nativeProbeOriginal.shouldProbeHabitatHealthViaNativeHttp;
+const realProbeHabitatHealthViaNativeHttp = nativeProbeOriginal.probeHabitatHealthViaNativeHttp;
+
+function restoreNativeHabitatHealthProbeModule(): void {
+  // Bun mock.module 会写穿原模块导出；必须还原到 mock 前捕获的函数引用
+  mock.module("./native-habitat-health-probe.ts", () => ({
+    shouldProbeHabitatHealthViaNativeHttp: realShouldProbeHabitatHealthViaNativeHttp,
+    probeHabitatHealthViaNativeHttp: realProbeHabitatHealthViaNativeHttp,
+  }));
+}
+
 describe("habitat-health-probe", () => {
   afterEach(() => {
     delete (globalThis as { portalShell?: unknown }).portalShell;
     mock.restore();
+    restoreNativeHabitatHealthProbeModule();
+  });
+
+  afterAll(() => {
+    restoreNativeHabitatHealthProbeModule();
   });
 
   test("isHabitatHealthConnected", () => {

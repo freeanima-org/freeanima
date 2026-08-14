@@ -1,37 +1,45 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
 
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
 
 const listConversationIdsWithMessagesBetweenMock = mock(async () => ["s-1"]);
-const collectConversationBlocksMock = mock(async () => [
-  { conversation_id: "s-1", text: "user: hello\nassistant: hi" },
+const getConversationMetaLiteMock = mock(async () => ({
+  model: "test",
+  title: "Test",
+  platform: "chat",
+  timestamp: "2026-06-08T10:00:00+08:00",
+}));
+const listMessagesMock = mock(async () => [
+  { role: "user", content: "hello", timestamp: "2026-06-08T10:00:00+08:00" },
+  { role: "assistant", content: "hi", timestamp: "2026-06-08T10:01:00+08:00" },
 ]);
 const upsertTemporalSummaryMock = mock(async () => 42);
 const summarizeTemporalTextMock = mock(async () => "当日主题摘要");
 
+const conversationOriginal = await import("@freeanima/host/core/db/pg/conversation");
+const temporalSummaryOriginal = await import("@freeanima/host/core/db/pg/temporal-summary");
+const summarizeOriginal = await import("./summarize.ts");
+
 mock.module("@freeanima/host/core/db/pg/conversation", () => ({
+  ...conversationOriginal,
   listConversationIdsWithMessagesBetween: listConversationIdsWithMessagesBetweenMock,
+  getConversationMetaLite: getConversationMetaLiteMock,
+  listMessages: listMessagesMock,
 }));
 mock.module("@freeanima/host/core/db/pg/temporal-summary", () => ({
+  ...temporalSummaryOriginal,
   upsertTemporalSummary: upsertTemporalSummaryMock,
 }));
-mock.module("../light-sleep/build-messages.ts", () => ({
-  collectConversationBlocks: collectConversationBlocksMock,
-  cstDayRange: (day?: string) => {
-    const d = day ?? "2026-06-08";
-    const [y, m, dd] = d.split("-").map(Number) as [number, number, number];
-    const next = new Date(Date.UTC(y, m - 1, dd + 1));
-    const to = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}-${String(next.getUTCDate()).padStart(2, "0")}`;
-    return {
-      day: d,
-      fromIso: `${d}T00:00:00+08:00`,
-      toIso: `${to}T00:00:00+08:00`,
-    };
-  },
-}));
 mock.module("./summarize.ts", () => ({
+  ...summarizeOriginal,
   summarizeTemporalText: summarizeTemporalTextMock,
 }));
+
+afterAll(() => {
+  mock.module("@freeanima/host/core/db/pg/conversation", () => conversationOriginal);
+  mock.module("@freeanima/host/core/db/pg/temporal-summary", () => temporalSummaryOriginal);
+  mock.module("./summarize.ts", () => summarizeOriginal);
+});
 
 const { runTemporalSummaryDay } = await import("./day-run.ts");
 
@@ -51,9 +59,17 @@ describe("runTemporalSummaryDay", () => {
   beforeEach(() => {
     listConversationIdsWithMessagesBetweenMock.mockClear();
     listConversationIdsWithMessagesBetweenMock.mockImplementation(async () => ["s-1"]);
-    collectConversationBlocksMock.mockClear();
-    collectConversationBlocksMock.mockImplementation(async () => [
-      { conversation_id: "s-1", text: "user: hello\nassistant: hi" },
+    getConversationMetaLiteMock.mockClear();
+    getConversationMetaLiteMock.mockImplementation(async () => ({
+      model: "test",
+      title: "Test",
+      platform: "chat",
+      timestamp: "2026-06-08T10:00:00+08:00",
+    }));
+    listMessagesMock.mockClear();
+    listMessagesMock.mockImplementation(async () => [
+      { role: "user", content: "hello", timestamp: "2026-06-08T10:00:00+08:00" },
+      { role: "assistant", content: "hi", timestamp: "2026-06-08T10:01:00+08:00" },
     ]);
     upsertTemporalSummaryMock.mockClear();
     upsertTemporalSummaryMock.mockImplementation(async () => 42);
@@ -94,7 +110,7 @@ describe("runTemporalSummaryDay", () => {
     });
     expect(result.ok).toBe(true);
     expect(result.skipped).toBe("no_sessions");
-    expect(collectConversationBlocksMock).not.toHaveBeenCalled();
+    expect(listMessagesMock).not.toHaveBeenCalled();
     expect(upsertTemporalSummaryMock).toHaveBeenCalledWith(
       expect.objectContaining({
         empty_reason: "no_sessions",
