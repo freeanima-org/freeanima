@@ -24,7 +24,8 @@ title: src 分层与依赖约束
 kernel/
   hooks / logging / token / 纯工具（uuid、omitUndefined…）
   config-mechanism/   # 容器、section 注册、热 apply 端口（无 llm/mcp 字段）
-  loop-mechanism/     # 纯 LLM↔tool↔stream + StreamEvent（无 turn/memory）
+  loop-mechanism/     # 目标：纯 LLM↔tool↔stream + StreamEvent（无 turn/memory）
+                      # P4：注入化已在 engine/loop；整包迁入推迟到 P5（避免厚 ports）
 ```
 
 **不进 kernel：** 各 config 参数段、turn/conversation、drizzle/PG、capabilities、React、具体 MCP/gateway apply。
@@ -63,9 +64,11 @@ DDL 仅 habitat。存储形状的纯 Zod 经 **codegen + package exports** 落�
 
 热更新今日是 PG section patch → apply，不是 `fs.watch`。产品段用 `registerSection` 挂上。
 
-### 2. Agent loop：纯循环进 kernel；turn 留 engine
+### 2. Agent loop：去产品假设；物理迁 kernel 随 P5
 
-可抽：LLM↔tool↔stream、`StreamEvent`、hook 端口。须先把 compress / 默认 profile / ALS 会话假设改为注入。**不**迁 turn/conversation/memory/self。
+可抽：LLM↔tool↔stream、`StreamEvent`、hook 端口。**须先**把 compress / 默认 profile / ALS 会话假设改为注入；loop **不对** `llm_kind` 做行为分支（仅透传 hook 过滤作用域）。**不**迁 turn/conversation/memory/self。
+
+**P4（#17726）已落地（注入化）**：`EngineOpts` 显式 `model` / `conversationId` / `toolProgress` / `onAfterMessagesPersisted`；紧急压缩经 `createConversationAfterMessagesPersisted` 由 conversation 路径注入；auto LLM 不注入（与昔日 ALS 行为一致）。`runStream` 仍在 `engine/loop`——整包迁入 `kernel/loop-mechanism` 需厚 ports 才能过 `host-kernel` 叶层，推迟到 P5 分包边界。
 
 ### 3. 三分包：为依赖清晰（不发布）
 
@@ -95,16 +98,17 @@ portal = 形态薄入口（拆入两包）；client = portal-sdk + app-frame（f
 4. ~~`shared` 内混有 DOM 与 `node:fs` 入口~~（P1：默认无 DOM；`*-browser` / `*-node` 分入口）
 5. ~~存储 Zod 与 rpc-contract 平行手写易漂移~~（P2：`just db shapes` codegen + rpc-contract 组合 `pg-shapes`）
 6. ~~config 机制混在 core/platform~~（P3：`host/kernel/config-mechanism` + `registerSection`）
+7. ~~loop 隐式绑 compress / PROFILE_CHAT / ALS~~（P4：`engine/loop` 注入化；目录迁入 `loop-mechanism` 待 P5）
 
 ## 分阶段任务（风巢 17683）
 
-| 阶段 | 任务   | 要点                                                                                            |
-| ---- | ------ | ----------------------------------------------------------------------------------------------- |
-| P0   | #17722 | 本文档 + 死链/rules 方向对齐；收束 #17713                                                       |
-| P1   | #17723 | **已落地**：剪 shared→host、frontend→db；oxlint；`just qa check-frontend-no-drizzle`            |
-| P2   | #17724 | **已落地**：`createSelectSchema` → `just db shapes` 纯 Zod → `shared/pg-shapes`                 |
-| P3   | #17725 | **已落地**：config 机制进 `host/kernel/config-mechanism`；产品段 Zod/apply 经 `registerSection` |
-| P4   | #17726 | 纯 loop 进 kernel                                                                               |
-| P5   | #17727 | 三 workspace 包 + portal 拆入                                                                   |
+| 阶段 | 任务   | 要点                                                                                                         |
+| ---- | ------ | ------------------------------------------------------------------------------------------------------------ |
+| P0   | #17722 | 本文档 + 死链/rules 方向对齐；收束 #17713                                                                    |
+| P1   | #17723 | **已落地**：剪 shared→host、frontend→db；oxlint；`just qa check-frontend-no-drizzle`                         |
+| P2   | #17724 | **已落地**：`createSelectSchema` → `just db shapes` 纯 Zod → `shared/pg-shapes`                              |
+| P3   | #17725 | **已落地**：config 机制进 `host/kernel/config-mechanism`；产品段 Zod/apply 经 `registerSection`              |
+| P4   | #17726 | **已落地（注入化）**：loop 去 compress/profile/ALS 硬依赖；`runStream` 仍 `engine/loop`，整包迁 kernel 待 P5 |
+| P5   | #17727 | 三 workspace 包 + portal 拆入；顺带迁 `loop-mechanism`                                                       |
 
 依赖：P0→P1→P2→P5；P3/P4 可在 P0 后并行，再汇入 P5。

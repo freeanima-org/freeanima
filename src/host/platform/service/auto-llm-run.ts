@@ -216,10 +216,10 @@ async function runEngineOnce(
       for await (const ev of loopEngine.runStream(messages, {
         model,
         tools,
-        config: deps.engine.config.data,
         logger: deps.engine.logger,
         llm: deps.engine.llm,
         executableTools: input.toolNames,
+        conversationId: "",
         ...omitUndefined({ toolPolicy }),
         max_turns: input.maxTurns,
         hookRegistry: deps.kernel.hookRegistry,

@@ -1,5 +1,6 @@
 export * from "./loop-engine.ts";
 export * from "./llm-debug-snapshot.ts";
+export * from "./conversation-loop-side-effects.ts";
 export {
   runWithToolContext,
   getToolConversationId,

@@ -144,7 +144,7 @@ describePg("tool catalog lazy load", () => {
       await runWithToolContext(
         sid,
         async () => {
-          await engine.run(msgs, { tools, executableTools });
+          await engine.run(msgs, { model: "test-model", tools, executableTools });
         },
         { tools: getTestEngine().toolSets, executableTools },
       );

@@ -35,6 +35,6 @@ alwaysApply: false
 | ---- | ---- |
 | `src/host/core/compress/compressor.ts` | l-points、`deriveBoundariesFromL4`、`shouldAdvance`、`slimMessage` |
 | `compression-config.ts` / `compression-summary.ts` / `compression-tool-loop.ts` | 配置、summary LLM、`isInToolLoop` |
-| engine turn / conversation / loop | `/summarize`、`recompressConversation`、`maybeApplyEmergencyCompression` |
+| engine turn / conversation / loop | `/summarize`、`recompressConversation`；loop 紧急压缩经 `createConversationAfterMessagesPersisted` 注入（非 loop 内硬调） |
 
 手动：`/compress`（`--force` 忽略滞后）；`/summarize` 见 docs。算法步骤与 legacy meta 迁移以 docs + `compressor.ts` 为准。
