@@ -162,6 +162,30 @@ import type {
   DiarySuggestTagsOutput,
 } from "./frames/diary.ts";
 import type {
+  NoteAppendInput,
+  NoteAppendOutput,
+  NoteBlockCreateInput,
+  NoteBlockCreateOutput,
+  NoteBlockDeleteInput,
+  NoteBlockDeleteOutput,
+  NoteBlockPatchInput,
+  NoteBlockPatchOutput,
+  NoteBlockReorderInput,
+  NoteBlockReorderOutput,
+  NoteCreateInput,
+  NoteCreateOutput,
+  NoteDeleteInput,
+  NoteDeleteOutput,
+  NoteGetInput,
+  NoteGetOutput,
+  NoteListInput,
+  NoteListOutput,
+  NotePatchInput,
+  NotePatchOutput,
+  NoteSearchInput,
+  NoteSearchOutput,
+} from "./frames/note.ts";
+import type {
   CompanionConfigGetInput,
   CompanionConfigGetOutput,
   CompanionConfigUpdateInput,
@@ -298,6 +322,17 @@ export const RPC_PROTOCOL_METHODS = [
   "diary.templatePatch",
   "diary.templateDelete",
   "diary.suggestTags",
+  "note.list",
+  "note.create",
+  "note.append",
+  "note.patch",
+  "note.delete",
+  "note.get",
+  "note.search",
+  "note.blockCreate",
+  "note.blockPatch",
+  "note.blockDelete",
+  "note.blockReorder",
   "vault.list",
   "vault.get",
   "vault.create",
@@ -414,6 +449,17 @@ export type RpcRouterInputs = {
   "diary.templatePatch": DiaryTemplatePatchInput;
   "diary.templateDelete": DiaryTemplateDeleteInput;
   "diary.suggestTags": DiarySuggestTagsInput;
+  "note.list": NoteListInput;
+  "note.create": NoteCreateInput;
+  "note.append": NoteAppendInput;
+  "note.patch": NotePatchInput;
+  "note.delete": NoteDeleteInput;
+  "note.get": NoteGetInput;
+  "note.search": NoteSearchInput;
+  "note.blockCreate": NoteBlockCreateInput;
+  "note.blockPatch": NoteBlockPatchInput;
+  "note.blockDelete": NoteBlockDeleteInput;
+  "note.blockReorder": NoteBlockReorderInput;
   "vault.list": VaultListInput;
   "vault.get": VaultGetInput;
   "vault.create": VaultCreateInput;
@@ -533,6 +579,17 @@ export type RpcRouterOutputs = {
   "diary.templatePatch": DiaryTemplatePatchOutput;
   "diary.templateDelete": DiaryTemplateDeleteOutput;
   "diary.suggestTags": DiarySuggestTagsOutput;
+  "note.list": NoteListOutput;
+  "note.create": NoteCreateOutput;
+  "note.append": NoteAppendOutput;
+  "note.patch": NotePatchOutput;
+  "note.delete": NoteDeleteOutput;
+  "note.get": NoteGetOutput;
+  "note.search": NoteSearchOutput;
+  "note.blockCreate": NoteBlockCreateOutput;
+  "note.blockPatch": NoteBlockPatchOutput;
+  "note.blockDelete": NoteBlockDeleteOutput;
+  "note.blockReorder": NoteBlockReorderOutput;
   "vault.list": VaultListOutput;
   "vault.get": VaultGetOutput;
   "vault.create": VaultCreateOutput;

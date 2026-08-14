@@ -7,11 +7,13 @@ import {
   EMAIL_THREAD_COMPONENT,
   entities,
   DIARY_ENTRY_COMPONENT,
+  NOTE_COMPONENT,
   PROJECT_COMPONENT,
   PROJECT_FOLDER_COMPONENT,
   parseCalendarEventSearchFilters,
   parseContentBlockSearchFilters,
   parseDiaryEntrySearchFilters,
+  parseNoteSearchFilters,
   parseEmailAccountSearchFilters,
   parseEmailMessageSearchFilters,
   parseEmailThreadSearchFilters,
@@ -359,6 +361,14 @@ function buildDiaryEntryBodyConditions(
   return conditions;
 }
 
+function buildNoteBodyConditions(filters: ReturnType<typeof parseNoteSearchFilters>): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
+  return conditions;
+}
+
 function buildCalendarEventBodyConditions(
   filters: ReturnType<typeof parseCalendarEventSearchFilters>,
 ): SQL[] {
@@ -560,6 +570,9 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   }
   if (component === DIARY_ENTRY_COMPONENT) {
     return buildDiaryEntryBodyConditions(parseDiaryEntrySearchFilters(filters));
+  }
+  if (component === NOTE_COMPONENT) {
+    return buildNoteBodyConditions(parseNoteSearchFilters(filters));
   }
   if (component === CALENDAR_EVENT_COMPONENT) {
     return buildCalendarEventBodyConditions(parseCalendarEventSearchFilters(filters));

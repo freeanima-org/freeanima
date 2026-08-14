@@ -19,6 +19,7 @@ const DEFAULT_PRESENT_BY_COMPONENT: Record<string, AnimaPresent> = {
   semantic_memory: "overlay",
   calendar_event: "overlay",
   project: "overlay",
+  note: "navigate",
 };
 
 export function defaultPresentForComponent(component: string | undefined): AnimaPresent {
@@ -139,6 +140,13 @@ function parseShellPathAsAnimaUri(pathWithSearch: string): ParseAnimaUriResult {
     if (id == null) return { ok: false, error: "invalid event id" };
     return { ok: true, ref: { id, component: "calendar_event", present: "navigate" } };
   }
+  if (path === "/note") {
+    const idRaw = url.searchParams.get("id")?.trim();
+    if (!idRaw) return { ok: false, error: "note path missing id" };
+    const id = parsePositiveIntId(idRaw);
+    if (id == null) return { ok: false, error: "invalid id" };
+    return { ok: true, ref: { id, component: "note", present: "navigate" } };
+  }
   return { ok: false, error: "unsupported shell path" };
 }
 
@@ -161,6 +169,9 @@ export function animaUriToShellPath(ref: AnimaUriRef): string | null {
   }
   if (component === "calendar_event") {
     return `/calendar?event=${ref.id}`;
+  }
+  if (component === "note") {
+    return `/note?id=${ref.id}`;
   }
   return null;
 }

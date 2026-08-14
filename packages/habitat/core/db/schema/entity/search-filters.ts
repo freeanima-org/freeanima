@@ -4,6 +4,7 @@ import {
   CALENDAR_EVENT_COMPONENT,
   CONTENT_BLOCK_COMPONENT,
   DIARY_ENTRY_COMPONENT,
+  NOTE_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,
   EMAIL_THREAD_COMPONENT,
@@ -150,6 +151,25 @@ export function parseDiaryEntrySearchFilters(
   const parsed = diaryEntrySearchFiltersSchema.safeParse(raw);
   if (!parsed.success) {
     throw new Error(`invalid diary_entry filters: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+
+export const noteSearchFiltersSchema = z
+  .object({
+    client_op_id: z.string().min(1).optional(),
+  })
+  .strict();
+
+export type NoteSearchFilters = z.infer<typeof noteSearchFiltersSchema>;
+
+export function parseNoteSearchFilters(
+  raw: Record<string, unknown> | undefined,
+): NoteSearchFilters {
+  if (!raw || Object.keys(raw).length === 0) return {};
+  const parsed = noteSearchFiltersSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`invalid note filters: ${parsed.error.message}`);
   }
   return parsed.data;
 }
@@ -312,6 +332,7 @@ export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [TAG_COMPONENT]: tagSearchFiltersSchema,
   [CONTENT_BLOCK_COMPONENT]: contentBlockSearchFiltersSchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntrySearchFiltersSchema,
+  [NOTE_COMPONENT]: noteSearchFiltersSchema,
   [CALENDAR_EVENT_COMPONENT]: calendarEventSearchFiltersSchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountSearchFiltersSchema,
   [EMAIL_THREAD_COMPONENT]: emailThreadSearchFiltersSchema,

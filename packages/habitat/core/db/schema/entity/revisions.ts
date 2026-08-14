@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { CONTENT_BLOCK_COMPONENT } from "./components/content-block.ts";
 import { DIARY_ENTRY_COMPONENT } from "./components/diary-entry.ts";
+import { NOTE_COMPONENT } from "./components/note.ts";
 import { PROJECT_COMPONENT } from "./components/project.ts";
 import { SMART_LIST_COMPONENT } from "./components/smart-list.ts";
 import { TASK_ITEM_COMPONENT } from "./components/task-item.ts";
@@ -22,6 +23,7 @@ export const ENTITY_REVISION_PRIMARY_COMPONENTS = [
   VAULT_ITEM_COMPONENT,
   CONTENT_BLOCK_COMPONENT,
   DIARY_ENTRY_COMPONENT,
+  NOTE_COMPONENT,
   PROJECT_COMPONENT,
   TASK_LIST_COMPONENT,
   SMART_LIST_COMPONENT,

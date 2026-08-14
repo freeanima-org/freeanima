@@ -473,13 +473,13 @@ const SEMANTIC_REF_PARAM = {
 export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "content-block",
-    "Content blocks (CRUD, container list, semantic-component filter, reorder). parent_id scopes to diary_entry container.",
+    "Content blocks (CRUD, container list, semantic-component filter, reorder). parent_id scopes to diary_entry or note container.",
     attachToolReturns(
       [
         {
           name: "content_block_create",
           description:
-            "Create a content_block under a container (parent_id = diary_entry). " +
+            "Create a content_block under a container (parent_id = diary_entry or note). " +
             "limbic/narrative/dream attach is parked by default (#16102); use text/semantic_ref only for new writes.",
           parameters: {
             type: "object",

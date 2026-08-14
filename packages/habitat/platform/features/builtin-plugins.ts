@@ -2,6 +2,7 @@ import type { FeaturePlugin } from "./types.ts";
 import { chatPlugin } from "@freeanima/features/chat/plugin";
 import { habitatPlugin } from "@freeanima/features/habitat/plugin";
 import { diaryPlugin } from "@freeanima/features/diary/plugin";
+import { notePlugin } from "@freeanima/features/note/plugin";
 import { calendarPlugin } from "@freeanima/features/calendar/plugin";
 import { emailPlugin } from "@freeanima/features/email/plugin";
 import { notificationPlugin } from "@freeanima/features/notification/plugin";
@@ -31,6 +32,7 @@ export const builtinFeaturePlugins: FeaturePlugin[] = [
   companionPlugin,
   codingPlugin,
   diaryPlugin,
+  notePlugin,
   calendarPlugin,
   pomodoroPlugin,
   emailPlugin,

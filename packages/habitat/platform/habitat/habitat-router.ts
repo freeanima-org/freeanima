@@ -5,6 +5,7 @@ import { companionHabitatRoutes } from "@freeanima/features/companion/habitat/ro
 import { codingHabitatRoutes } from "@freeanima/features/coding/habitat/routes/index.ts";
 import { habitatCoreRoutes } from "@freeanima/features/habitat/habitat/routes/index.ts";
 import { diaryHabitatRoutes } from "@freeanima/features/diary/habitat/routes/index.ts";
+import { noteHabitatRoutes } from "@freeanima/features/note/habitat/routes/index.ts";
 import { calendarHabitatRoutes } from "@freeanima/features/calendar/habitat/routes/index.ts";
 import { emailHabitatRoutes } from "@freeanima/features/email/habitat/routes/index.ts";
 import { mcpHabitatRoutes } from "@freeanima/features/mcp/habitat/routes/index.ts";
@@ -33,6 +34,7 @@ const featureRouteBundles = [
   bookmarkHabitatRoutes,
   emailHabitatRoutes,
   diaryHabitatRoutes,
+  noteHabitatRoutes,
   calendarHabitatRoutes,
   pomodoroHabitatRoutes,
   notificationHabitatRoutes,
@@ -55,6 +57,7 @@ export type HabitatMethodInputs = InferHabitatInputs<typeof chatHabitatRoutes> &
   InferHabitatInputs<typeof bookmarkHabitatRoutes> &
   InferHabitatInputs<typeof emailHabitatRoutes> &
   InferHabitatInputs<typeof diaryHabitatRoutes> &
+  InferHabitatInputs<typeof noteHabitatRoutes> &
   InferHabitatInputs<typeof calendarHabitatRoutes> &
   InferHabitatInputs<typeof pomodoroHabitatRoutes> &
   InferHabitatInputs<typeof notificationHabitatRoutes> &
@@ -75,6 +78,7 @@ export type HabitatMethodOutputs = InferHabitatOutputs<typeof chatHabitatRoutes>
   InferHabitatOutputs<typeof bookmarkHabitatRoutes> &
   InferHabitatOutputs<typeof emailHabitatRoutes> &
   InferHabitatOutputs<typeof diaryHabitatRoutes> &
+  InferHabitatOutputs<typeof noteHabitatRoutes> &
   InferHabitatOutputs<typeof calendarHabitatRoutes> &
   InferHabitatOutputs<typeof pomodoroHabitatRoutes> &
   InferHabitatOutputs<typeof notificationHabitatRoutes> &

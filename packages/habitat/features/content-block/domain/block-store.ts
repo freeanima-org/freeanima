@@ -4,6 +4,7 @@ import {
   DREAM_COMPONENT,
   LIMBIC_COMPONENT,
   NARRATIVE_COMPONENT,
+  NOTE_COMPONENT,
   SEMANTIC_REF_COMPONENT,
   asContentBlock,
   dreamBodySchema,
@@ -39,7 +40,7 @@ import type {
   ContentBlockUpdateInput,
 } from "./types.ts";
 
-const CONTAINER_COMPONENTS = new Set<string>([DIARY_ENTRY_COMPONENT]);
+const CONTAINER_COMPONENTS = new Set<string>([DIARY_ENTRY_COMPONENT, NOTE_COMPONENT]);
 
 async function assertContainer(parentId: number, worldId: number): Promise<void> {
   const parent = await getEntity(parentId);
@@ -48,7 +49,7 @@ async function assertContainer(parentId: number, worldId: number): Promise<void>
     parent.primary_component == null ||
     !CONTAINER_COMPONENTS.has(parent.primary_component)
   ) {
-    throw new Error("parent must be diary_entry");
+    throw new Error("parent must be diary_entry or note");
   }
   await assertEntityInWorld(parentId, worldId);
 }

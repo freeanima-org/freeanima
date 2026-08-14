@@ -6,6 +6,7 @@ import {
   CONTENT_BLOCK_COMPONENT,
   DIARY_BLOCK_TEMPLATE_COMPONENT,
   DIARY_ENTRY_COMPONENT,
+  NOTE_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,
   EMAIL_THREAD_COMPONENT,
@@ -32,6 +33,7 @@ import {
   contentBlockBodySchema,
   diaryBlockTemplateBodySchema,
   diaryEntryBodySchema,
+  noteBodySchema,
   emailAccountBodySchema,
   emailMessageBodySchema,
   emailThreadBodySchema,
@@ -58,6 +60,7 @@ import {
   type ContentBlockBody,
   type DiaryBlockTemplateBody,
   type DiaryEntryBody,
+  type NoteBody,
   type EmailAccountBody,
   type EmailMessageBody,
   type EmailThreadBody,
@@ -221,6 +224,16 @@ export function asDiaryEntry(
 ): (DiaryEntryBody & { id: number; title: string; content: string; summary: string }) | null {
   if (row.primary_component !== DIARY_ENTRY_COMPONENT) return null;
   const parsed = diaryEntryBodySchema.safeParse(row.body);
+  return parsed.success
+    ? { id: row.id, title: row.title, content: row.content, summary: row.summary, ...parsed.data }
+    : null;
+}
+
+export function asNote(
+  row: EntityRow,
+): (NoteBody & { id: number; title: string; content: string; summary: string }) | null {
+  if (row.primary_component !== NOTE_COMPONENT) return null;
+  const parsed = noteBodySchema.safeParse(row.body);
   return parsed.success
     ? { id: row.id, title: row.title, content: row.content, summary: row.summary, ...parsed.data }
     : null;

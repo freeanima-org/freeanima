@@ -51,6 +51,7 @@ SSOT：`packages/habitat/core/db/schema/entity/revisions.ts`、`updateEntity` /
 | `vault_item`      | 凭证（已有 `vault.history.*` + `/vault` UI） |
 | `content_block`   | 内容块                                       |
 | `diary_entry`     | 日记实体                                     |
+| `note`            | 笔记本实体                                   |
 | `project`         | 项目                                         |
 | `task_list`       | 清单                                         |
 | `smart_list`      | 智能清单                                     |

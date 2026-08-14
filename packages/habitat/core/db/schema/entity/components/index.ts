@@ -18,6 +18,7 @@ import {
 } from "./diary-block-template.ts";
 import { CALENDAR_EVENT_COMPONENT, calendarEventBodySchema } from "./calendar-event.ts";
 import { DIARY_ENTRY_COMPONENT, diaryEntryBodySchema } from "./diary-entry.ts";
+import { NOTE_COMPONENT, noteBodySchema } from "./note.ts";
 import { DREAM_COMPONENT, dreamBodySchema } from "./dream.ts";
 import { EMAIL_ACCOUNT_COMPONENT, emailAccountBodySchema } from "./email-account.ts";
 import { EMAIL_MESSAGE_COMPONENT, emailMessageBodySchema } from "./email-message.ts";
@@ -67,6 +68,7 @@ export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
   [PROJECT_COMPONENT]: 40,
   [TAG_COMPONENT]: 45,
   [DIARY_ENTRY_COMPONENT]: 50,
+  [NOTE_COMPONENT]: 51,
   [CALENDAR_EVENT_COMPONENT]: 52,
   [DIARY_BLOCK_TEMPLATE_COMPONENT]: 55,
   [CODING_NOTE_COMPONENT]: 58,
@@ -126,6 +128,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [PROJECT_COMPONENT]: projectBodySchema,
   [TAG_COMPONENT]: tagBodySchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntryBodySchema,
+  [NOTE_COMPONENT]: noteBodySchema,
   [CALENDAR_EVENT_COMPONENT]: calendarEventBodySchema,
   [DIARY_BLOCK_TEMPLATE_COMPONENT]: diaryBlockTemplateBodySchema,
   [CODING_NOTE_COMPONENT]: codingNoteBodySchema,
@@ -175,6 +178,7 @@ export * from "./project-folder.ts";
 export * from "./project.ts";
 export * from "./tag.ts";
 export * from "./diary-entry.ts";
+export * from "./note.ts";
 export * from "./calendar-event.ts";
 export * from "./diary-block-template.ts";
 export * from "./coding-note.ts";

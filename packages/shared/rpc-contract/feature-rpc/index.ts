@@ -7,6 +7,7 @@ export * from "../frames/subagent.ts";
 export * from "../frames/entity.ts";
 export * from "../frames/vault.ts";
 export * from "../frames/diary.ts";
+export * from "../frames/note.ts";
 export * from "../frames/calendar.ts";
 export * from "../frames/pomodoro.ts";
 export * from "../frames/email.ts";

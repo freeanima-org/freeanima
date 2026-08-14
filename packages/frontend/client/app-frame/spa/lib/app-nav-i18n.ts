@@ -12,6 +12,7 @@ import {
   Mail,
   MessageSquare,
   Settings,
+  StickyNote,
   Timer,
 } from "lucide-react";
 
@@ -102,6 +103,13 @@ export function appNavItems(): AppNavItem[] {
       "/diary",
       shellNavLabel(() => "📔 日记"),
       BookOpen,
+    ),
+    navItem(
+      "notes",
+      "/note",
+      "/note",
+      shellNavLabel(() => "笔记本"),
+      StickyNote,
     ),
     navItem(
       "bookmarks",
