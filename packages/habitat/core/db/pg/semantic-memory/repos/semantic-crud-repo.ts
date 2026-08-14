@@ -104,6 +104,16 @@ function mapDbRow(row: SemanticSelectRow): SemanticMemoryRow {
   return entityToSemanticMemoryRow(entityRow);
 }
 
+function resolveSourceConversations(
+  source: { conversation_id?: string } | null | undefined,
+  source_conversations: string[] | undefined,
+): string[] {
+  const fromField = normalizeSourceSessions(source_conversations);
+  if (fromField.length > 0) return fromField;
+  const cid = source?.conversation_id?.trim();
+  return cid ? [cid] : [];
+}
+
 export async function createSemanticMemory(row: SemanticMemoryCreateInput): Promise<number> {
   const content = row.content.trim();
   if (!content) throw new Error("content is required");
@@ -113,11 +123,13 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
   const now = new Date();
   const created = row.created_at ?? now;
   const updated = row.updated_at ?? created;
-  const source_conversations = normalizeSourceSessions(row.source_conversations);
+  // 缺 source 时仍写 source_conversations（兼容旧路径）
+  const source_conversations = resolveSourceConversations(row.source, row.source_conversations);
   const observed_at = toObservedAtIso(row.observed_at ?? created);
   const occurred_at = row.occurred_at ?? null;
   const status = normalizeStatus(row.status);
   const world_id = resolveAgentWorldId(row.world_id);
+  const links = row.links ?? [];
 
   const entity = await createEntity({
     type: "content",
@@ -129,8 +141,10 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
       memory_kind,
       status,
       source_conversations,
+      links,
       observed_at,
       occurred_at,
+      ...(row.source ? { source: row.source } : {}),
     },
     pinned,
     reference_count: 0,
@@ -162,7 +176,12 @@ export async function updateSemanticMemory(row: SemanticMemoryUpdateInput): Prom
   if (row.type !== undefined) bodyPatch.memory_kind = normalizeSemanticMemoryType(row.type);
   if (row.source_conversations !== undefined) {
     bodyPatch.source_conversations = normalizeSourceSessions(row.source_conversations);
+  } else if (row.source !== undefined) {
+    // 仅传 source 时回填 source_conversations，保持兼容索引
+    bodyPatch.source_conversations = resolveSourceConversations(row.source, undefined);
   }
+  if (row.source !== undefined) bodyPatch.source = row.source;
+  if (row.links !== undefined) bodyPatch.links = row.links;
   if (row.observed_at !== undefined) bodyPatch.observed_at = toObservedAtIso(row.observed_at);
   if (row.occurred_at !== undefined) bodyPatch.occurred_at = row.occurred_at;
   if (row.status !== undefined) bodyPatch.status = normalizeStatus(row.status);

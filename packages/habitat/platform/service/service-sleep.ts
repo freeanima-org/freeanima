@@ -27,9 +27,9 @@ import {
   runSleepStep,
 } from "../boot/pipeline-handlers.ts";
 import {
-  sleepCycleDefinition,
-  SLEEP_CYCLE_PIPELINE_ID,
-  SLEEP_STEP_IDS,
+  memoryMaintenanceDefinition,
+  MEMORY_MAINTENANCE_PIPELINE_ID,
+  MAINTENANCE_STEP_IDS,
 } from "../boot/sleep-cycle.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { listCronJobs } from "./service-status.ts";
@@ -114,7 +114,7 @@ export async function listPipelineStepRuns(
   }
 
   const listOpts: PipelineStepRunListOpts = {
-    pipeline_id: SLEEP_CYCLE_PIPELINE_ID,
+    pipeline_id: MEMORY_MAINTENANCE_PIPELINE_ID,
     limit: opts?.limit ?? 50,
     offset: opts?.offset ?? 0,
     ...omitUndefined({
@@ -131,7 +131,7 @@ export type SleepPipelineStatus = {
   step_running: boolean;
   catch_up_running: boolean;
   pipeline_id: string;
-  definition: typeof sleepCycleDefinition;
+  definition: typeof memoryMaintenanceDefinition;
   last_result: Awaited<ReturnType<typeof runSleepCycle>> | null;
   run_state: PipelineRunState | null;
   catch_up: SleepCatchUpStatus;
@@ -142,8 +142,8 @@ export function getSleepPipelineStatus(): SleepPipelineStatus {
     running: sleepCycleRunning,
     step_running: sleepStepRunning,
     catch_up_running: sleepCatchUpRunning,
-    pipeline_id: SLEEP_CYCLE_PIPELINE_ID,
-    definition: sleepCycleDefinition,
+    pipeline_id: MEMORY_MAINTENANCE_PIPELINE_ID,
+    definition: memoryMaintenanceDefinition,
     last_result: lastSleepCycleResult,
     run_state: readSleepPipelineStatus(),
     catch_up: { ...catchUpStatus },
@@ -200,9 +200,12 @@ export async function startSleepPipelineStep(
     return { ok: false, error: "sleep pipeline already running" };
   }
 
-  const known = sleepCycleDefinition.nodes.some((n) => n.id === opts.stepId);
+  const known =
+    memoryMaintenanceDefinition.nodes.some((n) => n.id === opts.stepId) ||
+    opts.stepId === "light-sleep" ||
+    opts.stepId === "deep-sleep";
   if (!known) {
-    return { ok: false, error: `unknown sleep step: ${opts.stepId}` };
+    return { ok: false, error: `unknown maintenance step: ${opts.stepId}` };
   }
 
   const lock = await acquireSleepPipelineLock();
@@ -279,16 +282,16 @@ export async function startSleepCatchUp(
           catchUpStatus = {
             ...catchUpStatus,
             current_day: day,
-            current_step: SLEEP_STEP_IDS.lightSleep,
+            current_step: MAINTENANCE_STEP_IDS.retainCatchUp,
           };
-          const result = await runSleepStep(SLEEP_STEP_IDS.lightSleep, {
+          const result = await runSleepStep(MAINTENANCE_STEP_IDS.retainCatchUp, {
             day,
             force: true,
             trigger: "catch_up",
           });
           if (!result.ok) {
             throw new Error(
-              result.error ?? result.dependency_error ?? `light-sleep failed for ${day}`,
+              result.error ?? result.dependency_error ?? `retain-catch-up failed for ${day}`,
             );
           }
           catchUpStatus = {
@@ -300,9 +303,9 @@ export async function startSleepCatchUp(
           catchUpStatus = {
             ...catchUpStatus,
             current_day: day,
-            current_step: SLEEP_STEP_IDS.temporalSummaryDay,
+            current_step: MAINTENANCE_STEP_IDS.temporalSummaryDay,
           };
-          const result = await runSleepStep(SLEEP_STEP_IDS.temporalSummaryDay, {
+          const result = await runSleepStep(MAINTENANCE_STEP_IDS.temporalSummaryDay, {
             day,
             force: true,
             trigger: "catch_up",
@@ -323,9 +326,9 @@ export async function startSleepCatchUp(
         catchUpStatus = {
           ...catchUpStatus,
           current_day: day,
-          current_step: SLEEP_STEP_IDS.temporalSummaryCascade,
+          current_step: MAINTENANCE_STEP_IDS.temporalSummaryCascade,
         };
-        const result = await runSleepStep(SLEEP_STEP_IDS.temporalSummaryCascade, {
+        const result = await runSleepStep(MAINTENANCE_STEP_IDS.temporalSummaryCascade, {
           day,
           force: true,
           trigger: "catch_up",

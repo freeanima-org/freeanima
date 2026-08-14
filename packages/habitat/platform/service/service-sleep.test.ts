@@ -19,20 +19,20 @@ const pipelineHandlersOriginal = { ...realPipelineHandlers };
 
 const runSleepCycleMock = mock(async () => ({
   ok: true,
-  pipeline_id: "sleep-cycle",
+  pipeline_id: "memory-maintenance",
   run_id: "test-run",
   day: "2026-06-14",
   status: "completed" as const,
   steps: {
-    "light-sleep": { status: "completed" as const },
+    "retain-catch-up": { status: "completed" as const },
   },
 }));
 
 const runSleepStepMock = mock(async () => ({
   ok: true,
-  step_id: "light-sleep",
+  step_id: "retain-catch-up",
   status: "completed" as const,
-  output: { ok: true, day: "2026-06-14", tool_calls: 3, sessions: 1 },
+  output: { ok: true, day: "2026-06-14", retained: 1, conversations: 1 },
 }));
 
 const pipelineRows: PipelineStepRunRow[] = [];
@@ -104,7 +104,7 @@ describe("service-sleep pipeline runs", () => {
     const { startSleepPipelineStep } = await import("./service-sleep.ts");
 
     const result = await startSleepPipelineStep(deps, {
-      stepId: "light-sleep",
+      stepId: "retain-catch-up",
       day: "2026-06-14",
     });
 
@@ -128,7 +128,7 @@ describe("service-sleep pipeline runs", () => {
     expect(appendPipelineStepRunMock).not.toHaveBeenCalled();
   });
 
-  it("startSleepCatchUp runs light-sleep with catch_up trigger", async () => {
+  it("startSleepCatchUp runs retain-catch-up with catch_up trigger", async () => {
     const deps = createDeps();
     const { startSleepCatchUp, getSleepPipelineStatus } = await import("./service-sleep.ts");
 
@@ -151,7 +151,7 @@ describe("service-sleep pipeline runs", () => {
     });
 
     expect(runSleepStepMock).toHaveBeenCalledWith(
-      "light-sleep",
+      "retain-catch-up",
       expect.objectContaining({
         day: "2026-06-10",
         force: true,
@@ -168,7 +168,7 @@ describe("service-sleep pipeline runs", () => {
       return "notified";
     });
     runSleepStepMock.mockImplementationOnce(async () => {
-      throw new Error("light-sleep boom");
+      throw new Error("retain-catch-up boom");
     });
 
     const deps = createDeps();
@@ -186,7 +186,7 @@ describe("service-sleep pipeline runs", () => {
       setTimeout(r, 80);
     });
 
-    expect(getSleepPipelineStatus().catch_up.error).toContain("light-sleep boom");
+    expect(getSleepPipelineStatus().catch_up.error).toContain("retain-catch-up boom");
     expect(refs.some((r) => r.startsWith("sleep:catch_up_failed:"))).toBe(true);
   });
 
@@ -194,19 +194,19 @@ describe("service-sleep pipeline runs", () => {
     const deps = createDeps();
     const { appendPipelineStepRun } = await import("@freeanima/habitat/core/db/pg/pipeline");
     await appendPipelineStepRun({
-      pipeline_id: "sleep-cycle",
+      pipeline_id: "memory-maintenance",
       run_id: "r1",
-      step_id: "light-sleep",
+      step_id: "retain-catch-up",
       day: "2026-06-14",
       trigger: "manual_step",
       status: "completed",
       finished_at: "2026-06-14T10:00:00+08:00",
-      output: { tool_calls: 2 },
+      output: { retained: 2 },
     });
 
     const { listPipelineStepRuns } = await import("./service-sleep.ts");
     const result = await listPipelineStepRuns(deps, { limit: 10 });
     expect(result.items).toHaveLength(1);
-    expect(result.items[0]?.step_id).toBe("light-sleep");
+    expect(result.items[0]?.step_id).toBe("retain-catch-up");
   });
 });

@@ -9,6 +9,9 @@ export function createEnginePort<I, R>(label: string) {
     resetForTests(): void {
       engineFn = null;
     },
+    isRegistered(): boolean {
+      return engineFn != null;
+    },
     async run(input: I): Promise<R> {
       if (!engineFn) {
         throw new Error(`${label} not configured: call register at service startup`);

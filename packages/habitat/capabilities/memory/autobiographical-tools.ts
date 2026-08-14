@@ -18,6 +18,8 @@ import {
   searchAutobiographicalMemoryFts,
 } from "@freeanima/habitat/core/db/pg/autobiographical-memory";
 
+import { MEMORY_PARKED_WRITE_MESSAGE, resolveActiveMemoryCutoverFlags } from "./service/cutover.ts";
+
 const SIGNIFICANCE_VALUES = ["normal", "milestone", "turning_point"] as const;
 
 function parseStringArray(value: unknown): string[] | undefined {
@@ -107,6 +109,9 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
       required: ["title", "content"],
     },
     handler: async (args: Record<string, unknown>) => {
+      if (resolveActiveMemoryCutoverFlags().park_limbic_dream_narrative) {
+        return toolError(MEMORY_PARKED_WRITE_MESSAGE);
+      }
       const title = coerceString(args.title ?? "").trim();
       const content = coerceString(args.content ?? "").trim();
       if (!title) return toolError("title is required");

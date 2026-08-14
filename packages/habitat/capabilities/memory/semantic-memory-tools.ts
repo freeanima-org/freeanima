@@ -43,11 +43,17 @@ async function handleCreateSemanticMemory(args: Record<string, unknown>): Promis
   const content = coerceString(args.content ?? "").trim();
   if (!content) return toolError("content is required");
 
+  const { getActiveRetainProvenance } = await import("./service/retain-context.ts");
+  const retainSource = getActiveRetainProvenance();
+
   const row: SemanticMemoryCreateInput = omitUndefined({
     content,
     type: args.type !== undefined ? coerceString(args.type) : undefined,
     pinned: args.pinned !== undefined ? Boolean(args.pinned) : undefined,
-    source_conversations: parseStringArray(args.source_conversations),
+    source_conversations:
+      parseStringArray(args.source_conversations) ??
+      (retainSource ? [retainSource.conversation_id] : undefined),
+    source: retainSource ?? undefined,
     observed_at:
       args.observed_at !== undefined && args.observed_at != null
         ? coerceString(args.observed_at)

@@ -25,7 +25,7 @@ function inprocessLockOpts(id: string): {
   renew?: boolean;
   mode: "try";
 } {
-  if (id === "builtin-sleep-cycle") {
+  if (id === "builtin-memory-maintenance" || id === "builtin-sleep-cycle") {
     return { key: SLEEP_PIPELINE_LOCK_KEY, ttlMs: 3 * HOUR_MS, renew: true, mode: "try" };
   }
   if (id === "builtin-temporal-summary-tick") {
@@ -39,7 +39,7 @@ function inprocessLockOpts(id: string): {
 
 /** 进程内 Bun.cron：不写 cron_jobs / cron_log */
 export const INPROCESS_BUILTIN_DEFS: readonly InprocessBuiltinDef[] = [
-  { id: "builtin-sleep-cycle", name: "sleep-cycle", schedule: "0 2 * * *" },
+  { id: "builtin-memory-maintenance", name: "memory-maintenance", schedule: "0 2 * * *" },
   // task-reminders 已迁 sleep-until-next（task-reminder-scheduler）；保留 handler 供测试手动 fire
   { id: "builtin-env-health", name: "env-health", schedule: "*/5 * * * *" },
   { id: "builtin-email-sync-all", name: "email-sync-all", schedule: "*/5 * * * *" },
@@ -219,8 +219,9 @@ export async function purgeInprocessBuiltinRowsFromPg(): Promise<number> {
     const ok = await deleteCronJob(def.id);
     if (ok) removed += 1;
   }
-  // 已迁 sleep-until-next 的旧分钟 cron 行
+  // 已迁 sleep-until-next 的旧分钟 cron 行；旧 sleep-cycle 行
   if (await deleteCronJob("builtin-task-reminders")) removed += 1;
+  if (await deleteCronJob("builtin-sleep-cycle")) removed += 1;
   return removed;
 }
 

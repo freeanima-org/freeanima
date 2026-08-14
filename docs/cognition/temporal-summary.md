@@ -5,11 +5,12 @@ title: 时间摘要
 # 时间摘要
 
 > 按时间桶对对话活动做客观、无差别的摘要。
+> **#16102：** Temporal **升格为记忆**（自传体时间骨架），进 MemoryService（`temporal.list/get/…`）；本页描述现行存储与 sleep 副产品行为。
 > 相关：[`memory.md`](memory.md)、[`sleep.md`](sleep.md)、[`diary.md`](../modules/diary.md)、[`compression.md`](compression.md)、[`entity-model.md`](../product/entity-model.md)。
 
 ## 命名
 
-**时间摘要**（`temporal_summary`）——按 **日 / 月 / 年** 分桶的**对话内容**摘要。不是记忆分类条目（语义 / 感性 / 叙事），不是日记散文，也不是运行时压缩里的 `summary` 段。
+**时间摘要**（`temporal_summary`）——按 **日 / 月 / 年** 分桶的**对话内容**摘要。目标 taxonomy 中属 **Temporal 记忆**；实现仍多用 `temporal_summary` 组件名。不是日记散文，也不是运行时压缩里的 `summary` 段。
 
 ## 与日记对比
 
@@ -69,7 +70,7 @@ title: 时间摘要
 | ---------- | -------------------------------------------------------- | ------------------------------------------------ |
 | 会话分片   | 进程内 `Bun.cron` `builtin-temporal-summary-tick` `*/30` | 若 watermark 后有 **CST 当日消息活动**则追加分片 |
 | 同伴合摘要 | 同一 tick / 装配时对**已关闭**桶                         | 按观众源集合合并一条同伴摘要 → Redis 缓存        |
-| 全局日     | 睡眠步骤 `temporal-summary-day`（浅睡之后）              | 覆盖该睡眠日的全局 `day` 实体                    |
+| 全局日     | 维护步骤 `temporal-summary-day`（retain 补跑之后）       | 覆盖该日的全局 `day` 实体                        |
 | 月         | 睡眠步骤 `temporal-summary-cascade`，在**月初**（1 日）  | 由该月的日实体生成上月                           |
 | 年         | 同一 cascade，在 **1 月 1 日**                           | 由该年的月实体生成上年                           |
 
@@ -77,7 +78,7 @@ title: 时间摘要
 
 Tick **不用** `conversations.updated_at` 作为候选门槛。候选是：至少有一条消息的 `payload.timestamp` 落在当前 CST 日历日的会话。写入 `temporal_day` **不得** bump `updated_at`。
 
-**全局日选源与 tick 一致**：按该 CST 日是否有消息 timestamp 选会话，**不是** `conversations.updated_at`。浅睡 / 梦境仍可按 `updated_at`，与时间摘要无关。
+**全局日选源与 tick 一致**：按该 CST 日是否有消息 timestamp 选会话，**不是** `conversations.updated_at`。
 
 ### 计入范围
 
@@ -162,8 +163,8 @@ LLM 提示仍要求约 `maxChars` 字。后处理在 `ceil(maxChars * 1.5)` 硬�
 
 若装配后的系统段超过 `system_prompt_max_chars`，栖息地截断并向 **user 与 agent 双方** subject 写入 Inbox 警告（`source_ref` `temporal_summary:system_truncated:{CST_date}`），每个 CST 日最多一次。
 
-## 与睡眠的关系
+## 与记忆维护的关系
 
-全局日覆盖是睡眠周期的**副产品**，不是浅睡语义 / 感性 / 自传阶段的替代。
+全局日覆盖是记忆维护周期的**副产品**，不是 retain 语义抽取的替代。
 
-栖息地 **补睡眠** 会在补缺失浅睡的同时回填缺失的全局 `day` 实体（以及范围内月初的月/年级联）；见 [`sleep.md`](sleep.md) 历史日。
+栖息地 **补跑** 会在补缺失 retain 的同时回填缺失的全局 `day` 实体（以及范围内月初的月/年级联）；见 [`sleep.md`](sleep.md)。

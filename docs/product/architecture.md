@@ -296,14 +296,15 @@ Agent 行为
 
 ## 记忆存储（摘要）
 
-| 认知类型                 | 说明                                                                  |
-| ------------------------ | --------------------------------------------------------------------- |
-| Episodic（情景）         | 对话归档；保留完整历史                                                |
-| Semantic（语义）         | 跨 sessions 的事实、偏好、经历；“how-to” 知识用 **`procedural` 类型** |
-| Limbic（感性）           | 情绪锚点与印记——“感受到什么”                                          |
-| Autobiographical（自传） | 重要经历的意义；按需召回                                              |
+| 认知类型 | 说明                                                        |
+| -------- | ----------------------------------------------------------- |
+| Semantic | 跨会话事实 / 偏好 / 经历 / procedural；MemoryService 主库存 |
+| Temporal | 日/月/年时间骨架（升格中）                                  |
+| Episodic | raw=messages 归档；slim=syncTurn 切片                       |
+| Parked   | limbic / dream / narrative — 目标停写只读                   |
 
-流水线：夜间 **sleep-cycle** 流水线（进程内 `Bun.cron` `builtin-sleep-cycle`）提取并维护记忆；作用域工具（`memory_semantic_search`、`memory_limbic_search`、`memory_autobiographical_search`、`conversation_search`）在聊天中按需检索。详情：[`memory.md`](../cognition/memory.md)、[`sleep.md`](../cognition/sleep.md)。
+**程序入口：** `MemoryService`（`embedded` \| `remote` 同契约）。LLM 工具仍是分范围 search（无统一 `memory_recall`）。  
+**巩固流水线：** turn 后 `retain`；夜间 `memory-maintenance`（cleanup / retain 补跑 / reflect / temporal / self）。详情：[`memory.md`](../cognition/memory.md)、[`sleep.md`](../cognition/sleep.md)（旧睡眠已废止）。
 
 ## 保险库与密钥（摘要）
 
@@ -385,11 +386,11 @@ mcp_servers:
 
 **轴：** 执行过程中是否有**用户回合**（不是谁触发的）。聊天室 LLM 请求**互斥**：要么对话路径，要么 AutoLlmRun——永不两者兼用，也无第三种孤儿 `chat()`。
 
-| 种类             | 用户回合 | PG 持久化                                                                 | 进程轨迹          | 睡眠流水线             |
-| ---------------- | -------- | ------------------------------------------------------------------------- | ----------------- | ---------------------- |
-| **Conversation** | 有       | `conversations` + `messages`                                              | 消息归档          | 参与（浅睡、梦境输入） |
-| **AutoLlmRun**   | 无       | `auto_llm_runs` + `auto_llm_messages`，经 `runAutoLlm` / `runAutoLlmChat` | 完整消息转录，TTL | 排除                   |
-| **Script cron**  | 无       | 仅 `cron_log`                                                             | stdout 文件       | 排除                   |
+| 种类             | 用户回合 | PG 持久化                                                                 | 进程轨迹          | 记忆维护流水线      |
+| ---------------- | -------- | ------------------------------------------------------------------------- | ----------------- | ------------------- |
+| **Conversation** | 有       | `conversations` + `messages`                                              | 消息归档          | 参与（retain 补跑） |
+| **AutoLlmRun**   | 无       | `auto_llm_runs` + `auto_llm_messages`，经 `runAutoLlm` / `runAutoLlmChat` | 完整消息转录，TTL | 排除                |
+| **Script cron**  | 无       | 仅 `cron_log`                                                             | stdout 文件       | 排除                |
 
 **对话持久化拆分：** 会话元数据（model、system_prompt、compression、todos、toolsets、…）在 **`conversations` 行**（领域类型 `ConversationMetaMessage`）。转录回合在 **`messages.payload`**（`StoredMessage` = 仅 user/system/assistant/tool）。勿把 meta 建模为消息角色——旧 JSONL 首行 `{ role: "conversation_meta" }` 形态已移除。
 AutoLlmRun 覆盖：cron agent 分支、睡眠 LLM 阶段、对话**标题**生成、**goal_judge**、压缩 / handoff 摘要、**内部 subagent**。一次性侧车用 `runAutoLlmChat`（记录的 `chat()`）；工具循环用 `runAutoLlm`。工具上下文用 `contextKind: auto_llm`，使 `memory_remember` 不附加 `source_conversations`。Cron `no_agent` shell 脚本**不是** AutoLlmRun。绑定策略的 AutoLlm 运行把**具体工具名列表**作为 `tools` 传入（HARD_DENY `toolset_load` / `toolset_unload` / `toolset_search`）。
@@ -489,7 +490,7 @@ settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
 - **`run` / `emit`**：实时派发——先 await 全部 `on` 处理器，再 fire-and-forget `subscribe` 处理器。`emit` 忽略拦截结果。
 - **`llm_kind`**：每个 `on` / `subscribe`（`conversation` | `auto_llm` | `all`）与每个 `run` / `emit`（`conversation` | `auto_llm`；永不 `all`）必填。处理器按注册范围过滤；运行种类注入处理器上下文为 `llm_kind`。以此避免对话提示段（技能目录、env-health、…）泄漏到 AutoLlm / subagent 运行。
 
-**Pipeline Runner** 仍独立：后台周期（sleep-cycle）的显式 DAG。状态在 `~/.anima/runtime/pipeline_*_run.json`。
+**Pipeline Runner** 仍独立：后台周期（`memory-maintenance`）的显式 DAG。状态在 `~/.anima/runtime/pipeline_*_run.json`。
 
 互补：Pipeline = 调度的多步后台工作；HookRegistry `on` =「可否继续 / 变更」；`subscribe` = 进程内通知。UI 除 `subscribe` 外仍常直接使用 `onConversationUpdated` 回调。
 

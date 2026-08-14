@@ -4,7 +4,7 @@ import { appendPipelineStepRun } from "@freeanima/habitat/core/db/pg/pipeline";
 import { formatCstIso } from "@freeanima/habitat/core/util";
 import { getPipelineRunner } from "@freeanima/habitat/engine/pipeline";
 
-import { SLEEP_CYCLE_PIPELINE_ID } from "../boot/sleep-cycle.ts";
+import { MEMORY_MAINTENANCE_PIPELINE_ID } from "../boot/sleep-cycle.ts";
 
 function outputToRecord(output: unknown): Record<string, unknown> | null {
   if (output == null) return null;
@@ -14,11 +14,11 @@ function outputToRecord(output: unknown): Record<string, unknown> | null {
   return { value: output };
 }
 
-/** 注册 sleep-cycle 流水线节点执行持久化 */
+/** 注册 memory-maintenance 流水线节点执行持久化 */
 export function registerSleepPipelineStepRecorder(): void {
   const runner = getPipelineRunner();
   runner.setStepFinishedListener(async (event: PipelineStepFinishedEvent) => {
-    if (event.pipeline_id !== SLEEP_CYCLE_PIPELINE_ID) return;
+    if (event.pipeline_id !== MEMORY_MAINTENANCE_PIPELINE_ID) return;
     if (!isPostgresPrimary()) return;
 
     const day = event.day?.trim();

@@ -3,25 +3,10 @@ import { getProfileHopModel } from "@freeanima/habitat/core/config";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { applyDeepSleepToolResult } from "@freeanima/habitat/capabilities/memory";
 import {
-  registerLightSleepEngine,
-  type LightSleepEngineInput,
-  type LightSleepEngineResult,
-} from "@freeanima/habitat/capabilities/memory/light-sleep-port";
-import {
-  registerDeepSleepEngine,
-  type DeepSleepEngineInput,
-  type DeepSleepEngineResult,
-} from "@freeanima/habitat/capabilities/memory/deep-sleep-port";
-import {
   registerAutobiographyEngine,
   type AutobiographyEngineInput,
   type AutobiographyEngineResult,
 } from "@freeanima/habitat/capabilities/memory/autobiography-port";
-import {
-  registerDreamEngine,
-  type DreamEngineInput,
-  type DreamEngineResult,
-} from "@freeanima/habitat/capabilities/memory/dream-engine-port";
 import {
   registerTemporalSummaryEngine,
   type TemporalSummaryEngineInput,
@@ -32,6 +17,16 @@ import {
   type SelfLayerRefreshEngineInput,
   type SelfLayerRefreshEngineResult,
 } from "@freeanima/habitat/capabilities/self/refresh-engine-port";
+import {
+  registerRetainLlm,
+  type RetainLlmInput,
+  type RetainLlmResult,
+} from "@freeanima/habitat/capabilities/memory/service/retain-llm-port";
+import {
+  registerReflectLlm,
+  type ReflectLlmInput,
+  type ReflectLlmResult,
+} from "@freeanima/habitat/capabilities/memory/service/reflect-llm-port";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
@@ -39,8 +34,8 @@ import { filterToolNamesByPolicy, resolveSleepCapabilityPolicy } from "./capabil
 import { runAutoLlm } from "./auto-llm-run.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
-const LIGHT_SLEEP_MAX_TURNS = 50;
-const DEEP_SLEEP_MAX_TURNS = 100;
+const RETAIN_MAX_TURNS = 50;
+const REFLECT_MAX_TURNS = 100;
 
 const SEMANTIC_MEMORY_WRITE_TOOLS = new Set([
   "memory_semantic_create",
@@ -62,25 +57,13 @@ function extractSemanticMemoryId(toolName: string, content: string): number | nu
   }
 }
 
-function extractLimbicMemoryId(toolName: string, content: string): string | null {
-  if (toolName !== "memory_limbic_create") return null;
-  try {
-    const parsed = JSON.parse(content) as Record<string, unknown>;
-    if (parsed.error) return null;
-    const id = coerceString(parsed.id ?? "").trim();
-    return id || null;
-  } catch {
-    return null;
-  }
-}
-
-type SleepStreamInput = {
+type ReflectStreamInput = {
   systemPrompt: string;
   userMessages: string[];
   toolNames: string[];
 };
 
-type SleepStreamOptions = {
+type ReflectStreamOptions = {
   runKind: string;
   runName: string;
   maxTurns: number;
@@ -88,10 +71,10 @@ type SleepStreamOptions = {
   onToolResult?: (name: string, content: string) => void;
 };
 
-async function runSleepStream(
+async function runReflectStream(
   deps: FullRuntimeDeps,
-  input: SleepStreamInput,
-  opts: SleepStreamOptions,
+  input: ReflectStreamInput,
+  opts: ReflectStreamOptions,
 ): Promise<{ summary: string; toolCalls: number }> {
   const model = getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT);
   const sleepPolicy = resolveSleepCapabilityPolicy(deps);
@@ -120,85 +103,16 @@ async function runSleepStream(
   return { summary: result.output.slice(0, 2000), toolCalls: result.toolCalls };
 }
 
-async function runLightSleepTurn(
-  deps: FullRuntimeDeps,
-  input: LightSleepEngineInput,
-): Promise<LightSleepEngineResult> {
-  const semanticMemoryIds: number[] = [];
-  const limbicMemoryIds: string[] = [];
-  const { summary, toolCalls } = await runSleepStream(deps, input, {
-    runKind: "light-sleep",
-    runName: `light-sleep/${input.stage}`,
-    maxTurns: LIGHT_SLEEP_MAX_TURNS,
-    metadata: { stage: input.stage },
-    onToolResult: (name, content) => {
-      const semanticId = extractSemanticMemoryId(name, content);
-      if (semanticId && !semanticMemoryIds.includes(semanticId)) {
-        semanticMemoryIds.push(semanticId);
-      }
-      const limbicId = extractLimbicMemoryId(name, content);
-      if (limbicId && !limbicMemoryIds.includes(limbicId)) {
-        limbicMemoryIds.push(limbicId);
-      }
-    },
-  });
-  return {
-    summary,
-    tool_calls: toolCalls,
-    semantic_memory_ids: semanticMemoryIds,
-    limbic_memory_ids: limbicMemoryIds,
-  };
-}
-
-async function runDeepSleepTurn(
-  deps: FullRuntimeDeps,
-  input: DeepSleepEngineInput,
-): Promise<DeepSleepEngineResult> {
-  const { summary, toolCalls } = await runSleepStream(deps, input, {
-    runKind: "deep-sleep",
-    runName: `deep-sleep/${input.round}`,
-    maxTurns: DEEP_SLEEP_MAX_TURNS,
-    metadata: { round: input.round },
-    onToolResult: (name, content) => {
-      if (input.changeLog) {
-        applyDeepSleepToolResult(input.changeLog, name, content);
-      }
-    },
-  });
-  return { summary, tool_calls: toolCalls };
-}
-
 async function runAutobiographyTurn(
   deps: FullRuntimeDeps,
   input: AutobiographyEngineInput,
 ): Promise<AutobiographyEngineResult> {
-  const { summary, toolCalls } = await runSleepStream(deps, input, {
+  const { summary, toolCalls } = await runReflectStream(deps, input, {
     runKind: "self-autobiography",
     runName: "self-autobiography",
     maxTurns: 20,
   });
   return { summary, tool_calls: toolCalls };
-}
-
-async function runDreamTurn(
-  deps: FullRuntimeDeps,
-  input: DreamEngineInput,
-): Promise<DreamEngineResult> {
-  const result = await runAutoLlm(deps, {
-    runName: "dream",
-    runKind: "dream",
-    subjectId: getResolvedWorldContext().agent_subject_id,
-    systemPrompt: input.systemPrompt,
-    userMessages: [input.userMessage],
-    model: getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT),
-    toolNames: [],
-    maxTurns: 1,
-    metadata: { dream: true },
-  });
-  if (result.status === "error") {
-    throw new Error(result.error ?? "dream LLM failed");
-  }
-  return { content: result.output.trim() };
 }
 
 async function runTemporalSummaryTurn(
@@ -243,12 +157,53 @@ async function runSelfLayerRefreshTurn(
   return { content: result.output.trim() };
 }
 
-/** Register light/deep/autobiography/dream/temporal-summary/self-layer-refresh LLM engines */
+async function runReflectTurn(
+  deps: FullRuntimeDeps,
+  input: ReflectLlmInput,
+): Promise<ReflectLlmResult> {
+  const { summary, toolCalls } = await runReflectStream(deps, input, {
+    runKind: "memory-reflect",
+    runName: `memory-reflect/${input.round}`,
+    maxTurns: REFLECT_MAX_TURNS,
+    metadata: { reflect: true, round: input.round },
+    onToolResult: (name, content) => {
+      if (input.changeLog) {
+        applyDeepSleepToolResult(input.changeLog, name, content);
+      }
+    },
+  });
+  return { summary, tool_calls: toolCalls };
+}
+
+async function runRetainTurn(
+  deps: FullRuntimeDeps,
+  input: RetainLlmInput,
+): Promise<RetainLlmResult> {
+  const semanticMemoryIds: number[] = [];
+  const { summary, toolCalls } = await runReflectStream(deps, input, {
+    runKind: "memory-retain",
+    runName: "memory-retain",
+    maxTurns: RETAIN_MAX_TURNS,
+    metadata: { retain: true },
+    onToolResult: (name, content) => {
+      const semanticId = extractSemanticMemoryId(name, content);
+      if (semanticId && !semanticMemoryIds.includes(semanticId)) {
+        semanticMemoryIds.push(semanticId);
+      }
+    },
+  });
+  return {
+    summary,
+    tool_calls: toolCalls,
+    semantic_memory_ids: semanticMemoryIds,
+  };
+}
+
+/** Register retain/reflect + autobiography/temporal/self-layer LLM engines */
 export function registerMemoryEngines(deps: FullRuntimeDeps): void {
-  registerLightSleepEngine((input) => runLightSleepTurn(deps, input));
-  registerDeepSleepEngine((input) => runDeepSleepTurn(deps, input));
+  registerRetainLlm((input) => runRetainTurn(deps, input));
+  registerReflectLlm((input) => runReflectTurn(deps, input));
   registerAutobiographyEngine((input) => runAutobiographyTurn(deps, input));
-  registerDreamEngine((input) => runDreamTurn(deps, input));
   registerTemporalSummaryEngine((input) => runTemporalSummaryTurn(deps, input));
   registerSelfLayerRefreshEngine((input) => runSelfLayerRefreshTurn(deps, input));
 }

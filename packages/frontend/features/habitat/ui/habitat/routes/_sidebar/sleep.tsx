@@ -111,14 +111,22 @@ export const Route = createFileRoute("/_sidebar/sleep")({
 
 function stepLabel(stepId: string): string {
   switch (stepId) {
+    case "retain-catch-up":
     case "light-sleep":
-      return "浅睡";
+      return "Retain 补跑";
+    case "reflect":
     case "deep-sleep":
-      return "深睡";
+      return "Reflect 巩固";
     case "dream":
-      return "梦境";
+      return "梦境（已废止）";
     case "memory-ref-sync":
-      return "记忆引用同步";
+      return "引用同步（已废止）";
+    case "conversation-cleanup":
+      return "会话清理";
+    case "temporal-summary-day":
+      return "日编年";
+    case "temporal-summary-cascade":
+      return "编年级联";
     case "self-layer-refresh":
       return "自我层刷新";
     default:
@@ -358,7 +366,8 @@ function SleepPage() {
           step_id: stepId,
           day: pipelineDay.trim() || undefined,
           force: pipelineForce,
-          deep_sleep_mode: stepId === "deep-sleep" ? deepSleepMode : undefined,
+          deep_sleep_mode:
+            stepId === "deep-sleep" || stepId === "reflect" ? deepSleepMode : undefined,
         }),
       );
       await refreshPipelineStatus();
@@ -393,9 +402,9 @@ function SleepPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">{"😴 睡眠"}</h2>
+      <h2 className="text-lg font-bold mb-1">{"记忆维护"}</h2>
       <p className="text-sm text-muted-foreground mb-4">
-        {"睡眠周期状态、手动运行与流水线步骤历史。"}
+        {"维护管线状态、手动运行与步骤历史（原睡眠周期；巩固已迁 retain/reflect）。"}
       </p>
 
       <Card className="bg-muted py-0 mb-4">
@@ -413,7 +422,7 @@ function SleepPage() {
               />
             </FormField>
             <div className="max-w-md">
-              <FormFieldLabel className="text-xs py-0">{"深睡模式"}</FormFieldLabel>
+              <FormFieldLabel className="text-xs py-0">{"Reflect 模式"}</FormFieldLabel>
               <Select
                 selectedKey={deepSleepMode}
                 onSelectionChange={(key) => {
