@@ -153,7 +153,8 @@ export async function serviceDiarySearch(
   assertPg(deps);
   const ctx = await storeContext(deps, input.subject_kind);
   const items = await searchDiaryEntries(ctx, input);
-  return { items };
+  // UI 列表/离线缓存仍按「壳 + 空 blocks」；命中摘要仅经 diary_search 工具返回
+  return { items: items.map((item) => ({ ...item, blocks: [] as typeof item.blocks })) };
 }
 
 export async function serviceDiaryBlockCreate(

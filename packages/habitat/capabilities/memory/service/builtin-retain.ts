@@ -9,9 +9,9 @@ import { updateSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-mem
 
 import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
 import {
-  LIGHT_SLEEP_INSTRUCTION_MESSAGE,
+  RETAIN_INSTRUCTION_MESSAGE,
   formatExistingMemoriesMessage,
-} from "../light-sleep/build-messages.ts";
+} from "../day-window/build-messages.ts";
 import { loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
 
 import { withRetainProvenance } from "./retain-context.ts";
@@ -65,7 +65,7 @@ export async function runBuiltinRetain(input: BuiltinRetainInput): Promise<Built
   const userMessages = [
     formatDialogueFromTexts(texts),
     formatExistingMemoriesMessage(related),
-    LIGHT_SLEEP_INSTRUCTION_MESSAGE,
+    RETAIN_INSTRUCTION_MESSAGE,
   ];
 
   return withRetainProvenance(input.source, async () => {

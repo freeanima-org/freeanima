@@ -22,7 +22,7 @@ export const starlightSidebar = [
         items: [
           { label: "记忆体系", link: "/docs/cognition/memory/" },
           { label: "压缩", link: "/docs/cognition/compression/" },
-          { label: "睡眠机制", link: "/docs/cognition/sleep/" },
+          { label: "记忆维护（原睡眠）", link: "/docs/cognition/sleep/" },
           { label: "梦境", link: "/docs/cognition/dream/" },
           { label: "自我层", link: "/docs/cognition/self-layer/" },
           { label: "时间感知", link: "/docs/cognition/time-perception/" },

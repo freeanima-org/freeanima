@@ -54,8 +54,6 @@ import {
 } from "../habitat-api/handlers/fts.ts";
 import {
   countSemanticMemory,
-  listAutobiographicalMemories,
-  listLimbicMemories,
   listSemanticMemories,
   listTemporalSummaries,
   regenerateTemporalSummary,
@@ -74,14 +72,13 @@ import { getOutpostsStatus } from "../habitat-api/handlers/outposts.ts";
 import { listSelfBlocks } from "../habitat-api/handlers/self.ts";
 import { getHabitatSkill, listHabitatSkills } from "../habitat-api/handlers/skills.ts";
 import {
-  getSleepPipelineStatus,
-  getSleepSummary,
+  getMemoryMaintenanceStatus,
+  getMemoryMaintenanceSummary,
   listCronLogs,
-  listPipelineStepRuns,
-  startSleepCatchUp,
-  startSleepCycle,
-  startSleepPipelineStep,
-} from "../habitat-api/handlers/sleep.ts";
+  startMemoryMaintenanceCatchUp,
+  startMemoryMaintenanceCycle,
+  startMemoryMaintenanceStep,
+} from "../habitat-api/handlers/memory-maintenance.ts";
 import {
   getHealthProbe,
   getStatus,
@@ -389,18 +386,6 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     ),
   ),
   defineHabitatRouteFromDef(
-    "memory.limbicList",
-    habitatMethodDefs["memory.limbicList"],
-    wrapConsoleLegacyHandler((payload) => listLimbicMemories(payload as Record<string, unknown>)),
-  ),
-  defineHabitatRouteFromDef(
-    "memory.autobiographicalList",
-    habitatMethodDefs["memory.autobiographicalList"],
-    wrapConsoleLegacyHandler((payload) =>
-      listAutobiographicalMemories(payload as Record<string, unknown>),
-    ),
-  ),
-  defineHabitatRouteFromDef(
     "entity.searchGet",
     habitatMethodDefs["entity.searchGet"],
     entitySearchHandler,
@@ -497,49 +482,42 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     ),
   ),
   defineHabitatRouteFromDef(
-    "sleep.summary",
-    habitatMethodDefs["sleep.summary"],
-    wrapConsoleLegacyHandler(() => getSleepSummary()),
+    "memoryMaintenance.summary",
+    habitatMethodDefs["memoryMaintenance.summary"],
+    wrapConsoleLegacyHandler(() => getMemoryMaintenanceSummary()),
   ),
   defineHabitatRouteFromDef(
-    "sleep.pipelineRuns",
-    habitatMethodDefs["sleep.pipelineRuns"],
+    "memoryMaintenance.status",
+    habitatMethodDefs["memoryMaintenance.status"],
+    wrapConsoleLegacyHandler(() => getMemoryMaintenanceStatus()),
+  ),
+  defineHabitatRouteFromDef(
+    "memoryMaintenance.runStep",
+    habitatMethodDefs["memoryMaintenance.runStep"],
     wrapConsoleLegacyHandler((payload) =>
-      listPipelineStepRuns(omitUndefined(payload as Record<string, unknown>)),
-    ),
-  ),
-  defineHabitatRouteFromDef(
-    "sleep.pipelineStatus",
-    habitatMethodDefs["sleep.pipelineStatus"],
-    wrapConsoleLegacyHandler(() => getSleepPipelineStatus()),
-  ),
-  defineHabitatRouteFromDef(
-    "sleep.runPipelineStep",
-    habitatMethodDefs["sleep.runPipelineStep"],
-    wrapConsoleLegacyHandler((payload) =>
-      startSleepPipelineStep(
+      startMemoryMaintenanceStep(
         omitUndefined(
           payload as {
             step_id: string;
             day?: string;
             force?: boolean;
-            deep_sleep_mode?: "full" | "incremental";
+            reflect_mode?: "full" | "incremental";
           },
         ),
       ),
     ),
   ),
   defineHabitatRouteFromDef(
-    "sleep.startCycle",
-    habitatMethodDefs["sleep.startCycle"],
+    "memoryMaintenance.startCycle",
+    habitatMethodDefs["memoryMaintenance.startCycle"],
     wrapConsoleLegacyHandler((payload) =>
-      startSleepCycle(omitUndefined(payload as Record<string, unknown>)),
+      startMemoryMaintenanceCycle(omitUndefined(payload as Record<string, unknown>)),
     ),
   ),
   defineHabitatRouteFromDef(
-    "sleep.startCatchUp",
-    habitatMethodDefs["sleep.startCatchUp"],
-    wrapConsoleLegacyHandler(() => startSleepCatchUp()),
+    "memoryMaintenance.startCatchUp",
+    habitatMethodDefs["memoryMaintenance.startCatchUp"],
+    wrapConsoleLegacyHandler(() => startMemoryMaintenanceCatchUp()),
   ),
   defineHabitatRouteFromDef(
     "cronLogs.list",

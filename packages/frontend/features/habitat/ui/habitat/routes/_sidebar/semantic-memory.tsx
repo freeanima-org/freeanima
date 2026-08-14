@@ -1,6 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
-import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useState } from "react";
 import type { SemanticMemoryRow } from "@freeanima/shared/db-shapes";
 import {
   Badge,
@@ -14,6 +14,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Sheet,
+  SheetHeader,
+  SheetTitle,
   Spinner,
   Switch,
   Table,
@@ -26,6 +29,8 @@ import {
 import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
+import { MemoryConsolidationDialog } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryConsolidationDialog.tsx";
+import { PassiveRecallDebugPanel } from "@freeanima/features/habitat/ui/habitat/components/habitat/PassiveRecallDebugPanel.tsx";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import {
   listSemanticMemories,
@@ -52,10 +57,26 @@ type BrowseSortBy = (typeof BROWSE_SORT_OPTIONS)[number];
 type SemanticRow = SemanticMemoryRow & { rank?: number };
 
 export const Route = createFileRoute("/_sidebar/semantic-memory")({
+  validateSearch: (search: Record<string, unknown>): { passive?: "1" } =>
+    omitUndefined({
+      passive:
+        search.passive === "1" || search.passive === 1 || search.passive === true
+          ? ("1" as const)
+          : undefined,
+    }),
   component: SemanticMemoryPage,
 });
 
 function SemanticMemoryPage() {
+  const navigate = useNavigate({ from: Route.fullPath });
+  const { passive } = Route.useSearch();
+  const [passiveOpen, setPassiveOpen] = useState(passive === "1");
+  const [consolidationOpen, setConsolidationOpen] = useState(false);
+
+  useEffect(() => {
+    setPassiveOpen(passive === "1");
+  }, [passive]);
+
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("active");
@@ -71,6 +92,14 @@ function SemanticMemoryPage() {
   const [toggling, setToggling] = useState<Record<string, boolean>>({});
 
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
+
+  const setPassiveSheetOpen = (open: boolean) => {
+    setPassiveOpen(open);
+    void navigate({
+      search: (prev) => omitUndefined({ ...prev, passive: open ? ("1" as const) : undefined }),
+      replace: true,
+    });
+  };
 
   const fetchList = useCallback(
     async (nextOffset: number) => {
@@ -136,10 +165,34 @@ function SemanticMemoryPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">{"📝 语义记忆"}</h2>
-      <p className="text-sm text-muted-foreground mb-4">
-        {"浏览 PG semantic_memory 表，支持 FTS 搜索与过滤。"}
-      </p>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold mb-1">{"📝 语义记忆"}</h2>
+          <p className="text-sm text-muted-foreground">
+            {"浏览 PG semantic_memory 表，支持 FTS 搜索与过滤。"}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={() => setConsolidationOpen(true)}
+          >
+            {"记忆巩固"}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setPassiveSheetOpen(true)}
+          >
+            {"🔎 被动召回调试"}
+          </Button>
+        </div>
+      </div>
+
+      <MemoryConsolidationDialog open={consolidationOpen} onOpenChange={setConsolidationOpen} />
 
       <form
         className="mb-4"
@@ -337,6 +390,20 @@ function SemanticMemoryPage() {
       ) : (
         <p className="text-sm text-muted-foreground">{"点击「查询」加载列表。"}</p>
       )}
+
+      <Sheet
+        isOpen={passiveOpen}
+        onOpenChange={setPassiveSheetOpen}
+        side="right"
+        className="w-full sm:max-w-xl md:max-w-2xl gap-0 p-0 overflow-hidden"
+      >
+        <SheetHeader className="border-b shrink-0 px-4 py-3">
+          <SheetTitle>{"🔎 被动召回调试"}</SheetTitle>
+        </SheetHeader>
+        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          {passiveOpen ? <PassiveRecallDebugPanel /> : null}
+        </div>
+      </Sheet>
     </div>
   );
 }

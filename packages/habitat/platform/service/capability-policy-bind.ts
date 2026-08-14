@@ -33,7 +33,3 @@ export function resolveInvisibleCapabilityPolicy(
 ): ResolvedCapabilityPolicy {
   return resolveCapabilityPolicy(input, toolSets);
 }
-
-/** @deprecated 兼容旧名 */
-export const resolveSleepMask = resolveSleepCapabilityPolicy;
-export const filterToolNamesByMask = filterToolNamesByPolicy;

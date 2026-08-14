@@ -12,14 +12,14 @@ describe("appendPipelineStepRun attempt", () => {
       nextId += 1;
     };
 
-    await append({ run_id: "run-1", step_id: "light-sleep" });
-    await append({ run_id: "run-1", step_id: "light-sleep" });
-    await append({ run_id: "run-1", step_id: "deep-sleep" });
+    await append({ run_id: "run-1", step_id: "retain-catch-up" });
+    await append({ run_id: "run-1", step_id: "retain-catch-up" });
+    await append({ run_id: "run-1", step_id: "reflect" });
 
     expect(rows).toEqual([
-      { run_id: "run-1", step_id: "light-sleep", attempt: 1 },
-      { run_id: "run-1", step_id: "light-sleep", attempt: 2 },
-      { run_id: "run-1", step_id: "deep-sleep", attempt: 1 },
+      { run_id: "run-1", step_id: "retain-catch-up", attempt: 1 },
+      { run_id: "run-1", step_id: "retain-catch-up", attempt: 2 },
+      { run_id: "run-1", step_id: "reflect", attempt: 1 },
     ]);
     expect(nextId).toBe(3);
   });

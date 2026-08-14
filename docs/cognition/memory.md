@@ -11,11 +11,11 @@ title: 记忆体系
 
 ## 迁移期双轨（重要）
 
-| 轨                             | 状态                                                              | 说明                                            |
-| ------------------------------ | ----------------------------------------------------------------- | ----------------------------------------------- |
-| **MemoryService**              | 生产巩固主路径（retain/reflect + syncTurn）                       | 见本页与 [`sleep.md`](sleep.md)（已废止旧睡眠） |
-| **memory-maintenance**         | 夜间维护 DAG（cleanup / retain 补跑 / reflect / temporal / self） | 原 `sleep-cycle`                                |
-| **limbic / dream / narrative** | **存量只读**；写入已拆除                                          | 列表与 search 保留                              |
+| 轨                             | 状态                                                                                 | 说明                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| **MemoryService**              | 生产巩固主路径（retain/reflect + syncTurn）                                          | 见本页与 [`sleep.md`](sleep.md)（已废止旧睡眠） |
+| **memory-maintenance**         | 夜间顺序维护（cleanup / Retain 缺口检查 / 周一 reflect·self / temporal）；补跑仅手动 | RPC `memoryMaintenance.*`                       |
+| **limbic / dream / narrative** | **存量只读**；写入已拆除                                                             | 列表与 search 保留                              |
 
 ---
 
@@ -81,7 +81,7 @@ links: Array<{ type: "merged_from"|"supersedes"|"conflicts_with"|"derived_from";
 
 硬依赖：PG、SearchBackend、LLM EnginePort。  
 可选：Redis、identity 透镜。  
-不依赖：Habitat UI、浅深睡（切流后）、limbic/dream 写入、Self 写入。
+不依赖：Habitat UI、retain/reflect（切流后）、limbic/dream 写入、Self 写入。
 
 最小可测：`MemoryService + PG + SearchBackend + LLM`（±Redis）。
 
@@ -147,8 +147,8 @@ LLM **没有** `memory_recall` 跨类型工具。程序侧 `MemoryService.recall
 ## 六、实现分期
 
 1. Spec + MemoryService 外壳（本页 + `createEmbeddedMemoryService`）
-2. retain；与 sleep **并行**（不停浅睡）
-3. reflect + temporal；**cutover** 停浅/深睡；park limbic/dream/narrative 写入
+2. retain（热路径 `syncTurn`）
+3. reflect + temporal；**cutover** park limbic/dream/narrative 写入
 4. MCP / embedded|remote / standalone harness
 5. 删 `memory_references`；cite 收尾；文档与门禁
 

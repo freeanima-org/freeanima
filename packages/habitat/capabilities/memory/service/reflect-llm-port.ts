@@ -1,7 +1,7 @@
 /**
  * Reflect 的 LLM 薄端口（四轮巩固；策略在 builtin-reflect）。
  */
-import type { DeepSleepChangeLog, DeepSleepRound } from "../deep-sleep/types.ts";
+import type { DeepSleepChangeLog, DeepSleepRound } from "../reflect/types.ts";
 import { createEnginePort } from "../engine-port-registry.ts";
 
 export type ReflectLlmInput = {

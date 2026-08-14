@@ -71,6 +71,9 @@ describePg("diary container + text blocks", () => {
 
     const found = await searchDiaryEntries(ctx, { query: "第二段", limit: 10 });
     expect(found.some((e) => e.id === entry.id)).toBe(true);
+    const hit = found.find((e) => e.id === entry.id);
+    expect(hit?.blocks.some((b) => b.content.includes("第二段"))).toBe(true);
+    expect(hit?.blocks.every((b) => b.parent_id === entry.id)).toBe(true);
 
     const ok = await deleteDiaryEntry(ctx, entry.id);
     expect(ok).toBe(true);

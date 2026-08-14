@@ -28,7 +28,7 @@ import * as memory from "./service-memory.ts";
 import * as selfLayer from "./service-self.ts";
 import * as fts from "./service-fts.ts";
 import * as promptDebug from "./service-prompt-debug.ts";
-import * as sleep from "./service-sleep.ts";
+import * as memoryMaintenance from "./service-memory-maintenance.ts";
 import * as autoLlmRuns from "./service-auto-llm-runs.ts";
 import * as messaging from "./service-messaging.ts";
 import { omitUndefined } from "@freeanima/habitat/core/util";
@@ -442,14 +442,6 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return memory.updateSemanticMemoryPinned(this.runtimeDeps(), id, pinned);
   }
 
-  listLimbicMemories(args?: Parameters<typeof memory.listLimbicMemories>[1]) {
-    return memory.listLimbicMemories(this.runtimeDeps(), args);
-  }
-
-  listAutobiographicalMemories(args?: Parameters<typeof memory.listAutobiographicalMemories>[1]) {
-    return memory.listAutobiographicalMemories(this.runtimeDeps(), args);
-  }
-
   getFtsStatus(): Promise<fts.FtsStatusSnapshot> {
     return fts.getFtsStatus(this.runtimeDeps());
   }
@@ -507,32 +499,32 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return status.deleteCronJob(jobId);
   }
 
-  getSleepSummary() {
-    return sleep.getSleepSummary();
+  getMemoryMaintenanceSummary() {
+    return memoryMaintenance.getMemoryMaintenanceSummary();
   }
 
-  listPipelineStepRuns(opts?: Parameters<typeof sleep.listPipelineStepRuns>[1]) {
-    return sleep.listPipelineStepRuns(this.runtimeDeps(), opts);
+  listCronLogs(opts?: Parameters<typeof memoryMaintenance.listCronLogs>[1]) {
+    return memoryMaintenance.listCronLogs(this.runtimeDeps(), opts);
   }
 
-  listCronLogs(opts?: Parameters<typeof sleep.listCronLogs>[1]) {
-    return sleep.listCronLogs(this.runtimeDeps(), opts);
+  getMemoryMaintenanceStatus() {
+    return memoryMaintenance.getMemoryMaintenanceStatus();
   }
 
-  getSleepPipelineStatus() {
-    return sleep.getSleepPipelineStatus();
+  startMemoryMaintenanceCycle(
+    opts?: Parameters<typeof memoryMaintenance.startMemoryMaintenanceCycle>[1],
+  ) {
+    return memoryMaintenance.startMemoryMaintenanceCycle(this.runtimeDeps(), opts);
   }
 
-  startSleepCycle(opts?: Parameters<typeof sleep.startSleepCycle>[1]) {
-    return sleep.startSleepCycle(this.runtimeDeps(), opts);
+  startMemoryMaintenanceStep(
+    opts: Parameters<typeof memoryMaintenance.startMemoryMaintenanceStep>[1],
+  ) {
+    return memoryMaintenance.startMemoryMaintenanceStep(this.runtimeDeps(), opts);
   }
 
-  startSleepPipelineStep(opts: Parameters<typeof sleep.startSleepPipelineStep>[1]) {
-    return sleep.startSleepPipelineStep(this.runtimeDeps(), opts);
-  }
-
-  startSleepCatchUp() {
-    return sleep.startSleepCatchUp(this.runtimeDeps());
+  startMemoryMaintenanceCatchUp() {
+    return memoryMaintenance.startMemoryMaintenanceCatchUp(this.runtimeDeps());
   }
 
   listAutoLlmRuns(opts?: Parameters<typeof autoLlmRuns.listAutoLlmRuns>[1]) {

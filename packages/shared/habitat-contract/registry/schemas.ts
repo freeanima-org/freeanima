@@ -1,12 +1,10 @@
 /** Habitat protocol schemas — migrated from habitat-api/api/schemas.ts */
 export {
-  autobiographicalMemoryListBodySchema,
   createConversationBodySchema,
   entityIdParamsSchema,
   entityListQuerySchema,
   entitySearchBodySchema,
   entitySearchQuerySchema,
-  limbicMemoryListBodySchema,
   memorySearchBodySchema,
   messagesQuerySchema,
   passiveRecallDebugBodySchema,

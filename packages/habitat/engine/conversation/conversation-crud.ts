@@ -668,7 +668,7 @@ export async function rollbackBeforeLastUser(conversationId: string): Promise<vo
   await pgWriteTruncate(conversationId, keepThroughPos);
 }
 
-/** Default minimum age before a stale conversation may be deleted by sleep-cycle cleanup */
+/** Default minimum age before a stale conversation may be deleted by memory-maintenance cleanup */
 export const STALE_SESSION_MIN_AGE_MS = 24 * 60 * 60 * 1000;
 
 export type CleanupStaleConversationsResult = {

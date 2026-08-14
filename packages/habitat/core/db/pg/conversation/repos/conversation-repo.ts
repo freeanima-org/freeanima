@@ -652,7 +652,7 @@ export async function getEarliestConversationDay(): Promise<string | null> {
 
 /**
  * CST calendar days YYYY-MM-DD with conversation.updated_at activity in [fromDay, toDay]
- * (same non-debug / non-cron filter as light-sleep).
+ * (same non-debug / non-cron filter as retain day-window).
  */
 export async function listConversationActivityDays(
   fromDay: string,

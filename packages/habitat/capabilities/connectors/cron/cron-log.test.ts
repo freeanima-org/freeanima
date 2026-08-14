@@ -36,13 +36,13 @@ describe("appendCronRunLog", () => {
     const { appendCronRunLog } = await import("./cron-log.ts");
 
     await appendCronRunLog({
-      job_id: "builtin-light-sleep",
+      job_id: "builtin-memory-maintenance",
       run_count: 1,
       ok: true,
       outputText: JSON.stringify({ ok: true, day: "2026-06-08", tool_calls: 3 }),
     });
     await appendCronRunLog({
-      job_id: "builtin-light-sleep",
+      job_id: "builtin-memory-maintenance",
       run_count: 2,
       ok: false,
       outputText: "ERROR: DrizzleQueryError: bad sql",

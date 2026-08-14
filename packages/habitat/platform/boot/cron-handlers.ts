@@ -1,33 +1,19 @@
 import { registerCronBuiltinHandler } from "@freeanima/habitat/capabilities/connectors/cron";
-import { registerSleepPipeline, runSleepCycle, resolveSleepCycleDay } from "./pipeline-handlers.ts";
+import { runNightlyMemoryMaintenance, resolveMemoryMaintenanceDay } from "./pipeline-handlers.ts";
 import type { Engine } from "@freeanima/habitat/engine";
 
-/** 注册内置 cron handler（睡眠周期 pipeline、邮箱同步） */
+/** 注册内置 cron handler（记忆维护夜间编排、邮箱同步等） */
 export function registerBootCronHandlers(engine: Engine): void {
-  registerSleepPipeline(engine);
-
   registerCronBuiltinHandler("builtin-memory-maintenance", async () => {
-    const result = await runSleepCycle(resolveSleepCycleDay(), { trigger: "scheduled" });
-    return JSON.stringify({
-      ok: result.ok,
-      day: result.day,
-      status: result.status,
-      steps: Object.fromEntries(
-        Object.entries(result.steps).map(([id, s]) => [
-          id,
-          { status: s.status, error: s.error, skipped_reason: s.skipped_reason },
-        ]),
-      ),
+    const result = await runNightlyMemoryMaintenance(engine, {
+      day: resolveMemoryMaintenanceDay(),
+      trigger: "scheduled",
     });
-  });
-  // 兼容旧 id 触发
-  registerCronBuiltinHandler("builtin-sleep-cycle", async () => {
-    const result = await runSleepCycle(resolveSleepCycleDay(), { trigger: "scheduled" });
     return JSON.stringify({
       ok: result.ok,
       day: result.day,
       status: result.status,
-      legacy_alias: "builtin-memory-maintenance",
+      retain_gap: result.retain_gap,
       steps: Object.fromEntries(
         Object.entries(result.steps).map(([id, s]) => [
           id,

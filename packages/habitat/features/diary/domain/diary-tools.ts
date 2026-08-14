@@ -11,6 +11,7 @@ import {
 } from "./entry-store.ts";
 import {
   entryPayload,
+  parseDiarySearchComponent,
   parseTagIds,
   parseTags,
   requireEntryByDate,
@@ -169,6 +170,17 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
   const query = coerceString(args.query ?? "").trim();
   if (!query) return toolError("query is required");
 
+  let component: string | undefined;
+  if (args.component != null && args.component !== "") {
+    const tag = parseDiarySearchComponent(args.component);
+    if (!tag) {
+      return toolError(
+        `invalid component: ${coerceString(args.component)} (expected limbic|narrative|semantic_ref|dream)`,
+      );
+    }
+    component = tag;
+  }
+
   const limit =
     typeof args.limit === "number" && Number.isFinite(args.limit)
       ? Math.max(1, Math.min(50, Math.floor(args.limit)))
@@ -204,6 +216,7 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
             : undefined,
         tag_ids,
         limit,
+        component,
       }),
     );
     return toolResult({
@@ -315,12 +328,21 @@ export function registerDiaryTools(toolSets: ToolSetRegistry): void {
         {
           name: "diary_search",
           description:
-            "Hybrid search diary entries by text query. items.blocks is always []; use diary_get for body text",
+            "Discover diary days with related emotion/autobiography via hybrid text search. " +
+            "Returns diary shells plus hit block summaries in items.blocks (id, components, title, snippet, parent_id). " +
+            "Optional component=limbic|narrative|dream|semantic_ref narrows semantic tags. " +
+            "For fine-grained block retrieval use content_block_search.",
           parameters: {
             type: "object",
             properties: {
               ...WORLD_ID_OPTIONAL,
               query: { type: "string" },
+              component: {
+                type: "string",
+                enum: ["limbic", "narrative", "semantic_ref", "dream"],
+                description:
+                  "Optional semantic tag on content_block (same as content_block_search)",
+              },
               entry_after: { type: "string" },
               entry_before: { type: "string" },
               tags: {

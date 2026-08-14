@@ -274,41 +274,32 @@ export async function deleteCronJob(id: string) {
   return hubCall(habitat().call("status.cronJobDelete", { id }));
 }
 
-export async function getSleepSummary() {
-  return hubCall(habitat().call("sleep.summary", {}));
+export async function getMemoryMaintenanceSummary() {
+  return hubCall(habitat().call("memoryMaintenance.summary", {}));
 }
 
-export async function listPipelineStepRuns(opts?: {
-  step_id?: string;
-  run_id?: string;
-  limit?: number;
-  offset?: number;
-}) {
-  return hubCall(habitat().call("sleep.pipelineRuns", omitUndefined(opts ?? {})));
+export async function getMemoryMaintenanceStatus() {
+  return hubCall(habitat().call("memoryMaintenance.status", {}));
 }
 
-export async function getSleepPipelineStatus() {
-  return hubCall(habitat().call("sleep.pipelineStatus", {}));
-}
-
-export async function startSleepCycle(body?: {
+export async function startMemoryMaintenanceCycle(body?: {
   day?: string;
-  deep_sleep_mode?: "full" | "incremental";
+  reflect_mode?: "full" | "incremental";
 }) {
-  return hubCall(habitat().call("sleep.startCycle", body ?? {}));
+  return hubCall(habitat().call("memoryMaintenance.startCycle", body ?? {}));
 }
 
-export async function startSleepPipelineStep(body: {
+export async function startMemoryMaintenanceStep(body: {
   step_id: string;
   day?: string;
   force?: boolean;
-  deep_sleep_mode?: "full" | "incremental";
+  reflect_mode?: "full" | "incremental";
 }) {
-  return hubCall(habitat().call("sleep.runPipelineStep", body));
+  return hubCall(habitat().call("memoryMaintenance.runStep", body));
 }
 
-export async function startSleepCatchUp() {
-  return hubCall(habitat().call("sleep.startCatchUp", {}));
+export async function startMemoryMaintenanceCatchUp() {
+  return hubCall(habitat().call("memoryMaintenance.startCatchUp", {}));
 }
 
 export async function listCronLogs(opts?: {
@@ -425,27 +416,6 @@ export async function listSemanticMemories(input: {
 
 export async function updateSemanticMemoryPinned(input: { id: number; pinned: boolean }) {
   return hubCall(habitat().call("memory.semanticPin", input));
-}
-
-export async function listLimbicMemories(input: {
-  query?: string;
-  offset?: number;
-  limit?: number;
-  conversation_id?: string;
-  kind?: string;
-}) {
-  return hubCall(habitat().call("memory.limbicList", input as never));
-}
-
-export async function listAutobiographicalMemories(input: {
-  query?: string;
-  offset?: number;
-  limit?: number;
-  status?: string;
-  significance?: string;
-  source_conversation?: string;
-}) {
-  return hubCall(habitat().call("memory.autobiographicalList", input as never));
 }
 
 export async function getFtsStatus() {

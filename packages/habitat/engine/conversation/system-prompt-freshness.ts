@@ -1,6 +1,6 @@
 import { CST_OFFSET_MS } from "@freeanima/habitat/core/util";
 
-/** CST 日界：与 sleep-cycle 对齐，每日 02:00 */
+/** CST 日界：与 memory-maintenance 对齐，每日 02:00 */
 export const SYSTEM_PROMPT_DAY_BOUNDARY_HOUR_CST = 2;
 
 /**

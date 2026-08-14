@@ -33,8 +33,6 @@ export {
   getTemporalSystemRollBatchStatus,
   countSemanticMemory,
   listSemanticMemories,
-  listLimbicMemories,
-  listAutobiographicalMemories,
   updateSemanticMemoryPinned,
 } from "./memory.ts";
 export { getPromptDebug } from "./prompt.ts";
@@ -43,7 +41,14 @@ export { getMcpStatus, mcpStartAll, mcpStopAll, mcpStartServer, mcpStopServer } 
 export { getOutpostsStatus } from "./outposts.ts";
 export { iterateConversationEvents } from "./conversation-events.ts";
 export { getFtsStatus, startRebuildFtsIndex, getRebuildFtsJobStatus } from "./fts.ts";
-export { getSleepSummary, listPipelineStepRuns, listCronLogs } from "./sleep.ts";
+export {
+  getMemoryMaintenanceSummary,
+  listCronLogs,
+  getMemoryMaintenanceStatus,
+  startMemoryMaintenanceCycle,
+  startMemoryMaintenanceStep,
+  startMemoryMaintenanceCatchUp,
+} from "./memory-maintenance.ts";
 export { listAutoLlmRuns, getAutoLlmRun } from "./auto-llm-runs.ts";
 export {
   listWorldEntities,

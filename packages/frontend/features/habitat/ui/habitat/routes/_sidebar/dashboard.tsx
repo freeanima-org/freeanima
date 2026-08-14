@@ -193,7 +193,8 @@ function DashboardPage() {
           <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
             <h3 className="text-sm font-semibold text-muted-foreground">{"记忆体系"}</h3>
             <Link
-              to="/passive-recall"
+              to="/semantic-memory"
+              search={{ passive: "1" }}
               className="text-primary underline-offset-4 hover:underline text-xs"
             >
               {"🔎 被动召回调试"}

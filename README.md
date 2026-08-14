@@ -24,14 +24,14 @@ The technical stack (layered memory, self layer, flat tool registry, Gateway, Va
 
 ## Capabilities
 
-| Area            | Highlights                                                                                             |
-| --------------- | ------------------------------------------------------------------------------------------------------ |
-| **Memory**      | Conversation archive → light-sleep → semantic / episodic / procedural + limbic; PG FTS / hybrid recall |
-| **Self layer**  | Six-block persistent identity (`self_blocks`)                                                          |
-| **Tools**       | Flat registry: local / MCP / ACP; Capability Policy (skill allow + caller deny)                        |
-| **Gateway**     | Discord · WeChat · Chat                                                                                |
-| **Credentials** | Vault (User/Agent libraries); runtime `vault()` / `env()`; LLM sees metadata, not values               |
-| **Runtime**     | Bun Habitat: Habitat RPC REST/WS `/rpc/v1` + SAP `/sap/v1` + Pipeline Runner (sleep, cron)             |
+| Area            | Highlights                                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------------------- |
+| **Memory**      | Conversation archive → retain/reflect → semantic + limbic (parked writes); PG FTS / hybrid recall       |
+| **Self layer**  | Six-block persistent identity (`self_blocks`)                                                           |
+| **Tools**       | Flat registry: local / MCP / ACP; Capability Policy (skill allow + caller deny)                         |
+| **Gateway**     | Discord · WeChat · Chat                                                                                 |
+| **Credentials** | Vault (User/Agent libraries); runtime `vault()` / `env()`; LLM sees metadata, not values                |
+| **Runtime**     | Bun Habitat: Habitat RPC REST/WS `/rpc/v1` + SAP `/sap/v1` + Pipeline Runner (memory-maintenance, cron) |
 
 ## Architecture at a glance
 

@@ -12,6 +12,8 @@ import {
   asContentBlock,
 } from "@freeanima/habitat/core/db/schema/entity";
 import { formatCstIso } from "@freeanima/habitat/core/util";
+import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
+import { resolveMemoryCutoverFlags } from "@freeanima/habitat/core/config/schemas/memory-config.ts";
 import {
   createEntity,
   getEntity,
@@ -21,6 +23,18 @@ import {
 import { ensureDiaryEntryForDay } from "@freeanima/habitat/core/db/pg/diary";
 import { findDiaryIdOnly } from "./diary-lookup.ts";
 
+const PARKED_WRITE_MESSAGE =
+  "该记忆类型已 park（#16102）：limbic / dream / narrative 停写，存量只读";
+
+function assertNotParkedSemanticWrite(): void {
+  let parked: boolean;
+  try {
+    parked = resolveMemoryCutoverFlags(getActiveRuntimeConfig().data).park_limbic_dream_narrative;
+  } catch {
+    parked = resolveMemoryCutoverFlags(null).park_limbic_dream_narrative;
+  }
+  if (parked) throw new Error(PARKED_WRITE_MESSAGE);
+}
 export type MemoryBrickRow = {
   id: number;
   world_id: number;
@@ -144,6 +158,7 @@ export async function createLimbicBrick(
   worldId: number,
   input: LimbicBrickCreateInput,
 ): Promise<MemoryBrickRow> {
+  assertNotParkedSemanticWrite();
   const day = input.day ?? formatCstIso(new Date()).slice(0, 10);
   const diary = await ensureDiaryEntryForDay(worldId, day);
   const sort_order = await nextSortOrder(worldId, diary.id);
@@ -182,6 +197,7 @@ export async function createNarrativeBrick(
   worldId: number,
   input: NarrativeBrickCreateInput,
 ): Promise<MemoryBrickRow> {
+  assertNotParkedSemanticWrite();
   const day = input.day ?? formatCstIso(new Date()).slice(0, 10);
   const diary = await ensureDiaryEntryForDay(worldId, day);
   const sort_order = await nextSortOrder(worldId, diary.id);
@@ -219,6 +235,7 @@ export async function createDreamBrick(
   worldId: number,
   input: DreamBrickCreateInput,
 ): Promise<MemoryBrickRow> {
+  assertNotParkedSemanticWrite();
   const existing = await getDreamBrickByDay(worldId, input.day);
   if (existing) {
     throw new Error(`dream already exists for ${input.day}`);

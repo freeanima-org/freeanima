@@ -1,16 +1,5 @@
-import type { AutobiographicalListOpts } from "@freeanima/habitat/core/db/pg/autobiographical-memory/types";
-import type {
-  AutobiographicalMemoryRow,
-  LimbicMemoryRow,
-  SemanticFtsHit,
-} from "@freeanima/habitat/core/db/schema/rows";
-import type { LimbicListOpts } from "@freeanima/habitat/core/db/pg/limbic-memory/types";
+import type { SemanticFtsHit } from "@freeanima/habitat/core/db/schema/rows";
 import type { SemanticMemorySearchOpts } from "@freeanima/habitat/core/db/pg/semantic-memory/types";
-import {
-  countAutobiographicalMemory,
-  listAutobiographicalMemory,
-} from "@freeanima/habitat/core/db/pg/autobiographical-memory";
-import { countLimbicMemory, listLimbicMemory } from "@freeanima/habitat/core/db/pg/limbic-memory";
 import {
   countSemanticMemory,
   countSemanticMemorySearch,
@@ -370,39 +359,4 @@ export async function updateSemanticMemoryPinned(
 
   await updateSemanticMemory({ id: existing.id, pinned });
   return { ok: true, id: existing.id, pinned };
-}
-
-export async function listLimbicMemories(
-  _deps: RuntimeDeps,
-  args: LimbicListOpts = {},
-): Promise<MemoryListResult<LimbicMemoryRow>> {
-  const { offset, limit } = clampPagination(args.offset, args.limit);
-  const filterOpts: Omit<LimbicListOpts, "offset" | "limit"> = omitUndefined({
-    query: args.query,
-    conversation_id: args.conversation_id,
-    kind: args.kind,
-  });
-  const [items, total] = await Promise.all([
-    listLimbicMemory({ ...filterOpts, offset, limit }),
-    countLimbicMemory(filterOpts),
-  ]);
-  return { items, total, offset, limit };
-}
-
-export async function listAutobiographicalMemories(
-  _deps: RuntimeDeps,
-  args: AutobiographicalListOpts = {},
-): Promise<MemoryListResult<AutobiographicalMemoryRow>> {
-  const { offset, limit } = clampPagination(args.offset, args.limit);
-  const filterOpts: Omit<AutobiographicalListOpts, "offset" | "limit"> = omitUndefined({
-    query: args.query,
-    status: args.status,
-    significance: args.significance,
-    source_conversation: args.source_conversation,
-  });
-  const [items, total] = await Promise.all([
-    listAutobiographicalMemory({ ...filterOpts, offset, limit }),
-    countAutobiographicalMemory(filterOpts),
-  ]);
-  return { items, total, offset, limit };
 }

@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   Button,
@@ -18,10 +17,6 @@ import { StatusAlert } from "@freeanima/ui-kit/composite";
 import type { PassiveRecallDebugTrace } from "@freeanima/shared/rpc-contract/frames/message";
 import { passiveRecallDebug } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
-
-export const Route = createFileRoute("/_sidebar/passive-recall")({
-  component: PassiveRecallDebugPage,
-});
 
 type DebugHit = { id: number; score: number; content_preview: string };
 
@@ -70,7 +65,8 @@ function HitTable({ title, hits }: { title: string; hits: DebugHit[] }) {
   );
 }
 
-function PassiveRecallDebugPage() {
+/** 被动召回调试面板（语义记忆页 Sheet 内嵌） */
+export function PassiveRecallDebugPanel() {
   const [userText, setUserText] = useState("");
   const [limit, setLimit] = useState(5);
   const [loading, setLoading] = useState(false);
@@ -89,7 +85,7 @@ function PassiveRecallDebugPage() {
       })) as DebugResult;
       setResult(data);
     } catch (e) {
-      logCaughtError("routes/_sidebar/passive-recall", e);
+      logCaughtError("components/habitat/PassiveRecallDebugPanel", e);
       setError(`检索失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setLoading(false);
@@ -100,12 +96,9 @@ function PassiveRecallDebugPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-bold">{"🔎 被动召回调试"}</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          {"模拟一条用户消息，查看被动语义注入各阶段（不改动对话）。"}
-        </p>
-      </div>
+      <p className="text-sm text-muted-foreground">
+        {"模拟一条用户消息，查看被动语义注入各阶段（不改动对话）。"}
+      </p>
 
       <FormFieldset className="gap-3">
         <FormField label={"模拟用户消息"}>

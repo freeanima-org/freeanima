@@ -13,8 +13,10 @@ export type InprocessBuiltinDef = {
   schedule: string;
 };
 
-/** 与手动 sleep API 共享的分布式锁逻辑名 */
-export const SLEEP_PIPELINE_LOCK_KEY = "sleep-pipeline";
+/** 与手动 memoryMaintenance API 共享的分布式锁逻辑名 */
+export const MEMORY_MAINTENANCE_LOCK_KEY = "memory-maintenance";
+/** @deprecated 使用 MEMORY_MAINTENANCE_LOCK_KEY */
+export const SLEEP_PIPELINE_LOCK_KEY = MEMORY_MAINTENANCE_LOCK_KEY;
 
 const HOUR_MS = 60 * 60 * 1000;
 const MIN_MS = 60 * 1000;
@@ -25,8 +27,8 @@ function inprocessLockOpts(id: string): {
   renew?: boolean;
   mode: "try";
 } {
-  if (id === "builtin-memory-maintenance" || id === "builtin-sleep-cycle") {
-    return { key: SLEEP_PIPELINE_LOCK_KEY, ttlMs: 3 * HOUR_MS, renew: true, mode: "try" };
+  if (id === "builtin-memory-maintenance") {
+    return { key: MEMORY_MAINTENANCE_LOCK_KEY, ttlMs: 3 * HOUR_MS, renew: true, mode: "try" };
   }
   if (id === "builtin-temporal-summary-tick") {
     return { key: `inprocess:${id}`, ttlMs: 25 * MIN_MS, renew: true, mode: "try" };

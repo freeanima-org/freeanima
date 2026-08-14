@@ -17,7 +17,6 @@ import {
 import { initRuntimeContext } from "../service/runtime-context.ts";
 import { registerMemoryEngines } from "../service/memory-engines.ts";
 import { registerBootCronHandlers } from "./cron-handlers.ts";
-import { registerSleepPipelineStepRecorder } from "../service/pipeline-step-run-log.ts";
 import { startupLog } from "./status.ts";
 import type { EnginePhaseResult } from "./engine-phase.ts";
 import { bindRemoteToolsServerDeps } from "@freeanima/habitat/capabilities/outpost/transport/runtime-context.ts";
@@ -71,7 +70,6 @@ export async function bootRuntimePhase(
 
   registerMemoryEngines(runtime.fullDeps());
   registerBootCronHandlers(engine);
-  registerSleepPipelineStepRecorder();
 
   await initCronModule();
   startupLog("Cron scheduler started (Bun.cron)");

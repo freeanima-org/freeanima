@@ -93,7 +93,7 @@ DATABASE_URL="postgresql://anima:…@127.0.0.1:5432/anima" \
 
 ## `auto_llm_runs` / `auto_llm_messages`（审计）
 
-非对话聊天 LLM（cron agent、睡眠流水线阶段、对话标题、目标判定、压缩 / handoff 摘要）写入
+非对话聊天 LLM（cron agent、记忆维护流水线阶段、对话标题、目标判定、压缩 / handoff 摘要）写入
 `auto_llm_runs` + `auto_llm_messages`，而不是 `conversations` / `messages`。保留策略（栖息地运行时 / 壳
 **设置 → 栖息地服务 → 服务配置** `auto_llm`）：
 
@@ -104,7 +104,7 @@ auto_llm:
   per_run_kind_keep: 100
 ```
 
-在 sleep-cycle 步骤 `conversation-cleanup`（过期对话清理之后）清理；删除 run 时
+在 memory-maintenance 步骤 `conversation-cleanup`（过期对话清理之后）清理；删除 run 时
 `auto_llm_messages` 级联删除。Cron 脚本运行（`no_agent`）仅用 `cron_log`。
 
 ## 备份

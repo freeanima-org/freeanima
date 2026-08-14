@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 import { contentBlockTypeSchema } from "./components/content-block.ts";
+import { limbicKindSchema } from "./components/limbic.ts";
+import { narrativeStatusSchema } from "./components/narrative.ts";
 
 /** content_block 结构化搜索 filters（EntitySearchOpts.filters） */
 export const contentBlockSearchFiltersSchema = z
@@ -9,6 +11,10 @@ export const contentBlockSearchFiltersSchema = z
     block_type: contentBlockTypeSchema.optional(),
     client_op_id: z.string().min(1).optional(),
     conversation_id: z.string().min(1).optional(),
+    /** limbic.kind */
+    kind: limbicKindSchema.optional(),
+    /** narrative.status；"all" 表示不过滤 */
+    status: z.union([narrativeStatusSchema, z.literal("all")]).optional(),
   })
   .strict();
 

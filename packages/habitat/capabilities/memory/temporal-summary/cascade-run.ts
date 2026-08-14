@@ -3,7 +3,7 @@ import {
   listTemporalSummariesInRange,
   upsertTemporalSummary,
 } from "@freeanima/habitat/core/db/pg/temporal-summary";
-import { cstDayRange } from "../light-sleep/build-messages.ts";
+import { cstDayRange } from "../day-window/build-messages.ts";
 import {
   isCstMonthStart,
   isCstYearStart,

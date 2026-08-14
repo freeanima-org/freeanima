@@ -44,7 +44,7 @@ FreeAnima Storage Architecture
 
 ### 自动维护（慢）
 
-睡眠周期步骤 `self-layer-refresh`（CST 周一，深睡 + memory-ref-sync 之后）：
+记忆维护步骤 `self-layer-refresh`（CST 周一，reflect 之后）：
 
 1. 仅加载**常驻语义记忆**（置顶 ∪ 高 `reference_count`，且 `active`）
 2. LLM 可对四个可维护块提出更新（永不改 `existence_anchor`）
@@ -67,7 +67,7 @@ FreeAnima Storage Architecture
 
 ## 自传体叙事（记忆层，提取已退役）
 
-浅睡**不再**提取新的自传体叙事，也不再维护自我层自传摘要。既有叙事实体仍可通过回忆工具查询。主观「人生故事大纲」不再是常驻自我块 —— 时间意识用时间摘要，身份用五块自我。
+retain / 自传路径**不再**提取新的自传体叙事，也不再维护自我层自传摘要。既有叙事砖可通过 `content_block_search`（`component=narrative`）或 `diary_search` 查询。主观「人生故事大纲」不再是常驻自我块 —— 时间意识用时间摘要，身份用五块自我。
 
 ---
 

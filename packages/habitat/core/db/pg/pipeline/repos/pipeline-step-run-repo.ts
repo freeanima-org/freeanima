@@ -91,7 +91,7 @@ export async function listPipelineStepRuns(
 
 /**
  * Distinct CST days with a completed or skipped pipeline step
- * (used by sleep catch-up to skip already-slept light-sleep days).
+ * (used by sleep catch-up to skip already completed retain-catch-up days).
  */
 export async function listCompletedStepDays(opts: {
   pipeline_id: string;

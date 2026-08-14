@@ -9,13 +9,12 @@ title: 回忆流程
 
 ## 按范围的主动工具
 
-| 范围              | 工具                                          | 说明                                            |
-| ----------------- | --------------------------------------------- | ----------------------------------------------- |
-| semantic          | `memory_semantic_search`                      | FTS + 结构化过滤；每轮 user 前也**被动**注入    |
-| limbic            | `memory_limbic_search`                        | 有 `query` 时混合 FTS；省略则为列表/过滤        |
-| autobiographical  | `memory_autobiographical_search`              | title + body 的 FTS；返回片段                   |
-| conversation      | `conversation_search` / `conversation_scroll` | 对话片段；搜索可按会话过滤；scroll 取完整上下文 |
-| write（semantic） | `memory_remember` / semantic CRUD             | 非检索                                          |
+| 范围               | 工具                                                    | 说明                                                         |
+| ------------------ | ------------------------------------------------------- | ------------------------------------------------------------ |
+| semantic           | `memory_semantic_search`                                | FTS + 结构化过滤；每轮 user 前也**被动**注入                 |
+| limbic / narrative | `content_block_search`（`component=limbic\|narrative`） | 情绪砖 / 自传砖；可选用 `content_block_get` / `diary_search` |
+| conversation       | `conversation_search` / `conversation_scroll`           | 对话片段；搜索可按会话过滤；scroll 取完整上下文              |
+| write（semantic）  | `memory_remember` / semantic CRUD                       | 非检索                                                       |
 
 ### 产品回忆策略（系统提示）
 
@@ -25,13 +24,13 @@ title: 回忆流程
 2. 本轮被动注入（`passive_memory_context`）
 3. 仍不足时主动 `memory_semantic_search`
 
-感性 / 自传 / 对话工具仍可用于明确的非语义需求；它们**不是**默认澄清/回忆路径。
+情绪 / 自传用 `content_block_search`（`component=limbic|narrative`）；对话搜索仍可用于明确的非语义需求；它们**不是**默认澄清/回忆路径。
 
 栖息地运维调试用 `memory.passiveRecallDebug`（被动管线追踪）。产品 LLM 路径用上表分范围工具。
 
 ### 常驻记忆
 
-与检索工具分开：**置顶**语义记忆加上**引用最多**的条目始终注入系统提示。LLM 在回复中引用记忆 ID 标记；引用计数经夜间 cron 同步。
+与检索工具分开：**置顶**语义记忆加上**引用最多**的条目始终注入系统提示。LLM 在回复中引用记忆 ID 标记；引用计数在 `syncTurn` 热路径 bump（`memory-ref-sync` 夜间步已删）。
 
 ## 与自我层的关系
 
@@ -45,6 +44,8 @@ title: 回忆流程
 ## 已退役：统一回忆
 
 `memory_recall`（四源 RRF）已**移除**。会话/对话搜索仅留在 `conversation_search`。跨资源「统一回忆 v2」（[Issue #47](https://github.com/freeanima-org/freeanima/issues/47)）仍未规划。
+
+旧对话工具 `memory_limbic_*` / `memory_autobiographical_*`（读+写）已移除；情绪/自传砖统一走 `content_block_*` / `diary_*`。
 
 ## 命名说明
 

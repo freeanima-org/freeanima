@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
@@ -17,15 +16,7 @@ import {
   getRebuildFtsJobStatus,
   startRebuildFtsIndex,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
-import {
-  catchWithFallback,
-  logCaughtError,
-} from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
-
-export const Route = createFileRoute("/_sidebar/fts")({
-  loader: () => getFtsStatus().catch(catchWithFallback("fts/getFtsStatus", null)),
-  component: FtsPage,
-});
+import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 
 type FtsTableCapabilities = {
   fts: boolean;
@@ -156,7 +147,7 @@ function RebuildProgress({ job }: { job: FtsRebuildJobStatus }) {
             </p>
             <progress className="w-full h-2 accent-primary" value={pct} max={100} />
             <p className="text-xs text-muted-foreground font-sans">
-              {"后台运行中，可关闭页面；刷新统计可查看覆盖度变化。"}
+              {"后台运行中，可关闭对话框；再次打开可查看覆盖度变化。"}
             </p>
           </>
         ) : null}
@@ -171,10 +162,15 @@ function RebuildProgress({ job }: { job: FtsRebuildJobStatus }) {
   );
 }
 
-function FtsPage() {
-  const initial = Route.useLoaderData() as FtsStatus | null;
-  const [status, setStatus] = useState<FtsStatus | null>(initial);
-  const [job, setJob] = useState<FtsRebuildJobStatus | null>(initial?.rebuild ?? null);
+export type FtsIndexPanelProps = {
+  /** 为 true 时轮询状态；关闭后停止 */
+  active: boolean;
+};
+
+/** 全文检索索引覆盖度与重建（数据维护 Dialog 内嵌） */
+export function FtsIndexPanel({ active }: FtsIndexPanelProps) {
+  const [status, setStatus] = useState<FtsStatus | null>(null);
+  const [job, setJob] = useState<FtsRebuildJobStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -186,7 +182,7 @@ function FtsPage() {
       setStatus(data);
       if (data.rebuild) setJob(data.rebuild);
     } catch (e) {
-      logCaughtError("routes/_sidebar/fts", e);
+      logCaughtError("components/habitat/FtsIndexPanel", e);
       setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
     }
   }, []);
@@ -196,28 +192,31 @@ function FtsPage() {
       const next = (await getRebuildFtsJobStatus()) as FtsRebuildJobStatus;
       setJob(next);
       if (!next.running) {
-        if (pollRef.current) {
-          clearInterval(pollRef.current);
-          pollRef.current = null;
-        }
         await reload();
       }
     } catch (err) {
-      logCaughtError("fts/pollRebuildJob", err);
+      logCaughtError("FtsIndexPanel/pollRebuildJob", err);
     }
   }, [reload]);
 
-  useEffect(() => {
-    if (job?.running && !pollRef.current) {
-      pollRef.current = setInterval(() => void pollJob(), 2000);
+  const stopPoll = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
     }
+  }, []);
+
+  useEffect(() => {
+    if (!active) {
+      stopPoll();
+      return () => {};
+    }
+    void reload();
+    pollRef.current = setInterval(() => void pollJob(), 2000);
     return () => {
-      if (pollRef.current) {
-        clearInterval(pollRef.current);
-        pollRef.current = null;
-      }
+      stopPoll();
     };
-  }, [job?.running, pollJob]);
+  }, [active, pollJob, reload, stopPoll]);
 
   const onRebuild = async (onlyMissing: boolean) => {
     setLoading(true);
@@ -227,11 +226,8 @@ function FtsPage() {
         only_missing: onlyMissing,
       })) as FtsRebuildJobStatus;
       setJob(started);
-      if (started.running && !pollRef.current) {
-        pollRef.current = setInterval(() => void pollJob(), 2000);
-      }
     } catch (e) {
-      logCaughtError("routes/_sidebar/fts", e);
+      logCaughtError("components/habitat/FtsIndexPanel", e);
       setError(`操作失败: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setLoading(false);
@@ -240,7 +236,6 @@ function FtsPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-4">{"🔍 全文检索"}</h2>
       <p className="text-sm text-muted-foreground mb-4">
         {
           "重建在后台执行，不会阻塞页面。默认仅补缺失行，可断点续跑（如向量中断后再次点击即可继续）。"
@@ -287,7 +282,7 @@ function FtsPage() {
               <dd className="break-all">{status.embedding.base_url ?? "—"}</dd>
             </dl>
           ) : (
-            <p className="text-sm text-muted-foreground">{"加载失败"}</p>
+            <p className="text-sm text-muted-foreground">{"加载中…"}</p>
           )}
           <div className="flex flex-wrap gap-2">
             <Button

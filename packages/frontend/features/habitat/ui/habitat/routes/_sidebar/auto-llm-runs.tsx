@@ -31,8 +31,6 @@ const RUN_KIND_OPTIONS = [
   "cron",
   "memory-retain",
   "memory-reflect",
-  "light-sleep",
-  "deep-sleep",
   "dream",
   "autobiography",
   "temporal-summary",
@@ -174,7 +172,7 @@ function AutoLlmRunsPage() {
       <h2 className="text-lg font-bold mb-1">{"🤖 自动 LLM 运行"}</h2>
       <p className="text-sm text-muted-foreground mb-4">
         {
-          "非对话 LLM 运行审计（定时任务、睡眠、标题生成、goal 判定、压缩摘要等）。与对话 messages 互斥。"
+          "非对话 LLM 运行审计（定时任务、记忆维护、标题生成、goal 判定、压缩摘要等）。与对话 messages 互斥。"
         }
       </p>
 

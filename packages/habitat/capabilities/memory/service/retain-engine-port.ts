@@ -1,6 +1,6 @@
 /**
  * retain 引擎端口（#16102 PR2）。
- * 生产可注入 LLM；未注册时 retain 仍前进 watermark（与 light-sleep 并行抽取）。
+ * 生产可注入 LLM；未注册时 retain 仍前进 watermark（与 retain 热路径并行抽取）。
  */
 
 export type RetainEngineItem = {

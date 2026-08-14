@@ -7,7 +7,7 @@ import { omitUndefined } from "@freeanima/habitat/core/util";
 import { loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
 
 import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
-import { cstDayRange } from "../light-sleep/build-messages.ts";
+import { cstDayRange } from "../day-window/build-messages.ts";
 import {
   fetchAllActiveMemories,
   buildDeepSleepMessages,
@@ -16,14 +16,14 @@ import {
   filterSplitCandidates,
   hasRecentMemoryUpdates,
   formatAllMemoriesMessage,
-} from "../deep-sleep/build-messages.ts";
+} from "../reflect/build-messages.ts";
 import {
   createEmptyChangeLog,
   snapshotChangeLog,
   type DeepSleepRound,
   type DeepSleepMode,
-} from "../deep-sleep/types.ts";
-import { recordDeepSleepRun } from "../deep-sleep/state.ts";
+} from "../reflect/types.ts";
+import { recordDeepSleepRun } from "../reflect/state.ts";
 import { isReflectLlmRegistered, runReflectLlm } from "./reflect-llm-port.ts";
 import type { ReflectEngineResult } from "./reflect.ts";
 

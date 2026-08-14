@@ -29,7 +29,7 @@ title: 实体模块
 
 行字段：id、title、primary_component、components、时间戳。点击行打开
 **详情弹窗**（`entity.get`：summary / content / body 与元数据）。存活行可
-**deleteEntity**（软删）；回收站可 **restore**。满 30 天由睡眠 cleanup **purge** 物理删除；若为
+**deleteEntity**（软删）；回收站可 **restore**。满 30 天由记忆维护 cleanup **purge** 物理删除；若为
 `object_file`，purge 后对无其它引用的 cid 删除对象存储 blob。
 
 ## 栖息地 RPC

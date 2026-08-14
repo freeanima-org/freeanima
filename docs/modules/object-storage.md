@@ -63,7 +63,7 @@ Habitat
 | **软删**（`object_storage_delete` / `entity.delete`） | 只写 `deleted_at`；SSOT 字节 **保留**，便于回收站 restore                                                         |
 | **换字节**（`updateObjectFile`）                      | entity 写入新 cid 成功后，对旧 cid 做即时引用计数释放（`COUNT==0` 才 `ObjectStore.delete`）                       |
 | **创建失败**（`createObjectFile`）                    | `put` 后 `createEntity` 失败时，对刚 put 的 cid 同样 COUNT 后释放（内容寻址，禁止盲删）                           |
-| **purge**（睡眠 cleanup，软删满 30 天）               | 物理删除 entity 行后，对无其它 `object_file`（含未到期软删）仍引用的 `(world_id, cid)` 调用 `ObjectStore.delete`  |
+| **purge**（记忆维护 cleanup，软删满 30 天）           | 物理删除 entity 行后，对无其它 `object_file`（含未到期软删）仍引用的 `(world_id, cid)` 调用 `ObjectStore.delete`  |
 | **`ObjectStore.delete`**                              | **必须**删除当前 SSOT 真实对象（S3 `DeleteObject` 或删本地 `object-store/…`）；并可清 `/tmp` 缓存。失败须抛错可见 |
 
 内容寻址：相同字节共享同一 cid；**仅当引用计数归零**才删权威对象。

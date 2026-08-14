@@ -13,6 +13,7 @@ import {
 } from "@freeanima/habitat/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
+import { groupDiaryBlockHitsByParent, toDiaryHitBlock } from "./search-hit.ts";
 import type {
   DiaryStoreContext,
   DiaryTextBlock,
@@ -245,30 +246,39 @@ export async function reorderDiaryTextBlocks(
   return updated;
 }
 
-/** 按 text 块正文 hybrid 搜索，返回命中的 parent diary id（保序去重） */
-export async function searchDiaryParentIdsByBlockText(
+export type DiaryTextBlockSearchOpts = {
+  query: string;
+  /** 最多返回多少个日记 parent */
+  limit: number;
+  /** 语义 tag（limbic / narrative / dream / semantic_ref） */
+  component?: string;
+};
+
+/**
+ * 按 text 块正文 hybrid 搜索；按日记 parent 分组保序。
+ * 返回的 blocks.content 已截断为 snippet。
+ */
+export async function searchDiaryTextBlockHits(
   ctx: DiaryStoreContext,
-  query: string,
-  limit: number,
-): Promise<number[]> {
+  opts: DiaryTextBlockSearchOpts,
+): Promise<{ parentId: number; blocks: DiaryTextBlock[] }[]> {
+  const parentLimit = Math.max(1, Math.min(50, opts.limit));
   const result = await searchEntities({
     world_id: ctx.worldId,
     primary_component: CONTENT_BLOCK_COMPONENT,
-    query,
+    query: opts.query,
+    ...(opts.component ? { component: opts.component } : {}),
     filters: { block_type: "text" },
-    limit: Math.max(1, Math.min(100, limit * 3)),
+    limit: Math.max(1, Math.min(100, parentLimit * 3)),
     mode: "hybrid",
     include_count: false,
   });
 
-  const parentIds: number[] = [];
-  const seen = new Set<number>();
+  const hits: DiaryTextBlock[] = [];
   for (const row of result.results) {
     const block = mapHit(row);
-    if (!block || seen.has(block.parent_id)) continue;
-    seen.add(block.parent_id);
-    parentIds.push(block.parent_id);
-    if (parentIds.length >= limit) break;
+    if (!block) continue;
+    hits.push(toDiaryHitBlock(block));
   }
-  return parentIds;
+  return groupDiaryBlockHitsByParent(hits, parentLimit);
 }

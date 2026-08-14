@@ -1,11 +1,32 @@
-import type { DiaryEntryRow } from "./types.ts";
-import { entryDayKey, getDiaryEntryByDate, parseDiaryDate } from "./entry-store.ts";
-import type { DiaryStoreContext } from "./types.ts";
+import {
+  DREAM_COMPONENT,
+  LIMBIC_COMPONENT,
+  NARRATIVE_COMPONENT,
+  SEMANTIC_REF_COMPONENT,
+} from "@freeanima/habitat/core/db/schema/entity";
 import { findTagByTitle } from "@freeanima/features/tag/domain";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
+import { entryDayKey, getDiaryEntryByDate, parseDiaryDate } from "./entry-store.ts";
+import type { DiaryEntryRow, DiaryStoreContext } from "./types.ts";
+
+/** 与 content_block 语义 tag 一致；diary_search / content_block_search 共用 */
+export const DIARY_SEARCH_SEMANTIC_COMPONENTS = [
+  LIMBIC_COMPONENT,
+  NARRATIVE_COMPONENT,
+  SEMANTIC_REF_COMPONENT,
+  DREAM_COMPONENT,
+] as const;
+
 export function entryPayload(row: DiaryEntryRow): DiaryEntryRow {
   return row;
+}
+
+/** limbic | narrative | semantic_ref | dream；非法返回 null */
+export function parseDiarySearchComponent(raw: unknown): string | null {
+  if (raw == null || raw === "") return null;
+  const tag = coerceString(raw).trim();
+  return (DIARY_SEARCH_SEMANTIC_COMPONENTS as readonly string[]).includes(tag) ? tag : null;
 }
 
 export function parseTags(raw: unknown): string[] | undefined {

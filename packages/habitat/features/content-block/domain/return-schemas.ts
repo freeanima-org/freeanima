@@ -5,12 +5,21 @@ const limbicSchema = z
     valence: z.number(),
     arousal: z.number(),
     intensity: z.number(),
+    kind: z.enum(["conversation_mood", "turning_point", "spike"]).optional(),
+    conversation_id: z.string().optional(),
+    source_segment: z.string().nullable().optional(),
+    semantic_memory_ids: z.array(z.number().int().positive()).optional(),
   })
   .nullable();
 
 const narrativeSchema = z
   .object({
     significance: z.enum(["normal", "milestone", "turning_point"]).optional(),
+    status: z.enum(["active", "deprecated"]).optional(),
+    period_start: z.string().nullable().optional(),
+    period_end: z.string().nullable().optional(),
+    source_facts: z.array(z.number().int().positive()).optional(),
+    source_conversations: z.array(z.string()).optional(),
   })
   .nullable();
 
@@ -49,7 +58,15 @@ const exampleBlock = {
   url: null,
   client_op_id: null,
   components: ["content_block", "limbic"],
-  limbic: { valence: 0.4, arousal: 0.3, intensity: 0.5 },
+  limbic: {
+    valence: 0.4,
+    arousal: 0.3,
+    intensity: 0.5,
+    kind: "conversation_mood" as const,
+    conversation_id: "conv-1",
+    source_segment: null,
+    semantic_memory_ids: [],
+  },
   narrative: null,
   semantic_ref: null,
   created_at: "2026-07-17T10:00:00+08:00",

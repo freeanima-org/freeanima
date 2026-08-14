@@ -14,7 +14,7 @@ title: 压缩
 | 不删消息   | 历史保留；压缩只改运行时视图与 `conversations` meta |
 | 四段       | LLM 上下文 = system + summary + slim + raw          |
 | 按需触发   | 用量接近窗口上限时压缩；工具循环内阈值更高          |
-| 与记忆独立 | 压缩不触发语义提取；浅睡 cron 另走                  |
+| 与记忆独立 | 压缩不触发语义提取；retain/memory-maintenance 另走  |
 
 ## 运行时四段
 
@@ -84,4 +84,4 @@ compression:
 
 ## 与记忆管道的关系
 
-压缩与浅睡/深睡**独立运行**：压缩管理当前 conversation 的 LLM 窗口；记忆提取每晚从完整对话存档运行。
+压缩与 retain/reflect **独立运行**：压缩管理当前 conversation 的 LLM 窗口；记忆提取每晚从完整对话存档运行。
