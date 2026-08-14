@@ -11,11 +11,11 @@ title: 记忆体系
 
 ## 迁移期双轨（重要）
 
-| 轨                             | 状态                                                                                 | 说明                                            |
-| ------------------------------ | ------------------------------------------------------------------------------------ | ----------------------------------------------- |
-| **MemoryService**              | 生产巩固主路径（retain/reflect + syncTurn）                                          | 见本页与 [`sleep.md`](sleep.md)（已废止旧睡眠） |
-| **memory-maintenance**         | 夜间顺序维护（cleanup / Retain 缺口检查 / 周一 reflect·self / temporal）；补跑仅手动 | RPC `memoryMaintenance.*`                       |
-| **limbic / dream / narrative** | **存量只读**；写入已拆除                                                             | 列表与 search 保留                              |
+| 轨                             | 状态                                                                                                  | 说明                                            |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| **MemoryService**              | 生产巩固主路径（retain/reflect + syncTurn）                                                           | 见本页与 [`sleep.md`](sleep.md)（已废止旧睡眠） |
+| **memory-maintenance**         | 夜间顺序维护（cleanup / Retain 缺口检查 / 周一 **cluster 校准**→reflect·self / temporal）；补跑仅手动 | RPC `memoryMaintenance.*`                       |
+| **limbic / dream / narrative** | **存量只读**；写入已拆除                                                                              | 列表与 search 保留                              |
 
 ---
 
@@ -41,16 +41,16 @@ Memory
 
 实现：`@freeanima/habitat/capabilities/memory` → `createEmbeddedMemoryService`（及日后 remote client）。
 
-| 方法                                                                   | 角色                                                |
-| ---------------------------------------------------------------------- | --------------------------------------------------- |
-| `syncTurn`                                                             | 回合入口：切片 + **内建 cite** + 触发 retain        |
-| `retain`                                                               | 可重放抽取；默认 user/assistant 正文；无思考链/工具 |
-| `recall` / `search`                                                    | 委托 SearchBackend hybrid；scope 分召回             |
-| `reflect`                                                              | **巩固作业**（非单条 patch）                        |
-| `remember` / `update` / `deprecate` / `get` / `list` / `pin` / `unpin` | CRUD                                                |
-| `cite`                                                                 | 热度（主路径在 syncTurn；显式 API 备用）            |
-| `listResident` / `assembleResidentBlock`                               | 常驻系统提示                                        |
-| `temporal.*`                                                           | list / get / 可选 search / regenerate               |
+| 方法                                                                   | 角色                                                      |
+| ---------------------------------------------------------------------- | --------------------------------------------------------- |
+| `syncTurn`                                                             | 回合入口：切片 + **内建 cite** + 触发 retain              |
+| `retain`                                                               | 可重放抽取；默认 user/assistant 正文；无思考链/工具       |
+| `recall` / `search`                                                    | 委托 SearchBackend hybrid；scope 分召回                   |
+| `reflect`                                                              | **巩固作业**（按 `search_documents.cluster_id` 分批四轮） |
+| `remember` / `update` / `deprecate` / `get` / `list` / `pin` / `unpin` | CRUD                                                      |
+| `cite`                                                                 | 热度（主路径在 syncTurn；显式 API 备用）                  |
+| `listResident` / `assembleResidentBlock`                               | 常驻系统提示                                              |
+| `temporal.*`                                                           | list / get / 可选 search / regenerate                     |
 
 配置：`memory.deployment`（默认 `embedded`）。
 
@@ -72,7 +72,7 @@ links: Array<{ type: "merged_from"|"supersedes"|"conflicts_with"|"derived_from";
 | 表                      | 角色                                                                       |
 | ----------------------- | -------------------------------------------------------------------------- |
 | `entities`              | semantic / temporal；`reference_count`                                     |
-| `search_documents`      | 可重建索引                                                                 |
+| `search_documents`      | 可重建索引；**embedding + cluster_id**（向量簇，供 reflect 分批）          |
 | ~~memory_references~~   | **已删除**；cite 在 syncTurn / append 路径 bump `entities.reference_count` |
 | ~~memory_episodes~~     | embedded **不建**；EpisodeSource = messages view                           |
 | ~~memory_retain_queue~~ | **不建**；watermark（可从 provenance 重建）                                |

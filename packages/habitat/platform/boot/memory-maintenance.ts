@@ -7,6 +7,7 @@ export const MEMORY_MAINTENANCE_PIPELINE_ID = "memory-maintenance";
 export const MAINTENANCE_STEP_IDS = {
   conversationCleanup: "conversation-cleanup",
   retainCatchUp: "retain-catch-up",
+  semanticClusterCalibrate: "semantic-cluster-calibrate",
   reflect: "reflect",
   selfLayerRefresh: "self-layer-refresh",
   temporalSummaryDay: "temporal-summary-day",
@@ -19,6 +20,7 @@ export type MaintenanceStepId = (typeof MAINTENANCE_STEP_IDS)[keyof typeof MAINT
 export const MAINTENANCE_STEP_LIST: readonly MaintenanceStepId[] = [
   MAINTENANCE_STEP_IDS.conversationCleanup,
   MAINTENANCE_STEP_IDS.retainCatchUp,
+  MAINTENANCE_STEP_IDS.semanticClusterCalibrate,
   MAINTENANCE_STEP_IDS.reflect,
   MAINTENANCE_STEP_IDS.selfLayerRefresh,
   MAINTENANCE_STEP_IDS.temporalSummaryDay,

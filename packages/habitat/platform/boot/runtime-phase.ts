@@ -69,6 +69,9 @@ export async function bootRuntimePhase(
   await loadSelfLayerPrompt();
 
   registerMemoryEngines(runtime.fullDeps());
+  const { registerSemanticClusteringEmbeddingHook } =
+    await import("@freeanima/habitat/capabilities/memory/clustering/register-hook.ts");
+  registerSemanticClusteringEmbeddingHook();
   registerBootCronHandlers(engine);
 
   await initCronModule();

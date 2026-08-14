@@ -32,8 +32,10 @@ export { searchSemanticMemoryVector } from "./vector-search.ts";
 export {
   registerEmbedTextFn,
   registerEmbedTextsFn,
+  registerAfterEmbeddingStored,
   resetEmbedTextFnForTest,
   resetEmbedTextsFnForTest,
+  resetAfterEmbeddingStoredForTest,
 } from "../embedding/runtime.ts";
 export {
   awaitPendingEmbeddingsForTest,

@@ -1,7 +1,12 @@
 import { describe, expect, it } from "bun:test";
 
 import type { RuntimeConfig } from "./runtime-config.ts";
-import { resolvePassiveRecallConfig } from "./memory-config.ts";
+import {
+  resolvePassiveRecallConfig,
+  resolveMemoryClusteringConfig,
+  DEFAULT_CLUSTERING_EPS,
+  DEFAULT_CLUSTERING_MAX_CALIBRATE_N,
+} from "./memory-config.ts";
 
 const base = {
   llm: {
@@ -59,5 +64,31 @@ describe("resolvePassiveRecallConfig", () => {
       exclude_resident: false,
       use_vector: false,
     });
+  });
+});
+
+describe("resolveMemoryClusteringConfig", () => {
+  it("disabled by default without embedding", () => {
+    expect(resolveMemoryClusteringConfig(base).enabled).toBe(false);
+  });
+
+  it("enabled when embedding configured", () => {
+    const resolved = resolveMemoryClusteringConfig({
+      ...base,
+      embedding: { model: "bge-m3" },
+    });
+    expect(resolved.enabled).toBe(true);
+    expect(resolved.eps).toBe(DEFAULT_CLUSTERING_EPS);
+    expect(resolved.max_calibrate_n).toBe(DEFAULT_CLUSTERING_MAX_CALIBRATE_N);
+  });
+
+  it("respects explicit overrides", () => {
+    expect(
+      resolveMemoryClusteringConfig({
+        ...base,
+        embedding: { model: "bge-m3" },
+        memory: { clustering: { enabled: false, eps: 0.2, max_calibrate_n: 1000 } },
+      }),
+    ).toMatchObject({ enabled: false, eps: 0.2, max_calibrate_n: 1000 });
   });
 });
