@@ -8,6 +8,7 @@ import { formatCstIso, omitUndefined } from "@freeanima/host/core/util";
 import { generateAutoLlmRunId, judgeGoal } from "@freeanima/host/core/llm";
 import { getProfileHopModel } from "@freeanima/host/core/config";
 import { PROFILE_CHAT, PROFILE_GOAL_JUDGE } from "@freeanima/host/core/provider";
+import type { LlmCallParams } from "@freeanima/host/core/provider";
 import { formatGoalContinuePrompt, formatGoalExhaustedMessage } from "@freeanima/host/engine/goal";
 import { isPostgresPrimary } from "@freeanima/host/core/db/pg";
 import { appendAutoLlmRun } from "@freeanima/host/core/db/pg/auto-llm-run";
@@ -41,6 +42,8 @@ export type AutoLlmRunInput = {
   goal?: ConversationGoal;
   metadata?: Record<string, unknown>;
   toolPolicy?: ResolvedCapabilityPolicy;
+  /** Per-call sampling (e.g. subagent temperature_tier → params) */
+  requestParams?: Partial<LlmCallParams>;
   onToolResult?: (name: string, content: string) => void;
   /** 子工具 steps 变更（含 running）；供父 Chat 进度投影 */
   onStep?: (steps: readonly AutoLlmToolStep[]) => void;
@@ -220,7 +223,7 @@ async function runEngineOnce(
         llm: deps.engine.llm,
         executableTools: input.toolNames,
         conversationId: "",
-        ...omitUndefined({ toolPolicy }),
+        ...omitUndefined({ toolPolicy, requestParams: input.requestParams }),
         max_turns: input.maxTurns,
         hookRegistry: deps.kernel.hookRegistry,
         llm_kind: "auto_llm",

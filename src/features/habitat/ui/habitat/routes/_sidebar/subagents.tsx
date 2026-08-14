@@ -4,6 +4,11 @@ import {
   Button,
   Input,
   Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Table,
   TableBody,
   TableCell,
@@ -34,6 +39,13 @@ export const Route = createFileRoute("/_sidebar/subagents")({
   component: SubagentsPage,
 });
 
+const TIER_NONE = "__none__";
+const TEMPERATURE_TIER_OPTIONS = [
+  { id: "focused", label: "专注" },
+  { id: "balanced", label: "平衡" },
+  { id: "creative", label: "发散" },
+] as const;
+
 const emptyForm = {
   slug: "",
   title: "",
@@ -41,6 +53,7 @@ const emptyForm = {
   content: "",
   skills: "",
   max_turns: "",
+  temperature_tier: "" as "" | "focused" | "balanced" | "creative",
   allowed_tools: "",
   denied_tools: "",
   prompt_includes: "",
@@ -80,6 +93,7 @@ function SubagentsPage() {
       content: row.content,
       skills: row.skills.join(", "),
       max_turns: row.max_turns != null ? String(row.max_turns) : "",
+      temperature_tier: row.temperature_tier ?? "",
       allowed_tools: row.allowed_tools.join(", "),
       denied_tools: row.denied_tools.join(", "),
       prompt_includes: (row.prompt_includes ?? []).join(", "),
@@ -103,6 +117,7 @@ function SubagentsPage() {
         content: form.content,
         skills: splitCsv(form.skills),
         max_turns: form.max_turns.trim() ? Number(form.max_turns) : null,
+        temperature_tier: form.temperature_tier || null,
         allowed_tools: splitCsv(form.allowed_tools),
         denied_tools: splitCsv(form.denied_tools),
         prompt_includes: splitCsv(form.prompt_includes).filter(
@@ -243,6 +258,33 @@ function SubagentsPage() {
               value={form.max_turns}
               onChange={(e) => setForm((f) => ({ ...f, max_turns: e.target.value }))}
             />
+          </div>
+          <div className="space-y-1">
+            <Label>{"采样档位"}</Label>
+            <Select
+              selectedKey={form.temperature_tier || TIER_NONE}
+              onSelectionChange={(key) => {
+                if (key == null) return;
+                const v = String(key);
+                setForm((f) => ({
+                  ...f,
+                  temperature_tier:
+                    v === TIER_NONE ? "" : (v as "focused" | "balanced" | "creative"),
+                }));
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem id={TIER_NONE}>{"（系统默认）"}</SelectItem>
+                {TEMPERATURE_TIER_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.id} id={opt.id}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1 md:col-span-2">
             <Label>{"允许工具（@ToolSet 或工具名）"}</Label>

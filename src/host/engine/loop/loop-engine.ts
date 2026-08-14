@@ -7,7 +7,7 @@ import {
 } from "@freeanima/host/core/tool";
 import { getRuntimeLogger } from "@freeanima/host/core/config";
 import type { Logger } from "@freeanima/host/kernel/logging";
-import { ProviderError } from "@freeanima/host/core/provider";
+import { ProviderError, type LlmCallParams } from "@freeanima/host/core/provider";
 import type {
   HookClarifyItem,
   HookStreamEvent,
@@ -80,6 +80,8 @@ export type EngineOpts = {
   toolProgress?: boolean;
   /** After persist; default no-op (no emergency compress / PG) */
   onAfterMessagesPersisted?: AfterMessagesPersisted;
+  /** Per-call sampling overrides (temperature / topP / …) */
+  requestParams?: Partial<LlmCallParams>;
   onMessageAppended?: (msg: StoredMessage) => void | Promise<void>;
   onToolRoundComplete?: (msgs: StoredMessage[]) => void | Promise<void>;
   signal?: AbortSignal;
@@ -415,6 +417,7 @@ export async function* runStream(
           tools: compiled,
           model,
           runtime: opts.llm,
+          requestParams: opts.requestParams,
         }),
       )) {
         if (chunk.type === "content") {

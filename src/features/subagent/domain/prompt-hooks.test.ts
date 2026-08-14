@@ -13,6 +13,7 @@ function row(partial: Partial<SubagentRow> & Pick<SubagentRow, "slug">): Subagen
     slug: partial.slug,
     skills: [],
     max_turns: null,
+    temperature_tier: null,
     allowed_tools: [],
     denied_tools: [],
     prompt_includes: [],

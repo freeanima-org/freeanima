@@ -23,6 +23,10 @@ import type { SubagentTaskInput } from "./types.ts";
 import { SUBAGENT_TOOL_RETURNS } from "./return-schemas.ts";
 import { normalizePromptIncludes } from "./subagent-prompt.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import {
+  SUBAGENT_TEMPERATURE_TIERS,
+  type SubagentTemperatureTier,
+} from "@freeanima/host/core/db/schema/entity/components/subagent.ts";
 
 const WORLD_ID_OPTIONAL = {
   world_id: {
@@ -78,6 +82,14 @@ function parseStringArray(raw: unknown): string[] | undefined {
   return raw.map((x) => String(x ?? "").trim()).filter(Boolean);
 }
 
+function parseTemperatureTier(raw: unknown): SubagentTemperatureTier | undefined {
+  if (raw == null) return undefined;
+  const v = coerceString(raw).trim();
+  return (SUBAGENT_TEMPERATURE_TIERS as readonly string[]).includes(v)
+    ? (v as SubagentTemperatureTier)
+    : undefined;
+}
+
 function parseTask(raw: Record<string, unknown>): SubagentTaskInput | string {
   const goal = coerceString(raw.goal ?? "").trim();
   if (!goal) return "goal is required";
@@ -87,6 +99,7 @@ function parseTask(raw: Record<string, unknown>): SubagentTaskInput | string {
   const instructions = raw.instructions != null ? coerceString(raw.instructions).trim() : undefined;
   const allowedRaw = parseStringArray(raw.allowed_tools);
   const promptIncludes = normalizePromptIncludes(parseStringArray(raw.prompt_includes));
+  const temperatureTier = parseTemperatureTier(raw.temperature_tier);
 
   if (!hasNamed) {
     if (!instructions) {
@@ -110,6 +123,7 @@ function parseTask(raw: Record<string, unknown>): SubagentTaskInput | string {
       raw.max_turns != null && Number(raw.max_turns) > 0
         ? Math.floor(Number(raw.max_turns))
         : undefined,
+    temperature_tier: temperatureTier,
     denied_tools: parseStringArray(raw.denied_tools),
     prompt_includes: promptIncludes.length > 0 ? promptIncludes : undefined,
   });
@@ -125,6 +139,7 @@ function rowPayload(row: Awaited<ReturnType<typeof getSubagent>>) {
     content: row.content,
     skills: row.skills,
     max_turns: row.max_turns,
+    temperature_tier: row.temperature_tier ?? null,
     allowed_tools: row.allowed_tools,
     denied_tools: row.denied_tools,
     prompt_includes: row.prompt_includes,
@@ -203,6 +218,11 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
               content: { type: "string", description: "Extra system instructions" },
               skills: { type: "array", items: { type: "string" } },
               max_turns: { type: "integer" },
+              temperature_tier: {
+                type: "string",
+                enum: [...SUBAGENT_TEMPERATURE_TIERS],
+                description: "Sampling tier: focused | balanced | creative",
+              },
               allowed_tools: {
                 type: "array",
                 items: { type: "string" },
@@ -232,6 +252,7 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
                     args.max_turns != null && Number(args.max_turns) > 0
                       ? Math.floor(Number(args.max_turns))
                       : undefined,
+                  temperature_tier: parseTemperatureTier(args.temperature_tier),
                   allowed_tools: parseStringArray(args.allowed_tools),
                   denied_tools: parseStringArray(args.denied_tools),
                   prompt_includes: normalizePromptIncludes(parseStringArray(args.prompt_includes)),
@@ -257,6 +278,11 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
               content: { type: "string" },
               skills: { type: "array", items: { type: "string" } },
               max_turns: { type: "integer" },
+              temperature_tier: {
+                type: "string",
+                enum: [...SUBAGENT_TEMPERATURE_TIERS],
+                description: "Sampling tier: focused | balanced | creative (null clears)",
+              },
               allowed_tools: { type: "array", items: { type: "string" } },
               denied_tools: { type: "array", items: { type: "string" } },
               prompt_includes: {
@@ -290,6 +316,12 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
                         ? Math.floor(Number(args.max_turns))
                         : null
                       : undefined,
+                  temperature_tier:
+                    args.temperature_tier === null
+                      ? null
+                      : args.temperature_tier != null
+                        ? parseTemperatureTier(args.temperature_tier)
+                        : undefined,
                   allowed_tools: parseStringArray(args.allowed_tools),
                   denied_tools: parseStringArray(args.denied_tools),
                   prompt_includes:
@@ -361,6 +393,12 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
               context: { type: "string" },
               skills: { type: "array", items: { type: "string" } },
               max_turns: { type: "integer" },
+              temperature_tier: {
+                type: "string",
+                enum: [...SUBAGENT_TEMPERATURE_TIERS],
+                description:
+                  "Sampling tier override: focused | balanced | creative (run > profile > config > balanced)",
+              },
               denied_tools: {
                 type: "array",
                 items: { type: "string" },

@@ -5,11 +5,18 @@ import {
 } from "@freeanima/host/core/capability-policy";
 import {
   DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS,
+  getProfileHopFormat,
   getProfileHopModel,
   peekActiveRuntimeConfig,
 } from "@freeanima/host/core/config";
 import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
-import { PROFILE_CHAT } from "@freeanima/host/core/provider";
+import {
+  PROFILE_CHAT,
+  resolveSamplingRanges,
+  temperatureTierSchema,
+  temperatureTierToCallParams,
+  type TemperatureTier,
+} from "@freeanima/host/core/provider";
 import { omitUndefined } from "@freeanima/host/core/util";
 import { getToolConversationId, reportToolProgress, toolResult } from "@freeanima/host/core/tool";
 import {
@@ -45,6 +52,7 @@ export const SUBAGENT_HARD_DENY_TOOLS = [
 
 const DEFAULT_SUBAGENT_MAX_TURNS = 20;
 const DEFAULT_SUBAGENT_MAX_PARALLEL = 4;
+const DEFAULT_SUBAGENT_TEMPERATURE_TIER: TemperatureTier = "balanced";
 const EPHEMERAL_SLUG = "ephemeral";
 
 export type SubagentRunTaskResult = {
@@ -123,6 +131,28 @@ function resolveMaxTurns(
   return cfg?.subagent?.max_turns ?? DEFAULT_SUBAGENT_MAX_TURNS;
 }
 
+/** 调用 > 档案 > auto_llm.subagent.temperature_tier > balanced */
+export function resolveTemperatureTier(
+  deps: FullRuntimeDeps,
+  profile: ResolvedSubagentProfile,
+  override?: TemperatureTier,
+): TemperatureTier {
+  if (override != null) {
+    const parsed = temperatureTierSchema.safeParse(override);
+    if (parsed.success) return parsed.data;
+  }
+  if (profile.temperature_tier != null) {
+    const parsed = temperatureTierSchema.safeParse(profile.temperature_tier);
+    if (parsed.success) return parsed.data;
+  }
+  const cfg = deps.engine.config.data.auto_llm as
+    | { subagent?: { temperature_tier?: string } }
+    | undefined;
+  const fromCfg = temperatureTierSchema.safeParse(cfg?.subagent?.temperature_tier);
+  if (fromCfg.success) return fromCfg.data;
+  return DEFAULT_SUBAGENT_TEMPERATURE_TIER;
+}
+
 function resolveMaxParallel(deps: FullRuntimeDeps): number {
   const cfg = deps.engine.config.data.auto_llm as
     | { subagent?: { max_parallel?: number } }
@@ -176,6 +206,7 @@ export async function resolveSubagentProfile(
           content: hit.content,
           skills: [],
           max_turns: null,
+          temperature_tier: null,
           allowed_tools: hit.allowed_tools ?? [],
           denied_tools: [],
           prompt_includes: mergePromptIncludes(undefined, task.prompt_includes),
@@ -197,6 +228,7 @@ export async function resolveSubagentProfile(
       content: row.content,
       skills: row.skills,
       max_turns: row.max_turns,
+      temperature_tier: row.temperature_tier ?? null,
       allowed_tools: row.allowed_tools,
       denied_tools: row.denied_tools,
       prompt_includes: mergePromptIncludes(row.prompt_includes, task.prompt_includes),
@@ -220,6 +252,7 @@ export async function resolveSubagentProfile(
     content: instructions,
     skills: task.skills ?? [],
     max_turns: task.max_turns ?? null,
+    temperature_tier: task.temperature_tier ?? null,
     allowed_tools: task.allowed_tools,
     denied_tools: [],
     prompt_includes: mergePromptIncludes(task.prompt_includes),
@@ -295,7 +328,14 @@ async function runOneTask(
   const systemPrompt = await buildSubagentSystemPrompt(deps, profile, toolNames);
 
   const maxTurns = resolveMaxTurns(deps, profile, task.max_turns);
+  const tier = resolveTemperatureTier(deps, profile, task.temperature_tier);
   const model = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
+  const format = getProfileHopFormat(deps.engine.config.data, PROFILE_CHAT);
+  const requestParams = temperatureTierToCallParams(
+    tier,
+    resolveSamplingRanges(format, model),
+    omitUndefined({ format }),
+  );
   const runName = resolveRunName(profile, task);
 
   const liveBase: SubagentLiveSlot = {
@@ -321,6 +361,7 @@ async function runOneTask(
       model,
       toolNames,
       maxTurns,
+      requestParams,
       toolPolicy: policy,
       parentConversationId,
       metadata: {
@@ -328,6 +369,7 @@ async function runOneTask(
         slug: profile.slug,
         kind: profile.kind,
         world_id: worldId,
+        temperature_tier: tier,
       },
       onStep: (steps: readonly AutoLlmToolStep[]) => {
         onLiveUpdate({

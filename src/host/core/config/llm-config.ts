@@ -56,6 +56,12 @@ export function getProfileHopProviderId(cfg: RuntimeConfig, profileId?: string):
   return hop.provider;
 }
 
+/** chat hop 所用 provider 的 wire format（可能未配置） */
+export function getProfileHopFormat(cfg: RuntimeConfig, profileId?: string): string | undefined {
+  const providerId = getProfileHopProviderId(cfg, profileId);
+  return getLlmConfig(cfg).providers[providerId]?.format;
+}
+
 export function getProviderBaseUrl(cfg: RuntimeConfig, providerId: string): string {
   const prov = getLlmConfig(cfg).providers[providerId];
   if (!prov?.base_url) {
