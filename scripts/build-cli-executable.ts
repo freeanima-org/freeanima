@@ -118,6 +118,14 @@ async function main(): Promise<void> {
   assertStandaloneBinaryHasNoTiktokenBuildPath(outfile, tiktokenPackageDir);
   rmSync(stagedWasm, { force: true });
 
+  console.log("verifying embedded web dist via --version…");
+  const verify = await $`${outfile} --version`.nothrow().quiet();
+  if (verify.exitCode !== 0) {
+    const errText = verify.stderr.toString() || verify.stdout.toString();
+    throw new Error(`standalone 自检失败（exit ${verify.exitCode}）:\n${errText}`);
+  }
+  console.log(verify.stdout.toString().trim());
+
   console.log(`executable ready: ${outfile}`);
   console.log(`  try: ${outfile} --version`);
   console.log(`  try: ${outfile} service status`);

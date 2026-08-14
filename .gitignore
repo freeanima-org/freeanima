@@ -37,6 +37,9 @@ node_modules
 .pnpm-store/
 .turbo/
 **/dist/
+# web dist 目录须在仓内（仅占位 .gitignore），供 dir: + oxlint dir-import-exists
+!packages/frontend/portal/app/web/dist/
+!packages/frontend/portal/app/web/dist/.gitignore
 **/dist-desktop/
 **/dist-mobile/
 **/*.tsbuildinfo

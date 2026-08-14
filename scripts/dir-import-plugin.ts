@@ -4,7 +4,8 @@
  *
  * Runtime：`bunfig.toml` preload；Bun.build / `--compile`：传入 `plugins`。
  * 生产用法：migrations / docs / web dist 的 `*-dir-import` 模块。
- * 目录不存在时导出空 map（源码 CLI 在尚未 pack web 时不致崩）。
+ * 目录不存在时导出空 map（源码 CLI 在尚未 pack web 时不致崩；
+ * oxlint `dir-import-exists` 要求目录在仓内，web dist 可用 `.gitignore` 占位）。
  */
 import type { BunPlugin } from "bun";
 import { existsSync, lstatSync, readdirSync, statSync } from "node:fs";
