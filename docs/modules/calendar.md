@@ -59,7 +59,7 @@ private world（壳 `subject_kind`）。
 - **task**：`status=pending` 根任务（**不**按 `in_backlog` 过滤：含清单/backlog
   与项目内）；live `due_at` 落在区间，或带 `recurrence` 时在区间内 **虚拟展开**后续实例（`virtual:
 true`，不写库）
-- **project**：有 `start_at`，且与区间相交
+- **project**：`status=active`，有 `start_at`，且与区间相交（不含已完成 / 搁置 / 取消）
 
 ## 提醒
 
