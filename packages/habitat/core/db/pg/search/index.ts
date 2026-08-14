@@ -25,7 +25,17 @@ export {
   createPgSearchIndexBackend,
   setSearchDocumentEmbedding,
   clearSearchDocumentEmbedding,
+  setSearchDocumentClusterId,
+  patchEntitySearchDocumentClusterIds,
 } from "./pg-search-index/backend.ts";
+export {
+  listActiveSemanticMemoryEmbeddings,
+  listActiveSemanticMemoryClusterIds,
+  findNearestClusteredNeighbor,
+  getEntitySearchDocumentClusterId,
+  type SemanticEmbeddingClusterRow,
+  type SemanticClusterIdRow,
+} from "./clustering-repo.ts";
 export {
   entitySearchDocumentsJoin,
   messageSearchDocumentsJoin,

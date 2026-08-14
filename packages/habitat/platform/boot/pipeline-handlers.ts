@@ -188,6 +188,31 @@ async function runReflectStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
   };
 }
 
+async function runSemanticClusterCalibrateStep(): Promise<MaintenanceStepResult> {
+  const { calibrateSemanticMemoryClusters } =
+    await import("@freeanima/habitat/capabilities/memory/clustering/calibrate.ts");
+  try {
+    const result = await calibrateSemanticMemoryClusters();
+    return {
+      ok: result.ok,
+      step_id: MAINTENANCE_STEP_IDS.semanticClusterCalibrate,
+      status: result.skipped ? "skipped" : result.ok ? "completed" : "failed",
+      output: result,
+      ...omitUndefined({
+        skipped_reason: result.skipped ? result.reason : undefined,
+        error: result.ok ? undefined : result.reason,
+      }),
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      step_id: MAINTENANCE_STEP_IDS.semanticClusterCalibrate,
+      status: "failed",
+      error: String(err),
+    };
+  }
+}
+
 async function runSelfLayerRefreshStep(): Promise<MaintenanceStepResult> {
   const selfContent = await loadSelfLayerPrompt();
   const result = await runSelfLayerRefresh(omitUndefined({ selfContent }));
@@ -310,6 +335,9 @@ export async function runMemoryMaintenanceStep(
     case MAINTENANCE_STEP_IDS.retainCatchUp:
       result = await runRetainCatchUpStep(ctx);
       break;
+    case MAINTENANCE_STEP_IDS.semanticClusterCalibrate:
+      result = await runSemanticClusterCalibrateStep();
+      break;
     case MAINTENANCE_STEP_IDS.reflect:
       result = await runReflectStep(ctx);
       break;
@@ -378,7 +406,7 @@ export async function checkRetainGapsAndNotify(): Promise<{
 }
 
 /**
- * 夜间 / 手动完整周期：cleanup → gap-check →（周一）reflect→self → temporal day→cascade。
+ * 夜间 / 手动完整周期：cleanup → gap-check →（周一）calibrate→reflect→self → temporal day→cascade。
  * **不**自动跑 retain 补跑。
  */
 export async function runNightlyMemoryMaintenance(
@@ -409,6 +437,13 @@ export async function runNightlyMemoryMaintenance(
   }
 
   if (trigger !== "scheduled" || shouldRunScheduledReflect(day)) {
+    const calibrate = await runMemoryMaintenanceStep(
+      MAINTENANCE_STEP_IDS.semanticClusterCalibrate,
+      { day, trigger },
+    );
+    steps[calibrate.step_id] = calibrate;
+    if (!calibrate.ok) ok = false;
+
     const reflect = await runMemoryMaintenanceStep(MAINTENANCE_STEP_IDS.reflect, {
       day,
       trigger,

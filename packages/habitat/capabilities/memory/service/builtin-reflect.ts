@@ -1,10 +1,15 @@
 /**
  * 内建 reflect：深睡四轮巩固迁入 MemoryService（#16102）。
+ * 按 search_documents.cluster_id 分批；NULL / 超字节再切块。
  */
 
+import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
+import { resolveMemoryClusteringConfig } from "@freeanima/habitat/core/config/schemas/memory-config.ts";
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
+import { listActiveSemanticMemoryClusterIds } from "@freeanima/habitat/core/db/pg/search/clustering-repo.ts";
+import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
 
 import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
 import { cstDayRange } from "../day-window/build-messages.ts";
@@ -22,10 +27,12 @@ import {
   snapshotChangeLog,
   type DeepSleepRound,
   type DeepSleepMode,
+  type DeepSleepChangeLog,
 } from "../reflect/types.ts";
 import { recordDeepSleepRun } from "../reflect/state.ts";
 import { isReflectLlmRegistered, runReflectLlm } from "./reflect-llm-port.ts";
 import type { ReflectEngineResult } from "./reflect.ts";
+import { partitionRowsByCluster } from "../clustering/batch.ts";
 
 const REFLECT_ROUNDS: DeepSleepRound[] = [
   "contradiction_expiry",
@@ -42,6 +49,68 @@ export type BuiltinReflectInput = {
   /** force → full；否则 incremental（对齐原定时深睡） */
   mode?: DeepSleepMode;
 };
+
+async function runReflectRoundsOnBatch(opts: {
+  batchRows: SemanticMemoryRow[];
+  mode: DeepSleepMode;
+  systemPrompt: string;
+  changeLog: DeepSleepChangeLog;
+}): Promise<{ roundsExecuted: number; toolCalls: number }> {
+  const { batchRows, mode, systemPrompt, changeLog } = opts;
+  let roundsExecuted = 0;
+  let toolCalls = 0;
+
+  for (let i = 0; i < REFLECT_ROUNDS.length; i++) {
+    const round = REFLECT_ROUNDS[i];
+    if (round === undefined) continue;
+
+    let splitCandidates: ReturnType<typeof filterSplitCandidates> | undefined;
+    if (round === "split") {
+      splitCandidates = filterSplitCandidates(batchRows, mode);
+      if (splitCandidates.length === 0) continue;
+    }
+    if (
+      round === "contradiction_expiry" &&
+      mode === "incremental" &&
+      !hasRecentMemoryUpdates(batchRows)
+    ) {
+      continue;
+    }
+    if (round === "merge" && mode === "incremental" && !hasRecentMemoryUpdates(batchRows)) {
+      continue;
+    }
+
+    const roundRows = round === "split" ? splitCandidates : batchRows;
+    if (!roundRows) continue;
+
+    const messages = buildDeepSleepMessages(
+      roundRows,
+      round,
+      changeLog,
+      omitUndefined({
+        splitTotalActive: round === "split" ? batchRows.length : undefined,
+      }),
+    );
+
+    const llm = await runReflectLlm({
+      systemPrompt,
+      userMessages: [
+        messages.allMemoriesText,
+        messages.changeLogText,
+        messages.preScreenText,
+        messages.instructionText,
+      ],
+      toolNames: [...DEEP_SLEEP_TOOL_NAMES],
+      round,
+      changeLog,
+    });
+    toolCalls += llm.tool_calls;
+    roundsExecuted += 1;
+    void snapshotChangeLog(changeLog);
+  }
+
+  return { roundsExecuted, toolCalls };
+}
 
 export async function runBuiltinReflect(
   input: BuiltinReflectInput = {},
@@ -72,16 +141,41 @@ export async function runBuiltinReflect(
     };
   }
 
-  const { bytes } = formatAllMemoriesMessage(allRows);
-  const sizeStatus = checkJsonSize(bytes);
-  if (sizeStatus === "error") {
-    logComponent("memory").error("reflect refused", { day, reason: "json_too_large", bytes });
-    return {
-      merged: 0,
-      deprecated: 0,
-      conflicts: 0,
-      summary: `json_too_large:${(bytes / 1024).toFixed(1)}KB`,
-    };
+  const clustering = resolveMemoryClusteringConfig(getActiveRuntimeConfig().data);
+  const clusterRows = await listActiveSemanticMemoryClusterIds();
+  const clusterById = new Map<number, number | null>();
+  for (const row of clusterRows) {
+    clusterById.set(row.entityId, row.clusterId);
+  }
+
+  let batches = partitionRowsByCluster(allRows, clusterById, clustering.max_batch_bytes);
+
+  // 无簇信息时退化为按字节切全量（避免整库 300KB 一刀切）
+  if (batches.length === 1 && batches[0] && checkJsonSize(batches[0].bytes) === "error") {
+    batches = partitionRowsByCluster(
+      allRows,
+      new Map(allRows.map((r) => [r.id, null])),
+      clustering.max_batch_bytes,
+    );
+  }
+
+  // 兼容：若仍是单批且体积仅 warn，继续；error 级单条超大仍尝试跑（已无法再切）
+  const { bytes: totalBytes } = formatAllMemoriesMessage(allRows);
+  if (batches.length === 1) {
+    const sizeStatus = checkJsonSize(batches[0]?.bytes ?? totalBytes);
+    if (sizeStatus === "error" && (batches[0]?.rows.length ?? 0) > 1) {
+      logComponent("memory").error("reflect refused", {
+        day,
+        reason: "json_too_large",
+        bytes: batches[0]?.bytes,
+      });
+      return {
+        merged: 0,
+        deprecated: 0,
+        conflicts: 0,
+        summary: `json_too_large:${((batches[0]?.bytes ?? 0) / 1024).toFixed(1)}KB`,
+      };
+    }
   }
 
   const parts = await decomposeSystemPromptParts(selfContent, null);
@@ -90,59 +184,33 @@ export async function runBuiltinReflect(
   let totalToolCalls = 0;
   let roundsExecuted = 0;
 
-  for (let i = 0; i < REFLECT_ROUNDS.length; i++) {
-    const round = REFLECT_ROUNDS[i];
-    if (round === undefined) continue;
-
-    let splitCandidates: ReturnType<typeof filterSplitCandidates> | undefined;
-    if (round === "split") {
-      splitCandidates = filterSplitCandidates(allRows, mode);
-      if (splitCandidates.length === 0) continue;
-    }
-    if (
-      round === "contradiction_expiry" &&
-      mode === "incremental" &&
-      !hasRecentMemoryUpdates(allRows)
-    ) {
-      continue;
-    }
-    if (round === "merge" && mode === "incremental" && !hasRecentMemoryUpdates(allRows)) {
-      continue;
-    }
-
-    const roundRows = round === "split" ? splitCandidates : allRows;
-    if (!roundRows) continue;
-
-    const messages = buildDeepSleepMessages(
-      roundRows,
-      round,
-      changeLog,
-      omitUndefined({
-        splitTotalActive: round === "split" ? allRows.length : undefined,
-      }),
-    );
-
-    const llm = await runReflectLlm({
+  for (let bi = 0; bi < batches.length; bi++) {
+    const batch = batches[bi];
+    if (!batch || batch.rows.length === 0) continue;
+    logComponent("memory").info("reflect batch", {
+      day,
+      batchIndex: bi,
+      batchCount: batches.length,
+      clusterId: batch.clusterId,
+      rows: batch.rows.length,
+      bytes: batch.bytes,
+    });
+    const result = await runReflectRoundsOnBatch({
+      batchRows: batch.rows,
+      mode,
       systemPrompt,
-      userMessages: [
-        messages.allMemoriesText,
-        messages.changeLogText,
-        messages.preScreenText,
-        messages.instructionText,
-      ],
-      toolNames: [...DEEP_SLEEP_TOOL_NAMES],
-      round,
       changeLog,
     });
-    totalToolCalls += llm.tool_calls;
-    roundsExecuted += 1;
-    void snapshotChangeLog(changeLog);
+    roundsExecuted += result.roundsExecuted;
+    totalToolCalls += result.toolCalls;
   }
 
   recordDeepSleepRun({
     day,
     roundsCompleted: roundsExecuted,
-    stats: omitUndefined({ total_tool_calls: totalToolCalls }),
+    stats: omitUndefined({
+      total_tool_calls: totalToolCalls,
+    }),
   });
 
   const merged = changeLog.addedIds.length;
@@ -152,6 +220,7 @@ export async function runBuiltinReflect(
   logComponent("memory").info("builtin reflect completed", {
     day,
     mode,
+    batches: batches.length,
     roundsExecuted,
     totalToolCalls,
     merged,
@@ -162,6 +231,6 @@ export async function runBuiltinReflect(
     merged,
     deprecated,
     conflicts,
-    summary: `reflect:${mode}:rounds=${roundsExecuted}:tools=${totalToolCalls}`,
+    summary: `reflect:${mode}:batches=${batches.length}:rounds=${roundsExecuted}:tools=${totalToolCalls}`,
   };
 }

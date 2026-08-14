@@ -147,8 +147,41 @@ export async function clearSearchDocumentEmbedding(
   const doc_key = searchDocKey(resource, sourceId);
   await getDb()
     .update(searchDocuments)
-    .set({ embedding: null, updated_at: new Date() })
+    .set({ embedding: null, cluster_id: null, updated_at: new Date() })
     .where(eq(searchDocuments.doc_key, doc_key));
+}
+
+export async function setSearchDocumentClusterId(
+  resource: "entity" | "message",
+  sourceId: string | number,
+  clusterId: number | null,
+): Promise<boolean> {
+  const doc_key = searchDocKey(resource, sourceId);
+  const rows = await getDb()
+    .update(searchDocuments)
+    .set({ cluster_id: clusterId, updated_at: new Date() })
+    .where(eq(searchDocuments.doc_key, doc_key))
+    .returning({ doc_key: searchDocuments.doc_key });
+  return rows.length > 0;
+}
+
+/** Batch-update cluster_id by entity source_id (resource=entity). */
+export async function patchEntitySearchDocumentClusterIds(
+  patches: ReadonlyArray<{ sourceId: number; clusterId: number | null }>,
+): Promise<number> {
+  if (patches.length === 0) return 0;
+  let updated = 0;
+  const now = new Date();
+  for (const patch of patches) {
+    const doc_key = searchDocKey("entity", patch.sourceId);
+    const rows = await getDb()
+      .update(searchDocuments)
+      .set({ cluster_id: patch.clusterId, updated_at: now })
+      .where(eq(searchDocuments.doc_key, doc_key))
+      .returning({ doc_key: searchDocuments.doc_key });
+    if (rows.length > 0) updated += 1;
+  }
+  return updated;
 }
 
 export async function listSearchDocumentKeys(

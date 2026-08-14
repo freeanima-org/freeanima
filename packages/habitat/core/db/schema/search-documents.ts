@@ -1,5 +1,5 @@
 import { sql, type SQL } from "drizzle-orm";
-import { bigint, index, pgTable, text, vector } from "drizzle-orm/pg-core";
+import { bigint, index, integer, pgTable, text, vector } from "drizzle-orm/pg-core";
 
 import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "./embedding.ts";
@@ -25,6 +25,8 @@ export const searchDocuments = pgTable(
     content: text("content").notNull().default(""),
     fts_segmented: text("fts_segmented"),
     embedding: vector("embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
+    /** 语义记忆向量簇（DBSCAN）；旁表派生字段，重建索引后可为空直至再校准 */
+    cluster_id: integer("cluster_id"),
     search_fts: tsvector("search_fts").generatedAlwaysAs(
       (): SQL => sql`CASE
         WHEN ${searchDocuments.resource} = 'message'
@@ -60,6 +62,7 @@ export const searchDocuments = pgTable(
     index("idx_search_documents_conversation").on(t.conversation_id),
     index("idx_search_documents_search_fts").using("gin", t.search_fts),
     index("idx_search_documents_deleted_at").on(t.deleted_at),
+    index("idx_search_documents_cluster_id").on(t.cluster_id),
   ],
 );
 

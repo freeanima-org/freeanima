@@ -30,8 +30,16 @@ title: 记忆维护（原睡眠机制）
 
 1. `conversation-cleanup`
 2. **Retain 缺口检查**（有缺口 → Inbox 通知；**不自动补跑**）
-3. CST 周一：`reflect` → `self-layer-refresh`
+3. CST 周一：`semantic-cluster-calibrate`（DBSCAN 全量校准 `search_documents.cluster_id`）→ `reflect`（按簇分批）→ `self-layer-refresh`
 4. `temporal-summary-day` → `temporal-summary-cascade`
+
+### 语义记忆聚类分批（#17）
+
+- 聚合依据：`search_documents.embedding`（向量 DBSCAN / 余弦距离），**不是**文本 FTS。
+- 簇号存在旁表 `search_documents.cluster_id`（与 embedding 同表）；噪声 / 未分组为 `NULL`。
+- 增量：embedding 写入后挂靠最近已标簇邻居（HNSW）；周全量校准纠偏。
+- 配置：`memory.clustering`（`eps` / `min_points` / `max_batch_bytes` / `max_calibrate_n`）。
+- 全量校准条数默认上限 5000（保护 2C2G）；超限 skip + soft-failure，reflect 仍可按已有簇 / NULL 分批。
 
 ## 运维 UI 挂载
 

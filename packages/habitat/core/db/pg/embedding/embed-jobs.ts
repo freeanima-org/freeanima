@@ -3,7 +3,7 @@ import { getActiveRuntimeConfig, getResolvedEmbeddingConfig } from "@freeanima/h
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 import { expandJobsToUnits } from "./batch-pack.ts";
-import { getEmbedTextFn, getEmbedTextsFn } from "./runtime.ts";
+import { getEmbedTextFn, getEmbedTextsFn, getAfterEmbeddingStored } from "./runtime.ts";
 import {
   setAutobiographicalMemoryEmbedding,
   setEntityEmbedding,
@@ -164,6 +164,18 @@ export async function embedAndStoreJobsResult(
     const ok = await storeJobEmbedding(entry.job, merged);
     if (ok) {
       updated += 1;
+      const after = getAfterEmbeddingStored();
+      if (after) {
+        try {
+          await after({ kind: entry.job.kind, id: entry.job.id, embedding: merged });
+        } catch (err) {
+          log.warn("afterEmbeddingStored failed", {
+            kind: entry.job.kind,
+            id: entry.job.id,
+            error: String(err),
+          });
+        }
+      }
     } else {
       storeFailure = `search_documents missing for ${entry.job.kind}:${entry.job.id}`;
       log.warn("embedding store skipped", { kind: entry.job.kind, id: entry.job.id });
