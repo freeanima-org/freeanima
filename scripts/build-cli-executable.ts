@@ -24,7 +24,7 @@ import {
   createTiktokenWasmPlugin,
   resolveTiktokenWasmPath,
 } from "./tiktoken-wasm-plugin.ts";
-import { createDirImportPlugin } from "./dir-import-plugin.ts";
+import { createDirImportPlugin } from "bun-plugin-dir-import";
 import { emitPackArtifact } from "./emit-pack-artifact.ts";
 
 const ROOT = join(import.meta.dir, "..");

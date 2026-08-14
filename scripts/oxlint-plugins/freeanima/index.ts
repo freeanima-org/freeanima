@@ -1,8 +1,8 @@
 /**
  * FreeAnima 仓库自定义 oxlint 护栏（jsPlugins）。
  * 规则名：`freeanima/<rule>`。
+ * `dir:` 存在性由外部包 `bun-plugin-dir-import/oxlint` 提供。
  */
-import { dirImportExists } from "./rules/dir-import-exists.ts";
 import { importDepth } from "./rules/import-depth.ts";
 import { layerDeps } from "./rules/layer-deps.ts";
 import { noDirectChat } from "./rules/no-direct-chat.ts";
@@ -14,7 +14,6 @@ const plugin = {
     name: "freeanima",
   },
   rules: {
-    "dir-import-exists": dirImportExists,
     "import-depth": importDepth,
     "layer-deps": layerDeps,
     "no-direct-offline-cache": noDirectOfflineCache,

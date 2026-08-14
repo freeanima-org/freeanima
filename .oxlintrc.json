@@ -8,7 +8,7 @@
     "suspicious": "error"
   },
   "plugins": ["typescript", "oxc", "import", "unicorn"],
-  "jsPlugins": ["./scripts/oxlint-plugins/freeanima/index.ts"],
+  "jsPlugins": ["./scripts/oxlint-plugins/freeanima/index.ts", "bun-plugin-dir-import/oxlint"],
   "env": {
     "node": true
   },
@@ -23,7 +23,7 @@
     "packages/frontend/portal/extension/**"
   ],
   "rules": {
-    "freeanima/dir-import-exists": "error",
+    "dir-import/dir-import-exists": "error",
     "freeanima/import-depth": "error",
     "freeanima/layer-deps": "error",
     "freeanima/no-direct-offline-cache": "error",

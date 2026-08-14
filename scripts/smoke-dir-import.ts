@@ -13,7 +13,7 @@ import { listEmbeddedMigrationsFromDir } from "@freeanima/habitat/core/db/migrat
 import { listEmbeddedDocsFromDir } from "@freeanima/habitat/capabilities/tools/docs-dir-import";
 import { listEmbeddedWebDistFromDir } from "@freeanima/portal/cli/web/web-dist-dir-import";
 
-import { createDirImportPlugin } from "./dir-import-plugin.ts";
+import { createDirImportPlugin } from "bun-plugin-dir-import";
 
 const ROOT = join(import.meta.dir, "..");
 const MIGRATIONS_DIR = join(ROOT, "packages/habitat/core/migrations");
