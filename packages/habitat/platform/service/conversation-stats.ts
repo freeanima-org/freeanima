@@ -199,10 +199,7 @@ export async function computeStats(
   const messages = message_count > 0 ? await deps.conversation.load(conversationId) : [];
   const assistant_msgs = messages.filter((m) => m.role === "assistant");
   const assistant_turns = assistant_msgs.length;
-  const meta =
-    message_count > 0 ? await deps.conversation.loadConversationMeta(conversationId) : null;
-  const fallbackModel = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
-  const model = meta != null && isConversationMeta(meta) ? meta.model : fallbackModel;
+  const model = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
 
   let input_tokens = 0;
   let output_tokens = 0;

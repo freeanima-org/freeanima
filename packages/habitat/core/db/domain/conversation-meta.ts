@@ -99,9 +99,14 @@ export function parseConversationGoal(raw: unknown): ConversationGoal | null {
 /**
  * Conversation row projection (not a message). Was JSONL first-line
  * `{ role: "conversation_meta" }`; PG stores columns on `conversations`.
+ *
+ * `model` is a write-only marker (last turn writeback / future session-level
+ * routing). Business paths must not read it — use `getProfileHopModel` /
+ * profile hop instead.
  */
 export const conversationMetaSchema = z
   .object({
+    /** Write-only marker; do not use for LLM routing or token budgets. */
     model: z.string(),
     cached_toolsets: z.array(z.string()).default([]),
     staged_toolsets: z.array(z.string()).optional(),

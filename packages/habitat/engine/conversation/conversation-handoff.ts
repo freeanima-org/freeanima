@@ -29,8 +29,7 @@ export async function generateConversationHandoffSummary(
   }
 
   const systemPrompt = meta.system_prompt ?? "";
-  const model = meta.model;
-  return generateConversationSummary(msgs, prevState, { l2: l4, l3: l4 }, systemPrompt, model, {
+  return generateConversationSummary(msgs, prevState, { l2: l4, l3: l4 }, systemPrompt, {
     parentConversationId: conversationId,
     runKind: AUTO_LLM_RUN_KIND_HANDOFF_SUMMARY,
   });

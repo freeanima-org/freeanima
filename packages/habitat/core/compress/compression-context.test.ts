@@ -50,4 +50,22 @@ describe("buildCompressOptionsResolved", () => {
     expect(opts.contextWindow).toBe(256_000);
     expect(opts.effectiveBudgetOverride).toBe(256_000 - 8192);
   });
+
+  it("ignores meta.model and uses fallbackModel for budget", async () => {
+    registerCatalogContextWindowLookup(async (model) => (model === "hop-model" ? 100_000 : 1));
+    const opts = await buildCompressOptionsResolved(
+      {
+        model: "stale-meta-model",
+        cached_toolsets: [],
+        functions: [],
+        timestamp: new Date().toISOString(),
+        system_prompt: "sys",
+      },
+      null,
+      "hop-model",
+    );
+    expect(opts.model).toBe("hop-model");
+    expect(opts.systemPrompt).toBe("sys");
+    expect(opts.contextWindow).toBe(100_000);
+  });
 });

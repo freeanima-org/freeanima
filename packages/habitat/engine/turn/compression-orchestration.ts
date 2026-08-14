@@ -87,11 +87,8 @@ export async function recompressConversation(
   if (updated && newState) {
     if (boundariesChanged) {
       const systemSnapshot = isConversationMeta(meta) ? (meta.system_prompt ?? "") : "";
-      const model = isConversationMeta(meta)
-        ? meta.model
-        : getProfileHopModel(getActiveRuntimeConfig().data, PROFILE_CHAT);
       await updateConversationMetaField(conversationId, { compression: newState });
-      scheduleCompressionSummary(conversationId, prevState, newState, systemSnapshot, model);
+      scheduleCompressionSummary(conversationId, prevState, newState, systemSnapshot);
     } else {
       await updateConversationMetaField(conversationId, { compression: newState });
     }

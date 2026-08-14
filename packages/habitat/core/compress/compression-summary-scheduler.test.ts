@@ -91,12 +91,13 @@ describe("scheduleCompressionSummary writeback", () => {
     restores.push(chatSpy);
 
     const cut: CompressionState = { l2: 3, l3: 3 };
-    scheduleCompressionSummary("conv-a", null, cut, "sys", "test-model");
+    scheduleCompressionSummary("conv-a", null, cut, "sys");
     const job = await flushCompressionSummaries("conv-a");
 
     expect(job?.ok).toBe(true);
     expect(job?.summary).toBe("I discussed login fixes.");
     expect(patchCalls.at(-1)?.summary).toBe("I discussed login fixes.");
+    expect(chatSpy.mock.calls[0]?.[1]?.model).toBeUndefined();
   });
 
   it("returns ok:false with runId when LLM returns empty, without inventing summary", async () => {
@@ -104,7 +105,7 @@ describe("scheduleCompressionSummary writeback", () => {
     restores.push(chatSpy);
 
     const cut: CompressionState = { l2: 3, l3: 3 };
-    scheduleCompressionSummary("conv-b", null, cut, "sys", "test-model");
+    scheduleCompressionSummary("conv-b", null, cut, "sys");
     const job = await flushCompressionSummaries("conv-b");
 
     expect(job?.ok).toBe(false);
@@ -126,7 +127,7 @@ describe("scheduleCompressionSummary writeback", () => {
     restores.push(chatSpy);
 
     const cut: CompressionState = { l2: 3, l3: 3 };
-    scheduleCompressionSummary("conv-hang", null, cut, "sys", "test-model");
+    scheduleCompressionSummary("conv-hang", null, cut, "sys");
     for (let i = 0; i < 50 && chatSpy.mock.calls.length === 0; i++) {
       await new Promise<void>((r) => {
         setTimeout(r, 5);
@@ -166,7 +167,7 @@ describe("scheduleCompressionSummary writeback", () => {
     restores.push(chatSpy);
 
     const cut: CompressionState = { l2: 3, l3: 3 };
-    scheduleCompressionSummary("conv-home", null, cut, "sys", "test-model");
+    scheduleCompressionSummary("conv-home", null, cut, "sys");
     for (let i = 0; i < 50 && chatSpy.mock.calls.length === 0; i++) {
       await new Promise<void>((r) => {
         setTimeout(r, 5);

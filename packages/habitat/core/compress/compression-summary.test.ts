@@ -83,21 +83,35 @@ describe("generateConversationSummary", () => {
     const messages = [msg("user", 2, "fix login"), msg("assistant", 3, "done")];
     const newState: CompressionState = { l2: 3, l3: 3 };
 
-    const result = await generateConversationSummary(
-      messages,
-      null,
-      newState,
-      "sys",
-      "test-model",
-      { preSliced: true },
-    );
+    const result = await generateConversationSummary(messages, null, newState, "sys", {
+      preSliced: true,
+      model: "test-model",
+    });
 
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.summary).toBe("I fixed login.");
     expect(chatSpy).toHaveBeenCalledTimes(1);
     const [, opts] = chatSpy.mock.calls[0]!;
     expect(opts?.profileId).toBe(llm.PROFILE_SUMMARY);
+    expect(opts?.model).toBe("test-model");
     expect(opts?.requestParams).toEqual(COMPRESSION_SUMMARY_REQUEST_PARAMS);
+  });
+
+  it("omits model override so PROFILE_SUMMARY hop is used", async () => {
+    const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "ok" });
+    restores.push(chatSpy);
+
+    await generateConversationSummary(
+      [msg("user", 2, "hi"), msg("assistant", 3, "yo")],
+      null,
+      { l2: 3, l3: 3 },
+      "sys",
+      { preSliced: true },
+    );
+
+    const [, opts] = chatSpy.mock.calls[0]!;
+    expect(opts?.profileId).toBe(llm.PROFILE_SUMMARY);
+    expect(opts?.model).toBeUndefined();
   });
 
   it("returns runId when LLM output is empty", async () => {
@@ -109,8 +123,7 @@ describe("generateConversationSummary", () => {
       null,
       { l2: 3, l3: 3 },
       "sys",
-      "test-model",
-      { preSliced: true },
+      { preSliced: true, model: "test-model" },
     );
 
     expect(result.ok).toBe(false);

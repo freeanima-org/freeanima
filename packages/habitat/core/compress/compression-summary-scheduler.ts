@@ -66,8 +66,8 @@ async function finalizeCompressionSummary(
   prevState: CompressionState | null,
   cutState: CompressionState,
   systemPromptSnapshot: string,
-  model: string,
   homeAtSchedule: string,
+  model?: string,
 ): Promise<CompressionSummaryJobResult> {
   if (!homeStillMatches(homeAtSchedule)) {
     getRuntimeLogger()
@@ -79,14 +79,11 @@ async function finalizeCompressionSummary(
   const fromPos = (prevL2 ?? 0) + 1;
   const slice = await listMessagesByPosRange(conversationId, fromPos, cutState.l2);
 
-  const gen = await generateConversationSummary(
-    slice,
-    prevState,
-    cutState,
-    systemPromptSnapshot,
-    model,
-    { preSliced: true, parentConversationId: conversationId },
-  );
+  const gen = await generateConversationSummary(slice, prevState, cutState, systemPromptSnapshot, {
+    preSliced: true,
+    parentConversationId: conversationId,
+    ...omitUndefined({ model }),
+  });
 
   if (!homeStillMatches(homeAtSchedule)) {
     getRuntimeLogger()
@@ -153,13 +150,16 @@ async function finalizeCompressionSummary(
   return omitUndefined({ ok: false as const, error: gen.error, runId: gen.runId });
 }
 
-/** Schedule async summary generation when compression boundaries change */
+/**
+ * Schedule async summary generation when compression boundaries change.
+ * Omit `model` to use PROFILE_SUMMARY hop (never conversation meta.model).
+ */
 export function scheduleCompressionSummary(
   conversationId: string,
   prevState: CompressionState | null,
   cutState: CompressionState,
   systemPromptSnapshot: string,
-  model: string,
+  model?: string,
 ): void {
   const homeAtSchedule = process.env.FREEANIMA_HOME ?? "";
   const prev = pendingCompressionSummaries.get(conversationId);
@@ -170,8 +170,8 @@ export function scheduleCompressionSummary(
       prevState,
       cutState,
       systemPromptSnapshot,
-      model,
       homeAtSchedule,
+      model,
     );
   };
   const p = run()

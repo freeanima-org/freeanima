@@ -19,6 +19,7 @@ export const conversations = pgTable(
   "conversations",
   {
     id: text("id").primaryKey(),
+    /** Write-only marker synced from meta; do not use for LLM routing. */
     model: text("model").notNull(),
     title: text("title"),
     cwd: text("cwd"),
