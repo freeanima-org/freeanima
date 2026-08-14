@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { BOOKMARK_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { BOOKMARK_COMPONENT };
 
-export const BOOKMARK_COMPONENT = "bookmark" as const;
+import { z } from "zod";
 
 export const bookmarkKindSchema = z.enum(["folder", "url"]);
 

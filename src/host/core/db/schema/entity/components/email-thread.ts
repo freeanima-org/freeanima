@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { EMAIL_THREAD_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { EMAIL_THREAD_COMPONENT };
 
-export const EMAIL_THREAD_COMPONENT = "email_thread" as const;
+import { z } from "zod";
 
 export const emailThreadBodySchema = z.object({
   account_id: z.number().int().positive(),

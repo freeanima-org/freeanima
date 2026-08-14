@@ -34,8 +34,8 @@ export function VaultRefField({
   label,
   hint,
   disabled = false,
-  type = "password",
-  placeholder,
+  type = "text",
+  placeholder = "未设置",
   subjectKind = "agent",
 }: VaultRefFieldProps): ReactNode {
   const [open, setOpen] = useState(false);
@@ -49,7 +49,7 @@ export function VaultRefField({
         <Input
           type={inputType}
           className="min-w-0 flex-1"
-          {...(placeholder !== undefined ? { placeholder } : {})}
+          placeholder={placeholder}
           value={value}
           disabled={disabled}
           autoComplete="off"

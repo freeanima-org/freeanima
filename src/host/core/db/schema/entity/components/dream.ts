@@ -1,7 +1,9 @@
+import { DREAM_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { DREAM_COMPONENT };
+
 import { z } from "zod";
 
 /** Semantic tag on content_block（梦境叙事；parent = dated diary_entry） */
-export const DREAM_COMPONENT = "dream" as const;
 
 export const dreamEpisodicSnippetSchema = z.object({
   conversation_id: z.string(),

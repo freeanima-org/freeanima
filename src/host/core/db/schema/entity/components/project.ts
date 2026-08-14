@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { PROJECT_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { PROJECT_COMPONENT };
 
-export const PROJECT_COMPONENT = "project" as const;
+import { z } from "zod";
 
 export const projectStatusSchema = z.enum(["active", "completed", "cancelled", "on_hold"]);
 export type ProjectStatus = z.infer<typeof projectStatusSchema>;

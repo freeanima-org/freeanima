@@ -1,8 +1,9 @@
+import { POMODORO_TASK_FOCUS_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { POMODORO_TASK_FOCUS_COMPONENT };
+
 import { z } from "zod";
 
 import { pomodoroPhaseSchema } from "./pomodoro-session.ts";
-
-export const POMODORO_TASK_FOCUS_COMPONENT = "pomodoro_task_focus" as const;
 
 export const pomodoroTaskFocusBodySchema = z.object({
   session_local_id: z.string().min(1),

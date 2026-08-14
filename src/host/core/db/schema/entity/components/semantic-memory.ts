@@ -1,3 +1,6 @@
+import { SEMANTIC_MEMORY_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { SEMANTIC_MEMORY_COMPONENT };
+
 import { z } from "zod";
 
 import {
@@ -15,8 +18,6 @@ export {
   type SemanticMemoryType,
   type SemanticMemoryStatus,
 };
-
-export const SEMANTIC_MEMORY_COMPONENT = "semantic_memory" as const;
 
 export const semanticMemoryBodySchema = z.object({
   /** 旧 semantic_memory.type（与 entities.type 区分） */

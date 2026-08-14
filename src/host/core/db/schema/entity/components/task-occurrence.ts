@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { TASK_OCCURRENCE_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { TASK_OCCURRENCE_COMPONENT };
 
-export const TASK_OCCURRENCE_COMPONENT = "task_occurrence" as const;
+import { z } from "zod";
 
 /** 重复任务某一期的完成历史（不可变快照） */
 export const taskOccurrenceBodySchema = z.object({

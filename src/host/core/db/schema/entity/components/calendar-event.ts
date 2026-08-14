@@ -1,8 +1,9 @@
+import { CALENDAR_EVENT_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { CALENDAR_EVENT_COMPONENT };
+
 import { z } from "zod";
 
 import { schedulableBodySchema } from "./schedulable.ts";
-
-export const CALENDAR_EVENT_COMPONENT = "calendar_event" as const;
 
 export const calendarEventBodySchema = schedulableBodySchema.extend({
   start_at: z.string().min(1),

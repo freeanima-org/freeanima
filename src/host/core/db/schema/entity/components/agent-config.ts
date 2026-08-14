@@ -1,8 +1,9 @@
+import { AGENT_CONFIG_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { AGENT_CONFIG_COMPONENT };
+
 import { z } from "zod";
 
 import { subjectConfigBodySchema } from "./subject-config.ts";
-
-export const AGENT_CONFIG_COMPONENT = "agent_config" as const;
 
 /** 展示字段在 entities.title / summary / content */
 export const agentConfigBodySchema = subjectConfigBodySchema;

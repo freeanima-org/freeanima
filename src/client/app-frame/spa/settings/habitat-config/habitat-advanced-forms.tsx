@@ -192,13 +192,8 @@ function EmbeddingForm({
       {hubConfigTextField("base_url", coerceString(value.base_url ?? ""), (v) =>
         onChange({ ...value, base_url: v }),
       )}
-      {hubConfigTextField(
-        "api_key",
-        coerceString(value.api_key ?? ""),
-        (v) => onChange({ ...value, api_key: v }),
-        {
-          type: "password",
-        },
+      {hubConfigVaultField("api_key", coerceString(value.api_key ?? ""), (v) =>
+        onChange({ ...value, api_key: v }),
       )}
       {hubConfigTextField("model", coerceString(value.model ?? ""), (v) =>
         onChange({ ...value, model: v }),

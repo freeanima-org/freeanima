@@ -12,6 +12,7 @@ import {
 } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { formatDateTime } from "@freeanima/ui-kit/lib/datetime-local.ts";
+import { COMPONENT_IDS } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
 import type { EntityAdminType } from "@freeanima/shared/rpc-contract/frames/entity.ts";
 import { Boxes } from "lucide-react";
 
@@ -26,6 +27,7 @@ import {
 
 const PAGE_SIZE = 20;
 const TYPE_ALL = "__all__";
+const COMPONENT_ALL = "__all__";
 const ENTITY_TYPES: EntityAdminType[] = ["content", "world", "agent", "user"];
 
 type EntityTab = "all" | "trash";
@@ -257,12 +259,26 @@ export function EntityApp() {
             ))}
           </SelectContent>
         </Select>
-        <Input
-          className="h-8 w-full max-w-[10rem] sm:h-9"
-          placeholder="主组件"
-          value={primaryComponent}
-          onChange={(e) => setPrimaryComponent(e.target.value)}
-        />
+        <Select
+          selectedKey={primaryComponent || COMPONENT_ALL}
+          onSelectionChange={(key) => {
+            if (key == null) return;
+            const v = String(key);
+            setPrimaryComponent(v === COMPONENT_ALL ? "" : v);
+          }}
+        >
+          <SelectTrigger size="sm" className="w-[11rem]">
+            <SelectValue placeholder="主组件" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem id={COMPONENT_ALL}>全部主组件</SelectItem>
+            {COMPONENT_IDS.map((id) => (
+              <SelectItem key={id} id={id}>
+                {id}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Input
           className="h-8 w-full sm:h-9 sm:max-w-xs"
           placeholder="关键词、id 或 anima:id"

@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { TEMPORAL_SUMMARY_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { TEMPORAL_SUMMARY_COMPONENT };
 
-export const TEMPORAL_SUMMARY_COMPONENT = "temporal_summary" as const;
+import { z } from "zod";
 
 export const temporalSummaryWindowSchema = z.enum(["day", "month", "year"]);
 

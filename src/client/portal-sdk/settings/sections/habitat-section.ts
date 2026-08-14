@@ -25,8 +25,9 @@ export const habitatFields = defineSettingsForm({
     },
     {
       key: "remoteAuthToken",
-      type: "password",
+      type: "text",
       label: "栖息地 API Token",
+      placeholder: "未设置",
       description: "anima token create 生成；REST/SAP 访问栖息地时必填",
       group: "连接栖息地",
     },

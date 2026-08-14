@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { WORLD_CONFIG_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { WORLD_CONFIG_COMPONENT };
 
-export const WORLD_CONFIG_COMPONENT = "world_config" as const;
+import { z } from "zod";
 
 export const worldGrantPermissionSchema = z.enum(["read", "write"]);
 export type WorldGrantPermission = z.infer<typeof worldGrantPermissionSchema>;

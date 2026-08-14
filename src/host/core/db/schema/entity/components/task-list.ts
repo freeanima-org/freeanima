@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { TASK_LIST_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { TASK_LIST_COMPONENT };
 
-export const TASK_LIST_COMPONENT = "task_list" as const;
+import { z } from "zod";
 
 export const taskListBodySchema = z.object({
   sort_order: z.number().int().optional(),
