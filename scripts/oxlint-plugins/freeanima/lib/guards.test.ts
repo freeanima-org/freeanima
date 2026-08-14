@@ -74,7 +74,31 @@ describe("layer-deps", () => {
     expect(checkLayerDeps("src/shared/rpc-contract/x.ts", "@freeanima/host/core/util")).toMatch(
       /shared 不得 import host/,
     );
+    expect(
+      checkLayerDeps("src/shared/util/x.ts", "@freeanima/host/kernel/config-mechanism"),
+    ).toMatch(/shared 不得 import host/);
     expect(checkLayerDeps("src/shared/util/x.ts", "@freeanima/shared/db-shapes")).toBeNull();
+  });
+
+  test("host-kernel 仅可依赖 kernel 与 shared", () => {
+    expect(
+      checkLayerDeps(
+        "src/host/kernel/config-mechanism/config-store.ts",
+        "@freeanima/shared/util/random-uuid.ts",
+      ),
+    ).toBeNull();
+    expect(
+      checkLayerDeps(
+        "src/host/kernel/config-mechanism/section-registry.ts",
+        "@freeanima/host/core/config",
+      ),
+    ).toMatch(/host\/kernel/);
+    expect(
+      checkLayerDeps(
+        "src/host/core/config/config-store.ts",
+        "@freeanima/host/kernel/config-mechanism",
+      ),
+    ).toBeNull();
   });
 
   test("feature-ui/client cannot import host/core/db or drizzle-orm", () => {

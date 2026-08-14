@@ -16,11 +16,11 @@ portal/cli → platform → capabilities → engine → core → kernel
 
 | Layer | Directory | Responsibility |
 | ----- | --------- | -------------- |
-| kernel | `src/host/kernel/` | HookRegistry、logging（**方向**：加厚为 config/loop **机制**，无产品段；见 [`src-layering.md`](../../docs/product/src-layering.md)） |
-| core | `src/host/core/` | PG、Redis 原语、config、tool/LLM 原语、skill |
+| kernel | `src/host/kernel/` | HookRegistry、logging、**config-mechanism**（容器 / section 注册 / 热 apply 端口；无 llm/mcp 产品字段）；见 [`src-layering.md`](../../docs/product/src-layering.md) |
+| core | `src/host/core/` | PG、Redis 原语、**产品 config 段 Zod / helpers**、tool/LLM 原语、skill |
 | engine | `src/host/engine/` | conversation、turn、loop、goal、pipeline |
 | capabilities | `src/host/capabilities/` | self、memory、tools、outpost、mcp-*、… |
-| platform | `src/host/platform/` | 组合根；`service/` = AppRuntime |
+| platform | `src/host/platform/` | 组合根；`service/` = AppRuntime；config apply 注册 |
 
 并列：`shared`（无 React）、`ui-kit`（仅 client）、`client`、`features`、`portal`。
 
@@ -38,7 +38,7 @@ app-frame → features/*/ui → { ui-kit, portal-sdk } → shared
 
 | Source | Allowed | Forbidden |
 | ------ | ------- | --------- |
-| `host/kernel` | kernel | 其它 |
+| `host/kernel` | kernel、shared（纯工具） | 其它 host、features、client、ui-kit |
 | `host/core` | kernel, core | engine+ |
 | `host/engine` | kernel, core, engine | platform, capabilities |
 | `host/capabilities/*` | kernel, core, own pack, shared 契约 | platform, features, other capabilities*, engine |
@@ -47,9 +47,9 @@ app-frame → features/*/ui → { ui-kit, portal-sdk } → shared
 | `ui-kit` | shared util（极少） | features, host, client |
 | `shared` | shared（含 `util` / `pg-shapes`；`db-shapes`/`entity-shapes` 为过渡 re-export；默认无 DOM） | host、ui-kit、client、React；DOM/`node:fs` 仅 `*-browser` / `*-node` |
 
-**方向：** `shared` 不得依赖 host（P1 已剪）；`omitUndefined` / `randomUuid` / CST·农历工具 SSOT 在 `@freeanima/shared/util`；存储形状前端吃 `@freeanima/shared/pg-shapes`（P2 codegen 替代 `createSelectSchema`）。三分包与 portal 归属 → [`src-layering.md`](../../docs/product/src-layering.md)。
+**方向：** `shared` 不得依赖 host（P1 已剪）；`omitUndefined` / `randomUuid` / CST·农历工具 SSOT 在 `@freeanima/shared/util`；存储形状前端吃 `@freeanima/shared/pg-shapes`（P2 codegen 替代 `createSelectSchema`）。P3：config **机制**在 `host/kernel/config-mechanism`，产品段 Zod/apply 经 `registerSection` 挂接。三分包与 portal 归属 → [`src-layering.md`](../../docs/product/src-layering.md)。
 
-**CI**：`just qa check` → oxlint `freeanima/layer-deps` + `scripts/check-frontend-no-drizzle.ts` + `scripts/check-shared-shapes.ts`。
+**CI**：`just qa check` → oxlint `freeanima/layer-deps`（含 `host-kernel` 叶层）+ `scripts/check-frontend-no-drizzle.ts` + `scripts/check-shared-shapes.ts`。
 
 ## Port / Catalog
 

@@ -24,11 +24,12 @@ import { sectionSchema } from "./config.ts";
 import { objectStorageConfigSchema } from "./object-storage.ts";
 import { companionConfigSchema } from "./companion.ts";
 import { promptSchema } from "./prompt.ts";
-import { BOOTSTRAP_CONFIG_KEYS } from "../bootstrap-config.ts";
+import { BOOTSTRAP_CONFIG_KEYS, registerSection } from "@freeanima/host/kernel/config-mechanism";
 
 /**
  * Habitat 运行时配置（PG habitat_runtime_config：一行一段）。
  * 不含 bootstrap 段（database / http / redis）；禁止再引入与 bootstrap 合并的超集 schema。
+ * 类型 SSOT：下方静态 shape；运行时亦 registerSection 挂到 kernel 注册表。
  */
 const runtimeConfigObjectSchema = z.object({
   i18n: i18nConfigSchema,
@@ -64,11 +65,20 @@ const runtimeConfigObjectSchema = z.object({
   companion: companionConfigSchema.optional(),
 });
 
+/** 将各产品段 Zod 挂入 kernel section 注册表（幂等合并） */
+export function registerRuntimeConfigSchemas(): void {
+  for (const [key, schema] of Object.entries(runtimeConfigObjectSchema.shape)) {
+    registerSection({ key, schema });
+  }
+}
+
+registerRuntimeConfigSchemas();
+
 export const runtimeConfigSchema = runtimeConfigObjectSchema.partial().passthrough();
 
 export type RuntimeConfig = z.infer<typeof runtimeConfigSchema>;
 
-/** 已知运行时段；未写入 PG 时 getSection 应返回 {} */
+/** 已知运行时段（与静态 shape / registerSection 同源） */
 export const RUNTIME_CONFIG_SECTION_KEYS = Object.keys(runtimeConfigObjectSchema.shape) as Array<
   keyof typeof runtimeConfigObjectSchema.shape
 >;
