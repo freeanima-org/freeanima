@@ -18,16 +18,9 @@ import {
   patchTaskDueAt,
   updateCalendarEvent,
   type CalendarEventRow,
-  type CalendarRangeItem,
   type CalendarRangeKind,
 } from "./lib/api.ts";
-import {
-  cstDayKey,
-  dayKeyFromIso,
-  monthLabel,
-  monthRangeIso,
-  shiftMonth,
-} from "./lib/format-calendar.ts";
+import { cstDayKey, monthLabel, monthRangeIso, shiftMonth } from "./lib/format-calendar.ts";
 import { registerCalendarOfflineModule } from "./lib/offline-store.ts";
 import { readCalendarUiPrefs, writeCalendarUiPrefs } from "./lib/calendar-prefs.ts";
 import { filterVisibleCalendarItems } from "./lib/visible-items.ts";
@@ -35,63 +28,6 @@ import { filterVisibleCalendarItems } from "./lib/visible-items.ts";
 registerCalendarOfflineModule();
 
 const KIND_OPTIONS: CalendarRangeKind[] = ["event", "task", "project"];
-
-function nextDayKey(day: string): string | null {
-  const parts = day.split("-").map(Number);
-  const y = parts[0];
-  const mo = parts[1];
-  const d = parts[2];
-  if (y == null || mo == null || d == null) return null;
-  if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(d)) return null;
-  const next = new Date(Date.UTC(y, mo - 1, d + 1));
-  return `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}-${String(next.getUTCDate()).padStart(2, "0")}`;
-}
-
-function countByDay(items: CalendarRangeItem[]): Map<string, number> {
-  const map = new Map<string, number>();
-  const bump = (day: string) => {
-    if (!day) return;
-    map.set(day, (map.get(day) ?? 0) + 1);
-  };
-  for (const item of items) {
-    if (item.kind === "event") {
-      const start = dayKeyFromIso(item.start_at);
-      const end = dayKeyFromIso(item.end_at ?? item.start_at);
-      if (!start) continue;
-      let cur: string | null = start;
-      while (cur != null && cur <= end) {
-        bump(cur);
-        const next = nextDayKey(cur);
-        if (next == null || next > end) break;
-        cur = next;
-      }
-      continue;
-    }
-    if (item.kind === "task") {
-      const start = dayKeyFromIso(item.start_at ?? item.due_at);
-      const end = dayKeyFromIso(item.due_at);
-      let cur: string | null = start;
-      while (cur != null && cur <= end) {
-        bump(cur);
-        const next = nextDayKey(cur);
-        if (next == null || next > end) break;
-        cur = next;
-      }
-      continue;
-    }
-    const start = dayKeyFromIso(item.start_at ?? "");
-    const end = dayKeyFromIso(item.end_at ?? item.start_at ?? "") || start;
-    if (!start) continue;
-    let cur: string | null = start;
-    while (cur != null && cur <= end) {
-      bump(cur);
-      const next = nextDayKey(cur);
-      if (next == null || next > end) break;
-      cur = next;
-    }
-  }
-  return map;
-}
 
 /** 日程暂只看用户视图，不暴露 subject 切换 */
 const CALENDAR_SUBJECT = "user" as const;
@@ -150,7 +86,6 @@ export function CalendarApp() {
     () => filterVisibleCalendarItems(items, expandRecurrence),
     [expandRecurrence, items],
   );
-  const dayCounts = useMemo(() => countByDay(visibleItems), [visibleItems]);
 
   const eventsById = useMemo(() => {
     const map = new Map<number, CalendarEventRow>();
@@ -350,8 +285,15 @@ export function CalendarApp() {
                 today={today}
                 items={visibleItems}
                 onSelectDay={setSelectedDay}
+                onOpenEvent={(id) => {
+                  const ev = eventsById.get(id);
+                  if (ev) setEditor({ mode: "edit", event: ev });
+                }}
                 onOpenTask={(id) => {
                   void openEntityResource({ id, component: "task_item", present: "overlay" });
+                }}
+                onOpenProject={() => {
+                  navigateAppModulePath("/projects");
                 }}
                 onDropTaskDue={(taskId, day) => {
                   void patchTaskDueAt(CALENDAR_SUBJECT, taskId, day).then(() => refresh());
@@ -363,8 +305,18 @@ export function CalendarApp() {
                 monthIndex={cursor.monthIndex}
                 selectedDay={selectedDay}
                 today={today}
-                dayCounts={dayCounts}
+                items={visibleItems}
                 onSelectDay={setSelectedDay}
+                onOpenEvent={(id) => {
+                  const ev = eventsById.get(id);
+                  if (ev) setEditor({ mode: "edit", event: ev });
+                }}
+                onOpenTask={(id) => {
+                  void openEntityResource({ id, component: "task_item", present: "overlay" });
+                }}
+                onOpenProject={() => {
+                  navigateAppModulePath("/projects");
+                }}
               />
             )}
           </section>
