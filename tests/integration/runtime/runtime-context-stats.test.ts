@@ -23,7 +23,7 @@ describePg("runtime context stats", () => {
     await beginIntegrationCaseWithConfig(
       "anima-ctx-stats-",
       `models:
-  m:
+  test-model:
     context_window: 128000
 compression:
   enabled: true
@@ -36,7 +36,8 @@ compression:
       return Array.from({ length: n }, (_, i) => i + 1);
     });
     await ensureFallbackTokenizer();
-    bindModelToFallbackForTest("m");
+    // 预算走 PROFILE_CHAT hop（test-model），不再读会话 meta.model
+    bindModelToFallbackForTest("test-model");
   });
 
   afterEach(async () => {
@@ -56,7 +57,7 @@ compression:
     const c = testConv();
     const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
     await c.updateConversationMetaField(sid, {
-      model: "m",
+      model: "stale-meta-model",
       system_prompt: "self layer block here\n\n<resident_memory>\n- fact\n</resident_memory>",
       cached_toolsets: ["__ctx_stats__"],
     });

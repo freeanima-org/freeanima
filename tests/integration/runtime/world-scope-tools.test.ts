@@ -23,6 +23,7 @@ import { createNotificationPort } from "@freeanima/habitat/platform/service/noti
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testAgentWorldId, testUserWorldId } from "../../helpers/world-context.ts";
+import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import type { RuntimeDeps } from "@freeanima/habitat/platform/service/runtime-deps";
 
@@ -165,14 +166,28 @@ describePg("world scope tools", () => {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    await createDreamEntry(
-      { worldId: testAgentWorldId() },
-      { dream_day: "2026-07-02", content: "agent dream" },
-    );
-    await createDreamEntry(
-      { worldId: testUserWorldId() },
-      { dream_day: "2026-07-02", content: "user dream" },
-    );
+    // 临时关 park，以便种 dream 存量再验 diary_get 的 world 作用域
+    const cfg = getActiveRuntimeConfig();
+    const prevCutover = cfg.data.memory?.cutover;
+    cfg.data.memory = {
+      ...cfg.data.memory,
+      cutover: { ...prevCutover, park_limbic_dream_narrative: false },
+    };
+    try {
+      await createDreamEntry(
+        { worldId: testAgentWorldId() },
+        { dream_day: "2026-07-02", content: "agent dream" },
+      );
+      await createDreamEntry(
+        { worldId: testUserWorldId() },
+        { dream_day: "2026-07-02", content: "user dream" },
+      );
+    } finally {
+      cfg.data.memory = {
+        ...cfg.data.memory,
+        cutover: prevCutover,
+      };
+    }
 
     let agentOut = "";
     await runWithToolContext(
