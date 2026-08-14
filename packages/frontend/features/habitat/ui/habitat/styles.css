@@ -1,8 +1,8 @@
 @import "tailwindcss";
 @import "@freeanima/ui-kit/styles/globals.css";
 @source "./**/*.{tsx,ts}";
-@source "../../../../src/ui-kit/**/*.{tsx,ts}";
-@source "../../../../src/client/portal-sdk/**/*.{tsx,ts}";
+@source "../../../../ui-kit/**/*.{tsx,ts}";
+@source "../../../../client/portal-sdk/**/*.{tsx,ts}";
 @import "@freeanima/ui-kit/styles.css";
 
 .app-main-padding {

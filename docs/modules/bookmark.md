@@ -34,4 +34,4 @@ title: 书签
 
 - [`portal.md`](portal.md) 浏览器形态
 - 扩展：`packages/frontend/portal/extension/features/bookmarks/`
-- Feature：`packages/{habitat,frontend}/features/bookmark/`
+- Feature：`packages/habitat/features/bookmark/` + `packages/frontend/features/bookmark/`

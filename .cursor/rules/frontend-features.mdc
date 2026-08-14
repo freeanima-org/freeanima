@@ -28,7 +28,7 @@ alwaysApply: false
 | `packages/{habitat,frontend}/features/<slug>/habitat/routes/index.ts` | Habitat RPC handler（`defineHabitatRoute`）                                                                  |
 | `packages/{habitat,frontend}/features/<slug>/ui`                      | 产品 UI（`@freeanima/feature-<slug>/ui/*`）                                                                  |
 | `platform`                                    | `packages/{habitat,frontend}/features/<slug>/plugin.ts` 注册 + 必要时 `service-*` 薄适配                                             |
-| `app-ui`                                      | 路由 lazy-load `@freeanima/feature-<slug>/ui/spa`；壳 CSS 已 `@source` 整棵 `src`，一般不必再按 feature 登记 |
+| `app-ui`                                      | 路由 lazy-load `@freeanima/feature-<slug>/ui/spa`；壳 CSS 已 `@source` 整棵 `packages/frontend`，一般不必再按 feature 登记 |
 
 **不要**：在 `app-ui` 内 `import @freeanima/shared/rpc-contract`；在 capabilities 内 import platform；新建独立 satellites 树做产品面；产品面不做 `remote_tools.attach`。
 

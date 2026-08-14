@@ -3,7 +3,7 @@ import { relToRepo, underScanRoots } from "../lib/repo-path.ts";
 import type { RuleModule } from "../lib/types.ts";
 import { visitModuleSpecifiers } from "../lib/visit-specifiers.ts";
 
-const SCAN_ROOTS = ["src", "scripts", "tests"] as const;
+const SCAN_ROOTS = ["packages", "scripts", "tests"] as const;
 
 export const importDepth: RuleModule = {
   meta: {

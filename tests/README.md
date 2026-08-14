@@ -4,13 +4,13 @@ The root `tests/` directory hosts **cross-package integration tests** and shared
 
 **Full-stack black-box E2E** (Compose + Playwright) lives in [freeanima-testing](https://github.com/freeanima-org/freeanima-testing)。主仓 PR dispatch **已暂停**（`ci.yml` `blackbox-dispatch` `if: false`）；恢复方式见该 job 注释。
 
-**Unit tests are always co-located**: `src/**/*.test.ts` (`bun:test`). Do not use `{pkg}/tests/unit/`.
+**Unit tests are always co-located**: `packages/**/*.test.ts` (`bun:test`). Do not use `{pkg}/tests/unit/`.
 
 ## Layers
 
 | Layer         | Location                                                                | External I/O                                                                            |
 | ------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Unit          | `src/**/*.test.ts`                                                      | mock + in-memory only (see [`.cursor/rules/testing.mdc`](../.cursor/rules/testing.mdc)) |
+| Unit          | `packages/**/*.test.ts`                                                 | mock + in-memory only (see [`.cursor/rules/testing.mdc`](../.cursor/rules/testing.mdc)) |
 | Integration   | `tests/integration/`                                                    | PG, Redis, temp `FREEANIMA_HOME`, `beginIntegrationCase`                                |
 | Black-box E2E | [freeanima-testing](https://github.com/freeanima-org/freeanima-testing) | Docker PG/Redis + source start + Playwright                                             |
 

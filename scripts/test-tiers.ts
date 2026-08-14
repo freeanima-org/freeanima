@@ -69,7 +69,7 @@ export function listUnitCorePaths(): string[] {
   }
 
   const coreNamed: string[] = [];
-  walkTestFiles(join(repoRoot, "src"), coreNamed);
+  walkTestFiles(join(repoRoot, "packages"), coreNamed);
   for (const f of coreNamed) {
     if (
       f.endsWith(".core.test.ts") ||

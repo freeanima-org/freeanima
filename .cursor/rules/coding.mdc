@@ -10,7 +10,7 @@ alwaysApply: false
 
 - Full type annotations on new and touched code
 - **Relative imports must include `.ts` / `.tsx` suffix** (oxlint `import/extensions`)
-- **Relative import depth**（oxlint `freeanima/import-depth`）：`src/`、`scripts/`、`tests/` 内相对路径最多 `../../`（禁止 `../../../` 及以上）；禁止 `../src/` 形式（跨目录引用 `src/` 须用 `@freeanima/*`）
+- **Relative import depth**（oxlint `freeanima/import-depth`）：`packages/`、`scripts/`、`tests/` 内相对路径最多 `../../`（禁止 `../../../` 及以上）；禁止 `../src/` 形式（跨包/跨目录引用须用 `@freeanima/*`）
 - **`dir:` 目录导入**（oxlint `freeanima/dir-import-exists`）：`import … from "dir:…"` 须解析到真实目录（`app/web/dist` 构建产物可缺）
 - **Base compiler flags** ([`tsconfig.base.json`](../../tsconfig.base.json)): `strict`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noImplicitOverride`, `allowUnreachableCode: false`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`
 - **Optional props**: with `exactOptionalPropertyTypes`, do not pass `prop: undefined` — use `omitUndefined()` from `@freeanima/shared/util`（host 路径 `@freeanima/habitat/core/util` 仍为 re-export）或 conditional spread

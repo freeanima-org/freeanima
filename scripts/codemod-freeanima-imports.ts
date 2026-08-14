@@ -198,7 +198,7 @@ function walk(dir: string, out: string[]): void {
 }
 
 const SCAN_ROOTS = [
-  "src",
+  "packages",
   "scripts",
   "tests",
   "types",

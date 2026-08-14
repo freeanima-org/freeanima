@@ -71,12 +71,12 @@ fmt-check: _deps
 # 全量单元 + 集成（串行）
 [no-cd]
 test: _deps
-  {{ bun }} test src --pass-with-no-tests
+  {{ bun }} test packages scripts/oxlint-plugins --pass-with-no-tests
   {{ bun }} scripts/run-integration-tests.ts
 
 [no-cd]
 test-unit: _deps
-  {{ bun }} test src --pass-with-no-tests
+  {{ bun }} test packages scripts/oxlint-plugins --pass-with-no-tests
 
 [no-cd]
 test-unit-core: _deps
@@ -88,11 +88,11 @@ test-integration *args: _deps
 
 [no-cd]
 test-changed: _deps
-  {{ bun }} test src --pass-with-no-tests --changed
+  {{ bun }} test packages scripts/oxlint-plugins --pass-with-no-tests --changed
 
 [no-cd]
 test-coverage: _deps
-  {{ bun }} test --coverage --pass-with-no-tests
+  {{ bun }} test packages scripts/oxlint-plugins --coverage --pass-with-no-tests
 
 [no-cd]
 coverage-cobertura: _deps

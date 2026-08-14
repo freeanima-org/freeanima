@@ -1,9 +1,9 @@
 # 弱价值 / 已处理的 unit smoke（维护备忘，非门禁清单）
 #
 # 已删：
-# - src/host/capabilities/self/package.test.ts（仅 package 常量）
-# - src/host/engine/conversation/conversation-store-pg-bridge.test.ts（typeof export）
-# - src/host/engine/turn/turn-runtime.test.ts（误碰 PG；覆盖由 integration engine 承担）
+# - packages/habitat/capabilities/self/package.test.ts（仅 package 常量）
+# - packages/habitat/engine/conversation/conversation-store-pg-bridge.test.ts（typeof export）
+# - packages/habitat/engine/turn/turn-runtime.test.ts（误碰 PG；覆盖由 integration engine 承担）
 #
 # 后续可删并（enhanced，非阻塞）：
 # - 仅断言 qualifiedId / typeof 的 package.test.ts

@@ -26,7 +26,7 @@ Main Chat / tasks      ── RPC only ─────► same Habitat
 ## 产品形态
 
 - **编码工作台 = 独立前哨窗**（UI + `remote_tools.attach`），与桌面伴侣同类；同一 **Tauri 入口**，不是第二个应用。
-- 功能代码：`packages/{habitat,frontend}/features/coding/` —— **不要**把 Coding 塞进 `features/companion/`。
+- 功能代码：`packages/habitat/features/coding/` + `packages/frontend/features/coding/` —— **不要**把 Coding 塞进 `features/companion/`。
 - 「产品 UI 不 attach」适用于**主壳产品模块**（聊天室、任务、…）。**前哨窗可以既是 UI 又是手**。
 - 保活与**伴侣进程/壳存活**对齐，但 **attach 生命周期不同**：
   - 伴侣：隐藏显示会**关闭** WebView → attach 拆除（离线）。
