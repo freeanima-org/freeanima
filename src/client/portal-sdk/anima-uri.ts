@@ -18,6 +18,7 @@ const DEFAULT_PRESENT_BY_COMPONENT: Record<string, AnimaPresent> = {
   task_list: "navigate",
   semantic_memory: "overlay",
   calendar_event: "overlay",
+  project: "overlay",
 };
 
 export function defaultPresentForComponent(component: string | undefined): AnimaPresent {
@@ -124,6 +125,20 @@ function parseShellPathAsAnimaUri(pathWithSearch: string): ParseAnimaUriResult {
     }
     return { ok: false, error: "tasks path missing item or list" };
   }
+  if (path === "/projects") {
+    const projectRaw = url.searchParams.get("project")?.trim();
+    if (!projectRaw) return { ok: false, error: "projects path missing project" };
+    const id = parsePositiveIntId(projectRaw);
+    if (id == null) return { ok: false, error: "invalid project id" };
+    return { ok: true, ref: { id, component: "project", present: "navigate" } };
+  }
+  if (path === "/calendar") {
+    const eventRaw = url.searchParams.get("event")?.trim();
+    if (!eventRaw) return { ok: false, error: "calendar path missing event" };
+    const id = parsePositiveIntId(eventRaw);
+    if (id == null) return { ok: false, error: "invalid event id" };
+    return { ok: true, ref: { id, component: "calendar_event", present: "navigate" } };
+  }
   return { ok: false, error: "unsupported shell path" };
 }
 
@@ -140,6 +155,12 @@ export function animaUriToShellPath(ref: AnimaUriRef): string | null {
   }
   if (component === "task_list") {
     return `/tasks?list=${ref.id}`;
+  }
+  if (component === "project") {
+    return `/projects?project=${ref.id}`;
+  }
+  if (component === "calendar_event") {
+    return `/calendar?event=${ref.id}`;
   }
   return null;
 }

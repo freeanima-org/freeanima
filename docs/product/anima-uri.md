@@ -51,7 +51,14 @@ Anima URI 是**壳 / UI 定位协议**，不是数据库外键。用户撰写的
 
 每个可展示组件可 `registerEntityOverlay(component, OverlayComponent)`。  
 `present=overlay` → 解析组件（默认 `primary_component`）→ 查注册表 → `EntityOverlayHost`。  
-`present=navigate` → 经 `navigateAppModulePath` 将组件映射到壳路径（如 `task_item` → `/tasks?item=…`）。
+`present=navigate` → 经 `navigateAppModulePath` 将组件映射到壳路径。`EntityOverlayHost` 在可映射时提供统一「在模块中打开」按钮（关浮层后 `present=navigate`）。
+
+| component        | 壳路径                       |
+| ---------------- | ---------------------------- |
+| `task_item`      | `/tasks?item={id}&present=…` |
+| `task_list`      | `/tasks?list={id}`           |
+| `project`        | `/projects?project={id}`     |
+| `calendar_event` | `/calendar?event={id}`       |
 
 ## 暂不在范围
 

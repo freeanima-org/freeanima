@@ -44,6 +44,10 @@ const PARSE_ERROR_ZH: Record<string, string> = {
   "invalid item id": "无效的任务 id",
   "invalid list id": "无效的清单 id",
   "tasks path missing item or list": "任务路径缺少 item 或 list",
+  "projects path missing project": "项目路径缺少 project",
+  "invalid project id": "无效的项目 id",
+  "calendar path missing event": "日程路径缺少 event",
+  "invalid event id": "无效的事件 id",
   "unsupported shell path": "不支持的壳路径",
 };
 

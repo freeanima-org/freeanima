@@ -23,7 +23,7 @@ type MonthGridProps = {
   onSelectDay: (day: string) => void;
   onOpenEvent: (id: number) => void;
   onOpenTask: (id: number) => void;
-  onOpenProject: () => void;
+  onOpenProject: (id: number) => void;
 };
 
 function chunkWeeks(cells: (string | null)[]): (string | null)[][] {
@@ -40,7 +40,7 @@ function openBar(
 ): void {
   if (bar.item.kind === "event") handlers.onOpenEvent(bar.item.id);
   else if (bar.item.kind === "task") handlers.onOpenTask(bar.item.id);
-  else handlers.onOpenProject();
+  else handlers.onOpenProject(bar.item.id);
 }
 
 export function MonthGrid({
