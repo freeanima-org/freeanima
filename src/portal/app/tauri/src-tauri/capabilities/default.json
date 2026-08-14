@@ -31,6 +31,7 @@
     "core:tray:default",
     "store:default",
     "notification:default",
+    "apk-installer:default",
     "autostart:default",
     "shell:allow-open",
     "allow-get-habitat-config",
